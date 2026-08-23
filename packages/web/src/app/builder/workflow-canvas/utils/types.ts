@@ -116,7 +116,16 @@ export enum ApEdgeType {
   LOOP_RETURN_EDGE = 'ApLoopReturnEdge',
   ROUTER_START_EDGE = 'ApRouterStartEdge',
   ROUTER_END_EDGE = 'ApRouterEndEdge',
+  JOIN_EDGE = 'ApJoinEdge',
 }
+
+export type ApJoinEdge = Edge & {
+  type: ApEdgeType.JOIN_EDGE;
+  data: {
+    from: string;
+    to: string;
+  };
+};
 
 export type ApStraightLineEdge = Edge & {
   type: ApEdgeType.STRAIGHT_LINE;
@@ -190,7 +199,8 @@ export type ApEdge =
   | ApLoopReturnEdge
   | ApStraightLineEdge
   | ApRouterStartEdge
-  | ApRouterEndEdge;
+  | ApRouterEndEdge
+  | ApJoinEdge;
 export type ApGraph = {
   nodes: ApNode[];
   edges: ApEdge[];

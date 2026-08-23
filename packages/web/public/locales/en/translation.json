@@ -2474,5 +2474,8 @@
   "Run several branches at the same time and wait for all of them": "Run several branches at the same time and wait for all of them",
   "Add branch": "Add branch",
   "Remove branch": "Remove branch",
-  "Every branch runs at the same time. The workflow continues once all of them finish.": "Every branch runs at the same time. The workflow continues once all of them finish."
+  "Every branch runs at the same time. The workflow continues once all of them finish.": "Every branch runs at the same time. The workflow continues once all of them finish.",
+  "Wait for": "Wait for",
+  "This step will not run until every step you pick here has finished.": "This step will not run until every step you pick here has finished.",
+  "waits for": "waits for"
 }

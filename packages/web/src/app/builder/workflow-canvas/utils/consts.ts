@@ -8,6 +8,7 @@ import {
   NoteColorVariant,
 } from '@fema-ipaas/shared';
 
+import { ApJoinCanvasEdge } from '../edges/join-edge';
 import { ApLoopReturnLineCanvasEdge as ApLoopReturnCanvasEdge } from '../edges/loop-return-edge';
 import { ApLoopStartLineCanvasEdge as ApLoopStartCanvasEdge } from '../edges/loop-start-edge';
 import { ApRouterEndCanvasEdge } from '../edges/router-end-edge';
@@ -102,6 +103,7 @@ export const workflowCanvasConsts = {
     [ApEdgeType.LOOP_RETURN_EDGE]: ApLoopReturnCanvasEdge,
     [ApEdgeType.ROUTER_START_EDGE]: ApRouterStartCanvasEdge,
     [ApEdgeType.ROUTER_END_EDGE]: ApRouterEndCanvasEdge,
+    [ApEdgeType.JOIN_EDGE]: ApJoinCanvasEdge,
   },
   nodeTypes: {
     [ApNodeType.STEP]: ApStepCanvasNode,

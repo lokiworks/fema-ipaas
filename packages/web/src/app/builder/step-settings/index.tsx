@@ -40,6 +40,7 @@ import { CodeSettings } from './code-settings';
 import { ComponentSettings } from './component-settings';
 import { ConnectorSettings } from './connector-settings';
 import EditableStepName from './editable-step-name';
+import { JoinEdgesSection } from './join-edges-section';
 import { LoopsSettings } from './loops-settings';
 import { ParallelSettings } from './parallel-settings';
 import { RouterSettings } from './router-settings';
@@ -206,6 +207,9 @@ const StepSettingsContainer = () => {
         )}
         {modifiedStep.type === WorkflowActionType.PARALLEL && (
           <ParallelSettings readonly={readonly} />
+        )}
+        {workflowStructureUtil.isAction(modifiedStep.type) && (
+          <JoinEdgesSection stepName={modifiedStep.name} readonly={readonly} />
         )}
         {modifiedStep.type === WorkflowTriggerType.CONNECTOR &&
           modifiedStep && (

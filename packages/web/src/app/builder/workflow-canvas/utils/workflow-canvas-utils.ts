@@ -724,6 +724,23 @@ const doesSelectionRectangleExist = () => {
     ) !== null
   );
 };
+// Join edges are drawn on top of the tree's own layout rather than participating in it: they
+// connect two existing step nodes, so they need no space of their own and must not shift anything.
+function buildJoinEdges(version: WorkflowVersion, graph: ApGraph): ApEdge[] {
+  const nodeIds = new Set(graph.nodes.map((node) => node.id));
+  return (version.graph?.joinEdges ?? [])
+    .filter((edge) => nodeIds.has(edge.from) && nodeIds.has(edge.to))
+    .map((edge) => ({
+      id: `join-${edge.from}-${edge.to}`,
+      source: edge.from,
+      target: edge.to,
+      type: ApEdgeType.JOIN_EDGE as const,
+      data: { from: edge.from, to: edge.to },
+      selectable: false,
+      focusable: false,
+    }));
+}
+
 export const workflowCanvasUtils = {
   createWorkflowGraph({
     version,
@@ -751,7 +768,11 @@ export const workflowCanvasUtils = {
       orientation === 'horizontal'
         ? transposeGraphPositions(stepsGraph)
         : stepsGraph;
-    return mergeGraph(orientedGraph, notesGraph);
+    const withNotes = mergeGraph(orientedGraph, notesGraph);
+    return {
+      ...withNotes,
+      edges: [...withNotes.edges, ...buildJoinEdges(version, withNotes)],
+    };
   },
   createFocusStepInGraphParams,
   calculateGraphBoundingBox,

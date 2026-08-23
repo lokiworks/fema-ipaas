@@ -2377,5 +2377,8 @@
   "Run several branches at the same time and wait for all of them": "同时运行多个分支，全部完成后继续",
   "Add branch": "新增分支",
   "Remove branch": "删除分支",
-  "Every branch runs at the same time. The workflow continues once all of them finish.": "各分支同时运行，全部结束后工作流才继续。"
+  "Every branch runs at the same time. The workflow continues once all of them finish.": "各分支同时运行，全部结束后工作流才继续。",
+  "Wait for": "等待这些步骤",
+  "This step will not run until every step you pick here has finished.": "选中的每个步骤都完成之后，本步骤才会运行。",
+  "waits for": "等待"
 }

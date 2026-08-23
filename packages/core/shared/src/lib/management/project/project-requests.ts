@@ -1,6 +1,6 @@
 import { Metadata, Nullable, OptionalArrayFromQuery, SAFE_STRING_PATTERN } from '@activepieces/core-utils'
 import { z } from 'zod'
-import { PiecesFilterType, ProjectIcon, ProjectType } from './project'
+import { ProjectIcon, ProjectType } from './project'
 
 export const UpdateProjectPlatformRequest = z.object({
     releasesEnabled: z.boolean().optional(),
@@ -9,12 +9,6 @@ export const UpdateProjectPlatformRequest = z.object({
     externalId: z.string().optional(),
     metadata: z.optional(Metadata),
     icon: ProjectIcon.optional(),
-    plan: z.object({
-        pieces: z.array(z.string()).optional(),
-        piecesFilterType: z.nativeEnum(PiecesFilterType).optional(),
-        activeFlowsLimit: z.optional(Nullable(z.number().int().positive())),
-    }).optional(),
-    globalConnectionExternalIds: z.array(z.string()).optional(),
     maxConcurrentJobs: z.optional(Nullable(z.number().int().positive())),
     workerGroupId: z.optional(Nullable(z.string())),
     executionDataRetentionDays: z.optional(Nullable(z.number().int().positive())),
@@ -27,8 +21,6 @@ export const CreatePlatformProjectRequest = z.object({
     externalId: Nullable(z.string()),
     metadata: Nullable(Metadata),
     maxConcurrentJobs: Nullable(z.number()),
-    globalConnectionExternalIds: z.array(z.string()).optional(),
-    alertReceiverEmail: z.email().nullable().optional(),
 })
 
 export type CreatePlatformProjectRequest = z.infer<typeof CreatePlatformProjectRequest>

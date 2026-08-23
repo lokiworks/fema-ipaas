@@ -1,6 +1,5 @@
 import type { RunEnvironment } from '@activepieces/core-execution'
 import type { FlowId, ProjectId, UserId } from '@activepieces/core-utils'
-import type { McpId } from '../../automation/mcp/mcp'
 
 type FlowCreated = {
     flowId: FlowId
@@ -153,7 +152,7 @@ type AiProviderConfiguredOrUsed = {
 }
 
 type McpToolCalled = {
-    mcpId: McpId
+    mcpId: string
     toolName: string
 }
 

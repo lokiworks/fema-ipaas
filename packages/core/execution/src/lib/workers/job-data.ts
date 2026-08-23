@@ -8,8 +8,6 @@ import { CodeActionSchema, PieceActionSchema } from '../flows/actions/action'
 import { FlowVersion } from '../flows/flow-version'
 import { FlowTriggerType } from '../flows/triggers/trigger'
 import { AppConnectionType, AppConnectionValue, PiecePackage } from '@activepieces/core-piece-types'
-import { AgentTool } from '../agents/tools'
-import { AgentOutputField } from '../agents'
 
 export const LATEST_JOB_DATA_SCHEMA_VERSION = 10
 
@@ -55,7 +53,6 @@ export function getDefaultJobPriority(job: JobData): keyof typeof JOB_PRIORITY {
         case WorkerJobType.RENEW_WEBHOOK:
             return 'veryLow'
         case WorkerJobType.EXECUTE_WEBHOOK:
-        case WorkerJobType.EVENT_DESTINATION:
             return 'medium'
         case WorkerJobType.EXECUTE_FLOW:
             return getExecuteFlowPriority(job.environment, job.workerHandlerId)
@@ -66,7 +63,6 @@ export function getDefaultJobPriority(job: JobData): keyof typeof JOB_PRIORITY {
         case WorkerJobType.EXECUTE_TRIGGER_HOOK:
         case WorkerJobType.EXECUTE_TOKEN_REFRESH:
             return 'critical'
-        case WorkerJobType.EXECUTE_AGENT_RUN:
         case WorkerJobType.EXECUTE_ACTION:
             return 'high'
     }
@@ -83,8 +79,6 @@ export enum WorkerJobType {
     EXECUTE_TRIGGER_HOOK = 'EXECUTE_TRIGGER_HOOK',
     EXECUTE_PROPERTY = 'EXECUTE_PROPERTY',
     EXECUTE_EXTRACT_PIECE_INFORMATION = 'EXECUTE_EXTRACT_PIECE_INFORMATION',
-    EVENT_DESTINATION = 'EVENT_DESTINATION',
-    EXECUTE_AGENT_RUN = 'EXECUTE_AGENT_RUN',
     EXECUTE_TOKEN_REFRESH = 'EXECUTE_TOKEN_REFRESH',
     EXECUTE_ACTION = 'EXECUTE_ACTION',
 }
@@ -96,7 +90,6 @@ export const NON_SCHEDULED_JOB_TYPES: WorkerJobType[] = [
     WorkerJobType.EXECUTE_TRIGGER_HOOK,
     WorkerJobType.EXECUTE_PROPERTY,
     WorkerJobType.EXECUTE_EXTRACT_PIECE_INFORMATION,
-    WorkerJobType.EXECUTE_AGENT_RUN,
     WorkerJobType.EXECUTE_TOKEN_REFRESH,
     WorkerJobType.EXECUTE_RESOLVE_CONNECTION_IDENTIFIER,
     WorkerJobType.EXECUTE_ACTION,
@@ -294,81 +287,12 @@ export const UserInteractionJobDataWithoutWatchingInformation = z.union([
 ])
 export type UserInteractionJobDataWithoutWatchingInformation = z.infer<typeof UserInteractionJobDataWithoutWatchingInformation>
 
-export enum AgentRunSource {
-    CHAT = 'CHAT',
-    FLOW_STEP = 'FLOW_STEP',
-    AGENT = 'AGENT',
-}
-
-export const AgentPromptOverride = z.object({
-    system: z.string().optional(),
-    projectSelected: z.string().optional(),
-    noProject: z.string().optional(),
-    guides: z.record(z.string(), z.string()).optional(),
-})
-export type AgentPromptOverride = z.infer<typeof AgentPromptOverride>
-
-export const ResolvedAgentFlowTool = z.object({
-    toolName: z.string(),
-    flowId: z.string(),
-    description: z.string(),
-    inputSchema: z.record(z.string(), z.unknown()),
-    returnsResponse: z.boolean(),
-})
-export type ResolvedAgentFlowTool = z.infer<typeof ResolvedAgentFlowTool>
-
-export const ExecuteAgentRunJobData = z.object({
-    schemaVersion: z.number(),
-    jobType: z.literal(WorkerJobType.EXECUTE_AGENT_RUN),
-    conversationId: z.string(),
-    runId: z.string().optional(),
-    projectId: z.string().nullable(),
-    platformId: z.string(),
-    userId: z.string(),
-    userMessage: z.string(),
-    source: z.enum(AgentRunSource).optional(),
-    flowRunId: z.string().optional(),
-    waitpointId: z.string().optional(),
-    tools: z.array(AgentTool).optional(),
-    flowTools: z.array(ResolvedAgentFlowTool).optional(),
-    structuredOutput: z.array(AgentOutputField).optional(),
-    maxSteps: z.number().int().positive().optional(),
-    provider: z.enum(AIProviderName).optional(),
-    modelName: z.string().nullable(),
-    files: z.array(z.object({
-        name: z.string(),
-        mimeType: z.string(),
-        data: z.string(),
-    })).optional(),
-    promptOverride: AgentPromptOverride.optional(),
-    dryRun: z.boolean().optional(),
-    // Measurement mode: run real discovery (research/get-props/resolve/reads) but neutralize
-    // ap_execute_action and auto-resolve approval gates, so the eval harness can measure how the
-    // agent navigates to a runnable call with zero side effects and no approval stalls.
-    discoveryOnly: z.boolean().optional(),
-})
-export type ExecuteAgentRunJobData = z.infer<typeof ExecuteAgentRunJobData>
-
-export const EventDestinationJobData = z.object({
-    schemaVersion: z.number(),
-    platformId: z.string(),
-    projectId: z.string().optional(),
-    webhookId: z.string(),
-    webhookUrl: z.string(),
-    payload: z.unknown(), // EE audit-event schema stays in @activepieces/shared; engine does not need it
-    jobType: z.literal(WorkerJobType.EVENT_DESTINATION),
-})
-
-export type EventDestinationJobData = z.infer<typeof EventDestinationJobData>
-
 export const JobData = z.union([
     PollingJobData,
     RenewWebhookJobData,
     ExecuteFlowJobData,
     WebhookJobData,
     UserInteractionJobData,
-    EventDestinationJobData,
-    ExecuteAgentRunJobData,
 ])
 export type JobData = z.infer<typeof JobData>
 export type JobPayload = z.infer<typeof JobPayload>

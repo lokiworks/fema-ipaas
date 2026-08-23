@@ -1,7 +1,7 @@
 import { isNil, spreadIfDefined } from '@activepieces/core-utils'
 import { PieceMetadata } from '@activepieces/pieces-framework'
 import { apVersionUtil, onCallService, UNKNOWN_VERSION, wideEvent } from '@activepieces/server-utils'
-import { AddAllowedEmbedOriginsRequestBody, ApEdition, ApEnvironment, AppConnectionWithoutSensitiveData, ApplicationEventName, ConnectionDeletedEvent, ConnectionUpsertedEvent, Flow, FlowActivatedEvent, FlowCreatedEvent, FlowDeactivatedEvent, FlowDeletedEvent, FlowPublishedEvent, FlowRun, FlowRunFinishedEvent, FlowRunRetriedEvent, FlowRunStartedEvent, FlowUpdatedEvent, Folder, FolderCreatedEvent, FolderDeletedEvent, FolderUpdatedEvent, GitRepoWithoutSensitiveData, ProjectMember, ProjectRelease, ProjectReleaseEvent, ProjectRoleEvent, ProjectWithLimits, SigningKeyEvent, SignUpEvent, Template, UserEmailVerifiedEvent, UserInvitation, UserPasswordResetEvent, UserSignedInEvent, UserWithMetaInformation } from '@activepieces/shared'
+import { ApEnvironment, AppConnectionWithoutSensitiveData, ApplicationEventName, ConnectionDeletedEvent, ConnectionUpsertedEvent, Flow, FlowActivatedEvent, FlowCreatedEvent, FlowDeactivatedEvent, FlowDeletedEvent, FlowPublishedEvent, FlowRun, FlowRunFinishedEvent, FlowRunRetriedEvent, FlowRunStartedEvent, FlowUpdatedEvent, Folder, FolderCreatedEvent, FolderDeletedEvent, FolderUpdatedEvent, ProjectWithLimits, Template, UserEmailVerifiedEvent, UserInvitation, UserPasswordResetEvent, UserSignedInEvent, UserWithMetaInformation } from '@activepieces/shared'
 import replyFrom from '@fastify/reply-from'
 import swagger from '@fastify/swagger'
 import { createAdapter } from '@socket.io/redis-adapter'
@@ -9,12 +9,6 @@ import { FastifyBaseLogger, FastifyInstance, FastifyRequest, HTTPMethods } from 
 import { jsonSchemaTransform, jsonSchemaTransformObject } from 'fastify-type-provider-zod'
 import Mustache from 'mustache'
 import { globalRegistry } from 'zod/v4/core'
-import { agentsModule } from './agents/agents-module'
-import { aiProviderService } from './ai/ai-provider-service'
-import { aiProviderModule } from './ai/ai-provider.module'
-import { aiToolConfigModule } from './ai/ai-tool-config.module'
-import { platformAnalyticsModule } from './analytics/platform-analytics.module'
-import { setPlatformOAuthService } from './app-connection/app-connection-service/oauth2'
 import { appConnectionModule } from './app-connection/app-connection.module'
 import { platformAppConnectionModule } from './app-connection/platform-app-connection.module'
 import { authenticationModule } from './authentication/authentication.module'
@@ -26,54 +20,11 @@ import { rateLimitModule } from './core/security/rate-limit'
 import { authenticationMiddleware } from './core/security/v2/authn/authentication-middleware'
 import { authorizationMiddleware } from './core/security/v2/authz/authorization-middleware'
 import { distributedLock, redisConnections } from './database/redis-connections'
-import { agentEvalModule } from './ee/agent/agent-eval-controller'
-import { agentHelpers } from './ee/agent/agent-helpers'
-import { agentModule } from './ee/agent/agent.module'
-import { alertsModule } from './ee/alerts/alerts-module'
-import { apiKeyModule } from './ee/api-keys/api-key-module'
-import { platformOAuth2Service } from './ee/app-connections/platform-oauth2-service'
-import { appCredentialModule } from './ee/app-credentials/app-credentials.module'
-import { appSumoModule } from './ee/appsumo/appsumo.module'
-import { auditEventModule } from './ee/audit-logs/audit-event-module'
-import { enterpriseLocalAuthnModule } from './ee/authentication/enterprise-local-authn/enterprise-local-authn-module'
-import { federatedAuthModule } from './ee/authentication/federated-authn/federated-authn-module'
-import { rbacMiddleware } from './ee/authentication/project-role/rbac-middleware'
-import { authnSsoSamlModule } from './ee/authentication/saml-authn/authn-sso-saml-module'
-import { billingUsageReportModule } from './ee/billing-usage-report/billing-usage-report-module'
-import { connectionKeyModule } from './ee/connection-keys/connection-key.module'
-import { embedSubdomainModule } from './ee/embed-subdomain/embed-subdomain.module'
-import { enterpriseFlagsHooks } from './ee/flags/enterprise-flags.hooks'
-import { globalConnectionModule } from './ee/global-connections/global-connection-module'
-import { appearanceHelper } from './ee/helper/appearance-helper'
-import { managedAuthnModule } from './ee/managed-authn/managed-authn-module'
-import { oauthAppModule } from './ee/oauth-apps/oauth-app.module'
-import { pieceSetModule } from './ee/pieces/piece-set/piece-set.module'
-import { platformPieceModule } from './ee/pieces/platform-piece-module'
-import { adminPlatformModule } from './ee/platform/admin/admin-platform.controller'
-import { adminPlatformTemplatesCloudModule } from './ee/platform/admin/templates/admin-platform-templates-cloud.module'
-import { autumnBillingProvider } from './ee/platform/platform-plan/billing-providers/autumn-billing'
-import { platformPlanModule } from './ee/platform/platform-plan/platform-plan.module'
-import { platformTeardownJobs } from './ee/platform/platform-teardown-jobs'
-import { platformWebhooksModule } from './ee/platform-webhooks/platform-webhooks.module'
-import { projectEnterpriseHooks } from './ee/projects/ee-project-hooks'
-import { platformProjectBackgroundJobs } from './ee/projects/platform-project-jobs'
-import { platformProjectModule } from './ee/projects/platform-project-module'
-import { projectMemberModule } from './ee/projects/project-members/project-member.module'
-import { gitRepoModule } from './ee/projects/project-release/git-sync/git-sync.module'
-import { projectReleaseModule } from './ee/projects/project-release/project-release.module'
-import { projectReplaceModule } from './ee/projects/project-replace/project-replace.module'
-import { projectRoleModule } from './ee/projects/project-role/project-role.module'
-import { scimModule } from './ee/scim/scim-module'
-import { secretManagersModule } from './ee/secret-managers/secret-managers.module'
-import { signingKeyModule } from './ee/signing-key/signing-key-module'
-import { userModule } from './ee/users/user.module'
 import { fileModule } from './file/file.module'
 import { flagModule } from './flags/flag.module'
-import { flagHooks } from './flags/flags.hooks'
 import { flowBackgroundJobs } from './flows/flow/flow.jobs'
 import { humanInputModule } from './flows/flow/human-input/human-input.module'
 import { flowRunModule } from './flows/flow-run/flow-run-module'
-import { resumePageHooks } from './flows/flow-run/waitpoint/resume-page-hooks'
 import { flowModule } from './flows/flow.module'
 import { folderModule } from './flows/folder/folder.module'
 import { domainHelper } from './helper/domain-helper'
@@ -89,22 +40,16 @@ import { systemJobsSchedule } from './helper/system-jobs/system-job'
 import { systemSnapshot } from './helper/system-snapshot'
 import { validateEnvPropsOnStartup } from './helper/system-validator'
 import { shutdownTelemetry } from './helper/telemetry.utils'
-import { knowledgeBaseModule } from './knowledge-base/knowledge-base.module'
-import { mcpServerModule } from './mcp/mcp-module'
-import { mcpOAuthApproveController } from './mcp/oauth/code/mcp-oauth-approve.controller'
 import { communityPiecesModule } from './pieces/community-piece-module'
 import { startDevPieceWatcher } from './pieces/dev-piece-watcher'
 import { pieceModule } from './pieces/metadata/piece-metadata-controller'
 import { pieceMetadataService } from './pieces/metadata/piece-metadata-service'
 import { pieceSyncService } from './pieces/piece-sync-service'
-import { billingProvider } from './platform/billing-provider'
 import { platformModule } from './platform/platform.module'
-import { projectHooks } from './project/project-hooks'
+import { projectBackgroundJobs } from './project/project.jobs'
+import { projectModule } from './project/project.module'
 import { storeEntryModule } from './store-entry/store-entry.module'
-import { tablesModule } from './tables/tables.module'
-import { teamsBotModule } from './teams-bot/teams-bot.module'
 import { templateModule } from './template/template.module'
-import { toolSearchReindexJob } from './tool-search/tool-search-reindex.job'
 import { appEventRoutingModule } from './trigger/app-event-routing/app-event-routing.module'
 import { triggerModule } from './trigger/trigger.module'
 import { platformUserModule } from './user/platform/platform-user-module'
@@ -112,7 +57,6 @@ import { invitationModule } from './user-invitations/user-invitation.module'
 import { variableModule } from './variable/variable.module'
 import { webhookModule } from './webhooks/webhook-module'
 import { engineResponseWatcher } from './workers/engine-response-watcher'
-
 import { workerCapacity } from './workers/machine/worker-capacity'
 import { migrateQueuesAndRunConsumers, workerModule } from './workers/worker-module'
 
@@ -133,8 +77,8 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
             openapi: '3.1.0',
             servers: [
                 {
-                    url: 'https://cloud.activepieces.com/api',
-                    description: 'Production Server',
+                    url: '/api',
+                    description: 'This instance',
                 },
             ],
             components: {
@@ -150,12 +94,8 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
                 },
             },
             info: {
-                title: 'Activepieces Documentation',
+                title: 'FEMA Integration Platform API',
                 version: '0.0.0',
-            },
-            externalDocs: {
-                url: 'https://www.activepieces.com/docs',
-                description: 'Find more info here',
             },
         },
     })
@@ -204,7 +144,6 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     })
 
     app.addHook('preHandler', authorizationMiddleware)
-    app.addHook('preHandler', rbacMiddleware)
 
     const canaryAppUrl = system.get(AppSystemProp.CANARY_APP_URL)
     if (!isNil(canaryAppUrl)) {
@@ -216,17 +155,11 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     await app.register(fileModule)
     await app.register(flagModule)
     await app.register(storeEntryModule)
-    await app.register(teamsBotModule)
     await app.register(folderModule)
     await pieceSyncService(app.log).setup()
-    toolSearchReindexJob(app.log).register()
-    // Boot backfill: build the tool-search index if the flag is on but it is empty or only partially
-    // embedded (a populated deployment fires no sync delta, and a build that failed midway leaves rows
-    // unembedded). Fire-and-forget — a no-op once fully built, and must never block or fail boot.
-    rejectedPromiseHandler(toolSearchReindexJob(app.log).backfillIfNeeded(), app.log)
-    await toolSearchReindexJob(app.log).scheduleRecurringReconcile()
     await pieceMetadataService(app.log).setup()
     await app.register(pieceModule)
+    await app.register(communityPiecesModule)
     await app.register(collaborativeModule)
     await app.register(flowModule)
     await app.register(flowRunModule)
@@ -237,51 +170,25 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     await app.register(openapiModule)
     await app.register(appEventRoutingModule)
     await app.register(authenticationModule)
+    await app.register(otpModule)
     await app.register(triggerModule)
     await app.register(platformModule)
+    await app.register(projectModule)
     await app.register(humanInputModule)
-    await app.register(mcpServerModule)
-    await app.register(mcpOAuthApproveController)
-    await app.register(agentsModule)
     await app.register(platformUserModule)
-    await app.register(alertsModule)
     await app.register(invitationModule)
     await app.register(workerModule)
     await workerCapacity.setup()
     await app.register(oidcModule)
-    await aiProviderService(app.log).setup()
-    await app.register(aiProviderModule)
-    await app.register(billingUsageReportModule)
-    await app.register(tablesModule)
-    await app.register(knowledgeBaseModule)
-    await app.register(userModule)
     await app.register(templateModule)
-    await app.register(platformAnalyticsModule)
 
-    // Dev-only: accept browser debug logs into the shared evlog fs drain so a
-    // chat run can be reconstructed end-to-end (web + api + worker). Never in cloud/prod.
-    const clientLogsEnabled = system.get(AppSystemProp.LOG_FILE) === 'true' && system.getEdition() !== ApEdition.CLOUD
+    const clientLogsEnabled = system.get(AppSystemProp.LOG_FILE) === 'true'
     if (clientLogsEnabled) {
         await app.register(clientLogsModule)
     }
 
     systemJobHandlers.registerJobHandler(SystemJobName.DELETE_FLOW, (data) => flowBackgroundJobs(app.log).deleteFlowHandler(data))
-    systemJobHandlers.registerJobHandler(SystemJobName.HARD_DELETE_PROJECT, (data) => platformProjectBackgroundJobs(app.log).hardDeleteProjectHandler(data))
-
-    systemJobHandlers.registerJobHandler(SystemJobName.CHAT_STALE_SWEEP, async () => {
-        await agentHelpers.recoverAllStaleStreamingConversations({ log: app.log })
-    })
-    await systemJobsSchedule(app.log).upsertJob({
-        job: {
-            name: SystemJobName.CHAT_STALE_SWEEP,
-            data: {},
-            jobId: SystemJobName.CHAT_STALE_SWEEP,
-        },
-        schedule: {
-            type: 'repeated',
-            cron: '* * * * *',
-        },
-    })
+    systemJobHandlers.registerJobHandler(SystemJobName.HARD_DELETE_PROJECT, (data) => projectBackgroundJobs(app.log).hardDeleteProjectHandler(data))
 
     app.get(
         '/redirect',
@@ -302,91 +209,6 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     )
 
     await validateEnvPropsOnStartup(app.log)
-
-    const edition = system.getEdition()
-    app.log.info({
-        edition,
-    }, 'Activepieces Edition')
-    switch (edition) {
-        case ApEdition.CLOUD:
-            await app.register(adminPlatformModule)
-            await app.register(adminPlatformTemplatesCloudModule)
-            await app.register(appCredentialModule)
-            await app.register(connectionKeyModule)
-            await app.register(platformProjectModule)
-            await app.register(platformPlanModule)
-            await app.register(projectMemberModule)
-            await app.register(appSumoModule)
-            await app.register(signingKeyModule)
-            await app.register(authnSsoSamlModule)
-            await app.register(managedAuthnModule)
-            await app.register(oauthAppModule)
-            await app.register(platformPieceModule)
-            await app.register(pieceSetModule)
-            await app.register(otpModule)
-            await app.register(enterpriseLocalAuthnModule)
-            await app.register(federatedAuthModule)
-            await app.register(apiKeyModule)
-            await app.register(gitRepoModule)
-            await app.register(auditEventModule)
-            await app.register(platformWebhooksModule)
-            await app.register(projectRoleModule)
-            await app.register(projectReleaseModule)
-            await app.register(projectReplaceModule)
-            await app.register(globalConnectionModule)
-            await app.register(secretManagersModule)
-            await app.register(scimModule)
-            await app.register(embedSubdomainModule)
-            await app.register(agentModule)
-            await app.register(agentEvalModule)
-            await app.register(aiToolConfigModule)
-            setPlatformOAuthService(platformOAuth2Service(app.log))
-            projectHooks.set(projectEnterpriseHooks)
-            flagHooks.set(enterpriseFlagsHooks)
-            billingProvider.set(autumnBillingProvider)
-            resumePageHooks.set((log) => ({ getTheme: (params) => appearanceHelper.getTheme({ ...params, log }) }))
-            exceptionHandler.initializeSentry(system.get(AppSystemProp.SENTRY_DSN))
-            systemJobHandlers.registerJobHandler(SystemJobName.HARD_DELETE_PLATFORM, (data) => platformTeardownJobs(app.log).hardDeletePlatformHandler(data))
-            break
-        case ApEdition.ENTERPRISE:
-            await app.register(platformPlanModule)
-            await app.register(platformProjectModule)
-            await app.register(projectMemberModule)
-            await app.register(signingKeyModule)
-            await app.register(authnSsoSamlModule)
-            await app.register(managedAuthnModule)
-            await app.register(oauthAppModule)
-            await app.register(platformPieceModule)
-            await app.register(pieceSetModule)
-            await app.register(otpModule)
-            await app.register(enterpriseLocalAuthnModule)
-            await app.register(federatedAuthModule)
-            await app.register(apiKeyModule)
-            await app.register(gitRepoModule)
-            await app.register(auditEventModule)
-            await app.register(platformWebhooksModule)
-            await app.register(projectRoleModule)
-            await app.register(projectReleaseModule)
-            await app.register(projectReplaceModule)
-            await app.register(globalConnectionModule)
-            await app.register(secretManagersModule)
-            await app.register(scimModule)
-            await app.register(embedSubdomainModule)
-            await app.register(agentModule)
-            await app.register(agentEvalModule)
-            await app.register(aiToolConfigModule)
-            setPlatformOAuthService(platformOAuth2Service(app.log))
-            projectHooks.set(projectEnterpriseHooks)
-            flagHooks.set(enterpriseFlagsHooks)
-            billingProvider.set(autumnBillingProvider)
-            resumePageHooks.set((log) => ({ getTheme: (params) => appearanceHelper.getTheme({ ...params, log }) }))
-            break
-        case ApEdition.COMMUNITY:
-            await app.register(platformProjectModule)
-            await app.register(communityPiecesModule)
-            await app.register(otpModule)
-            break
-    }
 
     const isCanaryApp = system.getBoolean(AppSystemProp.IS_CANARY_APP) ?? false
     if (isCanaryApp) {
@@ -422,15 +244,7 @@ export async function getAdapter() {
 
 export async function appPostBoot(app: FastifyInstance): Promise<void> {
 
-    app.log.info(`
-             _____   _______   _____  __      __  ______   _____    _____   ______    _____   ______    _____
-    /\\      / ____| |__   __| |_   _| \\ \\    / / |  ____| |  __ \\  |_   _| |  ____|  / ____| |  ____|  / ____|
-   /  \\    | |         | |      | |    \\ \\  / /  | |__    | |__) |   | |   | |__    | |      | |__    | (___
-  / /\\ \\   | |         | |      | |     \\ \\/ /   |  __|   |  ___/    | |   |  __|   | |      |  __|    \\___ \\
- / ____ \\  | |____     | |     _| |_     \\  /    | |____  | |       _| |_  | |____  | |____  | |____   ____) |
-/_/    \\_\\  \\_____|    |_|    |_____|     \\/     |______| |_|      |_____| |______|  \\_____| |______| |_____/
-
-The application started on ${await domainHelper.getPublicApiUrl({ path: '' })}, as specified by the AP_FRONTEND_URL variables.`)
+    app.log.info(`Integration platform started on ${await domainHelper.getPublicApiUrl({ path: '' })}`)
 
     const environment = system.get(AppSystemProp.ENVIRONMENT)
     const pieces = process.env.AP_DEV_PIECES
@@ -494,26 +308,18 @@ function registerOpenApiSchemas() {
     globalRegistry.add(FlowRunStartedEvent, { id: ApplicationEventName.FLOW_RUN_STARTED })
     globalRegistry.add(FlowRunFinishedEvent, { id: ApplicationEventName.FLOW_RUN_FINISHED })
     globalRegistry.add(FlowRunRetriedEvent, { id: ApplicationEventName.FLOW_RUN_RETRIED })
-    globalRegistry.add(SignUpEvent, { id: ApplicationEventName.USER_SIGNED_UP })
     globalRegistry.add(UserSignedInEvent, { id: ApplicationEventName.USER_SIGNED_IN })
     globalRegistry.add(UserPasswordResetEvent, { id: ApplicationEventName.USER_PASSWORD_RESET })
     globalRegistry.add(UserEmailVerifiedEvent, { id: ApplicationEventName.USER_EMAIL_VERIFIED })
-    globalRegistry.add(SigningKeyEvent, { id: ApplicationEventName.SIGNING_KEY_CREATED })
-    globalRegistry.add(ProjectRoleEvent, { id: ApplicationEventName.PROJECT_ROLE_CREATED })
-    globalRegistry.add(ProjectReleaseEvent, { id: ApplicationEventName.PROJECT_RELEASE_CREATED })
     globalRegistry.add(Template, { id: 'template' })
     globalRegistry.add(Folder, { id: 'folder' })
     globalRegistry.add(UserWithMetaInformation, { id: 'user' })
     globalRegistry.add(UserInvitation, { id: 'user-invitation' })
-    globalRegistry.add(ProjectMember, { id: 'project-member' })
     globalRegistry.add(ProjectWithLimits, { id: 'project' })
     globalRegistry.add(Flow, { id: 'flow' })
     globalRegistry.add(FlowRun, { id: 'flow-run' })
     globalRegistry.add(AppConnectionWithoutSensitiveData, { id: 'app-connection' })
     globalRegistry.add(PieceMetadata, { id: 'piece' })
-    globalRegistry.add(GitRepoWithoutSensitiveData, { id: 'git-repo' })
-    globalRegistry.add(ProjectRelease, { id: 'project-release' })
-    globalRegistry.add(AddAllowedEmbedOriginsRequestBody, { id: 'embedding' })
 }
 
 const REDIRECT_HTML_TEMPLATE = `<!DOCTYPE html>

@@ -28,20 +28,6 @@ export enum ProjectType {
 
 
 
-export type ProjectPlanId = string
-
-export const ProjectPlan = z.object({
-    ...BaseModelSchema,
-    projectId: z.string(),
-    locked: z.boolean().default(false),
-    name: z.string(),
-    piecesFilterType: z.nativeEnum(PiecesFilterType),
-    pieces: z.array(z.string()),
-    activeFlowsLimit: Nullable(z.number()),
-})
-
-export type ProjectPlan = z.infer<typeof ProjectPlan>
-
 export const ProjectIcon = z.object({
     color: z.nativeEnum(ColorName),
 })
@@ -67,15 +53,12 @@ export const Project = z.object({
 })
 
 const projectAnalytics = z.object({
-    totalUsers: z.number(),
-    activeUsers: z.number(),
     totalFlows: z.number(),
     activeFlows: z.number(),
 })
 export type Project = z.infer<typeof Project>
 
 export const ProjectWithLimits = Project.omit({ deleted: true }).extend({
-    plan: ProjectPlan,
     analytics: projectAnalytics,
 })
 

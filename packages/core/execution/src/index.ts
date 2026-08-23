@@ -1,5 +1,5 @@
 // @activepieces/core-execution — the execution layer extracted from @activepieces/shared
-// (flows, flow-run, engine operations, agents, workers). See SRE-163.
+// (flows, flow-run, engine operations, workers). See SRE-163.
 
 export * from './lib/flows/actions/action'
 export * from './lib/flows/operations'
@@ -29,9 +29,7 @@ export * from './lib/flow-run/log-serializer'
 export * from './lib/flow-run/waitpoint'
 export * from './lib/engine'
 export * from './lib/engine/rpc'
-export * from './lib/workers/agent-events'
 export * from './lib/workers/job-data'
 export * from './lib/workers/worker-contract'
 export * from './lib/workers'
-export * from './lib/agents'
 

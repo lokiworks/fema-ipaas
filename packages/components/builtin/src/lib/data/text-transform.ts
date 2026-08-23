@@ -3,7 +3,7 @@ import { createComponent, FlowComponentCategory, Property } from '@fema-ipaas/co
 export const textTransformComponent = createComponent({
     type: 'data/text-transform',
     displayName: 'Text Transform',
-    description: 'Change a piece of text — case, trim, replace, split, slug',
+    description: 'Change a snippet of text — case, trim, replace, split, slug',
     category: FlowComponentCategory.DATA,
     icon: 'type',
     props: {

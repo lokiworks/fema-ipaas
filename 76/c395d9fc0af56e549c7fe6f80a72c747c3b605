@@ -1,0 +1,47 @@
+packages/web/src/app/builder/step-settings/join-edges-section.tsx
+  s_94864882421579::t_bae62ebd8498df 5-14,23-40,43-67,71-94
+  s_94864882421579::t_22e5e6e89e5e87 1-4,15-22,41-42,68-70
+packages/web/src/app/builder/workflow-canvas/utils/types.ts
+  s_94864882421579::t_987b8648c29d9c 202-203
+  s_94864882421579::t_b37b282179fe79 119,122-128
+  s_94864882421579::t_d34528d2f14120 129
+packages/web/src/app/builder/workflow-canvas/edges/join-edge.tsx
+  s_94864882421579::t_b37b282179fe79 1-54
+packages/web/src/app/builder/workflow-canvas/utils/join-edges.test.ts
+  s_94864882421579::t_ac6a2e1b4ab170 2-12,16-73,80-81
+  s_94864882421579::t_22e5e6e89e5e87 13-15,74-79
+  s_94864882421579::t_e13bb669b7c354 1
+packages/web/public/locales/zh/translation.json
+  s_94864882421579::t_de8d3e17d94211 2380-2383
+packages/web/src/app/builder/workflow-canvas/utils/consts.ts
+  s_94864882421579::t_22e5e6e89e5e87 11
+  s_94864882421579::t_b37b282179fe79 106
+packages/web/public/locales/en/translation.json
+  s_94864882421579::t_de8d3e17d94211 2477-2480
+packages/web/src/app/builder/step-settings/index.tsx
+  s_94864882421579::t_efab8eae84fd32 43,211-212
+  s_94864882421579::t_9626c04b238bad 213
+packages/web/src/app/builder/workflow-canvas/utils/workflow-canvas-utils.ts
+  s_94864882421579::t_027e75c67ee727 727-743,771-775
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "76c395d9fc0af56e549c7fe6f80a72c747c3b605",
+  "prompts": {},
+  "humans": {
+    "h_cdf097b75cf508": {
+      "author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

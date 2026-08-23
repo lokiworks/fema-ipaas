@@ -1,0 +1,180 @@
+packages/web/src/features/automations/hooks/use-automations-data.ts
+  s_94864882421579::t_a8886c30603ed2 54
+packages/web/src/features/invitations/index.ts
+  s_94864882421579::t_58be5495ed0f9f 5
+  s_94864882421579::t_e5ffaad757be88 1-4,6-7
+packages/web/src/app/connections/basic-secret-connection-settings.tsx
+  s_94864882421579::t_3eede0050a3bfb 1-70
+packages/web/src/app/routes/platform/setup/pieces/index.tsx
+  s_94864882421579::t_ad39824457ebc6 1-3
+packages/web/src/app/routes/automations/index.tsx
+  s_94864882421579::t_a8886c30603ed2 232
+packages/server/api/src/app/app-connection/app-connection-service/app-connection-service.ts
+  s_94864882421579::t_3ec6e3cb72c06a 487
+  s_94864882421579::t_6af5331c1d5cda 3
+packages/server/api/src/app/user-invitations/user-invitation.module.ts
+  s_94864882421579::t_6af5331c1d5cda 9
+  s_94864882421579::t_f4a73bbc2d83ff 153
+packages/web/src/components/custom/metric-card.tsx
+  s_94864882421579::t_05a60b4c447848 1-79
+packages/web/src/app/builder/piece-properties/properties-utils.tsx
+  s_94864882421579::t_a8886c30603ed2 11
+packages/web/src/app/query-client.ts
+  s_94864882421579::t_131b5b10becaca 32
+  s_94864882421579::t_a8886c30603ed2 1
+packages/web/src/app/app.tsx
+  s_94864882421579::t_a8886c30603ed2 23-39
+packages/web/src/app/routes/platform-routes.tsx
+  s_94864882421579::t_a8886c30603ed2 75-79,97-101
+packages/server/api/src/app/platform/platform.service.ts
+  s_94864882421579::t_6af5331c1d5cda 1-2
+packages/web/src/app/builder/test-step/test-sample-data-viewer.tsx
+  s_94864882421579::t_6a47a3f2029089 2,90,106
+packages/server/api/src/app/project/project.controller.ts
+  s_94864882421579::t_6af5331c1d5cda 2
+packages/server/api/src/app/template/template.controller.ts
+  s_94864882421579::t_6af5331c1d5cda 8
+packages/web/src/app/connections/secret-input.tsx
+  s_94864882421579::t_ad39824457ebc6 14-43
+packages/server/api/src/app/flags/flag.service.ts
+  s_94864882421579::t_6af5331c1d5cda 10
+packages/server/api/src/app/user-invitations/user-invitation.service.ts
+  s_94864882421579::t_6af5331c1d5cda 1,9
+packages/server/api/src/app/workers/rpc/worker-rpc-service.ts
+  s_94864882421579::t_6af5331c1d5cda 1,3
+packages/web/src/app/components/global-search/use-global-search-results.ts
+  s_94864882421579::t_7a3a3d56b7614c 295
+  s_94864882421579::t_726068ab7eca2e 119
+  s_94864882421579::t_a8886c30603ed2 157,226,261
+packages/web/src/components/custom/home-button.tsx
+  s_94864882421579::t_131b5b10becaca 21
+packages/server/api/src/app/flows/flow/flow.controller.ts
+  s_94864882421579::t_6af5331c1d5cda 2
+packages/web/src/app/builder/run-details/flow-step-input-output.tsx
+  s_94864882421579::t_6a47a3f2029089 57
+packages/web/src/features/flows/components/change-owner-dialog.tsx
+  s_94864882421579::t_ea6b1a063edab3 53
+  s_94864882421579::t_a8886c30603ed2 49-52
+packages/web/src/app/builder/test-step/test-runner-context.tsx
+  s_94864882421579::t_52804f4fd35ca7 97,181
+packages/server/api/src/app/core/security/v2/authn/authenticate.ts
+  s_94864882421579::t_6af5331c1d5cda 1
+packages/server/api/src/app/workers/job-queue/job-queue.ts
+  s_94864882421579::t_6af5331c1d5cda 10
+packages/web/src/features/connections/hooks/oauth-apps-hooks.ts
+  s_94864882421579::t_3eede0050a3bfb 1-19
+packages/server/api/src/app/project/project-side-effects.ts
+  s_94864882421579::t_6af5331c1d5cda 2
+packages/web/src/app/routes/platform/infra/health/components/queue-tab.tsx
+  s_94864882421579::t_05a60b4c447848 5
+packages/server/api/src/app/project/project.module.ts
+  s_94864882421579::t_6af5331c1d5cda 3
+packages/server/api/src/app/project/project-access.ts
+  s_94864882421579::t_6af5331c1d5cda 2
+packages/web/src/app/components/project-settings/index.tsx
+  s_94864882421579::t_60b64f01e7e2b7 98
+  s_94864882421579::t_a8886c30603ed2 4
+  s_94864882421579::t_ba9b0f1f6f2a9d 2
+packages/web/src/app/routes/platform/users/index.tsx
+  s_94864882421579::t_ba9b0f1f6f2a9d 8
+  s_94864882421579::t_6b31c4da9fbd61 82-83
+packages/web/src/app/builder/step-settings/piece-settings/connection-select.tsx
+  s_94864882421579::t_a8886c30603ed2 15
+packages/server/api/src/app/platform/platform.controller.ts
+  s_94864882421579::t_6af5331c1d5cda 1
+packages/server/api/src/app/user/user-service.ts
+  s_94864882421579::t_6af5331c1d5cda 2
+  s_94864882421579::t_f4a73bbc2d83ff 268
+packages/web/src/app/builder/pieces-selector/index.tsx
+  s_94864882421579::t_726068ab7eca2e 142,163
+packages/server/api/src/app/core/security/v2/authz/authorize.ts
+  s_94864882421579::t_6af5331c1d5cda 1
+packages/web/src/app/routes/platform/projects/columns.tsx
+  s_94864882421579::t_ea6b1a063edab3 43,74,77
+packages/web/src/app/connections/oauth2-connection-settings.tsx
+  s_94864882421579::t_a8886c30603ed2 23
+packages/server/worker/src/lib/worker.ts
+  s_94864882421579::t_a8886c30603ed2 6
+packages/web/src/features/automations/components/automations-filters.tsx
+  s_94864882421579::t_a8886c30603ed2 100,135
+packages/server/api/src/app/pieces/metadata/piece-metadata-service.ts
+  s_94864882421579::t_6af5331c1d5cda 12
+packages/web/src/features/invitations/components/invitation-card.tsx
+  s_94864882421579::t_b86e188f2c5528 1-65
+packages/web/src/app/connections/secret-text-connection-settings.tsx
+  s_94864882421579::t_a8886c30603ed2 7
+packages/server/api/src/app/pieces/metadata/piece-metadata-controller.ts
+  s_94864882421579::t_6af5331c1d5cda 13
+package.json
+  s_94864882421579::t_7e3bc166fb8b2a 31,35-36
+packages/web/src/features/automations/components/automations-empty-state.tsx
+  s_94864882421579::t_a8886c30603ed2 8
+packages/web/src/app/routes/platform/users/actions/update-user-dialog.tsx
+  s_94864882421579::t_ea6b1a063edab3 81
+packages/server/api/src/app/app-connection/app-connection-service/oauth2/oauth2-util.ts
+  s_94864882421579::t_3ec6e3cb72c06a 101
+packages/web/src/features/projects/components/new-project-dialog.tsx
+  s_94864882421579::t_6b31c4da9fbd61 99,103
+packages/web/src/app/builder/flow-canvas/widgets/test-flow-widget.tsx
+  s_94864882421579::t_a8886c30603ed2 22-29
+packages/server/api/src/app/app-connection/app-connection-service/oauth2/services/credentials-oauth2-service.ts
+  s_94864882421579::t_3ec6e3cb72c06a 108-109
+packages/web/src/app/components/flow-actions-menu.tsx
+  s_94864882421579::t_950e914b9e24b1 81,83
+packages/web/src/api/authentication-api.ts
+  s_94864882421579::t_726068ab7eca2e 39
+packages/web/src/features/platform-admin/hooks/platform-user-hooks.ts
+  s_94864882421579::t_a8886c30603ed2 14
+packages/web/src/app/routes/platform/infra/health/components/runs-tab.tsx
+  s_94864882421579::t_a8886c30603ed2 7
+packages/web/src/features/automations/components/create-new-menu.tsx
+  s_94864882421579::t_a8886c30603ed2 2
+packages/server/api/src/app/core/websockets.service.ts
+  s_94864882421579::t_6af5331c1d5cda 7
+packages/web/src/features/invitations/hooks/user-invitations-hooks.ts
+  s_94864882421579::t_b86e188f2c5528 1-48
+packages/web/src/app/routes/auth-routes.tsx
+  s_94864882421579::t_a8886c30603ed2 3
+packages/web/src/features/invitations/components/accept-invitation.tsx
+  s_94864882421579::t_b86e188f2c5528 1-79
+packages/web/src/app/builder/step-settings/index.tsx
+  s_94864882421579::t_0f4fc87bd27f4d 188
+  s_94864882421579::t_a8886c30603ed2 189-194
+packages/web/src/app/components/project-layout/project-dashboard-page-header.tsx
+  s_94864882421579::t_a8886c30603ed2 2
+  s_94864882421579::t_7a3a3d56b7614c 41
+packages/web/src/features/connections/index.ts
+  s_94864882421579::t_3eede0050a3bfb 17
+packages/web/src/features/projects/components/create-project-button.tsx
+  s_94864882421579::t_ea6b1a063edab3 16-18
+packages/core/execution/src/lib/workers/job-data.ts
+  s_94864882421579::t_a8886c30603ed2 3
+packages/web/src/features/automations/components/automations-table.tsx
+  s_94864882421579::t_a8886c30603ed2 1,235
+packages/server/api/src/app/pieces/piece-sync-service.ts
+  s_94864882421579::t_6af5331c1d5cda 2
+packages/web/src/features/invitations/api/user-invitation.ts
+  s_94864882421579::t_b86e188f2c5528 1-26
+packages/web/src/features/automations/components/automations-table-row.tsx
+  s_94864882421579::t_a8886c30603ed2 287-296
+packages/web/src/app/components/sidebar/dashboard/index.tsx
+  s_94864882421579::t_0f4fc87bd27f4d 166,366
+packages/server/api/src/app/workers/machine/machine-service.ts
+  s_94864882421579::t_f4a73bbc2d83ff 91
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "c7a80811620657aade66c2ce4d7a7462de95e7b8",
+  "prompts": {},
+  "sessions": {
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

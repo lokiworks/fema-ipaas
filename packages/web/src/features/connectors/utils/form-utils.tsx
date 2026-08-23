@@ -13,6 +13,8 @@ import {
   ConnectionScope,
   ConnectionType,
   CodeActionSchema,
+  ComponentActionSchema,
+  ComponentActionSettings,
   LoopOnItemsActionSchema,
   ConnectorActionSchema,
   ConnectorActionSettings,
@@ -549,8 +551,23 @@ export const formUtils = {
     type: WorkflowActionType | WorkflowTriggerType,
     actionNameOrTriggerName: string,
     connector: ConnectorMetadataModel | null,
+    componentProps?: ConnectorPropertyMap,
   ) => {
     switch (type) {
+      case WorkflowActionType.COMPONENT:
+        return ComponentActionSchema.omit({ settings: true }).extend(
+          z.object({
+            settings: ComponentActionSettings.omit({ input: true }).extend(
+              z.object({
+                input: buildClassicSchema(
+                  componentProps ?? {},
+                  undefined,
+                  false,
+                ),
+              }).shape,
+            ),
+          }).shape,
+        );
       case WorkflowActionType.LOOP_ON_ITEMS:
         return LoopOnItemsActionSchema.omit({ settings: true }).extend(
           z.object({

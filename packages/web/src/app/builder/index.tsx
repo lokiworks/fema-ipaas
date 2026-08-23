@@ -20,6 +20,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from '@/components/ui/resizable-panel';
+import { componentsHooks } from '@/features/components';
 import { connectorsHooks } from '@/features/connectors';
 import { tenantHooks } from '@/hooks/tenant-hooks';
 import { useElementSize } from '@/hooks/use-element-size';
@@ -142,6 +143,7 @@ const BuilderPage = () => {
       selectedStep?.type === WorkflowActionType.CONNECTOR ||
       selectedStep?.type === WorkflowTriggerType.CONNECTOR,
   });
+  const { data: flowComponents } = componentsHooks.useComponents();
   workflowCanvasHooks.useSetSocketListener(refetchConnector);
   workflowCanvasHooks.useListenToExistingRun();
 
@@ -226,6 +228,15 @@ const BuilderPage = () => {
               selectedStep && (
                 <StepSettingsProvider
                   connectorModel={connectorModel}
+                  componentProps={
+                    selectedStep.type === WorkflowActionType.COMPONENT
+                      ? flowComponents?.find(
+                          (candidate) =>
+                            candidate.type ===
+                            selectedStep.settings.componentType,
+                        )?.props
+                      : undefined
+                  }
                   connectorModelNotFound={connectorModelNotFound}
                   selectedStep={selectedStep}
                   key={constructContainerKey({

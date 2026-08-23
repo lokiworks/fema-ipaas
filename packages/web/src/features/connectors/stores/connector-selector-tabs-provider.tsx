@@ -8,6 +8,7 @@ export enum ConnectorSelectorTabType {
   APPROVALS = 'APPROVALS',
   APPS = 'APPS',
   UTILITY = 'UTILITY',
+  COMPONENTS = 'COMPONENTS',
   CUSTOM = 'CUSTOM',
   NONE = 'NONE',
 }

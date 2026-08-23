@@ -18,6 +18,10 @@ export default defineConfig({
         __dirname,
         '../../packages/connectors/sdk/src',
       ),
+      '@fema-ipaas/component-sdk': path.resolve(
+        __dirname,
+        '../../packages/components/sdk/src',
+      ),
       '@fema-ipaas/core-utils': path.resolve(
         __dirname,
         '../../packages/core/utils/src',

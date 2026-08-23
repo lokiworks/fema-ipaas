@@ -33,6 +33,7 @@
     "@fastify/reply-from": "12.6.2",
     "@fastify/static": "10.1.2",
     "@fastify/swagger": "9.5.1",
+    "@fema-ipaas/component-sdk": "workspace:*",
     "@fema-ipaas/components": "workspace:*",
     "@fema-ipaas/connector-common": "workspace:*",
     "@fema-ipaas/connector-sdk": "workspace:*",

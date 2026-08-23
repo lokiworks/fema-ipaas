@@ -1,5 +1,5 @@
 import { isNil } from '@fema-ipaas/core-utils'
-import { AnyFlowComponentDefinition } from './component'
+import { AnyFlowComponentDefinition, FlowComponentMetadata, toComponentMetadata } from './component'
 
 export function buildComponentRegistry(components: AnyFlowComponentDefinition[]): ComponentRegistry {
     const byType = new Map<string, AnyFlowComponentDefinition>()
@@ -11,6 +11,7 @@ export function buildComponentRegistry(components: AnyFlowComponentDefinition[])
     }
     return {
         list: () => [...byType.values()],
+        listMetadata: () => [...byType.values()].map(toComponentMetadata),
         get: (type: string) => byType.get(type) ?? null,
         getOrThrow: (type: string) => {
             const component = byType.get(type)
@@ -24,6 +25,7 @@ export function buildComponentRegistry(components: AnyFlowComponentDefinition[])
 
 export type ComponentRegistry = {
     list(): AnyFlowComponentDefinition[]
+    listMetadata(): FlowComponentMetadata[]
     get(type: string): AnyFlowComponentDefinition | null
     getOrThrow(type: string): AnyFlowComponentDefinition
 }

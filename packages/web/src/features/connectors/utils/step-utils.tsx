@@ -1,3 +1,4 @@
+import { FlowComponentCategory } from '@fema-ipaas/component-sdk';
 import {
   ErrorHandlingOptionsParam,
   ConnectorMetadataModel,
@@ -16,6 +17,8 @@ import {
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 
+import { componentLogoUrl, componentsApi } from '@/features/components';
+
 import { connectorsApi } from '../api/connectors-api';
 import {
   ConnectorStepMetadata,
@@ -25,25 +28,28 @@ import {
 } from '../types';
 
 export const CORE_STEP_METADATA: Record<
-  | Exclude<WorkflowActionType, WorkflowActionType.CONNECTOR>
+  | Exclude<
+      WorkflowActionType,
+      WorkflowActionType.CONNECTOR | WorkflowActionType.COMPONENT
+    >
   | WorkflowTriggerType.EMPTY,
   PrimitiveStepMetadata
 > = {
   [WorkflowActionType.CODE]: {
     displayName: t('Code'),
-    logoUrl: 'https://cdn.fema.local/connectors/new-core/code.svg',
+    logoUrl: '/assets/steps/code.svg',
     description: t('Powerful Node.js & TypeScript code with npm'),
     type: WorkflowActionType.CODE as const,
   },
   [WorkflowActionType.LOOP_ON_ITEMS]: {
     displayName: t('Loop on Items'),
-    logoUrl: 'https://cdn.fema.local/connectors/new-core/loop.svg',
+    logoUrl: '/assets/steps/loop.svg',
     description: 'Iterate over a list of items',
     type: WorkflowActionType.LOOP_ON_ITEMS as const,
   },
   [WorkflowActionType.ROUTER]: {
     displayName: t('Router'),
-    logoUrl: 'https://cdn.fema.local/connectors/new-core/router.svg',
+    logoUrl: '/assets/steps/router.svg',
     description: t(
       'Split your workflow into branches depending on condition(s)',
     ),
@@ -51,7 +57,7 @@ export const CORE_STEP_METADATA: Record<
   },
   [WorkflowTriggerType.EMPTY]: {
     displayName: t('Empty Trigger'),
-    logoUrl: 'https://cdn.fema.local/connectors/new-core/empty-trigger.svg',
+    logoUrl: '/assets/steps/empty-trigger.svg',
     description: t('Empty Trigger'),
     type: WorkflowTriggerType.EMPTY as const,
   },
@@ -101,6 +107,24 @@ export const stepUtils = {
           actionOrTriggerOrAgentDisplayName: '',
           actionOrTriggerOrAgentDescription: '',
         };
+      case WorkflowActionType.COMPONENT: {
+        const components = await componentsApi.list();
+        const component = components.find(
+          (candidate) => candidate.type === step.settings.componentType,
+        );
+        return {
+          type: WorkflowActionType.COMPONENT,
+          componentType: step.settings.componentType,
+          category: component?.category ?? FlowComponentCategory.RUNTIME,
+          icon: component?.icon ?? '',
+          props: component?.props ?? {},
+          displayName: component?.displayName ?? step.settings.componentType,
+          description: component?.description ?? '',
+          logoUrl: componentLogoUrl(component?.icon ?? ''),
+          actionOrTriggerOrAgentDisplayName: component?.displayName ?? '',
+          actionOrTriggerOrAgentDescription: component?.description ?? '',
+        };
+      }
       case WorkflowActionType.CONNECTOR:
       case WorkflowTriggerType.CONNECTOR: {
         const connector = await connectorsApi.get({

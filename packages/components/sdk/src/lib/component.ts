@@ -7,6 +7,11 @@ export function createComponent<Props extends InputPropertyMap>(
     return definition
 }
 
+export function toComponentMetadata(definition: AnyFlowComponentDefinition): FlowComponentMetadata {
+    const { run, ...metadata } = definition
+    return metadata
+}
+
 export enum FlowComponentCategory {
     CONTROL = 'CONTROL',
     DATA = 'DATA',
@@ -26,3 +31,5 @@ export type FlowComponentDefinition<Props extends InputPropertyMap = InputProper
 }
 
 export type AnyFlowComponentDefinition = FlowComponentDefinition<InputPropertyMap>
+
+export type FlowComponentMetadata = Omit<AnyFlowComponentDefinition, 'run'>

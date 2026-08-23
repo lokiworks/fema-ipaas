@@ -1,10 +1,10 @@
 import { WorkflowOperationType, WorkflowTriggerType } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import {
+  BlocksIcon,
   CheckCircle2Icon,
   LayoutGridIcon,
   PuzzleIcon,
-  SparklesIcon,
   WrenchIcon,
 } from 'lucide-react';
 import React, { useEffect, useRef } from 'react';
@@ -27,20 +27,16 @@ import {
   connectorSelectorCustomization,
   ConnectorSearchProvider,
   useConnectorSearchContext,
-  connectorsHooks,
 } from '@/features/connectors';
 import { tenantHooks } from '@/hooks/tenant-hooks';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { authenticationSession } from '@/lib/authentication-session';
 
 import { ApprovalsTabContent } from './approvals-tab-content';
+import { ComponentsTabContent } from './components-tab-content';
 import { ConnectorsCardList } from './connectors-card-list';
 import { ExploreTabContent } from './explore-tab-content';
 
-const getTabsList = (
-  operationType: WorkflowOperationType,
-  aiAndAgentsAvailable: boolean,
-) => {
+const getTabsList = (operationType: WorkflowOperationType) => {
   const baseTabs = [
     {
       value: ConnectorSelectorTabType.EXPLORE,
@@ -64,14 +60,12 @@ const getTabsList = (
     WorkflowOperationType.UPDATE_ACTION,
   ].includes(operationType);
 
-  if (replaceOrAddAction && aiAndAgentsAvailable) {
-    baseTabs.splice(1, 0, {
-      value: ConnectorSelectorTabType.AI_AND_AGENTS,
-      name: t('AI & Agents'),
-      icon: <SparklesIcon className="size-5" />,
-    });
-  }
   if (replaceOrAddAction) {
+    baseTabs.splice(1, 0, {
+      value: ConnectorSelectorTabType.COMPONENTS,
+      name: t('Core Components'),
+      icon: <BlocksIcon className="size-5" />,
+    });
     baseTabs.push({
       value: ConnectorSelectorTabType.APPROVALS,
       name: t('Approvals'),
@@ -139,19 +133,6 @@ const ConnectorSelectorContent = ({
       });
     }
   }, [isOpen]);
-  const aiProviders: unknown[] = [];
-  const {
-    connectorModel: aiConnectorModel,
-    isError: isAiConnectorError,
-    isSuccess: isAiConnectorLoaded,
-  } = connectorsHooks.useConnector({
-    name: '@fema-ipaas/connector-ai',
-    workspaceId: authenticationSession.getWorkspaceId() ?? undefined,
-  });
-  const isAiConnectorUnavailable =
-    isAiConnectorError ||
-    (isAiConnectorLoaded &&
-      Object.keys(aiConnectorModel?.actions ?? {}).length === 0);
   const clearSearch = () => {
     setSearchQuery('');
     setSelectedConnectorMetadataInConnectorSelector(null);
@@ -159,10 +140,7 @@ const ConnectorSelectorContent = ({
 
   const { tenant } = tenantHooks.useCurrentTenant();
   const tabsList = connectorSelectorCustomization.buildResolvedTabs({
-    availableBuiltinTabs: getTabsList(
-      operation.type,
-      aiProviders.length > 0 && !isAiConnectorUnavailable,
-    ),
+    availableBuiltinTabs: getTabsList(operation.type),
     config: tenant.connectorSelectorConfig,
   });
   const firstTab = tabsList[0];
@@ -246,6 +224,10 @@ const ConnectorSelectorContent = ({
             >
               <ExploreTabContent operation={operation} />
               <ApprovalsTabContent operation={operation} />
+              <ComponentsTabContent
+                operation={operation}
+                searchQuery={searchQuery === '' ? '' : debouncedQuery}
+              />
 
               <ConnectorsCardList
                 //this is done to avoid debounced results when user clears search

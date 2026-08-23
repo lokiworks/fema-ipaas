@@ -1,8 +1,10 @@
+import { FlowComponentCategory } from '@fema-ipaas/component-sdk';
 import {
   ActionBase,
   ErrorHandlingOptionsParam,
   ConnectorAuthProperty,
   ConnectorMetadataModelSummary,
+  InputPropertyMap,
   TriggerBase,
 } from '@fema-ipaas/connector-sdk';
 import {
@@ -39,19 +41,31 @@ export type PrimitiveStepMetadata = BaseStepMetadata & {
     | WorkflowTriggerType.EMPTY;
 };
 
+export type ComponentStepMetadata = BaseStepMetadata & {
+  type: WorkflowActionType.COMPONENT;
+  componentType: string;
+  category: FlowComponentCategory;
+  icon: string;
+  props: InputPropertyMap;
+};
+
 export type ConnectorStepMetadataWithSuggestions = ConnectorStepMetadata &
   Pick<ConnectorMetadataModelSummary, 'suggestedActions' | 'suggestedTriggers'>;
 
 export type StepMetadataWithSuggestions =
   | ConnectorStepMetadataWithSuggestions
-  | PrimitiveStepMetadata;
+  | PrimitiveStepMetadata
+  | ComponentStepMetadata;
 
 export type CategorizedStepMetadataWithSuggestions = {
   title: string;
   metadata: StepMetadataWithSuggestions[];
 };
 
-export type StepMetadata = ConnectorStepMetadata | PrimitiveStepMetadata;
+export type StepMetadata =
+  | ConnectorStepMetadata
+  | PrimitiveStepMetadata
+  | ComponentStepMetadata;
 
 export type StepMetadataWithActionOrTriggerOrAgentDisplayName = StepMetadata & {
   actionOrTriggerOrAgentDisplayName: string;
@@ -99,6 +113,7 @@ export type ConnectorSelectorConnectorItem =
 
 export type ConnectorSelectorItem =
   | ConnectorSelectorConnectorItem
-  | PrimitiveStepMetadata;
+  | PrimitiveStepMetadata
+  | ComponentStepMetadata;
 
 export type HandleSelectActionOrTrigger = (item: ConnectorSelectorItem) => void;

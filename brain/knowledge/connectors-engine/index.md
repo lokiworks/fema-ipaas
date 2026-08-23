@@ -41,11 +41,14 @@ User-facing data transforms (81+ functions) inside any builder text input via a 
 - **Where**: shared lib `packages/core/shared/src/lib/formula/` (`FEMA_FUNCTIONS` registry is the single source of truth; `formulaEvaluator.evaluate`, type checker). Editor is the TipTap `text-input-with-mentions`. Runtime hooks in the engine's `props-resolver.ts` pre-pass.
 - **Gotchas**: no HTTP endpoints, no DB tables, no worker job — evaluation is synchronous in the engine. Runs on **every** edition, unconditionally (even if the editor flag is off, saved formulas still evaluate). Uses `expr-eval`; preprocess normalizes `;`→`,`, `and/or/not`, and rewrites `if()` to lazy ternary. Changing a function = bump `@fema-ipaas/shared` minor; never hard-remove a function (mark `deprecated`).
 
-### Nothing typechecks the engine
+### Nothing typechecks the engine — or the web
 
-`@fema-ipaas/engine`'s `build` is esbuild (`esbuild.config.mjs`, types stripped, never checked) and its `lint` is eslint only — no `tsc --noEmit` in `turbo.json` or any CI workflow. So type errors ship silently: as of Jul 2026 `npx tsc -p tsconfig.lib.json --noEmit` reports errors in `api/engine-file-api.ts`, `api/engine-run-api.ts`, `network/dns-lookup-guard.ts`, `connector-context/workflows.ts`, `variables/props-processor.ts` on a clean `main`.
+`@fema-ipaas/engine`'s `build` is esbuild (`esbuild.config.mjs`, types stripped, never checked) and its `lint` is eslint only. **`web`'s `build` is `vite build`, which is also esbuild and also never typechecks.** Neither has `tsc --noEmit` in `turbo.json` or any CI workflow, so type errors ship silently in both.
 
-- Run tsc yourself before/after an engine change and **diff the file list** rather than expecting zero — a green run is not the baseline.
+This is not theoretical. Adding `WorkflowActionType.COMPONENT` broke a `Record<WorkflowActionType, ...>` in `web`'s `step-utils.tsx` and a green `turbo run build` said nothing. Separately, a domain-wide rename turned xyflow's `screenToFlowPosition` into `screenToWorkflowPosition` in two canvas files — a method that does not exist — and that shipped too, breaking note drag and the drag layer at runtime.
+
+- Run `npx tsc --noEmit -p packages/web/tsconfig.app.json` and `-p packages/server/engine/tsconfig.lib.json` yourself after any change to either, and **diff the file list** rather than expecting zero — a green run is not the baseline.
+- A new `@fema-ipaas/*` import in `web` must be registered in **three** places that do not share config: `tsconfig.app.json`'s `paths` (not inherited from `tsconfig.base.json`), `vite.config.mts`'s `resolve.alias`, and `vitest.config.ts`'s own `alias`. Miss the vitest one and `turbo build` plus `tsc` both stay green while `web#test` fails to collect every file that transitively imports it.
 - Engine tests only run correctly from the package dir (`cd packages/server/engine && npx vitest run`); from the repo root the root config applies and every file fails collection with `describe is not defined`.
 
 ### The engine gets only 64 file descriptors

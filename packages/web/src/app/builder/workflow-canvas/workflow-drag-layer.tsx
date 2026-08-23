@@ -229,7 +229,7 @@ function handleNoteDragEnd({
     if (draggedNote) {
       const element = document.getElementById(e.active.id.toString());
       if (element) {
-        const positionOnCanvas = reactFlow.screenToWorkflowPosition({
+        const positionOnCanvas = reactFlow.screenToFlowPosition({
           x: element.getBoundingClientRect().left,
           y: element.getBoundingClientRect().top,
         });

@@ -17,6 +17,9 @@
       ],
       "@fema-ipaas/connector-sdk": [
         "../../packages/connectors/sdk/src"
+      ],
+      "@fema-ipaas/component-sdk": [
+        "../../packages/components/sdk/src"
       ]
     }
   },

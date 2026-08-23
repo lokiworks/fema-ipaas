@@ -307,6 +307,7 @@ export const connectorsHooks = {
           ),
         };
       case ConnectorSelectorTabType.APPROVALS:
+      case ConnectorSelectorTabType.COMPONENTS:
         return {
           isLoading: false,
           data: [],

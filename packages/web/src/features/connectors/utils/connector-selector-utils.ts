@@ -13,6 +13,7 @@ import {
   WorkflowActionType,
   BranchOperator,
   CodeAction,
+  ComponentAction,
   ConnectorAction,
   ConnectorTrigger,
   WorkflowTrigger,
@@ -120,10 +121,27 @@ const isStepInitiallyValid = (
       }
       return false;
     }
+    case WorkflowActionType.COMPONENT: {
+      const overridingInput =
+        overrideDefaultSettings && 'input' in overrideDefaultSettings
+          ? overrideDefaultSettings.input
+          : undefined;
+      const input =
+        overridingInput ?? getInitalStepInput(connectorSelectorItem);
+      return connectorPropertiesUtils
+        .buildSchema(connectorSelectorItem.props, undefined)
+        .safeParse(input).success;
+    }
   }
 };
 
 const getInitalStepInput = (connectorSelectorItem: ConnectorSelectorItem) => {
+  if (connectorSelectorItem.type === WorkflowActionType.COMPONENT) {
+    return formUtils.getDefaultValueForProperties({
+      props: { ...connectorSelectorItem.props },
+      existingInput: {},
+    });
+  }
   if (!isConnectorActionOrTrigger(connectorSelectorItem)) {
     return {};
   }
@@ -227,6 +245,27 @@ const getDefaultStepValues = ({
             ],
           },
           children: [null, null],
+        },
+        common,
+      );
+    case WorkflowActionType.COMPONENT:
+      return deepMergeAndCast<ComponentAction>(
+        {
+          type: WorkflowActionType.COMPONENT,
+          settings: overrideDefaultSettings ?? {
+            componentType: connectorSelectorItem.componentType,
+            input,
+            errorHandlingOptions,
+            propertySettings: Object.fromEntries(
+              Object.entries(input).map(([key]) => [
+                key,
+                {
+                  type: PropertyExecutionType.MANUAL,
+                  schema: undefined,
+                },
+              ]),
+            ),
+          },
         },
         common,
       );

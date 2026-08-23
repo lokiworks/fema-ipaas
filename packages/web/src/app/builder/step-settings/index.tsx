@@ -37,6 +37,7 @@ import {
 import { TestStepCTAButton } from '../test-step/test-step-cta-button';
 
 import { CodeSettings } from './code-settings';
+import { ComponentSettings } from './component-settings';
 import { ConnectorSettings } from './connector-settings';
 import EditableStepName from './editable-step-name';
 import { LoopsSettings } from './loops-settings';
@@ -188,6 +189,9 @@ const StepSettingsContainer = () => {
         )}
         {modifiedStep.type === WorkflowActionType.CODE && (
           <CodeSettings readonly={readonly}></CodeSettings>
+        )}
+        {modifiedStep.type === WorkflowActionType.COMPONENT && (
+          <ComponentSettings step={modifiedStep} readonly={readonly} />
         )}
         {modifiedStep.type === WorkflowActionType.CONNECTOR && modifiedStep && (
           <ConnectorSettings

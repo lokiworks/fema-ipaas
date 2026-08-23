@@ -62,7 +62,7 @@ const NoteDragOverlay = () => {
         if (noteDragOverlayMode === NoteDragOverlayMode.CREATE) {
           const rect = containerRef.current?.getBoundingClientRect();
           if (rect) {
-            const positionOnCanvas = reactFlow.screenToWorkflowPosition({
+            const positionOnCanvas = reactFlow.screenToFlowPosition({
               x: rect.left,
               y: rect.top,
             });

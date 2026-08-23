@@ -11,6 +11,7 @@ import { globalRegistry } from 'zod/v4/core'
 import { authenticationModule } from './authentication/authentication.module'
 import { localAuthnModule } from './authentication/local-authn/local-authn.module'
 import { otpModule } from './authentication/otp/otp-module'
+import { componentModule } from './components/component.module'
 import { connectionModule } from './connection/connection.module'
 import { tenantConnectionModule } from './connection/tenant-connection.module'
 import { communityConnectorsModule } from './connectors/community-connector-module'
@@ -150,6 +151,7 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     await connectorSyncService(app.log).setup()
     await connectorMetadataService(app.log).setup()
     await app.register(connectorModule)
+    await app.register(componentModule)
     await app.register(communityConnectorsModule)
     await app.register(collaborativeModule)
     await app.register(workflowModule)

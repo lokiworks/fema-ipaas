@@ -55,6 +55,7 @@ export type StepSettingsProviderProps = {
   selectedStep: WorkflowAction | WorkflowTrigger;
   connectorModel: ConnectorMetadataModel | undefined;
   connectorModelNotFound: boolean;
+  componentProps?: ConnectorPropertyMap;
   children: ReactNode;
 };
 
@@ -66,6 +67,7 @@ export const StepSettingsProvider = ({
   selectedStep,
   connectorModel,
   connectorModelNotFound,
+  componentProps,
   children,
 }: StepSettingsProviderProps) => {
   const [formSchema, setFormSchema] = useState<ZodObject<any>>(
@@ -78,6 +80,7 @@ export const StepSettingsProvider = ({
       selectedStep.type,
       selectedStep.settings.actionName ?? selectedStep.settings.triggerName,
       connectorModel ?? null,
+      componentProps,
     );
     formSchemaInitializedRef.current = true;
     setFormSchema(schema as ZodObject<any>);

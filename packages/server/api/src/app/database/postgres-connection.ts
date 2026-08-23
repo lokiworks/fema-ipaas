@@ -7,6 +7,8 @@ import { AppSystemProp } from '../helper/system/system-props'
 import { commonProperties } from './database-connection'
 import { Migration } from './migration'
 import { InitialSchema1787473797710 } from './migration/postgres/1787473797710-InitialSchema'
+import { CreateWorkspaceMember1787900000000 } from './migration/postgres/1787900000000-CreateWorkspaceMember'
+import { CreateAuditEvent1787900000001 } from './migration/postgres/1787900000001-CreateAuditEvent'
 
 const getSslConfig = (): boolean | TlsOptions => {
     const useSsl = system.get(AppSystemProp.POSTGRES_USE_SSL)
@@ -21,6 +23,8 @@ const getSslConfig = (): boolean | TlsOptions => {
 export const getMigrations = (): (new () => Migration)[] => {
     return [
         InitialSchema1787473797710,
+        CreateWorkspaceMember1787900000000,
+        CreateAuditEvent1787900000001,
     ]
 }
 

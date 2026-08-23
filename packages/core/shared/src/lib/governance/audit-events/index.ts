@@ -39,6 +39,10 @@ export enum ApplicationEventName {
     USER_SIGNED_IN = 'user.signed.in',
     USER_PASSWORD_RESET = 'user.password.reset',
     USER_EMAIL_VERIFIED = 'user.email.verified',
+    CONNECTOR_PUBLISHED = 'connector.published',
+    MEMBER_ADDED = 'member.added',
+    MEMBER_REMOVED = 'member.removed',
+    NETWORK_AGENT_CREATED = 'network.agent.created',
 }
 
 const BaseAuditEventProps = {
@@ -323,6 +327,51 @@ export const WorkflowDeactivatedEvent = z.object({
 
 export type WorkflowDeactivatedEvent = z.infer<typeof WorkflowDeactivatedEvent>
 
+const ConnectorEventData = z.object({
+    connector: z.object({
+        name: z.string(),
+        version: z.string(),
+    }),
+})
+
+export const ConnectorPublishedEvent = z.object({
+    ...BaseAuditEventProps,
+    action: z.literal(ApplicationEventName.CONNECTOR_PUBLISHED),
+    data: ConnectorEventData,
+})
+export type ConnectorPublishedEvent = z.infer<typeof ConnectorPublishedEvent>
+
+const MemberEventData = z.object({
+    member: z.object({
+        userId: z.string(),
+        role: z.string(),
+    }),
+})
+
+export const MemberEvent = z.object({
+    ...BaseAuditEventProps,
+    action: z.union([
+        z.literal(ApplicationEventName.MEMBER_ADDED),
+        z.literal(ApplicationEventName.MEMBER_REMOVED),
+    ]),
+    data: MemberEventData,
+})
+export type MemberEvent = z.infer<typeof MemberEvent>
+
+const NetworkAgentEventData = z.object({
+    networkAgent: z.object({
+        id: z.string(),
+        displayName: z.string(),
+    }),
+})
+
+export const NetworkAgentCreatedEvent = z.object({
+    ...BaseAuditEventProps,
+    action: z.literal(ApplicationEventName.NETWORK_AGENT_CREATED),
+    data: NetworkAgentEventData,
+})
+export type NetworkAgentCreatedEvent = z.infer<typeof NetworkAgentCreatedEvent>
+
 const AuthenticationEventData = z.object({
     user: UserMeta.optional(),
 })
@@ -387,6 +436,9 @@ export const ApplicationEvent = z.union([
     AuthenticationEvent,
     FolderEvent,
     SignUpEvent,
+    ConnectorPublishedEvent,
+    MemberEvent,
+    NetworkAgentCreatedEvent,
 ])
 
 export type ApplicationEvent = z.infer<typeof ApplicationEvent>
@@ -441,6 +493,14 @@ export function summarizeApplicationEvent(event: ApplicationEvent) {
             return `User ${event.userEmail} verified email`
         case ApplicationEventName.USER_SIGNED_UP:
             return `User ${event.userEmail} signed up using email from ${event.data.source}`
+        case ApplicationEventName.CONNECTOR_PUBLISHED:
+            return `Connector ${event.data.connector.name}@${event.data.connector.version} was published`
+        case ApplicationEventName.MEMBER_ADDED:
+            return `User ${event.data.member.userId} was added as ${event.data.member.role}`
+        case ApplicationEventName.MEMBER_REMOVED:
+            return `User ${event.data.member.userId} was removed from the workspace`
+        case ApplicationEventName.NETWORK_AGENT_CREATED:
+            return `Network agent "${event.data.networkAgent.displayName}" was created`
     }
 }
 

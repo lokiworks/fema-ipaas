@@ -60,7 +60,7 @@ const systemPropDefaultValues: Partial<Record<SystemProp, string>> = {
     [AppSystemProp.ENFORCE_CONNECTION_CONNECTOR_BINDING]: 'false',
     [AppSystemProp.ISSUE_ARCHIVE_DAYS]: '7',
     [AppSystemProp.POSTGRES_IDLE_TIMEOUT_MS]: '300000',
-    [AppSystemProp.SCIM_DEFAULT_WORKSPACE_ROLE]: DefaultWorkspaceRole.EDITOR,
+    [AppSystemProp.SCIM_DEFAULT_WORKSPACE_ROLE]: DefaultWorkspaceRole.OPERATOR,
     [AppSystemProp.NETWORK_MODE]: NetworkMode.UNRESTRICTED,
     [AppSystemProp.LOG_SAMPLE_RATE_INFO]: '100',
     [AppSystemProp.LOG_KEEP_SLOW_MS]: '2000',

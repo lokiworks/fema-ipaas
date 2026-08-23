@@ -1,6 +1,5 @@
-import { Permission, isNil } from '@fema-ipaas/core-utils';
+import { isNil } from '@fema-ipaas/core-utils';
 import {
-  ApFlagId,
   WORKSPACE_COLOR_PALETTE,
   TenantRole,
   WorkspaceType,
@@ -13,10 +12,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useDebounce } from 'use-debounce';
 
 import { SearchInput } from '@/components/custom/search-input';
-import { BotIcon } from '@/components/icons/bot';
 import { ChartLineIcon } from '@/components/icons/chart-line';
 import { CompassIcon } from '@/components/icons/compass';
-import { SendIcon } from '@/components/icons/send';
 import { ShieldIcon } from '@/components/icons/shield';
 import { useEmbedding } from '@/components/providers/embed-provider';
 import { Button } from '@/components/ui/button';
@@ -43,11 +40,7 @@ import {
   workspaceCollectionUtils,
   getWorkspaceName,
 } from '@/features/workspaces';
-import {
-  useAuthorization,
-  useIsTenantAdmin,
-} from '@/hooks/authorization-hooks';
-import { flagsHooks } from '@/hooks/flags-hooks';
+import { useIsTenantAdmin } from '@/hooks/authorization-hooks';
 import { tenantHooks } from '@/hooks/tenant-hooks';
 import { userHooks } from '@/hooks/user-hooks';
 import { cn } from '@/lib/utils';
@@ -64,9 +57,6 @@ import WorkspaceSideBarItem from '../workspace';
 export function WorkspaceDashboardSidebar({
   className,
 }: { className?: string } = {}) {
-  const { data: agentsEnabledFlag } = flagsHooks.useFlag<boolean>(
-    ApFlagId.AGENTS_ENABLED,
-  );
   const { data: workspaces } = workspaceCollectionUtils.useAll();
   const { embedState } = useEmbedding();
   const { state } = useSidebar();
@@ -139,8 +129,6 @@ export function WorkspaceDashboardSidebar({
     [navigate, workspaces],
   );
 
-  const { checkAccess } = useAuthorization();
-
   const permissionFilter = (link: SidebarGeneralItemType) => {
     if (link.type === 'link') {
       return isNil(link.hasPermission) || link.hasPermission;
@@ -153,29 +141,6 @@ export function WorkspaceDashboardSidebar({
       userId: currentUser?.id,
     });
   }, []);
-
-  const chatLink: SidebarItemType = {
-    type: 'link',
-    to: '/chat',
-    label: t('Chat'),
-    show: tenant.plan.chatEnabled,
-    icon: SendIcon,
-    hasPermission: true,
-    isSubItem: false,
-    onClick: () => {
-      window.dispatchEvent(new Event('new-chat'));
-    },
-  };
-
-  const agentsLink: SidebarItemType = {
-    type: 'link',
-    to: '/agents',
-    label: t('Agents'),
-    show: tenant.plan.agentsEnabled && agentsEnabledFlag === true,
-    icon: BotIcon,
-    hasPermission: checkAccess(Permission.READ_AGENT),
-    isSubItem: false,
-  };
 
   const exploreLink: SidebarItemType = {
     type: 'link',
@@ -218,7 +183,7 @@ export function WorkspaceDashboardSidebar({
     },
   };
 
-  const items = [chatLink, agentsLink, exploreLink, impactLink]
+  const items = [exploreLink, impactLink]
     .filter((item) => item.show !== false)
     .filter(permissionFilter);
 

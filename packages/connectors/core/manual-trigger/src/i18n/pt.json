@@ -1,6 +1,0 @@
-{
-  "Manual Trigger": "Gatilho manual",
-  "Manually start your own workflow without any extra configurations": "Iniciar manualmente o seu próprio fluxo sem quaisquer configurações extras",
-  "Markdown": "Markdown",
-  "Manual triggers are used to start a workflow on demand, publish your workflow and click (Run Workflow) at the start of the workflow.": "Os gatilhos manuais são usados para iniciar um fluxo à demanda, publicar seu fluxo e clicar (Executar Fluxo) no início do fluxo."
-}

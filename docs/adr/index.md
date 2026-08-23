@@ -22,3 +22,4 @@ icon: 🧭
 | 0010 | [保持 MIT 并冻结上游基线](0010-license-and-upstream-notice-policy.md) | accepted |
 | 0011 | [上游迁移压缩为单一基线，放弃从 FEMA Integration Platform 就地升级](0011-squash-upstream-migrations-into-one-baseline.md) | accepted |
 | 0012 | [节点分发用穷尽映射表，且暂不引入 UI Graph 编译层](0012-engine-dispatch-and-no-graph-compiler.md) | proposed |
+| 0013 | [权限在工作空间角色上强制执行，成员关系是访问前提](0013-permissions-are-enforced-against-a-workspace-role.md) | accepted |

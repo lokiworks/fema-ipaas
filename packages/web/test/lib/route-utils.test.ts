@@ -17,13 +17,21 @@ const allow =
 describe('determineDefaultRoute', () => {
   it('routes based on the user permissions', () => {
     expect(
+      determineDefaultRoute({ checkAccess: allow([Permission.READ_RUN]) }),
+    ).toBe('/home');
+    expect(
       determineDefaultRoute({ checkAccess: allow([Permission.READ_WORKFLOW]) }),
     ).toBe('/automations');
-    expect(
-      determineDefaultRoute({ checkAccess: allow([Permission.READ_RUN]) }),
-    ).toBe('/runs');
     expect(determineDefaultRoute({ checkAccess: () => false })).toBe(
       '/settings',
     );
+  });
+
+  it('prefers home over workflows when the user can read runs', () => {
+    expect(
+      determineDefaultRoute({
+        checkAccess: allow([Permission.READ_RUN, Permission.READ_WORKFLOW]),
+      }),
+    ).toBe('/home');
   });
 });

@@ -3,6 +3,7 @@ import {
     DataSource,
     EntitySchema,
 } from 'typeorm'
+import { AuditEventEntity } from '../audit/audit-event.entity'
 import { OtpEntity } from '../authentication/otp/otp-entity'
 import { UserIdentityEntity } from '../authentication/user-identity/user-identity-entity'
 import { ConnectionEntity } from '../connection/connection.entity'
@@ -26,6 +27,7 @@ import { FolderEntity } from '../workflows/folder/folder.entity'
 import { WorkflowEntity } from '../workflows/workflow/workflow.entity'
 import { WorkflowVersionEntity } from '../workflows/workflow-version/workflow-version-entity'
 import { WorkspaceEntity } from '../workspace/workspace-entity'
+import { WorkspaceMemberEntity } from '../workspace/workspace-member.entity'
 import { DatabaseType } from './database-type'
 import { createPGliteDataSource } from './pglite-connection'
 import { createPostgresDataSource } from './postgres-connection'
@@ -41,7 +43,9 @@ function getEntities(): EntitySchema<unknown>[] {
         WorkflowEntity,
         WorkflowVersionEntity,
         ExecutionEntity,
+        AuditEventEntity,
         WorkspaceEntity,
+        WorkspaceMemberEntity,
         StoreEntryEntity,
         UserEntity,
         ConnectionEntity,

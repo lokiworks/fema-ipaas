@@ -32,14 +32,11 @@ export const determineDefaultRoute = ({
   if (chatEnabled) {
     return CHAT_ROUTE;
   }
-  if (
-    checkAccess(Permission.READ_WORKFLOW) ||
-    checkAccess(Permission.READ_TABLE)
-  ) {
-    return authenticationSession.appendWorkspaceRoutePrefix('/automations');
-  }
   if (checkAccess(Permission.READ_RUN)) {
-    return authenticationSession.appendWorkspaceRoutePrefix('/runs');
+    return authenticationSession.appendWorkspaceRoutePrefix('/home');
+  }
+  if (checkAccess(Permission.READ_WORKFLOW)) {
+    return authenticationSession.appendWorkspaceRoutePrefix('/automations');
   }
   return authenticationSession.appendWorkspaceRoutePrefix('/settings');
 };

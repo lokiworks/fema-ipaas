@@ -1,4 +1,5 @@
 import { t } from 'i18next';
+import { ScrollTextIcon } from 'lucide-react';
 import { ComponentType, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -151,6 +152,11 @@ export function TenantSidebar() {
     {
       label: t('Security'),
       items: [
+        {
+          to: '/tenant/audit',
+          label: t('Audit Log'),
+          icon: ScrollTextIcon,
+        },
         {
           to: '/tenant/security/sso',
           label: t('Single Sign On'),

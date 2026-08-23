@@ -8,6 +8,8 @@ import { FastifyBaseLogger, FastifyInstance, FastifyRequest, HTTPMethods } from 
 import { jsonSchemaTransform, jsonSchemaTransformObject } from 'fastify-type-provider-zod'
 import Mustache from 'mustache'
 import { globalRegistry } from 'zod/v4/core'
+import { registerAuditEventListener } from './audit/audit-event-listener'
+import { auditEventModule } from './audit/audit-event.module'
 import { authenticationModule } from './authentication/authentication.module'
 import { localAuthnModule } from './authentication/local-authn/local-authn.module'
 import { otpModule } from './authentication/otp/otp-module'
@@ -152,6 +154,8 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     await connectorMetadataService(app.log).setup()
     await app.register(connectorModule)
     await app.register(componentModule)
+    await app.register(auditEventModule)
+    registerAuditEventListener(app.log)
     await app.register(communityConnectorsModule)
     await app.register(collaborativeModule)
     await app.register(workflowModule)

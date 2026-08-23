@@ -100,7 +100,6 @@ const getPinnedConnectors = (
 
 const POPULAR_CONNECTORS_NAMES = [
   '@fema-ipaas/connector-google-sheets',
-  '@fema-ipaas/connector-slack',
   '@fema-ipaas/connector-notion',
   '@fema-ipaas/connector-gmail',
   '@fema-ipaas/connector-hubspot',

@@ -1,5 +1,4 @@
 import { Connector, ConnectorAuthProperty } from '@fema-ipaas/connector-sdk'
-import { slack } from '@fema-ipaas/connector-slack'
 import { apId, ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil } from '@fema-ipaas/core-utils'
 import { LATEST_JOB_DATA_SCHEMA_VERSION, RunEnvironment, WorkerJobType, WorkflowStatus } from '@fema-ipaas/shared'
 import { FastifyRequest } from 'fastify'
@@ -16,12 +15,8 @@ import { workspaceService } from '../../workspace/workspace-service'
 import { triggerSourceService } from '../trigger-source/trigger-source-service'
 import { appEventRoutingService } from './app-event-routing.service'
 
-const appWebhooks: Record<string, Connector<ConnectorAuthProperty | ConnectorAuthProperty[] | undefined>> = {
-    slack,
-}
-const connectorNames: Record<string, string> = {
-    slack: '@fema-ipaas/connector-slack',
-}
+const appWebhooks: Record<string, Connector<ConnectorAuthProperty | ConnectorAuthProperty[] | undefined>> = {}
+const connectorNames: Record<string, string> = {}
 
 export const appEventRoutingModule: FastifyPluginAsyncZod = async (app) => {
     await app.register(appEventRoutingController, { prefix: '/v1/app-events' })

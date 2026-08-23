@@ -92,7 +92,11 @@ async function assertAccessToWorkspace(principal: Principal, workspaceSecurity: 
             },
         })
     }
-    await workspaceAccess(log).assertPrincipalCanAccessWorkspace({ principal, workspaceId: workspaceSecurity.workspaceId })
+    await workspaceAccess(log).assertPrincipalCanAccessWorkspace({
+        principal,
+        workspaceId: workspaceSecurity.workspaceId,
+        permission: workspaceSecurity.permission,
+    })
 }
 
 

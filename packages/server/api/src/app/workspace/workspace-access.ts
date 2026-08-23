@@ -1,18 +1,23 @@
-import { apId, ApplicationError, ErrorCode, isNil, Permission, RoleType, WorkspaceRole } from '@fema-ipaas/core-utils'
-import { Principal, PrincipalType, TenantRole } from '@fema-ipaas/shared'
+import { ApplicationError, ErrorCode, isNil, Permission, RoleType, WorkspaceRole } from '@fema-ipaas/core-utils'
+import { DefaultWorkspaceRole, Principal, PrincipalType, rolePermissions, TenantRole } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { userService } from '../user/user-service'
+import { workspaceMemberRepo } from './workspace-member.repo'
 import { workspaceService } from './workspace-service'
 
-const WORKSPACE_ADMIN_ROLE: WorkspaceRole = {
-    id: apId(),
-    created: new Date().toISOString(),
-    updated: new Date().toISOString(),
-    name: 'Workspace Admin',
-    permissions: Object.values(Permission),
-    tenantId: null,
-    type: RoleType.DEFAULT,
+function buildRole(name: DefaultWorkspaceRole): WorkspaceRole {
+    return {
+        id: name,
+        created: EPOCH,
+        updated: EPOCH,
+        name,
+        permissions: rolePermissions[name],
+        tenantId: null,
+        type: RoleType.DEFAULT,
+    }
 }
+
+const EPOCH = new Date(0).toISOString()
 
 function denied(message: string): never {
     throw new ApplicationError({
@@ -22,7 +27,7 @@ function denied(message: string): never {
 }
 
 export const workspaceAccess = (log: FastifyBaseLogger) => ({
-    async assertPrincipalCanAccessWorkspace({ principal, workspaceId }: AssertParams): Promise<void> {
+    async assertPrincipalCanAccessWorkspace({ principal, workspaceId, permission }: AssertParams): Promise<void> {
         if (isNil(workspaceId)) {
             denied('Workspace ID is required')
         }
@@ -38,6 +43,9 @@ export const workspaceAccess = (log: FastifyBaseLogger) => ({
         if (isNil(role)) {
             denied('User not allowed to access this workspace')
         }
+        if (!isNil(permission) && !role.permissions.includes(permission)) {
+            denied(`Role ${role.name} is missing permission ${permission}`)
+        }
     },
 
     async resolveRole({ userId, workspaceId }: ResolveRoleParams): Promise<WorkspaceRole | null> {
@@ -46,13 +54,20 @@ export const workspaceAccess = (log: FastifyBaseLogger) => ({
             return null
         }
         if (workspace.ownerId === userId) {
-            return WORKSPACE_ADMIN_ROLE
+            return buildRole(DefaultWorkspaceRole.ADMIN)
         }
         const user = await userService(log).getOneOrFail({ id: userId })
         if (user.tenantId !== workspace.tenantId) {
             return null
         }
-        return user.tenantRole === TenantRole.ADMIN ? WORKSPACE_ADMIN_ROLE : null
+        if (user.tenantRole === TenantRole.ADMIN) {
+            return buildRole(DefaultWorkspaceRole.ADMIN)
+        }
+        const membership = await workspaceMemberRepo().findOneBy({ workspaceId, userId })
+        if (isNil(membership)) {
+            return null
+        }
+        return buildRole(membership.role)
     },
 
     async isTenantAdmin({ userId }: { userId: string }): Promise<boolean> {
@@ -64,6 +79,7 @@ export const workspaceAccess = (log: FastifyBaseLogger) => ({
 type AssertParams = {
     principal: Principal
     workspaceId: string | undefined | null
+    permission?: Permission
 }
 
 type ResolveRoleParams = {

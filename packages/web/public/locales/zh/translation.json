@@ -2310,5 +2310,11 @@
   "Failed runs": "失败次数",
   "Last 24 hours": "最近 24 小时",
   "No finished runs yet": "尚无已完成的运行",
-  "This core component is not available on this instance.": "当前实例没有这个核心组件。"
+  "This core component is not available on this instance.": "当前实例没有这个核心组件。",
+  "Audit Log": "审计日志",
+  "Who changed what, kept separate from what the system executed.": "谁改了什么 —— 与系统执行了什么分开记录。",
+  "No audit events yet": "暂无审计事件",
+  "Changes to workflows, connections and members will appear here.": "工作流、连接和成员的变更会出现在这里。",
+  "Actor": "操作人",
+  "Time": "时间"
 }

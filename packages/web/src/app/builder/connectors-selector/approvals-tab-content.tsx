@@ -16,13 +16,6 @@ import GenericActionOrTriggerItem from './generic-connector-selector-item';
 
 const APPROVAL_CONNECTORS_CONFIG = [
   {
-    connectorName: '@fema-ipaas/connector-slack',
-    approvalActionNames: [
-      'request_approval_message',
-      'request_approval_direct_message',
-    ],
-  },
-  {
     connectorName: '@fema-ipaas/connector-discord',
     approvalActionNames: ['request_approval_message'],
   },

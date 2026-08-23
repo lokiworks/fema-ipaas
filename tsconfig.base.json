@@ -65,9 +65,6 @@
       "@fema-ipaas/connector-forms": [
         "packages/connectors/core/forms/src/index.ts"
       ],
-      "@fema-ipaas/connector-github": [
-        "packages/connectors/community/github/src/index.ts"
-      ],
       "@fema-ipaas/connector-http": [
         "packages/connectors/core/http/src/index.ts"
       ],
@@ -80,20 +77,8 @@
       "@fema-ipaas/connector-postgres": [
         "packages/connectors/community/postgres/src/index.ts"
       ],
-      "@fema-ipaas/connector-rabbitmq": [
-        "packages/connectors/community/rabbitmq/src/index.ts"
-      ],
       "@fema-ipaas/connector-schedule": [
         "packages/connectors/core/schedule/src/index.ts"
-      ],
-      "@fema-ipaas/connector-sftp": [
-        "packages/connectors/core/sftp/src/index.ts"
-      ],
-      "@fema-ipaas/connector-slack": [
-        "packages/connectors/community/slack/src/index.ts"
-      ],
-      "@fema-ipaas/connector-smtp": [
-        "packages/connectors/core/smtp/src/index.ts"
       ],
       "@fema-ipaas/connector-store": [
         "packages/connectors/core/store/src/index.ts"

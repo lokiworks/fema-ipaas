@@ -1,6 +1,0 @@
-{
-  "Manual Trigger": "Disparador manual",
-  "Manually start your own workflow without any extra configurations": "Iniciar manualmente su propio flujo sin ninguna configuración adicional",
-  "Markdown": "Markdown",
-  "Manual triggers are used to start a workflow on demand, publish your workflow and click (Run Workflow) at the start of the workflow.": "Los activadores manuales se utilizan para iniciar un flujo bajo demanda, publicar su flujo y hacer clic en Ejecutar Workflow) al inicio del flujo."
-}

@@ -8,6 +8,16 @@ icon: "hammer"
 
 ### What has changed?
 
+#### Workspace permissions are now enforced, and workspace access requires membership
+
+Every route already declared a `Permission`, but nothing checked it — reaching a workspace at all granted everything inside it. The permission is now enforced against the caller's workspace role, and the permission vocabulary moved to the `RESOURCE:ACTION` form (`WORKFLOW:READ`, `CONNECTION:MANAGE`) with four roles: Admin, Developer, Operator, Viewer.
+
+Access itself is also narrower. A user reaches a workspace only as its owner, as a tenant admin, or through a row in the new `workspace_member` table. Accepting a workspace invitation now creates that row; previously the invitation was marked accepted and granted nothing.
+
+#### What you need to do
+
+Workspace owners and tenant admins keep full access and need no action. Any other user who previously reached a workspace without an accepted workspace invitation will be denied until they are added — call `POST /v1/workspace-members` with `workspaceId`, `userId` and `role`, or re-send the invitation. API consumers that stored permission strings must move to the new `RESOURCE:ACTION` values; the old `READ_WORKFLOW`-style strings are no longer recognised.
+
 #### Connector builds fail when connector code uses `__dirname` without declaring `bundleForkedEntries`
 
 The connector bundler now emits files a connector loads by path at runtime (for example a `child_process.fork` target) beside the main bundle, when they are declared in a `bundleForkedEntries` array in the connector's `package.json`, and it keeps dependencies that only those files import in the published manifest. Because an undeclared `__dirname`-relative file access always breaks after publishing — this is exactly how `@fema-ipaas/connector-oracle-database` 0.1.11/0.1.12 shipped with every new connection failing — the build now fails loudly when a connector's source references `__dirname` and declares no forked entries. Previously such a connector built successfully and shipped broken.

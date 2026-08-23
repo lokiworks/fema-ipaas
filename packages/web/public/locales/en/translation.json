@@ -2408,5 +2408,11 @@
   "Failed runs": "Failed runs",
   "Last 24 hours": "Last 24 hours",
   "No finished runs yet": "No finished runs yet",
-  "This core component is not available on this instance.": "This core component is not available on this instance."
+  "This core component is not available on this instance.": "This core component is not available on this instance.",
+  "Audit Log": "Audit Log",
+  "Who changed what, kept separate from what the system executed.": "Who changed what, kept separate from what the system executed.",
+  "No audit events yet": "No audit events yet",
+  "Changes to workflows, connections and members will appear here.": "Changes to workflows, connections and members will appear here.",
+  "Actor": "Actor",
+  "Time": "Time"
 }

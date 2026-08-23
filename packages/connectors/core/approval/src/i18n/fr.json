@@ -1,8 +1,0 @@
-{
-  "Build approval process in your workflows": "Construire le processus d'approbation dans vos workflows",
-  "Wait for Approval": "Attendre l'approbation",
-  "Create Approval Links": "Créer des liens d'approbation",
-  "Pauses the workflow and wait for the approval from the user": "Met le workflow en pause et attend l'approbation de l'utilisateur",
-  "Create links only without pausing the workflow, use wait for approval to pause": "Créer des liens uniquement sans interrompre le workflow, utiliser attendre l'approbation pour mettre en pause",
-  "Markdown": "Markdown"
-}

@@ -6,6 +6,19 @@ icon: 🔐
 
 How FEMA Integration Platform stores credentials and authenticates users, across CE/EE/Cloud. Multi-tenant rule throughout: connection queries filter by project via `ArrayContains([projectId])` on the `projectIds[]` array (never a scalar `projectId`), or by `scope = PLATFORM` for shared ones.
 
+### Workspace Roles & Permissions
+
+Four roles — Admin, Developer, Operator, Viewer — each a fixed `Permission[]` in `rolePermissions`. Permissions use the `RESOURCE:ACTION` vocabulary (`WORKFLOW:READ`, `CONNECTION:MANAGE`) from design doc section 20. System Admin is not a workspace role: it is `TenantRole.ADMIN` at the tenant level.
+
+- **Where**: `packages/core/utils/src/lib/permission.ts` (the vocabulary), `packages/core/shared/src/lib/authentication/authn/access-control-list.ts` (`rolePermissions`), `packages/server/api/src/app/workspace/workspace-access.ts` (`resolveRole`, `assertPrincipalCanAccessWorkspace`), `workspace_member` table.
+- **Access requires membership**: owner, tenant admin, or a `workspace_member` row. Nothing else reaches a workspace. Accepting a WORKSPACE invitation writes that row.
+
+- **Gotchas**:
+  - The single enforcement point is `assertPrincipalCanAccessWorkspace`, reached from `authorize.ts`. Services do **not** re-check. A route that forgets to declare a `Permission` in `securityAccess.workspace(...)` is therefore membership-gated but otherwise wide open — the missing declaration is the bug, and nothing will fail loudly.
+  - The declaration existed long before the enforcement. Until [ADR 0013](../../../docs/adr/0013-permissions-are-enforced-against-a-workspace-role.md), every route passed a `Permission` that `assertAccessToWorkspace` silently ignored, and the web's `checkAccess` returned a hardcoded `true`. If you are reading old code or an old branch, assume permissions there are decorative.
+  - The role ladder is strict containment (Viewer ⊂ Operator ⊂ Developer ⊂ Admin) and `access-control-list.test.ts` asserts it. Granting a role a permission its superior lacks fails the build.
+  - `SCIM_DEFAULT_WORKSPACE_ROLE` defaults to Operator. There is no Editor role any more.
+
 ### App Connections
 
 Encrypted credential records (AES-256) that workflow steps use to call external services. Types: `OAUTH2`, `CLOUD_OAUTH2` (token exchange via secrets.fema.local), `PLATFORM_OAUTH2`, `SECRET_TEXT`, `BASIC_AUTH`, `CUSTOM_AUTH`, `NO_AUTH`, `OIDC`.

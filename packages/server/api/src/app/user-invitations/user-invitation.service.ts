@@ -1,5 +1,5 @@
 import { apId, ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil, SeekPage, spreadIfDefined } from '@fema-ipaas/core-utils'
-import { InvitationStatus, InvitationType, TenantRole, UserInvitation, UserInvitationWithLink } from '@fema-ipaas/shared'
+import { DefaultWorkspaceRole, InvitationStatus, InvitationType, TenantRole, UserInvitation, UserInvitationWithLink } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { EntityManager, IsNull, ObjectLiteral, SelectQueryBuilder } from 'typeorm'
@@ -11,6 +11,7 @@ import { JwtAudience, jwtUtils } from '../helper/jwt-utils'
 import { buildPaginator } from '../helper/pagination/build-paginator'
 import { paginationHelper } from '../helper/pagination/pagination-utils'
 import { userService } from '../user/user-service'
+import { workspaceMemberService } from '../workspace/workspace-member.service'
 import { UserInvitationEntity } from './user-invitation.entity'
 
 export const userInvitationRepo = repoFactory(UserInvitationEntity)
@@ -70,6 +71,11 @@ export const userInvitationsService = (log: FastifyBaseLogger) => ({
                 case InvitationType.WORKSPACE: {
                     const { workspaceId } = invitation
                     assertNotNullOrUndefined(workspaceId, 'workspaceId')
+                    await workspaceMemberService(log).upsert({
+                        workspaceId,
+                        userId: user.id,
+                        role: toWorkspaceRole(invitation.workspaceRoleId),
+                    })
                     break
                 }
             }
@@ -251,6 +257,14 @@ export const userInvitationsService = (log: FastifyBaseLogger) => ({
         })
     },
 })
+
+function toWorkspaceRole(workspaceRoleId: string | null | undefined): DefaultWorkspaceRole {
+    const roles: string[] = Object.values(DefaultWorkspaceRole)
+    if (!isNil(workspaceRoleId) && roles.includes(workspaceRoleId)) {
+        return workspaceRoleId as DefaultWorkspaceRole
+    }
+    return DefaultWorkspaceRole.VIEWER
+}
 
 export const INVITATION_EXPIRY_SECONDS = dayjs.duration(7, 'days').asSeconds()
 

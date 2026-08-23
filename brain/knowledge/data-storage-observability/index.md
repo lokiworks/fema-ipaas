@@ -26,9 +26,18 @@ Central binary persistence with two backends: DB (`bytea`) or S3-compatible (AWS
 
 Resolve workflow/connection secrets from external vaults (HashiCorp, AWS Secrets Manager, CyberArk Conjur, 1Password) instead of the DB. Reference syntax `{{connectionId|path}}`. Config encrypted at rest, secrets + connection status cached in Redis. Scope PLATFORM or PROJECT (projectIds `@>` containment). Gated by `platform.plan.secretManagersEnabled`. EE/Cloud only.
 
-### Audit Logs (EE)
+### Audit Log
 
-Security-relevant actions persisted to `audit_event`, queryable by platform admins (filter user/action/project/date). Captured transparently via listeners on the `applicationEvents` bus (userEvent + workerEvent) — no caller coupling. 27 `ApplicationEventName` values (workflow CRUD/lifecycle, run lifecycle, auth, connections, roles, releases). Gated by `platform.plan.auditLogEnabled`. EE/Cloud only.
+"Who changed what", deliberately separate from Execution's "what the system ran" (design doc section 41). Rows land in `audit_event`, listed by tenant admins at `/tenant/audit` via `GET /v1/audit-events`.
+
+- **Where**: `packages/server/api/src/app/audit` (entity, service, listener, controller), `packages/core/shared/src/lib/governance/audit-events` (`ApplicationEvent` union, `ApplicationEventName`, `summarizeApplicationEvent`).
+- **Nothing calls the audit service directly.** `registerAuditEventListener` subscribes to the existing `applicationEvents` bus at boot, so every existing `sendUserEvent` / `sendWorkerEvent` call site persists automatically. To audit a new action, emit on that bus — do not add an `auditEventService.record` call.
+- `enrichAuditEventParam` fills actor, email, IP, workspace name from the request, so emitters pass only `action` and `data`.
+
+- **Gotchas**:
+  - The bus and the event model long outlived the persistence. The EE listener was deleted with the rest of EE, which left every `sendUserEvent` call firing into an empty listener list — events were emitted and silently dropped, with no error anywhere. If audit rows are missing, check that the listener is registered before suspecting the emitters.
+  - The entity is typed as `AuditEventRow` (`action: string`, `data: object`), not the `ApplicationEvent` discriminated union. TypeORM's `DeepPartial` cannot map a union whose members have differently-shaped `data`, and forcing it needs a cast. The union stays the API contract; the row is the storage shape.
+  - `summarizeApplicationEvent` switches exhaustively on `action`. A new `ApplicationEventName` without a case there fails the build — that is deliberate, so new audited actions get a human-readable line.
 
 ### Analytics / Impact (EE)
 

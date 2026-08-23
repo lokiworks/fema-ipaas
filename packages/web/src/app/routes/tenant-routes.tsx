@@ -34,6 +34,7 @@ const TenantTemplatesPage = React.lazy(() =>
   })),
 );
 const UsersPage = React.lazy(() => import('./tenant/users'));
+const AuditLogPage = React.lazy(() => import('./tenant/audit'));
 const TenantConnectionsPage = React.lazy(() => import('./tenant/connections'));
 
 function SuspenseWrapper({ children }: { children: React.ReactNode }) {
@@ -68,6 +69,7 @@ export const tenantRoutes = [
   },
   tenantRoute('/tenant/workspaces', 'Workspaces', WorkspacesPage),
   tenantRoute('/tenant/users', 'Members', UsersPage),
+  tenantRoute('/tenant/audit', 'Audit Log', AuditLogPage),
   tenantRoute('/tenant/connections', 'Connections', TenantConnectionsPage),
   {
     path: '/tenant/setup',

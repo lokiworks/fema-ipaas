@@ -1,0 +1,60 @@
+packages/web/src/app/connections/oauth2-connection-settings.tsx
+  s_94864882421579::t_ee43a2de9e4287 40
+packages/web/src/app/builder/piece-properties/properties-utils.tsx
+  s_94864882421579::t_ee43a2de9e4287 1
+packages/web/src/features/automations/hooks/use-automations-data.ts
+  s_94864882421579::t_42e8a238302deb 55,57,60,63-69,268
+packages/server/api/src/app/app.ts
+  s_94864882421579::t_cdf76ceb5cb36b 14,167
+packages/web/src/app/connections/secret-text-connection-settings.tsx
+  s_94864882421579::t_ee43a2de9e4287 1
+packages/core/shared/src/lib/authentication/local-authn/index.ts
+  s_94864882421579::t_cdf76ceb5cb36b 1-15
+packages/server/api/src/app/authentication/local-authn/local-authn.module.ts
+  s_94864882421579::t_3083a16934a2b1 1-79
+packages/web/src/features/automations/hooks/use-automations-selection.ts
+  s_94864882421579::t_483d24a6be83d7 131,136
+packages/web/src/app/builder/state/run-state.ts
+  s_94864882421579::t_ed482c8ff959f2 385-389
+packages/web/src/features/automations/components/automations-table.tsx
+  s_94864882421579::t_349519879abcee 25,238
+packages/web/src/features/automations/hooks/use-owner-options.ts
+  s_94864882421579::t_e6391ab1fe8327 39
+packages/web/src/app/connections/secret-input.tsx
+  s_94864882421579::t_54c8dd0814971a 1-47
+packages/web/src/app/components/locked-feature-guard.tsx
+  s_94864882421579::t_58524f3855e972 1-18
+packages/web/src/features/automations/components/automations-table-row.tsx
+  s_94864882421579::t_349519879abcee 1,286
+packages/web/src/app/routes/automations/index.tsx
+  s_94864882421579::t_0d26049506d0ea 287
+packages/web/src/features/automations/hooks/use-automations-mutations.ts
+  s_94864882421579::t_4215b65857e323 7,18,78,100,105-106,112,209,257
+packages/web/src/features/automations/lib/utils.ts
+  s_94864882421579::t_84ea9ae815fd1e 1,9,13,17,102
+  s_94864882421579::t_8c4e3b7b16c6ae 14
+packages/web/src/features/automations/components/automations-filters.tsx
+  s_94864882421579::t_e6391ab1fe8327 138
+packages/core/shared/src/index.ts
+  s_94864882421579::t_a45114544c8f94 52
+packages/web/src/features/automations/components/create-new-menu.tsx
+  s_94864882421579::t_8c4e3b7b16c6ae 39,83-87,89-98,136
+packages/web/src/features/automations/lib/types.ts
+  s_94864882421579::t_42e8a238302deb 2,4,6,14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "dcbdf514168878ce578c1b3a20388fcb2b629495",
+  "prompts": {},
+  "sessions": {
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

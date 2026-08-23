@@ -1,0 +1,45 @@
+NOTICE.md
+  s_94864882421579::t_db0ecded35e3cf 1-61
+docs/adr/0004-separate-connector-and-flow-component.md
+  s_94864882421579::t_6e36c08c61a320 1-39
+docs/adr/0001-fork-activepieces-ce.md
+  s_94864882421579::t_6e36c08c61a320 1-34
+docs/adr/0006-workflow-version-and-connector-version-lock.md
+  s_94864882421579::t_6e36c08c61a320 1-32
+docs/adr/0009-no-ai-agent-in-integration-core.md
+  s_94864882421579::t_6e36c08c61a320 1-40
+docs/adr/0010-license-and-upstream-notice-policy.md
+  s_94864882421579::t_6e36c08c61a320 1-41
+docs/adr/0002-remove-enterprise-edition.md
+  s_94864882421579::t_6e36c08c61a320 1-33
+UPSTREAM.md
+  s_94864882421579::t_db0ecded35e3cf 1-38
+docs/adr/0007-runtime-keeps-worker-sandbox-engine.md
+  s_94864882421579::t_6e36c08c61a320 1-38
+docs/adr/0005-connection-domain-model.md
+  s_94864882421579::t_6e36c08c61a320 1-38
+LICENSE
+  s_94864882421579::t_3559b7314476fa 1,3-4,6-10
+docs/adr/index.md
+  s_94864882421579::t_6e36c08c61a320 1-22
+docs/adr/0008-ui-follows-enterprise-integration-mental-model.md
+  s_94864882421579::t_6e36c08c61a320 1-36
+docs/adr/0003-piece-to-connector.md
+  s_94864882421579::t_6e36c08c61a320 1-37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "e07c2bfe582473e397596bee18ca23b7e6be9090",
+  "prompts": {},
+  "sessions": {
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

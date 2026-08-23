@@ -1,0 +1,21 @@
+docs/adr/0011-squash-upstream-migrations-into-one-baseline.md
+  s_94864882421579::t_92848cf6ed4dd5 1-42
+docs/adr/index.md
+  s_94864882421579::t_44eb6eb2b0ddbe 23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "2e684636b19f3b33eb8f3e3f3d015ce2f432df49",
+  "prompts": {},
+  "sessions": {
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

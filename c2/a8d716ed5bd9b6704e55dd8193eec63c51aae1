@@ -1,0 +1,27 @@
+packages/server/engine/src/lib/handler/workflow-executor.ts
+  s_94864882421579::t_c68996c07ac197 14,84-87,89-90,93,95-96,125-126
+  s_94864882421579::t_7fa113d281ef5e 69-70,72
+packages/server/engine/src/lib/handler/execution-plan-cursor.ts
+  s_94864882421579::t_7fa113d281ef5e 11-14
+  s_94864882421579::t_c68996c07ac197 1-10,15-68
+brain/knowledge/connectors-engine/index.md
+  s_94864882421579::t_491fc7152b9067 25-26
+packages/server/engine/test/handler/execution-plan-cursor.test.ts
+  s_94864882421579::t_4b7d7b3ed81903 1-46
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "c2a8d716ed5bd9b6704e55dd8193eec63c51aae1",
+  "prompts": {},
+  "sessions": {
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

@@ -1,0 +1,77 @@
+packages/server/api/src/app/workers/job-queue/interceptors/rate-limiter-interceptor.ts
+  s_94864882421579::t_1b9cfb2b2e6c4b 1,3,5,9,13,29-30,33-37,39-43,48-49,90-91,132
+packages/server/api/src/app/workers/rpc/worker-rpc-service.ts
+  s_94864882421579::t_ec1a5a591a1b35 105
+packages/server/api/src/app/database/seeds/index.ts
+  s_94864882421579::t_ec1a5a591a1b35 12
+packages/server/worker/src/lib/worker.ts
+  s_94864882421579::t_79f0f1fc2ad5c2 342
+packages/server/api/src/app/helper/email/email-service.ts
+  s_94864882421579::t_0e87dbda65f2e3 1-110
+packages/server/api/src/app/flags/flag.service.ts
+  s_94864882421579::t_52f4a7ffab27ea 142,196,300
+  s_94864882421579::t_8bd2ec4c19b619 9,288
+packages/server/api/src/app/authentication/otp/otp-service.ts
+  s_94864882421579::t_8bd2ec4c19b619 7
+packages/server/api/src/app/flows/flow-version/migrations/index.ts
+  s_94864882421579::t_6eff54de9cfa01 15-17
+packages/server/api/src/app/app-connection/app-connection-service/oauth2/services/credentials-oauth2-service.ts
+  s_94864882421579::t_6f95ed6149e3bb 115
+packages/core/shared/src/index.ts
+  s_94864882421579::t_00699dc9c4b85a 50
+packages/server/api/src/app/app-connection/app-connection-service/app-connection-service.ts
+  s_94864882421579::t_6f95ed6149e3bb 56,473-474,506
+packages/server/api/src/app/app-connection/app-connection-worker-controller.ts
+  s_94864882421579::t_6f95ed6149e3bb 30
+packages/server/api/src/app/workers/job-queue/job-queue.ts
+  s_94864882421579::t_52f4a7ffab27ea 3,214-221,225,262
+packages/server/api/src/app/project/project-access.ts
+  s_94864882421579::t_01350e53292981 1-71
+packages/server/api/src/app/webhooks/webhook.service.ts
+  s_94864882421579::t_ec1a5a591a1b35 273
+packages/server/api/src/app/app-connection/app-connection-service/oauth2/oauth2-util.ts
+  s_94864882421579::t_6f95ed6149e3bb 121
+packages/server/api/src/app/helper/email/mail-sender.ts
+  s_94864882421579::t_12307b4721cc04 1-2,4-8,10-11,13-16,18-20,23-37,41-50,52-55,57-65,67-77,79-83
+packages/server/worker/src/lib/execute/job-registry.ts
+  s_94864882421579::t_79f0f1fc2ad5c2 47
+packages/server/api/src/app/flows/flow-run/flow-run-service.ts
+  s_94864882421579::t_ec1a5a591a1b35 379
+packages/server/api/src/app/core/security/v2/authz/authorize.ts
+  s_94864882421579::t_8ee6893499a10c 5,62,66,97
+packages/server/api/src/app/flows/pre-warm-workers.ts
+  s_94864882421579::t_52f4a7ffab27ea 93
+packages/server/api/src/app/flows/flow-run/flow-run-hooks.ts
+  s_94864882421579::t_e4f18c1f80d784 1-2,16,24-29
+packages/server/api/src/app/workers/machine/machine-service.ts
+  s_94864882421579::t_52f4a7ffab27ea 100
+packages/core/shared/src/lib/governance/audit-events/index.ts
+  s_94864882421579::t_21a031380d8716 1,3-532
+  s_94864882421579::t_00699dc9c4b85a 2
+packages/server/api/src/app/core/websockets.service.ts
+  s_94864882421579::t_8ee6893499a10c 1,119
+packages/server/api/src/app/platform/platform.controller.ts
+  s_94864882421579::t_8bd2ec4c19b619 10
+packages/server/api/src/app/flows/folder/folder.service.ts
+  s_94864882421579::t_52f4a7ffab27ea 144
+packages/server/api/src/app/server.ts
+  s_94864882421579::t_ec1a5a591a1b35 132
+packages/server/api/src/app/user-invitations/user-invitation.service.ts
+  s_94864882421579::t_8bd2ec4c19b619 8,141,318
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "0acd5ec3323952ae1c457e0737245acf2eea2715",
+  "prompts": {},
+  "sessions": {
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

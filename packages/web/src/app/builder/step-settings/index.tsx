@@ -41,6 +41,7 @@ import { ComponentSettings } from './component-settings';
 import { ConnectorSettings } from './connector-settings';
 import EditableStepName from './editable-step-name';
 import { LoopsSettings } from './loops-settings';
+import { ParallelSettings } from './parallel-settings';
 import { RouterSettings } from './router-settings';
 import { StepNavigationButtons } from './step-navigation-buttons';
 import { useStepSettingsContext } from './step-settings-context';
@@ -202,6 +203,9 @@ const StepSettingsContainer = () => {
         )}
         {modifiedStep.type === WorkflowActionType.ROUTER && modifiedStep && (
           <RouterSettings readonly={readonly}></RouterSettings>
+        )}
+        {modifiedStep.type === WorkflowActionType.PARALLEL && (
+          <ParallelSettings readonly={readonly} />
         )}
         {modifiedStep.type === WorkflowTriggerType.CONNECTOR &&
           modifiedStep && (

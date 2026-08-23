@@ -9,6 +9,7 @@ export enum WorkflowActionType {
     COMPONENT = 'COMPONENT',
     CONNECTOR = 'CONNECTOR',
     LOOP_ON_ITEMS = 'LOOP_ON_ITEMS',
+    PARALLEL = 'PARALLEL',
     ROUTER = 'ROUTER',
 }
 
@@ -293,6 +294,17 @@ export const RouterActionSettings = z.object({
     executionType: z.nativeEnum(RouterExecutionType),
 })
 
+export const ParallelBranch = z.object({
+    branchName: z.string().min(1, 'formErrors.required'),
+})
+
+export const ParallelActionSettings = z.object({
+    ...commonActionSettings,
+    branches: z.array(ParallelBranch).min(2, 'formErrors.parallelNeedsTwoBranches'),
+})
+
+export type ParallelActionSettings = z.infer<typeof ParallelActionSettings>
+
 export const RouterActionSettingsWithValidation = z.object({
     branches: RouterBranchesSchema(true),
     executionType: z.nativeEnum(RouterExecutionType),
@@ -329,6 +341,13 @@ export const WorkflowAction: z.ZodType<WorkflowAction> = z.lazy(() =>
             nextAction: WorkflowAction.optional(),
             children: z.array(z.union([WorkflowAction, z.null()])),
         }),
+        z.object({
+            ...commonActionProps,
+            type: z.literal(WorkflowActionType.PARALLEL),
+            settings: ParallelActionSettings,
+            nextAction: WorkflowAction.optional(),
+            children: z.array(z.union([WorkflowAction, z.null()])),
+        }),
     ]),
 )
 
@@ -343,12 +362,19 @@ export const RouterActionSchema = z.object({
     settings: RouterActionSettings,
 })
 
+export const ParallelActionSchema = z.object({
+    ...commonActionProps,
+    type: z.literal(WorkflowActionType.PARALLEL),
+    settings: ParallelActionSettings,
+})
+
 export const SingleActionSchema = z.discriminatedUnion('type', [
     CodeActionSchema,
     ComponentActionSchema,
     ConnectorActionSchema,
     LoopOnItemsActionSchema,
     RouterActionSchema,
+    ParallelActionSchema,
 ])
 
 // Manually defined to avoid z.infer in recursive types (causes TypeScript OOM)
@@ -366,6 +392,14 @@ export type WorkflowAction =
     | (BaseActionProps & { type: WorkflowActionType.CONNECTOR, settings: ConnectorActionSettings, nextAction?: WorkflowAction, continueOnFailureBranches?: ContinueOnFailureBranches })
     | (BaseActionProps & { type: WorkflowActionType.LOOP_ON_ITEMS, settings: LoopOnItemsActionSettings, nextAction?: WorkflowAction, firstLoopAction?: WorkflowAction })
     | (BaseActionProps & { type: WorkflowActionType.ROUTER, settings: RouterActionSettings, nextAction?: WorkflowAction, children: (WorkflowAction | null)[] })
+    | (BaseActionProps & { type: WorkflowActionType.PARALLEL, settings: ParallelActionSettings, nextAction?: WorkflowAction, children: (WorkflowAction | null)[] })
+
+export type ParallelAction = BaseActionProps & {
+    type: WorkflowActionType.PARALLEL
+    settings: ParallelActionSettings
+    nextAction?: WorkflowAction
+    children: (WorkflowAction | null)[]
+}
 
 export type RouterAction = BaseActionProps & {
     type: WorkflowActionType.ROUTER

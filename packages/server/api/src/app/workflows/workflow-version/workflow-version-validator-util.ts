@@ -5,7 +5,7 @@ import {
     ConnectorPropertyMap,
 } from '@fema-ipaas/connector-sdk'
 import { ApplicationError, ErrorCode, isNil, STEP_NAME_REGEX, TenantId, UserId } from '@fema-ipaas/core-utils'
-import { CodeActionSettings, ComponentActionSettings, ConnectorActionSettings, ConnectorTriggerSettings, LoopOnItemsActionSettings, RouterActionSettingsWithValidation, SourceCode, WorkflowActionType, workflowConnectorUtil, WorkflowOperationRequest, WorkflowOperationType, workflowStructureUtil, WorkflowTrigger, WorkflowTriggerType } from '@fema-ipaas/shared'
+import { CodeActionSettings, ComponentActionSettings, ConnectorActionSettings, ConnectorTriggerSettings, LoopOnItemsActionSettings, ParallelActionSettings, RouterActionSettingsWithValidation, SourceCode, WorkflowActionType, workflowConnectorUtil, WorkflowOperationRequest, WorkflowOperationType, workflowStructureUtil, WorkflowTrigger, WorkflowTriggerType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { z } from 'zod'
 import { connectorMetadataService } from '../../connectors/metadata/connector-metadata-service'
@@ -13,6 +13,7 @@ import { connectorMetadataService } from '../../connectors/metadata/connector-me
 const loopSettingsValidator = LoopOnItemsActionSettings.and(z.object({
     items: z.string().min(1),
 }))
+const parallelSettingsValidator = ParallelActionSettings
 const routerSettingsValidator = RouterActionSettingsWithValidation
 const codeSettingsValidator = CodeActionSettings.and(z.object({
     sourceCode: SourceCode.and(z.object({
@@ -54,6 +55,11 @@ export const workflowVersionValidationUtil = (log: FastifyBaseLogger) => ({
                             clonedRequest.request.action.settings,
                         ).success
                         break
+                    case WorkflowActionType.PARALLEL:
+                        clonedRequest.request.action.valid = parallelSettingsValidator.safeParse(
+                            clonedRequest.request.action.settings,
+                        ).success
+                        break
                     case WorkflowActionType.CODE:
                         clonedRequest.request.action.valid = codeSettingsValidator.safeParse(
                             clonedRequest.request.action.settings,
@@ -89,6 +95,11 @@ export const workflowVersionValidationUtil = (log: FastifyBaseLogger) => ({
                     }
                     case WorkflowActionType.ROUTER:
                         clonedRequest.request.valid = routerSettingsValidator.safeParse(
+                            clonedRequest.request.settings,
+                        ).success
+                        break
+                    case WorkflowActionType.PARALLEL:
+                        clonedRequest.request.valid = parallelSettingsValidator.safeParse(
                             clonedRequest.request.settings,
                         ).success
                         break

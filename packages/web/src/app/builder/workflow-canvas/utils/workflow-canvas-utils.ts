@@ -8,6 +8,7 @@ import {
   workflowStructureUtil,
   WorkflowVersion,
   LoopOnItemsAction,
+  ParallelAction,
   RouterAction,
   StepLocationRelativeToParent,
   WorkflowTrigger,
@@ -137,6 +138,7 @@ const createStepGraph: (params: {
     edges:
       step.type !== WorkflowActionType.LOOP_ON_ITEMS &&
       step.type !== WorkflowActionType.ROUTER &&
+      step.type !== WorkflowActionType.PARALLEL &&
       !sharedWorkflowCanvasUtils.hasContinueOnFailureBranches(step)
         ? [straightLineEdge]
         : [],
@@ -162,7 +164,8 @@ const buildWorkflowGraph: (params: {
   const childGraph =
     step.type === WorkflowActionType.LOOP_ON_ITEMS
       ? buildLoopChildGraph({ step, orientation })
-      : step.type === WorkflowActionType.ROUTER
+      : step.type === WorkflowActionType.ROUTER ||
+        step.type === WorkflowActionType.PARALLEL
       ? buildRouterChildGraph({ step, orientation })
       : sharedWorkflowCanvasUtils.hasContinueOnFailureBranches(step)
       ? buildContinueOnFailureBranchesGraph({ step, orientation })
@@ -377,7 +380,7 @@ const buildRouterChildGraph = ({
   step,
   orientation,
 }: {
-  step: RouterAction;
+  step: BranchingAction;
   orientation: CanvasOrientation;
 }) => {
   const layout = getLayout(orientation);
@@ -652,6 +655,7 @@ const isSkipped = (stepName: string, trigger: WorkflowTrigger) => {
       (stepInPath) =>
         stepInPath.type === WorkflowActionType.LOOP_ON_ITEMS ||
         stepInPath.type === WorkflowActionType.ROUTER ||
+        stepInPath.type === WorkflowActionType.PARALLEL ||
         sharedWorkflowCanvasUtils.hasContinueOnFailureBranches(stepInPath),
     )
     .filter((parentInPath) =>
@@ -757,3 +761,5 @@ export const workflowCanvasUtils = {
   determineInitiallySelectedStep,
   doesSelectionRectangleExist,
 };
+
+type BranchingAction = RouterAction | ParallelAction;

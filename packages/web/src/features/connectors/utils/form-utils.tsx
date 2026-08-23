@@ -13,12 +13,14 @@ import {
   ConnectionScope,
   ConnectionType,
   CodeActionSchema,
+  formErrors,
   ComponentActionSchema,
   ComponentActionSettings,
   LoopOnItemsActionSchema,
   ConnectorActionSchema,
   ConnectorActionSettings,
   ConnectorTrigger,
+  ParallelActionSchema,
   RouterActionSchema,
   RouterBranchesSchema,
   RouterExecutionType,
@@ -573,6 +575,20 @@ export const formUtils = {
           z.object({
             settings: z.object({
               items: z.string().min(1),
+            }),
+          }).shape,
+        );
+      case WorkflowActionType.PARALLEL:
+        return ParallelActionSchema.omit({ settings: true }).extend(
+          z.object({
+            settings: z.object({
+              branches: z
+                .array(
+                  z.object({
+                    branchName: z.string().min(1, formErrors.required),
+                  }),
+                )
+                .min(2),
             }),
           }).shape,
         );

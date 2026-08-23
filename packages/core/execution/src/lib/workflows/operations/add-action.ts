@@ -36,6 +36,14 @@ function createAction(request: UpdateActionRequest, {
             }
 
             break
+        case WorkflowActionType.PARALLEL:
+            action = {
+                ...baseProperties,
+                type: WorkflowActionType.PARALLEL,
+                settings: request.settings,
+                children: request.settings.branches.map(() => null),
+            }
+            break
         case WorkflowActionType.LOOP_ON_ITEMS:
             action = {
                 ...baseProperties,

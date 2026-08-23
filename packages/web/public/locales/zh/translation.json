@@ -2372,5 +2372,10 @@
   "Add input": "新增参数",
   "Remove input": "删除参数",
   "Generated files": "生成的文件",
-  "Could not save the connector": "保存连接器失败"
+  "Could not save the connector": "保存连接器失败",
+  "Parallel": "并行",
+  "Run several branches at the same time and wait for all of them": "同时运行多个分支，全部完成后继续",
+  "Add branch": "新增分支",
+  "Remove branch": "删除分支",
+  "Every branch runs at the same time. The workflow continues once all of them finish.": "各分支同时运行，全部结束后工作流才继续。"
 }

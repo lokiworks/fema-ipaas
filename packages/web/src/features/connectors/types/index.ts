@@ -38,6 +38,7 @@ export type PrimitiveStepMetadata = BaseStepMetadata & {
     | WorkflowActionType.CODE
     | WorkflowActionType.LOOP_ON_ITEMS
     | WorkflowActionType.ROUTER
+    | WorkflowActionType.PARALLEL
     | WorkflowTriggerType.EMPTY;
 };
 

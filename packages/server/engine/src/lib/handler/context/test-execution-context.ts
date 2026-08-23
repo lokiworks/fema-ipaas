@@ -33,6 +33,7 @@ export const testExecutionContext = {
 
             const stepType = step.type
             switch (stepType) {
+                case WorkflowActionType.PARALLEL:
                 case WorkflowActionType.ROUTER:
                     workflowExecutionContext = await workflowExecutionContext.upsertStep(
                         step.name,

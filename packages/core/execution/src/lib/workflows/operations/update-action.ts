@@ -87,6 +87,19 @@ function _updateAction(workflowVersion: WorkflowVersion, request: UpdateActionRe
                 }
                 break
             }
+
+            case WorkflowActionType.PARALLEL: {
+                const existingSampleData = stepToUpdate.type === WorkflowActionType.PARALLEL ? stepToUpdate.settings.sampleData : undefined
+                const children = stepToUpdate.type === WorkflowActionType.PARALLEL ? stepToUpdate.children : request.settings.branches.map(() => null)
+                updatedAction = {
+                    ...baseProps,
+                    settings: { ...request.settings, sampleData: existingSampleData },
+                    type: WorkflowActionType.PARALLEL,
+                    nextAction: stepToUpdate.nextAction,
+                    children,
+                }
+                break
+            }
         }
         const parseResult = SingleActionSchema.safeParse(updatedAction)
         const valid = (isNil(request.valid) ? true : request.valid) && parseResult.success

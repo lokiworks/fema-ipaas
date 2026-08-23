@@ -1,7 +1,7 @@
 ---
 title: 节点分发用穷尽映射表，且暂不引入 UI Graph 编译层
 icon: 🧭
-status: proposed
+status: superseded by 0015-parallel-and-the-compiler-without-a-graph-persistence-rewrite
 ---
 
 ## Decision

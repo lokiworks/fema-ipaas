@@ -2469,5 +2469,10 @@
   "Add input": "Add input",
   "Remove input": "Remove input",
   "Generated files": "Generated files",
-  "Could not save the connector": "Could not save the connector"
+  "Could not save the connector": "Could not save the connector",
+  "Parallel": "Parallel",
+  "Run several branches at the same time and wait for all of them": "Run several branches at the same time and wait for all of them",
+  "Add branch": "Add branch",
+  "Remove branch": "Remove branch",
+  "Every branch runs at the same time. The workflow continues once all of them finish.": "Every branch runs at the same time. The workflow continues once all of them finish."
 }

@@ -55,6 +55,14 @@ export const CORE_STEP_METADATA: Record<
     ),
     type: WorkflowActionType.ROUTER as const,
   },
+  [WorkflowActionType.PARALLEL]: {
+    displayName: t('Parallel'),
+    logoUrl: '/assets/steps/parallel.svg',
+    description: t(
+      'Run several branches at the same time and wait for all of them',
+    ),
+    type: WorkflowActionType.PARALLEL as const,
+  },
   [WorkflowTriggerType.EMPTY]: {
     displayName: t('Empty Trigger'),
     logoUrl: '/assets/steps/empty-trigger.svg',
@@ -66,6 +74,7 @@ export const CORE_ACTIONS_METADATA = [
   CORE_STEP_METADATA[WorkflowActionType.CODE],
   CORE_STEP_METADATA[WorkflowActionType.LOOP_ON_ITEMS],
   CORE_STEP_METADATA[WorkflowActionType.ROUTER],
+  CORE_STEP_METADATA[WorkflowActionType.PARALLEL],
 ] as const;
 
 export const stepUtils = {
@@ -98,6 +107,7 @@ export const stepUtils = {
       'customLogoUrl' in step ? step.customLogoUrl : undefined;
     switch (step.type) {
       case WorkflowActionType.ROUTER:
+      case WorkflowActionType.PARALLEL:
       case WorkflowActionType.LOOP_ON_ITEMS:
       case WorkflowActionType.CODE:
       case WorkflowTriggerType.EMPTY:

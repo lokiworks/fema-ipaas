@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { Nullable } from '@fema-ipaas/core-utils'
 import { Metadata } from '@fema-ipaas/core-utils'
-import { BranchCondition, CodeActionSchema, CodeActionSettings, WorkflowActionType, LoopOnItemsActionSchema, LoopOnItemsActionSettings, ConnectorActionSchema, ConnectorActionSettings, RouterActionSchema, RouterActionSettings, ComponentActionSchema, ComponentActionSettings } from '../actions/action'
+import { BranchCondition, CodeActionSchema, CodeActionSettings, WorkflowActionType, LoopOnItemsActionSchema, LoopOnItemsActionSettings, ConnectorActionSchema, ConnectorActionSettings, ParallelActionSchema, ParallelActionSettings, RouterActionSchema, RouterActionSettings, ComponentActionSchema, ComponentActionSettings } from '../actions/action'
 import { WorkflowStatus } from '../workflow'
 import { WorkflowVersion, WorkflowVersionState } from '../workflow-version'
 import { Note } from '../note'
@@ -154,6 +154,7 @@ export const UpdateActionRequest = z.union([
     ComponentActionSchema.omit({ lastUpdatedDate: true, settings: true }).and(z.object({ settings: ComponentActionSettings.omit({ sampleData: true }) })),
     ConnectorActionSchema.omit({ lastUpdatedDate: true, settings: true }).and(z.object({ settings: ConnectorActionSettings.omit({ sampleData: true }) })),
     RouterActionSchema.omit({ lastUpdatedDate: true, settings: true }).and(z.object({ settings: RouterActionSettings.omit({ sampleData: true }) })),
+    ParallelActionSchema.omit({ lastUpdatedDate: true, settings: true }).and(z.object({ settings: ParallelActionSettings.omit({ sampleData: true }) })),
 ])
 
 

@@ -13,6 +13,17 @@ Metadata catalog of integrations (`@fema-ipaas/connector-*`), served from an in-
 - **Entities/services**: `connector_metadata` (unique on name+version+platformId; `null` platformId = official, set = custom); `connectorMetadataService` (list/get/create/delete + cache), `connectorInstallService` (upload/NPM install → `EXECUTE_METADATA` engine job), `connectorSyncService` (bundled registry → DB).
 - **Gotchas**: routes under `/v1/connectors`; install/delete are `platformAdminOnly`; `options` runs dynamic prop eval on a worker. Per-connector/action visibility (EE/Cloud) resolved at read time by `resolveVisibility` → returns `null` on CE. Optional per-action `outputSchema` drives the builder's Smart Output Viewer (opt-in, non-breaking).
 
+### Parallel & the Execution Plan
+
+`WorkflowActionType.PARALLEL` runs N branches concurrently and joins before continuing to `nextAction`. `workflowCompiler.compile(workflowVersion)` produces an `ExecutionPlan` (`entry` / `nodes` / `dependencies`) as an explicit boundary between the stored tree and what the Engine needs to know. See [ADR 0015](../../../docs/adr/0015-parallel-and-the-compiler-without-a-graph-persistence-rewrite.md), which supersedes 0012.
+
+- Persistence is still the `nextAction` tree. Parallel is fan-out + join, which the tree expresses — the same shape as Router's `children`. Arbitrary DAG re-convergence still is not supported.
+
+- **Gotchas**:
+  - A paused branch must leave the **parallel step itself** `PAUSED`. `isCompleted()` treats any non-PAUSED status as done, so marking it SUCCEEDED makes the resume skip the whole node and strand the waiting branch. This was a real bug caught by a resume test, not a hypothetical.
+  - Branch results are merged by **object identity**, not by presence. Every branch starts from the same base context, so untouched steps come back as the same object. Skipping on "already in base" instead drops the step a branch just moved off PAUSED — which is exactly what resume produces.
+  - The compiler exists and is tested, but the Engine still walks the tree directly. Moving the traversal onto the plan is the next step, and when it happens the Engine stops needing to know the tree at all.
+
 ### Workflow Components
 
 Platform-owned flow logic nodes (Branch, Loop, Delay, Code, Stop, Approval) — **not** connectors, and deliberately a separate concept ([ADR 0004](../../../docs/adr/0004-separate-connector-and-workflow-component.md)). The `WorkflowActionType.COMPONENT` action carries a `componentType` string resolved against a static registry.

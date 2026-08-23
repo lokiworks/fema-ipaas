@@ -12,6 +12,7 @@ import { connectorExecutor } from './connector-executor'
 import { EngineConstants, ResolvedExecuteWorkflowOperation } from './context/engine-constants'
 import { WorkflowExecutorContext } from './context/workflow-execution-context'
 import { loopExecutor } from './loop-executor'
+import { parallelExecutor } from './parallel-executor'
 import { routerExecuter } from './router-executor'
 
 let executors: Record<WorkflowActionType, BaseExecutor<WorkflowAction>> | null = null
@@ -23,6 +24,7 @@ function getExecutors(): Record<WorkflowActionType, BaseExecutor<WorkflowAction>
         [WorkflowActionType.CODE]: codeExecutor,
         [WorkflowActionType.COMPONENT]: componentExecutor,
         [WorkflowActionType.LOOP_ON_ITEMS]: loopExecutor,
+        [WorkflowActionType.PARALLEL]: parallelExecutor,
         [WorkflowActionType.CONNECTOR]: connectorExecutor,
         [WorkflowActionType.ROUTER]: routerExecuter,
     }

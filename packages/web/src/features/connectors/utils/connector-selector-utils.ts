@@ -121,6 +121,9 @@ const isStepInitiallyValid = (
       }
       return false;
     }
+    case WorkflowActionType.PARALLEL: {
+      return true;
+    }
     case WorkflowActionType.COMPONENT: {
       const overridingInput =
         overrideDefaultSettings && 'input' in overrideDefaultSettings
@@ -214,6 +217,17 @@ const getDefaultStepValues = ({
           settings: overrideDefaultSettings ?? {
             items: '',
           },
+        },
+        common,
+      );
+    case WorkflowActionType.PARALLEL:
+      return deepMergeAndCast<WorkflowAction>(
+        {
+          type: WorkflowActionType.PARALLEL,
+          settings: overrideDefaultSettings ?? {
+            branches: [{ branchName: 'Branch 1' }, { branchName: 'Branch 2' }],
+          },
+          children: [null, null],
         },
         common,
       );

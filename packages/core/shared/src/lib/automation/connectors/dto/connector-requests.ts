@@ -104,6 +104,8 @@ export const AddConnectorRequestBody = z.union([
         connectorName: z.string().min(1),
         connectorVersion: ExactVersionType,
         connectorArchive: ApMultipartFile,
+        checksum: z.string().optional(),
+        signature: z.string().optional(),
     }).describe('Private Connector'),
     z.object({
         packageType: z.literal(PackageType.REGISTRY),

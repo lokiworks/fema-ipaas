@@ -1,10 +1,10 @@
-import { createHash } from 'node:crypto'
 import { ConnectorMetadata, ConnectorMetadataModel } from '@fema-ipaas/connector-sdk'
 import { ApplicationError, ErrorCode, isNil, TenantId, WorkspaceId } from '@fema-ipaas/core-utils'
 import { AddConnectorRequestBody, ConnectorPackage, ConnectorSource, ConnectorType, EngineResponse, EngineResponseStatus, ExecuteExtractConnectorMetadata, FileCompression, FileId, FileType, PackageType, WorkerJobType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { fileService } from '../file/file.service'
 import { userInteractionWatcher } from '../workers/user-interaction-watcher'
+import { connectorIntegrity } from './integrity/connector-integrity'
 import { connectorMetadataService } from './metadata/connector-metadata-service'
 
 export const connectorInstallService = (log: FastifyBaseLogger) => ({
@@ -13,15 +13,16 @@ export const connectorInstallService = (log: FastifyBaseLogger) => ({
         params: AddConnectorRequestBody,
     ): Promise<ConnectorMetadataModel> {
         try {
+            const archive = params.packageType === PackageType.ARCHIVE && Buffer.isBuffer(params.connectorArchive.data)
+                ? params.connectorArchive.data
+                : undefined
+            const checksum = isNil(archive) ? undefined : verifyArchive({ archive, params })
             const connectorPackage = await saveConnectorPackage(tenantId, params, log)
             const connectorInformation = await extractConnectorInformation({
                 ...connectorPackage,
                 tenantId,
             }, log)
             const archiveId = connectorPackage.packageType === PackageType.ARCHIVE ? connectorPackage.archiveId : undefined
-            const checksum = params.packageType === PackageType.ARCHIVE && Buffer.isBuffer(params.connectorArchive.data)
-                ? createHash('sha256').update(params.connectorArchive.data).digest('hex')
-                : undefined
             const savedConnector = await connectorMetadataService(log).create({
                 connectorMetadata: {
                     ...connectorInformation,
@@ -61,6 +62,13 @@ export const connectorInstallService = (log: FastifyBaseLogger) => ({
     },
 })
 
+
+function verifyArchive({ archive, params }: { archive: Buffer, params: AddConnectorRequestBody }): string {
+    const declaredChecksum = 'checksum' in params ? params.checksum : undefined
+    const signature = 'signature' in params ? params.signature : undefined
+    connectorIntegrity.assertSignatureValid({ archive, signature })
+    return connectorIntegrity.assertChecksumMatches({ archive, expected: declaredChecksum })
+}
 
 async function saveConnectorPackage(tenantId: string | undefined, params: AddConnectorRequestBody, log: FastifyBaseLogger): Promise<ConnectorPackage> {
 

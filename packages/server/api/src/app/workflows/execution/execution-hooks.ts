@@ -1,7 +1,8 @@
-import { isManualConnectorTrigger, isNil } from '@fema-ipaas/core-utils'
-import { Execution, isExecutionStateTerminal, isFailedState, RunEnvironment, WebsocketClientEvent, WorkflowTriggerType } from '@fema-ipaas/shared'
+import { isManualConnectorTrigger, isNil, isObject } from '@fema-ipaas/core-utils'
+import { Execution, isExecutionStateTerminal, isFailedState, RunEnvironment, StepOutputStatus, WebsocketClientEvent, WorkflowActionType, workflowStructureUtil, WorkflowTriggerType, WorkflowVersion } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { websocketService } from '../../core/websockets.service'
+import { otelExecutionMetrics } from '../../helper/otel-execution-metrics'
 import { workflowVersionService } from '../workflow-version/workflow-version.service'
 
 export const executionHooks = (log: FastifyBaseLogger) => ({
@@ -13,6 +14,7 @@ export const executionHooks = (log: FastifyBaseLogger) => ({
             return
         }
         const workflowVersion = await workflowVersionService(log).getOne(execution.workflowVersionId)
+        recordConnectorActionMetrics({ execution, workflowVersion })
         const isConnectorTrigger = !isNil(workflowVersion) && workflowVersion.trigger.type === WorkflowTriggerType.CONNECTOR && !isNil(workflowVersion.trigger.settings.triggerName)
         const isManualTrigger = isConnectorTrigger && isManualConnectorTrigger({ connectorName: workflowVersion.trigger.settings.connectorName, triggerName: workflowVersion.trigger.settings.triggerName })
         if (execution.environment === RunEnvironment.TESTING || isManualTrigger) {
@@ -30,3 +32,29 @@ export const executionHooks = (log: FastifyBaseLogger) => ({
         }
     },
 })
+
+function recordConnectorActionMetrics({ execution, workflowVersion }: RecordConnectorActionMetricsParams): void {
+    if (isNil(workflowVersion) || isNil(execution.steps)) {
+        return
+    }
+    const connectorByStepName = new Map(
+        workflowStructureUtil.getAllSteps(workflowVersion.trigger)
+            .filter((step) => step.type === WorkflowActionType.CONNECTOR)
+            .map((step) => [step.name, step.settings.connectorName]),
+    )
+    for (const [stepName, stepOutput] of Object.entries(execution.steps)) {
+        const connectorName = connectorByStepName.get(stepName)
+        if (isNil(connectorName) || !isObject(stepOutput)) {
+            continue
+        }
+        otelExecutionMetrics.recordConnectorAction({
+            connectorName,
+            failed: Reflect.get(stepOutput, 'status') === StepOutputStatus.FAILED,
+        })
+    }
+}
+
+type RecordConnectorActionMetricsParams = {
+    execution: Execution
+    workflowVersion: WorkflowVersion | null
+}

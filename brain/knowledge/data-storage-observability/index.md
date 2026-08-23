@@ -36,7 +36,7 @@ Two OTLP exporters, both pushed from the `system-snapshot` tick and both gated o
 - **Gotchas**:
   - Counters are accumulated **in process memory** and exported as cumulative sums with `aggregationTemporality: 2`. A restart resets them to zero, which is correct cumulative-OTLP behaviour — the collector handles the reset — but it means these are not durable and must not be used for billing or any figure that has to survive a deploy.
   - `PAUSED` and `RUNNING` are not failures. `isFailure` treats everything except `SUCCEEDED`, `RUNNING` and `PAUSED` as failed, so a new non-terminal status must be added there or it will be counted as a failure.
-  - `connector_action_*` is recorded through `otelExecutionMetrics.recordConnectorAction`, but the engine runs in a **separate process** and cannot reach this accumulator. Wiring connector-level counts needs a path back over the engine API first; the recorder exists and is tested, the call site does not.
+  - `connector_action_*` is aggregated in `executionHooks.onFinish`, not in the engine — the engine runs in a separate process and cannot reach the accumulator. That hook already loads the workflow version for other reasons, so mapping step name → connector name costs no extra query. The consequence is **run-level granularity**: counts land when a run finishes, so a run that never terminates contributes nothing.
   - Both exporters share `FEMA_OTEL_QUEUE_METRICS_ENABLED`. The name is now narrower than what it gates.
 
 ### Audit Log

@@ -72,9 +72,10 @@ Turns an OpenAPI 3 or Swagger 2 document into a connector package (design doc se
 - `checksum` is a real sha256 of the uploaded archive, computed in `connectorInstallService`. It is **only** set for `PackageType.ARCHIVE` — a REGISTRY install has no local bytes to hash, so the column stays null there rather than storing something fabricated.
 
 - **Gotchas**:
-  - Nothing verifies the checksum yet — it is recorded at install so a later integrity check has something to compare against. Do not describe it as tamper detection until a verifier exists.
   - `source` is `NOT NULL`; the migration backfills existing rows from `connectorType` (OFFICIAL → OFFICIAL, everything else → PRIVATE). A new insert path that forgets `source` fails at the DB, which is deliberate.
-  - Signature (section 23's optional `signature`) is not implemented.
+  - Signing is **opt-in and fails closed once opted in**: with `FEMA_CONNECTOR_SIGNING_KEYS` unset nothing is required, but set even one key and every archive upload must carry a valid signature or the install is rejected. That ordering is the self-hosting rule (`.claude/rules/self-hosting.md`) — an unconfigured instance must not be silently broken — combined with the security rule that a half-enforced check is worse than none.
+  - Verification covers the bytes, not the metadata: `assertSignatureValid` verifies the signature over the archive itself, so a valid signature for a *different* archive is rejected. A malformed public key is treated as untrusted rather than throwing, so one bad entry in the key list cannot break installs signed by the others.
+  - `POST /v1/connectors/integrity/verify` re-hashes every stored archive against its recorded checksum. A connector installed from the registry has no local archive and reports `UNVERIFIABLE`, which is not a failure — only `MISMATCH` means the bytes changed.
 
 ### Connector Sets (EE/Cloud only, `manageConnectorsEnabled`)
 

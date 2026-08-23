@@ -23,6 +23,7 @@ export * from '@fema-ipaas/core-utils'
 
 // management
 export * from './lib/management/tenant'
+export * from './lib/management/network-agent'
 export * from './lib/management/workspace'
 export * from './lib/management/workspace-role/workspace-role.request'
 export * from './lib/management/invitations'

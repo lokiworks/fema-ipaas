@@ -8,6 +8,14 @@ icon: "hammer"
 
 ### What has changed?
 
+#### Encrypted payloads now carry a key id, enabling encryption key rotation
+
+Values encrypted at rest (connections, variables, OIDC keys) now store the id of the key that encrypted them. Rotation is supported end to end: set `FEMA_ENCRYPTION_KEY` to the new key, list the previous one in the new `FEMA_RETIRED_ENCRYPTION_KEYS` (comma separated, 32-char hex each), then call `POST /v1/encryption/rotate` as a tenant admin to re-encrypt existing rows.
+
+#### What you need to do
+
+Nothing to upgrade. Payloads written before this change carry no key id and are still decrypted by trying the current key and then each retired key, so existing data keeps working untouched. You only need `FEMA_RETIRED_ENCRYPTION_KEYS` when you actually rotate — and it must stay set until `POST /v1/encryption/rotate` reports no remaining rows, or values encrypted with the old key become unreadable.
+
 #### Workspace permissions are now enforced, and workspace access requires membership
 
 Every route already declared a `Permission`, but nothing checked it — reaching a workspace at all granted everything inside it. The permission is now enforced against the caller's workspace role, and the permission vocabulary moved to the `RESOURCE:ACTION` form (`WORKFLOW:READ`, `CONNECTION:MANAGE`) with four roles: Admin, Developer, Operator, Viewer.

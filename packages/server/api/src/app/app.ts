@@ -22,6 +22,7 @@ import { startDevConnectorWatcher } from './connectors/dev-connector-watcher'
 import { connectorModule } from './connectors/metadata/connector-metadata-controller'
 import { connectorMetadataService } from './connectors/metadata/connector-metadata-service'
 import { collaborativeModule } from './core/collaborative/collaborative.module'
+import { encryptionModule } from './core/security/encryption/encryption.module'
 import { oidcModule } from './core/security/oidc/oidc.module'
 import { rateLimitModule } from './core/security/rate-limit'
 import { authenticationMiddleware } from './core/security/v2/authn/authentication-middleware'
@@ -40,6 +41,7 @@ import { systemJobsSchedule } from './helper/system-jobs/system-job'
 import { systemSnapshot } from './helper/system-snapshot'
 import { validateEnvPropsOnStartup } from './helper/system-validator'
 import { shutdownTelemetry } from './helper/telemetry.utils'
+import { networkAgentModule } from './network-agent/network-agent.module'
 import { storeEntryModule } from './store-entry/store-entry.module'
 import { templateModule } from './template/template.module'
 import { tenantModule } from './tenant/tenant.module'
@@ -155,6 +157,8 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     await app.register(connectorModule)
     await app.register(componentModule)
     await app.register(auditEventModule)
+    await app.register(encryptionModule)
+    await app.register(networkAgentModule)
     registerAuditEventListener(app.log)
     await app.register(communityConnectorsModule)
     await app.register(collaborativeModule)

@@ -48,6 +48,10 @@ export const ConnectionEntity = new EntitySchema<ConnectionSchema>({
             array: true,
             nullable: false,
         },
+        networkAgentId: {
+            type: String,
+            nullable: true,
+        },
         scope: {
             type: String,
         },

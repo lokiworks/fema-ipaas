@@ -190,6 +190,7 @@ femaEnvVariables:
     - FEMA_CONNECTORS_SOURCE
   fema-auth-secrets:
     - FEMA_ENCRYPTION_KEY
+    - FEMA_RETIRED_ENCRYPTION_KEYS
     - FEMA_JWT_SECRET
     - FEMA_API_KEY
     - FEMA_WORKER_TOKEN

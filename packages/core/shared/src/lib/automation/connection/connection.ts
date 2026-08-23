@@ -111,6 +111,7 @@ export type Connection<Type extends ConnectionType = ConnectionType> = BaseModel
     metadata: Metadata | null
     connectorVersion: string
     preSelectForNewWorkspaces: boolean
+    networkAgentId: string | null
 }
 
 export type OAuth2Connection = Connection<ConnectionType.OAUTH2>
@@ -138,6 +139,7 @@ export const ConnectionWithoutSensitiveData = z.object({
     workflowIds: Nullable(z.array(ApId)),
     connectorVersion: z.string(),
     preSelectForNewWorkspaces: z.boolean(),
+    networkAgentId: Nullable(z.string()),
 }).describe('App connection is a connection to an external app.')
 export type ConnectionWithoutSensitiveData = z.infer<typeof ConnectionWithoutSensitiveData>
 

@@ -46,6 +46,15 @@ function urlValidator(value: string) {
     }
 }
 
+function retiredEncryptionKeysValidator(value: string): true | string {
+    const keys = value.split(',').map((key) => key.trim()).filter((key) => key.length > 0)
+    const invalid = keys.filter((key) => !/^[0-9a-fA-F]{32}$/.test(key))
+    if (invalid.length > 0) {
+        return 'Every retired key must be a 32-character hexadecimal string, comma separated'
+    }
+    return true
+}
+
 const systemPropValidators: {
     [key in SystemProp]: (value: string) => true | string
 } = {
@@ -105,6 +114,7 @@ const systemPropValidators: {
     [AppSystemProp.DB_TYPE]: enumValidator(Object.values(DatabaseType)),
     [AppSystemProp.DEV_CONNECTORS]: stringValidator,
     [AppSystemProp.ENCRYPTION_KEY]: stringValidator,
+    [AppSystemProp.RETIRED_ENCRYPTION_KEYS]: retiredEncryptionKeysValidator,
     [AppSystemProp.EXECUTION_DATA_RETENTION_DAYS]: numberValidator,
     [AppSystemProp.JWT_SECRET]: stringValidator,
     [AppSystemProp.DEFAULT_CONCURRENT_JOBS_LIMIT]: numberValidator,

@@ -6,6 +6,30 @@ icon: 🔐
 
 How FEMA Integration Platform stores credentials and authenticates users, across CE/EE/Cloud. Multi-tenant rule throughout: connection queries filter by project via `ArrayContains([projectId])` on the `projectIds[]` array (never a scalar `projectId`), or by `scope = PLATFORM` for shared ones.
 
+### Network Agent
+
+Outbound-tunnel relay for reaching systems inside an enterprise intranet (design doc section 18). **The tunnel is not implemented** — only the data model, the binding on `Connection`, and CRUD exist ([ADR 0014](../../../docs/adr/0014-network-agent-model-lands-before-the-tunnel.md)).
+
+- **Where**: `packages/server/api/src/app/network-agent`, table `network_agent`, binding column `connection.networkAgentId` (nullable, currently read by nothing).
+- Creating an agent returns a one-time token; only its HMAC is stored (`tokenHash` via `encryptUtils.hmacString`). The token is never retrievable again.
+
+- **Gotchas**:
+  - `status` stays `PENDING` forever and `lastSeenAt` stays `null` until the tunnel lands. Do not surface `PENDING` as a fault.
+  - `hostAllowlist` / `cidrAllowlist` are **stored but not enforced**. Nothing reads them yet, so do not describe them as network isolation in UI copy or docs.
+  - The model shipped early on purpose: adding a binding column to `connection` after production data exists would be a backfilling migration, whereas a nullable column now is free. That is what section 18 means by "reserve the schema from day one".
+
+### Encryption at Rest & Key Rotation
+
+AES-256-CBC through `encryptUtils` (`packages/server/api/src/app/helper/encryption.ts`) — the only path to encrypted columns (`connection.value`, `variable.value`, OIDC private keys). Every payload stores `keyId`, the first 8 hex chars of `sha256(key)`, so the key that wrote a row is identifiable.
+
+- **Rotating**: set `FEMA_ENCRYPTION_KEY` to the new key, put the old one in `FEMA_RETIRED_ENCRYPTION_KEYS` (comma separated), then `POST /v1/encryption/rotate` (tenant admin) to re-encrypt. `encryptionRotationService` batches 200 rows and skips anything already on the current key, so it is safe to re-run.
+
+- **Gotchas**:
+  - Do **not** drop a retired key until a rotate run reports zero remaining rows. Decryption tries the key matching `keyId` first, then falls back to every configured key — remove the only key that can read a row and that row is unrecoverable.
+  - Payloads written before keyed encryption have **no** `keyId`. They are not broken: the decrypt path falls back to trying all configured keys. Do not "fix" them by requiring `keyId`.
+  - Rotation covers `connection` and `variable`. OIDC keys are regenerated rather than rotated, so they are not in the sweep.
+  - api's tests are **not** in the root `npm run test-unit` filter list, and 15 of its unit files need Redis/Postgres. `encryption.test.ts` runs only via `cd packages/server/api && npx vitest run test/unit/app/helper/encryption.test.ts`.
+
 ### Workspace Roles & Permissions
 
 Four roles — Admin, Developer, Operator, Viewer — each a fixed `Permission[]` in `rolePermissions`. Permissions use the `RESOURCE:ACTION` vocabulary (`WORKFLOW:READ`, `CONNECTION:MANAGE`) from design doc section 20. System Admin is not a workspace role: it is `TenantRole.ADMIN` at the tenant level.

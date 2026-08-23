@@ -70,7 +70,7 @@ function buildLegacyPauseHook({ context }: { context: ActionContext<ConnectorAut
 function buildLegacyGenerateResumeUrl({ context }: { context: ActionContext<ConnectorAuthProperty, InputPropertyMap> }): (params: { queryParams: Record<string, string>, sync?: boolean }) => string {
     return (params) => {
         const randomId = Math.random().toString(36).substring(2)
-        const url = new URL(`${context.server.publicUrl}v1/flow-runs/${context.run.id}/requests/${randomId}${params.sync ? '/sync' : ''}`)
+        const url = new URL(`${context.server.publicUrl}v1/executions/${context.run.id}/requests/${randomId}${params.sync ? '/sync' : ''}`)
         url.search = new URLSearchParams(params.queryParams).toString()
         return url.toString()
     }

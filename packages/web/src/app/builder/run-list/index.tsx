@@ -1,5 +1,5 @@
 import { SeekPage } from '@fema/core-utils';
-import { FlowRun, isFlowRunStateTerminal } from '@fema/shared';
+import { Execution, isExecutionStateTerminal } from '@fema/shared';
 import { InfiniteData, useInfiniteQuery } from '@tanstack/react-query';
 import { t } from 'i18next';
 import React, { useMemo } from 'react';
@@ -12,15 +12,15 @@ import {
 } from '@/components/custom/card-list';
 import { Button } from '@/components/ui/button';
 import { VirtualizedScrollArea } from '@/components/ui/virtualized-scroll-area';
-import { flowRunsApi } from '@/features/flow-runs';
+import { executionsApi } from '@/features/executions';
 import { authenticationSession } from '@/lib/authentication-session';
 
 import { SidebarHeader } from '../sidebar-header';
 
-import { FLOW_CARD_HEIGHT, FlowRunCard } from './flow-run-card';
+import { FLOW_CARD_HEIGHT, ExecutionCard } from './execution-card';
 
 type RunsListItem =
-  | { type: 'flowRun'; run: FlowRun }
+  | { type: 'execution'; run: Execution }
   | { type: 'loadMoreButton'; id: 'loadMoreButton' };
 const RunsList = React.memo(() => {
   const [flow, setRightSidebar, run] = useBuilderStateContext((state) => [
@@ -39,15 +39,15 @@ const RunsList = React.memo(() => {
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteQuery<
-    SeekPage<FlowRun>,
+    SeekPage<Execution>,
     Error,
-    InfiniteData<SeekPage<FlowRun>>
+    InfiniteData<SeekPage<Execution>>
   >({
-    queryKey: ['flow-runs', flow.id],
+    queryKey: ['executions', flow.id],
     getNextPageParam: (lastPage) => lastPage.next,
     initialPageParam: undefined,
     queryFn: ({ pageParam }) =>
-      flowRunsApi.list({
+      executionsApi.list({
         flowId: [flow.id],
         workspaceId: authenticationSession.getWorkspaceId()!,
         limit: 15,
@@ -59,7 +59,7 @@ const RunsList = React.memo(() => {
       const allRuns = query.state.data?.pages.flatMap((page) => page.data);
       const runningRuns = allRuns?.filter(
         (run) =>
-          !isFlowRunStateTerminal({
+          !isExecutionStateTerminal({
             status: run.status,
             ignoreInternalError: false,
           }),
@@ -68,7 +68,7 @@ const RunsList = React.memo(() => {
     },
   });
 
-  const dedupedRuns: FlowRun[] = useMemo(() => {
+  const dedupedRuns: Execution[] = useMemo(() => {
     const seen = new Set<string>();
     return (runs?.pages.flatMap((page) => page.data) ?? []).filter((run) => {
       if (seen.has(run.id)) {
@@ -81,7 +81,7 @@ const RunsList = React.memo(() => {
 
   const allViewedRuns: RunsListItem[] = useMemo(() => {
     const allRuns = dedupedRuns.map((run) => ({
-      type: 'flowRun' as const,
+      type: 'execution' as const,
       run,
     }));
     if (hasNextPage) {
@@ -113,16 +113,16 @@ const RunsList = React.memo(() => {
           estimateSize={() => FLOW_CARD_HEIGHT}
           getItemKey={(index) => index}
           renderItem={(item) => {
-            if (item.type === 'flowRun') {
+            if (item.type === 'execution') {
               return (
-                <FlowRunCard
+                <ExecutionCard
                   refetchRuns={() => {
                     refetch();
                   }}
                   run={item.run}
                   key={item.run.id + item.run.status}
                   viewedRunId={run?.id}
-                ></FlowRunCard>
+                ></ExecutionCard>
               );
             }
             return (

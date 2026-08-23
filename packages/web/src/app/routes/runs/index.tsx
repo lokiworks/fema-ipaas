@@ -1,4 +1,4 @@
-import { RunsTable } from '@/features/flow-runs';
+import { RunsTable } from '@/features/executions';
 
 const RunsPage = () => {
   return <RunsTable />;

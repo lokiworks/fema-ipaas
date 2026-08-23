@@ -1,7 +1,7 @@
 import {
+    Execution,
     Flow,
     FlowOperationStatus,
-    FlowRun,
     FlowStatus,
     FlowVersion,
     Folder,
@@ -18,7 +18,7 @@ import {
 export type FlowSchema = Flow & {
     versions: FlowVersion[]
     workspace: Workspace
-    runs: FlowRun[]
+    runs: Execution[]
     folder?: Folder
     owner?: User
     events: TriggerEvent[]
@@ -103,7 +103,7 @@ export const FlowEntity = new EntitySchema<FlowSchema>({
     relations: {
         runs: {
             type: 'one-to-many',
-            target: 'flow_run',
+            target: 'execution',
             inverseSide: 'flow',
         },
         owner: {

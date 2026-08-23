@@ -32,7 +32,7 @@ mistake closes the gate:
   so a degraded Redis cannot block, only under-enforce.
 
 Credit *tracking* is likewise non-fatal — `trackCredits` rethrows non-duplicate errors, but no caller
-lets that surface: `flow-run-hooks#onFinish` wraps both the per-run credit and the AI-usage tracker in
+lets that surface: `execution-hooks#onFinish` wraps both the per-run credit and the AI-usage tracker in
 `tryCatch` and warns, and chat fires its tracker through `rejectedPromiseHandler`. A dead Autumn
 cannot fail a run or a chat turn.
 
@@ -85,7 +85,7 @@ Two deliberate exceptions, both of which still fail open on an *unknown* balance
 ### Self-hosted EE skips the run gate entirely (temporary)
 
 `shouldBlockRunOnCredits` returns `false` immediately when `FEMA_EDITION=ee`, before any provider call.
-That one branch covers every flow-run credit gate — run admission from the worker RPC
+That one branch covers every execution credit gate — run admission from the worker RPC
 (`submitPayloads`), the webhook path, `startManualTrigger`, and the retry assert all funnel through it.
 Cloud is unaffected; CE already resolved to the no-op default provider.
 

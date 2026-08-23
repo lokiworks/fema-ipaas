@@ -1,5 +1,5 @@
 import { isNil } from '@fema/core-utils'
-import { CodeAction, ConnectorAction, FlowRunStatus } from '@fema/shared'
+import { CodeAction, ConnectorAction, ExecutionStatus } from '@fema/shared'
 import { EngineConstants } from '../handler/context/engine-constants'
 import {  FlowExecutorContext } from '../handler/context/flow-execution-context'
 
@@ -34,12 +34,12 @@ export async function continueIfFailureHandler(
     const continueOnFailure = action.settings.errorHandlingOptions?.continueOnFailure?.value
 
     if (
-        executionState.verdict.status === FlowRunStatus.FAILED &&
+        executionState.verdict.status === ExecutionStatus.FAILED &&
         continueOnFailure &&
         isNil(constants.stepNameToTest)
     ) {
         return executionState
-            .setVerdict({ status: FlowRunStatus.RUNNING })
+            .setVerdict({ status: ExecutionStatus.RUNNING })
     }
 
     return executionState
@@ -47,7 +47,7 @@ export async function continueIfFailureHandler(
 
 
 const executionFailedWithRetryableError = (flowExecutorContext: FlowExecutorContext): boolean => {
-    return flowExecutorContext.verdict.status === FlowRunStatus.FAILED
+    return flowExecutorContext.verdict.status === ExecutionStatus.FAILED
 }
 
 type Request<T extends CodeAction | ConnectorAction> = {

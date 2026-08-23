@@ -214,7 +214,7 @@ Get detailed results of a flow run including step-by-step outputs, errors, and d
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `flowRunId` | string | Yes | The run ID |
+| `executionId` | string | Yes | The run ID |
 
 ### ap_setup_guide
 
@@ -558,7 +558,7 @@ Retry a failed flow run.
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `flowRunId` | string | Yes | The failed run ID |
+| `executionId` | string | Yes | The failed run ID |
 | `strategy` | string | Yes | `FROM_FAILED_STEP` or `ON_LATEST_VERSION` |
 
 - **FROM_FAILED_STEP**: Resume from where it failed, keeping previous step outputs

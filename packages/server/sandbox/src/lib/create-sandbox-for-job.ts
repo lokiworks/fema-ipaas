@@ -88,7 +88,7 @@ function baseEnv({ settings, networkMode }: { settings: SandboxSettings, network
     return {
         HOME: '/tmp/',
         FEMA_EXECUTION_MODE: settings.EXECUTION_MODE,
-        FEMA_MAX_FLOW_RUN_LOG_SIZE_MB: String(settings.MAX_FLOW_RUN_LOG_SIZE_MB),
+        FEMA_MAX_EXECUTION_LOG_SIZE_MB: String(settings.MAX_EXECUTION_LOG_SIZE_MB),
         FEMA_MAX_FILE_SIZE_MB: String(settings.MAX_FILE_SIZE_MB),
         NODE_PATH: '/usr/src/node_modules',
         FEMA_NETWORK_MODE: networkMode,

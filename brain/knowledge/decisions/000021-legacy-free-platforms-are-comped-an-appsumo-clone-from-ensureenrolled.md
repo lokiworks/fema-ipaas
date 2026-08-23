@@ -68,7 +68,7 @@ The enrolled branch therefore also fires the comp, gated so it costs nothing whe
 **The lazy sync is still not enough on its own, so there are deliberately two trigger points.**
 `triggerLazyBillingProviderSync` hangs off `getOrCreateForPlatform`, which the billing page, the
 dashboard and both AI usage trackers reach, but the per-production-run credit does not:
-`flow-run-hooks` goes `trackProductionRunCredit` to `trackCredits` to `resolveClientForPlatform` to
+`execution-hooks` goes `trackProductionRunCredit` to `trackCredits` to `resolveClientForPlatform` to
 `loadAutumnCreds`, never touching `getOrCreateForPlatform`. A platform running only non-AI flows on a
 schedule, with nobody logging in, was therefore never comped. The check is now also on
 `loadAutumnCreds`, the choke point every EE billing path funnels through, so one production run is
@@ -132,7 +132,7 @@ that never got a plan name cannot be comped.
 - **Every site keyed on the plan *name* has to learn `free_legacy`; every site keyed on the *balance*
   already works.** The gates, Redis caches and chat block are balance-driven and need nothing. These
   are name-driven and are silently wrong until changed:
-  - `chat-usage-tracker.ts` and `flow-run-ai-usage-tracker.ts` both decide whether to meter
+  - `chat-usage-tracker.ts` and `execution-ai-usage-tracker.ts` both decide whether to meter
     `appSumoAiCredits` with `plan?.toLowerCase().includes('appsumo')`, a substring test left over from
     the six-tier era. `free_legacy` fails it, so its 200 credits would never be spent and its
     unlimited `apCredits` never bind: unmetered AI, not a block.

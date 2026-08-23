@@ -23,10 +23,10 @@ export enum ApplicationEventName {
     FLOW_PUBLISHED = 'flow.published',
     FLOW_ACTIVATED = 'flow.activated',
     FLOW_DEACTIVATED = 'flow.deactivated',
-    FLOW_RUN_RESUMED = 'flow.run.resumed',
-    FLOW_RUN_STARTED = 'flow.run.started',
-    FLOW_RUN_FINISHED = 'flow.run.finished',
-    FLOW_RUN_RETRIED = 'flow.run.retried',
+    EXECUTION_RESUMED = 'flow.run.resumed',
+    EXECUTION_STARTED = 'flow.run.started',
+    EXECUTION_FINISHED = 'flow.run.finished',
+    EXECUTION_RETRIED = 'flow.run.retried',
     FOLDER_CREATED = 'folder.created',
     FOLDER_UPDATED = 'folder.updated',
     FOLDER_DELETED = 'folder.deleted',
@@ -175,8 +175,8 @@ export const FolderDeletedEvent = z.object({
 })
 export type FolderDeletedEvent = z.infer<typeof FolderDeletedEvent>
 
-const FlowRunEventData = z.object({
-    flowRun: z.object({
+const ExecutionEventData = z.object({
+    execution: z.object({
         id: z.string(),
         startTime: z.string().nullish(),
         finishTime: z.string().nullish(),
@@ -194,38 +194,38 @@ const FlowRunEventData = z.object({
     }).optional(),
 })
 
-export const FlowRunEvent = z.object({
+export const ExecutionEvent = z.object({
     ...BaseAuditEventProps,
     action: z.union([
-        z.literal(ApplicationEventName.FLOW_RUN_STARTED),
-        z.literal(ApplicationEventName.FLOW_RUN_FINISHED),
-        z.literal(ApplicationEventName.FLOW_RUN_RESUMED),
-        z.literal(ApplicationEventName.FLOW_RUN_RETRIED),
+        z.literal(ApplicationEventName.EXECUTION_STARTED),
+        z.literal(ApplicationEventName.EXECUTION_FINISHED),
+        z.literal(ApplicationEventName.EXECUTION_RESUMED),
+        z.literal(ApplicationEventName.EXECUTION_RETRIED),
     ]),
-    data: FlowRunEventData,
+    data: ExecutionEventData,
 })
-export type FlowRunEvent = z.infer<typeof FlowRunEvent>
+export type ExecutionEvent = z.infer<typeof ExecutionEvent>
 
-export const FlowRunStartedEvent = z.object({
+export const ExecutionStartedEvent = z.object({
     ...BaseAuditEventProps,
-    action: z.literal(ApplicationEventName.FLOW_RUN_STARTED),
-    data: FlowRunEventData,
+    action: z.literal(ApplicationEventName.EXECUTION_STARTED),
+    data: ExecutionEventData,
 })
-export type FlowRunStartedEvent = z.infer<typeof FlowRunStartedEvent>
+export type ExecutionStartedEvent = z.infer<typeof ExecutionStartedEvent>
 
-export const FlowRunFinishedEvent = z.object({
+export const ExecutionFinishedEvent = z.object({
     ...BaseAuditEventProps,
-    action: z.literal(ApplicationEventName.FLOW_RUN_FINISHED),
-    data: FlowRunEventData,
+    action: z.literal(ApplicationEventName.EXECUTION_FINISHED),
+    data: ExecutionEventData,
 })
-export type FlowRunFinishedEvent = z.infer<typeof FlowRunFinishedEvent>
+export type ExecutionFinishedEvent = z.infer<typeof ExecutionFinishedEvent>
 
-export const FlowRunRetriedEvent = z.object({
+export const ExecutionRetriedEvent = z.object({
     ...BaseAuditEventProps,
-    action: z.literal(ApplicationEventName.FLOW_RUN_RETRIED),
-    data: FlowRunEventData,
+    action: z.literal(ApplicationEventName.EXECUTION_RETRIED),
+    data: ExecutionEventData,
 })
-export type FlowRunRetriedEvent = z.infer<typeof FlowRunRetriedEvent>
+export type ExecutionRetriedEvent = z.infer<typeof ExecutionRetriedEvent>
 
 export const FlowCreatedEvent = z.object({
     ...BaseAuditEventProps,
@@ -383,7 +383,7 @@ export const ApplicationEvent = z.union([
     FlowPublishedEvent,
     FlowActivatedEvent,
     FlowDeactivatedEvent,
-    FlowRunEvent,
+    ExecutionEvent,
     AuthenticationEvent,
     FolderEvent,
     SignUpEvent,
@@ -396,16 +396,16 @@ export function summarizeApplicationEvent(event: ApplicationEvent) {
         case ApplicationEventName.FLOW_UPDATED: {
             return convertUpdateActionToDetails(event)
         }
-        case ApplicationEventName.FLOW_RUN_STARTED:
-            return `Flow run ${event.data.flowRun.id} is started`
-        case ApplicationEventName.FLOW_RUN_FINISHED: {
-            return `Flow run ${event.data.flowRun.id} is finished`
+        case ApplicationEventName.EXECUTION_STARTED:
+            return `Flow run ${event.data.execution.id} is started`
+        case ApplicationEventName.EXECUTION_FINISHED: {
+            return `Flow run ${event.data.execution.id} is finished`
         }
-        case ApplicationEventName.FLOW_RUN_RESUMED: {
-            return `Flow run ${event.data.flowRun.id} is resumed`
+        case ApplicationEventName.EXECUTION_RESUMED: {
+            return `Flow run ${event.data.execution.id} is resumed`
         }
-        case ApplicationEventName.FLOW_RUN_RETRIED: {
-            return `Flow run ${event.data.flowRun.id} is retried from a failed step`
+        case ApplicationEventName.EXECUTION_RETRIED: {
+            return `Flow run ${event.data.execution.id} is retried from a failed step`
         }
         case ApplicationEventName.FLOW_CREATED:
             return `Flow ${event.data.flow.id} is created`

@@ -1,4 +1,4 @@
-import { FlowRunStatus, PlatformMetricsStatusPoint } from '@fema/shared';
+import { ExecutionStatus, PlatformMetricsStatusPoint } from '@fema/shared';
 import { t } from 'i18next';
 import { LineChart as LineChartIcon } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -15,16 +15,17 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatUtils } from '@/lib/format-utils';
 
-const SERIES: Array<{ status: FlowRunStatus; label: string; color: string }> = [
-  { status: FlowRunStatus.SUCCEEDED, label: 'Succeeded', color: '#22c55e' },
-  { status: FlowRunStatus.FAILED, label: 'Failed', color: '#f59e0b' },
-  {
-    status: FlowRunStatus.INTERNAL_ERROR,
-    label: 'Internal error',
-    color: '#ef4444',
-  },
-  { status: FlowRunStatus.CANCELED, label: 'Cancelled', color: '#9ca3af' },
-];
+const SERIES: Array<{ status: ExecutionStatus; label: string; color: string }> =
+  [
+    { status: ExecutionStatus.SUCCEEDED, label: 'Succeeded', color: '#22c55e' },
+    { status: ExecutionStatus.FAILED, label: 'Failed', color: '#f59e0b' },
+    {
+      status: ExecutionStatus.INTERNAL_ERROR,
+      label: 'Internal error',
+      color: '#ef4444',
+    },
+    { status: ExecutionStatus.CANCELED, label: 'Cancelled', color: '#9ca3af' },
+  ];
 
 type StatusLineChartProps = {
   data: PlatformMetricsStatusPoint[] | undefined;
@@ -32,7 +33,7 @@ type StatusLineChartProps = {
 };
 
 export function StatusLineChart({ data, isLoading }: StatusLineChartProps) {
-  const [selectedStatuses, setSelectedStatuses] = useState<FlowRunStatus[]>(
+  const [selectedStatuses, setSelectedStatuses] = useState<ExecutionStatus[]>(
     SERIES.map((item) => item.status),
   );
 
@@ -40,7 +41,7 @@ export function StatusLineChart({ data, isLoading }: StatusLineChartProps) {
     selectedStatuses.includes(item.status),
   );
 
-  const toggleStatus = (status: FlowRunStatus) => {
+  const toggleStatus = (status: ExecutionStatus) => {
     setSelectedStatuses((prev) =>
       prev.includes(status)
         ? prev.filter((item) => item !== status)

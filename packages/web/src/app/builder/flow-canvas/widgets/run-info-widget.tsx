@@ -1,7 +1,7 @@
 import {
   ApFlagId,
-  FlowRunStatus,
-  isFlowRunStateTerminal,
+  ExecutionStatus,
+  isExecutionStateTerminal,
   StepOutputStatus,
 } from '@fema/shared';
 import { useReactFlow } from '@xyflow/react';
@@ -14,11 +14,11 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card';
-import { flowRunUtils } from '@/features/flow-runs';
+import { executionUtils } from '@/features/executions';
 import {
   isTimelineEmpty,
   TimelineBar,
-} from '@/features/flow-runs/components/timeline-bar';
+} from '@/features/executions/components/timeline-bar';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { formatUtils } from '@/lib/format-utils';
 import { cn } from '@/lib/utils';
@@ -35,45 +35,45 @@ function getStatusText({
   memoryLimit,
   logSizeLimit,
 }: {
-  status: FlowRunStatus;
+  status: ExecutionStatus;
   timeout: number;
   memoryLimit: number;
   logSizeLimit: number;
 }) {
   switch (status) {
-    case FlowRunStatus.SUCCEEDED:
+    case ExecutionStatus.SUCCEEDED:
       return t('Run Succeeded');
-    case FlowRunStatus.FAILED:
+    case ExecutionStatus.FAILED:
       return t('Run Failed');
-    case FlowRunStatus.PAUSED:
+    case ExecutionStatus.PAUSED:
       return t('Run Paused');
-    case FlowRunStatus.QUOTA_EXCEEDED:
+    case ExecutionStatus.QUOTA_EXCEEDED:
       return t(
         'This run stopped because your platform ran out of credits. It can be retried once credits are available.',
       );
-    case FlowRunStatus.LOG_SIZE_EXCEEDED:
+    case ExecutionStatus.LOG_SIZE_EXCEEDED:
       return t(
         'Run failed due to output of steps exceeding the log size limit of {logSizeLimit} MB',
         { logSizeLimit },
       );
-    case FlowRunStatus.MEMORY_LIMIT_EXCEEDED:
+    case ExecutionStatus.MEMORY_LIMIT_EXCEEDED:
       return t(
         'Run failed due to exceeding the memory limit of {memoryLimit} MB',
         {
           memoryLimit: Math.floor(memoryLimit / 1024),
         },
       );
-    case FlowRunStatus.QUEUED:
+    case ExecutionStatus.QUEUED:
       return t('Queued');
-    case FlowRunStatus.RUNNING:
+    case ExecutionStatus.RUNNING:
       return t('Running');
-    case FlowRunStatus.TIMEOUT:
+    case ExecutionStatus.TIMEOUT:
       return t('Run exceeded {timeout} seconds, try to optimize your steps.', {
         timeout,
       });
-    case FlowRunStatus.INTERNAL_ERROR:
+    case ExecutionStatus.INTERNAL_ERROR:
       return t('Run failed with an internal error, contact support.');
-    case FlowRunStatus.CANCELED:
+    case ExecutionStatus.CANCELED:
       return t('Run Cancelled');
   }
 }
@@ -81,28 +81,28 @@ function getStatusText({
 const RunInfoWidget = () => {
   const run = useBuilderStateContext((state) => state.run);
   const { variant, Icon } = run
-    ? flowRunUtils.getStatusIcon(run.status)
+    ? executionUtils.getStatusIcon(run.status)
     : { variant: 'default' as const, Icon: CircleHelp };
   const { data: timeoutSeconds } = flagsHooks.useFlag<number>(
-    ApFlagId.FLOW_RUN_TIME_SECONDS,
+    ApFlagId.EXECUTION_TIME_SECONDS,
   );
   const { data: memoryLimit } = flagsHooks.useFlag<number>(
-    ApFlagId.FLOW_RUN_MEMORY_LIMIT_KB,
+    ApFlagId.EXECUTION_MEMORY_LIMIT_KB,
   );
   const { data: logSizeLimit } = flagsHooks.useFlag<number>(
-    ApFlagId.FLOW_RUN_LOG_SIZE_LIMIT_MB,
+    ApFlagId.EXECUTION_LOG_SIZE_LIMIT_MB,
   );
   if (!run) {
     return null;
   }
-  const isRunTerminal = isFlowRunStateTerminal({
+  const isRunTerminal = isExecutionStateTerminal({
     status: run.status,
     ignoreInternalError: false,
   });
   return (
     <LargeWidgetWrapper
       containerClassName={cn(
-        flowRunUtils.getStatusContainerClassName(variant),
+        executionUtils.getStatusContainerClassName(variant),
         'bg-background border border-border dark:bg-background dark:border-border',
       )}
       key={run.id + run.status}
@@ -224,7 +224,7 @@ const JumpToFailedStepButton = ({
   const { fitView } = useReactFlow();
   const selectedStepOutput =
     run && selectedStep
-      ? flowRunUtils.extractStepOutput(
+      ? executionUtils.extractStepOutput(
           selectedStep,
           loopsIndexes,
           run.steps ?? {},

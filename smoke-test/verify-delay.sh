@@ -170,7 +170,7 @@ echo "Webhook triggered (HTTP $TRIGGER_CODE)"
 # Poll flow runs for completion (delay is 11s, allow up to POLL_TIMEOUT)
 echo "--- Waiting for flow run to complete (timeout: ${POLL_TIMEOUT}s) ---"
 for i in $(seq 1 "$POLL_TIMEOUT"); do
-  RUNS_RESPONSE=$(curl -s "$API_URL/flow-runs?flowId=$FLOW_ID&projectId=$PROJECT_ID&limit=1" \
+  RUNS_RESPONSE=$(curl -s "$API_URL/executions?flowId=$FLOW_ID&projectId=$PROJECT_ID&limit=1" \
     -H "$AUTH" 2>/dev/null || echo '{}')
 
   RUN_STATUS=$(echo "$RUNS_RESPONSE" | jq -r '.data[0].status // empty' 2>/dev/null || echo "")

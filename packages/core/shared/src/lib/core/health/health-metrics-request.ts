@@ -1,5 +1,5 @@
 import { ApId } from '@fema/core-utils'
-import { FlowRunStatus } from '@fema/workflow-core'
+import { ExecutionStatus } from '@fema/workflow-core'
 import { z } from 'zod'
 
 export const PlatformMetricsReportRequest = z.object({
@@ -16,7 +16,7 @@ export const PlatformMetricsSummary = z.object({
 
 export const PlatformMetricsStatusPoint = z.object({
     day: z.string(),
-    status: z.enum(FlowRunStatus),
+    status: z.enum(ExecutionStatus),
     count: z.number(),
 })
 
@@ -36,12 +36,12 @@ export const PlatformMetricsReport = z.object({
 })
 
 export const StuckJob = z.object({
-    flowRunId: ApId,
+    executionId: ApId,
     flowId: ApId,
     flowName: z.string(),
     workspaceId: ApId,
     workspaceName: z.string(),
-    status: z.enum(FlowRunStatus),
+    status: z.enum(ExecutionStatus),
 })
 
 export const PlatformMetricsLive = z.object({

@@ -82,7 +82,7 @@ export const engineFileApi = {
         const raw = new Uint8Array(await response.arrayBuffer())
         // The server's proxy path runs the file through fileCompressor.decompress before
         // streaming it back, but the S3 signed-URL redirect path serves the stored bytes
-        // straight from S3 — which for FLOW_RUN_LOG is zstd-compressed. Native fetch does
+        // straight from S3 — which for EXECUTION_LOG is zstd-compressed. Native fetch does
         // not auto-decompress zstd, so callers (RESUME hydration, slice materialization)
         // would crash on JSON.parse. Detect the magic bytes and decompress here so the
         // download contract is "always returns the original payload" regardless of which
@@ -143,7 +143,7 @@ type UploadParams = {
     engineToken: string
     apiUrl: string
     fileId: string
-    type: FileType.FLOW_STEP_FILE | FileType.FLOW_RUN_LOG | FileType.FLOW_RUN_LOG_SLICE
+    type: FileType.FLOW_STEP_FILE | FileType.EXECUTION_LOG | FileType.EXECUTION_LOG_SLICE
     fileName?: string
     compression?: FileCompression
     data: Uint8Array | Buffer | Readable

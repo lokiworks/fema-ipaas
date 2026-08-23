@@ -62,6 +62,6 @@ with `MODULE_NOT_FOUND` — the ENOENT-mid-delete failure above, but on the ordi
 only on a hash mismatch. A synchronous `existsSync` in the predicate keeps the check atomic with the decision
 it feeds; pinned by the concurrency case in `sandbox/test/lib/cache/flow/code/code-builder.test.ts` and, end
 to end, by `handles concurrent flow run executions without jobs getting stuck` in
-`api/test/integration/ce/flows/flow-run/execute-flow-e2e.test.ts`.
+`api/test/integration/ce/flows/execution/execute-flow-e2e.test.ts`.
 
 Related: [[workers]], [[action-run]], [[gotcha-engine-vitest-needs-fresh-core-execution-dist-can-t-load-connector-dist-local]].

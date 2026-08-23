@@ -17,7 +17,7 @@ stateDiagram-v2
 
 | Field | Meaning |
 | --- | --- |
-| `flowRunId`, `stepName` | Which run/step is paused. Unique together: a step has at most one waitpoint. |
+| `executionId`, `stepName` | Which run/step is paused. Unique together: a step has at most one waitpoint. |
 | `type` | `DELAY` or `WEBHOOK`. |
 | `status` | `PENDING` until the resume signal arrives, then `COMPLETED`. |
 | `resumeDateTime` | For `DELAY`: when to fire the resume. |
@@ -69,8 +69,8 @@ Duplicate callbacks are absorbed by the uniqueness constraint; the engine never 
 | Method | Path | Notes |
 | --- | --- | --- |
 | `POST` | `/v1/waitpoints` | Engine-only. Creates a `PENDING` waitpoint, returns its resume URL. |
-| `ALL` | `/v1/flow-runs/:id/waitpoints/:waitpointId` | Resume, async. |
-| `ALL` | `/v1/flow-runs/:id/waitpoints/:waitpointId/sync` | Resume, sync. The HTTP response is whatever the flow produces after resuming. |
+| `ALL` | `/v1/executions/:id/waitpoints/:waitpointId` | Resume, async. |
+| `ALL` | `/v1/executions/:id/waitpoints/:waitpointId/sync` | Resume, sync. The HTTP response is whatever the flow produces after resuming. |
 
 ## Connector API
 

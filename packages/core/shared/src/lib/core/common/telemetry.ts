@@ -220,7 +220,7 @@ export enum TelemetryEventName {
     UPGRADE_POPUP = 'upgrade.popup',
     CREATED_FLOW = 'flow.created',
     DEMO_IMPORTED = 'demo.imported',
-    FLOW_RUN_CREATED = 'run.created',
+    EXECUTION_CREATED = 'run.created',
     FLOW_PUBLISHED = 'flow.published',
     /**used with templates dialog + import flow component + flows imported by uri query param*/
     FLOW_IMPORTED = 'flow.imported',
@@ -298,7 +298,7 @@ export type TelemetryEvent =
   >
   | BaseTelemetryEvent<TelemetryEventName.UPGRADE_CLICKED, UpgradeClicked>
   | BaseTelemetryEvent<TelemetryEventName.UPGRADE_POPUP, UpgradePopup>
-  | BaseTelemetryEvent<TelemetryEventName.FLOW_RUN_CREATED, RunCreated>
+  | BaseTelemetryEvent<TelemetryEventName.EXECUTION_CREATED, RunCreated>
   | BaseTelemetryEvent<TelemetryEventName.FLOW_PUBLISHED, FlowPublished>
   | BaseTelemetryEvent<TelemetryEventName.QUOTA_ALERT, QuotaAlert>
   | BaseTelemetryEvent<TelemetryEventName.CREATED_FLOW, FlowCreated>

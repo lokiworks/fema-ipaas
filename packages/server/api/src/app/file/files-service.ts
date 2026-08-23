@@ -63,8 +63,8 @@ export const fileTransportHeaders = {
 } as const
 
 export const ENGINE_WRITABLE_FILE_TYPES: ReadonlySet<FileType> = new Set([
-    FileType.FLOW_RUN_LOG,
-    FileType.FLOW_RUN_LOG_SLICE,
+    FileType.EXECUTION_LOG,
+    FileType.EXECUTION_LOG_SLICE,
     FileType.FLOW_STEP_FILE,
 ])
 

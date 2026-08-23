@@ -3,7 +3,7 @@ import { FlowTriggerType } from '@fema/shared';
 import { StoreApi } from 'zustand';
 
 import { RightSideBarType } from '@/app/builder/types';
-import { flowRunUtils } from '@/features/flow-runs';
+import { executionUtils } from '@/features/executions';
 
 import { BuilderState } from '../builder-hooks';
 import { flowCanvasUtils } from '../flow-canvas/utils/flow-canvas-utils';
@@ -60,7 +60,7 @@ export const createCanvasState = (
   set: StoreApi<BuilderState>['setState'],
 ): CanvasState => {
   const failedStepNameInRun = initialState.run?.steps
-    ? flowRunUtils.findLastStepWithStatus(
+    ? executionUtils.findLastStepWithStatus(
         initialState.run.status,
         initialState.run.steps,
       )
@@ -156,7 +156,7 @@ export const createCanvasState = (
         }
         return {
           userManuallySelectedStepDuringRun: false,
-          loopsIndexes: flowRunUtils.snapLoopsToLatestIteration(
+          loopsIndexes: executionUtils.snapLoopsToLatestIteration(
             state.run,
             state.loopsIndexes,
           ),

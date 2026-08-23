@@ -4,7 +4,7 @@ import { isNil, STEP_NAME_REGEX } from '@fema/core-utils'
 import { CodeAction, EngineGenericError, ExecutionError, ExecutionErrorType, FlowActionType, GenericStepOutput, StepOutputStatus } from '@fema/shared'
 import { initCodeSandbox } from '../core/code/code-sandbox'
 import { continueIfFailureHandler, runWithExponentialBackoff } from '../helper/error-handling'
-import { flowRunProgressReporter } from '../helper/flow-run-progress-reporter'
+import { executionProgressReporter } from '../helper/execution-progress-reporter'
 import { utils } from '../utils'
 import { ActionHandler, BaseExecutor, failStep } from './base-executor'
 
@@ -37,7 +37,7 @@ const executeAction: ActionHandler<CodeAction> = async ({ action, executionState
         })
         stepOutput.input = censoredInput
 
-        await flowRunProgressReporter.sendUpdate({
+        await executionProgressReporter.sendUpdate({
             engineConstants: constants,
             flowExecutorContext: await executionState.upsertStep(action.name, stepOutput),
             stepNameToUpdate: action.name,

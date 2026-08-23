@@ -15,7 +15,7 @@ describe('jwtUtils audience', () => {
             payload: samplePayload(),
             key: SECRET,
             algorithm: JwtSignAlgorithm.HS256,
-            audience: JwtAudience.FLOW_RUN_LOG,
+            audience: JwtAudience.EXECUTION_LOG,
             expiresInSeconds: 60,
         })
 
@@ -23,11 +23,11 @@ describe('jwtUtils audience', () => {
             jwt: token,
             key: SECRET,
             algorithm: JwtSignAlgorithm.HS256,
-            audience: JwtAudience.FLOW_RUN_LOG,
+            audience: JwtAudience.EXECUTION_LOG,
         })
 
         expect(decoded.userId).toBe('user-1')
-        expect(decoded.aud).toBe(JwtAudience.FLOW_RUN_LOG)
+        expect(decoded.aud).toBe(JwtAudience.EXECUTION_LOG)
     })
 
     it('rejects a token signed with a different audience', async () => {
@@ -44,7 +44,7 @@ describe('jwtUtils audience', () => {
                 jwt: token,
                 key: SECRET,
                 algorithm: JwtSignAlgorithm.HS256,
-                audience: JwtAudience.FLOW_RUN_LOG,
+                audience: JwtAudience.EXECUTION_LOG,
             }),
         ).rejects.toThrowError(/audience/i)
     })
@@ -62,7 +62,7 @@ describe('jwtUtils audience', () => {
                 jwt: token,
                 key: SECRET,
                 algorithm: JwtSignAlgorithm.HS256,
-                audience: JwtAudience.FLOW_RUN_LOG,
+                audience: JwtAudience.EXECUTION_LOG,
             }),
         ).rejects.toThrowError(/audience/i)
     })

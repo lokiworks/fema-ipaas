@@ -1,10 +1,10 @@
 import { PlatformId } from '@fema/core-utils'
 import { apDayjsDuration } from '@fema/server-utils'
-import { FlowRunStatus, InternalErrorImpactItem, PlatformMetricsHealthDay, PlatformMetricsHealthHistory, PlatformMetricsLive, PlatformMetricsReport, PlatformMetricsStatusPoint, RunEnvironment, StuckJob } from '@fema/shared'
+import { ExecutionStatus, InternalErrorImpactItem, PlatformMetricsHealthDay, PlatformMetricsHealthHistory, PlatformMetricsLive, PlatformMetricsReport, PlatformMetricsStatusPoint, RunEnvironment, StuckJob } from '@fema/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { distributedStore } from '../database/redis-connections'
-import { flowRunRepo } from '../flows/flow-run/flow-run-service'
+import { executionRepo } from '../flows/execution/execution-service'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
 import { workspaceService } from '../workspace/workspace-service'
@@ -18,10 +18,10 @@ function buildReportCacheKey(platformId: PlatformId, window: ReportWindow): stri
     return `${REPORT_CACHE_PREFIX}:${platformId}:${window.createdAfter}:${window.createdBefore}`
 }
 
-async function countsByStatus(workspaceIds: string[], window: ReportWindow): Promise<Map<FlowRunStatus, number>> {
-    const rows: Array<{ status: FlowRunStatus, count: string }> = await flowRunRepo().query(`
+async function countsByStatus(workspaceIds: string[], window: ReportWindow): Promise<Map<ExecutionStatus, number>> {
+    const rows: Array<{ status: ExecutionStatus, count: string }> = await executionRepo().query(`
         SELECT status, COUNT(*) AS count
-        FROM flow_run
+        FROM execution
         WHERE "workspaceId" = ANY($1)
           AND environment = $2
           AND "archivedAt" IS NULL
@@ -34,9 +34,9 @@ async function countsByStatus(workspaceIds: string[], window: ReportWindow): Pro
 }
 
 async function buildStatusTimeseries(workspaceIds: string[], window: ReportWindow): Promise<PlatformMetricsStatusPoint[]> {
-    const rows: Array<{ day: Date, status: FlowRunStatus, count: string }> = await flowRunRepo().query(`
+    const rows: Array<{ day: Date, status: ExecutionStatus, count: string }> = await executionRepo().query(`
         SELECT DATE_TRUNC('day', created) AS day, status, COUNT(*) AS count
-        FROM flow_run
+        FROM execution
         WHERE "workspaceId" = ANY($1)
           AND environment = $2
           AND "archivedAt" IS NULL
@@ -53,13 +53,13 @@ async function buildStatusTimeseries(workspaceIds: string[], window: ReportWindo
 }
 
 async function buildInternalErrorImpact(workspaceIds: string[], window: ReportWindow): Promise<InternalErrorImpactItem[]> {
-    const rows: Array<{ workspaceId: string, flowId: string, workspaceName: string | null, flowName: string | null, count: string }> = await flowRunRepo().query(`
+    const rows: Array<{ workspaceId: string, flowId: string, workspaceName: string | null, flowName: string | null, count: string }> = await executionRepo().query(`
         SELECT fr."workspaceId" AS "workspaceId",
                fr."flowId" AS "flowId",
                MAX(p."displayName") AS "workspaceName",
                MAX(fv."displayName") AS "flowName",
                COUNT(*) AS count
-        FROM flow_run fr
+        FROM execution fr
         LEFT JOIN flow_version fv ON fv.id = fr."flowVersionId"
         LEFT JOIN workspace p ON p.id = fr."workspaceId"
         WHERE fr."workspaceId" = ANY($1)
@@ -71,7 +71,7 @@ async function buildInternalErrorImpact(workspaceIds: string[], window: ReportWi
         GROUP BY fr."workspaceId", fr."flowId"
         ORDER BY COUNT(*) DESC
         LIMIT $6
-    `, [workspaceIds, RunEnvironment.PRODUCTION, FlowRunStatus.INTERNAL_ERROR, window.createdAfter, window.createdBefore, INTERNAL_ERROR_LIMIT])
+    `, [workspaceIds, RunEnvironment.PRODUCTION, ExecutionStatus.INTERNAL_ERROR, window.createdAfter, window.createdBefore, INTERNAL_ERROR_LIMIT])
     return rows.map((row) => ({
         workspaceId: row.workspaceId,
         workspaceName: row.workspaceName ?? '',
@@ -89,18 +89,18 @@ function previousWindow(window: ReportWindow): ReportWindow {
     }
 }
 
-function summarize(counts: Map<FlowRunStatus, number>): { completed: number, successRate: number } {
-    const succeeded = counts.get(FlowRunStatus.SUCCEEDED) ?? 0
-    const failed = counts.get(FlowRunStatus.FAILED) ?? 0
+function summarize(counts: Map<ExecutionStatus, number>): { completed: number, successRate: number } {
+    const succeeded = counts.get(ExecutionStatus.SUCCEEDED) ?? 0
+    const failed = counts.get(ExecutionStatus.FAILED) ?? 0
     const completed = succeeded + failed
     const successRate = completed === 0 ? 0 : (succeeded / completed) * 100
     return { completed, successRate }
 }
 
-async function queueStatusCounts(workspaceIds: string[], window: ReportWindow): Promise<Map<FlowRunStatus, number>> {
-    const rows: Array<{ status: FlowRunStatus, count: string }> = await flowRunRepo().query(`
+async function queueStatusCounts(workspaceIds: string[], window: ReportWindow): Promise<Map<ExecutionStatus, number>> {
+    const rows: Array<{ status: ExecutionStatus, count: string }> = await executionRepo().query(`
         SELECT status, COUNT(*) AS count
-        FROM flow_run
+        FROM execution
         WHERE "workspaceId" = ANY($1)
           AND environment = $2
           AND "archivedAt" IS NULL
@@ -108,7 +108,7 @@ async function queueStatusCounts(workspaceIds: string[], window: ReportWindow): 
           AND created >= $4
           AND created <= $5
         GROUP BY status
-    `, [workspaceIds, RunEnvironment.PRODUCTION, [FlowRunStatus.RUNNING, FlowRunStatus.QUEUED], window.createdAfter, window.createdBefore])
+    `, [workspaceIds, RunEnvironment.PRODUCTION, [ExecutionStatus.RUNNING, ExecutionStatus.QUEUED], window.createdAfter, window.createdBefore])
     return new Map(rows.map((row) => [row.status, Number(row.count)]))
 }
 
@@ -118,14 +118,14 @@ function stuckBeforeIso(): string {
 }
 
 async function buildStuckJobs(workspaceIds: string[], window: ReportWindow): Promise<StuckJob[]> {
-    const rows: Array<{ flowRunId: string, flowId: string, workspaceId: string, status: FlowRunStatus, flowName: string | null, workspaceName: string | null }> = await flowRunRepo().query(`
-        SELECT fr.id AS "flowRunId",
+    const rows: Array<{ executionId: string, flowId: string, workspaceId: string, status: ExecutionStatus, flowName: string | null, workspaceName: string | null }> = await executionRepo().query(`
+        SELECT fr.id AS "executionId",
                fr."flowId" AS "flowId",
                fr."workspaceId" AS "workspaceId",
                fr.status AS status,
                fv."displayName" AS "flowName",
                p."displayName" AS "workspaceName"
-        FROM flow_run fr
+        FROM execution fr
         LEFT JOIN flow_version fv ON fv.id = fr."flowVersionId"
         LEFT JOIN workspace p ON p.id = fr."workspaceId"
         WHERE fr."workspaceId" = ANY($1)
@@ -139,9 +139,9 @@ async function buildStuckJobs(workspaceIds: string[], window: ReportWindow): Pro
           AND fr.created <= $6
         ORDER BY fr."startTime" ASC
         LIMIT $7
-    `, [workspaceIds, RunEnvironment.PRODUCTION, FlowRunStatus.RUNNING, stuckBeforeIso(), window.createdAfter, window.createdBefore, STUCK_JOBS_LIMIT])
+    `, [workspaceIds, RunEnvironment.PRODUCTION, ExecutionStatus.RUNNING, stuckBeforeIso(), window.createdAfter, window.createdBefore, STUCK_JOBS_LIMIT])
     return rows.map((row) => ({
-        flowRunId: row.flowRunId,
+        executionId: row.executionId,
         flowId: row.flowId,
         flowName: row.flowName ?? '',
         workspaceId: row.workspaceId,
@@ -162,22 +162,22 @@ function buildEmptyHealthHistory(): PlatformMetricsHealthDay[] {
 async function buildHealthHistory(workspaceIds: string[]): Promise<PlatformMetricsHealthDay[]> {
     const windowStart = dayjs().startOf('day').subtract(HEALTH_HISTORY_DAYS - 1, 'day').toISOString()
 
-    const errorRows: Array<{ day: Date, internalErrors: string, affectedFlows: string }> = await flowRunRepo().query(`
+    const errorRows: Array<{ day: Date, internalErrors: string, affectedFlows: string }> = await executionRepo().query(`
         SELECT DATE_TRUNC('day', created) AS day,
                COUNT(*) AS "internalErrors",
                COUNT(DISTINCT "flowId") AS "affectedFlows"
-        FROM flow_run
+        FROM execution
         WHERE "workspaceId" = ANY($1)
           AND environment = $2
           AND "archivedAt" IS NULL
           AND status = $3
           AND created >= $4
         GROUP BY day
-    `, [workspaceIds, RunEnvironment.PRODUCTION, FlowRunStatus.INTERNAL_ERROR, windowStart])
+    `, [workspaceIds, RunEnvironment.PRODUCTION, ExecutionStatus.INTERNAL_ERROR, windowStart])
 
-    const stuckRows: Array<{ day: Date, stuckJobs: string }> = await flowRunRepo().query(`
+    const stuckRows: Array<{ day: Date, stuckJobs: string }> = await executionRepo().query(`
         SELECT DATE_TRUNC('day', "startTime") AS day, COUNT(*) AS "stuckJobs"
-        FROM flow_run
+        FROM execution
         WHERE "workspaceId" = ANY($1)
           AND environment = $2
           AND "archivedAt" IS NULL
@@ -187,7 +187,7 @@ async function buildHealthHistory(workspaceIds: string[]): Promise<PlatformMetri
           AND "startTime" >= $4
           AND "startTime" < $5
         GROUP BY day
-    `, [workspaceIds, RunEnvironment.PRODUCTION, FlowRunStatus.RUNNING, windowStart, stuckBeforeIso()])
+    `, [workspaceIds, RunEnvironment.PRODUCTION, ExecutionStatus.RUNNING, windowStart, stuckBeforeIso()])
 
     const errorByDay = new Map(errorRows.map((row) => [dayjs(row.day).format('YYYY-MM-DD'), row]))
     const stuckByDay = new Map(stuckRows.map((row) => [dayjs(row.day).format('YYYY-MM-DD'), row]))
@@ -253,8 +253,8 @@ export const healthMetricsService = (log: FastifyBaseLogger) => ({
             buildStuckJobs(workspaceIds, window),
         ])
         return {
-            running: counts.get(FlowRunStatus.RUNNING) ?? 0,
-            queued: counts.get(FlowRunStatus.QUEUED) ?? 0,
+            running: counts.get(ExecutionStatus.RUNNING) ?? 0,
+            queued: counts.get(ExecutionStatus.QUEUED) ?? 0,
             stuckJobs,
         }
     },

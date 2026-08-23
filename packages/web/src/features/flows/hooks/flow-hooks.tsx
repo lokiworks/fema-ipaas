@@ -27,7 +27,7 @@ import { internalErrorToast } from '@/components/ui/sonner';
 import { connectorsApi } from '@/features/connectors/api/connectors-api';
 import { connectorSelectorUtils } from '@/features/connectors/utils/connector-selector-utils';
 import { stepUtils } from '@/features/connectors/utils/step-utils';
-import { flowRunsApi } from '@/features/flow-runs/api/flow-runs-api';
+import { executionsApi } from '@/features/executions/api/executions-api';
 import { foldersApi } from '@/features/folders/api/folders-api';
 import { templatesApi } from '@/features/templates/api/templates-api';
 import { flagsHooks } from '@/hooks/flags-hooks';
@@ -354,7 +354,7 @@ export const flowHooks = {
     const socket = useSocket();
     return useMutation<void>({
       mutationFn: () =>
-        flowRunsApi.subscribeToTestFlowOrManualRun(
+        executionsApi.subscribeToTestFlowOrManualRun(
           socket,
           {
             flowVersionId,

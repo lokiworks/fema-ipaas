@@ -8,7 +8,7 @@ import { createFileUploader } from '../../connector-context/file-uploader'
 import { createFlowsContext } from '../../connector-context/flows'
 import { createContextStore } from '../../connector-context/store'
 import { waitpointClient } from '../../connector-context/waitpoint-client'
-import { flowRunProgressReporter } from '../../helper/flow-run-progress-reporter'
+import { executionProgressReporter } from '../../helper/execution-progress-reporter'
 import { utils } from '../../utils'
 import { propsProcessor } from '../../variables/props-processor'
 import { ActionContextRequest, CollectedHooks, ConnectorRuntime, ContextRequest, PropsContextRequest, TriggerContextRequest } from './connector-protocol'
@@ -48,7 +48,7 @@ async function buildActionContext({ connector, request, hooks, pending }: Action
         }),
         output: runtime.actionRunMode
             ? { update: async (): Promise<void> => Promise.resolve() }
-            : flowRunProgressReporter.createOutputContext(runtime),
+            : executionProgressReporter.createOutputContext(runtime),
         flows: createFlowsContext({
             engineToken: runtime.engineToken,
             internalApiUrl: runtime.internalApiUrl,
@@ -67,7 +67,7 @@ async function buildActionContext({ connector, request, hooks, pending }: Action
         tags: createTagsManager(hooks),
         connections: createConnections({ runtime, target: 'actions', hooks }),
         run: {
-            id: runtime.flowRunId,
+            id: runtime.executionId,
             stop: (request?: StopHookParams) => {
                 hooks.hookResponse = { ...hooks.hookResponse, type: 'stopped', response: request ?? { response: {} } }
             },
@@ -124,7 +124,7 @@ async function buildTriggerContext({ connector, request, hooks }: TriggerParams)
         auth: propsValue[AUTHENTICATION_PROPERTY_NAME],
         propsValue,
         payload: request.payload ?? {},
-        run: { id: runtime.flowRunId },
+        run: { id: runtime.executionId },
         workspace: createWorkspaceContext(runtime),
         server: {
             token: runtime.engineToken,
@@ -224,7 +224,7 @@ async function createWaitpoint({ runtime, stepName, hooks, params }: SubmitWaitp
     const result = await waitpointClient.create({
         apiUrl: runtime.internalApiUrl,
         engineToken: runtime.engineToken,
-        flowRunId: runtime.flowRunId,
+        executionId: runtime.executionId,
         workspaceId: runtime.workspaceId,
         stepName,
         type: params.type,

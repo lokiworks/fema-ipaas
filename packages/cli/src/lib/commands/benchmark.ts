@@ -166,7 +166,7 @@ function validateSetup(machines: WorkerMachineWithStatus[]): SetupCheck[] {
     ];
 }
 
-function aggregateTimeline(runs: FlowRunLike[]): TimelineAggregate {
+function aggregateTimeline(runs: ExecutionLike[]): TimelineAggregate {
     const phase = (name: TimelinePhaseName): number[] =>
         runs
             .map((r) => r.timeline?.legs?.[0]?.find((p) => p.name === name)?.durationMs)
@@ -233,12 +233,12 @@ async function measureNetwork(client: AxiosInstance): Promise<NetworkBaseline> {
 }
 
 async function collectRuns({ client, workspaceId, flowId, since }: CollectRunsParams): Promise<CollectedRuns> {
-    const collected: FlowRunLike[] = [];
+    const collected: ExecutionLike[] = [];
     let cursor: string | undefined;
     for (let page = 0; page < MAX_RUN_PAGES; page++) {
         const params: Record<string, string | number> = { workspaceId, flowId, createdAfter: since, limit: RUN_PAGE_SIZE };
         if (cursor) params.cursor = cursor;
-        const res = await client.get('/api/v1/flow-runs', { params });
+        const res = await client.get('/api/v1/executions', { params });
         if (res.status !== 200 || !Array.isArray(res.data?.data)) break;
         collected.push(...res.data.data);
         cursor = res.data.next ?? undefined;
@@ -349,7 +349,7 @@ function buildMeta({ url }: { url: string }): RunMeta {
             node: process.version,
             platform: `${os.platform()} ${os.arch()}`,
             cpus: os.cpus().length,
-            note: 'The CLI runs from a different host/region than the API and workers; all client-side latency below includes CLI→server network. Authoritative per-run latency is server-measured (FlowRun.timeline).',
+            note: 'The CLI runs from a different host/region than the API and workers; all client-side latency below includes CLI→server network. Authoritative per-run latency is server-measured (Execution.timeline).',
         },
     };
 }
@@ -372,7 +372,7 @@ async function collectOutsideFlows({ client, benchmarkWorkspaceId, since }: Coll
         for (let page = 0; page < MAX_OUTSIDE_RUN_PAGES; page++) {
             const params: Record<string, string | number> = { workspaceId: workspace.id, createdAfter: since, limit: RUN_PAGE_SIZE };
             if (cursor) params.cursor = cursor;
-            const res = await client.get('/api/v1/flow-runs', { params });
+            const res = await client.get('/api/v1/executions', { params });
             if (res.status !== 200 || !Array.isArray(res.data?.data)) break;
             outsideRuns.push(...res.data.data.map((r: Record<string, unknown>) => ({ ...r, workspaceId: workspace.id }) as OutsideRunLike));
             cursor = res.data.next ?? undefined;
@@ -427,8 +427,8 @@ function isNilLike(value: unknown): value is null | undefined {
 }
 
 async function probeStorage({ client, workspaceId, flowId }: ProbeStorageParams): Promise<StorageProbe> {
-    const res = await client.get('/api/v1/flow-runs', { params: { workspaceId, flowId, limit: 50 } });
-    const runs: FlowRunLike[] = Array.isArray(res.data?.data) ? res.data.data : [];
+    const res = await client.get('/api/v1/executions', { params: { workspaceId, flowId, limit: 50 } });
+    const runs: ExecutionLike[] = Array.isArray(res.data?.data) ? res.data.data : [];
     if (runs.length === 0) {
         return { logsPersisted: 0, sampled: 0, detail: 'No runs found to check log persistence.' };
     }
@@ -933,8 +933,8 @@ const CPU_THROTTLE_WARN_PCT = 20;
 // two throttles (workspace concurrency cap + rate limiter) that silently cap throughput and emit 429s.
 const DIAGNOSTIC_FLAGS = [
     'EDITION', 'CURRENT_VERSION', 'ENVIRONMENT', 'PUBLIC_URL', 'CONNECTORS_SYNC_MODE',
-    'FLOW_RUN_TIME_SECONDS', 'TRIGGER_TIMEOUT_SECONDS', 'WEBHOOK_TIMEOUT_SECONDS',
-    'FLOW_RUN_MEMORY_LIMIT_KB', 'FLOW_RUN_LOG_SIZE_LIMIT_MB', 'ALLOW_NPM_PACKAGES_IN_CODE_STEP',
+    'EXECUTION_TIME_SECONDS', 'TRIGGER_TIMEOUT_SECONDS', 'WEBHOOK_TIMEOUT_SECONDS',
+    'EXECUTION_MEMORY_LIMIT_KB', 'EXECUTION_LOG_SIZE_LIMIT_MB', 'ALLOW_NPM_PACKAGES_IN_CODE_STEP',
     'DEFAULT_CONCURRENT_JOBS_LIMIT', 'WORKSPACE_RATE_LIMITER_ENABLED', 'EXECUTION_DATA_RETENTION_DAYS',
 ];
 
@@ -988,7 +988,7 @@ type SetupDiscovery = {
 type NetworkBaseline = { probes: number; minMs: number; p50Ms: number };
 
 type TimelinePhaseName = 'QUEUE' | 'PROVISION' | 'BOOT' | 'RUN';
-type FlowRunLike = {
+type ExecutionLike = {
     logsFileId?: string | null;
     status?: string;
     timeline?: { legs?: Array<Array<{ name: TimelinePhaseName; durationMs: number }>> } | null;

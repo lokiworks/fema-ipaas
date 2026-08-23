@@ -8,12 +8,12 @@ icon: ⏱️
 
 ### How it works
 - Builds a `webhook → data-mapper → return-response` flow. Instead of a raw `--concurrency`, it **auto-discovers the deployment shape** (`GET /v1/worker-machines`) and drives load = the effective **execution slot** count, so a healthy deploy queues ~zero by construction. Any queue-wait it reports is a real finding (usually driven concurrency > slots).
-- Attributes latency from each `FlowRun.timeline` into QUEUE / PROVISION / BOOT / RUN, cross-checked against live BullMQ queue depth.
+- Attributes latency from each `Execution.timeline` into QUEUE / PROVISION / BOOT / RUN, cross-checked against live BullMQ queue depth.
 - Also validates machine specs/settings, measures CLI→server RTT, and checks S3 signed-URL upload + latency.
 
 ### Authoritative-latency design
 - The CLI runs from a different region than the API/workers, so **all client-side numbers (autocannon, RTT, CLI→S3) are network-polluted and reported observational only**.
-- Authoritative latency is server/worker-measured: per-run split from `FlowRun.timeline` (`wideEvent.timed` in `sandbox.ts`), in-region DB/Redis/S3 round-trip from `GET /v1/health/diagnostics`.
+- Authoritative latency is server/worker-measured: per-run split from `Execution.timeline` (`wideEvent.timed` in `sandbox.ts`), in-region DB/Redis/S3 round-trip from `GET /v1/health/diagnostics`.
 - Caveat: the QUEUE phase absorbs app↔worker clock skew (can clamp to 0 or inflate) — hence the queue-depth cross-check.
 
 ### Key connectors
@@ -45,7 +45,7 @@ Entry point: `benchmarkCommand`, a commander Command registered in `packages/cli
 - `packages/server/api/src/app/helper/app-machine-cache.ts` — the App Instance Registry, the `appMachines` Redis hash.
 - `packages/server/api/src/app/helper/system-snapshot.ts` — the tick each app self-registers on.
 - `packages/core/shared/src/lib/core/health/index.ts` — `GetDiagnosticsResponse` / `InfraCheck` / `DeploymentConfig` / `AppInstance` types.
-- `packages/core/execution/src/lib/flow-run/flow-run.ts` — the `RunTimeline` phases the attribution reads.
+- `packages/core/execution/src/lib/execution/execution.ts` — the `RunTimeline` phases the attribution reads.
 - `packages/server/sandbox/src/lib/sandbox.ts` — where the per-run phases are timed inside the worker.
 - [Execution Runtime](./index.md) — domain terms: execution slot, queue-wait vs service-time.
 - `benchmark/` — the harness scripts, including `run-gke.sh` behind the published reference numbers.

@@ -1,11 +1,11 @@
 import { ConnectorPropertyMap, StaticPropsValue } from '@fema/connector-sdk'
 import { ErrorCode, isNil, PlatformError } from '@fema/core-utils'
-import { ConnectorAction, EngineGenericError, ExecutionType, FlowActionType, FlowRunStatus, GenericStepOutput, RespondResponse, StepOutputStatus } from '@fema/shared'
+import { ConnectorAction, EngineGenericError, ExecutionStatus, ExecutionType, FlowActionType, GenericStepOutput, RespondResponse, StepOutputStatus } from '@fema/shared'
 import { engineRunApi } from '../api/engine-run-api'
 import { ConnectorRuntime } from '../core/connector/connector-protocol'
 import { connectorRunner } from '../core/connector/connector-runner'
 import { continueIfFailureHandler, runWithExponentialBackoff } from '../helper/error-handling'
-import { flowRunProgressReporter } from '../helper/flow-run-progress-reporter'
+import { executionProgressReporter } from '../helper/execution-progress-reporter'
 import { HookResponse, utils } from '../utils'
 import { ActionHandler, BaseExecutor, failStep } from './base-executor'
 import { EngineConstants } from './context/engine-constants'
@@ -61,7 +61,7 @@ const executeAction: ActionHandler<ConnectorAction> = async ({ action, execution
 
         const isPaused = executionState.isPaused({ stepName: action.name })
         if (!isPaused) {
-            await flowRunProgressReporter.sendUpdate({
+            await executionProgressReporter.sendUpdate({
                 engineConstants: constants,
                 flowExecutorContext: await executionState.upsertStep(action.name, stepOutput),
                 stepNameToUpdate: action.name,
@@ -113,7 +113,7 @@ const executeAction: ActionHandler<ConnectorAction> = async ({ action, execution
             }
             const succeeded = stepOutput.setOutput(output).setStatus(StepOutputStatus.SUCCEEDED).setDuration(stepEndTime - stepStartTime)
             return (await newExecutionContext.upsertStep(action.name, succeeded)).incrementStepsExecuted().setVerdict({
-                status: FlowRunStatus.SUCCEEDED,
+                status: ExecutionStatus.SUCCEEDED,
                 stopResponse: hookResponse.response.response,
             })
         }
@@ -121,10 +121,10 @@ const executeAction: ActionHandler<ConnectorAction> = async ({ action, execution
             const paused = stepOutput.setOutput(output).setStatus(StepOutputStatus.PAUSED).setDuration(stepEndTime - stepStartTime)
             return (await newExecutionContext.upsertStep(action.name, paused))
                 .incrementStepsExecuted()
-                .setVerdict({ status: FlowRunStatus.PAUSED })
+                .setVerdict({ status: ExecutionStatus.PAUSED })
         }
         const succeeded = stepOutput.setOutput(output).setStatus(StepOutputStatus.SUCCEEDED).setDuration(stepEndTime - stepStartTime)
-        return (await newExecutionContext.upsertStep(action.name, succeeded)).incrementStepsExecuted().setVerdict({ status: FlowRunStatus.RUNNING })
+        return (await newExecutionContext.upsertStep(action.name, succeeded)).incrementStepsExecuted().setVerdict({ status: ExecutionStatus.RUNNING })
 
     }))
 
@@ -161,7 +161,7 @@ export function buildRuntime({ constants, connectorName, contextVersion }: Build
         workspaceId: constants.workspaceId,
         flowId: constants.flowId,
         flowVersionId: constants.flowVersionId,
-        flowRunId: constants.flowRunId,
+        executionId: constants.executionId,
         connectorName,
         contextVersion,
         actionRunMode: constants.actionRunMode,

@@ -107,7 +107,7 @@ export type SandboxSettings = {
     REUSE_SANDBOX: string | undefined
     FLOW_TIMEOUT_SECONDS: number
     MAX_FILE_SIZE_MB: number
-    MAX_FLOW_RUN_LOG_SIZE_MB: number
+    MAX_EXECUTION_LOG_SIZE_MB: number
     NETWORK_MODE: NetworkMode
     SANDBOX_MEMORY_LIMIT: string
     SANDBOX_PROPAGATED_ENV_VARS: string[]

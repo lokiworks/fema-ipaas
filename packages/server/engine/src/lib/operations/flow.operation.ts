@@ -1,12 +1,12 @@
 import { isNil, tryCatch } from '@fema/core-utils'
-import { EngineGenericError, EngineResponse, EngineResponseStatus, ExecuteFlowOperation, ExecuteTriggerResponse, ExecutionError, ExecutionErrorType, ExecutionState, ExecutionType, FlowActionType, FlowRunStatus, flowStructureUtil, GenericStepOutput, LoopStepOutput, ResumePayload, ResumeReason, StepOutput, StepOutputStatus, TriggerHookType, TriggerPayload } from '@fema/shared'
+import { EngineGenericError, EngineResponse, EngineResponseStatus, ExecuteFlowOperation, ExecuteTriggerResponse, ExecutionError, ExecutionErrorType, ExecutionState, ExecutionStatus, ExecutionType, FlowActionType, flowStructureUtil, GenericStepOutput, LoopStepOutput, ResumePayload, ResumeReason, StepOutput, StepOutputStatus, TriggerHookType, TriggerPayload } from '@fema/shared'
 import { engineFileApi } from '../api/engine-file-api'
 import { triggerRunner } from '../core/connector/trigger-runner'
 import { EngineConstants, ResolvedBeginExecuteFlowOperation, ResolvedExecuteFlowOperation } from '../handler/context/engine-constants'
 import { FlowExecutorContext } from '../handler/context/flow-execution-context'
 import { testExecutionContext } from '../handler/context/test-execution-context'
 import { flowExecutor } from '../handler/flow-executor'
-import { flowRunProgressReporter } from '../helper/flow-run-progress-reporter'
+import { executionProgressReporter } from '../helper/execution-progress-reporter'
 import { utils } from '../utils'
 import { resolveJobPayload } from './utils/resolve-job-payload'
 
@@ -38,12 +38,12 @@ export const flowOperation = {
             return reportFailedRun({ input, constants, error: executionError })
         }
         const finished = output.finishExecution()
-        await flowRunProgressReporter.sendUpdate({
+        await executionProgressReporter.sendUpdate({
             engineConstants: constants,
             flowExecutorContext: finished,
         })
-        await flowRunProgressReporter.backup()
-        const status = finished.verdict.status === FlowRunStatus.LOG_SIZE_EXCEEDED
+        await executionProgressReporter.backup()
+        const status = finished.verdict.status === ExecutionStatus.LOG_SIZE_EXCEEDED
             ? EngineResponseStatus.LOG_SIZE_EXCEEDED
             : EngineResponseStatus.OK
         return {
@@ -75,11 +75,11 @@ async function reportFailedRun({ input, constants, error }: ReportFailedRunParam
         },
     })
     const output = (await buildFailedTriggerContext({ input, baseContext, error })).finishExecution()
-    await flowRunProgressReporter.sendUpdate({
+    await executionProgressReporter.sendUpdate({
         engineConstants: constants,
         flowExecutorContext: output,
     })
-    await flowRunProgressReporter.backup()
+    await executionProgressReporter.backup()
     return {
         status: EngineResponseStatus.OK,
         response: undefined,
@@ -100,7 +100,7 @@ const executeSingleStepOrFlow = async (input: ResolvedExecuteFlowOperation, cons
         })
         const step = flowStructureUtil.getActionOrThrow(input.stepNameToTest!, input.flowVersion.trigger)
         const executionState = await resolveStateOrThrowOnNonUserError({ input, constants, baseContext: testContext })
-        if (executionState.verdict.status !== FlowRunStatus.RUNNING) {
+        if (executionState.verdict.status !== ExecutionStatus.RUNNING) {
             return executionState
         }
         return flowExecutor.execute({
@@ -116,7 +116,7 @@ const executeSingleStepOrFlow = async (input: ResolvedExecuteFlowOperation, cons
         },
     })
     const executionState = await resolveStateOrThrowOnNonUserError({ input, constants, baseContext: emptyContext })
-    if (executionState.verdict.status !== FlowRunStatus.RUNNING) {
+    if (executionState.verdict.status !== ExecutionStatus.RUNNING) {
         return executionState
     }
     return flowExecutor.executeFromTrigger({
@@ -147,7 +147,7 @@ async function buildFailedTriggerContext({ input, baseContext, error }: BuildFai
         input: {},
     }).setOutput(triggerPayload ?? {}).setErrorMessage(message)
     return (await baseContext.upsertStep(trigger.name, failedTriggerOutput)).setVerdict({
-        status: FlowRunStatus.FAILED,
+        status: ExecutionStatus.FAILED,
         failedStep: {
             name: trigger.name,
             displayName: trigger.displayName,

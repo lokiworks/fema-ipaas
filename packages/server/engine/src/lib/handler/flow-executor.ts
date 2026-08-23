@@ -1,9 +1,9 @@
 import { performance } from 'node:perf_hooks'
 import { isNil } from '@fema/core-utils'
-import { EngineGenericError, ExecutionType, FlowAction, FlowActionType, FlowRunStatus, FlowTrigger, GenericStepOutput, StepOutputStatus } from '@fema/shared'
+import { EngineGenericError, ExecutionStatus, ExecutionType, FlowAction, FlowActionType, FlowTrigger, GenericStepOutput, StepOutputStatus } from '@fema/shared'
 import dayjs from 'dayjs'
 import { triggerRunner } from '../core/connector/trigger-runner'
-import { flowRunProgressReporter } from '../helper/flow-run-progress-reporter'
+import { executionProgressReporter } from '../helper/execution-progress-reporter'
 import { loggingUtils } from '../helper/logging-utils'
 import { BaseExecutor } from './base-executor'
 import { codeExecutor } from './code-executor'
@@ -42,22 +42,22 @@ export const flowExecutor = {
     }): Promise<FlowExecutorContext> {
         const trigger = input.flowVersion.trigger
         if (input.executionType === ExecutionType.BEGIN) {
-            await flowRunProgressReporter.sendUpdate({
+            await executionProgressReporter.sendUpdate({
                 engineConstants: constants,
                 flowExecutorContext: executionState,
             })
-            void flowRunProgressReporter.backup().catch((err) => {
+            void executionProgressReporter.backup().catch((err) => {
                 console.error('[Progress] Initial payload upload failed', err)
             })
             await triggerRunner.executeOnStart({ trigger, constants, payload: input.triggerPayload })
-            await flowRunProgressReporter.sendUpdate({
+            await executionProgressReporter.sendUpdate({
                 engineConstants: constants,
                 flowExecutorContext: executionState,
                 stepNameToUpdate: trigger.name,
                 startTime: dayjs().toISOString(),
             })
             executionState = await applyLogSizeLimitIfExceeded(executionState, trigger)
-            if (executionState.verdict.status !== FlowRunStatus.RUNNING) {
+            if (executionState.verdict.status !== ExecutionStatus.RUNNING) {
                 return executionState
             }
         }
@@ -85,7 +85,7 @@ export const flowExecutor = {
             }
             const handler = this.getExecutorForAction(currentAction.type)
 
-            await flowRunProgressReporter.sendUpdate({
+            await executionProgressReporter.sendUpdate({
                 engineConstants: constants,
                 flowExecutorContext: flowExecutionContext,
                 stepNameToUpdate: previousAction!.name,
@@ -107,7 +107,7 @@ export const flowExecutor = {
             }
             flowExecutionContext = await applyLogSizeLimitIfExceeded(flowExecutionContext, currentAction)
 
-            const shouldBreakExecution = flowExecutionContext.verdict.status !== FlowRunStatus.RUNNING || testSingleStepMode
+            const shouldBreakExecution = flowExecutionContext.verdict.status !== ExecutionStatus.RUNNING || testSingleStepMode
             previousAction = currentAction
             currentAction = currentAction.nextAction
 
@@ -117,7 +117,7 @@ export const flowExecutor = {
 
         }
 
-        await flowRunProgressReporter.sendUpdate({
+        await executionProgressReporter.sendUpdate({
             engineConstants: constants,
             flowExecutorContext: flowExecutionContext,
             stepNameToUpdate: previousAction?.name,
@@ -146,7 +146,7 @@ async function runContinueOnFailureBranchIfNeeded({ action, executionState, cons
     if (isNil(branches?.onSuccess) && isNil(branches?.onFailure)) {
         return executionState
     }
-    if (executionState.verdict.status !== FlowRunStatus.RUNNING) {
+    if (executionState.verdict.status !== ExecutionStatus.RUNNING) {
         return executionState
     }
     const stepOutput = executionState.getStepOutput(action.name)
@@ -178,7 +178,7 @@ const applyLogSizeLimitIfExceeded = async (
         })
             .setErrorMessage(`Flow run data size exceeded the maximum allowed size of ${loggingUtils.maxLogSizeMb} MB`))
     return failed.setVerdict({
-        status: FlowRunStatus.LOG_SIZE_EXCEEDED,
+        status: ExecutionStatus.LOG_SIZE_EXCEEDED,
         failedStep: {
             name: action.name,
             displayName: action.displayName,

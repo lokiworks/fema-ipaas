@@ -79,7 +79,7 @@ export type ConnectorRuntime = {
     workspaceId: string
     flowId: string
     flowVersionId: string
-    flowRunId: string
+    executionId: string
     connectorName: string
     contextVersion?: ContextVersion
     actionRunMode: boolean

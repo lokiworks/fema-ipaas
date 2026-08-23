@@ -1,5 +1,5 @@
 import { apId, assertEqual, createByteLruCache, isNil } from '@fema/core-utils'
-import { BaseStepOutput, EngineGenericError, executionJournal, FailedStep, FileType, FlowActionType, FlowRunStatus, GenericStepOutput, LogSliceRef, LoopStepOutput, LoopStepResult, RespondResponse, StepOutput, StepOutputStatus, StepOutputType } from '@fema/shared'
+import { BaseStepOutput, EngineGenericError, executionJournal, ExecutionStatus, FailedStep, FileType, FlowActionType, GenericStepOutput, LogSliceRef, LoopStepOutput, LoopStepResult, RespondResponse, StepOutput, StepOutputStatus, StepOutputType } from '@fema/shared'
 import { engineFileApi } from '../../api/engine-file-api'
 import { loggingUtils } from '../../helper/logging-utils'
 import { sizeofUtils } from '../../helper/sizeof'
@@ -7,7 +7,7 @@ import { StepExecutionPath } from './step-execution-path'
 
 const DEFAULT_THRESHOLD_KB = 32
 const SLICE_THRESHOLD_BYTES = Number(
-    process.env.FEMA_FLOW_RUN_LOG_SLICE_THRESHOLD_KB ?? DEFAULT_THRESHOLD_KB,
+    process.env.FEMA_EXECUTION_LOG_SLICE_THRESHOLD_KB ?? DEFAULT_THRESHOLD_KB,
 ) * 1024
 const SLICE_CACHE_BUDGET_BYTES = 64 * 1024 * 1024
 
@@ -34,7 +34,7 @@ export class FlowExecutorContext {
         this.tags = copyFrom?.tags ?? []
         this.steps = copyFrom?.steps ?? {}
         this.duration = copyFrom?.duration ?? -1
-        this.verdict = copyFrom?.verdict ?? { status: FlowRunStatus.RUNNING }
+        this.verdict = copyFrom?.verdict ?? { status: ExecutionStatus.RUNNING }
         this.currentPath = copyFrom?.currentPath ?? StepExecutionPath.empty()
         this.stepNameToTest = copyFrom?.stepNameToTest ?? false
         this.stepsCount = copyFrom?.stepsCount ?? 0
@@ -49,10 +49,10 @@ export class FlowExecutorContext {
     }
 
     public finishExecution(): FlowExecutorContext {
-        if (this.verdict.status === FlowRunStatus.RUNNING) {
+        if (this.verdict.status === ExecutionStatus.RUNNING) {
             return new FlowExecutorContext({
                 ...this,
-                verdict: { status: FlowRunStatus.SUCCEEDED },
+                verdict: { status: ExecutionStatus.SUCCEEDED },
             })
         }
         return this
@@ -218,7 +218,7 @@ async function maybeSliceOutput({ value, engineApi }: MaybeSliceOutputParams): P
         apiUrl: engineApi.internalApiUrl,
         engineToken: engineApi.engineToken,
         fileId: apId(),
-        type: FileType.FLOW_RUN_LOG_SLICE,
+        type: FileType.EXECUTION_LOG_SLICE,
         data,
     })
     return { ref: { fileId, size, url: readUrl } }
@@ -255,15 +255,15 @@ function withTruncatedInput<T extends BaseStepOutput>(stepOutput: T): T {
 }
 
 export type FlowVerdict = {
-    status: FlowRunStatus.PAUSED
+    status: ExecutionStatus.PAUSED
 } | {
-    status: FlowRunStatus.SUCCEEDED
+    status: ExecutionStatus.SUCCEEDED
     stopResponse: RespondResponse | undefined
 } | {
-    status: FlowRunStatus.FAILED | FlowRunStatus.LOG_SIZE_EXCEEDED
+    status: ExecutionStatus.FAILED | ExecutionStatus.LOG_SIZE_EXCEEDED
     failedStep: FailedStep
 } | {
-    status: FlowRunStatus.RUNNING
+    status: ExecutionStatus.RUNNING
 }
 
 export type EngineApiConfig = {

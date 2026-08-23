@@ -15,7 +15,7 @@ import { fileCompressor } from './file-compressor'
 import { FileEntity } from './file.entity'
 import { s3Helper } from './s3-helper'
 
-const ALLOWED_SIGNED_FILE_TYPES: FileType[] = [FileType.FLOW_STEP_FILE, FileType.FLOW_RUN_LOG_SLICE]
+const ALLOWED_SIGNED_FILE_TYPES: FileType[] = [FileType.FLOW_STEP_FILE, FileType.EXECUTION_LOG_SLICE]
 
 const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'image/tiff', 'image/bmp', 'image/ico', 'image/avif', 'image/apng']
 
@@ -351,7 +351,7 @@ export function getLocationForFile(type: FileType) {
 }
 
 export function getDownloadName(file: Pick<File, 'id' | 'fileName' | 'type'>): string {
-    return file.fileName ?? `${file.id}.${file.type === FileType.FLOW_RUN_LOG_SLICE ? 'json' : 'bin'}`
+    return file.fileName ?? `${file.id}.${file.type === FileType.EXECUTION_LOG_SLICE ? 'json' : 'bin'}`
 }
 
 export function getEffectiveExecutionDataRetentionDays(executionDataRetentionDays: number | null | undefined): number {
@@ -364,8 +364,8 @@ export function getEffectiveExecutionDataRetentionDays(executionDataRetentionDay
 
 function isExecutionDataFileThatExpires(type: FileType) {
     switch (type) {
-        case FileType.FLOW_RUN_LOG:
-        case FileType.FLOW_RUN_LOG_SLICE:
+        case FileType.EXECUTION_LOG:
+        case FileType.EXECUTION_LOG_SLICE:
         case FileType.FLOW_STEP_FILE:
         case FileType.TRIGGER_PAYLOAD:
         case FileType.TRIGGER_EVENT_FILE:

@@ -90,7 +90,7 @@ export const webhookController: FastifyPluginAsyncZod = async (app) => {
             flowVersionToRun: WebhookFlowVersionToRun.LATEST,
             execute: true,
             onRunCreated: (run) => {
-                app.io.to(run.workspaceId).emit(WebsocketClientEvent.TEST_FLOW_RUN_STARTED, run)
+                app.io.to(run.workspaceId).emit(WebsocketClientEvent.TEST_EXECUTION_STARTED, run)
             },
             ...extractHeaderFromRequest(request),
         })

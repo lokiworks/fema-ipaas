@@ -9,7 +9,7 @@ export const generateMockEngineConstants = (params?: Partial<EngineConstants>): 
             flowId: params?.flowId ?? 'flowId',
             flowVersionId: params?.flowVersionId ?? 'flowVersionId',
             flowVersionState: params?.flowVersionState ?? FlowVersionState.DRAFT,
-            flowRunId: params?.flowRunId ?? 'flowRunId',
+            executionId: params?.executionId ?? 'executionId',
             publicApiUrl: params?.publicApiUrl ?? 'http://127.0.0.1:4200/api/',
             internalApiUrl: params?.internalApiUrl ?? 'http://127.0.0.1:3000/',
             retryConstants: params?.retryConstants ?? {
@@ -133,7 +133,7 @@ export function buildMockBeginExecuteFlowOperation(
         publicApiUrl: 'http://127.0.0.1:4200/api/',
         timeoutInSeconds: 10,
         platformId: 'platformId',
-        flowRunId: 'flowRunId',
+        executionId: 'executionId',
         executionType: ExecutionType.BEGIN,
         runEnvironment: RunEnvironment.TESTING,
         workerHandlerId: null,

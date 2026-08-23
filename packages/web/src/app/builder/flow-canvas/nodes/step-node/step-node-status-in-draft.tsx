@@ -16,7 +16,7 @@ import {
   TooltipContent,
 } from '@/components/ui/tooltip';
 import { connectorSelectorUtils } from '@/features/connectors';
-import { StepStatusIcon, flowRunUtils } from '@/features/flow-runs';
+import { StepStatusIcon, executionUtils } from '@/features/executions';
 
 import { useBuilderStateContext } from '../../../builder-hooks';
 import { flowCanvasUtils } from '../../utils/flow-canvas-utils';
@@ -149,7 +149,7 @@ const ApStepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
   }
 
   const config = draftStatusConfig[status];
-  const badgeClassName = flowRunUtils.getStatusContainerClassName(
+  const badgeClassName = executionUtils.getStatusContainerClassName(
     config.variant,
     true,
   );

@@ -1,4 +1,4 @@
-import { FlowRunStatus } from '@fema/shared'
+import { ExecutionStatus } from '@fema/shared'
 import { vi } from 'vitest'
 import { FlowExecutorContext } from '../../src/lib/handler/context/flow-execution-context'
 import { flowExecutor } from '../../src/lib/handler/flow-executor'
@@ -63,7 +63,7 @@ describe('flow waitpoint response propagation', () => {
         })
 
         expect(result.verdict).toEqual({
-            status: FlowRunStatus.PAUSED,
+            status: ExecutionStatus.PAUSED,
         })
 
         expect(mockSendFlowResponse).toHaveBeenCalledWith({
@@ -111,7 +111,7 @@ describe('flow waitpoint response propagation', () => {
         })
 
         expect(result.verdict).toEqual({
-            status: FlowRunStatus.PAUSED,
+            status: ExecutionStatus.PAUSED,
         })
         expect(mockSendFlowResponse).not.toHaveBeenCalled()
     })

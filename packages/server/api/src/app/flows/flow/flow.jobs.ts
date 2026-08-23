@@ -3,8 +3,8 @@ import { FastifyBaseLogger } from 'fastify'
 import { repoFactory } from '../../core/db/repo-factory'
 import { SystemJobData, SystemJobName } from '../../helper/system-jobs/common'
 import { systemJobsSchedule } from '../../helper/system-jobs/system-job'
-import { flowRunRepo } from '../flow-run/flow-run-service'
-import { WaitpointEntity } from '../flow-run/waitpoint/waitpoint-entity'
+import { executionRepo } from '../execution/execution-service'
+import { WaitpointEntity } from '../execution/waitpoint/waitpoint-entity'
 import { flowVersionRepo } from '../flow-version/flow-version.service'
 import { flowExecutionCache } from './flow-execution-cache'
 import { flowSideEffects } from './flow-service-side-effects'
@@ -18,15 +18,15 @@ export async function batchDeleteByFlowId(flowId: string): Promise<void> {
     await waitpointRepo()
         .createQueryBuilder()
         .delete()
-        .where('"flowRunId" IN (SELECT id FROM flow_run WHERE "flowId" = :flowId)', { flowId })
+        .where('"executionId" IN (SELECT id FROM execution WHERE "flowId" = :flowId)', { flowId })
         .execute()
 
     let deleted: number
     do {
-        const result = await flowRunRepo()
+        const result = await executionRepo()
             .createQueryBuilder()
             .delete()
-            .where('id IN (SELECT id FROM flow_run WHERE "flowId" = :flowId LIMIT :limit)', { flowId, limit: BATCH_SIZE })
+            .where('id IN (SELECT id FROM execution WHERE "flowId" = :flowId LIMIT :limit)', { flowId, limit: BATCH_SIZE })
             .execute()
         deleted = result.affected ?? 0
     } while (deleted > 0)

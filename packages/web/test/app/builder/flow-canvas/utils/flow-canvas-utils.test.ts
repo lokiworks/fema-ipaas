@@ -12,8 +12,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { flowCanvasUtils } from '@/app/builder/flow-canvas/utils/flow-canvas-utils';
 import { ApEdgeType, ApNodeType } from '@/app/builder/flow-canvas/utils/types';
 
-vi.mock('@/features/flow-runs', () => ({
-  flowRunUtils: {
+vi.mock('@/features/executions', () => ({
+  executionUtils: {
     extractStepOutput: () => undefined,
     findLastStepWithStatus: () => null,
   },

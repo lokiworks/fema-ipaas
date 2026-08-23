@@ -16,7 +16,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { flowRunUtils } from '@/features/flow-runs';
+import { executionUtils } from '@/features/executions';
 import { cn } from '@/lib/utils';
 
 import { useBuilderStateContext } from '../builder-hooks';
@@ -33,7 +33,7 @@ const LoopIterationInput = ({ stepName }: { stepName: string }) => {
     ]);
   const stepOutput = useMemo(() => {
     return run && run.steps
-      ? flowRunUtils.extractStepOutput(stepName, loopsIndexes, run.steps)
+      ? executionUtils.extractStepOutput(stepName, loopsIndexes, run.steps)
       : null;
   }, [run, stepName, loopsIndexes, flowVersion.trigger]);
 

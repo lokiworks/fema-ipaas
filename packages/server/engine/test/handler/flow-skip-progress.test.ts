@@ -1,4 +1,4 @@
-import { FlowAction, FlowRunStatus, StepOutputStatus, StreamStepProgress, UpdateRunProgressRequest } from '@fema/shared'
+import { FlowAction, ExecutionStatus, StepOutputStatus, StreamStepProgress, UpdateRunProgressRequest } from '@fema/shared'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { FlowExecutorContext } from '../../src/lib/handler/context/flow-execution-context'
 import { buildConnectorAction, generateMockEngineConstants } from './test-helper'
@@ -47,7 +47,7 @@ describe('flowExecutor — progress events with skipped neighbours', () => {
             constants: generateMockEngineConstants({ streamStepProgress: StreamStepProgress.WEBSOCKET }),
         })
 
-        expect(result.verdict).toStrictEqual({ status: FlowRunStatus.RUNNING })
+        expect(result.verdict).toStrictEqual({ status: ExecutionStatus.RUNNING })
 
         const finalStatus = lastStatusByStep()
         expect(finalStatus.first).toBe(StepOutputStatus.SUCCEEDED)

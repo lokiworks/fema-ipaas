@@ -1,5 +1,5 @@
 import { tryParseFriendlyConnectorError } from '@fema/core-utils'
-import { FlowAction, FlowRunStatus } from '@fema/shared'
+import { FlowAction, ExecutionStatus } from '@fema/shared'
 import { FlowExecutorContext } from '../../src/lib/handler/context/flow-execution-context'
 import { flowExecutor } from '../../src/lib/handler/flow-executor'
 import { connectorExecutor } from '../../src/lib/handler/connector-executor'
@@ -21,7 +21,7 @@ describe('connectorExecutor', () => {
             }), executionState: FlowExecutorContext.empty(), constants: generateMockEngineConstants(),
         })
         expect(result.verdict).toStrictEqual({
-            status: FlowRunStatus.RUNNING,
+            status: ExecutionStatus.RUNNING,
         })
         expect(result.steps.data_mapper.output).toEqual({ 'key': 3 })
     })
@@ -44,8 +44,8 @@ describe('connectorExecutor', () => {
         })
 
         const verdict = result.verdict
-        expect(verdict.status).toBe(FlowRunStatus.FAILED)
-        if (verdict.status !== FlowRunStatus.FAILED) {
+        expect(verdict.status).toBe(ExecutionStatus.FAILED)
+        if (verdict.status !== ExecutionStatus.FAILED) {
             throw new Error('Expected a FAILED verdict')
         }
         expect(verdict.failedStep.name).toBe('send_http')
@@ -78,7 +78,7 @@ describe('connectorExecutor', () => {
             }), executionState: FlowExecutorContext.empty(), constants: generateMockEngineConstants(),
         })
         expect(result.verdict).toStrictEqual({
-            status: FlowRunStatus.RUNNING,
+            status: ExecutionStatus.RUNNING,
         })
         expect(result.steps.data_mapper).toBeUndefined()
     })
@@ -110,7 +110,7 @@ describe('connectorExecutor', () => {
             action: flow, executionState: FlowExecutorContext.empty(), constants: generateMockEngineConstants(),
         })
         expect(result.verdict).toStrictEqual({
-            status: FlowRunStatus.RUNNING,
+            status: ExecutionStatus.RUNNING,
         })
         expect(result.steps.data_mapper.output).toEqual({ 'key': 3 })
         expect(result.steps.send_http).toBeUndefined()

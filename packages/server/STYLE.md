@@ -158,7 +158,7 @@ const { data: provisioned, error: provisionError } = await tryCatch(
     () => provisionFlowConnectors({ flowVersion, platformId: data.platformId, flowId: data.flowId, projectId: data.projectId, log: ctx.log, apiClient: ctx.apiClient }),
 )
 if (provisionError) {
-    await reportFlowStatus(ctx, data, FlowRunStatus.INTERNAL_ERROR)
+    await reportFlowStatus(ctx, data, ExecutionStatus.INTERNAL_ERROR)
     throw provisionError
 }
 // `provisioned` is narrowed to the success type from here

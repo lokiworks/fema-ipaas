@@ -129,7 +129,7 @@ In the AI connector, picking the FEMA Integration Platform-provided AI now lists
 ### What has changed?
 
 #### Log fields are now grouped by entity
-Log fields are now grouped under the entity they belong to, so each thing has one name. A flow run id is `flowRun.id` (it used to appear as `runId`, `flowRunId`, or a bare `id`), and other ids follow the same shape (`flow.id`, `project.id`, `job.id`, …). Errors are logged under `error`. This only changes how logs look — nothing about the API, database, or flows changes.
+Log fields are now grouped under the entity they belong to, so each thing has one name. A flow run id is `execution.id` (it used to appear as `runId`, `executionId`, or a bare `id`), and other ids follow the same shape (`flow.id`, `project.id`, `job.id`, …). Errors are logged under `error`. This only changes how logs look — nothing about the API, database, or flows changes.
 
 #### Google SSO is configured via environment variables only
 "Sign in with Google" can no longer be enabled from the SSO page in the admin panel — that setting has been removed. It is now controlled solely by the `FEMA_GOOGLE_CLIENT_ID` and `FEMA_GOOGLE_CLIENT_SECRET` environment variables. The button only appears when both are set (and the platform's Google auth toggle is enabled).
@@ -144,7 +144,7 @@ The up-front install is no longer needed because connector installs are now fast
 
 ### Do you need to take action?
 - Only if you set up Google SSO from the admin panel. Move your Google OAuth2 credentials into the `FEMA_GOOGLE_CLIENT_ID` and `FEMA_GOOGLE_CLIENT_SECRET` environment variables.
-- Only if you build dashboards or alerts on FEMA Integration Platform logs. Update them to the new grouped names, e.g. `runId` → `flowRun.id` and `err` → `error`.
+- Only if you build dashboards or alerts on FEMA Integration Platform logs. Update them to the new grouped names, e.g. `runId` → `execution.id` and `err` → `error`.
 - Only if you maintain **custom connectors** (in a fork or built outside the repo). Migrate each one to the bundle model — run `npm run cli -- connectors migrate <connector-name>` (or `--all`), or follow the [migration guide](/build-connectors/misc/migrate-connectors-to-bundles). Connectors that still import `@fema/shared` or depend on the now-unpublished libraries will fail to build.
 - Only if your deployment sets `FEMA_PRE_WARM_CACHE`. Remove it from your environment — it is no longer read. Nothing else is required.
 
@@ -173,12 +173,12 @@ Previously if your worker was on a different version of your app server, the wor
 ### What has changed?
 
 #### Flow Run Log Size Enforcement
-This is an important behavior change in how flow run logs are stored and capped, but **no action is required** — the existing default (`FEMA_MAX_FLOW_RUN_LOG_SIZE_MB=50`) is preserved.
+This is an important behavior change in how flow run logs are stored and capped, but **no action is required** — the existing default (`FEMA_MAX_EXECUTION_LOG_SIZE_MB=50`) is preserved.
 
-- Large step outputs are now offloaded to object storage instead of sitting inline in worker memory, controlled by the new `FEMA_FLOW_RUN_LOG_SLICE_THRESHOLD_KB` env var (default `32`).
-- Large step input values are replaced with a `(truncated, original size <N>)` placeholder in the log via the new `FEMA_FLOW_RUN_LOG_INPUT_TRUNCATE_THRESHOLD_KB` env var (default `2`). The step still receives the full value at runtime.
-- Runs whose combined step inputs and outputs exceed `FEMA_MAX_FLOW_RUN_LOG_SIZE_MB` now terminate with the new `LOG_SIZE_EXCEEDED` status instead of silently trimming inputs. Offloaded outputs still count their original size against the cap.
-- See [Limits → Files & flow run logs](/install/reference/limits#files-flow-run-logs) for the full behavior, environment variables, and defaults.
+- Large step outputs are now offloaded to object storage instead of sitting inline in worker memory, controlled by the new `FEMA_EXECUTION_LOG_SLICE_THRESHOLD_KB` env var (default `32`).
+- Large step input values are replaced with a `(truncated, original size <N>)` placeholder in the log via the new `FEMA_EXECUTION_LOG_INPUT_TRUNCATE_THRESHOLD_KB` env var (default `2`). The step still receives the full value at runtime.
+- Runs whose combined step inputs and outputs exceed `FEMA_MAX_EXECUTION_LOG_SIZE_MB` now terminate with the new `LOG_SIZE_EXCEEDED` status instead of silently trimming inputs. Offloaded outputs still count their original size against the cap.
+- See [Limits → Files & flow run logs](/install/reference/limits#files-execution-logs) for the full behavior, environment variables, and defaults.
 - Embedding now requires setting allowed embed origins, which means only the domains listed in the field can embed the app (wildcards are supported). There is also a new env variable `FEMA_ALLOWED_EMBED_ORIGINS` for setting pre-allowed origins, and a new endpoint for adding these origins — [check docs](/endpoints/embedding/add-allowed-embed-origins).
 - "Sign in with Google" can no longer be enabled from the SSO page in the admin panel — that setting has been removed. It is now controlled solely by the `FEMA_GOOGLE_CLIENT_ID` and `FEMA_GOOGLE_CLIENT_SECRET` environment variables. The button only appears when both are set (and the platform's Google auth toggle is enabled).
 
@@ -266,13 +266,13 @@ When creating a project now, the platform owner email doesn't automatically get 
 
 - For Embed Plan users: the "Use a Template" dialog no longer appears when clicking the "New Flow" button.
 - The `/flow-templates` API endpoints have been removed and replaced by `/templates`.
-- Log size configuration has changed: `FEMA_MAX_FILE_SIZE_MB` no longer controls flow run logs. Use `FEMA_MAX_FLOW_RUN_LOG_SIZE_MB` instead.
+- Log size configuration has changed: `FEMA_MAX_FILE_SIZE_MB` no longer controls flow run logs. Use `FEMA_MAX_EXECUTION_LOG_SIZE_MB` instead.
 
 ### Do you need to take action?
 
 - If you are on the embed plan, update your implementation to redirect users to the `/templates` page.
 - Review the new endpoints documentation: [Templates API Schema](https://github.com/lokiworks/fema-ipaas/docs/endpoints/templates/schema).
-- If you use a custom value for `FEMA_MAX_FILE_SIZE_MB`, be sure to also set `FEMA_MAX_FLOW_RUN_LOG_SIZE_MB` accordingly.
+- If you use a custom value for `FEMA_MAX_FILE_SIZE_MB`, be sure to also set `FEMA_MAX_EXECUTION_LOG_SIZE_MB` accordingly.
 
 ## 0.75.0
 

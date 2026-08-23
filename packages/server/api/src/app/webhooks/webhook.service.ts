@@ -1,10 +1,10 @@
 import { apId, assertNotNullOrUndefined, FlowVersionId, isNil, PlatformId, WorkspaceId } from '@fema/core-utils'
 import { wideEvent } from '@fema/server-utils'
-import { EngineHttpResponse, EventPayload, ExecutionType, Flow, FlowRun, FlowStatus, LATEST_JOB_DATA_SCHEMA_VERSION, RunEnvironment, StreamStepProgress, TriggerPayload, WorkerJobType } from '@fema/shared'
+import { EngineHttpResponse, EventPayload, Execution, ExecutionType, Flow, FlowStatus, LATEST_JOB_DATA_SCHEMA_VERSION, RunEnvironment, StreamStepProgress, TriggerPayload, WorkerJobType } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
+import { executionService } from '../flows/execution/execution-service'
 import { flowExecutionCache } from '../flows/flow/flow-execution-cache'
-import { flowRunService } from '../flows/flow-run/flow-run-service'
 import { flowVersionRepo } from '../flows/flow-version/flow-version.service'
 import { pinoLogging } from '../helper/logger'
 import { rejectedPromiseHandler } from '../helper/promise-handler'
@@ -275,7 +275,7 @@ async function handleSync(params: SyncWebhookParams): Promise<EngineHttpResponse
     if (creditsExhausted) {
         const flowVersion = await flowVersionRepo().findOneBy({ id: flowVersionIdToRun })
         assertNotNullOrUndefined(flowVersion, 'flowVersion')
-        const quotaExceededRun = await flowRunService(logger).createQuotaExceededRun({
+        const quotaExceededRun = await executionService(logger).createQuotaExceededRun({
             flowVersion,
             payload,
             workspaceId,
@@ -284,7 +284,7 @@ async function handleSync(params: SyncWebhookParams): Promise<EngineHttpResponse
             failParentOnFailure,
             shouldExecuteTriggerOnRetry: true,
         })
-        wideEvent.set({ flowRun: { id: quotaExceededRun.id }, webhook: { quotaExceeded: true } })
+        wideEvent.set({ execution: { id: quotaExceededRun.id }, webhook: { quotaExceeded: true } })
         return {
             status: StatusCodes.PAYMENT_REQUIRED,
             body: {},
@@ -292,7 +292,7 @@ async function handleSync(params: SyncWebhookParams): Promise<EngineHttpResponse
         }
     }
 
-    const createdRun = await flowRunService(logger).start({
+    const createdRun = await executionService(logger).start({
         platformId,
         environment: runEnvironment,
         flowId: flow.id,
@@ -308,7 +308,7 @@ async function handleSync(params: SyncWebhookParams): Promise<EngineHttpResponse
         failParentOnFailure,
     })
 
-    wideEvent.set({ flowRun: { id: createdRun.id } })
+    wideEvent.set({ execution: { id: createdRun.id } })
     params.onRunCreated?.(createdRun)
 
     const listenerResult = await engineResponseWatcher(logger).oneTimeListener<EngineHttpResponse>(webhookRequestId, true, timeoutMs ?? WEBHOOK_TIMEOUT_MS, {
@@ -347,7 +347,7 @@ type HandleWebhookParams = {
     logger: FastifyBaseLogger
     payload?: Record<string, unknown>
     execute: boolean
-    onRunCreated?: (run: FlowRun) => void
+    onRunCreated?: (run: Execution) => void
     parentRunId?: string
     failParentOnFailure: boolean
     timeoutMs?: number
@@ -380,7 +380,7 @@ type SyncWebhookParams = {
     webhookRequestId: string
     workerHandlerId: string
     flowVersionIdToRun: FlowVersionId
-    onRunCreated?: (run: FlowRun) => void
+    onRunCreated?: (run: Execution) => void
     parentRunId?: string
     failParentOnFailure: boolean
     timeoutMs?: number

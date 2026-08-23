@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { PlatformError, ErrorCode } from '@fema/core-utils';
-import { EngineResponseStatus, ExecutionType, FlowActionType, FlowRunStatus, FlowTriggerType, FlowVersionState, StreamStepProgress, RunEnvironment, WorkerJobType } from '@fema/shared';
+import { EngineResponseStatus, ExecutionType, FlowActionType, ExecutionStatus, FlowTriggerType, FlowVersionState, StreamStepProgress, RunEnvironment, WorkerJobType } from '@fema/shared';
 import type { ExecuteFlowJobData, FlowVersion } from '@fema/shared'
 
 vi.mock('../../../../src/lib/config/worker-settings', () => ({
@@ -166,7 +166,7 @@ describe('executeFlowJob', () => {
             }
 
             expect(ctx.apiClient.uploadRunLog).toHaveBeenCalledWith(
-                expect.objectContaining({ status: FlowRunStatus.INTERNAL_ERROR }),
+                expect.objectContaining({ status: ExecutionStatus.INTERNAL_ERROR }),
             )
         })
     })
@@ -183,7 +183,7 @@ describe('executeFlowJob', () => {
             expect(result.status).toBe(EngineResponseStatus.OK)
 
             expect(ctx.apiClient.uploadRunLog).toHaveBeenCalledWith(
-                expect.objectContaining({ status: FlowRunStatus.FAILED }),
+                expect.objectContaining({ status: ExecutionStatus.FAILED }),
             )
 
             // No sandbox work happens for a missing flow: provision returns early, run is never called.
@@ -200,7 +200,7 @@ describe('executeFlowJob', () => {
             expect(result.kind).toBe(JobResultKind.FIRE_AND_FORGET)
             expect(result.status).toBe(EngineResponseStatus.OK)
             expect(ctx.apiClient.uploadRunLog).toHaveBeenCalledWith(
-                expect.objectContaining({ status: FlowRunStatus.FAILED, failedStep }),
+                expect.objectContaining({ status: ExecutionStatus.FAILED, failedStep }),
             )
             expect(ctx.runtime.execute).not.toHaveBeenCalled()
         })

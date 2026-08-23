@@ -1,4 +1,4 @@
-import { FlowRunStatus } from '@fema/shared'
+import { ExecutionStatus } from '@fema/shared'
 import { FlowExecutorContext } from '../../src/lib/handler/context/flow-execution-context'
 import { flowExecutor } from '../../src/lib/handler/flow-executor'
 import { buildConnectorAction, generateMockEngineConstants } from './test-helper'
@@ -38,7 +38,7 @@ describe('flow with response', () => {
             }), executionState: FlowExecutorContext.empty(), constants: generateMockEngineConstants(),
         })
         expect(result.verdict).toStrictEqual({
-            status: FlowRunStatus.SUCCEEDED,
+            status: ExecutionStatus.SUCCEEDED,
             stopResponse: response,
         })
         expect(result.steps.http.output).toEqual(response)

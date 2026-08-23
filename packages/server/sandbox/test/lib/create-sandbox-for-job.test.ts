@@ -43,7 +43,7 @@ type Settings = {
     LOG_PRETTY: string
     ENVIRONMENT: string
     APP_WEBHOOK_SECRETS: string
-    MAX_FLOW_RUN_LOG_SIZE_MB: number
+    MAX_EXECUTION_LOG_SIZE_MB: number
     MAX_FILE_SIZE_MB: number
     SANDBOX_MEMORY_LIMIT: string
     SANDBOX_PROPAGATED_ENV_VARS: string[]
@@ -71,7 +71,7 @@ function buildSettings(overrides: Partial<Settings> = {}): Settings {
         LOG_PRETTY: 'false',
         ENVIRONMENT: ApEnvironment.PRODUCTION,
         APP_WEBHOOK_SECRETS: '{}',
-        MAX_FLOW_RUN_LOG_SIZE_MB: 10,
+        MAX_EXECUTION_LOG_SIZE_MB: 10,
         MAX_FILE_SIZE_MB: 10,
         SANDBOX_MEMORY_LIMIT: '1048576',
         SANDBOX_PROPAGATED_ENV_VARS: [],
@@ -151,7 +151,7 @@ describe('createSandboxForJob', () => {
         it('emits all required keys including NODE_PATH (STRICT mirrors settings)', () => {
             const settings = buildSettings({
                 EXECUTION_MODE: ExecutionMode.SANDBOX_PROCESS,
-                MAX_FLOW_RUN_LOG_SIZE_MB: 25,
+                MAX_EXECUTION_LOG_SIZE_MB: 25,
                 MAX_FILE_SIZE_MB: 50,
                 NETWORK_MODE: NetworkMode.STRICT,
             })
@@ -161,7 +161,7 @@ describe('createSandboxForJob', () => {
             expect(env).toMatchObject({
                 HOME: '/tmp/',
                 FEMA_EXECUTION_MODE: ExecutionMode.SANDBOX_PROCESS,
-                FEMA_MAX_FLOW_RUN_LOG_SIZE_MB: '25',
+                FEMA_MAX_EXECUTION_LOG_SIZE_MB: '25',
                 FEMA_MAX_FILE_SIZE_MB: '50',
                 NODE_PATH: '/usr/src/node_modules',
                 FEMA_NETWORK_MODE: NetworkMode.STRICT,

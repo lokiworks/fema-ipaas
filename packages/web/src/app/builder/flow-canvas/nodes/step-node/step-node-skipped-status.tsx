@@ -7,7 +7,7 @@ import {
 import { t } from 'i18next';
 import { RouteOff } from 'lucide-react';
 
-import { flowRunUtils } from '@/features/flow-runs';
+import { executionUtils } from '@/features/executions';
 
 import { useBuilderStateContext } from '../../../builder-hooks';
 import { flowCanvasUtils } from '../../utils/flow-canvas-utils';
@@ -35,7 +35,7 @@ const ApStepNodeSkippedStatus = ({ stepName }: { stepName: string }) => {
   return (
     <StepNodeBadgeContainer>
       <div
-        className={flowRunUtils.getStatusContainerClassName('default', true)}
+        className={executionUtils.getStatusContainerClassName('default', true)}
       >
         <RouteOff className="size-3" />
         <div>{t('Skipped')}</div>

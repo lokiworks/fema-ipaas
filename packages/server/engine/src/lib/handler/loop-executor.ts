@@ -1,6 +1,6 @@
 import { LATEST_CONTEXT_VERSION } from '@fema/connector-sdk'
 import { isNil } from '@fema/core-utils'
-import { FlowRunStatus, LoopOnItemsAction, LoopStepOutput } from '@fema/shared'
+import { ExecutionStatus, LoopOnItemsAction, LoopStepOutput } from '@fema/shared'
 import { utils } from '../utils'
 import { BaseExecutor, failStep } from './base-executor'
 import { flowExecutor } from './flow-executor'
@@ -74,7 +74,7 @@ export const loopExecutor: BaseExecutor<LoopOnItemsAction> = {
             newExecutionContext = newExecutionContext.setCurrentPath(newExecutionContext.currentPath.removeLast())
             stepOutput = newExecutionContext.getLoopStepOutput({ stepName: action.name }) ?? stepOutput
 
-            if (newExecutionContext.verdict.status !== FlowRunStatus.RUNNING) {
+            if (newExecutionContext.verdict.status !== ExecutionStatus.RUNNING) {
                 return newExecutionContext.upsertStep(action.name, stepOutput.setDuration(performance.now() - stepStartTime))
             }
 

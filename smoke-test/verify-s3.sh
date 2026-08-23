@@ -68,7 +68,7 @@ echo ""
 echo "--- Flow run read-back (S3 read path) ---"
 RUN_ID=""
 for i in $(seq 1 30); do
-  RUN_ID=$(curl -s "$API_URL/flow-runs?flowId=$FLOW_ID&projectId=$PROJECT_ID&limit=1" \
+  RUN_ID=$(curl -s "$API_URL/executions?flowId=$FLOW_ID&projectId=$PROJECT_ID&limit=1" \
     -H "$AUTH" 2>/dev/null | jq -r '.data[0].id // empty' 2>/dev/null || echo "")
   if [ -n "$RUN_ID" ]; then
     break
@@ -86,7 +86,7 @@ else
   RUN=""
   RUN_STATUS=""
   for i in $(seq 1 30); do
-    RUN=$(curl -s --fail-with-body "$API_URL/flow-runs/$RUN_ID" -H "$AUTH")
+    RUN=$(curl -s --fail-with-body "$API_URL/executions/$RUN_ID" -H "$AUTH")
     RUN_STATUS=$(echo "$RUN" | jq -r '.status // empty')
     if [ "$RUN_STATUS" != "RUNNING" ] && [ "$RUN_STATUS" != "PAUSED" ] && [ -n "$RUN_STATUS" ]; then
       break

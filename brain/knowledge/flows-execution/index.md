@@ -15,7 +15,7 @@ Versioned directed graph (trigger + actions) stored as JSONB. All 26 modificatio
 
 ### Flow Runs
 One execution instance per flow version, trigger → terminal state. 12 statuses (3 non-terminal: QUEUED/RUNNING/PAUSED; 9 terminal incl. FAILED/TIMEOUT/QUOTA_EXCEEDED/MEMORY_LIMIT_EXCEEDED).
-- Logs: full execution context stored as zstd-compressed File (`FLOW_RUN_LOG`); step outputs >32KB offloaded to `FLOW_RUN_LOG_SLICE` files (`LogSliceRef`). State backed up every 15s for crash recovery.
+- Logs: full execution context stored as zstd-compressed File (`EXECUTION_LOG`); step outputs >32KB offloaded to `EXECUTION_LOG_SLICE` files (`LogSliceRef`). State backed up every 15s for crash recovery.
 - Retry: FROM_FAILED_STEP (resume, keep prior outputs) or ON_LATEST_VERSION (fresh run). Failed-trigger is a special case — restarts with `executeTrigger: true`. Only terminal states within `EXECUTION_DATA_RETENTION_DAYS`.
 - `failedStep` JSONB snapshot powers filtered retries, error search, failure emails, jump-to-failed-step.
 - Paid editions emit AI usage billing (`ai_usage_per_run`) on terminal runs.

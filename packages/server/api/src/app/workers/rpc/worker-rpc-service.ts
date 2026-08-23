@@ -7,10 +7,10 @@ import { redisConnections } from '../../database/redis-connections'
 import { fileService, getLocationForFile } from '../../file/file.service'
 import { s3Helper } from '../../file/s3-helper'
 import { signedFileTransport } from '../../file/signed-file-transport'
+import { engineRunCallbackService } from '../../flows/execution/engine-run-callback-service'
+import { executionService } from '../../flows/execution/execution-service'
 import { flowSideEffects } from '../../flows/flow/flow-service-side-effects'
 import { flowService } from '../../flows/flow/flow.service'
-import { engineRunCallbackService } from '../../flows/flow-run/engine-run-callback-service'
-import { flowRunService } from '../../flows/flow-run/flow-run-service'
 import { flowVersionService } from '../../flows/flow-version/flow-version.service'
 import { preWarmWorkersService } from '../../flows/pre-warm-workers'
 import { rejectedPromiseHandler } from '../../helper/promise-handler'
@@ -103,10 +103,10 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
 
             const creditsExhausted = false
 
-            const flowRuns = await Promise.all(
+            const executions = await Promise.all(
                 filterPayloads.map((payload) =>
                     creditsExhausted
-                        ? flowRunService(log).createQuotaExceededRun({
+                        ? executionService(log).createQuotaExceededRun({
                             flowVersion,
                             payload,
                             workspaceId,
@@ -115,7 +115,7 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
                             failParentOnFailure,
                             shouldExecuteTriggerOnRetry: false,
                         })
-                        : flowRunService(log).start({
+                        : executionService(log).start({
                             flowId: flowVersion.flowId,
                             environment,
                             flowVersionId,
@@ -132,7 +132,7 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
                         }),
                 ),
             )
-            return flowRuns
+            return executions
         },
 
         async savePayloads(input) {

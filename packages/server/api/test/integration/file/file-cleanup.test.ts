@@ -26,7 +26,7 @@ const saveLogFile = async ({ workspaceId, platformId, created }: { workspaceId: 
         workspaceId,
         platformId,
         created,
-        type: FileType.FLOW_RUN_LOG,
+        type: FileType.EXECUTION_LOG,
         location: FileLocation.DB,
         compression: FileCompression.NONE,
     })
@@ -66,7 +66,7 @@ describe('fileService.deleteStaleBulk', () => {
         const orphanStale = await saveLogFile({ workspaceId: null, platformId: mockPlatform.id, created: daysAgo(40) })
         const orphanFresh = await saveLogFile({ workspaceId: null, platformId: mockPlatform.id, created: daysAgo(10) })
 
-        await fileService(app!.log).deleteStaleBulk([FileType.FLOW_RUN_LOG])
+        await fileService(app!.log).deleteStaleBulk([FileType.EXECUTION_LOG])
 
         const allIds = [
             defaultWorkspaceStale,

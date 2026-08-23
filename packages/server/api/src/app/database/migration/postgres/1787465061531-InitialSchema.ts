@@ -155,7 +155,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             CREATE INDEX "idx_flow_version_updated_by" ON "flow_version" ("updatedBy")
         `)
         await queryRunner.query(`
-            CREATE TABLE "flow_run" (
+            CREATE TABLE "execution" (
                 "id" character varying(21) NOT NULL,
                 "created" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
                 "updated" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -181,7 +181,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             )
         `)
         await queryRunner.query(`
-            CREATE INDEX "idx_run_workspace_id_environment_flow_id_status_created_archived_" ON "flow_run" (
+            CREATE INDEX "idx_run_workspace_id_environment_flow_id_status_created_archived_" ON "execution" (
                 "workspaceId",
                 "environment",
                 "flowId",
@@ -191,7 +191,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             )
         `)
         await queryRunner.query(`
-            CREATE INDEX "idx_run_workspace_id_environment_status_created_archived_at" ON "flow_run" (
+            CREATE INDEX "idx_run_workspace_id_environment_status_created_archived_at" ON "execution" (
                 "workspaceId",
                 "environment",
                 "status",
@@ -200,7 +200,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             )
         `)
         await queryRunner.query(`
-            CREATE INDEX "idx_run_workspace_id_environment_created_archived_at" ON "flow_run" (
+            CREATE INDEX "idx_run_workspace_id_environment_created_archived_at" ON "execution" (
                 "workspaceId",
                 "environment",
                 "created",
@@ -208,7 +208,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             )
         `)
         await queryRunner.query(`
-            CREATE INDEX "idx_run_workspace_id_environment_created_status_archived_at" ON "flow_run" (
+            CREATE INDEX "idx_run_workspace_id_environment_created_status_archived_at" ON "execution" (
                 "workspaceId",
                 "environment",
                 "created",
@@ -217,7 +217,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             )
         `)
         await queryRunner.query(`
-            CREATE INDEX "idx_run_workspace_id_environment_flow_id_created_archived_at" ON "flow_run" (
+            CREATE INDEX "idx_run_workspace_id_environment_flow_id_created_archived_at" ON "execution" (
                 "workspaceId",
                 "environment",
                 "flowId",
@@ -226,19 +226,19 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             )
         `)
         await queryRunner.query(`
-            CREATE INDEX "idx_run_flow_id" ON "flow_run" ("flowId")
+            CREATE INDEX "idx_run_flow_id" ON "execution" ("flowId")
         `)
         await queryRunner.query(`
-            CREATE INDEX "idx_run_logs_file_id" ON "flow_run" ("logsFileId")
+            CREATE INDEX "idx_run_logs_file_id" ON "execution" ("logsFileId")
         `)
         await queryRunner.query(`
-            CREATE INDEX "idx_run_parent_run_id" ON "flow_run" ("parentRunId")
+            CREATE INDEX "idx_run_parent_run_id" ON "execution" ("parentRunId")
         `)
         await queryRunner.query(`
-            CREATE INDEX "idx_run_flow_version_id" ON "flow_run" ("flowVersionId")
+            CREATE INDEX "idx_run_flow_version_id" ON "execution" ("flowVersionId")
         `)
         await queryRunner.query(`
-            CREATE INDEX "idx_run_triggered_by" ON "flow_run" ("triggeredBy")
+            CREATE INDEX "idx_run_triggered_by" ON "execution" ("triggeredBy")
         `)
         await queryRunner.query(`
             CREATE TABLE "workspace" (
@@ -523,7 +523,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
                 "id" character varying(21) NOT NULL,
                 "created" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
                 "updated" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-                "flowRunId" character varying(21) NOT NULL,
+                "executionId" character varying(21) NOT NULL,
                 "workspaceId" character varying(21) NOT NULL,
                 "type" character varying NOT NULL,
                 "status" character varying NOT NULL,
@@ -538,7 +538,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             )
         `)
         await queryRunner.query(`
-            CREATE UNIQUE INDEX "idx_waitpoint_flow_run_id_step_name" ON "waitpoint" ("flowRunId", "stepName")
+            CREATE UNIQUE INDEX "idx_waitpoint_execution_id_step_name" ON "waitpoint" ("executionId", "stepName")
         `)
         await queryRunner.query(`
             CREATE INDEX "idx_waitpoint_workspace_id" ON "waitpoint" ("workspaceId")
@@ -635,25 +635,25 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             ADD CONSTRAINT "fk_flow_version_flow" FOREIGN KEY ("flowId") REFERENCES "flow"("id") ON DELETE CASCADE ON UPDATE NO ACTION
         `)
         await queryRunner.query(`
-            ALTER TABLE "flow_run"
-            ADD CONSTRAINT "fk_flow_run_triggered_by_user_id" FOREIGN KEY ("triggeredBy") REFERENCES "user"("id") ON DELETE
+            ALTER TABLE "execution"
+            ADD CONSTRAINT "fk_execution_triggered_by_user_id" FOREIGN KEY ("triggeredBy") REFERENCES "user"("id") ON DELETE
             SET NULL ON UPDATE NO ACTION
         `)
         await queryRunner.query(`
-            ALTER TABLE "flow_run"
-            ADD CONSTRAINT "fk_flow_run_workspace_id" FOREIGN KEY ("workspaceId") REFERENCES "workspace"("id") ON DELETE CASCADE ON UPDATE NO ACTION
+            ALTER TABLE "execution"
+            ADD CONSTRAINT "fk_execution_workspace_id" FOREIGN KEY ("workspaceId") REFERENCES "workspace"("id") ON DELETE CASCADE ON UPDATE NO ACTION
         `)
         await queryRunner.query(`
-            ALTER TABLE "flow_run"
-            ADD CONSTRAINT "fk_flow_run_flow_id" FOREIGN KEY ("flowId") REFERENCES "flow"("id") ON DELETE CASCADE ON UPDATE NO ACTION
+            ALTER TABLE "execution"
+            ADD CONSTRAINT "fk_execution_flow_id" FOREIGN KEY ("flowId") REFERENCES "flow"("id") ON DELETE CASCADE ON UPDATE NO ACTION
         `)
         await queryRunner.query(`
-            ALTER TABLE "flow_run"
-            ADD CONSTRAINT "fk_flow_run_flow_version_id" FOREIGN KEY ("flowVersionId") REFERENCES "flow_version"("id") ON DELETE CASCADE ON UPDATE NO ACTION
+            ALTER TABLE "execution"
+            ADD CONSTRAINT "fk_execution_flow_version_id" FOREIGN KEY ("flowVersionId") REFERENCES "flow_version"("id") ON DELETE CASCADE ON UPDATE NO ACTION
         `)
         await queryRunner.query(`
-            ALTER TABLE "flow_run"
-            ADD CONSTRAINT "fk_flow_run_logs_file_id" FOREIGN KEY ("logsFileId") REFERENCES "file"("id") ON DELETE
+            ALTER TABLE "execution"
+            ADD CONSTRAINT "fk_execution_logs_file_id" FOREIGN KEY ("logsFileId") REFERENCES "file"("id") ON DELETE
             SET NULL ON UPDATE NO ACTION
         `)
         await queryRunner.query(`
@@ -763,19 +763,19 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             ALTER TABLE "workspace" DROP CONSTRAINT "fk_workspace_owner_id"
         `)
         await queryRunner.query(`
-            ALTER TABLE "flow_run" DROP CONSTRAINT "fk_flow_run_logs_file_id"
+            ALTER TABLE "execution" DROP CONSTRAINT "fk_execution_logs_file_id"
         `)
         await queryRunner.query(`
-            ALTER TABLE "flow_run" DROP CONSTRAINT "fk_flow_run_flow_version_id"
+            ALTER TABLE "execution" DROP CONSTRAINT "fk_execution_flow_version_id"
         `)
         await queryRunner.query(`
-            ALTER TABLE "flow_run" DROP CONSTRAINT "fk_flow_run_flow_id"
+            ALTER TABLE "execution" DROP CONSTRAINT "fk_execution_flow_id"
         `)
         await queryRunner.query(`
-            ALTER TABLE "flow_run" DROP CONSTRAINT "fk_flow_run_workspace_id"
+            ALTER TABLE "execution" DROP CONSTRAINT "fk_execution_workspace_id"
         `)
         await queryRunner.query(`
-            ALTER TABLE "flow_run" DROP CONSTRAINT "fk_flow_run_triggered_by_user_id"
+            ALTER TABLE "execution" DROP CONSTRAINT "fk_execution_triggered_by_user_id"
         `)
         await queryRunner.query(`
             ALTER TABLE "flow_version" DROP CONSTRAINT "fk_flow_version_flow"
@@ -829,7 +829,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             DROP INDEX "public"."idx_waitpoint_workspace_id"
         `)
         await queryRunner.query(`
-            DROP INDEX "public"."idx_waitpoint_flow_run_id_step_name"
+            DROP INDEX "public"."idx_waitpoint_execution_id_step_name"
         `)
         await queryRunner.query(`
             DROP TABLE "waitpoint"
@@ -967,7 +967,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             DROP INDEX "public"."idx_run_workspace_id_environment_flow_id_status_created_archived_"
         `)
         await queryRunner.query(`
-            DROP TABLE "flow_run"
+            DROP TABLE "execution"
         `)
         await queryRunner.query(`
             DROP INDEX "public"."idx_flow_version_updated_by"

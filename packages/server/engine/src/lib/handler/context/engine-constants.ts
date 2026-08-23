@@ -15,7 +15,7 @@ type EngineConstantsParams = {
     flowVersionId: string
     flowVersionState: FlowVersionState
     triggerConnectorName: string
-    flowRunId: string
+    executionId: string
     publicApiUrl: string
     internalApiUrl: string
     retryConstants: RetryConstants
@@ -56,7 +56,7 @@ export class EngineConstants {
     public readonly flowVersionId: string
     public readonly flowVersionState: FlowVersionState
     public readonly triggerConnectorName: string
-    public readonly flowRunId: string
+    public readonly executionId: string
     public readonly publicApiUrl: string
     public readonly internalApiUrl: string
     public readonly retryConstants: RetryConstants
@@ -100,7 +100,7 @@ export class EngineConstants {
         this.flowId = params.flowId
         this.flowVersionId = params.flowVersionId
         this.flowVersionState = params.flowVersionState
-        this.flowRunId = params.flowRunId
+        this.executionId = params.executionId
         this.publicApiUrl = params.publicApiUrl
         this.internalApiUrl = params.internalApiUrl
         this.retryConstants = params.retryConstants
@@ -124,7 +124,7 @@ export class EngineConstants {
         return new EngineConstants({
             ...sharedFields(input),
             ...flowFields(input.flowVersion),
-            flowRunId: input.flowRunId,
+            executionId: input.executionId,
             internalApiUrl: input.internalApiUrl,
             streamStepProgress: input.streamStepProgress,
             workerHandlerId: input.workerHandlerId ?? null,
@@ -141,7 +141,7 @@ export class EngineConstants {
             ...sharedFields(input),
             ...flowFields(undefined),
             flowVersionId: input.flowVersionId ?? DEFAULT_MCP_DATA.flowVersionId,
-            flowRunId: DEFAULT_MCP_DATA.flowRunId,
+            executionId: DEFAULT_MCP_DATA.executionId,
             actionRunMode: true,
         })
     }
@@ -152,7 +152,7 @@ export class EngineConstants {
             ...sharedFields(input),
             ...flow,
             triggerConnectorName: flow.triggerConnectorName ?? DEFAULT_MCP_DATA.triggerConnectorName,
-            flowRunId: DEFAULT_EXECUTE_PROPERTY,
+            executionId: DEFAULT_EXECUTE_PROPERTY,
         })
     }
 
@@ -160,7 +160,7 @@ export class EngineConstants {
         return new EngineConstants({
             ...sharedFields(input),
             ...flowFields(input.flowVersion),
-            flowRunId: DEFAULT_TRIGGER_EXECUTION,
+            executionId: DEFAULT_TRIGGER_EXECUTION,
         })
     }
     public getPropsResolver({ contextVersion, connectorName }: GetPropsResolverParams): PropsResolver {

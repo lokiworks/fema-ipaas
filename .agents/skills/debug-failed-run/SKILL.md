@@ -7,12 +7,12 @@ description: "Debug a failed FEMA Integration Platform flow run end-to-end: give
 
 Investigate why a flow run failed by combining two sources of truth:
 
-1. **The DevOps debug script** — live BullMQ job + Postgres (`flow_run`, `flow_version`, `flow`) + the run log file, joined into one JSON report. Run over SSH.
+1. **The DevOps debug script** — live BullMQ job + Postgres (`execution`, `flow_version`, `flow`) + the run log file, joined into one JSON report. Run over SSH.
 2. **ClickHouse logs** — the centralized server/worker logs, queried via the ClickStack MCP. These fill in what the script can't: surrounding log lines, infra errors, and the decompressed run body when the script's host can't unzip it (see Node note below).
 
 ## Inputs
 
-- **`id`** (required) — the flow run id. For flow executions the BullMQ `jobId === flowRun.id`, so this works for both `--run` and `--job`.
+- **`id`** (required) — the flow run id. For flow executions the BullMQ `jobId === execution.id`, so this works for both `--run` and `--job`.
 - **`host`** (required) — SSH target for the DevOps box, e.g. `user@host`. Always ask the user for this (or read it from their local SSH config / `~/.ssh/config` alias) — never assume one. The examples below use `<host>` as a placeholder; substitute the real target at run time.
 - **`--queue`** (optional) — BullMQ queue name. Default `workerJobs`. Dedicated worker-group jobs may live in `platform-<workerGroupId>-jobs`.
 
@@ -31,7 +31,7 @@ stdout is a single-line JSON report (pipe-friendly); all progress chatter goes t
 
 - `summary` / `diagnostics` — human-readable verdict and caveats.
 - `job.failedReason` + `job.stacktrace` — the BullMQ failure. `"Internal error"` is a generic wrapper; the real cause is in the stacktrace.
-- `flowRun.status` and the failing step (`steps[].isFailedStep`, `runLogs.steps[].errorMessage`).
+- `execution.status` and the failing step (`steps[].isFailedStep`, `runLogs.steps[].errorMessage`).
 - `flow` / `flowVersion` — which flow/version/connectors ran; `flowVersion.connectionIds` for connection issues.
 - `triggerPayload` — what triggered the run.
 

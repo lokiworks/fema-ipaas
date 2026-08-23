@@ -4,9 +4,9 @@ import {
   flowStructureUtil,
   FlowActionType,
   FlowTriggerType,
-  isFlowRunStateTerminal,
-  FlowRun,
-  FlowRunStatus,
+  isExecutionStateTerminal,
+  Execution,
+  ExecutionStatus,
   ApFlagId,
   LogSliceRef,
   StepOutputType,
@@ -23,7 +23,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { connectorsHooks } from '@/features/connectors';
-import { flowRunUtils } from '@/features/flow-runs';
+import { executionUtils } from '@/features/executions';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { formatUtils } from '@/lib/format-utils';
 
@@ -67,7 +67,7 @@ export const FlowStepInputOutput = () => {
       : requestedTab;
   const selectedStepOutput = useMemo(() => {
     return run && selectedStep && run.steps
-      ? flowRunUtils.extractStepOutput(
+      ? executionUtils.extractStepOutput(
           selectedStep.name,
           loopsIndexes,
           run.steps,
@@ -107,7 +107,7 @@ export const FlowStepInputOutput = () => {
   if (!run) {
     return <></>;
   }
-  const isRunDone = isFlowRunStateTerminal({
+  const isRunDone = isExecutionStateTerminal({
     status: run.status,
     ignoreInternalError: true,
   });
@@ -116,7 +116,7 @@ export const FlowStepInputOutput = () => {
   );
 
   if (
-    run.status === FlowRunStatus.INTERNAL_ERROR &&
+    run.status === ExecutionStatus.INTERNAL_ERROR &&
     !isNil(run.internalError) &&
     isNil(selectedStepOutput)
   ) {
@@ -125,15 +125,15 @@ export const FlowStepInputOutput = () => {
 
   if (
     !isRunDone &&
-    run.status !== FlowRunStatus.PAUSED &&
-    run.status !== FlowRunStatus.INTERNAL_ERROR &&
+    run.status !== ExecutionStatus.PAUSED &&
+    run.status !== ExecutionStatus.INTERNAL_ERROR &&
     isNil(selectedStepOutput)
   ) {
     return <StepOutputSkeleton className="p-4" />;
   }
 
   const message =
-    run.status === FlowRunStatus.INTERNAL_ERROR && isNil(selectedStepOutput)
+    run.status === ExecutionStatus.INTERNAL_ERROR && isNil(selectedStepOutput)
       ? t(
           'There are no logs captured for this run, because of an internal error, please contact support.',
         )
@@ -377,12 +377,12 @@ const SlicedOutputDownload = ({
 );
 
 function handleRunFailureOrEmptyLog(
-  run: FlowRun | null,
+  run: Execution | null,
   retentionDays: number | null,
 ) {
   if (
     isNil(run) ||
-    !isFlowRunStateTerminal({ status: run.status, ignoreInternalError: true })
+    !isExecutionStateTerminal({ status: run.status, ignoreInternalError: true })
   ) {
     return null;
   }

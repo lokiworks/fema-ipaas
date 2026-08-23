@@ -1,6 +1,6 @@
 import { AIProviderName, apId, assertNotNullOrUndefined, WorkspaceRole, RoleType } from '@fema/core-utils'
 import { LATEST_CONTEXT_VERSION, ConnectorMetadata } from '@fema/connector-sdk'
-import { AIProvider, Connection, ConnectionScope, ConnectionStatus, ConnectionType, ApplicationEvent, ApplicationEventName, ColorName, File, FileCompression, FileLocation, FileType, Flow, FlowOperationStatus, FlowRun, FlowRunStatus, FlowStatus, FlowTriggerType, FlowVersion, FlowVersionState, Folder, InvitationStatus, InvitationType, LATEST_FLOW_SCHEMA_VERSION, OtpModel, OtpState, OtpType, PackageType, ConnectorsFilterType, ConnectorType, Platform, PlatformPlan, PlatformRole, Workspace, WorkspaceIcon, WorkspaceType, RunEnvironment, Template, TemplateStatus, TemplateType, User, UserIdentity, UserIdentityProvider, UserInvitation, UserStatus } from '@fema/shared'
+import { AIProvider, Connection, ConnectionScope, ConnectionStatus, ConnectionType, ApplicationEvent, ApplicationEventName, ColorName, File, FileCompression, FileLocation, FileType, Flow, FlowOperationStatus, Execution, ExecutionStatus, FlowStatus, FlowTriggerType, FlowVersion, FlowVersionState, Folder, InvitationStatus, InvitationType, LATEST_FLOW_SCHEMA_VERSION, OtpModel, OtpState, OtpType, PackageType, ConnectorsFilterType, ConnectorType, Platform, PlatformPlan, PlatformRole, Workspace, WorkspaceIcon, WorkspaceType, RunEnvironment, Template, TemplateStatus, TemplateType, User, UserIdentity, UserIdentityProvider, UserInvitation, UserStatus } from '@fema/shared'
 import { faker } from '@faker-js/faker'
 import bcrypt from 'bcrypt'
 import dayjs from 'dayjs'
@@ -380,25 +380,25 @@ export const createMockOtpWithCode = async (otp?: Partial<OtpModel>): Promise<Mo
     return { otp: createMockOtp({ ...otp, value, version: HASHED_OTP_VERSION }), code }
 }
 
-export const createMockFlowRun = (flowRun?: Partial<FlowRun>): FlowRun => {
+export const createMockExecution = (execution?: Partial<Execution>): Execution => {
     return {
-        id: flowRun?.id ?? apId(),
-        created: flowRun?.created ?? faker.date.recent().toISOString(),
-        updated: flowRun?.updated ?? faker.date.recent().toISOString(),
-        workspaceId: flowRun?.workspaceId ?? apId(),
-        flowId: flowRun?.flowId ?? apId(),
-        tags: flowRun?.tags ?? [],
+        id: execution?.id ?? apId(),
+        created: execution?.created ?? faker.date.recent().toISOString(),
+        updated: execution?.updated ?? faker.date.recent().toISOString(),
+        workspaceId: execution?.workspaceId ?? apId(),
+        flowId: execution?.flowId ?? apId(),
+        tags: execution?.tags ?? [],
         steps: {},
-        failParentOnFailure: flowRun?.failParentOnFailure ?? false,
-        parentRunId: flowRun?.parentRunId ?? undefined,
-        flowVersionId: flowRun?.flowVersionId ?? apId(),
-        flowVersion: flowRun?.flowVersion,
-        logsFileId: flowRun?.logsFileId ?? null,
-        status: flowRun?.status ?? faker.helpers.enumValue(FlowRunStatus),
-        startTime: flowRun?.startTime ?? faker.date.recent().toISOString(),
-        finishTime: flowRun?.finishTime ?? faker.date.recent().toISOString(),
+        failParentOnFailure: execution?.failParentOnFailure ?? false,
+        parentRunId: execution?.parentRunId ?? undefined,
+        flowVersionId: execution?.flowVersionId ?? apId(),
+        flowVersion: execution?.flowVersion,
+        logsFileId: execution?.logsFileId ?? null,
+        status: execution?.status ?? faker.helpers.enumValue(ExecutionStatus),
+        startTime: execution?.startTime ?? faker.date.recent().toISOString(),
+        finishTime: execution?.finishTime ?? faker.date.recent().toISOString(),
         environment:
-            flowRun?.environment ?? faker.helpers.enumValue(RunEnvironment),
+            execution?.environment ?? faker.helpers.enumValue(RunEnvironment),
     }
 }
 
@@ -525,7 +525,7 @@ type Solution = {
     table: Table
     connection: Connection<ConnectionType.SECRET_TEXT>
     flow: Flow
-    flowRun: FlowRun
+    execution: Execution
     flowVersion: FlowVersion
     cell: Cell
 }
@@ -538,7 +538,7 @@ export const createMockSolutionAndSave = async ({ workspaceId, platformId, userI
     const connection = createMockConnection({ workspaceIds: [workspaceId], platformId }, userId)
     const flow = createMockFlow({ workspaceId })
     const flowVersion = createMockFlowVersion({ flowId: flow.id })
-    const flowRun = createMockFlowRun({ workspaceId, flowId: flow.id, flowVersionId: flowVersion.id })
+    const execution = createMockExecution({ workspaceId, flowId: flow.id, flowVersionId: flowVersion.id })
     await databaseConnection().getRepository('table').save([table])
     await databaseConnection().getRepository('field').save([field])
     await databaseConnection().getRepository('record').save([record])
@@ -546,18 +546,18 @@ export const createMockSolutionAndSave = async ({ workspaceId, platformId, userI
     await databaseConnection().getRepository('connection').save([connection])
     await databaseConnection().getRepository('flow').save([flow])
     await databaseConnection().getRepository('flow_version').save([flowVersion])
-    await databaseConnection().getRepository('flow_run').save([flowRun])
-    return { table, connection, flow, flowRun, flowVersion, cell }
+    await databaseConnection().getRepository('execution').save([execution])
+    return { table, connection, flow, execution, flowVersion, cell }
 }
 
 export const checkIfSolutionExistsInDb = async (solution: Solution): Promise<boolean> => {
     const table = await databaseConnection().getRepository('table').findOneBy({ id: solution.table.id })
     const connection = await databaseConnection().getRepository('connection').findOneBy({ id: solution.connection.id })
     const flow = await databaseConnection().getRepository('flow').findOneBy({ id: solution.flow.id })
-    const flowRun = await databaseConnection().getRepository('flow_run').findOneBy({ id: solution.flowRun.id })
+    const execution = await databaseConnection().getRepository('execution').findOneBy({ id: solution.execution.id })
     const flowVersion = await databaseConnection().getRepository('flow_version').findOneBy({ id: solution.flowVersion.id })
     const cell = await databaseConnection().getRepository('cell').findOneBy({ id: solution.cell.id })
-    return table !== null && connection !== null && flow !== null && flowRun !== null && flowVersion !== null && cell !== null
+    return table !== null && connection !== null && flow !== null && execution !== null && flowVersion !== null && cell !== null
 }
 export const mockBasicUser = async ({ userIdentity, user }: { userIdentity?: Partial<UserIdentity>, user?: Partial<User> }) => {
     const mockUserIdentity = createMockUserIdentity({

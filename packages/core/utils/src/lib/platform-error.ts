@@ -1,4 +1,4 @@
-import type { ApId, FlowId, FlowRunId, FlowVersionId, WorkspaceId, UserId } from './id-generator'
+import type { ApId, FlowId, ExecutionId, FlowVersionId, WorkspaceId, UserId } from './id-generator'
 import type { Permission, PlatformUsageMetric } from './permission'
 import type { WorkspaceRole } from './workspace-role'
 
@@ -25,7 +25,7 @@ export type ApErrorParams =
     | ExistingUserErrorParams
     | FlowOperationErrorParams
     | FlowOperationInProgressErrorParams
-    | FlowRunRetryOutsideRetentionErrorParams
+    | ExecutionRetryOutsideRetentionErrorParams
     | InvalidApiKeyParams
     | InvalidConnectionParams
     | InvalidBearerTokenParams
@@ -180,10 +180,10 @@ ErrorCode.SYSTEM_PROP_INVALID,
 }
 >
 
-export type FlowRunRetryOutsideRetentionErrorParams = BaseErrorParams<
-ErrorCode.FLOW_RUN_RETRY_OUTSIDE_RETENTION,
+export type ExecutionRetryOutsideRetentionErrorParams = BaseErrorParams<
+ErrorCode.EXECUTION_RETRY_OUTSIDE_RETENTION,
 {
-    flowRunId: FlowRunId
+    executionId: ExecutionId
     failedJobRetentionDays: number
 }
 >
@@ -525,7 +525,7 @@ export enum ErrorCode {
     WORKSPACE_EXTERNAL_ID_ALREADY_EXISTS = 'WORKSPACE_EXTERNAL_ID_ALREADY_EXISTS',
     FLOW_OPERATION_INVALID = 'FLOW_OPERATION_INVALID',
     FLOW_OPERATION_IN_PROGRESS = 'FLOW_OPERATION_IN_PROGRESS',
-    FLOW_RUN_RETRY_OUTSIDE_RETENTION = 'FLOW_RUN_RETRY_OUTSIDE_RETENTION',
+    EXECUTION_RETRY_OUTSIDE_RETENTION = 'EXECUTION_RETRY_OUTSIDE_RETENTION',
     INVALID_API_KEY = 'INVALID_API_KEY',
     INVALID_CONNECTION = 'INVALID_CONNECTION',
     INVALID_BEARER_TOKEN = 'INVALID_BEARER_TOKEN',

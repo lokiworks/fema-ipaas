@@ -3,7 +3,7 @@ import {
   FlowAction,
   FlowActionType,
   FlowOperationType,
-  FlowRun,
+  Execution,
   flowCanvasUtils as sharedFlowCanvasUtils,
   flowStructureUtil,
   FlowVersion,
@@ -16,7 +16,7 @@ import {
 } from '@fema/shared';
 import { t } from 'i18next';
 
-import { flowRunUtils } from '@/features/flow-runs';
+import { executionUtils } from '@/features/executions';
 import { NEW_FLOW_QUERY_PARAM } from '@/lib/route-utils';
 
 import { flowCanvasLayoutConsts } from './layout-consts';
@@ -663,13 +663,13 @@ const isSkipped = (stepName: string, trigger: FlowTrigger) => {
 
 const getStepStatus = (
   stepName: string | undefined,
-  run: FlowRun | null,
+  run: Execution | null,
   loopIndexes: Record<string, number>,
 ) => {
   if (isNil(run) || isNil(stepName) || isNil(run.steps)) {
     return undefined;
   }
-  const stepOutput = flowRunUtils.extractStepOutput(
+  const stepOutput = executionUtils.extractStepOutput(
     stepName,
     loopIndexes,
     run.steps,

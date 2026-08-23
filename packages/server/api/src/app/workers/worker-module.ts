@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
-import { runsMetadataQueue } from '../flows/flow-run/flow-runs-queue'
+import { runsMetadataQueue } from '../flows/execution/executions-queue'
 import { pubsub } from '../helper/pubsub'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'

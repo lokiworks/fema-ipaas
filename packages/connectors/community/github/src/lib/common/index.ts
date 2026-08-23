@@ -462,13 +462,13 @@ export async function getRepoFileContent(
   return Buffer.from(response.body.content, 'base64').toString('utf-8');
 }
 
-export async function getWorkflowRun(
+export async function getWorkexecution(
   auth: GithubAuthValue,
   owner: string,
   repo: string,
   runId: number
-): Promise<WorkflowRun> {
-  const response = await githubApiCall<WorkflowRun>({
+): Promise<Workexecution> {
+  const response = await githubApiCall<Workexecution>({
     auth,
     method: HttpMethod.GET,
     resourceUri: `/repos/${owner}/${repo}/actions/runs/${runId}`,
@@ -584,7 +584,7 @@ type EnvironmentSummary = {
   name: string;
 };
 
-export type WorkflowRun = {
+export type Workexecution = {
   id: number;
   status: string;
   conclusion: string | null;

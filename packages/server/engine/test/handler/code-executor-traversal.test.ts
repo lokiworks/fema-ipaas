@@ -1,4 +1,4 @@
-import { CodeAction, FlowRunStatus } from '@fema/shared'
+import { CodeAction, ExecutionStatus } from '@fema/shared'
 import { codeExecutor } from '../../src/lib/handler/code-executor'
 import { FlowExecutorContext } from '../../src/lib/handler/context/flow-execution-context'
 import { buildCodeAction, generateMockEngineConstants } from './test-helper'
@@ -17,7 +17,7 @@ describe('code executor step-name path traversal', () => {
             constants: generateMockEngineConstants(),
         })
 
-        expect(result.verdict.status).toBe(FlowRunStatus.FAILED)
+        expect(result.verdict.status).toBe(ExecutionStatus.FAILED)
         expect(result.steps[traversalName].status).toEqual('FAILED')
         expect(result.steps[traversalName].errorMessage).toContain('Invalid code step name')
     })

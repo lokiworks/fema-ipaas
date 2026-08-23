@@ -64,7 +64,7 @@ describe('jobMigrations v6 → v7 (dropLogsUploadUrl)', () => {
     it('strips logsUploadUrl from EXECUTE_FLOW at v6 and bumps to latest', async () => {
         const legacy = {
             ...baseFlowJob({ schemaVersion: 6 }),
-            logsUploadUrl: 'https://old-api.example.com/v1/flow-runs/logs?token=ABC',
+            logsUploadUrl: 'https://old-api.example.com/v1/executions/logs?token=ABC',
         }
 
         const migrated = await jobMigrations(mockLog).apply(legacy) as ExecuteFlowJobData & Record<string, unknown>

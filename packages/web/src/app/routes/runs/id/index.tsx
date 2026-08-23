@@ -1,4 +1,4 @@
-import { FlowRun, PopulatedFlow } from '@fema/shared';
+import { Execution, PopulatedFlow } from '@fema/shared';
 import { useQuery } from '@tanstack/react-query';
 import { ReactFlowProvider } from '@xyflow/react';
 import { useParams } from 'react-router-dom';
@@ -6,26 +6,26 @@ import { useParams } from 'react-router-dom';
 import { BuilderPage } from '@/app/builder';
 import { BuilderStateProvider } from '@/app/builder/state/builder-state-provider';
 import { LoadingSpinner } from '@/components/custom/spinner';
-import { flowRunsApi } from '@/features/flow-runs';
+import { executionsApi } from '@/features/executions';
 import { flowsApi, sampleDataHooks } from '@/features/flows';
 
-const FlowRunPage = () => {
+const ExecutionPage = () => {
   const { runId, workspaceId } = useParams();
   const { data, isLoading } = useQuery<
     {
-      run: FlowRun;
+      run: Execution;
       flow: PopulatedFlow;
     },
     Error
   >({
     queryKey: ['run', runId],
     queryFn: async () => {
-      const flowRun = await flowRunsApi.getPopulated(runId!);
-      const flow = await flowsApi.get(flowRun.flowId, {
-        versionId: flowRun.flowVersionId,
+      const execution = await executionsApi.getPopulated(runId!);
+      const flow = await flowsApi.get(execution.flowId, {
+        versionId: execution.flowVersionId,
       });
       return {
-        run: flowRun,
+        run: execution,
         flow: flow,
       };
     },
@@ -66,4 +66,4 @@ const FlowRunPage = () => {
   );
 };
 
-export { FlowRunPage };
+export { ExecutionPage };

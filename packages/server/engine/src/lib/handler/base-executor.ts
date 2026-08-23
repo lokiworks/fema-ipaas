@@ -1,5 +1,5 @@
 import { isNil, isString } from '@fema/core-utils'
-import { BaseStepOutput, FlowAction, FlowRunStatus, StepOutputStatus } from '@fema/shared'
+import { BaseStepOutput, ExecutionStatus, FlowAction, StepOutputStatus } from '@fema/shared'
 import { utils } from '../utils'
 import { EngineConstants } from './context/engine-constants'
 import { FlowExecutorContext } from './context/flow-execution-context'
@@ -9,7 +9,7 @@ export async function failStep({ action, executionState, stepOutput, error, dura
     const failed = stepOutput.setStatus(StepOutputStatus.FAILED).setErrorMessage(message)
     const withDuration = isNil(durationMs) ? failed : failed.setDuration(durationMs)
     return (await executionState.upsertStep(action.name, withDuration)).setVerdict({
-        status: FlowRunStatus.FAILED,
+        status: ExecutionStatus.FAILED,
         failedStep: {
             name: action.name,
             displayName: action.displayName,

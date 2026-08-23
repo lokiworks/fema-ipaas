@@ -1,4 +1,4 @@
-import { BranchOperator, FlowRunStatus, LoopStepOutput, RouterExecutionType, RouterStepOutput } from '@fema/shared'
+import { BranchOperator, ExecutionStatus, LoopStepOutput, RouterExecutionType, RouterStepOutput } from '@fema/shared'
 import { vi } from 'vitest'
 import { FlowExecutorContext } from '../../src/lib/handler/context/flow-execution-context'
 import { StepExecutionPath } from '../../src/lib/handler/context/step-execution-path'
@@ -80,7 +80,7 @@ describe('flow with pause', () => {
             constants: generateMockEngineConstants({ internalApiUrl: engineApi.url, stepNames: ['loop'] }),
         })
         expect(pauseResult.verdict).toEqual({
-            status: FlowRunStatus.PAUSED,
+            status: ExecutionStatus.PAUSED,
         })
         expect(Object.keys(pauseResult.steps)).toEqual(['loop'])
 
@@ -94,7 +94,7 @@ describe('flow with pause', () => {
         const resumeResultTwo = await flowExecutor.execute({
             action: pauseFlowWithLoopAndBranch,
             executionState: pauseResult.setCurrentPath(StepExecutionPath.empty()).setVerdict({
-                status: FlowRunStatus.RUNNING,
+                status: ExecutionStatus.RUNNING,
             }),
             constants: generateMockEngineConstants({
                 internalApiUrl: engineApi.url,
@@ -110,7 +110,7 @@ describe('flow with pause', () => {
         })
         
         expect(resumeResultTwo.verdict).toStrictEqual({
-            status: FlowRunStatus.RUNNING,
+            status: ExecutionStatus.RUNNING,
         },
         )
         expect(Object.keys(resumeResultTwo.steps)).toEqual(['loop'])
@@ -144,12 +144,12 @@ describe('flow with pause', () => {
             }),
         })
         expect(resumeResult1.verdict).toStrictEqual({
-            status: FlowRunStatus.PAUSED,
+            status: ExecutionStatus.PAUSED,
         })
         const resumeResult2 = await flowExecutor.execute({
             action: flawWithTwoPause,
             executionState: resumeResult1.setVerdict({
-                status: FlowRunStatus.RUNNING,
+                status: ExecutionStatus.RUNNING,
             }),
             constants: generateMockEngineConstants({
                 internalApiUrl: engineApi.url,
@@ -163,7 +163,7 @@ describe('flow with pause', () => {
             }),
         })
         expect(resumeResult2.verdict).toStrictEqual({
-            status: FlowRunStatus.RUNNING,
+            status: ExecutionStatus.RUNNING,
         })
 
     })
@@ -176,7 +176,7 @@ describe('flow with pause', () => {
             constants: generateMockEngineConstants({ internalApiUrl: engineApi.url }),
         })
         expect(pauseResult.verdict).toStrictEqual({
-            status: FlowRunStatus.PAUSED,
+            status: ExecutionStatus.PAUSED,
         })
         expect(await pauseResult.getStepView('approval')).toBeDefined()
         expect(await pauseResult.getStepView('echo_step')).toBeUndefined()
@@ -196,7 +196,7 @@ describe('flow with pause', () => {
             }),
         })
         expect(resumeResult.verdict).toStrictEqual({
-            status: FlowRunStatus.RUNNING,
+            status: ExecutionStatus.RUNNING,
         })
         expect(await resumeResult.getStepView('approval')).toEqual({
             output: { approved: true },
@@ -252,7 +252,7 @@ describe('flow with pause', () => {
         })
 
         expect(result.verdict).toStrictEqual({
-            status: FlowRunStatus.PAUSED,
+            status: ExecutionStatus.PAUSED,
         })
 
         const routerOutput = result.steps.router as RouterStepOutput

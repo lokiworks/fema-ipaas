@@ -58,11 +58,11 @@ export function StuckJobsTable({ stuckJobs, isLoading }: StuckJobsTableProps) {
             <TableBody>
               {jobs.map((job) => (
                 <TableRow
-                  key={job.flowRunId}
+                  key={job.executionId}
                   className="cursor-pointer"
                   onClick={() =>
                     navigate(
-                      `/workspaces/${job.workspaceId}/runs/${job.flowRunId}`,
+                      `/workspaces/${job.workspaceId}/runs/${job.executionId}`,
                     )
                   }
                 >

@@ -12,7 +12,7 @@ import {
   useBuilderStore,
 } from '@/app/builder/builder-hooks';
 import { connectorSelectorUtils } from '@/features/connectors';
-import { flowRunUtils } from '@/features/flow-runs';
+import { executionUtils } from '@/features/executions';
 import { flowHooks } from '@/features/flows';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 
@@ -46,19 +46,19 @@ const TestFlowWidget = () => {
       flowVersionId: flowVersion.id,
       isForManualTrigger: isManualTrigger,
       onUpdateRun: (response: UpdateRunProgressRequest) => {
-        assertNotNullOrUndefined(response.flowRun, 'flowRun');
+        assertNotNullOrUndefined(response.execution, 'execution');
         const currentRun = builderStore.getState().run;
         const previousSteps = currentRun?.steps ?? {};
-        const startTime = response.flowRun.startTime ?? currentRun?.startTime;
+        const startTime = response.execution.startTime ?? currentRun?.startTime;
         const steps = isNil(response.step)
           ? previousSteps
-          : flowRunUtils.updateRunSteps(
+          : executionUtils.updateRunSteps(
               previousSteps,
               response.step.name,
               response.step.path,
               response.step.output,
             );
-        setRun({ ...response.flowRun, startTime, steps }, flowVersion);
+        setRun({ ...response.execution, startTime, steps }, flowVersion);
       },
     });
 

@@ -3,7 +3,7 @@ import {
   FlowAction,
   FlowActionType,
   FlowOperationType,
-  FlowRun,
+  Execution,
   flowOperations,
   flowStructureUtil,
   FlowVersion,
@@ -17,7 +17,7 @@ import { Socket } from 'socket.io-client';
 import { StoreApi } from 'zustand';
 
 import { internalErrorToast } from '@/components/ui/sonner';
-import { flowRunUtils } from '@/features/flow-runs';
+import { executionUtils } from '@/features/executions';
 
 import { BuilderState } from '../builder-hooks';
 
@@ -28,8 +28,8 @@ export type UpdateSampleDataParams = {
 };
 
 export type RunState = {
-  run: FlowRun | null;
-  setRun: (run: FlowRun, flowVersion: FlowVersion) => void;
+  run: Execution | null;
+  setRun: (run: Execution, flowVersion: FlowVersion) => void;
   clearRun: (userHasPermissionToEditFlow: boolean) => void;
   loopsIndexes: Record<string, number>;
   setLoopIndex: (stepName: string, index: number) => void;
@@ -57,7 +57,7 @@ export type RunState = {
   beforeStepTestPreparation: (step: FlowAction) => void;
 };
 type RunStateInitialState = {
-  run: FlowRun | null;
+  run: Execution | null;
   flowVersion: FlowVersion;
   socket: Socket;
 };
@@ -76,13 +76,16 @@ export const createRunState = (
     run: initialState.run,
     loopsIndexes:
       initialState.run && initialState.run.steps
-        ? flowRunUtils.pinLoopsToIterationsWithFailedStep(initialState.run, {})
+        ? executionUtils.pinLoopsToIterationsWithFailedStep(
+            initialState.run,
+            {},
+          )
         : {},
-    setRun: async (run: FlowRun, flowVersion: FlowVersion) =>
+    setRun: async (run: Execution, flowVersion: FlowVersion) =>
       set((state) => {
         get().removeAllStepTestsListeners();
         const isNewRun = state.run?.id !== run.id;
-        const loopsIndexes = flowRunUtils.pinLoopsToIterationsWithFailedStep(
+        const loopsIndexes = executionUtils.pinLoopsToIterationsWithFailedStep(
           run,
           state.loopsIndexes,
           {
@@ -107,7 +110,7 @@ export const createRunState = (
         return;
       }
       set((state) => ({
-        loopsIndexes: flowRunUtils.pinLoopsToIterationsWithFailedStep(
+        loopsIndexes: executionUtils.pinLoopsToIterationsWithFailedStep(
           run,
           state.loopsIndexes,
         ),
@@ -144,7 +147,7 @@ export const createRunState = (
         loopsIndexes[stepName] = index;
 
         childLoops.forEach((childLoop) => {
-          const childLoopOutput = flowRunUtils.extractStepOutput(
+          const childLoopOutput = executionUtils.extractStepOutput(
             childLoop.name,
             loopsIndexes,
             state.run?.steps ?? {},

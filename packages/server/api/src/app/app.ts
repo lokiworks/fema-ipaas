@@ -2,7 +2,7 @@ import swagger from '@fastify/swagger'
 import { ConnectorMetadata } from '@fema/connector-sdk'
 import { isNil, spreadIfDefined } from '@fema/core-utils'
 import { apVersionUtil, onCallService, UNKNOWN_VERSION, wideEvent } from '@fema/server-utils'
-import { ApEnvironment, ApplicationEventName, ConnectionDeletedEvent, ConnectionUpsertedEvent, ConnectionWithoutSensitiveData, Flow, FlowActivatedEvent, FlowCreatedEvent, FlowDeactivatedEvent, FlowDeletedEvent, FlowPublishedEvent, FlowRun, FlowRunFinishedEvent, FlowRunRetriedEvent, FlowRunStartedEvent, FlowUpdatedEvent, Folder, FolderCreatedEvent, FolderDeletedEvent, FolderUpdatedEvent, Template, UserEmailVerifiedEvent, UserInvitation, UserPasswordResetEvent, UserSignedInEvent, UserWithMetaInformation, WorkspaceWithLimits } from '@fema/shared'
+import { ApEnvironment, ApplicationEventName, ConnectionDeletedEvent, ConnectionUpsertedEvent, ConnectionWithoutSensitiveData, Execution, ExecutionFinishedEvent, ExecutionRetriedEvent, ExecutionStartedEvent, Flow, FlowActivatedEvent, FlowCreatedEvent, FlowDeactivatedEvent, FlowDeletedEvent, FlowPublishedEvent, FlowUpdatedEvent, Folder, FolderCreatedEvent, FolderDeletedEvent, FolderUpdatedEvent, Template, UserEmailVerifiedEvent, UserInvitation, UserPasswordResetEvent, UserSignedInEvent, UserWithMetaInformation, WorkspaceWithLimits } from '@fema/shared'
 import { createAdapter } from '@socket.io/redis-adapter'
 import { FastifyBaseLogger, FastifyInstance, FastifyRequest, HTTPMethods } from 'fastify'
 import { jsonSchemaTransform, jsonSchemaTransformObject } from 'fastify-type-provider-zod'
@@ -26,9 +26,9 @@ import { authorizationMiddleware } from './core/security/v2/authz/authorization-
 import { distributedLock, redisConnections } from './database/redis-connections'
 import { fileModule } from './file/file.module'
 import { flagModule } from './flags/flag.module'
+import { executionModule } from './flows/execution/execution-module'
 import { flowBackgroundJobs } from './flows/flow/flow.jobs'
 import { humanInputModule } from './flows/flow/human-input/human-input.module'
-import { flowRunModule } from './flows/flow-run/flow-run-module'
 import { flowModule } from './flows/flow.module'
 import { folderModule } from './flows/folder/folder.module'
 import { domainHelper } from './helper/domain-helper'
@@ -153,7 +153,7 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     await app.register(communityConnectorsModule)
     await app.register(collaborativeModule)
     await app.register(flowModule)
-    await app.register(flowRunModule)
+    await app.register(executionModule)
     await app.register(webhookModule)
     await app.register(connectionModule)
     await app.register(platformConnectionModule)
@@ -297,9 +297,9 @@ function registerOpenApiSchemas() {
     globalRegistry.add(FolderCreatedEvent, { id: ApplicationEventName.FOLDER_CREATED })
     globalRegistry.add(FolderUpdatedEvent, { id: ApplicationEventName.FOLDER_UPDATED })
     globalRegistry.add(FolderDeletedEvent, { id: ApplicationEventName.FOLDER_DELETED })
-    globalRegistry.add(FlowRunStartedEvent, { id: ApplicationEventName.FLOW_RUN_STARTED })
-    globalRegistry.add(FlowRunFinishedEvent, { id: ApplicationEventName.FLOW_RUN_FINISHED })
-    globalRegistry.add(FlowRunRetriedEvent, { id: ApplicationEventName.FLOW_RUN_RETRIED })
+    globalRegistry.add(ExecutionStartedEvent, { id: ApplicationEventName.EXECUTION_STARTED })
+    globalRegistry.add(ExecutionFinishedEvent, { id: ApplicationEventName.EXECUTION_FINISHED })
+    globalRegistry.add(ExecutionRetriedEvent, { id: ApplicationEventName.EXECUTION_RETRIED })
     globalRegistry.add(UserSignedInEvent, { id: ApplicationEventName.USER_SIGNED_IN })
     globalRegistry.add(UserPasswordResetEvent, { id: ApplicationEventName.USER_PASSWORD_RESET })
     globalRegistry.add(UserEmailVerifiedEvent, { id: ApplicationEventName.USER_EMAIL_VERIFIED })
@@ -309,7 +309,7 @@ function registerOpenApiSchemas() {
     globalRegistry.add(UserInvitation, { id: 'user-invitation' })
     globalRegistry.add(WorkspaceWithLimits, { id: 'workspace' })
     globalRegistry.add(Flow, { id: 'flow' })
-    globalRegistry.add(FlowRun, { id: 'flow-run' })
+    globalRegistry.add(Execution, { id: 'execution' })
     globalRegistry.add(ConnectionWithoutSensitiveData, { id: 'connection' })
     globalRegistry.add(ConnectorMetadata, { id: 'connector' })
 }

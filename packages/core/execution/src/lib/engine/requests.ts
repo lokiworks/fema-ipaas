@@ -1,8 +1,8 @@
 import { z } from 'zod'
-import { RunInternalError } from '../flow-run/execution/execution-output'
-import { FlowRunStatus } from '../flow-run/execution/flow-execution'
-import { StepOutput } from '../flow-run/execution/step-output'
-import { FailedStep, FlowRun } from '../flow-run/flow-run'
+import { RunInternalError } from '../execution/state/execution-output'
+import { ExecutionStatus } from '../execution/state/flow-execution'
+import { StepOutput } from '../execution/state/step-output'
+import { FailedStep, Execution } from '../execution/execution'
 import { StepRunResponse } from '../flows/sample-data'
 import { StreamStepProgress } from './engine-operation'
 
@@ -13,7 +13,7 @@ export const UploadRunLogsRequest = z.object({
     tags: z.array(z.string()).optional(),
     // Optional so the worker can post a timings-only update (provision/boot/run) after a successful
     // execute without re-asserting the terminal status the engine already reported.
-    status: z.nativeEnum(FlowRunStatus).optional(),
+    status: z.nativeEnum(ExecutionStatus).optional(),
     workspaceId: z.string(),
     streamStepProgress: z.nativeEnum(StreamStepProgress).optional(),
     logsFileId: z.string().optional(),
@@ -71,7 +71,7 @@ export const GetFlowVersionForWorkerRequest = z.object({
 export type GetFlowVersionForWorkerRequest = z.infer<typeof GetFlowVersionForWorkerRequest>
 
 export type UpdateRunProgressRequest = {
-    flowRun: Omit<FlowRun, 'steps'>
+    execution: Omit<Execution, 'steps'>
     step?: {
         name: string
         path: readonly [string, number][]

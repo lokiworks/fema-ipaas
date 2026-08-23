@@ -1,4 +1,4 @@
-import { FlowAction, FlowRunStatus } from '@fema/shared'
+import { FlowAction, ExecutionStatus } from '@fema/shared'
 import { codeExecutor } from '../../src/lib/handler/code-executor'
 import { FlowExecutorContext } from '../../src/lib/handler/context/flow-execution-context'
 import { flowExecutor } from '../../src/lib/handler/flow-executor'
@@ -15,7 +15,7 @@ describe('codeExecutor', () => {
                 },
             }), executionState: FlowExecutorContext.empty(), constants: generateMockEngineConstants(),
         })
-        expect(result.verdict.status).toBe(FlowRunStatus.RUNNING)
+        expect(result.verdict.status).toBe(ExecutionStatus.RUNNING)
         expect(result.steps.echo_step.output).toEqual({ 'key': 3 })
     })
 
@@ -30,7 +30,7 @@ describe('codeExecutor', () => {
             executionState: FlowExecutorContext.empty(),
             constants: generateMockEngineConstants({ flowVersionId: 'action-runs/plat-xyz_deadbeef' }),
         })
-        expect(result.verdict.status).toBe(FlowRunStatus.RUNNING)
+        expect(result.verdict.status).toBe(ExecutionStatus.RUNNING)
         expect(result.steps.echo_action_run.output).toEqual({ 'key': 3 })
     })
 
@@ -42,7 +42,7 @@ describe('codeExecutor', () => {
             }), executionState: FlowExecutorContext.empty(), constants: generateMockEngineConstants(),
         })
         expect(result.verdict).toStrictEqual({
-            status: FlowRunStatus.FAILED,
+            status: ExecutionStatus.FAILED,
             failedStep: {
                 name: 'runtime',
                 displayName: 'Your Action Name',
@@ -63,7 +63,7 @@ describe('codeExecutor', () => {
             constants: generateMockEngineConstants(),
         })
         expect(result.verdict).toStrictEqual({
-            status: FlowRunStatus.FAILED,
+            status: ExecutionStatus.FAILED,
             failedStep: {
                 name: 'system_error',
                 displayName: 'Your Action Name',
@@ -80,7 +80,7 @@ describe('codeExecutor', () => {
             executionState: FlowExecutorContext.empty(),
             constants: generateMockEngineConstants(),
         })
-        expect(result.verdict.status).toBe(FlowRunStatus.FAILED)
+        expect(result.verdict.status).toBe(ExecutionStatus.FAILED)
         expect(result.steps.process_exit.status).toEqual('FAILED')
         expect(result.steps.process_exit.errorMessage).toContain('1')
     })
@@ -91,7 +91,7 @@ describe('codeExecutor', () => {
             executionState: FlowExecutorContext.empty(),
             constants: generateMockEngineConstants(),
         })
-        expect(result.verdict.status).toBe(FlowRunStatus.FAILED)
+        expect(result.verdict.status).toBe(ExecutionStatus.FAILED)
         expect(result.steps.unhandled_rejection.status).toEqual('FAILED')
         expect(result.verdict.failedStep?.message).toContain('Unhandled rejection from user code')
     })
@@ -102,7 +102,7 @@ describe('codeExecutor', () => {
             executionState: FlowExecutorContext.empty(),
             constants: generateMockEngineConstants(),
         })
-        expect(result.verdict.status).toBe(FlowRunStatus.FAILED)
+        expect(result.verdict.status).toBe(ExecutionStatus.FAILED)
         expect(result.steps.setTimeout_error.status).toEqual('FAILED')
         expect(result.verdict.failedStep?.message).toContain('Unexpected token')
     })
@@ -113,7 +113,7 @@ describe('codeExecutor', () => {
             executionState: FlowExecutorContext.empty(),
             constants: generateMockEngineConstants(),
         })
-        expect(result.verdict.status).toBe(FlowRunStatus.RUNNING)
+        expect(result.verdict.status).toBe(ExecutionStatus.RUNNING)
         expect(result.steps.hello_world_npm.output).toEqual({ message: 'Hello, World!' })
     })
 
@@ -123,7 +123,7 @@ describe('codeExecutor', () => {
             executionState: FlowExecutorContext.empty(),
             constants: generateMockEngineConstants(),
         })
-        expect(result.verdict.status).toBe(FlowRunStatus.FAILED)
+        expect(result.verdict.status).toBe(ExecutionStatus.FAILED)
         expect(result.steps.stdout_on_failure.errorMessage).toContain('Error after logging')
         expect(result.steps.stdout_on_failure.errorMessage).toContain('stdout line from user code')
         expect(result.steps.stdout_on_failure.errorMessage).toContain('stderr line from user code')
@@ -137,7 +137,7 @@ describe('codeExecutor', () => {
                 skip: true,
             }), executionState: FlowExecutorContext.empty(), constants: generateMockEngineConstants(),
         })
-        expect(result.verdict.status).toBe(FlowRunStatus.RUNNING)
+        expect(result.verdict.status).toBe(ExecutionStatus.RUNNING)
         expect(result.steps.echo_step).toBeUndefined()
     })
     it('should skip flow action', async () => {
@@ -159,7 +159,7 @@ describe('codeExecutor', () => {
         const result = await flowExecutor.execute({
             action: flow, executionState: FlowExecutorContext.empty(), constants: generateMockEngineConstants(),
         })
-        expect(result.verdict.status).toBe(FlowRunStatus.RUNNING)
+        expect(result.verdict.status).toBe(ExecutionStatus.RUNNING)
         expect(result.steps.echo_step).toBeUndefined()
         expect(result.steps.echo_step_1.output).toEqual({ 'key': 3 })
     })

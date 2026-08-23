@@ -31,7 +31,7 @@ describe('engineFileApi.download zstd auto-decompression', () => {
 
     it('decompresses raw zstd bytes — covers the S3 signed-URL redirect path on RESUME', async () => {
         // Simulates the path where the server 307s to S3 and the engine receives the
-        // file exactly as it was uploaded — zstd-compressed for FLOW_RUN_LOG.
+        // file exactly as it was uploaded — zstd-compressed for EXECUTION_LOG.
         const original = Buffer.from(JSON.stringify({ executionState: { steps: { trigger: { output: { ok: true } } }, tags: [] } }))
         const compressed = await zstdCompress(original)
         vi.spyOn(global, 'fetch').mockResolvedValue(new Response(new Uint8Array(compressed), { status: 200 }))

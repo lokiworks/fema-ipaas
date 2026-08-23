@@ -18,7 +18,7 @@ import { t } from 'i18next';
 import { useFormContext } from 'react-hook-form';
 
 import { internalErrorToast } from '@/components/ui/sonner';
-import { flowRunsApi } from '@/features/flow-runs';
+import { executionsApi } from '@/features/executions';
 import { triggerEventsApi } from '@/features/flows';
 import { api } from '@/lib/api';
 import { authenticationSession } from '@/lib/authentication-session';
@@ -186,7 +186,7 @@ export const testStepHooks = {
       useRequiredStateToTestSteps().builderState;
     return useMutation<{ runId: string }, Error, TestActionMutationParams>({
       mutationFn: async () => {
-        const response = await flowRunsApi.testStep({
+        const response = await executionsApi.testStep({
           request: {
             workspaceId: authenticationSession.getWorkspaceId()!,
             flowVersionId,

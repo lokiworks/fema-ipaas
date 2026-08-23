@@ -190,8 +190,8 @@
                            "admin-guide/security/audit-logs/flow-deactivated",
                            "admin-guide/security/audit-logs/connection-upserted",
                            "admin-guide/security/audit-logs/connection-deleted",
-                           "admin-guide/security/audit-logs/flow-run-started",
-                           "admin-guide/security/audit-logs/flow-run-finished",
+                           "admin-guide/security/audit-logs/execution-started",
+                           "admin-guide/security/audit-logs/execution-finished",
                            "admin-guide/security/audit-logs/folder-created",
                            "admin-guide/security/audit-logs/folder-updated",
                            "admin-guide/security/audit-logs/folder-deleted",
@@ -477,9 +477,9 @@
                         "group": "Flow Runs",
                         "icon": "play",
                         "pages": [
-                           "endpoints/flow-runs/schema",
-                           "endpoints/flow-runs/get",
-                           "endpoints/flow-runs/list"
+                           "endpoints/executions/schema",
+                           "endpoints/executions/get",
+                           "endpoints/executions/list"
                         ]
                      },
                      {

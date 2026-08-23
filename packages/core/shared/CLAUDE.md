@@ -17,7 +17,7 @@ Zod schema + `z.infer` dual export. Use `BaseModelSchema` (id, created, updated)
 - `ApFlagId` (`src/lib/core/flag/flag.ts`) — 42 feature flags.
 - `FlowOperationType` — 26 flow modification ops. Add new op types here + handler in flow service.
 - `FlowActionType` — CODE, CONNECTOR, LOOP_ON_ITEMS, ROUTER.
-- `FlowRunStatus` — 12 states (QUEUED, RUNNING, SUCCEEDED, FAILED, PAUSED, TIMEOUT, CANCELED, etc.).
+- `ExecutionStatus` — 12 states (QUEUED, RUNNING, SUCCEEDED, FAILED, PAUSED, TIMEOUT, CANCELED, etc.).
 - `BranchOperator` — 24 condition operators for router.
 - `WorkerJobType` — 9 job types. Add new jobs here + handler in worker.
 - `ApplicationEventName` — 19 audit events. Add for new auditable actions.

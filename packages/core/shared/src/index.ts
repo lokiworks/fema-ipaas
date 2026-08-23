@@ -30,7 +30,7 @@ export * from './lib/management/analytics'
 export * from './lib/management/ai-tools'
 export * from './lib/management/template'
 
-// automation — flows / flow-run / engine / agents / workers were extracted to
+// automation — flows / execution / engine / agents / workers were extracted to
 // @fema/workflow-core (SRE-163); shared re-exports them for backward compat.
 export * from '@fema/workflow-core'
 export * from './lib/automation/connection/connection'

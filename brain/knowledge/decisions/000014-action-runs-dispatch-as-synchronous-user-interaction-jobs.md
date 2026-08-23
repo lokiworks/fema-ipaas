@@ -13,9 +13,9 @@ re-running it. This decides the dispatch mechanism only — durable storage for 
 
 ## Context
 The path being replaced created a throwaway flow, grafted one step onto it, called
-`flowRunService.test()`, polled `flow_run` every 2s for up to 120s, dug the step out of `run.steps`,
-then best-effort deleted the flow. That wrote three rows per call (flow, flow_version, flow_run),
-and leaked `__actionRun__` flows whenever the `finally` delete failed. Because `flow_run.flowId` is
+`executionService.test()`, polled `execution` every 2s for up to 120s, dug the step out of `run.steps`,
+then best-effort deleted the flow. That wrote three rows per call (flow, flow_version, execution),
+and leaked `__actionRun__` flows whenever the `finally` delete failed. Because `execution.flowId` is
 `onDelete: CASCADE`, the successful cleanup also cascade-deleted the run row — so the old path
 recorded nothing durable either, despite paying for three inserts.
 

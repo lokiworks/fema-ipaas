@@ -2,14 +2,14 @@ import { CreateStepRunRequestBody, GetSampleDataRequest, PrincipalType, SERVICE_
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { WorkspaceResourceType } from '../../core/security/authorization/common'
 import { securityAccess } from '../../core/security/authorization/fastify-security'
+import { executionService } from '../execution/execution-service'
 import { flowService } from '../flow/flow.service'
-import { flowRunService } from '../flow-run/flow-run-service'
 import { sampleDataService } from './sample-data.service'
 
 export const sampleDataController: FastifyPluginAsyncZod = async (fastify) => {
 
     fastify.post('/test-step', TestSampleDataRequestBody, async (request) => {
-        return flowRunService(request.log).test({
+        return executionService(request.log).test({
             workspaceId: request.workspaceId,
             flowVersionId: request.body.flowVersionId,
             stepNameToTest: request.body.stepName,

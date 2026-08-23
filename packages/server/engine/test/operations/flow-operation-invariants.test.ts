@@ -5,7 +5,7 @@ import {
     EngineResponseStatus,
     ExecutionType,
     FlowActionType,
-    FlowRunStatus,
+    ExecutionStatus,
     FlowTriggerType,
     FlowVersionState,
     ResumeReason,
@@ -20,8 +20,8 @@ const { mockSendUpdate, mockBackup } = vi.hoisted(() => ({
     mockSendUpdate: vi.fn().mockResolvedValue(undefined),
     mockBackup: vi.fn().mockResolvedValue(undefined),
 }))
-vi.mock('../../src/lib/helper/flow-run-progress-reporter', () => ({
-    flowRunProgressReporter: {
+vi.mock('../../src/lib/helper/execution-progress-reporter', () => ({
+    executionProgressReporter: {
         sendUpdate: mockSendUpdate,
         backup: mockBackup,
         createOutputContext: vi.fn().mockReturnValue({ update: vi.fn().mockResolvedValue(undefined) }),
@@ -87,7 +87,7 @@ function makeBeginOperation(overrides?: Partial<BeginExecuteFlowOperation>): Beg
         timeoutInSeconds: 600,
         platformId: 'plat-1',
         flowVersion: makeFlowVersion(),
-        flowRunId: 'run-1',
+        executionId: 'run-1',
         executionType: ExecutionType.BEGIN,
         runEnvironment: RunEnvironment.TESTING,
         workerHandlerId: null,
@@ -156,7 +156,7 @@ function makeResumeOperation(overrides?: Partial<ResumeExecuteFlowOperation>): R
         timeoutInSeconds: 600,
         platformId: 'plat-1',
         flowVersion: makeFlowVersion(),
-        flowRunId: 'run-1',
+        executionId: 'run-1',
         executionType: ExecutionType.RESUME,
         runEnvironment: RunEnvironment.TESTING,
         workerHandlerId: null,
@@ -175,7 +175,7 @@ let engineApi: EngineApiStub
 describe('flow operation invariants', () => {
     beforeEach(async () => {
         engineApi = await startEngineApiStub({
-            'POST /v1/waitpoints': { id: 'wp-new', resumeUrl: 'http://localhost:4200/api/v1/flow-runs/run-1/waitpoints/wp-new' },
+            'POST /v1/waitpoints': { id: 'wp-new', resumeUrl: 'http://localhost:4200/api/v1/executions/run-1/waitpoints/wp-new' },
         })
     })
 
@@ -224,7 +224,7 @@ describe('flow operation invariants', () => {
 
             expect(response.status).toBe(EngineResponseStatus.OK)
             const finalCtx = mockSendUpdate.mock.calls[mockSendUpdate.mock.calls.length - 1][0].flowExecutorContext
-            expect(finalCtx.verdict.status).toBe(FlowRunStatus.FAILED)
+            expect(finalCtx.verdict.status).toBe(ExecutionStatus.FAILED)
             expect(mockBackup).toHaveBeenCalled()
         })
 
@@ -316,7 +316,7 @@ describe('flow operation invariants', () => {
         })
 
         it('drops FAILED steps on a retry resume (resumeReason=RETRY — FlowRetryStrategy.FROM_FAILED_STEP)', async () => {
-            // The retry-from-failed-step feature (flow-run-service.ts FlowRetryStrategy.FROM_FAILED_STEP)
+            // The retry-from-failed-step feature (execution-service.ts FlowRetryStrategy.FROM_FAILED_STEP)
             // re-enqueues the run as executionType=RESUME with resumeReason=RETRY, expecting the
             // engine to replay the failed step. Preserving FAILED on this path would silently turn
             // retry into a no-op. The discriminator is the explicit `resumeReason` field.
@@ -407,7 +407,7 @@ describe('flow operation invariants', () => {
         })
 
         it('preserves FAILED steps on a delay-connector waitpoint resume even though resumePayload is null', async () => {
-            // The Delay connector's scheduled resume (`flow-run-module.ts` RESUME_DELAY_WAITPOINT
+            // The Delay connector's scheduled resume (`execution-module.ts` RESUME_DELAY_WAITPOINT
             // handler) calls `resumeFromWaitpoint` with `resumePayload: null`. Prior to the
             // explicit `resumeReason` field this looked indistinguishable from a retry, and the
             // engine would drop FAILED — replaying any `continueOnFailure` step that preceded
@@ -507,7 +507,7 @@ describe('flow operation invariants', () => {
             expect(response.status).toBe(EngineResponseStatus.OK)
             const finalSendUpdate = mockSendUpdate.mock.calls[mockSendUpdate.mock.calls.length - 1][0]
             const finalCtx = finalSendUpdate.flowExecutorContext
-            expect(finalCtx.verdict.status).toBe(FlowRunStatus.FAILED)
+            expect(finalCtx.verdict.status).toBe(ExecutionStatus.FAILED)
             expect(finalCtx.verdict.failedStep.name).toBe('trigger_1')
             expect(mockBackup).toHaveBeenCalled()
         })
@@ -531,7 +531,7 @@ describe('flow operation invariants', () => {
 
             const finalSendUpdate = mockSendUpdate.mock.calls[mockSendUpdate.mock.calls.length - 1][0]
             const finalCtx = finalSendUpdate.flowExecutorContext
-            expect(finalCtx.verdict.status).toBe(FlowRunStatus.FAILED)
+            expect(finalCtx.verdict.status).toBe(ExecutionStatus.FAILED)
             expect(finalCtx.verdict.failedStep).toEqual({
                 name: 'trigger_1',
                 displayName: 'Test Trigger',
@@ -566,7 +566,7 @@ describe('flow operation invariants', () => {
 
             expect(response.status).toBe(EngineResponseStatus.OK)
             const finalCtx = mockSendUpdate.mock.calls[mockSendUpdate.mock.calls.length - 1][0].flowExecutorContext
-            expect(finalCtx.verdict.status).toBe(FlowRunStatus.FAILED)
+            expect(finalCtx.verdict.status).toBe(ExecutionStatus.FAILED)
             expect(finalCtx.verdict.failedStep.name).toBe('trigger_1')
             expect(finalCtx.steps.trigger_1.errorMessage).toEqual(expect.stringContaining('toLowerCase'))
         })

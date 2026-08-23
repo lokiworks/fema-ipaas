@@ -52,7 +52,7 @@ const getSettings = (): SandboxSettings => ({
     REUSE_SANDBOX: undefined,
     FLOW_TIMEOUT_SECONDS: 600,
     MAX_FILE_SIZE_MB: 10,
-    MAX_FLOW_RUN_LOG_SIZE_MB: 10,
+    MAX_EXECUTION_LOG_SIZE_MB: 10,
     NETWORK_MODE: NetworkMode.UNRESTRICTED,
     SANDBOX_MEMORY_LIMIT: '256',
     SANDBOX_PROPAGATED_ENV_VARS: [],

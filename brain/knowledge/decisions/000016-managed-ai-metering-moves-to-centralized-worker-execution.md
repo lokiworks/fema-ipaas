@@ -18,7 +18,7 @@ call, not on it:
 - The engine/worker then holds the raw OpenRouter key and calls OpenRouter **directly** — the AP server
   never sees the request/response, so it cannot count tokens.
 - Credit usage is **reconstructed after the fact** and tracked post-run / fire-and-forget
-  (`flow-run-ai-usage-tracker` from `flow-run-hooks.ts#onFinish`, `chat-usage-tracker` →
+  (`execution-ai-usage-tracker` from `execution-hooks.ts#onFinish`, `chat-usage-tracker` →
   `trackCreditsWithAppSumo`).
 
 Consequences of this shape (the over-consumption window; tracked as finding S4 of the security

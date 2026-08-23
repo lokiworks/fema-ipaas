@@ -10,7 +10,7 @@ import { githubAuth } from '../auth';
 import {
   getRepoEnvironments,
   getRepoFileContent,
-  getWorkflowRun,
+  getWorkexecution,
   githubApiCall,
   githubCommon,
   RepositoryProp,
@@ -151,7 +151,7 @@ export const githubTriggerWorkflowDispatchAction = createAction({
         );
       }
 
-      const runStatus = await getWorkflowRun(auth, owner, repo, state.runId);
+      const runStatus = await getWorkexecution(auth, owner, repo, state.runId);
 
       if (runStatus.status === 'completed') {
         await context.store.delete(waitStateKey, StoreScope.FLOW);
@@ -180,7 +180,7 @@ export const githubTriggerWorkflowDispatchAction = createAction({
     const { ref } = propsValue;
     const inputs = propsValue.inputs ?? {};
 
-    const dispatchResponse = await githubApiCall<{ workflow_run_id: number }>({
+    const dispatchResponse = await githubApiCall<{ workexecution_id: number }>({
       auth,
       method: HttpMethod.POST,
       resourceUri: `/repos/${owner}/${repo}/actions/workflows/${workflow.id}/dispatches`,
@@ -191,11 +191,11 @@ export const githubTriggerWorkflowDispatchAction = createAction({
       },
     });
 
-    const initialRun = await getWorkflowRun(
+    const initialRun = await getWorkexecution(
       auth,
       owner,
       repo,
-      dispatchResponse.body.workflow_run_id
+      dispatchResponse.body.workexecution_id
     );
 
     if (!propsValue.waitForCompletion) {

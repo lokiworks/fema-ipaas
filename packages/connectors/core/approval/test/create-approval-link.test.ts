@@ -4,7 +4,7 @@ import { createMockActionContext } from '@fema/connector-sdk';
 import { createApprovalLink } from '../src/lib/actions/create-approval-link';
 
 const RESUME_URL =
-  'https://github.com/lokiworks/fema-ipaas/api/v1/flow-runs/run-id/waitpoints/wp-id';
+  'https://github.com/lokiworks/fema-ipaas/api/v1/executions/run-id/waitpoints/wp-id';
 
 function mockContext() {
   const ctx = createMockActionContext({ propsValue: {} });

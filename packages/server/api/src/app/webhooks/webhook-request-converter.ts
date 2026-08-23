@@ -1,6 +1,6 @@
 import { PassThrough, Readable } from 'node:stream'
 import { MultipartFile } from '@fastify/multipart'
-import { EventPayload, FAIL_PARENT_ON_FAILURE_HEADER, FileCompression, FileType, FlowRun, PARENT_RUN_ID_HEADER } from '@fema/shared'
+import { EventPayload, Execution, FAIL_PARENT_ON_FAILURE_HEADER, FileCompression, FileType, PARENT_RUN_ID_HEADER } from '@fema/shared'
 import { FastifyBaseLogger, FastifyRequest } from 'fastify'
 import mime from 'mime-types'
 import { fileService } from '../file/file.service'
@@ -48,7 +48,7 @@ export async function convertRequest(
     }
 }
 
-export function extractHeaderFromRequest(request: FastifyRequest): Pick<FlowRun, 'parentRunId' | 'failParentOnFailure'> {
+export function extractHeaderFromRequest(request: FastifyRequest): Pick<Execution, 'parentRunId' | 'failParentOnFailure'> {
     return {
         parentRunId: request.headers[PARENT_RUN_ID_HEADER] as string,
         failParentOnFailure: request.headers[FAIL_PARENT_ON_FAILURE_HEADER] === 'true',

@@ -137,14 +137,14 @@ export const setupServer = async (): Promise<FastifyInstance> => {
 
 async function setupBaseApp(): Promise<FastifyInstance> {
     const fileSizeLimit = system.getNumberOrThrow(AppSystemProp.MAX_FILE_SIZE_MB)
-    const flowRunLogSizeLimit = system.getNumberOrThrow(AppSystemProp.MAX_FLOW_RUN_LOG_SIZE_MB)
+    const executionLogSizeLimit = system.getNumberOrThrow(AppSystemProp.MAX_EXECUTION_LOG_SIZE_MB)
     const app = fastify({
         disableRequestLogging: true,
         querystringParser: (str) => qs.parse(str, { arrayLimit: 1000 }),
         loggerInstance: system.globalLogger(),
         ignoreTrailingSlash: true,
         pluginTimeout: 120000,
-        bodyLimit: Math.max(fileSizeLimit + 4, flowRunLogSizeLimit + 4, 25) * 1024 * 1024,
+        bodyLimit: Math.max(fileSizeLimit + 4, executionLogSizeLimit + 4, 25) * 1024 * 1024,
         genReqId: () => {
             return `req_${apId()}`
         },

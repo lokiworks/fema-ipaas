@@ -1,6 +1,6 @@
 
 import { tryParseFriendlyConnectorError } from '@fema/core-utils'
-import { BranchOperator, FlowRunStatus, RouterExecutionType } from '@fema/shared'
+import { BranchOperator, ExecutionStatus, RouterExecutionType } from '@fema/shared'
 import { codeExecutor } from '../../src/lib/handler/code-executor'
 import { FlowExecutorContext } from '../../src/lib/handler/context/flow-execution-context'
 import { loopExecutor } from '../../src/lib/handler/loop-executor'
@@ -26,7 +26,7 @@ describe('code connector with error handling', () => {
             }), executionState: FlowExecutorContext.empty(), constants: generateMockEngineConstants(),
         })
         expect(result.verdict).toStrictEqual({
-            status: FlowRunStatus.RUNNING,
+            status: ExecutionStatus.RUNNING,
         })
         expect(result.steps.runtime.status).toEqual('FAILED')
         expect(result.steps.runtime.errorMessage).toContain('Custom Runtime Error')
@@ -62,7 +62,7 @@ describe('connector with error handling', () => {
         })
 
         expect(result.verdict).toStrictEqual({
-            status: FlowRunStatus.RUNNING,
+            status: ExecutionStatus.RUNNING,
         })
         expect(result.steps.send_http.status).toBe('FAILED')
 
@@ -101,7 +101,7 @@ describe('action input resolution failures surface as FAILED step', () => {
             constants: generateMockEngineConstants(),
         })
 
-        expect(result.verdict.status).toBe(FlowRunStatus.FAILED)
+        expect(result.verdict.status).toBe(ExecutionStatus.FAILED)
         expect(result.steps.echo_step.status).toBe('FAILED')
         expect(result.steps.echo_step.errorMessage).toContain('connection (missing-conn) not found')
     })
@@ -118,7 +118,7 @@ describe('action input resolution failures surface as FAILED step', () => {
             constants: generateMockEngineConstants(),
         })
 
-        expect(result.verdict.status).toBe(FlowRunStatus.FAILED)
+        expect(result.verdict.status).toBe(ExecutionStatus.FAILED)
         expect(result.steps.loop.status).toBe('FAILED')
         expect(result.steps.loop.errorMessage).toContain('connection (missing-conn) not found')
     })
@@ -139,7 +139,7 @@ describe('action input resolution failures surface as FAILED step', () => {
             constants: generateMockEngineConstants(),
         })
 
-        expect(result.verdict.status).toBe(FlowRunStatus.FAILED)
+        expect(result.verdict.status).toBe(ExecutionStatus.FAILED)
         expect(result.steps.router.status).toBe('FAILED')
         expect(result.steps.router.errorMessage).toContain('connection (missing-conn) not found')
     })

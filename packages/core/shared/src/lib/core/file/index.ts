@@ -13,12 +13,12 @@ export enum FileType {
      * Compressed (ZSTD) execution-log manifest for a single flow run.
      * Expires on the file-cleanup schedule.
      */
-    FLOW_RUN_LOG = 'FLOW_RUN_LOG',
+    EXECUTION_LOG = 'EXECUTION_LOG',
     /**
-     * One step output (or loop-iteration bundle) sliced out of a flow-run-log manifest
-     * when it exceeds FEMA_FLOW_RUN_LOG_SLICE_THRESHOLD_KB.
+     * One step output (or loop-iteration bundle) sliced out of a execution-log manifest
+     * when it exceeds FEMA_EXECUTION_LOG_SLICE_THRESHOLD_KB.
      */
-    FLOW_RUN_LOG_SLICE = 'FLOW_RUN_LOG_SLICE',
+    EXECUTION_LOG_SLICE = 'EXECUTION_LOG_SLICE',
     /**
      * Tarball of a custom connector's source, downloaded and extracted by the worker
      * to load connector code. Stored in DB, kept indefinitely.

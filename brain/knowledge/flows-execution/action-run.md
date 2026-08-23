@@ -4,14 +4,14 @@ icon: ⚡
 
 # Action Runs
 
-An **action run** executes a *single* connector action or code step directly, outside any flow — the unit of work behind MCP's `ap_run_action` and the chat `ap_execute_action` / `ap_run_code` tools. It replaces the old "temporary flow" hack: create a throwaway flow → graft one step → `flowRunService.test()` → poll `flow_run` for ≤120s → dig the step out of `run.steps` → best-effort delete the flow.
+An **action run** executes a *single* connector action or code step directly, outside any flow — the unit of work behind MCP's `ap_run_action` and the chat `ap_execute_action` / `ap_run_code` tools. It replaces the old "temporary flow" hack: create a throwaway flow → graft one step → `executionService.test()` → poll `execution` for ≤120s → dig the step out of `run.steps` → best-effort delete the flow.
 
-At this stage action runs are **execution only — nothing is persisted**. The caller gets the outcome in-process. Durable storage (an `action_run` table separate from [Flow Runs](./flow-runs.md), its endpoints, and an "Action runs" UI tab) lands separately.
+At this stage action runs are **execution only — nothing is persisted**. The caller gets the outcome in-process. Durable storage (an `action_run` table separate from [Flow Runs](./executions.md), its endpoints, and an "Action runs" UI tab) lands separately.
 
 ### How it works
 - **Dispatch**: `actionRunService(log).run({ projectId, platformId, step })` resolves the connector package, then submits `WorkerJobType.EXECUTE_ACTION` via `userInteractionWatcher.submitAndWaitForResponse` — **synchronous request/response**, the same mechanism as property resolution and auth validation. No polling, no queued flow job, **no retry**. See decision [Action runs dispatch as synchronous user-interaction jobs](../decisions/000014-action-runs-dispatch-as-synchronous-user-interaction-jobs.md).
 - **Engine**: `actionOperation` → `actionRunStepRunner.run({ step, operation })` runs the one step against `FlowExecutorContext.empty()` and returns `steps[step.name]`. The chat tool executor (`engine/src/lib/tools/index.ts`) calls the same primitive.
-- **Outcome**: `deriveActionRunOutcome` maps the engine response to `{ status, output, logs, errorMessage }`. Status is a `FlowRunStatus`, of which only **SUCCEEDED / FAILED / TIMEOUT / INTERNAL_ERROR** are reachable — an action run is synchronous, so QUEUED and RUNNING never occur, and PAUSED is explicitly rejected.
+- **Outcome**: `deriveActionRunOutcome` maps the engine response to `{ status, output, logs, errorMessage }`. Status is a `ExecutionStatus`, of which only **SUCCEEDED / FAILED / TIMEOUT / INTERNAL_ERROR** are reachable — an action run is synchronous, so QUEUED and RUNNING never occur, and PAUSED is explicitly rejected.
 - **Priority** `high`, not `critical`, so action runs never outrank the builder interactions a human is actively waiting on.
 
 ### Gotchas
@@ -45,7 +45,7 @@ At this stage action runs are **execution only — nothing is persisted**. The c
 - **FLOW-scoped store entries all collide inside a project — known, accepted.** `context.store` and `context.files` are HTTP-backed services needing only `internalApiUrl`, `engineToken` and `flowId`. With no real flow, `fromExecuteActionInput` substitutes the `DEFAULT_MCP_DATA` sentinel `flowId: 'mcp-flow-id'`, and `createContextStore` builds FLOW keys as `prefix + 'flow_' + flowId + '/' + key`. This is **not** a tenancy break: `storeEntryController` pins `projectId` from the engine token, so entries never cross a project. It is a key collision — every FLOW-scoped `store.put()` from every action run in a project lands in one `flow_mcp-flow-id/` namespace. PROJECT-scoped entries are correct, and `context.files` ignores `flowId`, so uploads are cleanly project-scoped. Fixing it means either rejecting FLOW scope in `actionRunMode` (breaks connectors that store state as a side effect) or a per-run `flowId` (makes those writes unreachable garbage) — neither is clearly right, so it stays as-is.
 - **`EXECUTE_ACTION` is in `UserInteractionJobData`**, so its payload shape is bound by `LATEST_JOB_DATA_SCHEMA_VERSION` — changing it needs a job-data migration. `expiresAt` is the exception that proves the rule: it is *optional*, so an old-shaped job still parses and simply behaves as it did before. Any **required** addition still needs the version bump.
 - **`step` is validated by a real schema (`ActionRunStep`), not `z.custom`.** `z.custom()` with no validator accepts anything — a missing `step`, or `42` — which defeated `tryDequeue`'s schema gate for this job type. The same schema is parsed in `actionRunService` before enqueuing, because a schema failure at dequeue becomes an `UnrecoverableError` and **that path never publishes to the watcher**: the caller would hang the whole budget and then be told the action may have written.
-- The old path's cleanup deleted the temp flow, and `flow_run.flowId` is `onDelete: CASCADE` — so it recorded nothing durable either, despite paying for three inserts per call.
+- The old path's cleanup deleted the temp flow, and `execution.flowId` is `onDelete: CASCADE` — so it recorded nothing durable either, despite paying for three inserts per call.
 
 ### Editions
 All editions (Community, Enterprise, Cloud). MCP `ap_run_action` is CE; the chat tools that use it are EE.
@@ -55,7 +55,7 @@ Entry point: `actionRunService`, defined in `action-run.service.ts`.
 
 - `packages/server/api/src/app/action-run/` — `action-run.service.ts` (`run()`), `action-run-outcome.ts` (engine response → terminal status)
 - `packages/server/api/src/app/workers/user-interaction-watcher.ts` — `submitAndWaitForResponse`, now with an optional per-caller timeout
-- `packages/server/api/src/app/mcp/tools/flow-run-utils.ts` — `executeActionRunAction` / `executeActionRunCode`, the rewrite that deleted the temporary-flow path
+- `packages/server/api/src/app/mcp/tools/execution-utils.ts` — `executeActionRunAction` / `executeActionRunCode`, the rewrite that deleted the temporary-flow path
 - `packages/core/execution/src/lib/engine/engine-operation.ts` — `EngineOperationType.EXECUTE_ACTION`, `ExecuteActionOperation`
 - `packages/core/execution/src/lib/workers/job-data.ts` — `WorkerJobType.EXECUTE_ACTION`, `ExecuteActionJobData`
 - `packages/server/engine/src/lib/handler/action-run-step-runner.ts` — the shared single-step primitive

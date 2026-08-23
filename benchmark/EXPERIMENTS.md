@@ -88,8 +88,8 @@ saturates its cap first):
 - **"flow run" (372 ms warm / 762 ms cold)** is orchestration, not compute: after each step the
   engine reports progress / persists output via an HTTP callback to the app (3 runnable steps ≈ 3
   round-trips + flow load + final `sendFlowResponse`), plus the isolated-vm code call. Direct
-  evidence it's app-callback-bound: adding apps cut warm flow-run from 477 ms (1:20) → 372 ms (1:10)
-  with identical steps — pure compute wouldn't move. Cold flow-run is ~2× warm because the
+  evidence it's app-callback-bound: adding apps cut warm execution from 477 ms (1:20) → 372 ms (1:10)
+  with identical steps — pure compute wouldn't move. Cold execution is ~2× warm because the
   just-forked engine runs on a cold V8 (no JIT warmup) while contending for CPU.
 
 ### The ratio finding
@@ -102,7 +102,7 @@ saturates its cap first):
 | 80 w | cold | 33.3 | 33.5 | +1% |
 
 - **Warm: 1:10 does add throughput** — at 80 workers 111 → 149 req/s (+35%). The app is the warm
-  bottleneck (workers idle ~11–14%), so more apps = more callback capacity = lower flow-run latency =
+  bottleneck (workers idle ~11–14%), so more apps = more callback capacity = lower execution latency =
   higher throughput. The 40-worker pair shows +58%, smaller because 40 workers can't push enough warm
   load to fully use even the 1:20 apps.
 - **Cold: 1:10 makes essentially no difference** (−1% / +1%) — cold is worker-bound (each job pays
@@ -123,7 +123,7 @@ from the same-region S3 bucket via a signed link (fast in-region fetch, not a sl
 **Cache warmth comes from running long-lived worker replicas, not a warm-up flag.**
 
 > Measurement caveat: layer numbers are from `hey` + engine timing logs. Per-step splits weren't
-> captured (the engine logged flow-run as one aggregate), so the within-step attribution is
+> captured (the engine logged execution as one aggregate), so the within-step attribution is
 > structural, not timed.
 
 ---
@@ -192,7 +192,7 @@ Victim had executed 252 runs and had one in flight. `kubectl delete pod` →
 | Pod fully gone | +1.7 s |
 
 Client + server verification: the concurrent `hey` run returned **747/747 HTTP 200**; the
-flow-runs API showed **0** `FAILED` / `INTERNAL_ERROR` / `TIMEOUT` runs afterwards. (A separate
+executions API showed **0** `FAILED` / `INTERNAL_ERROR` / `TIMEOUT` runs afterwards. (A separate
 150 s run that spanned a 14→4→6 rescale saw 8/2144 responses come back 408 — the sync-reply path
 giving up during churn; the runs themselves all succeeded.)
 

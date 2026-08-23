@@ -1,5 +1,5 @@
 // @fema/workflow-core — the execution layer extracted from @fema/shared
-// (flows, flow-run, engine operations, workers). See SRE-163.
+// (flows, execution, engine operations, workers). See SRE-163.
 
 export * from './lib/flows/actions/action'
 export * from './lib/flows/operations'
@@ -21,12 +21,12 @@ export * from './lib/flows/util/flow-structure-util'
 export * from './lib/flows/util/flow-connector-util'
 export * from './lib/flows/util/flow-canvas-util'
 export * from './lib/flows'
-export * from './lib/flow-run/dto/list-flow-runs-request'
-export * from './lib/flow-run/execution'
-export * from './lib/flow-run/flow-run'
-export * from './lib/flow-run/test-flow-run-request'
-export * from './lib/flow-run/log-serializer'
-export * from './lib/flow-run/waitpoint'
+export * from './lib/execution/dto/list-executions-request'
+export * from './lib/execution/execution'
+export * from './lib/execution/state'
+export * from './lib/execution/test-execution-request'
+export * from './lib/execution/log-serializer'
+export * from './lib/execution/waitpoint'
 export * from './lib/engine'
 export * from './lib/engine/rpc'
 export * from './lib/workers/job-data'

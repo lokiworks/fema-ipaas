@@ -1,11 +1,11 @@
-import { FlowRunStatus, FlowTriggerType, FlowVersionState, GenericStepOutput, StepOutputStatus } from '@fema/shared'
+import { ExecutionStatus, FlowTriggerType, FlowVersionState, GenericStepOutput, StepOutputStatus } from '@fema/shared'
 import { vi } from 'vitest'
 import { FlowExecutorContext } from '../../src/lib/handler/context/flow-execution-context'
 import { flowExecutor } from '../../src/lib/handler/flow-executor'
 import { buildCodeAction, buildMockBeginExecuteFlowOperation, buildSimpleLoopAction, generateMockEngineConstants } from './test-helper'
 
-vi.mock('../../src/lib/helper/flow-run-progress-reporter', () => ({
-    flowRunProgressReporter: {
+vi.mock('../../src/lib/helper/execution-progress-reporter', () => ({
+    executionProgressReporter: {
         sendUpdate: vi.fn().mockResolvedValue(undefined),
         backup: vi.fn().mockResolvedValue(undefined),
         init: vi.fn(),
@@ -26,7 +26,7 @@ describe('flow executor log size exceeded', () => {
         let FreshContext: typeof FlowExecutorContext
 
         beforeAll(async () => {
-            process.env.FEMA_MAX_FLOW_RUN_LOG_SIZE_MB = '0.0001'
+            process.env.FEMA_MAX_EXECUTION_LOG_SIZE_MB = '0.0001'
             vi.resetModules()
             const executorModule = await import('../../src/lib/handler/flow-executor')
             const contextModule = await import('../../src/lib/handler/context/flow-execution-context')
@@ -52,7 +52,7 @@ describe('flow executor log size exceeded', () => {
                 constants: generateMockEngineConstants(),
             })
 
-            expect(result.verdict.status).toBe(FlowRunStatus.LOG_SIZE_EXCEEDED)
+            expect(result.verdict.status).toBe(ExecutionStatus.LOG_SIZE_EXCEEDED)
         })
 
         it('should set failedStep to the step that caused log size to exceed', async () => {
@@ -69,7 +69,7 @@ describe('flow executor log size exceeded', () => {
                 constants: generateMockEngineConstants(),
             })
 
-            expect(result.verdict.status).toBe(FlowRunStatus.LOG_SIZE_EXCEEDED)
+            expect(result.verdict.status).toBe(ExecutionStatus.LOG_SIZE_EXCEEDED)
             expect(result.verdict.failedStep).toEqual(expect.objectContaining({
                 name: 'echo_step',
             }))
@@ -91,7 +91,7 @@ describe('flow executor log size exceeded', () => {
                 constants: generateMockEngineConstants(),
             })
 
-            expect(result.verdict.status).toBe(FlowRunStatus.LOG_SIZE_EXCEEDED)
+            expect(result.verdict.status).toBe(ExecutionStatus.LOG_SIZE_EXCEEDED)
         })
 
         it('should return LOG_SIZE_EXCEEDED verdict when trigger output exceeds log size limit', async () => {
@@ -138,7 +138,7 @@ describe('flow executor log size exceeded', () => {
                 }),
             })
 
-            expect(result.verdict.status).toBe(FlowRunStatus.LOG_SIZE_EXCEEDED)
+            expect(result.verdict.status).toBe(ExecutionStatus.LOG_SIZE_EXCEEDED)
         })
     })
 
@@ -156,7 +156,7 @@ describe('flow executor log size exceeded', () => {
             constants: generateMockEngineConstants(),
         })
 
-        expect(result.verdict.status).toBe(FlowRunStatus.RUNNING)
+        expect(result.verdict.status).toBe(ExecutionStatus.RUNNING)
         expect(result.steps.echo_step.status).toBe(StepOutputStatus.SUCCEEDED)
     })
 
@@ -176,6 +176,6 @@ describe('flow executor log size exceeded', () => {
             constants: generateMockEngineConstants(),
         })
 
-        expect(result.verdict.status).toBe(FlowRunStatus.RUNNING)
+        expect(result.verdict.status).toBe(ExecutionStatus.RUNNING)
     })
 })

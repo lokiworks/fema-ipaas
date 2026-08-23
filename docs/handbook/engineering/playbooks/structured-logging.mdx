@@ -6,7 +6,7 @@ icon: "list-tree"
 
 All structured logging on the server goes through [evlog](https://www.evlog.dev) — `logger.{info,warn,error,debug}({ fields }, msg)` and `wideEvent.set/error/timed` from `@fema/server-utils`.
 
-The **field keys** (not the message string) are the real schema — they are what dashboards, alerts, and the OTLP drain query against. If the same thing is logged under different keys (`runId` here, `flowRunId` there, a bare `id` elsewhere), every query becomes a guessing game and correlation silently breaks.
+The **field keys** (not the message string) are the real schema — they are what dashboards, alerts, and the OTLP drain query against. If the same thing is logged under different keys (`runId` here, `executionId` there, a bare `id` elsewhere), every query becomes a guessing game and correlation silently breaks.
 
 One rule above all: **one concept = one field, everywhere.**
 
@@ -15,15 +15,15 @@ One rule above all: **one concept = one field, everywhere.**
 Following [evlog's guidance](https://www.evlog.dev/learn/wide-events), group related fields under the entity they belong to instead of flat, prefixed keys. An entity's own id is just `id` inside its group.
 
 ```ts
-// ✅ Grouped — clear, and flattens to flowRun.id / flow.id
+// ✅ Grouped — clear, and flattens to execution.id / flow.id
 logger.info({
-  flowRun: { id: run.id, status: run.status },
+  execution: { id: run.id, status: run.status },
   flow: { id: run.flowId },
   project: { id: run.projectId },
 }, 'Flow run started')
 
 // ❌ Flat prefixes, alias, and a bare id
-logger.info({ runId: run.id, flowRunId: run.id, id: run.id }, 'Flow run started')
+logger.info({ runId: run.id, executionId: run.id, id: run.id }, 'Flow run started')
 ```
 
 The group name is the camelCase singular entity from the domain model. The id lives at `entity.id`, and the entity's attributes sit beside it in the same group.
@@ -32,7 +32,7 @@ The group name is the camelCase singular entity from the domain model. The id li
 
 <Steps>
 <Step title="The id is `id`, inside its entity group">
-Never a top-level `flowRunId`, `runId`, or bare `id`. A flow run is `flowRun: { id }`, a flow is `flow: { id }`. This gives exactly one queryable path per entity.
+Never a top-level `executionId`, `runId`, or bare `id`. A flow run is `execution: { id }`, a flow is `flow: { id }`. This gives exactly one queryable path per entity.
 </Step>
 
 <Step title="Attributes live beside the id, merged into one group">
@@ -56,7 +56,7 @@ One level of grouping (two max). `requestId`, `service`, `version`, `level`, `ms
 
 | Group | Fields | Entity |
 | --- | --- | --- |
-| `flowRun` | `id`, `status`, `environment` | A flow execution |
+| `execution` | `id`, `status`, `environment` | A flow execution |
 | `flow` | `id`, `version` | A flow definition |
 | `flowVersion` | `id` | A flow version |
 | `project` | `id` | A project |
@@ -75,5 +75,5 @@ One level of grouping (two max). `requestId`, `service`, `version`, `level`, `ms
 | `migration` | `name` | A database migration |
 
 <Warning>
-This convention governs the keys in **logging calls** only, not entity or DTO field names. Data-model fields such as `JobData.runId`, DB query arguments, and service-call arguments stay as-is — the value is simply logged under `flowRun: { id }`.
+This convention governs the keys in **logging calls** only, not entity or DTO field names. Data-model fields such as `JobData.runId`, DB query arguments, and service-call arguments stay as-is — the value is simply logged under `execution: { id }`.
 </Warning>

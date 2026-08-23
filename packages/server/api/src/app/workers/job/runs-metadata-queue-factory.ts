@@ -1,6 +1,6 @@
 import { apId, ApId } from '@fema/core-utils'
 import { apDayjsDuration } from '@fema/server-utils'
-import { FailedStep, FlowRunStatus, RunEnvironment } from '@fema/shared'
+import { ExecutionStatus, FailedStep, RunEnvironment } from '@fema/shared'
 import { Queue } from 'bullmq'
 import Redis from 'ioredis'
 import { DistributedStore } from '../../database/redis/distributed-store-factory'
@@ -109,7 +109,7 @@ export type RunsMetadataUpsertData = {
     triggeredBy?: string
     startTime?: string | null
     finishTime?: string | null
-    status?: FlowRunStatus
+    status?: ExecutionStatus
     tags?: string[]
     failedStep?: FailedStep
     stepNameToTest?: string

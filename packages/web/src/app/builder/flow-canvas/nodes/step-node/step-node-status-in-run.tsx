@@ -1,7 +1,7 @@
 import { t } from 'i18next';
 import { useMemo } from 'react';
 
-import { StepStatusIcon, flowRunUtils } from '@/features/flow-runs';
+import { StepStatusIcon, executionUtils } from '@/features/executions';
 
 import { useBuilderStateContext } from '../../../builder-hooks';
 import { flowCanvasUtils } from '../../utils/flow-canvas-utils';
@@ -20,11 +20,13 @@ const ApStepNodeStatusInRun = ({ stepName }: { stepName: string }) => {
     return null;
   }
   const { variant, text } = stepStatusInRun
-    ? flowRunUtils.getStatusIconForStep(stepStatusInRun)
+    ? executionUtils.getStatusIconForStep(stepStatusInRun)
     : ({ variant: 'default', text: t('Testing...') } as const);
   return (
     <StepNodeBadgeContainer>
-      <div className={flowRunUtils.getStatusContainerClassName(variant, true)}>
+      <div
+        className={executionUtils.getStatusContainerClassName(variant, true)}
+      >
         <StepStatusIcon
           status={stepStatusInRun}
           size="3"

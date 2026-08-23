@@ -1,6 +1,6 @@
 import { StreamStepProgress } from '../engine/engine-operation'
 import { GetFlowVersionForWorkerRequest, UploadRunLogsRequest } from '../engine/requests'
-import { FlowRun, RunEnvironment } from '../flow-run/flow-run'
+import { Execution, RunEnvironment } from '../execution/execution'
 import { FlowVersion } from '../flows/flow-version'
 import { TriggerRunStatus } from '../flows/triggers/trigger-run'
 import { ConsumeJobRequest, ConsumeJobResponse, WorkerMachineHealthcheckRequest } from './index'
@@ -68,7 +68,7 @@ export type WorkerToApiContract = {
     poll(input: WorkerMachineHealthcheckRequest): Promise<ConsumeJobRequest | null>
     completeJob(input: ConsumeJobResponse & { jobId: string, token: string, queueName: string }): Promise<void>
     uploadRunLog(input: UploadRunLogsRequest): Promise<void>
-    submitPayloads(input: SubmitPayloadsRequest): Promise<FlowRun[]>
+    submitPayloads(input: SubmitPayloadsRequest): Promise<Execution[]>
     savePayloads(input: SavePayloadRequest): Promise<void>
     getFlowVersion(input: GetFlowVersionForWorkerRequest): Promise<FlowVersion | null>
     getConnector(input: GetConnectorRequest): Promise<unknown>

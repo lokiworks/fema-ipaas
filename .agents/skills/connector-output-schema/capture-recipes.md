@@ -38,11 +38,11 @@ Committed endpoint, good for re-running and light batching. It **enqueues** a te
 ```
 POST /v1/authentication/sign-in     { email, password }  -> { token, projectId }
 POST /v1/sample-data/test-step      { projectId, flowVersionId, stepName }
-      -> a FlowRun record: { id, status, steps, ... }        // NOT { runId, output }
+      -> a Execution record: { id, status, steps, ... }        // NOT { runId, output }
 GET  /v1/sample-data?flowId=&flowVersionId=&stepName=&projectId=&type=OUTPUT
 ```
 
-**The output is not in the synchronous response.** `test-step` returns a `FlowRun` (note `id`, not `runId`; a `status` enum, not a `success` boolean) that comes back with `status: QUEUED` and empty `steps: {}` — the real step output streams to the builder over websocket once the run completes. To capture it in a script, **poll** `GET /v1/sample-data?...&type=OUTPUT` (or re-fetch the run by `id` and read `steps[<stepName>].output`) until it's populated. Because of this asynchrony, the browser Test Step (§2) — which just shows the output when the run finishes — is usually the simpler path.
+**The output is not in the synchronous response.** `test-step` returns a `Execution` (note `id`, not `runId`; a `status` enum, not a `success` boolean) that comes back with `status: QUEUED` and empty `steps: {}` — the real step output streams to the builder over websocket once the run completes. To capture it in a script, **poll** `GET /v1/sample-data?...&type=OUTPUT` (or re-fetch the run by `id` and read `steps[<stepName>].output`) until it's populated. Because of this asynchrony, the browser Test Step (§2) — which just shows the output when the run finishes — is usually the simpler path.
 
 Dev sign-in for a fresh local instance is typically `dev@ap.com` / `12345678`. The backend is proxied at `http://localhost:4200/api` in dev (not the API port directly).
 

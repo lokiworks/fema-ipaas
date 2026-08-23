@@ -1,9 +1,9 @@
 import { Permission, isNil } from '@fema/core-utils';
 import {
-  FlowRunStatus,
+  ExecutionStatus,
   WebsocketClientEvent,
   RunEnvironment,
-  isFlowRunStateTerminal,
+  isExecutionStateTerminal,
 } from '@fema/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useReactFlow } from '@xyflow/react';
@@ -15,7 +15,7 @@ import { useDebouncedCallback } from 'use-debounce';
 import { useEmbedding } from '@/components/providers/embed-provider';
 import { useSocket } from '@/components/providers/socket-provider';
 import { internalErrorToast } from '@/components/ui/sonner';
-import { flowRunsApi, flowRunUtils } from '@/features/flow-runs';
+import { executionsApi, executionUtils } from '@/features/executions';
 import { flowsApi } from '@/features/flows';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 
@@ -51,13 +51,13 @@ const useListenToExistingRun = () => {
       if (isNil(run)) {
         return null;
       }
-      const flowRun = await flowRunsApi.getPopulated(run.id);
-      setRun(flowRun, flowVersion);
+      const execution = await executionsApi.getPopulated(run.id);
+      setRun(execution, flowVersion);
     },
     enabled:
       !isNil(run) &&
       run.environment === RunEnvironment.PRODUCTION &&
-      !isFlowRunStateTerminal({
+      !isExecutionStateTerminal({
         status: run.status,
         ignoreInternalError: false,
       }) &&
@@ -173,8 +173,8 @@ export const useFocusOnStep = () => {
     ]);
 
   const previousStatus = usePrevious(currentRun?.status);
-  const currentStep = flowRunUtils.findLastStepWithStatus(
-    previousStatus ?? FlowRunStatus.RUNNING,
+  const currentStep = executionUtils.findLastStepWithStatus(
+    previousStatus ?? ExecutionStatus.RUNNING,
     currentRun?.steps ?? {},
   );
 

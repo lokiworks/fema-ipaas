@@ -22,9 +22,9 @@ const RunsPage = lazyWithRetry(
   () => import('./runs').then((m) => ({ default: m.RunsPage })),
   'runs',
 );
-const FlowRunPage = lazyWithRetry(
-  () => import('./runs/id').then((m) => ({ default: m.FlowRunPage })),
-  'flow-run',
+const ExecutionPage = lazyWithRetry(
+  () => import('./runs/id').then((m) => ({ default: m.ExecutionPage })),
+  'execution',
 );
 const ConnectionsPage = lazyWithRetry(
   () => import('./connections').then((m) => ({ default: m.ConnectionsPage })),
@@ -98,7 +98,7 @@ export const workspaceRoutes = [
         <PageTitle title="Flow Run">
           <BuilderLayout>
             <SuspenseWrapper>
-              <FlowRunPage />
+              <ExecutionPage />
             </SuspenseWrapper>
           </BuilderLayout>
         </PageTitle>

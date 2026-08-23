@@ -114,7 +114,7 @@ export const WorkerSettingsResponse = z.object({
     LOG_PRETTY: z.string(),
     ENVIRONMENT: z.string(),
     APP_WEBHOOK_SECRETS: z.string(),
-    MAX_FLOW_RUN_LOG_SIZE_MB: z.number(),
+    MAX_EXECUTION_LOG_SIZE_MB: z.number(),
     MAX_FILE_SIZE_MB: z.number(),
     SANDBOX_MEMORY_LIMIT: z.string(),
     SANDBOX_PROPAGATED_ENV_VARS: z.array(z.string()),

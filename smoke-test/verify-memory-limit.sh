@@ -38,7 +38,7 @@ fi
 AUTH="Authorization: Bearer $TOKEN"
 
 list_runs() {
-  curl -s --max-time 30 "$API/flow-runs?projectId=$PROJECT_ID&flowId=$FLOW_ID&limit=$((NUM_RUNS + 5))" -H "$AUTH"
+  curl -s --max-time 30 "$API/executions?projectId=$PROJECT_ID&flowId=$FLOW_ID&limit=$((NUM_RUNS + 5))" -H "$AUTH"
 }
 
 count_runs() {

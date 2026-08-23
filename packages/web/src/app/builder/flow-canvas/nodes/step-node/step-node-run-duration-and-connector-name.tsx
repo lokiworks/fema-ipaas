@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { TextWithTooltip } from '@/components/custom/text-with-tooltip';
-import { flowRunUtils } from '@/features/flow-runs';
+import { executionUtils } from '@/features/executions';
 import { formatUtils } from '@/lib/format-utils';
 import { cn } from '@/lib/utils';
 
@@ -33,7 +33,7 @@ const StepNodeRunDurationAndConnectorName = ({
   const isHorizontal = canvasOrientation === 'horizontal';
   const selectedStepOutput = useMemo(() => {
     return run && run.steps
-      ? flowRunUtils.extractStepOutput(stepName, loopIndexes, run.steps)
+      ? executionUtils.extractStepOutput(stepName, loopIndexes, run.steps)
       : null;
   }, [run, stepName, loopIndexes, flowVersion.trigger]);
 

@@ -7,8 +7,8 @@ import { entitiesMustBeOwnedByCurrentWorkspace } from '../authentication/authori
 import { connectorBundle } from '../connectors/connector-bundle'
 import { securityAccess } from '../core/security/authorization/fastify-security'
 import { fileService } from '../file/file.service'
+import { engineRunCallbackService } from '../flows/execution/engine-run-callback-service'
 import { flowService } from '../flows/flow/flow.service'
-import { engineRunCallbackService } from '../flows/flow-run/engine-run-callback-service'
 import { flowVersionService } from '../flows/flow-version/flow-version.service'
 
 export const flowEngineWorker: FastifyPluginAsyncZod = async (app) => {

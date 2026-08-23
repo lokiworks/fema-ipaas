@@ -4,7 +4,7 @@ export const DEFAULT_MCP_DATA = {
     flowId: 'mcp-flow-id',
     flowVersionId: 'mcp-flow-version-id',
     flowVersionState: FlowVersionState.LOCKED,
-    flowRunId: 'mcp-flow-run-id',
+    executionId: 'mcp-execution-id',
     triggerConnectorName: 'mcp-trigger-connector-name',
 }
 

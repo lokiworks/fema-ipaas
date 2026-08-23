@@ -1,6 +1,6 @@
 import { LATEST_CONTEXT_VERSION } from '@fema/connector-sdk'
 import { isNil, tryCatchSync } from '@fema/core-utils'
-import { BranchCondition, BranchExecutionType, BranchOperator, EngineGenericError, FlowRunStatus, RouterAction, RouterActionSettings, RouterExecutionType, RouterStepOutput, StepOutputStatus } from '@fema/shared'
+import { BranchCondition, BranchExecutionType, BranchOperator, EngineGenericError, ExecutionStatus, RouterAction, RouterActionSettings, RouterExecutionType, RouterStepOutput, StepOutputStatus } from '@fema/shared'
 import dayjs, { Dayjs } from 'dayjs'
 import { utils } from '../utils'
 import { BaseExecutor, failStep } from './base-executor'
@@ -132,7 +132,7 @@ async function handleRouterExecution({ action, executionState, constants, censor
                 constants,
             })
 
-            const shouldBreakExecution = executionState.verdict.status !== FlowRunStatus.RUNNING || routerExecutionType === RouterExecutionType.EXECUTE_FIRST_MATCH
+            const shouldBreakExecution = executionState.verdict.status !== ExecutionStatus.RUNNING || routerExecutionType === RouterExecutionType.EXECUTE_FIRST_MATCH
             if (shouldBreakExecution) {
                 break
             }

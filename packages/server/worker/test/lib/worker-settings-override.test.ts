@@ -52,7 +52,7 @@ function buildWorkerSettingsResponse(overrides?: Partial<WorkerSettingsResponse>
         LOG_PRETTY: 'false',
         ENVIRONMENT: 'prod',
         APP_WEBHOOK_SECRETS: '{}',
-        MAX_FLOW_RUN_LOG_SIZE_MB: 10,
+        MAX_EXECUTION_LOG_SIZE_MB: 10,
         MAX_FILE_SIZE_MB: 10,
         SANDBOX_MEMORY_LIMIT: '1024',
         SANDBOX_PROPAGATED_ENV_VARS: [],

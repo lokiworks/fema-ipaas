@@ -1,6 +1,6 @@
 import { isNil, Permission } from '@fema/core-utils';
 import {
-  FlowRun,
+  Execution,
   FlowVersion,
   FlowVersionState,
   PopulatedFlow,
@@ -154,7 +154,7 @@ const useShouldShowPublishButton = ({
 }: {
   flowVersion: FlowVersion;
   isPublishing: boolean;
-  run: FlowRun | null;
+  run: Execution | null;
   isSaving: boolean;
 }) => {
   const { checkAccess } = useAuthorization();

@@ -1,5 +1,5 @@
 import { PlatformError, ErrorCode } from '@fema/core-utils'
-import { EngineResponseStatus, FlowRunStatus } from '@fema/shared'
+import { EngineResponseStatus, ExecutionStatus } from '@fema/shared'
 import { deriveActionRunOutcome } from '../../../../src/app/action-run/action-run-outcome'
 import { WORKER_DID_NOT_RESPOND_MESSAGE } from '../../../../src/app/workers/user-interaction-watcher'
 
@@ -19,40 +19,40 @@ function ok(overrides: { success: boolean, output?: unknown, message?: string, l
 describe('deriveActionRunOutcome', () => {
     describe('status table', () => {
         it('OK + success maps to SUCCEEDED', () => {
-            expect(deriveActionRunOutcome(ok({ success: true })).status).toBe(FlowRunStatus.SUCCEEDED)
+            expect(deriveActionRunOutcome(ok({ success: true })).status).toBe(ExecutionStatus.SUCCEEDED)
         })
         it('OK + failure maps to FAILED', () => {
-            expect(deriveActionRunOutcome(ok({ success: false })).status).toBe(FlowRunStatus.FAILED)
+            expect(deriveActionRunOutcome(ok({ success: false })).status).toBe(ExecutionStatus.FAILED)
         })
         it('TIMEOUT maps to TIMEOUT', () => {
             const outcome = deriveActionRunOutcome({
                 result: { data: { status: EngineResponseStatus.TIMEOUT, response: { success: false, input: {}, output: null } }, error: null },
             })
-            expect(outcome.status).toBe(FlowRunStatus.TIMEOUT)
+            expect(outcome.status).toBe(ExecutionStatus.TIMEOUT)
         })
         it('any other engine status maps to INTERNAL_ERROR', () => {
             const outcome = deriveActionRunOutcome({
                 result: { data: { status: EngineResponseStatus.USER_FAILURE, response: { success: false, input: {}, output: null } }, error: null },
             })
-            expect(outcome.status).toBe(FlowRunStatus.INTERNAL_ERROR)
+            expect(outcome.status).toBe(ExecutionStatus.INTERNAL_ERROR)
         })
         it('error channel maps to INTERNAL_ERROR', () => {
             const outcome = deriveActionRunOutcome({ result: { data: null, error: new Error('boom') } })
-            expect(outcome.status).toBe(FlowRunStatus.INTERNAL_ERROR)
+            expect(outcome.status).toBe(ExecutionStatus.INTERNAL_ERROR)
         })
         it('watcher timeout maps to TIMEOUT, not INTERNAL_ERROR', () => {
             const error = new PlatformError({
                 code: ErrorCode.ENGINE_OPERATION_FAILURE,
                 params: { message: WORKER_DID_NOT_RESPOND_MESSAGE },
             })
-            expect(deriveActionRunOutcome({ result: { data: null, error } }).status).toBe(FlowRunStatus.TIMEOUT)
+            expect(deriveActionRunOutcome({ result: { data: null, error } }).status).toBe(ExecutionStatus.TIMEOUT)
         })
         it('other ENGINE_OPERATION_FAILURE errors stay INTERNAL_ERROR', () => {
             const error = new PlatformError({
                 code: ErrorCode.ENGINE_OPERATION_FAILURE,
                 params: { message: 'sandbox failed to boot' },
             })
-            expect(deriveActionRunOutcome({ result: { data: null, error } }).status).toBe(FlowRunStatus.INTERNAL_ERROR)
+            expect(deriveActionRunOutcome({ result: { data: null, error } }).status).toBe(ExecutionStatus.INTERNAL_ERROR)
         })
     })
 
@@ -106,7 +106,7 @@ describe('deriveActionRunOutcome', () => {
             const outcome = deriveActionRunOutcome({
                 result: { data: { status: EngineResponseStatus.TIMEOUT, response: { success: false, input: {}, output: null, neverStarted: true } }, error: null },
             })
-            expect(outcome.status).toBe(FlowRunStatus.TIMEOUT)
+            expect(outcome.status).toBe(ExecutionStatus.TIMEOUT)
             expect(outcome.neverStarted).toBe(true)
         })
         it('is false for a run the sandbox killed mid-flight', () => {

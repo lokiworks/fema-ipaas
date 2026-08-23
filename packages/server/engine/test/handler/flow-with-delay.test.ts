@@ -1,4 +1,4 @@
-import { FlowRunStatus } from '@fema/shared'
+import { ExecutionStatus } from '@fema/shared'
 import { FlowExecutorContext } from '../../src/lib/handler/context/flow-execution-context'
 import { flowExecutor } from '../../src/lib/handler/flow-executor'
 import { EngineApiStub, startEngineApiStub } from '../helpers/engine-api-stub'
@@ -41,7 +41,7 @@ describe('flow with delay', () => {
         })
 
         expect(result.verdict).toEqual({
-            status: FlowRunStatus.PAUSED,
+            status: ExecutionStatus.PAUSED,
         })
         expect(engineApi.requestsFor(WAITPOINT_PATH)[0].body).toEqual(
             expect.objectContaining({
@@ -75,7 +75,7 @@ describe('flow with delay', () => {
         const resumeResult = await flowExecutor.execute({
             action: delayForFlow,
             executionState: pauseResult.setVerdict({
-                status: FlowRunStatus.RUNNING,
+                status: ExecutionStatus.RUNNING,
             }),
             constants: generateMockEngineConstants({
                 internalApiUrl: engineApi.url,
@@ -88,7 +88,7 @@ describe('flow with delay', () => {
         })
 
         expect(resumeResult.verdict).toEqual({
-            status: FlowRunStatus.RUNNING,
+            status: ExecutionStatus.RUNNING,
         })
         expect(resumeResult.steps.delay_step.output).toEqual(
             expect.objectContaining({ success: true }),
@@ -113,7 +113,7 @@ describe('flow with delay', () => {
         })
 
         expect(result.verdict).toEqual({
-            status: FlowRunStatus.RUNNING,
+            status: ExecutionStatus.RUNNING,
         })
         expect(engineApi.requestsFor(WAITPOINT_PATH)).toHaveLength(0)
     })
@@ -140,7 +140,7 @@ describe('flow with delay', () => {
         })
 
         expect(result.verdict).toEqual({
-            status: FlowRunStatus.PAUSED,
+            status: ExecutionStatus.PAUSED,
         })
         expect(engineApi.requestsFor(WAITPOINT_PATH)[0].body).toEqual(
             expect.objectContaining({
@@ -168,7 +168,7 @@ describe('flow with delay', () => {
         })
 
         expect(result.verdict).toEqual({
-            status: FlowRunStatus.RUNNING,
+            status: ExecutionStatus.RUNNING,
         })
         expect(engineApi.requestsFor(WAITPOINT_PATH)).toHaveLength(0)
     })

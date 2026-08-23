@@ -1,9 +1,9 @@
-import { FlowRunId, PlatformId, WorkspaceId } from '@fema/core-utils'
+import { ExecutionId, PlatformId, WorkspaceId } from '@fema/core-utils'
 import { z } from 'zod'
 import { ExecutionToolStatus, PredefinedInputsStructure } from '@fema/connector-types'
 import { ConnectionType, ConnectionValue } from '@fema/connector-types'
-import { ExecutionType } from '../flow-run/execution/execution-output'
-import { RunEnvironment } from '../flow-run/flow-run'
+import { ExecutionType } from '../execution/state/execution-output'
+import { RunEnvironment } from '../execution/execution'
 import { CodeAction, ConnectorAction } from '../flows/actions/action'
 import { FlowVersion } from '../flows/flow-version'
 import { ConnectorPackage } from '@fema/connector-types'
@@ -110,7 +110,7 @@ export type ExecutePropsOptions = BaseEngineOperation & {
 
 type BaseExecuteFlowOperation<T extends ExecutionType> = BaseEngineOperation & {
     flowVersion: FlowVersion
-    flowRunId: FlowRunId
+    executionId: ExecutionId
     executionType: T
     runEnvironment: RunEnvironment
     workerHandlerId: string | null

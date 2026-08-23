@@ -2,7 +2,7 @@ import { StepOutputStatus } from '@fema/shared';
 import { t } from 'i18next';
 import { Loader2 } from 'lucide-react';
 
-import { StepStatusIcon } from '@/features/flow-runs';
+import { StepStatusIcon } from '@/features/executions';
 import { formatUtils } from '@/lib/format-utils';
 import { cn } from '@/lib/utils';
 

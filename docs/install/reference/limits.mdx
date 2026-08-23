@@ -16,7 +16,7 @@ when the variable is unset.
   <Card title="Execution" icon="bolt" href="#execution">
     Run timeout, worker memory, retention.
   </Card>
-  <Card title="Files & flow run logs" icon="file" href="#files-&-flow-run-logs">
+  <Card title="Files & flow run logs" icon="file" href="#files-&-execution-logs">
     File sizes, log size, slicing thresholds.
   </Card>
   <Card title="Webhooks" icon="webhook" href="#webhooks">
@@ -81,24 +81,24 @@ and outputs of every step in a single run.
 | Limit | Cloud | Env var | Self-hosted default |
 |---|---|---|---|
 | Step file size | 10 MB | `FEMA_MAX_FILE_SIZE_MB` | `25` |
-| Flow run log size (combined inputs + outputs, includes sliced payloads) | 25 MB | `FEMA_MAX_FLOW_RUN_LOG_SIZE_MB` | `50` |
-| Step output slice threshold | 32 KB | `FEMA_FLOW_RUN_LOG_SLICE_THRESHOLD_KB` | `32` |
-| Step input truncate threshold | 2 KB | `FEMA_FLOW_RUN_LOG_INPUT_TRUNCATE_THRESHOLD_KB` | `2` |
+| Flow run log size (combined inputs + outputs, includes sliced payloads) | 25 MB | `FEMA_MAX_EXECUTION_LOG_SIZE_MB` | `50` |
+| Step output slice threshold | 32 KB | `FEMA_EXECUTION_LOG_SLICE_THRESHOLD_KB` | `32` |
+| Step input truncate threshold | 2 KB | `FEMA_EXECUTION_LOG_INPUT_TRUNCATE_THRESHOLD_KB` | `2` |
 
 **How it works**
 
-- **Input** — values above `FEMA_FLOW_RUN_LOG_INPUT_TRUNCATE_THRESHOLD_KB` are
+- **Input** — values above `FEMA_EXECUTION_LOG_INPUT_TRUNCATE_THRESHOLD_KB` are
   replaced with a placeholder in the log; the step still receives the full
   value at runtime.
-- **Output** — outputs above `FEMA_FLOW_RUN_LOG_SLICE_THRESHOLD_KB` are offloaded
+- **Output** — outputs above `FEMA_EXECUTION_LOG_SLICE_THRESHOLD_KB` are offloaded
   to object storage and replaced with a reference in the log; the payload is
   re-hydrated on demand.
 - **Total** — the cumulative size of inputs and outputs (counting the
   **original** size of offloaded outputs) is capped by
-  `FEMA_MAX_FLOW_RUN_LOG_SIZE_MB`. Runs that exceed it end with status
+  `FEMA_MAX_EXECUTION_LOG_SIZE_MB`. Runs that exceed it end with status
   `LOG_SIZE_EXCEEDED` — regardless of how many outputs were offloaded to object
-  storage. Lowering `FEMA_FLOW_RUN_LOG_SLICE_THRESHOLD_KB` will **not** buy more
-  log headroom; only raising `FEMA_MAX_FLOW_RUN_LOG_SIZE_MB` does.
+  storage. Lowering `FEMA_EXECUTION_LOG_SLICE_THRESHOLD_KB` will **not** buy more
+  log headroom; only raising `FEMA_MAX_EXECUTION_LOG_SIZE_MB` does.
 
 ---
 

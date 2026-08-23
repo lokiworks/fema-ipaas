@@ -11,7 +11,7 @@ import {
   WebhookPauseMetadata,
 } from '@fema/connector-types';
 import type { SeekPage } from '@fema/core-utils';
-import type { FlowRunId, WorkspaceId } from '@fema/core-utils';
+import type { ExecutionId, WorkspaceId } from '@fema/core-utils';
 import type { Readable } from 'node:stream'
 
 import {
@@ -193,7 +193,7 @@ export type CreateWaitpointHook = (params: CreateWaitpointParams) => Promise<Cre
 export type WaitForWaitpointHook = (waitpointId: string) => void;
 
 export type RunContext = {
-  id: FlowRunId;
+  id: ExecutionId;
   stop: StopHook;
   /** @deprecated Use createWaitpoint + waitForWaitpoint instead */
   pause?: PauseHook;

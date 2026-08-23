@@ -1,4 +1,4 @@
-import { FlowRunStatus } from '@fema/shared'
+import { ExecutionStatus } from '@fema/shared'
 import { FlowExecutorContext } from '../../src/lib/handler/context/flow-execution-context'
 import { flowExecutor } from '../../src/lib/handler/flow-executor'
 import { buildConnectorAction, generateMockEngineConstants } from './test-helper'
@@ -42,8 +42,8 @@ describe('flow retry', () => {
         const retryEntireFlow = await flowExecutor.execute({
             action: successHttpAction, executionState: context, constants: generateMockEngineConstants(),
         })
-        expect(failedResult.verdict.status).toBe(FlowRunStatus.FAILED)
-        expect(retryEntireFlow.verdict.status).toBe(FlowRunStatus.RUNNING)
+        expect(failedResult.verdict.status).toBe(ExecutionStatus.FAILED)
+        expect(retryEntireFlow.verdict.status).toBe(ExecutionStatus.RUNNING)
     }, 10000)
 
     it('should retry flow from failed step', async () => {
@@ -56,7 +56,7 @@ describe('flow retry', () => {
         const retryFromFailed = await flowExecutor.execute({
             action: successHttpAction, executionState: context, constants: generateMockEngineConstants({}),
         })
-        expect(failedResult.verdict.status).toBe(FlowRunStatus.FAILED)
-        expect(retryFromFailed.verdict.status).toBe(FlowRunStatus.RUNNING)
+        expect(failedResult.verdict.status).toBe(ExecutionStatus.FAILED)
+        expect(retryFromFailed.verdict.status).toBe(ExecutionStatus.RUNNING)
     }, 10000)
 })

@@ -1,12 +1,12 @@
 import { isNil } from '@fema/core-utils'
-import { FlowRunStatus, PauseType } from '@fema/shared'
+import { ExecutionStatus, PauseType } from '@fema/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { In, MoreThan } from 'typeorm'
 import { repoFactory } from '../../core/db/repo-factory'
 import { redisConnections } from '../../database/redis-connections'
-import { flowRunRepo } from '../../flows/flow-run/flow-run-service'
-import { WaitpointEntity } from '../../flows/flow-run/waitpoint/waitpoint-entity'
+import { executionRepo } from '../../flows/execution/execution-service'
+import { WaitpointEntity } from '../../flows/execution/waitpoint/waitpoint-entity'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
 import { SystemJobName } from '../../helper/system-jobs/common'
@@ -27,9 +27,9 @@ export const refillPausedRuns = (log: FastifyBaseLogger) => ({
         }
 
         log.info('[refillPausedRuns] Finding paused DELAY runs with waitpoints from pre-migration data')
-        const pausedRuns = await flowRunRepo().find({
+        const pausedRuns = await executionRepo().find({
             where: {
-                status: FlowRunStatus.PAUSED,
+                status: ExecutionStatus.PAUSED,
                 created: MoreThan(dayjs().subtract(executionRetentionDays, 'day').toISOString()),
             },
         })
@@ -40,9 +40,9 @@ export const refillPausedRuns = (log: FastifyBaseLogger) => ({
             return
         }
 
-        const flowRunIds = pausedRuns.map(r => r.id)
-        const waitpoints = await waitpointRepo().findBy({ flowRunId: In(flowRunIds) })
-        const waitpointByRunId = Object.fromEntries(waitpoints.map(w => [w.flowRunId, w]))
+        const executionIds = pausedRuns.map(r => r.id)
+        const waitpoints = await waitpointRepo().findBy({ executionId: In(executionIds) })
+        const waitpointByRunId = Object.fromEntries(waitpoints.map(w => [w.executionId, w]))
 
         let migratedCount = 0
 
@@ -67,7 +67,7 @@ export const refillPausedRuns = (log: FastifyBaseLogger) => ({
             await systemJobsSchedule(log).upsertJob({
                 job: {
                     name: SystemJobName.RESUME_DELAY_WAITPOINT,
-                    data: { flowRunId: pausedRun.id, workspaceId: pausedRun.workspaceId, waitpointId: waitpoint.id },
+                    data: { executionId: pausedRun.id, workspaceId: pausedRun.workspaceId, waitpointId: waitpoint.id },
                     jobId: `resume-delay-${pausedRun.id}`,
                 },
                 schedule: {

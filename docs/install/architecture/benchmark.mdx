@@ -185,7 +185,7 @@ Infra round-trip (server-measured, in-region — authoritative, not reachable fr
 
 Config flags (server-reported)
   EDITION "ce"   DEFAULT_CONCURRENT_JOBS_LIMIT 1000   PROJECT_RATE_LIMITER_ENABLED false
-  FLOW_RUN_MEMORY_LIMIT_KB 1048576   WEBHOOK_TIMEOUT_SECONDS 30   FLOW_RUN_TIME_SECONDS 600  ...
+  EXECUTION_MEMORY_LIMIT_KB 1048576   WEBHOOK_TIMEOUT_SECONDS 30   EXECUTION_TIME_SECONDS 600  ...
 
 Setup
   workers online : 4, execution slots : 4
@@ -219,8 +219,8 @@ Each section answers one question:
 | **Config flags** | The limits and throttles that silently cap throughput — a `PROJECT_RATE_LIMITER_ENABLED` or a low `DEFAULT_CONCURRENT_JOBS_LIMIT` re-queues jobs (latency, not errors); the memory/timeout/log ceilings that turn into `MEMORY_LIMIT_EXCEEDED` / `TIMEOUT` / `LOG_SIZE_EXCEEDED` statuses | `GET /v1/flags` |
 | **Setup** | Execution slots (Σ `FEMA_WORKER_CONCURRENCY`) and a PASS/WARN check of every worker's specs, sandbox mode, reuse, and concurrency against the recommended shape | `GET /v1/worker-machines` |
 | **Network** | CLI→server round-trip, so cross-region distance is quantified and subtracted rather than blamed on the server | timed `GET /v1/flags` |
-| **Load + latency split** | Throughput, run-status outcomes (server truth, not just HTTP codes), live **queue depth** during load, and the per-run latency split into **QUEUE / PROVISION / BOOT / RUN** — measured inside the worker, so it's the same on any deployment regardless of where the CLI runs. The verdict says whether latency is **queue-bound** (too much concurrency for the slot count) or **service-bound** (real engine time) | `FlowRun.timeline` + `GET /v1/worker-machines/queue-metrics` |
-| **Storage** | Fraction of runs whose logs were persisted — proves the worker→storage write path works end to end | `FlowRun.logsFileId` |
+| **Load + latency split** | Throughput, run-status outcomes (server truth, not just HTTP codes), live **queue depth** during load, and the per-run latency split into **QUEUE / PROVISION / BOOT / RUN** — measured inside the worker, so it's the same on any deployment regardless of where the CLI runs. The verdict says whether latency is **queue-bound** (too much concurrency for the slot count) or **service-bound** (real engine time) | `Execution.timeline` + `GET /v1/worker-machines/queue-metrics` |
+| **Storage** | Fraction of runs whose logs were persisted — proves the worker→storage write path works end to end | `Execution.logsFileId` |
 
 Here the read is unambiguous: workers pegged at ~100% of their 0.5-core limit and RUN ≈ 200 ms dominate, while QUEUE (~100 ms at concurrency = slots) and the infra round-trips are small — the deployment is **service-bound on worker CPU**, so the lever is more/bigger workers, not a code change.
 

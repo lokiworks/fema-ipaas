@@ -257,7 +257,7 @@ describe('Files Controller', () => {
                 query: { token: engineToken },
                 headers: {
                     'content-type': 'application/octet-stream',
-                    'x-ap-file-type': FileType.FLOW_RUN_LOG_SLICE,
+                    'x-ap-file-type': FileType.EXECUTION_LOG_SLICE,
                 },
                 payload: body,
             })
@@ -273,7 +273,7 @@ describe('Files Controller', () => {
         })
 
         it.each([
-            { type: FileType.FLOW_RUN_LOG_SLICE, extension: 'json' },
+            { type: FileType.EXECUTION_LOG_SLICE, extension: 'json' },
             { type: FileType.FLOW_STEP_FILE, extension: 'bin' },
         ])('names an unnamed $type download <id>.$extension', async ({ type, extension }) => {
             const { mockWorkspace, mockPlatform } = await mockAndSaveBasicSetup()

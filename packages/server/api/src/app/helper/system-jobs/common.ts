@@ -1,4 +1,4 @@
-import { FlowId, FlowRunId, PlatformId, WorkspaceId } from '@fema/core-utils'
+import { ExecutionId, FlowId, PlatformId, WorkspaceId } from '@fema/core-utils'
 import { Flow } from '@fema/shared'
 import { Job, JobsOptions } from 'bullmq'
 import { Dayjs } from 'dayjs'
@@ -33,7 +33,7 @@ type HardDeletePlatformSystemJobData = {
 }
 
 type ResumeDelayWaitpointSystemJobData = {
-    flowRunId: FlowRunId
+    executionId: ExecutionId
     workspaceId: WorkspaceId
     waitpointId: string
 }

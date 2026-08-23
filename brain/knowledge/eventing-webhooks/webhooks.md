@@ -20,7 +20,7 @@ Webhooks are the primary entry point for event-driven flow execution from outsid
   - `/:flowId/draft/sync` and `/:flowId/draft` — testing against the draft version.
   - `/:flowId/test` — captures request as sample data, no execution.
 - **Async**: offload payload to S3/DB if over `FEMA_WEBHOOK_PAYLOAD_INLINE_THRESHOLD_KB` (default 512KB) → queue `EXECUTE_WEBHOOK` → return 200. Job carries a `JobPayload` union (`inline` or `ref`); the **engine** resolves it at execution time (workers no longer fetch payloads).
-- **Sync**: create FlowRun with `WEBHOOK_RESPONSE` → register `engineResponseWatcher` → wait (`FEMA_WEBHOOK_TIMEOUT_SECONDS`, default 30; callers can override, e.g. MCP uses 5 min) → return flow response or 204 on timeout.
+- **Sync**: create Execution with `WEBHOOK_RESPONSE` → register `engineResponseWatcher` → wait (`FEMA_WEBHOOK_TIMEOUT_SECONDS`, default 30; callers can override, e.g. MCP uses 5 min) → return flow response or 204 on timeout.
 - **Version resolution** `LOCKED_FALL_BACK_TO_LATEST`: uses `publishedVersionId` if set, else latest draft.
 - **Payload normalization** (`convertRequest`): multipart parts and binary bodies upload to the File service and the payload carries URLs; JSON/text pass through. `BINARY_CONTENT_TYPE_PATTERNS` covers `image/*`, `video/*`, `audio/*`, `application/pdf|zip|gzip|octet-stream` and `text/csv` (each also needs a `addContentTypeParser` entry in `webhook-module.ts` to stream rather than parse). Subflow linkage is read off `x-parent-run-id` / `x-fail-parent-on-failure`.
 

@@ -1,0 +1,495 @@
+packages/web/src/app/builder/piece-properties/text-input-with-mentions/components/function-hover-popover.tsx
+  s_94864882421579::t_2ad88df6d4b596 1,157,199
+packages/server/api/test/helpers/e2e-setup.ts
+  s_94864882421579::t_2ad88df6d4b596 21-23
+tools/scripts/utils/piece-script-utils.ts
+  s_94864882421579::t_2ad88df6d4b596 27,71
+.github/workflows/benchmark.yml
+  s_94864882421579::t_2ad88df6d4b596 15-22
+docs/handbook/engineering/playbooks/database-migration.mdx
+  s_94864882421579::t_2ad88df6d4b596 39-40
+packages/core/formula/src/lib/function-type-checker.ts
+  s_94864882421579::t_2ad88df6d4b596 1,35,199
+brain/knowledge/pieces-engine/index.md
+  s_94864882421579::t_2ad88df6d4b596 27,39,63
+brain/knowledge/flows-execution/chat.md
+  s_94864882421579::t_2ad88df6d4b596 39
+brain/knowledge/decisions/000030-this-fork-has-no-editions-the-ee-pages-are-history.md
+  s_94864882421579::t_2ad88df6d4b596 10
+docs/install/reference/environment-variables.mdx
+  s_94864882421579::t_2ad88df6d4b596 63-68,71,76,86,90-100,107,112-128,131-132,141,145-155,167-179,190-197,209-211,223-228,232-233,243-246,257-261,272-273
+packages/server/api/test/integration/pieces/piece-options-e2e.test.ts
+  s_94864882421579::t_2ad88df6d4b596 10
+docs/build-pieces/piece-reference/triggers/webhook-trigger.mdx
+  s_94864882421579::t_2ad88df6d4b596 33
+packages/core/formula/src/lib/function-implementations.ts
+  s_94864882421579::t_2ad88df6d4b596 6,413
+packages/server/api/package.json
+  s_94864882421579::t_2ad88df6d4b596 142,144
+packages/web/src/app/builder/flow-canvas/nodes/big-add-button-node.tsx
+  s_94864882421579::t_ed2e610f0b4b66 118-119
+  s_94864882421579::t_2ad88df6d4b596 64-65,71-72
+docs/admin-guide/guides/scim/overview.mdx
+  s_94864882421579::t_2ad88df6d4b596 37
+docs/install/architecture/piece-syncing.mdx
+  s_94864882421579::t_2ad88df6d4b596 43
+brain/knowledge/decisions/000025-connection-piece-binding-is-enforced-in-the-engine.md
+  s_94864882421579::t_2ad88df6d4b596 7,29,32,49
+packages/core/formula/src/lib/function-registry.ts
+  s_94864882421579::t_2ad88df6d4b596 1
+.agents/skills/piece-output-schema/SKILL.md
+  s_94864882421579::t_2ad88df6d4b596 26
+brain/knowledge/engineering/regenerate-the-baseline-migration.md
+  s_94864882421579::t_2ad88df6d4b596 26-30
+docs/install/options/gcp.mdx
+  s_94864882421579::t_2ad88df6d4b596 17-20
+packages/web/public/locales/ru/translation.json
+  s_94864882421579::t_2ad88df6d4b596 421
+docker-entrypoint.sh
+  s_94864882421579::t_2ad88df6d4b596 7-8,10-11,14-16,21,31,33,41,56
+docs/build-pieces/building-pieces/create-trigger.mdx
+  s_94864882421579::t_2ad88df6d4b596 127,140
+packages/server/api/vitest.setup.ts
+  s_94864882421579::t_2ad88df6d4b596 8
+packages/core/shared/src/lib/management/platform/platform.model.ts
+  s_94864882421579::t_2ad88df6d4b596 39,262
+packages/server/sandbox/test/lib/sandbox/isolate.test.ts
+  s_94864882421579::t_2ad88df6d4b596 45-47,237,240,278,281,286,291,293,300-302,315-316
+packages/core/shared/src/lib/core/file/index.ts
+  s_94864882421579::t_2ad88df6d4b596 19
+packages/server/api/src/app/helper/system-validator.ts
+  s_94864882421579::t_2ad88df6d4b596 247,269,272,280,290,298
+packages/web/public/locales/pt/translation.json
+  s_94864882421579::t_2ad88df6d4b596 1066,1141
+brain/knowledge/decisions/000016-action-run-code-cache-is-namespaced-per-platform.md
+  s_94864882421579::t_2ad88df6d4b596 57,70,109,129,138
+packages/web/public/locales/ar/translation.json
+  s_94864882421579::t_2ad88df6d4b596 438
+docs/build-pieces/building-pieces/create-action.mdx
+  s_94864882421579::t_2ad88df6d4b596 101
+docs/install/configure-operate/setup-app-webhooks.mdx
+  s_94864882421579::t_2ad88df6d4b596 17
+packages/server/api/test/integration/file/files-controller.test.ts
+  s_94864882421579::t_2ad88df6d4b596 95-96,120,123
+brain/knowledge/connections-auth/app-connections.md
+  s_94864882421579::t_2ad88df6d4b596 28
+packages/cli/README.md
+  s_94864882421579::t_2ad88df6d4b596 19,27
+packages/server/api/src/app/project/project-service.ts
+  s_94864882421579::t_2ad88df6d4b596 262
+benchmark/run-gke.sh
+  s_94864882421579::t_2ad88df6d4b596 29,32,141,172
+brain/knowledge/decisions/000029-the-engine-never-imports-a-piece-a-fresh-child-process-does.md
+  s_94864882421579::t_2ad88df6d4b596 30
+packages/server/api/test/integration/webhooks/webhook-oversized-file.test.ts
+  s_94864882421579::t_2ad88df6d4b596 2
+smoke-test/verify-memory-limit.sh
+  s_94864882421579::t_2ad88df6d4b596 7
+benchmark/run-workerpool.sh
+  s_94864882421579::t_2ad88df6d4b596 35,37-38,41
+packages/web/src/app/routes/platform/infra/workers/worker-assignments-tab.tsx
+  s_94864882421579::t_2ad88df6d4b596 31
+brain/knowledge/ai-intelligence/ai-agents.md
+  s_94864882421579::t_2ad88df6d4b596 25,33
+packages/core/execution/src/lib/flow-run/flow-run.ts
+  s_94864882421579::t_2ad88df6d4b596 82
+.agents/skills/piece-output-schema/capture-recipes.md
+  s_94864882421579::t_2ad88df6d4b596 72
+docs/build-pieces/misc/pieces-ci-cd.mdx
+  s_94864882421579::t_2ad88df6d4b596 24,78
+docs/handbook/engineering/onboarding/stack.mdx
+  s_94864882421579::t_2ad88df6d4b596 36
+docs/install/architecture/network-security.mdx
+  s_94864882421579::t_2ad88df6d4b596 11-12,14,18,21,31,40,45,48,58,63-64,70,73,76,80,83
+brain/knowledge/execution-runtime/index.md
+  s_94864882421579::t_2ad88df6d4b596 7,11,24,33,37,46-47
+.github/workflows/ci.yml
+  s_94864882421579::t_2ad88df6d4b596 196-202
+docs/_snippets/execution-mode.mdx
+  s_94864882421579::t_2ad88df6d4b596 3-6
+packages/server/engine/src/lib/network/ssrf-guard.ts
+  s_94864882421579::t_2ad88df6d4b596 47,52,58
+packages/server/sandbox/test/lib/create-sandbox-for-job.test.ts
+  s_94864882421579::t_2ad88df6d4b596 163-165,167,169,172,175,179,182,187,195,241,243,251-252,260
+brain/knowledge/eventing-webhooks/event-destinations.md
+  s_94864882421579::t_2ad88df6d4b596 22
+AGENTS.md
+  s_94864882421579::t_2ad88df6d4b596 8,118-122
+brain/knowledge/ai-intelligence/mcp-server.md
+  s_94864882421579::t_2ad88df6d4b596 18
+packages/server/engine/src/lib/piece-context/connection-resolver.ts
+  s_94864882421579::t_2ad88df6d4b596 56
+packages/server/api/test/unit/app/helper/system-jobs/remove-deprecated-jobs.test.ts
+  s_94864882421579::t_2ad88df6d4b596 8-9,27-31
+brain/knowledge/execution-runtime/gotcha-code-cache-is-namespaced-by-flowversionid-never-reuse-a-constant.md
+  s_94864882421579::t_2ad88df6d4b596 13,21,27
+brain/knowledge/engineering/server-module-anatomy.md
+  s_94864882421579::t_2ad88df6d4b596 137,141
+docs/install/guarantees/execution-isolation.mdx
+  s_94864882421579::t_2ad88df6d4b596 17-18,24,30-31
+docs/install/options/docker-compose.mdx
+  s_94864882421579::t_2ad88df6d4b596 62
+packages/core/formula/src/lib/formula-evaluator.ts
+  s_94864882421579::t_2ad88df6d4b596 2,183,198,232,292
+packages/server/engine/src/lib/core/code/code-sandbox.ts
+  s_94864882421579::t_2ad88df6d4b596 5,26,31
+packages/web/public/locales/fr/translation.json
+  s_94864882421579::t_2ad88df6d4b596 1066,1141
+packages/server/sandbox/src/lib/sandbox/fork.ts
+  s_94864882421579::t_2ad88df6d4b596 17
+packages/web/src/app/builder/flow-canvas/widgets/index.tsx
+  s_94864882421579::t_2ad88df6d4b596 28,62
+docs/install/configure-operate/production-setup.mdx
+  s_94864882421579::t_2ad88df6d4b596 30-34,38,70-75,85,89,91,94-96,99,105-107,115,117,122-123
+packages/server/AGENTS.md
+  s_94864882421579::t_2ad88df6d4b596 11
+benchmark/docker-compose.yml
+  s_94864882421579::t_2ad88df6d4b596 14,26-50,65-86
+docs/install/guarantees/crash-recovery.mdx
+  s_94864882421579::t_2ad88df6d4b596 10
+packages/server/api/test/unit/app/helper/otel-queue-metrics.test.ts
+  s_94864882421579::t_2ad88df6d4b596 98,104,109,118,126,140
+packages/cli/src/lib/commands/benchmark.ts
+  s_94864882421579::t_2ad88df6d4b596 15,453,455
+benchmark/docker-compose.minio.yml
+  s_94864882421579::t_2ad88df6d4b596 4
+brain/knowledge/execution-runtime/benchmark-cli.md
+  s_94864882421579::t_2ad88df6d4b596 25-26,34,36
+brain/knowledge/decisions/000021-legacy-free-platforms-are-comped-an-appsumo-clone-from-ensureenrolled.md
+  s_94864882421579::t_2ad88df6d4b596 85
+packages/server/api/src/app/helper/system/system-props.ts
+  s_94864882421579::t_6d476e88df362a 166,175
+packages/web/src/app/builder/flow-canvas/edges/router-end-edge.tsx
+  s_94864882421579::t_2ad88df6d4b596 87,93,109-110
+Dockerfile
+  s_94864882421579::t_2ad88df6d4b596 4,141
+brain/knowledge/decisions/000028-piece-tarballs-are-never-mirrored-into-our-own-s3.md
+  s_94864882421579::t_2ad88df6d4b596 11,22
+packages/server/sandbox/test/lib/sandbox/fork.test.ts
+  s_94864882421579::t_2ad88df6d4b596 25,43,46
+docs/install/options/docker.mdx
+  s_94864882421579::t_2ad88df6d4b596 24,38,82
+brain/knowledge/decisions/000020-credit-gating-fails-open-on-an-unknown-balance.md
+  s_94864882421579::t_2ad88df6d4b596 87
+packages/server/worker/src/lib/worker.ts
+  s_94864882421579::t_2ad88df6d4b596 18,32,45-46,49,178,186,225-226,228,231,233,417,421,439
+packages/server/engine/src/lib/core/piece/piece-runner.ts
+  s_94864882421579::t_2ad88df6d4b596 121
+packages/web/src/app/builder/piece-properties/text-input-with-mentions/text-input-utils.ts
+  s_94864882421579::t_2ad88df6d4b596 2,95
+smoke-test/verify-s3.sh
+  s_94864882421579::t_2ad88df6d4b596 5
+brain/knowledge/pieces-engine/building-pieces.md
+  s_94864882421579::t_2ad88df6d4b596 23
+docs/install/reference/breaking-changes.mdx
+  s_94864882421579::t_2ad88df6d4b596 115,122,125,135,140-141,146,149,157,159,176,178-180,182-183,187,210,213,217-218,226,237,269,275,281,285,291,297,305,316,322,327-328,332-333,338,342,385,389,411,415,422-423,427-428
+packages/web/public/locales/nl/translation.json
+  s_94864882421579::t_2ad88df6d4b596 1066,1141
+packages/server/api/src/app/app.ts
+  s_94864882421579::t_2ad88df6d4b596 242,253
+Dockerfile.worker
+  s_94864882421579::t_2ad88df6d4b596 58-59
+benchmark/run-local.sh
+  s_94864882421579::t_2ad88df6d4b596 33
+packages/web/public/locales/zh/translation.json
+  s_94864882421579::t_2ad88df6d4b596 1066,1141
+packages/core/shared/src/lib/core/user/user.ts
+  s_94864882421579::t_2ad88df6d4b596 62
+tools/scripts/breaking-change-check.ts
+  s_94864882421579::t_2ad88df6d4b596 111-112,114
+docs/build-pieces/misc/publish-piece.mdx
+  s_94864882421579::t_2ad88df6d4b596 30,33,45
+docs/install/architecture/sandboxing.mdx
+  s_94864882421579::t_2ad88df6d4b596 7,49
+packages/server/api/test/README.md
+  s_94864882421579::t_2ad88df6d4b596 31-32
+benchmark/EXPERIMENTS.md
+  s_94864882421579::t_2ad88df6d4b596 34-35,119,145,147,221,274,279
+packages/server/api/test/unit/app/workers/job-queue/active-invariant.test.ts
+  s_94864882421579::t_2ad88df6d4b596 25-26
+tools/setup-dev.js
+  s_94864882421579::t_2ad88df6d4b596 71
+docs/install/troubleshooting/bullboard.mdx
+  s_94864882421579::t_2ad88df6d4b596 20-22
+packages/web/public/locales/ja/translation.json
+  s_94864882421579::t_ed2e610f0b4b66 1141
+  s_94864882421579::t_2ad88df6d4b596 1066
+packages/server/engine/test/handler/flow-log-size.test.ts
+  s_94864882421579::t_2ad88df6d4b596 29
+docs/install/configure-operate/setup-s3.mdx
+  s_94864882421579::t_2ad88df6d4b596 15,19,26-34,37,42
+packages/web/src/app/builder/flow-canvas/edges/branch-label.tsx
+  s_94864882421579::t_2ad88df6d4b596 132
+packages/web/public/locales/zh-TW/translation.json
+  s_94864882421579::t_2ad88df6d4b596 1066,1141
+packages/web/src/app/builder/flow-canvas/nodes/loop-return-node.tsx
+  s_94864882421579::t_2ad88df6d4b596 24
+docs/install/configure-operate/sandboxing.mdx
+  s_94864882421579::t_2ad88df6d4b596 3,17
+docker-compose.yml
+  s_94864882421579::t_2ad88df6d4b596 13,25,38-40
+docs/install/reference/limits.mdx
+  s_94864882421579::t_2ad88df6d4b596 41,43-45,49-50,58-59,83-86,90,93,98,100-101,112-114,135
+docs/about/changelog.mdx
+  s_94864882421579::t_2ad88df6d4b596 23,49,93-94
+tools/scripts/pieces/update-pieces-metadata.ts
+  s_94864882421579::t_2ad88df6d4b596 5,7,9,17,21
+docs/install/architecture/autoscaling.mdx
+  s_94864882421579::t_2ad88df6d4b596 10
+brain/knowledge/decisions/000001-worker-is-the-sandbox-one-job-per-worker-scale-by-replicas.md
+  s_94864882421579::t_2ad88df6d4b596 27
+packages/web/src/app/builder/flow-canvas/edges/loop-return-edge.tsx
+  s_94864882421579::t_2ad88df6d4b596 59,76-77
+packages/web/public/locales/es/translation.json
+  s_94864882421579::t_2ad88df6d4b596 1066,1141
+brain/knowledge/flows-execution/index.md
+  s_94864882421579::t_2ad88df6d4b596 41
+brain/knowledge/decisions/000002-transitional-multi-box-concurrency-honor-ap-worker-concurrency.md
+  s_94864882421579::t_2ad88df6d4b596 5,9,13
+docs/install/configure-operate/separate-workers.mdx
+  s_94864882421579::t_2ad88df6d4b596 21,27-33,37
+.claude/rules/safe-http.md
+  s_94864882421579::t_2ad88df6d4b596 1
+docs/install/configure-operate/worker-groups.mdx
+  s_94864882421579::t_2ad88df6d4b596 22,24-25,28-29,32-33,39-40,44,47,54
+brain/knowledge/pieces-engine/pieces.md
+  s_94864882421579::t_2ad88df6d4b596 30
+packages/web/src/app/builder/piece-properties/text-input-with-mentions/extensions/bracket-nodes.tsx
+  s_94864882421579::t_ed2e610f0b4b66 54-56
+  s_94864882421579::t_2ad88df6d4b596 1,14,81
+docs/handbook/engineering/playbooks/run-ee.mdx
+  s_94864882421579::t_2ad88df6d4b596 20-40
+docs/install/options/railway.mdx
+  s_94864882421579::t_2ad88df6d4b596 50,61,71
+packages/web/scripts/generate-usecase-images.mjs
+  s_94864882421579::t_2ad88df6d4b596 245,302,304-305,322-323,325,328-331
+brain/knowledge/eventing-webhooks/webhooks.md
+  s_94864882421579::t_2ad88df6d4b596 22-23,30
+docs/build-pieces/building-pieces/development-setup.mdx
+  s_94864882421579::t_2ad88df6d4b596 44,46,49
+packages/server/sandbox/src/lib/sandbox/isolate.ts
+  s_94864882421579::t_2ad88df6d4b596 30-33,71
+docs/admin-guide/guides/project-replace-cli.mdx
+  s_94864882421579::t_2ad88df6d4b596 42-43,58,61,66,138,144,210-211,234
+brain/knowledge/decisions/000014-action-runs-dispatch-as-synchronous-user-interaction-jobs.md
+  s_94864882421579::t_2ad88df6d4b596 39
+deploy/pulumi/index.ts
+  s_94864882421579::t_2ad88df6d4b596 218,222,226,230,234,238,245,287,294,390,394,398,402,406,410,414,418,422,426,430
+tools/deploy.sh
+  s_94864882421579::t_2ad88df6d4b596 6-8,11-13
+packages/cli/src/lib/commands/publish-piece.ts
+  s_94864882421579::t_2ad88df6d4b596 54-55,68
+brain/knowledge/platform-editions-ee/ee-platform-plans-billing.md
+  s_94864882421579::t_2ad88df6d4b596 29,35
+packages/server/sandbox/src/lib/sandbox/sandbox.ts
+  s_94864882421579::t_2ad88df6d4b596 193-194,196
+packages/server/utils/test/safe-http.test.ts
+  s_94864882421579::t_2ad88df6d4b596 64,67
+docs/build-pieces/piece-reference/flow-control.mdx
+  s_94864882421579::t_2ad88df6d4b596 150
+brain/knowledge/flows-execution/formulas.md
+  s_94864882421579::t_2ad88df6d4b596 15,31
+packages/server/worker/test/lib/worker.test.ts
+  s_94864882421579::t_2ad88df6d4b596 25,127-128,132,140,579,583
+brain/knowledge/data-storage-observability/file-storage.md
+  s_94864882421579::t_2ad88df6d4b596 35
+CLAUDE.md
+  s_94864882421579::t_2ad88df6d4b596 8,118-122
+docs/install/architecture/latency.mdx
+  s_94864882421579::t_2ad88df6d4b596 10,29,80
+packages/server/engine/src/lib/piece-context/file-uploader.ts
+  s_94864882421579::t_2ad88df6d4b596 8
+docs/embedding/configure-embedding.mdx
+  s_94864882421579::t_2ad88df6d4b596 42
+benchmark/docker-compose.workerpool.yml
+  s_94864882421579::t_2ad88df6d4b596 15-18,20,30
+packages/server/engine/test/piece-context/connection-resolver.test.ts
+  s_94864882421579::t_2ad88df6d4b596 166,170,181,189,210
+brain/knowledge/flows-execution/triggers.md
+  s_94864882421579::t_2ad88df6d4b596 18
+docs/install/configure-operate/setup-opentelemetry.mdx
+  s_94864882421579::t_2ad88df6d4b596 13-14,20,29,36-37,41
+packages/server/api/test/unit/network-utils.test.ts
+  s_94864882421579::t_2ad88df6d4b596 32,53
+packages/web/src/app/builder/flow-canvas/edges/router-start-edge.tsx
+  s_94864882421579::t_2ad88df6d4b596 100-101,104,108,119,131,164-165
+packages/tests-e2e/global-setup.ts
+  s_94864882421579::t_2ad88df6d4b596 13
+turbo.json
+  s_94864882421579::t_2ad88df6d4b596 4-9,13-24
+packages/server/engine/src/lib/worker-socket.ts
+  s_94864882421579::t_2ad88df6d4b596 29,130
+docs/resources/diagrams/cold-vs-warm.html
+  s_94864882421579::t_2ad88df6d4b596 77
+brain/knowledge/decisions/000013-sandbox-pool-is-a-pure-execute-cloud-run-pool-superseded.md
+  s_94864882421579::t_2ad88df6d4b596 19
+docs/mcp/tool-search.mdx
+  s_94864882421579::t_2ad88df6d4b596 37,44
+docs/install/troubleshooting/truncated-logs.mdx
+  s_94864882421579::t_2ad88df6d4b596 31,34
+packages/web/src/app/builder/flow-canvas/canvas-controls/use-fit-to-view.ts
+  s_94864882421579::t_2ad88df6d4b596 86,90,126,153,156,177,185
+.github/workflows/tests-e2e-ee.yml
+  s_94864882421579::t_2ad88df6d4b596 8-27
+packages/server/api/test/integration/engine-services/engine-services.test.ts
+  s_94864882421579::t_2ad88df6d4b596 260,264,286,301,401-402,420,423,429-430,447,450
+packages/server/engine/src/lib/core/piece/piece-path.ts
+  s_94864882421579::t_2ad88df6d4b596 85
+packages/web/src/app/builder/flow-canvas/utils/consts.ts
+  s_94864882421579::t_2ad88df6d4b596 51,87
+docs/install/configure-operate/enterprise-license.mdx
+  s_94864882421579::t_2ad88df6d4b596 18,27-28
+brain/knowledge/flows-execution/flow-runs.md
+  s_94864882421579::t_2ad88df6d4b596 31,35
+.github/workflows/release-pieces.yml
+  s_94864882421579::t_2ad88df6d4b596 92
+docs/handbook/engineering/playbooks/building-for-self-hosting.mdx
+  s_94864882421579::t_2ad88df6d4b596 23
+.agents/skills/piece-builder/SKILL.md
+  s_94864882421579::t_2ad88df6d4b596 100
+docs/build-pieces/piece-reference/large-file-streaming.mdx
+  s_94864882421579::t_2ad88df6d4b596 26,194,198
+packages/server/worker/test/lib/worker-settings-override.test.ts
+  s_94864882421579::t_2ad88df6d4b596 104-107,113-115,180-181,191-193,203-205,215-216,220,224-225,229,233-234
+packages/web/src/app/builder/flow-canvas/edges/loop-start-edge.tsx
+  s_94864882421579::t_2ad88df6d4b596 40,60-61
+packages/server/api/test/integration/file/file-cleanup.test.ts
+  s_94864882421579::t_2ad88df6d4b596 13,18
+packages/server/api/test/integration/flows/flow-run/execute-flow-e2e.test.ts
+  s_94864882421579::t_2ad88df6d4b596 13
+benchmark/k8s-sandbox.yaml
+  s_94864882421579::t_2ad88df6d4b596 10-16,18-27,31,35-37,43,144-145,182,186,188-191,193
+docs/resources/diagrams/file-storage-signed-urls.html
+  s_94864882421579::t_2ad88df6d4b596 116,120
+brain/knowledge/data-storage-observability/tables.md
+  s_94864882421579::t_2ad88df6d4b596 11
+packages/cli/src/lib/commands/sync-pieces.ts
+  s_94864882421579::t_2ad88df6d4b596 30,34
+packages/web/vite.config.mts
+  s_94864882421579::t_2ad88df6d4b596 14-15,135-136
+scripts/chat-logs.mjs
+  s_94864882421579::t_2ad88df6d4b596 8,29
+packages/server/engine/src/lib/handler/context/flow-execution-context.ts
+  s_94864882421579::t_2ad88df6d4b596 10
+packages/web/src/app/connections/create-edit-connection-dialog.tsx
+  s_94864882421579::t_2ad88df6d4b596 135
+brain/knowledge/execution-runtime/workers.md
+  s_94864882421579::t_2ad88df6d4b596 7,18-19,28-29,31-32,41-42,45,50,54,56,83,93
+smoke-test/verify-isolation.sh
+  s_94864882421579::t_2ad88df6d4b596 57,62
+docs/install/architecture/workers.mdx
+  s_94864882421579::t_2ad88df6d4b596 20,33-34
+brain/knowledge/platform-editions-ee/index.md
+  s_94864882421579::t_2ad88df6d4b596 29
+brain/knowledge/flows-execution/action-run.md
+  s_94864882421579::t_2ad88df6d4b596 19,29,33-34,38
+docs/adr/0002-remove-enterprise-edition.md
+  s_94864882421579::t_2ad88df6d4b596 10
+packages/server/engine/test/piece-context/file-uploader.test.ts
+  s_94864882421579::t_2ad88df6d4b596 13,53
+docs/install/guarantees/reserved-resources.mdx
+  s_94864882421579::t_2ad88df6d4b596 27,33,39
+packages/server/sandbox/src/lib/sandbox.ts
+  s_94864882421579::t_2ad88df6d4b596 18
+packages/server/utils/src/safe-http.ts
+  s_94864882421579::t_2ad88df6d4b596 9,74
+packages/server/worker/test/lib/configs.test.ts
+  s_94864882421579::t_2ad88df6d4b596 4-5,8-9,13-16,24,29-30,35-36,46,51-52
+docs/handbook/engineering/playbooks/canary-deployment.mdx
+  s_94864882421579::t_2ad88df6d4b596 34,44,54,56,64,95,120,129
+packages/server/worker/src/lib/config/configs.ts
+  s_94864882421579::t_73612cf17f6a36 3
+  s_94864882421579::t_2ad88df6d4b596 27-52
+brain/knowledge/engineering/architecture-spine.md
+  s_94864882421579::t_2ad88df6d4b596 11
+docs/resources/diagrams/worker-scaling.html
+  s_94864882421579::t_2ad88df6d4b596 81
+brain/knowledge/flows-execution/subflows.md
+  s_94864882421579::t_2ad88df6d4b596 29,33
+docs/install/configure-operate/telemetry.mdx
+  s_94864882421579::t_2ad88df6d4b596 25
+packages/web/src/app/builder/flow-canvas/edges/straight-line-edge.tsx
+  s_94864882421579::t_2ad88df6d4b596 50-51
+  s_94864882421579::t_ed2e610f0b4b66 43-44,47-48
+packages/web/public/locales/de/translation.json
+  s_94864882421579::t_2ad88df6d4b596 1066,1141
+brain/knowledge/connections-auth/ce-authentication.md
+  s_94864882421579::t_2ad88df6d4b596 25
+docs/mcp/overview.mdx
+  s_94864882421579::t_2ad88df6d4b596 68
+brain/knowledge/platform-editions-ee/embed.md
+  s_94864882421579::t_2ad88df6d4b596 26
+packages/server/engine/vitest.config.ts
+  s_94864882421579::t_2ad88df6d4b596 9-12,35
+docs/install/configure-operate/rollback.mdx
+  s_94864882421579::t_2ad88df6d4b596 23
+packages/cli/src/lib/commands/generate-worker-token.ts
+  s_94864882421579::t_2ad88df6d4b596 18,43
+packages/server/engine/src/lib/core/piece/piece-context-builder.ts
+  s_94864882421579::t_2ad88df6d4b596 275-276,280
+tools/scripts/pieces/find-changed-pieces.ts
+  s_94864882421579::t_2ad88df6d4b596 2,46
+docs/install/architecture/benchmark.mdx
+  s_94864882421579::t_2ad88df6d4b596 36,120-121,146,153,158,166,220
+.github/workflows/smoke-test.yml
+  s_94864882421579::t_2ad88df6d4b596 32-33,83,104-111,139-146
+packages/server/api/test/unit/app/mcp/tool-search-flag.test.ts
+  s_94864882421579::t_2ad88df6d4b596 15,17,21,30
+brain/knowledge/engineering/e2e-tests-and-monitors.md
+  s_94864882421579::t_2ad88df6d4b596 9,20-21
+packages/server/sandbox/src/lib/create-sandbox-for-job.ts
+  s_94864882421579::t_2ad88df6d4b596 90-92,94-95,102,105
+packages/web/public/locales/en/translation.json
+  s_94864882421579::t_2ad88df6d4b596 1066,1141
+packages/web/src/app/builder/flow-canvas/edges/add-button.tsx
+  s_94864882421579::t_2ad88df6d4b596 49-50,91-92,97,110
+  s_94864882421579::t_ed2e610f0b4b66 98-99,107-108
+packages/web/src/app/components/account-settings/index.tsx
+  s_94864882421579::t_2ad88df6d4b596 2,52
+brain/knowledge/decisions/000014-streaming-file-inputs-resolve-to-a-lazy-apstreamingfile.md
+  s_94864882421579::t_2ad88df6d4b596 21,23
+packages/web/src/app/builder/piece-properties/text-input-with-mentions/components/function-search-popover.tsx
+  s_94864882421579::t_2ad88df6d4b596 1,47
+packages/server/sandbox/test/lib/sandbox/sandbox.test.ts
+  s_94864882421579::t_2ad88df6d4b596 41-42,118-119,140,332,340,382,390,393,400,403,416,440,466-467
+benchmark/docker-compose.perf.yml
+  s_94864882421579::t_2ad88df6d4b596 4,9,17-18
+packages/server/engine/src/lib/handler/context/engine-constants.ts
+  s_94864882421579::t_2ad88df6d4b596 47,50-51
+packages/pieces/common/src/lib/http/core/fetch-http-client.ts
+  s_94864882421579::t_2ad88df6d4b596 14
+deploy/activepieces-helm/values.yaml
+  s_94864882421579::t_2ad88df6d4b596 131-136,155-158,174,181-190,192-198,200-202,204-207,209-211,213-219,221-223,225-229,231-238,240-245,247-253,255-260,262-263
+packages/server/api/test/unit/app/authentication/turnstile.test.ts
+  s_94864882421579::t_2ad88df6d4b596 20,23,26,29
+packages/server/engine/src/lib/helper/logging-utils.ts
+  s_94864882421579::t_2ad88df6d4b596 5,10
+.github/workflows/tests-e2e-ce.yml
+  s_94864882421579::t_2ad88df6d4b596 8-28
+.env.dev
+  s_94864882421579::t_71f6ec2c634ef8 1-17,19-21,24
+.env.example
+  s_94864882421579::t_299503bcb53faa 3,6,9,12,14-28,31,34-35
+.husky/pre-commit
+  s_94864882421579::t_fd63c854a2e12c 4-10
+packages/server/api/.env.tests
+  s_94864882421579::t_75713d6e0400a2 1-27
+packages/tests-e2e/.env.e2e
+  s_94864882421579::t_5c8681a15249d0 1-19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "fb718974d597c18c40d722d193eea1d6349a6b9e",
+  "prompts": {},
+  "sessions": {
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

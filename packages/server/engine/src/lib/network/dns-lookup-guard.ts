@@ -64,14 +64,15 @@ function buildGuardedCallbackLookup({ policy, boundLookup }: BuildCallbackLookup
 }
 
 function buildGuardedPromiseLookup({ policy, boundPromisesLookup }: BuildPromiseLookupParams): GuardedPromiseLookup {
-    return async function promiseLookup(hostname, options) {
-        const allEntries = await boundPromisesLookup(hostname, { ...options, all: true })
+    return async function promiseLookup(hostname: string, options?: number | dns.LookupOptions) {
+        const callerOptions = typeof options === 'number' ? { family: options } : options
+        const allEntries = await boundPromisesLookup(hostname, { ...callerOptions, all: true })
         const blocked = findBlockedEntry({ entries: allEntries, allowList: policy.allowList })
         if (blocked) {
             throw buildBlockedError({ host: hostname, ip: blocked.address })
         }
-        return options?.all ? allEntries : allEntries[0]
-    }
+        return callerOptions?.all ? allEntries : allEntries[0]
+    } as GuardedPromiseLookup
 }
 
 function toAddressList({ address, family }: ToAddressListParams): dns.LookupAddress[] {

@@ -1,0 +1,56 @@
+packages/server/api/src/app/helper/system/system-props.ts
+  s_94864882421579::t_8cbc46886e8cba 40
+packages/server/api/src/app/connectors/connector-install-service.ts
+  s_94864882421579::t_6af79f1c5da76f 7,16-19,66-71
+  s_94864882421579::t_9cec0f16fd7d60 72
+brain/knowledge/connectors-engine/index.md
+  s_94864882421579::t_7e539c54430447 76-78
+packages/server/api/test/unit/app/connectors/connector-integrity.test.ts
+  s_94864882421579::t_02a1c30567775b 1,3-4,18-66,69-82,85-98,100-101,103-107,109-110,112-125,127-128,130-132
+  s_94864882421579::t_7d64d011d2c549 2,5-17,67-68,83-84,99,102,108,111,126,129
+packages/server/api/src/app/connectors/integrity/connector-integrity.ts
+  s_94864882421579::t_8cbc46886e8cba 1-92
+packages/core/shared/src/lib/automation/connectors/dto/connector-requests.ts
+  s_94864882421579::t_6af79f1c5da76f 107-108
+packages/server/api/src/app/workflows/execution/execution-hooks.ts
+  s_94864882421579::t_c0cfcdac425f7a 17,35-60
+  s_94864882421579::t_afbff57565e364 1-2,5
+packages/server/api/src/app/connectors/integrity/connector-integrity.service.ts
+  s_94864882421579::t_459a38823e97ec 13,25
+  s_94864882421579::t_4f5d5ebf5142b3 1-12,14-24,26-65
+packages/server/api/src/app/helper/system-validator.ts
+  s_94864882421579::t_8cbc46886e8cba 58-66,127
+packages/server/api/src/app/connectors/integrity/connector-integrity.controller.ts
+  s_94864882421579::t_e7a53078e46de4 5
+  s_94864882421579::t_4dfd4c9a1c5cc1 1-4,6-18
+packages/server/api/src/app/connectors/openapi/openapi-import.module.ts
+  s_94864882421579::t_4dfd4c9a1c5cc1 2,7
+.codegraph/.gitignore
+  s_05019b0fba23d6::t_055f01fdc9587a 1-16
+brain/knowledge/data-storage-observability/index.md
+  s_94864882421579::t_5de193c27784f0 39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "8ccb3394d702d2e66e46518004f54fa03e917e90",
+  "prompts": {},
+  "sessions": {
+    "s_05019b0fba23d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e10c4cdb-7c07-45f3-b342-da41bb100baa",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    },
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

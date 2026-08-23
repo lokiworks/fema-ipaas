@@ -1,4 +1,4 @@
-import { ExecutionError, ExecutionErrorType } from '@fema/shared'
+import { ExecutionError, ExecutionErrorType } from '@fema-ipaas/shared'
 import { toExitError } from '../../../src/lib/core/connector/connector-runner'
 
 const heapMessage = 'FATAL ERROR: Reached heap limit Allocation failed - JavaScript heap out of memory'

@@ -17,7 +17,7 @@ In-builder data transformation: users transform any text input using ~104 functi
 
 ### Gotchas
 - On **every** edition, unconditionally on — no plan flag or license toggle. The pre-pass runs regardless of any editor flag, so saved formulas keep evaluating even where the editor is off. Only embed difference: the search popover hides the external "See All" docs link.
-- No new HTTP endpoints, no DB tables, no worker job — function metadata is bundled in `@fema/shared` and read directly by the frontend; evaluation is synchronous inside the engine.
+- No new HTTP endpoints, no DB tables, no worker job — function metadata is bundled in `@fema-ipaas/shared` and read directly by the frontend; evaluation is synchronous inside the engine.
 - Evaluation failure throws `FormulaEvaluationError` (an `ExecutionError`), so the step fails with a structured message instead of crashing the engine.
 - Type checker skips expression-operator args (e.g. `3 == 9`) to avoid false-positive errors on runtime-evaluated values.
 - **`tokenizeExpression` tracks string literals, and that is what eats reference chips.** The serializer in `text-input-utils.ts` enters string mode on any `"`/`'` so a `)` or `;` inside a quoted function argument does not close the function node early. Added for formula args in 0.85.0 (#12444), it also swallowed `{{` — so `"{{step_4['result']}}"` re-parsed as raw text, and one unpaired quote earlier in a value killed every later chip in that field (GIT-1752). References are now emitted from inside the accumulation loop, and the string state is recomputed across the reference's interior. That recomputation is not optional: `concat("{{a"}}; lower(x))` puts the string-closing quote *inside* the reference, and skipping it leaves the following `;` inside the string and corrupts the value on re-save.
@@ -26,7 +26,7 @@ In-builder data transformation: users transform any text input using ~104 functi
 - Backward-compat hooks: `argCompatibility.defaultArgs` (fill missing trailing args from a default) and `deprecated: { replacement, removeAfter }` (strikethrough badge, still resolves at runtime). Never hard-remove a function; format bumps are handled by the `v\d+` wrapper (add `evaluateV2`, dispatch on captured version).
 
 ### Key files
-Entry point: `formulaEvaluator`, exported from `packages/core/formula/src/lib/formula-evaluator.ts` and imported by the engine's `props-resolver.ts` as `@fema/expression`.
+Entry point: `formulaEvaluator`, exported from `packages/core/formula/src/lib/formula-evaluator.ts` and imported by the engine's `props-resolver.ts` as `@fema-ipaas/expression`.
 
 - `packages/core/formula/src/lib/` — the whole formula library: evaluator + wrapper format, `FEMA_FUNCTIONS` registry, function implementations, type checker.
 - `packages/server/engine/src/lib/variables/props-resolver.ts` — the runtime pre-pass that detects the wrapper and evaluates before normal `{{var}}` resolution.
@@ -36,4 +36,4 @@ Entry point: `formulaEvaluator`, exported from `packages/core/formula/src/lib/fo
 - `packages/core/shared/test/formula/` — evaluator, type-checker, and serializer round-trip tests.
 - `packages/web/test/app/builder/connector-properties/text-input-with-mentions/` — serializer resilience and round-trip tests (unclosed `{{`, quoted references, quoted function args).
 
-Paths verified 2026-07-17. An earlier version pointed at `packages/core/shared/src/lib/formula/`; it moved to its own package at `packages/core/formula/src/lib/` (`@fema/expression`).
+Paths verified 2026-07-17. An earlier version pointed at `packages/core/shared/src/lib/formula/`; it moved to its own package at `packages/core/formula/src/lib/` (`@fema-ipaas/expression`).

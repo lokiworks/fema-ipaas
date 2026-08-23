@@ -4,7 +4,7 @@ import {
   ConnectorPackageInformation,
   PropertyType,
   ExecutePropsResult,
-} from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-sdk';
 import {
   AddConnectorRequestBody,
   GetConnectorRequestParams,
@@ -12,7 +12,7 @@ import {
   ListConnectorsRequestQuery,
   PackageType,
   ConnectorOptionRequest,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 
 import { internalErrorToast } from '@/components/ui/sonner';

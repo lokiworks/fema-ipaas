@@ -1,4 +1,4 @@
-import { File, TriggerEvent, Workflow, Workspace } from '@fema/shared'
+import { File, TriggerEvent, Workflow, Workspace } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import {
     ApIdSchema,

@@ -1,9 +1,9 @@
-import { isNil } from '@fema/core-utils';
+import { isNil } from '@fema-ipaas/core-utils';
 import {
   WorkflowActionType,
   WorkflowTriggerType,
   TelemetryEventName,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { MoveLeft } from 'lucide-react';
 import React from 'react';

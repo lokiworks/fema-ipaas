@@ -1,5 +1,5 @@
-import { ConnectorAuth, createConnector } from '@fema/connector-sdk';
-import { ConnectorCategory } from '@fema/connector-sdk';
+import { ConnectorAuth, createConnector } from '@fema-ipaas/connector-sdk';
+import { ConnectorCategory } from '@fema-ipaas/connector-sdk';
 import { convertJsonToXml } from './lib/actions/convert-json-to-xml';
 import { convertXmlToJson } from './lib/actions/convert-xml-to-json';
 

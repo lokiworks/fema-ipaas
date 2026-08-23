@@ -1,5 +1,5 @@
-import { apId } from '@fema/core-utils'
-import { TenantRole, PrincipalType, WorkspaceType, UserStatus } from '@fema/shared'
+import { apId } from '@fema-ipaas/core-utils'
+import { TenantRole, PrincipalType, WorkspaceType, UserStatus } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { databaseConnection } from '../../../../src/app/database/database-connection'

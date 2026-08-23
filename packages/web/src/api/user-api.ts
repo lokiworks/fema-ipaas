@@ -1,4 +1,4 @@
-import { UpdateMeResponse, UserWithMetaInformation } from '@fema/shared';
+import { UpdateMeResponse, UserWithMetaInformation } from '@fema-ipaas/shared';
 
 import { api } from '@/lib/api';
 

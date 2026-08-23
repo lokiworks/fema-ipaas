@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { STEP_NAME_REGEX } from '@fema/core-utils'
-import { VersionType } from '@fema/connector-types'
+import { STEP_NAME_REGEX } from '@fema-ipaas/core-utils'
+import { VersionType } from '@fema-ipaas/connector-types'
 import { CodeActionSettings, LoopOnItemsActionSettings, ConnectorActionSettings, RouterActionSettings } from '../actions/action'
 import { PropertySettings } from '../properties'
 import { SampleDataSetting } from '../sample-data'

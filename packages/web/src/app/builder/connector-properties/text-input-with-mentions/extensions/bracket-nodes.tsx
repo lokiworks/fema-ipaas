@@ -1,4 +1,4 @@
-import { FEMA_FUNCTIONS, ApFunction } from '@fema/expression';
+import { FEMA_FUNCTIONS, ApFunction } from '@fema-ipaas/expression';
 import { InputRule, Node, mergeAttributes } from '@tiptap/core';
 import { JSONContent } from '@tiptap/react';
 

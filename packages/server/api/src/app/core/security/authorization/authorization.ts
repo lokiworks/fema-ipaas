@@ -1,4 +1,4 @@
-import { WorkspaceId } from '@fema/core-utils'
+import { WorkspaceId } from '@fema-ipaas/core-utils'
 import { NoneAuthorization, PublicRoute, RouteKind, TenantAuthorization, UnscopedAuthorization, WorkspaceAuthorization } from './common'
 
 export type WorkspaceAuthorizationConfig = Omit<WorkspaceAuthorization, 'workspaceResource'> & {

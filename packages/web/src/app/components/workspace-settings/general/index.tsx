@@ -5,7 +5,7 @@ import {
   WORKSPACE_COLOR_PALETTE,
   WorkspaceIcon,
   WorkspaceType,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';

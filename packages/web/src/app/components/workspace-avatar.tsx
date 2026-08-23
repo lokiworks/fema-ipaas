@@ -2,7 +2,7 @@ import {
   ColorName,
   WORKSPACE_COLOR_PALETTE,
   WorkspaceType,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 
 import { Avatar } from '@/components/ui/avatar';
 

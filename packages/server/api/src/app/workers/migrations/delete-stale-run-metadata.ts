@@ -1,5 +1,5 @@
 
-import { isNil } from '@fema/core-utils'
+import { isNil } from '@fema-ipaas/core-utils'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { redisHelper } from '../../database/redis'

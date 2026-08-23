@@ -1,4 +1,4 @@
-import { ConnectorAuth, Property } from '@fema/connector-sdk'
+import { ConnectorAuth, Property } from '@fema-ipaas/connector-sdk'
 import { propsProcessor } from '../../src/lib/variables/props-processor'
 describe('Property Validation', () => {
     describe('required properties', () => {

@@ -1,4 +1,4 @@
-import { Property, createAction } from '@fema/connector-sdk';
+import { Property, createAction } from '@fema-ipaas/connector-sdk';
 import {
   optionalTimeFormats,
   timeFormat,
@@ -8,7 +8,7 @@ import {
   apDayjs,
 } from '../common';
 import * as z from 'zod/mini'
-import { propsValidation } from '@fema/connector-common';
+import { propsValidation } from '@fema-ipaas/connector-common';
 import { lastDayOfPreviousMonthActionOutputSchema } from '../output-schemas';
 
 export const lastDayOfPreviousMonthAction = createAction({

@@ -1,10 +1,10 @@
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { randomUUID } from 'node:crypto'
-import { ApplicationError, ErrorCode } from '@fema/core-utils'
+import { ApplicationError, ErrorCode } from '@fema-ipaas/core-utils'
 import { describe, expect, it, vi } from 'vitest'
-import type { WorkerToApiContract } from '@fema/shared'
-import type { ApLogger } from '@fema/server-utils'
+import type { WorkerToApiContract } from '@fema-ipaas/shared'
+import type { ApLogger } from '@fema-ipaas/server-utils'
 import { connectorCache } from '../../../src/lib/cache/connectors/connector-cache'
 
 const fakeLog = {
@@ -42,7 +42,7 @@ describe('connector-cache connectorName path traversal', () => {
         '../../common/node_modules/x',
         '../../../usr/local/lib',
         '..',
-        '@fema/..',
+        '@fema-ipaas/..',
     ])('rejects a traversal connectorName %j before any fetch', async (connectorName) => {
         getConnectorMock.mockReset()
         let thrown: unknown

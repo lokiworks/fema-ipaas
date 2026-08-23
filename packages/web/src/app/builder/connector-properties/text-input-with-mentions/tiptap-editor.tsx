@@ -1,10 +1,10 @@
-import { isNil } from '@fema/core-utils';
+import { isNil } from '@fema-ipaas/core-utils';
 import {
   ApFunction,
   formulaEvaluator,
   typeCheckTiptapDoc,
-} from '@fema/expression';
-import { workflowStructureUtil } from '@fema/shared';
+} from '@fema-ipaas/expression';
+import { workflowStructureUtil } from '@fema-ipaas/shared';
 import { Extensions } from '@tiptap/core';
 import { Document } from '@tiptap/extension-document';
 import { HardBreak } from '@tiptap/extension-hard-break';

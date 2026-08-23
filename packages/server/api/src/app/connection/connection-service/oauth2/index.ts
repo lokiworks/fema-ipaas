@@ -1,7 +1,7 @@
 import {
     ConnectionType,
     TenantOAuth2ConnectionValue,
-} from '@fema/shared'
+} from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import {
     ClaimOAuth2Request,

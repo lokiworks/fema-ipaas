@@ -1,5 +1,5 @@
 import { Readable } from 'node:stream'
-import { EngineGenericError, FileSizeError } from '@fema/shared'
+import { EngineGenericError, FileSizeError } from '@fema-ipaas/shared'
 import { createFileUploader } from '../../src/lib/connector-context/file-uploader'
 
 const SERVICE_PARAMS = {

@@ -6,7 +6,7 @@ import {
   WORKFLOW_CANVAS_STEP_WIDTH,
   WORKFLOW_CANVAS_VSPACE,
   NoteColorVariant,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 
 import { ApLoopReturnLineCanvasEdge as ApLoopReturnCanvasEdge } from '../edges/loop-return-edge';
 import { ApLoopStartLineCanvasEdge as ApLoopStartCanvasEdge } from '../edges/loop-start-edge';

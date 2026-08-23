@@ -15,8 +15,8 @@ function createTriggerTemplate(displayName: string, description: string, techniq
     let triggerTemplate = ''
     if (technique === 'polling') {
         triggerTemplate = `
-import { createTrigger, TriggerStrategy, ConnectionValueForAuthProperty  } from '@fema/connector-sdk';
-import { DedupeStrategy, Polling, pollingHelper } from '@fema/connector-common';
+import { createTrigger, TriggerStrategy, ConnectionValueForAuthProperty  } from '@fema-ipaas/connector-sdk';
+import { DedupeStrategy, Polling, pollingHelper } from '@fema-ipaas/connector-common';
 import dayjs from 'dayjs';
 
 // replace auth with connector auth variable
@@ -58,7 +58,7 @@ async run(context) {
     }
     else {
         triggerTemplate = `
-import { createTrigger, TriggerStrategy } from '@fema/connector-sdk';
+import { createTrigger, TriggerStrategy } from '@fema-ipaas/connector-sdk';
 export const ${camelCase} = createTrigger({
     // auth: check https://github.com/lokiworks/fema-ipaas/docs/developers/connector-reference/authentication,
     name: '${camelCase}',

@@ -68,15 +68,15 @@
       },
     },
     "packages/cli": {
-      "name": "@fema/cli",
+      "name": "@fema-ipaas/cli",
       "version": "1.3.0",
       "bin": {
         "connectors-cli": "../../dist/packages/cli/src/index.js",
       },
       "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "*",
-        "@fema/shared": "*",
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "*",
+        "@fema-ipaas/shared": "*",
         "autocannon": "8.0.0",
         "axios": "1.18.0",
         "chalk": "4.1.2",
@@ -95,12 +95,42 @@
         "@types/node": "24.11.0",
       },
     },
+    "packages/components/builtin": {
+      "name": "@fema-ipaas/components",
+      "version": "0.1.0",
+      "dependencies": {
+        "@fema-ipaas/component-sdk": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
+        "dayjs": "1.11.9",
+        "tslib": "2.6.2",
+        "zod": "4.3.6",
+      },
+      "devDependencies": {
+        "@types/node": "24.11.0",
+        "typescript": "5.5.4",
+      },
+    },
+    "packages/components/sdk": {
+      "name": "@fema-ipaas/component-sdk",
+      "version": "0.1.0",
+      "dependencies": {
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
+        "tslib": "2.6.2",
+        "zod": "4.3.6",
+      },
+      "devDependencies": {
+        "@types/node": "24.11.0",
+        "typescript": "5.5.4",
+      },
+    },
     "packages/connectors/common": {
-      "name": "@fema/connector-common",
+      "name": "@fema-ipaas/connector-common",
       "version": "0.12.9",
       "dependencies": {
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/core-utils": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
         "form-data": "4.0.6",
         "zod": "4.3.6",
       },
@@ -109,13 +139,13 @@
       },
     },
     "packages/connectors/community/github": {
-      "name": "@fema/connector-github",
+      "name": "@fema-ipaas/connector-github",
       "version": "0.8.11",
       "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
         "jsonwebtoken": "9.0.1",
         "yaml": "2.9.0",
       },
@@ -126,13 +156,13 @@
       },
     },
     "packages/connectors/community/mysql": {
-      "name": "@fema/connector-mysql",
+      "name": "@fema-ipaas/connector-mysql",
       "version": "0.2.7",
       "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
         "promise-mysql": "5.2.0",
         "sqlstring": "2.3.3",
       },
@@ -142,13 +172,13 @@
       },
     },
     "packages/connectors/community/postgres": {
-      "name": "@fema/connector-postgres",
+      "name": "@fema-ipaas/connector-postgres",
       "version": "0.3.1",
       "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
         "dayjs": "1.11.9",
         "pg": "8.11.3",
         "pg-format": "1.0.4",
@@ -160,13 +190,13 @@
       },
     },
     "packages/connectors/community/rabbitmq": {
-      "name": "@fema/connector-rabbitmq",
+      "name": "@fema-ipaas/connector-rabbitmq",
       "version": "0.1.6",
       "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
         "amqplib": "0.10.7",
         "dayjs": "1.11.9",
       },
@@ -176,13 +206,13 @@
       },
     },
     "packages/connectors/community/slack": {
-      "name": "@fema/connector-slack",
+      "name": "@fema-ipaas/connector-slack",
       "version": "0.17.9",
       "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
         "@slack/web-api": "7.9.0",
         "slackify-markdown": "4.4.0",
         "zod": "4.3.6",
@@ -192,13 +222,13 @@
       },
     },
     "packages/connectors/core/approval": {
-      "name": "@fema/connector-approval",
+      "name": "@fema-ipaas/connector-approval",
       "version": "0.1.27",
       "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
       },
       "devDependencies": {
         "tslib": "2.6.2",
@@ -206,26 +236,26 @@
       },
     },
     "packages/connectors/core/connections": {
-      "name": "@fema/connector-connections",
+      "name": "@fema-ipaas/connector-connections",
       "version": "0.5.10",
       "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
       },
       "devDependencies": {
         "tslib": "2.6.2",
       },
     },
     "packages/connectors/core/crypto": {
-      "name": "@fema/connector-crypto",
+      "name": "@fema-ipaas/connector-crypto",
       "version": "0.0.27",
       "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
         "buffer": "6.0.3",
         "openpgp": "^6.2.0",
         "zod": "4.3.6",
@@ -236,13 +266,13 @@
       },
     },
     "packages/connectors/core/csv": {
-      "name": "@fema/connector-csv",
+      "name": "@fema-ipaas/connector-csv",
       "version": "0.4.21",
       "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
         "csv-parse": "5.6.0",
         "csv-stringify": "6.5.2",
         "safe-flat": "2.1.0",
@@ -254,13 +284,13 @@
       },
     },
     "packages/connectors/core/data-mapper": {
-      "name": "@fema/connector-data-mapper",
+      "name": "@fema-ipaas/connector-data-mapper",
       "version": "0.3.21",
       "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
       },
       "devDependencies": {
         "tslib": "2.6.2",
@@ -268,13 +298,13 @@
       },
     },
     "packages/connectors/core/data-summarizer": {
-      "name": "@fema/connector-data-summarizer",
+      "name": "@fema-ipaas/connector-data-summarizer",
       "version": "0.0.15",
       "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
       },
       "devDependencies": {
         "tslib": "2.6.2",
@@ -282,13 +312,13 @@
       },
     },
     "packages/connectors/core/date-helper": {
-      "name": "@fema/connector-date-helper",
+      "name": "@fema-ipaas/connector-date-helper",
       "version": "0.1.34",
       "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
         "dayjs": "1.11.9",
         "zod": "4.3.6",
       },
@@ -298,13 +328,13 @@
       },
     },
     "packages/connectors/core/delay": {
-      "name": "@fema/connector-delay",
+      "name": "@fema-ipaas/connector-delay",
       "version": "0.3.34",
       "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
         "dayjs": "1.11.9",
         "zod": "4.3.6",
       },
@@ -313,13 +343,13 @@
       },
     },
     "packages/connectors/core/file-helper": {
-      "name": "@fema/connector-file-helper",
+      "name": "@fema-ipaas/connector-file-helper",
       "version": "0.1.29",
       "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
         "@zip.js/zip.js": "^2.8.15",
         "mime-types": "2.1.35",
       },
@@ -330,13 +360,13 @@
       },
     },
     "packages/connectors/core/forms": {
-      "name": "@fema/connector-forms",
+      "name": "@fema-ipaas/connector-forms",
       "version": "0.4.21",
       "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
         "http-status-codes": "2.2.0",
         "mime-types": "2.1.35",
       },
@@ -346,13 +376,13 @@
       },
     },
     "packages/connectors/core/http": {
-      "name": "@fema/connector-http",
+      "name": "@fema-ipaas/connector-http",
       "version": "0.11.19",
       "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
         "axios": "1.18.0",
         "form-data": "4.0.6",
         "undici": "7.29.0",
@@ -363,26 +393,26 @@
       },
     },
     "packages/connectors/core/manual-trigger": {
-      "name": "@fema/connector-manual-trigger",
+      "name": "@fema-ipaas/connector-manual-trigger",
       "version": "0.0.7",
       "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
       },
       "devDependencies": {
         "tslib": "^2.3.0",
       },
     },
     "packages/connectors/core/math-helper": {
-      "name": "@fema/connector-math-helper",
+      "name": "@fema-ipaas/connector-math-helper",
       "version": "0.0.30",
       "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
         "zod": "4.3.6",
       },
       "devDependencies": {
@@ -391,13 +421,13 @@
       },
     },
     "packages/connectors/core/schedule": {
-      "name": "@fema/connector-schedule",
+      "name": "@fema-ipaas/connector-schedule",
       "version": "0.1.22",
       "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
       },
       "devDependencies": {
         "tslib": "2.6.2",
@@ -405,13 +435,13 @@
       },
     },
     "packages/connectors/core/sftp": {
-      "name": "@fema/connector-sftp",
+      "name": "@fema-ipaas/connector-sftp",
       "version": "0.5.7",
       "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
         "basic-ftp": "5.3.1",
         "dayjs": "1.11.9",
         "ssh2": "1.16.0",
@@ -425,13 +455,13 @@
       },
     },
     "packages/connectors/core/smtp": {
-      "name": "@fema/connector-smtp",
+      "name": "@fema-ipaas/connector-smtp",
       "version": "0.4.7",
       "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
         "mime-types": "2.1.35",
         "nodemailer": "9.0.1",
       },
@@ -442,13 +472,13 @@
       },
     },
     "packages/connectors/core/store": {
-      "name": "@fema/connector-store",
+      "name": "@fema-ipaas/connector-store",
       "version": "0.6.20",
       "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
         "deep-equal": "2.2.2",
         "zod": "4.3.6",
       },
@@ -458,13 +488,13 @@
       },
     },
     "packages/connectors/core/subflows": {
-      "name": "@fema/connector-subflows",
+      "name": "@fema-ipaas/connector-subflows",
       "version": "0.6.3",
       "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
         "csv-parse": "5.6.0",
       },
       "devDependencies": {
@@ -473,26 +503,26 @@
       },
     },
     "packages/connectors/core/tags": {
-      "name": "@fema/connector-tags",
+      "name": "@fema-ipaas/connector-tags",
       "version": "0.0.22",
       "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
       },
       "devDependencies": {
         "tslib": "2.6.2",
       },
     },
     "packages/connectors/core/text-helper": {
-      "name": "@fema/connector-text-helper",
+      "name": "@fema-ipaas/connector-text-helper",
       "version": "0.6.5",
       "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
         "@joplin/turndown": "4.0.85",
         "@joplin/turndown-plugin-gfm": "1.0.67",
         "jsdom": "^24.0.0",
@@ -510,13 +540,13 @@
       },
     },
     "packages/connectors/core/webhook": {
-      "name": "@fema/connector-webhook",
+      "name": "@fema-ipaas/connector-webhook",
       "version": "0.1.41",
       "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
       },
       "devDependencies": {
         "tslib": "2.6.2",
@@ -524,13 +554,13 @@
       },
     },
     "packages/connectors/core/xml": {
-      "name": "@fema/connector-xml",
+      "name": "@fema-ipaas/connector-xml",
       "version": "0.1.20",
       "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
         "fast-xml-parser": "5.7.0",
         "json2xml": "0.1.3",
       },
@@ -541,11 +571,11 @@
       },
     },
     "packages/connectors/sdk": {
-      "name": "@fema/connector-sdk",
+      "name": "@fema-ipaas/connector-sdk",
       "version": "0.36.0",
       "dependencies": {
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
         "ai": "^6.0.0",
         "semver": "7.6.0",
         "zod": "4.3.6",
@@ -557,10 +587,10 @@
       },
     },
     "packages/core/connector-types": {
-      "name": "@fema/connector-types",
+      "name": "@fema-ipaas/connector-types",
       "version": "0.4.0",
       "dependencies": {
-        "@fema/core-utils": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
         "tslib": "2.6.2",
         "zod": "4.3.6",
       },
@@ -570,11 +600,11 @@
       },
     },
     "packages/core/execution": {
-      "name": "@fema/workflow-core",
+      "name": "@fema-ipaas/workflow-core",
       "version": "0.14.0",
       "dependencies": {
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
         "dayjs": "1.11.9",
         "semver": "7.6.0",
         "socket.io-client": "4.8.1",
@@ -589,7 +619,7 @@
       },
     },
     "packages/core/formula": {
-      "name": "@fema/expression",
+      "name": "@fema-ipaas/expression",
       "version": "0.2.0",
       "dependencies": {
         "dayjs": "1.11.9",
@@ -602,13 +632,13 @@
       },
     },
     "packages/core/shared": {
-      "name": "@fema/shared",
+      "name": "@fema-ipaas/shared",
       "version": "0.139.0",
       "dependencies": {
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-        "@fema/expression": "workspace:*",
-        "@fema/workflow-core": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
+        "@fema-ipaas/expression": "workspace:*",
+        "@fema-ipaas/workflow-core": "workspace:*",
         "dayjs": "1.11.9",
         "deepmerge-ts": "7.1.0",
         "expr-eval": "2.0.2",
@@ -620,14 +650,14 @@
         "zod": "4.3.6",
       },
       "devDependencies": {
-        "@fema/connector-types": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
         "@types/node": "24.11.0",
         "@types/semver": "7.5.6",
         "vitest": "3.2.6",
       },
     },
     "packages/core/utils": {
-      "name": "@fema/core-utils",
+      "name": "@fema-ipaas/core-utils",
       "version": "0.3.0",
       "dependencies": {
         "deepmerge-ts": "7.1.0",
@@ -675,15 +705,15 @@
         "@fastify/reply-from": "12.6.2",
         "@fastify/static": "10.1.2",
         "@fastify/swagger": "9.5.1",
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-        "@fema/engine": "workspace:*",
-        "@fema/expression": "workspace:*",
-        "@fema/server-utils": "workspace:*",
-        "@fema/shared": "workspace:*",
-        "@fema/workflow-core": "workspace:*",
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
+        "@fema-ipaas/engine": "workspace:*",
+        "@fema-ipaas/expression": "workspace:*",
+        "@fema-ipaas/server-utils": "workspace:*",
+        "@fema-ipaas/shared": "workspace:*",
+        "@fema-ipaas/workflow-core": "workspace:*",
         "@modelcontextprotocol/sdk": "1.27.1",
         "@openrouter/ai-sdk-provider": "3.0.0",
         "@openrouter/sdk": "0.2.9",
@@ -754,7 +784,7 @@
       },
       "devDependencies": {
         "@faker-js/faker": "8.2.0",
-        "@fema/connector-slack": "workspace:*",
+        "@fema-ipaas/connector-slack": "workspace:*",
         "@types/bcrypt": "5.0.0",
         "@types/content-disposition": "0.5.9",
         "@types/decompress": "4.2.4",
@@ -777,14 +807,14 @@
       },
     },
     "packages/server/engine": {
-      "name": "@fema/engine",
+      "name": "@fema-ipaas/engine",
       "version": "0.7.0",
       "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-        "@fema/expression": "workspace:*",
-        "@fema/shared": "workspace:*",
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
+        "@fema-ipaas/expression": "workspace:*",
+        "@fema-ipaas/shared": "workspace:*",
         "ai": "^6.0.0",
         "async-mutex": "0.4.0",
         "cron-validator": "1.3.1",
@@ -808,12 +838,12 @@
       },
     },
     "packages/server/sandbox": {
-      "name": "@fema/sandbox",
+      "name": "@fema-ipaas/sandbox",
       "version": "0.1.0",
       "dependencies": {
-        "@fema/core-utils": "workspace:*",
-        "@fema/server-utils": "workspace:*",
-        "@fema/shared": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
+        "@fema-ipaas/server-utils": "workspace:*",
+        "@fema-ipaas/shared": "workspace:*",
         "esbuild": "0.25.0",
         "nanoid": "3.3.17",
         "socket.io": "4.7.5",
@@ -829,7 +859,7 @@
       },
     },
     "packages/server/utils": {
-      "name": "@fema/server-utils",
+      "name": "@fema-ipaas/server-utils",
       "version": "0.2.0",
       "dependencies": {
         "@ai-sdk/amazon-bedrock": "5.0.38",
@@ -839,9 +869,9 @@
         "@ai-sdk/openai": "4.0.25",
         "@ai-sdk/openai-compatible": "3.0.18",
         "@ai-sdk/provider": "4.0.4",
-        "@fema/core-utils": "workspace:*",
-        "@fema/expression": "workspace:*",
-        "@fema/shared": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
+        "@fema-ipaas/expression": "workspace:*",
+        "@fema-ipaas/shared": "workspace:*",
         "@modelcontextprotocol/sdk": "1.27.1",
         "@openrouter/ai-sdk-provider": "3.0.0",
         "ai": "7.0.44",
@@ -873,12 +903,12 @@
         "@ai-sdk/openai": "4.0.25",
         "@ai-sdk/openai-compatible": "3.0.18",
         "@ai-sdk/provider": "4.0.4",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-        "@fema/expression": "workspace:*",
-        "@fema/sandbox": "workspace:*",
-        "@fema/server-utils": "workspace:*",
-        "@fema/shared": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
+        "@fema-ipaas/expression": "workspace:*",
+        "@fema-ipaas/sandbox": "workspace:*",
+        "@fema-ipaas/server-utils": "workspace:*",
+        "@fema-ipaas/shared": "workspace:*",
         "@openrouter/ai-sdk-provider": "3.0.0",
         "ai": "7.0.44",
         "async-mutex": "0.4.0",
@@ -930,10 +960,10 @@
         "@dnd-kit/modifiers": "7.0.0",
         "@dnd-kit/sortable": "8.0.0",
         "@dnd-kit/utilities": "3.2.2",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-        "@fema/expression": "workspace:*",
-        "@fema/shared": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
+        "@fema-ipaas/expression": "workspace:*",
+        "@fema-ipaas/shared": "workspace:*",
         "@hookform/resolvers": "5.2.2",
         "@radix-ui/react-accordion": "1.2.4",
         "@radix-ui/react-use-controllable-state": "1.2.2",
@@ -1477,81 +1507,85 @@
 
     "@fastify/view": ["@fastify/view@11.1.1", "", { "dependencies": { "fastify-plugin": "^5.0.0", "toad-cache": "^3.7.0" } }, "sha512-GiHqT3R2eKJgWmy0s45eELTC447a4+lTM2o+8fSWeKwBe9VToeePuHJcKtOEXPrKGSddGO0RsNayULiS3aeHeQ=="],
 
-    "@fema/cli": ["@fema/cli@workspace:packages/cli"],
+    "@fema-ipaas/cli": ["@fema-ipaas/cli@workspace:packages/cli"],
 
-    "@fema/connector-approval": ["@fema/connector-approval@workspace:packages/connectors/core/approval"],
+    "@fema-ipaas/component-sdk": ["@fema-ipaas/component-sdk@workspace:packages/components/sdk"],
 
-    "@fema/connector-common": ["@fema/connector-common@workspace:packages/connectors/common"],
+    "@fema-ipaas/components": ["@fema-ipaas/components@workspace:packages/components/builtin"],
 
-    "@fema/connector-connections": ["@fema/connector-connections@workspace:packages/connectors/core/connections"],
+    "@fema-ipaas/connector-approval": ["@fema-ipaas/connector-approval@workspace:packages/connectors/core/approval"],
 
-    "@fema/connector-crypto": ["@fema/connector-crypto@workspace:packages/connectors/core/crypto"],
+    "@fema-ipaas/connector-common": ["@fema-ipaas/connector-common@workspace:packages/connectors/common"],
 
-    "@fema/connector-csv": ["@fema/connector-csv@workspace:packages/connectors/core/csv"],
+    "@fema-ipaas/connector-connections": ["@fema-ipaas/connector-connections@workspace:packages/connectors/core/connections"],
 
-    "@fema/connector-data-mapper": ["@fema/connector-data-mapper@workspace:packages/connectors/core/data-mapper"],
+    "@fema-ipaas/connector-crypto": ["@fema-ipaas/connector-crypto@workspace:packages/connectors/core/crypto"],
 
-    "@fema/connector-data-summarizer": ["@fema/connector-data-summarizer@workspace:packages/connectors/core/data-summarizer"],
+    "@fema-ipaas/connector-csv": ["@fema-ipaas/connector-csv@workspace:packages/connectors/core/csv"],
 
-    "@fema/connector-date-helper": ["@fema/connector-date-helper@workspace:packages/connectors/core/date-helper"],
+    "@fema-ipaas/connector-data-mapper": ["@fema-ipaas/connector-data-mapper@workspace:packages/connectors/core/data-mapper"],
 
-    "@fema/connector-delay": ["@fema/connector-delay@workspace:packages/connectors/core/delay"],
+    "@fema-ipaas/connector-data-summarizer": ["@fema-ipaas/connector-data-summarizer@workspace:packages/connectors/core/data-summarizer"],
 
-    "@fema/connector-file-helper": ["@fema/connector-file-helper@workspace:packages/connectors/core/file-helper"],
+    "@fema-ipaas/connector-date-helper": ["@fema-ipaas/connector-date-helper@workspace:packages/connectors/core/date-helper"],
 
-    "@fema/connector-forms": ["@fema/connector-forms@workspace:packages/connectors/core/forms"],
+    "@fema-ipaas/connector-delay": ["@fema-ipaas/connector-delay@workspace:packages/connectors/core/delay"],
 
-    "@fema/connector-github": ["@fema/connector-github@workspace:packages/connectors/community/github"],
+    "@fema-ipaas/connector-file-helper": ["@fema-ipaas/connector-file-helper@workspace:packages/connectors/core/file-helper"],
 
-    "@fema/connector-http": ["@fema/connector-http@workspace:packages/connectors/core/http"],
+    "@fema-ipaas/connector-forms": ["@fema-ipaas/connector-forms@workspace:packages/connectors/core/forms"],
 
-    "@fema/connector-manual-trigger": ["@fema/connector-manual-trigger@workspace:packages/connectors/core/manual-trigger"],
+    "@fema-ipaas/connector-github": ["@fema-ipaas/connector-github@workspace:packages/connectors/community/github"],
 
-    "@fema/connector-math-helper": ["@fema/connector-math-helper@workspace:packages/connectors/core/math-helper"],
+    "@fema-ipaas/connector-http": ["@fema-ipaas/connector-http@workspace:packages/connectors/core/http"],
 
-    "@fema/connector-mysql": ["@fema/connector-mysql@workspace:packages/connectors/community/mysql"],
+    "@fema-ipaas/connector-manual-trigger": ["@fema-ipaas/connector-manual-trigger@workspace:packages/connectors/core/manual-trigger"],
 
-    "@fema/connector-postgres": ["@fema/connector-postgres@workspace:packages/connectors/community/postgres"],
+    "@fema-ipaas/connector-math-helper": ["@fema-ipaas/connector-math-helper@workspace:packages/connectors/core/math-helper"],
 
-    "@fema/connector-rabbitmq": ["@fema/connector-rabbitmq@workspace:packages/connectors/community/rabbitmq"],
+    "@fema-ipaas/connector-mysql": ["@fema-ipaas/connector-mysql@workspace:packages/connectors/community/mysql"],
 
-    "@fema/connector-schedule": ["@fema/connector-schedule@workspace:packages/connectors/core/schedule"],
+    "@fema-ipaas/connector-postgres": ["@fema-ipaas/connector-postgres@workspace:packages/connectors/community/postgres"],
 
-    "@fema/connector-sdk": ["@fema/connector-sdk@workspace:packages/connectors/sdk"],
+    "@fema-ipaas/connector-rabbitmq": ["@fema-ipaas/connector-rabbitmq@workspace:packages/connectors/community/rabbitmq"],
 
-    "@fema/connector-sftp": ["@fema/connector-sftp@workspace:packages/connectors/core/sftp"],
+    "@fema-ipaas/connector-schedule": ["@fema-ipaas/connector-schedule@workspace:packages/connectors/core/schedule"],
 
-    "@fema/connector-slack": ["@fema/connector-slack@workspace:packages/connectors/community/slack"],
+    "@fema-ipaas/connector-sdk": ["@fema-ipaas/connector-sdk@workspace:packages/connectors/sdk"],
 
-    "@fema/connector-smtp": ["@fema/connector-smtp@workspace:packages/connectors/core/smtp"],
+    "@fema-ipaas/connector-sftp": ["@fema-ipaas/connector-sftp@workspace:packages/connectors/core/sftp"],
 
-    "@fema/connector-store": ["@fema/connector-store@workspace:packages/connectors/core/store"],
+    "@fema-ipaas/connector-slack": ["@fema-ipaas/connector-slack@workspace:packages/connectors/community/slack"],
 
-    "@fema/connector-subflows": ["@fema/connector-subflows@workspace:packages/connectors/core/subflows"],
+    "@fema-ipaas/connector-smtp": ["@fema-ipaas/connector-smtp@workspace:packages/connectors/core/smtp"],
 
-    "@fema/connector-tags": ["@fema/connector-tags@workspace:packages/connectors/core/tags"],
+    "@fema-ipaas/connector-store": ["@fema-ipaas/connector-store@workspace:packages/connectors/core/store"],
 
-    "@fema/connector-text-helper": ["@fema/connector-text-helper@workspace:packages/connectors/core/text-helper"],
+    "@fema-ipaas/connector-subflows": ["@fema-ipaas/connector-subflows@workspace:packages/connectors/core/subflows"],
 
-    "@fema/connector-types": ["@fema/connector-types@workspace:packages/core/connector-types"],
+    "@fema-ipaas/connector-tags": ["@fema-ipaas/connector-tags@workspace:packages/connectors/core/tags"],
 
-    "@fema/connector-webhook": ["@fema/connector-webhook@workspace:packages/connectors/core/webhook"],
+    "@fema-ipaas/connector-text-helper": ["@fema-ipaas/connector-text-helper@workspace:packages/connectors/core/text-helper"],
 
-    "@fema/connector-xml": ["@fema/connector-xml@workspace:packages/connectors/core/xml"],
+    "@fema-ipaas/connector-types": ["@fema-ipaas/connector-types@workspace:packages/core/connector-types"],
 
-    "@fema/core-utils": ["@fema/core-utils@workspace:packages/core/utils"],
+    "@fema-ipaas/connector-webhook": ["@fema-ipaas/connector-webhook@workspace:packages/connectors/core/webhook"],
 
-    "@fema/engine": ["@fema/engine@workspace:packages/server/engine"],
+    "@fema-ipaas/connector-xml": ["@fema-ipaas/connector-xml@workspace:packages/connectors/core/xml"],
 
-    "@fema/expression": ["@fema/expression@workspace:packages/core/formula"],
+    "@fema-ipaas/core-utils": ["@fema-ipaas/core-utils@workspace:packages/core/utils"],
 
-    "@fema/sandbox": ["@fema/sandbox@workspace:packages/server/sandbox"],
+    "@fema-ipaas/engine": ["@fema-ipaas/engine@workspace:packages/server/engine"],
 
-    "@fema/server-utils": ["@fema/server-utils@workspace:packages/server/utils"],
+    "@fema-ipaas/expression": ["@fema-ipaas/expression@workspace:packages/core/formula"],
 
-    "@fema/shared": ["@fema/shared@workspace:packages/core/shared"],
+    "@fema-ipaas/sandbox": ["@fema-ipaas/sandbox@workspace:packages/server/sandbox"],
 
-    "@fema/workflow-core": ["@fema/workflow-core@workspace:packages/core/execution"],
+    "@fema-ipaas/server-utils": ["@fema-ipaas/server-utils@workspace:packages/server/utils"],
+
+    "@fema-ipaas/shared": ["@fema-ipaas/shared@workspace:packages/core/shared"],
+
+    "@fema-ipaas/workflow-core": ["@fema-ipaas/workflow-core@workspace:packages/core/execution"],
 
     "@floating-ui/core": ["@floating-ui/core@1.7.5", "", { "dependencies": { "@floating-ui/utils": "^0.2.11" } }, "sha512-1Ih4WTWyw0+lKyFMcBHGbb5U5FtuHJuujoyyr5zTaWS5EYMeT6Jb2AuDeftsCsEuchO+mM2ij5+q9crhydzLhQ=="],
 
@@ -5613,11 +5647,11 @@
 
     "@fastify/swagger/yaml": ["yaml@2.8.3", "", { "bin": { "yaml": "bin.mjs" } }, "sha512-AvbaCLOO2Otw/lW5bmh9d/WEdcDFdQp2Z2ZUH3pX9U2ihyUY0nvLv7J6TrWowklRGPYbB/IuIMfYgxaCPg5Bpg=="],
 
-    "@fema/connector-manual-trigger/tslib": ["tslib@2.8.1", "", {}, "sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w=="],
+    "@fema-ipaas/connector-manual-trigger/tslib": ["tslib@2.8.1", "", {}, "sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w=="],
 
-    "@fema/sandbox/esbuild": ["esbuild@0.25.0", "", { "optionalDependencies": { "@esbuild/aix-ppc64": "0.25.0", "@esbuild/android-arm": "0.25.0", "@esbuild/android-arm64": "0.25.0", "@esbuild/android-x64": "0.25.0", "@esbuild/darwin-arm64": "0.25.0", "@esbuild/darwin-x64": "0.25.0", "@esbuild/freebsd-arm64": "0.25.0", "@esbuild/freebsd-x64": "0.25.0", "@esbuild/linux-arm": "0.25.0", "@esbuild/linux-arm64": "0.25.0", "@esbuild/linux-ia32": "0.25.0", "@esbuild/linux-loong64": "0.25.0", "@esbuild/linux-mips64el": "0.25.0", "@esbuild/linux-ppc64": "0.25.0", "@esbuild/linux-riscv64": "0.25.0", "@esbuild/linux-s390x": "0.25.0", "@esbuild/linux-x64": "0.25.0", "@esbuild/netbsd-arm64": "0.25.0", "@esbuild/netbsd-x64": "0.25.0", "@esbuild/openbsd-arm64": "0.25.0", "@esbuild/openbsd-x64": "0.25.0", "@esbuild/sunos-x64": "0.25.0", "@esbuild/win32-arm64": "0.25.0", "@esbuild/win32-ia32": "0.25.0", "@esbuild/win32-x64": "0.25.0" }, "bin": { "esbuild": "bin/esbuild" } }, "sha512-BXq5mqc8ltbaN34cDqWuYKyNhX8D/Z0J1xdtdQ8UcIIIyJyz+ZMKUt58tF3SrZ85jcfN/PZYhjR5uDQAYNVbuw=="],
+    "@fema-ipaas/sandbox/esbuild": ["esbuild@0.25.0", "", { "optionalDependencies": { "@esbuild/aix-ppc64": "0.25.0", "@esbuild/android-arm": "0.25.0", "@esbuild/android-arm64": "0.25.0", "@esbuild/android-x64": "0.25.0", "@esbuild/darwin-arm64": "0.25.0", "@esbuild/darwin-x64": "0.25.0", "@esbuild/freebsd-arm64": "0.25.0", "@esbuild/freebsd-x64": "0.25.0", "@esbuild/linux-arm": "0.25.0", "@esbuild/linux-arm64": "0.25.0", "@esbuild/linux-ia32": "0.25.0", "@esbuild/linux-loong64": "0.25.0", "@esbuild/linux-mips64el": "0.25.0", "@esbuild/linux-ppc64": "0.25.0", "@esbuild/linux-riscv64": "0.25.0", "@esbuild/linux-s390x": "0.25.0", "@esbuild/linux-x64": "0.25.0", "@esbuild/netbsd-arm64": "0.25.0", "@esbuild/netbsd-x64": "0.25.0", "@esbuild/openbsd-arm64": "0.25.0", "@esbuild/openbsd-x64": "0.25.0", "@esbuild/sunos-x64": "0.25.0", "@esbuild/win32-arm64": "0.25.0", "@esbuild/win32-ia32": "0.25.0", "@esbuild/win32-x64": "0.25.0" }, "bin": { "esbuild": "bin/esbuild" } }, "sha512-BXq5mqc8ltbaN34cDqWuYKyNhX8D/Z0J1xdtdQ8UcIIIyJyz+ZMKUt58tF3SrZ85jcfN/PZYhjR5uDQAYNVbuw=="],
 
-    "@fema/server-utils/ai": ["ai@7.0.44", "", { "dependencies": { "@ai-sdk/gateway": "4.0.33", "@ai-sdk/provider": "4.0.4", "@ai-sdk/provider-utils": "5.0.16" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-OMJ8v3ZzMIt90wIZRluD8c/VgvmX8SvAajGNYEbCeCAiCbr62yhCgXC7MvZRrQ0pOTfLZRohztUVrt5A08gKNg=="],
+    "@fema-ipaas/server-utils/ai": ["ai@7.0.44", "", { "dependencies": { "@ai-sdk/gateway": "4.0.33", "@ai-sdk/provider": "4.0.4", "@ai-sdk/provider-utils": "5.0.16" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-OMJ8v3ZzMIt90wIZRluD8c/VgvmX8SvAajGNYEbCeCAiCbr62yhCgXC7MvZRrQ0pOTfLZRohztUVrt5A08gKNg=="],
 
     "@formatjs/ecma402-abstract/tslib": ["tslib@2.8.1", "", {}, "sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w=="],
 
@@ -6895,59 +6929,59 @@
 
     "@fastify/ajv-compiler/ajv/json-schema-traverse": ["json-schema-traverse@1.0.0", "", {}, "sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug=="],
 
-    "@fema/sandbox/esbuild/@esbuild/aix-ppc64": ["@esbuild/aix-ppc64@0.25.0", "", { "os": "aix", "cpu": "ppc64" }, "sha512-O7vun9Sf8DFjH2UtqK8Ku3LkquL9SZL8OLY1T5NZkA34+wG3OQF7cl4Ql8vdNzM6fzBbYfLaiRLIOZ+2FOCgBQ=="],
+    "@fema-ipaas/sandbox/esbuild/@esbuild/aix-ppc64": ["@esbuild/aix-ppc64@0.25.0", "", { "os": "aix", "cpu": "ppc64" }, "sha512-O7vun9Sf8DFjH2UtqK8Ku3LkquL9SZL8OLY1T5NZkA34+wG3OQF7cl4Ql8vdNzM6fzBbYfLaiRLIOZ+2FOCgBQ=="],
 
-    "@fema/sandbox/esbuild/@esbuild/android-arm": ["@esbuild/android-arm@0.25.0", "", { "os": "android", "cpu": "arm" }, "sha512-PTyWCYYiU0+1eJKmw21lWtC+d08JDZPQ5g+kFyxP0V+es6VPPSUhM6zk8iImp2jbV6GwjX4pap0JFbUQN65X1g=="],
+    "@fema-ipaas/sandbox/esbuild/@esbuild/android-arm": ["@esbuild/android-arm@0.25.0", "", { "os": "android", "cpu": "arm" }, "sha512-PTyWCYYiU0+1eJKmw21lWtC+d08JDZPQ5g+kFyxP0V+es6VPPSUhM6zk8iImp2jbV6GwjX4pap0JFbUQN65X1g=="],
 
-    "@fema/sandbox/esbuild/@esbuild/android-arm64": ["@esbuild/android-arm64@0.25.0", "", { "os": "android", "cpu": "arm64" }, "sha512-grvv8WncGjDSyUBjN9yHXNt+cq0snxXbDxy5pJtzMKGmmpPxeAmAhWxXI+01lU5rwZomDgD3kJwulEnhTRUd6g=="],
+    "@fema-ipaas/sandbox/esbuild/@esbuild/android-arm64": ["@esbuild/android-arm64@0.25.0", "", { "os": "android", "cpu": "arm64" }, "sha512-grvv8WncGjDSyUBjN9yHXNt+cq0snxXbDxy5pJtzMKGmmpPxeAmAhWxXI+01lU5rwZomDgD3kJwulEnhTRUd6g=="],
 
-    "@fema/sandbox/esbuild/@esbuild/android-x64": ["@esbuild/android-x64@0.25.0", "", { "os": "android", "cpu": "x64" }, "sha512-m/ix7SfKG5buCnxasr52+LI78SQ+wgdENi9CqyCXwjVR2X4Jkz+BpC3le3AoBPYTC9NHklwngVXvbJ9/Akhrfg=="],
+    "@fema-ipaas/sandbox/esbuild/@esbuild/android-x64": ["@esbuild/android-x64@0.25.0", "", { "os": "android", "cpu": "x64" }, "sha512-m/ix7SfKG5buCnxasr52+LI78SQ+wgdENi9CqyCXwjVR2X4Jkz+BpC3le3AoBPYTC9NHklwngVXvbJ9/Akhrfg=="],
 
-    "@fema/sandbox/esbuild/@esbuild/darwin-arm64": ["@esbuild/darwin-arm64@0.25.0", "", { "os": "darwin", "cpu": "arm64" }, "sha512-mVwdUb5SRkPayVadIOI78K7aAnPamoeFR2bT5nszFUZ9P8UpK4ratOdYbZZXYSqPKMHfS1wdHCJk1P1EZpRdvw=="],
+    "@fema-ipaas/sandbox/esbuild/@esbuild/darwin-arm64": ["@esbuild/darwin-arm64@0.25.0", "", { "os": "darwin", "cpu": "arm64" }, "sha512-mVwdUb5SRkPayVadIOI78K7aAnPamoeFR2bT5nszFUZ9P8UpK4ratOdYbZZXYSqPKMHfS1wdHCJk1P1EZpRdvw=="],
 
-    "@fema/sandbox/esbuild/@esbuild/darwin-x64": ["@esbuild/darwin-x64@0.25.0", "", { "os": "darwin", "cpu": "x64" }, "sha512-DgDaYsPWFTS4S3nWpFcMn/33ZZwAAeAFKNHNa1QN0rI4pUjgqf0f7ONmXf6d22tqTY+H9FNdgeaAa+YIFUn2Rg=="],
+    "@fema-ipaas/sandbox/esbuild/@esbuild/darwin-x64": ["@esbuild/darwin-x64@0.25.0", "", { "os": "darwin", "cpu": "x64" }, "sha512-DgDaYsPWFTS4S3nWpFcMn/33ZZwAAeAFKNHNa1QN0rI4pUjgqf0f7ONmXf6d22tqTY+H9FNdgeaAa+YIFUn2Rg=="],
 
-    "@fema/sandbox/esbuild/@esbuild/freebsd-arm64": ["@esbuild/freebsd-arm64@0.25.0", "", { "os": "freebsd", "cpu": "arm64" }, "sha512-VN4ocxy6dxefN1MepBx/iD1dH5K8qNtNe227I0mnTRjry8tj5MRk4zprLEdG8WPyAPb93/e4pSgi1SoHdgOa4w=="],
+    "@fema-ipaas/sandbox/esbuild/@esbuild/freebsd-arm64": ["@esbuild/freebsd-arm64@0.25.0", "", { "os": "freebsd", "cpu": "arm64" }, "sha512-VN4ocxy6dxefN1MepBx/iD1dH5K8qNtNe227I0mnTRjry8tj5MRk4zprLEdG8WPyAPb93/e4pSgi1SoHdgOa4w=="],
 
-    "@fema/sandbox/esbuild/@esbuild/freebsd-x64": ["@esbuild/freebsd-x64@0.25.0", "", { "os": "freebsd", "cpu": "x64" }, "sha512-mrSgt7lCh07FY+hDD1TxiTyIHyttn6vnjesnPoVDNmDfOmggTLXRv8Id5fNZey1gl/V2dyVK1VXXqVsQIiAk+A=="],
+    "@fema-ipaas/sandbox/esbuild/@esbuild/freebsd-x64": ["@esbuild/freebsd-x64@0.25.0", "", { "os": "freebsd", "cpu": "x64" }, "sha512-mrSgt7lCh07FY+hDD1TxiTyIHyttn6vnjesnPoVDNmDfOmggTLXRv8Id5fNZey1gl/V2dyVK1VXXqVsQIiAk+A=="],
 
-    "@fema/sandbox/esbuild/@esbuild/linux-arm": ["@esbuild/linux-arm@0.25.0", "", { "os": "linux", "cpu": "arm" }, "sha512-vkB3IYj2IDo3g9xX7HqhPYxVkNQe8qTK55fraQyTzTX/fxaDtXiEnavv9geOsonh2Fd2RMB+i5cbhu2zMNWJwg=="],
+    "@fema-ipaas/sandbox/esbuild/@esbuild/linux-arm": ["@esbuild/linux-arm@0.25.0", "", { "os": "linux", "cpu": "arm" }, "sha512-vkB3IYj2IDo3g9xX7HqhPYxVkNQe8qTK55fraQyTzTX/fxaDtXiEnavv9geOsonh2Fd2RMB+i5cbhu2zMNWJwg=="],
 
-    "@fema/sandbox/esbuild/@esbuild/linux-arm64": ["@esbuild/linux-arm64@0.25.0", "", { "os": "linux", "cpu": "arm64" }, "sha512-9QAQjTWNDM/Vk2bgBl17yWuZxZNQIF0OUUuPZRKoDtqF2k4EtYbpyiG5/Dk7nqeK6kIJWPYldkOcBqjXjrUlmg=="],
+    "@fema-ipaas/sandbox/esbuild/@esbuild/linux-arm64": ["@esbuild/linux-arm64@0.25.0", "", { "os": "linux", "cpu": "arm64" }, "sha512-9QAQjTWNDM/Vk2bgBl17yWuZxZNQIF0OUUuPZRKoDtqF2k4EtYbpyiG5/Dk7nqeK6kIJWPYldkOcBqjXjrUlmg=="],
 
-    "@fema/sandbox/esbuild/@esbuild/linux-ia32": ["@esbuild/linux-ia32@0.25.0", "", { "os": "linux", "cpu": "ia32" }, "sha512-43ET5bHbphBegyeqLb7I1eYn2P/JYGNmzzdidq/w0T8E2SsYL1U6un2NFROFRg1JZLTzdCoRomg8Rvf9M6W6Gg=="],
+    "@fema-ipaas/sandbox/esbuild/@esbuild/linux-ia32": ["@esbuild/linux-ia32@0.25.0", "", { "os": "linux", "cpu": "ia32" }, "sha512-43ET5bHbphBegyeqLb7I1eYn2P/JYGNmzzdidq/w0T8E2SsYL1U6un2NFROFRg1JZLTzdCoRomg8Rvf9M6W6Gg=="],
 
-    "@fema/sandbox/esbuild/@esbuild/linux-loong64": ["@esbuild/linux-loong64@0.25.0", "", { "os": "linux", "cpu": "none" }, "sha512-fC95c/xyNFueMhClxJmeRIj2yrSMdDfmqJnyOY4ZqsALkDrrKJfIg5NTMSzVBr5YW1jf+l7/cndBfP3MSDpoHw=="],
+    "@fema-ipaas/sandbox/esbuild/@esbuild/linux-loong64": ["@esbuild/linux-loong64@0.25.0", "", { "os": "linux", "cpu": "none" }, "sha512-fC95c/xyNFueMhClxJmeRIj2yrSMdDfmqJnyOY4ZqsALkDrrKJfIg5NTMSzVBr5YW1jf+l7/cndBfP3MSDpoHw=="],
 
-    "@fema/sandbox/esbuild/@esbuild/linux-mips64el": ["@esbuild/linux-mips64el@0.25.0", "", { "os": "linux", "cpu": "none" }, "sha512-nkAMFju7KDW73T1DdH7glcyIptm95a7Le8irTQNO/qtkoyypZAnjchQgooFUDQhNAy4iu08N79W4T4pMBwhPwQ=="],
+    "@fema-ipaas/sandbox/esbuild/@esbuild/linux-mips64el": ["@esbuild/linux-mips64el@0.25.0", "", { "os": "linux", "cpu": "none" }, "sha512-nkAMFju7KDW73T1DdH7glcyIptm95a7Le8irTQNO/qtkoyypZAnjchQgooFUDQhNAy4iu08N79W4T4pMBwhPwQ=="],
 
-    "@fema/sandbox/esbuild/@esbuild/linux-ppc64": ["@esbuild/linux-ppc64@0.25.0", "", { "os": "linux", "cpu": "ppc64" }, "sha512-NhyOejdhRGS8Iwv+KKR2zTq2PpysF9XqY+Zk77vQHqNbo/PwZCzB5/h7VGuREZm1fixhs4Q/qWRSi5zmAiO4Fw=="],
+    "@fema-ipaas/sandbox/esbuild/@esbuild/linux-ppc64": ["@esbuild/linux-ppc64@0.25.0", "", { "os": "linux", "cpu": "ppc64" }, "sha512-NhyOejdhRGS8Iwv+KKR2zTq2PpysF9XqY+Zk77vQHqNbo/PwZCzB5/h7VGuREZm1fixhs4Q/qWRSi5zmAiO4Fw=="],
 
-    "@fema/sandbox/esbuild/@esbuild/linux-riscv64": ["@esbuild/linux-riscv64@0.25.0", "", { "os": "linux", "cpu": "none" }, "sha512-5S/rbP5OY+GHLC5qXp1y/Mx//e92L1YDqkiBbO9TQOvuFXM+iDqUNG5XopAnXoRH3FjIUDkeGcY1cgNvnXp/kA=="],
+    "@fema-ipaas/sandbox/esbuild/@esbuild/linux-riscv64": ["@esbuild/linux-riscv64@0.25.0", "", { "os": "linux", "cpu": "none" }, "sha512-5S/rbP5OY+GHLC5qXp1y/Mx//e92L1YDqkiBbO9TQOvuFXM+iDqUNG5XopAnXoRH3FjIUDkeGcY1cgNvnXp/kA=="],
 
-    "@fema/sandbox/esbuild/@esbuild/linux-s390x": ["@esbuild/linux-s390x@0.25.0", "", { "os": "linux", "cpu": "s390x" }, "sha512-XM2BFsEBz0Fw37V0zU4CXfcfuACMrppsMFKdYY2WuTS3yi8O1nFOhil/xhKTmE1nPmVyvQJjJivgDT+xh8pXJA=="],
+    "@fema-ipaas/sandbox/esbuild/@esbuild/linux-s390x": ["@esbuild/linux-s390x@0.25.0", "", { "os": "linux", "cpu": "s390x" }, "sha512-XM2BFsEBz0Fw37V0zU4CXfcfuACMrppsMFKdYY2WuTS3yi8O1nFOhil/xhKTmE1nPmVyvQJjJivgDT+xh8pXJA=="],
 
-    "@fema/sandbox/esbuild/@esbuild/linux-x64": ["@esbuild/linux-x64@0.25.0", "", { "os": "linux", "cpu": "x64" }, "sha512-9yl91rHw/cpwMCNytUDxwj2XjFpxML0y9HAOH9pNVQDpQrBxHy01Dx+vaMu0N1CKa/RzBD2hB4u//nfc+Sd3Cw=="],
+    "@fema-ipaas/sandbox/esbuild/@esbuild/linux-x64": ["@esbuild/linux-x64@0.25.0", "", { "os": "linux", "cpu": "x64" }, "sha512-9yl91rHw/cpwMCNytUDxwj2XjFpxML0y9HAOH9pNVQDpQrBxHy01Dx+vaMu0N1CKa/RzBD2hB4u//nfc+Sd3Cw=="],
 
-    "@fema/sandbox/esbuild/@esbuild/netbsd-arm64": ["@esbuild/netbsd-arm64@0.25.0", "", { "os": "none", "cpu": "arm64" }, "sha512-RuG4PSMPFfrkH6UwCAqBzauBWTygTvb1nxWasEJooGSJ/NwRw7b2HOwyRTQIU97Hq37l3npXoZGYMy3b3xYvPw=="],
+    "@fema-ipaas/sandbox/esbuild/@esbuild/netbsd-arm64": ["@esbuild/netbsd-arm64@0.25.0", "", { "os": "none", "cpu": "arm64" }, "sha512-RuG4PSMPFfrkH6UwCAqBzauBWTygTvb1nxWasEJooGSJ/NwRw7b2HOwyRTQIU97Hq37l3npXoZGYMy3b3xYvPw=="],
 
-    "@fema/sandbox/esbuild/@esbuild/netbsd-x64": ["@esbuild/netbsd-x64@0.25.0", "", { "os": "none", "cpu": "x64" }, "sha512-jl+qisSB5jk01N5f7sPCsBENCOlPiS/xptD5yxOx2oqQfyourJwIKLRA2yqWdifj3owQZCL2sn6o08dBzZGQzA=="],
+    "@fema-ipaas/sandbox/esbuild/@esbuild/netbsd-x64": ["@esbuild/netbsd-x64@0.25.0", "", { "os": "none", "cpu": "x64" }, "sha512-jl+qisSB5jk01N5f7sPCsBENCOlPiS/xptD5yxOx2oqQfyourJwIKLRA2yqWdifj3owQZCL2sn6o08dBzZGQzA=="],
 
-    "@fema/sandbox/esbuild/@esbuild/openbsd-arm64": ["@esbuild/openbsd-arm64@0.25.0", "", { "os": "openbsd", "cpu": "arm64" }, "sha512-21sUNbq2r84YE+SJDfaQRvdgznTD8Xc0oc3p3iW/a1EVWeNj/SdUCbm5U0itZPQYRuRTW20fPMWMpcrciH2EJw=="],
+    "@fema-ipaas/sandbox/esbuild/@esbuild/openbsd-arm64": ["@esbuild/openbsd-arm64@0.25.0", "", { "os": "openbsd", "cpu": "arm64" }, "sha512-21sUNbq2r84YE+SJDfaQRvdgznTD8Xc0oc3p3iW/a1EVWeNj/SdUCbm5U0itZPQYRuRTW20fPMWMpcrciH2EJw=="],
 
-    "@fema/sandbox/esbuild/@esbuild/openbsd-x64": ["@esbuild/openbsd-x64@0.25.0", "", { "os": "openbsd", "cpu": "x64" }, "sha512-2gwwriSMPcCFRlPlKx3zLQhfN/2WjJ2NSlg5TKLQOJdV0mSxIcYNTMhk3H3ulL/cak+Xj0lY1Ym9ysDV1igceg=="],
+    "@fema-ipaas/sandbox/esbuild/@esbuild/openbsd-x64": ["@esbuild/openbsd-x64@0.25.0", "", { "os": "openbsd", "cpu": "x64" }, "sha512-2gwwriSMPcCFRlPlKx3zLQhfN/2WjJ2NSlg5TKLQOJdV0mSxIcYNTMhk3H3ulL/cak+Xj0lY1Ym9ysDV1igceg=="],
 
-    "@fema/sandbox/esbuild/@esbuild/sunos-x64": ["@esbuild/sunos-x64@0.25.0", "", { "os": "sunos", "cpu": "x64" }, "sha512-bxI7ThgLzPrPz484/S9jLlvUAHYMzy6I0XiU1ZMeAEOBcS0VePBFxh1JjTQt3Xiat5b6Oh4x7UC7IwKQKIJRIg=="],
+    "@fema-ipaas/sandbox/esbuild/@esbuild/sunos-x64": ["@esbuild/sunos-x64@0.25.0", "", { "os": "sunos", "cpu": "x64" }, "sha512-bxI7ThgLzPrPz484/S9jLlvUAHYMzy6I0XiU1ZMeAEOBcS0VePBFxh1JjTQt3Xiat5b6Oh4x7UC7IwKQKIJRIg=="],
 
-    "@fema/sandbox/esbuild/@esbuild/win32-arm64": ["@esbuild/win32-arm64@0.25.0", "", { "os": "win32", "cpu": "arm64" }, "sha512-ZUAc2YK6JW89xTbXvftxdnYy3m4iHIkDtK3CLce8wg8M2L+YZhIvO1DKpxrd0Yr59AeNNkTiic9YLf6FTtXWMw=="],
+    "@fema-ipaas/sandbox/esbuild/@esbuild/win32-arm64": ["@esbuild/win32-arm64@0.25.0", "", { "os": "win32", "cpu": "arm64" }, "sha512-ZUAc2YK6JW89xTbXvftxdnYy3m4iHIkDtK3CLce8wg8M2L+YZhIvO1DKpxrd0Yr59AeNNkTiic9YLf6FTtXWMw=="],
 
-    "@fema/sandbox/esbuild/@esbuild/win32-ia32": ["@esbuild/win32-ia32@0.25.0", "", { "os": "win32", "cpu": "ia32" }, "sha512-eSNxISBu8XweVEWG31/JzjkIGbGIJN/TrRoiSVZwZ6pkC6VX4Im/WV2cz559/TXLcYbcrDN8JtKgd9DJVIo8GA=="],
+    "@fema-ipaas/sandbox/esbuild/@esbuild/win32-ia32": ["@esbuild/win32-ia32@0.25.0", "", { "os": "win32", "cpu": "ia32" }, "sha512-eSNxISBu8XweVEWG31/JzjkIGbGIJN/TrRoiSVZwZ6pkC6VX4Im/WV2cz559/TXLcYbcrDN8JtKgd9DJVIo8GA=="],
 
-    "@fema/sandbox/esbuild/@esbuild/win32-x64": ["@esbuild/win32-x64@0.25.0", "", { "os": "win32", "cpu": "x64" }, "sha512-ZENoHJBxA20C2zFzh6AI4fT6RraMzjYw4xKWemRTRmRVtN9c5DcH9r/f2ihEkMjOW5eGgrwCslG/+Y/3bL+DHQ=="],
+    "@fema-ipaas/sandbox/esbuild/@esbuild/win32-x64": ["@esbuild/win32-x64@0.25.0", "", { "os": "win32", "cpu": "x64" }, "sha512-ZENoHJBxA20C2zFzh6AI4fT6RraMzjYw4xKWemRTRmRVtN9c5DcH9r/f2ihEkMjOW5eGgrwCslG/+Y/3bL+DHQ=="],
 
-    "@fema/server-utils/ai/@ai-sdk/gateway": ["@ai-sdk/gateway@4.0.33", "", { "dependencies": { "@ai-sdk/provider": "4.0.4", "@ai-sdk/provider-utils": "5.0.16", "@vercel/oidc": "3.2.0" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-YFkZhWH1ksIoSO2b0S/nAboiYBYRhkrmbC/6vOBsKZz6Y0FfBBaIjWBu3lW2n2x7cXEH776RUKGOiEzJYmu+Pw=="],
+    "@fema-ipaas/server-utils/ai/@ai-sdk/gateway": ["@ai-sdk/gateway@4.0.33", "", { "dependencies": { "@ai-sdk/provider": "4.0.4", "@ai-sdk/provider-utils": "5.0.16", "@vercel/oidc": "3.2.0" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-YFkZhWH1ksIoSO2b0S/nAboiYBYRhkrmbC/6vOBsKZz6Y0FfBBaIjWBu3lW2n2x7cXEH776RUKGOiEzJYmu+Pw=="],
 
-    "@fema/server-utils/ai/@ai-sdk/provider-utils": ["@ai-sdk/provider-utils@5.0.16", "", { "dependencies": { "@ai-sdk/provider": "4.0.4", "@standard-schema/spec": "^1.1.0", "@workflow/serde": "4.1.0", "eventsource-parser": "^3.0.8", "undici": "^7.28.0" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-LWDrmYWkZoAJwMbToUglpR6AmgvtnNtCCGeU9MKlXiSV3Yiu4u73/pVA18sQAAe3kZtCRBY9P31lAfnPekWWyg=="],
+    "@fema-ipaas/server-utils/ai/@ai-sdk/provider-utils": ["@ai-sdk/provider-utils@5.0.16", "", { "dependencies": { "@ai-sdk/provider": "4.0.4", "@standard-schema/spec": "^1.1.0", "@workflow/serde": "4.1.0", "eventsource-parser": "^3.0.8", "undici": "^7.28.0" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-LWDrmYWkZoAJwMbToUglpR6AmgvtnNtCCGeU9MKlXiSV3Yiu4u73/pVA18sQAAe3kZtCRBY9P31lAfnPekWWyg=="],
 
     "@isaacs/cliui/strip-ansi/ansi-regex": ["ansi-regex@6.2.2", "", {}, "sha512-Bq3SmSpyFHaWjPk8If9yc6svM8c56dB5BAtW4Qbw5jHTwwXXcTLoRMkpDJp6VL0XzlWaCHTXrkFURMYmD0sLqg=="],
 
@@ -7627,9 +7661,9 @@
 
     "@bull-board/fastify/@fastify/static/glob/minimatch": ["minimatch@10.2.5", "", { "dependencies": { "brace-expansion": "^5.0.5" } }, "sha512-MULkVLfKGYDFYejP07QOurDLLQpcjk7Fw+7jXS2R2czRQzR56yHRveU5NDJEOviH+hETZKSkIk5c+T23GjFUMg=="],
 
-    "@fema/server-utils/ai/@ai-sdk/provider-utils/eventsource-parser": ["eventsource-parser@3.0.8", "", {}, "sha512-70QWGkr4snxr0OXLRWsFLeRBIRPuQOvt4s8QYjmUlmlkyTZkRqS7EDVRZtzU3TiyDbXSzaOeF0XUKy8PchzukQ=="],
+    "@fema-ipaas/server-utils/ai/@ai-sdk/provider-utils/eventsource-parser": ["eventsource-parser@3.0.8", "", {}, "sha512-70QWGkr4snxr0OXLRWsFLeRBIRPuQOvt4s8QYjmUlmlkyTZkRqS7EDVRZtzU3TiyDbXSzaOeF0XUKy8PchzukQ=="],
 
-    "@fema/server-utils/ai/@ai-sdk/provider-utils/undici": ["undici@7.28.0", "", {}, "sha512-cRZYrTDwWznlnRiPjggAGxZXanty6M8RV1ff8Wm4LWXBp7/IG8v5DnOm74DtUBp9OONpK75YlPnIjQqX0dBDtA=="],
+    "@fema-ipaas/server-utils/ai/@ai-sdk/provider-utils/undici": ["undici@7.28.0", "", {}, "sha512-cRZYrTDwWznlnRiPjggAGxZXanty6M8RV1ff8Wm4LWXBp7/IG8v5DnOm74DtUBp9OONpK75YlPnIjQqX0dBDtA=="],
 
     "@oclif/core/minimatch/brace-expansion/balanced-match": ["balanced-match@4.0.4", "", {}, "sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA=="],
 

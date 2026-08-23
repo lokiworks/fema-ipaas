@@ -104,7 +104,7 @@ Replace finished in 1240ms
   - fema-onlinepay@0.0.7 (CUSTOM)
 
 1 connection(s) need authorization on destination before workflows can run:
-  - Slack Main (@fema/connector-slack) [externalId=slack_main]
+  - Slack Main (@fema-ipaas/connector-slack) [externalId=slack_main]
 ```
 
 ### `--json`
@@ -124,7 +124,7 @@ Replace finished in 1240ms
     { "name": "fema-onlinepay", "version": "0.0.7", "connectorType": "CUSTOM" }
   ],
   "connectionsAwaitingAuthorization": [
-    { "externalId": "slack_main", "connectorName": "@fema/connector-slack", "displayName": "Slack Main" }
+    { "externalId": "slack_main", "connectorName": "@fema-ipaas/connector-slack", "displayName": "Slack Main" }
   ],
   "durationMs": 1240
 }
@@ -136,7 +136,7 @@ Replace finished in 1240ms
 {
   "errors": [
     { "kind": "FEMA_VERSION_MISMATCH", "sourceVersion": "1.2.0", "destVersion": "1.1.5", "message": "..." },
-    { "kind": "CONNECTION_CONNECTOR_MISMATCH", "externalId": "slack_main", "expectedConnectorName": "@fema/connector-slack", "foundConnectorName": "@fema/connector-discord" }
+    { "kind": "CONNECTION_CONNECTOR_MISMATCH", "externalId": "slack_main", "expectedConnectorName": "@fema-ipaas/connector-slack", "foundConnectorName": "@fema-ipaas/connector-discord" }
   ]
 }
 ```
@@ -148,7 +148,7 @@ The full set of preflight error kinds: `FEMA_VERSION_MISMATCH`, `CONNECTOR_VERSI
 ```jsonc
 {
   "failures": [
-    { "connectorName": "@fema/connector-slack", "version": "1.2.3", "connectorType": "OFFICIAL", "message": "ENGINE_OPERATION_FAILURE: ..." },
+    { "connectorName": "@fema-ipaas/connector-slack", "version": "1.2.3", "connectorType": "OFFICIAL", "message": "ENGINE_OPERATION_FAILURE: ..." },
     { "connectorName": "pdfcrowd-connector-fema", "version": "0.0.5", "connectorType": "CUSTOM", "message": "..." }
   ]
 }
@@ -176,7 +176,7 @@ After a replace, the CLI prints any connections that still need authorization on
 
 ```text
 1 connection(s) need authorization on destination before workflows can run:
-  - Slack Main (@fema/connector-slack) [externalId=slack_main]
+  - Slack Main (@fema-ipaas/connector-slack) [externalId=slack_main]
 ```
 
 The operator opens the destination UI → **Connections** → reconnects each placeholder using the destination's credentials (a different Slack workspace, prod-grade API key, etc.). Until that's done, any workflow run that uses the connection will fail at execution time. Re-running the CLI after authorization is a no-op for connections that are already `ACTIVE`.

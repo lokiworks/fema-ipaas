@@ -1,5 +1,5 @@
-import { WorkspaceRole } from '@fema/core-utils'
-import { DefaultWorkspaceRole, Tenant, TenantPlan, TenantRole, PrincipalType, Workspace, User, UserIdentity } from '@fema/shared'
+import { WorkspaceRole } from '@fema-ipaas/core-utils'
+import { DefaultWorkspaceRole, Tenant, TenantPlan, TenantRole, PrincipalType, Workspace, User, UserIdentity } from '@fema-ipaas/shared'
 import { FastifyInstance, InjectOptions } from 'fastify'
 import { generateMockToken } from './auth'
 import { db } from './db'

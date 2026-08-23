@@ -1,9 +1,9 @@
 import { spawn } from 'node:child_process'
 import { copyFile, cp } from 'node:fs/promises'
 import { join } from 'path'
-import { isNil } from '@fema/core-utils'
-import { memoryLock } from '@fema/server-utils'
-import { WebsocketClientEvent } from '@fema/shared'
+import { isNil } from '@fema-ipaas/core-utils'
+import { memoryLock } from '@fema-ipaas/server-utils'
+import { WebsocketClientEvent } from '@fema-ipaas/shared'
 import chokidar from 'chokidar'
 import { FastifyInstance } from 'fastify'
 import { system } from '../helper/system/system'
@@ -24,9 +24,9 @@ async function buildConnectors(app: FastifyInstance, connectorsInfo: ConnectorIn
 
     const connectorFilters = connectorsInfo.map(p => `--filter=${p.packageName}`)
     const filterArgs = [
-        '--filter=@fema/connector-sdk',
-        '--filter=@fema/connector-common',
-        '--filter=@fema/shared',
+        '--filter=@fema-ipaas/connector-sdk',
+        '--filter=@fema-ipaas/connector-common',
+        '--filter=@fema-ipaas/shared',
         ...connectorFilters,
         '--force',
     ]

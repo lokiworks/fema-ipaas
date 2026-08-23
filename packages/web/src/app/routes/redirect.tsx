@@ -1,4 +1,4 @@
-import { ErrorCode, isNil } from '@fema/core-utils';
+import { ErrorCode, isNil } from '@fema-ipaas/core-utils';
 import { t } from 'i18next';
 import React, { useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';

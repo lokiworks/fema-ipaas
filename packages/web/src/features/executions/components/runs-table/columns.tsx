@@ -1,5 +1,5 @@
-import { isNil, SeekPage } from '@fema/core-utils';
-import { Execution, ExecutionStatus } from '@fema/shared';
+import { isNil, SeekPage } from '@fema-ipaas/core-utils';
+import { Execution, ExecutionStatus } from '@fema-ipaas/shared';
 import { ColumnDef } from '@tanstack/react-table';
 import { t } from 'i18next';
 import {

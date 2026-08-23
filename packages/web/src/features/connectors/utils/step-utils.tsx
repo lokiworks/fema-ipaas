@@ -2,8 +2,8 @@ import {
   ErrorHandlingOptionsParam,
   ConnectorMetadataModel,
   ConnectorMetadataModelSummary,
-} from '@fema/connector-sdk';
-import { LocalesEnum, spreadIfDefined } from '@fema/core-utils';
+} from '@fema-ipaas/connector-sdk';
+import { LocalesEnum, spreadIfDefined } from '@fema-ipaas/core-utils';
 import {
   WorkflowAction,
   WorkflowActionType,
@@ -13,7 +13,7 @@ import {
   WorkflowTrigger,
   StepOutput,
   StepRunResponse,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 
 import { connectorsApi } from '../api/connectors-api';

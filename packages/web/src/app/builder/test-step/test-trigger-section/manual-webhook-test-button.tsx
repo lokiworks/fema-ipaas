@@ -1,4 +1,4 @@
-import { WorkflowTrigger } from '@fema/shared';
+import { WorkflowTrigger } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import React, { useState } from 'react';
 import { useFormContext } from 'react-hook-form';

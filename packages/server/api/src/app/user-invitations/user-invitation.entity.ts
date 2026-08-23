@@ -1,4 +1,4 @@
-import { UserInvitation, Workspace } from '@fema/shared'
+import { UserInvitation, Workspace } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import { BaseColumnSchemaPart } from '../database/database-common'
 

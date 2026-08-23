@@ -1,4 +1,4 @@
-import { isNil } from '@fema/core-utils';
+import { isNil } from '@fema-ipaas/core-utils';
 import { t } from 'i18next';
 import React from 'react';
 import { Navigate, useParams, useSearchParams } from 'react-router-dom';

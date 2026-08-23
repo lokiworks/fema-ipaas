@@ -2,12 +2,12 @@ import {
   ConnectorAuthProperty,
   ConnectorProperty,
   PropertyType,
-} from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-sdk';
 import {
   WorkflowAction,
   WorkflowTrigger,
   PropertyExecutionType,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { Calendar, File } from 'lucide-react';
 import React from 'react';

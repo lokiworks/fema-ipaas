@@ -1,4 +1,4 @@
-import { TenantRole, UserStatus } from '@fema/shared';
+import { TenantRole, UserStatus } from '@fema-ipaas/shared';
 import { ColumnDef } from '@tanstack/react-table';
 import { t } from 'i18next';
 import {

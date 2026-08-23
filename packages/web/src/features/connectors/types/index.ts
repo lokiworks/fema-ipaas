@@ -4,7 +4,7 @@ import {
   ConnectorAuthProperty,
   ConnectorMetadataModelSummary,
   TriggerBase,
-} from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-sdk';
 import {
   WorkflowActionType,
   PackageType,
@@ -12,7 +12,7 @@ import {
   WorkflowTriggerType,
   WorkflowOperationType,
   StepLocationRelativeToParent,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 
 type BaseStepMetadata = {
   displayName: string;

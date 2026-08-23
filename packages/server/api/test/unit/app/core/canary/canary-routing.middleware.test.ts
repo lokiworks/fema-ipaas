@@ -1,5 +1,5 @@
 import { EventEmitter } from 'node:events'
-import { PrincipalType } from '@fema/shared'
+import { PrincipalType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 

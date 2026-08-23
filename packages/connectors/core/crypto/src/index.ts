@@ -1,5 +1,5 @@
-import { createConnector, ConnectorAuth } from '@fema/connector-sdk';
-import { ConnectorCategory } from '@fema/connector-sdk';
+import { createConnector, ConnectorAuth } from '@fema-ipaas/connector-sdk';
+import { ConnectorCategory } from '@fema-ipaas/connector-sdk';
 import { generatePassword } from './lib/actions/generate-password';
 import { hashText } from './lib/actions/hash-text';
 import { hmacSignature } from './lib/actions/hmac-signature';

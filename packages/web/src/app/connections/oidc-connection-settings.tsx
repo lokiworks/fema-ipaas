@@ -1,4 +1,4 @@
-import { OIDCAuthProps, OIDCProperty } from '@fema/connector-sdk';
+import { OIDCAuthProps, OIDCProperty } from '@fema-ipaas/connector-sdk';
 import React from 'react';
 
 import { GenericPropertiesForm } from '@/app/builder/connector-properties/generic-properties-form';

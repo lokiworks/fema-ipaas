@@ -1,4 +1,4 @@
-import { Template, Tenant } from '@fema/shared'
+import { Template, Tenant } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import {
     BaseColumnSchemaPart,

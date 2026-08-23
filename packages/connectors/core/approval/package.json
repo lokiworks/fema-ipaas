@@ -1,5 +1,5 @@
 {
-  "name": "@fema/connector-approval",
+  "name": "@fema-ipaas/connector-approval",
   "version": "0.1.27",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -10,10 +10,10 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@fema/connector-common": "workspace:*",
-    "@fema/connector-sdk": "workspace:*",
-    "@fema/connector-types": "workspace:*",
-    "@fema/core-utils": "workspace:*"
+    "@fema-ipaas/connector-common": "workspace:*",
+    "@fema-ipaas/connector-sdk": "workspace:*",
+    "@fema-ipaas/connector-types": "workspace:*",
+    "@fema-ipaas/core-utils": "workspace:*"
   },
   "devDependencies": {
     "vitest": "3.2.6",

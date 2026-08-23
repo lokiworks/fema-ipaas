@@ -54,7 +54,7 @@ async function bundleConnector({ connectorPath, distPath, repoRoot }: BundleConn
 
     const bundleBytes = statSync(outfile).size
     const rawBytes = totalInputBytes(pass.result.metafile)
-    const external = [...pass.externalized].filter((dep) => !dep.startsWith('@fema/') && !BUNDLE_HELPER_DEPS.has(dep))
+    const external = [...pass.externalized].filter((dep) => !dep.startsWith('@fema-ipaas/') && !BUNDLE_HELPER_DEPS.has(dep))
 
     enforceSizeGate({ connectorPath, bundleBytes })
 
@@ -178,7 +178,7 @@ function readInlineConfig(manifest: ConnectorManifest): InlineConfig {
     return { inlineAll: true, inlineList: new Set(), excludeList }
 }
 
-// Only @fema/* workspace code and relative/absolute imports are always bundled in.
+// Only @fema-ipaas/* workspace code and relative/absolute imports are always bundled in.
 // Node builtins and packages in `external` (known-native + auto-externalized dynamic-require
 // deps) are kept external. Everything else is inlined when inlineAll / listed in inlineList.
 function externalizeThirdParty({ inlineAll, inlineList, external, inlined, externalized }: ExternalizeParams): esbuild.Plugin {
@@ -193,7 +193,7 @@ function externalizeThirdParty({ inlineAll, inlineList, external, inlined, exter
                 if (id.startsWith('.') || isAbsolute(id)) {
                     return null
                 }
-                if (id.startsWith('@fema/')) {
+                if (id.startsWith('@fema-ipaas/')) {
                     return null
                 }
                 if (id.startsWith('node:') || NODE_BUILTINS.has(id)) {
@@ -322,13 +322,13 @@ function workspaceAliases(repoRoot: string): Record<string, string> {
         // form-data → mime-types → mime-db pulls ~133 KB of MIME data into every HTTP connector
         // bundle. Swap in a minimal common-types table; uncommon types fall back gracefully.
         'mime-db': resolve(repoRoot, 'packages', 'connectors', 'framework', 'src', 'mime-db-min.cjs'),
-        '@fema/shared': resolve(repoRoot, 'packages', 'core', 'shared', 'src'),
-        '@fema/connector-sdk': resolve(repoRoot, 'packages', 'connectors', 'framework', 'src'),
-        '@fema/connector-common': resolve(repoRoot, 'packages', 'connectors', 'common', 'src'),
-        '@fema/core-utils': resolve(repoRoot, 'packages', 'core', 'utils', 'src'),
-        '@fema/connector-types': resolve(repoRoot, 'packages', 'core', 'connector-types', 'src'),
-        '@fema/expression': resolve(repoRoot, 'packages', 'core', 'formula', 'src'),
-        '@fema/workflow-core': resolve(repoRoot, 'packages', 'core', 'execution', 'src'),
+        '@fema-ipaas/shared': resolve(repoRoot, 'packages', 'core', 'shared', 'src'),
+        '@fema-ipaas/connector-sdk': resolve(repoRoot, 'packages', 'connectors', 'framework', 'src'),
+        '@fema-ipaas/connector-common': resolve(repoRoot, 'packages', 'connectors', 'common', 'src'),
+        '@fema-ipaas/core-utils': resolve(repoRoot, 'packages', 'core', 'utils', 'src'),
+        '@fema-ipaas/connector-types': resolve(repoRoot, 'packages', 'core', 'connector-types', 'src'),
+        '@fema-ipaas/expression': resolve(repoRoot, 'packages', 'core', 'formula', 'src'),
+        '@fema-ipaas/workflow-core': resolve(repoRoot, 'packages', 'core', 'execution', 'src'),
     }
 }
 
@@ -351,7 +351,7 @@ function enforceSizeGate({ connectorPath, bundleBytes }: SizeGateParams): void {
 // The published bundle lives at src/index.js — the entry path the engine's connector loader
 // resolves (older deployed engines hardcode `<package>/src/index.js`, ignoring package.json
 // "main"). Emitting a single self-contained src/index.js keeps bundled connectors installable
-// on every engine version while still inlining all @fema/* workspace code.
+// on every engine version while still inlining all @fema-ipaas/* workspace code.
 const BUNDLE_FILENAME = 'src/index.js'
 // tslib only exists to back tsc's `importHelpers` down-levelling. esbuild emits its own inline
 // helpers, so the published bundle never requires it. Drop it from every manifest rather than

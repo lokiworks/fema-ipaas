@@ -1,4 +1,4 @@
-import type { ApId, BaseModel, WorkspaceId } from '@fema/core-utils'
+import type { ApId, BaseModel, WorkspaceId } from '@fema-ipaas/core-utils'
 
 export type StoreEntryId = ApId
 

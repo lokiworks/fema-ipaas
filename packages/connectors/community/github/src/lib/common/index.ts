@@ -5,9 +5,9 @@ import {
   HttpRequest,
   HttpResponse,
   QueryParams,
-} from '@fema/connector-common';
-import { Property } from '@fema/connector-sdk';
-import { isNil } from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-common';
+import { Property } from '@fema-ipaas/connector-sdk';
+import { isNil } from '@fema-ipaas/connector-sdk';
 import { githubAuth } from '../auth';
 import { githubAuthHelpers, GithubAuthValue, isAppAuth } from './auth-helpers';
 

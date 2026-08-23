@@ -30,7 +30,7 @@ You will be asked three questions to define your new connector:
 npm run cli connectors create
 
 ? Enter the connector name: gelato
-? Enter the package name: @fema/connector-gelato
+? Enter the package name: @fema-ipaas/connector-gelato
 ? Select the connector type: community
 ```
 
@@ -38,7 +38,7 @@ The connector will be generated at `packages/connectors/community/gelato/`,
 the `src/index.ts` file should contain the following code
 
 ```ts
-import { ConnectorAuth, createConnector } from '@fema/connectors-framework';
+import { ConnectorAuth, createConnector } from '@fema-ipaas/connectors-framework';
 
 export const gelato = createConnector({
   displayName: 'Gelato',

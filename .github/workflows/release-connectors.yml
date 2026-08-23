@@ -46,7 +46,7 @@ jobs:
       - name: copy project .npmrc to user level
         run: cp .npmrc $HOME/.npmrc
 
-      # @fema/shared, connectors-common and connectors-framework are no longer published to npm:
+      # @fema-ipaas/shared, connectors-common and connectors-framework are no longer published to npm:
       # connectors are now self-contained bundles that inline these dependencies at build time.
 
       - name: Find changed connectors

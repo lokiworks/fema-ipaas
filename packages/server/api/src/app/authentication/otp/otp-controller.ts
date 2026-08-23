@@ -1,4 +1,4 @@
-import { CreateOtpRequestBody } from '@fema/shared'
+import { CreateOtpRequestBody } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { securityAccess } from '../../core/security/authorization/fastify-security'

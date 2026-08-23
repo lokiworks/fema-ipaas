@@ -1,5 +1,5 @@
-import { ConnectorAuth, createConnector } from '@fema/connector-sdk';
-import { ConnectorCategory } from '@fema/connector-sdk';
+import { ConnectorAuth, createConnector } from '@fema-ipaas/connector-sdk';
+import { ConnectorCategory } from '@fema-ipaas/connector-sdk';
 import { csvToJsonAction } from './lib/actions/convert-csv-to-json';
 import { jsonToCsvAction } from './lib/actions/convert-json-to-csv';
 import { excelToCsvAction } from './lib/actions/convert-excel-to-csv';

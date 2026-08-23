@@ -1,14 +1,14 @@
 {
-  "name": "@fema/connector-manual-trigger",
+  "name": "@fema-ipaas/connector-manual-trigger",
   "version": "0.0.7",
   "type": "commonjs",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "dependencies": {
-    "@fema/connector-common": "workspace:*",
-    "@fema/connector-sdk": "workspace:*",
-    "@fema/connector-types": "workspace:*",
-    "@fema/core-utils": "workspace:*"
+    "@fema-ipaas/connector-common": "workspace:*",
+    "@fema-ipaas/connector-sdk": "workspace:*",
+    "@fema-ipaas/connector-types": "workspace:*",
+    "@fema-ipaas/core-utils": "workspace:*"
   },
   "devDependencies": {
     "tslib": "^2.3.0"

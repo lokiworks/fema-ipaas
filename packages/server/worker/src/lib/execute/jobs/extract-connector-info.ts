@@ -2,7 +2,7 @@ import {
     EngineOperationType,
     ExecuteExtractConnectorMetadataJobData,
     WorkerJobType,
-} from '@fema/shared'
+} from '@fema-ipaas/shared'
 import { workerSettings } from '../../config/worker-settings'
 import { JobContext, JobHandler, SynchronousJobResult } from '../types'
 import { buildSynchronousResult } from '../utils/synchronous-result'

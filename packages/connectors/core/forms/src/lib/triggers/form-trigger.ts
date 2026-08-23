@@ -2,12 +2,12 @@ import {
   Property,
   TriggerStrategy,
   createTrigger,
-} from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-sdk';
 import {
   createKeyForFormInput,
   MarkdownVariant,
   USE_DRAFT_QUERY_PARAM_NAME,
-} from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-sdk';
 
 
 const markdown = `**Published Form URL:**

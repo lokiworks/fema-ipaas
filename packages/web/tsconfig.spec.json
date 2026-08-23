@@ -8,10 +8,10 @@
       "@/*": [
         "./src/*"
       ],
-      "@fema/shared": [
+      "@fema-ipaas/shared": [
         "../../packages/core/shared/src"
       ],
-      "@fema/connector-sdk": [
+      "@fema-ipaas/connector-sdk": [
         "../../packages/connectors/sdk/src"
       ]
     },

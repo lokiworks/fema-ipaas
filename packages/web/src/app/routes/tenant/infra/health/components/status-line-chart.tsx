@@ -1,4 +1,4 @@
-import { ExecutionStatus, TenantMetricsStatusPoint } from '@fema/shared';
+import { ExecutionStatus, TenantMetricsStatusPoint } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { LineChart as LineChartIcon } from 'lucide-react';
 import { useMemo, useState } from 'react';

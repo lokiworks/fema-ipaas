@@ -1,5 +1,5 @@
-import { isNil } from '@fema/core-utils';
-import { WorkflowVersionState } from '@fema/shared';
+import { isNil } from '@fema-ipaas/core-utils';
+import { WorkflowVersionState } from '@fema-ipaas/shared';
 import React from 'react';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';

@@ -1,5 +1,5 @@
 {
-  "name": "@fema/connector-store",
+  "name": "@fema-ipaas/connector-store",
   "version": "0.6.20",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -9,12 +9,12 @@
     "lint": "eslint 'src/**/*.ts'"
   },
   "dependencies": {
-    "@fema/connector-common": "workspace:*",
-    "@fema/connector-sdk": "workspace:*",
+    "@fema-ipaas/connector-common": "workspace:*",
+    "@fema-ipaas/connector-sdk": "workspace:*",
     "deep-equal": "2.2.2",
     "zod": "4.3.6",
-    "@fema/connector-types": "workspace:*",
-    "@fema/core-utils": "workspace:*"
+    "@fema-ipaas/connector-types": "workspace:*",
+    "@fema-ipaas/core-utils": "workspace:*"
   },
   "devDependencies": {
     "@types/deep-equal": "1.0.4",

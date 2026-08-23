@@ -1,4 +1,4 @@
-import { ConnectorPropValueSchema } from '@fema/connector-sdk';
+import { ConnectorPropValueSchema } from '@fema-ipaas/connector-sdk';
 import { rabbitmqAuth } from '../auth';
 import amqp, { ChannelModel, Connection } from 'amqplib';
 

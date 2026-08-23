@@ -1,5 +1,5 @@
-import { ConnectorAuth, createConnector } from '@fema/connector-sdk';
-import { ConnectorCategory } from '@fema/connector-sdk';
+import { ConnectorAuth, createConnector } from '@fema-ipaas/connector-sdk';
+import { ConnectorCategory } from '@fema-ipaas/connector-sdk';
 import { advancedMapping } from './lib/actions/advanced-mapping';
 
 export const dataMapper = createConnector({

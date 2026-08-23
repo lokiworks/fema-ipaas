@@ -1,4 +1,4 @@
-import { OutputSchema } from '@fema/connector-sdk';
+import { OutputSchema } from '@fema-ipaas/connector-sdk';
 
 /**
  * Every action here returns a date rendered with the step's own "To Time Format"

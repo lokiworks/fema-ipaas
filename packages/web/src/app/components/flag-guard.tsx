@@ -1,4 +1,4 @@
-import { ApFlagId } from '@fema/shared';
+import { ApFlagId } from '@fema-ipaas/shared';
 
 import { flagsHooks } from '@/hooks/flags-hooks';
 

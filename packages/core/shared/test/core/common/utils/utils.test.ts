@@ -15,7 +15,7 @@ import {
     startCase,
     unique,
     validateIndexBound,
-} from '@fema/core-utils'
+} from '@fema-ipaas/core-utils'
 
 describe('setAtPath', () => {
     it('should set a value at a dot-separated path', () => {

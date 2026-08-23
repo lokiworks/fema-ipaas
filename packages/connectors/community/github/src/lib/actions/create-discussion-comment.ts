@@ -1,7 +1,7 @@
 import { githubAuth } from '../auth';
-import { createAction, Property } from '@fema/connector-sdk';
+import { createAction, Property } from '@fema-ipaas/connector-sdk';
 import { githubApiCall, githubCommon } from '../common';
-import { HttpMethod } from '@fema/connector-common';
+import { HttpMethod } from '@fema-ipaas/connector-common';
 
 export const githubCreateDiscussionCommentAction = createAction({
   auth: githubAuth,

@@ -7,7 +7,7 @@ icon: 🪪
 Lets platform owners register their own OAuth 2.0 app credentials (client ID + secret) per connector. When a platform has a custom OAuth app for a connector, the connection dialog uses those credentials instead of FEMA Integration Platform' shared ones — giving vendors control over consent screens, rate limits, and branding. No plan flag gate.
 
 ### Entity
-`oauth_app`: id, connectorName (e.g. `@fema/connector-google-sheets`), platformId (FK, CASCADE), clientId, clientSecret (jsonb, encrypted `EncryptedObject`). Unique index on `(platformId, connectorName)` — one credential set per connector per platform.
+`oauth_app`: id, connectorName (e.g. `@fema-ipaas/connector-google-sheets`), platformId (FK, CASCADE), clientId, clientSecret (jsonb, encrypted `EncryptedObject`). Unique index on `(platformId, connectorName)` — one credential set per connector per platform.
 
 ### How it works
 - Endpoints under `/v1/oauth-apps`: `GET` (list, `publicPlatform` — any platform member), `POST` (upsert, platform admin), `DELETE /:id` (platform admin).

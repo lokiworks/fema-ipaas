@@ -1,5 +1,5 @@
-import { ApplicationError, ErrorCode, isNil, WorkflowId } from '@fema/core-utils'
-import { ChatUIResponse, FormInputType, FormResponse, PopulatedWorkflow } from '@fema/shared'
+import { ApplicationError, ErrorCode, isNil, WorkflowId } from '@fema-ipaas/core-utils'
+import { ChatUIResponse, FormInputType, FormResponse, PopulatedWorkflow } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { connectorMetadataService } from '../../../connectors/metadata/connector-metadata-service'
 import { tenantService } from '../../../tenant/tenant.service'
@@ -7,7 +7,7 @@ import { workspaceService } from '../../../workspace/workspace-service'
 import { workflowVersionService } from '../../workflow-version/workflow-version.service'
 import { workflowRepo } from '../workflow.repo'
 
-const FORMS_CONNECTOR_NAME = '@fema/connector-forms'
+const FORMS_CONNECTOR_NAME = '@fema-ipaas/connector-forms'
 const FORM_TRIIGGER = 'form_submission'
 const FILE_TRIGGER = 'file_submission'
 const SIMPLE_FILE_PROPS = {

@@ -1,4 +1,4 @@
-import { OAuth2GrantType } from '@fema/shared'
+import { OAuth2GrantType } from '@fema-ipaas/shared'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { oauth2Util } from '../../../../src/app/connection/connection-service/oauth2/oauth2-util'
 

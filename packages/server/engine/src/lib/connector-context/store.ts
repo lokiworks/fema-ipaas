@@ -1,7 +1,7 @@
 import { URL } from 'node:url'
-import { Store, StoreScope } from '@fema/connector-sdk'
-import { isNil, WorkflowId } from '@fema/core-utils'
-import { DeleteStoreEntryRequest, ExecutionError, FetchError, PutStoreEntryRequest, StorageError, StorageInvalidKeyError, StorageLimitError, STORE_KEY_MAX_LENGTH, STORE_VALUE_MAX_SIZE, StoreEntry } from '@fema/shared'
+import { Store, StoreScope } from '@fema-ipaas/connector-sdk'
+import { isNil, WorkflowId } from '@fema-ipaas/core-utils'
+import { DeleteStoreEntryRequest, ExecutionError, FetchError, PutStoreEntryRequest, StorageError, StorageInvalidKeyError, StorageLimitError, STORE_KEY_MAX_LENGTH, STORE_VALUE_MAX_SIZE, StoreEntry } from '@fema-ipaas/shared'
 import { retryFetch } from '../api/retry-fetch'
 import { utils } from '../utils'
 

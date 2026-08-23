@@ -1,4 +1,4 @@
-import { isNil } from '@fema/core-utils';
+import { isNil } from '@fema-ipaas/core-utils';
 import {
   WorkflowAction,
   WorkflowActionType,
@@ -7,7 +7,7 @@ import {
   WorkflowTriggerType,
   workflowConnectorUtil,
   workflowStructureUtil,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import deepEqual from 'deep-equal';
 import { useEffect, useRef, useState } from 'react';
@@ -160,7 +160,7 @@ const StepSettingsContainer = () => {
   const [isEditingStepOrBranchName, setIsEditingStepOrBranchName] =
     useState(false);
   const runAgentStep =
-    modifiedStep.settings.connectorName === '@fema/connector-ai' &&
+    modifiedStep.settings.connectorName === '@fema-ipaas/connector-ai' &&
     modifiedStep.settings.actionName === 'run_agent';
 
   const showActionErrorHandlingForm =

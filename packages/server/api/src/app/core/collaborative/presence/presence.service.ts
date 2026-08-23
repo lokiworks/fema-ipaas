@@ -1,4 +1,4 @@
-import { PresenceUser } from '@fema/shared'
+import { PresenceUser } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { redisConnections } from '../../../database/redis-connections'
 

@@ -1,4 +1,4 @@
-import { WorkflowAction, ExecutionStatus, StepOutputStatus, StreamStepProgress, UpdateRunProgressRequest } from '@fema/shared'
+import { WorkflowAction, ExecutionStatus, StepOutputStatus, StreamStepProgress, UpdateRunProgressRequest } from '@fema-ipaas/shared'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { WorkflowExecutorContext } from '../../src/lib/handler/context/workflow-execution-context'
 import { buildConnectorAction, generateMockEngineConstants } from './test-helper'
@@ -91,7 +91,7 @@ const buildMapper = ({ name, mapping, skip, nextAction }: {
         name,
         input: { mapping: mapping ?? {} },
         skip,
-        connectorName: '@fema/connector-data-mapper',
+        connectorName: '@fema-ipaas/connector-data-mapper',
         actionName: 'advanced_mapping',
     }),
     nextAction,

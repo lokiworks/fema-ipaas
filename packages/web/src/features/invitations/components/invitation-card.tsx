@@ -1,5 +1,5 @@
-import { Permission } from '@fema/core-utils';
-import { UserInvitation } from '@fema/shared';
+import { Permission } from '@fema-ipaas/core-utils';
+import { UserInvitation } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { Trash } from 'lucide-react';
 

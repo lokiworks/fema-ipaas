@@ -1,4 +1,4 @@
-import { ConnectorMetadataModel, ConnectorMetadataModelSummary } from '@fema/connector-sdk'
+import { ConnectorMetadataModel, ConnectorMetadataModelSummary } from '@fema-ipaas/connector-sdk'
 import { FastifyBaseLogger } from 'fastify'
 import { ConnectorMetadataSchema } from './metadata/connector-metadata-entity'
 

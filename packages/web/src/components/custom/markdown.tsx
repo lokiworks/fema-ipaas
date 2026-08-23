@@ -1,4 +1,4 @@
-import { MarkdownVariant } from '@fema/shared';
+import { MarkdownVariant } from '@fema-ipaas/shared';
 import { useMutation } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { Check, Copy, Info, AlertTriangle, Lightbulb } from 'lucide-react';

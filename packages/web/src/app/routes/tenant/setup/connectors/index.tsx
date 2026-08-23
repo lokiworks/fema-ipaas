@@ -1,6 +1,6 @@
-import { ConnectorMetadataModelSummary } from '@fema/connector-sdk';
-import { ApErrorParams, ErrorCode } from '@fema/core-utils';
-import { ConnectorScope, ConnectorType } from '@fema/shared';
+import { ConnectorMetadataModelSummary } from '@fema-ipaas/connector-sdk';
+import { ApErrorParams, ErrorCode } from '@fema-ipaas/core-utils';
+import { ConnectorScope, ConnectorType } from '@fema-ipaas/shared';
 import { ColumnDef } from '@tanstack/react-table';
 import { t } from 'i18next';
 import {

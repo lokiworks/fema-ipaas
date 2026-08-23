@@ -4,7 +4,7 @@ import {
   WorkflowTrigger,
   WorkflowTriggerType,
   workflowStructureUtil,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { PanelImperativeHandle } from 'react-resizable-panels';
 import { usePrevious } from 'react-use';

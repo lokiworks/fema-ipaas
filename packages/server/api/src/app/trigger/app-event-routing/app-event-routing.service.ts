@@ -1,4 +1,4 @@
-import { apId, WorkflowId, WorkspaceId } from '@fema/core-utils'
+import { apId, WorkflowId, WorkspaceId } from '@fema-ipaas/core-utils'
 import { repoFactory } from '../../core/db/repo-factory'
 import {
     AppEventRouting,

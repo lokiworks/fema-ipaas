@@ -1,11 +1,11 @@
-import { Permission } from '@fema/core-utils';
+import { Permission } from '@fema-ipaas/core-utils';
 import {
   ApFlagId,
   WorkflowOperationType,
   WorkflowVersionState,
   supportUrl,
   UncategorizedFolderId,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { useQueryClient } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { ChevronDown, CircleHelp, HistoryIcon } from 'lucide-react';

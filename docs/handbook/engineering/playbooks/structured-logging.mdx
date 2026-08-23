@@ -4,7 +4,7 @@ description: "Field-naming conventions for evlog wide events across the FEMA Int
 icon: "list-tree"
 ---
 
-All structured logging on the server goes through [evlog](https://www.evlog.dev) — `logger.{info,warn,error,debug}({ fields }, msg)` and `wideEvent.set/error/timed` from `@fema/server-utils`.
+All structured logging on the server goes through [evlog](https://www.evlog.dev) — `logger.{info,warn,error,debug}({ fields }, msg)` and `wideEvent.set/error/timed` from `@fema-ipaas/server-utils`.
 
 The **field keys** (not the message string) are the real schema — they are what dashboards, alerts, and the OTLP drain query against. If the same thing is logged under different keys (`runId` here, `executionId` there, a bare `id` elsewhere), every query becomes a guessing game and correlation silently breaks.
 

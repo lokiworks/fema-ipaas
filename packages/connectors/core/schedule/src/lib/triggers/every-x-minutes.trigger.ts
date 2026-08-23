@@ -2,7 +2,7 @@ import {
   Property,
   TriggerStrategy,
   createTrigger,
-} from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-sdk';
 
 export const everyXMinutesTrigger = createTrigger({
   name: 'every_x_minutes',

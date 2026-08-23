@@ -1,7 +1,7 @@
 import { z } from 'zod'
-import { ErrorCode } from '@fema/core-utils'
-import { BaseModelSchema, Nullable } from '@fema/core-utils'
-import { isNil, truncateString } from '@fema/core-utils'
+import { ErrorCode } from '@fema-ipaas/core-utils'
+import { BaseModelSchema, Nullable } from '@fema-ipaas/core-utils'
+import { isNil, truncateString } from '@fema-ipaas/core-utils'
 import { ExecutionState, RunInternalError } from './state/execution-output'
 import { ExecutionStatus } from './state/workflow-execution'
 

@@ -8,7 +8,7 @@ import { join } from 'node:path';
 
 function createActionTemplate(displayName: string, description: string) {
   const camelCase = displayNameToCamelCase(displayName)
-  const actionTemplate = `import { createAction, Property } from '@fema/connector-sdk';
+  const actionTemplate = `import { createAction, Property } from '@fema-ipaas/connector-sdk';
 
 export const ${camelCase} = createAction({
   // auth: check https://github.com/lokiworks/fema-ipaas/docs/developers/connector-reference/authentication,

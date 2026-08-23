@@ -1,4 +1,4 @@
-import { Permission } from '@fema/core-utils';
+import { Permission } from '@fema-ipaas/core-utils';
 import {
   WorkflowRetryStrategy,
   Execution,
@@ -6,7 +6,7 @@ import {
   ExecutionWithRetryError,
   isFailedState,
   isExecutionStateTerminal,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { useQuery } from '@tanstack/react-query';
 import { t } from 'i18next';
 import {

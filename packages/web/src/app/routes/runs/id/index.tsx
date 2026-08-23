@@ -1,4 +1,4 @@
-import { Execution, PopulatedWorkflow } from '@fema/shared';
+import { Execution, PopulatedWorkflow } from '@fema-ipaas/shared';
 import { useQuery } from '@tanstack/react-query';
 import { ReactFlowProvider } from '@xyflow/react';
 import { useParams } from 'react-router-dom';

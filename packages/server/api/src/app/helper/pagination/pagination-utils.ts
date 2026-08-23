@@ -1,4 +1,4 @@
-import { isNil, SeekPage } from '@fema/core-utils'
+import { isNil, SeekPage } from '@fema-ipaas/core-utils'
 import { CursorResult } from './paginator'
 
 export function atob(value: string): string {

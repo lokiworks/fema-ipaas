@@ -1,5 +1,5 @@
-import { ConnectorPropValueSchema, Property, createTrigger, TriggerStrategy, ConnectionValueForAuthProperty } from '@fema/connector-sdk';
-import { DedupeStrategy, Polling, pollingHelper } from '@fema/connector-common';
+import { ConnectorPropValueSchema, Property, createTrigger, TriggerStrategy, ConnectionValueForAuthProperty } from '@fema-ipaas/connector-sdk';
+import { DedupeStrategy, Polling, pollingHelper } from '@fema-ipaas/connector-common';
 import { getClient, getProtocolBackwardCompatibility, endClient } from '../common';
 import { sftpAuth } from '../auth';
 import dayjs from 'dayjs';

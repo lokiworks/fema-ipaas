@@ -1,4 +1,4 @@
-import { isNil, isObject } from '@fema/core-utils';
+import { isNil, isObject } from '@fema-ipaas/core-utils';
 import { t } from 'i18next';
 import { ChevronDown, ChevronRight, Info } from 'lucide-react';
 import { useState } from 'react';

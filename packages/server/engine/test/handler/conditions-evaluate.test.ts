@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { BranchCondition, BranchOperator } from '@fema/shared'
+import { BranchCondition, BranchOperator } from '@fema-ipaas/shared'
 import { evaluateConditions } from '../../src/lib/handler/router-executor'
 
 describe('Branch evaluateConditions', () => {

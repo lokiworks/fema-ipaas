@@ -1,5 +1,5 @@
-import { apId, ApplicationError, ErrorCode, isNil, spreadIfDefined, spreadIfNotUndefined, TenantId, UserId } from '@fema/core-utils'
-import { AuthenticationResponse, SsoDomainVerification, SYSTEM_LIMITS, Tenant, TenantPlanLimits, TenantRole, TenantWithoutFederatedAuth, TenantWithoutSensitiveData, UpdateTenantRequestBody, User, UserStatus, WorkspaceType } from '@fema/shared'
+import { apId, ApplicationError, ErrorCode, isNil, spreadIfDefined, spreadIfNotUndefined, TenantId, UserId } from '@fema-ipaas/core-utils'
+import { AuthenticationResponse, SsoDomainVerification, SYSTEM_LIMITS, Tenant, TenantPlanLimits, TenantRole, TenantWithoutFederatedAuth, TenantWithoutSensitiveData, UpdateTenantRequestBody, User, UserStatus, WorkspaceType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { nanoid } from 'nanoid'
 import { authenticationUtils } from '../authentication/authentication-utils'

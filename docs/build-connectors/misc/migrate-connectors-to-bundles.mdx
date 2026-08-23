@@ -13,12 +13,12 @@ FEMA Integration Platform builds each connector into a single self-contained bun
 
 | | **Before** | **Now** |
 |---|---|---|
-| Connector dependencies | `@fema/shared` + framework + common | framework + common only |
-| Imports in connector code | `@fema/shared` and `@fema/connectors-framework` | `@fema/connectors-framework` only |
+| Connector dependencies | `@fema-ipaas/shared` + framework + common | framework + common only |
+| Imports in connector code | `@fema-ipaas/shared` and `@fema-ipaas/connectors-framework` | `@fema-ipaas/connectors-framework` only |
 | Build output | compiled files + dependency tree | one self-contained bundle |
-| `@fema/shared` location | `packages/shared` | `packages/core/shared` (same package name) |
+| `@fema-ipaas/shared` location | `packages/shared` | `packages/core/shared` (same package name) |
 
-Connectors now import only from `@fema/connectors-framework` and `@fema/connectors-common`. The framework re-exports the foundation symbols (`isNil`, `SeekPage`, `ConnectorCategory`, `ConnectionType`, and so on) that used to come from `@fema/shared`.
+Connectors now import only from `@fema-ipaas/connectors-framework` and `@fema-ipaas/connectors-common`. The framework re-exports the foundation symbols (`isNil`, `SeekPage`, `ConnectorCategory`, `ConnectionType`, and so on) that used to come from `@fema-ipaas/shared`.
 
 ## Migrate with the CLI
 
@@ -47,29 +47,29 @@ To migrate by hand — or to see exactly what the command changes — follow the
 
 <Steps>
 <Step title="Repoint imports to the framework">
-Replace any `@fema/shared` (or `@fema/core-*`) import with `@fema/connectors-framework`:
+Replace any `@fema-ipaas/shared` (or `@fema-ipaas/core-*`) import with `@fema-ipaas/connectors-framework`:
 
 ```ts
 // Before
-import { ConnectorCategory, ExecutionType } from '@fema/shared';
+import { ConnectorCategory, ExecutionType } from '@fema-ipaas/shared';
 
 // After
-import { ConnectorCategory, ExecutionType } from '@fema/connectors-framework';
+import { ConnectorCategory, ExecutionType } from '@fema-ipaas/connectors-framework';
 ```
 
 If a symbol isn't re-exported by the framework, it was server-only and shouldn't be imported into a connector.
 </Step>
 
 <Step title="Update package.json dependencies and scripts">
-Remove `@fema/shared` and move `tslib` to `devDependencies`. Add `@fema/core-connector-types` and `@fema/core-utils` — these are build-time only (they let `tsc` emit portable type declarations; your source never imports them directly). Add the `bundle` script.
+Remove `@fema-ipaas/shared` and move `tslib` to `devDependencies`. Add `@fema-ipaas/core-connector-types` and `@fema-ipaas/core-utils` — these are build-time only (they let `tsc` emit portable type declarations; your source never imports them directly). Add the `bundle` script.
 
 ```jsonc
 {
   "dependencies": {
-    "@fema/connectors-common": "workspace:*",
-    "@fema/connectors-framework": "workspace:*",
-    "@fema/core-connector-types": "workspace:*",
-    "@fema/core-utils": "workspace:*"
+    "@fema-ipaas/connectors-common": "workspace:*",
+    "@fema-ipaas/connectors-framework": "workspace:*",
+    "@fema-ipaas/core-connector-types": "workspace:*",
+    "@fema-ipaas/core-utils": "workspace:*"
   },
   "devDependencies": {
     "tslib": "2.6.2"
@@ -94,10 +94,10 @@ Add a `no-restricted-imports` rule to the `*.ts`/`*.tsx` override in the connect
       "patterns": [
         "lodash",
         "lodash/*",
-        "@fema/core-*",
-        "@fema/server*",
-        "@fema/engine",
-        "@fema/shared"
+        "@fema-ipaas/core-*",
+        "@fema-ipaas/server*",
+        "@fema-ipaas/engine",
+        "@fema-ipaas/shared"
       ]
     }]
   }

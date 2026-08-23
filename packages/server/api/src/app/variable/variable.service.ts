@@ -1,5 +1,5 @@
-import { apId, ApId, ApplicationError, Cursor, ErrorCode, isNil, Metadata, SeekPage, spreadIfDefined, TenantId, UserId, WorkspaceId } from '@fema/core-utils'
-import { ConnectionOwners, User, UserIdentity, UserWithMetaInformation, Variable, VariableWithoutSensitiveData } from '@fema/shared'
+import { apId, ApId, ApplicationError, Cursor, ErrorCode, isNil, Metadata, SeekPage, spreadIfDefined, TenantId, UserId, WorkspaceId } from '@fema-ipaas/core-utils'
+import { ConnectionOwners, User, UserIdentity, UserWithMetaInformation, Variable, VariableWithoutSensitiveData } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { Equal, ILike, QueryFailedError } from 'typeorm'
 import { repoFactory } from '../core/db/repo-factory'

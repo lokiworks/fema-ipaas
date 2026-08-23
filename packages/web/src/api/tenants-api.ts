@@ -2,7 +2,7 @@ import {
   AuthenticationResponse,
   TenantWithoutSensitiveData,
   UpdateTenantRequestBody,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 
 import { api } from '@/lib/api';
 import { authenticationSession } from '@/lib/authentication-session';

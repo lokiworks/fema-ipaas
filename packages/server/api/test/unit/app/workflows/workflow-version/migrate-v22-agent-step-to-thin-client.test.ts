@@ -1,4 +1,4 @@
-import { WorkflowActionType, WorkflowTriggerType, WorkflowVersion } from '@fema/shared'
+import { WorkflowActionType, WorkflowTriggerType, WorkflowVersion } from '@fema-ipaas/shared'
 import { describe, expect, it } from 'vitest'
 import { migrateV22AgentStepToThinClient } from '../../../../../src/app/workflows/workflow-version/migrations/migrate-v22-agent-step-to-thin-client'
 
@@ -16,7 +16,7 @@ function workflowWith(input: Record<string, unknown>, connectorVersion = '0.5.0'
                 type: WorkflowActionType.CONNECTOR,
                 displayName: 'Run Agent',
                 valid: true,
-                settings: { connectorName: '@fema/connector-ai', connectorVersion, actionName: 'run_agent', input },
+                settings: { connectorName: '@fema-ipaas/connector-ai', connectorVersion, actionName: 'run_agent', input },
             },
         },
     } as unknown as WorkflowVersion
@@ -31,7 +31,7 @@ describe('migrateV22AgentStepToThinClient', () => {
     it('moves the pinned connection to an id and the step to the thin client together', async () => {
         const migrated = await migrateV22AgentStepToThinClient.migrate(workflowWith({
             prompt: 'do a thing',
-            agentTools: [{ type: 'CONNECTOR', toolName: 'send', connectorMetadata: { connectorName: '@fema/connector-gmail', predefinedInput: { auth: '{{connections[\'my-gmail\']}}' } } }],
+            agentTools: [{ type: 'CONNECTOR', toolName: 'send', connectorMetadata: { connectorName: '@fema-ipaas/connector-gmail', predefinedInput: { auth: '{{connections[\'my-gmail\']}}' } } }],
         }))
 
         const settings = agentStep(migrated)
@@ -77,7 +77,7 @@ describe('migrateV22AgentStepToThinClient', () => {
     it('does not touch a step that is not the agent', async () => {
         const workflow = workflowWith({ prompt: 'x' })
         const notAgent = JSON.parse(JSON.stringify(workflow))
-        notAgent.trigger.nextAction.settings.connectorName = '@fema/connector-gmail'
+        notAgent.trigger.nextAction.settings.connectorName = '@fema-ipaas/connector-gmail'
 
         const migrated = await migrateV22AgentStepToThinClient.migrate(notAgent)
 

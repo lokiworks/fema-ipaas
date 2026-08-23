@@ -1,4 +1,4 @@
-import { typeCheckTiptapDoc } from '@fema/expression'
+import { typeCheckTiptapDoc } from '@fema-ipaas/expression'
 import { describe, expect, it } from 'vitest'
 
 type Node = {

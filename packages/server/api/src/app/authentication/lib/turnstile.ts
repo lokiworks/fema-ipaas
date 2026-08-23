@@ -1,5 +1,5 @@
-import { ApplicationError, ErrorCode, isNil, tryCatch } from '@fema/core-utils'
-import { safeHttp } from '@fema/server-utils'
+import { ApplicationError, ErrorCode, isNil, tryCatch } from '@fema-ipaas/core-utils'
+import { safeHttp } from '@fema-ipaas/server-utils'
 import { isAxiosError } from 'axios'
 import { FastifyBaseLogger } from 'fastify'
 import { system } from '../../helper/system/system'

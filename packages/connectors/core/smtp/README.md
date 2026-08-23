@@ -2,4 +2,4 @@
 
 ## Building
 
-Run `turbo run build --filter=@fema/connector-smtp` to build the library.
+Run `turbo run build --filter=@fema-ipaas/connector-smtp` to build the library.

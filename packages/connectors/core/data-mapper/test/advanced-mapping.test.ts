@@ -1,7 +1,7 @@
 /// <reference types="vitest/globals" />
 
 import { advancedMapping } from '../src/lib/actions/advanced-mapping';
-import { createMockActionContext } from '@fema/connector-sdk';
+import { createMockActionContext } from '@fema-ipaas/connector-sdk';
 
 describe('advancedMapping', () => {
   test('returns simple object mapping as-is', async () => {

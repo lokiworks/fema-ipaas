@@ -1,5 +1,5 @@
-import { apId, isNil, TenantId } from '@fema/core-utils'
-import { OtpModel, OtpState, OtpType } from '@fema/shared'
+import { apId, isNil, TenantId } from '@fema-ipaas/core-utils'
+import { OtpModel, OtpState, OtpType } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { repoFactory } from '../../core/db/repo-factory'

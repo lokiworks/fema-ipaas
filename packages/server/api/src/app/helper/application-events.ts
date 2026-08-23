@@ -1,5 +1,5 @@
-import { apId, isNil, TenantId, tryCatch, UserId, WorkspaceId } from '@fema/core-utils'
-import { ApplicationEvent, PrincipalType } from '@fema/shared'
+import { apId, isNil, TenantId, tryCatch, UserId, WorkspaceId } from '@fema-ipaas/core-utils'
+import { ApplicationEvent, PrincipalType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyRequest } from 'fastify'
 import { authenticationUtils } from '../authentication/authentication-utils'
 import { userIdentityService } from '../authentication/user-identity/user-identity-service'

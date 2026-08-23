@@ -101,7 +101,7 @@ Get the detailed input property schema for a specific connector action or trigge
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `connectorName` | string | Yes | Connector name (e.g., `@fema/connector-slack`) |
+| `connectorName` | string | Yes | Connector name (e.g., `@fema-ipaas/connector-slack`) |
 | `actionOrTriggerName` | string | Yes | Action or trigger name (e.g., `send_channel_message`) |
 | `type` | string | Yes | `action` or `trigger` |
 | `auth` | string | No | Connection externalId. When provided, dynamic dropdowns and DYNAMIC sub-fields are resolved. |
@@ -114,7 +114,7 @@ Resolve dropdown options for a single connector property. Returns available choi
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `connectorName` | string | Yes | Connector name (e.g., `@fema/connector-slack`) |
+| `connectorName` | string | Yes | Connector name (e.g., `@fema-ipaas/connector-slack`) |
 | `actionOrTriggerName` | string | Yes | Action or trigger name (e.g., `send_channel_message`) |
 | `type` | string | Yes | `action` or `trigger` |
 | `propertyName` | string | Yes | The exact property name to resolve (e.g., `channel`) |
@@ -132,7 +132,7 @@ Resolve a chain of dependent dropdown properties in one call. For actions with c
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `connectorName` | string | Yes | Connector name (e.g., `@fema/connector-google-sheets`) |
+| `connectorName` | string | Yes | Connector name (e.g., `@fema-ipaas/connector-google-sheets`) |
 | `actionOrTriggerName` | string | Yes | Action or trigger name (e.g., `insert_row`) |
 | `type` | string | Yes | `action` or `trigger` |
 | `propertyChain` | array | Yes | Ordered list of properties to resolve (max 10). Each item has `propertyName` (string) and optional `selectedValue` (any). |
@@ -325,7 +325,7 @@ Set or update the trigger for a workflow.
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
 | `workflowId` | string | Yes | The workflow ID |
-| `connectorName` | string | Yes | Connector name (e.g., `@fema/connector-gmail`) |
+| `connectorName` | string | Yes | Connector name (e.g., `@fema-ipaas/connector-gmail`) |
 | `triggerName` | string | Yes | Trigger name from the connector |
 | `input` | object | No | Trigger configuration |
 | `auth` | string | No | Connection externalId |
@@ -570,7 +570,7 @@ Execute a single connector action once without building or saving a workflow. De
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `connectorName` | string | Yes | Connector name (e.g. `slack` or `@fema/connector-slack`). Use `ap_research_connectors` to discover. |
+| `connectorName` | string | Yes | Connector name (e.g. `slack` or `@fema-ipaas/connector-slack`). Use `ap_research_connectors` to discover. |
 | `actionName` | string | Yes | Action to run (e.g. `send_channel_message`). Use `ap_get_connector_props` for the input shape. |
 | `input` | object | No | Fully-resolved input for the action. Keys must match the connector action's props. Pass raw values — do **not** wrap them in `{{…}}`. Omit entirely if the action has no props. |
 | `connectionExternalId` | string | No | `externalId` from `ap_list_connections`. Required if the connector needs auth. Auto-wrapped server-side as `{{connections['externalId']}}`. Must be a plain ID — special characters are rejected. |

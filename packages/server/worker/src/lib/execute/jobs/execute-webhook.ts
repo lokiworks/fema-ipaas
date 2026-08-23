@@ -1,5 +1,5 @@
-import { isNil, parseToJsonIfPossible, tryCatch } from '@fema/core-utils'
-import { ConnectorTrigger, EngineOperationType, EngineResponseStatus, ExecuteTriggerResponse, StreamStepProgress, TriggerHookType, WebhookJobData, WorkerJobType, WorkflowVersion } from '@fema/shared'
+import { isNil, parseToJsonIfPossible, tryCatch } from '@fema-ipaas/core-utils'
+import { ConnectorTrigger, EngineOperationType, EngineResponseStatus, ExecuteTriggerResponse, StreamStepProgress, TriggerHookType, WebhookJobData, WorkerJobType, WorkflowVersion } from '@fema-ipaas/shared'
 import { workerSettings } from '../../config/worker-settings'
 import { FireAndForgetJobResult, JobContext, JobHandler, JobResultKind } from '../types'
 import { isSandboxTimeout } from '../utils/sandbox-helpers'
@@ -14,7 +14,7 @@ function getAppWebhookDetails(workflowVersion: WorkflowVersion, publicApiUrl: st
     }
     const secrets = parseToJsonIfPossible(appWebhookSecretsJson) as Record<string, { webhookSecret: string | Record<string, string> }> | undefined
     const webhookSecret = secrets?.[connectorName]?.webhookSecret
-    const connectorUrlName = connectorName.replace('@fema/connector-', '')
+    const connectorUrlName = connectorName.replace('@fema-ipaas/connector-', '')
     return {
         appWebhookUrl: getAppWebhookUrl(publicApiUrl, connectorUrlName),
         webhookSecret,

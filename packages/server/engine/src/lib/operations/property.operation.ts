@@ -1,11 +1,11 @@
-import { ConnectorPropertyMap, DropdownState, ExecutePropsResult, InputPropertyMap, PropertyType, StaticPropsValue } from '@fema/connector-sdk'
-import { isNil, isObject } from '@fema/core-utils'
+import { ConnectorPropertyMap, DropdownState, ExecutePropsResult, InputPropertyMap, PropertyType, StaticPropsValue } from '@fema-ipaas/connector-sdk'
+import { isNil, isObject } from '@fema-ipaas/core-utils'
 import {
     EngineGenericError,
     EngineResponse,
     EngineResponseStatus,
     ExecutePropsOptions,
-} from '@fema/shared'
+} from '@fema-ipaas/shared'
 import * as z from 'zod/mini'
 import { ConnectorDescription } from '../core/connector/connector-protocol'
 import { connectorRunner } from '../core/connector/connector-runner'

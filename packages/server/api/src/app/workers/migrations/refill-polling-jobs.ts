@@ -1,4 +1,4 @@
-import { LATEST_JOB_DATA_SCHEMA_VERSION, TriggerStrategy, WorkerJobType, WorkflowTriggerType } from '@fema/shared'
+import { LATEST_JOB_DATA_SCHEMA_VERSION, TriggerStrategy, WorkerJobType, WorkflowTriggerType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { IsNull } from 'typeorm'
 import { triggerSourceRepo } from '../../trigger/trigger-source/trigger-source-service'

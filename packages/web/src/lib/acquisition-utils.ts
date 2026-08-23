@@ -1,4 +1,4 @@
-import { tryCatchSync } from '@fema/core-utils';
+import { tryCatchSync } from '@fema-ipaas/core-utils';
 
 const ACQUISITION_PARAM_KEYS = [
   'utm_source',

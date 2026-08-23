@@ -1,7 +1,7 @@
 /// <reference types="vitest/globals" />
 
 import * as XLSX from 'xlsx';
-import { createMockActionContext } from '@fema/connector-sdk';
+import { createMockActionContext } from '@fema-ipaas/connector-sdk';
 import { excelToCsvAction } from '../src/lib/actions/convert-excel-to-csv';
 
 function makeXlsxBase64(sheets: Record<string, (string | number)[][]>): string {

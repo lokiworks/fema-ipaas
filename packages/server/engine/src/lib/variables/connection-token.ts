@@ -1,5 +1,5 @@
-import { ContextVersion } from '@fema/connector-sdk'
-import { isNil } from '@fema/core-utils'
+import { ContextVersion } from '@fema-ipaas/connector-sdk'
+import { isNil } from '@fema-ipaas/core-utils'
 
 import { createConnectionResolver } from '../connector-context/connection-resolver'
 import { scriptEvaluator } from './script-evaluator'

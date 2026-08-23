@@ -1,7 +1,7 @@
-import { createTrigger, TriggerStrategy } from '@fema/connector-sdk';
+import { createTrigger, TriggerStrategy } from '@fema-ipaas/connector-sdk';
 import { githubApiCall, githubCommon } from '../common';
 import { githubAuth } from '../auth';
-import { HttpMethod } from '@fema/connector-common';
+import { HttpMethod } from '@fema-ipaas/connector-common';
 
 export const githubRegisterTrigger = ({
   name,

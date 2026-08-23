@@ -1,7 +1,7 @@
 import { javascript } from '@codemirror/lang-javascript';
 import { json } from '@codemirror/lang-json';
-import { deepMergeAndCast } from '@fema/core-utils';
-import { ApFlagId, SourceCode } from '@fema/shared';
+import { deepMergeAndCast } from '@fema-ipaas/core-utils';
+import { ApFlagId, SourceCode } from '@fema-ipaas/shared';
 import { githubDark, githubLight } from '@uiw/codemirror-theme-github';
 import CodeMirror, { EditorState, EditorView } from '@uiw/react-codemirror';
 import { t } from 'i18next';

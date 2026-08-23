@@ -1,4 +1,4 @@
-import { CodeAction, WorkflowAction, WorkflowActionType, workflowStructureUtil, WorkflowTrigger, WorkflowTriggerType, WorkflowVersion, WorkflowVersionState } from '@fema/shared'
+import { CodeAction, WorkflowAction, WorkflowActionType, workflowStructureUtil, WorkflowTrigger, WorkflowTriggerType, WorkflowVersion, WorkflowVersionState } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { describe, expect, it, vi } from 'vitest'
 import { workflowVersionService } from '../../../../../src/app/workflows/workflow-version/workflow-version.service'

@@ -1,4 +1,4 @@
-import { isNil, stringifyNullOrUndefined } from '@fema/core-utils';
+import { isNil, stringifyNullOrUndefined } from '@fema-ipaas/core-utils';
 import {
   WorkflowAction,
   WorkflowActionType,
@@ -12,7 +12,7 @@ import {
   StepRunResponse,
   TestStepProgressEvent,
   WebsocketClientEvent,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { Socket } from 'socket.io-client';
 import { StoreApi } from 'zustand';
 

@@ -1,5 +1,5 @@
-import { apId } from '@fema/core-utils'
-import { WorkflowStatus, WorkflowTriggerType, WorkflowVersionState, PackageType, ConnectorType } from '@fema/shared'
+import { apId } from '@fema-ipaas/core-utils'
+import { WorkflowStatus, WorkflowTriggerType, WorkflowVersionState, PackageType, ConnectorType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { databaseConnection } from '../../../../../../src/app/database/database-connection'
@@ -32,7 +32,7 @@ describe('Human Input API', () => {
 
             await databaseConnection().getRepository('connector_metadata').createQueryBuilder().delete().execute()
             const mockConnector = createMockConnectorMetadata({
-                name: '@fema/connector-forms',
+                name: '@fema-ipaas/connector-forms',
                 version: '0.2.0',
                 connectorType: ConnectorType.OFFICIAL,
                 packageType: PackageType.REGISTRY,
@@ -52,7 +52,7 @@ describe('Human Input API', () => {
                 trigger: {
                     type: WorkflowTriggerType.CONNECTOR,
                     settings: {
-                        connectorName: '@fema/connector-forms',
+                        connectorName: '@fema-ipaas/connector-forms',
                         connectorVersion: '0.2.0',
                         triggerName: 'form_submission',
                         input: {
@@ -133,7 +133,7 @@ describe('Human Input API', () => {
 
             await databaseConnection().getRepository('connector_metadata').createQueryBuilder().delete().execute()
             const mockConnector = createMockConnectorMetadata({
-                name: '@fema/connector-forms',
+                name: '@fema-ipaas/connector-forms',
                 version: '0.3.0',
                 connectorType: ConnectorType.OFFICIAL,
                 packageType: PackageType.REGISTRY,
@@ -153,7 +153,7 @@ describe('Human Input API', () => {
                 trigger: {
                     type: WorkflowTriggerType.CONNECTOR,
                     settings: {
-                        connectorName: '@fema/connector-forms',
+                        connectorName: '@fema-ipaas/connector-forms',
                         connectorVersion: '0.3.0',
                         triggerName: 'chat_submission',
                         input: {

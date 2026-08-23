@@ -1,7 +1,7 @@
 import {
   workflowStructureUtil,
   StepLocationRelativeToParent,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { useCallback, useEffect } from 'react';
 
 import { isEditableTarget } from '@/lib/dom-utils';

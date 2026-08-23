@@ -1,4 +1,4 @@
-import { createAction, Property } from '@fema/connector-sdk';
+import { createAction, Property } from '@fema-ipaas/connector-sdk';
 import { JSDOM, VirtualConsole } from 'jsdom';
 
 export const extractFromHtml = createAction({

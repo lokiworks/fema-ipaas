@@ -1,7 +1,7 @@
 /// <reference types="vitest/globals" />
 
 import { extractDateParts } from '../src/lib/actions/extract-date-parts';
-import { createMockActionContext } from '@fema/connector-sdk';
+import { createMockActionContext } from '@fema-ipaas/connector-sdk';
 
 describe('extractDateParts', () => {
   test('extracts multiple parts', async () => {

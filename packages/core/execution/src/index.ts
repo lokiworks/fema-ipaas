@@ -1,4 +1,4 @@
-// @fema/workflow-core — the execution layer extracted from @fema/shared
+// @fema-ipaas/workflow-core — the execution layer extracted from @fema-ipaas/shared
 // (workflows, execution, engine operations, workers). See SRE-163.
 
 export * from './lib/workflows/actions/action'

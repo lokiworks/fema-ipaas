@@ -1,4 +1,4 @@
-import { ExecutionStatus } from '@fema/shared'
+import { ExecutionStatus } from '@fema-ipaas/shared'
 import { WorkflowExecutorContext } from '../../src/lib/handler/context/workflow-execution-context'
 import { workflowExecutor } from '../../src/lib/handler/workflow-executor'
 import { EngineApiStub, startEngineApiStub } from '../helpers/engine-api-stub'
@@ -22,7 +22,7 @@ describe('workflow with delay', () => {
     it('delay-for pauses workflow and calls waitpointClient.create with DELAY type', async () => {
         const delayForWorkflow = buildConnectorAction({
             name: 'delay_step',
-            connectorName: '@fema/connector-delay',
+            connectorName: '@fema-ipaas/connector-delay',
             actionName: 'delayFor',
             input: {
                 unit: 'seconds',
@@ -54,7 +54,7 @@ describe('workflow with delay', () => {
     it('delay-for resumes successfully after pause', async () => {
         const delayForWorkflow = buildConnectorAction({
             name: 'delay_step',
-            connectorName: '@fema/connector-delay',
+            connectorName: '@fema-ipaas/connector-delay',
             actionName: 'delayFor',
             input: {
                 unit: 'seconds',
@@ -98,7 +98,7 @@ describe('workflow with delay', () => {
     it('delay-for uses setTimeout for short delays without pausing', async () => {
         const shortDelayWorkflow = buildConnectorAction({
             name: 'delay_step',
-            connectorName: '@fema/connector-delay',
+            connectorName: '@fema-ipaas/connector-delay',
             actionName: 'delayFor',
             input: {
                 unit: 'seconds',
@@ -122,7 +122,7 @@ describe('workflow with delay', () => {
         const futureDate = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()
         const delayUntilWorkflow = buildConnectorAction({
             name: 'delay_step',
-            connectorName: '@fema/connector-delay',
+            connectorName: '@fema-ipaas/connector-delay',
             actionName: 'delay_until',
             input: {
                 delayUntilTimestamp: futureDate,
@@ -154,7 +154,7 @@ describe('workflow with delay', () => {
         const pastDate = new Date(Date.now() - 60 * 1000).toISOString()
         const delayUntilWorkflow = buildConnectorAction({
             name: 'delay_step',
-            connectorName: '@fema/connector-delay',
+            connectorName: '@fema-ipaas/connector-delay',
             actionName: 'delay_until',
             input: {
                 delayUntilTimestamp: pastDate,

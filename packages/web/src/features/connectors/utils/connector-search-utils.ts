@@ -3,7 +3,7 @@ import {
   WorkflowTriggerType,
   WorkflowActionType,
   AI_CONNECTOR_NAME,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 
 import {
@@ -99,15 +99,15 @@ const getPinnedConnectors = (
 };
 
 const POPULAR_CONNECTORS_NAMES = [
-  '@fema/connector-google-sheets',
-  '@fema/connector-slack',
-  '@fema/connector-notion',
-  '@fema/connector-gmail',
-  '@fema/connector-hubspot',
-  '@fema/connector-openai',
-  '@fema/connector-google-forms',
-  '@fema/connector-google-drive',
-  '@fema/connector-google-docs',
+  '@fema-ipaas/connector-google-sheets',
+  '@fema-ipaas/connector-slack',
+  '@fema-ipaas/connector-notion',
+  '@fema-ipaas/connector-gmail',
+  '@fema-ipaas/connector-hubspot',
+  '@fema-ipaas/connector-openai',
+  '@fema-ipaas/connector-google-forms',
+  '@fema-ipaas/connector-google-drive',
+  '@fema-ipaas/connector-google-docs',
 ];
 const getPopularConnectors = (
   queryResult: StepMetadataWithSuggestions[],
@@ -163,21 +163,21 @@ const sortByConnectorNameOrder = (
   });
 };
 const HIGHLIGHTED_CONNECTORS_NAMES_FOR_TRIGGERS = [
-  '@fema/connector-webhook',
-  '@fema/connector-schedule',
-  '@fema/connector-manual-trigger',
-  '@fema/connector-forms',
-  '@fema/connector-tables',
+  '@fema-ipaas/connector-webhook',
+  '@fema-ipaas/connector-schedule',
+  '@fema-ipaas/connector-manual-trigger',
+  '@fema-ipaas/connector-forms',
+  '@fema-ipaas/connector-tables',
 ];
 
 const HIGHLIGHTED_CONNECTORS_NAMES_FOR_ACTIONS = [
   AI_CONNECTOR_NAME,
-  '@fema/connector-http',
-  '@fema/connector-tables',
-  '@fema/connector-forms',
-  '@fema/connector-webhook',
-  '@fema/connector-text-helper',
-  '@fema/connector-date-helper',
+  '@fema-ipaas/connector-http',
+  '@fema-ipaas/connector-tables',
+  '@fema-ipaas/connector-forms',
+  '@fema-ipaas/connector-webhook',
+  '@fema-ipaas/connector-text-helper',
+  '@fema-ipaas/connector-date-helper',
 ];
 
 export const connectorSearchUtils = {

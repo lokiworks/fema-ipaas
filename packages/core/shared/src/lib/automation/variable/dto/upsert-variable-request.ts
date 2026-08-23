@@ -1,4 +1,4 @@
-import { Metadata } from '@fema/core-utils'
+import { Metadata } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 import { VARIABLE_NAME_REGEX } from '../variable'
 

@@ -1,6 +1,6 @@
-import { isNil, partition } from '@fema/core-utils'
-import { apVersionUtil } from '@fema/server-utils'
-import { ExecutionMode, NetworkMode, WorkerGroupScope, WorkerMachineHealthcheckRequest, WorkerMachineStatus, WorkerMachineType, WorkerMachineWithStatus, WorkerSettingsResponse } from '@fema/shared'
+import { isNil, partition } from '@fema-ipaas/core-utils'
+import { apVersionUtil } from '@fema-ipaas/server-utils'
+import { ExecutionMode, NetworkMode, WorkerGroupScope, WorkerMachineHealthcheckRequest, WorkerMachineStatus, WorkerMachineType, WorkerMachineWithStatus, WorkerSettingsResponse } from '@fema-ipaas/shared'
 
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'

@@ -1,9 +1,9 @@
-import { isNil } from '@fema/core-utils';
+import { isNil } from '@fema-ipaas/core-utils';
 import {
   RouterAction,
   BranchExecutionType,
   RouterActionSettings,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { GripVertical, Trash, CopyPlus, Pencil } from 'lucide-react';
 import React, { useState } from 'react';

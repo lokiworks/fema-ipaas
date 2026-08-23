@@ -1,15 +1,15 @@
 {
-  "name": "@fema/connector-rabbitmq",
+  "name": "@fema-ipaas/connector-rabbitmq",
   "version": "0.1.6",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "dependencies": {
-    "@fema/connector-common": "workspace:*",
-    "@fema/connector-sdk": "workspace:*",
+    "@fema-ipaas/connector-common": "workspace:*",
+    "@fema-ipaas/connector-sdk": "workspace:*",
     "amqplib": "0.10.7",
     "dayjs": "1.11.9",
-    "@fema/connector-types": "workspace:*",
-    "@fema/core-utils": "workspace:*"
+    "@fema-ipaas/connector-types": "workspace:*",
+    "@fema-ipaas/core-utils": "workspace:*"
   },
   "devDependencies": {
     "@types/amqplib": "0.10.7",

@@ -1,5 +1,5 @@
-import { apId } from '@fema/core-utils'
-import { ConnectionScope, ConnectionStatus, ConnectionType, PackageType, ConnectorType, PLACEHOLDER_CONNECTION_TYPE } from '@fema/shared'
+import { apId } from '@fema-ipaas/core-utils'
+import { ConnectionScope, ConnectionStatus, ConnectionType, PackageType, ConnectorType, PLACEHOLDER_CONNECTION_TYPE } from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { connectorMetadataService } from '../../../../src/app/connectors/metadata/connector-metadata-service'

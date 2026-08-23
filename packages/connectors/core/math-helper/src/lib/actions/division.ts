@@ -2,8 +2,8 @@ import {
   createAction,
   ConnectorAuth,
   Property,
-} from '@fema/connector-sdk';
-import { propsValidation } from '@fema/connector-common';
+} from '@fema-ipaas/connector-sdk';
+import { propsValidation } from '@fema-ipaas/connector-common';
 import * as z from 'zod/mini';
 import { divisionActionOutputSchema } from '../output-schemas';
 

@@ -1,5 +1,5 @@
-import { ConnectorAuth, Property } from '@fema/connector-sdk';
-import { httpClient, HttpMethod } from '@fema/connector-common';
+import { ConnectorAuth, Property } from '@fema-ipaas/connector-sdk';
+import { httpClient, HttpMethod } from '@fema-ipaas/connector-common';
 import {
   exchangeAppJwtForInstallationToken,
   signGithubAppJwt,

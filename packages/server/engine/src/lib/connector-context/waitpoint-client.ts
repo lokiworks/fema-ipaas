@@ -1,4 +1,4 @@
-import { CreateWaitpointRequest, CreateWaitpointResponse, EngineGenericError } from '@fema/shared'
+import { CreateWaitpointRequest, CreateWaitpointResponse, EngineGenericError } from '@fema-ipaas/shared'
 import { retryFetch } from '../api/retry-fetch'
 
 export const waitpointClient = {

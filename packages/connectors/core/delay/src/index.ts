@@ -1,5 +1,5 @@
-import { ConnectorAuth, createConnector } from '@fema/connector-sdk';
-import { ConnectorCategory } from '@fema/connector-sdk';
+import { ConnectorAuth, createConnector } from '@fema-ipaas/connector-sdk';
+import { ConnectorCategory } from '@fema-ipaas/connector-sdk';
 import { delayForAction } from './lib/actions/delay-for-action';
 import { delayUntilAction } from './lib/actions/delay-until-action';
 

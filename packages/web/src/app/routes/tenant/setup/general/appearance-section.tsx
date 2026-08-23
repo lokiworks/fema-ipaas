@@ -1,5 +1,5 @@
-import { isNil } from '@fema/core-utils';
-import { HEX_COLOR_PATTERN } from '@fema/shared';
+import { isNil } from '@fema-ipaas/core-utils';
+import { HEX_COLOR_PATTERN } from '@fema-ipaas/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { t } from 'i18next';

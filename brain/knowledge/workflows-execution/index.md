@@ -41,12 +41,12 @@ Primary entry point for inbound HTTP → workflow execution. 5 public routes: sy
 - Handshake verification (HEADER/QUERY/BODY_PARAM/HEAD_REQUEST) runs BEFORE the disabled-workflow guard. Version resolution = `LOCKED_FALL_BACK_TO_LATEST`. Payload cap `FEMA_MAX_WEBHOOK_PAYLOAD_SIZE_MB` (5MB → 413).
 
 ### Human Input (Forms & Chat)
-Public read-only endpoints returning UI metadata for workflows whose trigger is `@fema/connector-forms`. Triggers: `form_submission`, `file_submission`, `chat_submission`.
+Public read-only endpoints returning UI metadata for workflows whose trigger is `@fema-ipaas/connector-forms`. Triggers: `form_submission`, `file_submission`, `chat_submission`.
 - `GET /v1/human-input/form/:workflowId` and `/chat/:workflowId` — return title, input schema, platform branding (white-labeled). `useDraft=true` loads the draft version.
 - Gotcha: these endpoints only return the UI definition; the actual submission goes through the WEBHOOK endpoint. Unpublished workflows 404 unless `useDraft=true`.
 
 ### Subflows
-A **Subflow** is a workflow invoked by another workflow rather than by its own external trigger — reached by a webhook POST to `/v1/webhooks/:workflowId`, never a dedicated transport. Vocabulary from `@fema/connector-subflows`:
+A **Subflow** is a workflow invoked by another workflow rather than by its own external trigger — reached by a webhook POST to `/v1/webhooks/:workflowId`, never a dedicated transport. Vocabulary from `@fema-ipaas/connector-subflows`:
 - **Callable Workflow** — the trigger that makes a workflow callable; carries the parent's `data` payload and an optional `callbackUrl`. *Avoid:* child workflow, nested workflow, sub-workflow.
 - **Call Workflow** — the action that invokes one subflow once, optionally waiting on a waitpoint for its `Respond` callback.
 - **Subflow fan-out** — many calls dispatched from one parent step (e.g. one per CSV batch), fire-and-forget, no waiting per call. *Avoid:* scatter, broadcast.

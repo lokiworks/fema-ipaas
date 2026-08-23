@@ -4,7 +4,7 @@ icon: 🧩
 
 # Connectors
 
-The metadata catalog of automation integrations ("connectors") — each a named integration like `@fema/connector-gmail` providing actions and triggers. Stored in `connector_metadata` and served from an in-memory `connectorCache` rebuilt from the DB on startup and refreshed via pub/sub.
+The metadata catalog of automation integrations ("connectors") — each a named integration like `@fema-ipaas/connector-gmail` providing actions and triggers. Stored in `connector_metadata` and served from an in-memory `connectorCache` rebuilt from the DB on startup and refreshed via pub/sub.
 
 ### Entities & services
 - `connector_metadata` (ConnectorMetadataEntity) — unique on `(name, version, platformId)`; `platformId` null = official, set = custom connector for that platform. `actions`/`triggers` are JSON maps (each may carry an optional `outputSchema`).

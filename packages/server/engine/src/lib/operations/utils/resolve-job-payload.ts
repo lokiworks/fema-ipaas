@@ -1,5 +1,5 @@
-import { isNil } from '@fema/core-utils'
-import { JobPayload } from '@fema/shared'
+import { isNil } from '@fema-ipaas/core-utils'
+import { JobPayload } from '@fema-ipaas/shared'
 import { engineFileApi } from '../../api/engine-file-api'
 
 export async function resolveJobPayload({ payload, apiUrl, engineToken }: ResolveJobPayloadParams): Promise<unknown> {

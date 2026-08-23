@@ -1,6 +1,6 @@
-import { Resolver, Runtime } from '@fema/sandbox'
-import { type ApLogger } from '@fema/server-utils'
-import { EngineResponseStatus, JobData, WorkerJobType, WorkerToApiContract } from '@fema/shared'
+import { Resolver, Runtime } from '@fema-ipaas/sandbox'
+import { type ApLogger } from '@fema-ipaas/server-utils'
+import { EngineResponseStatus, JobData, WorkerJobType, WorkerToApiContract } from '@fema-ipaas/shared'
 
 export enum JobResultKind {
     FIRE_AND_FORGET = 'FIRE_AND_FORGET',

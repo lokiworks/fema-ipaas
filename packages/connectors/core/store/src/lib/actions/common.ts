@@ -1,4 +1,4 @@
-import { Property, StoreScope } from "@fema/connector-sdk"
+import { Property, StoreScope } from "@fema-ipaas/connector-sdk"
 
 export enum ConnectorStoreScope {
     WORKSPACE = 'COLLECTION',

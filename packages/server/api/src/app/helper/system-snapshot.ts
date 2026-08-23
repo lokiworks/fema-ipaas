@@ -1,6 +1,6 @@
 import os from 'os'
 import { monitorEventLoopDelay } from 'perf_hooks'
-import { createLogger } from '@fema/server-utils'
+import { createLogger } from '@fema-ipaas/server-utils'
 import { FastifyBaseLogger } from 'fastify'
 import { jobQueue } from '../workers/job-queue/job-queue'
 import { appMachineCache } from './app-machine-cache'

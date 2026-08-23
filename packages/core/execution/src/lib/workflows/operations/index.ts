@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { Nullable } from '@fema/core-utils'
-import { Metadata } from '@fema/core-utils'
+import { Nullable } from '@fema-ipaas/core-utils'
+import { Metadata } from '@fema-ipaas/core-utils'
 import { BranchCondition, CodeActionSchema, CodeActionSettings, WorkflowActionType, LoopOnItemsActionSchema, LoopOnItemsActionSettings, ConnectorActionSchema, ConnectorActionSettings, RouterActionSchema, RouterActionSettings } from '../actions/action'
 import { WorkflowStatus } from '../workflow'
 import { WorkflowVersion, WorkflowVersionState } from '../workflow-version'

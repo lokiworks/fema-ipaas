@@ -1,5 +1,5 @@
-import { isNil, tryCatch } from '@fema/core-utils'
-import { ConsumeJobRequest, ConsumeJobResponse, EngineResponseStatus, JobData } from '@fema/shared'
+import { isNil, tryCatch } from '@fema-ipaas/core-utils'
+import { ConsumeJobRequest, ConsumeJobResponse, EngineResponseStatus, JobData } from '@fema-ipaas/shared'
 import { Worker as BullMQWorker, Job, UnrecoverableError } from 'bullmq'
 import { FastifyBaseLogger } from 'fastify'
 import { accessTokenManager } from '../../authentication/lib/access-token-manager'

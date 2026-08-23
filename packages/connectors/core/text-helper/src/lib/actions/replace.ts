@@ -1,4 +1,4 @@
-import { Property, createAction } from '@fema/connector-sdk';
+import { Property, createAction } from '@fema-ipaas/connector-sdk';
 
 export const replace = createAction({
   audience: 'both',

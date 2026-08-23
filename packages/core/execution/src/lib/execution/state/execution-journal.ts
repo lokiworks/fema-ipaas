@@ -1,4 +1,4 @@
-import { isNil } from '@fema/core-utils'
+import { isNil } from '@fema-ipaas/core-utils'
 import { WorkflowActionType } from '../../workflows/actions/action'
 import { BaseStepOutput, LoopStepOutput, StepOutput, StepOutputStatus } from './step-output'
 

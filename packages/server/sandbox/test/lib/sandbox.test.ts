@@ -1,5 +1,5 @@
-import { ApplicationError, ErrorCode } from '@fema/core-utils'
-import { EngineResponseStatus } from '@fema/shared'
+import { ApplicationError, ErrorCode } from '@fema-ipaas/core-utils'
+import { EngineResponseStatus } from '@fema-ipaas/shared'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const acquiredBoxIds: number[] = []
@@ -7,8 +7,8 @@ const runTimeouts: number[] = []
 const managerCalls = { release: 0, invalidate: 0 }
 let bootAdvanceMs = 0
 
-vi.mock('@fema/server-utils', async (importActual) => {
-    const actual = await importActual<typeof import('@fema/server-utils')>()
+vi.mock('@fema-ipaas/server-utils', async (importActual) => {
+    const actual = await importActual<typeof import('@fema-ipaas/server-utils')>()
     return {
         ...actual,
         wideEvent: {

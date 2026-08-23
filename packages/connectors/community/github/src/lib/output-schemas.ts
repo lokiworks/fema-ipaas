@@ -1,4 +1,4 @@
-import { OutputSchema } from '@fema/connector-sdk';
+import { OutputSchema } from '@fema-ipaas/connector-sdk';
 
 const simpleUserFields: OutputSchema['fields'] = [
   { key: 'login', label: 'Username' },

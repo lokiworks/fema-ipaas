@@ -3,7 +3,7 @@ import {
   SeekPage,
   UpdateWorkspaceTenantRequest,
   WorkspaceWithLimits,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { BarChart3, Cpu, Search, Server } from 'lucide-react';

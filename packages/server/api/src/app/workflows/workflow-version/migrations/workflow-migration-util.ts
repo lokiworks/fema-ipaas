@@ -1,4 +1,4 @@
-import { WorkflowActionType, workflowStructureUtil, WorkflowTriggerType, WorkflowVersion } from '@fema/shared'
+import { WorkflowActionType, workflowStructureUtil, WorkflowTriggerType, WorkflowVersion } from '@fema-ipaas/shared'
 
 export const workflowMigrationUtil = {
     pinConnectorToVersion(workflowVersion: WorkflowVersion, connectorName: string, connectorVersion: string) {

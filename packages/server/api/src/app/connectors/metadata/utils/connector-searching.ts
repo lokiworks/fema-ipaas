@@ -1,9 +1,9 @@
-import { ActionBase, TriggerBase } from '@fema/connector-sdk'
+import { ActionBase, TriggerBase } from '@fema-ipaas/connector-sdk'
 
 import {
     ConnectorCategory,
     SuggestionType,
-} from '@fema/shared'
+} from '@fema-ipaas/shared'
 import Fuse from 'fuse.js'
 import { ConnectorMetadataSchema } from '../connector-metadata-entity'
 

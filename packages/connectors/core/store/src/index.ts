@@ -1,5 +1,5 @@
-import { ConnectorAuth, createConnector } from '@fema/connector-sdk';
-import { ConnectorCategory } from '@fema/connector-sdk';
+import { ConnectorAuth, createConnector } from '@fema-ipaas/connector-sdk';
+import { ConnectorCategory } from '@fema-ipaas/connector-sdk';
 import { storageAddtoList } from './lib/actions/store-add-to-list';
 import { storageAppendAction } from './lib/actions/store-append-action';
 import { storageGetAction } from './lib/actions/store-get-action';

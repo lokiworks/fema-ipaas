@@ -1,6 +1,6 @@
-import { FAIL_PARENT_ON_FAILURE_HEADER, WorkflowStatus, WorkflowTriggerType, isNil, PARENT_RUN_ID_HEADER, ConnectorAuth, PopulatedWorkflow, Property } from "@fema/connector-sdk";
-import { WorkflowsContext, ListWorkflowsContextParams } from "@fema/connector-sdk";
-import { httpClient, HttpMethod } from "@fema/connector-common";
+import { FAIL_PARENT_ON_FAILURE_HEADER, WorkflowStatus, WorkflowTriggerType, isNil, PARENT_RUN_ID_HEADER, ConnectorAuth, PopulatedWorkflow, Property } from "@fema-ipaas/connector-sdk";
+import { WorkflowsContext, ListWorkflowsContextParams } from "@fema-ipaas/connector-sdk";
+import { httpClient, HttpMethod } from "@fema-ipaas/connector-common";
 
 
 export const callableWorkflowKey = (runId: string) => `callableWorkflow_${runId}`;
@@ -27,7 +27,7 @@ export async function listWorkflowsWithSubflowTrigger({
         (workflow) =>
             workflow.version.trigger.type === WorkflowTriggerType.CONNECTOR &&
             workflow.version.trigger.settings.connectorName ==
-            '@fema/connector-subflows'
+            '@fema-ipaas/connector-subflows'
     );
     return workflows;
 }

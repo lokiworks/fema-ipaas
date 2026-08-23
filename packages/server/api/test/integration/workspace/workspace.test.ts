@@ -1,5 +1,5 @@
-import { ErrorCode } from '@fema/core-utils'
-import { PrincipalType, WorkspaceType } from '@fema/shared'
+import { ErrorCode } from '@fema-ipaas/core-utils'
+import { PrincipalType, WorkspaceType } from '@fema-ipaas/shared'
 import { faker } from '@faker-js/faker'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'

@@ -1,4 +1,4 @@
-import { NoteColorVariant } from '@fema/shared';
+import { NoteColorVariant } from '@fema-ipaas/shared';
 import { Editor } from '@tiptap/core';
 import { t } from 'i18next';
 import { TrashIcon } from 'lucide-react';

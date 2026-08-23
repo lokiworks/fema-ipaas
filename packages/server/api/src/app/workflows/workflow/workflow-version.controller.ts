@@ -1,5 +1,5 @@
-import { SeekPage } from '@fema/core-utils'
-import { ListWorkflowVersionRequest, PrincipalType, WorkflowVersionMetadata } from '@fema/shared'
+import { SeekPage } from '@fema-ipaas/core-utils'
+import { ListWorkflowVersionRequest, PrincipalType, WorkflowVersionMetadata } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'

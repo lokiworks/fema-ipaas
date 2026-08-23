@@ -143,7 +143,7 @@ This benchmark runs in `SANDBOX_CODE_ONLY` mode. It does **not** represent the p
 Load-test and **diagnose** your own deployment — no cluster scripts required — with the CLI. It publishes a synchronous workflow (webhook trigger → data mapper → return response), fires load at its sync webhook endpoint with [autocannon](https://github.com/mcollina/autocannon), and returns one self-contained diagnostic bundle you can hand to support.
 
 ```bash
-FEMA_API_KEY=<key> npx @fema/cli@latest benchmark --url https://your-instance.example.com
+FEMA_API_KEY=<key> npx @fema-ipaas/cli@latest benchmark --url https://your-instance.example.com
 ```
 
 The CLI provisions a **throwaway project** for the run (with a high concurrency cap so a project rate limiter can't queue-throttle the numbers) and deletes it when finished — nothing is left behind, and it never touches your real projects. The API key must be a platform-admin key.

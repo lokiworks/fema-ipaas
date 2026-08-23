@@ -1,7 +1,7 @@
 /// <reference types="vitest/globals" />
 
 import { rsaSignature } from '../src/lib/actions/rsa-signature';
-import { createMockActionContext } from '@fema/connector-sdk';
+import { createMockActionContext } from '@fema-ipaas/connector-sdk';
 import Crypto from 'crypto';
 
 const { privateKey, publicKey } = Crypto.generateKeyPairSync('rsa', {

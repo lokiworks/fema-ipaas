@@ -1,5 +1,5 @@
-import { isNil, Permission } from '@fema/core-utils';
-import { ApFlagId, TenantRole, WorkspaceType } from '@fema/shared';
+import { isNil, Permission } from '@fema-ipaas/core-utils';
+import { ApFlagId, TenantRole, WorkspaceType } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { UsersRound, Lock } from 'lucide-react';
 import { useState } from 'react';

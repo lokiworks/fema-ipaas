@@ -1,6 +1,6 @@
-import { Property, createAction } from '@fema/connector-sdk';
+import { Property, createAction } from '@fema-ipaas/connector-sdk';
 import { Converter, Flavor } from 'showdown';
-import { propsValidation } from '@fema/connector-common';
+import { propsValidation } from '@fema-ipaas/connector-common';
 import { z, type ZodTypeAny } from 'zod';
 
 export const markdownToHTML = createAction({

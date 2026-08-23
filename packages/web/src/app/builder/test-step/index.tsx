@@ -1,4 +1,4 @@
-import { WorkflowActionType, WorkflowTriggerType } from '@fema/shared';
+import { WorkflowActionType, WorkflowTriggerType } from '@fema-ipaas/shared';
 import React from 'react';
 
 import { TestActionSection } from './test-action-section';

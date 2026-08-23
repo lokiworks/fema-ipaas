@@ -1,4 +1,4 @@
-import { Property, createAction } from '@fema/connector-sdk';
+import { Property, createAction } from '@fema-ipaas/connector-sdk';
 import TurndownService from '@joplin/turndown';
 
 import { gfm } from '@joplin/turndown-plugin-gfm';

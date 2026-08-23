@@ -2,8 +2,8 @@ import {
   ConnectorAuth,
   Property,
   createConnector,
-} from '@fema/connector-sdk';
-import { ConnectionType, ConnectorCategory } from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-sdk';
+import { ConnectionType, ConnectorCategory } from '@fema-ipaas/connector-sdk';
 import { runQuery } from './lib/actions/run-query';
 import { findRows } from './lib/actions/find-rows';
 import { insertRow } from './lib/actions/insert-row';

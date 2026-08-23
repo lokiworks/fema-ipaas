@@ -1,5 +1,5 @@
-import { isNil } from '@fema/core-utils';
-import { WorkflowActionType, WorkflowTriggerType } from '@fema/shared';
+import { isNil } from '@fema-ipaas/core-utils';
+import { WorkflowActionType, WorkflowTriggerType } from '@fema-ipaas/shared';
 import { useCallback, useRef, useSyncExternalStore } from 'react';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';

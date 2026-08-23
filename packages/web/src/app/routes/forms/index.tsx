@@ -1,5 +1,5 @@
-import { isNil } from '@fema/core-utils';
-import { USE_DRAFT_QUERY_PARAM_NAME } from '@fema/shared';
+import { isNil } from '@fema-ipaas/core-utils';
+import { USE_DRAFT_QUERY_PARAM_NAME } from '@fema-ipaas/shared';
 import { useParams } from 'react-router-dom';
 import { useSearchParam } from 'react-use';
 

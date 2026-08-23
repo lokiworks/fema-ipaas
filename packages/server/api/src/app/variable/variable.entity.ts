@@ -2,7 +2,7 @@ import {
     User,
     UserIdentity,
     Variable,
-} from '@fema/shared'
+} from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import { BaseColumnSchemaPart } from '../database/database-common'
 import { EncryptedObject } from '../helper/encryption'

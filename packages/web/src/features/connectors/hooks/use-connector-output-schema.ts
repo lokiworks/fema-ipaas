@@ -1,5 +1,5 @@
-import type { OutputSchema } from '@fema/connector-sdk';
-import { isNil } from '@fema/core-utils';
+import type { OutputSchema } from '@fema-ipaas/connector-sdk';
+import { isNil } from '@fema-ipaas/core-utils';
 
 import { connectorsHooks } from './connectors-hooks';
 

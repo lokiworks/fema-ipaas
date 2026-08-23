@@ -1,4 +1,4 @@
-import { TenantId, WorkspaceId } from '@fema/core-utils'
+import { TenantId, WorkspaceId } from '@fema-ipaas/core-utils'
 
 export const getTenantPlanNameKey = (tenantId: TenantId): string => `tenant_plan:plan:${tenantId}`
 export const getCreditsBalanceKey = (tenantId: TenantId): string => `tenant_plan:credits:${tenantId}`

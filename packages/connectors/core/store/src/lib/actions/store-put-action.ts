@@ -5,10 +5,10 @@ import {
   Property,
   ShortTextProperty,
   StaticDropdownProperty,
-} from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-sdk';
 import { common, getScopeAndKey, ConnectorStoreScope } from './common';
 import * as z from 'zod/mini'
-import { propsValidation } from '@fema/connector-common';
+import { propsValidation } from '@fema-ipaas/connector-common';
 
 async function executeStoragePut(context: ActionContext<ConnectorAuthProperty | undefined, {
   key: ShortTextProperty<true>;

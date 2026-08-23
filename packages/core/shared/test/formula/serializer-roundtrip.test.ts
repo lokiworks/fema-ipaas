@@ -1,4 +1,4 @@
-import { formulaEvaluator } from '@fema/expression'
+import { formulaEvaluator } from '@fema-ipaas/expression'
 import { describe, expect, it } from 'vitest'
 
 /**

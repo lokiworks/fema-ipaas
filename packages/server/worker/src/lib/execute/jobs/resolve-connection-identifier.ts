@@ -1,5 +1,5 @@
-import { ApplicationError, ErrorCode } from '@fema/core-utils'
-import { EngineOperationType, EngineResponseStatus, ExecuteResolveConnectionIdentifierJobData, WorkerJobType } from '@fema/shared'
+import { ApplicationError, ErrorCode } from '@fema-ipaas/core-utils'
+import { EngineOperationType, EngineResponseStatus, ExecuteResolveConnectionIdentifierJobData, WorkerJobType } from '@fema-ipaas/shared'
 import { workerSettings } from '../../config/worker-settings'
 import { JobContext, JobHandler, JobResultKind, SynchronousJobResult } from '../types'
 

@@ -9,7 +9,7 @@ Load this when the user wants the automation to react to a step failing instead 
 - **Branch placement discipline**: success-branch = steps that depend on the step's output (processing, forwarding, updating); failure-branch = error handling, logging, fallback notifications. After building, call `ap_workflow_structure` to verify every step is in the correct branch; if misplaced, `ap_delete_step` + `ap_add_step` to move it.
 
 ## The HTTP connector has its own failure modes — and a trap
-`@fema/connector-http`'s `send_request` exposes a connector-specific `failureMode`, separate from the platform `continueOnFailure` above:
+`@fema-ipaas/connector-http`'s `send_request` exposes a connector-specific `failureMode`, separate from the platform `continueOnFailure` above:
 ```
 retry_all   retry_5xx   retry_none
 continue_all   continue_4xx   continue_none  (DEFAULT: stop on error)

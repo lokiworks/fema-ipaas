@@ -1,4 +1,4 @@
-import { Nullable } from '@fema/core-utils'
+import { Nullable } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 import { ThirdPartyAuthnProviderEnum } from './authn-provider-name'
 

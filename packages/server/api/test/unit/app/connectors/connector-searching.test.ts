@@ -1,12 +1,12 @@
-import { SuggestionType } from '@fema/shared'
+import { SuggestionType } from '@fema-ipaas/shared'
 import { describe, expect, it } from 'vitest'
 import { connectorSearching } from '../../../../src/app/connectors/metadata/utils/connector-searching'
 import { createMockConnectorMetadata } from '../../../helpers/mocks'
 
 const connectors = [
-    createMockConnectorMetadata({ name: '@fema/connector-discord', displayName: 'Discord', description: 'Send messages to Discord channels' }),
-    createMockConnectorMetadata({ name: '@fema/connector-slack', displayName: 'Slack', description: 'Send messages to Slack channels' }),
-    createMockConnectorMetadata({ name: '@fema/connector-gmail', displayName: 'Gmail', description: 'Send and read emails' }),
+    createMockConnectorMetadata({ name: '@fema-ipaas/connector-discord', displayName: 'Discord', description: 'Send messages to Discord channels' }),
+    createMockConnectorMetadata({ name: '@fema-ipaas/connector-slack', displayName: 'Slack', description: 'Send messages to Slack channels' }),
+    createMockConnectorMetadata({ name: '@fema-ipaas/connector-gmail', displayName: 'Gmail', description: 'Send and read emails' }),
 ]
 
 describe('connectorSearching.search — robustness to extra query words', () => {

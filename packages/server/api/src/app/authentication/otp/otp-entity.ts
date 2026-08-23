@@ -1,4 +1,4 @@
-import { OtpModel, OtpState, OtpType, UserIdentity } from '@fema/shared'
+import { OtpModel, OtpState, OtpType, UserIdentity } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import {
     ApIdSchema,

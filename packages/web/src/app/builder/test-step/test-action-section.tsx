@@ -1,10 +1,10 @@
-import { isNil } from '@fema/core-utils';
+import { isNil } from '@fema-ipaas/core-utils';
 import {
   WorkflowAction,
   WorkflowActionType,
   Step,
   workflowStructureUtil,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { FlaskConical, Play } from 'lucide-react';
 import React, { useContext } from 'react';

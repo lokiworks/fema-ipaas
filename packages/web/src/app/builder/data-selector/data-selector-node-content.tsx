@@ -2,7 +2,7 @@ import {
   WorkflowAction,
   WorkflowTrigger,
   workflowStructureUtil,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 

@@ -3,7 +3,7 @@ import {
     EngineResponseStatus,
     ExecuteResolveConnectionIdentifierOperation,
     ExecuteResolveConnectionIdentifierResponse,
-} from '@fema/shared'
+} from '@fema-ipaas/shared'
 import { connectorAuth } from '../core/connector/connector-auth'
 
 export const resolveConnectionIdentifierOperation = {

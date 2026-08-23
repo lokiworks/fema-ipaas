@@ -1,10 +1,10 @@
-import { ConnectorAuth, ConnectorAuthProperty, PropertyType } from '@fema/connector-sdk'
-import { ConnectionType, ConnectionValue, ConnectorPackage } from '@fema/shared'
+import { ConnectorAuth, ConnectorAuthProperty, PropertyType } from '@fema-ipaas/connector-sdk'
+import { ConnectionType, ConnectionValue, ConnectorPackage } from '@fema-ipaas/shared'
 import { connectorAuth } from '../../../src/lib/core/connector/connector-auth'
 import { CollectedHooks, ConnectorDescription } from '../../../src/lib/core/connector/connector-protocol'
 import { connectorRunner } from '../../../src/lib/core/connector/connector-runner'
 
-const CONNECTOR = { connectorName: '@fema/connector-test', connectorVersion: '1.0.0' } as unknown as ConnectorPackage
+const CONNECTOR = { connectorName: '@fema-ipaas/connector-test', connectorVersion: '1.0.0' } as unknown as ConnectorPackage
 
 const HOOKS: CollectedHooks = { hookResponse: {}, listeners: [] } as unknown as CollectedHooks
 
@@ -61,7 +61,7 @@ describe('connector-auth callMethod', () => {
         await connectorAuth.callMethod({ operation: operationFor(SECRET_TEXT_VALUE), authValueType: ConnectionType.SECRET_TEXT, methodPath: ['validate'] })
 
         expect(call).toHaveBeenCalledWith({
-            connector: expect.objectContaining({ connectorName: '@fema/connector-test', connectorVersion: '1.0.0' }),
+            connector: expect.objectContaining({ connectorName: '@fema-ipaas/connector-test', connectorVersion: '1.0.0' }),
             path: ['auth', 'validate'],
             args: [{ auth: 'my-secret', server: { apiUrl: 'http://internal/', publicUrl: 'http://public' } }],
         })

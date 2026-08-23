@@ -8,7 +8,7 @@ npm run create-action    # Add action
 npm run create-trigger   # Add trigger
 ```
 
-After creating: add path to `tsconfig.base.json`: `"@fema/connector-{name}": ["packages/connectors/community/{name}/src/index.ts"]`
+After creating: add path to `tsconfig.base.json`: `"@fema-ipaas/connector-{name}": ["packages/connectors/community/{name}/src/index.ts"]`
 
 ## Structure
 
@@ -48,6 +48,6 @@ Three types: `ConnectorAuth.SecretText()` with validate callback, `ConnectorAuth
 ## Key Rules
 
 - Trigger `run()` must return an **array**
-- Use `httpClient` from `@fema/connector-common` for HTTP requests
+- Use `httpClient` from `@fema-ipaas/connector-common` for HTTP requests
 - Always provide `sampleData` for triggers
 - i18n: `src/i18n/translation.json` with identity-mapped English keys

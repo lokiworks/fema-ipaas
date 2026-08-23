@@ -1,5 +1,5 @@
-import type { ActionClassification } from '@fema/connector-sdk';
-import { WorkflowActionType, WorkflowTriggerType } from '@fema/shared';
+import type { ActionClassification } from '@fema-ipaas/connector-sdk';
+import { WorkflowActionType, WorkflowTriggerType } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 
 import { CardListItem } from '@/components/custom/card-list';

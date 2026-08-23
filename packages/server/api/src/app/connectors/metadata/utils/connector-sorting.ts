@@ -1,4 +1,4 @@
-import { ConnectorOrderBy, ConnectorSortBy } from '@fema/shared'
+import { ConnectorOrderBy, ConnectorSortBy } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { ConnectorMetadataSchema } from '../connector-metadata-entity'
 

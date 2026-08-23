@@ -1,4 +1,4 @@
-import { FEMA_FUNCTIONS } from '@fema/expression';
+import { FEMA_FUNCTIONS } from '@fema-ipaas/expression';
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';

@@ -1,6 +1,6 @@
 
-import { DEDUPE_KEY_PROPERTY } from '@fema/connector-sdk'
-import { isNil } from '@fema/core-utils'
+import { DEDUPE_KEY_PROPERTY } from '@fema-ipaas/connector-sdk'
+import { isNil } from '@fema-ipaas/core-utils'
 import { redisConnections } from '../database/redis-connections'
 
 const DUPLICATE_RECORD_EXPIRATION_SECONDS = 30

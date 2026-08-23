@@ -1,5 +1,5 @@
-import { apId } from '@fema/core-utils'
-import { OtpState, OtpType, TenantRole, UserIdentityProvider, UserStatus } from '@fema/shared'
+import { apId } from '@fema-ipaas/core-utils'
+import { OtpState, OtpType, TenantRole, UserIdentityProvider, UserStatus } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { passwordHasher } from '../../../../src/app/authentication/lib/password-hasher'

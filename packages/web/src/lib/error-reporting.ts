@@ -1,5 +1,5 @@
-import { isNil } from '@fema/core-utils';
-import { ApFlagId } from '@fema/shared';
+import { isNil } from '@fema-ipaas/core-utils';
+import { ApFlagId } from '@fema-ipaas/shared';
 
 import { FlagsMap } from '@/api/flags-api';
 import { queryClient } from '@/app/query-client';

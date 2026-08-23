@@ -1,4 +1,4 @@
-import { WorkflowStatus } from '@fema/shared'
+import { WorkflowStatus } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { db } from '../../../helpers/db'

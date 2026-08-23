@@ -1,4 +1,4 @@
-import { ApId, BaseModelSchema, Nullable } from '@fema/core-utils'
+import { ApId, BaseModelSchema, Nullable } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 
 export type FileId = ApId

@@ -3,7 +3,7 @@ import {
   StepLocationRelativeToParent,
   WorkflowTrigger,
   Note,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { Edge } from '@xyflow/react';
 
 export enum ApNodeType {

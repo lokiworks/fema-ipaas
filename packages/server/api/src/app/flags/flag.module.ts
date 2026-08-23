@@ -1,4 +1,4 @@
-import { ALL_PRINCIPAL_TYPES } from '@fema/shared'
+import { ALL_PRINCIPAL_TYPES } from '@fema-ipaas/shared'
 import { FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { securityAccess } from '../core/security/authorization/fastify-security'

@@ -1,4 +1,4 @@
-import { BaseEngineOperation, CodeAction, ConnectorAction, StepOutput } from '@fema/shared'
+import { BaseEngineOperation, CodeAction, ConnectorAction, StepOutput } from '@fema-ipaas/shared'
 import { EngineConstants } from './context/engine-constants'
 import { WorkflowExecutorContext } from './context/workflow-execution-context'
 import { workflowExecutor } from './workflow-executor'

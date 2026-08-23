@@ -2,8 +2,8 @@ import {
     WorkflowTriggerType,
     WorkflowVersionState,
     TriggerHookType,
-} from '@fema/shared'
-import type { ExecuteTriggerOperation, WorkflowVersion } from '@fema/shared'
+} from '@fema-ipaas/shared'
+import type { ExecuteTriggerOperation, WorkflowVersion } from '@fema-ipaas/shared'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const { mockDownload } = vi.hoisted(() => ({

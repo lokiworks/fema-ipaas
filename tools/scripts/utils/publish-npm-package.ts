@@ -32,9 +32,9 @@ function assertNoSemverRanges(packageJsonPath: string): void {
 }
 
 // Final, bullet-proof publish gate. A published connector is a self-contained bundle: every
-// @fema/* library (shared, framework, common, core-*) is inlined and NONE of them is
+// @fema-ipaas/* library (shared, framework, common, core-*) is inlined and NONE of them is
 // published to npm, and there must be no unresolved workspace:* dep. So refuse to publish if any
-// dependency is either still a workspace:* range OR an @fema/* package — regardless of how
+// dependency is either still a workspace:* range OR an @fema-ipaas/* package — regardless of how
 // it leaked into the manifest. This catches bundler/manifest regressions before they hit the registry.
 function assertNoUnpublishableDeps(packageJsonPath: string): void {
   const json = JSON.parse(readFileSync(packageJsonPath).toString())
@@ -49,7 +49,7 @@ function assertNoUnpublishableDeps(packageJsonPath: string): void {
     for (const [name, version] of Object.entries(deps)) {
       if (version.startsWith('workspace:')) {
         offending.push(`${field}.${name}: ${version} (unresolved workspace dependency)`)
-      } else if (name.startsWith('@fema/')) {
+      } else if (name.startsWith('@fema-ipaas/')) {
         offending.push(`${field}.${name}: ${version} (must be bundled, never published)`)
       }
     }
@@ -80,7 +80,7 @@ export const publishNpmPackage = async (path: string): Promise<void> => {
   const { version } = await readPackageJson(path)
 
   // Bundles the connector into a self-contained artifact and rewrites the manifest (strips the
-  // @fema/* + workspace deps that are now inlined). MUST be awaited — it copies the
+  // @fema-ipaas/* + workspace deps that are now inlined). MUST be awaited — it copies the
   // source package.json (with workspace:* deps) before the async bundle+rewrite, so reading the
   // manifest before it resolves would see the un-stripped deps and fail the assertion below.
   await prepareConnectorDistForPublish(path)

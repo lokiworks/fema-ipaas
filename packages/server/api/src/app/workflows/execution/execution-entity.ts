@@ -5,7 +5,7 @@ import {
     Workflow,
     WorkflowVersion,
     Workspace,
-} from '@fema/shared'
+} from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import {
     ApIdSchema,

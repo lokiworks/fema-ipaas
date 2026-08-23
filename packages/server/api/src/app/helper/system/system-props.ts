@@ -1,4 +1,4 @@
-import { assertNotNullOrUndefined } from '@fema/core-utils'
+import { assertNotNullOrUndefined } from '@fema-ipaas/core-utils'
 
 export type SystemProp = AppSystemProp
 

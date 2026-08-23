@@ -3,7 +3,7 @@ import {
   ConnectionStatus,
   MAX_TENANT_CONNECTION_OWNERS,
   TenantConnectionsListItem,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { ColumnDef } from '@tanstack/react-table';
 import { t } from 'i18next';
 import {

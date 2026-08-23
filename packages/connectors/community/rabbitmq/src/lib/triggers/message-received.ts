@@ -4,8 +4,8 @@ import {
   ConnectorPropValueSchema,
   Property,
   ConnectionValueForAuthProperty,
-} from '@fema/connector-sdk';
-import { DedupeStrategy, Polling, pollingHelper } from '@fema/connector-common';
+} from '@fema-ipaas/connector-sdk';
+import { DedupeStrategy, Polling, pollingHelper } from '@fema-ipaas/connector-common';
 import { rabbitmqAuth } from '../auth';
 import { rabbitmqConnect } from '../common';
 import dayjs from 'dayjs';

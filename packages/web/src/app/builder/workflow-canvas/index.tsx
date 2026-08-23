@@ -1,4 +1,4 @@
-import { isNil } from '@fema/core-utils';
+import { isNil } from '@fema-ipaas/core-utils';
 import {
   workflowCanvasUtils as sharedWorkflowCanvasUtils,
   WorkflowActionType,
@@ -7,7 +7,7 @@ import {
   WorkflowVersion,
   Note,
   Step,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import {
   ReactFlow,
   Background,

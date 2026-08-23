@@ -1,9 +1,9 @@
-import { isNil, assertNotNullOrUndefined } from '@fema/core-utils';
+import { isNil, assertNotNullOrUndefined } from '@fema-ipaas/core-utils';
 import {
   WorkflowTriggerType,
   Permission,
   UpdateRunProgressRequest,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 
 import { EditWorkflowOrViewDraftButton } from '@/app/builder/builder-header/workflow-status/view-draft-or-edit-workflow-button';

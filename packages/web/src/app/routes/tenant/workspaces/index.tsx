@@ -1,4 +1,4 @@
-import { WorkspaceType, WorkspaceWithLimits } from '@fema/shared';
+import { WorkspaceType, WorkspaceWithLimits } from '@fema-ipaas/shared';
 import { ColumnDef } from '@tanstack/react-table';
 import { t } from 'i18next';
 import { CheckIcon, Package, Pencil, Trash } from 'lucide-react';

@@ -1,5 +1,5 @@
 import { slackAuth } from '../auth';
-import { createAction, Property } from '@fema/connector-sdk';
+import { createAction, Property } from '@fema-ipaas/connector-sdk';
 import { WebClient } from '@slack/web-api';
 import { requireUserToken, SlackAuthValue } from '../common/auth-helpers';
 

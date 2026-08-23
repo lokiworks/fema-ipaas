@@ -1,4 +1,4 @@
-import { SeekPage } from '@fema/core-utils';
+import { SeekPage } from '@fema-ipaas/core-utils';
 import {
   GetWorkflowTemplateRequestQuery,
   CreateWorkflowRequest,
@@ -11,7 +11,7 @@ import {
   PopulatedWorkflow,
   SharedTemplate,
   CountWorkflowsRequest,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { toast } from 'sonner';
 
 import { UNSAVED_CHANGES_TOAST } from '@/components/ui/sonner';

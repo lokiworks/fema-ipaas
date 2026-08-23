@@ -1,7 +1,7 @@
-import { createAction, Property } from '@fema/connector-sdk';
+import { createAction, Property } from '@fema-ipaas/connector-sdk';
 
 import { githubAuth } from '../auth';
-import { httpClient, HttpMethod } from '@fema/connector-common';
+import { httpClient, HttpMethod } from '@fema-ipaas/connector-common';
 import { githubAuthHelpers, GithubAuthValue } from '../common/auth-helpers';
 
 export const githubRawGraphqlQuery = createAction({

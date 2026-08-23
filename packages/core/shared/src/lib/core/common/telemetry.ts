@@ -1,5 +1,5 @@
-import type { UserId, WorkflowId, WorkspaceId } from '@fema/core-utils'
-import type { RunEnvironment } from '@fema/workflow-core'
+import type { UserId, WorkflowId, WorkspaceId } from '@fema-ipaas/core-utils'
+import type { RunEnvironment } from '@fema-ipaas/workflow-core'
 
 type WorkflowCreated = {
     workflowId: WorkflowId

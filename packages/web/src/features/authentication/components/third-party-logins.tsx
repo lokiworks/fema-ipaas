@@ -3,7 +3,7 @@ import {
   ThirdPartyAuthnProviderEnum,
   ThirdPartyAuthnProvidersToShowMap,
   TelemetryEventName,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import React from 'react';
 

@@ -4,11 +4,11 @@ import {
   ConnectorAuth,
   Property,
   TriggerStrategy,
-} from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-sdk';
 import {
   assertNotNullOrUndefined,
   MarkdownVariant,
-} from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-sdk';
 import { createHmac, timingSafeEqual } from 'crypto';
 
 const liveMarkdown = `**Live URL:**

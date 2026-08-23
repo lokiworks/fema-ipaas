@@ -1,4 +1,4 @@
-import { Metadata } from '@fema/core-utils'
+import { Metadata } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 import { ConnectionScope, ConnectionType } from '../connection'
 import { OAuth2AuthorizationMethod } from '../oauth2-authorization-method'

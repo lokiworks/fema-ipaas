@@ -1,4 +1,4 @@
-import { createAction, Property } from '@fema/connector-sdk';
+import { createAction, Property } from '@fema-ipaas/connector-sdk';
 import { mysqlCommon, mysqlConnect, sanitizeColumnName } from '../common';
 import { mysqlAuth } from '../..';
 import { updateRowOutputSchema } from '../output-schemas';

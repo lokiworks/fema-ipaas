@@ -1,5 +1,5 @@
-import { Permission } from '@fema/core-utils';
-import { WorkflowVersionState } from '@fema/shared';
+import { Permission } from '@fema-ipaas/core-utils';
+import { WorkflowVersionState } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { EyeIcon, PencilIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';

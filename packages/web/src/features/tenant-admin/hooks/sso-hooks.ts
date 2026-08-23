@@ -1,4 +1,4 @@
-import { UpdateTenantRequestBody } from '@fema/shared';
+import { UpdateTenantRequestBody } from '@fema-ipaas/shared';
 import { useMutation } from '@tanstack/react-query';
 
 import { tenantApi } from '@/api/tenants-api';

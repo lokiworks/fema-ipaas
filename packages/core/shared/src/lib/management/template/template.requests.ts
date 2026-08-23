@@ -1,4 +1,4 @@
-import { Metadata, Nullable, OptionalArrayFromQuery } from '@fema/core-utils'
+import { Metadata, Nullable, OptionalArrayFromQuery } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 import { TemplateStatus, TemplateTag, TemplateType, WorkflowVersionTemplate } from './template'
 

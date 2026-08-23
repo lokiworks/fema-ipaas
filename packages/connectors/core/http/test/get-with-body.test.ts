@@ -1,12 +1,12 @@
 /// <reference types="vitest/globals" />
 
 import http from 'node:http';
-import { createMockActionContext } from '@fema/connector-sdk';
+import { createMockActionContext } from '@fema-ipaas/connector-sdk';
 import {
   createCustomApiCallAction,
   httpClient,
   HttpMethod,
-} from '@fema/connector-common';
+} from '@fema-ipaas/connector-common';
 import { httpSendRequestAction } from '../src/lib/actions/send-http-request-action';
 
 type SeenRequest = { method: string; contentLength?: string; body: string };

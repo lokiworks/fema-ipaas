@@ -1,5 +1,5 @@
-import { ExecutionId, TenantId, WorkflowId, WorkspaceId } from '@fema/core-utils'
-import { Workflow } from '@fema/shared'
+import { ExecutionId, TenantId, WorkflowId, WorkspaceId } from '@fema-ipaas/core-utils'
+import { Workflow } from '@fema-ipaas/shared'
 import { Job, JobsOptions } from 'bullmq'
 import { Dayjs } from 'dayjs'
 

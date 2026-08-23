@@ -1,7 +1,7 @@
 /// <reference types="vitest/globals" />
 
 import { nextDayofYear } from '../src/lib/actions/next-day-of-year';
-import { createMockActionContext } from '@fema/connector-sdk';
+import { createMockActionContext } from '@fema-ipaas/connector-sdk';
 
 describe('nextDayOfYear', () => {
   beforeEach(() => {

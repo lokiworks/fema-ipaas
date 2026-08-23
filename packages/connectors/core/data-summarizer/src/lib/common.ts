@@ -1,5 +1,5 @@
-import { Property } from "@fema/connector-sdk"
-import { isNil } from "@fema/connector-sdk"
+import { Property } from "@fema-ipaas/connector-sdk"
+import { isNil } from "@fema-ipaas/connector-sdk"
 
 type ErrorInfo = {
     value: unknown | null,

@@ -1,5 +1,5 @@
-import { apId } from '@fema/core-utils'
-import { InvitationStatus, InvitationType, TenantRole } from '@fema/shared'
+import { apId } from '@fema-ipaas/core-utils'
+import { InvitationStatus, InvitationType, TenantRole } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { JwtAudience, jwtUtils } from '../../../../src/app/helper/jwt-utils'

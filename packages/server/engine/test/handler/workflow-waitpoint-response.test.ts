@@ -1,4 +1,4 @@
-import { ExecutionStatus } from '@fema/shared'
+import { ExecutionStatus } from '@fema-ipaas/shared'
 import { vi } from 'vitest'
 import { WorkflowExecutorContext } from '../../src/lib/handler/context/workflow-execution-context'
 import { workflowExecutor } from '../../src/lib/handler/workflow-executor'
@@ -39,7 +39,7 @@ describe('workflow waitpoint response propagation', () => {
 
         const action = buildConnectorAction({
             name: 'http',
-            connectorName: '@fema/connector-webhook',
+            connectorName: '@fema-ipaas/connector-webhook',
             actionName: 'return_response_and_wait_for_next_webhook',
             input: {
                 responseType: 'json',
@@ -56,7 +56,7 @@ describe('workflow waitpoint response propagation', () => {
             executionState: WorkflowExecutorContext.empty(),
             constants: generateMockEngineConstants({
                 internalApiUrl: engineApi.url,
-                triggerConnectorName: '@fema/connector-webhook',
+                triggerConnectorName: '@fema-ipaas/connector-webhook',
                 workerHandlerId: 'test-handler-id',
                 httpRequestId: 'test-request-id',
             }),
@@ -87,7 +87,7 @@ describe('workflow waitpoint response propagation', () => {
     it('should not call sendWorkflowResponse when triggerConnectorName does not match', async () => {
         const action = buildConnectorAction({
             name: 'http',
-            connectorName: '@fema/connector-webhook',
+            connectorName: '@fema-ipaas/connector-webhook',
             actionName: 'return_response_and_wait_for_next_webhook',
             input: {
                 responseType: 'json',

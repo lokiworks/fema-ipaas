@@ -1,5 +1,5 @@
-import { ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil } from '@fema/core-utils'
-import { ApEnvironment, AuthenticationResponse, EndpointScope, PrincipalType, TelemetryEventName, TenantRole, User, UserIdentity, UserIdentityProvider, UserStatus, Workspace, WorkspaceType } from '@fema/shared'
+import { ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil } from '@fema-ipaas/core-utils'
+import { ApEnvironment, AuthenticationResponse, EndpointScope, PrincipalType, TelemetryEventName, TenantRole, User, UserIdentity, UserIdentityProvider, UserStatus, Workspace, WorkspaceType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyRequest } from 'fastify'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'

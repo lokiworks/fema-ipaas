@@ -50,7 +50,7 @@ async function prepareConnectorDistForPublish(connectorPath: string): Promise<vo
     console.info(`[prepareConnector] bundled ${connectorPath} → ${(bundleBytes / 1024).toFixed(0)} KB (${ratio}x smaller than ${(rawBytes / 1024).toFixed(0)} KB raw inputs)${extNote}${forkNote}`)
 }
 
-// The published artifact inlines @fema/* workspace code AND third-party deps into the
+// The published artifact inlines @fema-ipaas/* workspace code AND third-party deps into the
 // self-contained bundle by default. Only deps that cannot be safely inlined (native addons,
 // dynamic require) stay external and are kept here so the runtime installer resolves them.
 // A connector can force a dep external via bundleDeps in its package.json (escape hatch).

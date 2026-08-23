@@ -1,4 +1,4 @@
-import { TenantThemeColors } from '@fema/shared'
+import { TenantThemeColors } from '@fema-ipaas/shared'
 import tinycolor from 'tinycolor2'
 
 function generateColorVariations(defaultColor: string) {

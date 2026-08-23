@@ -1,5 +1,5 @@
-import { type ApLogger } from '@fema/server-utils'
-import { ExecutionMode, maxSocketHttpBufferSizeBytes, NetworkMode } from '@fema/shared'
+import { type ApLogger } from '@fema-ipaas/server-utils'
+import { ExecutionMode, maxSocketHttpBufferSizeBytes, NetworkMode } from '@fema-ipaas/shared'
 import { nanoid } from 'nanoid'
 import { cacheUtils } from './cache/cache-paths'
 import { sandboxCapacity } from './sandbox/capacity'

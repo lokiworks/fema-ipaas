@@ -27,7 +27,7 @@ import {
     RunEnvironment,
     StepOutputType,
     StreamStepProgress,
-} from '@fema/shared'
+} from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { worker } from '../../../../../../worker/src/lib/worker'
@@ -71,14 +71,14 @@ async function setupSubflowFixtures({ childAlwaysFails = false, retryOnFailure =
     const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
 
     const webhookConnector = createMockConnectorMetadata({
-        name: '@fema/connector-webhook',
+        name: '@fema-ipaas/connector-webhook',
         version: '0.1.29',
         tenantId: undefined,
         packageType: PackageType.REGISTRY,
         connectorType: ConnectorType.OFFICIAL,
     })
     const subflowsConnector = createMockConnectorMetadata({
-        name: '@fema/connector-subflows',
+        name: '@fema-ipaas/connector-subflows',
         version: '0.4.11',
         tenantId: undefined,
         packageType: PackageType.REGISTRY,
@@ -93,7 +93,7 @@ async function setupSubflowFixtures({ childAlwaysFails = false, retryOnFailure =
         displayName: 'Return Response',
         valid: true,
         settings: {
-            connectorName: '@fema/connector-subflows',
+            connectorName: '@fema-ipaas/connector-subflows',
             connectorVersion: '0.4.11',
             actionName: 'returnResponse',
             input: {
@@ -150,7 +150,7 @@ async function setupSubflowFixtures({ childAlwaysFails = false, retryOnFailure =
             valid: true,
             lastUpdatedDate: new Date().toISOString(),
             settings: {
-                connectorName: '@fema/connector-subflows',
+                connectorName: '@fema-ipaas/connector-subflows',
                 connectorVersion: '0.4.11',
                 triggerName: 'callableWorkflow',
                 input: {
@@ -179,7 +179,7 @@ async function setupSubflowFixtures({ childAlwaysFails = false, retryOnFailure =
         displayName: 'Call Workflow',
         valid: true,
         settings: {
-            connectorName: '@fema/connector-subflows',
+            connectorName: '@fema-ipaas/connector-subflows',
             connectorVersion: '0.4.11',
             actionName: 'callWorkflow',
             input: {
@@ -222,7 +222,7 @@ async function setupSubflowFixtures({ childAlwaysFails = false, retryOnFailure =
             valid: true,
             lastUpdatedDate: new Date().toISOString(),
             settings: {
-                connectorName: '@fema/connector-webhook',
+                connectorName: '@fema-ipaas/connector-webhook',
                 connectorVersion: '0.1.29',
                 triggerName: 'catch_webhook',
                 input: { authType: 'none' },
@@ -240,14 +240,14 @@ async function setupSubflowWithWebhookResponseFixtures() {
     const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
 
     const webhookConnector = createMockConnectorMetadata({
-        name: '@fema/connector-webhook',
+        name: '@fema-ipaas/connector-webhook',
         version: '0.1.29',
         tenantId: undefined,
         packageType: PackageType.REGISTRY,
         connectorType: ConnectorType.OFFICIAL,
     })
     const subflowsConnector = createMockConnectorMetadata({
-        name: '@fema/connector-subflows',
+        name: '@fema-ipaas/connector-subflows',
         version: '0.4.11',
         tenantId: undefined,
         packageType: PackageType.REGISTRY,
@@ -262,7 +262,7 @@ async function setupSubflowWithWebhookResponseFixtures() {
         displayName: 'Return Response',
         valid: true,
         settings: {
-            connectorName: '@fema/connector-subflows',
+            connectorName: '@fema-ipaas/connector-subflows',
             connectorVersion: '0.4.11',
             actionName: 'returnResponse',
             input: {
@@ -293,7 +293,7 @@ async function setupSubflowWithWebhookResponseFixtures() {
             displayName: 'Callable Workflow',
             valid: true,
             settings: {
-                connectorName: '@fema/connector-subflows',
+                connectorName: '@fema-ipaas/connector-subflows',
                 connectorVersion: '0.4.11',
                 triggerName: 'callableWorkflow',
                 input: {
@@ -322,7 +322,7 @@ async function setupSubflowWithWebhookResponseFixtures() {
         displayName: 'Return Response',
         valid: true,
         settings: {
-            connectorName: '@fema/connector-webhook',
+            connectorName: '@fema-ipaas/connector-webhook',
             connectorVersion: '0.1.29',
             actionName: 'return_response',
             input: {
@@ -345,7 +345,7 @@ async function setupSubflowWithWebhookResponseFixtures() {
         displayName: 'Call Workflow',
         valid: true,
         settings: {
-            connectorName: '@fema/connector-subflows',
+            connectorName: '@fema-ipaas/connector-subflows',
             connectorVersion: '0.4.11',
             actionName: 'callWorkflow',
             input: {
@@ -387,7 +387,7 @@ async function setupSubflowWithWebhookResponseFixtures() {
             valid: true,
             lastUpdatedDate: new Date().toISOString(),
             settings: {
-                connectorName: '@fema/connector-webhook',
+                connectorName: '@fema-ipaas/connector-webhook',
                 connectorVersion: '0.1.29',
                 triggerName: 'catch_webhook',
                 input: { authType: 'none' },
@@ -433,14 +433,14 @@ describe('Execute Workflow E2E', () => {
 
         // Save connector metadata records
         const webhookConnector = createMockConnectorMetadata({
-            name: '@fema/connector-webhook',
+            name: '@fema-ipaas/connector-webhook',
             version: '0.1.29',
             tenantId: undefined,
             packageType: PackageType.REGISTRY,
             connectorType: ConnectorType.OFFICIAL,
         })
         const dataMapperConnector = createMockConnectorMetadata({
-            name: '@fema/connector-data-mapper',
+            name: '@fema-ipaas/connector-data-mapper',
             version: '0.3.15',
             tenantId: undefined,
             packageType: PackageType.REGISTRY,
@@ -478,7 +478,7 @@ describe('Execute Workflow E2E', () => {
             displayName: 'Map Data',
             valid: true,
             settings: {
-                connectorName: '@fema/connector-data-mapper',
+                connectorName: '@fema-ipaas/connector-data-mapper',
                 connectorVersion: '0.3.15',
                 actionName: 'advanced_mapping',
                 input: {
@@ -508,7 +508,7 @@ describe('Execute Workflow E2E', () => {
                 valid: true,
                 lastUpdatedDate: new Date().toISOString(),
                 settings: {
-                    connectorName: '@fema/connector-webhook',
+                    connectorName: '@fema-ipaas/connector-webhook',
                     connectorVersion: '0.1.29',
                     triggerName: 'catch_webhook',
                     input: { authType: 'none' },
@@ -599,7 +599,7 @@ describe('Execute Workflow E2E', () => {
         expect(installResponse.statusCode, installResponse.body).toBe(StatusCodes.CREATED)
 
         const webhookConnector = createMockConnectorMetadata({
-            name: '@fema/connector-webhook',
+            name: '@fema-ipaas/connector-webhook',
             version: '0.1.29',
             tenantId: undefined,
             packageType: PackageType.REGISTRY,
@@ -635,7 +635,7 @@ describe('Execute Workflow E2E', () => {
                 valid: true,
                 lastUpdatedDate: new Date().toISOString(),
                 settings: {
-                    connectorName: '@fema/connector-webhook',
+                    connectorName: '@fema-ipaas/connector-webhook',
                     connectorVersion: '0.1.29',
                     triggerName: 'catch_webhook',
                     input: { authType: 'none' },
@@ -673,7 +673,7 @@ describe('Execute Workflow E2E', () => {
         const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
 
         const webhookConnector = createMockConnectorMetadata({
-            name: '@fema/connector-webhook',
+            name: '@fema-ipaas/connector-webhook',
             version: '0.1.29',
             tenantId: undefined,
             packageType: PackageType.REGISTRY,
@@ -713,7 +713,7 @@ describe('Execute Workflow E2E', () => {
                 valid: true,
                 lastUpdatedDate: new Date().toISOString(),
                 settings: {
-                    connectorName: '@fema/connector-webhook',
+                    connectorName: '@fema-ipaas/connector-webhook',
                     connectorVersion: '0.1.29',
                     triggerName: 'catch_webhook',
                     input: { authType: 'none' },
@@ -849,14 +849,14 @@ describe('Execute Workflow E2E', () => {
         const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
 
         const webhookConnector = createMockConnectorMetadata({
-            name: '@fema/connector-webhook',
+            name: '@fema-ipaas/connector-webhook',
             version: '0.1.29',
             tenantId: undefined,
             packageType: PackageType.REGISTRY,
             connectorType: ConnectorType.OFFICIAL,
         })
         const delayConnector = createMockConnectorMetadata({
-            name: '@fema/connector-delay',
+            name: '@fema-ipaas/connector-delay',
             version: '0.3.26',
             tenantId: undefined,
             packageType: PackageType.REGISTRY,
@@ -887,7 +887,7 @@ describe('Execute Workflow E2E', () => {
             displayName: 'Delay For',
             valid: true,
             settings: {
-                connectorName: '@fema/connector-delay',
+                connectorName: '@fema-ipaas/connector-delay',
                 connectorVersion: '0.3.26',
                 actionName: 'delayFor',
                 input: {
@@ -915,7 +915,7 @@ describe('Execute Workflow E2E', () => {
                 valid: true,
                 lastUpdatedDate: new Date().toISOString(),
                 settings: {
-                    connectorName: '@fema/connector-webhook',
+                    connectorName: '@fema-ipaas/connector-webhook',
                     connectorVersion: '0.1.29',
                     triggerName: 'catch_webhook',
                     input: { authType: 'none' },
@@ -952,14 +952,14 @@ describe('Execute Workflow E2E', () => {
         const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
 
         const webhookConnector = createMockConnectorMetadata({
-            name: '@fema/connector-webhook',
+            name: '@fema-ipaas/connector-webhook',
             version: '0.1.29',
             tenantId: undefined,
             packageType: PackageType.REGISTRY,
             connectorType: ConnectorType.OFFICIAL,
         })
         const delayConnector = createMockConnectorMetadata({
-            name: '@fema/connector-delay',
+            name: '@fema-ipaas/connector-delay',
             version: '0.3.26',
             tenantId: undefined,
             packageType: PackageType.REGISTRY,
@@ -993,7 +993,7 @@ describe('Execute Workflow E2E', () => {
             displayName: 'Delay For',
             valid: true,
             settings: {
-                connectorName: '@fema/connector-delay',
+                connectorName: '@fema-ipaas/connector-delay',
                 connectorVersion: '0.3.26',
                 actionName: 'delayFor',
                 input: {
@@ -1037,7 +1037,7 @@ describe('Execute Workflow E2E', () => {
                 valid: true,
                 lastUpdatedDate: new Date().toISOString(),
                 settings: {
-                    connectorName: '@fema/connector-webhook',
+                    connectorName: '@fema-ipaas/connector-webhook',
                     connectorVersion: '0.1.29',
                     triggerName: 'catch_webhook',
                     input: { authType: 'none' },

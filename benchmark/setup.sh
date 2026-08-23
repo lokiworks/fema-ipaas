@@ -22,7 +22,7 @@ done
 # Wait for webhook connector to be synced (connectors sync from cloud in batches)
 echo "Waiting for webhook connector to be available..." >&2
 for i in $(seq 1 300); do
-  HAS_WEBHOOK=$(curl -sf "$BASE_URL/connectors" 2>/dev/null | jq '[.[].name] | any(. == "@fema/connector-webhook")' 2>/dev/null || echo "false")
+  HAS_WEBHOOK=$(curl -sf "$BASE_URL/connectors" 2>/dev/null | jq '[.[].name] | any(. == "@fema-ipaas/connector-webhook")' 2>/dev/null || echo "false")
   if [ "$HAS_WEBHOOK" = "true" ]; then
     echo "Webhook connector is available (took ${i}s)" >&2
     break
@@ -137,7 +137,7 @@ IMPORT_PAYLOAD=$(jq -n \
         displayName: "Catch Webhook",
         type: "CONNECTOR_TRIGGER",
         settings: {
-          connectorName: "@fema/connector-webhook",
+          connectorName: "@fema-ipaas/connector-webhook",
           connectorVersion: $webhookV,
           triggerName: "catch_webhook",
           input: { authType: "none", authFields: {} },
@@ -157,7 +157,7 @@ IMPORT_PAYLOAD=$(jq -n \
           valid: true,
           settings: {
             input: { first_number: 2, second_number: 3 },
-            connectorName: "@fema/connector-math-helper",
+            connectorName: "@fema-ipaas/connector-math-helper",
             actionName: "addition_math",
             connectorVersion: $mathV,
             sampleData: {},
@@ -197,7 +197,7 @@ IMPORT_PAYLOAD=$(jq -n \
                   respond: "stop",
                   responseType: "json"
                 },
-                connectorName: "@fema/connector-webhook",
+                connectorName: "@fema-ipaas/connector-webhook",
                 actionName: "return_response",
                 sampleData: {},
                 connectorVersion: $webhookV,

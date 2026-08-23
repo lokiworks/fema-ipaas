@@ -1,5 +1,5 @@
-import { ApplicationError, ErrorCode } from '@fema/core-utils'
-import { OtpType, ResetPasswordRequestBody, UserIdentity, VerifyEmailRequestBody } from '@fema/shared'
+import { ApplicationError, ErrorCode } from '@fema-ipaas/core-utils'
+import { OtpType, ResetPasswordRequestBody, UserIdentity, VerifyEmailRequestBody } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'

@@ -1,4 +1,4 @@
-import type { ApId, TenantId, WorkspaceId } from '@fema/core-utils'
+import type { ApId, TenantId, WorkspaceId } from '@fema-ipaas/core-utils'
 import { PrincipalType } from './principal-type'
 
 export type WorkerPrincipal = {

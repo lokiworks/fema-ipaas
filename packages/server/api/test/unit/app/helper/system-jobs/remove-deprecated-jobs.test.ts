@@ -48,7 +48,7 @@ describe('removeDeprecatedJobs', () => {
         await seedQueue.add('usage-report', {}, { repeat: { pattern: '0 * * * *', tz: 'UTC' } })
         await seedQueue.upsertJobScheduler('trial-tracker', { pattern: '0 * * * *', tz: 'UTC' }, { name: 'trial-tracker', data: {} })
         await seedQueue.add('issue-reminder', {}, { jobId: 'issue-reminder-one-off', delay: 60_000 })
-        await seedQueue.add('bundle-connector', { name: '@fema/connector-slack', version: '1.0.0' }, { jobId: 'bundle-connector:@fema/connector-slack:1.0.0', delay: 60_000 })
+        await seedQueue.add('bundle-connector', { name: '@fema-ipaas/connector-slack', version: '1.0.0' }, { jobId: 'bundle-connector:@fema-ipaas/connector-slack:1.0.0', delay: 60_000 })
         await seedQueue.upsertJobScheduler(SystemJobName.CONNECTORS_ANALYTICS, { pattern: '0 * * * *', tz: 'UTC' }, { name: SystemJobName.CONNECTORS_ANALYTICS, data: {} })
 
         await systemJobsSchedule(log).init()

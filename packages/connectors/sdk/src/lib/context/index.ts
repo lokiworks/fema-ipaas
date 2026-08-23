@@ -9,9 +9,9 @@ import {
   DelayPauseMetadata,
   PauseMetadata,
   WebhookPauseMetadata,
-} from '@fema/connector-types';
-import type { SeekPage } from '@fema/core-utils';
-import type { ExecutionId, WorkspaceId } from '@fema/core-utils';
+} from '@fema-ipaas/connector-types';
+import type { SeekPage } from '@fema-ipaas/core-utils';
+import type { ExecutionId, WorkspaceId } from '@fema-ipaas/core-utils';
 import type { Readable } from 'node:stream'
 
 import {
@@ -24,7 +24,7 @@ import {
   StaticPropsValue,
 } from '../property';
 import { ConnectorAuthProperty } from '../property/authentication';
-import type { PopulatedWorkflowSummary } from '@fema/connector-types';
+import type { PopulatedWorkflowSummary } from '@fema-ipaas/connector-types';
 
 export type BaseContext<
   ConnectorAuth extends ConnectorAuthProperty | ConnectorAuthProperty[] | undefined,

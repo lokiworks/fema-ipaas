@@ -1,5 +1,5 @@
-import { apId, isNil } from '@fema/core-utils'
-import { DefaultWorkspaceRole, Principal, SigningKeyId } from '@fema/shared'
+import { apId, isNil } from '@fema-ipaas/core-utils'
+import { DefaultWorkspaceRole, Principal, SigningKeyId } from '@fema-ipaas/shared'
 import { faker } from '@faker-js/faker'
 import jwt, { Algorithm, JwtPayload, SignOptions } from 'jsonwebtoken'
 import {

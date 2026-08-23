@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { OptionalArrayFromQuery } from '@fema/core-utils'
-import { Cursor } from '@fema/core-utils'
+import { OptionalArrayFromQuery } from '@fema-ipaas/core-utils'
+import { Cursor } from '@fema-ipaas/core-utils'
 import { WorkflowStatus } from '../workflow'
 import { WorkflowVersionState } from '../workflow-version'
 

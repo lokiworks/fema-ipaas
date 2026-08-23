@@ -1,4 +1,4 @@
-import { apId } from '@fema/core-utils'
+import { apId } from '@fema-ipaas/core-utils'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import qs from 'qs'

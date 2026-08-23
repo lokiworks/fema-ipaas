@@ -11,10 +11,10 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "@fema/core-utils": [
+      "@fema-ipaas/core-utils": [
         "../utils/dist/index.d.ts"
       ],
-      "@fema/connector-types": [
+      "@fema-ipaas/connector-types": [
         "../connector-types/dist/index.d.ts"
       ]
     }

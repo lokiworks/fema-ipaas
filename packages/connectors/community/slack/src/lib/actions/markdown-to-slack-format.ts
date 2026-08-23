@@ -1,7 +1,7 @@
 import {
   createAction,
   Property,
-} from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-sdk';
 import slackifyMarkdown from 'slackify-markdown';
 
 export const markdownToSlackFormat = createAction({

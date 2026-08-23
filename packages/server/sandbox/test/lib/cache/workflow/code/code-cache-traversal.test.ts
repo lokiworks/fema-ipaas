@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { readdir, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path, { join } from 'node:path'
-import { ApplicationError, ErrorCode } from '@fema/core-utils'
+import { ApplicationError, ErrorCode } from '@fema-ipaas/core-utils'
 import { afterEach, describe, expect, it } from 'vitest'
 import { codeCache } from '../../../../../src/lib/cache/workflow/code/code-cache'
 

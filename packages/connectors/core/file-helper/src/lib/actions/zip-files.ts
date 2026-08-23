@@ -3,7 +3,7 @@ import {
   createAction,
   ApFile,
   ConnectorAuth,
-} from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-sdk';
 import {
   ZipWriter,
   BlobWriter,

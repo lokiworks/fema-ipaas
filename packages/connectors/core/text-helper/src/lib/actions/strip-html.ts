@@ -1,5 +1,5 @@
 import { stripHtml } from 'string-strip-html';
-import { createAction, Property } from '@fema/connector-sdk';
+import { createAction, Property } from '@fema-ipaas/connector-sdk';
 
 export const stripHtmlContent = createAction({
   audience: 'both',

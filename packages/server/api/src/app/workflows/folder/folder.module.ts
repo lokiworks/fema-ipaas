@@ -1,5 +1,5 @@
-import { Permission } from '@fema/core-utils'
-import { ApplicationEventName, CreateFolderRequest, DeleteFolderRequest, ListFolderRequest, PrincipalType, SERVICE_KEY_SECURITY_OPENAPI, UpdateFolderRequest } from '@fema/shared'
+import { Permission } from '@fema-ipaas/core-utils'
+import { ApplicationEventName, CreateFolderRequest, DeleteFolderRequest, ListFolderRequest, PrincipalType, SERVICE_KEY_SECURITY_OPENAPI, UpdateFolderRequest } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'

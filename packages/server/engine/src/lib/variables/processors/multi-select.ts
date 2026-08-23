@@ -1,4 +1,4 @@
-import { isNil, parseToJsonIfPossible } from '@fema/core-utils'
+import { isNil, parseToJsonIfPossible } from '@fema-ipaas/core-utils'
 import { ProcessorFn } from './types'
 
 export const multiSelectProcessor: ProcessorFn = (_property, value) => {

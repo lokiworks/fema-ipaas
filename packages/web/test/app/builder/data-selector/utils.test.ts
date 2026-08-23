@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 // Importing the data-selector utils pulls in `@/features/connectors` → `src/lib/api.ts`,
 // which reads `window.location.origin` at module load, so this suite needs a DOM.
-import { WorkflowAction, WorkflowActionType } from '@fema/shared';
+import { WorkflowAction, WorkflowActionType } from '@fema-ipaas/shared';
 import { describe, expect, it } from 'vitest';
 
 import { DataSelectorTreeNode } from '@/app/builder/data-selector/type';

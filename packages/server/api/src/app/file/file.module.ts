@@ -1,4 +1,4 @@
-import { FileType } from '@fema/shared'
+import { FileType } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { entitiesMustBeOwnedByCurrentWorkspace } from '../authentication/authorization'
 import { SystemJobName } from '../helper/system-jobs/common'

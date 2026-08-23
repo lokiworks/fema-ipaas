@@ -1,4 +1,4 @@
-import { isNil, Permission } from '@fema/core-utils';
+import { isNil, Permission } from '@fema-ipaas/core-utils';
 import { t } from 'i18next';
 import { Info } from 'lucide-react';
 

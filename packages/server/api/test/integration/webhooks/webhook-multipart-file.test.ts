@@ -1,4 +1,4 @@
-import { FileType, Workflow, WorkflowStatus, Workspace } from '@fema/shared'
+import { FileType, Workflow, WorkflowStatus, Workspace } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import FormData from 'form-data'
 import { StatusCodes } from 'http-status-codes'

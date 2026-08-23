@@ -1,4 +1,4 @@
-import { SsoDomainVerification } from '@fema/shared';
+import { SsoDomainVerification } from '@fema-ipaas/shared';
 
 import { api } from '@/lib/api';
 

@@ -1,4 +1,4 @@
-import { InvitationType, UserInvitation } from '@fema/shared';
+import { InvitationType, UserInvitation } from '@fema-ipaas/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 
 import { userInvitationApi } from '../api/user-invitation';

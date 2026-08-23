@@ -4,7 +4,7 @@ import {
   ExecutionType,
   Property,
   StoreScope,
-} from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-sdk';
 import * as YAML from 'yaml';
 import { githubAuth } from '../auth';
 import {
@@ -15,7 +15,7 @@ import {
   githubCommon,
   RepositoryProp,
 } from '../common';
-import { HttpMethod } from '@fema/connector-common';
+import { HttpMethod } from '@fema-ipaas/connector-common';
 import { GithubAuthValue } from '../common/auth-helpers';
 
 const WORKFLOW_DISPATCH_NOTE = `**Requirements**

@@ -3,8 +3,8 @@ import {
   ConnectorMetadataModelSummary,
   PropertyType,
   ExecutePropsResult,
-} from '@fema/connector-sdk';
-import { LocalesEnum } from '@fema/core-utils';
+} from '@fema-ipaas/connector-sdk';
+import { LocalesEnum } from '@fema-ipaas/core-utils';
 import {
   AddConnectorRequestBody,
   WorkflowActionType,
@@ -15,7 +15,7 @@ import {
   ApFlagId,
   ApEnvironment,
   TelemetryEventName,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import {
   QueryClient,
   useMutation,

@@ -1,5 +1,5 @@
-import { ApplicationError, ErrorCode, isNil, Permission, WorkspaceRole } from '@fema/core-utils'
-import { ApiToWorkerContract, createNotifyClient, Principal, PrincipalForType, PrincipalType, WebsocketServerEvent } from '@fema/shared'
+import { ApplicationError, ErrorCode, isNil, Permission, WorkspaceRole } from '@fema-ipaas/core-utils'
+import { ApiToWorkerContract, createNotifyClient, Principal, PrincipalForType, PrincipalType, WebsocketServerEvent } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { Socket } from 'socket.io'
 import { accessTokenManager } from '../authentication/lib/access-token-manager'

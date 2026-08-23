@@ -1,4 +1,4 @@
-import { OutputSchema } from '@fema/connector-sdk';
+import { OutputSchema } from '@fema-ipaas/connector-sdk';
 
 // Every action returns a bare number, so each schema is a single whole-output
 // field: value: '' resolves to the entire step output and adds no path segment.

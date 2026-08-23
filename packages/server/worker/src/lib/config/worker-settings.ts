@@ -1,5 +1,5 @@
-import { assertNotNullOrUndefined } from '@fema/core-utils'
-import { WorkerSettingsResponse } from '@fema/shared'
+import { assertNotNullOrUndefined } from '@fema-ipaas/core-utils'
+import { WorkerSettingsResponse } from '@fema-ipaas/shared'
 
 let settings: WorkerSettingsResponse | undefined
 let settingsResolver: (() => void) | null = null

@@ -1,4 +1,4 @@
-import { createAction } from '@fema/connector-sdk';
+import { createAction } from '@fema-ipaas/connector-sdk';
 import { slackAuth } from '../auth';
 import { findUserByHandleAction } from './find-user-by-handle';
 import { findUserByHandleActionOutputSchema } from '../output-schemas';

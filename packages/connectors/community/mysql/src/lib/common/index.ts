@@ -3,7 +3,7 @@ import {
   ConnectorPropValueSchema,
   Property,
   StaticPropsValue,
-} from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-sdk';
 import { Connection, createConnection } from 'promise-mysql';
 import { mysqlAuth } from '../..';
 import sqlstring from 'sqlstring';

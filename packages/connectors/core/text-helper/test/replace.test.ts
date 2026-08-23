@@ -1,7 +1,7 @@
 /// <reference types="vitest/globals" />
 
 import { replace } from '../src/lib/actions/replace';
-import { createMockActionContext } from '@fema/connector-sdk';
+import { createMockActionContext } from '@fema-ipaas/connector-sdk';
 
 describe('replace action', () => {
   test('replaces all occurrences by default', async () => {

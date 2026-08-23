@@ -1,5 +1,5 @@
-import { isNil } from '@fema/core-utils'
-import { JobData, PollingJobData, RenewWebhookJobData, WorkerJobType } from '@fema/shared'
+import { isNil } from '@fema-ipaas/core-utils'
+import { JobData, PollingJobData, RenewWebhookJobData, WorkerJobType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { triggerSourceRepo } from '../../../trigger/trigger-source/trigger-source-service'
 import { InterceptorResult, InterceptorVerdict, JobInterceptor } from '../job-interceptor'

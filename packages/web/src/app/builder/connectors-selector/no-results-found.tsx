@@ -1,4 +1,4 @@
-import { ApFlagId, feedbackUrl } from '@fema/shared';
+import { ApFlagId, feedbackUrl } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { MessageSquarePlusIcon, SearchXIcon } from 'lucide-react';
 

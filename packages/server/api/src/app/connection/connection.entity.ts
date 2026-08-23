@@ -3,7 +3,7 @@ import {
     ConnectionStatus,
     User,
     UserIdentity,
-} from '@fema/shared'
+} from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import {
     BaseColumnSchemaPart,

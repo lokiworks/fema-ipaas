@@ -1,5 +1,5 @@
-import { isNil, Permission, tryCatch } from '@fema/core-utils';
-import { TenantRole, WorkspaceType } from '@fema/shared';
+import { isNil, Permission, tryCatch } from '@fema-ipaas/core-utils';
+import { TenantRole, WorkspaceType } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { Settings } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';

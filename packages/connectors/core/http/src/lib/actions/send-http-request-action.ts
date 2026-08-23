@@ -6,15 +6,15 @@ import {
   QueryParams,
   AuthenticationType,
   toFailsafeOutput,
-} from '@fema/connector-common';
+} from '@fema-ipaas/connector-common';
 import {
   ApFile,
   createAction,
   DynamicPropsValue,
   ConnectorAuth,
   Property,
-} from '@fema/connector-sdk';
-import { assertNotNullOrUndefined, isEmpty } from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-sdk';
+import { assertNotNullOrUndefined, isEmpty } from '@fema-ipaas/connector-sdk';
 import FormData from 'form-data';
 import { httpMethodDropdown } from '../common/props';
 import { ProxyAgent } from 'undici';

@@ -5,8 +5,8 @@ import { buildPackage, findConnector, findConnectors } from '../utils/connector-
 import { makeFolderRecursive, readPackageJson } from '../utils/files';
 import { join } from 'node:path';
 import { exec } from '../utils/exec';
-import { connectorTranslation } from '@fema/connector-sdk';
-import { MAX_KEY_LENGTH_FOR_CORWDIN } from '@fema/shared';
+import { connectorTranslation } from '@fema-ipaas/connector-sdk';
+import { MAX_KEY_LENGTH_FOR_CORWDIN } from '@fema-ipaas/shared';
 
 const findConnectorInModule= async (connectorOutputFile: string) => {
     const module = await import(connectorOutputFile);

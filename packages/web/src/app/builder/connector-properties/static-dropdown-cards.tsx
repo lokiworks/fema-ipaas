@@ -1,4 +1,4 @@
-import { DropdownOption } from '@fema/connector-sdk';
+import { DropdownOption } from '@fema-ipaas/connector-sdk';
 import React from 'react';
 
 import { cn } from '@/lib/utils';

@@ -1,5 +1,5 @@
-import { TriggerStrategy } from '@fema/connector-sdk';
-import { createTrigger, Property } from '@fema/connector-sdk';
+import { TriggerStrategy } from '@fema-ipaas/connector-sdk';
+import { createTrigger, Property } from '@fema-ipaas/connector-sdk';
 import {
   DAY_HOURS,
   validateWeekDays,

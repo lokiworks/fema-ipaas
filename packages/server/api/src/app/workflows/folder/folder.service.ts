@@ -1,5 +1,5 @@
-import { apId, ApplicationError, Cursor, ErrorCode, isNil, SeekPage, WorkspaceId } from '@fema/core-utils'
-import { CreateFolderRequest, Folder, FolderDto, FolderId, UpdateFolderRequest } from '@fema/shared'
+import { apId, ApplicationError, Cursor, ErrorCode, isNil, SeekPage, WorkspaceId } from '@fema-ipaas/core-utils'
+import { CreateFolderRequest, Folder, FolderDto, FolderId, UpdateFolderRequest } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { repoFactory } from '../../core/db/repo-factory'
 import { buildPaginator } from '../../helper/pagination/build-paginator'

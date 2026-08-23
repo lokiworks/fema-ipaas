@@ -1,4 +1,4 @@
-import { EngineGenericError, ExecutionError, FetchError, VariableNotFoundError } from '@fema/shared'
+import { EngineGenericError, ExecutionError, FetchError, VariableNotFoundError } from '@fema-ipaas/shared'
 import { retryFetch } from '../api/retry-fetch'
 import { utils } from '../utils'
 

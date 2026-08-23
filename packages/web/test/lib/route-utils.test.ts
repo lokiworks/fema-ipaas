@@ -1,4 +1,4 @@
-import { Permission } from '@fema/core-utils';
+import { Permission } from '@fema-ipaas/core-utils';
 import { describe, expect, it, vi } from 'vitest';
 
 import { determineDefaultRoute } from '@/lib/route-utils';

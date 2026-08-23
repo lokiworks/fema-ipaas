@@ -1,5 +1,9 @@
-import { isNil } from '@fema/core-utils';
-import { AuthenticationResponse, Principal, PrincipalType } from '@fema/shared';
+import { isNil } from '@fema-ipaas/core-utils';
+import {
+  AuthenticationResponse,
+  Principal,
+  PrincipalType,
+} from '@fema-ipaas/shared';
 import dayjs from 'dayjs';
 import { jwtDecode } from 'jwt-decode';
 

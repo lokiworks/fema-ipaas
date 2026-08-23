@@ -1,10 +1,10 @@
-import { Permission, isNil } from '@fema/core-utils';
+import { Permission, isNil } from '@fema-ipaas/core-utils';
 import {
   ExecutionStatus,
   WebsocketClientEvent,
   RunEnvironment,
   isExecutionStateTerminal,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useReactFlow } from '@xyflow/react';
 import { t } from 'i18next';

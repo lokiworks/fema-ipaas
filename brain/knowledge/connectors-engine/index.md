@@ -8,7 +8,7 @@ How the connector catalog, visibility, formulas, workers, and AI agents fit toge
 
 ### Connectors
 
-Metadata catalog of integrations (`@fema/connector-*`), served from an in-memory `connectorCache` rebuilt from the `connector_metadata` table and refreshed via pub/sub.
+Metadata catalog of integrations (`@fema-ipaas/connector-*`), served from an in-memory `connectorCache` rebuilt from the `connector_metadata` table and refreshed via pub/sub.
 
 - **Entities/services**: `connector_metadata` (unique on name+version+platformId; `null` platformId = official, set = custom); `connectorMetadataService` (list/get/create/delete + cache), `connectorInstallService` (upload/NPM install → `EXECUTE_METADATA` engine job), `connectorSyncService` (bundled registry → DB).
 - **Gotchas**: routes under `/v1/connectors`; install/delete are `platformAdminOnly`; `options` runs dynamic prop eval on a worker. Per-connector/action visibility (EE/Cloud) resolved at read time by `resolveVisibility` → returns `null` on CE. Optional per-action `outputSchema` drives the builder's Smart Output Viewer (opt-in, non-breaking).
@@ -25,11 +25,11 @@ Named, reusable connector/action/trigger visibility config a platform admin assi
 User-facing data transforms (81+ functions) inside any builder text input via a `/` slash editor; saved inline as `ap-formula-v1::{<expr>}::ap-formula-v1` so they round-trip through workflow JSON.
 
 - **Where**: shared lib `packages/core/shared/src/lib/formula/` (`FEMA_FUNCTIONS` registry is the single source of truth; `formulaEvaluator.evaluate`, type checker). Editor is the TipTap `text-input-with-mentions`. Runtime hooks in the engine's `props-resolver.ts` pre-pass.
-- **Gotchas**: no HTTP endpoints, no DB tables, no worker job — evaluation is synchronous in the engine. Runs on **every** edition, unconditionally (even if the editor flag is off, saved formulas still evaluate). Uses `expr-eval`; preprocess normalizes `;`→`,`, `and/or/not`, and rewrites `if()` to lazy ternary. Changing a function = bump `@fema/shared` minor; never hard-remove a function (mark `deprecated`).
+- **Gotchas**: no HTTP endpoints, no DB tables, no worker job — evaluation is synchronous in the engine. Runs on **every** edition, unconditionally (even if the editor flag is off, saved formulas still evaluate). Uses `expr-eval`; preprocess normalizes `;`→`,`, `and/or/not`, and rewrites `if()` to lazy ternary. Changing a function = bump `@fema-ipaas/shared` minor; never hard-remove a function (mark `deprecated`).
 
 ### Nothing typechecks the engine
 
-`@fema/engine`'s `build` is esbuild (`esbuild.config.mjs`, types stripped, never checked) and its `lint` is eslint only — no `tsc --noEmit` in `turbo.json` or any CI workflow. So type errors ship silently: as of Jul 2026 `npx tsc -p tsconfig.lib.json --noEmit` reports errors in `api/engine-file-api.ts`, `api/engine-run-api.ts`, `network/dns-lookup-guard.ts`, `connector-context/workflows.ts`, `variables/props-processor.ts` on a clean `main`.
+`@fema-ipaas/engine`'s `build` is esbuild (`esbuild.config.mjs`, types stripped, never checked) and its `lint` is eslint only — no `tsc --noEmit` in `turbo.json` or any CI workflow. So type errors ship silently: as of Jul 2026 `npx tsc -p tsconfig.lib.json --noEmit` reports errors in `api/engine-file-api.ts`, `api/engine-run-api.ts`, `network/dns-lookup-guard.ts`, `connector-context/workflows.ts`, `variables/props-processor.ts` on a clean `main`.
 
 - Run tsc yourself before/after an engine change and **diff the file list** rather than expecting zero — a green run is not the baseline.
 - Engine tests only run correctly from the package dir (`cd packages/server/engine && npx vitest run`); from the repo root the root config applies and every file fails collection with `describe is not defined`.
@@ -66,7 +66,7 @@ Node processes that poll the app over Socket.IO and execute workflows. The worke
 
 ### AI Agents (gated by `agentsEnabled`)
 
-A workflow step type (`@fema/connector-agent`) running a ReAct-style LLM loop (up to `maxSteps`) that can call tools before producing a final answer. **No backend entity** — config lives in the workflow version's step settings.
+A workflow step type (`@fema-ipaas/connector-agent`) running a ReAct-style LLM loop (up to `maxSteps`) that can call tools before producing a final answer. **No backend entity** — config lives in the workflow version's step settings.
 
 - **Tools** (`AgentTool` union): CONNECTOR action, WORKFLOW (child run), MCP server, KNOWLEDGE_BASE (semantic search on 768-dim embeddings). Config: `agentTools`, `structuredOutput`, `prompt`, `maxSteps`, `aiProviderModel`, optional web search.
 - **Gotchas**: external MCP tools validated server-side via `POST /v1/projects/:projectId/agent-tools/mcp/validate` (initialize→initialized→tools/list handshake) through SSRF-filtered `apAxios`; errors collapse to one generic message. Lives under `agents/` (agent connecting *out*), distinct from `mcp/` (exposing AP *as* an MCP server). `AgentTimeline` renders step blocks in the builder.

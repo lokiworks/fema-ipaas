@@ -1,4 +1,4 @@
-import { WorkflowVersionTemplate } from '@fema/shared';
+import { WorkflowVersionTemplate } from '@fema-ipaas/shared';
 import { Workflow } from 'lucide-react';
 
 import { Card, CardContent } from '@/components/ui/card';

@@ -1,4 +1,4 @@
-import { ApId, BaseModel } from '@fema/core-utils'
+import { ApId, BaseModel } from '@fema-ipaas/core-utils'
 
 export type FlagId = ApId
 

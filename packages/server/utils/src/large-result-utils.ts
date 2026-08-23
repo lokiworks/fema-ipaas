@@ -1,4 +1,4 @@
-import { isObject } from '@fema/core-utils'
+import { isObject } from '@fema-ipaas/core-utils'
 
 // Squeezes long strings before dropping array items, because in a tool output the bulk is almost
 // always a few oversized strings (an email body, an HTML page, a base64 part) while the items are

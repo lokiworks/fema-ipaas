@@ -1,7 +1,7 @@
 /// <reference types="vitest/globals" />
 
 import { formatDateAction } from '../src/lib/actions/format-date';
-import { createMockActionContext } from '@fema/connector-sdk';
+import { createMockActionContext } from '@fema-ipaas/connector-sdk';
 
 describe('formatDateAction', () => {
   test('converts between formats', async () => {

@@ -1,4 +1,4 @@
-import { PresenceRequest, PrincipalType, WebsocketClientEvent, WebsocketServerEvent } from '@fema/shared'
+import { PresenceRequest, PrincipalType, WebsocketClientEvent, WebsocketServerEvent } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { userService } from '../../../user/user-service'

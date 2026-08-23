@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { Metadata } from '@fema/core-utils'
+import { Metadata } from '@fema-ipaas/core-utils'
 
 export const CreateWorkflowRequest = z.object({
     displayName: z.string(),

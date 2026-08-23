@@ -3,7 +3,7 @@ import {
   WorkflowActionType,
   workflowStructureUtil,
   ConnectorCategory,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { useQueries } from '@tanstack/react-query';
 import { useMemo } from 'react';
 

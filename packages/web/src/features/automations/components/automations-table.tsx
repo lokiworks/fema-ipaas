@@ -1,4 +1,4 @@
-import { FolderDto, PopulatedWorkflow } from '@fema/shared';
+import { FolderDto, PopulatedWorkflow } from '@fema-ipaas/shared';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import { t } from 'i18next';
 import { Activity, Clock, Info, Type, User } from 'lucide-react';

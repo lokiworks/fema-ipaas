@@ -1,5 +1,5 @@
-import { ApplicationError, ErrorCode } from '@fema/core-utils'
-import { parseError, wideEvent } from '@fema/server-utils'
+import { ApplicationError, ErrorCode } from '@fema-ipaas/core-utils'
+import { parseError, wideEvent } from '@fema-ipaas/server-utils'
 import { FastifyError, FastifyReply, FastifyRequest } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { exceptionHandler } from './exception-handler'

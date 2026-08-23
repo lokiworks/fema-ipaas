@@ -67,10 +67,10 @@ const scaffoldConnector = async (
     main: './dist/src/index.js',
     types: './dist/src/index.d.ts',
     dependencies: {
-      '@fema/connector-common': 'workspace:*',
-      '@fema/connector-sdk': 'workspace:*',
-      '@fema/connector-types': 'workspace:*',
-      '@fema/core-utils': 'workspace:*',
+      '@fema-ipaas/connector-common': 'workspace:*',
+      '@fema-ipaas/connector-sdk': 'workspace:*',
+      '@fema-ipaas/connector-types': 'workspace:*',
+      '@fema-ipaas/core-utils': 'workspace:*',
     },
     devDependencies: {
       tslib: '2.6.2',
@@ -142,10 +142,10 @@ const scaffoldConnector = async (
               patterns: [
                 'lodash',
                 'lodash/*',
-                '@fema/core-*',
-                '@fema/server*',
-                '@fema/engine',
-                '@fema/shared',
+                '@fema-ipaas/core-*',
+                '@fema-ipaas/server*',
+                '@fema-ipaas/engine',
+                '@fema-ipaas/shared',
               ],
             },
           ],
@@ -170,7 +170,7 @@ const scaffoldConnector = async (
     })
     .join('');
 
-  const indexTemplate = `import { createConnector, ConnectorAuth } from '@fema/connector-sdk';
+  const indexTemplate = `import { createConnector, ConnectorAuth } from '@fema-ipaas/connector-sdk';
 
 export const ${connectorNameCamelCase} = createConnector({
   displayName: '${capitalizeFirstLetter(connectorName)}',
@@ -218,7 +218,7 @@ export const createConnectorCommand = new Command('create')
         name: 'packageName',
         message: 'Enter the package name:',
         default: (answers: Record<string, string>) =>
-          `@fema/connector-${answers.connectorName}`,
+          `@fema-ipaas/connector-${answers.connectorName}`,
         when: (answers: Record<string, string>) =>
           answers.connectorName !== undefined,
       },

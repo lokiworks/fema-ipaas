@@ -4,7 +4,7 @@ import {
   WorkflowOperationType,
   workflowStructureUtil,
   StepLocationRelativeToParent,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import {
   ArrowLeftRight,

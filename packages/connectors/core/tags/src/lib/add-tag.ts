@@ -1,4 +1,4 @@
-import { Property, createAction } from '@fema/connector-sdk';
+import { Property, createAction } from '@fema-ipaas/connector-sdk';
 
 const markdown = `
 This action add a tag to the current execution, this tag can be used to filter the execution in the **API** only at this moment.

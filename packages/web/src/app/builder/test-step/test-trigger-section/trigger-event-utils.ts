@@ -1,5 +1,5 @@
-import { TriggerBase, TriggerStrategy } from '@fema/connector-sdk';
-import { TriggerTestStrategy } from '@fema/shared';
+import { TriggerBase, TriggerStrategy } from '@fema-ipaas/connector-sdk';
+import { TriggerTestStrategy } from '@fema-ipaas/shared';
 
 import { connectorSelectorUtils } from '@/features/connectors';
 
@@ -27,7 +27,7 @@ export const triggerEventUtils = {
       return 'chat-trigger';
     }
     if (
-      connectorName === '@fema/connector-webhook' &&
+      connectorName === '@fema-ipaas/connector-webhook' &&
       triggerName === 'catch_webhook'
     ) {
       return 'webhook';

@@ -1,7 +1,7 @@
 import {
   ConnectionWithoutSensitiveData,
   ListGlobalConnectionsRequestQuery,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { UseFormReturn } from 'react-hook-form';

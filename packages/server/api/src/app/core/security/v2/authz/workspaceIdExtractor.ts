@@ -1,4 +1,4 @@
-import { ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil, isObject } from '@fema/core-utils'
+import { ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil, isObject } from '@fema-ipaas/core-utils'
 import { FastifyRequest } from 'fastify'
 import { databaseConnection } from '../../../../database/database-connection'
 import { EntitySourceType, WorkspaceBodyResource, WorkspaceParamResource, WorkspaceQueryResource, WorkspaceTableResource } from '../../authorization/common'

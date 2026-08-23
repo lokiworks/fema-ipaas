@@ -1,7 +1,7 @@
 /// <reference types="vitest/globals" />
 
 import { defaultValue } from '../src/lib/actions/default-value';
-import { createMockActionContext } from '@fema/connector-sdk';
+import { createMockActionContext } from '@fema-ipaas/connector-sdk';
 
 describe('defaultValue action', () => {
   test('returns value when not empty', async () => {

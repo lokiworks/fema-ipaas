@@ -1,5 +1,5 @@
-import { isNil } from '@fema/core-utils';
-import { WorkflowActionType, WorkflowOperationType } from '@fema/shared';
+import { isNil } from '@fema-ipaas/core-utils';
+import { WorkflowActionType, WorkflowOperationType } from '@fema-ipaas/shared';
 
 import { CardList, CardListItemSkeleton } from '@/components/custom/card-list';
 import {
@@ -16,33 +16,33 @@ import GenericActionOrTriggerItem from './generic-connector-selector-item';
 
 const APPROVAL_CONNECTORS_CONFIG = [
   {
-    connectorName: '@fema/connector-slack',
+    connectorName: '@fema-ipaas/connector-slack',
     approvalActionNames: [
       'request_approval_message',
       'request_approval_direct_message',
     ],
   },
   {
-    connectorName: '@fema/connector-discord',
+    connectorName: '@fema-ipaas/connector-discord',
     approvalActionNames: ['request_approval_message'],
   },
   {
-    connectorName: '@fema/connector-microsoft-teams',
+    connectorName: '@fema-ipaas/connector-microsoft-teams',
     approvalActionNames: [
       'request_approval_direct_message',
       'request_approval_in_channel',
     ],
   },
   {
-    connectorName: '@fema/connector-microsoft-outlook',
+    connectorName: '@fema-ipaas/connector-microsoft-outlook',
     approvalActionNames: ['request_approval_in_mail'],
   },
   {
-    connectorName: '@fema/connector-gmail',
+    connectorName: '@fema-ipaas/connector-gmail',
     approvalActionNames: ['request_approval_in_mail'],
   },
   {
-    connectorName: '@fema/connector-telegram-bot',
+    connectorName: '@fema-ipaas/connector-telegram-bot',
     approvalActionNames: ['request_approval_message'],
   },
 ];

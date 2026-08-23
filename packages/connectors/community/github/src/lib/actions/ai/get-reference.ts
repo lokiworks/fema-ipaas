@@ -1,7 +1,7 @@
-import { createAction, Property } from '@fema/connector-sdk';
+import { createAction, Property } from '@fema-ipaas/connector-sdk';
 import { githubAuth } from '../../auth';
 import { githubApiCall } from '../../common';
-import { HttpMethod } from '@fema/connector-common';
+import { HttpMethod } from '@fema-ipaas/connector-common';
 import { ownerProp, repoProp, githubError } from './common';
 import { gitRefBodyOutputSchema } from '../../output-schemas';
 

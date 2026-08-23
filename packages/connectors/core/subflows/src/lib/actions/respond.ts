@@ -1,7 +1,7 @@
-import { DynamicPropsValue, ConnectorAuth, Property, StoreScope, createAction } from '@fema/connector-sdk';
+import { DynamicPropsValue, ConnectorAuth, Property, StoreScope, createAction } from '@fema-ipaas/connector-sdk';
 import { callableWorkflowKey, CallableWorkflowResponse, MOCK_CALLBACK_IN_TEST_WORKFLOW_URL } from '../common';
-import { httpClient, HttpMethod } from '@fema/connector-common';
-import { isNil } from '@fema/connector-sdk';
+import { httpClient, HttpMethod } from '@fema-ipaas/connector-common';
+import { isNil } from '@fema-ipaas/connector-sdk';
 
 export const response = createAction({
   audience: 'both',

@@ -1,9 +1,9 @@
 import { sftpAuth } from '../auth';
 import { endClient, getClient, getProtocolBackwardCompatibility } from '../common';
-import { Property, createAction } from '@fema/connector-sdk';
+import { Property, createAction } from '@fema-ipaas/connector-sdk';
 import Client from 'ssh2-sftp-client';
 import { Client as FTPClient, FTPError } from 'basic-ftp';
-import { MarkdownVariant } from '@fema/connector-sdk';
+import { MarkdownVariant } from '@fema-ipaas/connector-sdk';
 import { getSftpError } from './common';
 
 async function renameFTP(client: FTPClient, oldPath: string, newPath: string) {

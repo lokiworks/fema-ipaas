@@ -12,13 +12,13 @@ process.env.FEMA_TEST_MODE = 'true'
 process.env.FEMA_DEV_CONNECTORS = 'http,data-mapper,approval,webhook,delay'
 
 const alias = {
-  '@fema/shared': path.resolve(__dirname, '../../core/shared/src/index.ts'),
-  '@fema/connector-sdk': path.resolve(__dirname, '../../connectors/sdk/src/index.ts'),
-  '@fema/connector-common': path.resolve(__dirname, '../../connectors/common/src/index.ts'),
-  '@fema/expression': path.resolve(__dirname, '../../core/formula/src/index.ts'),
-  '@fema/connector-types': path.resolve(__dirname, '../../core/connector-types/src/index.ts'),
-  '@fema/core-utils': path.resolve(__dirname, '../../core/utils/src/index.ts'),
-  '@fema/workflow-core': path.resolve(__dirname, '../../core/execution/src/index.ts'),
+  '@fema-ipaas/shared': path.resolve(__dirname, '../../core/shared/src/index.ts'),
+  '@fema-ipaas/connector-sdk': path.resolve(__dirname, '../../connectors/sdk/src/index.ts'),
+  '@fema-ipaas/connector-common': path.resolve(__dirname, '../../connectors/common/src/index.ts'),
+  '@fema-ipaas/expression': path.resolve(__dirname, '../../core/formula/src/index.ts'),
+  '@fema-ipaas/connector-types': path.resolve(__dirname, '../../core/connector-types/src/index.ts'),
+  '@fema-ipaas/core-utils': path.resolve(__dirname, '../../core/utils/src/index.ts'),
+  '@fema-ipaas/workflow-core': path.resolve(__dirname, '../../core/execution/src/index.ts'),
 }
 
 const connectorChildEntry = path.resolve(__dirname, '../../../dist/packages/engine-test/connector-child.js')

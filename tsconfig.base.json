@@ -20,122 +20,128 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@fema/core-utils": [
+      "@fema-ipaas/core-utils": [
         "packages/core/utils/src/index.ts"
       ],
-      "@fema/expression": [
+      "@fema-ipaas/expression": [
         "packages/core/formula/src/index.ts"
       ],
-      "@fema/connector-types": [
+      "@fema-ipaas/connector-types": [
         "packages/core/connector-types/src/index.ts"
       ],
-      "@fema/workflow-core": [
+      "@fema-ipaas/workflow-core": [
         "packages/core/execution/src/index.ts"
       ],
-      "@fema/engine": [
+      "@fema-ipaas/engine": [
         "packages/server/engine/src/main.ts"
       ],
-      "@fema/connector-approval": [
+      "@fema-ipaas/connector-approval": [
         "packages/connectors/core/approval/src/index.ts"
       ],
-      "@fema/connector-connections": [
+      "@fema-ipaas/connector-connections": [
         "packages/connectors/core/connections/src/index.ts"
       ],
-      "@fema/connector-crypto": [
+      "@fema-ipaas/connector-crypto": [
         "packages/connectors/core/crypto/src/index.ts"
       ],
-      "@fema/connector-csv": [
+      "@fema-ipaas/connector-csv": [
         "packages/connectors/core/csv/src/index.ts"
       ],
-      "@fema/connector-data-mapper": [
+      "@fema-ipaas/connector-data-mapper": [
         "packages/connectors/core/data-mapper/src/index.ts"
       ],
-      "@fema/connector-data-summarizer": [
+      "@fema-ipaas/connector-data-summarizer": [
         "packages/connectors/core/data-summarizer/src/index.ts"
       ],
-      "@fema/connector-date-helper": [
+      "@fema-ipaas/connector-date-helper": [
         "packages/connectors/core/date-helper/src/index.ts"
       ],
-      "@fema/connector-delay": [
+      "@fema-ipaas/connector-delay": [
         "packages/connectors/core/delay/src/index.ts"
       ],
-      "@fema/connector-file-helper": [
+      "@fema-ipaas/connector-file-helper": [
         "packages/connectors/core/file-helper/src/index.ts"
       ],
-      "@fema/connector-forms": [
+      "@fema-ipaas/connector-forms": [
         "packages/connectors/core/forms/src/index.ts"
       ],
-      "@fema/connector-github": [
+      "@fema-ipaas/connector-github": [
         "packages/connectors/community/github/src/index.ts"
       ],
-      "@fema/connector-http": [
+      "@fema-ipaas/connector-http": [
         "packages/connectors/core/http/src/index.ts"
       ],
-      "@fema/connector-math-helper": [
+      "@fema-ipaas/connector-math-helper": [
         "packages/connectors/core/math-helper/src/index.ts"
       ],
-      "@fema/connector-mysql": [
+      "@fema-ipaas/connector-mysql": [
         "packages/connectors/community/mysql/src/index.ts"
       ],
-      "@fema/connector-postgres": [
+      "@fema-ipaas/connector-postgres": [
         "packages/connectors/community/postgres/src/index.ts"
       ],
-      "@fema/connector-rabbitmq": [
+      "@fema-ipaas/connector-rabbitmq": [
         "packages/connectors/community/rabbitmq/src/index.ts"
       ],
-      "@fema/connector-schedule": [
+      "@fema-ipaas/connector-schedule": [
         "packages/connectors/core/schedule/src/index.ts"
       ],
-      "@fema/connector-sftp": [
+      "@fema-ipaas/connector-sftp": [
         "packages/connectors/core/sftp/src/index.ts"
       ],
-      "@fema/connector-slack": [
+      "@fema-ipaas/connector-slack": [
         "packages/connectors/community/slack/src/index.ts"
       ],
-      "@fema/connector-smtp": [
+      "@fema-ipaas/connector-smtp": [
         "packages/connectors/core/smtp/src/index.ts"
       ],
-      "@fema/connector-store": [
+      "@fema-ipaas/connector-store": [
         "packages/connectors/core/store/src/index.ts"
       ],
-      "@fema/connector-subflows": [
+      "@fema-ipaas/connector-subflows": [
         "packages/connectors/core/subflows/src/index.ts"
       ],
-      "@fema/connector-tags": [
+      "@fema-ipaas/connector-tags": [
         "packages/connectors/core/tags/src/index.ts"
       ],
-      "@fema/connector-text-helper": [
+      "@fema-ipaas/connector-text-helper": [
         "packages/connectors/core/text-helper/src/index.ts"
       ],
-      "@fema/connector-webhook": [
+      "@fema-ipaas/connector-webhook": [
         "packages/connectors/core/webhook/src/index.ts"
       ],
-      "@fema/connector-xml": [
+      "@fema-ipaas/connector-xml": [
         "packages/connectors/core/xml/src/index.ts"
       ],
-      "@fema/ai-providers": [
+      "@fema-ipaas/ai-providers": [
         "packages/core/ai-providers/src/index.ts"
       ],
-      "@fema/connector-common": [
+      "@fema-ipaas/connector-common": [
         "packages/connectors/common/src/index.ts"
       ],
-      "@fema/connector-sdk": [
+      "@fema-ipaas/connector-sdk": [
         "packages/connectors/sdk/src/index.ts"
       ],
-      "@fema/server-utils": [
+      "@fema-ipaas/server-utils": [
         "packages/server/utils/src/index.ts"
       ],
-      "@fema/sandbox": [
+      "@fema-ipaas/sandbox": [
         "packages/server/sandbox/src/index.ts"
       ],
-      "@fema/shared": [
+      "@fema-ipaas/shared": [
         "packages/core/shared/src/index.ts"
       ],
       "ee-embed-sdk": [
         "packages/ee/embed-sdk/src/index.ts"
       ],
-      "@fema/connector-manual-trigger": [
+      "@fema-ipaas/connector-manual-trigger": [
         "packages/connectors/core/manual-trigger/src/index.ts"
+      ],
+      "@fema-ipaas/component-sdk": [
+        "packages/components/sdk/src/index.ts"
+      ],
+      "@fema-ipaas/components": [
+        "packages/components/builtin/src/index.ts"
       ]
     },
     "resolveJsonModule": true

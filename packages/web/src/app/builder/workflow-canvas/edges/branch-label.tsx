@@ -1,11 +1,11 @@
-import { isNil } from '@fema/core-utils';
+import { isNil } from '@fema-ipaas/core-utils';
 import {
   WorkflowActionType,
   BranchExecutionType,
   WorkflowOperationType,
   workflowStructureUtil,
   StepLocationRelativeToParent,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { useReactFlow } from '@xyflow/react';
 import { t } from 'i18next';
 import { CopyPlus, EllipsisVertical, Trash2 } from 'lucide-react';

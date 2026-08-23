@@ -1,9 +1,9 @@
-import { isNil } from '@fema/core-utils';
+import { isNil } from '@fema-ipaas/core-utils';
 import {
   TenantWithoutSensitiveData,
   WorkspaceWithLimits,
   WorkspaceType,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { ColumnDef } from '@tanstack/react-table';
 import { t } from 'i18next';
 import {

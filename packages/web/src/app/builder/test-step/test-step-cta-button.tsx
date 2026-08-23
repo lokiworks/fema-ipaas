@@ -1,11 +1,11 @@
-import { isNil } from '@fema/core-utils';
+import { isNil } from '@fema-ipaas/core-utils';
 import {
   WorkflowAction,
   WorkflowTrigger,
   WorkflowTriggerType,
   Step,
   workflowStructureUtil,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { Play } from 'lucide-react';
 import { useContext, useEffect } from 'react';

@@ -1,8 +1,8 @@
 import { rm, writeFile } from 'node:fs/promises'
 import path, { dirname, join } from 'node:path'
-import { ensureTrailingSlash, groupBy, isEmpty, isNil, tryCatch } from '@fema/core-utils'
-import { type ApLogger, fileSystemUtils, memoryLock, wideEvent } from '@fema/server-utils'
-import { ConnectorPackage, ConnectorType, ExecutionMode, getConnectorNameFromAlias, PackageType } from '@fema/shared'
+import { ensureTrailingSlash, groupBy, isEmpty, isNil, tryCatch } from '@fema-ipaas/core-utils'
+import { type ApLogger, fileSystemUtils, memoryLock, wideEvent } from '@fema-ipaas/server-utils'
+import { ConnectorPackage, ConnectorType, ExecutionMode, getConnectorNameFromAlias, PackageType } from '@fema-ipaas/shared'
 import writeFileAtomic from 'write-file-atomic'
 import { SandboxSettings } from '../../types'
 import { bunRunner } from '../../utils/bun-runner'
@@ -134,7 +134,7 @@ async function installConnectors(rootWorkspace: string, connectors: ConnectorPac
 }
 
 // A workspace member name (and its dependency key) must be a plain npm package name. A relative
-// path such as `../../../common/connectors/@fema/connector-x` — fed in via stale `usedConnectors` data
+// path such as `../../../common/connectors/@fema-ipaas/connector-x` — fed in via stale `usedConnectors` data
 // from a since-reverted build — makes bun write an unparseable resolution token into the SHARED
 // bun.lock. That lock then fails to parse on the next install and takes down EVERY connector in the
 // workspace (so cache pre-warm and the deploy fail). Worse, because the install joins the name onto

@@ -1,4 +1,4 @@
-import { FolderDto, PopulatedWorkflow } from '@fema/shared';
+import { FolderDto, PopulatedWorkflow } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import {
   ArrowDown,

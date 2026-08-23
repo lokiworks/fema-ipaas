@@ -10,27 +10,27 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      '@fema/shared': path.resolve(
+      '@fema-ipaas/shared': path.resolve(
         __dirname,
         '../../packages/core/shared/src',
       ),
-      '@fema/connector-sdk': path.resolve(
+      '@fema-ipaas/connector-sdk': path.resolve(
         __dirname,
         '../../packages/connectors/sdk/src',
       ),
-      '@fema/core-utils': path.resolve(
+      '@fema-ipaas/core-utils': path.resolve(
         __dirname,
         '../../packages/core/utils/src',
       ),
-      '@fema/expression': path.resolve(
+      '@fema-ipaas/expression': path.resolve(
         __dirname,
         '../../packages/core/formula/src',
       ),
-      '@fema/connector-types': path.resolve(
+      '@fema-ipaas/connector-types': path.resolve(
         __dirname,
         '../../packages/core/connector-types/src',
       ),
-      '@fema/workflow-core': path.resolve(
+      '@fema-ipaas/workflow-core': path.resolve(
         __dirname,
         '../../packages/core/execution/src',
       ),

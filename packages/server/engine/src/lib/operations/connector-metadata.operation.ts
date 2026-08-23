@@ -1,10 +1,10 @@
 import path from 'path'
-import { ConnectorMetadata, connectorTranslation } from '@fema/connector-sdk'
+import { ConnectorMetadata, connectorTranslation } from '@fema-ipaas/connector-sdk'
 import {
     EngineResponse,
     EngineResponseStatus,
     ExecuteExtractConnectorMetadataOperation,
-} from '@fema/shared'
+} from '@fema-ipaas/shared'
 import { connectorPath } from '../core/connector/connector-path'
 import { connectorRunner } from '../core/connector/connector-runner'
 import { EngineConstants } from '../handler/context/engine-constants'

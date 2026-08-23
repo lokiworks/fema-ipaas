@@ -1,4 +1,4 @@
-import { createAction, Property } from '@fema/connector-sdk';
+import { createAction, Property } from '@fema-ipaas/connector-sdk';
 import { predefinedMimeTypes } from '../common/mimeTypes';
 import mime from 'mime-types';
 

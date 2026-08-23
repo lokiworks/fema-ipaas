@@ -1,5 +1,5 @@
-import { isNil, TenantId, tryCatch } from '@fema/core-utils'
-import { PrincipalType } from '@fema/shared'
+import { isNil, TenantId, tryCatch } from '@fema-ipaas/core-utils'
+import { PrincipalType } from '@fema-ipaas/shared'
 import { FastifyRequest } from 'fastify'
 import { databaseConnection } from '../database/database-connection'
 import { networkUtils } from '../helper/network-utils'

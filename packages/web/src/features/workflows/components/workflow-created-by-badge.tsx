@@ -1,4 +1,4 @@
-import { WorkflowCreator, WorkflowCreatorType } from '@fema/shared';
+import { WorkflowCreator, WorkflowCreatorType } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 
 import { McpSvg } from '@/assets/img/custom/mcp';

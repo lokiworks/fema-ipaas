@@ -1,5 +1,8 @@
-import { Permission } from '@fema/core-utils';
-import { ConnectionStatus, ConnectionWithoutSensitiveData } from '@fema/shared';
+import { Permission } from '@fema-ipaas/core-utils';
+import {
+  ConnectionStatus,
+  ConnectionWithoutSensitiveData,
+} from '@fema-ipaas/shared';
 import { ColumnDef } from '@tanstack/react-table';
 import { t } from 'i18next';
 import {

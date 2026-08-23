@@ -1,4 +1,4 @@
-import { Property } from '@fema/connector-sdk';
+import { Property } from '@fema-ipaas/connector-sdk';
 import { describe, expect, it } from 'vitest';
 
 import { filterPropertyUtils } from '@/app/builder/connector-properties/filter-property-utils';

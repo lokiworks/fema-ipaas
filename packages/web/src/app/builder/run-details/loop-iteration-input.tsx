@@ -1,10 +1,10 @@
-import { isNil } from '@fema/core-utils';
+import { isNil } from '@fema-ipaas/core-utils';
 import {
   WorkflowActionType,
   StepOutput,
   StepOutputStatus,
   workflowStructureUtil,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';

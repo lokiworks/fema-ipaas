@@ -1,4 +1,4 @@
-import { WorkerProps } from '@fema/shared';
+import { WorkerProps } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { SlidersHorizontal } from 'lucide-react';
 import React from 'react';

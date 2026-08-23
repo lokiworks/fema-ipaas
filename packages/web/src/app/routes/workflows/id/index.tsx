@@ -1,5 +1,5 @@
-import { isNil } from '@fema/core-utils';
-import { PopulatedWorkflow } from '@fema/shared';
+import { isNil } from '@fema-ipaas/core-utils';
+import { PopulatedWorkflow } from '@fema-ipaas/shared';
 import { useQuery } from '@tanstack/react-query';
 import { ReactFlowProvider } from '@xyflow/react';
 import { t } from 'i18next';

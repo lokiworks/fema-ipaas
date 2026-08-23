@@ -1,10 +1,10 @@
-import { isNil } from '@fema/core-utils';
+import { isNil } from '@fema-ipaas/core-utils';
 import {
   WorkflowTriggerType,
   WorkflowVersionState,
   StepOutputStatus,
   workflowStructureUtil,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { TriangleAlert } from 'lucide-react';
 import React, { useMemo } from 'react';

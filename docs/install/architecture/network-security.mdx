@@ -67,7 +67,7 @@ With `FEMA_NETWORK_MODE=STRICT` you should see an `SSRFBlockedError`. With `UNRE
 
 Separate from workflow code, the API server itself makes outbound HTTP on behalf of admins and users: OAuth token claim and refresh, Hashicorp Vault, CyberArk Conjur, event-destination webhooks, on-call pager, MCP tool validation. The URLs come from admin config (Vault server URL) or user input (webhook destination, MCP server URL), so the same SSRF risks apply.
 
-Unlike user-code egress, **this layer is always on**. It does not require `FEMA_NETWORK_MODE=STRICT`. It is implemented as a `request-filtering-agent` wrapper attached to the shared axios instances in `@fema/server-utils`, and every outbound request workflows through it. The blocked ranges are identical to the engine guard (RFC1918, loopback, link-local, cloud metadata, non-unicast).
+Unlike user-code egress, **this layer is always on**. It does not require `FEMA_NETWORK_MODE=STRICT`. It is implemented as a `request-filtering-agent` wrapper attached to the shared axios instances in `@fema-ipaas/server-utils`, and every outbound request workflows through it. The blocked ranges are identical to the engine guard (RFC1918, loopback, link-local, cloud metadata, non-unicast).
 
 <Tip>
 `FEMA_SSRF_ALLOW_LIST` is shared between both surfaces. Add an IP or CIDR once and it applies to user-code egress **and** server-side HTTP. Restart the server after changing the value.

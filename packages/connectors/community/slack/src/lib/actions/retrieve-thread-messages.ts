@@ -1,4 +1,4 @@
-import { createAction, Property } from '@fema/connector-sdk';
+import { createAction, Property } from '@fema-ipaas/connector-sdk';
 import { slackAuth } from '../auth';
 import { WebClient } from '@slack/web-api';
 import { slackChannel } from '../common/props';

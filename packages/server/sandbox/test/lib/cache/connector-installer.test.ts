@@ -3,9 +3,9 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { PackageType, ConnectorType } from '@fema/shared'
-import type { OfficialConnectorPackage, PrivateConnectorPackage } from '@fema/shared'
-import type { ApLogger } from '@fema/server-utils'
+import { PackageType, ConnectorType } from '@fema-ipaas/shared'
+import type { OfficialConnectorPackage, PrivateConnectorPackage } from '@fema-ipaas/shared'
+import type { ApLogger } from '@fema-ipaas/server-utils'
 
 // Module-level variable updated per test so the vi.mock factory can reference it
 let testWorkspace = ''
@@ -111,8 +111,8 @@ afterEach(async () => {
 
 describe('connectorInstaller', () => {
     it('batch install succeeds — all connectors marked ready', async () => {
-        const connector1 = makeConnector('@fema/connector-a')
-        const connector2 = makeConnector('@fema/connector-b')
+        const connector1 = makeConnector('@fema-ipaas/connector-a')
+        const connector2 = makeConnector('@fema-ipaas/connector-b')
         const installer = connectorInstaller(fakeLog, testWorkspace, fakeGetSettings)
 
         mockInstall.mockResolvedValueOnce({ output: '' })
@@ -125,8 +125,8 @@ describe('connectorInstaller', () => {
     })
 
     it('batch fails with good and bad connector — good connector marked ready, bad connector rolled back', async () => {
-        const good = makeConnector('@fema/connector-good')
-        const bad = makeConnector('@fema/connector-bad')
+        const good = makeConnector('@fema-ipaas/connector-good')
+        const bad = makeConnector('@fema-ipaas/connector-bad')
         const installer = connectorInstaller(fakeLog, testWorkspace, fakeGetSettings)
 
         mockInstall
@@ -137,8 +137,8 @@ describe('connectorInstaller', () => {
         const error = await installer.install({ connectors: [good, bad], includeFilters: false, ...bundleSource }).catch(e => e as Error)
 
         expect(error).toBeInstanceOf(Error)
-        expect(error.message).toContain('@fema/connector-bad@1.0.0')
-        expect(error.message).not.toContain('@fema/connector-good@1.0.0')
+        expect(error.message).toContain('@fema-ipaas/connector-bad@1.0.0')
+        expect(error.message).not.toContain('@fema-ipaas/connector-good@1.0.0')
         expect(mockInstall).toHaveBeenCalledTimes(3)
 
         expect(await pathExists(readyFilePath(good))).toBe(true)
@@ -146,8 +146,8 @@ describe('connectorInstaller', () => {
     })
 
     it('batch fails with both connectors bad — both rolled back, error names both', async () => {
-        const connector1 = makeConnector('@fema/connector-x')
-        const connector2 = makeConnector('@fema/connector-y')
+        const connector1 = makeConnector('@fema-ipaas/connector-x')
+        const connector2 = makeConnector('@fema-ipaas/connector-y')
         const installer = connectorInstaller(fakeLog, testWorkspace, fakeGetSettings)
 
         mockInstall
@@ -158,8 +158,8 @@ describe('connectorInstaller', () => {
         const error = await installer.install({ connectors: [connector1, connector2], includeFilters: false, ...bundleSource }).catch(e => e as Error)
 
         expect(error).toBeInstanceOf(Error)
-        expect(error.message).toContain('@fema/connector-x@1.0.0')
-        expect(error.message).toContain('@fema/connector-y@1.0.0')
+        expect(error.message).toContain('@fema-ipaas/connector-x@1.0.0')
+        expect(error.message).toContain('@fema-ipaas/connector-y@1.0.0')
         expect(mockInstall).toHaveBeenCalledTimes(3)
 
         expect(await pathExists(connectorDirPath(connector1))).toBe(false)
@@ -167,7 +167,7 @@ describe('connectorInstaller', () => {
     })
 
     it('single connector fails — rolled back immediately, no individual retry', async () => {
-        const connector = makeConnector('@fema/connector-solo')
+        const connector = makeConnector('@fema-ipaas/connector-solo')
         const installer = connectorInstaller(fakeLog, testWorkspace, fakeGetSettings)
 
         mockInstall.mockRejectedValueOnce(new Error('install failure'))
@@ -179,7 +179,7 @@ describe('connectorInstaller', () => {
     })
 
     it('connector already installed — bun install never called', async () => {
-        const connector = makeConnector('@fema/connector-cached')
+        const connector = makeConnector('@fema-ipaas/connector-cached')
         const connectorDir = connectorDirPath(connector)
 
         await mkdir(join(connectorDir, 'node_modules'), { recursive: true })
@@ -211,11 +211,11 @@ describe('connectorInstaller', () => {
     })
 
     it('skips connectors whose name is a relative path — they never reach the shared bun workspace', async () => {
-        const good = makeConnector('@fema/connector-good')
+        const good = makeConnector('@fema-ipaas/connector-good')
         // Stale `usedConnectors` data from a since-reverted build can carry a relative path as the
         // connectorName. Writing it as a workspace member corrupts the shared bun.lock and breaks every
         // other connector (and cache pre-warm / deploy), so it must be dropped before any member is built.
-        const poison = makeConnector('../../../common/connectors/@fema/connector-algolia', '0.0.3')
+        const poison = makeConnector('../../../common/connectors/@fema-ipaas/connector-algolia', '0.0.3')
         const installer = connectorInstaller(fakeLog, testWorkspace, fakeGetSettings)
 
         mockInstall.mockResolvedValueOnce({ output: '' })
@@ -224,13 +224,13 @@ describe('connectorInstaller', () => {
 
         expect(mockInstall).toHaveBeenCalledOnce()
         expect(mockInstall.mock.calls[0]?.[0].filtersPath).toEqual([
-            expect.stringContaining('@fema/connector-good-1.0.0'),
+            expect.stringContaining('@fema-ipaas/connector-good-1.0.0'),
         ])
         expect(await pathExists(readyFilePath(good))).toBe(true)
     })
 
     it('install made up only of invalid-named connectors is a no-op — bun never runs', async () => {
-        const poison = makeConnector('../../../common/connectors/@fema/connector-algolia', '0.0.3')
+        const poison = makeConnector('../../../common/connectors/@fema-ipaas/connector-algolia', '0.0.3')
         const installer = connectorInstaller(fakeLog, testWorkspace, fakeGetSettings)
 
         await installer.install({ connectors: [poison], includeFilters: true, ...bundleSource })
@@ -239,10 +239,10 @@ describe('connectorInstaller', () => {
     })
 
     it('mixes valid and invalid connectors — only valid ones reach bun, both filters present for valid', async () => {
-        const goodA = makeConnector('@fema/connector-a')
+        const goodA = makeConnector('@fema-ipaas/connector-a')
         const goodB = makeConnector('connector-b-unscoped')
-        const poison1 = makeConnector('../../../common/connectors/@fema/connector-x', '0.0.3')
-        const poison2 = makeConnector('@fema/connector-y/extra', '1.2.3')
+        const poison1 = makeConnector('../../../common/connectors/@fema-ipaas/connector-x', '0.0.3')
+        const poison2 = makeConnector('@fema-ipaas/connector-y/extra', '1.2.3')
         const installer = connectorInstaller(fakeLog, testWorkspace, fakeGetSettings)
 
         mockInstall.mockResolvedValueOnce({ output: '' })
@@ -252,15 +252,15 @@ describe('connectorInstaller', () => {
         expect(mockInstall).toHaveBeenCalledOnce()
         const filtersPath = mockInstall.mock.calls[0]?.[0].filtersPath as string[]
         expect(filtersPath).toHaveLength(2)
-        expect(filtersPath.some(f => f.includes('@fema/connector-a-1.0.0'))).toBe(true)
+        expect(filtersPath.some(f => f.includes('@fema-ipaas/connector-a-1.0.0'))).toBe(true)
         expect(filtersPath.some(f => f.includes('connector-b-unscoped-1.0.0'))).toBe(true)
         expect(filtersPath.some(f => f.includes('connector-x'))).toBe(false)
         expect(filtersPath.some(f => f.includes('connector-y'))).toBe(false)
     })
 
     it('individual fallback always passes --filter path regardless of includeFilters', async () => {
-        const connector1 = makeConnector('@fema/connector-filter-a')
-        const connector2 = makeConnector('@fema/connector-filter-b')
+        const connector1 = makeConnector('@fema-ipaas/connector-filter-a')
+        const connector2 = makeConnector('@fema-ipaas/connector-filter-b')
         const installer = connectorInstaller(fakeLog, testWorkspace, fakeGetSettings)
 
         mockInstall
@@ -288,11 +288,11 @@ describe('connectorInstaller', () => {
 
 describe('isValidPackageName', () => {
     it.each([
-        '@fema/connector-algolia',
-        '@fema/connector-add-event',
+        '@fema-ipaas/connector-algolia',
+        '@fema-ipaas/connector-add-event',
         '@acme/connector-sample',
         // the `<name>-<version>` workspace-member form is itself a single-slash scoped name
-        '@fema/connector-algolia-0.0.3',
+        '@fema-ipaas/connector-algolia-0.0.3',
         'tslib',
         'connector-b-unscoped',
         'lodash.merge',
@@ -304,15 +304,15 @@ describe('isValidPackageName', () => {
 
     it.each([
         // the production poison: a relative path masquerading as a connector name
-        '../../../common/connectors/@fema/connector-algolia',
-        '../../../common/connectors/@fema/connector-algolia-0.0.3',
+        '../../../common/connectors/@fema-ipaas/connector-algolia',
+        '../../../common/connectors/@fema-ipaas/connector-algolia-0.0.3',
         '..',
         '../foo',
         './foo',
         'foo/..',
-        '@fema/..',
+        '@fema-ipaas/..',
         // more than one path segment (scoped names allow exactly one slash)
-        '@fema/connector-y/extra',
+        '@fema-ipaas/connector-y/extra',
         'a/b/c',
         'foo/bar',
         // malformed scopes

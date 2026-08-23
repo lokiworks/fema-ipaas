@@ -1,4 +1,4 @@
-import { createAction, Property } from '@fema/connector-sdk';
+import { createAction, Property } from '@fema-ipaas/connector-sdk';
 import { flatten } from 'safe-flat';
 import { stringify } from "csv-stringify/sync";
 import { jsonToCsvActionOutputSchema } from '../output-schemas';

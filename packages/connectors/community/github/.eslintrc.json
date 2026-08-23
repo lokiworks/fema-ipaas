@@ -33,10 +33,10 @@
             "patterns": [
               "lodash",
               "lodash/*",
-              "@fema/core-*",
-              "@fema/server*",
-              "@fema/engine",
-              "@fema/shared"
+              "@fema-ipaas/core-*",
+              "@fema-ipaas/server*",
+              "@fema-ipaas/engine",
+              "@fema-ipaas/shared"
             ]
           }
         ]

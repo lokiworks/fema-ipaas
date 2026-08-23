@@ -1,4 +1,4 @@
-import { isNil, apId } from '@fema/core-utils';
+import { isNil, apId } from '@fema-ipaas/core-utils';
 import {
   PopulatedWorkflow,
   WorkflowVersionState,
@@ -6,7 +6,7 @@ import {
   WorkflowOperationStatus,
   TemplateType,
   Template,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { ReactFlowProvider } from '@xyflow/react';
 import { t } from 'i18next';
 import { ArrowLeft, ArrowRight, Link, ExternalLink } from 'lucide-react';

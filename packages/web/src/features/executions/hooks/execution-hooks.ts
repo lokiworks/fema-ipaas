@@ -1,4 +1,4 @@
-import { ApErrorParams, ErrorCode } from '@fema/core-utils';
+import { ApErrorParams, ErrorCode } from '@fema-ipaas/core-utils';
 import {
   BulkActionOnRunsRequestBody,
   BulkArchiveActionOnRunsRequestBody,
@@ -9,7 +9,7 @@ import {
   Execution,
   ExecutionWithRetryError,
   PopulatedWorkflow,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { useMemo } from 'react';

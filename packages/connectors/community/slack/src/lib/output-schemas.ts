@@ -1,4 +1,4 @@
-import { OutputSchema } from '@fema/connector-sdk';
+import { OutputSchema } from '@fema-ipaas/connector-sdk';
 
 const channelFields: OutputSchema['fields'] = [
   { key: 'id', label: 'Channel ID' },

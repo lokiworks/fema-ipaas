@@ -1,4 +1,4 @@
-import { SignInRequest, SignUpRequest } from '@fema/shared'
+import { SignInRequest, SignUpRequest } from '@fema-ipaas/shared'
 import { faker } from '@faker-js/faker'
 
 export const createMockSignUpRequest = (

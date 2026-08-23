@@ -1,4 +1,4 @@
-import { Permission } from '@fema/core-utils';
+import { Permission } from '@fema-ipaas/core-utils';
 import { t } from 'i18next';
 import { useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';

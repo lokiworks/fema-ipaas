@@ -43,12 +43,12 @@ import {
   Polling,
   httpClient,
   pollingHelper,
-} from '@fema/connectors-common';
+} from '@fema-ipaas/connectors-common';
 import {
   TriggerStrategy,
   createTrigger,
   ConnectionValueForAuthProperty
-} from '@fema/connectors-framework';
+} from '@fema-ipaas/connectors-framework';
 import dayjs from 'dayjs';
 
 const polling: Polling<
@@ -106,7 +106,7 @@ The way polling triggers usually work is as follows:
 To make the trigger readable by FEMA Integration Platform, add it to the array of triggers in the connector definition.
 
 ```typescript
-import { createConnector } from '@fema/connectors-framework';
+import { createConnector } from '@fema-ipaas/connectors-framework';
 import { getIcecreamFlavor } from './lib/actions/get-icecream-flavor';
 // Don't forget to add the following import.
 import { newFlavorCreated } from './lib/triggers/new-flavor-created';

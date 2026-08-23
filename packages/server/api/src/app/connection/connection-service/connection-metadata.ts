@@ -1,4 +1,4 @@
-import { isNil, Metadata, omit, spreadIfDefined } from '@fema/core-utils'
+import { isNil, Metadata, omit, spreadIfDefined } from '@fema-ipaas/core-utils'
 
 // accountIdentifier is always rewritten, never left untouched: an unresolved
 // re-connect must clear a previously resolved account rather than keep labelling

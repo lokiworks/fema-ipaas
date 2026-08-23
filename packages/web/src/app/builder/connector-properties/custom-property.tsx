@@ -1,4 +1,4 @@
-import { CustomProperty as CustomPropertyType } from '@fema/connector-sdk';
+import { CustomProperty as CustomPropertyType } from '@fema-ipaas/connector-sdk';
 import { useEffect, useId } from 'react';
 
 import { useEmbedding } from '@/components/providers/embed-provider';

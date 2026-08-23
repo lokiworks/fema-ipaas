@@ -1,4 +1,4 @@
-import { createAction } from '@fema/connector-sdk';
+import { createAction } from '@fema-ipaas/connector-sdk';
 import { mysqlConnect, mysqlGetTableNames } from '../common';
 import { mysqlAuth } from '../..';
 import { getTablesOutputSchema } from '../output-schemas';

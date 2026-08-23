@@ -1,4 +1,4 @@
-import { User, Workflow, WorkflowVersion } from '@fema/shared'
+import { User, Workflow, WorkflowVersion } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import {
     ApIdSchema,

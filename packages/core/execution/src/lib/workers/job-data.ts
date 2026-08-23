@@ -1,13 +1,13 @@
 
 import { z } from 'zod'
-import { isNil } from '@fema/core-utils'
+import { isNil } from '@fema-ipaas/core-utils'
 import { ResumeReason, StreamStepProgress, TriggerHookType, TriggerPayload } from '../engine'
 import { ExecutionType } from '../execution/state/execution-output'
 import { RunEnvironment } from '../execution/execution'
 import { CodeActionSchema, ConnectorActionSchema } from '../workflows/actions/action'
 import { WorkflowVersion } from '../workflows/workflow-version'
 import { WorkflowTriggerType } from '../workflows/triggers/trigger'
-import { ConnectionType, ConnectionValue, ConnectorPackage } from '@fema/connector-types'
+import { ConnectionType, ConnectionValue, ConnectorPackage } from '@fema-ipaas/connector-types'
 
 export const LATEST_JOB_DATA_SCHEMA_VERSION = 10
 

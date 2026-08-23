@@ -1,5 +1,5 @@
-import { Permission } from '@fema/core-utils'
-import { PrincipalType } from '@fema/shared'
+import { Permission } from '@fema-ipaas/core-utils'
+import { PrincipalType } from '@fema-ipaas/shared'
 import { AuthorizationType, NoneAuthorization, PublicRoute, RouteKind, TenantAuthorization, UnscopedAuthorization, WorkspaceAuthorization, WorkspaceResource } from './common'
 
 type FastifySecurityAuthorization =

@@ -1,4 +1,4 @@
-import { TriggerStatusReport } from '@fema/shared';
+import { TriggerStatusReport } from '@fema-ipaas/shared';
 import { useQuery } from '@tanstack/react-query';
 
 import { api } from '@/lib/api';

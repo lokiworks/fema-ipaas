@@ -1,4 +1,4 @@
-import { FileCompression, FileLocation, FileType } from '@fema/shared'
+import { FileCompression, FileLocation, FileType } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyInstance } from 'fastify'
 import { In } from 'typeorm'

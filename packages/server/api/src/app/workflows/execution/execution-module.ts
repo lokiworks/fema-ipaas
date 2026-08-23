@@ -1,5 +1,5 @@
-import { isNil } from '@fema/core-utils'
-import { ExecutionStatus, TelemetryEventName } from '@fema/shared'
+import { isNil } from '@fema-ipaas/core-utils'
+import { ExecutionStatus, TelemetryEventName } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyPluginAsync } from 'fastify'
 import { Between, EntityManager } from 'typeorm'

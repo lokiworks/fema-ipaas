@@ -14,7 +14,7 @@ Open-source AI-first workflow automation platform. Self-hosted or cloud. 400+ co
 - **Multi-server**: Use `distributedLock`, BullMQ deduplication, or `FOR UPDATE SKIP LOCKED` for concurrent operations.
 - **Managed PostgreSQL**: No custom extensions. Use `sanitizeObjectForPostgresql()` for external data.
 - **Before modifying a module**: Read its subsystem page in `brain/knowledge/<area>/` (and that area's `index.md` glossary) for domain language, entities, services, and integration details.
-- **Cross-cutting libraries live in `packages/core/*`**, ordered thin → thick: `core-utils`, `core-connector-types`, `core-formula`, `core-execution` (thin, bundleable, framework-agnostic) and `core/shared` (the one thick, app-level member — **keeps the name `@fema/shared`**, carries DB/EE/management schemas + heavy deps). Connectors and the engine may import the thin members but **never** `@fema/shared`; connectors get what they need via `@fema/connector-sdk`. See `.claude/rules/core-packages.md`.
+- **Cross-cutting libraries live in `packages/core/*`**, ordered thin → thick: `core-utils`, `core-connector-types`, `core-formula`, `core-execution` (thin, bundleable, framework-agnostic) and `core/shared` (the one thick, app-level member — **keeps the name `@fema-ipaas/shared`**, carries DB/EE/management schemas + heavy deps). Connectors and the engine may import the thin members but **never** `@fema-ipaas/shared`; connectors get what they need via `@fema-ipaas/connector-sdk`. See `.claude/rules/core-packages.md`.
 | `brain/<area>/index.md` | 9 areas | First stop for an unfamiliar subsystem | Area glossary + list of its pages |
 | `brain/<area>/*.md` | one page per subsystem | When Claude explores that subsystem | Entity schemas, services, data workflows, gotchas |
 | `brain/decisions/*.md` | numbered, under `decisions/` | When Claude needs the *why* behind a design | One hard-to-reverse call each |
@@ -47,16 +47,16 @@ Open-source AI-first workflow automation platform. Self-hosted or cloud. 400+ co
 - **No `any` type** — Use proper type definitions or `unknown` with type guards
 - **No type casting** — Do not use `as SomeType` to force types. If you encounter an unnecessary cast, remove it.
 - **No deprecated APIs** — Before using any library method or export, check its JSDoc. If it carries a `@deprecated` tag, use the recommended replacement instead. Examples: prefer `z.enum` over `z.nativeEnum`.
-- **Go-style error handling** — Use `tryCatch` / `tryCatchSync` from `@fema/shared`
-- **Zod error messages must be i18n keys** — Every `.min()`, `.refine()`, `.superRefine()`, etc. that surfaces a user-facing message must pass a string that exists as a key in `packages/web/public/locales/en/translation.json`. For common messages (e.g. required fields) use the `formErrors` constant from `@fema/shared`. Add a new translation key if none fits; never use raw English sentences that are not in the translation file.
-- **`@fema/shared` version bump** — Any change to `packages/core/shared` must be accompanied by a version bump in `packages/core/shared/package.json`: bump the **patch** version for non-breaking additions or fixes, bump the **minor** version for new exports or behaviour changes after you check if it has already been bumped in the current branch or not
+- **Go-style error handling** — Use `tryCatch` / `tryCatchSync` from `@fema-ipaas/shared`
+- **Zod error messages must be i18n keys** — Every `.min()`, `.refine()`, `.superRefine()`, etc. that surfaces a user-facing message must pass a string that exists as a key in `packages/web/public/locales/en/translation.json`. For common messages (e.g. required fields) use the `formErrors` constant from `@fema-ipaas/shared`. Add a new translation key if none fits; never use raw English sentences that are not in the translation file.
+- **`@fema-ipaas/shared` version bump** — Any change to `packages/core/shared` must be accompanied by a version bump in `packages/core/shared/package.json`: bump the **patch** version for non-breaking additions or fixes, bump the **minor** version for new exports or behaviour changes after you check if it has already been bumped in the current branch or not
 - **Helper functions** — Define non-exported helpers outside of const declarations
 - **Named parameters** — Always use a single destructured object parameter instead of positional arguments. This applies to every function with more than one parameter, regardless of type. It prevents mix-ups at the call site and makes future additions non-breaking.
 - **Prefer immutable data workflow** — Functions should produce data by returning it, not by mutating an array/object the caller passes in. If a helper accumulates results (logs, derived rows, computed bindings), it should build the collection locally and return it — not take a pre-allocated bag the caller will read after. Local mutation inside a function's own body is fine; mutation that crosses the function boundary is not. Build new collections with `.map` / `.filter` / `.reduce` / spread rather than in-place `push` / `splice` / property assignment when feasible.
 - **File order**: Imports → Exported functions/constants → Helper functions → Types
 - **Comments** — Do NOT include comments in code. No inline comments, no explanatory comment blocks, no JSDoc narration. Code must be self-explanatory through naming and structure. If a *why* genuinely needs recording, put it in the commit message or PR description, not in the source.
 - **Util file exports** — When a util file exposes multiple plain functions or constants (non-React), do not export them individually. Instead, group them into a single named `const` and export that one object (e.g. `export const myUtils = { fn1, fn2 }`). Callers use `myUtils.fn1()` at the call site. **React components** in the same file should be **named exports** (e.g. `export function MyAlert()` or `export const MyAlert = …`) and imported by name — do not bundle them into a wrapper object for the sake of this rule.
-- **Safe outbound HTTP (SSRF)** — For any outbound HTTP in `packages/server/{api,worker,utils}`, use `safeHttp.axios` / `safeHttp.createAxios({ ... })` from `@fema/server-utils`. Never use raw `fetch` or `axios.create` for URLs that come from user input, admin config, OAuth endpoints, or third-party integrations — they bypass the SSRF filter (private/loopback/metadata IPs). See `.claude/rules/safe-http.md`.
+- **Safe outbound HTTP (SSRF)** — For any outbound HTTP in `packages/server/{api,worker,utils}`, use `safeHttp.axios` / `safeHttp.createAxios({ ... })` from `@fema-ipaas/server-utils`. Never use raw `fetch` or `axios.create` for URLs that come from user input, admin config, OAuth endpoints, or third-party integrations — they bypass the SSRF filter (private/loopback/metadata IPs). See `.claude/rules/safe-http.md`.
 
 ## Query Error Handling
 
@@ -64,7 +64,7 @@ Open-source AI-first workflow automation platform. Self-hosted or cloud. 400+ co
 - **Do NOT add** `showErrorDialog` to minor/auxiliary queries (feature flags, connector metadata, single-item fetches, filter options, user details). These should fail silently.
 - Rule of thumb: if the query failure would leave the user staring at an empty table or blank page with no explanation, it should have `meta: { showErrorDialog: true }`.
 
-## Key Utilities (`@fema/shared`)
+## Key Utilities (`@fema-ipaas/shared`)
 
 `apId()`, `tryCatch()`, `tryCatchSync()`, `isNil()`, `spreadIfDefined()`, `spreadIfNotUndefined()`, `ApplicationError({ code, params })`, `SeekPage<T>`, `formErrors`, `BaseModelSchema`, `chunk()`, `partition()`, `unique()`, `omit()`, `sanitizeObjectForPostgresql()`
 

@@ -1,4 +1,4 @@
-import { WorkflowRetryStrategy, ExecutionStatus, WorkflowVersionState, RunEnvironment } from '@fema/shared'
+import { WorkflowRetryStrategy, ExecutionStatus, WorkflowVersionState, RunEnvironment } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { databaseConnection } from '../../../../../src/app/database/database-connection'
 import { db } from '../../../../helpers/db'

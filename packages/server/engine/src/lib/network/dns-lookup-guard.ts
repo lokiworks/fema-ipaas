@@ -1,6 +1,6 @@
 import dns from 'node:dns'
-import { ssrfIpClassifier } from '@fema/core-utils'
-import { SSRFBlockedError } from '@fema/shared'
+import { ssrfIpClassifier } from '@fema-ipaas/core-utils'
+import { SSRFBlockedError } from '@fema-ipaas/shared'
 import type { GuardPolicy, UninstallFn } from './ssrf-guard'
 
 export function installDnsLookupGuard(policy: GuardPolicy): UninstallFn {

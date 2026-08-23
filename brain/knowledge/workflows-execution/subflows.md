@@ -4,7 +4,7 @@ icon: 🪆
 
 # Subflows
 
-A **Subflow** is a workflow invoked by another workflow instead of by its own external trigger — a reusable function at workflow granularity. The `@fema/connector-subflows` core connector supplies both halves: the **Callable Workflow** trigger that makes a workflow callable, and the actions a parent uses to reach it. A parent calls a subflow once (**Call Workflow**, optionally waiting for a response through a waitpoint) or fans out many calls from one streaming step (**Stream CSV to Subflows**). The **Respond** action sends data back to a waiting parent. There is no dedicated transport: every call is a webhook `POST` to `/v1/webhooks/:workflowId`.
+A **Subflow** is a workflow invoked by another workflow instead of by its own external trigger — a reusable function at workflow granularity. The `@fema-ipaas/connector-subflows` core connector supplies both halves: the **Callable Workflow** trigger that makes a workflow callable, and the actions a parent uses to reach it. A parent calls a subflow once (**Call Workflow**, optionally waiting for a response through a waitpoint) or fans out many calls from one streaming step (**Stream CSV to Subflows**). The **Respond** action sends data back to a waiting parent. There is no dedicated transport: every call is a webhook `POST` to `/v1/webhooks/:workflowId`.
 
 ### Entities & services
 No server entity of its own — subflows are ordinary workflows plus two conventions on the webhook path.

@@ -1,5 +1,5 @@
-import { isNil } from '@fema/core-utils'
-import { ApEnvironment, WorkerGroupScope } from '@fema/shared'
+import { isNil } from '@fema-ipaas/core-utils'
+import { ApEnvironment, WorkerGroupScope } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import { pubsub } from '../../helper/pubsub'

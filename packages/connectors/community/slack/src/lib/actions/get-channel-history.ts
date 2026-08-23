@@ -1,5 +1,5 @@
 import { ConversationsHistoryResponse, WebClient } from '@slack/web-api';
-import { createAction, Property } from '@fema/connector-sdk';
+import { createAction, Property } from '@fema-ipaas/connector-sdk';
 import { slackAuth } from '../auth';
 import { singleSelectChannelInfo, slackChannel } from '../common/props';
 import { getBotToken, SlackAuthValue } from '../common/auth-helpers';

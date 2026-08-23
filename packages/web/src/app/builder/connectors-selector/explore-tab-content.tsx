@@ -1,4 +1,4 @@
-import { WorkflowOperationType } from '@fema/shared';
+import { WorkflowOperationType } from '@fema-ipaas/shared';
 
 import {
   CardListItem,

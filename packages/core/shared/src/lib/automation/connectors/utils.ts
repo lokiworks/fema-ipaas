@@ -1,9 +1,9 @@
-import { ApplicationError, assertNotNullOrUndefined, ErrorCode } from '@fema/core-utils'
+import { ApplicationError, assertNotNullOrUndefined, ErrorCode } from '@fema-ipaas/core-utils'
 
 /**
- * @param {string} connectorName - starts with `@fema/connector-`
+ * @param {string} connectorName - starts with `@fema-ipaas/connector-`
  * @param {string} connectorVersion - the version of the connector
- * @returns {string} the package alias for the connector, e.g. `@fema/connector-slack-0.0.1`
+ * @returns {string} the package alias for the connector, e.g. `@fema-ipaas/connector-slack-0.0.1`
  */
 export const getPackageAliasForConnector = (params: GetPackageAliasForConnectorParams): string => {
     const { connectorName, connectorVersion } = params
@@ -24,8 +24,8 @@ export const getConnectorNameFromAlias = (alias: string): string => {
 }
 
 /**
- * @param {string} alias - e.g. `@fema/connector-slack-0.0.1`
- * @returns {string} the connector name, e.g. `@fema/connector-slack`
+ * @param {string} alias - e.g. `@fema-ipaas/connector-slack-0.0.1`
+ * @returns {string} the connector name, e.g. `@fema-ipaas/connector-slack`
  */
 export const trimVersionFromAlias = (alias: string): string => {
     return alias.split('-').slice(0, -1).join('-')

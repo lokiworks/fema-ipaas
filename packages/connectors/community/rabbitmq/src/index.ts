@@ -1,4 +1,4 @@
-import { createConnector, ConnectorAuth, Property } from '@fema/connector-sdk';
+import { createConnector, ConnectorAuth, Property } from '@fema-ipaas/connector-sdk';
 import { messageReceived } from './lib/triggers/message-received';
 import { sendMessageToExchange } from './lib/actions/send-message-to-exchange';
 import { sendMessageToQueue } from './lib/actions/send-message-to-queue';

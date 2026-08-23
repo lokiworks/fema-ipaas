@@ -1,4 +1,4 @@
-import { File, FileCompression, FileType, Workspace } from '@fema/shared'
+import { File, FileCompression, FileType, Workspace } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import {
     ApIdSchema,

@@ -1,4 +1,4 @@
-import { FileCompression, FileType, WorkflowRetryStrategy, ExecutionStatus, WorkflowTriggerType, WorkflowVersionState, RunEnvironment, StepOutputStatus, StepOutputType } from '@fema/shared'
+import { FileCompression, FileType, WorkflowRetryStrategy, ExecutionStatus, WorkflowTriggerType, WorkflowVersionState, RunEnvironment, StepOutputStatus, StepOutputType } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { fileService } from '../../../../../src/app/file/file.service'
 import { payloadOffloader } from '../../../../../src/app/workers/payload-offloader'

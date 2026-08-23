@@ -1,6 +1,6 @@
 import { I18nForConnector, ConnectorMetadataModel, ConnectorMetadataModelSummary } from "./connector-metadata"
-import { LocalesEnum } from "@fema/core-utils"
-import { MAX_KEY_LENGTH_FOR_CORWDIN } from "@fema/connector-types"
+import { LocalesEnum } from "@fema-ipaas/core-utils"
+import { MAX_KEY_LENGTH_FOR_CORWDIN } from "@fema-ipaas/connector-types"
 import path from 'path';
 import fs from 'fs/promises';
 

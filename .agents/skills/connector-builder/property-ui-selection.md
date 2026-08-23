@@ -64,7 +64,7 @@ Use for any **message body** the user composes. Pair it with a sibling `StaticDr
 ### `DateRange` (+ `display: 'dropdown'`)
 Use for "limit results to a time window" on search/list actions. Omit `display` for pill buttons; set `display: 'dropdown'` when it lives inside a filter builder. Resolve in `run()`:
 ```typescript
-import { dateRangeUtils } from '@fema/connector-sdk';
+import { dateRangeUtils } from '@fema-ipaas/connector-sdk';
 const { after, before } = dateRangeUtils.resolve(context.propsValue.date_range); // ISO strings or undefined
 ```
 

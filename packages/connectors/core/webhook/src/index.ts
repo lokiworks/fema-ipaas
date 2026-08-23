@@ -1,6 +1,6 @@
-import { createConnector, ConnectorAuth } from '@fema/connector-sdk';
+import { createConnector, ConnectorAuth } from '@fema-ipaas/connector-sdk';
 import { catchWebhook } from './lib/triggers/catch-hook';
-import { ConnectorCategory } from '@fema/connector-sdk';
+import { ConnectorCategory } from '@fema-ipaas/connector-sdk';
 import { returnResponse } from './lib/actions/return-response';
 import { returnResponseAndWaitForNextWebhook } from './lib/actions/return-response-and-wait-for-next-webhook';
 

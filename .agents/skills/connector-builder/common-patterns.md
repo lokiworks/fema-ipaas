@@ -2,10 +2,10 @@
 
 ## HTTP Client
 
-Always use `httpClient` from `@fema/connector-common`:
+Always use `httpClient` from `@fema-ipaas/connector-common`:
 
 ```typescript
-import { httpClient, HttpMethod, AuthenticationType } from '@fema/connector-common';
+import { httpClient, HttpMethod, AuthenticationType } from '@fema-ipaas/connector-common';
 ```
 
 ### GET with Bearer Token
@@ -77,8 +77,8 @@ import {
   AuthenticationType,
   HttpMessageBody,
   HttpResponse,
-} from '@fema/connector-common';
-import { Property } from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-common';
+import { Property } from '@fema-ipaas/connector-sdk';
 import { myAppAuth } from '../auth';
 
 const BASE_URL = 'https://api.example.com/v1';
@@ -215,7 +215,7 @@ export async function myAppPaginatedApiCall<T>({
 Always add this to give power users a generic HTTP action:
 
 ```typescript
-import { createCustomApiCallAction } from '@fema/connector-common';
+import { createCustomApiCallAction } from '@fema-ipaas/connector-common';
 
 // In createConnector actions array:
 createCustomApiCallAction({

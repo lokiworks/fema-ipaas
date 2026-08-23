@@ -1,5 +1,5 @@
-import { isNil } from '@fema/core-utils'
-import { EngineGenericError, ExecutionMode } from '@fema/shared'
+import { isNil } from '@fema-ipaas/core-utils'
+import { EngineGenericError, ExecutionMode } from '@fema-ipaas/shared'
 import { CodeSandbox } from '../../core/code/code-sandbox-common'
 
 export const EXECUTION_MODE = process.env.FEMA_EXECUTION_MODE as ExecutionMode | undefined

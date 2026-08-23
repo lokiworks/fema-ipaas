@@ -1,4 +1,4 @@
-import { WorkflowAction, ExecutionStatus } from '@fema/shared'
+import { WorkflowAction, ExecutionStatus } from '@fema-ipaas/shared'
 import { codeExecutor } from '../../src/lib/handler/code-executor'
 import { WorkflowExecutorContext } from '../../src/lib/handler/context/workflow-execution-context'
 import { workflowExecutor } from '../../src/lib/handler/workflow-executor'

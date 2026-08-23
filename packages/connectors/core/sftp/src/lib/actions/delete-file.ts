@@ -1,4 +1,4 @@
-import { createAction, Property } from '@fema/connector-sdk';
+import { createAction, Property } from '@fema-ipaas/connector-sdk';
 import { endClient, getClient, getProtocolBackwardCompatibility } from '../common';
 import { sftpAuth } from '../auth';
 import { Client as FTPClient, FTPError } from 'basic-ftp';

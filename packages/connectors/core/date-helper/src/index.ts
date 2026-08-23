@@ -1,5 +1,5 @@
-import { createConnector, ConnectorAuth } from '@fema/connector-sdk';
-import { ConnectorCategory } from '@fema/connector-sdk';
+import { createConnector, ConnectorAuth } from '@fema-ipaas/connector-sdk';
+import { ConnectorCategory } from '@fema-ipaas/connector-sdk';
 import { addSubtractDateAction } from './lib/actions/add-subtract-date';
 import { dateDifferenceAction } from './lib/actions/date-difference';
 import { extractDateParts } from './lib/actions/extract-date-parts';

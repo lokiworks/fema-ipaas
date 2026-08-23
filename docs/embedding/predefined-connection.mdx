@@ -33,7 +33,7 @@ const instanceUrl = 'https://github.com/lokiworks/fema-ipaas';
 
 // The name of the user / organization in your SAAS
 const externalProjectId = 'org_1234';
-const connectorName = '@fema/connector-gelato';
+const connectorName = '@fema-ipaas/connector-gelato';
 // This will depend on what your connector auth type is, can be one of this ['PLATFORM_OAUTH2','SECRET_TEXT','BASIC_AUTH','CUSTOM_AUTH']
 const connectorAuthType = "CUSTOM_AUTH"
 const connectionProps = {
@@ -176,13 +176,13 @@ import {
    ConnectionsManager,
    Property,
    TriggerStrategy
-} from "@fema/connectors-framework";
+} from "@fema-ipaas/connectors-framework";
 import {
    createTrigger
-} from "@fema/connectors-framework";
+} from "@fema-ipaas/connectors-framework";
 import {
    isNil
-} from "@fema/shared";
+} from "@fema-ipaas/shared";
 // Add this import from the index.ts file, where it contains the definition of the auth object.
 import { auth } from '../..';
 

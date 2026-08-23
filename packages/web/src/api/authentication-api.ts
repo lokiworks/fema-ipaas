@@ -1,4 +1,4 @@
-import { WorkspaceRole } from '@fema/core-utils';
+import { WorkspaceRole } from '@fema-ipaas/core-utils';
 import {
   CreateOtpRequestBody,
   CompleteSignUpRequest,
@@ -14,7 +14,7 @@ import {
   ThirdPartyAuthnProviderEnum,
   UserIdentity,
   VerifyEmailCodeRequest,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 
 import { api } from '@/lib/api';
 

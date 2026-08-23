@@ -1,4 +1,4 @@
-import { ApFile, Property, createAction } from '@fema/connector-sdk';
+import { ApFile, Property, createAction } from '@fema-ipaas/connector-sdk';
 import { smtpAuth } from '../..';
 import { smtpCommon } from '../common';
 import { Attachment, Headers } from 'nodemailer/lib/mailer';

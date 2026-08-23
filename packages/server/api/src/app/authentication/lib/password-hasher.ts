@@ -1,4 +1,4 @@
-import { assertNotNullOrUndefined } from '@fema/core-utils'
+import { assertNotNullOrUndefined } from '@fema-ipaas/core-utils'
 import bcrypt from 'bcrypt'
 import { FirebaseScrypt } from 'firebase-scrypt'
 import { system } from '../../helper/system/system'

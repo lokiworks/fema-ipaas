@@ -81,8 +81,8 @@ Dev connectors load from each connector's built `dist/`, and the watcher only re
 
 ```bash
 # build the connector (+ framework/common if needed)
-npx turbo run build --filter=@fema/connector-<name> \
-  --filter=@fema/connector-sdk --filter=@fema/connector-common
+npx turbo run build --filter=@fema-ipaas/connector-<name> \
+  --filter=@fema-ipaas/connector-sdk --filter=@fema-ipaas/connector-common
 # tsc doesn't copy src/i18n — copy it if the connector has one
 cp -R packages/connectors/community/<name>/src/i18n packages/connectors/community/<name>/dist/src/i18n 2>/dev/null || true
 # invalidate the in-memory dev-connector cache without a full restart:

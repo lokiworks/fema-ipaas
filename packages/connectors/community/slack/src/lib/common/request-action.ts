@@ -4,8 +4,8 @@ import {
     slackSendMessage,
     textToSectionBlocks,
 } from './utils';
-import { assertNotNullOrUndefined } from '@fema/connector-sdk';
-import { ExecutionType } from '@fema/connector-sdk';
+import { assertNotNullOrUndefined } from '@fema-ipaas/connector-sdk';
+import { ExecutionType } from '@fema-ipaas/connector-sdk';
 import { ChatPostMessageResponse } from '@slack/web-api';
 import { getBotToken, SlackAuthValue } from './auth-helpers';
 

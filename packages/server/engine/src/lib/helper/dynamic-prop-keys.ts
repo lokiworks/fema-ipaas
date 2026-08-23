@@ -1,5 +1,5 @@
-import { InputPropertyMap } from '@fema/connector-sdk'
-import { isObject } from '@fema/core-utils'
+import { InputPropertyMap } from '@fema-ipaas/connector-sdk'
+import { isObject } from '@fema-ipaas/core-utils'
 
 // react-hook-form treats `.` and `[` as path separators and strips `]`, `"` and `'`
 // (see its stringToPath util), so dynamic-property keys containing any of these break

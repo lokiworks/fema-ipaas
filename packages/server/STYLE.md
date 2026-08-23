@@ -61,7 +61,7 @@ Think of the const as a namespace — it groups the public API. A reader sees wh
 // packages/server/api/src/app/workflows/workflow/workflow.service.ts (shape)
 
 // 1. imports
-import { ApplicationError, apId, /* ... */ } from '@fema/shared'
+import { ApplicationError, apId, /* ... */ } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 // ...
 
@@ -131,7 +131,7 @@ Rules of thumb:
 
 ## 4. Error handling: throw `ApplicationError` at boundaries, use `tryCatch` for recoverable failures
 
-`@fema/shared` exports `tryCatch` / `tryCatchSync` (see [`try-catch.ts`](../core/shared/src/lib/core/common/try-catch.ts)) that turn throws into a discriminated `{ data, error }` result. Two distinct patterns, each with its place.
+`@fema-ipaas/shared` exports `tryCatch` / `tryCatchSync` (see [`try-catch.ts`](../core/shared/src/lib/core/common/try-catch.ts)) that turn throws into a discriminated `{ data, error }` result. Two distinct patterns, each with its place.
 
 ### 4a) Unrecoverable / contract violations — throw `ApplicationError`
 

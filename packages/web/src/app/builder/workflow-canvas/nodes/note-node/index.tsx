@@ -1,5 +1,5 @@
 import { useDraggable } from '@dnd-kit/core';
-import { Note, NoteColorVariant } from '@fema/shared';
+import { Note, NoteColorVariant } from '@fema-ipaas/shared';
 import { Editor } from '@tiptap/core';
 import { NodeProps, NodeResizeControl } from '@xyflow/react';
 import { t } from 'i18next';

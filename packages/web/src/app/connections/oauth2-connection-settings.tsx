@@ -3,8 +3,8 @@ import {
   OAuth2Props,
   ConnectorMetadataModel,
   ConnectorMetadataModelSummary,
-} from '@fema/connector-sdk';
-import { isNil } from '@fema/core-utils';
+} from '@fema-ipaas/connector-sdk';
+import { isNil } from '@fema-ipaas/core-utils';
 import {
   ApErrorParams,
   ApFlagId,
@@ -14,7 +14,7 @@ import {
   UpsertCloudOAuth2Request,
   UpsertOAuth2Request,
   UpsertTenantOAuth2Request,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { ChevronDown } from 'lucide-react';
 import { Dispatch, SetStateAction, useState } from 'react';

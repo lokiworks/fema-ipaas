@@ -1,9 +1,9 @@
 import {
   Property,
   createAction,
-} from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-sdk';
 import * as z from 'zod/mini'
-import { propsValidation } from '@fema/connector-common';
+import { propsValidation } from '@fema-ipaas/connector-common';
 
 export const generatePassword = createAction({
   audience: 'both',

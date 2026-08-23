@@ -1,4 +1,4 @@
-import { apId } from '@fema/core-utils'
+import { apId } from '@fema-ipaas/core-utils'
 import { FastifyBaseLogger } from 'fastify'
 import { pubsub } from '../helper/pubsub'
 

@@ -44,9 +44,9 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@fema/shared': path.resolve(repoRoot, 'packages/core/shared/src/index.ts'),
-      '@fema/connectors-framework': path.resolve(repoRoot, 'packages/connectors/sdk/src/index.ts'),
-      '@fema/connectors-common': path.resolve(repoRoot, 'packages/connectors/common/src/index.ts'),
+      '@fema-ipaas/shared': path.resolve(repoRoot, 'packages/core/shared/src/index.ts'),
+      '@fema-ipaas/connectors-framework': path.resolve(repoRoot, 'packages/connectors/sdk/src/index.ts'),
+      '@fema-ipaas/connectors-common': path.resolve(repoRoot, 'packages/connectors/common/src/index.ts'),
     },
   },
 })
@@ -57,7 +57,7 @@ export default defineConfig({
 Create a `test/` directory and add `.test.ts` files:
 
 ```typescript
-import { createMockActionContext } from '@fema/connectors-framework';
+import { createMockActionContext } from '@fema-ipaas/connectors-framework';
 import { myAction } from '../src/lib/actions/my-action';
 
 describe('myAction', () => {
@@ -78,7 +78,7 @@ describe('myAction', () => {
 
 ```bash
 # Run tests for a specific connector
-npx turbo test --filter=@fema/connector-text-helper
+npx turbo test --filter=@fema-ipaas/connector-text-helper
 
 # Run tests directly from the connector directory
 cd packages/connectors/core/text-helper

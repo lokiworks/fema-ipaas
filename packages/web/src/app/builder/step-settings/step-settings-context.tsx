@@ -2,13 +2,13 @@ import {
   ConnectorMetadataModel,
   ConnectorPropertyMap,
   connectorPropertiesUtils,
-} from '@fema/connector-sdk';
-import { setAtPath } from '@fema/core-utils';
+} from '@fema-ipaas/connector-sdk';
+import { setAtPath } from '@fema-ipaas/core-utils';
 import {
   WorkflowAction,
   WorkflowTrigger,
   PropertyExecutionType,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import {
   createContext,
   ReactNode,

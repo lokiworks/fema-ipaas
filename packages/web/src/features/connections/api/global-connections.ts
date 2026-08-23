@@ -1,10 +1,10 @@
-import { SeekPage } from '@fema/core-utils';
+import { SeekPage } from '@fema-ipaas/core-utils';
 import {
   ConnectionWithoutSensitiveData,
   ListGlobalConnectionsRequestQuery,
   UpdateGlobalConnectionValueRequestBody,
   UpsertGlobalConnectionRequestBody,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 
 import { api } from '@/lib/api';
 

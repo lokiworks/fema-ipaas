@@ -1,4 +1,4 @@
-import { WorkflowOperationType, WorkflowTriggerType } from '@fema/shared';
+import { WorkflowOperationType, WorkflowTriggerType } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import {
   CheckCircle2Icon,
@@ -145,7 +145,7 @@ const ConnectorSelectorContent = ({
     isError: isAiConnectorError,
     isSuccess: isAiConnectorLoaded,
   } = connectorsHooks.useConnector({
-    name: '@fema/connector-ai',
+    name: '@fema-ipaas/connector-ai',
     workspaceId: authenticationSession.getWorkspaceId() ?? undefined,
   });
   const isAiConnectorUnavailable =

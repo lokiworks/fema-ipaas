@@ -1,4 +1,4 @@
-import { WorkflowTrigger, TriggerEventWithPayload } from '@fema/shared';
+import { WorkflowTrigger, TriggerEventWithPayload } from '@fema-ipaas/shared';
 import deepEqual from 'deep-equal';
 import { t } from 'i18next';
 import React from 'react';

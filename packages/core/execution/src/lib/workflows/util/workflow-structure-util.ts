@@ -1,11 +1,11 @@
-import { isNil } from '@fema/core-utils'
-import { ApplicationError, ErrorCode } from '@fema/core-utils'
+import { isNil } from '@fema-ipaas/core-utils'
+import { ApplicationError, ErrorCode } from '@fema-ipaas/core-utils'
 import { BranchCondition, BranchExecutionType, emptyCondition, WorkflowAction, WorkflowActionType } from '../actions/action'
 import { WorkflowVersion } from '../workflow-version'
 import { WorkflowTrigger, WorkflowTriggerType } from '../triggers/trigger'
 
 
-export const AI_CONNECTOR_NAME = '@fema/connector-ai'
+export const AI_CONNECTOR_NAME = '@fema-ipaas/connector-ai'
 
 export type Step = WorkflowAction | WorkflowTrigger
 type StepWithIndex = Step & {

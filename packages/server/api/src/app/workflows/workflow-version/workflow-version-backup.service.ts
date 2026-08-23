@@ -1,5 +1,5 @@
-import { spreadIfDefined } from '@fema/core-utils'
-import { FileCompression, FileType, WorkflowVersion } from '@fema/shared'
+import { spreadIfDefined } from '@fema-ipaas/core-utils'
+import { FileCompression, FileType, WorkflowVersion } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { fileService } from '../../file/file.service'
 

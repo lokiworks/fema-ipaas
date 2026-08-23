@@ -1,7 +1,7 @@
 import {
   createConnector,
-} from '@fema/connector-sdk';
-import { ConnectorCategory } from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-sdk';
+import { ConnectorCategory } from '@fema-ipaas/connector-sdk';
 import { createFile } from './lib/actions/create-file';
 import { uploadFileAction } from './lib/actions/upload-file';
 import { readFileContent } from './lib/actions/read-file';

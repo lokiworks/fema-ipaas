@@ -1,4 +1,4 @@
-import { tryCatch } from '@fema/core-utils';
+import { tryCatch } from '@fema-ipaas/core-utils';
 import { useKeyPress, useReactFlow } from '@xyflow/react';
 import { t } from 'i18next';
 import {

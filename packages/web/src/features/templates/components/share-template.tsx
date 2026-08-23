@@ -1,5 +1,5 @@
-import { ApErrorParams, ErrorCode, isNil } from '@fema/core-utils';
-import { Template } from '@fema/shared';
+import { ApErrorParams, ErrorCode, isNil } from '@fema-ipaas/core-utils';
+import { Template } from '@fema-ipaas/shared';
 import { useMutation } from '@tanstack/react-query';
 import { t } from 'i18next';
 import React from 'react';

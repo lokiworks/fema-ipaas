@@ -4,7 +4,7 @@ import {
     EngineResponseStatus,
     ExecuteTokenRefreshJobData,
     WorkerJobType,
-} from '@fema/shared'
+} from '@fema-ipaas/shared'
 import { workerSettings } from '../../config/worker-settings'
 import { JobContext, JobHandler, JobResultKind, SynchronousJobResult } from '../types'
 import { isSandboxTimeout } from '../utils/sandbox-helpers'

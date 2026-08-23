@@ -1,4 +1,4 @@
-import { CreateOtpRequestBody, OtpType } from '@fema/shared';
+import { CreateOtpRequestBody, OtpType } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { MailCheck } from 'lucide-react';
 import { toast } from 'sonner';

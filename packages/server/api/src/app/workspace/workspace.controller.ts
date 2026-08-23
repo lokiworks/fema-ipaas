@@ -1,5 +1,5 @@
-import { ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil, SeekPage } from '@fema/core-utils'
-import { CreateTenantWorkspaceRequest, ListWorkspaceRequestForTenantQueryParams, PrincipalType, SERVICE_KEY_SECURITY_OPENAPI, UpdateWorkspaceTenantRequest, WorkspaceType, WorkspaceWithLimits } from '@fema/shared'
+import { ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil, SeekPage } from '@fema-ipaas/core-utils'
+import { CreateTenantWorkspaceRequest, ListWorkspaceRequestForTenantQueryParams, PrincipalType, SERVICE_KEY_SECURITY_OPENAPI, UpdateWorkspaceTenantRequest, WorkspaceType, WorkspaceWithLimits } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'

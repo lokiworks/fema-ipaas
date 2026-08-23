@@ -1,9 +1,9 @@
-import { createConnector, ConnectorAuth } from '@fema/connector-sdk';
+import { createConnector, ConnectorAuth } from '@fema-ipaas/connector-sdk';
 import { callWorkflow } from './lib/actions/call-workflow';
 import { streamCsvToSubflows } from './lib/actions/stream-csv-to-workflow';
 import { callableWorkflow } from './lib/triggers/callable-workflow';
 import { response } from './lib/actions/respond';
-import { ConnectorCategory } from '@fema/connector-sdk';
+import { ConnectorCategory } from '@fema-ipaas/connector-sdk';
 
 export const workflows = createConnector({
   displayName: 'Sub Workflows',

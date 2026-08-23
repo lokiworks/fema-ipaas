@@ -1,6 +1,6 @@
-import { ApplicationError, ErrorCode } from '@fema/core-utils'
-import { TriggerStrategy } from '@fema/connector-sdk'
-import { ApEnvironment, EngineResponseStatus, TriggerSourceScheduleType } from '@fema/shared'
+import { ApplicationError, ErrorCode } from '@fema-ipaas/core-utils'
+import { TriggerStrategy } from '@fema-ipaas/connector-sdk'
+import { ApEnvironment, EngineResponseStatus, TriggerSourceScheduleType } from '@fema-ipaas/shared'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mockSubmitAndWaitForResponse = vi.fn()
@@ -61,7 +61,7 @@ const mockLog = {
 const BASE_PARAMS = {
     workflowId: 'workflow-1',
     workflowVersionId: 'fv-1',
-    connectorName: '@fema/connector-test',
+    connectorName: '@fema-ipaas/connector-test',
     workspaceId: 'proj-1',
     simulate: false,
 }

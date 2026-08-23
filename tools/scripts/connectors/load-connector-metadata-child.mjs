@@ -2,7 +2,7 @@
  * Standalone Node entrypoint that loads a connector's compiled JS and prints its
  * metadata as JSON on stdout. Invoked as a child process from
  * `connector-script-utils.ts:loadConnectorFromFolder` so that the connector's
- * `require('@fema/connector-sdk')` resolves via standard
+ * `require('@fema-ipaas/connector-sdk')` resolves via standard
  * node_modules lookup — matching the pinned framework inside the connector's
  * package.json — instead of being intercepted by `tsconfig-paths/register`
  * in the parent script (which would redirect to the local workspace

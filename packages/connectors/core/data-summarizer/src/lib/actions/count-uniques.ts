@@ -1,6 +1,6 @@
-import { createAction, Property } from '@fema/connector-sdk';
+import { createAction, Property } from '@fema-ipaas/connector-sdk';
 import { common } from '../common';
-import { isNil } from '@fema/connector-sdk';
+import { isNil } from '@fema-ipaas/connector-sdk';
 
 export const countUniques = createAction({
   audience: 'both',

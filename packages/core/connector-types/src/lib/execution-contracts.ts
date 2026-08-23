@@ -1,10 +1,10 @@
-import { ApId, BaseModelSchema, DateOrString, Nullable } from '@fema/core-utils'
+import { ApId, BaseModelSchema, DateOrString, Nullable } from '@fema-ipaas/core-utils'
 import * as z from 'zod/mini'
 import { PackageType, ConnectorType } from './connector'
 import { TriggerStrategy } from './trigger'
 
-// Contracts that the execution layer (@fema/workflow-core) and the engine
-// need from @fema/shared. Hosted here (the connector-types contract package) so
+// Contracts that the execution layer (@fema-ipaas/workflow-core) and the engine
+// need from @fema-ipaas/shared. Hosted here (the connector-types contract package) so
 // the engine can name them without importing shared. See SRE-163.
 
 // ── store-entry ────────────────────────────────────────────────────────────

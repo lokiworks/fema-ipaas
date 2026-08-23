@@ -1,4 +1,4 @@
-import { BaseModelSchema } from '@fema/core-utils'
+import { BaseModelSchema } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 
 const KnowledgeBaseFile = z.object({

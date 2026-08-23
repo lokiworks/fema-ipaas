@@ -1,5 +1,5 @@
-import { isNil, spreadIfDefined } from '@fema/core-utils'
-import { apDayjsDuration } from '@fema/server-utils'
+import { isNil, spreadIfDefined } from '@fema-ipaas/core-utils'
+import { apDayjsDuration } from '@fema-ipaas/server-utils'
 import { FastifyBaseLogger } from 'fastify'
 import { distributedStore } from '../database/redis-connections'
 import { workspaceRepo } from './workspace-repo'

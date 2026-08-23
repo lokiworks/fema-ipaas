@@ -1,5 +1,5 @@
-import { isNil } from '@fema/core-utils';
-import { UserWithMetaInformation } from '@fema/shared';
+import { isNil } from '@fema-ipaas/core-utils';
+import { UserWithMetaInformation } from '@fema-ipaas/shared';
 import {
   QueryClient,
   useMutation,

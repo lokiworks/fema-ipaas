@@ -1,4 +1,4 @@
-import { Permission } from '@fema/core-utils';
+import { Permission } from '@fema-ipaas/core-utils';
 
 import { authenticationSession } from './authentication-session';
 

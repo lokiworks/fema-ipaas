@@ -1,9 +1,9 @@
-import { isNil } from '@fema/core-utils';
+import { isNil } from '@fema-ipaas/core-utils';
 import {
   WORKSPACE_COLOR_PALETTE,
   WorkspaceType,
   WorkspaceWithLimits,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { User } from 'lucide-react';
 
 import { Avatar } from '@/components/ui/avatar';

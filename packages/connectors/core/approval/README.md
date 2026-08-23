@@ -2,4 +2,4 @@
 
 ## Building
 
-Run `turbo run build --filter=@fema/connector-approval` to build the library.
+Run `turbo run build --filter=@fema-ipaas/connector-approval` to build the library.

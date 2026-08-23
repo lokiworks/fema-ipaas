@@ -1,5 +1,5 @@
 {
-  "name": "@fema/engine",
+  "name": "@fema-ipaas/engine",
   "version": "0.7.0",
   "type": "commonjs",
   "scripts": {
@@ -9,9 +9,9 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@fema/connector-common": "workspace:*",
-    "@fema/connector-sdk": "workspace:*",
-    "@fema/shared": "workspace:*",
+    "@fema-ipaas/connector-common": "workspace:*",
+    "@fema-ipaas/connector-sdk": "workspace:*",
+    "@fema-ipaas/shared": "workspace:*",
     "ai": "^6.0.0",
     "async-mutex": "0.4.0",
     "cron-validator": "1.3.1",
@@ -26,8 +26,8 @@
     "tslib": "2.6.2",
     "undici": "7.29.0",
     "zod": "4.3.6",
-    "@fema/core-utils": "workspace:*",
-    "@fema/expression": "workspace:*"
+    "@fema-ipaas/core-utils": "workspace:*",
+    "@fema-ipaas/expression": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "24.11.0",

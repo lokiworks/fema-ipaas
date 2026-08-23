@@ -1,4 +1,4 @@
-import { ExecutionType, TriggerStrategy } from '@fema/connector-types';
+import { ExecutionType, TriggerStrategy } from '@fema-ipaas/connector-types';
 import {
   ActionContext,
   SetScheduleRequest,

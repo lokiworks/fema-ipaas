@@ -1,4 +1,4 @@
-import { RouterAction } from '@fema/shared';
+import { RouterAction } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import React from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';

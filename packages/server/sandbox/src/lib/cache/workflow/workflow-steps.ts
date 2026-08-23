@@ -1,4 +1,4 @@
-import { Step, WorkflowActionType, workflowStructureUtil, WorkflowTriggerType, WorkflowVersion } from '@fema/shared'
+import { Step, WorkflowActionType, workflowStructureUtil, WorkflowTriggerType, WorkflowVersion } from '@fema-ipaas/shared'
 
 export const workflowSteps = {
     code: (workflowVersion: WorkflowVersion): Step[] =>

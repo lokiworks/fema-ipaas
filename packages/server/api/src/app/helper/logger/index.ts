@@ -1,4 +1,4 @@
-import { apVersionUtil, evlogSetup } from '@fema/server-utils'
+import { apVersionUtil, evlogSetup } from '@fema-ipaas/server-utils'
 import { FastifyBaseLogger } from 'fastify'
 import { AppSystemProp, environmentVariables } from '../system/system-props'
 

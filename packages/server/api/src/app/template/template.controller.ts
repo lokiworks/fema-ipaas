@@ -1,5 +1,5 @@
-import { ApplicationError, ErrorCode, isNil } from '@fema/core-utils'
-import { ALL_PRINCIPAL_TYPES, CreateTemplateRequestBody, ListTemplatesRequestQuery, Principal, PrincipalType, SERVICE_KEY_SECURITY_OPENAPI, Template, TemplateType, UpdateTemplateRequestBody } from '@fema/shared'
+import { ApplicationError, ErrorCode, isNil } from '@fema-ipaas/core-utils'
+import { ALL_PRINCIPAL_TYPES, CreateTemplateRequestBody, ListTemplatesRequestQuery, Principal, PrincipalType, SERVICE_KEY_SECURITY_OPENAPI, Template, TemplateType, UpdateTemplateRequestBody } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'

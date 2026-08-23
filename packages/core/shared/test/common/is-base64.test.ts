@@ -1,4 +1,4 @@
-import { isBase64 } from '@fema/core-utils'
+import { isBase64 } from '@fema-ipaas/core-utils'
 
 const validBase64 = 'SGVsbG8gV29ybGQ='  // "Hello World"
 const validPngBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='

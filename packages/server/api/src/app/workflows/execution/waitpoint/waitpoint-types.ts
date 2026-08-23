@@ -1,5 +1,5 @@
-import { ApId } from '@fema/core-utils'
-import { ExecutionStatus, PauseType, RespondResponse, WaitpointVersion } from '@fema/shared'
+import { ApId } from '@fema-ipaas/core-utils'
+import { ExecutionStatus, PauseType, RespondResponse, WaitpointVersion } from '@fema-ipaas/shared'
 
 enum WaitpointStatus {
     PENDING = 'PENDING',

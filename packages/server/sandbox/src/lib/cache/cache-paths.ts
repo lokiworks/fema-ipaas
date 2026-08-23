@@ -1,7 +1,7 @@
 import { readdir, rm, stat } from 'fs/promises'
 import path from 'path'
-import { tryCatch } from '@fema/core-utils'
-import { type ApLogger } from '@fema/server-utils'
+import { tryCatch } from '@fema-ipaas/core-utils'
+import { type ApLogger } from '@fema-ipaas/server-utils'
 
 export const cacheUtils = (basePath: string) => ({
     getGlobalCachePathLatestVersion(): string {

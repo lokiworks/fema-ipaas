@@ -2,15 +2,15 @@ import {
   ConnectorProperty,
   ConnectorPropertyMap,
   PropertyGroup,
-} from '@fema/connector-sdk';
-import { isNil } from '@fema/core-utils';
+} from '@fema-ipaas/connector-sdk';
+import { isNil } from '@fema-ipaas/core-utils';
 import {
   ApFlagId,
   ConnectorAction,
   ConnectorActionSettings,
   ConnectorTrigger,
   ConnectorTriggerSettings,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import React from 'react';
 
 import { Skeleton } from '@/components/ui/skeleton';

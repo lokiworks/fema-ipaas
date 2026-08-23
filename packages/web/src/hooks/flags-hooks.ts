@@ -1,4 +1,4 @@
-import { ApFlagId } from '@fema/shared';
+import { ApFlagId } from '@fema-ipaas/shared';
 import { useSuspenseQuery } from '@tanstack/react-query';
 
 import { flagsApi, FlagsMap } from '../api/flags-api';

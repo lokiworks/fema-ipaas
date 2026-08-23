@@ -1,4 +1,4 @@
-import { SeekPage } from '@fema/core-utils';
+import { SeekPage } from '@fema-ipaas/core-utils';
 import {
   ConnectionOwners,
   ListVariablesRequestQuery,
@@ -6,7 +6,7 @@ import {
   UpdateVariableRequestBody,
   UpsertVariableRequestBody,
   VariableWithoutSensitiveData,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 
 import { api } from '@/lib/api';
 

@@ -1,4 +1,4 @@
-import { PropertyType } from '@fema/connector-sdk'
+import { PropertyType } from '@fema-ipaas/connector-sdk'
 import { checkboxProcessor } from './checkbox'
 import { dateTimeProcessor } from './date-time'
 import { fileProcessor } from './file'

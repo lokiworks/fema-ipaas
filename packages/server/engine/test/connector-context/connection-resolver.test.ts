@@ -1,5 +1,5 @@
-import { ContextVersion } from '@fema/connector-sdk'
-import { ConnectionStatus, ConnectionType, ConnectionExpiredError, ConnectionLoadingError, ConnectionNotFoundError, ConnectionConnectorMismatchError, FetchError } from '@fema/shared'
+import { ContextVersion } from '@fema-ipaas/connector-sdk'
+import { ConnectionStatus, ConnectionType, ConnectionExpiredError, ConnectionLoadingError, ConnectionNotFoundError, ConnectionConnectorMismatchError, FetchError } from '@fema-ipaas/shared'
 import { createConnectionResolver } from '../../src/lib/connector-context/connection-resolver'
 
 const RESOLVER_PARAMS = {
@@ -9,7 +9,7 @@ const RESOLVER_PARAMS = {
     contextVersion: ContextVersion.V1,
 }
 
-function makeConnection({ status = ConnectionStatus.ACTIVE, type = ConnectionType.SECRET_TEXT, value = { type: ConnectionType.SECRET_TEXT, secret_text: 'my-secret' }, connectorName = '@fema/connector-slack' }: {
+function makeConnection({ status = ConnectionStatus.ACTIVE, type = ConnectionType.SECRET_TEXT, value = { type: ConnectionType.SECRET_TEXT, secret_text: 'my-secret' }, connectorName = '@fema-ipaas/connector-slack' }: {
     status?: ConnectionStatus
     type?: ConnectionType
     value?: Record<string, unknown>
@@ -164,7 +164,7 @@ describe('connection-resolver service', () => {
     })
 
     describe('FEMA_ENFORCE_CONNECTION_CONNECTOR_BINDING', () => {
-        const connectorName = '@fema/connector-slack'
+        const connectorName = '@fema-ipaas/connector-slack'
 
         afterEach(() => {
             delete process.env.FEMA_ENFORCE_CONNECTION_CONNECTOR_BINDING
@@ -179,7 +179,7 @@ describe('connection-resolver service', () => {
 
         it('throws ConnectionConnectorMismatchError for another connector when enabled', async () => {
             process.env.FEMA_ENFORCE_CONNECTION_CONNECTOR_BINDING = 'true'
-            mockFetchReturning('@fema/connector-google-sheets')
+            mockFetchReturning('@fema-ipaas/connector-google-sheets')
 
             const resolver = createConnectionResolver({ ...RESOLVER_PARAMS, connectorName })
             await expect(resolver.obtain('my-connection')).rejects.toThrow(ConnectionConnectorMismatchError)
@@ -197,7 +197,7 @@ describe('connection-resolver service', () => {
         })
 
         it('resolves a connection for another connector when disabled', async () => {
-            mockFetchReturning('@fema/connector-google-sheets')
+            mockFetchReturning('@fema-ipaas/connector-google-sheets')
 
             const resolver = createConnectionResolver({ ...RESOLVER_PARAMS, connectorName })
             await expect(resolver.obtain('my-connection')).resolves.toEqual({
@@ -208,14 +208,14 @@ describe('connection-resolver service', () => {
 
         it('throws ConnectionConnectorMismatchError for a step with no connector of its own when enabled', async () => {
             process.env.FEMA_ENFORCE_CONNECTION_CONNECTOR_BINDING = 'true'
-            mockFetchReturning('@fema/connector-google-sheets')
+            mockFetchReturning('@fema-ipaas/connector-google-sheets')
 
             const resolver = createConnectionResolver(RESOLVER_PARAMS)
             await expect(resolver.obtain('my-connection')).rejects.toThrow(ConnectionConnectorMismatchError)
         })
 
         it('resolves for a step with no connector of its own when disabled', async () => {
-            mockFetchReturning('@fema/connector-google-sheets')
+            mockFetchReturning('@fema-ipaas/connector-google-sheets')
 
             const resolver = createConnectionResolver(RESOLVER_PARAMS)
             await expect(resolver.obtain('my-connection')).resolves.toEqual({

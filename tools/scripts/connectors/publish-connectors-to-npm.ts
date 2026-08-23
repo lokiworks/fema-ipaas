@@ -1,6 +1,6 @@
 import { publishNpmPackage } from '../utils/publish-npm-package'
 import { findAllConnectorsDirectoryInSource } from '../utils/connector-script-utils'
-import { chunk } from '@fema/core-utils'
+import { chunk } from '@fema-ipaas/core-utils'
 
 function getChangedConnectorPaths(): string[] | null {
   const changedConnectors = process.env['CHANGED_CONNECTORS']

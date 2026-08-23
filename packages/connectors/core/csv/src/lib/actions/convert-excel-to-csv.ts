@@ -1,4 +1,4 @@
-import { createAction, Property } from '@fema/connector-sdk';
+import { createAction, Property } from '@fema-ipaas/connector-sdk';
 import * as XLSX from 'xlsx';
 import { excelToCsvActionOutputSchema } from '../output-schemas';
 

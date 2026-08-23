@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { BaseModelSchema } from '@fema/core-utils'
+import { BaseModelSchema } from '@fema-ipaas/core-utils'
 import { EngineResponseStatus } from '../engine/engine-operation'
 import { JobData } from './job-data'
 

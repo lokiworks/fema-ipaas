@@ -1,6 +1,6 @@
-import { assertNotNullOrUndefined, isNil } from '@fema/core-utils';
-import { FEMA_FUNCTIONS, formulaEvaluator } from '@fema/expression';
-import { WorkflowAction, WorkflowTrigger } from '@fema/shared';
+import { assertNotNullOrUndefined, isNil } from '@fema-ipaas/core-utils';
+import { FEMA_FUNCTIONS, formulaEvaluator } from '@fema-ipaas/expression';
+import { WorkflowAction, WorkflowTrigger } from '@fema-ipaas/shared';
 import { MentionNodeAttrs } from '@tiptap/extension-mention';
 import { JSONContent } from '@tiptap/react';
 import { Variable as VariableIcon } from 'lucide-react';

@@ -1,4 +1,4 @@
-import { FileType, Workflow, WorkflowStatus, Workspace, WebhookHandshakeStrategy } from '@fema/shared'
+import { FileType, Workflow, WorkflowStatus, Workspace, WebhookHandshakeStrategy } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { webhookHandshake } from '../../../../src/app/webhooks/webhook-handshake'

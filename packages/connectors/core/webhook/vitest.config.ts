@@ -10,9 +10,9 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@fema/shared': path.resolve(repoRoot, 'packages/core/shared/src/index.ts'),
-      '@fema/connector-sdk': path.resolve(repoRoot, 'packages/connectors/sdk/src/index.ts'),
-      '@fema/connector-common': path.resolve(repoRoot, 'packages/connectors/common/src/index.ts'),
+      '@fema-ipaas/shared': path.resolve(repoRoot, 'packages/core/shared/src/index.ts'),
+      '@fema-ipaas/connector-sdk': path.resolve(repoRoot, 'packages/connectors/sdk/src/index.ts'),
+      '@fema-ipaas/connector-common': path.resolve(repoRoot, 'packages/connectors/common/src/index.ts'),
     },
   },
 })

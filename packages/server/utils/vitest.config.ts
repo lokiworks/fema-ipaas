@@ -10,7 +10,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@fema/shared': path.resolve(__dirname, '../../../packages/core/shared/src/index.ts'),
+      '@fema-ipaas/shared': path.resolve(__dirname, '../../../packages/core/shared/src/index.ts'),
     },
   },
 })

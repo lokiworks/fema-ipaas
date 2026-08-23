@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { Cursor } from '@fema/core-utils'
+import { Cursor } from '@fema-ipaas/core-utils'
 
 export const CreateFolderRequest = z.object({
     displayName: z.string(),

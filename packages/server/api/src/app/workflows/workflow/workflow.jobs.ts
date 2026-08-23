@@ -1,4 +1,4 @@
-import { assertNotNullOrUndefined } from '@fema/core-utils'
+import { assertNotNullOrUndefined } from '@fema-ipaas/core-utils'
 import { FastifyBaseLogger } from 'fastify'
 import { repoFactory } from '../../core/db/repo-factory'
 import { SystemJobData, SystemJobName } from '../../helper/system-jobs/common'

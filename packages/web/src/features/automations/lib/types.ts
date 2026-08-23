@@ -1,5 +1,5 @@
-import { SeekPage } from '@fema/core-utils';
-import { FolderDto, PopulatedWorkflow } from '@fema/shared';
+import { SeekPage } from '@fema-ipaas/core-utils';
+import { FolderDto, PopulatedWorkflow } from '@fema-ipaas/shared';
 
 export type TreeItemType = 'folder' | 'workflow' | 'load-more-folder';
 

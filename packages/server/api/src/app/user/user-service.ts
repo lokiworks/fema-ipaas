@@ -1,5 +1,5 @@
-import { apId, ApplicationError, assertNotNullOrUndefined, Cursor, ErrorCode, isNil, SeekPage, spreadIfDefined, TenantId, UserId, WorkspaceId } from '@fema/core-utils'
-import { TenantRole, User, UserIdentity, UserStatus, UserWithMetaInformation, WorkspaceType } from '@fema/shared'
+import { apId, ApplicationError, assertNotNullOrUndefined, Cursor, ErrorCode, isNil, SeekPage, spreadIfDefined, TenantId, UserId, WorkspaceId } from '@fema-ipaas/core-utils'
+import { TenantRole, User, UserIdentity, UserStatus, UserWithMetaInformation, WorkspaceType } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { nanoid } from 'nanoid'

@@ -1,4 +1,4 @@
-import { WorkflowTriggerType, WorkflowVersion } from '@fema/shared'
+import { WorkflowTriggerType, WorkflowVersion } from '@fema-ipaas/shared'
 import deepEqual from 'deep-equal'
 
 function isSameTrigger({ published, toPublish }: IsSameTriggerParams): boolean {

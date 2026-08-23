@@ -1,5 +1,5 @@
-import { SeekPage } from '@fema/core-utils';
-import { Execution, isExecutionStateTerminal } from '@fema/shared';
+import { SeekPage } from '@fema-ipaas/core-utils';
+import { Execution, isExecutionStateTerminal } from '@fema-ipaas/shared';
 import { InfiniteData, useInfiniteQuery } from '@tanstack/react-query';
 import { t } from 'i18next';
 import React, { useMemo } from 'react';

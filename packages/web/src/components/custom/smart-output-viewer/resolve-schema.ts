@@ -1,4 +1,4 @@
-import { isNil } from '@fema/core-utils';
+import { isNil } from '@fema-ipaas/core-utils';
 
 import { pathUtils } from '@/lib/path-utils';
 import { stringUtils } from '@/lib/string-utils';

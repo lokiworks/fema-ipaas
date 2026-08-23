@@ -1,4 +1,4 @@
-import { WorkflowTriggerType, WorkflowVersion, PropertyExecutionType } from '@fema/shared'
+import { WorkflowTriggerType, WorkflowVersion, PropertyExecutionType } from '@fema-ipaas/shared'
 import { describe, expect, it } from 'vitest'
 import { workflowPublishUtils } from '../../../../../src/app/workflows/workflow/workflow-publish-utils'
 
@@ -6,7 +6,7 @@ function connectorTrigger(overrides: { connectorName?: string, triggerName?: str
     return {
         type: WorkflowTriggerType.CONNECTOR,
         settings: {
-            connectorName: overrides.connectorName ?? '@fema/connector-jira-cloud',
+            connectorName: overrides.connectorName ?? '@fema-ipaas/connector-jira-cloud',
             connectorVersion: '0.4.1',
             triggerName: overrides.triggerName ?? 'new_issue',
             input: overrides.input ?? { workspaceId: 'AP', maxResults: 50 },
@@ -54,8 +54,8 @@ describe('workflowPublishUtils.isSameTrigger', () => {
 
     it('is false when the connector was swapped', () => {
         expect(workflowPublishUtils.isSameTrigger({
-            published: connectorTrigger({ connectorName: '@fema/connector-jira-cloud' }),
-            toPublish: connectorTrigger({ connectorName: '@fema/connector-linear' }),
+            published: connectorTrigger({ connectorName: '@fema-ipaas/connector-jira-cloud' }),
+            toPublish: connectorTrigger({ connectorName: '@fema-ipaas/connector-linear' }),
         })).toBe(false)
     })
 

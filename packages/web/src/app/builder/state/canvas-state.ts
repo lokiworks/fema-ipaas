@@ -1,5 +1,5 @@
-import { isNil } from '@fema/core-utils';
-import { WorkflowTriggerType } from '@fema/shared';
+import { isNil } from '@fema-ipaas/core-utils';
+import { WorkflowTriggerType } from '@fema-ipaas/shared';
 import { StoreApi } from 'zustand';
 
 import { RightSideBarType } from '@/app/builder/types';

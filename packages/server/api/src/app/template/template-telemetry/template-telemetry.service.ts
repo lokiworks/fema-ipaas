@@ -1,5 +1,5 @@
-import { isNil, tryCatch } from '@fema/core-utils'
-import { TemplateTelemetryEvent, TemplateTelemetryEventType } from '@fema/shared'
+import { isNil, tryCatch } from '@fema-ipaas/core-utils'
+import { TemplateTelemetryEvent, TemplateTelemetryEventType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { rejectedPromiseHandler } from '../../helper/promise-handler'
 import { system } from '../../helper/system/system'

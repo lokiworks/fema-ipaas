@@ -1,5 +1,5 @@
-import { isNil } from '@fema/core-utils';
-import { WorkflowTriggerType, workflowStructureUtil } from '@fema/shared';
+import { isNil } from '@fema-ipaas/core-utils';
+import { WorkflowTriggerType, workflowStructureUtil } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMemo } from 'react';

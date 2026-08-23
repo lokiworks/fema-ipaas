@@ -1,10 +1,10 @@
-import { ApErrorParams, ErrorCode } from '@fema/core-utils';
+import { ApErrorParams, ErrorCode } from '@fema-ipaas/core-utils';
 import {
   AddConnectorRequestBody,
   ApFlagId,
   PackageType,
   ConnectorScope,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { HttpStatusCode } from 'axios';
@@ -258,7 +258,7 @@ const InstallConnectorDialog = ({
                         value={field.value || ''}
                         id="connectorName"
                         type="text"
-                        placeholder="@fema/connector-name"
+                        placeholder="@fema-ipaas/connector-name"
                         className="rounded-sm"
                       />
                       <FormMessage />

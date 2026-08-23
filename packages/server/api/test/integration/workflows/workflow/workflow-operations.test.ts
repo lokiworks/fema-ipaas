@@ -10,7 +10,7 @@ import {
     ConnectorType,
     PopulatedWorkflow,
     StepLocationRelativeToParent,
-} from '@fema/shared'
+} from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { db } from '../../../../helpers/db'
@@ -227,7 +227,7 @@ describe('Workflow Operations API', () => {
             const ctx = await createTestContext(app!)
 
             const mockConnector = createMockConnectorMetadata({
-                name: '@fema/connector-schedule',
+                name: '@fema-ipaas/connector-schedule',
                 version: '0.2.0',
                 connectorType: ConnectorType.OFFICIAL,
                 packageType: PackageType.REGISTRY,
@@ -246,7 +246,7 @@ describe('Workflow Operations API', () => {
                 request: {
                     type: WorkflowTriggerType.CONNECTOR,
                     settings: {
-                        connectorName: '@fema/connector-schedule',
+                        connectorName: '@fema-ipaas/connector-schedule',
                         connectorVersion: '0.2.0',
                         input: {},
                         triggerName: 'every_hour',
@@ -260,7 +260,7 @@ describe('Workflow Operations API', () => {
             expect(response?.statusCode).toBe(StatusCodes.OK)
             const body = response?.json()
             expect(body.version.trigger.type).toBe(WorkflowTriggerType.CONNECTOR)
-            expect(body.version.trigger.settings.connectorName).toBe('@fema/connector-schedule')
+            expect(body.version.trigger.settings.connectorName).toBe('@fema-ipaas/connector-schedule')
         })
     })
 
@@ -416,7 +416,7 @@ describe('Workflow Operations API', () => {
             const ctx = await createTestContext(app!)
 
             const mockConnector = createMockConnectorMetadata({
-                name: '@fema/connector-test',
+                name: '@fema-ipaas/connector-test',
                 version: '0.1.0',
                 connectorType: ConnectorType.OFFICIAL,
                 packageType: PackageType.REGISTRY,
@@ -438,7 +438,7 @@ describe('Workflow Operations API', () => {
                         displayName: 'Connector Step',
                         name: 'step_1',
                         settings: {
-                            connectorName: '@fema/connector-test',
+                            connectorName: '@fema-ipaas/connector-test',
                             connectorVersion: '0.1.0',
                             actionName: 'test_action',
                             input: {},
@@ -458,7 +458,7 @@ describe('Workflow Operations API', () => {
                     displayName: 'Connector Step',
                     name: 'step_1',
                     settings: {
-                        connectorName: '@fema/connector-test',
+                        connectorName: '@fema-ipaas/connector-test',
                         connectorVersion: '0.1.0',
                         actionName: 'test_action',
                         input: inputData,

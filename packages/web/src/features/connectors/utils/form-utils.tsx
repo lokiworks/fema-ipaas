@@ -7,8 +7,8 @@ import {
   ConnectorProperty,
   ConnectorPropertyMap,
   PropertyType,
-} from '@fema/connector-sdk';
-import { Metadata, isNil, parseToJsonIfPossible } from '@fema/core-utils';
+} from '@fema-ipaas/connector-sdk';
+import { Metadata, isNil, parseToJsonIfPossible } from '@fema-ipaas/core-utils';
 import {
   ConnectionScope,
   ConnectionType,
@@ -37,7 +37,7 @@ import {
   ConnectorTriggerSettings,
   AUTHENTICATION_PROPERTY_NAME,
   OAuth2GrantType,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { z, ZodObject, ZodType } from 'zod';
 

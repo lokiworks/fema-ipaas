@@ -1,7 +1,7 @@
 /// <reference types="vitest/globals" />
 
 import { createFile } from '../src/lib/actions/create-file';
-import { createMockActionContext } from '@fema/connector-sdk';
+import { createMockActionContext } from '@fema-ipaas/connector-sdk';
 
 describe('createFile', () => {
   test('creates file with utf8 encoding', async () => {

@@ -1,4 +1,4 @@
-import { ApId, BaseModelSchema } from '@fema/core-utils'
+import { ApId, BaseModelSchema } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 
 export const ConcurrencyPool = z.object({

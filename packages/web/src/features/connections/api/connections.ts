@@ -1,4 +1,4 @@
-import { SeekPage } from '@fema/core-utils';
+import { SeekPage } from '@fema-ipaas/core-utils';
 import {
   ConnectionOwners,
   ConnectionWithoutSensitiveData,
@@ -9,7 +9,7 @@ import {
   ReplaceConnectionsRequestBody,
   UpdateConnectionValueRequestBody,
   UpsertConnectionRequestBody,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 
 import { api } from '@/lib/api';
 import { authenticationSession } from '@/lib/authentication-session';

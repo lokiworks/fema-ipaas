@@ -3,7 +3,7 @@ import {
   WorkerMachineStatus,
   WorkerMachineType,
   WorkerMachineWithStatus,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import {
   Server,

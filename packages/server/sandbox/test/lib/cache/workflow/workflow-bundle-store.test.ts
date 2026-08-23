@@ -2,9 +2,9 @@ import { rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { randomUUID } from 'node:crypto'
-import { isNil } from '@fema/core-utils'
-import { type ApLogger } from '@fema/server-utils'
-import { WorkflowActionType, WorkflowTriggerType, WorkflowVersion, WorkflowVersionState, LATEST_WORKFLOW_SCHEMA_VERSION, PackageType, ConnectorType, WorkerToApiContract } from '@fema/shared'
+import { isNil } from '@fema-ipaas/core-utils'
+import { type ApLogger } from '@fema-ipaas/server-utils'
+import { WorkflowActionType, WorkflowTriggerType, WorkflowVersion, WorkflowVersionState, LATEST_WORKFLOW_SCHEMA_VERSION, PackageType, ConnectorType, WorkerToApiContract } from '@fema-ipaas/shared'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cacheUtils } from '../../../../src/lib/cache/cache-paths'
 import { codeCache } from '../../../../src/lib/cache/workflow/code/code-cache'
@@ -58,7 +58,7 @@ function buildWorkflowVersion(overrides: Partial<WorkflowVersion> = {}): Workflo
     } as unknown as WorkflowVersion
 }
 
-const connector = { packageType: PackageType.REGISTRY, connectorType: ConnectorType.OFFICIAL, connectorName: '@fema/connector-http', connectorVersion: '1.0.0' }
+const connector = { packageType: PackageType.REGISTRY, connectorType: ConnectorType.OFFICIAL, connectorName: '@fema-ipaas/connector-http', connectorVersion: '1.0.0' }
 
 function inMemoryApiClient(): { apiClient: WorkerToApiContract, getWorkflowBundle: ReturnType<typeof vi.fn> } {
     let stored: Buffer | null = null

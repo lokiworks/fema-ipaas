@@ -6,7 +6,7 @@ import {
     PackageType,
     ConnectorScope,
     ConnectorType,
-} from '@fema/shared'
+} from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { MockInstance } from 'vitest'

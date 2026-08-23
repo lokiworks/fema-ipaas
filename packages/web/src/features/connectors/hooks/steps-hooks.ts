@@ -1,11 +1,11 @@
-import { LocalesEnum, isNil } from '@fema/core-utils';
+import { LocalesEnum, isNil } from '@fema-ipaas/core-utils';
 import {
   WorkflowAction,
   WorkflowActionType,
   WorkflowTriggerType,
   SuggestionType,
   WorkflowTrigger,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { useQueries, useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 

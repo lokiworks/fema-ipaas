@@ -12,8 +12,8 @@ import {
     RunEnvironment,
     StepOutputStatus,
     StreamStepProgress,
-} from '@fema/shared'
-import type { BeginExecuteWorkflowOperation, WorkflowAction, WorkflowVersion, ResumeExecuteWorkflowOperation } from '@fema/shared'
+} from '@fema-ipaas/shared'
+import type { BeginExecuteWorkflowOperation, WorkflowAction, WorkflowVersion, ResumeExecuteWorkflowOperation } from '@fema-ipaas/shared'
 import { describe, expect, it, vi } from 'vitest'
 
 const { mockSendUpdate, mockBackup } = vi.hoisted(() => ({
@@ -109,7 +109,7 @@ function makeWorkflowVersionWithTwoApprovals(): WorkflowVersion {
         valid: true,
         settings: {
             input: {},
-            connectorName: '@fema/connector-approval',
+            connectorName: '@fema-ipaas/connector-approval',
             connectorVersion: '1.0.0',
             actionName: 'wait_for_approval',
             propertySettings: {},
@@ -123,7 +123,7 @@ function makeWorkflowVersionWithTwoApprovals(): WorkflowVersion {
         valid: true,
         settings: {
             input: {},
-            connectorName: '@fema/connector-approval',
+            connectorName: '@fema-ipaas/connector-approval',
             connectorVersion: '1.0.0',
             actionName: 'wait_for_approval',
             propertySettings: {},

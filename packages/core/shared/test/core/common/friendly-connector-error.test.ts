@@ -1,4 +1,4 @@
-import { formatConnectorError, tryParseFriendlyConnectorError } from '@fema/core-utils'
+import { formatConnectorError, tryParseFriendlyConnectorError } from '@fema-ipaas/core-utils'
 
 class TestHttpError extends Error {
     constructor(public readonly response: { status: number, body: unknown, headers?: Record<string, unknown> }, public readonly request: { body?: unknown, url?: string, method?: string }) {

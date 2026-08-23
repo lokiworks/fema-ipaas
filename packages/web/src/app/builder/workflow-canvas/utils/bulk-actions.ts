@@ -6,7 +6,7 @@ import {
   WorkflowVersion,
   StepLocationRelativeToParent,
   PasteLocation,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { toast } from 'sonner';
 

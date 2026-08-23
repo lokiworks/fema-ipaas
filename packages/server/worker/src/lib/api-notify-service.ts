@@ -1,6 +1,6 @@
-import { Runtime } from '@fema/sandbox'
-import { ApLogger } from '@fema/server-utils'
-import { ApiToWorkerContract, WorkerToApiContract } from '@fema/shared'
+import { Runtime } from '@fema-ipaas/sandbox'
+import { ApLogger } from '@fema-ipaas/server-utils'
+import { ApiToWorkerContract, WorkerToApiContract } from '@fema-ipaas/shared'
 
 export function createApiToWorkerHandlers({ getRuntime, apiClient, getPublicApiUrl, log }: CreateApiToWorkerHandlersParams): ApiToWorkerContract {
     return {

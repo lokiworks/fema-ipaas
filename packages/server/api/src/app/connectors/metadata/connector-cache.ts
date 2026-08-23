@@ -1,5 +1,5 @@
-import { isNil } from '@fema/core-utils'
-import { ApEnvironment, ConnectorType } from '@fema/shared'
+import { isNil } from '@fema-ipaas/core-utils'
+import { ApEnvironment, ConnectorType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { repoFactory } from '../../core/db/repo-factory'
 import { pubsub } from '../../helper/pubsub'

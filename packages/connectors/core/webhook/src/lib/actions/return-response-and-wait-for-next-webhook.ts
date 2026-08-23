@@ -3,8 +3,8 @@ import {
     ConnectorAuth,
     Property,
     createAction,
-  } from '@fema/connector-sdk';
-  import { ExecutionType, StopResponse } from '@fema/connector-sdk';
+  } from '@fema-ipaas/connector-sdk';
+  import { ExecutionType, StopResponse } from '@fema-ipaas/connector-sdk';
 
   const HTTP_STATUS_OK = 200;
   const HTTP_STATUS_MOVED_PERMANENTLY = 301;

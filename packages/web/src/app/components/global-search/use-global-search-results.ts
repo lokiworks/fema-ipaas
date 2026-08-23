@@ -1,4 +1,4 @@
-import { WORKSPACE_COLOR_PALETTE } from '@fema/shared';
+import { WORKSPACE_COLOR_PALETTE } from '@fema-ipaas/shared';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { t } from 'i18next';
 

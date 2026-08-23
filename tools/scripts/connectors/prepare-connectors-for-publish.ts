@@ -1,6 +1,6 @@
 import { findAllConnectorsDirectoryInSource } from '../utils/connector-script-utils'
 import { prepareConnectorDistForPublish } from '../../../packages/cli/src/lib/utils/prepare-connector-utils'
-import { chunk } from '@fema/core-utils'
+import { chunk } from '@fema-ipaas/core-utils'
 
 function getChangedConnectorPaths(): string[] | null {
     const changedConnectors = process.env['CHANGED_CONNECTORS']

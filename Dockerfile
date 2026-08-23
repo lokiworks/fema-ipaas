@@ -72,7 +72,7 @@ RUN --mount=type=cache,target=/root/.bun/install/cache \
 COPY . .
 
 # Build frontend, engine, server API, and worker
-RUN npx turbo run build --filter=web --filter=@fema/engine --filter=api --filter=worker
+RUN npx turbo run build --filter=web --filter=@fema-ipaas/engine --filter=api --filter=worker
 
 # The web build emits hidden source maps (vite build.sourcemap='hidden') used to
 # symbolicate production stack traces in Sentry/BetterStack error tracking. Upload

@@ -1,4 +1,4 @@
-import { WorkflowActionType, GenericStepOutput, LoopStepOutput, StepOutputStatus, StepOutputType } from '@fema/shared'
+import { WorkflowActionType, GenericStepOutput, LoopStepOutput, StepOutputStatus, StepOutputType } from '@fema-ipaas/shared'
 import { describe, expect, it } from 'vitest'
 import { WorkflowExecutorContext } from '../../../src/lib/handler/context/workflow-execution-context'
 import { sizeofUtils } from '../../../src/lib/helper/sizeof'

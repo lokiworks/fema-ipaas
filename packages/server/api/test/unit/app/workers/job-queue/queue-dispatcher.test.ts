@@ -1,4 +1,4 @@
-import { ConsumeJobRequest } from '@fema/shared'
+import { ConsumeJobRequest } from '@fema-ipaas/shared'
 import { Worker as BullMQWorker } from 'bullmq'
 import { FastifyBaseLogger } from 'fastify'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'

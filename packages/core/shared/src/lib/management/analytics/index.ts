@@ -1,5 +1,5 @@
-import { BaseModelSchema, DateOrString, Nullable } from '@fema/core-utils'
-import { WorkflowStatus } from '@fema/workflow-core'
+import { BaseModelSchema, DateOrString, Nullable } from '@fema-ipaas/core-utils'
+import { WorkflowStatus } from '@fema-ipaas/workflow-core'
 import { z } from 'zod'
 import { UserWithMetaInformation } from '../../core/user'
 

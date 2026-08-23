@@ -1,4 +1,4 @@
-import { RunTimeline, TimelinePhase } from '@fema/shared';
+import { RunTimeline, TimelinePhase } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 
 import {

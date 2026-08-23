@@ -5,7 +5,7 @@ import {
   Property,
   StoreScope,
   TriggerStrategy,
-} from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-sdk';
 import { callableWorkflowKey, CallableWorkflowRequest, MOCK_CALLBACK_IN_TEST_WORKFLOW_URL } from '../common';
 
 export const callableWorkflow = createTrigger({

@@ -1,4 +1,4 @@
-import { WorkflowAction, ApFlagId, WorkflowTrigger } from '@fema/shared';
+import { WorkflowAction, ApFlagId, WorkflowTrigger } from '@fema-ipaas/shared';
 import { useMutation } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { useState } from 'react';

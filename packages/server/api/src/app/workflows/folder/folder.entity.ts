@@ -1,4 +1,4 @@
-import { Folder as Folder, Workflow, Workspace } from '@fema/shared'
+import { Folder as Folder, Workflow, Workspace } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import {
     ApIdSchema,

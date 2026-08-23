@@ -1,4 +1,4 @@
-import { WorkflowActionType, ExecutionStatus, GenericStepOutput, StepOutputStatus, StreamStepProgress, UpdateRunProgressRequest, UploadRunLogsRequest } from '@fema/shared'
+import { WorkflowActionType, ExecutionStatus, GenericStepOutput, StepOutputStatus, StreamStepProgress, UpdateRunProgressRequest, UploadRunLogsRequest } from '@fema-ipaas/shared'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { WorkflowExecutorContext } from '../../src/lib/handler/context/workflow-execution-context'
 import { generateMockEngineConstants } from '../handler/test-helper'

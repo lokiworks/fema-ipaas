@@ -1,5 +1,5 @@
-import { SeekPage } from '@fema/core-utils';
-import { TriggerEventWithPayload } from '@fema/shared';
+import { SeekPage } from '@fema-ipaas/core-utils';
+import { TriggerEventWithPayload } from '@fema-ipaas/shared';
 import { useQuery } from '@tanstack/react-query';
 
 import { authenticationSession } from '@/lib/authentication-session';

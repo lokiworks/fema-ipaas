@@ -1,6 +1,6 @@
 import { inspect } from 'util'
-import { formatConnectorError } from '@fema/core-utils'
-import { EngineResponse, EngineResponseStatus, ExecuteTriggerOperation, ExecuteTriggerResponse, TriggerHookType } from '@fema/shared'
+import { formatConnectorError } from '@fema-ipaas/core-utils'
+import { EngineResponse, EngineResponseStatus, ExecuteTriggerOperation, ExecuteTriggerResponse, TriggerHookType } from '@fema-ipaas/shared'
 import { triggerRunner } from '../core/connector/trigger-runner'
 import { EngineConstants, ResolvedExecuteTriggerOperation } from '../handler/context/engine-constants'
 import { utils } from '../utils'

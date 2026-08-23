@@ -1,4 +1,4 @@
-import { BranchOperator, ExecutionStatus, LoopStepOutput, RouterExecutionType, RouterStepOutput } from '@fema/shared'
+import { BranchOperator, ExecutionStatus, LoopStepOutput, RouterExecutionType, RouterStepOutput } from '@fema-ipaas/shared'
 import { vi } from 'vitest'
 import { WorkflowExecutorContext } from '../../src/lib/handler/context/workflow-execution-context'
 import { StepExecutionPath } from '../../src/lib/handler/context/step-execution-path'
@@ -10,7 +10,7 @@ import { buildCodeAction, buildConnectorAction, buildRouterWithOneCondition, bui
 
 const simplePauseWorkflow = buildConnectorAction({
     name: 'approval',
-    connectorName: '@fema/connector-approval',
+    connectorName: '@fema-ipaas/connector-approval',
     actionName: 'wait_for_approval',
     input: {},
     nextAction: buildCodeAction({
@@ -21,7 +21,7 @@ const simplePauseWorkflow = buildConnectorAction({
 
 const flawWithTwoPause = buildConnectorAction({
     name: 'approval',
-    connectorName: '@fema/connector-approval',
+    connectorName: '@fema-ipaas/connector-approval',
     actionName: 'wait_for_approval',
     input: {},
     nextAction: buildCodeAction({
@@ -29,7 +29,7 @@ const flawWithTwoPause = buildConnectorAction({
         input: {},
         nextAction: buildConnectorAction({
             name: 'approval-1',
-            connectorName: '@fema/connector-approval',
+            connectorName: '@fema-ipaas/connector-approval',
             actionName: 'wait_for_approval',
             input: {},
             nextAction: buildCodeAction({
@@ -224,7 +224,7 @@ describe('workflow with pause', () => {
             children: [
                 buildConnectorAction({
                     name: 'approval_1',
-                    connectorName: '@fema/connector-approval',
+                    connectorName: '@fema-ipaas/connector-approval',
                     actionName: 'wait_for_approval',
                     input: {},
                     nextAction: buildCodeAction({
@@ -234,7 +234,7 @@ describe('workflow with pause', () => {
                 }),
                 buildConnectorAction({
                     name: 'approval_2',
-                    connectorName: '@fema/connector-approval',
+                    connectorName: '@fema-ipaas/connector-approval',
                     actionName: 'wait_for_approval',
                     input: {},
                     nextAction: buildCodeAction({

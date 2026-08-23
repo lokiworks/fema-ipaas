@@ -1,4 +1,4 @@
-import { PrincipalType } from '@fema/shared'
+import { PrincipalType } from '@fema-ipaas/shared'
 import { FastifyRequest } from 'fastify'
 import { tenantService } from '../tenant/tenant.service'
 

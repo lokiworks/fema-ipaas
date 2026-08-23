@@ -1,10 +1,10 @@
-import { apId } from '@fema/core-utils';
+import { apId } from '@fema-ipaas/core-utils';
 import {
   AddNoteRequest,
   WorkflowOperationType,
   NoteColorVariant,
   Note,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { StoreApi } from 'zustand';
 
 import { authenticationSession } from '@/lib/authentication-session';

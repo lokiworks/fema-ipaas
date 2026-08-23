@@ -3,7 +3,7 @@ import { ConnectorMetadata } from '../../../packages/connectors/sdk/src';
 import { StatusCodes } from 'http-status-codes';
 import { HttpHeader } from '../../../packages/connectors/common/src';
 import { FEMA_CLOUD_API_BASE, findNewConnectors, connectorMetadataExists } from '../utils/connector-script-utils';
-import { chunk } from '@fema/core-utils';
+import { chunk } from '@fema-ipaas/core-utils';
 assert(process.env['FEMA_CLOUD_API_KEY'], 'API Key is not defined');
 
 const { FEMA_CLOUD_API_KEY } = process.env;

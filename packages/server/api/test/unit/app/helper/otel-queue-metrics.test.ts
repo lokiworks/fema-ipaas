@@ -4,8 +4,8 @@ import { otelQueueMetrics } from '../../../../src/app/helper/otel-queue-metrics'
 
 const { postMock } = vi.hoisted(() => ({ postMock: vi.fn() }))
 
-vi.mock('@fema/server-utils', async (importOriginal) => {
-    const original = await importOriginal<typeof import('@fema/server-utils')>()
+vi.mock('@fema-ipaas/server-utils', async (importOriginal) => {
+    const original = await importOriginal<typeof import('@fema-ipaas/server-utils')>()
     return {
         ...original,
         safeHttp: {

@@ -1,6 +1,6 @@
-import { ConnectionType } from '@fema/connector-sdk';
-import { ConnectionValueForAuthProperty } from '@fema/connector-sdk';
-import { httpClient, HttpMethod } from '@fema/connector-common';
+import { ConnectionType } from '@fema-ipaas/connector-sdk';
+import { ConnectionValueForAuthProperty } from '@fema-ipaas/connector-sdk';
+import { httpClient, HttpMethod } from '@fema-ipaas/connector-common';
 import type { slackAuth } from '../auth';
 
 export type SlackAuthValue = ConnectionValueForAuthProperty<

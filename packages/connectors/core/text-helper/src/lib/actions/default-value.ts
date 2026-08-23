@@ -1,5 +1,5 @@
-import { createAction, Property } from '@fema/connector-sdk';
-import { isEmpty } from '@fema/connector-sdk';
+import { createAction, Property } from '@fema-ipaas/connector-sdk';
+import { isEmpty } from '@fema-ipaas/connector-sdk';
 
 export const defaultValue = createAction({
   audience: 'both',

@@ -1,8 +1,8 @@
-import { OAuth2AuthorizationMethod } from '@fema/connector-sdk'
+import { OAuth2AuthorizationMethod } from '@fema-ipaas/connector-sdk'
 import {
     BaseOAuth2ConnectionValue,
     OAuth2GrantType,
-} from '@fema/shared'
+} from '@fema-ipaas/shared'
 
 export type OAuth2Service<CONNECTION_VALUE extends BaseOAuth2ConnectionValue> =
   {

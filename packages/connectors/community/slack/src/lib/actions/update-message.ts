@@ -1,4 +1,4 @@
-import { createAction, Property } from '@fema/connector-sdk';
+import { createAction, Property } from '@fema-ipaas/connector-sdk';
 import { slackAuth } from '../auth';
 import { blocks, singleSelectChannelInfo, slackChannel, mentionOriginWorkflow } from '../common/props';
 import { buildWorkflowOriginContextBlock, processMessageTimestamp, textToSectionBlocks } from '../common/utils';

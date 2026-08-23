@@ -1,5 +1,5 @@
-import { apId, sanitizeObjectForPostgresql, WorkspaceId } from '@fema/core-utils'
-import { PutStoreEntryRequest, StoreEntry } from '@fema/shared'
+import { apId, sanitizeObjectForPostgresql, WorkspaceId } from '@fema-ipaas/core-utils'
+import { PutStoreEntryRequest, StoreEntry } from '@fema-ipaas/shared'
 import { repoFactory } from '../core/db/repo-factory'
 import { StoreEntryEntity } from './store-entry-entity'
 

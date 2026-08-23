@@ -1,6 +1,6 @@
-import { ApplicationError, ErrorCode, isNil, SeekPage } from '@fema/core-utils'
-import { safeHttp } from '@fema/server-utils'
-import { ListTemplatesRequestQuery, Template } from '@fema/shared'
+import { ApplicationError, ErrorCode, isNil, SeekPage } from '@fema-ipaas/core-utils'
+import { safeHttp } from '@fema-ipaas/server-utils'
+import { ListTemplatesRequestQuery, Template } from '@fema-ipaas/shared'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
 

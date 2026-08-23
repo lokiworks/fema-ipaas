@@ -1,9 +1,9 @@
-# @fema/cli
+# @fema-ipaas/cli
 
 ## Usage
 
 ```bash
-npx @fema/cli <command>
+npx @fema-ipaas/cli <command>
 ```
 
 ### benchmark
@@ -16,7 +16,7 @@ Authenticate with a platform-admin API key. The CLI provisions a throwaway proje
 (with a high concurrency cap so a project rate limiter can't skew the numbers) and deletes it after:
 
 ```bash
-FEMA_API_KEY=<key> npx @fema/cli benchmark --url https://your-instance.example.com
+FEMA_API_KEY=<key> npx @fema-ipaas/cli benchmark --url https://your-instance.example.com
 ```
 
 | Option | Default | Description |
@@ -30,7 +30,7 @@ FEMA_API_KEY=<key> npx @fema/cli benchmark --url https://your-instance.example.c
 
 ## Building
 
-Run `turbo run build --filter=@fema/cli` to build the library.
+Run `turbo run build --filter=@fema-ipaas/cli` to build the library.
 
 The publishable, self-contained bundle is produced by `npm run build-publish` (bundles workspace
 deps with esbuild into `dist/`) and published via the **Release CLI** GitHub workflow.

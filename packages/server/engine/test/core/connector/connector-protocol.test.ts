@@ -1,4 +1,4 @@
-import { ExecutionError, ExecutionErrorType } from '@fema/shared'
+import { ExecutionError, ExecutionErrorType } from '@fema-ipaas/shared'
 import { connectorProtocol } from '../../../src/lib/core/connector/connector-protocol'
 
 describe('connector protocol', () => {

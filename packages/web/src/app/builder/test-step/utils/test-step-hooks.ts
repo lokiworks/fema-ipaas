@@ -4,14 +4,14 @@ import {
   formatConnectorError,
   isString,
   tryParseFriendlyConnectorError,
-} from '@fema/core-utils';
+} from '@fema-ipaas/core-utils';
 import {
   WorkflowAction,
   StepRunResponse,
   WorkflowTrigger,
   TriggerEventWithPayload,
   TriggerTestStrategy,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { useMutation } from '@tanstack/react-query';
 import deepEqual from 'deep-equal';
 import { t } from 'i18next';

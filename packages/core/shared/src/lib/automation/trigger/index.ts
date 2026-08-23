@@ -1,4 +1,4 @@
-import { BaseModelSchema, Nullable } from '@fema/core-utils'
+import { BaseModelSchema, Nullable } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 
 export enum TriggerStrategy {

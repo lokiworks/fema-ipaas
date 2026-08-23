@@ -1,4 +1,4 @@
-import { isNil } from '@fema/core-utils'
+import { isNil } from '@fema-ipaas/core-utils'
 import { WorkflowAction, WorkflowActionType } from '../actions/action'
 import { WorkflowVersion } from '../workflow-version'
 import { WorkflowTrigger, WorkflowTriggerType } from '../triggers/trigger'

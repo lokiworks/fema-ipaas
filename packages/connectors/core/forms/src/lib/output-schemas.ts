@@ -1,4 +1,4 @@
-import { OutputSchema } from '@fema/connector-sdk';
+import { OutputSchema } from '@fema-ipaas/connector-sdk';
 
 export const returnResponseActionOutputSchema: OutputSchema = {
   fields: [

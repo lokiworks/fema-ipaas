@@ -14,14 +14,14 @@ Use `community/` for almost all work.
 
 | Location | Format | Example |
 |---|---|---|
-| `community/` | `@fema/connector-<name>` | `@fema/connector-slack` |
-| `core/` | `@fema/connector-<name>` | `@fema/connector-http` |
+| `community/` | `@fema-ipaas/connector-<name>` | `@fema-ipaas/connector-slack` |
+| `core/` | `@fema-ipaas/connector-<name>` | `@fema-ipaas/connector-http` |
 | `custom/` | Any npm-valid name | `@mycompany/connector-crm` |
 
 ## ConnectorCategory Values
 
 ```typescript
-import { ConnectorCategory } from '@fema/shared';
+import { ConnectorCategory } from '@fema-ipaas/shared';
 ```
 
 | Category | Use for |

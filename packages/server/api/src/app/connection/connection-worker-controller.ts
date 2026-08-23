@@ -1,5 +1,5 @@
-import { ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil } from '@fema/core-utils'
-import { Connection, EnginePrincipal, GetConnectionForWorkerRequestQuery } from '@fema/shared'
+import { ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil } from '@fema-ipaas/core-utils'
+import { Connection, EnginePrincipal, GetConnectionForWorkerRequestQuery } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { securityAccess } from '../core/security/authorization/fastify-security'
 import { connectionService } from './connection-service/connection-service'

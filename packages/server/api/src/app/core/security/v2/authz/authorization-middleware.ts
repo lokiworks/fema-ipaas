@@ -1,5 +1,5 @@
-import { isNil } from '@fema/core-utils'
-import { PrincipalType } from '@fema/shared'
+import { isNil } from '@fema-ipaas/core-utils'
+import { PrincipalType } from '@fema-ipaas/shared'
 import { FastifyRequest } from 'fastify'
 import { AuthorizationRouteSecurity } from '../../authorization/authorization'
 import { AuthorizationType, RouteKind, WorkspaceResourceType } from '../../authorization/common'

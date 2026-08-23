@@ -9,14 +9,14 @@
  *   - bun must be available for connector installation
  *   - Redis (in-memory via FEMA_REDIS_TYPE=MEMORY) is started automatically
  */
-import { apDayjs } from '@fema/server-utils'
+import { apDayjs } from '@fema-ipaas/server-utils'
 import {
     WorkflowTriggerType,
     WorkflowVersionState,
     PackageType,
     ConnectorType,
     PrincipalType,
-} from '@fema/shared'
+} from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { worker } from '../../../../../worker/src/lib/worker'
@@ -69,7 +69,7 @@ describe('Connector Options E2E', () => {
                 name: 'trigger',
                 displayName: 'Catch Webhook',
                 settings: {
-                    connectorName: '@fema/connector-webhook',
+                    connectorName: '@fema-ipaas/connector-webhook',
                     connectorVersion: '~0.1.29',
                     triggerName: 'catch_webhook',
                     input: { authType: 'basic' },
@@ -82,7 +82,7 @@ describe('Connector Options E2E', () => {
         await db.save('workflow_version', mockWorkflowVersion)
 
         const mockConnector = createMockConnectorMetadata({
-            name: '@fema/connector-webhook',
+            name: '@fema-ipaas/connector-webhook',
             version: '0.1.29',
             tenantId: undefined,
             packageType: PackageType.REGISTRY,
@@ -106,7 +106,7 @@ describe('Connector Options E2E', () => {
                 workspaceId: mockWorkspace.id,
                 workflowId: mockWorkflow.id,
                 workflowVersionId: mockWorkflowVersion.id,
-                connectorName: '@fema/connector-webhook',
+                connectorName: '@fema-ipaas/connector-webhook',
                 connectorVersion: '~0.1.29',
                 actionOrTriggerName: 'catch_webhook',
                 propertyName: 'authFields',

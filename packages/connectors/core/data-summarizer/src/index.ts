@@ -1,9 +1,9 @@
-import { createConnector, ConnectorAuth } from '@fema/connector-sdk';
+import { createConnector, ConnectorAuth } from '@fema-ipaas/connector-sdk';
 import { calculateAverage } from './lib/actions/calculate-average';
 import { calculateSum } from './lib/actions/calculate-sum';
 import { countUniques } from './lib/actions/count-uniques';
 import { getMinMax } from './lib/actions/get-min-max';
-import { ConnectorCategory } from '@fema/connector-sdk';
+import { ConnectorCategory } from '@fema-ipaas/connector-sdk';
 
 export const dataSummarizer = createConnector({
   displayName: 'Data Summarizer',

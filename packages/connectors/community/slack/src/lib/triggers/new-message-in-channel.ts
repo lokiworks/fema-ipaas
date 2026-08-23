@@ -1,4 +1,4 @@
-import { Property, TriggerStrategy, createTrigger } from '@fema/connector-sdk';
+import { Property, TriggerStrategy, createTrigger } from '@fema-ipaas/connector-sdk';
 import { appWebhookSetupInfo, singleSelectChannelInfo, slackChannel } from '../common/props';
 import { slackAuth } from '../auth';
 import { getTeamId, SlackAuthValue } from '../common/auth-helpers';

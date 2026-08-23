@@ -1,4 +1,4 @@
-import { StepOutputStatus } from '@fema/shared';
+import { StepOutputStatus } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import React from 'react';
 

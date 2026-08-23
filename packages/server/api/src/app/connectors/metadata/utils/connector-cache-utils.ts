@@ -1,5 +1,5 @@
-import { apId, isEmpty, isNil } from '@fema/core-utils'
-import { ConnectorType, PackageType } from '@fema/shared'
+import { apId, isEmpty, isNil } from '@fema-ipaas/core-utils'
+import { ConnectorType, PackageType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import semVer from 'semver'
 import { system } from '../../../helper/system/system'

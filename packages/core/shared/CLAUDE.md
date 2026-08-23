@@ -1,4 +1,4 @@
-# @fema/shared
+# @fema-ipaas/shared
 
 Types, DTOs, Zod schemas, utilities. Version bump required on ANY change (patch for fixes, minor for new exports).
 

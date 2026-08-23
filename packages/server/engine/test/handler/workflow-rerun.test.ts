@@ -1,11 +1,11 @@
-import { ExecutionStatus } from '@fema/shared'
+import { ExecutionStatus } from '@fema-ipaas/shared'
 import { WorkflowExecutorContext } from '../../src/lib/handler/context/workflow-execution-context'
 import { workflowExecutor } from '../../src/lib/handler/workflow-executor'
 import { buildConnectorAction, generateMockEngineConstants } from './test-helper'
 
 const failedHttpAction = buildConnectorAction({
     name: 'send_http',
-    connectorName: '@fema/connector-http',
+    connectorName: '@fema-ipaas/connector-http',
     actionName: 'send_request',
     input: {
         'url': `${process.env.FEMA_TEST_FIXTURE_URL}/api/v1/asd`,
@@ -19,7 +19,7 @@ const failedHttpAction = buildConnectorAction({
 
 const successHttpAction =  buildConnectorAction({
     name: 'send_http',
-    connectorName: '@fema/connector-http',
+    connectorName: '@fema-ipaas/connector-http',
     actionName: 'send_request',
     input: {
         'url': `${process.env.FEMA_TEST_FIXTURE_URL}/api/v1/ok`,

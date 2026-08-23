@@ -1,9 +1,9 @@
-import { ConnectorMetadataModelSummary } from '@fema/connector-sdk';
+import { ConnectorMetadataModelSummary } from '@fema-ipaas/connector-sdk';
 import {
   apId,
   ConnectorSelectorTabConfig,
   ConnectorSelectorTabSection,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import {
   CheckIcon,

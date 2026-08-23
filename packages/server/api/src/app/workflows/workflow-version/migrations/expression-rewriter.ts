@@ -1,4 +1,4 @@
-import { extractMustacheTokens, isNil } from '@fema/core-utils'
+import { extractMustacheTokens, isNil } from '@fema-ipaas/core-utils'
 import { AnyNode, AssignmentProperty, Identifier, MemberExpression, parse, Property } from 'acorn'
 import { ancestor } from 'acorn-walk'
 import { analyze } from 'eslint-scope'

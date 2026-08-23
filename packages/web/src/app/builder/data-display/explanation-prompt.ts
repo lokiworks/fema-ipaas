@@ -1,4 +1,4 @@
-import { FriendlyConnectorError, isNil } from '@fema/core-utils';
+import { FriendlyConnectorError, isNil } from '@fema-ipaas/core-utils';
 
 const MAX_BODY_PAYLOAD_CHARS = 4000;
 const MAX_PROPERTY_VALUE_CHARS = 400;

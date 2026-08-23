@@ -1,10 +1,10 @@
-import { isNil, Permission } from '@fema/core-utils';
+import { isNil, Permission } from '@fema-ipaas/core-utils';
 import {
   Execution,
   WorkflowVersion,
   WorkflowVersionState,
   PopulatedWorkflow,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { useMutation } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { Info } from 'lucide-react';

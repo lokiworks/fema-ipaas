@@ -4,7 +4,7 @@ import {
   WorkflowTriggerType,
   Step,
   workflowStructureUtil,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { Handle, NodeProps, Position } from '@xyflow/react';
 import React, { useMemo } from 'react';
 

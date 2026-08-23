@@ -1,5 +1,5 @@
-import { ConnectorAuth } from '@fema/connector-sdk';
-import { httpClient, HttpMethod } from '@fema/connector-common';
+import { ConnectorAuth } from '@fema-ipaas/connector-sdk';
+import { httpClient, HttpMethod } from '@fema-ipaas/connector-common';
 
 const nameOf = (value: unknown): string | undefined => {
   if (typeof value === 'object' && value !== null && 'name' in value && typeof value.name === 'string' && value.name.length > 0) {

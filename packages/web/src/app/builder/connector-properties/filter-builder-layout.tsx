@@ -2,7 +2,7 @@ import {
   ConnectorProperty,
   PropertyGroup,
   PropertyType,
-} from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-sdk';
 import { t } from 'i18next';
 import { Check, Filter, Plus, X } from 'lucide-react';
 import React, { useState } from 'react';

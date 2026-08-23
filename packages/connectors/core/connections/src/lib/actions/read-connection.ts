@@ -1,5 +1,5 @@
-import { Property, createAction } from '@fema/connector-sdk';
-import { isNil } from '@fema/connector-sdk';
+import { Property, createAction } from '@fema-ipaas/connector-sdk';
+import { isNil } from '@fema-ipaas/connector-sdk';
 
 const markdown = `
 **Advanced Connector**

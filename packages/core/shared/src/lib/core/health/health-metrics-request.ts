@@ -1,5 +1,5 @@
-import { ApId } from '@fema/core-utils'
-import { ExecutionStatus } from '@fema/workflow-core'
+import { ApId } from '@fema-ipaas/core-utils'
+import { ExecutionStatus } from '@fema-ipaas/workflow-core'
 import { z } from 'zod'
 
 export const TenantMetricsReportRequest = z.object({

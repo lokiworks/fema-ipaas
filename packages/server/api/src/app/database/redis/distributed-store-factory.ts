@@ -1,4 +1,4 @@
-import { isNil } from '@fema/core-utils'
+import { isNil } from '@fema-ipaas/core-utils'
 import Redis from 'ioredis'
 
 export const distributedStoreFactory = (getRedisClient: () => Promise<Redis>) => ({

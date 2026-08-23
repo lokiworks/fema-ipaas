@@ -1,6 +1,6 @@
 import {
     PopulatedWorkflow,
-} from '@fema/shared'
+} from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { createTestContext } from '../../../helpers/test-context'

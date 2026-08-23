@@ -2,7 +2,7 @@ import {
   TenantMetricsHealthHistory,
   TenantMetricsLive,
   TenantMetricsReport,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 
 import { api } from '@/lib/api';
 

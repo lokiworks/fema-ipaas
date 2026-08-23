@@ -9,7 +9,7 @@ import {
   WorkflowTriggerType,
   WorkflowVersionState,
   PopulatedWorkflow,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { QueryClient } from '@tanstack/react-query';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';

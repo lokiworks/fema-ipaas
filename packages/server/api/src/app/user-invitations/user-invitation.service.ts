@@ -1,5 +1,5 @@
-import { apId, ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil, SeekPage, spreadIfDefined } from '@fema/core-utils'
-import { InvitationStatus, InvitationType, TenantRole, UserInvitation, UserInvitationWithLink } from '@fema/shared'
+import { apId, ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil, SeekPage, spreadIfDefined } from '@fema-ipaas/core-utils'
+import { InvitationStatus, InvitationType, TenantRole, UserInvitation, UserInvitationWithLink } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { EntityManager, IsNull, ObjectLiteral, SelectQueryBuilder } from 'typeorm'

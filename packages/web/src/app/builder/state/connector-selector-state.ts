@@ -1,4 +1,4 @@
-import { WorkflowTriggerType } from '@fema/shared';
+import { WorkflowTriggerType } from '@fema-ipaas/shared';
 import { StoreApi } from 'zustand';
 
 import { RightSideBarType } from '@/app/builder/types';

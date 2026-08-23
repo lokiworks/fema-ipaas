@@ -1,5 +1,5 @@
-import { createAction, Property } from '@fema/connector-sdk';
-import { isString } from '@fema/connector-sdk';
+import { createAction, Property } from '@fema-ipaas/connector-sdk';
+import { isString } from '@fema-ipaas/connector-sdk';
 import {parse} from 'csv-parse/sync';
 
 export const csvToJsonAction = createAction({

@@ -1,5 +1,5 @@
-import { isNil } from '@fema/core-utils';
-import { ConnectionScope, PopulatedWorkflow } from '@fema/shared';
+import { isNil } from '@fema-ipaas/core-utils';
+import { ConnectionScope, PopulatedWorkflow } from '@fema-ipaas/shared';
 import { useMutation } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { ChevronDown, GlobeIcon, Info, WorkflowIcon } from 'lucide-react';
@@ -175,8 +175,8 @@ const ReplaceConnectionsDialog = ({
     connectors
       ?.filter(
         (connector) =>
-          connector.name !== '@fema/connector-mcp' &&
-          connector.name !== '@fema/connector-webhook' &&
+          connector.name !== '@fema-ipaas/connector-mcp' &&
+          connector.name !== '@fema-ipaas/connector-webhook' &&
           connectionConnectorNames.has(connector.name),
       )
       .map((connector) => ({

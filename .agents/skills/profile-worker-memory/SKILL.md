@@ -69,8 +69,8 @@ A full snapshot of a ~950 MB heap kills the process mid-serialization (the cgrou
 // returnByValue: true, includeCommandLineAPI: true
 const cache = process.mainModule.constructor._cache
 const keys = Object.keys(cache)
-// → totalModules, count matching @fema/shared, connectors-framework,
-//   distinct @fema/connector-* packages, and process.memoryUsage()
+// → totalModules, count matching @fema-ipaas/shared, connectors-framework,
+//   distinct @fema-ipaas/connector-* packages, and process.memoryUsage()
 ```
 
 Run it against the `sandbox-<id>` pid while a workflow holds the sandbox open. To *get* that window, end the probe workflow with a CODE step that sleeps — a `delay` connector step over 10 s creates a waitpoint and **pauses the run**, releasing the sandbox, so the process you wanted is gone before you arrive.

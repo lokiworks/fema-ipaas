@@ -1,4 +1,4 @@
-import { TenantRole, UpdateUserRequestBody, User } from '@fema/shared';
+import { TenantRole, UpdateUserRequestBody, User } from '@fema-ipaas/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { t } from 'i18next';

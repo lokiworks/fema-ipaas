@@ -1,6 +1,6 @@
-import { Connector } from '@fema/connector-sdk'
-import { isNil, isObject } from '@fema/core-utils'
-import { extractConnectorFromModule } from '@fema/shared'
+import { Connector } from '@fema-ipaas/connector-sdk'
+import { isNil, isObject } from '@fema-ipaas/core-utils'
+import { extractConnectorFromModule } from '@fema-ipaas/shared'
 import { buildContext } from './connector-context-builder'
 import { ChildMessage, connectorProtocol, ParentMessage } from './connector-protocol'
 

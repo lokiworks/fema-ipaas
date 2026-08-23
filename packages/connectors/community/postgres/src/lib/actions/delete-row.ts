@@ -1,4 +1,4 @@
-import { createAction, Property } from '@fema/connector-sdk';
+import { createAction, Property } from '@fema-ipaas/connector-sdk';
 import { postgresAuth } from '../..';
 import { pgClient, postgresCommon, postgresUtils } from '../common';
 import { deleteRowOutputSchema } from '../output-schemas';

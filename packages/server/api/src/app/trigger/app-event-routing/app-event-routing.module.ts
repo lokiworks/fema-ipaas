@@ -1,7 +1,7 @@
-import { Connector, ConnectorAuthProperty } from '@fema/connector-sdk'
-import { slack } from '@fema/connector-slack'
-import { apId, ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil } from '@fema/core-utils'
-import { LATEST_JOB_DATA_SCHEMA_VERSION, RunEnvironment, WorkerJobType, WorkflowStatus } from '@fema/shared'
+import { Connector, ConnectorAuthProperty } from '@fema-ipaas/connector-sdk'
+import { slack } from '@fema-ipaas/connector-slack'
+import { apId, ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil } from '@fema-ipaas/core-utils'
+import { LATEST_JOB_DATA_SCHEMA_VERSION, RunEnvironment, WorkerJobType, WorkflowStatus } from '@fema-ipaas/shared'
 import { FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
@@ -20,7 +20,7 @@ const appWebhooks: Record<string, Connector<ConnectorAuthProperty | ConnectorAut
     slack,
 }
 const connectorNames: Record<string, string> = {
-    slack: '@fema/connector-slack',
+    slack: '@fema-ipaas/connector-slack',
 }
 
 export const appEventRoutingModule: FastifyPluginAsyncZod = async (app) => {

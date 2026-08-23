@@ -1,5 +1,5 @@
-import { validateIndexBound } from '@fema/core-utils';
-import { ConnectionOwners, UserWithMetaInformation } from '@fema/shared';
+import { validateIndexBound } from '@fema-ipaas/core-utils';
+import { ConnectionOwners, UserWithMetaInformation } from '@fema-ipaas/shared';
 import { ColumnDef } from '@tanstack/react-table';
 import { t } from 'i18next';
 import { User } from 'lucide-react';

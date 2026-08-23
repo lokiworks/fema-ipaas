@@ -1,4 +1,4 @@
-# @fema/expression
+# @fema-ipaas/expression
 
 The formula / expression evaluator (`{{ ... }}` resolution) — used by the engine to
 resolve step inputs and by the api/web for validation.
@@ -7,6 +7,6 @@ resolve step inputs and by the api/web for validation.
 
 - **Must be tree-shakeable.** It is bundled where formulas run (connectors/engine), so
   keep it small, side-effect-free (`"sideEffects": false`), and acyclic.
-- **May import `@fema/core-*` packages only** — never `server`, `web`,
+- **May import `@fema-ipaas/core-*` packages only** — never `server`, `web`,
   `connectors`, or `shared`. Enforced by the `no-restricted-imports` boundary lint in
   `.eslintrc.json`.

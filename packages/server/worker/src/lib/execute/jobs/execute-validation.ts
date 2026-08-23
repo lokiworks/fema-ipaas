@@ -1,4 +1,4 @@
-import { ConnectionValue, EngineOperationType, EngineResponseStatus, ExecuteValidateAuthJobData, WorkerJobType } from '@fema/shared'
+import { ConnectionValue, EngineOperationType, EngineResponseStatus, ExecuteValidateAuthJobData, WorkerJobType } from '@fema-ipaas/shared'
 import { workerSettings } from '../../config/worker-settings'
 import { JobContext, JobHandler, JobResultKind, SynchronousJobResult } from '../types'
 import { isSandboxTimeout } from '../utils/sandbox-helpers'

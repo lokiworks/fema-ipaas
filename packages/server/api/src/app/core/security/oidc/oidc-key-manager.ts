@@ -1,6 +1,6 @@
 import { createHash, createPublicKey, generateKeyPair, JsonWebKey } from 'crypto'
 import { promisify } from 'util'
-import { ApplicationError, ErrorCode, isNil } from '@fema/core-utils'
+import { ApplicationError, ErrorCode, isNil } from '@fema-ipaas/core-utils'
 import { Mutex } from 'async-mutex'
 import { FlagEntity } from '../../../flags/flag.entity'
 import { EncryptedObject, encryptUtils } from '../../../helper/encryption'

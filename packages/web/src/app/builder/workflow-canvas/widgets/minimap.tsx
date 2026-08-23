@@ -1,5 +1,5 @@
-import { isNil } from '@fema/core-utils';
-import { workflowStructureUtil, Step } from '@fema/shared';
+import { isNil } from '@fema-ipaas/core-utils';
+import { workflowStructureUtil, Step } from '@fema-ipaas/shared';
 import { MiniMap, MiniMapNodeProps } from '@xyflow/react';
 
 import { useTheme } from '@/components/providers/theme-provider';

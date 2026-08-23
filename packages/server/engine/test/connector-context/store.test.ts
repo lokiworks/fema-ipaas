@@ -1,5 +1,5 @@
-import { StoreScope } from '@fema/connector-sdk'
-import { StorageError, StorageInvalidKeyError, StorageLimitError, STORE_KEY_MAX_LENGTH, STORE_VALUE_MAX_SIZE } from '@fema/shared'
+import { StoreScope } from '@fema-ipaas/connector-sdk'
+import { StorageError, StorageInvalidKeyError, StorageLimitError, STORE_KEY_MAX_LENGTH, STORE_VALUE_MAX_SIZE } from '@fema-ipaas/shared'
 import { createContextStore } from '../../src/lib/connector-context/store'
 
 const STORE_PARAMS = {

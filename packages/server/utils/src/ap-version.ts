@@ -1,4 +1,4 @@
-import { isNil } from '@fema/core-utils';
+import { isNil } from '@fema-ipaas/core-utils';
 import fs from 'fs'
 import path from 'path'
 import { apLogger } from './ap-logger'

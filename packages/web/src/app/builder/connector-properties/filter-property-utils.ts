@@ -1,4 +1,4 @@
-import { ConnectorProperty, PropertyType } from '@fema/connector-sdk';
+import { ConnectorProperty, PropertyType } from '@fema-ipaas/connector-sdk';
 import { t } from 'i18next';
 
 import { formatUtils } from '@/lib/format-utils';

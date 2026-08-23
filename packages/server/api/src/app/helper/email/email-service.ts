@@ -1,5 +1,5 @@
-import { isNil, TenantId } from '@fema/core-utils'
-import { OtpType, UserIdentity, UserInvitation } from '@fema/shared'
+import { isNil, TenantId } from '@fema-ipaas/core-utils'
+import { OtpType, UserIdentity, UserInvitation } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { tenantService } from '../../tenant/tenant.service'
 import { workspaceService } from '../../workspace/workspace-service'

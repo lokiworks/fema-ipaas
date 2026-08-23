@@ -1,4 +1,4 @@
-import { Property } from '@fema/connector-sdk';
+import { Property } from '@fema-ipaas/connector-sdk';
 import { describe, expect, it } from 'vitest';
 
 import { formUtils } from '@/features/connectors/utils/form-utils';

@@ -1,5 +1,5 @@
-import { Permission } from '@fema/core-utils';
-import { TenantRole } from '@fema/shared';
+import { Permission } from '@fema-ipaas/core-utils';
+import { TenantRole } from '@fema-ipaas/shared';
 
 import { userHooks } from '@/hooks/user-hooks';
 

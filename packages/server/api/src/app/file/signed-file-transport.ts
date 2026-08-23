@@ -1,5 +1,5 @@
-import { assertNotNullOrUndefined, isNil } from '@fema/core-utils'
-import { File, FileLocation, FileType } from '@fema/shared'
+import { assertNotNullOrUndefined, isNil } from '@fema-ipaas/core-utils'
+import { File, FileLocation, FileType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyReply } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { system } from '../helper/system/system'

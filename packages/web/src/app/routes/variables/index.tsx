@@ -1,5 +1,5 @@
-import { Permission } from '@fema/core-utils';
-import { VariableWithoutSensitiveData } from '@fema/shared';
+import { Permission } from '@fema-ipaas/core-utils';
+import { VariableWithoutSensitiveData } from '@fema-ipaas/shared';
 import { ColumnDef } from '@tanstack/react-table';
 import { t } from 'i18next';
 import {

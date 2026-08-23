@@ -2,12 +2,12 @@ import {
   ConnectorAuthProperty,
   ConnectorPropertyMap,
   connectorPropertiesUtils,
-} from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-sdk';
 import {
   deepMergeAndCast,
   isNil,
   isManualConnectorTrigger,
-} from '@fema/core-utils';
+} from '@fema-ipaas/core-utils';
 import {
   WorkflowAction,
   WorkflowActionType,
@@ -27,7 +27,7 @@ import {
   WorkflowVersion,
   WorkflowOperationType,
   AUTHENTICATION_PROPERTY_NAME,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { useRef } from 'react';
 
 import {
@@ -355,12 +355,14 @@ export const CONNECTOR_SELECTOR_ELEMENTS_HEIGHTS = {
 };
 
 const isMcpToolTrigger = (connectorName: string, triggerName: string) => {
-  return connectorName === '@fema/connector-mcp' && triggerName === 'mcp_tool';
+  return (
+    connectorName === '@fema-ipaas/connector-mcp' && triggerName === 'mcp_tool'
+  );
 };
 
 const isChatTrigger = (connectorName: string, triggerName: string) => {
   return (
-    connectorName === '@fema/connector-forms' &&
+    connectorName === '@fema-ipaas/connector-forms' &&
     triggerName === 'chat_submission'
   );
 };

@@ -1,4 +1,4 @@
-import { ExecuteWorkflowJobData, ExecutionType, WorkflowTriggerType, PollingJobData, ResumeReason, RunEnvironment, StreamStepProgress, WorkerJobType } from '@fema/shared'
+import { ExecuteWorkflowJobData, ExecutionType, WorkflowTriggerType, PollingJobData, ResumeReason, RunEnvironment, StreamStepProgress, WorkerJobType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 

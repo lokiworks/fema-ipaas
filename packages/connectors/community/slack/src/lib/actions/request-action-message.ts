@@ -1,6 +1,6 @@
-import { createAction, Property } from '@fema/connector-sdk';
+import { createAction, Property } from '@fema-ipaas/connector-sdk';
 import { slackAuth } from '../auth';
-import { assertNotNullOrUndefined } from '@fema/connector-sdk';
+import { assertNotNullOrUndefined } from '@fema-ipaas/connector-sdk';
 import {
   profilePicture,
   text,

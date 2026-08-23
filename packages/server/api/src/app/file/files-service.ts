@@ -1,6 +1,6 @@
 import { Transform } from 'node:stream'
-import { ApplicationError, ErrorCode } from '@fema/core-utils'
-import { FileReadToken, FileType } from '@fema/shared'
+import { ApplicationError, ErrorCode } from '@fema-ipaas/core-utils'
+import { FileReadToken, FileType } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { domainHelper } from '../helper/domain-helper'
 import { JwtAudience, JwtSignAlgorithm, jwtUtils } from '../helper/jwt-utils'

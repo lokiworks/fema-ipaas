@@ -1,5 +1,5 @@
-import { apId } from '@fema/core-utils'
-import { TenantRole, TelemetryEventName, UserStatus } from '@fema/shared'
+import { apId } from '@fema-ipaas/core-utils'
+import { TenantRole, TelemetryEventName, UserStatus } from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { authenticationUtils } from '../../../../src/app/authentication/authentication-utils'

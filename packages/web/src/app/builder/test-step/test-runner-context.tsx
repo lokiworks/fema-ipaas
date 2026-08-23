@@ -3,7 +3,7 @@ import {
   WorkflowActionType,
   WorkflowTrigger,
   WorkflowTriggerType,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { useQueryClient } from '@tanstack/react-query';
 import React, {
   createContext,
@@ -30,7 +30,7 @@ const ActionTestRunnerContext =
 
 const isReturnResponseAndWaitForWebhook = (step: WorkflowAction) =>
   step.type === WorkflowActionType.CONNECTOR &&
-  step.settings.connectorName === '@fema/connector-webhook' &&
+  step.settings.connectorName === '@fema-ipaas/connector-webhook' &&
   step.settings.actionName === 'return_response_and_wait_for_next_webhook';
 
 const ActionTestRunnerProvider = ({

@@ -1,7 +1,7 @@
 
-    import { createConnector, ConnectorAuth } from "@fema/connector-sdk";
+    import { createConnector, ConnectorAuth } from "@fema-ipaas/connector-sdk";
 import { manualTrigger } from "./lib/triggers/manual-trigger";
-import { ConnectorCategory } from "@fema/connector-sdk";
+import { ConnectorCategory } from "@fema-ipaas/connector-sdk";
 
 export const manualTriggerConnector = createConnector({
       displayName: "Manual Trigger",

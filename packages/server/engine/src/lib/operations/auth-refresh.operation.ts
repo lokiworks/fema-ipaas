@@ -1,12 +1,12 @@
-import { PropertyType } from '@fema/connector-sdk'
-import { isObject } from '@fema/core-utils'
+import { PropertyType } from '@fema-ipaas/connector-sdk'
+import { isObject } from '@fema-ipaas/core-utils'
 import {
     ConnectionType,
     EngineResponse,
     EngineResponseStatus,
     ExecuteRefreshTokenAuthOperation,
     ExecuteRefreshTokenAuthResponse,
-} from '@fema/shared'
+} from '@fema-ipaas/shared'
 import { connectorAuth } from '../core/connector/connector-auth'
 
 export const authRefreshOperation = {

@@ -2,7 +2,7 @@ import {
   createAction,
   ConnectorAuth,
   Property,
-} from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-sdk';
 import { subtractionActionOutputSchema } from '../output-schemas';
 
 export const subtraction = createAction({

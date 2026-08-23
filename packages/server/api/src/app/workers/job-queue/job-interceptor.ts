@@ -1,4 +1,4 @@
-import { JobData } from '@fema/shared'
+import { JobData } from '@fema-ipaas/shared'
 import { Job } from 'bullmq'
 import { FastifyBaseLogger } from 'fastify'
 

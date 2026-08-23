@@ -1,4 +1,4 @@
-# @fema/core-utils
+# @fema-ipaas/core-utils
 
 Tier-1 foundation: framework-agnostic utilities, primitives, errors, and ID
 helpers that the rest of the codebase builds on.
@@ -7,6 +7,6 @@ helpers that the rest of the codebase builds on.
 
 - **Must be tree-shakeable.** It is bundled into every connector (and the engine), so
   keep it small, side-effect-free (`"sideEffects": false`), and acyclic.
-- **May import other `@fema/core-*` packages only** — never `server`,
+- **May import other `@fema-ipaas/core-*` packages only** — never `server`,
   `web`, `connectors`, or `shared`. Enforced by the `no-restricted-imports` boundary
   lint in `.eslintrc.json`.

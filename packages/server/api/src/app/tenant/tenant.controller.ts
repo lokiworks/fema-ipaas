@@ -1,5 +1,5 @@
-import { ApId, ApplicationError, ErrorCode } from '@fema/core-utils'
-import { AuthenticationResponse, CreateTenantRequest, FileType, PrincipalType, SERVICE_KEY_SECURITY_OPENAPI, TenantWithoutSensitiveData, UpdateTenantRequestBody } from '@fema/shared'
+import { ApId, ApplicationError, ErrorCode } from '@fema-ipaas/core-utils'
+import { AuthenticationResponse, CreateTenantRequest, FileType, PrincipalType, SERVICE_KEY_SECURITY_OPENAPI, TenantWithoutSensitiveData, UpdateTenantRequestBody } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'

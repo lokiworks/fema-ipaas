@@ -1,5 +1,5 @@
-import { ssrfIpClassifier } from '@fema/core-utils'
-import { NetworkMode } from '@fema/shared'
+import { ssrfIpClassifier } from '@fema-ipaas/core-utils'
+import { NetworkMode } from '@fema-ipaas/shared'
 import { installDnsLookupGuard } from './dns-lookup-guard'
 import { installSocketConnectGuard } from './socket-connect-guard'
 

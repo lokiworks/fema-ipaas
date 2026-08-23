@@ -5,10 +5,10 @@ import { readdir, stat } from 'node:fs/promises'
 import { resolve, join, relative, dirname } from 'node:path'
 import { cwd } from 'node:process'
 import * as semver from 'semver'
-import { tryCatch } from '@fema/core-utils'
+import { tryCatch } from '@fema-ipaas/core-utils'
 import { readPackageJson } from './files'
 import { StatusCodes } from 'http-status-codes'
-import { connectorTranslation, ConnectorMetadata } from '@fema/connector-sdk'
+import { connectorTranslation, ConnectorMetadata } from '@fema-ipaas/connector-sdk'
 
 const LOAD_CONNECTOR_METADATA_CHILD = resolve(
     __dirname,
@@ -27,7 +27,7 @@ type LoadedConnectorChildPayload = {
 export const FEMA_CLOUD_API_BASE = 'https://github.com/lokiworks/fema-ipaas/api/v1';
 export const CONNECTORS_FOLDER = 'packages/connectors'
 export const COMMUNITY_CONNECTOR_FOLDER = 'packages/connectors/community'
-export const NON_CONNECTORS_PACKAGES = ['@fema/connector-sdk', '@fema/connector-common']
+export const NON_CONNECTORS_PACKAGES = ['@fema-ipaas/connector-sdk', '@fema-ipaas/connector-common']
 
 const validateSupportedRelease = (minRelease: string | undefined, maxRelease: string | undefined) => {
     if (minRelease !== undefined && !semver.valid(minRelease)) {

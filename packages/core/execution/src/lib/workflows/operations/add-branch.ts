@@ -1,4 +1,4 @@
-import { insertAt } from '@fema/core-utils'
+import { insertAt } from '@fema-ipaas/core-utils'
 import { WorkflowActionType, RouterAction } from '../actions/action'
 import { WorkflowVersion } from '../workflow-version'
 import { workflowStructureUtil } from '../util/workflow-structure-util'

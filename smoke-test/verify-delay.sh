@@ -30,7 +30,7 @@ AUTH="Authorization: Bearer $TOKEN"
 # Wait for delay connector to be synced
 echo "--- Waiting for delay connector ---"
 for i in $(seq 1 300); do
-  HAS_DELAY=$(curl -sf "$API_URL/connectors" 2>/dev/null | jq '[.[].name] | any(. == "@fema/connector-delay")' 2>/dev/null || echo "false")
+  HAS_DELAY=$(curl -sf "$API_URL/connectors" 2>/dev/null | jq '[.[].name] | any(. == "@fema-ipaas/connector-delay")' 2>/dev/null || echo "false")
   if [ "$HAS_DELAY" = "true" ]; then
     echo "Delay connector is available (took ${i}s)"
     break
@@ -69,7 +69,7 @@ curl -s --fail-with-body "$API_URL/workflows/$WORKFLOW_ID" \
         "displayName": "Catch Webhook",
         "type": "CONNECTOR_TRIGGER",
         "settings": {
-          "connectorName": "@fema/connector-webhook",
+          "connectorName": "@fema-ipaas/connector-webhook",
           "connectorVersion": "~0.1.29",
           "triggerName": "catch_webhook",
           "input": { "authType": "none", "authFields": {} },
@@ -86,7 +86,7 @@ curl -s --fail-with-body "$API_URL/workflows/$WORKFLOW_ID" \
           "valid": true,
           "displayName": "Delay For",
           "settings": {
-            "connectorName": "@fema/connector-delay",
+            "connectorName": "@fema-ipaas/connector-delay",
             "connectorVersion": "~0.3.26",
             "actionName": "delayFor",
             "input": {

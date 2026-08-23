@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { BaseModelSchema, Nullable } from '@fema/core-utils'
+import { BaseModelSchema, Nullable } from '@fema-ipaas/core-utils'
 
 export type FolderId = string
 

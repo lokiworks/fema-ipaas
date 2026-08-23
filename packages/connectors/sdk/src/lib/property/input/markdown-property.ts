@@ -1,7 +1,7 @@
 import * as z from "zod/mini";
 import { BasePropertySchema, TPropertyValue } from './common';
 import { PropertyType } from './property-type';
-import { MarkdownVariant } from '@fema/connector-types';
+import { MarkdownVariant } from '@fema-ipaas/connector-types';
 
 export const MarkDownProperty = z.object({
   ...BasePropertySchema.shape,

@@ -1,4 +1,4 @@
-import { ConnectorAuth, Property } from '@fema/connector-sdk';
+import { ConnectorAuth, Property } from '@fema-ipaas/connector-sdk';
 
 export const rabbitmqAuth = ConnectorAuth.CustomAuth({
   description: "Rabbitmq Auth",

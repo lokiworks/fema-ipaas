@@ -1,9 +1,9 @@
 import fs from 'fs/promises'
 import { inspect } from 'node:util'
 import path from 'path'
-import { ConnectionsManager, ContextVersion, RespondHookParams, StopHookParams } from '@fema/connector-sdk'
-import { formatConnectorError, Result, tryCatch } from '@fema/core-utils'
-import { ExecutionError, ExecutionErrorType, RespondResponse } from '@fema/shared'
+import { ConnectionsManager, ContextVersion, RespondHookParams, StopHookParams } from '@fema-ipaas/connector-sdk'
+import { formatConnectorError, Result, tryCatch } from '@fema-ipaas/core-utils'
+import { ExecutionError, ExecutionErrorType, RespondResponse } from '@fema-ipaas/shared'
 import { createConnectionResolver } from './connector-context/connection-resolver'
 
 export type FileEntry = {

@@ -1,4 +1,4 @@
-import { ApplicationError, apId, ErrorCode } from '@fema/core-utils'
+import { ApplicationError, apId, ErrorCode } from '@fema-ipaas/core-utils'
 import { describe, expect, it } from 'vitest'
 import { ACTION_RUN_CODE_DIR } from '../../../src/lib/cache/cache-paths'
 import { assertSafeCodeNamespace, assertSafePathSegment } from '../../../src/lib/utils/path-safety'

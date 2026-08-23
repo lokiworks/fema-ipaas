@@ -1,7 +1,7 @@
 import {
   FEMA_MAXIMUM_PROFILE_PICTURE_SIZE,
   PROFILE_PICTURE_ALLOWED_TYPES,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { useQueryClient } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { Camera, Mail } from 'lucide-react';

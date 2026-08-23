@@ -1,4 +1,4 @@
-import { ApplicationError, ErrorCode } from '@fema/core-utils'
+import { ApplicationError, ErrorCode } from '@fema-ipaas/core-utils'
 import disposableDomains from 'disposable-email-domains'
 import wildcardDomains from 'disposable-email-domains/wildcard.json'
 import { FastifyBaseLogger } from 'fastify'

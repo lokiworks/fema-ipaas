@@ -1,7 +1,7 @@
 /// <reference types="vitest/globals" />
 
 import { dateDifferenceAction } from '../src/lib/actions/date-difference';
-import { createMockActionContext } from '@fema/connector-sdk';
+import { createMockActionContext } from '@fema-ipaas/connector-sdk';
 
 describe('dateDifferenceAction', () => {
   test('calculates difference in days', async () => {

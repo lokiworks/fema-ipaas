@@ -1,4 +1,4 @@
-import { isNil } from '@fema/core-utils';
+import { isNil } from '@fema-ipaas/core-utils';
 
 import { ApAvatar } from '@/components/custom/ap-avatar';
 import { useEmbedding } from '@/components/providers/embed-provider';

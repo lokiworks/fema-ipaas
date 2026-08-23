@@ -1,5 +1,5 @@
-import { ApplicationError, ErrorCode } from '@fema/core-utils'
-import { CloudOAuth2ConnectionValue } from '@fema/shared'
+import { ApplicationError, ErrorCode } from '@fema-ipaas/core-utils'
+import { CloudOAuth2ConnectionValue } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { OAuth2Service } from '../oauth2-service'
 

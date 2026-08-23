@@ -1,5 +1,5 @@
 import slugify from 'slugify';
-import { Property, createAction } from '@fema/connector-sdk';
+import { Property, createAction } from '@fema-ipaas/connector-sdk';
 
 export const slugifyAction = createAction({
   audience: 'both',

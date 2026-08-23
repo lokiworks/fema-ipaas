@@ -1,5 +1,5 @@
-import { ConnectorMetadataModel } from '@fema/connector-sdk';
-import { isNil } from '@fema/core-utils';
+import { ConnectorMetadataModel } from '@fema-ipaas/connector-sdk';
+import { isNil } from '@fema-ipaas/core-utils';
 
 import { StepPropertySnapshot } from './explanation-prompt';
 

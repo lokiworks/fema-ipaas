@@ -1,5 +1,5 @@
-import { SecretTextProperty } from '@fema/connector-sdk';
-import { UpsertSecretTextRequest } from '@fema/shared';
+import { SecretTextProperty } from '@fema-ipaas/connector-sdk';
+import { UpsertSecretTextRequest } from '@fema-ipaas/shared';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { z } from 'zod';

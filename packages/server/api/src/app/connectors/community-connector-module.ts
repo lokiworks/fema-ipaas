@@ -1,5 +1,5 @@
-import { ConnectorMetadataModel } from '@fema/connector-sdk'
-import { AddConnectorRequestBody, PrincipalType } from '@fema/shared'
+import { ConnectorMetadataModel } from '@fema-ipaas/connector-sdk'
+import { AddConnectorRequestBody, PrincipalType } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { securityAccess } from '../core/security/authorization/fastify-security'

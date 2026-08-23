@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { Nullable } from '@fema/core-utils'
+import { Nullable } from '@fema-ipaas/core-utils'
 export enum NoteColorVariant {
     ORANGE = 'orange',
     RED = 'red',

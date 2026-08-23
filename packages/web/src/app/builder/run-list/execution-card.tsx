@@ -1,11 +1,11 @@
-import { Permission } from '@fema/core-utils';
+import { Permission } from '@fema-ipaas/core-utils';
 import {
   WorkflowRetryStrategy,
   Execution,
   ExecutionStatus,
   isFailedState,
   isExecutionStateTerminal,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { Eye, Repeat, Timer } from 'lucide-react';
 import React, { useState } from 'react';

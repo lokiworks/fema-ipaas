@@ -1,6 +1,6 @@
-import { apId } from '@fema/core-utils'
-import { ActionBase } from '@fema/connector-sdk'
-import { DefaultWorkspaceRole, WorkflowTriggerType, PackageType, ConnectorType, PrincipalType } from '@fema/shared'
+import { apId } from '@fema-ipaas/core-utils'
+import { ActionBase } from '@fema-ipaas/connector-sdk'
+import { DefaultWorkspaceRole, WorkflowTriggerType, PackageType, ConnectorType, PrincipalType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { databaseConnection } from '../../../../src/app/database/database-connection'
@@ -176,7 +176,7 @@ describe('Connector Metadata CE API', () => {
             const ctx = await createTestContext(app!)
 
             const mockConnector = createMockConnectorMetadata({
-                name: '@fema/ce-scoped-connector',
+                name: '@fema-ipaas/ce-scoped-connector',
                 connectorType: ConnectorType.OFFICIAL,
                 displayName: 'CE Scoped Test',
                 packageType: PackageType.REGISTRY,
@@ -184,11 +184,11 @@ describe('Connector Metadata CE API', () => {
             await db.save('connector_metadata', mockConnector)
             await connectorCache(mockLog).setup()
 
-            const response = await ctx.get(`/v1/connectors/@fema/ce-scoped-connector?workspaceId=${ctx.workspace.id}`)
+            const response = await ctx.get(`/v1/connectors/@fema-ipaas/ce-scoped-connector?workspaceId=${ctx.workspace.id}`)
 
             expect(response?.statusCode).toBe(StatusCodes.OK)
             const body = response?.json()
-            expect(body.name).toBe('@fema/ce-scoped-connector')
+            expect(body.name).toBe('@fema-ipaas/ce-scoped-connector')
         })
     })
 
@@ -206,7 +206,7 @@ describe('Connector Metadata CE API', () => {
     describe('release-compatibility fallback', () => {
         it('GET /v1/connectors/:scope/:name falls back to the newest compatible version when latest requires a newer release', async () => {
             const compatible = createMockConnectorMetadata({
-                name: '@fema/connector-release-test',
+                name: '@fema-ipaas/connector-release-test',
                 connectorType: ConnectorType.OFFICIAL,
                 packageType: PackageType.REGISTRY,
                 version: '0.1.32',
@@ -214,7 +214,7 @@ describe('Connector Metadata CE API', () => {
                 maximumSupportedRelease: '99999.99999.9999',
             })
             const incompatible = createMockConnectorMetadata({
-                name: '@fema/connector-release-test',
+                name: '@fema-ipaas/connector-release-test',
                 connectorType: ConnectorType.OFFICIAL,
                 packageType: PackageType.REGISTRY,
                 version: '0.1.33',
@@ -225,7 +225,7 @@ describe('Connector Metadata CE API', () => {
             await connectorCache(mockLog).setup()
 
             const ctx = await createTestContext(app!)
-            const response = await ctx.get('/v1/connectors/@fema/connector-release-test')
+            const response = await ctx.get('/v1/connectors/@fema-ipaas/connector-release-test')
 
             expect(response?.statusCode).toBe(StatusCodes.OK)
             expect(response?.json().version).toBe('0.1.32')
@@ -269,7 +269,7 @@ describe('Connector Metadata CE API', () => {
 
         it('GET /v1/connectors/:scope/:name returns 404 when all versions are incompatible', async () => {
             const incompatible = createMockConnectorMetadata({
-                name: '@fema/connector-all-incompatible',
+                name: '@fema-ipaas/connector-all-incompatible',
                 connectorType: ConnectorType.OFFICIAL,
                 packageType: PackageType.REGISTRY,
                 version: '0.1.33',
@@ -280,7 +280,7 @@ describe('Connector Metadata CE API', () => {
             await connectorCache(mockLog).setup()
 
             const ctx = await createTestContext(app!)
-            const response = await ctx.get('/v1/connectors/@fema/connector-all-incompatible')
+            const response = await ctx.get('/v1/connectors/@fema-ipaas/connector-all-incompatible')
 
             expect(response?.statusCode).toBe(StatusCodes.NOT_FOUND)
         })
@@ -344,7 +344,7 @@ describe('Connector Metadata CE API', () => {
         it('should reject deleting a tenant-owned official connector with 403', async () => {
             const ctx = await createTestContext(app!)
             const mockConnector = createMockConnectorMetadata({
-                name: '@fema/official-connector',
+                name: '@fema-ipaas/official-connector',
                 connectorType: ConnectorType.OFFICIAL,
                 packageType: PackageType.REGISTRY,
                 tenantId: ctx.tenant.id,
@@ -649,7 +649,7 @@ describe('Connector Metadata CE API', () => {
         it('GET /v1/connectors/:scope/:name hides audience:ai by default', async () => {
             const ctx = await createTestContext(app!)
             const mockConnector = createMockConnectorMetadata({
-                name: '@fema/audience-scoped-connector',
+                name: '@fema-ipaas/audience-scoped-connector',
                 connectorType: ConnectorType.OFFICIAL,
                 packageType: PackageType.REGISTRY,
                 actions: buildActions(),
@@ -657,7 +657,7 @@ describe('Connector Metadata CE API', () => {
             await db.save('connector_metadata', mockConnector)
             await connectorCache(mockLog).setup()
 
-            const response = await ctx.get('/v1/connectors/@fema/audience-scoped-connector')
+            const response = await ctx.get('/v1/connectors/@fema-ipaas/audience-scoped-connector')
 
             expect(response?.statusCode).toBe(StatusCodes.OK)
             const body = response?.json()

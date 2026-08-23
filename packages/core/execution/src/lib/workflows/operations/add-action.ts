@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
-import { isNil } from '@fema/core-utils'
-import { ApplicationError, ErrorCode } from '@fema/core-utils'
+import { isNil } from '@fema-ipaas/core-utils'
+import { ApplicationError, ErrorCode } from '@fema-ipaas/core-utils'
 import { WorkflowAction, WorkflowActionType, LoopOnItemsAction, RouterAction, SingleActionSchema } from '../actions/action'
 import { WorkflowVersion } from '../workflow-version'
 import { workflowStructureUtil, Step } from '../util/workflow-structure-util'

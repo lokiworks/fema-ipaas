@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { OptionalArrayFromQuery, OptionalBooleanFromQuery } from '@fema/core-utils'
-import { ApId } from '@fema/core-utils'
+import { OptionalArrayFromQuery, OptionalBooleanFromQuery } from '@fema-ipaas/core-utils'
+import { ApId } from '@fema-ipaas/core-utils'
 import { ExecutionStatus } from '../state/workflow-execution'
 
 export const ListExecutionsRequestQuery = z.object({

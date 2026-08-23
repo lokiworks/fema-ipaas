@@ -1,5 +1,5 @@
-import { isNil, WorkflowId, WorkflowVersionId, WorkspaceId } from '@fema/core-utils'
-import { TriggerTestStrategy } from '@fema/shared'
+import { isNil, WorkflowId, WorkflowVersionId, WorkspaceId } from '@fema-ipaas/core-utils'
+import { TriggerTestStrategy } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { distributedLock } from '../../database/redis-connections'
 import { workflowService } from '../../workflows/workflow/workflow.service'

@@ -35,7 +35,7 @@ function collectTsFiles(dir: string): string[] {
     return files
 }
 
-// A connector imports only from @fema/connector-sdk (which re-exports the foundation
+// A connector imports only from @fema-ipaas/connector-sdk (which re-exports the foundation
 // symbols). Repoint every shared / core-* import specifier to the framework; a symbol the
 // framework does not re-export was server-only and will surface as a build error.
 function repointImports(content: string): string {
@@ -58,7 +58,7 @@ function migrateManifest({ connectorPath, dryRun }: MigrateConnectorParams): boo
     const devDependencies: Record<string, string> = manifest.devDependencies ?? {}
     const scripts: Record<string, string> = manifest.scripts ?? {}
 
-    delete dependencies['@fema/shared']
+    delete dependencies['@fema-ipaas/shared']
     for (const dep of REQUIRED_DEPENDENCIES) {
         dependencies[dep] = dependencies[dep] ?? 'workspace:*'
     }
@@ -119,27 +119,27 @@ function defaultEslintConfig(): Record<string, unknown> {
     }
 }
 
-const FRAMEWORK = '@fema/connector-sdk'
+const FRAMEWORK = '@fema-ipaas/connector-sdk'
 const REPOINTED_MODULES = [
-    '@fema/shared',
-    '@fema/core-utils',
-    '@fema/connector-types',
-    '@fema/expression',
-    '@fema/workflow-core',
+    '@fema-ipaas/shared',
+    '@fema-ipaas/core-utils',
+    '@fema-ipaas/connector-types',
+    '@fema-ipaas/expression',
+    '@fema-ipaas/workflow-core',
 ]
 const REQUIRED_DEPENDENCIES = [
-    '@fema/connector-common',
-    '@fema/connector-sdk',
-    '@fema/connector-types',
-    '@fema/core-utils',
+    '@fema-ipaas/connector-common',
+    '@fema-ipaas/connector-sdk',
+    '@fema-ipaas/connector-types',
+    '@fema-ipaas/core-utils',
 ]
 const IMPORT_BOUNDARY_PATTERNS = [
     'lodash',
     'lodash/*',
-    '@fema/core-*',
-    '@fema/server*',
-    '@fema/engine',
-    '@fema/shared',
+    '@fema-ipaas/core-*',
+    '@fema-ipaas/server*',
+    '@fema-ipaas/engine',
+    '@fema-ipaas/shared',
 ]
 const TSLIB_VERSION = '2.6.2'
 const BUNDLE_SCRIPT = 'node ../../../../dist/packages/cli/src/index.js connectors bundle'

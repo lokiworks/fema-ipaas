@@ -1,4 +1,4 @@
-import { WorkflowAction, ExecutionStatus, LoopStepOutput } from '@fema/shared'
+import { WorkflowAction, ExecutionStatus, LoopStepOutput } from '@fema-ipaas/shared'
 import {  WorkflowExecutorContext } from '../../src/lib/handler/context/workflow-execution-context'
 import { workflowExecutor } from '../../src/lib/handler/workflow-executor'
 import { buildCodeAction, buildSimpleLoopAction, generateMockEngineConstants } from './test-helper'

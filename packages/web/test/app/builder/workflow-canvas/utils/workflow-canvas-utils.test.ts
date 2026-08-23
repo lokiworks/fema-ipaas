@@ -6,7 +6,7 @@ import {
   WorkflowTriggerType,
   WorkflowVersion,
   WorkflowVersionState,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { describe, expect, it, vi } from 'vitest';
 
 import { workflowCanvasUtils } from '@/app/builder/workflow-canvas/utils/workflow-canvas-utils';

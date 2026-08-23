@@ -1,7 +1,7 @@
 /// <reference types="vitest/globals" />
 
 import { getCurrentDate } from '../src/lib/actions/get-current-date';
-import { createMockActionContext } from '@fema/connector-sdk';
+import { createMockActionContext } from '@fema-ipaas/connector-sdk';
 
 describe('getCurrentDate', () => {
   beforeEach(() => {

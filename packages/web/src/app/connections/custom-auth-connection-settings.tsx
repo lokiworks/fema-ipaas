@@ -1,4 +1,4 @@
-import { CustomAuthProperty } from '@fema/connector-sdk';
+import { CustomAuthProperty } from '@fema-ipaas/connector-sdk';
 import React from 'react';
 
 import { GenericPropertiesForm } from '@/app/builder/connector-properties/generic-properties-form';

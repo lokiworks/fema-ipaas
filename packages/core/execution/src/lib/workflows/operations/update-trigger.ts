@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { isNil } from '@fema/core-utils'
+import { isNil } from '@fema-ipaas/core-utils'
 import { WorkflowAction } from '../actions/action'
 import { WorkflowVersion } from '../workflow-version'
 import { SampleDataSettings } from '../sample-data'

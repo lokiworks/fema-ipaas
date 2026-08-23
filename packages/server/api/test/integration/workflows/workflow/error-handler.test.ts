@@ -1,4 +1,4 @@
-import { apId, ErrorCode } from '@fema/core-utils'
+import { apId, ErrorCode } from '@fema-ipaas/core-utils'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { createTestContext } from '../../../../helpers/test-context'

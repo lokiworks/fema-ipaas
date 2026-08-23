@@ -1,4 +1,4 @@
-import { STORE_KEY_MAX_LENGTH } from '@fema/connector-types'
+import { STORE_KEY_MAX_LENGTH } from '@fema-ipaas/connector-types'
 
 export enum ExecutionErrorType {
     ENGINE = 'ENGINE',

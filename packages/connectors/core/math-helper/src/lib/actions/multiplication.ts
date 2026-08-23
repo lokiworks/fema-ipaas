@@ -2,7 +2,7 @@ import {
   ConnectorAuth,
   Property,
   createAction,
-} from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-sdk';
 import { multiplicationActionOutputSchema } from '../output-schemas';
 
 export const multiplication = createAction({

@@ -1,9 +1,9 @@
-import { ErrorCode } from '@fema/core-utils';
+import { ErrorCode } from '@fema-ipaas/core-utils';
 import {
   formErrors,
   VARIABLE_NAME_REGEX,
   VariableWithoutSensitiveData,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { t } from 'i18next';

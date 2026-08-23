@@ -1,4 +1,4 @@
-import { ConnectorAction, ConnectorTrigger } from '@fema/shared';
+import { ConnectorAction, ConnectorTrigger } from '@fema-ipaas/shared';
 import { useMutation } from '@tanstack/react-query';
 import { t } from 'i18next';
 import React, { useState } from 'react';

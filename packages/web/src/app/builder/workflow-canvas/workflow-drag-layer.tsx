@@ -10,12 +10,12 @@ import {
   useSensors,
   PointerSensorOptions,
 } from '@dnd-kit/core';
-import { isNil } from '@fema/core-utils';
+import { isNil } from '@fema-ipaas/core-utils';
 import {
   WorkflowOperationType,
   StepLocationRelativeToParent,
   workflowStructureUtil,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { ReactFlowInstance, useReactFlow } from '@xyflow/react';
 import { t } from 'i18next';
 import type { PointerEvent } from 'react';

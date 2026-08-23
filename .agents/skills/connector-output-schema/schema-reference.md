@@ -1,6 +1,6 @@
 # Schema Reference
 
-The authoritative type lives in `packages/connectors/sdk/src/lib/output-schema.ts` and is re-exported from `@fema/connector-sdk`.
+The authoritative type lives in `packages/connectors/sdk/src/lib/output-schema.ts` and is re-exported from `@fema-ipaas/connector-sdk`.
 
 ```ts
 export type OutputSchema = {

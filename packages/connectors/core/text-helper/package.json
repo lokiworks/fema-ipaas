@@ -1,13 +1,13 @@
 {
-  "name": "@fema/connector-text-helper",
+  "name": "@fema-ipaas/connector-text-helper",
   "version": "0.6.5",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "dependencies": {
-    "@fema/connector-types": "workspace:*",
-    "@fema/core-utils": "workspace:*",
-    "@fema/connector-common": "workspace:*",
-    "@fema/connector-sdk": "workspace:*",
+    "@fema-ipaas/connector-types": "workspace:*",
+    "@fema-ipaas/core-utils": "workspace:*",
+    "@fema-ipaas/connector-common": "workspace:*",
+    "@fema-ipaas/connector-sdk": "workspace:*",
     "@joplin/turndown": "4.0.85",
     "@joplin/turndown-plugin-gfm": "1.0.67",
     "jsdom": "^24.0.0",

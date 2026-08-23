@@ -1,8 +1,8 @@
-import { createAction } from '@fema/connector-sdk';
+import { createAction } from '@fema-ipaas/connector-sdk';
 import { buildWorkflowOriginContextBlock, slackSendMessage, textToSectionBlocks } from '../common/utils';
 import { slackAuth } from '../auth';
-import { assertNotNullOrUndefined } from '@fema/connector-sdk';
-import { ExecutionType } from '@fema/connector-sdk';
+import { assertNotNullOrUndefined } from '@fema-ipaas/connector-sdk';
+import { ExecutionType } from '@fema-ipaas/connector-sdk';
 import {
   profilePicture,
   singleSelectChannelInfo,

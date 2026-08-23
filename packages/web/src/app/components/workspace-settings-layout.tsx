@@ -1,4 +1,4 @@
-import { isNil } from '@fema/core-utils';
+import { isNil } from '@fema-ipaas/core-utils';
 import { Navigate } from 'react-router-dom';
 
 import { authenticationSession } from '../../lib/authentication-session';

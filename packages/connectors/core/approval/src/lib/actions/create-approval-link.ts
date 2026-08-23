@@ -1,5 +1,5 @@
-import { createAction, ConnectorAuth, Property } from '@fema/connector-sdk';
-import { MarkdownVariant } from '@fema/connector-sdk';
+import { createAction, ConnectorAuth, Property } from '@fema-ipaas/connector-sdk';
+import { MarkdownVariant } from '@fema-ipaas/connector-sdk';
 
 export const createApprovalLink = createAction({
   audience: 'both',

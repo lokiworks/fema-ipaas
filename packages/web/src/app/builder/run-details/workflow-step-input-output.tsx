@@ -1,4 +1,4 @@
-import { isNil, tryParseFriendlyConnectorError } from '@fema/core-utils';
+import { isNil, tryParseFriendlyConnectorError } from '@fema-ipaas/core-utils';
 import {
   StepOutputStatus,
   workflowStructureUtil,
@@ -11,7 +11,7 @@ import {
   LogSliceRef,
   StepOutputType,
   RunInternalError,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { Download, Info, ShieldAlert } from 'lucide-react';
 import { useMemo, useState } from 'react';

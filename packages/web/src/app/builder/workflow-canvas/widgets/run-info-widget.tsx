@@ -3,7 +3,7 @@ import {
   ExecutionStatus,
   isExecutionStateTerminal,
   StepOutputStatus,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { useReactFlow } from '@xyflow/react';
 import { t } from 'i18next';
 import { ArrowRight, CircleHelp, Info, Magnet } from 'lucide-react';

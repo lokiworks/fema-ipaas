@@ -7,8 +7,8 @@ Most common. Use for simple APIs that issue a single API key or token.
 Inside `validate`, `auth` is a plain string. Inside actions/triggers, it's the full connection object — read the secret via `context.auth.secret_text`.
 
 ```typescript
-import { ConnectorAuth } from '@fema/connector-sdk';
-import { httpClient, HttpMethod } from '@fema/connector-common';
+import { ConnectorAuth } from '@fema-ipaas/connector-sdk';
+import { httpClient, HttpMethod } from '@fema-ipaas/connector-common';
 
 export const myAppAuth = ConnectorAuth.SecretText({
   displayName: 'API Key',
@@ -40,7 +40,7 @@ export const myAppAuth = ConnectorAuth.SecretText({
 For services like Google, Slack, GitHub that use OAuth2 authorization workflows.
 
 ```typescript
-import { ConnectorAuth } from '@fema/connector-sdk';
+import { ConnectorAuth } from '@fema-ipaas/connector-sdk';
 
 export const myAppAuth = ConnectorAuth.OAuth2({
   required: true,
@@ -90,7 +90,7 @@ createCustomApiCallAction({
 For APIs using username/password authentication.
 
 ```typescript
-import { ConnectorAuth } from '@fema/connector-sdk';
+import { ConnectorAuth } from '@fema-ipaas/connector-sdk';
 
 export const myAppAuth = ConnectorAuth.BasicAuth({
   displayName: 'Connection',
@@ -131,7 +131,7 @@ export const myAppAuth = ConnectorAuth.BasicAuth({
 For APIs needing multiple fields — e.g. instance URL + API key, or region + credentials.
 
 ```typescript
-import { ConnectorAuth, Property } from '@fema/connector-sdk';
+import { ConnectorAuth, Property } from '@fema-ipaas/connector-sdk';
 
 export const myAppAuth = ConnectorAuth.CustomAuth({
   displayName: 'Connection',

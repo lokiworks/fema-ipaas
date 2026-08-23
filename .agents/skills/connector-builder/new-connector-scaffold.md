@@ -6,7 +6,7 @@ Copy-ready templates for the four config files a new connector needs. Only "New 
 
 ```json
 {
-    "name": "@fema/connector-<name>",
+    "name": "@fema-ipaas/connector-<name>",
     "version": "0.0.1",
     "main": "./dist/src/index.js",
     "types": "./dist/src/index.d.ts",
@@ -15,9 +15,9 @@ Copy-ready templates for the four config files a new connector needs. Only "New 
         "lint": "eslint 'src/**/*.ts'"
     },
     "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/shared": "workspace:*",
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/shared": "workspace:*",
         "tslib": "2.6.2"
     }
 }

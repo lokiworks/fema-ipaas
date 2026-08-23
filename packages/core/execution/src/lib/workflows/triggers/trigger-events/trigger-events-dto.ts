@@ -1,7 +1,7 @@
-import { WorkflowId } from '@fema/core-utils'
+import { WorkflowId } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
-import { ApId } from '@fema/core-utils'
-import { Cursor } from '@fema/core-utils'
+import { ApId } from '@fema-ipaas/core-utils'
+import { Cursor } from '@fema-ipaas/core-utils'
 
 export const ListTriggerEventsRequest = z.object({
     workspaceId: ApId,

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { ApplicationError, ErrorCode } from '@fema/core-utils';
-import { EngineResponseStatus, ExecutionType, WorkflowActionType, ExecutionStatus, WorkflowTriggerType, WorkflowVersionState, StreamStepProgress, RunEnvironment, WorkerJobType } from '@fema/shared';
-import type { ExecuteWorkflowJobData, WorkflowVersion } from '@fema/shared'
+import { ApplicationError, ErrorCode } from '@fema-ipaas/core-utils';
+import { EngineResponseStatus, ExecutionType, WorkflowActionType, ExecutionStatus, WorkflowTriggerType, WorkflowVersionState, StreamStepProgress, RunEnvironment, WorkerJobType } from '@fema-ipaas/shared';
+import type { ExecuteWorkflowJobData, WorkflowVersion } from '@fema-ipaas/shared'
 
 vi.mock('../../../../src/lib/config/worker-settings', () => ({
     workerSettings: {
@@ -26,7 +26,7 @@ function makeWorkflowVersion(): WorkflowVersion {
             lastUpdatedDate: '2024-01-01T00:00:00Z',
             type: WorkflowTriggerType.CONNECTOR,
             settings: {
-                connectorName: '@fema/connector-gmail',
+                connectorName: '@fema-ipaas/connector-gmail',
                 connectorVersion: '~0.1.0',
                 triggerName: 'new_email',
                 input: {},
@@ -39,7 +39,7 @@ function makeWorkflowVersion(): WorkflowVersion {
                 lastUpdatedDate: '2024-01-01T00:00:00Z',
                 type: WorkflowActionType.CONNECTOR,
                 settings: {
-                    connectorName: '@fema/connector-slack',
+                    connectorName: '@fema-ipaas/connector-slack',
                     connectorVersion: '~0.2.0',
                     actionName: 'send_message',
                     input: {},
@@ -191,7 +191,7 @@ describe('executeWorkflowJob', () => {
         })
 
         it('marks run as FAILED and completes the job (OK) when the workflow is disabled', async () => {
-            const failedStep = { name: 'step_1', displayName: 'HTTP', message: 'The connector @fema/connector-http@1.0.0 is not installed' }
+            const failedStep = { name: 'step_1', displayName: 'HTTP', message: 'The connector @fema-ipaas/connector-http@1.0.0 is not installed' }
             const ctx = makeMockContext({ resolveResult: { kind: 'disabled', failedStep } })
             const data = makeResumeJobData({ executionType: ExecutionType.BEGIN })
 

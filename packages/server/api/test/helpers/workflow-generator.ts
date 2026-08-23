@@ -1,5 +1,5 @@
-import { apId } from '@fema/core-utils'
-import { WorkflowAction, WorkflowActionType, WorkflowOperationStatus, WorkflowStatus, WorkflowTrigger, WorkflowTriggerType, WorkflowVersion, WorkflowVersionState, PopulatedWorkflow, PropertyExecutionType } from '@fema/shared'
+import { apId } from '@fema-ipaas/core-utils'
+import { WorkflowAction, WorkflowActionType, WorkflowOperationStatus, WorkflowStatus, WorkflowTrigger, WorkflowTriggerType, WorkflowVersion, WorkflowVersionState, PopulatedWorkflow, PropertyExecutionType } from '@fema-ipaas/shared'
 import { faker } from '@faker-js/faker'
 import dayjs from 'dayjs'
 
@@ -73,7 +73,7 @@ function generateAction(): WorkflowAction {
         lastUpdatedDate: dayjs().toISOString(),
         settings: {
             input: {},
-            connectorName: faker.helpers.arrayElement(['@fema/connector-schedule', '@fema/connector-webhook']),
+            connectorName: faker.helpers.arrayElement(['@fema-ipaas/connector-schedule', '@fema-ipaas/connector-webhook']),
             connectorVersion: faker.system.semver(),
             actionName: faker.hacker.noun(),
             propertySettings: {},
@@ -89,7 +89,7 @@ function generateTrigger(): WorkflowTrigger {
         name: apId(),
         lastUpdatedDate: dayjs().toISOString(),
         settings: {
-            connectorName: faker.helpers.arrayElement(['@fema/connector-schedule', '@fema/connector-webhook']),
+            connectorName: faker.helpers.arrayElement(['@fema-ipaas/connector-schedule', '@fema-ipaas/connector-webhook']),
             connectorVersion: faker.system.semver(),
             triggerName: faker.hacker.noun(),
             input: {},

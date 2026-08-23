@@ -1,5 +1,5 @@
-import { isManualConnectorTrigger, isNil } from '@fema/core-utils'
-import { Execution, isExecutionStateTerminal, isFailedState, RunEnvironment, WebsocketClientEvent, WorkflowTriggerType } from '@fema/shared'
+import { isManualConnectorTrigger, isNil } from '@fema-ipaas/core-utils'
+import { Execution, isExecutionStateTerminal, isFailedState, RunEnvironment, WebsocketClientEvent, WorkflowTriggerType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { websocketService } from '../../core/websockets.service'
 import { workflowVersionService } from '../workflow-version/workflow-version.service'

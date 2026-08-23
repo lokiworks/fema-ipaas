@@ -1,5 +1,5 @@
 {
-  "name": "@fema/connector-common",
+  "name": "@fema-ipaas/connector-common",
   "version": "0.12.9",
   "type": "commonjs",
   "sideEffects": false,
@@ -10,8 +10,8 @@
     "lint": "eslint 'src/**/*.ts'"
   },
   "dependencies": {
-    "@fema/connector-sdk": "workspace:*",
-    "@fema/core-utils": "workspace:*",
+    "@fema-ipaas/connector-sdk": "workspace:*",
+    "@fema-ipaas/core-utils": "workspace:*",
     "form-data": "4.0.6",
     "zod": "4.3.6"
   },

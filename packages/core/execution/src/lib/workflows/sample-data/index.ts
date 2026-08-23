@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import * as zMini from 'zod/mini'
-import { File } from '@fema/connector-types'
+import { File } from '@fema-ipaas/connector-types'
 
 export enum SampleDataFileType {
     INPUT = 'INPUT',

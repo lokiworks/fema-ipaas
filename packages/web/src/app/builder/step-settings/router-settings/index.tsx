@@ -1,4 +1,4 @@
-import { isNil } from '@fema/core-utils';
+import { isNil } from '@fema-ipaas/core-utils';
 import {
   WorkflowActionType,
   WorkflowOperationRequest,
@@ -7,7 +7,7 @@ import {
   WorkflowVersion,
   RouterAction,
   RouterExecutionType,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { useReactFlow } from '@xyflow/react';
 import { t } from 'i18next';
 import { Split } from 'lucide-react';

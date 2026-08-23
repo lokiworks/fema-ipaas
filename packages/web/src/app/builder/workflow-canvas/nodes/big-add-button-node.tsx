@@ -1,5 +1,5 @@
 import { DragMoveEvent, useDndMonitor, useDroppable } from '@dnd-kit/core';
-import { isNil } from '@fema/core-utils';
+import { isNil } from '@fema-ipaas/core-utils';
 import { Handle, Position } from '@xyflow/react';
 import { Plus } from 'lucide-react';
 import React, { useId, useState } from 'react';

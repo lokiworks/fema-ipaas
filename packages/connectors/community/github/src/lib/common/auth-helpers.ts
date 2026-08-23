@@ -1,6 +1,6 @@
-import { ConnectionType } from '@fema/connector-sdk';
-import { ConnectionValueForAuthProperty } from '@fema/connector-sdk';
-import { httpClient, HttpMethod } from '@fema/connector-common';
+import { ConnectionType } from '@fema-ipaas/connector-sdk';
+import { ConnectionValueForAuthProperty } from '@fema-ipaas/connector-sdk';
+import { httpClient, HttpMethod } from '@fema-ipaas/connector-common';
 import jwt from 'jsonwebtoken';
 import type { githubAuth } from '../auth';
 

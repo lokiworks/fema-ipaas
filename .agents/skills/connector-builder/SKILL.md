@@ -82,15 +82,15 @@ The condensed rules in this file (Quick Auth Reference, Quick Connector Definiti
 - [ ] Every hand-written action carries `audience`, `aiMetadata`, and `classification`; every trigger carries `aiMetadata` and `classification: 'READ'` (see `ai-metadata.md`)
 - [ ] Register in `tsconfig.base.json` at repo root (insert **alphabetically** — build fails without this):
     ```json
-    "@fema/connector-<name>": ["packages/connectors/community/<name>/src/index.ts"]
+    "@fema-ipaas/connector-<name>": ["packages/connectors/community/<name>/src/index.ts"]
     ```
 
 **Build and lint:**
 
 ```bash
 bun install   # new connectors only — creates workspace symlinks
-npx turbo run build --filter=@fema/connector-<name>
-npx turbo run lint --filter=@fema/connector-<name>
+npx turbo run build --filter=@fema-ipaas/connector-<name>
+npx turbo run lint --filter=@fema-ipaas/connector-<name>
 ```
 
 Both must pass. Lint failures (unused imports, `any` types, unused vars) block CI even when the build is green.
@@ -148,7 +148,7 @@ Full code examples: read `auth-patterns.md`
 
 **`src/lib/auth.ts`**
 ```typescript
-import { ConnectorAuth } from '@fema/connector-sdk';
+import { ConnectorAuth } from '@fema-ipaas/connector-sdk';
 
 export const myAppAuth = ConnectorAuth.SecretText({
     displayName: 'API Key',
@@ -159,9 +159,9 @@ export const myAppAuth = ConnectorAuth.SecretText({
 
 **`src/index.ts`**
 ```typescript
-import { createConnector } from '@fema/connector-sdk';
-import { createCustomApiCallAction } from '@fema/connector-common';
-import { ConnectorCategory } from '@fema/shared';
+import { createConnector } from '@fema-ipaas/connector-sdk';
+import { createCustomApiCallAction } from '@fema-ipaas/connector-common';
+import { ConnectorCategory } from '@fema-ipaas/shared';
 import { myAppAuth } from './lib/auth';
 import { myAction } from './lib/actions/my-action';
 import { myTrigger } from './lib/triggers/my-trigger';

@@ -1,4 +1,4 @@
-import { isNil } from '@fema/core-utils'
+import { isNil } from '@fema-ipaas/core-utils'
 import { Mutex } from 'async-mutex'
 import { FastifyBaseLogger } from 'fastify'
 import Redis from 'ioredis'

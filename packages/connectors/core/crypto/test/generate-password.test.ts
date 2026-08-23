@@ -1,7 +1,7 @@
 /// <reference types="vitest/globals" />
 
 import { generatePassword } from '../src/lib/actions/generate-password';
-import { createMockActionContext } from '@fema/connector-sdk';
+import { createMockActionContext } from '@fema-ipaas/connector-sdk';
 
 describe('generatePassword', () => {
   test('generates password with correct length', async () => {

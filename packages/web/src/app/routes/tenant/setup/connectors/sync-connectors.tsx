@@ -1,4 +1,4 @@
-import { ApFlagId, ConnectorSyncMode } from '@fema/shared';
+import { ApFlagId, ConnectorSyncMode } from '@fema-ipaas/shared';
 import { RefreshCcw } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';

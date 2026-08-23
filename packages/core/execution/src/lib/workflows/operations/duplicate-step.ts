@@ -1,4 +1,4 @@
-import { isNil } from '@fema/core-utils'
+import { isNil } from '@fema-ipaas/core-utils'
 import { BranchExecutionType, WorkflowAction, RouterAction } from '../actions/action'
 import { WorkflowVersion } from '../workflow-version'
 import { workflowStructureUtil } from '../util/workflow-structure-util'

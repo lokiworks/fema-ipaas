@@ -1,5 +1,5 @@
-import { createConnector, ConnectorAuth } from '@fema/connector-sdk';
-import { ConnectorCategory } from '@fema/connector-sdk';
+import { createConnector, ConnectorAuth } from '@fema-ipaas/connector-sdk';
+import { ConnectorCategory } from '@fema-ipaas/connector-sdk';
 import { readFileAction } from './lib/actions/read-file';
 import { createFile } from './lib/actions/create-file';
 import { changeFileEncoding } from './lib/actions/change-file-encoding';

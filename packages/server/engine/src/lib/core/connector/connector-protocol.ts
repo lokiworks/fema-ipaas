@@ -1,6 +1,6 @@
-import { ConnectorMetadata, ContextVersion } from '@fema/connector-sdk'
-import { isNil, isObject } from '@fema/core-utils'
-import { ExecutionError, ExecutionErrorType, ExecutionType, PropertySettings, ResumePayload, ScheduleOptions } from '@fema/shared'
+import { ConnectorMetadata, ContextVersion } from '@fema-ipaas/connector-sdk'
+import { isNil, isObject } from '@fema-ipaas/core-utils'
+import { ExecutionError, ExecutionErrorType, ExecutionType, PropertySettings, ResumePayload, ScheduleOptions } from '@fema-ipaas/shared'
 import { HookResponse } from '../../utils'
 
 export const connectorProtocol = {

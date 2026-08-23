@@ -2,7 +2,7 @@ import {
   WorkflowActionType,
   WorkflowOperationType,
   WorkflowTriggerType,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import React, { useState } from 'react';
 
 import { CardListItemSkeleton } from '@/components/custom/card-list';

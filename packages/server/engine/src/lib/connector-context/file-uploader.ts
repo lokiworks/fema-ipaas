@@ -1,7 +1,7 @@
 import { Readable } from 'node:stream'
-import { FilesService } from '@fema/connector-sdk'
-import { apId } from '@fema/core-utils'
-import { FileSizeError, FileType } from '@fema/shared'
+import { FilesService } from '@fema-ipaas/connector-sdk'
+import { apId } from '@fema-ipaas/core-utils'
+import { FileSizeError, FileType } from '@fema-ipaas/shared'
 import { engineFileApi } from '../api/engine-file-api'
 
 export function createFileUploader({ engineToken, apiUrl }: CreateFileUploaderParams): FilesService {

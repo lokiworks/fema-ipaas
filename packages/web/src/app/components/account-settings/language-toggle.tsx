@@ -1,4 +1,4 @@
-import { ApFlagId } from '@fema/shared';
+import { ApFlagId } from '@fema-ipaas/shared';
 import { useMutation } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { Check, ChevronsUpDown, Globe } from 'lucide-react';

@@ -1,4 +1,4 @@
-import { ResetPasswordRequestBody } from '@fema/shared';
+import { ResetPasswordRequestBody } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { useRef, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';

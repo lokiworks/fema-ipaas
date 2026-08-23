@@ -1,4 +1,4 @@
-import { WorkerMachineWithStatus } from '@fema/shared';
+import { WorkerMachineWithStatus } from '@fema-ipaas/shared';
 
 import { api } from '@/lib/api';
 

@@ -17,7 +17,7 @@ Exposes an FEMA Integration Platform project as an MCP server so AI clients (Cla
 - **Locked tools** — always on when MCP is enabled, cannot be disabled (e.g. `ap_list_workflows`, `ap_workflow_structure`, `ap_research_connectors`, `ap_get_connector_props`, `ap_list_connections`, `ap_list_tables`, `ap_get_run`).
 - **Tool-search tools** — `ap_search_actions` / `ap_search_triggers`: semantic (pgvector) search over the action and trigger catalog with a keyword-floor fallback. Registered only when `FEMA_TOOL_SEARCH_ENABLED` is on — that env flag is the master switch, so their `LOCKED_TOOL_NAMES` entries are inert while it is off. The settings panel lists them via the `TOOL_SEARCH_ENABLED` flag.
 - **Controllable tools** — toggled per-project via `disabledTools` (workflow/step/branch management, publish, table + record ops, testing, run management).
-- **Dynamic workflow tools** — each enabled workflow using the MCP trigger connector (`@fema/connector-mcp`) becomes a callable tool named `{toolName}_{workflowId[0..4]}`; execution submits a webhook (sync if `returnsResponse`, else async).
+- **Dynamic workflow tools** — each enabled workflow using the MCP trigger connector (`@fema-ipaas/connector-mcp`) becomes a callable tool named `{toolName}_{workflowId[0..4]}`; execution submits a webhook (sync if `returnsResponse`, else async).
 
 ### How it works
 

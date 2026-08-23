@@ -4,7 +4,7 @@
 import {
   ConnectorPropertyMap,
   Property,
-} from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-sdk';
 import * as React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -109,7 +109,7 @@ const Harness = () => {
       <DynamicProperties
         refreshers={['items']}
         propertyName="fields"
-        connectorName="@fema/connector-test"
+        connectorName="@fema-ipaas/connector-test"
         connectorVersion="0.0.1"
         actionOrTriggerName="test_action"
         disabled={false}

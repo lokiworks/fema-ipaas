@@ -16,7 +16,7 @@ The FEMA Integration Platform monorepo replaced [Nx](https://nx.dev) with [Turbo
 | | **Old (Nx)** | **New (Turbo)** |
 |---|---|---|
 | Build config | `project.json` per connector | `package.json` scripts |
-| Build command | `nx build connectors-{name}` | `turbo run build --filter=@fema/connector-{name}` |
+| Build command | `nx build connectors-{name}` | `turbo run build --filter=@fema-ipaas/connector-{name}` |
 | Output directory | `dist/out-tsc` (shared) | `./dist` (local per connector) |
 | Task runner | Nx executor (`@nx/js:tsc`) | Direct `tsc -p tsconfig.lib.json && cp package.json dist/` |
 | Dependencies | Inferred by Nx graph | Workspace protocol (`workspace:*`) in `package.json` |
@@ -49,7 +49,7 @@ npx ts-node tools/scripts/migrate-custom-connector-to-turbo.ts packages/connecto
 
 For each connector, the script:
 
-1. **Updates `package.json`** — adds `build` and `lint` scripts, sets `main` and `types` entry points, ensures `@fema/connectors-framework`, `@fema/shared`, and `tslib` are listed as dependencies
+1. **Updates `package.json`** — adds `build` and `lint` scripts, sets `main` and `types` entry points, ensures `@fema-ipaas/connectors-framework`, `@fema-ipaas/shared`, and `tslib` are listed as dependencies
 2. **Updates `tsconfig.lib.json`** — sets `outDir` to `./dist`, adds `rootDir`, `baseUrl`, `paths`, and `declaration` settings
 3. **Creates `tsconfig.json`** if missing — extends the root `tsconfig.base.json`
 4. **Deletes `project.json`** — removes Nx configuration
@@ -59,7 +59,7 @@ For each connector, the script:
 After migrating, build your connector to verify everything works:
 
 ```bash
-npx turbo run build --filter=@fema/connector-your-connector --force
+npx turbo run build --filter=@fema-ipaas/connector-your-connector --force
 ```
 
 Or use the CLI:

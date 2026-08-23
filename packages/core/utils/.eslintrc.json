@@ -11,10 +11,10 @@
             "patterns": [
               {
                 "group": [
-                  "@fema/shared",
-                  "@fema/server*",
-                  "@fema/connectors*",
-                  "@fema/web*"
+                  "@fema-ipaas/shared",
+                  "@fema-ipaas/server*",
+                  "@fema-ipaas/connectors*",
+                  "@fema-ipaas/web*"
                 ],
                 "message": "core/* packages are the framework-agnostic foundation; they must not import shared, server, connectors, or web. Keep core/* acyclic."
               }

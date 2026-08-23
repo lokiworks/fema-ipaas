@@ -1,4 +1,4 @@
-import { UserIdentity } from '@fema/shared'
+import { UserIdentity } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import { ApIdSchema, BaseColumnSchemaPart } from '../../database/database-common'
 

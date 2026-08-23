@@ -18,7 +18,7 @@ Lets platform admins connect FEMA Integration Platform to an external secret sto
 - Redis cache (`secret-manager-cache.ts`) caches secret values keyed `(platformId, connectionId, path)` and connection status keyed `(platformId, connectionId)`; invalidated on create/update/delete or the cache endpoint.
 
 ### Gotchas
-- Separator is `SecretManagerFieldsSeparator` (a constant in `@fema/shared`, `|` in the reference form).
+- Separator is `SecretManagerFieldsSeparator` (a constant in `@fema-ipaas/shared`, `|` in the reference form).
 - A value not starting with `{{` or lacking the separator is treated as a plain literal (`SECRET_MANAGER_KEY_NOT_SECRET`), not an error.
 - create/update validate connectivity via `provider.connect` before saving.
 

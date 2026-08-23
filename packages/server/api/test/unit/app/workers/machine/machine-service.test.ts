@@ -1,4 +1,4 @@
-import { ExecutionMode } from '@fema/shared'
+import { ExecutionMode } from '@fema-ipaas/shared'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('../../../../../src/app/workers/machine/machine-cache', () => ({

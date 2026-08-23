@@ -1,4 +1,4 @@
-import { EnginePrincipal, PrincipalType } from '@fema/shared'
+import { EnginePrincipal, PrincipalType } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { beforeAll, describe, expect, it, vi } from 'vitest'

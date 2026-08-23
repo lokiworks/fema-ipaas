@@ -1,5 +1,5 @@
-import { isNil } from '@fema/core-utils';
-import { TemplateType } from '@fema/shared';
+import { isNil } from '@fema-ipaas/core-utils';
+import { TemplateType } from '@fema-ipaas/shared';
 import { Navigate, useParams, useLocation } from 'react-router-dom';
 
 import { PageTitle } from '@/app/components/page-title';

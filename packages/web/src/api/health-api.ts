@@ -1,4 +1,4 @@
-import { GetSystemHealthChecksResponse } from '@fema/shared';
+import { GetSystemHealthChecksResponse } from '@fema-ipaas/shared';
 
 import { api } from '@/lib/api';
 

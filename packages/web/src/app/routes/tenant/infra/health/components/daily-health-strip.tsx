@@ -1,4 +1,4 @@
-import { TenantMetricsHealthDay } from '@fema/shared';
+import { TenantMetricsHealthDay } from '@fema-ipaas/shared';
 import dayjs from 'dayjs';
 import { t } from 'i18next';
 import { ArrowUpRight } from 'lucide-react';

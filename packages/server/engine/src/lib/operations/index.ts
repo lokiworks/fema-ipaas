@@ -1,6 +1,6 @@
 import { inspect } from 'util'
-import { formatConnectorError, tryCatch } from '@fema/core-utils'
-import { EngineOperation, EngineOperationType, EngineResponse, EngineResponseStatus, ExecuteActionOperation, ExecuteExtractConnectorMetadataOperation, ExecutePropsOptions, ExecuteRefreshTokenAuthOperation, ExecuteResolveConnectionIdentifierOperation, ExecuteTriggerOperation, ExecuteValidateAuthOperation, ExecuteWorkflowOperation, ExecutionError, ExecutionErrorType, TriggerHookType } from '@fema/shared'
+import { formatConnectorError, tryCatch } from '@fema-ipaas/core-utils'
+import { EngineOperation, EngineOperationType, EngineResponse, EngineResponseStatus, ExecuteActionOperation, ExecuteExtractConnectorMetadataOperation, ExecutePropsOptions, ExecuteRefreshTokenAuthOperation, ExecuteResolveConnectionIdentifierOperation, ExecuteTriggerOperation, ExecuteValidateAuthOperation, ExecuteWorkflowOperation, ExecutionError, ExecutionErrorType, TriggerHookType } from '@fema-ipaas/shared'
 import { actionOperation } from './action.operation'
 import { authRefreshOperation } from './auth-refresh.operation'
 import { authValidationOperation } from './auth-validation.operation'

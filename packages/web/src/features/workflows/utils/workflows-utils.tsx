@@ -2,7 +2,7 @@ import {
   PopulatedWorkflow,
   WorkflowTriggerType,
   TriggerSourceScheduleType,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import cronstrue from 'cronstrue/i18n';
 import { t } from 'i18next';
 import JSZip from 'jszip';

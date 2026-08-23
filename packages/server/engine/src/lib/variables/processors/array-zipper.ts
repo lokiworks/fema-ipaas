@@ -1,4 +1,4 @@
-import { isObject } from '@fema/core-utils'
+import { isObject } from '@fema-ipaas/core-utils'
 import { ProcessorFn } from './types'
 
 function getLongestArrayLengthInObject(props: Record<string, unknown>): number {

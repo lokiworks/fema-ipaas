@@ -1,4 +1,4 @@
-import { FEMA_FUNCTIONS, ApFunction } from '@fema/expression';
+import { FEMA_FUNCTIONS, ApFunction } from '@fema-ipaas/expression';
 import { ExternalLink } from 'lucide-react';
 import { RefObject, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';

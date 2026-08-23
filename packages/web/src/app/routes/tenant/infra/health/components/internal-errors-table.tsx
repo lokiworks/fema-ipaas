@@ -1,4 +1,4 @@
-import { InternalErrorImpactItem } from '@fema/shared';
+import { InternalErrorImpactItem } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { CircleCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';

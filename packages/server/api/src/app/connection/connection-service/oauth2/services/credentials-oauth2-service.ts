@@ -1,7 +1,7 @@
-import { OAuth2AuthorizationMethod } from '@fema/connector-sdk'
-import { ApplicationError, ErrorCode, isNil } from '@fema/core-utils'
-import { safeHttp } from '@fema/server-utils'
-import { BaseOAuth2ConnectionValue, ConnectionType, OAuth2ConnectionValueWithApp, OAuth2GrantType, resolveValueFromProps } from '@fema/shared'
+import { OAuth2AuthorizationMethod } from '@fema-ipaas/connector-sdk'
+import { ApplicationError, ErrorCode, isNil } from '@fema-ipaas/core-utils'
+import { safeHttp } from '@fema-ipaas/server-utils'
+import { BaseOAuth2ConnectionValue, ConnectionType, OAuth2ConnectionValueWithApp, OAuth2GrantType, resolveValueFromProps } from '@fema-ipaas/shared'
 import { AxiosError } from 'axios'
 import { FastifyBaseLogger } from 'fastify'
 import {

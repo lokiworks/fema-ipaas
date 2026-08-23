@@ -1,5 +1,8 @@
-import { Permission } from '@fema/core-utils';
-import { WorkflowVersionMetadata, WorkflowVersionState } from '@fema/shared';
+import { Permission } from '@fema-ipaas/core-utils';
+import {
+  WorkflowVersionMetadata,
+  WorkflowVersionState,
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { EllipsisVertical, Eye, EyeIcon, Pencil } from 'lucide-react';
 import React, { useState } from 'react';

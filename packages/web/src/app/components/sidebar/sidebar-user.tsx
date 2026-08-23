@@ -1,4 +1,4 @@
-import { isNil } from '@fema/core-utils';
+import { isNil } from '@fema-ipaas/core-utils';
 import { useQueryClient } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { ChevronsUpDown, LogOut, UserCogIcon } from 'lucide-react';

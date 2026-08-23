@@ -1,4 +1,4 @@
-import { RuntimeExecutionResult } from '@fema/sandbox'
+import { RuntimeExecutionResult } from '@fema-ipaas/sandbox'
 import { JobResultKind, SynchronousJobResult } from '../types'
 
 export function buildSynchronousResult(result: RuntimeExecutionResult): SynchronousJobResult {

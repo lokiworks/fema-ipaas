@@ -4,12 +4,12 @@ import {
   PropertyType,
   DEFAULT_CONNECTION_DISPLAY_NAME,
   OAuth2Props,
-} from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-sdk';
 import {
   ConnectionType,
   BOTH_CLIENT_CREDENTIALS_AND_AUTHORIZATION_CODE,
   OAuth2GrantType,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import deepEqual from 'deep-equal';
 import { t } from 'i18next';
 

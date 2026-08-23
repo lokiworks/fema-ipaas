@@ -1,11 +1,11 @@
-import { Permission, isNil } from '@fema/core-utils';
+import { Permission, isNil } from '@fema-ipaas/core-utils';
 import {
   ApFlagId,
   WORKSPACE_COLOR_PALETTE,
   TenantRole,
   WorkspaceType,
   TemplateTelemetryEventType,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { Search } from 'lucide-react';
 import { useState, useMemo, useEffect, useCallback } from 'react';

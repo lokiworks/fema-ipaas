@@ -1,5 +1,5 @@
-import { ApId, OptionalBooleanFromQuery } from '@fema/core-utils'
-import { USE_DRAFT_QUERY_PARAM_NAME } from '@fema/shared'
+import { ApId, OptionalBooleanFromQuery } from '@fema-ipaas/core-utils'
+import { USE_DRAFT_QUERY_PARAM_NAME } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
 import { securityAccess } from '../../../core/security/authorization/fastify-security'

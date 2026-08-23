@@ -1,5 +1,5 @@
-import { Property } from '@fema/connector-sdk';
-import { HttpMethod } from '@fema/connector-common';
+import { Property } from '@fema-ipaas/connector-sdk';
+import { HttpMethod } from '@fema-ipaas/connector-common';
 
 const httpMethodDropdownOptions = Object.values(HttpMethod).map((m) => ({
   label: m,

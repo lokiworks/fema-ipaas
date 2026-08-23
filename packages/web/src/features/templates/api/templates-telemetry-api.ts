@@ -1,4 +1,4 @@
-import { TemplateTelemetryEvent } from '@fema/shared';
+import { TemplateTelemetryEvent } from '@fema-ipaas/shared';
 
 import { api } from '@/lib/api';
 

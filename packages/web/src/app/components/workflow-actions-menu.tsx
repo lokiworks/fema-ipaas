@@ -1,9 +1,9 @@
-import { Permission } from '@fema/core-utils';
+import { Permission } from '@fema-ipaas/core-utils';
 import {
   WorkflowOperationType,
   WorkflowVersion,
   PopulatedWorkflow,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { useMutation } from '@tanstack/react-query';
 import { t } from 'i18next';
 import {

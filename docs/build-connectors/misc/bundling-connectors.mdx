@@ -3,7 +3,7 @@ title: 'Bundling Connectors'
 icon: 'cube'
 ---
 
-FEMA Integration Platform builds every connector into a **self-contained bundle**. Instead of shipping a connector that depends on `@fema/shared`, `@fema/connectors-framework`, `@fema/connectors-common`, and the `@fema/core-*` packages at install time, the build inlines all of that code into a single artifact.
+FEMA Integration Platform builds every connector into a **self-contained bundle**. Instead of shipping a connector that depends on `@fema-ipaas/shared`, `@fema-ipaas/connectors-framework`, `@fema-ipaas/connectors-common`, and the `@fema-ipaas/core-*` packages at install time, the build inlines all of that code into a single artifact.
 
 This is what lets the engine provision a connector by downloading **one artifact** — no `bun install` / `npm install` of a dependency tree at runtime.
 
@@ -11,7 +11,7 @@ This is what lets the engine provision a connector by downloading **one artifact
 
 When a connector is built for publishing, the bundler:
 
-- **Inlines all `@fema/*` workspace libraries** (`shared`, `connectors-framework`, `connectors-common`, `core-utils`, `core-connector-types`, …) directly into the bundle. These libraries are **never published to npm** — they only exist as part of each connector's bundle.
+- **Inlines all `@fema-ipaas/*` workspace libraries** (`shared`, `connectors-framework`, `connectors-common`, `core-utils`, `core-connector-types`, …) directly into the bundle. These libraries are **never published to npm** — they only exist as part of each connector's bundle.
 - **Inlines third-party dependencies** (e.g. an SDK the connector imports) into the same bundle.
 - **Keeps a small allow-list of deps external** only when they genuinely cannot be inlined — native addons or packages that use dynamic `require`. These remain in the published `dependencies` so the runtime installer resolves them.
 
@@ -23,7 +23,7 @@ After bundling, the connector's `dist/package.json` is rewritten:
 
 ```jsonc
 {
-  "name": "@fema/connector-json",
+  "name": "@fema-ipaas/connector-json",
   "version": "0.1.7",
   "main": "./src/index.js",      // the self-contained bundle
   "dependencies": {
@@ -33,7 +33,7 @@ After bundling, the connector's `dist/package.json` is rewritten:
 }
 ```
 
-No `@fema/*` dependency appears — installing the connector never requires those packages to exist on the registry.
+No `@fema-ipaas/*` dependency appears — installing the connector never requires those packages to exist on the registry.
 
 ### Forcing a dependency to stay external
 
@@ -41,7 +41,7 @@ If a dependency must not be inlined (for example a native module), add it to a `
 
 ```jsonc
 {
-  "name": "@fema/connector-example",
+  "name": "@fema-ipaas/connector-example",
   "bundleDeps": ["some-native-addon"]
 }
 ```
@@ -52,7 +52,7 @@ A file your connector loads by path at runtime — for example `child_process.fo
 
 ```jsonc
 {
-  "name": "@fema/connector-oracle-database",
+  "name": "@fema-ipaas/connector-oracle-database",
   "bundleForkedEntries": ["src/lib/common/oracle-runner.ts"]
 }
 ```

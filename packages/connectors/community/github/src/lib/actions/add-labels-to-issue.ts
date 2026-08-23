@@ -1,7 +1,7 @@
 import { githubAuth } from '../auth';
-import { createAction } from '@fema/connector-sdk';
+import { createAction } from '@fema-ipaas/connector-sdk';
 import { githubApiCall, githubCommon } from '../common';
-import { HttpMethod } from '@fema/connector-common';
+import { HttpMethod } from '@fema-ipaas/connector-common';
 import { addLabelsToIssueActionOutputSchema } from '../output-schemas';
 
 export const githubAddLabelsToIssueAction = createAction({

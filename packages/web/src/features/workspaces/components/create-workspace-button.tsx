@@ -1,4 +1,4 @@
-import { WorkspaceWithLimits } from '@fema/shared';
+import { WorkspaceWithLimits } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { Plus } from 'lucide-react';
 

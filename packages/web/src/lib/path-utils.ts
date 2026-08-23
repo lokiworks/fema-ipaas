@@ -1,4 +1,4 @@
-import { isObject } from '@fema/core-utils';
+import { isObject } from '@fema-ipaas/core-utils';
 
 const COMMON_WRAPPERS = [
   'properties',

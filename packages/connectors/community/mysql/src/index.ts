@@ -2,8 +2,8 @@ import {
   ConnectorAuth,
   Property,
   createConnector,
-} from '@fema/connector-sdk';
-import { ConnectorCategory } from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-sdk';
+import { ConnectorCategory } from '@fema-ipaas/connector-sdk';
 import actions from './lib/actions';
 
 export const mysqlAuth = ConnectorAuth.CustomAuth({

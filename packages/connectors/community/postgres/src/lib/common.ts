@@ -1,4 +1,4 @@
-import { ConnectionValueForAuthProperty, Property } from "@fema/connector-sdk";
+import { ConnectionValueForAuthProperty, Property } from "@fema-ipaas/connector-sdk";
 import { postgresAuth } from "..";
 import { Client } from "pg";
 import format from "pg-format";

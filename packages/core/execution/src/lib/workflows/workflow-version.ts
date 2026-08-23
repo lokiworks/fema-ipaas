@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { BaseModelSchema, Nullable } from '@fema/core-utils'
-import { UserWithMetaInformation } from '@fema/connector-types'
+import { BaseModelSchema, Nullable } from '@fema-ipaas/core-utils'
+import { UserWithMetaInformation } from '@fema-ipaas/connector-types'
 import { Note } from './note'
 import { WorkflowTrigger } from './triggers/trigger'
 

@@ -10,7 +10,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@fema/connector-sdk': path.resolve(repoRoot, 'packages/connectors/sdk/src/index.ts'),
+      '@fema-ipaas/connector-sdk': path.resolve(repoRoot, 'packages/connectors/sdk/src/index.ts'),
     },
   },
 })

@@ -1,4 +1,4 @@
-import { Workspace } from '@fema/shared'
+import { Workspace } from '@fema-ipaas/shared'
 import { hooksFactory } from '../helper/hooks-factory'
 
 export const workspaceHooks = hooksFactory.create<WorkspaceHooks>(_log => ({

@@ -1,5 +1,5 @@
-import { BaseModelSchema, DateOrString, Nullable, OptionalArrayFromQuery } from '@fema/core-utils'
-import { Folder, Workflow, WorkflowOperationRequest, WorkflowOperationType, WorkflowVersion } from '@fema/workflow-core'
+import { BaseModelSchema, DateOrString, Nullable, OptionalArrayFromQuery } from '@fema-ipaas/core-utils'
+import { Folder, Workflow, WorkflowOperationRequest, WorkflowOperationType, WorkflowVersion } from '@fema-ipaas/workflow-core'
 import { z } from 'zod'
 import { UserWithMetaInformation } from '../../core/user/user'
 export const ListAuditEventsRequest = z.object({

@@ -1,4 +1,4 @@
-import { WorkflowVersionTemplate, Template } from '@fema/shared';
+import { WorkflowVersionTemplate, Template } from '@fema-ipaas/shared';
 
 export const templateUtils = {
   parseTemplate: (jsonString: string): Template | null => {

@@ -3,7 +3,7 @@ import {
   textConditions,
   singleValueConditions,
   RouterAction,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { Trash } from 'lucide-react';
 import { useFormContext, useWatch } from 'react-hook-form';

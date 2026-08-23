@@ -2,7 +2,7 @@ import {
   Property,
   TriggerStrategy,
   createTrigger,
-} from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-sdk';
 import { appWebhookSetupInfo, getChannels, multiSelectChannelInfo, userIds, usergroupIds } from '../common/props';
 import { slackAuth } from '../auth';
 import { getBotToken, getTeamId, SlackAuthValue } from '../common/auth-helpers';

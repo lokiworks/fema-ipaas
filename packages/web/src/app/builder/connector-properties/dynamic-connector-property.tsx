@@ -1,6 +1,9 @@
-import { ConnectorPropertyMap, PropertyType } from '@fema/connector-sdk';
-import { isNil } from '@fema/core-utils';
-import { AUTHENTICATION_PROPERTY_NAME, PropertySettings } from '@fema/shared';
+import { ConnectorPropertyMap, PropertyType } from '@fema-ipaas/connector-sdk';
+import { isNil } from '@fema-ipaas/core-utils';
+import {
+  AUTHENTICATION_PROPERTY_NAME,
+  PropertySettings,
+} from '@fema-ipaas/shared';
 import deepEqual from 'deep-equal';
 import React, { useState, useRef, useContext } from 'react';
 import { useFormContext, UseFormReturn, useWatch } from 'react-hook-form';

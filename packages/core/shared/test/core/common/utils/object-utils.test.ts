@@ -9,7 +9,7 @@ import {
     sanitizeObjectForPostgresql,
     spreadIfDefined,
     spreadIfNotUndefined,
-} from '@fema/core-utils'
+} from '@fema-ipaas/core-utils'
 
 describe('applyFunctionToValuesSync', () => {
     it('should apply function to string values in nested objects', () => {

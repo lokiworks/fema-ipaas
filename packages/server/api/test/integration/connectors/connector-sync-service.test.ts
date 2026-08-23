@@ -1,7 +1,7 @@
 import {
     PackageType,
     ConnectorType,
-} from '@fema/shared'
+} from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyInstance } from 'fastify'
 import { databaseConnection } from '../../../../src/app/database/database-connection'
 import { connectorMetadataService } from '../../../../src/app/connectors/metadata/connector-metadata-service'

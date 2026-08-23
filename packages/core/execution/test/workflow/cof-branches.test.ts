@@ -69,7 +69,7 @@ function buildConnectorAction({
         displayName: name,
         lastUpdatedDate: '2026-05-02T00:00:00.000Z',
         settings: {
-            connectorName: '@fema/connector-store',
+            connectorName: '@fema-ipaas/connector-store',
             connectorVersion: '0.0.1',
             actionName: 'get',
             input: {},
@@ -425,7 +425,7 @@ describe('Continue-on-Failure branches', () => {
                     displayName: 'step_1 (renamed)',
                     valid: true,
                     settings: {
-                        connectorName: '@fema/connector-store',
+                        connectorName: '@fema-ipaas/connector-store',
                         connectorVersion: '0.0.1',
                         actionName: 'put',
                         input: { changed: true },
@@ -485,7 +485,7 @@ describe('Continue-on-Failure branches', () => {
                     displayName: 'step_1',
                     valid: true,
                     settings: {
-                        connectorName: '@fema/connector-store',
+                        connectorName: '@fema-ipaas/connector-store',
                         connectorVersion: '0.0.1',
                         actionName: 'get',
                         input: {},

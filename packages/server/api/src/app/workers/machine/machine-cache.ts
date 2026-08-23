@@ -1,6 +1,6 @@
-import { parseToJsonIfPossible } from '@fema/core-utils'
-import { apDayjs } from '@fema/server-utils'
-import { MachineInformation, WorkerGroupScope } from '@fema/shared'
+import { parseToJsonIfPossible } from '@fema-ipaas/core-utils'
+import { apDayjs } from '@fema-ipaas/server-utils'
+import { MachineInformation, WorkerGroupScope } from '@fema-ipaas/shared'
 import { redisConnections } from '../../database/redis-connections'
 
 export type WorkerMachine = {

@@ -4,7 +4,7 @@ import {
   WorkflowVersion,
   Step,
   workflowStructureUtil,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { useReactFlow } from '@xyflow/react';
 import { t } from 'i18next';
 import React, { useMemo } from 'react';

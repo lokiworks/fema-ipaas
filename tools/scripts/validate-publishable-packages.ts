@@ -13,7 +13,7 @@ async function processBatches<T>(items: T[], batchSize: number, processor: (item
 
 const main = async () => {
   const connectorsMetadata = await findAllConnectorsDirectoryInSource()
-  // connectors-framework, connectors-common and @fema/shared are no longer published to npm:
+  // connectors-framework, connectors-common and @fema-ipaas/shared are no longer published to npm:
   // connectors are self-contained bundles that inline these at build time. Exclude them from the
   // publishable-package validation and only validate the connectors themselves.
   const notPublished = ['packages/connectors/sdk', 'packages/connectors/common']

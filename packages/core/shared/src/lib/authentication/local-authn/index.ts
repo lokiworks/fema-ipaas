@@ -1,4 +1,4 @@
-import { ApId } from '@fema/core-utils'
+import { ApId } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 
 export const VerifyEmailRequestBody = z.object({

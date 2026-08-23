@@ -8,16 +8,16 @@ const packageDir = resolve(here, '..')
 const repoRoot = resolve(packageDir, '../..')
 const distDir = resolve(packageDir, 'dist')
 
-// @fema/* workspace packages are no longer published to npm, so the published CLI must
+// @fema-ipaas/* workspace packages are no longer published to npm, so the published CLI must
 // inline them. esbuild resolves them from source via these aliases (mirrors the connector bundler).
 const alias = {
-    '@fema/shared': resolve(repoRoot, 'packages/core/shared/src'),
-    '@fema/connector-sdk': resolve(repoRoot, 'packages/connectors/sdk/src'),
-    '@fema/connector-common': resolve(repoRoot, 'packages/connectors/common/src'),
-    '@fema/core-utils': resolve(repoRoot, 'packages/core/utils/src'),
-    '@fema/connector-types': resolve(repoRoot, 'packages/core/connector-types/src'),
-    '@fema/expression': resolve(repoRoot, 'packages/core/formula/src'),
-    '@fema/workflow-core': resolve(repoRoot, 'packages/core/execution/src'),
+    '@fema-ipaas/shared': resolve(repoRoot, 'packages/core/shared/src'),
+    '@fema-ipaas/connector-sdk': resolve(repoRoot, 'packages/connectors/sdk/src'),
+    '@fema-ipaas/connector-common': resolve(repoRoot, 'packages/connectors/common/src'),
+    '@fema-ipaas/core-utils': resolve(repoRoot, 'packages/core/utils/src'),
+    '@fema-ipaas/connector-types': resolve(repoRoot, 'packages/core/connector-types/src'),
+    '@fema-ipaas/expression': resolve(repoRoot, 'packages/core/formula/src'),
+    '@fema-ipaas/workflow-core': resolve(repoRoot, 'packages/core/execution/src'),
 }
 
 // esbuild ships a platform-specific native binary, and autocannon loads a .wasm histogram —

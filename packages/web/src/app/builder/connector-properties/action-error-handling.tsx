@@ -1,4 +1,4 @@
-import { WorkflowAction, WorkflowTrigger } from '@fema/shared';
+import { WorkflowAction, WorkflowTrigger } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { ShieldAlert } from 'lucide-react';
 import React from 'react';

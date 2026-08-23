@@ -1,5 +1,5 @@
 {
-  "name": "@fema/connector-data-summarizer",
+  "name": "@fema-ipaas/connector-data-summarizer",
   "version": "0.0.15",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -14,9 +14,9 @@
     "tslib": "2.6.2"
   },
   "dependencies": {
-    "@fema/connector-common": "workspace:*",
-    "@fema/connector-sdk": "workspace:*",
-    "@fema/connector-types": "workspace:*",
-    "@fema/core-utils": "workspace:*"
+    "@fema-ipaas/connector-common": "workspace:*",
+    "@fema-ipaas/connector-sdk": "workspace:*",
+    "@fema-ipaas/connector-types": "workspace:*",
+    "@fema-ipaas/core-utils": "workspace:*"
   }
 }

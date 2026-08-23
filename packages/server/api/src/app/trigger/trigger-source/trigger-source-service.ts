@@ -1,5 +1,5 @@
-import { apId, ApplicationError, ErrorCode, isNil, WorkflowId } from '@fema/core-utils'
-import { PopulatedTriggerSource, TemplateTelemetryEventType, TriggerSource, WorkflowVersion } from '@fema/shared'
+import { apId, ApplicationError, ErrorCode, isNil, WorkflowId } from '@fema-ipaas/core-utils'
+import { PopulatedTriggerSource, TemplateTelemetryEventType, TriggerSource, WorkflowVersion } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { In } from 'typeorm'
 import { repoFactory } from '../../core/db/repo-factory'

@@ -1,5 +1,5 @@
-import { OAuth2Props, ConnectorPropertyMap } from '@fema/connector-sdk';
-import { isNil } from '@fema/core-utils';
+import { OAuth2Props, ConnectorPropertyMap } from '@fema-ipaas/connector-sdk';
+import { isNil } from '@fema-ipaas/core-utils';
 import {
   WorkflowActionType,
   WorkflowOperationRequest,
@@ -7,7 +7,7 @@ import {
   WorkflowTriggerType,
   ConnectorAction,
   ConnectorTrigger,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { AlertTriangle, ArrowUp, Info } from 'lucide-react';
 import semver from 'semver';

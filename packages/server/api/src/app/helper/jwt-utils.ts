@@ -1,6 +1,6 @@
 import { randomBytes } from 'crypto'
 import { promisify } from 'util'
-import { ApplicationError, ErrorCode, isNil, spreadIfDefined } from '@fema/core-utils'
+import { ApplicationError, ErrorCode, isNil, spreadIfDefined } from '@fema-ipaas/core-utils'
 import { Mutex } from 'async-mutex'
 import jwtLibrary, {
     DecodeOptions,

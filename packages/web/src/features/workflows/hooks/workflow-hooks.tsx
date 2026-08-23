@@ -1,4 +1,9 @@
-import { ApErrorParams, isNil, ErrorCode, SeekPage } from '@fema/core-utils';
+import {
+  ApErrorParams,
+  isNil,
+  ErrorCode,
+  SeekPage,
+} from '@fema-ipaas/core-utils';
 import {
   ApFlagId,
   WorkflowOperationType,
@@ -14,7 +19,7 @@ import {
   TelemetryEventName,
   UncategorizedFolderId,
   UpdateRunProgressRequest,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { QueryClient, useMutation, useQuery } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { useNavigate } from 'react-router-dom';
@@ -244,7 +249,7 @@ export const workflowHooks = {
           displayName: t('Untitled'),
         });
         const mcpConnector = await connectorsApi.get({
-          name: '@fema/connector-mcp',
+          name: '@fema-ipaas/connector-mcp',
         });
         const trigger = mcpConnector.triggers['mcp_tool'];
         if (!trigger) {

@@ -1,4 +1,4 @@
-import { WorkspaceWithLimits } from '@fema/shared';
+import { WorkspaceWithLimits } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { Layers, Search } from 'lucide-react';
 import { useState } from 'react';

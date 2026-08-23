@@ -1,6 +1,6 @@
 /// <reference types="vitest/globals" />
 
-import { createMockPollingTriggerContext } from '@fema/connector-sdk';
+import { createMockPollingTriggerContext } from '@fema-ipaas/connector-sdk';
 import { everyXMinutesTrigger } from '../src/lib/triggers/every-x-minutes.trigger';
 
 describe('everyXMinutesTrigger', () => {

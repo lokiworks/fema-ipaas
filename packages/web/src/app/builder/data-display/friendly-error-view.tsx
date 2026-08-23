@@ -1,4 +1,4 @@
-import { FriendlyConnectorError, isNil } from '@fema/core-utils';
+import { FriendlyConnectorError, isNil } from '@fema-ipaas/core-utils';
 import { t } from 'i18next';
 import {
   AlertOctagon,

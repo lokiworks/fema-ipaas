@@ -1,4 +1,4 @@
-import { OptionalArrayFromQuery } from '@fema/core-utils'
+import { OptionalArrayFromQuery } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 import { WorkspaceType } from '../../../management/workspace/workspace'
 import { ConnectionScope, ConnectionStatus, ConnectionWithoutSensitiveData } from '../connection'

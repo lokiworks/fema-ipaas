@@ -1,5 +1,5 @@
-import { createConnector, ConnectorAuth } from '@fema/connector-sdk';
-import { ConnectorCategory } from '@fema/connector-sdk';
+import { createConnector, ConnectorAuth } from '@fema-ipaas/connector-sdk';
+import { ConnectorCategory } from '@fema-ipaas/connector-sdk';
 import { onChatSubmission } from './lib/triggers/chat-trigger';
 import { onFormSubmission } from './lib/triggers/form-trigger';
 import { returnResponse } from './lib/actions/return-response';

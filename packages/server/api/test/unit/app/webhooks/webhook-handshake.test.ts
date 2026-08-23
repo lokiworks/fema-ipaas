@@ -1,4 +1,4 @@
-import { WebhookHandshakeStrategy } from '@fema/shared'
+import { WebhookHandshakeStrategy } from '@fema-ipaas/shared'
 import { isHandshakeRequest } from '../../../../src/app/webhooks/webhook-handshake'
 
 const makePayload = (overrides: { headers?: Record<string, string>, queryParams?: Record<string, string>, body?: unknown } = {}) => ({

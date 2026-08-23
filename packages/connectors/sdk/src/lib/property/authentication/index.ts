@@ -6,8 +6,8 @@ import { OIDCProperty, OIDCAuthProps } from "./oidc-prop";
 import { SecretTextProperty } from "./secret-text-property";
 import { PropertyType } from "../input/property-type";
 import { OAuth2Property, OAuth2Props } from "./oauth2-prop";
-import { isNil } from "@fema/core-utils";
-import { ConnectionType } from "@fema/connector-types";
+import { isNil } from "@fema-ipaas/core-utils";
+import { ConnectionType } from "@fema-ipaas/connector-types";
 
 export const ConnectorAuthProperty = z.union([
   BasicAuthProperty,

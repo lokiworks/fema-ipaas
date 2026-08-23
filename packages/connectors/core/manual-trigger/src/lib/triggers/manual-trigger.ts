@@ -1,6 +1,6 @@
 
-import { createTrigger, Property, TriggerStrategy  } from '@fema/connector-sdk';
-import { MarkdownVariant } from '@fema/connector-sdk';
+import { createTrigger, Property, TriggerStrategy  } from '@fema-ipaas/connector-sdk';
+import { MarkdownVariant } from '@fema-ipaas/connector-sdk';
 
 export const manualTrigger = createTrigger({
 name: 'manual_trigger',

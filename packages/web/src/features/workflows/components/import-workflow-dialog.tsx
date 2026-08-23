@@ -1,10 +1,10 @@
-import { isNil } from '@fema/core-utils';
+import { isNil } from '@fema-ipaas/core-utils';
 import {
   PopulatedWorkflow,
   TelemetryEventName,
   UncategorizedFolderId,
   Template,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { useMutation } from '@tanstack/react-query';
 import { HttpStatusCode } from 'axios';
 import { t } from 'i18next';

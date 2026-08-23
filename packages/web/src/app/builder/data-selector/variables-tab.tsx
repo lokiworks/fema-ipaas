@@ -1,4 +1,4 @@
-import { Permission } from '@fema/core-utils';
+import { Permission } from '@fema-ipaas/core-utils';
 import { t } from 'i18next';
 import { Plus, SearchXIcon, Variable } from 'lucide-react';
 import { useState } from 'react';

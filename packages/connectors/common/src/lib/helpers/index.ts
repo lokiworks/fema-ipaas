@@ -11,7 +11,7 @@ import {
   ConnectionValueForAuthProperty,
   ExtractConnectorAuthPropertyTypeForMethods,
   ApFile,
-} from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-sdk';
 import {
   HttpHeaders,
   HttpMethod,
@@ -20,7 +20,7 @@ import {
   httpClient,
   toFailsafeOutput,
 } from '../http';
-import { assertNotNullOrUndefined, isEmpty, isNil } from '@fema/core-utils';
+import { assertNotNullOrUndefined, isEmpty, isNil } from '@fema-ipaas/core-utils';
 import fs from 'fs';
 // Self-contained content-type → file-extension lookup, replacing the heavy
 // `mime-types`/`mime-db` dependency (~134 KB inlined into every connector bundle).

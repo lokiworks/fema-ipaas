@@ -6,8 +6,8 @@ import {
     WorkflowVersionState,
     ConnectorTrigger,
     SampleDataSettings,
-} from '@fema/shared'
-import type { WorkflowVersion } from '@fema/shared'
+} from '@fema-ipaas/shared'
+import type { WorkflowVersion } from '@fema-ipaas/shared'
 
 const mockGetConnector = vi.fn()
 const mockGetTenantId = vi.fn().mockResolvedValue('tenant-1')
@@ -82,7 +82,7 @@ const mockLog = {
 
 function makeConnectorTriggerSettings(extras: Partial<ConnectorTrigger['settings']> = {}): ConnectorTrigger['settings'] {
     return {
-        connectorName: '@fema/connector-gmail',
+        connectorName: '@fema-ipaas/connector-gmail',
         connectorVersion: '~0.1.0',
         triggerName: 'new_email',
         input: {},
@@ -112,7 +112,7 @@ function makeWorkflowVersion(overrides: { id?: string, trigger?: WorkflowVersion
                 lastUpdatedDate: '2024-01-01T00:00:00Z',
                 type: WorkflowActionType.CONNECTOR,
                 settings: {
-                    connectorName: '@fema/connector-slack',
+                    connectorName: '@fema-ipaas/connector-slack',
                     connectorVersion: '~0.2.0',
                     actionName: 'send_message',
                     input: {},

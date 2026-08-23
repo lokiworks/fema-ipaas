@@ -1,4 +1,4 @@
-import { isNil } from '@fema/core-utils'
+import { isNil } from '@fema-ipaas/core-utils'
 import { executionProgressReporter } from './lib/helper/execution-progress-reporter'
 import { ssrfGuard } from './lib/network/ssrf-guard'
 import { workerSocket } from './lib/worker-socket'

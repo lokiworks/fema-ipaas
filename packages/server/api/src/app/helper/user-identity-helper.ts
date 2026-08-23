@@ -1,4 +1,4 @@
-import { UserIdentityProvider } from '@fema/shared'
+import { UserIdentityProvider } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { userIdentityService } from '../authentication/user-identity/user-identity-service'
 import { userService } from '../user/user-service'

@@ -2,7 +2,7 @@ import {
   WORKSPACE_COLOR_PALETTE,
   WorkspaceType,
   WorkspaceWithLimits,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 
 import { cn } from '@/lib/utils';
 

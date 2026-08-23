@@ -1,4 +1,4 @@
-import { isObject } from '@fema/core-utils';
+import { isObject } from '@fema-ipaas/core-utils';
 import { t } from 'i18next';
 import { Download } from 'lucide-react';
 import React, { useMemo } from 'react';

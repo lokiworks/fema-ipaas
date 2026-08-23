@@ -1,4 +1,4 @@
-import { OutputSchema } from '@fema/connector-sdk';
+import { OutputSchema } from '@fema-ipaas/connector-sdk';
 
 // run() returns the CSV text itself, not an object -- value: '' labels the
 // whole string so it isn't rendered as an unlabeled blob.

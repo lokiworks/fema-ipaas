@@ -1,5 +1,5 @@
-import { apId } from '@fema/core-utils'
-import { PrincipalType } from '@fema/shared'
+import { apId } from '@fema-ipaas/core-utils'
+import { PrincipalType } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'

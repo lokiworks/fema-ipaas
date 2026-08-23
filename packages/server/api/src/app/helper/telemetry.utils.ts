@@ -1,5 +1,5 @@
-import { UserId, WorkspaceId } from '@fema/core-utils'
-import { TelemetryEvent, User, UserIdentity } from '@fema/shared'
+import { UserId, WorkspaceId } from '@fema-ipaas/core-utils'
+import { TelemetryEvent, User, UserIdentity } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 
 export const telemetry = (_log: FastifyBaseLogger) => ({

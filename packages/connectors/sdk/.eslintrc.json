@@ -14,8 +14,8 @@
           {
             "paths": [
               {
-                "name": "@fema/shared",
-                "message": "connectors-framework must not import @fema/shared (it bundles into every connector). Use @fema/core-utils or @fema/connector-types."
+                "name": "@fema-ipaas/shared",
+                "message": "connectors-framework must not import @fema-ipaas/shared (it bundles into every connector). Use @fema-ipaas/core-utils or @fema-ipaas/connector-types."
               }
             ]
           }

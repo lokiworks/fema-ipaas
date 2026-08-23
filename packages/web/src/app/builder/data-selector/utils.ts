@@ -1,11 +1,11 @@
-import { isNil, isObject } from '@fema/core-utils';
+import { isNil, isObject } from '@fema-ipaas/core-utils';
 import {
   workflowCanvasUtils,
   WorkflowAction,
   WorkflowActionType,
   WorkflowTrigger,
   WorkflowTriggerType,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 
 import { connectorSelectorUtils } from '@/features/connectors';

@@ -14,7 +14,7 @@ function reportMigration({ connectorFolder, label, dryRun }: { connectorFolder: 
     }
     console.info(chalk.green(`${dryRun ? '[dry run] ' : ''}✓ ${label}`))
     if (report.repointedFiles.length > 0) {
-        console.info(`    repointed imports in ${report.repointedFiles.length} file(s) → @fema/connector-sdk`)
+        console.info(`    repointed imports in ${report.repointedFiles.length} file(s) → @fema-ipaas/connector-sdk`)
     }
     if (report.manifestChanged) {
         console.info('    updated package.json (dropped shared, added core build deps, moved tslib to devDependencies, added bundle script)')
@@ -42,7 +42,7 @@ async function migrateAll({ dryRun }: { dryRun: boolean }): Promise<void> {
 }
 
 export const migrateConnectorCommand = new Command('migrate')
-    .description('Migrate a connector to the self-contained bundle model: repoint imports to @fema/connector-sdk, fix package.json, and add the import-boundary lint rule')
+    .description('Migrate a connector to the self-contained bundle model: repoint imports to @fema-ipaas/connector-sdk, fix package.json, and add the import-boundary lint rule')
     .argument('[name]', 'name of the connector to migrate')
     .option('--name <connectorName>', 'name of the connector to migrate')
     .option('--all', 'migrate every connector under packages/connectors')

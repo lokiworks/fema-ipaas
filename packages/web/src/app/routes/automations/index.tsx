@@ -1,5 +1,5 @@
-import { Permission } from '@fema/core-utils';
-import { UncategorizedFolderId } from '@fema/shared';
+import { Permission } from '@fema-ipaas/core-utils';
+import { UncategorizedFolderId } from '@fema-ipaas/shared';
 import { useCallback } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 

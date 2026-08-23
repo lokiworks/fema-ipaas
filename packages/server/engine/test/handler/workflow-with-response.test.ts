@@ -1,4 +1,4 @@
-import { ExecutionStatus } from '@fema/shared'
+import { ExecutionStatus } from '@fema-ipaas/shared'
 import { WorkflowExecutorContext } from '../../src/lib/handler/context/workflow-execution-context'
 import { workflowExecutor } from '../../src/lib/handler/workflow-executor'
 import { buildConnectorAction, generateMockEngineConstants } from './test-helper'
@@ -32,7 +32,7 @@ describe('workflow with response', () => {
         const result = await workflowExecutor.execute({
             action: buildConnectorAction({
                 name: 'http',
-                connectorName: '@fema/connector-webhook',
+                connectorName: '@fema-ipaas/connector-webhook',
                 actionName: 'return_response',
                 input,
             }), executionState: WorkflowExecutorContext.empty(), constants: generateMockEngineConstants(),

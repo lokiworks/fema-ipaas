@@ -1,7 +1,7 @@
 import os from 'os'
-import { parseToJsonIfPossible } from '@fema/core-utils'
-import { apDayjs, apVersionUtil, systemUsage } from '@fema/server-utils'
-import { AppInstance } from '@fema/shared'
+import { parseToJsonIfPossible } from '@fema-ipaas/core-utils'
+import { apDayjs, apVersionUtil, systemUsage } from '@fema-ipaas/server-utils'
+import { AppInstance } from '@fema-ipaas/shared'
 import { redisConnections } from '../database/redis-connections'
 
 // Apps are stateless behind the load balancer and, unlike workers, have no inbound healthcheck

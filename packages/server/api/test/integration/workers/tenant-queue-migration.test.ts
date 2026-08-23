@@ -1,5 +1,5 @@
-import { apId } from '@fema/core-utils'
-import { WorkflowTriggerType, LATEST_JOB_DATA_SCHEMA_VERSION, WorkerJobType } from '@fema/shared'
+import { apId } from '@fema-ipaas/core-utils'
+import { WorkflowTriggerType, LATEST_JOB_DATA_SCHEMA_VERSION, WorkerJobType } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { getTenantGroupQueueName } from '../../../../src/app/workers/job'
 import { jobQueue } from '../../../../src/app/workers/job-queue/job-queue'

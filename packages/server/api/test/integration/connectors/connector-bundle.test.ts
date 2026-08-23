@@ -1,5 +1,5 @@
-import { apId } from '@fema/core-utils'
-import { FileCompression, FileLocation, FileType, PackageType, ConnectorType, Principal, PrincipalType } from '@fema/shared'
+import { apId } from '@fema-ipaas/core-utils'
+import { FileCompression, FileLocation, FileType, PackageType, ConnectorType, Principal, PrincipalType } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { generateMockToken } from '../../../helpers/auth'
@@ -37,14 +37,14 @@ function bundleRequest(name: string, version: string, token: string) {
 
 describe('Connector Bundle Endpoint', () => {
     it('rejects an invalid engine token with 401', async () => {
-        const response = await app!.inject(bundleRequest('@fema/connector-anything', '1.0.0', 'not-a-real-token'))
+        const response = await app!.inject(bundleRequest('@fema-ipaas/connector-anything', '1.0.0', 'not-a-real-token'))
         expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED)
     })
 
     it('redirects a registry connector to the npm tarball, never to our own S3', async () => {
         const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
         await db.save('connector_metadata', createMockConnectorMetadata({
-            name: '@fema/connector-bundle-official',
+            name: '@fema-ipaas/connector-bundle-official',
             version: '1.2.3',
             packageType: PackageType.REGISTRY,
             connectorType: ConnectorType.OFFICIAL,
@@ -52,7 +52,7 @@ describe('Connector Bundle Endpoint', () => {
         }))
         const token = await engineToken(mockWorkspace.id, mockTenant.id)
 
-        const response = await app!.inject(bundleRequest('@fema/connector-bundle-official', '1.2.3', token))
+        const response = await app!.inject(bundleRequest('@fema-ipaas/connector-bundle-official', '1.2.3', token))
 
         expect(response.statusCode).toBe(StatusCodes.TEMPORARY_REDIRECT)
         expect(response.headers.location).toContain('registry.npmjs.org')

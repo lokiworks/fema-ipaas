@@ -1,5 +1,5 @@
-import { isNil, tryCatch } from '@fema/core-utils'
-import { ConsumeJobRequest } from '@fema/shared'
+import { isNil, tryCatch } from '@fema-ipaas/core-utils'
+import { ConsumeJobRequest } from '@fema-ipaas/shared'
 import { Worker as BullMQWorker } from 'bullmq'
 import { FastifyBaseLogger } from 'fastify'
 

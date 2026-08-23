@@ -1,5 +1,5 @@
-import { apId, ApplicationError, ErrorCode, isNil } from '@fema/core-utils'
-import { LATEST_JOB_DATA_SCHEMA_VERSION, UserInteractionJobDataWithoutWatchingInformation, WorkerJobType } from '@fema/shared'
+import { apId, ApplicationError, ErrorCode, isNil } from '@fema-ipaas/core-utils'
+import { LATEST_JOB_DATA_SCHEMA_VERSION, UserInteractionJobDataWithoutWatchingInformation, WorkerJobType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { engineResponseWatcher } from './engine-response-watcher'
 import { jobQueue, JobType } from './job-queue/job-queue'

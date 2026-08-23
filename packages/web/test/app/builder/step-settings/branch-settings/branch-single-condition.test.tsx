@@ -18,7 +18,7 @@
  * act rather than @testing-library/react (not a dependency of this package).
  */
 /* eslint-disable testing-library/no-unnecessary-act */
-import { BranchOperator } from '@fema/shared';
+import { BranchOperator } from '@fema-ipaas/shared';
 import * as React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';

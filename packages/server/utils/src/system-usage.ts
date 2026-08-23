@@ -1,7 +1,7 @@
 import fs from 'fs'
 import os from 'os'
-import { tryCatch } from '@fema/core-utils';
-import { MachineInformation } from '@fema/shared';
+import { tryCatch } from '@fema-ipaas/core-utils';
+import { MachineInformation } from '@fema-ipaas/shared';
 import checkDiskSpace from 'check-disk-space'
 import si from 'systeminformation'
 import { fileSystemUtils } from './file-system-utils'

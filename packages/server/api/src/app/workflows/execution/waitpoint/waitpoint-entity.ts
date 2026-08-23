@@ -1,4 +1,4 @@
-import { PauseType, Workspace } from '@fema/shared'
+import { PauseType, Workspace } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import { ApIdSchema, BaseColumnSchemaPart } from '../../../database/database-common'
 import { Waitpoint, WaitpointStatus, WaitpointVersionEnum } from './waitpoint-types'

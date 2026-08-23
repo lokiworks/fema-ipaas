@@ -1,4 +1,4 @@
-import { isNil, SeekPage } from '@fema/core-utils';
+import { isNil, SeekPage } from '@fema-ipaas/core-utils';
 import {
   CreateTenantWorkspaceRequest,
   ListWorkspaceRequestForTenantQueryParams,
@@ -6,7 +6,7 @@ import {
   WorkspaceType,
   WorkspaceWithLimits,
   WorkspaceWithLimitsWithTenant,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { queryCollectionOptions } from '@tanstack/query-db-collection';
 import {
   and,

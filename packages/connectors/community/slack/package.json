@@ -1,16 +1,16 @@
 {
-  "name": "@fema/connector-slack",
+  "name": "@fema-ipaas/connector-slack",
   "version": "0.17.9",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "dependencies": {
-    "@fema/connector-common": "workspace:*",
-    "@fema/connector-sdk": "workspace:*",
+    "@fema-ipaas/connector-common": "workspace:*",
+    "@fema-ipaas/connector-sdk": "workspace:*",
     "@slack/web-api": "7.9.0",
     "slackify-markdown": "4.4.0",
     "zod": "4.3.6",
-    "@fema/connector-types": "workspace:*",
-    "@fema/core-utils": "workspace:*"
+    "@fema-ipaas/connector-types": "workspace:*",
+    "@fema-ipaas/core-utils": "workspace:*"
   },
   "devDependencies": {
     "tslib": "2.6.2"

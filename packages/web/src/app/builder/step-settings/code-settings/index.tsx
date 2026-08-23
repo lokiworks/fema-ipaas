@@ -1,4 +1,4 @@
-import { CodeAction, MarkdownVariant } from '@fema/shared';
+import { CodeAction, MarkdownVariant } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';

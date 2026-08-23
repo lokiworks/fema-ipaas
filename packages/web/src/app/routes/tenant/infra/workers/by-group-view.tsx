@@ -2,7 +2,7 @@ import {
   WorkspaceWithLimits,
   WorkerGroupScope,
   WorkerMachineWithStatus,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { Layers, Plus } from 'lucide-react';
 import { useState } from 'react';

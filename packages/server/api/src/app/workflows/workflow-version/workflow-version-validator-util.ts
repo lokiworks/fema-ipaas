@@ -2,9 +2,9 @@ import {
     ConnectorAuthProperty,
     connectorPropertiesUtils,
     ConnectorPropertyMap,
-} from '@fema/connector-sdk'
-import { ApplicationError, ErrorCode, isNil, STEP_NAME_REGEX, TenantId, UserId } from '@fema/core-utils'
-import { CodeActionSettings, ConnectorActionSettings, ConnectorTriggerSettings, LoopOnItemsActionSettings, RouterActionSettingsWithValidation, SourceCode, WorkflowActionType, workflowConnectorUtil, WorkflowOperationRequest, WorkflowOperationType, workflowStructureUtil, WorkflowTrigger, WorkflowTriggerType } from '@fema/shared'
+} from '@fema-ipaas/connector-sdk'
+import { ApplicationError, ErrorCode, isNil, STEP_NAME_REGEX, TenantId, UserId } from '@fema-ipaas/core-utils'
+import { CodeActionSettings, ConnectorActionSettings, ConnectorTriggerSettings, LoopOnItemsActionSettings, RouterActionSettingsWithValidation, SourceCode, WorkflowActionType, workflowConnectorUtil, WorkflowOperationRequest, WorkflowOperationType, workflowStructureUtil, WorkflowTrigger, WorkflowTriggerType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { z } from 'zod'
 import { connectorMetadataService } from '../../connectors/metadata/connector-metadata-service'

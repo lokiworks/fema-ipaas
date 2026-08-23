@@ -1,10 +1,10 @@
-import { createCustomApiCallAction, httpClient, HttpMethod } from '@fema/connector-common';
+import { createCustomApiCallAction, httpClient, HttpMethod } from '@fema-ipaas/connector-common';
 import {
   createConnector,
   Property,
-} from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-sdk';
 
-import { ConnectorCategory } from '@fema/connector-sdk';
+import { ConnectorCategory } from '@fema-ipaas/connector-sdk';
 import crypto from 'node:crypto';
 import { requestActionDirectMessageAction } from './lib/actions/request-action-direct-message';
 import { requestActionMessageAction } from './lib/actions/request-action-message';

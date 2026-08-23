@@ -1,5 +1,5 @@
-import { tryParseFriendlyConnectorError } from '@fema/core-utils'
-import { WorkflowAction, ExecutionStatus } from '@fema/shared'
+import { tryParseFriendlyConnectorError } from '@fema-ipaas/core-utils'
+import { WorkflowAction, ExecutionStatus } from '@fema-ipaas/shared'
 import { WorkflowExecutorContext } from '../../src/lib/handler/context/workflow-execution-context'
 import { workflowExecutor } from '../../src/lib/handler/workflow-executor'
 import { connectorExecutor } from '../../src/lib/handler/connector-executor'
@@ -11,7 +11,7 @@ describe('connectorExecutor', () => {
         const result = await connectorExecutor.handle({
             action: buildConnectorAction({
                 name: 'data_mapper',
-                connectorName: '@fema/connector-data-mapper',
+                connectorName: '@fema-ipaas/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -30,7 +30,7 @@ describe('connectorExecutor', () => {
         const result = await connectorExecutor.handle({
             action: buildConnectorAction({
                 name: 'send_http',
-                connectorName: '@fema/connector-http',
+                connectorName: '@fema-ipaas/connector-http',
                 actionName: 'send_request',
                 input: {
                     'url': `${process.env.FEMA_TEST_FIXTURE_URL}/api/v1/asd`,
@@ -73,7 +73,7 @@ describe('connectorExecutor', () => {
                 name: 'data_mapper',
                 input: {},
                 skip: true,
-                connectorName: '@fema/connector-data-mapper',
+                connectorName: '@fema-ipaas/connector-data-mapper',
                 actionName: 'advanced_mapping',
             }), executionState: WorkflowExecutorContext.empty(), constants: generateMockEngineConstants(),
         })
@@ -92,13 +92,13 @@ describe('connectorExecutor', () => {
                     },
                 },
                 skip: false,
-                connectorName: '@fema/connector-data-mapper',
+                connectorName: '@fema-ipaas/connector-data-mapper',
                 actionName: 'advanced_mapping',
             }),
             nextAction: {
                 ...buildConnectorAction({
                     name: 'send_http',
-                    connectorName: '@fema/connector-http',
+                    connectorName: '@fema-ipaas/connector-http',
                     actionName: 'send_request',
                     input: {},
                     skip: true,

@@ -1,5 +1,5 @@
 import { TlsOptions } from 'node:tls'
-import { isNil, spreadIfDefined } from '@fema/core-utils'
+import { isNil, spreadIfDefined } from '@fema-ipaas/core-utils'
 import 'pg'
 import { DataSource } from 'typeorm'
 import { system } from '../helper/system/system'

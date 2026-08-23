@@ -1,4 +1,4 @@
-import { isNil, tryCatchSync } from '@fema/core-utils'
+import { isNil, tryCatchSync } from '@fema-ipaas/core-utils'
 import jsep from 'jsep'
 
 export const propertyPath = {

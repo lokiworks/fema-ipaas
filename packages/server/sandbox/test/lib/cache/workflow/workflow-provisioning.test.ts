@@ -2,8 +2,8 @@ import { rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { randomUUID } from 'node:crypto'
-import { type ApLogger } from '@fema/server-utils'
-import { WorkflowActionType, WorkflowTriggerType, WorkflowVersion, WorkflowVersionState, LATEST_WORKFLOW_SCHEMA_VERSION, PackageType, ConnectorType, WorkerToApiContract } from '@fema/shared'
+import { type ApLogger } from '@fema-ipaas/server-utils'
+import { WorkflowActionType, WorkflowTriggerType, WorkflowVersion, WorkflowVersionState, LATEST_WORKFLOW_SCHEMA_VERSION, PackageType, ConnectorType, WorkerToApiContract } from '@fema-ipaas/shared'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { workflowProvisioning } from '../../../../src/lib/cache/workflow/workflow-provisioning'
 
@@ -41,14 +41,14 @@ function workflowWithConnector(overrides: Partial<WorkflowVersion> = {}): Workfl
             name: 'trigger', type: WorkflowTriggerType.EMPTY, displayName: 'Trigger', valid: true, settings: {},
             nextAction: {
                 name: 'step_1', type: WorkflowActionType.CONNECTOR, displayName: 'HTTP', valid: true,
-                settings: { connectorName: '@fema/connector-http', connectorVersion: '^1.0.0', actionName: 'send', input: {}, inputUiInfo: {} },
+                settings: { connectorName: '@fema-ipaas/connector-http', connectorVersion: '^1.0.0', actionName: 'send', input: {}, inputUiInfo: {} },
             },
         },
         ...overrides,
     } as unknown as WorkflowVersion
 }
 
-const httpConnector = { packageType: PackageType.REGISTRY, name: '@fema/connector-http', version: '1.0.5', connectorType: ConnectorType.OFFICIAL }
+const httpConnector = { packageType: PackageType.REGISTRY, name: '@fema-ipaas/connector-http', version: '1.0.5', connectorType: ConnectorType.OFFICIAL }
 
 const workflow = { id: 'workflow1', versionId: 'fv1', workspaceId: 'p1' }
 
@@ -151,7 +151,7 @@ describe('workflowProvisioning.resolve', () => {
         if (resolved.kind === 'disabled') {
             expect(resolved.failedStep?.name).toBe('step_1')
             expect(resolved.failedStep?.displayName).toBe('HTTP')
-            expect(resolved.failedStep?.message).toContain('@fema/connector-http@^1.0.0')
+            expect(resolved.failedStep?.message).toContain('@fema-ipaas/connector-http@^1.0.0')
             expect(resolved.failedStep?.message).toContain('turned off')
         }
     })

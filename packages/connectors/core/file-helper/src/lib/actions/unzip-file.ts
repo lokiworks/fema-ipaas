@@ -2,7 +2,7 @@ import {
   Property,
   createAction,
   ConnectorAuth,
-} from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-sdk';
 import {
   ZipReader,
   BlobReader,

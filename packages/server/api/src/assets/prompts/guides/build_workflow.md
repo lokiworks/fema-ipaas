@@ -54,15 +54,15 @@ FEMA Integration Platform ships connectors that need no external app or connecti
 
 | User says | Connector | What it is |
 |---|---|---|
-| "a form" | `@fema/connector-forms` (**Human Input**) | hosted web form trigger w/ shareable link |
-| "every day/hour", "cron" | `@fema/connector-schedule` | schedule triggers |
-| "webhook", "receive events" | `@fema/connector-webhook` | inbound webhook trigger |
-| "save/track data here" | `@fema/connector-tables` | built-in database — `ap_load_guide('tables')` |
-| "remember/count/dedup" | `@fema/connector-store` | key-value store — `ap_load_guide('state')` |
-| "ask AI/classify/extract" | `@fema/connector-ai` | native AI — use this, never the OpenAI/vendor connector — `ap_load_guide('ai')` |
-| "human sign-off" | `@fema/connector-approval` | pause for approve/reject |
-| "wait/pause" | `@fema/connector-delay` | delay step |
-| "split big work" | `@fema/connector-subflows` | call another workflow |
+| "a form" | `@fema-ipaas/connector-forms` (**Human Input**) | hosted web form trigger w/ shareable link |
+| "every day/hour", "cron" | `@fema-ipaas/connector-schedule` | schedule triggers |
+| "webhook", "receive events" | `@fema-ipaas/connector-webhook` | inbound webhook trigger |
+| "save/track data here" | `@fema-ipaas/connector-tables` | built-in database — `ap_load_guide('tables')` |
+| "remember/count/dedup" | `@fema-ipaas/connector-store` | key-value store — `ap_load_guide('state')` |
+| "ask AI/classify/extract" | `@fema-ipaas/connector-ai` | native AI — use this, never the OpenAI/vendor connector — `ap_load_guide('ai')` |
+| "human sign-off" | `@fema-ipaas/connector-approval` | pause for approve/reject |
+| "wait/pause" | `@fema-ipaas/connector-delay` | delay step |
+| "split big work" | `@fema-ipaas/connector-subflows` | call another workflow |
 
 ## CODE is the last resort — use inline expressions & conditions first
 Dropping a **CODE step** into a workflow to filter, reshape, calculate, or format data is almost always the wrong first move — it's slower to build, opaque to a non-coder, and harder to debug. Walk this ladder and stop at the first rung that fits; only the last rung is code:

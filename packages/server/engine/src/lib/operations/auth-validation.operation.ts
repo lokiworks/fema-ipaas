@@ -1,10 +1,10 @@
-import { isObject } from '@fema/core-utils'
+import { isObject } from '@fema-ipaas/core-utils'
 import {
     EngineResponse,
     EngineResponseStatus,
     ExecuteValidateAuthOperation,
     ExecuteValidateAuthResponse,
-} from '@fema/shared'
+} from '@fema-ipaas/shared'
 import { connectorAuth } from '../core/connector/connector-auth'
 
 export const authValidationOperation = {

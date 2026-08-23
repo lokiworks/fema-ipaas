@@ -1,5 +1,5 @@
 import { Multipart } from '@fastify/multipart'
-import { ApMultipartFile } from '@fema/core-utils'
+import { ApMultipartFile } from '@fema-ipaas/core-utils'
 
 /**
  * Rebuilds the body shape that `@fastify/multipart`'s `attachFieldsToBody: 'keyValues'` used to

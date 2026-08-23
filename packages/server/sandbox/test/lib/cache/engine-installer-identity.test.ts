@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { ApEnvironment } from '@fema/shared'
+import { ApEnvironment } from '@fema-ipaas/shared'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { engineInstaller } from '../../../src/lib/cache/engine/engine-installer'
 

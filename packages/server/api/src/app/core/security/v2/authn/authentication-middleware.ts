@@ -1,4 +1,4 @@
-import { isNil } from '@fema/core-utils'
+import { isNil } from '@fema-ipaas/core-utils'
 import { FastifyRequest } from 'fastify'
 import { RouteKind } from '../../authorization/common'
 import { authenticateOrThrow } from './authenticate'

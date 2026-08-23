@@ -1,5 +1,5 @@
-import { ApplicationError, ErrorCode, isNil, isObject } from '@fema/core-utils'
-import { PrincipalType } from '@fema/shared'
+import { ApplicationError, ErrorCode, isNil, isObject } from '@fema-ipaas/core-utils'
+import { PrincipalType } from '@fema-ipaas/shared'
 import { preSerializationHookHandler } from 'fastify'
 
 export function extractResourceName(url: string): string | undefined {

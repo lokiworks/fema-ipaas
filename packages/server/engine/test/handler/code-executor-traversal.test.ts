@@ -1,4 +1,4 @@
-import { CodeAction, ExecutionStatus } from '@fema/shared'
+import { CodeAction, ExecutionStatus } from '@fema-ipaas/shared'
 import { codeExecutor } from '../../src/lib/handler/code-executor'
 import { WorkflowExecutorContext } from '../../src/lib/handler/context/workflow-execution-context'
 import { buildCodeAction, generateMockEngineConstants } from './test-helper'

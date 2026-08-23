@@ -1,11 +1,11 @@
-import { OAuth2Property, OAuth2Props } from '@fema/connector-sdk';
-import { isNil } from '@fema/core-utils';
+import { OAuth2Property, OAuth2Props } from '@fema-ipaas/connector-sdk';
+import { isNil } from '@fema-ipaas/core-utils';
 import {
   ConnectionType,
   BOTH_CLIENT_CREDENTIALS_AND_AUTHORIZATION_CODE,
   OAuth2GrantType,
   ThirdPartyAuthnProviderEnum,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { useSearchParams } from 'react-router-dom';
 
 import {

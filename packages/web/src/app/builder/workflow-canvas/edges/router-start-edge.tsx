@@ -1,4 +1,4 @@
-import { StepLocationRelativeToParent } from '@fema/shared';
+import { StepLocationRelativeToParent } from '@fema-ipaas/shared';
 import { BaseEdge, EdgeProps } from '@xyflow/react';
 
 import { workflowCanvasConsts } from '../utils/consts';

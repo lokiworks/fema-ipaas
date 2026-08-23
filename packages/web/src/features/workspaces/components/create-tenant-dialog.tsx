@@ -1,4 +1,4 @@
-import { SAFE_STRING_PATTERN } from '@fema/core-utils';
+import { SAFE_STRING_PATTERN } from '@fema-ipaas/core-utils';
 import { useMutation } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { SubmitHandler, useForm } from 'react-hook-form';

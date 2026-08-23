@@ -6,15 +6,15 @@ import {
   ConnectorMetadataModel,
   ConnectorMetadataModelSummary,
   PropertyType,
-} from '@fema/connector-sdk';
-import { assertNotNullOrUndefined, isNil, apId } from '@fema/core-utils';
+} from '@fema-ipaas/connector-sdk';
+import { assertNotNullOrUndefined, isNil, apId } from '@fema-ipaas/core-utils';
 import {
   ConnectionType,
   ConnectionWithoutSensitiveData,
   UpsertConnectionRequestBody,
   ConnectionStatus,
   OAuth2GrantType,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { CheckIcon, UnplugIcon, XIcon } from 'lucide-react';
 

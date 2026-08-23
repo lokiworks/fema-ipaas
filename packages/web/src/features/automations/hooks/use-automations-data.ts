@@ -3,7 +3,7 @@ import {
   FolderDto,
   PopulatedWorkflow,
   UncategorizedFolderId,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';

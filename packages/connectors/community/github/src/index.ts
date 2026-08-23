@@ -1,6 +1,6 @@
-import { createCustomApiCallAction } from '@fema/connector-common';
-import { createConnector } from '@fema/connector-sdk';
-import { ConnectorCategory } from '@fema/connector-sdk';
+import { createCustomApiCallAction } from '@fema-ipaas/connector-common';
+import { createConnector } from '@fema-ipaas/connector-sdk';
+import { ConnectorCategory } from '@fema-ipaas/connector-sdk';
 import { githubAuthHelpers, GithubAuthValue } from './lib/common/auth-helpers';
 import { githubCreateIssueAction } from './lib/actions/create-issue';
 import { githubUnlockIssueAction } from './lib/actions/unlock-issue';

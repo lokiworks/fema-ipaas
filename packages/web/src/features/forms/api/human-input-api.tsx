@@ -3,7 +3,7 @@ import {
   FormResponse,
   USE_DRAFT_QUERY_PARAM_NAME,
   HumanInputFormResult,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import semVer from 'semver';
 
 import { api } from '@/lib/api';

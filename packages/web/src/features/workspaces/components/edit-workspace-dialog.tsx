@@ -1,9 +1,9 @@
-import { Permission } from '@fema/core-utils';
+import { Permission } from '@fema-ipaas/core-utils';
 import {
   ConnectionWithoutSensitiveData,
   UpdateWorkspaceTenantRequest,
   TenantRole,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { useQueryClient } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { useForm } from 'react-hook-form';

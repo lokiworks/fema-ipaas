@@ -2,8 +2,8 @@ import {
   ConnectorProperty,
   PropertyGroup,
   PropertyType,
-} from '@fema/connector-sdk';
-import { PropertyExecutionType, PropertySettings } from '@fema/shared';
+} from '@fema-ipaas/connector-sdk';
+import { PropertyExecutionType, PropertySettings } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { Info, SquareFunction } from 'lucide-react';
 import React, { useLayoutEffect, useRef, useState } from 'react';

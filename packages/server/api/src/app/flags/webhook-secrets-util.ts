@@ -1,5 +1,5 @@
-import { assertNotNullOrUndefined, isNil, parseToJsonIfPossible } from '@fema/core-utils'
-import { WorkflowVersion } from '@fema/shared'
+import { assertNotNullOrUndefined, isNil, parseToJsonIfPossible } from '@fema-ipaas/core-utils'
+import { WorkflowVersion } from '@fema-ipaas/shared'
 
 let webhookSecrets:
 | Record<string, { webhookSecret: string | Record<string, string> }>

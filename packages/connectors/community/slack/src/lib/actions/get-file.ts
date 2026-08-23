@@ -1,6 +1,6 @@
 import { slackAuth } from '../auth';
-import { AuthenticationType, httpClient, HttpMethod } from '@fema/connector-common';
-import { createAction, Property } from '@fema/connector-sdk';
+import { AuthenticationType, httpClient, HttpMethod } from '@fema-ipaas/connector-common';
+import { createAction, Property } from '@fema-ipaas/connector-sdk';
 import { WebClient } from '@slack/web-api';
 import { getBotToken, SlackAuthValue } from '../common/auth-helpers';
 import { getFileActionOutputSchema } from '../output-schemas';

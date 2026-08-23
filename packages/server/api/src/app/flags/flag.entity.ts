@@ -1,4 +1,4 @@
-import { Flag } from '@fema/shared'
+import { Flag } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import {
     BaseColumnSchemaPart,

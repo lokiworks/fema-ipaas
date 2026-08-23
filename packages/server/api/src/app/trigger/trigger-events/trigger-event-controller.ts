@@ -3,7 +3,7 @@ import {
     ListTriggerEventsRequest,
     PrincipalType,
     SaveTriggerEventRequest,
-} from '@fema/shared'
+} from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { WorkspaceResourceType } from '../../core/security/authorization/common'
 import { securityAccess } from '../../core/security/authorization/fastify-security'

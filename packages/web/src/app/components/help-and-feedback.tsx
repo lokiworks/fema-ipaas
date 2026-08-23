@@ -1,4 +1,4 @@
-import { ApFlagId, supportUrl } from '@fema/shared';
+import { ApFlagId, supportUrl } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { BookOpen, CircleHelp, History } from 'lucide-react';
 import { Link } from 'react-router-dom';

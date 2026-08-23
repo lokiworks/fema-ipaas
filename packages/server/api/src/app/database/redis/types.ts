@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export { RedisType } from '@fema/server-utils'
+export { RedisType } from '@fema-ipaas/server-utils'
 
 export const RedisConnectionSettings = z.object({
     REDIS_TYPE: z.string(),

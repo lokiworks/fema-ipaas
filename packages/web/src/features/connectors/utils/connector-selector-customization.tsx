@@ -2,7 +2,7 @@ import {
   CONNECTOR_SELECTOR_BUILTIN_TABS,
   ConnectorSelectorConfig,
   ConnectorSelectorTabConfig,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import {
   ActivityIcon,
   AppWindowIcon,

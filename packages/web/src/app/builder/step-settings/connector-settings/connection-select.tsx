@@ -1,8 +1,8 @@
 import {
   ConnectorMetadataModel,
   ConnectorMetadataModelSummary,
-} from '@fema/connector-sdk';
-import { Permission, isNil } from '@fema/core-utils';
+} from '@fema-ipaas/connector-sdk';
+import { Permission, isNil } from '@fema-ipaas/core-utils';
 import {
   ConnectionScope,
   ConnectionStatus,
@@ -10,7 +10,7 @@ import {
   ConnectorAction,
   ConnectorTrigger,
   PropertyExecutionType,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { Plus, Globe, Cable, Check, Unplug, X, LucideIcon } from 'lucide-react';
 import { useState } from 'react';

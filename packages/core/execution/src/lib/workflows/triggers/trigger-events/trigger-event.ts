@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { BaseModel } from '@fema/core-utils'
+import { BaseModel } from '@fema-ipaas/core-utils'
 
 export type TriggerEventId = string
 

@@ -1,5 +1,5 @@
-import { isNil } from '@fema/core-utils'
-import { ExecutionStatus, PauseType } from '@fema/shared'
+import { isNil } from '@fema-ipaas/core-utils'
+import { ExecutionStatus, PauseType } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { In, MoreThan } from 'typeorm'

@@ -1,6 +1,6 @@
 /// <reference types="vitest/globals" />
 
-import { createMockActionContext } from '@fema/connector-sdk';
+import { createMockActionContext } from '@fema-ipaas/connector-sdk';
 import { parseUrl } from '../src/lib/actions/parse-url';
 
 const run = (url: string, returnArrays = true) =>

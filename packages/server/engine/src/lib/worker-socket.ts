@@ -6,7 +6,7 @@ import {
     EngineResponse,
     ERROR_MESSAGES_TO_REDACT,
     WorkerNotifyContract,
-} from '@fema/shared'
+} from '@fema-ipaas/shared'
 import { io, type ManagerOptions, type Socket, type SocketOptions } from 'socket.io-client'
 import { executionProgressReporter } from './helper/execution-progress-reporter'
 import { execute } from './operations'

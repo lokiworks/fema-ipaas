@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process'
 import path from 'node:path'
-import { isNil, tryCatchSync } from '@fema/core-utils'
-import { ConnectorMemoryLimitError, EngineGenericError } from '@fema/shared'
+import { isNil, tryCatchSync } from '@fema-ipaas/core-utils'
+import { ConnectorMemoryLimitError, EngineGenericError } from '@fema-ipaas/shared'
 import { connectorPath } from './connector-path'
 import { ChildMessage, CollectedHooks, ConnectorDescription, connectorProtocol, ContextRequest, ParentMessage } from './connector-protocol'
 

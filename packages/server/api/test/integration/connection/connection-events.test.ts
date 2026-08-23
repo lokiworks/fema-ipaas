@@ -1,10 +1,10 @@
-import { wideEvent } from '@fema/server-utils'
+import { wideEvent } from '@fema-ipaas/server-utils'
 import {
     ConnectionType,
     ApplicationEventName,
     PackageType,
     ConnectorType,
-} from '@fema/shared'
+} from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import * as applicationEventsModule from '../../../../src/app/helper/application-events'

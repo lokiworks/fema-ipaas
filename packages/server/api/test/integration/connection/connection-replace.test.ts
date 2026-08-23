@@ -1,4 +1,4 @@
-import { Connection, ConnectionScope, WorkflowStatus, WorkflowVersionState } from '@fema/shared'
+import { Connection, ConnectionScope, WorkflowStatus, WorkflowVersionState } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { db } from '../../../helpers/db'
@@ -20,7 +20,7 @@ afterAll(async () => {
     await teardownTestEnvironment()
 })
 
-const CONNECTOR_NAME = '@fema/connector-slack'
+const CONNECTOR_NAME = '@fema-ipaas/connector-slack'
 
 describe('POST /v1/connections/replace', () => {
     it('keeps the source connection when deleteSourceConnection is not set', async () => {

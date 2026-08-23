@@ -1,5 +1,5 @@
-import { isNil, WorkspaceId } from '@fema/core-utils'
-import { FileType, WorkflowOperationRequest, WorkflowOperationType, workflowStructureUtil, WorkflowVersion } from '@fema/shared'
+import { isNil, WorkspaceId } from '@fema-ipaas/core-utils'
+import { FileType, WorkflowOperationRequest, WorkflowOperationType, workflowStructureUtil, WorkflowVersion } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { EntityManager } from 'typeorm'
 import { exceptionHandler } from '../../helper/exception-handler'

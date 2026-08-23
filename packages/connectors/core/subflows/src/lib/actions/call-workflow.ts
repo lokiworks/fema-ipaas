@@ -3,8 +3,8 @@ import {
   DynamicPropsValue,
   ConnectorAuth,
   Property,
-} from '@fema/connector-sdk';
-import { ExecutionType, isNil } from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-sdk';
+import { ExecutionType, isNil } from '@fema-ipaas/connector-sdk';
 import { CallableWorkflowResponse, dispatchToSubflow, findEnabledSubflowOrThrow, findWorkflowByExternalIdOrThrow, subflowDropdown } from '../common';
 
 export const callWorkflow = createAction({

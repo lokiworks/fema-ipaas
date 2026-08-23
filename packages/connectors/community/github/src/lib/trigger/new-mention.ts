@@ -1,8 +1,8 @@
-import { createTrigger, TriggerStrategy } from '@fema/connector-sdk';
+import { createTrigger, TriggerStrategy } from '@fema-ipaas/connector-sdk';
 import { githubAuth } from '../auth';
 import { githubApiCall, githubCommon } from '../common';
 import { getAuthenticatedLogin, GithubAuthValue } from '../common/auth-helpers';
-import { HttpMethod } from '@fema/connector-common';
+import { HttpMethod } from '@fema-ipaas/connector-common';
 
 interface WebhookInformation {
   webhookId: number;

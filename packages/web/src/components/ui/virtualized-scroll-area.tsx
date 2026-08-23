@@ -1,6 +1,6 @@
 'use client';
 
-import { isNil } from '@fema/core-utils';
+import { isNil } from '@fema-ipaas/core-utils';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import * as React from 'react';
 

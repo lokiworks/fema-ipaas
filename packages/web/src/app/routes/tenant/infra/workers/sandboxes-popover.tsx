@@ -1,4 +1,4 @@
-import { SandboxInformation } from '@fema/shared';
+import { SandboxInformation } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { Box } from 'lucide-react';
 import prettyBytes from 'pretty-bytes';

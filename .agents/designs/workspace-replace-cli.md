@@ -61,7 +61,7 @@ Source and destination are **separate FEMA Integration Platform deployments**, e
   "workflows":   [ /* full workflow states with externalId */ ],
   "tables":  [ /* schema only — name, externalId, fields[], status, trigger */ ],
   "folders": [ /* externalId, displayName, displayOrder */ ],
-  "requiredConnectors": [ { "name": "@fema/connector-slack", "version": "1.2.3" } ]
+  "requiredConnectors": [ { "name": "@fema-ipaas/connector-slack", "version": "1.2.3" } ]
 }
 ```
 

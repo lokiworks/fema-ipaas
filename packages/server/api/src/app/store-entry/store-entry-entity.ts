@@ -1,4 +1,4 @@
-import { STORE_KEY_MAX_LENGTH, StoreEntry } from '@fema/shared'
+import { STORE_KEY_MAX_LENGTH, StoreEntry } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import {
     ApIdSchema,

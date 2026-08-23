@@ -2,9 +2,9 @@ import {
   ConnectorProperty,
   ConnectorPropertyMap,
   PropertyType,
-} from '@fema/connector-sdk';
-import { isNil } from '@fema/core-utils';
-import { PropertySettings } from '@fema/shared';
+} from '@fema-ipaas/connector-sdk';
+import { isNil } from '@fema-ipaas/core-utils';
+import { PropertySettings } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { ControllerRenderProps, UseFormReturn } from 'react-hook-form';
 

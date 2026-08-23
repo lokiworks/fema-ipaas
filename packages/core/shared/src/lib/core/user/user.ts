@@ -1,4 +1,4 @@
-import { BaseModelSchema, DateOrString, Nullable } from '@fema/core-utils'
+import { BaseModelSchema, DateOrString, Nullable } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 
 export enum TenantRole {

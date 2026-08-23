@@ -1,7 +1,7 @@
 /// <reference types="vitest/globals" />
 
 import { hashText } from '../src/lib/actions/hash-text';
-import { createMockActionContext } from '@fema/connector-sdk';
+import { createMockActionContext } from '@fema-ipaas/connector-sdk';
 
 describe('hashText', () => {
   test('hashes with MD5', async () => {

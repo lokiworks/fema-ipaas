@@ -1,4 +1,4 @@
-import { WorkflowVersionState } from '@fema/shared';
+import { WorkflowVersionState } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import React from 'react';
 

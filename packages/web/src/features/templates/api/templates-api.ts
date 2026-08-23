@@ -1,11 +1,11 @@
-import { SeekPage } from '@fema/core-utils';
+import { SeekPage } from '@fema-ipaas/core-utils';
 import {
   CreateTemplateRequestBody,
   ListTemplatesRequestQuery,
   Template,
   UpdateTemplateRequestBody,
   Flag,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 
 import { api } from '@/lib/api';
 

@@ -1,4 +1,4 @@
-import { PrincipalType } from '@fema/shared'
+import { PrincipalType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { beforeAll, describe, expect, it, vi } from 'vitest'
 import { jwtUtils } from '../../../../src/app/helper/jwt-utils'

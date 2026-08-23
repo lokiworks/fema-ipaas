@@ -1,4 +1,4 @@
-import { Template, TemplateType } from '@fema/shared';
+import { Template, TemplateType } from '@fema-ipaas/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { useSearchParams } from 'react-router-dom';

@@ -1,4 +1,4 @@
-import { isNil } from '@fema/core-utils'
+import { isNil } from '@fema-ipaas/core-utils'
 import { Queue } from 'bullmq'
 import { FastifyBaseLogger } from 'fastify'
 import { jobQueue } from './job-queue/job-queue'

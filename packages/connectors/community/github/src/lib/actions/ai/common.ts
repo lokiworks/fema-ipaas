@@ -1,4 +1,4 @@
-import { Property } from '@fema/connector-sdk';
+import { Property } from '@fema-ipaas/connector-sdk';
 
 /**
  * Shared flat props + error mapping for the agent (audience:'ai') GitHub atomics.

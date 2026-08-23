@@ -1,4 +1,4 @@
-import { ApId, ApMultipartFile, Nullable, OptionalArrayFromQuery, OptionalBooleanFromQuery, SAFE_STRING_PATTERN, tryCatchSync } from '@fema/core-utils'
+import { ApId, ApMultipartFile, Nullable, OptionalArrayFromQuery, OptionalBooleanFromQuery, SAFE_STRING_PATTERN, tryCatchSync } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 import { FederatedAuthnProviderConfig } from '../../core/federated-authn'
 import { ConnectorSelectorConfig, TenantThemeColors } from './tenant.model'

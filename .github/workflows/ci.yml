@@ -123,7 +123,7 @@ jobs:
           fi
 
       - name: Build core projects
-        run: npx turbo run build --filter=web --filter=worker --filter=api --filter=@fema/engine --filter=@fema/connector-http --filter=@fema/connector-data-mapper --filter=@fema/connector-approval --filter=@fema/connector-webhook --filter=@fema/connector-delay
+        run: npx turbo run build --filter=web --filter=worker --filter=api --filter=@fema-ipaas/engine --filter=@fema-ipaas/connector-http --filter=@fema-ipaas/connector-data-mapper --filter=@fema-ipaas/connector-approval --filter=@fema-ipaas/connector-webhook --filter=@fema-ipaas/connector-delay
 
       - name: Build changed connectors projects
         if: steps.extract-connectors.outputs.connectors_filters != '' && steps.check-framework-common.outputs.framework_or_common_changed == 'false'
@@ -133,7 +133,7 @@ jobs:
           for connector in "${CONNECTORS[@]}"; do
             connector_name=$(echo "$connector" | tr -d '{}')
             if [ -f "packages/connectors/community/${connector_name}/package.json" ] || [ -f "packages/connectors/core/${connector_name}/package.json" ]; then
-              FILTER_ARGS="$FILTER_ARGS --filter=@fema/connector-${connector_name}"
+              FILTER_ARGS="$FILTER_ARGS --filter=@fema-ipaas/connector-${connector_name}"
             fi
           done
           if [ -n "$FILTER_ARGS" ]; then
@@ -142,14 +142,14 @@ jobs:
 
       - name: Build all connectors projects
         if: steps.check-framework-common.outputs.framework_or_common_changed == 'true'
-        run: npx turbo run build --filter='@fema/connector-*'
+        run: npx turbo run build --filter='@fema-ipaas/connector-*'
 
       - name: Run all tests and migration checks in parallel
         run: |
           set -euo pipefail
           pids=()
 
-          npx turbo run test --filter=@fema/engine --filter=@fema/shared --filter=@fema/sandbox --filter=@fema/ai-providers --filter=@fema/connector-sdk --filter=web &
+          npx turbo run test --filter=@fema-ipaas/engine --filter=@fema-ipaas/shared --filter=@fema-ipaas/sandbox --filter=@fema-ipaas/ai-providers --filter=@fema-ipaas/connector-sdk --filter=web &
           pids+=($!)
 
           npx turbo run test-ce test-ee test-cloud check-migrations --filter=api &

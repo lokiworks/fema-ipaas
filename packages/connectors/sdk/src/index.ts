@@ -17,8 +17,8 @@ export {
   camelCase,
   startCase,
   tryCatch,
-} from '@fema/core-utils';
-export type { SeekPage } from '@fema/core-utils';
+} from '@fema-ipaas/core-utils';
+export type { SeekPage } from '@fema-ipaas/core-utils';
 
 export {
   ConnectorCategory,
@@ -46,11 +46,11 @@ export {
   RAW_PAYLOAD_HEADER,
   PARENT_RUN_ID_HEADER,
   FAIL_PARENT_ON_FAILURE_HEADER,
-} from '@fema/connector-types';
+} from '@fema-ipaas/connector-types';
 export type {
   BasicAuthConnectionValue,
   CustomAuthConnectionValue,
   PopulatedWorkflowSummary,
   ExecuteToolResponse,
   PopulatedWorkflow,
-} from '@fema/connector-types';
+} from '@fema-ipaas/connector-types';

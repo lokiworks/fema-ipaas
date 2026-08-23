@@ -1,4 +1,4 @@
-import { Tenant, User } from '@fema/shared'
+import { Tenant, User } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import {
     ApIdSchema,

@@ -14,7 +14,7 @@ Now, let's establish authentication for this connector, which necessitates the i
 Modify `src/index.ts` file to add authentication,
 
 ```ts
-import { ConnectorAuth, createConnector } from '@fema/connectors-framework';
+import { ConnectorAuth, createConnector } from '@fema-ipaas/connectors-framework';
 
 export const gelatoAuth = ConnectorAuth.SecretText({
   displayName: 'API Key',

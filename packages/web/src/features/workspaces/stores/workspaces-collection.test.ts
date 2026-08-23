@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { ConnectorsFilterType, WorkspaceType } from '@fema/shared';
-import type { WorkspaceWithLimits } from '@fema/shared';
+import { ConnectorsFilterType, WorkspaceType } from '@fema-ipaas/shared';
+import type { WorkspaceWithLimits } from '@fema-ipaas/shared';
 import {
   and,
   createCollection,

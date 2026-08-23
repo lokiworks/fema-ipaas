@@ -1,4 +1,4 @@
-import { isNil } from '@fema/shared';
+import { isNil } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import {
   Boxes,
@@ -28,7 +28,7 @@ const HARDWARE_DOCS_LINK =
 const PRODUCTION_SETUP_LINK =
   'https://github.com/lokiworks/fema-ipaas/docs/install/configure-operate/production-setup#what-it-looks-like';
 
-// Matches UNKNOWN_VERSION in @fema/server-utils: the sentinel the backend reports when
+// Matches UNKNOWN_VERSION in @fema-ipaas/server-utils: the sentinel the backend reports when
 // it could not read its release from package.json. Not importable here (server-only package).
 const UNREADABLE_RELEASE_VERSION = '0.0.0';
 

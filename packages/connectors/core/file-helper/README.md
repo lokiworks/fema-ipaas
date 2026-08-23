@@ -2,4 +2,4 @@
 
 ## Building
 
-Run `turbo run build --filter=@fema/connector-file-helper` to build the library.
+Run `turbo run build --filter=@fema-ipaas/connector-file-helper` to build the library.

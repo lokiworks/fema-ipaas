@@ -1,7 +1,7 @@
 import {
   Property,
   createAction,
-} from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-sdk';
 import {
   optionalTimeFormats,
   timeFormat,
@@ -11,7 +11,7 @@ import {
   apDayjs,
 } from '../common';
 import * as z from 'zod/mini'
-import { propsValidation } from '@fema/connector-common';
+import { propsValidation } from '@fema-ipaas/connector-common';
 import { nextDayOfWeekActionOutputSchema } from '../output-schemas';
 
 export const nextDayofWeek = createAction({

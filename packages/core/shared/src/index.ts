@@ -16,10 +16,10 @@ export * from './lib/core/store-entry/store-entry'
 export * from './lib/core/support-url'
 export * from './lib/core/feedback-url'
 export * from './lib/core/health'
-// Foundation utilities/types live in @fema/core-utils; shared re-exports the whole
+// Foundation utilities/types live in @fema-ipaas/core-utils; shared re-exports the whole
 // surface here once (instead of via per-file `export *` shim files under lib/core/common).
 // The local ./lib/form-errors file remains for internal relative imports only.
-export * from '@fema/core-utils'
+export * from '@fema-ipaas/core-utils'
 
 // management
 export * from './lib/management/tenant'
@@ -31,8 +31,8 @@ export * from './lib/management/ai-tools'
 export * from './lib/management/template'
 
 // automation — workflows / execution / engine / agents / workers were extracted to
-// @fema/workflow-core (SRE-163); shared re-exports them for backward compat.
-export * from '@fema/workflow-core'
+// @fema-ipaas/workflow-core (SRE-163); shared re-exports them for backward compat.
+export * from '@fema-ipaas/workflow-core'
 export * from './lib/automation/connection/connection'
 export * from './lib/automation/connection/dto/read-connection-request'
 export * from './lib/automation/connection/dto/upsert-connection-request'

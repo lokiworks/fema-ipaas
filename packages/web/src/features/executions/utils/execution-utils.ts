@@ -1,4 +1,4 @@
-import { isNil } from '@fema/core-utils';
+import { isNil } from '@fema-ipaas/core-utils';
 import {
   executionJournal,
   WorkflowActionType,
@@ -7,7 +7,7 @@ import {
   isFailedState,
   StepOutput,
   StepOutputStatus,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import {
   CircleAlert,

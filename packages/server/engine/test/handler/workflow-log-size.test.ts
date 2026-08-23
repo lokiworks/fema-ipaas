@@ -1,4 +1,4 @@
-import { ExecutionStatus, WorkflowTriggerType, WorkflowVersionState, GenericStepOutput, StepOutputStatus } from '@fema/shared'
+import { ExecutionStatus, WorkflowTriggerType, WorkflowVersionState, GenericStepOutput, StepOutputStatus } from '@fema-ipaas/shared'
 import { vi } from 'vitest'
 import { WorkflowExecutorContext } from '../../src/lib/handler/context/workflow-execution-context'
 import { workflowExecutor } from '../../src/lib/handler/workflow-executor'

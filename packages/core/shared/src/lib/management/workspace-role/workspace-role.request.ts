@@ -1,4 +1,4 @@
-import { RoleType, SAFE_STRING_PATTERN } from '@fema/core-utils'
+import { RoleType, SAFE_STRING_PATTERN } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 
 export const CreateWorkspaceRoleRequestBody = z.object({

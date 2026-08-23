@@ -4,8 +4,8 @@ import type { OutputSchema } from '../output-schema';
 import { ActionClassification, AiMetadata, PropertyGroup, TriggerBase } from '../connector-metadata';
 import { InputPropertyMap } from '../property';
 import { ExtractConnectorAuthPropertyTypeForMethods, ConnectorAuthProperty } from '../property/authentication';
-import { isNil } from '@fema/core-utils';
-import { TriggerStrategy, TriggerTestStrategy, WebhookHandshakeConfiguration, WebhookHandshakeStrategy } from '@fema/connector-types';
+import { isNil } from '@fema-ipaas/core-utils';
+import { TriggerStrategy, TriggerTestStrategy, WebhookHandshakeConfiguration, WebhookHandshakeStrategy } from '@fema-ipaas/connector-types';
 export { TriggerStrategy }
 
 export const DEDUPE_KEY_PROPERTY = '_dedupe_key'

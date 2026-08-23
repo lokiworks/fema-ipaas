@@ -4,7 +4,7 @@ import {
   Action,
   OutputSchemaField,
   createMockActionContext,
-} from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-sdk';
 import { addSubtractDateAction } from '../src/lib/actions/add-subtract-date';
 import { dateDifferenceAction } from '../src/lib/actions/date-difference';
 import { extractDateParts } from '../src/lib/actions/extract-date-parts';

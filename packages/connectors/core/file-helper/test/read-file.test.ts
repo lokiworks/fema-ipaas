@@ -1,7 +1,7 @@
 /// <reference types="vitest/globals" />
 
 import { readFileAction } from '../src/lib/actions/read-file';
-import { createMockActionContext, ApFile } from '@fema/connector-sdk';
+import { createMockActionContext, ApFile } from '@fema-ipaas/connector-sdk';
 
 describe('readFileAction', () => {
   test('reads file as text', async () => {

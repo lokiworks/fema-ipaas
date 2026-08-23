@@ -3,8 +3,8 @@ import { WebhookRenewConfiguration } from "./trigger/trigger";
 import { ErrorHandlingOptionsParam } from "./action/action";
 import { ConnectorAuthProperty } from "./property/authentication";
 import * as z from "zod/mini";
-import { LocalesEnum } from "@fema/core-utils";
-import { PackageType, ConnectorCategory, ConnectorType, TriggerStrategy, TriggerTestStrategy, WebhookHandshakeConfiguration } from "@fema/connector-types";
+import { LocalesEnum } from "@fema-ipaas/core-utils";
+import { PackageType, ConnectorCategory, ConnectorType, TriggerStrategy, TriggerTestStrategy, WebhookHandshakeConfiguration } from "@fema-ipaas/connector-types";
 import { ContextVersion } from "./context/versioning";
 import type { OutputSchema } from "./output-schema";
 

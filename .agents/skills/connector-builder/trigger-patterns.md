@@ -21,8 +21,8 @@ Two deduplication strategies:
 ### TIMEBASED Polling (most common)
 
 ```typescript
-import { createTrigger, TriggerStrategy, ConnectionValueForAuthProperty } from '@fema/connector-sdk';
-import { DedupeStrategy, Polling, pollingHelper, httpClient, HttpMethod, AuthenticationType } from '@fema/connector-common';
+import { createTrigger, TriggerStrategy, ConnectionValueForAuthProperty } from '@fema-ipaas/connector-sdk';
+import { DedupeStrategy, Polling, pollingHelper, httpClient, HttpMethod, AuthenticationType } from '@fema-ipaas/connector-common';
 import { myAppAuth } from '../auth';
 
 const polling: Polling<ConnectionValueForAuthProperty<typeof myAppAuth>, Record<string, never>> = {
@@ -133,8 +133,8 @@ Use when the API supports webhook registration. The workflow:
 3. `onDisable` -- Delete the webhook when the workflow is turned off
 
 ```typescript
-import { createTrigger, TriggerStrategy } from '@fema/connector-sdk';
-import { httpClient, HttpMethod, AuthenticationType } from '@fema/connector-common';
+import { createTrigger, TriggerStrategy } from '@fema-ipaas/connector-sdk';
+import { httpClient, HttpMethod, AuthenticationType } from '@fema-ipaas/connector-common';
 import { myAppAuth } from '../auth';
 
 export const newRecordWebhookTrigger = createTrigger({
@@ -221,7 +221,7 @@ async run(context) {
 Some APIs (Slack, Okta) send a verification challenge on registration:
 
 ```typescript
-import { WebhookHandshakeStrategy } from '@fema/connector-sdk';
+import { WebhookHandshakeStrategy } from '@fema-ipaas/connector-sdk';
 
 export const myTrigger = createTrigger({
   // ...
@@ -247,7 +247,7 @@ export const myTrigger = createTrigger({
 For APIs where webhooks expire (e.g., Google Sheets):
 
 ```typescript
-import { WebhookRenewStrategy } from '@fema/connector-sdk';
+import { WebhookRenewStrategy } from '@fema-ipaas/connector-sdk';
 
 export const myTrigger = createTrigger({
   // ...

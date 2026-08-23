@@ -1,7 +1,7 @@
 import fs from 'fs/promises'
 import path from 'path'
-import { isNil } from '@fema/core-utils'
-import { EngineGenericError, getConnectorNameFromAlias, getPackageAliasForConnector, trimVersionFromAlias } from '@fema/shared'
+import { isNil } from '@fema-ipaas/core-utils'
+import { EngineGenericError, getConnectorNameFromAlias, getPackageAliasForConnector, trimVersionFromAlias } from '@fema-ipaas/shared'
 import { utils } from '../../utils'
 import { ConnectorRef } from './connector-runner'
 

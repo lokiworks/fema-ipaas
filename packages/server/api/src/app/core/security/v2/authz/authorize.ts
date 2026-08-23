@@ -1,5 +1,5 @@
-import { ApplicationError, ErrorCode, isNil } from '@fema/core-utils'
-import { Principal, PrincipalType, TenantRole, UserIdentityProvider } from '@fema/shared'
+import { ApplicationError, ErrorCode, isNil } from '@fema-ipaas/core-utils'
+import { Principal, PrincipalType, TenantRole, UserIdentityProvider } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { userIdentityService } from '../../../../authentication/user-identity/user-identity-service'
 import { userService } from '../../../../user/user-service'

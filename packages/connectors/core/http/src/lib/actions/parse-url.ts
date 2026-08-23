@@ -1,4 +1,4 @@
-import { createAction, Property } from '@fema/connector-sdk';
+import { createAction, Property } from '@fema-ipaas/connector-sdk';
 import { parseUrlActionOutputSchema } from '../output-schemas';
 
 export const parseUrl = createAction({

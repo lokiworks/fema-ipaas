@@ -2,8 +2,8 @@ import {
   ConnectorAuth,
   Property,
   createConnector,
-} from '@fema/connector-sdk';
-import { ConnectorCategory } from '@fema/connector-sdk';
+} from '@fema-ipaas/connector-sdk';
+import { ConnectorCategory } from '@fema-ipaas/connector-sdk';
 import { sendEmail } from './lib/actions/send-email';
 import { smtpCommon } from './lib/common';
 

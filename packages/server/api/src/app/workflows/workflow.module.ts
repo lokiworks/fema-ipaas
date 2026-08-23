@@ -1,4 +1,4 @@
-import { Permission, PrincipalType, TestExecutionRequestBody, WebsocketClientEvent, WebsocketServerEvent } from '@fema/shared'
+import { Permission, PrincipalType, TestExecutionRequestBody, WebsocketClientEvent, WebsocketServerEvent } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { websocketService } from '../core/websockets.service'
 import { executionService } from './execution/execution-service'

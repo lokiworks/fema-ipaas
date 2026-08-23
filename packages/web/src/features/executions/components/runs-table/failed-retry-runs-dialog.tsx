@@ -1,5 +1,5 @@
-import { ErrorCode } from '@fema/core-utils';
-import { ApFlagId, ExecutionWithRetryError } from '@fema/shared';
+import { ErrorCode } from '@fema-ipaas/core-utils';
+import { ApFlagId, ExecutionWithRetryError } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { ExternalLink } from 'lucide-react';
 

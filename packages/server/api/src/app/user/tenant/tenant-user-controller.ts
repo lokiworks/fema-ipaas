@@ -1,5 +1,5 @@
-import { ApId, assertNotNullOrUndefined, SeekPage } from '@fema/core-utils'
-import { ListUsersRequestBody, PrincipalType, SERVICE_KEY_SECURITY_OPENAPI, UpdateUserRequestBody, UserWithMetaInformation } from '@fema/shared'
+import { ApId, assertNotNullOrUndefined, SeekPage } from '@fema-ipaas/core-utils'
+import { ListUsersRequestBody, PrincipalType, SERVICE_KEY_SECURITY_OPENAPI, UpdateUserRequestBody, UserWithMetaInformation } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'

@@ -1,6 +1,6 @@
 'use client';
 
-import { apId, isNil, SeekPage } from '@fema/core-utils';
+import { apId, isNil, SeekPage } from '@fema-ipaas/core-utils';
 import {
   ColumnDef as TanstackColumnDef,
   flexRender,

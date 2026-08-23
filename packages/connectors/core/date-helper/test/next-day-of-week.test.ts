@@ -1,7 +1,7 @@
 /// <reference types="vitest/globals" />
 
 import { nextDayofWeek } from '../src/lib/actions/next-day-of-week';
-import { createMockActionContext } from '@fema/connector-sdk';
+import { createMockActionContext } from '@fema-ipaas/connector-sdk';
 
 describe('nextDayOfWeek', () => {
   beforeEach(() => {

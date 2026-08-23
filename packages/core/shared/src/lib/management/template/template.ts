@@ -1,5 +1,5 @@
-import { BaseModelSchema, ColorHex, Metadata, Nullable } from '@fema/core-utils'
-import { Note, WorkflowVersion } from '@fema/workflow-core'
+import { BaseModelSchema, ColorHex, Metadata, Nullable } from '@fema-ipaas/core-utils'
+import { Note, WorkflowVersion } from '@fema-ipaas/workflow-core'
 import { z } from 'zod'
 
 export const TemplateTag = z.object({

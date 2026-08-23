@@ -1,15 +1,15 @@
 {
-  "name": "@fema/shared",
+  "name": "@fema-ipaas/shared",
   "version": "0.139.0",
   "type": "commonjs",
   "sideEffects": false,
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "dependencies": {
-    "@fema/workflow-core": "workspace:*",
-    "@fema/expression": "workspace:*",
-    "@fema/connector-types": "workspace:*",
-    "@fema/core-utils": "workspace:*",
+    "@fema-ipaas/workflow-core": "workspace:*",
+    "@fema-ipaas/expression": "workspace:*",
+    "@fema-ipaas/connector-types": "workspace:*",
+    "@fema-ipaas/core-utils": "workspace:*",
     "dayjs": "1.11.9",
     "deepmerge-ts": "7.1.0",
     "expr-eval": "2.0.2",
@@ -26,7 +26,7 @@
     "test": "vitest run"
   },
   "devDependencies": {
-    "@fema/connector-types": "workspace:*",
+    "@fema-ipaas/connector-types": "workspace:*",
     "@types/node": "24.11.0",
     "@types/semver": "7.5.6",
     "vitest": "3.2.6"

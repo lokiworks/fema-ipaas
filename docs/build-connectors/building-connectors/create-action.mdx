@@ -39,8 +39,8 @@ import {
   createAction,
   Property,
   ConnectorAuth,
-} from '@fema/connectors-framework';
-import { httpClient, HttpMethod } from '@fema/connectors-common';
+} from '@fema-ipaas/connectors-framework';
+import { httpClient, HttpMethod } from '@fema-ipaas/connectors-common';
 import { gelatoAuth } from '../..';
 
 export const getIcecreamFlavor = createAction({
@@ -81,7 +81,7 @@ You can describe how an action's output is presented in the builder — includin
 To make the action readable by FEMA Integration Platform, add it to the array of actions in the connector definition.
 
 ```typescript
-import { createConnector } from '@fema/connectors-framework';
+import { createConnector } from '@fema-ipaas/connectors-framework';
 // Don't forget to add the following import.
 import { getIcecreamFlavor } from './lib/actions/get-icecream-flavor';
 
@@ -105,7 +105,7 @@ For more details, check out the [Connector Development](/build-connectors/buildi
 Once you edit the environment variable, restart the backend. The connector will be rebuilt. After this process, you'll need to **refresh** the frontend to see the changes.
 
 <Tip>
-If the build fails, try debugging by running `npx turbo run build --filter=@fema/connector-gelato`.
+If the build fails, try debugging by running `npx turbo run build --filter=@fema-ipaas/connector-gelato`.
 It will display any errors in your code.
 </Tip>
 

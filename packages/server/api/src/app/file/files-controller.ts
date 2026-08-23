@@ -1,6 +1,6 @@
 import { Readable } from 'node:stream'
-import { ApId, ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil } from '@fema/core-utils'
-import { ALL_PRINCIPAL_TYPES, EnginePrincipal, FileCompression, FileTransportQueryParams, FileType, Principal, PrincipalType } from '@fema/shared'
+import { ApId, ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil } from '@fema-ipaas/core-utils'
+import { ALL_PRINCIPAL_TYPES, EnginePrincipal, FileCompression, FileTransportQueryParams, FileType, Principal, PrincipalType } from '@fema-ipaas/shared'
 import contentDisposition from 'content-disposition'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'

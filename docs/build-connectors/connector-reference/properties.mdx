@@ -177,7 +177,7 @@ Property.DateRange({
 The value is `{ preset, after?, before? }`. Resolve it to concrete ISO bounds inside `run()` with `dateRangeUtils.resolve` — relative presets resolve against "now", so recurring workflows roll the window forward:
 
 ```typescript
-import { dateRangeUtils } from '@fema/connectors-framework';
+import { dateRangeUtils } from '@fema-ipaas/connectors-framework';
 
 const { after, before } = dateRangeUtils.resolve(context.propsValue.date_range);
 // after / before are ISO strings (or undefined for an open bound)
@@ -493,7 +493,7 @@ This property is used to construct forms dynamically based on API responses or u
 import {
 	httpClient,
 	HttpMethod,
-} from '@fema/connectors-common';
+} from '@fema-ipaas/connectors-common';
 
 
 Property.DynamicProperties({

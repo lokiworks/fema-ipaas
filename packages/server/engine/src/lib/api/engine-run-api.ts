@@ -1,4 +1,4 @@
-import { EngineGenericError, SendWorkflowResponseRequest, UpdateRunProgressRequest, UpdateStepProgressRequest, UploadRunLogsRequest } from '@fema/shared'
+import { EngineGenericError, SendWorkflowResponseRequest, UpdateRunProgressRequest, UpdateStepProgressRequest, UploadRunLogsRequest } from '@fema-ipaas/shared'
 import { retryFetch } from './retry-fetch'
 
 export const engineRunApi = {

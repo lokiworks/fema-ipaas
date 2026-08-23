@@ -1,4 +1,4 @@
-import { ApErrorParams, ErrorCode, isNil } from '@fema/core-utils';
+import { ApErrorParams, ErrorCode, isNil } from '@fema-ipaas/core-utils';
 import axios, {
   AxiosError,
   AxiosRequestConfig,

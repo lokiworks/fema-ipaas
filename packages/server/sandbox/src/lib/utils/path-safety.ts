@@ -1,4 +1,4 @@
-import { ApplicationError, ErrorCode } from '@fema/core-utils'
+import { ApplicationError, ErrorCode } from '@fema-ipaas/core-utils'
 
 export function assertSafePathSegment(value: string, field: string): void {
     const isUnsafe = value.length === 0

@@ -1,4 +1,4 @@
-import { Template } from '@fema/shared';
+import { Template } from '@fema-ipaas/shared';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { CategorySection } from './category-section';

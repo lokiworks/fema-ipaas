@@ -1,4 +1,4 @@
-import { isObject } from '@fema/core-utils';
+import { isObject } from '@fema-ipaas/core-utils';
 
 const TRUNCATED_INPUT_PLACEHOLDER_REGEX =
   /^\(truncated(, original size \d+(\.\d+)? (KB|MB))?\)$/;

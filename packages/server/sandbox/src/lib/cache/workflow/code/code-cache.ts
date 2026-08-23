@@ -1,6 +1,6 @@
 import { readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import { fileSystemUtils } from '@fema/server-utils'
+import { fileSystemUtils } from '@fema-ipaas/server-utils'
 import { assertSafeCodeNamespace, assertSafePathSegment } from '../../../utils/path-safety'
 
 const COMPILED_CODE_FILENAME = 'index.js'

@@ -2,7 +2,7 @@ import * as crypto from 'crypto'
 import { randomBytes } from 'node:crypto'
 import { promisify } from 'util'
 
-import { assertNotNullOrUndefined, isNil } from '@fema/core-utils'
+import { assertNotNullOrUndefined, isNil } from '@fema-ipaas/core-utils'
 import { Mutex } from 'async-mutex'
 import { z } from 'zod'
 import { RedisType } from '../database/redis/types'

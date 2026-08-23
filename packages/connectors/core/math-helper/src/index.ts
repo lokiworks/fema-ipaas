@@ -1,4 +1,4 @@
-import { createConnector, ConnectorAuth, ConnectorCategory } from '@fema/connector-sdk';
+import { createConnector, ConnectorAuth, ConnectorCategory } from '@fema-ipaas/connector-sdk';
 import { addition } from './lib/actions/addition';
 import { division } from './lib/actions/division';
 import { generateRandom } from './lib/actions/generateRandom';

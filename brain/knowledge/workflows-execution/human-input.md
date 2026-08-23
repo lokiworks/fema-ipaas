@@ -4,7 +4,7 @@ icon: 📝
 
 # Human Input
 
-Human Input exposes public endpoints that let external users interact with workflows via two modes: **Forms** (structured input fields) and **Chat** (conversational UI). Both are backed by workflows whose trigger is the `@fema/connector-forms` connector. The backend endpoints are read-only and public — they return UI metadata (title, input schema, branding); the actual submission goes through the webhook endpoint.
+Human Input exposes public endpoints that let external users interact with workflows via two modes: **Forms** (structured input fields) and **Chat** (conversational UI). Both are backed by workflows whose trigger is the `@fema-ipaas/connector-forms` connector. The backend endpoints are read-only and public — they return UI metadata (title, input schema, branding); the actual submission goes through the webhook endpoint.
 
 ### Entities & services
 - `human-input.service.ts` — resolves workflow, validates trigger type, builds response.

@@ -1,5 +1,5 @@
-import { Property } from '@fema/connector-sdk'
-import { PropertyExecutionType } from '@fema/shared'
+import { Property } from '@fema-ipaas/connector-sdk'
+import { PropertyExecutionType } from '@fema-ipaas/shared'
 import { dynamicPropKeys } from '../../src/lib/helper/dynamic-prop-keys'
 import { propsProcessor } from '../../src/lib/variables/props-processor'
 

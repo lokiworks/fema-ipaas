@@ -1,4 +1,4 @@
-import { isNil } from '@fema/core-utils'
+import { isNil } from '@fema-ipaas/core-utils'
 
 const MAX_NAME_PART_LENGTH = 50
 const FALLBACK_FIRST_NAME = 'there'

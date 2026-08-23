@@ -1,6 +1,6 @@
-import { ListWorkflowsContextParams, WorkflowsContext } from '@fema/connector-sdk'
-import { SeekPage } from '@fema/core-utils'
-import { FetchError, PopulatedWorkflow } from '@fema/shared'
+import { ListWorkflowsContextParams, WorkflowsContext } from '@fema-ipaas/connector-sdk'
+import { SeekPage } from '@fema-ipaas/core-utils'
+import { FetchError, PopulatedWorkflow } from '@fema-ipaas/shared'
 import { retryFetch } from '../api/retry-fetch'
 
 export const createWorkflowsContext = ({ engineToken, internalApiUrl, workflowId, workflowVersionId }: CreateWorkflowsServiceParams): WorkflowsContext => {

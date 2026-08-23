@@ -1,4 +1,4 @@
-import { isNil, debounce } from '@fema/core-utils';
+import { isNil, debounce } from '@fema-ipaas/core-utils';
 import {
   WorkflowOperationRequest,
   WorkflowOperationType,
@@ -9,7 +9,7 @@ import {
   workflowStructureUtil,
   StepSettings,
   WorkflowTriggerType,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { QueryClient } from '@tanstack/react-query';
 import { StoreApi } from 'zustand';
 

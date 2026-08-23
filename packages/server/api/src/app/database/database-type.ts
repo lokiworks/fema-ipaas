@@ -1,1 +1,1 @@
-export { DatabaseType } from '@fema/server-utils'
+export { DatabaseType } from '@fema-ipaas/server-utils'

@@ -1,4 +1,4 @@
-import { ConnectionStatus } from '@fema/shared';
+import { ConnectionStatus } from '@fema-ipaas/shared';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 

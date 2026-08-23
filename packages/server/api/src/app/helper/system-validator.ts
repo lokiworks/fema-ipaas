@@ -1,6 +1,6 @@
 import { inspect } from 'util'
-import { isNil } from '@fema/core-utils'
-import { ApEnvironment, ConnectorSyncMode, DefaultWorkspaceRole, ExecutionMode, FileLocation, NetworkMode } from '@fema/shared'
+import { isNil } from '@fema-ipaas/core-utils'
+import { ApEnvironment, ConnectorSyncMode, DefaultWorkspaceRole, ExecutionMode, FileLocation, NetworkMode } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { DatabaseType } from '../database/database-type'
 import { RedisType } from '../database/redis/types'

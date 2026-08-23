@@ -1,5 +1,5 @@
-import { PropertyType } from '@fema/connector-sdk';
-import { ConnectorOptionRequest } from '@fema/shared';
+import { PropertyType } from '@fema-ipaas/connector-sdk';
+import { ConnectorOptionRequest } from '@fema-ipaas/shared';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('i18next', () => ({ t: (key: string) => key }));

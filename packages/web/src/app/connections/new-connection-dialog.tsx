@@ -1,6 +1,6 @@
-import { ConnectorMetadataModelSummary } from '@fema/connector-sdk';
-import { isNil } from '@fema/core-utils';
-import { ConnectionWithoutSensitiveData } from '@fema/shared';
+import { ConnectorMetadataModelSummary } from '@fema-ipaas/connector-sdk';
+import { isNil } from '@fema-ipaas/core-utils';
+import { ConnectionWithoutSensitiveData } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import React, { useState } from 'react';
 

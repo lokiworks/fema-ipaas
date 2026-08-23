@@ -1,5 +1,5 @@
-import { isNil, tryParseFriendlyConnectorError } from '@fema/core-utils';
-import { WorkflowAction } from '@fema/shared';
+import { isNil, tryParseFriendlyConnectorError } from '@fema-ipaas/core-utils';
+import { WorkflowAction } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { Loader2, Play } from 'lucide-react';
 import React, { useState } from 'react';

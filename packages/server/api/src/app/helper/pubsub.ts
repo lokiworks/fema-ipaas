@@ -1,4 +1,4 @@
-import { isNil, tryCatch } from '@fema/core-utils'
+import { isNil, tryCatch } from '@fema-ipaas/core-utils'
 import { Mutex } from 'async-mutex'
 import Redis from 'ioredis'
 import { redisConnections } from '../database/redis-connections'

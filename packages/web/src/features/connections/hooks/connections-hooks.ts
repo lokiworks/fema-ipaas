@@ -1,8 +1,13 @@
 import {
   getAuthPropertyForValue,
   ConnectorAuthProperty,
-} from '@fema/connector-sdk';
-import { ApErrorParams, ErrorCode, isNil, SeekPage } from '@fema/core-utils';
+} from '@fema-ipaas/connector-sdk';
+import {
+  ApErrorParams,
+  ErrorCode,
+  isNil,
+  SeekPage,
+} from '@fema-ipaas/core-utils';
 import {
   ConnectionScope,
   ConnectionStatus,
@@ -11,7 +16,7 @@ import {
   PLACEHOLDER_CONNECTION_TYPE,
   ReplaceConnectionsRequestBody,
   UpsertConnectionRequestBody,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { useMemo } from 'react';

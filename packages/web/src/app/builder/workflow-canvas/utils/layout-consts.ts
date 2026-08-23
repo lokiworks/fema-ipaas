@@ -6,7 +6,7 @@ import {
   WORKFLOW_CANVAS_STEP_HEIGHT,
   WORKFLOW_CANVAS_STEP_WIDTH,
   WORKFLOW_CANVAS_VSPACE,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 
 import { ApNodeType, CanvasOrientation } from './types';
 

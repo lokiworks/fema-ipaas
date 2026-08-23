@@ -1,7 +1,7 @@
 /// <reference types="vitest/globals" />
 
 import { htmlToMarkdown } from '../src/lib/actions/html-to-markdown';
-import { createMockActionContext } from '@fema/connector-sdk';
+import { createMockActionContext } from '@fema-ipaas/connector-sdk';
 
 describe('htmlToMarkdown action', () => {
   test('converts basic HTML to markdown', async () => {

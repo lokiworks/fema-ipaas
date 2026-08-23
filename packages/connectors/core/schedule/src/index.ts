@@ -1,5 +1,5 @@
-import { ConnectorAuth, createConnector } from '@fema/connector-sdk';
-import { ConnectorCategory } from '@fema/connector-sdk';
+import { ConnectorAuth, createConnector } from '@fema-ipaas/connector-sdk';
+import { ConnectorCategory } from '@fema-ipaas/connector-sdk';
 import { cronExpressionTrigger } from './lib/triggers/cron-expression.trigger';
 import { everyDayTrigger } from './lib/triggers/every-day.trigger';
 import { everyHourTrigger } from './lib/triggers/every-hour.trigger';

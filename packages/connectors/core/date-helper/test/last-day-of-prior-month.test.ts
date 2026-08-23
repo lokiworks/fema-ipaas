@@ -1,7 +1,7 @@
 /// <reference types="vitest/globals" />
 
 import { lastDayOfPreviousMonthAction } from '../src/lib/actions/last-day-of-prior-month';
-import { createMockActionContext } from '@fema/connector-sdk';
+import { createMockActionContext } from '@fema-ipaas/connector-sdk';
 
 describe('lastDayOfPreviousMonth', () => {
   beforeEach(() => {

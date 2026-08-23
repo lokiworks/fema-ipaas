@@ -1,12 +1,12 @@
-import { ConnectorMetadataModel } from '@fema/connector-sdk';
-import { LocalesEnum, isNil } from '@fema/core-utils';
+import { ConnectorMetadataModel } from '@fema-ipaas/connector-sdk';
+import { LocalesEnum, isNil } from '@fema-ipaas/core-utils';
 import {
   WorkflowAction,
   WorkflowActionType,
   WorkflowTrigger,
   WorkflowTriggerType,
   workflowStructureUtil,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { useQueries } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { Database, SearchXIcon, Variable } from 'lucide-react';

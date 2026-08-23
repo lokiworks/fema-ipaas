@@ -1,4 +1,4 @@
-import { BaseModelSchema, Nullable, NullableEnum, WorkspaceRole } from '@fema/core-utils'
+import { BaseModelSchema, Nullable, NullableEnum, WorkspaceRole } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 import { TenantRole } from '../../core/user/index'
 

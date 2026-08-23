@@ -1,4 +1,4 @@
-import { WorkflowId, WorkspaceId } from '@fema/core-utils'
+import { WorkflowId, WorkspaceId } from '@fema-ipaas/core-utils'
 import { EntitySchema } from 'typeorm'
 import { ApIdSchema, BaseColumnSchemaPart } from '../../database/database-common'
 

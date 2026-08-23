@@ -4,8 +4,8 @@ import {
   ConnectorMetadataModel,
   ConnectorMetadataModelSummary,
   PropertyType,
-} from '@fema/connector-sdk';
-import { isNil } from '@fema/core-utils';
+} from '@fema-ipaas/connector-sdk';
+import { isNil } from '@fema-ipaas/core-utils';
 import {
   ApFlagId,
   ConnectionScope,
@@ -13,7 +13,7 @@ import {
   ConnectionWithoutSensitiveData,
   BOTH_CLIENT_CREDENTIALS_AND_AUTHORIZATION_CODE,
   UpsertConnectionRequestBody,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { t } from 'i18next';
 import { useState } from 'react';

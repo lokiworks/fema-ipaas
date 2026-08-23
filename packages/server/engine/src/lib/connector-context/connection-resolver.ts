@@ -1,5 +1,5 @@
-import { ContextVersion } from '@fema/connector-sdk'
-import { Connection, ConnectionConnectorMismatchError, ConnectionExpiredError, ConnectionLoadingError, ConnectionNotFoundError, ConnectionStatus, ConnectionType, ConnectionValue, ExecutionError, FetchError } from '@fema/shared'
+import { ContextVersion } from '@fema-ipaas/connector-sdk'
+import { Connection, ConnectionConnectorMismatchError, ConnectionExpiredError, ConnectionLoadingError, ConnectionNotFoundError, ConnectionStatus, ConnectionType, ConnectionValue, ExecutionError, FetchError } from '@fema-ipaas/shared'
 import { retryFetch } from '../api/retry-fetch'
 import { utils } from '../utils'
 

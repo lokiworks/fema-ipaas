@@ -1,5 +1,5 @@
-import { apId } from '@fema/core-utils'
-import { FileCompression, FileType, PrincipalType } from '@fema/shared'
+import { apId } from '@fema-ipaas/core-utils'
+import { FileCompression, FileType, PrincipalType } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { vi } from 'vitest'

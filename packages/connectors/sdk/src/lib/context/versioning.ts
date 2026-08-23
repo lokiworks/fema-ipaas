@@ -1,4 +1,4 @@
-import { PauseType } from '@fema/connector-types';
+import { PauseType } from '@fema-ipaas/connector-types';
 import { ActionContext, PauseHook } from ".";
 import { InputPropertyMap, ConnectorAuthProperty } from "../property";
 

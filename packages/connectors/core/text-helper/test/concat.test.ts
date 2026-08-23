@@ -1,7 +1,7 @@
 /// <reference types="vitest/globals" />
 
 import { concat } from '../src/lib/actions/concat';
-import { createMockActionContext } from '@fema/connector-sdk';
+import { createMockActionContext } from '@fema-ipaas/connector-sdk';
 
 describe('concat action', () => {
   test('concatenates texts without separator', async () => {

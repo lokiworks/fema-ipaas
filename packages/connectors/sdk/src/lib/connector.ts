@@ -4,7 +4,7 @@ import {
   EventPayload,
   ParseEventResponse,
   ConnectorCategory,
-} from '@fema/connector-types';
+} from '@fema-ipaas/connector-types';
 import { ConnectorBase, ConnectorMetadata} from './connector-metadata';
 import { ConnectorAuthProperty } from './property/authentication';
 import { ServerContext } from './context';

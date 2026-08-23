@@ -1,4 +1,4 @@
-import { WorkerMachineWithStatus } from '@fema/shared';
+import { WorkerMachineWithStatus } from '@fema-ipaas/shared';
 import { useQuery } from '@tanstack/react-query';
 
 import { workersApi, WorkerPoolCapacity } from '../api/workers-api';

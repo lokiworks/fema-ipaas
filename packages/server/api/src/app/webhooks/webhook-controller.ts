@@ -1,10 +1,10 @@
 
-import { wideEvent } from '@fema/server-utils'
+import { wideEvent } from '@fema-ipaas/server-utils'
 import {
     RAW_PAYLOAD_HEADER,
     WebhookUrlParams,
     WebsocketClientEvent,
-} from '@fema/shared'
+} from '@fema-ipaas/shared'
 import { FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { securityAccess } from '../core/security/authorization/fastify-security'

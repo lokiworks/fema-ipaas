@@ -1,5 +1,5 @@
-import { ApId, isNil } from '@fema/core-utils'
-import { ALL_PRINCIPAL_TYPES, ExecutionStatus } from '@fema/shared'
+import { ApId, isNil } from '@fema-ipaas/core-utils'
+import { ALL_PRINCIPAL_TYPES, ExecutionStatus } from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyReply } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import Mustache from 'mustache'

@@ -1,4 +1,4 @@
-import { evlogSetup } from '@fema/server-utils'
+import { evlogSetup } from '@fema-ipaas/server-utils'
 import dayjs from 'dayjs'
 import { FastifyInstance } from 'fastify'
 import { appPostBoot } from './app/app'

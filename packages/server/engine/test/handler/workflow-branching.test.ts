@@ -1,4 +1,4 @@
-import { BranchCondition, BranchOperator, ExecutionStatus, RouterExecutionType } from '@fema/shared'
+import { BranchCondition, BranchOperator, ExecutionStatus, RouterExecutionType } from '@fema-ipaas/shared'
 import { WorkflowExecutorContext } from '../../src/lib/handler/context/workflow-execution-context'
 import { workflowExecutor } from '../../src/lib/handler/workflow-executor'
 import { buildCodeAction, buildRouterWithOneCondition, generateMockEngineConstants } from './test-helper'

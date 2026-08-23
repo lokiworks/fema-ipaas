@@ -1,4 +1,4 @@
-import { createAction, Property } from '@fema/connector-sdk';
+import { createAction, Property } from '@fema-ipaas/connector-sdk';
 import { createCsvParser, CsvRow } from '../csv';
 import { dispatchToSubflow, findEnabledSubflowOrThrow, subflowDropdown } from '../common';
 import { fanOutBatches } from '../fan-out';

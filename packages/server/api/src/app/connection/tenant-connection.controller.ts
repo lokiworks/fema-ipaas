@@ -1,5 +1,5 @@
-import { SeekPage } from '@fema/core-utils'
-import { ListTenantConnectionsRequestQuery, PrincipalType, SERVICE_KEY_SECURITY_OPENAPI, TenantConnectionOwnersResponse, TenantConnectionsListItem } from '@fema/shared'
+import { SeekPage } from '@fema-ipaas/core-utils'
+import { ListTenantConnectionsRequestQuery, PrincipalType, SERVICE_KEY_SECURITY_OPENAPI, TenantConnectionOwnersResponse, TenantConnectionsListItem } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { securityAccess } from '../core/security/authorization/fastify-security'

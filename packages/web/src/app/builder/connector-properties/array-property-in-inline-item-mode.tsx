@@ -1,5 +1,5 @@
-import { ArraySubProps } from '@fema/connector-sdk';
-import { isNil } from '@fema/core-utils';
+import { ArraySubProps } from '@fema-ipaas/connector-sdk';
+import { isNil } from '@fema-ipaas/core-utils';
 import React, { useEffect, useRef } from 'react';
 import { useFormContext } from 'react-hook-form';
 

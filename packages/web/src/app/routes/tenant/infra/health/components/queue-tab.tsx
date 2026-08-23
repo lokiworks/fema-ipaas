@@ -1,4 +1,4 @@
-import { TenantMetricsLive } from '@fema/shared';
+import { TenantMetricsLive } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { Activity, Loader2 } from 'lucide-react';
 

@@ -1,4 +1,4 @@
-import { PrincipalType } from '@fema/shared'
+import { PrincipalType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'

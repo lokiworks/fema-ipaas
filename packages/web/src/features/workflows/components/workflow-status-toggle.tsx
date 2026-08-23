@@ -1,5 +1,5 @@
-import { Permission, isNil } from '@fema/core-utils';
-import { WorkflowStatus, PopulatedWorkflow } from '@fema/shared';
+import { Permission, isNil } from '@fema-ipaas/core-utils';
+import { WorkflowStatus, PopulatedWorkflow } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { useEffect, useState } from 'react';
 

@@ -1,4 +1,4 @@
-import { ErrorCode } from '@fema/core-utils';
+import { ErrorCode } from '@fema-ipaas/core-utils';
 
 import { HttpError } from '@/lib/api';
 

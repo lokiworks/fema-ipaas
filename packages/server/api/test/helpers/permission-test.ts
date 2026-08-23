@@ -1,4 +1,4 @@
-import { DefaultWorkspaceRole } from '@fema/shared'
+import { DefaultWorkspaceRole } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { createMemberContext, createTestContext, TestContext } from './test-context'

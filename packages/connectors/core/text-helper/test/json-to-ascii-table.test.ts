@@ -1,7 +1,7 @@
 /// <reference types="vitest/globals" />
 
 import { jsonToAsciiTable } from '../src/lib/actions/json-to-ascii-table';
-import { createMockActionContext } from '@fema/connector-sdk';
+import { createMockActionContext } from '@fema-ipaas/connector-sdk';
 
 describe('jsonToAsciiTable action', () => {
   test('converts array of objects to table', async () => {

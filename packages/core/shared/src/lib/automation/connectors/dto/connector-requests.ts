@@ -1,4 +1,4 @@
-import { ApMultipartFile, OptionalArrayFromQuery, OptionalBooleanFromQuery } from '@fema/core-utils'
+import { ApMultipartFile, OptionalArrayFromQuery, OptionalBooleanFromQuery } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 import { ConnectorCategory, PackageType } from '../connector'
 

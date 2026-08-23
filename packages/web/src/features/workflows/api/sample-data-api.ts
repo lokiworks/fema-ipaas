@@ -1,4 +1,4 @@
-import { GetSampleDataRequest } from '@fema/shared';
+import { GetSampleDataRequest } from '@fema-ipaas/shared';
 
 import { api } from '@/lib/api';
 

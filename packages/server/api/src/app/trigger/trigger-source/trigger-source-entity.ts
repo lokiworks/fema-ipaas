@@ -1,4 +1,4 @@
-import { TriggerSource, Workflow, Workspace } from '@fema/shared'
+import { TriggerSource, Workflow, Workspace } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import { BaseColumnSchemaPart } from '../../database/database-common'
 

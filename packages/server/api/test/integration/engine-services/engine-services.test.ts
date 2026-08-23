@@ -1,7 +1,7 @@
 import { AddressInfo } from 'net'
-import { apId } from '@fema/core-utils'
-import { ContextVersion, StoreScope } from '@fema/connector-sdk'
-import { ConnectionStatus, ConnectionType, ConnectionExpiredError, ConnectionNotFoundError, ConnectionConnectorMismatchError, FetchError, WorkflowStatus, WorkflowVersionState, PrincipalType } from '@fema/shared'
+import { apId } from '@fema-ipaas/core-utils'
+import { ContextVersion, StoreScope } from '@fema-ipaas/connector-sdk'
+import { ConnectionStatus, ConnectionType, ConnectionExpiredError, ConnectionNotFoundError, ConnectionConnectorMismatchError, FetchError, WorkflowStatus, WorkflowVersionState, PrincipalType } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { createConnectionResolver } from '../../../../../engine/src/lib/connector-context/connection-resolver'
 import { createFileUploader } from '../../../../../engine/src/lib/connector-context/file-uploader'
@@ -258,7 +258,7 @@ describe('Engine Services Integration', () => {
         })
 
         describe('FEMA_ENFORCE_CONNECTION_CONNECTOR_BINDING', () => {
-            const connectorName = '@fema/connector-slack'
+            const connectorName = '@fema-ipaas/connector-slack'
 
             afterEach(() => {
                 delete process.env.FEMA_ENFORCE_CONNECTION_CONNECTOR_BINDING
@@ -284,7 +284,7 @@ describe('Engine Services Integration', () => {
 
             it('should reject a connection belonging to another connector when enabled', async () => {
                 process.env.FEMA_ENFORCE_CONNECTION_CONNECTOR_BINDING = 'true'
-                const externalId = await saveConnection('@fema/connector-google-sheets')
+                const externalId = await saveConnection('@fema-ipaas/connector-google-sheets')
 
                 const connectionService = createConnectionResolver({
                     workspaceId,
@@ -316,7 +316,7 @@ describe('Engine Services Integration', () => {
             })
 
             it('should allow a connection belonging to another connector when disabled', async () => {
-                const externalId = await saveConnection('@fema/connector-google-sheets')
+                const externalId = await saveConnection('@fema-ipaas/connector-google-sheets')
 
                 const connectionService = createConnectionResolver({
                     workspaceId,

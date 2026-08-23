@@ -1,4 +1,4 @@
-import { tryCatch } from '@fema/core-utils';
+import { tryCatch } from '@fema-ipaas/core-utils';
 import { Node } from '@xyflow/react';
 import { getFontEmbedCSS } from 'html-to-image';
 

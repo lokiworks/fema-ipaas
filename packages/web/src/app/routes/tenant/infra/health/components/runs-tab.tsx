@@ -1,4 +1,4 @@
-import { TenantMetricsReport } from '@fema/shared';
+import { TenantMetricsReport } from '@fema-ipaas/shared';
 import dayjs from 'dayjs';
 import { t } from 'i18next';
 import { CheckCircle2, ListChecks } from 'lucide-react';

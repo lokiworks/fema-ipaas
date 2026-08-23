@@ -1,4 +1,4 @@
-import { JobData, WorkerJobType } from '@fema/shared'
+import { JobData, WorkerJobType } from '@fema-ipaas/shared'
 import { executeActionJob } from './jobs/execute-action'
 import { executePollingJob } from './jobs/execute-polling'
 import { executePropertyJob } from './jobs/execute-property'

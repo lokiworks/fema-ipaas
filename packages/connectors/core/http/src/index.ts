@@ -1,4 +1,4 @@
-import { ConnectorAuth, createConnector, ConnectorCategory } from '@fema/connector-sdk';
+import { ConnectorAuth, createConnector, ConnectorCategory } from '@fema-ipaas/connector-sdk';
 import { httpSendRequestAction } from './lib/actions/send-http-request-action';
 import { parseUrl } from './lib/actions/parse-url';
 

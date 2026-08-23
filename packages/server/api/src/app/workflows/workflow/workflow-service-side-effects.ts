@@ -1,5 +1,5 @@
-import { isNil, TenantId, WorkspaceId } from '@fema/core-utils'
-import { ApplicationEventName, FileType, PopulatedWorkflow, Workflow, WorkflowOperationRequest, WorkflowOperationType, WorkflowStatus, WorkflowVersion } from '@fema/shared'
+import { isNil, TenantId, WorkspaceId } from '@fema-ipaas/core-utils'
+import { ApplicationEventName, FileType, PopulatedWorkflow, Workflow, WorkflowOperationRequest, WorkflowOperationType, WorkflowStatus, WorkflowVersion } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { applicationEvents, MetaInformation } from '../../helper/application-events'
 import { triggerSourceService } from '../../trigger/trigger-source/trigger-source-service'

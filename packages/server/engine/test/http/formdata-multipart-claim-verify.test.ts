@@ -1,5 +1,5 @@
 import http from 'node:http'
-import { FetchHttpClient, HttpMethod } from '@fema/connector-common'
+import { FetchHttpClient, HttpMethod } from '@fema-ipaas/connector-common'
 import FormData from 'form-data'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 

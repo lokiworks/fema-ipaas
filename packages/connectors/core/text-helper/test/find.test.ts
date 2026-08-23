@@ -1,7 +1,7 @@
 /// <reference types="vitest/globals" />
 
 import { find } from '../src/lib/actions/find';
-import { createMockActionContext } from '@fema/connector-sdk';
+import { createMockActionContext } from '@fema-ipaas/connector-sdk';
 
 describe('find action', () => {
   test('finds plain text match', async () => {

@@ -1,6 +1,6 @@
 
-import { tryParseFriendlyConnectorError } from '@fema/core-utils'
-import { BranchOperator, ExecutionStatus, RouterExecutionType } from '@fema/shared'
+import { tryParseFriendlyConnectorError } from '@fema-ipaas/core-utils'
+import { BranchOperator, ExecutionStatus, RouterExecutionType } from '@fema-ipaas/shared'
 import { codeExecutor } from '../../src/lib/handler/code-executor'
 import { WorkflowExecutorContext } from '../../src/lib/handler/context/workflow-execution-context'
 import { loopExecutor } from '../../src/lib/handler/loop-executor'
@@ -40,7 +40,7 @@ describe('connector with error handling', () => {
         const result = await connectorExecutor.handle({
             action: buildConnectorAction({
                 name: 'send_http',
-                connectorName: '@fema/connector-http',
+                connectorName: '@fema-ipaas/connector-http',
                 actionName: 'send_request',
                 input: {
                     'method': 'POST',

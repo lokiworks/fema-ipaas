@@ -1,5 +1,5 @@
-import { ConnectorMetadataModel } from '@fema/connector-sdk'
-import { ApId, BaseModel } from '@fema/core-utils'
+import { ConnectorMetadataModel } from '@fema-ipaas/connector-sdk'
+import { ApId, BaseModel } from '@fema-ipaas/core-utils'
 import { EntitySchema } from 'typeorm'
 import {
     ApIdSchema,

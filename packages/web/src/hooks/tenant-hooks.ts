@@ -1,4 +1,4 @@
-import { TenantWithoutSensitiveData } from '@fema/shared';
+import { TenantWithoutSensitiveData } from '@fema-ipaas/shared';
 import {
   QueryClient,
   useMutation,

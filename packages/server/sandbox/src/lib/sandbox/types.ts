@@ -1,5 +1,5 @@
 import { ChildProcess } from 'child_process'
-import { EngineOperation, EngineOperationType, EngineResponse } from '@fema/shared'
+import { EngineOperation, EngineOperationType, EngineResponse } from '@fema-ipaas/shared'
 
 export type SandboxMount = {
     hostPath: string

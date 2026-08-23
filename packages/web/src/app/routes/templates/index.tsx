@@ -3,7 +3,7 @@ import {
   TemplateTelemetryEventType,
   TemplateType,
   UncategorizedFolderId,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { Plus } from 'lucide-react';
 import { useCallback, useMemo } from 'react';

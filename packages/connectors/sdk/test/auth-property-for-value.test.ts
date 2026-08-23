@@ -1,4 +1,4 @@
-import { ConnectionType } from '@fema/connector-types';
+import { ConnectionType } from '@fema-ipaas/connector-types';
 import { describe, expect, it } from 'vitest';
 import { PropertyType } from '../src/lib/property/input/property-type';
 import { getAuthPropertyForValue, ConnectorAuth } from '../src/lib/property';

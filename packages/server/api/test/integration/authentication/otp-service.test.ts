@@ -1,4 +1,4 @@
-import { OtpType } from '@fema/shared'
+import { OtpType } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { otpService } from '../../../../src/app/authentication/otp/otp-service'
 import { databaseConnection } from '../../../../src/app/database/database-connection'

@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { assertNotNullOrUndefined, isNil } from '@fema/core-utils'
+import { assertNotNullOrUndefined, isNil } from '@fema-ipaas/core-utils'
 import Redis, { RedisOptions } from 'ioredis'
 import { baseRedisOptions } from './redis-options'
 import { RedisConnectionSettings } from './types'

@@ -1,4 +1,4 @@
-import { Template } from '@fema/shared';
+import { Template } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { LayoutGrid } from 'lucide-react';
 

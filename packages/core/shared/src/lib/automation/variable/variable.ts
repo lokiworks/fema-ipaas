@@ -1,4 +1,4 @@
-import { BaseModel, BaseModelSchema, Metadata, Nullable } from '@fema/core-utils'
+import { BaseModel, BaseModelSchema, Metadata, Nullable } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 import { UserWithMetaInformation } from '../../core/user'
 

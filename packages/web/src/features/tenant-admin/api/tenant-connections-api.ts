@@ -1,9 +1,9 @@
-import { SeekPage } from '@fema/core-utils';
+import { SeekPage } from '@fema-ipaas/core-utils';
 import {
   ListTenantConnectionsRequestQuery,
   TenantConnectionOwnersResponse,
   TenantConnectionsListItem,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 
 import { api } from '@/lib/api';
 

@@ -1,7 +1,7 @@
 /// <reference types="vitest/globals" />
 
 import { addSubtractDateAction } from '../src/lib/actions/add-subtract-date';
-import { createMockActionContext } from '@fema/connector-sdk';
+import { createMockActionContext } from '@fema-ipaas/connector-sdk';
 
 describe('addSubtractDateAction', () => {
   test('adds hours', async () => {

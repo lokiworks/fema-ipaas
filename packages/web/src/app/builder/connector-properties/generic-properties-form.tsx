@@ -4,9 +4,9 @@ import {
   ArraySubProps,
   PropertyGroup,
   ConnectorProperty,
-} from '@fema/connector-sdk';
-import { isNil } from '@fema/core-utils';
-import { PropertyExecutionType, PropertySettings } from '@fema/shared';
+} from '@fema-ipaas/connector-sdk';
+import { isNil } from '@fema-ipaas/core-utils';
+import { PropertyExecutionType, PropertySettings } from '@fema-ipaas/shared';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 

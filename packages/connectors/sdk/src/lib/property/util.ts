@@ -2,8 +2,8 @@ import { ConnectorPropertyMap } from ".";
 import { ConnectorAuthProperty } from "./authentication";
 import { PropertyType } from "./input/property-type";
 import * as z from "zod/mini";
-import { isEmpty, isNil } from "@fema/core-utils";
-import { AUTHENTICATION_PROPERTY_NAME } from "@fema/connector-types";
+import { isEmpty, isNil } from "@fema-ipaas/core-utils";
+import { AUTHENTICATION_PROPERTY_NAME } from "@fema-ipaas/connector-types";
 
 function buildSchema(props: ConnectorPropertyMap, auth: ConnectorAuthProperty | ConnectorAuthProperty[] | undefined, requireAuth: boolean | undefined = true) {
     const entries = Object.entries(props);

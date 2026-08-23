@@ -2,7 +2,7 @@ import {
   workflowStructureUtil,
   WorkflowVersion,
   SampleDataFileType,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { useQuery, QueryClient } from '@tanstack/react-query';
 
 import { sampleDataApi } from '../api/sample-data-api';

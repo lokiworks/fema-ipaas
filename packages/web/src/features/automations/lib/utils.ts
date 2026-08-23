@@ -1,4 +1,4 @@
-import { FolderDto, PopulatedWorkflow } from '@fema/shared';
+import { FolderDto, PopulatedWorkflow } from '@fema-ipaas/shared';
 
 import { AutomationsFilters, FolderContent, TreeItem } from './types';
 

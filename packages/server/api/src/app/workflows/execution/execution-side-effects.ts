@@ -2,7 +2,7 @@ import { ApplicationEventName,
     Execution,
     isExecutionStateTerminal,
     TenantId,
-} from '@fema/shared'
+} from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { applicationEvents } from '../../helper/application-events'
 import { executionHooks } from './execution-hooks'

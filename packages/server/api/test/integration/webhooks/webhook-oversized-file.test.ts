@@ -1,7 +1,7 @@
 // Must be set before the server reads it to size @fastify/multipart's fileSize limit.
 process.env.FEMA_MAX_FILE_SIZE_MB = '1'
 
-import { FileType, Workflow, WorkflowStatus, Workspace } from '@fema/shared'
+import { FileType, Workflow, WorkflowStatus, Workspace } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import FormData from 'form-data'
 import { StatusCodes } from 'http-status-codes'

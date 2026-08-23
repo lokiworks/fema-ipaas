@@ -1,4 +1,4 @@
-import { MachineInformation, WorkerGroupScope, WorkerMachineStatus, WorkerMachineType } from '@fema/shared'
+import { MachineInformation, WorkerGroupScope, WorkerMachineStatus, WorkerMachineType } from '@fema-ipaas/shared'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { WorkerMachine, workerMachineCache } from '../../../../../src/app/workers/machine/machine-cache'
 import { machineService } from '../../../../../src/app/workers/machine/machine-service'

@@ -1,4 +1,4 @@
-import { SeekPage } from '@fema/core-utils';
+import { SeekPage } from '@fema-ipaas/core-utils';
 import {
   CountExecutionsByStatusRequest,
   CountExecutionsByStatusResponse,
@@ -14,7 +14,7 @@ import {
   BulkArchiveActionOnRunsRequestBody,
   BulkCancelWorkflowRequestBody,
   UpdateRunProgressRequest,
-} from '@fema/shared';
+} from '@fema-ipaas/shared';
 import { Socket } from 'socket.io-client';
 
 import { api } from '@/lib/api';

@@ -4,7 +4,7 @@ import {
     RunEnvironment,
     StreamStepProgress,
     WorkerGroupScope,
-} from '@fema/shared'
+} from '@fema-ipaas/shared'
 import { z } from 'zod'
 
 export const parseWorkerGroupValue = ({ value, workspaceWorker }: { value: string | undefined, workspaceWorker: boolean }): WorkerGroupAssignment | null => {

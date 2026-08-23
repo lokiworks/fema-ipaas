@@ -1,9 +1,9 @@
 import { z } from 'zod'
 import * as zMini from 'zod/mini'
-import { BaseModelSchema, Nullable } from '@fema/core-utils'
-import { ApId } from '@fema/core-utils'
-import { Metadata } from '@fema/core-utils'
-import { TriggerSource, WebhookHandshakeConfiguration } from '@fema/connector-types'
+import { BaseModelSchema, Nullable } from '@fema-ipaas/core-utils'
+import { ApId } from '@fema-ipaas/core-utils'
+import { Metadata } from '@fema-ipaas/core-utils'
+import { TriggerSource, WebhookHandshakeConfiguration } from '@fema-ipaas/connector-types'
 import { WorkflowVersion } from './workflow-version'
 
 type WorkflowId = ApId

@@ -72,8 +72,8 @@ function migrateConnector(connectorDir: string): void {
 
     // Ensure workspace dependencies are present
     const requiredDeps: Record<string, string> = {
-      '@fema/connector-sdk': 'workspace:*',
-      '@fema/shared': 'workspace:*',
+      '@fema-ipaas/connector-sdk': 'workspace:*',
+      '@fema-ipaas/shared': 'workspace:*',
       'tslib': '2.6.2',
     };
 

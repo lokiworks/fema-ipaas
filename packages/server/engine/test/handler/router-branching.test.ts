@@ -1,4 +1,4 @@
-import { BranchCondition, BranchOperator, WorkflowAction, ExecutionStatus, RouterExecutionType } from '@fema/shared'
+import { BranchCondition, BranchOperator, WorkflowAction, ExecutionStatus, RouterExecutionType } from '@fema-ipaas/shared'
 import { WorkflowExecutorContext } from '../../src/lib/handler/context/workflow-execution-context'
 import { workflowExecutor } from '../../src/lib/handler/workflow-executor'
 import { buildCodeAction, buildConnectorAction, buildRouterWithOneCondition, generateMockEngineConstants } from './test-helper'
@@ -19,7 +19,7 @@ describe('router with branching different conditions', () => {
         const result = await executeRouterActionWithOneCondition([
             buildConnectorAction({
                 name: 'data_mapper',
-                connectorName: '@fema/connector-data-mapper',
+                connectorName: '@fema-ipaas/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -29,7 +29,7 @@ describe('router with branching different conditions', () => {
             }),
             buildConnectorAction({
                 name: 'data_mapper_1',
-                connectorName: '@fema/connector-data-mapper',
+                connectorName: '@fema-ipaas/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -63,7 +63,7 @@ describe('router with branching different conditions', () => {
         const result = await executeRouterActionWithOneCondition([
             buildConnectorAction({
                 name: 'data_mapper',
-                connectorName: '@fema/connector-data-mapper',
+                connectorName: '@fema-ipaas/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -73,7 +73,7 @@ describe('router with branching different conditions', () => {
             }),
             buildConnectorAction({
                 name: 'data_mapper_1',
-                connectorName: '@fema/connector-data-mapper',
+                connectorName: '@fema-ipaas/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -107,7 +107,7 @@ describe('router with branching different conditions', () => {
         const result = await executeRouterActionWithOneCondition([
             buildConnectorAction({
                 name: 'data_mapper',
-                connectorName: '@fema/connector-data-mapper',
+                connectorName: '@fema-ipaas/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -117,7 +117,7 @@ describe('router with branching different conditions', () => {
             }),
             buildConnectorAction({
                 name: 'data_mapper_1',
-                connectorName: '@fema/connector-data-mapper',
+                connectorName: '@fema-ipaas/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -164,7 +164,7 @@ describe('router with branching different conditions', () => {
         const result = await executeRouterActionWithOneCondition([
             buildConnectorAction({
                 name: 'data_mapper',
-                connectorName: '@fema/connector-data-mapper',
+                connectorName: '@fema-ipaas/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -174,7 +174,7 @@ describe('router with branching different conditions', () => {
             }),
             buildConnectorAction({
                 name: 'data_mapper_1',
-                connectorName: '@fema/connector-data-mapper',
+                connectorName: '@fema-ipaas/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -184,7 +184,7 @@ describe('router with branching different conditions', () => {
             }),
             buildConnectorAction({
                 name: 'fallback_mapper',
-                connectorName: '@fema/connector-data-mapper',
+                connectorName: '@fema-ipaas/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -220,7 +220,7 @@ describe('router with branching different conditions', () => {
         const result = await executeRouterActionWithOneCondition([
             buildConnectorAction({
                 name: 'data_mapper',
-                connectorName: '@fema/connector-data-mapper',
+                connectorName: '@fema-ipaas/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -230,7 +230,7 @@ describe('router with branching different conditions', () => {
             }),
             buildConnectorAction({
                 name: 'data_mapper_1',
-                connectorName: '@fema/connector-data-mapper',
+                connectorName: '@fema-ipaas/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -240,7 +240,7 @@ describe('router with branching different conditions', () => {
             }),
             buildConnectorAction({
                 name: 'fallback_mapper',
-                connectorName: '@fema/connector-data-mapper',
+                connectorName: '@fema-ipaas/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -276,7 +276,7 @@ describe('router with branching different conditions', () => {
         const result = await executeRouterActionWithOneCondition([
             buildConnectorAction({
                 name: 'data_mapper',
-                connectorName: '@fema/connector-data-mapper',
+                connectorName: '@fema-ipaas/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -286,7 +286,7 @@ describe('router with branching different conditions', () => {
             }),
             buildConnectorAction({
                 name: 'fallback_mapper',
-                connectorName: '@fema/connector-data-mapper',
+                connectorName: '@fema-ipaas/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -315,7 +315,7 @@ describe('router with branching different conditions', () => {
         const result = await executeRouterActionWithOneCondition([
             buildConnectorAction({
                 name: 'data_mapper',
-                connectorName: '@fema/connector-data-mapper',
+                connectorName: '@fema-ipaas/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -325,7 +325,7 @@ describe('router with branching different conditions', () => {
             }),
             buildConnectorAction({
                 name: 'data_mapper_1',
-                connectorName: '@fema/connector-data-mapper',
+                connectorName: '@fema-ipaas/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -335,7 +335,7 @@ describe('router with branching different conditions', () => {
             }),
             buildConnectorAction({
                 name: 'fallback_mapper',
-                connectorName: '@fema/connector-data-mapper',
+                connectorName: '@fema-ipaas/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -372,7 +372,7 @@ describe('router with branching different conditions', () => {
                 buildConnectorAction({
                     name: 'data_mapper',
                     skip: true,
-                    connectorName: '@fema/connector-data-mapper',
+                    connectorName: '@fema-ipaas/connector-data-mapper',
                     actionName: 'advanced_mapping',
                     input: {},
                 }),
@@ -396,7 +396,7 @@ describe('router with branching different conditions', () => {
                 buildConnectorAction({
                     name: 'data_mapper',
                     skip: true,
-                    connectorName: '@fema/connector-data-mapper',
+                    connectorName: '@fema-ipaas/connector-data-mapper',
                     actionName: 'advanced_mapping',
                     input: {},
                 }),

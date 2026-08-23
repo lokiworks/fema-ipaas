@@ -1,5 +1,5 @@
-import { Property, createAction } from '@fema/connector-sdk';
-import { FileResponseInterface, HumanInputFormResult, HumanInputFormResultTypes } from '@fema/connector-sdk';
+import { Property, createAction } from '@fema-ipaas/connector-sdk';
+import { FileResponseInterface, HumanInputFormResult, HumanInputFormResultTypes } from '@fema-ipaas/connector-sdk';
 import { StatusCodes } from 'http-status-codes';
 import mime from 'mime-types';
 import { returnResponseActionOutputSchema } from '../output-schemas';

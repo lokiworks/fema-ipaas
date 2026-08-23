@@ -1,4 +1,4 @@
-import { isNil } from '@fema/core-utils'
+import { isNil } from '@fema-ipaas/core-utils'
 import { SystemJobHandler, SystemJobName } from './common'
 
 const jobHandlers = new Map<SystemJobName, SystemJobHandler>()

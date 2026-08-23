@@ -1,4 +1,4 @@
-import { WebhookRenewStrategy } from '@fema/connector-sdk'
+import { WebhookRenewStrategy } from '@fema-ipaas/connector-sdk'
 import {
     ApplicationEventName,
     Workflow,
@@ -15,7 +15,7 @@ import {
     TriggerStrategy,
     TriggerTestStrategy,
     WebhookHandshakeStrategy,
-} from '@fema/shared'
+} from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { workflowService } from '../../../../../src/app/workflows/workflow/workflow.service'
@@ -311,7 +311,7 @@ async function seedPublishableWorkflow({
     publishCurrentVersion,
 }: SeedPublishableWorkflowParams): Promise<{ workflow: Workflow, workflowVersion: WorkflowVersion }> {
     const connectorMetadata = createMockConnectorMetadata({
-        name: '@fema/connector-schedule',
+        name: '@fema-ipaas/connector-schedule',
         version: '0.1.5',
         triggers: {
             every_hour: {
@@ -373,7 +373,7 @@ function scheduleTrigger(): WorkflowTrigger {
     return {
         type: WorkflowTriggerType.CONNECTOR,
         settings: {
-            connectorName: '@fema/connector-schedule',
+            connectorName: '@fema-ipaas/connector-schedule',
             connectorVersion: '0.1.5',
             input: { run_on_weekends: false },
             triggerName: 'every_hour',

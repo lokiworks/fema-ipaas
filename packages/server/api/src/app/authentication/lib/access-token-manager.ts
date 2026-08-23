@@ -1,5 +1,5 @@
-import { apId, ApplicationError, ErrorCode, TenantId, WorkspaceId } from '@fema/core-utils'
-import { ALL_PRINCIPAL_TYPES, EnginePrincipal, Principal, PrincipalType, UserStatus, WorkerPrincipal } from '@fema/shared'
+import { apId, ApplicationError, ErrorCode, TenantId, WorkspaceId } from '@fema-ipaas/core-utils'
+import { ALL_PRINCIPAL_TYPES, EnginePrincipal, Principal, PrincipalType, UserStatus, WorkerPrincipal } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { jwtUtils } from '../../helper/jwt-utils'

@@ -1,10 +1,13 @@
+MIT License
+
 Copyright (c) 2020-2024 Activepieces Inc.
+Copyright (c) 2026 FEMA iPaaS Contributors
 
-Portions of this software are licensed as follows:
-
-* All content that resides under the "packages/ee/" and "packages/server/api/src/app/ee" directory of this repository, if that directory exists, is licensed under the license defined in packages/ee/LICENSE
-* All third party components incorporated into the Activepieces Inc Software are licensed under the original license provided by the owner of the applicable component.
-* Content outside of the above mentioned directories or restrictions above is available under the "MIT Expat" license as defined below.
+This project is a derivative work of Activepieces Community Edition
+(https://github.com/activepieces/activepieces), used under the MIT License.
+The upstream Enterprise-licensed directories ("packages/ee/" and
+"packages/server/api/src/app/ee/") have been removed in their entirety and
+no code from them is incorporated here. See UPSTREAM.md and NOTICE.md.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

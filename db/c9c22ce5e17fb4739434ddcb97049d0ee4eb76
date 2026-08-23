@@ -1,0 +1,79 @@
+packages/core/shared/src/index.ts
+  s_94864882421579::t_b0741c9b5db863 51
+packages/server/api/src/app/template/template.service.ts
+  s_94864882421579::t_3473dbff5c652f 44,87
+packages/server/api/src/app/app-connection/app-connection-service/app-connection-service.ts
+  s_94864882421579::t_b410c607d27546 3
+packages/server/api/src/app/helper/system-validator.ts
+  s_94864882421579::t_415facbab18886 89-90
+packages/server/api/src/app/user-invitations/user-invitation.module.ts
+  s_94864882421579::t_7fa2dadec0d078 10-11,27,31,48,59,94,111,164
+packages/server/api/src/app/user/user-service.ts
+  s_94864882421579::t_6aff9f9e419556 92,161,176,270
+  s_94864882421579::t_11dfe63818563c 15
+packages/server/api/src/app/flows/flow-run/flow-run-hooks.ts
+  s_94864882421579::t_3d12953efcd9b8 1-2
+packages/server/api/src/app/helper/email/email-service.ts
+  s_94864882421579::t_3d12953efcd9b8 12
+packages/server/api/src/app/template/community-templates.service.ts
+  s_94864882421579::t_3473dbff5c652f 2,4-5,7-14,18-19,25,29-30,32,34-39,41,43-48,55-56,58-60,62
+packages/server/api/src/app/flows/flow/flow.controller.ts
+  s_94864882421579::t_bee76e32b49614 2
+packages/core/execution/src/lib/flows/folders/list-folders-response.ts
+  s_94864882421579::t_3d12953efcd9b8 3
+packages/server/api/src/app/project/project-side-effects.ts
+  s_94864882421579::t_7f5417fefefe7a 3,10,68-79,88-92
+packages/server/api/src/app/platform/platform.controller.ts
+  s_94864882421579::t_29a362c5cacc35 3
+packages/server/api/src/app/project/project.controller.ts
+  s_94864882421579::t_3d12953efcd9b8 1-2
+packages/server/api/src/app/user-invitations/user-invitation.service.ts
+  s_94864882421579::t_7fa2dadec0d078 73,181
+packages/server/api/src/app/platform/platform.service.ts
+  s_94864882421579::t_594f8f6c4988ed 203-205,212-213
+  s_94864882421579::t_8229f85af5a329 2,132-137,220-223
+packages/server/api/src/app/core/security/v2/authz/authorize.ts
+  s_94864882421579::t_11dfe63818563c 62-67
+packages/server/api/src/app/pieces/piece-sync-service.ts
+  s_94864882421579::t_0f91474b08ee19 4,97
+  s_94864882421579::t_11dfe63818563c 2,17-20,92-96,98-99,124-126,128-129
+  s_94864882421579::t_415facbab18886 1
+packages/server/api/src/app/helper/system/system-props.ts
+  s_94864882421579::t_3473dbff5c652f 12
+  s_94864882421579::t_11dfe63818563c 13
+packages/server/api/src/app/pieces/metadata/piece-metadata-controller.ts
+  s_94864882421579::t_e910b2297700fc 9
+packages/server/api/src/app/project/project-access.ts
+  s_94864882421579::t_11dfe63818563c 30-31
+packages/core/execution/src/lib/flows/folders/folder.ts
+  s_94864882421579::t_3d12953efcd9b8 18
+packages/server/api/src/app/pieces/piece-visibility.ts
+  s_94864882421579::t_94b60e97970179 1-20
+packages/server/api/src/app/template/template.controller.ts
+  s_94864882421579::t_3473dbff5c652f 7,67,102,126
+packages/server/api/src/app/core/security/platform-guards.ts
+  s_94864882421579::t_d7699888b314eb 1-12,15-44
+  s_94864882421579::t_11dfe63818563c 13-14
+packages/server/api/src/app/pieces/metadata/piece-metadata-service.ts
+  s_94864882421579::t_e910b2297700fc 10
+packages/core/shared/src/lib/governance/system-limits.ts
+  s_94864882421579::t_b0741c9b5db863 1-37
+packages/server/api/src/app/project/project.jobs.ts
+  s_94864882421579::t_11dfe63818563c 2,29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "dbc9c22ce5e17fb4739434ddcb97049d0ee4eb76",
+  "prompts": {},
+  "sessions": {
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

@@ -1,0 +1,29 @@
+AGENTS.md
+  s_94864882421579::t_aabdf9e38e386c 8-9,16,21-22,75,115-118
+.claude/rules/data-isolation.md
+  s_94864882421579::t_aabdf9e38e386c 1-3
+packages/server/AGENTS.md
+  s_94864882421579::t_4b5dc112f78d2b 16,63-64
+.claude/rules/self-hosting.md
+  s_94864882421579::t_4b5dc112f78d2b 1-2
+CLAUDE.md
+  s_94864882421579::t_aabdf9e38e386c 8-9,16,21-22,75,115-118
+.claude/rules/no-editions.md
+  s_94864882421579::t_aabdf9e38e386c 1-3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "86e2548a5d6516518088bacd84fa4df089645271",
+  "prompts": {},
+  "sessions": {
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

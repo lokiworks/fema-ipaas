@@ -1,6 +1,6 @@
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
-import { projectController } from './project.controller'
 import { projectWorkerController } from './project-worker-controller'
+import { projectController } from './project.controller'
 
 export const projectModule: FastifyPluginAsyncZod = async (app) => {
     await app.register(projectController, { prefix: '/v1/projects' })

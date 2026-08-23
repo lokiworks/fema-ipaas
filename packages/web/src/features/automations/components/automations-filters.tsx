@@ -97,9 +97,7 @@ export const AutomationsFilters = ({
   const ownerOptions = useOwnerOptions();
   const [isTemplatesBrowseDialogOpen, setIsTemplatesBrowseDialogOpen] =
     useState(false);
-  const typeOptions = [
-    { value: 'flow', label: t('Flows') },
-  ];
+  const typeOptions = [{ value: 'flow', label: t('Flows') }];
 
   const statusOptions = Object.values(FlowStatus).map((status) => ({
     value: status,
@@ -134,9 +132,7 @@ export const AutomationsFilters = ({
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder={
-                  t('Search flows...')
-                }
+                placeholder={t('Search flows...')}
                 value={searchTerm}
                 onChange={(e) => {
                   onSearchChange(e.target.value);

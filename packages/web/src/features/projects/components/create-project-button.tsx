@@ -11,14 +11,11 @@ import { NewProjectDialog } from './new-project-dialog';
 
 export function CreateProjectButton({
   variant,
-  projects,
   onCreate,
 }: CreateProjectButtonProps) {
-  const {
-    hasReachedLimit,
-    ensureTeamProjectAvailable,
-    teamProjectLimitDialog,
-  } = useTeamProjectLimitGuard({ projects });
+  const hasReachedLimit = false;
+  const ensureTeamProjectAvailable = () => undefined;
+  const teamProjectLimitDialog = null;
 
   const trigger = triggerFor({
     variant,

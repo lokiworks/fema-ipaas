@@ -1,12 +1,11 @@
 import { isNil, Permission, tryCatch } from '@activepieces/core-utils';
-import { ApFlagId, PlatformRole, ProjectType } from '@activepieces/shared';
+import { PlatformRole, ProjectType } from '@activepieces/shared';
 import { t } from 'i18next';
-import { Bell, GitBranch, Puzzle, Settings, Users } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
-import { McpSvg } from '@/assets/img/custom/mcp';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
@@ -15,18 +14,13 @@ import { INTERNAL_ERROR_MESSAGE } from '@/components/ui/sonner';
 import { projectCollectionUtils } from '@/features/projects';
 import { ApProjectDisplay } from '@/features/projects/components/ap-project-display';
 import { useAuthorization } from '@/hooks/authorization-hooks';
-import { flagsHooks } from '@/hooks/flags-hooks';
-import { platformHooks } from '@/hooks/platform-hooks';
 import { userHooks } from '@/hooks/user-hooks';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
 
 import { ProjectAvatar } from '../project-avatar';
 
-import { EnvironmentSettings } from './environment';
 import { GeneralSettings, FormValues } from './general';
-import { McpServerSettings } from './mcp-server';
-import { PiecesSettings } from './pieces';
 
 type TabId =
   | 'general'
@@ -57,11 +51,6 @@ export function ProjectSettingsDialog({
   const { project } = projectCollectionUtils.useCurrentProject();
   const previousOpenRef = useRef(open);
 
-  const { data: showAlerts } = flagsHooks.useFlag(ApFlagId.SHOW_ALERTS);
-  const { data: showProjectMembers } = flagsHooks.useFlag(
-    ApFlagId.SHOW_PROJECT_MEMBERS,
-  );
-  const { platform } = platformHooks.useCurrentPlatform();
   const platformRole = userHooks.getCurrentUserPlatformRole();
 
   const form = useForm<FormValues>({
@@ -70,23 +59,16 @@ export function ProjectSettingsDialog({
       icon: project.icon,
       externalId: initialValues?.externalId,
       maxConcurrentJobs: project.maxConcurrentJobs,
-      activeFlowsLimit: project.plan?.activeFlowsLimit ?? null,
     },
     disabled: checkAccess(Permission.WRITE_PROJECT) === false,
   });
 
   const handleSave = async (values: FormValues) => {
-    const activeFlowsLimitChanged =
-      (values.activeFlowsLimit ?? null) !==
-      (project.plan?.activeFlowsLimit ?? null);
     const transaction = projectCollectionUtils.update(project.id, {
       displayName: values.projectName,
       externalId: values.externalId,
       icon: values.icon,
       maxConcurrentJobs: values.maxConcurrentJobs,
-      plan: activeFlowsLimitChanged
-        ? { ...project.plan, activeFlowsLimit: values.activeFlowsLimit ?? null }
-        : undefined,
     });
     const { error } = await tryCatch(() => transaction.isPersisted.promise);
     if (!isNil(error)) {
@@ -106,7 +88,6 @@ export function ProjectSettingsDialog({
         ...initialValues,
         icon: project.icon,
         maxConcurrentJobs: project.maxConcurrentJobs,
-        activeFlowsLimit: project.plan?.activeFlowsLimit ?? null,
       });
       setActiveTab(initialTab);
     }
@@ -114,8 +95,7 @@ export function ProjectSettingsDialog({
   }, [open, project]);
 
   const hasGeneralSettings =
-    project.type === ProjectType.TEAM ||
-    (platform.plan.embeddingEnabled && platformRole === PlatformRole.ADMIN);
+    project.type === ProjectType.TEAM || platformRole === PlatformRole.ADMIN;
 
   const tabs = [
     {
@@ -124,55 +104,12 @@ export function ProjectSettingsDialog({
       icon: <Settings className="w-4 h-4" />,
       disabled: !hasGeneralSettings,
     },
-    {
-      id: 'members' as TabId,
-      label: t('Members'),
-      icon: <Users className="w-4 h-4" />,
-      disabled:
-        project.type !== ProjectType.TEAM ||
-        !checkAccess(Permission.READ_PROJECT_MEMBER) ||
-        !showProjectMembers,
-    },
-    {
-      id: 'alerts' as TabId,
-      label: t('Alert Emails'),
-      icon: <Bell className="w-4 h-4" />,
-      disabled: !checkAccess(Permission.READ_ALERT) || !showAlerts,
-    },
-    {
-      id: 'mcp' as TabId,
-      label: t('MCP Server'),
-      icon: <McpSvg className="w-4 h-4" />,
-      disabled: false,
-    },
-    {
-      id: 'pieces' as TabId,
-      label: t('Pieces'),
-      icon: <Puzzle className="w-4 h-4" />,
-      disabled: false,
-    },
-    {
-      id: 'environment' as TabId,
-      label: t('Environment'),
-      icon: <GitBranch className="w-4 h-4" />,
-      disabled: !checkAccess(Permission.READ_PROJECT_RELEASE),
-    },
   ].filter((tab) => !tab.disabled);
 
   const renderTabContent = () => {
     switch (activeTab) {
       case 'general':
         return <GeneralSettings form={form} />;
-      case 'members':
-        return <MembersSettings />;
-      case 'alerts':
-        return <AlertsSettings />;
-      case 'pieces':
-        return <PiecesSettings />;
-      case 'environment':
-        return <EnvironmentSettings />;
-      case 'mcp':
-        return <McpServerSettings />;
       default:
         return null;
     }

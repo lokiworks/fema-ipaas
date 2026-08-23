@@ -2,7 +2,6 @@ import { isNil, tryParseFriendlyPieceError } from '@activepieces/core-utils';
 import {
   StepOutputStatus,
   flowStructureUtil,
-  AgentResult,
   FlowActionType,
   FlowTriggerType,
   isFlowRunStateTerminal,
@@ -55,7 +54,7 @@ export const FlowStepInputOutput = () => {
         : null,
     ],
   );
-  const isAgent = isRunAgent(selectedStep);
+  const isAgent = false;
   const isTrigger =
     !isNil(selectedStep) && flowStructureUtil.isTrigger(selectedStep.type);
   const [requestedTab, setActiveTab] = useState<RunActiveTab>(
@@ -261,13 +260,6 @@ export const FlowStepInputOutput = () => {
             </TabsContent>
           )}
 
-          {isAgent && (
-            <TabsContent value="timeline">
-              <AgentTimeline
-                agentResult={selectedStepOutput.output as AgentResult}
-              />
-            </TabsContent>
-          )}
           <TabsContent value="output">
             {isStepRunning ? (
               <StepOutputSkeleton className="p-4" />

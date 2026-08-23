@@ -72,7 +72,11 @@ export const platformRoutes = [
   },
   platformRoute('/platform/projects', 'Workspaces', ProjectsPage),
   platformRoute('/platform/users', 'Members', UsersPage),
-  platformRoute('/platform/connections', 'Connections', PlatformConnectionsPage),
+  platformRoute(
+    '/platform/connections',
+    'Connections',
+    PlatformConnectionsPage,
+  ),
   {
     path: '/platform/setup',
     element: (
@@ -90,7 +94,11 @@ export const platformRoutes = [
     'Global Connections',
     GlobalConnectionsTable,
   ),
-  platformRoute('/platform/setup/templates', 'Templates', PlatformTemplatesPage),
+  platformRoute(
+    '/platform/setup/templates',
+    'Templates',
+    PlatformTemplatesPage,
+  ),
   {
     path: '/platform/security',
     element: (

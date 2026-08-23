@@ -34,7 +34,6 @@ export function useOwnerOptions() {
       seenIds.add(currentUser.id);
     }
 
-
     return options;
   }, [currentUser]);
 }

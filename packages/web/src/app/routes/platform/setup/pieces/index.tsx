@@ -1,9 +1,6 @@
-import { ApErrorParams, ErrorCode, isNil } from '@activepieces/core-utils';
-import {
-  PieceMetadataModelSummary,
-  PropertyType,
-} from '@activepieces/pieces-framework';
-import { OAuth2GrantType, PieceScope, PieceType } from '@activepieces/shared';
+import { ApErrorParams, ErrorCode } from '@activepieces/core-utils';
+import { PieceMetadataModelSummary } from '@activepieces/pieces-framework';
+import { PieceScope, PieceType } from '@activepieces/shared';
 import { ColumnDef } from '@tanstack/react-table';
 import { t } from 'i18next';
 import {
@@ -39,7 +36,6 @@ import {
 } from '@/features/pieces';
 import { platformHooks } from '@/hooks/platform-hooks';
 import { api } from '@/lib/api';
-
 
 type TabValue = 'pieces' | 'piece-sets';
 
@@ -125,16 +121,6 @@ const PiecesListTab = () => {
           cell: ({ row }) => {
             return (
               <div className="flex justify-end">
-                {shouldShowOauth2SettingForPiece(row.original) && (
-                  <ConfigurePieceOAuth2Dialog
-                    pieceName={row.original.name}
-                    onConfigurationDone={() => {
-                      refetchPieces();
-                      refetchPiecesOAuth2AppsMap();
-                    }}
-                    isEnabled={isEnabled}
-                  />
-                )}
                 <PieceActions
                   pieceName={row.original.name}
                   isEnabled={isEnabled}
@@ -273,12 +259,6 @@ const PlatformPiecesPage = () => {
           >
             <PiecesListTab />
           </TabsContent>
-          <TabsContent
-            value="piece-sets"
-            className="flex-1 min-h-0 flex flex-col mt-0 min-w-0"
-          >
-            <PieceSetsTab />
-          </TabsContent>
         </Tabs>
       </div>
     </>
@@ -287,19 +267,3 @@ const PlatformPiecesPage = () => {
 
 PlatformPiecesPage.displayName = 'PlatformPiecesPage';
 export { PlatformPiecesPage };
-
-function shouldShowOauth2SettingForPiece(piece: PieceMetadataModelSummary) {
-  const pieceAuth = Array.isArray(piece.auth)
-    ? piece.auth.find((auth) => auth.type === PropertyType.OAUTH2)
-    : piece.auth;
-  if (isNil(pieceAuth)) {
-    return false;
-  }
-  if (pieceAuth.type !== PropertyType.OAUTH2) {
-    return false;
-  }
-  if (pieceAuth.grantType === OAuth2GrantType.CLIENT_CREDENTIALS) {
-    return false;
-  }
-  return true;
-}

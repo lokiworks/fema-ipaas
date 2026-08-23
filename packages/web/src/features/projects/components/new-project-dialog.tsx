@@ -10,8 +10,6 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { DefaultTag } from '@/components/custom/global-connection-utils';
-import { MultiSelectPieceProperty } from '@/components/custom/multi-select-piece-property';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -80,17 +78,12 @@ export const NewProjectDialog = (props: NewProjectDialogProps) => {
 const NewProjectForm = ({
   onCreate,
   setOpen,
-  globalConnections,
-  globalConnectionsEnabled,
 }: Omit<NewProjectDialogProps, 'children'> & {
   setOpen: (open: boolean) => void;
   globalConnections: AppConnectionWithoutSensitiveData[];
   globalConnectionsEnabled: boolean;
 }) => {
   const queryClient = useQueryClient();
-  const preselectedConnectionExternalIds = globalConnections
-    .filter((connection) => connection.preSelectForNewProjects)
-    .map((connection) => connection.externalId);
 
   const form = useForm<CreatePlatformProjectRequest>({
     resolver: zodResolver(
@@ -103,22 +96,11 @@ const NewProjectForm = ({
           .or(z.literal('')),
       }),
     ),
-    defaultValues: {
-      globalConnectionExternalIds: preselectedConnectionExternalIds,
-      alertReceiverEmail: '',
-    },
+    defaultValues: {},
   });
 
   const handleCreate = () => {
-    const values = form.getValues();
-    const alertReceiverEmail = values.alertReceiverEmail?.trim();
-    mutate({
-      ...values,
-      alertReceiverEmail:
-        alertReceiverEmail && alertReceiverEmail.length > 0
-          ? alertReceiverEmail
-          : null,
-    });
+    mutate(form.getValues());
   };
 
   const { mutate, isPending } = projectCollectionUtils.useCreateProject(
@@ -180,37 +162,6 @@ const NewProjectForm = ({
               </FormItem>
             )}
           />
-          {globalConnectionsEnabled && (
-            <FormField
-              name="globalConnectionExternalIds"
-              render={({ field }) => (
-                <FormItem className="grid space-y-2">
-                  <Label>{t('Global Connections')}</Label>
-                  <MultiSelectPieceProperty
-                    placeholder={t('Select global connections')}
-                    options={
-                      globalConnections.map((connection) => ({
-                        value: connection.externalId,
-                        label: connection.displayName,
-                      })) ?? []
-                    }
-                    loading={false}
-                    onChange={(value) => {
-                      field.onChange(value ?? []);
-                    }}
-                    itemExtraContent={(index) => {
-                      if (globalConnections[index].preSelectForNewProjects) {
-                        return <DefaultTag />;
-                      }
-                      return null;
-                    }}
-                    initialValues={field.value ?? []}
-                    showDeselect={(field.value ?? []).length > 0}
-                  />
-                </FormItem>
-              )}
-            />
-          )}
           {form?.formState?.errors?.root?.serverError && (
             <FormMessage>
               {form.formState.errors.root.serverError.message}

@@ -1,7 +1,7 @@
 import { groupBy, isNil, tryCatch } from '@activepieces/core-utils'
+import { PieceMetadataModel } from '@activepieces/pieces-framework'
 import { apVersionUtil, safeHttp } from '@activepieces/server-utils'
 import { PieceSyncMode, PieceType } from '@activepieces/shared'
-import { PieceMetadataModel } from '@activepieces/pieces-framework'
 import { FastifyBaseLogger } from 'fastify'
 import semver from 'semver'
 import { rejectedPromiseHandler } from '../helper/promise-handler'

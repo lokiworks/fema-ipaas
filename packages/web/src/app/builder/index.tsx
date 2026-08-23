@@ -240,8 +240,6 @@ const BuilderPage = () => {
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>
-
-      <ChatDrawer />
     </div>
   );
 };

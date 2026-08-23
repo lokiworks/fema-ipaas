@@ -2,8 +2,6 @@ import { Permission } from '@activepieces/core-utils';
 import {
   FlowOperationType,
   FlowVersion,
-  FlowVersionState,
-  GitBranchType,
   PopulatedFlow,
 } from '@activepieces/shared';
 import { useMutation } from '@tanstack/react-query';
@@ -17,7 +15,6 @@ import {
   Pencil,
   Share2,
   Trash2,
-  UploadCloud,
   User,
 } from 'lucide-react';
 import React, { useState } from 'react';
@@ -41,7 +38,6 @@ import { ChangeOwnerDialog } from '@/features/flows/components/change-owner-dial
 import { ImportFlowDialog } from '@/features/flows/components/import-flow-dialog';
 import { foldersHooks } from '@/features/folders';
 import { useAuthorization } from '@/hooks/authorization-hooks';
-import { platformHooks } from '@/hooks/platform-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 import { useNewWindow } from '@/lib/navigation-utils';
 
@@ -76,28 +72,15 @@ const FlowActionMenu: React.FC<FlowActionMenuProps> = ({
   insideBuilder,
 }) => {
   const isRunsPage = useLocation().pathname.includes('/runs');
-  const { platform } = platformHooks.useCurrentPlatform();
   const openNewWindow = useNewWindow();
-  const { gitSync } = gitSyncHooks.useGitSync(
-    authenticationSession.getProjectId()!,
-    platform.plan.environmentsEnabled,
-  );
   const { checkAccess } = useAuthorization();
   const userHasPermissionToWriteFolder = checkAccess(Permission.WRITE_FOLDER);
   const userHasPermissionToUpdateFlow = checkAccess(Permission.WRITE_FLOW);
-  const userHasPermissionToPushToGit = checkAccess(
-    Permission.WRITE_PROJECT_RELEASE,
-  );
 
   const { embedState } = useEmbedding();
-  const isDevelopmentBranch =
-    gitSync && gitSync.branchType === GitBranchType.DEVELOPMENT;
+  const isDevelopmentBranch = false;
   const [open, setOpen] = useState(false);
-  const allowPush =
-    flow.publishedVersionId !== null &&
-    flow.version.state === FlowVersionState.LOCKED;
-  const { projectMembers } = projectMembersHooks.useProjectMembers();
-  const hasProjectMembers = projectMembers && projectMembers.length > 0;
+  const hasProjectMembers = false;
 
   const [isRenameOpen, setIsRenameOpen] = useState(false);
   const [renameValue, setRenameValue] = useState(flowVersion.displayName);
@@ -211,23 +194,6 @@ const FlowActionMenu: React.FC<FlowActionMenuProps> = ({
               )}
             </>
           )}
-
-          <PermissionNeededTooltip hasPermission={userHasPermissionToPushToGit}>
-            <PublishedNeededTooltip allowPush={allowPush}>
-              <PushToGitDialog type="flow" flows={[flow]}>
-                <DropdownMenuItem
-                  disabled={!userHasPermissionToPushToGit || !allowPush}
-                  onSelect={(e) => e.preventDefault()}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="flex cursor-pointer  flex-row gap-2 items-center">
-                    <UploadCloud className="h-4 w-4" />
-                    <span>{t('Push to Git')}</span>
-                  </div>
-                </DropdownMenuItem>
-              </PushToGitDialog>
-            </PublishedNeededTooltip>
-          </PermissionNeededTooltip>
 
           {!embedState.hideFolders && (
             <PermissionNeededTooltip

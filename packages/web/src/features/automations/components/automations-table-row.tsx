@@ -284,16 +284,16 @@ export const AutomationsTableRow = ({
             )}
 
             {item.type === 'flow' && !embedState.hideFolders && (
-                <DropdownMenuItem
-                  onClick={() => {
-                    setMoveFolderId('');
-                    setIsMoveOpen(true);
-                  }}
-                >
-                  <CornerUpLeft className="h-4 w-4 mr-2" />
-                  {t('Move To')}
-                </DropdownMenuItem>
-              )}
+              <DropdownMenuItem
+                onClick={() => {
+                  setMoveFolderId('');
+                  setIsMoveOpen(true);
+                }}
+              >
+                <CornerUpLeft className="h-4 w-4 mr-2" />
+                {t('Move To')}
+              </DropdownMenuItem>
+            )}
 
             {isFlowItem(item) && !embedState.hideExportAndImportFlow && (
               <DropdownMenuItem onClick={() => onExportFlow(item.data)}>
@@ -404,4 +404,3 @@ function isFlowItem(
 ): item is Omit<TreeItem, 'data'> & { data: PopulatedFlow } {
   return item.type === 'flow';
 }
-

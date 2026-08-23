@@ -1,5 +1,4 @@
 import { isNil } from '@activepieces/core-utils';
-import { ApEdition, ApFlagId } from '@activepieces/shared';
 import React, { ComponentType } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, useLocation } from 'react-router-dom';
@@ -10,7 +9,6 @@ import { CompassIcon } from '@/components/icons/compass';
 import { useEmbedding } from '@/components/providers/embed-provider';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar-shadcn';
 import { projectHooks } from '@/features/projects';
-import { flagsHooks } from '@/hooks/flags-hooks';
 import { cn } from '@/lib/utils';
 
 import { authenticationSession } from '../../../lib/authentication-session';
@@ -47,7 +45,6 @@ export function ProjectDashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { data: edition } = flagsHooks.useFlag<ApEdition>(ApFlagId.EDITION);
   const currentProjectId = authenticationSession.getProjectId();
   const { t } = useTranslation();
   const location = useLocation();
@@ -102,7 +99,6 @@ export function ProjectDashboardLayout({
         >
           {children}
         </ProjectDashboardLayoutInner>
-        {edition !== ApEdition.COMMUNITY && <ManagePlanDialog />}
       </GlobalSearchProvider>
     </ProjectChangedRedirector>
   );
@@ -142,7 +138,6 @@ function ProjectDashboardLayoutInner({
             {!hideHeader && (
               <ProjectDashboardLayoutHeader key={currentProjectId} />
             )}
-            <CreditsUsageAlert />
             <div className="flex-1 overflow-auto">{children}</div>
           </div>
         </div>

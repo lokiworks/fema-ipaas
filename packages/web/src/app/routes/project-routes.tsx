@@ -18,7 +18,6 @@ const FlowBuilderPage = lazyWithRetry(
   () => import('./flows/id').then((m) => ({ default: m.FlowBuilderPage })),
   'flow-builder',
 );
-const AnalyticsPage = lazyWithRetry(() => import('./impact'), 'analytics');
 const RunsPage = lazyWithRetry(
   () => import('./runs').then((m) => ({ default: m.RunsPage })),
   'runs',
@@ -159,16 +158,4 @@ export const projectRoutes = [
       </ProjectDashboardLayout>
     ),
   }),
-  {
-    path: '/impact',
-    element: (
-      <ProjectDashboardLayout>
-        <PageTitle title="Impact">
-          <SuspenseWrapper>
-            <AnalyticsPage />
-          </SuspenseWrapper>
-        </PageTitle>
-      </ProjectDashboardLayout>
-    ),
-  },
 ];

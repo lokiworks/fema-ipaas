@@ -51,9 +51,7 @@ export function useAutomationsData(
 
   const folderCounts = useMemo(() => {
     const folders = foldersQuery.data ?? [];
-    return new Map(
-      folders.map((folder) => [folder.id, folder.numberOfFlows]),
-    );
+    return new Map(folders.map((folder) => [folder.id, folder.numberOfFlows]));
   }, [foldersQuery.data]);
 
   const folderContentsQuery = useQuery<FolderContentsMap>({

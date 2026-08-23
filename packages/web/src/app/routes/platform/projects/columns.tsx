@@ -40,7 +40,7 @@ export const projectsTableColumns = ({
         <DataTableColumnHeader column={column} title={t('Name')} icon={Tag} />
       ),
       cell: ({ row }) => {
-        const locked = row.original.plan.locked;
+        const locked = false;
         const isPersonal = row.original.type === ProjectType.PERSONAL;
 
         return (
@@ -71,10 +71,10 @@ export const projectsTableColumns = ({
         return (
           <div className="text-left tabular-nums">
             <span className="font-medium">
-              {row.original.analytics.activeUsers}
+              {row.original.analytics.activeFlows}
             </span>
             <span className="text-muted-foreground">
-              {` / ${row.original.analytics.totalUsers}`}
+              {` / ${row.original.analytics.totalFlows}`}
             </span>
           </div>
         );

@@ -1,5 +1,5 @@
 import { isNil, tryParseFriendlyPieceError } from '@activepieces/core-utils';
-import { AgentResult, AgentTaskStatus, FlowAction } from '@activepieces/shared';
+import { FlowAction } from '@activepieces/shared';
 import { t } from 'i18next';
 import { Loader2, Play } from 'lucide-react';
 import React, { useState } from 'react';
@@ -23,7 +23,6 @@ type TestSampleDataViewerProps = {
   isValid: boolean;
   currentStep?: FlowAction;
   isTesting: boolean;
-  agentResult?: AgentResult;
   sampleData?: unknown;
   sampleDataInput?: unknown | null;
   errorMessage: string | null;
@@ -88,11 +87,7 @@ export const TestSampleDataViewer = React.memo(
         ? 'Output'
         : requestedTab;
 
-    const isFailed =
-      !isNil(errorMessage) ||
-      (isRunAgent(currentStep) &&
-        (sampleData as AgentResult | undefined)?.status ===
-          AgentTaskStatus.FAILED);
+    const isFailed = !isNil(errorMessage);
 
     const status: 'success' | 'failed' | 'testing' | 'idle' = isTesting
       ? 'testing'
@@ -108,7 +103,7 @@ export const TestSampleDataViewer = React.memo(
         ? consoleLogs
         : outputData;
 
-    const showAgentView = isRunAgent(currentStep) && !errorMessage;
+    const showAgentView = false;
     const friendlyError =
       !isTesting && !showAgentView && activeTab === 'Output'
         ? tryParseFriendlyPieceError(errorMessage)
@@ -136,11 +131,6 @@ export const TestSampleDataViewer = React.memo(
           <div className="flex-1 min-h-0 px-3 pb-3 overflow-auto">
             {isTesting && !showAgentView ? (
               <TestingPreviewContent data={activeData} />
-            ) : showAgentView ? (
-              <AgentTestStep
-                agentResult={getAgentResult(sampleData)}
-                errorMessage={errorMessage}
-              />
             ) : friendlyError ? (
               <FriendlyErrorView
                 error={friendlyError}
@@ -360,13 +350,3 @@ const TestingPreviewContent = ({ data }: TestingPreviewContentProps) => {
 };
 
 TestSampleDataViewer.displayName = 'TestSampleDataViewer';
-
-//In case the user has mangled sample data
-function getAgentResult(sampleData: unknown) {
-  if (isNil(sampleData)) return undefined;
-  if (typeof sampleData !== 'object' || sampleData === null) return undefined;
-  if (!('status' in sampleData)) return undefined;
-  if (!('steps' in sampleData)) return undefined;
-  if (!('prompt' in sampleData)) return undefined;
-  return sampleData as AgentResult;
-}

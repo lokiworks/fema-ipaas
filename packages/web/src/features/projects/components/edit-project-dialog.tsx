@@ -10,7 +10,6 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
 import { GlobalConnectionWarning } from '@/components/custom/global-connection-utils';
-import { MultiSelectPieceProperty } from '@/components/custom/multi-select-piece-property';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -93,7 +92,6 @@ const EditProjectForm = ({
   onClose,
   projectId,
   initialValues,
-  globalConnections,
   globalConnectionsEnabled,
 }: {
   onClose: () => void;
@@ -106,10 +104,6 @@ const EditProjectForm = ({
   const { platform } = platformHooks.useCurrentPlatform();
   const platformRole = userHooks.getCurrentUserPlatformRole();
   const queryClient = useQueryClient();
-
-  const currentConnectionExternalIds = globalConnections
-    .filter((connection) => connection.projectIds.includes(projectId))
-    .map((connection) => connection.externalId);
 
   const { mutate, isPending } = projectCollectionUtils.useUpdateProject(
     () => {
@@ -131,7 +125,6 @@ const EditProjectForm = ({
     defaultValues: {
       displayName: initialValues?.projectName,
       externalId: initialValues?.externalId,
-      globalConnectionExternalIds: currentConnectionExternalIds,
     },
     disabled: checkAccess(Permission.WRITE_PROJECT) === false,
   });
@@ -146,7 +139,6 @@ const EditProjectForm = ({
             request: {
               displayName: values.displayName,
               externalId: values.externalId,
-              globalConnectionExternalIds: values.globalConnectionExternalIds,
             },
           });
         })}
@@ -189,31 +181,6 @@ const EditProjectForm = ({
               )}
             />
           )}
-
-        {globalConnectionsEnabled && (
-          <FormField
-            name="globalConnectionExternalIds"
-            render={({ field }) => (
-              <FormItem>
-                <Label>{t('Global Connections')}</Label>
-                <MultiSelectPieceProperty
-                  placeholder={t('Select global connections')}
-                  options={globalConnections.map((connection) => ({
-                    value: connection.externalId,
-                    label: connection.displayName,
-                  }))}
-                  loading={false}
-                  onChange={(value) => {
-                    field.onChange(value ?? []);
-                  }}
-                  initialValues={field.value ?? []}
-                  showDeselect={(field.value ?? []).length > 0}
-                />
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
 
         <DialogFooter className="justify-end mt-6">
           <Button type="button" variant="outline" onClick={onClose}>

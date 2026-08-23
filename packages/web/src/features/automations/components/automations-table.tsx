@@ -1,7 +1,4 @@
-import {
-  FolderDto,
-  PopulatedFlow,
-} from '@activepieces/shared';
+import { FolderDto, PopulatedFlow } from '@activepieces/shared';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import { t } from 'i18next';
 import { Activity, Clock, Info, Type, User } from 'lucide-react';
@@ -235,7 +232,7 @@ export const AutomationsTable = ({
                             onDuplicate={onDuplicateFlow}
                             onMoveTo={onMoveItem}
                             onExportFlow={onExportFlow}
-                                isMoving={isMoving}
+                            isMoving={isMoving}
                             isDuplicating={isDuplicating}
                             onLoadMore={
                               child.type === 'load-more-folder'

@@ -1,7 +1,6 @@
 import { ProjectRole } from '@activepieces/core-utils';
 import {
   CreateOtpRequestBody,
-  GetCurrentProjectMemberRoleQuery,
   CompleteSignUpRequest,
   RequestEmailCodeRequest,
   ResetPasswordRequestBody,
@@ -37,7 +36,7 @@ export const authenticationApi = {
       providerName,
     });
   },
-  getCurrentProjectRole(query: GetCurrentProjectMemberRoleQuery) {
+  getCurrentProjectRole(query: { projectId: string }) {
     return api.get<ProjectRole | null>('/v1/project-members/role', query);
   },
   claimThirdPartyRequest(request: ClaimTokenRequest) {

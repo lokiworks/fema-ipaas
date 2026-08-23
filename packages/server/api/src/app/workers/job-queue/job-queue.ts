@@ -7,7 +7,7 @@ import { redisConnections } from '../../database/redis-connections'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
 import { projectWorkerGroupService } from '../../project/project-worker-group.service'
-import { getPlatformGroupQueueName, getProjectGroupQueueName, QueueName } from '../job'
+import { getProjectGroupQueueName, QueueName } from '../job'
 import { workerCapacity } from '../machine/worker-capacity'
 
 const EIGHT_MINUTES_IN_MILLISECONDS = apDayjsDuration(8, 'minute').asMilliseconds()

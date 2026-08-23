@@ -8,7 +8,6 @@ import TelemetryProvider from '@/components/providers/telemetry-provider';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { RefreshAnalyticsProvider } from '@/features/platform-admin';
 
 import { EmbeddingFontLoader } from './components/embedding-font-loader';
 import { GlobalErrorBoundary } from './components/global-error-boundary';
@@ -21,25 +20,23 @@ export function App() {
   return (
     <GlobalErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <RefreshAnalyticsProvider>
-          <EmbeddingProvider>
-            <InitialDataGuard>
-              <EmbeddingFontLoader>
-                <TelemetryProvider>
-                  <TooltipProvider>
-                    <React.Fragment key={i18n.language}>
-                      <ThemeProvider storageKey="vite-ui-theme">
-                        <ApRouter />
-                        <Toaster position="bottom-right" />
-                        <ApErrorDialog />
-                      </ThemeProvider>
-                    </React.Fragment>
-                  </TooltipProvider>
-                </TelemetryProvider>
-              </EmbeddingFontLoader>
-            </InitialDataGuard>
-          </EmbeddingProvider>
-        </RefreshAnalyticsProvider>
+        <EmbeddingProvider>
+          <InitialDataGuard>
+            <EmbeddingFontLoader>
+              <TelemetryProvider>
+                <TooltipProvider>
+                  <React.Fragment key={i18n.language}>
+                    <ThemeProvider storageKey="vite-ui-theme">
+                      <ApRouter />
+                      <Toaster position="bottom-right" />
+                      <ApErrorDialog />
+                    </ThemeProvider>
+                  </React.Fragment>
+                </TooltipProvider>
+              </TelemetryProvider>
+            </EmbeddingFontLoader>
+          </InitialDataGuard>
+        </EmbeddingProvider>
       </QueryClientProvider>
     </GlobalErrorBoundary>
   );

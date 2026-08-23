@@ -3,7 +3,6 @@ import { PieceMetadata, PieceMetadataModel } from '@activepieces/pieces-framewor
 import { AddPieceRequestBody, EngineResponse, EngineResponseStatus, ExecuteExtractPieceMetadata, FileCompression, FileId, FileType, PackageType, PiecePackage, PieceType, WorkerJobType } from '@activepieces/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { fileService } from '../file/file.service'
-import { rejectedPromiseHandler } from '../helper/promise-handler'
 import { userInteractionWatcher } from '../workers/user-interaction-watcher'
 import { pieceMetadataService } from './metadata/piece-metadata-service'
 

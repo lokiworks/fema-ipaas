@@ -5,11 +5,10 @@ import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
 import { userIdentityService } from '../authentication/user-identity/user-identity-service'
-import { transaction } from '../core/db/transaction'
 import { ProjectResourceType } from '../core/security/authorization/common'
+import { securityAccess } from '../core/security/authorization/fastify-security'
 import { platformGuards } from '../core/security/platform-guards'
 import { projectAccess } from '../project/project-access'
-import { securityAccess } from '../core/security/authorization/fastify-security'
 import { projectService } from '../project/project-service'
 import { userService } from '../user/user-service'
 import { INVITATION_EXPIRY_SECONDS, userInvitationsService } from './user-invitation.service'
@@ -151,7 +150,7 @@ async function shouldAutoAcceptInvitation(principal: Principal, request: SendUse
 async function assertPrincipalHasPermissionToProject<R extends Principal & { platform: { id: string } }>(
     fastify: FastifyInstance,
     request: FastifyRequest, reply: FastifyReply, principal: R,
-    projectId: string, permission: Permission): Promise<void> {
+    projectId: string, _permission: Permission): Promise<void> {
     const project = await projectService(request.log).getOneOrThrow(projectId)
     if (isNil(project) || project.platformId !== principal.platform.id) {
         throw new ActivepiecesError({

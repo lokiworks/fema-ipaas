@@ -1,17 +1,16 @@
-import { SecretInput } from '@/app/connections/secret-input';
 import { SecretTextProperty } from '@activepieces/pieces-framework';
 import { UpsertSecretTextRequest } from '@activepieces/shared';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { z } from 'zod';
 
+import { SecretInput } from '@/app/connections/secret-input';
 import {
   FormControl,
   FormField,
   FormItem,
   FormLabel,
 } from '@/components/ui/form';
-
 
 type SecretTextConnectionSettingsProps = {
   authProperty: SecretTextProperty<boolean>;

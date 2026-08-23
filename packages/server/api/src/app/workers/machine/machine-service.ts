@@ -88,7 +88,7 @@ export const machineService = (log: FastifyBaseLogger) => {
             }
             return buildSettingsResponse(log)
         },
-        async list(platformId: string): Promise<WorkerMachineWithStatus[]> {
+        async list(_platformId: string): Promise<WorkerMachineWithStatus[]> {
             const allWorkers = await workerMachineCache().find()
 
             const offlineThreshold = dayjs().subtract(60, 'seconds').utc()

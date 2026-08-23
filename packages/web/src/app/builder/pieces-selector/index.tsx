@@ -1,4 +1,3 @@
-import { isNil } from '@activepieces/core-utils';
 import { FlowOperationType, FlowTriggerType } from '@activepieces/shared';
 import { t } from 'i18next';
 import {
@@ -30,7 +29,6 @@ import {
   usePieceSearchContext,
   piecesHooks,
 } from '@/features/pieces';
-import { aiProviderQueries } from '@/features/platform-admin';
 import { platformHooks } from '@/hooks/platform-hooks';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { authenticationSession } from '@/lib/authentication-session';
@@ -141,7 +139,7 @@ const PieceSelectorContent = ({
       });
     }
   }, [isOpen]);
-  const { data: aiProviders } = aiProviderQueries.useAiProviders();
+  const aiProviders: unknown[] = [];
   const {
     pieceModel: aiPieceModel,
     isError: isAiPieceError,
@@ -162,7 +160,7 @@ const PieceSelectorContent = ({
   const tabsList = pieceSelectorCustomization.buildResolvedTabs({
     availableBuiltinTabs: getTabsList(
       operation.type,
-      !isNil(aiProviders) && aiProviders.length > 0 && !isAiPieceUnavailable,
+      aiProviders.length > 0 && !isAiPieceUnavailable,
     ),
     config: platform.pieceSelectorConfig,
   });

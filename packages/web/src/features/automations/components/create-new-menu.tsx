@@ -1,11 +1,5 @@
 import { t } from 'i18next';
-import {
-  FolderPlus,
-  Loader2,
-  Sparkles,
-  Upload,
-  Workflow,
-} from 'lucide-react';
+import { FolderPlus, Loader2, Sparkles, Upload, Workflow } from 'lucide-react';
 import { useState } from 'react';
 
 import { PermissionNeededTooltip } from '@/components/custom/permission-needed-tooltip';

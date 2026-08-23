@@ -8,7 +8,6 @@ import { flagsHooks } from '@/hooks/flags-hooks';
 import { platformHooks } from '@/hooks/platform-hooks';
 import { userHooks } from '@/hooks/user-hooks';
 
-
 export const GeneralPage = () => {
   const { platform } = platformHooks.useCurrentPlatform();
   const { data: edition } = flagsHooks.useFlag<ApEdition>(ApFlagId.EDITION);

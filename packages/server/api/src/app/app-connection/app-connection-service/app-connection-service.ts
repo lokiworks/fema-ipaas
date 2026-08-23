@@ -1,6 +1,6 @@
 import { ActivepiecesError, apId, Cursor, ErrorCode, isNil, Metadata, PlatformId, ProjectId, SeekPage, spreadIfDefined, tryCatch, tryCatchSync, unique, UserId } from '@activepieces/core-utils'
 import { PieceMetadata } from '@activepieces/pieces-framework'
-import { ApEdition, ApEnvironment, AppConnection, AppConnectionId, AppConnectionOwners, AppConnectionScope, AppConnectionStatus, AppConnectionType, AppConnectionValue, AppConnectionWithoutSensitiveData, EngineResponse, EngineResponseStatus, ExecuteResolveConnectionIdentifierResponse, ExecuteValidateAuthResponse, MAX_PLATFORM_APP_CONNECTION_OWNERS, OAuth2GrantType, PlatformAppConnectionOwner, PlatformAppConnectionOwnersResponse, PlatformAppConnectionProjectInfo, PlatformAppConnectionsListItem, PlatformRole, UpsertAppConnectionRequestBody, User, UserIdentity, UserWithMetaInformation, WorkerJobType } from '@activepieces/shared'
+import { ApEnvironment, AppConnection, AppConnectionId, AppConnectionOwners, AppConnectionScope, AppConnectionStatus, AppConnectionType, AppConnectionValue, AppConnectionWithoutSensitiveData, EngineResponse, EngineResponseStatus, ExecuteResolveConnectionIdentifierResponse, ExecuteValidateAuthResponse, MAX_PLATFORM_APP_CONNECTION_OWNERS, OAuth2GrantType, PlatformAppConnectionOwner, PlatformAppConnectionOwnersResponse, PlatformAppConnectionProjectInfo, PlatformAppConnectionsListItem, PlatformRole, UpsertAppConnectionRequestBody, User, UserIdentity, UserWithMetaInformation, WorkerJobType } from '@activepieces/shared'
 import { FastifyBaseLogger } from 'fastify'
 import semver from 'semver'
 import { ArrayContains, Equal, FindOperator, FindOptionsWhere, ILike, In } from 'typeorm'
@@ -484,7 +484,7 @@ export const appConnectionService = (log: FastifyBaseLogger) => ({
         })
     },
 
-    async getOwners({ projectId, platformId }: { projectId: ProjectId, platformId: PlatformId }): Promise<AppConnectionOwners[]> {
+    async getOwners({ projectId: _projectId, platformId }: { projectId: ProjectId, platformId: PlatformId }): Promise<AppConnectionOwners[]> {
         const platformAdmins = (await userService(log).getByPlatformRole(platformId, PlatformRole.ADMIN)).map(user => ({
             firstName: user.identity.firstName,
             lastName: user.identity.lastName,
@@ -948,10 +948,6 @@ type GetOneParams = {
     projectId: ProjectId | null
     platformId: string
     id: string
-}
-
-type GetManyParams = {
-    projectId: ProjectId
 }
 
 type RevalidateParams = {

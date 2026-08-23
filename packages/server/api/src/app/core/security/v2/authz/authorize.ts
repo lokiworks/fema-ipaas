@@ -1,4 +1,4 @@
-import { ActivepiecesError, ErrorCode, isNil, Permission } from '@activepieces/core-utils'
+import { ActivepiecesError, ErrorCode, isNil } from '@activepieces/core-utils'
 import { PlatformRole, Principal, PrincipalType, UserIdentityProvider } from '@activepieces/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { userIdentityService } from '../../../../authentication/user-identity/user-identity-service'

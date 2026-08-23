@@ -20,6 +20,7 @@ import { ChevronDown } from 'lucide-react';
 import { Dispatch, SetStateAction, useState } from 'react';
 import { useFormContext, UseFormReturn } from 'react-hook-form';
 
+import { SecretInput } from '@/app/connections/secret-input';
 import {
   MultiSelect,
   MultiSelectContent,
@@ -37,7 +38,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { SecretInput } from '@/app/connections/secret-input';
 import { Input } from '@/components/ui/input';
 import { OAuth2App, oauth2Utils } from '@/features/connections';
 import { appConnectionsApi } from '@/features/connections/api/app-connections';
@@ -46,7 +46,6 @@ import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
 
 import { GenericPropertiesForm } from '../builder/piece-properties/generic-properties-form';
-
 
 function OAuth2ConnectionSettings({
   authProperty,

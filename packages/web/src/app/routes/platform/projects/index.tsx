@@ -27,7 +27,6 @@ import {
   EditProjectDialog,
   projectCollectionUtils,
 } from '@/features/projects';
-import { PlatformAdminProjectAlertSubscriptionBulkActions } from '@/features/projects/components/platform-admin-project-alert-subscription-bulk-actions';
 import { platformHooks } from '@/hooks/platform-hooks';
 import { formatUtils } from '@/lib/format-utils';
 import { validationUtils } from '@/lib/validation-utils';
@@ -213,20 +212,6 @@ export default function ProjectsPage() {
 
   const bulkActions: BulkAction<ProjectWithLimits>[] = useMemo(
     () => [
-      {
-        render: (
-          _: RowDataWithActions<ProjectWithLimits>[],
-          resetSelection: () => void,
-        ) => (
-          <PlatformAdminProjectAlertSubscriptionBulkActions
-            selectedProjects={selectedRows}
-            resetSelection={() => {
-              resetSelection();
-              setSelectedRows([]);
-            }}
-          />
-        ),
-      },
       {
         render: (
           _: RowDataWithActions<ProjectWithLimits>[],

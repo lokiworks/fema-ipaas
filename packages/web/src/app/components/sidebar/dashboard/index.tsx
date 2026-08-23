@@ -163,7 +163,7 @@ export function ProjectDashboardSidebar({
     hasPermission: true,
     isSubItem: false,
     onClick: () => {
-      window.dispatchEvent(new Event(chatUtils.newChatEvent));
+      window.dispatchEvent(new Event('new-chat'));
     },
   };
 
@@ -363,11 +363,7 @@ function DelayedSidebarUsageLimits() {
     return () => clearTimeout(timer);
   }, []);
 
-  return show ? (
-    <div>
-      <SidebarUsageLimits />
-    </div>
-  ) : null;
+  return show ? null : null;
 }
 
 function SidebarPlatformAdminLink() {

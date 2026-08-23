@@ -185,24 +185,13 @@ const StepSettingsContainer = () => {
         {modifiedStep.type === FlowActionType.CODE && (
           <CodeSettings readonly={readonly}></CodeSettings>
         )}
-        {modifiedStep.type === FlowActionType.PIECE &&
-          runAgentStep &&
-          modifiedStep && (
-            <AgentSettings
-              step={modifiedStep}
-              flowId={flowVersion.flowId}
-              readonly={readonly}
-            />
-          )}
-        {modifiedStep.type === FlowActionType.PIECE &&
-          !runAgentStep &&
-          modifiedStep && (
-            <PieceSettings
-              step={modifiedStep}
-              flowId={flowVersion.flowId}
-              readonly={readonly}
-            ></PieceSettings>
-          )}
+        {modifiedStep.type === FlowActionType.PIECE && modifiedStep && (
+          <PieceSettings
+            step={modifiedStep}
+            flowId={flowVersion.flowId}
+            readonly={readonly}
+          ></PieceSettings>
+        )}
         {modifiedStep.type === FlowActionType.ROUTER && modifiedStep && (
           <RouterSettings readonly={readonly}></RouterSettings>
         )}

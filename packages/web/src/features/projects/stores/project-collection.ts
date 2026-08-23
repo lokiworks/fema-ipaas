@@ -71,9 +71,6 @@ export const projectCollection = createCollection<ProjectWithLimits, string>(
         if (modified.icon !== original.icon) {
           request.icon = modified.icon;
         }
-        if (modified.plan !== original.plan) {
-          request.plan = modified.plan;
-        }
         if (modified.maxConcurrentJobs !== original.maxConcurrentJobs) {
           request.maxConcurrentJobs = modified.maxConcurrentJobs;
         }

@@ -98,7 +98,7 @@ export const oauth2Util = (log: FastifyBaseLogger) => ({
         pieceVersion,
         clientId,
         redirectUrl,
-        projectId,
+        projectId: _projectId,
         props,
         scopes,
     }: BuildAuthorizationUrlParams): Promise<GetOAuth2AuthorizationUrlResponse> => {

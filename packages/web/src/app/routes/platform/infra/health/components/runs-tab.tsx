@@ -4,10 +4,9 @@ import { t } from 'i18next';
 import { CheckCircle2, ListChecks } from 'lucide-react';
 import { ReactNode } from 'react';
 
+import { MetricCard } from '@/components/custom/metric-card';
 import { formatUtils } from '@/lib/format-utils';
 import { cn } from '@/lib/utils';
-
-import { MetricCard } from '../../../../impact/summary/metric-card';
 
 import { InternalErrorsTable } from './internal-errors-table';
 import { StatusLineChart } from './status-line-chart';

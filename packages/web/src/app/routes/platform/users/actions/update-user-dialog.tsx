@@ -78,11 +78,7 @@ export const UpdateUserDialog = ({
               render={({ field }) => (
                 <FormItem className="grid space-y-2">
                   <Label htmlFor="role">{t('Role')}</Label>
-                  <RoleSelector
-                    type="platform"
-                    value={field.value}
-                    onValueChange={field.onChange}
-                  />
+                  <input type="hidden" value={field.value} />
                   <FormMessage />
                 </FormItem>
               )}

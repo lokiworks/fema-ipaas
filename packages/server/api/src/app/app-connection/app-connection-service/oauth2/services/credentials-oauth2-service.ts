@@ -105,8 +105,8 @@ export const credentialsOauth2Service = (log: FastifyBaseLogger): OAuth2Service<
     },
 
     async refresh({
-        platformId,
-        projectId,
+        platformId: _platformId,
+        projectId: _projectId,
         connectionValue: appConnection,
     }: RefreshOAuth2Request<OAuth2ConnectionValueWithApp>): Promise<OAuth2ConnectionValueWithApp> {
         if (!oauth2Util(log).isExpired(appConnection)) {

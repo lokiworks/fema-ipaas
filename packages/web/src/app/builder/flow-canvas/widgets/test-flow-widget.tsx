@@ -11,7 +11,6 @@ import {
   useBuilderStateContext,
   useBuilderStore,
 } from '@/app/builder/builder-hooks';
-import { ChatDrawerSource } from '@/app/builder/types';
 import { flowRunUtils } from '@/features/flow-runs';
 import { flowHooks } from '@/features/flows';
 import { pieceSelectorUtils } from '@/features/pieces';
@@ -20,21 +19,14 @@ import { useAuthorization } from '@/hooks/authorization-hooks';
 import { AboveTriggerButton } from './above-trigger-button';
 
 const TestFlowWidget = () => {
-  const [
-    setChatDrawerOpenSource,
-    flowVersion,
-    readonly,
-    hideTestWidget,
-    setRun,
-    publishedVersionId,
-  ] = useBuilderStateContext((state) => [
-    state.setChatDrawerOpenSource,
-    state.flowVersion,
-    state.readonly,
-    state.hideTestWidget,
-    state.setRun,
-    state.flow.publishedVersionId,
-  ]);
+  const [flowVersion, readonly, hideTestWidget, setRun, publishedVersionId] =
+    useBuilderStateContext((state) => [
+      state.flowVersion,
+      state.readonly,
+      state.hideTestWidget,
+      state.setRun,
+      state.flow.publishedVersionId,
+    ]);
   const builderStore = useBuilderStore();
 
   const { checkAccess } = useAuthorization();
@@ -44,10 +36,6 @@ const TestFlowWidget = () => {
     flowVersion.trigger.type === FlowTriggerType.PIECE &&
     !isNil(flowVersion.trigger.settings.sampleData?.lastTestDate);
 
-  const isChatTrigger = pieceSelectorUtils.isChatTrigger(
-    flowVersion.trigger.settings.pieceName,
-    flowVersion.trigger.settings.triggerName,
-  );
   const isManualTrigger = pieceSelectorUtils.isManualTrigger({
     pieceName: flowVersion.trigger.settings.pieceName,
     triggerName: flowVersion.trigger.settings.triggerName,
@@ -91,18 +79,6 @@ const TestFlowWidget = () => {
   if (readonly) {
     return (
       <EditFlowOrViewDraftButton onCanvas={true}></EditFlowOrViewDraftButton>
-    );
-  }
-
-  if (isChatTrigger) {
-    return (
-      <AboveTriggerButton
-        onClick={() => {
-          setChatDrawerOpenSource(ChatDrawerSource.TEST_FLOW);
-        }}
-        text={t('Open Chat')}
-        loading={isTestingFlow}
-      />
     );
   }
 

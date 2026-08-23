@@ -83,20 +83,6 @@ export function useGlobalSearchResults(query: string, open: boolean) {
     placeholderData: keepPreviousData,
   });
 
-  const tablesQuery = useQuery({
-    queryKey: ['global-search-tables', projectId, query],
-    queryFn: () =>
-      tablesApi.list({
-        projectId,
-        ...(hasQuery ? { name: query } : {}),
-        limit: SEARCH_LIMIT,
-        cursor: undefined,
-      }),
-    enabled: (searchEnabled || suggestionsEnabled) && !hideTables,
-    staleTime: hasQuery ? 15_000 : 60_000,
-    placeholderData: keepPreviousData,
-  });
-
   const matchedPages = STATIC_PAGES.filter(
     (p) =>
       (!p.requiresPlatformAdmin || isPlatformAdmin) &&
@@ -130,19 +116,7 @@ export function useGlobalSearchResults(query: string, open: boolean) {
     }),
   );
 
-  const tableResults: SearchResultItem[] = (tablesQuery.data?.data ?? []).map(
-    (table) => ({
-      id: `table-${table.id}`,
-      type: 'table' as const,
-      label: table.name,
-      href: authenticationSession.appendProjectRoutePrefix(
-        `/tables/${table.id}`,
-      ),
-      folderName: table.folderId ? folderMap.get(table.folderId) ?? null : null,
-      updated: table.updated ? String(table.updated) : null,
-      projectName: currentProjectName,
-    }),
-  );
+  const tableResults: SearchResultItem[] = [];
 
   const folderResults: SearchResultItem[] = matchedFolders
     .slice(0, SEARCH_LIMIT)
@@ -180,8 +154,7 @@ export function useGlobalSearchResults(query: string, open: boolean) {
     pageIcon: page.icon,
   }));
 
-  const isSearchLoading =
-    (flowsQuery.isLoading || tablesQuery.isLoading) && searchEnabled;
+  const isSearchLoading = flowsQuery.isLoading && searchEnabled;
 
   if (!hasQuery) {
     if (hasHistory) {
@@ -250,9 +223,7 @@ export function useGlobalSearchResults(query: string, open: boolean) {
       ];
 
       const isFillLoading =
-        needsSupplement &&
-        (flowsQuery.isLoading || tablesQuery.isLoading) &&
-        suggestionsEnabled;
+        needsSupplement && flowsQuery.isLoading && suggestionsEnabled;
 
       const groups: SearchResultGroup[] = periodDefs
         .filter((p) => buckets[p.key].length > 0)
@@ -287,8 +258,7 @@ export function useGlobalSearchResults(query: string, open: boolean) {
       return { groups, isLoading: false };
     }
 
-    const isFallbackLoading =
-      (flowsQuery.isLoading || tablesQuery.isLoading) && suggestionsEnabled;
+    const isFallbackLoading = flowsQuery.isLoading && suggestionsEnabled;
     const flatItems: SearchResultItem[] = [
       ...flowResults.slice(0, 5),
       ...tableResults.slice(0, 5),
@@ -322,7 +292,7 @@ export function useGlobalSearchResults(query: string, open: boolean) {
       type: 'table',
       heading: t('Tables'),
       items: tableResults,
-      isLoading: tablesQuery.isLoading && searchEnabled,
+      isLoading: false,
     },
     {
       type: 'folder',

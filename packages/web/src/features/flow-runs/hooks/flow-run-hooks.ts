@@ -158,8 +158,6 @@ export const flowRunMutations = {
               closeButton: true,
               dismissible: true,
             });
-          } else if (apError.code === ErrorCode.QUOTA_EXCEEDED) {
-            useManagePlanDialogStore.getState().openDialog();
           }
           return;
         }

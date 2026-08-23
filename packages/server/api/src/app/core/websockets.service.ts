@@ -1,10 +1,10 @@
-import { projectAccess } from '../project/project-access'
 import { ActivepiecesError, ErrorCode, isNil, Permission, ProjectRole } from '@activepieces/core-utils'
 import { ApiToWorkerContract, createNotifyClient, Principal, PrincipalForType, PrincipalType, WebsocketServerEvent } from '@activepieces/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { Socket } from 'socket.io'
 import { accessTokenManager } from '../authentication/lib/access-token-manager'
 import { rejectedPromiseHandler } from '../helper/promise-handler'
+import { projectAccess } from '../project/project-access'
 import { app } from '../server'
 
 export type WebsocketListener<T, PR extends PrincipalType.USER | PrincipalType.WORKER> = (socket: Socket) => (data: T, principal: PrincipalForType<PR>, projectId: PR extends PrincipalType.USER ? string : null, callback?: (data: unknown) => void) => Promise<void>

@@ -5,13 +5,7 @@ import {
   UncategorizedFolderId,
 } from '@activepieces/shared';
 import { t } from 'i18next';
-import {
-  ChevronRight,
-  Plus,
-  Sparkles,
-  Upload,
-  Workflow,
-} from 'lucide-react';
+import { ChevronRight, Plus, Sparkles, Upload, Workflow } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -221,7 +215,6 @@ export const AutomationsEmptyState = ({
   const { mutate: createFlow, isPending: isCreateFlowPending } =
     flowHooks.useStartFromScratch(UncategorizedFolderId);
 
-
   const handleTemplateSelect = (template: Template) => {
     if (embedState.isEmbedded) {
       setSelectedTemplate(template);
@@ -300,7 +293,6 @@ export const AutomationsEmptyState = ({
               hasPermission={userHasPermissionToWriteFlow}
             />
           </GetStartedCard>
-
         </div>
       </div>
 

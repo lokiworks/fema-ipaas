@@ -1,5 +1,5 @@
 import { ActivepiecesError, apId, assertNotNullOrUndefined, Cursor, ErrorCode, isNil, PlatformId, ProjectId, SeekPage, spreadIfDefined, UserId } from '@activepieces/core-utils'
-import { ApEdition, PlatformRole, ProjectType, User, UserIdentity, UserStatus, UserWithMetaInformation } from '@activepieces/shared'
+import { PlatformRole, ProjectType, User, UserIdentity, UserStatus, UserWithMetaInformation } from '@activepieces/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { nanoid } from 'nanoid'
@@ -9,7 +9,6 @@ import { repoFactory } from '../core/db/repo-factory'
 import { transaction } from '../core/db/transaction'
 import { buildPaginator } from '../helper/pagination/build-paginator'
 import { paginationHelper } from '../helper/pagination/pagination-utils'
-import { system } from '../helper/system/system'
 import { platformService } from '../platform/platform.service'
 import { projectService } from '../project/project-service'
 import { projectSideEffects } from '../project/project-side-effects'
@@ -266,7 +265,7 @@ async function deleteIdentityIfOrphaned({ identityId, entityManager }: { identit
     }
 }
 
-async function getUsersForProject(platformId: PlatformId, projectId: string): Promise<UserId[]> {
+async function getUsersForProject(platformId: PlatformId, _projectId: string): Promise<UserId[]> {
     return userRepo().find({ where: { platformId, platformRole: PlatformRole.ADMIN } }).then((users) => users.map((user) => user.id))
 }
 

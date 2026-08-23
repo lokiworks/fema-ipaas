@@ -1,4 +1,3 @@
-import { SecretInput } from '@/app/connections/secret-input';
 import { isNil } from '@activepieces/core-utils';
 import {
   PieceProperty,
@@ -9,6 +8,7 @@ import { PropertySettings } from '@activepieces/shared';
 import { t } from 'i18next';
 import { ControllerRenderProps, UseFormReturn } from 'react-hook-form';
 
+import { SecretInput } from '@/app/connections/secret-input';
 import { ColorPicker } from '@/components/custom/color-picker';
 import { DictionaryInput } from '@/components/custom/dictionary-input';
 import { JsonEditor } from '@/components/custom/json-editor';

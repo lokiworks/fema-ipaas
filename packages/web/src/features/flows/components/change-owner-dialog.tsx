@@ -46,7 +46,11 @@ const ChangeOwnerDialog = ({
   flow,
   onOwnerChange,
 }: ChangeOwnerDialogProps) => {
-  const { projectMembers, isLoading } = projectMembersHooks.useProjectMembers();
+  const projectMembers: {
+    userId: string;
+    user: { firstName: string; lastName: string; email: string };
+  }[] = [];
+  const isLoading = false;
   const [isDialogOpened, setIsDialogOpened] = useState(false);
 
   const form = useForm<ChangeOwnerFormSchema>({

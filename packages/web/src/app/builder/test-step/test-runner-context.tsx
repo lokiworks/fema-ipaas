@@ -14,12 +14,10 @@ import React, {
 } from 'react';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
-import { ChatDrawerSource } from '@/app/builder/types';
 import { pieceSelectorUtils, piecesHooks } from '@/features/pieces';
 
 import { DynamicPropertiesContext } from '../piece-properties/dynamic-properties-context';
 
-import { McpToolTestingDialog } from './custom-test-step/mcp-tool-testing-dialog';
 import TestWebhookDialog from './custom-test-step/test-webhook-dialog';
 import {
   TestType,
@@ -96,9 +94,7 @@ const TriggerTestRunnerProvider = ({
   const [isTestingDialogOpen, setIsTestingDialogOpen] = useState(false);
   const abortControllerRef = useRef<AbortController>(new AbortController());
 
-  const [setChatDrawerOpenSource, flowVersionId] = useBuilderStateContext(
-    (state) => [state.setChatDrawerOpenSource, state.flowVersion.id],
-  );
+  const flowVersionId = useBuilderStateContext((state) => state.flowVersion.id);
   const { isLoadingDynamicProperties } = useContext(DynamicPropertiesContext);
   const queryClient = useQueryClient();
 
@@ -171,9 +167,6 @@ const TriggerTestRunnerProvider = ({
     if (!canFireTest || !testType) return;
     switch (testType) {
       case 'chat-trigger':
-        setChatDrawerOpenSource(ChatDrawerSource.TEST_STEP);
-        simulateTrigger(abortControllerRef.current.signal);
-        break;
       case 'simulation':
       case 'webhook':
         simulateTrigger(abortControllerRef.current.signal);
@@ -185,13 +178,7 @@ const TriggerTestRunnerProvider = ({
         setIsTestingDialogOpen(true);
         break;
     }
-  }, [
-    canFireTest,
-    testType,
-    simulateTrigger,
-    pollTrigger,
-    setChatDrawerOpenSource,
-  ]);
+  }, [canFireTest, testType, simulateTrigger, pollTrigger]);
 
   return (
     <TriggerTestRunnerContext.Provider
@@ -221,13 +208,6 @@ const TriggerTestRunnerProvider = ({
       }}
     >
       {children}
-      {testType === 'mcp-tool' && (
-        <McpToolTestingDialog
-          open={isTestingDialogOpen}
-          onOpenChange={setIsTestingDialogOpen}
-          onTestingSuccess={onTestSuccess}
-        />
-      )}
     </TriggerTestRunnerContext.Provider>
   );
 };

@@ -1,11 +1,9 @@
 import { Permission } from '@activepieces/core-utils';
 import { UncategorizedFolderId } from '@activepieces/shared';
-import { t } from 'i18next';
 import { useCallback } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { recordAccess } from '@/app/components/global-search/access-history';
-import { useEmbedding } from '@/components/providers/embed-provider';
 import { AutomationsEmptyState } from '@/features/automations/components/automations-empty-state';
 import { AutomationsFilters as AutomationsFiltersComponent } from '@/features/automations/components/automations-filters';
 import { AutomationsNoResultsState } from '@/features/automations/components/automations-no-results-state';
@@ -43,7 +41,6 @@ export const AutomationsPage = () => {
 const AutomationsPageContent = ({ projectId }: { projectId: string }) => {
   const [, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { embedState } = useEmbedding();
 
   const { data: allProjects = [] } = projectCollectionUtils.useAll();
   const currentProjectName = (() => {
@@ -53,7 +50,6 @@ const AutomationsPageContent = ({ projectId }: { projectId: string }) => {
 
   const { checkAccess } = useAuthorization();
   const userHasPermissionToWriteFlow = checkAccess(Permission.WRITE_FLOW);
-  const userHasPermissionToWriteTable = checkAccess(Permission.WRITE_TABLE);
   const userHasPermissionToWriteFolder = checkAccess(Permission.WRITE_FOLDER);
 
   const {
@@ -233,8 +229,7 @@ const AutomationsPageContent = ({ projectId }: { projectId: string }) => {
     );
   };
 
-  const hasAnyItems =
-    rootFlows.length > 0 || rootTables.length > 0 || folders.length > 0;
+  const hasAnyItems = rootFlows.length > 0 || folders.length > 0;
   const isEmptyState = !hasAnyItems && !isLoading && !filtersActive;
   const isNoResultsState =
     treeItems.length === 0 && filtersActive && !isLoading;
@@ -371,7 +366,6 @@ const AutomationsPageContent = ({ projectId }: { projectId: string }) => {
           }}
         />
       </ImportFlowDialog>
-
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { ActivepiecesError, ErrorCode, isNil } from '@activepieces/core-utils'
+import { isNil } from '@activepieces/core-utils'
 import { Principal, PrincipalType } from '@activepieces/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { nanoid } from 'nanoid'

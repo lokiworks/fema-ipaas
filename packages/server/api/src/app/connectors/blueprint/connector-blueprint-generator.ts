@@ -1,4 +1,4 @@
-import { BlueprintAction, BlueprintAuthType, BlueprintField, ConnectorBlueprintDefinition } from '@fema-ipaas/shared'
+import { BlueprintAction, BlueprintAuthType, BlueprintField, BlueprintFieldType, ConnectorBlueprintDefinition } from '@fema-ipaas/shared'
 
 export const connectorBlueprintGenerator = {
     generate(definition: ConnectorBlueprintDefinition): Record<string, string> {
@@ -84,13 +84,7 @@ function authExpressionFor(definition: ConnectorBlueprintDefinition): string {
 }
 
 function actionFileFor({ action, definition }: { action: BlueprintAction, definition: ConnectorBlueprintDefinition }): string {
-    const props = action.fields
-        .map((field) => `        ${JSON.stringify(field.name)}: Property.ShortText({
-            displayName: ${JSON.stringify(field.displayName)},
-            description: ${JSON.stringify(field.description)},
-            required: ${field.required},
-        }),`)
-        .join('\n')
+    const props = action.fields.map(propertyFor).join('\n')
     return `import { createAction, Property } from '@fema-ipaas/connector-sdk'
 import { httpClient, HttpMethod } from '@fema-ipaas/connector-common'
 import { BASE_URL, connectorAuth, DEFAULT_HEADERS } from '../../index'
@@ -117,6 +111,41 @@ ${props}
     },
 })
 `
+}
+
+function propertyFor(field: BlueprintField): string {
+    const common = `            displayName: ${JSON.stringify(field.displayName)},
+            description: ${JSON.stringify(field.description)},
+            required: ${field.required},`
+    if (field.type === BlueprintFieldType.DROPDOWN) {
+        const options = field.options
+            .map((value) => `                    { label: ${JSON.stringify(value)}, value: ${JSON.stringify(value)} },`)
+            .join('\n')
+        return `        ${JSON.stringify(field.name)}: Property.StaticDropdown({
+${common}
+            options: {
+                options: [
+${options}
+                ],
+            },
+        }),`
+    }
+    return `        ${JSON.stringify(field.name)}: Property.${PROPERTY_KIND[field.type]}({
+${common}
+        }),`
+}
+
+const PROPERTY_KIND: Record<BlueprintFieldType, string> = {
+    [BlueprintFieldType.TEXT]: 'ShortText',
+    [BlueprintFieldType.LONG_TEXT]: 'LongText',
+    [BlueprintFieldType.NUMBER]: 'Number',
+    [BlueprintFieldType.CHECKBOX]: 'Checkbox',
+    [BlueprintFieldType.DROPDOWN]: 'StaticDropdown',
+    [BlueprintFieldType.DATE_TIME]: 'DateTime',
+    [BlueprintFieldType.JSON]: 'Json',
+    [BlueprintFieldType.ARRAY]: 'Array',
+    [BlueprintFieldType.OBJECT]: 'Object',
+    [BlueprintFieldType.SECRET]: 'SecretText',
 }
 
 function authHeaderFor(definition: ConnectorBlueprintDefinition): string {

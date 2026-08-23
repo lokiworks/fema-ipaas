@@ -16,7 +16,13 @@ const OPENAPI_3 = {
             get: {
                 operationId: 'listOrders',
                 summary: 'List orders',
-                parameters: [{ name: 'status', in: 'query', required: false, schema: { type: 'string' } }],
+                parameters: [
+                    { name: 'status', in: 'query', required: false, schema: { type: 'string', enum: ['open', 'closed'] } },
+                    { name: 'limit', in: 'query', required: false, schema: { type: 'integer' } },
+                    { name: 'includeArchived', in: 'query', required: false, schema: { type: 'boolean' } },
+                    { name: 'since', in: 'query', required: false, schema: { type: 'string', format: 'date-time' } },
+                    { name: 'tags', in: 'query', required: false, schema: { type: 'array' } },
+                ],
             },
             post: {
                 summary: 'Create an order',
@@ -66,7 +72,9 @@ describe('openApiParser', () => {
 
     it('merges path-level parameters into every operation on that path', () => {
         const listOrders = openApiParser.parse(OPENAPI_3).operations.find((operation) => operation.operationId === 'listOrders')
-        expect(listOrders?.parameters.map((parameter) => parameter.name).sort()).toEqual(['status', 'tenant'])
+        const names = listOrders?.parameters.map((parameter) => parameter.name) ?? []
+        expect(names).toContain('tenant')
+        expect(names).toContain('status')
     })
 
     it('synthesises an operationId when the document omits one', () => {
@@ -147,5 +155,25 @@ describe('openApiConnectorGenerator', () => {
 
     it('refuses to generate a connector with no operations selected', () => {
         expect(() => generate([])).toThrow(/at least one operation/)
+    })
+
+    it('maps declared schema types onto matching property kinds', () => {
+        const action = generate(['listOrders']).files['src/lib/actions/listorders.ts']
+        expect(action).toContain('Property.Number')
+        expect(action).toContain('Property.Checkbox')
+        expect(action).toContain('Property.DateTime')
+        expect(action).toContain('Property.Array')
+    })
+
+    it('turns an enum into a static dropdown carrying its values', () => {
+        const action = generate(['listOrders']).files['src/lib/actions/listorders.ts']
+        expect(action).toContain('Property.StaticDropdown')
+        expect(action).toContain('"open"')
+        expect(action).toContain('"closed"')
+    })
+
+    it('still falls back to short text for an untyped parameter', () => {
+        const action = generate(['getOrder']).files['src/lib/actions/getorder.ts']
+        expect(action).toContain('Property.ShortText')
     })
 })

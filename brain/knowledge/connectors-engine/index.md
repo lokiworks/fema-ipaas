@@ -47,7 +47,7 @@ A stored blueprint (`connector_blueprint`) describing an HTTP API — base URL, 
 
 - **Gotchas**:
   - Like OpenAPI import, this emits **source files, not an installed connector**. Generated code goes through `fema connectors validate` and `publish` like anything else.
-  - Every input becomes `Property.ShortText`. There is no type picker yet, so numbers and dropdowns need hand-editing after generation.
+  - Each input carries a `BlueprintFieldType` chosen in the UI, which selects the generated property kind. A DROPDOWN field renders its configured options as a StaticDropdown.
   - Auth maps to one SDK auth per blueprint type. `CUSTOM_AUTH` generates an empty `props: {}` — the fields have to be filled in by hand.
   - `networkAgentId` is on the blueprint schema but nothing reads it, matching the network agent's own state ([ADR 0014](../../../docs/adr/0014-network-agent-model-lands-before-the-tunnel.md)).
 
@@ -61,7 +61,7 @@ Turns an OpenAPI 3 or Swagger 2 document into a connector package (design doc se
 - **Gotchas**:
   - The output is **source files, not an installed connector**. The user saves them under `packages/connectors` and runs `fema connectors validate` then `publish`. There is no path from the browser straight into the registry, deliberately: generated code should pass review and the validate rules before it runs.
   - JSON only. YAML specs must be converted first; the endpoint returns a clear validation error rather than guessing.
-  - The generator emits `Property.ShortText` for every parameter regardless of the declared schema type. Numbers, enums and nested bodies come through as text and need hand-editing — the generated connector is a starting point, not a finished one.
+  - Declared schema types map onto matching properties: `integer`/`number` → Number, `boolean` → Checkbox, `enum` → StaticDropdown carrying the values, `array`/`object` → Array/Object, `string` with `format: date-time` → DateTime, `password` → SecretText. An untyped parameter still falls back to ShortText — the generated connector is a good starting point, not a finished one.
   - Only the **first** server and the **first** security scheme are used. Multi-server or multi-auth specs need manual adjustment.
 
 ### Connector CLI

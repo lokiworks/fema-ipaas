@@ -18,7 +18,8 @@ Reaches systems inside a customer intranet without asking them to open an inboun
   - **An empty allowlist denies everything.** A freshly created agent has authorised no targets, not all of them. Defaulting to allow would turn "forgot to configure the scope" into silent whole-network reach.
   - The agent package deliberately does **not** depend on `@fema-ipaas/shared` and declares its own copy of the wire contract. It is a binary installed inside a customer network, and shared carries DB schemas and heavy deps irrelevant to forwarding one HTTP call. The two contract files are a protocol pair and must change together — changing one alone shows up at runtime as an event name that never matches and a request that silently never answers.
   - Proxy requests time out after 30s rather than hanging on an agent that has gone away.
-  - **Not wired yet**: a Connection bound to an agent does not automatically route through the tunnel. `POST /v1/network-agents/proxy` works, but connector outbound HTTP still goes direct through `safeHttp`. Connecting them means changing the connector HTTP path.
+  - Egress routing is **per process, not per request**. A connector runs in a fresh child process per call (ADR 0029), so when `connection-resolver` sees a `networkAgentId` it wraps that process's `fetch` for the rest of the call. Calls back to the platform's own internal API are excluded, or the proxy request would proxy itself.
+  - `deactivate()` restores the original `fetch`. It has to fully undo `activate()` — leaving the wrapper installed would silently route a later, unbound connection through an agent.
 
 ### Encryption at Rest & Key Rotation
 

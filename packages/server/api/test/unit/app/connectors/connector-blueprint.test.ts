@@ -1,4 +1,4 @@
-import { BlueprintAuthType, BlueprintHttpMethod, ConnectorBlueprintDefinition } from '@fema-ipaas/shared'
+import { BlueprintAuthType, BlueprintFieldType, BlueprintHttpMethod, ConnectorBlueprintDefinition } from '@fema-ipaas/shared'
 import { connectorBlueprintGenerator } from '../../../../src/app/connectors/blueprint/connector-blueprint-generator'
 
 const BASE: ConnectorBlueprintDefinition = {
@@ -18,8 +18,8 @@ const BASE: ConnectorBlueprintDefinition = {
         method: BlueprintHttpMethod.GET,
         path: '/orders/{id}',
         fields: [
-            { name: 'id', displayName: 'Order id', description: '', required: true, in: 'path' },
-            { name: 'expand', displayName: 'Expand', description: '', required: false, in: 'query' },
+            { name: 'id', displayName: 'Order id', description: '', required: true, in: 'path', type: BlueprintFieldType.TEXT, options: [] },
+            { name: 'expand', displayName: 'Expand', description: '', required: false, in: 'query', type: BlueprintFieldType.TEXT, options: [] },
         ],
     }],
     networkAgentId: null,
@@ -82,7 +82,7 @@ describe('connectorBlueprintGenerator', () => {
             actions: [{
                 ...BASE.actions[0],
                 method: BlueprintHttpMethod.POST,
-                fields: [{ name: 'note', displayName: 'Note', description: '', required: false, in: 'body' }],
+                fields: [{ name: 'note', displayName: 'Note', description: '', required: false, in: 'body', type: BlueprintFieldType.TEXT, options: [] }],
             }],
         })['src/lib/actions/get-order.ts']
         expect(withBody).toContain('"note": input["note"]')
@@ -94,5 +94,43 @@ describe('connectorBlueprintGenerator', () => {
         expect(packageJson.name).toBe('@fema-ipaas/connector-orders')
         expect(packageJson.version).toBe('1.0.0')
         expect(packageJson.dependencies['@fema-ipaas/connector-sdk']).toBe('workspace:*')
+    })
+
+    it('renders each field type as its matching property kind', () => {
+        const files = generate({
+            actions: [{
+                ...BASE.actions[0],
+                fields: [
+                    { name: 'count', displayName: 'Count', description: '', required: false, in: 'query', type: BlueprintFieldType.NUMBER, options: [] },
+                    { name: 'active', displayName: 'Active', description: '', required: false, in: 'query', type: BlueprintFieldType.CHECKBOX, options: [] },
+                    { name: 'secret', displayName: 'Secret', description: '', required: false, in: 'header', type: BlueprintFieldType.SECRET, options: [] },
+                    { name: 'payload', displayName: 'Payload', description: '', required: false, in: 'body', type: BlueprintFieldType.JSON, options: [] },
+                ],
+            }],
+        })['src/lib/actions/get-order.ts']
+        expect(files).toContain('Property.Number')
+        expect(files).toContain('Property.Checkbox')
+        expect(files).toContain('Property.SecretText')
+        expect(files).toContain('Property.Json')
+    })
+
+    it('renders a dropdown field with its configured options', () => {
+        const file = generate({
+            actions: [{
+                ...BASE.actions[0],
+                fields: [{
+                    name: 'status',
+                    displayName: 'Status',
+                    description: '',
+                    required: true,
+                    in: 'query',
+                    type: BlueprintFieldType.DROPDOWN,
+                    options: ['open', 'closed'],
+                }],
+            }],
+        })['src/lib/actions/get-order.ts']
+        expect(file).toContain('Property.StaticDropdown')
+        expect(file).toContain('"open"')
+        expect(file).toContain('"closed"')
     })
 })

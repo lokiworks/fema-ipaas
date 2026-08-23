@@ -1,5 +1,6 @@
 import {
   BlueprintAuthType,
+  BlueprintFieldType,
   BlueprintHttpMethod,
   ConnectorBlueprintDefinition,
   GenerateFromBlueprintResponse,
@@ -400,6 +401,8 @@ function FieldEditor({
                 description: '',
                 required: false,
                 in: 'query',
+                type: BlueprintFieldType.TEXT,
+                options: [],
               },
             ])
           }
@@ -409,7 +412,7 @@ function FieldEditor({
         </Button>
       </div>
       {fields.map((field, index) => (
-        <div key={index} className="grid gap-2 sm:grid-cols-4">
+        <div key={index} className="grid gap-2 sm:grid-cols-5">
           <Input
             className="h-8 font-mono text-xs"
             placeholder={t('Name')}

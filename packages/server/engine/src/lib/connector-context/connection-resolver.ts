@@ -1,6 +1,8 @@
 import { ContextVersion } from '@fema-ipaas/connector-sdk'
+import { isNil } from '@fema-ipaas/core-utils'
 import { Connection, ConnectionConnectorMismatchError, ConnectionExpiredError, ConnectionLoadingError, ConnectionNotFoundError, ConnectionStatus, ConnectionType, ConnectionValue, ExecutionError, FetchError } from '@fema-ipaas/shared'
 import { retryFetch } from '../api/retry-fetch'
+import { networkAgentEgress } from '../network/network-agent-egress'
 import { utils } from '../utils'
 
 export const createConnectionResolver = ({ workspaceId, engineToken, apiUrl, contextVersion, connectorName }: CreateConnectionResolverParams): ConnectionResolver => {
@@ -27,6 +29,15 @@ export const createConnectionResolver = ({ workspaceId, engineToken, apiUrl, con
                     throw new ConnectionExpiredError(externalId)
                 }
                 assertConnectorBinding({ externalId, connectorName, connection })
+                // A connection bound to a network agent means its target lives inside a customer
+                // network. Route this process's egress through the agent for the rest of the call.
+                if (!isNil(connection.networkAgentId)) {
+                    networkAgentEgress.activate({
+                        networkAgentId: connection.networkAgentId,
+                        apiUrl,
+                        engineToken,
+                    })
+                }
                 return getConnectionValue(connection, contextVersion)
             }))
 

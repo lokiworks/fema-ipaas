@@ -17,12 +17,27 @@ export enum BlueprintHttpMethod {
     DELETE = 'DELETE',
 }
 
+export enum BlueprintFieldType {
+    TEXT = 'TEXT',
+    LONG_TEXT = 'LONG_TEXT',
+    NUMBER = 'NUMBER',
+    CHECKBOX = 'CHECKBOX',
+    DROPDOWN = 'DROPDOWN',
+    DATE_TIME = 'DATE_TIME',
+    JSON = 'JSON',
+    ARRAY = 'ARRAY',
+    OBJECT = 'OBJECT',
+    SECRET = 'SECRET',
+}
+
 export const BlueprintField = z.object({
     name: z.string().min(1, 'formErrors.required'),
     displayName: z.string().min(1, 'formErrors.required'),
     description: z.string().default(''),
     required: z.boolean().default(false),
     in: z.enum(['query', 'path', 'header', 'body']),
+    type: z.enum(BlueprintFieldType).default(BlueprintFieldType.TEXT),
+    options: z.array(z.string()).default([]),
 })
 
 export const BlueprintAction = z.object({
@@ -72,6 +87,7 @@ export const GenerateFromBlueprintResponse = z.object({
 })
 
 export type BlueprintField = z.infer<typeof BlueprintField>
+export type BlueprintFieldTypeValue = `${BlueprintFieldType}`
 export type BlueprintAction = z.infer<typeof BlueprintAction>
 export type BlueprintAuth = z.infer<typeof BlueprintAuth>
 export type ConnectorBlueprintDefinition = z.infer<typeof ConnectorBlueprintDefinition>

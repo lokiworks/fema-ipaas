@@ -1,4 +1,5 @@
 import { ParsedAuthScheme, ParsedOpenApi, ParsedOperation, ParsedParameter } from './openapi-parser'
+import { propertyForSchema } from './property-for-schema'
 
 export const openApiConnectorGenerator = {
     generate({ parsed, operationIds, connectorName, displayName }: GenerateParams): GeneratedConnector {
@@ -87,11 +88,15 @@ const connectorAuth = ConnectorAuth.SecretText({
 function actionFileFor({ operation, baseUrl }: { operation: ParsedOperation, baseUrl: string }): string {
     const props = operation.parameters
         .filter((parameter) => parameter.name.length > 0)
-        .map((parameter) => `        ${JSON.stringify(parameter.name)}: Property.ShortText({
-            displayName: ${JSON.stringify(parameter.name)},
-            description: ${JSON.stringify(parameter.description)},
-            required: ${parameter.required},
-        }),`)
+        .map((parameter) => propertyForSchema.render({
+            name: parameter.name,
+            displayName: parameter.name,
+            description: parameter.description,
+            required: parameter.required,
+            type: parameter.type,
+            format: parameter.format,
+            enumValues: parameter.enumValues,
+        }))
         .join('\n')
     const bodyProp = operation.hasRequestBody
         ? `        body: Property.Json({

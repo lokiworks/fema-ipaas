@@ -82,12 +82,17 @@ function parseOperations(paths: Record<string, unknown>): ParsedOperation[] {
 
 function toParameter(parameter: Record<string, unknown>): ParsedParameter {
     const schema = isRecord(parameter.schema) ? parameter.schema : {}
+    const enumValues = Array.isArray(schema.enum)
+        ? schema.enum
+        : Array.isArray(parameter.enum) ? parameter.enum : undefined
     return {
         name: typeof parameter.name === 'string' ? parameter.name : '',
         in: typeof parameter.in === 'string' ? parameter.in : 'query',
         required: parameter.required === true,
         description: typeof parameter.description === 'string' ? parameter.description : '',
         type: typeof schema.type === 'string' ? schema.type : typeof parameter.type === 'string' ? parameter.type : 'string',
+        format: typeof schema.format === 'string' ? schema.format : undefined,
+        enumValues: enumValues?.map((value) => String(value)),
     }
 }
 
@@ -106,6 +111,8 @@ export type ParsedParameter = {
     required: boolean
     description: string
     type: string
+    format?: string
+    enumValues?: string[]
 }
 
 export type ParsedOperation = {

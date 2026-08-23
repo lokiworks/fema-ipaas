@@ -1,0 +1,71 @@
+packages/server/api/src/app/database/migration/postgres/1787900000005-AddWorkflowGraph.ts
+  s_94864882421579::t_47bd1f70087f01 1-13
+packages/core/execution/src/lib/workflows/execution-plan/index.ts
+  s_94864882421579::t_58f6e3c44022bb 3
+packages/server/api/src/app/database/postgres-connection.ts
+  s_94864882421579::t_47bd1f70087f01 35
+  s_05019b0fba23d6::t_aaecd103423ef3 15
+packages/server/engine/src/lib/handler/execution-plan-cursor.ts
+  s_94864882421579::t_fcfef93ed98529 2,7-8,46,70
+  s_94864882421579::t_6eacd6ba8fea5a 23-36,83-84
+  s_94864882421579::t_1328ee5b7cf43f 85-86
+packages/core/shared/test/automation/compile-workflow.test.ts
+  s_94864882421579::t_d191f3ad1e8dcb 19,131-153
+packages/core/execution/src/lib/workflows/execution-plan/compile-workflow.ts
+  s_94864882421579::t_5a5665acc1f5f9 5,11-13,17,22-28
+  s_94864882421579::t_e51be64a526b5d 29-30
+packages/server/engine/src/lib/handler/workflow-executor.ts
+  s_94864882421579::t_fcfef93ed98529 87
+  s_94864882421579::t_6eacd6ba8fea5a 94-102
+packages/core/execution/src/lib/workflows/workflow-version.ts
+  s_94864882421579::t_58f6e3c44022bb 4,28
+brain/knowledge/connectors-engine/index.md
+  s_94864882421579::t_fcf928ca6cd5a9 20,26-29
+packages/core/execution/src/lib/workflows/operations/index.ts
+  s_94864882421579::t_af8666cb9b5f88 438-441,452-463
+  s_94864882421579::t_562032dd88d874 4,48,180-184,299-302
+  s_94864882421579::t_d4078167e007c8 464
+packages/core/shared/src/lib/governance/audit-events/index.ts
+  s_94864882421579::t_5b2e3411f211a9 605-606
+packages/core/execution/src/lib/workflows/execution-plan/workflow-graph.ts
+  s_94864882421579::t_58f6e3c44022bb 1-18
+docs/adr/0017-join-edges-extend-the-tree-instead-of-replacing-it.md
+  s_94864882421579::t_d328a27d862fbb 1-49
+packages/server/engine/src/lib/handler/context/engine-constants.ts
+  s_94864882421579::t_87b6b4f25ead3d 58,225,234,257
+  s_94864882421579::t_6896d6b07074b8 104
+  s_94864882421579::t_d57c32eaeb690a 16
+  s_05019b0fba23d6::t_7f833a8b78eb96 3
+packages/server/engine/test/handler/workflow-with-join.test.ts
+  s_94864882421579::t_99cd3a87744b32 1-125
+docs/adr/0015-parallel-and-the-compiler-without-a-graph-persistence-rewrite.md
+  s_94864882421579::t_d328a27d862fbb 4
+docs/adr/index.md
+  s_94864882421579::t_d328a27d862fbb 27
+packages/server/api/src/app/workflows/workflow-version/workflow-version-entity.ts
+  s_94864882421579::t_47bd1f70087f01 57-60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "833d76c253acbc5ab68e3ff795e2a67d114f3d01",
+  "prompts": {},
+  "sessions": {
+    "s_05019b0fba23d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e10c4cdb-7c07-45f3-b342-da41bb100baa",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    },
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

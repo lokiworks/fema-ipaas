@@ -4,6 +4,7 @@ import { createLogger } from '@fema-ipaas/server-utils'
 import { FastifyBaseLogger } from 'fastify'
 import { jobQueue } from '../workers/job-queue/job-queue'
 import { appMachineCache } from './app-machine-cache'
+import { otelExecutionMetrics } from './otel-execution-metrics'
 import { otelQueueMetrics, QueueCounts } from './otel-queue-metrics'
 
 const SNAPSHOT_INTERVAL_MS = 60_000
@@ -61,6 +62,7 @@ export const systemSnapshot = {
                 }
 
                 await otelQueueMetrics.push({ log, queueCounts: queueCounts ?? {} })
+                await otelExecutionMetrics.push(log)
             }
             catch {
                 // Never crash the process from a monitoring tick

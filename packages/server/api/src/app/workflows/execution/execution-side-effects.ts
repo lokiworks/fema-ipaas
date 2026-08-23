@@ -1,3 +1,4 @@
+import { isNil } from '@fema-ipaas/core-utils'
 import { ApplicationEventName,
     Execution,
     isExecutionStateTerminal,
@@ -5,6 +6,7 @@ import { ApplicationEventName,
 } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { applicationEvents } from '../../helper/application-events'
+import { otelExecutionMetrics } from '../../helper/otel-execution-metrics'
 import { executionHooks } from './execution-hooks'
 import { waitpointService } from './waitpoint/waitpoint-service'
 
@@ -18,6 +20,10 @@ export const executionSideEffects = (log: FastifyBaseLogger) => ({
         }
         await waitpointService(log).deleteByExecutionId(execution.id)
         await executionHooks(log).onFinish(execution)
+        otelExecutionMetrics.recordExecution({
+            status: execution.status,
+            durationMs: durationOf(execution),
+        })
         applicationEvents(log).sendWorkerEvent({
             workspaceId: execution.workspaceId,
             tenantId,
@@ -62,4 +68,11 @@ export const executionSideEffects = (log: FastifyBaseLogger) => ({
 type ExecutionSideEffectParams = {
     execution: Execution
     tenantId: TenantId
+}
+
+function durationOf(execution: Execution): number | undefined {
+    if (isNil(execution.startTime) || isNil(execution.finishTime)) {
+        return undefined
+    }
+    return new Date(execution.finishTime).getTime() - new Date(execution.startTime).getTime()
 }

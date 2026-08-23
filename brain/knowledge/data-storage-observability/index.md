@@ -26,6 +26,19 @@ Central binary persistence with two backends: DB (`bytea`) or S3-compatible (AWS
 
 Resolve workflow/connection secrets from external vaults (HashiCorp, AWS Secrets Manager, CyberArk Conjur, 1Password) instead of the DB. Reference syntax `{{connectionId|path}}`. Config encrypted at rest, secrets + connection status cached in Redis. Scope PLATFORM or PROJECT (projectIds `@>` containment). Gated by `platform.plan.secretManagersEnabled`. EE/Cloud only.
 
+### OpenTelemetry Metrics
+
+Two OTLP exporters, both pushed from the `system-snapshot` tick and both gated on `FEMA_OTEL_QUEUE_METRICS_ENABLED` plus `OTEL_EXPORTER_OTLP_ENDPOINT`:
+
+- `otel-queue-metrics.ts` — `bullmq.job.count` gauge, jobs by queue and state.
+- `otel-execution-metrics.ts` — design doc section 40's execution metrics: `workflow_execution_total`, `workflow_execution_failed_total`, `connector_action_total`, `connector_action_failed_total` (cumulative monotonic sums) and a `workflow_execution_duration` histogram.
+
+- **Gotchas**:
+  - Counters are accumulated **in process memory** and exported as cumulative sums with `aggregationTemporality: 2`. A restart resets them to zero, which is correct cumulative-OTLP behaviour — the collector handles the reset — but it means these are not durable and must not be used for billing or any figure that has to survive a deploy.
+  - `PAUSED` and `RUNNING` are not failures. `isFailure` treats everything except `SUCCEEDED`, `RUNNING` and `PAUSED` as failed, so a new non-terminal status must be added there or it will be counted as a failure.
+  - `connector_action_*` is recorded through `otelExecutionMetrics.recordConnectorAction`, but the engine runs in a **separate process** and cannot reach this accumulator. Wiring connector-level counts needs a path back over the engine API first; the recorder exists and is tested, the call site does not.
+  - Both exporters share `FEMA_OTEL_QUEUE_METRICS_ENABLED`. The name is now narrower than what it gates.
+
 ### Audit Log
 
 "Who changed what", deliberately separate from Execution's "what the system ran" (design doc section 41). Rows land in `audit_event`, listed by tenant admins at `/tenant/audit` via `GET /v1/audit-events`.

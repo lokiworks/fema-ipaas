@@ -20,3 +20,4 @@ icon: 🧭
 | 0008 | [UI 按企业集成心智重建，而不是自动化工具心智](0008-ui-follows-enterprise-integration-mental-model.md) | accepted |
 | 0009 | [AI Agent 与 MCP 不进入 Integration Core](0009-no-ai-agent-in-integration-core.md) | accepted |
 | 0010 | [保持 MIT 并冻结上游基线](0010-license-and-upstream-notice-policy.md) | accepted |
+| 0011 | [上游迁移压缩为单一基线，放弃从 Activepieces 就地升级](0011-squash-upstream-migrations-into-one-baseline.md) | accepted |

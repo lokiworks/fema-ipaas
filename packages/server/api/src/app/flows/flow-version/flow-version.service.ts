@@ -1,4 +1,4 @@
-import { apId, Cursor, ErrorCode, FlowId, FlowVersionId, isNil, PlatformError, PlatformId, ProjectId, sanitizeObjectForPostgresql, SeekPage, UserId } from '@fema/core-utils'
+import { apId, Cursor, ErrorCode, FlowId, FlowVersionId, isNil, PlatformError, PlatformId, sanitizeObjectForPostgresql, SeekPage, UserId, WorkspaceId } from '@fema/core-utils'
 import { FlowOperationRequest, flowOperations, FlowOperationType, flowStructureUtil, FlowTriggerType, FlowVersion, FlowVersionState, LATEST_FLOW_SCHEMA_VERSION, Note } from '@fema/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
@@ -18,7 +18,7 @@ export const flowVersionRepo = repoFactory(FlowVersionEntity)
 export const flowVersionService = (log: FastifyBaseLogger) => ({
     async applyOperation({
         flowVersion,
-        projectId,
+        workspaceId,
         userId,
         userOperation,
         entityManager,
@@ -59,7 +59,7 @@ export const flowVersionService = (log: FastifyBaseLogger) => ({
             }
             case FlowOperationType.SAVE_SAMPLE_DATA: {
                 const sampleDataSettings = await sampleDataService(log).saveSampleDataFileIdsInStep({
-                    projectId,
+                    workspaceId,
                     flowVersionId: mutatedFlowVersion.id,
                     stepName: userOperation.request.stepName,
                     payload: userOperation.request.payload,
@@ -81,7 +81,7 @@ export const flowVersionService = (log: FastifyBaseLogger) => ({
         }
         for (const operation of operations) {
             mutatedFlowVersion = await applySingleOperation({
-                projectId,
+                workspaceId,
                 flowVersion: mutatedFlowVersion,
                 operation,
                 platformId,
@@ -136,7 +136,7 @@ export const flowVersionService = (log: FastifyBaseLogger) => ({
         })
     },
 
-    async getLatestVersionsByFlowIds(flowIds: FlowId[], projectId?: ProjectId): Promise<Map<FlowId, FlowVersion>> {
+    async getLatestVersionsByFlowIds(flowIds: FlowId[], workspaceId?: WorkspaceId): Promise<Map<FlowId, FlowVersion>> {
         if (flowIds.length === 0) {
             return new Map()
         }
@@ -149,7 +149,7 @@ export const flowVersionService = (log: FastifyBaseLogger) => ({
             .getMany()
         const migratedEntries = await Promise.all(
             latestVersions.map(async (version) => {
-                const migrated = await flowVersionMigrationService(log).migrate(version, projectId)
+                const migrated = await flowVersionMigrationService(log).migrate(version, workspaceId)
                 return [version.flowId, migrated] as const
             }),
         )
@@ -224,7 +224,7 @@ export const flowVersionService = (log: FastifyBaseLogger) => ({
         removeConnectionsName = false,
         removeSampleData = false,
         entityManager,
-        projectId,
+        workspaceId,
     }: GetFlowVersionOrThrowParams): Promise<FlowVersion> {
         const flowVersion: FlowVersion | null = await findOne(log, {
             where: {
@@ -235,7 +235,7 @@ export const flowVersionService = (log: FastifyBaseLogger) => ({
             order: {
                 created: 'DESC',
             },
-        }, entityManager, projectId)
+        }, entityManager, workspaceId)
 
         if (isNil(flowVersion)) {
             throw new PlatformError({
@@ -307,17 +307,17 @@ export const flowVersionService = (log: FastifyBaseLogger) => ({
 
 
 
-async function findOne(log: FastifyBaseLogger, options: FindOneOptions, entityManager?: EntityManager, projectId?: ProjectId): Promise<FlowVersion | null> {
+async function findOne(log: FastifyBaseLogger, options: FindOneOptions, entityManager?: EntityManager, workspaceId?: WorkspaceId): Promise<FlowVersion | null> {
     const flowVersion = await flowVersionRepo(entityManager).findOne(options)
     if (isNil(flowVersion)) {
         return null
     }
-    return flowVersionMigrationService(log).migrate(flowVersion, projectId)
+    return flowVersionMigrationService(log).migrate(flowVersion, workspaceId)
 }
 
 
 async function applySingleOperation({
-    projectId,
+    workspaceId,
     flowVersion,
     operation,
     platformId,
@@ -326,7 +326,7 @@ async function applySingleOperation({
     entityManager,
 }: ApplySingleOperationParams): Promise<FlowVersion> {
     await flowVersionSideEffects(log).preApplyOperation({
-        projectId,
+        workspaceId,
         flowVersion,
         operation,
         entityManager,
@@ -368,7 +368,7 @@ type GetFlowVersionOrThrowParams = {
     removeConnectionsName?: boolean
     removeSampleData?: boolean
     entityManager?: EntityManager
-    projectId?: ProjectId
+    workspaceId?: WorkspaceId
 }
 
 type NewFlowVersion = Omit<FlowVersion, 'created' | 'updated'>
@@ -382,7 +382,7 @@ type CreateEmptyVersionParams = {
 }
 
 type ApplySingleOperationParams = {
-    projectId: ProjectId
+    workspaceId: WorkspaceId
     flowVersion: FlowVersion
     operation: FlowOperationRequest
     platformId: PlatformId
@@ -399,7 +399,7 @@ type ListFlowVersionParams = {
 
 type ApplyOperationParams = {
     userId: UserId | null
-    projectId: ProjectId
+    workspaceId: WorkspaceId
     platformId: PlatformId
     flowVersion: FlowVersion
     userOperation: FlowOperationRequest

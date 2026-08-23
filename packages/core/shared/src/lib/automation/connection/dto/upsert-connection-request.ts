@@ -7,7 +7,7 @@ const commonAuthProps = {
     externalId: z.string(),
     displayName: z.string(),
     connectorName: z.string(),
-    projectId: z.string(),
+    workspaceId: z.string(),
     metadata: z.optional(Metadata),
     connectorVersion: z.string().optional(),
 }
@@ -148,37 +148,37 @@ export const UpdateConnectionValueRequestBody = z.object({
 
 export const UpdateGlobalConnectionValueRequestBody = z.object({
     displayName: z.string().min(1),
-    projectIds: z.array(z.string()).optional(),
+    workspaceIds: z.array(z.string()).optional(),
     metadata: z.optional(Metadata),
-    preSelectForNewProjects: z.boolean().optional(),
+    preSelectForNewWorkspaces: z.boolean().optional(),
 })
 
 export type UpdateConnectionValueRequestBody = z.infer<typeof UpdateConnectionValueRequestBody>
 export type UpdateGlobalConnectionValueRequestBody = z.infer<typeof UpdateGlobalConnectionValueRequestBody>
 const GlobalConnectionExtras = z.object({
     scope: z.literal(ConnectionScope.PLATFORM),
-    projectIds: z.array(z.string()),
+    workspaceIds: z.array(z.string()),
     externalId: z.string().optional(),
     metadata: z.optional(Metadata),
-    preSelectForNewProjects: z.boolean().optional(),
+    preSelectForNewWorkspaces: z.boolean().optional(),
 })
 export const UpsertGlobalConnectionRequestBody =
     z.union([
-        UpsertSecretTextRequest.omit({ projectId: true, externalId: true }).merge(GlobalConnectionExtras),
-        UpsertOAuth2Request.omit({ projectId: true, externalId: true }).merge(GlobalConnectionExtras),
-        UpsertCloudOAuth2Request.omit({ projectId: true, externalId: true }).merge(GlobalConnectionExtras),
-        UpsertPlatformOAuth2Request.omit({ projectId: true, externalId: true }).merge(GlobalConnectionExtras),
-        UpsertBasicAuthRequest.omit({ projectId: true, externalId: true }).merge(GlobalConnectionExtras),
-        UpsertCustomAuthRequest.omit({ projectId: true, externalId: true }).merge(GlobalConnectionExtras),
-        UpsertOIDCRequest.omit({ projectId: true, externalId: true }).merge(GlobalConnectionExtras),
-        UpsertNoAuthRequest.omit({ projectId: true, externalId: true }).merge(GlobalConnectionExtras),
+        UpsertSecretTextRequest.omit({ workspaceId: true, externalId: true }).merge(GlobalConnectionExtras),
+        UpsertOAuth2Request.omit({ workspaceId: true, externalId: true }).merge(GlobalConnectionExtras),
+        UpsertCloudOAuth2Request.omit({ workspaceId: true, externalId: true }).merge(GlobalConnectionExtras),
+        UpsertPlatformOAuth2Request.omit({ workspaceId: true, externalId: true }).merge(GlobalConnectionExtras),
+        UpsertBasicAuthRequest.omit({ workspaceId: true, externalId: true }).merge(GlobalConnectionExtras),
+        UpsertCustomAuthRequest.omit({ workspaceId: true, externalId: true }).merge(GlobalConnectionExtras),
+        UpsertOIDCRequest.omit({ workspaceId: true, externalId: true }).merge(GlobalConnectionExtras),
+        UpsertNoAuthRequest.omit({ workspaceId: true, externalId: true }).merge(GlobalConnectionExtras),
     ])
 export type UpsertGlobalConnectionRequestBody = z.infer<typeof UpsertGlobalConnectionRequestBody>
 
 export const GetOAuth2AuthorizationUrlRequestBody = z.object({
     connectorName: z.string(),
     connectorVersion: z.string().optional(),
-    projectId: z.string().optional(),
+    workspaceId: z.string().optional(),
     clientId: z.string(),
     redirectUrl: z.string(),
     scopes: z.array(z.string()).optional(),
@@ -195,7 +195,7 @@ export type GetOAuth2AuthorizationUrlResponse = z.infer<typeof GetOAuth2Authoriz
 export const ReplaceConnectionsRequestBody = z.object({
     sourceConnectionId: z.string(),
     targetConnectionId: z.string(),
-    projectId: z.string(),
+    workspaceId: z.string(),
     deleteSourceConnection: z.boolean().optional().default(false),
     applyToPublishedVersions: z.boolean().optional().default(false),
 })
@@ -203,6 +203,6 @@ export type ReplaceConnectionsRequestBody = z.infer<typeof ReplaceConnectionsReq
 
 export const ListFlowsFromConnectionRequestQuery = z.object({
     sourceConnectionIds: z.array(z.string()),
-    projectId: z.string(),
+    workspaceId: z.string(),
 })
 export type ListFlowsFromConnectionRequestQuery = z.infer<typeof ListFlowsFromConnectionRequestQuery>

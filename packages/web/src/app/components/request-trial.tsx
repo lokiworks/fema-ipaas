@@ -6,7 +6,7 @@ import { flagsHooks } from '@/hooks/flags-hooks';
 import { userHooks } from '@/hooks/user-hooks';
 
 export type FeatureKey =
-  | 'PROJECTS'
+  | 'WORKSPACES'
   | 'BRANDING'
   | 'CONNECTORS'
   | 'TEMPLATES'

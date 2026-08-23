@@ -76,7 +76,7 @@ const FlowActionMenu: React.FC<FlowActionMenuProps> = ({
   const { embedState } = useEmbedding();
   const isDevelopmentBranch = false;
   const [open, setOpen] = useState(false);
-  const hasProjectMembers = false;
+  const hasWorkspaceMembers = false;
 
   const [isRenameOpen, setIsRenameOpen] = useState(false);
   const [renameValue, setRenameValue] = useState(flowVersion.displayName);
@@ -118,7 +118,7 @@ const FlowActionMenu: React.FC<FlowActionMenuProps> = ({
       };
       const createdFlow = await flowsApi.create({
         displayName: modifiedFlowVersion.displayName,
-        projectId: authenticationSession.getProjectId()!,
+        workspaceId: authenticationSession.getWorkspaceId()!,
         folderId: flow.folderId ?? undefined,
       });
       const updatedFlow = await flowsApi.update(createdFlow.id, {
@@ -216,7 +216,7 @@ const FlowActionMenu: React.FC<FlowActionMenuProps> = ({
               </DropdownMenuItem>
             </PermissionNeededTooltip>
           )}
-          {!readonly && hasProjectMembers && !embedState.isEmbedded && (
+          {!readonly && hasWorkspaceMembers && !embedState.isEmbedded && (
             <PermissionNeededTooltip
               hasPermission={userHasPermissionToUpdateFlow}
             >

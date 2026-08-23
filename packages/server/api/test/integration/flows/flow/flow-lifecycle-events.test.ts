@@ -61,7 +61,7 @@ describe('Flow application events', () => {
 
             const response = await ctx.post('/v1/flows', {
                 displayName: 'My flow',
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
             })
 
             expect(response?.statusCode).toBe(StatusCodes.CREATED)
@@ -262,7 +262,7 @@ describe('Flow application events', () => {
 
             await flowService(app.log).update({
                 id: flow.id,
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
                 platformId: ctx.platform.id,
                 userId: ctx.user.id,
                 operation: renameOperation,
@@ -277,7 +277,7 @@ describe('Flow application events', () => {
 
             await flowService(app.log).update({
                 id: flow.id,
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
                 platformId: ctx.platform.id,
                 userId: ctx.user.id,
                 operation: renameOperation,
@@ -333,7 +333,7 @@ async function seedPublishableFlow({
     await db.save('connector_metadata', connectorMetadata)
 
     const flow = createMockFlow({
-        projectId: ctx.project.id,
+        workspaceId: ctx.workspace.id,
         status: initialStatus,
     })
     await db.save('flow', flow)

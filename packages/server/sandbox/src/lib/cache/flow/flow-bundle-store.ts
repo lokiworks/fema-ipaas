@@ -11,7 +11,7 @@ import { flowSteps } from './flow-steps'
 const MISS = ''
 
 export const flowBundleStore = (log: ApLogger, apiClient: WorkerToApiContract, basePath: string) => ({
-    async tryFetch({ flowVersionId, projectId }: TryFetchParams): Promise<MaterializedFlowBundle | null> {
+    async tryFetch({ flowVersionId, workspaceId }: TryFetchParams): Promise<MaterializedFlowBundle | null> {
         const cache = cacheState(path.join(cacheUtils(basePath).getGlobalCacheBundlesPath(), flowVersionId))
         const { state } = await cache.getOrSetCache({
             key: flowVersionId,
@@ -23,7 +23,7 @@ export const flowBundleStore = (log: ApLogger, apiClient: WorkerToApiContract, b
             // optimization and must never fail the run.
             installFn: async () => {
                 const { data: state, error } = await tryCatch(async () => {
-                    const response = await apiClient.getFlowBundle({ flowVersionId, projectId })
+                    const response = await apiClient.getFlowBundle({ flowVersionId, workspaceId })
                     const data = await resolveBundleData(response)
                     if (isNil(data)) {
                         return MISS
@@ -49,7 +49,7 @@ export const flowBundleStore = (log: ApLogger, apiClient: WorkerToApiContract, b
         return isNil(manifest) ? null : { flowVersion: manifest.flowVersion, connectors: manifest.connectors }
     },
 
-    async publish({ flowVersion, connectors, projectId, platformId }: PublishParams): Promise<void> {
+    async publish({ flowVersion, connectors, workspaceId, platformId }: PublishParams): Promise<void> {
         const codes = codeCache(cacheUtils(basePath).getGlobalCodeCachePath())
         const compiledSteps = await Promise.all(flowSteps.code(flowVersion).map(async ({ name: stepName }) => ({
             stepName,
@@ -59,7 +59,7 @@ export const flowBundleStore = (log: ApLogger, apiClient: WorkerToApiContract, b
         const data = Buffer.from(JSON.stringify(manifest), 'utf8')
         const prepared = await apiClient.prepareFlowBundleUpload({
             flowVersionId: flowVersion.id,
-            projectId,
+            workspaceId,
             platformId,
             size: data.length,
         })
@@ -72,7 +72,7 @@ export const flowBundleStore = (log: ApLogger, apiClient: WorkerToApiContract, b
         }
         await apiClient.uploadFlowBundle({
             flowVersionId: flowVersion.id,
-            projectId,
+            workspaceId,
             platformId,
             data,
         })
@@ -106,13 +106,13 @@ function parseManifest(value: string | null): FlowBundleManifest | null {
 
 type TryFetchParams = {
     flowVersionId: string
-    projectId: string
+    workspaceId: string
 }
 
 type PublishParams = {
     flowVersion: FlowVersion
     connectors: ConnectorPackage[]
-    projectId: string
+    workspaceId: string
     platformId: string
 }
 

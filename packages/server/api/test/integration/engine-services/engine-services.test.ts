@@ -36,20 +36,20 @@ afterAll(async () => {
 
 describe('Engine Services Integration', () => {
     let engineToken: string
-    let projectId: string
+    let workspaceId: string
     let platformId: string
     let ownerId: string
 
     beforeEach(async () => {
-        const { mockPlatform, mockProject, mockOwner } = await mockAndSaveBasicSetup()
-        projectId = mockProject.id
+        const { mockPlatform, mockWorkspace, mockOwner } = await mockAndSaveBasicSetup()
+        workspaceId = mockWorkspace.id
         platformId = mockPlatform.id
         ownerId = mockOwner.id
 
         engineToken = await generateMockToken({
             type: PrincipalType.ENGINE,
             id: apId(),
-            projectId,
+            workspaceId,
             platform: { id: platformId },
         })
     })
@@ -60,7 +60,7 @@ describe('Engine Services Integration', () => {
             const flowVersionId = apId()
             const mockFlow = createMockFlow({
                 id: flowId,
-                projectId,
+                workspaceId,
                 status: FlowStatus.ENABLED,
                 externalId: 'ext-flow-1',
             })
@@ -90,7 +90,7 @@ describe('Engine Services Integration', () => {
             const populatedFlow = result.data.find(f => f.id === flowId)
             expect(populatedFlow).toBeDefined()
             expect(populatedFlow!.id).toBe(flowId)
-            expect(populatedFlow!.projectId).toBe(projectId)
+            expect(populatedFlow!.workspaceId).toBe(workspaceId)
             expect(populatedFlow!.externalId).toBe('ext-flow-1')
             expect(populatedFlow!.status).toBe(FlowStatus.ENABLED)
             expect(populatedFlow!.version).toBeDefined()
@@ -111,8 +111,8 @@ describe('Engine Services Integration', () => {
             const ext1 = apId()
             const ext2 = apId()
 
-            const flow1 = createMockFlow({ id: flow1Id, projectId, externalId: ext1 })
-            const flow2 = createMockFlow({ id: flow2Id, projectId, externalId: ext2 })
+            const flow1 = createMockFlow({ id: flow1Id, workspaceId, externalId: ext1 })
+            const flow2 = createMockFlow({ id: flow2Id, workspaceId, externalId: ext2 })
             const version1 = createMockFlowVersion({ flowId: flow1Id })
             const version2 = createMockFlowVersion({ flowId: flow2Id })
 
@@ -158,7 +158,7 @@ describe('Engine Services Integration', () => {
 
             const mockConn = createMockConnection({
                 platformId,
-                projectIds: [projectId],
+                workspaceIds: [workspaceId],
                 externalId,
                 status: ConnectionStatus.ACTIVE,
             }, ownerId)
@@ -169,7 +169,7 @@ describe('Engine Services Integration', () => {
             })
 
             const connectionService = createConnectionResolver({
-                projectId,
+                workspaceId,
                 engineToken,
                 apiUrl,
                 contextVersion: ContextVersion.V1,
@@ -194,7 +194,7 @@ describe('Engine Services Integration', () => {
 
             const mockConn = createMockConnection({
                 platformId,
-                projectIds: [projectId],
+                workspaceIds: [workspaceId],
                 externalId,
                 status: ConnectionStatus.ACTIVE,
             }, ownerId)
@@ -205,7 +205,7 @@ describe('Engine Services Integration', () => {
             })
 
             const connectionService = createConnectionResolver({
-                projectId,
+                workspaceId,
                 engineToken,
                 apiUrl,
                 contextVersion: undefined,
@@ -218,7 +218,7 @@ describe('Engine Services Integration', () => {
 
         it('should throw ConnectionNotFoundError for missing connection', async () => {
             const connectionService = createConnectionResolver({
-                projectId,
+                workspaceId,
                 engineToken,
                 apiUrl,
                 contextVersion: ContextVersion.V1,
@@ -237,7 +237,7 @@ describe('Engine Services Integration', () => {
 
             const mockConn = createMockConnection({
                 platformId,
-                projectIds: [projectId],
+                workspaceIds: [workspaceId],
                 externalId,
             }, ownerId)
 
@@ -248,7 +248,7 @@ describe('Engine Services Integration', () => {
             })
 
             const connectionService = createConnectionResolver({
-                projectId,
+                workspaceId,
                 engineToken,
                 apiUrl,
                 contextVersion: ContextVersion.V1,
@@ -268,7 +268,7 @@ describe('Engine Services Integration', () => {
                 const externalId = apId()
                 const mockConn = createMockConnection({
                     platformId,
-                    projectIds: [projectId],
+                    workspaceIds: [workspaceId],
                     externalId,
                     connectorName: connectionConnectorName,
                 }, ownerId)
@@ -287,7 +287,7 @@ describe('Engine Services Integration', () => {
                 const externalId = await saveConnection('@fema/connector-google-sheets')
 
                 const connectionService = createConnectionResolver({
-                    projectId,
+                    workspaceId,
                     engineToken,
                     apiUrl,
                     contextVersion: ContextVersion.V1,
@@ -302,7 +302,7 @@ describe('Engine Services Integration', () => {
                 const externalId = await saveConnection(connectorName)
 
                 const connectionService = createConnectionResolver({
-                    projectId,
+                    workspaceId,
                     engineToken,
                     apiUrl,
                     contextVersion: ContextVersion.V1,
@@ -319,7 +319,7 @@ describe('Engine Services Integration', () => {
                 const externalId = await saveConnection('@fema/connector-google-sheets')
 
                 const connectionService = createConnectionResolver({
-                    projectId,
+                    workspaceId,
                     engineToken,
                     apiUrl,
                     contextVersion: ContextVersion.V1,
@@ -376,7 +376,7 @@ describe('Engine Services Integration', () => {
             expect(result).toBeNull()
         })
 
-        it('should isolate flow-scoped vs project-scoped keys', async () => {
+        it('should isolate flow-scoped vs workspace-scoped keys', async () => {
             const flowId = apId()
             const store = createContextStore({
                 apiUrl,
@@ -386,13 +386,13 @@ describe('Engine Services Integration', () => {
             })
 
             await store.put('sharedKey', { scope: 'flow' }, StoreScope.FLOW)
-            await store.put('sharedKey', { scope: 'project' }, StoreScope.PROJECT)
+            await store.put('sharedKey', { scope: 'workspace' }, StoreScope.WORKSPACE)
 
             const flowValue = await store.get('sharedKey', StoreScope.FLOW)
             expect(flowValue).toEqual({ scope: 'flow' })
 
-            const projectValue = await store.get('sharedKey', StoreScope.PROJECT)
-            expect(projectValue).toEqual({ scope: 'project' })
+            const workspaceValue = await store.get('sharedKey', StoreScope.WORKSPACE)
+            expect(workspaceValue).toEqual({ scope: 'workspace' })
         })
     })
 

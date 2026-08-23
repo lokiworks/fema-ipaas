@@ -10,7 +10,7 @@ export const executePollingJob: JobHandler<PollingJobData, FireAndForgetJobResul
     async execute(ctx: JobContext, data: PollingJobData): Promise<FireAndForgetJobResult> {
         const timeoutInSeconds = workerSettings.getSettings().TRIGGER_TIMEOUT_SECONDS
 
-        const resolved = await ctx.resolver.resolve({ platformId: data.platformId, publicApiUrl: ctx.publicApiUrl, engineToken: ctx.engineToken, flow: { id: data.flowId, versionId: data.flowVersionId, projectId: data.projectId } })
+        const resolved = await ctx.resolver.resolve({ platformId: data.platformId, publicApiUrl: ctx.publicApiUrl, engineToken: ctx.engineToken, flow: { id: data.flowId, versionId: data.flowVersionId, workspaceId: data.workspaceId } })
 
         if (resolved.kind === 'flow-not-found') {
             ctx.log.info({ flowVersion: { id: data.flowVersionId } }, 'Flow version not found for polling trigger, skipping')
@@ -37,7 +37,7 @@ export const executePollingJob: JobHandler<PollingJobData, FireAndForgetJobResul
                     flowVersion,
                     webhookUrl: getWebhookUrl(ctx.publicApiUrl, data.flowId),
                     test: false,
-                    projectId: data.projectId,
+                    workspaceId: data.workspaceId,
                     platformId: data.platformId,
                     engineToken: ctx.engineToken,
                     internalApiUrl: ctx.internalApiUrl,
@@ -53,7 +53,7 @@ export const executePollingJob: JobHandler<PollingJobData, FireAndForgetJobResul
                 if (triggerResult.output.length > 0) {
                     await ctx.apiClient.submitPayloads({
                         flowVersionId: data.flowVersionId,
-                        projectId: data.projectId,
+                        workspaceId: data.workspaceId,
                         payloads: triggerResult.output,
                         environment: RunEnvironment.PRODUCTION,
                         streamStepProgress: StreamStepProgress.NONE,

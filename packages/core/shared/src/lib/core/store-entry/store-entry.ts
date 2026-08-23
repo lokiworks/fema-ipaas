@@ -1,4 +1,4 @@
-import type { ApId, BaseModel, ProjectId } from '@fema/core-utils'
+import type { ApId, BaseModel, WorkspaceId } from '@fema/core-utils'
 
 export type StoreEntryId = ApId
 
@@ -7,6 +7,6 @@ export const STORE_VALUE_MAX_SIZE = 512 * 1024
 
 export type StoreEntry = {
     key: string
-    projectId: ProjectId
+    workspaceId: WorkspaceId
     value: unknown
 } & BaseModel<StoreEntryId>

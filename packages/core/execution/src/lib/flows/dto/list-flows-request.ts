@@ -10,7 +10,7 @@ export const ListFlowsRequest = z.object({
     limit: z.coerce.number().optional(),
     cursor: z.string().optional(),
     status: OptionalArrayFromQuery(z.nativeEnum(FlowStatus)),
-    projectId: z.string(),
+    workspaceId: z.string(),
     name: z.string().optional(),
     agentExternalIds: OptionalArrayFromQuery(z.string()),
     versionState: z.nativeEnum(FlowVersionState).optional(),

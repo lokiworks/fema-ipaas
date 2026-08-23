@@ -62,7 +62,7 @@ export type RunTimeline = z.infer<typeof RunTimeline>
 
 export const FlowRun = z.object({
     ...BaseModelSchema,
-    projectId: z.string(),
+    workspaceId: z.string(),
     flowId: z.string(),
     parentRunId: z.string().optional(),
     failParentOnFailure: z.boolean(),

@@ -11,7 +11,7 @@ export const ListFlowRunsRequestQuery = z.object({
     cursor: z.string().optional(),
     createdAfter: z.string().optional(),
     createdBefore: z.string().optional(),
-    projectId: ApId,
+    workspaceId: ApId,
     failedStepName: z.string().optional(),
     failedStepMessage: z.string().optional(),
     flowRunIds: OptionalArrayFromQuery(ApId),
@@ -21,7 +21,7 @@ export const ListFlowRunsRequestQuery = z.object({
 export type ListFlowRunsRequestQuery = z.infer<typeof ListFlowRunsRequestQuery>
 
 export const CountFlowRunsByStatusRequest = z.object({
-    projectId: ApId,
+    workspaceId: ApId,
     createdAfter: z.string().optional(),
     createdBefore: z.string().optional(),
 })

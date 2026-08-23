@@ -1,4 +1,4 @@
-import { FlowId, FlowVersionId, isNil, ProjectId } from '@fema/core-utils'
+import { FlowId, FlowVersionId, isNil, WorkspaceId } from '@fema/core-utils'
 import { TriggerTestStrategy } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { distributedLock } from '../../database/redis-connections'
@@ -20,7 +20,7 @@ export const testTriggerService = (log: FastifyBaseLogger) => {
                     log.info('[testTriggerService#test] Acquired lock')
                     const populatedFlow = await flowService(log).getOnePopulatedOrThrow({
                         id: executeParams.flowId,
-                        projectId: executeParams.projectId,
+                        workspaceId: executeParams.workspaceId,
                         versionId: executeParams.flowVersionId,
                     })
 
@@ -36,7 +36,7 @@ export const testTriggerService = (log: FastifyBaseLogger) => {
                             if (exists) {
                                 await triggerSourceService(log).disable({
                                     flowId: executeParams.flowId,
-                                    projectId: executeParams.projectId,
+                                    workspaceId: executeParams.workspaceId,
                                     simulate: true,
                                     ignoreError: true,
                                 })
@@ -44,7 +44,7 @@ export const testTriggerService = (log: FastifyBaseLogger) => {
                             }
                             await triggerSourceService(log).enable({
                                 flowVersion: populatedFlow.version,
-                                projectId: executeParams.projectId,
+                                workspaceId: executeParams.workspaceId,
                                 simulate: true,
                             })
                             return
@@ -52,7 +52,7 @@ export const testTriggerService = (log: FastifyBaseLogger) => {
                         case TriggerTestStrategy.TEST_FUNCTION: {
                             return triggerEventService(log).test({
                                 flow: populatedFlow,
-                                projectId: executeParams.projectId,
+                                workspaceId: executeParams.workspaceId,
                             })
                         }
                     }
@@ -60,14 +60,14 @@ export const testTriggerService = (log: FastifyBaseLogger) => {
             })
         },
         async cancel(params: CancelParams): Promise<void> {
-            const { flowId, projectId } = params
+            const { flowId, workspaceId } = params
             return distributedLock(log).runExclusive({
                 key: lockKey(flowId),
                 timeoutInSeconds: 120,
                 fn: async () => {
                     const trigger = await triggerSourceService(log).getByFlowId({
                         flowId,
-                        projectId,
+                        workspaceId,
                         simulate: true,
                     })
                     if (isNil(trigger)) {
@@ -76,7 +76,7 @@ export const testTriggerService = (log: FastifyBaseLogger) => {
                     return triggerSourceService(log).disable({
                         flowId,
                         simulate: true,
-                        projectId,
+                        workspaceId,
                         ignoreError: false,
                     })
                 },
@@ -89,11 +89,11 @@ export const testTriggerService = (log: FastifyBaseLogger) => {
 type TestParams = {
     flowId: FlowId
     flowVersionId: FlowVersionId
-    projectId: ProjectId
+    workspaceId: WorkspaceId
     testStrategy: TriggerTestStrategy
 }
 
 type CancelParams = {
     flowId: FlowId
-    projectId: ProjectId
+    workspaceId: WorkspaceId
 }

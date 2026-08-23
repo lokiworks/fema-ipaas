@@ -1,4 +1,4 @@
-import { apId, Cursor, ErrorCode, FlowId, FlowRunId, FlowVersionId, isNil, PlatformError, PlatformId, ProjectId, SeekPage } from '@fema/core-utils'
+import { apId, Cursor, ErrorCode, FlowId, FlowRunId, FlowVersionId, isNil, PlatformError, PlatformId, SeekPage, WorkspaceId } from '@fema/core-utils'
 import { apDayjs, wideEvent } from '@fema/server-utils'
 import { ExecuteFlowJobData, ExecutionType, ExecutioOutputFile, FileCompression, FileType, FlowRetryStrategy, FlowRun, FlowRunCountByStatus, FlowRunStatus, FlowRunWithRetryError, FlowVersion, GenericStepOutput, isFlowRunStateTerminal, JobPayload, LATEST_JOB_DATA_SCHEMA_VERSION, logSerializer, LogSliceRef, ResumeReason, RunEnvironment, RunInternalError, SampleDataFileType, StepOutput, StepOutputStatus, StepOutputType, StreamStepProgress, WorkerJobType } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
@@ -13,9 +13,9 @@ import { paginationHelper } from '../../helper/pagination/pagination-utils'
 import { Order } from '../../helper/pagination/paginator'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
-import { projectService } from '../../project/project-service'
 import { jobQueue, JobType } from '../../workers/job-queue/job-queue'
 import { payloadOffloader } from '../../workers/payload-offloader'
+import { workspaceService } from '../../workspace/workspace-service'
 import { flowService } from '../flow/flow.service'
 import { flowVersionService } from '../flow-version/flow-version.service'
 import { sampleDataService } from '../step-run/sample-data.service'
@@ -31,10 +31,10 @@ export const WEBHOOK_TIMEOUT_MS = system.getNumberOrThrow(AppSystemProp.WEBHOOK_
 export const flowRunRepo = repoFactory<FlowRun>(FlowRunEntity)
 
 export const flowRunService = (log: FastifyBaseLogger) => ({
-    async upsert({ id, projectId }: { id: FlowRunId, projectId: ProjectId }): Promise<FlowRun> {
-        const existingFlowRun = await flowRunRepo().findOneBy({ id, projectId })
+    async upsert({ id, workspaceId }: { id: FlowRunId, workspaceId: WorkspaceId }): Promise<FlowRun> {
+        const existingFlowRun = await flowRunRepo().findOneBy({ id, workspaceId })
         if (isNil(existingFlowRun)) {
-            return flowRunRepo().save({ id, projectId })
+            return flowRunRepo().save({ id, workspaceId })
         }
         return existingFlowRun
     },
@@ -55,7 +55,7 @@ export const flowRunService = (log: FastifyBaseLogger) => ({
 
 
         const whereClause: Record<string, unknown> = {
-            projectId: params.projectId,
+            workspaceId: params.workspaceId,
         }
         if (!isNil(params.environment)) {
             whereClause.environment = params.environment
@@ -111,15 +111,15 @@ export const flowRunService = (log: FastifyBaseLogger) => ({
         const { data, cursor: newCursor } = await paginator.paginate(query)
         return paginationHelper.createPage<FlowRun>(data, newCursor)
     },
-    async retry({ flowRunId, strategy, projectId }: RetryParams): Promise<FlowRun> {
+    async retry({ flowRunId, strategy, workspaceId }: RetryParams): Promise<FlowRun> {
         const oldFlowRun = await flowRunService(log).getOnePopulatedOrThrow({
             id: flowRunId,
-            projectId,
+            workspaceId,
         })
         log.info({ flowRun: { id: flowRunId }, flow: { id: oldFlowRun.flowId }, strategy }, 'Flow run retry initiated')
 
-        const project = await projectService(log).getOneOrThrow(oldFlowRun.projectId)
-        const retentionDays = getEffectiveExecutionDataRetentionDays(project.executionDataRetentionDays)
+        const workspace = await workspaceService(log).getOneOrThrow(oldFlowRun.workspaceId)
+        const retentionDays = getEffectiveExecutionDataRetentionDays(workspace.executionDataRetentionDays)
         if (
             isFlowRunStateTerminal({ status: oldFlowRun.status, ignoreInternalError: false }) &&
             isOutsideRetentionWindow(oldFlowRun.created, retentionDays)
@@ -144,14 +144,14 @@ export const flowRunService = (log: FastifyBaseLogger) => ({
 
                 await flowRunRepo().update({
                     id: oldFlowRun.id,
-                    projectId: oldFlowRun.projectId,
+                    workspaceId: oldFlowRun.workspaceId,
                 }, {
                     status: FlowRunStatus.QUEUED,
                     startTime: apDayjs().toISOString(),
                     finishTime: null,
                 })
                 const updatedFlowRun = await findFlowRunOrThrow(oldFlowRun.id)
-                const platformId = await projectService(log).getPlatformId(updatedFlowRun.projectId)
+                const platformId = await workspaceService(log).getPlatformId(updatedFlowRun.workspaceId)
                 await flowRunSideEffects(log).onRetry({ flowRun: updatedFlowRun, platformId })
                 if (triggerFailed) {
                     return addToQueue({
@@ -185,7 +185,7 @@ export const flowRunService = (log: FastifyBaseLogger) => ({
                 return this.start({
                     flowId: oldFlowRun.flowId,
                     payload,
-                    platformId: await projectService(log).getPlatformId(oldFlowRun.projectId),
+                    platformId: await workspaceService(log).getPlatformId(oldFlowRun.workspaceId),
                     executionType: ExecutionType.BEGIN,
                     streamStepProgress: StreamStepProgress.NONE,
                     workerHandlerId: undefined,
@@ -193,17 +193,17 @@ export const flowRunService = (log: FastifyBaseLogger) => ({
                     executeTrigger: triggerFailed,
                     environment: oldFlowRun.environment,
                     flowVersionId: latestFlowVersion.id,
-                    projectId: oldFlowRun.projectId,
+                    workspaceId: oldFlowRun.workspaceId,
                     failParentOnFailure: oldFlowRun.failParentOnFailure,
                     parentRunId: oldFlowRun.parentRunId,
                 })
             }
         }
     },
-    async cancel({ projectId, platformId, flowRunIds, excludeFlowRunIds, status, flowId, createdAfter, createdBefore }: CancelParams): Promise<void> {
+    async cancel({ workspaceId, platformId, flowRunIds, excludeFlowRunIds, status, flowId, createdAfter, createdBefore }: CancelParams): Promise<void> {
         const filteredStatus = status ?? CANCELLABLE_STATUSES
         const flowRuns = await filterFlowRunsAndApplyFilters({
-            projectId,
+            workspaceId,
             flowRunIds,
             status: filteredStatus,
             flowId,
@@ -233,7 +233,7 @@ export const flowRunService = (log: FastifyBaseLogger) => ({
         const filteredFlowRuns = await filterFlowRunsAndApplyFilters(params)
         await flowRunRepo().update({
             id: In(filteredFlowRuns.map(flowRun => flowRun.id)),
-            projectId: params.projectId,
+            workspaceId: params.workspaceId,
         }, {
             archivedAt: new Date().toISOString(),
         })
@@ -243,7 +243,7 @@ export const flowRunService = (log: FastifyBaseLogger) => ({
         const limit = pLimit(10)
         const results = await Promise.allSettled(
             filteredFlowRuns.map(flowRun =>
-                limit(() => this.retry({ flowRunId: flowRun.id, strategy: params.strategy, projectId: params.projectId })),
+                limit(() => this.retry({ flowRunId: flowRun.id, strategy: params.strategy, workspaceId: params.workspaceId })),
             ),
         )
         return results.map((result, i) => {
@@ -268,7 +268,7 @@ export const flowRunService = (log: FastifyBaseLogger) => ({
         workerHandlerId,
         streamStepProgress,
         httpRequestId,
-        projectId,
+        workspaceId,
         flowVersionId,
         parentRunId,
         failParentOnFailure,
@@ -277,7 +277,7 @@ export const flowRunService = (log: FastifyBaseLogger) => ({
         environment,
     }: StartParams): Promise<FlowRun> {
         const newFlowRun = await queueOrCreateInstantly({
-            projectId,
+            workspaceId,
             flowVersionId,
             parentRunId,
             flowId,
@@ -307,17 +307,17 @@ export const flowRunService = (log: FastifyBaseLogger) => ({
         }, log)
 
         await flowRunSideEffects(log).onStart({ flowRun: newFlowRun, platformId })
-        log.info({ flowRun: { id: newFlowRun.id }, flow: { id: flowId }, project: { id: projectId }, executionType }, 'Flow run started')
+        log.info({ flowRun: { id: newFlowRun.id }, flow: { id: flowId }, workspace: { id: workspaceId }, executionType }, 'Flow run started')
         return newFlowRun
     },
 
-    async createQuotaExceededRun({ flowVersion, payload, projectId, environment, parentRunId, failParentOnFailure, triggeredBy, shouldExecuteTriggerOnRetry }: CreateQuotaExceededRunParams): Promise<FlowRun> {
+    async createQuotaExceededRun({ flowVersion, payload, workspaceId, environment, parentRunId, failParentOnFailure, triggeredBy, shouldExecuteTriggerOnRetry }: CreateQuotaExceededRunParams): Promise<FlowRun> {
         const now = new Date().toISOString()
         const logsFileId = apId()
-        await persistQuotaExceededTriggerLog({ log, flowVersion, projectId, payload, logsFileId, shouldExecuteTriggerOnRetry })
+        await persistQuotaExceededTriggerLog({ log, flowVersion, workspaceId, payload, logsFileId, shouldExecuteTriggerOnRetry })
         const flowRun: FlowRun = {
             id: apId(),
-            projectId,
+            workspaceId,
             flowId: flowVersion.flowId,
             flowVersionId: flowVersion.id,
             environment,
@@ -334,22 +334,22 @@ export const flowRunService = (log: FastifyBaseLogger) => ({
             triggeredBy,
         }
         await runsMetadataQueue(log).add(flowRun)
-        log.info({ flowRun: { id: flowRun.id }, flow: { id: flowVersion.flowId }, project: { id: projectId } }, 'Flow run admitted as QUOTA_EXCEEDED')
+        log.info({ flowRun: { id: flowRun.id }, flow: { id: flowVersion.flowId }, workspace: { id: workspaceId } }, 'Flow run admitted as QUOTA_EXCEEDED')
         return flowRun
     },
 
-    async test({ projectId, flowVersionId, parentRunId, stepNameToTest, triggeredBy }: TestParams): Promise<FlowRun> {
+    async test({ workspaceId, flowVersionId, parentRunId, stepNameToTest, triggeredBy }: TestParams): Promise<FlowRun> {
         const flowVersion = await flowVersionService(log).getOneOrThrow(flowVersionId)
-        await flowService(log).getOneOrThrow({ id: flowVersion.flowId, projectId })
+        await flowService(log).getOneOrThrow({ id: flowVersion.flowId, workspaceId })
 
         const triggerPayload = await sampleDataService(log).getOrReturnEmpty({
-            projectId,
+            workspaceId,
             flowVersion,
             stepName: flowVersion.trigger.name,
             type: SampleDataFileType.OUTPUT,
         })
         const flowRun = await queueOrCreateInstantly({
-            projectId,
+            workspaceId,
             flowId: flowVersion.flowId,
             flowVersionId: flowVersion.id,
             environment: RunEnvironment.TESTING,
@@ -364,24 +364,24 @@ export const flowRunService = (log: FastifyBaseLogger) => ({
             executionType: ExecutionType.BEGIN,
             workerHandlerId: undefined,
             httpRequestId: undefined,
-            platformId: await projectService(log).getPlatformId(projectId),
+            platformId: await workspaceService(log).getPlatformId(workspaceId),
             executeTrigger: false,
             streamStepProgress: StreamStepProgress.WEBSOCKET,
-            sampleData: !isNil(stepNameToTest) ? await sampleDataService(log).getSampleDataForFlow(projectId, flowVersion, SampleDataFileType.OUTPUT) : undefined,
+            sampleData: !isNil(stepNameToTest) ? await sampleDataService(log).getSampleDataForFlow(workspaceId, flowVersion, SampleDataFileType.OUTPUT) : undefined,
         }, log)
     },
-    async startManualTrigger({ projectId, flowVersionId, triggeredBy }: StartManualTriggerParams): Promise<FlowRun> {
+    async startManualTrigger({ workspaceId, flowVersionId, triggeredBy }: StartManualTriggerParams): Promise<FlowRun> {
         const flowVersion = await flowVersionService(log).getOneOrThrow(flowVersionId)
-        await flowService(log).getOneOrThrow({ id: flowVersion.flowId, projectId })
+        await flowService(log).getOneOrThrow({ id: flowVersion.flowId, workspaceId })
         const triggerPayload = {}
-        const platformId = await projectService(log).getPlatformId(projectId)
+        const platformId = await workspaceService(log).getPlatformId(workspaceId)
 
         const creditsExhausted = false
         if (creditsExhausted) {
             return this.createQuotaExceededRun({
                 flowVersion,
                 payload: triggerPayload,
-                projectId,
+                workspaceId,
                 environment: RunEnvironment.PRODUCTION,
                 parentRunId: undefined,
                 failParentOnFailure: undefined,
@@ -391,7 +391,7 @@ export const flowRunService = (log: FastifyBaseLogger) => ({
         }
 
         const flowRun = await queueOrCreateInstantly({
-            projectId,
+            workspaceId,
             flowId: flowVersion.flowId,
             flowVersionId: flowVersion.id,
             environment: RunEnvironment.PRODUCTION,
@@ -415,7 +415,7 @@ export const flowRunService = (log: FastifyBaseLogger) => ({
     async getOne(params: GetOneParams): Promise<FlowRun | null> {
         const flowRun = await queryBuilderForFlowRun(flowRunRepo()).where({
             id: params.id,
-            ...(params.projectId ? { projectId: params.projectId } : {}),
+            ...(params.workspaceId ? { workspaceId: params.workspaceId } : {}),
         }).getOne()
 
         return flowRun
@@ -440,7 +440,7 @@ export const flowRunService = (log: FastifyBaseLogger) => ({
         if (isNil(flowRun.logsFileId)) {
             return null
         }
-        const stateFile = await readLogsFile(log, flowRun.logsFileId, flowRun.projectId)
+        const stateFile = await readLogsFile(log, flowRun.logsFileId, flowRun.workspaceId)
         return stateFile?.executionState.steps ?? null
     },
     async countByStatus(params: CountByStatusParams): Promise<FlowRunCountByStatus[]> {
@@ -448,7 +448,7 @@ export const flowRunService = (log: FastifyBaseLogger) => ({
             .select('flow_run.status', 'status')
             .addSelect('COUNT(*)', 'count')
             .where({
-                projectId: params.projectId,
+                workspaceId: params.workspaceId,
                 environment: RunEnvironment.PRODUCTION,
                 archivedAt: IsNull(),
             })
@@ -469,7 +469,7 @@ export const flowRunService = (log: FastifyBaseLogger) => ({
         let steps = {}
         let internalError: RunInternalError | undefined = undefined
         if (!isNil(flowRun.logsFileId)) {
-            const stateFile = await readLogsFile(log, flowRun.logsFileId, flowRun.projectId)
+            const stateFile = await readLogsFile(log, flowRun.logsFileId, flowRun.workspaceId)
             if (!isNil(stateFile)) {
                 steps = stateFile.executionState.steps
                 internalError = stateFile.internalError
@@ -489,11 +489,11 @@ async function cancelSingleRun(log: FastifyBaseLogger, flowRun: FlowRun, platfor
         key: `runs_metadata_${flowRun.id}`,
         timeoutInSeconds: 30,
         fn: async () => {
-            await jobQueue(log).removeAllFlowRunJobs({ flowRunId: flowRun.id, platformId, projectId: flowRun.projectId })
+            await jobQueue(log).removeAllFlowRunJobs({ flowRunId: flowRun.id, platformId, workspaceId: flowRun.workspaceId })
             await waitpointService(log).deleteByFlowRunId(flowRun.id)
             await runsMetadataQueue(log).add({
                 id: flowRun.id,
-                projectId: flowRun.projectId,
+                workspaceId: flowRun.workspaceId,
                 status: FlowRunStatus.CANCELED,
             })
         },
@@ -540,7 +540,7 @@ async function filterFlowRunsAndApplyFilters(
     params: FilterFlowRunsAndApplyFiltersParams,
 ): Promise<FlowRun[]> {
     let query = flowRunRepo().createQueryBuilder('flow_run').where({
-        projectId: params.projectId,
+        workspaceId: params.workspaceId,
         environment: RunEnvironment.PRODUCTION,
     })
 
@@ -603,16 +603,16 @@ export async function addToQueue(params: AddToQueueParams, log: FastifyBaseLogge
 
     let jobPayload: JobPayload = { type: 'inline', value: null }
     if (!isNil(params.payload) && isNil(params.workerHandlerId)) {
-        jobPayload = await payloadOffloader.offloadPayload(log, params.payload, params.flowRun.projectId, params.platformId)
+        jobPayload = await payloadOffloader.offloadPayload(log, params.payload, params.flowRun.workspaceId, params.platformId)
     }
     else if (!isNil(params.payload)) {
-        jobPayload = await payloadOffloader.maybeOffloadPayload(log, params.payload, params.flowRun.projectId, params.platformId)
+        jobPayload = await payloadOffloader.maybeOffloadPayload(log, params.payload, params.flowRun.workspaceId, params.platformId)
     }
 
     const commonJobData = {
         schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
         workerHandlerId: params.workerHandlerId ?? null,
-        projectId: params.flowRun.projectId,
+        workspaceId: params.flowRun.workspaceId,
         platformId: params.platformId,
         environment: params.flowRun.environment,
         flowId: params.flowRun.flowId,
@@ -675,7 +675,7 @@ async function resolveStepOutput({ step, flowRun, log }: ResolveStepOutputParams
     }
     const ref = step.output as LogSliceRef
     const file = await fileService(log).getDataOrUndefined({
-        projectId: flowRun.projectId,
+        workspaceId: flowRun.workspaceId,
         fileId: ref.fileId,
         type: FileType.FLOW_RUN_LOG_SLICE,
     })
@@ -692,9 +692,9 @@ async function resolveStepOutput({ step, flowRun, log }: ResolveStepOutputParams
     return JSON.parse(file.data.toString('utf-8'))
 }
 
-async function readLogsFile(log: FastifyBaseLogger, logsFileId: string, projectId: string): Promise<ExecutioOutputFile | null> {
+async function readLogsFile(log: FastifyBaseLogger, logsFileId: string, workspaceId: string): Promise<ExecutioOutputFile | null> {
     const result = await fileService(log).getDataOrUndefined({
-        projectId,
+        workspaceId,
         fileId: logsFileId,
         type: FileType.FLOW_RUN_LOG,
     })
@@ -704,7 +704,7 @@ async function readLogsFile(log: FastifyBaseLogger, logsFileId: string, projectI
     return JSON.parse(result.data.toString('utf-8'))
 }
 
-async function persistQuotaExceededTriggerLog({ log, flowVersion, projectId, payload, logsFileId, shouldExecuteTriggerOnRetry }: PersistQuotaExceededTriggerLogParams): Promise<void> {
+async function persistQuotaExceededTriggerLog({ log, flowVersion, workspaceId, payload, logsFileId, shouldExecuteTriggerOnRetry }: PersistQuotaExceededTriggerLogParams): Promise<void> {
     const triggerStep = GenericStepOutput.create({
         input: {},
         type: flowVersion.trigger.type,
@@ -721,10 +721,10 @@ async function persistQuotaExceededTriggerLog({ log, flowVersion, projectId, pay
         data: await logSerializer.serialize(outputFile),
         compression: FileCompression.ZSTD,
     })
-    const platformId = await projectService(log).getPlatformId(projectId)
+    const platformId = await workspaceService(log).getPlatformId(workspaceId)
     await fileService(log).save({
         fileId: logsFileId,
-        projectId,
+        workspaceId,
         platformId,
         type: FileType.FLOW_RUN_LOG,
         data,
@@ -737,7 +737,7 @@ async function queueOrCreateInstantly(params: CreateParams, log: FastifyBaseLogg
     const now = new Date().toISOString()
     const flowRun: FlowRun = {
         id: apId(),
-        projectId: params.projectId,
+        workspaceId: params.workspaceId,
         flowId: params.flowId,
         flowVersionId: params.flowVersionId,
         environment: params.environment,
@@ -766,7 +766,7 @@ export function isOutsideRetentionWindow(createdTime: string, retentionDays: num
 }
 
 type CreateParams = {
-    projectId: ProjectId
+    workspaceId: WorkspaceId
     flowVersionId: FlowVersionId
     triggeredBy?: string
     parentRunId?: FlowRunId
@@ -777,7 +777,7 @@ type CreateParams = {
 }
 
 type ListParams = {
-    projectId: ProjectId
+    workspaceId: WorkspaceId
     flowId: FlowId[] | undefined
     status: FlowRunStatus[] | undefined
     cursor: Cursor | null
@@ -794,7 +794,7 @@ type ListParams = {
 
 type GetOneParams = {
     id: FlowRunId
-    projectId: ProjectId | undefined
+    workspaceId: WorkspaceId | undefined
 }
 
 type ResolveStepOutputParams = {
@@ -823,7 +823,7 @@ export type AddToQueueParams = AddToQueueParamsCommon & (
 type CreateQuotaExceededRunParams = {
     flowVersion: FlowVersion
     payload: unknown
-    projectId: ProjectId
+    workspaceId: WorkspaceId
     environment: RunEnvironment
     parentRunId?: FlowRunId
     failParentOnFailure: boolean | undefined
@@ -834,7 +834,7 @@ type CreateQuotaExceededRunParams = {
 type PersistQuotaExceededTriggerLogParams = {
     log: FastifyBaseLogger
     flowVersion: FlowVersion
-    projectId: ProjectId
+    workspaceId: WorkspaceId
     payload: unknown
     logsFileId: string
     shouldExecuteTriggerOnRetry: boolean
@@ -846,7 +846,7 @@ type StartParams = {
     platformId: PlatformId
     environment: RunEnvironment
     flowVersionId: FlowVersionId
-    projectId: ProjectId
+    workspaceId: WorkspaceId
     parentRunId?: FlowRunId
     failParentOnFailure: boolean | undefined
     stepNameToTest?: string
@@ -861,7 +861,7 @@ type StartParams = {
 
 
 type TestParams = {
-    projectId: ProjectId
+    workspaceId: WorkspaceId
     flowVersionId: FlowVersionId
     triggeredBy?: string
     parentRunId?: FlowRunId
@@ -869,18 +869,18 @@ type TestParams = {
 }
 
 type StartManualTriggerParams = {
-    projectId: ProjectId
+    workspaceId: WorkspaceId
     flowVersionId: FlowVersionId
     triggeredBy: string
 }
 type RetryParams = {
     flowRunId: FlowRunId
     strategy: FlowRetryStrategy
-    projectId: ProjectId
+    workspaceId: WorkspaceId
 }
 
 type CancelParams = {
-    projectId: ProjectId
+    workspaceId: WorkspaceId
     platformId: PlatformId
     flowRunIds?: FlowRunId[]
     excludeFlowRunIds?: FlowRunId[]
@@ -891,7 +891,7 @@ type CancelParams = {
 }
 
 type BulkRetryParams = {
-    projectId: ProjectId
+    workspaceId: WorkspaceId
     flowRunIds?: FlowRunId[]
     strategy: FlowRetryStrategy
     status?: FlowRunStatus[]
@@ -905,7 +905,7 @@ type BulkRetryParams = {
 }
 
 type BulkArchiveActionParams = {
-    projectId: ProjectId
+    workspaceId: WorkspaceId
     flowRunIds?: FlowRunId[]
     status?: FlowRunStatus[]
     flowId?: FlowId[]
@@ -918,13 +918,13 @@ type BulkArchiveActionParams = {
 }
 
 type CountByStatusParams = {
-    projectId: ProjectId
+    workspaceId: WorkspaceId
     createdAfter?: string
     createdBefore?: string
 }
 
 type FilterFlowRunsAndApplyFiltersParams = {
-    projectId: ProjectId
+    workspaceId: WorkspaceId
     flowRunIds?: FlowRunId[]
     status?: FlowRunStatus[]
     archived?: boolean

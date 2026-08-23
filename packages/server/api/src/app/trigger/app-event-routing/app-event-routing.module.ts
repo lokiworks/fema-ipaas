@@ -9,10 +9,10 @@ import { securityAccess } from '../../core/security/authorization/fastify-securi
 import { flowService } from '../../flows/flow/flow.service'
 import { domainHelper } from '../../helper/domain-helper'
 import { rejectedPromiseHandler } from '../../helper/promise-handler'
-import { projectService } from '../../project/project-service'
 import { WebhookFlowVersionToRun, webhookService } from '../../webhooks/webhook.service'
 import { jobQueue, JobType } from '../../workers/job-queue/job-queue'
 import { payloadOffloader } from '../../workers/payload-offloader'
+import { workspaceService } from '../../workspace/workspace-service'
 import { triggerSourceService } from '../trigger-source/trigger-source-service'
 import { appEventRoutingService } from './app-event-routing.service'
 
@@ -104,7 +104,7 @@ export const appEventRoutingController: FastifyPluginAsyncZod = async (
             })
             const eventsQueue = listeners.map(async (listener) => {
                 const requestId = apId()
-                const flow = await flowService(request.log).getOne({ id: listener.flowId, projectId: listener.projectId })
+                const flow = await flowService(request.log).getOne({ id: listener.flowId, workspaceId: listener.workspaceId })
                 if (isNil(flow)) {
                     return
                 }
@@ -116,14 +116,14 @@ export const appEventRoutingController: FastifyPluginAsyncZod = async (
                     isSimulating ? WebhookFlowVersionToRun.LATEST : WebhookFlowVersionToRun.LOCKED_FALL_BACK_TO_LATEST,
                     flow,
                 )
-                const platformId = await projectService(request.log).getPlatformId(listener.projectId)
-                const jobPayload = await payloadOffloader.offloadPayload(request.log, payload, listener.projectId, platformId)
+                const platformId = await workspaceService(request.log).getPlatformId(listener.workspaceId)
+                const jobPayload = await payloadOffloader.offloadPayload(request.log, payload, listener.workspaceId, platformId)
                 return jobQueue(request.log).add({
                     id: requestId,
                     type: JobType.ONE_TIME,
                     data: {
                         platformId,
-                        projectId: listener.projectId,
+                        workspaceId: listener.workspaceId,
                         schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
                         requestId,
                         payload: jobPayload,

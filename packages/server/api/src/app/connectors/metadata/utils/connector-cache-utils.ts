@@ -62,7 +62,7 @@ async function loadDevConnectors(log: FastifyBaseLogger, devConnectorsConfig: st
     return connectors.map((p): ConnectorMetadataSchema => ({
         id: apId(),
         ...p,
-        projectUsage: 0,
+        workspaceUsage: 0,
         connectorType: ConnectorType.OFFICIAL,
         packageType: PackageType.REGISTRY,
         created: new Date().toISOString(),

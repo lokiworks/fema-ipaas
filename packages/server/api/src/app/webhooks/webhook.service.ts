@@ -1,4 +1,4 @@
-import { apId, assertNotNullOrUndefined, FlowVersionId, isNil, PlatformId, ProjectId } from '@fema/core-utils'
+import { apId, assertNotNullOrUndefined, FlowVersionId, isNil, PlatformId, WorkspaceId } from '@fema/core-utils'
 import { wideEvent } from '@fema/server-utils'
 import { EngineHttpResponse, EventPayload, ExecutionType, Flow, FlowRun, FlowStatus, LATEST_JOB_DATA_SCHEMA_VERSION, RunEnvironment, StreamStepProgress, TriggerPayload, WorkerJobType } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
@@ -89,13 +89,13 @@ export const webhookService = {
         // can only be read once. The handshake check and the payload resolution below both need it,
         // so memoize — a second call would stream an empty body and hand the run a 0-byte file URL.
         let resolvedDataPromise: Promise<EventPayload> | undefined
-        const resolveData = (): Promise<EventPayload> => (resolvedDataPromise ??= data(flow.projectId))
+        const resolveData = (): Promise<EventPayload> => (resolvedDataPromise ??= data(flow.workspaceId))
 
         wideEvent.set({
             webhook: {
                 flowFound: true,
             },
-            project: { id: flow.projectId },
+            workspace: { id: flow.workspaceId },
             platform: { id: flowExecutionResult.platformId },
         })
         const flowVersionIdToRun = await webhookService.getFlowVersionIdToRun(flowVersionToRun, flow)
@@ -110,7 +110,7 @@ export const webhookService = {
                 handshakeConfiguration: flowExecutionResult.handshakeConfiguration,
                 flowId: flow.id,
                 flowVersionId: flowVersionIdToRun,
-                projectId: flow.projectId,
+                workspaceId: flow.workspaceId,
                 logger: pinoLogger,
             })
             if (!isNil(response)) {
@@ -178,7 +178,7 @@ export const webhookService = {
         wideEvent.set({ webhook: { mode: 'sync' } })
         const flowHttpResponse = await handleSync({
             payload: resolvedPayload,
-            projectId: flow.projectId,
+            workspaceId: flow.workspaceId,
             flow,
             platformId: flowExecutionResult.platformId,
             runEnvironment: flowVersionToRun === WebhookFlowVersionToRun.LOCKED_FALL_BACK_TO_LATEST ? RunEnvironment.PRODUCTION : RunEnvironment.TESTING,
@@ -207,7 +207,7 @@ export const webhookService = {
 async function handleAsync(params: AsyncWebhookParams): Promise<EngineHttpResponse> {
     const { flow, logger, webhookRequestId, payload, flowVersionIdToRun, webhookHeader, saveSampleData, execute, runEnvironment, parentRunId, failParentOnFailure, platformId } = params
 
-    const jobPayload = await payloadOffloader.offloadPayload(logger, payload, flow.projectId, platformId)
+    const jobPayload = await payloadOffloader.offloadPayload(logger, payload, flow.workspaceId, platformId)
 
     await wideEvent.timed({
         name: 'webhookQueueAdd',
@@ -216,7 +216,7 @@ async function handleAsync(params: AsyncWebhookParams): Promise<EngineHttpRespon
             type: JobType.ONE_TIME,
             data: {
                 platformId,
-                projectId: flow.projectId,
+                workspaceId: flow.workspaceId,
                 schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
                 requestId: webhookRequestId,
                 payload: jobPayload,
@@ -243,7 +243,7 @@ async function handleAsync(params: AsyncWebhookParams): Promise<EngineHttpRespon
 }
 
 async function handleSync(params: SyncWebhookParams): Promise<EngineHttpResponse> {
-    const { payload, projectId, flow, logger, webhookRequestId, workerHandlerId, flowVersionIdToRun, runEnvironment, saveSampleData, flowVersionToRun, parentRunId, failParentOnFailure, platformId, timeoutMs } = params
+    const { payload, workspaceId, flow, logger, webhookRequestId, workerHandlerId, flowVersionIdToRun, runEnvironment, saveSampleData, flowVersionToRun, parentRunId, failParentOnFailure, platformId, timeoutMs } = params
 
     if (saveSampleData) {
         rejectedPromiseHandler(savePayload({
@@ -278,7 +278,7 @@ async function handleSync(params: SyncWebhookParams): Promise<EngineHttpResponse
         const quotaExceededRun = await flowRunService(logger).createQuotaExceededRun({
             flowVersion,
             payload,
-            projectId,
+            workspaceId,
             environment: runEnvironment,
             parentRunId,
             failParentOnFailure,
@@ -299,7 +299,7 @@ async function handleSync(params: SyncWebhookParams): Promise<EngineHttpResponse
         flowVersionId: flowVersionIdToRun,
         payload,
         workerHandlerId,
-        projectId,
+        workspaceId,
         executeTrigger: true,
         httpRequestId: webhookRequestId,
         executionType: ExecutionType.BEGIN,
@@ -335,7 +335,7 @@ async function savePayload(params: Omit<AsyncWebhookParams, 'saveSampleData' | '
         parentRunId,
         failParentOnFailure,
     })
-    await triggerSourceService(logger).disable({ flowId: flow.id, projectId: flow.projectId, simulate: true, ignoreError: true })
+    await triggerSourceService(logger).disable({ flowId: flow.id, workspaceId: flow.workspaceId, simulate: true, ignoreError: true })
 }
 
 type HandleWebhookParams = {
@@ -343,7 +343,7 @@ type HandleWebhookParams = {
     async: boolean
     saveSampleData: boolean
     flowVersionToRun: WebhookFlowVersionToRun
-    data: (projectId: string) => Promise<EventPayload>
+    data: (workspaceId: string) => Promise<EventPayload>
     logger: FastifyBaseLogger
     payload?: Record<string, unknown>
     execute: boolean
@@ -371,7 +371,7 @@ type AsyncWebhookParams = {
 type SyncWebhookParams = {
     payload: unknown
     saveSampleData: boolean
-    projectId: ProjectId
+    workspaceId: WorkspaceId
     runEnvironment: RunEnvironment
     platformId: PlatformId
     flowVersionToRun: WebhookFlowVersionToRun

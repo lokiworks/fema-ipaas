@@ -36,7 +36,7 @@ export function InvitationCard({ invitation }: { invitation: UserInvitation }) {
         ></UserAvatar>
         <div>
           <p className="text-sm font-medium leading-none">
-            {invitation.email} ({invitation.projectRole?.name})
+            {invitation.email} ({invitation.workspaceRole?.name})
           </p>
         </div>
       </div>

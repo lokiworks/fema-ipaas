@@ -1,4 +1,4 @@
-import { FileType, Flow, FlowStatus, Project, WebhookHandshakeStrategy } from '@fema/shared'
+import { FileType, Flow, FlowStatus, Workspace, WebhookHandshakeStrategy } from '@fema/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { webhookHandshake } from '../../../../src/app/webhooks/webhook-handshake'
@@ -28,7 +28,7 @@ describe('Webhook file streaming with a handshake-configured trigger', () => {
             strategy: WebhookHandshakeStrategy.HEADER_PRESENT,
             paramName: 'x-ap-handshake-absent',
         })
-        const { mockFlow, mockProject } = await createEnabledFlow()
+        const { mockFlow, mockWorkspace } = await createEnabledFlow()
         const content = 'A'.repeat(4 * 1024 * 1024)
 
         const response = await app.inject({
@@ -40,7 +40,7 @@ describe('Webhook file streaming with a handshake-configured trigger', () => {
         expect(response.statusCode).toBe(StatusCodes.OK)
 
         const files = await databaseConnection().getRepository('file').findBy({
-            projectId: mockProject.id,
+            workspaceId: mockWorkspace.id,
             type: FileType.FLOW_STEP_FILE,
         })
         expect(files).toHaveLength(1)
@@ -48,12 +48,12 @@ describe('Webhook file streaming with a handshake-configured trigger', () => {
     })
 })
 
-async function createEnabledFlow(): Promise<{ mockFlow: Flow, mockProject: Project }> {
-    const { mockProject } = await mockAndSaveBasicSetup()
-    const mockFlow = createMockFlow({ projectId: mockProject.id, status: FlowStatus.ENABLED })
+async function createEnabledFlow(): Promise<{ mockFlow: Flow, mockWorkspace: Workspace }> {
+    const { mockWorkspace } = await mockAndSaveBasicSetup()
+    const mockFlow = createMockFlow({ workspaceId: mockWorkspace.id, status: FlowStatus.ENABLED })
     await db.save('flow', [mockFlow])
     const mockFlowVersion = createMockFlowVersion({ flowId: mockFlow.id })
     await db.save('flow_version', [mockFlowVersion])
     await db.update('flow', mockFlow.id, { publishedVersionId: mockFlowVersion.id })
-    return { mockFlow, mockProject }
+    return { mockFlow, mockWorkspace }
 }

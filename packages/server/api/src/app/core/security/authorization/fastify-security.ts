@@ -1,10 +1,10 @@
 import { Permission } from '@fema/core-utils'
 import { PrincipalType } from '@fema/shared'
-import { AuthorizationType, NoneAuthorization, PlatformAuthorization, ProjectAuthorization, ProjectResource, PublicRoute, RouteKind, UnscopedAuthorization } from './common'
+import { AuthorizationType, NoneAuthorization, PlatformAuthorization, PublicRoute, RouteKind, UnscopedAuthorization, WorkspaceAuthorization, WorkspaceResource } from './common'
 
 type FastifySecurityAuthorization =
     | PlatformAuthorization
-    | ProjectAuthorization
+    | WorkspaceAuthorization
     | UnscopedAuthorization
     | NoneAuthorization
 
@@ -77,17 +77,17 @@ export const securityAccess = {
      * - platformId field is available on the request.principal (request.principal.platformId)
      *
      * @param allowedPrincipals - Array of allowed principal types (USER, ENGINE, or SERVICE)
-     * @param projectResource - Optional resource configuration for extracting projectId from the request
+     * @param workspaceResource - Optional resource configuration for extracting workspaceId from the request
      * @returns Security configuration for public platform routes
      */
-    publicPlatform: (allowedPrincipals: readonly (PrincipalType.USER | PrincipalType.ENGINE | PrincipalType.SERVICE)[], projectResource?: ProjectResource) => {
+    publicPlatform: (allowedPrincipals: readonly (PrincipalType.USER | PrincipalType.ENGINE | PrincipalType.SERVICE)[], workspaceResource?: WorkspaceResource) => {
         return {
             kind: RouteKind.AUTHENTICATED,
             authorization: {
                 type: AuthorizationType.PLATFORM,
                 allowedPrincipals,
                 adminOnly: false,
-                projectResource,
+                workspaceResource,
             },
         } as const
     },
@@ -107,52 +107,52 @@ export const securityAccess = {
     },
     
     /**
-     * Creates a security configuration for project-scoped routes.
+     * Creates a security configuration for workspace-scoped routes.
      *
      * **Pre-check:**
-     * - Extract projectId from the request based on projectResource
-     *   - ProjectTableResource: uses a db table to get projectId of the entity with id specified in the request body, query or param
-     *   - ProjectQueryResource: gets projectId from the query string
-     *   - ProjectBodyResource: gets projectId from the request body
-     *   - ProjectParamResource: gets projectId from the request param
+     * - Extract workspaceId from the request based on workspaceResource
+     *   - WorkspaceTableResource: uses a db table to get workspaceId of the entity with id specified in the request body, query or param
+     *   - WorkspaceQueryResource: gets workspaceId from the query string
+     *   - WorkspaceBodyResource: gets workspaceId from the request body
+     *   - WorkspaceParamResource: gets workspaceId from the request param
      *
      * **Conditions for access:**
      * - Principal type of token must be one of the allowedPrincipals
-     * - User with principal.id must be member of project with the extracted projectId
-     * - If permission is provided, user with principal.id must have the permission on the project with the extracted projectId
+     * - User with principal.id must be member of workspace with the extracted workspaceId
+     * - If permission is provided, user with principal.id must have the permission on the workspace with the extracted workspaceId
      *
      * **Effects:**
-     * - projectId field is available on the request object (request.projectId)
+     * - workspaceId field is available on the request object (request.workspaceId)
      *
      * @param allowedPrincipals - Array of allowed principal types (USER, SERVICE, or ENGINE)
      * @param permission - Optional permission required for access
-     * @param projectResource - Resource configuration for extracting projectId from the request
-     * @returns Security configuration for project-scoped routes
+     * @param workspaceResource - Resource configuration for extracting workspaceId from the request
+     * @returns Security configuration for workspace-scoped routes
      */
-    project: (allowedPrincipals: readonly (PrincipalType.USER | PrincipalType.SERVICE | PrincipalType.ENGINE)[], permission: Permission | undefined, projectResource: ProjectResource) => {
+    workspace: (allowedPrincipals: readonly (PrincipalType.USER | PrincipalType.SERVICE | PrincipalType.ENGINE)[], permission: Permission | undefined, workspaceResource: WorkspaceResource) => {
         return {
             kind: RouteKind.AUTHENTICATED,
             authorization: {
-                type: AuthorizationType.PROJECT,
+                type: AuthorizationType.WORKSPACE,
                 allowedPrincipals,
                 permission,
-                projectResource,
+                workspaceResource,
             },
         } as const
     },
     
     /**
-     * Creates a security configuration for unscoped routes that do not require platformId or projectId.
+     * Creates a security configuration for unscoped routes that do not require platformId or workspaceId.
      *
-     * Mainly used for routes that do not require platformId or projectId appended on the request object.
+     * Mainly used for routes that do not require platformId or workspaceId appended on the request object.
      * This is useful when we need a route that allows Worker principal + other principals because the
-     * worker principal token does not contain platformId or projectId.
+     * worker principal token does not contain platformId or workspaceId.
      *
      * **Conditions for access:**
      * - Principal type of token must be one of the allowedPrincipals
      *
      * **Effects:**
-     * - No effects (platformId and projectId are not available on the request object)
+     * - No effects (platformId and workspaceId are not available on the request object)
      *
      * @param allowedPrincipals - Array of allowed principal types
      * @returns Security configuration for unscoped routes
@@ -171,7 +171,7 @@ export const securityAccess = {
      * Creates a security configuration for routes that are only accessible to Engine principal.
      *
      * **Effects:**
-     * - projectId field is available on the request.principal because the engine principal token contains projectId
+     * - workspaceId field is available on the request.principal because the engine principal token contains workspaceId
      *
      * @returns Security configuration for engine-only routes
      */

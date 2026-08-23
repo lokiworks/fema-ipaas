@@ -127,7 +127,7 @@ export const jobMigrations = (log: FastifyBaseLogger) => ({
         log.info({
             schemaVersion: jobData.schemaVersion,
             job: { type: jobData.jobType },
-            project: { id: jobData.projectId },
+            workspace: { id: jobData.workspaceId },
         }, '[jobMigrations] Apply migration for job')
         const migrations = createMigrations(log)
         for (const migration of migrations) {

@@ -8,9 +8,9 @@ import { variableService } from './variable.service'
 export const variableWorkerController: FastifyPluginAsyncZod = async (app) => {
     app.get('/:name', GetVariableRequest, async (request): Promise<RevealVariableResponse> => {
         const enginePrincipal = (request.principal as EnginePrincipal)
-        assertNotNullOrUndefined(enginePrincipal.projectId, 'projectId')
+        assertNotNullOrUndefined(enginePrincipal.workspaceId, 'workspaceId')
         const value = await variableService(request.log).getDecryptedValueForWorker({
-            projectId: enginePrincipal.projectId,
+            workspaceId: enginePrincipal.workspaceId,
             name: request.params.name,
         })
         return { value }

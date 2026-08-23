@@ -142,7 +142,7 @@ async function tryDequeue(worker: BullMQWorker, queueName: string, log: FastifyB
 
     const engineToken = await accessTokenManager(log).generateEngineToken({
         jobId,
-        projectId: migratedData.projectId as string,
+        workspaceId: migratedData.workspaceId as string,
         platformId: migratedData.platformId,
     })
 

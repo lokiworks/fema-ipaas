@@ -6,7 +6,7 @@ export const ListAuditEventsRequest = z.object({
     limit: z.coerce.number().optional(),
     cursor: z.string().optional(),
     action: OptionalArrayFromQuery(z.string()),
-    projectId: OptionalArrayFromQuery(z.string()),
+    workspaceId: OptionalArrayFromQuery(z.string()),
     userId: z.string().optional(),
     createdBefore: z.string().optional(),
     createdAfter: z.string().optional(),
@@ -44,8 +44,8 @@ export enum ApplicationEventName {
 const BaseAuditEventProps = {
     ...BaseModelSchema,
     platformId: z.string(),
-    projectId: z.string().optional(),
-    projectDisplayName: z.string().optional(),
+    workspaceId: z.string().optional(),
+    workspaceDisplayName: z.string().optional(),
     userId: z.string().optional(),
     userEmail: z.string().optional(),
     ip: z.string().optional(),
@@ -62,7 +62,7 @@ const ConnectionEventData = z.object({
         created: DateOrString,
         updated: DateOrString,
     }),
-    project: z.object({
+    workspace: z.object({
         displayName: z.string(),
     }).optional(),
 })
@@ -98,7 +98,7 @@ const VariableEventData = z.object({
         created: DateOrString,
         updated: DateOrString,
     }),
-    project: z.object({
+    workspace: z.object({
         displayName: z.string(),
     }).optional(),
 })
@@ -137,7 +137,7 @@ export type VariableValueRevealedEvent = z.infer<typeof VariableValueRevealedEve
 
 const FolderEventData = z.object({
     folder: Folder.pick({ id: true, displayName: true, created: true, updated: true }),
-    project: z.object({
+    workspace: z.object({
         displayName: z.string(),
     }).optional(),
 })
@@ -189,7 +189,7 @@ const FlowRunEventData = z.object({
         flowDisplayName: z.string().optional(),
         status: z.string(),
     }),
-    project: z.object({
+    workspace: z.object({
         displayName: z.string(),
     }).optional(),
 })
@@ -232,7 +232,7 @@ export const FlowCreatedEvent = z.object({
     action: z.literal(ApplicationEventName.FLOW_CREATED),
     data: z.object({
         flow: Flow.pick({ id: true, externalId: true, created: true, updated: true }),
-        project: z.object({
+        workspace: z.object({
             displayName: z.string(),
             externalId: Nullable(z.string()),
         }).optional(),
@@ -253,7 +253,7 @@ export const FlowDeletedEvent = z.object({
             created: true,
             updated: true,
         }),
-        project: z.object({
+        workspace: z.object({
             displayName: z.string(),
             externalId: Nullable(z.string()),
         }).optional(),
@@ -275,7 +275,7 @@ export const FlowUpdatedEvent = z.object({
             updated: true,
         }),
         request: FlowOperationRequest,
-        project: z.object({
+        workspace: z.object({
             displayName: z.string(),
             externalId: Nullable(z.string()),
         }).optional(),
@@ -293,7 +293,7 @@ const FlowLifecycleEventData = z.object({
         created: true,
         updated: true,
     }),
-    project: z.object({
+    workspace: z.object({
         displayName: z.string(),
         externalId: Nullable(z.string()),
     }).optional(),

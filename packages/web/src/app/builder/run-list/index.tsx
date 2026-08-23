@@ -49,7 +49,7 @@ const RunsList = React.memo(() => {
     queryFn: ({ pageParam }) =>
       flowRunsApi.list({
         flowId: [flow.id],
-        projectId: authenticationSession.getProjectId()!,
+        workspaceId: authenticationSession.getWorkspaceId()!,
         limit: 15,
         cursor: pageParam as string | undefined,
       }),

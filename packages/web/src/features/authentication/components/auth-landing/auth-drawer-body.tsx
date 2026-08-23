@@ -819,8 +819,8 @@ function CodeStep({
       onSuccess: (data) => {
         authenticationSession.saveResponse(data, false);
         // A brand-new member arrives on the pre-platform onboarding token, so
-        // there is no project yet: ask their name before building the platform.
-        if (isNil(data.projectId)) {
+        // there is no workspace yet: ask their name before building the platform.
+        if (isNil(data.workspaceId)) {
           onNeedsName();
           return;
         }

@@ -5,7 +5,7 @@ export type TriggerEventId = string
 
 export const TriggerEvent = z.object({
     id: z.string(),
-    projectId: z.string(),
+    workspaceId: z.string(),
     flowId: z.string(),
     sourceName: z.string(),
     fileId: z.string(),

@@ -60,7 +60,7 @@ const TemplateDetailsPage = ({ template }: TemplateDetailsPageProps) => {
     const flowId = apId();
     return {
       id: flowId,
-      projectId: apId(),
+      workspaceId: apId(),
       externalId: apId(),
       folderId: null,
       status: FlowStatus.DISABLED,

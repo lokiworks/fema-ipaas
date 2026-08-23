@@ -40,7 +40,7 @@ export const variablesApi = {
     return api.post<RevealVariableResponse>(`/v1/variables/${id}/reveal`, {});
   },
   getOwners(request: {
-    projectId: string;
+    workspaceId: string;
   }): Promise<SeekPage<ConnectionOwners>> {
     return api.get<SeekPage<ConnectionOwners>>('/v1/variables/owners', request);
   },

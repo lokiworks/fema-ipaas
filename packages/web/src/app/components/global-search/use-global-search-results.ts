@@ -1,11 +1,14 @@
-import { PROJECT_COLOR_PALETTE } from '@fema/shared';
+import { WORKSPACE_COLOR_PALETTE } from '@fema/shared';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { t } from 'i18next';
 
 import { useEmbedding } from '@/components/providers/embed-provider';
 import { flowsApi } from '@/features/flows';
 import { foldersApi } from '@/features/folders';
-import { projectCollectionUtils, getProjectName } from '@/features/projects';
+import {
+  workspaceCollectionUtils,
+  getWorkspaceName,
+} from '@/features/workspaces';
 import { useIsPlatformAdmin } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 
@@ -36,14 +39,14 @@ function getTimePeriod(
 }
 
 export function useGlobalSearchResults(query: string, open: boolean) {
-  const projectId = authenticationSession.getProjectId() ?? '';
+  const workspaceId = authenticationSession.getWorkspaceId() ?? '';
   const isPlatformAdmin = useIsPlatformAdmin();
   const { embedState } = useEmbedding();
   const hideTables = embedState.hideTables;
-  const { data: allProjects = [] } = projectCollectionUtils.useAll();
-  const currentProject = allProjects.find((p) => p.id === projectId);
-  const currentProjectName = currentProject
-    ? getProjectName(currentProject)
+  const { data: allWorkspaces = [] } = workspaceCollectionUtils.useAll();
+  const currentWorkspace = allWorkspaces.find((p) => p.id === workspaceId);
+  const currentWorkspaceName = currentWorkspace
+    ? getWorkspaceName(currentWorkspace)
     : null;
   const hasQuery = query.length > 0;
 
@@ -54,15 +57,15 @@ export function useGlobalSearchResults(query: string, open: boolean) {
   const needsSupplement =
     !hasQuery && accessHistory.length < SUPPLEMENT_THRESHOLD;
 
-  const searchEnabled = hasQuery && !!projectId;
+  const searchEnabled = hasQuery && !!workspaceId;
   const suggestionsEnabled =
-    !hasQuery && needsSupplement && open && !!projectId;
+    !hasQuery && needsSupplement && open && !!workspaceId;
 
   const foldersQuery = useQuery({
-    queryKey: ['global-search-folders', projectId],
+    queryKey: ['global-search-folders', workspaceId],
     queryFn: () => foldersApi.list(),
     staleTime: 60_000,
-    enabled: !!projectId && open,
+    enabled: !!workspaceId && open,
   });
 
   const folderMap = new Map(
@@ -70,10 +73,10 @@ export function useGlobalSearchResults(query: string, open: boolean) {
   );
 
   const flowsQuery = useQuery({
-    queryKey: ['global-search-flows', projectId, query],
+    queryKey: ['global-search-flows', workspaceId, query],
     queryFn: () =>
       flowsApi.list({
-        projectId,
+        workspaceId,
         ...(hasQuery ? { name: query } : {}),
         limit: SEARCH_LIMIT,
         cursor: undefined,
@@ -89,7 +92,7 @@ export function useGlobalSearchResults(query: string, open: boolean) {
       (!hasQuery || p.label.toLowerCase().includes(query.toLowerCase())),
   ).slice(0, SEARCH_LIMIT);
 
-  const matchedProjects = allProjects
+  const matchedWorkspaces = allWorkspaces
     .filter(
       (p) =>
         !hasQuery || p.displayName.toLowerCase().includes(query.toLowerCase()),
@@ -108,11 +111,13 @@ export function useGlobalSearchResults(query: string, open: boolean) {
       id: `flow-${flow.id}`,
       type: 'flow' as const,
       label: flow.version.displayName,
-      href: authenticationSession.appendProjectRoutePrefix(`/flows/${flow.id}`),
+      href: authenticationSession.appendWorkspaceRoutePrefix(
+        `/flows/${flow.id}`,
+      ),
       folderName: flow.folderId ? folderMap.get(flow.folderId) ?? null : null,
       updated: flow.updated ? String(flow.updated) : null,
       status: flow.status,
-      projectName: currentProjectName,
+      workspaceName: currentWorkspaceName,
     }),
   );
 
@@ -125,26 +130,28 @@ export function useGlobalSearchResults(query: string, open: boolean) {
       type: 'folder' as const,
       label: folder.displayName,
       href:
-        authenticationSession.appendProjectRoutePrefix('/automations') +
+        authenticationSession.appendWorkspaceRoutePrefix('/automations') +
         `?folder=${folder.id}`,
-      projectName: currentProjectName,
+      workspaceName: currentWorkspaceName,
     }));
 
-  const projectResults: SearchResultItem[] = matchedProjects.map((project) => {
-    const palette = project.icon
-      ? PROJECT_COLOR_PALETTE[project.icon.color]
-      : null;
-    const name = getProjectName(project);
-    return {
-      id: `project-${project.id}`,
-      type: 'project' as const,
-      label: name,
-      href: `/projects/${project.id}/automations`,
-      iconBgColor: palette?.color,
-      iconTextColor: palette?.textColor,
-      iconLetter: name.charAt(0).toUpperCase(),
-    };
-  });
+  const workspaceResults: SearchResultItem[] = matchedWorkspaces.map(
+    (workspace) => {
+      const palette = workspace.icon
+        ? WORKSPACE_COLOR_PALETTE[workspace.icon.color]
+        : null;
+      const name = getWorkspaceName(workspace);
+      return {
+        id: `workspace-${workspace.id}`,
+        type: 'workspace' as const,
+        label: name,
+        href: `/workspaces/${workspace.id}/automations`,
+        iconBgColor: palette?.color,
+        iconTextColor: palette?.textColor,
+        iconLetter: name.charAt(0).toUpperCase(),
+      };
+    },
+  );
 
   const pageResults: SearchResultItem[] = matchedPages.map((page) => ({
     id: page.id,
@@ -171,7 +178,7 @@ export function useGlobalSearchResults(query: string, open: boolean) {
           href: h.href,
           status: h.status,
           folderName: h.folderName,
-          projectName: h.projectName,
+          workspaceName: h.workspaceName,
           iconBgColor: h.iconBgColor,
           iconTextColor: h.iconTextColor,
           iconLetter: h.iconLetter,
@@ -195,7 +202,7 @@ export function useGlobalSearchResults(query: string, open: boolean) {
             item: r,
             timestamp: r.updated ? new Date(r.updated).getTime() : 0,
           })),
-          ...projectResults.map((r) => ({ item: r, timestamp: 0 })),
+          ...workspaceResults.map((r) => ({ item: r, timestamp: 0 })),
           ...pageResults.map((r) => ({ item: r, timestamp: 0 })),
         ].filter((p) => !historyIds.has(p.item.id));
 
@@ -262,7 +269,7 @@ export function useGlobalSearchResults(query: string, open: boolean) {
     const flatItems: SearchResultItem[] = [
       ...flowResults.slice(0, 5),
       ...tableResults.slice(0, 5),
-      ...projectResults.slice(0, 5),
+      ...workspaceResults.slice(0, 5),
       ...pageResults.slice(0, 5),
     ];
     return {
@@ -301,9 +308,9 @@ export function useGlobalSearchResults(query: string, open: boolean) {
       isLoading: foldersQuery.isLoading && searchEnabled,
     },
     {
-      type: 'project',
-      heading: t('Projects'),
-      items: projectResults,
+      type: 'workspace',
+      heading: t('Workspaces'),
+      items: workspaceResults,
       isLoading: false,
     },
     {
@@ -319,7 +326,7 @@ export function useGlobalSearchResults(query: string, open: boolean) {
 
 export type SearchResultItem = {
   id: string;
-  type: 'flow' | 'table' | 'folder' | 'project' | 'page';
+  type: 'flow' | 'table' | 'folder' | 'workspace' | 'page';
   label: string;
   href: string;
   status?: 'ENABLED' | 'DISABLED' | null;
@@ -329,7 +336,7 @@ export type SearchResultItem = {
   iconTextColor?: string;
   iconLetter?: string;
   pageIcon?: StaticPage['icon'];
-  projectName?: string | null;
+  workspaceName?: string | null;
 };
 
 export type SearchResultGroup = {

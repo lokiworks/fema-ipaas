@@ -2,7 +2,7 @@
 import { AuthorizationType } from '../src/app/core/security/authorization/common'
 import { FastifyRouteSecurity } from '../src/app/core/security/authorization/fastify-security'
 import { ApId, Permission } from '@fema/core-utils';
-import { EndpointScope, MaybeProjectExtra, Principal, Principal, PrincipalForTypes, PrincipalForTypes, PrincipalType } from '@fema/shared';
+import { EndpointScope, MaybeWorkspaceExtra, Principal, Principal, PrincipalForTypes, PrincipalForTypes, PrincipalType } from '@fema/shared';
 import fastify, {
     RouteShorthandOptions as BaseRouteShorthandOptions,
     FastifyBaseLogger,
@@ -36,7 +36,7 @@ declare module 'fastify' {
             ? PrincipalForTypes<Q>
             : typeof ContextConfig['security'] extends undefined ? Principal : Principal
         
-        projectId: ContextConfig['security'] extends { authorization: { type: AuthorizationType.PROJECT } } ? string : undefined
+        workspaceId: ContextConfig['security'] extends { authorization: { type: AuthorizationType.WORKSPACE } } ? string : undefined
         rawBody?: string | Buffer
         isMultipart(): boolean
     }

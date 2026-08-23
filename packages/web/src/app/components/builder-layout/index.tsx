@@ -6,7 +6,7 @@ import {
   GlobalSearchProvider,
   useGlobalSearch,
 } from '../global-search/global-search-context';
-import { ProjectDashboardSidebar } from '../sidebar/dashboard';
+import { WorkspaceDashboardSidebar } from '../sidebar/dashboard';
 
 export function BuilderLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -22,7 +22,7 @@ function BuilderLayoutInner({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider hoverMode={!searchOpen} defaultOpen={false}>
-      {!embedState.isEmbedded && <ProjectDashboardSidebar />}
+      {!embedState.isEmbedded && <WorkspaceDashboardSidebar />}
       <SidebarInset className="flex flex-col h-full overflow-hidden bg-sidebar">
         <div
           className={cn(

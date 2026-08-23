@@ -1,9 +1,9 @@
-import { Project, User, UserIdentity } from '@fema/shared'
+import { User, UserIdentity, Workspace } from '@fema/shared'
 import { EntitySchema } from 'typeorm'
 import { BaseColumnSchemaPart } from '../database/database-common'
 
 export type UserSchema = User & {
-    projects: Project[]
+    workspaces: Workspace[]
     identity: UserIdentity
 }
 
@@ -52,9 +52,9 @@ export const UserEntity = new EntitySchema<UserSchema>({
         },
     ],
     relations: {
-        projects: {
+        workspaces: {
             type: 'one-to-many',
-            target: 'project',
+            target: 'workspace',
             inverseSide: 'owner',
         },
         identity: {

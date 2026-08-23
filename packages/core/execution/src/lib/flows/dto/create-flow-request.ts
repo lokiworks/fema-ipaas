@@ -6,7 +6,7 @@ export const CreateFlowRequest = z.object({
     /**If folderId is provided, folderName is ignored */
     folderId: z.string().optional(),
     folderName: z.string().optional(),
-    projectId: z.string(),
+    workspaceId: z.string(),
     templateId: z.string().optional(),
     metadata: z.optional(Metadata),
 })

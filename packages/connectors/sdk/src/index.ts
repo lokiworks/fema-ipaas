@@ -40,7 +40,7 @@ export {
   // flow contracts
   FlowStatus,
   FlowTriggerType,
-  Project,
+  Workspace,
   StopResponse,
   USE_DRAFT_QUERY_PARAM_NAME,
   RAW_PAYLOAD_HEADER,

@@ -1,9 +1,9 @@
 import { Permission, isNil } from '@fema/core-utils';
 import {
   ApFlagId,
-  PROJECT_COLOR_PALETTE,
+  WORKSPACE_COLOR_PALETTE,
   PlatformRole,
-  ProjectType,
+  WorkspaceType,
   TemplateTelemetryEventType,
 } from '@fema/shared';
 import { t } from 'i18next';
@@ -37,12 +37,12 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar-shadcn';
 import { VirtualizedScrollArea } from '@/components/ui/virtualized-scroll-area';
-import {
-  CreateProjectButton,
-  projectCollectionUtils,
-  getProjectName,
-} from '@/features/projects';
 import { templatesTelemetryApi } from '@/features/templates';
+import {
+  CreateWorkspaceButton,
+  workspaceCollectionUtils,
+  getWorkspaceName,
+} from '@/features/workspaces';
 import {
   useAuthorization,
   useIsPlatformAdmin,
@@ -57,17 +57,17 @@ import { GlobalSearchCommand } from '../../global-search/global-search-command';
 import { STATIC_PAGES } from '../../global-search/static-pages';
 import { SidebarGeneralItemType } from '../ap-sidebar-group';
 import { ApSidebarItem, SidebarItemType } from '../ap-sidebar-item';
-import ProjectSideBarItem from '../project';
 import { AppSidebarHeader } from '../sidebar-header';
 import { SidebarUser } from '../sidebar-user';
+import WorkspaceSideBarItem from '../workspace';
 
-export function ProjectDashboardSidebar({
+export function WorkspaceDashboardSidebar({
   className,
 }: { className?: string } = {}) {
   const { data: agentsEnabledFlag } = flagsHooks.useFlag<boolean>(
     ApFlagId.AGENTS_ENABLED,
   );
-  const { data: projects } = projectCollectionUtils.useAll();
+  const { data: workspaces } = workspaceCollectionUtils.useAll();
   const { embedState } = useEmbedding();
   const { state } = useSidebar();
   const location = useLocation();
@@ -83,60 +83,60 @@ export function ProjectDashboardSidebar({
     }
   }, [searchOpen]);
 
-  const shouldShowNewProjectButton = useMemo(() => {
-    if (platform.plan.billedTeamProjectsLimit === 0) {
+  const shouldShowNewWorkspaceButton = useMemo(() => {
+    if (platform.plan.billedTeamWorkspacesLimit === 0) {
       return false;
     }
     return currentUser?.platformRole === PlatformRole.ADMIN;
-  }, [platform.plan.billedTeamProjectsLimit]);
+  }, [platform.plan.billedTeamWorkspacesLimit]);
 
   const shouldShowSearchButton = useMemo(() => {
-    if (platform.plan.billedTeamProjectsLimit === 0) {
+    if (platform.plan.billedTeamWorkspacesLimit === 0) {
       return false;
     }
     return true;
-  }, [platform.plan.billedTeamProjectsLimit]);
+  }, [platform.plan.billedTeamWorkspacesLimit]);
 
   const shouldShowInlineAddButton =
-    platform.plan.billedTeamProjectsLimit !== 0 &&
+    platform.plan.billedTeamWorkspacesLimit !== 0 &&
     currentUser?.platformRole === PlatformRole.ADMIN &&
-    projects.filter((project) => project.type === ProjectType.TEAM).length ===
-      0;
+    workspaces.filter((workspace) => workspace.type === WorkspaceType.TEAM)
+      .length === 0;
 
   const isSearchMode = debouncedSearchQuery.length > 0;
 
-  const displayProjects = useMemo(() => {
+  const displayWorkspaces = useMemo(() => {
     if (isSearchMode) {
       const query = debouncedSearchQuery.toLowerCase();
-      return projects.filter((project) =>
-        project.displayName.toLowerCase().includes(query),
+      return workspaces.filter((workspace) =>
+        workspace.displayName.toLowerCase().includes(query),
       );
     }
-    return projects;
-  }, [isSearchMode, debouncedSearchQuery, projects]);
-  const handleProjectSelect = useCallback(
-    async (projectId: string) => {
-      const project = projects.find((p) => p.id === projectId);
-      if (project) {
-        const palette = project.icon
-          ? PROJECT_COLOR_PALETTE[project.icon.color]
+    return workspaces;
+  }, [isSearchMode, debouncedSearchQuery, workspaces]);
+  const handleWorkspaceSelect = useCallback(
+    async (workspaceId: string) => {
+      const workspace = workspaces.find((p) => p.id === workspaceId);
+      if (workspace) {
+        const palette = workspace.icon
+          ? WORKSPACE_COLOR_PALETTE[workspace.icon.color]
           : null;
-        const name = getProjectName(project);
+        const name = getWorkspaceName(workspace);
         recordAccess({
-          id: `project-${projectId}`,
-          type: 'project',
+          id: `workspace-${workspaceId}`,
+          type: 'workspace',
           label: name,
-          href: `/projects/${projectId}/automations`,
+          href: `/workspaces/${workspaceId}/automations`,
           iconBgColor: palette?.color,
           iconTextColor: palette?.textColor,
           iconLetter: name.charAt(0).toUpperCase(),
         });
       }
-      projectCollectionUtils.setCurrentProject(projectId);
-      navigate(`/projects/${projectId}/automations`);
+      workspaceCollectionUtils.setCurrentWorkspace(workspaceId);
+      navigate(`/workspaces/${workspaceId}/automations`);
       setSearchOpen(false);
     },
-    [navigate, projects],
+    [navigate, workspaces],
   );
 
   const { checkAccess } = useAuthorization();
@@ -247,14 +247,14 @@ export function ProjectDashboardSidebar({
 
           <SidebarGroup className="flex-1 overflow-hidden">
             <div className="flex items-center justify-between group-data-[collapsible=icon]:hidden">
-              <SidebarGroupLabel>{t('Projects')}</SidebarGroupLabel>
+              <SidebarGroupLabel>{t('Workspaces')}</SidebarGroupLabel>
               <div className="flex items-center justify-center gap-2">
-                {shouldShowNewProjectButton && (
-                  <CreateProjectButton
+                {shouldShowNewWorkspaceButton && (
+                  <CreateWorkspaceButton
                     variant="icon"
-                    projects={projects ?? []}
-                    onCreate={(project) => {
-                      navigate(`/projects/${project.id}/flows`);
+                    workspaces={workspaces ?? []}
+                    onCreate={(workspace) => {
+                      navigate(`/workspaces/${workspace.id}/flows`);
                     }}
                   />
                 )}
@@ -276,7 +276,7 @@ export function ProjectDashboardSidebar({
                       sideOffset={8}
                     >
                       <SearchInput
-                        placeholder={t('Search projects...')}
+                        placeholder={t('Search workspaces...')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e)}
                         className="h-8"
@@ -294,7 +294,7 @@ export function ProjectDashboardSidebar({
               }}
             >
               <div className="flex max-h-[100%]">
-                {displayProjects.length > 0 ? (
+                {displayWorkspaces.length > 0 ? (
                   <VirtualizedScrollArea
                     className={cn(
                       'flex-1',
@@ -302,21 +302,23 @@ export function ProjectDashboardSidebar({
                         ? 'flex flex-col items-center scrollbar-none'
                         : '',
                     )}
-                    items={displayProjects}
+                    items={displayWorkspaces}
                     estimateSize={() => 35}
-                    getItemKey={(index) => displayProjects[index]?.id ?? index}
+                    getItemKey={(index) =>
+                      displayWorkspaces[index]?.id ?? index
+                    }
                     overscan={10}
-                    renderItem={(project) => (
+                    renderItem={(workspace) => (
                       <SidebarMenuItem className="w-full">
-                        <ProjectSideBarItem
-                          key={project.id}
-                          project={project}
-                          isCurrentProject={
+                        <WorkspaceSideBarItem
+                          key={workspace.id}
+                          workspace={workspace}
+                          isCurrentWorkspace={
                             location.pathname.includes(
-                              `/projects/${project.id}`,
+                              `/workspaces/${workspace.id}`,
                             ) && !location.pathname.includes('/agents')
                           }
-                          handleProjectSelect={handleProjectSelect}
+                          handleWorkspaceSelect={handleWorkspaceSelect}
                         />
                       </SidebarMenuItem>
                     )}
@@ -324,7 +326,7 @@ export function ProjectDashboardSidebar({
                 ) : (
                   isSearchMode && (
                     <div className="px-2 py-2 text-sm text-muted-foreground">
-                      {state === 'expanded' && t('No projects found.')}
+                      {state === 'expanded' && t('No workspaces found.')}
                     </div>
                   )
                 )}
@@ -332,11 +334,11 @@ export function ProjectDashboardSidebar({
               {shouldShowInlineAddButton && state === 'expanded' && (
                 <SidebarMenu>
                   <SidebarMenuItem>
-                    <CreateProjectButton
+                    <CreateWorkspaceButton
                       variant="sidebar-menu"
-                      projects={projects ?? []}
-                      onCreate={(project) => {
-                        navigate(`/projects/${project.id}/flows`);
+                      workspaces={workspaces ?? []}
+                      onCreate={(workspace) => {
+                        navigate(`/workspaces/${workspace.id}/flows`);
                       }}
                     />
                   </SidebarMenuItem>
@@ -378,7 +380,7 @@ function SidebarPlatformAdminLink() {
     <SidebarMenu>
       <ApSidebarItem
         type="link"
-        to="/platform/projects"
+        to="/platform/workspaces"
         label={t('Platform Admin')}
         icon={ShieldIcon}
         isSubItem={false}
@@ -387,7 +389,8 @@ function SidebarPlatformAdminLink() {
         onClick={() => {
           const page = STATIC_PAGES.find(
             (p) =>
-              p.href === '/platform/projects' && p.id === 'page-platform-admin',
+              p.href === '/platform/workspaces' &&
+              p.id === 'page-platform-admin',
           );
           if (page)
             recordAccess({
@@ -402,4 +405,4 @@ function SidebarPlatformAdminLink() {
   );
 }
 
-export const SIDEBAR_ID = 'project-sidebar';
+export const SIDEBAR_ID = 'workspace-sidebar';

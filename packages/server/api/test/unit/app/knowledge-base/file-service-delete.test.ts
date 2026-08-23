@@ -57,20 +57,20 @@ describe('fileService.delete', () => {
     })
 
     it('should delete a DB-stored file', async () => {
-        mockFindOneBy.mockResolvedValue({ id: 'file-1', projectId: 'proj-1', s3Key: null })
+        mockFindOneBy.mockResolvedValue({ id: 'file-1', workspaceId: 'proj-1', s3Key: null })
         mockRepoDelete.mockResolvedValue({ affected: 1 })
 
-        await fileService(mockLog).delete({ projectId: 'proj-1', fileId: 'file-1' })
+        await fileService(mockLog).delete({ workspaceId: 'proj-1', fileId: 'file-1' })
 
         expect(mockRepoDelete).toHaveBeenCalledWith({ id: 'file-1' })
         expect(mockDeleteFiles).not.toHaveBeenCalled()
     })
 
     it('should delete an S3-stored file and its S3 object', async () => {
-        mockFindOneBy.mockResolvedValue({ id: 'file-2', projectId: 'proj-1', s3Key: 'some/s3/key' })
+        mockFindOneBy.mockResolvedValue({ id: 'file-2', workspaceId: 'proj-1', s3Key: 'some/s3/key' })
         mockRepoDelete.mockResolvedValue({ affected: 1 })
 
-        await fileService(mockLog).delete({ projectId: 'proj-1', fileId: 'file-2' })
+        await fileService(mockLog).delete({ workspaceId: 'proj-1', fileId: 'file-2' })
 
         expect(mockDeleteFiles).toHaveBeenCalledWith(['some/s3/key'])
         expect(mockRepoDelete).toHaveBeenCalledWith({ id: 'file-2' })
@@ -79,7 +79,7 @@ describe('fileService.delete', () => {
     it('should do nothing when file does not exist', async () => {
         mockFindOneBy.mockResolvedValue(null)
 
-        await fileService(mockLog).delete({ projectId: 'proj-1', fileId: 'file-missing' })
+        await fileService(mockLog).delete({ workspaceId: 'proj-1', fileId: 'file-missing' })
 
         expect(mockRepoDelete).not.toHaveBeenCalled()
         expect(mockDeleteFiles).not.toHaveBeenCalled()

@@ -8,13 +8,13 @@ import { platformService } from '../../../../src/app/platform/platform.service'
 import { createMockPlatform, createMockUserIdentity } from '../../../helpers/mocks'
 import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
 
-const trackProject = vi.fn()
+const trackWorkspace = vi.fn()
 
 vi.mock('../../../../src/app/helper/telemetry.utils', async (importOriginal) => {
     const actual = await importOriginal<typeof import('../../../../src/app/helper/telemetry.utils')>()
     return {
         ...actual,
-        telemetry: (log: FastifyBaseLogger) => ({ ...actual.telemetry(log), trackProject }),
+        telemetry: (log: FastifyBaseLogger) => ({ ...actual.telemetry(log), trackWorkspace }),
     }
 })
 
@@ -43,7 +43,7 @@ async function createViaRoute({ token, name }: { token: string, name: string }) 
 }
 
 async function createFirstPlatform(identityId: string, callerTokenVersion?: string) {
-    const { response } = await platformService(app!.log).createPlatformWithProject({
+    const { response } = await platformService(app!.log).createPlatformWithWorkspace({
         identityId,
         name: 'Ahmad',
         invalidatePreviousTokens: true,
@@ -54,7 +54,7 @@ async function createFirstPlatform(identityId: string, callerTokenVersion?: stri
 }
 
 function provisionFirstPlatform(identityId: string) {
-    return platformService(app!.log).createPlatformWithProject({
+    return platformService(app!.log).createPlatformWithWorkspace({
         identityId,
         name: 'Ahmad',
         invalidatePreviousTokens: true,
@@ -89,8 +89,8 @@ afterAll(async () => {
 })
 
 beforeEach(async () => {
-    trackProject.mockClear()
-    await databaseConnection().getRepository('project').createQueryBuilder().delete().execute()
+    trackWorkspace.mockClear()
+    await databaseConnection().getRepository('workspace').createQueryBuilder().delete().execute()
     await databaseConnection().getRepository('platform').createQueryBuilder().delete().execute()
     await databaseConnection().getRepository('user').createQueryBuilder().delete().execute()
     await databaseConnection().getRepository('user_identity').createQueryBuilder().delete().execute()
@@ -105,7 +105,7 @@ describe('First platform provisioning', () => {
 
         expect(second.platformId).toBe(first.platformId)
         expect(await databaseConnection().getRepository('platform').count()).toBe(1)
-        expect(await databaseConnection().getRepository('project').count()).toBe(1)
+        expect(await databaseConnection().getRepository('workspace').count()).toBe(1)
         expect(await databaseConnection().getRepository('user').count()).toBe(1)
     })
 
@@ -153,20 +153,20 @@ describe('First platform provisioning', () => {
 
         const response = await createFirstPlatform(identityId)
 
-        const signedUp = trackProject.mock.calls.filter(([, event]) => event.name === TelemetryEventName.SIGNED_UP)
+        const signedUp = trackWorkspace.mock.calls.filter(([, event]) => event.name === TelemetryEventName.SIGNED_UP)
         expect(signedUp).toHaveLength(1)
-        expect(signedUp[0][0]).toBe(response.projectId)
+        expect(signedUp[0][0]).toBe(response.workspaceId)
     })
 
-    it('repairs a platform left without a project instead of wedging the identity', async () => {
+    it('repairs a platform left without a workspace instead of wedging the identity', async () => {
         const identityId = await seedVerifiedIdentity()
         const first = await createFirstPlatform(identityId)
-        await databaseConnection().getRepository('project').createQueryBuilder().delete().execute()
+        await databaseConnection().getRepository('workspace').createQueryBuilder().delete().execute()
 
         const retry = await createFirstPlatform(identityId)
 
         expect(retry.platformId).toBe(first.platformId)
-        expect(await databaseConnection().getRepository('project').count()).toBe(1)
+        expect(await databaseConnection().getRepository('workspace').count()).toBe(1)
         expect(await databaseConnection().getRepository('platform').count()).toBe(1)
     })
 

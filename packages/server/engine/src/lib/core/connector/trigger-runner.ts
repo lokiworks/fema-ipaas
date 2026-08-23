@@ -101,7 +101,7 @@ export const triggerRunner = {
 async function buildTriggerContext({ connector, constants, triggerName, input, propertySettings, contextVersion, payload, storePrefix, includeFiles, webhookUrl, isRepublish }: BuildTriggerContextParams): Promise<TriggerContextRequest> {
     const { resolvedInput } = await createPropsResolver({
         apiUrl: constants.internalApiUrl,
-        projectId: constants.projectId,
+        workspaceId: constants.workspaceId,
         engineToken: constants.engineToken,
         contextVersion,
         stepNames: constants.stepNames,

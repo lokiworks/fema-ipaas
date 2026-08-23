@@ -318,14 +318,14 @@ async function openPopup({
   let authorizationUrl, codeVerifier;
   try {
     setLoading(true);
-    const formProjectId = form.getValues().request.projectId;
+    const formWorkspaceId = form.getValues().request.workspaceId;
     const result = await connectionsApi.getOAuth2AuthorizationUrl({
       connectorName,
       clientId,
       redirectUrl,
       connectorVersion,
       props,
-      projectId: formProjectId,
+      workspaceId: formWorkspaceId,
       scopes,
     });
     authorizationUrl = result.authorizationUrl;

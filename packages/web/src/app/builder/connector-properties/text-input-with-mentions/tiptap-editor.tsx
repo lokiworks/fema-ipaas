@@ -253,14 +253,14 @@ export const TiptapEditor = ({
     (state) => state.setInsertMentionHandler,
   );
 
-  const projectId = authenticationSession.getProjectId();
+  const workspaceId = authenticationSession.getWorkspaceId();
   const { data: variablesPage } = variablesQueries.useVariables({
     request: {
-      projectId: projectId ?? '',
+      workspaceId: workspaceId ?? '',
       limit: 100,
     },
-    extraKeys: ['mention-resolver-variables', projectId ?? ''],
-    enabled: !!projectId,
+    extraKeys: ['mention-resolver-variables', workspaceId ?? ''],
+    enabled: !!workspaceId,
   });
   const variableByName = useMemo(
     () => new Map((variablesPage?.data ?? []).map((v) => [v.name, v.name])),

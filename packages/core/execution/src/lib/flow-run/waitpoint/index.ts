@@ -6,7 +6,7 @@ export type WaitpointVersion = z.infer<typeof WaitpointVersion>
 
 export const CreateWaitpointRequest = z.object({
     flowRunId: z.string(),
-    projectId: z.string(),
+    workspaceId: z.string(),
     stepName: z.string(),
     type: z.enum(['DELAY', 'WEBHOOK']),
     version: WaitpointVersion,

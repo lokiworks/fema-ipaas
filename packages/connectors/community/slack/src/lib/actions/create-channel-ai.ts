@@ -21,7 +21,7 @@ export const createChannelAiAction = createAction({
     channelName: Property.ShortText({
       displayName: 'Channel Name',
       description:
-        "Name for the new channel, without the leading '#'. Slack lowercases it and replaces spaces with hyphens, e.g. 'project-updates'. Max 80 characters.",
+        "Name for the new channel, without the leading '#'. Slack lowercases it and replaces spaces with hyphens, e.g. 'workspace-updates'. Max 80 characters.",
       required: true,
     }),
     isPrivate: Property.Checkbox({

@@ -1,9 +1,9 @@
-import { FlowId, FlowVersionId, isNil, ProjectId } from '@fema/core-utils'
+import { FlowId, FlowVersionId, isNil, WorkspaceId } from '@fema/core-utils'
 import { EngineResponse, EngineResponseStatus, ExecuteTriggerResponse, TriggerHookType, TriggerPayload, TriggerSource, WebhookHandshakeConfiguration, WebhookHandshakeStrategy, WorkerJobType } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
-import { projectService } from '../project/project-service'
 import { triggerUtils } from '../trigger/trigger-source/trigger-utils'
 import { userInteractionWatcher } from '../workers/user-interaction-watcher'
+import { workspaceService } from '../workspace/workspace-service'
 
 export const webhookHandshake = {
     async handleHandshakeRequest(params: HandleHandshakeRequestParams): Promise<WebhookHandshakeResponse | null> {
@@ -13,14 +13,14 @@ export const webhookHandshake = {
             return null
         }
 
-        const platformId = await projectService(logger).getPlatformId(params.projectId)
+        const platformId = await workspaceService(logger).getPlatformId(params.workspaceId)
 
         const engineHelperResponse = await userInteractionWatcher.submitAndWaitForResponse<EngineResponse<ExecuteTriggerResponse<TriggerHookType.HANDSHAKE>>>({
             jobType: WorkerJobType.EXECUTE_TRIGGER_HOOK,
             hookType: TriggerHookType.HANDSHAKE,
             flowId: params.flowId,
             flowVersionId: params.flowVersionId,
-            projectId: params.projectId,
+            workspaceId: params.workspaceId,
             test: false,
             platformId,
             triggerPayload: payload,
@@ -33,14 +33,14 @@ export const webhookHandshake = {
     },
     async getWebhookHandshakeConfiguration(params: GetWebhookHandshakeConfigurationParams): Promise<WebhookHandshakeConfiguration | null> {
         const { triggerSource, logger } = params
-        if (isNil(triggerSource) || isNil(triggerSource.connectorName) || isNil(triggerSource.connectorVersion) || isNil(triggerSource.triggerName) || isNil(triggerSource.projectId)) {
+        if (isNil(triggerSource) || isNil(triggerSource.connectorName) || isNil(triggerSource.connectorVersion) || isNil(triggerSource.triggerName) || isNil(triggerSource.workspaceId)) {
             return null
         }
         const connectorTrigger = await triggerUtils(logger).getConnectorTriggerByName({
             connectorName: triggerSource.connectorName,
             connectorVersion: triggerSource.connectorVersion,
             triggerName: triggerSource.triggerName,
-            projectId: triggerSource.projectId,
+            workspaceId: triggerSource.workspaceId,
         })
         if (isNil(connectorTrigger)) {
             return null
@@ -89,7 +89,7 @@ type HandleHandshakeRequestParams = {
     payload: TriggerPayload
     flowId: FlowId
     flowVersionId: FlowVersionId
-    projectId: ProjectId
+    workspaceId: WorkspaceId
     handshakeConfiguration: WebhookHandshakeConfiguration | null
     logger: FastifyBaseLogger
 }

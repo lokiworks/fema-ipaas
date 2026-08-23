@@ -10,7 +10,7 @@ import { sampleDataApi } from '../api/sample-data-api';
 export const sampleDataHooks = {
   useSampleDataForFlow: (
     flowVersion: FlowVersion | undefined,
-    projectId: string | undefined,
+    workspaceId: string | undefined,
   ) => {
     return useQuery({
       queryKey: ['sampleData', flowVersion?.id],
@@ -26,7 +26,7 @@ export const sampleDataHooks = {
               [step.name]: await getSampleData(
                 flowVersion!,
                 step.name,
-                projectId!,
+                workspaceId!,
                 SampleDataFileType.OUTPUT,
               ),
             };
@@ -42,7 +42,7 @@ export const sampleDataHooks = {
   },
   useSampleDataInputForFlow: (
     flowVersion: FlowVersion | undefined,
-    projectId: string | undefined,
+    workspaceId: string | undefined,
   ) => {
     return useQuery({
       queryKey: ['sampleDataInput', flowVersion?.id],
@@ -59,7 +59,7 @@ export const sampleDataHooks = {
                 ? await getSampleData(
                     flowVersion!,
                     step.name,
-                    projectId!,
+                    workspaceId!,
                     SampleDataFileType.INPUT,
                   )
                 : undefined,
@@ -85,7 +85,7 @@ export const sampleDataHooks = {
 async function getSampleData(
   flowVersion: FlowVersion,
   stepName: string,
-  projectId: string,
+  workspaceId: string,
   type: SampleDataFileType,
 ): Promise<unknown> {
   return sampleDataApi
@@ -93,7 +93,7 @@ async function getSampleData(
       flowId: flowVersion.flowId,
       flowVersionId: flowVersion.id,
       stepName,
-      projectId,
+      workspaceId,
       type,
     })
     .catch((error) => {

@@ -17,8 +17,8 @@ vi.mock('../../../../../src/app/helper/system/system', () => ({
     },
 }))
 
-vi.mock('../../../../../src/app/project/project-service', () => ({
-    projectService: vi.fn(() => ({
+vi.mock('../../../../../src/app/workspace/workspace-service', () => ({
+    workspaceService: vi.fn(() => ({
         getPlatformId: mockGetPlatformId,
     })),
 }))
@@ -62,7 +62,7 @@ const BASE_PARAMS = {
     flowId: 'flow-1',
     flowVersionId: 'fv-1',
     connectorName: '@fema/connector-test',
-    projectId: 'proj-1',
+    workspaceId: 'proj-1',
     simulate: false,
 }
 
@@ -262,7 +262,7 @@ describe('flowTriggerSideEffect', () => {
             })
 
             expect(mockDeleteListeners).toHaveBeenCalledWith({
-                projectId: 'proj-1',
+                workspaceId: 'proj-1',
                 flowId: 'flow-1',
             })
         })

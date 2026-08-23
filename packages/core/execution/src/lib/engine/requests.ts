@@ -14,7 +14,7 @@ export const UploadRunLogsRequest = z.object({
     // Optional so the worker can post a timings-only update (provision/boot/run) after a successful
     // execute without re-asserting the terminal status the engine already reported.
     status: z.nativeEnum(FlowRunStatus).optional(),
-    projectId: z.string(),
+    workspaceId: z.string(),
     streamStepProgress: z.nativeEnum(StreamStepProgress).optional(),
     logsFileId: z.string().optional(),
     stepNameToTest: z.string().optional(),
@@ -33,7 +33,7 @@ export type UploadRunLogsRequest = z.infer<typeof UploadRunLogsRequest>
 
 
 export const UpdateStepProgressRequest = z.object({
-    projectId: z.string(),
+    workspaceId: z.string(),
     runId: z.string(),
     output: z.unknown(),
     sequence: z.number().optional(),

@@ -49,19 +49,19 @@ const customAuthConnection = ({ platformId, connectorName, connectorVersion, val
     created: dayjs().toISOString(),
     updated: dayjs().toISOString(),
     platformId,
-    projectIds: [apId()],
+    workspaceIds: [apId()],
     connectorName,
     connectorVersion,
     displayName: 'Test Custom Auth',
     type: ConnectionType.CUSTOM_AUTH,
-    scope: ConnectionScope.PROJECT,
+    scope: ConnectionScope.WORKSPACE,
     status: ConnectionStatus.ACTIVE,
     ownerId: apId(),
     value,
     metadata: {},
     externalId: apId(),
     owner: null,
-    preSelectForNewProjects: false,
+    preSelectForNewWorkspaces: false,
 })
 
 describe('Custom auth token refresh — needRefresh', () => {

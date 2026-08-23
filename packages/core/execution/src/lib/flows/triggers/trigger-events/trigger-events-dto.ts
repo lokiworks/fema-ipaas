@@ -4,7 +4,7 @@ import { ApId } from '@fema/core-utils'
 import { Cursor } from '@fema/core-utils'
 
 export const ListTriggerEventsRequest = z.object({
-    projectId: ApId,
+    workspaceId: ApId,
     flowId: z.string(),
     limit: z.coerce.number().optional(),
     cursor: z.string().optional(),
@@ -16,7 +16,7 @@ export type ListTriggerEventsRequest = Omit<z.infer<typeof ListTriggerEventsRequ
 }
 
 export const SaveTriggerEventRequest = z.object({
-    projectId: ApId,
+    workspaceId: ApId,
     flowId: z.string(),
     mockData: z.unknown(),
 })

@@ -27,7 +27,7 @@ export const executePropertyJob: JobHandler<ExecutePropertyJobData, SynchronousJ
                     flowVersion: data.flowVersion,
                     input: data.input,
                     sampleData: data.sampleData,
-                    projectId: data.projectId,
+                    workspaceId: data.workspaceId,
                     searchValue: data.searchValue,
                     platformId: data.platformId,
                     engineToken: ctx.engineToken,

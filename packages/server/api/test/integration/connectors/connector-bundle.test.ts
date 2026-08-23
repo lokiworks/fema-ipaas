@@ -17,11 +17,11 @@ afterAll(async () => {
     await teardownTestEnvironment()
 })
 
-async function engineToken(projectId: string, platformId: string): Promise<string> {
+async function engineToken(workspaceId: string, platformId: string): Promise<string> {
     const principal: Principal = {
         id: apId(),
         type: PrincipalType.ENGINE,
-        projectId,
+        workspaceId,
         platform: { id: platformId },
     }
     return generateMockToken(principal)
@@ -42,7 +42,7 @@ describe('Connector Bundle Endpoint', () => {
     })
 
     it('redirects a registry connector to the npm tarball, never to our own S3', async () => {
-        const { mockPlatform, mockProject } = await mockAndSaveBasicSetup()
+        const { mockPlatform, mockWorkspace } = await mockAndSaveBasicSetup()
         await db.save('connector_metadata', createMockConnectorMetadata({
             name: '@fema/connector-bundle-official',
             version: '1.2.3',
@@ -50,7 +50,7 @@ describe('Connector Bundle Endpoint', () => {
             connectorType: ConnectorType.OFFICIAL,
             platformId: undefined,
         }))
-        const token = await engineToken(mockProject.id, mockPlatform.id)
+        const token = await engineToken(mockWorkspace.id, mockPlatform.id)
 
         const response = await app!.inject(bundleRequest('@fema/connector-bundle-official', '1.2.3', token))
 
@@ -67,7 +67,7 @@ describe('Connector Bundle Endpoint', () => {
         await db.save('file', createMockFile({
             id: archiveId,
             platformId: platformA.mockPlatform.id,
-            projectId: null,
+            workspaceId: null,
             type: FileType.PACKAGE_ARCHIVE,
             location: FileLocation.DB,
             compression: FileCompression.NONE,
@@ -82,8 +82,8 @@ describe('Connector Bundle Endpoint', () => {
             archiveId,
         }))
 
-        const tokenA = await engineToken(platformA.mockProject.id, platformA.mockPlatform.id)
-        const tokenB = await engineToken(platformB.mockProject.id, platformB.mockPlatform.id)
+        const tokenA = await engineToken(platformA.mockWorkspace.id, platformA.mockPlatform.id)
+        const tokenB = await engineToken(platformB.mockWorkspace.id, platformB.mockPlatform.id)
 
         const ownerResponse = await app!.inject(bundleRequest('@acme/connector-private', '0.0.1', tokenA))
         expect(ownerResponse.statusCode).toBe(StatusCodes.OK)
@@ -101,15 +101,15 @@ describe('Connector Bundle Endpoint', () => {
         await db.save('file', createMockFile({
             id: archiveId,
             platformId: platformA.mockPlatform.id,
-            projectId: null,
+            workspaceId: null,
             type: FileType.PACKAGE_ARCHIVE,
             location: FileLocation.DB,
             compression: FileCompression.NONE,
             data: Buffer.from('archive-bytes'),
         }))
 
-        const tokenA = await engineToken(platformA.mockProject.id, platformA.mockPlatform.id)
-        const tokenB = await engineToken(platformB.mockProject.id, platformB.mockPlatform.id)
+        const tokenA = await engineToken(platformA.mockWorkspace.id, platformA.mockPlatform.id)
+        const tokenB = await engineToken(platformB.mockWorkspace.id, platformB.mockPlatform.id)
         const byArchive = (token: string) => ({
             method: 'GET' as const,
             url: `/api/v1/engine/connectors/bundle?archiveId=${archiveId}`,

@@ -183,21 +183,21 @@ describe('machineService.list — platform filtering', () => {
         expect(result[0].type).toBe(WorkerMachineType.SHARED)
     })
 
-    it('should return project-scope workers to any platform', async () => {
+    it('should return workspace-scope workers to any platform', async () => {
         mockGetWorkerGroupId.mockResolvedValue(null)
 
         await workerMachineCache().upsert({
-            id: 'project-worker',
-            information: fakeMachineInfo('project-worker'),
+            id: 'workspace-worker',
+            information: fakeMachineInfo('workspace-worker'),
             type: 'DEDICATED',
-            workerGroupScope: WorkerGroupScope.PROJECT,
+            workerGroupScope: WorkerGroupScope.WORKSPACE,
             workerGroupId: '1cpu_machine',
         })
 
         const result = await machineService(mockLogger).list('any-platform');
         expect(result).toHaveLength(1)
-        expect(result[0].id).toBe('project-worker')
-        expect(result[0].workerGroupScope).toBe(WorkerGroupScope.PROJECT)
+        expect(result[0].id).toBe('workspace-worker')
+        expect(result[0].workerGroupScope).toBe(WorkerGroupScope.WORKSPACE)
     })
 
     it('should include legacy workers with no type as shared', async () => {

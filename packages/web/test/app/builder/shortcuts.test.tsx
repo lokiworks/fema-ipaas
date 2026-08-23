@@ -36,7 +36,7 @@ function buildFlow(): PopulatedFlow {
     id: 'flow-1',
     created: now,
     updated: now,
-    projectId: 'project-1',
+    workspaceId: 'workspace-1',
     externalId: 'flow-1',
     ownerId: null,
     folderId: null,

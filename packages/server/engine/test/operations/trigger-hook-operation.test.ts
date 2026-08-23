@@ -57,7 +57,7 @@ function makeOperation(triggerPayload: ExecuteTriggerOperation<TriggerHookType.R
         flowVersion: makeFlowVersion(),
         webhookUrl: 'http://localhost:4200/webhook',
         triggerPayload,
-        projectId: 'project-1',
+        workspaceId: 'workspace-1',
         platformId: 'platform-1',
         engineToken: 'test-token',
         internalApiUrl: 'http://localhost:3000/',

@@ -50,7 +50,7 @@ function flowWithConnector(overrides: Partial<FlowVersion> = {}): FlowVersion {
 
 const httpConnector = { packageType: PackageType.REGISTRY, name: '@fema/connector-http', version: '1.0.5', connectorType: ConnectorType.OFFICIAL }
 
-const flow = { id: 'flow1', versionId: 'fv1', projectId: 'p1' }
+const flow = { id: 'flow1', versionId: 'fv1', workspaceId: 'p1' }
 
 afterEach(async () => {
     for (const f of folders) {
@@ -147,7 +147,7 @@ describe('flowProvisioning.resolve', () => {
         const resolved = await flowProvisioning(fakeLog, apiClient, uniqueBasePath(), getSettings).resolve({ flow, platformId: 'plat1' })
 
         expect(resolved.kind).toBe('disabled')
-        expect(disableFlow).toHaveBeenCalledWith({ flowId: 'flow1', projectId: 'p1' })
+        expect(disableFlow).toHaveBeenCalledWith({ flowId: 'flow1', workspaceId: 'p1' })
         if (resolved.kind === 'disabled') {
             expect(resolved.failedStep?.name).toBe('step_1')
             expect(resolved.failedStep?.displayName).toBe('HTTP')

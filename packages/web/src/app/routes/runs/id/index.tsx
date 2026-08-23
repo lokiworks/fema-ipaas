@@ -10,7 +10,7 @@ import { flowRunsApi } from '@/features/flow-runs';
 import { flowsApi, sampleDataHooks } from '@/features/flows';
 
 const FlowRunPage = () => {
-  const { runId, projectId } = useParams();
+  const { runId, workspaceId } = useParams();
   const { data, isLoading } = useQuery<
     {
       run: FlowRun;
@@ -34,10 +34,10 @@ const FlowRunPage = () => {
   });
 
   const { data: sampleData, isLoading: isSampleDataLoading } =
-    sampleDataHooks.useSampleDataForFlow(data?.flow?.version, projectId);
+    sampleDataHooks.useSampleDataForFlow(data?.flow?.version, workspaceId);
 
   const { data: sampleDataInput, isLoading: isSampleDataInputLoading } =
-    sampleDataHooks.useSampleDataInputForFlow(data?.flow?.version, projectId);
+    sampleDataHooks.useSampleDataInputForFlow(data?.flow?.version, workspaceId);
 
   if (isLoading || isSampleDataLoading || isSampleDataInputLoading) {
     return (

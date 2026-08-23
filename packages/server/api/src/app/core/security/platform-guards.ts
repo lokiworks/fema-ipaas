@@ -1,8 +1,8 @@
 import { ErrorCode, isNil, PlatformError } from '@fema/core-utils'
-import { PlatformRole, Principal, PrincipalType, ProjectType } from '@fema/shared'
+import { PlatformRole, Principal, PrincipalType, WorkspaceType } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
-import { projectService } from '../../project/project-service'
 import { userService } from '../../user/user-service'
+import { workspaceService } from '../../workspace/workspace-service'
 
 export const platformGuards = {
     async assertPrincipalIsPlatformAdmin({ principal, log }: PrincipalParams): Promise<void> {
@@ -19,12 +19,12 @@ export const platformGuards = {
         }
     },
 
-    async assertProjectIsTeamType({ projectId, log }: ProjectParams): Promise<void> {
-        if (isNil(projectId)) {
+    async assertWorkspaceIsTeamType({ workspaceId, log }: WorkspaceParams): Promise<void> {
+        if (isNil(workspaceId)) {
             return
         }
-        const project = await projectService(log).getOne(projectId)
-        if (isNil(project) || project.type !== ProjectType.TEAM) {
+        const workspace = await workspaceService(log).getOne(workspaceId)
+        if (isNil(workspace) || workspace.type !== WorkspaceType.TEAM) {
             throw new PlatformError({
                 code: ErrorCode.AUTHORIZATION,
                 params: { message: 'Operation is only allowed on team workspaces' },
@@ -38,7 +38,7 @@ type PrincipalParams = {
     log: FastifyBaseLogger
 }
 
-type ProjectParams = {
-    projectId: string | undefined | null
+type WorkspaceParams = {
+    workspaceId: string | undefined | null
     log: FastifyBaseLogger
 }

@@ -2,7 +2,7 @@ import { Permission } from '@fema/core-utils';
 
 import { authenticationSession } from './authentication-session';
 
-export const routesThatRequireProjectId = {
+export const routesThatRequireWorkspaceId = {
   runs: '/runs',
   singleRun: '/runs/:runId',
   flows: '/flows',
@@ -32,12 +32,12 @@ export const determineDefaultRoute = ({
     return CHAT_ROUTE;
   }
   if (checkAccess(Permission.READ_FLOW) || checkAccess(Permission.READ_TABLE)) {
-    return authenticationSession.appendProjectRoutePrefix('/automations');
+    return authenticationSession.appendWorkspaceRoutePrefix('/automations');
   }
   if (checkAccess(Permission.READ_RUN)) {
-    return authenticationSession.appendProjectRoutePrefix('/runs');
+    return authenticationSession.appendWorkspaceRoutePrefix('/runs');
   }
-  return authenticationSession.appendProjectRoutePrefix('/settings');
+  return authenticationSession.appendWorkspaceRoutePrefix('/settings');
 };
 
 export const NEW_FLOW_QUERY_PARAM = 'newFlow';

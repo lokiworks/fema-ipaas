@@ -33,13 +33,13 @@ type MutationDeps = {
 export function useAutomationsMutations(deps: MutationDeps) {
   const openNewWindow = useNewWindow();
   const navigate = useNavigate();
-  const projectId = authenticationSession.getProjectId() ?? '';
+  const workspaceId = authenticationSession.getWorkspaceId() ?? '';
 
   const { mutate: startFromScratch, isPending: isCreateFlowPending } =
     useMutation<PopulatedFlow, Error, string | undefined>({
       mutationFn: async (folderId) => {
         return flowsApi.create({
-          projectId,
+          workspaceId,
           displayName: t('Untitled'),
           folderId:
             !folderId || folderId === UncategorizedFolderId
@@ -154,7 +154,7 @@ export function useAutomationsMutations(deps: MutationDeps) {
       const displayName = `${version.displayName} - Copy`;
       const createdFlow = await flowsApi.create({
         displayName,
-        projectId: flow.projectId,
+        workspaceId: flow.workspaceId,
         folderId: flow.folderId ?? undefined,
       });
       return flowsApi.update(createdFlow.id, {

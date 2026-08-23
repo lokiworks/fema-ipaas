@@ -4,16 +4,16 @@ import { z } from 'zod'
 export enum PlatformRole {
     /**
      * Platform administrator with full control over platform settings,
-     * users, and all projects
+     * users, and all workspaces
      */
     ADMIN = 'ADMIN',
     /**
-     * Regular platform member with access only to projects they are
+     * Regular platform member with access only to workspaces they are
      * explicitly invited to
      */
     MEMBER = 'MEMBER',
     /**
-     * Platform operator with automatic access to all projects without editior permission, except (others' private projects) in the
+     * Platform operator with automatic access to all workspaces without editior permission, except (others' private workspaces) in the
      * platform but no platform administration capabilities
      */
     OPERATOR = 'OPERATOR',

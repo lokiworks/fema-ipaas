@@ -90,7 +90,7 @@ const statusCodeMap: Partial<Record<ErrorCode, StatusCodes>> = {
     [ErrorCode.FLOW_OPERATION_IN_PROGRESS]: StatusCodes.CONFLICT,
     [ErrorCode.AUTHORIZATION]: StatusCodes.FORBIDDEN,
     [ErrorCode.SIGN_UP_DISABLED]: StatusCodes.FORBIDDEN,
-    [ErrorCode.PROJECT_EXTERNAL_ID_ALREADY_EXISTS]: StatusCodes.CONFLICT,
+    [ErrorCode.WORKSPACE_EXTERNAL_ID_ALREADY_EXISTS]: StatusCodes.CONFLICT,
     [ErrorCode.INVALID_CREDENTIALS]: StatusCodes.UNAUTHORIZED,
     [ErrorCode.SESSION_EXPIRED]: StatusCodes.FORBIDDEN,
     [ErrorCode.EMAIL_IS_NOT_VERIFIED]: StatusCodes.FORBIDDEN,

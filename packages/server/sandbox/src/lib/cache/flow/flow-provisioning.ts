@@ -15,7 +15,7 @@ export const flowProvisioning = (log: ApLogger, apiClient: WorkerToApiContract, 
             name: 'flowBundleDownload',
             fn: () => flowBundleStore(log, apiClient, basePath).tryFetch({
                 flowVersionId: flow.versionId,
-                projectId: flow.projectId,
+                workspaceId: flow.workspaceId,
             }),
         }))
         if (bundleError) {
@@ -37,7 +37,7 @@ export const flowProvisioning = (log: ApLogger, apiClient: WorkerToApiContract, 
                 throw error
             }
             log.warn({ error: String(error), flow: { id: flow.id } }, 'Flow disabled due to missing connector')
-            const { error: disableError } = await tryCatch(() => apiClient.disableFlow({ flowId: flow.id, projectId: flow.projectId }))
+            const { error: disableError } = await tryCatch(() => apiClient.disableFlow({ flowId: flow.id, workspaceId: flow.workspaceId }))
             if (disableError) {
                 log.error({ error: String(disableError), flow: { id: flow.id } }, 'Failed to disable flow after missing connector')
             }
@@ -51,14 +51,14 @@ export const flowProvisioning = (log: ApLogger, apiClient: WorkerToApiContract, 
             connectors,
             code: { kind: 'source', steps: extractCodeArtifacts(flowVersion) },
             // The compiled code only exists on disk after install, so the caller invokes this afterwards.
-            publishBundle: shouldPublish ? buildPublishBundle({ log, apiClient, basePath, flowVersion, connectors, projectId: flow.projectId, platformId }) : null,
+            publishBundle: shouldPublish ? buildPublishBundle({ log, apiClient, basePath, flowVersion, connectors, workspaceId: flow.workspaceId, platformId }) : null,
         }
     },
 })
 
-function buildPublishBundle({ log, apiClient, basePath, flowVersion, connectors, projectId, platformId }: BuildPublishBundleParams): PublishBundle {
+function buildPublishBundle({ log, apiClient, basePath, flowVersion, connectors, workspaceId, platformId }: BuildPublishBundleParams): PublishBundle {
     return async () => {
-        const { error } = await tryCatch(() => flowBundleStore(log, apiClient, basePath).publish({ flowVersion, connectors, projectId, platformId }))
+        const { error } = await tryCatch(() => flowBundleStore(log, apiClient, basePath).publish({ flowVersion, connectors, workspaceId, platformId }))
         if (error) {
             log.warn({ error: String(error), flowVersion: { id: flowVersion.id } }, 'Failed to publish flow bundle')
         }
@@ -109,7 +109,7 @@ function extractCodeArtifacts(flowVersion: FlowVersion): CodeArtifact[] {
 }
 
 type ResolveParams = {
-    flow: { id: string, versionId: string, projectId: string }
+    flow: { id: string, versionId: string, workspaceId: string }
     platformId: string
 }
 
@@ -128,7 +128,7 @@ type BuildPublishBundleParams = {
     basePath: string
     flowVersion: FlowVersion
     connectors: ConnectorPackage[]
-    projectId: string
+    workspaceId: string
     platformId: string
 }
 

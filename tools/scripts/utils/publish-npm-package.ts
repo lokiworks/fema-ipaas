@@ -94,7 +94,7 @@ export const publishNpmPackage = async (path: string): Promise<void> => {
 
   execSync(`npm publish --access public --tag latest`, { cwd: outputPath, stdio: 'inherit' })
 
-  console.info(`[publishProject] success, path=${path}, version=${version}`)
+  console.info(`[publishWorkspace] success, path=${path}, version=${version}`)
 }
 
 const main = async (): Promise<void> => {

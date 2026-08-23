@@ -31,7 +31,7 @@ export const waitpointService = (log: FastifyBaseLogger) => ({
             .values({
                 id,
                 flowRunId: params.flowRunId,
-                projectId: params.projectId,
+                workspaceId: params.workspaceId,
                 stepName: params.stepName,
                 type: params.type,
                 version: params.version,
@@ -57,7 +57,7 @@ export const waitpointService = (log: FastifyBaseLogger) => ({
             await systemJobsSchedule(log).upsertJob({
                 job: {
                     name: SystemJobName.RESUME_DELAY_WAITPOINT,
-                    data: { flowRunId: params.flowRunId, projectId: params.projectId, waitpointId: waitpoint.id },
+                    data: { flowRunId: params.flowRunId, workspaceId: params.workspaceId, waitpointId: waitpoint.id },
                     jobId: `resume-delay-${params.flowRunId}`,
                 },
                 schedule: {
@@ -97,7 +97,7 @@ export const waitpointService = (log: FastifyBaseLogger) => ({
     },
 
     async handleResumeSignal(params: HandleResumeSignalParams): Promise<boolean> {
-        const { flowRunId, waitpointId, flowRunStatus, projectId, resumePayload, workerHandlerId, onReady } = params
+        const { flowRunId, waitpointId, flowRunStatus, workspaceId, resumePayload, workerHandlerId, onReady } = params
 
         if (flowRunStatus === FlowRunStatus.PAUSED) {
             const waitpoint = await transaction(async (entityManager) => {
@@ -123,7 +123,7 @@ export const waitpointService = (log: FastifyBaseLogger) => ({
         }
 
         if (flowRunStatus === FlowRunStatus.RUNNING || flowRunStatus === FlowRunStatus.QUEUED) {
-            const { completedExisting } = await this.complete({ flowRunId, projectId, waitpointId, resumePayload, workerHandlerId })
+            const { completedExisting } = await this.complete({ flowRunId, workspaceId, waitpointId, resumePayload, workerHandlerId })
             if (!completedExisting) {
                 log.info({ flowRun: { id: flowRunId }, waitpoint: { id: waitpointId } }, '[waitpointService#handleResumeSignal] Stale resume signal during RUNNING/QUEUED, ignoring')
                 return false

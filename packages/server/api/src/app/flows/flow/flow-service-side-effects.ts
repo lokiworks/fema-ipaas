@@ -1,4 +1,4 @@
-import { isNil, PlatformId, ProjectId } from '@fema/core-utils'
+import { isNil, PlatformId, WorkspaceId } from '@fema/core-utils'
 import { ApplicationEventName, FileType, Flow, FlowOperationRequest, FlowOperationType, FlowStatus, FlowVersion, PopulatedFlow } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { applicationEvents, MetaInformation } from '../../helper/application-events'
@@ -17,7 +17,7 @@ export const flowSideEffects = (log: FastifyBaseLogger) => ({
             case FlowStatus.ENABLED: {
                 await triggerSourceService(log).enable({
                     flowVersion: publishedFlowVersion,
-                    projectId: flowToUpdate.projectId,
+                    workspaceId: flowToUpdate.workspaceId,
                     simulate: false,
                     templateId,
                     isRepublish,
@@ -27,7 +27,7 @@ export const flowSideEffects = (log: FastifyBaseLogger) => ({
             case FlowStatus.DISABLED: {
                 await triggerSourceService(log).disable({
                     flowId: publishedFlowVersion.flowId,
-                    projectId: flowToUpdate.projectId,
+                    workspaceId: flowToUpdate.workspaceId,
                     simulate: false,
                     ignoreError: false,
                     templateId,
@@ -46,19 +46,19 @@ export const flowSideEffects = (log: FastifyBaseLogger) => ({
         }
         await triggerSourceService(log).disable({
             flowId: flowToDelete.id,
-            projectId: flowToDelete.projectId,
+            workspaceId: flowToDelete.workspaceId,
             simulate: false,
             ignoreError: true,
         })
 
         await sampleDataService(log).deleteForFlow({
-            projectId: flowToDelete.projectId,
+            workspaceId: flowToDelete.workspaceId,
             flowId: flowToDelete.id,
             fileType: FileType.SAMPLE_DATA,
         })
 
         await sampleDataService(log).deleteForFlow({
-            projectId: flowToDelete.projectId,
+            workspaceId: flowToDelete.workspaceId,
             flowId: flowToDelete.id,
             fileType: FileType.SAMPLE_DATA_INPUT,
         })
@@ -108,9 +108,9 @@ export const flowSideEffects = (log: FastifyBaseLogger) => ({
         })
     },
 
-    onDisabledByWorker({ flow, projectId, platformId }: OnDisabledByWorkerParams): void {
+    onDisabledByWorker({ flow, workspaceId, platformId }: OnDisabledByWorkerParams): void {
         applicationEvents(log).sendWorkerEvent({
-            projectId,
+            workspaceId,
             platformId,
             action: ApplicationEventName.FLOW_DEACTIVATED,
             data: {
@@ -155,7 +155,7 @@ type OnOperationAppliedParams = FlowEventParams & {
 
 type OnDisabledByWorkerParams = {
     flow: PopulatedFlow
-    projectId: ProjectId
+    workspaceId: WorkspaceId
     platformId: PlatformId
 }
 

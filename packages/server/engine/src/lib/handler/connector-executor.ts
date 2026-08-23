@@ -158,7 +158,7 @@ export function buildRuntime({ constants, connectorName, contextVersion }: Build
         internalApiUrl: constants.internalApiUrl,
         publicApiUrl: constants.publicApiUrl,
         engineToken: constants.engineToken,
-        projectId: constants.projectId,
+        workspaceId: constants.workspaceId,
         flowId: constants.flowId,
         flowVersionId: constants.flowVersionId,
         flowRunId: constants.flowRunId,

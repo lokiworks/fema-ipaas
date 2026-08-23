@@ -31,7 +31,7 @@ import { connectionsApi } from '../api/connections';
 import { globalConnectionsApi } from '../api/global-connections';
 import {
   ConnectionNameAlreadyExists,
-  NoProjectSelected,
+  NoWorkspaceSelected,
   isConnectionNameUnique,
 } from '../utils/utils';
 
@@ -56,8 +56,8 @@ type UseUpsertConnectionProps = {
   setErrorMessage: (message: string) => void;
   form: UseFormReturn<{
     request: UpsertConnectionRequestBody & {
-      projectIds: string[];
-      preSelectForNewProjects: boolean;
+      workspaceIds: string[];
+      preSelectForNewWorkspaces: boolean;
     };
   }>;
   setOpen: (open: boolean, connection?: ConnectionWithoutSensitiveData) => void;
@@ -79,7 +79,7 @@ export const connectionsMutations = {
         const isNameUnique = await isConnectionNameUnique({
           isGlobalConnection,
           displayName: formValues.displayName,
-          projectId: formValues.projectId,
+          workspaceId: formValues.workspaceId,
         });
         if (
           !isNameUnique &&
@@ -89,17 +89,17 @@ export const connectionsMutations = {
           throw new ConnectionNameAlreadyExists();
         }
         if (isGlobalConnection) {
-          if (formValues.projectIds.length === 0) {
-            throw new NoProjectSelected();
+          if (formValues.workspaceIds.length === 0) {
+            throw new NoWorkspaceSelected();
           }
           if (formValues.type === PLACEHOLDER_CONNECTION_TYPE) {
             throw new Error(
-              'Placeholder connections are only supported at the project scope.',
+              'Placeholder connections are only supported at the workspace scope.',
             );
           }
           return globalConnectionsApi.upsert({
             ...formValues,
-            projectIds: formValues.projectIds,
+            workspaceIds: formValues.workspaceIds,
             scope: ConnectionScope.PLATFORM,
           });
         }
@@ -114,8 +114,8 @@ export const connectionsMutations = {
           form.setError('request.displayName', {
             message: err.message,
           });
-        } else if (err instanceof NoProjectSelected) {
-          form.setError('request.projectIds', {
+        } else if (err instanceof NoWorkspaceSelected) {
+          form.setError('request.workspaceIds', {
             message: err.message,
           });
         } else if (api.isError(err)) {
@@ -384,13 +384,13 @@ export const connectionsQueries = {
   },
 
   useConnectionsOwners: () => {
-    const projectId = authenticationSession.getProjectId() ?? '';
+    const workspaceId = authenticationSession.getWorkspaceId() ?? '';
 
     return useQuery({
-      queryKey: ['connections-owners', projectId],
+      queryKey: ['connections-owners', workspaceId],
       queryFn: async () => {
         const { data: owners } = await connectionsApi.getOwners({
-          projectId,
+          workspaceId,
         });
         return owners;
       },

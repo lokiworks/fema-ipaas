@@ -41,9 +41,9 @@ beforeEach(async () => {
 })
 
 async function createPausedFlowRunWithWaitpoint(params: {
-    projectId: string
+    workspaceId: string
 }) {
-    const flow = createMockFlow({ projectId: params.projectId })
+    const flow = createMockFlow({ workspaceId: params.workspaceId })
     await db.save('flow', flow)
 
     const flowVersion = createMockFlowVersion({
@@ -53,7 +53,7 @@ async function createPausedFlowRunWithWaitpoint(params: {
     await db.save('flow_version', flowVersion)
 
     const flowRun = createMockFlowRun({
-        projectId: params.projectId,
+        workspaceId: params.workspaceId,
         flowId: flow.id,
         flowVersionId: flowVersion.id,
         status: FlowRunStatus.PAUSED,
@@ -64,7 +64,7 @@ async function createPausedFlowRunWithWaitpoint(params: {
     await db.save('waitpoint', {
         id: apId(),
         flowRunId: flowRun.id,
-        projectId: params.projectId,
+        workspaceId: params.workspaceId,
         stepName: 'approval',
         type: 'WEBHOOK',
         status: 'PENDING',
@@ -77,7 +77,7 @@ async function createPausedFlowRunWithWaitpoint(params: {
 
 describe('Resume flow run', () => {
     it('should resume legacy PAUSED flow with no waitpoint via async endpoint', async () => {
-        const flow = createMockFlow({ projectId: ctx.project.id })
+        const flow = createMockFlow({ workspaceId: ctx.workspace.id })
         await db.save('flow', flow)
 
         const flowVersion = createMockFlowVersion({
@@ -87,7 +87,7 @@ describe('Resume flow run', () => {
         await db.save('flow_version', flowVersion)
 
         const flowRun = createMockFlowRun({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             flowId: flow.id,
             flowVersionId: flowVersion.id,
             status: FlowRunStatus.PAUSED,
@@ -108,7 +108,7 @@ describe('Resume flow run', () => {
     })
 
     it('should trigger resume when uploadRunLog finds a pre-completed waitpoint', async () => {
-        const flow = createMockFlow({ projectId: ctx.project.id })
+        const flow = createMockFlow({ workspaceId: ctx.workspace.id })
         await db.save('flow', flow)
 
         const flowVersion = createMockFlowVersion({
@@ -118,7 +118,7 @@ describe('Resume flow run', () => {
         await db.save('flow_version', flowVersion)
 
         const flowRun = createMockFlowRun({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             flowId: flow.id,
             flowVersionId: flowVersion.id,
             status: FlowRunStatus.RUNNING,
@@ -131,7 +131,7 @@ describe('Resume flow run', () => {
 
         await distributedStore.merge(redisMetadataKey(runId), {
             id: runId,
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             flowId: flow.id,
             flowVersionId: flowVersion.id,
             environment: RunEnvironment.PRODUCTION,
@@ -141,7 +141,7 @@ describe('Resume flow run', () => {
         await db.save('waitpoint', {
             id: apId(),
             flowRunId: runId,
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             stepName: 'approval',
             type: 'WEBHOOK',
             status: 'COMPLETED',
@@ -155,7 +155,7 @@ describe('Resume flow run', () => {
         const handlers = createHandlers(app.log)
         await handlers.uploadRunLog({
             runId,
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             status: FlowRunStatus.PAUSED,
         })
 
@@ -172,7 +172,7 @@ describe('Resume flow run', () => {
     })
 
     it('should not resume when flow is in terminal state', async () => {
-        const flow = createMockFlow({ projectId: ctx.project.id })
+        const flow = createMockFlow({ workspaceId: ctx.workspace.id })
         await db.save('flow', flow)
 
         const flowVersion = createMockFlowVersion({
@@ -182,7 +182,7 @@ describe('Resume flow run', () => {
         await db.save('flow_version', flowVersion)
 
         const flowRun = createMockFlowRun({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             flowId: flow.id,
             flowVersionId: flowVersion.id,
             status: FlowRunStatus.SUCCEEDED,
@@ -200,7 +200,7 @@ describe('Resume flow run', () => {
     })
 
     it('sync: should resume legacy PAUSED flow with no waitpoint', async () => {
-        const flow = createMockFlow({ projectId: ctx.project.id })
+        const flow = createMockFlow({ workspaceId: ctx.workspace.id })
         await db.save('flow', flow)
 
         const flowVersion = createMockFlowVersion({
@@ -211,7 +211,7 @@ describe('Resume flow run', () => {
 
         const requestId = apId()
         const flowRun = createMockFlowRun({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             flowId: flow.id,
             flowVersionId: flowVersion.id,
             status: FlowRunStatus.PAUSED,
@@ -236,7 +236,7 @@ describe('Resume flow run', () => {
     })
 
     it('should persist PAUSED status for a Redis-only run', async () => {
-        const flow = createMockFlow({ projectId: ctx.project.id })
+        const flow = createMockFlow({ workspaceId: ctx.workspace.id })
         await db.save('flow', flow)
 
         const flowVersion = createMockFlowVersion({
@@ -250,7 +250,7 @@ describe('Resume flow run', () => {
 
         const runMetadata: RunsMetadataUpsertData = {
             id: runId,
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             flowId: flow.id,
             flowVersionId: flowVersion.id,
             environment: RunEnvironment.PRODUCTION,
@@ -261,7 +261,7 @@ describe('Resume flow run', () => {
         await db.save('waitpoint', {
             id: apId(),
             flowRunId: runId,
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             stepName: 'approval',
             type: 'WEBHOOK',
             status: 'PENDING',
@@ -272,7 +272,7 @@ describe('Resume flow run', () => {
         const handlers = createHandlers(app.log)
         await handlers.uploadRunLog({
             runId,
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             status: FlowRunStatus.PAUSED,
         })
 
@@ -295,7 +295,7 @@ describe('Resume flow run', () => {
     })
 
     it('should persist DELAY waitpoint with waitpointId via uploadRunLog', async () => {
-        const flow = createMockFlow({ projectId: ctx.project.id })
+        const flow = createMockFlow({ workspaceId: ctx.workspace.id })
         await db.save('flow', flow)
 
         const flowVersion = createMockFlowVersion({
@@ -309,7 +309,7 @@ describe('Resume flow run', () => {
 
         const runMetadata: RunsMetadataUpsertData = {
             id: runId,
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             flowId: flow.id,
             flowVersionId: flowVersion.id,
             environment: RunEnvironment.PRODUCTION,
@@ -320,7 +320,7 @@ describe('Resume flow run', () => {
         await db.save('waitpoint', {
             id: apId(),
             flowRunId: runId,
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             stepName: 'delay_step',
             type: 'DELAY',
             status: 'PENDING',
@@ -332,7 +332,7 @@ describe('Resume flow run', () => {
         const handlers = createHandlers(app.log)
         await handlers.uploadRunLog({
             runId,
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             status: FlowRunStatus.PAUSED,
         })
 
@@ -350,14 +350,14 @@ describe('Resume flow run', () => {
 
     it('should clean up waitpoint when flow run finishes (onFinish)', async () => {
         const { flowRun } = await createPausedFlowRunWithWaitpoint({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
         })
 
         const waitpointBefore = await db.findOneBy('waitpoint', { flowRunId: flowRun.id })
         expect(waitpointBefore).not.toBeNull()
 
         await db.update('flow_run', flowRun.id, { status: FlowRunStatus.SUCCEEDED })
-        const updatedRun = await db.findOneByOrFail<{ id: string, status: string, projectId: string }>('flow_run', { id: flowRun.id })
+        const updatedRun = await db.findOneByOrFail<{ id: string, status: string, workspaceId: string }>('flow_run', { id: flowRun.id })
         await flowRunSideEffects(app.log).onFinish({ flowRun: updatedRun as any, platformId: ctx.platform.id })
 
         const waitpointAfter = await db.findOneBy('waitpoint', { flowRunId: flowRun.id })
@@ -366,11 +366,11 @@ describe('Resume flow run', () => {
 
     it('markParentRunAsFailed should complete waitpoint when parent is PAUSED', async () => {
         const { flowRun: parentRun } = await createPausedFlowRunWithWaitpoint({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
         })
 
         const childRun = createMockFlowRun({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             flowId: parentRun.flowId,
             flowVersionId: parentRun.flowVersionId,
             status: FlowRunStatus.FAILED,
@@ -383,7 +383,7 @@ describe('Resume flow run', () => {
         const existingWaitpoint = await db.findOneBy<{ id: string }>('waitpoint', { flowRunId: parentRun.id })
         await waitpointService(app.log).complete({
             flowRunId: parentRun.id,
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             waitpointId: existingWaitpoint!.id,
             resumePayload: {
                 payload: { body: { status: 'error', data: { message: 'Subflow execution failed' } } },
@@ -398,7 +398,7 @@ describe('Resume flow run', () => {
     })
 
     it('markParentRunAsFailed should drop the failure when parent has no PENDING waitpoint (regression: subflow retry must not hijack a future pause)', async () => {
-        const flow = createMockFlow({ projectId: ctx.project.id })
+        const flow = createMockFlow({ workspaceId: ctx.workspace.id })
         await db.save('flow', flow)
 
         const flowVersion = createMockFlowVersion({
@@ -408,7 +408,7 @@ describe('Resume flow run', () => {
         await db.save('flow_version', flowVersion)
 
         const parentRun = createMockFlowRun({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             flowId: flow.id,
             flowVersionId: flowVersion.id,
             status: FlowRunStatus.RUNNING,
@@ -418,7 +418,7 @@ describe('Resume flow run', () => {
 
         const result = await waitpointService(app.log).complete({
             flowRunId: parentRun.id,
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             waitpointId: apId(),
             resumePayload: {
                 payload: { body: { status: 'error', data: { message: 'Subflow execution failed' } } },
@@ -435,7 +435,7 @@ describe('Resume flow run', () => {
     })
 
     it('should drop stale resume signal when parent is already in terminal state and not produce a buffered waitpoint', async () => {
-        const flow = createMockFlow({ projectId: ctx.project.id })
+        const flow = createMockFlow({ workspaceId: ctx.workspace.id })
         await db.save('flow', flow)
 
         const flowVersion = createMockFlowVersion({
@@ -445,7 +445,7 @@ describe('Resume flow run', () => {
         await db.save('flow_version', flowVersion)
 
         const parentRun = createMockFlowRun({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             flowId: flow.id,
             flowVersionId: flowVersion.id,
             status: FlowRunStatus.FAILED,
@@ -455,7 +455,7 @@ describe('Resume flow run', () => {
 
         const result = await waitpointService(app.log).complete({
             flowRunId: parentRun.id,
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             waitpointId: apId(),
             resumePayload: {
                 payload: { body: { status: 'error', data: { message: 'Subflow execution failed' } } },
@@ -470,7 +470,7 @@ describe('Resume flow run', () => {
             flowRunId: parentRun.id,
             waitpointId: apId(),
             flowRunStatus: FlowRunStatus.FAILED,
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             resumePayload: { body: { status: 'error' } },
             onReady: async () => {
                 throw new Error('onReady should not be called for terminal state')
@@ -483,7 +483,7 @@ describe('Resume flow run', () => {
 
     it('should resume via new /:id/waitpoints/:waitpointId route', async () => {
         const { flowRun } = await createPausedFlowRunWithWaitpoint({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
         })
 
         const waitpoint = await db.findOneBy<{ id: string }>('waitpoint', { flowRunId: flowRun.id })
@@ -503,7 +503,7 @@ describe('Resume flow run', () => {
 
     it('should return stale message on double resume via waitpoint route', async () => {
         const { flowRun } = await createPausedFlowRunWithWaitpoint({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
         })
 
         const waitpoint = await db.findOneBy<{ id: string }>('waitpoint', { flowRunId: flowRun.id })
@@ -535,7 +535,7 @@ describe('Resume flow run', () => {
 
     it('should clean up waitpoints when flow is deleted via batchDeleteByFlowId', async () => {
         const { flowRun, flow } = await createPausedFlowRunWithWaitpoint({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
         })
 
         const waitpointBefore = await db.findOneBy('waitpoint', { flowRunId: flowRun.id })
@@ -552,7 +552,7 @@ describe('Resume flow run', () => {
 
     it('V0 async: should resume via waitpoint path when V0 waitpoint exists', async () => {
         const { flowRun } = await createPausedFlowRunWithWaitpoint({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
         })
 
         const waitpointBefore = await db.findOneBy<{ id: string }>('waitpoint', { flowRunId: flowRun.id })
@@ -574,7 +574,7 @@ describe('Resume flow run', () => {
     })
 
     it('V0 async: should take legacy path when only V1 waitpoint exists', async () => {
-        const flow = createMockFlow({ projectId: ctx.project.id })
+        const flow = createMockFlow({ workspaceId: ctx.workspace.id })
         await db.save('flow', flow)
 
         const flowVersion = createMockFlowVersion({
@@ -584,7 +584,7 @@ describe('Resume flow run', () => {
         await db.save('flow_version', flowVersion)
 
         const flowRun = createMockFlowRun({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             flowId: flow.id,
             flowVersionId: flowVersion.id,
             status: FlowRunStatus.PAUSED,
@@ -596,7 +596,7 @@ describe('Resume flow run', () => {
         await db.save('waitpoint', {
             id: waitpointId,
             flowRunId: flowRun.id,
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             stepName: 'approval',
             type: 'WEBHOOK',
             version: 'V1',
@@ -624,7 +624,7 @@ describe('Resume flow run', () => {
 
     it('confirm page: GET renders Approve/Disapprove and does NOT consume the waitpoint (scanner prefetch)', async () => {
         const { flowRun } = await createPausedFlowRunWithWaitpoint({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
         })
         const waitpoint = await db.findOneBy<{ id: string }>('waitpoint', { flowRunId: flowRun.id })
 
@@ -650,7 +650,7 @@ describe('Resume flow run', () => {
 
     it('confirm page: HEAD does NOT consume the waitpoint', async () => {
         const { flowRun } = await createPausedFlowRunWithWaitpoint({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
         })
         const waitpoint = await db.findOneBy<{ id: string }>('waitpoint', { flowRunId: flowRun.id })
 
@@ -667,7 +667,7 @@ describe('Resume flow run', () => {
     })
 
     it('confirm page: an already-responded run shows the already-responded state', async () => {
-        const flow = createMockFlow({ projectId: ctx.project.id })
+        const flow = createMockFlow({ workspaceId: ctx.workspace.id })
         await db.save('flow', flow)
 
         const flowVersion = createMockFlowVersion({
@@ -677,7 +677,7 @@ describe('Resume flow run', () => {
         await db.save('flow_version', flowVersion)
 
         const flowRun = createMockFlowRun({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             flowId: flow.id,
             flowVersionId: flowVersion.id,
             status: FlowRunStatus.SUCCEEDED,
@@ -699,7 +699,7 @@ describe('Resume flow run', () => {
 
     it('confirm page: POST with Accept text/html records the response and consumes the waitpoint', async () => {
         const { flowRun } = await createPausedFlowRunWithWaitpoint({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
         })
         const waitpoint = await db.findOneBy<{ id: string }>('waitpoint', { flowRunId: flowRun.id })
 
@@ -719,7 +719,7 @@ describe('Resume flow run', () => {
 
     it('confirm page: POST with JSON Accept keeps the JSON contract and consumes', async () => {
         const { flowRun } = await createPausedFlowRunWithWaitpoint({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
         })
         const waitpoint = await db.findOneBy<{ id: string }>('waitpoint', { flowRunId: flowRun.id })
 
@@ -741,7 +741,7 @@ describe('Resume flow run', () => {
 
     it('confirm page: preserves extra query params (e.g. chat_id) in the Approve/Disapprove actions', async () => {
         const { flowRun } = await createPausedFlowRunWithWaitpoint({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
         })
         const waitpoint = await db.findOneBy<{ id: string }>('waitpoint', { flowRunId: flowRun.id })
 
@@ -763,7 +763,7 @@ describe('Resume flow run', () => {
 
     it('deprecated route: a bare GET still resumes and consumes the waitpoint (kept for old emails)', async () => {
         const { flowRun } = await createPausedFlowRunWithWaitpoint({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
         })
         const waitpoint = await db.findOneBy<{ id: string }>('waitpoint', { flowRunId: flowRun.id })
 
@@ -782,7 +782,7 @@ describe('Resume flow run', () => {
     })
 
     it('V0 sync: should return 409 when flow run is in terminal state', async () => {
-        const flow = createMockFlow({ projectId: ctx.project.id })
+        const flow = createMockFlow({ workspaceId: ctx.workspace.id })
         await db.save('flow', flow)
 
         const flowVersion = createMockFlowVersion({
@@ -792,7 +792,7 @@ describe('Resume flow run', () => {
         await db.save('flow_version', flowVersion)
 
         const flowRun = createMockFlowRun({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             flowId: flow.id,
             flowVersionId: flowVersion.id,
             status: FlowRunStatus.SUCCEEDED,
@@ -813,7 +813,7 @@ describe('Resume flow run', () => {
     })
 
     it('V0 sync: should resume via waitpoint path when V0 waitpoint exists', async () => {
-        const flow = createMockFlow({ projectId: ctx.project.id })
+        const flow = createMockFlow({ workspaceId: ctx.workspace.id })
         await db.save('flow', flow)
 
         const flowVersion = createMockFlowVersion({
@@ -823,7 +823,7 @@ describe('Resume flow run', () => {
         await db.save('flow_version', flowVersion)
 
         const flowRun = createMockFlowRun({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             flowId: flow.id,
             flowVersionId: flowVersion.id,
             status: FlowRunStatus.PAUSED,
@@ -836,7 +836,7 @@ describe('Resume flow run', () => {
         await db.save('waitpoint', {
             id: waitpointId,
             flowRunId: flowRun.id,
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             stepName: 'approval',
             type: 'WEBHOOK',
             status: 'PENDING',

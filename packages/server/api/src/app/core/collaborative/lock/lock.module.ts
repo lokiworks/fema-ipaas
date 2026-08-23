@@ -7,7 +7,7 @@ import { lockService } from './lock.service'
 
 export const lockModule: FastifyPluginAsyncZod = async (app) => {
     websocketService.addListener(PrincipalType.USER, WebsocketServerEvent.LOCK_RESOURCE, (socket) => {
-        return async (data: LockResourceRequest, principal, projectId, callback) => {
+        return async (data: LockResourceRequest, principal, workspaceId, callback) => {
             app.log.info({ resourceId: data.resourceId }, '[Lock] LOCK_RESOURCE event received')
             try {
                 const user = await userService(app.log).getMetaInformation({ id: principal.id })
@@ -24,14 +24,14 @@ export const lockModule: FastifyPluginAsyncZod = async (app) => {
                     if (!data.force) {
                         socket.data.lockedResourceId = data.resourceId
                     }
-                    socket.to(projectId).emit(WebsocketClientEvent.RESOURCE_LOCKED, {
+                    socket.to(workspaceId).emit(WebsocketClientEvent.RESOURCE_LOCKED, {
                         resourceId: data.resourceId,
                         userId: principal.id,
                         userDisplayName: displayName,
                     })
                 }
 
-                registerLockDisconnectHandler({ socket, userId: principal.id, projectId, app })
+                registerLockDisconnectHandler({ socket, userId: principal.id, workspaceId, app })
 
                 callback?.(result)
             }
@@ -42,7 +42,7 @@ export const lockModule: FastifyPluginAsyncZod = async (app) => {
         }
     })
     websocketService.addListener(PrincipalType.USER, WebsocketServerEvent.UNLOCK_RESOURCE, (socket) => {
-        return async (data: { resourceId: string }, principal, projectId) => {
+        return async (data: { resourceId: string }, principal, workspaceId) => {
             try {
                 const released = await lockService(app.log).release({
                     resourceId: data.resourceId,
@@ -50,7 +50,7 @@ export const lockModule: FastifyPluginAsyncZod = async (app) => {
                 })
                 socket.data.lockedResourceId = null
                 if (released) {
-                    websocketService.to(projectId).emit(WebsocketClientEvent.RESOURCE_UNLOCKED, {
+                    websocketService.to(workspaceId).emit(WebsocketClientEvent.RESOURCE_UNLOCKED, {
                         resourceId: data.resourceId,
                     })
                 }
@@ -62,7 +62,7 @@ export const lockModule: FastifyPluginAsyncZod = async (app) => {
     })
 }
 
-function registerLockDisconnectHandler({ socket, userId, projectId, app }: RegisterDisconnectHandlerParams): void {
+function registerLockDisconnectHandler({ socket, userId, workspaceId, app }: RegisterDisconnectHandlerParams): void {
     if (socket.data.lockDisconnectRegistered) {
         return
     }
@@ -75,7 +75,7 @@ function registerLockDisconnectHandler({ socket, userId, projectId, app }: Regis
                 userId,
             })
             if (released) {
-                websocketService.to(projectId).emit(WebsocketClientEvent.RESOURCE_UNLOCKED, {
+                websocketService.to(workspaceId).emit(WebsocketClientEvent.RESOURCE_UNLOCKED, {
                     resourceId: lockedResourceId,
                 })
             }
@@ -86,6 +86,6 @@ function registerLockDisconnectHandler({ socket, userId, projectId, app }: Regis
 type RegisterDisconnectHandlerParams = {
     socket: { data: Record<string, unknown>, once: (event: string, handler: () => void) => void, id: string }
     userId: string
-    projectId: string
+    workspaceId: string
     app: FastifyInstance
 }

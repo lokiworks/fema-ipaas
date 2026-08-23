@@ -11,7 +11,7 @@ import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/
 let app: FastifyInstance | null = null
 let engineToken: string
 let platformId: string
-let projectId: string
+let workspaceId: string
 
 const DEFAULT_BODY = { audience: 'sts.amazonaws.com' }
 
@@ -24,13 +24,13 @@ afterAll(async () => {
 })
 
 beforeEach(async () => {
-    const { mockPlatform, mockProject } = await mockAndSaveBasicSetup()
+    const { mockPlatform, mockWorkspace } = await mockAndSaveBasicSetup()
     platformId = mockPlatform.id
-    projectId = mockProject.id
+    workspaceId = mockWorkspace.id
     engineToken = await generateMockToken({
         type: PrincipalType.ENGINE,
         id: apId(),
-        projectId,
+        workspaceId,
         platform: { id: platformId },
     })
 })
@@ -65,7 +65,7 @@ describe('OIDC Token Endpoint', () => {
             const userToken = await generateMockToken({
                 type: PrincipalType.USER,
                 id: apId(),
-                projectId,
+                workspaceId,
                 platform: { id: platformId },
             })
 
@@ -115,7 +115,7 @@ describe('OIDC Token Endpoint', () => {
             expect(decoded.payload.aud).toBe('vault.example.com')
         })
 
-        it('should include platform and project in the sub claim', async () => {
+        it('should include platform and workspace in the sub claim', async () => {
             const response = await app!.inject({
                 method: 'POST',
                 url: '/api/v1/worker/oidc-token',
@@ -126,9 +126,9 @@ describe('OIDC Token Endpoint', () => {
             const { token } = response.json()
             const decoded = jwtUtils.decode<{ sub: string }>({ jwt: token })
 
-            expect(decoded.payload.sub).toMatch(/^platform:.+:project:.+$/)
+            expect(decoded.payload.sub).toMatch(/^platform:.+:workspace:.+$/)
             expect(decoded.payload.sub).toContain(platformId)
-            expect(decoded.payload.sub).toContain(projectId)
+            expect(decoded.payload.sub).toContain(workspaceId)
         })
 
         it('should use RS256 as the signing algorithm', async () => {

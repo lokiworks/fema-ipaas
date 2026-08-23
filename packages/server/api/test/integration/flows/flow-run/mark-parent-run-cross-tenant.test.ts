@@ -16,8 +16,8 @@ afterAll(async () => {
     await teardownTestEnvironment()
 })
 
-async function createPausedParentWithWaitpoint(projectId: string) {
-    const flow = createMockFlow({ projectId })
+async function createPausedParentWithWaitpoint(workspaceId: string) {
+    const flow = createMockFlow({ workspaceId })
     await db.save('flow', flow)
 
     const flowVersion = createMockFlowVersion({
@@ -27,7 +27,7 @@ async function createPausedParentWithWaitpoint(projectId: string) {
     await db.save('flow_version', flowVersion)
 
     const flowRun = createMockFlowRun({
-        projectId,
+        workspaceId,
         flowId: flow.id,
         flowVersionId: flowVersion.id,
         status: FlowRunStatus.PAUSED,
@@ -39,7 +39,7 @@ async function createPausedParentWithWaitpoint(projectId: string) {
     await db.save('waitpoint', {
         id: waitpointId,
         flowRunId: flowRun.id,
-        projectId,
+        workspaceId,
         stepName: 'approval',
         type: 'WEBHOOK',
         status: 'PENDING',
@@ -51,16 +51,16 @@ async function createPausedParentWithWaitpoint(projectId: string) {
 }
 
 describe('markParentRunAsFailed tenant isolation', () => {
-    it('does not fail a parent run that belongs to another project', async () => {
-        const { mockProject: projectA } = await mockAndSaveBasicSetup()
-        const { mockProject: projectB } = await mockAndSaveBasicSetup()
+    it('does not fail a parent run that belongs to another workspace', async () => {
+        const { mockWorkspace: workspaceA } = await mockAndSaveBasicSetup()
+        const { mockWorkspace: workspaceB } = await mockAndSaveBasicSetup()
 
-        const { flowRun: victimRun, waitpointId } = await createPausedParentWithWaitpoint(projectB.id)
+        const { flowRun: victimRun, waitpointId } = await createPausedParentWithWaitpoint(workspaceB.id)
 
         await markParentRunAsFailed({
             parentRunId: victimRun.id,
             childRunId: apId(),
-            projectId: projectA.id,
+            workspaceId: workspaceA.id,
             log: app.log,
         })
 
@@ -71,15 +71,15 @@ describe('markParentRunAsFailed tenant isolation', () => {
         expect(run?.status).toBe(FlowRunStatus.PAUSED)
     })
 
-    it('fails a parent run in the same project', async () => {
-        const { mockProject } = await mockAndSaveBasicSetup()
+    it('fails a parent run in the same workspace', async () => {
+        const { mockWorkspace } = await mockAndSaveBasicSetup()
 
-        const { flowRun: parentRun, waitpointId } = await createPausedParentWithWaitpoint(mockProject.id)
+        const { flowRun: parentRun, waitpointId } = await createPausedParentWithWaitpoint(mockWorkspace.id)
 
         await markParentRunAsFailed({
             parentRunId: parentRun.id,
             childRunId: apId(),
-            projectId: mockProject.id,
+            workspaceId: mockWorkspace.id,
             log: app.log,
         })
 

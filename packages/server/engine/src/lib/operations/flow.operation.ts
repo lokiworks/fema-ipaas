@@ -93,7 +93,7 @@ const executeSingleStepOrFlow = async (input: ResolvedExecuteFlowOperation, cons
             apiUrl: input.internalApiUrl,
             flowVersion: input.flowVersion,
             excludedStepName: input.stepNameToTest!,
-            projectId: input.projectId,
+            workspaceId: input.workspaceId,
             engineToken: input.engineToken,
             sampleData: input.sampleData,
             engineConstants: constants,

@@ -1,6 +1,6 @@
 import { inspect } from 'util'
 import { isNil } from '@fema/core-utils'
-import { ApEnvironment, ConnectorSyncMode, DefaultProjectRole, ExecutionMode, FileLocation, NetworkMode } from '@fema/shared'
+import { ApEnvironment, ConnectorSyncMode, DefaultWorkspaceRole, ExecutionMode, FileLocation, NetworkMode } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { DatabaseType } from '../database/database-type'
 import { RedisType } from '../database/redis/types'
@@ -53,7 +53,7 @@ const systemPropValidators: {
     [AppSystemProp.ALLOW_DISPOSABLE_EMAILS]: booleanValidator,
     [AppSystemProp.ALLOW_OPEN_SIGN_UP]: booleanValidator,
     [AppSystemProp.EXECUTION_MODE]: enumValidator(Object.values(ExecutionMode)),
-    [AppSystemProp.SKIP_PROJECT_LIMITS_CHECK]: booleanValidator,
+    [AppSystemProp.SKIP_WORKSPACE_LIMITS_CHECK]: booleanValidator,
     [AppSystemProp.LOG_LEVEL]: enumValidator(['error', 'warn', 'info', 'debug', 'trace']),
     [AppSystemProp.LOG_PRETTY]: booleanValidator,
     [AppSystemProp.LOG_FILE]: booleanValidator,
@@ -119,7 +119,7 @@ const systemPropValidators: {
     [AppSystemProp.POSTGRES_USE_SSL]: booleanValidator,
     [AppSystemProp.POSTGRES_POOL_SIZE]: numberValidator,
     [AppSystemProp.POSTGRES_IDLE_TIMEOUT_MS]: numberValidator,
-    [AppSystemProp.PROJECT_RATE_LIMITER_ENABLED]: booleanValidator,
+    [AppSystemProp.WORKSPACE_RATE_LIMITER_ENABLED]: booleanValidator,
     [AppSystemProp.QUEUE_UI_ENABLED]: booleanValidator,
     [AppSystemProp.QUEUE_UI_PASSWORD]: stringValidator,
     [AppSystemProp.QUEUE_UI_USERNAME]: stringValidator,
@@ -168,7 +168,7 @@ const systemPropValidators: {
     [AppSystemProp.FEATUREBASE_API_KEY]: stringValidator,
     [AppSystemProp.OPENROUTER_PROVISION_KEY]: stringValidator,
     [AppSystemProp.OPENAI_API_KEY]: stringValidator,
-    [AppSystemProp.SCIM_DEFAULT_PROJECT_ROLE]: enumValidator(Object.values(DefaultProjectRole)),
+    [AppSystemProp.SCIM_DEFAULT_WORKSPACE_ROLE]: enumValidator(Object.values(DefaultWorkspaceRole)),
 
     // AppSystemProp
     // Cloud

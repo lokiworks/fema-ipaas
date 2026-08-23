@@ -56,7 +56,7 @@ export const CreateFolderDialog = ({
     mutationFn: async (data) => {
       return await foldersApi.create({
         displayName: data.displayName.trim(),
-        projectId: authenticationSession.getProjectId()!,
+        workspaceId: authenticationSession.getWorkspaceId()!,
       });
     },
     onSuccess: (folder) => {

@@ -51,9 +51,9 @@ export const STATIC_PAGES: StaticPage[] = [
   },
   // Platform Admin pages
   {
-    id: 'page-platform-projects',
-    label: 'Platform Admin — Projects',
-    href: '/platform/projects',
+    id: 'page-platform-workspaces',
+    label: 'Platform Admin — Workspaces',
+    href: '/platform/workspaces',
     icon: LayoutGridIcon,
     requiresPlatformAdmin: true,
   },
@@ -128,9 +128,9 @@ export const STATIC_PAGES: StaticPage[] = [
     requiresPlatformAdmin: true,
   },
   {
-    id: 'page-platform-project-roles',
-    label: 'Platform Admin — Project Roles',
-    href: '/platform/security/project-roles',
+    id: 'page-platform-workspace-roles',
+    label: 'Platform Admin — Workspace Roles',
+    href: '/platform/security/workspace-roles',
     icon: Settings2Icon,
     requiresPlatformAdmin: true,
   },
@@ -179,7 +179,7 @@ export const STATIC_PAGES: StaticPage[] = [
   {
     id: 'page-platform-admin',
     label: 'Platform Admin',
-    href: '/platform/projects',
+    href: '/platform/workspaces',
     icon: ShieldIcon,
     requiresPlatformAdmin: true,
   },

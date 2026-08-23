@@ -1,4 +1,4 @@
-import { apId, ProjectId, sanitizeObjectForPostgresql } from '@fema/core-utils'
+import { apId, sanitizeObjectForPostgresql, WorkspaceId } from '@fema/core-utils'
 import { PutStoreEntryRequest, StoreEntry } from '@fema/shared'
 import { repoFactory } from '../core/db/repo-factory'
 import { StoreEntryEntity } from './store-entry-entity'
@@ -6,17 +6,17 @@ import { StoreEntryEntity } from './store-entry-entity'
 const storeEntryRepo = repoFactory<StoreEntry>(StoreEntryEntity)
 
 export const storeEntryService = {
-    async upsert({ projectId, request }: { projectId: ProjectId, request: PutStoreEntryRequest }): Promise<StoreEntry | null> {
+    async upsert({ workspaceId, request }: { workspaceId: WorkspaceId, request: PutStoreEntryRequest }): Promise<StoreEntry | null> {
         const value = sanitizeObjectForPostgresql(request.value)
         const insertResult = await storeEntryRepo().upsert({
             id: apId(),
             key: request.key,
             value,
-            projectId,
-        }, ['projectId', 'key'])
+            workspaceId,
+        }, ['workspaceId', 'key'])
 
         return {
-            projectId,
+            workspaceId,
             key: request.key,
             value,
             id: insertResult.identifiers[0].id,
@@ -25,26 +25,26 @@ export const storeEntryService = {
         }
     },
     async getOne({
-        projectId,
+        workspaceId,
         key,
     }: {
-        projectId: ProjectId
+        workspaceId: WorkspaceId
         key: string
     }): Promise<StoreEntry | null> {
         return storeEntryRepo().findOneBy({
-            projectId,
+            workspaceId,
             key,
         })
     },
     async delete({
-        projectId,
+        workspaceId,
         key,
     }: {
-        projectId: ProjectId
+        workspaceId: WorkspaceId
         key: string
     }): Promise<void> {
         await storeEntryRepo().delete({
-            projectId,
+            workspaceId,
             key,
         })
     },

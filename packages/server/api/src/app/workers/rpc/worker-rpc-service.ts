@@ -16,12 +16,12 @@ import { preWarmWorkersService } from '../../flows/pre-warm-workers'
 import { rejectedPromiseHandler } from '../../helper/promise-handler'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
-import { projectService } from '../../project/project-service'
 import { dedupeService } from '../../trigger/dedupe-service'
 import { triggerEventService } from '../../trigger/trigger-events/trigger-event.service'
 import { triggerRunStats } from '../../trigger/trigger-run/trigger-run-stats'
 import { triggerSourceService } from '../../trigger/trigger-source/trigger-source-service'
-import { getPlatformGroupQueueName, getProjectGroupQueueName, QueueName, WorkerGroupAssignment } from '../job'
+import { workspaceService } from '../../workspace/workspace-service'
+import { getPlatformGroupQueueName, getWorkspaceGroupQueueName, QueueName, WorkerGroupAssignment } from '../job'
 import { jobBroker } from '../job-queue/job-broker'
 import { machineService } from '../machine/machine-service'
 
@@ -29,8 +29,8 @@ const getPollQueueName = (assignment: WorkerGroupAssignment | null): string => {
     if (isNil(assignment)) {
         return QueueName.WORKER_JOBS
     }
-    return assignment.scope === WorkerGroupScope.PROJECT
-        ? getProjectGroupQueueName(assignment.id)
+    return assignment.scope === WorkerGroupScope.WORKSPACE
+        ? getWorkspaceGroupQueueName(assignment.id)
         : getPlatformGroupQueueName(assignment.id)
 }
 
@@ -87,18 +87,18 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
         },
 
         async uploadRunLog(input) {
-            await engineRunCallbackService(log).uploadRunLog({ projectId: input.projectId, request: input })
+            await engineRunCallbackService(log).uploadRunLog({ workspaceId: input.workspaceId, request: input })
         },
 
         async submitPayloads(input) {
-            const { flowVersionId, projectId, payloads, httpRequestId, streamStepProgress, environment, parentRunId, failParentOnFailure } = input
+            const { flowVersionId, workspaceId, payloads, httpRequestId, streamStepProgress, environment, parentRunId, failParentOnFailure } = input
 
             const flowVersion = await flowVersionService(log).getOne(flowVersionId)
             if (!flowVersion) {
                 return []
             }
 
-            const platformId = await projectService(log).getPlatformId(projectId)
+            const platformId = await workspaceService(log).getPlatformId(workspaceId)
             const filterPayloads = await dedupeService.filterUniquePayloads(flowVersionId, payloads)
 
             const creditsExhausted = false
@@ -109,7 +109,7 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
                         ? flowRunService(log).createQuotaExceededRun({
                             flowVersion,
                             payload,
-                            projectId,
+                            workspaceId,
                             environment,
                             parentRunId,
                             failParentOnFailure,
@@ -120,7 +120,7 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
                             environment,
                             flowVersionId,
                             payload,
-                            projectId,
+                            workspaceId,
                             platformId,
                             httpRequestId,
                             workerHandlerId: undefined,
@@ -136,19 +136,19 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
         },
 
         async savePayloads(input) {
-            const { flowId, projectId, payloads } = input
+            const { flowId, workspaceId, payloads } = input
             const savePayloads = payloads.map((payload) =>
                 rejectedPromiseHandler(triggerEventService(log).saveEvent({
                     flowId,
                     payload,
-                    projectId,
+                    workspaceId,
                 }), log),
             )
             rejectedPromiseHandler(Promise.all(savePayloads), log)
             if (payloads.length > 0) {
                 await triggerSourceService(log).disable({
                     flowId,
-                    projectId,
+                    workspaceId,
                     simulate: true,
                     ignoreError: true,
                 })
@@ -171,7 +171,7 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
             return connectorMetadataService(log).get({
                 name: input.name,
                 version: input.version,
-                projectId: input.projectId,
+                workspaceId: input.workspaceId,
                 platformId: input.platformId,
             })
         },
@@ -203,7 +203,7 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
             // into app memory — the worker pulls them straight from S3 via a signed URL.
             const file = await fileService(log).getFile({
                 fileId: input.flowVersionId,
-                projectId: input.projectId,
+                workspaceId: input.workspaceId,
                 type: FileType.FLOW_BUNDLE,
             })
             if (isNil(file)) {
@@ -216,7 +216,7 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
             }
             const { data } = await fileService(log).getDataOrThrow({
                 fileId: input.flowVersionId,
-                projectId: input.projectId,
+                workspaceId: input.workspaceId,
                 type: FileType.FLOW_BUNDLE,
             })
             return { kind: 'inline', data }
@@ -237,7 +237,7 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
             // hand back a signed PUT URL for a direct-to-S3 upload.
             const file = await fileService(log).save({
                 fileId: input.flowVersionId,
-                projectId: input.projectId,
+                workspaceId: input.workspaceId,
                 platformId: input.platformId,
                 type: FileType.FLOW_BUNDLE,
                 data: null,
@@ -255,7 +255,7 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
         async uploadFlowBundle(input) {
             await fileService(log).save({
                 fileId: input.flowVersionId,
-                projectId: input.projectId,
+                workspaceId: input.workspaceId,
                 platformId: input.platformId,
                 type: FileType.FLOW_BUNDLE,
                 data: input.data,
@@ -265,16 +265,16 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
         },
 
         async disableFlow(input) {
-            const { flowId, projectId } = input
-            const flow = await flowService(log).getOneOrThrow({ id: flowId, projectId })
+            const { flowId, workspaceId } = input
+            const flow = await flowService(log).getOneOrThrow({ id: flowId, workspaceId })
             if (flow.status === FlowStatus.DISABLED) {
                 return
             }
-            const platformId = await projectService(log).getPlatformId(projectId)
+            const platformId = await workspaceService(log).getPlatformId(workspaceId)
             const disabledFlow = await flowService(log).update({
                 id: flowId,
                 userId: null,
-                projectId,
+                workspaceId,
                 platformId,
                 emitEvents: false,
                 operation: {
@@ -282,8 +282,8 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
                     request: { status: FlowStatus.DISABLED },
                 },
             })
-            flowSideEffects(log).onDisabledByWorker({ flow: disabledFlow, projectId, platformId })
-            log.info({ flow: { id: flowId }, project: { id: projectId } }, '[workerRpc#disableFlow] Flow disabled by worker request')
+            flowSideEffects(log).onDisabledByWorker({ flow: disabledFlow, workspaceId, platformId })
+            log.info({ flow: { id: flowId }, workspace: { id: workspaceId } }, '[workerRpc#disableFlow] Flow disabled by worker request')
         },
 
     }

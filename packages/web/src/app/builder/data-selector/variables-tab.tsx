@@ -20,19 +20,19 @@ const VariablesTab = () => {
   const [search, setSearch] = useState('');
   const [debouncedSearch] = useDebounce(search, 250);
   const [createOpen, setCreateOpen] = useState(false);
-  const projectId = authenticationSession.getProjectId();
+  const workspaceId = authenticationSession.getWorkspaceId();
   const { checkAccess } = useAuthorization();
   const canRead = checkAccess(Permission.READ_VARIABLE);
   const canWrite = checkAccess(Permission.WRITE_VARIABLE);
 
   const { data, isLoading, refetch } = variablesQueries.useVariables({
     request: {
-      projectId: projectId ?? '',
+      workspaceId: workspaceId ?? '',
       limit: 50,
       name: debouncedSearch || undefined,
     },
-    extraKeys: ['data-selector-variables', projectId ?? '', debouncedSearch],
-    enabled: !!projectId && canRead,
+    extraKeys: ['data-selector-variables', workspaceId ?? '', debouncedSearch],
+    enabled: !!workspaceId && canRead,
   });
 
   const variables = data?.data ?? [];

@@ -1,8 +1,8 @@
 import { FlowTriggerType, LATEST_JOB_DATA_SCHEMA_VERSION, TriggerStrategy, WorkerJobType } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { IsNull } from 'typeorm'
-import { projectService } from '../../project/project-service'
 import { triggerSourceRepo } from '../../trigger/trigger-source/trigger-source-service'
+import { workspaceService } from '../../workspace/workspace-service'
 import { jobQueue, JobType } from '../job-queue/job-queue'
 
 export const refillPollingJobs = (log: FastifyBaseLogger) => ({
@@ -27,8 +27,8 @@ export const refillPollingJobs = (log: FastifyBaseLogger) => ({
                     id: triggerSource.flowVersionId,
                     type: JobType.REPEATING,
                     data: {
-                        projectId: triggerSource.projectId,
-                        platformId: await projectService(log).getPlatformId(triggerSource.projectId),
+                        workspaceId: triggerSource.workspaceId,
+                        platformId: await workspaceService(log).getPlatformId(triggerSource.workspaceId),
                         schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
                         flowVersionId: triggerSource.flowVersionId,
                         flowId: triggerSource.flowId,

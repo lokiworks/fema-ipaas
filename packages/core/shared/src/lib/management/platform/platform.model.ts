@@ -10,7 +10,7 @@ export const PlatformUsage = z.object({
     appSumoAiCreditsUsed: Nullable(z.number()),
     appSumoAiCreditsRemaining: Nullable(z.number()),
     activeFlows: z.number(),
-    teamProjects: z.number(),
+    teamWorkspaces: z.number(),
     users: z.number(),
     activeUsers: z.number(),
     invitedSeats: z.number(),
@@ -41,7 +41,7 @@ export enum ConsumableFeatureId {
 }
 
 export enum UnconsumableFeatureId {
-    TEAM_PROJECTS_LIMIT = 'teamProjectsLimit',
+    TEAM_WORKSPACES_LIMIT = 'teamWorkspacesLimit',
     USERS_LIMIT = 'usersLimit',
     ACTIVE_FLOWS_LIMIT = 'activeFlowsLimit',
 }
@@ -62,7 +62,7 @@ export enum FeatureFlagId {
     MANAGE_CONNECTORS_ENABLED = 'manageConnectorsEnabled',
     MANAGE_TEMPLATES_ENABLED = 'manageTemplatesEnabled',
     CUSTOM_APPEARANCE_ENABLED = 'customAppearanceEnabled',
-    PROJECT_ROLES_ENABLED = 'projectRolesEnabled',
+    WORKSPACE_ROLES_ENABLED = 'workspaceRolesEnabled',
     GLOBAL_CONNECTIONS_ENABLED = 'globalConnectionsEnabled',
     CUSTOM_ROLES_ENABLED = 'customRolesEnabled',
     API_KEYS_ENABLED = 'apiKeysEnabled',
@@ -99,10 +99,10 @@ export const PlatformPlan = z.object({
     manageConnectorsEnabled: z.boolean(),
     manageTemplatesEnabled: z.boolean(),
     customAppearanceEnabled: z.boolean(),
-    billedTeamProjectsLimit: Nullable(z.number()),
+    billedTeamWorkspacesLimit: Nullable(z.number()),
     usersLimit: Nullable(z.number()),
     scheduledUsersLimit: Nullable(z.number()),
-    projectRolesEnabled: z.boolean(),
+    workspaceRolesEnabled: z.boolean(),
     globalConnectionsEnabled: z.boolean(),
     customRolesEnabled: z.boolean(),
     apiKeysEnabled: z.boolean(),
@@ -112,7 +112,7 @@ export const PlatformPlan = z.object({
     licenseKey: Nullable(z.string()),
     licenseExpiresAt: Nullable(DateOrString),
 
-    projectsLimit: Nullable(z.number()),
+    workspacesLimit: Nullable(z.number()),
     activeFlowsLimit: Nullable(z.number()),
 
     /** @deprecated use workerGroupId instead — will be removed in 0.83.0 */
@@ -278,13 +278,13 @@ export type SeatsBillableFeature = z.infer<typeof SeatsBillableFeature>
 
 export type ConsumableBillableFeature = CreditsBillableFeature | AppSumoCreditsBillableFeature
 
-export const ProjectCreditUsage = z.object({
-    projectId: z.string(),
-    projectName: z.string(),
+export const WorkspaceCreditUsage = z.object({
+    workspaceId: z.string(),
+    workspaceName: z.string(),
     creditsUsed: z.number(),
     aiCreditsUsed: z.number(),
 })
-export type ProjectCreditUsage = z.infer<typeof ProjectCreditUsage>
+export type WorkspaceCreditUsage = z.infer<typeof WorkspaceCreditUsage>
 
 export const PlatformBillingInformation = z.object({
     plan: PlatformPlan,

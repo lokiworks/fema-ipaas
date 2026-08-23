@@ -1,4 +1,4 @@
-import { ErrorCode, isNil, ProjectId, spreadIfDefined, tryCatch } from '@fema/core-utils'
+import { ErrorCode, isNil, spreadIfDefined, tryCatch, WorkspaceId } from '@fema/core-utils'
 import { onCallService } from '@fema/server-utils'
 import { FlowVersion, LATEST_FLOW_SCHEMA_VERSION } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
@@ -9,7 +9,7 @@ import { flowVersionRepo } from './flow-version.service'
 import { flowMigrations } from './migrations'
 
 export const flowVersionMigrationService = (log: FastifyBaseLogger) => ({
-    async migrate(flowVersion: FlowVersion, projectId?: ProjectId): Promise<FlowVersion> {
+    async migrate(flowVersion: FlowVersion, workspaceId?: WorkspaceId): Promise<FlowVersion> {
         // Early exit if already at latest version
         if (flowVersion.schemaVersion === LATEST_FLOW_SCHEMA_VERSION) {
             return flowVersion
@@ -22,7 +22,7 @@ export const flowVersionMigrationService = (log: FastifyBaseLogger) => ({
             backupFiles[flowVersion.schemaVersion] = await flowVersionBackupService(log).store(flowVersion)
         }
 
-        const { data: migratedFlowVersion, error: migrationError } = await tryCatch(() => flowMigrations.apply(flowVersion, { log, projectId }))
+        const { data: migratedFlowVersion, error: migrationError } = await tryCatch(() => flowMigrations.apply(flowVersion, { log, workspaceId }))
         if (migrationError) {
             log.error({ migrationError }, '[flowVersionMigration] Failed to migrate flow version')
             onCallService(log, system.get(AppSystemProp.PAGE_ONCALL_WEBHOOK)).page({

@@ -80,7 +80,7 @@ function makeFlowVersion(): FlowVersion {
 
 function makeBeginOperation(overrides?: Partial<BeginExecuteFlowOperation>): BeginExecuteFlowOperation {
     return {
-        projectId: 'proj-1',
+        workspaceId: 'proj-1',
         engineToken: 'test-token',
         internalApiUrl: engineApi.url,
         publicApiUrl: 'http://localhost:4200/api/',
@@ -149,7 +149,7 @@ function makeFlowVersionWithTwoApprovals(): FlowVersion {
 
 function makeResumeOperation(overrides?: Partial<ResumeExecuteFlowOperation>): ResumeExecuteFlowOperation {
     return {
-        projectId: 'proj-1',
+        workspaceId: 'proj-1',
         engineToken: 'test-token',
         internalApiUrl: engineApi.url,
         publicApiUrl: 'http://localhost:4200/api/',

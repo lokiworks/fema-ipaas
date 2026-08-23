@@ -9,7 +9,7 @@ export const testExecutionContext = {
     async stateFromFlowVersion({
         flowVersion,
         excludedStepName,
-        projectId,
+        workspaceId,
         engineToken,
         apiUrl,
         sampleData,
@@ -47,7 +47,7 @@ export const testExecutionContext = {
                 case FlowActionType.LOOP_ON_ITEMS: {
                     const { resolvedInput } = await createPropsResolver({
                         apiUrl,
-                        projectId,
+                        workspaceId,
                         engineToken,
                         contextVersion: LATEST_CONTEXT_VERSION,
                         stepNames: engineConstants.stepNames,
@@ -89,7 +89,7 @@ type TestExecutionParams = {
     engineConstants: EngineConstants
     flowVersion?: FlowVersion
     excludedStepName?: string
-    projectId: string
+    workspaceId: string
     apiUrl: string
     engineToken: string
     sampleData?: Record<string, unknown>

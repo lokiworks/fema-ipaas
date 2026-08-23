@@ -1,4 +1,4 @@
-import type { ApId, PlatformId, ProjectId } from '@fema/core-utils'
+import type { ApId, PlatformId, WorkspaceId } from '@fema/core-utils'
 import { PrincipalType } from './principal-type'
 
 export type WorkerPrincipal = {
@@ -31,7 +31,7 @@ export type UserPrincipal = {
 export type EnginePrincipal = {
     id: ApId
     type: PrincipalType.ENGINE
-    projectId: ProjectId
+    workspaceId: WorkspaceId
     platform: {
         id: PlatformId
     }

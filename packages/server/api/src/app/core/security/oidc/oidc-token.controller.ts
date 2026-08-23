@@ -9,7 +9,7 @@ import { oidcKeyManager } from './oidc-key-manager'
 export const oidcTokenController: FastifyPluginAsyncZod = async (app) => {
     const issuer = system.getOrThrow(AppSystemProp.FRONTEND_URL).replace(/\/$/, '')
     app.post('/oidc-token', CreateOidcTokenRequestOptions, async (request, reply) => {
-        const { projectId, platform } = request.principal
+        const { workspaceId, platform } = request.principal
         const { audience, expiresInSeconds } = request.body
         const [privateKey, kid] = await Promise.all([
             oidcKeyManager.getPrivateKeyPem(),
@@ -17,7 +17,7 @@ export const oidcTokenController: FastifyPluginAsyncZod = async (app) => {
         ])
         const token = await jwtUtils.sign({
             payload: {
-                sub: `platform:${platform.id}:project:${projectId}`,
+                sub: `platform:${platform.id}:workspace:${workspaceId}`,
                 aud: audience,
             },
             key: privateKey,

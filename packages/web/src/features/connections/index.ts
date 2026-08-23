@@ -1,5 +1,5 @@
 export { connectionsApi } from './api/connections';
-export { ProjectSelector } from '../projects/components/projects-selector';
+export { WorkspaceSelector } from '../workspaces/components/workspaces-selector';
 export { EditGlobalConnectionDialog } from './components/edit-global-connection-dialog';
 export { RenameConnectionDialog } from './components/rename-connection-dialog';
 export { RevalidateConnectionButton } from './components/revalidate-connection-button';

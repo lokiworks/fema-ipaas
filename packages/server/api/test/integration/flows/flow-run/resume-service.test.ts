@@ -25,11 +25,11 @@ beforeEach(async () => {
 })
 
 async function createFlowRunAndWaitpoint(params: {
-    projectId: string
+    workspaceId: string
     flowRunStatus?: FlowRunStatus
     waitpointStatus?: WaitpointStatus
 }) {
-    const flow = createMockFlow({ projectId: params.projectId })
+    const flow = createMockFlow({ workspaceId: params.workspaceId })
     await db.save('flow', flow)
 
     const flowVersion = createMockFlowVersion({
@@ -39,7 +39,7 @@ async function createFlowRunAndWaitpoint(params: {
     await db.save('flow_version', flowVersion)
 
     const flowRun = createMockFlowRun({
-        projectId: params.projectId,
+        workspaceId: params.workspaceId,
         flowId: flow.id,
         flowVersionId: flowVersion.id,
         status: params.flowRunStatus ?? FlowRunStatus.PAUSED,
@@ -51,7 +51,7 @@ async function createFlowRunAndWaitpoint(params: {
     await db.save('waitpoint', {
         id: waitpointId,
         flowRunId: flowRun.id,
-        projectId: params.projectId,
+        workspaceId: params.workspaceId,
         stepName: 'approval',
         type: 'WEBHOOK',
         status: params.waitpointStatus ?? WaitpointStatus.PENDING,
@@ -65,7 +65,7 @@ async function createFlowRunAndWaitpoint(params: {
 describe('resumeService resumeFromWaitpointWithoutLock', () => {
     it('consumes a PENDING waitpoint and enqueues resume when flow is PAUSED (worker-before-callback ordering)', async () => {
         const { flowRun, waitpointId } = await createFlowRunAndWaitpoint({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             flowRunStatus: FlowRunStatus.PAUSED,
             waitpointStatus: WaitpointStatus.PENDING,
         })
@@ -84,14 +84,14 @@ describe('resumeService resumeFromWaitpointWithoutLock', () => {
 
     it('consumes a COMPLETED waitpoint when race recovery fires (callback-before-worker ordering)', async () => {
         const { flowRun, waitpointId } = await createFlowRunAndWaitpoint({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             flowRunStatus: FlowRunStatus.RUNNING,
             waitpointStatus: WaitpointStatus.PENDING,
         })
 
         await waitpointService(app.log).complete({
             flowRunId: flowRun.id,
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             waitpointId,
             resumePayload: { body: { status: 'early' } },
         })
@@ -112,14 +112,14 @@ describe('resumeService resumeFromWaitpointWithoutLock', () => {
 
     it('does not leave a stale COMPLETED row to poison the next pause cycle (leftover-row regression)', async () => {
         const { flowRun, waitpointId } = await createFlowRunAndWaitpoint({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             flowRunStatus: FlowRunStatus.RUNNING,
             waitpointStatus: WaitpointStatus.PENDING,
         })
 
         await waitpointService(app.log).complete({
             flowRunId: flowRun.id,
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             waitpointId,
             resumePayload: { body: { status: 'quick' } },
         })
@@ -134,7 +134,7 @@ describe('resumeService resumeFromWaitpointWithoutLock', () => {
 
         const freshPause = await waitpointService(app.log).createForPause({
             flowRunId: flowRun.id,
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             stepName: 'approval',
             type: PauseType.WEBHOOK,
             version: 'V1',
@@ -148,7 +148,7 @@ describe('resumeService resumeFromWaitpointWithoutLock', () => {
 
     it('returns stale=true when no PENDING waitpoint exists', async () => {
         const { flowRun } = await createFlowRunAndWaitpoint({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             flowRunStatus: FlowRunStatus.PAUSED,
             waitpointStatus: WaitpointStatus.PENDING,
         })

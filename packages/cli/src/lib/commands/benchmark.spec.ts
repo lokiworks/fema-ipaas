@@ -133,15 +133,15 @@ describe('benchmarkUtils.aggregateOutsideRuns', () => {
     it('groups runs by flow with count and avg run time, busiest first', () => {
         const at = (ms: number) => new Date(ms).toISOString();
         const flows = benchmarkUtils.aggregateOutsideRuns([
-            { flowId: 'a', projectId: 'p1', startTime: at(0), finishTime: at(100) },
-            { flowId: 'a', projectId: 'p1', startTime: at(0), finishTime: at(300) },
-            { flowId: 'a', projectId: 'p1' }, // still counted, excluded from avg (no timestamps)
-            { flowId: 'b', projectId: 'p2', startTime: at(0), finishTime: at(50) },
-            { projectId: 'p2' }, // no flowId — dropped
+            { flowId: 'a', workspaceId: 'p1', startTime: at(0), finishTime: at(100) },
+            { flowId: 'a', workspaceId: 'p1', startTime: at(0), finishTime: at(300) },
+            { flowId: 'a', workspaceId: 'p1' }, // still counted, excluded from avg (no timestamps)
+            { flowId: 'b', workspaceId: 'p2', startTime: at(0), finishTime: at(50) },
+            { workspaceId: 'p2' }, // no flowId — dropped
         ]);
         expect(flows).toEqual([
-            { flowId: 'a', projectId: 'p1', runs: 3, avgRunMs: 200 },
-            { flowId: 'b', projectId: 'p2', runs: 1, avgRunMs: 50 },
+            { flowId: 'a', workspaceId: 'p1', runs: 3, avgRunMs: 200 },
+            { flowId: 'b', workspaceId: 'p2', runs: 1, avgRunMs: 50 },
         ]);
     });
 });

@@ -60,7 +60,7 @@ function makeFlowVersion(): FlowVersion {
 
 function makeResumeJobData(overrides?: Partial<ExecuteFlowJobData>): ExecuteFlowJobData {
     return {
-        projectId: 'proj-1',
+        workspaceId: 'proj-1',
         platformId: 'plat-1',
         jobType: WorkerJobType.EXECUTE_FLOW,
         environment: RunEnvironment.PRODUCTION,

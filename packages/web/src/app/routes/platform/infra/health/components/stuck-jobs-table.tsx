@@ -51,7 +51,7 @@ export function StuckJobsTable({ stuckJobs, isLoading }: StuckJobsTableProps) {
             <TableHeader>
               <TableRow>
                 <TableHead>{t('Flow')}</TableHead>
-                <TableHead>{t('Project')}</TableHead>
+                <TableHead>{t('Workspace')}</TableHead>
                 <TableHead>{t('Status')}</TableHead>
               </TableRow>
             </TableHeader>
@@ -61,12 +61,14 @@ export function StuckJobsTable({ stuckJobs, isLoading }: StuckJobsTableProps) {
                   key={job.flowRunId}
                   className="cursor-pointer"
                   onClick={() =>
-                    navigate(`/projects/${job.projectId}/runs/${job.flowRunId}`)
+                    navigate(
+                      `/workspaces/${job.workspaceId}/runs/${job.flowRunId}`,
+                    )
                   }
                 >
                   <TableCell className="font-medium">{job.flowName}</TableCell>
                   <TableCell className="text-muted-foreground">
-                    {job.projectName}
+                    {job.workspaceName}
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline">

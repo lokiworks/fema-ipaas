@@ -127,10 +127,10 @@ export function PlatformSidebar() {
       label: t('General'),
       items: [
         {
-          to: '/platform/projects',
-          label: t('Projects'),
+          to: '/platform/workspaces',
+          label: t('Workspaces'),
           icon: LayoutGridIcon,
-          locked: platform.plan.billedTeamProjectsLimit === 0,
+          locked: platform.plan.billedTeamWorkspacesLimit === 0,
         },
         {
           to: '/platform/users',
@@ -158,10 +158,10 @@ export function PlatformSidebar() {
           locked: !platform.plan.ssoEnabled,
         },
         {
-          to: '/platform/security/project-roles',
-          label: t('Project Roles'),
+          to: '/platform/security/workspace-roles',
+          label: t('Workspace Roles'),
           icon: Settings2Icon,
-          locked: !platform.plan.projectRolesEnabled,
+          locked: !platform.plan.workspaceRolesEnabled,
         },
         {
           to: '/platform/security/api-keys',

@@ -35,7 +35,10 @@ import { Button } from '@/components/ui/button';
 import { flowHooks } from '@/features/flows';
 import { FlowCreatedByBadge } from '@/features/flows/components/flow-created-by-badge';
 import { foldersHooks } from '@/features/folders';
-import { getProjectName, projectCollectionUtils } from '@/features/projects';
+import {
+  getWorkspaceName,
+  workspaceCollectionUtils,
+} from '@/features/workspaces';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
@@ -75,7 +78,7 @@ export const BuilderHeader = () => {
   ]);
 
   const { embedState } = useEmbedding();
-  const { project } = projectCollectionUtils.useCurrentProject();
+  const { workspace } = workspaceCollectionUtils.useCurrentWorkspace();
 
   const { data: folderData } = foldersHooks.useFolder(
     flow.folderId ?? UncategorizedFolderId,
@@ -91,7 +94,8 @@ export const BuilderHeader = () => {
 
   const goToFlowsPage = () => {
     navigate({
-      pathname: authenticationSession.appendProjectRoutePrefix('/automations'),
+      pathname:
+        authenticationSession.appendWorkspaceRoutePrefix('/automations'),
       search: createSearchParams({
         folderId: folderData?.id ?? UncategorizedFolderId,
       }).toString(),
@@ -109,7 +113,7 @@ export const BuilderHeader = () => {
                   onClick={goToFlowsPage}
                   className="cursor-pointer text-sm"
                 >
-                  {getProjectName(project)}
+                  {getWorkspaceName(workspace)}
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />

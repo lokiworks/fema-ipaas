@@ -17,7 +17,7 @@ describeWithAuth('List flow runs endpoint', () => app!, (setup) => {
         const ctx = await setup()
 
         const response = await ctx.get('/v1/flow-runs', {
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
         })
 
         expect(response?.statusCode).toBe(200)

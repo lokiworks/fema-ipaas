@@ -9,7 +9,7 @@
  * Changes made:
  * 1. Updates package.json with build/lint scripts and workspace dependencies
  * 2. Updates tsconfig.lib.json with correct outDir and baseUrl/paths/rootDir
- * 3. Deletes project.json (Nx configuration)
+ * 3. Deletes workspace.json (Nx configuration)
  *
  * Usage:
  *   npx ts-node tools/scripts/migrate-custom-connector-to-turbo.ts [connector-path]
@@ -193,11 +193,11 @@ function migrateConnector(connectorDir: string): void {
     changes++;
   }
 
-  // 4. Delete project.json (Nx config)
-  const projectJsonPath = path.join(connectorDir, 'project.json');
-  if (fs.existsSync(projectJsonPath)) {
-    fs.unlinkSync(projectJsonPath);
-    console.log(`  ✓ Deleted project.json (Nx config)`);
+  // 4. Delete workspace.json (Nx config)
+  const workspaceJsonPath = path.join(connectorDir, 'workspace.json');
+  if (fs.existsSync(workspaceJsonPath)) {
+    fs.unlinkSync(workspaceJsonPath);
+    console.log(`  ✓ Deleted workspace.json (Nx config)`);
     changes++;
   }
 

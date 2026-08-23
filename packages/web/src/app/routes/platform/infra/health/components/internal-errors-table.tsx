@@ -47,7 +47,7 @@ export function InternalErrorsTable({
         </CardTitle>
         <CardDescription>
           {t(
-            'Internal errors are failures inside FEMA Integration Platform itself (engine or worker), not in your flow logic. Grouped by the project and flow they affected.',
+            'Internal errors are failures inside FEMA Integration Platform itself (engine or worker), not in your flow logic. Grouped by the workspace and flow they affected.',
           )}
         </CardDescription>
       </CardHeader>
@@ -63,7 +63,7 @@ export function InternalErrorsTable({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t('Project')}</TableHead>
+                <TableHead>{t('Workspace')}</TableHead>
                 <TableHead>{t('Flow')}</TableHead>
                 <TableHead className="text-right">{t('Errors')}</TableHead>
                 <TableHead className="text-right">{t('Share')}</TableHead>
@@ -72,16 +72,16 @@ export function InternalErrorsTable({
             <TableBody>
               {errors.map((error) => (
                 <TableRow
-                  key={`${error.projectId}-${error.flowId}`}
+                  key={`${error.workspaceId}-${error.flowId}`}
                   className="cursor-pointer"
                   onClick={() =>
                     navigate(
-                      `/projects/${error.projectId}/runs?flowId=${error.flowId}`,
+                      `/workspaces/${error.workspaceId}/runs?flowId=${error.flowId}`,
                     )
                   }
                 >
                   <TableCell className="text-muted-foreground">
-                    {error.projectName}
+                    {error.workspaceName}
                   </TableCell>
                   <TableCell className="font-medium">
                     {error.flowName}

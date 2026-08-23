@@ -4,7 +4,7 @@ import { ALL_PRINCIPAL_TYPES, ConnectorAudienceFilter, ConnectorCategory, Connec
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
-import { ProjectResourceType } from '../../core/security/authorization/common'
+import { WorkspaceResourceType } from '../../core/security/authorization/common'
 import { securityAccess } from '../../core/security/authorization/fastify-security'
 import { flowService } from '../../flows/flow/flow.service'
 import { sampleDataService } from '../../flows/step-run/sample-data.service'
@@ -42,10 +42,10 @@ const baseConnectorsController: FastifyPluginAsyncZod = async (app) => {
             })
         }
         const platformId = getPlatformId(req.principal)
-        const projectId = req.query.projectId
+        const workspaceId = req.query.workspaceId
         const connectorMetadataSummary = await connectorMetadataService(req.log).list({
             includeHidden: query.includeHidden ?? false,
-            projectId,
+            workspaceId,
             platformId,
             categories: query.categories,
             searchQuery: query.searchQuery,
@@ -77,7 +77,7 @@ const baseConnectorsController: FastifyPluginAsyncZod = async (app) => {
                 version,
                 locale: req.query.locale as LocalesEnum | undefined,
             })
-            const policy = await resolveVisibility({ platformId, projectId: req.query.projectId, log: req.log })
+            const policy = await resolveVisibility({ platformId, workspaceId: req.query.workspaceId, log: req.log })
             const visibleConnector = applyVisibilityPolicy({ policy, connector })
             return filterModelActionsByAudience(visibleConnector, req.query.audience)
         },
@@ -97,7 +97,7 @@ const baseConnectorsController: FastifyPluginAsyncZod = async (app) => {
                 version,
                 locale: req.query.locale as LocalesEnum | undefined,
             })
-            const policy = await resolveVisibility({ platformId, projectId: req.query.projectId, log: req.log })
+            const policy = await resolveVisibility({ platformId, workspaceId: req.query.workspaceId, log: req.log })
             const visibleConnector = applyVisibilityPolicy({ policy, connector })
             return filterModelActionsByAudience(visibleConnector, req.query.audience)
         },
@@ -125,18 +125,18 @@ const baseConnectorsController: FastifyPluginAsyncZod = async (app) => {
         '/options',
         OptionsConnectorRequest,
         async (req) => {
-            const projectId = req.projectId
+            const workspaceId = req.workspaceId
             const platform = req.principal.platform
             const flow = await flowService(req.log).getOnePopulatedOrThrow({
-                projectId,
+                workspaceId,
                 id: req.body.flowId,
                 versionId: req.body.flowVersionId,
             })
-            const sampleData = await sampleDataService(req.log).getSampleDataForFlow(projectId, flow.version, SampleDataFileType.OUTPUT)
+            const sampleData = await sampleDataService(req.log).getSampleDataForFlow(workspaceId, flow.version, SampleDataFileType.OUTPUT)
             const { response } = await userInteractionWatcher.submitAndWaitForResponse<EngineResponse<unknown>>({
                 jobType: WorkerJobType.EXECUTE_PROPERTY,
                 platformId: platform.id,
-                projectId,
+                workspaceId,
                 flowVersion: flow.version,
                 propertyName: req.body.propertyName,
                 actionOrTriggerName: req.body.actionOrTriggerName,
@@ -228,8 +228,8 @@ const OptionsConnectorRequest = {
         body: ConnectorOptionRequest,
     },
     config: {
-        security: securityAccess.project([PrincipalType.USER], undefined, {
-            type: ProjectResourceType.BODY,
+        security: securityAccess.workspace([PrincipalType.USER], undefined, {
+            type: WorkspaceResourceType.BODY,
         }),
     },
 }

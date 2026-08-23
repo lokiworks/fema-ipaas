@@ -18,7 +18,7 @@ export const generateMockEngineConstants = (params?: Partial<EngineConstants>): 
                 retryInterval: 1,
             },
             engineToken: params?.engineToken ?? 'engineToken',
-            projectId: params?.projectId ?? 'projectId',
+            workspaceId: params?.workspaceId ?? 'workspaceId',
             triggerConnectorName: params?.triggerConnectorName ?? 'mcp-trigger-connector-name',
             streamStepProgress: params?.streamStepProgress ?? StreamStepProgress.NONE,
             workerHandlerId: params?.workerHandlerId ?? null,
@@ -127,7 +127,7 @@ export function buildMockBeginExecuteFlowOperation(
     params: Partial<ResolvedBeginExecuteFlowOperation> & Pick<BeginExecuteFlowOperation, 'flowVersion'>,
 ): ResolvedBeginExecuteFlowOperation {
     return {
-        projectId: 'projectId',
+        workspaceId: 'workspaceId',
         engineToken: 'engineToken',
         internalApiUrl: 'http://127.0.0.1:3000/',
         publicApiUrl: 'http://127.0.0.1:4200/api/',

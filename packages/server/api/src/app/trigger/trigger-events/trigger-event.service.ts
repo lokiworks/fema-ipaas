@@ -1,4 +1,4 @@
-import { apId, Cursor, ErrorCode, FlowId, PlatformError, ProjectId, SeekPage } from '@fema/core-utils'
+import { apId, Cursor, ErrorCode, FlowId, PlatformError, SeekPage, WorkspaceId } from '@fema/core-utils'
 import { ConnectorTrigger, EngineResponse, EngineResponseStatus, ExecuteTriggerResponse, FileCompression, FileType, FlowTrigger, FlowTriggerType, getConnectorMajorAndMinorVersion, PopulatedFlow, TriggerEventWithPayload, TriggerHookType, WorkerJobType } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { repoFactory } from '../../core/db/repo-factory'
@@ -7,26 +7,26 @@ import { flowService } from '../../flows/flow/flow.service'
 import { buildPaginator } from '../../helper/pagination/build-paginator'
 import { paginationHelper } from '../../helper/pagination/pagination-utils'
 import { Order } from '../../helper/pagination/paginator'
-import { projectService } from '../../project/project-service'
 import { userInteractionWatcher } from '../../workers/user-interaction-watcher'
+import { workspaceService } from '../../workspace/workspace-service'
 import { TriggerEventEntity } from './trigger-event.entity'
 
 export const triggerEventRepo = repoFactory(TriggerEventEntity)
 
 export const triggerEventService = (log: FastifyBaseLogger) => ({
     async saveEvent({
-        projectId,
+        workspaceId,
         flowId,
         payload,
     }: SaveEventParams): Promise<TriggerEventWithPayload> {
         const flow = await flowService(log).getOnePopulatedOrThrow({
             id: flowId,
-            projectId,
+            workspaceId,
         })
 
         const data = Buffer.from(JSON.stringify(payload))
         const file = await fileService(log).save({
-            projectId,
+            workspaceId,
             fileName: `${apId()}.json`,
             data,
             size: data.length,
@@ -38,7 +38,7 @@ export const triggerEventService = (log: FastifyBaseLogger) => ({
         const trigger = await triggerEventRepo().save({
             id: apId(),
             fileId: file.id,
-            projectId,
+            workspaceId,
             flowId: flow.id,
             sourceName,
         })
@@ -49,11 +49,11 @@ export const triggerEventService = (log: FastifyBaseLogger) => ({
     },
 
     async test({
-        projectId,
+        workspaceId,
         flow,
     }: TestParams): Promise<SeekPage<TriggerEventWithPayload>> {
         const trigger = flow.version.trigger
-        const platformId = await projectService(log).getPlatformId(projectId)
+        const platformId = await workspaceService(log).getPlatformId(workspaceId)
         const emptyPage = paginationHelper.createPage<TriggerEventWithPayload>([], null)
         switch (trigger.type) {
             case FlowTriggerType.CONNECTOR: {
@@ -63,12 +63,12 @@ export const triggerEventService = (log: FastifyBaseLogger) => ({
                     flowId: flow.id,
                     flowVersionId: flow.version.id,
                     test: true,
-                    projectId,
+                    workspaceId,
                     jobType: WorkerJobType.EXECUTE_TRIGGER_HOOK,
                     platformId,
                 }, log)
                 await triggerEventRepo().delete({
-                    projectId,
+                    workspaceId,
                     flowId: flow.id,
                 })
                 if (engineResponse.status !== EngineResponseStatus.OK) {
@@ -82,14 +82,14 @@ export const triggerEventService = (log: FastifyBaseLogger) => ({
 
                 for (const output of engineResponse.response.output) {
                     await this.saveEvent({
-                        projectId,
+                        workspaceId,
                         flowId: flow.id,
                         payload: output,
                     })
                 }
 
                 return this.list({
-                    projectId,
+                    workspaceId,
                     flow,
                     cursor: null,
                     limit: engineResponse.response.output.length,
@@ -101,7 +101,7 @@ export const triggerEventService = (log: FastifyBaseLogger) => ({
     },
 
     async list({
-        projectId,
+        workspaceId,
         flow,
         cursor,
         limit,
@@ -119,7 +119,7 @@ export const triggerEventService = (log: FastifyBaseLogger) => ({
             },
         })
         const query = triggerEventRepo().createQueryBuilder('trigger_event').where({
-            projectId,
+            workspaceId,
             flowId,
             sourceName,
         })
@@ -156,18 +156,18 @@ function getSourceName(trigger: FlowTrigger): string {
 }
 
 type TestParams = {
-    projectId: ProjectId
+    workspaceId: WorkspaceId
     flow: PopulatedFlow
 }
 
 type SaveEventParams = {
-    projectId: ProjectId
+    workspaceId: WorkspaceId
     flowId: FlowId
     payload: unknown
 }
 
 type ListParams = {
-    projectId: ProjectId
+    workspaceId: WorkspaceId
     flow: PopulatedFlow
     cursor: Cursor | null
     limit: number

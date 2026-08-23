@@ -74,7 +74,7 @@ export const RunsTable = () => {
   const [selectedAll, setSelectedAll] = useState(false);
   const [excludedRows, setExcludedRows] = useState<Set<string>>(new Set());
 
-  const projectId = authenticationSession.getProjectId()!;
+  const workspaceId = authenticationSession.getWorkspaceId()!;
   const [retriedRunsIds, setRetriedRunsIds] = useState<string[]>([]);
   const [failedRetryRuns, setFailedRetryRuns] = useState<
     Required<FlowRunWithRetryError>[]
@@ -103,7 +103,7 @@ export const RunsTable = () => {
   }, [hasSeededDefaultRange, setSearchParams]);
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['flow-run-table', searchParams.toString(), projectId],
+    queryKey: ['flow-run-table', searchParams.toString(), workspaceId],
     enabled: hasSeededDefaultRange,
     staleTime: 0,
     gcTime: 0,
@@ -126,7 +126,7 @@ export const RunsTable = () => {
 
       return flowRunsApi.list({
         status: status ?? undefined,
-        projectId,
+        workspaceId,
         flowId,
         cursor: cursor ?? undefined,
         limit,
@@ -165,7 +165,7 @@ export const RunsTable = () => {
     onViewError: setErrorDialogRun,
     onViewRun: (run) =>
       navigate(
-        authenticationSession.appendProjectRoutePrefix(`/runs/${run.id}`),
+        authenticationSession.appendWorkspaceRoutePrefix(`/runs/${run.id}`),
       ),
   });
 
@@ -236,7 +236,7 @@ export const RunsTable = () => {
       const isAlreadyViewingRetriedRuns = searchParams.get(RUN_IDS_QUERY_PARAM);
       refetch();
       if (isAlreadyViewingRetriedRuns) {
-        navigate(authenticationSession.appendProjectRoutePrefix(`/runs`));
+        navigate(authenticationSession.appendWorkspaceRoutePrefix(`/runs`));
         setSearchParams({
           [RUN_IDS_QUERY_PARAM]: runsIds,
           [LIMIT_QUERY_PARAM]: runsIds.length.toString(),
@@ -292,7 +292,7 @@ export const RunsTable = () => {
                 onClick={() => {
                   const runIds = selectedRows.map((row) => row.id);
                   archiveRuns.mutate({
-                    projectId,
+                    workspaceId,
                     flowRunIds: selectedAll ? undefined : runIds,
                     excludeFlowRunIds: selectedAll
                       ? Array.from(excludedRows)
@@ -363,7 +363,7 @@ export const RunsTable = () => {
                         'status',
                       ) as FlowRunStatus[];
                       cancelRuns.mutate({
-                        projectId,
+                        workspaceId,
                         flowRunIds: selectedAll ? undefined : runIds,
                         excludeFlowRunIds: selectedAll
                           ? Array.from(excludedRows)
@@ -450,7 +450,7 @@ export const RunsTable = () => {
                         onClick={() => {
                           const runIds = selectedRows.map((row) => row.id);
                           retryRuns.mutate({
-                            projectId,
+                            workspaceId,
                             flowRunIds: selectedAll ? undefined : runIds,
                             strategy: FlowRetryStrategy.ON_LATEST_VERSION,
                             excludeFlowRunIds: selectedAll
@@ -494,7 +494,7 @@ export const RunsTable = () => {
                           onClick={() => {
                             const runIds = selectedRows.map((row) => row.id);
                             retryRuns.mutate({
-                              projectId,
+                              workspaceId,
                               flowRunIds: selectedAll ? undefined : runIds,
                               strategy: FlowRetryStrategy.FROM_FAILED_STEP,
                               excludeFlowRunIds: selectedAll
@@ -551,11 +551,11 @@ export const RunsTable = () => {
     (row: FlowRun, newWindow: boolean) => {
       if (newWindow) {
         openNewWindow(
-          authenticationSession.appendProjectRoutePrefix(`/runs/${row.id}`),
+          authenticationSession.appendWorkspaceRoutePrefix(`/runs/${row.id}`),
         );
       } else {
         navigate(
-          authenticationSession.appendProjectRoutePrefix(`/runs/${row.id}`),
+          authenticationSession.appendWorkspaceRoutePrefix(`/runs/${row.id}`),
         );
       }
     },
@@ -571,7 +571,9 @@ export const RunsTable = () => {
             variant="outline"
             onClick={() => {
               setSearchParams({});
-              navigate(authenticationSession.appendProjectRoutePrefix(`/runs`));
+              navigate(
+                authenticationSession.appendWorkspaceRoutePrefix(`/runs`),
+              );
             }}
           >
             <div className="flex flex-row gap-2 items-center">

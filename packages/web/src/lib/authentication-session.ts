@@ -8,18 +8,18 @@ import { queryClient } from '@/app/query-client';
 
 import { ApStorage } from './ap-browser-storage';
 const tokenKey = 'token';
-const projectIdKey = 'projectId';
+const workspaceIdKey = 'workspaceId';
 export const authenticationSession = {
-  setProjectId(projectId: string) {
-    ApStorage.getInstance().setItem(projectIdKey, projectId);
+  setWorkspaceId(workspaceId: string) {
+    ApStorage.getInstance().setItem(workspaceIdKey, workspaceId);
   },
   saveResponse(response: AuthenticationResponse, isEmbedding: boolean) {
     if (isEmbedding) {
       ApStorage.setInstanceToSessionStorage();
     }
     ApStorage.getInstance().setItem(tokenKey, response.token);
-    if (!isNil(response.projectId)) {
-      ApStorage.getInstance().setItem(projectIdKey, response.projectId);
+    if (!isNil(response.workspaceId)) {
+      ApStorage.getInstance().setItem(workspaceIdKey, response.workspaceId);
     }
     queryClient.invalidateQueries({ queryKey: ['flags'] });
     window.dispatchEvent(new Event('storage'));
@@ -42,18 +42,21 @@ export const authenticationSession = {
     return ApStorage.getInstance().getItem(tokenKey) ?? null;
   },
 
-  getProjectId(): string | null {
+  getWorkspaceId(): string | null {
     const token = this.getToken();
     if (isNil(token)) {
       return null;
     }
-    const projectId = ApStorage.getInstance().getItem(projectIdKey);
-    if (!isNil(projectId)) {
-      return projectId;
+    const workspaceId = ApStorage.getInstance().getItem(workspaceIdKey);
+    if (!isNil(workspaceId)) {
+      return workspaceId;
     }
     const decodedJwt = getDecodedJwt(token);
-    if ('projectId' in decodedJwt && typeof decodedJwt.projectId === 'string') {
-      return decodedJwt.projectId;
+    if (
+      'workspaceId' in decodedJwt &&
+      typeof decodedJwt.workspaceId === 'string'
+    ) {
+      return decodedJwt.workspaceId;
     }
     return null;
   },
@@ -65,13 +68,15 @@ export const authenticationSession = {
     const decodedJwt = getDecodedJwt(token);
     return decodedJwt.id;
   },
-  appendProjectRoutePrefix(path: string): string {
-    const projectId = this.getProjectId();
+  appendWorkspaceRoutePrefix(path: string): string {
+    const workspaceId = this.getWorkspaceId();
 
-    if (isNil(projectId)) {
+    if (isNil(workspaceId)) {
       return path;
     }
-    return `/projects/${projectId}${path.startsWith('/') ? path : `/${path}`}`;
+    return `/workspaces/${workspaceId}${
+      path.startsWith('/') ? path : `/${path}`
+    }`;
   },
   getPlatformId(): string | null {
     const token = this.getToken();
@@ -100,16 +105,16 @@ export const authenticationSession = {
       platformId,
     });
     ApStorage.getInstance().setItem(tokenKey, result.token);
-    if (!isNil(result.projectId)) {
-      ApStorage.getInstance().setItem(projectIdKey, result.projectId);
+    if (!isNil(result.workspaceId)) {
+      ApStorage.getInstance().setItem(workspaceIdKey, result.workspaceId);
     }
     window.location.href = '/';
   },
-  switchToProject(projectId: string) {
-    if (authenticationSession.getProjectId() === projectId) {
+  switchToWorkspace(workspaceId: string) {
+    if (authenticationSession.getWorkspaceId() === workspaceId) {
       return;
     }
-    ApStorage.getInstance().setItem(projectIdKey, projectId);
+    ApStorage.getInstance().setItem(workspaceIdKey, workspaceId);
     window.dispatchEvent(new Event('storage'));
   },
   isLoggedIn(): boolean {
@@ -120,7 +125,7 @@ export const authenticationSession = {
     return !this.isJwtExpired(token);
   },
   clearSession() {
-    ApStorage.getInstance().removeItem(projectIdKey);
+    ApStorage.getInstance().removeItem(workspaceIdKey);
     ApStorage.getInstance().removeItem(tokenKey);
   },
   logOut() {

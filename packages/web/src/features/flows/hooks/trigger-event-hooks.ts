@@ -14,7 +14,7 @@ export const triggerEventHooks = {
       queryKey: ['triggerEvents', flowVersionId],
       queryFn: () =>
         triggerEventsApi.list({
-          projectId: authenticationSession.getProjectId()!,
+          workspaceId: authenticationSession.getWorkspaceId()!,
           flowId: flowId,
           limit: 5,
           cursor: undefined,

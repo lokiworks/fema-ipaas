@@ -13,7 +13,7 @@ export enum ConnectionStatus {
 }
 
 export enum ConnectionScope {
-    PROJECT = 'PROJECT',
+    WORKSPACE = 'WORKSPACE',
     PLATFORM = 'PLATFORM',
 }
 
@@ -102,7 +102,7 @@ export type Connection<Type extends ConnectionType = ConnectionType> = BaseModel
     scope: ConnectionScope
     connectorName: string
     displayName: string
-    projectIds: string[]
+    workspaceIds: string[]
     platformId: string
     status: ConnectionStatus
     ownerId: string
@@ -110,7 +110,7 @@ export type Connection<Type extends ConnectionType = ConnectionType> = BaseModel
     value: ConnectionValue<Type>
     metadata: Metadata | null
     connectorVersion: string
-    preSelectForNewProjects: boolean
+    preSelectForNewWorkspaces: boolean
 }
 
 export type OAuth2Connection = Connection<ConnectionType.OAUTH2>
@@ -128,7 +128,7 @@ export const ConnectionWithoutSensitiveData = z.object({
     displayName: z.string(),
     type: z.nativeEnum(ConnectionType),
     connectorName: z.string(),
-    projectIds: z.array(ApId),
+    workspaceIds: z.array(ApId),
     platformId: Nullable(z.string()),
     scope: z.nativeEnum(ConnectionScope),
     status: z.nativeEnum(ConnectionStatus),
@@ -137,7 +137,7 @@ export const ConnectionWithoutSensitiveData = z.object({
     metadata: Nullable(Metadata),
     flowIds: Nullable(z.array(ApId)),
     connectorVersion: z.string(),
-    preSelectForNewProjects: z.boolean(),
+    preSelectForNewWorkspaces: z.boolean(),
 }).describe('App connection is a connection to an external app.')
 export type ConnectionWithoutSensitiveData = z.infer<typeof ConnectionWithoutSensitiveData>
 

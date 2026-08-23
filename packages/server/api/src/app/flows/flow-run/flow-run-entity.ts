@@ -3,8 +3,8 @@ import {
     Flow,
     FlowRun,
     FlowVersion,
-    Project,
     User,
+    Workspace,
 } from '@fema/shared'
 import { EntitySchema } from 'typeorm'
 import {
@@ -13,7 +13,7 @@ import {
 } from '../../database/database-common'
 
 type FlowRunSchema = FlowRun & {
-    project: Project
+    workspace: Workspace
     flow: Flow
     flowVersion: FlowVersion
     logsFile: File
@@ -26,7 +26,7 @@ export const FlowRunEntity = new EntitySchema<FlowRunSchema>({
     name: 'flow_run',
     columns: {
         ...BaseColumnSchemaPart,
-        projectId: ApIdSchema,
+        workspaceId: ApIdSchema,
         flowId: ApIdSchema,
         flowVersionId: ApIdSchema,
         environment: {
@@ -96,24 +96,24 @@ export const FlowRunEntity = new EntitySchema<FlowRunSchema>({
     },
     indices: [
         {
-            name: 'idx_run_project_id_environment_flow_id_status_created_archived_',
-            columns: ['projectId', 'environment', 'flowId', 'status', 'created', 'archivedAt'],
+            name: 'idx_run_workspace_id_environment_flow_id_status_created_archived_',
+            columns: ['workspaceId', 'environment', 'flowId', 'status', 'created', 'archivedAt'],
         },
         {
-            name: 'idx_run_project_id_environment_status_created_archived_at',
-            columns: ['projectId', 'environment', 'status', 'created', 'archivedAt'],
+            name: 'idx_run_workspace_id_environment_status_created_archived_at',
+            columns: ['workspaceId', 'environment', 'status', 'created', 'archivedAt'],
         },
         {
-            name: 'idx_run_project_id_environment_created_archived_at',
-            columns: ['projectId', 'environment', 'created', 'archivedAt'],
+            name: 'idx_run_workspace_id_environment_created_archived_at',
+            columns: ['workspaceId', 'environment', 'created', 'archivedAt'],
         },
         {
-            name: 'idx_run_project_id_environment_created_status_archived_at',
-            columns: ['projectId', 'environment', 'created', 'archivedAt', 'status'],
+            name: 'idx_run_workspace_id_environment_created_status_archived_at',
+            columns: ['workspaceId', 'environment', 'created', 'archivedAt', 'status'],
         },
         {
-            name: 'idx_run_project_id_environment_flow_id_created_archived_at',
-            columns: ['projectId', 'environment', 'flowId', 'created', 'archivedAt'],
+            name: 'idx_run_workspace_id_environment_flow_id_created_archived_at',
+            columns: ['workspaceId', 'environment', 'flowId', 'created', 'archivedAt'],
         },
         {
             name: 'idx_run_flow_id',
@@ -147,14 +147,14 @@ export const FlowRunEntity = new EntitySchema<FlowRunSchema>({
                 foreignKeyConstraintName: 'fk_flow_run_triggered_by_user_id',
             },
         },
-        project: {
+        workspace: {
             type: 'many-to-one',
-            target: 'project',
+            target: 'workspace',
             cascade: true,
             onDelete: 'CASCADE',
             joinColumn: {
-                name: 'projectId',
-                foreignKeyConstraintName: 'fk_flow_run_project_id',
+                name: 'workspaceId',
+                foreignKeyConstraintName: 'fk_flow_run_workspace_id',
             },
         },
         flow: {

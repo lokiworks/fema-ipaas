@@ -1,4 +1,4 @@
-import { File, FileCompression, FileType, Project } from '@fema/shared'
+import { File, FileCompression, FileType, Workspace } from '@fema/shared'
 import { EntitySchema } from 'typeorm'
 import {
     ApIdSchema,
@@ -6,14 +6,14 @@ import {
 } from '../database/database-common'
 
 type FileSchema = File & {
-    project: Project
+    workspace: Workspace
 }
 
 export const FileEntity = new EntitySchema<FileSchema>({
     name: 'file',
     columns: {
         ...BaseColumnSchemaPart,
-        projectId: { ...ApIdSchema, nullable: true },
+        workspaceId: { ...ApIdSchema, nullable: true },
         platformId: { ...ApIdSchema, nullable: true },
         data: {
             type: 'bytea',
@@ -52,17 +52,17 @@ export const FileEntity = new EntitySchema<FileSchema>({
     },
     indices: [
         {
-            name: 'idx_file_project_id_type_created',
-            columns: ['projectId', 'type', 'created'],
+            name: 'idx_file_workspace_id_type_created',
+            columns: ['workspaceId', 'type', 'created'],
         },
         {
             name: 'idx_file_type_created_desc',
             columns: ['type', 'created'],
         },
         {
-            name: 'idx_file_platform_id_null_project',
+            name: 'idx_file_platform_id_null_workspace',
             columns: ['platformId'],
-            where: '"projectId" IS NULL',
+            where: '"workspaceId" IS NULL',
         },
         {
             // Real index is a partial expression index on (type, (metadata->>'flowId')),
@@ -74,14 +74,14 @@ export const FileEntity = new EntitySchema<FileSchema>({
         },
     ],
     relations: {
-        project: {
+        workspace: {
             type: 'many-to-one',
-            target: 'project',
+            target: 'workspace',
             cascade: true,
             onDelete: 'CASCADE',
             joinColumn: {
-                name: 'projectId',
-                foreignKeyConstraintName: 'fk_file_project_id',
+                name: 'workspaceId',
+                foreignKeyConstraintName: 'fk_file_workspace_id',
             },
         },
     },

@@ -81,7 +81,7 @@ function buildExtractConnectorJob(): ExecuteExtractConnectorMetadataJobData {
     return {
         schemaVersion: 4,
         jobType: WorkerJobType.EXECUTE_EXTRACT_CONNECTOR_INFORMATION,
-        projectId: undefined,
+        workspaceId: undefined,
         platformId: 'plat-1',
         connector: {
             connectorName: '@fema/connector-test',

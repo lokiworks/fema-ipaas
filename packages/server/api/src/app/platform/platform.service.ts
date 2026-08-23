@@ -1,5 +1,5 @@
 import { apId, ErrorCode, isNil, PlatformError, PlatformId, spreadIfDefined, spreadIfNotUndefined, UserId } from '@fema/core-utils'
-import { AuthenticationResponse, Platform, PlatformPlanLimits, PlatformRole, PlatformWithoutFederatedAuth, PlatformWithoutSensitiveData, ProjectType, SsoDomainVerification, SYSTEM_LIMITS, UpdatePlatformRequestBody, User, UserStatus } from '@fema/shared'
+import { AuthenticationResponse, Platform, PlatformPlanLimits, PlatformRole, PlatformWithoutFederatedAuth, PlatformWithoutSensitiveData, SsoDomainVerification, SYSTEM_LIMITS, UpdatePlatformRequestBody, User, UserStatus, WorkspaceType } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { nanoid } from 'nanoid'
 import { authenticationUtils } from '../authentication/authentication-utils'
@@ -7,29 +7,29 @@ import { userIdentityRepository, userIdentityService } from '../authentication/u
 import { repoFactory } from '../core/db/repo-factory'
 import { distributedLock } from '../database/redis-connections'
 import { defaultTheme } from '../flags/theme'
-import { projectService } from '../project/project-service'
 import { userService } from '../user/user-service'
+import { workspaceService } from '../workspace/workspace-service'
 import { PlatformEntity } from './platform.entity'
 
 export const platformRepo = repoFactory<Platform>(PlatformEntity)
 
 export const platformService = (log: FastifyBaseLogger) => ({
-    async listPlatformsForIdentityWithAtleastProject(params: ListPlatformsForIdentityParams): Promise<PlatformWithoutSensitiveData[]> {
+    async listPlatformsForIdentityWithAtleastWorkspace(params: ListPlatformsForIdentityParams): Promise<PlatformWithoutSensitiveData[]> {
         const users = await userService(log).getByIdentityId({ identityId: params.identityId })
 
-        const platformsWithProjects = await Promise.all(users.map(async (user) => {
+        const platformsWithWorkspaces = await Promise.all(users.map(async (user) => {
             if (isNil(user.platformId) || user.status === UserStatus.INACTIVE) {
                 return null
             }
-            const hasProjects = await projectService(log).userHasProjects({
+            const hasWorkspaces = await workspaceService(log).userHasWorkspaces({
                 platformId: user.platformId,
                 userId: user.id,
                 isPrivileged: userService(log).isUserPrivileged(user),
             })
-            return hasProjects ? user.platformId : null
+            return hasWorkspaces ? user.platformId : null
         }))
 
-        const platforms = await Promise.all(platformsWithProjects.filter((platformId) => !isNil(platformId)).map((platformId) => this.getOneWithPlanOrThrow(platformId)))
+        const platforms = await Promise.all(platformsWithWorkspaces.filter((platformId) => !isNil(platformId)).map((platformId) => this.getOneWithPlanOrThrow(platformId)))
         return platforms
     },
     async create(params: AddParams): Promise<PlatformWithoutFederatedAuth> {
@@ -70,7 +70,7 @@ export const platformService = (log: FastifyBaseLogger) => ({
         log.info({ platform: { id: savedPlatform.id }, ownerId }, 'Platform created')
         return stripFederatedAuth(savedPlatform)
     },
-    async createPlatformWithProject({ identityId, name, invalidatePreviousTokens, isFirstPlatform, callerTokenVersion, beforeProvision }: CreatePlatformWithProjectParams): Promise<CreatePlatformWithProjectResult> {
+    async createPlatformWithWorkspace({ identityId, name, invalidatePreviousTokens, isFirstPlatform, callerTokenVersion, beforeProvision }: CreatePlatformWithWorkspaceParams): Promise<CreatePlatformWithWorkspaceResult> {
         return distributedLock(log).runExclusive({
             key: `create-platform-${identityId}`,
             timeoutInSeconds: 30,
@@ -96,20 +96,20 @@ export const platformService = (log: FastifyBaseLogger) => ({
                         platformId: null,
                     })
                 const platform = await this.create({ ownerId: owner.id, name })
-                const personalProject = await projectService(log).create({
-                    displayName: personalProjectName(name),
+                const personalWorkspace = await workspaceService(log).create({
+                    displayName: personalWorkspaceName(name),
                     ownerId: owner.id,
                     platformId: platform.id,
-                    type: ProjectType.PERSONAL,
+                    type: WorkspaceType.PERSONAL,
                 })
                 if (invalidatePreviousTokens) {
                     await rotateTokenVersion(identityId)
                 }
-                await reportSignup({ identityId, user: owner, projectId: personalProject.id, log })
-                const response = await authenticationUtils(log).getProjectAndToken({
+                await reportSignup({ identityId, user: owner, workspaceId: personalWorkspace.id, log })
+                const response = await authenticationUtils(log).getWorkspaceAndToken({
                     userId: owner.id,
                     platformId: platform.id,
-                    projectId: personalProject.id,
+                    workspaceId: personalWorkspace.id,
                 })
                 return { response, provisioned: true }
             },
@@ -228,7 +228,7 @@ function findProvisionedOwner(users: User[]): PlatformOwner | undefined {
     return users.find((user): user is PlatformOwner => !isNil(user.platformId))
 }
 
-async function resumeProvisionedPlatform({ owner, identityId, name, invalidatePreviousTokens, callerTokenVersion, log }: ResumeProvisionedPlatformParams): Promise<CreatePlatformWithProjectResult> {
+async function resumeProvisionedPlatform({ owner, identityId, name, invalidatePreviousTokens, callerTokenVersion, log }: ResumeProvisionedPlatformParams): Promise<CreatePlatformWithWorkspaceResult> {
     const identity = await userIdentityService(log).getOneOrFail({ id: identityId })
     const earlierAttemptNeverRotated = isSameTokenVersion(identity.tokenVersion, callerTokenVersion)
     const response = await finishExistingPlatform({
@@ -242,7 +242,7 @@ async function resumeProvisionedPlatform({ owner, identityId, name, invalidatePr
     return { response, provisioned: false }
 }
 
-async function linkOwnerToPlatform({ ownerId, platformId, identityId, name, invalidatePreviousTokens, log }: LinkOwnerToPlatformParams): Promise<CreatePlatformWithProjectResult> {
+async function linkOwnerToPlatform({ ownerId, platformId, identityId, name, invalidatePreviousTokens, log }: LinkOwnerToPlatformParams): Promise<CreatePlatformWithWorkspaceResult> {
     await userService(log).addOwnerToPlatform({ id: ownerId, platformId })
     const owner = await userService(log).getOneOrFail({ id: ownerId })
     const response = await finishExistingPlatform({
@@ -253,17 +253,17 @@ async function linkOwnerToPlatform({ ownerId, platformId, identityId, name, inva
         identityId,
         log,
     })
-    if (!isNil(response.projectId)) {
-        await reportSignup({ identityId, user: owner, projectId: response.projectId, log })
+    if (!isNil(response.workspaceId)) {
+        await reportSignup({ identityId, user: owner, workspaceId: response.workspaceId, log })
     }
     return { response, provisioned: true }
 }
 
-async function reportSignup({ identityId, user, projectId, log }: ReportSignupParams): Promise<void> {
+async function reportSignup({ identityId, user, workspaceId, log }: ReportSignupParams): Promise<void> {
     await authenticationUtils(log).sendTelemetry({
         identity: await userIdentityService(log).getOneOrFail({ id: identityId }),
         user,
-        projectId,
+        workspaceId,
     })
 }
 
@@ -278,35 +278,35 @@ async function rotateTokenVersion(identityId: string): Promise<void> {
     })
 }
 
-function personalProjectName(platformName: string): string {
+function personalWorkspaceName(platformName: string): string {
     const noun = ' Platform'
     if (platformName.endsWith(noun)) {
-        return `${platformName.slice(0, -noun.length)} Project`
+        return `${platformName.slice(0, -noun.length)} Workspace`
     }
-    return /['’]s$/.test(platformName) ? `${platformName} Project` : `${platformName}'s Project`
+    return /['’]s$/.test(platformName) ? `${platformName} Workspace` : `${platformName}'s Workspace`
 }
 
 async function finishExistingPlatform({ user, platformId, name, invalidatePreviousTokens, identityId, log }: FinishExistingPlatformParams): Promise<AuthenticationResponse> {
-    const hasProjects = await projectService(log).userHasProjects({
+    const hasWorkspaces = await workspaceService(log).userHasWorkspaces({
         platformId,
         userId: user.id,
         isPrivileged: userService(log).isUserPrivileged(user),
     })
-    const project = hasProjects
+    const workspace = hasWorkspaces
         ? null
-        : await projectService(log).create({
-            displayName: personalProjectName(name),
+        : await workspaceService(log).create({
+            displayName: personalWorkspaceName(name),
             ownerId: user.id,
             platformId,
-            type: ProjectType.PERSONAL,
+            type: WorkspaceType.PERSONAL,
         })
     if (invalidatePreviousTokens) {
         await rotateTokenVersion(identityId)
     }
-    return authenticationUtils(log).getProjectAndToken({
+    return authenticationUtils(log).getWorkspaceAndToken({
         userId: user.id,
         platformId,
-        projectId: project?.id ?? null,
+        workspaceId: workspace?.id ?? null,
     })
 }
 
@@ -340,12 +340,12 @@ type UpdateParams = UpdatePlatformRequestBody & {
     ssoDomainVerification?: SsoDomainVerification | null
 }
 
-type CreatePlatformWithProjectResult = {
+type CreatePlatformWithWorkspaceResult = {
     response: AuthenticationResponse
     provisioned: boolean
 }
 
-type CreatePlatformWithProjectParams = {
+type CreatePlatformWithWorkspaceParams = {
     identityId: string
     name: string
     invalidatePreviousTokens: boolean
@@ -384,7 +384,7 @@ type FinishExistingPlatformParams = {
 type ReportSignupParams = {
     identityId: string
     user: User
-    projectId: string
+    workspaceId: string
     log: FastifyBaseLogger
 }
 

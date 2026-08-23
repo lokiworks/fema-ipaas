@@ -34,7 +34,7 @@ export function textToSectionBlocks(text: string): (KnownBlock | Block)[] {
 
 export function buildFlowOriginContextBlock(context: {
   server: { publicUrl: string };
-  project: { id: string };
+  workspace: { id: string };
   flows: { current: { id: string } };
 }): KnownBlock {
   return {
@@ -42,7 +42,7 @@ export function buildFlowOriginContextBlock(context: {
     elements: [
       {
         type: 'mrkdwn',
-        text: `Message sent by <${new URL(context.server.publicUrl).origin}/projects/${context.project.id}/flows/${context.flows.current.id}|this flow>.`
+        text: `Message sent by <${new URL(context.server.publicUrl).origin}/workspaces/${context.workspace.id}/flows/${context.flows.current.id}|this flow>.`
       }
     ]
   };

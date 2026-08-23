@@ -1,10 +1,10 @@
-import { apId, isNil, PlatformId, ProjectId, tryCatch, UserId } from '@fema/core-utils'
+import { apId, isNil, PlatformId, tryCatch, UserId, WorkspaceId } from '@fema/core-utils'
 import { ApplicationEvent, PrincipalType } from '@fema/shared'
 import { FastifyBaseLogger, FastifyRequest } from 'fastify'
 import { authenticationUtils } from '../authentication/authentication-utils'
 import { userIdentityService } from '../authentication/user-identity/user-identity-service'
-import { projectService } from '../project/project-service'
 import { userService } from '../user/user-service'
+import { workspaceService } from '../workspace/workspace-service'
 import { networkUtils } from './network-utils'
 import { rejectedPromiseHandler } from './promise-handler'
 import { system } from './system/system'
@@ -12,7 +12,7 @@ import { AppSystemProp } from './system/system-props'
 
 
 type UserEventListener = (params: ApplicationEvent) => void
-type WorkerEventListener = (projectId: string, params: ApplicationEvent) => void
+type WorkerEventListener = (workspaceId: string, params: ApplicationEvent) => void
 
 type ListenerRegistration = {
     userEventListeners: UserEventListener[]
@@ -27,7 +27,7 @@ const listeners: ListenerRegistration = {
 type RawAuditEventParam = Pick<ApplicationEvent, 'data' | 'action'>
 
 type SendWorkerEventParams = RawAuditEventParam & {
-    projectId: ProjectId
+    workspaceId: WorkspaceId
     platformId: PlatformId
 }
 
@@ -48,18 +48,18 @@ export const applicationEvents = (log: FastifyBaseLogger) => ({
             }
         }), log)
     },
-    sendWorkerEvent({ projectId, platformId, action, data }: SendWorkerEventParams): void {
+    sendWorkerEvent({ workspaceId, platformId, action, data }: SendWorkerEventParams): void {
         for (const listener of listeners.workerEventListeners) {
             const event = {
                 action,
                 data,
-                projectId,
+                workspaceId,
                 platformId,
                 id: apId(),
                 created: new Date().toISOString(),
                 updated: new Date().toISOString(),
             } as ApplicationEvent
-            listener(projectId, event)
+            listener(workspaceId, event)
         }
     },
 })
@@ -70,8 +70,8 @@ async function enrichAuditEventParam(requestOrMeta: ApplicationEventSource, para
     if (isNil(meta)) {
         return undefined
     }
-    const project = isNil(meta.projectId) ? undefined : await projectService(log).getOne(meta.projectId)
-    const userId = meta.userId ?? project?.ownerId
+    const workspace = isNil(meta.workspaceId) ? undefined : await workspaceService(log).getOne(meta.workspaceId)
+    const userId = meta.userId ?? workspace?.ownerId
     const { data: user } = await tryCatch(async () => isNil(userId) ? undefined : userService(log).getOneOrFail({ id: userId }))
     const identity = isNil(user?.identityId) ? undefined : await userIdentityService(log).getOneOrFail({ id: user.identityId })
     const eventToSave: unknown = {
@@ -80,13 +80,13 @@ async function enrichAuditEventParam(requestOrMeta: ApplicationEventSource, para
         updated: new Date().toISOString(),
         userId,
         userEmail: identity?.email,
-        projectId: meta.projectId,
-        projectDisplayName: project?.displayName,
+        workspaceId: meta.workspaceId,
+        workspaceDisplayName: workspace?.displayName,
         platformId: meta.platformId,
         ip: meta.ip,
         data: {
             ...params.data,
-            project,
+            workspace,
             user,
         },
         action: params.action,
@@ -105,10 +105,10 @@ async function extractMetaInformation(requestOrMeta: ApplicationEventSource, log
             return undefined
         }
         const extractedUserId = await authenticationUtils(log).extractUserIdFromRequest(request)
-        const projectId = request.projectId ?? principal.projectId
+        const workspaceId = request.workspaceId ?? principal.workspaceId
         const meta: MetaInformation = {
             platformId: principal.platform.id,
-            projectId,
+            workspaceId,
             userId: extractedUserId,
             ip: networkUtils.extractClientRealIp(request, system.get(AppSystemProp.CLIENT_REAL_IP_HEADER)),
         }
@@ -124,7 +124,7 @@ function isFastifyRequest(requestOrMeta: ApplicationEventSource): requestOrMeta 
 export type MetaInformation = {
     platformId: PlatformId
     userId?: UserId | null
-    projectId?: ProjectId
+    workspaceId?: WorkspaceId
     ip?: string
 }
 

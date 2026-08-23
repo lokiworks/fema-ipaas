@@ -2,7 +2,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 
 import { SocketProvider } from '@/components/providers/socket-provider';
 import { useTelemetry } from '@/components/providers/telemetry-provider';
-import { projectCollectionUtils } from '@/features/projects';
+import { workspaceCollectionUtils } from '@/features/workspaces';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { platformHooks } from '@/hooks/platform-hooks';
 
@@ -28,6 +28,6 @@ export const AllowOnlyLoggedInUserOnlyGuard = ({
   }
   platformHooks.useCurrentPlatform();
   flagsHooks.useFlags();
-  projectCollectionUtils.useCurrentProject();
+  workspaceCollectionUtils.useCurrentWorkspace();
   return <SocketProvider>{children}</SocketProvider>;
 };

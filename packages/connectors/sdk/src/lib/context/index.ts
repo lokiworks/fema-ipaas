@@ -11,7 +11,7 @@ import {
   WebhookPauseMetadata,
 } from '@fema/connector-types';
 import type { SeekPage } from '@fema/core-utils';
-import type { FlowRunId, ProjectId } from '@fema/core-utils';
+import type { FlowRunId, WorkspaceId } from '@fema/core-utils';
 import type { Readable } from 'node:stream'
 
 import {
@@ -35,8 +35,8 @@ export type BaseContext<
     auth: ConnectionValueForAuthProperty<ConnectorAuth>;
   propsValue: StaticPropsValue<Props>;
   store: Store;
-  project: {
-    id: ProjectId;
+  workspace: {
+    id: WorkspaceId;
     externalId: () => Promise<string | undefined>;
   };
   connections: ConnectionsManager;
@@ -161,8 +161,8 @@ export type ListFlowsContextParams = {
 
 export type PropertyContext = {
   server: ServerContext;
-  project: {
-    id: ProjectId;
+  workspace: {
+    id: WorkspaceId;
     externalId: () => Promise<string | undefined>;
   };
   searchValue?: string;
@@ -286,8 +286,8 @@ export interface Store {
 }
 
 export enum StoreScope {
-  // Collection were deprecated in favor of project
-  PROJECT = 'COLLECTION',
+  // Collection were deprecated in favor of workspace
+  WORKSPACE = 'COLLECTION',
   FLOW = 'FLOW',
 }
 

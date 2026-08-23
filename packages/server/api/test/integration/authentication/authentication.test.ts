@@ -19,7 +19,7 @@ afterAll(async () => {
 
 beforeEach(async () => {
     await databaseConnection().getRepository('flag').createQueryBuilder().delete().execute()
-    await databaseConnection().getRepository('project').createQueryBuilder().delete().execute()
+    await databaseConnection().getRepository('workspace').createQueryBuilder().delete().execute()
     await databaseConnection().getRepository('platform').createQueryBuilder().delete().execute()
     await databaseConnection().getRepository('user').createQueryBuilder().delete().execute()
     await databaseConnection().getRepository('user_identity').createQueryBuilder().delete().execute()
@@ -51,11 +51,11 @@ describe('Authentication API', () => {
             expect(responseBody?.status).toBe('ACTIVE')
             expect(responseBody?.platformId).toBeNull()
             expect(responseBody?.externalId).toBe(null)
-            expect(responseBody?.projectId).toBeNull()
+            expect(responseBody?.workspaceId).toBeNull()
             expect(responseBody?.token).toBeDefined()
         })
 
-        it('Does not create project or platform on signup', async () => {
+        it('Does not create workspace or platform on signup', async () => {
             // arrange
             const mockSignUpRequest = createMockSignUpRequest()
 
@@ -70,10 +70,10 @@ describe('Authentication API', () => {
             expect(response?.statusCode).toBe(StatusCodes.OK)
 
             const platformCount = await databaseConnection().getRepository('platform').count()
-            const projectCount = await databaseConnection().getRepository('project').count()
+            const workspaceCount = await databaseConnection().getRepository('workspace').count()
 
             expect(platformCount).toBe(0)
-            expect(projectCount).toBe(0)
+            expect(workspaceCount).toBe(0)
         })
     })
 
@@ -104,7 +104,7 @@ describe('Authentication API', () => {
 
             expect(response?.statusCode).toBe(StatusCodes.OK)
             expect(responseBody?.platformId).toBeNull()
-            expect(responseBody?.projectId).toBeNull()
+            expect(responseBody?.workspaceId).toBeNull()
             expect(responseBody?.token).toBeDefined()
         })
 

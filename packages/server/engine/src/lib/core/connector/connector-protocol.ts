@@ -76,7 +76,7 @@ export type ConnectorRuntime = {
     internalApiUrl: string
     publicApiUrl: string
     engineToken: string
-    projectId: string
+    workspaceId: string
     flowId: string
     flowVersionId: string
     flowRunId: string

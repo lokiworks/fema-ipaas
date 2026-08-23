@@ -22,7 +22,7 @@ const FlowBuilderPage = () => {
     isLoading,
     isError,
   } = useQuery<PopulatedFlow, Error>({
-    queryKey: ['flow', flowId, authenticationSession.getProjectId()],
+    queryKey: ['flow', flowId, authenticationSession.getWorkspaceId()],
     queryFn: () => flowsApi.get(flowId!),
     gcTime: 0,
     retry: false,
@@ -30,10 +30,10 @@ const FlowBuilderPage = () => {
   });
 
   const { data: sampleData, isLoading: isSampleDataLoading } =
-    sampleDataHooks.useSampleDataForFlow(flow?.version, flow?.projectId);
+    sampleDataHooks.useSampleDataForFlow(flow?.version, flow?.workspaceId);
 
   const { data: sampleDataInput, isLoading: isSampleDataInputLoading } =
-    sampleDataHooks.useSampleDataInputForFlow(flow?.version, flow?.projectId);
+    sampleDataHooks.useSampleDataInputForFlow(flow?.version, flow?.workspaceId);
   if (isLoading || isSampleDataLoading || isSampleDataInputLoading) {
     return (
       <div className="bg-background flex h-full w-full items-center justify-center ">

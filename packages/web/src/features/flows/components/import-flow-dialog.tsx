@@ -115,7 +115,7 @@ const ImportFlowDialog = (
 
       return flowHooks.importFlowsFromTemplates({
         templates,
-        projectId: authenticationSession.getProjectId()!,
+        workspaceId: authenticationSession.getWorkspaceId()!,
         folderName: folder?.displayName,
       });
     },

@@ -196,7 +196,7 @@ const InstallConnectorDialog = ({
             className="flex flex-col gap-4"
             onSubmit={form.handleSubmit((data) =>
               mutate({
-                projectId: authenticationSession.getProjectId()!,
+                workspaceId: authenticationSession.getWorkspaceId()!,
                 ...data,
               } as AddConnectorRequestBody),
             )}

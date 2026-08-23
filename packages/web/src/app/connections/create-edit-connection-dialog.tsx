@@ -45,7 +45,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { SkeletonList } from '@/components/ui/skeleton';
 import {
-  ProjectSelector,
+  WorkspaceSelector,
   connectionsMutations,
   oauthAppsQueries,
   oauth2Utils,
@@ -72,7 +72,7 @@ function CreateOrEditConnectionSection({
   selectedAuth,
   onTryAnotherMethodButtonClicked,
   showTryAnotherMethodButton,
-  projectId: projectIdOverride,
+  workspaceId: workspaceIdOverride,
   presentation = 'dialog',
 }: CreateOrEditConnectionSectionProps) {
   const isInline = presentation === 'inline';
@@ -104,11 +104,11 @@ function CreateOrEditConnectionSection({
           oauth2App: selectedAuth.oauth2App,
           grantType: selectedAuth.grantType,
           redirectUrl: redirectUrl ?? '',
-          projectId: projectIdOverride ?? undefined,
+          workspaceId: workspaceIdOverride ?? undefined,
         }),
         ...(isGlobalConnection ? { scope: ConnectionScope.PLATFORM } : {}),
-        projectIds: reconnectConnection?.projectIds ?? [],
-        preSelectForNewProjects: false,
+        workspaceIds: reconnectConnection?.workspaceIds ?? [],
+        preSelectForNewWorkspaces: false,
         connectorVersion: connector.version,
       },
     },
@@ -173,7 +173,7 @@ function CreateOrEditConnectionSection({
               variables={{
                 redirectUrl: redirectUrl ?? '',
                 platformId: authenticationSession.getPlatformId() ?? '',
-                projectId: authenticationSession.getProjectId() ?? '',
+                workspaceId: authenticationSession.getWorkspaceId() ?? '',
                 frontendUrl: oidcIssuerUrl,
                 frontendHost: oidcIssuerHost,
               }}
@@ -207,25 +207,25 @@ function CreateOrEditConnectionSection({
             )}
             {isGlobalConnection && isNil(reconnectConnection) && (
               <div className="my-4 flex flex-col gap-4">
-                <ProjectSelector
+                <WorkspaceSelector
                   control={form.control}
-                  name="request.projectIds"
+                  name="request.workspaceIds"
                 />
                 <FormField
                   control={form.control}
-                  name="request.preSelectForNewProjects"
+                  name="request.preSelectForNewWorkspaces"
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center gap-3">
                       <Checkbox
-                        id="preSelectForNewProjects"
+                        id="preSelectForNewWorkspaces"
                         checked={field.value}
                         onCheckedChange={field.onChange}
                       />
                       <Label
-                        htmlFor="preSelectForNewProjects"
+                        htmlFor="preSelectForNewWorkspaces"
                         className="cursor-pointer"
                       >
-                        {t('Include by default in new projects')}
+                        {t('Include by default in new workspaces')}
                       </Label>
                     </FormItem>
                   )}
@@ -426,7 +426,7 @@ function CreateOrEditConnectionDialog({
   reconnectConnection,
   isGlobalConnection,
   externalIdComingFromSdk,
-  projectId: projectIdOverride,
+  workspaceId: workspaceIdOverride,
 }: ConnectionDialogProps) {
   const {
     data: connectorsOAuth2AppsMap,
@@ -467,7 +467,7 @@ function CreateOrEditConnectionDialog({
             reconnectConnection={reconnectConnection}
             isGlobalConnection={isGlobalConnection}
             externalIdComingFromSdk={externalIdComingFromSdk}
-            projectId={projectIdOverride}
+            workspaceId={workspaceIdOverride}
           />
         )}
       </DialogContent>
@@ -480,7 +480,7 @@ function CreateOrEditConnectionInline({
   reconnectConnection,
   isGlobalConnection,
   externalIdComingFromSdk,
-  projectId: projectIdOverride,
+  workspaceId: workspaceIdOverride,
 }: InlineConnectionProps) {
   const {
     data: connectorsOAuth2AppsMap,
@@ -498,7 +498,7 @@ function CreateOrEditConnectionInline({
       reconnectConnection={reconnectConnection}
       isGlobalConnection={isGlobalConnection}
       externalIdComingFromSdk={externalIdComingFromSdk}
-      projectId={projectIdOverride}
+      workspaceId={workspaceIdOverride}
     />
   );
 }
@@ -590,7 +590,7 @@ type ConnectionDialogProps = {
   reconnectConnection: ConnectionWithoutSensitiveData | null;
   isGlobalConnection: boolean;
   externalIdComingFromSdk?: string | null;
-  projectId?: string | null;
+  workspaceId?: string | null;
 };
 
 type InlineConnectionProps = Omit<ConnectionDialogProps, 'open'>;
@@ -602,7 +602,7 @@ type CreateOrEditConnectionDialogContentProps = {
   isGlobalConnection: boolean;
   externalIdComingFromSdk?: string | null;
   setOpen: (open: boolean, connection?: ConnectionWithoutSensitiveData) => void;
-  projectId?: string | null;
+  workspaceId?: string | null;
   presentation?: 'dialog' | 'inline';
 };
 
@@ -620,8 +620,8 @@ type ConnectionSettingsProps = {
 
 type ConnectionFormValues = {
   request: UpsertConnectionRequestBody & {
-    projectIds: string[];
-    preSelectForNewProjects: boolean;
+    workspaceIds: string[];
+    preSelectForNewWorkspaces: boolean;
     scope?: ConnectionScope;
   };
 };

@@ -21,8 +21,8 @@ export const PlatformMetricsStatusPoint = z.object({
 })
 
 export const InternalErrorImpactItem = z.object({
-    projectId: ApId,
-    projectName: z.string(),
+    workspaceId: ApId,
+    workspaceName: z.string(),
     flowId: ApId,
     flowName: z.string(),
     count: z.number(),
@@ -39,8 +39,8 @@ export const StuckJob = z.object({
     flowRunId: ApId,
     flowId: ApId,
     flowName: z.string(),
-    projectId: ApId,
-    projectName: z.string(),
+    workspaceId: ApId,
+    workspaceName: z.string(),
     status: z.enum(FlowRunStatus),
 })
 

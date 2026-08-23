@@ -113,7 +113,7 @@ export const FailedStepDialog = ({
             <Button
               onClick={() =>
                 navigate(
-                  authenticationSession.appendProjectRoutePrefix(
+                  authenticationSession.appendWorkspaceRoutePrefix(
                     `/runs/${run.id}`,
                   ),
                 )
@@ -191,7 +191,7 @@ export const FailedStepDialog = ({
           <Button
             onClick={() =>
               navigate(
-                authenticationSession.appendProjectRoutePrefix(
+                authenticationSession.appendWorkspaceRoutePrefix(
                   `/runs/${run.id}`,
                 ),
               )

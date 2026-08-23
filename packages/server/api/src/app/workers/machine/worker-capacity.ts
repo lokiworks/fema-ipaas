@@ -42,23 +42,23 @@ export const workerCapacity = {
         }
         const allWorkers = await workerMachineCache().find()
         const offlineThreshold = dayjs().subtract(60, 'seconds').utc()
-        const projectGroups = new Map<string, PoolCapacity>()
+        const workspaceGroups = new Map<string, PoolCapacity>()
         const shared: PoolCapacity = { slots: 0, online: 0 }
         for (const worker of allWorkers) {
             if (!dayjs(worker.updated).isAfter(offlineThreshold)) {
                 continue
             }
             const slots = parseWorkerConcurrency(worker.information.workerProps.WORKER_CONCURRENCY)
-            if (worker.workerGroupScope === WorkerGroupScope.PROJECT && !isNil(worker.workerGroupId) && worker.workerGroupId.length > 0) {
-                const current = projectGroups.get(worker.workerGroupId) ?? { slots: 0, online: 0 }
-                projectGroups.set(worker.workerGroupId, { slots: current.slots + slots, online: current.online + 1 })
+            if (worker.workerGroupScope === WorkerGroupScope.WORKSPACE && !isNil(worker.workerGroupId) && worker.workerGroupId.length > 0) {
+                const current = workspaceGroups.get(worker.workerGroupId) ?? { slots: 0, online: 0 }
+                workspaceGroups.set(worker.workerGroupId, { slots: current.slots + slots, online: current.online + 1 })
             }
             else if (isNil(worker.workerGroupScope)) {
                 shared.slots += slots
                 shared.online += 1
             }
         }
-        capacitySnapshot = { projectGroups, shared }
+        capacitySnapshot = { workspaceGroups, shared }
         return capacitySnapshot
     },
     async invalidate(): Promise<void> {
@@ -77,6 +77,6 @@ export type PoolCapacity = {
 }
 
 export type WorkerCapacitySnapshot = {
-    projectGroups: Map<string, PoolCapacity>
+    workspaceGroups: Map<string, PoolCapacity>
     shared: PoolCapacity
 }

@@ -23,11 +23,11 @@ beforeEach(async () => {
 })
 
 async function createFailedFlowRun(params: {
-    projectId: string
+    workspaceId: string
     startTime?: string
     finishTime?: string
 }) {
-    const flow = createMockFlow({ projectId: params.projectId })
+    const flow = createMockFlow({ workspaceId: params.workspaceId })
     await db.save('flow', flow)
 
     const flowVersion = createMockFlowVersion({
@@ -37,7 +37,7 @@ async function createFailedFlowRun(params: {
     await db.save('flow_version', flowVersion)
 
     const flowRun = createMockFlowRun({
-        projectId: params.projectId,
+        workspaceId: params.workspaceId,
         flowId: flow.id,
         flowVersionId: flowVersion.id,
         status: FlowRunStatus.FAILED,
@@ -53,12 +53,12 @@ async function createFailedFlowRun(params: {
 describe('Retry flow run', () => {
     it('should retry from failed step and transition to queued status', async () => {
         const { flowRun } = await createFailedFlowRun({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
         })
 
         const response = await ctx.post(`/v1/flow-runs/${flowRun.id}/retry`, {
             strategy: FlowRetryStrategy.FROM_FAILED_STEP,
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
         })
 
         expect(response.statusCode).toBe(200)
@@ -71,14 +71,14 @@ describe('Retry flow run', () => {
         const originalStartTime = new Date('2020-01-01T00:00:00.000Z').toISOString()
         const originalFinishTime = new Date('2020-01-01T00:05:00.000Z').toISOString()
         const { flowRun } = await createFailedFlowRun({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             startTime: originalStartTime,
             finishTime: originalFinishTime,
         })
 
         const response = await ctx.post(`/v1/flow-runs/${flowRun.id}/retry`, {
             strategy: FlowRetryStrategy.FROM_FAILED_STEP,
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
         })
 
         expect(response.statusCode).toBe(200)
@@ -91,12 +91,12 @@ describe('Retry flow run', () => {
 
     it('should retry on latest version and create a new run', async () => {
         const { flowRun } = await createFailedFlowRun({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
         })
 
         const response = await ctx.post(`/v1/flow-runs/${flowRun.id}/retry`, {
             strategy: FlowRetryStrategy.ON_LATEST_VERSION,
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
         })
 
         expect(response.statusCode).toBe(200)
@@ -108,17 +108,17 @@ describe('Retry flow run', () => {
     it('should return 400 for invalid flow run id', async () => {
         const response = await ctx.post('/v1/flow-runs/non-existent-id/retry', {
             strategy: FlowRetryStrategy.FROM_FAILED_STEP,
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
         })
 
         expect(response.statusCode).toBe(400)
     })
 
     it('should materialize a sliced trigger output on ON_LATEST_VERSION retry instead of replaying the LogSliceRef', async () => {
-        const projectId = ctx.project.id
+        const workspaceId = ctx.workspace.id
         const platformId = ctx.platform.id
 
-        const flow = createMockFlow({ projectId })
+        const flow = createMockFlow({ workspaceId })
         await db.save('flow', flow)
 
         const flowVersion = createMockFlowVersion({
@@ -133,7 +133,7 @@ describe('Retry flow run', () => {
         }
         const sliceData = Buffer.from(JSON.stringify(realTriggerOutput), 'utf-8')
         const sliceFile = await fileService(app.log).save({
-            projectId,
+            workspaceId,
             platformId,
             type: FileType.FLOW_RUN_LOG_SLICE,
             data: sliceData,
@@ -159,7 +159,7 @@ describe('Retry flow run', () => {
         }
         const logData = Buffer.from(JSON.stringify(logContent), 'utf-8')
         const logFile = await fileService(app.log).save({
-            projectId,
+            workspaceId,
             platformId,
             type: FileType.FLOW_RUN_LOG,
             data: logData,
@@ -168,7 +168,7 @@ describe('Retry flow run', () => {
         })
 
         const flowRun = createMockFlowRun({
-            projectId,
+            workspaceId,
             flowId: flow.id,
             flowVersionId: flowVersion.id,
             status: FlowRunStatus.SUCCEEDED,
@@ -181,7 +181,7 @@ describe('Retry flow run', () => {
 
         const response = await ctx.post(`/v1/flow-runs/${flowRun.id}/retry`, {
             strategy: FlowRetryStrategy.ON_LATEST_VERSION,
-            projectId,
+            workspaceId,
         })
 
         expect(response.statusCode).toBe(200)
@@ -197,10 +197,10 @@ describe('Retry flow run', () => {
     })
 
     it('should fail with 404 on ON_LATEST_VERSION retry when the sliced trigger output file is gone', async () => {
-        const projectId = ctx.project.id
+        const workspaceId = ctx.workspace.id
         const platformId = ctx.platform.id
 
-        const flow = createMockFlow({ projectId })
+        const flow = createMockFlow({ workspaceId })
         await db.save('flow', flow)
 
         const flowVersion = createMockFlowVersion({
@@ -228,7 +228,7 @@ describe('Retry flow run', () => {
         }
         const logData = Buffer.from(JSON.stringify(logContent), 'utf-8')
         const logFile = await fileService(app.log).save({
-            projectId,
+            workspaceId,
             platformId,
             type: FileType.FLOW_RUN_LOG,
             data: logData,
@@ -237,7 +237,7 @@ describe('Retry flow run', () => {
         })
 
         const flowRun = createMockFlowRun({
-            projectId,
+            workspaceId,
             flowId: flow.id,
             flowVersionId: flowVersion.id,
             status: FlowRunStatus.SUCCEEDED,
@@ -248,7 +248,7 @@ describe('Retry flow run', () => {
 
         const response = await ctx.post(`/v1/flow-runs/${flowRun.id}/retry`, {
             strategy: FlowRetryStrategy.ON_LATEST_VERSION,
-            projectId,
+            workspaceId,
         })
 
         expect(response.statusCode).toBe(404)

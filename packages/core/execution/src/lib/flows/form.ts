@@ -28,7 +28,7 @@ export const FormResponse = z.object({
     id: z.string(),
     title: z.string(),
     props: FormProps,
-    projectId: z.string(),
+    workspaceId: z.string(),
     version: z.string(),
 })
 
@@ -44,7 +44,7 @@ export const ChatUIResponse = z.object({
     id: z.string(),
     title: z.string(),
     props: ChatUIProps,
-    projectId: z.string(),
+    workspaceId: z.string(),
     platformLogoUrl: z.string(),
     platformName: z.string(),
 })

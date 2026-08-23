@@ -2,7 +2,7 @@ import swagger from '@fastify/swagger'
 import { ConnectorMetadata } from '@fema/connector-sdk'
 import { isNil, spreadIfDefined } from '@fema/core-utils'
 import { apVersionUtil, onCallService, UNKNOWN_VERSION, wideEvent } from '@fema/server-utils'
-import { ApEnvironment, ApplicationEventName, ConnectionDeletedEvent, ConnectionUpsertedEvent, ConnectionWithoutSensitiveData, Flow, FlowActivatedEvent, FlowCreatedEvent, FlowDeactivatedEvent, FlowDeletedEvent, FlowPublishedEvent, FlowRun, FlowRunFinishedEvent, FlowRunRetriedEvent, FlowRunStartedEvent, FlowUpdatedEvent, Folder, FolderCreatedEvent, FolderDeletedEvent, FolderUpdatedEvent, ProjectWithLimits, Template, UserEmailVerifiedEvent, UserInvitation, UserPasswordResetEvent, UserSignedInEvent, UserWithMetaInformation } from '@fema/shared'
+import { ApEnvironment, ApplicationEventName, ConnectionDeletedEvent, ConnectionUpsertedEvent, ConnectionWithoutSensitiveData, Flow, FlowActivatedEvent, FlowCreatedEvent, FlowDeactivatedEvent, FlowDeletedEvent, FlowPublishedEvent, FlowRun, FlowRunFinishedEvent, FlowRunRetriedEvent, FlowRunStartedEvent, FlowUpdatedEvent, Folder, FolderCreatedEvent, FolderDeletedEvent, FolderUpdatedEvent, Template, UserEmailVerifiedEvent, UserInvitation, UserPasswordResetEvent, UserSignedInEvent, UserWithMetaInformation, WorkspaceWithLimits } from '@fema/shared'
 import { createAdapter } from '@socket.io/redis-adapter'
 import { FastifyBaseLogger, FastifyInstance, FastifyRequest, HTTPMethods } from 'fastify'
 import { jsonSchemaTransform, jsonSchemaTransformObject } from 'fastify-type-provider-zod'
@@ -43,8 +43,6 @@ import { systemSnapshot } from './helper/system-snapshot'
 import { validateEnvPropsOnStartup } from './helper/system-validator'
 import { shutdownTelemetry } from './helper/telemetry.utils'
 import { platformModule } from './platform/platform.module'
-import { projectBackgroundJobs } from './project/project.jobs'
-import { projectModule } from './project/project.module'
 import { storeEntryModule } from './store-entry/store-entry.module'
 import { templateModule } from './template/template.module'
 import { appEventRoutingModule } from './trigger/app-event-routing/app-event-routing.module'
@@ -56,6 +54,8 @@ import { webhookModule } from './webhooks/webhook-module'
 import { engineResponseWatcher } from './workers/engine-response-watcher'
 import { workerCapacity } from './workers/machine/worker-capacity'
 import { migrateQueuesAndRunConsumers, workerModule } from './workers/worker-module'
+import { workspaceBackgroundJobs } from './workspace/workspace.jobs'
+import { workspaceModule } from './workspace/workspace.module'
 
 export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> => {
 
@@ -126,10 +126,10 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     app.addHook('preHandler', (request, _reply, done) => {
         try {
             const principal = request.principal
-            const projectId = extractProjectId(principal)
+            const workspaceId = extractWorkspaceId(principal)
             const platformId = extractPlatformId(principal)
             wideEvent.set({
-                ...spreadIfDefined('project', isNil(projectId) ? undefined : { id: projectId }),
+                ...spreadIfDefined('workspace', isNil(workspaceId) ? undefined : { id: workspaceId }),
                 ...spreadIfDefined('platform', isNil(platformId) ? undefined : { id: platformId }),
                 ...spreadIfDefined('principalType', principal?.type),
             })
@@ -165,7 +165,7 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     await app.register(localAuthnModule)
     await app.register(triggerModule)
     await app.register(platformModule)
-    await app.register(projectModule)
+    await app.register(workspaceModule)
     await app.register(humanInputModule)
     await app.register(platformUserModule)
     await app.register(invitationModule)
@@ -180,7 +180,7 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     }
 
     systemJobHandlers.registerJobHandler(SystemJobName.DELETE_FLOW, (data) => flowBackgroundJobs(app.log).deleteFlowHandler(data))
-    systemJobHandlers.registerJobHandler(SystemJobName.HARD_DELETE_PROJECT, (data) => projectBackgroundJobs(app.log).hardDeleteProjectHandler(data))
+    systemJobHandlers.registerJobHandler(SystemJobName.HARD_DELETE_WORKSPACE, (data) => workspaceBackgroundJobs(app.log).hardDeleteWorkspaceHandler(data))
 
     app.get(
         '/redirect',
@@ -281,8 +281,8 @@ function extractPlatformId(principal: { platform?: { id?: string } } | null | un
     return principal?.platform?.id
 }
 
-function extractProjectId(principal: { projectId?: string } | null | undefined): string | undefined {
-    return principal?.projectId
+function extractWorkspaceId(principal: { workspaceId?: string } | null | undefined): string | undefined {
+    return principal?.workspaceId
 }
 
 function registerOpenApiSchemas() {
@@ -307,7 +307,7 @@ function registerOpenApiSchemas() {
     globalRegistry.add(Folder, { id: 'folder' })
     globalRegistry.add(UserWithMetaInformation, { id: 'user' })
     globalRegistry.add(UserInvitation, { id: 'user-invitation' })
-    globalRegistry.add(ProjectWithLimits, { id: 'project' })
+    globalRegistry.add(WorkspaceWithLimits, { id: 'workspace' })
     globalRegistry.add(Flow, { id: 'flow' })
     globalRegistry.add(FlowRun, { id: 'flow-run' })
     globalRegistry.add(ConnectionWithoutSensitiveData, { id: 'connection' })

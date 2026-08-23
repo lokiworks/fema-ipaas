@@ -68,7 +68,7 @@ afterAll(async () => {
 }, 15_000)
 
 async function setupSubflowFixtures({ childAlwaysFails = false, retryOnFailure = false }: { childAlwaysFails?: boolean, retryOnFailure?: boolean } = {}) {
-    const { mockPlatform, mockProject } = await mockAndSaveBasicSetup()
+    const { mockPlatform, mockWorkspace } = await mockAndSaveBasicSetup()
 
     const webhookConnector = createMockConnectorMetadata({
         name: '@fema/connector-webhook',
@@ -136,7 +136,7 @@ async function setupSubflowFixtures({ childAlwaysFails = false, retryOnFailure =
     }
 
     const childFlow = createMockFlow({
-        projectId: mockProject.id,
+        workspaceId: mockWorkspace.id,
         status: FlowStatus.ENABLED,
     })
 
@@ -208,7 +208,7 @@ async function setupSubflowFixtures({ childAlwaysFails = false, retryOnFailure =
     }
 
     const parentFlow = createMockFlow({
-        projectId: mockProject.id,
+        workspaceId: mockWorkspace.id,
     })
     await db.save('flow', parentFlow)
 
@@ -233,11 +233,11 @@ async function setupSubflowFixtures({ childAlwaysFails = false, retryOnFailure =
     })
     await db.save('flow_version', parentFlowVersion)
 
-    return { parentFlow, parentFlowVersion, childFlow, mockPlatform, mockProject }
+    return { parentFlow, parentFlowVersion, childFlow, mockPlatform, mockWorkspace }
 }
 
 async function setupSubflowWithWebhookResponseFixtures() {
-    const { mockPlatform, mockProject } = await mockAndSaveBasicSetup()
+    const { mockPlatform, mockWorkspace } = await mockAndSaveBasicSetup()
 
     const webhookConnector = createMockConnectorMetadata({
         name: '@fema/connector-webhook',
@@ -279,7 +279,7 @@ async function setupSubflowWithWebhookResponseFixtures() {
     }
 
     const childFlow = createMockFlow({
-        projectId: mockProject.id,
+        workspaceId: mockWorkspace.id,
         status: FlowStatus.ENABLED,
     })
 
@@ -372,7 +372,7 @@ async function setupSubflowWithWebhookResponseFixtures() {
     }
 
     const parentFlow = createMockFlow({
-        projectId: mockProject.id,
+        workspaceId: mockWorkspace.id,
         status: FlowStatus.ENABLED,
     })
     await db.save('flow', parentFlow)
@@ -399,16 +399,16 @@ async function setupSubflowWithWebhookResponseFixtures() {
     await db.save('flow_version', parentFlowVersion)
     await db.update('flow', parentFlow.id, { publishedVersionId: parentFlowVersion.id })
 
-    return { parentFlow, parentFlowVersion, mockPlatform, mockProject }
+    return { parentFlow, parentFlowVersion, mockPlatform, mockWorkspace }
 }
 
-async function pollFlowRunToCompletion(flowRunId: string, projectId: string) {
+async function pollFlowRunToCompletion(flowRunId: string, workspaceId: string) {
     const maxWaitMs = 120_000
     const pollIntervalMs = 500
     const start = Date.now()
     let result = await flowRunService(app.log).getOnePopulatedOrThrow({
         id: flowRunId,
-        projectId,
+        workspaceId,
     })
 
     while (
@@ -420,7 +420,7 @@ async function pollFlowRunToCompletion(flowRunId: string, projectId: string) {
         await new Promise((resolve) => setTimeout(resolve, pollIntervalMs))
         result = await flowRunService(app.log).getOnePopulatedOrThrow({
             id: flowRunId,
-            projectId,
+            workspaceId,
         })
     }
 
@@ -429,7 +429,7 @@ async function pollFlowRunToCompletion(flowRunId: string, projectId: string) {
 
 describe('Execute Flow E2E', () => {
     it('executes a webhook → data mapper → code flow end-to-end', async () => {
-        const { mockPlatform, mockProject } = await mockAndSaveBasicSetup()
+        const { mockPlatform, mockWorkspace } = await mockAndSaveBasicSetup()
 
         // Save connector metadata records
         const webhookConnector = createMockConnectorMetadata({
@@ -494,7 +494,7 @@ describe('Execute Flow E2E', () => {
         }
 
         const mockFlow = createMockFlow({
-            projectId: mockProject.id,
+            workspaceId: mockWorkspace.id,
         })
         await db.save('flow', mockFlow)
 
@@ -529,7 +529,7 @@ describe('Execute Flow E2E', () => {
             streamStepProgress: StreamStepProgress.NONE,
             executeTrigger: false,
             flowVersionId: mockFlowVersion.id,
-            projectId: mockProject.id,
+            workspaceId: mockWorkspace.id,
             workerHandlerId: undefined,
             httpRequestId: undefined,
             failParentOnFailure: undefined,
@@ -541,7 +541,7 @@ describe('Execute Flow E2E', () => {
         const start = Date.now()
         let result = await flowRunService(app.log).getOnePopulatedOrThrow({
             id: flowRun.id,
-            projectId: mockProject.id,
+            workspaceId: mockWorkspace.id,
         })
 
         while (
@@ -551,7 +551,7 @@ describe('Execute Flow E2E', () => {
             await new Promise((resolve) => setTimeout(resolve, pollIntervalMs))
             result = await flowRunService(app.log).getOnePopulatedOrThrow({
                 id: flowRun.id,
-                projectId: mockProject.id,
+                workspaceId: mockWorkspace.id,
             })
         }
         console.log(result)
@@ -622,7 +622,7 @@ describe('Execute Flow E2E', () => {
             },
         }
 
-        const mockFlow = createMockFlow({ projectId: ctx.project.id })
+        const mockFlow = createMockFlow({ workspaceId: ctx.workspace.id })
         await db.save('flow', mockFlow)
 
         const mockFlowVersion = createMockFlowVersion({
@@ -655,13 +655,13 @@ describe('Execute Flow E2E', () => {
             streamStepProgress: StreamStepProgress.NONE,
             executeTrigger: false,
             flowVersionId: mockFlowVersion.id,
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             workerHandlerId: undefined,
             httpRequestId: undefined,
             failParentOnFailure: undefined,
         })
 
-        const result = await pollFlowRunToCompletion(flowRun.id, ctx.project.id)
+        const result = await pollFlowRunToCompletion(flowRun.id, ctx.workspace.id)
 
         expect(result.status).toBe(FlowRunStatus.SUCCEEDED)
         expect(result.steps.step_1.output).toEqual(
@@ -670,7 +670,7 @@ describe('Execute Flow E2E', () => {
     }, 180_000)
 
     it('handles concurrent flow run executions without jobs getting stuck', async () => {
-        const { mockPlatform, mockProject } = await mockAndSaveBasicSetup()
+        const { mockPlatform, mockWorkspace } = await mockAndSaveBasicSetup()
 
         const webhookConnector = createMockConnectorMetadata({
             name: '@fema/connector-webhook',
@@ -699,7 +699,7 @@ describe('Execute Flow E2E', () => {
         }
 
         const mockFlow = createMockFlow({
-            projectId: mockProject.id,
+            workspaceId: mockWorkspace.id,
         })
         await db.save('flow', mockFlow)
 
@@ -737,7 +737,7 @@ describe('Execute Flow E2E', () => {
                     streamStepProgress: StreamStepProgress.NONE,
                     executeTrigger: false,
                     flowVersionId: mockFlowVersion.id,
-                    projectId: mockProject.id,
+                    workspaceId: mockWorkspace.id,
                     workerHandlerId: undefined,
                     httpRequestId: undefined,
                     failParentOnFailure: undefined,
@@ -767,7 +767,7 @@ describe('Execute Flow E2E', () => {
             for (const [id] of pending) {
                 const updated = await flowRunService(app.log).getOnePopulatedOrThrow({
                     id,
-                    projectId: mockProject.id,
+                    workspaceId: mockWorkspace.id,
                 })
                 results.set(id, updated.status)
             }
@@ -784,7 +784,7 @@ describe('Execute Flow E2E', () => {
     }, 30_000)
 
     it('executes parent → child subflow with wait-for-response', async () => {
-        const { parentFlow, parentFlowVersion, mockPlatform, mockProject } = await setupSubflowFixtures()
+        const { parentFlow, parentFlowVersion, mockPlatform, mockWorkspace } = await setupSubflowFixtures()
 
         const flowRun = await flowRunService(app.log).start({
             flowId: parentFlow.id,
@@ -795,13 +795,13 @@ describe('Execute Flow E2E', () => {
             streamStepProgress: StreamStepProgress.NONE,
             executeTrigger: false,
             flowVersionId: parentFlowVersion.id,
-            projectId: mockProject.id,
+            workspaceId: mockWorkspace.id,
             workerHandlerId: undefined,
             httpRequestId: undefined,
             failParentOnFailure: undefined,
         })
 
-        const result = await pollFlowRunToCompletion(flowRun.id, mockProject.id)
+        const result = await pollFlowRunToCompletion(flowRun.id, mockWorkspace.id)
 
         expect(result.status).toBe(FlowRunStatus.SUCCEEDED)
         expect(result.steps.step_1.output).toEqual(
@@ -816,7 +816,7 @@ describe('Execute Flow E2E', () => {
     }, 180_000)
 
     it('retry-on-failure of a wait-for-response Call Flow retries the parent step and fails after maxAttempts without re-invoking the child subflow', async () => {
-        const { parentFlow, parentFlowVersion, childFlow, mockPlatform, mockProject } = await setupSubflowFixtures({
+        const { parentFlow, parentFlowVersion, childFlow, mockPlatform, mockWorkspace } = await setupSubflowFixtures({
             childAlwaysFails: true,
             retryOnFailure: true,
         })
@@ -830,13 +830,13 @@ describe('Execute Flow E2E', () => {
             streamStepProgress: StreamStepProgress.NONE,
             executeTrigger: false,
             flowVersionId: parentFlowVersion.id,
-            projectId: mockProject.id,
+            workspaceId: mockWorkspace.id,
             workerHandlerId: undefined,
             httpRequestId: undefined,
             failParentOnFailure: undefined,
         })
 
-        const result = await pollFlowRunToCompletion(flowRun.id, mockProject.id)
+        const result = await pollFlowRunToCompletion(flowRun.id, mockWorkspace.id)
         const childRunCount = await databaseConnection()
             .getRepository('flow_run')
             .count({ where: { flowId: childFlow.id } })
@@ -846,7 +846,7 @@ describe('Execute Flow E2E', () => {
     }, 180_000)
 
     it('executes a webhook → delay_for → code flow without infinite loop', async () => {
-        const { mockPlatform, mockProject } = await mockAndSaveBasicSetup()
+        const { mockPlatform, mockWorkspace } = await mockAndSaveBasicSetup()
 
         const webhookConnector = createMockConnectorMetadata({
             name: '@fema/connector-webhook',
@@ -901,7 +901,7 @@ describe('Execute Flow E2E', () => {
         }
 
         const mockFlow = createMockFlow({
-            projectId: mockProject.id,
+            workspaceId: mockWorkspace.id,
         })
         await db.save('flow', mockFlow)
 
@@ -935,13 +935,13 @@ describe('Execute Flow E2E', () => {
             streamStepProgress: StreamStepProgress.NONE,
             executeTrigger: false,
             flowVersionId: mockFlowVersion.id,
-            projectId: mockProject.id,
+            workspaceId: mockWorkspace.id,
             workerHandlerId: undefined,
             httpRequestId: undefined,
             failParentOnFailure: undefined,
         })
 
-        const result = await pollFlowRunToCompletion(flowRun.id, mockProject.id)
+        const result = await pollFlowRunToCompletion(flowRun.id, mockWorkspace.id)
         expect(result.status).toBe(FlowRunStatus.SUCCEEDED)
         expect(result.steps.step_2.output).toEqual(
             expect.objectContaining({ resumed: true }),
@@ -949,7 +949,7 @@ describe('Execute Flow E2E', () => {
     }, 60_000)
 
     it('slices a >32 KB step output, persists it across a delay/resume, and materializes it for a downstream step', async () => {
-        const { mockPlatform, mockProject } = await mockAndSaveBasicSetup()
+        const { mockPlatform, mockWorkspace } = await mockAndSaveBasicSetup()
 
         const webhookConnector = createMockConnectorMetadata({
             name: '@fema/connector-webhook',
@@ -1023,7 +1023,7 @@ describe('Execute Flow E2E', () => {
         }
 
         const mockFlow = createMockFlow({
-            projectId: mockProject.id,
+            workspaceId: mockWorkspace.id,
         })
         await db.save('flow', mockFlow)
 
@@ -1057,13 +1057,13 @@ describe('Execute Flow E2E', () => {
             streamStepProgress: StreamStepProgress.NONE,
             executeTrigger: false,
             flowVersionId: mockFlowVersion.id,
-            projectId: mockProject.id,
+            workspaceId: mockWorkspace.id,
             workerHandlerId: undefined,
             httpRequestId: undefined,
             failParentOnFailure: undefined,
         })
 
-        const result = await pollFlowRunToCompletion(flowRun.id, mockProject.id)
+        const result = await pollFlowRunToCompletion(flowRun.id, mockWorkspace.id)
         expect(result.status).toBe(FlowRunStatus.SUCCEEDED)
         // step_1 was offloaded to a FLOW_RUN_LOG_SLICE file; the journal stores a LogSliceRef.
         expect(result.steps.step_1.outputType).toBe(StepOutputType.SLICE)
@@ -1079,7 +1079,7 @@ describe('Execute Flow E2E', () => {
     }, 60_000)
 
     it('executes parent → child subflow with wait-for-response in test step mode', async () => {
-        const { parentFlow, parentFlowVersion, mockPlatform, mockProject } = await setupSubflowFixtures()
+        const { parentFlow, parentFlowVersion, mockPlatform, mockWorkspace } = await setupSubflowFixtures()
 
         const flowRun = await flowRunService(app.log).start({
             flowId: parentFlow.id,
@@ -1090,14 +1090,14 @@ describe('Execute Flow E2E', () => {
             streamStepProgress: StreamStepProgress.WEBSOCKET,
             executeTrigger: false,
             flowVersionId: parentFlowVersion.id,
-            projectId: mockProject.id,
+            workspaceId: mockWorkspace.id,
             workerHandlerId: undefined,
             httpRequestId: undefined,
             failParentOnFailure: undefined,
             stepNameToTest: 'step_1',
         })
 
-        const result = await pollFlowRunToCompletion(flowRun.id, mockProject.id)
+        const result = await pollFlowRunToCompletion(flowRun.id, mockWorkspace.id)
 
         expect(result.status).toBe(FlowRunStatus.SUCCEEDED)
         expect(result.steps.step_1.output).toEqual(

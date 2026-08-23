@@ -90,9 +90,9 @@ export const worker = {
     async start({ apiUrl, socketUrl, workerToken, withHealthServer = false }: WorkerStartParams): Promise<void> {
         assertReleaseReadable()
         const workerGroupId = system.get(WorkerSystemProp.WORKER_GROUP_ID)
-        const projectWorker = system.getBoolean(WorkerSystemProp.PROJECT_WORKER) ?? true
+        const workspaceWorker = system.getBoolean(WorkerSystemProp.WORKSPACE_WORKER) ?? true
         socket = io(socketUrl.url, {
-            auth: { token: workerToken, workerId, workerGroupId, projectWorker },
+            auth: { token: workerToken, workerId, workerGroupId, workspaceWorker },
             path: socketUrl.path,
             transports: ['websocket'],
             reconnection: true,
@@ -336,7 +336,7 @@ async function executeJob(apiClient: WorkerToApiContract, job: ConsumeJobRequest
         event: 'job.execute',
         job: { id: job.jobId, type: jobData.jobType },
         ...spreadIfDefined('requestId', 'requestId' in jobData ? jobData.requestId : 'httpRequestId' in jobData ? jobData.httpRequestId : undefined),
-        ...spreadIfDefined('project', 'projectId' in jobData && jobData.projectId != null ? { id: jobData.projectId } : undefined),
+        ...spreadIfDefined('workspace', 'workspaceId' in jobData && jobData.workspaceId != null ? { id: jobData.workspaceId } : undefined),
         ...spreadIfDefined('platform', 'platformId' in jobData ? { id: jobData.platformId } : undefined),
         ...spreadIfDefined('flow', 'flowId' in jobData ? { id: jobData.flowId } : undefined),
         ...spreadIfDefined('flowRun', 'runId' in jobData ? { id: jobData.runId } : undefined),

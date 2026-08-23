@@ -1,4 +1,4 @@
-import { FlowId, ProjectId } from '@fema/core-utils'
+import { FlowId, WorkspaceId } from '@fema/core-utils'
 import { EntitySchema } from 'typeorm'
 import { ApIdSchema, BaseColumnSchemaPart } from '../../database/database-common'
 
@@ -9,7 +9,7 @@ export type AppEventRouting = {
     created: string
     updated: string
     appName: string
-    projectId: ProjectId
+    workspaceId: WorkspaceId
     flowId: FlowId
     identifierValue: string
     event: string
@@ -22,7 +22,7 @@ export const AppEventRoutingEntity = new EntitySchema<AppEventRouting>({
         appName: {
             type: String,
         },
-        projectId: ApIdSchema,
+        workspaceId: ApIdSchema,
         flowId: ApIdSchema,
         identifierValue: {
             type: String,
@@ -38,8 +38,8 @@ export const AppEventRoutingEntity = new EntitySchema<AppEventRouting>({
             unique: false,
         },
         {
-            name: 'idx_app_event_flow_id_project_id_appName_identifier_value_event',
-            columns: ['appName', 'projectId', 'flowId', 'identifierValue', 'event'],
+            name: 'idx_app_event_flow_id_workspace_id_appName_identifier_value_event',
+            columns: ['appName', 'workspaceId', 'flowId', 'identifierValue', 'event'],
             unique: true,
         },
         {

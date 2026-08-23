@@ -1,9 +1,9 @@
-import { Project, UserInvitation } from '@fema/shared'
+import { UserInvitation, Workspace } from '@fema/shared'
 import { EntitySchema } from 'typeorm'
 import { BaseColumnSchemaPart } from '../database/database-common'
 
 type UserInvitationSchema = UserInvitation & {
-    project?: Project
+    workspace?: Workspace
 }
 export const UserInvitationEntity = new EntitySchema<UserInvitationSchema>({
     name: 'user_invitation',
@@ -24,7 +24,7 @@ export const UserInvitationEntity = new EntitySchema<UserInvitationSchema>({
         email: {
             type: String,
         },
-        projectId: {
+        workspaceId: {
             type: String,
             nullable: true,
         },
@@ -32,27 +32,27 @@ export const UserInvitationEntity = new EntitySchema<UserInvitationSchema>({
             type: String,
             nullable: false,
         },
-        projectRoleId: {
+        workspaceRoleId: {
             type: String,
             nullable: true,
         },
     },
     indices: [
         {
-            name: 'idx_user_invitation_email_platform_project',
-            columns: ['email', 'platformId', 'projectId'],
+            name: 'idx_user_invitation_email_platform_workspace',
+            columns: ['email', 'platformId', 'workspaceId'],
             unique: true,
         },
     ],
     relations: {
-        project: {
+        workspace: {
             type: 'many-to-one',
-            target: 'project',
+            target: 'workspace',
             cascade: true,
             onDelete: 'CASCADE',
             joinColumn: {
-                name: 'projectId',
-                foreignKeyConstraintName: 'fk_user_invitation_project_id',
+                name: 'workspaceId',
+                foreignKeyConstraintName: 'fk_user_invitation_workspace_id',
             },
         },
     },

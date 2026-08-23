@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 export const CountFlowsRequest = z.object({
-    projectId: z.string(),
+    workspaceId: z.string(),
     folderId: z.string().optional(),
 })
 

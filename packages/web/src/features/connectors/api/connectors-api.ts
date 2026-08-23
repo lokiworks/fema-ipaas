@@ -30,7 +30,7 @@ export const connectorsApi = {
     return api.get<ConnectorMetadataModel>(`/v1/connectors/${request.name}`, {
       version: request.version ?? undefined,
       locale: request.locale ?? undefined,
-      projectId: request.projectId ?? undefined,
+      workspaceId: request.workspaceId ?? undefined,
       audience: request.audience ?? undefined,
     });
   },

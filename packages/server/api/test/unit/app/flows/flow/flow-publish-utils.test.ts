@@ -9,9 +9,9 @@ function connectorTrigger(overrides: { connectorName?: string, triggerName?: str
             connectorName: overrides.connectorName ?? '@fema/connector-jira-cloud',
             connectorVersion: '0.4.1',
             triggerName: overrides.triggerName ?? 'new_issue',
-            input: overrides.input ?? { projectId: 'AP', maxResults: 50 },
+            input: overrides.input ?? { workspaceId: 'AP', maxResults: 50 },
             propertySettings: {
-                projectId: { type: PropertyExecutionType.MANUAL },
+                workspaceId: { type: PropertyExecutionType.MANUAL },
             },
         },
         valid: true,
@@ -40,8 +40,8 @@ describe('flowPublishUtils.isSameTrigger', () => {
 
     it('ignores key order in the input', () => {
         expect(flowPublishUtils.isSameTrigger({
-            published: connectorTrigger({ input: { projectId: 'AP', maxResults: 50 } }),
-            toPublish: connectorTrigger({ input: { maxResults: 50, projectId: 'AP' } }),
+            published: connectorTrigger({ input: { workspaceId: 'AP', maxResults: 50 } }),
+            toPublish: connectorTrigger({ input: { maxResults: 50, workspaceId: 'AP' } }),
         })).toBe(true)
     })
 
@@ -61,8 +61,8 @@ describe('flowPublishUtils.isSameTrigger', () => {
 
     it('is false when the input now points at a different resource', () => {
         expect(flowPublishUtils.isSameTrigger({
-            published: connectorTrigger({ input: { projectId: 'AP', maxResults: 50 } }),
-            toPublish: connectorTrigger({ input: { projectId: 'OPS', maxResults: 50 } }),
+            published: connectorTrigger({ input: { workspaceId: 'AP', maxResults: 50 } }),
+            toPublish: connectorTrigger({ input: { workspaceId: 'OPS', maxResults: 50 } }),
         })).toBe(false)
     })
 

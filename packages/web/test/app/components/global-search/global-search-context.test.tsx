@@ -44,8 +44,8 @@ vi.mock('@/components/ui/command', () => ({
   CommandSeparator: () => null,
 }));
 
-vi.mock('@/features/projects', () => ({
-  projectCollectionUtils: { setCurrentProject: vi.fn() },
+vi.mock('@/features/workspaces', () => ({
+  workspaceCollectionUtils: { setCurrentWorkspace: vi.fn() },
 }));
 
 vi.mock('@/app/components/global-search/use-global-search-results', () => ({

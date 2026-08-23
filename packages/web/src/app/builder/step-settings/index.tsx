@@ -23,7 +23,7 @@ import {
   ConnectorIcon,
   ConnectorStepMetadata,
 } from '@/features/connectors';
-import { projectCollectionUtils } from '@/features/projects';
+import { workspaceCollectionUtils } from '@/features/workspaces';
 import { cn, GAP_SIZE_FOR_STEP_SETTINGS } from '@/lib/utils';
 
 import { ActionErrorHandlingForm } from '../connector-properties/action-error-handling';
@@ -47,7 +47,7 @@ import { UpdateConnectorVersionDialog } from './update-connector-version-dialog/
 
 const StepSettingsContainer = () => {
   const { selectedStep, connectorModel, formSchema } = useStepSettingsContext();
-  const { project } = projectCollectionUtils.useCurrentProject();
+  const { workspace } = workspaceCollectionUtils.useCurrentWorkspace();
   const [
     readonly,
     exitStepSettings,
@@ -334,7 +334,7 @@ const StepSettingsContainer = () => {
                     mode={stepDataPanelView === 'split' ? 'split' : 'drawer'}
                     flowId={flowVersion.flowId}
                     flowVersionId={flowVersion.id}
-                    projectId={project?.id}
+                    workspaceId={workspace?.id}
                     stepType={modifiedStep.type}
                     showGenerateSampleData={showGenerateSampleData}
                     showStepInputOutFromRun={showStepInputOutFromRun}

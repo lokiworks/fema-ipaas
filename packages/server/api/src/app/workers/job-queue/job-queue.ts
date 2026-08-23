@@ -6,8 +6,8 @@ import { FastifyBaseLogger } from 'fastify'
 import { redisConnections } from '../../database/redis-connections'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
-import { projectWorkerGroupService } from '../../project/project-worker-group.service'
-import { getProjectGroupQueueName, QueueName } from '../job'
+import { workspaceWorkerGroupService } from '../../workspace/workspace-worker-group.service'
+import { getWorkspaceGroupQueueName, QueueName } from '../job'
 import { workerCapacity } from '../machine/worker-capacity'
 
 const EIGHT_MINUTES_IN_MILLISECONDS = apDayjsDuration(8, 'minute').asMilliseconds()
@@ -25,8 +25,8 @@ export const jobQueue = (log: FastifyBaseLogger) => ({
         const { type, data } = params
 
         const platformId = data.platformId
-        const projectId = 'projectId' in data ? data.projectId : null
-        const queueName = await getQueueName({ platformId, projectId, jobType: data.jobType }, log)
+        const workspaceId = 'workspaceId' in data ? data.workspaceId : null
+        const queueName = await getQueueName({ platformId, workspaceId, jobType: data.jobType }, log)
         const queue = await ensureQueueExists({ log, queueName })
 
         switch (type) {
@@ -74,8 +74,8 @@ export const jobQueue = (log: FastifyBaseLogger) => ({
         }, '[jobQueue#removeRepeatingJob] removed jobs from all queues')
     },
 
-    async removeOneTimeJob({ jobId, platformId, projectId, jobType }: RemoveOneTimeJobParams): Promise<void> {
-        const queueName = await getQueueName({ platformId, projectId, jobType }, log)
+    async removeOneTimeJob({ jobId, platformId, workspaceId, jobType }: RemoveOneTimeJobParams): Promise<void> {
+        const queueName = await getQueueName({ platformId, workspaceId, jobType }, log)
         const queue = await ensureQueueExists({ log, queueName })
         const job = await queue.getJob(jobId)
         if (!isNil(job)) {
@@ -92,8 +92,8 @@ export const jobQueue = (log: FastifyBaseLogger) => ({
         }, '[jobQueue#removeOneTimeJob] job not found in queue')
     },
 
-    async cancelAndReportNeverStarted({ jobId, platformId, projectId, jobType }: RemoveOneTimeJobParams): Promise<boolean> {
-        const queueName = await getQueueName({ platformId, projectId, jobType }, log)
+    async cancelAndReportNeverStarted({ jobId, platformId, workspaceId, jobType }: RemoveOneTimeJobParams): Promise<boolean> {
+        const queueName = await getQueueName({ platformId, workspaceId, jobType }, log)
         const queue = await ensureQueueExists({ log, queueName })
         const job = await queue.getJob(jobId)
         if (isNil(job)) {
@@ -126,8 +126,8 @@ export const jobQueue = (log: FastifyBaseLogger) => ({
         }
         return queue
     },
-    async removeAllFlowRunJobs({ flowRunId, platformId, projectId }: RemoveAllFlowRunJobsParams): Promise<void> {
-        const queueName = await getQueueName({ platformId, projectId, jobType: WorkerJobType.EXECUTE_FLOW }, log)
+    async removeAllFlowRunJobs({ flowRunId, platformId, workspaceId }: RemoveAllFlowRunJobsParams): Promise<void> {
+        const queueName = await getQueueName({ platformId, workspaceId, jobType: WorkerJobType.EXECUTE_FLOW }, log)
         const queue = await ensureQueueExists({ log, queueName })
         const allJobs = await queue.getJobs(['waiting', 'delayed'])
         const matching = allJobs.filter((j) => j.id?.startsWith(flowRunId))
@@ -204,21 +204,21 @@ export function isUserInteractionJobData(jobData: JobData): jobData is UserInter
     return USER_INTERACTION_JOB_TYPES.has(jobData.jobType)
 }
 
-const PROJECT_GROUP_ROUTABLE_JOB_TYPES = new Set<WorkerJobType>([
+const WORKSPACE_GROUP_ROUTABLE_JOB_TYPES = new Set<WorkerJobType>([
     WorkerJobType.EXECUTE_FLOW,
     WorkerJobType.EXECUTE_WEBHOOK,
 ])
 
-async function getQueueName({ platformId, projectId, jobType }: GetQueueNameParams, log: FastifyBaseLogger): Promise<string> {
-    if (!isNil(platformId) && !isNil(projectId) && !isNil(jobType) && PROJECT_GROUP_ROUTABLE_JOB_TYPES.has(jobType)) {
-        const projectGroupId = await projectWorkerGroupService(log).getProjectWorkerGroup({ projectId, platformId })
-        if (!isNil(projectGroupId)) {
+async function getQueueName({ platformId, workspaceId, jobType }: GetQueueNameParams, log: FastifyBaseLogger): Promise<string> {
+    if (!isNil(platformId) && !isNil(workspaceId) && !isNil(jobType) && WORKSPACE_GROUP_ROUTABLE_JOB_TYPES.has(jobType)) {
+        const workspaceGroupId = await workspaceWorkerGroupService(log).getWorkspaceWorkerGroup({ workspaceId, platformId })
+        if (!isNil(workspaceGroupId)) {
             // Only route to the group's dedicated queue while it has a live worker; otherwise fall
             // through to the shared queue so runs still execute until a worker returns.
-            const { projectGroups } = await workerCapacity.get()
-            const capacity = projectGroups.get(projectGroupId)
+            const { workspaceGroups } = await workerCapacity.get()
+            const capacity = workspaceGroups.get(workspaceGroupId)
             if (!isNil(capacity) && capacity.online > 0) {
-                return getProjectGroupQueueName(projectGroupId)
+                return getWorkspaceGroupQueueName(workspaceGroupId)
             }
         }
     }
@@ -233,21 +233,21 @@ export enum JobType {
 
 type GetQueueNameParams = {
     platformId: string | null
-    projectId?: string | null
+    workspaceId?: string | null
     jobType?: WorkerJobType
 }
 
 type RemoveOneTimeJobParams = {
     jobId: ApId
     platformId: string | null
-    projectId?: string | null
+    workspaceId?: string | null
     jobType?: WorkerJobType
 }
 
 type RemoveAllFlowRunJobsParams = {
     flowRunId: string
     platformId: string | null
-    projectId?: string | null
+    workspaceId?: string | null
 }
 
 type BaseAddParams<JD extends Omit<JobData, 'engineToken'>, JT extends JobType> = {

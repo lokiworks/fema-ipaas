@@ -9,7 +9,7 @@ import {
   createBuilderStore,
 } from '@/app/builder/builder-hooks';
 import { useSocket } from '@/components/providers/socket-provider';
-import { projectHooks } from '@/features/projects';
+import { workspaceHooks } from '@/features/workspaces';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 
 type BuilderStateProviderProps = Omit<
@@ -26,7 +26,7 @@ export function BuilderStateProvider({
   const storeRef = useRef<BuilderStore>(undefined);
   const { checkAccess } = useAuthorization();
   const readonly = !checkAccess(Permission.WRITE_FLOW) || props.readonly;
-  projectHooks.useReloadPageIfProjectIdChanged(props.flow.projectId);
+  workspaceHooks.useReloadPageIfWorkspaceIdChanged(props.flow.workspaceId);
   const socket = useSocket();
   const queryClient = useQueryClient();
   if (!storeRef.current) {

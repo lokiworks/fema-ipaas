@@ -11,7 +11,7 @@ const TriggerHealthPage = React.lazy(() => import('./platform/infra/triggers'));
 const SettingsWorkersPage = React.lazy(
   () => import('./platform/infra/workers'),
 );
-const ProjectsPage = React.lazy(() => import('./platform/projects'));
+const WorkspacesPage = React.lazy(() => import('./platform/workspaces'));
 const SSOPage = React.lazy(() =>
   import('./platform/security/sso').then((m) => ({ default: m.SSOPage })),
 );
@@ -65,12 +65,12 @@ export const platformRoutes = [
     element: (
       <PlatformLayout>
         <PageTitle title="Platform">
-          <Navigate to="/platform/projects" />
+          <Navigate to="/platform/workspaces" />
         </PageTitle>
       </PlatformLayout>
     ),
   },
-  platformRoute('/platform/projects', 'Workspaces', ProjectsPage),
+  platformRoute('/platform/workspaces', 'Workspaces', WorkspacesPage),
   platformRoute('/platform/users', 'Members', UsersPage),
   platformRoute(
     '/platform/connections',

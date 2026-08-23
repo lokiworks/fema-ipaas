@@ -4,8 +4,8 @@ import { FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
-import { entitiesMustBeOwnedByCurrentProject } from '../../authentication/authorization'
-import { ProjectResourceType } from '../../core/security/authorization/common'
+import { entitiesMustBeOwnedByCurrentWorkspace } from '../../authentication/authorization'
+import { WorkspaceResourceType } from '../../core/security/authorization/common'
 import { securityAccess } from '../../core/security/authorization/fastify-security'
 import { networkUtils } from '../../helper/network-utils'
 import { userService } from '../../user/user-service'
@@ -16,10 +16,10 @@ import { flowService } from './flow.service'
 const DEFAULT_PAGE_SIZE = 10
 
 export const flowController: FastifyPluginAsyncZod = async (app) => {
-    app.addHook('preSerialization', entitiesMustBeOwnedByCurrentProject)
+    app.addHook('preSerialization', entitiesMustBeOwnedByCurrentWorkspace)
     app.post('/', CreateFlowRequestOptions, async (request, reply) => {
         const newFlow = await flowService(request.log).create({
-            projectId: request.projectId,
+            workspaceId: request.workspaceId,
             request: request.body,
             ownerId: actorUserId(request),
             templateId: request.body.templateId,
@@ -31,10 +31,10 @@ export const flowController: FastifyPluginAsyncZod = async (app) => {
 
     app.post('/:id', {
         config: {
-            security: securityAccess.project(
+            security: securityAccess.workspace(
                 [PrincipalType.USER, PrincipalType.SERVICE], 
                 Permission.UPDATE_FLOW_STATUS, {
-                    type: ProjectResourceType.TABLE,
+                    type: WorkspaceResourceType.TABLE,
                     tableName: FlowEntity,
                 }),
         },
@@ -69,14 +69,14 @@ export const flowController: FastifyPluginAsyncZod = async (app) => {
     }, async (request) => {
         const flow = await flowService(request.log).getOnePopulatedOrThrow({
             id: request.params.id,
-            projectId: request.projectId,
+            workspaceId: request.workspaceId,
         })
 
         return flowService(request.log).update({
             id: request.params.id,
             userId: actorUserId(request),
             platformId: request.principal.platform.id,
-            projectId: request.projectId,
+            workspaceId: request.workspaceId,
             operation: cleanOperation(request.body),
             previousFlow: flow,
             ip: networkUtils.clientIp(request),
@@ -85,7 +85,7 @@ export const flowController: FastifyPluginAsyncZod = async (app) => {
 
     app.get('/', ListFlowsRequestOptions, async (request) => {
         return flowService(request.log).list({
-            projectIds: [request.projectId],
+            workspaceIds: [request.workspaceId],
             folderId: request.query.folderId,
             folderIds: request.query.folderIds,
             cursorRequest: request.query.cursor ?? null,
@@ -102,7 +102,7 @@ export const flowController: FastifyPluginAsyncZod = async (app) => {
     app.get('/count', CountFlowsRequestOptions, async (request) => {
         return flowService(request.log).count({
             folderId: request.query.folderId,
-            projectId: request.projectId,
+            workspaceId: request.workspaceId,
         })
     })
 
@@ -111,7 +111,7 @@ export const flowController: FastifyPluginAsyncZod = async (app) => {
         return flowService(request.log).getTemplate({
             flowId: request.params.id,
             userMetadata,
-            projectId: request.projectId,
+            workspaceId: request.workspaceId,
             versionId: undefined,
         })
     })
@@ -119,7 +119,7 @@ export const flowController: FastifyPluginAsyncZod = async (app) => {
     app.get('/:id', GetFlowRequestOptions, async (request) => {
         return flowService(request.log).getOnePopulatedOrThrow({
             id: request.params.id,
-            projectId: request.projectId,
+            workspaceId: request.workspaceId,
             versionId: request.query.versionId,
         })
     })
@@ -127,11 +127,11 @@ export const flowController: FastifyPluginAsyncZod = async (app) => {
     app.delete('/:id', DeleteFlowRequestOptions, async (request, reply) => {
         const flow = await flowService(request.log).getOnePopulatedOrThrow({
             id: request.params.id,
-            projectId: request.projectId,
+            workspaceId: request.workspaceId,
         })
         await flowService(request.log).delete({
             id: request.params.id,
-            projectId: request.projectId,
+            workspaceId: request.workspaceId,
             previousFlow: flow,
             userId: actorUserId(request),
             ip: networkUtils.clientIp(request),
@@ -174,10 +174,10 @@ function cleanOperation(operation: FlowOperationRequest): FlowOperationRequest {
 
 const CreateFlowRequestOptions = {
     config: {
-        security: securityAccess.project(
+        security: securityAccess.workspace(
             [PrincipalType.USER, PrincipalType.SERVICE], 
             Permission.WRITE_FLOW, {
-                type: ProjectResourceType.BODY,
+                type: WorkspaceResourceType.BODY,
             }),
     },
     schema: {
@@ -194,10 +194,10 @@ const CreateFlowRequestOptions = {
 
 const ListFlowsRequestOptions = {
     config: {
-        security: securityAccess.project(
+        security: securityAccess.workspace(
             [PrincipalType.USER, PrincipalType.SERVICE], 
             Permission.READ_FLOW, {
-                type: ProjectResourceType.QUERY,
+                type: WorkspaceResourceType.QUERY,
             }),
     },
     schema: {
@@ -213,10 +213,10 @@ const ListFlowsRequestOptions = {
 
 const CountFlowsRequestOptions = {
     config: {
-        security: securityAccess.project(
+        security: securityAccess.workspace(
             [PrincipalType.USER, PrincipalType.SERVICE], 
             Permission.READ_FLOW, {
-                type: ProjectResourceType.QUERY,
+                type: WorkspaceResourceType.QUERY,
             }),
     },
     schema: {
@@ -226,10 +226,10 @@ const CountFlowsRequestOptions = {
 
 const GetFlowTemplateRequestOptions = {
     config: {
-        security: securityAccess.project(
+        security: securityAccess.workspace(
             [PrincipalType.USER, PrincipalType.SERVICE], 
             Permission.READ_FLOW, {
-                type: ProjectResourceType.TABLE,
+                type: WorkspaceResourceType.TABLE,
                 tableName: FlowEntity,
             }),
     },
@@ -249,10 +249,10 @@ const GetFlowTemplateRequestOptions = {
 
 const GetFlowRequestOptions = {
     config: {
-        security: securityAccess.project(
+        security: securityAccess.workspace(
             [PrincipalType.USER, PrincipalType.SERVICE], 
             Permission.READ_FLOW, {
-                type: ProjectResourceType.TABLE,
+                type: WorkspaceResourceType.TABLE,
                 tableName: FlowEntity,
             }),
     },
@@ -272,10 +272,10 @@ const GetFlowRequestOptions = {
 
 const DeleteFlowRequestOptions = {
     config: {
-        security: securityAccess.project(
+        security: securityAccess.workspace(
             [PrincipalType.USER, PrincipalType.SERVICE], 
             Permission.WRITE_FLOW, {
-                type: ProjectResourceType.TABLE,
+                type: WorkspaceResourceType.TABLE,
                 tableName: FlowEntity,
             }),
     },

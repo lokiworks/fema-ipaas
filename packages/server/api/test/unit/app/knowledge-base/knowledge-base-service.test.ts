@@ -60,21 +60,21 @@ describe('knowledgeBaseService', () => {
 
     describe('deleteFile', () => {
         it('should delete the KB file and the underlying file', async () => {
-            const kbFile = { id: 'kb-1', projectId: 'proj-1', fileId: 'file-1', displayName: 'test.txt' }
+            const kbFile = { id: 'kb-1', workspaceId: 'proj-1', fileId: 'file-1', displayName: 'test.txt' }
             mockFindOneBy.mockResolvedValue(kbFile)
             mockDelete.mockResolvedValue({ affected: 1 })
 
-            await knowledgeBaseService(mockLog).deleteFile({ projectId: 'proj-1', id: 'kb-1' })
+            await knowledgeBaseService(mockLog).deleteFile({ workspaceId: 'proj-1', id: 'kb-1' })
 
-            expect(mockFindOneBy).toHaveBeenCalledWith({ id: 'kb-1', projectId: 'proj-1' })
-            expect(mockDelete).toHaveBeenCalledWith({ id: 'kb-1', projectId: 'proj-1' })
-            expect(mockFileServiceDelete).toHaveBeenCalledWith({ projectId: 'proj-1', fileId: 'file-1' })
+            expect(mockFindOneBy).toHaveBeenCalledWith({ id: 'kb-1', workspaceId: 'proj-1' })
+            expect(mockDelete).toHaveBeenCalledWith({ id: 'kb-1', workspaceId: 'proj-1' })
+            expect(mockFileServiceDelete).toHaveBeenCalledWith({ workspaceId: 'proj-1', fileId: 'file-1' })
         })
 
         it('should not call delete when KB file does not exist', async () => {
             mockFindOneBy.mockResolvedValue(null)
 
-            await knowledgeBaseService(mockLog).deleteFile({ projectId: 'proj-1', id: 'kb-missing' })
+            await knowledgeBaseService(mockLog).deleteFile({ workspaceId: 'proj-1', id: 'kb-missing' })
 
             expect(mockDelete).not.toHaveBeenCalled()
             expect(mockFileServiceDelete).not.toHaveBeenCalled()
@@ -82,17 +82,17 @@ describe('knowledgeBaseService', () => {
     })
 
     describe('getChunkCount', () => {
-        it('should scope query by projectId and knowledgeBaseFileId', async () => {
+        it('should scope query by workspaceId and knowledgeBaseFileId', async () => {
             mockCount.mockResolvedValue(42)
 
             const result = await knowledgeBaseService(mockLog).getChunkCount({
-                projectId: 'proj-1',
+                workspaceId: 'proj-1',
                 knowledgeBaseFileId: 'kb-file-1',
             })
 
             expect(result).toBe(42)
             expect(mockCount).toHaveBeenCalledWith({
-                where: { projectId: 'proj-1', knowledgeBaseFileId: 'kb-file-1' },
+                where: { workspaceId: 'proj-1', knowledgeBaseFileId: 'kb-file-1' },
             })
         })
     })
@@ -105,7 +105,7 @@ describe('knowledgeBaseService', () => {
             ])
 
             const results = await knowledgeBaseService(mockLog).search({
-                projectId: 'proj-1',
+                workspaceId: 'proj-1',
                 knowledgeBaseFileIds: ['kb-file-1'],
                 queryEmbedding: [0.1, 0.2, 0.3],
                 limit: 5,
@@ -121,7 +121,7 @@ describe('knowledgeBaseService', () => {
             ])
 
             const results = await knowledgeBaseService(mockLog).search({
-                projectId: 'proj-1',
+                workspaceId: 'proj-1',
                 knowledgeBaseFileIds: ['kb-file-1'],
                 queryEmbedding: [0.1, 0.2],
                 limit: 5,
@@ -137,7 +137,7 @@ describe('knowledgeBaseService', () => {
             ])
 
             const results = await knowledgeBaseService(mockLog).search({
-                projectId: 'proj-1',
+                workspaceId: 'proj-1',
                 knowledgeBaseFileIds: ['kb-file-1'],
                 queryEmbedding: [0.1, 0.2],
                 limit: 5,
@@ -155,7 +155,7 @@ describe('knowledgeBaseService', () => {
             ])
 
             const results = await knowledgeBaseService(mockLog).search({
-                projectId: 'proj-1',
+                workspaceId: 'proj-1',
                 knowledgeBaseFileIds: ['kb-file-1'],
                 queryEmbedding: [0.1, 0.2],
                 limit: 5,
@@ -170,7 +170,7 @@ describe('knowledgeBaseService', () => {
             ])
 
             const results = await knowledgeBaseService(mockLog).search({
-                projectId: 'proj-1',
+                workspaceId: 'proj-1',
                 knowledgeBaseFileIds: ['kb-file-1'],
                 queryEmbedding: [0.1, 0.2],
                 limit: 5,
@@ -184,7 +184,7 @@ describe('knowledgeBaseService', () => {
     describe('storeChunks', () => {
         it('should insert new chunks when no id is provided', async () => {
             await knowledgeBaseService(mockLog).storeChunks({
-                projectId: 'proj-1',
+                workspaceId: 'proj-1',
                 knowledgeBaseFileId: 'kb-file-1',
                 chunks: [{
                     content: 'test content',
@@ -198,7 +198,7 @@ describe('knowledgeBaseService', () => {
 
         it('should update existing chunks when id is provided', async () => {
             await knowledgeBaseService(mockLog).storeChunks({
-                projectId: 'proj-1',
+                workspaceId: 'proj-1',
                 knowledgeBaseFileId: 'kb-file-1',
                 chunks: [{
                     id: 'chunk-1',
@@ -209,14 +209,14 @@ describe('knowledgeBaseService', () => {
             expect(mockInsert).not.toHaveBeenCalled()
             expect(mockUpdate).toHaveBeenCalledTimes(1)
             expect(mockUpdate).toHaveBeenCalledWith(
-                { id: 'chunk-1', projectId: 'proj-1' },
+                { id: 'chunk-1', workspaceId: 'proj-1' },
                 expect.objectContaining({ embedding: '[0.1,0.2,0.3]' }),
             )
         })
 
         it('should handle mixed insert and update chunks', async () => {
             await knowledgeBaseService(mockLog).storeChunks({
-                projectId: 'proj-1',
+                workspaceId: 'proj-1',
                 knowledgeBaseFileId: 'kb-file-1',
                 chunks: [
                     { content: 'new chunk', chunkIndex: 0 },
@@ -230,7 +230,7 @@ describe('knowledgeBaseService', () => {
 
         it('should not call insert or update for empty chunks array', async () => {
             await knowledgeBaseService(mockLog).storeChunks({
-                projectId: 'proj-1',
+                workspaceId: 'proj-1',
                 knowledgeBaseFileId: 'kb-file-1',
                 chunks: [],
             })

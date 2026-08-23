@@ -4,11 +4,11 @@ import { Job, Queue } from 'bullmq'
 import { FastifyBaseLogger } from 'fastify'
 import { redisConnections } from '../../database/redis-connections'
 import { flowVersionRepo } from '../../flows/flow-version/flow-version.service'
-import { projectService } from '../../project/project-service'
+import { workspaceService } from '../../workspace/workspace-service'
 import { jobQueue, JobType } from '../job-queue/job-queue'
 
-type LegacyOneTimeJobData = Pick<BeginExecuteFlowJobData, 'runId' | 'projectId' | 'flowVersionId' | 'environment' | 'workerHandlerId' | 'httpRequestId' | 'payload' | 'executeTrigger' | 'executionType' | 'stepNameToTest' | 'sampleData'> & { progressUpdateType: string }
-type LegacyWebhookJobData = Pick<WebhookJobData, 'projectId' | 'schemaVersion' | 'requestId' | 'payload' | 'runEnvironment' | 'flowId' | 'saveSampleData' | 'flowVersionIdToRun' | 'execute' | 'parentRunId' | 'failParentOnFailure'>
+type LegacyOneTimeJobData = Pick<BeginExecuteFlowJobData, 'runId' | 'workspaceId' | 'flowVersionId' | 'environment' | 'workerHandlerId' | 'httpRequestId' | 'payload' | 'executeTrigger' | 'executionType' | 'stepNameToTest' | 'sampleData'> & { progressUpdateType: string }
+type LegacyWebhookJobData = Pick<WebhookJobData, 'workspaceId' | 'schemaVersion' | 'requestId' | 'payload' | 'runEnvironment' | 'flowId' | 'saveSampleData' | 'flowVersionIdToRun' | 'execute' | 'parentRunId' | 'failParentOnFailure'>
 const migratedKey = 'unified_queue_migrated'
 
 export const unifyOldQueuesIntoOne = (log: FastifyBaseLogger) => ({
@@ -71,7 +71,7 @@ async function migrateOneTimeJobs(log: FastifyBaseLogger): Promise<boolean> {
                     ...restCasedData,
                     streamStepProgress: legacyProgressUpdateType === 'TEST_FLOW' ? StreamStepProgress.WEBSOCKET : StreamStepProgress.NONE,
                     flowId: flowVersion.flowId,
-                    platformId: await projectService(log).getPlatformId(casedData.projectId),
+                    platformId: await workspaceService(log).getPlatformId(casedData.workspaceId),
                     schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
                     jobType: WorkerJobType.EXECUTE_FLOW,
                 } as ExecuteFlowJobData,
@@ -102,7 +102,7 @@ async function migrateWebhookJobs(log: FastifyBaseLogger): Promise<boolean> {
             type: JobType.ONE_TIME,
             data: {
                 ...casedData,
-                platformId: await projectService(log).getPlatformId(casedData.projectId),
+                platformId: await workspaceService(log).getPlatformId(casedData.workspaceId),
                 jobType: WorkerJobType.EXECUTE_WEBHOOK,
             },
         })

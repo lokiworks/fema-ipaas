@@ -4,8 +4,8 @@ import { LATEST_JOB_DATA_SCHEMA_VERSION, TriggerSourceScheduleType, TriggerStrat
 import { FastifyBaseLogger } from 'fastify'
 import { IsNull } from 'typeorm'
 import { connectorMetadataService } from '../../connectors/metadata/connector-metadata-service'
-import { projectService } from '../../project/project-service'
 import { triggerSourceRepo } from '../../trigger/trigger-source/trigger-source-service'
+import { workspaceService } from '../../workspace/workspace-service'
 import { jobQueue, JobType } from '../job-queue/job-queue'
 
 export const refillRenewWebhookJobs = (log: FastifyBaseLogger) => ({
@@ -26,7 +26,7 @@ export const refillRenewWebhookJobs = (log: FastifyBaseLogger) => ({
                 const connectorMetadata = await connectorMetadataService(log).get({
                     name: triggerSource.connectorName,
                     version: triggerSource.connectorVersion,
-                    platformId: await projectService(log).getPlatformId(triggerSource.projectId),
+                    platformId: await workspaceService(log).getPlatformId(triggerSource.workspaceId),
                 })
                 const connectorTrigger = connectorMetadata?.triggers?.[triggerSource.triggerName]
                 if (isNil(connectorTrigger) || isNil(connectorTrigger.renewConfiguration) || connectorTrigger.renewConfiguration.strategy !== WebhookRenewStrategy.CRON) {
@@ -36,8 +36,8 @@ export const refillRenewWebhookJobs = (log: FastifyBaseLogger) => ({
                     id: triggerSource.flowVersionId,
                     type: JobType.REPEATING,
                     data: {
-                        projectId: triggerSource.projectId,
-                        platformId: await projectService(log).getPlatformId(triggerSource.projectId),
+                        workspaceId: triggerSource.workspaceId,
+                        platformId: await workspaceService(log).getPlatformId(triggerSource.workspaceId),
                         schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
                         flowVersionId: triggerSource.flowVersionId,
                         flowId: triggerSource.flowId,

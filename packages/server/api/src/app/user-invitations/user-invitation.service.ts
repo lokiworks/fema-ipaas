@@ -53,7 +53,7 @@ export const userInvitationsService = (log: FastifyBaseLogger) => ({
         log.info({ count: invitations.length }, '[provisionUserInvitation] list invitations')
         for (const invitation of invitations) {
             log.info({ invitation }, '[provisionUserInvitation] provision')
-            const user = await userService(log).getOrCreateWithProject({
+            const user = await userService(log).getOrCreateWithWorkspace({
                 identity,
                 platformId: invitation.platformId,
             })
@@ -67,9 +67,9 @@ export const userInvitationsService = (log: FastifyBaseLogger) => ({
                     })
                     break
                 }
-                case InvitationType.PROJECT: {
-                    const { projectId } = invitation
-                    assertNotNullOrUndefined(projectId, 'projectId')
+                case InvitationType.WORKSPACE: {
+                    const { workspaceId } = invitation
+                    assertNotNullOrUndefined(workspaceId, 'workspaceId')
                     break
                 }
             }
@@ -81,9 +81,9 @@ export const userInvitationsService = (log: FastifyBaseLogger) => ({
     async createInvitationRecord({
         email,
         platformId,
-        projectId,
+        workspaceId,
         type,
-        projectRoleId,
+        workspaceRoleId,
         platformRole,
         status,
         entityManager,
@@ -95,10 +95,10 @@ export const userInvitationsService = (log: FastifyBaseLogger) => ({
             type,
             email: email.toLowerCase().trim(),
             platformId,
-            projectRoleId: type === InvitationType.PLATFORM ? undefined : projectRoleId!,
-            platformRole: type === InvitationType.PROJECT ? undefined : platformRole!,
-            projectId: type === InvitationType.PLATFORM ? undefined : projectId!,
-        }, ['email', 'platformId', 'projectId'])
+            workspaceRoleId: type === InvitationType.PLATFORM ? undefined : workspaceRoleId!,
+            platformRole: type === InvitationType.WORKSPACE ? undefined : platformRole!,
+            workspaceId: type === InvitationType.PLATFORM ? undefined : workspaceId!,
+        }, ['email', 'platformId', 'workspaceId'])
 
         return this.getOneOrThrow({
             id,
@@ -116,7 +116,7 @@ export const userInvitationsService = (log: FastifyBaseLogger) => ({
                 platformId: userInvitation.platformId,
             })
             if (emailService(log).isConfigured()) {
-                await emailService(log).sendProjectMemberAdded({
+                await emailService(log).sendWorkspaceMemberAdded({
                     userInvitation,
                 })
             }
@@ -169,14 +169,14 @@ export const userInvitationsService = (log: FastifyBaseLogger) => ({
         const queryBuilder = repo().createQueryBuilder('user_invitation')
             .where({
                 platformId: params.platformId,
-                ...spreadIfDefined('projectId', params.projectId),
+                ...spreadIfDefined('workspaceId', params.workspaceId),
                 ...spreadIfDefined('status', params.status),
                 ...spreadIfDefined('type', params.type),
             })
         const { data, cursor } = await paginator.paginate(queryBuilder)
         const enrichedData = await Promise.all(data.map(async (invitation) => {
             return {
-                projectRole: null,
+                workspaceRole: null,
                 ...invitation,
             }
         }))
@@ -242,12 +242,12 @@ export const userInvitationsService = (log: FastifyBaseLogger) => ({
     async getByEmailAndPlatformIdOrThrow({
         email,
         platformId,
-        projectId,
+        workspaceId,
     }: GetOneByPlatformIdAndEmailParams): Promise<UserInvitation | null> {
         return repo().findOneBy({
             email,
             platformId,
-            projectId: isNil(projectId) ? IsNull() : projectId,
+            workspaceId: isNil(workspaceId) ? IsNull() : workspaceId,
         })
     },
 })
@@ -305,7 +305,7 @@ const enrichWithInvitationLink = async (userInvitation: UserInvitation, expireyI
 type ListUserParams = {
     platformId: string
     type: InvitationType
-    projectId: string | null
+    workspaceId: string | null
     status?: InvitationStatus
     limit: number
     cursor: string | null
@@ -341,10 +341,10 @@ export type CreateInvitationRecordParams = {
     email: string
     platformId: string
     platformRole: PlatformRole | null
-    projectId: string | null
+    workspaceId: string | null
     status: InvitationStatus
     type: InvitationType
-    projectRoleId: string | null
+    workspaceRoleId: string | null
     entityManager?: EntityManager
 }
 
@@ -367,5 +367,5 @@ export type CountReservedSeatsParams = {
 type GetOneByPlatformIdAndEmailParams = {
     email: string
     platformId: string
-    projectId: string | null
+    workspaceId: string | null
 }

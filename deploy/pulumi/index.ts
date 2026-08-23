@@ -32,7 +32,7 @@ const dbInstanceClass = config.require("dbInstanceClass");
 // Add tags for every resource that allows them, with the following properties.
 // Useful to know who or what created the resource/service
 registerAutoTags({
-    "pulumi:Project": pulumi.getProject(),
+    "pulumi:Workspace": pulumi.getWorkspace(),
     "pulumi:Stack": pulumi.getStack(),
     "Created by": config.get("author") || child_process.execSync("pulumi whoami").toString().trim().replace('\\', '/')
 });

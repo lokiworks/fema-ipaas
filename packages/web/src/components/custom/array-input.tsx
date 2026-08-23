@@ -62,7 +62,7 @@ const ArrayInput = React.memo(
 
     // `fields` is the single source of truth: it owns both the stable row id and
     // the value. Mutations derive a new `fields` array from it (preserving ids)
-    // and project the values onto the form. Rebuilding from `form.getValues()`
+    // and workspace the values onto the form. Rebuilding from `form.getValues()`
     // here would resurrect any holes a prior reorder left in the form value and
     // would churn every row id, so it is deliberately avoided. See issue #13897.
     const append = () => {

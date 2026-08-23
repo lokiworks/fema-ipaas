@@ -1,4 +1,4 @@
-import type { FlowId, ProjectId, UserId } from '@fema/core-utils'
+import type { FlowId, UserId, WorkspaceId } from '@fema/core-utils'
 import type { RunEnvironment } from '@fema/workflow-core'
 
 type FlowCreated = {
@@ -16,7 +16,7 @@ type TemplateSearch = {
 }
 
 type RunCreated = {
-    projectId: ProjectId
+    workspaceId: WorkspaceId
     flowId: FlowId
     environment: RunEnvironment
     count: number
@@ -31,7 +31,7 @@ type SignedUp = {
     email?: string
     firstName?: string
     lastName?: string
-    projectId: ProjectId
+    workspaceId: WorkspaceId
 }
 
 type EmailCodeRequested = {
@@ -120,7 +120,7 @@ type Referral = {
 
 type FlowShared = {
     flowId: FlowId
-    projectId: ProjectId
+    workspaceId: WorkspaceId
 }
 
 type OpenedFromDashboard = {
@@ -129,25 +129,25 @@ type OpenedFromDashboard = {
 
 type FormsViewed = {
     flowId: string
-    projectId: string
+    workspaceId: string
     formProps: Record<string, unknown>
 }
 
 type UserInvited = {
     platformId: string
-    projectId?: string
+    workspaceId?: string
     email: string
 }
 
 type TriggerFailuresExceeded = {
-    projectId: string
+    workspaceId: string
     flowId: string
     connectorName: string
     connectorVersion: string
 }
 type AiProviderConfiguredOrUsed = {
     provider: string
-    projectId: string
+    workspaceId: string
     platformId: string
 }
 
@@ -158,7 +158,7 @@ type McpToolCalled = {
 
 type McpServerConnected = {
     userId: string
-    projectId?: string
+    workspaceId?: string
     platformId?: string
 }
 

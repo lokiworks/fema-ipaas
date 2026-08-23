@@ -5,9 +5,9 @@ import {
     FlowStatus,
     FlowVersion,
     Folder,
-    Project,
     TriggerEvent,
     User,
+    Workspace,
 } from '@fema/shared'
 import { EntitySchema } from 'typeorm'
 import {
@@ -17,7 +17,7 @@ import {
 
 export type FlowSchema = Flow & {
     versions: FlowVersion[]
-    project: Project
+    workspace: Workspace
     runs: FlowRun[]
     folder?: Folder
     owner?: User
@@ -29,7 +29,7 @@ export const FlowEntity = new EntitySchema<FlowSchema>({
     name: 'flow',
     columns: {
         ...BaseColumnSchemaPart,
-        projectId: {
+        workspaceId: {
             ...ApIdSchema,
             nullable: false,
         },
@@ -80,8 +80,8 @@ export const FlowEntity = new EntitySchema<FlowSchema>({
     },
     indices: [
         {
-            name: 'idx_flow_project_id',
-            columns: ['projectId'],
+            name: 'idx_flow_workspace_id',
+            columns: ['workspaceId'],
             unique: false,
         },
         {
@@ -95,8 +95,8 @@ export const FlowEntity = new EntitySchema<FlowSchema>({
             unique: false,
         },
         {
-            name: 'idx_flow_project_id_status',
-            columns: ['projectId', 'status'],
+            name: 'idx_flow_workspace_id_status',
+            columns: ['workspaceId', 'status'],
             unique: false,
         },
     ],
@@ -137,14 +137,14 @@ export const FlowEntity = new EntitySchema<FlowSchema>({
             target: 'flow_version',
             inverseSide: 'flow',
         },
-        project: {
+        workspace: {
             type: 'many-to-one',
-            target: 'project',
+            target: 'workspace',
             cascade: true,
             onDelete: 'CASCADE',
             joinColumn: {
-                name: 'projectId',
-                foreignKeyConstraintName: 'fk_flow_project_id',
+                name: 'workspaceId',
+                foreignKeyConstraintName: 'fk_flow_workspace_id',
             },
         },
         publishedVersion: {

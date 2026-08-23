@@ -27,7 +27,7 @@ export const executeWebhookJob: JobHandler<WebhookJobData, FireAndForgetJobResul
         const settings = workerSettings.getSettings()
         const timeoutInSeconds = settings.TRIGGER_TIMEOUT_SECONDS
 
-        const resolved = await ctx.resolver.resolve({ platformId: data.platformId, publicApiUrl: ctx.publicApiUrl, engineToken: ctx.engineToken, flow: { id: data.flowId, versionId: data.flowVersionIdToRun, projectId: data.projectId } })
+        const resolved = await ctx.resolver.resolve({ platformId: data.platformId, publicApiUrl: ctx.publicApiUrl, engineToken: ctx.engineToken, flow: { id: data.flowId, versionId: data.flowVersionIdToRun, workspaceId: data.workspaceId } })
 
         if (resolved.kind === 'flow-not-found') {
             ctx.log.info({ flowVersion: { id: data.flowVersionIdToRun } }, 'Flow version not found for webhook, skipping')
@@ -59,7 +59,7 @@ export const executeWebhookJob: JobHandler<WebhookJobData, FireAndForgetJobResul
                         webhookUrl: getWebhookUrl(ctx.publicApiUrl, data.flowId, true),
                         triggerPayload: data.payload,
                         test: true,
-                        projectId: data.projectId,
+                        workspaceId: data.workspaceId,
                         platformId: data.platformId,
                         engineToken: ctx.engineToken,
                         internalApiUrl: ctx.internalApiUrl,
@@ -78,7 +78,7 @@ export const executeWebhookJob: JobHandler<WebhookJobData, FireAndForgetJobResul
                         await ctx.apiClient.savePayloads({
                             flowId: data.flowId,
                             flowVersionId: flowVersion.id,
-                            projectId: data.projectId,
+                            workspaceId: data.workspaceId,
                             payloads: sampleTriggerResult.output,
                         })
                     }
@@ -100,7 +100,7 @@ export const executeWebhookJob: JobHandler<WebhookJobData, FireAndForgetJobResul
                     webhookUrl: getWebhookUrl(ctx.publicApiUrl, data.flowId),
                     triggerPayload: data.payload,
                     test: false,
-                    projectId: data.projectId,
+                    workspaceId: data.workspaceId,
                     platformId: data.platformId,
                     engineToken: ctx.engineToken,
                     internalApiUrl: ctx.internalApiUrl,
@@ -136,7 +136,7 @@ export const executeWebhookJob: JobHandler<WebhookJobData, FireAndForgetJobResul
             if (triggerResult.output.length > 0) {
                 await ctx.apiClient.submitPayloads({
                     flowVersionId: flowVersion.id,
-                    projectId: data.projectId,
+                    workspaceId: data.workspaceId,
                     payloads: triggerResult.output,
                     httpRequestId: data.requestId,
                     environment: data.runEnvironment,

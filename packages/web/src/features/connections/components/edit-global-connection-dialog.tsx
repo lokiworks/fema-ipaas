@@ -25,13 +25,13 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
-import { ProjectSelector } from '../../projects/components/projects-selector';
+import { WorkspaceSelector } from '../../workspaces/components/workspaces-selector';
 import { globalConnectionsMutations } from '../hooks/global-connections-hooks';
 
 const EditGlobalConnectionSchema = z.object({
   displayName: z.string(),
-  projectIds: z.array(z.string()),
-  preSelectForNewProjects: z.boolean(),
+  workspaceIds: z.array(z.string()),
+  preSelectForNewWorkspaces: z.boolean(),
 });
 
 type EditGlobalConnectionSchema = z.infer<typeof EditGlobalConnectionSchema>;
@@ -39,8 +39,8 @@ type EditGlobalConnectionSchema = z.infer<typeof EditGlobalConnectionSchema>;
 type EditGlobalConnectionDialogProps = {
   connectionId: string;
   currentName: string;
-  projectIds: string[];
-  preSelectForNewProjects: boolean;
+  workspaceIds: string[];
+  preSelectForNewWorkspaces: boolean;
   onEdit: () => void;
   userHasPermissionToEdit: boolean;
 };
@@ -48,8 +48,8 @@ type EditGlobalConnectionDialogProps = {
 const EditGlobalConnectionDialog: React.FC<EditGlobalConnectionDialogProps> = ({
   connectionId,
   currentName,
-  projectIds,
-  preSelectForNewProjects,
+  workspaceIds,
+  preSelectForNewWorkspaces,
   onEdit,
   userHasPermissionToEdit,
 }) => {
@@ -59,8 +59,8 @@ const EditGlobalConnectionDialog: React.FC<EditGlobalConnectionDialogProps> = ({
     resolver: zodResolver(EditGlobalConnectionSchema),
     defaultValues: {
       displayName: currentName,
-      projectIds: projectIds,
-      preSelectForNewProjects: preSelectForNewProjects,
+      workspaceIds: workspaceIds,
+      preSelectForNewWorkspaces: preSelectForNewWorkspaces,
     },
   });
 
@@ -107,8 +107,8 @@ const EditGlobalConnectionDialog: React.FC<EditGlobalConnectionDialogProps> = ({
                 updateGlobalConnection({
                   connectionId,
                   displayName: data.displayName,
-                  projectIds: data.projectIds,
-                  preSelectForNewProjects: data.preSelectForNewProjects,
+                  workspaceIds: data.workspaceIds,
+                  preSelectForNewWorkspaces: data.preSelectForNewWorkspaces,
                   currentName: currentName,
                 }),
               )}
@@ -131,25 +131,25 @@ const EditGlobalConnectionDialog: React.FC<EditGlobalConnectionDialogProps> = ({
                     </FormItem>
                   )}
                 />
-                <ProjectSelector
+                <WorkspaceSelector
                   control={editConnectionForm.control}
-                  name="projectIds"
+                  name="workspaceIds"
                 />
                 <FormField
                   control={editConnectionForm.control}
-                  name="preSelectForNewProjects"
+                  name="preSelectForNewWorkspaces"
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center gap-3">
                       <Checkbox
-                        id="preSelectForNewProjects"
+                        id="preSelectForNewWorkspaces"
                         checked={field.value}
                         onCheckedChange={field.onChange}
                       />
                       <Label
-                        htmlFor="preSelectForNewProjects"
+                        htmlFor="preSelectForNewWorkspaces"
                         className="cursor-pointer"
                       >
-                        {t('Include by default in new projects')}
+                        {t('Include by default in new workspaces')}
                       </Label>
                     </FormItem>
                   )}

@@ -157,18 +157,18 @@ const GlobalConnectionsTable = () => {
       },
     },
     {
-      accessorKey: 'projectsCount',
+      accessorKey: 'workspacesCount',
       size: 100,
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          title={t('Projects')}
+          title={t('Workspaces')}
           icon={FolderOpen}
         />
       ),
       cell: ({ row }) => {
         return (
-          <div className="text-left">{row.original.projectIds.length}</div>
+          <div className="text-left">{row.original.workspaceIds.length}</div>
         );
       },
     },
@@ -177,13 +177,13 @@ const GlobalConnectionsTable = () => {
       cell: ({ row }) => {
         return (
           <div className="flex items-center gap-2 justify-end">
-            {row.original.preSelectForNewProjects && <DefaultTag />}
+            {row.original.preSelectForNewWorkspaces && <DefaultTag />}
             <EditGlobalConnectionDialog
               connectionId={row.original.id}
               currentName={row.original.displayName}
-              projectIds={row.original.projectIds}
-              preSelectForNewProjects={
-                row.original.preSelectForNewProjects ?? false
+              workspaceIds={row.original.workspaceIds}
+              preSelectForNewWorkspaces={
+                row.original.preSelectForNewWorkspaces ?? false
               }
               userHasPermissionToEdit={true}
               onEdit={() => {
@@ -321,7 +321,7 @@ const GlobalConnectionsTable = () => {
         <DataTable
           emptyStateTextTitle={t('No global connections found')}
           emptyStateTextDescription={t(
-            'Create a global connection that can be shared to multiple projects',
+            'Create a global connection that can be shared to multiple workspaces',
           )}
           emptyStateIcon={<Globe className="size-14" />}
           columns={columns}

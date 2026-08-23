@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { VARIABLE_NAME_REGEX } from '../variable'
 
 export const UpsertVariableRequestBody = z.object({
-    projectId: z.string(),
+    workspaceId: z.string(),
     name: z.string().min(1, 'formErrors.required').regex(VARIABLE_NAME_REGEX, 'invalidVariableName'),
     value: z.string().min(1, 'formErrors.required'),
     metadata: z.optional(Metadata),

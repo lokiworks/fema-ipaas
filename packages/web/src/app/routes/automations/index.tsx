@@ -27,25 +27,31 @@ import { TreeItem } from '@/features/automations/lib/types';
 import { connectionsQueries } from '@/features/connections';
 import { connectorsHooks } from '@/features/connectors';
 import { ImportFlowDialog } from '@/features/flows/components/import-flow-dialog';
-import { projectCollectionUtils, getProjectName } from '@/features/projects';
+import {
+  workspaceCollectionUtils,
+  getWorkspaceName,
+} from '@/features/workspaces';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 
 export const AutomationsPage = () => {
-  const { projectId: projectIdFromUrl } = useParams<{ projectId: string }>();
-  const projectId = projectIdFromUrl ?? authenticationSession.getProjectId()!;
+  const { workspaceId: workspaceIdFromUrl } = useParams<{
+    workspaceId: string;
+  }>();
+  const workspaceId =
+    workspaceIdFromUrl ?? authenticationSession.getWorkspaceId()!;
 
-  return <AutomationsPageContent key={projectId} projectId={projectId} />;
+  return <AutomationsPageContent key={workspaceId} workspaceId={workspaceId} />;
 };
 
-const AutomationsPageContent = ({ projectId }: { projectId: string }) => {
+const AutomationsPageContent = ({ workspaceId }: { workspaceId: string }) => {
   const [, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const { data: allProjects = [] } = projectCollectionUtils.useAll();
-  const currentProjectName = (() => {
-    const p = allProjects.find((proj) => proj.id === projectId);
-    return p ? getProjectName(p) : null;
+  const { data: allWorkspaces = [] } = workspaceCollectionUtils.useAll();
+  const currentWorkspaceName = (() => {
+    const p = allWorkspaces.find((proj) => proj.id === workspaceId);
+    return p ? getWorkspaceName(p) : null;
   })();
 
   const { checkAccess } = useAuthorization();
@@ -122,8 +128,8 @@ const AutomationsPageContent = ({ projectId }: { projectId: string }) => {
   const dialogs = useAutomationsDialogs({ mutations, selectedItems });
 
   const { data: connections } = connectionsQueries.useConnections({
-    request: { projectId, limit: 10000 },
-    extraKeys: [projectId],
+    request: { workspaceId, limit: 10000 },
+    extraKeys: [workspaceId],
   });
 
   const { connectors } = connectorsHooks.useConnectors({});
@@ -163,7 +169,7 @@ const AutomationsPageContent = ({ projectId }: { projectId: string }) => {
         }
         toggleFolder(item.id);
       } else if (item.type === 'flow') {
-        const href = authenticationSession.appendProjectRoutePrefix(
+        const href = authenticationSession.appendWorkspaceRoutePrefix(
           `/flows/${item.id}`,
         );
         const flowData = item.data as {
@@ -179,7 +185,7 @@ const AutomationsPageContent = ({ projectId }: { projectId: string }) => {
           href,
           status: flowData?.status ?? null,
           folderName,
-          projectName: currentProjectName,
+          workspaceName: currentWorkspaceName,
         });
         if (ctrlKey) {
           window.open(href, '_blank');
@@ -192,7 +198,7 @@ const AutomationsPageContent = ({ projectId }: { projectId: string }) => {
       navigate,
       toggleFolder,
       folders,
-      currentProjectName,
+      currentWorkspaceName,
       clearSelection,
       expandedFolders,
     ],
@@ -279,7 +285,7 @@ const AutomationsPageContent = ({ projectId }: { projectId: string }) => {
             isLoading={isLoading}
             selectedItems={selectedItems}
             expandedFolders={expandedFolders}
-            projectMembers={undefined}
+            workspaceMembers={undefined}
             folders={folders}
             selectableCount={selectableItems.length}
             isPinned={isPinned}

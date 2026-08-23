@@ -3,7 +3,7 @@ import { FlowVersionMetadata, ListFlowVersionRequest, PrincipalType } from '@fem
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
-import { ProjectResourceType } from '../../core/security/authorization/common'
+import { WorkspaceResourceType } from '../../core/security/authorization/common'
 import { securityAccess } from '../../core/security/authorization/fastify-security'
 import { flowVersionService } from '../flow-version/flow-version.service'
 import { FlowEntity } from './flow.entity'
@@ -16,7 +16,7 @@ export const flowVersionController: FastifyPluginAsyncZod = async (fastify) => {
     fastify.get('/:flowId/versions', ListVersionParams, async (request) => {
         const flow = await flowService(request.log).getOneOrThrow({
             id: request.params.flowId,
-            projectId: request.projectId,
+            workspaceId: request.workspaceId,
         })
         return flowVersionService(request.log).list({
             flowId: flow.id,
@@ -29,8 +29,8 @@ export const flowVersionController: FastifyPluginAsyncZod = async (fastify) => {
 
 const ListVersionParams = {
     config: {
-        security: securityAccess.project([PrincipalType.USER], undefined, {
-            type: ProjectResourceType.TABLE,
+        security: securityAccess.workspace([PrincipalType.USER], undefined, {
+            type: WorkspaceResourceType.TABLE,
             tableName: FlowEntity,
             lookup: {
                 paramKey: 'flowId',

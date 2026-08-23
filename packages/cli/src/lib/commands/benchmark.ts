@@ -3,7 +3,7 @@ import autocannon from 'autocannon';
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import chalk from 'chalk';
 import { Command } from 'commander';
-import { Project } from '@fema/shared';
+import { Workspace } from '@fema/shared';
 
 const BENCHMARK_DOC = 'Load-test a deployment\'s sync-webhook path, auto-discover its shape, and attribute latency (queue-wait vs service-time) against the recommended setup.';
 
@@ -35,11 +35,11 @@ export const benchmarkCommand = new Command('benchmark')
                 measureNetwork(authed),
             ]);
 
-            const project = await provisionProject({ client: authed });
-            log(config, `Provisioned throwaway project ${project.id}`);
+            const workspace = await provisionWorkspace({ client: authed });
+            log(config, `Provisioned throwaway workspace ${workspace.id}`);
             const runsFailed = await (async () => {
-                const projectLimits = await collectProjectLimits({ client: authed, projectId: project.id, rateLimiterEnabled: flags['PROJECT_RATE_LIMITER_ENABLED'] === true });
-                const flowId = await createBenchmarkFlow({ client: authed, projectId: project.id });
+                const workspaceLimits = await collectWorkspaceLimits({ client: authed, workspaceId: workspace.id, rateLimiterEnabled: flags['WORKSPACE_RATE_LIMITER_ENABLED'] === true });
+                const flowId = await createBenchmarkFlow({ client: authed, workspaceId: workspace.id });
                 log(config, `Flow ready: ${flowId}`);
 
                 const slots = setup.executionSlots;
@@ -66,15 +66,15 @@ export const benchmarkCommand = new Command('benchmark')
                     });
                     const queueDepth = queueSampler.stop();
                     const summary = benchmarkUtils.toSummary({ result, flowId, connections: phase.connections });
-                    const runsInWindow = await collectRuns({ client: authed, projectId: project.id, flowId, since: startedAt });
+                    const runsInWindow = await collectRuns({ client: authed, workspaceId: workspace.id, flowId, since: startedAt });
                     runs.push({ label: phase.label, connections: phase.connections, requests, startedAt, summary, timeline: runsInWindow.timeline, outcomes: runsInWindow.outcomes, queueDepth });
                 }
 
                 const diagnosticsTimeline = { intervalMs: DIAGNOSTICS_SAMPLE_INTERVAL_MS, samples: diagnosticsSampler.stop() };
-                log(config, 'Scanning other projects for flows that ran during the benchmark...');
-                const outsideFlows = await collectOutsideFlows({ client: authed, benchmarkProjectId: project.id, since: runs[0].startedAt });
-                const storage = await probeStorage({ client: authed, projectId: project.id, flowId });
-                const report: BenchmarkReport = { meta: buildMeta({ url: config.url }), flowId, project: { id: project.id, limits: projectLimits }, health, diagnostics, diagnosticsTimeline, setup, flags, network, storage, outsideFlows, runs };
+                log(config, 'Scanning other workspaces for flows that ran during the benchmark...');
+                const outsideFlows = await collectOutsideFlows({ client: authed, benchmarkWorkspaceId: workspace.id, since: runs[0].startedAt });
+                const storage = await probeStorage({ client: authed, workspaceId: workspace.id, flowId });
+                const report: BenchmarkReport = { meta: buildMeta({ url: config.url }), flowId, workspace: { id: workspace.id, limits: workspaceLimits }, health, diagnostics, diagnosticsTimeline, setup, flags, network, storage, outsideFlows, runs };
 
                 if (config.json) {
                     process.stdout.write(JSON.stringify(report, null, 2) + '\n');
@@ -83,8 +83,8 @@ export const benchmarkCommand = new Command('benchmark')
                 }
                 return runs.some((r) => r.summary.failed > 0);
             })().finally(async () => {
-                log(config, `Deleting throwaway project ${project.id}`);
-                await deleteProject({ client: authed, id: project.id });
+                log(config, `Deleting throwaway workspace ${workspace.id}`);
+                await deleteWorkspace({ client: authed, id: workspace.id });
             });
             process.exit(runsFailed ? 1 : 0);
         } catch (e) {
@@ -232,11 +232,11 @@ async function measureNetwork(client: AxiosInstance): Promise<NetworkBaseline> {
     return { probes: samples.length, minMs: samples.length ? Math.min(...samples) : 0, p50Ms: percentile(samples, 50) };
 }
 
-async function collectRuns({ client, projectId, flowId, since }: CollectRunsParams): Promise<CollectedRuns> {
+async function collectRuns({ client, workspaceId, flowId, since }: CollectRunsParams): Promise<CollectedRuns> {
     const collected: FlowRunLike[] = [];
     let cursor: string | undefined;
     for (let page = 0; page < MAX_RUN_PAGES; page++) {
-        const params: Record<string, string | number> = { projectId, flowId, createdAfter: since, limit: RUN_PAGE_SIZE };
+        const params: Record<string, string | number> = { workspaceId, flowId, createdAfter: since, limit: RUN_PAGE_SIZE };
         if (cursor) params.cursor = cursor;
         const res = await client.get('/api/v1/flow-runs', { params });
         if (res.status !== 200 || !Array.isArray(res.data?.data)) break;
@@ -356,28 +356,28 @@ function buildMeta({ url }: { url: string }): RunMeta {
 
 // Flows the benchmark does NOT own that ran inside its window. They share the same execution slots,
 // so they are the answer to "why is QUEUE high on a deployment that looks idle". Scans every platform
-// project except the benchmark's throwaway one.
-async function collectOutsideFlows({ client, benchmarkProjectId, since }: CollectOutsideFlowsParams): Promise<OutsideFlowsReport> {
-    const projectsRes = await client.get('/api/v1/projects', { params: { limit: PROJECT_PAGE_SIZE } });
-    if (projectsRes.status !== 200 || !Array.isArray(projectsRes.data?.data)) {
-        return { available: false, detail: `project listing failed (HTTP ${projectsRes.status}) — cannot scan for outside flows`, flows: [] };
+// workspace except the benchmark's throwaway one.
+async function collectOutsideFlows({ client, benchmarkWorkspaceId, since }: CollectOutsideFlowsParams): Promise<OutsideFlowsReport> {
+    const workspacesRes = await client.get('/api/v1/workspaces', { params: { limit: WORKSPACE_PAGE_SIZE } });
+    if (workspacesRes.status !== 200 || !Array.isArray(workspacesRes.data?.data)) {
+        return { available: false, detail: `workspace listing failed (HTTP ${workspacesRes.status}) — cannot scan for outside flows`, flows: [] };
     }
     const notes: string[] = [];
-    if (projectsRes.data.next) notes.push(`only the first ${PROJECT_PAGE_SIZE} projects scanned`);
-    const projects: Array<{ id: string }> = projectsRes.data.data;
+    if (workspacesRes.data.next) notes.push(`only the first ${WORKSPACE_PAGE_SIZE} workspaces scanned`);
+    const workspaces: Array<{ id: string }> = workspacesRes.data.data;
 
     const outsideRuns: OutsideRunLike[] = [];
-    for (const project of projects.filter((p) => p.id !== benchmarkProjectId)) {
+    for (const workspace of workspaces.filter((p) => p.id !== benchmarkWorkspaceId)) {
         let cursor: string | undefined;
         for (let page = 0; page < MAX_OUTSIDE_RUN_PAGES; page++) {
-            const params: Record<string, string | number> = { projectId: project.id, createdAfter: since, limit: RUN_PAGE_SIZE };
+            const params: Record<string, string | number> = { workspaceId: workspace.id, createdAfter: since, limit: RUN_PAGE_SIZE };
             if (cursor) params.cursor = cursor;
             const res = await client.get('/api/v1/flow-runs', { params });
             if (res.status !== 200 || !Array.isArray(res.data?.data)) break;
-            outsideRuns.push(...res.data.data.map((r: Record<string, unknown>) => ({ ...r, projectId: project.id }) as OutsideRunLike));
+            outsideRuns.push(...res.data.data.map((r: Record<string, unknown>) => ({ ...r, workspaceId: workspace.id }) as OutsideRunLike));
             cursor = res.data.next ?? undefined;
             if (!cursor) break;
-            if (page === MAX_OUTSIDE_RUN_PAGES - 1) notes.push(`run listing truncated at ${MAX_OUTSIDE_RUN_PAGES * RUN_PAGE_SIZE} runs for project ${project.id}`);
+            if (page === MAX_OUTSIDE_RUN_PAGES - 1) notes.push(`run listing truncated at ${MAX_OUTSIDE_RUN_PAGES * RUN_PAGE_SIZE} runs for workspace ${workspace.id}`);
         }
     }
 
@@ -386,7 +386,7 @@ async function collectOutsideFlows({ client, benchmarkProjectId, since }: Collec
     const flows: OutsideFlow[] = [];
     for (const [index, aggregate] of aggregates.entries()) {
         const description = index < MAX_OUTSIDE_FLOWS_DETAILED
-            ? await describeFlow({ client, flowId: aggregate.flowId, projectId: aggregate.projectId })
+            ? await describeFlow({ client, flowId: aggregate.flowId, workspaceId: aggregate.workspaceId })
             : { displayName: null, connectors: [] };
         flows.push({ ...aggregate, ...description });
     }
@@ -394,10 +394,10 @@ async function collectOutsideFlows({ client, benchmarkProjectId, since }: Collec
 }
 
 function aggregateOutsideRuns(runs: OutsideRunLike[]): OutsideFlowAggregate[] {
-    const byFlow = new Map<string, { projectId: string; runs: number; totalRunMs: number; timedRuns: number }>();
+    const byFlow = new Map<string, { workspaceId: string; runs: number; totalRunMs: number; timedRuns: number }>();
     for (const run of runs) {
         if (typeof run.flowId !== 'string') continue;
-        const entry = byFlow.get(run.flowId) ?? { projectId: run.projectId, runs: 0, totalRunMs: 0, timedRuns: 0 };
+        const entry = byFlow.get(run.flowId) ?? { workspaceId: run.workspaceId, runs: 0, totalRunMs: 0, timedRuns: 0 };
         entry.runs += 1;
         const started = Date.parse(run.startTime ?? '');
         const finished = Date.parse(run.finishTime ?? '');
@@ -408,12 +408,12 @@ function aggregateOutsideRuns(runs: OutsideRunLike[]): OutsideFlowAggregate[] {
         byFlow.set(run.flowId, entry);
     }
     return [...byFlow.entries()]
-        .map(([flowId, agg]) => ({ flowId, projectId: agg.projectId, runs: agg.runs, avgRunMs: agg.timedRuns > 0 ? Math.round(agg.totalRunMs / agg.timedRuns) : null }))
+        .map(([flowId, agg]) => ({ flowId, workspaceId: agg.workspaceId, runs: agg.runs, avgRunMs: agg.timedRuns > 0 ? Math.round(agg.totalRunMs / agg.timedRuns) : null }))
         .sort((a, b) => b.runs - a.runs);
 }
 
-async function describeFlow({ client, flowId, projectId }: DescribeFlowParams): Promise<FlowDescription> {
-    const res = await client.get(`/api/v1/flows/${flowId}`, { params: { projectId } }).catch(() => null);
+async function describeFlow({ client, flowId, workspaceId }: DescribeFlowParams): Promise<FlowDescription> {
+    const res = await client.get(`/api/v1/flows/${flowId}`, { params: { workspaceId } }).catch(() => null);
     if (!res || res.status !== 200 || isNilLike(res.data?.version)) {
         return { displayName: null, connectors: [] };
     }
@@ -426,8 +426,8 @@ function isNilLike(value: unknown): value is null | undefined {
     return value === null || value === undefined;
 }
 
-async function probeStorage({ client, projectId, flowId }: ProbeStorageParams): Promise<StorageProbe> {
-    const res = await client.get('/api/v1/flow-runs', { params: { projectId, flowId, limit: 50 } });
+async function probeStorage({ client, workspaceId, flowId }: ProbeStorageParams): Promise<StorageProbe> {
+    const res = await client.get('/api/v1/flow-runs', { params: { workspaceId, flowId, limit: 50 } });
     const runs: FlowRunLike[] = Array.isArray(res.data?.data) ? res.data.data : [];
     if (runs.length === 0) {
         return { logsPersisted: 0, sampled: 0, detail: 'No runs found to check log persistence.' };
@@ -457,43 +457,43 @@ function authenticate({ config }: { config: BenchmarkConfig }): AuthResult {
     return { token: apiKey };
 }
 
-// The benchmark always runs in a throwaway project it provisions and deletes, never the caller's own.
-// A low maxConcurrentJobs on a real project would queue the load and inflate latency — a measurement
-// artifact, not a server problem — so the throwaway project is created with a cap well above any
-// realistic slot count, taking the project rate limiter out of the picture entirely.
-async function provisionProject({ client }: { client: AxiosInstance }): Promise<ResolvedProject> {
-    const res = await client.post('/api/v1/projects', {
+// The benchmark always runs in a throwaway workspace it provisions and deletes, never the caller's own.
+// A low maxConcurrentJobs on a real workspace would queue the load and inflate latency — a measurement
+// artifact, not a server problem — so the throwaway workspace is created with a cap well above any
+// realistic slot count, taking the workspace rate limiter out of the picture entirely.
+async function provisionWorkspace({ client }: { client: AxiosInstance }): Promise<ResolvedWorkspace> {
+    const res = await client.post('/api/v1/workspaces', {
         displayName: `benchmark-${Date.now()}`,
-        maxConcurrentJobs: EPHEMERAL_PROJECT_MAX_CONCURRENCY,
+        maxConcurrentJobs: EPHEMERAL_WORKSPACE_MAX_CONCURRENCY,
     });
     if (res.status >= 400 || typeof res.data?.id !== 'string') {
-        throw new Error(`Could not create a benchmark project (HTTP ${res.status}: ${JSON.stringify(res.data)}). The API key must be a platform admin key, and the plan must allow team projects.`);
+        throw new Error(`Could not create a benchmark workspace (HTTP ${res.status}: ${JSON.stringify(res.data)}). The API key must be a platform admin key, and the plan must allow team workspaces.`);
     }
     return { id: res.data.id };
 }
 
-async function deleteProject({ client, id }: { client: AxiosInstance; id: string }): Promise<void> {
-    await client.delete(`/api/v1/projects/${id}`).catch(() => undefined);
+async function deleteWorkspace({ client, id }: { client: AxiosInstance; id: string }): Promise<void> {
+    await client.delete(`/api/v1/workspaces/${id}`).catch(() => undefined);
 }
 
-// Reads the project's own concurrency cap so a queue-throttled benchmark can be told apart from a slow
-// server. PROJECT_RATE_LIMITER_ENABLED gates whether the cap is enforced at all.
-async function collectProjectLimits({ client, projectId, rateLimiterEnabled }: CollectProjectLimitsParams): Promise<ProjectLimits> {
-    const res = await client.get<Project>(`/api/v1/projects/${projectId}`);
+// Reads the workspace's own concurrency cap so a queue-throttled benchmark can be told apart from a slow
+// server. WORKSPACE_RATE_LIMITER_ENABLED gates whether the cap is enforced at all.
+async function collectWorkspaceLimits({ client, workspaceId, rateLimiterEnabled }: CollectWorkspaceLimitsParams): Promise<WorkspaceLimits> {
+    const res = await client.get<Workspace>(`/api/v1/workspaces/${workspaceId}`);
     if (res.status !== 200 || typeof res.data !== 'object') {
-        return { available: false, reason: `projects/${projectId} returned HTTP ${res.status}` };
+        return { available: false, reason: `workspaces/${workspaceId} returned HTTP ${res.status}` };
     }
     const maxConcurrentJobs: number | null = res.data?.maxConcurrentJobs ?? null;
     return { available: true, maxConcurrentJobs, rateLimiterEnabled };
 }
 
-async function createBenchmarkFlow({ client, projectId }: { client: AxiosInstance; projectId: string }): Promise<string> {
+async function createBenchmarkFlow({ client, workspaceId }: { client: AxiosInstance; workspaceId: string }): Promise<string> {
     const [webhookVersion, mapperVersion] = await Promise.all([
         resolveConnectorVersion(client, WEBHOOK_CONNECTOR),
         resolveConnectorVersion(client, DATA_MAPPER_CONNECTOR),
     ]);
 
-    const created = await client.post('/api/v1/flows', { displayName: 'Benchmark Flow', projectId });
+    const created = await client.post('/api/v1/flows', { displayName: 'Benchmark Flow', workspaceId });
     const flowId: string | undefined = created.data?.id;
     if (!flowId) {
         throw new Error(`Failed to create flow: ${JSON.stringify(created.data)}`);
@@ -636,7 +636,7 @@ function renderReport(report: BenchmarkReport): void {
         console.log(`  redis    : ${infra(d.redis)}`);
         console.log(`  storage  : ${infra(d.storage)}   ${chalk.gray('(S3/GCS write+read round-trip; same cost is inside every RUN as the end-of-run log backup)')}`);
         if (d.config) {
-            console.log(`  config   : execution=${d.config.executionMode} storage=${d.config.fileStorageLocation} signedUrls=${d.config.s3SignedUrls} sandboxMemKB=${d.config.sandboxMemoryLimitKb} s3=${d.config.s3Endpoint ?? 'n/a'}/${d.config.s3Region ?? 'n/a'} rateLimiter=${d.config.projectRateLimiterEnabled ?? 'n/a'} concurrentJobsLimit=${d.config.defaultConcurrentJobsLimit ?? 'n/a'}`);
+            console.log(`  config   : execution=${d.config.executionMode} storage=${d.config.fileStorageLocation} signedUrls=${d.config.s3SignedUrls} sandboxMemKB=${d.config.sandboxMemoryLimitKb} s3=${d.config.s3Endpoint ?? 'n/a'}/${d.config.s3Region ?? 'n/a'} rateLimiter=${d.config.workspaceRateLimiterEnabled ?? 'n/a'} concurrentJobsLimit=${d.config.defaultConcurrentJobsLimit ?? 'n/a'}`);
         }
         if (d.apps) {
             console.log(`  apps     : ${d.apps.count} connected`);
@@ -679,16 +679,16 @@ function renderReport(report: BenchmarkReport): void {
         console.log(`  [${badge}] ${c.dimension.padEnd(18)} ${c.detail}`);
     }
 
-    console.log(chalk.bold('\nProject'));
-    console.log(`  throwaway project (auto-created, deleted after) : ${report.project.id}`);
-    if (report.project.limits.available === true) {
-        const cap = report.project.limits.maxConcurrentJobs;
+    console.log(chalk.bold('\nWorkspace'));
+    console.log(`  throwaway workspace (auto-created, deleted after) : ${report.workspace.id}`);
+    if (report.workspace.limits.available === true) {
+        const cap = report.workspace.limits.maxConcurrentJobs;
         const capLabel = cap === null ? 'unset (platform default)' : `${cap} concurrent jobs`;
-        // The benchmark project is uncapped on purpose, so these numbers can't throttle THIS run — they are
-        // reported so you can see whether the platform rate limiter would throttle your real projects.
-        console.log(`  benchmark project cap : ${capLabel} (not a bottleneck here)`);
+        // The benchmark workspace is uncapped on purpose, so these numbers can't throttle THIS run — they are
+        // reported so you can see whether the platform rate limiter would throttle your real workspaces.
+        console.log(`  benchmark workspace cap : ${capLabel} (not a bottleneck here)`);
     } else {
-        console.log(chalk.yellow(`  project limits skipped: ${report.project.limits.reason}`));
+        console.log(chalk.yellow(`  workspace limits skipped: ${report.workspace.limits.reason}`));
     }
 
     renderRateLimiter(report);
@@ -730,15 +730,15 @@ function renderReport(report: BenchmarkReport): void {
     console.log(chalk.gray('\nShare the full machine-readable bundle for support: re-run with --json > ap-benchmark.json'));
 }
 
-// Answers "is the project rate limiter the reason QUEUE is high?" directly: prints whether the
-// limiter is on, the cap real projects get, whether the driven load would exceed it, and — the
+// Answers "is the workspace rate limiter the reason QUEUE is high?" directly: prints whether the
+// limiter is on, the cap real workspaces get, whether the driven load would exceed it, and — the
 // decisive signal — whether any benchmark run carries the >=20s re-queue delay the limiter imposes.
 function renderRateLimiter(report: BenchmarkReport): void {
-    console.log(chalk.bold('\nRate limiter (project concurrency throttle)'));
-    const enabled = report.flags['PROJECT_RATE_LIMITER_ENABLED'] === true;
+    console.log(chalk.bold('\nRate limiter (workspace concurrency throttle)'));
+    const enabled = report.flags['WORKSPACE_RATE_LIMITER_ENABLED'] === true;
     const defaultLimit = report.flags['DEFAULT_CONCURRENT_JOBS_LIMIT'];
-    console.log(`  PROJECT_RATE_LIMITER_ENABLED  : ${enabled ? chalk.yellow('true') : chalk.green('false')}`);
-    console.log(`  DEFAULT_CONCURRENT_JOBS_LIMIT : ${JSON.stringify(defaultLimit ?? null)} ${chalk.gray('(cap per real project; the benchmark project is exempt via its own high cap)')}`);
+    console.log(`  WORKSPACE_RATE_LIMITER_ENABLED  : ${enabled ? chalk.yellow('true') : chalk.green('false')}`);
+    console.log(`  DEFAULT_CONCURRENT_JOBS_LIMIT : ${JSON.stringify(defaultLimit ?? null)} ${chalk.gray('(cap per real workspace; the benchmark workspace is exempt via its own high cap)')}`);
 
     if (!enabled) {
         console.log(chalk.green('  => rate limiter is OFF — it cannot be the source of any queue time on this deployment.'));
@@ -751,16 +751,16 @@ function renderRateLimiter(report: BenchmarkReport): void {
     console.log(`  rate-limited runs detected    : ${rateLimited > 0 ? chalk.yellow(`${rateLimited}/${sampled}`) : chalk.green(`0/${sampled}`)} ${chalk.gray(`(a limited run is re-queued with a >=${RATE_LIMIT_MIN_BACKOFF_MS / 1000}s delay, so its QUEUE >= ${RATE_LIMIT_DETECTION_MS / 1000}s; max QUEUE seen ${(maxQueueMs / 1000).toFixed(1)}s)`)}`);
 
     if (rateLimited > 0) {
-        console.log(chalk.yellow(`  => rate limiter FIRED during the benchmark — ${rateLimited} runs carry the backoff delay. Raise the project cap or lower concurrency.`));
+        console.log(chalk.yellow(`  => rate limiter FIRED during the benchmark — ${rateLimited} runs carry the backoff delay. Raise the workspace cap or lower concurrency.`));
         return;
     }
     console.log(chalk.green(`  => no run shows the backoff signature: the QUEUE times measured here contain zero rate-limiter delay.`));
 
     const driven = Math.max(0, ...report.runs.map((r) => r.connections));
     if (typeof defaultLimit === 'number' && driven > defaultLimit) {
-        console.log(chalk.yellow(`  => caution for REAL projects: this load ran at concurrency ${driven}, above the ${defaultLimit}-job default cap — a real project under the same load would throttle (+${RATE_LIMIT_MIN_BACKOFF_MS / 1000}s per rejected run).`));
+        console.log(chalk.yellow(`  => caution for REAL workspaces: this load ran at concurrency ${driven}, above the ${defaultLimit}-job default cap — a real workspace under the same load would throttle (+${RATE_LIMIT_MIN_BACKOFF_MS / 1000}s per rejected run).`));
     } else if (typeof defaultLimit === 'number') {
-        console.log(chalk.gray(`  => real projects capped at ${defaultLimit} concurrent jobs would sustain this load (driven concurrency ${driven}).`));
+        console.log(chalk.gray(`  => real workspaces capped at ${defaultLimit} concurrent jobs would sustain this load (driven concurrency ${driven}).`));
     }
 }
 
@@ -801,7 +801,7 @@ function renderOutsideFlows(report: BenchmarkReport): void {
     for (const flow of flows) {
         const avgRun = flow.avgRunMs === null ? 'n/a' : `${flow.avgRunMs} ms`;
         console.log(`  - ${flow.displayName ?? flow.flowId}: ${flow.runs} runs, avg run ${avgRun}`);
-        console.log(chalk.gray(`      flow ${flow.flowId}  project ${flow.projectId}  connectors [${flow.connectors.join(', ') || 'unknown'}]`));
+        console.log(chalk.gray(`      flow ${flow.flowId}  workspace ${flow.workspaceId}  connectors [${flow.connectors.join(', ') || 'unknown'}]`));
     }
     console.log(chalk.gray(`  window starts ${CLOCK_SKEW_BUFFER_MS / 60_000} min before the load (clock-skew tolerance), so slightly-earlier runs can appear.`));
     if (detail) console.log(chalk.gray(`  note: ${detail}`));
@@ -908,7 +908,7 @@ function log(config: BenchmarkConfig, message: string): void {
 const WEBHOOK_CONNECTOR = '@fema/connector-webhook';
 const DATA_MAPPER_CONNECTOR = '@fema/connector-data-mapper';
 const DEFAULT_CONCURRENCY = 10;
-const EPHEMERAL_PROJECT_MAX_CONCURRENCY = 1000;
+const EPHEMERAL_WORKSPACE_MAX_CONCURRENCY = 1000;
 const NETWORK_PROBES = 20;
 const RUN_PAGE_SIZE = 100;
 const MAX_RUN_PAGES = 30;
@@ -918,7 +918,7 @@ const RECOMMENDED_MAX_RAM_GB = 1;
 const QUEUE_SAMPLE_INTERVAL_MS = 500;
 const DIAGNOSTICS_SAMPLE_INTERVAL_MS = 5_000;
 const CLOCK_SKEW_BUFFER_MS = 5 * 60 * 1000;
-const PROJECT_PAGE_SIZE = 100;
+const WORKSPACE_PAGE_SIZE = 100;
 const MAX_OUTSIDE_RUN_PAGES = 5;
 const MAX_OUTSIDE_FLOWS_DETAILED = 20;
 // The server's rate-limiter re-queues a rejected job with min(600s, 20s * 2^attempts) delay
@@ -930,12 +930,12 @@ const RATE_LIMIT_DETECTION_MS = 15_000;
 const CPU_STEAL_WARN_PCT = 5;
 const CPU_THROTTLE_WARN_PCT = 20;
 // Flags that matter for a perf triage — edition, version, execution mode, resource limits, and the
-// two throttles (project concurrency cap + rate limiter) that silently cap throughput and emit 429s.
+// two throttles (workspace concurrency cap + rate limiter) that silently cap throughput and emit 429s.
 const DIAGNOSTIC_FLAGS = [
     'EDITION', 'CURRENT_VERSION', 'ENVIRONMENT', 'PUBLIC_URL', 'CONNECTORS_SYNC_MODE',
     'FLOW_RUN_TIME_SECONDS', 'TRIGGER_TIMEOUT_SECONDS', 'WEBHOOK_TIMEOUT_SECONDS',
     'FLOW_RUN_MEMORY_LIMIT_KB', 'FLOW_RUN_LOG_SIZE_LIMIT_MB', 'ALLOW_NPM_PACKAGES_IN_CODE_STEP',
-    'DEFAULT_CONCURRENT_JOBS_LIMIT', 'PROJECT_RATE_LIMITER_ENABLED', 'EXECUTION_DATA_RETENTION_DAYS',
+    'DEFAULT_CONCURRENT_JOBS_LIMIT', 'WORKSPACE_RATE_LIMITER_ENABLED', 'EXECUTION_DATA_RETENTION_DAYS',
 ];
 
 export const benchmarkUtils = { normalizeOptions, toSummary, resolvePhases, validateSetup, aggregateTimeline, percentile, aggregateOutsideRuns };
@@ -951,9 +951,9 @@ type BenchmarkConfig = {
 
 type AuthResult = { token: string };
 
-type ResolvedProject = { id: string };
-type CollectProjectLimitsParams = { client: AxiosInstance; projectId: string; rateLimiterEnabled: boolean };
-type ProjectLimits =
+type ResolvedWorkspace = { id: string };
+type CollectWorkspaceLimitsParams = { client: AxiosInstance; workspaceId: string; rateLimiterEnabled: boolean };
+type WorkspaceLimits =
     | { available: false; reason: string }
     | { available: true; maxConcurrentJobs: number | null; rateLimiterEnabled: boolean };
 
@@ -1014,19 +1014,19 @@ type StorageProbe = {
     detail: string;
 };
 
-type CollectRunsParams = { client: AxiosInstance; projectId: string; flowId: string; since: string };
+type CollectRunsParams = { client: AxiosInstance; workspaceId: string; flowId: string; since: string };
 type RunOutcomes = Record<string, number>;
 type CollectedRuns = { timeline: TimelineAggregate; outcomes: RunOutcomes };
-type ProbeStorageParams = { client: AxiosInstance; projectId: string; flowId: string };
+type ProbeStorageParams = { client: AxiosInstance; workspaceId: string; flowId: string };
 
 type QueueSample = { waiting: number; active: number };
-type OutsideRunLike = { flowId?: string; projectId: string; startTime?: string; finishTime?: string };
-type OutsideFlowAggregate = { flowId: string; projectId: string; runs: number; avgRunMs: number | null };
+type OutsideRunLike = { flowId?: string; workspaceId: string; startTime?: string; finishTime?: string };
+type OutsideFlowAggregate = { flowId: string; workspaceId: string; runs: number; avgRunMs: number | null };
 type FlowDescription = { displayName: string | null; connectors: string[] };
 type OutsideFlow = OutsideFlowAggregate & FlowDescription;
 type OutsideFlowsReport = { available: boolean; detail?: string; flows: OutsideFlow[] };
-type CollectOutsideFlowsParams = { client: AxiosInstance; benchmarkProjectId: string; since: string };
-type DescribeFlowParams = { client: AxiosInstance; flowId: string; projectId: string };
+type CollectOutsideFlowsParams = { client: AxiosInstance; benchmarkWorkspaceId: string; since: string };
+type DescribeFlowParams = { client: AxiosInstance; flowId: string; workspaceId: string };
 type QueueDepth = { samples: number; available: boolean; maxWaiting?: number; maxActive?: number; avgWaiting?: number };
 type QueueSampler = { stop: () => QueueDepth };
 type DiagnosticsSample = {
@@ -1073,7 +1073,7 @@ type DiagnosticsInfo = {
         s3SignedUrls: boolean | null;
         s3Endpoint: string | null;
         s3Region: string | null;
-        projectRateLimiterEnabled?: boolean | null;
+        workspaceRateLimiterEnabled?: boolean | null;
         defaultConcurrentJobsLimit?: number | null;
     };
     apps?: {
@@ -1142,7 +1142,7 @@ type PhaseReport = {
 type BenchmarkReport = {
     meta: RunMeta;
     flowId: string;
-    project: { id: string; limits: ProjectLimits };
+    workspace: { id: string; limits: WorkspaceLimits };
     health: HealthInfo;
     diagnostics: DiagnosticsInfo;
     diagnosticsTimeline: DiagnosticsTimeline;

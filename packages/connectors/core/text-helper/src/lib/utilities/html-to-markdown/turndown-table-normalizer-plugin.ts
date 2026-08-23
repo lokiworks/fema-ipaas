@@ -39,7 +39,7 @@
  * rule runs — see the "leaky abstraction" note below — but Turndown
  * doesn't expose that internal parser for a plugin to reuse, so a
  * plugin needing pre-traversal DOM access has to bring its own. jsdom
- * is used here because it's already a dependency in this project's
+ * is used here because it's already a dependency in this workspace's
  * environment; @mixmark-io/domino (the same lightweight parser
  * Turndown uses internally) is an equally valid, lighter-weight
  * choice if jsdom isn't already present elsewhere in your dependency

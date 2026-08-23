@@ -42,13 +42,17 @@ import {
   connectorsHooks,
 } from '@/features/connectors';
 import { platformConnectionsQueries } from '@/features/platform-admin/hooks/platform-connections-hooks';
-import { getProjectName, projectCollectionUtils } from '@/features/projects';
+import {
+  getWorkspaceName,
+  workspaceCollectionUtils,
+} from '@/features/workspaces';
 import { formatUtils } from '@/lib/format-utils';
 
 export default function PlatformConnectionsPage() {
   const { data: connections, isLoading } = platformConnectionsQueries.useList();
   const { data: owners } = platformConnectionsQueries.useOwners();
-  const { data: projects } = projectCollectionUtils.useAllPlatformProjects();
+  const { data: workspaces } =
+    workspaceCollectionUtils.useAllPlatformWorkspaces();
   const { connectors } = connectorsHooks.useConnectors({});
 
   const filters: DataTableFilters<
@@ -82,12 +86,12 @@ export default function PlatformConnectionsPage() {
     },
     {
       type: 'select',
-      title: t('Project'),
-      accessorKey: 'projectIds',
+      title: t('Workspace'),
+      accessorKey: 'workspaceIds',
       icon: Folder,
-      options: (projects ?? []).map((project) => ({
-        label: getProjectName(project),
-        value: project.id,
+      options: (workspaces ?? []).map((workspace) => ({
+        label: getWorkspaceName(workspace),
+        value: workspace.id,
       })),
     },
     {
@@ -157,16 +161,18 @@ export default function PlatformConnectionsPage() {
         },
       },
       {
-        accessorKey: 'projects',
+        accessorKey: 'workspaces',
         size: 220,
         header: ({ column }) => (
           <DataTableColumnHeader
             column={column}
-            title={t('Project')}
+            title={t('Workspace')}
             icon={Folder}
           />
         ),
-        cell: ({ row }) => <ProjectsCell projects={row.original.projects} />,
+        cell: ({ row }) => (
+          <WorkspacesCell workspaces={row.original.workspaces} />
+        ),
       },
       {
         accessorKey: 'scope',
@@ -227,7 +233,7 @@ export default function PlatformConnectionsPage() {
       <DashboardPageHeader
         title={t('Connections')}
         description={t(
-          'All app connections across every project on this platform',
+          'All app connections across every workspace on this platform',
         )}
       />
       {owners?.truncated && (
@@ -240,7 +246,7 @@ export default function PlatformConnectionsPage() {
       <DataTable
         emptyStateTextTitle={t('No connections found')}
         emptyStateTextDescription={t(
-          'Connections created in any project on this platform will appear here.',
+          'Connections created in any workspace on this platform will appear here.',
         )}
         emptyStateIcon={<Unplug className="size-14" />}
         columns={columns}
@@ -261,22 +267,22 @@ const ScopeBadge = ({ scope }: { scope: ConnectionScope }) => {
       </Badge>
     );
   }
-  return <Badge variant="outline">{t('Project')}</Badge>;
+  return <Badge variant="outline">{t('Workspace')}</Badge>;
 };
 
-const ProjectsCell = ({
-  projects,
+const WorkspacesCell = ({
+  workspaces,
 }: {
-  projects: PlatformConnectionsListItem['projects'];
+  workspaces: PlatformConnectionsListItem['workspaces'];
 }) => {
-  if (projects.length === 0) {
+  if (workspaces.length === 0) {
     return <span className="text-muted-foreground">{t('N/A')}</span>;
   }
-  if (projects.length === 1) {
-    const project = projects[0];
-    const name = getProjectName(project);
+  if (workspaces.length === 1) {
+    const workspace = workspaces[0];
+    const name = getWorkspaceName(workspace);
     return (
-      <Link to={`/projects/${project.id}`}>
+      <Link to={`/workspaces/${workspace.id}`}>
         <TextWithTooltip tooltipMessage={name}>
           <span className="truncate max-w-[200px] text-primary hover:underline">
             {name}
@@ -285,8 +291,8 @@ const ProjectsCell = ({
       </Link>
     );
   }
-  const label = t('{count, plural, =1 {1 project} other {# projects}}', {
-    count: projects.length,
+  const label = t('{count, plural, =1 {1 workspace} other {# workspaces}}', {
+    count: workspaces.length,
   });
   return (
     <Tooltip>
@@ -297,9 +303,9 @@ const ProjectsCell = ({
       </TooltipTrigger>
       <TooltipContent>
         <ul className="flex flex-col gap-1 max-w-[260px]">
-          {projects.map((project) => (
-            <li key={project.id} className="truncate">
-              {getProjectName(project)}
+          {workspaces.map((workspace) => (
+            <li key={workspace.id} className="truncate">
+              {getWorkspaceName(workspace)}
             </li>
           ))}
         </ul>

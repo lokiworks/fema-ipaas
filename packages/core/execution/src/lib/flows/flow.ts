@@ -45,7 +45,7 @@ export type FlowExecutionState = {
 }
 export const Flow = z.object({
     ...BaseModelSchema,
-    projectId: z.string(),
+    workspaceId: z.string(),
     externalId: z.string(),
     ownerId: Nullable(z.string()),
     folderId: Nullable(z.string()),

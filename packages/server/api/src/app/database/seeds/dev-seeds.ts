@@ -46,7 +46,7 @@ const seedDevUser = async (): Promise<void> => {
         provider: UserIdentityProvider.EMAIL,
     })
 
-    await platformService(log).createPlatformWithProject({
+    await platformService(log).createPlatformWithWorkspace({
         identityId: response.id,
         name: 'dev\'s Platform',
         invalidatePreviousTokens: true,

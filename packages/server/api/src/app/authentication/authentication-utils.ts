@@ -1,20 +1,20 @@
 import { assertNotNullOrUndefined, ErrorCode, isNil, PlatformError } from '@fema/core-utils'
-import { ApEnvironment, AuthenticationResponse, EndpointScope, PlatformRole, PrincipalType, Project, ProjectType, TelemetryEventName, User, UserIdentity, UserIdentityProvider, UserStatus } from '@fema/shared'
+import { ApEnvironment, AuthenticationResponse, EndpointScope, PlatformRole, PrincipalType, TelemetryEventName, User, UserIdentity, UserIdentityProvider, UserStatus, Workspace, WorkspaceType } from '@fema/shared'
 import { FastifyBaseLogger, FastifyRequest } from 'fastify'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
 import { telemetry } from '../helper/telemetry.utils'
-import { projectService } from '../project/project-service'
 import { userService } from '../user/user-service'
 import { userInvitationsService } from '../user-invitations/user-invitation.service'
+import { workspaceService } from '../workspace/workspace-service'
 import { accessTokenManager } from './lib/access-token-manager'
 import { userIdentityService } from './user-identity/user-identity-service'
 
 export const authenticationUtils = (log: FastifyBaseLogger) => ({
-    async assertUserIsInvitedToPlatformOrProject({
+    async assertUserIsInvitedToPlatformOrWorkspace({
         email,
         platformId,
-    }: AssertUserIsInvitedToPlatformOrProjectParams): Promise<void> {
+    }: AssertUserIsInvitedToPlatformOrWorkspaceParams): Promise<void> {
         const isInvited = await userInvitationsService(log).hasAnyAcceptedInvitations({
             platformId,
             email,
@@ -30,21 +30,21 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
         }
     },
 
-    async getProjectAndToken(params: GetProjectAndTokenParams): Promise<AuthenticationResponse> {
+    async getWorkspaceAndToken(params: GetWorkspaceAndTokenParams): Promise<AuthenticationResponse> {
         const user = await userService(log).getOneOrFail({ id: params.userId })
-        const projects = await projectService(log).getAllForUser({
+        const workspaces = await workspaceService(log).getAllForUser({
             platformId: params.platformId,
             userId: params.userId,
             isPrivileged: userService(log).isUserPrivileged(user),
         })
-        const project = isNil(params.projectId)
-            ? findPersonalProject(projects, params.userId) ?? projects?.[0]
-            : projects.find((project) => project.id === params.projectId)
-        if (isNil(project)) {
+        const workspace = isNil(params.workspaceId)
+            ? findPersonalWorkspace(workspaces, params.userId) ?? workspaces?.[0]
+            : workspaces.find((workspace) => workspace.id === params.workspaceId)
+        if (isNil(workspace)) {
             throw new PlatformError({
                 code: ErrorCode.INVITATION_ONLY_SIGN_UP,
                 params: {
-                    message: 'No project found for user',
+                    message: 'No workspace found for user',
                 },
             })
         }
@@ -82,7 +82,7 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
             newsLetter: identity.newsLetter,
             verified: identity.verified,
             token,
-            projectId: project.id,
+            workspaceId: workspace.id,
         }
     },
 
@@ -115,7 +115,7 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
             newsLetter: identity.newsLetter,
             verified: identity.verified,
             token,
-            projectId: null,
+            workspaceId: null,
         }
     },
 
@@ -134,15 +134,15 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
     async sendTelemetry({
         user,
         identity,
-        projectId,
+        workspaceId,
     }: SendTelemetryParams): Promise<void> {
         try {
             await telemetry(log).identify(identity, user)
-            await telemetry(log).trackProject(projectId, {
+            await telemetry(log).trackWorkspace(workspaceId, {
                 name: TelemetryEventName.SIGNED_UP,
                 payload: {
                     userId: user.id,
-                    projectId,
+                    workspaceId,
                 },
             })
         }
@@ -178,21 +178,21 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
             return request.principal.id
         }
         // TODO currently it's same as api service, but it's better to get it from api key service, in case we introduced more admin users
-        const projectId = request.principal.type === PrincipalType.ENGINE ? request.principal.projectId : request.projectId
-        assertNotNullOrUndefined(projectId, 'projectId')
-        const project = await projectService(log).getOneOrThrow(projectId)
-        return project.ownerId
+        const workspaceId = request.principal.type === PrincipalType.ENGINE ? request.principal.workspaceId : request.workspaceId
+        assertNotNullOrUndefined(workspaceId, 'workspaceId')
+        const workspace = await workspaceService(log).getOneOrThrow(workspaceId)
+        return workspace.ownerId
     },
 })
 
-function findPersonalProject(projects: Project[], userId: string): Project | undefined {
-    return projects.find((project) => project.ownerId === userId && project.type === ProjectType.PERSONAL)
+function findPersonalWorkspace(workspaces: Workspace[], userId: string): Workspace | undefined {
+    return workspaces.find((workspace) => workspace.ownerId === userId && workspace.type === WorkspaceType.PERSONAL)
 }
 
 type SendTelemetryParams = {
     identity: UserIdentity
     user: User
-    projectId: string
+    workspaceId: string
 }
 
 type AssertDomainIsAllowedParams = {
@@ -210,7 +210,7 @@ type AssertEmailMatchesSsoDomainParams = {
     platformId: string
 }
 
-type AssertUserIsInvitedToPlatformOrProjectParams = {
+type AssertUserIsInvitedToPlatformOrWorkspaceParams = {
     email: string
     platformId: string
 }
@@ -219,9 +219,9 @@ type GetOnboardingResponseParams = {
     identityId: string
 }
 
-type GetProjectAndTokenParams = {
+type GetWorkspaceAndTokenParams = {
     userId: string
     platformId: string
-    projectId: string | null
+    workspaceId: string | null
     scope?: EndpointScope
 }

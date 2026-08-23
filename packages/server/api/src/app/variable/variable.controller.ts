@@ -3,7 +3,7 @@ import { ApplicationEventName, ConnectionOwners, ListVariablesRequestQuery, Prin
 import { FastifyPluginCallbackZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
-import { ProjectResourceType } from '../core/security/authorization/common'
+import { WorkspaceResourceType } from '../core/security/authorization/common'
 import { securityAccess } from '../core/security/authorization/fastify-security'
 import { applicationEvents } from '../helper/application-events'
 import { securityHelper } from '../helper/security-helper'
@@ -14,7 +14,7 @@ export const variableController: FastifyPluginCallbackZod = (app, _opts, done) =
     app.post('/', CreateVariableRequest, async (request, reply) => {
         const ownerId = await securityHelper.getUserIdFromRequest(request)
         const variable = await variableService(request.log).create({
-            projectId: request.projectId,
+            workspaceId: request.workspaceId,
             platformId: request.principal.platform.id,
             name: request.body.name,
             value: request.body.value,
@@ -31,7 +31,7 @@ export const variableController: FastifyPluginCallbackZod = (app, _opts, done) =
     app.post('/:id', UpdateVariableRequest, async (request, reply) => {
         const variable = await variableService(request.log).update({
             id: request.params.id,
-            projectId: request.projectId,
+            workspaceId: request.workspaceId,
             platformId: request.principal.platform.id,
             value: request.body.value,
             metadata: request.body.metadata,
@@ -45,7 +45,7 @@ export const variableController: FastifyPluginCallbackZod = (app, _opts, done) =
 
     app.get('/', ListVariablesRequest, async (request): Promise<SeekPage<VariableWithoutSensitiveData>> => {
         return variableService(request.log).list({
-            projectId: request.projectId,
+            workspaceId: request.workspaceId,
             platformId: request.principal.platform.id,
             cursor: request.query.cursor,
             limit: request.query.limit,
@@ -55,7 +55,7 @@ export const variableController: FastifyPluginCallbackZod = (app, _opts, done) =
 
     app.get('/owners', ListVariableOwnersRequest, async (request): Promise<SeekPage<ConnectionOwners>> => {
         const owners = await variableService(request.log).getOwners({
-            projectId: request.projectId,
+            workspaceId: request.workspaceId,
             platformId: request.principal.platform.id,
         })
         return { data: owners, next: null, previous: null }
@@ -64,12 +64,12 @@ export const variableController: FastifyPluginCallbackZod = (app, _opts, done) =
     app.post('/:id/reveal', RevealVariableRequest, async (request) => {
         const variable = await variableService(request.log).getOneOrThrowWithoutValue({
             id: request.params.id,
-            projectId: request.projectId,
+            workspaceId: request.workspaceId,
             platformId: request.principal.platform.id,
         })
         const value = await variableService(request.log).getDecryptedValue({
             id: request.params.id,
-            projectId: request.projectId,
+            workspaceId: request.workspaceId,
             platformId: request.principal.platform.id,
         })
         applicationEvents(request.log).sendUserEvent(request, {
@@ -82,7 +82,7 @@ export const variableController: FastifyPluginCallbackZod = (app, _opts, done) =
     app.delete('/:id', DeleteVariableRequest, async (request, reply): Promise<void> => {
         const variable = await variableService(request.log).delete({
             id: request.params.id,
-            projectId: request.projectId,
+            workspaceId: request.workspaceId,
             platformId: request.principal.platform.id,
         })
         applicationEvents(request.log).sendUserEvent(request, {
@@ -97,16 +97,16 @@ export const variableController: FastifyPluginCallbackZod = (app, _opts, done) =
 
 const CreateVariableRequest = {
     config: {
-        security: securityAccess.project(
+        security: securityAccess.workspace(
             [PrincipalType.USER, PrincipalType.SERVICE],
             Permission.WRITE_VARIABLE,
-            { type: ProjectResourceType.BODY },
+            { type: WorkspaceResourceType.BODY },
         ),
     },
     schema: {
         tags: ['variables'],
         security: [SERVICE_KEY_SECURITY_OPENAPI],
-        description: 'Create a project variable. Fails if a variable with the same name already exists.',
+        description: 'Create a workspace variable. Fails if a variable with the same name already exists.',
         body: UpsertVariableRequestBody,
         response: {
             [StatusCodes.CREATED]: VariableWithoutSensitiveData,
@@ -116,16 +116,16 @@ const CreateVariableRequest = {
 
 const UpdateVariableRequest = {
     config: {
-        security: securityAccess.project(
+        security: securityAccess.workspace(
             [PrincipalType.USER, PrincipalType.SERVICE],
             Permission.WRITE_VARIABLE,
-            { type: ProjectResourceType.TABLE, tableName: VariableEntity },
+            { type: WorkspaceResourceType.TABLE, tableName: VariableEntity },
         ),
     },
     schema: {
         tags: ['variables'],
         security: [SERVICE_KEY_SECURITY_OPENAPI],
-        description: 'Update a project variable value or metadata. Name cannot be changed.',
+        description: 'Update a workspace variable value or metadata. Name cannot be changed.',
         params: z.object({ id: ApId }),
         body: UpdateVariableRequestBody,
         response: {
@@ -136,17 +136,17 @@ const UpdateVariableRequest = {
 
 const ListVariablesRequest = {
     config: {
-        security: securityAccess.project(
+        security: securityAccess.workspace(
             [PrincipalType.USER, PrincipalType.SERVICE],
             Permission.READ_VARIABLE,
-            { type: ProjectResourceType.QUERY },
+            { type: WorkspaceResourceType.QUERY },
         ),
     },
     schema: {
         tags: ['variables'],
         security: [SERVICE_KEY_SECURITY_OPENAPI],
         querystring: ListVariablesRequestQuery,
-        description: 'List project variables',
+        description: 'List workspace variables',
         response: {
             [StatusCodes.OK]: SeekPage(VariableWithoutSensitiveData),
         },
@@ -155,17 +155,17 @@ const ListVariablesRequest = {
 
 const ListVariableOwnersRequest = {
     config: {
-        security: securityAccess.project(
+        security: securityAccess.workspace(
             [PrincipalType.USER, PrincipalType.SERVICE],
             Permission.READ_VARIABLE,
-            { type: ProjectResourceType.QUERY },
+            { type: WorkspaceResourceType.QUERY },
         ),
     },
     schema: {
         tags: ['variables'],
         security: [SERVICE_KEY_SECURITY_OPENAPI],
-        querystring: z.object({ projectId: z.string() }),
-        description: 'List users who own at least one variable in the project',
+        querystring: z.object({ workspaceId: z.string() }),
+        description: 'List users who own at least one variable in the workspace',
         response: {
             [StatusCodes.OK]: SeekPage(z.object({
                 firstName: z.string(),
@@ -178,10 +178,10 @@ const ListVariableOwnersRequest = {
 
 const RevealVariableRequest = {
     config: {
-        security: securityAccess.project(
+        security: securityAccess.workspace(
             [PrincipalType.USER],
             Permission.WRITE_VARIABLE,
-            { type: ProjectResourceType.TABLE, tableName: VariableEntity },
+            { type: WorkspaceResourceType.TABLE, tableName: VariableEntity },
         ),
     },
     schema: {
@@ -197,16 +197,16 @@ const RevealVariableRequest = {
 
 const DeleteVariableRequest = {
     config: {
-        security: securityAccess.project(
+        security: securityAccess.workspace(
             [PrincipalType.USER, PrincipalType.SERVICE],
             Permission.WRITE_VARIABLE,
-            { type: ProjectResourceType.TABLE, tableName: VariableEntity },
+            { type: WorkspaceResourceType.TABLE, tableName: VariableEntity },
         ),
     },
     schema: {
         tags: ['variables'],
         security: [SERVICE_KEY_SECURITY_OPENAPI],
-        description: 'Delete a project variable',
+        description: 'Delete a workspace variable',
         params: z.object({ id: ApId }),
         response: {
             [StatusCodes.NO_CONTENT]: z.never(),

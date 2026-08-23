@@ -1,5 +1,5 @@
 import { PropertyType } from '@fema/connector-sdk'
-import { assertNotNullOrUndefined, ErrorCode, isNil, PlatformError, PlatformId, ProjectId, tryCatch, UserId } from '@fema/core-utils'
+import { assertNotNullOrUndefined, ErrorCode, isNil, PlatformError, PlatformId, tryCatch, UserId, WorkspaceId } from '@fema/core-utils'
 import { Connection, ConnectionStatus, ConnectionType, ConnectionValue, ConnectionWithoutSensitiveData, EngineResponse, EngineResponseStatus, ExecuteRefreshTokenAuthResponse, Flow, FlowOperationType, flowStructureUtil, FlowVersion, FlowVersionState, PopulatedFlow, WorkerJobType } from '@fema/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
@@ -11,8 +11,8 @@ import { flowService } from '../../flows/flow/flow.service'
 import { flowVersionRepo, flowVersionService } from '../../flows/flow-version/flow-version.service'
 import { encryptUtils } from '../../helper/encryption'
 import { exceptionHandler } from '../../helper/exception-handler'
-import { projectService } from '../../project/project-service'
 import { userInteractionWatcher } from '../../workers/user-interaction-watcher'
+import { workspaceService } from '../../workspace/workspace-service'
 import { ConnectionSchema } from '../connection.entity'
 import { connectionsRepo } from './connection-service'
 import { oauth2Handler } from './oauth2'
@@ -23,13 +23,13 @@ export const connectionHandler = (log: FastifyBaseLogger) => ({
         const { connection, newConnection, userId, applyToPublishedVersions } = params
 
         await Promise.all(flows.map(async (flow) => {
-            const project = await projectService(log).getOneOrThrow(flow.projectId)
+            const workspace = await workspaceService(log).getOneOrThrow(flow.workspaceId)
             // Don't change the order: republish first (when opted in), then make sure the
             // draft also points to the new connection.
             if (applyToPublishedVersions) {
-                await handleLockedVersion(flow, userId, flow.projectId, project.platformId, connection, newConnection, log)
+                await handleLockedVersion(flow, userId, flow.workspaceId, workspace.platformId, connection, newConnection, log)
             }
-            await handleDraftVersion(flow, userId, flow.projectId, project.platformId, connection, newConnection, log)
+            await handleDraftVersion(flow, userId, flow.workspaceId, workspace.platformId, connection, newConnection, log)
         }))
     },
 
@@ -42,11 +42,11 @@ export const connectionHandler = (log: FastifyBaseLogger) => ({
     // versions of the flows it can see (those whose latest version references the
     // connection), so only published versions whose flow's latest version dropped the
     // connection stay untouched and count as blocking.
-    async countPublishedFlowsReferencingConnection({ projectId, externalId, applyToPublishedVersions }: CountPublishedFlowsParams): Promise<number> {
+    async countPublishedFlowsReferencingConnection({ workspaceId, externalId, applyToPublishedVersions }: CountPublishedFlowsParams): Promise<number> {
         const query = flowVersionRepo()
             .createQueryBuilder('flow_version')
             .innerJoin('flow', 'flow', 'flow.id = flow_version."flowId"')
-            .where('flow."projectId" = :projectId', { projectId })
+            .where('flow."workspaceId" = :workspaceId', { workspaceId })
             .andWhere('flow_version.id = flow."publishedVersionId"')
             .andWhere('flow_version."connectionIds" && :externalIds', { externalIds: [externalId] })
         if (applyToPublishedVersions) {
@@ -61,13 +61,13 @@ export const connectionHandler = (log: FastifyBaseLogger) => ({
         return query.getCount()
     },
 
-    async refresh(connection: Connection, projectId: ProjectId, log: FastifyBaseLogger): Promise<Connection> {
+    async refresh(connection: Connection, workspaceId: WorkspaceId, log: FastifyBaseLogger): Promise<Connection> {
         switch (connection.value.type) {
             case ConnectionType.PLATFORM_OAUTH2:
                 connection.value = await oauth2Handler[connection.value.type](log).refresh({
                     connectorName: connection.connectorName,
                     platformId: connection.platformId,
-                    projectId,
+                    workspaceId,
                     connectionValue: connection.value,
                 })
                 break
@@ -75,7 +75,7 @@ export const connectionHandler = (log: FastifyBaseLogger) => ({
                 connection.value = await oauth2Handler[connection.value.type](log).refresh({
                     connectorName: connection.connectorName,
                     platformId: connection.platformId,
-                    projectId,
+                    workspaceId,
                     connectionValue: connection.value,
                 })
                 break
@@ -83,7 +83,7 @@ export const connectionHandler = (log: FastifyBaseLogger) => ({
                 connection.value = await oauth2Handler[connection.value.type](log).refresh({
                     connectorName: connection.connectorName,
                     platformId: connection.platformId,
-                    projectId,
+                    workspaceId,
                     connectionValue: connection.value,
                 })
                 break
@@ -140,12 +140,12 @@ export const connectionHandler = (log: FastifyBaseLogger) => ({
  */
     async lockAndRefreshConnection({
         platformId,
-        projectId,
+        workspaceId,
         externalId,
         log,
     }: {
         platformId: PlatformId
-        projectId: ProjectId
+        workspaceId: WorkspaceId
         externalId: string
         log: FastifyBaseLogger
     }) {
@@ -158,7 +158,7 @@ export const connectionHandler = (log: FastifyBaseLogger) => ({
 
                 try {
                     const encryptedConnection = await connectionsRepo().findOneBy({
-                        projectIds: ArrayContains([projectId]),
+                        workspaceIds: ArrayContains([workspaceId]),
                         externalId,
                     })
                     if (isNil(encryptedConnection)) {
@@ -168,7 +168,7 @@ export const connectionHandler = (log: FastifyBaseLogger) => ({
                     if (!await this.needRefresh(connection, log)) {
                         return connection
                     }
-                    const refreshedConnection = await this.refresh(connection, projectId, log)
+                    const refreshedConnection = await this.refresh(connection, workspaceId, log)
         
                     await connectionsRepo().update(refreshedConnection.id, {
                         status: ConnectionStatus.ACTIVE,
@@ -192,10 +192,10 @@ export const connectionHandler = (log: FastifyBaseLogger) => ({
             },
         })
     },
-    async revalidateConnection({ id, platformId, projectId, externalId, validate, log }: {
+    async revalidateConnection({ id, platformId, workspaceId, externalId, validate, log }: {
         id: string
         platformId: PlatformId
-        projectId: ProjectId
+        workspaceId: WorkspaceId
         externalId: string
         validate: (params: { connectorName: string, value: ConnectionValue }) => Promise<void>
         log: FastifyBaseLogger
@@ -207,7 +207,7 @@ export const connectionHandler = (log: FastifyBaseLogger) => ({
                 const encryptedConnection = await connectionsRepo().findOneBy({
                     id,
                     platformId,
-                    projectIds: ArrayContains([projectId]),
+                    workspaceIds: ArrayContains([workspaceId]),
                 })
                 if (isNil(encryptedConnection)) {
                     return null
@@ -220,7 +220,7 @@ export const connectionHandler = (log: FastifyBaseLogger) => ({
                 const skipRefresh = connection.value.type === ConnectionType.PLATFORM_OAUTH2
                 try {
                     if (!skipRefresh && (forceRefresh || await this.needRefresh(connection, log))) {
-                        connection = await this.refresh(connection, projectId, log)
+                        connection = await this.refresh(connection, workspaceId, log)
                         await connectionsRepo().update(connection.id, {
                             status: ConnectionStatus.ACTIVE,
                             value: await encryptUtils.encryptObject(connection.value),
@@ -342,7 +342,7 @@ class CustomAuthRefreshError extends Error {
     }
 }
 
-async function handleLockedVersion(flow: PopulatedFlow, userId: UserId, projectId: ProjectId, platformId: PlatformId, connection: ConnectionWithoutSensitiveData, newConnection: ConnectionWithoutSensitiveData, log: FastifyBaseLogger) {
+async function handleLockedVersion(flow: PopulatedFlow, userId: UserId, workspaceId: WorkspaceId, platformId: PlatformId, connection: ConnectionWithoutSensitiveData, newConnection: ConnectionWithoutSensitiveData, log: FastifyBaseLogger) {
     if (isNil(flow.publishedVersionId)) {
         return
     }
@@ -352,7 +352,7 @@ async function handleLockedVersion(flow: PopulatedFlow, userId: UserId, projectI
 
     await flowService(log).update({
         id: flow.id,
-        projectId,
+        workspaceId,
         platformId,
         userId,
         previousFlow: flow,
@@ -364,7 +364,7 @@ async function handleLockedVersion(flow: PopulatedFlow, userId: UserId, projectI
 
     await flowService(log).update({
         id: flow.id,
-        projectId,
+        workspaceId,
         platformId,
         userId,
         operation: {
@@ -374,7 +374,7 @@ async function handleLockedVersion(flow: PopulatedFlow, userId: UserId, projectI
     })
 }
 
-async function handleDraftVersion(flow: Flow, userId: UserId, projectId: ProjectId, platformId: PlatformId, connection: ConnectionWithoutSensitiveData, newConnection: ConnectionWithoutSensitiveData, log: FastifyBaseLogger) {
+async function handleDraftVersion(flow: Flow, userId: UserId, workspaceId: WorkspaceId, platformId: PlatformId, connection: ConnectionWithoutSensitiveData, newConnection: ConnectionWithoutSensitiveData, log: FastifyBaseLogger) {
     const latestVersion = await flowVersionService(log).getFlowVersionOrThrow({
         flowId: flow.id,
         versionId: undefined,
@@ -390,7 +390,7 @@ async function handleDraftVersion(flow: Flow, userId: UserId, projectId: Project
 
     await flowService(log).update({
         id: flow.id,
-        projectId,
+        workspaceId,
         platformId,
         userId,
         operation: {
@@ -432,7 +432,7 @@ type UpdateFlowsWithConnectionParams = {
 }
 
 type CountPublishedFlowsParams = {
-    projectId: ProjectId
+    workspaceId: WorkspaceId
     externalId: string
     applyToPublishedVersions: boolean
 }

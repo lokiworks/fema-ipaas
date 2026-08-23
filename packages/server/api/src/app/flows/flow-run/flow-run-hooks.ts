@@ -16,7 +16,7 @@ export const flowRunHooks = (log: FastifyBaseLogger) => ({
         const isConnectorTrigger = !isNil(flowVersion) && flowVersion.trigger.type === FlowTriggerType.CONNECTOR && !isNil(flowVersion.trigger.settings.triggerName)
         const isManualTrigger = isConnectorTrigger && isManualConnectorTrigger({ connectorName: flowVersion.trigger.settings.connectorName, triggerName: flowVersion.trigger.settings.triggerName })
         if (flowRun.environment === RunEnvironment.TESTING || isManualTrigger) {
-            websocketService.to(flowRun.projectId).emit(WebsocketClientEvent.UPDATE_RUN_PROGRESS, {
+            websocketService.to(flowRun.workspaceId).emit(WebsocketClientEvent.UPDATE_RUN_PROGRESS, {
                 flowRun,
             })
         }
@@ -24,7 +24,7 @@ export const flowRunHooks = (log: FastifyBaseLogger) => ({
             log.info({
                 flowRun: { id: flowRun.id, status: flowRun.status },
                 flow: { id: flowRun.flowId },
-                project: { id: flowRun.projectId },
+                workspace: { id: flowRun.workspaceId },
                 step: { name: flowRun.failedStep },
             }, '[flowRunHooks#onFinish] Production run failed')
         }

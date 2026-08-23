@@ -254,7 +254,7 @@ describe('platformQueueMigrationService', () => {
 
 function buildPollingJobData({ platformId, flowVersionId }: { platformId: string, flowVersionId: string }) {
     return {
-        projectId: apId(),
+        workspaceId: apId(),
         platformId,
         schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
         flowVersionId,

@@ -24,7 +24,7 @@ export const platformController: FastifyPluginAsyncZod = async (app) => {
         const identityId = isOnboarding
             ? req.principal.id
             : (await userService(req.log).getOneOrFail({ id: req.principal.id })).identityId
-        const { response } = await platformService(req.log).createPlatformWithProject({
+        const { response } = await platformService(req.log).createPlatformWithWorkspace({
             identityId,
             name: req.body.name,
             invalidatePreviousTokens: isOnboarding,

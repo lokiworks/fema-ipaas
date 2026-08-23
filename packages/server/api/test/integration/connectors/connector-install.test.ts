@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
-    DefaultProjectRole,
+    DefaultWorkspaceRole,
     EngineResponseStatus,
     PackageType,
     ConnectorScope,
@@ -102,7 +102,7 @@ describe('POST /v1/connectors — private connector installation', () => {
 
     it('should reject installation by a non-platform-admin user', async () => {
         const ctx = await createTestContext(app!)
-        const memberCtx = await createMemberContext(app!, ctx, { projectRole: DefaultProjectRole.EDITOR })
+        const memberCtx = await createMemberContext(app!, ctx, { workspaceRole: DefaultWorkspaceRole.EDITOR })
 
         const formData = new FormData()
         formData.append(

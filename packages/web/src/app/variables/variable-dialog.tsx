@@ -80,7 +80,7 @@ export function VariableDialog(props: VariableDialogProps) {
 function VariableForm(props: VariableFormProps) {
   const { existing, onOpenChange, onSaved } = props;
   const isEdit = !!existing;
-  const projectId = authenticationSession.getProjectId();
+  const workspaceId = authenticationSession.getWorkspaceId();
   const [valueVisible, setValueVisible] = useState(false);
   const [showValueField, setShowValueField] = useState(!isEdit);
 
@@ -95,14 +95,14 @@ function VariableForm(props: VariableFormProps) {
 
   const { mutate: save, isPending } = useMutation({
     mutationFn: async (values: FormValues) => {
-      if (!projectId) {
-        throw new Error('No project');
+      if (!workspaceId) {
+        throw new Error('No workspace');
       }
       if (existing) {
         return variablesApi.update(existing.id, { value: values.value });
       }
       return variablesApi.create({
-        projectId,
+        workspaceId,
         name: values.name,
         value: values.value ?? '',
       });

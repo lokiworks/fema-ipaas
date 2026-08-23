@@ -41,7 +41,7 @@ describe('Human Input API', () => {
             await connectorCache(mockLog).setup()
 
             const mockFlow = createMockFlow({
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
                 status: FlowStatus.ENABLED,
             })
             await db.save('flow', mockFlow)
@@ -106,7 +106,7 @@ describe('Human Input API', () => {
             const ctx = await createTestContext(app!)
 
             const mockFlow = createMockFlow({
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
                 status: FlowStatus.ENABLED,
             })
             await db.save('flow', mockFlow)
@@ -142,7 +142,7 @@ describe('Human Input API', () => {
             await connectorCache(mockLog).setup()
 
             const mockFlow = createMockFlow({
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
                 status: FlowStatus.ENABLED,
             })
             await db.save('flow', mockFlow)

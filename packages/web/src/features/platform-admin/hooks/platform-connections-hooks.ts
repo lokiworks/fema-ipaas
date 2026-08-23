@@ -27,7 +27,7 @@ export const platformConnectionsQueries = {
         const cursor = searchParams.get(CURSOR_QUERY_PARAM);
         const limit = searchParams.get(LIMIT_QUERY_PARAM);
         const status = searchParams.getAll('status') as ConnectionStatus[];
-        const projectIds = searchParams.getAll('projectIds');
+        const workspaceIds = searchParams.getAll('workspaceIds');
         const ownerIds = searchParams.getAll('ownerIds');
         return platformConnectionsApi.list({
           cursor: cursor ?? undefined,
@@ -35,7 +35,7 @@ export const platformConnectionsQueries = {
           displayName: searchParams.get('displayName') ?? undefined,
           connectorName: searchParams.get('connectorName') ?? undefined,
           status: status.length > 0 ? status : undefined,
-          projectIds: projectIds.length > 0 ? projectIds : undefined,
+          workspaceIds: workspaceIds.length > 0 ? workspaceIds : undefined,
           ownerIds: ownerIds.length > 0 ? ownerIds : undefined,
         });
       },

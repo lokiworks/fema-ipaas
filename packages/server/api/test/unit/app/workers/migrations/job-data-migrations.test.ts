@@ -29,7 +29,7 @@ function baseFlowJob(overrides: Partial<ExecuteFlowJobData> = {}): ExecuteFlowJo
     return {
         jobType: WorkerJobType.EXECUTE_FLOW,
         schemaVersion: 6,
-        projectId: 'proj-1',
+        workspaceId: 'proj-1',
         platformId: 'plat-1',
         flowId: 'flow-1',
         flowVersionId: 'fv-1',
@@ -47,7 +47,7 @@ function basePollingJob(overrides: Partial<PollingJobData> = {}): PollingJobData
     return {
         jobType: WorkerJobType.EXECUTE_POLLING,
         schemaVersion: 6,
-        projectId: 'proj-1',
+        workspaceId: 'proj-1',
         platformId: 'plat-1',
         flowVersionId: 'fv-1',
         flowId: 'flow-1',

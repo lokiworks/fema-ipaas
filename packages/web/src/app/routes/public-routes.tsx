@@ -4,7 +4,7 @@ import { PageTitle } from '@/app/components/page-title';
 import { RouteLoadingBar } from '@/components/custom/route-loading-bar';
 import { lazyWithRetry } from '@/lib/lazy-with-retry';
 
-import { ProjectDashboardLayout } from '../components/project-layout';
+import { WorkspaceDashboardLayout } from '../components/workspace-layout';
 import { TemplateDetailsWrapper } from '../guards/template-details-wrapper';
 
 import NotFoundPage from './404-page';
@@ -32,13 +32,13 @@ export const publicRoutes = [
   {
     path: '/templates',
     element: (
-      <ProjectDashboardLayout>
+      <WorkspaceDashboardLayout>
         <PageTitle title="Templates">
           <SuspenseWrapper>
             <TemplatesPage />
           </SuspenseWrapper>
         </PageTitle>
-      </ProjectDashboardLayout>
+      </WorkspaceDashboardLayout>
     ),
   },
   {

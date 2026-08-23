@@ -80,7 +80,7 @@ async function buildActionContext({ connector, request, hooks, pending }: Action
                 hooks.hookResponse = { ...hooks.hookResponse, type: 'paused' }
             },
         },
-        project: createProjectContext(runtime),
+        workspace: createWorkspaceContext(runtime),
     }
 
     return backwardCompatabilityContextUtils.makeActionContextBackwardCompatible({
@@ -125,7 +125,7 @@ async function buildTriggerContext({ connector, request, hooks }: TriggerParams)
         propsValue,
         payload: request.payload ?? {},
         run: { id: runtime.flowRunId },
-        project: createProjectContext(runtime),
+        workspace: createWorkspaceContext(runtime),
         server: {
             token: runtime.engineToken,
             apiUrl: runtime.internalApiUrl,
@@ -144,7 +144,7 @@ function buildPropsContext({ runtime, stepName, searchValue }: PropsContextReque
             apiUrl: runtime.internalApiUrl,
             publicUrl: runtime.publicApiUrl,
         },
-        project: createProjectContext(runtime),
+        workspace: createWorkspaceContext(runtime),
         flows: createFlowsContext({
             engineToken: runtime.engineToken,
             internalApiUrl: runtime.internalApiUrl,
@@ -177,7 +177,7 @@ async function processProps({ request, props, requireAuth, connector }: ProcessP
 function createConnections({ runtime, target, hooks }: { runtime: ConnectorRuntime, target: 'actions' | 'triggers' | 'properties', hooks: CollectedHooks }): ReturnType<typeof utils.createConnectionManager> {
     return utils.createConnectionManager({
         apiUrl: runtime.internalApiUrl,
-        projectId: runtime.projectId,
+        workspaceId: runtime.workspaceId,
         engineToken: runtime.engineToken,
         target,
         hookResponse: hooks.hookResponse,
@@ -186,15 +186,15 @@ function createConnections({ runtime, target, hooks }: { runtime: ConnectorRunti
     })
 }
 
-function createProjectContext(runtime: ConnectorRuntime): { id: string, externalId: () => Promise<string | undefined> } {
+function createWorkspaceContext(runtime: ConnectorRuntime): { id: string, externalId: () => Promise<string | undefined> } {
     return {
-        id: runtime.projectId,
+        id: runtime.workspaceId,
         externalId: async () => {
-            const response = await retryFetch(`${runtime.internalApiUrl}v1/worker/project`, {
+            const response = await retryFetch(`${runtime.internalApiUrl}v1/worker/workspace`, {
                 headers: { Authorization: `Bearer ${runtime.engineToken}` },
             })
-            const project = await response.json()
-            return isObject(project) && typeof project.externalId === 'string' ? project.externalId : undefined
+            const workspace = await response.json()
+            return isObject(workspace) && typeof workspace.externalId === 'string' ? workspace.externalId : undefined
         },
     }
 }
@@ -225,7 +225,7 @@ async function createWaitpoint({ runtime, stepName, hooks, params }: SubmitWaitp
         apiUrl: runtime.internalApiUrl,
         engineToken: runtime.engineToken,
         flowRunId: runtime.flowRunId,
-        projectId: runtime.projectId,
+        workspaceId: runtime.workspaceId,
         stepName,
         type: params.type,
         version: params.version ?? 'V1',

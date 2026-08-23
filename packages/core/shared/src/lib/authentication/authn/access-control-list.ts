@@ -1,25 +1,25 @@
 import { Permission } from '@fema/core-utils'
-import { DefaultProjectRole } from '../../management/project/project-member'
+import { DefaultWorkspaceRole } from '../../management/workspace/workspace-member'
 
-export const rolePermissions: Record<DefaultProjectRole, Permission[]> = {
-    [DefaultProjectRole.ADMIN]: [
+export const rolePermissions: Record<DefaultWorkspaceRole, Permission[]> = {
+    [DefaultWorkspaceRole.ADMIN]: [
         Permission.READ_CONNECTION,
         Permission.WRITE_CONNECTION,
         Permission.READ_FLOW,
         Permission.WRITE_FLOW,
         Permission.UPDATE_FLOW_STATUS,
-        Permission.READ_PROJECT_MEMBER,
-        Permission.WRITE_PROJECT_MEMBER,
+        Permission.READ_WORKSPACE_MEMBER,
+        Permission.WRITE_WORKSPACE_MEMBER,
         Permission.WRITE_INVITATION,
         Permission.READ_INVITATION,
-        Permission.WRITE_PROJECT_RELEASE,
-        Permission.READ_PROJECT_RELEASE,
+        Permission.WRITE_WORKSPACE_RELEASE,
+        Permission.READ_WORKSPACE_RELEASE,
         Permission.READ_RUN,
         Permission.WRITE_RUN,
         Permission.WRITE_ALERT,
         Permission.READ_ALERT,
-        Permission.WRITE_PROJECT,
-        Permission.READ_PROJECT,
+        Permission.WRITE_WORKSPACE,
+        Permission.READ_WORKSPACE,
         Permission.WRITE_FOLDER,
         Permission.READ_FOLDER,
         Permission.READ_TABLE,
@@ -33,19 +33,19 @@ export const rolePermissions: Record<DefaultProjectRole, Permission[]> = {
         Permission.READ_AGENT,
         Permission.WRITE_AGENT,
     ],
-    [DefaultProjectRole.EDITOR]: [
+    [DefaultWorkspaceRole.EDITOR]: [
         Permission.READ_CONNECTION,
         Permission.WRITE_CONNECTION,
         Permission.READ_FLOW,
         Permission.WRITE_FLOW,
         Permission.UPDATE_FLOW_STATUS,
-        Permission.READ_PROJECT_MEMBER,
+        Permission.READ_WORKSPACE_MEMBER,
         Permission.READ_INVITATION,
-        Permission.WRITE_PROJECT_RELEASE,
-        Permission.READ_PROJECT_RELEASE,
+        Permission.WRITE_WORKSPACE_RELEASE,
+        Permission.READ_WORKSPACE_RELEASE,
         Permission.READ_RUN,
         Permission.WRITE_RUN,
-        Permission.READ_PROJECT,
+        Permission.READ_WORKSPACE,
         Permission.WRITE_FOLDER,
         Permission.READ_FOLDER,
         Permission.READ_TABLE,
@@ -59,12 +59,12 @@ export const rolePermissions: Record<DefaultProjectRole, Permission[]> = {
         Permission.READ_AGENT,
         Permission.WRITE_AGENT,
     ],
-    [DefaultProjectRole.VIEWER]: [
+    [DefaultWorkspaceRole.VIEWER]: [
         Permission.READ_CONNECTION,
         Permission.READ_FLOW,
-        Permission.READ_PROJECT_MEMBER,
+        Permission.READ_WORKSPACE_MEMBER,
         Permission.READ_INVITATION,
-        Permission.READ_PROJECT,
+        Permission.READ_WORKSPACE,
         Permission.READ_RUN,
         Permission.READ_FOLDER,
         Permission.READ_TABLE,

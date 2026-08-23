@@ -1,6 +1,6 @@
 import { apId } from '@fema/core-utils'
 import { ActionBase } from '@fema/connector-sdk'
-import { DefaultProjectRole, FlowTriggerType, PackageType, ConnectorType, PrincipalType } from '@fema/shared'
+import { DefaultWorkspaceRole, FlowTriggerType, PackageType, ConnectorType, PrincipalType } from '@fema/shared'
 import { FastifyBaseLogger, FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { databaseConnection } from '../../../../src/app/database/database-connection'
@@ -184,7 +184,7 @@ describe('Connector Metadata CE API', () => {
             await db.save('connector_metadata', mockConnector)
             await connectorCache(mockLog).setup()
 
-            const response = await ctx.get(`/v1/connectors/@fema/ce-scoped-connector?projectId=${ctx.project.id}`)
+            const response = await ctx.get(`/v1/connectors/@fema/ce-scoped-connector?workspaceId=${ctx.workspace.id}`)
 
             expect(response?.statusCode).toBe(StatusCodes.OK)
             const body = response?.json()
@@ -363,7 +363,7 @@ describe('Connector Metadata CE API', () => {
         it('should reject deletion by a non-admin platform member with 403', async () => {
             const ownerCtx = await createTestContext(app!)
             const memberCtx = await createMemberContext(app!, ownerCtx, {
-                projectRole: DefaultProjectRole.EDITOR,
+                workspaceRole: DefaultWorkspaceRole.EDITOR,
             })
             const mockConnector = createMockConnectorMetadata({
                 name: '@custom/member-cannot-delete',
@@ -411,7 +411,7 @@ describe('Connector Metadata CE API', () => {
                 version: '0.1.0',
             })
             await db.save('connector_metadata', mockConnector)
-            const mockFlow = createMockFlow({ projectId: ctx.project.id })
+            const mockFlow = createMockFlow({ workspaceId: ctx.workspace.id })
             await db.save('flow', mockFlow)
             const mockFlowVersion = createMockFlowVersion({
                 flowId: mockFlow.id,
@@ -452,7 +452,7 @@ describe('Connector Metadata CE API', () => {
                 version: '0.1.0',
             })
             await db.save('connector_metadata', mockConnector)
-            const mockFlow = createMockFlow({ projectId: ctx.project.id })
+            const mockFlow = createMockFlow({ workspaceId: ctx.workspace.id })
             await db.save('flow', mockFlow)
             const staleVersion = createMockFlowVersion({
                 flowId: mockFlow.id,
@@ -498,7 +498,7 @@ describe('Connector Metadata CE API', () => {
                 version: '0.1.0',
             })
             await db.save('connector_metadata', mockConnector)
-            const otherFlow = createMockFlow({ projectId: otherCtx.project.id })
+            const otherFlow = createMockFlow({ workspaceId: otherCtx.workspace.id })
             await db.save('flow', otherFlow)
             const otherFlowVersion = createMockFlowVersion({
                 flowId: otherFlow.id,

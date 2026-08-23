@@ -1,7 +1,7 @@
 import { Property, StoreScope } from "@fema/connector-sdk"
 
 export enum ConnectorStoreScope {
-    PROJECT = 'COLLECTION',
+    WORKSPACE = 'COLLECTION',
     FLOW = 'FLOW',
     RUN = 'RUN',
 }
@@ -9,8 +9,8 @@ export enum ConnectorStoreScope {
 const testRunId = 'test-run-id-CbVidYfEuCRpUanfEb3RU';
 export function getScopeAndKey(params: Params): { scope: StoreScope, key: string } {
     switch (params.scope) {
-        case ConnectorStoreScope.PROJECT:
-            return { scope: StoreScope.PROJECT, key: params.key }
+        case ConnectorStoreScope.WORKSPACE:
+            return { scope: StoreScope.WORKSPACE, key: params.key }
         case ConnectorStoreScope.FLOW:
             return { scope: StoreScope.FLOW, key: params.key }
         case ConnectorStoreScope.RUN:
@@ -37,8 +37,8 @@ export const common = {
         options: {
             options: [
                 {
-                    label: 'Project',
-                    value: ConnectorStoreScope.PROJECT,
+                    label: 'Workspace',
+                    value: ConnectorStoreScope.WORKSPACE,
                 },
                 {
                     label: 'Flow',
@@ -50,6 +50,6 @@ export const common = {
                 },
             ],
         },
-        defaultValue: ConnectorStoreScope.PROJECT,
+        defaultValue: ConnectorStoreScope.WORKSPACE,
     })
 }

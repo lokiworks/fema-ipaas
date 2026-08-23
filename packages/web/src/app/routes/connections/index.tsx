@@ -80,7 +80,7 @@ function ConnectionsPage() {
     label: connector.displayName,
     value: connector.name,
   }));
-  const projectId = authenticationSession.getProjectId()!;
+  const workspaceId = authenticationSession.getWorkspaceId()!;
 
   const searchParams = new URLSearchParams(location.search);
   const cursor = searchParams.get(CURSOR_QUERY_PARAM) ?? undefined;
@@ -97,14 +97,14 @@ function ConnectionsPage() {
     refetch,
   } = connectionsQueries.useConnections({
     request: {
-      projectId,
+      workspaceId,
       cursor,
       limit,
       status,
       connectorName,
       displayName,
     },
-    extraKeys: [location.search, projectId],
+    extraKeys: [location.search, workspaceId],
     showErrorDialog: true,
   });
 
@@ -308,7 +308,7 @@ function ConnectionsPage() {
               {userHasPermissionToRename && (
                 <RevalidateConnectionButton connectionId={row.original.id} />
               )}
-              {row.original.scope === ConnectionScope.PROJECT ? (
+              {row.original.scope === ConnectionScope.WORKSPACE ? (
                 <RenameConnectionDialog
                   connectionId={row.original.id}
                   currentName={row.original.displayName}
@@ -321,13 +321,13 @@ function ConnectionsPage() {
                 <EditGlobalConnectionDialog
                   connectionId={row.original.id}
                   currentName={row.original.displayName}
-                  projectIds={row.original.projectIds}
+                  workspaceIds={row.original.workspaceIds}
                   userHasPermissionToEdit={userHasPermissionToRename}
                   onEdit={() => {
                     refetch();
                   }}
-                  preSelectForNewProjects={
-                    row.original.preSelectForNewProjects ?? false
+                  preSelectForNewWorkspaces={
+                    row.original.preSelectForNewWorkspaces ?? false
                   }
                 />
               )}
@@ -351,7 +351,7 @@ function ConnectionsPage() {
       {
         render: (_, resetSelection) => {
           const deletableRows = selectedRows.filter(
-            (row) => row.scope === ConnectionScope.PROJECT,
+            (row) => row.scope === ConnectionScope.WORKSPACE,
           );
           return (
             <>
@@ -400,7 +400,7 @@ function ConnectionsPage() {
         hasPermission={userHasPermissionToWriteConnection}
       >
         <ReplaceConnectionsDialog
-          projectId={projectId}
+          workspaceId={workspaceId}
           onConnectionMerged={() => {
             setRefresh(refresh + 1);
             refetch();

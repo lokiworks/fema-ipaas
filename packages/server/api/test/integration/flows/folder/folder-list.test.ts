@@ -25,7 +25,7 @@ afterAll(async () => {
 })
 
 async function saveFlowInFolder(ctx: TestContext, folderId: string | null): Promise<string> {
-    const flow = createMockFlow({ projectId: ctx.project.id, folderId })
+    const flow = createMockFlow({ workspaceId: ctx.workspace.id, folderId })
     await db.save('flow', flow)
     const flowVersion = createMockFlowVersion({ flowId: flow.id })
     await db.save('flow_version', flowVersion)
@@ -33,7 +33,7 @@ async function saveFlowInFolder(ctx: TestContext, folderId: string | null): Prom
 }
 
 async function saveTableInFolder(ctx: TestContext, folderId: string | null): Promise<string> {
-    const table = { ...createMockTable({ projectId: ctx.project.id }), folderId }
+    const table = { ...createMockTable({ workspaceId: ctx.workspace.id }), folderId }
     await db.save('table', table)
     return table.id
 }
@@ -42,7 +42,7 @@ describe('Folder N+1 fix', () => {
     describe('GET /v1/folders enrichment', () => {
         it('returns numberOfFlows and numberOfTables per folder', async () => {
             const ctx = await createTestContext(app)
-            const folder = createMockFolder({ projectId: ctx.project.id })
+            const folder = createMockFolder({ workspaceId: ctx.workspace.id })
             await db.save('folder', folder)
 
             await saveFlowInFolder(ctx, folder.id)
@@ -50,7 +50,7 @@ describe('Folder N+1 fix', () => {
             await saveTableInFolder(ctx, folder.id)
 
             const response = await ctx.get('/v1/folders', {
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
                 limit: 100,
             })
 
@@ -64,9 +64,9 @@ describe('Folder N+1 fix', () => {
     describe('GET /v1/flows?folderIds', () => {
         it('returns flows from the given folders only', async () => {
             const ctx = await createTestContext(app)
-            const folderA = createMockFolder({ projectId: ctx.project.id })
-            const folderB = createMockFolder({ projectId: ctx.project.id })
-            const folderC = createMockFolder({ projectId: ctx.project.id })
+            const folderA = createMockFolder({ workspaceId: ctx.workspace.id })
+            const folderB = createMockFolder({ workspaceId: ctx.workspace.id })
+            const folderC = createMockFolder({ workspaceId: ctx.workspace.id })
             await db.save('folder', folderA)
             await db.save('folder', folderB)
             await db.save('folder', folderC)
@@ -77,7 +77,7 @@ describe('Folder N+1 fix', () => {
             await saveFlowInFolder(ctx, null)
 
             const response = await ctx.get('/v1/flows', {
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
                 folderIds: [folderA.id, folderB.id],
                 limit: 100,
             })
@@ -91,9 +91,9 @@ describe('Folder N+1 fix', () => {
             const ctx = await createTestContext(app)
             const folders = await Promise.all(
                 // Unique displayName per folder: faker.lorem.word() collides across 25
-                // folders in one project, violating idx_folder_project_id_display_name.
+                // folders in one workspace, violating idx_folder_workspace_id_display_name.
                 Array.from({ length: 25 }, async (_item, index) => {
-                    const folder = createMockFolder({ projectId: ctx.project.id, displayName: `folder-${index}-${apId()}` })
+                    const folder = createMockFolder({ workspaceId: ctx.workspace.id, displayName: `folder-${index}-${apId()}` })
                     await db.save('folder', folder)
                     return folder
                 }),
@@ -104,7 +104,7 @@ describe('Folder N+1 fix', () => {
             // Mirror the frontend's serialization (api.ts uses arrayFormat: 'repeat'). In qs 6.x
             // arrayLimit governs repeated-key notation too, so >20 ids collapse into an object
             // (then fail string validation) unless arrayLimit is raised — which is what this guards.
-            const query = qs.stringify({ projectId: ctx.project.id, folderIds, limit: 100 }, { arrayFormat: 'repeat' })
+            const query = qs.stringify({ workspaceId: ctx.workspace.id, folderIds, limit: 100 }, { arrayFormat: 'repeat' })
             const response = await ctx.get(`/v1/flows?${query}`)
 
             expect(response?.statusCode).toBe(StatusCodes.OK)
@@ -116,8 +116,8 @@ describe('Folder N+1 fix', () => {
     describe('GET /v1/tables?folderIds', () => {
         it('returns tables from the given folders only', async () => {
             const ctx = await createTestContext(app)
-            const folderA = createMockFolder({ projectId: ctx.project.id })
-            const folderB = createMockFolder({ projectId: ctx.project.id })
+            const folderA = createMockFolder({ workspaceId: ctx.workspace.id })
+            const folderB = createMockFolder({ workspaceId: ctx.workspace.id })
             await db.save('folder', folderA)
             await db.save('folder', folderB)
 
@@ -126,7 +126,7 @@ describe('Folder N+1 fix', () => {
             await saveTableInFolder(ctx, null)
 
             const response = await ctx.get('/v1/tables', {
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
                 folderIds: [folderA.id],
                 limit: 100,
             })
@@ -140,13 +140,13 @@ describe('Folder N+1 fix', () => {
     describe('empty folderIds filter', () => {
         it('flowService.list returns no flows for an empty folderIds without erroring', async () => {
             const ctx = await createTestContext(app)
-            const folder = createMockFolder({ projectId: ctx.project.id })
+            const folder = createMockFolder({ workspaceId: ctx.workspace.id })
             await db.save('folder', folder)
             await saveFlowInFolder(ctx, folder.id)
             await saveFlowInFolder(ctx, null)
 
             const page = await flowService(app.log).list({
-                projectIds: [ctx.project.id],
+                workspaceIds: [ctx.workspace.id],
                 folderIds: [],
                 limit: 100,
             })
@@ -156,13 +156,13 @@ describe('Folder N+1 fix', () => {
 
         it('tableService.list returns no tables for an empty folderIds without erroring', async () => {
             const ctx = await createTestContext(app)
-            const folder = createMockFolder({ projectId: ctx.project.id })
+            const folder = createMockFolder({ workspaceId: ctx.workspace.id })
             await db.save('folder', folder)
             await saveTableInFolder(ctx, folder.id)
             await saveTableInFolder(ctx, null)
 
             const page = await tableService.list({
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
                 cursor: undefined,
                 limit: 100,
                 name: undefined,

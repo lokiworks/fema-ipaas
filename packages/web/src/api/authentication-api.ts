@@ -1,4 +1,4 @@
-import { ProjectRole } from '@fema/core-utils';
+import { WorkspaceRole } from '@fema/core-utils';
 import {
   CreateOtpRequestBody,
   CompleteSignUpRequest,
@@ -36,8 +36,8 @@ export const authenticationApi = {
       providerName,
     });
   },
-  getCurrentProjectRole(query: { projectId: string }) {
-    return api.get<ProjectRole | null>('/v1/project-members/role', query);
+  getCurrentWorkspaceRole(query: { workspaceId: string }) {
+    return api.get<WorkspaceRole | null>('/v1/workspace-members/role', query);
   },
   claimThirdPartyRequest(request: ClaimTokenRequest) {
     return api.post<AuthenticationResponse>(

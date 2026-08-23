@@ -38,8 +38,8 @@ const workerCommand = new Command('workers')
 
 workerCommand.addCommand(generateWorkerTokenCommand)
 
-const projectCommand = new Command('project')
-  .description('Manage projects')
+const workspaceCommand = new Command('workspace')
+  .description('Manage workspaces')
 
 
 const program = new Command();
@@ -50,6 +50,6 @@ program.addCommand(connectorCommand);
 program.addCommand(actionCommand);
 program.addCommand(triggerCommand);
 program.addCommand(workerCommand);
-program.addCommand(projectCommand);
+program.addCommand(workspaceCommand);
 program.addCommand(benchmarkCommand);
 program.parse(process.argv);

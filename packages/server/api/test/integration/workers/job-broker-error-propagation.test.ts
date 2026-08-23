@@ -21,14 +21,14 @@ afterAll(async () => {
 
 describe('Job broker error propagation', () => {
     it('should propagate INTERNAL_ERROR with errorMessage through engine response watcher', async () => {
-        const { mockPlatform, mockProject } = await mockAndSaveBasicSetup()
+        const { mockPlatform, mockWorkspace } = await mockAndSaveBasicSetup()
         const requestId = apId()
         const webserverId = engineResponseWatcher(app.log).getServerId()
 
         const jobData = {
             jobType: WorkerJobType.EXECUTE_TRIGGER_HOOK,
             platformId: mockPlatform.id,
-            projectId: mockProject.id,
+            workspaceId: mockWorkspace.id,
             schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
             flowId: apId(),
             flowVersionId: apId(),
@@ -72,14 +72,14 @@ describe('Job broker error propagation', () => {
     })
 
     it('should use default error message when INTERNAL_ERROR has no errorMessage', async () => {
-        const { mockPlatform, mockProject } = await mockAndSaveBasicSetup()
+        const { mockPlatform, mockWorkspace } = await mockAndSaveBasicSetup()
         const requestId = apId()
         const webserverId = engineResponseWatcher(app.log).getServerId()
 
         const jobData = {
             jobType: WorkerJobType.EXECUTE_TRIGGER_HOOK,
             platformId: mockPlatform.id,
-            projectId: mockProject.id,
+            workspaceId: mockWorkspace.id,
             schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
             flowId: apId(),
             flowVersionId: apId(),
@@ -122,14 +122,14 @@ describe('Job broker error propagation', () => {
     })
 
     it('should treat USER_FAILURE as completed and propagate error through engine response watcher', async () => {
-        const { mockPlatform, mockProject } = await mockAndSaveBasicSetup()
+        const { mockPlatform, mockWorkspace } = await mockAndSaveBasicSetup()
         const requestId = apId()
         const webserverId = engineResponseWatcher(app.log).getServerId()
 
         const jobData = {
             jobType: WorkerJobType.EXECUTE_TRIGGER_HOOK,
             platformId: mockPlatform.id,
-            projectId: mockProject.id,
+            workspaceId: mockWorkspace.id,
             schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
             flowId: apId(),
             flowVersionId: apId(),
@@ -173,14 +173,14 @@ describe('Job broker error propagation', () => {
     })
 
     it('should pass through USER_FAILURE response payload when provided', async () => {
-        const { mockPlatform, mockProject } = await mockAndSaveBasicSetup()
+        const { mockPlatform, mockWorkspace } = await mockAndSaveBasicSetup()
         const requestId = apId()
         const webserverId = engineResponseWatcher(app.log).getServerId()
 
         const jobData = {
             jobType: WorkerJobType.EXECUTE_TRIGGER_HOOK,
             platformId: mockPlatform.id,
-            projectId: mockProject.id,
+            workspaceId: mockWorkspace.id,
             schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
             flowId: apId(),
             flowVersionId: apId(),
@@ -225,14 +225,14 @@ describe('Job broker error propagation', () => {
     })
 
     it('should pass through OK response as-is (regression guard)', async () => {
-        const { mockPlatform, mockProject } = await mockAndSaveBasicSetup()
+        const { mockPlatform, mockWorkspace } = await mockAndSaveBasicSetup()
         const requestId = apId()
         const webserverId = engineResponseWatcher(app.log).getServerId()
 
         const jobData = {
             jobType: WorkerJobType.EXECUTE_TRIGGER_HOOK,
             platformId: mockPlatform.id,
-            projectId: mockProject.id,
+            workspaceId: mockWorkspace.id,
             schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
             flowId: apId(),
             flowVersionId: apId(),

@@ -25,8 +25,11 @@ export function useAutomationsData(
   filters: AutomationsFilters,
   pinnedList?: string[],
 ) {
-  const { projectId: projectIdFromUrl } = useParams<{ projectId: string }>();
-  const projectId = projectIdFromUrl ?? authenticationSession.getProjectId()!;
+  const { workspaceId: workspaceIdFromUrl } = useParams<{
+    workspaceId: string;
+  }>();
+  const workspaceId =
+    workspaceIdFromUrl ?? authenticationSession.getWorkspaceId()!;
   const queryClient = useQueryClient();
   const isFiltered = hasNonFolderFilters(filters);
 
@@ -40,7 +43,7 @@ export function useAutomationsData(
   >(new Map());
 
   const foldersQuery = useQuery({
-    queryKey: ['folders', projectId],
+    queryKey: ['folders', workspaceId],
     queryFn: () => foldersApi.list(),
     staleTime: STALE_TIME,
     refetchOnMount: 'always',
@@ -55,11 +58,11 @@ export function useAutomationsData(
   }, [foldersQuery.data]);
 
   const folderContentsQuery = useQuery<FolderContentsMap>({
-    queryKey: ['all-folder-contents', projectId, folderIds],
+    queryKey: ['all-folder-contents', workspaceId, folderIds],
     queryFn: async () => {
       const folders = foldersQuery.data!;
       const flowsPage = await flowsApi.list({
-        projectId,
+        workspaceId,
         folderIds: folders.map((f) => f.id),
         limit: FOLDER_CONTENTS_LIMIT,
         cursor: undefined,
@@ -75,10 +78,10 @@ export function useAutomationsData(
   const skipFlows =
     filters.typeFilter.length > 0 && !filters.typeFilter.includes('flow');
   const rootFlowsQuery = useQuery({
-    queryKey: ['root-flows', projectId, filters],
+    queryKey: ['root-flows', workspaceId, filters],
     queryFn: () =>
       flowsApi.list({
-        projectId,
+        workspaceId,
         folderId: isFiltered ? undefined : UncategorizedFolderId,
         limit: 1000,
         cursor: undefined,

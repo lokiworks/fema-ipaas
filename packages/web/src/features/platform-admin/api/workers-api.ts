@@ -7,7 +7,7 @@ export const workersApi = {
     return api.get<WorkerMachineWithStatus[]>('/v1/worker-machines');
   },
   listWorkerGroups() {
-    return api.get<WorkerPoolCapacity>('/v1/projects/worker-groups');
+    return api.get<WorkerPoolCapacity>('/v1/workspaces/worker-groups');
   },
 };
 

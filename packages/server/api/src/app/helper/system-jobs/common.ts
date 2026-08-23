@@ -1,4 +1,4 @@
-import { FlowId, FlowRunId, PlatformId, ProjectId } from '@fema/core-utils'
+import { FlowId, FlowRunId, PlatformId, WorkspaceId } from '@fema/core-utils'
 import { Flow } from '@fema/shared'
 import { Job, JobsOptions } from 'bullmq'
 import { Dayjs } from 'dayjs'
@@ -9,7 +9,7 @@ export enum SystemJobName {
     FILE_CLEANUP_TRIGGER = 'file-cleanup-trigger',
     RUN_TELEMETRY = 'run-telemetry',
     DELETE_FLOW = 'delete-flow',
-    HARD_DELETE_PROJECT = 'hard-delete-project',
+    HARD_DELETE_WORKSPACE = 'hard-delete-workspace',
     HARD_DELETE_PLATFORM = 'hard-delete-platform',
     BILLING_USAGE_REPORT = 'billing-usage-report',
     RESUME_DELAY_WAITPOINT = 'resume-delay-waitpoint',
@@ -22,8 +22,8 @@ type DeleteFlowDurableSystemJobData =  {
     preDeleteDone: boolean
 }
 
-type HardDeleteProjectSystemJobData = {
-    projectId: ProjectId
+type HardDeleteWorkspaceSystemJobData = {
+    workspaceId: WorkspaceId
     platformId: PlatformId
     preDeletedFlowIds: FlowId[]
 }
@@ -34,7 +34,7 @@ type HardDeletePlatformSystemJobData = {
 
 type ResumeDelayWaitpointSystemJobData = {
     flowRunId: FlowRunId
-    projectId: ProjectId
+    workspaceId: WorkspaceId
     waitpointId: string
 }
 
@@ -50,7 +50,7 @@ type SystemJobDataMap = {
     [SystemJobName.FILE_CLEANUP_TRIGGER]: Record<string, never>
     [SystemJobName.RUN_TELEMETRY]: Record<string, never>
     [SystemJobName.DELETE_FLOW]: DeleteFlowDurableSystemJobData
-    [SystemJobName.HARD_DELETE_PROJECT]: HardDeleteProjectSystemJobData
+    [SystemJobName.HARD_DELETE_WORKSPACE]: HardDeleteWorkspaceSystemJobData
     [SystemJobName.HARD_DELETE_PLATFORM]: HardDeletePlatformSystemJobData
     [SystemJobName.BILLING_USAGE_REPORT]: Record<string, never>
     [SystemJobName.RESUME_DELAY_WAITPOINT]: ResumeDelayWaitpointSystemJobData

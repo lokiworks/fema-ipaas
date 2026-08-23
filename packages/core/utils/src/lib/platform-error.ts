@@ -1,6 +1,6 @@
-import type { ApId, FlowId, FlowRunId, FlowVersionId, ProjectId, UserId } from './id-generator'
+import type { ApId, FlowId, FlowRunId, FlowVersionId, WorkspaceId, UserId } from './id-generator'
 import type { Permission, PlatformUsageMetric } from './permission'
-import type { ProjectRole } from './project-role'
+import type { WorkspaceRole } from './workspace-role'
 
 export class PlatformError extends Error {
     constructor(public error: ApErrorParams, message?: string) {
@@ -67,7 +67,7 @@ export type ApErrorParams =
     | InvalidSmtpCredentialsErrorParams
     | InvalidGitCredentialsParams
     | InvalidReleaseTypeParams
-    | ProjectExternalIdAlreadyExistsParams
+    | WorkspaceExternalIdAlreadyExistsParams
     | SandboxMemoryIssueParams
     | SandboxExecutionTimeoutParams
     | SandboxInternalErrorParams
@@ -167,8 +167,8 @@ export type PermissionDeniedErrorParams = BaseErrorParams<
 ErrorCode.PERMISSION_DENIED,
 {
     userId: UserId
-    projectId: ProjectId
-    projectRole: ProjectRole | null
+    workspaceId: WorkspaceId
+    workspaceRole: WorkspaceRole | null
     permission: Permission | undefined
 }
 >
@@ -422,7 +422,7 @@ export type InvalidReleaseTypeParams = BaseErrorParams<ErrorCode.INVALID_RELEASE
     message: string
 }>
 
-export type ProjectExternalIdAlreadyExistsParams = BaseErrorParams<ErrorCode.PROJECT_EXTERNAL_ID_ALREADY_EXISTS, {
+export type WorkspaceExternalIdAlreadyExistsParams = BaseErrorParams<ErrorCode.WORKSPACE_EXTERNAL_ID_ALREADY_EXISTS, {
     externalId: string
 }>
 
@@ -522,7 +522,7 @@ export enum ErrorCode {
     EMAIL_AUTH_DISABLED = 'EMAIL_AUTH_DISABLED',
     EXISTING_USER = 'EXISTING_USER',
     EXISTING_ALERT_CHANNEL = 'EXISTING_ALERT_CHANNEL',
-    PROJECT_EXTERNAL_ID_ALREADY_EXISTS = 'PROJECT_EXTERNAL_ID_ALREADY_EXISTS',
+    WORKSPACE_EXTERNAL_ID_ALREADY_EXISTS = 'WORKSPACE_EXTERNAL_ID_ALREADY_EXISTS',
     FLOW_OPERATION_INVALID = 'FLOW_OPERATION_INVALID',
     FLOW_OPERATION_IN_PROGRESS = 'FLOW_OPERATION_IN_PROGRESS',
     FLOW_RUN_RETRY_OUTSIDE_RETENTION = 'FLOW_RUN_RETRY_OUTSIDE_RETENTION',

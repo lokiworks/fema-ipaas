@@ -89,14 +89,14 @@ export const flowRunQueries = {
       refetchInterval: 7000,
     }),
   useRunStats: () => {
-    const projectId = authenticationSession.getProjectId()!;
+    const workspaceId = authenticationSession.getWorkspaceId()!;
 
     const { data, isLoading, dataUpdatedAt, refetch } = useQuery({
-      queryKey: ['flow-run-count-by-status', projectId],
+      queryKey: ['flow-run-count-by-status', workspaceId],
       queryFn: () => {
         const range = getDefaultRange(DEFAULT_DATE_PRESET);
         return flowRunsApi.countByStatus({
-          projectId,
+          workspaceId,
           createdAfter: range.from.toISOString(),
           createdBefore: range.to.toISOString(),
         });
@@ -128,13 +128,13 @@ export const flowRunMutations = {
       {
         runId: string;
         flowId: string;
-        projectId: string;
+        workspaceId: string;
         retryStrategy: FlowRetryStrategy;
       }
     >({
-      mutationFn: async ({ runId, flowId, projectId, retryStrategy }) => {
+      mutationFn: async ({ runId, flowId, workspaceId, retryStrategy }) => {
         const updatedRun = await flowRunsApi.retry(runId, {
-          projectId,
+          workspaceId,
           strategy: retryStrategy,
         });
         const populatedFlow = await flowsApi.get(flowId, {

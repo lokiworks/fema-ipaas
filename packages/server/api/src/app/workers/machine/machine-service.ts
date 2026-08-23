@@ -102,7 +102,7 @@ export const machineService = (log: FastifyBaseLogger) => {
                     if (worker.workerGroupScope === WorkerGroupScope.PLATFORM) {
                         return !isNil(platformWorkerGroupId) && worker.workerGroupId === platformWorkerGroupId
                     }
-                    if (worker.workerGroupScope === WorkerGroupScope.PROJECT) {
+                    if (worker.workerGroupScope === WorkerGroupScope.WORKSPACE) {
                         return true
                     }
                     return isNil(platformWorkerGroupId)
@@ -115,7 +115,7 @@ export const machineService = (log: FastifyBaseLogger) => {
                     workerGroupScope: worker.workerGroupScope,
                 }))
         },
-        async listProjectWorkerGroups(): Promise<WorkerPoolCapacity> {
+        async listWorkspaceWorkerGroups(): Promise<WorkerPoolCapacity> {
             const allWorkers = await workerMachineCache().find()
             const offlineThreshold = dayjs().subtract(60, 'seconds').utc()
             const slotsByLabel = new Map<string, number>()
@@ -125,7 +125,7 @@ export const machineService = (log: FastifyBaseLogger) => {
                     continue
                 }
                 const slots = parseWorkerConcurrency(worker.information.workerProps.WORKER_CONCURRENCY)
-                if (worker.workerGroupScope === WorkerGroupScope.PROJECT && !isNil(worker.workerGroupId) && worker.workerGroupId.length > 0) {
+                if (worker.workerGroupScope === WorkerGroupScope.WORKSPACE && !isNil(worker.workerGroupId) && worker.workerGroupId.length > 0) {
                     slotsByLabel.set(worker.workerGroupId, (slotsByLabel.get(worker.workerGroupId) ?? 0) + slots)
                 }
                 else if (isNil(worker.workerGroupScope)) {

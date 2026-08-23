@@ -7,7 +7,7 @@ import { ConsumeJobRequest, ConsumeJobResponse, WorkerMachineHealthcheckRequest 
 
 export type SubmitPayloadsRequest = {
     flowVersionId: string
-    projectId: string
+    workspaceId: string
     payloads: unknown[]
     httpRequestId?: string
     environment: RunEnvironment
@@ -19,20 +19,20 @@ export type SubmitPayloadsRequest = {
 export type SavePayloadRequest = {
     flowId: string
     flowVersionId: string
-    projectId: string
+    workspaceId: string
     payloads: unknown[]
 }
 
 export type GetConnectorRequest = {
     name: string
     version?: string
-    projectId?: string
+    workspaceId?: string
     platformId?: string
 }
 
 export type GetFlowBundleRequest = {
     flowVersionId: string
-    projectId: string
+    workspaceId: string
 }
 
 export type GetFlowBundleResponse =
@@ -41,7 +41,7 @@ export type GetFlowBundleResponse =
 
 export type PrepareFlowBundleUploadRequest = {
     flowVersionId: string
-    projectId: string
+    workspaceId: string
     platformId: string
     size: number
 }
@@ -53,7 +53,7 @@ export type PrepareFlowBundleUploadResponse =
 
 export type UploadFlowBundleRequest = {
     flowVersionId: string
-    projectId: string
+    workspaceId: string
     platformId: string
     data: Buffer
 }
@@ -84,21 +84,21 @@ export type WorkerToApiContract = {
 
 export type DisableFlowRequest = {
     flowId: string
-    projectId: string
+    workspaceId: string
 }
 
 export type PrewarmDataRequest = {
     workerGroupId: string | undefined
-    projectWorker: boolean | undefined
-    flow?: { id: string, versionId: string, projectId: string }
+    workspaceWorker: boolean | undefined
+    flow?: { id: string, versionId: string, workspaceId: string }
 }
 
 export type PrewarmDataResponse = {
-    flows: { id: string, versionId: string, projectId: string }[]
+    flows: { id: string, versionId: string, workspaceId: string }[]
     platformId: string
     engineToken: string
 }
 
 export type ApiToWorkerContract = {
-    flowPublished(input: { flowId: string, flowVersionId: string, projectId: string }): void
+    flowPublished(input: { flowId: string, flowVersionId: string, workspaceId: string }): void
 }

@@ -2,7 +2,7 @@ import { Readable } from 'stream'
 import { DeleteObjectsCommand, GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3, S3ClientConfig } from '@aws-sdk/client-s3'
 import { Upload } from '@aws-sdk/lib-storage'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
-import { apId, isNil, ProjectId, tryCatch } from '@fema/core-utils'
+import { apId, isNil, tryCatch, WorkspaceId } from '@fema/core-utils'
 import { FileType } from '@fema/shared'
 import { NodeHttpHandler } from '@smithy/node-http-handler'
 import contentDisposition from 'content-disposition'
@@ -14,7 +14,7 @@ import { AppSystemProp } from '../helper/system/system-props'
 import { fileRepo } from './file.service'
 
 export const s3Helper = (log: FastifyBaseLogger) => ({
-    async constructS3Key(platformId: string | undefined, projectId: ProjectId | undefined, type: FileType, fileId: string): Promise<string> {
+    async constructS3Key(platformId: string | undefined, workspaceId: WorkspaceId | undefined, type: FileType, fileId: string): Promise<string> {
         const existingFile = await fileRepo().findOneBy({ id: fileId })
         if (!isNil(existingFile?.s3Key)) {
             return existingFile.s3Key
@@ -22,11 +22,11 @@ export const s3Helper = (log: FastifyBaseLogger) => ({
         if (!isNil(platformId)) {
             return `platform/${platformId}/${type}/${fileId}`
         }
-        else if (!isNil(projectId)) {
-            return `project/${projectId}/${type}/${fileId}`
+        else if (!isNil(workspaceId)) {
+            return `workspace/${workspaceId}/${type}/${fileId}`
         }
         else {
-            throw new Error('Either platformId or projectId must be provided')
+            throw new Error('Either platformId or workspaceId must be provided')
         }
     },
     async uploadStream(s3Key: string, body: Readable): Promise<number> {

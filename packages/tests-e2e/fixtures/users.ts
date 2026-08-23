@@ -46,5 +46,5 @@ export type AuthenticationResponse = {
   trackEvents: boolean;
   newsLetter: boolean;
   token: string;
-  projectId: string;
+  workspaceId: string;
 }

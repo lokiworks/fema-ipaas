@@ -116,14 +116,14 @@ describe('store service', () => {
             expect(calledUrl).toContain('test_flow_flow-123%2FmyKey')
         })
 
-        it('PROJECT scope prefixes key without flow id', async () => {
+        it('WORKSPACE scope prefixes key without flow id', async () => {
             const fetchSpy = vi.spyOn(global, 'fetch').mockResolvedValue(new Response(
                 JSON.stringify({ key: 'k', value: null }),
                 { status: 200, headers: { 'Content-Type': 'application/json' } },
             ))
 
             const store = createContextStore(STORE_PARAMS)
-            await store.get('myKey', StoreScope.PROJECT)
+            await store.get('myKey', StoreScope.WORKSPACE)
 
             const calledUrl = fetchSpy.mock.calls[0][0].toString()
             expect(calledUrl).toContain('test_myKey')

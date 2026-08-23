@@ -43,7 +43,7 @@ export const flagService = (log: FastifyBaseLogger) => ({
                 ApFlagId.SHOW_COMMUNITY,
                 ApFlagId.SUPPORTED_APP_WEBHOOKS,
                 ApFlagId.TELEMETRY_ENABLED,
-                ApFlagId.TEMPLATES_PROJECT_ID,
+                ApFlagId.TEMPLATES_WORKSPACE_ID,
                 ApFlagId.TERMS_OF_SERVICE_URL,
                 ApFlagId.THEME,
                 ApFlagId.THIRD_PARTY_AUTH_PROVIDER_REDIRECT_URL,
@@ -89,7 +89,7 @@ export const flagService = (log: FastifyBaseLogger) => ({
                 updated,
             },
             {
-                id: ApFlagId.SHOW_PROJECT_MEMBERS,
+                id: ApFlagId.SHOW_WORKSPACE_MEMBERS,
                 value: false,
                 created,
                 updated,
@@ -265,8 +265,8 @@ export const flagService = (log: FastifyBaseLogger) => ({
                 updated,
             },
             {
-                id: ApFlagId.PROJECT_RATE_LIMITER_ENABLED,
-                value: system.getBoolean(AppSystemProp.PROJECT_RATE_LIMITER_ENABLED) ?? false,
+                id: ApFlagId.WORKSPACE_RATE_LIMITER_ENABLED,
+                value: system.getBoolean(AppSystemProp.WORKSPACE_RATE_LIMITER_ENABLED) ?? false,
                 created,
                 updated,
             },

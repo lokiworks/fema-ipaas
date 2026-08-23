@@ -1,20 +1,20 @@
-import { ProjectRole } from '@fema/core-utils'
-import { DefaultProjectRole, Platform, PlatformPlan, PlatformRole, PrincipalType, Project, User, UserIdentity } from '@fema/shared'
+import { WorkspaceRole } from '@fema/core-utils'
+import { DefaultWorkspaceRole, Platform, PlatformPlan, PlatformRole, PrincipalType, Workspace, User, UserIdentity } from '@fema/shared'
 import { FastifyInstance, InjectOptions } from 'fastify'
 import { generateMockToken } from './auth'
 import { db } from './db'
 import {
     createMockApiKey,
-    createMockProjectMember,
+    createMockWorkspaceMember,
     mockAndSaveBasicSetup,
     mockBasicUser,
 } from './mocks'
 
 export async function createTestContext(app: FastifyInstance, params?: TestContextParams): Promise<TestContext> {
-    const { mockUserIdentity, mockOwner, mockPlatform, mockProject } = await mockAndSaveBasicSetup({
+    const { mockUserIdentity, mockOwner, mockPlatform, mockWorkspace } = await mockAndSaveBasicSetup({
         platform: params?.platform,
         plan: params?.plan,
-        project: params?.project,
+        workspace: params?.workspace,
     })
 
     const token = await generateMockToken({
@@ -27,7 +27,7 @@ export async function createTestContext(app: FastifyInstance, params?: TestConte
         userIdentity: mockUserIdentity,
         user: mockOwner,
         platform: mockPlatform,
-        project: mockProject,
+        workspace: mockWorkspace,
         token,
     })
 }
@@ -44,17 +44,17 @@ export async function createMemberContext(
         },
     })
 
-    const projectRole = await db.findOneByOrFail<ProjectRole>('project_role', {
-        name: params.projectRole,
+    const workspaceRole = await db.findOneByOrFail<WorkspaceRole>('workspace_role', {
+        name: params.workspaceRole,
     })
 
-    const mockProjectMember = createMockProjectMember({
+    const mockWorkspaceMember = createMockWorkspaceMember({
         userId: mockUser.id,
         platformId: parentCtx.platform.id,
-        projectId: parentCtx.project.id,
-        projectRoleId: projectRole.id,
+        workspaceId: parentCtx.workspace.id,
+        workspaceRoleId: workspaceRole.id,
     })
-    await db.save('project_member', mockProjectMember)
+    await db.save('workspace_member', mockWorkspaceMember)
 
     const token = await generateMockToken({
         id: mockUser.id,
@@ -66,7 +66,7 @@ export async function createMemberContext(
         userIdentity: mockUserIdentity,
         user: mockUser,
         platform: parentCtx.platform,
-        project: parentCtx.project,
+        workspace: parentCtx.workspace,
         token,
     })
 }
@@ -84,7 +84,7 @@ export async function createServiceContext(
         userIdentity: parentCtx.userIdentity,
         user: parentCtx.user,
         platform: parentCtx.platform,
-        project: parentCtx.project,
+        workspace: parentCtx.workspace,
         token: mockApiKey.value,
     })
 }
@@ -118,7 +118,7 @@ function buildContext(app: FastifyInstance, data: ContextData): TestContext {
         userIdentity: data.userIdentity,
         user: data.user,
         platform: data.platform,
-        project: data.project,
+        workspace: data.workspace,
         token: data.token,
         get: makeRequest('GET'),
         post: makeRequest('POST'),
@@ -139,11 +139,11 @@ function buildContext(app: FastifyInstance, data: ContextData): TestContext {
 export type TestContextParams = {
     platform?: Partial<Platform>
     plan?: Partial<PlatformPlan>
-    project?: Partial<Project>
+    workspace?: Partial<Workspace>
 }
 
 type MemberContextParams = {
-    projectRole: DefaultProjectRole | string
+    workspaceRole: DefaultWorkspaceRole | string
 }
 
 type RequestOptions = {
@@ -154,7 +154,7 @@ type ContextData = {
     userIdentity: UserIdentity
     user: User
     platform: Platform
-    project: Project
+    workspace: Workspace
     token: string
 }
 
@@ -162,7 +162,7 @@ export type TestContext = {
     userIdentity: UserIdentity
     user: User
     platform: Platform
-    project: Project
+    workspace: Workspace
     token: string
     get: (url: string, query?: Record<string, unknown>, opts?: RequestOptions) => ReturnType<FastifyInstance['inject']>
     post: (url: string, body?: Record<string, unknown>, opts?: RequestOptions) => ReturnType<FastifyInstance['inject']>

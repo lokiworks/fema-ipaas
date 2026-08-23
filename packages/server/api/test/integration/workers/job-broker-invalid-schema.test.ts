@@ -27,12 +27,12 @@ const waitKey = (): string => `bull:${QueueName.WORKER_JOBS}:wait`
 
 describe('jobBroker.tryDequeue — invalid-schema poison handling', () => {
     it('fails the job as unrecoverable when migrated data still fails JobData.parse, instead of recycling', async () => {
-        const { mockPlatform, mockProject } = await mockAndSaveBasicSetup()
+        const { mockPlatform, mockWorkspace } = await mockAndSaveBasicSetup()
 
         const validJobData: ExecuteFlowJobData = {
             jobType: WorkerJobType.EXECUTE_FLOW,
             schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
-            projectId: mockProject.id,
+            workspaceId: mockWorkspace.id,
             platformId: mockPlatform.id,
             flowId: apId(),
             flowVersionId: apId(),
@@ -57,7 +57,7 @@ describe('jobBroker.tryDequeue — invalid-schema poison handling', () => {
         const poisonedRaw = JSON.stringify({
             jobType: WorkerJobType.EXECUTE_FLOW,
             schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
-            projectId: mockProject.id,
+            workspaceId: mockWorkspace.id,
             platformId: mockPlatform.id,
             runId: apId(),
             executionType: 'BEGIN',

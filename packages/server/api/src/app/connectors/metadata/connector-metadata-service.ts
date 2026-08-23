@@ -8,7 +8,7 @@ import semVer from 'semver'
 import { EntityManager, In, IsNull } from 'typeorm'
 import { repoFactory } from '../../core/db/repo-factory'
 import { flowVersionRepo } from '../../flows/flow-version/flow-version.service'
-import { projectService } from '../../project/project-service'
+import { workspaceService } from '../../workspace/workspace-service'
 import { resolveVisibility } from '../connector-visibility'
 import { connectorCache, ConnectorRegistryEntry } from './connector-cache'
 import { ConnectorMetadataEntity, ConnectorMetadataSchema } from './connector-metadata-entity'
@@ -28,7 +28,7 @@ export const connectorMetadataService = (log: FastifyBaseLogger) => {
                 locale,
                 log,
             }))
-            const policy = await resolveVisibility({ platformId: params.platformId, projectId: params.projectId, log })
+            const policy = await resolveVisibility({ platformId: params.platformId, workspaceId: params.workspaceId, log })
             const audience = params.audience ?? ConnectorAudienceFilter.HUMAN
             const audienceConnectors = translatedConnectors.map((connector) => ({ ...connector, actions: filterActionsByAudience(connector.actions, audience) }))
             const sortedConnectors = await connectorListUtils(log).sortAndSearchConnectors({
@@ -52,7 +52,7 @@ export const connectorMetadataService = (log: FastifyBaseLogger) => {
                 version: connector.version,
             }))
         },
-        async get({ projectId, platformId, version, name }: GetOrThrowParams): Promise<ConnectorMetadataModel | undefined> {
+        async get({ workspaceId, platformId, version, name }: GetOrThrowParams): Promise<ConnectorMetadataModel | undefined> {
             const bestMatch = await findExactVersion(log, { name, version, platformId })
             if (isNil(bestMatch)) {
                 return undefined
@@ -68,7 +68,7 @@ export const connectorMetadataService = (log: FastifyBaseLogger) => {
                 return undefined
             }
 
-            const policy = await resolveVisibility({ platformId, projectId, log })
+            const policy = await resolveVisibility({ platformId, workspaceId, log })
             if (isNil(policy)) {
                 return connector
             }
@@ -97,7 +97,7 @@ export const connectorMetadataService = (log: FastifyBaseLogger) => {
                 id,
             })
             await connectorRepos().update(id, {
-                projectUsage: usage,
+                workspaceUsage: usage,
                 updated: existingMetadata.updated,
                 created: existingMetadata.created,
             })
@@ -192,8 +192,8 @@ export const connectorMetadataService = (log: FastifyBaseLogger) => {
 }
 
 async function findFlowsUsingConnector({ connectorName, platformId, log }: FindFlowsUsingConnectorParams): Promise<string[]> {
-    const projectIds = await projectService(log).getProjectIdsByPlatform(platformId)
-    if (projectIds.length === 0) {
+    const workspaceIds = await workspaceService(log).getWorkspaceIdsByPlatform(platformId)
+    if (workspaceIds.length === 0) {
         return []
     }
     const latestVersionSubquery = flowVersionRepo()
@@ -205,7 +205,7 @@ async function findFlowsUsingConnector({ connectorName, platformId, log }: FindF
 
     const candidates = await flowVersionRepo().createQueryBuilder('flow_version')
         .innerJoin('flow_version.flow', 'flow')
-        .where('flow."projectId" IN (:...projectIds)', { projectIds })
+        .where('flow."workspaceId" IN (:...workspaceIds)', { workspaceIds })
         .andWhere('flow_version.trigger::text LIKE :needle', { needle: `%"${connectorName}"%` })
         .andWhere(`(flow_version.id = flow."publishedVersionId" OR flow_version.id = (${latestVersionSubquery.getQuery()}))`)
         .getMany()
@@ -503,7 +503,7 @@ function filterRegistry(registry: ConnectorRegistryEntry[], params: { release: s
 
 
 type ListParams = {
-    projectId?: string
+    workspaceId?: string
     platformId?: string
     includeHidden: boolean
     categories?: ConnectorCategory[]
@@ -519,7 +519,7 @@ type GetOrThrowParams = {
     name: string
     version?: string
     entityManager?: EntityManager
-    projectId?: string
+    workspaceId?: string
     platformId?: string
     locale?: LocalesEnum
 }
@@ -538,7 +538,7 @@ type FindFlowsUsingConnectorParams = {
 type CreateParams = {
     connectorMetadata: ConnectorMetadata
     platformId?: string
-    projectId?: string
+    workspaceId?: string
     packageType: PackageType
     connectorType: ConnectorType
     archiveId?: string

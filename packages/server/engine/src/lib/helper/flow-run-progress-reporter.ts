@@ -53,7 +53,7 @@ export const flowRunProgressReporter = {
                         output: step,
                     },
                     flowRun: {
-                        projectId: engineConstants.projectId,
+                        workspaceId: engineConstants.workspaceId,
                         flowId: engineConstants.flowId,
                         flowVersionId: engineConstants.flowVersionId,
                         id: engineConstants.flowRunId,
@@ -70,7 +70,7 @@ export const flowRunProgressReporter = {
             })
         })
     },
-    createOutputContext: ({ internalApiUrl, engineToken, projectId, flowRunId }: CreateOutputContextParams): OutputContext => {
+    createOutputContext: ({ internalApiUrl, engineToken, workspaceId, flowRunId }: CreateOutputContextParams): OutputContext => {
         return {
             update: async (params: { data: unknown }) => {
                 // Streaming output is best-effort — a failed push must never fail the run.
@@ -78,7 +78,7 @@ export const flowRunProgressReporter = {
                     apiUrl: internalApiUrl,
                     engineToken,
                     request: {
-                        projectId,
+                        workspaceId,
                         runId: flowRunId,
                         output: params.data,
                     },
@@ -131,7 +131,7 @@ export const flowRunProgressReporter = {
 
             const request: UploadRunLogsRequest = {
                 runId: engineConstants.flowRunId,
-                projectId: engineConstants.projectId,
+                workspaceId: engineConstants.workspaceId,
                 status,
                 streamStepProgress: engineConstants.streamStepProgress,
                 logsFileId: engineConstants.logsFileId,
@@ -245,7 +245,7 @@ type UpdateStepProgressParams = {
 type CreateOutputContextParams = {
     internalApiUrl: string
     engineToken: string
-    projectId: string
+    workspaceId: string
     flowRunId: string
 }
 

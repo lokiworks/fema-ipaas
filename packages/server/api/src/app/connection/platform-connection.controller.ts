@@ -7,14 +7,14 @@ import { connectionService } from './connection-service/connection-service'
 
 export const platformConnectionController: FastifyPluginAsyncZod = async (app) => {
     app.get('/', ListPlatformConnectionsRequest, async (request): Promise<SeekPage<PlatformConnectionsListItem>> => {
-        const { displayName, connectorName, status, scope, cursor, limit, projectIds, ownerIds } = request.query
+        const { displayName, connectorName, status, scope, cursor, limit, workspaceIds, ownerIds } = request.query
         return connectionService(request.log).listForPlatform({
             platformId: request.principal.platform.id,
             connectorName,
             displayName,
             status,
             scope,
-            projectIds,
+            workspaceIds,
             ownerIds,
             cursorRequest: cursor ?? null,
             limit: limit ?? DEFAULT_PAGE_SIZE,

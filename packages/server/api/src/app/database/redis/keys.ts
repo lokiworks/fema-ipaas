@@ -1,4 +1,4 @@
-import { PlatformId, ProjectId } from '@fema/core-utils'
+import { PlatformId, WorkspaceId } from '@fema/core-utils'
 
 export const getPlatformPlanNameKey = (platformId: PlatformId): string => `platform_plan:plan:${platformId}`
 export const getCreditsBalanceKey = (platformId: PlatformId): string => `platform_plan:credits:${platformId}`
@@ -14,7 +14,7 @@ export const getAutumnEnrollLockKey = (platformId: PlatformId): string => `autum
 export const getFreeLegacyCompAttemptKey = (platformId: PlatformId): string => `platform_plan:free-legacy-comp-attempt:${platformId}`
 export const getBillingOverviewFetchLockKey = (platformId: PlatformId): string => `billing_overview_fetch_${platformId}`
 export const getCustomerStateFetchLockKey = (platformId: PlatformId): string => `customer_state_fetch_${platformId}`
-export const getProjectConcurrencyPoolKey = (projectId: ProjectId): string => `project:concurrency-pool:${projectId}` // gets pool id for the project
+export const getWorkspaceConcurrencyPoolKey = (workspaceId: WorkspaceId): string => `workspace:concurrency-pool:${workspaceId}` // gets pool id for the workspace
 export const getConcurrencyPoolLimitKey = (poolId: string): string => `concurrency-pool:limit:${poolId}` // gets limit value for the pool
 export const getConcurrencyPoolSetKey = (poolId: string): string => `active_jobs_set:pool:${poolId}`
 

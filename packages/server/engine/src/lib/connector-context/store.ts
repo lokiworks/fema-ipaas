@@ -141,7 +141,7 @@ function createKey(prefix: string, scope: StoreScope, flowId: FlowId, key: strin
         throw new StorageInvalidKeyError(key)
     }
     switch (scope) {
-        case StoreScope.PROJECT:
+        case StoreScope.WORKSPACE:
             return prefix + key
         case StoreScope.FLOW:
             return prefix + 'flow_' + flowId + '/' + key

@@ -24,7 +24,7 @@ type TestTriggerSectionProps = {
   isSaving: boolean;
   flowVersionId: string;
   flowId: string;
-  projectId: string;
+  workspaceId: string;
 };
 
 const TestTriggerSection = React.memo(

@@ -23,7 +23,7 @@ const config: PlaywrightTestConfig = {
   reporter: process.env.CI ? 'github' : 'html',
   /* Global setup to run once before all tests */
   globalSetup: require.resolve('./global-setup'),
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+  /* Shared settings for all the workspaces below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: 'http://localhost:4200',
@@ -35,8 +35,8 @@ const config: PlaywrightTestConfig = {
     headless: true,
   },
 
-  /* Configure projects for major browsers */
-  projects: [
+  /* Configure workspaces for major browsers */
+  workspaces: [
     {
       name: 'e2e',
       use: {

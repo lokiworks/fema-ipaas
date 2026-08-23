@@ -51,14 +51,14 @@ export const variablesQueries = {
     }, [search]);
   },
 
-  useVariableOwners: (projectId: string) => {
+  useVariableOwners: (workspaceId: string) => {
     return useQuery({
-      queryKey: ['variable-owners', projectId],
+      queryKey: ['variable-owners', workspaceId],
       queryFn: async () => {
-        const page = await variablesApi.getOwners({ projectId });
+        const page = await variablesApi.getOwners({ workspaceId });
         return page.data;
       },
-      enabled: !!projectId,
+      enabled: !!workspaceId,
     });
   },
 };

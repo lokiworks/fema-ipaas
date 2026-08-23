@@ -15,18 +15,18 @@ export const triggerSourceRepo = repoFactory(TriggerSourceEntity)
 export const triggerSourceService = (log: FastifyBaseLogger) => {
     return {
         async enable(params: EnableTriggerParams): Promise<TriggerSource> {
-            const { flowVersion, projectId, simulate, templateId, isRepublish } = params
+            const { flowVersion, workspaceId, simulate, templateId, isRepublish } = params
             log.info({
                 flow: { id: flowVersion.flowId },
                 flowVersion: { id: flowVersion.id },
-                project: { id: projectId },
+                workspace: { id: workspaceId },
                 simulate,
             }, '[triggerSourceService#enable] Enabling trigger source')
-            const connectorTrigger = await triggerUtils(log).getConnectorTriggerOrThrow({ flowVersion, projectId })
+            const connectorTrigger = await triggerUtils(log).getConnectorTriggerOrThrow({ flowVersion, workspaceId })
             const existingTriggerSource = await triggerSourceRepo().findOne({
                 where: {
                     flowId: flowVersion.flowId,
-                    projectId,
+                    workspaceId,
                     simulate,
                 },
                 withDeleted: true,
@@ -36,14 +36,14 @@ export const triggerSourceService = (log: FastifyBaseLogger) => {
             }
             await triggerSourceRepo().softDelete({
                 flowId: flowVersion.flowId,
-                projectId,
+                workspaceId,
                 simulate,
             })
             log.info('[triggerSourceService#enable] Soft deleted trigger source')
             const triggerSourceWithouSchedule: Omit<TriggerSource, 'created' | 'updated' | 'schedule'> = {
                 id: apId(),
                 type: connectorTrigger.type,
-                projectId,
+                workspaceId,
                 flowId: flowVersion.flowId,
                 triggerName: connectorTrigger.name,
                 flowVersionId: flowVersion.id,
@@ -55,7 +55,7 @@ export const triggerSourceService = (log: FastifyBaseLogger) => {
             const { scheduleOptions } = await flowTriggerSideEffect(log).enable({
                 flowId: flowVersion.flowId,
                 flowVersionId: flowVersion.id,
-                projectId,
+                workspaceId,
                 connectorName: flowVersion.trigger.settings.connectorName,
                 connectorTrigger,
                 simulate,
@@ -77,33 +77,33 @@ export const triggerSourceService = (log: FastifyBaseLogger) => {
             })
         },
         async get(params: GetTriggerParams): Promise<TriggerSource | null> {
-            const { projectId, id } = params
+            const { workspaceId, id } = params
             return triggerSourceRepo().findOne({
                 where: {
                     id,
-                    projectId,
+                    workspaceId,
                 },
             })
         },
-        async getByFlowId(params: GetFlowIdParamsWithProjectId): Promise<TriggerSource | null> {
-            const { flowId, simulate, projectId } = params
+        async getByFlowId(params: GetFlowIdParamsWithWorkspaceId): Promise<TriggerSource | null> {
+            const { flowId, simulate, workspaceId } = params
             return triggerSourceRepo().findOne({
                 where: {
                     flowId,
                     simulate,
-                    ...(projectId ? { projectId } : {}),
+                    ...(workspaceId ? { workspaceId } : {}),
                 },
             })
         },
         async getByFlowIds(params: GetByFlowIdsParams): Promise<Map<FlowId, TriggerSource>> {
-            const { flowIds, projectId } = params
+            const { flowIds, workspaceId } = params
             if (flowIds.length === 0) {
                 return new Map()
             }
             const triggerSources = await triggerSourceRepo().find({
                 where: {
                     flowId: In(flowIds),
-                    projectId,
+                    workspaceId,
                 },
             })
             const result = new Map<FlowId, TriggerSource>()
@@ -124,11 +124,11 @@ export const triggerSourceService = (log: FastifyBaseLogger) => {
                 },
             })
         },
-        async getOrThrow({ projectId, id }: GetTriggerParams): Promise<TriggerSource> {
+        async getOrThrow({ workspaceId, id }: GetTriggerParams): Promise<TriggerSource> {
             const triggerSource = await triggerSourceRepo().findOne({
                 where: {
                     id,
-                    projectId,
+                    workspaceId,
                 },
             })
             if (isNil(triggerSource)) {
@@ -150,27 +150,27 @@ export const triggerSourceService = (log: FastifyBaseLogger) => {
             })
         },
         async disable(params: DisableTriggerParams): Promise<void> {
-            const { projectId, flowId, simulate, templateId } = params
+            const { workspaceId, flowId, simulate, templateId } = params
             log.info({
                 flow: { id: flowId },
-                project: { id: projectId },
+                workspace: { id: workspaceId },
                 simulate,
             }, '[triggerSourceService#disable] Disabling trigger source')
             const triggerSource = await triggerSourceRepo().findOneBy({
                 flowId,
-                projectId,
+                workspaceId,
                 simulate,
             })
             if (isNil(triggerSource)) {
                 return
             }
             const flowVersion = await flowVersionService(log).getOneOrThrow(triggerSource.flowVersionId)
-            const connectorTrigger = await triggerUtils(log).getConnectorTrigger({ flowVersion, projectId })
+            const connectorTrigger = await triggerUtils(log).getConnectorTrigger({ flowVersion, workspaceId })
             if (!isNil(connectorTrigger)) {
                 await flowTriggerSideEffect(log).disable({
                     flowId: triggerSource.flowId,
                     flowVersionId: triggerSource.flowVersionId,
-                    projectId,
+                    workspaceId,
                     connectorName: triggerSource.connectorName,
                     connectorTrigger,
                     simulate,
@@ -180,7 +180,7 @@ export const triggerSourceService = (log: FastifyBaseLogger) => {
             }
             await triggerSourceRepo().softDelete({
                 id: triggerSource.id,
-                projectId,
+                workspaceId,
             })
             log.info('[triggerSourceService#disable] Soft deleted trigger source')
             if (templateId) {
@@ -201,28 +201,28 @@ type ExistsByFlowIdParams = {
 
 type GetByFlowIdParams = {
     flowId: string
-    projectId?: string
+    workspaceId?: string
     simulate: boolean
 }
 
 type GetByFlowIdsParams = {
     flowIds: FlowId[]
-    projectId: string
+    workspaceId: string
 }
 
-type GetFlowIdParamsWithProjectId = {
+type GetFlowIdParamsWithWorkspaceId = {
     flowId: string
-    projectId: string
+    workspaceId: string
     simulate: boolean | undefined
 }
 
 type GetTriggerParams = {
-    projectId: string
+    workspaceId: string
     id: string
 }
 
 type DisableTriggerParams = {
-    projectId: string
+    workspaceId: string
     flowId: string
     simulate: boolean
     ignoreError: boolean
@@ -231,7 +231,7 @@ type DisableTriggerParams = {
 
 type EnableTriggerParams = {
     flowVersion: FlowVersion
-    projectId: string
+    workspaceId: string
     simulate: boolean
     templateId?: string
     isRepublish?: boolean

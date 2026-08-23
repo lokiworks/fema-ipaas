@@ -8,7 +8,7 @@ import { foldersApi } from '../api/folders-api';
 export const foldersHooks = {
   useFolders: () => {
     const folderQuery = useQuery({
-      queryKey: ['folders', authenticationSession.getProjectId()],
+      queryKey: ['folders', authenticationSession.getWorkspaceId()],
       queryFn: () => foldersApi.list(),
     });
     return {
@@ -59,7 +59,7 @@ export const foldersMutations = {
       mutationFn: async (data) => {
         return await foldersApi.create({
           displayName: data.displayName.trim(),
-          projectId: authenticationSession.getProjectId()!,
+          workspaceId: authenticationSession.getWorkspaceId()!,
         });
       },
       onSuccess,

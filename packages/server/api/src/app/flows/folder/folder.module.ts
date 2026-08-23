@@ -3,8 +3,8 @@ import { ApplicationEventName, CreateFolderRequest, DeleteFolderRequest, ListFol
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
-import { entitiesMustBeOwnedByCurrentProject } from '../../authentication/authorization'
-import { ProjectResourceType } from '../../core/security/authorization/common'
+import { entitiesMustBeOwnedByCurrentWorkspace } from '../../authentication/authorization'
+import { WorkspaceResourceType } from '../../core/security/authorization/common'
 import { securityAccess } from '../../core/security/authorization/fastify-security'
 import { applicationEvents } from '../../helper/application-events'
 import { FolderEntity } from './folder.entity'
@@ -16,11 +16,11 @@ export const folderModule: FastifyPluginAsyncZod = async (app) => {
 }
 
 const folderController: FastifyPluginAsyncZod = async (fastify) => {
-    fastify.addHook('preSerialization', entitiesMustBeOwnedByCurrentProject)
+    fastify.addHook('preSerialization', entitiesMustBeOwnedByCurrentWorkspace)
 
     fastify.post('/', CreateFolderParams, async (request) => {
         const createdFolder = await folderService(request.log).upsert({
-            projectId: request.projectId,
+            workspaceId: request.workspaceId,
             request: request.body,
         })
         applicationEvents(request.log).sendUserEvent(request, {
@@ -38,7 +38,7 @@ const folderController: FastifyPluginAsyncZod = async (fastify) => {
         UpdateFolderParams,
         async (request) => {
             const updatedFlow = await folderService(request.log).update({
-                projectId: request.projectId,
+                workspaceId: request.workspaceId,
                 folderId: request.params.id,
                 request: request.body,
             })
@@ -61,7 +61,7 @@ const folderController: FastifyPluginAsyncZod = async (fastify) => {
             request,
         ) => {
             return folderService(request.log).getOneOrThrow({
-                projectId: request.projectId,
+                workspaceId: request.workspaceId,
                 folderId: request.params.id,
             })
         },
@@ -72,7 +72,7 @@ const folderController: FastifyPluginAsyncZod = async (fastify) => {
         ListFoldersParams,
         async (request) => {
             return folderService(request.log).list({
-                projectId: request.projectId,
+                workspaceId: request.workspaceId,
                 cursorRequest: request.query.cursor ?? null,
                 limit: request.query.limit ?? DEFAULT_PAGE_SIZE,
             })
@@ -84,7 +84,7 @@ const folderController: FastifyPluginAsyncZod = async (fastify) => {
         DeleteFolderParams,
         async (request, reply) => {
             const folder = await folderService(request.log).getOneOrThrow({
-                projectId: request.projectId,
+                workspaceId: request.workspaceId,
                 folderId: request.params.id,
             })
             applicationEvents(request.log).sendUserEvent(request, {
@@ -94,7 +94,7 @@ const folderController: FastifyPluginAsyncZod = async (fastify) => {
                 },
             })
             await folderService(request.log).delete({
-                projectId: request.projectId,
+                workspaceId: request.workspaceId,
                 folderId: request.params.id,
             })
             return reply.status(StatusCodes.OK).send()
@@ -105,10 +105,10 @@ const folderController: FastifyPluginAsyncZod = async (fastify) => {
 
 const CreateFolderParams = {
     config: {
-        security: securityAccess.project(
+        security: securityAccess.workspace(
             [PrincipalType.USER, PrincipalType.SERVICE], 
             Permission.WRITE_FLOW, {
-                type: ProjectResourceType.BODY,
+                type: WorkspaceResourceType.BODY,
             }),
     },
     schema: {
@@ -121,10 +121,10 @@ const CreateFolderParams = {
 
 const UpdateFolderParams = {
     config: {
-        security: securityAccess.project(
+        security: securityAccess.workspace(
             [PrincipalType.USER, PrincipalType.SERVICE], 
             Permission.WRITE_FLOW, {
-                type: ProjectResourceType.TABLE,
+                type: WorkspaceResourceType.TABLE,
                 tableName: FolderEntity,
             }),
     },
@@ -141,10 +141,10 @@ const UpdateFolderParams = {
 
 const GetFolderParams = {
     config: {
-        security: securityAccess.project(
+        security: securityAccess.workspace(
             [PrincipalType.USER, PrincipalType.SERVICE], 
             Permission.READ_FLOW, {
-                type: ProjectResourceType.TABLE,
+                type: WorkspaceResourceType.TABLE,
                 tableName: FolderEntity,
             }),
     },
@@ -160,10 +160,10 @@ const GetFolderParams = {
 
 const ListFoldersParams = {
     config: {
-        security: securityAccess.project(
+        security: securityAccess.workspace(
             [PrincipalType.USER, PrincipalType.SERVICE], 
             Permission.READ_FLOW, {
-                type: ProjectResourceType.QUERY,
+                type: WorkspaceResourceType.QUERY,
             }),
     },
     schema: {
@@ -176,10 +176,10 @@ const ListFoldersParams = {
 
 const DeleteFolderParams = {
     config: {
-        security: securityAccess.project(
+        security: securityAccess.workspace(
             [PrincipalType.USER, PrincipalType.SERVICE], 
             Permission.WRITE_FLOW, {
-                type: ProjectResourceType.TABLE,
+                type: WorkspaceResourceType.TABLE,
                 tableName: FolderEntity,
             }),
     },

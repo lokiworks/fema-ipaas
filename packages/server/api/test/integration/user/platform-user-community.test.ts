@@ -1,11 +1,11 @@
 import { apId } from '@fema/core-utils'
-import { PlatformRole, PrincipalType, ProjectType, UserStatus } from '@fema/shared'
+import { PlatformRole, PrincipalType, WorkspaceType, UserStatus } from '@fema/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { databaseConnection } from '../../../../src/app/database/database-connection'
 import { generateMockToken } from '../../../helpers/auth'
 import {
-    createMockProject,
+    createMockWorkspace,
     createMockUser,
     mockAndSaveBasicSetup,
     mockBasicUser,
@@ -240,7 +240,7 @@ describe('User API', () => {
             expect(response?.statusCode).toBe(StatusCodes.NO_CONTENT)
         })
 
-        it('Removes a user who owns a personal project on the first attempt', async () => {
+        it('Removes a user who owns a personal workspace on the first attempt', async () => {
             // arrange
             const { mockOwner, mockPlatform } = await mockAndSaveBasicSetup()
             const { mockUser: mockMember } = await mockBasicUser({
@@ -249,12 +249,12 @@ describe('User API', () => {
                     platformRole: PlatformRole.MEMBER,
                 },
             })
-            const personalProject = createMockProject({
+            const personalWorkspace = createMockWorkspace({
                 ownerId: mockMember.id,
                 platformId: mockPlatform.id,
-                type: ProjectType.PERSONAL,
+                type: WorkspaceType.PERSONAL,
             })
-            await databaseConnection().getRepository('project').save(personalProject)
+            await databaseConnection().getRepository('workspace').save(personalWorkspace)
 
             const mockOwnerToken = await generateMockToken({
                 id: mockOwner.id,

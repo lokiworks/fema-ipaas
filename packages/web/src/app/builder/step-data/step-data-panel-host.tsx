@@ -21,7 +21,7 @@ type StepDataPanelHostProps = {
   mode: 'drawer' | 'split';
   flowId: string;
   flowVersionId: string;
-  projectId?: string;
+  workspaceId?: string;
   stepType: FlowActionType | FlowTriggerType;
   showGenerateSampleData: boolean;
   showStepInputOutFromRun: boolean;
@@ -32,7 +32,7 @@ const StepDataPanelHost = ({
   mode,
   flowId,
   flowVersionId,
-  projectId,
+  workspaceId,
   stepType,
   showGenerateSampleData,
   showStepInputOutFromRun,
@@ -83,12 +83,12 @@ const StepDataPanelHost = ({
       )}
       role={mode === 'drawer' ? 'dialog' : undefined}
     >
-      {showGenerateSampleData && projectId && (
+      {showGenerateSampleData && workspaceId && (
         <TestStepContainer
           type={stepType}
           flowId={flowId}
           flowVersionId={flowVersionId}
-          projectId={projectId}
+          workspaceId={workspaceId}
           isSaving={saving}
         />
       )}

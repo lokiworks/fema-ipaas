@@ -76,7 +76,7 @@ const DynamicDropdownConnectorPropertyImplementation = React.memo(
       mutate(
         {
           request: {
-            projectId: authenticationSession.getProjectId()!,
+            workspaceId: authenticationSession.getWorkspaceId()!,
             connectorName: props.connectorName,
             connectorVersion: props.connectorVersion,
             propertyName: props.propertyName,

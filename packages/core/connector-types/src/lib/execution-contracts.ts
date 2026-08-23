@@ -74,7 +74,7 @@ export type ScheduleOptions = z.infer<typeof ScheduleOptions>
 export const TriggerSource = z.object({
     ...BaseModelSchema,
     type: z.enum(TriggerStrategy),
-    projectId: z.string(),
+    workspaceId: z.string(),
     flowId: z.string(),
     triggerName: z.string(),
     schedule: Nullable(ScheduleOptions),
@@ -99,7 +99,7 @@ export enum FileType {
     TRIGGER_PAYLOAD = 'TRIGGER_PAYLOAD',
     SAMPLE_DATA_INPUT = 'SAMPLE_DATA_INPUT',
     TRIGGER_EVENT_FILE = 'TRIGGER_EVENT_FILE',
-    PROJECT_RELEASE = 'PROJECT_RELEASE',
+    WORKSPACE_RELEASE = 'WORKSPACE_RELEASE',
     FLOW_VERSION_BACKUP = 'FLOW_VERSION_BACKUP',
     PLATFORM_ASSET = 'PLATFORM_ASSET',
     USER_PROFILE_PICTURE = 'USER_PROFILE_PICTURE',
@@ -120,7 +120,7 @@ export enum FileLocation {
 
 export const File = z.object({
     ...BaseModelSchema,
-    projectId: Nullable(z.string()),
+    workspaceId: Nullable(z.string()),
     platformId: Nullable(z.string()),
     type: z.enum(FileType),
     compression: z.enum(FileCompression),

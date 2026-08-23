@@ -1,16 +1,16 @@
 import { TriggerBase } from '@fema/connector-sdk'
-import { ErrorCode, isNil, PlatformError, ProjectId } from '@fema/core-utils'
+import { ErrorCode, isNil, PlatformError, WorkspaceId } from '@fema/core-utils'
 import { FlowTriggerType, FlowVersion } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { connectorMetadataService } from '../../connectors/metadata/connector-metadata-service'
-import { projectService } from '../../project/project-service'
+import { workspaceService } from '../../workspace/workspace-service'
 
 export const triggerUtils = (log: FastifyBaseLogger) => ({
-    async getConnectorTriggerOrThrow({ flowVersion, projectId }: GetConnectorTriggerOrThrowParams): Promise<TriggerBase> {
+    async getConnectorTriggerOrThrow({ flowVersion, workspaceId }: GetConnectorTriggerOrThrowParams): Promise<TriggerBase> {
 
         const connectorTrigger = await this.getConnectorTrigger({
             flowVersion,
-            projectId,
+            workspaceId,
 
         })
         if (isNil(connectorTrigger)) {
@@ -30,7 +30,7 @@ export const triggerUtils = (log: FastifyBaseLogger) => ({
         }
         return connectorTrigger
     },
-    async getConnectorTrigger({ flowVersion, projectId }: GetConnectorTriggerOrThrowParams): Promise<TriggerBase | null> {
+    async getConnectorTrigger({ flowVersion, workspaceId }: GetConnectorTriggerOrThrowParams): Promise<TriggerBase | null> {
         if (flowVersion.trigger.type !== FlowTriggerType.CONNECTOR) {
             return null
         }
@@ -42,11 +42,11 @@ export const triggerUtils = (log: FastifyBaseLogger) => ({
             connectorName,
             connectorVersion,
             triggerName,
-            projectId,
+            workspaceId,
         })
     },
-    async getConnectorTriggerByName({ connectorName, connectorVersion, triggerName, projectId }: GetConnectorTriggerByNameParams): Promise<TriggerBase | null> {
-        const platformId = await projectService(log).getPlatformId(projectId)
+    async getConnectorTriggerByName({ connectorName, connectorVersion, triggerName, workspaceId }: GetConnectorTriggerByNameParams): Promise<TriggerBase | null> {
+        const platformId = await workspaceService(log).getPlatformId(workspaceId)
         const connector = await connectorMetadataService(log).get({
             platformId,
             name: connectorName,
@@ -64,10 +64,10 @@ type GetConnectorTriggerByNameParams = {
     connectorName: string
     connectorVersion: string
     triggerName: string
-    projectId: ProjectId
+    workspaceId: WorkspaceId
 }
 
 type GetConnectorTriggerOrThrowParams = {
     flowVersion: FlowVersion
-    projectId: ProjectId
+    workspaceId: WorkspaceId
 }

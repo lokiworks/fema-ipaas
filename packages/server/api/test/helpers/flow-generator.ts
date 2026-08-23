@@ -20,7 +20,7 @@ export const flowGenerator = {
             operationStatus: FlowOperationStatus.NONE,
             status: faker.helpers.enumValue(FlowStatus),
             id: flowId,
-            projectId: apId(),
+            workspaceId: apId(),
             folderId: apId(),
             created: faker.date.recent().toISOString(),
             updated: faker.date.recent().toISOString(),

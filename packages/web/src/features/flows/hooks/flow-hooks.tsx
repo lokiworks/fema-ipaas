@@ -39,20 +39,20 @@ import { NEW_FLOW_QUERY_PARAM } from '@/lib/route-utils';
 import { flowsApi } from '../api/flows-api';
 import { flowsUtils } from '../utils/flows-utils';
 
-const createFlowsQueryKey = (projectId: string) => ['flows', projectId];
+const createFlowsQueryKey = (workspaceId: string) => ['flows', workspaceId];
 export const flowHooks = {
   invalidateFlowsQuery: (queryClient: QueryClient) => {
     queryClient.invalidateQueries({
-      queryKey: createFlowsQueryKey(authenticationSession.getProjectId()!),
+      queryKey: createFlowsQueryKey(authenticationSession.getWorkspaceId()!),
     });
   },
-  useFlows: (request: Omit<ListFlowsRequest, 'projectId'>) => {
+  useFlows: (request: Omit<ListFlowsRequest, 'workspaceId'>) => {
     return useQuery({
-      queryKey: createFlowsQueryKey(authenticationSession.getProjectId()!),
+      queryKey: createFlowsQueryKey(authenticationSession.getWorkspaceId()!),
       queryFn: async () => {
         return await flowsApi.list({
           ...request,
-          projectId: authenticationSession.getProjectId()!,
+          workspaceId: authenticationSession.getWorkspaceId()!,
         });
       },
       staleTime: 5 * 1000,
@@ -233,7 +233,7 @@ export const flowHooks = {
     return useMutation({
       mutationFn: async () => {
         const flow = await flowsApi.create({
-          projectId: authenticationSession.getProjectId()!,
+          workspaceId: authenticationSession.getWorkspaceId()!,
           displayName: t('Untitled'),
         });
         const mcpConnector = await connectorsApi.get({
@@ -398,7 +398,7 @@ export const flowHooks = {
             ? await foldersApi.get(folderId)
             : undefined;
         const flow = await flowsApi.create({
-          projectId: authenticationSession.getProjectId()!,
+          workspaceId: authenticationSession.getWorkspaceId()!,
           displayName: t('Untitled'),
           folderName: folder?.displayName,
         });
@@ -446,11 +446,11 @@ export const flowHooks = {
   },
   importFlowsFromTemplates: async ({
     templates,
-    projectId,
+    workspaceId,
     folderName,
   }: {
     templates: Template[];
-    projectId: string;
+    workspaceId: string;
     folderName?: string;
   }): Promise<PopulatedFlow[]> => {
     if (templates.length === 0) {
@@ -473,7 +473,7 @@ export const flowHooks = {
         const flow = await flowsApi.create({
           displayName: templateFlow.displayName,
           templateId: template.id,
-          projectId,
+          workspaceId,
           folderName,
         });
 

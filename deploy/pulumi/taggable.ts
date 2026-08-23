@@ -42,7 +42,7 @@ const taggableResourceTypes = [
     "aws:cloudwatch/eventRule:EventRule",
     "aws:cloudwatch/logGroup:LogGroup",
     "aws:cloudwatch/metricAlarm:MetricAlarm",
-    "aws:codebuild/project:Project",
+    "aws:codebuild/workspace:Workspace",
     "aws:codecommit/repository:Repository",
     "aws:codepipeline/pipeline:Pipeline",
     "aws:codepipeline/webhook:Webhook",

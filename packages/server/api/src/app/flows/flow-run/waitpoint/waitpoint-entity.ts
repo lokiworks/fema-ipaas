@@ -1,10 +1,10 @@
-import { PauseType, Project } from '@fema/shared'
+import { PauseType, Workspace } from '@fema/shared'
 import { EntitySchema } from 'typeorm'
 import { ApIdSchema, BaseColumnSchemaPart } from '../../../database/database-common'
 import { Waitpoint, WaitpointStatus, WaitpointVersionEnum } from './waitpoint-types'
 
 type WaitpointSchema = Waitpoint & {
-    project: Project
+    workspace: Workspace
 }
 
 export const WaitpointEntity = new EntitySchema<WaitpointSchema>({
@@ -15,7 +15,7 @@ export const WaitpointEntity = new EntitySchema<WaitpointSchema>({
             ...ApIdSchema,
             nullable: false,
         },
-        projectId: {
+        workspaceId: {
             ...ApIdSchema,
             nullable: false,
         },
@@ -68,19 +68,19 @@ export const WaitpointEntity = new EntitySchema<WaitpointSchema>({
             unique: true,
         },
         {
-            name: 'idx_waitpoint_project_id',
-            columns: ['projectId'],
+            name: 'idx_waitpoint_workspace_id',
+            columns: ['workspaceId'],
         },
     ],
     relations: {
-        project: {
+        workspace: {
             type: 'many-to-one',
-            target: 'project',
+            target: 'workspace',
             cascade: true,
             onDelete: 'CASCADE',
             joinColumn: {
-                name: 'projectId',
-                foreignKeyConstraintName: 'fk_waitpoint_project_id',
+                name: 'workspaceId',
+                foreignKeyConstraintName: 'fk_waitpoint_workspace_id',
             },
         },
     },

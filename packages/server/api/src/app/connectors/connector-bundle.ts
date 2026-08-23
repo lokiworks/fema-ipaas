@@ -12,7 +12,7 @@ import { connectorMetadataService } from './metadata/connector-metadata-service'
 // (ARCHIVE) connectors are served straight from the file store. Always platform-scoped via the engine
 // token's platformId.
 export const connectorBundle = (log: FastifyBaseLogger) => ({
-    async resolve({ name, version, archiveId, platformId, projectId }: ResolveParams): Promise<ConnectorBundleResolution> {
+    async resolve({ name, version, archiveId, platformId, workspaceId }: ResolveParams): Promise<ConnectorBundleResolution> {
         // ARCHIVE connectors are addressed by archiveId — they may not be registered in metadata yet
         // (e.g. during EXTRACT_CONNECTOR_METADATA of a freshly uploaded .tgz). Scope to the token's
         // platform so one platform cannot read another's private archive.
@@ -23,7 +23,7 @@ export const connectorBundle = (log: FastifyBaseLogger) => ({
         if (isNil(name) || isNil(version)) {
             return { type: 'not-found' }
         }
-        const metadata = await connectorMetadataService(log).get({ name, version, platformId, projectId })
+        const metadata = await connectorMetadataService(log).get({ name, version, platformId, workspaceId })
         if (isNil(metadata)) {
             return { type: 'not-found' }
         }
@@ -91,7 +91,7 @@ type ResolveParams = {
     version?: string
     archiveId?: string
     platformId: string
-    projectId: string
+    workspaceId: string
 }
 
 type ConnectorBundleResolution =

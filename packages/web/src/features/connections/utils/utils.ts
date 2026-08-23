@@ -32,10 +32,10 @@ export class ConnectionNameAlreadyExists extends Error {
   }
 }
 
-export class NoProjectSelected extends Error {
+export class NoWorkspaceSelected extends Error {
   constructor() {
-    super(t('Please select at least one project'));
-    this.name = 'NoProjectSelected';
+    super(t('Please select at least one workspace'));
+    this.name = 'NoWorkspaceSelected';
   }
 }
 
@@ -108,10 +108,11 @@ export const newConnectionUtils = {
     grantType,
     oauth2App,
     redirectUrl,
-    projectId: projectIdOverride,
+    workspaceId: workspaceIdOverride,
   }: DefaultValuesParams): Partial<UpsertConnectionRequestBody> {
-    const projectId = projectIdOverride ?? authenticationSession.getProjectId();
-    assertNotNullOrUndefined(projectId, 'projectId');
+    const workspaceId =
+      workspaceIdOverride ?? authenticationSession.getWorkspaceId();
+    assertNotNullOrUndefined(workspaceId, 'workspaceId');
     if (!auth) {
       throw new Error(`Unsupported property type: ${auth}`);
     }
@@ -119,7 +120,7 @@ export const newConnectionUtils = {
       externalId: suggestedExternalId,
       displayName: suggestedDisplayName,
       connectorName: connectorName,
-      projectId,
+      workspaceId,
     };
 
     switch (auth.type) {
@@ -257,18 +258,18 @@ export const newConnectionUtils = {
 export const isConnectionNameUnique = async ({
   isGlobalConnection,
   displayName,
-  projectId,
+  workspaceId,
 }: {
   isGlobalConnection: boolean;
   displayName: string;
-  projectId?: string;
+  workspaceId?: string;
 }) => {
   const connections = isGlobalConnection
     ? await globalConnectionsApi.list({
         limit: 10000,
       })
     : await connectionsApi.list({
-        projectId: projectId ?? authenticationSession.getProjectId()!,
+        workspaceId: workspaceId ?? authenticationSession.getWorkspaceId()!,
         limit: 10000,
       });
   const existingConnection = connections.data.find(
@@ -285,5 +286,5 @@ type DefaultValuesParams = {
   auth: ConnectorAuthProperty;
   oauth2App: OAuth2App | null;
   grantType: OAuth2GrantType | null;
-  projectId?: string;
+  workspaceId?: string;
 };

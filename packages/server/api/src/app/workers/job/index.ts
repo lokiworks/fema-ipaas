@@ -7,12 +7,12 @@ import {
 } from '@fema/shared'
 import { z } from 'zod'
 
-export const parseWorkerGroupValue = ({ value, projectWorker }: { value: string | undefined, projectWorker: boolean }): WorkerGroupAssignment | null => {
+export const parseWorkerGroupValue = ({ value, workspaceWorker }: { value: string | undefined, workspaceWorker: boolean }): WorkerGroupAssignment | null => {
     if (isNil(value) || value.length === 0) {
         return null
     }
     return {
-        scope: projectWorker ? WorkerGroupScope.PROJECT : WorkerGroupScope.PLATFORM,
+        scope: workspaceWorker ? WorkerGroupScope.WORKSPACE : WorkerGroupScope.PLATFORM,
         id: value,
     }
 }
@@ -34,8 +34,8 @@ export const getPlatformGroupQueueName = (workerGroupId: string): string => {
     return `platform-${workerGroupId}-jobs`
 }
 
-export const getProjectGroupQueueName = (workerGroupId: string): string => {
-    return `project-${workerGroupId}-jobs`
+export const getWorkspaceGroupQueueName = (workerGroupId: string): string => {
+    return `workspace-${workerGroupId}-jobs`
 }
 
 export const ApQueueJob = z.object({
@@ -54,14 +54,14 @@ export type MigrateJobsRequest = z.infer<typeof MigrateJobsRequest>
 
 export const SavePayloadRequest = z.object({
     flowId: z.string(),
-    projectId: z.string(),
+    workspaceId: z.string(),
     payloads: z.array(z.unknown()),
 })
 export type SavePayloadRequest = z.infer<typeof SavePayloadRequest>
 
 export const SubmitPayloadsRequest = z.object({
     flowVersionId: z.string(),
-    projectId: z.string(),
+    workspaceId: z.string(),
     streamStepProgress: z.nativeEnum(StreamStepProgress),
     workerHandlerId: z.string().optional(),
     httpRequestId: z.string().optional(),

@@ -8,7 +8,7 @@ import { userHooks } from '@/hooks/user-hooks';
 export const useAuthorization = () => {
   const checkAccess = (_permission: Permission) => true;
 
-  return { checkAccess, isFetchingProjectRole: false };
+  return { checkAccess, isFetchingWorkspaceRole: false };
 };
 
 export const useIsPlatformAdmin = () => {

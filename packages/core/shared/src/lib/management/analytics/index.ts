@@ -24,8 +24,8 @@ export type AnalyticsRunsUsage = z.infer<typeof AnalyticsRunsUsage>
 export const AnalyticsFlowReportItem = z.object({
     flowId: z.string(),
     flowName: z.string(),
-    projectId: z.string(),
-    projectName: z.string(),
+    workspaceId: z.string(),
+    workspaceName: z.string(),
     status: z.nativeEnum(FlowStatus),
     timeSavedPerRun: Nullable(z.number()),
     ownerId: Nullable(z.string()),

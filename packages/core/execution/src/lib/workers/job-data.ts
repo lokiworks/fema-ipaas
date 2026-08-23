@@ -98,7 +98,7 @@ export const NON_SCHEDULED_JOB_TYPES: WorkerJobType[] = [
 // Never change without increasing LATEST_JOB_DATA_SCHEMA_VERSION, and adding a migration
 export const RenewWebhookJobData = z.object({
     schemaVersion: z.number(),
-    projectId: z.string(),
+    workspaceId: z.string(),
     platformId: z.string(),
     flowVersionId: z.string(),
     flowId: z.string(),
@@ -108,7 +108,7 @@ export type RenewWebhookJobData = z.infer<typeof RenewWebhookJobData>
 
 // Never change without increasing LATEST_JOB_DATA_SCHEMA_VERSION, and adding a migration
 export const PollingJobData = z.object({
-    projectId: z.string(),
+    workspaceId: z.string(),
     platformId: z.string(),
     schemaVersion: z.number(),
     flowVersionId: z.string(),
@@ -119,7 +119,7 @@ export const PollingJobData = z.object({
 export type PollingJobData = z.infer<typeof PollingJobData>
 
 const ExecuteFlowJobDataCommon = z.object({
-    projectId: z.string(),
+    workspaceId: z.string(),
     platformId: z.string(),
     jobType: z.literal(WorkerJobType.EXECUTE_FLOW),
     environment: z.nativeEnum(RunEnvironment),
@@ -152,7 +152,7 @@ export const ExecuteFlowJobData = z.discriminatedUnion('executionType', [BeginEx
 export type ExecuteFlowJobData = z.infer<typeof ExecuteFlowJobData>
 
 export const WebhookJobData = z.object({
-    projectId: z.string(),
+    workspaceId: z.string(),
     platformId: z.string(),
     schemaVersion: z.number(),
     requestId: z.string(),
@@ -170,7 +170,7 @@ export type WebhookJobData = z.infer<typeof WebhookJobData>
 
 export const ExecuteValidateAuthJobData = z.object({
     jobType: z.literal(WorkerJobType.EXECUTE_VALIDATION),
-    projectId: z.string().optional(),
+    workspaceId: z.string().optional(),
     platformId: z.string(),
     connector: ConnectorPackage,
     schemaVersion: z.number(),
@@ -182,7 +182,7 @@ export type ExecuteValidateAuthJobData = z.infer<typeof ExecuteValidateAuthJobDa
 
 export const ExecuteResolveConnectionIdentifierJobData = z.object({
     jobType: z.literal(WorkerJobType.EXECUTE_RESOLVE_CONNECTION_IDENTIFIER),
-    projectId: z.string().optional(),
+    workspaceId: z.string().optional(),
     platformId: z.string(),
     connector: ConnectorPackage,
     schemaVersion: z.number(),
@@ -195,7 +195,7 @@ export type ExecuteResolveConnectionIdentifierJobData = z.infer<typeof ExecuteRe
 
 export const ExecuteTokenRefreshJobData = z.object({
     jobType: z.literal(WorkerJobType.EXECUTE_TOKEN_REFRESH),
-    projectId: z.string().optional(),
+    workspaceId: z.string().optional(),
     platformId: z.string(),
     connector: ConnectorPackage,
     schemaVersion: z.number(),
@@ -208,7 +208,7 @@ export type ExecuteTokenRefreshJobData = z.infer<typeof ExecuteTokenRefreshJobDa
 export const ExecuteTriggerHookJobData = z.object({
     jobType: z.literal(WorkerJobType.EXECUTE_TRIGGER_HOOK),
     platformId: z.string(),
-    projectId: z.string(),
+    workspaceId: z.string(),
     schemaVersion: z.number(),
     flowId: z.string(),
     flowVersionId: z.string(),
@@ -223,7 +223,7 @@ export type ExecuteTriggerHookJobData = z.infer<typeof ExecuteTriggerHookJobData
 
 export const ExecutePropertyJobData = z.object({
     jobType: z.literal(WorkerJobType.EXECUTE_PROPERTY),
-    projectId: z.string(),
+    workspaceId: z.string(),
     platformId: z.string(),
     schemaVersion: z.number(),
     flowVersion: FlowVersion.optional(),
@@ -241,7 +241,7 @@ export type ExecutePropertyJobData = z.infer<typeof ExecutePropertyJobData>
 export const ExecuteExtractConnectorMetadataJobData = z.object({
     schemaVersion: z.number(),
     jobType: z.literal(WorkerJobType.EXECUTE_EXTRACT_CONNECTOR_INFORMATION),
-    projectId: z.undefined(),
+    workspaceId: z.undefined(),
     platformId: z.string(),
     connector: ConnectorPackage,
     requestId: z.string(),
@@ -254,7 +254,7 @@ export type ActionRunStep = z.infer<typeof ActionRunStep>
 
 export const ExecuteActionJobData = z.object({
     jobType: z.literal(WorkerJobType.EXECUTE_ACTION),
-    projectId: z.string(),
+    workspaceId: z.string(),
     platformId: z.string(),
     schemaVersion: z.number(),
     step: ActionRunStep,

@@ -1,13 +1,13 @@
-import { ProjectId } from '@fema/core-utils'
-import { NoneAuthorization, PlatformAuthorization, ProjectAuthorization, PublicRoute, RouteKind, UnscopedAuthorization } from './common'
+import { WorkspaceId } from '@fema/core-utils'
+import { NoneAuthorization, PlatformAuthorization, PublicRoute, RouteKind, UnscopedAuthorization, WorkspaceAuthorization } from './common'
 
-export type ProjectAuthorizationConfig = Omit<ProjectAuthorization, 'projectResource'> & {
-    projectId: ProjectId | undefined
+export type WorkspaceAuthorizationConfig = Omit<WorkspaceAuthorization, 'workspaceResource'> & {
+    workspaceId: WorkspaceId | undefined
 }
 
 type AuthorizationRuleConfig =
     | PlatformAuthorization
-    | ProjectAuthorizationConfig
+    | WorkspaceAuthorizationConfig
     | UnscopedAuthorization
     | NoneAuthorization
 

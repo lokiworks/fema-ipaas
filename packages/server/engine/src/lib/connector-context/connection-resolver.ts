@@ -3,10 +3,10 @@ import { Connection, ConnectionConnectorMismatchError, ConnectionExpiredError, C
 import { retryFetch } from '../api/retry-fetch'
 import { utils } from '../utils'
 
-export const createConnectionResolver = ({ projectId, engineToken, apiUrl, contextVersion, connectorName }: CreateConnectionResolverParams): ConnectionResolver => {
+export const createConnectionResolver = ({ workspaceId, engineToken, apiUrl, contextVersion, connectorName }: CreateConnectionResolverParams): ConnectionResolver => {
     return {
         async obtain(externalId: string): Promise<ConnectionValue> {
-            const url = `${apiUrl}v1/worker/connections/${encodeURIComponent(externalId)}?projectId=${projectId}`
+            const url = `${apiUrl}v1/worker/connections/${encodeURIComponent(externalId)}?workspaceId=${workspaceId}`
 
             const { data: connectionValue, error: connectionValueError } = await utils.tryCatchAndThrowOnEngineError((async () => {
                 const response = await retryFetch(url, {
@@ -92,7 +92,7 @@ type ConnectionResolver = {
 }
 
 type CreateConnectionResolverParams = {
-    projectId: string
+    workspaceId: string
     apiUrl: string
     engineToken: string
     contextVersion: ContextVersion | undefined

@@ -194,7 +194,7 @@ TestActionSection.displayName = 'TestActionSection';
 type TestActionComponentProps = {
   isSaving: boolean;
   flowVersionId: string;
-  projectId: string;
+  workspaceId: string;
 };
 
 export { TestActionSection };

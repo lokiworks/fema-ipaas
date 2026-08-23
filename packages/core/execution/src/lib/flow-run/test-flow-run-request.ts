@@ -11,14 +11,14 @@ export type TestFlowRunRequestBody = z.infer<typeof TestFlowRunRequestBody>
 
 export const RetryFlowRequestBody = z.object({
     strategy: z.nativeEnum(FlowRetryStrategy),
-    projectId: ApId,
+    workspaceId: ApId,
 })
 
 export type RetryFlowRequestBody = z.infer<typeof RetryFlowRequestBody>
 
 
 export const BulkActionOnRunsRequestBody = z.object({
-    projectId: ApId,
+    workspaceId: ApId,
     flowRunIds: z.array(ApId).optional(),
     excludeFlowRunIds: z.array(ApId).optional(),
     strategy: z.nativeEnum(FlowRetryStrategy),
@@ -33,7 +33,7 @@ export const BulkActionOnRunsRequestBody = z.object({
 export type BulkActionOnRunsRequestBody = z.infer<typeof BulkActionOnRunsRequestBody>
 
 export const BulkCancelFlowRequestBody = z.object({
-    projectId: ApId,
+    workspaceId: ApId,
     flowRunIds: z.array(ApId).optional(),
     excludeFlowRunIds: z.array(ApId).optional(),
     status: z.array(z.union([
@@ -48,7 +48,7 @@ export const BulkCancelFlowRequestBody = z.object({
 export type BulkCancelFlowRequestBody = z.infer<typeof BulkCancelFlowRequestBody>
 
 export const BulkArchiveActionOnRunsRequestBody = z.object({
-    projectId: ApId,
+    workspaceId: ApId,
     flowRunIds: z.array(ApId).optional(),
     excludeFlowRunIds: z.array(ApId).optional(),
     status: z.array(z.nativeEnum(FlowRunStatus)).optional(),

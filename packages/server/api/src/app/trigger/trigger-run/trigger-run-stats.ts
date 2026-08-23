@@ -1,4 +1,4 @@
-import { PlatformId, ProjectId } from '@fema/core-utils'
+import { PlatformId, WorkspaceId } from '@fema/core-utils'
 import { apDayjs, apDayjsDuration } from '@fema/server-utils'
 import { TriggerRunStatus, TriggerStatusReport } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
@@ -86,7 +86,7 @@ const aggregateRecords = (records: ParsedRedisRecord[]): TriggerStatusReport => 
 }
 
 type GetStatusReportParams = {
-    platformId: ProjectId
+    platformId: WorkspaceId
 }
 
 type SaveParams = {

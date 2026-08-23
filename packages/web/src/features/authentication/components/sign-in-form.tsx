@@ -59,7 +59,7 @@ const SignInForm = ({ onForgotPassword }: SignInFormProps) => {
     onSuccess: (data) => {
       authenticationSession.saveResponse(data, false);
 
-      if (isNil(data.projectId)) {
+      if (isNil(data.workspaceId)) {
         navigate('/create-platform');
         return;
       }

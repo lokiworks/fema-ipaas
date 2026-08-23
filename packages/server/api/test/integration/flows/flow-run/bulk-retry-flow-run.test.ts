@@ -23,25 +23,25 @@ beforeEach(async () => {
 
 describe('Bulk retry flow runs (POST /v1/flow-runs/retry)', () => {
     it('scopes retry to the createdAfter window when Select All is used', async () => {
-        const projectId = ctx.project.id
+        const workspaceId = ctx.workspace.id
         const tenDaysAgo = new Date(Date.now() - 10 * DAY_MS).toISOString()
         const threeDaysAgo = new Date(Date.now() - 3 * DAY_MS).toISOString()
         const now = new Date().toISOString()
 
-        const { run: oldRun } = await createFailedRun({ projectId, createdAt: tenDaysAgo })
-        const { run: midRun } = await createFailedRun({ projectId, createdAt: threeDaysAgo })
-        const { run: newRun } = await createFailedRun({ projectId, createdAt: now })
+        const { run: oldRun } = await createFailedRun({ workspaceId, createdAt: tenDaysAgo })
+        const { run: midRun } = await createFailedRun({ workspaceId, createdAt: threeDaysAgo })
+        const { run: newRun } = await createFailedRun({ workspaceId, createdAt: now })
 
         const cutoff = new Date(Date.now() - 5 * DAY_MS).toISOString()
         const response = await ctx.post('/v1/flow-runs/retry', {
-            projectId,
+            workspaceId,
             strategy: FlowRetryStrategy.ON_LATEST_VERSION,
             createdAfter: cutoff,
         })
 
         expect(response.statusCode).toBe(200)
 
-        await waitForRunCountForProject({ projectId, expected: 5 })
+        await waitForRunCountForWorkspace({ workspaceId, expected: 5 })
 
         const oldStatus = await readStatus(oldRun.id)
         expect(oldStatus).toBe(FlowRunStatus.FAILED)
@@ -53,47 +53,47 @@ describe('Bulk retry flow runs (POST /v1/flow-runs/retry)', () => {
     })
 
     it('retries every matching run when createdAfter is omitted', async () => {
-        const projectId = ctx.project.id
-        await createFailedRun({ projectId, createdAt: new Date(Date.now() - 10 * DAY_MS).toISOString() })
-        await createFailedRun({ projectId, createdAt: new Date(Date.now() - 3 * DAY_MS).toISOString() })
-        await createFailedRun({ projectId, createdAt: new Date().toISOString() })
+        const workspaceId = ctx.workspace.id
+        await createFailedRun({ workspaceId, createdAt: new Date(Date.now() - 10 * DAY_MS).toISOString() })
+        await createFailedRun({ workspaceId, createdAt: new Date(Date.now() - 3 * DAY_MS).toISOString() })
+        await createFailedRun({ workspaceId, createdAt: new Date().toISOString() })
 
         const response = await ctx.post('/v1/flow-runs/retry', {
-            projectId,
+            workspaceId,
             strategy: FlowRetryStrategy.ON_LATEST_VERSION,
         })
 
         expect(response.statusCode).toBe(200)
-        await waitForRunCountForProject({ projectId, expected: 6 })
+        await waitForRunCountForWorkspace({ workspaceId, expected: 6 })
     })
 
     it('scopes retry to the status filter', async () => {
-        const projectId = ctx.project.id
-        const { run: failed } = await createFailedRun({ projectId })
+        const workspaceId = ctx.workspace.id
+        const { run: failed } = await createFailedRun({ workspaceId })
         const { run: succeeded } = await createFailedRun({
-            projectId,
+            workspaceId,
             status: FlowRunStatus.SUCCEEDED,
         })
 
         const response = await ctx.post('/v1/flow-runs/retry', {
-            projectId,
+            workspaceId,
             strategy: FlowRetryStrategy.ON_LATEST_VERSION,
             status: [FlowRunStatus.FAILED],
         })
 
         expect(response.statusCode).toBe(200)
-        await waitForRunCountForProject({ projectId, expected: 3 })
+        await waitForRunCountForWorkspace({ workspaceId, expected: 3 })
         expect(await readStatus(failed.id)).toBe(FlowRunStatus.FAILED)
         expect(await readStatus(succeeded.id)).toBe(FlowRunStatus.SUCCEEDED)
     })
 
     it('scopes retry to the flowId filter', async () => {
-        const projectId = ctx.project.id
-        const { run: runA, flow: flowA } = await createFailedRun({ projectId })
-        const { run: runB } = await createFailedRun({ projectId })
+        const workspaceId = ctx.workspace.id
+        const { run: runA, flow: flowA } = await createFailedRun({ workspaceId })
+        const { run: runB } = await createFailedRun({ workspaceId })
 
         const response = await ctx.post('/v1/flow-runs/retry', {
-            projectId,
+            workspaceId,
             strategy: FlowRetryStrategy.ON_LATEST_VERSION,
             flowId: [flowA.id],
         })
@@ -105,39 +105,39 @@ describe('Bulk retry flow runs (POST /v1/flow-runs/retry)', () => {
     })
 
     it('skips runs listed in excludeFlowRunIds', async () => {
-        const projectId = ctx.project.id
-        const { run: run1 } = await createFailedRun({ projectId })
-        const { run: run2 } = await createFailedRun({ projectId })
-        const { run: run3 } = await createFailedRun({ projectId })
+        const workspaceId = ctx.workspace.id
+        const { run: run1 } = await createFailedRun({ workspaceId })
+        const { run: run2 } = await createFailedRun({ workspaceId })
+        const { run: run3 } = await createFailedRun({ workspaceId })
 
         const response = await ctx.post('/v1/flow-runs/retry', {
-            projectId,
+            workspaceId,
             strategy: FlowRetryStrategy.ON_LATEST_VERSION,
             excludeFlowRunIds: [run2.id],
         })
 
         expect(response.statusCode).toBe(200)
-        await waitForRunCountForProject({ projectId, expected: 5 })
+        await waitForRunCountForWorkspace({ workspaceId, expected: 5 })
         expect(await readStatus(run1.id)).toBe(FlowRunStatus.FAILED)
         expect(await readStatus(run2.id)).toBe(FlowRunStatus.FAILED)
         expect(await readStatus(run3.id)).toBe(FlowRunStatus.FAILED)
     })
 
-    it('never touches runs in other projects', async () => {
-        const projectId = ctx.project.id
-        await createFailedRun({ projectId })
+    it('never touches runs in other workspaces', async () => {
+        const workspaceId = ctx.workspace.id
+        await createFailedRun({ workspaceId })
 
-        const { mockProject: otherProject } = await mockAndSaveBasicSetup()
-        const { run: otherRun } = await createFailedRun({ projectId: otherProject.id })
+        const { mockWorkspace: otherWorkspace } = await mockAndSaveBasicSetup()
+        const { run: otherRun } = await createFailedRun({ workspaceId: otherWorkspace.id })
 
         const response = await ctx.post('/v1/flow-runs/retry', {
-            projectId,
+            workspaceId,
             strategy: FlowRetryStrategy.ON_LATEST_VERSION,
         })
 
         expect(response.statusCode).toBe(200)
-        await waitForRunCountForProject({ projectId, expected: 2 })
-        expect(await countRunsForProject(otherProject.id)).toBe(1)
+        await waitForRunCountForWorkspace({ workspaceId, expected: 2 })
+        expect(await countRunsForWorkspace(otherWorkspace.id)).toBe(1)
         expect(await readStatus(otherRun.id)).toBe(FlowRunStatus.FAILED)
     })
 })
@@ -145,15 +145,15 @@ describe('Bulk retry flow runs (POST /v1/flow-runs/retry)', () => {
 const DAY_MS = 24 * 60 * 60 * 1000
 
 async function createFailedRun({
-    projectId,
+    workspaceId,
     createdAt,
     status = FlowRunStatus.FAILED,
 }: {
-    projectId: string
+    workspaceId: string
     createdAt?: string
     status?: FlowRunStatus
 }): Promise<{ flow: { id: string }, flowVersion: { id: string }, run: { id: string } }> {
-    const flow = createMockFlow({ projectId })
+    const flow = createMockFlow({ workspaceId })
     await db.save('flow', flow)
 
     const flowVersion = createMockFlowVersion({
@@ -163,7 +163,7 @@ async function createFailedRun({
     await db.save('flow_version', flowVersion)
 
     const run = createMockFlowRun({
-        projectId,
+        workspaceId,
         flowId: flow.id,
         flowVersionId: flowVersion.id,
         status,
@@ -181,8 +181,8 @@ async function createFailedRun({
     return { flow, flowVersion, run }
 }
 
-async function countRunsForProject(projectId: string): Promise<number> {
-    return databaseConnection().getRepository('flow_run').count({ where: { projectId } })
+async function countRunsForWorkspace(workspaceId: string): Promise<number> {
+    return databaseConnection().getRepository('flow_run').count({ where: { workspaceId } })
 }
 
 async function countRunsForFlow(flowId: string): Promise<number> {
@@ -212,8 +212,8 @@ async function waitForCount({
     expect(last).toBe(expected)
 }
 
-async function waitForRunCountForProject({ projectId, expected }: { projectId: string, expected: number }): Promise<void> {
-    await waitForCount({ read: async () => countRunsForProject(projectId), expected })
+async function waitForRunCountForWorkspace({ workspaceId, expected }: { workspaceId: string, expected: number }): Promise<void> {
+    await waitForCount({ read: async () => countRunsForWorkspace(workspaceId), expected })
 }
 
 async function waitForRunCountForFlow({ flowId, expected }: { flowId: string, expected: number }): Promise<void> {

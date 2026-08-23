@@ -42,9 +42,9 @@ describe('Flow API', () => {
 
             const response = await ctx.post('/v1/flows', {
                 displayName: 'test flow',
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
                 metadata: { foo: 'bar' },
-            }, { query: { projectId: ctx.project.id } })
+            }, { query: { workspaceId: ctx.workspace.id } })
 
             expect(response?.statusCode).toBe(StatusCodes.CREATED)
             const responseBody = response?.json()
@@ -53,7 +53,7 @@ describe('Flow API', () => {
             expect(responseBody?.id).toHaveLength(21)
             expect(responseBody?.created).toBeDefined()
             expect(responseBody?.updated).toBeDefined()
-            expect(responseBody?.projectId).toBe(ctx.project.id)
+            expect(responseBody?.workspaceId).toBe(ctx.workspace.id)
             expect(responseBody?.folderId).toBeNull()
             expect(responseBody?.status).toBe('DISABLED')
             expect(responseBody?.publishedVersionId).toBeNull()
@@ -105,7 +105,7 @@ describe('Flow API', () => {
             await db.save('connector_metadata', mockConnectorMetadata1)
 
             const mockFlow = createMockFlow({
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
                 status: FlowStatus.DISABLED,
             })
             await db.save('flow', mockFlow)
@@ -145,7 +145,7 @@ describe('Flow API', () => {
                 expect(responseBody.id).toBe(mockFlow.id)
                 expect(responseBody.created).toBeDefined()
                 expect(responseBody.updated).toBeDefined()
-                expect(responseBody.projectId).toBe(ctx.project.id)
+                expect(responseBody.workspaceId).toBe(ctx.workspace.id)
                 expect(responseBody.folderId).toBeNull()
                 expect(responseBody.publishedVersionId).toBe(mockFlowVersion.id)
                 expect(responseBody.metadata).toBeNull()
@@ -158,7 +158,7 @@ describe('Flow API', () => {
             const ctx = await createTestContext(app!)
 
             const mockFlow = createMockFlow({
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
                 status: FlowStatus.ENABLED,
             })
             await db.save('flow', mockFlow)
@@ -181,7 +181,7 @@ describe('Flow API', () => {
             expect(responseBody?.id).toBe(mockFlow.id)
             expect(responseBody?.created).toBeDefined()
             expect(responseBody?.updated).toBeDefined()
-            expect(responseBody?.projectId).toBe(ctx.project.id)
+            expect(responseBody?.workspaceId).toBe(ctx.workspace.id)
             expect(responseBody?.folderId).toBeNull()
             expect(responseBody?.status).toBe('DISABLED')
             expect(responseBody?.publishedVersionId).toBe(mockFlowVersion.id)
@@ -219,7 +219,7 @@ describe('Flow API', () => {
             await db.save('connector_metadata', mockConnectorMetadata1)
 
             const mockFlow = createMockFlow({
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
                 status: FlowStatus.DISABLED,
             })
             await db.save('flow', mockFlow)
@@ -259,7 +259,7 @@ describe('Flow API', () => {
                 expect(responseBody.id).toBe(mockFlow.id)
                 expect(responseBody.created).toBeDefined()
                 expect(responseBody.updated).toBeDefined()
-                expect(responseBody.projectId).toBe(ctx.project.id)
+                expect(responseBody.workspaceId).toBe(ctx.workspace.id)
                 expect(responseBody.folderId).toBeNull()
                 expect(responseBody.status).toBe('ENABLED')
                 expect(responseBody.publishedVersionId).toBe(mockFlowVersion.id)
@@ -277,11 +277,11 @@ describe('Flow API', () => {
             const ctx = await createTestContext(app!)
 
             const mockEnabledFlow = createMockFlow({
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
                 status: FlowStatus.ENABLED,
             })
             const mockDisabledFlow = createMockFlow({
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
                 status: FlowStatus.DISABLED,
             })
             await db.save('flow', [mockEnabledFlow, mockDisabledFlow])
@@ -291,7 +291,7 @@ describe('Flow API', () => {
             await db.save('flow_version', [mockEnabledFlowVersion, mockDisabledFlowVersion])
 
             const response = await ctx.get('/v1/flows', {
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
                 status: 'ENABLED',
             })
 
@@ -305,13 +305,13 @@ describe('Flow API', () => {
         it('Populates Flow version', async () => {
             const ctx = await createTestContext(app!)
 
-            const mockFlow = createMockFlow({ projectId: ctx.project.id })
+            const mockFlow = createMockFlow({ workspaceId: ctx.workspace.id })
             await db.save('flow', mockFlow)
 
             const mockFlowVersion = createMockFlowVersion({ flowId: mockFlow.id })
             await db.save('flow_version', mockFlowVersion)
 
-            const response = await ctx.get('/v1/flows', { projectId: ctx.project.id })
+            const response = await ctx.get('/v1/flows', { workspaceId: ctx.workspace.id })
 
             expect(response?.statusCode).toBe(StatusCodes.OK)
             const responseBody = response?.json()
@@ -324,10 +324,10 @@ describe('Flow API', () => {
         it('Fails if a flow with no version exists', async () => {
             const ctx = await createTestContext(app!)
 
-            const mockFlow = createMockFlow({ projectId: ctx.project.id })
+            const mockFlow = createMockFlow({ workspaceId: ctx.workspace.id })
             await db.save('flow', mockFlow)
 
-            const response = await ctx.get('/v1/flows', { projectId: ctx.project.id })
+            const response = await ctx.get('/v1/flows', { workspaceId: ctx.workspace.id })
 
             expect(response?.statusCode).toBe(StatusCodes.NOT_FOUND)
             const responseBody = response?.json()
@@ -342,7 +342,7 @@ describe('Flow API', () => {
         it('Updates flow metadata', async () => {
             const ctx = await createTestContext(app!)
 
-            const mockFlow = createMockFlow({ projectId: ctx.project.id })
+            const mockFlow = createMockFlow({ workspaceId: ctx.workspace.id })
             await db.save('flow', mockFlow)
 
             const mockFlowVersion = createMockFlowVersion({ flowId: mockFlow.id })
@@ -371,7 +371,7 @@ describe('Flow API', () => {
             const ctx = await createTestContext(app!)
 
             const mockFlow = createMockFlow({
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
                 status: FlowStatus.ENABLED,
             })
             await db.save('flow', mockFlow)

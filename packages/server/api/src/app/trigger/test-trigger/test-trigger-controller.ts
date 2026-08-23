@@ -1,6 +1,6 @@
 import { CancelTestTriggerRequestBody, PrincipalType, TestTriggerRequestBody } from '@fema/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
-import { ProjectResourceType } from '../../core/security/authorization/common'
+import { WorkspaceResourceType } from '../../core/security/authorization/common'
 import { securityAccess } from '../../core/security/authorization/fastify-security'
 import { testTriggerService } from '../../trigger/test-trigger/test-trigger-service'
 
@@ -11,13 +11,13 @@ export const testTriggerController: FastifyPluginAsyncZod = async (app) => {
         const logWithContext = req.log.child({
             flow: { id: flowId },
             flowVersion: { id: flowVersionId },
-            project: { id: req.projectId },
+            workspace: { id: req.workspaceId },
             testStrategy,
         })
         return testTriggerService(logWithContext).test({
             flowId,
             flowVersionId,
-            projectId: req.projectId,
+            workspaceId: req.workspaceId,
             testStrategy,
         })
     })
@@ -26,7 +26,7 @@ export const testTriggerController: FastifyPluginAsyncZod = async (app) => {
 
         return testTriggerService(req.log).cancel({
             flowId,
-            projectId: req.projectId,
+            workspaceId: req.workspaceId,
         })
     })
 }
@@ -36,8 +36,8 @@ const TestTriggerRequest = {
         body: TestTriggerRequestBody,
     },
     config: {
-        security: securityAccess.project([PrincipalType.USER], undefined, {
-            type: ProjectResourceType.BODY,
+        security: securityAccess.workspace([PrincipalType.USER], undefined, {
+            type: WorkspaceResourceType.BODY,
         }),
     },
 }
@@ -47,8 +47,8 @@ const CancelTestTriggerRequest = {
         body: CancelTestTriggerRequestBody,
     },
     config: {
-        security: securityAccess.project([PrincipalType.USER], undefined, {
-            type: ProjectResourceType.BODY,
+        security: securityAccess.workspace([PrincipalType.USER], undefined, {
+            type: WorkspaceResourceType.BODY,
         }),
     },
 }

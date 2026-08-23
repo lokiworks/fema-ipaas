@@ -26,7 +26,7 @@ const TemplateViewer = ({ template }: { template: Template }) => {
     mutationFn: async () => {
       const flows = await flowHooks.importFlowsFromTemplates({
         templates: [template],
-        projectId: authenticationSession.getProjectId()!,
+        workspaceId: authenticationSession.getWorkspaceId()!,
       });
       return flows[0];
     },

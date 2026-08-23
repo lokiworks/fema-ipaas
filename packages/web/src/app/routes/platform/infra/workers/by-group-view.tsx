@@ -1,5 +1,5 @@
 import {
-  ProjectWithLimits,
+  WorkspaceWithLimits,
   WorkerGroupScope,
   WorkerMachineWithStatus,
 } from '@fema/shared';
@@ -11,28 +11,28 @@ import { TextWithTooltip } from '@/components/custom/text-with-tooltip';
 import { Button } from '@/components/ui/button';
 import { WorkerGroupInfo } from '@/features/platform-admin/api/workers-api';
 
-import { AssignProjectsDialog } from './assign-projects-dialog';
-import { ProjectAvatar } from './project-avatar';
+import { AssignWorkspacesDialog } from './assign-workspaces-dialog';
+import { WorkspaceAvatar } from './workspace-avatar';
 
 export function ByGroupView({
-  projects,
+  workspaces,
   workerGroups,
   workers,
 }: ByGroupViewProps) {
   const groupsFromLive = workerGroups.map((g) => g.label);
-  const groupsFromProjects = projects
+  const groupsFromWorkspaces = workspaces
     .map((p) => p.workerGroupId)
     .filter((id): id is string => id != null);
 
   const allGroupLabels = Array.from(
-    new Set([...groupsFromLive, ...groupsFromProjects]),
+    new Set([...groupsFromLive, ...groupsFromWorkspaces]),
   ).sort();
 
   if (allGroupLabels.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 gap-3 text-muted-foreground">
         <Layers className="size-10" strokeWidth={1.5} />
-        <p className="text-sm">{t('No projects')}</p>
+        <p className="text-sm">{t('No workspaces')}</p>
       </div>
     );
   }
@@ -43,7 +43,7 @@ export function ByGroupView({
         <GroupCard
           key={label}
           groupLabel={label}
-          allProjects={projects}
+          allWorkspaces={workspaces}
           workers={workers}
         />
       ))}
@@ -51,16 +51,16 @@ export function ByGroupView({
   );
 }
 
-function GroupCard({ groupLabel, allProjects, workers }: GroupCardProps) {
+function GroupCard({ groupLabel, allWorkspaces, workers }: GroupCardProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const assignedProjects = allProjects.filter(
+  const assignedWorkspaces = allWorkspaces.filter(
     (p) => p.workerGroupId === groupLabel,
   );
 
   const groupWorkers = workers.filter(
     (w) =>
-      w.workerGroupScope === WorkerGroupScope.PROJECT &&
+      w.workerGroupScope === WorkerGroupScope.WORKSPACE &&
       w.workerGroupId === groupLabel,
   );
   const onlineWorkerCount = groupWorkers.length;
@@ -98,7 +98,7 @@ function GroupCard({ groupLabel, allProjects, workers }: GroupCardProps) {
         <div className="border-t pt-4">
           <div className="flex items-center justify-between mb-2.5">
             <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              {t('PROJECTS')}
+              {t('WORKSPACES')}
             </span>
             <Button
               variant="ghost"
@@ -111,16 +111,18 @@ function GroupCard({ groupLabel, allProjects, workers }: GroupCardProps) {
             </Button>
           </div>
 
-          {assignedProjects.length === 0 ? (
-            <p className="text-xs text-muted-foreground">{t('No projects')}</p>
+          {assignedWorkspaces.length === 0 ? (
+            <p className="text-xs text-muted-foreground">
+              {t('No workspaces')}
+            </p>
           ) : (
             <div className="flex flex-wrap items-center gap-1.5">
-              {assignedProjects.slice(0, 3).map((project) => (
-                <ProjectChip key={project.id} project={project} />
+              {assignedWorkspaces.slice(0, 3).map((workspace) => (
+                <WorkspaceChip key={workspace.id} workspace={workspace} />
               ))}
-              {assignedProjects.length > 3 && (
+              {assignedWorkspaces.length > 3 && (
                 <span className="text-xs text-muted-foreground">
-                  {t('+{count} more', { count: assignedProjects.length - 3 })}
+                  {t('+{count} more', { count: assignedWorkspaces.length - 3 })}
                 </span>
               )}
             </div>
@@ -128,35 +130,35 @@ function GroupCard({ groupLabel, allProjects, workers }: GroupCardProps) {
         </div>
       </div>
 
-      <AssignProjectsDialog
+      <AssignWorkspacesDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         groupLabel={groupLabel}
-        allProjects={allProjects}
+        allWorkspaces={allWorkspaces}
       />
     </>
   );
 }
 
-function ProjectChip({ project }: { project: ProjectWithLimits }) {
+function WorkspaceChip({ workspace }: { workspace: WorkspaceWithLimits }) {
   return (
     <div className="inline-flex items-center gap-1 rounded-full border bg-muted/40 px-2 py-0.5 text-xs">
-      <ProjectAvatar project={project} size="sm" />
-      <TextWithTooltip tooltipMessage={project.displayName}>
-        <span className="max-w-[100px] truncate">{project.displayName}</span>
+      <WorkspaceAvatar workspace={workspace} size="sm" />
+      <TextWithTooltip tooltipMessage={workspace.displayName}>
+        <span className="max-w-[100px] truncate">{workspace.displayName}</span>
       </TextWithTooltip>
     </div>
   );
 }
 
 type ByGroupViewProps = {
-  projects: ProjectWithLimits[];
+  workspaces: WorkspaceWithLimits[];
   workerGroups: WorkerGroupInfo[];
   workers: WorkerMachineWithStatus[];
 };
 
 type GroupCardProps = {
   groupLabel: string;
-  allProjects: ProjectWithLimits[];
+  allWorkspaces: WorkspaceWithLimits[];
   workers: WorkerMachineWithStatus[];
 };

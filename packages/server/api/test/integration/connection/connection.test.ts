@@ -41,7 +41,7 @@ describe('Connection CE API', () => {
                 externalId: 'test-secret-connection',
                 displayName: 'Test Secret Connection',
                 connectorName: mockConnector.name,
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
                 type: ConnectionType.SECRET_TEXT,
                 value: {
                     type: ConnectionType.SECRET_TEXT,
@@ -73,7 +73,7 @@ describe('Connection CE API', () => {
                 externalId: 'test-no-auth-connection',
                 displayName: 'Test No Auth',
                 connectorName: mockConnector.name,
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
                 type: ConnectionType.NO_AUTH,
                 value: {
                     type: ConnectionType.NO_AUTH,
@@ -101,7 +101,7 @@ describe('Connection CE API', () => {
                 externalId: 'test-placeholder-connection',
                 displayName: 'Placeholder Slack',
                 connectorName: mockConnector.name,
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
                 type: PLACEHOLDER_CONNECTION_TYPE,
                 connectorVersion: mockConnector.version,
             })
@@ -130,7 +130,7 @@ describe('Connection CE API', () => {
                 externalId: 'placeholder-no-clobber',
                 displayName: 'Active Secret',
                 connectorName: mockConnector.name,
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
                 type: ConnectionType.SECRET_TEXT,
                 value: {
                     type: ConnectionType.SECRET_TEXT,
@@ -147,7 +147,7 @@ describe('Connection CE API', () => {
                 externalId: 'placeholder-no-clobber',
                 displayName: 'Should Not Win',
                 connectorName: mockConnector.name,
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
                 type: PLACEHOLDER_CONNECTION_TYPE,
                 connectorVersion: mockConnector.version,
             })
@@ -174,7 +174,7 @@ describe('Connection CE API', () => {
                 externalId: 'placeholder-fill-in',
                 displayName: 'Pending',
                 connectorName: mockConnector.name,
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
                 type: PLACEHOLDER_CONNECTION_TYPE,
                 connectorVersion: mockConnector.version,
             })
@@ -185,7 +185,7 @@ describe('Connection CE API', () => {
                 externalId: 'placeholder-fill-in',
                 displayName: 'Filled In',
                 connectorName: mockConnector.name,
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
                 type: ConnectionType.SECRET_TEXT,
                 value: {
                     type: ConnectionType.SECRET_TEXT,
@@ -216,7 +216,7 @@ describe('Connection CE API', () => {
                 externalId: 'upsert-test-connection',
                 displayName: 'First Name',
                 connectorName: mockConnector.name,
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
                 type: ConnectionType.SECRET_TEXT,
                 value: {
                     type: ConnectionType.SECRET_TEXT,
@@ -260,7 +260,7 @@ describe('Connection CE API', () => {
                 externalId: 'update-test-connection',
                 displayName: 'Original Name',
                 connectorName: mockConnector.name,
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
                 type: ConnectionType.SECRET_TEXT,
                 value: {
                     type: ConnectionType.SECRET_TEXT,
@@ -306,7 +306,7 @@ describe('Connection CE API', () => {
                 externalId: 'list-test-connection',
                 displayName: 'Test Connection',
                 connectorName: mockConnector.name,
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
                 type: ConnectionType.SECRET_TEXT,
                 value: {
                     type: ConnectionType.SECRET_TEXT,
@@ -316,7 +316,7 @@ describe('Connection CE API', () => {
             })
 
             const response = await ctx.get('/v1/connections', {
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
             })
 
             expect(response?.statusCode).toBe(StatusCodes.OK)
@@ -346,7 +346,7 @@ describe('Connection CE API', () => {
                 externalId: 'filter-a',
                 displayName: 'Connection A',
                 connectorName: mockConnectorA.name,
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
                 type: ConnectionType.SECRET_TEXT,
                 value: { type: ConnectionType.SECRET_TEXT, secret_text: 's' },
                 connectorVersion: mockConnectorA.version,
@@ -358,14 +358,14 @@ describe('Connection CE API', () => {
                 externalId: 'filter-b',
                 displayName: 'Connection B',
                 connectorName: mockConnectorB.name,
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
                 type: ConnectionType.SECRET_TEXT,
                 value: { type: ConnectionType.SECRET_TEXT, secret_text: 's' },
                 connectorVersion: mockConnectorB.version,
             })
 
             const response = await ctx.get('/v1/connections', {
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
                 connectorName: mockConnectorA.name,
             })
 
@@ -392,7 +392,7 @@ describe('Connection CE API', () => {
                 externalId: 'get-by-id-test',
                 displayName: 'Get Me',
                 connectorName: mockConnector.name,
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
                 type: ConnectionType.SECRET_TEXT,
                 value: { type: ConnectionType.SECRET_TEXT, secret_text: 'my-secret' },
                 connectorVersion: mockConnector.version,
@@ -419,7 +419,7 @@ describe('Connection CE API', () => {
     })
 
     describe('GET /v1/connections (Isolation)', () => {
-        it('should isolate connections between projects', async () => {
+        it('should isolate connections between workspaces', async () => {
             const ctx1 = await createTestContext(app!)
             const ctx2 = await createTestContext(app!)
 
@@ -433,16 +433,16 @@ describe('Connection CE API', () => {
 
             await ctx1.post('/v1/connections', {
                 externalId: 'isolation-test',
-                displayName: 'Project 1 Connection',
+                displayName: 'Workspace 1 Connection',
                 connectorName: mockConnector.name,
-                projectId: ctx1.project.id,
+                workspaceId: ctx1.workspace.id,
                 type: ConnectionType.SECRET_TEXT,
                 value: { type: ConnectionType.SECRET_TEXT, secret_text: 's' },
                 connectorVersion: mockConnector.version,
             })
 
             const response = await ctx2.get('/v1/connections', {
-                projectId: ctx2.project.id,
+                workspaceId: ctx2.workspace.id,
             })
 
             expect(response?.statusCode).toBe(StatusCodes.OK)
@@ -451,7 +451,7 @@ describe('Connection CE API', () => {
             expect(ids).not.toContain('isolation-test')
         })
 
-        it('should not get a connection from another project', async () => {
+        it('should not get a connection from another workspace', async () => {
             const ctx1 = await createTestContext(app!)
             const ctx2 = await createTestContext(app!)
 
@@ -464,10 +464,10 @@ describe('Connection CE API', () => {
             connectorMetadataService(mockLog).getOrThrow = vi.fn().mockResolvedValue(mockConnector)
 
             const createResponse = await ctx1.post('/v1/connections', {
-                externalId: 'cross-project-get',
-                displayName: 'Project 1 Connection',
+                externalId: 'cross-workspace-get',
+                displayName: 'Workspace 1 Connection',
                 connectorName: mockConnector.name,
-                projectId: ctx1.project.id,
+                workspaceId: ctx1.workspace.id,
                 type: ConnectionType.SECRET_TEXT,
                 value: { type: ConnectionType.SECRET_TEXT, secret_text: 's' },
                 connectorVersion: mockConnector.version,
@@ -496,7 +496,7 @@ describe('Connection CE API', () => {
                 externalId: 'delete-test',
                 displayName: 'Delete Me',
                 connectorName: mockConnector.name,
-                projectId: ctx.project.id,
+                workspaceId: ctx.workspace.id,
                 type: ConnectionType.SECRET_TEXT,
                 value: { type: ConnectionType.SECRET_TEXT, secret_text: 's' },
                 connectorVersion: mockConnector.version,
@@ -517,13 +517,13 @@ describe('Connection CE API', () => {
             expect(response?.statusCode).toBe(StatusCodes.NOT_FOUND)
         })
 
-        it('should not delete a platform-scoped connection from the project route', async () => {
+        it('should not delete a platform-scoped connection from the workspace route', async () => {
             const ctx = await setup()
 
             const platformConnection = {
                 ...createMockConnection({
                     platformId: ctx.platform.id,
-                    projectIds: [ctx.project.id],
+                    workspaceIds: [ctx.workspace.id],
                     externalId: 'platform-delete-test',
                 }, ctx.user.id),
                 scope: ConnectionScope.PLATFORM,

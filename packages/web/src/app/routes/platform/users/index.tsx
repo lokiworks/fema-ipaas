@@ -109,7 +109,9 @@ export default function UsersPage() {
       featureKey="USERS"
       locked={false}
       lockTitle={t('Unlock Users')}
-      lockDescription={t('Manage your users and their access to your projects')}
+      lockDescription={t(
+        'Manage your users and their access to your workspaces',
+      )}
     >
       <div className="flex flex-col w-full">
         <DashboardPageHeader
@@ -120,7 +122,9 @@ export default function UsersPage() {
         />
         <DataTable
           emptyStateTextTitle={t('No users found')}
-          emptyStateTextDescription={t('Start inviting users to your project')}
+          emptyStateTextDescription={t(
+            'Start inviting users to your workspace',
+          )}
           emptyStateIcon={<User className="size-14" />}
           columns={columns}
           page={{

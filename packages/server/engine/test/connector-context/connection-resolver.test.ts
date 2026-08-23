@@ -3,7 +3,7 @@ import { ConnectionStatus, ConnectionType, ConnectionExpiredError, ConnectionLoa
 import { createConnectionResolver } from '../../src/lib/connector-context/connection-resolver'
 
 const RESOLVER_PARAMS = {
-    projectId: 'project-123',
+    workspaceId: 'workspace-123',
     apiUrl: 'http://localhost:3000/',
     engineToken: 'test-token',
     contextVersion: ContextVersion.V1,

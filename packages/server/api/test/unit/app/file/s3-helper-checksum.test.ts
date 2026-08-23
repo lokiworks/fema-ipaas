@@ -80,7 +80,7 @@ describe('s3Helper checksum behavior on S3-compatible providers', () => {
     it('uploads without aws-chunked encoding or checksum headers', async () => {
         const payload = Buffer.from('regression-test-payload')
 
-        await s3Helper(log).uploadFile('project/p1/FLOW_RUN_LOG/f1', payload)
+        await s3Helper(log).uploadFile('workspace/p1/FLOW_RUN_LOG/f1', payload)
 
         const putRequest = captured.find((request) => request.method === 'PUT')
         expect(putRequest).toBeDefined()
@@ -92,7 +92,7 @@ describe('s3Helper checksum behavior on S3-compatible providers', () => {
     })
 
     it('deletes objects with the CRC32C checksum accepted by OCI', async () => {
-        await s3Helper(log).deleteFiles(['project/p1/FLOW_RUN_LOG/f1'])
+        await s3Helper(log).deleteFiles(['workspace/p1/FLOW_RUN_LOG/f1'])
 
         const deleteRequest = captured.find((request) => request.method === 'POST')
         expect(deleteRequest).toBeDefined()

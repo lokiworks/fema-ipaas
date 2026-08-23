@@ -1,7 +1,7 @@
 import os from 'os'
 import path from 'path'
 import { ErrorCode, isNil, PlatformError } from '@fema/core-utils'
-import { ConnectorSyncMode, DefaultProjectRole, ExecutionMode, FileLocation, NetworkMode } from '@fema/shared'
+import { ConnectorSyncMode, DefaultWorkspaceRole, ExecutionMode, FileLocation, NetworkMode } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { DatabaseType } from '../../database/database-type'
 import { RedisType } from '../../database/redis/types'
@@ -53,14 +53,14 @@ const systemPropDefaultValues: Partial<Record<SystemProp, string>> = {
     [AppSystemProp.REDIS_TYPE]: RedisType.STANDALONE,
     [AppSystemProp.TRIGGER_DEFAULT_POLL_INTERVAL]: '5',
     [AppSystemProp.DEFAULT_CONCURRENT_JOBS_LIMIT]: '5',
-    [AppSystemProp.PROJECT_RATE_LIMITER_ENABLED]: 'false',
+    [AppSystemProp.WORKSPACE_RATE_LIMITER_ENABLED]: 'false',
     [AppSystemProp.MAX_RECORDS_PER_TABLE]: '10000',
     [AppSystemProp.MAX_FIELDS_PER_TABLE]: '100',
     [AppSystemProp.ENABLE_FLOW_ON_PUBLISH]: 'true',
     [AppSystemProp.ENFORCE_CONNECTION_CONNECTOR_BINDING]: 'false',
     [AppSystemProp.ISSUE_ARCHIVE_DAYS]: '7',
     [AppSystemProp.POSTGRES_IDLE_TIMEOUT_MS]: '300000',
-    [AppSystemProp.SCIM_DEFAULT_PROJECT_ROLE]: DefaultProjectRole.EDITOR,
+    [AppSystemProp.SCIM_DEFAULT_WORKSPACE_ROLE]: DefaultWorkspaceRole.EDITOR,
     [AppSystemProp.NETWORK_MODE]: NetworkMode.UNRESTRICTED,
     [AppSystemProp.LOG_SAMPLE_RATE_INFO]: '100',
     [AppSystemProp.LOG_KEEP_SLOW_MS]: '2000',

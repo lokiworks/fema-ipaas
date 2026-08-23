@@ -1,5 +1,5 @@
 import { ConnectorMetadata, ConnectorMetadataModel } from '@fema/connector-sdk'
-import { ErrorCode, isNil, PlatformError, PlatformId, ProjectId } from '@fema/core-utils'
+import { ErrorCode, isNil, PlatformError, PlatformId, WorkspaceId } from '@fema/core-utils'
 import { AddConnectorRequestBody, ConnectorPackage, ConnectorType, EngineResponse, EngineResponseStatus, ExecuteExtractConnectorMetadata, FileCompression, FileId, FileType, PackageType, WorkerJobType } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { fileService } from '../file/file.service'
@@ -61,7 +61,7 @@ async function saveConnectorPackage(platformId: string | undefined, params: AddC
     switch (params.packageType) {
         case PackageType.ARCHIVE: {
             const archiveId = await saveArchive({
-                projectId: undefined,
+                workspaceId: undefined,
                 platformId,
                 archive: params.connectorArchive.data as Buffer,
             }, log)
@@ -89,7 +89,7 @@ const extractConnectorInformation = async (request: ExecuteExtractConnectorMetad
         jobType: WorkerJobType.EXECUTE_EXTRACT_CONNECTOR_INFORMATION,
         platformId: request.platformId,
         connector: request,
-        projectId: undefined,
+        workspaceId: undefined,
     }, log)
 
     if (engineResponse.status !== EngineResponseStatus.OK) {
@@ -102,10 +102,10 @@ const saveArchive = async (
     params: GetConnectorArchivePackageParams,
     log: FastifyBaseLogger,
 ): Promise<FileId> => {
-    const { projectId, platformId, archive } = params
+    const { workspaceId, platformId, archive } = params
 
     const archiveFile = await fileService(log).save({
-        projectId: isNil(platformId) ? projectId : undefined,
+        workspaceId: isNil(platformId) ? workspaceId : undefined,
         platformId,
         data: archive,
         size: archive.length,
@@ -118,7 +118,7 @@ const saveArchive = async (
 
 type GetConnectorArchivePackageParams = {
     archive: Buffer
-    projectId?: ProjectId
+    workspaceId?: WorkspaceId
     platformId?: PlatformId
 }
 

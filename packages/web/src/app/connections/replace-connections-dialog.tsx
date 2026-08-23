@@ -54,7 +54,7 @@ import { flowsApi } from '@/features/flows';
 type ReplaceConnectionsDialogProps = {
   onConnectionMerged: () => void;
   children: React.ReactNode;
-  projectId: string;
+  workspaceId: string;
 };
 
 type FormData = {
@@ -74,7 +74,7 @@ enum STEP {
 const ReplaceConnectionsDialog = ({
   onConnectionMerged,
   children,
-  projectId,
+  workspaceId,
 }: ReplaceConnectionsDialogProps) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [step, setStep] = useState<STEP>(STEP.SELECT);
@@ -88,10 +88,10 @@ const ReplaceConnectionsDialog = ({
   const { data: connections, isLoading: connectionsLoading } =
     connectionsQueries.useConnections({
       request: {
-        projectId,
+        workspaceId,
         limit: 1000,
       },
-      extraKeys: [projectId, dialogOpen],
+      extraKeys: [workspaceId, dialogOpen],
       enabled: dialogOpen,
     });
 
@@ -105,7 +105,7 @@ const ReplaceConnectionsDialog = ({
     useMutation({
       mutationFn: async (externalId: string) => {
         const response = await flowsApi.list({
-          projectId: projectId,
+          workspaceId: workspaceId,
           connectionExternalIds: [externalId],
           cursor: undefined,
           limit: 1000,
@@ -235,7 +235,7 @@ const ReplaceConnectionsDialog = ({
     replaceConnections({
       sourceConnectionId: values.sourceConnections.id,
       targetConnectionId: values.replacedWithConnection.id,
-      projectId: projectId,
+      workspaceId: workspaceId,
       deleteSourceConnection: effectiveDeleteSourceConnection,
       applyToPublishedVersions,
     });
@@ -460,7 +460,7 @@ const ReplaceConnectionsDialog = ({
                           className="max-w-[200px] cursor-pointer hover:bg-secondary/70"
                           onClick={() =>
                             navigate(
-                              `/projects/${flow.projectId}/flows/${flow.id}`,
+                              `/workspaces/${flow.workspaceId}/flows/${flow.id}`,
                             )
                           }
                         >

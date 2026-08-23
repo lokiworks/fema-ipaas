@@ -23,10 +23,10 @@ export const platformUserKeys = {
 export const platformUserHooks = {
   useUsers: () => {
     const { data: currentUser } = userHooks.useCurrentUser();
-    const { checkAccess, isFetchingProjectRole } = useAuthorization();
+    const { checkAccess, isFetchingWorkspaceRole } = useAuthorization();
     const hasInvitePermission = checkAccess(Permission.WRITE_INVITATION);
     const canListUsers =
-      !isNil(currentUser) && hasInvitePermission && !isFetchingProjectRole;
+      !isNil(currentUser) && hasInvitePermission && !isFetchingWorkspaceRole;
     return useQuery<SeekPage<UserWithMetaInformation>, Error>({
       queryKey: platformUserKeys.users,
       queryFn: async () => {
@@ -46,7 +46,7 @@ export const platformUserHooks = {
             type: InvitationType.PLATFORM,
             cursor: undefined,
             limit: 100,
-            projectId: null,
+            workspaceId: null,
           })
           .then((res) => res.data);
       },

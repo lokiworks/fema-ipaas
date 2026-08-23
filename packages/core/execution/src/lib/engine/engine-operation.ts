@@ -1,4 +1,4 @@
-import { FlowRunId, PlatformId, ProjectId } from '@fema/core-utils'
+import { FlowRunId, PlatformId, WorkspaceId } from '@fema/core-utils'
 import { z } from 'zod'
 import { ExecutionToolStatus, PredefinedInputsStructure } from '@fema/connector-types'
 import { ConnectionType, ConnectionValue } from '@fema/connector-types'
@@ -56,7 +56,7 @@ export type EngineStderr = z.infer<typeof EngineStderr>
 
 
 export type BaseEngineOperation = {
-    projectId: ProjectId
+    workspaceId: WorkspaceId
     engineToken: string
     internalApiUrl: string
     publicApiUrl: string
@@ -64,12 +64,12 @@ export type BaseEngineOperation = {
     platformId: PlatformId
 }
 
-export type ExecuteValidateAuthOperation = Omit<BaseEngineOperation, 'projectId'> & {
+export type ExecuteValidateAuthOperation = Omit<BaseEngineOperation, 'workspaceId'> & {
     connector: ConnectorPackage
     auth: ConnectionValue
 }
 
-export type ExecuteResolveConnectionIdentifierOperation = Omit<BaseEngineOperation, 'projectId'> & {
+export type ExecuteResolveConnectionIdentifierOperation = Omit<BaseEngineOperation, 'workspaceId'> & {
     connector: ConnectorPackage
     auth: ConnectionValue
     connectionType: ConnectionType

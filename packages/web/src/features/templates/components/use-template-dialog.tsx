@@ -31,9 +31,12 @@ import {
 } from '@/components/ui/select';
 import { flowHooks } from '@/features/flows';
 import { foldersApi, foldersHooks } from '@/features/folders';
-import { getProjectName, projectCollectionUtils } from '@/features/projects';
-import { ApProjectDisplay } from '@/features/projects/components/ap-project-display';
 import { templatesTelemetryApi } from '@/features/templates';
+import {
+  getWorkspaceName,
+  workspaceCollectionUtils,
+} from '@/features/workspaces';
+import { ApWorkspaceDisplay } from '@/features/workspaces/components/ap-workspace-display';
 import { authenticationSession } from '@/lib/authentication-session';
 
 type UseTemplateDialogProps = {
@@ -48,30 +51,30 @@ export const UseTemplateDialog = ({
   onOpenChange,
 }: UseTemplateDialogProps) => {
   const navigate = useNavigate();
-  const [selectedProjectId, setSelectedProjectId] = useState<string>('');
+  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string>('');
   const [selectedFolderId, setSelectedFolderId] = useState<string>('');
 
-  const { data: projects } = projectCollectionUtils.useAll();
+  const { data: workspaces } = workspaceCollectionUtils.useAll();
   const { folders } = foldersHooks.useFolders();
 
   useEffect(() => {
     if (open) {
-      const currentProjectId = authenticationSession.getProjectId();
-      if (currentProjectId) {
-        setSelectedProjectId(currentProjectId);
-      } else if (projects && projects.length > 0) {
-        setSelectedProjectId(projects[0].id);
+      const currentWorkspaceId = authenticationSession.getWorkspaceId();
+      if (currentWorkspaceId) {
+        setSelectedWorkspaceId(currentWorkspaceId);
+      } else if (workspaces && workspaces.length > 0) {
+        setSelectedWorkspaceId(workspaces[0].id);
       }
       setSelectedFolderId(UncategorizedFolderId);
     }
-  }, [open, projects]);
+  }, [open, workspaces]);
 
   const { mutate: createFlow, isPending } = useMutation<
     PopulatedFlow[],
     Error,
-    { projectId: string; folderId: string }
+    { workspaceId: string; folderId: string }
   >({
-    mutationFn: async ({ projectId, folderId }) => {
+    mutationFn: async ({ workspaceId, folderId }) => {
       const flows = template.flows || [];
       const hasMultipleFlows = flows.length > 1;
 
@@ -80,7 +83,7 @@ export const UseTemplateDialog = ({
       if (hasMultipleFlows) {
         const newFolder = await foldersApi.create({
           displayName: template.name,
-          projectId: projectId,
+          workspaceId: workspaceId,
         });
         folderName = newFolder.displayName;
       } else if (!isNil(folderId) && folderId !== UncategorizedFolderId) {
@@ -90,7 +93,7 @@ export const UseTemplateDialog = ({
 
       return await flowHooks.importFlowsFromTemplates({
         templates: [template],
-        projectId,
+        workspaceId,
         folderName,
       });
     },
@@ -115,11 +118,14 @@ export const UseTemplateDialog = ({
   });
 
   const handleConfirmUseTemplate = () => {
-    if (!selectedProjectId) {
-      toast.error(t('Please select a project'));
+    if (!selectedWorkspaceId) {
+      toast.error(t('Please select a workspace'));
       return;
     }
-    createFlow({ projectId: selectedProjectId, folderId: selectedFolderId });
+    createFlow({
+      workspaceId: selectedWorkspaceId,
+      folderId: selectedFolderId,
+    });
 
     const userId = authenticationSession.getCurrentUserId();
 
@@ -147,27 +153,27 @@ export const UseTemplateDialog = ({
                   { count: flowCount },
                 )
               : t(
-                  'Select the project and folder where you want to use this template.',
+                  'Select the workspace and folder where you want to use this template.',
                 )}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="project">{t('Project')}</Label>
+            <Label htmlFor="workspace">{t('Workspace')}</Label>
             <Select
-              value={selectedProjectId}
-              onValueChange={setSelectedProjectId}
+              value={selectedWorkspaceId}
+              onValueChange={setSelectedWorkspaceId}
             >
-              <SelectTrigger id="project">
-                <SelectValue placeholder={t('Select a project')} />
+              <SelectTrigger id="workspace">
+                <SelectValue placeholder={t('Select a workspace')} />
               </SelectTrigger>
               <SelectContent>
-                {projects?.map((project) => (
-                  <SelectItem key={project.id} value={project.id}>
-                    <ApProjectDisplay
-                      title={getProjectName(project)}
-                      icon={project.icon}
-                      projectType={project.type}
+                {workspaces?.map((workspace) => (
+                  <SelectItem key={workspace.id} value={workspace.id}>
+                    <ApWorkspaceDisplay
+                      title={getWorkspaceName(workspace)}
+                      icon={workspace.icon}
+                      workspaceType={workspace.type}
                     />
                   </SelectItem>
                 ))}
@@ -209,7 +215,7 @@ export const UseTemplateDialog = ({
           <Button
             onClick={handleConfirmUseTemplate}
             loading={isPending}
-            disabled={!selectedProjectId}
+            disabled={!selectedWorkspaceId}
           >
             {t('Confirm')}
           </Button>

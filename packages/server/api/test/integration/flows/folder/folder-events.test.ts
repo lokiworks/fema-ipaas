@@ -42,7 +42,7 @@ describe('Folder application events', () => {
 
         const response = await ctx.post('/v1/folders', {
             displayName: 'My folder',
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
         })
 
         expect(response?.statusCode).toBe(StatusCodes.OK)
@@ -53,7 +53,7 @@ describe('Folder application events', () => {
 
     it('emits FOLDER_UPDATED on POST /v1/folders/:id', async () => {
         const ctx = await createTestContext(app)
-        const folder = createMockFolder({ projectId: ctx.project.id })
+        const folder = createMockFolder({ workspaceId: ctx.workspace.id })
         await db.save('folder', folder)
 
         const response = await ctx.post(`/v1/folders/${folder.id}`, {
@@ -68,7 +68,7 @@ describe('Folder application events', () => {
 
     it('emits FOLDER_DELETED on DELETE /v1/folders/:id', async () => {
         const ctx = await createTestContext(app)
-        const folder = createMockFolder({ projectId: ctx.project.id })
+        const folder = createMockFolder({ workspaceId: ctx.workspace.id })
         await db.save('folder', folder)
 
         const response = await ctx.delete(`/v1/folders/${folder.id}`)

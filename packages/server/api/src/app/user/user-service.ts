@@ -1,5 +1,5 @@
-import { apId, assertNotNullOrUndefined, Cursor, ErrorCode, isNil, PlatformError, PlatformId, ProjectId, SeekPage, spreadIfDefined, UserId } from '@fema/core-utils'
-import { PlatformRole, ProjectType, User, UserIdentity, UserStatus, UserWithMetaInformation } from '@fema/shared'
+import { apId, assertNotNullOrUndefined, Cursor, ErrorCode, isNil, PlatformError, PlatformId, SeekPage, spreadIfDefined, UserId, WorkspaceId } from '@fema/core-utils'
+import { PlatformRole, User, UserIdentity, UserStatus, UserWithMetaInformation, WorkspaceType } from '@fema/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { nanoid } from 'nanoid'
@@ -10,8 +10,8 @@ import { transaction } from '../core/db/transaction'
 import { buildPaginator } from '../helper/pagination/build-paginator'
 import { paginationHelper } from '../helper/pagination/pagination-utils'
 import { platformService } from '../platform/platform.service'
-import { projectService } from '../project/project-service'
-import { projectSideEffects } from '../project/project-side-effects'
+import { workspaceService } from '../workspace/workspace-service'
+import { workspaceSideEffects } from '../workspace/workspace-side-effects'
 import { UserEntity, UserSchema } from './user-entity'
 
 
@@ -30,7 +30,7 @@ export const userService = (log: FastifyBaseLogger) => ({
         }
         return userRepo().save(user)
     },
-    async getOrCreateWithProject({ identity, platformId }: GetOrCreateWithProjectParams): Promise<User> {
+    async getOrCreateWithWorkspace({ identity, platformId }: GetOrCreateWithWorkspaceParams): Promise<User> {
         const user = await this.getOneByIdentityAndPlatform({
             identityId: identity.id,
             platformId,
@@ -42,11 +42,11 @@ export const userService = (log: FastifyBaseLogger) => ({
                 platformRole: PlatformRole.MEMBER,
             })
 
-            await projectService(log).create({
-                displayName: identity.firstName + '\'s Project',
+            await workspaceService(log).create({
+                displayName: identity.firstName + '\'s Workspace',
                 ownerId: newUser.id,
                 platformId,
-                type: ProjectType.PERSONAL,
+                type: WorkspaceType.PERSONAL,
             })
             return newUser
         }
@@ -157,7 +157,7 @@ export const userService = (log: FastifyBaseLogger) => ({
         if (isNil(user)) {
             return
         }
-        await projectSideEffects(log).deletePersonalProjectForUser({
+        await workspaceSideEffects(log).deletePersonalWorkspaceForUser({
             userId: id,
             platformId,
         })
@@ -172,7 +172,7 @@ export const userService = (log: FastifyBaseLogger) => ({
     async removeFromPlatform({ id, platformId }: DeleteParams): Promise<void> {
         await assertNotPlatformOwner({ id, platformId, log })
         const user = await this.getOneOrFail({ id })
-        await projectSideEffects(log).deletePersonalProjectForUser({
+        await workspaceSideEffects(log).deletePersonalWorkspaceForUser({
             userId: id,
             platformId,
         })
@@ -196,8 +196,8 @@ export const userService = (log: FastifyBaseLogger) => ({
     async getByPlatformRole(id: PlatformId, role: PlatformRole): Promise<UserSchema[]> {
         return userRepo().find({ where: { platformId: id, platformRole: role }, relations: { identity: true } })
     },
-    async listProjectUsers({ platformId, projectId }: ListUsersForProjectParams): Promise<UserWithMetaInformation[]> {
-        const users = await getUsersForProject(platformId, projectId)
+    async listWorkspaceUsers({ platformId, workspaceId }: ListUsersForWorkspaceParams): Promise<UserWithMetaInformation[]> {
+        const users = await getUsersForWorkspace(platformId, workspaceId)
         const usersWithMetaInformation = await userRepo().find({ where: { platformId, id: In(users) }, relations: { identity: true } }).then((users) => users.map(this.getMetaInformation))
         return Promise.all(usersWithMetaInformation)
     },
@@ -265,7 +265,7 @@ async function deleteIdentityIfOrphaned({ identityId, entityManager }: { identit
     }
 }
 
-async function getUsersForProject(platformId: PlatformId, _projectId: string): Promise<UserId[]> {
+async function getUsersForWorkspace(platformId: PlatformId, _workspaceId: string): Promise<UserId[]> {
     return userRepo().find({ where: { platformId, platformRole: PlatformRole.ADMIN } }).then((users) => users.map((user) => user.id))
 }
 
@@ -277,8 +277,8 @@ type GetOneByIdAndPlatformIdParams = {
     id: UserId
     platformId: PlatformId
 }
-type ListUsersForProjectParams = {
-    projectId: ProjectId
+type ListUsersForWorkspaceParams = {
+    workspaceId: WorkspaceId
     platformId: PlatformId
 }
 
@@ -345,7 +345,7 @@ type UpdatePlatformIdParams = {
     platformId: string
 }
 
-type GetOrCreateWithProjectParams = {
+type GetOrCreateWithWorkspaceParams = {
     identity: UserIdentity
     platformId: string
 }

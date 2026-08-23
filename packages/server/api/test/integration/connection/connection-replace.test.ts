@@ -28,12 +28,12 @@ describe('POST /v1/connections/replace', () => {
 
         const source = createMockConnection({
             platformId: ctx.platform.id,
-            projectIds: [ctx.project.id],
+            workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         const target = createMockConnection({
             platformId: ctx.platform.id,
-            projectIds: [ctx.project.id],
+            workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         await db.save('connection', [source, target])
@@ -41,7 +41,7 @@ describe('POST /v1/connections/replace', () => {
         const response = await ctx.post('/v1/connections/replace', {
             sourceConnectionId: source.id,
             targetConnectionId: target.id,
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
         })
 
         expect(response?.statusCode).toBe(StatusCodes.NO_CONTENT)
@@ -54,12 +54,12 @@ describe('POST /v1/connections/replace', () => {
 
         const source = createMockConnection({
             platformId: ctx.platform.id,
-            projectIds: [ctx.project.id],
+            workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         const target = createMockConnection({
             platformId: ctx.platform.id,
-            projectIds: [ctx.project.id],
+            workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         await db.save('connection', [source, target])
@@ -67,7 +67,7 @@ describe('POST /v1/connections/replace', () => {
         const response = await ctx.post('/v1/connections/replace', {
             sourceConnectionId: source.id,
             targetConnectionId: target.id,
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             deleteSourceConnection: true,
         })
 
@@ -81,7 +81,7 @@ describe('POST /v1/connections/replace', () => {
 
         const source = createMockConnection({
             platformId: ctx.platform.id,
-            projectIds: [ctx.project.id],
+            workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         await db.save('connection', source)
@@ -89,7 +89,7 @@ describe('POST /v1/connections/replace', () => {
         const response = await ctx.post('/v1/connections/replace', {
             sourceConnectionId: source.id,
             targetConnectionId: source.id,
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             deleteSourceConnection: true,
         })
 
@@ -98,20 +98,20 @@ describe('POST /v1/connections/replace', () => {
         expect(stillThere?.id).toBe(source.id)
     })
 
-    it('rejects deleting a platform source from the project replace', async () => {
+    it('rejects deleting a platform source from the workspace replace', async () => {
         const ctx = await createTestContext(app!)
 
         const source: Connection = {
             ...createMockConnection({
                 platformId: ctx.platform.id,
-                projectIds: [ctx.project.id],
+                workspaceIds: [ctx.workspace.id],
                 connectorName: CONNECTOR_NAME,
             }, ctx.user.id),
             scope: ConnectionScope.PLATFORM,
         }
         const target = createMockConnection({
             platformId: ctx.platform.id,
-            projectIds: [ctx.project.id],
+            workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         await db.save('connection', [source, target])
@@ -119,7 +119,7 @@ describe('POST /v1/connections/replace', () => {
         const response = await ctx.post('/v1/connections/replace', {
             sourceConnectionId: source.id,
             targetConnectionId: target.id,
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             deleteSourceConnection: true,
         })
 
@@ -134,20 +134,20 @@ describe('POST /v1/connections/replace', () => {
         const source: Connection = {
             ...createMockConnection({
                 platformId: ctx.platform.id,
-                projectIds: [ctx.project.id],
+                workspaceIds: [ctx.workspace.id],
                 connectorName: CONNECTOR_NAME,
             }, ctx.user.id),
             scope: ConnectionScope.PLATFORM,
         }
         const target = createMockConnection({
             platformId: ctx.platform.id,
-            projectIds: [ctx.project.id],
+            workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         await db.save('connection', [source, target])
 
         const flow = createMockFlow({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             status: FlowStatus.DISABLED,
         })
         await db.save('flow', flow)
@@ -161,7 +161,7 @@ describe('POST /v1/connections/replace', () => {
         const response = await ctx.post('/v1/connections/replace', {
             sourceConnectionId: source.id,
             targetConnectionId: target.id,
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
         })
 
         expect(response?.statusCode).toBe(StatusCodes.NO_CONTENT)
@@ -174,18 +174,18 @@ describe('POST /v1/connections/replace', () => {
 
         const source = createMockConnection({
             platformId: ctx.platform.id,
-            projectIds: [ctx.project.id],
+            workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         const target = createMockConnection({
             platformId: ctx.platform.id,
-            projectIds: [ctx.project.id],
+            workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         await db.save('connection', [source, target])
 
         const flow = createMockFlow({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             status: FlowStatus.DISABLED,
         })
         await db.save('flow', flow)
@@ -199,7 +199,7 @@ describe('POST /v1/connections/replace', () => {
         const response = await ctx.post('/v1/connections/replace', {
             sourceConnectionId: source.id,
             targetConnectionId: target.id,
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             deleteSourceConnection: true,
         })
 
@@ -216,18 +216,18 @@ describe('POST /v1/connections/replace', () => {
 
         const source = createMockConnection({
             platformId: ctx.platform.id,
-            projectIds: [ctx.project.id],
+            workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         const target = createMockConnection({
             platformId: ctx.platform.id,
-            projectIds: [ctx.project.id],
+            workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         await db.save('connection', [source, target])
 
         const flow = createMockFlow({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             status: FlowStatus.DISABLED,
         })
         await db.save('flow', flow)
@@ -243,7 +243,7 @@ describe('POST /v1/connections/replace', () => {
         const response = await ctx.post('/v1/connections/replace', {
             sourceConnectionId: source.id,
             targetConnectionId: target.id,
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             deleteSourceConnection: true,
         })
 
@@ -257,12 +257,12 @@ describe('POST /v1/connections/replace', () => {
 
         const source = createMockConnection({
             platformId: ctx.platform.id,
-            projectIds: [ctx.project.id],
+            workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         const target = createMockConnection({
             platformId: ctx.platform.id,
-            projectIds: [ctx.project.id],
+            workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         await db.save('connection', [source, target])
@@ -272,7 +272,7 @@ describe('POST /v1/connections/replace', () => {
         // the draft, so a draft-and-published replace must refuse instead of
         // reporting success while the published flow stays on the old connection.
         const flow = createMockFlow({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             status: FlowStatus.DISABLED,
         })
         await db.save('flow', flow)
@@ -295,7 +295,7 @@ describe('POST /v1/connections/replace', () => {
         const response = await ctx.post('/v1/connections/replace', {
             sourceConnectionId: source.id,
             targetConnectionId: target.id,
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             applyToPublishedVersions: true,
         })
 
@@ -309,18 +309,18 @@ describe('POST /v1/connections/replace', () => {
 
         const source = createMockConnection({
             platformId: ctx.platform.id,
-            projectIds: [ctx.project.id],
+            workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         const target = createMockConnection({
             platformId: ctx.platform.id,
-            projectIds: [ctx.project.id],
+            workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         await db.save('connection', [source, target])
 
         const flow = createMockFlow({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             status: FlowStatus.DISABLED,
         })
         await db.save('flow', flow)
@@ -343,7 +343,7 @@ describe('POST /v1/connections/replace', () => {
         const response = await ctx.post('/v1/connections/replace', {
             sourceConnectionId: source.id,
             targetConnectionId: target.id,
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
         })
 
         expect(response?.statusCode).toBe(StatusCodes.NO_CONTENT)
@@ -356,12 +356,12 @@ describe('POST /v1/connections/replace', () => {
 
         const source = createMockConnection({
             platformId: ctx.platform.id,
-            projectIds: [ctx.project.id],
+            workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         const target = createMockConnection({
             platformId: ctx.platform.id,
-            projectIds: [ctx.project.id],
+            workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         await db.save('connection', [source, target])
@@ -370,7 +370,7 @@ describe('POST /v1/connections/replace', () => {
         // it, so the flow is invisible to the replace's connection filter and its
         // published version would be orphaned by the delete.
         const flow = createMockFlow({
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             status: FlowStatus.DISABLED,
         })
         await db.save('flow', flow)
@@ -393,7 +393,7 @@ describe('POST /v1/connections/replace', () => {
         const response = await ctx.post('/v1/connections/replace', {
             sourceConnectionId: source.id,
             targetConnectionId: target.id,
-            projectId: ctx.project.id,
+            workspaceId: ctx.workspace.id,
             deleteSourceConnection: true,
             applyToPublishedVersions: true,
         })

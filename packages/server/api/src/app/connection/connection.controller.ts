@@ -4,7 +4,7 @@ import { ApplicationEventName, ConnectionOwners, ConnectionScope, ConnectionStat
 import { FastifyPluginCallbackZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
-import { ProjectResourceType } from '../core/security/authorization/common'
+import { WorkspaceResourceType } from '../core/security/authorization/common'
 import { securityAccess } from '../core/security/authorization/fastify-security'
 import { applicationEvents } from '../helper/application-events'
 import { auditEvents } from '../helper/audit-events'
@@ -18,12 +18,12 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
         const ownerId = await securityHelper.getUserIdFromRequest(request)
         const baseUpsert = {
             platformId: request.principal.platform.id,
-            projectIds: [request.projectId],
+            workspaceIds: [request.workspaceId],
             externalId: request.body.externalId,
             displayName: request.body.displayName,
             connectorName: request.body.connectorName,
             ownerId,
-            scope: ConnectionScope.PROJECT,
+            scope: ConnectionScope.WORKSPACE,
             metadata: request.body.metadata,
             connectorVersion: request.body.connectorVersion,
         }
@@ -54,11 +54,11 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
         const connection = await connectionService(request.log).update({
             id: request.params.id,
             platformId: request.principal.platform.id,
-            projectIds: [request.projectId],
-            scope: ConnectionScope.PROJECT,
+            workspaceIds: [request.workspaceId],
+            scope: ConnectionScope.WORKSPACE,
             request: {
                 displayName: request.body.displayName,
-                projectIds: null,
+                workspaceIds: null,
                 metadata: request.body.metadata,
             },
         })
@@ -74,7 +74,7 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
             status,
             scope,
             platformId: request.principal.platform.id,
-            projectId: request.projectId,
+            workspaceId: request.workspaceId,
             cursorRequest: cursor ?? null,
             limit: limit ?? DEFAULT_PAGE_SIZE,
             externalIds: undefined,
@@ -87,8 +87,8 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
         wideEvent.audit(auditEvents.connectionListed({
             actor: auditEvents.actorFromPrincipal(request.principal),
             target: {
-                type: 'project',
-                id: request.projectId,
+                type: 'workspace',
+                id: request.workspaceId,
                 platformId: request.principal.platform.id,
                 connectionCount: connectionsWithoutSensitiveData.data.length,
             },
@@ -100,7 +100,7 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
         return connectionService(request.log).getOnePublicOrThrow({
             id: request.params.id,
             platformId: request.principal.platform.id,
-            projectId: request.projectId,
+            workspaceId: request.workspaceId,
         })
     })
 
@@ -108,13 +108,13 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
         return connectionService(request.log).revalidate({
             id: request.params.id,
             platformId: request.principal.platform.id,
-            projectId: request.projectId,
+            workspaceId: request.workspaceId,
         })
     })
 
     app.get('/owners', ListConnectionOwnersRequest, async (request): Promise<SeekPage<ConnectionOwners>> => {
         const owners = await connectionService(request.log).getOwners({
-            projectId: request.projectId,
+            workspaceId: request.workspaceId,
             platformId: request.principal.platform.id,
         })
         return {
@@ -130,7 +130,7 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
         await connectionService(request.log).replace({
             sourceConnectionId,
             targetConnectionId,
-            projectId: request.projectId,
+            workspaceId: request.workspaceId,
             platformId: request.principal.platform.id,
             userId: request.principal.id,
             deleteSourceConnection,
@@ -143,7 +143,7 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
         const connection = await connectionService(request.log).getOneOrThrowWithoutValue({
             id: request.params.id,
             platformId: request.principal.platform.id,
-            projectId: request.projectId,
+            workspaceId: request.workspaceId,
         })
         if (connection.scope === ConnectionScope.PLATFORM) {
             throw new PlatformError({
@@ -156,8 +156,8 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
         await connectionService(request.log).delete({
             id: request.params.id,
             platformId: request.principal.platform.id,
-            scope: ConnectionScope.PROJECT,
-            projectId: request.projectId,
+            scope: ConnectionScope.WORKSPACE,
+            workspaceId: request.workspaceId,
         })
         applicationEvents(request.log).sendUserEvent(request, {
             action: ApplicationEventName.CONNECTION_DELETED,
@@ -175,7 +175,7 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
             clientId: request.body.clientId,
             redirectUrl: request.body.redirectUrl,
             props: request.body.props,
-            projectId: request.projectId,
+            workspaceId: request.workspaceId,
             scopes: request.body.scopes,
         })
     })
@@ -187,11 +187,11 @@ const DEFAULT_PAGE_SIZE = 10
 
 const UpsertConnectionRequest = {
     config: {
-        security: securityAccess.project(
+        security: securityAccess.workspace(
             [PrincipalType.USER, PrincipalType.SERVICE],
             Permission.WRITE_CONNECTION,
             {
-                type: ProjectResourceType.BODY,
+                type: WorkspaceResourceType.BODY,
             },
         ),
     },
@@ -208,11 +208,11 @@ const UpsertConnectionRequest = {
 
 const UpdateConnectionValueRequest = {
     config: {
-        security: securityAccess.project(
+        security: securityAccess.workspace(
             [PrincipalType.USER, PrincipalType.SERVICE],
             Permission.WRITE_CONNECTION,
             {
-                type: ProjectResourceType.TABLE,
+                type: WorkspaceResourceType.TABLE,
                 tableName: ConnectionEntity,
             },
         ),
@@ -230,11 +230,11 @@ const UpdateConnectionValueRequest = {
 
 const ReplaceConnectionsRequest = {
     config: {
-        security: securityAccess.project(
+        security: securityAccess.workspace(
             [PrincipalType.USER, PrincipalType.SERVICE],
             Permission.WRITE_CONNECTION,
             {
-                type: ProjectResourceType.BODY,
+                type: WorkspaceResourceType.BODY,
             },
         ),
     },
@@ -251,11 +251,11 @@ const ReplaceConnectionsRequest = {
 
 const ListConnectionsRequest = {
     config: {
-        security: securityAccess.project(
+        security: securityAccess.workspace(
             [PrincipalType.USER, PrincipalType.SERVICE],
             Permission.READ_CONNECTION,
             {
-                type: ProjectResourceType.QUERY,
+                type: WorkspaceResourceType.QUERY,
             },
         ),
     },
@@ -271,11 +271,11 @@ const ListConnectionsRequest = {
 }
 const GetConnectionRequest = {
     config: {
-        security: securityAccess.project(
+        security: securityAccess.workspace(
             [PrincipalType.USER, PrincipalType.SERVICE],
             Permission.READ_CONNECTION,
             {
-                type: ProjectResourceType.TABLE,
+                type: WorkspaceResourceType.TABLE,
                 tableName: ConnectionEntity,
             },
         ),
@@ -295,11 +295,11 @@ const GetConnectionRequest = {
 
 const RevalidateConnectionRequest = {
     config: {
-        security: securityAccess.project(
+        security: securityAccess.workspace(
             [PrincipalType.USER, PrincipalType.SERVICE],
             Permission.WRITE_CONNECTION,
             {
-                type: ProjectResourceType.TABLE,
+                type: WorkspaceResourceType.TABLE,
                 tableName: ConnectionEntity,
             },
         ),
@@ -319,11 +319,11 @@ const RevalidateConnectionRequest = {
 
 const ListConnectionOwnersRequest = {
     config: {
-        security: securityAccess.project(
+        security: securityAccess.workspace(
             [PrincipalType.USER, PrincipalType.SERVICE],
             Permission.READ_CONNECTION,
             {
-                type: ProjectResourceType.QUERY,
+                type: WorkspaceResourceType.QUERY,
             },
         ),
     },
@@ -340,11 +340,11 @@ const ListConnectionOwnersRequest = {
 
 const DeleteConnectionRequest = {
     config: {
-        security: securityAccess.project(
+        security: securityAccess.workspace(
             [PrincipalType.USER, PrincipalType.SERVICE],
             Permission.WRITE_CONNECTION,
             {
-                type: ProjectResourceType.TABLE,
+                type: WorkspaceResourceType.TABLE,
                 tableName: ConnectionEntity,
             },
         ),

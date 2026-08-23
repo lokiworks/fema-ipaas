@@ -1,4 +1,4 @@
-import { Flow, Folder as Folder, Project } from '@fema/shared'
+import { Flow, Folder as Folder, Workspace } from '@fema/shared'
 import { EntitySchema } from 'typeorm'
 import {
     ApIdSchema,
@@ -7,7 +7,7 @@ import {
 
 export type FolderSchema = {
     flows: Flow[]
-    project: Project
+    workspace: Workspace
 } & Folder
 
 export const FolderEntity = new EntitySchema<FolderSchema>({
@@ -17,7 +17,7 @@ export const FolderEntity = new EntitySchema<FolderSchema>({
         displayName: {
             type: String,
         },
-        projectId: ApIdSchema,
+        workspaceId: ApIdSchema,
         displayOrder: {
             type: Number,
             default: 0,
@@ -29,13 +29,13 @@ export const FolderEntity = new EntitySchema<FolderSchema>({
     },
     indices: [
         {
-            name: 'idx_folder_project_id_display_name',
-            columns: ['projectId', 'displayName'],
+            name: 'idx_folder_workspace_id_display_name',
+            columns: ['workspaceId', 'displayName'],
             unique: true,
         },
         {
-            name: 'idx_folder_project_id_external_id',
-            columns: ['projectId', 'externalId'],
+            name: 'idx_folder_workspace_id_external_id',
+            columns: ['workspaceId', 'externalId'],
             unique: true,
             where: '"externalId" IS NOT NULL',
         },
@@ -46,15 +46,15 @@ export const FolderEntity = new EntitySchema<FolderSchema>({
             target: 'flow',
             inverseSide: 'folder',
         },
-        project: {
+        workspace: {
             type: 'many-to-one',
-            target: 'project',
+            target: 'workspace',
             cascade: true,
             onDelete: 'CASCADE',
             joinColumn: {
-                name: 'projectId',
+                name: 'workspaceId',
                 referencedColumnName: 'id',
-                foreignKeyConstraintName: 'fk_folder_project',
+                foreignKeyConstraintName: 'fk_folder_workspace',
             },
         },
     },

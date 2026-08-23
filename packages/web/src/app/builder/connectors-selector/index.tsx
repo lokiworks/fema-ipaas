@@ -145,7 +145,7 @@ const ConnectorSelectorContent = ({
     isSuccess: isAiConnectorLoaded,
   } = connectorsHooks.useConnector({
     name: '@fema/connector-ai',
-    projectId: authenticationSession.getProjectId() ?? undefined,
+    workspaceId: authenticationSession.getWorkspaceId() ?? undefined,
   });
   const isAiConnectorUnavailable =
     isAiConnectorError ||

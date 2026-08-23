@@ -93,28 +93,28 @@ export const passwordlessAuthService = (log: FastifyBaseLogger) => ({
                     params: { message: 'User is not invited to the platform' },
                 })
             }
-            const user = await userService(log).getOrCreateWithProject({
+            const user = await userService(log).getOrCreateWithWorkspace({
                 identity: verifiedIdentity,
                 platformId,
             })
             await userInvitationsService(log).provisionUserInvitation({ email })
-            return authenticationUtils(log).getProjectAndToken({
+            return authenticationUtils(log).getWorkspaceAndToken({
                 userId: user.id,
                 platformId,
-                projectId: null,
+                workspaceId: null,
             })
         }
 
         if (!isNil(preferredPlatformId)) {
             await assertPlatformAuthIsOpenTo({ email, platformId: preferredPlatformId, log })
-            const user = await userService(log).getOrCreateWithProject({
+            const user = await userService(log).getOrCreateWithWorkspace({
                 identity: verifiedIdentity,
                 platformId: preferredPlatformId,
             })
-            return authenticationUtils(log).getProjectAndToken({
+            return authenticationUtils(log).getWorkspaceAndToken({
                 userId: user.id,
                 platformId: preferredPlatformId,
-                projectId: null,
+                workspaceId: null,
             })
         }
         return authenticationUtils(log).getOnboardingResponse({ identityId: verifiedIdentity.id })
@@ -126,7 +126,7 @@ export const passwordlessAuthService = (log: FastifyBaseLogger) => ({
         const writeNames = async (): Promise<void> => {
             await userIdentityService(log).updateNames({ id: identityId, firstName, lastName })
         }
-        const { response, provisioned } = await platformService(log).createPlatformWithProject({
+        const { response, provisioned } = await platformService(log).createPlatformWithWorkspace({
             identityId,
             name: signupNames.platformNameFromPerson({ firstName, email: identity.email }),
             invalidatePreviousTokens: false,

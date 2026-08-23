@@ -21,14 +21,14 @@ function getPayloadSizeInBytes(payload: unknown): number {
 async function offloadPayload(
     log: FastifyBaseLogger,
     payload: unknown,
-    projectId: string,
+    workspaceId: string,
     platformId: string,
 ): Promise<JobPayload> {
     const fileId = apId()
     const data = Buffer.from(JSON.stringify(payload), 'utf8')
     await fileService(log).save({
         fileId,
-        projectId,
+        workspaceId,
         platformId,
         data,
         size: data.length,
@@ -42,7 +42,7 @@ async function offloadPayload(
 async function maybeOffloadPayload(
     log: FastifyBaseLogger,
     payload: unknown,
-    projectId: string,
+    workspaceId: string,
     platformId: string,
 ): Promise<JobPayload> {
     const thresholdKb = system.getNumberOrThrow(AppSystemProp.WEBHOOK_PAYLOAD_INLINE_THRESHOLD_KB)
@@ -55,7 +55,7 @@ async function maybeOffloadPayload(
     const data = Buffer.from(JSON.stringify(payload), 'utf8')
     await fileService(log).save({
         fileId,
-        projectId,
+        workspaceId,
         platformId,
         data,
         size: data.length,

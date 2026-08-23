@@ -77,7 +77,7 @@ afterAll(async () => {
 beforeEach(async () => {
     await databaseConnection().getRepository('flag').createQueryBuilder().delete().execute()
     await databaseConnection().getRepository('otp').createQueryBuilder().delete().execute()
-    await databaseConnection().getRepository('project').createQueryBuilder().delete().execute()
+    await databaseConnection().getRepository('workspace').createQueryBuilder().delete().execute()
     await databaseConnection().getRepository('platform').createQueryBuilder().delete().execute()
     await databaseConnection().getRepository('user').createQueryBuilder().delete().execute()
     await databaseConnection().getRepository('user_identity').createQueryBuilder().delete().execute()
@@ -224,7 +224,7 @@ describe('Passwordless Authentication API', () => {
             expect(response?.statusCode).toBe(StatusCodes.OK)
             const body = response?.json()
             expect(body?.platformId).toBeNull()
-            expect(body?.projectId).toBeNull()
+            expect(body?.workspaceId).toBeNull()
             expect(body?.token).toBeDefined()
             expect(await databaseConnection().getRepository('platform').count()).toBe(0)
         })
@@ -244,14 +244,14 @@ describe('Passwordless Authentication API', () => {
 
             expect(response?.statusCode).toBe(StatusCodes.OK)
             const body = response?.json()
-            expect(body?.projectId).not.toBeNull()
+            expect(body?.workspaceId).not.toBeNull()
             const identity = await databaseConnection().getRepository('user_identity').findOneBy({ email: EMAIL })
             expect(identity?.firstName).toBe('Ahmad')
             expect(identity?.lastName).toBe('Bin Tash')
             const platform = await databaseConnection().getRepository('platform').findOneBy({ id: body?.platformId })
             expect(platform?.name).toBe("Ahmad's Platform")
-            const project = await databaseConnection().getRepository('project').findOneBy({ platformId: body?.platformId })
-            expect(project?.displayName).toBe("Ahmad's Project")
+            const workspace = await databaseConnection().getRepository('workspace').findOneBy({ platformId: body?.platformId })
+            expect(workspace?.displayName).toBe("Ahmad's Workspace")
         })
 
         it('consumes one code exactly once, even when two confirmations race it', async () => {
@@ -288,7 +288,7 @@ describe('Passwordless Authentication API', () => {
             expect(second?.statusCode).toBe(StatusCodes.OK)
             expect(second?.json()?.platformId).toBe(first?.json()?.platformId)
             expect(await databaseConnection().getRepository('platform').count()).toBe(1)
-            expect(await databaseConnection().getRepository('project').count()).toBe(1)
+            expect(await databaseConnection().getRepository('workspace').count()).toBe(1)
             expect(await databaseConnection().getRepository('user').count()).toBe(1)
         })
 

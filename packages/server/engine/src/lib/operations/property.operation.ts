@@ -43,7 +43,7 @@ async function executeProps(operation: ExecutePropsOptions): Promise<ExecuteProp
         const executionState = await testExecutionContext.stateFromFlowVersion({
             apiUrl: operation.internalApiUrl,
             flowVersion: operation.flowVersion,
-            projectId: operation.projectId,
+            workspaceId: operation.workspaceId,
             engineToken: operation.engineToken,
             sampleData: operation.sampleData,
             engineConstants: constants,
@@ -51,7 +51,7 @@ async function executeProps(operation: ExecutePropsOptions): Promise<ExecuteProp
         const contextVersion = description.metadata.contextInfo?.version
         const { resolvedInput } = await createPropsResolver({
             apiUrl: constants.internalApiUrl,
-            projectId: constants.projectId,
+            workspaceId: constants.workspaceId,
             engineToken: constants.engineToken,
             contextVersion,
             stepNames: constants.stepNames,

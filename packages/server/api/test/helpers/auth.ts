@@ -1,5 +1,5 @@
 import { apId, isNil } from '@fema/core-utils'
-import { DefaultProjectRole, Principal, SigningKeyId } from '@fema/shared'
+import { DefaultWorkspaceRole, Principal, SigningKeyId } from '@fema/shared'
 import { faker } from '@faker-js/faker'
 import jwt, { Algorithm, JwtPayload, SignOptions } from 'jsonwebtoken'
 import {
@@ -92,8 +92,8 @@ export const generateMockExternalToken = (
 ): GenerateMockExternalTokenReturn => {
     const commonPayload = {
         externalUserId: params?.externalUserId ?? apId(),
-        role: params?.projectRole as DefaultProjectRole ?? DefaultProjectRole.ADMIN,
-        externalProjectId: params?.externalProjectId ?? apId(),
+        role: params?.workspaceRole as DefaultWorkspaceRole ?? DefaultWorkspaceRole.ADMIN,
+        externalWorkspaceId: params?.externalWorkspaceId ?? apId(),
         firstName: params?.externalFirstName ?? faker.person.firstName(),
         lastName: params?.externalLastName ?? faker.person.lastName(),
         concurrencyPoolKey: params?.concurrencyPoolKey,

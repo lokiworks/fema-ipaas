@@ -3,7 +3,7 @@ import { ChatUIResponse, FormInputType, FormResponse, PopulatedFlow } from '@fem
 import { FastifyBaseLogger } from 'fastify'
 import { connectorMetadataService } from '../../../connectors/metadata/connector-metadata-service'
 import { platformService } from '../../../platform/platform.service'
-import { projectService } from '../../../project/project-service'
+import { workspaceService } from '../../../workspace/workspace-service'
 import { flowVersionService } from '../../flow-version/flow-version.service'
 import { flowRepo } from '../flow.repo'
 
@@ -50,14 +50,14 @@ export const humanInputService = (log: FastifyBaseLogger) => ({
         const connectorVersion = await connectorMetadataService(log).resolveExactVersion({
             name: FORMS_CONNECTOR_NAME,
             version: flow.version.trigger.settings.connectorVersion,
-            platformId: await projectService(log).getPlatformId(flow.projectId),
+            platformId: await workspaceService(log).getPlatformId(flow.workspaceId),
         })
         const triggerSettings = flow.version.trigger.settings
         return {
             id: flow.id,
             title: flow.version.displayName,
             props: triggerSettings.triggerName === FILE_TRIGGER ? SIMPLE_FILE_PROPS : triggerSettings.input,
-            projectId: flow.projectId,
+            workspaceId: flow.workspaceId,
             version: connectorVersion,
         }
     },
@@ -75,13 +75,13 @@ export const humanInputService = (log: FastifyBaseLogger) => ({
                 },
             })
         }
-        const platformId = await projectService(log).getPlatformId(flow.projectId)
+        const platformId = await workspaceService(log).getPlatformId(flow.workspaceId)
         const platform = await platformService(log).getOneOrThrow(platformId)
         return {
             id: flow.id,
             title: flow.version.displayName,
             props: flow.version.trigger.settings.input,
-            projectId: flow.projectId,
+            workspaceId: flow.workspaceId,
             platformLogoUrl: platform.logoIconUrl,
             platformName: platform.name,
         }

@@ -16,9 +16,9 @@ afterAll(async () => {
 })
 
 async function createEnabledFlow() {
-    const { mockProject } = await mockAndSaveBasicSetup()
+    const { mockWorkspace } = await mockAndSaveBasicSetup()
     const mockFlow = createMockFlow({
-        projectId: mockProject.id,
+        workspaceId: mockWorkspace.id,
         status: FlowStatus.ENABLED,
     })
     await db.save('flow', [mockFlow])

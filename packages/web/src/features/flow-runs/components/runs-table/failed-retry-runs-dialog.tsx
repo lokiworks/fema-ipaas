@@ -80,7 +80,7 @@ export const FailedRetryRunsDialog = ({
                     className="shrink-0"
                     onClick={() =>
                       openNewWindow(
-                        authenticationSession.appendProjectRoutePrefix(
+                        authenticationSession.appendWorkspaceRoutePrefix(
                           `/runs/${run.id}`,
                         ),
                       )

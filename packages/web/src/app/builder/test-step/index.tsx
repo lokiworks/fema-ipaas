@@ -9,7 +9,7 @@ type TestStepContainerProps = {
   isSaving: boolean;
   flowId: string;
   type: FlowActionType | FlowTriggerType;
-  projectId: string;
+  workspaceId: string;
 };
 
 const TestStepContainer = React.memo(
@@ -18,7 +18,7 @@ const TestStepContainer = React.memo(
     isSaving,
     type,
     flowId,
-    projectId,
+    workspaceId,
   }: TestStepContainerProps) => {
     return (
       <div className="flex flex-col h-full">
@@ -27,13 +27,13 @@ const TestStepContainer = React.memo(
             flowId={flowId}
             isSaving={isSaving}
             flowVersionId={flowVersionId}
-            projectId={projectId}
+            workspaceId={workspaceId}
           ></TestTriggerSection>
         ) : (
           <TestActionSection
             flowVersionId={flowVersionId}
             isSaving={isSaving}
-            projectId={projectId}
+            workspaceId={workspaceId}
           ></TestActionSection>
         )}
       </div>

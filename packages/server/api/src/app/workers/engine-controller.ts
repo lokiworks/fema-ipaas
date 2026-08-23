@@ -3,7 +3,7 @@ import { FileType, FlowVersion, GetFlowVersionForWorkerRequest, ListFlowsRequest
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
-import { entitiesMustBeOwnedByCurrentProject } from '../authentication/authorization'
+import { entitiesMustBeOwnedByCurrentWorkspace } from '../authentication/authorization'
 import { connectorBundle } from '../connectors/connector-bundle'
 import { securityAccess } from '../core/security/authorization/fastify-security'
 import { fileService } from '../file/file.service'
@@ -13,11 +13,11 @@ import { flowVersionService } from '../flows/flow-version/flow-version.service'
 
 export const flowEngineWorker: FastifyPluginAsyncZod = async (app) => {
 
-    app.addHook('preSerialization', entitiesMustBeOwnedByCurrentProject)
+    app.addHook('preSerialization', entitiesMustBeOwnedByCurrentWorkspace)
 
-    app.get('/populated-flows', GetAllFlowsByProjectParams, async (request) => {
+    app.get('/populated-flows', GetAllFlowsByWorkspaceParams, async (request) => {
         return flowService(request.log).list({
-            projectIds: [request.principal.projectId],
+            workspaceIds: [request.principal.workspaceId],
             limit: request.query.limit ?? 1000000,
             cursorRequest: request.query.cursor ?? null,
             folderId: request.query.folderId,
@@ -34,7 +34,7 @@ export const flowEngineWorker: FastifyPluginAsyncZod = async (app) => {
         const flowVersion = await flowVersionService(request.log).getOneOrThrow(request.query.versionId)
         await flowService(request.log).getOneOrThrow({
             id: flowVersion.flowId,
-            projectId: request.principal.projectId,
+            workspaceId: request.principal.workspaceId,
         })
         return flowVersion
     })
@@ -50,7 +50,7 @@ export const flowEngineWorker: FastifyPluginAsyncZod = async (app) => {
             version: request.query.version,
             archiveId: request.query.archiveId,
             platformId: request.principal.platform.id,
-            projectId: request.principal.projectId,
+            workspaceId: request.principal.workspaceId,
         })
         if (resolution.type === 'not-found') {
             return reply.status(StatusCodes.NOT_FOUND).send()
@@ -60,7 +60,7 @@ export const flowEngineWorker: FastifyPluginAsyncZod = async (app) => {
         }
         const { data } = await fileService(request.log).getDataOrThrow({
             fileId: resolution.archiveId,
-            projectId: undefined,
+            workspaceId: undefined,
             type: FileType.PACKAGE_ARCHIVE,
         })
         return reply
@@ -71,7 +71,7 @@ export const flowEngineWorker: FastifyPluginAsyncZod = async (app) => {
 
     app.post('/run-progress', RunProgressRequest, async (request, reply) => {
         engineRunCallbackService(request.log).updateRunProgress({
-            projectId: request.principal.projectId,
+            workspaceId: request.principal.workspaceId,
             request: request.body,
         })
         return reply.status(StatusCodes.OK).send()
@@ -79,7 +79,7 @@ export const flowEngineWorker: FastifyPluginAsyncZod = async (app) => {
 
     app.post('/step-progress', StepProgressRequest, async (request, reply) => {
         engineRunCallbackService(request.log).updateStepProgress({
-            projectId: request.principal.projectId,
+            workspaceId: request.principal.workspaceId,
             request: request.body,
         })
         return reply.status(StatusCodes.OK).send()
@@ -87,7 +87,7 @@ export const flowEngineWorker: FastifyPluginAsyncZod = async (app) => {
 
     app.post('/run-logs', RunLogsRequest, async (request, reply) => {
         await engineRunCallbackService(request.log).uploadRunLog({
-            projectId: request.principal.projectId,
+            workspaceId: request.principal.workspaceId,
             request: request.body,
         })
         return reply.status(StatusCodes.OK).send()
@@ -103,12 +103,12 @@ export const flowEngineWorker: FastifyPluginAsyncZod = async (app) => {
 }
 
 
-const GetAllFlowsByProjectParams = {
+const GetAllFlowsByWorkspaceParams = {
     config: {
         security: securityAccess.engine(),
     },
     schema: {
-        querystring: ListFlowsRequest.omit({ projectId: true }),
+        querystring: ListFlowsRequest.omit({ workspaceId: true }),
     },
 }
 

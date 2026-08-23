@@ -42,7 +42,7 @@ export function clearAccessHistory(): void {
   }
 }
 
-export type AccessedItemType = 'flow' | 'table' | 'project' | 'page';
+export type AccessedItemType = 'flow' | 'table' | 'workspace' | 'page';
 
 export type AccessedItem = {
   id: string;
@@ -52,7 +52,7 @@ export type AccessedItem = {
   accessedAt: number;
   status?: 'ENABLED' | 'DISABLED' | null;
   folderName?: string | null;
-  projectName?: string | null;
+  workspaceName?: string | null;
   iconBgColor?: string;
   iconTextColor?: string;
   iconLetter?: string;

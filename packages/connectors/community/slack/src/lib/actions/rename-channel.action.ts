@@ -27,7 +27,7 @@ export const renameChannelAction = createAction({
     name: Property.ShortText({
       displayName: 'New Name',
       description:
-        "New name for the channel, without the leading '#'. Slack lowercases it and replaces spaces with hyphens, e.g. 'project-updates'. Max 80 characters.",
+        "New name for the channel, without the leading '#'. Slack lowercases it and replaces spaces with hyphens, e.g. 'workspace-updates'. Max 80 characters.",
       required: true,
     }),
   },

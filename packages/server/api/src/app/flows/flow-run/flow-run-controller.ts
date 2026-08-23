@@ -4,7 +4,7 @@ import { FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
-import { ProjectResourceType } from '../../core/security/authorization/common'
+import { WorkspaceResourceType } from '../../core/security/authorization/common'
 import { securityAccess } from '../../core/security/authorization/fastify-security'
 import { userService } from '../../user/user-service'
 import { FlowRunEntity } from './flow-run-entity'
@@ -15,7 +15,7 @@ const DEFAULT_PAGING_LIMIT = 10
 export const flowRunController: FastifyPluginAsyncZod = async (app) => {
     app.get('/', ListRequest, async (request) => {
         return flowRunService(request.log).list({
-            projectId: request.query.projectId,
+            workspaceId: request.query.workspaceId,
             flowId: request.query.flowId,
             tags: request.query.tags,
             status: request.query.status,
@@ -33,7 +33,7 @@ export const flowRunController: FastifyPluginAsyncZod = async (app) => {
 
     app.get('/count-by-status', CountByStatusRouteConfig, async (request) => {
         const data = await flowRunService(request.log).countByStatus({
-            projectId: request.query.projectId,
+            workspaceId: request.query.workspaceId,
             createdAfter: request.query.createdAfter,
             createdBefore: request.query.createdBefore,
         })
@@ -45,7 +45,7 @@ export const flowRunController: FastifyPluginAsyncZod = async (app) => {
         GetRequest,
         async (request, reply) => {
             const flowRun = await flowRunService(request.log).getOnePopulatedOrThrow({
-                projectId: request.projectId,
+                workspaceId: request.workspaceId,
                 id: request.params.id,
             })
             const internalErrorEnabled = flowRun.internalError?.source === RunInternalErrorSource.ENGINE || true
@@ -58,7 +58,7 @@ export const flowRunController: FastifyPluginAsyncZod = async (app) => {
         const flowRun = await flowRunService(req.log).retry({
             flowRunId: req.params.id,
             strategy: req.body.strategy,
-            projectId: req.body.projectId,
+            workspaceId: req.body.workspaceId,
         })
 
         if (isNil(flowRun)) {
@@ -76,7 +76,7 @@ export const flowRunController: FastifyPluginAsyncZod = async (app) => {
 
     app.post('/cancel', BulkCancelFlowRequest, async (req) => {
         return flowRunService(req.log).cancel({
-            projectId: req.projectId,
+            workspaceId: req.workspaceId,
             platformId: req.principal.platform.id,
             flowRunIds: req.body.flowRunIds,
             excludeFlowRunIds: req.body.excludeFlowRunIds,
@@ -89,7 +89,7 @@ export const flowRunController: FastifyPluginAsyncZod = async (app) => {
 
     app.post('/retry', BulkRetryFlowRequest, async (req) => {
         return flowRunService(req.log).bulkRetry({
-            projectId: req.projectId,
+            workspaceId: req.workspaceId,
             flowRunIds: req.body.flowRunIds,
             excludeFlowRunIds: req.body.excludeFlowRunIds,
             strategy: req.body.strategy,
@@ -104,7 +104,7 @@ export const flowRunController: FastifyPluginAsyncZod = async (app) => {
 
     app.post('/archive', ArchiveFlowRunRequest, async (req) => {
         return flowRunService(req.log).bulkArchive({
-            projectId: req.projectId,
+            workspaceId: req.workspaceId,
             flowRunIds: req.body.flowRunIds,
             excludeFlowRunIds: req.body.excludeFlowRunIds,
             status: req.body.status,
@@ -130,10 +130,10 @@ const FlowRunFilteredWithNoSteps = FlowRun.omit({ steps: true })
 
 const ListRequest = {
     config: {
-        security: securityAccess.project(
+        security: securityAccess.workspace(
             [PrincipalType.USER, PrincipalType.SERVICE], 
             Permission.READ_RUN, {
-                type: ProjectResourceType.QUERY,
+                type: WorkspaceResourceType.QUERY,
             }),
     },
     schema: {
@@ -149,10 +149,10 @@ const ListRequest = {
 
 const GetRequest = {
     config: {
-        security: securityAccess.project(
+        security: securityAccess.workspace(
             [PrincipalType.USER, PrincipalType.SERVICE], 
             Permission.READ_RUN, {
-                type: ProjectResourceType.TABLE,
+                type: WorkspaceResourceType.TABLE,
                 tableName: FlowRunEntity,
             }),
     },
@@ -171,10 +171,10 @@ const GetRequest = {
 
 const RetryFlowRequest = {
     config: {
-        security: securityAccess.project(
+        security: securityAccess.workspace(
             [PrincipalType.USER, PrincipalType.SERVICE], 
             Permission.WRITE_RUN, {
-                type: ProjectResourceType.TABLE,
+                type: WorkspaceResourceType.TABLE,
                 tableName: FlowRunEntity,
             }),
     },
@@ -188,10 +188,10 @@ const RetryFlowRequest = {
 
 const BulkCancelFlowRequest = {
     config: {
-        security: securityAccess.project(
+        security: securityAccess.workspace(
             [PrincipalType.USER, PrincipalType.SERVICE], 
             Permission.WRITE_RUN, {
-                type: ProjectResourceType.BODY,
+                type: WorkspaceResourceType.BODY,
             }),
     },
     schema: {
@@ -204,10 +204,10 @@ const BulkCancelFlowRequest = {
 
 const ArchiveFlowRunRequest = {
     config: {
-        security: securityAccess.project(
+        security: securityAccess.workspace(
             [PrincipalType.USER, PrincipalType.SERVICE], 
             Permission.WRITE_RUN, {
-                type: ProjectResourceType.BODY,
+                type: WorkspaceResourceType.BODY,
             }),
     },
     schema: {
@@ -217,10 +217,10 @@ const ArchiveFlowRunRequest = {
 
 const CountByStatusRouteConfig = {
     config: {
-        security: securityAccess.project(
+        security: securityAccess.workspace(
             [PrincipalType.USER, PrincipalType.SERVICE],
             Permission.READ_RUN, {
-                type: ProjectResourceType.QUERY,
+                type: WorkspaceResourceType.QUERY,
             }),
     },
     schema: {
@@ -236,10 +236,10 @@ const CountByStatusRouteConfig = {
 
 const BulkRetryFlowRequest = {
     config: {
-        security: securityAccess.project(
+        security: securityAccess.workspace(
             [PrincipalType.USER, PrincipalType.SERVICE],
             Permission.WRITE_RUN, {
-                type: ProjectResourceType.BODY,
+                type: WorkspaceResourceType.BODY,
             }),
     },
     schema: {

@@ -91,10 +91,10 @@ describe('flowBundleStore', () => {
         const codes = codeCache(cacheUtils(basePath).getGlobalCodeCachePath())
         await codes.writeCompiledStep({ flowVersionId: flowVersion.id, stepName: 'step_1', compiledJs: 'exports.code = () => 1' })
 
-        await flowBundleStore(fakeLog, apiClient, basePath).publish({ flowVersion, connectors: [connector], projectId: 'p1', platformId: 'plat1' })
+        await flowBundleStore(fakeLog, apiClient, basePath).publish({ flowVersion, connectors: [connector], workspaceId: 'p1', platformId: 'plat1' })
 
         const fetchBasePath = uniqueBasePath()
-        const fetched = await flowBundleStore(fakeLog, apiClient, fetchBasePath).tryFetch({ flowVersionId: flowVersion.id, projectId: 'p1' })
+        const fetched = await flowBundleStore(fakeLog, apiClient, fetchBasePath).tryFetch({ flowVersionId: flowVersion.id, workspaceId: 'p1' })
 
         expect(fetched?.flowVersion.id).toBe('fv1')
         expect(fetched?.connectors).toEqual([connector])
@@ -108,10 +108,10 @@ describe('flowBundleStore', () => {
         const flowVersion = buildFlowVersion()
         const codes = codeCache(cacheUtils(basePath).getGlobalCodeCachePath())
         await codes.writeCompiledStep({ flowVersionId: flowVersion.id, stepName: 'step_1', compiledJs: 'exports.code = () => 1' })
-        await flowBundleStore(fakeLog, apiClient, basePath).publish({ flowVersion, connectors: [connector], projectId: 'p1', platformId: 'plat1' })
+        await flowBundleStore(fakeLog, apiClient, basePath).publish({ flowVersion, connectors: [connector], workspaceId: 'p1', platformId: 'plat1' })
 
-        const first = await flowBundleStore(fakeLog, apiClient, basePath).tryFetch({ flowVersionId: flowVersion.id, projectId: 'p1' })
-        const second = await flowBundleStore(fakeLog, apiClient, basePath).tryFetch({ flowVersionId: flowVersion.id, projectId: 'p1' })
+        const first = await flowBundleStore(fakeLog, apiClient, basePath).tryFetch({ flowVersionId: flowVersion.id, workspaceId: 'p1' })
+        const second = await flowBundleStore(fakeLog, apiClient, basePath).tryFetch({ flowVersionId: flowVersion.id, workspaceId: 'p1' })
 
         expect(first?.flowVersion.id).toBe('fv1')
         expect(second?.flowVersion.id).toBe('fv1')
@@ -121,7 +121,7 @@ describe('flowBundleStore', () => {
     it('tryFetch returns null when no bundle is stored', async () => {
         const basePath = uniqueBasePath()
         const apiClient = { async getFlowBundle() { return null } } as unknown as WorkerToApiContract
-        expect(await flowBundleStore(fakeLog, apiClient, basePath).tryFetch({ flowVersionId: 'fv1', projectId: 'p1' })).toBeNull()
+        expect(await flowBundleStore(fakeLog, apiClient, basePath).tryFetch({ flowVersionId: 'fv1', workspaceId: 'p1' })).toBeNull()
     })
 
     it('tryFetch ignores a bundle whose schemaVersion is stale (self-heals via rebuild)', async () => {
@@ -131,9 +131,9 @@ describe('flowBundleStore', () => {
         const codes = codeCache(cacheUtils(basePath).getGlobalCodeCachePath())
         await codes.writeCompiledStep({ flowVersionId: staleFlowVersion.id, stepName: 'step_1', compiledJs: 'old' })
 
-        await flowBundleStore(fakeLog, apiClient, basePath).publish({ flowVersion: staleFlowVersion, connectors: [connector], projectId: 'p1', platformId: 'plat1' })
+        await flowBundleStore(fakeLog, apiClient, basePath).publish({ flowVersion: staleFlowVersion, connectors: [connector], workspaceId: 'p1', platformId: 'plat1' })
 
-        expect(await flowBundleStore(fakeLog, apiClient, basePath).tryFetch({ flowVersionId: staleFlowVersion.id, projectId: 'p1' })).toBeNull()
+        expect(await flowBundleStore(fakeLog, apiClient, basePath).tryFetch({ flowVersionId: staleFlowVersion.id, workspaceId: 'p1' })).toBeNull()
     })
 
     it('publish uploads via signed PUT (no inline RPC) when prepare returns a url', async () => {
@@ -147,7 +147,7 @@ describe('flowBundleStore', () => {
         const codes = codeCache(cacheUtils(basePath).getGlobalCodeCachePath())
         await codes.writeCompiledStep({ flowVersionId: flowVersion.id, stepName: 'step_1', compiledJs: 'exports.code = () => 1' })
 
-        await flowBundleStore(fakeLog, apiClient, basePath).publish({ flowVersion, connectors: [connector], projectId: 'p1', platformId: 'plat1' })
+        await flowBundleStore(fakeLog, apiClient, basePath).publish({ flowVersion, connectors: [connector], workspaceId: 'p1', platformId: 'plat1' })
 
         expect(put).toHaveBeenCalledOnce()
         expect(put.mock.calls[0][0]).toBe('https://s3/put')
@@ -164,7 +164,7 @@ describe('flowBundleStore', () => {
         const codes = codeCache(cacheUtils(basePath).getGlobalCodeCachePath())
         await codes.writeCompiledStep({ flowVersionId: flowVersion.id, stepName: 'step_1', compiledJs: 'exports.code = () => 1' })
 
-        await flowBundleStore(fakeLog, apiClient, basePath).publish({ flowVersion, connectors: [connector], projectId: 'p1', platformId: 'plat1' })
+        await flowBundleStore(fakeLog, apiClient, basePath).publish({ flowVersion, connectors: [connector], workspaceId: 'p1', platformId: 'plat1' })
 
         expect(put).not.toHaveBeenCalled()
     })
@@ -178,7 +178,7 @@ describe('flowBundleStore', () => {
             getFlowBundle: vi.fn(async () => ({ kind: 'url', url: 'https://s3/get' })),
         } as unknown as WorkerToApiContract
 
-        const fetched = await flowBundleStore(fakeLog, apiClient, basePath).tryFetch({ flowVersionId: flowVersion.id, projectId: 'p1' })
+        const fetched = await flowBundleStore(fakeLog, apiClient, basePath).tryFetch({ flowVersionId: flowVersion.id, workspaceId: 'p1' })
 
         expect(fetched?.flowVersion.id).toBe('fv1')
         expect(bundleHttp.getBuffer).toHaveBeenCalledWith('https://s3/get')
@@ -192,8 +192,8 @@ describe('flowBundleStore', () => {
         const getFlowBundle = vi.fn(async () => ({ kind: 'url', url: 'https://s3/get' }))
         const apiClient = { getFlowBundle } as unknown as WorkerToApiContract
 
-        const first = await flowBundleStore(fakeLog, apiClient, basePath).tryFetch({ flowVersionId: 'fv1', projectId: 'p1' })
-        const second = await flowBundleStore(fakeLog, apiClient, basePath).tryFetch({ flowVersionId: 'fv1', projectId: 'p1' })
+        const first = await flowBundleStore(fakeLog, apiClient, basePath).tryFetch({ flowVersionId: 'fv1', workspaceId: 'p1' })
+        const second = await flowBundleStore(fakeLog, apiClient, basePath).tryFetch({ flowVersionId: 'fv1', workspaceId: 'p1' })
 
         expect(first).toBeNull()
         expect(second).toBeNull()

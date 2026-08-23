@@ -260,7 +260,7 @@ function WorkerCard({ worker, index }: WorkerCardProps) {
           <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
             <Tooltip>
               <TooltipTrigger asChild>
-                {worker.workerGroupScope === WorkerGroupScope.PROJECT &&
+                {worker.workerGroupScope === WorkerGroupScope.WORKSPACE &&
                 worker.workerGroupId ? (
                   <Badge
                     variant="outline"
@@ -284,10 +284,10 @@ function WorkerCard({ worker, index }: WorkerCardProps) {
                 )}
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
-                {worker.workerGroupScope === WorkerGroupScope.PROJECT &&
+                {worker.workerGroupScope === WorkerGroupScope.WORKSPACE &&
                 worker.workerGroupId
                   ? t(
-                      'This worker runs the projects assigned to the {group} group.',
+                      'This worker runs the workspaces assigned to the {group} group.',
                       {
                         group: worker.workerGroupId.replaceAll('_', ' '),
                       },

@@ -1,43 +1,14 @@
-import { isNil, Permission } from '@activepieces/core-utils';
-import { ApEdition, ApFlagId, PlatformRole } from '@activepieces/shared';
-import { useQuery } from '@tanstack/react-query';
+import { Permission } from '@activepieces/core-utils';
+import { PlatformRole } from '@activepieces/shared';
 
-import { authenticationApi } from '@/api/authentication-api';
-import { platformApi } from '@/api/platforms-api';
-import { flagsHooks } from '@/hooks/flags-hooks';
 import { userHooks } from '@/hooks/user-hooks';
-import { authenticationSession } from '@/lib/authentication-session';
 
+// Until the role model lands, reaching a workspace at all means holding every
+// permission inside it — the server enforces workspace membership, not roles.
 export const useAuthorization = () => {
-  const { data: edition } = flagsHooks.useFlag(ApFlagId.EDITION);
+  const checkAccess = (_permission: Permission) => true;
 
-  const platformId = authenticationSession.getPlatformId();
-  const { data: projectRole, isLoading } = useQuery({
-    queryKey: ['project-role', authenticationSession.getProjectId()],
-    queryFn: async () => {
-      const platform = await platformApi.getCurrentPlatform();
-      if (platform.plan.projectRolesEnabled) {
-        const projectRole = await authenticationApi.getCurrentProjectRole({
-          projectId: authenticationSession.getProjectId() ?? '',
-        });
-        return projectRole;
-      }
-      return null;
-    },
-    retry: false,
-    enabled:
-      !isNil(edition) && edition !== ApEdition.COMMUNITY && !isNil(platformId),
-  });
-
-  const checkAccess = (permission: Permission) => {
-    if (isLoading || edition === ApEdition.COMMUNITY) {
-      return true;
-    }
-
-    return projectRole?.permissions?.includes(permission) ?? true;
-  };
-
-  return { checkAccess, isFetchingProjectRole: isLoading };
+  return { checkAccess, isFetchingProjectRole: false };
 };
 
 export const useIsPlatformAdmin = () => {

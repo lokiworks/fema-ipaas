@@ -1,13 +1,11 @@
 import { isNil } from '@activepieces/core-utils'
-import { ApEdition, FlowStatus, FlowVersionState, PrewarmDataRequest, PrewarmDataResponse } from '@activepieces/shared'
+import { FlowStatus, FlowVersionState, PrewarmDataRequest, PrewarmDataResponse } from '@activepieces/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { accessTokenManager } from '../authentication/lib/access-token-manager'
 import { distributedLock, distributedStore } from '../database/redis-connections'
 import Paginator from '../helper/pagination/paginator'
-import { system } from '../helper/system/system'
 import { platformService } from '../platform/platform.service'
 import { projectService } from '../project/project-service'
-import { projectWorkerGroupService } from '../project/project-worker-group.service'
 import { flowService } from './flow/flow.service'
 
 
@@ -26,9 +24,6 @@ export const preWarmWorkersService = (log: FastifyBaseLogger) => ({
     async getPrewarmData(input: PrewarmDataRequest): Promise<PrewarmDataResponse> {
         // Targeted prewarm (flowPublished): the flow is already known, so skip listing (and the cache) and just mint a token for its project.
         if (!isNil(input.flow)) {
-            if (system.getEdition() === ApEdition.CLOUD && isNil(input.workerGroupId)) {
-                return EMPTY_RESPONSE
-            }
             const platformId = await projectService(log).getPlatformId(input.flow.projectId)
             const engineToken = await accessTokenManager(log).generateEngineToken({ projectId: input.flow.projectId, platformId })
             return { flows: [input.flow], platformId, engineToken }
@@ -73,39 +68,15 @@ async function resolveCachedScope(input: PrewarmDataRequest, log: FastifyBaseLog
 }
 
 async function computeScope(input: PrewarmDataRequest, log: FastifyBaseLogger): Promise<PrewarmScope | null> {
-    let projectIds: string[] | undefined = undefined
-    let platformId: string | undefined = undefined
-
-    // For cloud we only prewarm dedicated workers (with a worker group id) — shared workers handle every
-    // user's flows, so there is no bounded set to warm.
-    if (system.getEdition() === ApEdition.CLOUD) {
-        if (isNil(input.workerGroupId)) {
-            return null
-        }
-        if (input.projectWorker) {
-            projectIds = await projectWorkerGroupService(log).getWorkerGroupProjects({ workerGroupId: input.workerGroupId })
-            if (isNil(projectIds) || projectIds.length === 0) {
-                return null
-            }
-            platformId = await projectService(log).getPlatformId(projectIds[0])
-        }
-        else {
-            return null
-        }
+    const platform = await platformService(log).getOldestPlatform()
+    if (isNil(platform)) {
+        return null
     }
-    else {
-        const platform = await platformService(log).getOldestPlatform()
-        if (isNil(platform)) {
-            return null
-        }
-        platformId = platform.id
-    }
+    const platformId = platform.id
 
-    const activeFlows = await flowService(log).list(
-        !isNil(projectIds) ? { ...BASE_LIST_PARAMS, projectIds } : { ...BASE_LIST_PARAMS, platformId },
-    )
+    const activeFlows = await flowService(log).list({ ...BASE_LIST_PARAMS, platformId })
     const flows = activeFlows.data.map((flow) => ({ id: flow.id, versionId: flow.version.id, projectId: flow.projectId }))
-    const tokenProjectId = projectIds?.[0] ?? (await projectService(log).getProjectIdsByPlatform(platformId))[0]
+    const tokenProjectId = (await projectService(log).getProjectIdsByPlatform(platformId))[0]
     return { flows, platformId, tokenProjectId }
 }
 

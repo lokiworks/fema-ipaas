@@ -33,7 +33,6 @@ import { platformHooks } from '@/hooks/platform-hooks';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { authenticationSession } from '@/lib/authentication-session';
 
-import { AITabContent } from './ai-tab-content';
 import { ApprovalsTabContent } from './approvals-tab-content';
 import { ExploreTabContent } from './explore-tab-content';
 import { PiecesCardList } from './pieces-card-list';
@@ -244,7 +243,6 @@ const PieceSelectorContent = ({
               }}
             >
               <ExploreTabContent operation={operation} />
-              <AITabContent operation={operation} />
               <ApprovalsTabContent operation={operation} />
 
               <PiecesCardList

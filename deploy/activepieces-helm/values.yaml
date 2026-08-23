@@ -178,7 +178,6 @@ activepiecesConfig:
 # Populate secrets with deploy/scripts/apply-secrets.sh --secret-name <name> before deploying.
 activepiecesEnvVariables:
   activepieces-config-secrets:
-    - AP_EDITION
     - AP_EXECUTION_MODE
     - AP_ENVIRONMENT
     - AP_FRONTEND_URL

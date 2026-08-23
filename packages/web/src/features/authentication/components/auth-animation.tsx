@@ -1190,8 +1190,7 @@ function AuthAnimation() {
         )}
         style={{
           height: '100%',
-          backgroundImage:
-            'url(https://cdn.activepieces.com/assets/auth-anim-bg.webp)',
+          backgroundImage: 'none',
         }}
       >
         {/* Scene Title - top center */}

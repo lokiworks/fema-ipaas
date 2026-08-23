@@ -1,5 +1,4 @@
 import {
-  ApEdition,
   ApFlagId,
   ThirdPartyAuthnProviderEnum,
   ThirdPartyAuthnProvidersToShowMap,
@@ -25,8 +24,7 @@ function useThirdPartyAvailability(): ThirdPartyAvailability {
     flagsHooks.useFlag<ThirdPartyAuthnProvidersToShowMap>(
       ApFlagId.THIRD_PARTY_AUTH_PROVIDERS_TO_SHOW_MAP,
     );
-  const { data: edition } = flagsHooks.useFlag<ApEdition>(ApFlagId.EDITION);
-  const isCloud = edition === ApEdition.CLOUD;
+  const isCloud = false;
   return {
     google: Boolean(thirdPartyAuthProviders?.google),
     saml: isCloud || Boolean(thirdPartyAuthProviders?.saml),
@@ -60,8 +58,7 @@ const ThirdPartyLogin = React.memo(
     const { data: thirdPartyRedirectUrl } = flagsHooks.useFlag<string>(
       ApFlagId.THIRD_PARTY_AUTH_PROVIDER_REDIRECT_URL,
     );
-    const { data: edition } = flagsHooks.useFlag<ApEdition>(ApFlagId.EDITION);
-    const isCloud = edition === ApEdition.CLOUD;
+    const isCloud = false;
     const thirdPartyLogin = oauth2Utils.useThirdPartyLogin();
     const { capture } = useTelemetry();
     const availability = useThirdPartyAvailability();

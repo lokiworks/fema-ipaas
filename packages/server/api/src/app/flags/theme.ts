@@ -73,9 +73,9 @@ export function generateTheme({
 }
 
 export const defaultTheme = generateTheme({
-    primaryColor: '#6e41e2',
-    websiteName: 'Activepieces',
-    fullLogoUrl: 'https://cdn.activepieces.com/brand/full-logo.png',
-    favIconUrl: 'https://cdn.activepieces.com/brand/logo.svg',
-    logoIconUrl: 'https://cdn.activepieces.com/brand/logo.svg',
+    primaryColor: '#2D6CDF',
+    websiteName: 'Integration Platform',
+    fullLogoUrl: '/assets/full-logo.svg',
+    favIconUrl: '/assets/logo.svg',
+    logoIconUrl: '/assets/logo.svg',
 })

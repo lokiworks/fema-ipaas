@@ -130,7 +130,6 @@ export const WorkerSettingsResponse = z.object({
     S3_USE_SIGNED_URLS: z.string(),
     EVENT_DESTINATION_TIMEOUT_SECONDS: z.number(),
     WORKER_GROUP_ID: z.string().optional(),
-    EDITION: z.string(),
     NETWORK_MODE: z.enum(NetworkMode),
     SSRF_ALLOW_LIST: z.array(z.string()),
     ENFORCE_CONNECTION_PIECE_BINDING: z.boolean(),

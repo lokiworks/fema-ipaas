@@ -1,6 +1,6 @@
 import { isNil } from '@activepieces/core-utils'
 import { apVersionUtil } from '@activepieces/server-utils'
-import { ApEdition, ApFlagId, ExecutionMode, Flag } from '@activepieces/shared'
+import { ApFlagId, ExecutionMode, Flag } from '@activepieces/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { In } from 'typeorm'
@@ -32,7 +32,6 @@ export const flagService = (log: FastifyBaseLogger) => ({
                 ApFlagId.SHOW_POWERED_BY_IN_FORM,
                 ApFlagId.CLOUD_AUTH_ENABLED,
                 ApFlagId.CURRENT_VERSION,
-                ApFlagId.EDITION,
                 ApFlagId.EMAIL_AUTH_ENABLED,
                 ApFlagId.EXECUTION_DATA_RETENTION_DAYS,
                 ApFlagId.ENVIRONMENT,
@@ -85,13 +84,13 @@ export const flagService = (log: FastifyBaseLogger) => ({
             },
             {
                 id: ApFlagId.SHOW_ALERTS,
-                value: system.getEdition() !== ApEdition.COMMUNITY,
+                value: false,
                 created,
                 updated,
             },
             {
                 id: ApFlagId.SHOW_PROJECT_MEMBERS,
-                value: system.getEdition() !== ApEdition.COMMUNITY,
+                value: false,
                 created,
                 updated,
             },
@@ -126,12 +125,6 @@ export const flagService = (log: FastifyBaseLogger) => ({
                 updated,
             },
             {
-                id: ApFlagId.EDITION,
-                value: system.getEdition(),
-                created,
-                updated,
-            },
-            {
                 id: ApFlagId.THIRD_PARTY_AUTH_PROVIDERS_TO_SHOW_MAP,
                 value: {},
                 created,
@@ -157,13 +150,13 @@ export const flagService = (log: FastifyBaseLogger) => ({
             },
             {
                 id: ApFlagId.SHOW_COMMUNITY,
-                value: system.getEdition() !== ApEdition.ENTERPRISE,
+                value: true,
                 created,
                 updated,
             },
             {
                 id: ApFlagId.PRIVATE_PIECES_ENABLED,
-                value: system.getEdition() !== ApEdition.COMMUNITY,
+                value: false,
                 created,
                 updated,
             },

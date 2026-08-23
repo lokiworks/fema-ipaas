@@ -1,5 +1,5 @@
 import { apVersionUtil, systemUsage, UNKNOWN_VERSION } from '@activepieces/server-utils'
-import { ActivepiecesError, ApEdition, apId, ErrorCode, FileLocation, GetDiagnosticsResponse, GetSystemHealthChecksResponse, InfraCheck, ReleaseHealth, tryCatch, unique } from '@activepieces/shared'
+import { apId, FileLocation, GetDiagnosticsResponse, GetSystemHealthChecksResponse, InfraCheck, ReleaseHealth, tryCatch, unique } from '@activepieces/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { databaseConnection } from '../database/database-connection'
 import { redisConnections } from '../database/redis-connections'
@@ -65,12 +65,6 @@ export const healthStatusService = (log: FastifyBaseLogger) => ({
         // Self-hosted only: a platform admin here is the infra operator. On Cloud a platform admin is a
         // tenant, so exposing shared Redis/S3/DB latency + the internal S3 endpoint would leak operator
         // infra and let tenants probe storage they don't own.
-        if (system.getEdition() === ApEdition.CLOUD) {
-            throw new ActivepiecesError({
-                code: ErrorCode.FEATURE_DISABLED,
-                params: { message: 'Infra diagnostics are not available on the cloud edition' },
-            })
-        }
         const [database, redis, storage, machines, apps] = await Promise.all([
             measureDatabase(log),
             measureRedis(log),

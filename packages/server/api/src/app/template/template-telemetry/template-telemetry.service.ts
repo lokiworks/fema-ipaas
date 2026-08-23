@@ -1,11 +1,10 @@
 import { isNil, tryCatch } from '@activepieces/core-utils'
-import { ApEdition, TemplateTelemetryEvent, TemplateTelemetryEventType } from '@activepieces/shared'
+import { TemplateTelemetryEvent, TemplateTelemetryEventType } from '@activepieces/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { rejectedPromiseHandler } from '../../helper/promise-handler'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
 
-const CLOUD_TELEMETRY_URL = 'https://cloud.activepieces.com/api/v1/templates-telemetry'
 const INTERNAL_TELEMETRY_URL = 'https://template-manager.activepieces.com/api/public/analytics/event'
 const TEMPLATE_TELEMETRY_API_KEY = system.get(AppSystemProp.TEMPLATE_MANAGER_API_KEY)
 const TEMPLATE_TELEMETRY_API_KEY_HEADER = 'X-API-Key'
@@ -18,26 +17,10 @@ export const templateTelemetryService = (log: FastifyBaseLogger) => ({
             return
         }
 
-        const edition = system.getEdition()
-        if (edition !== ApEdition.CLOUD) {
-            rejectedPromiseHandler(sendToCloud(event), log)
-            return
-        }
-
         rejectedPromiseHandler(sendToInternal(event, log), log)
     },
 })
 
-async function sendToCloud(event: TemplateTelemetryEvent): Promise<void> {
-    const url = `${CLOUD_TELEMETRY_URL}/event`
-    await tryCatch(() => fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(event),
-    }))
-}
 
 async function sendToInternal(event: TemplateTelemetryEvent, log: FastifyBaseLogger): Promise<void> {
     if (isNil(TEMPLATE_TELEMETRY_API_KEY)) {

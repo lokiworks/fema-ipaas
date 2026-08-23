@@ -1,6 +1,4 @@
 import {
-  ApEdition,
-  ApFlagId,
   WorkerGroupScope,
   WorkerMachineStatus,
   WorkerMachineType,
@@ -43,7 +41,6 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { workersQueries } from '@/features/platform-admin';
-import { flagsHooks } from '@/hooks/flags-hooks';
 import { platformHooks } from '@/hooks/platform-hooks';
 import { useTimeAgo } from '@/hooks/use-time-ago';
 import { cn } from '@/lib/utils';
@@ -55,9 +52,8 @@ import { WorkerConfigsPopover } from './worker-configs-popover';
 type TabValue = 'health' | 'worker-groups';
 
 export default function WorkersPage() {
-  const { data: edition } = flagsHooks.useFlag<ApEdition>(ApFlagId.EDITION);
   const { platform } = platformHooks.useCurrentPlatform();
-  const isCloud = edition === ApEdition.CLOUD;
+  const isCloud = false;
   const { data: workersData, isLoading } = workersQueries.useWorkerMachines();
   const [searchParams, setSearchParams] = useSearchParams();
 

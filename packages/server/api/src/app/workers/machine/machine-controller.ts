@@ -1,11 +1,10 @@
 import { isNil } from '@activepieces/core-utils'
-import { ApEdition, createRpcServer, PrincipalType, WebsocketServerEvent, WorkerMachineHealthcheckRequest, WorkerToApiContract } from '@activepieces/shared'
+import { createRpcServer, PrincipalType, WebsocketServerEvent, WorkerMachineHealthcheckRequest, WorkerToApiContract } from '@activepieces/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
 import { securityAccess } from '../../core/security/authorization/fastify-security'
 import { websocketService } from '../../core/websockets.service'
-import { system } from '../../helper/system/system'
 import { parseWorkerGroupValue, QueueName } from '../job'
 import { jobBroker } from '../job-queue/job-broker'
 import { jobQueue } from '../job-queue/job-queue'
@@ -52,7 +51,7 @@ export const workerMachineController: FastifyPluginAsyncZod = async (app) => {
         return { queues: counts }
     })
 
-    if (system.getEdition() !== ApEdition.CLOUD) {
+    if (true) {
         app.get('/queue-metrics/prometheus/:queueName?', PrometheusQueueMetricsParams, async (request, reply) => {
             const queue = jobQueue(app.log).getAllQueues().find((q) => q.name === request.params.queueName)
             if (isNil(queue)) {

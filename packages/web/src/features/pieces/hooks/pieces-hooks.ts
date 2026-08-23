@@ -7,7 +7,6 @@ import {
 } from '@activepieces/pieces-framework';
 import {
   AddPieceRequestBody,
-  ApEdition,
   FlowActionType,
   flowPieceUtil,
   PieceOptionRequest,
@@ -407,12 +406,11 @@ export const piecesHooks = {
     const { data: release } = flagsHooks.useFlag<string>(
       ApFlagId.CURRENT_VERSION,
     );
-    const { data: edition } = flagsHooks.useFlag<ApEdition>(ApFlagId.EDITION);
     const query = useQuery({
-      queryKey: ['pieces-registry', release, edition],
-      queryFn: () => piecesApi.registry(release!, edition!),
+      queryKey: ['pieces-registry', release],
+      queryFn: () => piecesApi.registry(release!),
       staleTime: Infinity,
-      enabled: !!pieceName && !!release && !!edition,
+      enabled: !!pieceName && !!release,
       select: (registry) =>
         registry
           .filter((entry) => entry.name === pieceName)

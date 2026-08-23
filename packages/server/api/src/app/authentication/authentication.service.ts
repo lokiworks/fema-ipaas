@@ -1,6 +1,6 @@
 import { ActivepiecesError, assertNotNullOrUndefined, ErrorCode, isNil } from '@activepieces/core-utils'
 import { cryptoUtils } from '@activepieces/server-utils'
-import { ApEdition, ApEnvironment, ApFlagId, AuthenticationResponse, OtpType, PlatformWithoutSensitiveData, User, UserIdentity, UserIdentityProvider } from '@activepieces/shared'
+import { ApFlagId, AuthenticationResponse, PlatformWithoutSensitiveData, User, UserIdentity, UserIdentityProvider } from '@activepieces/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { flagService } from '../flags/flag.service'
 import { system } from '../helper/system/system'
@@ -10,7 +10,6 @@ import { userService } from '../user/user-service'
 import { userInvitationsService } from '../user-invitations/user-invitation.service'
 import { authenticationUtils } from './authentication-utils'
 import { disposableEmail } from './lib/disposable-email'
-import { otpService } from './otp/otp-service'
 import { userIdentityService } from './user-identity/user-identity-service'
 
 export const authenticationService = (log: FastifyBaseLogger) => ({
@@ -211,27 +210,7 @@ async function getUserForPlatform(identityId: string, platform: PlatformWithoutS
 }
 
 async function sendVerificationOrAutoVerify(userIdentity: UserIdentity, log: FastifyBaseLogger): Promise<void> {
-    const edition = system.getEdition()
-    const environment = system.get(AppSystemProp.ENVIRONMENT)
-    switch (edition) {
-        case ApEdition.CLOUD:
-            if (environment === ApEnvironment.DEVELOPMENT) {
-                await userIdentityService(log).verify(userIdentity.id)
-                break
-            }
-            if (!userIdentity.verified) {
-                await otpService(log).createAndSend({
-                    platformId: null,
-                    email: userIdentity.email,
-                    type: OtpType.EMAIL_VERIFICATION,
-                })
-            }
-            break
-        case ApEdition.COMMUNITY:
-        case ApEdition.ENTERPRISE:
-            await userIdentityService(log).verify(userIdentity.id)
-            break
-    }
+    await userIdentityService(log).verify(userIdentity.id)
 }
 
 async function getPreferredPlatformIdForFederatedAuthn(email: string, log: FastifyBaseLogger): Promise<string | null> {
@@ -242,15 +221,7 @@ async function getPreferredPlatformIdForFederatedAuthn(email: string, log: Fasti
     return getPreferredPlatformId(identity.id, log)
 }
 
-async function getPreferredPlatformId(identityId: string, log: FastifyBaseLogger): Promise<string | null> {
-    const edition = system.getEdition()
-    if (edition === ApEdition.CLOUD) {
-        const platforms = await platformService(log).listPlatformsForIdentityWithAtleastProject({ identityId }) // this only gets platforms where user is active
-        const identity = await userIdentityService(log).getOneOrFail({ id: identityId })
-        const lastUsed = !isNil(identity.lastLoggedInPlatformId) ? platforms.find((p) => p.id === identity.lastLoggedInPlatformId) : undefined
-        const licensed = platforms.find((p) => !isNil(p.plan.licenseKey))
-        return lastUsed?.id ?? licensed?.id ?? platforms[0]?.id ?? null
-    }
+async function getPreferredPlatformId(_identityId: string, _log: FastifyBaseLogger): Promise<string | null> {
     return null
 }
 

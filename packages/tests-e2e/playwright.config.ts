@@ -8,21 +8,8 @@ if (!process.env.CI) {
   dotenv.config({ path: path.resolve(__dirname, '.env.e2e') });
 }
 
-const AP_EDITION = process.env.AP_EDITION || 'ce';
-
-const editionConfigs = {
-  ce: {
-    testDir: './scenarios/ce',
-  },
-  ee: {
-    testDir: './scenarios/ee',
-  },
-};
-
-const editionConfig = editionConfigs[AP_EDITION as keyof typeof editionConfigs];
-
 const config: PlaywrightTestConfig = {
-  testDir: editionConfig.testDir,
+  testDir: './scenarios',
   testMatch: '**/*.spec.ts',
   /* Run tests in files in parallel */
   fullyParallel: true,
@@ -51,12 +38,12 @@ const config: PlaywrightTestConfig = {
   /* Configure projects for major browsers */
   projects: [
     {
-      name: `@activepieces/${AP_EDITION}`,
+      name: 'e2e',
       use: {
         ...devices['Desktop Chrome'],
         headless: true,
       },
-      testDir: editionConfig.testDir,
+      testDir: './scenarios',
     },
   ],
 

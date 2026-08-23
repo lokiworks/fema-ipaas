@@ -1,19 +1,16 @@
 import { ActivepiecesError, ErrorCode, isNil } from '@activepieces/core-utils'
-import { ALL_PRINCIPAL_TYPES, ApEdition, ApFlagId, CreateTemplateRequestBody, ListTemplatesRequestQuery, Principal, PrincipalType, SERVICE_KEY_SECURITY_OPENAPI, Template, TemplateType, UpdateTemplateRequestBody } from '@activepieces/shared'
+import { ALL_PRINCIPAL_TYPES, CreateTemplateRequestBody, ListTemplatesRequestQuery, Principal, PrincipalType, SERVICE_KEY_SECURITY_OPENAPI, Template, TemplateType, UpdateTemplateRequestBody } from '@activepieces/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
 import { securityAccess } from '../core/security/authorization/fastify-security'
 import { platformGuards } from '../core/security/platform-guards'
-import { flagService } from '../flags/flag.service'
 import { migrateFlowVersionTemplateList } from '../flows/flow-version/migrations'
-import { system } from '../helper/system/system'
 import { platformService } from '../platform/platform.service'
 import { communityTemplates } from './community-templates.service'
 import { templateService } from './template.service'
 
-const edition = system.getEdition()
 
 export const templateController: FastifyPluginAsyncZod = async (app) => {
     app.get('/:id', GetParams, async (request) => {
@@ -21,23 +18,10 @@ export const templateController: FastifyPluginAsyncZod = async (app) => {
         if (!isNil(template)) {
             return template
         }
-        if (edition !== ApEdition.CLOUD) {
-            return communityTemplates.getOrThrow(request.params.id)
-        }
-        throw new ActivepiecesError({
-            code: ErrorCode.ENTITY_NOT_FOUND,
-            params: {
-                entityType: 'template',
-                entityId: request.params.id,
-                message: `Template ${request.params.id} not found`,
-            },
-        })
+        return communityTemplates.getOrThrow(request.params.id)
     })
 
-    app.get('/categories', GetCategoriesParams, async (request) => {
-        if (edition === ApEdition.CLOUD) {
-            return flagService(request.log).getOne(ApFlagId.TEMPLATES_CATEGORIES)
-        }
+    app.get('/categories', GetCategoriesParams, async () => {
         return communityTemplates.getCategories()
     })
 
@@ -235,14 +219,6 @@ async function loadOfficialTemplatesOrReturnEmpty(
 ): Promise<Template[]> {
     if (!isNil(query.type) && query.type !== TemplateType.OFFICIAL) {
         return []
-    }
-    if (edition === ApEdition.CLOUD) {
-        const officialTemplatesFromCloud = await templateService(log).list({
-            platformId: null,
-            type: TemplateType.OFFICIAL,
-            ...query,
-        })
-        return officialTemplatesFromCloud.data
     }
     const loadTemplatesFromCloud = await communityTemplates.list({ ...query, type: TemplateType.OFFICIAL })
     return loadTemplatesFromCloud.data

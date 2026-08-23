@@ -1,12 +1,11 @@
 import { ActivepiecesError, ApId, ErrorCode, isNil, omit, Permission, SeekPage } from '@activepieces/core-utils'
-import { ApEdition, BulkActionOnRunsRequestBody, BulkArchiveActionOnRunsRequestBody, BulkCancelFlowRequestBody, CountFlowRunsByStatusRequest, CountFlowRunsByStatusResponse, FlowRun, ListFlowRunsRequestQuery, PlatformRole, PrincipalType, RetryFlowRequestBody, RunEnvironment, RunInternalErrorSource, SERVICE_KEY_SECURITY_OPENAPI } from '@activepieces/shared'
+import { BulkActionOnRunsRequestBody, BulkArchiveActionOnRunsRequestBody, BulkCancelFlowRequestBody, CountFlowRunsByStatusRequest, CountFlowRunsByStatusResponse, FlowRun, ListFlowRunsRequestQuery, PlatformRole, PrincipalType, RetryFlowRequestBody, RunEnvironment, RunInternalErrorSource, SERVICE_KEY_SECURITY_OPENAPI } from '@activepieces/shared'
 import { FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
 import { ProjectResourceType } from '../../core/security/authorization/common'
 import { securityAccess } from '../../core/security/authorization/fastify-security'
-import { system } from '../../helper/system/system'
 import { userService } from '../../user/user-service'
 import { FlowRunEntity } from './flow-run-entity'
 import { flowRunService } from './flow-run-service'
@@ -49,7 +48,7 @@ export const flowRunController: FastifyPluginAsyncZod = async (app) => {
                 projectId: request.projectId,
                 id: request.params.id,
             })
-            const internalErrorEnabled = flowRun.internalError?.source === RunInternalErrorSource.ENGINE || system.getEdition() !== ApEdition.CLOUD
+            const internalErrorEnabled = flowRun.internalError?.source === RunInternalErrorSource.ENGINE || true
             const canViewInternalError = internalErrorEnabled && await isRequesterPlatformAdmin(request)
             await reply.send(canViewInternalError ? flowRun : omit(flowRun, ['internalError']))
         },

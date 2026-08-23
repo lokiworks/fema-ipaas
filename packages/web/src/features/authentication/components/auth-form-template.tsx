@@ -1,4 +1,4 @@
-import { ApEdition, ApFlagId } from '@activepieces/shared';
+import { ApFlagId } from '@activepieces/shared';
 import { t } from 'i18next';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -18,12 +18,8 @@ const TermsFooter = () => {
   const { data: privacyPolicyUrl } = flagsHooks.useFlag<string>(
     ApFlagId.PRIVACY_POLICY_URL,
   );
-  const { data: edition } = flagsHooks.useFlag<ApEdition>(ApFlagId.EDITION);
 
-  if (
-    edition !== ApEdition.CLOUD ||
-    (!termsOfServiceUrl && !privacyPolicyUrl)
-  ) {
+  if (!termsOfServiceUrl && !privacyPolicyUrl) {
     return null;
   }
 
@@ -60,7 +56,7 @@ const AuthImage = () => {
 
   return (
     <img
-      src="https://cdn.activepieces.com/assets/auth-bg.webp"
+      src="/assets/full-logo.svg"
       alt=""
       onLoad={onLoad}
       className={cn(

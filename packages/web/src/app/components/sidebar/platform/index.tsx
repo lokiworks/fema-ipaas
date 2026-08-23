@@ -1,4 +1,3 @@
-import { ApEdition, ApFlagId } from '@activepieces/shared';
 import { t } from 'i18next';
 import { ComponentType, useRef } from 'react';
 import { Link } from 'react-router-dom';
@@ -40,7 +39,6 @@ import {
   SidebarSeparator,
 } from '@/components/ui/sidebar-shadcn';
 import { useAuthorization } from '@/hooks/authorization-hooks';
-import { flagsHooks } from '@/hooks/flags-hooks';
 import { platformHooks } from '@/hooks/platform-hooks';
 import { determineDefaultRoute } from '@/lib/route-utils';
 import { cn } from '@/lib/utils';
@@ -50,7 +48,6 @@ import { SidebarUser } from '../sidebar-user';
 
 export function PlatformSidebar() {
   const { platform } = platformHooks.useCurrentPlatform();
-  const { data: edition } = flagsHooks.useFlag<ApEdition>(ApFlagId.EDITION);
   const { checkAccess } = useAuthorization();
   const defaultRoute = determineDefaultRoute({
     checkAccess,
@@ -101,13 +98,13 @@ export function PlatformSidebar() {
       to: '/platform/setup/billing',
       label: t('Billing & subscription'),
       icon: ReceiptIcon,
-      locked: edition === ApEdition.COMMUNITY,
+      locked: true,
     },
     {
       to: '/platform/setup/usage',
       label: t('Usage'),
       icon: ChartLineIcon,
-      locked: edition === ApEdition.COMMUNITY,
+      locked: true,
     },
     {
       to: '/platform/security/embed',

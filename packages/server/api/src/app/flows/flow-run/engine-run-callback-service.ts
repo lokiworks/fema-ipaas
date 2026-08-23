@@ -1,11 +1,10 @@
 import { isNil, tryCatch } from '@activepieces/core-utils'
-import { ApEdition, ExecutioOutputFile, FileCompression, FileType, isFlowRunStateTerminal, logSerializer, RunInternalError, RunInternalErrorSource, SendFlowResponseRequest, StreamStepProgress, truncateFailedStepMessage, UpdateStepProgressRequest, UploadRunLogsRequest, WebsocketClientEvent } from '@activepieces/shared'
+import { ExecutioOutputFile, FileCompression, FileType, isFlowRunStateTerminal, logSerializer, RunInternalError, RunInternalErrorSource, SendFlowResponseRequest, StreamStepProgress, truncateFailedStepMessage, UpdateStepProgressRequest, UploadRunLogsRequest, WebsocketClientEvent } from '@activepieces/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { websocketService } from '../../core/websockets.service'
 import { fileCompressor } from '../../file/file-compressor'
 import { fileService } from '../../file/file.service'
 import { pubsub } from '../../helper/pubsub'
-import { system } from '../../helper/system/system'
 import { projectService } from '../../project/project-service'
 import { RunsMetadataUpsertData } from '../../workers/job'
 import { runsMetadataQueue } from './flow-runs-queue'
@@ -27,7 +26,7 @@ export const engineRunCallbackService = (log: FastifyBaseLogger) => ({
     },
 
     async uploadRunLog({ projectId, request }: UploadRunLogParams): Promise<void> {
-        const internalErrorEnabled = request.internalError?.source === RunInternalErrorSource.ENGINE || system.getEdition() !== ApEdition.CLOUD
+        const internalErrorEnabled = request.internalError?.source === RunInternalErrorSource.ENGINE || true
         const internalError = internalErrorEnabled ? request.internalError : undefined
         const isTerminal = !isNil(request.status) && isFlowRunStateTerminal({ status: request.status, ignoreInternalError: false })
         if (isTerminal && !isNil(request.logsFileId)) {

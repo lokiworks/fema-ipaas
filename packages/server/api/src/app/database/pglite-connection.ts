@@ -1,7 +1,7 @@
 import { mkdirSync } from 'node:fs'
 import path from 'node:path'
 import { spreadIfDefined } from '@activepieces/core-utils'
-import { ApEdition, ApEnvironment } from '@activepieces/shared'
+import { ApEnvironment } from '@activepieces/shared'
 import { types } from '@electric-sql/pglite'
 import { vector } from '@electric-sql/pglite/vector'
 import { DataSource } from 'typeorm'
@@ -28,11 +28,7 @@ const getPGliteDataPath = (): string | undefined => {
 }
 
 export const createPGliteDataSource = (): DataSource => {
-    const edition = system.getEdition()
     const env = system.getOrThrow<ApEnvironment>(AppSystemProp.ENVIRONMENT)
-    if (edition !== ApEdition.COMMUNITY && env !== ApEnvironment.TESTING) {
-        throw new Error(`Edition ${edition} not supported in pglite mode in ${env} environment`)
-    }
 
     const dataPath = getPGliteDataPath()
 

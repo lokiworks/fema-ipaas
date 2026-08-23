@@ -1,7 +1,7 @@
 import os from 'os'
 import path from 'path'
 import { ActivepiecesError, ErrorCode, isNil } from '@activepieces/core-utils'
-import { ApEdition, DefaultProjectRole, ExecutionMode, FileLocation, NetworkMode, PieceSyncMode } from '@activepieces/shared'
+import { DefaultProjectRole, ExecutionMode, FileLocation, NetworkMode, PieceSyncMode } from '@activepieces/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { DatabaseType } from '../../database/database-type'
 import { RedisType } from '../../database/redis/types'
@@ -20,7 +20,6 @@ const systemPropDefaultValues: Partial<Record<SystemProp, string>> = {
     [AppSystemProp.CLOUD_AUTH_ENABLED]: 'true',
     [AppSystemProp.CONFIG_PATH]: path.join(os.homedir(), '.activepieces'),
     [AppSystemProp.DB_TYPE]: DatabaseType.POSTGRES,
-    [AppSystemProp.EDITION]: ApEdition.COMMUNITY,
     [AppSystemProp.APP_WEBHOOK_SECRETS]: '{}',
     [AppSystemProp.AUTUMN_CONSOLE_URL]: 'https://console.activepieces.com',
     [AppSystemProp.CONTAINER_TYPE]: ContainerType.WORKER_AND_APP,
@@ -160,9 +159,6 @@ export const system = {
         }
 
         return value
-    },
-    getEdition(): ApEdition {
-        return this.getOrThrow<ApEdition>(AppSystemProp.EDITION)
     },
     isWorker(): boolean {
         return [ContainerType.WORKER, ContainerType.WORKER_AND_APP].includes(

@@ -1,6 +1,5 @@
 import { ApMultipartFile, OptionalArrayFromQuery, OptionalBooleanFromQuery } from '@activepieces/core-utils'
 import { z } from 'zod'
-import { ApEdition } from '../../../core/flag/flag'
 import { PackageType, PieceCategory } from '../piece'
 
 export const EXACT_VERSION_PATTERN = '^[0-9]+\\.[0-9]+\\.[0-9]+$'
@@ -53,7 +52,6 @@ export const ListPiecesRequestQuery = z.object({
     release: ExactVersionType.optional(),
     includeHidden: OptionalBooleanFromQuery,
     audience: z.nativeEnum(PieceAudienceFilter).optional(),
-    edition: z.nativeEnum(ApEdition).optional(),
     searchQuery: z.string().optional(),
     sortBy: z.nativeEnum(PieceSortBy).optional(),
     orderBy: z.nativeEnum(PieceOrderBy).optional(),
@@ -67,7 +65,6 @@ export type ListPiecesRequestQuery = z.infer<typeof ListPiecesRequestQuery>
 
 export const RegistryPiecesRequestQuery = z.object({
     release: ExactVersionType,
-    edition: z.nativeEnum(ApEdition),
 })
 
 export type RegistryPiecesRequestQuery = z.infer<typeof RegistryPiecesRequestQuery>

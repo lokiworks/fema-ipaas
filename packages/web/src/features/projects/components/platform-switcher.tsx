@@ -1,4 +1,3 @@
-import { ApEdition, ApFlagId } from '@activepieces/shared';
 import { t } from 'i18next';
 import { Check, Plus } from 'lucide-react';
 import * as React from 'react';
@@ -12,7 +11,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { projectHooks } from '@/features/projects/stores/project-collection';
-import { flagsHooks } from '@/hooks/flags-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 import { cn } from '@/lib/utils';
 
@@ -24,9 +22,8 @@ import { CreatePlatformDialog } from './create-platform-dialog';
 export function PlatformSwitcher({ children }: { children: React.ReactNode }) {
   const { data: allProjects } = projectHooks.useProjectsForPlatforms();
   const { platform: currentPlatform } = platformHooks.useCurrentPlatform();
-  const { data: edition } = flagsHooks.useFlag<ApEdition>(ApFlagId.EDITION);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const isCloud = edition === ApEdition.CLOUD;
+  const isCloud = false;
 
   const platforms = React.useMemo(() => {
     if (!allProjects) return [];

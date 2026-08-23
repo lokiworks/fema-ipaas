@@ -1,9 +1,8 @@
 import { isNil, PlatformId, tryCatch } from '@activepieces/core-utils'
-import { ApEdition, PrincipalType } from '@activepieces/shared'
+import { PrincipalType } from '@activepieces/shared'
 import { FastifyRequest } from 'fastify'
 import { databaseConnection } from '../database/database-connection'
 import { networkUtils } from '../helper/network-utils'
-import { system } from '../helper/system/system'
 import { platformService } from './platform.service'
 
 export const platformUtils = {
@@ -15,9 +14,6 @@ export const platformUtils = {
             && req.principal.type !== PrincipalType.ONBOARDING
         ) {
             return req.principal.platform.id
-        }
-        if (system.getEdition() === ApEdition.CLOUD) {
-            return null
         }
         const oldestPlatform = await platformService(req.log).getOldestPlatform()
         return oldestPlatform?.id ?? null

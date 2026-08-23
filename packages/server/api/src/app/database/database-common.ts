@@ -1,4 +1,3 @@
-import { ApEdition } from '@activepieces/shared'
 import { EntitySchemaColumnOptions } from 'typeorm'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
@@ -28,8 +27,4 @@ export const BaseColumnSchemaPart = {
         type: 'timestamp with time zone',
         updateDate: true,
     } as EntitySchemaColumnOptions,
-}
-
-export function isNotOneOfTheseEditions(editions: ApEdition[]): boolean {
-    return !editions.includes(system.getEdition())
 }

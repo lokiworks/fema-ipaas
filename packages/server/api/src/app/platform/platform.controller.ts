@@ -1,20 +1,18 @@
 import { ActivepiecesError, ApId, ErrorCode } from '@activepieces/core-utils'
-import { ApEdition, AuthenticationResponse, CreatePlatformRequest, FileType, PlatformWithoutSensitiveData, PrincipalType, SERVICE_KEY_SECURITY_OPENAPI, UpdatePlatformRequestBody } from '@activepieces/shared'
+import { AuthenticationResponse, CreatePlatformRequest, FileType, PlatformWithoutSensitiveData, PrincipalType, SERVICE_KEY_SECURITY_OPENAPI, UpdatePlatformRequestBody } from '@activepieces/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
 import { securityAccess } from '../core/security/authorization/fastify-security'
 import { fileService } from '../file/file.service'
 import { attachMultipartFieldsToBody } from '../helper/multipart-body'
-import { system } from '../helper/system/system'
 import { userService } from '../user/user-service'
 import { platformService } from './platform.service'
 
-const edition = system.getEdition()
 export const platformController: FastifyPluginAsyncZod = async (app) => {
     app.post('/', CreatePlatformEndpoint, async (req) => {
         const isOnboarding = req.principal.type === PrincipalType.ONBOARDING
-        if (!isOnboarding && edition !== ApEdition.CLOUD) {
+        if (!isOnboarding) {
             // only first ee/ce user will be able to have onboarding token. which means any other principal type should not be able to create platform
             throw new ActivepiecesError({
                 code: ErrorCode.AUTHORIZATION,

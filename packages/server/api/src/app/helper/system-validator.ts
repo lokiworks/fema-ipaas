@@ -1,6 +1,6 @@
 import { inspect } from 'util'
 import { isNil } from '@activepieces/core-utils'
-import { ApEdition, ApEnvironment, DefaultProjectRole, ExecutionMode, FileLocation, NetworkMode, PieceSyncMode } from '@activepieces/shared'
+import { ApEnvironment, DefaultProjectRole, ExecutionMode, FileLocation, NetworkMode, PieceSyncMode } from '@activepieces/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { DatabaseType } from '../database/database-type'
 import { RedisType } from '../database/redis/types'
@@ -165,7 +165,6 @@ const systemPropValidators: {
     [AppSystemProp.FIREBASE_HASH_PARAMETERS]: stringValidator,
     [AppSystemProp.INTERNAL_URL]: stringValidator,
     [AppSystemProp.WORKERS]: numberValidator,
-    [AppSystemProp.EDITION]: enumValidator(Object.values(ApEdition)),
     [AppSystemProp.FEATUREBASE_API_KEY]: stringValidator,
     [AppSystemProp.OPENROUTER_PROVISION_KEY]: stringValidator,
     [AppSystemProp.OPENAI_API_KEY]: stringValidator,
@@ -299,17 +298,6 @@ export const validateEnvPropsOnStartup = async (log: FastifyBaseLogger): Promise
             message: 'AP_JWT_SECRET is undefined, please define it in the environment variables',
             docUrl: 'https://www.activepieces.com/docs/install/configuration/environment-variables',
         }))
-    }
-
-    const edition = system.getEdition()
-    if ([ApEdition.CLOUD, ApEdition.ENTERPRISE].includes(edition) && environment === ApEnvironment.PRODUCTION) {
-        const executionMode = system.getOrThrow<ExecutionMode>(AppSystemProp.EXECUTION_MODE)
-        if (![ExecutionMode.SANDBOX_PROCESS, ExecutionMode.SANDBOX_CODE_ONLY, ExecutionMode.SANDBOX_CODE_AND_PROCESS].includes(executionMode)) {
-            throw new Error(JSON.stringify({
-                message: `Execution mode ${executionMode} is no longer supported in this edition, check the documentation for recent changes`,
-                docUrl: 'https://www.activepieces.com/docs/install/configuration/overview',
-            }))
-        }
     }
 
 }

@@ -119,7 +119,6 @@ async function installNewPieces(cloudPieces: PieceRegistryResponse[], dbPieces: 
 
 async function listCloudPieces(): Promise<PieceRegistryResponse[]> {
     const queryParams = new URLSearchParams()
-    queryParams.append('edition', system.getEdition())
     queryParams.append('release', apVersionUtil.getCurrentRelease())
     const base = registrySourceUrl()
     if (isNil(base)) {

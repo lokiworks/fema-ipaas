@@ -4,7 +4,7 @@
 import {
   PiecePropertyMap,
   Property,
-} from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
 import * as React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -109,7 +109,7 @@ const Harness = () => {
       <DynamicProperties
         refreshers={['items']}
         propertyName="fields"
-        pieceName="@activepieces/piece-test"
+        pieceName="@fema/connector-test"
         pieceVersion="0.0.1"
         actionOrTriggerName="test_action"
         disabled={false}

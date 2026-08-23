@@ -1,4 +1,4 @@
-import { AIProviderName } from '@activepieces/core-utils'
+import { AIProviderName } from '@fema/core-utils'
 import { describe, expect, it } from 'vitest'
 import { ACTIVEPIECES_CHAT_TIERS, AI_PROVIDER_CAPABILITIES, aiProviderUtils, ALLOWED_CHAT_MODELS_BY_PROVIDER } from './ai-providers'
 

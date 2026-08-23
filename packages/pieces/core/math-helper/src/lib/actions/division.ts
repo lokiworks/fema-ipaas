@@ -2,8 +2,8 @@ import {
   createAction,
   PieceAuth,
   Property,
-} from '@activepieces/pieces-framework';
-import { propsValidation } from '@activepieces/pieces-common';
+} from '@fema/connector-sdk';
+import { propsValidation } from '@fema/connector-common';
 import * as z from 'zod/mini';
 import { divisionActionOutputSchema } from '../output-schemas';
 

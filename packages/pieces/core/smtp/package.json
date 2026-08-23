@@ -1,5 +1,5 @@
 {
-  "name": "@activepieces/piece-smtp",
+  "name": "@fema/connector-smtp",
   "version": "0.4.7",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -9,12 +9,12 @@
     "lint": "eslint 'src/**/*.ts'"
   },
   "dependencies": {
-    "@activepieces/pieces-common": "workspace:*",
-    "@activepieces/pieces-framework": "workspace:*",
+    "@fema/connector-common": "workspace:*",
+    "@fema/connector-sdk": "workspace:*",
     "mime-types": "2.1.35",
     "nodemailer": "9.0.1",
-    "@activepieces/core-piece-types": "workspace:*",
-    "@activepieces/core-utils": "workspace:*"
+    "@fema/connector-types": "workspace:*",
+    "@fema/core-utils": "workspace:*"
   },
   "devDependencies": {
     "@types/mime-types": "2.1.1",

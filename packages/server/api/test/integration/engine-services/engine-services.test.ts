@@ -1,7 +1,7 @@
 import { AddressInfo } from 'net'
-import { apId } from '@activepieces/core-utils'
-import { ContextVersion, StoreScope } from '@activepieces/pieces-framework'
-import { AppConnectionStatus, AppConnectionType, ConnectionExpiredError, ConnectionNotFoundError, ConnectionPieceMismatchError, FetchError, FlowStatus, FlowVersionState, PrincipalType } from '@activepieces/shared'
+import { apId } from '@fema/core-utils'
+import { ContextVersion, StoreScope } from '@fema/connector-sdk'
+import { AppConnectionStatus, AppConnectionType, ConnectionExpiredError, ConnectionNotFoundError, ConnectionPieceMismatchError, FetchError, FlowStatus, FlowVersionState, PrincipalType } from '@fema/shared'
 import { FastifyInstance } from 'fastify'
 import { createConnectionResolver } from '../../../../../engine/src/lib/piece-context/connection-resolver'
 import { createFileUploader } from '../../../../../engine/src/lib/piece-context/file-uploader'
@@ -258,7 +258,7 @@ describe('Engine Services Integration', () => {
         })
 
         describe('AP_ENFORCE_CONNECTION_PIECE_BINDING', () => {
-            const pieceName = '@activepieces/piece-slack'
+            const pieceName = '@fema/connector-slack'
 
             afterEach(() => {
                 delete process.env.AP_ENFORCE_CONNECTION_PIECE_BINDING
@@ -284,7 +284,7 @@ describe('Engine Services Integration', () => {
 
             it('should reject a connection belonging to another piece when enabled', async () => {
                 process.env.AP_ENFORCE_CONNECTION_PIECE_BINDING = 'true'
-                const externalId = await saveConnection('@activepieces/piece-google-sheets')
+                const externalId = await saveConnection('@fema/connector-google-sheets')
 
                 const connectionService = createConnectionResolver({
                     projectId,
@@ -316,7 +316,7 @@ describe('Engine Services Integration', () => {
             })
 
             it('should allow a connection belonging to another piece when disabled', async () => {
-                const externalId = await saveConnection('@activepieces/piece-google-sheets')
+                const externalId = await saveConnection('@fema/connector-google-sheets')
 
                 const connectionService = createConnectionResolver({
                     projectId,

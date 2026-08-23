@@ -1,5 +1,5 @@
-import { ActionBase } from '@activepieces/pieces-framework'
-import { PieceAudienceFilter, PieceCategory, PieceOrderBy, PieceSortBy, SuggestionType } from '@activepieces/shared'
+import { ActionBase } from '@fema/connector-sdk'
+import { PieceAudienceFilter, PieceCategory, PieceOrderBy, PieceSortBy, SuggestionType } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { PieceMetadataSchema } from '../piece-metadata-entity'
 import { pieceSearching } from './piece-searching'

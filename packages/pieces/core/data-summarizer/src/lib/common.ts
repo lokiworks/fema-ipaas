@@ -1,5 +1,5 @@
-import { Property } from "@activepieces/pieces-framework"
-import { isNil } from "@activepieces/pieces-framework"
+import { Property } from "@fema/connector-sdk"
+import { isNil } from "@fema/connector-sdk"
 
 type ErrorInfo = {
     value: unknown | null,

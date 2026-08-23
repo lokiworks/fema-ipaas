@@ -1,5 +1,5 @@
-import { ActivepiecesError, ErrorCode, isNil, Permission, ProjectRole } from '@activepieces/core-utils'
-import { ApiToWorkerContract, createNotifyClient, Principal, PrincipalForType, PrincipalType, WebsocketServerEvent } from '@activepieces/shared'
+import { ActivepiecesError, ErrorCode, isNil, Permission, ProjectRole } from '@fema/core-utils'
+import { ApiToWorkerContract, createNotifyClient, Principal, PrincipalForType, PrincipalType, WebsocketServerEvent } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { Socket } from 'socket.io'
 import { accessTokenManager } from '../authentication/lib/access-token-manager'

@@ -1,4 +1,4 @@
-import { AppConnectionType } from '@activepieces/core-piece-types';
+import { AppConnectionType } from '@fema/connector-types';
 import { describe, expect, it } from 'vitest';
 import { PropertyType } from '../src/lib/property/input/property-type';
 import { getAuthPropertyForValue, PieceAuth } from '../src/lib/property';

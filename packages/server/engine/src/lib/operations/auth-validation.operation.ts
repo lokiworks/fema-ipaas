@@ -1,10 +1,10 @@
-import { isObject } from '@activepieces/core-utils'
+import { isObject } from '@fema/core-utils'
 import {
     EngineResponse,
     EngineResponseStatus,
     ExecuteValidateAuthOperation,
     ExecuteValidateAuthResponse,
-} from '@activepieces/shared'
+} from '@fema/shared'
 import { pieceAuth } from '../core/piece/piece-auth'
 
 export const authValidationOperation = {

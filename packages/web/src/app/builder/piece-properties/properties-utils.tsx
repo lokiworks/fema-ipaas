@@ -1,10 +1,10 @@
-import { isNil } from '@activepieces/core-utils';
 import {
   PieceProperty,
   PiecePropertyMap,
   PropertyType,
-} from '@activepieces/pieces-framework';
-import { PropertySettings } from '@activepieces/shared';
+} from '@fema/connector-sdk';
+import { isNil } from '@fema/core-utils';
+import { PropertySettings } from '@fema/shared';
 import { t } from 'i18next';
 import { ControllerRenderProps, UseFormReturn } from 'react-hook-form';
 

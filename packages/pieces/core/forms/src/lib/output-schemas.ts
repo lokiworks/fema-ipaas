@@ -1,4 +1,4 @@
-import { OutputSchema } from '@activepieces/pieces-framework';
+import { OutputSchema } from '@fema/connector-sdk';
 
 export const returnResponseActionOutputSchema: OutputSchema = {
   fields: [

@@ -9,7 +9,7 @@ import {
   UserIdentity,
   VerifyEmailRequestBody,
   VerifyEmailCodeRequest,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import { useMutation } from '@tanstack/react-query';
 
 import { authenticationApi } from '@/api/authentication-api';

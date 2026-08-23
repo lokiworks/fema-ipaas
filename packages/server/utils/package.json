@@ -1,5 +1,5 @@
 {
-  "name": "@activepieces/server-utils",
+  "name": "@fema/server-utils",
   "version": "0.2.0",
   "type": "commonjs",
   "main": "./dist/src/index.js",
@@ -9,8 +9,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@activepieces/ai-providers": "workspace:*",
-    "@activepieces/shared": "workspace:*",
+    "@fema/shared": "workspace:*",
     "@modelcontextprotocol/sdk": "1.27.1",
     "evlog": "2.22.4",
     "@ai-sdk/amazon-bedrock": "5.0.38",
@@ -31,8 +30,8 @@
     "request-filtering-agent": "3.2.0",
     "systeminformation": "5.31.7",
     "tslib": "2.6.2",
-    "@activepieces/core-utils": "workspace:*",
-    "@activepieces/core-formula": "workspace:*"
+    "@fema/core-utils": "workspace:*",
+    "@fema/expression": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "24.11.0",

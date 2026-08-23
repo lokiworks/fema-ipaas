@@ -1,10 +1,10 @@
-import { AIProviderName } from '@activepieces/core-utils'
-import { AIProviderModelType, ALLOWED_CHAT_MODELS_BY_PROVIDER } from '@activepieces/shared'
+import { AIProviderName } from '@fema/core-utils'
+import { AIProviderModelType, ALLOWED_CHAT_MODELS_BY_PROVIDER } from '@fema/shared'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const { mockSendRequest } = vi.hoisted(() => ({ mockSendRequest: vi.fn() }))
 
-vi.mock('@activepieces/pieces-common', () => ({
+vi.mock('@fema/connector-common', () => ({
     httpClient: { sendRequest: mockSendRequest },
     HttpMethod: { GET: 'GET' },
 }))

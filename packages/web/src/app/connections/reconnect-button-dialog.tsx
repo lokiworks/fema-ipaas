@@ -1,7 +1,7 @@
 import {
   AppConnectionScope,
   AppConnectionWithoutSensitiveData,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import { t } from 'i18next';
 import { Cable } from 'lucide-react';
 import { useState } from 'react';

@@ -1,11 +1,11 @@
-import { isNil } from '@activepieces/core-utils';
-import { OAuth2Property, OAuth2Props } from '@activepieces/pieces-framework';
+import { OAuth2Property, OAuth2Props } from '@fema/connector-sdk';
+import { isNil } from '@fema/core-utils';
 import {
   AppConnectionType,
   BOTH_CLIENT_CREDENTIALS_AND_AUTHORIZATION_CODE,
   OAuth2GrantType,
   ThirdPartyAuthnProviderEnum,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import { useSearchParams } from 'react-router-dom';
 
 import {

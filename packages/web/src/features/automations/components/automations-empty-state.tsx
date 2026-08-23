@@ -1,9 +1,5 @@
-import { Permission } from '@activepieces/core-utils';
-import {
-  Template,
-  TemplateType,
-  UncategorizedFolderId,
-} from '@activepieces/shared';
+import { Permission } from '@fema/core-utils';
+import { Template, TemplateType, UncategorizedFolderId } from '@fema/shared';
 import { t } from 'i18next';
 import { ChevronRight, Plus, Sparkles, Upload, Workflow } from 'lucide-react';
 import { useState } from 'react';

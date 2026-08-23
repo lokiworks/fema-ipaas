@@ -1,10 +1,10 @@
-import { isNil } from '@activepieces/core-utils';
 import {
   OAuth2Property,
   OAuth2Props,
   PieceMetadataModel,
   PieceMetadataModelSummary,
-} from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
+import { isNil } from '@fema/core-utils';
 import {
   ApErrorParams,
   ApFlagId,
@@ -14,7 +14,7 @@ import {
   UpsertCloudOAuth2Request,
   UpsertOAuth2Request,
   UpsertPlatformOAuth2Request,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import { t } from 'i18next';
 import { ChevronDown } from 'lucide-react';
 import { Dispatch, SetStateAction, useState } from 'react';

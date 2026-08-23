@@ -27,7 +27,7 @@ import {
     RunEnvironment,
     StepOutputType,
     StreamStepProgress,
-} from '@activepieces/shared'
+} from '@fema/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { worker } from '../../../../../../worker/src/lib/worker'
@@ -71,14 +71,14 @@ async function setupSubflowFixtures({ childAlwaysFails = false, retryOnFailure =
     const { mockPlatform, mockProject } = await mockAndSaveBasicSetup()
 
     const webhookPiece = createMockPieceMetadata({
-        name: '@activepieces/piece-webhook',
+        name: '@fema/connector-webhook',
         version: '0.1.29',
         platformId: undefined,
         packageType: PackageType.REGISTRY,
         pieceType: PieceType.OFFICIAL,
     })
     const subflowsPiece = createMockPieceMetadata({
-        name: '@activepieces/piece-subflows',
+        name: '@fema/connector-subflows',
         version: '0.4.11',
         platformId: undefined,
         packageType: PackageType.REGISTRY,
@@ -93,7 +93,7 @@ async function setupSubflowFixtures({ childAlwaysFails = false, retryOnFailure =
         displayName: 'Return Response',
         valid: true,
         settings: {
-            pieceName: '@activepieces/piece-subflows',
+            pieceName: '@fema/connector-subflows',
             pieceVersion: '0.4.11',
             actionName: 'returnResponse',
             input: {
@@ -150,7 +150,7 @@ async function setupSubflowFixtures({ childAlwaysFails = false, retryOnFailure =
             valid: true,
             lastUpdatedDate: new Date().toISOString(),
             settings: {
-                pieceName: '@activepieces/piece-subflows',
+                pieceName: '@fema/connector-subflows',
                 pieceVersion: '0.4.11',
                 triggerName: 'callableFlow',
                 input: {
@@ -179,7 +179,7 @@ async function setupSubflowFixtures({ childAlwaysFails = false, retryOnFailure =
         displayName: 'Call Flow',
         valid: true,
         settings: {
-            pieceName: '@activepieces/piece-subflows',
+            pieceName: '@fema/connector-subflows',
             pieceVersion: '0.4.11',
             actionName: 'callFlow',
             input: {
@@ -222,7 +222,7 @@ async function setupSubflowFixtures({ childAlwaysFails = false, retryOnFailure =
             valid: true,
             lastUpdatedDate: new Date().toISOString(),
             settings: {
-                pieceName: '@activepieces/piece-webhook',
+                pieceName: '@fema/connector-webhook',
                 pieceVersion: '0.1.29',
                 triggerName: 'catch_webhook',
                 input: { authType: 'none' },
@@ -240,14 +240,14 @@ async function setupSubflowWithWebhookResponseFixtures() {
     const { mockPlatform, mockProject } = await mockAndSaveBasicSetup()
 
     const webhookPiece = createMockPieceMetadata({
-        name: '@activepieces/piece-webhook',
+        name: '@fema/connector-webhook',
         version: '0.1.29',
         platformId: undefined,
         packageType: PackageType.REGISTRY,
         pieceType: PieceType.OFFICIAL,
     })
     const subflowsPiece = createMockPieceMetadata({
-        name: '@activepieces/piece-subflows',
+        name: '@fema/connector-subflows',
         version: '0.4.11',
         platformId: undefined,
         packageType: PackageType.REGISTRY,
@@ -262,7 +262,7 @@ async function setupSubflowWithWebhookResponseFixtures() {
         displayName: 'Return Response',
         valid: true,
         settings: {
-            pieceName: '@activepieces/piece-subflows',
+            pieceName: '@fema/connector-subflows',
             pieceVersion: '0.4.11',
             actionName: 'returnResponse',
             input: {
@@ -293,7 +293,7 @@ async function setupSubflowWithWebhookResponseFixtures() {
             displayName: 'Callable Flow',
             valid: true,
             settings: {
-                pieceName: '@activepieces/piece-subflows',
+                pieceName: '@fema/connector-subflows',
                 pieceVersion: '0.4.11',
                 triggerName: 'callableFlow',
                 input: {
@@ -322,7 +322,7 @@ async function setupSubflowWithWebhookResponseFixtures() {
         displayName: 'Return Response',
         valid: true,
         settings: {
-            pieceName: '@activepieces/piece-webhook',
+            pieceName: '@fema/connector-webhook',
             pieceVersion: '0.1.29',
             actionName: 'return_response',
             input: {
@@ -345,7 +345,7 @@ async function setupSubflowWithWebhookResponseFixtures() {
         displayName: 'Call Flow',
         valid: true,
         settings: {
-            pieceName: '@activepieces/piece-subflows',
+            pieceName: '@fema/connector-subflows',
             pieceVersion: '0.4.11',
             actionName: 'callFlow',
             input: {
@@ -387,7 +387,7 @@ async function setupSubflowWithWebhookResponseFixtures() {
             valid: true,
             lastUpdatedDate: new Date().toISOString(),
             settings: {
-                pieceName: '@activepieces/piece-webhook',
+                pieceName: '@fema/connector-webhook',
                 pieceVersion: '0.1.29',
                 triggerName: 'catch_webhook',
                 input: { authType: 'none' },
@@ -433,14 +433,14 @@ describe('Execute Flow E2E', () => {
 
         // Save piece metadata records
         const webhookPiece = createMockPieceMetadata({
-            name: '@activepieces/piece-webhook',
+            name: '@fema/connector-webhook',
             version: '0.1.29',
             platformId: undefined,
             packageType: PackageType.REGISTRY,
             pieceType: PieceType.OFFICIAL,
         })
         const dataMapperPiece = createMockPieceMetadata({
-            name: '@activepieces/piece-data-mapper',
+            name: '@fema/connector-data-mapper',
             version: '0.3.15',
             platformId: undefined,
             packageType: PackageType.REGISTRY,
@@ -478,7 +478,7 @@ describe('Execute Flow E2E', () => {
             displayName: 'Map Data',
             valid: true,
             settings: {
-                pieceName: '@activepieces/piece-data-mapper',
+                pieceName: '@fema/connector-data-mapper',
                 pieceVersion: '0.3.15',
                 actionName: 'advanced_mapping',
                 input: {
@@ -508,7 +508,7 @@ describe('Execute Flow E2E', () => {
                 valid: true,
                 lastUpdatedDate: new Date().toISOString(),
                 settings: {
-                    pieceName: '@activepieces/piece-webhook',
+                    pieceName: '@fema/connector-webhook',
                     pieceVersion: '0.1.29',
                     triggerName: 'catch_webhook',
                     input: { authType: 'none' },
@@ -599,7 +599,7 @@ describe('Execute Flow E2E', () => {
         expect(installResponse.statusCode, installResponse.body).toBe(StatusCodes.CREATED)
 
         const webhookPiece = createMockPieceMetadata({
-            name: '@activepieces/piece-webhook',
+            name: '@fema/connector-webhook',
             version: '0.1.29',
             platformId: undefined,
             packageType: PackageType.REGISTRY,
@@ -635,7 +635,7 @@ describe('Execute Flow E2E', () => {
                 valid: true,
                 lastUpdatedDate: new Date().toISOString(),
                 settings: {
-                    pieceName: '@activepieces/piece-webhook',
+                    pieceName: '@fema/connector-webhook',
                     pieceVersion: '0.1.29',
                     triggerName: 'catch_webhook',
                     input: { authType: 'none' },
@@ -673,7 +673,7 @@ describe('Execute Flow E2E', () => {
         const { mockPlatform, mockProject } = await mockAndSaveBasicSetup()
 
         const webhookPiece = createMockPieceMetadata({
-            name: '@activepieces/piece-webhook',
+            name: '@fema/connector-webhook',
             version: '0.1.29',
             platformId: undefined,
             packageType: PackageType.REGISTRY,
@@ -713,7 +713,7 @@ describe('Execute Flow E2E', () => {
                 valid: true,
                 lastUpdatedDate: new Date().toISOString(),
                 settings: {
-                    pieceName: '@activepieces/piece-webhook',
+                    pieceName: '@fema/connector-webhook',
                     pieceVersion: '0.1.29',
                     triggerName: 'catch_webhook',
                     input: { authType: 'none' },
@@ -849,14 +849,14 @@ describe('Execute Flow E2E', () => {
         const { mockPlatform, mockProject } = await mockAndSaveBasicSetup()
 
         const webhookPiece = createMockPieceMetadata({
-            name: '@activepieces/piece-webhook',
+            name: '@fema/connector-webhook',
             version: '0.1.29',
             platformId: undefined,
             packageType: PackageType.REGISTRY,
             pieceType: PieceType.OFFICIAL,
         })
         const delayPiece = createMockPieceMetadata({
-            name: '@activepieces/piece-delay',
+            name: '@fema/connector-delay',
             version: '0.3.26',
             platformId: undefined,
             packageType: PackageType.REGISTRY,
@@ -887,7 +887,7 @@ describe('Execute Flow E2E', () => {
             displayName: 'Delay For',
             valid: true,
             settings: {
-                pieceName: '@activepieces/piece-delay',
+                pieceName: '@fema/connector-delay',
                 pieceVersion: '0.3.26',
                 actionName: 'delayFor',
                 input: {
@@ -915,7 +915,7 @@ describe('Execute Flow E2E', () => {
                 valid: true,
                 lastUpdatedDate: new Date().toISOString(),
                 settings: {
-                    pieceName: '@activepieces/piece-webhook',
+                    pieceName: '@fema/connector-webhook',
                     pieceVersion: '0.1.29',
                     triggerName: 'catch_webhook',
                     input: { authType: 'none' },
@@ -952,14 +952,14 @@ describe('Execute Flow E2E', () => {
         const { mockPlatform, mockProject } = await mockAndSaveBasicSetup()
 
         const webhookPiece = createMockPieceMetadata({
-            name: '@activepieces/piece-webhook',
+            name: '@fema/connector-webhook',
             version: '0.1.29',
             platformId: undefined,
             packageType: PackageType.REGISTRY,
             pieceType: PieceType.OFFICIAL,
         })
         const delayPiece = createMockPieceMetadata({
-            name: '@activepieces/piece-delay',
+            name: '@fema/connector-delay',
             version: '0.3.26',
             platformId: undefined,
             packageType: PackageType.REGISTRY,
@@ -993,7 +993,7 @@ describe('Execute Flow E2E', () => {
             displayName: 'Delay For',
             valid: true,
             settings: {
-                pieceName: '@activepieces/piece-delay',
+                pieceName: '@fema/connector-delay',
                 pieceVersion: '0.3.26',
                 actionName: 'delayFor',
                 input: {
@@ -1037,7 +1037,7 @@ describe('Execute Flow E2E', () => {
                 valid: true,
                 lastUpdatedDate: new Date().toISOString(),
                 settings: {
-                    pieceName: '@activepieces/piece-webhook',
+                    pieceName: '@fema/connector-webhook',
                     pieceVersion: '0.1.29',
                     triggerName: 'catch_webhook',
                     input: { authType: 'none' },

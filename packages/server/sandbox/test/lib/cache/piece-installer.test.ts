@@ -3,9 +3,9 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { PackageType, PieceType } from '@activepieces/shared'
-import type { OfficialPiecePackage, PrivatePiecePackage } from '@activepieces/shared'
-import type { ApLogger } from '@activepieces/server-utils'
+import { PackageType, PieceType } from '@fema/shared'
+import type { OfficialPiecePackage, PrivatePiecePackage } from '@fema/shared'
+import type { ApLogger } from '@fema/server-utils'
 
 // Module-level variable updated per test so the vi.mock factory can reference it
 let testWorkspace = ''
@@ -111,8 +111,8 @@ afterEach(async () => {
 
 describe('pieceInstaller', () => {
     it('batch install succeeds — all pieces marked ready', async () => {
-        const piece1 = makePiece('@activepieces/piece-a')
-        const piece2 = makePiece('@activepieces/piece-b')
+        const piece1 = makePiece('@fema/connector-a')
+        const piece2 = makePiece('@fema/connector-b')
         const installer = pieceInstaller(fakeLog, testWorkspace, fakeGetSettings)
 
         mockInstall.mockResolvedValueOnce({ output: '' })
@@ -125,8 +125,8 @@ describe('pieceInstaller', () => {
     })
 
     it('batch fails with good and bad piece — good piece marked ready, bad piece rolled back', async () => {
-        const good = makePiece('@activepieces/piece-good')
-        const bad = makePiece('@activepieces/piece-bad')
+        const good = makePiece('@fema/connector-good')
+        const bad = makePiece('@fema/connector-bad')
         const installer = pieceInstaller(fakeLog, testWorkspace, fakeGetSettings)
 
         mockInstall
@@ -137,8 +137,8 @@ describe('pieceInstaller', () => {
         const error = await installer.install({ pieces: [good, bad], includeFilters: false, ...bundleSource }).catch(e => e as Error)
 
         expect(error).toBeInstanceOf(Error)
-        expect(error.message).toContain('@activepieces/piece-bad@1.0.0')
-        expect(error.message).not.toContain('@activepieces/piece-good@1.0.0')
+        expect(error.message).toContain('@fema/connector-bad@1.0.0')
+        expect(error.message).not.toContain('@fema/connector-good@1.0.0')
         expect(mockInstall).toHaveBeenCalledTimes(3)
 
         expect(await pathExists(readyFilePath(good))).toBe(true)
@@ -146,8 +146,8 @@ describe('pieceInstaller', () => {
     })
 
     it('batch fails with both pieces bad — both rolled back, error names both', async () => {
-        const piece1 = makePiece('@activepieces/piece-x')
-        const piece2 = makePiece('@activepieces/piece-y')
+        const piece1 = makePiece('@fema/connector-x')
+        const piece2 = makePiece('@fema/connector-y')
         const installer = pieceInstaller(fakeLog, testWorkspace, fakeGetSettings)
 
         mockInstall
@@ -158,8 +158,8 @@ describe('pieceInstaller', () => {
         const error = await installer.install({ pieces: [piece1, piece2], includeFilters: false, ...bundleSource }).catch(e => e as Error)
 
         expect(error).toBeInstanceOf(Error)
-        expect(error.message).toContain('@activepieces/piece-x@1.0.0')
-        expect(error.message).toContain('@activepieces/piece-y@1.0.0')
+        expect(error.message).toContain('@fema/connector-x@1.0.0')
+        expect(error.message).toContain('@fema/connector-y@1.0.0')
         expect(mockInstall).toHaveBeenCalledTimes(3)
 
         expect(await pathExists(pieceDirPath(piece1))).toBe(false)
@@ -167,7 +167,7 @@ describe('pieceInstaller', () => {
     })
 
     it('single piece fails — rolled back immediately, no individual retry', async () => {
-        const piece = makePiece('@activepieces/piece-solo')
+        const piece = makePiece('@fema/connector-solo')
         const installer = pieceInstaller(fakeLog, testWorkspace, fakeGetSettings)
 
         mockInstall.mockRejectedValueOnce(new Error('install failure'))
@@ -179,7 +179,7 @@ describe('pieceInstaller', () => {
     })
 
     it('piece already installed — bun install never called', async () => {
-        const piece = makePiece('@activepieces/piece-cached')
+        const piece = makePiece('@fema/connector-cached')
         const pieceDir = pieceDirPath(piece)
 
         await mkdir(join(pieceDir, 'node_modules'), { recursive: true })
@@ -211,11 +211,11 @@ describe('pieceInstaller', () => {
     })
 
     it('skips pieces whose name is a relative path — they never reach the shared bun workspace', async () => {
-        const good = makePiece('@activepieces/piece-good')
+        const good = makePiece('@fema/connector-good')
         // Stale `usedPieces` data from a since-reverted build can carry a relative path as the
         // pieceName. Writing it as a workspace member corrupts the shared bun.lock and breaks every
         // other piece (and cache pre-warm / deploy), so it must be dropped before any member is built.
-        const poison = makePiece('../../../common/pieces/@activepieces/piece-algolia', '0.0.3')
+        const poison = makePiece('../../../common/pieces/@fema/connector-algolia', '0.0.3')
         const installer = pieceInstaller(fakeLog, testWorkspace, fakeGetSettings)
 
         mockInstall.mockResolvedValueOnce({ output: '' })
@@ -224,13 +224,13 @@ describe('pieceInstaller', () => {
 
         expect(mockInstall).toHaveBeenCalledOnce()
         expect(mockInstall.mock.calls[0]?.[0].filtersPath).toEqual([
-            expect.stringContaining('@activepieces/piece-good-1.0.0'),
+            expect.stringContaining('@fema/connector-good-1.0.0'),
         ])
         expect(await pathExists(readyFilePath(good))).toBe(true)
     })
 
     it('install made up only of invalid-named pieces is a no-op — bun never runs', async () => {
-        const poison = makePiece('../../../common/pieces/@activepieces/piece-algolia', '0.0.3')
+        const poison = makePiece('../../../common/pieces/@fema/connector-algolia', '0.0.3')
         const installer = pieceInstaller(fakeLog, testWorkspace, fakeGetSettings)
 
         await installer.install({ pieces: [poison], includeFilters: true, ...bundleSource })
@@ -239,10 +239,10 @@ describe('pieceInstaller', () => {
     })
 
     it('mixes valid and invalid pieces — only valid ones reach bun, both filters present for valid', async () => {
-        const goodA = makePiece('@activepieces/piece-a')
+        const goodA = makePiece('@fema/connector-a')
         const goodB = makePiece('piece-b-unscoped')
-        const poison1 = makePiece('../../../common/pieces/@activepieces/piece-x', '0.0.3')
-        const poison2 = makePiece('@activepieces/piece-y/extra', '1.2.3')
+        const poison1 = makePiece('../../../common/pieces/@fema/connector-x', '0.0.3')
+        const poison2 = makePiece('@fema/connector-y/extra', '1.2.3')
         const installer = pieceInstaller(fakeLog, testWorkspace, fakeGetSettings)
 
         mockInstall.mockResolvedValueOnce({ output: '' })
@@ -252,15 +252,15 @@ describe('pieceInstaller', () => {
         expect(mockInstall).toHaveBeenCalledOnce()
         const filtersPath = mockInstall.mock.calls[0]?.[0].filtersPath as string[]
         expect(filtersPath).toHaveLength(2)
-        expect(filtersPath.some(f => f.includes('@activepieces/piece-a-1.0.0'))).toBe(true)
+        expect(filtersPath.some(f => f.includes('@fema/connector-a-1.0.0'))).toBe(true)
         expect(filtersPath.some(f => f.includes('piece-b-unscoped-1.0.0'))).toBe(true)
         expect(filtersPath.some(f => f.includes('piece-x'))).toBe(false)
         expect(filtersPath.some(f => f.includes('piece-y'))).toBe(false)
     })
 
     it('individual fallback always passes --filter path regardless of includeFilters', async () => {
-        const piece1 = makePiece('@activepieces/piece-filter-a')
-        const piece2 = makePiece('@activepieces/piece-filter-b')
+        const piece1 = makePiece('@fema/connector-filter-a')
+        const piece2 = makePiece('@fema/connector-filter-b')
         const installer = pieceInstaller(fakeLog, testWorkspace, fakeGetSettings)
 
         mockInstall
@@ -288,11 +288,11 @@ describe('pieceInstaller', () => {
 
 describe('isValidPackageName', () => {
     it.each([
-        '@activepieces/piece-algolia',
-        '@activepieces/piece-add-event',
+        '@fema/connector-algolia',
+        '@fema/connector-add-event',
         '@acme/piece-sample',
         // the `<name>-<version>` workspace-member form is itself a single-slash scoped name
-        '@activepieces/piece-algolia-0.0.3',
+        '@fema/connector-algolia-0.0.3',
         'tslib',
         'piece-b-unscoped',
         'lodash.merge',
@@ -304,15 +304,15 @@ describe('isValidPackageName', () => {
 
     it.each([
         // the production poison: a relative path masquerading as a piece name
-        '../../../common/pieces/@activepieces/piece-algolia',
-        '../../../common/pieces/@activepieces/piece-algolia-0.0.3',
+        '../../../common/pieces/@fema/connector-algolia',
+        '../../../common/pieces/@fema/connector-algolia-0.0.3',
         '..',
         '../foo',
         './foo',
         'foo/..',
-        '@activepieces/..',
+        '@fema/..',
         // more than one path segment (scoped names allow exactly one slash)
-        '@activepieces/piece-y/extra',
+        '@fema/connector-y/extra',
         'a/b/c',
         'foo/bar',
         // malformed scopes

@@ -1,4 +1,4 @@
-import { PlatformWithoutSensitiveData } from '@activepieces/shared';
+import { PlatformWithoutSensitiveData } from '@fema/shared';
 import {
   QueryClient,
   useMutation,

@@ -1,5 +1,5 @@
-import type { ActionClassification } from '@activepieces/pieces-framework';
-import { FlowActionType, FlowTriggerType } from '@activepieces/shared';
+import type { ActionClassification } from '@fema/connector-sdk';
+import { FlowActionType, FlowTriggerType } from '@fema/shared';
 import { t } from 'i18next';
 
 import { CardListItem } from '@/components/custom/card-list';

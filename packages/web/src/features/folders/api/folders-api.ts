@@ -4,7 +4,7 @@ import {
   FolderDto,
   ListFolderRequest,
   UpdateFolderRequest,
-} from '@activepieces/shared';
+} from '@fema/shared';
 
 import { api } from '@/lib/api';
 import { authenticationSession } from '@/lib/authentication-session';

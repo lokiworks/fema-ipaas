@@ -1,8 +1,8 @@
 import { slackAuth } from '../auth';
-import { createAction, Property } from '@activepieces/pieces-framework';
+import { createAction, Property } from '@fema/connector-sdk';
 import { WebClient } from '@slack/web-api';
 import * as z from 'zod/mini'
-import { propsValidation } from '@activepieces/pieces-common';
+import { propsValidation } from '@fema/connector-common';
 import { requireUserToken, SlackAuthValue } from '../common/auth-helpers';
 import { updateProfileActionOutputSchema } from '../output-schemas';
 

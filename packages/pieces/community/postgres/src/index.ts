@@ -2,8 +2,8 @@ import {
   PieceAuth,
   Property,
   createPiece,
-} from '@activepieces/pieces-framework';
-import { AppConnectionType, PieceCategory } from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
+import { AppConnectionType, PieceCategory } from '@fema/connector-sdk';
 import { runQuery } from './lib/actions/run-query';
 import { findRows } from './lib/actions/find-rows';
 import { insertRow } from './lib/actions/insert-row';

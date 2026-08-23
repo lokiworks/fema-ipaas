@@ -1,4 +1,4 @@
-import { ExecutionError, ExecutionErrorType } from '@activepieces/shared'
+import { ExecutionError, ExecutionErrorType } from '@fema/shared'
 import { pieceProtocol } from '../../../src/lib/core/piece/piece-protocol'
 
 describe('piece protocol', () => {

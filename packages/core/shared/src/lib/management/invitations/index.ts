@@ -1,4 +1,4 @@
-import { BaseModelSchema, Nullable, NullableEnum, ProjectRole } from '@activepieces/core-utils'
+import { BaseModelSchema, Nullable, NullableEnum, ProjectRole } from '@fema/core-utils'
 import { z } from 'zod'
 import { PlatformRole } from '../../core/user/index'
 

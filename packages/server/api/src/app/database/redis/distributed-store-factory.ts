@@ -1,4 +1,4 @@
-import { isNil } from '@activepieces/core-utils'
+import { isNil } from '@fema/core-utils'
 import Redis from 'ioredis'
 
 export const distributedStoreFactory = (getRedisClient: () => Promise<Redis>) => ({

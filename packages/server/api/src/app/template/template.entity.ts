@@ -1,4 +1,4 @@
-import { Platform, Template } from '@activepieces/shared'
+import { Platform, Template } from '@fema/shared'
 import { EntitySchema } from 'typeorm'
 import {
     BaseColumnSchemaPart,

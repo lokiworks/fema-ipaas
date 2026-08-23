@@ -1,5 +1,5 @@
-import { Permission } from '@activepieces/core-utils';
-import { PlatformRole } from '@activepieces/shared';
+import { Permission } from '@fema/core-utils';
+import { PlatformRole } from '@fema/shared';
 
 import { userHooks } from '@/hooks/user-hooks';
 

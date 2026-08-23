@@ -1,7 +1,7 @@
 /// <reference types="vitest/globals" />
 
 import { findAll } from '../src/lib/actions/find-all';
-import { createMockActionContext } from '@activepieces/pieces-framework';
+import { createMockActionContext } from '@fema/connector-sdk';
 
 describe('findAll action', () => {
   test('returns all plain text occurrences', async () => {

@@ -1,4 +1,4 @@
-import { isNil } from '@activepieces/core-utils'
+import { isNil } from '@fema/core-utils'
 
 import { initCodeSandbox } from '../core/code/code-sandbox'
 import { createSharedScriptSession, SharedScriptSession } from '../core/code/shared-script-session'

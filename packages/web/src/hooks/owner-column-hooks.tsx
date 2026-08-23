@@ -1,8 +1,5 @@
-import { validateIndexBound } from '@activepieces/core-utils';
-import {
-  AppConnectionOwners,
-  UserWithMetaInformation,
-} from '@activepieces/shared';
+import { validateIndexBound } from '@fema/core-utils';
+import { AppConnectionOwners, UserWithMetaInformation } from '@fema/shared';
 import { ColumnDef } from '@tanstack/react-table';
 import { t } from 'i18next';
 import { User } from 'lucide-react';

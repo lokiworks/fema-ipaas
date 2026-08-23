@@ -41,12 +41,12 @@ Primary entry point for inbound HTTP → flow execution. 5 public routes: sync/a
 - Handshake verification (HEADER/QUERY/BODY_PARAM/HEAD_REQUEST) runs BEFORE the disabled-flow guard. Version resolution = `LOCKED_FALL_BACK_TO_LATEST`. Payload cap `AP_MAX_WEBHOOK_PAYLOAD_SIZE_MB` (5MB → 413).
 
 ### Human Input (Forms & Chat)
-Public read-only endpoints returning UI metadata for flows whose trigger is `@activepieces/piece-forms`. Triggers: `form_submission`, `file_submission`, `chat_submission`.
+Public read-only endpoints returning UI metadata for flows whose trigger is `@fema/connector-forms`. Triggers: `form_submission`, `file_submission`, `chat_submission`.
 - `GET /v1/human-input/form/:flowId` and `/chat/:flowId` — return title, input schema, platform branding (white-labeled). `useDraft=true` loads the draft version.
 - Gotcha: these endpoints only return the UI definition; the actual submission goes through the WEBHOOK endpoint. Unpublished flows 404 unless `useDraft=true`.
 
 ### Subflows
-A **Subflow** is a flow invoked by another flow rather than by its own external trigger — reached by a webhook POST to `/v1/webhooks/:flowId`, never a dedicated transport. Vocabulary from `@activepieces/piece-subflows`:
+A **Subflow** is a flow invoked by another flow rather than by its own external trigger — reached by a webhook POST to `/v1/webhooks/:flowId`, never a dedicated transport. Vocabulary from `@fema/connector-subflows`:
 - **Callable Flow** — the trigger that makes a flow callable; carries the parent's `data` payload and an optional `callbackUrl`. *Avoid:* child flow, nested flow, sub-workflow.
 - **Call Flow** — the action that invokes one subflow once, optionally waiting on a waitpoint for its `Respond` callback.
 - **Subflow fan-out** — many calls dispatched from one parent step (e.g. one per CSV batch), fire-and-forget, no waiting per call. *Avoid:* scatter, broadcast.

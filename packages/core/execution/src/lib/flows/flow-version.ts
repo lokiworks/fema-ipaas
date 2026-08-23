@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { BaseModelSchema, Nullable } from '@activepieces/core-utils'
-import { UserWithMetaInformation } from '@activepieces/core-piece-types'
+import { BaseModelSchema, Nullable } from '@fema/core-utils'
+import { UserWithMetaInformation } from '@fema/connector-types'
 import { Note } from './note'
 import { FlowTrigger } from './triggers/trigger'
 

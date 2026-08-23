@@ -1,5 +1,5 @@
-import { createPiece, PieceAuth } from '@activepieces/pieces-framework';
-import { PieceCategory } from '@activepieces/pieces-framework';
+import { createPiece, PieceAuth } from '@fema/connector-sdk';
+import { PieceCategory } from '@fema/connector-sdk';
 import { readFileAction } from './lib/actions/read-file';
 import { createFile } from './lib/actions/create-file';
 import { changeFileEncoding } from './lib/actions/change-file-encoding';

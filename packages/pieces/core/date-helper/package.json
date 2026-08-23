@@ -1,5 +1,5 @@
 {
-  "name": "@activepieces/piece-date-helper",
+  "name": "@fema/connector-date-helper",
   "version": "0.1.34",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -14,11 +14,11 @@
     "tslib": "2.6.2"
   },
   "dependencies": {
-    "@activepieces/pieces-common": "workspace:*",
-    "@activepieces/pieces-framework": "workspace:*",
+    "@fema/connector-common": "workspace:*",
+    "@fema/connector-sdk": "workspace:*",
     "dayjs": "1.11.9",
     "zod": "4.3.6",
-    "@activepieces/core-piece-types": "workspace:*",
-    "@activepieces/core-utils": "workspace:*"
+    "@fema/connector-types": "workspace:*",
+    "@fema/core-utils": "workspace:*"
   }
 }

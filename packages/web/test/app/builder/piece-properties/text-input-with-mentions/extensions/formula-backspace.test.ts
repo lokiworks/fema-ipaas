@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { formulaEvaluator } from '@activepieces/core-formula';
+import { formulaEvaluator } from '@fema/expression';
 import { Editor } from '@tiptap/core';
 import { Document } from '@tiptap/extension-document';
 import { Mention } from '@tiptap/extension-mention';

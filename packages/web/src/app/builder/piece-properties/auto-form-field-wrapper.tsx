@@ -2,12 +2,8 @@ import {
   PieceAuthProperty,
   PieceProperty,
   PropertyType,
-} from '@activepieces/pieces-framework';
-import {
-  FlowAction,
-  FlowTrigger,
-  PropertyExecutionType,
-} from '@activepieces/shared';
+} from '@fema/connector-sdk';
+import { FlowAction, FlowTrigger, PropertyExecutionType } from '@fema/shared';
 import { t } from 'i18next';
 import { Calendar, File } from 'lucide-react';
 import React from 'react';

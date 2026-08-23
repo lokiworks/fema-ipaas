@@ -1,7 +1,7 @@
 import { Readable } from 'node:stream'
 import { promisify } from 'node:util'
 import { zstdDecompress as zstdDecompressCallback } from 'node:zlib'
-import { EngineFileNotFoundError, EngineGenericError, FileCompression, FileType, isZstdCompressed } from '@activepieces/shared'
+import { EngineFileNotFoundError, EngineGenericError, FileCompression, FileType, isZstdCompressed } from '@fema/shared'
 import { retryFetch } from './retry-fetch'
 
 const zstdDecompress = promisify(zstdDecompressCallback)

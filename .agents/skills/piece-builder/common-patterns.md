@@ -2,10 +2,10 @@
 
 ## HTTP Client
 
-Always use `httpClient` from `@activepieces/pieces-common`:
+Always use `httpClient` from `@fema/connector-common`:
 
 ```typescript
-import { httpClient, HttpMethod, AuthenticationType } from '@activepieces/pieces-common';
+import { httpClient, HttpMethod, AuthenticationType } from '@fema/connector-common';
 ```
 
 ### GET with Bearer Token
@@ -77,8 +77,8 @@ import {
   AuthenticationType,
   HttpMessageBody,
   HttpResponse,
-} from '@activepieces/pieces-common';
-import { Property } from '@activepieces/pieces-framework';
+} from '@fema/connector-common';
+import { Property } from '@fema/connector-sdk';
 import { myAppAuth } from '../auth';
 
 const BASE_URL = 'https://api.example.com/v1';
@@ -215,7 +215,7 @@ export async function myAppPaginatedApiCall<T>({
 Always add this to give power users a generic HTTP action:
 
 ```typescript
-import { createCustomApiCallAction } from '@activepieces/pieces-common';
+import { createCustomApiCallAction } from '@fema/connector-common';
 
 // In createPiece actions array:
 createCustomApiCallAction({

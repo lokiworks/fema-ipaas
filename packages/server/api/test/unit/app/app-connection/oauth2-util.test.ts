@@ -1,4 +1,4 @@
-import { OAuth2GrantType } from '@activepieces/shared'
+import { OAuth2GrantType } from '@fema/shared'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { oauth2Util } from '../../../../src/app/app-connection/app-connection-service/oauth2/oauth2-util'
 

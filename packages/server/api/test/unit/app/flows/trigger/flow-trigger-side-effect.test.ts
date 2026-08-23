@@ -1,6 +1,6 @@
-import { ActivepiecesError, ErrorCode } from '@activepieces/core-utils'
-import { TriggerStrategy } from '@activepieces/pieces-framework'
-import { ApEnvironment, EngineResponseStatus, TriggerSourceScheduleType } from '@activepieces/shared'
+import { ActivepiecesError, ErrorCode } from '@fema/core-utils'
+import { TriggerStrategy } from '@fema/connector-sdk'
+import { ApEnvironment, EngineResponseStatus, TriggerSourceScheduleType } from '@fema/shared'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mockSubmitAndWaitForResponse = vi.fn()
@@ -61,7 +61,7 @@ const mockLog = {
 const BASE_PARAMS = {
     flowId: 'flow-1',
     flowVersionId: 'fv-1',
-    pieceName: '@activepieces/piece-test',
+    pieceName: '@fema/connector-test',
     projectId: 'proj-1',
     simulate: false,
 }

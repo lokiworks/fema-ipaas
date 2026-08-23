@@ -1,4 +1,4 @@
-import { OutputSchema } from '@activepieces/pieces-framework';
+import { OutputSchema } from '@fema/connector-sdk';
 
 const channelFields: OutputSchema['fields'] = [
   { key: 'id', label: 'Channel ID' },

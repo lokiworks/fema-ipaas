@@ -1,7 +1,7 @@
 import { Readable } from 'node:stream'
-import { apId } from '@activepieces/core-utils'
-import { FilesService } from '@activepieces/pieces-framework'
-import { FileSizeError, FileType } from '@activepieces/shared'
+import { FilesService } from '@fema/connector-sdk'
+import { apId } from '@fema/core-utils'
+import { FileSizeError, FileType } from '@fema/shared'
 import { engineFileApi } from '../api/engine-file-api'
 
 export function createFileUploader({ engineToken, apiUrl }: CreateFileUploaderParams): FilesService {

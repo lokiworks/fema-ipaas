@@ -1,4 +1,4 @@
-import { Property } from '@activepieces/pieces-framework';
+import { Property } from '@fema/connector-sdk';
 import { describe, expect, it } from 'vitest';
 
 import { formUtils } from '@/features/pieces/utils/form-utils';

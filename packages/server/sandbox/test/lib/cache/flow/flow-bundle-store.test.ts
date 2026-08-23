@@ -2,9 +2,9 @@ import { rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { randomUUID } from 'node:crypto'
-import { isNil } from '@activepieces/core-utils'
-import { type ApLogger } from '@activepieces/server-utils'
-import { FlowActionType, FlowTriggerType, FlowVersion, FlowVersionState, LATEST_FLOW_SCHEMA_VERSION, PackageType, PieceType, WorkerToApiContract } from '@activepieces/shared'
+import { isNil } from '@fema/core-utils'
+import { type ApLogger } from '@fema/server-utils'
+import { FlowActionType, FlowTriggerType, FlowVersion, FlowVersionState, LATEST_FLOW_SCHEMA_VERSION, PackageType, PieceType, WorkerToApiContract } from '@fema/shared'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cacheUtils } from '../../../../src/lib/cache/cache-paths'
 import { codeCache } from '../../../../src/lib/cache/flow/code/code-cache'
@@ -58,7 +58,7 @@ function buildFlowVersion(overrides: Partial<FlowVersion> = {}): FlowVersion {
     } as unknown as FlowVersion
 }
 
-const piece = { packageType: PackageType.REGISTRY, pieceType: PieceType.OFFICIAL, pieceName: '@activepieces/piece-http', pieceVersion: '1.0.0' }
+const piece = { packageType: PackageType.REGISTRY, pieceType: PieceType.OFFICIAL, pieceName: '@fema/connector-http', pieceVersion: '1.0.0' }
 
 function inMemoryApiClient(): { apiClient: WorkerToApiContract, getFlowBundle: ReturnType<typeof vi.fn> } {
     let stored: Buffer | null = null

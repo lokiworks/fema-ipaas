@@ -1,5 +1,5 @@
-import { PieceAuth, createPiece } from '@activepieces/pieces-framework';
-import { PieceCategory } from '@activepieces/pieces-framework';
+import { PieceAuth, createPiece } from '@fema/connector-sdk';
+import { PieceCategory } from '@fema/connector-sdk';
 import { concat } from './lib/actions/concat';
 import { find } from './lib/actions/find';
 import { findAll } from './lib/actions/find-all';

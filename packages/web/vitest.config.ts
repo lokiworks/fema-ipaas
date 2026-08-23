@@ -10,27 +10,27 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      '@activepieces/shared': path.resolve(
+      '@fema/shared': path.resolve(
         __dirname,
         '../../packages/core/shared/src',
       ),
-      '@activepieces/pieces-framework': path.resolve(
+      '@fema/connector-sdk': path.resolve(
         __dirname,
         '../../packages/pieces/framework/src',
       ),
-      '@activepieces/core-utils': path.resolve(
+      '@fema/core-utils': path.resolve(
         __dirname,
         '../../packages/core/utils/src',
       ),
-      '@activepieces/core-formula': path.resolve(
+      '@fema/expression': path.resolve(
         __dirname,
         '../../packages/core/formula/src',
       ),
-      '@activepieces/core-piece-types': path.resolve(
+      '@fema/connector-types': path.resolve(
         __dirname,
         '../../packages/core/piece-types/src',
       ),
-      '@activepieces/core-execution': path.resolve(
+      '@fema/workflow-core': path.resolve(
         __dirname,
         '../../packages/core/execution/src',
       ),

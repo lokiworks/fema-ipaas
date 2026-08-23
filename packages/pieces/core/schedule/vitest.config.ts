@@ -10,7 +10,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@activepieces/pieces-framework': path.resolve(repoRoot, 'packages/pieces/framework/src/index.ts'),
+      '@fema/connector-sdk': path.resolve(repoRoot, 'packages/pieces/framework/src/index.ts'),
     },
   },
 })

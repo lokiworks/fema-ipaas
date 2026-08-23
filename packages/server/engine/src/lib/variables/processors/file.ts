@@ -1,6 +1,6 @@
 import { Readable } from 'node:stream'
-import { isBase64, isNil, isString } from '@activepieces/core-utils'
-import { ApFile, ApStreamingFile, PropertyType } from '@activepieces/pieces-framework'
+import { ApFile, ApStreamingFile, PropertyType } from '@fema/connector-sdk'
+import { isBase64, isNil, isString } from '@fema/core-utils'
 import { ProcessorFn } from './types'
 
 export const fileProcessor: ProcessorFn = async (property, urlOrBase64) => {

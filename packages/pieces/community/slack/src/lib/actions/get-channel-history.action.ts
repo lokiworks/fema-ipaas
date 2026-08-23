@@ -1,5 +1,5 @@
 import { ConversationsHistoryResponse, WebClient } from '@slack/web-api';
-import { createAction, Property } from '@activepieces/pieces-framework';
+import { createAction, Property } from '@fema/connector-sdk';
 import { slackAuth } from '../auth';
 import { getBotToken, SlackAuthValue } from '../common/auth-helpers';
 import { channelHistoryActionOutputSchema } from '../output-schemas';

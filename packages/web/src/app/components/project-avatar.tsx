@@ -1,8 +1,4 @@
-import {
-  ColorName,
-  PROJECT_COLOR_PALETTE,
-  ProjectType,
-} from '@activepieces/shared';
+import { ColorName, PROJECT_COLOR_PALETTE, ProjectType } from '@fema/shared';
 
 import { Avatar } from '@/components/ui/avatar';
 

@@ -1,5 +1,5 @@
-import { PieceAuth, createPiece } from '@activepieces/pieces-framework';
-import { PieceCategory } from '@activepieces/pieces-framework';
+import { PieceAuth, createPiece } from '@fema/connector-sdk';
+import { PieceCategory } from '@fema/connector-sdk';
 import { createApprovalLink } from './lib/actions/create-approval-link';
 import { waitForApprovalLink } from './lib/actions/wait-for-approval';
 

@@ -2,7 +2,7 @@ import {
   Property,
   TriggerStrategy,
   createTrigger,
-} from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
 
 export const everyXMinutesTrigger = createTrigger({
   name: 'every_x_minutes',

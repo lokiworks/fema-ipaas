@@ -1,10 +1,10 @@
-import { ApErrorParams, ErrorCode } from '@activepieces/core-utils';
+import { ApErrorParams, ErrorCode } from '@fema/core-utils';
 import {
   AddPieceRequestBody,
   ApFlagId,
   PackageType,
   PieceScope,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { HttpStatusCode } from 'axios';
@@ -254,7 +254,7 @@ const InstallPieceDialog = ({
                         value={field.value || ''}
                         id="pieceName"
                         type="text"
-                        placeholder="@activepieces/piece-name"
+                        placeholder="@fema/connector-name"
                         className="rounded-sm"
                       />
                       <FormMessage />

@@ -1,10 +1,10 @@
-import { apId } from '@activepieces/core-utils';
+import { apId } from '@fema/core-utils';
 import {
   AddNoteRequest,
   FlowOperationType,
   NoteColorVariant,
   Note,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import { StoreApi } from 'zustand';
 
 import { authenticationSession } from '@/lib/authentication-session';

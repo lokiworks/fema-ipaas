@@ -1,4 +1,4 @@
-import { JobData, WorkerJobType } from '@activepieces/shared'
+import { JobData, WorkerJobType } from '@fema/shared'
 import { executeActionJob } from './jobs/execute-action'
 import { executeFlowJob } from './jobs/execute-flow'
 import { executePollingJob } from './jobs/execute-polling'

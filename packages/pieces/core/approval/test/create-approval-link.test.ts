@@ -1,6 +1,6 @@
 /// <reference types="vitest/globals" />
 
-import { createMockActionContext } from '@activepieces/pieces-framework';
+import { createMockActionContext } from '@fema/connector-sdk';
 import { createApprovalLink } from '../src/lib/actions/create-approval-link';
 
 const RESUME_URL =

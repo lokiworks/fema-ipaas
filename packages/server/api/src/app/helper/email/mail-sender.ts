@@ -1,6 +1,6 @@
 import fs from 'fs/promises'
 import path from 'path'
-import { isNil, tryCatch } from '@activepieces/core-utils'
+import { isNil, tryCatch } from '@fema/core-utils'
 import { FastifyBaseLogger } from 'fastify'
 import Mustache from 'mustache'
 import nodemailer from 'nodemailer'

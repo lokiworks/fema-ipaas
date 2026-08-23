@@ -1,6 +1,6 @@
 import { Transform } from 'node:stream'
-import { ActivepiecesError, ErrorCode } from '@activepieces/core-utils'
-import { FileReadToken, FileType } from '@activepieces/shared'
+import { ActivepiecesError, ErrorCode } from '@fema/core-utils'
+import { FileReadToken, FileType } from '@fema/shared'
 import dayjs from 'dayjs'
 import { domainHelper } from '../helper/domain-helper'
 import { JwtAudience, JwtSignAlgorithm, jwtUtils } from '../helper/jwt-utils'

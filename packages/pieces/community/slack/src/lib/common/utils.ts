@@ -1,4 +1,4 @@
-import { ApFile } from '@activepieces/pieces-framework';
+import { ApFile } from '@fema/connector-sdk';
 import { Block, KnownBlock, WebClient } from '@slack/web-api';
 
 const SLACK_SECTION_TEXT_MAX_LENGTH = 3000;

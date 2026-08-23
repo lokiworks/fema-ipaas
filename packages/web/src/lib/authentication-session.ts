@@ -1,9 +1,5 @@
-import { isNil } from '@activepieces/core-utils';
-import {
-  AuthenticationResponse,
-  Principal,
-  PrincipalType,
-} from '@activepieces/shared';
+import { isNil } from '@fema/core-utils';
+import { AuthenticationResponse, Principal, PrincipalType } from '@fema/shared';
 import dayjs from 'dayjs';
 import { jwtDecode } from 'jwt-decode';
 

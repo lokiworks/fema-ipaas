@@ -1,4 +1,4 @@
-import { ExecutionType, TriggerStrategy } from '@activepieces/core-piece-types';
+import { ExecutionType, TriggerStrategy } from '@fema/connector-types';
 import {
   ActionContext,
   SetScheduleRequest,

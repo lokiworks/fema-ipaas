@@ -1,7 +1,7 @@
 
-    import { createPiece, PieceAuth } from "@activepieces/pieces-framework";
+    import { createPiece, PieceAuth } from "@fema/connector-sdk";
 import { manualTrigger } from "./lib/triggers/manual-trigger";
-import { PieceCategory } from "@activepieces/pieces-framework";
+import { PieceCategory } from "@fema/connector-sdk";
 
 export const manualTriggerPiece = createPiece({
       displayName: "Manual Trigger",

@@ -7,7 +7,7 @@ icon: 🪪
 Lets platform owners register their own OAuth 2.0 app credentials (client ID + secret) per piece. When a platform has a custom OAuth app for a piece, the connection dialog uses those credentials instead of Activepieces' shared ones — giving vendors control over consent screens, rate limits, and branding. No plan flag gate.
 
 ### Entity
-`oauth_app`: id, pieceName (e.g. `@activepieces/piece-google-sheets`), platformId (FK, CASCADE), clientId, clientSecret (jsonb, encrypted `EncryptedObject`). Unique index on `(platformId, pieceName)` — one credential set per piece per platform.
+`oauth_app`: id, pieceName (e.g. `@fema/connector-google-sheets`), platformId (FK, CASCADE), clientId, clientSecret (jsonb, encrypted `EncryptedObject`). Unique index on `(platformId, pieceName)` — one credential set per piece per platform.
 
 ### How it works
 - Endpoints under `/v1/oauth-apps`: `GET` (list, `publicPlatform` — any platform member), `POST` (upsert, platform admin), `DELETE /:id` (platform admin).

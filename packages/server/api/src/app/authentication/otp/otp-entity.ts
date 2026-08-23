@@ -1,4 +1,4 @@
-import { OtpModel, OtpState, OtpType, UserIdentity } from '@activepieces/shared'
+import { OtpModel, OtpState, OtpType, UserIdentity } from '@fema/shared'
 import { EntitySchema } from 'typeorm'
 import {
     ApIdSchema,

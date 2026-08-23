@@ -1,4 +1,4 @@
-import { FlowTriggerType, FlowVersion, PropertyExecutionType } from '@activepieces/shared'
+import { FlowTriggerType, FlowVersion, PropertyExecutionType } from '@fema/shared'
 import { describe, expect, it } from 'vitest'
 import { flowPublishUtils } from '../../../../../src/app/flows/flow/flow-publish-utils'
 
@@ -6,7 +6,7 @@ function pieceTrigger(overrides: { pieceName?: string, triggerName?: string, inp
     return {
         type: FlowTriggerType.PIECE,
         settings: {
-            pieceName: overrides.pieceName ?? '@activepieces/piece-jira-cloud',
+            pieceName: overrides.pieceName ?? '@fema/connector-jira-cloud',
             pieceVersion: '0.4.1',
             triggerName: overrides.triggerName ?? 'new_issue',
             input: overrides.input ?? { projectId: 'AP', maxResults: 50 },
@@ -54,8 +54,8 @@ describe('flowPublishUtils.isSameTrigger', () => {
 
     it('is false when the piece was swapped', () => {
         expect(flowPublishUtils.isSameTrigger({
-            published: pieceTrigger({ pieceName: '@activepieces/piece-jira-cloud' }),
-            toPublish: pieceTrigger({ pieceName: '@activepieces/piece-linear' }),
+            published: pieceTrigger({ pieceName: '@fema/connector-jira-cloud' }),
+            toPublish: pieceTrigger({ pieceName: '@fema/connector-linear' }),
         })).toBe(false)
     })
 

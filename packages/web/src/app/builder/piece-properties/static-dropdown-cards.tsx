@@ -1,4 +1,4 @@
-import { DropdownOption } from '@activepieces/pieces-framework';
+import { DropdownOption } from '@fema/connector-sdk';
 import React from 'react';
 
 import { cn } from '@/lib/utils';

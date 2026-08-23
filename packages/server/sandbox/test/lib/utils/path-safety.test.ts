@@ -1,4 +1,4 @@
-import { ActivepiecesError, apId, ErrorCode } from '@activepieces/core-utils'
+import { ActivepiecesError, apId, ErrorCode } from '@fema/core-utils'
 import { describe, expect, it } from 'vitest'
 import { ACTION_RUN_CODE_DIR } from '../../../src/lib/cache/cache-paths'
 import { assertSafeCodeNamespace, assertSafePathSegment } from '../../../src/lib/utils/path-safety'

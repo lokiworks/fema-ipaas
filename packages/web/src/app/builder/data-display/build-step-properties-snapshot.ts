@@ -1,5 +1,5 @@
-import { isNil } from '@activepieces/core-utils';
-import { PieceMetadataModel } from '@activepieces/pieces-framework';
+import { PieceMetadataModel } from '@fema/connector-sdk';
+import { isNil } from '@fema/core-utils';
 
 import { StepPropertySnapshot } from './explanation-prompt';
 

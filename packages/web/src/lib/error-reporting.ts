@@ -1,5 +1,5 @@
-import { isNil } from '@activepieces/core-utils';
-import { ApFlagId } from '@activepieces/shared';
+import { isNil } from '@fema/core-utils';
+import { ApFlagId } from '@fema/shared';
 
 import { FlagsMap } from '@/api/flags-api';
 import { queryClient } from '@/app/query-client';

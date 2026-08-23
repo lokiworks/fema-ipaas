@@ -10,13 +10,13 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "@activepieces/core-utils": [
+      "@fema/core-utils": [
         "packages/core/utils/dist/src/index.d.ts"
       ],
-      "@activepieces/core-formula": [
+      "@fema/expression": [
         "packages/core/formula/dist/src/index.d.ts"
       ],
-      "@activepieces/core-execution": [
+      "@fema/workflow-core": [
         "packages/core/execution/dist/src/index.d.ts"
       ]
     }

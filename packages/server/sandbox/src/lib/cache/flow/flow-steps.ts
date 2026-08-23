@@ -1,4 +1,4 @@
-import { FlowActionType, flowStructureUtil, FlowTriggerType, FlowVersion, Step } from '@activepieces/shared'
+import { FlowActionType, flowStructureUtil, FlowTriggerType, FlowVersion, Step } from '@fema/shared'
 
 export const flowSteps = {
     code: (flowVersion: FlowVersion): Step[] =>

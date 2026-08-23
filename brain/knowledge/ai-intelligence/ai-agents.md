@@ -4,11 +4,11 @@ icon: 🤖
 
 # AI Agents
 
-A flow step type (backed by `@activepieces/piece-agent`) that runs an LLM-driven autonomous loop. Given a prompt, tools, an AI provider/model, and optional structured-output fields, it runs a ReAct-style loop (up to `maxSteps`) where the model can call any configured tool before producing a final answer.
+A flow step type (backed by `@fema/connector-agent`) that runs an LLM-driven autonomous loop. Given a prompt, tools, an AI provider/model, and optional structured-output fields, it runs a ReAct-style loop (up to `maxSteps`) where the model can call any configured tool before producing a final answer.
 
 ### How it works
 
-- No backend entity of its own — the whole configuration lives inside the flow version's step settings. The step is a `PIECE` action on `@activepieces/piece-agent`; `settings.input` holds `agentTools`, `structuredOutput`, `prompt`, `maxSteps`, `aiProviderModel` (`{ provider, model }`), and optional `webSearch`.
+- No backend entity of its own — the whole configuration lives inside the flow version's step settings. The step is a `PIECE` action on `@fema/connector-agent`; `settings.input` holds `agentTools`, `structuredOutput`, `prompt`, `maxSteps`, `aiProviderModel` (`{ provider, model }`), and optional `webSearch`.
 - Configured entirely in the Flow Builder (`web/src/app/builder/step-settings/agent-settings/`); a test panel runs a single agent step. `AgentTimeline` renders `AgentStepBlock[]` from the output as markdown blocks + expandable tool-call cards.
 
 ### Tool types (AgentTool discriminated union)
@@ -32,7 +32,7 @@ A flow step type (backed by `@activepieces/piece-agent`) that runs an LLM-driven
 - **Whatever enqueues an agent run must pre-check the same thing the worker resolves.** The chat route asked "is any provider enabled for chat" while the worker looked up the run's *pinned* provider, and the flow-step route checked nothing at all — so a run enqueued fine and could only fail. Both now call `agentHelpers.assertRunProviderConfigured`, which mirrors the worker's lookup. A pre-check that answers a *different* question than the worker is worse than none: it makes the failure look impossible.
 - **Everything the agent job does before its try/catch has no recovery.** `getAgentConfig` used to run outside it, so a config failure sent no error to the chat client and never called `releaseFlowStep` — the flow run sat PAUSED until `AP_PAUSED_FLOW_TIMEOUT_DAYS`. Anything added above that block needs its own failure path, or a paused run leaks.
 - **Build the unattended tool set as an allow-list.** Removing chat tools by name failed three times running — display tools, then build-plan and phase tools, then `ap_discover_action_auth` and `ap_load_guide`, which live with the local tools and so survived a filter written by tool group. Grouping tracks where a tool was constructed, not whether it assumes someone is reading. A flow step gets exactly what it is listed: its configured piece actions, the public-web readers, and the structured-output tool. Anything added to chat later stays out by default.
-- A separate zod-free `agent-primitives.ts` holding those values was tried and **folded back** — don't re-create it. It bought no isolation: `core-execution` imports the `@activepieces/core-piece-types` **barrel**, which re-exports `agents.ts`, so `zod/mini` comes along whatever the values live in.
+- A separate zod-free `agent-primitives.ts` holding those values was tried and **folded back** — don't re-create it. It bought no isolation: `core-execution` imports the `@fema/connector-types` **barrel**, which re-exports `agents.ts`, so `zod/mini` comes along whatever the values live in.
 - Only the zod *schemas* stay duplicated — the `zod` vs `zod/mini` split is a real bundle-size decision, and a schema drift breaks loudly where a function drift did not.
 - **In `agents.ts` the enums must stay above the schemas that use them.** A TS enum compiles to a hoisted `var` plus a deferred IIFE, so a schema evaluating `z.literal(AgentToolType.PIECE)` at module load before the enum block has run reads `undefined`. `tsc` catches it (`TS2450: Enum used before its declaration`), but only if you build — it is easy to introduce while reordering the file to satisfy the "exported types and constants at the end" convention.
 

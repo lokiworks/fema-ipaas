@@ -1,4 +1,4 @@
-import { ExecutionToolStatus } from './agents'
+import { ExecutionToolStatus } from './tool-execution'
 
 export type ExecuteToolResponse = {
     status: ExecutionToolStatus

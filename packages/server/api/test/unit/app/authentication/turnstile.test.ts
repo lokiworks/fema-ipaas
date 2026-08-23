@@ -1,4 +1,4 @@
-import { safeHttp } from '@activepieces/server-utils'
+import { safeHttp } from '@fema/server-utils'
 import { AxiosError, AxiosHeaders } from 'axios'
 import { FastifyBaseLogger } from 'fastify'
 import { turnstile } from '../../../../src/app/authentication/lib/turnstile'

@@ -1,5 +1,5 @@
-import { ApId, Permission, SeekPage } from '@activepieces/core-utils'
-import { AppConnectionOwners, ApplicationEventName, ListVariablesRequestQuery, PrincipalType, RevealVariableResponse, SERVICE_KEY_SECURITY_OPENAPI, UpdateVariableRequestBody, UpsertVariableRequestBody, VariableWithoutSensitiveData } from '@activepieces/shared'
+import { ApId, Permission, SeekPage } from '@fema/core-utils'
+import { AppConnectionOwners, ApplicationEventName, ListVariablesRequestQuery, PrincipalType, RevealVariableResponse, SERVICE_KEY_SECURITY_OPENAPI, UpdateVariableRequestBody, UpsertVariableRequestBody, VariableWithoutSensitiveData } from '@fema/shared'
 import { FastifyPluginCallbackZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'

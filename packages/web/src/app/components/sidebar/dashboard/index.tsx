@@ -1,11 +1,11 @@
-import { Permission, isNil } from '@activepieces/core-utils';
+import { Permission, isNil } from '@fema/core-utils';
 import {
   ApFlagId,
   PROJECT_COLOR_PALETTE,
   PlatformRole,
   ProjectType,
   TemplateTelemetryEventType,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import { t } from 'i18next';
 import { Search } from 'lucide-react';
 import { useState, useMemo, useEffect, useCallback } from 'react';

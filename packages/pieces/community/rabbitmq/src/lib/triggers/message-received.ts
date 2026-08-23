@@ -4,8 +4,8 @@ import {
   PiecePropValueSchema,
   Property,
   AppConnectionValueForAuthProperty,
-} from '@activepieces/pieces-framework';
-import { DedupeStrategy, Polling, pollingHelper } from '@activepieces/pieces-common';
+} from '@fema/connector-sdk';
+import { DedupeStrategy, Polling, pollingHelper } from '@fema/connector-common';
 import { rabbitmqAuth } from '../auth';
 import { rabbitmqConnect } from '../common';
 import dayjs from 'dayjs';

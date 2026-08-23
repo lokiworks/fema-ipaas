@@ -2,4 +2,4 @@
 
 ## Building
 
-Run `turbo run build --filter=@activepieces/engine` to build the library.
+Run `turbo run build --filter=@fema/engine` to build the library.

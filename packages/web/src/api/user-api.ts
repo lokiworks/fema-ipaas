@@ -1,7 +1,4 @@
-import {
-  UpdateMeResponse,
-  UserWithMetaInformation,
-} from '@activepieces/shared';
+import { UpdateMeResponse, UserWithMetaInformation } from '@fema/shared';
 
 import { api } from '@/lib/api';
 

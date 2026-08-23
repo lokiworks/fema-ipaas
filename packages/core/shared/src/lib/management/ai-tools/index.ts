@@ -1,4 +1,4 @@
-import { BaseModelSchema } from '@activepieces/core-utils'
+import { BaseModelSchema } from '@fema/core-utils'
 import { z } from 'zod'
 import { formErrors } from '../../form-errors'
 

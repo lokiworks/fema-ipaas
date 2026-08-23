@@ -1,4 +1,4 @@
-import { ProjectType, ProjectWithLimits } from '@activepieces/shared';
+import { ProjectType, ProjectWithLimits } from '@fema/shared';
 import { ColumnDef } from '@tanstack/react-table';
 import { t } from 'i18next';
 import { CheckIcon, Package, Pencil, Trash } from 'lucide-react';

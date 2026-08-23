@@ -1,4 +1,4 @@
-import { createAction, Property } from '@activepieces/pieces-framework';
+import { createAction, Property } from '@fema/connector-sdk';
 
 export const advancedMapping = createAction({
   audience: 'both',

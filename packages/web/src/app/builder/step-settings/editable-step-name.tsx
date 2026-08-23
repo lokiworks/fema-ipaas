@@ -1,4 +1,4 @@
-import { isNil } from '@activepieces/core-utils';
+import { isNil } from '@fema/core-utils';
 import { t } from 'i18next';
 import { Pencil } from 'lucide-react';
 import React, { useCallback, useRef } from 'react';

@@ -1,6 +1,6 @@
-import { createAction, Property } from '@activepieces/pieces-framework';
+import { createAction, Property } from '@fema/connector-sdk';
 import { common } from '../common';
-import { isNil } from '@activepieces/pieces-framework';
+import { isNil } from '@fema/connector-sdk';
 
 export const countUniques = createAction({
   audience: 'both',

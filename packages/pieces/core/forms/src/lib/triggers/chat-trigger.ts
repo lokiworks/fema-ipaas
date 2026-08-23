@@ -2,12 +2,12 @@ import {
   Property,
   TriggerStrategy,
   createTrigger,
-} from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
 import {
   MarkdownVariant,
   USE_DRAFT_QUERY_PARAM_NAME,
   ChatFormResponse,
-} from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
 import { chatSubmissionTriggerOutputSchema } from '../output-schemas';
 
 const responseMarkdown = `

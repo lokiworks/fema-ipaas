@@ -1,4 +1,4 @@
-import { defineErrorCatalog, ErrorCatalog } from '@activepieces/server-utils'
+import { defineErrorCatalog, ErrorCatalog } from '@fema/server-utils'
 
 // New server errors should be defined here using defineErrorCatalog so they carry
 // structured why/fix context that flows into the per-request wide event automatically.

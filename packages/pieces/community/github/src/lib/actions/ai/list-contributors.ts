@@ -1,7 +1,7 @@
-import { createAction } from '@activepieces/pieces-framework';
+import { createAction } from '@fema/connector-sdk';
 import { githubAuth } from '../../auth';
 import { githubPaginatedApiCall } from '../../common';
-import { HttpMethod } from '@activepieces/pieces-common';
+import { HttpMethod } from '@fema/connector-common';
 import { ownerProp, repoProp, githubError } from './common';
 import { listContributorsOutputSchema } from '../../output-schemas';
 

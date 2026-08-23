@@ -1,4 +1,4 @@
-import { WebhookRenewStrategy } from '@activepieces/pieces-framework'
+import { WebhookRenewStrategy } from '@fema/connector-sdk'
 import {
     ApplicationEventName,
     Flow,
@@ -15,7 +15,7 @@ import {
     TriggerStrategy,
     TriggerTestStrategy,
     WebhookHandshakeStrategy,
-} from '@activepieces/shared'
+} from '@fema/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { flowService } from '../../../../../src/app/flows/flow/flow.service'
@@ -311,7 +311,7 @@ async function seedPublishableFlow({
     publishCurrentVersion,
 }: SeedPublishableFlowParams): Promise<{ flow: Flow, flowVersion: FlowVersion }> {
     const pieceMetadata = createMockPieceMetadata({
-        name: '@activepieces/piece-schedule',
+        name: '@fema/connector-schedule',
         version: '0.1.5',
         triggers: {
             every_hour: {
@@ -373,7 +373,7 @@ function scheduleTrigger(): FlowTrigger {
     return {
         type: FlowTriggerType.PIECE,
         settings: {
-            pieceName: '@activepieces/piece-schedule',
+            pieceName: '@fema/connector-schedule',
             pieceVersion: '0.1.5',
             input: { run_on_weekends: false },
             triggerName: 'every_hour',

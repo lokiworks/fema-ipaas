@@ -1,5 +1,5 @@
-import { Property, createAction } from '@activepieces/pieces-framework';
-import { isNil } from '@activepieces/pieces-framework';
+import { Property, createAction } from '@fema/connector-sdk';
+import { isNil } from '@fema/connector-sdk';
 
 const markdown = `
 **Advanced Piece**

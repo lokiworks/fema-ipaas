@@ -1,4 +1,4 @@
-import { FlowTriggerType, FlowVersion } from '@activepieces/shared'
+import { FlowTriggerType, FlowVersion } from '@fema/shared'
 import deepEqual from 'deep-equal'
 
 function isSameTrigger({ published, toPublish }: IsSameTriggerParams): boolean {

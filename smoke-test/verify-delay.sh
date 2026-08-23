@@ -14,7 +14,7 @@ echo ""
 echo "--- Signing in ---"
 SIGNIN_RESPONSE=$(curl -s --fail-with-body "$API_URL/authentication/sign-in" \
   -H "Content-Type: application/json" \
-  -d '{"email":"bench@activepieces.com","password":"BenchmarkPass1"}')
+  -d '{"email":"bench@fema.local","password":"BenchmarkPass1"}')
 
 TOKEN=$(echo "$SIGNIN_RESPONSE" | jq -r '.token')
 PROJECT_ID=$(echo "$SIGNIN_RESPONSE" | jq -r '.projectId')
@@ -30,7 +30,7 @@ AUTH="Authorization: Bearer $TOKEN"
 # Wait for delay piece to be synced
 echo "--- Waiting for delay piece ---"
 for i in $(seq 1 300); do
-  HAS_DELAY=$(curl -sf "$API_URL/pieces" 2>/dev/null | jq '[.[].name] | any(. == "@activepieces/piece-delay")' 2>/dev/null || echo "false")
+  HAS_DELAY=$(curl -sf "$API_URL/pieces" 2>/dev/null | jq '[.[].name] | any(. == "@fema/connector-delay")' 2>/dev/null || echo "false")
   if [ "$HAS_DELAY" = "true" ]; then
     echo "Delay piece is available (took ${i}s)"
     break
@@ -69,7 +69,7 @@ curl -s --fail-with-body "$API_URL/flows/$FLOW_ID" \
         "displayName": "Catch Webhook",
         "type": "PIECE_TRIGGER",
         "settings": {
-          "pieceName": "@activepieces/piece-webhook",
+          "pieceName": "@fema/connector-webhook",
           "pieceVersion": "~0.1.29",
           "triggerName": "catch_webhook",
           "input": { "authType": "none", "authFields": {} },
@@ -86,7 +86,7 @@ curl -s --fail-with-body "$API_URL/flows/$FLOW_ID" \
           "valid": true,
           "displayName": "Delay For",
           "settings": {
-            "pieceName": "@activepieces/piece-delay",
+            "pieceName": "@fema/connector-delay",
             "pieceVersion": "~0.3.26",
             "actionName": "delayFor",
             "input": {

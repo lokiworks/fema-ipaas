@@ -1,4 +1,4 @@
-import { StepLocationRelativeToParent } from '@activepieces/shared';
+import { StepLocationRelativeToParent } from '@fema/shared';
 import { BaseEdge, EdgeProps } from '@xyflow/react';
 
 import { flowCanvasConsts } from '../utils/consts';

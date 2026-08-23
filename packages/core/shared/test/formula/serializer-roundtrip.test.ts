@@ -1,4 +1,4 @@
-import { formulaEvaluator } from '@activepieces/core-formula'
+import { formulaEvaluator } from '@fema/expression'
 import { describe, expect, it } from 'vitest'
 
 /**

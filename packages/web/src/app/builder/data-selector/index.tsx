@@ -1,12 +1,12 @@
-import { LocalesEnum, isNil } from '@activepieces/core-utils';
-import { PieceMetadataModel } from '@activepieces/pieces-framework';
+import { PieceMetadataModel } from '@fema/connector-sdk';
+import { LocalesEnum, isNil } from '@fema/core-utils';
 import {
   FlowAction,
   FlowActionType,
   FlowTrigger,
   FlowTriggerType,
   flowStructureUtil,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import { useQueries } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { Database, SearchXIcon, Variable } from 'lucide-react';

@@ -1,5 +1,5 @@
-import { AIProviderName } from '@activepieces/core-utils'
-import { getEffectiveProviderAndModel } from '@activepieces/core-piece-types'
+import { AIProviderName } from '@fema/core-utils'
+import { getEffectiveProviderAndModel } from '@fema/connector-types'
 
 describe('getEffectiveProviderAndModel', () => {
     describe('direct providers', () => {

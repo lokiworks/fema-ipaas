@@ -1,13 +1,13 @@
 {
-  "name": "@activepieces/piece-text-helper",
+  "name": "@fema/connector-text-helper",
   "version": "0.6.5",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "dependencies": {
-    "@activepieces/core-piece-types": "workspace:*",
-    "@activepieces/core-utils": "workspace:*",
-    "@activepieces/pieces-common": "workspace:*",
-    "@activepieces/pieces-framework": "workspace:*",
+    "@fema/connector-types": "workspace:*",
+    "@fema/core-utils": "workspace:*",
+    "@fema/connector-common": "workspace:*",
+    "@fema/connector-sdk": "workspace:*",
     "@joplin/turndown": "4.0.85",
     "@joplin/turndown-plugin-gfm": "1.0.67",
     "jsdom": "^24.0.0",

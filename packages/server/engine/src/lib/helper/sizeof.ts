@@ -1,5 +1,5 @@
-import { isNil } from '@activepieces/core-utils'
-import { StepOutputType } from '@activepieces/shared'
+import { isNil } from '@fema/core-utils'
+import { StepOutputType } from '@fema/shared'
 import { utils } from '../utils'
 
 function recursiveSizeof(value: unknown): number {

@@ -1,10 +1,10 @@
-import { PieceAuth, PieceAuthProperty, PropertyType } from '@activepieces/pieces-framework'
-import { AppConnectionType, AppConnectionValue, PiecePackage } from '@activepieces/shared'
+import { PieceAuth, PieceAuthProperty, PropertyType } from '@fema/connector-sdk'
+import { AppConnectionType, AppConnectionValue, PiecePackage } from '@fema/shared'
 import { pieceAuth } from '../../../src/lib/core/piece/piece-auth'
 import { CollectedHooks, PieceDescription } from '../../../src/lib/core/piece/piece-protocol'
 import { pieceRunner } from '../../../src/lib/core/piece/piece-runner'
 
-const PIECE = { pieceName: '@activepieces/piece-test', pieceVersion: '1.0.0' } as unknown as PiecePackage
+const PIECE = { pieceName: '@fema/connector-test', pieceVersion: '1.0.0' } as unknown as PiecePackage
 
 const HOOKS: CollectedHooks = { hookResponse: {}, listeners: [] } as unknown as CollectedHooks
 
@@ -61,7 +61,7 @@ describe('piece-auth callMethod', () => {
         await pieceAuth.callMethod({ operation: operationFor(SECRET_TEXT_VALUE), authValueType: AppConnectionType.SECRET_TEXT, methodPath: ['validate'] })
 
         expect(call).toHaveBeenCalledWith({
-            piece: expect.objectContaining({ pieceName: '@activepieces/piece-test', pieceVersion: '1.0.0' }),
+            piece: expect.objectContaining({ pieceName: '@fema/connector-test', pieceVersion: '1.0.0' }),
             path: ['auth', 'validate'],
             args: [{ auth: 'my-secret', server: { apiUrl: 'http://internal/', publicUrl: 'http://public' } }],
         })

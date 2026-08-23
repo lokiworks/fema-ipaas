@@ -1,5 +1,5 @@
 import { randomInt, randomUUID } from 'node:crypto'
-import { OtpType } from '@activepieces/shared'
+import { OtpType } from '@fema/shared'
 
 export const otpGenerator = {
     generate({ type }: GenerateParams): string {

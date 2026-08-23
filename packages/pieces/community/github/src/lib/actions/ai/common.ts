@@ -1,4 +1,4 @@
-import { Property } from '@activepieces/pieces-framework';
+import { Property } from '@fema/connector-sdk';
 
 /**
  * Shared flat props + error mapping for the agent (audience:'ai') GitHub atomics.

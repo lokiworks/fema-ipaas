@@ -104,7 +104,7 @@ const CreateRequest = {
 | `securityAccess.publicPlatform(principals)` | any platform member |
 | `securityAccess.public()` | no auth |
 
-A new capability needs a new value in the `Permission` enum in `@activepieces/shared`.
+A new capability needs a new value in the `Permission` enum in `@fema/shared`.
 
 ## Module registration
 

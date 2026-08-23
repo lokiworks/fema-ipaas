@@ -1,4 +1,4 @@
-import { PlatformMetricsHealthDay } from '@activepieces/shared';
+import { PlatformMetricsHealthDay } from '@fema/shared';
 import dayjs from 'dayjs';
 import { t } from 'i18next';
 import { ArrowUpRight } from 'lucide-react';

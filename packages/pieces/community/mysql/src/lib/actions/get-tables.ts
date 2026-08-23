@@ -1,4 +1,4 @@
-import { createAction } from '@activepieces/pieces-framework';
+import { createAction } from '@fema/connector-sdk';
 import { mysqlConnect, mysqlGetTableNames } from '../common';
 import { mysqlAuth } from '../..';
 import { getTablesOutputSchema } from '../output-schemas';

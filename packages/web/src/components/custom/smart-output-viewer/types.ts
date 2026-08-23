@@ -2,6 +2,6 @@ import type {
   FieldFormat,
   OutputSchemaField,
   OutputSchema,
-} from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
 
 export type { FieldFormat, OutputSchemaField, OutputSchema };

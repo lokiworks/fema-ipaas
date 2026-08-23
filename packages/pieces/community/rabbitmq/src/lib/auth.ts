@@ -1,4 +1,4 @@
-import { PieceAuth, Property } from '@activepieces/pieces-framework';
+import { PieceAuth, Property } from '@fema/connector-sdk';
 
 export const rabbitmqAuth = PieceAuth.CustomAuth({
   description: "Rabbitmq Auth",

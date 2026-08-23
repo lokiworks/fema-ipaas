@@ -1,5 +1,5 @@
-import { TriggerStrategy } from '@activepieces/pieces-framework';
-import { createTrigger, Property } from '@activepieces/pieces-framework';
+import { TriggerStrategy } from '@fema/connector-sdk';
+import { createTrigger, Property } from '@fema/connector-sdk';
 import { DAY_HOURS, timezoneOptions, validateHours } from '../common';
 
 export const everyDayTrigger = createTrigger({

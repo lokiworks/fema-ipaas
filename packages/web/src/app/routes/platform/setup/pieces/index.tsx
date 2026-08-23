@@ -1,6 +1,6 @@
-import { ApErrorParams, ErrorCode } from '@activepieces/core-utils';
-import { PieceMetadataModelSummary } from '@activepieces/pieces-framework';
-import { PieceScope, PieceType } from '@activepieces/shared';
+import { PieceMetadataModelSummary } from '@fema/connector-sdk';
+import { ApErrorParams, ErrorCode } from '@fema/core-utils';
+import { PieceScope, PieceType } from '@fema/shared';
 import { ColumnDef } from '@tanstack/react-table';
 import { t } from 'i18next';
 import {

@@ -1,4 +1,4 @@
-import { ExecutionMode } from '@activepieces/shared'
+import { ExecutionMode } from '@fema/shared'
 import { DatabaseType } from './database-type'
 import { RedisType } from './redis-type'
 

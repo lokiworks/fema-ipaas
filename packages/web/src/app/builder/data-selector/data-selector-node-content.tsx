@@ -1,8 +1,4 @@
-import {
-  FlowAction,
-  FlowTrigger,
-  flowStructureUtil,
-} from '@activepieces/shared';
+import { FlowAction, FlowTrigger, flowStructureUtil } from '@fema/shared';
 import { t } from 'i18next';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 

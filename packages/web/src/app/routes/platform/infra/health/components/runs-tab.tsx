@@ -1,4 +1,4 @@
-import { PlatformMetricsReport } from '@activepieces/shared';
+import { PlatformMetricsReport } from '@fema/shared';
 import dayjs from 'dayjs';
 import { t } from 'i18next';
 import { CheckCircle2, ListChecks } from 'lucide-react';

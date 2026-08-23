@@ -1,4 +1,4 @@
-import { isNil, parseToJsonIfPossible } from '@activepieces/core-utils'
+import { isNil, parseToJsonIfPossible } from '@fema/core-utils'
 import { ProcessorFn } from './types'
 
 export const multiSelectProcessor: ProcessorFn = (_property, value) => {

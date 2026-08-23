@@ -1,4 +1,4 @@
-import { isNil } from '@activepieces/core-utils';
+import { isNil } from '@fema/core-utils';
 import {
   FlowAction,
   FlowActionType,
@@ -7,7 +7,7 @@ import {
   FlowTriggerType,
   flowPieceUtil,
   flowStructureUtil,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import deepEqual from 'deep-equal';
 import { useEffect, useRef, useState } from 'react';
@@ -156,7 +156,7 @@ const StepSettingsContainer = () => {
   const [isEditingStepOrBranchName, setIsEditingStepOrBranchName] =
     useState(false);
   const runAgentStep =
-    modifiedStep.settings.pieceName === '@activepieces/piece-ai' &&
+    modifiedStep.settings.pieceName === '@fema/connector-ai' &&
     modifiedStep.settings.actionName === 'run_agent';
 
   const showActionErrorHandlingForm =

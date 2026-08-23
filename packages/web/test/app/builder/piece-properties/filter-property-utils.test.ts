@@ -1,4 +1,4 @@
-import { Property } from '@activepieces/pieces-framework';
+import { Property } from '@fema/connector-sdk';
 import { describe, expect, it } from 'vitest';
 
 import { filterPropertyUtils } from '@/app/builder/piece-properties/filter-property-utils';

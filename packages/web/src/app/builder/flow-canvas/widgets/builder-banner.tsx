@@ -1,4 +1,4 @@
-import { isNil } from '@activepieces/core-utils';
+import { isNil } from '@fema/core-utils';
 
 import { ResourceLockWidget } from '@/components/custom/resource-lock-widget';
 

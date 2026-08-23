@@ -1,6 +1,6 @@
-import { isNil, isObject } from '@activepieces/core-utils'
-import { Piece } from '@activepieces/pieces-framework'
-import { extractPieceFromModule } from '@activepieces/shared'
+import { Piece } from '@fema/connector-sdk'
+import { isNil, isObject } from '@fema/core-utils'
+import { extractPieceFromModule } from '@fema/shared'
 import { buildContext } from './piece-context-builder'
 import { ChildMessage, ParentMessage, pieceProtocol } from './piece-protocol'
 

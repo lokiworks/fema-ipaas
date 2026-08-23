@@ -1,5 +1,5 @@
-import { apId, isNil, PlatformId } from '@activepieces/core-utils'
-import { OtpModel, OtpState, OtpType } from '@activepieces/shared'
+import { apId, isNil, PlatformId } from '@fema/core-utils'
+import { OtpModel, OtpState, OtpType } from '@fema/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { repoFactory } from '../../core/db/repo-factory'

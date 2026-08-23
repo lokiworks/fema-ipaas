@@ -1,4 +1,4 @@
-import { environmentMigrations } from '@activepieces/server-utils'
+import { environmentMigrations } from '@fema/server-utils'
 
 function env(prop: string) {
     return environmentMigrations.migrate(prop)

@@ -2,4 +2,4 @@
 
 ## Building
 
-Run `turbo run build --filter=@activepieces/pieces-common` to build the library.
+Run `turbo run build --filter=@fema/connector-common` to build the library.

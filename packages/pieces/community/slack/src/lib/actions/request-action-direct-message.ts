@@ -1,6 +1,6 @@
-import { createAction } from '@activepieces/pieces-framework';
+import { createAction } from '@fema/connector-sdk';
 import { slackAuth } from '../auth';
-import { assertNotNullOrUndefined } from '@activepieces/pieces-framework';
+import { assertNotNullOrUndefined } from '@fema/connector-sdk';
 import {
   profilePicture,
   text,

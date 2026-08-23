@@ -1,5 +1,5 @@
-import { ActivepiecesError, ApId, ErrorCode } from '@activepieces/core-utils'
-import { AuthenticationResponse, CreatePlatformRequest, FileType, PlatformWithoutSensitiveData, PrincipalType, SERVICE_KEY_SECURITY_OPENAPI, UpdatePlatformRequestBody } from '@activepieces/shared'
+import { ActivepiecesError, ApId, ErrorCode } from '@fema/core-utils'
+import { AuthenticationResponse, CreatePlatformRequest, FileType, PlatformWithoutSensitiveData, PrincipalType, SERVICE_KEY_SECURITY_OPENAPI, UpdatePlatformRequestBody } from '@fema/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'

@@ -1,4 +1,4 @@
-import { AppConnectionValueForAuthProperty, Property } from "@activepieces/pieces-framework";
+import { AppConnectionValueForAuthProperty, Property } from "@fema/connector-sdk";
 import { postgresAuth } from "..";
 import { Client } from "pg";
 import format from "pg-format";

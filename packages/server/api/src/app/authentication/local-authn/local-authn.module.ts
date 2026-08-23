@@ -1,5 +1,5 @@
-import { ActivepiecesError, ErrorCode } from '@activepieces/core-utils'
-import { OtpType, ResetPasswordRequestBody, UserIdentity, VerifyEmailRequestBody } from '@activepieces/shared'
+import { ActivepiecesError, ErrorCode } from '@fema/core-utils'
+import { OtpType, ResetPasswordRequestBody, UserIdentity, VerifyEmailRequestBody } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'

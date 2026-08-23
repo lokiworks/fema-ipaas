@@ -1,4 +1,4 @@
-import { createAction, Property } from '@activepieces/pieces-framework';
+import { createAction, Property } from '@fema/connector-sdk';
 import { postgresAuth } from '../..';
 import { pgClient, postgresCommon, postgresUtils } from '../common';
 import { updateRowOutputSchema } from '../output-schemas';

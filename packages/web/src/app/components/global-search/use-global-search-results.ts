@@ -1,4 +1,4 @@
-import { PROJECT_COLOR_PALETTE } from '@activepieces/shared';
+import { PROJECT_COLOR_PALETTE } from '@fema/shared';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { t } from 'i18next';
 

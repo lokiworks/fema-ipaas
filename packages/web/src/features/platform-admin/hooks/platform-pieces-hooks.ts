@@ -1,4 +1,4 @@
-import { PieceSelectorConfig } from '@activepieces/shared';
+import { PieceSelectorConfig } from '@fema/shared';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { toast } from 'sonner';

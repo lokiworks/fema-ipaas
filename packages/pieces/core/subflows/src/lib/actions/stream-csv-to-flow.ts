@@ -1,4 +1,4 @@
-import { createAction, Property } from '@activepieces/pieces-framework';
+import { createAction, Property } from '@fema/connector-sdk';
 import { createCsvParser, CsvRow } from '../csv';
 import { dispatchToSubflow, findEnabledSubflowOrThrow, subflowDropdown } from '../common';
 import { fanOutBatches } from '../fan-out';

@@ -1,7 +1,7 @@
 import { URL } from 'node:url'
-import { FlowId, isNil } from '@activepieces/core-utils'
-import { Store, StoreScope } from '@activepieces/pieces-framework'
-import { DeleteStoreEntryRequest, ExecutionError, FetchError, PutStoreEntryRequest, StorageError, StorageInvalidKeyError, StorageLimitError, STORE_KEY_MAX_LENGTH, STORE_VALUE_MAX_SIZE, StoreEntry } from '@activepieces/shared'
+import { Store, StoreScope } from '@fema/connector-sdk'
+import { FlowId, isNil } from '@fema/core-utils'
+import { DeleteStoreEntryRequest, ExecutionError, FetchError, PutStoreEntryRequest, StorageError, StorageInvalidKeyError, StorageLimitError, STORE_KEY_MAX_LENGTH, STORE_VALUE_MAX_SIZE, StoreEntry } from '@fema/shared'
 import { retryFetch } from '../api/retry-fetch'
 import { utils } from '../utils'
 

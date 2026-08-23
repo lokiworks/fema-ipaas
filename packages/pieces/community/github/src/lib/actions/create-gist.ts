@@ -1,8 +1,8 @@
-import { createAction, Property } from '@activepieces/pieces-framework';
+import { createAction, Property } from '@fema/connector-sdk';
 import { githubAuth } from '../auth';
 import { githubApiCall } from '../common';
 import { GithubAuthValue, isAppAuth } from '../common/auth-helpers';
-import { HttpMethod } from '@activepieces/pieces-common';
+import { HttpMethod } from '@fema/connector-common';
 import { createGistActionOutputSchema } from '../output-schemas';
 
 export const githubCreateGistAction = createAction({

@@ -1,5 +1,5 @@
-import { apId } from '@activepieces/core-utils'
-import { InvitationStatus, InvitationType, PlatformRole } from '@activepieces/shared'
+import { apId } from '@fema/core-utils'
+import { InvitationStatus, InvitationType, PlatformRole } from '@fema/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { JwtAudience, jwtUtils } from '../../../../src/app/helper/jwt-utils'

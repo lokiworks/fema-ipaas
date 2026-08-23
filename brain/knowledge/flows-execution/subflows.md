@@ -4,7 +4,7 @@ icon: 🪆
 
 # Subflows
 
-A **Subflow** is a flow invoked by another flow instead of by its own external trigger — a reusable function at flow granularity. The `@activepieces/piece-subflows` core piece supplies both halves: the **Callable Flow** trigger that makes a flow callable, and the actions a parent uses to reach it. A parent calls a subflow once (**Call Flow**, optionally waiting for a response through a waitpoint) or fans out many calls from one streaming step (**Stream CSV to Subflows**). The **Respond** action sends data back to a waiting parent. There is no dedicated transport: every call is a webhook `POST` to `/v1/webhooks/:flowId`.
+A **Subflow** is a flow invoked by another flow instead of by its own external trigger — a reusable function at flow granularity. The `@fema/connector-subflows` core piece supplies both halves: the **Callable Flow** trigger that makes a flow callable, and the actions a parent uses to reach it. A parent calls a subflow once (**Call Flow**, optionally waiting for a response through a waitpoint) or fans out many calls from one streaming step (**Stream CSV to Subflows**). The **Respond** action sends data back to a waiting parent. There is no dedicated transport: every call is a webhook `POST` to `/v1/webhooks/:flowId`.
 
 ### Entities & services
 No server entity of its own — subflows are ordinary flows plus two conventions on the webhook path.

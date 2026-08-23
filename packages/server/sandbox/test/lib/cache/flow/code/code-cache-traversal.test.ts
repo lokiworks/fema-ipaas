@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { readdir, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path, { join } from 'node:path'
-import { ActivepiecesError, ErrorCode } from '@activepieces/core-utils'
+import { ActivepiecesError, ErrorCode } from '@fema/core-utils'
 import { afterEach, describe, expect, it } from 'vitest'
 import { codeCache } from '../../../../../src/lib/cache/flow/code/code-cache'
 

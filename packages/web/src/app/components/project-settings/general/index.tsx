@@ -5,7 +5,7 @@ import {
   PROJECT_COLOR_PALETTE,
   ProjectIcon,
   ProjectType,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import { t } from 'i18next';
 import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';

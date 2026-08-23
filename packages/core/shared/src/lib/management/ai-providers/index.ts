@@ -1,4 +1,4 @@
-import { AIProviderName, BaseModelSchema } from '@activepieces/core-utils'
+import { AIProviderName, BaseModelSchema } from '@fema/core-utils'
 import { z } from 'zod'
 
 export enum AIProviderModelType {
@@ -348,5 +348,5 @@ export {
     DEFAULT_CHAT_TIER_ID,
     AI_PROVIDER_CAPABILITIES,
     aiProviderUtils,
-} from '@activepieces/core-piece-types'
-export type { ActivepiecesChatTier, AIProviderCapabilities, AIWebSearchMode } from '@activepieces/core-piece-types'
+} from '@fema/connector-types'
+export type { ActivepiecesChatTier, AIProviderCapabilities, AIWebSearchMode } from '@fema/connector-types'

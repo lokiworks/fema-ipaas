@@ -1,5 +1,5 @@
-import { AppConnectionValueForAuthProperty, FilesService, ServerContext, Store } from '@activepieces/pieces-framework';
-import { isNil } from '@activepieces/core-utils';
+import { AppConnectionValueForAuthProperty, FilesService, ServerContext, Store } from '@fema/connector-sdk';
+import { isNil } from '@fema/core-utils';
 
 
 interface TimebasedPolling<AuthValue, PropsValue> {

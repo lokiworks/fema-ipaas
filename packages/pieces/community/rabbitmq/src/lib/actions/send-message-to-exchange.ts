@@ -1,4 +1,4 @@
-import { createAction, Property } from '@activepieces/pieces-framework';
+import { createAction, Property } from '@fema/connector-sdk';
 import { rabbitmqAuth } from '../auth';
 import { rabbitmqConnect } from '../common';
 

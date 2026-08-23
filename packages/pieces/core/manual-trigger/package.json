@@ -1,14 +1,14 @@
 {
-  "name": "@activepieces/piece-manual-trigger",
+  "name": "@fema/connector-manual-trigger",
   "version": "0.0.7",
   "type": "commonjs",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "dependencies": {
-    "@activepieces/pieces-common": "workspace:*",
-    "@activepieces/pieces-framework": "workspace:*",
-    "@activepieces/core-piece-types": "workspace:*",
-    "@activepieces/core-utils": "workspace:*"
+    "@fema/connector-common": "workspace:*",
+    "@fema/connector-sdk": "workspace:*",
+    "@fema/connector-types": "workspace:*",
+    "@fema/core-utils": "workspace:*"
   },
   "devDependencies": {
     "tslib": "^2.3.0"

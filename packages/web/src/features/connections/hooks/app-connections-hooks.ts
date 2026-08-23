@@ -1,13 +1,8 @@
 import {
-  ApErrorParams,
-  ErrorCode,
-  isNil,
-  SeekPage,
-} from '@activepieces/core-utils';
-import {
   getAuthPropertyForValue,
   PieceAuthProperty,
-} from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
+import { ApErrorParams, ErrorCode, isNil, SeekPage } from '@fema/core-utils';
 import {
   AppConnectionScope,
   AppConnectionStatus,
@@ -16,7 +11,7 @@ import {
   PLACEHOLDER_CONNECTION_TYPE,
   ReplaceAppConnectionsRequestBody,
   UpsertAppConnectionRequestBody,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { useMemo } from 'react';

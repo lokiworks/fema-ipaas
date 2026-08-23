@@ -1,4 +1,4 @@
-import { PlatformId, ProjectId } from '@activepieces/core-utils'
+import { PlatformId, ProjectId } from '@fema/core-utils'
 
 export const getPlatformPlanNameKey = (platformId: PlatformId): string => `platform_plan:plan:${platformId}`
 export const getCreditsBalanceKey = (platformId: PlatformId): string => `platform_plan:credits:${platformId}`

@@ -1,9 +1,9 @@
-import { ActivepiecesError, assertNotNullOrUndefined, ErrorCode } from '@activepieces/core-utils'
+import { ActivepiecesError, assertNotNullOrUndefined, ErrorCode } from '@fema/core-utils'
 
 /**
- * @param {string} pieceName - starts with `@activepieces/piece-`
+ * @param {string} pieceName - starts with `@fema/connector-`
  * @param {string} pieceVersion - the version of the piece
- * @returns {string} the package alias for the piece, e.g. `@activepieces/piece-activepieces-0.0.1`
+ * @returns {string} the package alias for the piece, e.g. `@fema/connector-activepieces-0.0.1`
  */
 export const getPackageAliasForPiece = (params: GetPackageAliasForPieceParams): string => {
     const { pieceName, pieceVersion } = params
@@ -11,21 +11,21 @@ export const getPackageAliasForPiece = (params: GetPackageAliasForPieceParams): 
 }
 
 /**
- * @param {string} alias - e.g. piece-activepieces or @publisher/piece-activepieces or activepieces or @publisher/activepieces 
- * @returns {string} the piece name, e.g. activepieces
+ * @param {string} alias - e.g. connector-slack or @publisher/connector-slack or slack or @publisher/slack
+ * @returns {string} the piece name, e.g. slack
  */
 export const getPieceNameFromAlias = (alias: string): string => {
-    const fullPieceName =  alias.startsWith('@') ? alias.split('/').pop() : alias
+    const fullPieceName = alias.startsWith('@') ? alias.split('/').pop() : alias
     assertNotNullOrUndefined(fullPieceName, 'Full piece name')
-    if (fullPieceName.startsWith('piece-')) {
-        return fullPieceName.split('-').slice(1).join('-')
+    if (fullPieceName.startsWith('connector-')) {
+        return fullPieceName.slice('connector-'.length)
     }
     return fullPieceName
 }
 
 /**
- * @param {string} alias - e.g. `@activepieces/piece-activepieces-0.0.1`
- * @returns {string} the piece name, e.g. `@activepieces/piece-activepieces`
+ * @param {string} alias - e.g. `@fema/connector-activepieces-0.0.1`
+ * @returns {string} the piece name, e.g. `@fema/connector-activepieces`
  */
 export const trimVersionFromAlias = (alias: string): string => {
     return alias.split('-').slice(0, -1).join('-')

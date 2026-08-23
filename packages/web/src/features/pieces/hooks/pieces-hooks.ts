@@ -1,10 +1,10 @@
-import { LocalesEnum } from '@activepieces/core-utils';
 import {
   PieceMetadataModel,
   PieceMetadataModelSummary,
   PropertyType,
   ExecutePropsResult,
-} from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
+import { LocalesEnum } from '@fema/core-utils';
 import {
   AddPieceRequestBody,
   FlowActionType,
@@ -15,7 +15,7 @@ import {
   ApFlagId,
   ApEnvironment,
   TelemetryEventName,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import {
   QueryClient,
   useMutation,

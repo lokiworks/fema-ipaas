@@ -1,4 +1,4 @@
-import { typeCheckTiptapDoc } from '@activepieces/core-formula'
+import { typeCheckTiptapDoc } from '@fema/expression'
 import { describe, expect, it } from 'vitest'
 
 type Node = {

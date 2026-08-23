@@ -1,4 +1,4 @@
-import { ExecutionError, ExecutionErrorType } from '@activepieces/shared'
+import { ExecutionError, ExecutionErrorType } from '@fema/shared'
 import { toExitError } from '../../../src/lib/core/piece/piece-runner'
 
 const heapMessage = 'FATAL ERROR: Reached heap limit Allocation failed - JavaScript heap out of memory'

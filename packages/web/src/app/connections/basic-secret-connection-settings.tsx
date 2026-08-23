@@ -1,5 +1,5 @@
-import { BasicAuthProperty } from '@activepieces/pieces-framework';
-import { UpsertBasicAuthRequest } from '@activepieces/shared';
+import { BasicAuthProperty } from '@fema/connector-sdk';
+import { UpsertBasicAuthRequest } from '@fema/shared';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { z } from 'zod';

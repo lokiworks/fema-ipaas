@@ -1,4 +1,4 @@
-import { isNil } from '@activepieces/core-utils'
+import { isNil } from '@fema/core-utils'
 
 const MAX_NAME_PART_LENGTH = 50
 const FALLBACK_FIRST_NAME = 'there'

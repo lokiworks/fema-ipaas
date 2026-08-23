@@ -1,7 +1,7 @@
-import { ActivepiecesError, apId, assertNotNullOrUndefined, ErrorCode, isNil } from '@activepieces/core-utils'
-import { slack } from '@activepieces/piece-slack'
-import { Piece, PieceAuthProperty } from '@activepieces/pieces-framework'
-import { FlowStatus, LATEST_JOB_DATA_SCHEMA_VERSION, RunEnvironment, WorkerJobType } from '@activepieces/shared'
+import { Piece, PieceAuthProperty } from '@fema/connector-sdk'
+import { slack } from '@fema/connector-slack'
+import { ActivepiecesError, apId, assertNotNullOrUndefined, ErrorCode, isNil } from '@fema/core-utils'
+import { FlowStatus, LATEST_JOB_DATA_SCHEMA_VERSION, RunEnvironment, WorkerJobType } from '@fema/shared'
 import { FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
@@ -20,7 +20,7 @@ const appWebhooks: Record<string, Piece<PieceAuthProperty | PieceAuthProperty[] 
     slack,
 }
 const pieceNames: Record<string, string> = {
-    slack: '@activepieces/piece-slack',
+    slack: '@fema/connector-slack',
 }
 
 export const appEventRoutingModule: FastifyPluginAsyncZod = async (app) => {

@@ -1,5 +1,5 @@
-import { createPiece, PieceAuth } from '@activepieces/pieces-framework';
-import { PieceCategory } from '@activepieces/pieces-framework';
+import { createPiece, PieceAuth } from '@fema/connector-sdk';
+import { PieceCategory } from '@fema/connector-sdk';
 import { generatePassword } from './lib/actions/generate-password';
 import { hashText } from './lib/actions/hash-text';
 import { hmacSignature } from './lib/actions/hmac-signature';

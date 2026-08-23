@@ -1,5 +1,5 @@
 import { buffer as readableToBuffer } from 'node:stream/consumers'
-import { ApFile, ApStreamingFile, PieceAuth, Property } from '@activepieces/pieces-framework'
+import { ApFile, ApStreamingFile, PieceAuth, Property } from '@fema/connector-sdk'
 import { propsProcessor } from '../../src/lib/variables/props-processor'
 
 const HELLO_TXT_DATA_URL = 'data:text/plain;base64,aGVsbG8='

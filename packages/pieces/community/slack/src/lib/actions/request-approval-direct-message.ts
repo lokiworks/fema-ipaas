@@ -1,8 +1,8 @@
-import { createAction } from '@activepieces/pieces-framework';
+import { createAction } from '@fema/connector-sdk';
 import { buildFlowOriginContextBlock, slackSendMessage, textToSectionBlocks } from '../common/utils';
 import { slackAuth } from '../auth';
-import { assertNotNullOrUndefined } from '@activepieces/pieces-framework';
-import { ExecutionType } from '@activepieces/pieces-framework';
+import { assertNotNullOrUndefined } from '@fema/connector-sdk';
+import { ExecutionType } from '@fema/connector-sdk';
 import { profilePicture, text, userId, username, mentionOriginFlow } from '../common/props';
 import { ChatPostMessageResponse, WebClient } from '@slack/web-api';
 import { getBotToken, SlackAuthValue } from '../common/auth-helpers';

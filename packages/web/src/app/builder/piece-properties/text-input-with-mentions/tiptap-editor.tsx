@@ -1,10 +1,10 @@
+import { isNil } from '@fema/core-utils';
 import {
   ApFunction,
   formulaEvaluator,
   typeCheckTiptapDoc,
-} from '@activepieces/core-formula';
-import { isNil } from '@activepieces/core-utils';
-import { flowStructureUtil } from '@activepieces/shared';
+} from '@fema/expression';
+import { flowStructureUtil } from '@fema/shared';
 import { Extensions } from '@tiptap/core';
 import { Document } from '@tiptap/extension-document';
 import { HardBreak } from '@tiptap/extension-hard-break';

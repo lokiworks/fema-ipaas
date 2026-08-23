@@ -1,4 +1,4 @@
-import { SsoDomainVerification } from '@activepieces/shared';
+import { SsoDomainVerification } from '@fema/shared';
 
 import { api } from '@/lib/api';
 

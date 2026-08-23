@@ -1,4 +1,4 @@
-import { Property, TriggerStrategy, createTrigger } from '@activepieces/pieces-framework';
+import { Property, TriggerStrategy, createTrigger } from '@fema/connector-sdk';
 import { appWebhookSetupInfo, singleSelectChannelInfo, slackChannel } from '../common/props';
 import { slackAuth } from '../auth';
 import { getTeamId, SlackAuthValue } from '../common/auth-helpers';

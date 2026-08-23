@@ -2,7 +2,7 @@ import {
   createAction,
   PieceAuth,
   Property,
-} from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
 import { subtractionActionOutputSchema } from '../output-schemas';
 
 export const subtraction = createAction({

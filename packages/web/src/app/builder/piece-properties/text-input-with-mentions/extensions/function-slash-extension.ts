@@ -1,5 +1,5 @@
-import { ApFunction } from '@activepieces/core-formula';
-import { isNil } from '@activepieces/core-utils';
+import { isNil } from '@fema/core-utils';
+import { ApFunction } from '@fema/expression';
 import { Editor, Extension } from '@tiptap/core';
 import { Node as ProseMirrorNode } from '@tiptap/pm/model';
 import { JSONContent } from '@tiptap/react';

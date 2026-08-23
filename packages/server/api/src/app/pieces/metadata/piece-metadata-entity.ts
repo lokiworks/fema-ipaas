@@ -1,5 +1,5 @@
-import { ApId, BaseModel } from '@activepieces/core-utils'
-import { PieceMetadataModel } from '@activepieces/pieces-framework'
+import { PieceMetadataModel } from '@fema/connector-sdk'
+import { ApId, BaseModel } from '@fema/core-utils'
 import { EntitySchema } from 'typeorm'
 import {
     ApIdSchema,

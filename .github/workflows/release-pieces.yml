@@ -46,7 +46,7 @@ jobs:
       - name: copy project .npmrc to user level
         run: cp .npmrc $HOME/.npmrc
 
-      # @activepieces/shared, pieces-common and pieces-framework are no longer published to npm:
+      # @fema/shared, pieces-common and pieces-framework are no longer published to npm:
       # pieces are now self-contained bundles that inline these dependencies at build time.
 
       - name: Find changed pieces

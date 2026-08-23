@@ -1,5 +1,5 @@
-import { isNil, PlatformId } from '@activepieces/core-utils'
-import { OtpType, UserIdentity, UserInvitation } from '@activepieces/shared'
+import { isNil, PlatformId } from '@fema/core-utils'
+import { OtpType, UserIdentity, UserInvitation } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { platformService } from '../../platform/platform.service'
 import { projectService } from '../../project/project-service'

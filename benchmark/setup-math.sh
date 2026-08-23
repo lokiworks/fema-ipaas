@@ -8,7 +8,7 @@ BASE_URL="http://localhost:8080/api/v1"
 
 SIGNIN=$(curl -s --fail-with-body "$BASE_URL/authentication/sign-in" \
   -H "Content-Type: application/json" \
-  -d '{"email":"bench@activepieces.com","password":"BenchmarkPass1"}')
+  -d '{"email":"bench@fema.local","password":"BenchmarkPass1"}')
 TOKEN=$(echo "$SIGNIN" | jq -r '.token')
 PROJECT_ID=$(echo "$SIGNIN" | jq -r '.projectId')
 echo "Signed in. Project: $PROJECT_ID" >&2
@@ -29,7 +29,7 @@ IMPORT_PAYLOAD=$(jq -n '{
     trigger: {
       name: "trigger", valid: true, displayName: "Catch Webhook", type: "PIECE_TRIGGER",
       settings: {
-        pieceName: "@activepieces/piece-webhook", pieceVersion: "~0.1.36",
+        pieceName: "@fema/connector-webhook", pieceVersion: "~0.1.36",
         triggerName: "catch_webhook", input: { authType: "none", authFields: {} },
         propertySettings: {
           authType: { type: "MANUAL" }, authFields: { type: "MANUAL", schema: {} },
@@ -41,7 +41,7 @@ IMPORT_PAYLOAD=$(jq -n '{
         name: "step_1", skip: false, type: "PIECE", valid: true,
         settings: {
           input: { first_number: 21, second_number: 21 },
-          pieceName: "@activepieces/piece-math-helper", actionName: "addition_math",
+          pieceName: "@fema/connector-math-helper", actionName: "addition_math",
           pieceVersion: "~0.0.24", sampleData: {},
           propertySettings: {
             first_number: { type: "MANUAL" }, second_number: { type: "MANUAL" }
@@ -53,7 +53,7 @@ IMPORT_PAYLOAD=$(jq -n '{
           name: "step_2", skip: false, type: "PIECE", valid: true,
           settings: {
             input: { fields: { body: { sum: "{{step_1}}" }, status: 200, headers: {} }, respond: "stop", responseType: "json" },
-            pieceName: "@activepieces/piece-webhook", actionName: "return_response",
+            pieceName: "@fema/connector-webhook", actionName: "return_response",
             sampleData: {}, pieceVersion: "~0.1.36",
             propertySettings: {
               fields: { type: "MANUAL", schema: {

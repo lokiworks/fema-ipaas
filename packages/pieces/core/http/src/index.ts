@@ -1,4 +1,4 @@
-import { PieceAuth, createPiece, PieceCategory } from '@activepieces/pieces-framework';
+import { PieceAuth, createPiece, PieceCategory } from '@fema/connector-sdk';
 import { httpSendRequestAction } from './lib/actions/send-http-request-action';
 import { parseUrl } from './lib/actions/parse-url';
 

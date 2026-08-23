@@ -1,5 +1,5 @@
-import { TriggerStrategy } from '@activepieces/pieces-framework';
-import { createTrigger, Property } from '@activepieces/pieces-framework';
+import { TriggerStrategy } from '@fema/connector-sdk';
+import { createTrigger, Property } from '@fema/connector-sdk';
 
 export const everyHourTrigger = createTrigger({
   name: 'every_hour',

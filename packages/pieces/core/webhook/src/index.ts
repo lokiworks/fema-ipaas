@@ -1,6 +1,6 @@
-import { createPiece, PieceAuth } from '@activepieces/pieces-framework';
+import { createPiece, PieceAuth } from '@fema/connector-sdk';
 import { catchWebhook } from './lib/triggers/catch-hook';
-import { PieceCategory } from '@activepieces/pieces-framework';
+import { PieceCategory } from '@fema/connector-sdk';
 import { returnResponse } from './lib/actions/return-response';
 import { returnResponseAndWaitForNextWebhook } from './lib/actions/return-response-and-wait-for-next-webhook';
 

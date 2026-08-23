@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 /* eslint-disable testing-library/no-unnecessary-act */
-import { GetSystemHealthChecksResponse } from '@activepieces/shared';
+import { GetSystemHealthChecksResponse } from '@fema/shared';
 import * as React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';

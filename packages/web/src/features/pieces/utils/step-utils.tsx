@@ -1,9 +1,9 @@
-import { LocalesEnum, spreadIfDefined } from '@activepieces/core-utils';
 import {
   ErrorHandlingOptionsParam,
   PieceMetadataModel,
   PieceMetadataModelSummary,
-} from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
+import { LocalesEnum, spreadIfDefined } from '@fema/core-utils';
 import {
   FlowAction,
   FlowActionType,
@@ -13,7 +13,7 @@ import {
   FlowTrigger,
   StepOutput,
   StepRunResponse,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import { t } from 'i18next';
 
 import { piecesApi } from '../api/pieces-api';

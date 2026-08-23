@@ -1,4 +1,4 @@
-import { OutputSchema } from '@activepieces/pieces-framework';
+import { OutputSchema } from '@fema/connector-sdk';
 
 /**
  * Every action here returns a date rendered with the step's own "To Time Format"

@@ -1,5 +1,5 @@
-import { Property, createAction } from '@activepieces/pieces-framework';
-import { FileResponseInterface, HumanInputFormResult, HumanInputFormResultTypes } from '@activepieces/pieces-framework';
+import { Property, createAction } from '@fema/connector-sdk';
+import { FileResponseInterface, HumanInputFormResult, HumanInputFormResultTypes } from '@fema/connector-sdk';
 import { StatusCodes } from 'http-status-codes';
 import mime from 'mime-types';
 import { returnResponseActionOutputSchema } from '../output-schemas';

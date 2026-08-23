@@ -1,16 +1,16 @@
-import { isNil } from '@activepieces/core-utils';
 import {
   PieceProperty,
   PiecePropertyMap,
   PropertyGroup,
-} from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
+import { isNil } from '@fema/core-utils';
 import {
   ApFlagId,
   PieceAction,
   PieceActionSettings,
   PieceTrigger,
   PieceTriggerSettings,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import React from 'react';
 
 import { Skeleton } from '@/components/ui/skeleton';

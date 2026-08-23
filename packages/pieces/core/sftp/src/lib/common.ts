@@ -1,4 +1,4 @@
-import { isNil } from '@activepieces/pieces-framework';
+import { isNil } from '@fema/connector-sdk';
 import Client from 'ssh2-sftp-client';
 import { ServerHostKeyAlgorithm } from 'ssh2';
 import { Client as FTPClient } from 'basic-ftp';

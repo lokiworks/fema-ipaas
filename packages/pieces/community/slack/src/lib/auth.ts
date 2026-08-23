@@ -1,5 +1,5 @@
-import { PieceAuth } from '@activepieces/pieces-framework';
-import { httpClient, HttpMethod } from '@activepieces/pieces-common';
+import { PieceAuth } from '@fema/connector-sdk';
+import { httpClient, HttpMethod } from '@fema/connector-common';
 
 const nameOf = (value: unknown): string | undefined => {
   if (typeof value === 'object' && value !== null && 'name' in value && typeof value.name === 'string' && value.name.length > 0) {

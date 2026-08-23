@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { PiecesFilterType, ProjectType } from '@activepieces/shared';
-import type { ProjectWithLimits } from '@activepieces/shared';
+import { PiecesFilterType, ProjectType } from '@fema/shared';
+import type { ProjectWithLimits } from '@fema/shared';
 import {
   and,
   createCollection,

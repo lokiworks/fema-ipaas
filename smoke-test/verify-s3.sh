@@ -27,7 +27,7 @@ echo ""
 echo "--- Signing in ---"
 SIGNIN_RESPONSE=$(curl -s --fail-with-body "$API_URL/authentication/sign-in" \
   -H "Content-Type: application/json" \
-  -d '{"email":"bench@activepieces.com","password":"BenchmarkPass1"}')
+  -d '{"email":"bench@fema.local","password":"BenchmarkPass1"}')
 
 TOKEN=$(echo "$SIGNIN_RESPONSE" | jq -r '.token')
 PROJECT_ID=$(echo "$SIGNIN_RESPONSE" | jq -r '.projectId')

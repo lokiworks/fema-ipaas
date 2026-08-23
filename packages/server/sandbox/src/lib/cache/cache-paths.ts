@@ -1,7 +1,7 @@
 import { readdir, rm, stat } from 'fs/promises'
 import path from 'path'
-import { tryCatch } from '@activepieces/core-utils'
-import { type ApLogger } from '@activepieces/server-utils'
+import { tryCatch } from '@fema/core-utils'
+import { type ApLogger } from '@fema/server-utils'
 
 export const cacheUtils = (basePath: string) => ({
     getGlobalCachePathLatestVersion(): string {

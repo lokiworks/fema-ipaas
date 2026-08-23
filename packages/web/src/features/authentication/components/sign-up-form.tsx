@@ -1,5 +1,5 @@
-import { ErrorCode, isNil } from '@activepieces/core-utils';
-import { OtpType, TelemetryEventName } from '@activepieces/shared';
+import { ErrorCode, isNil } from '@fema/core-utils';
+import { OtpType, TelemetryEventName } from '@fema/shared';
 import { t } from 'i18next';
 import { Eye, EyeOff } from 'lucide-react';
 import { useCallback, useState } from 'react';

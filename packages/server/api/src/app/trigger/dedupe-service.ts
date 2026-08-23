@@ -1,6 +1,6 @@
 
-import { isNil } from '@activepieces/core-utils'
-import { DEDUPE_KEY_PROPERTY } from '@activepieces/pieces-framework'
+import { DEDUPE_KEY_PROPERTY } from '@fema/connector-sdk'
+import { isNil } from '@fema/core-utils'
 import { redisConnections } from '../database/redis-connections'
 
 const DUPLICATE_RECORD_EXPIRATION_SECONDS = 30

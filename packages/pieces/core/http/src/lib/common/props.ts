@@ -1,5 +1,5 @@
-import { Property } from '@activepieces/pieces-framework';
-import { HttpMethod } from '@activepieces/pieces-common';
+import { Property } from '@fema/connector-sdk';
+import { HttpMethod } from '@fema/connector-common';
 
 const httpMethodDropdownOptions = Object.values(HttpMethod).map((m) => ({
   label: m,

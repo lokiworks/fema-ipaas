@@ -1,10 +1,10 @@
-import { ErrorCode, isNil } from '@activepieces/core-utils';
+import { ErrorCode, isNil } from '@fema/core-utils';
 import {
   OtpType,
   AuthenticationResponse,
   SignInRequest,
   TelemetryEventName,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { t } from 'i18next';

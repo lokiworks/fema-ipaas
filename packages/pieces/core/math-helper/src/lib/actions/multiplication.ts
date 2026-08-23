@@ -2,7 +2,7 @@ import {
   PieceAuth,
   Property,
   createAction,
-} from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
 import { multiplicationActionOutputSchema } from '../output-schemas';
 
 export const multiplication = createAction({

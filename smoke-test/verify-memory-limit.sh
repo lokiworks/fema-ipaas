@@ -15,7 +15,7 @@ NUM_RUNS="${3:-3}"
 RUN_TIMEOUT_SECONDS=180
 
 API="http://$BASE_URL/api/v1"
-BENCH_EMAIL="${BENCH_EMAIL:-bench@activepieces.com}"
+BENCH_EMAIL="${BENCH_EMAIL:-bench@fema.local}"
 
 echo "=== Memory Limit Exceeded Detection Test ==="
 echo "Flow ID:  $FLOW_ID"

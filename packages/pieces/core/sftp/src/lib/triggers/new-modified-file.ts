@@ -1,5 +1,5 @@
-import { PiecePropValueSchema, Property, createTrigger, TriggerStrategy, AppConnectionValueForAuthProperty } from '@activepieces/pieces-framework';
-import { DedupeStrategy, Polling, pollingHelper } from '@activepieces/pieces-common';
+import { PiecePropValueSchema, Property, createTrigger, TriggerStrategy, AppConnectionValueForAuthProperty } from '@fema/connector-sdk';
+import { DedupeStrategy, Polling, pollingHelper } from '@fema/connector-common';
 import { getClient, getProtocolBackwardCompatibility, endClient } from '../common';
 import { sftpAuth } from '../auth';
 import dayjs from 'dayjs';

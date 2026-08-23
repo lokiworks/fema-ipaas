@@ -1,4 +1,4 @@
-import { AP_FUNCTIONS, ApFunction } from '@activepieces/core-formula';
+import { AP_FUNCTIONS, ApFunction } from '@fema/expression';
 import { InputRule, Node, mergeAttributes } from '@tiptap/core';
 import { JSONContent } from '@tiptap/react';
 

@@ -1,13 +1,13 @@
 
 import { z } from 'zod'
-import { isNil } from '@activepieces/core-utils'
+import { isNil } from '@fema/core-utils'
 import { ResumeReason, StreamStepProgress, TriggerHookType, TriggerPayload } from '../engine'
 import { ExecutionType } from '../flow-run/execution/execution-output'
 import { RunEnvironment } from '../flow-run/flow-run'
 import { CodeActionSchema, PieceActionSchema } from '../flows/actions/action'
 import { FlowVersion } from '../flows/flow-version'
 import { FlowTriggerType } from '../flows/triggers/trigger'
-import { AppConnectionType, AppConnectionValue, PiecePackage } from '@activepieces/core-piece-types'
+import { AppConnectionType, AppConnectionValue, PiecePackage } from '@fema/connector-types'
 
 export const LATEST_JOB_DATA_SCHEMA_VERSION = 10
 

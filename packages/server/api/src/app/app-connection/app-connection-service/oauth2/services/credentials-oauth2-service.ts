@@ -1,7 +1,7 @@
-import { ActivepiecesError, ErrorCode, isNil } from '@activepieces/core-utils'
-import { OAuth2AuthorizationMethod } from '@activepieces/pieces-framework'
-import { safeHttp } from '@activepieces/server-utils'
-import { AppConnectionType, BaseOAuth2ConnectionValue, OAuth2ConnectionValueWithApp, OAuth2GrantType, resolveValueFromProps } from '@activepieces/shared'
+import { OAuth2AuthorizationMethod } from '@fema/connector-sdk'
+import { ActivepiecesError, ErrorCode, isNil } from '@fema/core-utils'
+import { safeHttp } from '@fema/server-utils'
+import { AppConnectionType, BaseOAuth2ConnectionValue, OAuth2ConnectionValueWithApp, OAuth2GrantType, resolveValueFromProps } from '@fema/shared'
 import { AxiosError } from 'axios'
 import { FastifyBaseLogger } from 'fastify'
 import {

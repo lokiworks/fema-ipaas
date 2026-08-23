@@ -18,8 +18,8 @@ export {
   startCase,
   tryCatch,
   AIProviderName,
-} from '@activepieces/core-utils';
-export type { SeekPage } from '@activepieces/core-utils';
+} from '@fema/core-utils';
+export type { SeekPage } from '@fema/core-utils';
 
 export {
   PieceCategory,
@@ -28,29 +28,7 @@ export {
   OAuth2GrantType,
   WebhookHandshakeStrategy,
   ExecutionType,
-  AgentToolType,
-  // agents / tools
-  AgentTool,
-  AgentFlowTool,
-  AgentMcpTool,
-  AgentKnowledgeBaseTool,
-  AgentOutputField,
-  AgentOutputFieldType,
-  AgentPieceProps,
-  AgentStepBlock,
-  AgentTaskStatus,
-  ContentBlockType,
   ExecutionToolStatus,
-  KnowledgeBaseSourceType,
-  MarkdownContentBlock,
-  McpProtocol,
-  McpAuthType,
-  ToolCallContentBlock,
-  ToolCallStatus,
-  ToolCallType,
-  TASK_COMPLETION_TOOL_NAME,
-  buildAuthHeaders,
-  mcpToolNameUtils,
   normalizeToolOutputToExecuteResponse,
   // ai providers
   AIProviderModel,
@@ -66,9 +44,6 @@ export {
   splitCloudflareGatewayModelId,
   AI_PROVIDER_CAPABILITIES,
   // mcp
-  McpProperty,
-  McpPropertyType,
-  McpTrigger,
   // forms
   ChatFormResponse,
   FileResponseInterface,
@@ -76,20 +51,6 @@ export {
   HumanInputFormResultTypes,
   createKeyForFormInput,
   // tables
-  Table,
-  Field,
-  FieldType,
-  Filter,
-  FilterOperator,
-  PopulatedRecord,
-  StaticDropdownEmptyOption,
-  TableWebhookEventType,
-  CreateTableWebhookRequest,
-  CreateRecordsRequest,
-  ExportTableResponse,
-  ListRecordsRequest,
-  ListTablesRequest,
-  UpdateRecordRequest,
   // flow contracts
   FlowStatus,
   FlowTriggerType,
@@ -101,15 +62,11 @@ export {
   FAIL_PARENT_ON_FAILURE_HEADER,
   ACTIVEPIECES_CHAT_TIERS,
   DEFAULT_CHAT_TIER_ID,
-} from '@activepieces/core-piece-types';
+} from '@fema/connector-types';
 export type {
-  McpAuthConfig,
   BasicAuthConnectionValue,
   CustomAuthConnectionValue,
   PopulatedFlowSummary,
-  AgentProviderModel,
-  AgentResult,
-  ToolCallBase,
   ExecuteToolResponse,
   PopulatedFlow,
-} from '@activepieces/core-piece-types';
+} from '@fema/connector-types';

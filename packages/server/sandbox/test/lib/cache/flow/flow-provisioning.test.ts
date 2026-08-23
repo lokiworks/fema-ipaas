@@ -2,8 +2,8 @@ import { rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { randomUUID } from 'node:crypto'
-import { type ApLogger } from '@activepieces/server-utils'
-import { FlowActionType, FlowTriggerType, FlowVersion, FlowVersionState, LATEST_FLOW_SCHEMA_VERSION, PackageType, PieceType, WorkerToApiContract } from '@activepieces/shared'
+import { type ApLogger } from '@fema/server-utils'
+import { FlowActionType, FlowTriggerType, FlowVersion, FlowVersionState, LATEST_FLOW_SCHEMA_VERSION, PackageType, PieceType, WorkerToApiContract } from '@fema/shared'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { flowProvisioning } from '../../../../src/lib/cache/flow/flow-provisioning'
 
@@ -41,14 +41,14 @@ function flowWithPiece(overrides: Partial<FlowVersion> = {}): FlowVersion {
             name: 'trigger', type: FlowTriggerType.EMPTY, displayName: 'Trigger', valid: true, settings: {},
             nextAction: {
                 name: 'step_1', type: FlowActionType.PIECE, displayName: 'HTTP', valid: true,
-                settings: { pieceName: '@activepieces/piece-http', pieceVersion: '^1.0.0', actionName: 'send', input: {}, inputUiInfo: {} },
+                settings: { pieceName: '@fema/connector-http', pieceVersion: '^1.0.0', actionName: 'send', input: {}, inputUiInfo: {} },
             },
         },
         ...overrides,
     } as unknown as FlowVersion
 }
 
-const httpPiece = { packageType: PackageType.REGISTRY, name: '@activepieces/piece-http', version: '1.0.5', pieceType: PieceType.OFFICIAL }
+const httpPiece = { packageType: PackageType.REGISTRY, name: '@fema/connector-http', version: '1.0.5', pieceType: PieceType.OFFICIAL }
 
 const flow = { id: 'flow1', versionId: 'fv1', projectId: 'p1' }
 
@@ -151,7 +151,7 @@ describe('flowProvisioning.resolve', () => {
         if (resolved.kind === 'disabled') {
             expect(resolved.failedStep?.name).toBe('step_1')
             expect(resolved.failedStep?.displayName).toBe('HTTP')
-            expect(resolved.failedStep?.message).toContain('@activepieces/piece-http@^1.0.0')
+            expect(resolved.failedStep?.message).toContain('@fema/connector-http@^1.0.0')
             expect(resolved.failedStep?.message).toContain('turned off')
         }
     })

@@ -1,5 +1,5 @@
-import { isNil } from '@activepieces/core-utils'
-import { ContextVersion } from '@activepieces/pieces-framework'
+import { ContextVersion } from '@fema/connector-sdk'
+import { isNil } from '@fema/core-utils'
 
 import { createConnectionResolver } from '../piece-context/connection-resolver'
 import { scriptEvaluator } from './script-evaluator'

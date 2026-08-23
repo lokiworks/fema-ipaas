@@ -1,4 +1,4 @@
-import { FlowActionType, flowStructureUtil, FlowTriggerType, FlowVersion } from '@activepieces/shared'
+import { FlowActionType, flowStructureUtil, FlowTriggerType, FlowVersion } from '@fema/shared'
 
 export const flowMigrationUtil = {
     pinPieceToVersion(flowVersion: FlowVersion, pieceName: string, pieceVersion: string) {

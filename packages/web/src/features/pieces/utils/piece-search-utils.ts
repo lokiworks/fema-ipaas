@@ -3,7 +3,7 @@ import {
   FlowTriggerType,
   FlowActionType,
   AI_PIECE_NAME,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import { t } from 'i18next';
 
 import {
@@ -97,15 +97,15 @@ const getPinnedPieces = (
 };
 
 const POPULAR_PIECES_NAMES = [
-  '@activepieces/piece-google-sheets',
-  '@activepieces/piece-slack',
-  '@activepieces/piece-notion',
-  '@activepieces/piece-gmail',
-  '@activepieces/piece-hubspot',
-  '@activepieces/piece-openai',
-  '@activepieces/piece-google-forms',
-  '@activepieces/piece-google-drive',
-  '@activepieces/piece-google-docs',
+  '@fema/connector-google-sheets',
+  '@fema/connector-slack',
+  '@fema/connector-notion',
+  '@fema/connector-gmail',
+  '@fema/connector-hubspot',
+  '@fema/connector-openai',
+  '@fema/connector-google-forms',
+  '@fema/connector-google-drive',
+  '@fema/connector-google-docs',
 ];
 const getPopularPieces = (
   queryResult: StepMetadataWithSuggestions[],
@@ -159,21 +159,21 @@ const sortByPieceNameOrder = (
   });
 };
 const HIGHLIGHTED_PIECES_NAMES_FOR_TRIGGERS = [
-  '@activepieces/piece-webhook',
-  '@activepieces/piece-schedule',
-  '@activepieces/piece-manual-trigger',
-  '@activepieces/piece-forms',
-  '@activepieces/piece-tables',
+  '@fema/connector-webhook',
+  '@fema/connector-schedule',
+  '@fema/connector-manual-trigger',
+  '@fema/connector-forms',
+  '@fema/connector-tables',
 ];
 
 const HIGHLIGHTED_PIECES_NAMES_FOR_ACTIONS = [
   AI_PIECE_NAME,
-  '@activepieces/piece-http',
-  '@activepieces/piece-tables',
-  '@activepieces/piece-forms',
-  '@activepieces/piece-webhook',
-  '@activepieces/piece-text-helper',
-  '@activepieces/piece-date-helper',
+  '@fema/connector-http',
+  '@fema/connector-tables',
+  '@fema/connector-forms',
+  '@fema/connector-webhook',
+  '@fema/connector-text-helper',
+  '@fema/connector-date-helper',
 ];
 
 export const pieceSearchUtils = {

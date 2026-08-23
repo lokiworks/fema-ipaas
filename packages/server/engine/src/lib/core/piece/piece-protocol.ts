@@ -1,6 +1,6 @@
-import { isNil, isObject } from '@activepieces/core-utils'
-import { ContextVersion, PieceMetadata } from '@activepieces/pieces-framework'
-import { ExecutionError, ExecutionErrorType, ExecutionType, PropertySettings, ResumePayload, ScheduleOptions } from '@activepieces/shared'
+import { ContextVersion, PieceMetadata } from '@fema/connector-sdk'
+import { isNil, isObject } from '@fema/core-utils'
+import { ExecutionError, ExecutionErrorType, ExecutionType, PropertySettings, ResumePayload, ScheduleOptions } from '@fema/shared'
 import { HookResponse } from '../../utils'
 
 export const pieceProtocol = {

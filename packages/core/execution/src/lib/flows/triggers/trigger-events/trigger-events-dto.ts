@@ -1,7 +1,7 @@
-import { FlowId } from '@activepieces/core-utils'
+import { FlowId } from '@fema/core-utils'
 import { z } from 'zod'
-import { ApId } from '@activepieces/core-utils'
-import { Cursor } from '@activepieces/core-utils'
+import { ApId } from '@fema/core-utils'
+import { Cursor } from '@fema/core-utils'
 
 export const ListTriggerEventsRequest = z.object({
     projectId: ApId,

@@ -1,5 +1,5 @@
-import { isNil, Permission } from '@activepieces/core-utils';
-import { ApFlagId, PlatformRole, ProjectType } from '@activepieces/shared';
+import { isNil, Permission } from '@fema/core-utils';
+import { ApFlagId, PlatformRole, ProjectType } from '@fema/shared';
 import { t } from 'i18next';
 import { UsersRound, Lock } from 'lucide-react';
 import { useState } from 'react';

@@ -1,5 +1,5 @@
-import { ProjectId, UserId } from '@activepieces/core-utils'
-import { TelemetryEvent, User, UserIdentity } from '@activepieces/shared'
+import { ProjectId, UserId } from '@fema/core-utils'
+import { TelemetryEvent, User, UserIdentity } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 
 export const telemetry = (_log: FastifyBaseLogger) => ({

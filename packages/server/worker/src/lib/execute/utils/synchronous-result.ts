@@ -1,4 +1,4 @@
-import { RuntimeExecutionResult } from '@activepieces/sandbox'
+import { RuntimeExecutionResult } from '@fema/sandbox'
 import { JobResultKind, SynchronousJobResult } from '../types'
 
 export function buildSynchronousResult(result: RuntimeExecutionResult): SynchronousJobResult {

@@ -1,5 +1,5 @@
-import { ActivepiecesError, ErrorCode } from '@activepieces/core-utils'
-import { CloudOAuth2ConnectionValue } from '@activepieces/shared'
+import { ActivepiecesError, ErrorCode } from '@fema/core-utils'
+import { CloudOAuth2ConnectionValue } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { OAuth2Service } from '../oauth2-service'
 

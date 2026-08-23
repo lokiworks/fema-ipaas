@@ -5,9 +5,9 @@ import {
   HttpRequest,
   HttpResponse,
   QueryParams,
-} from '@activepieces/pieces-common';
-import { Property } from '@activepieces/pieces-framework';
-import { isNil } from '@activepieces/pieces-framework';
+} from '@fema/connector-common';
+import { Property } from '@fema/connector-sdk';
+import { isNil } from '@fema/connector-sdk';
 import { githubAuth } from '../auth';
 import { githubAuthHelpers, GithubAuthValue, isAppAuth } from './auth-helpers';
 

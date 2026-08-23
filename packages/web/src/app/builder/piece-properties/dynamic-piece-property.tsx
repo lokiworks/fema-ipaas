@@ -1,9 +1,6 @@
-import { isNil } from '@activepieces/core-utils';
-import { PiecePropertyMap, PropertyType } from '@activepieces/pieces-framework';
-import {
-  AUTHENTICATION_PROPERTY_NAME,
-  PropertySettings,
-} from '@activepieces/shared';
+import { PiecePropertyMap, PropertyType } from '@fema/connector-sdk';
+import { isNil } from '@fema/core-utils';
+import { AUTHENTICATION_PROPERTY_NAME, PropertySettings } from '@fema/shared';
 import deepEqual from 'deep-equal';
 import React, { useState, useRef, useContext } from 'react';
 import { useFormContext, UseFormReturn, useWatch } from 'react-hook-form';

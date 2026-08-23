@@ -1,5 +1,5 @@
-import { PieceAuth, createPiece } from '@activepieces/pieces-framework';
-import { PieceCategory } from '@activepieces/pieces-framework';
+import { PieceAuth, createPiece } from '@fema/connector-sdk';
+import { PieceCategory } from '@fema/connector-sdk';
 import { convertJsonToXml } from './lib/actions/convert-json-to-xml';
 import { convertXmlToJson } from './lib/actions/convert-xml-to-json';
 

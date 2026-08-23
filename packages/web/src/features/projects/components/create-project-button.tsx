@@ -1,4 +1,4 @@
-import { ProjectWithLimits } from '@activepieces/shared';
+import { ProjectWithLimits } from '@fema/shared';
 import { t } from 'i18next';
 import { Plus } from 'lucide-react';
 

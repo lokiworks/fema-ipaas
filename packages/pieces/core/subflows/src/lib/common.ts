@@ -1,6 +1,6 @@
-import { FAIL_PARENT_ON_FAILURE_HEADER, FlowStatus, FlowTriggerType, isNil, PARENT_RUN_ID_HEADER, PieceAuth, PopulatedFlow, Property } from "@activepieces/pieces-framework";
-import { FlowsContext, ListFlowsContextParams } from "@activepieces/pieces-framework";
-import { httpClient, HttpMethod } from "@activepieces/pieces-common";
+import { FAIL_PARENT_ON_FAILURE_HEADER, FlowStatus, FlowTriggerType, isNil, PARENT_RUN_ID_HEADER, PieceAuth, PopulatedFlow, Property } from "@fema/connector-sdk";
+import { FlowsContext, ListFlowsContextParams } from "@fema/connector-sdk";
+import { httpClient, HttpMethod } from "@fema/connector-common";
 
 
 export const callableFlowKey = (runId: string) => `callableFlow_${runId}`;
@@ -27,7 +27,7 @@ export async function listFlowsWithSubflowTrigger({
         (flow) =>
             flow.version.trigger.type === FlowTriggerType.PIECE &&
             flow.version.trigger.settings.pieceName ==
-            '@activepieces/piece-subflows'
+            '@fema/connector-subflows'
     );
     return flows;
 }

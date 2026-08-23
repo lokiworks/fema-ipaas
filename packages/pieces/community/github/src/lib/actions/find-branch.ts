@@ -1,7 +1,7 @@
-import { createAction, Property } from '@activepieces/pieces-framework';
+import { createAction, Property } from '@fema/connector-sdk';
 import { githubAuth } from '../auth';
 import { githubApiCall, githubCommon } from '../common';
-import { HttpError, HttpMethod } from '@activepieces/pieces-common';
+import { HttpError, HttpMethod } from '@fema/connector-common';
 import { findBranchActionOutputSchema } from '../output-schemas';
 
 export const githubFindBranchAction = createAction({

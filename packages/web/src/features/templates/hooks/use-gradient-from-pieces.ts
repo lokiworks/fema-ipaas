@@ -3,7 +3,7 @@ import {
   FlowActionType,
   flowStructureUtil,
   PieceCategory,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import { useQueries } from '@tanstack/react-query';
 import { useMemo } from 'react';
 

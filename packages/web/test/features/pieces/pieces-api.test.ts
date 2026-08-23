@@ -1,5 +1,5 @@
-import { PropertyType } from '@activepieces/pieces-framework';
-import { PieceOptionRequest } from '@activepieces/shared';
+import { PropertyType } from '@fema/connector-sdk';
+import { PieceOptionRequest } from '@fema/shared';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('i18next', () => ({ t: (key: string) => key }));

@@ -8,7 +8,7 @@ const OWNER = 'utils'
 const EVLOG_IMPORT = /from\s+'evlog(\/[a-z-]+)?'/
 
 describe('evlog single owner', () => {
-    it('is declared only by @activepieces/server-utils', () => {
+    it('is declared only by @fema/server-utils', () => {
         const declaring = serverPackageDirs()
             .filter((dir) => declaresEvlog({ dir }))
             .map((dir) => relative(SERVER_ROOT, dir))
@@ -16,7 +16,7 @@ describe('evlog single owner', () => {
         expect(declaring).toEqual([OWNER])
     })
 
-    it('is imported only from @activepieces/server-utils sources', () => {
+    it('is imported only from @fema/server-utils sources', () => {
         const importing = serverPackageDirs()
             .filter((dir) => relative(SERVER_ROOT, dir) !== OWNER)
             .flatMap((dir) => tsFilesIn({ dir: join(dir, 'src') }))

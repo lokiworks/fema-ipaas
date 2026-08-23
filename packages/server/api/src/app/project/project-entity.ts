@@ -7,7 +7,7 @@ import {
     Project,
     TriggerEvent,
     User,
-} from '@activepieces/shared'
+} from '@fema/shared'
 import { EntitySchema } from 'typeorm'
 import {
     ApIdSchema,

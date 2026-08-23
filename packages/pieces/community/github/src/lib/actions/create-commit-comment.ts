@@ -1,7 +1,7 @@
 import { githubAuth } from '../auth';
-import { createAction, Property } from '@activepieces/pieces-framework';
+import { createAction, Property } from '@fema/connector-sdk';
 import { githubApiCall, githubCommon } from '../common';
-import { HttpMethod } from '@activepieces/pieces-common';
+import { HttpMethod } from '@fema/connector-common';
 import { createCommitCommentActionOutputSchema } from '../output-schemas';
 
 export const githubCreateCommitCommentAction = createAction({

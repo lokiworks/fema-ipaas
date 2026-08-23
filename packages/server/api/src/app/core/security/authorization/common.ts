@@ -1,5 +1,5 @@
-import { Permission } from '@activepieces/core-utils'
-import { PrincipalType } from '@activepieces/shared'
+import { Permission } from '@fema/core-utils'
+import { PrincipalType } from '@fema/shared'
 import { EntitySchema } from 'typeorm'
 
 export enum AuthorizationType {

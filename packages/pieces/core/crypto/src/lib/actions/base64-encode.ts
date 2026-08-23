@@ -1,4 +1,4 @@
-import { Property, createAction } from '@activepieces/pieces-framework';
+import { Property, createAction } from '@fema/connector-sdk';
 
 export const base64Encode = createAction({
   audience: 'both',

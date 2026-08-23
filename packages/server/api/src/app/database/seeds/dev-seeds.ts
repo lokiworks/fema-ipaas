@@ -1,4 +1,4 @@
-import { ApEnvironment, UserIdentityProvider } from '@activepieces/shared'
+import { ApEnvironment, UserIdentityProvider } from '@fema/shared'
 import { authenticationService } from '../../authentication/authentication.service'
 import { FlagEntity } from '../../flags/flag.entity'
 import { system } from '../../helper/system/system'

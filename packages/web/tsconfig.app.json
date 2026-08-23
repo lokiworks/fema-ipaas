@@ -12,17 +12,11 @@
       "@/*": [
         "./src/*"
       ],
-      "@activepieces/shared": [
+      "@fema/shared": [
         "../../packages/core/shared/src"
       ],
-      "@activepieces/pieces-framework": [
+      "@fema/connector-sdk": [
         "../../packages/pieces/framework/src"
-      ],
-      "ee-embed-sdk": [
-        "../../packages/ee/embed-sdk/src"
-      ],
-      "@activepieces/piece-ai": [
-        "../../packages/pieces/community/ai/src"
       ]
     }
   },
@@ -36,5 +30,12 @@
     "src/**/*.spec.jsx",
     "src/**/*.test.jsx"
   ],
-  "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx", "i18next-parser.config.js", "src/app/builder/builder-flow-status-section/index.tsx"]
+  "include": [
+    "src/**/*.js",
+    "src/**/*.jsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "i18next-parser.config.js",
+    "src/app/builder/builder-flow-status-section/index.tsx"
+  ]
 }

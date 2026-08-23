@@ -6,8 +6,8 @@ import {
     ExecutionMode,
     NetworkMode,
     WebsocketServerEvent,
-} from '@activepieces/shared'
-import type { WorkerToApiContract, WorkerSettingsResponse } from '@activepieces/shared'
+} from '@fema/shared'
+import type { WorkerToApiContract, WorkerSettingsResponse } from '@fema/shared'
 
 const mockWorkerSettingsSet = vi.fn()
 

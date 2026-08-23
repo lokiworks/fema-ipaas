@@ -1,6 +1,6 @@
-import { isNil } from '@activepieces/core-utils';
-import { DropdownState, PropertyType } from '@activepieces/pieces-framework';
-import { AUTHENTICATION_PROPERTY_NAME } from '@activepieces/shared';
+import { DropdownState, PropertyType } from '@fema/connector-sdk';
+import { isNil } from '@fema/core-utils';
+import { AUTHENTICATION_PROPERTY_NAME } from '@fema/shared';
 import deepEqual from 'deep-equal';
 import { t } from 'i18next';
 import React, { useContext, useEffect, useRef, useState } from 'react';

@@ -1,12 +1,12 @@
-import { isNil } from '@activepieces/core-utils';
 import {
   OAuth2Props,
   PiecePropertyMap,
   ArraySubProps,
   PropertyGroup,
   PieceProperty,
-} from '@activepieces/pieces-framework';
-import { PropertyExecutionType, PropertySettings } from '@activepieces/shared';
+} from '@fema/connector-sdk';
+import { isNil } from '@fema/core-utils';
+import { PropertyExecutionType, PropertySettings } from '@fema/shared';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 

@@ -3,8 +3,8 @@ import {
   DynamicPropsValue,
   PieceAuth,
   Property,
-} from '@activepieces/pieces-framework';
-import { ExecutionType, isNil } from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
+import { ExecutionType, isNil } from '@fema/connector-sdk';
 import { CallableFlowResponse, dispatchToSubflow, findEnabledSubflowOrThrow, findFlowByExternalIdOrThrow, subflowDropdown } from '../common';
 
 export const callFlow = createAction({

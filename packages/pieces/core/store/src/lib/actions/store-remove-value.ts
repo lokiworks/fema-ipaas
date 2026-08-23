@@ -5,10 +5,10 @@ import {
   Property,
   ShortTextProperty,
   StaticDropdownProperty,
-} from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
 import { common, getScopeAndKey, PieceStoreScope } from './common';
 import * as z from 'zod/mini'
-import { propsValidation } from '@activepieces/pieces-common';
+import { propsValidation } from '@fema/connector-common';
 
 async function executeStorageRemoveValue(context: ActionContext<PieceAuthProperty | undefined, {
   key: ShortTextProperty<true>;

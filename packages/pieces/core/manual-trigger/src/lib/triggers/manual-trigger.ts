@@ -1,6 +1,6 @@
 
-import { createTrigger, Property, TriggerStrategy  } from '@activepieces/pieces-framework';
-import { MarkdownVariant } from '@activepieces/pieces-framework';
+import { createTrigger, Property, TriggerStrategy  } from '@fema/connector-sdk';
+import { MarkdownVariant } from '@fema/connector-sdk';
 
 export const manualTrigger = createTrigger({
 name: 'manual_trigger',

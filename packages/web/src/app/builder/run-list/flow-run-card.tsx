@@ -1,11 +1,11 @@
-import { Permission } from '@activepieces/core-utils';
+import { Permission } from '@fema/core-utils';
 import {
   FlowRetryStrategy,
   FlowRun,
   FlowRunStatus,
   isFailedState,
   isFlowRunStateTerminal,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import { t } from 'i18next';
 import { Eye, Repeat, Timer } from 'lucide-react';
 import React, { useState } from 'react';

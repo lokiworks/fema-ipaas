@@ -1,7 +1,7 @@
 // Must be set before the server reads it to size @fastify/multipart's fileSize limit.
 process.env.AP_MAX_FILE_SIZE_MB = '1'
 
-import { FileType, Flow, FlowStatus, Project } from '@activepieces/shared'
+import { FileType, Flow, FlowStatus, Project } from '@fema/shared'
 import { FastifyInstance } from 'fastify'
 import FormData from 'form-data'
 import { StatusCodes } from 'http-status-codes'

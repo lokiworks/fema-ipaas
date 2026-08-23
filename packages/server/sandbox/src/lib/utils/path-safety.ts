@@ -1,4 +1,4 @@
-import { ActivepiecesError, ErrorCode } from '@activepieces/core-utils'
+import { ActivepiecesError, ErrorCode } from '@fema/core-utils'
 
 export function assertSafePathSegment(value: string, field: string): void {
     const isUnsafe = value.length === 0

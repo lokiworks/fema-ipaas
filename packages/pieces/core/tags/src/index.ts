@@ -1,5 +1,5 @@
-import { createPiece, PieceAuth } from '@activepieces/pieces-framework';
-import { PieceCategory } from '@activepieces/pieces-framework';
+import { createPiece, PieceAuth } from '@fema/connector-sdk';
+import { PieceCategory } from '@fema/connector-sdk';
 import { addTag } from './lib/add-tag';
 
 export const tags = createPiece({

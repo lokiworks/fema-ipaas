@@ -1,9 +1,9 @@
-import { isNil } from '@activepieces/core-utils';
+import { isNil } from '@fema/core-utils';
 import {
   PlatformWithoutSensitiveData,
   ProjectWithLimits,
   ProjectType,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import { ColumnDef } from '@tanstack/react-table';
 import { t } from 'i18next';
 import {

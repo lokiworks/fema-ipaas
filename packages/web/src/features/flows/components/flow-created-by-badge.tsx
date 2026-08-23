@@ -1,4 +1,4 @@
-import { FlowCreator, FlowCreatorType } from '@activepieces/shared';
+import { FlowCreator, FlowCreatorType } from '@fema/shared';
 import { t } from 'i18next';
 
 import { McpSvg } from '@/assets/img/custom/mcp';

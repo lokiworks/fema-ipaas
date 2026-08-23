@@ -1,10 +1,10 @@
-import { createCustomApiCallAction, httpClient, HttpMethod } from '@activepieces/pieces-common';
+import { createCustomApiCallAction, httpClient, HttpMethod } from '@fema/connector-common';
 import {
   createPiece,
   Property,
-} from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
 
-import { PieceCategory } from '@activepieces/pieces-framework';
+import { PieceCategory } from '@fema/connector-sdk';
 import crypto from 'node:crypto';
 import { requestActionDirectMessageAction } from './lib/actions/request-action-direct-message';
 import { requestActionMessageAction } from './lib/actions/request-action-message';

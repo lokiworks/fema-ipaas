@@ -6,7 +6,7 @@ import {
   FLOW_CANVAS_STEP_HEIGHT,
   FLOW_CANVAS_STEP_WIDTH,
   FLOW_CANVAS_VSPACE,
-} from '@activepieces/shared';
+} from '@fema/shared';
 
 import { ApNodeType, CanvasOrientation } from './types';
 

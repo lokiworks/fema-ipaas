@@ -1,7 +1,7 @@
 import fs from 'fs/promises'
 import path from 'path'
-import { isNil } from '@activepieces/core-utils'
-import { EngineGenericError, getPackageAliasForPiece, getPieceNameFromAlias, trimVersionFromAlias } from '@activepieces/shared'
+import { isNil } from '@fema/core-utils'
+import { EngineGenericError, getPackageAliasForPiece, getPieceNameFromAlias, trimVersionFromAlias } from '@fema/shared'
 import { utils } from '../../utils'
 import { PieceRef } from './piece-runner'
 

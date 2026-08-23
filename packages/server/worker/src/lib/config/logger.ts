@@ -1,4 +1,4 @@
-import { type ApLogger, apVersionUtil, evlogSetup } from '@activepieces/server-utils'
+import { type ApLogger, apVersionUtil, evlogSetup } from '@fema/server-utils'
 import { system, WorkerSystemProp } from './configs'
 
 function buildLogger(): ApLogger {

@@ -1,4 +1,4 @@
-import { LoopOnItemsAction } from '@activepieces/shared';
+import { LoopOnItemsAction } from '@fema/shared';
 import { t } from 'i18next';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';

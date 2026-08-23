@@ -1,6 +1,6 @@
-import { createAction, Property } from '@activepieces/pieces-framework';
+import { createAction, Property } from '@fema/connector-sdk';
 import { slackAuth } from '../auth';
-import { assertNotNullOrUndefined } from '@activepieces/pieces-framework';
+import { assertNotNullOrUndefined } from '@fema/connector-sdk';
 import { Block, KnownBlock } from '@slack/web-api';
 import { slackSendMessage, textToSectionBlocks } from '../common/utils';
 import { getBotToken, SlackAuthValue } from '../common/auth-helpers';

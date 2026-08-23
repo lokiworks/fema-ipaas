@@ -1,11 +1,11 @@
 import {
   createAction,
   Property,
-} from '@activepieces/pieces-framework';
-import { ExecutionType } from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
+import { ExecutionType } from '@fema/connector-sdk';
 import { markdownDescription } from '../common';
 import * as z from 'zod/mini'
-import { propsValidation } from '@activepieces/pieces-common';
+import { propsValidation } from '@fema/connector-common';
 import { delayForActionOutputSchema } from '../output-schemas';
 
 enum TimeUnit {

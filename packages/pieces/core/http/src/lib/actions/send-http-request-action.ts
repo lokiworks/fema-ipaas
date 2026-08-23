@@ -6,15 +6,15 @@ import {
   QueryParams,
   AuthenticationType,
   toFailsafeOutput,
-} from '@activepieces/pieces-common';
+} from '@fema/connector-common';
 import {
   ApFile,
   createAction,
   DynamicPropsValue,
   PieceAuth,
   Property,
-} from '@activepieces/pieces-framework';
-import { assertNotNullOrUndefined, isEmpty } from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
+import { assertNotNullOrUndefined, isEmpty } from '@fema/connector-sdk';
 import FormData from 'form-data';
 import { httpMethodDropdown } from '../common/props';
 import { ProxyAgent } from 'undici';

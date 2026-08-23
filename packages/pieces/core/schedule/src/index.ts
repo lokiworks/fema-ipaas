@@ -1,5 +1,5 @@
-import { PieceAuth, createPiece } from '@activepieces/pieces-framework';
-import { PieceCategory } from '@activepieces/pieces-framework';
+import { PieceAuth, createPiece } from '@fema/connector-sdk';
+import { PieceCategory } from '@fema/connector-sdk';
 import { cronExpressionTrigger } from './lib/triggers/cron-expression.trigger';
 import { everyDayTrigger } from './lib/triggers/every-day.trigger';
 import { everyHourTrigger } from './lib/triggers/every-hour.trigger';

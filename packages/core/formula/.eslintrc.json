@@ -11,10 +11,10 @@
             "patterns": [
               {
                 "group": [
-                  "@activepieces/shared",
-                  "@activepieces/server*",
-                  "@activepieces/pieces*",
-                  "@activepieces/web*"
+                  "@fema/shared",
+                  "@fema/server*",
+                  "@fema/pieces*",
+                  "@fema/web*"
                 ],
                 "message": "core/* packages are the framework-agnostic foundation; they must not import shared, server, pieces, or web. Keep core/* acyclic."
               }

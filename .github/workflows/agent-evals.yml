@@ -61,7 +61,7 @@ jobs:
           max-age: 3w
           max-size: 20gb
 
-      # The eval tests import @activepieces/* packages by their built dist/, which
+      # The eval tests import @fema/* packages by their built dist/, which
       # bun install alone does not produce.
       - name: Build worker dependency graph
         run: npx turbo run build --filter=worker

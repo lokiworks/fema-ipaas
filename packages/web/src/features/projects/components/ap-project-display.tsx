@@ -1,9 +1,5 @@
-import { isNil } from '@activepieces/core-utils';
-import {
-  PROJECT_COLOR_PALETTE,
-  ProjectIcon,
-  ProjectType,
-} from '@activepieces/shared';
+import { isNil } from '@fema/core-utils';
+import { PROJECT_COLOR_PALETTE, ProjectIcon, ProjectType } from '@fema/shared';
 import { User } from 'lucide-react';
 import { useContext } from 'react';
 

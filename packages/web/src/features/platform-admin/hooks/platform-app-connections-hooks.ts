@@ -1,4 +1,4 @@
-import { AppConnectionStatus } from '@activepieces/shared';
+import { AppConnectionStatus } from '@fema/shared';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 

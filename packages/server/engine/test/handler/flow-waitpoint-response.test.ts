@@ -1,4 +1,4 @@
-import { FlowRunStatus } from '@activepieces/shared'
+import { FlowRunStatus } from '@fema/shared'
 import { vi } from 'vitest'
 import { FlowExecutorContext } from '../../src/lib/handler/context/flow-execution-context'
 import { flowExecutor } from '../../src/lib/handler/flow-executor'
@@ -39,7 +39,7 @@ describe('flow waitpoint response propagation', () => {
 
         const action = buildPieceAction({
             name: 'http',
-            pieceName: '@activepieces/piece-webhook',
+            pieceName: '@fema/connector-webhook',
             actionName: 'return_response_and_wait_for_next_webhook',
             input: {
                 responseType: 'json',
@@ -56,7 +56,7 @@ describe('flow waitpoint response propagation', () => {
             executionState: FlowExecutorContext.empty(),
             constants: generateMockEngineConstants({
                 internalApiUrl: engineApi.url,
-                triggerPieceName: '@activepieces/piece-webhook',
+                triggerPieceName: '@fema/connector-webhook',
                 workerHandlerId: 'test-handler-id',
                 httpRequestId: 'test-request-id',
             }),
@@ -87,7 +87,7 @@ describe('flow waitpoint response propagation', () => {
     it('should not call sendFlowResponse when triggerPieceName does not match', async () => {
         const action = buildPieceAction({
             name: 'http',
-            pieceName: '@activepieces/piece-webhook',
+            pieceName: '@fema/connector-webhook',
             actionName: 'return_response_and_wait_for_next_webhook',
             input: {
                 responseType: 'json',

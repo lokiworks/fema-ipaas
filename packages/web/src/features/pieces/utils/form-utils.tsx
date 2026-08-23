@@ -1,9 +1,4 @@
 import {
-  Metadata,
-  isNil,
-  parseToJsonIfPossible,
-} from '@activepieces/core-utils';
-import {
   piecePropertiesUtils,
   OAuth2Props,
   PieceAuthProperty,
@@ -12,7 +7,8 @@ import {
   PieceProperty,
   PiecePropertyMap,
   PropertyType,
-} from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
+import { Metadata, isNil, parseToJsonIfPossible } from '@fema/core-utils';
 import {
   AppConnectionScope,
   AppConnectionType,
@@ -41,7 +37,7 @@ import {
   PieceTriggerSettings,
   AUTHENTICATION_PROPERTY_NAME,
   OAuth2GrantType,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import { t } from 'i18next';
 import { z, ZodObject, ZodType } from 'zod';
 

@@ -1,6 +1,6 @@
 
-import { createTrigger, TriggerStrategy, Property, AppConnectionValueForAuthProperty } from '@activepieces/pieces-framework';
-import { DedupeStrategy, Polling, pollingHelper } from '@activepieces/pieces-common';
+import { createTrigger, TriggerStrategy, Property, AppConnectionValueForAuthProperty } from '@fema/connector-sdk';
+import { DedupeStrategy, Polling, pollingHelper } from '@fema/connector-common';
 import crypto from 'crypto';
 import { postgresAuth } from '../..';
 import { pgClient, postgresCommon } from '../common';

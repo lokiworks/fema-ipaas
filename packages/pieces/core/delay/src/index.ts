@@ -1,5 +1,5 @@
-import { PieceAuth, createPiece } from '@activepieces/pieces-framework';
-import { PieceCategory } from '@activepieces/pieces-framework';
+import { PieceAuth, createPiece } from '@fema/connector-sdk';
+import { PieceCategory } from '@fema/connector-sdk';
 import { delayForAction } from './lib/actions/delay-for-action';
 import { delayUntilAction } from './lib/actions/delay-until-action';
 

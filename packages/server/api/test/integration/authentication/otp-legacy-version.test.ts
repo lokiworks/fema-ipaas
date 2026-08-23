@@ -1,4 +1,4 @@
-import { apId, OtpState, OtpType } from '@activepieces/shared'
+import { apId, OtpState, OtpType } from '@fema/shared'
 import dayjs from 'dayjs'
 import { FastifyInstance } from 'fastify'
 import { otpService } from '../../../../src/app/authentication/otp/otp-service'

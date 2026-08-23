@@ -1,4 +1,4 @@
-import { Metadata, Nullable, OptionalArrayFromQuery, SAFE_STRING_PATTERN } from '@activepieces/core-utils'
+import { Metadata, Nullable, OptionalArrayFromQuery, SAFE_STRING_PATTERN } from '@fema/core-utils'
 import { z } from 'zod'
 import { ProjectIcon, ProjectType } from './project'
 

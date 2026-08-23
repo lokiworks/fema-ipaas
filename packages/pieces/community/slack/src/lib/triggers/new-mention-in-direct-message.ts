@@ -2,7 +2,7 @@ import {
   Property,
   TriggerStrategy,
   createTrigger,
-} from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
 import { slackAuth } from '../auth';
 import { appWebhookSetupInfo, userId } from '../common/props';
 import { getTeamId, getUserId, SlackAuthValue } from '../common/auth-helpers';

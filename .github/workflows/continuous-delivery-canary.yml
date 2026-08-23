@@ -73,7 +73,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Build shared and server-utils packages
-        run: bunx turbo run build --filter=@activepieces/shared --filter=@activepieces/server-utils
+        run: bunx turbo run build --filter=@fema/shared --filter=@fema/server-utils
 
       - name: Configure SSH
         run: |

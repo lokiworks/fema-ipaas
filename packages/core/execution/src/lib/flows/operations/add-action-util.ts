@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { applyFunctionToValuesSync, isNil } from '@activepieces/core-utils'
+import { applyFunctionToValuesSync, isNil } from '@fema/core-utils'
 import { FlowAction } from '../actions/action'
 import { FlowVersion } from '../flow-version'
 import { flowStructureUtil } from '../util/flow-structure-util'
@@ -20,7 +20,7 @@ function mapToNewNames(flowVersion: FlowVersion, clonedActions: FlowAction[]): R
 
 function remapStepReferences({ text, oldNameToNewName }: RemapStepReferencesProps): string {
     // TODO: replace this naive /{{(.*?)}}/g tokenizer with `extractMustacheTokens`
-    // from @activepieces/core-utils. The lazy regex stops at the first `}}`, so a token
+    // from @fema/core-utils. The lazy regex stops at the first `}}`, so a token
     // whose content contains `}}` (e.g. a string literal) is truncated and the
     // trailing step name is not renamed on duplicate/paste. Swap deferred — needs
     // duplicate/paste re-testing in the builder before landing.

@@ -1,4 +1,4 @@
-import { isNil, tryCatch } from '@activepieces/core-utils'
+import { isNil, tryCatch } from '@fema/core-utils'
 import { initCodeSandbox } from './code-sandbox'
 import { CreateScriptSessionParams, ScriptSession } from './code-sandbox-common'
 

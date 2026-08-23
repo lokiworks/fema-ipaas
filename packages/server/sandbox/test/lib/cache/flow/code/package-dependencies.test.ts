@@ -5,14 +5,14 @@ describe('packageDependencies.sanitize', () => {
     it('keeps registry-style dependencies', () => {
         const result = packageDependencies.sanitize({
             'lodash': '^4.17.21',
-            '@activepieces/piece-slack': '0.1.0',
+            '@fema/connector-slack': '0.1.0',
             'dayjs': '1.11.10',
             'zod': '>=3 <4',
             'left-pad': '*',
         })
         expect(result).toEqual({
             'lodash': '^4.17.21',
-            '@activepieces/piece-slack': '0.1.0',
+            '@fema/connector-slack': '0.1.0',
             'dayjs': '1.11.10',
             'zod': '>=3 <4',
             'left-pad': '*',

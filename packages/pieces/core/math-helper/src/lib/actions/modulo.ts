@@ -2,7 +2,7 @@ import {
   createAction,
   PieceAuth,
   Property,
-} from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
 import { moduloActionOutputSchema } from '../output-schemas';
 
 export const modulo = createAction({

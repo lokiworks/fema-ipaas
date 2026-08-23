@@ -1,4 +1,4 @@
-import { PieceProperty, PropertyType } from '@activepieces/pieces-framework';
+import { PieceProperty, PropertyType } from '@fema/connector-sdk';
 import { t } from 'i18next';
 
 import { formatUtils } from '@/lib/format-utils';

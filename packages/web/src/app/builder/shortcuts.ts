@@ -1,7 +1,4 @@
-import {
-  flowStructureUtil,
-  StepLocationRelativeToParent,
-} from '@activepieces/shared';
+import { flowStructureUtil, StepLocationRelativeToParent } from '@fema/shared';
 import { useCallback, useEffect } from 'react';
 
 import { isEditableTarget } from '@/lib/dom-utils';

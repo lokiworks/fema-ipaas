@@ -70,7 +70,7 @@ describe('rewriteManifestForBundle', () => {
         mkdirSync(distPath, { recursive: true })
         writeFileSync(join(repoRoot, 'package.json'), JSON.stringify({ name: 'root', workspaces: [] }))
         writeFileSync(join(distPath, 'package.json'), JSON.stringify({
-            name: '@activepieces/piece-demo',
+            name: '@fema/connector-demo',
             version: '1.0.0',
             dependencies,
         }))

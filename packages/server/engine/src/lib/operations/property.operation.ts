@@ -1,11 +1,11 @@
-import { isNil, isObject } from '@activepieces/core-utils'
-import { DropdownState, ExecutePropsResult, InputPropertyMap, PiecePropertyMap, PropertyType, StaticPropsValue } from '@activepieces/pieces-framework'
+import { DropdownState, ExecutePropsResult, InputPropertyMap, PiecePropertyMap, PropertyType, StaticPropsValue } from '@fema/connector-sdk'
+import { isNil, isObject } from '@fema/core-utils'
 import {
     EngineGenericError,
     EngineResponse,
     EngineResponseStatus,
     ExecutePropsOptions,
-} from '@activepieces/shared'
+} from '@fema/shared'
 import * as z from 'zod/mini'
 import { PieceDescription } from '../core/piece/piece-protocol'
 import { pieceRunner } from '../core/piece/piece-runner'

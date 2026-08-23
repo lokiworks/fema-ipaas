@@ -1,4 +1,4 @@
-import { AIProviderName, isNil } from '@activepieces/core-utils'
+import { AIProviderName, isNil } from '@fema/core-utils'
 import * as z from 'zod/mini'
 
 export enum AIProviderModelType {

@@ -72,7 +72,7 @@
         "!src/**/*.test.ts"
       ]
     },
-    "@activepieces/engine#build": {
+    "@fema/engine#build": {
       "dependsOn": [],
       "outputs": [
         "../../../dist/packages/engine/**"
@@ -103,7 +103,7 @@
     "bundle": {
       "dependsOn": [
         "build",
-        "@activepieces/cli#build"
+        "@fema/cli#build"
       ],
       "inputs": [
         "src/**",
@@ -114,13 +114,13 @@
         "dist/package.json"
       ]
     },
-    "@activepieces/engine#test": {
+    "@fema/engine#test": {
       "dependsOn": [
         "build",
-        "@activepieces/piece-http#build",
-        "@activepieces/piece-data-mapper#build",
-        "@activepieces/piece-approval#build",
-        "@activepieces/piece-webhook#build"
+        "@fema/connector-http#build",
+        "@fema/connector-data-mapper#build",
+        "@fema/connector-approval#build",
+        "@fema/connector-webhook#build"
       ],
       "inputs": [
         "src/**",

@@ -1,5 +1,5 @@
-import { isNil } from '@activepieces/core-utils';
-import { OAuth2Props, PiecePropertyMap } from '@activepieces/pieces-framework';
+import { OAuth2Props, PiecePropertyMap } from '@fema/connector-sdk';
+import { isNil } from '@fema/core-utils';
 import {
   FlowActionType,
   FlowOperationRequest,
@@ -7,7 +7,7 @@ import {
   FlowTriggerType,
   PieceAction,
   PieceTrigger,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import { t } from 'i18next';
 import { AlertTriangle, ArrowUp, Info } from 'lucide-react';
 import semver from 'semver';

@@ -3,7 +3,7 @@ import {
   FlowActionType,
   flowStructureUtil,
   PieceCategory,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import { cva } from 'class-variance-authority';
 import { t } from 'i18next';
 import { useMemo } from 'react';

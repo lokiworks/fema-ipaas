@@ -1,6 +1,6 @@
 /// <reference types="vitest/globals" />
 
-import { createMockActionContext } from '@activepieces/pieces-framework';
+import { createMockActionContext } from '@fema/connector-sdk';
 import { jsonToCsvAction } from '../src/lib/actions/convert-json-to-csv';
 
 describe('convert_json_to_csv output schema', () => {

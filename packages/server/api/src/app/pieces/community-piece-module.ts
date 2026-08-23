@@ -1,5 +1,5 @@
-import { PieceMetadataModel } from '@activepieces/pieces-framework'
-import { AddPieceRequestBody, PrincipalType } from '@activepieces/shared'
+import { PieceMetadataModel } from '@fema/connector-sdk'
+import { AddPieceRequestBody, PrincipalType } from '@fema/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { securityAccess } from '../core/security/authorization/fastify-security'

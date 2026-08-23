@@ -14,8 +14,8 @@
           {
             "paths": [
               {
-                "name": "@activepieces/shared",
-                "message": "pieces-common must not import @activepieces/shared (it bundles into every piece). Use @activepieces/core-utils or @activepieces/core-piece-types."
+                "name": "@fema/shared",
+                "message": "pieces-common must not import @fema/shared (it bundles into every piece). Use @fema/core-utils or @fema/connector-types."
               }
             ]
           }

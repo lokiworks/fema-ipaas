@@ -1,5 +1,5 @@
-import { isNil } from '@activepieces/core-utils';
-import { FlowTriggerType, flowStructureUtil } from '@activepieces/shared';
+import { isNil } from '@fema/core-utils';
+import { FlowTriggerType, flowStructureUtil } from '@fema/shared';
 import { t } from 'i18next';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMemo } from 'react';

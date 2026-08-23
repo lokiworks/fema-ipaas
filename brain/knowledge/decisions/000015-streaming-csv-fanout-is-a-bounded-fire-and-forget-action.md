@@ -6,7 +6,7 @@ status: accepted
 
 ## Decision
 
-The `Stream CSV to Subflows` action (`@activepieces/piece-subflows`) streams a CSV from a **streaming** `Property.File` — `file.body` piped into a streaming CSV parser — and dispatches one **fire-and-forget** Subflow call per batch (`data = { batchIndex, headers, rows, extraData }`), with bounded in-flight concurrency and stream back-pressure. It is a pure piece with zero engine or framework change. Streaming bounds **memory, not time**, so the step stays capped by `FLOW_TIMEOUT_SECONDS` (default 600s, fixed on Cloud) like any other; a file whose fan-out can't finish inside that window is explicitly out of scope for v1.
+The `Stream CSV to Subflows` action (`@fema/connector-subflows`) streams a CSV from a **streaming** `Property.File` — `file.body` piped into a streaming CSV parser — and dispatches one **fire-and-forget** Subflow call per batch (`data = { batchIndex, headers, rows, extraData }`), with bounded in-flight concurrency and stream back-pressure. It is a pure piece with zero engine or framework change. Streaming bounds **memory, not time**, so the step stays capped by `FLOW_TIMEOUT_SECONDS` (default 600s, fixed on Cloud) like any other; a file whose fan-out can't finish inside that window is explicitly out of scope for v1.
 
 ## Context
 

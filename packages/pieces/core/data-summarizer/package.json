@@ -1,5 +1,5 @@
 {
-  "name": "@activepieces/piece-data-summarizer",
+  "name": "@fema/connector-data-summarizer",
   "version": "0.0.15",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -14,9 +14,9 @@
     "tslib": "2.6.2"
   },
   "dependencies": {
-    "@activepieces/pieces-common": "workspace:*",
-    "@activepieces/pieces-framework": "workspace:*",
-    "@activepieces/core-piece-types": "workspace:*",
-    "@activepieces/core-utils": "workspace:*"
+    "@fema/connector-common": "workspace:*",
+    "@fema/connector-sdk": "workspace:*",
+    "@fema/connector-types": "workspace:*",
+    "@fema/core-utils": "workspace:*"
   }
 }

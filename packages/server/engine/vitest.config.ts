@@ -12,13 +12,13 @@ process.env.AP_TEST_MODE = 'true'
 process.env.AP_DEV_PIECES = 'http,data-mapper,approval,webhook,delay'
 
 const alias = {
-  '@activepieces/shared': path.resolve(__dirname, '../../core/shared/src/index.ts'),
-  '@activepieces/pieces-framework': path.resolve(__dirname, '../../pieces/framework/src/index.ts'),
-  '@activepieces/pieces-common': path.resolve(__dirname, '../../pieces/common/src/index.ts'),
-  '@activepieces/core-formula': path.resolve(__dirname, '../../core/formula/src/index.ts'),
-  '@activepieces/core-piece-types': path.resolve(__dirname, '../../core/piece-types/src/index.ts'),
-  '@activepieces/core-utils': path.resolve(__dirname, '../../core/utils/src/index.ts'),
-  '@activepieces/core-execution': path.resolve(__dirname, '../../core/execution/src/index.ts'),
+  '@fema/shared': path.resolve(__dirname, '../../core/shared/src/index.ts'),
+  '@fema/connector-sdk': path.resolve(__dirname, '../../pieces/framework/src/index.ts'),
+  '@fema/connector-common': path.resolve(__dirname, '../../pieces/common/src/index.ts'),
+  '@fema/expression': path.resolve(__dirname, '../../core/formula/src/index.ts'),
+  '@fema/connector-types': path.resolve(__dirname, '../../core/piece-types/src/index.ts'),
+  '@fema/core-utils': path.resolve(__dirname, '../../core/utils/src/index.ts'),
+  '@fema/workflow-core': path.resolve(__dirname, '../../core/execution/src/index.ts'),
 }
 
 const pieceChildEntry = path.resolve(__dirname, '../../../dist/packages/engine-test/piece-child.js')

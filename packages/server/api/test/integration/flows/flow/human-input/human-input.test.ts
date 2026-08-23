@@ -1,5 +1,5 @@
-import { apId } from '@activepieces/core-utils'
-import { FlowStatus, FlowTriggerType, FlowVersionState, PackageType, PieceType } from '@activepieces/shared'
+import { apId } from '@fema/core-utils'
+import { FlowStatus, FlowTriggerType, FlowVersionState, PackageType, PieceType } from '@fema/shared'
 import { FastifyBaseLogger, FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { databaseConnection } from '../../../../../../src/app/database/database-connection'
@@ -32,7 +32,7 @@ describe('Human Input API', () => {
 
             await databaseConnection().getRepository('piece_metadata').createQueryBuilder().delete().execute()
             const mockPiece = createMockPieceMetadata({
-                name: '@activepieces/piece-forms',
+                name: '@fema/connector-forms',
                 version: '0.2.0',
                 pieceType: PieceType.OFFICIAL,
                 packageType: PackageType.REGISTRY,
@@ -52,7 +52,7 @@ describe('Human Input API', () => {
                 trigger: {
                     type: FlowTriggerType.PIECE,
                     settings: {
-                        pieceName: '@activepieces/piece-forms',
+                        pieceName: '@fema/connector-forms',
                         pieceVersion: '0.2.0',
                         triggerName: 'form_submission',
                         input: {
@@ -133,7 +133,7 @@ describe('Human Input API', () => {
 
             await databaseConnection().getRepository('piece_metadata').createQueryBuilder().delete().execute()
             const mockPiece = createMockPieceMetadata({
-                name: '@activepieces/piece-forms',
+                name: '@fema/connector-forms',
                 version: '0.3.0',
                 pieceType: PieceType.OFFICIAL,
                 packageType: PackageType.REGISTRY,
@@ -153,7 +153,7 @@ describe('Human Input API', () => {
                 trigger: {
                     type: FlowTriggerType.PIECE,
                     settings: {
-                        pieceName: '@activepieces/piece-forms',
+                        pieceName: '@fema/connector-forms',
                         pieceVersion: '0.3.0',
                         triggerName: 'chat_submission',
                         input: {

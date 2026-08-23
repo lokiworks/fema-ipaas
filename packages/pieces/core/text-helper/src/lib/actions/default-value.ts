@@ -1,5 +1,5 @@
-import { createAction, Property } from '@activepieces/pieces-framework';
-import { isEmpty } from '@activepieces/pieces-framework';
+import { createAction, Property } from '@fema/connector-sdk';
+import { isEmpty } from '@fema/connector-sdk';
 
 export const defaultValue = createAction({
   audience: 'both',

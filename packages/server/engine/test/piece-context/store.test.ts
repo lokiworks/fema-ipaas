@@ -1,5 +1,5 @@
-import { StoreScope } from '@activepieces/pieces-framework'
-import { StorageError, StorageInvalidKeyError, StorageLimitError, STORE_KEY_MAX_LENGTH, STORE_VALUE_MAX_SIZE } from '@activepieces/shared'
+import { StoreScope } from '@fema/connector-sdk'
+import { StorageError, StorageInvalidKeyError, StorageLimitError, STORE_KEY_MAX_LENGTH, STORE_VALUE_MAX_SIZE } from '@fema/shared'
 import { createContextStore } from '../../src/lib/piece-context/store'
 
 const STORE_PARAMS = {

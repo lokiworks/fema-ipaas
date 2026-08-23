@@ -1,9 +1,9 @@
-import { SeekPage } from '@activepieces/core-utils';
+import { SeekPage } from '@fema/core-utils';
 import {
   ListPlatformAppConnectionsRequestQuery,
   PlatformAppConnectionOwnersResponse,
   PlatformAppConnectionsListItem,
-} from '@activepieces/shared';
+} from '@fema/shared';
 
 import { api } from '@/lib/api';
 

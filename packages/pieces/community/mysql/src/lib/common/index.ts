@@ -3,7 +3,7 @@ import {
   PiecePropValueSchema,
   Property,
   StaticPropsValue,
-} from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
 import { Connection, createConnection } from 'promise-mysql';
 import { mysqlAuth } from '../..';
 import sqlstring from 'sqlstring';

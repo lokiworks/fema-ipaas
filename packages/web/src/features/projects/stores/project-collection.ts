@@ -1,4 +1,4 @@
-import { isNil, SeekPage } from '@activepieces/core-utils';
+import { isNil, SeekPage } from '@fema/core-utils';
 import {
   CreatePlatformProjectRequest,
   ListProjectRequestForPlatformQueryParams,
@@ -6,7 +6,7 @@ import {
   ProjectType,
   ProjectWithLimits,
   ProjectWithLimitsWithPlatform,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import { queryCollectionOptions } from '@tanstack/query-db-collection';
 import {
   and,

@@ -1,10 +1,10 @@
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { randomUUID } from 'node:crypto'
-import { ActivepiecesError, ErrorCode } from '@activepieces/core-utils'
+import { ActivepiecesError, ErrorCode } from '@fema/core-utils'
 import { describe, expect, it, vi } from 'vitest'
-import type { WorkerToApiContract } from '@activepieces/shared'
-import type { ApLogger } from '@activepieces/server-utils'
+import type { WorkerToApiContract } from '@fema/shared'
+import type { ApLogger } from '@fema/server-utils'
 import { pieceCache } from '../../../src/lib/cache/pieces/piece-cache'
 
 const fakeLog = {
@@ -42,7 +42,7 @@ describe('piece-cache pieceName path traversal', () => {
         '../../common/node_modules/x',
         '../../../usr/local/lib',
         '..',
-        '@activepieces/..',
+        '@fema/..',
     ])('rejects a traversal pieceName %j before any fetch', async (pieceName) => {
         getPieceMock.mockReset()
         let thrown: unknown

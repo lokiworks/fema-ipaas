@@ -61,7 +61,7 @@ Think of the const as a namespace — it groups the public API. A reader sees wh
 // packages/server/api/src/app/flows/flow/flow.service.ts (shape)
 
 // 1. imports
-import { ActivepiecesError, apId, /* ... */ } from '@activepieces/shared'
+import { ActivepiecesError, apId, /* ... */ } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 // ...
 
@@ -131,7 +131,7 @@ Rules of thumb:
 
 ## 4. Error handling: throw `ActivepiecesError` at boundaries, use `tryCatch` for recoverable failures
 
-`@activepieces/shared` exports `tryCatch` / `tryCatchSync` (see [`try-catch.ts`](../core/shared/src/lib/core/common/try-catch.ts)) that turn throws into a discriminated `{ data, error }` result. Two distinct patterns, each with its place.
+`@fema/shared` exports `tryCatch` / `tryCatchSync` (see [`try-catch.ts`](../core/shared/src/lib/core/common/try-catch.ts)) that turn throws into a discriminated `{ data, error }` result. Two distinct patterns, each with its place.
 
 ### 4a) Unrecoverable / contract violations — throw `ActivepiecesError`
 

@@ -1,4 +1,4 @@
-import { ApFlagId } from '@activepieces/shared';
+import { ApFlagId } from '@fema/shared';
 import { t } from 'i18next';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';

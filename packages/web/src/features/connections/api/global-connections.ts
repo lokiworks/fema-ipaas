@@ -1,10 +1,10 @@
-import { SeekPage } from '@activepieces/core-utils';
+import { SeekPage } from '@fema/core-utils';
 import {
   AppConnectionWithoutSensitiveData,
   ListGlobalConnectionsRequestQuery,
   UpdateGlobalConnectionValueRequestBody,
   UpsertGlobalConnectionRequestBody,
-} from '@activepieces/shared';
+} from '@fema/shared';
 
 import { api } from '@/lib/api';
 

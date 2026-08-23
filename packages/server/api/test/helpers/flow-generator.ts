@@ -1,5 +1,5 @@
-import { apId } from '@activepieces/core-utils'
-import { FlowAction, FlowActionType, FlowOperationStatus, FlowStatus, FlowTrigger, FlowTriggerType, FlowVersion, FlowVersionState, PopulatedFlow, PropertyExecutionType } from '@activepieces/shared'
+import { apId } from '@fema/core-utils'
+import { FlowAction, FlowActionType, FlowOperationStatus, FlowStatus, FlowTrigger, FlowTriggerType, FlowVersion, FlowVersionState, PopulatedFlow, PropertyExecutionType } from '@fema/shared'
 import { faker } from '@faker-js/faker'
 import dayjs from 'dayjs'
 
@@ -73,7 +73,7 @@ function generateAction(): FlowAction {
         lastUpdatedDate: dayjs().toISOString(),
         settings: {
             input: {},
-            pieceName: faker.helpers.arrayElement(['@activepieces/piece-schedule', '@activepieces/piece-webhook']),
+            pieceName: faker.helpers.arrayElement(['@fema/connector-schedule', '@fema/connector-webhook']),
             pieceVersion: faker.system.semver(),
             actionName: faker.hacker.noun(),
             propertySettings: {},
@@ -89,7 +89,7 @@ function generateTrigger(): FlowTrigger {
         name: apId(),
         lastUpdatedDate: dayjs().toISOString(),
         settings: {
-            pieceName: faker.helpers.arrayElement(['@activepieces/piece-schedule', '@activepieces/piece-webhook']),
+            pieceName: faker.helpers.arrayElement(['@fema/connector-schedule', '@fema/connector-webhook']),
             pieceVersion: faker.system.semver(),
             triggerName: faker.hacker.noun(),
             input: {},

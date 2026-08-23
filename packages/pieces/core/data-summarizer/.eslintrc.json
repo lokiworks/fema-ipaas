@@ -27,10 +27,10 @@
             "patterns": [
               "lodash",
               "lodash/*",
-              "@activepieces/core-*",
-              "@activepieces/server*",
-              "@activepieces/engine",
-              "@activepieces/shared"
+              "@fema/core-*",
+              "@fema/server*",
+              "@fema/engine",
+              "@fema/shared"
             ]
           }
         ]

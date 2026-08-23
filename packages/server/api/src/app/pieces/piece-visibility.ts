@@ -1,4 +1,4 @@
-import { PieceMetadataModel, PieceMetadataModelSummary } from '@activepieces/pieces-framework'
+import { PieceMetadataModel, PieceMetadataModelSummary } from '@fema/connector-sdk'
 import { FastifyBaseLogger } from 'fastify'
 import { PieceMetadataSchema } from './metadata/piece-metadata-entity'
 

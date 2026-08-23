@@ -1,5 +1,5 @@
-import { DedupeStrategy, Polling, pollingHelper } from '@activepieces/pieces-common'
-import { Store } from '@activepieces/pieces-framework'
+import { DedupeStrategy, Polling, pollingHelper } from '@fema/connector-common'
+import { Store } from '@fema/connector-sdk'
 
 function fakeStore(initial: Record<string, unknown> = {}): Store {
     const data: Record<string, unknown> = { ...initial }

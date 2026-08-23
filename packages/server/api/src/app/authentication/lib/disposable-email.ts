@@ -1,4 +1,4 @@
-import { ActivepiecesError, ErrorCode } from '@activepieces/core-utils'
+import { ActivepiecesError, ErrorCode } from '@fema/core-utils'
 import disposableDomains from 'disposable-email-domains'
 import wildcardDomains from 'disposable-email-domains/wildcard.json'
 import { FastifyBaseLogger } from 'fastify'

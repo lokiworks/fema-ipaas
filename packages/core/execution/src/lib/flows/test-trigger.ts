@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { ApId } from '@activepieces/core-utils'
+import { ApId } from '@fema/core-utils'
 
 export enum TriggerTestStrategy {
     SIMULATION = 'SIMULATION',

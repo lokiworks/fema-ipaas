@@ -1,4 +1,4 @@
-import { Flow, Project, TriggerSource } from '@activepieces/shared'
+import { Flow, Project, TriggerSource } from '@fema/shared'
 import { EntitySchema } from 'typeorm'
 import { BaseColumnSchemaPart } from '../../database/database-common'
 

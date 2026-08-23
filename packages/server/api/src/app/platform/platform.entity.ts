@@ -1,4 +1,4 @@
-import { Platform, User } from '@activepieces/shared'
+import { Platform, User } from '@fema/shared'
 import { EntitySchema } from 'typeorm'
 import {
     ApIdSchema,

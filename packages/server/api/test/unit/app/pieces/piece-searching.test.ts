@@ -1,12 +1,12 @@
-import { SuggestionType } from '@activepieces/shared'
+import { SuggestionType } from '@fema/shared'
 import { describe, expect, it } from 'vitest'
 import { pieceSearching } from '../../../../src/app/pieces/metadata/utils/piece-searching'
 import { createMockPieceMetadata } from '../../../helpers/mocks'
 
 const pieces = [
-    createMockPieceMetadata({ name: '@activepieces/piece-discord', displayName: 'Discord', description: 'Send messages to Discord channels' }),
-    createMockPieceMetadata({ name: '@activepieces/piece-slack', displayName: 'Slack', description: 'Send messages to Slack channels' }),
-    createMockPieceMetadata({ name: '@activepieces/piece-gmail', displayName: 'Gmail', description: 'Send and read emails' }),
+    createMockPieceMetadata({ name: '@fema/connector-discord', displayName: 'Discord', description: 'Send messages to Discord channels' }),
+    createMockPieceMetadata({ name: '@fema/connector-slack', displayName: 'Slack', description: 'Send messages to Slack channels' }),
+    createMockPieceMetadata({ name: '@fema/connector-gmail', displayName: 'Gmail', description: 'Send and read emails' }),
 ]
 
 describe('pieceSearching.search — robustness to extra query words', () => {

@@ -1,14 +1,10 @@
-import { setAtPath } from '@activepieces/core-utils';
 import {
   PieceMetadataModel,
   PiecePropertyMap,
   piecePropertiesUtils,
-} from '@activepieces/pieces-framework';
-import {
-  FlowAction,
-  FlowTrigger,
-  PropertyExecutionType,
-} from '@activepieces/shared';
+} from '@fema/connector-sdk';
+import { setAtPath } from '@fema/core-utils';
+import { FlowAction, FlowTrigger, PropertyExecutionType } from '@fema/shared';
 import {
   createContext,
   ReactNode,

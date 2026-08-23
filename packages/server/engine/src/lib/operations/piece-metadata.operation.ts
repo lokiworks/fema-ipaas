@@ -1,10 +1,10 @@
 import path from 'path'
-import { PieceMetadata, pieceTranslation } from '@activepieces/pieces-framework'
+import { PieceMetadata, pieceTranslation } from '@fema/connector-sdk'
 import {
     EngineResponse,
     EngineResponseStatus,
     ExecuteExtractPieceMetadataOperation,
-} from '@activepieces/shared'
+} from '@fema/shared'
 import { piecePath } from '../core/piece/piece-path'
 import { pieceRunner } from '../core/piece/piece-runner'
 import { EngineConstants } from '../handler/context/engine-constants'

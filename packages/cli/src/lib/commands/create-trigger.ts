@@ -15,8 +15,8 @@ function createTriggerTemplate(displayName: string, description: string, techniq
     let triggerTemplate = ''
     if (technique === 'polling') {
         triggerTemplate = `
-import { createTrigger, TriggerStrategy, AppConnectionValueForAuthProperty  } from '@activepieces/pieces-framework';
-import { DedupeStrategy, Polling, pollingHelper } from '@activepieces/pieces-common';
+import { createTrigger, TriggerStrategy, AppConnectionValueForAuthProperty  } from '@fema/connector-sdk';
+import { DedupeStrategy, Polling, pollingHelper } from '@fema/connector-common';
 import dayjs from 'dayjs';
 
 // replace auth with piece auth variable
@@ -58,7 +58,7 @@ async run(context) {
     }
     else {
         triggerTemplate = `
-import { createTrigger, TriggerStrategy } from '@activepieces/pieces-framework';
+import { createTrigger, TriggerStrategy } from '@fema/connector-sdk';
 export const ${camelCase} = createTrigger({
     // auth: check https://www.activepieces.com/docs/developers/piece-reference/authentication,
     name: '${camelCase}',

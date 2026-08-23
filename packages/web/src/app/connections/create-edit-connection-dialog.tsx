@@ -1,11 +1,11 @@
-import { isNil } from '@activepieces/core-utils';
 import {
   getAuthPropertyForValue,
   PieceAuthProperty,
   PieceMetadataModel,
   PieceMetadataModelSummary,
   PropertyType,
-} from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
+import { isNil } from '@fema/core-utils';
 import {
   ApFlagId,
   AppConnectionScope,
@@ -13,7 +13,7 @@ import {
   AppConnectionWithoutSensitiveData,
   BOTH_CLIENT_CREDENTIALS_AND_AUTHORIZATION_CODE,
   UpsertAppConnectionRequestBody,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { t } from 'i18next';
 import { useState } from 'react';

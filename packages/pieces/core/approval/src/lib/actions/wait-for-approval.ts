@@ -1,5 +1,5 @@
-import { createAction, PieceAuth, Property } from '@activepieces/pieces-framework';
-import { ExecutionType, MarkdownVariant } from '@activepieces/pieces-framework';
+import { createAction, PieceAuth, Property } from '@fema/connector-sdk';
+import { ExecutionType, MarkdownVariant } from '@fema/connector-sdk';
 
 export const waitForApprovalLink = createAction({
   audience: 'both',

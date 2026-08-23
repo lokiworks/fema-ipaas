@@ -1,4 +1,4 @@
-import { ProjectRole } from '@activepieces/core-utils';
+import { ProjectRole } from '@fema/core-utils';
 import {
   CreateOtpRequestBody,
   CompleteSignUpRequest,
@@ -14,7 +14,7 @@ import {
   ThirdPartyAuthnProviderEnum,
   UserIdentity,
   VerifyEmailCodeRequest,
-} from '@activepieces/shared';
+} from '@fema/shared';
 
 import { api } from '@/lib/api';
 

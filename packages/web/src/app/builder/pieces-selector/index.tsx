@@ -1,4 +1,4 @@
-import { FlowOperationType, FlowTriggerType } from '@activepieces/shared';
+import { FlowOperationType, FlowTriggerType } from '@fema/shared';
 import { t } from 'i18next';
 import {
   CheckCircle2Icon,
@@ -144,7 +144,7 @@ const PieceSelectorContent = ({
     isError: isAiPieceError,
     isSuccess: isAiPieceLoaded,
   } = piecesHooks.usePiece({
-    name: '@activepieces/piece-ai',
+    name: '@fema/connector-ai',
     projectId: authenticationSession.getProjectId() ?? undefined,
   });
   const isAiPieceUnavailable =

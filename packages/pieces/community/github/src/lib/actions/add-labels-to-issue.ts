@@ -1,7 +1,7 @@
 import { githubAuth } from '../auth';
-import { createAction } from '@activepieces/pieces-framework';
+import { createAction } from '@fema/connector-sdk';
 import { githubApiCall, githubCommon } from '../common';
-import { HttpMethod } from '@activepieces/pieces-common';
+import { HttpMethod } from '@fema/connector-common';
 import { addLabelsToIssueActionOutputSchema } from '../output-schemas';
 
 export const githubAddLabelsToIssueAction = createAction({

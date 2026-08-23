@@ -3,7 +3,7 @@ import {
   WorkerMachineStatus,
   WorkerMachineType,
   WorkerMachineWithStatus,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import { t } from 'i18next';
 import {
   Server,

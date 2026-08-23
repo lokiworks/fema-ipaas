@@ -10,7 +10,7 @@ status: accepted
 统一迁移到 Connector 领域语言。判定标准：核心代码 `grep -ri "piece"` 结果为 0
 （LICENSE / NOTICE / 上游迁移说明 / git history 例外）。
 
-术语映射见设计文档 §5。包名从 `@activepieces/*` 迁移到 `@fema/*`，环境变量从 `AP_*`
+术语映射见设计文档 §5。包名从 `@fema/*` 迁移到 `@fema/*`，环境变量从 `AP_*`
 迁移到 `FEMA_*`。
 
 迁移期允许存在 `legacyPieceToConnector()` 适配器，但它不暴露到 UI、不进新 SDK 文档、

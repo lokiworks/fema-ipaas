@@ -1,5 +1,5 @@
 {
-  "name": "@activepieces/core-formula",
+  "name": "@fema/expression",
   "version": "0.2.0",
   "type": "commonjs",
   "main": "./dist/src/index.js",

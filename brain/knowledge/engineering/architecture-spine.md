@@ -13,15 +13,15 @@ Activepieces: open-source AI-first workflow automation platform (self-hosted or 
 - **HTTP**: POST for all create/update, DELETE for deletes. Never PUT/PATCH. Every endpoint needs `securityAccess`.
 - **Side effects**: separated into `*-side-effects.ts`, called explicitly after mutations.
 - **Multi-server concurrency**: `distributedLock`, BullMQ dedup, or `FOR UPDATE SKIP LOCKED`.
-- **SSRF**: outbound HTTP in `server/{api,worker,utils}` must use `safeHttp.axios`/`createAxios` from `@activepieces/server-utils`. Never raw `fetch`/`axios.create` on user/OAuth/third-party URLs.
+- **SSRF**: outbound HTTP in `server/{api,worker,utils}` must use `safeHttp.axios`/`createAxios` from `@fema/server-utils`. Never raw `fetch`/`axios.create` on user/OAuth/third-party URLs.
 - **Self-hosting**: any new env var/secret/piece-auth/DB-extension must default to zero setup — never ship UI that looks enabled but is silently broken without manual setup.
 
 ## Core packages (thin → thick)
-`packages/core/*` = `@activepieces/core-<name>` (utils, piece-types, formula, execution — thin, framework-agnostic, dual-format). **Exception**: `packages/core/shared` keeps the name `@activepieces/shared` (thick, app-level, carries DB/EE schemas + heavy deps). Pieces & engine may import the thin members but **never** `@activepieces/shared` — they get symbols via `@activepieces/pieces-framework`. Any change to `core/shared` needs a version bump in its package.json (patch=fix, minor=new export).
+`packages/core/*` = `@fema/core-<name>` (utils, piece-types, formula, execution — thin, framework-agnostic, dual-format). **Exception**: `packages/core/shared` keeps the name `@fema/shared` (thick, app-level, carries DB/EE schemas + heavy deps). Pieces & engine may import the thin members but **never** `@fema/shared` — they get symbols via `@fema/connector-sdk`. Any change to `core/shared` needs a version bump in its package.json (patch=fix, minor=new export).
 
 ## Coding conventions
 - No `any`, no `as` type casting, no `@deprecated` APIs.
-- Go-style errors: `tryCatch`/`tryCatchSync` from `@activepieces/shared`.
+- Go-style errors: `tryCatch`/`tryCatchSync` from `@fema/shared`.
 - Named params (single destructured object), immutable data flow (return, don't mutate caller's collection).
 - Zod messages must be i18n keys in `web/public/locales/en/translation.json`; use `formErrors` constant.
 - File order: imports → exported fns/consts → helpers → types. **Exported types/consts at end of file.**

@@ -1,16 +1,16 @@
 {
-  "name": "@activepieces/piece-postgres",
+  "name": "@fema/connector-postgres",
   "version": "0.3.1",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "dependencies": {
-    "@activepieces/pieces-common": "workspace:*",
-    "@activepieces/pieces-framework": "workspace:*",
+    "@fema/connector-common": "workspace:*",
+    "@fema/connector-sdk": "workspace:*",
     "dayjs": "1.11.9",
     "pg": "8.11.3",
     "pg-format": "1.0.4",
-    "@activepieces/core-piece-types": "workspace:*",
-    "@activepieces/core-utils": "workspace:*"
+    "@fema/connector-types": "workspace:*",
+    "@fema/core-utils": "workspace:*"
   },
   "scripts": {
     "build": "tsc -p tsconfig.lib.json && cp package.json dist/",

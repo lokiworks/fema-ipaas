@@ -1,5 +1,5 @@
-import { ErrorCode } from '@activepieces/core-utils'
-import { PrincipalType, ProjectType } from '@activepieces/shared'
+import { ErrorCode } from '@fema/core-utils'
+import { PrincipalType, ProjectType } from '@fema/shared'
 import { faker } from '@faker-js/faker'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'

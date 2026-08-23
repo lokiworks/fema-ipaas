@@ -1,9 +1,4 @@
 import {
-  assertNotNullOrUndefined,
-  isNil,
-  apId,
-} from '@activepieces/core-utils';
-import {
   CustomAuthProps,
   OIDCAuthProps,
   OAuth2Props,
@@ -11,14 +6,15 @@ import {
   PieceMetadataModel,
   PieceMetadataModelSummary,
   PropertyType,
-} from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
+import { assertNotNullOrUndefined, isNil, apId } from '@fema/core-utils';
 import {
   AppConnectionType,
   AppConnectionWithoutSensitiveData,
   UpsertAppConnectionRequestBody,
   AppConnectionStatus,
   OAuth2GrantType,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import { t } from 'i18next';
 import { CheckIcon, UnplugIcon, XIcon } from 'lucide-react';
 

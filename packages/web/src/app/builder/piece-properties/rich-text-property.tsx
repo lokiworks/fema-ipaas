@@ -1,4 +1,4 @@
-import { RichTextProperty as RichTextPropertySchema } from '@activepieces/pieces-framework';
+import { RichTextProperty as RichTextPropertySchema } from '@fema/connector-sdk';
 import { t } from 'i18next';
 import React, { useMemo } from 'react';
 import { useFormContext } from 'react-hook-form';

@@ -1,5 +1,5 @@
-import { isNil } from '@activepieces/core-utils'
-import { Principal, PrincipalType } from '@activepieces/shared'
+import { isNil } from '@fema/core-utils'
+import { Principal, PrincipalType } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { nanoid } from 'nanoid'
 import { accessTokenManager } from '../../../../authentication/lib/access-token-manager'

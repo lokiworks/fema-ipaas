@@ -1,5 +1,5 @@
-import { TriggerBase, TriggerStrategy } from '@activepieces/pieces-framework';
-import { TriggerTestStrategy } from '@activepieces/shared';
+import { TriggerBase, TriggerStrategy } from '@fema/connector-sdk';
+import { TriggerTestStrategy } from '@fema/shared';
 
 import { pieceSelectorUtils } from '@/features/pieces';
 
@@ -27,7 +27,7 @@ export const triggerEventUtils = {
       return 'chat-trigger';
     }
     if (
-      pieceName === '@activepieces/piece-webhook' &&
+      pieceName === '@fema/connector-webhook' &&
       triggerName === 'catch_webhook'
     ) {
       return 'webhook';

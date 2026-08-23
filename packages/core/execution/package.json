@@ -1,5 +1,5 @@
 {
-  "name": "@activepieces/core-execution",
+  "name": "@fema/workflow-core",
   "version": "0.14.0",
   "type": "commonjs",
   "main": "./dist/src/index.js",
@@ -9,8 +9,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@activepieces/core-utils": "workspace:*",
-    "@activepieces/core-piece-types": "workspace:*",
+    "@fema/core-utils": "workspace:*",
+    "@fema/connector-types": "workspace:*",
     "dayjs": "1.11.9",
     "semver": "7.6.0",
     "socket.io-client": "4.8.1",

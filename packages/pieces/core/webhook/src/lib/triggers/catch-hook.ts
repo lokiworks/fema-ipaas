@@ -4,11 +4,11 @@ import {
   PieceAuth,
   Property,
   TriggerStrategy,
-} from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
 import {
   assertNotNullOrUndefined,
   MarkdownVariant,
-} from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
 import { createHmac, timingSafeEqual } from 'crypto';
 
 const liveMarkdown = `**Live URL:**

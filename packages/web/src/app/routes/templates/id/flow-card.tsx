@@ -1,4 +1,4 @@
-import { FlowVersionTemplate } from '@activepieces/shared';
+import { FlowVersionTemplate } from '@fema/shared';
 import { Workflow } from 'lucide-react';
 
 import { Card, CardContent } from '@/components/ui/card';

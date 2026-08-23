@@ -1,4 +1,4 @@
-import { StepRunResponse, UpdateStepProgressRequest } from '@activepieces/core-execution'
+import { StepRunResponse, UpdateStepProgressRequest } from '@fema/workflow-core'
 import { z } from 'zod'
 
 export enum WebsocketClientEvent {

@@ -1,7 +1,7 @@
 /// <reference types="vitest/globals" />
 
 import { convertJsonToXml } from '../src/lib/actions/convert-json-to-xml';
-import { createMockActionContext } from '@activepieces/pieces-framework';
+import { createMockActionContext } from '@fema/connector-sdk';
 
 describe('convertJsonToXml', () => {
   test('converts simple object to XML', async () => {

@@ -3,7 +3,7 @@ import {
     EngineResponseStatus,
     ExecuteResolveConnectionIdentifierOperation,
     ExecuteResolveConnectionIdentifierResponse,
-} from '@activepieces/shared'
+} from '@fema/shared'
 import { pieceAuth } from '../core/piece/piece-auth'
 
 export const resolveConnectionIdentifierOperation = {

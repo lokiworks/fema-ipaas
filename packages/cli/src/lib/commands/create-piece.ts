@@ -67,10 +67,10 @@ const scaffoldPiece = async (
     main: './dist/src/index.js',
     types: './dist/src/index.d.ts',
     dependencies: {
-      '@activepieces/pieces-common': 'workspace:*',
-      '@activepieces/pieces-framework': 'workspace:*',
-      '@activepieces/core-piece-types': 'workspace:*',
-      '@activepieces/core-utils': 'workspace:*',
+      '@fema/connector-common': 'workspace:*',
+      '@fema/connector-sdk': 'workspace:*',
+      '@fema/connector-types': 'workspace:*',
+      '@fema/core-utils': 'workspace:*',
     },
     devDependencies: {
       tslib: '2.6.2',
@@ -142,10 +142,10 @@ const scaffoldPiece = async (
               patterns: [
                 'lodash',
                 'lodash/*',
-                '@activepieces/core-*',
-                '@activepieces/server*',
-                '@activepieces/engine',
-                '@activepieces/shared',
+                '@fema/core-*',
+                '@fema/server*',
+                '@fema/engine',
+                '@fema/shared',
               ],
             },
           ],
@@ -170,7 +170,7 @@ const scaffoldPiece = async (
     })
     .join('');
 
-  const indexTemplate = `import { createPiece, PieceAuth } from '@activepieces/pieces-framework';
+  const indexTemplate = `import { createPiece, PieceAuth } from '@fema/connector-sdk';
 
 export const ${pieceNameCamelCase} = createPiece({
   displayName: '${capitalizeFirstLetter(pieceName)}',
@@ -218,7 +218,7 @@ export const createPieceCommand = new Command('create')
         name: 'packageName',
         message: 'Enter the package name:',
         default: (answers: Record<string, string>) =>
-          `@activepieces/piece-${answers.pieceName}`,
+          `@fema/connector-${answers.pieceName}`,
         when: (answers: Record<string, string>) =>
           answers.pieceName !== undefined,
       },

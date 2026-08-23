@@ -1,12 +1,12 @@
-import { isObject } from '@activepieces/core-utils'
-import { PropertyType } from '@activepieces/pieces-framework'
+import { PropertyType } from '@fema/connector-sdk'
+import { isObject } from '@fema/core-utils'
 import {
     AppConnectionType,
     EngineResponse,
     EngineResponseStatus,
     ExecuteRefreshTokenAuthOperation,
     ExecuteRefreshTokenAuthResponse,
-} from '@activepieces/shared'
+} from '@fema/shared'
 import { pieceAuth } from '../core/piece/piece-auth'
 
 export const authRefreshOperation = {

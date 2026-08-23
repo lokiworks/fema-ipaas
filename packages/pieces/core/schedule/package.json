@@ -1,5 +1,5 @@
 {
-  "name": "@activepieces/piece-schedule",
+  "name": "@fema/connector-schedule",
   "version": "0.1.22",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -10,10 +10,10 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@activepieces/pieces-common": "workspace:*",
-    "@activepieces/pieces-framework": "workspace:*",
-    "@activepieces/core-piece-types": "workspace:*",
-    "@activepieces/core-utils": "workspace:*"
+    "@fema/connector-common": "workspace:*",
+    "@fema/connector-sdk": "workspace:*",
+    "@fema/connector-types": "workspace:*",
+    "@fema/core-utils": "workspace:*"
   },
   "devDependencies": {
     "vitest": "3.2.6",

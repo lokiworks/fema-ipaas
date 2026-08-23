@@ -3,8 +3,8 @@ import {
   PieceAuth,
   Property,
   createAction,
-} from '@activepieces/pieces-framework';
-import { StopResponse } from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
+import { StopResponse } from '@fema/connector-sdk';
 
 const HTTP_STATUS_OK = 200;
 const HTTP_STATUS_MOVED_PERMANENTLY = 301;

@@ -1,4 +1,4 @@
-import { createAction } from '@activepieces/pieces-framework';
+import { createAction } from '@fema/connector-sdk';
 import { slackAuth } from '../auth';
 import { findUserByEmailAction } from './find-user-by-email';
 import { findUserByEmailActionOutputSchema } from '../output-schemas';

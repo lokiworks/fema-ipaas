@@ -1,5 +1,5 @@
-import { isNil } from '@activepieces/core-utils';
-import { FlowActionType, FlowOperationType } from '@activepieces/shared';
+import { isNil } from '@fema/core-utils';
+import { FlowActionType, FlowOperationType } from '@fema/shared';
 
 import { CardList, CardListItemSkeleton } from '@/components/custom/card-list';
 import {
@@ -16,33 +16,33 @@ import GenericActionOrTriggerItem from './generic-piece-selector-item';
 
 const APPROVAL_PIECES_CONFIG = [
   {
-    pieceName: '@activepieces/piece-slack',
+    pieceName: '@fema/connector-slack',
     approvalActionNames: [
       'request_approval_message',
       'request_approval_direct_message',
     ],
   },
   {
-    pieceName: '@activepieces/piece-discord',
+    pieceName: '@fema/connector-discord',
     approvalActionNames: ['request_approval_message'],
   },
   {
-    pieceName: '@activepieces/piece-microsoft-teams',
+    pieceName: '@fema/connector-microsoft-teams',
     approvalActionNames: [
       'request_approval_direct_message',
       'request_approval_in_channel',
     ],
   },
   {
-    pieceName: '@activepieces/piece-microsoft-outlook',
+    pieceName: '@fema/connector-microsoft-outlook',
     approvalActionNames: ['request_approval_in_mail'],
   },
   {
-    pieceName: '@activepieces/piece-gmail',
+    pieceName: '@fema/connector-gmail',
     approvalActionNames: ['request_approval_in_mail'],
   },
   {
-    pieceName: '@activepieces/piece-telegram-bot',
+    pieceName: '@fema/connector-telegram-bot',
     approvalActionNames: ['request_approval_message'],
   },
 ];

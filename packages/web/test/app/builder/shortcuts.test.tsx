@@ -9,7 +9,7 @@ import {
   FlowTriggerType,
   FlowVersionState,
   PopulatedFlow,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import { QueryClient } from '@tanstack/react-query';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';

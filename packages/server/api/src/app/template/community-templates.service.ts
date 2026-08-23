@@ -1,6 +1,6 @@
-import { ActivepiecesError, ErrorCode, isNil, SeekPage } from '@activepieces/core-utils'
-import { safeHttp } from '@activepieces/server-utils'
-import { ListTemplatesRequestQuery, Template } from '@activepieces/shared'
+import { ActivepiecesError, ErrorCode, isNil, SeekPage } from '@fema/core-utils'
+import { safeHttp } from '@fema/server-utils'
+import { ListTemplatesRequestQuery, Template } from '@fema/shared'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
 

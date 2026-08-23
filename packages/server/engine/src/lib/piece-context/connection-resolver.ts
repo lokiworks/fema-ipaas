@@ -1,5 +1,5 @@
-import { ContextVersion } from '@activepieces/pieces-framework'
-import { AppConnection, AppConnectionStatus, AppConnectionType, AppConnectionValue, ConnectionExpiredError, ConnectionLoadingError, ConnectionNotFoundError, ConnectionPieceMismatchError, ExecutionError, FetchError } from '@activepieces/shared'
+import { ContextVersion } from '@fema/connector-sdk'
+import { AppConnection, AppConnectionStatus, AppConnectionType, AppConnectionValue, ConnectionExpiredError, ConnectionLoadingError, ConnectionNotFoundError, ConnectionPieceMismatchError, ExecutionError, FetchError } from '@fema/shared'
 import { retryFetch } from '../api/retry-fetch'
 import { utils } from '../utils'
 

@@ -1,4 +1,4 @@
-// @activepieces/core-execution — the execution layer extracted from @activepieces/shared
+// @fema/workflow-core — the execution layer extracted from @fema/shared
 // (flows, flow-run, engine operations, workers). See SRE-163.
 
 export * from './lib/flows/actions/action'

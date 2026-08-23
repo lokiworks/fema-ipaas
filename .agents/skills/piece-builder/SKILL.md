@@ -82,15 +82,15 @@ The condensed rules in this file (Quick Auth Reference, Quick Piece Definition T
 - [ ] Every hand-written action carries `audience`, `aiMetadata`, and `classification`; every trigger carries `aiMetadata` and `classification: 'READ'` (see `ai-metadata.md`)
 - [ ] Register in `tsconfig.base.json` at repo root (insert **alphabetically** — build fails without this):
     ```json
-    "@activepieces/piece-<name>": ["packages/pieces/community/<name>/src/index.ts"]
+    "@fema/connector-<name>": ["packages/pieces/community/<name>/src/index.ts"]
     ```
 
 **Build and lint:**
 
 ```bash
 bun install   # new pieces only — creates workspace symlinks
-npx turbo run build --filter=@activepieces/piece-<name>
-npx turbo run lint --filter=@activepieces/piece-<name>
+npx turbo run build --filter=@fema/connector-<name>
+npx turbo run lint --filter=@fema/connector-<name>
 ```
 
 Both must pass. Lint failures (unused imports, `any` types, unused vars) block CI even when the build is green.
@@ -148,7 +148,7 @@ Full code examples: read `auth-patterns.md`
 
 **`src/lib/auth.ts`**
 ```typescript
-import { PieceAuth } from '@activepieces/pieces-framework';
+import { PieceAuth } from '@fema/connector-sdk';
 
 export const myAppAuth = PieceAuth.SecretText({
     displayName: 'API Key',
@@ -159,9 +159,9 @@ export const myAppAuth = PieceAuth.SecretText({
 
 **`src/index.ts`**
 ```typescript
-import { createPiece } from '@activepieces/pieces-framework';
-import { createCustomApiCallAction } from '@activepieces/pieces-common';
-import { PieceCategory } from '@activepieces/shared';
+import { createPiece } from '@fema/connector-sdk';
+import { createCustomApiCallAction } from '@fema/connector-common';
+import { PieceCategory } from '@fema/shared';
 import { myAppAuth } from './lib/auth';
 import { myAction } from './lib/actions/my-action';
 import { myTrigger } from './lib/triggers/my-trigger';

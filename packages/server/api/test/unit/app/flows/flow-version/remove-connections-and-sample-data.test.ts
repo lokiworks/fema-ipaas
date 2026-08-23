@@ -1,4 +1,4 @@
-import { CodeAction, FlowAction, FlowActionType, flowStructureUtil, FlowTrigger, FlowTriggerType, FlowVersion, FlowVersionState } from '@activepieces/shared'
+import { CodeAction, FlowAction, FlowActionType, flowStructureUtil, FlowTrigger, FlowTriggerType, FlowVersion, FlowVersionState } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { describe, expect, it, vi } from 'vitest'
 import { flowVersionService } from '../../../../../src/app/flows/flow-version/flow-version.service'

@@ -1,9 +1,9 @@
-import { PieceMetadataModelSummary } from '@activepieces/pieces-framework';
+import { PieceMetadataModelSummary } from '@fema/connector-sdk';
 import {
   apId,
   PieceSelectorTabConfig,
   PieceSelectorTabSection,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import { t } from 'i18next';
 import {
   CheckIcon,

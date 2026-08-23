@@ -1,7 +1,7 @@
-import { createAction } from '@activepieces/pieces-framework';
+import { createAction } from '@fema/connector-sdk';
 import { githubAuth } from '../auth';
 import { githubApiCall, githubCommon } from '../common';
-import { HttpMethod } from '@activepieces/pieces-common';
+import { HttpMethod } from '@fema/connector-common';
 
 export const githubDeleteBranchAction = createAction({
   auth: githubAuth,

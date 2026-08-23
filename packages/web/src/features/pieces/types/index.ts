@@ -4,7 +4,7 @@ import {
   PieceAuthProperty,
   PieceMetadataModelSummary,
   TriggerBase,
-} from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
 import {
   FlowActionType,
   PackageType,
@@ -12,7 +12,7 @@ import {
   FlowTriggerType,
   FlowOperationType,
   StepLocationRelativeToParent,
-} from '@activepieces/shared';
+} from '@fema/shared';
 
 type BaseStepMetadata = {
   displayName: string;

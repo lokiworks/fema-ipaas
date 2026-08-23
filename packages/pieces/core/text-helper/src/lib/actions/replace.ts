@@ -1,4 +1,4 @@
-import { Property, createAction } from '@activepieces/pieces-framework';
+import { Property, createAction } from '@fema/connector-sdk';
 
 export const replace = createAction({
   audience: 'both',

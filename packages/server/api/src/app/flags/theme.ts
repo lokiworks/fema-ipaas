@@ -1,4 +1,4 @@
-import { PlatformThemeColors } from '@activepieces/shared'
+import { PlatformThemeColors } from '@fema/shared'
 import tinycolor from 'tinycolor2'
 
 function generateColorVariations(defaultColor: string) {

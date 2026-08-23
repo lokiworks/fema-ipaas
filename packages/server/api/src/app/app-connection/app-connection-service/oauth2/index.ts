@@ -1,7 +1,7 @@
 import {
     AppConnectionType,
     PlatformOAuth2ConnectionValue,
-} from '@activepieces/shared'
+} from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import {
     ClaimOAuth2Request,

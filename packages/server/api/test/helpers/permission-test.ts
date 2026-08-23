@@ -1,4 +1,4 @@
-import { DefaultProjectRole } from '@activepieces/shared'
+import { DefaultProjectRole } from '@fema/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { createMemberContext, createTestContext, TestContext } from './test-context'

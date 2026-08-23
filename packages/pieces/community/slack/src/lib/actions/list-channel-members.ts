@@ -1,5 +1,5 @@
 import { slackAuth } from '../auth';
-import { createAction, Property } from '@activepieces/pieces-framework';
+import { createAction, Property } from '@fema/connector-sdk';
 import { ConversationsMembersResponse, WebClient } from '@slack/web-api';
 import { getBotToken, SlackAuthValue } from '../common/auth-helpers';
 import { listChannelMembersActionOutputSchema } from '../output-schemas';

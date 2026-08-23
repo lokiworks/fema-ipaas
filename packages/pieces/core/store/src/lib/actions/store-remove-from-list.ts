@@ -5,9 +5,9 @@ import {
   Property,
   ShortTextProperty,
   StaticDropdownProperty,
-} from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
 import * as z from 'zod/mini'
-import { propsValidation } from '@activepieces/pieces-common';
+import { propsValidation } from '@fema/connector-common';
 import deepEqual from 'deep-equal';
 import { common, getScopeAndKey, PieceStoreScope } from './common';
 

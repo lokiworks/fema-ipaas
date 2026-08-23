@@ -2,7 +2,7 @@ import {
   PlatformMetricsHealthHistory,
   PlatformMetricsLive,
   PlatformMetricsReport,
-} from '@activepieces/shared';
+} from '@fema/shared';
 
 import { api } from '@/lib/api';
 

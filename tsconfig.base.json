@@ -20,121 +20,121 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@activepieces/core-utils": [
+      "@fema/core-utils": [
         "packages/core/utils/src/index.ts"
       ],
-      "@activepieces/core-formula": [
+      "@fema/expression": [
         "packages/core/formula/src/index.ts"
       ],
-      "@activepieces/core-piece-types": [
+      "@fema/connector-types": [
         "packages/core/piece-types/src/index.ts"
       ],
-      "@activepieces/core-execution": [
+      "@fema/workflow-core": [
         "packages/core/execution/src/index.ts"
       ],
-      "@activepieces/engine": [
+      "@fema/engine": [
         "packages/server/engine/src/main.ts"
       ],
-      "@activepieces/piece-approval": [
+      "@fema/connector-approval": [
         "packages/pieces/core/approval/src/index.ts"
       ],
-      "@activepieces/piece-connections": [
+      "@fema/connector-connections": [
         "packages/pieces/core/connections/src/index.ts"
       ],
-      "@activepieces/piece-crypto": [
+      "@fema/connector-crypto": [
         "packages/pieces/core/crypto/src/index.ts"
       ],
-      "@activepieces/piece-csv": [
+      "@fema/connector-csv": [
         "packages/pieces/core/csv/src/index.ts"
       ],
-      "@activepieces/piece-data-mapper": [
+      "@fema/connector-data-mapper": [
         "packages/pieces/core/data-mapper/src/index.ts"
       ],
-      "@activepieces/piece-data-summarizer": [
+      "@fema/connector-data-summarizer": [
         "packages/pieces/core/data-summarizer/src/index.ts"
       ],
-      "@activepieces/piece-date-helper": [
+      "@fema/connector-date-helper": [
         "packages/pieces/core/date-helper/src/index.ts"
       ],
-      "@activepieces/piece-delay": [
+      "@fema/connector-delay": [
         "packages/pieces/core/delay/src/index.ts"
       ],
-      "@activepieces/piece-file-helper": [
+      "@fema/connector-file-helper": [
         "packages/pieces/core/file-helper/src/index.ts"
       ],
-      "@activepieces/piece-forms": [
+      "@fema/connector-forms": [
         "packages/pieces/core/forms/src/index.ts"
       ],
-      "@activepieces/piece-github": [
+      "@fema/connector-github": [
         "packages/pieces/community/github/src/index.ts"
       ],
-      "@activepieces/piece-http": [
+      "@fema/connector-http": [
         "packages/pieces/core/http/src/index.ts"
       ],
-      "@activepieces/piece-math-helper": [
+      "@fema/connector-math-helper": [
         "packages/pieces/core/math-helper/src/index.ts"
       ],
-      "@activepieces/piece-mysql": [
+      "@fema/connector-mysql": [
         "packages/pieces/community/mysql/src/index.ts"
       ],
-      "@activepieces/piece-postgres": [
+      "@fema/connector-postgres": [
         "packages/pieces/community/postgres/src/index.ts"
       ],
-      "@activepieces/piece-rabbitmq": [
+      "@fema/connector-rabbitmq": [
         "packages/pieces/community/rabbitmq/src/index.ts"
       ],
-      "@activepieces/piece-schedule": [
+      "@fema/connector-schedule": [
         "packages/pieces/core/schedule/src/index.ts"
       ],
-      "@activepieces/piece-sftp": [
+      "@fema/connector-sftp": [
         "packages/pieces/core/sftp/src/index.ts"
       ],
-      "@activepieces/piece-slack": [
+      "@fema/connector-slack": [
         "packages/pieces/community/slack/src/index.ts"
       ],
-      "@activepieces/piece-smtp": [
+      "@fema/connector-smtp": [
         "packages/pieces/core/smtp/src/index.ts"
       ],
-      "@activepieces/piece-store": [
+      "@fema/connector-store": [
         "packages/pieces/core/store/src/index.ts"
       ],
-      "@activepieces/piece-subflows": [
+      "@fema/connector-subflows": [
         "packages/pieces/core/subflows/src/index.ts"
       ],
-      "@activepieces/piece-tags": [
+      "@fema/connector-tags": [
         "packages/pieces/core/tags/src/index.ts"
       ],
-      "@activepieces/piece-text-helper": [
+      "@fema/connector-text-helper": [
         "packages/pieces/core/text-helper/src/index.ts"
       ],
-      "@activepieces/piece-webhook": [
+      "@fema/connector-webhook": [
         "packages/pieces/core/webhook/src/index.ts"
       ],
-      "@activepieces/piece-xml": [
+      "@fema/connector-xml": [
         "packages/pieces/core/xml/src/index.ts"
       ],
-      "@activepieces/ai-providers": [
+      "@fema/ai-providers": [
         "packages/core/ai-providers/src/index.ts"
       ],
-      "@activepieces/pieces-common": [
+      "@fema/connector-common": [
         "packages/pieces/common/src/index.ts"
       ],
-      "@activepieces/pieces-framework": [
+      "@fema/connector-sdk": [
         "packages/pieces/framework/src/index.ts"
       ],
-      "@activepieces/server-utils": [
+      "@fema/server-utils": [
         "packages/server/utils/src/index.ts"
       ],
-      "@activepieces/sandbox": [
+      "@fema/sandbox": [
         "packages/server/sandbox/src/index.ts"
       ],
-      "@activepieces/shared": [
+      "@fema/shared": [
         "packages/core/shared/src/index.ts"
       ],
       "ee-embed-sdk": [
         "packages/ee/embed-sdk/src/index.ts"
       ],
-      "@activepieces/piece-manual-trigger": [
+      "@fema/connector-manual-trigger": [
         "packages/pieces/core/manual-trigger/src/index.ts"
       ]
     },

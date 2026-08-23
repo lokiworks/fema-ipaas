@@ -1,4 +1,4 @@
-import { FlowRunStatus } from '@activepieces/shared'
+import { FlowRunStatus } from '@fema/shared'
 import { FlowExecutorContext } from '../../src/lib/handler/context/flow-execution-context'
 import { flowExecutor } from '../../src/lib/handler/flow-executor'
 import { EngineApiStub, startEngineApiStub } from '../helpers/engine-api-stub'
@@ -22,7 +22,7 @@ describe('flow with delay', () => {
     it('delay-for pauses flow and calls waitpointClient.create with DELAY type', async () => {
         const delayForFlow = buildPieceAction({
             name: 'delay_step',
-            pieceName: '@activepieces/piece-delay',
+            pieceName: '@fema/connector-delay',
             actionName: 'delayFor',
             input: {
                 unit: 'seconds',
@@ -54,7 +54,7 @@ describe('flow with delay', () => {
     it('delay-for resumes successfully after pause', async () => {
         const delayForFlow = buildPieceAction({
             name: 'delay_step',
-            pieceName: '@activepieces/piece-delay',
+            pieceName: '@fema/connector-delay',
             actionName: 'delayFor',
             input: {
                 unit: 'seconds',
@@ -98,7 +98,7 @@ describe('flow with delay', () => {
     it('delay-for uses setTimeout for short delays without pausing', async () => {
         const shortDelayFlow = buildPieceAction({
             name: 'delay_step',
-            pieceName: '@activepieces/piece-delay',
+            pieceName: '@fema/connector-delay',
             actionName: 'delayFor',
             input: {
                 unit: 'seconds',
@@ -122,7 +122,7 @@ describe('flow with delay', () => {
         const futureDate = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()
         const delayUntilFlow = buildPieceAction({
             name: 'delay_step',
-            pieceName: '@activepieces/piece-delay',
+            pieceName: '@fema/connector-delay',
             actionName: 'delay_until',
             input: {
                 delayUntilTimestamp: futureDate,
@@ -154,7 +154,7 @@ describe('flow with delay', () => {
         const pastDate = new Date(Date.now() - 60 * 1000).toISOString()
         const delayUntilFlow = buildPieceAction({
             name: 'delay_step',
-            pieceName: '@activepieces/piece-delay',
+            pieceName: '@fema/connector-delay',
             actionName: 'delay_until',
             input: {
                 delayUntilTimestamp: pastDate,

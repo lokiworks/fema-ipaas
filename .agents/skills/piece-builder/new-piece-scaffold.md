@@ -6,7 +6,7 @@ Copy-ready templates for the four config files a new piece needs. Only "New piec
 
 ```json
 {
-    "name": "@activepieces/piece-<name>",
+    "name": "@fema/connector-<name>",
     "version": "0.0.1",
     "main": "./dist/src/index.js",
     "types": "./dist/src/index.d.ts",
@@ -15,9 +15,9 @@ Copy-ready templates for the four config files a new piece needs. Only "New piec
         "lint": "eslint 'src/**/*.ts'"
     },
     "dependencies": {
-        "@activepieces/pieces-common": "workspace:*",
-        "@activepieces/pieces-framework": "workspace:*",
-        "@activepieces/shared": "workspace:*",
+        "@fema/connector-common": "workspace:*",
+        "@fema/connector-sdk": "workspace:*",
+        "@fema/shared": "workspace:*",
         "tslib": "2.6.2"
     }
 }

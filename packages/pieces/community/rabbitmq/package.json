@@ -1,15 +1,15 @@
 {
-  "name": "@activepieces/piece-rabbitmq",
+  "name": "@fema/connector-rabbitmq",
   "version": "0.1.6",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "dependencies": {
-    "@activepieces/pieces-common": "workspace:*",
-    "@activepieces/pieces-framework": "workspace:*",
+    "@fema/connector-common": "workspace:*",
+    "@fema/connector-sdk": "workspace:*",
     "amqplib": "0.10.7",
     "dayjs": "1.11.9",
-    "@activepieces/core-piece-types": "workspace:*",
-    "@activepieces/core-utils": "workspace:*"
+    "@fema/connector-types": "workspace:*",
+    "@fema/core-utils": "workspace:*"
   },
   "devDependencies": {
     "@types/amqplib": "0.10.7",

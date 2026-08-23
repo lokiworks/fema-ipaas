@@ -9,9 +9,9 @@ import {
   DelayPauseMetadata,
   PauseMetadata,
   WebhookPauseMetadata,
-} from '@activepieces/core-piece-types';
-import type { SeekPage } from '@activepieces/core-utils';
-import type { FlowRunId, ProjectId } from '@activepieces/core-utils';
+} from '@fema/connector-types';
+import type { SeekPage } from '@fema/core-utils';
+import type { FlowRunId, ProjectId } from '@fema/core-utils';
 import type { Readable } from 'node:stream'
 
 import {
@@ -24,7 +24,7 @@ import {
   StaticPropsValue,
 } from '../property';
 import { PieceAuthProperty } from '../property/authentication';
-import type { PopulatedFlowSummary } from '@activepieces/core-piece-types';
+import type { PopulatedFlowSummary } from '@fema/connector-types';
 
 export type BaseContext<
   PieceAuth extends PieceAuthProperty | PieceAuthProperty[] | undefined,

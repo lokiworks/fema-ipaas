@@ -1,5 +1,5 @@
-import { createAction, Property } from '@activepieces/pieces-framework';
-import { ExecutionType } from '@activepieces/pieces-framework';
+import { createAction, Property } from '@fema/connector-sdk';
+import { ExecutionType } from '@fema/connector-sdk';
 import dayjs from 'dayjs';
 import { markdownDescription } from '../common';
 import { delayUntilActionOutputSchema } from '../output-schemas';

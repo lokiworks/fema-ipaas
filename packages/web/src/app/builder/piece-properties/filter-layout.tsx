@@ -2,7 +2,7 @@ import {
   PieceProperty,
   PropertyGroup,
   PropertyType,
-} from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
 import { t } from 'i18next';
 import { Search, X } from 'lucide-react';
 import React from 'react';

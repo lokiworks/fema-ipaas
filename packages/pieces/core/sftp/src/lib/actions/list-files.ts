@@ -1,6 +1,6 @@
 import { sftpAuth } from '../auth';
 import { endClient, getClient, getProtocolBackwardCompatibility } from '../common';
-import { Property, createAction } from '@activepieces/pieces-framework';
+import { Property, createAction } from '@fema/connector-sdk';
 import Client from 'ssh2-sftp-client';
 import { Client as FTPClient, FTPError } from 'basic-ftp';
 import { getSftpError } from './common';

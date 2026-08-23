@@ -1,5 +1,5 @@
-import { assertNotNullOrUndefined } from '@activepieces/core-utils'
-import { environmentMigrations } from '@activepieces/server-utils'
+import { assertNotNullOrUndefined } from '@fema/core-utils'
+import { environmentMigrations } from '@fema/server-utils'
 
 export type SystemProp = AppSystemProp
 

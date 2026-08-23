@@ -1,4 +1,4 @@
-import { emptyCondition } from '@activepieces/shared';
+import { emptyCondition } from '@fema/shared';
 import { t } from 'i18next';
 import React from 'react';
 import { useFormContext, useFieldArray } from 'react-hook-form';

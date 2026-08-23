@@ -1,5 +1,5 @@
-import { ActivepiecesError, ErrorCode } from '@activepieces/core-utils'
-import { EngineResponseStatus } from '@activepieces/shared'
+import { ActivepiecesError, ErrorCode } from '@fema/core-utils'
+import { EngineResponseStatus } from '@fema/shared'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const acquiredBoxIds: number[] = []
@@ -7,8 +7,8 @@ const runTimeouts: number[] = []
 const managerCalls = { release: 0, invalidate: 0 }
 let bootAdvanceMs = 0
 
-vi.mock('@activepieces/server-utils', async (importActual) => {
-    const actual = await importActual<typeof import('@activepieces/server-utils')>()
+vi.mock('@fema/server-utils', async (importActual) => {
+    const actual = await importActual<typeof import('@fema/server-utils')>()
     return {
         ...actual,
         wideEvent: {

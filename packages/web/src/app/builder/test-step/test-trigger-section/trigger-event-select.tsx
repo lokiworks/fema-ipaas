@@ -1,4 +1,4 @@
-import { FlowTrigger, TriggerEventWithPayload } from '@activepieces/shared';
+import { FlowTrigger, TriggerEventWithPayload } from '@fema/shared';
 import deepEqual from 'deep-equal';
 import { t } from 'i18next';
 import React from 'react';

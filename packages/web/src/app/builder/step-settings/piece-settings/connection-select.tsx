@@ -1,8 +1,8 @@
-import { Permission, isNil } from '@activepieces/core-utils';
 import {
   PieceMetadataModel,
   PieceMetadataModelSummary,
-} from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
+import { Permission, isNil } from '@fema/core-utils';
 import {
   AppConnectionScope,
   AppConnectionStatus,
@@ -10,7 +10,7 @@ import {
   PieceAction,
   PieceTrigger,
   PropertyExecutionType,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import { t } from 'i18next';
 import { Plus, Globe, Cable, Check, Unplug, X, LucideIcon } from 'lucide-react';
 import { useState } from 'react';

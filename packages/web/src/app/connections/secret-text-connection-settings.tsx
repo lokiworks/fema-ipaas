@@ -1,5 +1,5 @@
-import { SecretTextProperty } from '@activepieces/pieces-framework';
-import { UpsertSecretTextRequest } from '@activepieces/shared';
+import { SecretTextProperty } from '@fema/connector-sdk';
+import { UpsertSecretTextRequest } from '@fema/shared';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { z } from 'zod';

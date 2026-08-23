@@ -1,10 +1,10 @@
-import { Permission } from '@activepieces/core-utils';
+import { Permission } from '@fema/core-utils';
 import {
   AppConnectionScope,
   AppConnectionStatus,
   AppConnectionWithoutSensitiveData,
   PlatformRole,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import { ColumnDef } from '@tanstack/react-table';
 import { t } from 'i18next';
 import {

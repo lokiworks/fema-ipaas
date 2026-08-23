@@ -8,13 +8,13 @@ import {
     WorkerJobType,
     EngineResponseStatus,
     WebsocketServerEvent,
-} from '@activepieces/shared'
+} from '@fema/shared'
 import { JobResultKind } from '../../src/lib/execute/types'
 import type {
     WorkerToApiContract,
     ExecuteExtractPieceMetadataJobData,
     ConsumeJobRequest,
-} from '@activepieces/shared'
+} from '@fema/shared'
 
 const mockGetHandler = vi.fn()
 
@@ -28,7 +28,7 @@ vi.mock('../../src/lib/execute/job-registry', () => ({
 // which strips a mock's return value and would make getSettings() return undefined from the second
 // test onward, crashing every poll loop before it reaches poll().
 vi.mock('../../src/lib/config/worker-settings', async () => {
-    const { apVersionUtil } = await vi.importActual<typeof import('@activepieces/server-utils')>('@activepieces/server-utils')
+    const { apVersionUtil } = await vi.importActual<typeof import('@fema/server-utils')>('@fema/server-utils')
     const settings = { PUBLIC_URL: 'http://localhost:3000', APP_VERSION: apVersionUtil.getCurrentRelease() }
     return {
         workerSettings: {
@@ -58,7 +58,7 @@ type StubRuntime = {
 
 const createdRuntimes: StubRuntime[] = []
 
-vi.mock('@activepieces/sandbox', () => ({
+vi.mock('@fema/sandbox', () => ({
     actionRunCache: { sweep: vi.fn().mockResolvedValue(undefined) },
     ACTION_RUN_CACHE_FIRST_SWEEP_DELAY_MS: 60_000,
     ACTION_RUN_CACHE_SWEEP_INTERVAL_MS: 1_800_000,
@@ -84,7 +84,7 @@ function buildExtractPieceJob(): ExecuteExtractPieceMetadataJobData {
         projectId: undefined,
         platformId: 'plat-1',
         piece: {
-            pieceName: '@activepieces/piece-test',
+            pieceName: '@fema/connector-test',
             pieceVersion: '0.1.0',
             packageType: PackageType.REGISTRY,
             pieceType: PieceType.OFFICIAL,
@@ -327,7 +327,7 @@ describe('worker integration', () => {
             execute: vi.fn().mockResolvedValue({
                 kind: JobResultKind.FIRE_AND_FORGET,
                 status: EngineResponseStatus.INTERNAL_ERROR,
-                logs: 'MODULE_NOT_FOUND: @activepieces/shared',
+                logs: 'MODULE_NOT_FOUND: @fema/shared',
             }),
         })
 
@@ -337,7 +337,7 @@ describe('worker integration', () => {
         expect(completeJobCalls.length).toBe(1)
         expect(completeJobCalls[0].jobId).toBe('job-internal-error')
         expect(completeJobCalls[0].status).toBe(EngineResponseStatus.INTERNAL_ERROR)
-        expect(completeJobCalls[0].logs).toBe('MODULE_NOT_FOUND: @activepieces/shared')
+        expect(completeJobCalls[0].logs).toBe('MODULE_NOT_FOUND: @fema/shared')
     }, 15_000)
 
     it('propagates TIMEOUT status from fire-and-forget result to completeJob', async () => {

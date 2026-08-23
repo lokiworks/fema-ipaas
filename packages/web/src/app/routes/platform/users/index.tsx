@@ -2,7 +2,7 @@ import {
   UserInvitation,
   UserStatus,
   UserWithMetaInformation,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import { t } from 'i18next';
 import { User } from 'lucide-react';
 import { useMemo } from 'react';

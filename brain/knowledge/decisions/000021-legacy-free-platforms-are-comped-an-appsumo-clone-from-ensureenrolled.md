@@ -88,7 +88,7 @@ runs. Dropping the lazy-sync trigger and keeping only `loadAutumnCreds` also wor
 reaches it through `throttledBillingProviderRefresh`, but a plan-read-only platform would then wait
 for its next entitlements refresh (up to 15 min) instead of being checked on the spot.
 
-`isFreeLegacyEligible` lives in `@activepieces/shared` rather than beside the comp because both the
+`isFreeLegacyEligible` lives in `@fema/shared` rather than beside the comp because both the
 in-memory gate in `platform-plan.service.ts` and the re-check inside the lock in `autumn-utils.ts`
 need it, and `autumn-utils` already imports `platformPlanService` (importing back would be circular).
 It uses `Date.parse` rather than dayjs so the shared bundle, which every web consumer pulls, does not

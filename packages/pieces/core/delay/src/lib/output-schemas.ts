@@ -1,4 +1,4 @@
-import { OutputSchema } from '@activepieces/pieces-framework';
+import { OutputSchema } from '@fema/connector-sdk';
 
 /**
  * Both actions have a bare `return {}` branch, but it is only the branch that

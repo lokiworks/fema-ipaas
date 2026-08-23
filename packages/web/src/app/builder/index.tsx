@@ -4,7 +4,7 @@ import {
   FlowTrigger,
   FlowTriggerType,
   flowStructureUtil,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { PanelImperativeHandle } from 'react-resizable-panels';
 import { usePrevious } from 'react-use';

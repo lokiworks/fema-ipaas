@@ -1,4 +1,4 @@
-import { TriggerStatusReport } from '@activepieces/shared';
+import { TriggerStatusReport } from '@fema/shared';
 import dayjs from 'dayjs';
 import { t } from 'i18next';
 import {

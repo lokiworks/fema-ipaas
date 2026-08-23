@@ -1,7 +1,7 @@
-import { createAction } from '@activepieces/pieces-framework';
+import { createAction } from '@fema/connector-sdk';
 import { githubAuth } from '../../auth';
 import { githubApiCall } from '../../common';
-import { HttpMethod } from '@activepieces/pieces-common';
+import { HttpMethod } from '@fema/connector-common';
 import { githubError } from './common';
 import { authenticatedUserBodyOutputSchema } from '../../output-schemas';
 

@@ -1,6 +1,6 @@
-import { createCustomApiCallAction } from '@activepieces/pieces-common';
-import { createPiece } from '@activepieces/pieces-framework';
-import { PieceCategory } from '@activepieces/pieces-framework';
+import { createCustomApiCallAction } from '@fema/connector-common';
+import { createPiece } from '@fema/connector-sdk';
+import { PieceCategory } from '@fema/connector-sdk';
 import { githubAuthHelpers, GithubAuthValue } from './lib/common/auth-helpers';
 import { githubCreateIssueAction } from './lib/actions/create-issue';
 import { githubUnlockIssueAction } from './lib/actions/unlock-issue';

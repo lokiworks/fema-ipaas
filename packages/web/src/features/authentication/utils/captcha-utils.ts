@@ -1,4 +1,4 @@
-import { ErrorCode } from '@activepieces/core-utils';
+import { ErrorCode } from '@fema/core-utils';
 
 import { HttpError } from '@/lib/api';
 

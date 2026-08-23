@@ -2,8 +2,8 @@ import {
   PieceProperty,
   PropertyGroup,
   PropertyType,
-} from '@activepieces/pieces-framework';
-import { PropertyExecutionType, PropertySettings } from '@activepieces/shared';
+} from '@fema/connector-sdk';
+import { PropertyExecutionType, PropertySettings } from '@fema/shared';
 import { t } from 'i18next';
 import { Info, SquareFunction } from 'lucide-react';
 import React, { useLayoutEffect, useRef, useState } from 'react';

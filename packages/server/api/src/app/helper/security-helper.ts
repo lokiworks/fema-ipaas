@@ -1,4 +1,4 @@
-import { PrincipalType } from '@activepieces/shared'
+import { PrincipalType } from '@fema/shared'
 import { FastifyRequest } from 'fastify'
 import { platformService } from '../platform/platform.service'
 

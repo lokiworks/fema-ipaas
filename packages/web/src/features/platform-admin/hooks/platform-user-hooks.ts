@@ -1,11 +1,11 @@
-import { isNil, Permission, SeekPage } from '@activepieces/core-utils';
+import { isNil, Permission, SeekPage } from '@fema/core-utils';
 import {
   InvitationType,
   UpdateUserRequestBody,
   User,
   UserStatus,
   UserWithMetaInformation,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { toast } from 'sonner';

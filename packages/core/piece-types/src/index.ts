@@ -41,17 +41,15 @@ export { MarkdownVariant } from './lib/markdown'
 export { TriggerPayload } from './lib/engine'
 export type { EventPayload, ParseEventResponse, ResumePayload } from './lib/engine'
 
-export * from './lib/agents'
+export * from './lib/tool-execution'
 
 export * from './lib/ai-providers'
 
 export * from './lib/forms'
 
-export * from './lib/tables'
 
 export * from './lib/flow-contracts'
 
-export * from './lib/mcp-piece'
 
 export * from './lib/engine-tools'
 

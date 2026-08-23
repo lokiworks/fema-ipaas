@@ -2,8 +2,8 @@ import {
   PieceAuth,
   Property,
   createPiece,
-} from '@activepieces/pieces-framework';
-import { PieceCategory } from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
+import { PieceCategory } from '@fema/connector-sdk';
 import { sendEmail } from './lib/actions/send-email';
 import { smtpCommon } from './lib/common';
 

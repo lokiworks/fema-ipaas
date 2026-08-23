@@ -1,13 +1,13 @@
 import {
-  deepMergeAndCast,
-  isNil,
-  isManualPieceTrigger,
-} from '@activepieces/core-utils';
-import {
   PieceAuthProperty,
   PiecePropertyMap,
   piecePropertiesUtils,
-} from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
+import {
+  deepMergeAndCast,
+  isNil,
+  isManualPieceTrigger,
+} from '@fema/core-utils';
 import {
   FlowAction,
   FlowActionType,
@@ -27,7 +27,7 @@ import {
   FlowVersion,
   FlowOperationType,
   AUTHENTICATION_PROPERTY_NAME,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import { useRef } from 'react';
 
 import {
@@ -346,13 +346,12 @@ export const PIECE_SELECTOR_ELEMENTS_HEIGHTS = {
 };
 
 const isMcpToolTrigger = (pieceName: string, triggerName: string) => {
-  return pieceName === '@activepieces/piece-mcp' && triggerName === 'mcp_tool';
+  return pieceName === '@fema/connector-mcp' && triggerName === 'mcp_tool';
 };
 
 const isChatTrigger = (pieceName: string, triggerName: string) => {
   return (
-    pieceName === '@activepieces/piece-forms' &&
-    triggerName === 'chat_submission'
+    pieceName === '@fema/connector-forms' && triggerName === 'chat_submission'
   );
 };
 

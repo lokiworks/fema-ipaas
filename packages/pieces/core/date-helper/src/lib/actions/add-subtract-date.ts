@@ -1,4 +1,4 @@
-import { Property, createAction } from '@activepieces/pieces-framework';
+import { Property, createAction } from '@fema/connector-sdk';
 import dayjs from 'dayjs';
 import {
   apDayjs,
@@ -11,7 +11,7 @@ import {
   timeZoneOptions,
 } from '../common';
 import * as z from 'zod/mini'
-import { propsValidation } from '@activepieces/pieces-common';
+import { propsValidation } from '@fema/connector-common';
 import { addSubtractDateActionOutputSchema } from '../output-schemas';
 
 export const addSubtractDateAction = createAction({

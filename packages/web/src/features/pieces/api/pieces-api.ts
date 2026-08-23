@@ -4,7 +4,7 @@ import {
   PiecePackageInformation,
   PropertyType,
   ExecutePropsResult,
-} from '@activepieces/pieces-framework';
+} from '@fema/connector-sdk';
 import {
   AddPieceRequestBody,
   GetPieceRequestParams,
@@ -12,7 +12,7 @@ import {
   ListPiecesRequestQuery,
   PackageType,
   PieceOptionRequest,
-} from '@activepieces/shared';
+} from '@fema/shared';
 import { t } from 'i18next';
 
 import { internalErrorToast } from '@/components/ui/sonner';

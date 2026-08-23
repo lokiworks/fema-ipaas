@@ -11,9 +11,9 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@activepieces/shared': path.resolve(__dirname, '../../../packages/core/shared/src/index.ts'),
-      '@activepieces/server-utils': path.resolve(__dirname, '../../../packages/server/utils/src/index.ts'),
-      '@activepieces/core-utils': path.resolve(__dirname, '../../../packages/core/utils/src/index.ts'),
+      '@fema/shared': path.resolve(__dirname, '../../../packages/core/shared/src/index.ts'),
+      '@fema/server-utils': path.resolve(__dirname, '../../../packages/server/utils/src/index.ts'),
+      '@fema/core-utils': path.resolve(__dirname, '../../../packages/core/utils/src/index.ts'),
     },
   },
 })

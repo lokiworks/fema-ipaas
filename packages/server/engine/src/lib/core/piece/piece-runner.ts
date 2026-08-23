@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process'
 import path from 'node:path'
-import { isNil, tryCatchSync } from '@activepieces/core-utils'
-import { EngineGenericError, PieceMemoryLimitError } from '@activepieces/shared'
+import { isNil, tryCatchSync } from '@fema/core-utils'
+import { EngineGenericError, PieceMemoryLimitError } from '@fema/shared'
 import { piecePath } from './piece-path'
 import { ChildMessage, CollectedHooks, ContextRequest, ParentMessage, PieceDescription, pieceProtocol } from './piece-protocol'
 

@@ -8,16 +8,16 @@ const packageDir = resolve(here, '..')
 const repoRoot = resolve(packageDir, '../..')
 const distDir = resolve(packageDir, 'dist')
 
-// @activepieces/* workspace packages are no longer published to npm, so the published CLI must
+// @fema/* workspace packages are no longer published to npm, so the published CLI must
 // inline them. esbuild resolves them from source via these aliases (mirrors the piece bundler).
 const alias = {
-    '@activepieces/shared': resolve(repoRoot, 'packages/core/shared/src'),
-    '@activepieces/pieces-framework': resolve(repoRoot, 'packages/pieces/framework/src'),
-    '@activepieces/pieces-common': resolve(repoRoot, 'packages/pieces/common/src'),
-    '@activepieces/core-utils': resolve(repoRoot, 'packages/core/utils/src'),
-    '@activepieces/core-piece-types': resolve(repoRoot, 'packages/core/piece-types/src'),
-    '@activepieces/core-formula': resolve(repoRoot, 'packages/core/formula/src'),
-    '@activepieces/core-execution': resolve(repoRoot, 'packages/core/execution/src'),
+    '@fema/shared': resolve(repoRoot, 'packages/core/shared/src'),
+    '@fema/connector-sdk': resolve(repoRoot, 'packages/pieces/framework/src'),
+    '@fema/connector-common': resolve(repoRoot, 'packages/pieces/common/src'),
+    '@fema/core-utils': resolve(repoRoot, 'packages/core/utils/src'),
+    '@fema/connector-types': resolve(repoRoot, 'packages/core/piece-types/src'),
+    '@fema/expression': resolve(repoRoot, 'packages/core/formula/src'),
+    '@fema/workflow-core': resolve(repoRoot, 'packages/core/execution/src'),
 }
 
 // esbuild ships a platform-specific native binary, and autocannon loads a .wasm histogram —

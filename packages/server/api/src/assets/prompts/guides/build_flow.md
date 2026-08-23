@@ -54,15 +54,15 @@ Activepieces ships pieces that need no external app or connection; registry sear
 
 | User says | Piece | What it is |
 |---|---|---|
-| "a form" | `@activepieces/piece-forms` (**Human Input**) | hosted web form trigger w/ shareable link |
-| "every day/hour", "cron" | `@activepieces/piece-schedule` | schedule triggers |
-| "webhook", "receive events" | `@activepieces/piece-webhook` | inbound webhook trigger |
-| "save/track data here" | `@activepieces/piece-tables` | built-in database — `ap_load_guide('tables')` |
-| "remember/count/dedup" | `@activepieces/piece-store` | key-value store — `ap_load_guide('state')` |
-| "ask AI/classify/extract" | `@activepieces/piece-ai` | native AI — use this, never the OpenAI/vendor piece — `ap_load_guide('ai')` |
-| "human sign-off" | `@activepieces/piece-approval` | pause for approve/reject |
-| "wait/pause" | `@activepieces/piece-delay` | delay step |
-| "split big work" | `@activepieces/piece-subflows` | call another flow |
+| "a form" | `@fema/connector-forms` (**Human Input**) | hosted web form trigger w/ shareable link |
+| "every day/hour", "cron" | `@fema/connector-schedule` | schedule triggers |
+| "webhook", "receive events" | `@fema/connector-webhook` | inbound webhook trigger |
+| "save/track data here" | `@fema/connector-tables` | built-in database — `ap_load_guide('tables')` |
+| "remember/count/dedup" | `@fema/connector-store` | key-value store — `ap_load_guide('state')` |
+| "ask AI/classify/extract" | `@fema/connector-ai` | native AI — use this, never the OpenAI/vendor piece — `ap_load_guide('ai')` |
+| "human sign-off" | `@fema/connector-approval` | pause for approve/reject |
+| "wait/pause" | `@fema/connector-delay` | delay step |
+| "split big work" | `@fema/connector-subflows` | call another flow |
 
 ## CODE is the last resort — use inline expressions & conditions first
 Dropping a **CODE step** into a flow to filter, reshape, calculate, or format data is almost always the wrong first move — it's slower to build, opaque to a non-coder, and harder to debug. Walk this ladder and stop at the first rung that fits; only the last rung is code:

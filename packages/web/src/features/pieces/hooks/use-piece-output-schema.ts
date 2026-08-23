@@ -1,5 +1,5 @@
-import { isNil } from '@activepieces/core-utils';
-import type { OutputSchema } from '@activepieces/pieces-framework';
+import type { OutputSchema } from '@fema/connector-sdk';
+import { isNil } from '@fema/core-utils';
 
 import { piecesHooks } from './pieces-hooks';
 

@@ -1,4 +1,4 @@
-import { type SandboxSettings } from '@activepieces/sandbox'
+import { type SandboxSettings } from '@fema/sandbox'
 import { system, WorkerSystemProp } from '../config/configs'
 import { workerSettings } from '../config/worker-settings'
 

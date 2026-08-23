@@ -22,7 +22,7 @@ done
 # Wait for webhook piece to be synced (pieces sync from cloud in batches)
 echo "Waiting for webhook piece to be available..." >&2
 for i in $(seq 1 300); do
-  HAS_WEBHOOK=$(curl -sf "$BASE_URL/pieces" 2>/dev/null | jq '[.[].name] | any(. == "@activepieces/piece-webhook")' 2>/dev/null || echo "false")
+  HAS_WEBHOOK=$(curl -sf "$BASE_URL/pieces" 2>/dev/null | jq '[.[].name] | any(. == "@fema/connector-webhook")' 2>/dev/null || echo "false")
   if [ "$HAS_WEBHOOK" = "true" ]; then
     echo "Webhook piece is available (took ${i}s)" >&2
     break
@@ -36,7 +36,7 @@ done
 
 # Sign up
 echo "Authenticating..." >&2
-BENCH_EMAIL="${BENCH_EMAIL:-bench@activepieces.com}"
+BENCH_EMAIL="${BENCH_EMAIL:-bench@fema.local}"
 # Try sign-up (first run creates the platform). On repeat runs public sign-up is disabled once a
 # platform exists, so fall back to sign-in with the same fixed credentials. No --fail-with-body here:
 # under `set -e` a rejected sign-up would abort the script before we can fall back.
@@ -137,7 +137,7 @@ IMPORT_PAYLOAD=$(jq -n \
         displayName: "Catch Webhook",
         type: "PIECE_TRIGGER",
         settings: {
-          pieceName: "@activepieces/piece-webhook",
+          pieceName: "@fema/connector-webhook",
           pieceVersion: $webhookV,
           triggerName: "catch_webhook",
           input: { authType: "none", authFields: {} },
@@ -157,7 +157,7 @@ IMPORT_PAYLOAD=$(jq -n \
           valid: true,
           settings: {
             input: { first_number: 2, second_number: 3 },
-            pieceName: "@activepieces/piece-math-helper",
+            pieceName: "@fema/connector-math-helper",
             actionName: "addition_math",
             pieceVersion: $mathV,
             sampleData: {},
@@ -197,7 +197,7 @@ IMPORT_PAYLOAD=$(jq -n \
                   respond: "stop",
                   responseType: "json"
                 },
-                pieceName: "@activepieces/piece-webhook",
+                pieceName: "@fema/connector-webhook",
                 actionName: "return_response",
                 sampleData: {},
                 pieceVersion: $webhookV,

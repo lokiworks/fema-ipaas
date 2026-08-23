@@ -1,6 +1,6 @@
-import { isNil } from '@activepieces/core-utils';
-import { PieceMetadataModelSummary } from '@activepieces/pieces-framework';
-import { AppConnectionWithoutSensitiveData } from '@activepieces/shared';
+import { PieceMetadataModelSummary } from '@fema/connector-sdk';
+import { isNil } from '@fema/core-utils';
+import { AppConnectionWithoutSensitiveData } from '@fema/shared';
 import { t } from 'i18next';
 import React, { useState } from 'react';
 

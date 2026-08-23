@@ -1,10 +1,10 @@
 import { z } from 'zod'
 import { OptionalArrayFromQuery, OptionalBooleanFromQuery } from '@fema/core-utils'
 import { ApId } from '@fema/core-utils'
-import { ExecutionStatus } from '../state/flow-execution'
+import { ExecutionStatus } from '../state/workflow-execution'
 
 export const ListExecutionsRequestQuery = z.object({
-    flowId: OptionalArrayFromQuery(ApId),
+    workflowId: OptionalArrayFromQuery(ApId),
     tags: OptionalArrayFromQuery(z.string()),
     status: OptionalArrayFromQuery(z.nativeEnum(ExecutionStatus)),
     limit: z.coerce.number().optional(),

@@ -1,14 +1,14 @@
-import { ActionErrorHandlingOptions, BeginExecuteFlowOperation, BranchCondition, BranchExecutionType, CodeAction, ExecutionType, FlowAction, FlowActionType, FlowVersionState, LoopOnItemsAction, ConnectorAction, PropertyExecutionType, RouterExecutionType, RunEnvironment, StreamStepProgress } from '@fema/shared'
-import { EngineConstants, ResolvedBeginExecuteFlowOperation } from '../../src/lib/handler/context/engine-constants'
+import { ActionErrorHandlingOptions, BeginExecuteWorkflowOperation, BranchCondition, BranchExecutionType, CodeAction, ExecutionType, WorkflowAction, WorkflowActionType, WorkflowVersionState, LoopOnItemsAction, ConnectorAction, PropertyExecutionType, RouterExecutionType, RunEnvironment, StreamStepProgress } from '@fema/shared'
+import { EngineConstants, ResolvedBeginExecuteWorkflowOperation } from '../../src/lib/handler/context/engine-constants'
 
 export const generateMockEngineConstants = (params?: Partial<EngineConstants>): EngineConstants => {
     return new EngineConstants(
         {
             platformId: params?.platformId ?? 'platformId',
             timeoutInSeconds: params?.timeoutInSeconds ?? 10,
-            flowId: params?.flowId ?? 'flowId',
-            flowVersionId: params?.flowVersionId ?? 'flowVersionId',
-            flowVersionState: params?.flowVersionState ?? FlowVersionState.DRAFT,
+            workflowId: params?.workflowId ?? 'workflowId',
+            workflowVersionId: params?.workflowVersionId ?? 'workflowVersionId',
+            workflowVersionState: params?.workflowVersionState ?? WorkflowVersionState.DRAFT,
             executionId: params?.executionId ?? 'executionId',
             publicApiUrl: params?.publicApiUrl ?? 'http://127.0.0.1:4200/api/',
             internalApiUrl: params?.internalApiUrl ?? 'http://127.0.0.1:3000/',
@@ -39,13 +39,13 @@ export function buildSimpleLoopAction({
 }: {
     name: string
     loopItems: string
-    firstLoopAction?: FlowAction
+    firstLoopAction?: WorkflowAction
     skip?: boolean
 }): LoopOnItemsAction {
     return {
         name,
         displayName: 'Loop',
-        type: FlowActionType.LOOP_ON_ITEMS,
+        type: WorkflowActionType.LOOP_ON_ITEMS,
         skip: skip ?? false,
         settings: {
             items: loopItems,
@@ -55,11 +55,11 @@ export function buildSimpleLoopAction({
     }
 }
 
-export function buildRouterWithOneCondition({ children, conditions, executionType, skip }: { children: FlowAction[], conditions: (BranchCondition | null)[], executionType: RouterExecutionType, skip?: boolean }): FlowAction {
+export function buildRouterWithOneCondition({ children, conditions, executionType, skip }: { children: WorkflowAction[], conditions: (BranchCondition | null)[], executionType: RouterExecutionType, skip?: boolean }): WorkflowAction {
     return {
         name: 'router',
         displayName: 'Your Router Name',
-        type: FlowActionType.ROUTER,
+        type: WorkflowActionType.ROUTER,
         skip: skip ?? false,
         settings: {
             branches: conditions.map((condition) => {
@@ -82,11 +82,11 @@ export function buildRouterWithOneCondition({ children, conditions, executionTyp
     }
 }
 
-export function buildCodeAction({ name, input, skip, nextAction, errorHandlingOptions }: { name: 'echo_step' | 'runtime' | 'echo_step_1' | 'system_error' | 'process_exit' | 'unhandled_rejection' | 'hello_world_npm' | 'stdout_on_failure' | 'setTimeout_error', input: Record<string, unknown>, skip?: boolean, errorHandlingOptions?: ActionErrorHandlingOptions, nextAction?: FlowAction }): CodeAction {
+export function buildCodeAction({ name, input, skip, nextAction, errorHandlingOptions }: { name: 'echo_step' | 'runtime' | 'echo_step_1' | 'system_error' | 'process_exit' | 'unhandled_rejection' | 'hello_world_npm' | 'stdout_on_failure' | 'setTimeout_error', input: Record<string, unknown>, skip?: boolean, errorHandlingOptions?: ActionErrorHandlingOptions, nextAction?: WorkflowAction }): CodeAction {
     return {
         name,
         displayName: 'Your Action Name',
-        type: FlowActionType.CODE,
+        type: WorkflowActionType.CODE,
         skip: skip ?? false,
         settings: {
             input,
@@ -101,11 +101,11 @@ export function buildCodeAction({ name, input, skip, nextAction, errorHandlingOp
     }
 }
 
-export function buildConnectorAction({ name, input, skip, connectorName, actionName, nextAction, errorHandlingOptions }: { errorHandlingOptions?: ActionErrorHandlingOptions, name: string, input: Record<string, unknown>, skip?: boolean, connectorName: string, actionName: string, nextAction?: FlowAction }): ConnectorAction {
+export function buildConnectorAction({ name, input, skip, connectorName, actionName, nextAction, errorHandlingOptions }: { errorHandlingOptions?: ActionErrorHandlingOptions, name: string, input: Record<string, unknown>, skip?: boolean, connectorName: string, actionName: string, nextAction?: WorkflowAction }): ConnectorAction {
     return {
         name,
         displayName: 'Your Action Name',
-        type: FlowActionType.CONNECTOR,
+        type: WorkflowActionType.CONNECTOR,
         skip: skip ?? false,
         settings: {
             input,
@@ -123,9 +123,9 @@ export function buildConnectorAction({ name, input, skip, connectorName, actionN
     }
 }
 
-export function buildMockBeginExecuteFlowOperation(
-    params: Partial<ResolvedBeginExecuteFlowOperation> & Pick<BeginExecuteFlowOperation, 'flowVersion'>,
-): ResolvedBeginExecuteFlowOperation {
+export function buildMockBeginExecuteWorkflowOperation(
+    params: Partial<ResolvedBeginExecuteWorkflowOperation> & Pick<BeginExecuteWorkflowOperation, 'workflowVersion'>,
+): ResolvedBeginExecuteWorkflowOperation {
     return {
         workspaceId: 'workspaceId',
         engineToken: 'engineToken',

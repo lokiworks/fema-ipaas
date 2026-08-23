@@ -8,7 +8,7 @@ status: accepted
 ## Context
 
 A daily job (`billing-usage-report-service.ts`, `reportAllPlatforms`) aggregates per-platform usage
-counts — active flows, team projects, active users — for every licensed platform. Until this decision
+counts — active workflows, team projects, active users — for every licensed platform. Until this decision
 the job had two sinks: a PostHog `total_runs_per_day` snapshot event (read by the console's usage
 cards) and an Autumn push (`reportUsageCounts` on the billing provider → `balances.update` per
 feature) meant to populate the usage column next to each limit in the Autumn dashboard.
@@ -34,7 +34,7 @@ is dropped from the `BillingProvider` interface (and its CE no-op and Autumn imp
 
 ## Consequences
 
-- The Autumn dashboard shows no usage next to `activeFlowsLimit` / `teamProjectsLimit` /
+- The Autumn dashboard shows no usage next to `activeWorkflowsLimit` / `teamProjectsLimit` /
   `usersLimit` for a customer. Support and sales read usage from the console's instance-reported
   usage cards (PostHog-backed) instead.
 - One less silently-failing network call per platform per day; the PostHog capture in the same loop

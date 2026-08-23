@@ -1,0 +1,292 @@
+import { apId, assertEqual, createByteLruCache, isNil } from '@fema/core-utils'
+import { BaseStepOutput, EngineGenericError, executionJournal, ExecutionStatus, FailedStep, FileType, GenericStepOutput, LogSliceRef, LoopStepOutput, LoopStepResult, RespondResponse, StepOutput, StepOutputStatus, StepOutputType, WorkflowActionType } from '@fema/shared'
+import { engineFileApi } from '../../api/engine-file-api'
+import { loggingUtils } from '../../helper/logging-utils'
+import { sizeofUtils } from '../../helper/sizeof'
+import { StepExecutionPath } from './step-execution-path'
+
+const DEFAULT_THRESHOLD_KB = 32
+const SLICE_THRESHOLD_BYTES = Number(
+    process.env.FEMA_EXECUTION_LOG_SLICE_THRESHOLD_KB ?? DEFAULT_THRESHOLD_KB,
+) * 1024
+const SLICE_CACHE_BUDGET_BYTES = 64 * 1024 * 1024
+
+const EMPTY_STEPS_SIZE_BYTES = sizeofUtils.recursiveSizeof({})
+
+export class WorkflowExecutorContext {
+    tags: readonly string[]
+    steps: Readonly<Record<string, StepOutput>>
+    verdict: WorkflowVerdict
+    currentPath: StepExecutionPath
+    stepNameToTest?: boolean
+    stepsCount: number
+    engineApi?: EngineApiConfig
+    resolvedStepOutputCache: SliceCache
+    slicingEnabled: boolean
+    logSizeBytes: number
+
+    /**
+     * Execution time in milliseconds
+     */
+    duration: number
+
+    constructor(copyFrom?: Partial<WorkflowExecutorContext>) {
+        this.tags = copyFrom?.tags ?? []
+        this.steps = copyFrom?.steps ?? {}
+        this.duration = copyFrom?.duration ?? -1
+        this.verdict = copyFrom?.verdict ?? { status: ExecutionStatus.RUNNING }
+        this.currentPath = copyFrom?.currentPath ?? StepExecutionPath.empty()
+        this.stepNameToTest = copyFrom?.stepNameToTest ?? false
+        this.stepsCount = copyFrom?.stepsCount ?? 0
+        this.engineApi = copyFrom?.engineApi
+        this.resolvedStepOutputCache = copyFrom?.resolvedStepOutputCache ?? createByteLruCache({ budgetBytes: SLICE_CACHE_BUDGET_BYTES })
+        this.slicingEnabled = copyFrom?.slicingEnabled ?? true
+        this.logSizeBytes = copyFrom?.logSizeBytes ?? EMPTY_STEPS_SIZE_BYTES
+    }
+
+    static empty(params?: WorkflowExecutorContextInit): WorkflowExecutorContext {
+        return new WorkflowExecutorContext({ engineApi: params?.engineApi, slicingEnabled: params?.slicingEnabled })
+    }
+
+    public finishExecution(): WorkflowExecutorContext {
+        if (this.verdict.status === ExecutionStatus.RUNNING) {
+            return new WorkflowExecutorContext({
+                ...this,
+                verdict: { status: ExecutionStatus.SUCCEEDED },
+            })
+        }
+        return this
+    }
+
+    public getLoopStepOutput({ stepName }: { stepName: string }): LoopStepOutput | undefined {
+        const stateAtPath = executionJournal.getStateAtPath({ path: this.currentPath.path, steps: this.steps })
+
+        const stepOutput = stateAtPath[stepName]
+        if (isNil(stepOutput)) {
+            return undefined
+        }
+        assertEqual(stepOutput.type, WorkflowActionType.LOOP_ON_ITEMS, 'stepOutput.type', 'LOOP_ON_ITEMS')
+        return new LoopStepOutput(stepOutput as GenericStepOutput<WorkflowActionType.LOOP_ON_ITEMS, LoopStepResult>)
+    }
+
+    public isCompleted({ stepName }: { stepName: string }): boolean {
+        const stateAtPath = executionJournal.getStateAtPath({ path: this.currentPath.path, steps: this.steps })
+        const stepOutput = stateAtPath[stepName]
+        if (isNil(stepOutput)) {
+            return false
+        }
+        return stepOutput.status !== StepOutputStatus.PAUSED
+    }
+
+    public isPaused({ stepName }: { stepName: string }): boolean {
+        const stateAtPath = executionJournal.getStateAtPath({ path: this.currentPath.path, steps: this.steps })
+        const stepOutput = stateAtPath[stepName]
+        if (isNil(stepOutput)) {
+            return false
+        }
+        return stepOutput.status === StepOutputStatus.PAUSED
+    }
+
+    public setDuration(duration: number): WorkflowExecutorContext {
+        return new WorkflowExecutorContext({
+            ...this,
+            duration,
+        })
+    }
+
+
+    public addTags(tags: string[]): WorkflowExecutorContext {
+        return new WorkflowExecutorContext({
+            ...this,
+            tags: [...this.tags, ...tags].filter((value, index, self) => {
+                return self.indexOf(value) === index
+            }),
+        })
+    }
+
+    public async upsertStep(stepName: string, stepOutput: BaseStepOutput): Promise<WorkflowExecutorContext> {
+        const truncated = withTruncatedInput(stepOutput)
+        let finalized: BaseStepOutput
+        if (truncated.type === WorkflowActionType.LOOP_ON_ITEMS) {
+            finalized = truncated
+        }
+        else if (truncated.outputType === StepOutputType.SLICE) {
+            // Already a slice ref — happens on RESUME when steps are restored from a log file.
+            // The ref payload is tiny (sub-threshold) so re-slicing would no-op and silently
+            // drop the discriminant, leaving downstream variable resolution with a raw
+            // LogSliceRef instead of the materialized output.
+            finalized = truncated
+        }
+        else {
+            const sliced = this.slicingEnabled
+                ? await maybeSliceOutput({ value: truncated.output, engineApi: this.engineApi })
+                : undefined
+            finalized = new GenericStepOutput({
+                type: truncated.type,
+                status: truncated.status,
+                input: truncated.input,
+                output: sliced?.ref ?? truncated.output,
+                outputType: sliced ? StepOutputType.SLICE : undefined,
+                duration: truncated.duration,
+                errorMessage: truncated.errorMessage,
+            })
+        }
+        const previousStep = executionJournal.getStep({ stepName, path: this.currentPath.path, steps: this.steps })
+        const steps = executionJournal.upsertStep({ stepName, stepOutput: finalized, path: this.currentPath.path, steps: this.steps })
+        return new WorkflowExecutorContext({
+            ...this,
+            steps,
+            logSizeBytes: this.logSizeBytes + sizeofUtils.upsertStepDelta({ stepName, previousStep, nextStep: finalized }),
+        })
+    }
+
+    public getStepOutput(stepName: string, path?: StepExecutionPath['path']): StepOutput | undefined {
+        return executionJournal.getStep({ stepName, path: path ?? this.currentPath.path, steps: this.steps })
+    }
+
+    public setCurrentPath(currentStatePath: StepExecutionPath): WorkflowExecutorContext {
+        return new WorkflowExecutorContext({
+            ...this,
+            currentPath: currentStatePath,
+        })
+    }
+
+    public setVerdict(verdict: WorkflowVerdict): WorkflowExecutorContext {
+        return new WorkflowExecutorContext({
+            ...this,
+            verdict,
+        })
+    }
+
+    public setRetryable(retryable: boolean): WorkflowExecutorContext {
+        return new WorkflowExecutorContext({
+            ...this,
+            retryable,
+        })
+    }
+
+    public incrementStepsExecuted(): WorkflowExecutorContext {
+        return new WorkflowExecutorContext({
+            ...this,
+            stepsCount: this.stepsCount + 1,
+        })
+    }
+    public async getStepView(stepName: string): Promise<StepView | undefined> {
+        const stepMaps = this.stepMapsAlongPath()
+        for (let level = stepMaps.length - 1; level >= 0; level--) {
+            const step = stepMaps[level][stepName]
+            if (!isNil(step)) {
+                const output = await resolveStepOutput(step, this.engineApi, this.resolvedStepOutputCache)
+                const error = step.status === StepOutputStatus.FAILED && step.errorMessage !== undefined
+                    ? { message: step.errorMessage }
+                    : undefined
+                return { output, error }
+            }
+        }
+        return undefined
+    }
+
+    private stepMapsAlongPath(): Array<Readonly<Record<string, StepOutput>>> {
+        const stepMaps: Array<Readonly<Record<string, StepOutput>>> = [this.steps]
+        let targetMap: Readonly<Record<string, StepOutput>> = this.steps
+        for (const [loopStepName, iteration] of this.currentPath.path) {
+            const stepOutput = targetMap[loopStepName]
+            if (!stepOutput?.output || stepOutput.type !== WorkflowActionType.LOOP_ON_ITEMS) {
+                throw new EngineGenericError('NotInstanceOfLoopOnItemsStepOutputError', '[ExecutionState#getTargetMap] Not instance of Loop On Items step output')
+            }
+            targetMap = stepOutput.output.iterations[iteration]
+            stepMaps.push(targetMap)
+        }
+        return stepMaps
+    }
+}
+
+async function maybeSliceOutput({ value, engineApi }: MaybeSliceOutputParams): Promise<{ ref: LogSliceRef } | undefined> {
+    if (isNil(value) || isNil(engineApi)) {
+        return undefined
+    }
+    const serialized = JSON.stringify(value)
+    if (isNil(serialized)) {
+        return undefined
+    }
+    const size = Buffer.byteLength(serialized)
+    if (size <= SLICE_THRESHOLD_BYTES) {
+        return undefined
+    }
+    const data = new TextEncoder().encode(serialized)
+    const { fileId, readUrl } = await engineFileApi.upload({
+        apiUrl: engineApi.internalApiUrl,
+        engineToken: engineApi.engineToken,
+        fileId: apId(),
+        type: FileType.EXECUTION_LOG_SLICE,
+        data,
+    })
+    return { ref: { fileId, size, url: readUrl } }
+}
+
+async function resolveStepOutput(step: StepOutput, engineApi: EngineApiConfig | undefined, cache: SliceCache): Promise<unknown> {
+    if (step.outputType !== StepOutputType.SLICE) {
+        return step.output
+    }
+    if (isNil(engineApi)) {
+        throw new EngineGenericError('MissingEngineApiConfigError', 'Cannot materialize log slice ref without engine api config')
+    }
+    const ref = step.output as LogSliceRef
+    const existing = cache.get(ref.fileId)
+    if (!isNil(existing)) {
+        return existing
+    }
+    const promise = engineFileApi.download({ apiUrl: engineApi.internalApiUrl, engineToken: engineApi.engineToken, fileId: ref.fileId })
+        .then((bytes) => JSON.parse(new TextDecoder('utf-8').decode(bytes)))
+    cache.set({ key: ref.fileId, value: promise, sizeBytes: ref.size })
+    return promise
+}
+
+function withTruncatedInput<T extends BaseStepOutput>(stepOutput: T): T {
+    const truncated = loggingUtils.maybeTruncateInput(stepOutput.input)
+    if (truncated === stepOutput.input) {
+        return stepOutput
+    }
+    return Object.assign(
+        Object.create(Object.getPrototypeOf(stepOutput)),
+        stepOutput,
+        { input: truncated },
+    )
+}
+
+export type WorkflowVerdict = {
+    status: ExecutionStatus.PAUSED
+} | {
+    status: ExecutionStatus.SUCCEEDED
+    stopResponse: RespondResponse | undefined
+} | {
+    status: ExecutionStatus.FAILED | ExecutionStatus.LOG_SIZE_EXCEEDED
+    failedStep: FailedStep
+} | {
+    status: ExecutionStatus.RUNNING
+}
+
+export type EngineApiConfig = {
+    engineToken: string
+    internalApiUrl: string
+}
+
+export type WorkflowExecutorContextInit = {
+    engineApi?: EngineApiConfig
+    slicingEnabled?: boolean
+}
+
+export type StepView = {
+    output: unknown
+    error: { message: string } | undefined
+}
+
+type MaybeSliceOutputParams = {
+    value: unknown
+    engineApi?: EngineApiConfig
+}
+
+type SliceCache = {
+    get(key: string): Promise<unknown> | undefined
+    set(params: { key: string, value: Promise<unknown>, sizeBytes: number }): void
+}

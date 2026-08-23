@@ -30,7 +30,7 @@ Change log format: MM/DD/YYYY (version)
 
 ### 07/09/2026 (0.13.0)
 - SDK URL: https://cdn.fema.local/sdk/embed/0.13.0.js
-- Added `embedding.hideGlobalSearch` parameter to the [configure](./embed-builder#configure-parameters) method **(value: true | false)**. When `true`, hides the global search button in the dashboard sidebar and disables the `CMD+K` / `Ctrl+K` command palette, so embedded users can't navigate to pages, flows, or tables through search. This version requires an FEMA Integration Platform release that includes [#14135](https://github.com/lokiworks/fema-ipaas/pull/14135).
+- Added `embedding.hideGlobalSearch` parameter to the [configure](./embed-builder#configure-parameters) method **(value: true | false)**. When `true`, hides the global search button in the dashboard sidebar and disables the `CMD+K` / `Ctrl+K` command palette, so embedded users can't navigate to pages, workflows, or tables through search. This version requires an FEMA Integration Platform release that includes [#14135](https://github.com/lokiworks/fema-ipaas/pull/14135).
 
 ### 07/09/2026 (0.12.0)
 - SDK URL: https://cdn.fema.local/sdk/embed/0.12.0.js
@@ -39,16 +39,16 @@ Change log format: MM/DD/YYYY (version)
 ### 06/18/2026 (0.10.0)
 - SDK URL: https://cdn.fema.local/sdk/embed/0.10.0.js
 - Added `authorizeMcp({ authRequestId })` — opens an in-embed MCP OAuth consent dialog so embedded (managed-auth) users can approve connecting an AI client to their project **without a standalone FEMA Integration Platform login**. Resolves with `{ redirectUrl }` on approval or `{ denied: true }`. See [Embeddable MCP](./embeddable-mcp).
-- Added `mcpSettings()` — opens the MCP settings dialog (connection URL, tools, exposed flows) for the embedded user's project, inside the host app.
+- Added `mcpSettings()` — opens the MCP settings dialog (connection URL, tools, exposed workflows) for the embedded user's project, inside the host app.
 
 ### 04/21/2026 (0.9.0)
 - SDK URL: https://cdn.fema.local/sdk/embed/0.9.0.js
 - This version requires you to **upgrade FEMA Integration Platform to [0.82.0](https://github.com/lokiworks/fema-ipaas/releases/tag/0.82.0)**.
-- Added `embedding.hideTables` parameter to the [configure](./embed-builder#configure-parameters) method **(value: true | false)**. When `true`, hides the Tables UI from the dashboard (tree view, Type filter option, Create/Import Table buttons, empty-state card, global search results) and blocks direct access to the `/tables/:id` editor route. The Tables connector used inside flows is unaffected.
+- Added `embedding.hideTables` parameter to the [configure](./embed-builder#configure-parameters) method **(value: true | false)**. When `true`, hides the Tables UI from the dashboard (tree view, Type filter option, Create/Import Table buttons, empty-state card, global search results) and blocks direct access to the `/tables/:id` editor route. The Tables connector used inside workflows is unaffected.
 
 ### 10/27/2025 (0.8.1)
 - SDK URL: https://cdn.fema.local/sdk/embed/0.8.1.js
-- Fixed a bug where if you didn't start your navigation route with '/' it would redirect you to '/flows'
+- Fixed a bug where if you didn't start your navigation route with '/' it would redirect you to '/workflows'
 
 ### 09/21/2025 (0.8.0)
 - SDK URL: https://cdn.fema.local/sdk/embed/0.8.0.js
@@ -66,8 +66,8 @@ Change log format: MM/DD/YYYY (version)
 ### 07/07/2025 (0.6.0)
 - SDK URL: https://cdn.fema.local/sdk/embed/0.6.0.js
 - This version requires you to **upgrade FEMA Integration Platform to [0.66.1](https://github.com/lokiworks/fema-ipaas/releases/tag/0.66.1)**
-- Added `embedding.dashboard.hideFlowsPageNavbar` parameter to the [configure](./embed-builder#configure-parameters) method **(value: true | false)**. 
-- **(Breaking Change)** `embedding.dashboard.hideSidebar` used to hide the navbar above the flows table in the dashboard now it relies on `embedding.dashboard.hideFlowsPageNavbar`.
+- Added `embedding.dashboard.hideWorkflowsPageNavbar` parameter to the [configure](./embed-builder#configure-parameters) method **(value: true | false)**. 
+- **(Breaking Change)** `embedding.dashboard.hideSidebar` used to hide the navbar above the workflows table in the dashboard now it relies on `embedding.dashboard.hideWorkflowsPageNavbar`.
 
 
 
@@ -76,7 +76,7 @@ Change log format: MM/DD/YYYY (version)
 ### 03/07/2025 (0.5.0)
 - SDK URL: https://cdn.fema.local/sdk/embed/0.5.0.js
 - This version requires you to **upgrade FEMA Integration Platform to [0.64.2](https://github.com/lokiworks/fema-ipaas/releases/tag/0.64.2)**
-- Added `embedding.hideDuplicateFlow` parameter to the [configure](./embed-builder#configure-parameters) method **(value: true | false)**. 
+- Added `embedding.hideDuplicateWorkflow` parameter to the [configure](./embed-builder#configure-parameters) method **(value: true | false)**. 
 - Added `embedding.builder.homeButtonIcon` parameter to the [configure](./embed-builder#configure-parameters) method **(value: 'logo' | 'back')**, if set to **'back'** the tooltip shown on hovering the home button is removed.
 - Added `embedding.locale` parameter to the [configure](./embed-builder#configure-parameters) method, it takes [ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes) locale codes, here are the ones supported: **('en' | 'nl' | 'it' | 'de' | 'fr' | 'bg' | 'uk' | 'hu' | 'es' | 'ja' | 'id' | 'vi' | 'zh' | 'pt')**
 - Added `embedding.styling.mode` parameter to [configure](./embed-builder#configure-parameters) method **(value: 'light' | 'dark')**
@@ -96,7 +96,7 @@ Change log format: MM/DD/YYYY (version)
 ### 16/06/2025 (0.5.0-rc.0)
 - SDK URL: https://cdn.fema.local/sdk/embed/0.5.0-rc.0.js
 - This version requires you to **upgrade FEMA Integration Platform to [0.64.0-rc.0](https://github.com/lokiworks/fema-ipaas/pkgs/container/fema/438888138?tag=0.64.0-rc.0)**
-- Added `embedding.hideDuplicateFlow` parameter to the [configure](./embed-builder#configure-parameters) method **(value: true | false)**. 
+- Added `embedding.hideDuplicateWorkflow` parameter to the [configure](./embed-builder#configure-parameters) method **(value: true | false)**. 
 - Added `embedding.builder.homeButtonIcon` parameter to the [configure](./embed-builder#configure-parameters) method **(value: 'logo' | 'back')**, if set to **'back'** the tooltip shown on hovering the home button is removed.
 - Added `embedding.locale` parameter to the [configure](./embed-builder#configure-parameters) method, it takes [ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes) locale codes, here are the ones supported: **('en' | 'nl' | 'it' | 'de' | 'fr' | 'bg' | 'uk' | 'hu' | 'es' | 'ja' | 'id' | 'vi' | 'zh' | 'pt')**
 - Added `embedding.styling.mode` parameter to [configure](./embed-builder#configure-parameters) method **(value: 'light' | 'dark')**
@@ -114,8 +114,8 @@ Change log format: MM/DD/YYYY (version)
 
 -- Note: we didn't consider adding optional new parameters as a breaking change so we were bumping the patch version, but that was wrong and we will begin bumping the minor version for those changes from now on, and patch version will only get bumped for bug fixes.
 - This version requires you to update FEMA Integration Platform to 0.56.0
-- Added `embedding.hideExportAndImportFlow` parameter to the [configure](./embed-builder#configure-parameters) method.
-- Added new possible value to the configure method param `embed.builder.disableNavigation` which is "keep_home_button_only" that keeps only the home button and hides the folder name with the delete flow action. 
+- Added `embedding.hideExportAndImportWorkflow` parameter to the [configure](./embed-builder#configure-parameters) method.
+- Added new possible value to the configure method param `embed.builder.disableNavigation` which is "keep_home_button_only" that keeps only the home button and hides the folder name with the delete workflow action. 
 - Added new param to the configure method `embed.builder.homeButtonClickedHandler`, that overrides the navigation behaviour on clicking the home button. 
 
 

@@ -1,5 +1,5 @@
 import { apId } from '@fema/core-utils'
-import { FlowTriggerType, LATEST_JOB_DATA_SCHEMA_VERSION, WorkerJobType } from '@fema/shared'
+import { WorkflowTriggerType, LATEST_JOB_DATA_SCHEMA_VERSION, WorkerJobType } from '@fema/shared'
 import { FastifyInstance } from 'fastify'
 import { getPlatformGroupQueueName } from '../../../../src/app/workers/job'
 import { jobQueue } from '../../../../src/app/workers/job-queue/job-queue'
@@ -34,14 +34,14 @@ describe('platformQueueMigrationService', () => {
 
     it('returns early without touching queues when fromQueueName equals toQueueName', async () => {
         const platformId = apId()
-        const flowVersionId = apId()
+        const workflowVersionId = apId()
         const sameQueue = getPlatformGroupQueueName(apId())
         const queue = await jobQueue(app.log).getOrCreateQueue({ queueName: sameQueue })
 
         await queue.upsertJobScheduler(
-            flowVersionId,
+            workflowVersionId,
             { pattern: '*/5 * * * *', tz: 'UTC' },
-            { name: flowVersionId, data: buildPollingJobData({ platformId, flowVersionId }) },
+            { name: workflowVersionId, data: buildPollingJobData({ platformId, workflowVersionId }) },
         )
 
         await platformQueueMigrationService(app.log).migrateJobs({
@@ -56,14 +56,14 @@ describe('platformQueueMigrationService', () => {
 
     it('moves a POLLING scheduler from source queue to target queue', async () => {
         const platformId = apId()
-        const flowVersionId = apId()
+        const workflowVersionId = apId()
         const fromQueue = await jobQueue(app.log).getOrCreateQueue({ queueName: fromQueueName })
         const toQueue = await jobQueue(app.log).getOrCreateQueue({ queueName: toQueueName })
 
         await fromQueue.upsertJobScheduler(
-            flowVersionId,
+            workflowVersionId,
             { pattern: '*/5 * * * *', tz: 'UTC' },
-            { name: flowVersionId, data: buildPollingJobData({ platformId, flowVersionId }) },
+            { name: workflowVersionId, data: buildPollingJobData({ platformId, workflowVersionId }) },
         )
 
         await platformQueueMigrationService(app.log).migrateJobs({ fromQueueName, toQueueName, platformId })
@@ -72,7 +72,7 @@ describe('platformQueueMigrationService', () => {
         expect(await toQueue.getJobSchedulersCount()).toBe(1)
 
         const [movedScheduler] = await toQueue.getJobSchedulers(0, 0)
-        expect(movedScheduler.id ?? movedScheduler.key).toBe(flowVersionId)
+        expect(movedScheduler.id ?? movedScheduler.key).toBe(workflowVersionId)
         expect(movedScheduler.template?.data?.platformId).toBe(platformId)
         expect(movedScheduler.pattern).toBe('*/5 * * * *')
     })
@@ -80,20 +80,20 @@ describe('platformQueueMigrationService', () => {
     it('does not migrate schedulers belonging to a different platform', async () => {
         const platformA = apId()
         const platformB = apId()
-        const flowVersionA = apId()
-        const flowVersionB = apId()
+        const workflowVersionA = apId()
+        const workflowVersionB = apId()
         const fromQueue = await jobQueue(app.log).getOrCreateQueue({ queueName: fromQueueName })
         const toQueue = await jobQueue(app.log).getOrCreateQueue({ queueName: toQueueName })
 
         await fromQueue.upsertJobScheduler(
-            flowVersionA,
+            workflowVersionA,
             { pattern: '*/5 * * * *', tz: 'UTC' },
-            { name: flowVersionA, data: buildPollingJobData({ platformId: platformA, flowVersionId: flowVersionA }) },
+            { name: workflowVersionA, data: buildPollingJobData({ platformId: platformA, workflowVersionId: workflowVersionA }) },
         )
         await fromQueue.upsertJobScheduler(
-            flowVersionB,
+            workflowVersionB,
             { pattern: '*/10 * * * *', tz: 'UTC' },
-            { name: flowVersionB, data: buildPollingJobData({ platformId: platformB, flowVersionId: flowVersionB }) },
+            { name: workflowVersionB, data: buildPollingJobData({ platformId: platformB, workflowVersionId: workflowVersionB }) },
         )
 
         await platformQueueMigrationService(app.log).migrateJobs({ fromQueueName, toQueueName, platformId: platformA })
@@ -110,14 +110,14 @@ describe('platformQueueMigrationService', () => {
 
     it('removes the orphaned next-run delayed job from the source queue after scheduler migration', async () => {
         const platformId = apId()
-        const flowVersionId = apId()
+        const workflowVersionId = apId()
         const fromQueue = await jobQueue(app.log).getOrCreateQueue({ queueName: fromQueueName })
         const toQueue = await jobQueue(app.log).getOrCreateQueue({ queueName: toQueueName })
 
         await fromQueue.upsertJobScheduler(
-            flowVersionId,
+            workflowVersionId,
             { pattern: '*/5 * * * *', tz: 'UTC' },
-            { name: flowVersionId, data: buildPollingJobData({ platformId, flowVersionId }) },
+            { name: workflowVersionId, data: buildPollingJobData({ platformId, workflowVersionId }) },
         )
         // upsertJobScheduler always queues the next-run delayed instance immediately
         expect(await fromQueue.getDelayedCount()).toBe(1)
@@ -132,19 +132,19 @@ describe('platformQueueMigrationService', () => {
     it('does not remove delayed jobs belonging to other-platform schedulers on the source queue', async () => {
         const platformA = apId()
         const platformB = apId()
-        const flowVersionA = apId()
-        const flowVersionB = apId()
+        const workflowVersionA = apId()
+        const workflowVersionB = apId()
         const fromQueue = await jobQueue(app.log).getOrCreateQueue({ queueName: fromQueueName })
 
         await fromQueue.upsertJobScheduler(
-            flowVersionA,
+            workflowVersionA,
             { pattern: '*/5 * * * *', tz: 'UTC' },
-            { name: flowVersionA, data: buildPollingJobData({ platformId: platformA, flowVersionId: flowVersionA }) },
+            { name: workflowVersionA, data: buildPollingJobData({ platformId: platformA, workflowVersionId: workflowVersionA }) },
         )
         await fromQueue.upsertJobScheduler(
-            flowVersionB,
+            workflowVersionB,
             { pattern: '*/10 * * * *', tz: 'UTC' },
-            { name: flowVersionB, data: buildPollingJobData({ platformId: platformB, flowVersionId: flowVersionB }) },
+            { name: workflowVersionB, data: buildPollingJobData({ platformId: platformB, workflowVersionId: workflowVersionB }) },
         )
         expect(await fromQueue.getDelayedCount()).toBe(2)
 
@@ -160,7 +160,7 @@ describe('platformQueueMigrationService', () => {
         const fromQueue = await jobQueue(app.log).getOrCreateQueue({ queueName: fromQueueName })
         const toQueue = await jobQueue(app.log).getOrCreateQueue({ queueName: toQueueName })
 
-        await fromQueue.add(jobId, buildPollingJobData({ platformId, flowVersionId: apId() }), { jobId })
+        await fromQueue.add(jobId, buildPollingJobData({ platformId, workflowVersionId: apId() }), { jobId })
 
         await platformQueueMigrationService(app.log).migrateJobs({ fromQueueName, toQueueName, platformId })
 
@@ -179,8 +179,8 @@ describe('platformQueueMigrationService', () => {
 
         const jobIdA = apId()
         const jobIdB = apId()
-        await fromQueue.add(jobIdA, buildPollingJobData({ platformId: platformA, flowVersionId: apId() }), { jobId: jobIdA })
-        await fromQueue.add(jobIdB, buildPollingJobData({ platformId: platformB, flowVersionId: apId() }), { jobId: jobIdB })
+        await fromQueue.add(jobIdA, buildPollingJobData({ platformId: platformA, workflowVersionId: apId() }), { jobId: jobIdA })
+        await fromQueue.add(jobIdB, buildPollingJobData({ platformId: platformB, workflowVersionId: apId() }), { jobId: jobIdB })
 
         await platformQueueMigrationService(app.log).migrateJobs({ fromQueueName, toQueueName, platformId: platformA })
 
@@ -196,11 +196,11 @@ describe('platformQueueMigrationService', () => {
             const total = 5
 
             for (let i = 0; i < total; i++) {
-                const flowVersionId = apId()
+                const workflowVersionId = apId()
                 await fromQueue.upsertJobScheduler(
-                    flowVersionId,
+                    workflowVersionId,
                     { pattern: '*/5 * * * *', tz: 'UTC' },
-                    { name: flowVersionId, data: buildPollingJobData({ platformId, flowVersionId }) },
+                    { name: workflowVersionId, data: buildPollingJobData({ platformId, workflowVersionId }) },
                 )
             }
 
@@ -219,9 +219,9 @@ describe('platformQueueMigrationService', () => {
             // Interleave platformA and platformB schedulers to exercise multi-batch offset tracking
             for (let i = 0; i < 3; i++) {
                 const idA = apId()
-                await fromQueue.upsertJobScheduler(idA, { pattern: '*/5 * * * *', tz: 'UTC' }, { name: idA, data: buildPollingJobData({ platformId: platformA, flowVersionId: idA }) })
+                await fromQueue.upsertJobScheduler(idA, { pattern: '*/5 * * * *', tz: 'UTC' }, { name: idA, data: buildPollingJobData({ platformId: platformA, workflowVersionId: idA }) })
                 const idB = apId()
-                await fromQueue.upsertJobScheduler(idB, { pattern: '*/10 * * * *', tz: 'UTC' }, { name: idB, data: buildPollingJobData({ platformId: platformB, flowVersionId: idB }) })
+                await fromQueue.upsertJobScheduler(idB, { pattern: '*/10 * * * *', tz: 'UTC' }, { name: idB, data: buildPollingJobData({ platformId: platformB, workflowVersionId: idB }) })
             }
 
             await platformQueueMigrationService(app.log).migrateJobs({ fromQueueName, toQueueName, platformId: platformA, batchSize: 2 })
@@ -241,7 +241,7 @@ describe('platformQueueMigrationService', () => {
 
             for (let i = 0; i < total; i++) {
                 const jobId = apId()
-                await fromQueue.add(jobId, buildPollingJobData({ platformId, flowVersionId: apId() }), { jobId })
+                await fromQueue.add(jobId, buildPollingJobData({ platformId, workflowVersionId: apId() }), { jobId })
             }
 
             await platformQueueMigrationService(app.log).migrateJobs({ fromQueueName, toQueueName, platformId, batchSize: 2 })
@@ -252,14 +252,14 @@ describe('platformQueueMigrationService', () => {
     })
 })
 
-function buildPollingJobData({ platformId, flowVersionId }: { platformId: string, flowVersionId: string }) {
+function buildPollingJobData({ platformId, workflowVersionId }: { platformId: string, workflowVersionId: string }) {
     return {
         workspaceId: apId(),
         platformId,
         schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
-        flowVersionId,
-        flowId: apId(),
-        triggerType: FlowTriggerType.CONNECTOR,
+        workflowVersionId,
+        workflowId: apId(),
+        triggerType: WorkflowTriggerType.CONNECTOR,
         jobType: WorkerJobType.EXECUTE_POLLING,
     }
 }

@@ -8,17 +8,17 @@ This benchmark answers one question for the recommended production shape: **at t
 
 Short answer: throughput keeps climbing to 777 req/s at 160 workers, but not proportionally — the per-worker rate peaks at 80 workers and falls about 20% by 160. The workers are not what limits it: they stay under a fifth of their CPU cap throughout, while database CPU grows in step with throughput.
 
-<img src="/resources/diagrams/fema-architecture.png" alt="FEMA Integration Platform production architecture: client, app, Redis job queue, Postgres, S3, and one-flow-per-worker execution tier" />
+<img src="/resources/diagrams/fema-architecture.png" alt="FEMA Integration Platform production architecture: client, app, Redis job queue, Postgres, S3, and one-workflow-per-worker execution tier" />
 
-_The shape under test: app tier, Redis job queue, Postgres, S3, and a one-flow-per-worker execution tier._
+_The shape under test: app tier, Redis job queue, Postgres, S3, and a one-workflow-per-worker execution tier._
 
 ## What's measured
 
-A 4-node **synchronous** webhook flow that holds the HTTP connection open until the flow returns:
+A 4-node **synchronous** webhook workflow that holds the HTTP connection open until the workflow returns:
 
 <Steps>
   <Step title="Webhook trigger">
-    Catches the request on a `/sync` URL and holds the connection until the flow finishes.
+    Catches the request on a `/sync` URL and holds the connection until the workflow finishes.
   </Step>
   <Step title="Math Helper">
     Adds `2 + 3`.
@@ -87,9 +87,9 @@ The singletons here are deliberately generous (3 vCPU request, `max_connections=
 Two things are happening at once:
 
 - **Below ~80 workers the fleet is still filling out.** 40 workers cannot push enough concurrent work to use the tiers behind them, so the per-worker rate is not yet at its best. This is why the 40→80 step is *super*-linear (2.27× throughput for 2× the fleet).
-- **Past ~80 workers, per-flow time stretches.** The measured `sandbox run` phase goes 146 ms at 80 workers to 181 ms at 160, so each worker completes fewer flows per second even though it is nowhere near its CPU cap. Something shared is absorbing the extra concurrency, and database CPU is the tier visibly growing with it (see the caveat above — growth is measured, causation is not).
+- **Past ~80 workers, per-workflow time stretches.** The measured `sandbox run` phase goes 146 ms at 80 workers to 181 ms at 160, so each worker completes fewer workflows per second even though it is nowhere near its CPU cap. Something shared is absorbing the extra concurrency, and database CPU is the tier visibly growing with it (see the caveat above — growth is measured, causation is not).
 
-The **concurrency-1 worker model** sets the shape: each worker is busy for the *whole* per-flow time — engine run plus the end-of-run run-log persistence it finishes before taking the next job — so fleet throughput is `workers ÷ per-flow-time`. That is linear in the fleet only while per-flow time holds constant, and past ~80 workers it does not. (The synchronous response reaches the client sooner than that — it is sent at the response step, before the worker wraps up the log write — so client-perceived latency is lower than the worker-busy time that sets throughput.)
+The **concurrency-1 worker model** sets the shape: each worker is busy for the *whole* per-workflow time — engine run plus the end-of-run run-log persistence it finishes before taking the next job — so fleet throughput is `workers ÷ per-workflow-time`. That is linear in the fleet only while per-workflow time holds constant, and past ~80 workers it does not. (The synchronous response reaches the client sooner than that — it is sent at the response step, before the worker wraps up the log write — so client-perceived latency is lower than the worker-busy time that sets throughput.)
 
 **What this means for sizing:** worker count is the right lever up to roughly this scale, but do not read the worker fleet as the only dial — the shared tiers behind it grow with throughput and need to grow with you.
 
@@ -103,14 +103,14 @@ Where the worker's milliseconds go — warm at peak (16 app · 160 w), averaged 
 
 | Layer | Warm |
 |---|---|
-| Provision (flow bundle + connector + engine, all disk-cache hits) | 0.5 ms |
+| Provision (workflow bundle + connector + engine, all disk-cache hits) | 0.5 ms |
 | Sandbox boot (engine process reused) | ~0 ms |
-| Flow run (4 steps: engine→app callbacks + end-of-run log persist) | 181 ms |
+| Workflow run (4 steps: engine→app callbacks + end-of-run log persist) | 181 ms |
 | **Worker-busy avg per job** | **~181 ms** |
 
-Warm provisioning and boot are effectively free — the connector cache is on local disk and the engine process is reused, so essentially the entire worker-busy time is the flow run itself. That figure grows with the fleet (167 ms at 40 workers, 146 ms at 80, 167 ms at 120, 181 ms at 160), which is the per-flow stretch behind the falling per-worker rate above.
+Warm provisioning and boot are effectively free — the connector cache is on local disk and the engine process is reused, so essentially the entire worker-busy time is the workflow run itself. That figure grows with the fleet (167 ms at 40 workers, 146 ms at 80, 167 ms at 120, 181 ms at 160), which is the per-workflow stretch behind the falling per-worker rate above.
 
-This is the time the **worker** is occupied per job — and at concurrency 1 it is what sets throughput (`workers ÷ worker-busy-time`). The synchronous client sees less: the response is published at the flow's response step, before the worker finishes persisting the run log, so client-perceived latency runs below the worker-busy figure. At peak the in-cluster client measured p50 180 ms, p95 288 ms, p99 652 ms.
+This is the time the **worker** is occupied per job — and at concurrency 1 it is what sets throughput (`workers ÷ worker-busy-time`). The synchronous client sees less: the response is published at the workflow's response step, before the worker finishes persisting the run log, so client-perceived latency runs below the worker-busy figure. At peak the in-cluster client measured p50 180 ms, p95 288 ms, p99 652 ms.
 
 ## Test environment
 
@@ -140,7 +140,7 @@ This benchmark runs in `SANDBOX_CODE_ONLY` mode. It does **not** represent the p
 
 ## Benchmark your own installation
 
-Load-test and **diagnose** your own deployment — no cluster scripts required — with the CLI. It publishes a synchronous flow (webhook trigger → data mapper → return response), fires load at its sync webhook endpoint with [autocannon](https://github.com/mcollina/autocannon), and returns one self-contained diagnostic bundle you can hand to support.
+Load-test and **diagnose** your own deployment — no cluster scripts required — with the CLI. It publishes a synchronous workflow (webhook trigger → data mapper → return response), fires load at its sync webhook endpoint with [autocannon](https://github.com/mcollina/autocannon), and returns one self-contained diagnostic bundle you can hand to support.
 
 ```bash
 FEMA_API_KEY=<key> npx @fema/cli@latest benchmark --url https://your-instance.example.com
@@ -165,7 +165,7 @@ The CLI provisions a **throwaway project** for the run (with a high concurrency 
 
 A **real run against a small deployment of the recommended shape** — 4 workers @ 0.5 vCPU / 1 GB, concurrency 1, `SANDBOX_CODE_ONLY`, `FEMA_REUSE_SANDBOX=true`, same-region GCS with signed URLs, warm, load = `concurrency 4 (= slots) × 200 requests`. This is a separate, deliberately tiny deployment used to show what the CLI's output looks like; it is **not** a row in the [results table](#results) above, and its cross-region client latency is not comparable to those numbers.
 
-Run the CLI against your own deployment and compare **tier by tier**. A number several times larger localizes the problem: `RUN` ≫ 200 ms means a heavier flow or a CPU-starved worker; `storage` ≫ 240 ms means a mis-regioned or throttled object store; a large `QUEUE` with climbing `queue depth` means you drove more concurrency than you have slots.
+Run the CLI against your own deployment and compare **tier by tier**. A number several times larger localizes the problem: `RUN` ≫ 200 ms means a heavier workflow or a CPU-starved worker; `storage` ≫ 240 ms means a mis-regioned or throttled object store; a large `QUEUE` with climbing `queue depth` means you drove more concurrency than you have slots.
 
 ```text
 Version & health
@@ -202,7 +202,7 @@ conc 4 (= slots)
     QUEUE      p50 100 ms   — wait for a free execution slot  (±app↔worker clock skew; cross-check the queue-depth)
     PROVISION  p50   1 ms   — connector install / cache provision
     BOOT       p50   0 ms   — engine fork + Node boot + isolate + socket connect
-    RUN        p50/p90 201 / 244 ms   — engine executes the flow, incl. end-of-run S3 log backup
+    RUN        p50/p90 201 / 244 ms   — engine executes the workflow, incl. end-of-run S3 log backup
     => queue-wait p50 102 ms vs service p50 201 ms  =>  verdict: service-bound
   observational (CLI-side, cross-region — NOT authoritative): client latency p50/p90/p99 256/311/5638 ms
 
@@ -225,7 +225,7 @@ Each section answers one question:
 Here the read is unambiguous: workers pegged at ~100% of their 0.5-core limit and RUN ≈ 200 ms dominate, while QUEUE (~100 ms at concurrency = slots) and the infra round-trips are small — the deployment is **service-bound on worker CPU**, so the lever is more/bigger workers, not a code change.
 
 - Exits non-zero if any request fails — usable as a CI gate.
-- The throwaway project (and its benchmark flow) is deleted automatically when the run finishes.
+- The throwaway project (and its benchmark workflow) is deleted automatically when the run finishes.
 
 <Note>
 If your hardware or sandbox mode differs from the recommended shape, the absolute numbers shift — but the **shape** holds: match concurrency to your own slot count so nothing queues, then read whether you are queue-bound or service-bound and which tier dominates.

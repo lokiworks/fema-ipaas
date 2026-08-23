@@ -101,7 +101,7 @@ export const githubTriggerWorkflowDispatchAction = createAction({
     waitForCompletion: Property.Checkbox({
       displayName: 'Wait for Completion',
       description:
-        'Pause this flow and poll the triggered run until it finishes (or times out), instead of returning immediately after dispatching it.',
+        'Pause this workflow and poll the triggered run until it finishes (or times out), instead of returning immediately after dispatching it.',
       required: true,
       defaultValue: false,
     }),
@@ -143,7 +143,7 @@ export const githubTriggerWorkflowDispatchAction = createAction({
     if (context.executionType === ExecutionType.RESUME) {
       const state = await context.store.get<WaitState>(
         waitStateKey,
-        StoreScope.FLOW
+        StoreScope.WORKFLOW
       );
       if (!state) {
         throw new Error(
@@ -154,12 +154,12 @@ export const githubTriggerWorkflowDispatchAction = createAction({
       const runStatus = await getWorkexecution(auth, owner, repo, state.runId);
 
       if (runStatus.status === 'completed') {
-        await context.store.delete(waitStateKey, StoreScope.FLOW);
+        await context.store.delete(waitStateKey, StoreScope.WORKFLOW);
         return runStatus;
       }
 
       if (Date.now() >= state.deadline) {
-        await context.store.delete(waitStateKey, StoreScope.FLOW);
+        await context.store.delete(waitStateKey, StoreScope.WORKFLOW);
         throw new Error(
           `Timed out waiting for workflow run ${state.runId} to finish (last status: "${runStatus.status}"). The run itself keeps going on GitHub: ${runStatus.html_url}`
         );
@@ -211,7 +211,7 @@ export const githubTriggerWorkflowDispatchAction = createAction({
       runId: initialRun.id,
       deadline: Date.now() + timeoutMinutes * 60 * 1000,
     };
-    await context.store.put(waitStateKey, state, StoreScope.FLOW);
+    await context.store.put(waitStateKey, state, StoreScope.WORKFLOW);
 
     const resumeAt = new Date(
       Date.now() +

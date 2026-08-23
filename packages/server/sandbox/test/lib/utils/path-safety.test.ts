@@ -14,7 +14,7 @@ function validationErrorFrom(run: () => void): PlatformError | null {
 }
 
 describe('assertSafeCodeNamespace', () => {
-    it('accepts a flow-version namespace, which is a single segment', () => {
+    it('accepts a workflow-version namespace, which is a single segment', () => {
         expect(() => assertSafeCodeNamespace(apId())).not.toThrow()
         expect(() => assertSafeCodeNamespace('fv-1')).not.toThrow()
     })

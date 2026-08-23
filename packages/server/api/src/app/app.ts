@@ -2,7 +2,7 @@ import swagger from '@fastify/swagger'
 import { ConnectorMetadata } from '@fema/connector-sdk'
 import { isNil, spreadIfDefined } from '@fema/core-utils'
 import { apVersionUtil, onCallService, UNKNOWN_VERSION, wideEvent } from '@fema/server-utils'
-import { ApEnvironment, ApplicationEventName, ConnectionDeletedEvent, ConnectionUpsertedEvent, ConnectionWithoutSensitiveData, Execution, ExecutionFinishedEvent, ExecutionRetriedEvent, ExecutionStartedEvent, Flow, FlowActivatedEvent, FlowCreatedEvent, FlowDeactivatedEvent, FlowDeletedEvent, FlowPublishedEvent, FlowUpdatedEvent, Folder, FolderCreatedEvent, FolderDeletedEvent, FolderUpdatedEvent, Template, UserEmailVerifiedEvent, UserInvitation, UserPasswordResetEvent, UserSignedInEvent, UserWithMetaInformation, WorkspaceWithLimits } from '@fema/shared'
+import { ApEnvironment, ApplicationEventName, ConnectionDeletedEvent, ConnectionUpsertedEvent, ConnectionWithoutSensitiveData, Execution, ExecutionFinishedEvent, ExecutionRetriedEvent, ExecutionStartedEvent, Folder, FolderCreatedEvent, FolderDeletedEvent, FolderUpdatedEvent, Template, UserEmailVerifiedEvent, UserInvitation, UserPasswordResetEvent, UserSignedInEvent, UserWithMetaInformation, Workflow, WorkflowActivatedEvent, WorkflowCreatedEvent, WorkflowDeactivatedEvent, WorkflowDeletedEvent, WorkflowPublishedEvent, WorkflowUpdatedEvent, WorkspaceWithLimits } from '@fema/shared'
 import { createAdapter } from '@socket.io/redis-adapter'
 import { FastifyBaseLogger, FastifyInstance, FastifyRequest, HTTPMethods } from 'fastify'
 import { jsonSchemaTransform, jsonSchemaTransformObject } from 'fastify-type-provider-zod'
@@ -26,11 +26,6 @@ import { authorizationMiddleware } from './core/security/v2/authz/authorization-
 import { distributedLock, redisConnections } from './database/redis-connections'
 import { fileModule } from './file/file.module'
 import { flagModule } from './flags/flag.module'
-import { executionModule } from './flows/execution/execution-module'
-import { flowBackgroundJobs } from './flows/flow/flow.jobs'
-import { humanInputModule } from './flows/flow/human-input/human-input.module'
-import { flowModule } from './flows/flow.module'
-import { folderModule } from './flows/folder/folder.module'
 import { domainHelper } from './helper/domain-helper'
 import { clientLogsModule } from './helper/logs/client-logs.module'
 import { openapiModule } from './helper/openapi/openapi.module'
@@ -54,6 +49,11 @@ import { webhookModule } from './webhooks/webhook-module'
 import { engineResponseWatcher } from './workers/engine-response-watcher'
 import { workerCapacity } from './workers/machine/worker-capacity'
 import { migrateQueuesAndRunConsumers, workerModule } from './workers/worker-module'
+import { executionModule } from './workflows/execution/execution-module'
+import { folderModule } from './workflows/folder/folder.module'
+import { humanInputModule } from './workflows/workflow/human-input/human-input.module'
+import { workflowBackgroundJobs } from './workflows/workflow/workflow.jobs'
+import { workflowModule } from './workflows/workflow.module'
 import { workspaceBackgroundJobs } from './workspace/workspace.jobs'
 import { workspaceModule } from './workspace/workspace.module'
 
@@ -152,7 +152,7 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     await app.register(connectorModule)
     await app.register(communityConnectorsModule)
     await app.register(collaborativeModule)
-    await app.register(flowModule)
+    await app.register(workflowModule)
     await app.register(executionModule)
     await app.register(webhookModule)
     await app.register(connectionModule)
@@ -179,7 +179,7 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
         await app.register(clientLogsModule)
     }
 
-    systemJobHandlers.registerJobHandler(SystemJobName.DELETE_FLOW, (data) => flowBackgroundJobs(app.log).deleteFlowHandler(data))
+    systemJobHandlers.registerJobHandler(SystemJobName.DELETE_WORKFLOW, (data) => workflowBackgroundJobs(app.log).deleteWorkflowHandler(data))
     systemJobHandlers.registerJobHandler(SystemJobName.HARD_DELETE_WORKSPACE, (data) => workspaceBackgroundJobs(app.log).hardDeleteWorkspaceHandler(data))
 
     app.get(
@@ -286,12 +286,12 @@ function extractWorkspaceId(principal: { workspaceId?: string } | null | undefin
 }
 
 function registerOpenApiSchemas() {
-    globalRegistry.add(FlowCreatedEvent, { id: ApplicationEventName.FLOW_CREATED })
-    globalRegistry.add(FlowUpdatedEvent, { id: ApplicationEventName.FLOW_UPDATED })
-    globalRegistry.add(FlowDeletedEvent, { id: ApplicationEventName.FLOW_DELETED })
-    globalRegistry.add(FlowPublishedEvent, { id: ApplicationEventName.FLOW_PUBLISHED })
-    globalRegistry.add(FlowActivatedEvent, { id: ApplicationEventName.FLOW_ACTIVATED })
-    globalRegistry.add(FlowDeactivatedEvent, { id: ApplicationEventName.FLOW_DEACTIVATED })
+    globalRegistry.add(WorkflowCreatedEvent, { id: ApplicationEventName.WORKFLOW_CREATED })
+    globalRegistry.add(WorkflowUpdatedEvent, { id: ApplicationEventName.WORKFLOW_UPDATED })
+    globalRegistry.add(WorkflowDeletedEvent, { id: ApplicationEventName.WORKFLOW_DELETED })
+    globalRegistry.add(WorkflowPublishedEvent, { id: ApplicationEventName.WORKFLOW_PUBLISHED })
+    globalRegistry.add(WorkflowActivatedEvent, { id: ApplicationEventName.WORKFLOW_ACTIVATED })
+    globalRegistry.add(WorkflowDeactivatedEvent, { id: ApplicationEventName.WORKFLOW_DEACTIVATED })
     globalRegistry.add(ConnectionUpsertedEvent, { id: ApplicationEventName.CONNECTION_UPSERTED })
     globalRegistry.add(ConnectionDeletedEvent, { id: ApplicationEventName.CONNECTION_DELETED })
     globalRegistry.add(FolderCreatedEvent, { id: ApplicationEventName.FOLDER_CREATED })
@@ -308,7 +308,7 @@ function registerOpenApiSchemas() {
     globalRegistry.add(UserWithMetaInformation, { id: 'user' })
     globalRegistry.add(UserInvitation, { id: 'user-invitation' })
     globalRegistry.add(WorkspaceWithLimits, { id: 'workspace' })
-    globalRegistry.add(Flow, { id: 'flow' })
+    globalRegistry.add(Workflow, { id: 'workflow' })
     globalRegistry.add(Execution, { id: 'execution' })
     globalRegistry.add(ConnectionWithoutSensitiveData, { id: 'connection' })
     globalRegistry.add(ConnectorMetadata, { id: 'connector' })

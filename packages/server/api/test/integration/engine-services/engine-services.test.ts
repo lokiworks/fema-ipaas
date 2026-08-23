@@ -1,19 +1,19 @@
 import { AddressInfo } from 'net'
 import { apId } from '@fema/core-utils'
 import { ContextVersion, StoreScope } from '@fema/connector-sdk'
-import { ConnectionStatus, ConnectionType, ConnectionExpiredError, ConnectionNotFoundError, ConnectionConnectorMismatchError, FetchError, FlowStatus, FlowVersionState, PrincipalType } from '@fema/shared'
+import { ConnectionStatus, ConnectionType, ConnectionExpiredError, ConnectionNotFoundError, ConnectionConnectorMismatchError, FetchError, WorkflowStatus, WorkflowVersionState, PrincipalType } from '@fema/shared'
 import { FastifyInstance } from 'fastify'
 import { createConnectionResolver } from '../../../../../engine/src/lib/connector-context/connection-resolver'
 import { createFileUploader } from '../../../../../engine/src/lib/connector-context/file-uploader'
-import { createFlowsContext } from '../../../../../engine/src/lib/connector-context/flows'
+import { createWorkflowsContext } from '../../../../../engine/src/lib/connector-context/workflows'
 import { createContextStore } from '../../../../../engine/src/lib/connector-context/store'
 import { encryptUtils } from '../../../../src/app/helper/encryption'
 import { generateMockToken } from '../../../helpers/auth'
 import { db } from '../../../helpers/db'
 import {
     createMockConnection,
-    createMockFlow,
-    createMockFlowVersion,
+    createMockWorkflow,
+    createMockWorkflowVersion,
     mockAndSaveBasicSetup,
 } from '../../../helpers/mocks'
 import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
@@ -54,32 +54,32 @@ describe('Engine Services Integration', () => {
         })
     })
 
-    describe('flows.service — createFlowsContext().list()', () => {
-        it('should return SeekPage<PopulatedFlow> with correct shape', async () => {
-            const flowId = apId()
-            const flowVersionId = apId()
-            const mockFlow = createMockFlow({
-                id: flowId,
+    describe('workflows.service — createWorkflowsContext().list()', () => {
+        it('should return SeekPage<PopulatedWorkflow> with correct shape', async () => {
+            const workflowId = apId()
+            const workflowVersionId = apId()
+            const mockWorkflow = createMockWorkflow({
+                id: workflowId,
                 workspaceId,
-                status: FlowStatus.ENABLED,
-                externalId: 'ext-flow-1',
+                status: WorkflowStatus.ENABLED,
+                externalId: 'ext-workflow-1',
             })
-            const mockVersion = createMockFlowVersion({
-                id: flowVersionId,
-                flowId,
-                state: FlowVersionState.LOCKED,
+            const mockVersion = createMockWorkflowVersion({
+                id: workflowVersionId,
+                workflowId,
+                state: WorkflowVersionState.LOCKED,
             })
-            await db.save('flow', mockFlow)
-            await db.save('flow_version', mockVersion)
+            await db.save('workflow', mockWorkflow)
+            await db.save('workflow_version', mockVersion)
 
-            const flowsContext = createFlowsContext({
+            const workflowsContext = createWorkflowsContext({
                 engineToken,
                 internalApiUrl: apiUrl,
-                flowId,
-                flowVersionId,
+                workflowId,
+                workflowVersionId,
             })
 
-            const result = await flowsContext.list({})
+            const result = await workflowsContext.list({})
 
             expect(result).toHaveProperty('data')
             expect(result).toHaveProperty('next')
@@ -87,62 +87,62 @@ describe('Engine Services Integration', () => {
             expect(Array.isArray(result.data)).toBe(true)
             expect(result.data.length).toBeGreaterThanOrEqual(1)
 
-            const populatedFlow = result.data.find(f => f.id === flowId)
-            expect(populatedFlow).toBeDefined()
-            expect(populatedFlow!.id).toBe(flowId)
-            expect(populatedFlow!.workspaceId).toBe(workspaceId)
-            expect(populatedFlow!.externalId).toBe('ext-flow-1')
-            expect(populatedFlow!.status).toBe(FlowStatus.ENABLED)
-            expect(populatedFlow!.version).toBeDefined()
-            expect(populatedFlow!.version.id).toBe(flowVersionId)
-            expect(populatedFlow!.version.flowId).toBe(flowId)
-            expect(populatedFlow!.version.trigger).toBeDefined()
-            expect(populatedFlow!.version.trigger.type).toBeDefined()
-            expect(populatedFlow!.version.trigger.name).toBeDefined()
-            expect(populatedFlow!.version.trigger.settings).toBeDefined()
-            expect(populatedFlow!.version.trigger.displayName).toBeDefined()
-            expect(populatedFlow!.version.displayName).toBeDefined()
-            expect(populatedFlow!.version.state).toBe(FlowVersionState.LOCKED)
+            const populatedWorkflow = result.data.find(f => f.id === workflowId)
+            expect(populatedWorkflow).toBeDefined()
+            expect(populatedWorkflow!.id).toBe(workflowId)
+            expect(populatedWorkflow!.workspaceId).toBe(workspaceId)
+            expect(populatedWorkflow!.externalId).toBe('ext-workflow-1')
+            expect(populatedWorkflow!.status).toBe(WorkflowStatus.ENABLED)
+            expect(populatedWorkflow!.version).toBeDefined()
+            expect(populatedWorkflow!.version.id).toBe(workflowVersionId)
+            expect(populatedWorkflow!.version.workflowId).toBe(workflowId)
+            expect(populatedWorkflow!.version.trigger).toBeDefined()
+            expect(populatedWorkflow!.version.trigger.type).toBeDefined()
+            expect(populatedWorkflow!.version.trigger.name).toBeDefined()
+            expect(populatedWorkflow!.version.trigger.settings).toBeDefined()
+            expect(populatedWorkflow!.version.trigger.displayName).toBeDefined()
+            expect(populatedWorkflow!.version.displayName).toBeDefined()
+            expect(populatedWorkflow!.version.state).toBe(WorkflowVersionState.LOCKED)
         })
 
         it('should filter by externalIds', async () => {
-            const flow1Id = apId()
-            const flow2Id = apId()
+            const workflow1Id = apId()
+            const workflow2Id = apId()
             const ext1 = apId()
             const ext2 = apId()
 
-            const flow1 = createMockFlow({ id: flow1Id, workspaceId, externalId: ext1 })
-            const flow2 = createMockFlow({ id: flow2Id, workspaceId, externalId: ext2 })
-            const version1 = createMockFlowVersion({ flowId: flow1Id })
-            const version2 = createMockFlowVersion({ flowId: flow2Id })
+            const workflow1 = createMockWorkflow({ id: workflow1Id, workspaceId, externalId: ext1 })
+            const workflow2 = createMockWorkflow({ id: workflow2Id, workspaceId, externalId: ext2 })
+            const version1 = createMockWorkflowVersion({ workflowId: workflow1Id })
+            const version2 = createMockWorkflowVersion({ workflowId: workflow2Id })
 
-            await db.save('flow', flow1)
-            await db.save('flow', flow2)
-            await db.save('flow_version', version1)
-            await db.save('flow_version', version2)
+            await db.save('workflow', workflow1)
+            await db.save('workflow', workflow2)
+            await db.save('workflow_version', version1)
+            await db.save('workflow_version', version2)
 
-            const flowsContext = createFlowsContext({
+            const workflowsContext = createWorkflowsContext({
                 engineToken,
                 internalApiUrl: apiUrl,
-                flowId: flow1Id,
-                flowVersionId: version1.id,
+                workflowId: workflow1Id,
+                workflowVersionId: version1.id,
             })
 
-            const result = await flowsContext.list({ externalIds: [ext1] })
+            const result = await workflowsContext.list({ externalIds: [ext1] })
 
             expect(result.data.length).toBe(1)
             expect(result.data[0].externalId).toBe(ext1)
         })
 
         it('should throw FetchError with invalid token', async () => {
-            const flowsContext = createFlowsContext({
+            const workflowsContext = createWorkflowsContext({
                 engineToken: 'invalid-token',
                 internalApiUrl: apiUrl,
-                flowId: apId(),
-                flowVersionId: apId(),
+                workflowId: apId(),
+                workflowVersionId: apId(),
             })
 
-            await expect(flowsContext.list({})).rejects.toThrow(FetchError)
+            await expect(workflowsContext.list({})).rejects.toThrow(FetchError)
         })
     })
 
@@ -339,7 +339,7 @@ describe('Engine Services Integration', () => {
             const store = createContextStore({
                 apiUrl,
                 prefix: '',
-                flowId: apId(),
+                workflowId: apId(),
                 engineToken,
             })
 
@@ -354,7 +354,7 @@ describe('Engine Services Integration', () => {
             const store = createContextStore({
                 apiUrl,
                 prefix: '',
-                flowId: apId(),
+                workflowId: apId(),
                 engineToken,
             })
 
@@ -366,7 +366,7 @@ describe('Engine Services Integration', () => {
             const store = createContextStore({
                 apiUrl,
                 prefix: '',
-                flowId: apId(),
+                workflowId: apId(),
                 engineToken,
             })
 
@@ -376,20 +376,20 @@ describe('Engine Services Integration', () => {
             expect(result).toBeNull()
         })
 
-        it('should isolate flow-scoped vs workspace-scoped keys', async () => {
-            const flowId = apId()
+        it('should isolate workflow-scoped vs workspace-scoped keys', async () => {
+            const workflowId = apId()
             const store = createContextStore({
                 apiUrl,
                 prefix: 'test_',
-                flowId,
+                workflowId,
                 engineToken,
             })
 
-            await store.put('sharedKey', { scope: 'flow' }, StoreScope.FLOW)
+            await store.put('sharedKey', { scope: 'workflow' }, StoreScope.WORKFLOW)
             await store.put('sharedKey', { scope: 'workspace' }, StoreScope.WORKSPACE)
 
-            const flowValue = await store.get('sharedKey', StoreScope.FLOW)
-            expect(flowValue).toEqual({ scope: 'flow' })
+            const workflowValue = await store.get('sharedKey', StoreScope.WORKFLOW)
+            expect(workflowValue).toEqual({ scope: 'workflow' })
 
             const workspaceValue = await store.get('sharedKey', StoreScope.WORKSPACE)
             expect(workspaceValue).toEqual({ scope: 'workspace' })

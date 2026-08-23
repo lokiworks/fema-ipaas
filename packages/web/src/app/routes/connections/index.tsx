@@ -268,12 +268,12 @@ function ConnectionsPage() {
         },
       },
       {
-        accessorKey: 'flowCount',
+        accessorKey: 'workflowCount',
         size: 80,
         header: ({ column }) => (
           <DataTableColumnHeader
             column={column}
-            title={t('Flows')}
+            title={t('Workflows')}
             icon={Workflow}
           />
         ),
@@ -289,7 +289,7 @@ function ConnectionsPage() {
                 );
               }}
             >
-              {row.original.flowIds?.length}
+              {row.original.workflowIds?.length}
             </div>
           );
         },

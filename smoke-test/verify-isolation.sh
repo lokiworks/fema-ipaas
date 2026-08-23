@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-FLOW_ID="${1:?Usage: verify-isolation.sh <flow_id> [base_url]}"
+WORKFLOW_ID="${1:?Usage: verify-isolation.sh <workflow_id> [base_url]}"
 BASE_URL="${2:-localhost:8080}"
 
 echo "=== Sandbox Filesystem Isolation Test ==="
-echo "Flow ID:  $FLOW_ID"
+echo "Workflow ID:  $WORKFLOW_ID"
 echo "Base URL: $BASE_URL"
 echo ""
 
@@ -13,7 +13,7 @@ RESPONSE=$(curl -s --max-time 60 \
   -X POST \
   -H "Content-Type: application/json" \
   -d '{"probe":true}' \
-  "http://$BASE_URL/api/v1/webhooks/$FLOW_ID/sync")
+  "http://$BASE_URL/api/v1/webhooks/$WORKFLOW_ID/sync")
 
 echo "--- Webhook response ---"
 echo "$RESPONSE"

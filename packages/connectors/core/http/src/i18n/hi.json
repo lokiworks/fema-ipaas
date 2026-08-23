@@ -28,6 +28,6 @@
   "JSON": "JSON",
   "Raw": "Raw",
   "Retry on all errors (4xx, 5xx)": "Retry on all errors (4xx, 5xx)",
-  "Continue flow": "Continue flow",
+  "Continue workflow": "Continue workflow",
   "Retry on internal errors (5xx)": "Retry on internal errors (5xx)"
 }

@@ -27,7 +27,7 @@ svg.lines{position:absolute;inset:0;z-index:2}
 .note{position:absolute;left:0;right:0;bottom:26px;text-align:center;font-size:13px;color:#64748b;font-weight:450}
 .note b{color:#334155;font-weight:600}
 </style></head><body><div class="stage">
-<div class="head"><h1>FEMA Integration Platform Architecture</h1><p>How a flow runs, end to end &mdash; from request to execution</p></div>
+<div class="head"><h1>FEMA Integration Platform Architecture</h1><p>How a workflow runs, end to end &mdash; from request to execution</p></div>
 <div class="rule"></div>
 
 <svg class="lines" width="1200" height="760">
@@ -59,7 +59,7 @@ svg.lines{position:absolute;inset:0;z-index:2}
 <div class="scaleghost" style="left:908px;top:268px;width:244px;height:108px"></div>
 
 <div class="card" style="left:52px;top:257px;width:172px;height:112px"><div class="badge"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8Z"/></svg></div><div class="t">Trigger</div><div class="s">Webhook or schedule</div></div>
-<div class="card" style="left:52px;top:399px;width:172px;height:112px"><div class="badge"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div><div class="t">Dashboard</div><div class="s">Build &amp; manage flows</div></div>
+<div class="card" style="left:52px;top:399px;width:172px;height:112px"><div class="badge"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div><div class="t">Dashboard</div><div class="s">Build &amp; manage workflows</div></div>
 
 <div class="card" style="left:312px;top:312px;width:160px;height:144px"><div class="badge"><svg width="22" height="19" viewBox="0 0 22 19" fill="#8142E3" xmlns="http://www.w3.org/2000/svg"><path d="M6.46013 5.81759C5.30809 4.10962 5.75876 1.79113 7.46672 0.639093C9.17469 -0.512944 11.4932 -0.0622757 12.6452 1.64569L20.4261 13.1813C21.5781 14.8893 21.1274 17.2077 19.4195 18.3598C17.7115 19.5118 15.393 19.0611 14.241 17.3532L10.8676 12.3519C10.4339 11.8054 9.55114 11.8905 9.02108 12.4205C8.58152 12.8601 8.43761 13.9846 8.31301 14.9582C8.29474 15.1009 8.27689 15.2405 8.25858 15.3741C8.19097 16.0114 7.97092 16.6418 7.58762 17.2101C6.33511 19.067 3.81375 19.5565 1.95682 18.304C0.0998936 17.0515 -0.390738 14.5304 0.861776 12.6734C1.51136 11.7104 2.50224 11.1151 3.56472 10.9399L3.56322 10.9384C6.63307 10.4932 7.20222 7.02864 6.64041 6.08487L6.46013 5.81759Z"/></svg></div><div class="t">App</div><div class="s">Receives requests, queues work</div></div>
 
@@ -101,8 +101,8 @@ svg.lines{position:absolute;inset:0;z-index:2}
     </g>
 </svg></div><div class="t">File storage</div><div class="pill">Amazon S3</div></div>
 
-<div class="card" style="left:904px;top:258px;width:244px;height:108px"><div class="badge"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#0F9D6B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><path d="M6 6h.01M6 18h.01M10 6h6M10 18h6"/></svg></div><div class="t">Worker</div><div class="s">Runs one flow</div></div>
-<div class="card" style="left:904px;top:402px;width:244px;height:108px"><div class="badge"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#0F9D6B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><path d="M6 6h.01M6 18h.01M10 6h6M10 18h6"/></svg></div><div class="t">Worker</div><div class="s">Runs one flow</div></div>
+<div class="card" style="left:904px;top:258px;width:244px;height:108px"><div class="badge"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#0F9D6B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><path d="M6 6h.01M6 18h.01M10 6h6M10 18h6"/></svg></div><div class="t">Worker</div><div class="s">Runs one workflow</div></div>
+<div class="card" style="left:904px;top:402px;width:244px;height:108px"><div class="badge"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#0F9D6B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><path d="M6 6h.01M6 18h.01M10 6h6M10 18h6"/></svg></div><div class="t">Worker</div><div class="s">Runs one workflow</div></div>
 
 <div class="elabel" style="left:268px;top:330px">event</div>
 <div class="elabel" style="left:516px;top:300px">enqueue</div>
@@ -111,5 +111,5 @@ svg.lines{position:absolute;inset:0;z-index:2}
 <div class="elabel" style="left:920px;top:520px">files</div>
 <div class="elabel" style="left:560px;top:176px;color:#059669;border-color:#bbf7d0">results</div>
 
-<div class="note"><b>Scales by arithmetic</b> &mdash; one worker per flow running at once. Need more throughput? Add workers.</div>
+<div class="note"><b>Scales by arithmetic</b> &mdash; one worker per workflow running at once. Need more throughput? Add workers.</div>
 </div></body></html>

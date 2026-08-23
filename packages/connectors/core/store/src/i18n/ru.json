@@ -22,6 +22,6 @@
   "The storage scope of the value.": "Область хранения значения.",
   "Separator between added values, use \\n for newlines": "Разделитель между добавленными значениями, используйте \\n для новых строк",
   "Project": "Проект",
-  "Flow": "Flow",
+  "Workflow": "Workflow",
   "Run": "Run"
 }

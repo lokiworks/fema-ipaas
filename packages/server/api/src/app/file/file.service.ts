@@ -15,7 +15,7 @@ import { fileCompressor } from './file-compressor'
 import { FileEntity } from './file.entity'
 import { s3Helper } from './s3-helper'
 
-const ALLOWED_SIGNED_FILE_TYPES: FileType[] = [FileType.FLOW_STEP_FILE, FileType.EXECUTION_LOG_SLICE]
+const ALLOWED_SIGNED_FILE_TYPES: FileType[] = [FileType.WORKFLOW_STEP_FILE, FileType.EXECUTION_LOG_SLICE]
 
 const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'image/tiff', 'image/bmp', 'image/ico', 'image/avif', 'image/apng']
 
@@ -231,7 +231,7 @@ export const fileService = (log: FastifyBaseLogger) => ({
                 jwt: token,
                 key: await jwtUtils.getJwtSecret(),
             })
-            const fileType = decodedToken.fileType ?? FileType.FLOW_STEP_FILE
+            const fileType = decodedToken.fileType ?? FileType.WORKFLOW_STEP_FILE
             if (!ALLOWED_SIGNED_FILE_TYPES.includes(fileType)) {
                 throw new Error(`File type ${fileType} not allowed for signed download`)
             }
@@ -344,7 +344,7 @@ function groupWorkspaceIdsByRetentionDays(workspaces: Pick<Workspace, 'id' | 'ex
 
 export function getLocationForFile(type: FileType) {
     const FILE_LOCATION = system.getOrThrow<FileLocation>(AppSystemProp.FILE_STORAGE_LOCATION)
-    if (type === FileType.FLOW_BUNDLE || isExecutionDataFileThatExpires(type)) {
+    if (type === FileType.WORKFLOW_BUNDLE || isExecutionDataFileThatExpires(type)) {
         return FILE_LOCATION
     }
     return FileLocation.DB
@@ -358,15 +358,15 @@ export function getEffectiveExecutionDataRetentionDays(executionDataRetentionDay
     if (isNil(executionDataRetentionDays)) {
         return EXECUTION_DATA_RETENTION_DAYS
     }
-    const pausedFlowTimeoutDays = system.getNumberOrThrow(AppSystemProp.PAUSED_FLOW_TIMEOUT_DAYS)
-    return Math.min(EXECUTION_DATA_RETENTION_DAYS, Math.max(executionDataRetentionDays, pausedFlowTimeoutDays))
+    const pausedWorkflowTimeoutDays = system.getNumberOrThrow(AppSystemProp.PAUSED_WORKFLOW_TIMEOUT_DAYS)
+    return Math.min(EXECUTION_DATA_RETENTION_DAYS, Math.max(executionDataRetentionDays, pausedWorkflowTimeoutDays))
 }
 
 function isExecutionDataFileThatExpires(type: FileType) {
     switch (type) {
         case FileType.EXECUTION_LOG:
         case FileType.EXECUTION_LOG_SLICE:
-        case FileType.FLOW_STEP_FILE:
+        case FileType.WORKFLOW_STEP_FILE:
         case FileType.TRIGGER_PAYLOAD:
         case FileType.TRIGGER_EVENT_FILE:
         case FileType.WEBHOOK_PAYLOAD:
@@ -377,7 +377,7 @@ function isExecutionDataFileThatExpires(type: FileType) {
         case FileType.SAMPLE_DATA_INPUT:
         case FileType.PACKAGE_ARCHIVE:
         case FileType.WORKSPACE_RELEASE:
-        case FileType.FLOW_VERSION_BACKUP:
+        case FileType.WORKFLOW_VERSION_BACKUP:
         case FileType.KNOWLEDGE_BASE:
             return false
         default:

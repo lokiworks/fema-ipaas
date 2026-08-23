@@ -81,15 +81,15 @@ echo "Signed up. Project: $PROJECT_ID" >&2
 
 AUTH="Authorization: Bearer $TOKEN"
 
-# Create flow
-echo "Creating flow..." >&2
-FLOW_RESPONSE=$(curl -s --fail-with-body "$BASE_URL/flows" \
+# Create workflow
+echo "Creating workflow..." >&2
+WORKFLOW_RESPONSE=$(curl -s --fail-with-body "$BASE_URL/workflows" \
   -H "Content-Type: application/json" \
   -H "$AUTH" \
-  -d "{\"displayName\":\"Benchmark Flow\",\"projectId\":\"$PROJECT_ID\"}")
+  -d "{\"displayName\":\"Benchmark Workflow\",\"projectId\":\"$PROJECT_ID\"}")
 
-FLOW_ID=$(echo "$FLOW_RESPONSE" | jq -r '.id')
-echo "Flow created: $FLOW_ID" >&2
+WORKFLOW_ID=$(echo "$WORKFLOW_RESPONSE" | jq -r '.id')
+echo "Workflow created: $WORKFLOW_ID" >&2
 
 # Resolve the CODE step body and Return Response body (parameterizable for isolation smoke).
 if [ -n "${CODE_BODY_FILE:-}" ]; then
@@ -116,7 +116,7 @@ else
   RESPONSE_BODY_JSON="$RESPONSE_BODY"
 fi
 
-# Flow: webhook (latest) -> math-helper addition (latest) -> small CODE step -> return response (latest).
+# Workflow: webhook (latest) -> math-helper addition (latest) -> small CODE step -> return response (latest).
 WEBHOOK_VERSION="${WEBHOOK_VERSION:-~0.1.36}"
 MATH_VERSION="${MATH_VERSION:-~0.0.24}"
 IMPORT_PAYLOAD=$(jq -n \
@@ -126,9 +126,9 @@ IMPORT_PAYLOAD=$(jq -n \
   --arg sumInput "$CODE_INPUT_SUM" \
   --argjson body "$RESPONSE_BODY_JSON" \
   '{
-    type: "IMPORT_FLOW",
+    type: "IMPORT_WORKFLOW",
     request: {
-      displayName: "Benchmark Flow",
+      displayName: "Benchmark Workflow",
       schemaVersion: "17",
       notes: [],
       trigger: {
@@ -226,44 +226,44 @@ IMPORT_PAYLOAD=$(jq -n \
     }
   }')
 
-# Import full flow via IMPORT_FLOW operation
-echo "Importing flow definition..." >&2
-curl -s --fail-with-body "$BASE_URL/flows/$FLOW_ID" \
+# Import full workflow via IMPORT_WORKFLOW operation
+echo "Importing workflow definition..." >&2
+curl -s --fail-with-body "$BASE_URL/workflows/$WORKFLOW_ID" \
   -H "Content-Type: application/json" \
   -H "$AUTH" \
   --data-binary "$IMPORT_PAYLOAD" > /dev/null
 
-# Publish flow
-echo "Publishing flow..." >&2
-curl -s --fail-with-body "$BASE_URL/flows/$FLOW_ID" \
+# Publish workflow
+echo "Publishing workflow..." >&2
+curl -s --fail-with-body "$BASE_URL/workflows/$WORKFLOW_ID" \
   -H "Content-Type: application/json" \
   -H "$AUTH" \
   -d '{"type":"LOCK_AND_PUBLISH","request":{}}' > /dev/null
 
-# Enable flow
-echo "Enabling flow..." >&2
-curl -s --fail-with-body "$BASE_URL/flows/$FLOW_ID" \
+# Enable workflow
+echo "Enabling workflow..." >&2
+curl -s --fail-with-body "$BASE_URL/workflows/$WORKFLOW_ID" \
   -H "Content-Type: application/json" \
   -H "$AUTH" \
   -d '{"type":"CHANGE_STATUS","request":{"status":"ENABLED"}}' > /dev/null
 
-# Wait for flow to become ENABLED (enabling is async; SANDBOXED mode needs longer)
-FLOW_ENABLE_TIMEOUT=${FLOW_ENABLE_TIMEOUT:-30}
-echo "Waiting for flow to become ENABLED (timeout: ${FLOW_ENABLE_TIMEOUT}s)..." >&2
-for i in $(seq 1 "$FLOW_ENABLE_TIMEOUT"); do
-  STATUS=$(curl -s "$BASE_URL/flows/$FLOW_ID" \
+# Wait for workflow to become ENABLED (enabling is async; SANDBOXED mode needs longer)
+WORKFLOW_ENABLE_TIMEOUT=${WORKFLOW_ENABLE_TIMEOUT:-30}
+echo "Waiting for workflow to become ENABLED (timeout: ${WORKFLOW_ENABLE_TIMEOUT}s)..." >&2
+for i in $(seq 1 "$WORKFLOW_ENABLE_TIMEOUT"); do
+  STATUS=$(curl -s "$BASE_URL/workflows/$WORKFLOW_ID" \
     -H "$AUTH" | jq -r '.status')
   if [ "$STATUS" = "ENABLED" ]; then
-    echo "Flow is ENABLED" >&2
+    echo "Workflow is ENABLED" >&2
     break
   fi
-  if [ "$i" -eq "$FLOW_ENABLE_TIMEOUT" ]; then
-    echo "WARNING: Flow status is '$STATUS' after ${FLOW_ENABLE_TIMEOUT}s, proceeding anyway" >&2
+  if [ "$i" -eq "$WORKFLOW_ENABLE_TIMEOUT" ]; then
+    echo "WARNING: Workflow status is '$STATUS' after ${WORKFLOW_ENABLE_TIMEOUT}s, proceeding anyway" >&2
   fi
   sleep 1
 done
 
-echo "Setup complete. Flow ID: $FLOW_ID" >&2
+echo "Setup complete. Workflow ID: $WORKFLOW_ID" >&2
 
-# Output only the flow ID to stdout
-echo "$FLOW_ID"
+# Output only the workflow ID to stdout
+echo "$WORKFLOW_ID"

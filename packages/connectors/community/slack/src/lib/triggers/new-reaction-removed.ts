@@ -31,7 +31,7 @@ export const newReactionRemoved = createTrigger({
       auth: slackAuth,
       displayName: 'Channels',
       description:
-        'If no channel is selected, the flow will be triggered for reactions removed in all channels the app has access to',
+        'If no channel is selected, the workflow will be triggered for reactions removed in all channels the app has access to',
       required: false,
       refreshers: [],
       async options({ auth }) {

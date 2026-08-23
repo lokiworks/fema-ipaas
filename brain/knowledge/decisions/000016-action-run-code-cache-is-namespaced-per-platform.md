@@ -8,29 +8,29 @@ status: proposed
 An action run's compiled code step lands in
 `<cache>/v12/codes/action-runs/<platformId>_<sha256(sourceCode)>/<stepName>/`, built by
 `actionRunCache.namespace`. The `action-runs/` directory level and the `platformId` are both load-bearing:
-the directory is what distinguishes an action-run build from a flow-version build on disk, and the
-`platformId` is what stops two customers sharing a directory. Flow-version caches stay at the root of
+the directory is what distinguishes an action-run build from a workflow-version build on disk, and the
+`platformId` is what stops two customers sharing a directory. Workflow-version caches stay at the root of
 `codes/`, unmoved.
 
 Those directories are reclaimed by `actionRunCache.sweep` — a worker-local pass every 30 minutes that
 reads **only** `codes/action-runs/`, deletes children untouched for 2h, then evicts oldest-first while more
 than `ACTION_RUN_CACHE_MAX_DIRS` (200) survivors remain, never touching one whose mtime is inside
 `ACTION_RUN_CACHE_ACTIVE_WINDOW_MS` (15 min). Reclamation is bounded by directory **count**, never by
-bytes. Flow version caches are explicitly **not** swept, and are now structurally unreachable by the sweep
+bytes. Workflow version caches are explicitly **not** swept, and are now structurally unreachable by the sweep
 rather than merely excluded by a filter. All four knobs are hardcoded constants, not env vars.
 
 ## Context
-The code cache is keyed by `flowVersionId` + step name and nothing else, and an action run has no flow
+The code cache is keyed by `workflowVersionId` + step name and nothing else, and an action run has no workflow
 version. Three schemes have been tried:
 
-1. **A real, throwaway `flowVersion.id`** (the pre-branch temporary-flow path). The flow row was deleted;
+1. **A real, throwaway `workflowVersion.id`** (the pre-branch temporary-workflow path). The workflow row was deleted;
    the directory was not. One leaked directory per `ap_run_code` call, named after a UUID that could never
    be traced back to a tenant.
-2. **The constant `DEFAULT_MCP_DATA.flowVersionId`.** Every action run compiled into one directory. Because
+2. **The constant `DEFAULT_MCP_DATA.workflowVersionId`.** Every action run compiled into one directory. Because
    a different snippet was always a hash miss and `installFn` opens by `rm -rf`-ing the directory, the
    destructive rebuild *was* the garbage collection — bounded at O(1) dirs. It was also the bug: `memoryLock`
    serialises the build but not the later read of `index.js`, so concurrent boxes could execute each other's
-   snippet, and a nil `provision.flowVersionId` made `buildCodeMount` return `null`, leaving nothing mounted
+   snippet, and a nil `provision.workflowVersionId` made `buildCodeMount` return `null`, leaving nothing mounted
    at `/root/codes` in isolate mode.
 3. **`sha256(sourceCode)`.** Fixed both, precisely by making the rm-and-rebuild branch unreachable — which
    is how the only reclamation on this path disappeared. It left a globally shared, content-addressed cache
@@ -58,7 +58,7 @@ threading `platformId` into the process maker — in fork mode `FEMA_BASE_CODE_D
 `getProcessMaker` time, before `platformId` is known — and changing the engine's read path. That objection
 is real but applies only to a **variable** first level like `codes/<platformId>/<hash>/`. `action-runs/` is
 a **constant**, so the base code directory stays `/root/codes`, both process makers are untouched, and
-`code-executor`'s `${baseCodeDirectory}/${flowVersionId}/${stepName}/index.js` absorbs the extra segment by
+`code-executor`'s `${baseCodeDirectory}/${workflowVersionId}/${stepName}/index.js` absorbs the extra segment by
 string interpolation with no change at all. The `platformId` stays flat *inside* that directory: a
 per-platform level would make the sweeper walk two levels and assemble its eviction list across platforms,
 which is the one place this design insists on recomputing from a single live `readdir`, and it would leave
@@ -86,7 +86,7 @@ large-dependency snippets cannot fill a disk, because `code-builder` deletes `no
 unconditionally after compile *and* on install failure — an action-run directory is the esbuild bundle, not the
 dependency tree, so reaching gigabytes needs thousands of distinct snippets inside one TTL window. The
 2 GiB budget it shipped with was also the size of the *entire* default Helm volume (`persistence.size:
-2Gi`, which also carries the engine, `connectors-metadata`, flow caches and bundles), so it could never fire.
+2Gi`, which also carries the engine, `connectors-metadata`, workflow caches and bundles), so it could never fire.
 
 Second, and the reason not to simply retune it: **a byte budget cannot bound the number of survivors, and
 the number is what safety depends on.** At any instant some directories are bind-mounted into running
@@ -115,7 +115,7 @@ eviction and the cap stops holding. ADR 0002 pushes operators *down* on concurre
 **30 minutes and 2 hours are different knobs and must not be collapsed.** The sweep is a `readdir` and one
 `stat` per entry on an `unref`'d timer — cheaper than when the interval was chosen, both because the recursive
 size walk went with the byte budget and because the `readdir` now returns only action-run directories rather
-than every flow-version cache on the worker — and tighter intervals already exist in `worker.ts` (30s watchdog,
+than every workflow-version cache on the worker — and tighter intervals already exist in `worker.ts` (30s watchdog,
 15s sandbox sampling). What the interval buys is *residency* overshoot, not disk overshoot: at a 2h TTL a
 30-minute pass means a directory lives 2h–2.5h, where a weekly pass would leave tenant code on shared disk
 for a week. The TTL is short because action-run code is agent-generated — repeats come from within a
@@ -167,7 +167,7 @@ immediately before `sandbox.start()`, so a bind-mounted directory was touched un
 any TTL above an hour, and inside the active window that eviction skips. Remove the touch and both controls
 lose the only signal they have that a directory is in use. The touch is gated on
 `isActionRunNamespace`, because `provision` runs on every execute and an ungated `utimes` charges every code step of
-every flow run for a directory that is never swept.
+every workflow run for a directory that is never swept.
 
 **The mtime cannot close the last interleaving on its own, so removal and provision shake hands in-process.**
 A removal whose re-`stat` has already passed cannot see a touch that lands a microsecond later: `rm` proceeds
@@ -183,27 +183,27 @@ mtime re-check alone; that is accepted, the same way the sweep is convergent rat
 
 **The discriminator is structural, which is why the earlier `ar_` prefix was retired.** A prefix made
 classification lexical, and it was collision-proof only because `ALPHABET` in `core-utils/id-generator.ts`
-is `[0-9A-Za-z]`: no `apId` can start with `ar_`, so no flow-version directory could be classified as
+is `[0-9A-Za-z]`: no `apId` can start with `ar_`, so no workflow-version directory could be classified as
 managed. Adding `_` to that alphabet would have misclassified any id beginning `ar_` — roughly one in
-238 000 per id, so effectively certain at cloud scale — and the sweeper would have started eating flow
+238 000 per id, so effectively certain at cloud scale — and the sweeper would have started eating workflow
 caches silently, from a one-character change three packages away with no test between it and data loss.
-Length could not help: `platformId` and `flowVersionId` are both 21-char `apId`s.
+Length could not help: `platformId` and `workflowVersionId` are both 21-char `apId`s.
 
-A directory does not remove that class of coupling so much as collapse its probability. A flow-version
-directory can now only be swept if it lands *inside* `codes/action-runs/`, which requires a `flowVersionId`
+A directory does not remove that class of coupling so much as collapse its probability. A workflow-version
+directory can now only be swept if it lands *inside* `codes/action-runs/`, which requires a `workflowVersionId`
 equal to the string `action-runs` — needing `ALPHABET` to gain `-`, **and** `ID_LENGTH` to go from 21 to 11,
 **and** the `ApId` regex to change, all together. The sweep also no longer filters by name at all: it reads
 only its own directory, so nothing at the root of `codes/` is a candidate however old. A test pins that a
-flow-version directory, a leftover `ar_`-prefixed directory and a stray file at the root of `codes/` all
+workflow-version directory, a leftover `ar_`-prefixed directory and a stray file at the root of `codes/` all
 survive a sweep of arbitrarily aged entries, and a second pins that `ACTION_RUN_CODE_DIR` is not `apId`-shaped.
 
-**Pre-`action-runs/` builds are deliberately left to leak.** Bare-`sha256`, `mcp-flow-version-id` and
+**Pre-`action-runs/` builds are deliberately left to leak.** Bare-`sha256`, `mcp-workflow-version-id` and
 `ar_`-prefixed directories only ever existed on machines that ran intermediate commits of the branch that
 introduced this — none of these layouts ever reached `main`. Reclaiming them needs a name-sniffing branch
-that, unlike the managed path, has no TTL and no mtime re-check, and would `rm -rf` `mcp-flow-version-id`
+that, unlike the managed path, has no TTL and no mtime re-check, and would `rm -rf` `mcp-workflow-version-id`
 every 30 minutes the day anything did provision under that still-live constant. Era-1 directories, named
-after real `apId`s, are indistinguishable from live flow-version caches and are likewise **not** reclaimable
-— better to leak them than to risk a heuristic that eats a flow's cache. On a dev box that ran those
+after real `apId`s, are indistinguishable from live workflow-version caches and are likewise **not** reclaimable
+— better to leak them than to risk a heuristic that eats a workflow's cache. On a dev box that ran those
 commits, `rm -rf cache/v12/codes` is the cleanup.
 
 Reversing this means changing an on-disk layout that the namer, the sweeper's root, the isolate mount and
@@ -219,4 +219,4 @@ Only a count cap fixes how many entries survive, and "how many survive" is what 
 reach something a live process is reading; but recency is a proxy for liveness, not liveness itself, so the
 window is what turns "unlikely to be reached" into "cannot be reached".
 
-Related: [[action-run]], [[gotcha-code-cache-is-namespaced-by-flowversionid-never-reuse-a-constant]].
+Related: [[action-run]], [[gotcha-code-cache-is-namespaced-by-workflowversionid-never-reuse-a-constant]].

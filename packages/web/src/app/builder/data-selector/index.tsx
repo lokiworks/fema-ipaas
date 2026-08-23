@@ -1,11 +1,11 @@
 import { ConnectorMetadataModel } from '@fema/connector-sdk';
 import { LocalesEnum, isNil } from '@fema/core-utils';
 import {
-  FlowAction,
-  FlowActionType,
-  FlowTrigger,
-  FlowTriggerType,
-  flowStructureUtil,
+  WorkflowAction,
+  WorkflowActionType,
+  WorkflowTrigger,
+  WorkflowTriggerType,
+  workflowStructureUtil,
 } from '@fema/shared';
 import { useQueries } from '@tanstack/react-query';
 import { t } from 'i18next';
@@ -36,23 +36,23 @@ import { dataSelectorUtils } from './utils';
 import { schemaTreeUtils } from './utils-schema';
 import { VariablesTab } from './variables-tab';
 
-type StepInfo = (FlowAction | FlowTrigger) & { dfsIndex: number };
+type StepInfo = (WorkflowAction | WorkflowTrigger) & { dfsIndex: number };
 
 function getStepsAndData(state: BuilderState): {
   steps: StepInfo[];
   sampleData: Record<string, unknown>;
   isFocusInsideListMapperModeInput: boolean;
 } {
-  const { selectedStep, flowVersion } = state;
-  if (!selectedStep || !flowVersion || !flowVersion.trigger) {
+  const { selectedStep, workflowVersion } = state;
+  if (!selectedStep || !workflowVersion || !workflowVersion.trigger) {
     return {
       steps: [],
       sampleData: {},
       isFocusInsideListMapperModeInput: false,
     };
   }
-  const pathToTargetStep = flowStructureUtil.findPathToStep(
-    flowVersion.trigger,
+  const pathToTargetStep = workflowStructureUtil.findPathToStep(
+    workflowVersion.trigger,
     selectedStep,
   );
   return {
@@ -132,7 +132,7 @@ const DataSelector = ({ parentHeight, parentWidth }: DataSelectorProps) => {
     () =>
       steps
         .map((step) => {
-          if (step.type === FlowActionType.CONNECTOR) {
+          if (step.type === WorkflowActionType.CONNECTOR) {
             return {
               stepName: step.name,
               connectorName: step.settings.connectorName,
@@ -140,7 +140,7 @@ const DataSelector = ({ parentHeight, parentWidth }: DataSelectorProps) => {
               stepKey: step.settings.actionName,
             };
           }
-          if (step.type === FlowTriggerType.CONNECTOR) {
+          if (step.type === WorkflowTriggerType.CONNECTOR) {
             return {
               stepName: step.name,
               connectorName: step.settings.connectorName,

@@ -1,5 +1,5 @@
-import { ExecutionId, FlowId, PlatformId, WorkspaceId } from '@fema/core-utils'
-import { Flow } from '@fema/shared'
+import { ExecutionId, PlatformId, WorkflowId, WorkspaceId } from '@fema/core-utils'
+import { Workflow } from '@fema/shared'
 import { Job, JobsOptions } from 'bullmq'
 import { Dayjs } from 'dayjs'
 
@@ -8,7 +8,7 @@ export enum SystemJobName {
     CONNECTORS_SYNC = 'connectors-sync',
     FILE_CLEANUP_TRIGGER = 'file-cleanup-trigger',
     RUN_TELEMETRY = 'run-telemetry',
-    DELETE_FLOW = 'delete-flow',
+    DELETE_WORKFLOW = 'delete-workflow',
     HARD_DELETE_WORKSPACE = 'hard-delete-workspace',
     HARD_DELETE_PLATFORM = 'hard-delete-platform',
     BILLING_USAGE_REPORT = 'billing-usage-report',
@@ -17,15 +17,15 @@ export enum SystemJobName {
     CHAT_STALE_SWEEP = 'chat-stale-sweep',
 }
 
-type DeleteFlowDurableSystemJobData =  {
-    flow: Flow
+type DeleteWorkflowDurableSystemJobData =  {
+    workflow: Workflow
     preDeleteDone: boolean
 }
 
 type HardDeleteWorkspaceSystemJobData = {
     workspaceId: WorkspaceId
     platformId: PlatformId
-    preDeletedFlowIds: FlowId[]
+    preDeletedWorkflowIds: WorkflowId[]
 }
 
 type HardDeletePlatformSystemJobData = {
@@ -49,7 +49,7 @@ type SystemJobDataMap = {
     [SystemJobName.CONNECTORS_SYNC]: Record<string, never>
     [SystemJobName.FILE_CLEANUP_TRIGGER]: Record<string, never>
     [SystemJobName.RUN_TELEMETRY]: Record<string, never>
-    [SystemJobName.DELETE_FLOW]: DeleteFlowDurableSystemJobData
+    [SystemJobName.DELETE_WORKFLOW]: DeleteWorkflowDurableSystemJobData
     [SystemJobName.HARD_DELETE_WORKSPACE]: HardDeleteWorkspaceSystemJobData
     [SystemJobName.HARD_DELETE_PLATFORM]: HardDeletePlatformSystemJobData
     [SystemJobName.BILLING_USAGE_REPORT]: Record<string, never>

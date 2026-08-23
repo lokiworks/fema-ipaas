@@ -29,7 +29,7 @@ export const SYSTEM_LIMITS: PlatformPlanLimits = {
     licenseKey: null,
     licenseExpiresAt: null,
     workspacesLimit: null,
-    activeFlowsLimit: null,
+    activeWorkflowsLimit: null,
     dedicatedWorkers: null,
     canary: false,
     customDomainsEnabled: false,

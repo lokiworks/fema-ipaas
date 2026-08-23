@@ -153,7 +153,7 @@ agent-browser open https://app.example.com/dashboard
 ```bash
 # Auto-save/restore cookies and localStorage across browser restarts
 agent-browser --session-name myapp open https://app.example.com/login
-# ... login flow ...
+# ... login workflow ...
 agent-browser close  # State auto-saved to ~/.agent-browser/sessions/
 
 # Next time, state is auto-loaded
@@ -482,7 +482,7 @@ Priority (lowest to highest): `~/.agent-browser/config.json` < `./agent-browser.
 | [references/commands.md](references/commands.md) | Full command reference with all options |
 | [references/snapshot-refs.md](references/snapshot-refs.md) | Ref lifecycle, invalidation rules, troubleshooting |
 | [references/session-management.md](references/session-management.md) | Parallel sessions, state persistence, concurrent scraping |
-| [references/authentication.md](references/authentication.md) | Login flows, OAuth, 2FA handling, state reuse |
+| [references/authentication.md](references/authentication.md) | Login workflows, OAuth, 2FA handling, state reuse |
 | [references/video-recording.md](references/video-recording.md) | Recording workflows for debugging and documentation |
 | [references/profiling.md](references/profiling.md) | Chrome DevTools profiling for performance analysis |
 | [references/proxy-support.md](references/proxy-support.md) | Proxy configuration, geo-testing, rotating proxies |

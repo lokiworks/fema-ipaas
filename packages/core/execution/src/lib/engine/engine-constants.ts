@@ -1,9 +1,9 @@
-import { FlowVersionState } from '../flows/flow-version'
+import { WorkflowVersionState } from '../workflows/workflow-version'
 
 export const DEFAULT_MCP_DATA = {
-    flowId: 'mcp-flow-id',
-    flowVersionId: 'mcp-flow-version-id',
-    flowVersionState: FlowVersionState.LOCKED,
+    workflowId: 'mcp-workflow-id',
+    workflowVersionId: 'mcp-workflow-version-id',
+    workflowVersionState: WorkflowVersionState.LOCKED,
     executionId: 'mcp-execution-id',
     triggerConnectorName: 'mcp-trigger-connector-name',
 }

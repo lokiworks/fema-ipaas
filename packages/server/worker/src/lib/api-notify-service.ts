@@ -4,13 +4,13 @@ import { ApiToWorkerContract, WorkerToApiContract } from '@fema/shared'
 
 export function createApiToWorkerHandlers({ getRuntime, apiClient, getPublicApiUrl, log }: CreateApiToWorkerHandlersParams): ApiToWorkerContract {
     return {
-        flowPublished({ flowId, flowVersionId, workspaceId }) {
-            log.info({ flowId, flowVersionId, workspaceId, message: 'Flow published, prewarming flow cache' })
+        workflowPublished({ workflowId, workflowVersionId, workspaceId }) {
+            log.info({ workflowId, workflowVersionId, workspaceId, message: 'Workflow published, prewarming workflow cache' })
             void getRuntime()?.prewarm({
                 log,
                 apiClient,
                 publicApiUrl: getPublicApiUrl(),
-                flow: { id: flowId, versionId: flowVersionId, workspaceId },
+                workflow: { id: workflowId, versionId: workflowVersionId, workspaceId },
             })
         },
     }

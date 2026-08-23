@@ -24,7 +24,7 @@ export const executePropertyJob: JobHandler<ExecutePropertyJobData, SynchronousJ
                     connector: data.connector,
                     propertyName: data.propertyName,
                     actionOrTriggerName: data.actionOrTriggerName,
-                    flowVersion: data.flowVersion,
+                    workflowVersion: data.workflowVersion,
                     input: data.input,
                     sampleData: data.sampleData,
                     workspaceId: data.workspaceId,

@@ -1,6 +1,6 @@
 import { isNil, tryCatch } from '@fema/core-utils'
 import { apDayjsDuration } from '@fema/server-utils'
-import { ExecuteFlowJobData, JOB_PRIORITY, JobData, RATE_LIMIT_PRIORITY, RunEnvironment, WorkerJobType } from '@fema/shared'
+import { ExecuteWorkflowJobData, JOB_PRIORITY, JobData, RATE_LIMIT_PRIORITY, RunEnvironment, WorkerJobType } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { getConcurrencyPoolSetKey } from '../../../database/redis/keys'
 import { distributedStore, redisConnections } from '../../../database/redis-connections'
@@ -9,17 +9,17 @@ import { AppSystemProp } from '../../../helper/system/system-props'
 import { workspaceService } from '../../../workspace/workspace-service'
 import { InterceptorResult, InterceptorVerdict, JobInterceptor } from '../job-interceptor'
 
-const RATE_LIMIT_WORKER_JOB_TYPES = [WorkerJobType.EXECUTE_FLOW]
+const RATE_LIMIT_WORKER_JOB_TYPES = [WorkerJobType.EXECUTE_WORKFLOW]
 const WORKSPACE_CONCURRENCY_TTL_SECONDS = 60
 
-function shouldContinue(jobData: JobData): jobData is ExecuteFlowJobData {
+function shouldContinue(jobData: JobData): jobData is ExecuteWorkflowJobData {
     if (!system.getBoolean(AppSystemProp.WORKSPACE_RATE_LIMITER_ENABLED)) {
         return false
     }
     if (!RATE_LIMIT_WORKER_JOB_TYPES.includes(jobData.jobType)) {
         return false
     }
-    const castedJob = jobData as ExecuteFlowJobData
+    const castedJob = jobData as ExecuteWorkflowJobData
     if (castedJob.environment === RunEnvironment.TESTING) {
         return false
     }
@@ -43,8 +43,8 @@ async function getMaxConcurrentJobs({ workspaceId, log }: { workspaceId: string,
     return effective
 }
 
-async function tryAcquireSlot({ jobId, jobData, log }: { jobId: string, jobData: ExecuteFlowJobData, log: FastifyBaseLogger }): Promise<boolean> {
-    const flowTimeoutInMilliseconds = apDayjsDuration(system.getNumberOrThrow(AppSystemProp.FLOW_TIMEOUT_SECONDS), 'seconds').add(1, 'minute').asMilliseconds()
+async function tryAcquireSlot({ jobId, jobData, log }: { jobId: string, jobData: ExecuteWorkflowJobData, log: FastifyBaseLogger }): Promise<boolean> {
+    const workflowTimeoutInMilliseconds = apDayjsDuration(system.getNumberOrThrow(AppSystemProp.WORKFLOW_TIMEOUT_SECONDS), 'seconds').add(1, 'minute').asMilliseconds()
     const maxConcurrentJobs = await getMaxConcurrentJobs({ workspaceId: jobData.workspaceId, log })
     const setKey = getConcurrencyPoolSetKey(jobData.workspaceId)
     const currentTime = Date.now()
@@ -79,7 +79,7 @@ return 0
         1,
         setKey,
         currentTime.toString(),
-        flowTimeoutInMilliseconds.toString(),
+        workflowTimeoutInMilliseconds.toString(),
         maxConcurrentJobs.toString(),
         member,
     ) as number
@@ -87,7 +87,7 @@ return 0
     return result === 0
 }
 
-async function releaseSlot({ jobId, jobData }: { jobId: string, jobData: ExecuteFlowJobData }): Promise<void> {
+async function releaseSlot({ jobId, jobData }: { jobId: string, jobData: ExecuteWorkflowJobData }): Promise<void> {
     const setKey = getConcurrencyPoolSetKey(jobData.workspaceId)
     const member = `${jobData.workspaceId}:${jobId}`
     const redisConnection = await redisConnections.useExisting()

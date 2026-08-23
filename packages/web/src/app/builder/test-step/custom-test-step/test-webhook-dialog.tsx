@@ -1,4 +1,4 @@
-import { FlowAction, ApFlagId, FlowTrigger } from '@fema/shared';
+import { WorkflowAction, ApFlagId, WorkflowTrigger } from '@fema/shared';
 import { useMutation } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { useState } from 'react';
@@ -71,14 +71,14 @@ const WebhookRequest = z.object({
 });
 
 type TestWaitForNextWebhookDialogProps = {
-  currentStep: FlowAction;
+  currentStep: WorkflowAction;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   testingMode: 'returnResponseAndWaitForNextWebhook';
 };
 
 type TestTriggerWebhookDialogProps = {
-  currentStep: FlowTrigger;
+  currentStep: WorkflowTrigger;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   testingMode: 'trigger';
@@ -94,7 +94,7 @@ const TestTriggerWebhookDialog = ({
   const { data: webhookPrefixUrl } = flagsHooks.useFlag<string>(
     ApFlagId.WEBHOOK_URL_PREFIX,
   );
-  const flowId = useBuilderStateContext((state) => state.flow.id);
+  const workflowId = useBuilderStateContext((state) => state.workflow.id);
   const [isLoading, setIsLoading] = useState(false);
   const { mutate: sendRequest } = useMutation<
     unknown,
@@ -104,7 +104,7 @@ const TestTriggerWebhookDialog = ({
     mutationFn: async (data: z.infer<typeof WebhookRequest>) => {
       setIsLoading(true);
 
-      await api.any(`${webhookPrefixUrl}/${flowId}/test`, {
+      await api.any(`${webhookPrefixUrl}/${workflowId}/test`, {
         method: data.method,
         data: data.body,
         headers: data.headers,

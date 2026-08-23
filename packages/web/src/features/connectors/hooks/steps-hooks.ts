@@ -1,10 +1,10 @@
 import { LocalesEnum, isNil } from '@fema/core-utils';
 import {
-  FlowAction,
-  FlowActionType,
-  FlowTriggerType,
+  WorkflowAction,
+  WorkflowActionType,
+  WorkflowTriggerType,
   SuggestionType,
-  FlowTrigger,
+  WorkflowTrigger,
 } from '@fema/shared';
 import { useQueries, useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -38,7 +38,7 @@ export const stepsHooks = {
       isLoading: query.isLoading,
     };
   },
-  useStepsMetadata: (props: (FlowAction | FlowTrigger)[]) => {
+  useStepsMetadata: (props: (WorkflowAction | WorkflowTrigger)[]) => {
     const { i18n } = useTranslation();
     return useQueries({
       queries: props.map((step) => {
@@ -128,7 +128,7 @@ function passSearch(
 }
 
 type UseStepMetadata = {
-  step: FlowAction | FlowTrigger | undefined;
+  step: WorkflowAction | WorkflowTrigger | undefined;
 };
 
 type UseMetadataProps = {
@@ -138,15 +138,15 @@ type UseMetadataProps = {
 };
 
 const getQueryKeyForStepMetadata = (
-  step: FlowAction | FlowTrigger | undefined,
+  step: WorkflowAction | WorkflowTrigger | undefined,
   locale: LocalesEnum,
 ): (string | undefined)[] => {
   if (isNil(step)) {
     return ['step-metadata-disabled', locale];
   }
   const isConnectorStep =
-    step.type === FlowActionType.CONNECTOR ||
-    step.type === FlowTriggerType.CONNECTOR;
+    step.type === WorkflowActionType.CONNECTOR ||
+    step.type === WorkflowTriggerType.CONNECTOR;
   const connectorName = isConnectorStep
     ? step.settings.connectorName
     : undefined;
@@ -158,11 +158,11 @@ const getQueryKeyForStepMetadata = (
       ? step.customLogoUrl
       : undefined;
   const actionName =
-    step.type === FlowActionType.CONNECTOR
+    step.type === WorkflowActionType.CONNECTOR
       ? step.settings.actionName
       : undefined;
   const triggerName =
-    step.type === FlowTriggerType.CONNECTOR
+    step.type === WorkflowTriggerType.CONNECTOR
       ? step.settings.triggerName
       : undefined;
   return [

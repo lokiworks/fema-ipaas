@@ -52,7 +52,7 @@ path "<secret_engine_name>/data/*" {
 
 ## Using HashiCorp Vault Secrets
 
-Once the connection is saved, you can reference Vault secrets inside any connector connection dialog — in global connections (Platform Admin) or directly in the flow builder.
+Once the connection is saved, you can reference Vault secrets inside any connector connection dialog — in global connections (Platform Admin) or directly in the workflow builder.
 
 1. Open a connection dialog and click the **key icon** (🔑) next to a credential field
 2. Select your HashiCorp Vault connection from the dropdown
@@ -72,8 +72,8 @@ secret/data/mysec/api_key
 
 ![Manage Oauth2 apps](/resources/screenshots/secret-manager.png)
 
-The connection will automatically retrieve the secret from Vault when the flow runs.
+The connection will automatically retrieve the secret from Vault when the workflow runs.
 
 <Warning>
-  If you update a secret in Vault and the change isn't reflected in your flows, the cached value may still be active. Use the **refresh icon** next to the connection in the Secret Managers page to clear its cache immediately, or wait up to 1 hour for it to expire automatically. See [Caching](/admin-guide/guides/secret-managers/overview#caching) for details.
+  If you update a secret in Vault and the change isn't reflected in your workflows, the cached value may still be active. Use the **refresh icon** next to the connection in the Secret Managers page to clear its cache immediately, or wait up to 1 hour for it to expire automatically. See [Caching](/admin-guide/guides/secret-managers/overview#caching) for details.
 </Warning>

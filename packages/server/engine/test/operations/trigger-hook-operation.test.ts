@@ -1,9 +1,9 @@
 import {
-    FlowTriggerType,
-    FlowVersionState,
+    WorkflowTriggerType,
+    WorkflowVersionState,
     TriggerHookType,
 } from '@fema/shared'
-import type { ExecuteTriggerOperation, FlowVersion } from '@fema/shared'
+import type { ExecuteTriggerOperation, WorkflowVersion } from '@fema/shared'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const { mockDownload } = vi.hoisted(() => ({
@@ -27,34 +27,34 @@ vi.mock('../../src/lib/core/connector/trigger-runner', () => ({
 
 import { triggerHookOperation } from '../../src/lib/operations/trigger-hook.operation'
 
-function makeFlowVersion(): FlowVersion {
+function makeWorkflowVersion(): WorkflowVersion {
     return {
         id: 'fv-1',
         created: '2024-01-01T00:00:00Z',
         updated: '2024-01-01T00:00:00Z',
-        flowId: 'flow-1',
-        displayName: 'Test Flow',
+        workflowId: 'workflow-1',
+        displayName: 'Test Workflow',
         trigger: {
             name: 'trigger_1',
             valid: true,
             displayName: 'Test Trigger',
-            type: FlowTriggerType.EMPTY,
+            type: WorkflowTriggerType.EMPTY,
             settings: {},
         },
         updatedBy: null,
         valid: true,
-        state: FlowVersionState.DRAFT,
+        state: WorkflowVersionState.DRAFT,
         schemaVersion: null,
         connectionIds: [],
         agentIds: [],
-    } as unknown as FlowVersion
+    } as unknown as WorkflowVersion
 }
 
 function makeOperation(triggerPayload: ExecuteTriggerOperation<TriggerHookType.RUN>['triggerPayload']): ExecuteTriggerOperation<TriggerHookType.RUN> {
     return {
         hookType: TriggerHookType.RUN,
         test: false,
-        flowVersion: makeFlowVersion(),
+        workflowVersion: makeWorkflowVersion(),
         webhookUrl: 'http://localhost:4200/webhook',
         triggerPayload,
         workspaceId: 'workspace-1',

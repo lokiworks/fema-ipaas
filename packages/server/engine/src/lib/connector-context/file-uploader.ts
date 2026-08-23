@@ -21,7 +21,7 @@ export function createFileUploader({ engineToken, apiUrl }: CreateFileUploaderPa
                 engineToken,
                 apiUrl,
                 fileId: apId(),
-                type: FileType.FLOW_STEP_FILE,
+                type: FileType.WORKFLOW_STEP_FILE,
                 fileName,
                 data,
             })

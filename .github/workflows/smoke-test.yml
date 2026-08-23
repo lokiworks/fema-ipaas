@@ -48,26 +48,26 @@ jobs:
           sleep 5
           docker compose -f benchmark/docker-compose.yml ps
 
-      - name: Setup flow
+      - name: Setup workflow
         id: setup
         run: |
           chmod +x benchmark/setup.sh
-          FLOW_ID=$(benchmark/setup.sh)
-          echo "flow_id=$FLOW_ID" >> "$GITHUB_OUTPUT"
-          echo "Flow ID: $FLOW_ID"
+          WORKFLOW_ID=$(benchmark/setup.sh)
+          echo "workflow_id=$WORKFLOW_ID" >> "$GITHUB_OUTPUT"
+          echo "Workflow ID: $WORKFLOW_ID"
 
       - name: Run smoke test
         run: |
           chmod +x smoke-test/verify.sh
-          smoke-test/verify.sh "${{ steps.setup.outputs.flow_id }}"
+          smoke-test/verify.sh "${{ steps.setup.outputs.workflow_id }}"
 
       - name: Run memory stability test
         if: matrix.executionMode == 'SANDBOX_CODE_ONLY'
         run: |
           chmod +x smoke-test/verify-memory.sh
-          smoke-test/verify-memory.sh "${{ steps.setup.outputs.flow_id }}"
+          smoke-test/verify-memory.sh "${{ steps.setup.outputs.workflow_id }}"
 
-      - name: Run delay flow smoke test
+      - name: Run delay workflow smoke test
         if: matrix.executionMode == 'SANDBOX_CODE_ONLY'
         run: |
           chmod +x smoke-test/verify-delay.sh
@@ -83,19 +83,19 @@ jobs:
       # the ENGINE heap via the isolate->engine result copy, and FEMA_WORKER_CONCURRENCY=1 (job env)
       # gives that single sandbox the full 1G worker container. Every run must end
       # MEMORY_LIMIT_EXCEEDED — this pins the detection path for production code-only engine OOMs.
-      - name: Setup OOM flow
+      - name: Setup OOM workflow
         if: matrix.executionMode == 'SANDBOX_CODE_ONLY'
         id: setup-oom
         run: |
-          FLOW_ID=$(CODE_INPUT_SUM="$(cat benchmark/oom-expression.txt)" benchmark/setup.sh)
-          echo "flow_id=$FLOW_ID" >> "$GITHUB_OUTPUT"
-          echo "Flow ID: $FLOW_ID"
+          WORKFLOW_ID=$(CODE_INPUT_SUM="$(cat benchmark/oom-expression.txt)" benchmark/setup.sh)
+          echo "workflow_id=$WORKFLOW_ID" >> "$GITHUB_OUTPUT"
+          echo "Workflow ID: $WORKFLOW_ID"
 
       - name: Run memory-limit smoke test
         if: matrix.executionMode == 'SANDBOX_CODE_ONLY'
         run: |
           chmod +x smoke-test/verify-memory-limit.sh
-          smoke-test/verify-memory-limit.sh "${{ steps.setup-oom.outputs.flow_id }}"
+          smoke-test/verify-memory-limit.sh "${{ steps.setup-oom.outputs.workflow_id }}"
 
       - name: Restart stack in S3 mode (MinIO, no signed URLs)
         if: matrix.executionMode == 'SANDBOX_CODE_ONLY'
@@ -116,21 +116,21 @@ jobs:
           sleep 5
           docker compose -f benchmark/docker-compose.yml -f benchmark/docker-compose.minio.yml ps
 
-      - name: Setup S3 flow (no signed URLs)
+      - name: Setup S3 workflow (no signed URLs)
         if: matrix.executionMode == 'SANDBOX_CODE_ONLY'
         id: setup-s3
         run: |
           chmod +x benchmark/setup.sh
-          FLOW_ID=$(benchmark/setup.sh)
-          echo "flow_id=$FLOW_ID" >> "$GITHUB_OUTPUT"
-          echo "Flow ID: $FLOW_ID"
+          WORKFLOW_ID=$(benchmark/setup.sh)
+          echo "workflow_id=$WORKFLOW_ID" >> "$GITHUB_OUTPUT"
+          echo "Workflow ID: $WORKFLOW_ID"
 
       - name: Run S3 smoke test (no signed URLs)
         if: matrix.executionMode == 'SANDBOX_CODE_ONLY'
         run: |
           chmod +x smoke-test/verify.sh smoke-test/verify-s3.sh
-          smoke-test/verify.sh "${{ steps.setup-s3.outputs.flow_id }}"
-          smoke-test/verify-s3.sh "${{ steps.setup-s3.outputs.flow_id }}"
+          smoke-test/verify.sh "${{ steps.setup-s3.outputs.workflow_id }}"
+          smoke-test/verify-s3.sh "${{ steps.setup-s3.outputs.workflow_id }}"
 
       - name: Restart stack in S3 mode (MinIO, signed URLs)
         if: matrix.executionMode == 'SANDBOX_CODE_ONLY'
@@ -151,28 +151,28 @@ jobs:
           sleep 5
           docker compose -f benchmark/docker-compose.yml -f benchmark/docker-compose.minio.yml ps
 
-      - name: Setup S3 flow (signed URLs)
+      - name: Setup S3 workflow (signed URLs)
         if: matrix.executionMode == 'SANDBOX_CODE_ONLY'
         id: setup-s3-signed
         run: |
           chmod +x benchmark/setup.sh
-          FLOW_ID=$(benchmark/setup.sh)
-          echo "flow_id=$FLOW_ID" >> "$GITHUB_OUTPUT"
-          echo "Flow ID: $FLOW_ID"
+          WORKFLOW_ID=$(benchmark/setup.sh)
+          echo "workflow_id=$WORKFLOW_ID" >> "$GITHUB_OUTPUT"
+          echo "Workflow ID: $WORKFLOW_ID"
 
       - name: Run S3 smoke test (signed URLs)
         if: matrix.executionMode == 'SANDBOX_CODE_ONLY'
         run: |
           chmod +x smoke-test/verify.sh smoke-test/verify-s3.sh
-          smoke-test/verify.sh "${{ steps.setup-s3-signed.outputs.flow_id }}"
-          smoke-test/verify-s3.sh "${{ steps.setup-s3-signed.outputs.flow_id }}"
+          smoke-test/verify.sh "${{ steps.setup-s3-signed.outputs.workflow_id }}"
+          smoke-test/verify-s3.sh "${{ steps.setup-s3-signed.outputs.workflow_id }}"
 
       # NOTE: The perf-regression gate runs LOCAL / GKE only, not in this CI preflight.
       # GitHub Actions shared runners deliver ~32 req/s here (worker CPU only ~65% — the runner is
       # the bottleneck, not our code), permanently below the 40 req/s threshold, so it would fail
       # every release. It is not measuring a code regression. Run it on controlled hardware:
       #   docker compose -f benchmark/docker-compose.yml -f benchmark/docker-compose.perf.yml up -d
-      #   benchmark/setup.sh && smoke-test/verify-perf.sh <flow-id>
+      #   benchmark/setup.sh && smoke-test/verify-perf.sh <workflow-id>
       # (both verify-perf.sh and docker-compose.perf.yml are kept in the repo for that.)
 
       # All overlays are listed so logs + teardown resolve regardless of which stack

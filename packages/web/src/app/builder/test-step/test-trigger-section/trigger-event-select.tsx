@@ -1,4 +1,4 @@
-import { FlowTrigger, TriggerEventWithPayload } from '@fema/shared';
+import { WorkflowTrigger, TriggerEventWithPayload } from '@fema/shared';
 import deepEqual from 'deep-equal';
 import { t } from 'i18next';
 import React from 'react';
@@ -23,7 +23,7 @@ export const TriggerEventSelect = React.memo(
   ({ pollResults, sampleData }: TriggerEventSelectProps) => {
     const selectedId = getSelectedId(sampleData, pollResults?.data ?? []);
 
-    const form = useFormContext<Pick<FlowTrigger, 'name' | 'settings'>>();
+    const form = useFormContext<Pick<WorkflowTrigger, 'name' | 'settings'>>();
     const formValues = form.getValues();
 
     const updateSampleData = useBuilderStateContext(

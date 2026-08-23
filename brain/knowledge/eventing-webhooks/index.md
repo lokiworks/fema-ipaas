@@ -7,7 +7,7 @@ icon: 📨
 Getting data in and out over HTTP, plus the internal bus that carries domain events between subsystems. Glossary below; each page holds the detail.
 
 ### 🪝 Webhook
-An inbound HTTP trigger — the primary entry point for event-driven execution from outside FEMA Integration Platform. **Sync** blocks the connection and returns the flow's response; **async** queues the job and returns `200` immediately with an `x-webhook-id`.
+An inbound HTTP trigger — the primary entry point for event-driven execution from outside FEMA Integration Platform. **Sync** blocks the connection and returns the workflow's response; **async** queues the job and returns `200` immediately with an `x-webhook-id`.
 - *Avoid:* "callback" for inbound HTTP; a callback is what the engine posts to the app during a run (see [Execution Runtime](../execution-runtime/index.md)).
 
 ### 🤝 Handshake
@@ -24,9 +24,9 @@ An outbound webhook subscribing to a chosen subset of Application Events at PLAT
 
 - **Webhooks** — inbound ingest, payload normalization, sync vs async, the Redis fast path
 - **Event Destinations** — outbound fan-out of Application Events
-- **Flow Failure Alerts** — failure emails, Redis dedup, the 24h window
+- **Workflow Failure Alerts** — failure emails, Redis dedup, the 24h window
 - **pubsub is the one shared Redis subscriber — reuse it** — why a second subscriber is the wrong reflex
 
 ## Related
 
-Application Events feed Audit Events in [Data, Storage & Observability](../data-storage-observability/index.md). Webhooks are TriggerSources that start flows in [Flows & Execution](../flows-execution/index.md).
+Application Events feed Audit Events in [Data, Storage & Observability](../data-storage-observability/index.md). Webhooks are TriggerSources that start workflows in [Workflows & Execution](../workflows-execution/index.md).

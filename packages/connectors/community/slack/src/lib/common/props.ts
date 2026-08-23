@@ -87,10 +87,10 @@ export const threadTs = Property.ShortText({
   required: false,
 });
 
-export const mentionOriginFlow = Property.Checkbox({
-  displayName: 'Mention flow of origin?',
+export const mentionOriginWorkflow = Property.Checkbox({
+  displayName: 'Mention workflow of origin?',
   description:
-    'If checked, adds a mention at the end of the Slack message to indicate which flow sent the notification, with a link to said flow.',
+    'If checked, adds a mention at the end of the Slack message to indicate which workflow sent the notification, with a link to said workflow.',
   required: false,
   defaultValue: false,
 });

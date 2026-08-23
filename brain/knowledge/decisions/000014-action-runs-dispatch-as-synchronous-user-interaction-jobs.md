@@ -2,26 +2,26 @@
 status: proposed
 ---
 
-# Action runs dispatch as synchronous user-interaction jobs, not queued flow jobs
+# Action runs dispatch as synchronous user-interaction jobs, not queued workflow jobs
 
 ## Decision
 An action run is submitted through `userInteractionWatcher.submitAndWaitForResponse` as
 `WorkerJobType.EXECUTE_ACTION` — the same request/response mechanism as property resolution and auth
-validation — and the caller blocks on the engine's answer. It is **not** a BullMQ `EXECUTE_FLOW` job
+validation — and the caller blocks on the engine's answer. It is **not** a BullMQ `EXECUTE_WORKFLOW` job
 polled for completion. Consequence: **no retry**. A worker killed mid-run fails the run instead of
 re-running it. This decides the dispatch mechanism only — durable storage for action runs is not settled yet.
 
 ## Context
-The path being replaced created a throwaway flow, grafted one step onto it, called
+The path being replaced created a throwaway workflow, grafted one step onto it, called
 `executionService.test()`, polled `execution` every 2s for up to 120s, dug the step out of `run.steps`,
-then best-effort deleted the flow. That wrote three rows per call (flow, flow_version, execution),
-and leaked `__actionRun__` flows whenever the `finally` delete failed. Because `execution.flowId` is
+then best-effort deleted the workflow. That wrote three rows per call (workflow, workflow_version, execution),
+and leaked `__actionRun__` workflows whenever the `finally` delete failed. Because `execution.workflowId` is
 `onDelete: CASCADE`, the successful cleanup also cascade-deleted the run row — so the old path
 recorded nothing durable either, despite paying for three inserts.
 
-Two dispatch options existed: keep it a queued flow job (retries, stalled-job recovery, but needs a
-run row to poll and a flow to anchor it to), or make it a synchronous user-interaction job (no row,
-no flow, no polling — but no retry).
+Two dispatch options existed: keep it a queued workflow job (retries, stalled-job recovery, but needs a
+run row to poll and a workflow to anchor it to), or make it a synchronous user-interaction job (no row,
+no workflow, no polling — but no retry).
 
 ## Why
 A single ad-hoc action is a **request/response**, not a background job. The caller — an MCP client or
@@ -32,7 +32,7 @@ implemented as polling.
 Losing retry is a *feature* here, not a cost. Ad-hoc actions are overwhelmingly side-effecting
 single calls ("send one Slack message", "create the invoice"). Silently re-firing one after a deploy
 restarts the worker is worse than failing it and letting the agent decide — retry semantics that are
-correct for an idempotent flow step are wrong for a bare user-initiated write.
+correct for an idempotent workflow step are wrong for a bare user-initiated write.
 
 Priority is `high`, not `critical`, so these never outrank the builder interactions a human is
 actively waiting on. Note this governs dequeue *order* only: all job types share one worker pool
@@ -51,10 +51,10 @@ off debugging the connector instead of retrying.
 `LATEST_JOB_DATA_SCHEMA_VERSION` — changing its payload shape needs a job-data migration, which is
 what makes this decision expensive to reverse.
 
-Because the engine runs the step with no flow around it, `EngineConstants.actionRunMode` disables
-the two flow-only behaviours: the progress reporter becomes a no-op (no run to stream to), and
+Because the engine runs the step with no workflow around it, `EngineConstants.actionRunMode` disables
+the two workflow-only behaviours: the progress reporter becomes a no-op (no run to stream to), and
 waitpoints are rejected via `assertActionRunCannotSuspend` as a plain `Error` so the step ends
-FAILED rather than INTERNAL_ERROR — "this action only works inside a flow" is a usage error, not an
+FAILED rather than INTERNAL_ERROR — "this action only works inside a workflow" is a usage error, not an
 engine bug, and must not page oncall.
 
 General rule this sets: **a user-blocking single-step execution is a user-interaction job; anything

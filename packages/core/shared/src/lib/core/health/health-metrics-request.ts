@@ -23,8 +23,8 @@ export const PlatformMetricsStatusPoint = z.object({
 export const InternalErrorImpactItem = z.object({
     workspaceId: ApId,
     workspaceName: z.string(),
-    flowId: ApId,
-    flowName: z.string(),
+    workflowId: ApId,
+    workflowName: z.string(),
     count: z.number(),
 })
 
@@ -37,8 +37,8 @@ export const PlatformMetricsReport = z.object({
 
 export const StuckJob = z.object({
     executionId: ApId,
-    flowId: ApId,
-    flowName: z.string(),
+    workflowId: ApId,
+    workflowName: z.string(),
     workspaceId: ApId,
     workspaceName: z.string(),
     status: z.enum(ExecutionStatus),
@@ -53,7 +53,7 @@ export const PlatformMetricsLive = z.object({
 export const PlatformMetricsHealthDay = z.object({
     day: z.string(),
     internalErrors: z.number(),
-    affectedFlows: z.number(),
+    affectedWorkflows: z.number(),
     stuckJobs: z.number(),
 })
 

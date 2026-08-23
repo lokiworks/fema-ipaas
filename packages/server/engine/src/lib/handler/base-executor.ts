@@ -1,10 +1,10 @@
 import { isNil, isString } from '@fema/core-utils'
-import { BaseStepOutput, ExecutionStatus, FlowAction, StepOutputStatus } from '@fema/shared'
+import { BaseStepOutput, ExecutionStatus, StepOutputStatus, WorkflowAction } from '@fema/shared'
 import { utils } from '../utils'
 import { EngineConstants } from './context/engine-constants'
-import { FlowExecutorContext } from './context/flow-execution-context'
+import { WorkflowExecutorContext } from './context/workflow-execution-context'
 
-export async function failStep({ action, executionState, stepOutput, error, durationMs }: FailStepParams): Promise<FlowExecutorContext> {
+export async function failStep({ action, executionState, stepOutput, error, durationMs }: FailStepParams): Promise<WorkflowExecutorContext> {
     const message = isString(error) ? error : utils.formatError(error)
     const failed = stepOutput.setStatus(StepOutputStatus.FAILED).setErrorMessage(message)
     const withDuration = isNil(durationMs) ? failed : failed.setDuration(durationMs)
@@ -18,19 +18,19 @@ export async function failStep({ action, executionState, stepOutput, error, dura
     })
 }
 
-export type ActionHandler<T extends FlowAction> = (request: { action: T, executionState: FlowExecutorContext, constants: EngineConstants }) => Promise<FlowExecutorContext>
+export type ActionHandler<T extends WorkflowAction> = (request: { action: T, executionState: WorkflowExecutorContext, constants: EngineConstants }) => Promise<WorkflowExecutorContext>
 
-export type BaseExecutor<T extends FlowAction> = {
+export type BaseExecutor<T extends WorkflowAction> = {
     handle(request: {
         action: T
-        executionState: FlowExecutorContext
+        executionState: WorkflowExecutorContext
         constants: EngineConstants
-    }): Promise<FlowExecutorContext>
+    }): Promise<WorkflowExecutorContext>
 }
 
 type FailStepParams = {
-    action: Pick<FlowAction, 'name' | 'displayName'>
-    executionState: FlowExecutorContext
+    action: Pick<WorkflowAction, 'name' | 'displayName'>
+    executionState: WorkflowExecutorContext
     stepOutput: BaseStepOutput
     error: Error | string
     durationMs?: number

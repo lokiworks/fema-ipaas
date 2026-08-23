@@ -11,7 +11,7 @@ The async webhook endpoint returns 200 (with `x-webhook-id`) as soon as the job 
 Sync webhooks write a Postgres row before ACK; async exists specifically to avoid putting Postgres on the ingest hot path. Making the ACK durable would mean a run/intent row per webhook before returning 200.
 
 ## Why
-Keeping the ACK Redis-only holds ingest at Redis latency and lets it survive a Postgres failover (flow resolution is served from a Redis cache). Rejected a Postgres write before ACK: every webhook would pay a write, ingest throughput would be bounded by Postgres, and webhook acceptance would drop whenever Postgres does. The cost is accepted and tuned by the operator's `redis.conf`, documented in `docs/install/guarantees/disaster-recovery.mdx`.
+Keeping the ACK Redis-only holds ingest at Redis latency and lets it survive a Postgres failover (workflow resolution is served from a Redis cache). Rejected a Postgres write before ACK: every webhook would pay a write, ingest throughput would be bounded by Postgres, and webhook acceptance would drop whenever Postgres does. The cost is accepted and tuned by the operator's `redis.conf`, documented in `docs/install/guarantees/disaster-recovery.mdx`.
 
 ## Consequences
 A Redis dataset loss silently drops acknowledged-but-unstarted webhooks inside the persistence window, the only Redis-loss exposure, since everything else in Redis is rebuildable from Postgres.

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { RespondResponse } from '../state/flow-execution'
+import { RespondResponse } from '../state/workflow-execution'
 
 export const WaitpointVersion = z.enum(['V0', 'V1'])
 export type WaitpointVersion = z.infer<typeof WaitpointVersion>

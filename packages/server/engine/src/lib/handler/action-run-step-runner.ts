@@ -1,13 +1,13 @@
 import { BaseEngineOperation, CodeAction, ConnectorAction, StepOutput } from '@fema/shared'
 import { EngineConstants } from './context/engine-constants'
-import { FlowExecutorContext } from './context/flow-execution-context'
-import { flowExecutor } from './flow-executor'
+import { WorkflowExecutorContext } from './context/workflow-execution-context'
+import { workflowExecutor } from './workflow-executor'
 
 export const actionRunStepRunner = {
     async run({ step, operation }: ActionRunStepParams): Promise<StepOutput> {
-        const executionState = await flowExecutor.getExecutorForAction(step.type).handle({
+        const executionState = await workflowExecutor.getExecutorForAction(step.type).handle({
             action: step,
-            executionState: FlowExecutorContext.empty(),
+            executionState: WorkflowExecutorContext.empty(),
             constants: EngineConstants.fromExecuteActionInput(operation),
         })
         return executionState.steps[step.name]
@@ -16,5 +16,5 @@ export const actionRunStepRunner = {
 
 type ActionRunStepParams = {
     step: ConnectorAction | CodeAction
-    operation: BaseEngineOperation & { flowVersionId?: string }
+    operation: BaseEngineOperation & { workflowVersionId?: string }
 }

@@ -11,7 +11,7 @@ Embedded authentication ("Embedding"): lets SaaS vendors embed the FEMA Integrat
 - **externalUserId**: vendor user id; hashed with platformId into a deterministic identity email `sha256("managed_<platformId>_<externalUserId>")` — managed users never have real emails.
 - **externalProjectId**: vendor project id; maps to an AP project via `externalId`.
 
-### How it works (`externalToken` flow)
+### How it works (`externalToken` workflow)
 1. `externalTokenExtractor` resolves the signing key by `kid`, verifies RS256, parses the payload.
 2. `getOrCreateProject` by `(platformId, externalProjectId)`; creates a TEAM project owned by the platform owner if absent.
 3. Optionally set displayName, upsert a concurrency pool.

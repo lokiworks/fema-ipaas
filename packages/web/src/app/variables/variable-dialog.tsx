@@ -144,7 +144,7 @@ function VariableForm(props: VariableFormProps) {
           </DialogTitle>
           <DialogDescription>
             {t(
-              'Store an API key, token, or other value you can reuse across flow steps without exposing it.',
+              'Store an API key, token, or other value you can reuse across workflow steps without exposing it.',
             )}
           </DialogDescription>
         </DialogHeader>

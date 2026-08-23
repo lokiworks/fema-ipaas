@@ -1,6 +1,6 @@
 import { ContextVersion } from '@fema/connector-sdk'
 import { ensureTrailingSlash, isNil, PlatformId, WorkspaceId } from '@fema/core-utils'
-import { BaseEngineOperation, BeginExecuteFlowOperation, DEFAULT_MCP_DATA, EngineGenericError, ExecutePropsOptions, ExecuteTriggerOperation, ExecutionState, ExecutionType, flowStructureUtil, FlowTrigger, FlowVersionState, ResumeExecuteFlowOperation, ResumePayload, RunEnvironment, StreamStepProgress, TriggerHookType, Workspace } from '@fema/shared'
+import { BaseEngineOperation, BeginExecuteWorkflowOperation, DEFAULT_MCP_DATA, EngineGenericError, ExecutePropsOptions, ExecuteTriggerOperation, ExecutionState, ExecutionType, ResumeExecuteWorkflowOperation, ResumePayload, RunEnvironment, StreamStepProgress, TriggerHookType, workflowStructureUtil, WorkflowTrigger, WorkflowVersionState, Workspace } from '@fema/shared'
 import { retryFetch } from '../../api/retry-fetch'
 import { createPropsResolver, PropsResolver } from '../../variables/props-resolver'
 
@@ -11,9 +11,9 @@ type RetryConstants = {
 }
 
 type EngineConstantsParams = {
-    flowId: string
-    flowVersionId: string
-    flowVersionState: FlowVersionState
+    workflowId: string
+    workflowVersionId: string
+    workflowVersionState: WorkflowVersionState
     triggerConnectorName: string
     executionId: string
     publicApiUrl: string
@@ -52,9 +52,9 @@ export class EngineConstants {
 
     public readonly platformId: string
     public readonly timeoutInSeconds: number
-    public readonly flowId: string
-    public readonly flowVersionId: string
-    public readonly flowVersionState: FlowVersionState
+    public readonly workflowId: string
+    public readonly workflowVersionId: string
+    public readonly workflowVersionState: WorkflowVersionState
     public readonly triggerConnectorName: string
     public readonly executionId: string
     public readonly publicApiUrl: string
@@ -77,7 +77,7 @@ export class EngineConstants {
         return EngineConstants.TEST_MODE
     }
 
-    public get isTestFlow(): boolean {
+    public get isTestWorkflow(): boolean {
         return this.streamStepProgress === StreamStepProgress.WEBSOCKET
     }
 
@@ -97,9 +97,9 @@ export class EngineConstants {
             throw new EngineGenericError('InternalApiUrlNotEndsWithSlashError', `Internal API URL must end with a slash, got: ${params.internalApiUrl}`)
         }
 
-        this.flowId = params.flowId
-        this.flowVersionId = params.flowVersionId
-        this.flowVersionState = params.flowVersionState
+        this.workflowId = params.workflowId
+        this.workflowVersionId = params.workflowVersionId
+        this.workflowVersionState = params.workflowVersionState
         this.executionId = params.executionId
         this.publicApiUrl = params.publicApiUrl
         this.internalApiUrl = params.internalApiUrl
@@ -120,10 +120,10 @@ export class EngineConstants {
         this.actionRunMode = params.actionRunMode ?? false
     }
 
-    public static fromExecuteFlowInput(input: ResolvedExecuteFlowOperation): EngineConstants {
+    public static fromExecuteWorkflowInput(input: ResolvedExecuteWorkflowOperation): EngineConstants {
         return new EngineConstants({
             ...sharedFields(input),
-            ...flowFields(input.flowVersion),
+            ...workflowFields(input.workflowVersion),
             executionId: input.executionId,
             internalApiUrl: input.internalApiUrl,
             streamStepProgress: input.streamStepProgress,
@@ -136,22 +136,22 @@ export class EngineConstants {
         })
     }
 
-    public static fromExecuteActionInput(input: BaseEngineOperation & { flowVersionId?: string }): EngineConstants {
+    public static fromExecuteActionInput(input: BaseEngineOperation & { workflowVersionId?: string }): EngineConstants {
         return new EngineConstants({
             ...sharedFields(input),
-            ...flowFields(undefined),
-            flowVersionId: input.flowVersionId ?? DEFAULT_MCP_DATA.flowVersionId,
+            ...workflowFields(undefined),
+            workflowVersionId: input.workflowVersionId ?? DEFAULT_MCP_DATA.workflowVersionId,
             executionId: DEFAULT_MCP_DATA.executionId,
             actionRunMode: true,
         })
     }
 
     public static fromExecutePropertyInput(input: Omit<ExecutePropsOptions, 'connector'> & { connectorName: string, connectorVersion: string }): EngineConstants {
-        const flow = flowFields(input.flowVersion)
+        const workflow = workflowFields(input.workflowVersion)
         return new EngineConstants({
             ...sharedFields(input),
-            ...flow,
-            triggerConnectorName: flow.triggerConnectorName ?? DEFAULT_MCP_DATA.triggerConnectorName,
+            ...workflow,
+            triggerConnectorName: workflow.triggerConnectorName ?? DEFAULT_MCP_DATA.triggerConnectorName,
             executionId: DEFAULT_EXECUTE_PROPERTY,
         })
     }
@@ -159,7 +159,7 @@ export class EngineConstants {
     public static fromExecuteTriggerInput(input: ResolvedExecuteTriggerOperation<TriggerHookType>): EngineConstants {
         return new EngineConstants({
             ...sharedFields(input),
-            ...flowFields(input.flowVersion),
+            ...workflowFields(input.workflowVersion),
             executionId: DEFAULT_TRIGGER_EXECUTION,
         })
     }
@@ -211,22 +211,22 @@ function sharedFields(input: SharedFieldsSource) {
     }
 }
 
-function flowFields(flowVersion: FlowFieldsSource | undefined) {
-    if (isNil(flowVersion)) {
+function workflowFields(workflowVersion: WorkflowFieldsSource | undefined) {
+    if (isNil(workflowVersion)) {
         return {
-            flowId: DEFAULT_MCP_DATA.flowId,
-            flowVersionId: DEFAULT_MCP_DATA.flowVersionId,
-            flowVersionState: DEFAULT_MCP_DATA.flowVersionState,
+            workflowId: DEFAULT_MCP_DATA.workflowId,
+            workflowVersionId: DEFAULT_MCP_DATA.workflowVersionId,
+            workflowVersionState: DEFAULT_MCP_DATA.workflowVersionState,
             triggerConnectorName: DEFAULT_MCP_DATA.triggerConnectorName,
             stepNames: [],
         }
     }
     return {
-        flowId: flowVersion.flowId,
-        flowVersionId: flowVersion.id,
-        flowVersionState: flowVersion.state,
-        triggerConnectorName: flowVersion.trigger?.settings.connectorName,
-        stepNames: isNil(flowVersion.trigger) ? [] : flowStructureUtil.getAllSteps(flowVersion.trigger).map((step) => step.name),
+        workflowId: workflowVersion.workflowId,
+        workflowVersionId: workflowVersion.id,
+        workflowVersionState: workflowVersion.state,
+        triggerConnectorName: workflowVersion.trigger?.settings.connectorName,
+        stepNames: isNil(workflowVersion.trigger) ? [] : workflowStructureUtil.getAllSteps(workflowVersion.trigger).map((step) => step.name),
     }
 }
 
@@ -244,14 +244,14 @@ type SharedFieldsSource = {
     platformId: PlatformId
 }
 
-type FlowFieldsSource = {
-    flowId: string
+type WorkflowFieldsSource = {
+    workflowId: string
     id: string
-    state: FlowVersionState
-    trigger?: FlowTrigger
+    state: WorkflowVersionState
+    trigger?: WorkflowTrigger
 }
 
-export type ResolvedBeginExecuteFlowOperation = Omit<BeginExecuteFlowOperation, 'triggerPayload'> & {
+export type ResolvedBeginExecuteWorkflowOperation = Omit<BeginExecuteWorkflowOperation, 'triggerPayload'> & {
     triggerPayload: unknown
 }
 
@@ -259,9 +259,9 @@ export type ResolvedExecuteTriggerOperation<HT extends TriggerHookType> = Omit<E
     triggerPayload?: unknown
 }
 
-export type ResolvedResumeExecuteFlowOperation = Omit<ResumeExecuteFlowOperation, 'resumePayload'> & {
+export type ResolvedResumeExecuteWorkflowOperation = Omit<ResumeExecuteWorkflowOperation, 'resumePayload'> & {
     resumePayload: ResumePayload
     executionState: ExecutionState
 }
 
-export type ResolvedExecuteFlowOperation = ResolvedBeginExecuteFlowOperation | ResolvedResumeExecuteFlowOperation
+export type ResolvedExecuteWorkflowOperation = ResolvedBeginExecuteWorkflowOperation | ResolvedResumeExecuteWorkflowOperation

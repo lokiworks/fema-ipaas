@@ -22,13 +22,13 @@ const InstallEvent = z.object({
 const ActivateEvent = z.object({
     eventType: z.literal(TemplateTelemetryEventType.ACTIVATE),
     templateId: z.string(),
-    flowId: z.string(),
+    workflowId: z.string(),
 })
 
 const DeactivateEvent = z.object({
     eventType: z.literal(TemplateTelemetryEventType.DEACTIVATE),
     templateId: z.string(),
-    flowId: z.string(),
+    workflowId: z.string(),
 })
 
 const ExploreViewEvent = z.object({

@@ -1,7 +1,7 @@
 import path from 'path'
 import { LATEST_CONTEXT_VERSION } from '@fema/connector-sdk'
 import { isNil, STEP_NAME_REGEX } from '@fema/core-utils'
-import { CodeAction, EngineGenericError, ExecutionError, ExecutionErrorType, FlowActionType, GenericStepOutput, StepOutputStatus } from '@fema/shared'
+import { CodeAction, EngineGenericError, ExecutionError, ExecutionErrorType, GenericStepOutput, StepOutputStatus, WorkflowActionType } from '@fema/shared'
 import { initCodeSandbox } from '../core/code/code-sandbox'
 import { continueIfFailureHandler, runWithExponentialBackoff } from '../helper/error-handling'
 import { executionProgressReporter } from '../helper/execution-progress-reporter'
@@ -26,7 +26,7 @@ const executeAction: ActionHandler<CodeAction> = async ({ action, executionState
     const stepStartTime = performance.now()
     const stepOutput = GenericStepOutput.create({
         input: {},
-        type: FlowActionType.CODE,
+        type: WorkflowActionType.CODE,
         status: StepOutputStatus.RUNNING,
     })
 
@@ -39,7 +39,7 @@ const executeAction: ActionHandler<CodeAction> = async ({ action, executionState
 
         await executionProgressReporter.sendUpdate({
             engineConstants: constants,
-            flowExecutorContext: await executionState.upsertStep(action.name, stepOutput),
+            workflowExecutorContext: await executionState.upsertStep(action.name, stepOutput),
             stepNameToUpdate: action.name,
         })
 
@@ -53,7 +53,7 @@ const executeAction: ActionHandler<CodeAction> = async ({ action, executionState
             // code-cache sink guard already block this upstream; this is the runtime backstop.
             throw new ExecutionError('InvalidStepName', `Invalid code step name: "${action.name}"`, ExecutionErrorType.USER)
         }
-        const artifactPath = path.resolve(`${constants.baseCodeDirectory}/${constants.flowVersionId}/${action.name}/index.js`)
+        const artifactPath = path.resolve(`${constants.baseCodeDirectory}/${constants.workflowVersionId}/${action.name}/index.js`)
         const codeSandbox = await initCodeSandbox()
 
         const output = await codeSandbox.runCodeModule({

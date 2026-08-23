@@ -176,14 +176,14 @@ const ApForm = ({ form, useDraft }: ApFormProps) => {
         if (api.isError(error)) {
           const status = error.response?.status;
           if (status === 404) {
-            toast.error(t('Flow not found'), {
+            toast.error(t('Workflow not found'), {
               description: t(
-                'The flow you are trying to submit to does not exist.',
+                'The workflow you are trying to submit to does not exist.',
               ),
               duration: 3000,
             });
           } else {
-            toast.error(t('The flow failed to execute.'), {
+            toast.error(t('The workflow failed to execute.'), {
               duration: 3000,
             });
           }

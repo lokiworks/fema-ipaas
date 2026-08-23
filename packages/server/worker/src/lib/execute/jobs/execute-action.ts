@@ -1,7 +1,7 @@
 import { spreadIfDefined, tryCatch } from '@fema/core-utils'
 import { actionRunCache, CodeArtifact } from '@fema/sandbox'
 import { cryptoUtils } from '@fema/server-utils'
-import { DEFAULT_MCP_DATA, EngineOperationType, EngineResponseStatus, ExecuteActionJobData, FlowActionType, WorkerJobType } from '@fema/shared'
+import { DEFAULT_MCP_DATA, EngineOperationType, EngineResponseStatus, ExecuteActionJobData, WorkerJobType, WorkflowActionType } from '@fema/shared'
 import { JobContext, JobHandler, JobResultKind, SynchronousJobResult } from '../types'
 import { isSandboxTimeout } from '../utils/sandbox-helpers'
 import { buildSynchronousResult } from '../utils/synchronous-result'
@@ -29,11 +29,11 @@ export const executeActionJob: JobHandler<ExecuteActionJobData, SynchronousJobRe
                     internalApiUrl: ctx.internalApiUrl,
                     publicApiUrl: ctx.publicApiUrl,
                     timeoutInSeconds,
-                    ...spreadIfDefined('flowVersionId', codeNamespace),
+                    ...spreadIfDefined('workflowVersionId', codeNamespace),
                 },
                 timeoutInSeconds,
                 expiresAt: data.expiresAt,
-                provision: { ...resolved.provision, ...spreadIfDefined('flowVersionId', codeNamespace) },
+                provision: { ...resolved.provision, ...spreadIfDefined('workflowVersionId', codeNamespace) },
             })
         })
 
@@ -53,7 +53,7 @@ export const executeActionJob: JobHandler<ExecuteActionJobData, SynchronousJobRe
 }
 
 async function resolveCodeStep({ step, platformId }: ResolveCodeStepParams): Promise<{ codes: CodeArtifact[], namespace?: string }> {
-    if (step.type !== FlowActionType.CODE) {
+    if (step.type !== WorkflowActionType.CODE) {
         return { codes: [] }
     }
     const sourceHash = await cryptoUtils.hashObject(step.settings.sourceCode)
@@ -63,8 +63,8 @@ async function resolveCodeStep({ step, platformId }: ResolveCodeStepParams): Pro
         codes: [{
             name: step.name,
             sourceCode: step.settings.sourceCode,
-            flowVersionId: namespace,
-            flowVersionState: DEFAULT_MCP_DATA.flowVersionState,
+            workflowVersionId: namespace,
+            workflowVersionState: DEFAULT_MCP_DATA.workflowVersionState,
         }],
     }
 }

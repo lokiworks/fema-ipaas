@@ -1,19 +1,19 @@
 ---
 title: "Connector syncing & versioning"
-description: "How connectors are packaged, distributed, and pinned to flow versions"
+description: "How connectors are packaged, distributed, and pinned to workflow versions"
 icon: "puzzle-connector"
 ---
 
 Connectors are standard [npm packages](https://www.npmjs.com/search?q=%40fema%2Fconnector-). Two facts follow from that:
 
 - **No server upgrade is needed for new connectors.** A sync job pulls fresh versions on its own.
-- **Each step is pinned to an exact version.** Flows never auto-upgrade. Version bumps are explicit, through the builder.
+- **Each step is pinned to an exact version.** Workflows never auto-upgrade. Version bumps are explicit, through the builder.
 
 ```mermaid
-flowchart LR
+workflowchart LR
     REG["npm registry<br/>(@fema/connector-*)"]
     CAT["Local connector catalog"]
-    STEP["Flow step<br/>connectorVersion: 0.5.3"]
+    STEP["Workflow step<br/>connectorVersion: 0.5.3"]
     UI["Builder version dialog"]
 
     REG -- "hourly sync<br/>(OFFICIAL_AUTO)" --> CAT
@@ -22,10 +22,10 @@ flowchart LR
 
     classDef src fill:#eef,stroke:#88a
     classDef catalog fill:#efe,stroke:#7a7
-    classDef flow fill:#fee,stroke:#a77
+    classDef workflow fill:#fee,stroke:#a77
     class REG src
     class CAT catalog
-    class STEP,UI flow
+    class STEP,UI workflow
 ```
 
 ## Packaging

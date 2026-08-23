@@ -91,7 +91,7 @@ parser.functions.word_count = (s: unknown) =>
 // Cap pad/repeat outputs so formulas can't OOM or hit V8's string-length
 // ceiling (~2^29) by passing huge counts/lengths. 10k characters is plenty
 // for every realistic use case; over that, behave like a no-op rather than
-// throw a RangeError that would crash the flow step.
+// throw a RangeError that would crash the workflow step.
 const MAX_PAD_OR_REPEAT_LENGTH = 10_000
 parser.functions.pad_left = (s: unknown, len: unknown, char: unknown = ' ') => {
     const padChar = String(char ?? ' ')
@@ -259,7 +259,7 @@ parser.functions.hours_between = (a: unknown, b: unknown) => {
 // boundaries, so they must use UTC parsing to be deterministic across server
 // timezones. Without `.utc()`, a UTC+8 server would shift a Z-suffixed
 // timestamp into local time first, then snap to local midnight, which both
-// disagrees with the doc examples and makes flow output depend on host TZ.
+// disagrees with the doc examples and makes workflow output depend on host TZ.
 parser.functions.start_of_day = (d: unknown) => {
     const parsed = dayjs.utc(String(d ?? ''))
     return parsed.isValid() ? parsed.startOf('day').toISOString() : ''
@@ -407,7 +407,7 @@ parser.functions.is_number = (v: unknown) => typeof v === 'number' && !Number.is
 parser.functions.is_list = (v: unknown) => Array.isArray(v)
 
 // After every impl is registered above, wrap any function whose registry entry
-// declares `argCompatibility.defaultArgs` so older saved flows that were saved
+// declares `argCompatibility.defaultArgs` so older saved workflows that were saved
 // before a new arg was added keep working at runtime instead of throwing a
 // "wrong number of arguments" error.
 for (const fn of FEMA_FUNCTIONS) {

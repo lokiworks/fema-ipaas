@@ -1,9 +1,9 @@
 import { z } from 'zod'
 import { RunInternalError } from '../execution/state/execution-output'
-import { ExecutionStatus } from '../execution/state/flow-execution'
+import { ExecutionStatus } from '../execution/state/workflow-execution'
 import { StepOutput } from '../execution/state/step-output'
 import { FailedStep, Execution } from '../execution/execution'
-import { StepRunResponse } from '../flows/sample-data'
+import { StepRunResponse } from '../workflows/sample-data'
 import { StreamStepProgress } from './engine-operation'
 
 
@@ -51,7 +51,7 @@ export const FileReadToken = z.object({
 })
 export type FileReadToken = z.infer<typeof FileReadToken>
 
-export const SendFlowResponseRequest = z.object({
+export const SendWorkflowResponseRequest = z.object({
     workerHandlerId: z.string(),
     httpRequestId: z.string(),
     runResponse: z.object({
@@ -63,12 +63,12 @@ export const SendFlowResponseRequest = z.object({
         headers: z.record(z.string(), z.coerce.string()),
     }),
 })
-export type SendFlowResponseRequest = z.infer<typeof SendFlowResponseRequest>
-export const GetFlowVersionForWorkerRequest = z.object({
+export type SendWorkflowResponseRequest = z.infer<typeof SendWorkflowResponseRequest>
+export const GetWorkflowVersionForWorkerRequest = z.object({
     versionId: z.string(),
 })
 
-export type GetFlowVersionForWorkerRequest = z.infer<typeof GetFlowVersionForWorkerRequest>
+export type GetWorkflowVersionForWorkerRequest = z.infer<typeof GetWorkflowVersionForWorkerRequest>
 
 export type UpdateRunProgressRequest = {
     execution: Omit<Execution, 'steps'>

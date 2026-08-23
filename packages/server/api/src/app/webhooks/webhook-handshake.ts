@@ -1,4 +1,4 @@
-import { FlowId, FlowVersionId, isNil, WorkspaceId } from '@fema/core-utils'
+import { isNil, WorkflowId, WorkflowVersionId, WorkspaceId } from '@fema/core-utils'
 import { EngineResponse, EngineResponseStatus, ExecuteTriggerResponse, TriggerHookType, TriggerPayload, TriggerSource, WebhookHandshakeConfiguration, WebhookHandshakeStrategy, WorkerJobType } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { triggerUtils } from '../trigger/trigger-source/trigger-utils'
@@ -18,8 +18,8 @@ export const webhookHandshake = {
         const engineHelperResponse = await userInteractionWatcher.submitAndWaitForResponse<EngineResponse<ExecuteTriggerResponse<TriggerHookType.HANDSHAKE>>>({
             jobType: WorkerJobType.EXECUTE_TRIGGER_HOOK,
             hookType: TriggerHookType.HANDSHAKE,
-            flowId: params.flowId,
-            flowVersionId: params.flowVersionId,
+            workflowId: params.workflowId,
+            workflowVersionId: params.workflowVersionId,
             workspaceId: params.workspaceId,
             test: false,
             platformId,
@@ -87,8 +87,8 @@ type WebhookHandshakeResponse = {
 
 type HandleHandshakeRequestParams = {
     payload: TriggerPayload
-    flowId: FlowId
-    flowVersionId: FlowVersionId
+    workflowId: WorkflowId
+    workflowVersionId: WorkflowVersionId
     workspaceId: WorkspaceId
     handshakeConfiguration: WebhookHandshakeConfiguration | null
     logger: FastifyBaseLogger

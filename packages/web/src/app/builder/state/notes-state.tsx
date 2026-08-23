@@ -1,7 +1,7 @@
 import { apId } from '@fema/core-utils';
 import {
   AddNoteRequest,
-  FlowOperationType,
+  WorkflowOperationType,
   NoteColorVariant,
   Note,
 } from '@fema/shared';
@@ -51,13 +51,13 @@ export const createNotesState = (
     addNote: (request: Omit<AddNoteRequest, 'id'>) => {
       const id = apId();
       get().applyOperation({
-        type: FlowOperationType.ADD_NOTE,
+        type: WorkflowOperationType.ADD_NOTE,
         request: {
           ...request,
           id,
         },
       });
-      const notes = get().flowVersion.notes;
+      const notes = get().workflowVersion.notes;
       const noteIndex = notes.findIndex((note) => note.id === id);
       if (noteIndex !== -1) {
         notes[noteIndex] = {
@@ -69,8 +69,8 @@ export const createNotesState = (
         authenticationSession.getCurrentUserId() ?? null;
       set(() => {
         return {
-          flowVersion: {
-            ...get().flowVersion,
+          workflowVersion: {
+            ...get().workflowVersion,
             notes,
           },
           draggedNote: null,
@@ -84,7 +84,7 @@ export const createNotesState = (
         return;
       }
       get().applyOperation({
-        type: FlowOperationType.UPDATE_NOTE,
+        type: WorkflowOperationType.UPDATE_NOTE,
         request: {
           ...note,
           content,
@@ -93,7 +93,7 @@ export const createNotesState = (
     },
     deleteNote: (id: string) => {
       get().applyOperation({
-        type: FlowOperationType.DELETE_NOTE,
+        type: WorkflowOperationType.DELETE_NOTE,
         request: {
           id: id,
         },
@@ -111,7 +111,7 @@ export const createNotesState = (
         return;
       }
       get().applyOperation({
-        type: FlowOperationType.UPDATE_NOTE,
+        type: WorkflowOperationType.UPDATE_NOTE,
         request: {
           ...note,
           position,
@@ -130,7 +130,7 @@ export const createNotesState = (
         return;
       }
       get().applyOperation({
-        type: FlowOperationType.UPDATE_NOTE,
+        type: WorkflowOperationType.UPDATE_NOTE,
         request: {
           ...note,
           size,
@@ -151,7 +151,7 @@ export const createNotesState = (
       });
     },
     getNoteById: (id: string) => {
-      return get().flowVersion.notes.find((note) => note.id === id) ?? null;
+      return get().workflowVersion.notes.find((note) => note.id === id) ?? null;
     },
     updateNoteColor: (id: string, color: NoteColorVariant) => {
       const note = get().getNoteById(id);
@@ -159,7 +159,7 @@ export const createNotesState = (
         return;
       }
       get().applyOperation({
-        type: FlowOperationType.UPDATE_NOTE,
+        type: WorkflowOperationType.UPDATE_NOTE,
         request: {
           ...note,
           color,

@@ -1,8 +1,8 @@
 import { Permission } from '@fema/core-utils';
 import {
   ApFlagId,
-  FlowOperationType,
-  FlowVersionState,
+  WorkflowOperationType,
+  WorkflowVersionState,
   supportUrl,
   UncategorizedFolderId,
 } from '@fema/shared';
@@ -32,9 +32,9 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
-import { flowHooks } from '@/features/flows';
-import { FlowCreatedByBadge } from '@/features/flows/components/flow-created-by-badge';
 import { foldersHooks } from '@/features/folders';
+import { workflowHooks } from '@/features/workflows';
+import { WorkflowCreatedByBadge } from '@/features/workflows/components/workflow-created-by-badge';
 import {
   getWorkspaceName,
   workspaceCollectionUtils,
@@ -43,13 +43,13 @@ import { useAuthorization } from '@/hooks/authorization-hooks';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 import { useNewWindow } from '@/lib/navigation-utils';
-import { NEW_FLOW_QUERY_PARAM } from '@/lib/route-utils';
+import { NEW_WORKFLOW_QUERY_PARAM } from '@/lib/route-utils';
 import { cn } from '@/lib/utils';
 
-import FlowActionMenu from '../../components/flow-actions-menu';
-import { flowCanvasConsts } from '../flow-canvas/utils/consts';
+import WorkflowActionMenu from '../../components/workflow-actions-menu';
+import { workflowCanvasConsts } from '../workflow-canvas/utils/consts';
 
-import { BuilderFlowStatusSection } from './flow-status';
+import { BuilderWorkflowStatusSection } from './workflow-status';
 
 export const BuilderHeader = () => {
   const [queryParams] = useSearchParams();
@@ -61,17 +61,17 @@ export const BuilderHeader = () => {
   );
 
   const hasPermissionToReadRuns = useAuthorization().checkAccess(
-    Permission.READ_FLOW,
+    Permission.READ_WORKFLOW,
   );
   const [
-    flow,
-    flowVersion,
+    workflow,
+    workflowVersion,
     moveToFolderClientSide,
     applyOperation,
     setRightSidebar,
   ] = useBuilderStateContext((state) => [
-    state.flow,
-    state.flowVersion,
+    state.workflow,
+    state.workflowVersion,
     state.moveToFolderClientSide,
     state.applyOperation,
     state.setRightSidebar,
@@ -81,18 +81,20 @@ export const BuilderHeader = () => {
   const { workspace } = workspaceCollectionUtils.useCurrentWorkspace();
 
   const { data: folderData } = foldersHooks.useFolder(
-    flow.folderId ?? UncategorizedFolderId,
+    workflow.folderId ?? UncategorizedFolderId,
   );
 
   const isLatestVersion =
-    flowVersion.state === FlowVersionState.DRAFT ||
-    flowVersion.id === flow.publishedVersionId;
-  const [isEditingFlowName, setIsEditingFlowName] = useState(false);
+    workflowVersion.state === WorkflowVersionState.DRAFT ||
+    workflowVersion.id === workflow.publishedVersionId;
+  const [isEditingWorkflowName, setIsEditingWorkflowName] = useState(false);
   useEffect(() => {
-    setIsEditingFlowName(queryParams.get(NEW_FLOW_QUERY_PARAM) === 'true');
+    setIsEditingWorkflowName(
+      queryParams.get(NEW_WORKFLOW_QUERY_PARAM) === 'true',
+    );
   }, []);
 
-  const goToFlowsPage = () => {
+  const goToWorkflowsPage = () => {
     navigate({
       pathname:
         authenticationSession.appendWorkspaceRoutePrefix('/automations'),
@@ -110,7 +112,7 @@ export const BuilderHeader = () => {
             <>
               <BreadcrumbItem>
                 <BreadcrumbLink
-                  onClick={goToFlowsPage}
+                  onClick={goToWorkflowsPage}
                   className="cursor-pointer text-sm"
                 >
                   {getWorkspaceName(workspace)}
@@ -119,46 +121,46 @@ export const BuilderHeader = () => {
               <BreadcrumbSeparator />
             </>
           )}
-          {!embedState.hideFlowNameInBuilder && (
+          {!embedState.hideWorkflowNameInBuilder && (
             <BreadcrumbItem>
               <BreadcrumbPage>
                 <div
                   className={cn('flex items-center gap-1 text-sm', {
-                    'max-w-[500px]': !isEditingFlowName,
+                    'max-w-[500px]': !isEditingWorkflowName,
                   })}
                 >
                   <EditableText
                     className="hover:cursor-text"
-                    value={flowVersion.displayName}
+                    value={workflowVersion.displayName}
                     readonly={!isLatestVersion}
                     onValueChange={(value) => {
                       applyOperation(
                         {
-                          type: FlowOperationType.CHANGE_NAME,
+                          type: WorkflowOperationType.CHANGE_NAME,
                           request: {
                             displayName: value,
                           },
                         },
                         () => {
-                          flowHooks.invalidateFlowsQuery(queryClient);
+                          workflowHooks.invalidateWorkflowsQuery(queryClient);
                         },
                       );
                     }}
-                    isEditing={isEditingFlowName}
-                    setIsEditing={setIsEditingFlowName}
+                    isEditing={isEditingWorkflowName}
+                    setIsEditing={setIsEditingWorkflowName}
                     tooltipContent=""
                   />
-                  <FlowActionMenu
+                  <WorkflowActionMenu
                     onVersionsListClick={() => {
                       setRightSidebar(RightSideBarType.VERSIONS);
                     }}
                     insideBuilder={true}
-                    flow={flow}
-                    flowVersion={flowVersion}
+                    workflow={workflow}
+                    workflowVersion={workflowVersion}
                     readonly={!isLatestVersion}
-                    onDelete={goToFlowsPage}
+                    onDelete={goToWorkflowsPage}
                     onRename={() => {
-                      setIsEditingFlowName(true);
+                      setIsEditingWorkflowName(true);
                     }}
                     onMoveTo={(folderId) => moveToFolderClientSide(folderId)}
                     onDuplicate={() => {}}
@@ -169,7 +171,7 @@ export const BuilderHeader = () => {
                     >
                       <ChevronDown className="h-4 w-4 text-muted-foreground" />
                     </Button>
-                  </FlowActionMenu>
+                  </WorkflowActionMenu>
                 </div>
               </BreadcrumbPage>
             </BreadcrumbItem>
@@ -192,7 +194,7 @@ export const BuilderHeader = () => {
         </Button>
       )}
       {!embedState.hideActiveUsers && (
-        <ActiveUsersWidget resourceId={flow.id} />
+        <ActiveUsersWidget resourceId={workflow.id} />
       )}
       {hasPermissionToReadRuns && (
         <Button
@@ -205,8 +207,8 @@ export const BuilderHeader = () => {
         </Button>
       )}
 
-      <BuilderFlowStatusSection></BuilderFlowStatusSection>
-      <FlowCreatedByBadge createdBy={flow.createdBy} />
+      <BuilderWorkflowStatusSection></BuilderWorkflowStatusSection>
+      <WorkflowCreatedByBadge createdBy={workflow.createdBy} />
     </div>
   );
 
@@ -215,7 +217,7 @@ export const BuilderHeader = () => {
   return (
     <div
       style={{
-        height: `$${flowCanvasConsts.BUILDER_HEADER_HEIGHT}px`,
+        height: `$${workflowCanvasConsts.BUILDER_HEADER_HEIGHT}px`,
       }}
     >
       <PageHeader

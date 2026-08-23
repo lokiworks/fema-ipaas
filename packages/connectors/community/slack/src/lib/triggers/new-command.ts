@@ -35,7 +35,7 @@ export const newCommand = createTrigger({
       auth: slackAuth,
       displayName: 'Channels',
       description:
-        'If no channel is selected, the flow will be triggered for commands in all channels',
+        'If no channel is selected, the workflow will be triggered for commands in all channels',
       required: false,
       refreshers: [],
       async options({ auth }) {

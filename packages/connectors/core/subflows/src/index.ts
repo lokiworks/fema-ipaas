@@ -1,18 +1,18 @@
 import { createConnector, ConnectorAuth } from '@fema/connector-sdk';
-import { callFlow } from './lib/actions/call-flow';
-import { streamCsvToSubflows } from './lib/actions/stream-csv-to-flow';
-import { callableFlow } from './lib/triggers/callable-flow';
+import { callWorkflow } from './lib/actions/call-workflow';
+import { streamCsvToSubflows } from './lib/actions/stream-csv-to-workflow';
+import { callableWorkflow } from './lib/triggers/callable-workflow';
 import { response } from './lib/actions/respond';
 import { ConnectorCategory } from '@fema/connector-sdk';
 
-export const flows = createConnector({
-  displayName: 'Sub Flows',
-  description: 'Trigger and call another sub flow.',
+export const workflows = createConnector({
+  displayName: 'Sub Workflows',
+  description: 'Trigger and call another sub workflow.',
   auth: ConnectorAuth.None(),
   minimumSupportedRelease: '0.82.0',
-  categories: [ConnectorCategory.CORE, ConnectorCategory.FLOW_CONTROL],
+  categories: [ConnectorCategory.CORE, ConnectorCategory.WORKFLOW_CONTROL],
   logoUrl: 'https://cdn.fema.local/connectors/new-core/subflows.svg',
   authors: ['hazemadelkhalel'],
-  actions: [callFlow, streamCsvToSubflows, response],
-  triggers: [callableFlow],
+  actions: [callWorkflow, streamCsvToSubflows, response],
+  triggers: [callableWorkflow],
 });

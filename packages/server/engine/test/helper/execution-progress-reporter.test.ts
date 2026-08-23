@@ -1,6 +1,6 @@
-import { FlowActionType, ExecutionStatus, GenericStepOutput, StepOutputStatus, StreamStepProgress, UpdateRunProgressRequest, UploadRunLogsRequest } from '@fema/shared'
+import { WorkflowActionType, ExecutionStatus, GenericStepOutput, StepOutputStatus, StreamStepProgress, UpdateRunProgressRequest, UploadRunLogsRequest } from '@fema/shared'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { FlowExecutorContext } from '../../src/lib/handler/context/flow-execution-context'
+import { WorkflowExecutorContext } from '../../src/lib/handler/context/workflow-execution-context'
 import { generateMockEngineConstants } from '../handler/test-helper'
 
 const { uploadRunLogMock, updateRunProgressMock, updateStepProgressMock } = vi.hoisted(() => ({
@@ -33,11 +33,11 @@ const buildUpdateParams = ({ status }: { status: ExecutionStatus }) => {
         internalApiUrl: 'http://127.0.0.1:65535/',
         logsFileId: 'logs-1',
     })
-    const flowExecutorContext = new FlowExecutorContext()
-    flowExecutorContext.verdict = status === ExecutionStatus.RUNNING
+    const workflowExecutorContext = new WorkflowExecutorContext()
+    workflowExecutorContext.verdict = status === ExecutionStatus.RUNNING
         ? { status: ExecutionStatus.RUNNING }
         : { status: ExecutionStatus.SUCCEEDED, stopResponse: undefined }
-    return { engineConstants, flowExecutorContext }
+    return { engineConstants, workflowExecutorContext }
 }
 
 const uploadStatuses = (): ExecutionStatus[] =>
@@ -89,7 +89,7 @@ describe('execution-progress-reporter backup ordering', () => {
         expect(runningAfterTerminal).toBe(false)
     })
 
-    it('still uploads RUNNING progress while the flow is in progress', async () => {
+    it('still uploads RUNNING progress while the workflow is in progress', async () => {
         executionProgressReporter.init()
 
         await executionProgressReporter.sendUpdate(buildUpdateParams({ status: ExecutionStatus.RUNNING }))
@@ -136,26 +136,26 @@ describe('execution-progress-reporter slicing in single-step test mode', () => {
             stepNameToTest: 'step_emit_big',
         })
 
-        let flowExecutorContext = FlowExecutorContext.empty({
+        let workflowExecutorContext = WorkflowExecutorContext.empty({
             engineApi: { engineToken: engineConstants.engineToken, internalApiUrl: engineConstants.internalApiUrl },
             slicingEnabled: false,
         })
-        flowExecutorContext.verdict = { status: ExecutionStatus.SUCCEEDED, stopResponse: undefined }
+        workflowExecutorContext.verdict = { status: ExecutionStatus.SUCCEEDED, stopResponse: undefined }
 
         const big = { big: 'x'.repeat(40_000) }
-        flowExecutorContext = await flowExecutorContext.upsertStep('step_emit_big', GenericStepOutput.create({
-            type: FlowActionType.CODE,
+        workflowExecutorContext = await workflowExecutorContext.upsertStep('step_emit_big', GenericStepOutput.create({
+            type: WorkflowActionType.CODE,
             status: StepOutputStatus.SUCCEEDED,
             input: {},
             output: big,
         }))
 
-        const stored = flowExecutorContext.steps['step_emit_big']
+        const stored = workflowExecutorContext.steps['step_emit_big']
         expect(stored.outputType).toBeUndefined()
         expect(stored.output).toEqual(big)
 
         executionProgressReporter.init()
-        await executionProgressReporter.sendUpdate({ engineConstants, flowExecutorContext })
+        await executionProgressReporter.sendUpdate({ engineConstants, workflowExecutorContext })
         await executionProgressReporter.backup()
 
         const stepResponse = uploadRunLogMock.mock.calls.at(-1)![0].request.stepResponse
@@ -210,20 +210,20 @@ describe('execution-progress-reporter slicing in single-step test mode', () => {
             stepNameToTest: 'failing_step',
         })
 
-        let flowExecutorContext = FlowExecutorContext.empty({
+        let workflowExecutorContext = WorkflowExecutorContext.empty({
             engineApi: { engineToken: engineConstants.engineToken, internalApiUrl: engineConstants.internalApiUrl },
             slicingEnabled: false,
         })
-        flowExecutorContext.verdict = { status: ExecutionStatus.RUNNING }
-        flowExecutorContext = await flowExecutorContext.upsertStep('failing_step', GenericStepOutput.create({
-            type: FlowActionType.CONNECTOR,
+        workflowExecutorContext.verdict = { status: ExecutionStatus.RUNNING }
+        workflowExecutorContext = await workflowExecutorContext.upsertStep('failing_step', GenericStepOutput.create({
+            type: WorkflowActionType.CONNECTOR,
             status: StepOutputStatus.FAILED,
             input: {},
             output: undefined,
         }))
 
         executionProgressReporter.init()
-        await executionProgressReporter.sendUpdate({ engineConstants, flowExecutorContext })
+        await executionProgressReporter.sendUpdate({ engineConstants, workflowExecutorContext })
         await executionProgressReporter.backup()
 
         const stepResponse = uploadRunLogMock.mock.calls.at(-1)![0].request.stepResponse

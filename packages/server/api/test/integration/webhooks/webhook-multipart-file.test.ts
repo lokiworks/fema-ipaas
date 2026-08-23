@@ -1,9 +1,9 @@
-import { FileType, Flow, FlowStatus, Workspace } from '@fema/shared'
+import { FileType, Workflow, WorkflowStatus, Workspace } from '@fema/shared'
 import { FastifyInstance } from 'fastify'
 import FormData from 'form-data'
 import { StatusCodes } from 'http-status-codes'
 import { db } from '../../../helpers/db'
-import { createMockFlow, createMockFlowVersion, mockAndSaveBasicSetup } from '../../../helpers/mocks'
+import { createMockWorkflow, createMockWorkflowVersion, mockAndSaveBasicSetup } from '../../../helpers/mocks'
 import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
 
 let app: FastifyInstance
@@ -18,7 +18,7 @@ afterAll(async () => {
 
 describe('Webhook multipart file', () => {
     it('should serialize a single multipart file as a URL and persist it', async () => {
-        const { mockFlow, mockWorkspace } = await createEnabledFlow()
+        const { mockWorkflow, mockWorkspace } = await createEnabledWorkflow()
 
         const form = new FormData()
         form.append('userName', 'John')
@@ -29,7 +29,7 @@ describe('Webhook multipart file', () => {
 
         const response = await app.inject({
             method: 'POST',
-            url: `/api/v1/webhooks/${mockFlow.id}`,
+            url: `/api/v1/webhooks/${mockWorkflow.id}`,
             headers: form.getHeaders(),
             payload: form.getBuffer(),
         })
@@ -40,17 +40,17 @@ describe('Webhook multipart file', () => {
 
         const savedFile = await db.findOneBy<SavedFile>(
             'file',
-            { workspaceId: mockWorkspace.id, type: FileType.FLOW_STEP_FILE },
+            { workspaceId: mockWorkspace.id, type: FileType.WORKFLOW_STEP_FILE },
         )
         expect(savedFile).not.toBeNull()
         expect(savedFile!.id).toBeTruthy()
         expect(savedFile!.fileName).toBe('doc.pdf')
-        expect(savedFile!.type).toBe(FileType.FLOW_STEP_FILE)
+        expect(savedFile!.type).toBe(FileType.WORKFLOW_STEP_FILE)
         expect(savedFile!.workspaceId).toBe(mockWorkspace.id)
     })
 
     it('should serialize multiple multipart files sharing a field name as an array of URLs', async () => {
-        const { mockFlow, mockWorkspace } = await createEnabledFlow()
+        const { mockWorkflow, mockWorkspace } = await createEnabledWorkflow()
 
         const form = new FormData()
         form.append('uploads', Buffer.from('first pdf'), {
@@ -64,7 +64,7 @@ describe('Webhook multipart file', () => {
 
         const response = await app.inject({
             method: 'POST',
-            url: `/api/v1/webhooks/${mockFlow.id}`,
+            url: `/api/v1/webhooks/${mockWorkflow.id}`,
             headers: form.getHeaders(),
             payload: form.getBuffer(),
         })
@@ -83,18 +83,18 @@ describe('Webhook multipart file', () => {
         )
         expect(firstFile).not.toBeNull()
         expect(firstFile!.id).toBeTruthy()
-        expect(firstFile!.type).toBe(FileType.FLOW_STEP_FILE)
+        expect(firstFile!.type).toBe(FileType.WORKFLOW_STEP_FILE)
         expect(secondFile).not.toBeNull()
         expect(secondFile!.id).toBeTruthy()
-        expect(secondFile!.type).toBe(FileType.FLOW_STEP_FILE)
+        expect(secondFile!.type).toBe(FileType.WORKFLOW_STEP_FILE)
     })
 
     it('should stream a raw binary body to a step file', async () => {
-        const { mockFlow, mockWorkspace } = await createEnabledFlow()
+        const { mockWorkflow, mockWorkspace } = await createEnabledWorkflow()
 
         const response = await app.inject({
             method: 'POST',
-            url: `/api/v1/webhooks/${mockFlow.id}`,
+            url: `/api/v1/webhooks/${mockWorkflow.id}`,
             headers: { 'content-type': 'application/pdf' },
             payload: Buffer.from('a raw pdf body streamed straight to storage'),
         })
@@ -103,22 +103,22 @@ describe('Webhook multipart file', () => {
 
         const savedFile = await db.findOneBy<SavedFile>(
             'file',
-            { workspaceId: mockWorkspace.id, type: FileType.FLOW_STEP_FILE },
+            { workspaceId: mockWorkspace.id, type: FileType.WORKFLOW_STEP_FILE },
         )
         expect(savedFile).not.toBeNull()
         expect(savedFile!.fileName).toBe('file.pdf')
-        expect(savedFile!.type).toBe(FileType.FLOW_STEP_FILE)
+        expect(savedFile!.type).toBe(FileType.WORKFLOW_STEP_FILE)
     })
 })
 
-async function createEnabledFlow(): Promise<{ mockFlow: Flow, mockWorkspace: Workspace }> {
+async function createEnabledWorkflow(): Promise<{ mockWorkflow: Workflow, mockWorkspace: Workspace }> {
     const { mockWorkspace } = await mockAndSaveBasicSetup()
-    const mockFlow = createMockFlow({ workspaceId: mockWorkspace.id, status: FlowStatus.ENABLED })
-    await db.save('flow', [mockFlow])
-    const mockFlowVersion = createMockFlowVersion({ flowId: mockFlow.id })
-    await db.save('flow_version', [mockFlowVersion])
-    await db.update('flow', mockFlow.id, { publishedVersionId: mockFlowVersion.id })
-    return { mockFlow, mockWorkspace }
+    const mockWorkflow = createMockWorkflow({ workspaceId: mockWorkspace.id, status: WorkflowStatus.ENABLED })
+    await db.save('workflow', [mockWorkflow])
+    const mockWorkflowVersion = createMockWorkflowVersion({ workflowId: mockWorkflow.id })
+    await db.save('workflow_version', [mockWorkflowVersion])
+    await db.update('workflow', mockWorkflow.id, { publishedVersionId: mockWorkflowVersion.id })
+    return { mockWorkflow, mockWorkspace }
 }
 
 type SavedFile = {

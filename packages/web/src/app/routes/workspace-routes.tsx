@@ -9,14 +9,15 @@ import { routesThatRequireWorkspaceId } from '@/lib/route-utils';
 
 import { BuilderLayout } from '../components/builder-layout';
 import { WorkspaceDashboardLayout } from '../components/workspace-layout';
-import { AfterImportFlowRedirect } from '../guards/after-import-flow-redirect';
+import { AfterImportWorkflowRedirect } from '../guards/after-import-workflow-redirect';
 import { RoutePermissionGuard } from '../guards/permission-guard';
 import { WorkspaceRouterWrapper } from '../guards/workspace-route-wrapper';
 
 import { AutomationsPage } from './automations';
-const FlowBuilderPage = lazyWithRetry(
-  () => import('./flows/id').then((m) => ({ default: m.FlowBuilderPage })),
-  'flow-builder',
+const WorkflowBuilderPage = lazyWithRetry(
+  () =>
+    import('./workflows/id').then((m) => ({ default: m.WorkflowBuilderPage })),
+  'workflow-builder',
 );
 const RunsPage = lazyWithRetry(
   () => import('./runs').then((m) => ({ default: m.RunsPage })),
@@ -50,7 +51,7 @@ function SuspenseWrapper({ children }: { children: React.ReactNode }) {
 }
 
 const automationsPagePermissions = [
-  Permission.READ_FLOW,
+  Permission.READ_WORKFLOW,
   Permission.READ_FOLDER,
 ];
 
@@ -60,7 +61,7 @@ export const workspaceRoutes = [
     element: (
       <WorkspaceDashboardLayout>
         <RoutePermissionGuard requiredPermissions={automationsPagePermissions}>
-          <PageTitle title="Flows">
+          <PageTitle title="Workflows">
             <SuspenseWrapper>
               <AutomationsPage />
             </SuspenseWrapper>
@@ -70,17 +71,17 @@ export const workspaceRoutes = [
     ),
   }),
   ...WorkspaceRouterWrapper({
-    path: routesThatRequireWorkspaceId.flows,
+    path: routesThatRequireWorkspaceId.workflows,
     element: <Navigate to={routesThatRequireWorkspaceId.automations} replace />,
   }),
   ...WorkspaceRouterWrapper({
-    path: routesThatRequireWorkspaceId.singleFlow,
+    path: routesThatRequireWorkspaceId.singleWorkflow,
     element: (
-      <RoutePermissionGuard requiredPermissions={Permission.READ_FLOW}>
+      <RoutePermissionGuard requiredPermissions={Permission.READ_WORKFLOW}>
         <PageTitle title="Builder">
           <BuilderLayout>
             <SuspenseWrapper>
-              <FlowBuilderPage />
+              <WorkflowBuilderPage />
             </SuspenseWrapper>
           </BuilderLayout>
         </PageTitle>
@@ -88,14 +89,14 @@ export const workspaceRoutes = [
     ),
   }),
   ...WorkspaceRouterWrapper({
-    path: '/flow-import-redirect/:flowId',
-    element: <AfterImportFlowRedirect></AfterImportFlowRedirect>,
+    path: '/workflow-import-redirect/:workflowId',
+    element: <AfterImportWorkflowRedirect></AfterImportWorkflowRedirect>,
   }),
   ...WorkspaceRouterWrapper({
     path: routesThatRequireWorkspaceId.singleRun,
     element: (
       <RoutePermissionGuard requiredPermissions={Permission.READ_RUN}>
-        <PageTitle title="Flow Run">
+        <PageTitle title="Workflow Run">
           <BuilderLayout>
             <SuspenseWrapper>
               <ExecutionPage />

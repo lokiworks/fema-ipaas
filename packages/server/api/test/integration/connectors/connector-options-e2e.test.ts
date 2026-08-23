@@ -11,8 +11,8 @@
  */
 import { apDayjs } from '@fema/server-utils'
 import {
-    FlowTriggerType,
-    FlowVersionState,
+    WorkflowTriggerType,
+    WorkflowVersionState,
     PackageType,
     ConnectorType,
     PrincipalType,
@@ -25,8 +25,8 @@ import { generateMockToken } from '../../../helpers/auth'
 import { db } from '../../../helpers/db'
 import { setupE2eEnvironment } from '../../../helpers/e2e-setup'
 import {
-    createMockFlow,
-    createMockFlowVersion,
+    createMockWorkflow,
+    createMockWorkflowVersion,
     createMockConnectorMetadata,
     mockAndSaveBasicSetup,
 } from '../../../helpers/mocks'
@@ -56,16 +56,16 @@ describe('Connector Options E2E', () => {
     it('returns dynamic properties for webhook authFields via full worker round-trip', async () => {
         const { mockPlatform, mockWorkspace, mockOwner } = await mockAndSaveBasicSetup()
 
-        const mockFlow = createMockFlow({
+        const mockWorkflow = createMockWorkflow({
             workspaceId: mockWorkspace.id,
         })
-        await db.save('flow', mockFlow)
+        await db.save('workflow', mockWorkflow)
 
-        const mockFlowVersion = createMockFlowVersion({
-            flowId: mockFlow.id,
-            state: FlowVersionState.DRAFT,
+        const mockWorkflowVersion = createMockWorkflowVersion({
+            workflowId: mockWorkflow.id,
+            state: WorkflowVersionState.DRAFT,
             trigger: {
-                type: FlowTriggerType.CONNECTOR,
+                type: WorkflowTriggerType.CONNECTOR,
                 name: 'trigger',
                 displayName: 'Catch Webhook',
                 settings: {
@@ -79,7 +79,7 @@ describe('Connector Options E2E', () => {
                 lastUpdatedDate: apDayjs().toISOString(),
             },
         })
-        await db.save('flow_version', mockFlowVersion)
+        await db.save('workflow_version', mockWorkflowVersion)
 
         const mockConnector = createMockConnectorMetadata({
             name: '@fema/connector-webhook',
@@ -104,8 +104,8 @@ describe('Connector Options E2E', () => {
             },
             body: {
                 workspaceId: mockWorkspace.id,
-                flowId: mockFlow.id,
-                flowVersionId: mockFlowVersion.id,
+                workflowId: mockWorkflow.id,
+                workflowVersionId: mockWorkflowVersion.id,
                 connectorName: '@fema/connector-webhook',
                 connectorVersion: '~0.1.29',
                 actionOrTriggerName: 'catch_webhook',

@@ -10,7 +10,7 @@ export enum FileType {
      */
     UNKNOWN = 'UNKNOWN',
     /**
-     * Compressed (ZSTD) execution-log manifest for a single flow run.
+     * Compressed (ZSTD) execution-log manifest for a single workflow run.
      * Expires on the file-cleanup schedule.
      */
     EXECUTION_LOG = 'EXECUTION_LOG',
@@ -25,10 +25,10 @@ export enum FileType {
      */
     PACKAGE_ARCHIVE = 'PACKAGE_ARCHIVE',
     /**
-     * File produced or referenced by a flow step at runtime (e.g. a step's
+     * File produced or referenced by a workflow step at runtime (e.g. a step's
      * attachment output). Expires on the file-cleanup schedule.
      */
-    FLOW_STEP_FILE = 'FLOW_STEP_FILE',
+    WORKFLOW_STEP_FILE = 'WORKFLOW_STEP_FILE',
     /**
      * Saved sample output for a step, captured during test runs and reused in
      * the builder. Kept indefinitely.
@@ -49,15 +49,15 @@ export enum FileType {
      */
     TRIGGER_EVENT_FILE = 'TRIGGER_EVENT_FILE',
     /**
-     * Snapshot of a workspace's flows/connections/tables for release versioning
+     * Snapshot of a workspace's workflows/connections/tables for release versioning
      * and rollback. Kept indefinitely.
      */
     WORKSPACE_RELEASE = 'WORKSPACE_RELEASE',
     /**
-     * Snapshot of a single flow version's schema for migration/rollback.
+     * Snapshot of a single workflow version's schema for migration/rollback.
      * Kept indefinitely.
      */
-    FLOW_VERSION_BACKUP = 'FLOW_VERSION_BACKUP',
+    WORKFLOW_VERSION_BACKUP = 'WORKFLOW_VERSION_BACKUP',
 
     /**
      * Platform public assets, like logos, should be stored in the database.
@@ -76,12 +76,12 @@ export enum FileType {
      */
     KNOWLEDGE_BASE = 'KNOWLEDGE_BASE',
     /**
-     * Prebuilt per-locked-flow-version run artifact (flow definition + resolved
-     * connector manifest + compiled code steps), addressed by flowVersionId. Lets a
-     * worker provision a flow by download + extract instead of fetch + compile.
+     * Prebuilt per-locked-workflow-version run artifact (workflow definition + resolved
+     * connector manifest + compiled code steps), addressed by workflowVersionId. Lets a
+     * worker provision a workflow by download + extract instead of fetch + compile.
      * Stored at the configured location (S3 when available). Kept indefinitely.
      */
-    FLOW_BUNDLE = 'FLOW_BUNDLE',
+    WORKFLOW_BUNDLE = 'WORKFLOW_BUNDLE',
 }
 export enum FileCompression {
     NONE = 'NONE',

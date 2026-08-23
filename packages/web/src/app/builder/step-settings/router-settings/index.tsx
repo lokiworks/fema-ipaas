@@ -1,10 +1,10 @@
 import { isNil } from '@fema/core-utils';
 import {
-  FlowActionType,
-  FlowOperationRequest,
-  FlowOperationType,
-  flowStructureUtil,
-  FlowVersion,
+  WorkflowActionType,
+  WorkflowOperationRequest,
+  WorkflowOperationType,
+  workflowStructureUtil,
+  WorkflowVersion,
   RouterAction,
   RouterExecutionType,
 } from '@fema/shared';
@@ -24,7 +24,7 @@ import {
   SelectItem,
 } from '../../../../components/ui/select';
 import { useBuilderStateContext } from '../../builder-hooks';
-import { flowCanvasUtils } from '../../flow-canvas/utils/flow-canvas-utils';
+import { workflowCanvasUtils } from '../../workflow-canvas/utils/workflow-canvas-utils';
 import { BranchSettings } from '../branch-settings';
 
 import { BranchesList } from './branches-list';
@@ -39,9 +39,9 @@ export const RouterSettings = memo(({ readonly }: { readonly: boolean }) => {
     addOperationListener,
     removeOperationListener,
   ] = useBuilderStateContext((state) => [
-    flowStructureUtil.getActionOrThrow(
+    workflowStructureUtil.getActionOrThrow(
       state.selectedStep!,
-      state.flowVersion.trigger,
+      state.workflowVersion.trigger,
     ) as RouterAction,
     state.applyOperation,
     state.setSelectedBranchIndex,
@@ -62,7 +62,7 @@ export const RouterSettings = memo(({ readonly }: { readonly: boolean }) => {
   const form = useFormContext<Omit<RouterAction, 'children' | 'nextAction'>>();
   const deleteBranch = (index: number) => {
     applyOperation({
-      type: FlowOperationType.DELETE_BRANCH,
+      type: WorkflowOperationType.DELETE_BRANCH,
       request: {
         stepName: step.name,
         branchIndex: index,
@@ -70,30 +70,30 @@ export const RouterSettings = memo(({ readonly }: { readonly: boolean }) => {
     });
 
     setSelectedBranchIndex(null);
-    fitView(flowCanvasUtils.createFocusStepInGraphParams(step.name));
+    fitView(workflowCanvasUtils.createFocusStepInGraphParams(step.name));
   };
 
   useEffect(() => {
     const operationListener = (
-      flowVersion: FlowVersion,
-      operation: FlowOperationRequest,
+      workflowVersion: WorkflowVersion,
+      operation: WorkflowOperationRequest,
     ) => {
       switch (operation.type) {
-        case FlowOperationType.DELETE_BRANCH: {
+        case WorkflowOperationType.DELETE_BRANCH: {
           if (operation.request.stepName !== step.name) {
             return;
           }
           remove(operation.request.branchIndex);
           break;
         }
-        case FlowOperationType.DUPLICATE_BRANCH:
-        case FlowOperationType.ADD_BRANCH: {
+        case WorkflowOperationType.DUPLICATE_BRANCH:
+        case WorkflowOperationType.ADD_BRANCH: {
           if (operation.request.stepName !== step.name) return;
-          const updatedStep = flowStructureUtil.getActionOrThrow(
+          const updatedStep = workflowStructureUtil.getActionOrThrow(
             operation.request.stepName,
-            flowVersion.trigger,
+            workflowVersion.trigger,
           );
-          if (updatedStep.type !== FlowActionType.ROUTER) {
+          if (updatedStep.type !== WorkflowActionType.ROUTER) {
             console.error(
               `Trying to duplicate a branch on a none router step! ${operation.request.stepName}`,
             );
@@ -101,7 +101,7 @@ export const RouterSettings = memo(({ readonly }: { readonly: boolean }) => {
           }
           const branch =
             updatedStep.settings.branches[operation.request.branchIndex];
-          if (operation.type === FlowOperationType.DUPLICATE_BRANCH) {
+          if (operation.type === WorkflowOperationType.DUPLICATE_BRANCH) {
             insert(operation.request.branchIndex + 1, {
               ...branch,
               branchName: `${branch.branchName} Copy`,
@@ -109,7 +109,7 @@ export const RouterSettings = memo(({ readonly }: { readonly: boolean }) => {
           } else {
             insert(
               updatedStep.settings.branches.length - 1,
-              flowStructureUtil.createBranch(
+              workflowStructureUtil.createBranch(
                 `Branch ${updatedStep.settings.branches.length}`,
                 undefined,
               ),
@@ -118,7 +118,7 @@ export const RouterSettings = memo(({ readonly }: { readonly: boolean }) => {
           form.trigger();
           break;
         }
-        case FlowOperationType.MOVE_BRANCH: {
+        case WorkflowOperationType.MOVE_BRANCH: {
           if (operation.request.stepName !== step.name) return;
           move(
             operation.request.sourceBranchIndex,
@@ -188,7 +188,7 @@ export const RouterSettings = memo(({ readonly }: { readonly: boolean }) => {
             deleteBranch={deleteBranch}
             moveBranch={({ sourceIndex, targetIndex }) => {
               applyOperation({
-                type: FlowOperationType.MOVE_BRANCH,
+                type: WorkflowOperationType.MOVE_BRANCH,
                 request: {
                   stepName: step.name,
                   sourceBranchIndex: sourceIndex,
@@ -198,7 +198,7 @@ export const RouterSettings = memo(({ readonly }: { readonly: boolean }) => {
             }}
             duplicateBranch={(index) => {
               applyOperation({
-                type: FlowOperationType.DUPLICATE_BRANCH,
+                type: WorkflowOperationType.DUPLICATE_BRANCH,
                 request: {
                   stepName: step.name,
                   branchIndex: index,
@@ -210,13 +210,13 @@ export const RouterSettings = memo(({ readonly }: { readonly: boolean }) => {
               setSelectedBranchIndex(index);
               if (step.children[index]) {
                 fitView(
-                  flowCanvasUtils.createFocusStepInGraphParams(
+                  workflowCanvasUtils.createFocusStepInGraphParams(
                     step.children[index].name,
                   ),
                 );
               } else {
                 fitView(
-                  flowCanvasUtils.createFocusStepInGraphParams(
+                  workflowCanvasUtils.createFocusStepInGraphParams(
                     `${step.name}-big-add-button-${step.name}-branch-${index}-start-edge`,
                   ),
                 );
@@ -228,7 +228,7 @@ export const RouterSettings = memo(({ readonly }: { readonly: boolean }) => {
               <BranchesToolbar
                 addButtonClicked={() => {
                   applyOperation({
-                    type: FlowOperationType.ADD_BRANCH,
+                    type: WorkflowOperationType.ADD_BRANCH,
                     request: {
                       stepName: step.name,
                       branchIndex: step.settings.branches.length - 1,

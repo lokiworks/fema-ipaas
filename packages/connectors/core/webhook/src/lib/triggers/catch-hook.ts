@@ -15,14 +15,14 @@ const liveMarkdown = `**Live URL:**
 \`\`\`text
 {{webhookUrl}}
 \`\`\`
-generate sample data & triggers published flow.
+generate sample data & triggers published workflow.
 
 `;
 
 const testMarkdown = `
 **Test URL:**
 
-if you want to generate sample data without triggering the flow, append \`/test\` to your webhook URL.
+if you want to generate sample data without triggering the workflow, append \`/test\` to your webhook URL.
 
 `;
 
@@ -31,7 +31,7 @@ const syncMarkdown = `**Synchronous Requests:**
 If you expect a response from this webhook, add \`/sync\` to the end of the URL.
 If it takes more than {{webhookTimeoutSeconds}} seconds, it will return a 408 Request Timeout response.
 
-To return data, add an Webhook step to your flow with the Return Response action.
+To return data, add an Webhook step to your workflow with the Return Response action.
 `;
 
 enum AuthType {
@@ -47,7 +47,7 @@ export const catchWebhook = createTrigger({
   description:
     'Receive incoming HTTP/webhooks using any HTTP method such as GET, POST, PUT, DELETE, etc.',
   aiMetadata: {
-    description: 'Fires once for every request delivered to the unique webhook URL generated for this flow, under any HTTP method. Use it as the entry point for any system that can call a URL; Authentication must be set explicitly to None, Basic credentials, a shared header value, or an HMAC signature over the raw body, and requests that fail verification are silently dropped without starting a run. Appending /sync to the URL makes the caller wait for a Return Response action, while /test generates sample data without triggering the published flow.',
+    description: 'Fires once for every request delivered to the unique webhook URL generated for this workflow, under any HTTP method. Use it as the entry point for any system that can call a URL; Authentication must be set explicitly to None, Basic credentials, a shared header value, or an HMAC signature over the raw body, and requests that fail verification are silently dropped without starting a run. Appending /sync to the URL makes the caller wait for a Return Response action, while /test generates sample data without triggering the published workflow.',
   },
   props: {
     liveMarkdown: Property.MarkDown({

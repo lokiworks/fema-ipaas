@@ -32,17 +32,17 @@ export function textToSectionBlocks(text: string): (KnownBlock | Block)[] {
   return blocks;
 }
 
-export function buildFlowOriginContextBlock(context: {
+export function buildWorkflowOriginContextBlock(context: {
   server: { publicUrl: string };
   workspace: { id: string };
-  flows: { current: { id: string } };
+  workflows: { current: { id: string } };
 }): KnownBlock {
   return {
     type: 'context',
     elements: [
       {
         type: 'mrkdwn',
-        text: `Message sent by <${new URL(context.server.publicUrl).origin}/workspaces/${context.workspace.id}/flows/${context.flows.current.id}|this flow>.`
+        text: `Message sent by <${new URL(context.server.publicUrl).origin}/workspaces/${context.workspace.id}/workflows/${context.workflows.current.id}|this workflow>.`
       }
     ]
   };

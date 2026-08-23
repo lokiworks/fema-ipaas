@@ -1,15 +1,15 @@
 import {
-  FlowStatus,
+  WorkflowStatus,
   FolderDto,
-  PopulatedFlow,
+  PopulatedWorkflow,
   UncategorizedFolderId,
 } from '@fema/shared';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
-import { flowsApi } from '@/features/flows/api/flows-api';
 import { foldersApi } from '@/features/folders/api/folders-api';
+import { workflowsApi } from '@/features/workflows/api/workflows-api';
 import { authenticationSession } from '@/lib/authentication-session';
 
 import { AutomationsFilters, FolderContent } from '../lib/types';
@@ -54,20 +54,22 @@ export function useAutomationsData(
 
   const folderCounts = useMemo(() => {
     const folders = foldersQuery.data ?? [];
-    return new Map(folders.map((folder) => [folder.id, folder.numberOfFlows]));
+    return new Map(
+      folders.map((folder) => [folder.id, folder.numberOfWorkflows]),
+    );
   }, [foldersQuery.data]);
 
   const folderContentsQuery = useQuery<FolderContentsMap>({
     queryKey: ['all-folder-contents', workspaceId, folderIds],
     queryFn: async () => {
       const folders = foldersQuery.data!;
-      const flowsPage = await flowsApi.list({
+      const workflowsPage = await workflowsApi.list({
         workspaceId,
         folderIds: folders.map((f) => f.id),
         limit: FOLDER_CONTENTS_LIMIT,
         cursor: undefined,
       });
-      return buildFolderContentsMap(folders, flowsPage.data);
+      return buildFolderContentsMap(folders, workflowsPage.data);
     },
     enabled: !!foldersQuery.data && foldersQuery.data.length > 0,
     staleTime: STALE_TIME,
@@ -75,12 +77,12 @@ export function useAutomationsData(
     meta: { showErrorDialog: true, loadSubsetOptions: {} },
   });
 
-  const skipFlows =
-    filters.typeFilter.length > 0 && !filters.typeFilter.includes('flow');
-  const rootFlowsQuery = useQuery({
-    queryKey: ['root-flows', workspaceId, filters],
+  const skipWorkflows =
+    filters.typeFilter.length > 0 && !filters.typeFilter.includes('workflow');
+  const rootWorkflowsQuery = useQuery({
+    queryKey: ['root-workflows', workspaceId, filters],
     queryFn: () =>
-      flowsApi.list({
+      workflowsApi.list({
         workspaceId,
         folderId: isFiltered ? undefined : UncategorizedFolderId,
         limit: 1000,
@@ -88,14 +90,14 @@ export function useAutomationsData(
         name: filters.searchTerm || undefined,
         status:
           filters.statusFilter.length > 0
-            ? (filters.statusFilter as FlowStatus[])
+            ? (filters.statusFilter as WorkflowStatus[])
             : undefined,
         connectionExternalIds:
           filters.connectionFilter.length > 0
             ? filters.connectionFilter
             : undefined,
       }),
-    enabled: !skipFlows,
+    enabled: !skipWorkflows,
     staleTime: STALE_TIME,
     refetchOnMount: 'always',
     meta: { showErrorDialog: true, loadSubsetOptions: {} },
@@ -142,7 +144,7 @@ export function useAutomationsData(
 
   const { treeItems, totalPageItems } = useMemo(() => {
     let folders = foldersQuery.data ?? [];
-    let rootFlows = rootFlowsQuery.data?.data ?? [];
+    let rootWorkflows = rootWorkflowsQuery.data?.data ?? [];
     const folderContents = folderContentsQuery.data ?? new Map();
 
     const hasFolderFilter = filters.folderFilter.length > 0;
@@ -150,13 +152,13 @@ export function useAutomationsData(
     if (isFiltered) {
       if (hasFolderFilter) {
         const folderSet = new Set(filters.folderFilter);
-        rootFlows = rootFlows.filter(
+        rootWorkflows = rootWorkflows.filter(
           (f) => f.folderId && folderSet.has(f.folderId),
         );
       }
 
       const { items, totalItems } = buildFilteredTreeItems(
-        rootFlows,
+        rootWorkflows,
         folders,
         folderVisibleCounts,
         rootPage,
@@ -172,12 +174,12 @@ export function useAutomationsData(
     if (hasFolderFilter) {
       const folderSet = new Set(filters.folderFilter);
       folders = folders.filter((f) => folderSet.has(f.id));
-      rootFlows = [];
+      rootWorkflows = [];
     }
 
     const { items, totalRootItems } = buildTreeItems(
       folders,
-      rootFlows,
+      rootWorkflows,
       folderContents,
       folderCounts,
       folderVisibleCounts,
@@ -189,7 +191,7 @@ export function useAutomationsData(
     return { treeItems: items, totalPageItems: totalRootItems };
   }, [
     foldersQuery.data,
-    rootFlowsQuery.data,
+    rootWorkflowsQuery.data,
     folderContentsQuery.data,
     folderCounts,
     folderVisibleCounts,
@@ -216,17 +218,17 @@ export function useAutomationsData(
   const totalPages = Math.ceil(totalPageItems / pageSize);
   const isLoading =
     foldersQuery.isLoading ||
-    (rootFlowsQuery.isLoading && !skipFlows) ||
+    (rootWorkflowsQuery.isLoading && !skipWorkflows) ||
     folderContentsQuery.isLoading;
 
   const invalidateAll = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['folders'] });
-    queryClient.invalidateQueries({ queryKey: ['root-flows'] });
+    queryClient.invalidateQueries({ queryKey: ['root-workflows'] });
     queryClient.invalidateQueries({ queryKey: ['all-folder-contents'] });
   }, [queryClient]);
 
   const invalidateRoot = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ['root-flows'] });
+    queryClient.invalidateQueries({ queryKey: ['root-workflows'] });
   }, [queryClient]);
 
   const invalidateFolder = useCallback(
@@ -240,7 +242,7 @@ export function useAutomationsData(
   return {
     treeItems,
     folders: foldersQuery.data ?? [],
-    rootFlows: rootFlowsQuery.data?.data ?? [],
+    rootWorkflows: rootWorkflowsQuery.data?.data ?? [],
     isLoading,
     isFiltered,
     expandedFolders: effectiveExpandedFolders,
@@ -263,14 +265,14 @@ type FolderContentsMap = Map<string, FolderContent>;
 
 function buildFolderContentsMap(
   folders: FolderDto[],
-  flows: PopulatedFlow[],
+  workflows: PopulatedWorkflow[],
 ): FolderContentsMap {
   const map: FolderContentsMap = new Map(
-    folders.map((folder) => [folder.id, { flows: [] }]),
+    folders.map((folder) => [folder.id, { workflows: [] }]),
   );
-  flows.forEach((flow) => {
-    if (flow.folderId) {
-      map.get(flow.folderId)?.flows.push(flow);
+  workflows.forEach((workflow) => {
+    if (workflow.folderId) {
+      map.get(workflow.folderId)?.workflows.push(workflow);
     }
   });
   return map;

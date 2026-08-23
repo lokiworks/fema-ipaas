@@ -10,7 +10,7 @@ const nameOf = (value: unknown): string | undefined => {
 
 export const slackOAuth2Auth = ConnectorAuth.OAuth2({
   description:
-    'Authenticate via a Slack OAuth flow.',
+    'Authenticate via a Slack OAuth workflow.',
   authUrl:
     'https://slack.com/oauth/v2/authorize?user_scope=search:read,users.profile:write,reactions:read,reactions:write,im:history,stars:read,channels:write,groups:write,im:write,mpim:write,channels:write.invites,groups:write.invites,channels:history,groups:history,chat:write,users:read,usergroups:write',
   tokenUrl: 'https://slack.com/api/oauth.v2.access',

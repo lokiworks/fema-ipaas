@@ -22,14 +22,14 @@ Named, reusable connector/action/trigger visibility config a platform admin assi
 
 ### Formulas
 
-User-facing data transforms (81+ functions) inside any builder text input via a `/` slash editor; saved inline as `ap-formula-v1::{<expr>}::ap-formula-v1` so they round-trip through flow JSON.
+User-facing data transforms (81+ functions) inside any builder text input via a `/` slash editor; saved inline as `ap-formula-v1::{<expr>}::ap-formula-v1` so they round-trip through workflow JSON.
 
 - **Where**: shared lib `packages/core/shared/src/lib/formula/` (`FEMA_FUNCTIONS` registry is the single source of truth; `formulaEvaluator.evaluate`, type checker). Editor is the TipTap `text-input-with-mentions`. Runtime hooks in the engine's `props-resolver.ts` pre-pass.
 - **Gotchas**: no HTTP endpoints, no DB tables, no worker job — evaluation is synchronous in the engine. Runs on **every** edition, unconditionally (even if the editor flag is off, saved formulas still evaluate). Uses `expr-eval`; preprocess normalizes `;`→`,`, `and/or/not`, and rewrites `if()` to lazy ternary. Changing a function = bump `@fema/shared` minor; never hard-remove a function (mark `deprecated`).
 
 ### Nothing typechecks the engine
 
-`@fema/engine`'s `build` is esbuild (`esbuild.config.mjs`, types stripped, never checked) and its `lint` is eslint only — no `tsc --noEmit` in `turbo.json` or any CI workflow. So type errors ship silently: as of Jul 2026 `npx tsc -p tsconfig.lib.json --noEmit` reports errors in `api/engine-file-api.ts`, `api/engine-run-api.ts`, `network/dns-lookup-guard.ts`, `connector-context/flows.ts`, `variables/props-processor.ts` on a clean `main`.
+`@fema/engine`'s `build` is esbuild (`esbuild.config.mjs`, types stripped, never checked) and its `lint` is eslint only — no `tsc --noEmit` in `turbo.json` or any CI workflow. So type errors ship silently: as of Jul 2026 `npx tsc -p tsconfig.lib.json --noEmit` reports errors in `api/engine-file-api.ts`, `api/engine-run-api.ts`, `network/dns-lookup-guard.ts`, `connector-context/workflows.ts`, `variables/props-processor.ts` on a clean `main`.
 
 - Run tsc yourself before/after an engine change and **diff the file list** rather than expecting zero — a green run is not the baseline.
 - Engine tests only run correctly from the package dir (`cd packages/server/engine && npx vitest run`); from the repo root the root config applies and every file fails collection with `describe is not defined`.
@@ -38,7 +38,7 @@ User-facing data transforms (81+ functions) inside any builder text input via a 
 
 Under `FEMA_EXECUTION_MODE=SANDBOX_PROCESS` / `SANDBOX_CODE_AND_PROCESS` the engine runs inside the `isolate` binary (`create-sandbox-for-job.ts` → `isolateProcess`). **The bundled isolate is 1.8.1, which hardcodes** `RLIMIT_NOFILE` **to 64 — soft *and* hard — with no flag to change it.** Verified: `ulimit -n` inside is `64`, outside `1048576`; upstream added `--open-files` only after 1.8.1, so our binary rejects it.
 
-That 64 is the real budget for everything the engine does at once: every HTTP socket to every connector, S3, plus 4 fds per CODE-step child process. An idle sandbox already sits around 23. Big flows (100+ steps, loops, several HTTP connectors) blow through it.
+That 64 is the real budget for everything the engine does at once: every HTTP socket to every connector, S3, plus 4 fds per CODE-step child process. An idle sandbox already sits around 23. Big workflows (100+ steps, loops, several HTTP connectors) blow through it.
 
 - **Do not go looking at the worker's or the host's limits** — they are irrelevant and look healthy. The worker process has 524288 and the host `fs.file-max` is effectively unbounded. The constrained process is the `sandbox-*` one, not the `node .../worker/dist/src/bootstrap.js` one.
 - Raising it requires shipping a newer isolate binary (amd64 + arm) in `packages/server/api/src/assets/` and passing `--open-files`.
@@ -56,7 +56,7 @@ Each CODE step is run in a fresh `node --eval` child process spawned with `stdio
 
 ### Workers
 
-Node processes that poll the app over Socket.IO and execute flows. The worker *is* the sandbox — the full execution model (concurrency 1, replicas, Resolver, box lifecycle) lives on [Execution Runtime](https://craftspace.app/o/fema/pages/pg_xLVaOvA8hs9XVLj7kNZNE). Here, the connector-relevant behavior:
+Node processes that poll the app over Socket.IO and execute workflows. The worker *is* the sandbox — the full execution model (concurrency 1, replicas, Resolver, box lifecycle) lives on [Execution Runtime](https://craftspace.app/o/fema/pages/pg_xLVaOvA8hs9XVLj7kNZNE). Here, the connector-relevant behavior:
 
 - **Version gate**: app and worker refuse to exchange jobs unless releases match exactly (fail-closed; auto-recovers once fleets converge).
 - **Disconnect** returns in-flight jobs to the queue (`releaseConnectionJobs`) to avoid post-deploy "Job stalled" storms.
@@ -66,9 +66,9 @@ Node processes that poll the app over Socket.IO and execute flows. The worker *i
 
 ### AI Agents (gated by `agentsEnabled`)
 
-A flow step type (`@fema/connector-agent`) running a ReAct-style LLM loop (up to `maxSteps`) that can call tools before producing a final answer. **No backend entity** — config lives in the flow version's step settings.
+A workflow step type (`@fema/connector-agent`) running a ReAct-style LLM loop (up to `maxSteps`) that can call tools before producing a final answer. **No backend entity** — config lives in the workflow version's step settings.
 
-- **Tools** (`AgentTool` union): CONNECTOR action, FLOW (child run), MCP server, KNOWLEDGE_BASE (semantic search on 768-dim embeddings). Config: `agentTools`, `structuredOutput`, `prompt`, `maxSteps`, `aiProviderModel`, optional web search.
+- **Tools** (`AgentTool` union): CONNECTOR action, WORKFLOW (child run), MCP server, KNOWLEDGE_BASE (semantic search on 768-dim embeddings). Config: `agentTools`, `structuredOutput`, `prompt`, `maxSteps`, `aiProviderModel`, optional web search.
 - **Gotchas**: external MCP tools validated server-side via `POST /v1/projects/:projectId/agent-tools/mcp/validate` (initialize→initialized→tools/list handshake) through SSRF-filtered `apAxios`; errors collapse to one generic message. Lives under `agents/` (agent connecting *out*), distinct from `mcp/` (exposing AP *as* an MCP server). `AgentTimeline` renders step blocks in the builder.
 
 ## Pages

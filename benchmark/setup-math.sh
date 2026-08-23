@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Benchmark flow: newest webhook trigger -> math-helper (addition) -> return response with the sum.
+# Benchmark workflow: newest webhook trigger -> math-helper (addition) -> return response with the sum.
 # Signs in to the existing bench user (created by setup.sh) and reuses the warm Cloud Run pool.
 
 BASE_URL="http://localhost:8080/api/v1"
@@ -14,16 +14,16 @@ PROJECT_ID=$(echo "$SIGNIN" | jq -r '.projectId')
 echo "Signed in. Project: $PROJECT_ID" >&2
 AUTH="Authorization: Bearer $TOKEN"
 
-FLOW_RESPONSE=$(curl -s --fail-with-body "$BASE_URL/flows" \
+WORKFLOW_RESPONSE=$(curl -s --fail-with-body "$BASE_URL/workflows" \
   -H "Content-Type: application/json" -H "$AUTH" \
-  -d "{\"displayName\":\"Bench Math Flow\",\"projectId\":\"$PROJECT_ID\"}")
-FLOW_ID=$(echo "$FLOW_RESPONSE" | jq -r '.id')
-echo "Flow created: $FLOW_ID" >&2
+  -d "{\"displayName\":\"Bench Math Workflow\",\"projectId\":\"$PROJECT_ID\"}")
+WORKFLOW_ID=$(echo "$WORKFLOW_RESPONSE" | jq -r '.id')
+echo "Workflow created: $WORKFLOW_ID" >&2
 
 IMPORT_PAYLOAD=$(jq -n '{
-  type: "IMPORT_FLOW",
+  type: "IMPORT_WORKFLOW",
   request: {
-    displayName: "Bench Math Flow",
+    displayName: "Bench Math Workflow",
     schemaVersion: "17",
     notes: [],
     trigger: {
@@ -72,17 +72,17 @@ IMPORT_PAYLOAD=$(jq -n '{
   }
 }')
 
-echo "Importing flow..." >&2
-curl -s --fail-with-body "$BASE_URL/flows/$FLOW_ID" -H "Content-Type: application/json" -H "$AUTH" --data-binary "$IMPORT_PAYLOAD" > /dev/null
+echo "Importing workflow..." >&2
+curl -s --fail-with-body "$BASE_URL/workflows/$WORKFLOW_ID" -H "Content-Type: application/json" -H "$AUTH" --data-binary "$IMPORT_PAYLOAD" > /dev/null
 echo "Publishing..." >&2
-curl -s --fail-with-body "$BASE_URL/flows/$FLOW_ID" -H "Content-Type: application/json" -H "$AUTH" -d '{"type":"LOCK_AND_PUBLISH","request":{}}' > /dev/null
+curl -s --fail-with-body "$BASE_URL/workflows/$WORKFLOW_ID" -H "Content-Type: application/json" -H "$AUTH" -d '{"type":"LOCK_AND_PUBLISH","request":{}}' > /dev/null
 echo "Enabling..." >&2
-curl -s --fail-with-body "$BASE_URL/flows/$FLOW_ID" -H "Content-Type: application/json" -H "$AUTH" -d '{"type":"CHANGE_STATUS","request":{"status":"ENABLED"}}' > /dev/null
+curl -s --fail-with-body "$BASE_URL/workflows/$WORKFLOW_ID" -H "Content-Type: application/json" -H "$AUTH" -d '{"type":"CHANGE_STATUS","request":{"status":"ENABLED"}}' > /dev/null
 
-FLOW_ENABLE_TIMEOUT=${FLOW_ENABLE_TIMEOUT:-120}
-for i in $(seq 1 "$FLOW_ENABLE_TIMEOUT"); do
-  STATUS=$(curl -s "$BASE_URL/flows/$FLOW_ID" -H "$AUTH" | jq -r '.status')
-  [ "$STATUS" = "ENABLED" ] && { echo "Flow is ENABLED" >&2; break; }
+WORKFLOW_ENABLE_TIMEOUT=${WORKFLOW_ENABLE_TIMEOUT:-120}
+for i in $(seq 1 "$WORKFLOW_ENABLE_TIMEOUT"); do
+  STATUS=$(curl -s "$BASE_URL/workflows/$WORKFLOW_ID" -H "$AUTH" | jq -r '.status')
+  [ "$STATUS" = "ENABLED" ] && { echo "Workflow is ENABLED" >&2; break; }
   sleep 1
 done
-echo "$FLOW_ID"
+echo "$WORKFLOW_ID"

@@ -19,7 +19,7 @@ Multiple isolated browser sessions with state persistence and concurrent browsin
 Use `--session` flag to isolate browser contexts:
 
 ```bash
-# Session 1: Authentication flow
+# Session 1: Authentication workflow
 agent-browser --session auth open https://app.example.com/login
 
 # Session 2: Public browsing (separate cookies, storage)

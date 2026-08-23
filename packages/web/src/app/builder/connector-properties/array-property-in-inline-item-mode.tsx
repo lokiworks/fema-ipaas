@@ -6,7 +6,7 @@ import { useFormContext } from 'react-hook-form';
 import { cn, GAP_SIZE_FOR_STEP_SETTINGS } from '@/lib/utils';
 
 import { useBuilderStateContext } from '../builder-hooks';
-import { flowCanvasHooks } from '../flow-canvas/hooks';
+import { workflowCanvasHooks } from '../workflow-canvas/hooks';
 
 import { GenericPropertiesForm } from './generic-properties-form';
 import { TextInputWithMentions } from './text-input-with-mentions';
@@ -37,7 +37,7 @@ const ArrayConnectorPropertyInInlineItemMode = React.memo(
       state.setIsFocusInsideListMapperModeInput,
     ]);
     const { inputName, disabled } = props;
-    flowCanvasHooks.useIsFocusInsideListMapperModeInput({
+    workflowCanvasHooks.useIsFocusInsideListMapperModeInput({
       containerRef,
       setIsFocusInsideListMapperModeInput,
       isFocusInsideListMapperModeInput,

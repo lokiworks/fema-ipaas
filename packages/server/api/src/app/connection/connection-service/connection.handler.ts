@@ -1,17 +1,17 @@
 import { PropertyType } from '@fema/connector-sdk'
 import { assertNotNullOrUndefined, ErrorCode, isNil, PlatformError, PlatformId, tryCatch, UserId, WorkspaceId } from '@fema/core-utils'
-import { Connection, ConnectionStatus, ConnectionType, ConnectionValue, ConnectionWithoutSensitiveData, EngineResponse, EngineResponseStatus, ExecuteRefreshTokenAuthResponse, Flow, FlowOperationType, flowStructureUtil, FlowVersion, FlowVersionState, PopulatedFlow, WorkerJobType } from '@fema/shared'
+import { Connection, ConnectionStatus, ConnectionType, ConnectionValue, ConnectionWithoutSensitiveData, EngineResponse, EngineResponseStatus, ExecuteRefreshTokenAuthResponse, PopulatedWorkflow, WorkerJobType, Workflow, WorkflowOperationType, workflowStructureUtil, WorkflowVersion, WorkflowVersionState } from '@fema/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { lru, LRU } from 'tiny-lru'
 import { ArrayContains } from 'typeorm'
 import { connectorMetadataService, getConnectorPackageWithoutArchive } from '../../connectors/metadata/connector-metadata-service'
 import { distributedLock } from '../../database/redis-connections'
-import { flowService } from '../../flows/flow/flow.service'
-import { flowVersionRepo, flowVersionService } from '../../flows/flow-version/flow-version.service'
 import { encryptUtils } from '../../helper/encryption'
 import { exceptionHandler } from '../../helper/exception-handler'
 import { userInteractionWatcher } from '../../workers/user-interaction-watcher'
+import { workflowService } from '../../workflows/workflow/workflow.service'
+import { workflowVersionRepo, workflowVersionService } from '../../workflows/workflow-version/workflow-version.service'
 import { workspaceService } from '../../workspace/workspace-service'
 import { ConnectionSchema } from '../connection.entity'
 import { connectionsRepo } from './connection-service'
@@ -19,41 +19,41 @@ import { oauth2Handler } from './oauth2'
 import { oauth2Util } from './oauth2/oauth2-util'
 
 export const connectionHandler = (log: FastifyBaseLogger) => ({
-    async updateFlowsWithConnection(flows: PopulatedFlow[], params: UpdateFlowsWithConnectionParams): Promise<void> {
+    async updateWorkflowsWithConnection(workflows: PopulatedWorkflow[], params: UpdateWorkflowsWithConnectionParams): Promise<void> {
         const { connection, newConnection, userId, applyToPublishedVersions } = params
 
-        await Promise.all(flows.map(async (flow) => {
-            const workspace = await workspaceService(log).getOneOrThrow(flow.workspaceId)
+        await Promise.all(workflows.map(async (workflow) => {
+            const workspace = await workspaceService(log).getOneOrThrow(workflow.workspaceId)
             // Don't change the order: republish first (when opted in), then make sure the
             // draft also points to the new connection.
             if (applyToPublishedVersions) {
-                await handleLockedVersion(flow, userId, flow.workspaceId, workspace.platformId, connection, newConnection, log)
+                await handleLockedVersion(workflow, userId, workflow.workspaceId, workspace.platformId, connection, newConnection, log)
             }
-            await handleDraftVersion(flow, userId, flow.workspaceId, workspace.platformId, connection, newConnection, log)
+            await handleDraftVersion(workflow, userId, workflow.workspaceId, workspace.platformId, connection, newConnection, log)
         }))
     },
 
-    // Queries published versions directly rather than relying on the flows fetched
-    // for the replace, since flowService.list filters by the latest (draft) version's
-    // connectionIds. A flow whose published version still uses the connection but whose
+    // Queries published versions directly rather than relying on the workflows fetched
+    // for the replace, since workflowService.list filters by the latest (draft) version's
+    // connectionIds. A workflow whose published version still uses the connection but whose
     // newer draft dropped it would be missing from that list, so deleting the source
     // would silently orphan the published version.
     // When applyToPublishedVersions is set, the replace republishes the published
-    // versions of the flows it can see (those whose latest version references the
-    // connection), so only published versions whose flow's latest version dropped the
+    // versions of the workflows it can see (those whose latest version references the
+    // connection), so only published versions whose workflow's latest version dropped the
     // connection stay untouched and count as blocking.
-    async countPublishedFlowsReferencingConnection({ workspaceId, externalId, applyToPublishedVersions }: CountPublishedFlowsParams): Promise<number> {
-        const query = flowVersionRepo()
-            .createQueryBuilder('flow_version')
-            .innerJoin('flow', 'flow', 'flow.id = flow_version."flowId"')
-            .where('flow."workspaceId" = :workspaceId', { workspaceId })
-            .andWhere('flow_version.id = flow."publishedVersionId"')
-            .andWhere('flow_version."connectionIds" && :externalIds', { externalIds: [externalId] })
+    async countPublishedWorkflowsReferencingConnection({ workspaceId, externalId, applyToPublishedVersions }: CountPublishedWorkflowsParams): Promise<number> {
+        const query = workflowVersionRepo()
+            .createQueryBuilder('workflow_version')
+            .innerJoin('workflow', 'workflow', 'workflow.id = workflow_version."workflowId"')
+            .where('workflow."workspaceId" = :workspaceId', { workspaceId })
+            .andWhere('workflow_version.id = workflow."publishedVersionId"')
+            .andWhere('workflow_version."connectionIds" && :externalIds', { externalIds: [externalId] })
         if (applyToPublishedVersions) {
-            const latestVersionConnectionIds = flowVersionRepo()
+            const latestVersionConnectionIds = workflowVersionRepo()
                 .createQueryBuilder('fv_latest')
                 .select('fv_latest."connectionIds"')
-                .where('fv_latest."flowId" = flow.id')
+                .where('fv_latest."workflowId" = workflow.id')
                 .orderBy('fv_latest.created', 'DESC')
                 .limit(1)
             query.andWhere(`NOT ((${latestVersionConnectionIds.getQuery()}) && :externalIds)`)
@@ -342,65 +342,65 @@ class CustomAuthRefreshError extends Error {
     }
 }
 
-async function handleLockedVersion(flow: PopulatedFlow, userId: UserId, workspaceId: WorkspaceId, platformId: PlatformId, connection: ConnectionWithoutSensitiveData, newConnection: ConnectionWithoutSensitiveData, log: FastifyBaseLogger) {
-    if (isNil(flow.publishedVersionId)) {
+async function handleLockedVersion(workflow: PopulatedWorkflow, userId: UserId, workspaceId: WorkspaceId, platformId: PlatformId, connection: ConnectionWithoutSensitiveData, newConnection: ConnectionWithoutSensitiveData, log: FastifyBaseLogger) {
+    if (isNil(workflow.publishedVersionId)) {
         return
     }
 
-    const lastPublishedVersion = await flowVersionService(log).getLatestVersion(flow.id, FlowVersionState.LOCKED)
-    assertNotNullOrUndefined(lastPublishedVersion, `Last published version not found for flow ${flow.id}`)
+    const lastPublishedVersion = await workflowVersionService(log).getLatestVersion(workflow.id, WorkflowVersionState.LOCKED)
+    assertNotNullOrUndefined(lastPublishedVersion, `Last published version not found for workflow ${workflow.id}`)
 
-    await flowService(log).update({
-        id: flow.id,
+    await workflowService(log).update({
+        id: workflow.id,
         workspaceId,
         platformId,
         userId,
-        previousFlow: flow,
+        previousWorkflow: workflow,
         operation: {
-            type: FlowOperationType.IMPORT_FLOW,
-            request: replaceConnectionInFlowVersion(lastPublishedVersion, connection, newConnection),
+            type: WorkflowOperationType.IMPORT_WORKFLOW,
+            request: replaceConnectionInWorkflowVersion(lastPublishedVersion, connection, newConnection),
         },
     })
 
-    await flowService(log).update({
-        id: flow.id,
+    await workflowService(log).update({
+        id: workflow.id,
         workspaceId,
         platformId,
         userId,
         operation: {
-            type: FlowOperationType.LOCK_AND_PUBLISH,
+            type: WorkflowOperationType.LOCK_AND_PUBLISH,
             request: {},
         },
     })
 }
 
-async function handleDraftVersion(flow: Flow, userId: UserId, workspaceId: WorkspaceId, platformId: PlatformId, connection: ConnectionWithoutSensitiveData, newConnection: ConnectionWithoutSensitiveData, log: FastifyBaseLogger) {
-    const latestVersion = await flowVersionService(log).getFlowVersionOrThrow({
-        flowId: flow.id,
+async function handleDraftVersion(workflow: Workflow, userId: UserId, workspaceId: WorkspaceId, platformId: PlatformId, connection: ConnectionWithoutSensitiveData, newConnection: ConnectionWithoutSensitiveData, log: FastifyBaseLogger) {
+    const latestVersion = await workflowVersionService(log).getWorkflowVersionOrThrow({
+        workflowId: workflow.id,
         versionId: undefined,
     })
 
     // Nothing to do if the latest version no longer references the old connection
-    // (e.g. it was just republished onto the new one). Otherwise IMPORT_FLOW will
+    // (e.g. it was just republished onto the new one). Otherwise IMPORT_WORKFLOW will
     // transparently create a draft from a published version and rewrite it, so the
-    // draft always ends up on the new connection even for never-edited published flows.
+    // draft always ends up on the new connection even for never-edited published workflows.
     if (!latestVersion.connectionIds.includes(connection.externalId)) {
         return
     }
 
-    await flowService(log).update({
-        id: flow.id,
+    await workflowService(log).update({
+        id: workflow.id,
         workspaceId,
         platformId,
         userId,
         operation: {
-            type: FlowOperationType.IMPORT_FLOW,
-            request: replaceConnectionInFlowVersion(latestVersion, connection, newConnection),
+            type: WorkflowOperationType.IMPORT_WORKFLOW,
+            request: replaceConnectionInWorkflowVersion(latestVersion, connection, newConnection),
         },
     })
 }
-function replaceConnectionInFlowVersion(flowVersion: FlowVersion, connection: ConnectionWithoutSensitiveData, newConnection: ConnectionWithoutSensitiveData) {
-    return flowStructureUtil.transferFlow(flowVersion, (step) => {
+function replaceConnectionInWorkflowVersion(workflowVersion: WorkflowVersion, connection: ConnectionWithoutSensitiveData, newConnection: ConnectionWithoutSensitiveData) {
+    return workflowStructureUtil.transferWorkflow(workflowVersion, (step) => {
         if (step.settings?.input?.auth?.includes(connection.externalId)) {
             return {
                 ...step,
@@ -424,14 +424,14 @@ function replaceConnectionIdInAuth(auth: string, oldConnectionId: string, newCon
     )
 }
 
-type UpdateFlowsWithConnectionParams = {
+type UpdateWorkflowsWithConnectionParams = {
     connection: ConnectionWithoutSensitiveData
     newConnection: ConnectionWithoutSensitiveData
     userId: UserId
     applyToPublishedVersions: boolean
 }
 
-type CountPublishedFlowsParams = {
+type CountPublishedWorkflowsParams = {
     workspaceId: WorkspaceId
     externalId: string
     applyToPublishedVersions: boolean

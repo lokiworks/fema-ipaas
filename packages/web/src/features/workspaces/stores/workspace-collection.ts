@@ -60,10 +60,11 @@ export const workspaceCollection = createCollection<
           request.releasesEnabled = modified.releasesEnabled;
         }
         if (
-          modified.notifyFlowOwnerOnFailure !==
-          original.notifyFlowOwnerOnFailure
+          modified.notifyWorkflowOwnerOnFailure !==
+          original.notifyWorkflowOwnerOnFailure
         ) {
-          request.notifyFlowOwnerOnFailure = modified.notifyFlowOwnerOnFailure;
+          request.notifyWorkflowOwnerOnFailure =
+            modified.notifyWorkflowOwnerOnFailure;
         }
         if (modified.externalId !== original.externalId) {
           request.externalId =

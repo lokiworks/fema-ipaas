@@ -40,7 +40,7 @@ export type Sandbox = {
 }
 
 export type SandboxStartOptions = {
-    flowVersionId: string | undefined
+    workflowVersionId: string | undefined
     platformId: string
     mounts: SandboxMount[]
 }

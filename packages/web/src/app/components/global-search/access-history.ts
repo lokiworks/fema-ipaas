@@ -42,7 +42,7 @@ export function clearAccessHistory(): void {
   }
 }
 
-export type AccessedItemType = 'flow' | 'table' | 'workspace' | 'page';
+export type AccessedItemType = 'workflow' | 'table' | 'workspace' | 'page';
 
 export type AccessedItem = {
   id: string;

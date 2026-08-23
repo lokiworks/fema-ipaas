@@ -1,6 +1,6 @@
 import { apId } from '@fema/core-utils'
 import { ActionBase } from '@fema/connector-sdk'
-import { DefaultWorkspaceRole, FlowTriggerType, PackageType, ConnectorType, PrincipalType } from '@fema/shared'
+import { DefaultWorkspaceRole, WorkflowTriggerType, PackageType, ConnectorType, PrincipalType } from '@fema/shared'
 import { FastifyBaseLogger, FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { databaseConnection } from '../../../../src/app/database/database-connection'
@@ -9,8 +9,8 @@ import { connectorMetadataService } from '../../../../src/app/connectors/metadat
 import { generateMockToken } from '../../../helpers/auth'
 import { db } from '../../../helpers/db'
 import {
-    createMockFlow,
-    createMockFlowVersion,
+    createMockWorkflow,
+    createMockWorkflowVersion,
     createMockConnectorMetadata,
 } from '../../../helpers/mocks'
 import { createMemberContext, createTestContext } from '../../../helpers/test-context'
@@ -401,7 +401,7 @@ describe('Connector Metadata CE API', () => {
             expect(remaining).not.toBeNull()
         })
 
-        it('should reject deleting a custom connector that is still used by a flow', async () => {
+        it('should reject deleting a custom connector that is still used by a workflow', async () => {
             const ctx = await createTestContext(app!)
             const mockConnector = createMockConnectorMetadata({
                 name: '@custom/in-use-connector',
@@ -411,14 +411,14 @@ describe('Connector Metadata CE API', () => {
                 version: '0.1.0',
             })
             await db.save('connector_metadata', mockConnector)
-            const mockFlow = createMockFlow({ workspaceId: ctx.workspace.id })
-            await db.save('flow', mockFlow)
-            const mockFlowVersion = createMockFlowVersion({
-                flowId: mockFlow.id,
+            const mockWorkflow = createMockWorkflow({ workspaceId: ctx.workspace.id })
+            await db.save('workflow', mockWorkflow)
+            const mockWorkflowVersion = createMockWorkflowVersion({
+                workflowId: mockWorkflow.id,
                 updatedBy: ctx.user.id,
-                displayName: 'My Webhook Flow',
+                displayName: 'My Webhook Workflow',
                 trigger: {
-                    type: FlowTriggerType.CONNECTOR,
+                    type: WorkflowTriggerType.CONNECTOR,
                     name: 'trigger',
                     settings: {
                         connectorName: mockConnector.name,
@@ -431,18 +431,18 @@ describe('Connector Metadata CE API', () => {
                     displayName: 'Trigger',
                 },
             })
-            await db.save('flow_version', mockFlowVersion)
+            await db.save('workflow_version', mockWorkflowVersion)
             await connectorCache(mockLog).setup()
 
             const response = await ctx.delete(`/v1/connectors/${mockConnector.id}`)
 
             expect(response?.statusCode).toBe(StatusCodes.CONFLICT)
-            expect(response?.json().params.message).toContain('My Webhook Flow')
+            expect(response?.json().params.message).toContain('My Webhook Workflow')
             const remaining = await databaseConnection().getRepository('connector_metadata').findOneBy({ id: mockConnector.id })
             expect(remaining).not.toBeNull()
         })
 
-        it('should allow deleting a custom connector that is only referenced by a stale flow version', async () => {
+        it('should allow deleting a custom connector that is only referenced by a stale workflow version', async () => {
             const ctx = await createTestContext(app!)
             const mockConnector = createMockConnectorMetadata({
                 name: '@custom/stale-version-connector',
@@ -452,14 +452,14 @@ describe('Connector Metadata CE API', () => {
                 version: '0.1.0',
             })
             await db.save('connector_metadata', mockConnector)
-            const mockFlow = createMockFlow({ workspaceId: ctx.workspace.id })
-            await db.save('flow', mockFlow)
-            const staleVersion = createMockFlowVersion({
-                flowId: mockFlow.id,
+            const mockWorkflow = createMockWorkflow({ workspaceId: ctx.workspace.id })
+            await db.save('workflow', mockWorkflow)
+            const staleVersion = createMockWorkflowVersion({
+                workflowId: mockWorkflow.id,
                 updatedBy: ctx.user.id,
                 created: '2020-01-01T00:00:00.000Z',
                 trigger: {
-                    type: FlowTriggerType.CONNECTOR,
+                    type: WorkflowTriggerType.CONNECTOR,
                     name: 'trigger',
                     settings: {
                         connectorName: mockConnector.name,
@@ -472,12 +472,12 @@ describe('Connector Metadata CE API', () => {
                     displayName: 'Trigger',
                 },
             })
-            const latestVersion = createMockFlowVersion({
-                flowId: mockFlow.id,
+            const latestVersion = createMockWorkflowVersion({
+                workflowId: mockWorkflow.id,
                 updatedBy: ctx.user.id,
                 created: '2024-01-01T00:00:00.000Z',
             })
-            await db.save('flow_version', [staleVersion, latestVersion])
+            await db.save('workflow_version', [staleVersion, latestVersion])
             await connectorCache(mockLog).setup()
 
             const response = await ctx.delete(`/v1/connectors/${mockConnector.id}`)
@@ -487,7 +487,7 @@ describe('Connector Metadata CE API', () => {
             expect(remaining).toBeNull()
         })
 
-        it('should allow deleting a custom connector used only by a flow in another platform', async () => {
+        it('should allow deleting a custom connector used only by a workflow in another platform', async () => {
             const ctx = await createTestContext(app!)
             const otherCtx = await createTestContext(app!)
             const mockConnector = createMockConnectorMetadata({
@@ -498,13 +498,13 @@ describe('Connector Metadata CE API', () => {
                 version: '0.1.0',
             })
             await db.save('connector_metadata', mockConnector)
-            const otherFlow = createMockFlow({ workspaceId: otherCtx.workspace.id })
-            await db.save('flow', otherFlow)
-            const otherFlowVersion = createMockFlowVersion({
-                flowId: otherFlow.id,
+            const otherWorkflow = createMockWorkflow({ workspaceId: otherCtx.workspace.id })
+            await db.save('workflow', otherWorkflow)
+            const otherWorkflowVersion = createMockWorkflowVersion({
+                workflowId: otherWorkflow.id,
                 updatedBy: otherCtx.user.id,
                 trigger: {
-                    type: FlowTriggerType.CONNECTOR,
+                    type: WorkflowTriggerType.CONNECTOR,
                     name: 'trigger',
                     settings: {
                         connectorName: mockConnector.name,
@@ -517,7 +517,7 @@ describe('Connector Metadata CE API', () => {
                     displayName: 'Trigger',
                 },
             })
-            await db.save('flow_version', otherFlowVersion)
+            await db.save('workflow_version', otherWorkflowVersion)
             await connectorCache(mockLog).setup()
 
             const response = await ctx.delete(`/v1/connectors/${mockConnector.id}`)

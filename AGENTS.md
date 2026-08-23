@@ -16,7 +16,7 @@ Open-source AI-first workflow automation platform. Self-hosted or cloud. 400+ co
 - **Before modifying a module**: Read its subsystem page in `brain/<area>/` (and that area's `index.md` glossary) for domain language, entities, services, and integration details.
 - **Cross-cutting libraries live in `packages/core/*`**, ordered thin → thick: `core-utils`, `core-connector-types`, `core-formula`, `core-execution` (thin, bundleable, framework-agnostic) and `core/shared` (the one thick, app-level member — **keeps the name `@fema/shared`**, carries DB/EE/management schemas + heavy deps). Connectors and the engine may import the thin members but **never** `@fema/shared`; connectors get what they need via `@fema/connector-sdk`. See `.claude/rules/core-packages.md`.
 | `brain/<area>/index.md` | 9 areas | First stop for an unfamiliar subsystem | Area glossary + list of its pages |
-| `brain/<area>/*.md` | one page per subsystem | When Claude explores that subsystem | Entity schemas, services, data flows, gotchas |
+| `brain/<area>/*.md` | one page per subsystem | When Claude explores that subsystem | Entity schemas, services, data workflows, gotchas |
 | `brain/decisions/*.md` | numbered, under `decisions/` | When Claude needs the *why* behind a design | One hard-to-reverse call each |
 | `.claude/rules/` | 3-5 lines each | Every session | Critical safety checks (entity registration, data isolation, edition safety) |
 | `.agents/skills/` | one folder each | When invoked | Investigations, not conventions — `/debug-failed-run`, `/triage-*`, `/connector-builder`. Code shapes and conventions live in the wiki, not here. |
@@ -51,7 +51,7 @@ Open-source AI-first workflow automation platform. Self-hosted or cloud. 400+ co
 - **`@fema/shared` version bump** — Any change to `packages/core/shared` must be accompanied by a version bump in `packages/core/shared/package.json`: bump the **patch** version for non-breaking additions or fixes, bump the **minor** version for new exports or behaviour changes after you check if it has already been bumped in the current branch or not
 - **Helper functions** — Define non-exported helpers outside of const declarations
 - **Named parameters** — Always use a single destructured object parameter instead of positional arguments. This applies to every function with more than one parameter, regardless of type. It prevents mix-ups at the call site and makes future additions non-breaking.
-- **Prefer immutable data flow** — Functions should produce data by returning it, not by mutating an array/object the caller passes in. If a helper accumulates results (logs, derived rows, computed bindings), it should build the collection locally and return it — not take a pre-allocated bag the caller will read after. Local mutation inside a function's own body is fine; mutation that crosses the function boundary is not. Build new collections with `.map` / `.filter` / `.reduce` / spread rather than in-place `push` / `splice` / property assignment when feasible.
+- **Prefer immutable data workflow** — Functions should produce data by returning it, not by mutating an array/object the caller passes in. If a helper accumulates results (logs, derived rows, computed bindings), it should build the collection locally and return it — not take a pre-allocated bag the caller will read after. Local mutation inside a function's own body is fine; mutation that crosses the function boundary is not. Build new collections with `.map` / `.filter` / `.reduce` / spread rather than in-place `push` / `splice` / property assignment when feasible.
 - **File order**: Imports → Exported functions/constants → Helper functions → Types
 - **Comments** — Do NOT include comments in code. No inline comments, no explanatory comment blocks, no JSDoc narration. Code must be self-explanatory through naming and structure. If a *why* genuinely needs recording, put it in the commit message or PR description, not in the source.
 - **Util file exports** — When a util file exposes multiple plain functions or constants (non-React), do not export them individually. Instead, group them into a single named `const` and export that one object (e.g. `export const myUtils = { fn1, fn2 }`). Callers use `myUtils.fn1()` at the call site. **React components** in the same file should be **named exports** (e.g. `export function MyAlert()` or `export const MyAlert = …`) and imported by name — do not bundle them into a wrapper object for the sake of this rule.
@@ -87,7 +87,7 @@ npx turbo run lint --filter=<package>           # Lint a single package, e.g. --
 npx turbo run serve --filter=web -- --mode=cloud # Run local frontend against the cloud backend
 ```
 
-When running in `--mode=cloud`, do not use OAuth2 connections — the OAuth provider will redirect back to `fema.local` after sign-in instead of your local frontend, breaking the flow. Use API-key / basic-auth connections, or test OAuth2 against a fully local backend.
+When running in `--mode=cloud`, do not use OAuth2 connections — the OAuth provider will redirect back to `fema.local` after sign-in instead of your local frontend, breaking the workflow. Use API-key / basic-auth connections, or test OAuth2 against a fully local backend.
 
 ## Pull Requests
 

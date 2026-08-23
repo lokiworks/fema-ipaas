@@ -30,4 +30,4 @@ export const chatSubmissionTriggerOutputSchema: OutputSchema = {
   ],
 };
 
-// form_submission has no fixed shape here -- its keys are whatever the flow builder names in the Inputs array.
+// form_submission has no fixed shape here -- its keys are whatever the workflow builder names in the Inputs array.

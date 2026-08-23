@@ -15,15 +15,15 @@ One rule above all: **one concept = one field, everywhere.**
 Following [evlog's guidance](https://www.evlog.dev/learn/wide-events), group related fields under the entity they belong to instead of flat, prefixed keys. An entity's own id is just `id` inside its group.
 
 ```ts
-// ✅ Grouped — clear, and flattens to execution.id / flow.id
+// ✅ Grouped — clear, and flattens to execution.id / workflow.id
 logger.info({
   execution: { id: run.id, status: run.status },
-  flow: { id: run.flowId },
+  workflow: { id: run.workflowId },
   project: { id: run.projectId },
-}, 'Flow run started')
+}, 'Workflow run started')
 
 // ❌ Flat prefixes, alias, and a bare id
-logger.info({ runId: run.id, executionId: run.id, id: run.id }, 'Flow run started')
+logger.info({ runId: run.id, executionId: run.id, id: run.id }, 'Workflow run started')
 ```
 
 The group name is the camelCase singular entity from the domain model. The id lives at `entity.id`, and the entity's attributes sit beside it in the same group.
@@ -32,7 +32,7 @@ The group name is the camelCase singular entity from the domain model. The id li
 
 <Steps>
 <Step title="The id is `id`, inside its entity group">
-Never a top-level `executionId`, `runId`, or bare `id`. A flow run is `execution: { id }`, a flow is `flow: { id }`. This gives exactly one queryable path per entity.
+Never a top-level `executionId`, `runId`, or bare `id`. A workflow run is `execution: { id }`, a workflow is `workflow: { id }`. This gives exactly one queryable path per entity.
 </Step>
 
 <Step title="Attributes live beside the id, merged into one group">
@@ -56,9 +56,9 @@ One level of grouping (two max). `requestId`, `service`, `version`, `level`, `ms
 
 | Group | Fields | Entity |
 | --- | --- | --- |
-| `execution` | `id`, `status`, `environment` | A flow execution |
-| `flow` | `id`, `version` | A flow definition |
-| `flowVersion` | `id` | A flow version |
+| `execution` | `id`, `status`, `environment` | A workflow execution |
+| `workflow` | `id`, `version` | A workflow definition |
+| `workflowVersion` | `id` | A workflow version |
 | `project` | `id` | A project |
 | `platform` | `id` | A platform / workspace |
 | `user` | `id` | A user |
@@ -67,11 +67,11 @@ One level of grouping (two max). `requestId`, `service`, `version`, `level`, `ms
 | `connection` | `id` | An app connection |
 | `sandbox` | `id` | An execution sandbox |
 | `worker` | `id` | A worker process |
-| `webhook` | `id`, `requestId`, `mode`, `flowFound`, `responseStatus` | A webhook request |
+| `webhook` | `id`, `requestId`, `mode`, `workflowFound`, `responseStatus` | A webhook request |
 | `conversation` | `id` | A chat conversation |
 | `waitpoint` | `id` | A pause / resume point |
-| `step` | `name` | A flow step |
-| `trigger` | `name` | A flow trigger |
+| `step` | `name` | A workflow step |
+| `trigger` | `name` | A workflow trigger |
 | `migration` | `name` | A database migration |
 
 <Warning>

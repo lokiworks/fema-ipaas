@@ -5,7 +5,7 @@ import { createContextStore } from '../../src/lib/connector-context/store'
 const STORE_PARAMS = {
     apiUrl: 'http://localhost:3000/',
     prefix: 'test_',
-    flowId: 'flow-123',
+    workflowId: 'workflow-123',
     engineToken: 'test-token',
 }
 
@@ -17,7 +17,7 @@ describe('store service', () => {
 
     describe('createContextStore get()', () => {
         it('returns value when store entry exists', async () => {
-            const storeEntry = { key: 'test_flow_flow-123/myKey', value: { foo: 'bar' } }
+            const storeEntry = { key: 'test_workflow_workflow-123/myKey', value: { foo: 'bar' } }
             vi.spyOn(global, 'fetch').mockResolvedValue(new Response(
                 JSON.stringify(storeEntry),
                 { status: 200, headers: { 'Content-Type': 'application/json' } },
@@ -59,7 +59,7 @@ describe('store service', () => {
 
     describe('createContextStore put()', () => {
         it('puts value and returns it', async () => {
-            const storeEntry = { key: 'test_flow_flow-123/myKey', value: 'hello' }
+            const storeEntry = { key: 'test_workflow_workflow-123/myKey', value: 'hello' }
             vi.spyOn(global, 'fetch').mockResolvedValue(new Response(
                 JSON.stringify(storeEntry),
                 { status: 200, headers: { 'Content-Type': 'application/json' } },
@@ -103,20 +103,20 @@ describe('store service', () => {
     })
 
     describe('key scoping', () => {
-        it('FLOW scope prefixes key with flow id', async () => {
+        it('WORKFLOW scope prefixes key with workflow id', async () => {
             const fetchSpy = vi.spyOn(global, 'fetch').mockResolvedValue(new Response(
                 JSON.stringify({ key: 'k', value: null }),
                 { status: 200, headers: { 'Content-Type': 'application/json' } },
             ))
 
             const store = createContextStore(STORE_PARAMS)
-            await store.get('myKey', StoreScope.FLOW)
+            await store.get('myKey', StoreScope.WORKFLOW)
 
             const calledUrl = fetchSpy.mock.calls[0][0].toString()
-            expect(calledUrl).toContain('test_flow_flow-123%2FmyKey')
+            expect(calledUrl).toContain('test_workflow_workflow-123%2FmyKey')
         })
 
-        it('WORKSPACE scope prefixes key without flow id', async () => {
+        it('WORKSPACE scope prefixes key without workflow id', async () => {
             const fetchSpy = vi.spyOn(global, 'fetch').mockResolvedValue(new Response(
                 JSON.stringify({ key: 'k', value: null }),
                 { status: 200, headers: { 'Content-Type': 'application/json' } },
@@ -127,10 +127,10 @@ describe('store service', () => {
 
             const calledUrl = fetchSpy.mock.calls[0][0].toString()
             expect(calledUrl).toContain('test_myKey')
-            expect(calledUrl).not.toContain('flow_')
+            expect(calledUrl).not.toContain('workflow_')
         })
 
-        it('default scope is FLOW', async () => {
+        it('default scope is WORKFLOW', async () => {
             const fetchSpy = vi.spyOn(global, 'fetch').mockResolvedValue(new Response(
                 JSON.stringify({ key: 'k', value: null }),
                 { status: 200, headers: { 'Content-Type': 'application/json' } },
@@ -140,7 +140,7 @@ describe('store service', () => {
             await store.get('myKey')
 
             const calledUrl = fetchSpy.mock.calls[0][0].toString()
-            expect(calledUrl).toContain('flow_flow-123')
+            expect(calledUrl).toContain('workflow_workflow-123')
         })
     })
 })

@@ -85,7 +85,7 @@ vi.mock('@/lib/authentication-session', () => ({
   },
 }));
 
-const RESOURCE_ID = 'flow-1';
+const RESOURCE_ID = 'workflow-1';
 const OTHER_USER = { userId: 'other-user', userDisplayName: 'Other User' };
 
 let latestHookResult: ReturnType<typeof useResourceLock> | null = null;

@@ -36,9 +36,9 @@ type Settings = {
     PUBLIC_URL: string
     TRIGGER_TIMEOUT_SECONDS: number
     TRIGGER_HOOKS_TIMEOUT_SECONDS: number
-    PAUSED_FLOW_TIMEOUT_DAYS: number
+    PAUSED_WORKFLOW_TIMEOUT_DAYS: number
     EXECUTION_MODE: string
-    FLOW_TIMEOUT_SECONDS: number
+    WORKFLOW_TIMEOUT_SECONDS: number
     LOG_LEVEL: string
     LOG_PRETTY: string
     ENVIRONMENT: string
@@ -64,9 +64,9 @@ function buildSettings(overrides: Partial<Settings> = {}): Settings {
         PUBLIC_URL: 'http://localhost:3000',
         TRIGGER_TIMEOUT_SECONDS: 60,
         TRIGGER_HOOKS_TIMEOUT_SECONDS: 60,
-        PAUSED_FLOW_TIMEOUT_DAYS: 30,
+        PAUSED_WORKFLOW_TIMEOUT_DAYS: 30,
         EXECUTION_MODE: ExecutionMode.SANDBOX_PROCESS,
-        FLOW_TIMEOUT_SECONDS: 600,
+        WORKFLOW_TIMEOUT_SECONDS: 600,
         LOG_LEVEL: 'info',
         LOG_PRETTY: 'false',
         ENVIRONMENT: ApEnvironment.PRODUCTION,

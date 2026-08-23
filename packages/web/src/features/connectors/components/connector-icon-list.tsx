@@ -1,7 +1,7 @@
 import {
-  FlowTrigger,
-  FlowActionType,
-  flowStructureUtil,
+  WorkflowTrigger,
+  WorkflowActionType,
+  workflowStructureUtil,
   ConnectorCategory,
 } from '@fema/shared';
 import { cva } from 'class-variance-authority';
@@ -43,14 +43,14 @@ export function ConnectorIconList({
   background,
   excludeCore = false,
 }: {
-  trigger: FlowTrigger;
+  trigger: WorkflowTrigger;
   maxNumberOfIconsToShow: number;
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl';
   className?: string;
   background?: string;
   excludeCore?: boolean;
 }) {
-  const steps = flowStructureUtil.getAllSteps(trigger);
+  const steps = workflowStructureUtil.getAllSteps(trigger);
 
   const { connectorNames, coreMetadata } = useMemo(
     () => extractConnectorNamesAndCoreMetadata(steps, excludeCore),
@@ -72,7 +72,7 @@ export function ConnectorIconList({
         displayName: connector.displayName,
         logoUrl: connector.logoUrl,
         description: connector.description,
-        type: FlowActionType.CONNECTOR as const,
+        type: WorkflowActionType.CONNECTOR as const,
         connectorType: connector.connectorType,
         connectorName: connector.name,
         connectorVersion: connector.version,

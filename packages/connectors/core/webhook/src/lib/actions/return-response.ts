@@ -15,7 +15,7 @@ enum ResponseType {
   REDIRECT = 'redirect',
 }
 
-enum FlowExecution {
+enum WorkflowExecution {
   STOP = 'stop',
   RESPOND = 'respond',
 }
@@ -26,7 +26,7 @@ export const returnResponse = createAction({
   classification: 'WRITE',
   displayName: 'Return Response',
   description: 'return a response',
-  aiMetadata: { description: 'Sends the HTTP response for a run started by the Catch Webhook trigger, with the body typed as JSON, Raw, or Redirect and Flow Execution choosing whether the run stops here or responds and continues; leave Flow Execution unset and no response is emitted. Prefer Respond and Wait for Next Webhook when the flow must answer then pause for a follow-up call, or the Forms connector Respond on UI action for form and chat triggers. Only synchronous (/sync) webhook calls receive it; not idempotent, since each call emits a response.', idempotent: false },
+  aiMetadata: { description: 'Sends the HTTP response for a run started by the Catch Webhook trigger, with the body typed as JSON, Raw, or Redirect and Workflow Execution choosing whether the run stops here or responds and continues; leave Workflow Execution unset and no response is emitted. Prefer Respond and Wait for Next Webhook when the workflow must answer then pause for a follow-up call, or the Forms connector Respond on UI action for form and chat triggers. Only synchronous (/sync) webhook calls receive it; not idempotent, since each call emits a response.', idempotent: false },
   props: {
     responseType: Property.StaticDropdown({
       displayName: 'Response Type',
@@ -98,14 +98,14 @@ export const returnResponse = createAction({
       },
     }),
     respond: Property.StaticDropdown({
-      displayName: 'Flow Execution',
+      displayName: 'Workflow Execution',
       required: false,
-      defaultValue: FlowExecution.STOP,
+      defaultValue: WorkflowExecution.STOP,
       options: {
         disabled: false,
         options: [
-          { label: 'Stop', value: FlowExecution.STOP },
-          { label: 'Respond and Continue', value: FlowExecution.RESPOND },
+          { label: 'Stop', value: WorkflowExecution.STOP },
+          { label: 'Respond and Continue', value: WorkflowExecution.RESPOND },
         ],
       },
     }),
@@ -138,14 +138,14 @@ export const returnResponse = createAction({
     }
     
     switch(respond){
-      case FlowExecution.STOP:
+      case WorkflowExecution.STOP:
         {
           context.run.stop({
             response,
           });
           break;
         }
-      case FlowExecution.RESPOND:
+      case WorkflowExecution.RESPOND:
         {
           context.run.respond({
             response,

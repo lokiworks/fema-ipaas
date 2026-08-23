@@ -27,7 +27,7 @@ Artifacts go in the `.security-triage/` workspace (gitignored).
 
 Write all artifacts to `.security-triage/` (gitignored — confirm with `git status` after a run
 that nothing new appears under tracked paths). Image CVEs are public, so fixes may use normal PRs
-(no private-fork flow) — but still never commit triage artifacts.
+(no private-fork workflow) — but still never commit triage artifacts.
 
 ## Prerequisites
 

@@ -84,7 +84,7 @@ function ConnectionSelect(params: ConnectionSelectProps) {
     selectedConnection?.scope === ConnectionScope.PLATFORM;
   // The create/reconnect dialog runs in global (PLATFORM) scope ONLY when
   // reconnecting an existing global connection. Creating a brand-new connection
-  // from a workspace flow must default to WORKSPACE scope, otherwise it silently
+  // from a workspace workflow must default to WORKSPACE scope, otherwise it silently
   // inherits the selected connection's platform scope and (for non-admins) hits
   // the platform-admin-only global-connections endpoint (GIT-1587).
   const isReconnectingGlobalConnection =

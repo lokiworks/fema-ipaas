@@ -31,7 +31,7 @@ export const httpSendRequestAction = createAction({
   classification: 'WRITE',
   displayName: 'Send HTTP request',
   description: 'Send HTTP request',
-  aiMetadata: { description: 'Sends an HTTP request to any URL with a chosen method, optional Basic or Bearer auth, an optional JSON, raw or multipart body, and can retry or continue the flow on 4xx/5xx. Use it as the generic escape hatch for an API with no dedicated connector — prefer that app\'s own connector when one exists, and Parse URL to pull a URL apart without calling it. Requires an absolute URL and a method; not idempotent, since a call\'s effect follows the method and POST/PATCH-style calls mutate remote data.', idempotent: false },
+  aiMetadata: { description: 'Sends an HTTP request to any URL with a chosen method, optional Basic or Bearer auth, an optional JSON, raw or multipart body, and can retry or continue the workflow on 4xx/5xx. Use it as the generic escape hatch for an API with no dedicated connector — prefer that app\'s own connector when one exists, and Parse URL to pull a URL apart without calling it. Requires an absolute URL and a method; not idempotent, since a call\'s effect follows the method and POST/PATCH-style calls mutate remote data.', idempotent: false },
   props: {
     method: httpMethodDropdown,
     url: Property.ShortText({
@@ -256,9 +256,9 @@ export const httpSendRequestAction = createAction({
           { label: 'Retry on all errors (4xx, 5xx)', value: 'retry_all' },
           { label: 'Retry on internal errors (5xx)', value: 'retry_5xx' },
           { label: 'Do not retry', value: 'retry_none' },
-          { label: 'Continue flow on all errors', value: 'continue_all' },
-          { label: 'Continue flow on 4xx errors', value: 'continue_4xx' },
-          { label: 'Do not continue (stop the flow)', value: 'continue_none' },
+          { label: 'Continue workflow on all errors', value: 'continue_all' },
+          { label: 'Continue workflow on 4xx errors', value: 'continue_4xx' },
+          { label: 'Do not continue (stop the workflow)', value: 'continue_none' },
         ],
       },
     })

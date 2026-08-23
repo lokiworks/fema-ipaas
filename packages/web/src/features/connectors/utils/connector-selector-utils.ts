@@ -9,23 +9,23 @@ import {
   isManualConnectorTrigger,
 } from '@fema/core-utils';
 import {
-  FlowAction,
-  FlowActionType,
+  WorkflowAction,
+  WorkflowActionType,
   BranchOperator,
   CodeAction,
   ConnectorAction,
   ConnectorTrigger,
-  FlowTrigger,
+  WorkflowTrigger,
   BranchExecutionType,
   RouterExecutionType,
-  flowStructureUtil,
+  workflowStructureUtil,
   StepSettings,
   RouterActionSettingsWithValidation,
-  FlowTriggerType,
+  WorkflowTriggerType,
   PropertyExecutionType,
   DEFAULT_SAMPLE_DATA_SETTINGS,
-  FlowVersion,
-  FlowOperationType,
+  WorkflowVersion,
+  WorkflowOperationType,
   AUTHENTICATION_PROPERTY_NAME,
 } from '@fema/shared';
 import { useRef } from 'react';
@@ -53,9 +53,9 @@ const isConnectorActionOrTrigger = (
   connectorSelectorItem: ConnectorSelectorItem,
 ): connectorSelectorItem is ConnectorSelectorConnectorItem => {
   return (
-    connectorSelectorItem.type === FlowActionType.CONNECTOR ||
-    (flowStructureUtil.isTrigger(connectorSelectorItem.type) &&
-      connectorSelectorItem.type === FlowTriggerType.CONNECTOR)
+    connectorSelectorItem.type === WorkflowActionType.CONNECTOR ||
+    (workflowStructureUtil.isTrigger(connectorSelectorItem.type) &&
+      connectorSelectorItem.type === WorkflowTriggerType.CONNECTOR)
   );
 };
 
@@ -82,10 +82,10 @@ const isStepInitiallyValid = (
   overrideDefaultSettings?: StepSettings,
 ) => {
   switch (connectorSelectorItem.type) {
-    case FlowActionType.CODE:
+    case WorkflowActionType.CODE:
       return true;
-    case FlowActionType.CONNECTOR:
-    case FlowTriggerType.CONNECTOR: {
+    case WorkflowActionType.CONNECTOR:
+    case WorkflowTriggerType.CONNECTOR: {
       const overridingInput =
         overrideDefaultSettings && 'input' in overrideDefaultSettings
           ? overrideDefaultSettings.input
@@ -99,7 +99,7 @@ const isStepInitiallyValid = (
         requireAuth: connectorSelectorItem.actionOrTrigger.requireAuth,
       });
     }
-    case FlowActionType.LOOP_ON_ITEMS: {
+    case WorkflowActionType.LOOP_ON_ITEMS: {
       if (
         overrideDefaultSettings &&
         'input' in overrideDefaultSettings &&
@@ -109,10 +109,10 @@ const isStepInitiallyValid = (
       }
       return false;
     }
-    case FlowTriggerType.EMPTY: {
+    case WorkflowTriggerType.EMPTY: {
       return false;
     }
-    case FlowActionType.ROUTER: {
+    case WorkflowActionType.ROUTER: {
       if (overrideDefaultSettings) {
         return RouterActionSettingsWithValidation.safeParse(
           overrideDefaultSettings,
@@ -145,7 +145,7 @@ const getDefaultStepValues = ({
   connectorSelectorItem: ConnectorSelectorItem;
   overrideDefaultSettings?: StepSettings;
   customLogoUrl?: string;
-}): FlowAction | FlowTrigger => {
+}): WorkflowAction | WorkflowTrigger => {
   const errorHandlingOptions: CodeAction['settings']['errorHandlingOptions'] = {
     continueOnFailure: {
       value: false,
@@ -174,10 +174,10 @@ const getDefaultStepValues = ({
   };
 
   switch (connectorSelectorItem.type) {
-    case FlowActionType.CODE:
+    case WorkflowActionType.CODE:
       return deepMergeAndCast<CodeAction>(
         {
-          type: FlowActionType.CODE,
+          type: WorkflowActionType.CODE,
           settings: overrideDefaultSettings ?? {
             sourceCode: {
               code: defaultCode,
@@ -189,20 +189,20 @@ const getDefaultStepValues = ({
         },
         common,
       );
-    case FlowActionType.LOOP_ON_ITEMS:
-      return deepMergeAndCast<FlowAction>(
+    case WorkflowActionType.LOOP_ON_ITEMS:
+      return deepMergeAndCast<WorkflowAction>(
         {
-          type: FlowActionType.LOOP_ON_ITEMS,
+          type: WorkflowActionType.LOOP_ON_ITEMS,
           settings: overrideDefaultSettings ?? {
             items: '',
           },
         },
         common,
       );
-    case FlowActionType.ROUTER:
-      return deepMergeAndCast<FlowAction>(
+    case WorkflowActionType.ROUTER:
+      return deepMergeAndCast<WorkflowAction>(
         {
-          type: FlowActionType.ROUTER,
+          type: WorkflowActionType.ROUTER,
           settings: overrideDefaultSettings ?? {
             executionType: RouterExecutionType.EXECUTE_FIRST_MATCH,
             branches: [
@@ -230,7 +230,7 @@ const getDefaultStepValues = ({
         },
         common,
       );
-    case FlowActionType.CONNECTOR: {
+    case WorkflowActionType.CONNECTOR: {
       if (!isConnectorActionOrTrigger(connectorSelectorItem)) {
         throw new Error(
           `Invalid connector selector item ${JSON.stringify(
@@ -240,7 +240,7 @@ const getDefaultStepValues = ({
       }
       return deepMergeAndCast<ConnectorAction>(
         {
-          type: FlowActionType.CONNECTOR,
+          type: WorkflowActionType.CONNECTOR,
           settings: overrideDefaultSettings ?? {
             connectorName:
               connectorSelectorItem.connectorMetadata.connectorName,
@@ -263,7 +263,7 @@ const getDefaultStepValues = ({
         common,
       );
     }
-    case FlowTriggerType.CONNECTOR: {
+    case WorkflowTriggerType.CONNECTOR: {
       if (!isConnectorActionOrTrigger(connectorSelectorItem)) {
         throw new Error(
           `Invalid connector selector item ${JSON.stringify(
@@ -273,7 +273,7 @@ const getDefaultStepValues = ({
       }
       return deepMergeAndCast<ConnectorTrigger>(
         {
-          type: FlowTriggerType.CONNECTOR,
+          type: WorkflowTriggerType.CONNECTOR,
           settings: overrideDefaultSettings ?? {
             connectorName:
               connectorSelectorItem.connectorMetadata.connectorName,
@@ -367,14 +367,14 @@ const isChatTrigger = (connectorName: string, triggerName: string) => {
 
 const getStepNameFromOperationType = (
   operation: ConnectorSelectorOperation,
-  flowVersion: FlowVersion,
+  workflowVersion: WorkflowVersion,
 ) => {
   switch (operation.type) {
-    case FlowOperationType.UPDATE_ACTION:
+    case WorkflowOperationType.UPDATE_ACTION:
       return operation.stepName;
-    case FlowOperationType.ADD_ACTION:
-      return flowStructureUtil.findUnusedName(flowVersion.trigger);
-    case FlowOperationType.UPDATE_TRIGGER:
+    case WorkflowOperationType.ADD_ACTION:
+      return workflowStructureUtil.findUnusedName(workflowVersion.trigger);
+    case WorkflowOperationType.UPDATE_TRIGGER:
       return 'trigger';
   }
 };

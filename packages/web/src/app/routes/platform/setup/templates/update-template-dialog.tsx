@@ -1,5 +1,5 @@
 import {
-  FlowVersionTemplate,
+  WorkflowVersionTemplate,
   TemplateTag as TemplateTagType,
   Template,
 } from '@fema/shared';
@@ -23,11 +23,11 @@ import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { templateUtils } from '@/features/flows';
 import { templatesApi } from '@/features/templates';
+import { templateUtils } from '@/features/workflows';
 import { api } from '@/lib/api';
 
-const UpdateFlowTemplateSchema = z.object({
+const UpdateWorkflowTemplateSchema = z.object({
   displayName: z.string().min(1, t('Name is required')),
   summary: z.string(),
   description: z.string(),
@@ -36,7 +36,9 @@ const UpdateFlowTemplateSchema = z.object({
   tags: z.array(TemplateTagType).optional(),
   categories: z.array(z.string()).optional(),
 });
-type UpdateFlowTemplateSchema = z.infer<typeof UpdateFlowTemplateSchema>;
+type UpdateWorkflowTemplateSchema = z.infer<
+  typeof UpdateWorkflowTemplateSchema
+>;
 
 export const UpdateTemplateDialog = ({
   children,
@@ -48,7 +50,7 @@ export const UpdateTemplateDialog = ({
   template: Template;
 }) => {
   const [open, setOpen] = useState(false);
-  const form = useForm<UpdateFlowTemplateSchema>({
+  const form = useForm<UpdateWorkflowTemplateSchema>({
     defaultValues: {
       displayName: template.name,
       summary: template.summary || '',
@@ -58,7 +60,7 @@ export const UpdateTemplateDialog = ({
       categories: template.categories || [],
       template: undefined,
     },
-    resolver: zodResolver(UpdateFlowTemplateSchema),
+    resolver: zodResolver(UpdateWorkflowTemplateSchema),
   });
 
   const { mutate, isPending } = useMutation({
@@ -74,13 +76,13 @@ export const UpdateTemplateDialog = ({
         blogUrl: formValue.blogUrl,
         metadata: template.metadata,
         categories: formValue.categories || [],
-        flows: formValue.template
+        workflows: formValue.template
           ? [
               {
-                ...(formValue.template as FlowVersionTemplate),
+                ...(formValue.template as WorkflowVersionTemplate),
                 displayName: formValue.displayName,
                 valid:
-                  (formValue.template as FlowVersionTemplate).valid ?? true,
+                  (formValue.template as WorkflowVersionTemplate).valid ?? true,
               },
             ]
           : undefined,
@@ -198,9 +200,10 @@ export const UpdateTemplateDialog = ({
                     onChange={(e) => {
                       e.target.files &&
                         e.target.files[0].text().then((text) => {
-                          const flowTemplate = templateUtils.extractFlow(text);
-                          if (flowTemplate) {
-                            field.onChange(flowTemplate);
+                          const workflowTemplate =
+                            templateUtils.extractWorkflow(text);
+                          if (workflowTemplate) {
+                            field.onChange(workflowTemplate);
                           } else {
                             form.setError('template', {
                               message: t('Invalid JSON'),

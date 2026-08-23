@@ -147,7 +147,7 @@ const PlatformTemplatesPage = () => {
         />
       ),
       cell: ({ row }) => {
-        const trigger = row.original.flows?.[0]?.trigger;
+        const trigger = row.original.workflows?.[0]?.trigger;
         if (!trigger) return null;
         return (
           <ConnectorIconList trigger={trigger} maxNumberOfIconsToShow={2} />

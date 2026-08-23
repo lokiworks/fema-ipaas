@@ -15,9 +15,9 @@ type TemplateCardProps = {
 export const ExploreTemplateCard = React.memo(
   ({ template, onTemplateSelect }: TemplateCardProps) => {
     const displayTags = template.tags.slice(0, 2);
-    const hasFlows = template.flows && template.flows.length > 0;
+    const hasWorkflows = template.workflows && template.workflows.length > 0;
     const { gradient } = useGradientFromConnectors(
-      hasFlows ? template.flows![0]?.trigger : undefined,
+      hasWorkflows ? template.workflows![0]?.trigger : undefined,
     );
 
     return (
@@ -67,9 +67,9 @@ export const ExploreTemplateCard = React.memo(
             background: gradient || 'transparent',
           }}
         >
-          {hasFlows && template.flows![0]?.trigger && (
+          {hasWorkflows && template.workflows![0]?.trigger && (
             <ConnectorIconList
-              trigger={template.flows![0]?.trigger}
+              trigger={template.workflows![0]?.trigger}
               maxNumberOfIconsToShow={4}
               size="md"
               className="flex gap-0.5"

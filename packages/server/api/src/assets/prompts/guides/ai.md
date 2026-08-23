@@ -1,8 +1,8 @@
-# Native AI in flows
+# Native AI in workflows
 
 FEMA Integration Platform has first-class AI via the `ai` connector (`@fema/connector-ai`) and the Agent. **Prefer these over hand-rolling HTTP calls to a model API** — they use the platform's configured AI providers, so the user manages keys/models centrally. Discover available models with `ap_list_ai_models`; the user adds providers (OpenAI, Anthropic, Google, OpenRouter, …) in settings (`ap_setup_guide` topic `ai_provider`).
 
-**Always use the native `@fema/connector-ai` connector for AI work — never a vendor-specific connector (the OpenAI connector, Anthropic connector, etc.) and never a raw model API call.** This holds even if the user names a model or provider ("use GPT-4o"): the native connector routes to that provider through the platform's central config, so you get the same model without a per-flow vendor connection. The native connector needs **no per-flow AI credential** — it draws on the providers the platform already has. So when you discover there is no OpenAI (or other vendor) credential, that is the *reason* to use the native connector, not a blocker: build with `@fema/connector-ai` and keep moving. Never insist on the OpenAI connector — or stall asking the user to connect one — after finding no credential.
+**Always use the native `@fema/connector-ai` connector for AI work — never a vendor-specific connector (the OpenAI connector, Anthropic connector, etc.) and never a raw model API call.** This holds even if the user names a model or provider ("use GPT-4o"): the native connector routes to that provider through the platform's central config, so you get the same model without a per-workflow vendor connection. The native connector needs **no per-workflow AI credential** — it draws on the providers the platform already has. So when you discover there is no OpenAI (or other vendor) credential, that is the *reason* to use the native connector, not a blocker: build with `@fema/connector-ai` and keep moving. Never insist on the OpenAI connector — or stall asking the user to connect one — after finding no credential.
 
 ## The `ai` connector actions — and their output shapes
 
@@ -24,7 +24,7 @@ Output shape decides how you reference the result. Get this wrong and `{{...}}` 
 
 ## Classify-then-route (the workhorse)
 
-To let AI make a decision the flow branches on:
+To let AI make a decision the workflow branches on:
 
 1. Use `classifyText` (or `extractStructuredData` with an enum field for strictness) and **constrain the output to a closed set** in the prompt — e.g. *"Return exactly one of: urgent, normal, low."*
 2. Add a `ROUTER` right after, one condition branch per value: `TEXT_EXACTLY_MATCHES {{step_N['output']}} = "urgent"`, plus `Otherwise`.
@@ -39,7 +39,7 @@ For "AI decides, a human only handles the hard ones": AI emits a confidence scor
 
 This is your call, not the user's — never surface it as a question. The rule:
 - **Language, drafting, summarizing, classifying, extracting, judgment** → use the native AI connector (`@fema/connector-ai`). When a task could plausibly go either way (e.g. "draft a reply", "summarize these", "categorize this"), **default to the AI connector** — don't quietly build a CODE step that hard-codes rules for something that's really a language/judgment task.
-- **Deterministic comparisons, arithmetic, reshaping/formatting data** → use a router condition or an **inline formula expression** (`filter_list`, `if`, `round`, `format_currency`, … — see the expression ladder in `build_flow`). Reach for a `CODE` step only when the logic is genuinely beyond those functions. They run instantly, free, and exactly.
+- **Deterministic comparisons, arithmetic, reshaping/formatting data** → use a router condition or an **inline formula expression** (`filter_list`, `if`, `round`, `format_currency`, … — see the expression ladder in `build_workflow`). Reach for a `CODE` step only when the logic is genuinely beyond those functions. They run instantly, free, and exactly.
 
 Don't use `askAi` as a comparison or arithmetic engine (e.g. "did the price change?", "is this number bigger?"). A router condition or an inline formula expression does it deterministically, instantly, and free. Use AI for language, extraction, and judgment — not exact comparisons or math.
 

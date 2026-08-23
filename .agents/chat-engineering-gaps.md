@@ -9,7 +9,7 @@
 
 ---
 
-## Priority 2: Value-Before-Auth Flow
+## Priority 2: Value-Before-Auth Workflow
 **Status:** Not started
 **Impact:** High — users hit auth wall before getting any value, kills conversion
 **Effort:** Low (prompt-only change)
@@ -36,12 +36,12 @@
 **Impact:** Medium — flying blind on whether tasks succeed, cannot measure PMF
 **Effort:** Low-Medium
 
-**Problem:** Current telemetry only syncs tool call counts to console. No outcome-level tracking. Cannot answer: "Do users complete tasks?", "Do one-time tasks convert to flows?", "Which task types succeed?"
+**Problem:** Current telemetry only syncs tool call counts to console. No outcome-level tracking. Cannot answer: "Do users complete tasks?", "Do one-time tasks convert to workflows?", "Which task types succeed?"
 
 **Fix:** Add 3 events:
 - `CHAT_TASK_COMPLETED` — fires when a one-time action or batch succeeds
-- `CHAT_FLOW_CREATED` — fires when `ap_build_flow` completes successfully from chat
-- `CHAT_CONVERSION` — fires when user converts a one-time task to a flow (Gap 2's "Automate This?" path)
+- `CHAT_WORKFLOW_CREATED` — fires when `ap_build_workflow` completes successfully from chat
+- `CHAT_CONVERSION` — fires when user converts a one-time task to a workflow (Gap 2's "Automate This?" path)
 
 ---
 
@@ -49,4 +49,4 @@
 
 ### ~~Gap 2: "Automate This?" Suggestion~~
 **Status:** Done
-System prompt suggests converting successful one-time tasks to flows via `ap_show_quick_replies`.
+System prompt suggests converting successful one-time tasks to workflows via `ap_show_quick_replies`.

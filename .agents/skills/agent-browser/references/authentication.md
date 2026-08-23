@@ -1,22 +1,22 @@
 # Authentication Patterns
 
-Login flows, session persistence, OAuth, 2FA, and authenticated browsing.
+Login workflows, session persistence, OAuth, 2FA, and authenticated browsing.
 
 **Related**: [session-management.md](session-management.md) for state persistence details, [SKILL.md](../SKILL.md) for quick start.
 
 ## Contents
 
-- [Basic Login Flow](#basic-login-flow)
+- [Basic Login Workflow](#basic-login-workflow)
 - [Saving Authentication State](#saving-authentication-state)
 - [Restoring Authentication](#restoring-authentication)
-- [OAuth / SSO Flows](#oauth--sso-flows)
+- [OAuth / SSO Workflows](#oauth--sso-workflows)
 - [Two-Factor Authentication](#two-factor-authentication)
 - [HTTP Basic Auth](#http-basic-auth)
 - [Cookie-Based Auth](#cookie-based-auth)
 - [Token Refresh Handling](#token-refresh-handling)
 - [Security Best Practices](#security-best-practices)
 
-## Basic Login Flow
+## Basic Login Workflow
 
 ```bash
 # Navigate to login page
@@ -71,12 +71,12 @@ agent-browser open https://app.example.com/dashboard
 agent-browser snapshot -i
 ```
 
-## OAuth / SSO Flows
+## OAuth / SSO Workflows
 
 For OAuth redirects:
 
 ```bash
-# Start OAuth flow
+# Start OAuth workflow
 agent-browser open https://app.example.com/auth/google
 
 # Handle redirects automatically
@@ -170,7 +170,7 @@ if [[ -f "$STATE_FILE" ]]; then
 else
     # First-time login
     agent-browser open https://app.example.com/login
-    # ... login flow ...
+    # ... login workflow ...
 fi
 ```
 

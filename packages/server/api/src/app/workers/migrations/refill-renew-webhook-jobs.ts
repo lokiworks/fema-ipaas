@@ -33,14 +33,14 @@ export const refillRenewWebhookJobs = (log: FastifyBaseLogger) => ({
                     return
                 }
                 await jobQueue(log).add({
-                    id: triggerSource.flowVersionId,
+                    id: triggerSource.workflowVersionId,
                     type: JobType.REPEATING,
                     data: {
                         workspaceId: triggerSource.workspaceId,
                         platformId: await workspaceService(log).getPlatformId(triggerSource.workspaceId),
                         schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
-                        flowVersionId: triggerSource.flowVersionId,
-                        flowId: triggerSource.flowId,
+                        workflowVersionId: triggerSource.workflowVersionId,
+                        workflowId: triggerSource.workflowId,
                         jobType: WorkerJobType.RENEW_WEBHOOK,
                     },
                     scheduleOptions: {

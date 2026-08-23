@@ -1,17 +1,20 @@
-import { flowStructureUtil, StepLocationRelativeToParent } from '@fema/shared';
+import {
+  workflowStructureUtil,
+  StepLocationRelativeToParent,
+} from '@fema/shared';
 import { useCallback, useEffect } from 'react';
 
 import { isEditableTarget } from '@/lib/dom-utils';
 
 import { useBuilderStateContext } from './builder-hooks';
-import { CanvasShortcutsProps } from './flow-canvas/context-menu/canvas-context-menu';
-import { canvasBulkActions } from './flow-canvas/utils/bulk-actions';
-import { flowCanvasConsts } from './flow-canvas/utils/consts';
+import { CanvasShortcutsProps } from './workflow-canvas/context-menu/canvas-context-menu';
+import { canvasBulkActions } from './workflow-canvas/utils/bulk-actions';
+import { workflowCanvasConsts } from './workflow-canvas/utils/consts';
 
 export const useHandleKeyPressOnCanvas = () => {
   const [
     selectedNodes,
-    flowVersion,
+    workflowVersion,
     selectedStep,
     exitStepSettings,
     applyOperation,
@@ -22,7 +25,7 @@ export const useHandleKeyPressOnCanvas = () => {
     setDraggedStep,
   ] = useBuilderStateContext((state) => [
     state.selectedNodes,
-    state.flowVersion,
+    state.workflowVersion,
     state.selectedStep,
     state.exitStepSettings,
     state.applyOperation,
@@ -41,16 +44,16 @@ export const useHandleKeyPressOnCanvas = () => {
       const insideSelectionRect =
         e.target instanceof HTMLElement &&
         e.target.classList.contains(
-          flowCanvasConsts.NODE_SELECTION_RECT_CLASS_NAME,
+          workflowCanvasConsts.NODE_SELECTION_RECT_CLASS_NAME,
         );
       const insideStep =
         e.target instanceof HTMLElement &&
         e.target.closest(
-          `[data-${flowCanvasConsts.STEP_CONTEXT_MENU_ATTRIBUTE}]`,
+          `[data-${workflowCanvasConsts.STEP_CONTEXT_MENU_ATTRIBUTE}]`,
         );
       const insideBody = e.target === document.body;
       const selectedNodesWithoutTrigger = selectedNodes.filter(
-        (node) => node !== flowVersion.trigger.name,
+        (node) => node !== workflowVersion.trigger.name,
       );
 
       shortcutHandler(e, {
@@ -67,7 +70,7 @@ export const useHandleKeyPressOnCanvas = () => {
 
             canvasBulkActions.copySelectedNodes({
               selectedNodes: selectedNodesWithoutTrigger,
-              flowVersion,
+              workflowVersion,
             });
           }
         },
@@ -93,7 +96,7 @@ export const useHandleKeyPressOnCanvas = () => {
           if (selectedNodesWithoutTrigger.length > 0) {
             canvasBulkActions.toggleSkipSelectedNodes({
               selectedNodes: selectedNodesWithoutTrigger,
-              flowVersion,
+              workflowVersion,
               applyOperation,
             });
           }
@@ -114,15 +117,15 @@ export const useHandleKeyPressOnCanvas = () => {
           canvasBulkActions.getActionsInClipboard().then((actions) => {
             if (actions.length > 0) {
               const lastStep = [
-                flowVersion.trigger,
-                ...flowStructureUtil.getAllNextActionsWithoutChildren(
-                  flowVersion.trigger,
+                workflowVersion.trigger,
+                ...workflowStructureUtil.getAllNextActionsWithoutChildren(
+                  workflowVersion.trigger,
                 ),
               ].at(-1)!.name;
               const lastSelectedNode =
                 selectedNodes.length === 1 ? selectedNodes[0] : null;
               canvasBulkActions.pasteNodes(
-                flowVersion,
+                workflowVersion,
                 {
                   parentStepName: lastSelectedNode ?? lastStep,
                   stepLocationRelativeToParent:
@@ -137,7 +140,7 @@ export const useHandleKeyPressOnCanvas = () => {
     },
     [
       selectedNodes,
-      flowVersion,
+      workflowVersion,
       applyOperation,
       selectedStep,
       exitStepSettings,

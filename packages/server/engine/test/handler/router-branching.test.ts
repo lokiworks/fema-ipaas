@@ -1,16 +1,16 @@
-import { BranchCondition, BranchOperator, FlowAction, ExecutionStatus, RouterExecutionType } from '@fema/shared'
-import { FlowExecutorContext } from '../../src/lib/handler/context/flow-execution-context'
-import { flowExecutor } from '../../src/lib/handler/flow-executor'
+import { BranchCondition, BranchOperator, WorkflowAction, ExecutionStatus, RouterExecutionType } from '@fema/shared'
+import { WorkflowExecutorContext } from '../../src/lib/handler/context/workflow-execution-context'
+import { workflowExecutor } from '../../src/lib/handler/workflow-executor'
 import { buildCodeAction, buildConnectorAction, buildRouterWithOneCondition, generateMockEngineConstants } from './test-helper'
 
-function executeRouterActionWithOneCondition(children: FlowAction[], conditions: (BranchCondition | null)[], executionType: RouterExecutionType): Promise<FlowExecutorContext> {
-    return flowExecutor.execute({
+function executeRouterActionWithOneCondition(children: WorkflowAction[], conditions: (BranchCondition | null)[], executionType: RouterExecutionType): Promise<WorkflowExecutorContext> {
+    return workflowExecutor.execute({
         action: buildRouterWithOneCondition({
             children,
             conditions,
             executionType,
         }),
-        executionState: FlowExecutorContext.empty(),
+        executionState: WorkflowExecutorContext.empty(),
         constants: generateMockEngineConstants(),
     })
 }
@@ -367,7 +367,7 @@ describe('router with branching different conditions', () => {
         expect(result.steps.fallback_mapper).toBeUndefined()
     })
     it('should skip router', async () => {
-        const result = await flowExecutor.execute({
+        const result = await workflowExecutor.execute({
             action: buildRouterWithOneCondition({ children: [
                 buildConnectorAction({
                     name: 'data_mapper',
@@ -383,15 +383,15 @@ describe('router with branching different conditions', () => {
                     secondValue: 'test',
                     caseSensitive: false,
                 },
-            ], executionType: RouterExecutionType.EXECUTE_FIRST_MATCH, skip: true }), executionState: FlowExecutorContext.empty(), constants: generateMockEngineConstants(),
+            ], executionType: RouterExecutionType.EXECUTE_FIRST_MATCH, skip: true }), executionState: WorkflowExecutorContext.empty(), constants: generateMockEngineConstants(),
         })
         expect(result.verdict).toStrictEqual({
             status: ExecutionStatus.RUNNING,
         })
         expect(result.steps.router).toBeUndefined()
     })
-    it('should skip router action in flow', async () => {
-        const router: FlowAction = {
+    it('should skip router action in workflow', async () => {
+        const router: WorkflowAction = {
             ...buildRouterWithOneCondition({ children: [
                 buildConnectorAction({
                     name: 'data_mapper',
@@ -421,8 +421,8 @@ describe('router with branching different conditions', () => {
                 nextAction: undefined,
             },
         }
-        const result = await flowExecutor.execute({
-            action: router, executionState: FlowExecutorContext.empty(), constants: generateMockEngineConstants(),
+        const result = await workflowExecutor.execute({
+            action: router, executionState: WorkflowExecutorContext.empty(), constants: generateMockEngineConstants(),
         })
         expect(result.verdict).toStrictEqual({
             status: ExecutionStatus.RUNNING,

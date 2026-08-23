@@ -12,7 +12,7 @@ export const AgentsFlagGuard = ({ children }: AgentsFlagGuardProps) => {
     ApFlagId.AGENTS_ENABLED,
   );
   if (agentsEnabled !== true) {
-    return <Navigate to="/flows" replace />;
+    return <Navigate to="/workflows" replace />;
   }
   return children;
 };

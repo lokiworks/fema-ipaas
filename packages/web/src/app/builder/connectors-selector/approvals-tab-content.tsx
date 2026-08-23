@@ -1,5 +1,5 @@
 import { isNil } from '@fema/core-utils';
-import { FlowActionType, FlowOperationType } from '@fema/shared';
+import { WorkflowActionType, WorkflowOperationType } from '@fema/shared';
 
 import { CardList, CardListItemSkeleton } from '@/components/custom/card-list';
 import {
@@ -68,9 +68,10 @@ const ApprovalsTabContent = ({
 
   if (
     selectedTab !== ConnectorSelectorTabType.APPROVALS ||
-    ![FlowOperationType.ADD_ACTION, FlowOperationType.UPDATE_ACTION].includes(
-      operation.type,
-    )
+    ![
+      WorkflowOperationType.ADD_ACTION,
+      WorkflowOperationType.UPDATE_ACTION,
+    ].includes(operation.type)
   ) {
     return null;
   }
@@ -114,7 +115,7 @@ const ApprovalsTabContent = ({
           key={`${item.connectorMetadata.connectorName}-${item.action.name}`}
           item={{
             actionOrTrigger: item.action,
-            type: FlowActionType.CONNECTOR,
+            type: WorkflowActionType.CONNECTOR,
             connectorMetadata: item.connectorMetadata,
           }}
           hideConnectorIconAndDescription={false}
@@ -127,7 +128,7 @@ const ApprovalsTabContent = ({
             handleAddingOrUpdatingStep({
               connectorSelectorItem: {
                 actionOrTrigger: item.action,
-                type: FlowActionType.CONNECTOR,
+                type: WorkflowActionType.CONNECTOR,
                 connectorMetadata: item.connectorMetadata,
               },
               operation,

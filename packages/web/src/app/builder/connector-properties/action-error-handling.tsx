@@ -1,4 +1,4 @@
-import { FlowAction, FlowTrigger } from '@fema/shared';
+import { WorkflowAction, WorkflowTrigger } from '@fema/shared';
 import { t } from 'i18next';
 import { ShieldAlert } from 'lucide-react';
 import React from 'react';
@@ -26,7 +26,7 @@ const ActionErrorHandlingForm = React.memo(
     hideRetryOnFailure,
     disabled,
   }: ActionErrorHandlingFormProps) => {
-    const form = useFormContext<FlowAction | FlowTrigger>();
+    const form = useFormContext<WorkflowAction | WorkflowTrigger>();
 
     if (hideContinueOnFailure === true && hideRetryOnFailure === true) {
       return null;

@@ -5,7 +5,7 @@ BASE_URL="${1:-localhost:8080}"
 API_URL="http://$BASE_URL/api/v1"
 POLL_TIMEOUT="${2:-60}"
 
-echo "=== Delay Flow Smoke Test ==="
+echo "=== Delay Workflow Smoke Test ==="
 echo "Base URL:     $BASE_URL"
 echo "Poll Timeout: ${POLL_TIMEOUT}s"
 echo ""
@@ -42,23 +42,23 @@ for i in $(seq 1 300); do
   sleep 1
 done
 
-# Create flow
-echo "--- Creating delay flow ---"
-FLOW_RESPONSE=$(curl -s --fail-with-body "$API_URL/flows" \
+# Create workflow
+echo "--- Creating delay workflow ---"
+WORKFLOW_RESPONSE=$(curl -s --fail-with-body "$API_URL/workflows" \
   -H "Content-Type: application/json" \
   -H "$AUTH" \
   -d "{\"displayName\":\"Delay Smoke Test\",\"projectId\":\"$PROJECT_ID\"}")
 
-FLOW_ID=$(echo "$FLOW_RESPONSE" | jq -r '.id')
-echo "Flow created: $FLOW_ID"
+WORKFLOW_ID=$(echo "$WORKFLOW_RESPONSE" | jq -r '.id')
+echo "Workflow created: $WORKFLOW_ID"
 
-# Import flow definition: webhook → delay(11s) → code
-echo "--- Importing flow definition ---"
-curl -s --fail-with-body "$API_URL/flows/$FLOW_ID" \
+# Import workflow definition: webhook → delay(11s) → code
+echo "--- Importing workflow definition ---"
+curl -s --fail-with-body "$API_URL/workflows/$WORKFLOW_ID" \
   -H "Content-Type: application/json" \
   -H "$AUTH" \
   -d '{
-    "type": "IMPORT_FLOW",
+    "type": "IMPORT_WORKFLOW",
     "request": {
       "displayName": "Delay Smoke Test",
       "schemaVersion": "17",
@@ -122,44 +122,44 @@ curl -s --fail-with-body "$API_URL/flows/$FLOW_ID" \
       }
     }
   }' > /dev/null
-echo "Flow definition imported"
+echo "Workflow definition imported"
 
-# Publish flow
-echo "--- Publishing flow ---"
-curl -s --fail-with-body "$API_URL/flows/$FLOW_ID" \
+# Publish workflow
+echo "--- Publishing workflow ---"
+curl -s --fail-with-body "$API_URL/workflows/$WORKFLOW_ID" \
   -H "Content-Type: application/json" \
   -H "$AUTH" \
   -d '{"type":"LOCK_AND_PUBLISH","request":{}}' > /dev/null
 
-# Enable flow
-echo "--- Enabling flow ---"
-curl -s --fail-with-body "$API_URL/flows/$FLOW_ID" \
+# Enable workflow
+echo "--- Enabling workflow ---"
+curl -s --fail-with-body "$API_URL/workflows/$WORKFLOW_ID" \
   -H "Content-Type: application/json" \
   -H "$AUTH" \
   -d '{"type":"CHANGE_STATUS","request":{"status":"ENABLED"}}' > /dev/null
 
-# Wait for flow to become ENABLED
+# Wait for workflow to become ENABLED
 for i in $(seq 1 30); do
-  STATUS=$(curl -s "$API_URL/flows/$FLOW_ID" -H "$AUTH" | jq -r '.status')
+  STATUS=$(curl -s "$API_URL/workflows/$WORKFLOW_ID" -H "$AUTH" | jq -r '.status')
   if [ "$STATUS" = "ENABLED" ]; then
-    echo "Flow is ENABLED"
+    echo "Workflow is ENABLED"
     break
   fi
   if [ "$i" -eq 30 ]; then
-    echo "FAIL: Flow not ENABLED after 30s (status: $STATUS)"
+    echo "FAIL: Workflow not ENABLED after 30s (status: $STATUS)"
     exit 1
   fi
   sleep 1
 done
 
-# Trigger the webhook (async — flow will pause at the delay step)
+# Trigger the webhook (async — workflow will pause at the delay step)
 echo ""
 echo "--- Triggering webhook ---"
 TRIGGER_CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 \
   -X POST \
   -H "Content-Type: application/json" \
   -d '{"test":true}' \
-  "http://$BASE_URL/api/v1/webhooks/$FLOW_ID")
+  "http://$BASE_URL/api/v1/webhooks/$WORKFLOW_ID")
 
 if [ "$TRIGGER_CODE" != "200" ]; then
   echo "FAIL: Webhook trigger returned HTTP $TRIGGER_CODE (expected 200)"
@@ -167,23 +167,23 @@ if [ "$TRIGGER_CODE" != "200" ]; then
 fi
 echo "Webhook triggered (HTTP $TRIGGER_CODE)"
 
-# Poll flow runs for completion (delay is 11s, allow up to POLL_TIMEOUT)
-echo "--- Waiting for flow run to complete (timeout: ${POLL_TIMEOUT}s) ---"
+# Poll workflow runs for completion (delay is 11s, allow up to POLL_TIMEOUT)
+echo "--- Waiting for workflow run to complete (timeout: ${POLL_TIMEOUT}s) ---"
 for i in $(seq 1 "$POLL_TIMEOUT"); do
-  RUNS_RESPONSE=$(curl -s "$API_URL/executions?flowId=$FLOW_ID&projectId=$PROJECT_ID&limit=1" \
+  RUNS_RESPONSE=$(curl -s "$API_URL/executions?workflowId=$WORKFLOW_ID&projectId=$PROJECT_ID&limit=1" \
     -H "$AUTH" 2>/dev/null || echo '{}')
 
   RUN_STATUS=$(echo "$RUNS_RESPONSE" | jq -r '.data[0].status // empty' 2>/dev/null || echo "")
 
   if [ "$RUN_STATUS" = "SUCCEEDED" ]; then
-    echo "PASS: Flow run completed with status SUCCEEDED (took ${i}s)"
+    echo "PASS: Workflow run completed with status SUCCEEDED (took ${i}s)"
     echo ""
-    echo "=== Delay Flow Smoke Test PASSED ==="
+    echo "=== Delay Workflow Smoke Test PASSED ==="
     exit 0
   fi
 
   if [ "$RUN_STATUS" = "INTERNAL_ERROR" ] || [ "$RUN_STATUS" = "FAILED" ] || [ "$RUN_STATUS" = "TIMEOUT" ] || [ "$RUN_STATUS" = "STOPPED" ]; then
-    echo "FAIL: Flow run ended with status $RUN_STATUS"
+    echo "FAIL: Workflow run ended with status $RUN_STATUS"
     RUN_ID=$(echo "$RUNS_RESPONSE" | jq -r '.data[0].id // empty' 2>/dev/null || echo "")
     if [ -n "$RUN_ID" ]; then
       echo "Run ID: $RUN_ID"
@@ -198,5 +198,5 @@ for i in $(seq 1 "$POLL_TIMEOUT"); do
   sleep 1
 done
 
-echo "FAIL: Flow run did not complete within ${POLL_TIMEOUT}s (last status: ${RUN_STATUS:-unknown})"
+echo "FAIL: Workflow run did not complete within ${POLL_TIMEOUT}s (last status: ${RUN_STATUS:-unknown})"
 exit 1

@@ -1,13 +1,13 @@
 import { isNil } from '@fema/core-utils';
-import { FlowActionType, FlowTriggerType } from '@fema/shared';
+import { WorkflowActionType, WorkflowTriggerType } from '@fema/shared';
 import { useCallback, useRef, useSyncExternalStore } from 'react';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { cn } from '@/lib/utils';
 
-import { flowCanvasConsts } from '../flow-canvas/utils/consts';
-import { FlowStepInputOutput } from '../run-details/flow-step-input-output';
+import { WorkflowStepInputOutput } from '../run-details/workflow-step-input-output';
 import { TestStepContainer } from '../test-step';
+import { workflowCanvasConsts } from '../workflow-canvas/utils/consts';
 
 const DISMISS_IGNORE_SELECTOR = [
   '[data-test-panel-trigger]',
@@ -19,10 +19,10 @@ const DISMISS_IGNORE_SELECTOR = [
 
 type StepDataPanelHostProps = {
   mode: 'drawer' | 'split';
-  flowId: string;
-  flowVersionId: string;
+  workflowId: string;
+  workflowVersionId: string;
   workspaceId?: string;
-  stepType: FlowActionType | FlowTriggerType;
+  stepType: WorkflowActionType | WorkflowTriggerType;
   showGenerateSampleData: boolean;
   showStepInputOutFromRun: boolean;
   saving: boolean;
@@ -30,8 +30,8 @@ type StepDataPanelHostProps = {
 
 const StepDataPanelHost = ({
   mode,
-  flowId,
-  flowVersionId,
+  workflowId,
+  workflowVersionId,
   workspaceId,
   stepType,
   showGenerateSampleData,
@@ -56,7 +56,7 @@ const StepDataPanelHost = ({
         if (target.closest(DISMISS_IGNORE_SELECTOR)) return;
         if (
           target.closest(
-            `[data-${flowCanvasConsts.STEP_CONTEXT_MENU_ATTRIBUTE}]`,
+            `[data-${workflowCanvasConsts.STEP_CONTEXT_MENU_ATTRIBUTE}]`,
           ) &&
           !isNil(run)
         )
@@ -86,13 +86,13 @@ const StepDataPanelHost = ({
       {showGenerateSampleData && workspaceId && (
         <TestStepContainer
           type={stepType}
-          flowId={flowId}
-          flowVersionId={flowVersionId}
+          workflowId={workflowId}
+          workflowVersionId={workflowVersionId}
           workspaceId={workspaceId}
           isSaving={saving}
         />
       )}
-      {showStepInputOutFromRun && <FlowStepInputOutput />}
+      {showStepInputOutFromRun && <WorkflowStepInputOutput />}
     </div>
   );
 };

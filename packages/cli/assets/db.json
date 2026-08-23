@@ -435,7 +435,7 @@
       "securitySchemes": {
         "OAuth2": {
           "type": "oauth2",
-          "flows": {
+          "workflows": {
             "authorizationCode": {
               "authorizationUrl": "https://slack.com/oauth/v2/authorize",
               "tokenUrl": "https://slack.com/api/oauth.v2.access",
@@ -2436,7 +2436,7 @@
     "securityDefinitions": {
       "oauth2-auth": {
         "type": "oauth2",
-        "flow": "accessCode",
+        "workflow": "accessCode",
         "authorizationUrl": "https://api.sendsms.ro/oauth2/authorize",
         "tokenUrl": "https://api.sendsms.ro/oauth2/token",
         "scopes": {

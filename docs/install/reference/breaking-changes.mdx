@@ -31,11 +31,11 @@ Claude, Cursor and anything else built on the MCP SDK are unaffected: the SDK st
 
 If you maintain your own MCP OAuth client, check two things before upgrading: that it sends `client_id` when it revokes a token, and that it stores and presents the `client_secret` that `/register` returns. Note that disconnecting and re-adding an MCP server creates a fresh registration, so an existing user meets the new behaviour when they reconnect rather than at upgrade.
 
-#### Agent steps move from the flow engine to the server
+#### Agent steps move from the workflow engine to the server
 
-An agent step used to run its loop inside the engine, holding a worker for as long as the agent took. It now pauses the flow, runs on the server, and resumes when the agent finishes. This upgrade rewrites every existing agent step to the new version.
+An agent step used to run its loop inside the engine, holding a worker for as long as the agent took. It now pauses the workflow, runs on the server, and resumes when the agent finishes. This upgrade rewrites every existing agent step to the new version.
 
-The step's inputs and its output shape are unchanged, so anything reading the step's result or its structured output keeps working. Sub-flow, MCP server, knowledge base and connector action tools all run on the new path.
+The step's inputs and its output shape are unchanged, so anything reading the step's result or its structured output keeps working. Sub-workflow, MCP server, knowledge base and connector action tools all run on the new path.
 
 Two differences are worth knowing before you upgrade:
 
@@ -61,7 +61,7 @@ This affects the Tables connector's Find Records action and any direct API call 
 
 #### What you need to do
 
-Nothing on upgrade. Re-check any flow or API integration that filters a Date column with `gt`, `gte`, `lt` or `lte` — it now returns the rows the filter actually describes, which may be more or fewer than before.
+Nothing on upgrade. Re-check any workflow or API integration that filters a Date column with `gt`, `gte`, `lt` or `lte` — it now returns the rows the filter actually describes, which may be more or fewer than before.
 
 #### Emailed sign-in codes allow ten wrong guesses per account per hour
 
@@ -94,18 +94,18 @@ Rolling back costs at most the codes issued after the deploy: the older build ca
 
 #### Disposable email addresses can no longer sign up
 
-Sign-up now refuses addresses from throwaway providers such as `mailinator.com` and `guerrillamail.com`, on both the emailed-code flow and the password form. Federated sign-in (Google, SAML, JWT), managed authentication and SCIM provisioning are unaffected, since those addresses come from an identity provider you already trust.
+Sign-up now refuses addresses from throwaway providers such as `mailinator.com` and `guerrillamail.com`, on both the emailed-code workflow and the password form. Federated sign-in (Google, SAML, JWT), managed authentication and SCIM provisioning are unaffected, since those addresses come from an identity provider you already trust.
 
 #### Plans and credits are now managed by our billing service
 
 Two license-key endpoints are removed: `GET /v1/license-keys/:licenseKey` and `POST /v1/license-keys/verify`. Applying a key is now `POST /v1/platform-billing/activate`.
 
-Four feature flags no longer appear in `GET /v1/flags`: `SHOW_BILLING_PAGE`, `CAN_BUY_ACTIVE_FLOWS`, `CAN_BUY_AI_CREDITS` and `SHOW_BILLING_LIMITS_ON_SIDEBAR`. Whether the billing page appears is now decided from the edition and plan instead.
+Four feature flags no longer appear in `GET /v1/flags`: `SHOW_BILLING_PAGE`, `CAN_BUY_ACTIVE_WORKFLOWS`, `CAN_BUY_AI_CREDITS` and `SHOW_BILLING_LIMITS_ON_SIDEBAR`. Whether the billing page appears is now decided from the edition and plan instead.
 
 #### Enterprise instances without a license key are placed on the free plan
 An Enterprise-edition instance with no license key previously ran with no credit enforcement. It is now enrolled on the free plan, so credit limits apply to it. Entering your license key restores your contracted limits.
 
-#### Running out of credits now stops production flow runs
+#### Running out of credits now stops production workflow runs
 When a platform has no credits left, new production runs are recorded with the `QUOTA_EXCEEDED` status instead of executing, and synchronous webhooks respond with HTTP 402. Such a run keeps its trigger payload, so it can be retried once credits are available. Test runs are unaffected.
 
 #### The AI connector offers only the named model tiers for FEMA Integration Platform-provided AI
@@ -115,8 +115,8 @@ In the AI connector, picking the FEMA Integration Platform-provided AI now lists
 - Only if your members sign up with addresses from a disposable email provider. Set `FEMA_ALLOW_DISPOSABLE_EMAILS=true` to keep accepting them.
 - Only if you run the Enterprise edition without a license key. Enter your key so your contracted limits apply instead of the free plan's.
 - Only if you call `GET /v1/license-keys/:licenseKey` or `POST /v1/license-keys/verify`. Both are removed — use `POST /v1/platform-billing/activate` instead.
-- Only if you read `SHOW_BILLING_PAGE`, `CAN_BUY_ACTIVE_FLOWS`, `CAN_BUY_AI_CREDITS` or `SHOW_BILLING_LIMITS_ON_SIDEBAR` from `GET /v1/flags`. They no longer exist.
-- Only if a flow uses FEMA Integration Platform-provided AI on a model outside the Fast/Expert/Heavy tiers. Choose a tier the next time you edit that step.
+- Only if you read `SHOW_BILLING_PAGE`, `CAN_BUY_ACTIVE_WORKFLOWS`, `CAN_BUY_AI_CREDITS` or `SHOW_BILLING_LIMITS_ON_SIDEBAR` from `GET /v1/flags`. They no longer exist.
+- Only if a workflow uses FEMA Integration Platform-provided AI on a model outside the Fast/Expert/Heavy tiers. Choose a tier the next time you edit that step.
 - No database action is required. The migration only adds columns and leaves the existing ones in place.
 #### Official connector bundles are served from the FEMA Integration Platform CDN by default
 `FEMA_USE_CDN_FOR_BUNDLES` now defaults to `true`. When an official connector bundle is not already cached in your own S3 bucket, the engine is redirected to `cdn.fema.local` for the tarball instead of `registry.npmjs.org`. If the CDN does not have that connector version, the download falls back to npm automatically, so installs keep working either way. Custom connectors and connectors from a private registry never use the CDN and are unaffected.
@@ -129,7 +129,7 @@ In the AI connector, picking the FEMA Integration Platform-provided AI now lists
 ### What has changed?
 
 #### Log fields are now grouped by entity
-Log fields are now grouped under the entity they belong to, so each thing has one name. A flow run id is `execution.id` (it used to appear as `runId`, `executionId`, or a bare `id`), and other ids follow the same shape (`flow.id`, `project.id`, `job.id`, …). Errors are logged under `error`. This only changes how logs look — nothing about the API, database, or flows changes.
+Log fields are now grouped under the entity they belong to, so each thing has one name. A workflow run id is `execution.id` (it used to appear as `runId`, `executionId`, or a bare `id`), and other ids follow the same shape (`workflow.id`, `project.id`, `job.id`, …). Errors are logged under `error`. This only changes how logs look — nothing about the API, database, or workflows changes.
 
 #### Google SSO is configured via environment variables only
 "Sign in with Google" can no longer be enabled from the SSO page in the admin panel — that setting has been removed. It is now controlled solely by the `FEMA_GOOGLE_CLIENT_ID` and `FEMA_GOOGLE_CLIENT_SECRET` environment variables. The button only appears when both are set (and the platform's Google auth toggle is enabled).
@@ -172,13 +172,13 @@ Previously if your worker was on a different version of your app server, the wor
 
 ### What has changed?
 
-#### Flow Run Log Size Enforcement
-This is an important behavior change in how flow run logs are stored and capped, but **no action is required** — the existing default (`FEMA_MAX_EXECUTION_LOG_SIZE_MB=50`) is preserved.
+#### Workflow Run Log Size Enforcement
+This is an important behavior change in how workflow run logs are stored and capped, but **no action is required** — the existing default (`FEMA_MAX_EXECUTION_LOG_SIZE_MB=50`) is preserved.
 
 - Large step outputs are now offloaded to object storage instead of sitting inline in worker memory, controlled by the new `FEMA_EXECUTION_LOG_SLICE_THRESHOLD_KB` env var (default `32`).
 - Large step input values are replaced with a `(truncated, original size <N>)` placeholder in the log via the new `FEMA_EXECUTION_LOG_INPUT_TRUNCATE_THRESHOLD_KB` env var (default `2`). The step still receives the full value at runtime.
 - Runs whose combined step inputs and outputs exceed `FEMA_MAX_EXECUTION_LOG_SIZE_MB` now terminate with the new `LOG_SIZE_EXCEEDED` status instead of silently trimming inputs. Offloaded outputs still count their original size against the cap.
-- See [Limits → Files & flow run logs](/install/reference/limits#files-execution-logs) for the full behavior, environment variables, and defaults.
+- See [Limits → Files & workflow run logs](/install/reference/limits#files-execution-logs) for the full behavior, environment variables, and defaults.
 - Embedding now requires setting allowed embed origins, which means only the domains listed in the field can embed the app (wildcards are supported). There is also a new env variable `FEMA_ALLOWED_EMBED_ORIGINS` for setting pre-allowed origins, and a new endpoint for adding these origins — [check docs](/endpoints/embedding/add-allowed-embed-origins).
 - "Sign in with Google" can no longer be enabled from the SSO page in the admin panel — that setting has been removed. It is now controlled solely by the `FEMA_GOOGLE_CLIENT_ID` and `FEMA_GOOGLE_CLIENT_SECRET` environment variables. The button only appears when both are set (and the platform's Google auth toggle is enabled).
 
@@ -197,8 +197,8 @@ When creating a project now, the platform owner email doesn't automatically get 
 
 #### Connector Versions Are Now Pinned
 - Connector versions are no longer stored with wildcards (`~1.2.0`, `^1.2.0`). All connector steps now use exact versions (e.g. `1.2.0`).
-- A migration automatically strips wildcard prefixes from all existing flow versions on upgrade.
-- The `LOCK_AND_PUBLISH` operation no longer resolves connector versions at publish time — steps run with the exact version stored in the flow.
+- A migration automatically strips wildcard prefixes from all existing workflow versions on upgrade.
+- The `LOCK_AND_PUBLISH` operation no longer resolves connector versions at publish time — steps run with the exact version stored in the workflow.
 - A new **version switcher** UI in the builder lets users upgrade or downgrade connector versions manually.
 
 #### REST API
@@ -213,7 +213,7 @@ When creating a project now, the platform owner email doesn't automatically get 
 - Server-side HTTP (OAuth, Vault, Conjur, event destinations, on-call pager, MCP validator) now blocks private, loopback, and cloud-metadata IPs. Reach internal hosts by adding their IP/CIDR to `FEMA_SSRF_ALLOW_LIST`.
 
 ### Do you need to take action?
-- **Pinned connector versions** — if you create or update flows via the REST API with wildcard versions (`~` or `^`), switch to exact versions; wildcards are silently stripped. If your publish flow relied on `LOCK_AND_PUBLISH` resolving wildcards, set the exact version on each step before publishing. Use `GET /v1/connectors/:name/versions` to list available versions.
+- **Pinned connector versions** — if you create or update workflows via the REST API with wildcard versions (`~` or `^`), switch to exact versions; wildcards are silently stripped. If your publish workflow relied on `LOCK_AND_PUBLISH` resolving wildcards, set the exact version on each step before publishing. Use `GET /v1/connectors/:name/versions` to list available versions.
 - **Concurrent jobs** — rename `FEMA_MAX_CONCURRENT_JOBS_PER_PROJECT` to `FEMA_DEFAULT_CONCURRENT_JOBS_LIMIT`. To keep the old cap, set `FEMA_DEFAULT_CONCURRENT_JOBS_LIMIT=100`.
 - **SSRF filter** — if you self-host Vault, Conjur, an OAuth2 token endpoint, or any internal webhook on a private IP, set `FEMA_SSRF_ALLOW_LIST` (comma-separated IPs or CIDRs, e.g. `10.0.5.12,192.168.10.0/24`) before upgrading.
 
@@ -228,7 +228,7 @@ When creating a project now, the platform owner email doesn't automatically get 
 - Secret managers has been refactored, the version in **0.79.0** no longer is supported, it was not used by anyone but it's worth to mention to upgrade to **0.80.0** before considering using the feature
 
 #### API
-- A new `UPDATE_SAMPLE_DATA_INFO` flow operation has been introduced to handle sample data updates independently.
+- A new `UPDATE_SAMPLE_DATA_INFO` workflow operation has been introduced to handle sample data updates independently.
 - `UPDATE_ACTION` and `UPDATE_TRIGGER` no longer accept or apply changes to `sampleData` in step settings. Any `sampleData` fields sent in these requests will be ignored and the existing sample data will be preserved.
 - A new required `lastUpdatedDate` field has been added to all actions and triggers, tracked automatically by the server. It is not accepted in `UPDATE_ACTION` or `UPDATE_TRIGGER` requests.
 
@@ -258,15 +258,15 @@ When creating a project now, the platform owner email doesn't automatically get 
 
 ### Do you need to take action?
 
-- If you're using the Todos feature, update your flows to use the new approvals channels available from the approvals tab in the connector selector.
+- If you're using the Todos feature, update your workflows to use the new approvals channels available from the approvals tab in the connector selector.
 
 
 ## 0.77.0
 ### What has changed?
 
-- For Embed Plan users: the "Use a Template" dialog no longer appears when clicking the "New Flow" button.
-- The `/flow-templates` API endpoints have been removed and replaced by `/templates`.
-- Log size configuration has changed: `FEMA_MAX_FILE_SIZE_MB` no longer controls flow run logs. Use `FEMA_MAX_EXECUTION_LOG_SIZE_MB` instead.
+- For Embed Plan users: the "Use a Template" dialog no longer appears when clicking the "New Workflow" button.
+- The `/workflow-templates` API endpoints have been removed and replaced by `/templates`.
+- Log size configuration has changed: `FEMA_MAX_FILE_SIZE_MB` no longer controls workflow run logs. Use `FEMA_MAX_EXECUTION_LOG_SIZE_MB` instead.
 
 ### Do you need to take action?
 
@@ -277,7 +277,7 @@ When creating a project now, the platform owner email doesn't automatically get 
 ## 0.75.0
 
 ### What has changed?
-- When you navigate to a flow run inside the builder the url will change to /runs, this is something embedding customers might need to consider in case they have a route guard that only allows users to navigate to /flows.
+- When you navigate to a workflow run inside the builder the url will change to /runs, this is something embedding customers might need to consider in case they have a route guard that only allows users to navigate to /workflows.
 - In **development mode**, loading connector translations are now off by default. Set `FEMA_LOAD_TRANSLATIONS_FOR_DEV_CONNECTORS=true` to enable.
 
 ### Do you need to take action?
@@ -335,17 +335,17 @@ When creating a project now, the platform owner email doesn't automatically get 
 ## 0.69.0
 
 ### What has changed?
-- `FEMA_FLOW_WORKER_CONCURRENCY` and `FEMA_SCHEDULED_WORKER_CONCURRENCY` are now deprecated all jobs have single queue and replaced with `FEMA_WORKER_CONCURRENCY`
+- `FEMA_WORKFLOW_WORKER_CONCURRENCY` and `FEMA_SCHEDULED_WORKER_CONCURRENCY` are now deprecated all jobs have single queue and replaced with `FEMA_WORKER_CONCURRENCY`
 
 ### When is action necessary?
 
-- If you are using `FEMA_FLOW_WORKER_CONCURRENCY` or `FEMA_SCHEDULED_WORKER_CONCURRENCY`, you should replace them with `FEMA_WORKER_CONCURRENCY`
+- If you are using `FEMA_WORKFLOW_WORKER_CONCURRENCY` or `FEMA_SCHEDULED_WORKER_CONCURRENCY`, you should replace them with `FEMA_WORKER_CONCURRENCY`
 
 ## 0.66.0
 
 ### What has changed?
 
-- If you use embedding the embedding SDK, please upgrade to version 0.6.0, `embedding.dashboard.hideSidebar` used to hide the navbar above the flows table in the dashboard now it relies on `embedding.dashboard.hideFlowsPageNavbar`
+- If you use embedding the embedding SDK, please upgrade to version 0.6.0, `embedding.dashboard.hideSidebar` used to hide the navbar above the workflows table in the dashboard now it relies on `embedding.dashboard.hideWorkflowsPageNavbar`
 
 
 ## 0.64.0
@@ -374,19 +374,19 @@ When creating a project now, the platform owner email doesn't automatically get 
 ### When is action necessary?
 
 - No action is required for this change.
-- Your published flows will continue to work without interruption.
-- When editing existing flows that use the "Dynamic Value" toggle on "Array of Properties" inputs (such as the "files" parameter in the "Extract Structured Data" action of the "Utility AI" connector), the end user will need to remap the values again.
+- Your published workflows will continue to work without interruption.
+- When editing existing workflows that use the "Dynamic Value" toggle on "Array of Properties" inputs (such as the "files" parameter in the "Extract Structured Data" action of the "Utility AI" connector), the end user will need to remap the values again.
 - For details on the new UI implementation, refer to this [announcement](https://github.com/lokiworks/fema-ipaas/discussions/t/inline-items/8964).
 
 ## 0.38.6
 
 ### What has changed?
 
-- Workers no longer rely on the `FEMA_FLOW_WORKER_CONCURRENCY` and `FEMA_SCHEDULED_WORKER_CONCURRENCY` environment variables. These values are now retrieved from the app server.
+- Workers no longer rely on the `FEMA_WORKFLOW_WORKER_CONCURRENCY` and `FEMA_SCHEDULED_WORKER_CONCURRENCY` environment variables. These values are now retrieved from the app server.
 
 ### When is action necessary?
 
-- If `FEMA_CONTAINER_TYPE` is set to `WORKER` on the worker machine, and `FEMA_SCHEDULED_WORKER_CONCURRENCY` or `FEMA_FLOW_WORKER_CONCURRENCY` are set to zero on the app server, workers will stop processing the queues. To fix this, check the [Separate Worker from App](https://github.com/lokiworks/fema-ipaas/docs/install/configure-operate/separate-workers) documentation and set the `FEMA_CONTAINER_TYPE` to fetch the necessary values from the app server. If no container type is set on the worker machine, this is not a breaking change.
+- If `FEMA_CONTAINER_TYPE` is set to `WORKER` on the worker machine, and `FEMA_SCHEDULED_WORKER_CONCURRENCY` or `FEMA_WORKFLOW_WORKER_CONCURRENCY` are set to zero on the app server, workers will stop processing the queues. To fix this, check the [Separate Worker from App](https://github.com/lokiworks/fema-ipaas/docs/install/configure-operate/separate-workers) documentation and set the `FEMA_CONTAINER_TYPE` to fetch the necessary values from the app server. If no container type is set on the worker machine, this is not a breaking change.
 
 ## 0.35.1
 
@@ -409,7 +409,7 @@ When creating a project now, the platform owner email doesn't automatically get 
 ### What has changed?
 
 - Files from actions or triggers are now stored in the database / S3 to support retries from certain steps, and the size of files from actions is now subject to the limit of `FEMA_MAX_FILE_SIZE_MB`.
-- Files in triggers were previously passed as base64 encoded strings; now they are passed as file paths in the database / S3. Paused flows that have triggers from version 0.29.0 or earlier will no longer work.
+- Files in triggers were previously passed as base64 encoded strings; now they are passed as file paths in the database / S3. Paused workflows that have triggers from version 0.29.0 or earlier will no longer work.
 
 ### When is action necessary?
 - If you are dealing with large files in the actions, consider increasing the `FEMA_MAX_FILE_SIZE_MB` to a higher value, and make sure the storage system (database/S3) has enough capacity for the files.
@@ -419,13 +419,13 @@ When creating a project now, the platform owner email doesn't automatically get 
 
 ### What has changed?
 
-- `FEMA_SANDBOX_RUN_TIME_SECONDS` is now deprecated and replaced with `FEMA_FLOW_TIMEOUT_SECONDS`
+- `FEMA_SANDBOX_RUN_TIME_SECONDS` is now deprecated and replaced with `FEMA_WORKFLOW_TIMEOUT_SECONDS`
 - `FEMA_CODE_SANDBOX_TYPE` is now deprecated and replaced with new mode in `FEMA_EXECUTION_MODE`
 
 ### When is action necessary?
 
 - If you are using `FEMA_CODE_SANDBOX_TYPE` to `V8_ISOLATE`, you should switch to `FEMA_EXECUTION_MODE` to `SANDBOX_CODE_ONLY`
-- If you are using `FEMA_SANDBOX_RUN_TIME_SECONDS` to set the sandbox run time limit, you should switch to `FEMA_FLOW_TIMEOUT_SECONDS`
+- If you are using `FEMA_SANDBOX_RUN_TIME_SECONDS` to set the sandbox run time limit, you should switch to `FEMA_WORKFLOW_TIMEOUT_SECONDS`
 
 ## 0.28.0
 

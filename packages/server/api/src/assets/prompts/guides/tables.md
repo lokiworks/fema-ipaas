@@ -1,14 +1,14 @@
 # FEMA Integration Platform Tables
 
-FEMA Integration Platform **Tables** are a lightweight database built into every project — no external database or connection needed. Use them to store and look up structured data across flow runs.
+FEMA Integration Platform **Tables** are a lightweight database built into every project — no external database or connection needed. Use them to store and look up structured data across workflow runs.
 
 ## When to use a Table
 
-Reach for a Table whenever a flow needs to **remember or look up data**:
+Reach for a Table whenever a workflow needs to **remember or look up data**:
 
 - Persisting state between runs (e.g. a "last processed id", or a log of seen items for deduplication)
 - Logging records (every lead, order, inbound email, error)
-- Small datasets the flow reads from (lookup/mapping tables, allow-lists)
+- Small datasets the workflow reads from (lookup/mapping tables, allow-lists)
 - Collecting submissions to review later
 
 **Prefer Tables over Google Sheets** when the data lives inside FEMA Integration Platform and doesn't need a spreadsheet UI — Tables are faster, typed, and need no connection/auth. Use **Google Sheets** only when the user already works in that sheet or needs to share/edit it as a spreadsheet. Use an **external database connector** (Postgres, MySQL, …) only for large or relational data.
@@ -38,9 +38,9 @@ Tables belong to a project, so a project must be selected before you create or w
 
 `eq`, `neq`, `gt`, `gte`, `lt`, `lte`, `co` (contains), `exists`, `not_exists`.
 
-## Reading & writing a Table inside a flow
+## Reading & writing a Table inside a workflow
 
-The agent tools above are for setup and inspection. To read/write a Table from inside a running flow, add the built-in **Tables** connector as a step (create record, find records, update record) and map step/trigger outputs into the fields:
+The agent tools above are for setup and inspection. To read/write a Table from inside a running workflow, add the built-in **Tables** connector as a step (create record, find records, update record) and map step/trigger outputs into the fields:
 
 > New email (trigger) → **Tables: Create Record** → map `{{trigger['output'].subject}}` to the `Subject` field, `{{trigger['output'].from}}` to `Sender`, etc.
 

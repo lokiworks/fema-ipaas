@@ -68,7 +68,7 @@ When you contribute connectors to FEMA Integration Platform they become automati
 
 <img src="/docs/resources/create-action.png" alt="">
 
-- **🤖 AI-First**: Native AI connectors let you experiment with various providers, or create your own agents using our AI SDK to help you build flows inside the builder.
+- **🤖 AI-First**: Native AI connectors let you experiment with various providers, or create your own agents using our AI SDK to help you build workflows inside the builder.
 
 - **🏢 Enterprise-Ready**: Developers set up the tools, and anyone in the organization can use the no-code builder. Full customization from branding to control.
 
@@ -88,7 +88,7 @@ When you contribute connectors to FEMA Integration Platform they become automati
 - [x] HTTP
 - [x] Code with **NPM**
 - [x] ASK AI in Code Connector (Non technical user can clean data without knowing to code)
-- [x] Flows are fully versioned.
+- [x] Workflows are fully versioned.
 - [x] Languages Translations
 - [x] Customizable Templates
 - [X] 200+ Connectors, check https://github.com/lokiworks/fema-ipaas/connectors

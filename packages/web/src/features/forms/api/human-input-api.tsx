@@ -9,13 +9,13 @@ import semVer from 'semver';
 import { api } from '@/lib/api';
 
 export const humanInputApi = {
-  getForm: (flowId: string, useDraft?: boolean) => {
-    return api.get<FormResponse>(`/v1/human-input/form/${flowId}`, {
+  getForm: (workflowId: string, useDraft?: boolean) => {
+    return api.get<FormResponse>(`/v1/human-input/form/${workflowId}`, {
       [USE_DRAFT_QUERY_PARAM_NAME]: useDraft ?? false,
     });
   },
-  getChatUI: (flowId: string, useDraft?: boolean) => {
-    return api.get<ChatUIResponse>(`/v1/human-input/chat/${flowId}`, {
+  getChatUI: (workflowId: string, useDraft?: boolean) => {
+    return api.get<ChatUIResponse>(`/v1/human-input/chat/${workflowId}`, {
       [USE_DRAFT_QUERY_PARAM_NAME]: useDraft ?? false,
     });
   },
@@ -45,7 +45,7 @@ export const humanInputApi = {
     );
   },
   sendMessage: async ({
-    flowId,
+    workflowId,
     chatId,
     message,
     files,
@@ -59,7 +59,7 @@ export const humanInputApi = {
     });
     const suffix = getSuffix(mode, true);
     return api.post<HumanInputFormResult | null>(
-      `/v1/webhooks/${flowId}${suffix}`,
+      `/v1/webhooks/${workflowId}${suffix}`,
       formData,
       undefined,
       {
@@ -119,7 +119,7 @@ function getSuffix(
 }
 
 type SendMessageParams = {
-  flowId: string;
+  workflowId: string;
   chatId: string;
   message: string;
   files: File[];

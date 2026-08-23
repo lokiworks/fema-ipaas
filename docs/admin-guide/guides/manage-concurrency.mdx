@@ -1,12 +1,12 @@
 ---
 title: "Manage Concurrency"
-description: "Control how many flows can run at the same time per project"
+description: "Control how many workflows can run at the same time per project"
 icon: 'gauge'
 ---
 
 ## Overview
 
-Concurrency limits control how many flow runs can execute simultaneously within a project. When a project reaches its limit, new runs are queued and retried automatically with exponential backoff until a slot becomes available.
+Concurrency limits control how many workflow runs can execute simultaneously within a project. When a project reaches its limit, new runs are queued and retried automatically with exponential backoff until a slot becomes available.
 
 This is useful to:
 
@@ -29,11 +29,11 @@ When the field is empty, the project uses the default concurrency limit from you
 
 When a project hits its concurrency limit:
 
-1. New flow runs are **not dropped** — they are queued.
+1. New workflow runs are **not dropped** — they are queued.
 2. The system retries queued runs with **exponential backoff**.
 3. Once an active run finishes and a slot opens, the next queued run starts.
 
-This means flows will always eventually execute, but they may experience delays when the project is at capacity.
+This means workflows will always eventually execute, but they may experience delays when the project is at capacity.
 
 ## Programmatic Management via Embedding
 

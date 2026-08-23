@@ -5,8 +5,8 @@ import dayjs, { Dayjs } from 'dayjs'
 import { utils } from '../utils'
 import { BaseExecutor, failStep } from './base-executor'
 import { EngineConstants } from './context/engine-constants'
-import { FlowExecutorContext } from './context/flow-execution-context'
-import { flowExecutor } from './flow-executor'
+import { WorkflowExecutorContext } from './context/workflow-execution-context'
+import { workflowExecutor } from './workflow-executor'
 
 export const routerExecuter: BaseExecutor<RouterAction> = {
     async handle({
@@ -85,12 +85,12 @@ const CONDITION_EVALUATORS: Record<BranchOperator, (condition: ConditionValues) 
 
 async function handleRouterExecution({ action, executionState, constants, censoredInput, resolvedInput, routerExecutionType }: {
     action: RouterAction
-    executionState: FlowExecutorContext
+    executionState: WorkflowExecutorContext
     constants: EngineConstants
     censoredInput: unknown
     resolvedInput: RouterActionSettings
     routerExecutionType: RouterExecutionType
-}): Promise<FlowExecutorContext> {
+}): Promise<WorkflowExecutorContext> {
     const stepStartTime = performance.now()
 
     const evaluatedConditionsWithoutFallback = resolvedInput.branches.map((branch) => {
@@ -126,7 +126,7 @@ async function handleRouterExecution({ action, executionState, constants, censor
                 continue
             }
 
-            executionState = await flowExecutor.execute({
+            executionState = await workflowExecutor.execute({
                 action: action.children[i],
                 executionState,
                 constants,

@@ -72,13 +72,13 @@ If you are tempted to mock a database, a queue, or a kernel primitive, and your 
 - **`packages/server/engine/test/handler/*.test.ts`** (13 files) — load real `@fema/connector-http`, `@fema/connector-data-mapper`, etc. and make real outbound HTTP calls from the executor. Target: relabel as integration (either move to a new `test/integration/` subtree, or document in the engine test README that the flat folder mixes unit and integration).
 - **`packages/server/engine/test/core/code/v8-isolate-code-sandbox.test.ts`** — runs a real V8 isolate. Target: same as above (integration).
 - **`packages/server/worker/test/connector-installer.test.ts`** — does real filesystem work against temp dirs; borderline integration. Target: decide on a threshold (temp-dir I/O alone = unit, vs. temp-dir I/O + subprocess = integration) and relabel accordingly.
-- **Duplication: `api/test/integration/ce/flows/flow/flow.test.ts` vs `api/test/integration/cloud/flow/flow.test.ts`** — both assert identical "Create flow" shapes; only role-permission checks differ. Target: extract the shared CRUD assertions into CE and keep only the cloud-specific role permutations under `cloud/`.
+- **Duplication: `api/test/integration/ce/workflows/workflow/workflow.test.ts` vs `api/test/integration/cloud/workflow/workflow.test.ts`** — both assert identical "Create workflow" shapes; only role-permission checks differ. Target: extract the shared CRUD assertions into CE and keep only the cloud-specific role permutations under `cloud/`.
 
 This list is a backlog, not a to-do list for this playbook. Tackle items opportunistically as you touch the adjacent code.
 
 ## What is NOT duplication (defense-in-depth)
 
-- Flow execution is tested at engine (pure logic), API integration (queue + worker dispatch), and smoke (post-deploy liveness). Each owns different failure modes.
+- Workflow execution is tested at engine (pure logic), API integration (queue + worker dispatch), and smoke (post-deploy liveness). Each owns different failure modes.
 - Sandbox isolation is tested at engine (V8 code sandbox) and worker (process orchestration). Distinct concerns.
 
 ## Related documentation

@@ -1,10 +1,10 @@
 ---
 title: "Execution Isolation"
-description: "User code in one flow can't read another flow's code, memory, environment, or files"
+description: "User code in one workflow can't read another workflow's code, memory, environment, or files"
 icon: "lock"
 ---
 
-User code in one flow **cannot** read another flow's code, memory, environment, or files. Each flow executes in its own isolated environment.
+User code in one workflow **cannot** read another workflow's code, memory, environment, or files. Each workflow executes in its own isolated environment.
 
 <Note>
 This is one of the FEMA Integration Platform execution guarantees for the [recommended production setup](/install/configure-operate/production-setup). For the full scope and Cloud parity, see [Crash Recovery](./crash-recovery).
@@ -14,12 +14,12 @@ This is one of the FEMA Integration Platform execution guarantees for the [recom
 
 Two layers stack:
 
-- **Sandbox.** Each flow's code runs inside a sandbox chosen by `FEMA_EXECUTION_MODE`: V8/code isolation for multi-tenant, or kernel-namespace isolation. See [Sandboxing](/install/architecture/sandboxing) for how each mode works and its trade-offs.
-- **One flow per worker.** At `FEMA_WORKER_CONCURRENCY=1` there is only ever one flow in a container, so even the container's filesystem and memory belong to a single flow.
+- **Sandbox.** Each workflow's code runs inside a sandbox chosen by `FEMA_EXECUTION_MODE`: V8/code isolation for multi-tenant, or kernel-namespace isolation. See [Sandboxing](/install/architecture/sandboxing) for how each mode works and its trade-offs.
+- **One workflow per worker.** At `FEMA_WORKER_CONCURRENCY=1` there is only ever one workflow in a container, so even the container's filesystem and memory belong to a single workflow.
 
 ## Where it stops
 
-This is **execution** isolation between flows: code, memory, and filesystem. It is distinct from **tenant data isolation** at the query layer (every database query scoped to `projectId` / `platformId`), which is an application-level guarantee enforced in the API, not by the sandbox. For that, see the security documentation.
+This is **execution** isolation between workflows: code, memory, and filesystem. It is distinct from **tenant data isolation** at the query layer (every database query scoped to `projectId` / `platformId`), which is an application-level guarantee enforced in the API, not by the sandbox. For that, see the security documentation.
 
 Choosing the right sandbox is the most important security decision for multi-tenant deployments; a weaker `FEMA_EXECUTION_MODE` narrows this guarantee.
 
@@ -27,7 +27,7 @@ Choosing the right sandbox is the most important security decision for multi-ten
 
 | Variable | Recommended | Effect |
 |---|---|---|
-| `FEMA_EXECUTION_MODE` | V8 / code sandboxing for multi-tenant | How user code is isolated from the host and other flows |
-| `FEMA_WORKER_CONCURRENCY` | `1` | One flow per container, no shared filesystem or memory |
+| `FEMA_EXECUTION_MODE` | V8 / code sandboxing for multi-tenant | How user code is isolated from the host and other workflows |
+| `FEMA_WORKER_CONCURRENCY` | `1` | One workflow per container, no shared filesystem or memory |
 
 See [Sandboxing Mode](/install/configure-operate/sandboxing) to set the value.

@@ -1,9 +1,9 @@
 import { isNil, apId } from '@fema/core-utils';
 import {
-  PopulatedFlow,
-  FlowVersionState,
-  FlowStatus,
-  FlowOperationStatus,
+  PopulatedWorkflow,
+  WorkflowVersionState,
+  WorkflowStatus,
+  WorkflowOperationStatus,
   TemplateType,
   Template,
 } from '@fema/shared';
@@ -14,9 +14,9 @@ import { useMemo, useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
-import { FlowCanvas } from '@/app/builder/flow-canvas';
-import { CanvasControls } from '@/app/builder/flow-canvas/canvas-controls';
 import { BuilderStateProvider } from '@/app/builder/state/builder-state-provider';
+import { WorkflowCanvas } from '@/app/builder/workflow-canvas';
+import { CanvasControls } from '@/app/builder/workflow-canvas/canvas-controls';
 import { TagWithBright } from '@/components/custom/tag-with-bright';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -27,7 +27,7 @@ import { formatUtils } from '@/lib/format-utils';
 import { FROM_QUERY_PARAM } from '@/lib/navigation-utils';
 
 import { ConnectorCard } from './connector-card';
-import { FlowCard } from './flow-card';
+import { WorkflowCard } from './workflow-card';
 
 type TemplateDetailsPageProps = {
   template: Template;
@@ -41,48 +41,48 @@ const TemplateDetailsPage = ({ template }: TemplateDetailsPageProps) => {
     useState(false);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedFlowIndex, setSelectedFlowIndex] = useState(0);
+  const [selectedWorkflowIndex, setSelectedWorkflowIndex] = useState(0);
   const [renderKey, setRenderKey] = useState(0);
   const { setOpen } = useSidebar();
   const hasClosedSidebar = useRef(false);
   const isNotAuthenticated = isNil(token);
 
-  const mockFlow = useMemo<PopulatedFlow | null>(() => {
-    if (!template || !template.flows || template.flows.length === 0) {
+  const mockWorkflow = useMemo<PopulatedWorkflow | null>(() => {
+    if (!template || !template.workflows || template.workflows.length === 0) {
       return null;
     }
 
-    const selectedFlow = template.flows[selectedFlowIndex];
-    if (!selectedFlow) {
+    const selectedWorkflow = template.workflows[selectedWorkflowIndex];
+    if (!selectedWorkflow) {
       return null;
     }
 
-    const flowId = apId();
+    const workflowId = apId();
     return {
-      id: flowId,
+      id: workflowId,
       workspaceId: apId(),
       externalId: apId(),
       folderId: null,
-      status: FlowStatus.DISABLED,
+      status: WorkflowStatus.DISABLED,
       publishedVersionId: null,
       metadata: null,
-      operationStatus: FlowOperationStatus.NONE,
+      operationStatus: WorkflowOperationStatus.NONE,
       created: template.created,
       updated: template.updated,
       version: {
-        ...selectedFlow,
+        ...selectedWorkflow,
         id: apId(),
-        flowId: flowId,
+        workflowId: workflowId,
         created: template.created,
         updated: template.updated,
-        state: FlowVersionState.LOCKED,
+        state: WorkflowVersionState.LOCKED,
         updatedBy: null,
         agentIds: [],
         connectionIds: [],
-        notes: selectedFlow.notes ?? [],
+        notes: selectedWorkflow.notes ?? [],
       },
     };
-  }, [template, selectedFlowIndex]);
+  }, [template, selectedWorkflowIndex]);
 
   useEffect(() => {
     if (!hasClosedSidebar.current) {
@@ -97,7 +97,7 @@ const TemplateDetailsPage = ({ template }: TemplateDetailsPageProps) => {
       setRenderKey((prev) => prev + 1);
     }, 50);
     return () => clearTimeout(timer);
-  }, [selectedFlowIndex]);
+  }, [selectedWorkflowIndex]);
 
   const handleUseTemplate = () => {
     if (isNil(token)) {
@@ -206,26 +206,26 @@ const TemplateDetailsPage = ({ template }: TemplateDetailsPageProps) => {
                   </p>
                 </div>
 
-                {template.flows && (
+                {template.workflows && (
                   <div className="flex flex-col gap-2">
                     <span className="text-sm font-medium">
                       {t("What's included?")}
                     </span>
 
                     <div className="grid grid-cols-1 gap-3">
-                      {template.flows.map((flow, index) => (
-                        <FlowCard
+                      {template.workflows.map((workflow, index) => (
+                        <WorkflowCard
                           key={index}
-                          flow={flow}
-                          isSelected={selectedFlowIndex === index}
-                          singleFlow={
+                          workflow={workflow}
+                          isSelected={selectedWorkflowIndex === index}
+                          singleWorkflow={
                             !(
                               template &&
-                              template.flows &&
-                              template.flows.length > 1
+                              template.workflows &&
+                              template.workflows.length > 1
                             )
                           }
-                          onClick={() => setSelectedFlowIndex(index)}
+                          onClick={() => setSelectedWorkflowIndex(index)}
                         />
                       ))}
                     </div>
@@ -266,19 +266,19 @@ const TemplateDetailsPage = ({ template }: TemplateDetailsPageProps) => {
             ref={canvasContainerRef}
             className="bg-muted/30 h-full w-full relative overflow-hidden border-l"
           >
-            {mockFlow && renderKey > 0 ? (
+            {mockWorkflow && renderKey > 0 ? (
               <div key={renderKey} className="h-full w-full">
                 <ReactFlowProvider>
                   <BuilderStateProvider
-                    flow={mockFlow}
-                    flowVersion={mockFlow.version}
+                    workflow={mockWorkflow}
+                    workflowVersion={mockWorkflow.version}
                     readonly={true}
                     hideTestWidget={true}
                     run={null}
                     outputSampleData={{}}
                     inputSampleData={{}}
                   >
-                    <FlowCanvas
+                    <WorkflowCanvas
                       setHasCanvasBeenInitialised={setHasCanvasBeenInitialised}
                     />
                     {canvasContainerRef.current && hasCanvasBeenInitialised && (
@@ -292,11 +292,11 @@ const TemplateDetailsPage = ({ template }: TemplateDetailsPageProps) => {
                   </BuilderStateProvider>
                 </ReactFlowProvider>
               </div>
-            ) : mockFlow ? (
+            ) : mockWorkflow ? (
               <div className="text-muted-foreground text-sm flex items-center justify-center h-full" />
             ) : (
               <div className="text-muted-foreground text-sm flex items-center justify-center h-full">
-                {t('No flow preview available')}
+                {t('No workflow preview available')}
               </div>
             )}
           </div>

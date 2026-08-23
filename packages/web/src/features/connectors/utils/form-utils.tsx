@@ -28,10 +28,10 @@ import {
   UpsertOAuth2Request,
   UpsertPlatformOAuth2Request,
   UpsertSecretTextRequest,
-  FlowTriggerType,
-  FlowActionType,
-  FlowAction,
-  FlowTrigger,
+  WorkflowTriggerType,
+  WorkflowActionType,
+  WorkflowAction,
+  WorkflowTrigger,
   PropertyExecutionType,
   PropertySettings,
   ConnectorTriggerSettings,
@@ -57,12 +57,12 @@ function buildClassicSchema(
 }
 
 function buildInputSchemaForStep(
-  type: FlowActionType | FlowTriggerType,
+  type: WorkflowActionType | WorkflowTriggerType,
   connector: ConnectorMetadata | null,
   actionNameOrTriggerName: string,
 ): ZodType {
   switch (type) {
-    case FlowActionType.CONNECTOR: {
+    case WorkflowActionType.CONNECTOR: {
       if (
         connector &&
         actionNameOrTriggerName &&
@@ -76,7 +76,7 @@ function buildInputSchemaForStep(
       }
       return z.object({});
     }
-    case FlowTriggerType.CONNECTOR: {
+    case WorkflowTriggerType.CONNECTOR: {
       if (
         connector &&
         actionNameOrTriggerName &&
@@ -525,13 +525,13 @@ function buildConnectionSchema(
 
 export const formUtils = {
   /**When we use deepEqual if one object has an undefined value and the other doesn't have the key, that's an unequality, so to be safe we remove undefined values */
-  removeUndefinedFromInput: (step: FlowAction | FlowTrigger) => {
+  removeUndefinedFromInput: (step: WorkflowAction | WorkflowTrigger) => {
     const copiedStep = JSON.parse(JSON.stringify(step)) as
-      | FlowAction
-      | FlowTrigger;
+      | WorkflowAction
+      | WorkflowTrigger;
     if (
-      copiedStep.type !== FlowTriggerType.CONNECTOR &&
-      copiedStep.type !== FlowActionType.CONNECTOR
+      copiedStep.type !== WorkflowTriggerType.CONNECTOR &&
+      copiedStep.type !== WorkflowActionType.CONNECTOR
     ) {
       return step;
     }
@@ -546,12 +546,12 @@ export const formUtils = {
   },
 
   buildConnectorSchema: (
-    type: FlowActionType | FlowTriggerType,
+    type: WorkflowActionType | WorkflowTriggerType,
     actionNameOrTriggerName: string,
     connector: ConnectorMetadataModel | null,
   ) => {
     switch (type) {
-      case FlowActionType.LOOP_ON_ITEMS:
+      case WorkflowActionType.LOOP_ON_ITEMS:
         return LoopOnItemsActionSchema.omit({ settings: true }).extend(
           z.object({
             settings: z.object({
@@ -559,7 +559,7 @@ export const formUtils = {
             }),
           }).shape,
         );
-      case FlowActionType.ROUTER:
+      case WorkflowActionType.ROUTER:
         return RouterActionSchema.omit({ settings: true }).extend(
           z.object({
             settings: z.object({
@@ -568,9 +568,9 @@ export const formUtils = {
             }),
           }).shape,
         );
-      case FlowActionType.CODE:
+      case WorkflowActionType.CODE:
         return CodeActionSchema;
-      case FlowActionType.CONNECTOR: {
+      case WorkflowActionType.CONNECTOR: {
         return ConnectorActionSchema.omit({ settings: true }).extend(
           z.object({
             settings: ConnectorActionSettings.omit({
@@ -589,7 +589,7 @@ export const formUtils = {
           }).shape,
         );
       }
-      case FlowTriggerType.CONNECTOR: {
+      case WorkflowTriggerType.CONNECTOR: {
         return ConnectorTrigger.omit({ settings: true }).extend(
           z.object({
             settings: ConnectorTriggerSettings.omit({

@@ -26,7 +26,7 @@ import { usePinnedItems } from '@/features/automations/hooks/use-pinned-items';
 import { TreeItem } from '@/features/automations/lib/types';
 import { connectionsQueries } from '@/features/connections';
 import { connectorsHooks } from '@/features/connectors';
-import { ImportFlowDialog } from '@/features/flows/components/import-flow-dialog';
+import { ImportWorkflowDialog } from '@/features/workflows/components/import-workflow-dialog';
 import {
   workspaceCollectionUtils,
   getWorkspaceName,
@@ -55,7 +55,9 @@ const AutomationsPageContent = ({ workspaceId }: { workspaceId: string }) => {
   })();
 
   const { checkAccess } = useAuthorization();
-  const userHasPermissionToWriteFlow = checkAccess(Permission.WRITE_FLOW);
+  const userHasPermissionToWriteWorkflow = checkAccess(
+    Permission.WRITE_WORKFLOW,
+  );
   const userHasPermissionToWriteFolder = checkAccess(Permission.WRITE_FOLDER);
 
   const {
@@ -81,7 +83,7 @@ const AutomationsPageContent = ({ workspaceId }: { workspaceId: string }) => {
   const {
     treeItems,
     folders,
-    rootFlows,
+    rootWorkflows,
     isLoading,
     expandedFolders,
     toggleFolder,
@@ -168,22 +170,22 @@ const AutomationsPageContent = ({ workspaceId }: { workspaceId: string }) => {
           clearSelection();
         }
         toggleFolder(item.id);
-      } else if (item.type === 'flow') {
+      } else if (item.type === 'workflow') {
         const href = authenticationSession.appendWorkspaceRoutePrefix(
-          `/flows/${item.id}`,
+          `/workflows/${item.id}`,
         );
-        const flowData = item.data as {
+        const workflowData = item.data as {
           status?: 'ENABLED' | 'DISABLED';
         } | null;
         const folderName = item.folderId
           ? folders.find((f) => f.id === item.folderId)?.displayName ?? null
           : null;
         recordAccess({
-          id: `flow-${item.id}`,
-          type: 'flow',
+          id: `workflow-${item.id}`,
+          type: 'workflow',
           label: item.name,
           href,
-          status: flowData?.status ?? null,
+          status: workflowData?.status ?? null,
           folderName,
           workspaceName: currentWorkspaceName,
         });
@@ -207,13 +209,13 @@ const AutomationsPageContent = ({ workspaceId }: { workspaceId: string }) => {
   const handleCreateInFolder = useCallback(
     (folderId: string, kind: CreateInFolderKind) => {
       switch (kind) {
-        case 'flow':
-          mutations.createFlow(folderId);
+        case 'workflow':
+          mutations.createWorkflow(folderId);
           break;
-        case 'import-flow':
+        case 'import-workflow':
           expandFolderIfCollapsed(folderId);
           dialogs.setImportTargetFolderId(folderId);
-          dialogs.setIsImportFlowDialogOpen(true);
+          dialogs.setIsImportWorkflowDialogOpen(true);
           break;
       }
     },
@@ -235,7 +237,7 @@ const AutomationsPageContent = ({ workspaceId }: { workspaceId: string }) => {
     );
   };
 
-  const hasAnyItems = rootFlows.length > 0 || folders.length > 0;
+  const hasAnyItems = rootWorkflows.length > 0 || folders.length > 0;
   const isEmptyState = !hasAnyItems && !isLoading && !filtersActive;
   const isNoResultsState =
     treeItems.length === 0 && filtersActive && !isLoading;
@@ -263,17 +265,17 @@ const AutomationsPageContent = ({ workspaceId }: { workspaceId: string }) => {
         folders={folders}
         connections={connections?.data}
         connectors={connectors}
-        userHasPermissionToWriteFlow={userHasPermissionToWriteFlow}
+        userHasPermissionToWriteWorkflow={userHasPermissionToWriteWorkflow}
         userHasPermissionToWriteFolder={userHasPermissionToWriteFolder}
-        onCreateFlow={() => mutations.createFlow()}
+        onCreateWorkflow={() => mutations.createWorkflow()}
         onCreateFolder={() => dialogs.setIsFolderDialogOpen(true)}
-        onImportFlow={() => {
+        onImportWorkflow={() => {
           dialogs.setImportTargetFolderId(undefined);
-          dialogs.setIsImportFlowDialogOpen(true);
+          dialogs.setIsImportWorkflowDialogOpen(true);
         }}
         onClearAllFilters={clearAllFilters}
         hasActiveFilters={filtersActive}
-        isCreatingFlow={mutations.isCreateFlowPending}
+        isCreatingWorkflow={mutations.isCreateWorkflowPending}
       />
 
       {isNoResultsState ? (
@@ -295,12 +297,12 @@ const AutomationsPageContent = ({ workspaceId }: { workspaceId: string }) => {
             onRowClick={handleRowClick}
             onRenameItem={dialogs.openRenameDialog}
             onDeleteItem={mutations.handleDeleteItem}
-            onDuplicateFlow={mutations.handleDuplicateFlow}
+            onDuplicateWorkflow={mutations.handleDuplicateWorkflow}
             onMoveItem={mutations.handleMoveItem}
-            onExportFlow={mutations.handleExportFlow}
+            onExportWorkflow={mutations.handleExportWorkflow}
             onCreateInFolder={handleCreateInFolder}
-            userHasPermissionToWriteFlow={userHasPermissionToWriteFlow}
-            isCreatingFlow={mutations.isCreateFlowPending}
+            userHasPermissionToWriteWorkflow={userHasPermissionToWriteWorkflow}
+            isCreatingWorkflow={mutations.isCreateWorkflowPending}
             isMoving={mutations.isMoving}
             isDuplicating={mutations.isDuplicating}
             onLoadMoreInFolder={loadMoreInFolder}
@@ -356,8 +358,8 @@ const AutomationsPageContent = ({ workspaceId }: { workspaceId: string }) => {
         onOpenChange={dialogs.setIsFolderDialogOpen}
       />
 
-      <ImportFlowDialog
-        key={dialogs.importTargetFolderId ?? 'root-import-flow'}
+      <ImportWorkflowDialog
+        key={dialogs.importTargetFolderId ?? 'root-import-workflow'}
         insideBuilder={false}
         folderId={dialogs.importTargetFolderId ?? UncategorizedFolderId}
         onRefresh={() => invalidateAll()}
@@ -365,13 +367,13 @@ const AutomationsPageContent = ({ workspaceId }: { workspaceId: string }) => {
         <button
           className="hidden"
           ref={(el) => {
-            if (el && dialogs.isImportFlowDialogOpen) {
+            if (el && dialogs.isImportWorkflowDialogOpen) {
               el.click();
-              dialogs.setIsImportFlowDialogOpen(false);
+              dialogs.setIsImportWorkflowDialogOpen(false);
             }
           }}
         />
-      </ImportFlowDialog>
+      </ImportWorkflowDialog>
     </div>
   );
 };

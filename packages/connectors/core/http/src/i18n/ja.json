@@ -32,7 +32,7 @@
   "Retry on all errors (4xx, 5xx)": "すべてのエラー（4xxx、5xx）を再試行してください",
   "Retry on internal errors (5xx)": "内部エラーを再試行（5xx）",
   "Do not retry": "再試行しない",
-  "Continue flow on all errors": "すべてのエラーでフローを続ける",
-  "Continue flow on 4xx errors": "4xxエラー時にフローを続ける",
-  "Do not continue (stop the flow)": "続行しない (フローを停止する)"
+  "Continue workflow on all errors": "すべてのエラーでフローを続ける",
+  "Continue workflow on 4xx errors": "4xxエラー時にフローを続ける",
+  "Do not continue (stop the workflow)": "続行しない (フローを停止する)"
 }

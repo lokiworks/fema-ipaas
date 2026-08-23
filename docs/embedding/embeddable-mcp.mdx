@@ -8,7 +8,7 @@ icon: "plug"
 
 ## What it does
 
-Every FEMA Integration Platform project can act as an [MCP](/mcp/overview) server — a place an AI can connect to in order to run that project's flows.
+Every FEMA Integration Platform project can act as an [MCP](/mcp/overview) server — a place an AI can connect to in order to run that project's workflows.
 
 When you embed FEMA Integration Platform, your users log in through **your** app, not FEMA Integration Platform. So they can't use the normal "connect your AI" screen (it would ask them to log in to FEMA Integration Platform, which they can't).
 
@@ -25,7 +25,7 @@ It's normal OAuth. The only FEMA Integration Platform-specific part is one SDK c
 
 ## Quick token (no OAuth)
 
-If you don't need the full OAuth flow — you just want a token to point an AI at the embedded user's project — call `generateMcpToken()` from the frontend. It uses the embed session you already configured, so there's no app registration, no PKCE, and no popup.
+If you don't need the full OAuth workflow — you just want a token to point an AI at the embedded user's project — call `generateMcpToken()` from the frontend. It uses the embed session you already configured, so there's no app registration, no PKCE, and no popup.
 
 ```ts
 const { mcpServerUrl, mcpToken } = await fema.generateMcpToken();
@@ -38,7 +38,7 @@ This is the same kind of credential the built-in chat assistant uses internally.
 - works for **15 minutes** — call `generateMcpToken()` again to get a fresh one.
 
 <Note>
-Use this when your app holds the MCP client and the embedded user is already signed in through the SDK. Use the **OAuth flow below** when a separate third-party app needs long-lived, revocable access on the user's behalf (it returns a refresh token).
+Use this when your app holds the MCP client and the embedded user is already signed in through the SDK. Use the **OAuth workflow below** when a separate third-party app needs long-lived, revocable access on the user's behalf (it returns a refresh token).
 </Note>
 
 ## Before you start
@@ -57,7 +57,7 @@ Below, `INSTANCE_URL` is your FEMA Integration Platform address (like `https://a
 3. **Ask FEMA Integration Platform to start a connection** → you get an `authRequestId`.
 4. **Show the Authorize popup** in your app → the user clicks Authorize → you get a `code`.
 5. **Trade the `code` for a token.**
-6. **Use the token** to run the user's flows.
+6. **Use the token** to run the user's workflows.
 
 ## Steps
 
@@ -163,7 +163,7 @@ Below, `INSTANCE_URL` is your FEMA Integration Platform address (like `https://a
       -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'
     ```
 
-    You'll see the user's tools and flows come back.
+    You'll see the user's tools and workflows come back.
   </Step>
 </Steps>
 

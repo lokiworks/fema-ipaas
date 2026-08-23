@@ -6,8 +6,8 @@ import { actionRunCache } from './action-run-cache'
 import { cacheUtils } from './cache-paths'
 import { connectorInstaller } from './connectors/connector-installer'
 import { engineInstaller } from './engine/engine-installer'
-import { codeBuilder } from './flow/code/code-builder'
-import { codeCache } from './flow/code/code-cache'
+import { codeBuilder } from './workflow/code/code-builder'
+import { codeCache } from './workflow/code/code-cache'
 
 export const localExecutionCache = (log: ApLogger, basePath: string, getSettings: () => SandboxSettings) => ({
     async provision({
@@ -78,11 +78,11 @@ async function installCodeStep({ artifact, codeCachePath, log, getSettings }: In
             codesFolderPath: codeCachePath,
         })
     }
-    if (!actionRunCache.isActionRunNamespace(artifact.flowVersionId)) {
+    if (!actionRunCache.isActionRunNamespace(artifact.workflowVersionId)) {
         await build()
         return
     }
-    const dirPath = codeCache(codeCachePath).flowVersionDir(artifact.flowVersionId)
+    const dirPath = codeCache(codeCachePath).workflowVersionDir(artifact.workflowVersionId)
     do {
         await build()
         await actionRunCache.touch(dirPath)

@@ -14,7 +14,7 @@ export const secureApId = (length: number) => customAlphabet(ALPHABET, length)()
 
 export type WorkspaceId = ApId
 export type ExecutionId = ApId
-export type FlowId = ApId
-export type FlowVersionId = ApId
+export type WorkflowId = ApId
+export type WorkflowVersionId = ApId
 export type PlatformId = ApId
 export type UserId = ApId

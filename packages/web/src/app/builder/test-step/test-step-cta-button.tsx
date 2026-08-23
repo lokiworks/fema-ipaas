@@ -1,10 +1,10 @@
 import { isNil } from '@fema/core-utils';
 import {
-  FlowAction,
-  FlowTrigger,
-  FlowTriggerType,
+  WorkflowAction,
+  WorkflowTrigger,
+  WorkflowTriggerType,
   Step,
-  flowStructureUtil,
+  workflowStructureUtil,
 } from '@fema/shared';
 import { t } from 'i18next';
 import { Play } from 'lucide-react';
@@ -29,14 +29,14 @@ const SOFT_PRIMARY_CTA_CLASSES =
 const TestStepCTAButton = () => {
   const [
     selectedStep,
-    flowVersion,
+    workflowVersion,
     isStepBeingTested,
     setStepDataPanelOpen,
     run,
     saving,
   ] = useBuilderStateContext((state) => [
     state.selectedStep,
-    state.flowVersion,
+    state.workflowVersion,
     state.isStepBeingTested,
     state.setStepDataPanelOpen,
     state.run,
@@ -44,7 +44,7 @@ const TestStepCTAButton = () => {
   ]);
 
   const currentStep = selectedStep
-    ? flowStructureUtil.getStep(selectedStep, flowVersion.trigger)
+    ? workflowStructureUtil.getStep(selectedStep, workflowVersion.trigger)
     : null;
 
   if (!currentStep) {
@@ -57,7 +57,7 @@ const TestStepCTAButton = () => {
   const stepIsRunning = isStepBeingTested(currentStep.name);
   const onOpenPanel = () => setStepDataPanelOpen(true);
 
-  if (isFlowAction(currentStep)) {
+  if (isWorkflowAction(currentStep)) {
     return (
       <ActionCTAButton
         currentStep={currentStep}
@@ -93,16 +93,16 @@ const TestStepCTAButton = () => {
   return null;
 };
 
-const isFlowAction = (step: Step): step is FlowAction =>
-  flowStructureUtil.isAction(step.type);
+const isWorkflowAction = (step: Step): step is WorkflowAction =>
+  workflowStructureUtil.isAction(step.type);
 
 const isConnectorTrigger = (
   step: Step,
-): step is Extract<FlowTrigger, { type: FlowTriggerType.CONNECTOR }> =>
-  step.type === FlowTriggerType.CONNECTOR;
+): step is Extract<WorkflowTrigger, { type: WorkflowTriggerType.CONNECTOR }> =>
+  step.type === WorkflowTriggerType.CONNECTOR;
 
 type ActionCTAButtonProps = {
-  currentStep: FlowAction;
+  currentStep: WorkflowAction;
   sampleDataExists: boolean;
   onOpenPanel: () => void;
   saving: boolean;

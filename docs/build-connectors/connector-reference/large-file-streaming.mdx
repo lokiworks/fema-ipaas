@@ -1,13 +1,13 @@
 ---
 title: "Large File Streaming"
 icon: 'water'
-description: "Move large files through a flow without buffering them in memory"
+description: "Move large files through a workflow without buffering them in memory"
 ---
 
 Large file streaming lets a connector process a big file by passing it through as a stream —
 transferring the bytes a chunk at a time — instead of loading the whole file into memory
 first. It is useful when a file is too large to hold in RAM at either the source or the
-destination. Because the file is never fully buffered, a flow can move files far larger
+destination. Because the file is never fully buffered, a workflow can move files far larger
 than the worker's memory budget.
 
 ## Why it matters
@@ -17,9 +17,9 @@ minus overhead — see [Limits](/install/reference/limits)). Reading a large fil
 `Buffer` holds the entire file in that budget at once, so a big enough file exhausts the
 memory and the worker is OOM-killed.
 
-Streaming avoids this: the bytes flow through as a Node `Readable`, roughly 5&nbsp;MB at a
+Streaming avoids this: the bytes workflow through as a Node `Readable`, roughly 5&nbsp;MB at a
 time, so no process ever holds the whole file. The transfer is transparent — there are no
-extra "chunk" steps in your flow; a streaming action looks and behaves like any other.
+extra "chunk" steps in your workflow; a streaming action looks and behaves like any other.
 
 <Warning>
 **Requires S3 file storage.** Full streaming only works when file storage is set to S3
@@ -192,7 +192,7 @@ advertised length. Don't require it: prefer pattern 1 or 2, which never need it.
 
 - **Writing into storage is capped.** A stream passed to `ctx.files.write` is counted against
   `FEMA_MAX_FILE_SIZE_MB` (Cloud: 10&nbsp;MB, self-hosted default: 25&nbsp;MB) *while* the bytes
-  flow; exceeding it aborts the transfer and fails the step. See
+  workflow; exceeding it aborts the transfer and fails the step. See
   [Limits](/install/reference/limits).
 - **Reading a streamed input is not capped.** A `streaming: true` file input has no
   `FEMA_MAX_FILE_SIZE_MB` ceiling — that is deliberate, since the point of the feature is to move

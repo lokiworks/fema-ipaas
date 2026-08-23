@@ -1,6 +1,6 @@
 import { ConnectorPropertyMap, StaticPropsValue } from '@fema/connector-sdk'
 import { ErrorCode, isNil, PlatformError } from '@fema/core-utils'
-import { ConnectorAction, EngineGenericError, ExecutionStatus, ExecutionType, FlowActionType, GenericStepOutput, RespondResponse, StepOutputStatus } from '@fema/shared'
+import { ConnectorAction, EngineGenericError, ExecutionStatus, ExecutionType, GenericStepOutput, RespondResponse, StepOutputStatus, WorkflowActionType } from '@fema/shared'
 import { engineRunApi } from '../api/engine-run-api'
 import { ConnectorRuntime } from '../core/connector/connector-protocol'
 import { connectorRunner } from '../core/connector/connector-runner'
@@ -28,7 +28,7 @@ const executeAction: ActionHandler<ConnectorAction> = async ({ action, execution
     const stepStartTime = performance.now()
     const stepOutput = GenericStepOutput.create({
         input: {},
-        type: FlowActionType.CONNECTOR,
+        type: WorkflowActionType.CONNECTOR,
         status: StepOutputStatus.RUNNING,
     })
 
@@ -63,7 +63,7 @@ const executeAction: ActionHandler<ConnectorAction> = async ({ action, execution
         if (!isPaused) {
             await executionProgressReporter.sendUpdate({
                 engineConstants: constants,
-                flowExecutorContext: await executionState.upsertStep(action.name, stepOutput),
+                workflowExecutorContext: await executionState.upsertStep(action.name, stepOutput),
                 stepNameToUpdate: action.name,
             })
         }
@@ -91,7 +91,7 @@ const executeAction: ActionHandler<ConnectorAction> = async ({ action, execution
         const webhookResponse = getResponse(hookResponse)
         const isSameConnector = constants.triggerConnectorName === connectorName
         if (!isNil(webhookResponse) && !isNil(constants.workerHandlerId) && !isNil(constants.httpRequestId) && isSameConnector) {
-            await engineRunApi.sendFlowResponse({
+            await engineRunApi.sendWorkflowResponse({
                 apiUrl: constants.internalApiUrl,
                 engineToken: constants.engineToken,
                 request: {
@@ -159,8 +159,8 @@ export function buildRuntime({ constants, connectorName, contextVersion }: Build
         publicApiUrl: constants.publicApiUrl,
         engineToken: constants.engineToken,
         workspaceId: constants.workspaceId,
-        flowId: constants.flowId,
-        flowVersionId: constants.flowVersionId,
+        workflowId: constants.workflowId,
+        workflowVersionId: constants.workflowVersionId,
         executionId: constants.executionId,
         connectorName,
         contextVersion,

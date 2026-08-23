@@ -1,7 +1,7 @@
 import { isNil } from '@fema/core-utils';
 import {
-  FlowOperationType,
-  PopulatedFlow,
+  WorkflowOperationType,
+  PopulatedWorkflow,
   UncategorizedFolderId,
 } from '@fema/shared';
 import { useMutation } from '@tanstack/react-query';
@@ -10,12 +10,12 @@ import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
-import { flowsApi } from '@/features/flows/api/flows-api';
-import { flowHooks } from '@/features/flows/hooks/flow-hooks';
 import { foldersApi } from '@/features/folders/api/folders-api';
+import { workflowsApi } from '@/features/workflows/api/workflows-api';
+import { workflowHooks } from '@/features/workflows/hooks/workflow-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 import { useNewWindow } from '@/lib/navigation-utils';
-import { NEW_FLOW_QUERY_PARAM } from '@/lib/route-utils';
+import { NEW_WORKFLOW_QUERY_PARAM } from '@/lib/route-utils';
 
 import { SelectedItemsMap, TreeItem } from '../lib/types';
 
@@ -35,10 +35,10 @@ export function useAutomationsMutations(deps: MutationDeps) {
   const navigate = useNavigate();
   const workspaceId = authenticationSession.getWorkspaceId() ?? '';
 
-  const { mutate: startFromScratch, isPending: isCreateFlowPending } =
-    useMutation<PopulatedFlow, Error, string | undefined>({
+  const { mutate: startFromScratch, isPending: isCreateWorkflowPending } =
+    useMutation<PopulatedWorkflow, Error, string | undefined>({
       mutationFn: async (folderId) => {
-        return flowsApi.create({
+        return workflowsApi.create({
           workspaceId,
           displayName: t('Untitled'),
           folderId:
@@ -47,19 +47,19 @@ export function useAutomationsMutations(deps: MutationDeps) {
               : folderId,
         });
       },
-      onSuccess: (flow) => {
-        navigate(`/flows/${flow.id}?${NEW_FLOW_QUERY_PARAM}=true`);
+      onSuccess: (workflow) => {
+        navigate(`/workflows/${workflow.id}?${NEW_WORKFLOW_QUERY_PARAM}=true`);
       },
     });
 
-  const { mutate: exportFlows, isPending: isExportFlowsPending } =
-    flowHooks.useExportFlows();
+  const { mutate: exportWorkflows, isPending: isExportWorkflowsPending } =
+    workflowHooks.useExportWorkflows();
 
   const { mutateAsync: deleteItem } = useMutation({
     mutationFn: async (item: TreeItem) => {
       switch (item.type) {
-        case 'flow':
-          await flowsApi.delete(item.id);
+        case 'workflow':
+          await workflowsApi.delete(item.id);
           break;
         case 'folder':
           await foldersApi.delete(item.id);
@@ -75,9 +75,9 @@ export function useAutomationsMutations(deps: MutationDeps) {
 
   const { mutateAsync: bulkDelete, isPending: isDeleting } = useMutation({
     mutationFn: async (selectedItems: SelectedItemsMap) => {
-      const { flowIds, folderIds } = getSelectedIdsByType(selectedItems);
+      const { workflowIds, folderIds } = getSelectedIdsByType(selectedItems);
       await Promise.all([
-        ...flowIds.map((id) => flowsApi.delete(id)),
+        ...workflowIds.map((id) => workflowsApi.delete(id)),
         ...folderIds.map((id) => foldersApi.delete(id)),
       ]);
     },
@@ -97,15 +97,15 @@ export function useAutomationsMutations(deps: MutationDeps) {
       selectedItems: SelectedItemsMap;
       targetFolderId: string;
     }) => {
-      const { flowIds } = getSelectedIdsByType(selectedItems);
+      const { workflowIds } = getSelectedIdsByType(selectedItems);
       const folderId =
         isNil(targetFolderId) || targetFolderId === UncategorizedFolderId
           ? null
           : targetFolderId;
       await Promise.all(
-        flowIds.map((id) =>
-          flowsApi.update(id, {
-            type: FlowOperationType.CHANGE_FOLDER,
+        workflowIds.map((id) =>
+          workflowsApi.update(id, {
+            type: WorkflowOperationType.CHANGE_FOLDER,
             request: { folderId },
           }),
         ),
@@ -132,9 +132,9 @@ export function useAutomationsMutations(deps: MutationDeps) {
       item: TreeItem;
       newName: string;
     }) => {
-      if (item.type === 'flow') {
-        await flowsApi.update(item.id, {
-          type: FlowOperationType.CHANGE_NAME,
+      if (item.type === 'workflow') {
+        await workflowsApi.update(item.id, {
+          type: WorkflowOperationType.CHANGE_NAME,
           request: { displayName: newName },
         });
       } else if (item.type === 'folder') {
@@ -148,17 +148,17 @@ export function useAutomationsMutations(deps: MutationDeps) {
     onError: () => toast.error(t('Failed to rename item')),
   });
 
-  const { mutate: duplicateFlow, isPending: isDuplicating } = useMutation({
-    mutationFn: async (flow: PopulatedFlow) => {
-      const version = flow.version;
+  const { mutate: duplicateWorkflow, isPending: isDuplicating } = useMutation({
+    mutationFn: async (workflow: PopulatedWorkflow) => {
+      const version = workflow.version;
       const displayName = `${version.displayName} - Copy`;
-      const createdFlow = await flowsApi.create({
+      const createdWorkflow = await workflowsApi.create({
         displayName,
-        workspaceId: flow.workspaceId,
-        folderId: flow.folderId ?? undefined,
+        workspaceId: workflow.workspaceId,
+        folderId: workflow.folderId ?? undefined,
       });
-      return flowsApi.update(createdFlow.id, {
-        type: FlowOperationType.IMPORT_FLOW,
+      return workflowsApi.update(createdWorkflow.id, {
+        type: WorkflowOperationType.IMPORT_WORKFLOW,
         request: {
           displayName,
           trigger: version.trigger,
@@ -168,11 +168,11 @@ export function useAutomationsMutations(deps: MutationDeps) {
       });
     },
     onSuccess: (data) => {
-      openNewWindow(`/flows/${data.id}`);
+      openNewWindow(`/workflows/${data.id}`);
       deps.invalidateAll();
-      toast.success(t('Flow duplicated successfully'));
+      toast.success(t('Workflow duplicated successfully'));
     },
-    onError: () => toast.error(t('Failed to duplicate flow')),
+    onError: () => toast.error(t('Failed to duplicate workflow')),
   });
 
   const { mutate: moveItem, isPending: isMovingItem } = useMutation({
@@ -187,9 +187,9 @@ export function useAutomationsMutations(deps: MutationDeps) {
         isNil(targetFolderId) || targetFolderId === UncategorizedFolderId
           ? null
           : targetFolderId;
-      if (item.type === 'flow') {
-        await flowsApi.update(item.id, {
-          type: FlowOperationType.CHANGE_FOLDER,
+      if (item.type === 'workflow') {
+        await workflowsApi.update(item.id, {
+          type: WorkflowOperationType.CHANGE_FOLDER,
           request: { folderId },
         });
       }
@@ -206,37 +206,39 @@ export function useAutomationsMutations(deps: MutationDeps) {
 
   const handleBulkExport = useCallback(
     (selectedItems: SelectedItemsMap) => {
-      const { flowIds } = getSelectedIdsByType(selectedItems);
+      const { workflowIds } = getSelectedIdsByType(selectedItems);
 
-      if (flowIds.length > 0) {
-        const flowsById = new Map(
+      if (workflowIds.length > 0) {
+        const workflowsById = new Map(
           deps.treeItems
-            .filter(isFlowTreeItem)
+            .filter(isWorkflowTreeItem)
             .map((item) => [item.id, item.data]),
         );
-        const flowsToExport = flowIds
-          .map((id) => flowsById.get(id))
-          .filter((flow): flow is PopulatedFlow => !isNil(flow));
-        if (flowsToExport.length > 0) {
-          exportFlows(flowsToExport);
+        const workflowsToExport = workflowIds
+          .map((id) => workflowsById.get(id))
+          .filter(
+            (workflow): workflow is PopulatedWorkflow => !isNil(workflow),
+          );
+        if (workflowsToExport.length > 0) {
+          exportWorkflows(workflowsToExport);
         }
       }
 
       deps.clearSelection();
     },
-    [deps, exportFlows],
+    [deps, exportWorkflows],
   );
 
-  const handleExportFlow = useCallback(
-    (flow: PopulatedFlow) => {
-      exportFlows([flow]);
+  const handleExportWorkflow = useCallback(
+    (workflow: PopulatedWorkflow) => {
+      exportWorkflows([workflow]);
     },
-    [exportFlows],
+    [exportWorkflows],
   );
 
   return {
-    createFlow: (folderId?: string) => startFromScratch(folderId),
-    isCreateFlowPending,
+    createWorkflow: (folderId?: string) => startFromScratch(folderId),
+    isCreateWorkflowPending,
     handleDeleteItem: deleteItem,
     handleBulkDelete: bulkDelete,
     handleBulkMoveTo: (
@@ -246,20 +248,20 @@ export function useAutomationsMutations(deps: MutationDeps) {
     handleBulkExport,
     handleRename: (item: TreeItem, newName: string) =>
       rename({ item, newName }),
-    handleDuplicateFlow: duplicateFlow,
+    handleDuplicateWorkflow: duplicateWorkflow,
     handleMoveItem: (item: TreeItem, targetFolderId: string) =>
       moveItem({ item, targetFolderId }),
-    handleExportFlow,
+    handleExportWorkflow,
     isDeleting,
     isMoving: isBulkMoving || isMovingItem,
     isRenaming,
     isDuplicating,
-    isExporting: isExportFlowsPending,
+    isExporting: isExportWorkflowsPending,
   };
 }
 
-function isFlowTreeItem(
+function isWorkflowTreeItem(
   item: TreeItem,
-): item is TreeItem & { data: PopulatedFlow } {
-  return item.type === 'flow' && !isNil(item.data);
+): item is TreeItem & { data: PopulatedWorkflow } {
+  return item.type === 'workflow' && !isNil(item.data);
 }

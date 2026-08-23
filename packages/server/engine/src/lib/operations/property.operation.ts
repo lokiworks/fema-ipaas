@@ -40,9 +40,9 @@ async function executeProps(operation: ExecutePropsOptions): Promise<ExecuteProp
     const { propertyType, path } = resolvePropertyPath({ description, operation })
 
     const { data: result, error } = await utils.tryCatchAndThrowOnEngineError(async () => {
-        const executionState = await testExecutionContext.stateFromFlowVersion({
+        const executionState = await testExecutionContext.stateFromWorkflowVersion({
             apiUrl: operation.internalApiUrl,
-            flowVersion: operation.flowVersion,
+            workflowVersion: operation.workflowVersion,
             workspaceId: operation.workspaceId,
             engineToken: operation.engineToken,
             sampleData: operation.sampleData,

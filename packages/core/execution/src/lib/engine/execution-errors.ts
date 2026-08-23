@@ -78,9 +78,9 @@ export class FileStoreError extends ExecutionError {
     }
 }
 
-export class PausedFlowTimeoutError extends ExecutionError {
+export class PausedWorkflowTimeoutError extends ExecutionError {
     constructor(cause?: unknown, maximumPauseDurationDays?: number) {
-        super('PausedFlowTimeoutError', `The flow cannot be paused for more than ${maximumPauseDurationDays} days`, ExecutionErrorType.USER, cause)
+        super('PausedWorkflowTimeoutError', `The workflow cannot be paused for more than ${maximumPauseDurationDays} days`, ExecutionErrorType.USER, cause)
     }
 }
 

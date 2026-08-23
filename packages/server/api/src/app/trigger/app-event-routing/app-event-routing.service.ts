@@ -1,4 +1,4 @@
-import { apId, FlowId, WorkspaceId } from '@fema/core-utils'
+import { apId, WorkflowId, WorkspaceId } from '@fema/core-utils'
 import { repoFactory } from '../../core/db/repo-factory'
 import {
     AppEventRouting,
@@ -19,7 +19,7 @@ export const appEventRoutingService = {
         appName,
         events,
         identifierValue,
-        flowId,
+        workflowId,
         workspaceId,
     }: CreateParams): Promise<void> {
         const upsertCommands: Promise<unknown>[] = []
@@ -30,10 +30,10 @@ export const appEventRoutingService = {
                     appName,
                     event,
                     identifierValue,
-                    flowId,
+                    workflowId,
                     workspaceId,
                 },
-                ['appName', 'event', 'identifierValue', 'workspaceId', 'flowId'],
+                ['appName', 'event', 'identifierValue', 'workspaceId', 'workflowId'],
             )
             upsertCommands.push(upsert)
         })
@@ -41,11 +41,11 @@ export const appEventRoutingService = {
     },
     async deleteListeners({
         workspaceId,
-        flowId,
+        workflowId,
     }: DeleteParams): Promise<void> {
         await appEventRoutingRepo().delete({
             workspaceId,
-            flowId,
+            workflowId,
         })
     },
 }
@@ -57,13 +57,13 @@ type ListParams = {
 }
 type DeleteParams = {
     workspaceId: WorkspaceId
-    flowId: FlowId
+    workflowId: WorkflowId
 }
 
 type CreateParams = {
     appName: string
     events: string[]
     identifierValue: string
-    flowId: FlowId
+    workflowId: WorkflowId
     workspaceId: WorkspaceId
 }

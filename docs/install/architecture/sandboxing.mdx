@@ -1,10 +1,10 @@
 ---
 title: "Sandboxing"
-description: "Choose the right isolation mode for running flow code"
+description: "Choose the right isolation mode for running workflow code"
 icon: "box"
 ---
 
-Flow code (Code steps and connector actions) always runs inside a **sandbox** that wraps the engine process. `FEMA_EXECUTION_MODE` decides which sandbox. It is the most important security choice in a self-hosted deployment: it decides whether a malicious flow is contained to one worker pod or can reach the kernel.
+Workflow code (Code steps and connector actions) always runs inside a **sandbox** that wraps the engine process. `FEMA_EXECUTION_MODE` decides which sandbox. It is the most important security choice in a self-hosted deployment: it decides whether a malicious workflow is contained to one worker pod or can reach the kernel.
 
 ## Execution Modes
 

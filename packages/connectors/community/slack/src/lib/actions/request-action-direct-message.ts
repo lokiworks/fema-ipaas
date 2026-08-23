@@ -7,7 +7,7 @@ import {
   userId,
   username,
   actions,
-  mentionOriginFlow,
+  mentionOriginWorkflow,
 } from '../common/props';
 import { requestAction } from '../common/request-action';
 import { requestActionActionOutputSchema } from '../output-schemas';
@@ -20,7 +20,7 @@ export const requestActionDirectMessageAction = createAction({
   description:
     'Send a message to a user and wait until the user selects an action',
   audience: 'both',
-  aiMetadata: { description: 'Send a direct message with interactive buttons to a user and pause the flow until that user clicks one of the defined actions, then resume with their choice. Use this for a human-in-the-loop decision via DM; use Request Approval in a Channel for a simple approve/disapprove gate in a channel. Sends a new message each run, so it is not idempotent.', idempotent: false },
+  aiMetadata: { description: 'Send a direct message with interactive buttons to a user and pause the workflow until that user clicks one of the defined actions, then resume with their choice. Use this for a human-in-the-loop decision via DM; use Request Approval in a Channel for a simple approve/disapprove gate in a channel. Sends a new message each run, so it is not idempotent.', idempotent: false },
   outputSchema: requestActionActionOutputSchema,
   props: {
     userId: userId(true),
@@ -28,7 +28,7 @@ export const requestActionDirectMessageAction = createAction({
     actions,
     username,
     profilePicture,
-    mentionOriginFlow,
+    mentionOriginWorkflow,
   },
   async run(context) {
     const { userId } = context.propsValue;

@@ -1,10 +1,10 @@
 import { isNil, isObject } from '@fema/core-utils';
 import {
-  flowCanvasUtils,
-  FlowAction,
-  FlowActionType,
-  FlowTrigger,
-  FlowTriggerType,
+  workflowCanvasUtils,
+  WorkflowAction,
+  WorkflowActionType,
+  WorkflowTrigger,
+  WorkflowTriggerType,
 } from '@fema/shared';
 import { t } from 'i18next';
 
@@ -274,7 +274,7 @@ function getSearchableValue(
 }
 
 function traverseStep(
-  step: (FlowAction | FlowTrigger) & { dfsIndex: number },
+  step: (WorkflowAction | WorkflowTrigger) & { dfsIndex: number },
   sampleData: Record<string, unknown>,
   zipArraysOfProperties: boolean,
   targetStepName: string,
@@ -282,7 +282,7 @@ function traverseStep(
   const displayName = `${step.dfsIndex + 1}. ${step.displayName}`;
   const stepNeedsTesting =
     isNil(step.settings.sampleData?.lastTestDate) &&
-    (step.type !== FlowTriggerType.CONNECTOR ||
+    (step.type !== WorkflowTriggerType.CONNECTOR ||
       !connectorSelectorUtils.isManualTrigger({
         connectorName: step.settings.connectorName,
         triggerName: step.settings.triggerName ?? '',
@@ -290,7 +290,7 @@ function traverseStep(
   if (stepNeedsTesting) {
     return buildTestStepNode(displayName, step.name);
   }
-  if (step.type === FlowActionType.LOOP_ON_ITEMS) {
+  if (step.type === WorkflowActionType.LOOP_ON_ITEMS) {
     const copiedSampleData = JSON.parse(JSON.stringify(sampleData[step.name]));
     delete copiedSampleData['iterations'];
     const headNode = traverseOutput(
@@ -318,9 +318,9 @@ function traverseStep(
     stepNode.data = { ...stepNode.data, stepName: step.name };
   }
 
-  const cofEnabled = flowCanvasUtils.hasContinueOnFailureBranches(step);
+  const cofEnabled = workflowCanvasUtils.hasContinueOnFailureBranches(step);
   if (cofEnabled) {
-    const branch = flowCanvasUtils.getStepBranchRelativeTo(
+    const branch = workflowCanvasUtils.getStepBranchRelativeTo(
       step,
       targetStepName,
     );

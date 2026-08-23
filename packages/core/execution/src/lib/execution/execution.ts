@@ -3,7 +3,7 @@ import { ErrorCode } from '@fema/core-utils'
 import { BaseModelSchema, Nullable } from '@fema/core-utils'
 import { isNil, truncateString } from '@fema/core-utils'
 import { ExecutionState, RunInternalError } from './state/execution-output'
-import { ExecutionStatus } from './state/flow-execution'
+import { ExecutionStatus } from './state/workflow-execution'
 
 export const FAILED_STEP_MESSAGE_MAX_LENGTH = 700
 
@@ -32,13 +32,13 @@ export enum RunEnvironment {
     TESTING = 'TESTING',
 }
 
-export enum FlowRetryStrategy {
+export enum WorkflowRetryStrategy {
     ON_LATEST_VERSION = 'ON_LATEST_VERSION',
     FROM_FAILED_STEP = 'FROM_FAILED_STEP',
 }
 
-export type FlowRetryPayload = {
-    strategy: FlowRetryStrategy
+export type WorkflowRetryPayload = {
+    strategy: WorkflowRetryStrategy
 }
 
 export const FailedStep = z.object({
@@ -63,13 +63,13 @@ export type RunTimeline = z.infer<typeof RunTimeline>
 export const Execution = z.object({
     ...BaseModelSchema,
     workspaceId: z.string(),
-    flowId: z.string(),
+    workflowId: z.string(),
     parentRunId: z.string().optional(),
     failParentOnFailure: z.boolean(),
     triggeredBy: z.string().optional(),
     tags: z.array(z.string()).optional(),
-    flowVersionId: z.string(),
-    flowVersion: z.object({
+    workflowVersionId: z.string(),
+    workflowVersion: z.object({
         displayName: z.string().optional(),
     }).optional(),
     logsFileId: Nullable(z.string()),
@@ -78,7 +78,7 @@ export const Execution = z.object({
     finishTime: z.string().nullish(),
     timeline: RunTimeline.nullish(),
     environment: z.nativeEnum(RunEnvironment),
-    // The steps data may be missing if the flow has not started yet,
+    // The steps data may be missing if the workflow has not started yet,
     // or if the run is older than FEMA_EXECUTION_DATA_RETENTION_DAYS and its execution data has been purged.
     steps: Nullable(z.record(z.string(), z.unknown())),
     failedStep: FailedStep.optional(),

@@ -36,6 +36,6 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     "i18next-parser.config.js",
-    "src/app/builder/builder-flow-status-section/index.tsx"
+    "src/app/builder/builder-workflow-status-section/index.tsx"
   ]
 }

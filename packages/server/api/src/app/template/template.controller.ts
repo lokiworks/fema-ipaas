@@ -6,8 +6,8 @@ import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
 import { securityAccess } from '../core/security/authorization/fastify-security'
 import { platformGuards } from '../core/security/platform-guards'
-import { migrateFlowVersionTemplateList } from '../flows/flow-version/migrations'
 import { platformService } from '../platform/platform.service'
+import { migrateWorkflowVersionTemplateList } from '../workflows/workflow-version/migrations'
 import { communityTemplates } from './community-templates.service'
 import { templateService } from './template.service'
 
@@ -39,8 +39,8 @@ export const templateController: FastifyPluginAsyncZod = async (app) => {
     app.post('/', {
         ...CreateParams,
         preValidation: async (request) => {
-            const migratedFlows = await migrateFlowVersionTemplateList(request.body.flows ?? [])
-            request.body.flows = migratedFlows
+            const migratedWorkflows = await migrateWorkflowVersionTemplateList(request.body.workflows ?? [])
+            request.body.workflows = migratedWorkflows
         },
     }, async (request, reply) => {
         const { type } = request.body
@@ -69,8 +69,8 @@ export const templateController: FastifyPluginAsyncZod = async (app) => {
 
     app.post('/:id', { ...UpdateParams,
         preValidation: async (request) => {
-            const migratedFlows = await migrateFlowVersionTemplateList(request.body.flows ?? [])
-            request.body.flows = migratedFlows
+            const migratedWorkflows = await migrateWorkflowVersionTemplateList(request.body.workflows ?? [])
+            request.body.workflows = migratedWorkflows
         },
     }, async (request, reply) => {
         const template = await templateService(app.log).getOneOrThrow({ id: request.params.id })

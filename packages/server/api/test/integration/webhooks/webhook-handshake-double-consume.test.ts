@@ -1,10 +1,10 @@
-import { FileType, Flow, FlowStatus, Workspace, WebhookHandshakeStrategy } from '@fema/shared'
+import { FileType, Workflow, WorkflowStatus, Workspace, WebhookHandshakeStrategy } from '@fema/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { webhookHandshake } from '../../../../src/app/webhooks/webhook-handshake'
 import { db } from '../../../helpers/db'
 import { databaseConnection } from '../../../../src/app/database/database-connection'
-import { createMockFlow, createMockFlowVersion, mockAndSaveBasicSetup } from '../../../helpers/mocks'
+import { createMockWorkflow, createMockWorkflowVersion, mockAndSaveBasicSetup } from '../../../helpers/mocks'
 import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
 
 let app: FastifyInstance
@@ -28,12 +28,12 @@ describe('Webhook file streaming with a handshake-configured trigger', () => {
             strategy: WebhookHandshakeStrategy.HEADER_PRESENT,
             paramName: 'x-ap-handshake-absent',
         })
-        const { mockFlow, mockWorkspace } = await createEnabledFlow()
+        const { mockWorkflow, mockWorkspace } = await createEnabledWorkflow()
         const content = 'A'.repeat(4 * 1024 * 1024)
 
         const response = await app.inject({
             method: 'POST',
-            url: `/api/v1/webhooks/${mockFlow.id}`,
+            url: `/api/v1/webhooks/${mockWorkflow.id}`,
             headers: { 'content-type': 'application/pdf' },
             payload: Buffer.from(content),
         })
@@ -41,19 +41,19 @@ describe('Webhook file streaming with a handshake-configured trigger', () => {
 
         const files = await databaseConnection().getRepository('file').findBy({
             workspaceId: mockWorkspace.id,
-            type: FileType.FLOW_STEP_FILE,
+            type: FileType.WORKFLOW_STEP_FILE,
         })
         expect(files).toHaveLength(1)
         expect(files[0].size).toBe(content.length)
     })
 })
 
-async function createEnabledFlow(): Promise<{ mockFlow: Flow, mockWorkspace: Workspace }> {
+async function createEnabledWorkflow(): Promise<{ mockWorkflow: Workflow, mockWorkspace: Workspace }> {
     const { mockWorkspace } = await mockAndSaveBasicSetup()
-    const mockFlow = createMockFlow({ workspaceId: mockWorkspace.id, status: FlowStatus.ENABLED })
-    await db.save('flow', [mockFlow])
-    const mockFlowVersion = createMockFlowVersion({ flowId: mockFlow.id })
-    await db.save('flow_version', [mockFlowVersion])
-    await db.update('flow', mockFlow.id, { publishedVersionId: mockFlowVersion.id })
-    return { mockFlow, mockWorkspace }
+    const mockWorkflow = createMockWorkflow({ workspaceId: mockWorkspace.id, status: WorkflowStatus.ENABLED })
+    await db.save('workflow', [mockWorkflow])
+    const mockWorkflowVersion = createMockWorkflowVersion({ workflowId: mockWorkflow.id })
+    await db.save('workflow_version', [mockWorkflowVersion])
+    await db.update('workflow', mockWorkflow.id, { publishedVersionId: mockWorkflowVersion.id })
+    return { mockWorkflow, mockWorkspace }
 }

@@ -1,11 +1,11 @@
 import {
     Connection,
     File,
-    Flow,
     Folder,
     Platform,
     TriggerEvent,
     User,
+    Workflow,
     Workspace,
 } from '@fema/shared'
 import { EntitySchema } from 'typeorm'
@@ -16,7 +16,7 @@ import {
 
 type WorkspaceSchema = Workspace & {
     owner: User
-    flows: Flow[]
+    workflows: Workflow[]
     files: File[]
     folders: Folder[]
     events: TriggerEvent[]
@@ -61,7 +61,7 @@ export const WorkspaceEntity = new EntitySchema<WorkspaceSchema>({
             nullable: false,
             default: false,
         },
-        notifyFlowOwnerOnFailure: {
+        notifyWorkflowOwnerOnFailure: {
             type: Boolean,
             nullable: false,
             default: false,
@@ -148,9 +148,9 @@ export const WorkspaceEntity = new EntitySchema<WorkspaceSchema>({
             target: 'file',
             inverseSide: 'workspace',
         },
-        flows: {
+        workflows: {
             type: 'one-to-many',
-            target: 'flow',
+            target: 'workflow',
             inverseSide: 'workspace',
         },
     },

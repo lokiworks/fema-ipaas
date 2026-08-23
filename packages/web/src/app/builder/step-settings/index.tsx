@@ -1,12 +1,12 @@
 import { isNil } from '@fema/core-utils';
 import {
-  FlowAction,
-  FlowActionType,
-  FlowOperationType,
-  FlowTrigger,
-  FlowTriggerType,
-  flowConnectorUtil,
-  flowStructureUtil,
+  WorkflowAction,
+  WorkflowActionType,
+  WorkflowOperationType,
+  WorkflowTrigger,
+  WorkflowTriggerType,
+  workflowConnectorUtil,
+  workflowStructureUtil,
 } from '@fema/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import deepEqual from 'deep-equal';
@@ -53,7 +53,7 @@ const StepSettingsContainer = () => {
     exitStepSettings,
     applyOperation,
     saving,
-    flowVersion,
+    workflowVersion,
     selectedBranchIndex,
     setSelectedBranchIndex,
     run,
@@ -64,7 +64,7 @@ const StepSettingsContainer = () => {
     state.exitStepSettings,
     state.applyOperation,
     state.saving,
-    state.flowVersion,
+    state.workflowVersion,
     state.selectedBranchIndex,
     state.setSelectedBranchIndex,
     state.run,
@@ -79,8 +79,10 @@ const StepSettingsContainer = () => {
   const selectedStepRef = useRef(selectedStep);
   selectedStepRef.current = selectedStep;
 
-  const currentValuesRef = useRef<FlowAction | FlowTrigger>(selectedStep);
-  const form = useForm<FlowAction | FlowTrigger>({
+  const currentValuesRef = useRef<WorkflowAction | WorkflowTrigger>(
+    selectedStep,
+  );
+  const form = useForm<WorkflowAction | WorkflowTrigger>({
     mode: 'all',
     disabled: readonly,
     reValidateMode: 'onChange',
@@ -91,7 +93,9 @@ const StepSettingsContainer = () => {
     },
     resolver: async (values, context, options) => {
       const result = await (
-        zodResolver(formSchema) as unknown as Resolver<FlowAction | FlowTrigger>
+        zodResolver(formSchema) as unknown as Resolver<
+          WorkflowAction | WorkflowTrigger
+        >
       )(values, context, options);
 
       const cleanedNewValues = formUtils.removeUndefinedFromInput(values);
@@ -101,10 +105,10 @@ const StepSettingsContainer = () => {
       const valid = Object.keys(result.errors).length === 0;
       cleanedNewValues.valid = valid;
       if (
-        cleanedNewValues.type === FlowTriggerType.EMPTY ||
+        cleanedNewValues.type === WorkflowTriggerType.EMPTY ||
         (isNil(connectorModel) &&
-          (cleanedNewValues.type === FlowActionType.CONNECTOR ||
-            cleanedNewValues.type === FlowTriggerType.CONNECTOR))
+          (cleanedNewValues.type === WorkflowActionType.CONNECTOR ||
+            cleanedNewValues.type === WorkflowTriggerType.CONNECTOR))
       ) {
         return result;
       }
@@ -118,9 +122,9 @@ const StepSettingsContainer = () => {
       }
       //We need to copy the object because the form is using the same object reference
       currentValuesRef.current = JSON.parse(JSON.stringify(cleanedNewValues));
-      if (cleanedNewValues.type === FlowTriggerType.CONNECTOR) {
+      if (cleanedNewValues.type === WorkflowTriggerType.CONNECTOR) {
         applyOperation({
-          type: FlowOperationType.UPDATE_TRIGGER,
+          type: WorkflowOperationType.UPDATE_TRIGGER,
           request: {
             ...cleanedNewValues,
             valid,
@@ -128,7 +132,7 @@ const StepSettingsContainer = () => {
         });
       } else {
         applyOperation({
-          type: FlowOperationType.UPDATE_ACTION,
+          type: WorkflowOperationType.UPDATE_ACTION,
           request: {
             ...cleanedNewValues,
             valid,
@@ -142,12 +146,12 @@ const StepSettingsContainer = () => {
   const sidebarHeaderContainerRef = useRef<HTMLDivElement>(null);
   const modifiedStep = form.getValues();
   const isManualTrigger =
-    modifiedStep.type === FlowTriggerType.CONNECTOR &&
+    modifiedStep.type === WorkflowTriggerType.CONNECTOR &&
     connectorSelectorUtils.isManualTrigger({
       connectorName: modifiedStep.settings.connectorName,
       triggerName: modifiedStep.settings.triggerName ?? '',
     });
-  const isEmptyTrigger = modifiedStep.type === FlowTriggerType.EMPTY;
+  const isEmptyTrigger = modifiedStep.type === WorkflowTriggerType.EMPTY;
   const showGenerateSampleData =
     !readonly && !isManualTrigger && !isEmptyTrigger;
   const showStepInputOutFromRun =
@@ -161,8 +165,8 @@ const StepSettingsContainer = () => {
 
   const showActionErrorHandlingForm =
     !isNil(stepMetadata) &&
-    (modifiedStep.type === FlowActionType.CODE ||
-      (modifiedStep.type === FlowActionType.CONNECTOR && runAgentStep));
+    (modifiedStep.type === WorkflowActionType.CODE ||
+      (modifiedStep.type === WorkflowActionType.CONNECTOR && runAgentStep));
 
   useEffect(() => {
     //RHF doesn't automatically trigger validation when the form is rendered, so we need to trigger it manually
@@ -179,39 +183,40 @@ const StepSettingsContainer = () => {
           GAP_SIZE_FOR_STEP_SETTINGS,
         )}
       >
-        {modifiedStep.type === FlowActionType.LOOP_ON_ITEMS && (
+        {modifiedStep.type === WorkflowActionType.LOOP_ON_ITEMS && (
           <LoopsSettings readonly={readonly}></LoopsSettings>
         )}
-        {modifiedStep.type === FlowActionType.CODE && (
+        {modifiedStep.type === WorkflowActionType.CODE && (
           <CodeSettings readonly={readonly}></CodeSettings>
         )}
-        {modifiedStep.type === FlowActionType.CONNECTOR && modifiedStep && (
+        {modifiedStep.type === WorkflowActionType.CONNECTOR && modifiedStep && (
           <ConnectorSettings
             step={modifiedStep}
-            flowId={flowVersion.flowId}
+            workflowId={workflowVersion.workflowId}
             readonly={readonly}
           ></ConnectorSettings>
         )}
-        {modifiedStep.type === FlowActionType.ROUTER && modifiedStep && (
+        {modifiedStep.type === WorkflowActionType.ROUTER && modifiedStep && (
           <RouterSettings readonly={readonly}></RouterSettings>
         )}
-        {modifiedStep.type === FlowTriggerType.CONNECTOR && modifiedStep && (
-          <ConnectorSettings
-            step={modifiedStep}
-            flowId={flowVersion.flowId}
-            readonly={readonly}
-          ></ConnectorSettings>
-        )}
+        {modifiedStep.type === WorkflowTriggerType.CONNECTOR &&
+          modifiedStep && (
+            <ConnectorSettings
+              step={modifiedStep}
+              workflowId={workflowVersion.workflowId}
+              readonly={readonly}
+            ></ConnectorSettings>
+          )}
         {showActionErrorHandlingForm && (
           <ActionErrorHandlingForm
             hideContinueOnFailure={
-              stepMetadata.type === FlowActionType.CONNECTOR
+              stepMetadata.type === WorkflowActionType.CONNECTOR
                 ? stepMetadata.errorHandlingOptions?.continueOnFailure?.hide
                 : false
             }
             disabled={readonly}
             hideRetryOnFailure={
-              stepMetadata.type === FlowActionType.CONNECTOR
+              stepMetadata.type === WorkflowActionType.CONNECTOR
                 ? stepMetadata.errorHandlingOptions?.retryOnFailure?.hide
                 : false
             }
@@ -249,8 +254,8 @@ const StepSettingsContainer = () => {
               <div className="flex items-center gap-1">
                 {isConnectorMetadata(stepMetadata) &&
                   stepMetadata.connectorVersion &&
-                  (modifiedStep.type === FlowActionType.CONNECTOR ||
-                    modifiedStep.type === FlowTriggerType.CONNECTOR) && (
+                  (modifiedStep.type === WorkflowActionType.CONNECTOR ||
+                    modifiedStep.type === WorkflowTriggerType.CONNECTOR) && (
                     <ConnectorVersionInHeader
                       step={modifiedStep}
                       connectorVersion={stepMetadata.connectorVersion}
@@ -263,8 +268,8 @@ const StepSettingsContainer = () => {
           >
             <EditableStepName
               selectedBranchIndex={selectedBranchIndex}
-              stepIndex={flowStructureUtil.getStepNumber(
-                flowVersion.trigger,
+              stepIndex={workflowStructureUtil.getStepNumber(
+                workflowVersion.trigger,
                 selectedStep.name,
               )}
               setDisplayName={(value) => {
@@ -332,8 +337,8 @@ const StepSettingsContainer = () => {
                 showTestPanel ? (
                   <StepDataPanelHost
                     mode={stepDataPanelView === 'split' ? 'split' : 'drawer'}
-                    flowId={flowVersion.flowId}
-                    flowVersionId={flowVersion.id}
+                    workflowId={workflowVersion.workflowId}
+                    workflowVersionId={workflowVersion.id}
                     workspaceId={workspace?.id}
                     stepType={modifiedStep.type}
                     showGenerateSampleData={showGenerateSampleData}
@@ -409,7 +414,7 @@ const StepSettingsLayout = ({
 };
 
 type ConnectorVersionInHeaderProps = {
-  step: FlowAction | FlowTrigger;
+  step: WorkflowAction | WorkflowTrigger;
   connectorVersion: string;
   readonly: boolean;
 };
@@ -419,11 +424,11 @@ const ConnectorVersionInHeader = ({
   connectorVersion,
   readonly,
 }: ConnectorVersionInHeaderProps) => {
-  const exactVersion = flowConnectorUtil.getExactVersion(connectorVersion);
+  const exactVersion = workflowConnectorUtil.getExactVersion(connectorVersion);
   const showSwitcher =
     !readonly &&
-    (step.type === FlowActionType.CONNECTOR ||
-      step.type === FlowTriggerType.CONNECTOR);
+    (step.type === WorkflowActionType.CONNECTOR ||
+      step.type === WorkflowTriggerType.CONNECTOR);
   return (
     <div className="flex items-center gap-1 shrink-0">
       <span className="text-xs text-muted-foreground">v{exactVersion}</span>
@@ -437,17 +442,18 @@ const ConnectorVersionInHeader = ({
   );
 };
 
-const isFlowActionStep = (step: FlowAction | FlowTrigger): step is FlowAction =>
-  flowStructureUtil.isAction(step.type);
+const isWorkflowActionStep = (
+  step: WorkflowAction | WorkflowTrigger,
+): step is WorkflowAction => workflowStructureUtil.isAction(step.type);
 
 const StepTestRunnerProvider = ({
   step,
   children,
 }: {
-  step: FlowAction | FlowTrigger;
+  step: WorkflowAction | WorkflowTrigger;
   children: React.ReactNode;
 }) => {
-  if (isFlowActionStep(step)) {
+  if (isWorkflowActionStep(step)) {
     return (
       <ActionTestRunnerProvider step={step} key={step.name}>
         {children}
@@ -461,7 +467,7 @@ const StepTestRunnerProvider = ({
   );
 };
 
-const stripSampleData = (step: FlowAction | FlowTrigger) => {
+const stripSampleData = (step: WorkflowAction | WorkflowTrigger) => {
   const { sampleData: _, ...settingsWithoutSampleData } = step.settings;
   const { lastUpdatedDate: __, ...stepWithoutMetadata } = step;
 
@@ -469,7 +475,7 @@ const stripSampleData = (step: FlowAction | FlowTrigger) => {
 };
 
 const isConnectorMetadata = (
-  metadata: { type: FlowActionType | FlowTriggerType } | undefined,
+  metadata: { type: WorkflowActionType | WorkflowTriggerType } | undefined,
 ): metadata is ConnectorStepMetadata =>
-  metadata?.type === FlowActionType.CONNECTOR ||
-  metadata?.type === FlowTriggerType.CONNECTOR;
+  metadata?.type === WorkflowActionType.CONNECTOR ||
+  metadata?.type === WorkflowTriggerType.CONNECTOR;

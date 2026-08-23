@@ -9,15 +9,15 @@ Backend-specific conventions for `packages/server/*`. The root [CLAUDE.md](../..
 A backend service is exported as a function that takes `log: FastifyBaseLogger` and returns an object literal of methods. No classes, no constructor injection, no `this` inside methods.
 
 ```ts
-// packages/server/api/src/app/flows/flow/flow.service.ts
-export const flowService = (log: FastifyBaseLogger) => ({
-    async create({ projectId, request, externalId, ownerId, templateId }: CreateParams): Promise<PopulatedFlow> {
+// packages/server/api/src/app/workflows/workflow/workflow.service.ts
+export const workflowService = (log: FastifyBaseLogger) => ({
+    async create({ projectId, request, externalId, ownerId, templateId }: CreateParams): Promise<PopulatedWorkflow> {
         const folderId = await getFolderIdFromRequest({ projectId, folderId: request.folderId, folderName: request.folderName, log })
         // ...
-        const savedFlowVersion = await flowVersionService(log).createEmptyVersion(savedFlow.id, { /* ... */ })
+        const savedWorkflowVersion = await workflowVersionService(log).createEmptyVersion(savedWorkflow.id, { /* ... */ })
         // ...
     },
-    async list({ projectIds, platformId, cursorRequest, /* ... */ }: ListParams): Promise<SeekPage<PopulatedFlow>> {
+    async list({ projectIds, platformId, cursorRequest, /* ... */ }: ListParams): Promise<SeekPage<PopulatedWorkflow>> {
         // ...
     },
 })
@@ -27,10 +27,10 @@ Callers instantiate per call site, threading the request logger through:
 
 ```ts
 // inside a controller
-const flow = await flowService(request.log).create({ /* ... */ })
+const workflow = await workflowService(request.log).create({ /* ... */ })
 ```
 
-**Why**: each call gets a fresh logger with per-request context, cross-service calls just pass `log` along (`flowVersionService(log).…`), and there is no DI framework or lifecycle to manage.
+**Why**: each call gets a fresh logger with per-request context, cross-service calls just pass `log` along (`workflowVersionService(log).…`), and there is no DI framework or lifecycle to manage.
 
 **Stateless variant** — when the service needs neither logging nor per-request state, export a plain object directly. This is the exception, not the rule.
 
@@ -58,7 +58,7 @@ Read the file top-down like a table of contents: imports → **exported const** 
 Think of the const as a namespace — it groups the public API. A reader sees what the module *does* before they see *how*.
 
 ```ts
-// packages/server/api/src/app/flows/flow/flow.service.ts (shape)
+// packages/server/api/src/app/workflows/workflow/workflow.service.ts (shape)
 
 // 1. imports
 import { PlatformError, apId, /* ... */ } from '@fema/shared'
@@ -66,22 +66,22 @@ import { FastifyBaseLogger } from 'fastify'
 // ...
 
 // 2. repo export
-export const flowRepo = repoFactory(FlowEntity)
+export const workflowRepo = repoFactory(WorkflowEntity)
 
 // 3. the namespace — public contract, scannable first
-export const flowService = (log: FastifyBaseLogger) => ({
-    async create(/* ... */) { /* calls lockFlowVersionIfNotLocked, applyStatusChange */ },
+export const workflowService = (log: FastifyBaseLogger) => ({
+    async create(/* ... */) { /* calls lockWorkflowVersionIfNotLocked, applyStatusChange */ },
     async list(/* ... */) { /* ... */ },
     async publish(/* ... */) { /* ... */ },
 })
 
 // 4. helpers — implementation detail, below the namespace
-const lockFlowVersionIfNotLocked = async ({ flowVersion, userId, /* ... */ }: LockFlowVersionIfNotLockedParams): Promise<FlowVersion> => { /* ... */ }
+const lockWorkflowVersionIfNotLocked = async ({ workflowVersion, userId, /* ... */ }: LockWorkflowVersionIfNotLockedParams): Promise<WorkflowVersion> => { /* ... */ }
 
 async function applyStatusChange(params: { /* ... */ }, log: FastifyBaseLogger): Promise<void> { /* ... */ }
 
 // 5. types at the bottom
-type CreateParams = { projectId: ProjectId; request: CreateFlowRequest; /* ... */ }
+type CreateParams = { projectId: ProjectId; request: CreateWorkflowRequest; /* ... */ }
 type ListParams = /* ... */
 ```
 
@@ -89,7 +89,7 @@ Rules of thumb:
 
 - **Never** inline a helper inside the const if it's more than a couple of lines — extract it below.
 - **Never** put helpers or types above the exported const — the const is what the reader opened the file for.
-- **Private helpers stay unexported.** Export a helper only when another module actually needs it (e.g. `getFolderIdFromRequest` in `flow.service.ts`).
+- **Private helpers stay unexported.** Export a helper only when another module actually needs it (e.g. `getFolderIdFromRequest` in `workflow.service.ts`).
 - Helpers that need the logger take it as a named parameter — they do **not** close over a module-level `log`.
 
 ---
@@ -123,7 +123,7 @@ Rules of thumb:
 
 - **One exported const per file**, named after the file (kebab → camel): `ssrf-ip-classifier.ts` → `ssrfIpClassifier`, `sandbox-capacity.ts` → `sandboxCapacity`.
 - **Group by file, not by category.** The file *is* the grouping.
-- **Exception — a single public entry point.** If the module exposes exactly one public function or class (e.g. a Fastify plugin like `flowController`), export it directly. The "group" is a group of one.
+- **Exception — a single public entry point.** If the module exposes exactly one public function or class (e.g. a Fastify plugin like `workflowController`), export it directly. The "group" is a group of one.
 - **Error classes and types stay as named exports** (`export class BlockedHostError`, `export type EgressProxy`) — they don't belong inside the namespace const.
 - Applies equally to `xxxService`, `xxxHelper`, `xxxUtils`, `xxxRepo` — they're all the same pattern under different names (see section 1).
 
@@ -138,10 +138,10 @@ Rules of thumb:
 For "this should not have happened" conditions — missing entities, validation failures, authorization failures — throw `PlatformError` with an `ErrorCode`. Let it bubble up to the Fastify error handler.
 
 ```ts
-if (isNil(flow)) {
+if (isNil(workflow)) {
     throw new PlatformError({
         code: ErrorCode.ENTITY_NOT_FOUND,
-        params: { entityType: 'Flow', entityId: id, message: 'Flow not found' },
+        params: { entityType: 'Workflow', entityId: id, message: 'Workflow not found' },
     })
 }
 ```
@@ -150,15 +150,15 @@ Convention: methods named `getOne` return `Thing | null`; methods named `getOneO
 
 ### 4b) Recoverable failures — destructure `{ data, error }` from `tryCatch`
 
-When you need to *react* to a failure rather than propagate it (fallback path, retry, logging-and-continue, attempt-then-check), wrap the call in `tryCatch` and branch on `error`. **Do not** write raw `try { ... } catch { ... }` for this — it fragments control flow and loses the typed result.
+When you need to *react* to a failure rather than propagate it (fallback path, retry, logging-and-continue, attempt-then-check), wrap the call in `tryCatch` and branch on `error`. **Do not** write raw `try { ... } catch { ... }` for this — it fragments control workflow and loses the typed result.
 
 ```ts
-// packages/server/worker/src/lib/execute/jobs/execute-flow.ts
+// packages/server/worker/src/lib/execute/jobs/execute-workflow.ts
 const { data: provisioned, error: provisionError } = await tryCatch(
-    () => provisionFlowConnectors({ flowVersion, platformId: data.platformId, flowId: data.flowId, projectId: data.projectId, log: ctx.log, apiClient: ctx.apiClient }),
+    () => provisionWorkflowConnectors({ workflowVersion, platformId: data.platformId, workflowId: data.workflowId, projectId: data.projectId, log: ctx.log, apiClient: ctx.apiClient }),
 )
 if (provisionError) {
-    await reportFlowStatus(ctx, data, ExecutionStatus.INTERNAL_ERROR)
+    await reportWorkflowStatus(ctx, data, ExecutionStatus.INTERNAL_ERROR)
     throw provisionError
 }
 // `provisioned` is narrowed to the success type from here

@@ -1,6 +1,6 @@
 import { isNil } from '@fema/core-utils'
-import { FlowActionType } from '../../flows/actions/action'
-import { FlowTriggerType } from '../../flows/triggers/trigger'
+import { WorkflowActionType } from '../../workflows/actions/action'
+import { WorkflowTriggerType } from '../../workflows/triggers/trigger'
 
 export enum StepOutputStatus {
     FAILED = 'FAILED',
@@ -10,7 +10,7 @@ export enum StepOutputStatus {
     SUCCEEDED = 'SUCCEEDED',
 }
 
-type BaseStepOutputParams<T extends FlowActionType | FlowTriggerType, OUTPUT> = {
+type BaseStepOutputParams<T extends WorkflowActionType | WorkflowTriggerType, OUTPUT> = {
     type: T
     status: StepOutputStatus
     input: unknown
@@ -20,7 +20,7 @@ type BaseStepOutputParams<T extends FlowActionType | FlowTriggerType, OUTPUT> = 
     errorMessage?: string
 }
 
-export class GenericStepOutput<T extends FlowActionType | FlowTriggerType, OUTPUT> {
+export class GenericStepOutput<T extends WorkflowActionType | WorkflowTriggerType, OUTPUT> {
     type: T
     status: StepOutputStatus
     input: unknown
@@ -67,7 +67,7 @@ export class GenericStepOutput<T extends FlowActionType | FlowTriggerType, OUTPU
         })
     }
 
-    static create<T extends FlowActionType | FlowTriggerType, OUTPUT>({
+    static create<T extends WorkflowActionType | WorkflowTriggerType, OUTPUT>({
         input,
         type,
         status,
@@ -104,14 +104,14 @@ export type LogSliceRef = {
 
 export const EXECUTION_LOG_MANIFEST_V2 = 2
 
-export type BaseStepOutput = GenericStepOutput<FlowActionType | FlowTriggerType, unknown>
+export type BaseStepOutput = GenericStepOutput<WorkflowActionType | WorkflowTriggerType, unknown>
 
 export type StepOutput =
-  | GenericStepOutput<FlowActionType.LOOP_ON_ITEMS, LoopStepResult>
-  | GenericStepOutput<FlowActionType.ROUTER, unknown>
+  | GenericStepOutput<WorkflowActionType.LOOP_ON_ITEMS, LoopStepResult>
+  | GenericStepOutput<WorkflowActionType.ROUTER, unknown>
   | GenericStepOutput<
-  | Exclude<FlowActionType, FlowActionType.LOOP_ON_ITEMS | FlowActionType.ROUTER>
-  | FlowTriggerType,
+  | Exclude<WorkflowActionType, WorkflowActionType.LOOP_ON_ITEMS | WorkflowActionType.ROUTER>
+  | WorkflowTriggerType,
   unknown
   >
 
@@ -126,12 +126,12 @@ type RouterStepResult = {
 }
 
 export class RouterStepOutput extends GenericStepOutput<
-FlowActionType.ROUTER,
+WorkflowActionType.ROUTER,
 RouterStepResult
 > {
     static init({ input }: { input: unknown }): RouterStepOutput {
         return new RouterStepOutput({
-            type: FlowActionType.ROUTER,
+            type: WorkflowActionType.ROUTER,
             input,
             status: StepOutputStatus.SUCCEEDED,
         })
@@ -145,11 +145,11 @@ export type LoopStepResult = {
 }
 
 export class LoopStepOutput extends GenericStepOutput<
-FlowActionType.LOOP_ON_ITEMS,
+WorkflowActionType.LOOP_ON_ITEMS,
 LoopStepResult
 > {
     constructor(
-        step: BaseStepOutputParams<FlowActionType.LOOP_ON_ITEMS, LoopStepResult>,
+        step: BaseStepOutputParams<WorkflowActionType.LOOP_ON_ITEMS, LoopStepResult>,
     ) {
         super(step)
         this.output = step.output ?? {
@@ -161,7 +161,7 @@ LoopStepResult
 
     static init({ input }: { input: unknown }): LoopStepOutput {
         return new LoopStepOutput({
-            type: FlowActionType.LOOP_ON_ITEMS,
+            type: WorkflowActionType.LOOP_ON_ITEMS,
             input,
             status: StepOutputStatus.SUCCEEDED,
         })

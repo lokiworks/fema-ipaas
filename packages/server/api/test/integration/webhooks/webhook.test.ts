@@ -1,14 +1,14 @@
-import { apId, EngineResponseStatus, FlowStatus, ConnectorType, PrincipalType, TriggerStrategy, WebhookHandshakeStrategy } from '@fema/shared'
+import { apId, EngineResponseStatus, WorkflowStatus, ConnectorType, PrincipalType, TriggerStrategy, WebhookHandshakeStrategy } from '@fema/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { generateMockToken } from '../../../helpers/auth'
 import { db } from '../../../helpers/db'
-import { createMockFlow, createMockFlowVersion, createMockConnectorMetadata, mockAndSaveBasicSetup } from '../../../helpers/mocks'
+import { createMockWorkflow, createMockWorkflowVersion, createMockConnectorMetadata, mockAndSaveBasicSetup } from '../../../helpers/mocks'
 import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
 import { userInteractionWatcher } from '../../../../src/app/workers/user-interaction-watcher'
 
 let app: FastifyInstance | null = null
-const MOCK_FLOW_ID = '8hfKOpm3kY1yAi1ApYOa1'
+const MOCK_WORKFLOW_ID = '8hfKOpm3kY1yAi1ApYOa1'
 beforeAll(async () => {
     app = await setupTestEnvironment()
 })
@@ -17,19 +17,19 @@ afterAll(async () => {
     await teardownTestEnvironment()
 })
 describe('Webhook Service', () => {
-    it('should accept webhook for enabled flow', async () => {
+    it('should accept webhook for enabled workflow', async () => {
         const { mockWorkspace, mockPlatform, mockOwner } = await mockAndSaveBasicSetup()
-        const mockFlow = createMockFlow({
+        const mockWorkflow = createMockWorkflow({
             workspaceId: mockWorkspace.id,
-            status: FlowStatus.ENABLED,
+            status: WorkflowStatus.ENABLED,
         })
-        await db.save('flow', [mockFlow])
-        const mockFlowVersion = createMockFlowVersion({
-            flowId: mockFlow.id,
+        await db.save('workflow', [mockWorkflow])
+        const mockWorkflowVersion = createMockWorkflowVersion({
+            workflowId: mockWorkflow.id,
         })
-        await db.save('flow_version', [mockFlowVersion])
-        await db.update('flow', mockFlow.id, {
-            publishedVersionId: mockFlowVersion.id,
+        await db.save('workflow_version', [mockWorkflowVersion])
+        await db.update('workflow', mockWorkflow.id, {
+            publishedVersionId: mockWorkflowVersion.id,
         })
         const mockToken = await generateMockToken({
             type: PrincipalType.USER,
@@ -40,7 +40,7 @@ describe('Webhook Service', () => {
         })
         const response = await app?.inject({
             method: 'POST',
-            url: `/api/v1/webhooks/${mockFlow.id}`,
+            url: `/api/v1/webhooks/${mockWorkflow.id}`,
             headers: {
                 authorization: `Bearer ${mockToken}`,
             },
@@ -49,7 +49,7 @@ describe('Webhook Service', () => {
         expect(response?.statusCode).toBe(StatusCodes.OK)
     })
 
-    it('should return GONE if the flow is not found', async () => {
+    it('should return GONE if the workflow is not found', async () => {
         const { mockOwner, mockPlatform } = await mockAndSaveBasicSetup()
         const mockToken = await generateMockToken({
             type: PrincipalType.USER,
@@ -61,26 +61,26 @@ describe('Webhook Service', () => {
 
         const response = await app?.inject({
             method: 'GET',
-            url: `/api/v1/webhooks/${MOCK_FLOW_ID}`,
+            url: `/api/v1/webhooks/${MOCK_WORKFLOW_ID}`,
             headers: {
                 authorization: `Bearer ${mockToken}`,
             },
         })
         expect(response?.statusCode).toBe(StatusCodes.GONE)
     })
-    it('should return NOT FOUND if the flow is disabled', async () => {
+    it('should return NOT FOUND if the workflow is disabled', async () => {
         const { mockWorkspace, mockPlatform, mockOwner } = await mockAndSaveBasicSetup()
-        const mockFlow = createMockFlow({
+        const mockWorkflow = createMockWorkflow({
             workspaceId: mockWorkspace.id,
-            status: FlowStatus.DISABLED,
+            status: WorkflowStatus.DISABLED,
         })
-        await db.save('flow', [mockFlow])
-        const mockFlowVersion = createMockFlowVersion({
-            flowId: mockFlow.id,
+        await db.save('workflow', [mockWorkflow])
+        const mockWorkflowVersion = createMockWorkflowVersion({
+            workflowId: mockWorkflow.id,
         })
-        await db.save('flow_version', [mockFlowVersion])
-        await db.update('flow', mockFlow.id, {
-            publishedVersionId: mockFlowVersion.id,
+        await db.save('workflow_version', [mockWorkflowVersion])
+        await db.update('workflow', mockWorkflow.id, {
+            publishedVersionId: mockWorkflowVersion.id,
         })
         const mockToken = await generateMockToken({
             type: PrincipalType.USER,
@@ -91,7 +91,7 @@ describe('Webhook Service', () => {
         })
         const response = await app?.inject({
             method: 'GET',
-            url: `/api/v1/webhooks/${mockFlow.id}`,
+            url: `/api/v1/webhooks/${mockWorkflow.id}`,
             headers: {
                 authorization: `Bearer ${mockToken}`,
             },
@@ -101,17 +101,17 @@ describe('Webhook Service', () => {
 
     it('should pass query parameters in webhook payload', async () => {
         const { mockWorkspace, mockPlatform, mockOwner } = await mockAndSaveBasicSetup()
-        const mockFlow = createMockFlow({
+        const mockWorkflow = createMockWorkflow({
             workspaceId: mockWorkspace.id,
-            status: FlowStatus.ENABLED,
+            status: WorkflowStatus.ENABLED,
         })
-        await db.save('flow', [mockFlow])
-        const mockFlowVersion = createMockFlowVersion({
-            flowId: mockFlow.id,
+        await db.save('workflow', [mockWorkflow])
+        const mockWorkflowVersion = createMockWorkflowVersion({
+            workflowId: mockWorkflow.id,
         })
-        await db.save('flow_version', [mockFlowVersion])
-        await db.update('flow', mockFlow.id, {
-            publishedVersionId: mockFlowVersion.id,
+        await db.save('workflow_version', [mockWorkflowVersion])
+        await db.update('workflow', mockWorkflow.id, {
+            publishedVersionId: mockWorkflowVersion.id,
         })
         const mockToken = await generateMockToken({
             type: PrincipalType.USER,
@@ -122,7 +122,7 @@ describe('Webhook Service', () => {
         })
         const response = await app?.inject({
             method: 'POST',
-            url: `/api/v1/webhooks/${mockFlow.id}?foo=bar&baz=qux`,
+            url: `/api/v1/webhooks/${mockWorkflow.id}?foo=bar&baz=qux`,
             headers: {
                 authorization: `Bearer ${mockToken}`,
             },
@@ -133,17 +133,17 @@ describe('Webhook Service', () => {
 
     it('should accept GET method', async () => {
         const { mockWorkspace, mockPlatform, mockOwner } = await mockAndSaveBasicSetup()
-        const mockFlow = createMockFlow({
+        const mockWorkflow = createMockWorkflow({
             workspaceId: mockWorkspace.id,
-            status: FlowStatus.ENABLED,
+            status: WorkflowStatus.ENABLED,
         })
-        await db.save('flow', [mockFlow])
-        const mockFlowVersion = createMockFlowVersion({
-            flowId: mockFlow.id,
+        await db.save('workflow', [mockWorkflow])
+        const mockWorkflowVersion = createMockWorkflowVersion({
+            workflowId: mockWorkflow.id,
         })
-        await db.save('flow_version', [mockFlowVersion])
-        await db.update('flow', mockFlow.id, {
-            publishedVersionId: mockFlowVersion.id,
+        await db.save('workflow_version', [mockWorkflowVersion])
+        await db.update('workflow', mockWorkflow.id, {
+            publishedVersionId: mockWorkflowVersion.id,
         })
         const mockToken = await generateMockToken({
             type: PrincipalType.USER,
@@ -154,7 +154,7 @@ describe('Webhook Service', () => {
         })
         const response = await app?.inject({
             method: 'GET',
-            url: `/api/v1/webhooks/${mockFlow.id}`,
+            url: `/api/v1/webhooks/${mockWorkflow.id}`,
             headers: {
                 authorization: `Bearer ${mockToken}`,
             },
@@ -164,17 +164,17 @@ describe('Webhook Service', () => {
 
     it('should accept PUT method', async () => {
         const { mockWorkspace, mockPlatform, mockOwner } = await mockAndSaveBasicSetup()
-        const mockFlow = createMockFlow({
+        const mockWorkflow = createMockWorkflow({
             workspaceId: mockWorkspace.id,
-            status: FlowStatus.ENABLED,
+            status: WorkflowStatus.ENABLED,
         })
-        await db.save('flow', [mockFlow])
-        const mockFlowVersion = createMockFlowVersion({
-            flowId: mockFlow.id,
+        await db.save('workflow', [mockWorkflow])
+        const mockWorkflowVersion = createMockWorkflowVersion({
+            workflowId: mockWorkflow.id,
         })
-        await db.save('flow_version', [mockFlowVersion])
-        await db.update('flow', mockFlow.id, {
-            publishedVersionId: mockFlowVersion.id,
+        await db.save('workflow_version', [mockWorkflowVersion])
+        await db.update('workflow', mockWorkflow.id, {
+            publishedVersionId: mockWorkflowVersion.id,
         })
         const mockToken = await generateMockToken({
             type: PrincipalType.USER,
@@ -185,7 +185,7 @@ describe('Webhook Service', () => {
         })
         const response = await app?.inject({
             method: 'PUT',
-            url: `/api/v1/webhooks/${mockFlow.id}`,
+            url: `/api/v1/webhooks/${mockWorkflow.id}`,
             headers: {
                 authorization: `Bearer ${mockToken}`,
             },
@@ -196,17 +196,17 @@ describe('Webhook Service', () => {
 
     it('should accept DELETE method', async () => {
         const { mockWorkspace, mockPlatform, mockOwner } = await mockAndSaveBasicSetup()
-        const mockFlow = createMockFlow({
+        const mockWorkflow = createMockWorkflow({
             workspaceId: mockWorkspace.id,
-            status: FlowStatus.ENABLED,
+            status: WorkflowStatus.ENABLED,
         })
-        await db.save('flow', [mockFlow])
-        const mockFlowVersion = createMockFlowVersion({
-            flowId: mockFlow.id,
+        await db.save('workflow', [mockWorkflow])
+        const mockWorkflowVersion = createMockWorkflowVersion({
+            workflowId: mockWorkflow.id,
         })
-        await db.save('flow_version', [mockFlowVersion])
-        await db.update('flow', mockFlow.id, {
-            publishedVersionId: mockFlowVersion.id,
+        await db.save('workflow_version', [mockWorkflowVersion])
+        await db.update('workflow', mockWorkflow.id, {
+            publishedVersionId: mockWorkflowVersion.id,
         })
         const mockToken = await generateMockToken({
             type: PrincipalType.USER,
@@ -217,7 +217,7 @@ describe('Webhook Service', () => {
         })
         const response = await app?.inject({
             method: 'DELETE',
-            url: `/api/v1/webhooks/${mockFlow.id}`,
+            url: `/api/v1/webhooks/${mockWorkflow.id}`,
             headers: {
                 authorization: `Bearer ${mockToken}`,
             },
@@ -227,17 +227,17 @@ describe('Webhook Service', () => {
 
     it('should return x-webhook-id header in response', async () => {
         const { mockWorkspace, mockPlatform, mockOwner } = await mockAndSaveBasicSetup()
-        const mockFlow = createMockFlow({
+        const mockWorkflow = createMockWorkflow({
             workspaceId: mockWorkspace.id,
-            status: FlowStatus.ENABLED,
+            status: WorkflowStatus.ENABLED,
         })
-        await db.save('flow', [mockFlow])
-        const mockFlowVersion = createMockFlowVersion({
-            flowId: mockFlow.id,
+        await db.save('workflow', [mockWorkflow])
+        const mockWorkflowVersion = createMockWorkflowVersion({
+            workflowId: mockWorkflow.id,
         })
-        await db.save('flow_version', [mockFlowVersion])
-        await db.update('flow', mockFlow.id, {
-            publishedVersionId: mockFlowVersion.id,
+        await db.save('workflow_version', [mockWorkflowVersion])
+        await db.update('workflow', mockWorkflow.id, {
+            publishedVersionId: mockWorkflowVersion.id,
         })
         const mockToken = await generateMockToken({
             type: PrincipalType.USER,
@@ -248,7 +248,7 @@ describe('Webhook Service', () => {
         })
         const response = await app?.inject({
             method: 'POST',
-            url: `/api/v1/webhooks/${mockFlow.id}`,
+            url: `/api/v1/webhooks/${mockWorkflow.id}`,
             headers: {
                 authorization: `Bearer ${mockToken}`,
             },
@@ -260,15 +260,15 @@ describe('Webhook Service', () => {
 
     it('should accept webhook on draft endpoint', async () => {
         const { mockWorkspace, mockPlatform, mockOwner } = await mockAndSaveBasicSetup()
-        const mockFlow = createMockFlow({
+        const mockWorkflow = createMockWorkflow({
             workspaceId: mockWorkspace.id,
-            status: FlowStatus.DISABLED,
+            status: WorkflowStatus.DISABLED,
         })
-        await db.save('flow', [mockFlow])
-        const mockFlowVersion = createMockFlowVersion({
-            flowId: mockFlow.id,
+        await db.save('workflow', [mockWorkflow])
+        const mockWorkflowVersion = createMockWorkflowVersion({
+            workflowId: mockWorkflow.id,
         })
-        await db.save('flow_version', [mockFlowVersion])
+        await db.save('workflow_version', [mockWorkflowVersion])
         const mockToken = await generateMockToken({
             type: PrincipalType.USER,
             platform: {
@@ -278,7 +278,7 @@ describe('Webhook Service', () => {
         })
         const response = await app?.inject({
             method: 'POST',
-            url: `/api/v1/webhooks/${mockFlow.id}/draft`,
+            url: `/api/v1/webhooks/${mockWorkflow.id}/draft`,
             headers: {
                 authorization: `Bearer ${mockToken}`,
             },
@@ -289,17 +289,17 @@ describe('Webhook Service', () => {
 
     it('should return 413 when webhook payload exceeds MAX_WEBHOOK_PAYLOAD_SIZE_MB', async () => {
         const { mockWorkspace, mockPlatform, mockOwner } = await mockAndSaveBasicSetup()
-        const mockFlow = createMockFlow({
+        const mockWorkflow = createMockWorkflow({
             workspaceId: mockWorkspace.id,
-            status: FlowStatus.ENABLED,
+            status: WorkflowStatus.ENABLED,
         })
-        await db.save('flow', [mockFlow])
-        const mockFlowVersion = createMockFlowVersion({
-            flowId: mockFlow.id,
+        await db.save('workflow', [mockWorkflow])
+        const mockWorkflowVersion = createMockWorkflowVersion({
+            workflowId: mockWorkflow.id,
         })
-        await db.save('flow_version', [mockFlowVersion])
-        await db.update('flow', mockFlow.id, {
-            publishedVersionId: mockFlowVersion.id,
+        await db.save('workflow_version', [mockWorkflowVersion])
+        await db.update('workflow', mockWorkflow.id, {
+            publishedVersionId: mockWorkflowVersion.id,
         })
         const mockToken = await generateMockToken({
             type: PrincipalType.USER,
@@ -312,7 +312,7 @@ describe('Webhook Service', () => {
         const largePayload = { data: 'x'.repeat(26 * 1024 * 1024) }
         const response = await app?.inject({
             method: 'POST',
-            url: `/api/v1/webhooks/${mockFlow.id}`,
+            url: `/api/v1/webhooks/${mockWorkflow.id}`,
             headers: {
                 authorization: `Bearer ${mockToken}`,
             },
@@ -323,17 +323,17 @@ describe('Webhook Service', () => {
 
     it('should accept webhook payload under MAX_WEBHOOK_PAYLOAD_SIZE_MB', async () => {
         const { mockWorkspace, mockPlatform, mockOwner } = await mockAndSaveBasicSetup()
-        const mockFlow = createMockFlow({
+        const mockWorkflow = createMockWorkflow({
             workspaceId: mockWorkspace.id,
-            status: FlowStatus.ENABLED,
+            status: WorkflowStatus.ENABLED,
         })
-        await db.save('flow', [mockFlow])
-        const mockFlowVersion = createMockFlowVersion({
-            flowId: mockFlow.id,
+        await db.save('workflow', [mockWorkflow])
+        const mockWorkflowVersion = createMockWorkflowVersion({
+            workflowId: mockWorkflow.id,
         })
-        await db.save('flow_version', [mockFlowVersion])
-        await db.update('flow', mockFlow.id, {
-            publishedVersionId: mockFlowVersion.id,
+        await db.save('workflow_version', [mockWorkflowVersion])
+        await db.update('workflow', mockWorkflow.id, {
+            publishedVersionId: mockWorkflowVersion.id,
         })
         const mockToken = await generateMockToken({
             type: PrincipalType.USER,
@@ -344,7 +344,7 @@ describe('Webhook Service', () => {
         })
         const response = await app?.inject({
             method: 'POST',
-            url: `/api/v1/webhooks/${mockFlow.id}`,
+            url: `/api/v1/webhooks/${mockWorkflow.id}`,
             headers: {
                 authorization: `Bearer ${mockToken}`,
             },
@@ -355,17 +355,17 @@ describe('Webhook Service', () => {
 
     it('should return 413 for sync webhook when payload exceeds limit', async () => {
         const { mockWorkspace, mockPlatform, mockOwner } = await mockAndSaveBasicSetup()
-        const mockFlow = createMockFlow({
+        const mockWorkflow = createMockWorkflow({
             workspaceId: mockWorkspace.id,
-            status: FlowStatus.ENABLED,
+            status: WorkflowStatus.ENABLED,
         })
-        await db.save('flow', [mockFlow])
-        const mockFlowVersion = createMockFlowVersion({
-            flowId: mockFlow.id,
+        await db.save('workflow', [mockWorkflow])
+        const mockWorkflowVersion = createMockWorkflowVersion({
+            workflowId: mockWorkflow.id,
         })
-        await db.save('flow_version', [mockFlowVersion])
-        await db.update('flow', mockFlow.id, {
-            publishedVersionId: mockFlowVersion.id,
+        await db.save('workflow_version', [mockWorkflowVersion])
+        await db.update('workflow', mockWorkflow.id, {
+            publishedVersionId: mockWorkflowVersion.id,
         })
         const mockToken = await generateMockToken({
             type: PrincipalType.USER,
@@ -377,7 +377,7 @@ describe('Webhook Service', () => {
         const largePayload = { data: 'x'.repeat(26 * 1024 * 1024) }
         const response = await app?.inject({
             method: 'POST',
-            url: `/api/v1/webhooks/${mockFlow.id}/sync`,
+            url: `/api/v1/webhooks/${mockWorkflow.id}/sync`,
             headers: {
                 authorization: `Bearer ${mockToken}`,
             },
@@ -386,7 +386,7 @@ describe('Webhook Service', () => {
         expect(response?.statusCode).toBe(StatusCodes.REQUEST_TOO_LONG)
     })
 
-    it('should process handshake for DISABLED flow during publish window', async () => {
+    it('should process handshake for DISABLED workflow during publish window', async () => {
         const { mockWorkspace, mockPlatform } = await mockAndSaveBasicSetup()
 
         const triggerName = 'new_webhook'
@@ -409,22 +409,22 @@ describe('Webhook Service', () => {
         })
         await db.save('connector_metadata', [mockConnector])
 
-        const mockFlow = createMockFlow({
+        const mockWorkflow = createMockWorkflow({
             workspaceId: mockWorkspace.id,
-            status: FlowStatus.DISABLED,
+            status: WorkflowStatus.DISABLED,
         })
-        await db.save('flow', [mockFlow])
+        await db.save('workflow', [mockWorkflow])
 
-        const mockFlowVersion = createMockFlowVersion({ flowId: mockFlow.id })
-        await db.save('flow_version', [mockFlowVersion])
-        await db.update('flow', mockFlow.id, { publishedVersionId: mockFlowVersion.id })
+        const mockWorkflowVersion = createMockWorkflowVersion({ workflowId: mockWorkflow.id })
+        await db.save('workflow_version', [mockWorkflowVersion])
+        await db.update('workflow', mockWorkflow.id, { publishedVersionId: mockWorkflowVersion.id })
 
         await db.save('trigger_source', [{
             id: apId(),
             created: new Date().toISOString(),
             updated: new Date().toISOString(),
-            flowId: mockFlow.id,
-            flowVersionId: mockFlowVersion.id,
+            workflowId: mockWorkflow.id,
+            workflowVersionId: mockWorkflowVersion.id,
             workspaceId: mockWorkspace.id,
             connectorName,
             connectorVersion,
@@ -448,7 +448,7 @@ describe('Webhook Service', () => {
 
         const response = await app?.inject({
             method: 'GET',
-            url: `/api/v1/webhooks/${mockFlow.id}?hub_challenge=test-challenge`,
+            url: `/api/v1/webhooks/${mockWorkflow.id}?hub_challenge=test-challenge`,
         })
 
         expect(response?.statusCode).toBe(StatusCodes.OK)
@@ -457,7 +457,7 @@ describe('Webhook Service', () => {
         interactionSpy.mockRestore()
     })
 
-    it('should process handshake for ENABLED flow on re-verification ping', async () => {
+    it('should process handshake for ENABLED workflow on re-verification ping', async () => {
         const { mockWorkspace, mockPlatform } = await mockAndSaveBasicSetup()
 
         const triggerName = 'new_webhook'
@@ -480,22 +480,22 @@ describe('Webhook Service', () => {
         })
         await db.save('connector_metadata', [mockConnector])
 
-        const mockFlow = createMockFlow({
+        const mockWorkflow = createMockWorkflow({
             workspaceId: mockWorkspace.id,
-            status: FlowStatus.ENABLED,
+            status: WorkflowStatus.ENABLED,
         })
-        await db.save('flow', [mockFlow])
+        await db.save('workflow', [mockWorkflow])
 
-        const mockFlowVersion = createMockFlowVersion({ flowId: mockFlow.id })
-        await db.save('flow_version', [mockFlowVersion])
-        await db.update('flow', mockFlow.id, { publishedVersionId: mockFlowVersion.id })
+        const mockWorkflowVersion = createMockWorkflowVersion({ workflowId: mockWorkflow.id })
+        await db.save('workflow_version', [mockWorkflowVersion])
+        await db.update('workflow', mockWorkflow.id, { publishedVersionId: mockWorkflowVersion.id })
 
         await db.save('trigger_source', [{
             id: apId(),
             created: new Date().toISOString(),
             updated: new Date().toISOString(),
-            flowId: mockFlow.id,
-            flowVersionId: mockFlowVersion.id,
+            workflowId: mockWorkflow.id,
+            workflowVersionId: mockWorkflowVersion.id,
             workspaceId: mockWorkspace.id,
             connectorName,
             connectorVersion,
@@ -519,7 +519,7 @@ describe('Webhook Service', () => {
 
         const response = await app?.inject({
             method: 'GET',
-            url: `/api/v1/webhooks/${mockFlow.id}?hub_challenge=test-challenge`,
+            url: `/api/v1/webhooks/${mockWorkflow.id}?hub_challenge=test-challenge`,
         })
 
         expect(response?.statusCode).toBe(StatusCodes.OK)
@@ -530,15 +530,15 @@ describe('Webhook Service', () => {
 
     it('should accept webhook on test endpoint without execution', async () => {
         const { mockWorkspace, mockPlatform, mockOwner } = await mockAndSaveBasicSetup()
-        const mockFlow = createMockFlow({
+        const mockWorkflow = createMockWorkflow({
             workspaceId: mockWorkspace.id,
-            status: FlowStatus.DISABLED,
+            status: WorkflowStatus.DISABLED,
         })
-        await db.save('flow', [mockFlow])
-        const mockFlowVersion = createMockFlowVersion({
-            flowId: mockFlow.id,
+        await db.save('workflow', [mockWorkflow])
+        const mockWorkflowVersion = createMockWorkflowVersion({
+            workflowId: mockWorkflow.id,
         })
-        await db.save('flow_version', [mockFlowVersion])
+        await db.save('workflow_version', [mockWorkflowVersion])
         const mockToken = await generateMockToken({
             type: PrincipalType.USER,
             platform: {
@@ -548,7 +548,7 @@ describe('Webhook Service', () => {
         })
         const response = await app?.inject({
             method: 'POST',
-            url: `/api/v1/webhooks/${mockFlow.id}/test`,
+            url: `/api/v1/webhooks/${mockWorkflow.id}/test`,
             headers: {
                 authorization: `Bearer ${mockToken}`,
             },

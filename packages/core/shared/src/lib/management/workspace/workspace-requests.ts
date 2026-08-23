@@ -4,7 +4,7 @@ import { WorkspaceIcon, WorkspaceType } from './workspace'
 
 export const UpdateWorkspacePlatformRequest = z.object({
     releasesEnabled: z.boolean().optional(),
-    notifyFlowOwnerOnFailure: z.boolean().optional(),
+    notifyWorkflowOwnerOnFailure: z.boolean().optional(),
     displayName: z.string().regex(new RegExp(SAFE_STRING_PATTERN)).optional(),
     externalId: z.string().optional(),
     metadata: z.optional(Metadata),

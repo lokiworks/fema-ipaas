@@ -4,7 +4,7 @@ import { formulaEvaluator } from '@fema/expression'
 import { FormulaEvaluationError } from '@fema/shared'
 
 import { SharedScriptSession } from '../core/code/shared-script-session'
-import { FlowExecutorContext, StepView } from '../handler/context/flow-execution-context'
+import { StepView, WorkflowExecutorContext } from '../handler/context/workflow-execution-context'
 import { utils } from '../utils'
 import { connectionToken } from './connection-token'
 import { propertyPath } from './property-path'
@@ -234,7 +234,7 @@ function extractReferencedStepNames(input: unknown, stepNames: string[]): Set<st
     return referencedSteps
 }
 
-function createMemoizedStepViewGetter(executionState: FlowExecutorContext): GetStepView {
+function createMemoizedStepViewGetter(executionState: WorkflowExecutorContext): GetStepView {
     const stepViewCache = new Map<string, Promise<StepView | undefined>>()
     return (stepName: string) => {
         let view = stepViewCache.get(stepName)
@@ -314,7 +314,7 @@ type ResolveInputInternalParams = {
 
 type ResolveInputParams = {
     unresolvedInput: unknown
-    executionState: FlowExecutorContext
+    executionState: WorkflowExecutorContext
 }
 
 type ResolveResult<T = unknown> = {

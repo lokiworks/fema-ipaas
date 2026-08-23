@@ -1,9 +1,9 @@
 import { ConnectorPropertyMap, StaticPropsValue, TriggerStrategy } from '@fema/connector-sdk'
 import { assertEqual, isNil, isObject } from '@fema/core-utils'
-import { ConnectorTrigger, EngineGenericError, EngineHttpResponse, ExecuteTriggerResponse, FlowTrigger, PropertySettings, TriggerHookType } from '@fema/shared'
+import { ConnectorTrigger, EngineGenericError, EngineHttpResponse, ExecuteTriggerResponse, PropertySettings, TriggerHookType, WorkflowTrigger } from '@fema/shared'
 import { buildRuntime } from '../../handler/connector-executor'
 import { EngineConstants, ResolvedExecuteTriggerOperation } from '../../handler/context/engine-constants'
-import { FlowExecutorContext } from '../../handler/context/flow-execution-context'
+import { WorkflowExecutorContext } from '../../handler/context/workflow-execution-context'
 import { createPropsResolver } from '../../variables/props-resolver'
 import { CollectedHooks, TriggerContextRequest } from './connector-protocol'
 import { ConnectorRef, connectorRunner } from './connector-runner'
@@ -36,7 +36,7 @@ export const triggerRunner = {
     },
 
     async executeTrigger({ params, constants }: ExecuteTriggerParams): Promise<ExecuteTriggerResponse<TriggerHookType>> {
-        const { connectorName, connectorVersion, triggerName, input, propertySettings } = (params.flowVersion.trigger as ConnectorTrigger).settings
+        const { connectorName, connectorVersion, triggerName, input, propertySettings } = (params.workflowVersion.trigger as ConnectorTrigger).settings
         assertTriggerName(triggerName)
 
         const connector: ConnectorRef = { connectorName, connectorVersion, devConnectors: constants.devConnectors }
@@ -108,7 +108,7 @@ async function buildTriggerContext({ connector, constants, triggerName, input, p
         connectorName: connector.connectorName,
     }).resolve<StaticPropsValue<ConnectorPropertyMap>>({
         unresolvedInput: input,
-        executionState: FlowExecutorContext.empty(),
+        executionState: WorkflowExecutorContext.empty(),
     })
 
     return {
@@ -174,7 +174,7 @@ function toWebhookResponse(value: unknown): { status: number, body?: unknown, he
 }
 
 type ExecuteOnStartParams = {
-    trigger: FlowTrigger
+    trigger: WorkflowTrigger
     constants: EngineConstants
     payload: unknown
 }

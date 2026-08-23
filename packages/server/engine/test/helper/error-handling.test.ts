@@ -1,10 +1,10 @@
 import { ExecutionStatus } from '@fema/shared'
-import { FlowExecutorContext } from '../../src/lib/handler/context/flow-execution-context'
+import { WorkflowExecutorContext } from '../../src/lib/handler/context/workflow-execution-context'
 import { runWithExponentialBackoff } from '../../src/lib/helper/error-handling'
 import { buildCodeAction, generateMockEngineConstants } from '../handler/test-helper'
 
 describe('runWithExponentialBackoff', () => {
-    const executionState = FlowExecutorContext.empty()
+    const executionState = WorkflowExecutorContext.empty()
     const action = buildCodeAction({
         name: 'runtime',
         input: {},
@@ -29,7 +29,7 @@ describe('runWithExponentialBackoff', () => {
     })
 
     it('should return resultExecutionState when verdict is not FAILED', async () => {
-        const resultExecutionState = FlowExecutorContext.empty().setVerdict({
+        const resultExecutionState = WorkflowExecutorContext.empty().setVerdict({
             status: ExecutionStatus.SUCCEEDED,
             stopResponse: undefined,
         })
@@ -43,7 +43,7 @@ describe('runWithExponentialBackoff', () => {
 
 
     it('should retry and return resultExecutionState when verdict is FAILED and retry is enabled', async () => {
-        const resultExecutionState = FlowExecutorContext.empty().setVerdict({
+        const resultExecutionState = WorkflowExecutorContext.empty().setVerdict({
             status: ExecutionStatus.FAILED,
             failedStep: {
                 name: 'runtime',
@@ -64,7 +64,7 @@ describe('runWithExponentialBackoff', () => {
     })
 
     it('should not retry and return resultExecutionState when verdict is FAILED but retry is disabled', async () => {
-        const resultExecutionState = FlowExecutorContext.empty().setVerdict({
+        const resultExecutionState = WorkflowExecutorContext.empty().setVerdict({
             status: ExecutionStatus.FAILED,
             failedStep: {
                 name: 'runtime',

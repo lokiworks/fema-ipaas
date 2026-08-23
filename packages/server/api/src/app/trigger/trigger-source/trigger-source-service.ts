@@ -1,41 +1,41 @@
-import { apId, ErrorCode, FlowId, isNil, PlatformError } from '@fema/core-utils'
-import { FlowVersion, PopulatedTriggerSource, TemplateTelemetryEventType, TriggerSource } from '@fema/shared'
+import { apId, ErrorCode, isNil, PlatformError, WorkflowId } from '@fema/core-utils'
+import { PopulatedTriggerSource, TemplateTelemetryEventType, TriggerSource, WorkflowVersion } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { In } from 'typeorm'
 import { repoFactory } from '../../core/db/repo-factory'
-import { flowVersionService } from '../../flows/flow-version/flow-version.service'
 import { templateTelemetryService } from '../../template/template-telemetry/template-telemetry.service'
 import { jobQueue } from '../../workers/job-queue/job-queue'
-import { flowTriggerSideEffect } from './flow-trigger-side-effect'
+import { workflowVersionService } from '../../workflows/workflow-version/workflow-version.service'
 import { TriggerSourceEntity } from './trigger-source-entity'
 import { triggerUtils } from './trigger-utils'
+import { workflowTriggerSideEffect } from './workflow-trigger-side-effect'
 
 export const triggerSourceRepo = repoFactory(TriggerSourceEntity)
 
 export const triggerSourceService = (log: FastifyBaseLogger) => {
     return {
         async enable(params: EnableTriggerParams): Promise<TriggerSource> {
-            const { flowVersion, workspaceId, simulate, templateId, isRepublish } = params
+            const { workflowVersion, workspaceId, simulate, templateId, isRepublish } = params
             log.info({
-                flow: { id: flowVersion.flowId },
-                flowVersion: { id: flowVersion.id },
+                workflow: { id: workflowVersion.workflowId },
+                workflowVersion: { id: workflowVersion.id },
                 workspace: { id: workspaceId },
                 simulate,
             }, '[triggerSourceService#enable] Enabling trigger source')
-            const connectorTrigger = await triggerUtils(log).getConnectorTriggerOrThrow({ flowVersion, workspaceId })
+            const connectorTrigger = await triggerUtils(log).getConnectorTriggerOrThrow({ workflowVersion, workspaceId })
             const existingTriggerSource = await triggerSourceRepo().findOne({
                 where: {
-                    flowId: flowVersion.flowId,
+                    workflowId: workflowVersion.workflowId,
                     workspaceId,
                     simulate,
                 },
                 withDeleted: true,
             })
             if (!isNil(existingTriggerSource)) {
-                await jobQueue(log).removeRepeatingJob({ flowVersionId: existingTriggerSource.flowVersionId })
+                await jobQueue(log).removeRepeatingJob({ workflowVersionId: existingTriggerSource.workflowVersionId })
             }
             await triggerSourceRepo().softDelete({
-                flowId: flowVersion.flowId,
+                workflowId: workflowVersion.workflowId,
                 workspaceId,
                 simulate,
             })
@@ -44,19 +44,19 @@ export const triggerSourceService = (log: FastifyBaseLogger) => {
                 id: apId(),
                 type: connectorTrigger.type,
                 workspaceId,
-                flowId: flowVersion.flowId,
+                workflowId: workflowVersion.workflowId,
                 triggerName: connectorTrigger.name,
-                flowVersionId: flowVersion.id,
-                connectorName: flowVersion.trigger.settings.connectorName,
-                connectorVersion: flowVersion.trigger.settings.connectorVersion,
+                workflowVersionId: workflowVersion.id,
+                connectorName: workflowVersion.trigger.settings.connectorName,
+                connectorVersion: workflowVersion.trigger.settings.connectorVersion,
                 simulate,
             }
             const triggerSource = await triggerSourceRepo().save(triggerSourceWithouSchedule)
-            const { scheduleOptions } = await flowTriggerSideEffect(log).enable({
-                flowId: flowVersion.flowId,
-                flowVersionId: flowVersion.id,
+            const { scheduleOptions } = await workflowTriggerSideEffect(log).enable({
+                workflowId: workflowVersion.workflowId,
+                workflowVersionId: workflowVersion.id,
                 workspaceId,
-                connectorName: flowVersion.trigger.settings.connectorName,
+                connectorName: workflowVersion.trigger.settings.connectorName,
                 connectorTrigger,
                 simulate,
                 isRepublish,
@@ -66,11 +66,11 @@ export const triggerSourceService = (log: FastifyBaseLogger) => {
                 templateTelemetryService(log).sendEvent({
                     eventType: TemplateTelemetryEventType.ACTIVATE,
                     templateId,
-                    flowId: flowVersion.flowId,
+                    workflowId: workflowVersion.workflowId,
                 })
             }
 
-            log.info('[triggerSourceService#enable] Enabled flow trigger side effect')
+            log.info('[triggerSourceService#enable] Enabled workflow trigger side effect')
             return triggerSourceRepo().save({
                 ...triggerSource,
                 schedule: scheduleOptions,
@@ -85,42 +85,42 @@ export const triggerSourceService = (log: FastifyBaseLogger) => {
                 },
             })
         },
-        async getByFlowId(params: GetFlowIdParamsWithWorkspaceId): Promise<TriggerSource | null> {
-            const { flowId, simulate, workspaceId } = params
+        async getByWorkflowId(params: GetWorkflowIdParamsWithWorkspaceId): Promise<TriggerSource | null> {
+            const { workflowId, simulate, workspaceId } = params
             return triggerSourceRepo().findOne({
                 where: {
-                    flowId,
+                    workflowId,
                     simulate,
                     ...(workspaceId ? { workspaceId } : {}),
                 },
             })
         },
-        async getByFlowIds(params: GetByFlowIdsParams): Promise<Map<FlowId, TriggerSource>> {
-            const { flowIds, workspaceId } = params
-            if (flowIds.length === 0) {
+        async getByWorkflowIds(params: GetByWorkflowIdsParams): Promise<Map<WorkflowId, TriggerSource>> {
+            const { workflowIds, workspaceId } = params
+            if (workflowIds.length === 0) {
                 return new Map()
             }
             const triggerSources = await triggerSourceRepo().find({
                 where: {
-                    flowId: In(flowIds),
+                    workflowId: In(workflowIds),
                     workspaceId,
                 },
             })
-            const result = new Map<FlowId, TriggerSource>()
+            const result = new Map<WorkflowId, TriggerSource>()
             for (const ts of triggerSources) {
-                result.set(ts.flowId, ts)
+                result.set(ts.workflowId, ts)
             }
             return result
         },
-        async getByFlowIdPopulated(params: GetByFlowIdParams): Promise<PopulatedTriggerSource | null> {
-            const { flowId, simulate } = params
+        async getByWorkflowIdPopulated(params: GetByWorkflowIdParams): Promise<PopulatedTriggerSource | null> {
+            const { workflowId, simulate } = params
             return triggerSourceRepo().findOne({
                 where: {
-                    flowId,
+                    workflowId,
                     simulate,
                 },
                 relations: {
-                    flow: true,
+                    workflow: true,
                 },
             })
         },
@@ -142,41 +142,41 @@ export const triggerSourceService = (log: FastifyBaseLogger) => {
             }
             return triggerSource
         },
-        async existsByFlowId(params: ExistsByFlowIdParams): Promise<boolean> {
-            const { flowId, simulate } = params
+        async existsByWorkflowId(params: ExistsByWorkflowIdParams): Promise<boolean> {
+            const { workflowId, simulate } = params
             return triggerSourceRepo().existsBy({
-                flowId,
+                workflowId,
                 simulate,
             })
         },
         async disable(params: DisableTriggerParams): Promise<void> {
-            const { workspaceId, flowId, simulate, templateId } = params
+            const { workspaceId, workflowId, simulate, templateId } = params
             log.info({
-                flow: { id: flowId },
+                workflow: { id: workflowId },
                 workspace: { id: workspaceId },
                 simulate,
             }, '[triggerSourceService#disable] Disabling trigger source')
             const triggerSource = await triggerSourceRepo().findOneBy({
-                flowId,
+                workflowId,
                 workspaceId,
                 simulate,
             })
             if (isNil(triggerSource)) {
                 return
             }
-            const flowVersion = await flowVersionService(log).getOneOrThrow(triggerSource.flowVersionId)
-            const connectorTrigger = await triggerUtils(log).getConnectorTrigger({ flowVersion, workspaceId })
+            const workflowVersion = await workflowVersionService(log).getOneOrThrow(triggerSource.workflowVersionId)
+            const connectorTrigger = await triggerUtils(log).getConnectorTrigger({ workflowVersion, workspaceId })
             if (!isNil(connectorTrigger)) {
-                await flowTriggerSideEffect(log).disable({
-                    flowId: triggerSource.flowId,
-                    flowVersionId: triggerSource.flowVersionId,
+                await workflowTriggerSideEffect(log).disable({
+                    workflowId: triggerSource.workflowId,
+                    workflowVersionId: triggerSource.workflowVersionId,
                     workspaceId,
                     connectorName: triggerSource.connectorName,
                     connectorTrigger,
                     simulate,
                     ignoreError: params.ignoreError,
                 })
-                log.info('[triggerSourceService#disable] Disabled flow trigger side effect')
+                log.info('[triggerSourceService#disable] Disabled workflow trigger side effect')
             }
             await triggerSourceRepo().softDelete({
                 id: triggerSource.id,
@@ -187,31 +187,31 @@ export const triggerSourceService = (log: FastifyBaseLogger) => {
                 templateTelemetryService(log).sendEvent({
                     eventType: TemplateTelemetryEventType.DEACTIVATE,
                     templateId,
-                    flowId,
+                    workflowId,
                 })
             }
         },
     }
 }
 
-type ExistsByFlowIdParams = {
-    flowId: string
+type ExistsByWorkflowIdParams = {
+    workflowId: string
     simulate: boolean
 }
 
-type GetByFlowIdParams = {
-    flowId: string
+type GetByWorkflowIdParams = {
+    workflowId: string
     workspaceId?: string
     simulate: boolean
 }
 
-type GetByFlowIdsParams = {
-    flowIds: FlowId[]
+type GetByWorkflowIdsParams = {
+    workflowIds: WorkflowId[]
     workspaceId: string
 }
 
-type GetFlowIdParamsWithWorkspaceId = {
-    flowId: string
+type GetWorkflowIdParamsWithWorkspaceId = {
+    workflowId: string
     workspaceId: string
     simulate: boolean | undefined
 }
@@ -223,14 +223,14 @@ type GetTriggerParams = {
 
 type DisableTriggerParams = {
     workspaceId: string
-    flowId: string
+    workflowId: string
     simulate: boolean
     ignoreError: boolean
     templateId?: string
 }
 
 type EnableTriggerParams = {
-    flowVersion: FlowVersion
+    workflowVersion: WorkflowVersion
     workspaceId: string
     simulate: boolean
     templateId?: string

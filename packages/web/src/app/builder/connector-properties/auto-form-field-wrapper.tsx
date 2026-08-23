@@ -3,7 +3,11 @@ import {
   ConnectorProperty,
   PropertyType,
 } from '@fema/connector-sdk';
-import { FlowAction, FlowTrigger, PropertyExecutionType } from '@fema/shared';
+import {
+  WorkflowAction,
+  WorkflowTrigger,
+  PropertyExecutionType,
+} from '@fema/shared';
 import { t } from 'i18next';
 import { Calendar, File } from 'lucide-react';
 import React from 'react';
@@ -199,7 +203,7 @@ function DynamicValueToggle({
   disabled,
   isToggled,
 }: DynamicValueToggleProps) {
-  const form = useFormContext<FlowAction | FlowTrigger>();
+  const form = useFormContext<WorkflowAction | WorkflowTrigger>();
   function updatePropertySettings(mode: PropertyExecutionType) {
     const propertySettingsForSingleProperty = {
       ...form.getValues().settings?.propertySettings?.[propertyName],

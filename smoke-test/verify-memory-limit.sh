@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Verifies that a flow that exhausts the sandbox memory reliably ends with flow run status
-# MEMORY_LIMIT_EXCEEDED. Expects a flow created by benchmark/setup.sh with
+# Verifies that a workflow that exhausts the sandbox memory reliably ends with workflow run status
+# MEMORY_LIMIT_EXCEEDED. Expects a workflow created by benchmark/setup.sh with
 # CODE_INPUT_SUM="$(cat benchmark/oom-expression.txt)" on a stack running
 # FEMA_EXECUTION_MODE=SANDBOX_CODE_ONLY. The expression builds ~50MB inside the 128MB v8
 # isolate (an array of refs to one big string), and the engine's outRef.copy() then
 # materializes every element separately in the ENGINE heap (~3GB) — the engine process dies
 # on the sandbox memory limit, which is how code-only engines OOM in production.
 
-FLOW_ID="${1:?Usage: verify-memory-limit.sh <flow_id> [base_url] [num_runs]}"
+WORKFLOW_ID="${1:?Usage: verify-memory-limit.sh <workflow_id> [base_url] [num_runs]}"
 BASE_URL="${2:-localhost:8080}"
 NUM_RUNS="${3:-3}"
 RUN_TIMEOUT_SECONDS=180
@@ -18,7 +18,7 @@ API="http://$BASE_URL/api/v1"
 BENCH_EMAIL="${BENCH_EMAIL:-bench@fema.local}"
 
 echo "=== Memory Limit Exceeded Detection Test ==="
-echo "Flow ID:  $FLOW_ID"
+echo "Workflow ID:  $WORKFLOW_ID"
 echo "Base URL: $BASE_URL"
 echo "Runs:     $NUM_RUNS"
 echo ""
@@ -38,7 +38,7 @@ fi
 AUTH="Authorization: Bearer $TOKEN"
 
 list_runs() {
-  curl -s --max-time 30 "$API/executions?projectId=$PROJECT_ID&flowId=$FLOW_ID&limit=$((NUM_RUNS + 5))" -H "$AUTH"
+  curl -s --max-time 30 "$API/executions?projectId=$PROJECT_ID&workflowId=$WORKFLOW_ID&limit=$((NUM_RUNS + 5))" -H "$AUTH"
 }
 
 count_runs() {
@@ -63,7 +63,7 @@ for i in $(seq 1 "$NUM_RUNS"); do
     -X POST \
     -H "Content-Type: application/json" \
     -d '{"test":true}' \
-    "http://$BASE_URL/api/v1/webhooks/$FLOW_ID")
+    "http://$BASE_URL/api/v1/webhooks/$WORKFLOW_ID")
   echo "  Webhook fired (HTTP $HTTP_CODE)"
 
   STATUS=""

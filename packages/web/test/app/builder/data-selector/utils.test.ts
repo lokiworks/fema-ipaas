@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 // Importing the data-selector utils pulls in `@/features/connectors` → `src/lib/api.ts`,
 // which reads `window.location.origin` at module load, so this suite needs a DOM.
-import { FlowAction, FlowActionType } from '@fema/shared';
+import { WorkflowAction, WorkflowActionType } from '@fema/shared';
 import { describe, expect, it } from 'vitest';
 
 import { DataSelectorTreeNode } from '@/app/builder/data-selector/type';
@@ -20,9 +20,9 @@ function collectPropertyPaths(node: TreeNode, acc: string[] = []): string[] {
   return acc;
 }
 
-const codeStep: FlowAction & { dfsIndex: number } = {
+const codeStep: WorkflowAction & { dfsIndex: number } = {
   name: 'step_1',
-  type: FlowActionType.CODE,
+  type: WorkflowActionType.CODE,
   displayName: 'Code',
   valid: true,
   lastUpdatedDate: '2024-01-01T00:00:00.000Z',

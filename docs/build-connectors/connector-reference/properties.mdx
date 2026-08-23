@@ -174,7 +174,7 @@ Property.DateRange({
 });
 ```
 
-The value is `{ preset, after?, before? }`. Resolve it to concrete ISO bounds inside `run()` with `dateRangeUtils.resolve` — relative presets resolve against "now", so recurring flows roll the window forward:
+The value is `{ preset, after?, before? }`. Resolve it to concrete ISO bounds inside `run()` with `dateRangeUtils.resolve` — relative presets resolve against "now", so recurring workflows roll the window forward:
 
 ```typescript
 import { dateRangeUtils } from '@fema/connectors-framework';
@@ -650,7 +650,7 @@ It has a `code` property which is a function that takes in an object parameter w
 | value | `unknown` | Whatever the type of the value you pass to onChange|
 | containerId | `string` | The ID of an HTML element in which you can modify the DOM however you like |
 | isEmbedded | `boolean` | The flag that tells you if the code is running inside an [embedded instance](/embedding/overview) of FEMA Integration Platform |
-| projectId | `string` | The project ID of the flow the step that contains this property is in |
+| projectId | `string` | The project ID of the workflow the step that contains this property is in |
 | disabled | `boolean` | The flag that tells you whether or not the property is disabled |
 | property | `{ displayName:string, description?: string, required: boolean}` | The current property information|
 

@@ -770,7 +770,7 @@ export const FEMA_FUNCTIONS: ApFunction[] = [
     {
         name: 'now',
         category: 'date',
-        description: 'Returns the current date and time at the moment the flow runs.',
+        description: 'Returns the current date and time at the moment the workflow runs.',
         syntax: 'now()',
         example: 'now()',
         exampleResult: '2025-01-15T14:30:00Z',
@@ -794,7 +794,7 @@ export const FEMA_FUNCTIONS: ApFunction[] = [
     {
         name: 'to_date',
         category: 'date',
-        description: 'Turns a text value into a proper date the flow can work with.',
+        description: 'Turns a text value into a proper date the workflow can work with.',
         syntax: 'to_date(text)',
         example: 'to_date( January 15, 2025 )',
         exampleResult: '2025-01-15T00:00:00Z',

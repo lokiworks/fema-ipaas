@@ -46,7 +46,7 @@ function ItemIcon({
     return <User className="size-4 shrink-0 text-muted-foreground" />;
   }
 
-  if (type === 'flow') {
+  if (type === 'workflow') {
     return (
       <span className="[&_svg]:text-violet-500! shrink-0">
         <WorkflowIcon className="size-4" />

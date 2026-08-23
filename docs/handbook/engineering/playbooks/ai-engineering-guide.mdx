@@ -18,7 +18,7 @@ Our repo has a layered AI assistance system:
 | `CLAUDE.md` (root) | ~55 lines | Every session | Non-obvious architecture rules |
 | `packages/*/CLAUDE.md` | ~30-55 lines each | When working in that package | Package-specific patterns |
 | `brain/wiki/<area>/index.md` | 9 areas | First stop for an unfamiliar subsystem | Area glossary + list of its pages |
-| `brain/wiki/<area>/*.md` | one page per subsystem | When Claude explores that subsystem | Entity schemas, services, data flows, gotchas |
+| `brain/wiki/<area>/*.md` | one page per subsystem | When Claude explores that subsystem | Entity schemas, services, data workflows, gotchas |
 | `brain/decisions/*.md` | numbered, flat | When Claude needs the *why* behind a design | One hard-to-reverse call each |
 | `.claude/rules/` | 3-5 lines each | Every session | Critical safety checks (entity registration, data isolation, edition safety) |
 | `.agents/skills/` | one folder each | When invoked | Investigations, not conventions — `/debug-failed-run`, `/triage-*`, `/connector-builder`. Code shapes and conventions live in the wiki, not here. |
@@ -31,7 +31,7 @@ Total context per session: ~150 lines. Claude has ~150 instruction slots — we 
 
 **Bad:** "add analytics"
 
-**Good:** "Add a project-level analytics dashboard showing flow run count, success rate, and average duration for the last 7/30/90 days. Project-scoped, CE feature, visible to users with READ_RUN permission."
+**Good:** "Add a project-level analytics dashboard showing workflow run count, success rate, and average duration for the last 7/30/90 days. Project-scoped, CE feature, visible to users with READ_RUN permission."
 
 Include:
 

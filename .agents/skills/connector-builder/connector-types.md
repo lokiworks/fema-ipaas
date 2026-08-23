@@ -41,7 +41,7 @@ import { ConnectorCategory } from '@fema/shared';
 | `PRODUCTIVITY` | General productivity (Trello, Airtable) |
 | `SALES_AND_CRM` | CRM/Sales (Salesforce, HubSpot CRM) |
 | `CORE` | Platform utilities (core/ connectors only) |
-| `FLOW_CONTROL` | Flow logic (core/ connectors only) |
+| `WORKFLOW_CONTROL` | Workflow logic (core/ connectors only) |
 | `UNIVERSAL_AI` | Universal AI connectors (core/ connectors only) |
 
 Multiple categories allowed: `categories: [ConnectorCategory.COMMERCE, ConnectorCategory.PAYMENT_PROCESSING]`
@@ -51,11 +51,11 @@ Multiple categories allowed: `categories: [ConnectorCategory.COMMERCE, Connector
 | Connector | What it does |
 |---|---|
 | `http` | Generic HTTP requests |
-| `store` | Key-value storage within flows |
+| `store` | Key-value storage within workflows |
 | `schedule` | Cron-based scheduling trigger |
-| `delay` | Pause flow execution |
+| `delay` | Pause workflow execution |
 | `webhook` | Generic webhook trigger |
-| `manual-trigger` | Manual flow execution |
+| `manual-trigger` | Manual workflow execution |
 | `data-mapper` | Transform/map data |
 | `math-helper` | Math operations |
 | `text-helper` | String operations |
@@ -68,7 +68,7 @@ Multiple categories allowed: `categories: [ConnectorCategory.COMMERCE, Connector
 | `pdf` | PDF generation |
 | `qrcode` | QR code generation |
 | `tables` | FEMA Integration Platform Tables integration |
-| `subflows` | Call other flows |
+| `subflows` | Call other workflows |
 | `connections` | Manage connections |
 | `forms` | FEMA Integration Platform Forms |
 | `graphql` | Generic GraphQL requests |

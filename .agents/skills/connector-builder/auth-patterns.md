@@ -37,7 +37,7 @@ export const myAppAuth = ConnectorAuth.SecretText({
 
 ## OAuth2
 
-For services like Google, Slack, GitHub that use OAuth2 authorization flows.
+For services like Google, Slack, GitHub that use OAuth2 authorization workflows.
 
 ```typescript
 import { ConnectorAuth } from '@fema/connector-sdk';

@@ -1,5 +1,5 @@
 import { apId, ErrorCode, isNil, PlatformError, SeekPage, spreadIfDefined } from '@fema/core-utils'
-import { CreateTemplateRequestBody, FlowVersionTemplate, ListTemplatesRequestQuery, Template, TemplateStatus, TemplateType, UpdateTemplateRequestBody } from '@fema/shared'
+import { CreateTemplateRequestBody, ListTemplatesRequestQuery, Template, TemplateStatus, TemplateType, UpdateTemplateRequestBody, WorkflowVersionTemplate } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { ArrayContains, ArrayOverlap, Equal, IsNull } from 'typeorm'
 import { repoFactory } from '../core/db/repo-factory'
@@ -29,12 +29,12 @@ export const templateService = (log: FastifyBaseLogger) => ({
     },
     async create({ platformId, params }: CreateParams): Promise<Template> {
         const preparedTemplate = await templateValidator.validateAndPrepare({
-            flows: params.flows,
+            workflows: params.workflows,
             platformId,
             log,
         })
 
-        const { flows, connectors } = preparedTemplate
+        const { workflows, connectors } = preparedTemplate
         const { name, summary, description, tags, blogUrl, metadata, author, categories, type } = params
 
         const newTags = tags ?? []
@@ -56,7 +56,7 @@ export const templateService = (log: FastifyBaseLogger) => ({
                     author,
                     categories,
                     connectors,
-                    flows,
+                    workflows,
                     status: TemplateStatus.PUBLISHED,
                 }
                 return templateRepo().save(newTemplate)
@@ -70,15 +70,15 @@ export const templateService = (log: FastifyBaseLogger) => ({
 
         const newTags = tags ?? []
 
-        let sanatizedFlows: FlowVersionTemplate[] | undefined = undefined
+        let sanatizedWorkflows: WorkflowVersionTemplate[] | undefined = undefined
         let connectors: string[] | undefined = undefined
-        if (!isNil(params.flows) && params.flows.length > 0) {
+        if (!isNil(params.workflows) && params.workflows.length > 0) {
             const preparedTemplate = await templateValidator.validateAndPrepare({
-                flows: params.flows,
+                workflows: params.workflows,
                 platformId: undefined,
                 log,
             })
-            sanatizedFlows = preparedTemplate.flows
+            sanatizedWorkflows = preparedTemplate.workflows
             connectors = preparedTemplate.connectors
         }
 
@@ -94,7 +94,7 @@ export const templateService = (log: FastifyBaseLogger) => ({
                     ...spreadIfDefined('blogUrl', blogUrl),
                     ...spreadIfDefined('metadata', metadata),
                     ...spreadIfDefined('categories', categories),
-                    ...spreadIfDefined('flows', sanatizedFlows),
+                    ...spreadIfDefined('workflows', sanatizedWorkflows),
                     ...spreadIfDefined('connectors', connectors),
                     ...spreadIfDefined('tags', newTags),
                     ...spreadIfDefined('status', status),

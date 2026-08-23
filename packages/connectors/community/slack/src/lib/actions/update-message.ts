@@ -1,7 +1,7 @@
 import { createAction, Property } from '@fema/connector-sdk';
 import { slackAuth } from '../auth';
-import { blocks, singleSelectChannelInfo, slackChannel, mentionOriginFlow } from '../common/props';
-import { buildFlowOriginContextBlock, processMessageTimestamp, textToSectionBlocks } from '../common/utils';
+import { blocks, singleSelectChannelInfo, slackChannel, mentionOriginWorkflow } from '../common/props';
+import { buildWorkflowOriginContextBlock, processMessageTimestamp, textToSectionBlocks } from '../common/utils';
 import { Block,KnownBlock, WebClient } from '@slack/web-api';
 import { getBotToken, SlackAuthValue } from '../common/auth-helpers';
 import { chatUpdateOutputSchema } from '../output-schemas';
@@ -15,7 +15,7 @@ export const updateMessage = createAction({
   audience: 'human',
   aiMetadata: {
     description:
-      'Edit an already-posted Slack message in place, replacing its text and blocks, identified by channel and message timestamp (ts). Pick this to revise content the flow previously sent rather than posting a new one; use Delete Message to remove it instead. Idempotent: re-running with the same inputs leaves the message in the same final state.',
+      'Edit an already-posted Slack message in place, replacing its text and blocks, identified by channel and message timestamp (ts). Pick this to revise content the workflow previously sent rather than posting a new one; use Delete Message to remove it instead. Idempotent: re-running with the same inputs leaves the message in the same final state.',
     idempotent: true,
   },
   auth: slackAuth,
@@ -34,7 +34,7 @@ export const updateMessage = createAction({
       description: 'The updated text of your message',
       required: true,
     }),
-    mentionOriginFlow,
+    mentionOriginWorkflow,
     blocks,
   },
   async run(context) {
@@ -51,8 +51,8 @@ export const updateMessage = createAction({
       blockList.push(...(propsValue.blocks as unknown as (KnownBlock | Block)[]));
     }
 
-    if (propsValue.mentionOriginFlow) {
-      blockList.push(buildFlowOriginContextBlock(context));
+    if (propsValue.mentionOriginWorkflow) {
+      blockList.push(buildWorkflowOriginContextBlock(context));
     }
 
     return await client.chat.update({

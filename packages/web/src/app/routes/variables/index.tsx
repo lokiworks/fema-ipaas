@@ -224,7 +224,7 @@ function VariablesPage() {
               <ConfirmationDeleteDialog
                 title={t('Delete variables')}
                 message={t(
-                  'This permanently deletes the selected variables. Flows that reference them will fail at runtime.',
+                  'This permanently deletes the selected variables. Workflows that reference them will fail at runtime.',
                 )}
                 entityName={t('variable')}
                 buttonText={t('Delete')}
@@ -308,7 +308,7 @@ function VariablesPage() {
       <ConfirmationDeleteDialog
         title={t('Delete variable')}
         message={t(
-          'This permanently deletes the variable. Flows that reference it will fail at runtime.',
+          'This permanently deletes the variable. Workflows that reference it will fail at runtime.',
         )}
         entityName={deleting?.name ?? ''}
         isDanger

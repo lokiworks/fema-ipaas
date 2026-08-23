@@ -8,7 +8,7 @@ const FORMULA_SUFFIX = `}::ap-formula-v${CURRENT_FORMULA_VERSION}`
 // brace-counting or string-literal tracking needed at the wrapper level.
 // `[\s\S]*?` matches any character including newlines, non-greedy so adjacent
 // formulas don't merge into one capture. The `v(\d+)` lets us route saved
-// flows from older format versions to the right evaluator after we ship v2,
+// workflows from older format versions to the right evaluator after we ship v2,
 // without a data migration.
 const FORMULA_REGEX = /ap-formula-v(\d+)::\{([\s\S]*?)\}::ap-formula-v\1/g
 

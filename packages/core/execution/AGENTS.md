@@ -1,6 +1,6 @@
 # @fema/workflow-core
 
-The execution layer: flows, execution, engine operations, agents, and workers — the
+The execution layer: workflows, execution, engine operations, agents, and workers — the
 types the engine runs on.
 
 > ⚠️ **Placeholder.** This package is currently a one-line stub; the engine still

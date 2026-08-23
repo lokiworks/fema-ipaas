@@ -76,7 +76,7 @@ describe('FunctionSearchPopover docs link', () => {
   it('points at the FEMA Integration Platform docs outside embed', () => {
     renderPopover({ docsUrl: DEFAULT_FORMULAS_DOCS_URL });
     expect(renderedDocsLink()?.getAttribute('href')).toBe(
-      'https://github.com/lokiworks/fema-ipaas/docs/flows/using-formulas',
+      'https://github.com/lokiworks/fema-ipaas/docs/workflows/using-formulas',
     );
   });
 });

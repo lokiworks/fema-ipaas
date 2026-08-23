@@ -19,7 +19,7 @@ Rule of thumb: **Store** = "one value per key"; **Tables** = "many rows of the s
 Actions (`name` slugs): `get`, `put`, `append`, `add_to_list`, `remove_from_list`, `remove_value`.
 
 - **`get` returns the raw stored value** (or the default you supply) — reference as `{{step_N['output']}}`, not `{{step_N['output'].value}}`.
-- **Scope** (the value you pass → UI label): `COLLECTION` → "Project" (shared across all flows in the project; this is the default), `FLOW` → "Flow" (shared across runs of one flow), `RUN` → "Run" (one run only).
+- **Scope** (the value you pass → UI label): `COLLECTION` → "Project" (shared across all workflows in the project; this is the default), `WORKFLOW` → "Workflow" (shared across runs of one workflow), `RUN` → "Run" (one run only).
 - Limits: **512 KB per value, 128-char key**. Hash long natural keys; move bigger/structured data to Tables.
 
 ## Idempotency — mandatory for retrying webhook triggers

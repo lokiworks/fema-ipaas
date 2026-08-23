@@ -15,8 +15,8 @@ Zod schema + `z.infer` dual export. Use `BaseModelSchema` (id, created, updated)
 - `Permission` (`src/lib/core/common/security/`) — 26 permissions. Add READ/WRITE pairs for new features.
 - `ErrorCode` (`src/lib/core/common/platform-error.ts`) — 66 codes. Also add HTTP mapping in server's `error-handler.ts`.
 - `ApFlagId` (`src/lib/core/flag/flag.ts`) — 42 feature flags.
-- `FlowOperationType` — 26 flow modification ops. Add new op types here + handler in flow service.
-- `FlowActionType` — CODE, CONNECTOR, LOOP_ON_ITEMS, ROUTER.
+- `WorkflowOperationType` — 26 workflow modification ops. Add new op types here + handler in workflow service.
+- `WorkflowActionType` — CODE, CONNECTOR, LOOP_ON_ITEMS, ROUTER.
 - `ExecutionStatus` — 12 states (QUEUED, RUNNING, SUCCEEDED, FAILED, PAUSED, TIMEOUT, CANCELED, etc.).
 - `BranchOperator` — 24 condition operators for router.
 - `WorkerJobType` — 9 job types. Add new jobs here + handler in worker.

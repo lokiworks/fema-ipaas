@@ -5,7 +5,7 @@ export const everyHourTrigger = createTrigger({
   name: 'every_hour',
   classification: 'READ',
   displayName: 'Every Hour',
-  description: 'Triggers the current flow every hour',
+  description: 'Triggers the current workflow every hour',
   aiMetadata: {
     description:
       'Fires at the top of every hour, in either of two modes: all seven days, or Monday-Friday only when weekends are excluded; each event represents an hourly tick, not an external change. Pick this for hourly recurrence; use Every X Minutes for a finer interval, Every Day for a single daily run at a chosen hour, or Cron Expression for anything more specific. The hour boundary is always evaluated in UTC - this trigger has no timezone option, so use Cron Expression if local time matters.',

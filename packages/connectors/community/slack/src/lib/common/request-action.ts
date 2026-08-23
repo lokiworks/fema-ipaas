@@ -1,5 +1,5 @@
 import {
-    buildFlowOriginContextBlock,
+    buildWorkflowOriginContextBlock,
     processMessageTimestamp,
     slackSendMessage,
     textToSectionBlocks,
@@ -75,8 +75,8 @@ export const requestAction = async (conversationId: string, context: any) => {
                     block_id: 'actions',
                     elements: actionElements,
                 },
-                ...(context.propsValue.mentionOriginFlow
-                    ? [buildFlowOriginContextBlock(context)]
+                ...(context.propsValue.mentionOriginWorkflow
+                    ? [buildWorkflowOriginContextBlock(context)]
                     : []),
             ],
             conversationId: conversationId,

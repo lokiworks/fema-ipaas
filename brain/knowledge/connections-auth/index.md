@@ -8,12 +8,12 @@ How FEMA Integration Platform stores credentials and authenticates users, across
 
 ### App Connections
 
-Encrypted credential records (AES-256) that flow steps use to call external services. Types: `OAUTH2`, `CLOUD_OAUTH2` (token exchange via secrets.fema.local), `PLATFORM_OAUTH2`, `SECRET_TEXT`, `BASIC_AUTH`, `CUSTOM_AUTH`, `NO_AUTH`, `OIDC`.
+Encrypted credential records (AES-256) that workflow steps use to call external services. Types: `OAUTH2`, `CLOUD_OAUTH2` (token exchange via secrets.fema.local), `PLATFORM_OAUTH2`, `SECRET_TEXT`, `BASIC_AUTH`, `CUSTOM_AUTH`, `NO_AUTH`, `OIDC`.
 
-- **Entity/isolation**: `Connection` has `projectIds[]` (multi-project) + `scope` (PROJECT/PLATFORM). PROJECT connections queried with `ArrayContains([projectId])`; flows reference by stable `externalId` (survives rename).
+- **Entity/isolation**: `Connection` has `projectIds[]` (multi-project) + `scope` (PROJECT/PLATFORM). PROJECT connections queried with `ArrayContains([projectId])`; workflows reference by stable `externalId` (survives rename).
 - **OAuth refresh**: auto on retrieval; distributed Redis lock keyed `${platformId}_${externalId}` (project-invariant so shared connections serialize). Refresh_token/client_secret always stripped from API responses. CUSTOM_AUTH connectors can opt into refresh via a `refresh` callback (worker `EXECUTE_TOKEN_REFRESH` job).
 - **OIDC**: AP acts as an OIDC IdP so connectors assume cloud roles (e.g. AWS AssumeRoleWithWebIdentity) without long-lived creds. Engine-only `POST /v1/worker/oidc-token` issues RS256 JWTs; public `/.well-known/openid-configuration` + `jwks.json`. Signing key auto-generated into the `flag` table (first-writer-wins, zero setup).
-- **Gotcha**: `POST /replace` rewires flow refs between connections; PLATFORM source can't be deleted via replace (`403`); deleting a project source `409`s while a published flow still uses it. Deleting a connection does NOT cascade — flows fail at runtime.
+- **Gotcha**: `POST /replace` rewires workflow refs between connections; PLATFORM source can't be deleted via replace (`403`); deleting a project source `409`s while a published workflow still uses it. Deleting a connection does NOT cascade — workflows fail at runtime.
 
 ### Global Connections (EE/Cloud)
 
@@ -29,7 +29,7 @@ User identity, sign-in, JWT sessions. `UserIdentity` = canonical email+password+
 
 ### EE Authentication
 
-Extends CE with SSO + RBAC. SAML 2.0 (`/v1/authn/saml/login` → IdP → ACS `/acs`) and Google/GitHub federated OAuth both funnel into `authenticationService.federatedAuthn()`; gated by `ssoEnabled`. Per-project RBAC via `assertPrincipalAccessToProject()` and `assertUserHasPermissionToFlow()`. Config stored on `platform.federatedAuthProviders`. Authz hooks: `platformMustHaveFeatureEnabled` (402), `projectMustBeTeamType`, `platformMustBeOwnedByCurrentUser`. OTP (email verify, password reset, and the `EMAIL_LOGIN` sign-in code) lives here. Its entity is registered for every edition, but `otpModule` is only registered on Cloud/EE and `sendOtp` returns early off those editions, so CE can send nothing today except `EMAIL_LOGIN`, which is gated on `SMTP_CONFIGURED` instead.
+Extends CE with SSO + RBAC. SAML 2.0 (`/v1/authn/saml/login` → IdP → ACS `/acs`) and Google/GitHub federated OAuth both funnel into `authenticationService.federatedAuthn()`; gated by `ssoEnabled`. Per-project RBAC via `assertPrincipalAccessToProject()` and `assertUserHasPermissionToWorkflow()`. Config stored on `platform.federatedAuthProviders`. Authz hooks: `platformMustHaveFeatureEnabled` (402), `projectMustBeTeamType`, `platformMustBeOwnedByCurrentUser`. OTP (email verify, password reset, and the `EMAIL_LOGIN` sign-in code) lives here. Its entity is registered for every edition, but `otpModule` is only registered on Cloud/EE and `sendOtp` returns early off those editions, so CE can send nothing today except `EMAIL_LOGIN`, which is gated on `SMTP_CONFIGURED` instead.
 
 ### Managed Auth / Embedding (EE)
 

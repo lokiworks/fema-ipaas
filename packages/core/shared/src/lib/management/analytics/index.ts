@@ -1,5 +1,5 @@
 import { BaseModelSchema, DateOrString, Nullable } from '@fema/core-utils'
-import { FlowStatus } from '@fema/workflow-core'
+import { WorkflowStatus } from '@fema/workflow-core'
 import { z } from 'zod'
 import { UserWithMetaInformation } from '../../core/user'
 
@@ -13,7 +13,7 @@ export enum AnalyticsTimePeriod {
 
 export const AnalyticsRunsUsageItem = z.object({
     day: z.string(),
-    flowId: z.string(),
+    workflowId: z.string(),
     runs: z.number(),
 })
 export type AnalyticsRunsUsageItem = z.infer<typeof AnalyticsRunsUsageItem>
@@ -21,26 +21,26 @@ export type AnalyticsRunsUsageItem = z.infer<typeof AnalyticsRunsUsageItem>
 export const AnalyticsRunsUsage = z.array(AnalyticsRunsUsageItem)
 export type AnalyticsRunsUsage = z.infer<typeof AnalyticsRunsUsage>
 
-export const AnalyticsFlowReportItem = z.object({
-    flowId: z.string(),
-    flowName: z.string(),
+export const AnalyticsWorkflowReportItem = z.object({
+    workflowId: z.string(),
+    workflowName: z.string(),
     workspaceId: z.string(),
     workspaceName: z.string(),
-    status: z.nativeEnum(FlowStatus),
+    status: z.nativeEnum(WorkflowStatus),
     timeSavedPerRun: Nullable(z.number()),
     ownerId: Nullable(z.string()),
 })
-export type AnalyticsFlowReportItem = z.infer<typeof AnalyticsFlowReportItem>
+export type AnalyticsWorkflowReportItem = z.infer<typeof AnalyticsWorkflowReportItem>
 
-export const AnalyticsFlowReport = z.array(AnalyticsFlowReportItem)
-export type AnalyticsFlowReport = z.infer<typeof AnalyticsFlowReport>
+export const AnalyticsWorkflowReport = z.array(AnalyticsWorkflowReportItem)
+export type AnalyticsWorkflowReport = z.infer<typeof AnalyticsWorkflowReport>
 
 export const PlatformAnalyticsReport = z.object({
     ...BaseModelSchema,
     cachedAt: DateOrString,
     runs: AnalyticsRunsUsage,
     outdated: z.boolean(),
-    flows: AnalyticsFlowReport,
+    workflows: AnalyticsWorkflowReport,
     platformId: z.string(),
     users: z.array(UserWithMetaInformation),
 })

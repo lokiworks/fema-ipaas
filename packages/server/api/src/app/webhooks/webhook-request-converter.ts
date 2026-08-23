@@ -33,14 +33,14 @@ export function isMultipartContentType(contentType: string | undefined): boolean
 export async function convertRequest(
     request: FastifyRequest,
     workspaceId: string,
-    flowId: string,
+    workflowId: string,
 ): Promise<EventPayload> {
     const contentType = request.headers['content-type']
     const isBinary = isBinaryContentType(contentType)
     return {
         method: request.method,
         headers: request.headers as Record<string, string>,
-        body: await convertBody(request, workspaceId, flowId),
+        body: await convertBody(request, workspaceId, workflowId),
         queryParams: request.query as Record<string, string>,
         // Streamed bodies (binary/multipart) are consumed straight to storage, so there is no
         // raw payload to forward; rawBody is captured only for the string-parsed signed types.
@@ -58,7 +58,7 @@ export function extractHeaderFromRequest(request: FastifyRequest): Pick<Executio
 async function convertBody(
     request: FastifyRequest,
     workspaceId: string,
-    flowId: string,
+    workflowId: string,
 ): Promise<unknown> {
     if (request.isMultipart()) {
         const platformId = await workspaceService(request.log).getPlatformId(workspaceId)
@@ -70,7 +70,7 @@ async function convertBody(
                     log: request.log,
                     data: failIfTruncated(part.file, maxFileSizeInBytes),
                     fileName: part.filename,
-                    flowId,
+                    workflowId,
                     platformId,
                     workspaceId,
                 })
@@ -92,7 +92,7 @@ async function convertBody(
             log: request.log,
             data: (request.body as Readable).pipe(enforceByteLimit(maxFileSizeInBytes)),
             fileName: `file.${extension}`,
-            flowId,
+            workflowId,
             platformId,
             workspaceId,
         })
@@ -103,19 +103,19 @@ async function convertBody(
 }
 
 async function saveStepFileAndConstructUrl(params: SaveStepFileParams): Promise<string> {
-    const { log, data, fileName, flowId, platformId, workspaceId } = params
+    const { log, data, fileName, workflowId, platformId, workspaceId } = params
     const file = await fileService(log).save({
         data,
-        metadata: { stepName: 'trigger', flowId },
+        metadata: { stepName: 'trigger', workflowId },
         fileName,
-        type: FileType.FLOW_STEP_FILE,
+        type: FileType.WORKFLOW_STEP_FILE,
         compression: FileCompression.NONE,
         workspaceId,
         platformId,
     })
     return filesService.constructReadUrl({
         fileId: file.id,
-        fileType: FileType.FLOW_STEP_FILE,
+        fileType: FileType.WORKFLOW_STEP_FILE,
         platformId,
     })
 }
@@ -143,7 +143,7 @@ type SaveStepFileParams = {
     log: FastifyBaseLogger
     data: Readable
     fileName: string
-    flowId: string
+    workflowId: string
     platformId: string
     workspaceId: string
 }

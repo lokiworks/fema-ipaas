@@ -18,7 +18,7 @@ export const readConnection = createAction({
   classification: 'READ',
   displayName: 'Read Connection',
   description: 'Fetch connection by name',
-  aiMetadata: { description: 'Looks up a stored app connection in the current workspace by its external ID, so a flow can resolve credentials at runtime instead of binding one fixed connection at build time (for example when the external ID arrives in a webhook payload). When the connection is known up front, configure the target connector action with its own auth instead. Requires the exact external ID and throws if no connection matches; read-only and idempotent.', idempotent: true },
+  aiMetadata: { description: 'Looks up a stored app connection in the current workspace by its external ID, so a workflow can resolve credentials at runtime instead of binding one fixed connection at build time (for example when the external ID arrives in a webhook payload). When the connection is known up front, configure the target connector action with its own auth instead. Requires the exact external ID and throws if no connection matches; read-only and idempotent.', idempotent: true },
   props: {
     info: Property.MarkDown({
       value: markdown,

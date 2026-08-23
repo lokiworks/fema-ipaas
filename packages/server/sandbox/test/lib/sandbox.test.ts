@@ -60,13 +60,13 @@ function buildExecuteParams(workerIndex: number, expiresAt?: number) {
     return {
         workerIndex,
         log,
-        operationType: 'EXECUTE_FLOW',
+        operationType: 'EXECUTE_WORKFLOW',
         operation: {},
         timeoutInSeconds: 60,
         expiresAt,
         provision: {
             platformId: 'p1',
-            flowVersionId: 'fv1',
+            workflowVersionId: 'fv1',
             connectors: [],
             codes: [],
             publicApiUrl: 'http://localhost/api/',

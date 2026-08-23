@@ -1,14 +1,14 @@
 import { GenericStepOutput, LoopStepOutput, RouterStepOutput, StepOutputStatus } from '../../../src/lib/execution/state/step-output'
-import { FlowActionType } from '../../../src/lib/flows/actions/action'
+import { WorkflowActionType } from '../../../src/lib/workflows/actions/action'
 
 describe('GenericStepOutput', () => {
     it('should create an instance with factory method', () => {
         const step = GenericStepOutput.create({
-            type: FlowActionType.CODE,
+            type: WorkflowActionType.CODE,
             status: StepOutputStatus.SUCCEEDED,
             input: { key: 'value' },
         })
-        expect(step.type).toBe(FlowActionType.CODE)
+        expect(step.type).toBe(WorkflowActionType.CODE)
         expect(step.status).toBe(StepOutputStatus.SUCCEEDED)
         expect(step.input).toEqual({ key: 'value' })
         expect(step.output).toBeUndefined()
@@ -16,7 +16,7 @@ describe('GenericStepOutput', () => {
 
     it('setOutput should return a new instance without modifying the original', () => {
         const original = GenericStepOutput.create({
-            type: FlowActionType.CODE,
+            type: WorkflowActionType.CODE,
             status: StepOutputStatus.RUNNING,
             input: {},
         })
@@ -28,7 +28,7 @@ describe('GenericStepOutput', () => {
 
     it('setStatus should return a new instance without modifying the original', () => {
         const original = GenericStepOutput.create({
-            type: FlowActionType.CODE,
+            type: WorkflowActionType.CODE,
             status: StepOutputStatus.RUNNING,
             input: {},
         })
@@ -39,7 +39,7 @@ describe('GenericStepOutput', () => {
 
     it('setErrorMessage should return a new instance without modifying the original', () => {
         const original = GenericStepOutput.create({
-            type: FlowActionType.CODE,
+            type: WorkflowActionType.CODE,
             status: StepOutputStatus.FAILED,
             input: {},
         })
@@ -50,7 +50,7 @@ describe('GenericStepOutput', () => {
 
     it('setDuration should return a new instance without modifying the original', () => {
         const original = GenericStepOutput.create({
-            type: FlowActionType.CODE,
+            type: WorkflowActionType.CODE,
             status: StepOutputStatus.SUCCEEDED,
             input: {},
         })
@@ -63,7 +63,7 @@ describe('GenericStepOutput', () => {
 describe('LoopStepOutput', () => {
     it('init should create with empty iterations and index 0', () => {
         const loop = LoopStepOutput.init({ input: [1, 2, 3] })
-        expect(loop.type).toBe(FlowActionType.LOOP_ON_ITEMS)
+        expect(loop.type).toBe(WorkflowActionType.LOOP_ON_ITEMS)
         expect(loop.status).toBe(StepOutputStatus.SUCCEEDED)
         expect(loop.output?.iterations).toEqual([])
         expect(loop.output?.index).toBe(0)
@@ -97,7 +97,7 @@ describe('LoopStepOutput', () => {
     it('setIterations should replace all iterations', () => {
         const loop = LoopStepOutput.init({ input: null }).addIteration().addIteration()
         const codeStep = GenericStepOutput.create({
-            type: FlowActionType.CODE,
+            type: WorkflowActionType.CODE,
             status: StepOutputStatus.SUCCEEDED,
             input: {},
         })
@@ -112,7 +112,7 @@ describe('LoopStepOutput', () => {
 describe('RouterStepOutput', () => {
     it('init should create with ROUTER type and SUCCEEDED status', () => {
         const router = RouterStepOutput.init({ input: {} })
-        expect(router.type).toBe(FlowActionType.ROUTER)
+        expect(router.type).toBe(WorkflowActionType.ROUTER)
         expect(router.status).toBe(StepOutputStatus.SUCCEEDED)
     })
 })

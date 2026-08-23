@@ -24,29 +24,29 @@ Note the connection's **external id** — step input references it as `{{connect
 
 The ground truth: what the builder itself shows.
 
-1. In the builder, create a test flow (any trigger).
+1. In the builder, create a test workflow (any trigger).
 2. Add the connector action/trigger, select the connection, fill required props.
 3. Click **Test Step**. The output panel shows the real output JSON — copy it.
 4. For a **trigger**, use **Test Trigger** (polling triggers run `test()`; webhook triggers — see §5).
 
-You can drive this headlessly with the browser MCP (`mcp__chrome-devtools__*` / `mcp__playwright__*`): navigate to the running frontend, sign in, build the flow, click Test Step, and read the output node. This is the most robust path for connectors whose inputs are awkward to construct by hand.
+You can drive this headlessly with the browser MCP (`mcp__chrome-devtools__*` / `mcp__playwright__*`): navigate to the running frontend, sign in, build the workflow, click Test Step, and read the output node. This is the most robust path for connectors whose inputs are awkward to construct by hand.
 
 ## 3. Capture via the test-step API (scriptable)
 
-Committed endpoint, good for re-running and light batching. It **enqueues** a test run of the flow up to the named step.
+Committed endpoint, good for re-running and light batching. It **enqueues** a test run of the workflow up to the named step.
 
 ```
 POST /v1/authentication/sign-in     { email, password }  -> { token, projectId }
-POST /v1/sample-data/test-step      { projectId, flowVersionId, stepName }
+POST /v1/sample-data/test-step      { projectId, workflowVersionId, stepName }
       -> a Execution record: { id, status, steps, ... }        // NOT { runId, output }
-GET  /v1/sample-data?flowId=&flowVersionId=&stepName=&projectId=&type=OUTPUT
+GET  /v1/sample-data?workflowId=&workflowVersionId=&stepName=&projectId=&type=OUTPUT
 ```
 
 **The output is not in the synchronous response.** `test-step` returns a `Execution` (note `id`, not `runId`; a `status` enum, not a `success` boolean) that comes back with `status: QUEUED` and empty `steps: {}` — the real step output streams to the builder over websocket once the run completes. To capture it in a script, **poll** `GET /v1/sample-data?...&type=OUTPUT` (or re-fetch the run by `id` and read `steps[<stepName>].output`) until it's populated. Because of this asynchrony, the browser Test Step (§2) — which just shows the output when the run finishes — is usually the simpler path.
 
 Dev sign-in for a fresh local instance is typically `dev@ap.com` / `12345678`. The backend is proxied at `http://localhost:4200/api` in dev (not the API port directly).
 
-**Prerequisite:** a flow with the step already configured (connection + props) — the endpoint needs a `flowVersionId` + `stepName` and does not create the step. Build the flow once in the UI (§2); the API is then handy for re-runs after input tweaks or seeded data. Constructing the flow purely over the API means driving the flow-update operations (`UPDATE_TRIGGER` / add-action) — heavier, only worth it when scripting many steps.
+**Prerequisite:** a workflow with the step already configured (connection + props) — the endpoint needs a `workflowVersionId` + `stepName` and does not create the step. Build the workflow once in the UI (§2); the API is then handy for re-runs after input tweaks or seeded data. Constructing the workflow purely over the API means driving the workflow-update operations (`UPDATE_TRIGGER` / add-action) — heavier, only worth it when scripting many steps.
 
 Driver scripts live under `/tmp` (e.g. `/tmp/<connector>_capture.mjs`) — throwaways, kept out of the repo.
 

@@ -61,9 +61,9 @@ const systemPropValidators: {
     [AppSystemProp.CLOUD_CHAT_ROLLOUT_CAP]: numberValidator,
     [AppSystemProp.TRIGGER_TIMEOUT_SECONDS]: numberValidator,
     [AppSystemProp.TRIGGER_HOOKS_TIMEOUT_SECONDS]: numberValidator,
-    [AppSystemProp.FLOW_TIMEOUT_SECONDS]: numberValidator,
+    [AppSystemProp.WORKFLOW_TIMEOUT_SECONDS]: numberValidator,
     [AppSystemProp.EVENT_DESTINATION_TIMEOUT_SECONDS]: numberValidator,
-    [AppSystemProp.PAUSED_FLOW_TIMEOUT_DAYS]: numberValidator,
+    [AppSystemProp.PAUSED_WORKFLOW_TIMEOUT_DAYS]: numberValidator,
     [AppSystemProp.APP_WEBHOOK_SECRETS]: stringValidator,
     [AppSystemProp.MAX_FILE_SIZE_MB]: numberValidator,
     [AppSystemProp.MAX_EXECUTION_LOG_SIZE_MB]: numberValidator,
@@ -185,7 +185,7 @@ const systemPropValidators: {
     [AppSystemProp.MAX_RECORDS_PER_TABLE]: numberValidator,
     [AppSystemProp.MAX_FIELDS_PER_TABLE]: numberValidator,
 
-    [AppSystemProp.ENABLE_FLOW_ON_PUBLISH]: booleanValidator,
+    [AppSystemProp.ENABLE_WORKFLOW_ON_PUBLISH]: booleanValidator,
     [AppSystemProp.ENFORCE_CONNECTION_CONNECTOR_BINDING]: booleanValidator,
     [AppSystemProp.ISSUE_ARCHIVE_DAYS]: (value: string) => {
         const days = parseInt(value)
@@ -284,10 +284,10 @@ export const validateEnvPropsOnStartup = async (log: FastifyBaseLogger): Promise
     const isApp = system.isApp()
     if (isApp) {
         const rentionPeriod = system.getNumberOrThrow(AppSystemProp.EXECUTION_DATA_RETENTION_DAYS)
-        const maximumPausedFlowTimeout = system.getNumberOrThrow(AppSystemProp.PAUSED_FLOW_TIMEOUT_DAYS)
-        if (maximumPausedFlowTimeout > rentionPeriod) {
+        const maximumPausedWorkflowTimeout = system.getNumberOrThrow(AppSystemProp.PAUSED_WORKFLOW_TIMEOUT_DAYS)
+        if (maximumPausedWorkflowTimeout > rentionPeriod) {
             throw new Error(JSON.stringify({
-                message: 'FEMA_PAUSED_FLOW_TIMEOUT_DAYS can not exceed FEMA_EXECUTION_DATA_RETENTION_DAYS',
+                message: 'FEMA_PAUSED_WORKFLOW_TIMEOUT_DAYS can not exceed FEMA_EXECUTION_DATA_RETENTION_DAYS',
             }))
         }
     }

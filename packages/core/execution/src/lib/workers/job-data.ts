@@ -4,9 +4,9 @@ import { isNil } from '@fema/core-utils'
 import { ResumeReason, StreamStepProgress, TriggerHookType, TriggerPayload } from '../engine'
 import { ExecutionType } from '../execution/state/execution-output'
 import { RunEnvironment } from '../execution/execution'
-import { CodeActionSchema, ConnectorActionSchema } from '../flows/actions/action'
-import { FlowVersion } from '../flows/flow-version'
-import { FlowTriggerType } from '../flows/triggers/trigger'
+import { CodeActionSchema, ConnectorActionSchema } from '../workflows/actions/action'
+import { WorkflowVersion } from '../workflows/workflow-version'
+import { WorkflowTriggerType } from '../workflows/triggers/trigger'
 import { ConnectionType, ConnectionValue, ConnectorPackage } from '@fema/connector-types'
 
 export const LATEST_JOB_DATA_SCHEMA_VERSION = 10
@@ -33,17 +33,17 @@ export const JOB_PRIORITY = {
     lowest: 6,
 }
 
-const TESTING_EXECUTE_FLOW_PRIORITY: keyof typeof JOB_PRIORITY = 'high'
-const ASYNC_EXECUTE_FLOW_PRIORITY: keyof typeof JOB_PRIORITY = 'medium'
-const SYNC_EXECUTE_FLOW_PRIORITY: keyof typeof JOB_PRIORITY = 'high'
+const TESTING_EXECUTE_WORKFLOW_PRIORITY: keyof typeof JOB_PRIORITY = 'high'
+const ASYNC_EXECUTE_WORKFLOW_PRIORITY: keyof typeof JOB_PRIORITY = 'medium'
+const SYNC_EXECUTE_WORKFLOW_PRIORITY: keyof typeof JOB_PRIORITY = 'high'
 export const RATE_LIMIT_PRIORITY: keyof typeof JOB_PRIORITY = 'lowest'
 
-function getExecuteFlowPriority(environment: RunEnvironment, workerHandlerId: string | undefined | null): keyof typeof JOB_PRIORITY {
+function getExecuteWorkflowPriority(environment: RunEnvironment, workerHandlerId: string | undefined | null): keyof typeof JOB_PRIORITY {
     switch (environment) {
         case RunEnvironment.TESTING:
-            return TESTING_EXECUTE_FLOW_PRIORITY
+            return TESTING_EXECUTE_WORKFLOW_PRIORITY
         case RunEnvironment.PRODUCTION:
-            return isNil(workerHandlerId) ? ASYNC_EXECUTE_FLOW_PRIORITY : SYNC_EXECUTE_FLOW_PRIORITY
+            return isNil(workerHandlerId) ? ASYNC_EXECUTE_WORKFLOW_PRIORITY : SYNC_EXECUTE_WORKFLOW_PRIORITY
     }
 }
 
@@ -54,8 +54,8 @@ export function getDefaultJobPriority(job: JobData): keyof typeof JOB_PRIORITY {
             return 'veryLow'
         case WorkerJobType.EXECUTE_WEBHOOK:
             return 'medium'
-        case WorkerJobType.EXECUTE_FLOW:
-            return getExecuteFlowPriority(job.environment, job.workerHandlerId)
+        case WorkerJobType.EXECUTE_WORKFLOW:
+            return getExecuteWorkflowPriority(job.environment, job.workerHandlerId)
         case WorkerJobType.EXECUTE_PROPERTY:
         case WorkerJobType.EXECUTE_EXTRACT_CONNECTOR_INFORMATION:
         case WorkerJobType.EXECUTE_VALIDATION:
@@ -73,7 +73,7 @@ export enum WorkerJobType {
     RENEW_WEBHOOK = 'RENEW_WEBHOOK',
     EXECUTE_POLLING = 'EXECUTE_POLLING',
     EXECUTE_WEBHOOK = 'EXECUTE_WEBHOOK',
-    EXECUTE_FLOW = 'EXECUTE_FLOW',
+    EXECUTE_WORKFLOW = 'EXECUTE_WORKFLOW',
     EXECUTE_VALIDATION = 'EXECUTE_VALIDATION',
     EXECUTE_RESOLVE_CONNECTION_IDENTIFIER = 'EXECUTE_RESOLVE_CONNECTION_IDENTIFIER',
     EXECUTE_TRIGGER_HOOK = 'EXECUTE_TRIGGER_HOOK',
@@ -85,7 +85,7 @@ export enum WorkerJobType {
 
 export const NON_SCHEDULED_JOB_TYPES: WorkerJobType[] = [
     WorkerJobType.EXECUTE_WEBHOOK,
-    WorkerJobType.EXECUTE_FLOW,
+    WorkerJobType.EXECUTE_WORKFLOW,
     WorkerJobType.EXECUTE_VALIDATION,
     WorkerJobType.EXECUTE_TRIGGER_HOOK,
     WorkerJobType.EXECUTE_PROPERTY,
@@ -100,8 +100,8 @@ export const RenewWebhookJobData = z.object({
     schemaVersion: z.number(),
     workspaceId: z.string(),
     platformId: z.string(),
-    flowVersionId: z.string(),
-    flowId: z.string(),
+    workflowVersionId: z.string(),
+    workflowId: z.string(),
     jobType: z.literal(WorkerJobType.RENEW_WEBHOOK),
 })
 export type RenewWebhookJobData = z.infer<typeof RenewWebhookJobData>
@@ -111,21 +111,21 @@ export const PollingJobData = z.object({
     workspaceId: z.string(),
     platformId: z.string(),
     schemaVersion: z.number(),
-    flowVersionId: z.string(),
-    flowId: z.string(),
-    triggerType: z.nativeEnum(FlowTriggerType),
+    workflowVersionId: z.string(),
+    workflowId: z.string(),
+    triggerType: z.nativeEnum(WorkflowTriggerType),
     jobType: z.literal(WorkerJobType.EXECUTE_POLLING),
 })
 export type PollingJobData = z.infer<typeof PollingJobData>
 
-const ExecuteFlowJobDataCommon = z.object({
+const ExecuteWorkflowJobDataCommon = z.object({
     workspaceId: z.string(),
     platformId: z.string(),
-    jobType: z.literal(WorkerJobType.EXECUTE_FLOW),
+    jobType: z.literal(WorkerJobType.EXECUTE_WORKFLOW),
     environment: z.nativeEnum(RunEnvironment),
     schemaVersion: z.number(),
-    flowId: z.string(),
-    flowVersionId: z.string(),
+    workflowId: z.string(),
+    workflowVersionId: z.string(),
     runId: z.string(),
     workerHandlerId: z.union([z.string(), z.null()]).optional(),
     httpRequestId: z.string().optional(),
@@ -136,20 +136,20 @@ const ExecuteFlowJobDataCommon = z.object({
     logsFileId: z.string(),
 })
 
-export const BeginExecuteFlowJobData = ExecuteFlowJobDataCommon.extend({
+export const BeginExecuteWorkflowJobData = ExecuteWorkflowJobDataCommon.extend({
     executionType: z.literal(ExecutionType.BEGIN),
     executeTrigger: z.boolean().optional(),
 })
-export type BeginExecuteFlowJobData = z.infer<typeof BeginExecuteFlowJobData>
+export type BeginExecuteWorkflowJobData = z.infer<typeof BeginExecuteWorkflowJobData>
 
-export const ResumeExecuteFlowJobData = ExecuteFlowJobDataCommon.extend({
+export const ResumeExecuteWorkflowJobData = ExecuteWorkflowJobDataCommon.extend({
     executionType: z.literal(ExecutionType.RESUME),
     resumeReason: z.nativeEnum(ResumeReason),
 })
-export type ResumeExecuteFlowJobData = z.infer<typeof ResumeExecuteFlowJobData>
+export type ResumeExecuteWorkflowJobData = z.infer<typeof ResumeExecuteWorkflowJobData>
 
-export const ExecuteFlowJobData = z.discriminatedUnion('executionType', [BeginExecuteFlowJobData, ResumeExecuteFlowJobData])
-export type ExecuteFlowJobData = z.infer<typeof ExecuteFlowJobData>
+export const ExecuteWorkflowJobData = z.discriminatedUnion('executionType', [BeginExecuteWorkflowJobData, ResumeExecuteWorkflowJobData])
+export type ExecuteWorkflowJobData = z.infer<typeof ExecuteWorkflowJobData>
 
 export const WebhookJobData = z.object({
     workspaceId: z.string(),
@@ -158,9 +158,9 @@ export const WebhookJobData = z.object({
     requestId: z.string(),
     payload: JobPayload,
     runEnvironment: z.nativeEnum(RunEnvironment),
-    flowId: z.string(),
+    workflowId: z.string(),
     saveSampleData: z.boolean(),
-    flowVersionIdToRun: z.string(),
+    workflowVersionIdToRun: z.string(),
     execute: z.boolean(),
     jobType: z.literal(WorkerJobType.EXECUTE_WEBHOOK),
     parentRunId: z.string().optional(),
@@ -210,8 +210,8 @@ export const ExecuteTriggerHookJobData = z.object({
     platformId: z.string(),
     workspaceId: z.string(),
     schemaVersion: z.number(),
-    flowId: z.string(),
-    flowVersionId: z.string(),
+    workflowId: z.string(),
+    workflowVersionId: z.string(),
     test: z.boolean(),
     hookType: z.nativeEnum(TriggerHookType),
     triggerPayload: TriggerPayload.optional(),
@@ -226,7 +226,7 @@ export const ExecutePropertyJobData = z.object({
     workspaceId: z.string(),
     platformId: z.string(),
     schemaVersion: z.number(),
-    flowVersion: FlowVersion.optional(),
+    workflowVersion: WorkflowVersion.optional(),
     propertyName: z.string(),
     connector: ConnectorPackage,
     actionOrTriggerName: z.string(),
@@ -290,7 +290,7 @@ export type UserInteractionJobDataWithoutWatchingInformation = z.infer<typeof Us
 export const JobData = z.union([
     PollingJobData,
     RenewWebhookJobData,
-    ExecuteFlowJobData,
+    ExecuteWorkflowJobData,
     WebhookJobData,
     UserInteractionJobData,
 ])

@@ -2,11 +2,11 @@
 
 Load this when the user wants the automation to react to a step failing instead of stopping. CODE and CONNECTOR steps support per-step error handling.
 
-- **Enable it**: pass `continueOnFailure: true` on `ap_add_step` (or `ap_update_step`). The flow keeps running when the step fails, and the step gains two outgoing branches: **On success** and **On failure**.
+- **Enable it**: pass `continueOnFailure: true` on `ap_add_step` (or `ap_update_step`). The workflow keeps running when the step fails, and the step gains two outgoing branches: **On success** and **On failure**.
 - **Add steps into a branch**: `ap_add_step` with `parentStepName` = the continue-on-failure step and `stepLocationRelativeToParent` = `INSIDE_ON_SUCCESS_BRANCH` (runs when it succeeded) or `INSIDE_ON_FAILURE_BRANCH` (runs when it failed). Chain further steps in a branch with `AFTER` the last step in that branch. This replaces wiring a separate Router/If just to handle failure.
 - **Read the outcome**: in the On-success branch (or after the step) read its result via `{{stepName['output'].field}}`; in the On-failure branch read the error via `{{stepName['error'].message}}`.
-- Only reach for branches when the user actually wants divergent behavior on failure. For "just don't stop the flow", `continueOnFailure: true` alone is enough. Use `retryOnFailure: true` when they want the step retried before it's considered failed.
-- **Branch placement discipline**: success-branch = steps that depend on the step's output (processing, forwarding, updating); failure-branch = error handling, logging, fallback notifications. After building, call `ap_flow_structure` to verify every step is in the correct branch; if misplaced, `ap_delete_step` + `ap_add_step` to move it.
+- Only reach for branches when the user actually wants divergent behavior on failure. For "just don't stop the workflow", `continueOnFailure: true` alone is enough. Use `retryOnFailure: true` when they want the step retried before it's considered failed.
+- **Branch placement discipline**: success-branch = steps that depend on the step's output (processing, forwarding, updating); failure-branch = error handling, logging, fallback notifications. After building, call `ap_workflow_structure` to verify every step is in the correct branch; if misplaced, `ap_delete_step` + `ap_add_step` to move it.
 
 ## The HTTP connector has its own failure modes — and a trap
 `@fema/connector-http`'s `send_request` exposes a connector-specific `failureMode`, separate from the platform `continueOnFailure` above:
@@ -23,13 +23,13 @@ ROUTER: EXISTS {{step_N['output'].body}} → success | Otherwise → failure
 4xx (not 429) → bad data, retrying won't help; log/alert. 429 → back off and retry. 5xx → retry capped, then alert. timeout/network → retry once, then dead-letter.
 
 ## Resuming a halted run
-With `continueOnFailure` off, the run halts at the failing step with prior outputs intact. `ap_retry_run` offers **FROM_FAILED_STEP** (resume at the failure, reuse prior outputs — cheap) or **ON_LATEST_VERSION** (re-run from the start against the published flow).
+With `continueOnFailure` off, the run halts at the failing step with prior outputs intact. `ap_retry_run` offers **FROM_FAILED_STEP** (resume at the failure, reuse prior outputs — cheap) or **ON_LATEST_VERSION** (re-run from the start against the published workflow).
 
 ## Human approvals block indefinitely
-Approval actions (Slack/Gmail request-approval, Todos "create and wait") pause until a human decides — **no built-in timeout** (paused time doesn't count against the 600 s budget). The return shape varies by connector (`approved` boolean vs a `status` string like `Accepted`/`Rejected`) — **verify with `ap_test_step` before routing on it.** For a timeout, run a separate scheduled "kill-switch" flow, or pre-score with AI and only escalate borderline cases (`ap_load_guide('ai')`).
+Approval actions (Slack/Gmail request-approval, Todos "create and wait") pause until a human decides — **no built-in timeout** (paused time doesn't count against the 600 s budget). The return shape varies by connector (`approved` boolean vs a `status` string like `Accepted`/`Rejected`) — **verify with `ap_test_step` before routing on it.** For a timeout, run a separate scheduled "kill-switch" workflow, or pre-score with AI and only escalate borderline cases (`ap_load_guide('ai')`).
 
 ## Scale & decomposition — the 600 s ceiling
-Split a flow when it risks the runtime ceiling or gets unwieldy (>~25 steps, >2 nesting levels, a loop over hundreds of items):
-- **Free path:** child flows with webhook triggers; the parent's last step POSTs to the child (fire-and-forget → the child must be idempotent — `ap_load_guide('state')`). Each child gets its own 600 s budget.
-- **Sub Flows connector:** a synchronous call with a return value (may require a specific plan — confirm availability before recommending).
-- **Chunk big loops:** loop over chunks of N in the parent, dispatch each chunk to a child flow.
+Split a workflow when it risks the runtime ceiling or gets unwieldy (>~25 steps, >2 nesting levels, a loop over hundreds of items):
+- **Free path:** child workflows with webhook triggers; the parent's last step POSTs to the child (fire-and-forget → the child must be idempotent — `ap_load_guide('state')`). Each child gets its own 600 s budget.
+- **Sub Workflows connector:** a synchronous call with a return value (may require a specific plan — confirm availability before recommending).
+- **Chunk big loops:** loop over chunks of N in the parent, dispatch each chunk to a child workflow.

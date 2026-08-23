@@ -8,7 +8,7 @@ npx @fema/cli <command>
 
 ### benchmark
 
-Creates a flow (webhook trigger → data mapper → return response), publishes it, then load-tests
+Creates a workflow (webhook trigger → data mapper → return response), publishes it, then load-tests
 its synchronous webhook endpoint with [autocannon](https://github.com/mcollina/autocannon).
 Defaults target a local dev environment.
 

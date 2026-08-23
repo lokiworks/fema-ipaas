@@ -1,8 +1,8 @@
-import type { FlowId, UserId, WorkspaceId } from '@fema/core-utils'
+import type { UserId, WorkflowId, WorkspaceId } from '@fema/core-utils'
 import type { RunEnvironment } from '@fema/workflow-core'
 
-type FlowCreated = {
-    flowId: FlowId
+type WorkflowCreated = {
+    workflowId: WorkflowId
 }
 type ConnectorsSearch = {
     target: 'steps' | 'triggers'
@@ -17,13 +17,13 @@ type TemplateSearch = {
 
 type RunCreated = {
     workspaceId: WorkspaceId
-    flowId: FlowId
+    workflowId: WorkflowId
     environment: RunEnvironment
     count: number
 }
 
-type FlowPublished = {
-    flowId: FlowId
+type WorkflowPublished = {
+    workflowId: WorkflowId
 }
 
 type SignedUp = {
@@ -55,26 +55,26 @@ type CaptchaUnavailable = {
 type QuotaAlert = {
     percentageUsed: number
 }
-type FlowImported = {
+type WorkflowImported = {
     id: string
     name: string
     location:
-    | 'import flow view'
+    | 'import workflow view'
     | 'inside the builder'
-    | 'import flow by uri encoded query param'
+    | 'import workflow by uri encoded query param'
     tab?: string
 }
-type FlowImportedUsingFile = {
+type WorkflowImportedUsingFile = {
     location: 'inside dashboard' | 'inside the builder'
     multiple: boolean
 }
 
-type FlowIssueClicked = {
-    flowId: string
+type WorkflowIssueClicked = {
+    workflowId: string
 }
 
-type FlowIssueResolved = {
-    flowId: string
+type WorkflowIssueResolved = {
+    workflowId: string
 }
 
 type RequestTrialSubmitted = {
@@ -118,8 +118,8 @@ type Referral = {
     referredUserId: UserId
 }
 
-type FlowShared = {
-    flowId: FlowId
+type WorkflowShared = {
+    workflowId: WorkflowId
     workspaceId: WorkspaceId
 }
 
@@ -128,7 +128,7 @@ type OpenedFromDashboard = {
 }
 
 type FormsViewed = {
-    flowId: string
+    workflowId: string
     workspaceId: string
     formProps: Record<string, unknown>
 }
@@ -141,7 +141,7 @@ type UserInvited = {
 
 type TriggerFailuresExceeded = {
     workspaceId: string
-    flowId: string
+    workflowId: string
     connectorName: string
     connectorVersion: string
 }
@@ -214,22 +214,22 @@ export enum TelemetryEventName {
     REQUEST_TRIAL_CLICKED = 'request.trial.clicked',
     REQUEST_TRIAL_SUBMITTED = 'request.trial.submitted',
     KEY_ACTIVATED = 'key.activated',
-    FLOW_ISSUE_CLICKED = 'flow.issue.clicked',
-    FLOW_ISSUE_RESOLVED = 'flow.issue.resolved',
+    WORKFLOW_ISSUE_CLICKED = 'workflow.issue.clicked',
+    WORKFLOW_ISSUE_RESOLVED = 'workflow.issue.resolved',
     USER_INVITED = 'user.invited',
     UPGRADE_POPUP = 'upgrade.popup',
-    CREATED_FLOW = 'flow.created',
+    CREATED_WORKFLOW = 'workflow.created',
     DEMO_IMPORTED = 'demo.imported',
     EXECUTION_CREATED = 'run.created',
-    FLOW_PUBLISHED = 'flow.published',
-    /**used with templates dialog + import flow component + flows imported by uri query param*/
-    FLOW_IMPORTED = 'flow.imported',
-    /**used only with import flow dialog*/
-    FLOW_IMPORTED_USING_FILE = 'flow.imported.using.file',
+    WORKFLOW_PUBLISHED = 'workflow.published',
+    /**used with templates dialog + import workflow component + workflows imported by uri query param*/
+    WORKFLOW_IMPORTED = 'workflow.imported',
+    /**used only with import workflow dialog*/
+    WORKFLOW_IMPORTED_USING_FILE = 'workflow.imported.using.file',
     CONNECTORS_SEARCH = 'connectors.search',
     REFERRAL = 'referral',
     REFERRAL_LINK_COPIED = 'referral.link.copied',
-    FLOW_SHARED = 'flow.shared',
+    WORKFLOW_SHARED = 'workflow.shared',
     TEMPLATE_SEARCH = 'template.search',
     FORMS_VIEWED = 'forms.viewed',
     FORMS_SUBMITTED = 'forms.submitted',
@@ -291,29 +291,29 @@ export type TelemetryEvent =
   TelemetryEventName.REQUEST_TRIAL_SUBMITTED,
   RequestTrialSubmitted
   >
-  | BaseTelemetryEvent<TelemetryEventName.FLOW_ISSUE_CLICKED, FlowIssueClicked>
+  | BaseTelemetryEvent<TelemetryEventName.WORKFLOW_ISSUE_CLICKED, WorkflowIssueClicked>
   | BaseTelemetryEvent<
-  TelemetryEventName.FLOW_ISSUE_RESOLVED,
-  FlowIssueResolved
+  TelemetryEventName.WORKFLOW_ISSUE_RESOLVED,
+  WorkflowIssueResolved
   >
   | BaseTelemetryEvent<TelemetryEventName.UPGRADE_CLICKED, UpgradeClicked>
   | BaseTelemetryEvent<TelemetryEventName.UPGRADE_POPUP, UpgradePopup>
   | BaseTelemetryEvent<TelemetryEventName.EXECUTION_CREATED, RunCreated>
-  | BaseTelemetryEvent<TelemetryEventName.FLOW_PUBLISHED, FlowPublished>
+  | BaseTelemetryEvent<TelemetryEventName.WORKFLOW_PUBLISHED, WorkflowPublished>
   | BaseTelemetryEvent<TelemetryEventName.QUOTA_ALERT, QuotaAlert>
-  | BaseTelemetryEvent<TelemetryEventName.CREATED_FLOW, FlowCreated>
+  | BaseTelemetryEvent<TelemetryEventName.CREATED_WORKFLOW, WorkflowCreated>
   | BaseTelemetryEvent<TelemetryEventName.TEMPLATE_SEARCH, TemplateSearch>
   | BaseTelemetryEvent<TelemetryEventName.CONNECTORS_SEARCH, ConnectorsSearch>
-  | BaseTelemetryEvent<TelemetryEventName.FLOW_IMPORTED, FlowImported>
+  | BaseTelemetryEvent<TelemetryEventName.WORKFLOW_IMPORTED, WorkflowImported>
   | BaseTelemetryEvent<
-  TelemetryEventName.FLOW_IMPORTED_USING_FILE,
-  FlowImportedUsingFile
+  TelemetryEventName.WORKFLOW_IMPORTED_USING_FILE,
+  WorkflowImportedUsingFile
   >
   | BaseTelemetryEvent<
   TelemetryEventName.REFERRAL_LINK_COPIED,
   ReferralLinkCopied
   >
-  | BaseTelemetryEvent<TelemetryEventName.FLOW_SHARED, FlowShared>
+  | BaseTelemetryEvent<TelemetryEventName.WORKFLOW_SHARED, WorkflowShared>
   | BaseTelemetryEvent<TelemetryEventName.DEMO_IMPORTED, Record<string, never>>
   | BaseTelemetryEvent<
   TelemetryEventName.OPENED_PRICING_FROM_DASHBOARD,

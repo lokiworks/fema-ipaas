@@ -11,7 +11,7 @@ export const delayUntilAction = createAction({
   displayName: 'Delay Until',
   description:
     'Delays the execution of the next action until a given timestamp',
-  aiMetadata: { description: 'Suspends the flow until one absolute date/time (ISO and other parseable formats) and then continues with the next step; a timestamp already in the past resumes immediately, and waits longer than a minute suspend the run rather than sleeping in-process. Choose this when the resume point is a known calendar instant, and prefer Delay For when you only know a relative duration. Requires the target timestamp, which must be parseable - an unparseable value throws instead of continuing - and the wait cannot exceed the instance paused-flow timeout; idempotent, it changes no data.', idempotent: true },
+  aiMetadata: { description: 'Suspends the workflow until one absolute date/time (ISO and other parseable formats) and then continues with the next step; a timestamp already in the past resumes immediately, and waits longer than a minute suspend the run rather than sleeping in-process. Choose this when the resume point is a known calendar instant, and prefer Delay For when you only know a relative duration. Requires the target timestamp, which must be parseable - an unparseable value throws instead of continuing - and the wait cannot exceed the instance paused-workflow timeout; idempotent, it changes no data.', idempotent: true },
   errorHandlingOptions: {
     continueOnFailure: {
       hide: true,
@@ -47,7 +47,7 @@ export const delayUntilAction = createAction({
         success: true,
       };
     } else if (delayInMs > 1 * 60 * 1000) {
-      // use flow pause
+      // use workflow pause
       const currentTime = new Date();
       const futureTime = dayjs(currentTime.getTime() + delayInMs);
       const waitpoint = await ctx.run.createWaitpoint({
@@ -80,7 +80,7 @@ export const delayUntilAction = createAction({
  * comparison against `delayInMs` false and falling through to
  * `setTimeout(resolve, NaN)` — coerced to 1ms. The step then reported
  * `success: true` with a null `delayTill` after waiting no time at all, so a
- * flow that was meant to wait silently did not. Fail loudly instead.
+ * workflow that was meant to wait silently did not. Fail loudly instead.
  */
 function parseTimestampOrThrow(timestamp: string): Date {
   const parsed = new Date(timestamp);

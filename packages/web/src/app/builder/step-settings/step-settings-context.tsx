@@ -4,7 +4,11 @@ import {
   connectorPropertiesUtils,
 } from '@fema/connector-sdk';
 import { setAtPath } from '@fema/core-utils';
-import { FlowAction, FlowTrigger, PropertyExecutionType } from '@fema/shared';
+import {
+  WorkflowAction,
+  WorkflowTrigger,
+  PropertyExecutionType,
+} from '@fema/shared';
 import {
   createContext,
   ReactNode,
@@ -35,7 +39,7 @@ const createUpdatedSchemaKey = (propertyKey: string) => {
 };
 
 export type StepSettingsContextState = {
-  selectedStep: FlowAction | FlowTrigger;
+  selectedStep: WorkflowAction | WorkflowTrigger;
   connectorModel: ConnectorMetadataModel | undefined;
   connectorModelNotFound: boolean;
   formSchema: ZodObject<any>;
@@ -48,7 +52,7 @@ export type StepSettingsContextState = {
 };
 
 export type StepSettingsProviderProps = {
-  selectedStep: FlowAction | FlowTrigger;
+  selectedStep: WorkflowAction | WorkflowTrigger;
   connectorModel: ConnectorMetadataModel | undefined;
   connectorModelNotFound: boolean;
   children: ReactNode;

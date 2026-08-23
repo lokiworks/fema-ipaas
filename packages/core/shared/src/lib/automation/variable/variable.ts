@@ -28,5 +28,5 @@ export const VariableWithoutSensitiveData = z.object({
     ownerId: Nullable(z.string()),
     owner: Nullable(UserWithMetaInformation),
     metadata: Nullable(Metadata),
-}).describe('A workspace-scoped encrypted variable that flows can reference via {{variables[\'NAME\']}}.')
+}).describe('A workspace-scoped encrypted variable that workflows can reference via {{variables[\'NAME\']}}.')
 export type VariableWithoutSensitiveData = z.infer<typeof VariableWithoutSensitiveData>

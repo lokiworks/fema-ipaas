@@ -9,7 +9,7 @@ export const delay = createConnector({
   minimumSupportedRelease: '0.82.0',
   logoUrl: 'https://cdn.fema.local/connectors/new-core/delay.svg',
   authors: ["Nilesh","kishanprmr","MoShizzle","AbdulTheActiveConnectorr","khaledmashaly","abuaboud"],
-  categories: [ConnectorCategory.CORE, ConnectorCategory.FLOW_CONTROL],
+  categories: [ConnectorCategory.CORE, ConnectorCategory.WORKFLOW_CONTROL],
   auth: ConnectorAuth.None(),
   actions: [
     delayForAction, // Delay for a fixed duration

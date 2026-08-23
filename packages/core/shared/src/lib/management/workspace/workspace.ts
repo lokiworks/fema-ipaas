@@ -44,15 +44,15 @@ export const Workspace = z.object({
     icon: WorkspaceIcon,
     externalId: Nullable(z.string()),
     releasesEnabled: z.boolean(),
-    notifyFlowOwnerOnFailure: z.boolean(),
+    notifyWorkflowOwnerOnFailure: z.boolean(),
     metadata: Nullable(Metadata),
     workerGroupId: Nullable(z.string()),
     executionDataRetentionDays: Nullable(z.number()),
 })
 
 const workspaceAnalytics = z.object({
-    totalFlows: z.number(),
-    activeFlows: z.number(),
+    totalWorkflows: z.number(),
+    activeWorkflows: z.number(),
 })
 export type Workspace = z.infer<typeof Workspace>
 

@@ -1,14 +1,14 @@
 import { isNil } from '@fema/core-utils'
-import { BeginExecuteFlowJobData, ExecuteFlowJobData, LATEST_JOB_DATA_SCHEMA_VERSION, StreamStepProgress, WebhookJobData, WorkerJobType } from '@fema/shared'
+import { BeginExecuteWorkflowJobData, ExecuteWorkflowJobData, LATEST_JOB_DATA_SCHEMA_VERSION, StreamStepProgress, WebhookJobData, WorkerJobType } from '@fema/shared'
 import { Job, Queue } from 'bullmq'
 import { FastifyBaseLogger } from 'fastify'
 import { redisConnections } from '../../database/redis-connections'
-import { flowVersionRepo } from '../../flows/flow-version/flow-version.service'
+import { workflowVersionRepo } from '../../workflows/workflow-version/workflow-version.service'
 import { workspaceService } from '../../workspace/workspace-service'
 import { jobQueue, JobType } from '../job-queue/job-queue'
 
-type LegacyOneTimeJobData = Pick<BeginExecuteFlowJobData, 'runId' | 'workspaceId' | 'flowVersionId' | 'environment' | 'workerHandlerId' | 'httpRequestId' | 'payload' | 'executeTrigger' | 'executionType' | 'stepNameToTest' | 'sampleData'> & { progressUpdateType: string }
-type LegacyWebhookJobData = Pick<WebhookJobData, 'workspaceId' | 'schemaVersion' | 'requestId' | 'payload' | 'runEnvironment' | 'flowId' | 'saveSampleData' | 'flowVersionIdToRun' | 'execute' | 'parentRunId' | 'failParentOnFailure'>
+type LegacyOneTimeJobData = Pick<BeginExecuteWorkflowJobData, 'runId' | 'workspaceId' | 'workflowVersionId' | 'environment' | 'workerHandlerId' | 'httpRequestId' | 'payload' | 'executeTrigger' | 'executionType' | 'stepNameToTest' | 'sampleData'> & { progressUpdateType: string }
+type LegacyWebhookJobData = Pick<WebhookJobData, 'workspaceId' | 'schemaVersion' | 'requestId' | 'payload' | 'runEnvironment' | 'workflowId' | 'saveSampleData' | 'workflowVersionIdToRun' | 'execute' | 'parentRunId' | 'failParentOnFailure'>
 const migratedKey = 'unified_queue_migrated'
 
 export const unifyOldQueuesIntoOne = (log: FastifyBaseLogger) => ({
@@ -54,27 +54,27 @@ async function migrateOneTimeJobs(log: FastifyBaseLogger): Promise<boolean> {
                 migratedOneTimeJobs,
             }, '[unifyOldQueuesIntoOne] Migrated one time jobs')
         }
-        const flowVersion = await flowVersionRepo().findOne({
+        const workflowVersion = await workflowVersionRepo().findOne({
             where: {
-                id: casedData.flowVersionId,
+                id: casedData.workflowVersionId,
             },
             select: {
-                flowId: true,
+                workflowId: true,
             },
         })
-        if (!isNil(flowVersion?.flowId)) {
+        if (!isNil(workflowVersion?.workflowId)) {
             const { progressUpdateType: legacyProgressUpdateType, ...restCasedData } = casedData
             await jobQueue(log).add({
                 id: job.id!,
                 type: JobType.ONE_TIME,
                 data: {
                     ...restCasedData,
-                    streamStepProgress: legacyProgressUpdateType === 'TEST_FLOW' ? StreamStepProgress.WEBSOCKET : StreamStepProgress.NONE,
-                    flowId: flowVersion.flowId,
+                    streamStepProgress: legacyProgressUpdateType === 'TEST_WORKFLOW' ? StreamStepProgress.WEBSOCKET : StreamStepProgress.NONE,
+                    workflowId: workflowVersion.workflowId,
                     platformId: await workspaceService(log).getPlatformId(casedData.workspaceId),
                     schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
-                    jobType: WorkerJobType.EXECUTE_FLOW,
-                } as ExecuteFlowJobData,
+                    jobType: WorkerJobType.EXECUTE_WORKFLOW,
+                } as ExecuteWorkflowJobData,
             })
         }
         await job.remove()

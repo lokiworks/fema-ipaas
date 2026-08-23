@@ -3,13 +3,13 @@ title: "Waitpoints"
 icon: "hourglass-half"
 ---
 
-A **waitpoint** is the durable row that represents a paused step on a flow run. The flow run row only carries status (`PAUSED`, `RUNNING`, …); the *why* lives on the waitpoint.
+A **waitpoint** is the durable row that represents a paused step on a workflow run. The workflow run row only carries status (`PAUSED`, `RUNNING`, …); the *why* lives on the waitpoint.
 
 ```mermaid
 stateDiagram-v2
     [*] --> PENDING: createWaitpoint
     PENDING --> COMPLETED: resume signal
-    COMPLETED --> [*]: flow resumes
+    COMPLETED --> [*]: workflow resumes
     [*] --> COMPLETED: pre-completed (resume arrived first)
 ```
 
@@ -31,8 +31,8 @@ stateDiagram-v2
 
 ## Lifecycle
 
-1. **Create.** The connector calls `ctx.run.createWaitpoint({ type, ... })` + `ctx.run.waitForWaitpoint(id)`. The engine marks the step as `paused` and asks the server to insert a `PENDING` row. The insert is idempotent on the `(flow run, step)` pair.
-2. **Checkpoint.** The engine serializes the execution context and transitions the flow run to `PAUSED`.
+1. **Create.** The connector calls `ctx.run.createWaitpoint({ type, ... })` + `ctx.run.waitForWaitpoint(id)`. The engine marks the step as `paused` and asks the server to insert a `PENDING` row. The insert is idempotent on the `(workflow run, step)` pair.
+2. **Checkpoint.** The engine serializes the execution context and transitions the workflow run to `PAUSED`.
 3. **Resume signal.** Either an HTTP call on the resume URL or the scheduled job firing. Both carry `{ body, headers, queryParams }`.
 4. **Re-run.** A worker rebuilds the context and re-invokes the same action with `ctx.executionType === ExecutionType.RESUME` and `ctx.resumePayload` populated.
 
@@ -57,10 +57,10 @@ sequenceDiagram
 
 ## Resume-before-pause race
 
-A callback can arrive before the flow run has finished writing `PAUSED` to disk. The protocol absorbs the race:
+A callback can arrive before the workflow run has finished writing `PAUSED` to disk. The protocol absorbs the race:
 
 - Completing a waitpoint takes a write lock on the `PENDING` row. If it exists, it flips to `COMPLETED` and stores the `resumePayload`. If it does not, a **pre-completed** row is inserted instead.
-- When the flow run transitions to `PAUSED`, the server checks for a matching `COMPLETED` waitpoint and enqueues the resume job immediately.
+- When the workflow run transitions to `PAUSED`, the server checks for a matching `COMPLETED` waitpoint and enqueues the resume job immediately.
 
 Duplicate callbacks are absorbed by the uniqueness constraint; the engine never processes a resume twice.
 
@@ -70,8 +70,8 @@ Duplicate callbacks are absorbed by the uniqueness constraint; the engine never 
 | --- | --- | --- |
 | `POST` | `/v1/waitpoints` | Engine-only. Creates a `PENDING` waitpoint, returns its resume URL. |
 | `ALL` | `/v1/executions/:id/waitpoints/:waitpointId` | Resume, async. |
-| `ALL` | `/v1/executions/:id/waitpoints/:waitpointId/sync` | Resume, sync. The HTTP response is whatever the flow produces after resuming. |
+| `ALL` | `/v1/executions/:id/waitpoints/:waitpointId/sync` | Resume, sync. The HTTP response is whatever the workflow produces after resuming. |
 
 ## Connector API
 
-Connector authors create waitpoints with `ctx.run.createWaitpoint` / `ctx.run.waitForWaitpoint`. Patterns for `WEBHOOK`, `DELAY`, and `responseToSend` are in Flow Control.
+Connector authors create waitpoints with `ctx.run.createWaitpoint` / `ctx.run.waitForWaitpoint`. Patterns for `WEBHOOK`, `DELAY`, and `responseToSend` are in Workflow Control.

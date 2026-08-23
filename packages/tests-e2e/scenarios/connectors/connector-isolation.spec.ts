@@ -4,12 +4,12 @@ import { test } from '../../../fixtures';
  * Warmup resilience smoke test.
  *
  * Triggers a connector sync (which may cause warmup for some connectors) and then
- * verifies the worker remains healthy by successfully running a Webhook flow.
+ * verifies the worker remains healthy by successfully running a Webhook workflow.
  * A broken connector published with workspace:* dependencies must not prevent other
- * flows from executing.
+ * workflows from executing.
  */
 test.describe('Connector isolation — CE', () => {
-  test('worker stays healthy after connector sync and can execute a webhook flow', async ({ page, automationsPage, builderPage, request }) => {
+  test('worker stays healthy after connector sync and can execute a webhook workflow', async ({ page, automationsPage, builderPage, request }) => {
     test.setTimeout(120000);
 
     // Trigger a connector sync — this exercises the warmup path
@@ -19,7 +19,7 @@ test.describe('Connector isolation — CE', () => {
     });
 
     await automationsPage.waitFor();
-    await automationsPage.newFlowFromScratch();
+    await automationsPage.newWorkflowFromScratch();
 
     await builderPage.selectInitialTrigger({
       connector: 'Webhook',
@@ -46,7 +46,7 @@ test.describe('Connector isolation — CE', () => {
     );
 
     await page.waitForTimeout(1000);
-    await builderPage.publishFlow();
+    await builderPage.publishWorkflow();
 
     await builderPage.expectSyncWebhookResponse({
       url: `${webhookUrl}/sync?runVersion=${runVersion}`,

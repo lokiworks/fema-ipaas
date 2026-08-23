@@ -71,22 +71,22 @@ export const workspacesTableColumns = ({
         return (
           <div className="text-left tabular-nums">
             <span className="font-medium">
-              {row.original.analytics.activeFlows}
+              {row.original.analytics.activeWorkflows}
             </span>
             <span className="text-muted-foreground">
-              {` / ${row.original.analytics.totalFlows}`}
+              {` / ${row.original.analytics.totalWorkflows}`}
             </span>
           </div>
         );
       },
     },
     {
-      accessorKey: 'flows',
+      accessorKey: 'workflows',
       size: 120,
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          title={t('Active Flows')}
+          title={t('Active Workflows')}
           icon={Workflow}
           className="w-full"
         />
@@ -95,10 +95,10 @@ export const workspacesTableColumns = ({
         return (
           <div className="text-left tabular-nums">
             <span className="font-medium">
-              {row.original.analytics.activeFlows}
+              {row.original.analytics.activeWorkflows}
             </span>
             <span className="text-muted-foreground">
-              {` / ${row.original.analytics.totalFlows}`}
+              {` / ${row.original.analytics.totalWorkflows}`}
             </span>
           </div>
         );

@@ -1,6 +1,6 @@
 import { AIProviderName, apId, assertNotNullOrUndefined, WorkspaceRole, RoleType } from '@fema/core-utils'
 import { LATEST_CONTEXT_VERSION, ConnectorMetadata } from '@fema/connector-sdk'
-import { AIProvider, Connection, ConnectionScope, ConnectionStatus, ConnectionType, ApplicationEvent, ApplicationEventName, ColorName, File, FileCompression, FileLocation, FileType, Flow, FlowOperationStatus, Execution, ExecutionStatus, FlowStatus, FlowTriggerType, FlowVersion, FlowVersionState, Folder, InvitationStatus, InvitationType, LATEST_FLOW_SCHEMA_VERSION, OtpModel, OtpState, OtpType, PackageType, ConnectorsFilterType, ConnectorType, Platform, PlatformPlan, PlatformRole, Workspace, WorkspaceIcon, WorkspaceType, RunEnvironment, Template, TemplateStatus, TemplateType, User, UserIdentity, UserIdentityProvider, UserInvitation, UserStatus } from '@fema/shared'
+import { AIProvider, Connection, ConnectionScope, ConnectionStatus, ConnectionType, ApplicationEvent, ApplicationEventName, ColorName, File, FileCompression, FileLocation, FileType, Workflow, WorkflowOperationStatus, Execution, ExecutionStatus, WorkflowStatus, WorkflowTriggerType, WorkflowVersion, WorkflowVersionState, Folder, InvitationStatus, InvitationType, LATEST_WORKFLOW_SCHEMA_VERSION, OtpModel, OtpState, OtpType, PackageType, ConnectorsFilterType, ConnectorType, Platform, PlatformPlan, PlatformRole, Workspace, WorkspaceIcon, WorkspaceType, RunEnvironment, Template, TemplateStatus, TemplateType, User, UserIdentity, UserIdentityProvider, UserInvitation, UserStatus } from '@fema/shared'
 import { faker } from '@faker-js/faker'
 import bcrypt from 'bcrypt'
 import dayjs from 'dayjs'
@@ -72,7 +72,7 @@ export const createMockTemplate = (
         created: template?.created ?? faker.date.recent().toISOString(),
         updated: template?.updated ?? faker.date.recent().toISOString(),
         connectors: template?.connectors ?? [],
-        flows: template?.flows ?? [createMockFlowVersion()],
+        workflows: template?.workflows ?? [createMockWorkflowVersion()],
         platformId: template?.platformId ?? apId(),
         name: template?.name ?? faker.lorem.word(),
         type: template?.type ?? TemplateType.CUSTOM,
@@ -97,7 +97,7 @@ export const createMockPlan = (plan?: Partial<WorkspacePlan>): WorkspacePlan => 
         locked: plan?.locked ?? false,
         connectors: plan?.connectors ?? [],
         connectorsFilterType: plan?.connectorsFilterType ?? ConnectorsFilterType.NONE,
-        activeFlowsLimit: plan?.activeFlowsLimit ?? null,
+        activeWorkflowsLimit: plan?.activeWorkflowsLimit ?? null,
     }
 }
 
@@ -130,7 +130,7 @@ export const createMockWorkspace = (workspace?: Partial<Workspace>): Workspace =
         platformId: workspace?.platformId ?? apId(),
         externalId: workspace?.externalId ?? apId(),
         releasesEnabled: workspace?.releasesEnabled ?? false,
-        notifyFlowOwnerOnFailure: workspace?.notifyFlowOwnerOnFailure ?? false,
+        notifyWorkflowOwnerOnFailure: workspace?.notifyWorkflowOwnerOnFailure ?? false,
         metadata: workspace?.metadata ?? null,
         type: workspace?.type ?? WorkspaceType.TEAM,
         poolId: workspace?.poolId ?? null,
@@ -386,13 +386,13 @@ export const createMockExecution = (execution?: Partial<Execution>): Execution =
         created: execution?.created ?? faker.date.recent().toISOString(),
         updated: execution?.updated ?? faker.date.recent().toISOString(),
         workspaceId: execution?.workspaceId ?? apId(),
-        flowId: execution?.flowId ?? apId(),
+        workflowId: execution?.workflowId ?? apId(),
         tags: execution?.tags ?? [],
         steps: {},
         failParentOnFailure: execution?.failParentOnFailure ?? false,
         parentRunId: execution?.parentRunId ?? undefined,
-        flowVersionId: execution?.flowVersionId ?? apId(),
-        flowVersion: execution?.flowVersion,
+        workflowVersionId: execution?.workflowVersionId ?? apId(),
+        workflowVersion: execution?.workflowVersion,
         logsFileId: execution?.logsFileId ?? null,
         status: execution?.status ?? faker.helpers.enumValue(ExecutionStatus),
         startTime: execution?.startTime ?? faker.date.recent().toISOString(),
@@ -402,25 +402,25 @@ export const createMockExecution = (execution?: Partial<Execution>): Execution =
     }
 }
 
-export const createMockFlow = (flow?: Partial<Flow>): Flow => {
+export const createMockWorkflow = (workflow?: Partial<Workflow>): Workflow => {
     return {
-        id: flow?.id ?? apId(),
-        created: flow?.created ?? faker.date.recent().toISOString(),
-        updated: flow?.updated ?? faker.date.recent().toISOString(),
-        workspaceId: flow?.workspaceId ?? apId(),
-        status: flow?.status ?? faker.helpers.enumValue(FlowStatus),
-        folderId: flow?.folderId ?? null,
-        operationStatus: flow?.operationStatus ?? FlowOperationStatus.NONE,
-        publishedVersionId: flow?.publishedVersionId ?? null,
-        externalId: flow?.externalId ?? apId(),
+        id: workflow?.id ?? apId(),
+        created: workflow?.created ?? faker.date.recent().toISOString(),
+        updated: workflow?.updated ?? faker.date.recent().toISOString(),
+        workspaceId: workflow?.workspaceId ?? apId(),
+        status: workflow?.status ?? faker.helpers.enumValue(WorkflowStatus),
+        folderId: workflow?.folderId ?? null,
+        operationStatus: workflow?.operationStatus ?? WorkflowOperationStatus.NONE,
+        publishedVersionId: workflow?.publishedVersionId ?? null,
+        externalId: workflow?.externalId ?? apId(),
     }
 }
 
-export const createMockFlowVersion = (
-    flowVersion?: Partial<FlowVersion>,
-): FlowVersion => {
+export const createMockWorkflowVersion = (
+    workflowVersion?: Partial<WorkflowVersion>,
+): WorkflowVersion => {
     const emptyTrigger = {
-        type: FlowTriggerType.EMPTY,
+        type: WorkflowTriggerType.EMPTY,
         name: 'trigger',
         settings: {},
         valid: false,
@@ -429,20 +429,20 @@ export const createMockFlowVersion = (
     } as const
 
     return {
-        id: flowVersion?.id ?? apId(),
-        created: flowVersion?.created ?? faker.date.recent().toISOString(),
-        updated: flowVersion?.updated ?? faker.date.recent().toISOString(),
-        displayName: flowVersion?.displayName ?? faker.word.words(),
-        flowId: flowVersion?.flowId ?? apId(),
-        agentIds: flowVersion?.agentIds ?? [],
-        trigger: flowVersion?.trigger ?? emptyTrigger,
-        connectionIds: flowVersion?.connectionIds ?? [],
-        state: flowVersion?.state ?? faker.helpers.enumValue(FlowVersionState),
-        updatedBy: flowVersion?.updatedBy,
-        valid: flowVersion?.valid ?? faker.datatype.boolean(),
-        notes: flowVersion?.notes ?? [],
-        schemaVersion: flowVersion?.schemaVersion ?? LATEST_FLOW_SCHEMA_VERSION,
-        backupFiles: flowVersion?.backupFiles ?? null,
+        id: workflowVersion?.id ?? apId(),
+        created: workflowVersion?.created ?? faker.date.recent().toISOString(),
+        updated: workflowVersion?.updated ?? faker.date.recent().toISOString(),
+        displayName: workflowVersion?.displayName ?? faker.word.words(),
+        workflowId: workflowVersion?.workflowId ?? apId(),
+        agentIds: workflowVersion?.agentIds ?? [],
+        trigger: workflowVersion?.trigger ?? emptyTrigger,
+        connectionIds: workflowVersion?.connectionIds ?? [],
+        state: workflowVersion?.state ?? faker.helpers.enumValue(WorkflowVersionState),
+        updatedBy: workflowVersion?.updatedBy,
+        valid: workflowVersion?.valid ?? faker.datatype.boolean(),
+        notes: workflowVersion?.notes ?? [],
+        schemaVersion: workflowVersion?.schemaVersion ?? LATEST_WORKFLOW_SCHEMA_VERSION,
+        backupFiles: workflowVersion?.backupFiles ?? null,
     }
 }
 
@@ -524,9 +524,9 @@ export const createMockCell = ({ recordId, fieldId, workspaceId }: { recordId: s
 type Solution = {
     table: Table
     connection: Connection<ConnectionType.SECRET_TEXT>
-    flow: Flow
+    workflow: Workflow
     execution: Execution
-    flowVersion: FlowVersion
+    workflowVersion: WorkflowVersion
     cell: Cell
 }
 
@@ -536,28 +536,28 @@ export const createMockSolutionAndSave = async ({ workspaceId, platformId, userI
     const record = createMockRecord({ tableId: table.id, workspaceId })
     const cell = createMockCell({ recordId: record.id, fieldId: field.id, workspaceId })
     const connection = createMockConnection({ workspaceIds: [workspaceId], platformId }, userId)
-    const flow = createMockFlow({ workspaceId })
-    const flowVersion = createMockFlowVersion({ flowId: flow.id })
-    const execution = createMockExecution({ workspaceId, flowId: flow.id, flowVersionId: flowVersion.id })
+    const workflow = createMockWorkflow({ workspaceId })
+    const workflowVersion = createMockWorkflowVersion({ workflowId: workflow.id })
+    const execution = createMockExecution({ workspaceId, workflowId: workflow.id, workflowVersionId: workflowVersion.id })
     await databaseConnection().getRepository('table').save([table])
     await databaseConnection().getRepository('field').save([field])
     await databaseConnection().getRepository('record').save([record])
     await databaseConnection().getRepository('cell').save([cell])
     await databaseConnection().getRepository('connection').save([connection])
-    await databaseConnection().getRepository('flow').save([flow])
-    await databaseConnection().getRepository('flow_version').save([flowVersion])
+    await databaseConnection().getRepository('workflow').save([workflow])
+    await databaseConnection().getRepository('workflow_version').save([workflowVersion])
     await databaseConnection().getRepository('execution').save([execution])
-    return { table, connection, flow, execution, flowVersion, cell }
+    return { table, connection, workflow, execution, workflowVersion, cell }
 }
 
 export const checkIfSolutionExistsInDb = async (solution: Solution): Promise<boolean> => {
     const table = await databaseConnection().getRepository('table').findOneBy({ id: solution.table.id })
     const connection = await databaseConnection().getRepository('connection').findOneBy({ id: solution.connection.id })
-    const flow = await databaseConnection().getRepository('flow').findOneBy({ id: solution.flow.id })
+    const workflow = await databaseConnection().getRepository('workflow').findOneBy({ id: solution.workflow.id })
     const execution = await databaseConnection().getRepository('execution').findOneBy({ id: solution.execution.id })
-    const flowVersion = await databaseConnection().getRepository('flow_version').findOneBy({ id: solution.flowVersion.id })
+    const workflowVersion = await databaseConnection().getRepository('workflow_version').findOneBy({ id: solution.workflowVersion.id })
     const cell = await databaseConnection().getRepository('cell').findOneBy({ id: solution.cell.id })
-    return table !== null && connection !== null && flow !== null && execution !== null && flowVersion !== null && cell !== null
+    return table !== null && connection !== null && workflow !== null && execution !== null && workflowVersion !== null && cell !== null
 }
 export const mockBasicUser = async ({ userIdentity, user }: { userIdentity?: Partial<UserIdentity>, user?: Partial<User> }) => {
     const mockUserIdentity = createMockUserIdentity({

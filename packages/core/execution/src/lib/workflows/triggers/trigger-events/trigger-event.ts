@@ -1,0 +1,20 @@
+import { z } from 'zod'
+import { BaseModel } from '@fema/core-utils'
+
+export type TriggerEventId = string
+
+export const TriggerEvent = z.object({
+    id: z.string(),
+    workspaceId: z.string(),
+    workflowId: z.string(),
+    sourceName: z.string(),
+    fileId: z.string(),
+})
+export type TriggerEvent = z.infer<typeof TriggerEvent> & BaseModel<TriggerEventId>
+
+
+export const TriggerEventWithPayload = TriggerEvent.extend({
+    payload: z.unknown(),
+})
+
+export type TriggerEventWithPayload = z.infer<typeof TriggerEventWithPayload>

@@ -201,8 +201,8 @@ export const ReplaceConnectionsRequestBody = z.object({
 })
 export type ReplaceConnectionsRequestBody = z.infer<typeof ReplaceConnectionsRequestBody>
 
-export const ListFlowsFromConnectionRequestQuery = z.object({
+export const ListWorkflowsFromConnectionRequestQuery = z.object({
     sourceConnectionIds: z.array(z.string()),
     workspaceId: z.string(),
 })
-export type ListFlowsFromConnectionRequestQuery = z.infer<typeof ListFlowsFromConnectionRequestQuery>
+export type ListWorkflowsFromConnectionRequestQuery = z.infer<typeof ListWorkflowsFromConnectionRequestQuery>

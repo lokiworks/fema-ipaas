@@ -1,10 +1,10 @@
 import { executionJournal } from '../../../src/lib/execution/state/execution-journal'
 import { GenericStepOutput, LoopStepOutput, StepOutput, StepOutputStatus } from '../../../src/lib/execution/state/step-output'
-import { FlowActionType } from '../../../src/lib/flows/actions/action'
+import { WorkflowActionType } from '../../../src/lib/workflows/actions/action'
 
 function createCodeStep(status: StepOutputStatus = StepOutputStatus.SUCCEEDED): StepOutput {
     return GenericStepOutput.create({
-        type: FlowActionType.CODE,
+        type: WorkflowActionType.CODE,
         status,
         input: {},
     })
@@ -15,15 +15,15 @@ function createLoopWithIterations(iterations: Record<string, StepOutput>[]): Loo
 }
 
 describe('executionJournal.getPathToStep', () => {
-    it('should return correct paths for each step in the flow', () => {
+    it('should return correct paths for each step in the workflow', () => {
         const steps: Record<string, StepOutput> = {
             step1: GenericStepOutput.create({
-                type: FlowActionType.CODE,
+                type: WorkflowActionType.CODE,
                 status: StepOutputStatus.SUCCEEDED,
                 input: {},
             }),
             step2: GenericStepOutput.create({
-                type: FlowActionType.LOOP_ON_ITEMS,
+                type: WorkflowActionType.LOOP_ON_ITEMS,
                 status: StepOutputStatus.SUCCEEDED,
                 input: {},
                 output: {
@@ -32,12 +32,12 @@ describe('executionJournal.getPathToStep', () => {
                     iterations: [
                         {
                             step3: GenericStepOutput.create({
-                                type: FlowActionType.CODE,
+                                type: WorkflowActionType.CODE,
                                 status: StepOutputStatus.SUCCEEDED,
                                 input: {},
                             }),
                             step4: GenericStepOutput.create({
-                                type: FlowActionType.LOOP_ON_ITEMS,
+                                type: WorkflowActionType.LOOP_ON_ITEMS,
                                 status: StepOutputStatus.SUCCEEDED,
                                 input: {},
                                 output: {
@@ -45,7 +45,7 @@ describe('executionJournal.getPathToStep', () => {
                                     index: 0,
                                     iterations: [{
                                         step5: GenericStepOutput.create({
-                                            type: FlowActionType.CODE,
+                                            type: WorkflowActionType.CODE,
                                             status: StepOutputStatus.SUCCEEDED,
                                             input: {},
                                         }),
@@ -55,12 +55,12 @@ describe('executionJournal.getPathToStep', () => {
                         },
                         {
                             step3: GenericStepOutput.create({
-                                type: FlowActionType.CODE,
+                                type: WorkflowActionType.CODE,
                                 status: StepOutputStatus.SUCCEEDED,
                                 input: {},
                             }),
                             step4: GenericStepOutput.create({
-                                type: FlowActionType.LOOP_ON_ITEMS,
+                                type: WorkflowActionType.LOOP_ON_ITEMS,
                                 status: StepOutputStatus.SUCCEEDED,
                                 input: {},
                                 output: {
@@ -68,7 +68,7 @@ describe('executionJournal.getPathToStep', () => {
                                     index: 0,
                                     iterations: [{
                                         step5: GenericStepOutput.create({
-                                            type: FlowActionType.CODE,
+                                            type: WorkflowActionType.CODE,
                                             status: StepOutputStatus.SUCCEEDED,
                                             input: {},
                                         }),
@@ -154,7 +154,7 @@ describe('executionJournal.upsertStep and getStep', () => {
             createLoopIterationIfNotExists: true,
         })
         const loop = steps['loop']
-        expect(loop.type).toBe(FlowActionType.LOOP_ON_ITEMS)
+        expect(loop.type).toBe(WorkflowActionType.LOOP_ON_ITEMS)
         expect(loop.output).toEqual({ item: undefined, index: 0, iterations: [{}, {}, { innerStep: stepOutput }] })
         expect(executionJournal.getStep({ stepName: 'innerStep', path: [['loop', 2]], steps })).toBe(stepOutput)
     })

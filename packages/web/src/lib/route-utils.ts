@@ -5,8 +5,8 @@ import { authenticationSession } from './authentication-session';
 export const routesThatRequireWorkspaceId = {
   runs: '/runs',
   singleRun: '/runs/:runId',
-  flows: '/flows',
-  singleFlow: '/flows/:flowId',
+  workflows: '/workflows',
+  singleWorkflow: '/workflows/:workflowId',
   automations: '/automations',
   connections: '/connections',
   singleConnection: '/connections/:connectionId',
@@ -31,7 +31,10 @@ export const determineDefaultRoute = ({
   if (chatEnabled) {
     return CHAT_ROUTE;
   }
-  if (checkAccess(Permission.READ_FLOW) || checkAccess(Permission.READ_TABLE)) {
+  if (
+    checkAccess(Permission.READ_WORKFLOW) ||
+    checkAccess(Permission.READ_TABLE)
+  ) {
     return authenticationSession.appendWorkspaceRoutePrefix('/automations');
   }
   if (checkAccess(Permission.READ_RUN)) {
@@ -40,5 +43,5 @@ export const determineDefaultRoute = ({
   return authenticationSession.appendWorkspaceRoutePrefix('/settings');
 };
 
-export const NEW_FLOW_QUERY_PARAM = 'newFlow';
+export const NEW_WORKFLOW_QUERY_PARAM = 'newWorkflow';
 export const NEW_TABLE_QUERY_PARAM = 'newTable';

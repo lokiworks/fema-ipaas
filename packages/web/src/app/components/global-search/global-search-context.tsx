@@ -135,7 +135,7 @@ function GlobalSearchDialogContent({
     >
       <div className="relative">
         <CommandInput
-          placeholder={t('Search pages, flows, tables...')}
+          placeholder={t('Search pages, workflows, tables...')}
           value={search}
           onValueChange={setSearch}
           containerClassName="border-b-0"

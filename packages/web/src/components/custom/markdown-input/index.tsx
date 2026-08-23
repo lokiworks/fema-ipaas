@@ -114,7 +114,7 @@ export const MarkdownInput = React.forwardRef<
     return (
       <div
         className={cn('relative h-full', {
-          //gotta add this nodrag nopan to prevent dnd-kit and React Flow interference with selection
+          //gotta add this nodrag nopan to prevent dnd-kit and React Workflow interference with selection
           'nodrag nopan nowheel cursor-text select-text': showTextCursor,
         })}
         onKeyDown={(e) => {

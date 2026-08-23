@@ -1,0 +1,722 @@
+import { apId } from '@fema/core-utils'
+import { ExecutionStatus, WorkflowVersionState, PauseType, RunEnvironment } from '@fema/shared'
+import { FastifyInstance } from 'fastify'
+import { waitpointService } from '../../../../../src/app/workflows/execution/waitpoint/waitpoint-service'
+import * as systemJobModule from '../../../../../src/app/helper/system-jobs/system-job'
+import { WaitpointStatus } from '../../../../../src/app/workflows/execution/waitpoint/waitpoint-types'
+import { db } from '../../../../helpers/db'
+import { createMockWorkflow, createMockExecution, createMockWorkflowVersion } from '../../../../helpers/mocks'
+import { createTestContext, TestContext } from '../../../../helpers/test-context'
+import { setupTestEnvironment, teardownTestEnvironment } from '../../../../helpers/test-setup'
+
+let app: FastifyInstance
+let ctx: TestContext
+const originalSystemJobsSchedule = systemJobModule.systemJobsSchedule
+
+beforeAll(async () => {
+    app = await setupTestEnvironment()
+})
+
+afterAll(async () => {
+    await teardownTestEnvironment()
+})
+
+beforeEach(async () => {
+    ctx = await createTestContext(app)
+})
+
+afterEach(() => {
+    vi.restoreAllMocks()
+})
+
+async function createExecution(params?: { status?: ExecutionStatus }) {
+    const workflow = createMockWorkflow({ workspaceId: ctx.workspace.id })
+    await db.save('workflow', workflow)
+
+    const workflowVersion = createMockWorkflowVersion({
+        workflowId: workflow.id,
+        state: WorkflowVersionState.LOCKED,
+    })
+    await db.save('workflow_version', workflowVersion)
+
+    const execution = createMockExecution({
+        workspaceId: ctx.workspace.id,
+        workflowId: workflow.id,
+        workflowVersionId: workflowVersion.id,
+        status: params?.status ?? ExecutionStatus.PAUSED,
+        environment: RunEnvironment.PRODUCTION,
+    })
+    await db.save('execution', execution)
+
+    return { workflow, workflowVersion, execution }
+}
+
+describe('Waitpoint service', () => {
+    describe('createForPause', () => {
+        it('should create a PENDING waitpoint when none exists', async () => {
+            const { execution } = await createExecution()
+
+            const result = await waitpointService(app.log).createForPause({
+                executionId: execution.id,
+                workspaceId: ctx.workspace.id,
+                stepName: 'approval',
+                type: PauseType.WEBHOOK,
+            })
+
+            expect(result.inserted).toBe(true)
+            expect(result.waitpoint.status).toBe(WaitpointStatus.PENDING)
+            expect(result.waitpoint.executionId).toBe(execution.id)
+            expect(result.waitpoint.type).toBe(PauseType.WEBHOOK)
+        })
+
+        it('should NOT return a COMPLETED waitpoint that belongs to a different step', async () => {
+            const { execution } = await createExecution({ status: ExecutionStatus.RUNNING })
+
+            const step1Pause = await waitpointService(app.log).createForPause({
+                executionId: execution.id,
+                workspaceId: ctx.workspace.id,
+                stepName: 'step_1',
+                type: PauseType.WEBHOOK,
+            })
+
+            await waitpointService(app.log).complete({
+                executionId: execution.id,
+                workspaceId: ctx.workspace.id,
+                waitpointId: step1Pause.waitpoint.id,
+                resumePayload: { body: { from: 'step_1' } },
+            })
+
+            const step2Pause = await waitpointService(app.log).createForPause({
+                executionId: execution.id,
+                workspaceId: ctx.workspace.id,
+                stepName: 'step_2',
+                type: PauseType.WEBHOOK,
+            })
+
+            expect(step2Pause.inserted).toBe(true)
+            expect(step2Pause.waitpoint.status).toBe(WaitpointStatus.PENDING)
+            expect(step2Pause.waitpoint.stepName).toBe('step_2')
+            expect(step2Pause.waitpoint.id).not.toBe(step1Pause.waitpoint.id)
+        })
+
+        it('should return existing COMPLETED waitpoint when resume arrived during RUNNING (fast subflow race)', async () => {
+            const { execution } = await createExecution({ status: ExecutionStatus.RUNNING })
+
+            const firstPause = await waitpointService(app.log).createForPause({
+                executionId: execution.id,
+                workspaceId: ctx.workspace.id,
+                stepName: 'approval',
+                type: PauseType.WEBHOOK,
+            })
+            expect(firstPause.inserted).toBe(true)
+
+            await waitpointService(app.log).complete({
+                executionId: execution.id,
+                workspaceId: ctx.workspace.id,
+                waitpointId: firstPause.waitpoint.id,
+                resumePayload: { body: { data: 'test' } },
+            })
+
+            const result = await waitpointService(app.log).createForPause({
+                executionId: execution.id,
+                workspaceId: ctx.workspace.id,
+                stepName: 'approval',
+                type: PauseType.WEBHOOK,
+            })
+
+            expect(result.inserted).toBe(false)
+            expect(result.waitpoint.status).toBe(WaitpointStatus.COMPLETED)
+            expect(result.waitpoint.resumePayload).toEqual({ body: { data: 'test' } })
+        })
+
+        it('should correctly map DELAY pause fields', async () => {
+            const { execution } = await createExecution()
+            const resumeAt = new Date(Date.now() + 60000).toISOString()
+
+            const result = await waitpointService(app.log).createForPause({
+                executionId: execution.id,
+                workspaceId: ctx.workspace.id,
+                stepName: 'delay_step',
+                type: PauseType.DELAY,
+                resumeDateTime: resumeAt,
+                workerHandlerId: 'server-1',
+                httpRequestId: 'reply-1',
+            })
+
+            expect(result.inserted).toBe(true)
+            expect(result.waitpoint.type).toBe(PauseType.DELAY)
+            expect(new Date(result.waitpoint.resumeDateTime!).toISOString()).toBe(resumeAt)
+            expect(result.waitpoint.workerHandlerId).toBe('server-1')
+            expect(result.waitpoint.httpRequestId).toBe('reply-1')
+        })
+
+        it('should reschedule the resume job when a DELAY pause is retried after the row exists', async () => {
+            const { execution } = await createExecution()
+            const pauseParams = {
+                executionId: execution.id,
+                workspaceId: ctx.workspace.id,
+                stepName: 'delay_step',
+                type: PauseType.DELAY,
+                resumeDateTime: new Date(Date.now() + 60000).toISOString(),
+            }
+            const upsertJobSpy = vi.fn()
+            vi.spyOn(systemJobModule, 'systemJobsSchedule').mockImplementation((log) => ({
+                ...originalSystemJobsSchedule(log),
+                upsertJob: upsertJobSpy,
+            }))
+
+            const first = await waitpointService(app.log).createForPause(pauseParams)
+            const retried = await waitpointService(app.log).createForPause(pauseParams)
+
+            expect(first.inserted).toBe(true)
+            expect(retried.inserted).toBe(false)
+            expect(retried.waitpoint.id).toBe(first.waitpoint.id)
+            expect(upsertJobSpy).toHaveBeenCalledTimes(2)
+            expect(upsertJobSpy.mock.calls[1][0].job.data.waitpointId).toBe(first.waitpoint.id)
+        })
+
+        it('should correctly map WEBHOOK pause fields', async () => {
+            const { execution } = await createExecution()
+
+            const result = await waitpointService(app.log).createForPause({
+                executionId: execution.id,
+                workspaceId: ctx.workspace.id,
+                stepName: 'webhook_step',
+                type: PauseType.WEBHOOK,
+                responseToSend: { status: 200, body: 'ok' },
+                workerHandlerId: 'server-2',
+            })
+
+            expect(result.inserted).toBe(true)
+            expect(result.waitpoint.type).toBe(PauseType.WEBHOOK)
+            expect(result.waitpoint.responseToSend).toEqual({ status: 200, body: 'ok' })
+            expect(result.waitpoint.workerHandlerId).toBe('server-2')
+        })
+    })
+
+    describe('complete', () => {
+        it('should complete existing PENDING waitpoint', async () => {
+            const { execution } = await createExecution()
+
+            const pauseResult = await waitpointService(app.log).createForPause({
+                executionId: execution.id,
+                workspaceId: ctx.workspace.id,
+                stepName: 'approval',
+                type: PauseType.WEBHOOK,
+            })
+
+            const result = await waitpointService(app.log).complete({
+                executionId: execution.id,
+                workspaceId: ctx.workspace.id,
+                waitpointId: pauseResult.waitpoint.id,
+                resumePayload: { body: { greeting: 'Hello' } },
+            })
+
+            expect(result.completedExisting).toBe(true)
+            expect(result.waitpoint!.status).toBe(WaitpointStatus.COMPLETED)
+            expect(result.waitpoint!.resumePayload).toEqual({ body: { greeting: 'Hello' } })
+        })
+
+        it('should drop stale resume signal when no PENDING waitpoint exists', async () => {
+            const { execution } = await createExecution({ status: ExecutionStatus.RUNNING })
+
+            const result = await waitpointService(app.log).complete({
+                executionId: execution.id,
+                workspaceId: ctx.workspace.id,
+                waitpointId: apId(),
+                resumePayload: { body: { status: 'error' } },
+            })
+
+            expect(result.completedExisting).toBe(false)
+            expect(result.waitpoint).toBeNull()
+
+            const stored = await db.findOneBy('waitpoint', { executionId: execution.id })
+            expect(stored).toBeNull()
+        })
+
+        it('should drop subsequent stale completions for same workflow run', async () => {
+            const { execution } = await createExecution()
+
+            const firstResult = await waitpointService(app.log).complete({
+                executionId: execution.id,
+                workspaceId: ctx.workspace.id,
+                waitpointId: apId(),
+                resumePayload: { body: { first: true } },
+            })
+
+            const secondResult = await waitpointService(app.log).complete({
+                executionId: execution.id,
+                workspaceId: ctx.workspace.id,
+                waitpointId: apId(),
+                resumePayload: { body: { second: true } },
+            })
+
+            expect(firstResult.completedExisting).toBe(false)
+            expect(secondResult.completedExisting).toBe(false)
+
+            const stored = await db.findOneBy('waitpoint', { executionId: execution.id })
+            expect(stored).toBeNull()
+        })
+    })
+
+    describe('multi-step pause isolation (regression: subflow retry hijack)', () => {
+        it('should NOT let stale resume signal from a finished step hijack the next step pause', async () => {
+            const { execution } = await createExecution({ status: ExecutionStatus.RUNNING })
+
+            const step1Pause = await waitpointService(app.log).createForPause({
+                executionId: execution.id,
+                workspaceId: ctx.workspace.id,
+                stepName: 'step_1',
+                type: PauseType.WEBHOOK,
+            })
+            expect(step1Pause.inserted).toBe(true)
+
+            await waitpointService(app.log).handleResumeSignal({
+                executionId: execution.id,
+                waitpointId: step1Pause.waitpoint.id,
+                executionStatus: ExecutionStatus.PAUSED,
+                workspaceId: ctx.workspace.id,
+                resumePayload: { body: { status: 'success', data: { from: 'step_1' } } },
+                onReady: async () => {},
+            })
+
+            const afterResume = await db.findOneBy('waitpoint', { executionId: execution.id })
+            expect(afterResume).toBeNull()
+
+            await waitpointService(app.log).handleResumeSignal({
+                executionId: execution.id,
+                waitpointId: step1Pause.waitpoint.id,
+                executionStatus: ExecutionStatus.RUNNING,
+                workspaceId: ctx.workspace.id,
+                resumePayload: { body: { status: 'error', data: { from: 'step_1_retry' } } },
+                onReady: async () => {
+                    throw new Error('onReady should not be called for stale signal')
+                },
+            })
+
+            const step2Pause = await waitpointService(app.log).createForPause({
+                executionId: execution.id,
+                workspaceId: ctx.workspace.id,
+                stepName: 'step_2',
+                type: PauseType.WEBHOOK,
+            })
+
+            expect(step2Pause.inserted).toBe(true)
+            expect(step2Pause.waitpoint.status).toBe(WaitpointStatus.PENDING)
+            expect(step2Pause.waitpoint.stepName).toBe('step_2')
+            expect(step2Pause.waitpoint.resumePayload).toBeNull()
+        })
+
+        it('should keep step_3 and step_4 isolated from repeated stale step_2 retries', async () => {
+            const { execution } = await createExecution({ status: ExecutionStatus.RUNNING })
+            const stepNames = ['step_1', 'step_2', 'step_3', 'step_4']
+            const stepWaitpointIds: Record<string, string> = {}
+
+            for (const stepName of stepNames) {
+                const pause = await waitpointService(app.log).createForPause({
+                    executionId: execution.id,
+                    workspaceId: ctx.workspace.id,
+                    stepName,
+                    type: PauseType.WEBHOOK,
+                })
+                expect(pause.inserted).toBe(true)
+                expect(pause.waitpoint.stepName).toBe(stepName)
+                stepWaitpointIds[stepName] = pause.waitpoint.id
+
+                await waitpointService(app.log).handleResumeSignal({
+                    executionId: execution.id,
+                    waitpointId: pause.waitpoint.id,
+                    executionStatus: ExecutionStatus.PAUSED,
+                    workspaceId: ctx.workspace.id,
+                    resumePayload: { body: { status: 'success', data: { from: stepName } } },
+                    onReady: async () => {},
+                })
+
+                if (stepName === 'step_2') {
+                    for (let retry = 0; retry < 3; retry++) {
+                        await waitpointService(app.log).handleResumeSignal({
+                            executionId: execution.id,
+                            waitpointId: stepWaitpointIds['step_2'],
+                            executionStatus: ExecutionStatus.RUNNING,
+                            workspaceId: ctx.workspace.id,
+                            resumePayload: { body: { status: 'error', data: { from: 'step_2_retry_' + retry } } },
+                            onReady: async () => {
+                                throw new Error('Stale step_2 retry should not call onReady')
+                            },
+                        })
+                    }
+                }
+            }
+
+            const lingering = await db.findOneBy('waitpoint', { executionId: execution.id })
+            expect(lingering).toBeNull()
+        })
+    })
+
+    describe('deleteByExecutionId', () => {
+        it('should delete waitpoint and allow creating a new one for next pause cycle', async () => {
+            const { execution } = await createExecution()
+
+            await waitpointService(app.log).createForPause({
+                executionId: execution.id,
+                workspaceId: ctx.workspace.id,
+                stepName: 'approval',
+                type: PauseType.WEBHOOK,
+            })
+
+            await waitpointService(app.log).deleteByExecutionId(execution.id)
+
+            const deleted = await db.findOneBy('waitpoint', { executionId: execution.id })
+            expect(deleted).toBeNull()
+
+            const result = await waitpointService(app.log).createForPause({
+                executionId: execution.id,
+                workspaceId: ctx.workspace.id,
+                stepName: 'delay_step',
+                type: PauseType.DELAY,
+                resumeDateTime: new Date().toISOString(),
+            })
+
+            expect(result.inserted).toBe(true)
+            expect(result.waitpoint.type).toBe(PauseType.DELAY)
+        })
+    })
+
+    describe('getByExecutionId', () => {
+        it('should return null when no waitpoint exists', async () => {
+            const result = await waitpointService(app.log).getByExecutionId(apId())
+            expect(result).toBeNull()
+        })
+
+        it('should return the waitpoint when it exists', async () => {
+            const { execution } = await createExecution()
+
+            await waitpointService(app.log).createForPause({
+                executionId: execution.id,
+                workspaceId: ctx.workspace.id,
+                stepName: 'approval',
+                type: PauseType.WEBHOOK,
+            })
+
+            const result = await waitpointService(app.log).getByExecutionId(execution.id)
+            expect(result).not.toBeNull()
+            expect(result!.executionId).toBe(execution.id)
+        })
+    })
+
+    describe('concurrent complete calls', () => {
+        it('should leave the waitpoint COMPLETED after concurrent completes on the same PENDING waitpoint', async () => {
+            const { execution } = await createExecution({ status: ExecutionStatus.RUNNING })
+
+            const pause = await waitpointService(app.log).createForPause({
+                executionId: execution.id,
+                workspaceId: ctx.workspace.id,
+                stepName: 'approval',
+                type: PauseType.WEBHOOK,
+            })
+
+            const [result1, result2] = await Promise.all([
+                waitpointService(app.log).complete({
+                    executionId: execution.id,
+                    workspaceId: ctx.workspace.id,
+                    waitpointId: pause.waitpoint.id,
+                    resumePayload: { body: { first: true } },
+                }),
+                waitpointService(app.log).complete({
+                    executionId: execution.id,
+                    workspaceId: ctx.workspace.id,
+                    waitpointId: pause.waitpoint.id,
+                    resumePayload: { body: { second: true } },
+                }),
+            ])
+
+            const completedCount = [result1.completedExisting, result2.completedExisting].filter(Boolean).length
+            expect(completedCount).toBeGreaterThanOrEqual(1)
+
+            const stored = await db.findOneBy<{ status: string }>('waitpoint', { executionId: execution.id })
+            expect(stored).not.toBeNull()
+            expect(stored!.status).toBe('COMPLETED')
+        })
+
+        it('should drop stale concurrent completes targeting non-existent waitpoints', async () => {
+            const { execution } = await createExecution({ status: ExecutionStatus.RUNNING })
+
+            const [result1, result2] = await Promise.all([
+                waitpointService(app.log).complete({
+                    executionId: execution.id,
+                    workspaceId: ctx.workspace.id,
+                    waitpointId: apId(),
+                    resumePayload: { body: { first: true } },
+                }),
+                waitpointService(app.log).complete({
+                    executionId: execution.id,
+                    workspaceId: ctx.workspace.id,
+                    waitpointId: apId(),
+                    resumePayload: { body: { second: true } },
+                }),
+            ])
+
+            expect(result1.completedExisting).toBe(false)
+            expect(result2.completedExisting).toBe(false)
+
+            const stored = await db.findOneBy('waitpoint', { executionId: execution.id })
+            expect(stored).toBeNull()
+        })
+    })
+
+    describe('handleResumeSignal', () => {
+        it('should call onReady and delete waitpoint when workflow is PAUSED', async () => {
+            const { execution } = await createExecution({ status: ExecutionStatus.PAUSED })
+
+            const pauseResult = await waitpointService(app.log).createForPause({
+                executionId: execution.id,
+                workspaceId: ctx.workspace.id,
+                stepName: 'approval',
+                type: PauseType.WEBHOOK,
+            })
+
+            let calledWith: { workerHandlerId: string | null } | null = null
+            const result = await waitpointService(app.log).handleResumeSignal({
+                executionId: execution.id,
+                waitpointId: pauseResult.waitpoint.id,
+                executionStatus: ExecutionStatus.PAUSED,
+                workspaceId: ctx.workspace.id,
+                resumePayload: null,
+                onReady: async (waitpoint) => {
+                    calledWith = { workerHandlerId: waitpoint.workerHandlerId }
+                },
+            })
+
+            expect(result).toBe(true)
+            expect(calledWith).not.toBeNull()
+            const deleted = await db.findOneBy('waitpoint', { executionId: execution.id })
+            expect(deleted).toBeNull()
+        })
+
+        it('should mark a fast-arriving signal as COMPLETED on the existing PENDING waitpoint when workflow is still RUNNING', async () => {
+            const { execution } = await createExecution({ status: ExecutionStatus.RUNNING })
+
+            const pause = await waitpointService(app.log).createForPause({
+                executionId: execution.id,
+                workspaceId: ctx.workspace.id,
+                stepName: 'approval',
+                type: PauseType.WEBHOOK,
+            })
+
+            let onReadyCalled = false
+            const result = await waitpointService(app.log).handleResumeSignal({
+                executionId: execution.id,
+                waitpointId: pause.waitpoint.id,
+                executionStatus: ExecutionStatus.RUNNING,
+                workspaceId: ctx.workspace.id,
+                resumePayload: { body: { msg: 'hello' } },
+                onReady: async () => {
+                    onReadyCalled = true
+                },
+            })
+
+            expect(result).toBe(true)
+            expect(onReadyCalled).toBe(false)
+            const waitpoint = await db.findOneBy<{ status: string, resumePayload: unknown }>('waitpoint', { executionId: execution.id })
+            expect(waitpoint).not.toBeNull()
+            expect(waitpoint!.status).toBe('COMPLETED')
+            expect(waitpoint!.resumePayload).toEqual({ body: { msg: 'hello' } })
+        })
+
+        it('should drop a stale RUNNING-state resume signal when no PENDING waitpoint exists', async () => {
+            const { execution } = await createExecution({ status: ExecutionStatus.RUNNING })
+
+            let onReadyCalled = false
+            const result = await waitpointService(app.log).handleResumeSignal({
+                executionId: execution.id,
+                waitpointId: apId(),
+                executionStatus: ExecutionStatus.RUNNING,
+                workspaceId: ctx.workspace.id,
+                resumePayload: { body: { msg: 'hello' } },
+                onReady: async () => {
+                    onReadyCalled = true
+                },
+            })
+
+            expect(result).toBe(false)
+            expect(onReadyCalled).toBe(false)
+            const waitpoint = await db.findOneBy('waitpoint', { executionId: execution.id })
+            expect(waitpoint).toBeNull()
+        })
+
+        it('should be a no-op when workflow is in terminal state', async () => {
+            const { execution } = await createExecution({ status: ExecutionStatus.SUCCEEDED })
+
+            let onReadyCalled = false
+            const result = await waitpointService(app.log).handleResumeSignal({
+                executionId: execution.id,
+                waitpointId: apId(),
+                executionStatus: ExecutionStatus.SUCCEEDED,
+                workspaceId: ctx.workspace.id,
+                resumePayload: null,
+                onReady: async () => {
+                    onReadyCalled = true
+                },
+            })
+
+            expect(result).toBe(false)
+            expect(onReadyCalled).toBe(false)
+            const waitpoint = await db.findOneBy('waitpoint', { executionId: execution.id })
+            expect(waitpoint).toBeNull()
+        })
+
+        it('should return false and not call onReady when waitpointId is stale', async () => {
+            const { execution } = await createExecution({ status: ExecutionStatus.PAUSED })
+
+            await waitpointService(app.log).createForPause({
+                executionId: execution.id,
+                workspaceId: ctx.workspace.id,
+                stepName: 'approval',
+                type: PauseType.WEBHOOK,
+            })
+
+            let onReadyCalled = false
+            const result = await waitpointService(app.log).handleResumeSignal({
+                executionId: execution.id,
+                waitpointId: apId(),
+                executionStatus: ExecutionStatus.PAUSED,
+                workspaceId: ctx.workspace.id,
+                resumePayload: null,
+                onReady: async () => {
+                    onReadyCalled = true
+                },
+            })
+
+            expect(result).toBe(false)
+            expect(onReadyCalled).toBe(false)
+            const waitpoint = await db.findOneBy('waitpoint', { executionId: execution.id })
+            expect(waitpoint).not.toBeNull()
+        })
+
+        it('should not complete wrong waitpoint when delay fires with stale waitpointId', async () => {
+            const { execution } = await createExecution({ status: ExecutionStatus.PAUSED })
+
+            const delayPause = await waitpointService(app.log).createForPause({
+                executionId: execution.id,
+                workspaceId: ctx.workspace.id,
+                stepName: 'delay_step',
+                type: PauseType.DELAY,
+                resumeDateTime: new Date(Date.now() + 60000).toISOString(),
+            })
+            const staleWaitpointId = delayPause.waitpoint.id
+
+            // Simulate: delay resolved early, workflow continued and paused on approval (new waitpoint)
+            await waitpointService(app.log).deleteByExecutionId(execution.id)
+            const approvalPause = await waitpointService(app.log).createForPause({
+                executionId: execution.id,
+                workspaceId: ctx.workspace.id,
+                stepName: 'approval_step',
+                type: PauseType.WEBHOOK,
+            })
+
+            // Stale delay job fires with old waitpointId — should NOT resume the approval step
+            const result = await waitpointService(app.log).handleResumeSignal({
+                executionId: execution.id,
+                waitpointId: staleWaitpointId,
+                executionStatus: ExecutionStatus.PAUSED,
+                workspaceId: ctx.workspace.id,
+                resumePayload: null,
+                onReady: async () => {
+                    throw new Error('Should not resume wrong waitpoint')
+                },
+            })
+
+            expect(result).toBe(false)
+            // Approval waitpoint should still be intact
+            const waitpoint = await db.findOneBy<{ id: string, stepName: string }>('waitpoint', { executionId: execution.id })
+            expect(waitpoint).not.toBeNull()
+            expect(waitpoint!.id).toBe(approvalPause.waitpoint.id)
+            expect(waitpoint!.stepName).toBe('approval_step')
+        })
+    })
+
+    describe('complete with waitpointId', () => {
+        it('should complete specific waitpoint when waitpointId matches', async () => {
+            const { execution } = await createExecution()
+
+            const pauseResult = await waitpointService(app.log).createForPause({
+                executionId: execution.id,
+                workspaceId: ctx.workspace.id,
+                stepName: 'approval',
+                type: PauseType.WEBHOOK,
+            })
+
+            const completeResult = await waitpointService(app.log).complete({
+                executionId: execution.id,
+                workspaceId: ctx.workspace.id,
+                waitpointId: pauseResult.waitpoint.id,
+                resumePayload: { body: { approved: true } },
+            })
+
+            expect(completeResult.completedExisting).toBe(true)
+            expect(completeResult.waitpoint.id).toBe(pauseResult.waitpoint.id)
+        })
+
+    })
+
+    describe('findPendingByVersion', () => {
+        it('should return pending V0 waitpoint when one exists', async () => {
+            const { execution } = await createExecution()
+
+            await db.save('waitpoint', {
+                id: apId(),
+                executionId: execution.id,
+                workspaceId: ctx.workspace.id,
+                stepName: 'approval',
+                type: 'WEBHOOK',
+                version: 'V0',
+                status: 'PENDING',
+                httpRequestId: null,
+                workerHandlerId: null,
+            })
+
+            const result = await waitpointService(app.log).findPendingByVersion({ executionId: execution.id, version: 'V0' })
+            expect(result).not.toBeNull()
+            expect(result!.executionId).toBe(execution.id)
+            expect(result!.version).toBe('V0')
+        })
+
+        it('should return null when only a V1 waitpoint exists', async () => {
+            const { execution } = await createExecution()
+
+            await db.save('waitpoint', {
+                id: apId(),
+                executionId: execution.id,
+                workspaceId: ctx.workspace.id,
+                stepName: 'approval',
+                type: 'WEBHOOK',
+                version: 'V1',
+                status: 'PENDING',
+                httpRequestId: null,
+                workerHandlerId: null,
+            })
+
+            const result = await waitpointService(app.log).findPendingByVersion({ executionId: execution.id, version: 'V0' })
+            expect(result).toBeNull()
+        })
+
+        it('should return null when waitpoint is COMPLETED', async () => {
+            const { execution } = await createExecution()
+
+            await db.save('waitpoint', {
+                id: apId(),
+                executionId: execution.id,
+                workspaceId: ctx.workspace.id,
+                stepName: 'approval',
+                type: 'WEBHOOK',
+                version: 'V0',
+                status: 'COMPLETED',
+                httpRequestId: null,
+                workerHandlerId: null,
+            })
+
+            const result = await waitpointService(app.log).findPendingByVersion({ executionId: execution.id, version: 'V0' })
+            expect(result).toBeNull()
+        })
+    })
+})

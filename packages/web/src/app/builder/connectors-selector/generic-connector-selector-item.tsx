@@ -1,5 +1,5 @@
 import type { ActionClassification } from '@fema/connector-sdk';
-import { FlowActionType, FlowTriggerType } from '@fema/shared';
+import { WorkflowActionType, WorkflowTriggerType } from '@fema/shared';
 import { t } from 'i18next';
 
 import { CardListItem } from '@/components/custom/card-list';
@@ -20,8 +20,8 @@ type GenericActionOrTriggerItemProps = {
 
 const getConnectorSelectorItemInfo = (item: ConnectorSelectorItem) => {
   if (
-    item.type === FlowActionType.CONNECTOR ||
-    item.type === FlowTriggerType.CONNECTOR
+    item.type === WorkflowActionType.CONNECTOR ||
+    item.type === WorkflowTriggerType.CONNECTOR
   ) {
     return {
       displayName: item.actionOrTrigger.displayName,

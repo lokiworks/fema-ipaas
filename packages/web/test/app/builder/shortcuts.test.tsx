@@ -3,12 +3,12 @@
  */
 /* eslint-disable testing-library/no-unnecessary-act */
 import {
-  FlowOperationStatus,
-  FlowOperationType,
-  FlowStatus,
-  FlowTriggerType,
-  FlowVersionState,
-  PopulatedFlow,
+  WorkflowOperationStatus,
+  WorkflowOperationType,
+  WorkflowStatus,
+  WorkflowTriggerType,
+  WorkflowVersionState,
+  PopulatedWorkflow,
 } from '@fema/shared';
 import { QueryClient } from '@tanstack/react-query';
 import { act } from 'react';
@@ -30,20 +30,20 @@ declare global {
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-function buildFlow(): PopulatedFlow {
+function buildWorkflow(): PopulatedWorkflow {
   const now = new Date().toISOString();
   return {
-    id: 'flow-1',
+    id: 'workflow-1',
     created: now,
     updated: now,
     workspaceId: 'workspace-1',
-    externalId: 'flow-1',
+    externalId: 'workflow-1',
     ownerId: null,
     folderId: null,
-    status: FlowStatus.DISABLED,
+    status: WorkflowStatus.DISABLED,
     publishedVersionId: null,
     metadata: null,
-    operationStatus: FlowOperationStatus.NONE,
+    operationStatus: WorkflowOperationStatus.NONE,
     timeSavedPerRun: null,
     templateId: null,
     createdBy: null,
@@ -51,13 +51,13 @@ function buildFlow(): PopulatedFlow {
       id: 'version-1',
       created: now,
       updated: now,
-      flowId: 'flow-1',
-      displayName: 'Test flow',
+      workflowId: 'workflow-1',
+      displayName: 'Test workflow',
       updatedBy: null,
       valid: true,
       schemaVersion: null,
       agentIds: [],
-      state: FlowVersionState.DRAFT,
+      state: WorkflowVersionState.DRAFT,
       connectionIds: [],
       backupFiles: null,
       notes: [],
@@ -65,7 +65,7 @@ function buildFlow(): PopulatedFlow {
         name: 'trigger',
         valid: true,
         displayName: 'Trigger',
-        type: FlowTriggerType.EMPTY,
+        type: WorkflowTriggerType.EMPTY,
         settings: {},
         lastUpdatedDate: now,
         nextAction: {
@@ -82,10 +82,10 @@ function buildFlow(): PopulatedFlow {
 }
 
 function createStore(): BuilderStore {
-  const flow = buildFlow();
+  const workflow = buildWorkflow();
   return createBuilderStore({
-    flow,
-    flowVersion: flow.version,
+    workflow,
+    workflowVersion: workflow.version,
     readonly: false,
     hideTestWidget: false,
     run: null,
@@ -175,7 +175,7 @@ describe('canvas shortcuts while editing step inputs (GIT-1445)', () => {
     dispatchKeyFrom(document.body, { key: 'e', ctrlKey: true });
     expect(applyOperation).toHaveBeenCalledTimes(1);
     expect(applyOperation).toHaveBeenCalledWith({
-      type: FlowOperationType.SET_SKIP_ACTION,
+      type: WorkflowOperationType.SET_SKIP_ACTION,
       request: { names: ['step_1'], skip: true },
     });
   });
@@ -184,7 +184,7 @@ describe('canvas shortcuts while editing step inputs (GIT-1445)', () => {
     const { applyOperation } = await setup();
     dispatchKeyFrom(document.body, { key: 'Delete', shiftKey: true });
     expect(applyOperation).toHaveBeenCalledWith({
-      type: FlowOperationType.DELETE_ACTION,
+      type: WorkflowOperationType.DELETE_ACTION,
       request: { names: ['step_1'] },
     });
   });

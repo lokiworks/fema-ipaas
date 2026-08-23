@@ -4,10 +4,10 @@ description: "Measured numbers for scaling the worker fleet: pod boot time, imag
 icon: "arrows-up-down"
 ---
 
-Workers are the unit you scale — one worker runs one flow at a time ([Production Setup](/install/configure-operate/production-setup)). This page gives the **measured** answers autoscaling decisions hang on: how fast new capacity arrives, and whether removing it is safe.
+Workers are the unit you scale — one worker runs one workflow at a time ([Production Setup](/install/configure-operate/production-setup)). This page gives the **measured** answers autoscaling decisions hang on: how fast new capacity arrives, and whether removing it is safe.
 
 <Note>
-**Scope:** the recommended production shape (`SANDBOX_CODE_ONLY`, `FEMA_REUSE_SANDBOX=true`, one flow per worker at 0.5 vCPU / 1 GB), measured on GKE with the cluster autoscaler. Other platforms differ mainly in node-provisioning time.
+**Scope:** the recommended production shape (`SANDBOX_CODE_ONLY`, `FEMA_REUSE_SANDBOX=true`, one workflow per worker at 0.5 vCPU / 1 GB), measured on GKE with the cluster autoscaler. Other platforms differ mainly in node-provisioning time.
 </Note>
 
 ## How fast capacity arrives
@@ -23,13 +23,13 @@ Measured from the scale command to the worker polling for jobs (workers have no 
 
 The worker image is **126 MB** compressed — a single pre-bundled `worker.js` with no `node_modules` — precisely because the pull sits on this critical path (the app image, which you scale rarely, is 551 MB). Keep it in a **same-region registry**; the pull times above include cross-region transfer.
 
-A new worker's first flow pays the one-time [cold start](/install/architecture/latency) (~2–3 s, connector install + engine boot); its second run is already warm.
+A new worker's first workflow pays the one-time [cold start](/install/architecture/latency) (~2–3 s, connector install + engine boot); its second run is already warm.
 
 ## Scaling down is safe
 
 <img src="/resources/diagrams/autoscaling-drain.png" alt="Drain timeline: a worker pod deleted under load finishes its in-flight run in 0.42 s, exits at 0.49 s, and is gone in 1.7 s — 747/747 requests returned 200 and zero runs failed" />
 
-On `SIGTERM` the worker stops polling, finishes its in-flight flow, and exits (forced exit only after 30 s, matching Kubernetes' default grace period). Deleting a busy pod mid-load lost nothing: every request returned 200 and the executions API showed zero failures. Runs that would have landed on the draining worker stay queued in Redis and drain to the remaining fleet.
+On `SIGTERM` the worker stops polling, finishes its in-flight workflow, and exits (forced exit only after 30 s, matching Kubernetes' default grace period). Deleting a busy pod mid-load lost nothing: every request returned 200 and the executions API showed zero failures. Runs that would have landed on the draining worker stay queued in Redis and drain to the remaining fleet.
 
 ## When to autoscale — and when not to
 

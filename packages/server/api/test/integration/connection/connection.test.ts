@@ -406,7 +406,7 @@ describe('Connection CE API', () => {
             expect(body.id).toBe(connectionId)
             expect(body.externalId).toBe('get-by-id-test')
             expect(body.value).toBeUndefined()
-            expect(body.flowIds).toEqual([])
+            expect(body.workflowIds).toEqual([])
         })
 
         it('should return 404 for a non-existent connection', async () => {

@@ -2,17 +2,17 @@ import { apId, isNil } from '@fema/core-utils'
 import { ExecutionType, JobData, ResumeReason, StreamStepProgress, WorkerJobType } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { z } from 'zod'
-import { flowVersionService } from '../../flows/flow-version/flow-version.service'
+import { workflowVersionService } from '../../workflows/workflow-version/workflow-version.service'
 
-const LegacyExecuteFlowFields = z.object({
+const LegacyExecuteWorkflowFields = z.object({
     streamStepProgress: z.enum(StreamStepProgress).optional(),
     progressUpdateType: z.string().optional(),
     workerHandlerId: z.string().nullish(),
     synchronousHandlerId: z.string().nullish(),
 })
 
-function deriveExecuteFlowMigrationFields(job: JobData): { streamStepProgress: StreamStepProgress, workerHandlerId: string | null } {
-    const legacy = LegacyExecuteFlowFields.parse(job)
+function deriveExecuteWorkflowMigrationFields(job: JobData): { streamStepProgress: StreamStepProgress, workerHandlerId: string | null } {
+    const legacy = LegacyExecuteWorkflowFields.parse(job)
     return {
         streamStepProgress: legacy.streamStepProgress ?? migrateProgressUpdateType(legacy.progressUpdateType),
         workerHandlerId: legacy.workerHandlerId ?? legacy.synchronousHandlerId ?? null,
@@ -20,15 +20,15 @@ function deriveExecuteFlowMigrationFields(job: JobData): { streamStepProgress: S
 }
 
 function createMigrations(log: FastifyBaseLogger): JobMigration[] {
-    const enrichFlowId: JobMigration = {
+    const enrichWorkflowId: JobMigration = {
         runAtSchemaVersion: 0,
         migrate: async (job: JobData) => {
-            if (job.jobType === WorkerJobType.EXECUTE_FLOW) {
-                const flowVersion = await flowVersionService(log).getOne(job.flowVersionId)
+            if (job.jobType === WorkerJobType.EXECUTE_WORKFLOW) {
+                const workflowVersion = await workflowVersionService(log).getOne(job.workflowVersionId)
                 const logsFileId = 'logsFileId' in job ? job.logsFileId : apId()
                 return {
                     ...job,
-                    flowId: flowVersion!.flowId,
+                    workflowId: workflowVersion!.workflowId,
                     schemaVersion: 4,
                     logsFileId,
                 }
@@ -42,7 +42,7 @@ function createMigrations(log: FastifyBaseLogger): JobMigration[] {
     const migratePayloadToUnion: JobMigration = {
         runAtSchemaVersion: 4,
         migrate: async (job: JobData) => {
-            if (job.jobType === WorkerJobType.EXECUTE_FLOW || job.jobType === WorkerJobType.EXECUTE_WEBHOOK) {
+            if (job.jobType === WorkerJobType.EXECUTE_WORKFLOW || job.jobType === WorkerJobType.EXECUTE_WEBHOOK) {
                 return {
                     ...job,
                     schemaVersion: 5,
@@ -55,11 +55,11 @@ function createMigrations(log: FastifyBaseLogger): JobMigration[] {
     const renameProgressAndHandlerFields: JobMigration = {
         runAtSchemaVersion: 5,
         migrate: async (job: JobData) => {
-            if (job.jobType === WorkerJobType.EXECUTE_FLOW) {
+            if (job.jobType === WorkerJobType.EXECUTE_WORKFLOW) {
                 return {
                     ...job,
                     schemaVersion: 6,
-                    ...deriveExecuteFlowMigrationFields(job),
+                    ...deriveExecuteWorkflowMigrationFields(job),
                 }
             }
             return { ...job, schemaVersion: 6 }
@@ -68,7 +68,7 @@ function createMigrations(log: FastifyBaseLogger): JobMigration[] {
     const dropLogsUploadUrl: JobMigration = {
         runAtSchemaVersion: 6,
         migrate: async (job: JobData) => {
-            if (job.jobType !== WorkerJobType.EXECUTE_FLOW) {
+            if (job.jobType !== WorkerJobType.EXECUTE_WORKFLOW) {
                 return { ...job, schemaVersion: 7 }
             }
             const legacy = job as Record<string, unknown>
@@ -79,16 +79,16 @@ function createMigrations(log: FastifyBaseLogger): JobMigration[] {
             }
         },
     }
-    const backfillRequiredExecuteFlowFields: JobMigration = {
+    const backfillRequiredExecuteWorkflowFields: JobMigration = {
         runAtSchemaVersion: 7,
         migrate: async (job: JobData) => {
-            if (job.jobType !== WorkerJobType.EXECUTE_FLOW) {
+            if (job.jobType !== WorkerJobType.EXECUTE_WORKFLOW) {
                 return { ...job, schemaVersion: 8 }
             }
             return {
                 ...job,
                 schemaVersion: 8,
-                ...deriveExecuteFlowMigrationFields(job),
+                ...deriveExecuteWorkflowMigrationFields(job),
             }
         },
     }
@@ -99,7 +99,7 @@ function createMigrations(log: FastifyBaseLogger): JobMigration[] {
     const addResumeReason: JobMigration = {
         runAtSchemaVersion: 9,
         migrate: async (job: JobData) => {
-            if (job.jobType !== WorkerJobType.EXECUTE_FLOW || job.executionType !== ExecutionType.RESUME) {
+            if (job.jobType !== WorkerJobType.EXECUTE_WORKFLOW || job.executionType !== ExecutionType.RESUME) {
                 return { ...job, schemaVersion: 10 }
             }
             const isLegacyRetry = job.payload.type === 'inline' && isNil(job.payload.value)
@@ -111,11 +111,11 @@ function createMigrations(log: FastifyBaseLogger): JobMigration[] {
         },
     }
 
-    return [enrichFlowId, migratePayloadToUnion, renameProgressAndHandlerFields, dropLogsUploadUrl, backfillRequiredExecuteFlowFields, bridgeV8ToV9, addResumeReason]
+    return [enrichWorkflowId, migratePayloadToUnion, renameProgressAndHandlerFields, dropLogsUploadUrl, backfillRequiredExecuteWorkflowFields, bridgeV8ToV9, addResumeReason]
 }
 
 function migrateProgressUpdateType(progressUpdateType: string | undefined): StreamStepProgress {
-    if (progressUpdateType === 'TEST_FLOW' || progressUpdateType === 'WEBHOOK_RESPONSE') {
+    if (progressUpdateType === 'TEST_WORKFLOW' || progressUpdateType === 'WEBHOOK_RESPONSE') {
         return StreamStepProgress.WEBSOCKET
     }
     return StreamStepProgress.NONE

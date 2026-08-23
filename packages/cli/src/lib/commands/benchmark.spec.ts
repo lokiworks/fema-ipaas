@@ -42,7 +42,7 @@ describe('benchmarkUtils.toSummary', () => {
             errors: 1,
             timeouts: 0,
         };
-        const s = benchmarkUtils.toSummary({ result, flowId: 'flow123', connections: 10 });
+        const s = benchmarkUtils.toSummary({ result, workflowId: 'workflow123', connections: 10 });
         expect(s.throughputReqSec).toBe(250);
         expect(s.p99Ms).toBe(40);
         expect(s.ok2xx).toBe(98);
@@ -130,18 +130,18 @@ describe('benchmarkUtils.aggregateTimeline', () => {
 });
 
 describe('benchmarkUtils.aggregateOutsideRuns', () => {
-    it('groups runs by flow with count and avg run time, busiest first', () => {
+    it('groups runs by workflow with count and avg run time, busiest first', () => {
         const at = (ms: number) => new Date(ms).toISOString();
-        const flows = benchmarkUtils.aggregateOutsideRuns([
-            { flowId: 'a', workspaceId: 'p1', startTime: at(0), finishTime: at(100) },
-            { flowId: 'a', workspaceId: 'p1', startTime: at(0), finishTime: at(300) },
-            { flowId: 'a', workspaceId: 'p1' }, // still counted, excluded from avg (no timestamps)
-            { flowId: 'b', workspaceId: 'p2', startTime: at(0), finishTime: at(50) },
-            { workspaceId: 'p2' }, // no flowId — dropped
+        const workflows = benchmarkUtils.aggregateOutsideRuns([
+            { workflowId: 'a', workspaceId: 'p1', startTime: at(0), finishTime: at(100) },
+            { workflowId: 'a', workspaceId: 'p1', startTime: at(0), finishTime: at(300) },
+            { workflowId: 'a', workspaceId: 'p1' }, // still counted, excluded from avg (no timestamps)
+            { workflowId: 'b', workspaceId: 'p2', startTime: at(0), finishTime: at(50) },
+            { workspaceId: 'p2' }, // no workflowId — dropped
         ]);
-        expect(flows).toEqual([
-            { flowId: 'a', workspaceId: 'p1', runs: 3, avgRunMs: 200 },
-            { flowId: 'b', workspaceId: 'p2', runs: 1, avgRunMs: 50 },
+        expect(workflows).toEqual([
+            { workflowId: 'a', workspaceId: 'p1', runs: 3, avgRunMs: 200 },
+            { workflowId: 'b', workspaceId: 'p2', runs: 1, avgRunMs: 50 },
         ]);
     });
 });

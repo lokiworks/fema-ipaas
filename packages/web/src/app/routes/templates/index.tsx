@@ -12,8 +12,8 @@ import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/components/custom/page-header';
 import { SearchInput } from '@/components/custom/search-input';
 import { Button } from '@/components/ui/button';
-import { flowHooks } from '@/features/flows';
 import { templatesTelemetryApi, templatesHooks } from '@/features/templates';
+import { workflowHooks } from '@/features/workflows';
 import { platformHooks } from '@/hooks/platform-hooks';
 import { DASHBOARD_CONTENT_PADDING_X } from '@/lib/utils';
 
@@ -34,8 +34,8 @@ const TemplatesPage = () => {
   const selectedCategory = category as string;
   const { data: allOfficialTemplates, isLoading: isAllTemplatesLoading } =
     templatesHooks.useAllOfficialTemplates();
-  const { mutate: createFlow, isPending: isCreateFlowPending } =
-    flowHooks.useStartFromScratch(UncategorizedFolderId);
+  const { mutate: createWorkflow, isPending: isCreateWorkflowPending } =
+    workflowHooks.useStartFromScratch(UncategorizedFolderId);
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
@@ -114,8 +114,8 @@ const TemplatesPage = () => {
                     <Button
                       variant="outline"
                       className="gap-2 h-full"
-                      onClick={() => createFlow()}
-                      disabled={isCreateFlowPending}
+                      onClick={() => createWorkflow()}
+                      disabled={isCreateWorkflowPending}
                     >
                       <Plus className="w-4 h-4" />
                       {t('Start from scratch')}

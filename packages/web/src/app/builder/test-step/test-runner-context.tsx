@@ -1,8 +1,8 @@
 import {
-  FlowAction,
-  FlowActionType,
-  FlowTrigger,
-  FlowTriggerType,
+  WorkflowAction,
+  WorkflowActionType,
+  WorkflowTrigger,
+  WorkflowTriggerType,
 } from '@fema/shared';
 import { useQueryClient } from '@tanstack/react-query';
 import React, {
@@ -28,8 +28,8 @@ import { testStepHooks } from './utils/test-step-hooks';
 const ActionTestRunnerContext =
   createContext<ActionTestRunnerContextValue | null>(null);
 
-const isReturnResponseAndWaitForWebhook = (step: FlowAction) =>
-  step.type === FlowActionType.CONNECTOR &&
+const isReturnResponseAndWaitForWebhook = (step: WorkflowAction) =>
+  step.type === WorkflowActionType.CONNECTOR &&
   step.settings.connectorName === '@fema/connector-webhook' &&
   step.settings.actionName === 'return_response_and_wait_for_next_webhook';
 
@@ -94,11 +94,13 @@ const TriggerTestRunnerProvider = ({
   const [isTestingDialogOpen, setIsTestingDialogOpen] = useState(false);
   const abortControllerRef = useRef<AbortController>(new AbortController());
 
-  const flowVersionId = useBuilderStateContext((state) => state.flowVersion.id);
+  const workflowVersionId = useBuilderStateContext(
+    (state) => state.workflowVersion.id,
+  );
   const { isLoadingDynamicProperties } = useContext(DynamicPropertiesContext);
   const queryClient = useQueryClient();
 
-  const isConnectorTrigger = step.type === FlowTriggerType.CONNECTOR;
+  const isConnectorTrigger = step.type === WorkflowTriggerType.CONNECTOR;
   const connectorName = isConnectorTrigger ? step.settings.connectorName : '';
   const connectorVersion = isConnectorTrigger
     ? step.settings.connectorVersion
@@ -131,9 +133,9 @@ const TriggerTestRunnerProvider = ({
 
   const onTestSuccess = useCallback(async () => {
     await queryClient.invalidateQueries({
-      queryKey: ['triggerEvents', flowVersionId],
+      queryKey: ['triggerEvents', workflowVersionId],
     });
-  }, [queryClient, flowVersionId]);
+  }, [queryClient, workflowVersionId]);
 
   const { mutate: saveMockAsSampleData, isPending: isSavingMockdata } =
     testStepHooks.useSaveMockData({
@@ -237,12 +239,12 @@ type ActionTestRunnerContextValue = {
 };
 
 type ActionTestRunnerProviderProps = {
-  step: FlowAction;
+  step: WorkflowAction;
   children: React.ReactNode;
 };
 
 type TriggerTestRunnerContextValue = {
-  step: FlowTrigger;
+  step: WorkflowTrigger;
   connectorModel: ReturnType<
     typeof connectorsHooks.useConnector
   >['connectorModel'];
@@ -269,6 +271,6 @@ type TriggerTestRunnerContextValue = {
 };
 
 type TriggerTestRunnerProviderProps = {
-  step: FlowTrigger;
+  step: WorkflowTrigger;
   children: React.ReactNode;
 };

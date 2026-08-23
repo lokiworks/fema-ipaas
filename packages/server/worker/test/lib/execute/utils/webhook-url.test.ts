@@ -3,31 +3,31 @@ import { getWebhookUrl, getAppWebhookUrl } from '../../../../src/lib/execute/uti
 import { ensurePublicApiUrl } from '../../../../src/lib/worker'
 
 describe('getWebhookUrl', () => {
-    const flowId = 'flow-123'
+    const workflowId = 'workflow-123'
 
     it('strips trailing slash to avoid double slash', () => {
-        expect(getWebhookUrl('https://example.com/api/', flowId))
-            .toBe('https://example.com/api/v1/webhooks/flow-123')
+        expect(getWebhookUrl('https://example.com/api/', workflowId))
+            .toBe('https://example.com/api/v1/webhooks/workflow-123')
     })
 
     it('works when URL has no trailing slash', () => {
-        expect(getWebhookUrl('https://example.com/api', flowId))
-            .toBe('https://example.com/api/v1/webhooks/flow-123')
+        expect(getWebhookUrl('https://example.com/api', workflowId))
+            .toBe('https://example.com/api/v1/webhooks/workflow-123')
     })
 
     it('appends /test suffix when simulate is true', () => {
-        expect(getWebhookUrl('https://example.com/api/', flowId, true))
-            .toBe('https://example.com/api/v1/webhooks/flow-123/test')
+        expect(getWebhookUrl('https://example.com/api/', workflowId, true))
+            .toBe('https://example.com/api/v1/webhooks/workflow-123/test')
     })
 
     it('does not append /test when simulate is false', () => {
-        expect(getWebhookUrl('https://example.com/api/', flowId, false))
-            .toBe('https://example.com/api/v1/webhooks/flow-123')
+        expect(getWebhookUrl('https://example.com/api/', workflowId, false))
+            .toBe('https://example.com/api/v1/webhooks/workflow-123')
     })
 
     it('does not append /test when simulate is undefined', () => {
-        expect(getWebhookUrl('https://example.com/api/', flowId, undefined))
-            .toBe('https://example.com/api/v1/webhooks/flow-123')
+        expect(getWebhookUrl('https://example.com/api/', workflowId, undefined))
+            .toBe('https://example.com/api/v1/webhooks/workflow-123')
     })
 })
 
@@ -71,7 +71,7 @@ describe('ensurePublicApiUrl', () => {
 })
 
 describe('end-to-end: ensurePublicApiUrl + getWebhookUrl', () => {
-    const flowId = 'flow-456'
+    const workflowId = 'workflow-456'
 
     it.each([
         'https://example.com',
@@ -80,8 +80,8 @@ describe('end-to-end: ensurePublicApiUrl + getWebhookUrl', () => {
         'https://example.com/api/',
     ])('produces correct webhook URL for publicUrl=%s', (publicUrl) => {
         const apiUrl = ensurePublicApiUrl(publicUrl)
-        expect(getWebhookUrl(apiUrl, flowId))
-            .toBe('https://example.com/api/v1/webhooks/flow-456')
+        expect(getWebhookUrl(apiUrl, workflowId))
+            .toBe('https://example.com/api/v1/webhooks/workflow-456')
     })
 
     it.each([
@@ -97,23 +97,23 @@ describe('end-to-end: ensurePublicApiUrl + getWebhookUrl', () => {
 })
 
 describe('regression: fema.local double-slash bug', () => {
-    const flowId = 'flow-abc'
+    const workflowId = 'workflow-abc'
 
     it('old behavior would produce double slash — fixed behavior produces correct URL', () => {
         // Before the fix, PUBLIC_URL was used directly (e.g. "https://github.com/lokiworks/fema-ipaas/")
-        // which produced "https://github.com/lokiworks/fema-ipaas//v1/webhooks/flow-abc"
+        // which produced "https://github.com/lokiworks/fema-ipaas//v1/webhooks/workflow-abc"
         const publicUrl = 'https://github.com/lokiworks/fema-ipaas/'
         const apiUrl = ensurePublicApiUrl(publicUrl)
         expect(apiUrl).toBe('https://github.com/lokiworks/fema-ipaas/api/')
-        expect(getWebhookUrl(apiUrl, flowId))
-            .toBe('https://github.com/lokiworks/fema-ipaas/api/v1/webhooks/flow-abc')
+        expect(getWebhookUrl(apiUrl, workflowId))
+            .toBe('https://github.com/lokiworks/fema-ipaas/api/v1/webhooks/workflow-abc')
     })
 
     it('handles cloud URL without trailing slash', () => {
         const publicUrl = 'https://github.com/lokiworks/fema-ipaas'
         const apiUrl = ensurePublicApiUrl(publicUrl)
-        expect(getWebhookUrl(apiUrl, flowId))
-            .toBe('https://github.com/lokiworks/fema-ipaas/api/v1/webhooks/flow-abc')
+        expect(getWebhookUrl(apiUrl, workflowId))
+            .toBe('https://github.com/lokiworks/fema-ipaas/api/v1/webhooks/workflow-abc')
     })
 
     it('produces correct app webhook URL for cloud', () => {

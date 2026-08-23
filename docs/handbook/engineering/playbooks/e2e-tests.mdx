@@ -21,7 +21,7 @@ packages/tests-e2e/
 │   ├── index.ts        # Page exports
 │   ├── authentication.page.ts
 │   ├── builder.page.ts
-│   ├── flows.page.ts
+│   ├── workflows.page.ts
 │   └── agent.page.ts
 ├── helper/             # Utilities and configuration
 │   └── config.ts       # Environment configuration
@@ -60,8 +60,8 @@ export class YourPage extends BasePage {
 #### ❌ Don't do
 ```typescript
 // Direct element selection in test files
-test('should create flow', async ({ page }) => {
-  await page.getByRole('button', { name: 'Create Flow' }).click();
+test('should create workflow', async ({ page }) => {
+  await page.getByRole('button', { name: 'Create Workflow' }).click();
   await page.getByText('From scratch').click();
   // Test logic mixed with element selection
 });
@@ -69,24 +69,24 @@ test('should create flow', async ({ page }) => {
 
 #### ✅ Do
 ```typescript
-// flows.page.ts
-export class FlowsPage extends BasePage {
+// workflows.page.ts
+export class WorkflowsPage extends BasePage {
   getters = {
-    createFlowButton: (page: Page) => page.getByRole('button', { name: 'Create Flow' }),
+    createWorkflowButton: (page: Page) => page.getByRole('button', { name: 'Create Workflow' }),
     fromScratchButton: (page: Page) => page.getByText('From scratch'),
   };
 
   actions = {
-    newFlowFromScratch: async (page: Page) => {
-      await this.getters.createFlowButton(page).click();
+    newWorkflowFromScratch: async (page: Page) => {
+      await this.getters.createWorkflowButton(page).click();
       await this.getters.fromScratchButton(page).click();
     },
   };
 }
 
 // integration.spec.ts
-test('should create flow', async ({ page }) => {
-  await flowsPage.actions.newFlowFromScratch(page);
+test('should create workflow', async ({ page }) => {
+  await workflowsPage.actions.newWorkflowFromScratch(page);
   // Clean test logic focused on behavior
 });
 ```
@@ -101,20 +101,20 @@ Test files should be organized by feature or workflow:
 import { test, expect } from '@playwright/test';
 import { 
   AuthenticationPage, 
-  FlowsPage, 
+  WorkflowsPage, 
   BuilderPage 
 } from '../pages';
 import { configUtils } from '../helper/config';
 
 test.describe('Feature Name', () => {
   let authenticationPage: AuthenticationPage;
-  let flowsPage: FlowsPage;
+  let workflowsPage: WorkflowsPage;
   let builderPage: BuilderPage;
 
   test.beforeEach(async () => {
     // Initialize page objects
     authenticationPage = new AuthenticationPage();
-    flowsPage = new FlowsPage();
+    workflowsPage = new WorkflowsPage();
     builderPage = new BuilderPage();
   });
 
@@ -132,13 +132,13 @@ test.describe('Feature Name', () => {
 
 ```typescript
 // Good test names
-test('should send Slack message via flow', async ({ page }) => {});
+test('should send Slack message via workflow', async ({ page }) => {});
 test('should handle webhook with dynamic parameters', async ({ page }) => {});
 test('should authenticate user with valid credentials', async ({ page }) => {});
 
 // Avoid vague names
 test('should work', async ({ page }) => {});
-test('test flow', async ({ page }) => {});
+test('test workflow', async ({ page }) => {});
 ```
 
 ## Configuration Management
@@ -187,13 +187,13 @@ test('should complete user workflow', async ({ page }) => {
   });
 
   // 3. Navigate to relevant page
-  await flowsPage.actions.navigate(page);
+  await workflowsPage.actions.navigate(page);
 
   // 4. Clean up existing data (if needed)
-  await flowsPage.actions.cleanupExistingFlows(page);
+  await workflowsPage.actions.cleanupExistingWorkflows(page);
 
   // 5. Perform the main workflow
-  await flowsPage.actions.newFlowFromScratch(page);
+  await workflowsPage.actions.newWorkflowFromScratch(page);
   await builderPage.actions.waitFor(page);
   await builderPage.actions.selectInitialTrigger(page, {
     connector: 'Schedule',
@@ -201,7 +201,7 @@ test('should complete user workflow', async ({ page }) => {
   });
 
   // 6. Add assertions and validations
-  await builderPage.actions.testFlowAndWaitForSuccess(page);
+  await builderPage.actions.testWorkflowAndWaitForSuccess(page);
   
   // 7. Clean up (if needed)
   await builderPage.actions.exitRun(page);
@@ -214,8 +214,8 @@ Use appropriate wait strategies instead of fixed timeouts:
 
 ```typescript
 // Good - Wait for specific conditions
-await page.waitForURL('**/flows/**');
-await page.waitForSelector('.react-flow__nodes', { state: 'visible' });
+await page.waitForURL('**/workflows/**');
+await page.waitForSelector('.react-workflow__nodes', { state: 'visible' });
 await page.waitForFunction(() => {
   const element = document.querySelector('.target-element');
   return element && element.textContent?.includes('Expected Text');
@@ -232,7 +232,7 @@ Implement proper error handling and cleanup:
 ```typescript
 test('should handle errors gracefully', async ({ page }) => {
   try {
-    await flowsPage.actions.navigate(page);
+    await workflowsPage.actions.navigate(page);
     // Test logic
   } catch (error) {
     // Log error details
@@ -242,7 +242,7 @@ test('should handle errors gracefully', async ({ page }) => {
     throw error;
   } finally {
     // Clean up resources
-    await flowsPage.actions.cleanupExistingFlows(page);
+    await workflowsPage.actions.cleanupExistingWorkflows(page);
   }
 });
 ```
@@ -256,7 +256,7 @@ Prefer semantic selectors over CSS selectors:
 ```typescript
 // Good - Semantic selectors
 getters = {
-  createButton: (page: Page) => page.getByRole('button', { name: 'Create Flow' }),
+  createButton: (page: Page) => page.getByRole('button', { name: 'Create Workflow' }),
   emailField: (page: Page) => page.getByPlaceholder('email@example.com'),
   searchInput: (page: Page) => page.getByRole('textbox', { name: 'Search' }),
 };
@@ -275,10 +275,10 @@ Use dynamic test data to avoid conflicts:
 ```typescript
 // Good - Dynamic test data
 const runVersion = Math.floor(Math.random() * 100000);
-const uniqueFlowName = `Test Flow ${Date.now()}`;
+const uniqueWorkflowName = `Test Workflow ${Date.now()}`;
 
 // Avoid - Static test data
-const flowName = 'Test Flow';
+const workflowName = 'Test Workflow';
 ```
 
 ### Assertions
@@ -287,7 +287,7 @@ Use meaningful assertions that verify business logic:
 
 ```typescript
 // Good - Business logic assertions
-await builderPage.actions.testFlowAndWaitForSuccess(page);
+await builderPage.actions.testWorkflowAndWaitForSuccess(page);
 const response = await apiRequest.get(urlWithParams);
 const body = await response.json();
 expect(body.targetRunVersion).toBe(runVersion.toString());
@@ -353,12 +353,12 @@ For the best local debugging experience, install the **Playwright Test for VSCod
 2. **Use VSCode Extension**: Set breakpoints directly in your test files.
 3. **Step Through**: Use F10 (step over) and F11 (step into) in debug mode.
 4. **Inspect Elements**: Use `await page.pause()` to pause execution and inspect the page.
-5. **Console Logs**: Add `console.log()` statements to track execution flow.
+5. **Console Logs**: Add `console.log()` statements to track execution workflow.
 6. **Manual Screenshots**: Take screenshots at critical points for visual debugging.
 
 ```typescript
 test('should debug workflow', async ({ page }) => {
-  await page.goto('/flows');
+  await page.goto('/workflows');
   
   // Pause execution for manual inspection
   await page.pause();
@@ -367,13 +367,13 @@ test('should debug workflow', async ({ page }) => {
   await page.screenshot({ path: 'debug-screenshot.png' });
   
   // Continue with test logic
-  await flowsPage.actions.newFlowFromScratch(page);
+  await workflowsPage.actions.newWorkflowFromScratch(page);
 });
 ```
 
 ## Common Patterns
 
-### Authentication Flow
+### Authentication Workflow
 
 ```typescript
 test('should authenticate user', async ({ page }) => {
@@ -388,13 +388,13 @@ test('should authenticate user', async ({ page }) => {
 });
 ```
 
-### Flow Creation and Testing
+### Workflow Creation and Testing
 
 ```typescript
-test('should create and test flow', async ({ page }) => {
-  await flowsPage.actions.navigate(page);
-  await flowsPage.actions.cleanupExistingFlows(page);
-  await flowsPage.actions.newFlowFromScratch(page);
+test('should create and test workflow', async ({ page }) => {
+  await workflowsPage.actions.navigate(page);
+  await workflowsPage.actions.cleanupExistingWorkflows(page);
+  await workflowsPage.actions.newWorkflowFromScratch(page);
   
   await builderPage.actions.waitFor(page);
   await builderPage.actions.selectInitialTrigger(page, {
@@ -402,7 +402,7 @@ test('should create and test flow', async ({ page }) => {
     trigger: 'Every Hour'
   });
   
-  await builderPage.actions.testFlowAndWaitForSuccess(page);
+  await builderPage.actions.testWorkflowAndWaitForSuccess(page);
 });
 ```
 

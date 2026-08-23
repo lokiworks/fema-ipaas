@@ -1,10 +1,14 @@
 import { isNil } from '@fema/core-utils';
-import { FlowTrigger, FlowTriggerType, flowStructureUtil } from '@fema/shared';
+import {
+  WorkflowTrigger,
+  WorkflowTriggerType,
+  workflowStructureUtil,
+} from '@fema/shared';
 import { t } from 'i18next';
 import { Zap } from 'lucide-react';
 import React from 'react';
 
-import { triggerEventHooks } from '@/features/flows';
+import { triggerEventHooks } from '@/features/workflows';
 
 import { useBuilderStateContext } from '../../builder-hooks';
 import { stepPropertiesSnapshotUtils } from '../../data-display/build-step-properties-snapshot';
@@ -22,19 +26,19 @@ import { TriggerEventSelect } from './trigger-event-select';
 
 type TestTriggerSectionProps = {
   isSaving: boolean;
-  flowVersionId: string;
-  flowId: string;
+  workflowVersionId: string;
+  workflowId: string;
   workspaceId: string;
 };
 
 const TestTriggerSection = React.memo(
-  ({ isSaving, flowVersionId, flowId }: TestTriggerSectionProps) => {
+  ({ isSaving, workflowVersionId, workflowId }: TestTriggerSectionProps) => {
     const runner = useTriggerTestRunner();
     const currentStep = useBuilderStateContext((state) =>
       state.selectedStep
-        ? flowStructureUtil.getStep(
+        ? workflowStructureUtil.getStep(
             state.selectedStep,
-            state.flowVersion.trigger,
+            state.workflowVersion.trigger,
           )
         : null,
     );
@@ -46,19 +50,19 @@ const TestTriggerSection = React.memo(
         sampleDataInput: stepName ? state.inputSampleData[stepName] : undefined,
         lastTestDate:
           stepName && state.selectedStep
-            ? findTriggerLastTestDate(state.flowVersion.trigger, stepName)
+            ? findTriggerLastTestDate(state.workflowVersion.trigger, stepName)
             : undefined,
       }));
 
     const { pollResults } = triggerEventHooks.usePollResults(
-      flowVersionId,
-      flowId,
+      workflowVersionId,
+      workflowId,
     );
 
     if (
       !runner ||
       !currentStep ||
-      currentStep.type !== FlowTriggerType.CONNECTOR
+      currentStep.type !== WorkflowTriggerType.CONNECTOR
     ) {
       return null;
     }
@@ -258,10 +262,10 @@ const TestTriggerSection = React.memo(
 TestTriggerSection.displayName = 'TestTriggerSection';
 
 const findTriggerLastTestDate = (
-  trigger: FlowTrigger,
+  trigger: WorkflowTrigger,
   stepName: string,
 ): string | undefined => {
-  const step = flowStructureUtil.getStep(stepName, trigger);
+  const step = workflowStructureUtil.getStep(stepName, trigger);
   return step?.settings?.sampleData?.lastTestDate;
 };
 

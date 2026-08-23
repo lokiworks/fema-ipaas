@@ -1,11 +1,11 @@
 ---
 name: connector-output-schema
-description: Generate `outputSchema` for an FEMA Integration Platform connector's actions and triggers, so a step's output renders as a curated, labelled tree in the flow builder and data selector. Use when the user asks to add or improve outputSchema for a connector.
+description: Generate `outputSchema` for an FEMA Integration Platform connector's actions and triggers, so a step's output renders as a curated, labelled tree in the workflow builder and data selector. Use when the user asks to add or improve outputSchema for a connector.
 ---
 
 # Connector Output Schema Generator
 
-An `outputSchema` turns a step's raw JSON output into a **friendly, typed, labelled tree** in the flow builder's data selector and output viewer — and a **path map** that LLM/MCP consumers use to find the fields that matter. This skill takes a connector from "raw JSON dump" to curated schemas across all its actions and triggers.
+An `outputSchema` turns a step's raw JSON output into a **friendly, typed, labelled tree** in the workflow builder's data selector and output viewer — and a **path map** that LLM/MCP consumers use to find the fields that matter. This skill takes a connector from "raw JSON dump" to curated schemas across all its actions and triggers.
 
 Read a shipped example before starting: `packages/connectors/community/clickup/src/lib/output-schemas.ts` is the richest; `google-docs` and `google-calendar` are readable smaller ones.
 
@@ -45,7 +45,7 @@ Open the action/trigger's `run()` (and `test()` for triggers). Note whether it r
 
 ### Step 3 — Capture the REAL output
 Run each step against the live connection and capture the exact output JSON. Full recipes in [capture-recipes.md](./capture-recipes.md).
-- **Preferred:** builder **Test Step** (UI, or drive it with the browser MCP), or the `POST /v1/sample-data/test-step` API once a flow with the step exists. Running the connector's own code delivers faithful output and lets the engine refresh OAuth tokens for you.
+- **Preferred:** builder **Test Step** (UI, or drive it with the browser MCP), or the `POST /v1/sample-data/test-step` API once a workflow with the step exists. Running the connector's own code delivers faithful output and lets the engine refresh OAuth tokens for you.
 - **Empty READ → WRITE first:** if a list/search/get returns an empty payload because the account has no data, seed data by running the corresponding **create/write** action first, then chain the new id into the read's input and re-run. Never author a list schema from an empty `[]`.
 
 ### Step 4 — Curate and author the schema

@@ -17,7 +17,7 @@ const allow =
 describe('determineDefaultRoute', () => {
   it('routes based on the user permissions', () => {
     expect(
-      determineDefaultRoute({ checkAccess: allow([Permission.READ_FLOW]) }),
+      determineDefaultRoute({ checkAccess: allow([Permission.READ_WORKFLOW]) }),
     ).toBe('/automations');
     expect(
       determineDefaultRoute({ checkAccess: allow([Permission.READ_RUN]) }),

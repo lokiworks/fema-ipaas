@@ -9,14 +9,14 @@ import { ApForm, formsQueries } from '@/features/forms';
 import NotFoundPage from '../404-page';
 
 export const FormPage = () => {
-  const { flowId } = useParams();
+  const { workflowId } = useParams();
   const useDraft = useSearchParam(USE_DRAFT_QUERY_PARAM_NAME) === 'true';
 
   const {
     data: form,
     isLoading,
     isError,
-  } = formsQueries.useForm(flowId!, useDraft, !isNil(flowId));
+  } = formsQueries.useForm(workflowId!, useDraft, !isNil(workflowId));
 
   return (
     <>

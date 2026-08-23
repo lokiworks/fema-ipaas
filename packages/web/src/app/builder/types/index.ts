@@ -6,6 +6,6 @@ export enum RightSideBarType {
 }
 
 export enum ChatDrawerSource {
-  TEST_FLOW = 'test-flow',
+  TEST_WORKFLOW = 'test-workflow',
   TEST_STEP = 'test-step',
 }

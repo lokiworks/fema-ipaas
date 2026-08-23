@@ -27,7 +27,7 @@ export const delayForAction = createAction({
   classification: 'READ',
   displayName: 'Delay For',
   description: 'Delays the execution of the next action for a given duration',
-  aiMetadata: { description: 'Pauses the flow for a fixed relative duration before the next step runs, given as an amount plus a unit (seconds, minutes, hours or days); short waits sleep in-process while longer ones suspend the run and resume it later. Pick this when the wait is known relative to now, and prefer Delay Until when you have an absolute target date/time. The amount must be non-negative and the wait cannot exceed the instance paused-flow timeout; idempotent, nothing is created or mutated.', idempotent: true },
+  aiMetadata: { description: 'Pauses the workflow for a fixed relative duration before the next step runs, given as an amount plus a unit (seconds, minutes, hours or days); short waits sleep in-process while longer ones suspend the run and resume it later. Pick this when the wait is known relative to now, and prefer Delay Until when you have an absolute target date/time. The amount must be non-negative and the wait cannot exceed the instance paused-workflow timeout; idempotent, nothing is created or mutated.', idempotent: true },
   errorHandlingOptions: {
     continueOnFailure: {
       hide: true,
@@ -73,7 +73,7 @@ export const delayForAction = createAction({
         success: true,
       };
     } else if (delayInMs > 1 * 10 * 1000) {
-      // use flow pause
+      // use workflow pause
       const currentTime = new Date();
       const futureTime = new Date(currentTime.getTime() + delayInMs);
       const waitpoint = await ctx.run.createWaitpoint({

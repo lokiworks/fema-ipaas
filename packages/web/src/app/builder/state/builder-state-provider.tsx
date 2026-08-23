@@ -25,8 +25,8 @@ export function BuilderStateProvider({
 }: BuilderStateProviderProps) {
   const storeRef = useRef<BuilderStore>(undefined);
   const { checkAccess } = useAuthorization();
-  const readonly = !checkAccess(Permission.WRITE_FLOW) || props.readonly;
-  workspaceHooks.useReloadPageIfWorkspaceIdChanged(props.flow.workspaceId);
+  const readonly = !checkAccess(Permission.WRITE_WORKFLOW) || props.readonly;
+  workspaceHooks.useReloadPageIfWorkspaceIdChanged(props.workflow.workspaceId);
   const socket = useSocket();
   const queryClient = useQueryClient();
   if (!storeRef.current) {

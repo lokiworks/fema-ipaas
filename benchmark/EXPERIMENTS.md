@@ -20,7 +20,7 @@ traffic?
 | Cluster | GKE, `e2-standard-4` × 14 nodes, `europe-west1-b` |
 | Worker | One sandbox per worker, concurrency 1, in-process engine fork (`SANDBOX_CODE_ONLY`: Node child + isolated-vm). Hard cap **0.5 vCPU / 1 GB** |
 | App | `1 vCPU / 1 GB` per pod |
-| Object store | Real same-region **GCS** bucket (`europe-west1`) over the S3-interop endpoint (`storage.googleapis.com`, path-style + SigV4 presigned URLs). Engine pulls flow bundle + connector archives via signed links |
+| Object store | Real same-region **GCS** bucket (`europe-west1`) over the S3-interop endpoint (`storage.googleapis.com`, path-style + SigV4 presigned URLs). Engine pulls workflow bundle + connector archives via signed links |
 | Postgres / Redis | In-cluster |
 | Load tool | [`hey`](https://github.com/rakyll/hey), `-c` = worker count (40 or 80) so requests don't queue behind the concurrency-1 workers — latency reflects real service time, not backlog |
 
@@ -34,14 +34,14 @@ traffic?
 - `warm` = `FEMA_REUSE_SANDBOX=true` — engine process reused between jobs.
 - `cold` = `FEMA_REUSE_SANDBOX=false` — fresh engine fork + boot every job (the realistic isolation guarantee).
 
-### The flow under test
+### The workflow under test
 
-A 4-node synchronous webhook flow:
+A 4-node synchronous webhook workflow:
 
-1. **Webhook trigger** (`catch_webhook`, `/sync` — holds the HTTP connection until the flow returns)
+1. **Webhook trigger** (`catch_webhook`, `/sync` — holds the HTTP connection until the workflow returns)
 2. **Math Helper** (`addition_math`, `2 + 3`)
 3. **Code step** in isolated-vm (`return { result: Number(inputs.sum) + 1 }`)
-4. **Webhook response** (`sendFlowResponse`)
+4. **Webhook response** (`sendWorkflowResponse`)
 
 The actual compute is sub-millisecond; everything measured below is orchestration overhead.
 
@@ -75,9 +75,9 @@ saturates its cap first):
 | Layer | Warm | Cold | What it is |
 |---|---|---|---|
 | app ingress + Redis + worker poll | ~91 ms | ~39 ms | webhook→app→Redis enqueue→worker dequeue, + response delivery back |
-| provision | 24 ms | 16 ms | flow-bundle + connector + engine install — all disk-cache hits |
+| provision | 24 ms | 16 ms | workflow-bundle + connector + engine install — all disk-cache hits |
 | sandbox boot | 18 ms | 1167 ms | warm = process reused; cold = fresh fork + Node start + bundle parse + isolated-vm init + socket connect |
-| flow run (4 steps) | 372 ms | 762 ms | per-step engine→app callbacks + isolated-vm code + response handshake |
+| workflow run (4 steps) | 372 ms | 762 ms | per-step engine→app callbacks + isolated-vm code + response handshake |
 | **end-to-end avg** | **505 ms** | **1984 ms** | p50 446/1957 · p95 648/2183 · p99 3817/2986 ms |
 
 - **The cold "sandbox boot" tax (1167 ms).** A fresh engine fork pays Node startup (incl. the
@@ -85,9 +85,9 @@ saturates its cap first):
   (the bulk), and socket.io connect (~90 ms). In isolated profiling this is ~570 ms; under sustained
   cold load it inflates to ~1167 ms because ~40 workers fork at once, each capped at 0.5 CPU, and
   contend — boot is CPU-bound. Warm reuses the process and pays just 18 ms.
-- **"flow run" (372 ms warm / 762 ms cold)** is orchestration, not compute: after each step the
+- **"workflow run" (372 ms warm / 762 ms cold)** is orchestration, not compute: after each step the
   engine reports progress / persists output via an HTTP callback to the app (3 runnable steps ≈ 3
-  round-trips + flow load + final `sendFlowResponse`), plus the isolated-vm code call. Direct
+  round-trips + workflow load + final `sendWorkflowResponse`), plus the isolated-vm code call. Direct
   evidence it's app-callback-bound: adding apps cut warm execution from 477 ms (1:20) → 372 ms (1:10)
   with identical steps — pure compute wouldn't move. Cold execution is ~2× warm because the
   just-forked engine runs on a cold V8 (no JIT warmup) while contending for CPU.
@@ -117,8 +117,8 @@ default** — the extra apps in 1:10 buy headroom, not a proportional throughput
 
 Provisioning is cheap because connectors are cached. A worker is its own sandbox and fills its connector cache
 lazily on first use (the old `FEMA_PRE_WARM_CACHE` up-front install step no longer exists). After first
-use the connector + flow bundle live on the worker's local disk, so warm runs do zero install work — here
-flow-bundle download ≈ 2 ms and connector install ≈ 3–13 ms. On a cold/first install the archive is pulled
+use the connector + workflow bundle live on the worker's local disk, so warm runs do zero install work — here
+workflow-bundle download ≈ 2 ms and connector install ≈ 3–13 ms. On a cold/first install the archive is pulled
 from the same-region S3 bucket via a signed link (fast in-region fetch, not a slow npm round-trip).
 **Cache warmth comes from running long-lived worker replicas, not a warm-up flag.**
 
@@ -274,7 +274,7 @@ assumed to be the laptop until reproduced in-cluster.
 - `run-gke.sh` minted a fresh random `FEMA_JWT_SECRET` per run but restarted only the worker. `envFrom` is
   read once at container start, so app pods kept the old secret and every worker socket handshake failed
   with `Authentication error` — and workers do not recover from it. Symptom: pods `Running`, fleet
-  "ready", nothing consuming jobs, flow publish dying after 300 s. Fix: restart app, **wait for its
+  "ready", nothing consuming jobs, workflow publish dying after 300 s. Fix: restart app, **wait for its
   rollout**, then restart workers.
 - The per-run breakdown parsed JSON, but the worker ignores `FEMA_LOG_PRETTY` and always uses the pretty
   renderer, so it silently reported "no timing samples". Now parses the `<name>Ms` keys from either shape.

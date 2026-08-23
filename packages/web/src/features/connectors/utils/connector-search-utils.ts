@@ -1,7 +1,7 @@
 import {
   ConnectorCategory,
-  FlowTriggerType,
-  FlowActionType,
+  WorkflowTriggerType,
+  WorkflowActionType,
   AI_CONNECTOR_NAME,
 } from '@fema/shared';
 import { t } from 'i18next';
@@ -13,16 +13,16 @@ import {
   StepMetadataWithSuggestions,
 } from '@/features/connectors/types';
 
-const isFlowController = (stepMetadata: StepMetadata) => {
+const isWorkflowController = (stepMetadata: StepMetadata) => {
   if (
-    stepMetadata.type === FlowActionType.CONNECTOR ||
-    stepMetadata.type === FlowTriggerType.CONNECTOR
+    stepMetadata.type === WorkflowActionType.CONNECTOR ||
+    stepMetadata.type === WorkflowTriggerType.CONNECTOR
   ) {
-    return stepMetadata.categories.includes(ConnectorCategory.FLOW_CONTROL);
+    return stepMetadata.categories.includes(ConnectorCategory.WORKFLOW_CONTROL);
   }
   return (
-    stepMetadata.type === FlowActionType.LOOP_ON_ITEMS ||
-    stepMetadata.type === FlowActionType.ROUTER
+    stepMetadata.type === WorkflowActionType.LOOP_ON_ITEMS ||
+    stepMetadata.type === WorkflowActionType.ROUTER
   );
 };
 
@@ -59,8 +59,8 @@ const getAiAndAgentsConnectors = (
 
 const isAiAndAgentConnector = (stepMetadata: StepMetadata) => {
   if (
-    stepMetadata.type === FlowActionType.CONNECTOR ||
-    stepMetadata.type === FlowTriggerType.CONNECTOR
+    stepMetadata.type === WorkflowActionType.CONNECTOR ||
+    stepMetadata.type === WorkflowTriggerType.CONNECTOR
   ) {
     return stepMetadata.categories.some((category) =>
       [
@@ -73,17 +73,17 @@ const isAiAndAgentConnector = (stepMetadata: StepMetadata) => {
 };
 
 const isUtilityConnector = (metadata: StepMetadata) =>
-  metadata.type !== FlowTriggerType.CONNECTOR &&
-  metadata.type !== FlowActionType.CONNECTOR
-    ? !isFlowController(metadata)
+  metadata.type !== WorkflowTriggerType.CONNECTOR &&
+  metadata.type !== WorkflowActionType.CONNECTOR
+    ? !isWorkflowController(metadata)
     : metadata.categories.includes(ConnectorCategory.CORE) &&
-      !isFlowController(metadata);
+      !isWorkflowController(metadata);
 
 const isAppConnector = (metadata: StepMetadata) => {
   return (
     !isUtilityConnector(metadata) &&
     !isAiAndAgentConnector(metadata) &&
-    !isFlowController(metadata)
+    !isWorkflowController(metadata)
   );
 };
 
@@ -127,8 +127,8 @@ const filterResultByConnectorType = (
 ) => {
   return queryResult.filter(
     (connector): connector is ConnectorStepMetadataWithSuggestions =>
-      connector.type === FlowActionType.CONNECTOR ||
-      connector.type === FlowTriggerType.CONNECTOR,
+      connector.type === WorkflowActionType.CONNECTOR ||
+      connector.type === WorkflowTriggerType.CONNECTOR,
   );
 };
 
@@ -181,7 +181,7 @@ const HIGHLIGHTED_CONNECTORS_NAMES_FOR_ACTIONS = [
 ];
 
 export const connectorSearchUtils = {
-  isFlowController,
+  isWorkflowController,
   getAiAndAgentsConnectors,
   isAiAndAgentConnector,
   isUtilityConnector,

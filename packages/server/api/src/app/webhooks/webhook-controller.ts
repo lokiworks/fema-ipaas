@@ -10,29 +10,29 @@ import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { securityAccess } from '../core/security/authorization/fastify-security'
 import { triggerSourceService } from '../trigger/trigger-source/trigger-source-service'
 import { convertRequest, extractHeaderFromRequest } from './webhook-request-converter'
-import { WebhookFlowVersionToRun, webhookService } from './webhook.service'
+import { webhookService, WebhookWorkflowVersionToRun } from './webhook.service'
 
 export const webhookController: FastifyPluginAsyncZod = async (app) => {
 
     app.all(
-        '/:flowId/sync',
+        '/:workflowId/sync',
         WEBHOOK_PARAMS,
         async (request: FastifyRequest<{ Params: WebhookUrlParams }>, reply) => {
             wideEvent.set({
-                flow: { id: request.params.flowId },
+                workflow: { id: request.params.workflowId },
                 webhook: {
                     method: request.method,
                     async: false,
                 },
             })
             const response = await webhookService.handleWebhook({
-                data: (workspaceId: string) => convertRequest(request, workspaceId, request.params.flowId),
+                data: (workspaceId: string) => convertRequest(request, workspaceId, request.params.workflowId),
                 logger: request.log,
-                flowId: request.params.flowId,
+                workflowId: request.params.workflowId,
                 async: false,
-                flowVersionToRun: WebhookFlowVersionToRun.LOCKED_FALL_BACK_TO_LATEST,
-                saveSampleData: await triggerSourceService(request.log).existsByFlowId({
-                    flowId: request.params.flowId,
+                workflowVersionToRun: WebhookWorkflowVersionToRun.LOCKED_FALL_BACK_TO_LATEST,
+                saveSampleData: await triggerSourceService(request.log).existsByWorkflowId({
+                    workflowId: request.params.workflowId,
                     simulate: true,
                 }),
                 execute: true,
@@ -48,26 +48,26 @@ export const webhookController: FastifyPluginAsyncZod = async (app) => {
     )
 
     app.all(
-        '/:flowId',
+        '/:workflowId',
         WEBHOOK_PARAMS,
         async (request: FastifyRequest<{ Params: WebhookUrlParams }>, reply) => {
             wideEvent.set({
-                flow: { id: request.params.flowId },
+                workflow: { id: request.params.workflowId },
                 webhook: {
                     method: request.method,
                     async: true,
                 },
             })
             const response = await webhookService.handleWebhook({
-                data: (workspaceId: string) => convertRequest(request, workspaceId, request.params.flowId),
+                data: (workspaceId: string) => convertRequest(request, workspaceId, request.params.workflowId),
                 logger: request.log,
-                flowId: request.params.flowId,
+                workflowId: request.params.workflowId,
                 async: true,
-                saveSampleData: await triggerSourceService(request.log).existsByFlowId({
-                    flowId: request.params.flowId,
+                saveSampleData: await triggerSourceService(request.log).existsByWorkflowId({
+                    workflowId: request.params.workflowId,
                     simulate: true,
                 }),
-                flowVersionToRun: WebhookFlowVersionToRun.LOCKED_FALL_BACK_TO_LATEST,
+                workflowVersionToRun: WebhookWorkflowVersionToRun.LOCKED_FALL_BACK_TO_LATEST,
                 execute: true,
                 ...extractRawPayload(request),
                 ...extractHeaderFromRequest(request),
@@ -80,14 +80,14 @@ export const webhookController: FastifyPluginAsyncZod = async (app) => {
         },
     )
 
-    app.all('/:flowId/draft/sync', WEBHOOK_PARAMS, async (request, reply) => {
+    app.all('/:workflowId/draft/sync', WEBHOOK_PARAMS, async (request, reply) => {
         const response = await webhookService.handleWebhook({
-            data: (workspaceId: string) => convertRequest(request, workspaceId, request.params.flowId),
+            data: (workspaceId: string) => convertRequest(request, workspaceId, request.params.workflowId),
             logger: request.log,
-            flowId: request.params.flowId,
+            workflowId: request.params.workflowId,
             async: false,
             saveSampleData: true,
-            flowVersionToRun: WebhookFlowVersionToRun.LATEST,
+            workflowVersionToRun: WebhookWorkflowVersionToRun.LATEST,
             execute: true,
             onRunCreated: (run) => {
                 app.io.to(run.workspaceId).emit(WebsocketClientEvent.TEST_EXECUTION_STARTED, run)
@@ -100,14 +100,14 @@ export const webhookController: FastifyPluginAsyncZod = async (app) => {
             .send(response.body)
     })
 
-    app.all('/:flowId/draft', WEBHOOK_PARAMS, async (request, reply) => {
+    app.all('/:workflowId/draft', WEBHOOK_PARAMS, async (request, reply) => {
         const response = await webhookService.handleWebhook({
-            data: (workspaceId: string) => convertRequest(request, workspaceId, request.params.flowId),
+            data: (workspaceId: string) => convertRequest(request, workspaceId, request.params.workflowId),
             logger: request.log,
-            flowId: request.params.flowId,
+            workflowId: request.params.workflowId,
             async: true,
             saveSampleData: true,
-            flowVersionToRun: WebhookFlowVersionToRun.LATEST,
+            workflowVersionToRun: WebhookWorkflowVersionToRun.LATEST,
             execute: true,
             ...extractHeaderFromRequest(request),
         })
@@ -117,14 +117,14 @@ export const webhookController: FastifyPluginAsyncZod = async (app) => {
             .send(response.body)
     })
 
-    app.all('/:flowId/test', WEBHOOK_PARAMS, async (request, reply) => {
+    app.all('/:workflowId/test', WEBHOOK_PARAMS, async (request, reply) => {
         const response = await webhookService.handleWebhook({
-            data: (workspaceId: string) => convertRequest(request, workspaceId, request.params.flowId),
+            data: (workspaceId: string) => convertRequest(request, workspaceId, request.params.workflowId),
             logger: request.log,
-            flowId: request.params.flowId,
+            workflowId: request.params.workflowId,
             async: true,
             saveSampleData: true,
-            flowVersionToRun: WebhookFlowVersionToRun.LATEST,
+            workflowVersionToRun: WebhookWorkflowVersionToRun.LATEST,
             execute: false,
             ...extractHeaderFromRequest(request),
         })

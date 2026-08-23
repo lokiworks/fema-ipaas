@@ -14,7 +14,8 @@ export function useAutomationsDialogs({
   selectedItems,
 }: DialogsDeps) {
   const [isFolderDialogOpen, setIsFolderDialogOpen] = useState(false);
-  const [isImportFlowDialogOpen, setIsImportFlowDialogOpen] = useState(false);
+  const [isImportWorkflowDialogOpen, setIsImportWorkflowDialogOpen] =
+    useState(false);
   const [isImportTableDialogOpen, setIsImportTableDialogOpen] = useState(false);
   const [importTargetFolderId, setImportTargetFolderId] = useState<
     string | undefined
@@ -46,8 +47,8 @@ export function useAutomationsDialogs({
   return {
     isFolderDialogOpen,
     setIsFolderDialogOpen,
-    isImportFlowDialogOpen,
-    setIsImportFlowDialogOpen,
+    isImportWorkflowDialogOpen,
+    setIsImportWorkflowDialogOpen,
     isImportTableDialogOpen,
     setIsImportTableDialogOpen,
     importTargetFolderId,

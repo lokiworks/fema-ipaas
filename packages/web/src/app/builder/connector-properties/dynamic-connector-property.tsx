@@ -34,8 +34,8 @@ const removeOptionsFromDropdownPropertiesSchema = (
 
 const DynamicPropertiesImplementation = React.memo(
   (props: DynamicPropertiesProps) => {
-    const [flowVersion, readonly] = useBuilderStateContext((state) => [
-      state.flowVersion,
+    const [workflowVersion, readonly] = useBuilderStateContext((state) => [
+      state.workflowVersion,
       state.readonly,
     ]);
     const form = useFormContext();
@@ -141,8 +141,8 @@ const DynamicPropertiesImplementation = React.memo(
             propertyName: props.propertyName,
             actionOrTriggerName: props.actionOrTriggerName,
             input: refresherValues,
-            flowVersionId: flowVersion.id,
-            flowId: flowVersion.flowId,
+            workflowVersionId: workflowVersion.id,
+            workflowId: workflowVersion.workflowId,
           },
           propertyType: PropertyType.DYNAMIC,
         },

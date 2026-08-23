@@ -4,7 +4,7 @@ icon: 🔐
 
 # Secret Managers
 
-Lets platform admins connect FEMA Integration Platform to an external secret store (HashiCorp Vault, AWS Secrets Manager, CyberArk Conjur, 1Password) so sensitive values in flow steps/connections resolve from the vault at runtime instead of the DB. Reference syntax: `{{<connectionId><separator><path>}}`. Gated by `platform.plan.secretManagersEnabled` (EE/Cloud).
+Lets platform admins connect FEMA Integration Platform to an external secret store (HashiCorp Vault, AWS Secrets Manager, CyberArk Conjur, 1Password) so sensitive values in workflow steps/connections resolve from the vault at runtime instead of the DB. Reference syntax: `{{<connectionId><separator><path>}}`. Gated by `platform.plan.secretManagersEnabled` (EE/Cloud).
 
 ### Entity
 `secret_manager_connection`: id, platformId (FK, CASCADE), providerId, name, scope (`PLATFORM`/`PROJECT`, default PLATFORM), projectIds (jsonb, queried with PostgreSQL `@>` containment), auth (jsonb, encrypted provider config).

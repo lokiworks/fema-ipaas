@@ -4,14 +4,14 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { humanInputApi } from '../api/human-input-api';
 
 export const formsKeys = {
-  form: (flowId: string) => ['form', flowId] as const,
+  form: (workflowId: string) => ['form', workflowId] as const,
 };
 
 export const formsQueries = {
-  useForm: (flowId: string, useDraft: boolean, enabled: boolean) =>
+  useForm: (workflowId: string, useDraft: boolean, enabled: boolean) =>
     useQuery<FormResponse | null, Error>({
-      queryKey: formsKeys.form(flowId),
-      queryFn: () => humanInputApi.getForm(flowId, useDraft),
+      queryKey: formsKeys.form(workflowId),
+      queryFn: () => humanInputApi.getForm(workflowId, useDraft),
       enabled,
       retry: false,
       staleTime: Infinity,

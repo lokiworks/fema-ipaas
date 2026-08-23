@@ -4,7 +4,7 @@ import {
   formulaEvaluator,
   typeCheckTiptapDoc,
 } from '@fema/expression';
-import { flowStructureUtil } from '@fema/shared';
+import { workflowStructureUtil } from '@fema/shared';
 import { Extensions } from '@tiptap/core';
 import { Document } from '@tiptap/extension-document';
 import { HardBreak } from '@tiptap/extension-hard-break';
@@ -237,7 +237,7 @@ export const TiptapEditor = ({
   const isHtml = outputFormat === 'html';
   const { embedState } = useEmbedding();
   const steps = useBuilderStateContext((state) =>
-    flowStructureUtil.getAllSteps(state.flowVersion.trigger),
+    workflowStructureUtil.getAllSteps(state.workflowVersion.trigger),
   );
   const stepsMetadata = stepsHooks
     .useStepsMetadata(steps)

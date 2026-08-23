@@ -1,5 +1,5 @@
 import { isNil, tryParseFriendlyConnectorError } from '@fema/core-utils';
-import { FlowAction } from '@fema/shared';
+import { WorkflowAction } from '@fema/shared';
 import { t } from 'i18next';
 import { Loader2, Play } from 'lucide-react';
 import React, { useState } from 'react';
@@ -21,7 +21,7 @@ import { TestButtonTooltip } from './test-step-tooltip';
 
 type TestSampleDataViewerProps = {
   isValid: boolean;
-  currentStep?: FlowAction;
+  currentStep?: WorkflowAction;
   isTesting: boolean;
   sampleData?: unknown;
   sampleDataInput?: unknown | null;

@@ -62,12 +62,12 @@ export function createMockActionContext<
       id: 'test-workspace-id',
       externalId: async () => undefined,
     },
-    flows: {
+    workflows: {
       list: async () => ({ data: [], next: null, previous: null }),
       current: {
-        id: 'test-flow-id',
+        id: 'test-workflow-id',
         version: {
-          id: 'test-flow-version-id',
+          id: 'test-workflow-version-id',
         },
       },
     },

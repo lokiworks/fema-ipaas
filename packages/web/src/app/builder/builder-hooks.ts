@@ -8,10 +8,10 @@ import {
   createConnectorSelectorState,
   ConnectorSelectorState,
 } from './state/connector-selector-state';
-import { createFlowState, FlowState } from './state/flow-state';
 import { createNotesState, NotesState } from './state/notes-state';
 import { createRunState, RunState } from './state/run-state';
 import { createStepFormState, StepFormState } from './state/step-form-state';
+import { createWorkflowState, WorkflowState } from './state/workflow-state';
 
 export const BuilderStateContext = createContext<BuilderStore | null>(null);
 
@@ -28,7 +28,7 @@ export function useBuilderStateContext<T>(
   return useStore(useBuilderStore(), selector);
 }
 
-export type BuilderState = FlowState &
+export type BuilderState = WorkflowState &
   ConnectorSelectorState &
   RunState &
   CanvasState &
@@ -36,8 +36,8 @@ export type BuilderState = FlowState &
   NotesState;
 export type BuilderInitialState = Pick<
   BuilderState,
-  | 'flow'
-  | 'flowVersion'
+  | 'workflow'
+  | 'workflowVersion'
   | 'readonly'
   | 'hideTestWidget'
   | 'run'
@@ -51,14 +51,14 @@ export type BuilderInitialState = Pick<
 export type BuilderStore = ReturnType<typeof createBuilderStore>;
 export const createBuilderStore = (initialState: BuilderInitialState) =>
   create<BuilderState>((set, get) => {
-    const flowState = createFlowState(initialState, get, set);
+    const workflowState = createWorkflowState(initialState, get, set);
     const connectorSelectorState = createConnectorSelectorState(get, set);
     const runState = createRunState(initialState, get, set);
     const canvasState = createCanvasState(initialState, set);
     const stepFormState = createStepFormState(set);
     const notesState = createNotesState(get, set);
     return {
-      ...flowState,
+      ...workflowState,
       ...notesState,
       ...runState,
       ...connectorSelectorState,

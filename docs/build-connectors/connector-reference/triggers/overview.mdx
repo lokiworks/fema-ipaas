@@ -32,11 +32,11 @@ export const createNewIssue = createTrigger({
     type: TriggerStrategy.WEBHOOK | TriggerStrategy.POLLING | TriggerStrategy.APP_WEBHOOK,
 
     props: {}; // Required properties from the user.
-    // Run when the user enable or publish the flow.
+    // Run when the user enable or publish the workflow.
 
 	onEnable: (ctx) => {},
-    // Run when the user disable the flow or
-    // the old flow is deleted after new one is published.
+    // Run when the user disable the workflow or
+    // the old workflow is deleted after new one is published.
 	onDisable: (ctx) => {},
 
     // Trigger implementation, It takes context as parameter.
@@ -48,7 +48,7 @@ export const createNewIssue = createTrigger({
 <Tip>
   It's important to note that the `run` method returns an array. The reason for
   this is that a single polling can contain multiple triggers, so each item in
-  the array will trigger the flow to run.
+  the array will trigger the workflow to run.
 </Tip>
 
 ## Context Object
@@ -60,7 +60,7 @@ The Context object contains multiple helpful connectors of information and tools
 await context.store.put('_lastFetchedDate', new Date());
 const lastFetchedData = await context.store.get('_lastFetchedDate', new Date());
 
-// Webhook URL: A unique, auto-generated URL that will trigger the flow. Useful when you need to develop a trigger based on webhooks.
+// Webhook URL: A unique, auto-generated URL that will trigger the workflow. Useful when you need to develop a trigger based on webhooks.
 context.webhookUrl;
 
 // Payload: Contains information about the HTTP request sent by the third party. It has three properties: status, headers, and body.

@@ -10,7 +10,7 @@ import { everyXMinutesTrigger } from './lib/triggers/every-x-minutes.trigger';
 export const schedule = createConnector({
   displayName: 'Schedule',
   logoUrl: 'https://cdn.fema.local/connectors/new-core/schedule.svg',
-  description: 'Trigger flow with fixed schedule',
+  description: 'Trigger workflow with fixed schedule',
   categories: [ConnectorCategory.CORE],
   auth: ConnectorAuth.None(),
   minimumSupportedRelease: '0.30.0',

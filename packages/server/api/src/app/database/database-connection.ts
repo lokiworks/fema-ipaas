@@ -9,11 +9,6 @@ import { ConnectionEntity } from '../connection/connection.entity'
 import { ConnectorMetadataEntity } from '../connectors/metadata/connector-metadata-entity'
 import { FileEntity } from '../file/file.entity'
 import { FlagEntity } from '../flags/flag.entity'
-import { ExecutionEntity } from '../flows/execution/execution-entity'
-import { WaitpointEntity } from '../flows/execution/waitpoint/waitpoint-entity'
-import { FlowEntity } from '../flows/flow/flow.entity'
-import { FlowVersionEntity } from '../flows/flow-version/flow-version-entity'
-import { FolderEntity } from '../flows/folder/folder.entity'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
 import { PlatformEntity } from '../platform/platform.entity'
@@ -25,6 +20,11 @@ import { TriggerSourceEntity } from '../trigger/trigger-source/trigger-source-en
 import { UserEntity } from '../user/user-entity'
 import { UserInvitationEntity } from '../user-invitations/user-invitation.entity'
 import { VariableEntity } from '../variable/variable.entity'
+import { ExecutionEntity } from '../workflows/execution/execution-entity'
+import { WaitpointEntity } from '../workflows/execution/waitpoint/waitpoint-entity'
+import { FolderEntity } from '../workflows/folder/folder.entity'
+import { WorkflowEntity } from '../workflows/workflow/workflow.entity'
+import { WorkflowVersionEntity } from '../workflows/workflow-version/workflow-version-entity'
 import { WorkspaceEntity } from '../workspace/workspace-entity'
 import { DatabaseType } from './database-type'
 import { createPGliteDataSource } from './pglite-connection'
@@ -38,8 +38,8 @@ function getEntities(): EntitySchema<unknown>[] {
         AppEventRoutingEntity,
         FileEntity,
         FlagEntity,
-        FlowEntity,
-        FlowVersionEntity,
+        WorkflowEntity,
+        WorkflowVersionEntity,
         ExecutionEntity,
         WorkspaceEntity,
         StoreEntryEntity,

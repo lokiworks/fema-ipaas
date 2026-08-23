@@ -12,15 +12,15 @@ export const zombiePollingInterceptor: JobInterceptor = {
         if (!ZOMBIE_REPEATING_JOB_TYPES.includes(jobData.jobType)) {
             return { verdict: InterceptorVerdict.ALLOW }
         }
-        const { flowVersionId } = jobData as PollingJobData | RenewWebhookJobData
-        // An active trigger source exists only when the flow is enabled and this exact version is current.
+        const { workflowVersionId } = jobData as PollingJobData | RenewWebhookJobData
+        // An active trigger source exists only when the workflow is enabled and this exact version is current.
         // If soft-deleted (disabled or re-published to a new version), findOneBy returns null.
-        const activeTriggerSource = await triggerSourceRepo().findOneBy({ flowVersionId })
+        const activeTriggerSource = await triggerSourceRepo().findOneBy({ workflowVersionId })
         if (!isNil(activeTriggerSource)) {
             return { verdict: InterceptorVerdict.ALLOW }
         }
-        log.warn({ flowVersion: { id: flowVersionId } }, '[zombiePollingInterceptor] No active trigger source — discarding repeat job (flow disabled, re-published, or deleted)')
-        await jobQueue(log).removeRepeatingJob({ flowVersionId })
+        log.warn({ workflowVersion: { id: workflowVersionId } }, '[zombiePollingInterceptor] No active trigger source — discarding repeat job (workflow disabled, re-published, or deleted)')
+        await jobQueue(log).removeRepeatingJob({ workflowVersionId })
         return { verdict: InterceptorVerdict.DISCARD }
     },
 

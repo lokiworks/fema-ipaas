@@ -1,4 +1,4 @@
-import { FolderDto, PopulatedFlow } from '@fema/shared';
+import { FolderDto, PopulatedWorkflow } from '@fema/shared';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import { t } from 'i18next';
 import { Activity, Clock, Info, Type, User } from 'lucide-react';
@@ -29,12 +29,12 @@ type AutomationsTableProps = {
   onRowClick: (item: TreeItem, ctrlKey?: boolean) => void;
   onRenameItem: (item: TreeItem) => void;
   onDeleteItem: (item: TreeItem) => void;
-  onDuplicateFlow: (flow: PopulatedFlow) => void;
+  onDuplicateWorkflow: (workflow: PopulatedWorkflow) => void;
   onMoveItem: (item: TreeItem, folderId: string) => void;
-  onExportFlow: (flow: PopulatedFlow) => void;
+  onExportWorkflow: (workflow: PopulatedWorkflow) => void;
   onCreateInFolder?: (folderId: string, kind: CreateInFolderKind) => void;
-  userHasPermissionToWriteFlow?: boolean;
-  isCreatingFlow?: boolean;
+  userHasPermissionToWriteWorkflow?: boolean;
+  isCreatingWorkflow?: boolean;
   isMoving: boolean;
   isDuplicating: boolean;
   onLoadMoreInFolder: (folderId: string) => void;
@@ -95,12 +95,12 @@ export const AutomationsTable = ({
   onRowClick,
   onRenameItem,
   onDeleteItem,
-  onDuplicateFlow,
+  onDuplicateWorkflow,
   onMoveItem,
-  onExportFlow,
+  onExportWorkflow,
   onCreateInFolder,
-  userHasPermissionToWriteFlow,
-  isCreatingFlow,
+  userHasPermissionToWriteWorkflow,
+  isCreatingWorkflow,
   isMoving,
   isDuplicating,
   onLoadMoreInFolder,
@@ -193,14 +193,14 @@ export const AutomationsTable = ({
                         onTogglePin={() => onTogglePin(group.item.id)}
                         onRename={() => onRenameItem(group.item)}
                         onDelete={() => onDeleteItem(group.item)}
-                        onDuplicate={onDuplicateFlow}
+                        onDuplicate={onDuplicateWorkflow}
                         onMoveTo={onMoveItem}
-                        onExportFlow={onExportFlow}
+                        onExportWorkflow={onExportWorkflow}
                         onCreateInFolder={onCreateInFolder}
-                        userHasPermissionToWriteFlow={
-                          userHasPermissionToWriteFlow
+                        userHasPermissionToWriteWorkflow={
+                          userHasPermissionToWriteWorkflow
                         }
-                        isCreatingFlow={isCreatingFlow}
+                        isCreatingWorkflow={isCreatingWorkflow}
                         isMoving={isMoving}
                         isDuplicating={isDuplicating}
                         onLoadMore={undefined}
@@ -229,9 +229,9 @@ export const AutomationsTable = ({
                             onTogglePin={() => onTogglePin(child.id)}
                             onRename={() => onRenameItem(child)}
                             onDelete={() => onDeleteItem(child)}
-                            onDuplicate={onDuplicateFlow}
+                            onDuplicate={onDuplicateWorkflow}
                             onMoveTo={onMoveItem}
-                            onExportFlow={onExportFlow}
+                            onExportWorkflow={onExportWorkflow}
                             isMoving={isMoving}
                             isDuplicating={isDuplicating}
                             onLoadMore={
@@ -267,9 +267,9 @@ export const AutomationsTable = ({
                     onTogglePin={() => onTogglePin(group.item.id)}
                     onRename={() => onRenameItem(group.item)}
                     onDelete={() => onDeleteItem(group.item)}
-                    onDuplicate={onDuplicateFlow}
+                    onDuplicate={onDuplicateWorkflow}
                     onMoveTo={onMoveItem}
-                    onExportFlow={onExportFlow}
+                    onExportWorkflow={onExportWorkflow}
                     isMoving={isMoving}
                     isDuplicating={isDuplicating}
                     onLoadMore={undefined}

@@ -3,8 +3,8 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { t } from 'i18next';
 
 import { useEmbedding } from '@/components/providers/embed-provider';
-import { flowsApi } from '@/features/flows';
 import { foldersApi } from '@/features/folders';
+import { workflowsApi } from '@/features/workflows';
 import {
   workspaceCollectionUtils,
   getWorkspaceName,
@@ -72,10 +72,10 @@ export function useGlobalSearchResults(query: string, open: boolean) {
     (foldersQuery.data ?? []).map((f) => [f.id, f.displayName]),
   );
 
-  const flowsQuery = useQuery({
-    queryKey: ['global-search-flows', workspaceId, query],
+  const workflowsQuery = useQuery({
+    queryKey: ['global-search-workflows', workspaceId, query],
     queryFn: () =>
-      flowsApi.list({
+      workflowsApi.list({
         workspaceId,
         ...(hasQuery ? { name: query } : {}),
         limit: SEARCH_LIMIT,
@@ -106,20 +106,22 @@ export function useGlobalSearchResults(query: string, open: boolean) {
       )
     : allFolders;
 
-  const flowResults: SearchResultItem[] = (flowsQuery.data?.data ?? []).map(
-    (flow) => ({
-      id: `flow-${flow.id}`,
-      type: 'flow' as const,
-      label: flow.version.displayName,
-      href: authenticationSession.appendWorkspaceRoutePrefix(
-        `/flows/${flow.id}`,
-      ),
-      folderName: flow.folderId ? folderMap.get(flow.folderId) ?? null : null,
-      updated: flow.updated ? String(flow.updated) : null,
-      status: flow.status,
-      workspaceName: currentWorkspaceName,
-    }),
-  );
+  const workflowResults: SearchResultItem[] = (
+    workflowsQuery.data?.data ?? []
+  ).map((workflow) => ({
+    id: `workflow-${workflow.id}`,
+    type: 'workflow' as const,
+    label: workflow.version.displayName,
+    href: authenticationSession.appendWorkspaceRoutePrefix(
+      `/workflows/${workflow.id}`,
+    ),
+    folderName: workflow.folderId
+      ? folderMap.get(workflow.folderId) ?? null
+      : null,
+    updated: workflow.updated ? String(workflow.updated) : null,
+    status: workflow.status,
+    workspaceName: currentWorkspaceName,
+  }));
 
   const tableResults: SearchResultItem[] = [];
 
@@ -161,7 +163,7 @@ export function useGlobalSearchResults(query: string, open: boolean) {
     pageIcon: page.icon,
   }));
 
-  const isSearchLoading = flowsQuery.isLoading && searchEnabled;
+  const isSearchLoading = workflowsQuery.isLoading && searchEnabled;
 
   if (!hasQuery) {
     if (hasHistory) {
@@ -194,7 +196,7 @@ export function useGlobalSearchResults(query: string, open: boolean) {
       if (needsSupplement) {
         const remaining = SUPPLEMENT_THRESHOLD - accessHistory.length;
         const fillCandidates: PoolItem[] = [
-          ...flowResults.map((r) => ({
+          ...workflowResults.map((r) => ({
             item: r,
             timestamp: r.updated ? new Date(r.updated).getTime() : 0,
           })),
@@ -230,7 +232,7 @@ export function useGlobalSearchResults(query: string, open: boolean) {
       ];
 
       const isFillLoading =
-        needsSupplement && flowsQuery.isLoading && suggestionsEnabled;
+        needsSupplement && workflowsQuery.isLoading && suggestionsEnabled;
 
       const groups: SearchResultGroup[] = periodDefs
         .filter((p) => buckets[p.key].length > 0)
@@ -265,9 +267,9 @@ export function useGlobalSearchResults(query: string, open: boolean) {
       return { groups, isLoading: false };
     }
 
-    const isFallbackLoading = flowsQuery.isLoading && suggestionsEnabled;
+    const isFallbackLoading = workflowsQuery.isLoading && suggestionsEnabled;
     const flatItems: SearchResultItem[] = [
-      ...flowResults.slice(0, 5),
+      ...workflowResults.slice(0, 5),
       ...tableResults.slice(0, 5),
       ...workspaceResults.slice(0, 5),
       ...pageResults.slice(0, 5),
@@ -290,10 +292,10 @@ export function useGlobalSearchResults(query: string, open: boolean) {
 
   const groups: SearchResultGroup[] = [
     {
-      type: 'flow',
-      heading: t('Flows'),
-      items: flowResults,
-      isLoading: flowsQuery.isLoading && searchEnabled,
+      type: 'workflow',
+      heading: t('Workflows'),
+      items: workflowResults,
+      isLoading: workflowsQuery.isLoading && searchEnabled,
     },
     {
       type: 'table',
@@ -326,7 +328,7 @@ export function useGlobalSearchResults(query: string, open: boolean) {
 
 export type SearchResultItem = {
   id: string;
-  type: 'flow' | 'table' | 'folder' | 'workspace' | 'page';
+  type: 'workflow' | 'table' | 'folder' | 'workspace' | 'page';
   label: string;
   href: string;
   status?: 'ENABLED' | 'DISABLED' | null;

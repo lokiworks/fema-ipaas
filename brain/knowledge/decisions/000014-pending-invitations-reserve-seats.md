@@ -58,7 +58,7 @@ proactively at invite time.
   seat decrease) compares the target against `usedSeats` (active + reserved), not active alone. The
   deactivate-users dialog lets the admin free seats by deactivating users and/or revoking pending invites.
   Unlike the invite/reactivation paths, the floor is an **intentional lock-free read** — it takes no
-  `FOR UPDATE`. These flows call Autumn's `attach` over the network, and holding the `platform_plan` row
+  `FOR UPDATE`. These workflows call Autumn's `attach` over the network, and holding the `platform_plan` row
   lock across that round-trip would serialize/block every invite for the platform until Autumn responds.
   A bounded transient overshoot (an invite landing between the floor read and the limit change) is
   acceptable: the invite path is the only hard ceiling and over-cap-after-downgrade is out of scope.

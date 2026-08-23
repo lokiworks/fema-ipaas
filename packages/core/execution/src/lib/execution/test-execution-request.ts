@@ -1,29 +1,29 @@
 import { z } from 'zod'
 import { ApId } from '@fema/core-utils'
-import { ExecutionStatus } from './state/flow-execution'
-import { FlowRetryStrategy } from './execution'
+import { ExecutionStatus } from './state/workflow-execution'
+import { WorkflowRetryStrategy } from './execution'
 
 export const TestExecutionRequestBody = z.object({
-    flowVersionId: ApId,
+    workflowVersionId: ApId,
 })
 
 export type TestExecutionRequestBody = z.infer<typeof TestExecutionRequestBody>
 
-export const RetryFlowRequestBody = z.object({
-    strategy: z.nativeEnum(FlowRetryStrategy),
+export const RetryWorkflowRequestBody = z.object({
+    strategy: z.nativeEnum(WorkflowRetryStrategy),
     workspaceId: ApId,
 })
 
-export type RetryFlowRequestBody = z.infer<typeof RetryFlowRequestBody>
+export type RetryWorkflowRequestBody = z.infer<typeof RetryWorkflowRequestBody>
 
 
 export const BulkActionOnRunsRequestBody = z.object({
     workspaceId: ApId,
     executionIds: z.array(ApId).optional(),
     excludeExecutionIds: z.array(ApId).optional(),
-    strategy: z.nativeEnum(FlowRetryStrategy),
+    strategy: z.nativeEnum(WorkflowRetryStrategy),
     status: z.array(z.nativeEnum(ExecutionStatus)).optional(),
-    flowId: z.array(ApId).optional(),
+    workflowId: z.array(ApId).optional(),
     createdAfter: z.string().optional(),
     createdBefore: z.string().optional(),
     failedStepName: z.string().optional(),
@@ -32,7 +32,7 @@ export const BulkActionOnRunsRequestBody = z.object({
 
 export type BulkActionOnRunsRequestBody = z.infer<typeof BulkActionOnRunsRequestBody>
 
-export const BulkCancelFlowRequestBody = z.object({
+export const BulkCancelWorkflowRequestBody = z.object({
     workspaceId: ApId,
     executionIds: z.array(ApId).optional(),
     excludeExecutionIds: z.array(ApId).optional(),
@@ -40,19 +40,19 @@ export const BulkCancelFlowRequestBody = z.object({
         z.literal(ExecutionStatus.PAUSED),
         z.literal(ExecutionStatus.QUEUED),
     ])).optional(),
-    flowId: z.array(ApId).optional(),
+    workflowId: z.array(ApId).optional(),
     createdAfter: z.string().optional(),
     createdBefore: z.string().optional(),
 })
 
-export type BulkCancelFlowRequestBody = z.infer<typeof BulkCancelFlowRequestBody>
+export type BulkCancelWorkflowRequestBody = z.infer<typeof BulkCancelWorkflowRequestBody>
 
 export const BulkArchiveActionOnRunsRequestBody = z.object({
     workspaceId: ApId,
     executionIds: z.array(ApId).optional(),
     excludeExecutionIds: z.array(ApId).optional(),
     status: z.array(z.nativeEnum(ExecutionStatus)).optional(),
-    flowId: z.array(ApId).optional(),
+    workflowId: z.array(ApId).optional(),
     createdAfter: z.string().optional(),
     createdBefore: z.string().optional(),
     failedStepName: z.string().optional(),

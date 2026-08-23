@@ -1,9 +1,9 @@
 import { isNil } from '@fema/core-utils';
 import {
-  FlowActionType,
+  WorkflowActionType,
   StepOutput,
   StepOutputStatus,
-  flowStructureUtil,
+  workflowStructureUtil,
 } from '@fema/shared';
 import { t } from 'i18next';
 import { ChevronDown, ChevronUp } from 'lucide-react';
@@ -22,20 +22,27 @@ import { cn } from '@/lib/utils';
 import { useBuilderStateContext } from '../builder-hooks';
 
 const LoopIterationInput = ({ stepName }: { stepName: string }) => {
-  const [setLoopIndex, currentIndex, run, flowVersion, loopsIndexes, stepType] =
-    useBuilderStateContext((state) => [
-      state.setLoopIndex,
-      state.loopsIndexes[stepName] ?? 0,
-      state.run,
-      state.flowVersion,
-      state.loopsIndexes,
-      flowStructureUtil.getStep(stepName, state.flowVersion.trigger)?.type,
-    ]);
+  const [
+    setLoopIndex,
+    currentIndex,
+    run,
+    workflowVersion,
+    loopsIndexes,
+    stepType,
+  ] = useBuilderStateContext((state) => [
+    state.setLoopIndex,
+    state.loopsIndexes[stepName] ?? 0,
+    state.run,
+    state.workflowVersion,
+    state.loopsIndexes,
+    workflowStructureUtil.getStep(stepName, state.workflowVersion.trigger)
+      ?.type,
+  ]);
   const stepOutput = useMemo(() => {
     return run && run.steps
       ? executionUtils.extractStepOutput(stepName, loopsIndexes, run.steps)
       : null;
-  }, [run, stepName, loopsIndexes, flowVersion.trigger]);
+  }, [run, stepName, loopsIndexes, workflowVersion.trigger]);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -55,7 +62,7 @@ const LoopIterationInput = ({ stepName }: { stepName: string }) => {
   const iterationStatuses = useMemo<StepOutputStatus[]>(() => {
     if (
       !stepOutput ||
-      stepOutput.type !== FlowActionType.LOOP_ON_ITEMS ||
+      stepOutput.type !== WorkflowActionType.LOOP_ON_ITEMS ||
       !stepOutput.output
     ) {
       return [];
@@ -72,7 +79,7 @@ const LoopIterationInput = ({ stepName }: { stepName: string }) => {
     setLoopIndex(stepName, parsedValue - 1);
   }
 
-  if (isNil(run) || stepType !== FlowActionType.LOOP_ON_ITEMS) {
+  if (isNil(run) || stepType !== WorkflowActionType.LOOP_ON_ITEMS) {
     return <></>;
   }
 

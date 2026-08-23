@@ -11,7 +11,7 @@ The **FEMA Integration Platform engineering brain**: how the system works, and *
 - 🏛️ [Architecture Spine](https://craftspace.app/o/fema/pages/pg_lf5wM8ajqA9wI85PV54uT) — the non-obvious cross-cutting rules (multi-tenancy, editions, entity registration, SSRF, package layout). Start here for "how do I not break things".
   - 🧩 [Connectors & Engine](https://craftspace.app/o/fema/pages/pg_EaDBCAoHuQIw6fQcc9UCf) — connector catalog, visibility, formulas, workers, AI agents.
   - 🏢 [Platform & Editions (EE)](https://craftspace.app/o/fema/pages/pg_3Vdh9lQJTzG9VTQFxcgDx) — Platform → Project → User, plans, CE/EE/Cloud gating.
-- 🔀 [Flows & Execution](https://craftspace.app/o/fema/pages/pg_pjh7gNWz3aPrRAASslKT5) — how flows are authored, triggered, run, and organized.
+- 🔀 [Workflows & Execution](https://craftspace.app/o/fema/pages/pg_pjh7gNWz3aPrRAASslKT5) — how workflows are authored, triggered, run, and organized.
   - ⚙️ [Execution Runtime](https://craftspace.app/o/fema/pages/pg_xLVaOvA8hs9XVLj7kNZNE) — where and how a job runs: Worker-is-Sandbox, Resolver, Slots, Reservations. The execution glossary.
 - 🤖 [AI & MCP](https://craftspace.app/o/fema/pages/pg_fApFNfXCXWZr3y3cyqqg3) — AI providers, credits, copilot, exposing FEMA Integration Platform as an MCP server.
 - 🔐 [Connections & Auth](https://craftspace.app/o/fema/pages/pg_Tu9nuosfHV1MCIHXcKL1l) — login, RBAC, audit, connections, secrets.

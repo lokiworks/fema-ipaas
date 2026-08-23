@@ -14,7 +14,7 @@ The metered currency for AI usage — 1000 credits = $1 — backed by per-key Op
 - *Avoid:* "tokens" for the billing unit; tokens are the model's unit, credits are ours.
 
 ### 🤖 Agent
-A flow step that runs an autonomous LLM loop rather than a single call. Its **AgentTool**s are Connector, Flow, MCP, or Knowledge Base handles.
+A workflow step that runs an autonomous LLM loop rather than a single call. Its **AgentTool**s are Connector, Workflow, MCP, or Knowledge Base handles.
 
 ### 🔗 MCP Server
 The per-project endpoint that exposes FEMA Integration Platform tools to an external AI assistant. Distinct from a **connector** that *calls* an MCP server.

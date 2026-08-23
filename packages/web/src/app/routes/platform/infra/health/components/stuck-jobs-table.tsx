@@ -50,7 +50,7 @@ export function StuckJobsTable({ stuckJobs, isLoading }: StuckJobsTableProps) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t('Flow')}</TableHead>
+                <TableHead>{t('Workflow')}</TableHead>
                 <TableHead>{t('Workspace')}</TableHead>
                 <TableHead>{t('Status')}</TableHead>
               </TableRow>
@@ -66,7 +66,9 @@ export function StuckJobsTable({ stuckJobs, isLoading }: StuckJobsTableProps) {
                     )
                   }
                 >
-                  <TableCell className="font-medium">{job.flowName}</TableCell>
+                  <TableCell className="font-medium">
+                    {job.workflowName}
+                  </TableCell>
                   <TableCell className="text-muted-foreground">
                     {job.workspaceName}
                   </TableCell>

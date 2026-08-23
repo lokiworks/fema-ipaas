@@ -1,6 +1,6 @@
 # AI-Ready Metadata
 
-Connectors power both human flow-builders and AI agents (via the MCP server and the agent tooling). Three fields declare how an action or trigger appears to agents and to flow-builders. They are additive — they change nothing about execution — and **new actions and triggers must ship with all of them**: a connector authored without them is a regression that has to be backfilled later.
+Connectors power both human workflow-builders and AI agents (via the MCP server and the agent tooling). Three fields declare how an action or trigger appears to agents and to workflow-builders. They are additive — they change nothing about execution — and **new actions and triggers must ship with all of them**: a connector authored without them is a regression that has to be backfilled later.
 
 | Field | Where | Shape | New code |
 |---|---|---|---|
@@ -28,7 +28,7 @@ export const createRecordAction = createAction({
 
 | Value | Meaning |
 |---|---|
-| `'human'` | For human flow-builders only; kept off the agent surface. Use for raw-LLM/ask-AI wrappers (the agent is already an LLM), generic data transforms and flow control the agent does natively, and actions that only make sense inside the visual builder. |
+| `'human'` | For human workflow-builders only; kept off the agent surface. Use for raw-LLM/ask-AI wrappers (the agent is already an LLM), generic data transforms and workflow control the agent does natively, and actions that only make sense inside the visual builder. |
 | `'ai'` | For AI agents only; kept out of the human catalog to reduce clutter. Use for agent-oriented atomics. |
 | `'both'` | Useful to humans and agents alike — the right value for almost every real integration action. |
 
@@ -102,7 +102,7 @@ Rules that settle the recurring edge cases:
 - **All triggers → `'READ'`**, polling and webhook alike. The badge answers "does this step change anything?"; the READ/SEARCH split is about how you address data (by id vs by query), which is meaningless for an event you did not ask for.
 - **Sending is `WRITE`, not `DESTRUCTIVE`** — a sent email/message adds state, it doesn't destroy any.
 - **AI/LLM inference or generation** that persists no artifact to an external system → `READ`. "Generate and upload/store" → `WRITE`.
-- **Pure in-flow transforms** (text/math/date/json/csv/crypto helpers) → `READ`.
+- **Pure in-workflow transforms** (text/math/date/json/csv/crypto helpers) → `READ`.
 - **Key-value store style connectors**: get → `READ`, put/append → `WRITE`, delete → `DESTRUCTIVE`.
 - **One action, multiple operations** (an `operation` prop that can read *or* delete) → tag the worst case reachable.
 - **Arbitrary-operation actions** (raw SQL, raw HTTP, caller-supplied method) → `WRITE`. Factory-built actions (`createCustomApiCallAction`) are tagged at the factory level, not per connector.

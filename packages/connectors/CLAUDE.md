@@ -38,11 +38,11 @@ Three types: `ConnectorAuth.SecretText()` with validate callback, `ConnectorAuth
   - `httpClient` **does not retry stream bodies** — `retries` is forced to `0` when the body is a `Readable` or `form-data`, because the retry loop would replay an already-drained stream and send a truncated body. Buffer the body if you need retries. See [Large File Streaming](../../docs/build-connectors/connector-reference/large-file-streaming.mdx).
 - `context.connections` — manage OAuth connections
 - `context.server` — API access (token, apiUrl, publicUrl)
-- `context.run.stop({ response })` — stop flow, return HTTP response
+- `context.run.stop({ response })` — stop workflow, return HTTP response
 - `context.run.pause({ pauseMetadata })` — pause for delay or webhook callback
-- `context.run.respond({ response })` — send response, continue flow
+- `context.run.respond({ response })` — send response, continue workflow
 - `context.agent.tools()` — AI agent tool construction
-- `context.generateResumeUrl()` — webhook resume URL for paused flows
+- `context.generateResumeUrl()` — webhook resume URL for paused workflows
 - `context.executionType` — `BEGIN` or `RESUME`
 
 ## Key Rules

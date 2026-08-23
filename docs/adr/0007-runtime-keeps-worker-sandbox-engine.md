@@ -35,4 +35,4 @@ Step 4 的关键架构改动埋在一堆无关变更里。
 - 短期内 Engine 内部仍会有上游遗留结构，靠 ADR 0003 的重命名收敛。
 - ExecutionPlan 是新增的一层，需要保证 UI Graph 的所有语义都能编译过去，
   否则会出现「画布上能画、但跑不了」的形态。
-- 将来更换 Flow Editor 不影响 Engine。
+- 将来更换 Workflow Editor 不影响 Engine。

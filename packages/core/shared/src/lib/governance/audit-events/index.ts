@@ -1,5 +1,5 @@
 import { BaseModelSchema, DateOrString, Nullable, OptionalArrayFromQuery } from '@fema/core-utils'
-import { Flow, FlowOperationRequest, FlowOperationType, FlowVersion, Folder } from '@fema/workflow-core'
+import { Folder, Workflow, WorkflowOperationRequest, WorkflowOperationType, WorkflowVersion } from '@fema/workflow-core'
 import { z } from 'zod'
 import { UserWithMetaInformation } from '../../core/user/user'
 export const ListAuditEventsRequest = z.object({
@@ -17,16 +17,16 @@ export type ListAuditEventsRequest = z.infer<typeof ListAuditEventsRequest>
 const UserMeta = UserWithMetaInformation.pick({ email: true, id: true, firstName: true, lastName: true })
 
 export enum ApplicationEventName {
-    FLOW_CREATED = 'flow.created',
-    FLOW_DELETED = 'flow.deleted',
-    FLOW_UPDATED = 'flow.updated',
-    FLOW_PUBLISHED = 'flow.published',
-    FLOW_ACTIVATED = 'flow.activated',
-    FLOW_DEACTIVATED = 'flow.deactivated',
-    EXECUTION_RESUMED = 'flow.run.resumed',
-    EXECUTION_STARTED = 'flow.run.started',
-    EXECUTION_FINISHED = 'flow.run.finished',
-    EXECUTION_RETRIED = 'flow.run.retried',
+    WORKFLOW_CREATED = 'workflow.created',
+    WORKFLOW_DELETED = 'workflow.deleted',
+    WORKFLOW_UPDATED = 'workflow.updated',
+    WORKFLOW_PUBLISHED = 'workflow.published',
+    WORKFLOW_ACTIVATED = 'workflow.activated',
+    WORKFLOW_DEACTIVATED = 'workflow.deactivated',
+    EXECUTION_RESUMED = 'workflow.run.resumed',
+    EXECUTION_STARTED = 'workflow.run.started',
+    EXECUTION_FINISHED = 'workflow.run.finished',
+    EXECUTION_RETRIED = 'workflow.run.retried',
     FOLDER_CREATED = 'folder.created',
     FOLDER_UPDATED = 'folder.updated',
     FOLDER_DELETED = 'folder.deleted',
@@ -183,10 +183,10 @@ const ExecutionEventData = z.object({
         duration: z.number().optional(),
         triggeredBy: z.string().optional(),
         environment: z.string(),
-        flowId: z.string(),
-        flowVersionId: z.string(),
+        workflowId: z.string(),
+        workflowVersionId: z.string(),
         stepNameToTest: z.string().nullish(),
-        flowDisplayName: z.string().optional(),
+        workflowDisplayName: z.string().optional(),
         status: z.string(),
     }),
     workspace: z.object({
@@ -227,11 +227,11 @@ export const ExecutionRetriedEvent = z.object({
 })
 export type ExecutionRetriedEvent = z.infer<typeof ExecutionRetriedEvent>
 
-export const FlowCreatedEvent = z.object({
+export const WorkflowCreatedEvent = z.object({
     ...BaseAuditEventProps,
-    action: z.literal(ApplicationEventName.FLOW_CREATED),
+    action: z.literal(ApplicationEventName.WORKFLOW_CREATED),
     data: z.object({
-        flow: Flow.pick({ id: true, externalId: true, created: true, updated: true }),
+        workflow: Workflow.pick({ id: true, externalId: true, created: true, updated: true }),
         workspace: z.object({
             displayName: z.string(),
             externalId: Nullable(z.string()),
@@ -239,17 +239,17 @@ export const FlowCreatedEvent = z.object({
     }),
 })
 
-export type FlowCreatedEvent = z.infer<typeof FlowCreatedEvent>
+export type WorkflowCreatedEvent = z.infer<typeof WorkflowCreatedEvent>
 
-export const FlowDeletedEvent = z.object({
+export const WorkflowDeletedEvent = z.object({
     ...BaseAuditEventProps,
-    action: z.literal(ApplicationEventName.FLOW_DELETED),
+    action: z.literal(ApplicationEventName.WORKFLOW_DELETED),
     data: z.object({
-        flow: Flow.pick({ id: true, externalId: true, created: true, updated: true }),
-        flowVersion: FlowVersion.pick({
+        workflow: Workflow.pick({ id: true, externalId: true, created: true, updated: true }),
+        workflowVersion: WorkflowVersion.pick({
             id: true,
             displayName: true,
-            flowId: true,
+            workflowId: true,
             created: true,
             updated: true,
         }),
@@ -260,21 +260,21 @@ export const FlowDeletedEvent = z.object({
     }),
 })
 
-export type FlowDeletedEvent = z.infer<typeof FlowDeletedEvent>
+export type WorkflowDeletedEvent = z.infer<typeof WorkflowDeletedEvent>
 
-export const FlowUpdatedEvent = z.object({
+export const WorkflowUpdatedEvent = z.object({
     ...BaseAuditEventProps,
-    action: z.literal(ApplicationEventName.FLOW_UPDATED),
+    action: z.literal(ApplicationEventName.WORKFLOW_UPDATED),
     data: z.object({
-        flow: Flow.pick({ id: true, externalId: true, created: true, updated: true }),
-        flowVersion: FlowVersion.pick({
+        workflow: Workflow.pick({ id: true, externalId: true, created: true, updated: true }),
+        workflowVersion: WorkflowVersion.pick({
             id: true,
             displayName: true,
-            flowId: true,
+            workflowId: true,
             created: true,
             updated: true,
         }),
-        request: FlowOperationRequest,
+        request: WorkflowOperationRequest,
         workspace: z.object({
             displayName: z.string(),
             externalId: Nullable(z.string()),
@@ -282,14 +282,14 @@ export const FlowUpdatedEvent = z.object({
     }),
 })
 
-export type FlowUpdatedEvent = z.infer<typeof FlowUpdatedEvent>
+export type WorkflowUpdatedEvent = z.infer<typeof WorkflowUpdatedEvent>
 
-const FlowLifecycleEventData = z.object({
-    flow: Flow.pick({ id: true, externalId: true, created: true, updated: true }),
-    flowVersion: FlowVersion.pick({
+const WorkflowLifecycleEventData = z.object({
+    workflow: Workflow.pick({ id: true, externalId: true, created: true, updated: true }),
+    workflowVersion: WorkflowVersion.pick({
         id: true,
         displayName: true,
-        flowId: true,
+        workflowId: true,
         created: true,
         updated: true,
     }),
@@ -299,29 +299,29 @@ const FlowLifecycleEventData = z.object({
     }).optional(),
 })
 
-export const FlowPublishedEvent = z.object({
+export const WorkflowPublishedEvent = z.object({
     ...BaseAuditEventProps,
-    action: z.literal(ApplicationEventName.FLOW_PUBLISHED),
-    data: FlowLifecycleEventData,
+    action: z.literal(ApplicationEventName.WORKFLOW_PUBLISHED),
+    data: WorkflowLifecycleEventData,
 })
 
-export type FlowPublishedEvent = z.infer<typeof FlowPublishedEvent>
+export type WorkflowPublishedEvent = z.infer<typeof WorkflowPublishedEvent>
 
-export const FlowActivatedEvent = z.object({
+export const WorkflowActivatedEvent = z.object({
     ...BaseAuditEventProps,
-    action: z.literal(ApplicationEventName.FLOW_ACTIVATED),
-    data: FlowLifecycleEventData,
+    action: z.literal(ApplicationEventName.WORKFLOW_ACTIVATED),
+    data: WorkflowLifecycleEventData,
 })
 
-export type FlowActivatedEvent = z.infer<typeof FlowActivatedEvent>
+export type WorkflowActivatedEvent = z.infer<typeof WorkflowActivatedEvent>
 
-export const FlowDeactivatedEvent = z.object({
+export const WorkflowDeactivatedEvent = z.object({
     ...BaseAuditEventProps,
-    action: z.literal(ApplicationEventName.FLOW_DEACTIVATED),
-    data: FlowLifecycleEventData,
+    action: z.literal(ApplicationEventName.WORKFLOW_DEACTIVATED),
+    data: WorkflowLifecycleEventData,
 })
 
-export type FlowDeactivatedEvent = z.infer<typeof FlowDeactivatedEvent>
+export type WorkflowDeactivatedEvent = z.infer<typeof WorkflowDeactivatedEvent>
 
 const AuthenticationEventData = z.object({
     user: UserMeta.optional(),
@@ -377,12 +377,12 @@ export type SignUpEvent = z.infer<typeof SignUpEvent>
 export const ApplicationEvent = z.union([
     ConnectionEvent,
     VariableEvent,
-    FlowCreatedEvent,
-    FlowDeletedEvent,
-    FlowUpdatedEvent,
-    FlowPublishedEvent,
-    FlowActivatedEvent,
-    FlowDeactivatedEvent,
+    WorkflowCreatedEvent,
+    WorkflowDeletedEvent,
+    WorkflowUpdatedEvent,
+    WorkflowPublishedEvent,
+    WorkflowActivatedEvent,
+    WorkflowDeactivatedEvent,
     ExecutionEvent,
     AuthenticationEvent,
     FolderEvent,
@@ -393,30 +393,30 @@ export type ApplicationEvent = z.infer<typeof ApplicationEvent>
 
 export function summarizeApplicationEvent(event: ApplicationEvent) {
     switch (event.action) {
-        case ApplicationEventName.FLOW_UPDATED: {
+        case ApplicationEventName.WORKFLOW_UPDATED: {
             return convertUpdateActionToDetails(event)
         }
         case ApplicationEventName.EXECUTION_STARTED:
-            return `Flow run ${event.data.execution.id} is started`
+            return `Workflow run ${event.data.execution.id} is started`
         case ApplicationEventName.EXECUTION_FINISHED: {
-            return `Flow run ${event.data.execution.id} is finished`
+            return `Workflow run ${event.data.execution.id} is finished`
         }
         case ApplicationEventName.EXECUTION_RESUMED: {
-            return `Flow run ${event.data.execution.id} is resumed`
+            return `Workflow run ${event.data.execution.id} is resumed`
         }
         case ApplicationEventName.EXECUTION_RETRIED: {
-            return `Flow run ${event.data.execution.id} is retried from a failed step`
+            return `Workflow run ${event.data.execution.id} is retried from a failed step`
         }
-        case ApplicationEventName.FLOW_CREATED:
-            return `Flow ${event.data.flow.id} is created`
-        case ApplicationEventName.FLOW_DELETED:
-            return `Flow ${event.data.flow.id} (${event.data.flowVersion.displayName}) is deleted`
-        case ApplicationEventName.FLOW_PUBLISHED:
-            return `Flow "${event.data.flowVersion.displayName}" was published`
-        case ApplicationEventName.FLOW_ACTIVATED:
-            return `Flow "${event.data.flowVersion.displayName}" was activated`
-        case ApplicationEventName.FLOW_DEACTIVATED:
-            return `Flow "${event.data.flowVersion.displayName}" was deactivated`
+        case ApplicationEventName.WORKFLOW_CREATED:
+            return `Workflow ${event.data.workflow.id} is created`
+        case ApplicationEventName.WORKFLOW_DELETED:
+            return `Workflow ${event.data.workflow.id} (${event.data.workflowVersion.displayName}) is deleted`
+        case ApplicationEventName.WORKFLOW_PUBLISHED:
+            return `Workflow "${event.data.workflowVersion.displayName}" was published`
+        case ApplicationEventName.WORKFLOW_ACTIVATED:
+            return `Workflow "${event.data.workflowVersion.displayName}" was activated`
+        case ApplicationEventName.WORKFLOW_DEACTIVATED:
+            return `Workflow "${event.data.workflowVersion.displayName}" was deactivated`
         case ApplicationEventName.FOLDER_CREATED:
             return `${event.data.folder.displayName} is created`
         case ApplicationEventName.FOLDER_UPDATED:
@@ -444,89 +444,89 @@ export function summarizeApplicationEvent(event: ApplicationEvent) {
     }
 }
 
-function convertUpdateActionToDetails(event: FlowUpdatedEvent) {
+function convertUpdateActionToDetails(event: WorkflowUpdatedEvent) {
     switch (event.data.request.type) {
-        case FlowOperationType.ADD_ACTION:
-            return `Added action "${event.data.request.request.action.displayName}" to "${event.data.flowVersion.displayName}" Flow.`
-        case FlowOperationType.UPDATE_ACTION:
-            return `Updated action "${event.data.request.request.displayName}" in "${event.data.flowVersion.displayName}" Flow.`
-        case FlowOperationType.DELETE_ACTION:
+        case WorkflowOperationType.ADD_ACTION:
+            return `Added action "${event.data.request.request.action.displayName}" to "${event.data.workflowVersion.displayName}" Workflow.`
+        case WorkflowOperationType.UPDATE_ACTION:
+            return `Updated action "${event.data.request.request.displayName}" in "${event.data.workflowVersion.displayName}" Workflow.`
+        case WorkflowOperationType.DELETE_ACTION:
         {
             const request = event.data.request.request
             const names = request.names
-            return `Deleted actions "${names.join(', ')}" from "${event.data.flowVersion.displayName}" Flow.`
+            return `Deleted actions "${names.join(', ')}" from "${event.data.workflowVersion.displayName}" Workflow.`
         }
-        case FlowOperationType.CHANGE_NAME:
-            return `Renamed flow "${event.data.flowVersion.displayName}" to "${event.data.request.request.displayName}".`
-        case FlowOperationType.LOCK_AND_PUBLISH:
-            return `Locked and published flow "${event.data.flowVersion.displayName}" Flow.`
-        case FlowOperationType.USE_AS_DRAFT:
-            return `Unlocked and unpublished flow "${event.data.flowVersion.displayName}" Flow.`
-        case FlowOperationType.MOVE_ACTION:
+        case WorkflowOperationType.CHANGE_NAME:
+            return `Renamed workflow "${event.data.workflowVersion.displayName}" to "${event.data.request.request.displayName}".`
+        case WorkflowOperationType.LOCK_AND_PUBLISH:
+            return `Locked and published workflow "${event.data.workflowVersion.displayName}" Workflow.`
+        case WorkflowOperationType.USE_AS_DRAFT:
+            return `Unlocked and unpublished workflow "${event.data.workflowVersion.displayName}" Workflow.`
+        case WorkflowOperationType.MOVE_ACTION:
             return `Moved action "${event.data.request.request.name}" to after "${event.data.request.request.newParentStep}".`
-        case FlowOperationType.LOCK_FLOW:
-            return `Locked flow "${event.data.flowVersion.displayName}" Flow.`
-        case FlowOperationType.CHANGE_STATUS:
-            return `Changed status of flow "${event.data.flowVersion.displayName}" Flow to "${event.data.request.request.status}".`
-        case FlowOperationType.DUPLICATE_ACTION:
-            return `Duplicated action "${event.data.request.request.stepName}" in "${event.data.flowVersion.displayName}" Flow.`
-        case FlowOperationType.IMPORT_FLOW:
-            return `Imported flow in "${event.data.request.request.displayName}" Flow.`
-        case FlowOperationType.UPDATE_TRIGGER:
-            return `Updated trigger in "${event.data.flowVersion.displayName}" Flow to "${event.data.request.request.displayName}".`
-        case FlowOperationType.CHANGE_FOLDER:
-            return `Moved flow "${event.data.flowVersion.displayName}" to folder id ${event.data.request.request.folderId}.`
-        case FlowOperationType.DELETE_BRANCH: {
+        case WorkflowOperationType.LOCK_WORKFLOW:
+            return `Locked workflow "${event.data.workflowVersion.displayName}" Workflow.`
+        case WorkflowOperationType.CHANGE_STATUS:
+            return `Changed status of workflow "${event.data.workflowVersion.displayName}" Workflow to "${event.data.request.request.status}".`
+        case WorkflowOperationType.DUPLICATE_ACTION:
+            return `Duplicated action "${event.data.request.request.stepName}" in "${event.data.workflowVersion.displayName}" Workflow.`
+        case WorkflowOperationType.IMPORT_WORKFLOW:
+            return `Imported workflow in "${event.data.request.request.displayName}" Workflow.`
+        case WorkflowOperationType.UPDATE_TRIGGER:
+            return `Updated trigger in "${event.data.workflowVersion.displayName}" Workflow to "${event.data.request.request.displayName}".`
+        case WorkflowOperationType.CHANGE_FOLDER:
+            return `Moved workflow "${event.data.workflowVersion.displayName}" to folder id ${event.data.request.request.folderId}.`
+        case WorkflowOperationType.DELETE_BRANCH: {
             return `Deleted branch number ${
                 event.data.request.request.branchIndex + 1
-            } in flow "${event.data.flowVersion.displayName}" for the step "${
+            } in workflow "${event.data.workflowVersion.displayName}" for the step "${
                 event.data.request.request.stepName
             }".`
         }
-        case FlowOperationType.SAVE_SAMPLE_DATA: {
-            return `Saved sample data for step "${event.data.request.request.stepName}" in flow "${event.data.flowVersion.displayName}".`
+        case WorkflowOperationType.SAVE_SAMPLE_DATA: {
+            return `Saved sample data for step "${event.data.request.request.stepName}" in workflow "${event.data.workflowVersion.displayName}".`
         }
-        case FlowOperationType.DUPLICATE_BRANCH: {
+        case WorkflowOperationType.DUPLICATE_BRANCH: {
             return `Duplicated branch number ${
                 event.data.request.request.branchIndex + 1
-            } in flow "${event.data.flowVersion.displayName}" for the step "${
+            } in workflow "${event.data.workflowVersion.displayName}" for the step "${
                 event.data.request.request.stepName
             }".`
         }
-        case FlowOperationType.ADD_BRANCH:
+        case WorkflowOperationType.ADD_BRANCH:
             return `Added branch number ${
                 event.data.request.request.branchIndex + 1
-            } in flow "${event.data.flowVersion.displayName}" for the step "${
+            } in workflow "${event.data.workflowVersion.displayName}" for the step "${
                 event.data.request.request.stepName
             }".`
-        case FlowOperationType.SET_SKIP_ACTION:
+        case WorkflowOperationType.SET_SKIP_ACTION:
         {
             const request = event.data.request.request
             const names = request.names
-            return `Updated actions "${names.join(', ')}" in "${event.data.flowVersion.displayName}" Flow to skip.`
+            return `Updated actions "${names.join(', ')}" in "${event.data.workflowVersion.displayName}" Workflow to skip.`
         }
-        case FlowOperationType.UPDATE_METADATA:
-            return `Updated metadata for flow "${event.data.flowVersion.displayName}".`
-        case FlowOperationType.UPDATE_MINUTES_SAVED:
-            return `Updated minutes saved for flow "${event.data.flowVersion.displayName}".`
-        case FlowOperationType.UPDATE_OWNER:
-            return `Updated owner for flow "${event.data.flowVersion.displayName}" to "${event.data.request.request.ownerId}".`
-        case FlowOperationType.MOVE_BRANCH:
+        case WorkflowOperationType.UPDATE_METADATA:
+            return `Updated metadata for workflow "${event.data.workflowVersion.displayName}".`
+        case WorkflowOperationType.UPDATE_MINUTES_SAVED:
+            return `Updated minutes saved for workflow "${event.data.workflowVersion.displayName}".`
+        case WorkflowOperationType.UPDATE_OWNER:
+            return `Updated owner for workflow "${event.data.workflowVersion.displayName}" to "${event.data.request.request.ownerId}".`
+        case WorkflowOperationType.MOVE_BRANCH:
             return `Moved branch number ${
                 event.data.request.request.sourceBranchIndex + 1
             } to ${
                 event.data.request.request.targetBranchIndex + 1
-            } in flow "${event.data.flowVersion.displayName}" for the step "${
+            } in workflow "${event.data.workflowVersion.displayName}" for the step "${
                 event.data.request.request.stepName
             }".`
-        case FlowOperationType.ADD_NOTE:
-            return `Added note to flow "${event.data.flowVersion.displayName}".`
-        case FlowOperationType.UPDATE_NOTE:
-            return `Updated note in flow "${event.data.flowVersion.displayName}".`
-        case FlowOperationType.DELETE_NOTE:
-            return `Deleted note in flow "${event.data.flowVersion.displayName}".`
-        case FlowOperationType.UPDATE_SAMPLE_DATA_INFO:
-            return `Updated sample data info for step "${event.data.request.request.stepName}" in flow "${event.data.flowVersion.displayName}".`
+        case WorkflowOperationType.ADD_NOTE:
+            return `Added note to workflow "${event.data.workflowVersion.displayName}".`
+        case WorkflowOperationType.UPDATE_NOTE:
+            return `Updated note in workflow "${event.data.workflowVersion.displayName}".`
+        case WorkflowOperationType.DELETE_NOTE:
+            return `Deleted note in workflow "${event.data.workflowVersion.displayName}".`
+        case WorkflowOperationType.UPDATE_SAMPLE_DATA_INFO:
+            return `Updated sample data info for step "${event.data.request.request.stepName}" in workflow "${event.data.workflowVersion.displayName}".`
     }
 }
 

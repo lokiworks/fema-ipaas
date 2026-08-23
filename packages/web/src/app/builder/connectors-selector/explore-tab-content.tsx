@@ -1,4 +1,4 @@
-import { FlowOperationType } from '@fema/shared';
+import { WorkflowOperationType } from '@fema/shared';
 
 import {
   CardListItem,
@@ -30,7 +30,7 @@ const ExploreTabContent = ({
       shouldCaptureEvent: false,
       searchQuery: '',
       type:
-        operation.type === FlowOperationType.UPDATE_TRIGGER
+        operation.type === WorkflowOperationType.UPDATE_TRIGGER
           ? 'trigger'
           : 'action',
     });

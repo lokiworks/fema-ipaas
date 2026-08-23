@@ -54,7 +54,7 @@ function makeWorkspace(
     icon: { color: 'BLUE' as never },
     externalId: null,
     releasesEnabled: false,
-    notifyFlowOwnerOnFailure: false,
+    notifyWorkflowOwnerOnFailure: false,
     metadata: null,
     plan: {
       id: `plan${id}`,
@@ -69,8 +69,8 @@ function makeWorkspace(
     analytics: {
       totalUsers: 0,
       activeUsers: 0,
-      totalFlows: 0,
-      activeFlows: 0,
+      totalWorkflows: 0,
+      activeWorkflows: 0,
     },
   };
 }
@@ -405,8 +405,8 @@ describe('setCurrentWorkspace', () => {
   });
 
   it('replaces the workspace ID segment in the pathname and navigates', () => {
-    setCurrentWorkspace('projNew', '/workspaces/projOld/flows');
-    expect(window.location.href).toBe('/workspaces/projNew/flows');
+    setCurrentWorkspace('projNew', '/workspaces/projOld/workflows');
+    expect(window.location.href).toBe('/workspaces/projNew/workflows');
   });
 
   it('works at different route depths', () => {

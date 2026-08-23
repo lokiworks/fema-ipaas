@@ -4,7 +4,7 @@ description: 'Learn how to manage and deploy releases across projects'
 icon: 'rocket'
 ---
 
-Project Releases allow you to sync flows, connections, and tables between different projects—essential for teams that want to develop in one environment and deploy to another with confidence.
+Project Releases allow you to sync workflows, connections, and tables between different projects—essential for teams that want to develop in one environment and deploy to another with confidence.
 
 <Tip>
 **Example:** Build and test your automations in a **Staging** project, then seamlessly promote them to **Production** when ready. Simply navigate to your Production project → **Releases** → create a release from Staging, and all your changes will be applied instantly.
@@ -16,7 +16,7 @@ There are three ways to create a release:
 | Source | Description |
 |--------|-------------|
 | **Git** | Pull changes from a connected Git repository |
-| **Project** | Copy flows from another project in your instance |
+| **Project** | Copy workflows from another project in your instance |
 | **Rollback** | Restore a previous release state |
 
 
@@ -44,7 +44,7 @@ If you want to use Git to track your changes, you'll need to connect a Git repos
 
 ### From Project
 
-Apply changes from flows, connections and tables in one project to another.
+Apply changes from workflows, connections and tables in one project to another.
 
 <Steps>
   <Step title="Open Create Release Menu">
@@ -54,7 +54,7 @@ Apply changes from flows, connections and tables in one project to another.
     Choose **From Project** from the dropdown menu.
   </Step>
   <Step title="Select Source Project">
-    Choose the project you want to copy flows, connections and tables from.
+    Choose the project you want to copy workflows, connections and tables from.
   </Step>
   <Step title="Review and Apply">
     Review the changes, and click **Apply Changes**.
@@ -80,12 +80,12 @@ Apply changes from flows, connections and tables in one project to another.
   </Step>
   <Step title="Review Changes">
     A dialog will appear showing all the changes that will be applied:
-    - **Flows Changes**: New, updated, or deleted flows
+    - **Workflows Changes**: New, updated, or deleted workflows
     - **Connections Changes**: New or renamed connections
     - **Tables Changes**: New, updated, or deleted tables
   </Step>
   <Step title="Select Changes">
-    Check or uncheck the flows you want to include in this release.
+    Check or uncheck the workflows you want to include in this release.
   </Step>
   <Step title="Add Release Details">
     Enter a **Name** and optional **Description** for your release.
@@ -100,7 +100,7 @@ Apply changes from flows, connections and tables in one project to another.
 
 ## Push Everything to Git
 
-If your project is connected to a Git repository, you can push all your flows, connections, and tables to Git.
+If your project is connected to a Git repository, you can push all your workflows, connections, and tables to Git.
 
 <Steps>
   <Step title="Click Push Everything">
@@ -110,22 +110,22 @@ If your project is connected to a Git repository, you can push all your flows, c
     Write a descriptive commit message explaining your changes.
   </Step>
   <Step title="Push">
-    Click **Push** to send all published flows to the Git repository.
+    Click **Push** to send all published workflows to the Git repository.
   </Step>
 </Steps>
 
 ![Push Everything to Git Dialog](/resources/screenshots/push-everything-to-git.png)
 
 
-## Pushing Individual Flows or Tables
+## Pushing Individual Workflows or Tables
 
-You can also push specific flows or tables to Git without pushing everything.
+You can also push specific workflows or tables to Git without pushing everything.
 <Warning>
- You can only push published flows to git
+ You can only push published workflows to git
 </Warning>
 <Steps>
   <Step title="Select Items">
-    Navigate to your flows or tables and select the items you want to push.
+    Navigate to your workflows or tables and select the items you want to push.
   </Step>
   <Step title="Open Push Dialog">
     Click the **Push to Git** option.
@@ -138,9 +138,9 @@ You can also push specific flows or tables to Git without pushing everything.
   </Step>
 </Steps>
 
-![Push to Git Dialog](/resources/screenshots/push-flows-to-git-1.png)
+![Push to Git Dialog](/resources/screenshots/push-workflows-to-git-1.png)
 
-![Push to Git Dialog](/resources/screenshots/push-flows-to-git-2.png)
+![Push to Git Dialog](/resources/screenshots/push-workflows-to-git-2.png)
 
 ## Rolling Back a Release
 
@@ -182,11 +182,11 @@ Click on any release to view its full details.
 
 When creating a release, you'll see a preview of all changes:
 
-### Flow Changes
+### Workflow Changes
 
-- New flows that will be created
-- Existing flows that will be updated
-- Flows that will be deleted
+- New workflows that will be created
+- Existing workflows that will be updated
+- Workflows that will be deleted
 
 ### Connection Changes
 
@@ -237,7 +237,7 @@ To create and manage releases, you need the **Write Project Release** permission
     After applying a release with new connections, navigate to the Connections page and reconnect them with valid credentials.
   </Accordion>
   <Accordion title="Push Everything button not visible">
-    Make sure you configured your git settings and if you are selecting flows, make sure they are published.
+    Make sure you configured your git settings and if you are selecting workflows, make sure they are published.
   </Accordion>
   <Accordion title="Cannot find Environment settings">
     Navigate to **Project Settings** from the sidebar, then click on **Environment**. If you don't see this option, the Environments feature may not be enabled for your instance.

@@ -84,8 +84,8 @@ export const ConnectorOptionRequest = z.object({
     connectorVersion: VersionType,
     actionOrTriggerName: z.string(),
     propertyName: z.string(),
-    flowId: z.string(),
-    flowVersionId: z.string(),
+    workflowId: z.string(),
+    workflowVersionId: z.string(),
     input: z.any(),
     searchValue: z.string().optional(),
 })

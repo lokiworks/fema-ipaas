@@ -1,13 +1,13 @@
 import { isNil } from '@fema/core-utils';
-import { FlowTriggerType } from '@fema/shared';
+import { WorkflowTriggerType } from '@fema/shared';
 import { StoreApi } from 'zustand';
 
 import { RightSideBarType } from '@/app/builder/types';
 import { executionUtils } from '@/features/executions';
 
 import { BuilderState } from '../builder-hooks';
-import { flowCanvasUtils } from '../flow-canvas/utils/flow-canvas-utils';
-import { CanvasOrientation } from '../flow-canvas/utils/types';
+import { CanvasOrientation } from '../workflow-canvas/utils/types';
+import { workflowCanvasUtils } from '../workflow-canvas/utils/workflow-canvas-utils';
 
 export type StepDataPanelView = 'drawer' | 'split';
 
@@ -25,7 +25,7 @@ export type CanvasState = {
   setShowMinimap: (showMinimap: boolean) => void;
   setSelectedBranchIndex: (index: number | null) => void;
   exitStepSettings: () => void;
-  renameFlowClientSide: (newName: string) => void;
+  renameWorkflowClientSide: (newName: string) => void;
   setRightSidebar: (rightSidebar: RightSideBarType) => void;
   removeStepSelection: () => void;
   selectStepByName: (
@@ -52,7 +52,7 @@ export type CanvasState = {
 
 type CanvasStateInitialState = Pick<
   BuilderState,
-  'readonly' | 'hideTestWidget' | 'run' | 'flowVersion'
+  'readonly' | 'hideTestWidget' | 'run' | 'workflowVersion'
 >;
 
 export const createCanvasState = (
@@ -65,13 +65,14 @@ export const createCanvasState = (
         initialState.run.steps,
       )
     : null;
-  const initiallySelectedStep = flowCanvasUtils.determineInitiallySelectedStep(
-    failedStepNameInRun,
-    initialState.flowVersion,
-  );
+  const initiallySelectedStep =
+    workflowCanvasUtils.determineInitiallySelectedStep(
+      failedStepNameInRun,
+      initialState.workflowVersion,
+    );
   const isEmptyTriggerInitiallySelected =
     initiallySelectedStep === 'trigger' &&
-    initialState.flowVersion.trigger.type === FlowTriggerType.EMPTY;
+    initialState.workflowVersion.trigger.type === WorkflowTriggerType.EMPTY;
   return {
     canvasOrientation: getCanvasOrientationFromLocalStorage(),
     setCanvasOrientation: (orientation: CanvasOrientation) => {
@@ -109,11 +110,11 @@ export const createCanvasState = (
         selectedBranchIndex: branchIndex,
       }),
     setReadOnly: (readonly: boolean) => set({ readonly }),
-    renameFlowClientSide: (newName: string) => {
+    renameWorkflowClientSide: (newName: string) => {
       set((state) => {
         return {
-          flowVersion: {
-            ...state.flowVersion,
+          workflowVersion: {
+            ...state.workflowVersion,
             displayName: newName,
           },
         };
@@ -127,7 +128,7 @@ export const createCanvasState = (
         const selectedNodes = isNil(selectedStep) ? [] : [selectedStep];
         const rightSidebar =
           selectedStep === 'trigger' &&
-          state.flowVersion.trigger.type === FlowTriggerType.EMPTY
+          state.workflowVersion.trigger.type === WorkflowTriggerType.EMPTY
             ? RightSideBarType.NONE
             : RightSideBarType.CONNECTOR_SETTINGS;
 

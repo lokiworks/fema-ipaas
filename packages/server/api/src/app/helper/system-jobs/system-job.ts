@@ -115,7 +115,7 @@ async function removeDeprecatedJobs(log: FastifyBaseLogger): Promise<void> {
         'platform-usage-report',
         'seven-days-in-trial',
         'issue-reminder',
-        'update-flow-status',
+        'update-workflow-status',
         'expire-pending-sso-domains',
         'console-usage-report',
         'execution-tracking',

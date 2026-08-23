@@ -201,7 +201,7 @@ const getStatusPresentation = (
       Icon: Hourglass,
       headline: t('Too many requests'),
       hint: t(
-        'The service is rate-limiting this account. Wait a few minutes and try again, or reduce how frequently this flow runs.',
+        'The service is rate-limiting this account. Wait a few minutes and try again, or reduce how frequently this workflow runs.',
       ),
       tone: WARNING_TONE,
     };

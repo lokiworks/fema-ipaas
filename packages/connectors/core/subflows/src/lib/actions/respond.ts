@@ -1,5 +1,5 @@
 import { DynamicPropsValue, ConnectorAuth, Property, StoreScope, createAction } from '@fema/connector-sdk';
-import { callableFlowKey, CallableFlowResponse, MOCK_CALLBACK_IN_TEST_FLOW_URL } from '../common';
+import { callableWorkflowKey, CallableWorkflowResponse, MOCK_CALLBACK_IN_TEST_WORKFLOW_URL } from '../common';
 import { httpClient, HttpMethod } from '@fema/connector-common';
 import { isNil } from '@fema/connector-sdk';
 
@@ -8,8 +8,8 @@ export const response = createAction({
   name: 'returnResponse',
   classification: 'WRITE',
   displayName: 'Return Response',
-  description: 'Return response to the original flow',
-  aiMetadata: { description: 'Sends a result payload back to the flow that invoked this one through Call Flow, releasing the caller from its wait; the body is entered as key-value pairs (Simple mode) or as raw JSON (Advanced mode). Use it only inside a flow whose trigger is "Callable Flow", and only when the caller ran with Wait for Response enabled - it silently does nothing when no callback URL was stored for the run. Not idempotent: each call posts a fresh response to the callback URL of the caller.', idempotent: false },
+  description: 'Return response to the original workflow',
+  aiMetadata: { description: 'Sends a result payload back to the workflow that invoked this one through Call Workflow, releasing the caller from its wait; the body is entered as key-value pairs (Simple mode) or as raw JSON (Advanced mode). Use it only inside a workflow whose trigger is "Callable Workflow", and only when the caller ran with Wait for Response enabled - it silently does nothing when no callback URL was stored for the run. Not idempotent: each call posts a fresh response to the callback URL of the caller.', idempotent: false },
   props: {
     mode: Property.StaticDropdown({
       displayName: 'Mode',
@@ -59,10 +59,10 @@ export const response = createAction({
   },
   async run(context) {
     const response = context.propsValue.response['response'];
-    const callbackUrl = await context.store.get<string>(callableFlowKey(context.run.id), StoreScope.FLOW);
-    const isNotTestFlow = callbackUrl !== MOCK_CALLBACK_IN_TEST_FLOW_URL;
-    if (isNotTestFlow && !isNil(callbackUrl)) {
-      await httpClient.sendRequest<CallableFlowResponse>({
+    const callbackUrl = await context.store.get<string>(callableWorkflowKey(context.run.id), StoreScope.WORKFLOW);
+    const isNotTestWorkflow = callbackUrl !== MOCK_CALLBACK_IN_TEST_WORKFLOW_URL;
+    if (isNotTestWorkflow && !isNil(callbackUrl)) {
+      await httpClient.sendRequest<CallableWorkflowResponse>({
         method: HttpMethod.POST,
         url: callbackUrl,
         body: {

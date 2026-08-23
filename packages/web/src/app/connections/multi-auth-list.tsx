@@ -162,7 +162,7 @@ function createOAuth2Options(
         oauth2App: emptyOAuth2App,
       },
       description: t(
-        'Authenticate securely from your server using the Client Credentials flow. Ideal for backend integrations.',
+        'Authenticate securely from your server using the Client Credentials workflow. Ideal for backend integrations.',
       ),
     });
   }

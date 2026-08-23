@@ -4,13 +4,13 @@
 
 - **Always throw `ExecutionError` subclasses** (from `@fema/shared`) instead of plain `Error`. The engine uses `tryCatchAndThrowOnEngineError` which only propagates errors of type `ExecutionErrorType.ENGINE` — plain `Error` instances are silently swallowed and treated as user-level failures.
 - Use `EngineGenericError` for engine-level failures (e.g., failed API calls to the server).
-- Use the existing specific error classes (`ConnectionNotFoundError`, `StorageLimitError`, `PausedFlowTimeoutError`, etc.) when applicable.
+- Use the existing specific error classes (`ConnectionNotFoundError`, `StorageLimitError`, `PausedWorkflowTimeoutError`, etc.) when applicable.
 
 ## USER vs ENGINE errors during input resolution
 
 - A USER-level `ExecutionError` (e.g. `ConnectionNotFoundError` from a stale `{{connections.X}}` reference) must surface as a **FAILED step**, never `INTERNAL_ERROR`. `INTERNAL_ERROR` fails the worker job and pages oncall — reserve it for genuine engine bugs.
 - **Actions**: resolve input (`getPropsResolver().resolve(...)`) **inside** the executor's `tryCatchAndThrowOnEngineError` wrapper. `code-executor`, `loop-executor`, and `router-executor` previously resolved outside it, leaking USER errors to `INTERNAL_ERROR`; `connector-executor` is the reference pattern.
-- **Triggers**: input resolution runs in `runOrReturnPayload` (`flow.operation.ts`). `resolveStateOrThrowOnNonUserError` catches USER errors and routes them to `buildFailedTriggerContext` (FAILED trigger step), while rethrowing ENGINE errors so real bugs still page.
+- **Triggers**: input resolution runs in `runOrReturnPayload` (`workflow.operation.ts`). `resolveStateOrThrowOnNonUserError` catches USER errors and routes them to `buildFailedTriggerContext` (FAILED trigger step), while rethrowing ENGINE errors so real bugs still page.
 
 ## Trigger step output
 

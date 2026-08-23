@@ -39,8 +39,8 @@ export const benchmarkCommand = new Command('benchmark')
             log(config, `Provisioned throwaway workspace ${workspace.id}`);
             const runsFailed = await (async () => {
                 const workspaceLimits = await collectWorkspaceLimits({ client: authed, workspaceId: workspace.id, rateLimiterEnabled: flags['WORKSPACE_RATE_LIMITER_ENABLED'] === true });
-                const flowId = await createBenchmarkFlow({ client: authed, workspaceId: workspace.id });
-                log(config, `Flow ready: ${flowId}`);
+                const workflowId = await createBenchmarkWorkflow({ client: authed, workspaceId: workspace.id });
+                log(config, `Workflow ready: ${workflowId}`);
 
                 const slots = setup.executionSlots;
                 const phases = benchmarkUtils.resolvePhases({ concurrency: config.concurrency, slots });
@@ -53,11 +53,11 @@ export const benchmarkCommand = new Command('benchmark')
                     // createdAfter is compared against the server clock, but this timestamp is the CLI's.
                     // The CLI runs cross-region, so its clock can lead the server's — widen the window by a
                     // skew buffer so runs aren't silently dropped. Safe because each benchmark builds a fresh
-                    // flow, so the flowId filter still admits only this run's flow runs.
+                    // workflow, so the workflowId filter still admits only this run's workflow runs.
                     const startedAt = new Date(Date.now() - CLOCK_SKEW_BUFFER_MS).toISOString();
                     const queueSampler = startQueueSampler(authed);
                     const result = await autocannon({
-                        url: `${config.url}/api/v1/webhooks/${flowId}/sync`,
+                        url: `${config.url}/api/v1/webhooks/${workflowId}/sync`,
                         connections: phase.connections,
                         amount: requests,
                         method: 'POST',
@@ -65,16 +65,16 @@ export const benchmarkCommand = new Command('benchmark')
                         body: config.body,
                     });
                     const queueDepth = queueSampler.stop();
-                    const summary = benchmarkUtils.toSummary({ result, flowId, connections: phase.connections });
-                    const runsInWindow = await collectRuns({ client: authed, workspaceId: workspace.id, flowId, since: startedAt });
+                    const summary = benchmarkUtils.toSummary({ result, workflowId, connections: phase.connections });
+                    const runsInWindow = await collectRuns({ client: authed, workspaceId: workspace.id, workflowId, since: startedAt });
                     runs.push({ label: phase.label, connections: phase.connections, requests, startedAt, summary, timeline: runsInWindow.timeline, outcomes: runsInWindow.outcomes, queueDepth });
                 }
 
                 const diagnosticsTimeline = { intervalMs: DIAGNOSTICS_SAMPLE_INTERVAL_MS, samples: diagnosticsSampler.stop() };
-                log(config, 'Scanning other workspaces for flows that ran during the benchmark...');
-                const outsideFlows = await collectOutsideFlows({ client: authed, benchmarkWorkspaceId: workspace.id, since: runs[0].startedAt });
-                const storage = await probeStorage({ client: authed, workspaceId: workspace.id, flowId });
-                const report: BenchmarkReport = { meta: buildMeta({ url: config.url }), flowId, workspace: { id: workspace.id, limits: workspaceLimits }, health, diagnostics, diagnosticsTimeline, setup, flags, network, storage, outsideFlows, runs };
+                log(config, 'Scanning other workspaces for workflows that ran during the benchmark...');
+                const outsideWorkflows = await collectOutsideWorkflows({ client: authed, benchmarkWorkspaceId: workspace.id, since: runs[0].startedAt });
+                const storage = await probeStorage({ client: authed, workspaceId: workspace.id, workflowId });
+                const report: BenchmarkReport = { meta: buildMeta({ url: config.url }), workflowId, workspace: { id: workspace.id, limits: workspaceLimits }, health, diagnostics, diagnosticsTimeline, setup, flags, network, storage, outsideWorkflows, runs };
 
                 if (config.json) {
                     process.stdout.write(JSON.stringify(report, null, 2) + '\n');
@@ -232,11 +232,11 @@ async function measureNetwork(client: AxiosInstance): Promise<NetworkBaseline> {
     return { probes: samples.length, minMs: samples.length ? Math.min(...samples) : 0, p50Ms: percentile(samples, 50) };
 }
 
-async function collectRuns({ client, workspaceId, flowId, since }: CollectRunsParams): Promise<CollectedRuns> {
+async function collectRuns({ client, workspaceId, workflowId, since }: CollectRunsParams): Promise<CollectedRuns> {
     const collected: ExecutionLike[] = [];
     let cursor: string | undefined;
     for (let page = 0; page < MAX_RUN_PAGES; page++) {
-        const params: Record<string, string | number> = { workspaceId, flowId, createdAfter: since, limit: RUN_PAGE_SIZE };
+        const params: Record<string, string | number> = { workspaceId, workflowId, createdAfter: since, limit: RUN_PAGE_SIZE };
         if (cursor) params.cursor = cursor;
         const res = await client.get('/api/v1/executions', { params });
         if (res.status !== 200 || !Array.isArray(res.data?.data)) break;
@@ -354,13 +354,13 @@ function buildMeta({ url }: { url: string }): RunMeta {
     };
 }
 
-// Flows the benchmark does NOT own that ran inside its window. They share the same execution slots,
+// Workflows the benchmark does NOT own that ran inside its window. They share the same execution slots,
 // so they are the answer to "why is QUEUE high on a deployment that looks idle". Scans every platform
 // workspace except the benchmark's throwaway one.
-async function collectOutsideFlows({ client, benchmarkWorkspaceId, since }: CollectOutsideFlowsParams): Promise<OutsideFlowsReport> {
+async function collectOutsideWorkflows({ client, benchmarkWorkspaceId, since }: CollectOutsideWorkflowsParams): Promise<OutsideWorkflowsReport> {
     const workspacesRes = await client.get('/api/v1/workspaces', { params: { limit: WORKSPACE_PAGE_SIZE } });
     if (workspacesRes.status !== 200 || !Array.isArray(workspacesRes.data?.data)) {
-        return { available: false, detail: `workspace listing failed (HTTP ${workspacesRes.status}) — cannot scan for outside flows`, flows: [] };
+        return { available: false, detail: `workspace listing failed (HTTP ${workspacesRes.status}) — cannot scan for outside workflows`, workflows: [] };
     }
     const notes: string[] = [];
     if (workspacesRes.data.next) notes.push(`only the first ${WORKSPACE_PAGE_SIZE} workspaces scanned`);
@@ -382,22 +382,22 @@ async function collectOutsideFlows({ client, benchmarkWorkspaceId, since }: Coll
     }
 
     const aggregates = aggregateOutsideRuns(outsideRuns);
-    if (aggregates.length > MAX_OUTSIDE_FLOWS_DETAILED) notes.push(`connectors/name resolved for the top ${MAX_OUTSIDE_FLOWS_DETAILED} of ${aggregates.length} flows only`);
-    const flows: OutsideFlow[] = [];
+    if (aggregates.length > MAX_OUTSIDE_WORKFLOWS_DETAILED) notes.push(`connectors/name resolved for the top ${MAX_OUTSIDE_WORKFLOWS_DETAILED} of ${aggregates.length} workflows only`);
+    const workflows: OutsideWorkflow[] = [];
     for (const [index, aggregate] of aggregates.entries()) {
-        const description = index < MAX_OUTSIDE_FLOWS_DETAILED
-            ? await describeFlow({ client, flowId: aggregate.flowId, workspaceId: aggregate.workspaceId })
+        const description = index < MAX_OUTSIDE_WORKFLOWS_DETAILED
+            ? await describeWorkflow({ client, workflowId: aggregate.workflowId, workspaceId: aggregate.workspaceId })
             : { displayName: null, connectors: [] };
-        flows.push({ ...aggregate, ...description });
+        workflows.push({ ...aggregate, ...description });
     }
-    return { available: true, flows, ...(notes.length > 0 ? { detail: notes.join('; ') } : {}) };
+    return { available: true, workflows, ...(notes.length > 0 ? { detail: notes.join('; ') } : {}) };
 }
 
-function aggregateOutsideRuns(runs: OutsideRunLike[]): OutsideFlowAggregate[] {
-    const byFlow = new Map<string, { workspaceId: string; runs: number; totalRunMs: number; timedRuns: number }>();
+function aggregateOutsideRuns(runs: OutsideRunLike[]): OutsideWorkflowAggregate[] {
+    const byWorkflow = new Map<string, { workspaceId: string; runs: number; totalRunMs: number; timedRuns: number }>();
     for (const run of runs) {
-        if (typeof run.flowId !== 'string') continue;
-        const entry = byFlow.get(run.flowId) ?? { workspaceId: run.workspaceId, runs: 0, totalRunMs: 0, timedRuns: 0 };
+        if (typeof run.workflowId !== 'string') continue;
+        const entry = byWorkflow.get(run.workflowId) ?? { workspaceId: run.workspaceId, runs: 0, totalRunMs: 0, timedRuns: 0 };
         entry.runs += 1;
         const started = Date.parse(run.startTime ?? '');
         const finished = Date.parse(run.finishTime ?? '');
@@ -405,15 +405,15 @@ function aggregateOutsideRuns(runs: OutsideRunLike[]): OutsideFlowAggregate[] {
             entry.totalRunMs += finished - started;
             entry.timedRuns += 1;
         }
-        byFlow.set(run.flowId, entry);
+        byWorkflow.set(run.workflowId, entry);
     }
-    return [...byFlow.entries()]
-        .map(([flowId, agg]) => ({ flowId, workspaceId: agg.workspaceId, runs: agg.runs, avgRunMs: agg.timedRuns > 0 ? Math.round(agg.totalRunMs / agg.timedRuns) : null }))
+    return [...byWorkflow.entries()]
+        .map(([workflowId, agg]) => ({ workflowId, workspaceId: agg.workspaceId, runs: agg.runs, avgRunMs: agg.timedRuns > 0 ? Math.round(agg.totalRunMs / agg.timedRuns) : null }))
         .sort((a, b) => b.runs - a.runs);
 }
 
-async function describeFlow({ client, flowId, workspaceId }: DescribeFlowParams): Promise<FlowDescription> {
-    const res = await client.get(`/api/v1/flows/${flowId}`, { params: { workspaceId } }).catch(() => null);
+async function describeWorkflow({ client, workflowId, workspaceId }: DescribeWorkflowParams): Promise<WorkflowDescription> {
+    const res = await client.get(`/api/v1/workflows/${workflowId}`, { params: { workspaceId } }).catch(() => null);
     if (!res || res.status !== 200 || isNilLike(res.data?.version)) {
         return { displayName: null, connectors: [] };
     }
@@ -426,8 +426,8 @@ function isNilLike(value: unknown): value is null | undefined {
     return value === null || value === undefined;
 }
 
-async function probeStorage({ client, workspaceId, flowId }: ProbeStorageParams): Promise<StorageProbe> {
-    const res = await client.get('/api/v1/executions', { params: { workspaceId, flowId, limit: 50 } });
+async function probeStorage({ client, workspaceId, workflowId }: ProbeStorageParams): Promise<StorageProbe> {
+    const res = await client.get('/api/v1/executions', { params: { workspaceId, workflowId, limit: 50 } });
     const runs: ExecutionLike[] = Array.isArray(res.data?.data) ? res.data.data : [];
     if (runs.length === 0) {
         return { logsPersisted: 0, sampled: 0, detail: 'No runs found to check log persistence.' };
@@ -487,25 +487,25 @@ async function collectWorkspaceLimits({ client, workspaceId, rateLimiterEnabled 
     return { available: true, maxConcurrentJobs, rateLimiterEnabled };
 }
 
-async function createBenchmarkFlow({ client, workspaceId }: { client: AxiosInstance; workspaceId: string }): Promise<string> {
+async function createBenchmarkWorkflow({ client, workspaceId }: { client: AxiosInstance; workspaceId: string }): Promise<string> {
     const [webhookVersion, mapperVersion] = await Promise.all([
         resolveConnectorVersion(client, WEBHOOK_CONNECTOR),
         resolveConnectorVersion(client, DATA_MAPPER_CONNECTOR),
     ]);
 
-    const created = await client.post('/api/v1/flows', { displayName: 'Benchmark Flow', workspaceId });
-    const flowId: string | undefined = created.data?.id;
-    if (!flowId) {
-        throw new Error(`Failed to create flow: ${JSON.stringify(created.data)}`);
+    const created = await client.post('/api/v1/workflows', { displayName: 'Benchmark Workflow', workspaceId });
+    const workflowId: string | undefined = created.data?.id;
+    if (!workflowId) {
+        throw new Error(`Failed to create workflow: ${JSON.stringify(created.data)}`);
     }
 
-    await postOperation(client, flowId, {
-        type: 'IMPORT_FLOW',
+    await postOperation(client, workflowId, {
+        type: 'IMPORT_WORKFLOW',
         request: buildImportRequest({ webhookVersion, mapperVersion }),
     });
-    await postOperation(client, flowId, { type: 'LOCK_AND_PUBLISH', request: { status: 'ENABLED' } });
-    await waitForEnabled(client, flowId);
-    return flowId;
+    await postOperation(client, workflowId, { type: 'LOCK_AND_PUBLISH', request: { status: 'ENABLED' } });
+    await waitForEnabled(client, workflowId);
+    return workflowId;
 }
 
 async function resolveConnectorVersion(client: AxiosInstance, name: string): Promise<string> {
@@ -517,27 +517,27 @@ async function resolveConnectorVersion(client: AxiosInstance, name: string): Pro
     return `~${version}`;
 }
 
-async function postOperation(client: AxiosInstance, flowId: string, operation: unknown): Promise<void> {
-    const res = await client.post(`/api/v1/flows/${flowId}`, operation);
+async function postOperation(client: AxiosInstance, workflowId: string, operation: unknown): Promise<void> {
+    const res = await client.post(`/api/v1/workflows/${workflowId}`, operation);
     if (res.status >= 400) {
-        throw new Error(`Flow operation failed (HTTP ${res.status}): ${JSON.stringify(res.data)}`);
+        throw new Error(`Workflow operation failed (HTTP ${res.status}): ${JSON.stringify(res.data)}`);
     }
 }
 
-async function waitForEnabled(client: AxiosInstance, flowId: string): Promise<void> {
+async function waitForEnabled(client: AxiosInstance, workflowId: string): Promise<void> {
     for (let i = 0; i < 30; i++) {
-        const res = await client.get(`/api/v1/flows/${flowId}`);
+        const res = await client.get(`/api/v1/workflows/${workflowId}`);
         if (res.data?.status === 'ENABLED') return;
         await sleep(1000);
     }
-    console.error(chalk.yellow('Flow did not report ENABLED within 30s; proceeding anyway.'));
+    console.error(chalk.yellow('Workflow did not report ENABLED within 30s; proceeding anyway.'));
 }
 
 // schemaVersion:null makes the server migrate this payload up to its own latest schema,
 // so the same payload stays valid across server versions without CLI maintenance.
 function buildImportRequest({ webhookVersion, mapperVersion }: { webhookVersion: string; mapperVersion: string }): unknown {
     return {
-        displayName: 'Benchmark Flow',
+        displayName: 'Benchmark Workflow',
         schemaVersion: null,
         notes: [],
         trigger: {
@@ -589,10 +589,10 @@ function buildImportRequest({ webhookVersion, mapperVersion }: { webhookVersion:
     };
 }
 
-function toSummary({ result, flowId, connections }: ToSummaryParams): Summary {
+function toSummary({ result, workflowId, connections }: ToSummaryParams): Summary {
     const failed = result.non2xx + result.errors + result.timeouts;
     return {
-        flowId,
+        workflowId,
         requests: result.requests.sent,
         connections,
         durationSec: result.duration,
@@ -613,7 +613,7 @@ function toSummary({ result, flowId, connections }: ToSummaryParams): Summary {
 }
 
 function renderReport(report: BenchmarkReport): void {
-    console.log(chalk.bold(`\nBenchmark report (flow ${report.flowId})`));
+    console.log(chalk.bold(`\nBenchmark report (workflow ${report.workflowId})`));
     console.log(chalk.gray(`  ran ${report.meta.ranAt} against ${report.meta.target}`));
     console.log(chalk.gray(`  CLI host: node ${report.meta.cli.node}, ${report.meta.cli.platform}, ${report.meta.cli.cpus} cpu — different region than API/workers`));
 
@@ -692,7 +692,7 @@ function renderReport(report: BenchmarkReport): void {
     }
 
     renderRateLimiter(report);
-    renderOutsideFlows(report);
+    renderOutsideWorkflows(report);
     renderDiagnosticsTimeline(report);
 
     console.log(chalk.bold('\nNetwork (CLI -> server, cross-region)'));
@@ -717,7 +717,7 @@ function renderReport(report: BenchmarkReport): void {
             console.log(`    QUEUE      p50/p90/max ${fmt(t.queueP50)} / ${fmt(t.queueP90)} / ${fmt(t.queueMax)} ms   — wait for a free execution slot  ${chalk.gray('(±app↔worker clock skew; cross-check the queue-depth above)')}${rateLimitNote}`);
             console.log(`    PROVISION  p50 ${fmt(t.provisionP50)} ms   — connector install / cache provision`);
             console.log(`    BOOT       p50 ${fmt(t.bootP50)} ms   — engine fork + Node boot + isolate + socket connect`);
-            console.log(`    RUN        p50/p90 ${fmt(t.serviceP50)} / ${fmt(t.serviceP90)} ms   — engine executes the flow, incl. end-of-run S3 log backup`);
+            console.log(`    RUN        p50/p90 ${fmt(t.serviceP50)} / ${fmt(t.serviceP90)} ms   — engine executes the workflow, incl. end-of-run S3 log backup`);
             console.log(`    => queue-wait p50 ${fmt(t.queueWaitP50)} ms (QUEUE+PROVISION+BOOT) vs service p50 ${fmt(t.serviceP50)} ms (RUN)`);
             console.log(`  ${verdict(t)}`);
         }
@@ -784,24 +784,24 @@ function renderDiagnosticsTimeline(report: BenchmarkReport): void {
     console.log(chalk.gray('  app cpu/evloop and worker pings refresh on their ~60s ticks, so consecutive rows can repeat them; db/redis/storage are probed fresh each sample.'));
 }
 
-// Answers "was anything else running while I benchmarked?" — outside flows share the execution
+// Answers "was anything else running while I benchmarked?" — outside workflows share the execution
 // slots, so each entry here is workload that inflated QUEUE without any config flag explaining it.
-function renderOutsideFlows(report: BenchmarkReport): void {
-    console.log(chalk.bold('\nOutside flows (ran during the benchmark, NOT part of it)'));
-    const { available, flows, detail } = report.outsideFlows;
+function renderOutsideWorkflows(report: BenchmarkReport): void {
+    console.log(chalk.bold('\nOutside workflows (ran during the benchmark, NOT part of it)'));
+    const { available, workflows, detail } = report.outsideWorkflows;
     if (!available) {
         console.log(chalk.gray(`  ${detail ?? 'unavailable'}`));
         return;
     }
-    if (flows.length === 0) {
-        console.log(chalk.green('  none — no other flow ran during the benchmark window. QUEUE times are contention-free.'));
+    if (workflows.length === 0) {
+        console.log(chalk.green('  none — no other workflow ran during the benchmark window. QUEUE times are contention-free.'));
         return;
     }
-    console.log(chalk.yellow(`  ${flows.length} flow(s) competed for the execution slots during the load — their runs inflate QUEUE:`));
-    for (const flow of flows) {
-        const avgRun = flow.avgRunMs === null ? 'n/a' : `${flow.avgRunMs} ms`;
-        console.log(`  - ${flow.displayName ?? flow.flowId}: ${flow.runs} runs, avg run ${avgRun}`);
-        console.log(chalk.gray(`      flow ${flow.flowId}  workspace ${flow.workspaceId}  connectors [${flow.connectors.join(', ') || 'unknown'}]`));
+    console.log(chalk.yellow(`  ${workflows.length} workflow(s) competed for the execution slots during the load — their runs inflate QUEUE:`));
+    for (const workflow of workflows) {
+        const avgRun = workflow.avgRunMs === null ? 'n/a' : `${workflow.avgRunMs} ms`;
+        console.log(`  - ${workflow.displayName ?? workflow.workflowId}: ${workflow.runs} runs, avg run ${avgRun}`);
+        console.log(chalk.gray(`      workflow ${workflow.workflowId}  workspace ${workflow.workspaceId}  connectors [${workflow.connectors.join(', ') || 'unknown'}]`));
     }
     console.log(chalk.gray(`  window starts ${CLOCK_SKEW_BUFFER_MS / 60_000} min before the load (clock-skew tolerance), so slightly-earlier runs can appear.`));
     if (detail) console.log(chalk.gray(`  note: ${detail}`));
@@ -920,7 +920,7 @@ const DIAGNOSTICS_SAMPLE_INTERVAL_MS = 5_000;
 const CLOCK_SKEW_BUFFER_MS = 5 * 60 * 1000;
 const WORKSPACE_PAGE_SIZE = 100;
 const MAX_OUTSIDE_RUN_PAGES = 5;
-const MAX_OUTSIDE_FLOWS_DETAILED = 20;
+const MAX_OUTSIDE_WORKFLOWS_DETAILED = 20;
 // The server's rate-limiter re-queues a rejected job with min(600s, 20s * 2^attempts) delay
 // (rate-limiter-interceptor.ts). 15s = one backoff minus clock-skew tolerance.
 const RATE_LIMIT_MIN_BACKOFF_MS = 20_000;
@@ -1014,19 +1014,19 @@ type StorageProbe = {
     detail: string;
 };
 
-type CollectRunsParams = { client: AxiosInstance; workspaceId: string; flowId: string; since: string };
+type CollectRunsParams = { client: AxiosInstance; workspaceId: string; workflowId: string; since: string };
 type RunOutcomes = Record<string, number>;
 type CollectedRuns = { timeline: TimelineAggregate; outcomes: RunOutcomes };
-type ProbeStorageParams = { client: AxiosInstance; workspaceId: string; flowId: string };
+type ProbeStorageParams = { client: AxiosInstance; workspaceId: string; workflowId: string };
 
 type QueueSample = { waiting: number; active: number };
-type OutsideRunLike = { flowId?: string; workspaceId: string; startTime?: string; finishTime?: string };
-type OutsideFlowAggregate = { flowId: string; workspaceId: string; runs: number; avgRunMs: number | null };
-type FlowDescription = { displayName: string | null; connectors: string[] };
-type OutsideFlow = OutsideFlowAggregate & FlowDescription;
-type OutsideFlowsReport = { available: boolean; detail?: string; flows: OutsideFlow[] };
-type CollectOutsideFlowsParams = { client: AxiosInstance; benchmarkWorkspaceId: string; since: string };
-type DescribeFlowParams = { client: AxiosInstance; flowId: string; workspaceId: string };
+type OutsideRunLike = { workflowId?: string; workspaceId: string; startTime?: string; finishTime?: string };
+type OutsideWorkflowAggregate = { workflowId: string; workspaceId: string; runs: number; avgRunMs: number | null };
+type WorkflowDescription = { displayName: string | null; connectors: string[] };
+type OutsideWorkflow = OutsideWorkflowAggregate & WorkflowDescription;
+type OutsideWorkflowsReport = { available: boolean; detail?: string; workflows: OutsideWorkflow[] };
+type CollectOutsideWorkflowsParams = { client: AxiosInstance; benchmarkWorkspaceId: string; since: string };
+type DescribeWorkflowParams = { client: AxiosInstance; workflowId: string; workspaceId: string };
 type QueueDepth = { samples: number; available: boolean; maxWaiting?: number; maxActive?: number; avgWaiting?: number };
 type QueueSampler = { stop: () => QueueDepth };
 type DiagnosticsSample = {
@@ -1104,12 +1104,12 @@ type LoadResult = {
 
 type ToSummaryParams = {
     result: LoadResult;
-    flowId: string;
+    workflowId: string;
     connections: number;
 };
 
 type Summary = {
-    flowId: string;
+    workflowId: string;
     requests: number;
     connections: number;
     durationSec: number;
@@ -1141,7 +1141,7 @@ type PhaseReport = {
 
 type BenchmarkReport = {
     meta: RunMeta;
-    flowId: string;
+    workflowId: string;
     workspace: { id: string; limits: WorkspaceLimits };
     health: HealthInfo;
     diagnostics: DiagnosticsInfo;
@@ -1150,6 +1150,6 @@ type BenchmarkReport = {
     flags: Record<string, unknown>;
     network: NetworkBaseline;
     storage: StorageProbe;
-    outsideFlows: OutsideFlowsReport;
+    outsideWorkflows: OutsideWorkflowsReport;
     runs: PhaseReport[];
 };

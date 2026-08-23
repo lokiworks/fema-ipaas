@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -uo pipefail
 
-# Perf-regression preflight: drives concurrent load at a published flow and fails
+# Perf-regression preflight: drives concurrent load at a published workflow and fails
 # if throughput, worker CPU, or worker memory cross a threshold. Catches regressions
 # like #13497 (a full process-table scan on the poll hot path) that pegged worker CPU
 # and collapsed throughput ~7x (136 -> 18 req/s) without breaking any functional test.
@@ -12,7 +12,7 @@ set -uo pipefail
 # Thresholds are deliberately generous (the regressions we guard against are multi-x,
 # not a few percent) and overridable via env so runner drift never makes this flaky.
 
-FLOW_ID="${1:?Usage: verify-perf.sh <flow_id> [base_url]}"
+WORKFLOW_ID="${1:?Usage: verify-perf.sh <workflow_id> [base_url]}"
 BASE_URL="${2:-localhost:8080}"
 
 DURATION_SECS="${PERF_DURATION_SECS:-20}"
@@ -28,10 +28,10 @@ MIN_RPS="${PERF_MIN_RPS:-40}"
 MAX_CPU_PERCENT="${PERF_MAX_CPU_PERCENT:-192}"
 MAX_MEM_MB="${PERF_MAX_MEM_MB:-1850}"
 
-WEBHOOK_URL="http://$BASE_URL/api/v1/webhooks/$FLOW_ID/sync"
+WEBHOOK_URL="http://$BASE_URL/api/v1/webhooks/$WORKFLOW_ID/sync"
 
 echo "=== Perf Regression Preflight ==="
-echo "Flow ID:        $FLOW_ID"
+echo "Workflow ID:        $WORKFLOW_ID"
 echo "Duration:       ${DURATION_SECS}s @ concurrency ${CONCURRENCY}"
 echo "Thresholds:     rps >= ${MIN_RPS}, worker cpu <= ${MAX_CPU_PERCENT}%, worker mem <= ${MAX_MEM_MB} MB"
 echo ""

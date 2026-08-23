@@ -1,13 +1,13 @@
 import { ActionContext, backwardCompatabilityContextUtils, Connector, ConnectorAuthProperty, ConnectorPropertyMap, CreateWaitpointHook, CreateWaitpointParams, CreateWaitpointResult, InputPropertyMap, SetScheduleRequest, StaticPropsValue, StopHookParams, TagsManager } from '@fema/connector-sdk'
 import { isNil, isObject } from '@fema/core-utils'
-import { AUTHENTICATION_PROPERTY_NAME, EngineGenericError, InvalidCronExpressionError, InvalidScheduleIntervalError, PausedFlowTimeoutError, ScheduleOptions, TriggerSourceScheduleType } from '@fema/shared'
+import { AUTHENTICATION_PROPERTY_NAME, EngineGenericError, InvalidCronExpressionError, InvalidScheduleIntervalError, PausedWorkflowTimeoutError, ScheduleOptions, TriggerSourceScheduleType } from '@fema/shared'
 import { isValidCron } from 'cron-validator'
 import dayjs from 'dayjs'
 import { retryFetch } from '../../api/retry-fetch'
 import { createFileUploader } from '../../connector-context/file-uploader'
-import { createFlowsContext } from '../../connector-context/flows'
 import { createContextStore } from '../../connector-context/store'
 import { waitpointClient } from '../../connector-context/waitpoint-client'
+import { createWorkflowsContext } from '../../connector-context/workflows'
 import { executionProgressReporter } from '../../helper/execution-progress-reporter'
 import { utils } from '../../utils'
 import { propsProcessor } from '../../variables/props-processor'
@@ -43,17 +43,17 @@ async function buildActionContext({ connector, request, hooks, pending }: Action
         store: createContextStore({
             apiUrl: runtime.internalApiUrl,
             prefix: '',
-            flowId: runtime.flowId,
+            workflowId: runtime.workflowId,
             engineToken: runtime.engineToken,
         }),
         output: runtime.actionRunMode
             ? { update: async (): Promise<void> => Promise.resolve() }
             : executionProgressReporter.createOutputContext(runtime),
-        flows: createFlowsContext({
+        workflows: createWorkflowsContext({
             engineToken: runtime.engineToken,
             internalApiUrl: runtime.internalApiUrl,
-            flowId: runtime.flowId,
-            flowVersionId: runtime.flowVersionId,
+            workflowId: runtime.workflowId,
+            workflowVersionId: runtime.workflowVersionId,
         }),
         step: { name: stepName },
         auth: propsValue[AUTHENTICATION_PROPERTY_NAME],
@@ -101,7 +101,7 @@ async function buildTriggerContext({ connector, request, hooks }: TriggerParams)
         store: createContextStore({
             apiUrl: runtime.internalApiUrl,
             prefix: request.storePrefix,
-            flowId: runtime.flowId,
+            workflowId: runtime.workflowId,
             engineToken: runtime.engineToken,
         }),
         step: { name: stepName },
@@ -113,11 +113,11 @@ async function buildTriggerContext({ connector, request, hooks }: TriggerParams)
         setSchedule: (scheduleRequest: SetScheduleRequest) => {
             hooks.scheduleOptions = parseSchedule(scheduleRequest)
         },
-        flows: createFlowsContext({
+        workflows: createWorkflowsContext({
             engineToken: runtime.engineToken,
             internalApiUrl: runtime.internalApiUrl,
-            flowId: runtime.flowId,
-            flowVersionId: runtime.flowVersionId,
+            workflowId: runtime.workflowId,
+            workflowVersionId: runtime.workflowVersionId,
         }),
         webhookUrl: request.webhookUrl,
         isRepublish: request.isRepublish,
@@ -145,11 +145,11 @@ function buildPropsContext({ runtime, stepName, searchValue }: PropsContextReque
             publicUrl: runtime.publicApiUrl,
         },
         workspace: createWorkspaceContext(runtime),
-        flows: createFlowsContext({
+        workflows: createWorkflowsContext({
             engineToken: runtime.engineToken,
             internalApiUrl: runtime.internalApiUrl,
-            flowId: runtime.flowId,
-            flowVersionId: runtime.flowVersionId,
+            workflowId: runtime.workflowId,
+            workflowVersionId: runtime.workflowVersionId,
         }),
         step: { name: stepName },
         connections: createConnections({
@@ -264,7 +264,7 @@ function parseSchedule(request: SetScheduleRequest): ScheduleOptions {
 
 function assertCanSuspend(runtime: ConnectorRuntime): void {
     if (runtime.actionRunMode) {
-        throw new Error('This action pauses the run (waitpoint) and can only run inside a flow, not as a action run.')
+        throw new Error('This action pauses the run (waitpoint) and can only run inside a workflow, not as a action run.')
     }
 }
 
@@ -272,12 +272,12 @@ function assertDelayWithinTimeout(resumeDateTime?: string): void {
     if (isNil(resumeDateTime)) {
         return
     }
-    if (dayjs(resumeDateTime).diff(dayjs(), 'days') > FEMA_PAUSED_FLOW_TIMEOUT_DAYS) {
-        throw new PausedFlowTimeoutError(undefined, FEMA_PAUSED_FLOW_TIMEOUT_DAYS)
+    if (dayjs(resumeDateTime).diff(dayjs(), 'days') > FEMA_PAUSED_WORKFLOW_TIMEOUT_DAYS) {
+        throw new PausedWorkflowTimeoutError(undefined, FEMA_PAUSED_WORKFLOW_TIMEOUT_DAYS)
     }
 }
 
-const FEMA_PAUSED_FLOW_TIMEOUT_DAYS = Number(process.env.FEMA_PAUSED_FLOW_TIMEOUT_DAYS)
+const FEMA_PAUSED_WORKFLOW_TIMEOUT_DAYS = Number(process.env.FEMA_PAUSED_WORKFLOW_TIMEOUT_DAYS)
 
 
 type BuildContextParams = {

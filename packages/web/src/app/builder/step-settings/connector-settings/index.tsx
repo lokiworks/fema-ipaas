@@ -56,8 +56,8 @@ const ConnectorSettings = React.memo((props: ConnectorSettingsProps) => {
     ApFlagId.WEBHOOK_URL_PREFIX,
   );
 
-  const { data: pausedFlowTimeoutDays } = flagsHooks.useFlag<number>(
-    ApFlagId.PAUSED_FLOW_TIMEOUT_DAYS,
+  const { data: pausedWorkflowTimeoutDays } = flagsHooks.useFlag<number>(
+    ApFlagId.PAUSED_WORKFLOW_TIMEOUT_DAYS,
   );
 
   const { data: webhookTimeoutSeconds } = flagsHooks.useFlag<number>(
@@ -66,10 +66,10 @@ const ConnectorSettings = React.memo((props: ConnectorSettingsProps) => {
 
   const { data: frontendUrl } = flagsHooks.useFlag<string>(ApFlagId.PUBLIC_URL);
   const markdownVariables = {
-    webhookUrl: `${webhookPrefixUrl}/${props.flowId}`,
-    formUrl: `${frontendUrl}forms/${props.flowId}`,
-    chatUrl: `${frontendUrl}chats/${props.flowId}`,
-    pausedFlowTimeoutDays: pausedFlowTimeoutDays?.toString() ?? '',
+    webhookUrl: `${webhookPrefixUrl}/${props.workflowId}`,
+    formUrl: `${frontendUrl}forms/${props.workflowId}`,
+    chatUrl: `${frontendUrl}chats/${props.workflowId}`,
+    pausedWorkflowTimeoutDays: pausedWorkflowTimeoutDays?.toString() ?? '',
     webhookTimeoutSeconds: webhookTimeoutSeconds?.toString() ?? '',
   };
 
@@ -338,6 +338,6 @@ function splitProps({
 
 type ConnectorSettingsProps = {
   step: ConnectorAction | ConnectorTrigger;
-  flowId: string;
+  workflowId: string;
   readonly: boolean;
 };

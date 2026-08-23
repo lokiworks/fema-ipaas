@@ -319,7 +319,7 @@
   "The workflow to trigger. It must have a workflow_dispatch trigger configured in its YAML file.": "The workflow to trigger. It must have a workflow_dispatch trigger configured in its YAML file.",
   "The branch or tag to run the workflow on. If a branch and a tag share the same name, GitHub resolves the tag.": "The branch or tag to run the workflow on. If a branch and a tag share the same name, GitHub resolves the tag.",
   "Detected from the workflow_dispatch trigger declared in the workflow file, as it exists on the selected branch/tag.": "Detected from the workflow_dispatch trigger declared in the workflow file, as it exists on the selected branch/tag.",
-  "Pause this flow and poll the triggered run until it finishes (or times out), instead of returning immediately after dispatching it.": "Pause this flow and poll the triggered run until it finishes (or times out), instead of returning immediately after dispatching it.",
+  "Pause this workflow and poll the triggered run until it finishes (or times out), instead of returning immediately after dispatching it.": "Pause this workflow and poll the triggered run until it finishes (or times out), instead of returning immediately after dispatching it.",
   "Only used when \"Wait for Completion\" is enabled.": "Only used when \"Wait for Completion\" is enabled.",
   "Repository owner login (user or org). Resolve via List My Repositories or Search Repositories.": "Repository owner login (user or org). Resolve via List My Repositories or Search Repositories.",
   "Repository name (without the owner prefix).": "Repository name (without the owner prefix).",

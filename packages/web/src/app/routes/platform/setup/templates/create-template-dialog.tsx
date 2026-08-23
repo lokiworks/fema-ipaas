@@ -1,6 +1,6 @@
 import {
   TemplateTag as TemplateTagType,
-  FlowVersionTemplate,
+  WorkflowVersionTemplate,
   TemplateType,
 } from '@fema/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,23 +22,25 @@ import {
 import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { templateUtils } from '@/features/flows';
 import { templatesApi } from '@/features/templates';
+import { templateUtils } from '@/features/workflows';
 import { userHooks } from '@/hooks/user-hooks';
 import { api } from '@/lib/api';
 
 import { Textarea } from '../../../../../components/ui/textarea';
 
-const CreateFlowTemplateSchema = z.object({
+const CreateWorkflowTemplateSchema = z.object({
   displayName: z.string().min(1, t('Name is required')),
   summary: z.string(),
   description: z.string(),
   blogUrl: z.string(),
-  template: FlowVersionTemplate,
+  template: WorkflowVersionTemplate,
   tags: z.array(TemplateTagType).optional(),
   categories: z.array(z.string()).optional(),
 });
-type CreateFlowTemplateSchema = z.infer<typeof CreateFlowTemplateSchema>;
+type CreateWorkflowTemplateSchema = z.infer<
+  typeof CreateWorkflowTemplateSchema
+>;
 
 export const CreateTemplateDialog = ({
   children,
@@ -49,7 +51,7 @@ export const CreateTemplateDialog = ({
 }) => {
   const [open, setOpen] = useState(false);
   const { data: currentUser } = userHooks.useCurrentUser();
-  const form = useForm<CreateFlowTemplateSchema>({
+  const form = useForm<CreateWorkflowTemplateSchema>({
     defaultValues: {
       displayName: '',
       blogUrl: '',
@@ -59,7 +61,7 @@ export const CreateTemplateDialog = ({
       categories: [],
       template: undefined,
     },
-    resolver: zodResolver(CreateFlowTemplateSchema),
+    resolver: zodResolver(CreateWorkflowTemplateSchema),
   });
 
   const { mutate, isPending } = useMutation({
@@ -70,14 +72,14 @@ export const CreateTemplateDialog = ({
         ? `${currentUser.firstName} ${currentUser.lastName}`
         : 'Unknown User';
 
-      const flowTemplate: FlowVersionTemplate = {
+      const workflowTemplate: WorkflowVersionTemplate = {
         ...formValue.template,
         displayName: formValue.displayName,
         valid: formValue.template.valid ?? true,
       };
 
       return templatesApi.create({
-        flows: [flowTemplate],
+        workflows: [workflowTemplate],
         type: TemplateType.CUSTOM,
         name: formValue.displayName,
         summary: formValue.summary,
@@ -208,9 +210,10 @@ export const CreateTemplateDialog = ({
                     onChange={(e) => {
                       e.target.files &&
                         e.target.files[0].text().then((text) => {
-                          const flowTemplate = templateUtils.extractFlow(text);
-                          if (flowTemplate) {
-                            field.onChange(flowTemplate);
+                          const workflowTemplate =
+                            templateUtils.extractWorkflow(text);
+                          if (workflowTemplate) {
+                            field.onChange(workflowTemplate);
                           } else {
                             form.setError('template', {
                               message: t('Invalid JSON'),

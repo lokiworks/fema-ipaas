@@ -24,13 +24,13 @@ import {
   StaticPropsValue,
 } from '../property';
 import { ConnectorAuthProperty } from '../property/authentication';
-import type { PopulatedFlowSummary } from '@fema/connector-types';
+import type { PopulatedWorkflowSummary } from '@fema/connector-types';
 
 export type BaseContext<
   ConnectorAuth extends ConnectorAuthProperty | ConnectorAuthProperty[] | undefined,
   Props extends InputPropertyMap
 > = {
-  flows: FlowsContext;
+  workflows: WorkflowsContext;
   step: StepContext;
     auth: ConnectionValueForAuthProperty<ConnectorAuth>;
   propsValue: StaticPropsValue<Props>;
@@ -140,8 +140,8 @@ export type PauseHook = (params: {
   pauseMetadata: Omit<DelayPauseMetadata, 'requestIdToReply'> | Omit<WebhookPauseMetadata, 'requestId' | 'requestIdToReply'>
 }) => void;
 
-export type FlowsContext = {
-  list(params?: ListFlowsContextParams): Promise<SeekPage<PopulatedFlowSummary>>
+export type WorkflowsContext = {
+  list(params?: ListWorkflowsContextParams): Promise<SeekPage<PopulatedWorkflowSummary>>
   current: {
     id: string;
     version: {
@@ -154,7 +154,7 @@ export type StepContext = {
   name: string;
 }
 
-export type ListFlowsContextParams = {
+export type ListWorkflowsContextParams = {
   externalIds?: string[]
 }
 
@@ -166,7 +166,7 @@ export type PropertyContext = {
     externalId: () => Promise<string | undefined>;
   };
   searchValue?: string;
-  flows: FlowsContext;
+  workflows: WorkflowsContext;
   connections: ConnectionsManager;
 };
 
@@ -205,7 +205,7 @@ export type RunContext = {
 export type OnStartContext<
   ConnectorAuth extends ConnectorAuthProperty | ConnectorAuthProperty[] | undefined,
   TriggerProps extends InputPropertyMap
-> = Omit<BaseContext<ConnectorAuth, TriggerProps>, 'flows'> & {
+> = Omit<BaseContext<ConnectorAuth, TriggerProps>, 'workflows'> & {
   run: Pick<RunContext, 'id'>;
   payload: unknown;
 }
@@ -288,7 +288,7 @@ export interface Store {
 export enum StoreScope {
   // Collection were deprecated in favor of workspace
   WORKSPACE = 'COLLECTION',
-  FLOW = 'FLOW',
+  WORKFLOW = 'WORKFLOW',
 }
 
 export type SetScheduleRequest =

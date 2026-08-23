@@ -126,7 +126,7 @@ export class AuthenticationPage extends BasePage {
     const switchMode = this.page.getByTestId('auth-switch-mode');
     if (!(await switchMode.count())) {
       throw new Error(
-        'Password sign-up is unreachable on this instance: the auth card offers only the email-code flow. Set E2E_EMAIL and E2E_PASSWORD to sign in with an existing account instead.',
+        'Password sign-up is unreachable on this instance: the auth card offers only the email-code workflow. Set E2E_EMAIL and E2E_PASSWORD to sign in with an existing account instead.',
       );
     }
 

@@ -32,7 +32,7 @@
   "Retry on all errors (4xx, 5xx)": "Alle Fehler wiederholen (4xx, 5xx)",
   "Retry on internal errors (5xx)": "Bei internen Fehlern wiederholen (5xx)",
   "Do not retry": "Nicht wiederholen",
-  "Continue flow on all errors": "Flow bei allen Fehlern fortsetzen",
-  "Continue flow on 4xx errors": "Flow bei 4xx-Fehlern fortsetzen",
-  "Do not continue (stop the flow)": "Nicht fortfahren (Strömung stoppen)"
+  "Continue workflow on all errors": "Workflow bei allen Fehlern fortsetzen",
+  "Continue workflow on 4xx errors": "Workflow bei 4xx-Fehlern fortsetzen",
+  "Do not continue (stop the workflow)": "Nicht fortfahren (Strömung stoppen)"
 }

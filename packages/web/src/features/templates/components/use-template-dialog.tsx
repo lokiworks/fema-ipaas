@@ -1,6 +1,6 @@
 import { isNil } from '@fema/core-utils';
 import {
-  PopulatedFlow,
+  PopulatedWorkflow,
   Template,
   TemplateTelemetryEventType,
   TemplateType,
@@ -29,9 +29,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { flowHooks } from '@/features/flows';
 import { foldersApi, foldersHooks } from '@/features/folders';
 import { templatesTelemetryApi } from '@/features/templates';
+import { workflowHooks } from '@/features/workflows';
 import {
   getWorkspaceName,
   workspaceCollectionUtils,
@@ -69,18 +69,18 @@ export const UseTemplateDialog = ({
     }
   }, [open, workspaces]);
 
-  const { mutate: createFlow, isPending } = useMutation<
-    PopulatedFlow[],
+  const { mutate: createWorkflow, isPending } = useMutation<
+    PopulatedWorkflow[],
     Error,
     { workspaceId: string; folderId: string }
   >({
     mutationFn: async ({ workspaceId, folderId }) => {
-      const flows = template.flows || [];
-      const hasMultipleFlows = flows.length > 1;
+      const workflows = template.workflows || [];
+      const hasMultipleWorkflows = workflows.length > 1;
 
       let folderName: string | undefined;
 
-      if (hasMultipleFlows) {
+      if (hasMultipleWorkflows) {
         const newFolder = await foldersApi.create({
           displayName: template.name,
           workspaceId: workspaceId,
@@ -91,29 +91,29 @@ export const UseTemplateDialog = ({
         folderName = folder.displayName;
       }
 
-      return await flowHooks.importFlowsFromTemplates({
+      return await workflowHooks.importWorkflowsFromTemplates({
         templates: [template],
         workspaceId,
         folderName,
       });
     },
-    onSuccess: (flows) => {
+    onSuccess: (workflows) => {
       onOpenChange(false);
-      if (flows.length === 1) {
-        toast.success(t('Flow created successfully'));
-        navigate(`/flows/${flows[0].id}`);
+      if (workflows.length === 1) {
+        toast.success(t('Workflow created successfully'));
+        navigate(`/workflows/${workflows[0].id}`);
       } else {
         toast.success(
-          t('{count} flows created successfully in a new folder', {
-            count: flows.length,
+          t('{count} workflows created successfully in a new folder', {
+            count: workflows.length,
           }),
         );
-        navigate(`/flows`);
+        navigate(`/workflows`);
       }
     },
     onError: (error) => {
-      toast.error(t('Failed to create flow from template'));
-      console.error('Error creating flow:', error);
+      toast.error(t('Failed to create workflow from template'));
+      console.error('Error creating workflow:', error);
     },
   });
 
@@ -122,7 +122,7 @@ export const UseTemplateDialog = ({
       toast.error(t('Please select a workspace'));
       return;
     }
-    createFlow({
+    createWorkflow({
       workspaceId: selectedWorkspaceId,
       folderId: selectedFolderId,
     });
@@ -138,8 +138,8 @@ export const UseTemplateDialog = ({
     }
   };
 
-  const flowCount = template.flows?.length || 0;
-  const hasMultipleFlows = flowCount > 1;
+  const workflowCount = template.workflows?.length || 0;
+  const hasMultipleWorkflows = workflowCount > 1;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -147,10 +147,10 @@ export const UseTemplateDialog = ({
         <DialogHeader>
           <DialogTitle>{t('Use Template')}</DialogTitle>
           <DialogDescription>
-            {hasMultipleFlows
+            {hasMultipleWorkflows
               ? t(
-                  'This template includes {count} flows with all dependencies. A new folder will be created to organize them.',
-                  { count: flowCount },
+                  'This template includes {count} workflows with all dependencies. A new folder will be created to organize them.',
+                  { count: workflowCount },
                 )
               : t(
                   'Select the workspace and folder where you want to use this template.',
@@ -180,7 +180,7 @@ export const UseTemplateDialog = ({
               </SelectContent>
             </Select>
           </div>
-          {!hasMultipleFlows && (
+          {!hasMultipleWorkflows && (
             <div className="flex flex-col gap-2">
               <Label htmlFor="folder">{t('Folder')}</Label>
               <Select

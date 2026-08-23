@@ -7,7 +7,7 @@ description: "Track every action on your platform and forward events to your too
 
 ## What are audit events?
 
-FEMA Integration Platform records an audit event for every meaningful action on the platform — a flow gets created, a run finishes, a user signs in, a connection is saved, a signing key is rotated, and so on. Each event captures what happened, who did it, when, and the project or platform it belongs to.
+FEMA Integration Platform records an audit event for every meaningful action on the platform — a workflow gets created, a run finishes, a user signs in, a connection is saved, a signing key is rotated, and so on. Each event captures what happened, who did it, when, and the project or platform it belongs to.
 
 You can do two things with these events: **view them in the audit log table** for compliance and forensics, or **stream them to a webhook** to react in real time.
 
@@ -19,20 +19,20 @@ Open **Platform Admin → Security → Audit Logs** to browse the full table. Fi
 
 ## Forward them to your tools
 
-To react to events in real time — get a Slack alert when a flow fails, forward audit logs to your SIEM, send a daily digest of new sign-ups — use [Event Streaming](/admin-guide/guides/event-streaming). It POSTs each event to a webhook URL of your choice, which you can point at an external system or at an internal handler flow that routes each event to the channel you care about.
+To react to events in real time — get a Slack alert when a workflow fails, forward audit logs to your SIEM, send a daily digest of new sign-ups — use [Event Streaming](/admin-guide/guides/event-streaming). It POSTs each event to a webhook URL of your choice, which you can point at an external system or at an internal handler workflow that routes each event to the channel you care about.
 
 ## Event catalog
 
 The full list of documented events. We add new ones as the platform grows; the source of truth for every event we emit is the [event schema in the codebase](https://github.com/lokiworks/fema-ipaas/blob/main/packages/core/shared/src/lib/ee/audit-events/index.ts).
 
-### Flows
-- [Flow created](/admin-guide/security/audit-logs/flow-created)
-- [Flow updated](/admin-guide/security/audit-logs/flow-updated)
-- [Flow deleted](/admin-guide/security/audit-logs/flow-deleted)
+### Workflows
+- [Workflow created](/admin-guide/security/audit-logs/workflow-created)
+- [Workflow updated](/admin-guide/security/audit-logs/workflow-updated)
+- [Workflow deleted](/admin-guide/security/audit-logs/workflow-deleted)
 
-### Flow runs
-- [Flow run started](/admin-guide/security/audit-logs/execution-started)
-- [Flow run finished](/admin-guide/security/audit-logs/execution-finished)
+### Workflow runs
+- [Workflow run started](/admin-guide/security/audit-logs/execution-started)
+- [Workflow run finished](/admin-guide/security/audit-logs/execution-finished)
 
 ### Folders
 - [Folder created](/admin-guide/security/audit-logs/folder-created)

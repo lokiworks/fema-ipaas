@@ -1,17 +1,17 @@
 import { Connector, ConnectorAuthProperty } from '@fema/connector-sdk'
 import { slack } from '@fema/connector-slack'
 import { apId, assertNotNullOrUndefined, ErrorCode, isNil, PlatformError } from '@fema/core-utils'
-import { FlowStatus, LATEST_JOB_DATA_SCHEMA_VERSION, RunEnvironment, WorkerJobType } from '@fema/shared'
+import { LATEST_JOB_DATA_SCHEMA_VERSION, RunEnvironment, WorkerJobType, WorkflowStatus } from '@fema/shared'
 import { FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { securityAccess } from '../../core/security/authorization/fastify-security'
-import { flowService } from '../../flows/flow/flow.service'
 import { domainHelper } from '../../helper/domain-helper'
 import { rejectedPromiseHandler } from '../../helper/promise-handler'
-import { WebhookFlowVersionToRun, webhookService } from '../../webhooks/webhook.service'
+import { webhookService, WebhookWorkflowVersionToRun } from '../../webhooks/webhook.service'
 import { jobQueue, JobType } from '../../workers/job-queue/job-queue'
 import { payloadOffloader } from '../../workers/payload-offloader'
+import { workflowService } from '../../workflows/workflow/workflow.service'
 import { workspaceService } from '../../workspace/workspace-service'
 import { triggerSourceService } from '../trigger-source/trigger-source-service'
 import { appEventRoutingService } from './app-event-routing.service'
@@ -104,17 +104,17 @@ export const appEventRoutingController: FastifyPluginAsyncZod = async (
             })
             const eventsQueue = listeners.map(async (listener) => {
                 const requestId = apId()
-                const flow = await flowService(request.log).getOne({ id: listener.flowId, workspaceId: listener.workspaceId })
-                if (isNil(flow)) {
+                const workflow = await workflowService(request.log).getOne({ id: listener.workflowId, workspaceId: listener.workspaceId })
+                if (isNil(workflow)) {
                     return
                 }
-                const isSimulating = await triggerSourceService(request.log).existsByFlowId({
-                    flowId: listener.flowId,
+                const isSimulating = await triggerSourceService(request.log).existsByWorkflowId({
+                    workflowId: listener.workflowId,
                     simulate: true,
                 })
-                const flowVersionIdToRun = await webhookService.getFlowVersionIdToRun(
-                    isSimulating ? WebhookFlowVersionToRun.LATEST : WebhookFlowVersionToRun.LOCKED_FALL_BACK_TO_LATEST,
-                    flow,
+                const workflowVersionIdToRun = await webhookService.getWorkflowVersionIdToRun(
+                    isSimulating ? WebhookWorkflowVersionToRun.LATEST : WebhookWorkflowVersionToRun.LOCKED_FALL_BACK_TO_LATEST,
+                    workflow,
                 )
                 const platformId = await workspaceService(request.log).getPlatformId(listener.workspaceId)
                 const jobPayload = await payloadOffloader.offloadPayload(request.log, payload, listener.workspaceId, platformId)
@@ -127,12 +127,12 @@ export const appEventRoutingController: FastifyPluginAsyncZod = async (
                         schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
                         requestId,
                         payload: jobPayload,
-                        flowId: listener.flowId,
+                        workflowId: listener.workflowId,
                         jobType: WorkerJobType.EXECUTE_WEBHOOK,
                         runEnvironment: isSimulating ? RunEnvironment.TESTING : RunEnvironment.PRODUCTION,
                         saveSampleData: isSimulating,
-                        flowVersionIdToRun,
-                        execute: flow.status === FlowStatus.ENABLED,
+                        workflowVersionIdToRun,
+                        execute: workflow.status === WorkflowStatus.ENABLED,
                     },
                 })
             })

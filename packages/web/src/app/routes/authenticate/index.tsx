@@ -14,7 +14,7 @@ const AuthenticatePage = () => {
     if (response) {
       const decodedResponse = JSON.parse(response);
       authenticationSession.saveResponse(decodedResponse, false);
-      navigate('/flows');
+      navigate('/workflows');
     }
   }, [response]);
 

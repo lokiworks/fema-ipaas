@@ -1,12 +1,12 @@
 import { isNil, stringifyNullOrUndefined } from '@fema/core-utils';
 import {
-  FlowAction,
-  FlowActionType,
-  FlowOperationType,
+  WorkflowAction,
+  WorkflowActionType,
+  WorkflowOperationType,
   Execution,
-  flowOperations,
-  flowStructureUtil,
-  FlowVersion,
+  workflowOperations,
+  workflowStructureUtil,
+  WorkflowVersion,
   LoopStepOutput,
   SampleDataFileType,
   StepRunResponse,
@@ -29,8 +29,8 @@ export type UpdateSampleDataParams = {
 
 export type RunState = {
   run: Execution | null;
-  setRun: (run: Execution, flowVersion: FlowVersion) => void;
-  clearRun: (userHasPermissionToEditFlow: boolean) => void;
+  setRun: (run: Execution, workflowVersion: WorkflowVersion) => void;
+  clearRun: (userHasPermissionToEditWorkflow: boolean) => void;
   loopsIndexes: Record<string, number>;
   setLoopIndex: (stepName: string, index: number) => void;
   selectFailedStep: () => void;
@@ -54,11 +54,11 @@ export type RunState = {
   isStepBeingTested: (stepName: string) => boolean;
   /**Used to revert the sample data locally when the test is cancelled */
   revertSampleDataLocallyCallbacks: Record<string, (() => void) | undefined>;
-  beforeStepTestPreparation: (step: FlowAction) => void;
+  beforeStepTestPreparation: (step: WorkflowAction) => void;
 };
 type RunStateInitialState = {
   run: Execution | null;
-  flowVersion: FlowVersion;
+  workflowVersion: WorkflowVersion;
   socket: Socket;
 };
 type StepTestListener = {
@@ -81,7 +81,7 @@ export const createRunState = (
             {},
           )
         : {},
-    setRun: async (run: Execution, flowVersion: FlowVersion) =>
+    setRun: async (run: Execution, workflowVersion: WorkflowVersion) =>
       set((state) => {
         get().removeAllStepTestsListeners();
         const isNewRun = state.run?.id !== run.id;
@@ -96,7 +96,7 @@ export const createRunState = (
         return {
           loopsIndexes,
           run,
-          flowVersion,
+          workflowVersion,
           readonly: true,
           userManuallySelectedStepDuringRun: isNewRun
             ? false
@@ -117,10 +117,10 @@ export const createRunState = (
       }));
       selectStepByName(run.failedStep.name);
     },
-    clearRun: (userHasPermissionToEditFlow: boolean) =>
+    clearRun: (userHasPermissionToEditWorkflow: boolean) =>
       set({
         run: null,
-        readonly: !userHasPermissionToEditFlow,
+        readonly: !userHasPermissionToEditWorkflow,
         loopsIndexes: {},
         selectedBranchIndex: null,
         userManuallySelectedStepDuringRun: false,
@@ -128,19 +128,19 @@ export const createRunState = (
       }),
     setLoopIndex: (stepName: string, index: number) => {
       set((state) => {
-        const parentLoop = flowStructureUtil.getStepOrThrow(
+        const parentLoop = workflowStructureUtil.getStepOrThrow(
           stepName,
-          state.flowVersion.trigger,
+          state.workflowVersion.trigger,
         );
-        if (parentLoop.type !== FlowActionType.LOOP_ON_ITEMS) {
+        if (parentLoop.type !== WorkflowActionType.LOOP_ON_ITEMS) {
           console.error(
             `Trying to set loop index for a step that is not a loop: ${stepName}`,
           );
           return state;
         }
-        const childLoops = flowStructureUtil
+        const childLoops = workflowStructureUtil
           .getAllChildSteps(parentLoop)
-          .filter((c) => c.type === FlowActionType.LOOP_ON_ITEMS)
+          .filter((c) => c.type === WorkflowActionType.LOOP_ON_ITEMS)
           .filter((c) => c.name !== stepName);
         const loopsIndexes = { ...state.loopsIndexes };
 
@@ -179,11 +179,11 @@ export const createRunState = (
       runId: string;
       stepName: string;
     }) => {
-      const step = flowStructureUtil.getStep(
+      const step = workflowStructureUtil.getStep(
         stepName,
-        get().flowVersion.trigger,
+        get().workflowVersion.trigger,
       );
-      if (isNil(step) || !flowStructureUtil.isAction(step?.type)) {
+      if (isNil(step) || !workflowStructureUtil.isAction(step?.type)) {
         console.error(`Step ${stepName} not found or is not an action`);
         return;
       }
@@ -205,22 +205,25 @@ export const createRunState = (
               response.standardError === '' ? null : response.standardError,
             );
             set((state) => {
-              const failedStep = flowStructureUtil.getStep(
+              const failedStep = workflowStructureUtil.getStep(
                 stepName,
-                state.flowVersion.trigger,
+                state.workflowVersion.trigger,
               );
               return {
-                flowVersion: flowOperations.apply(state.flowVersion, {
-                  type: FlowOperationType.UPDATE_SAMPLE_DATA_INFO,
-                  request: {
-                    stepName,
-                    sampleDataSettings: failedStep?.settings.sampleData ?? {},
+                workflowVersion: workflowOperations.apply(
+                  state.workflowVersion,
+                  {
+                    type: WorkflowOperationType.UPDATE_SAMPLE_DATA_INFO,
+                    request: {
+                      stepName,
+                      sampleDataSettings: failedStep?.settings.sampleData ?? {},
+                    },
                   },
-                }),
+                ),
               };
             });
           }
-          if (step.type === FlowActionType.CODE) {
+          if (step.type === WorkflowActionType.CODE) {
             get().setConsoleLogs(
               stepName,
               response.standardOutput === '' ? null : response.standardOutput,
@@ -290,8 +293,11 @@ export const createRunState = (
     },
     stepTestListeners: {},
     updateSampleData: ({ stepName, input, output }: UpdateSampleDataParams) => {
-      const { setSampleDataLocally, applyOperation, flowVersion } = get();
-      const step = flowStructureUtil.getStep(stepName, flowVersion.trigger);
+      const { setSampleDataLocally, applyOperation, workflowVersion } = get();
+      const step = workflowStructureUtil.getStep(
+        stepName,
+        workflowVersion.trigger,
+      );
       if (isNil(step)) {
         console.error(`Step ${stepName} not found`);
         internalErrorToast();
@@ -301,8 +307,8 @@ export const createRunState = (
       set((state) => {
         // only update the last test date
         return {
-          flowVersion: flowOperations.apply(state.flowVersion, {
-            type: FlowOperationType.UPDATE_SAMPLE_DATA_INFO,
+          workflowVersion: workflowOperations.apply(state.workflowVersion, {
+            type: WorkflowOperationType.UPDATE_SAMPLE_DATA_INFO,
             request: {
               stepName: step.name,
               sampleDataSettings: step.settings.sampleData ?? {},
@@ -318,7 +324,7 @@ export const createRunState = (
       });
       const payload = isNil(output) ? stringifyNullOrUndefined(output) : output;
       applyOperation({
-        type: FlowOperationType.SAVE_SAMPLE_DATA,
+        type: WorkflowOperationType.SAVE_SAMPLE_DATA,
         request: {
           stepName: step.name,
           payload,
@@ -332,7 +338,7 @@ export const createRunState = (
           value: input,
         });
         applyOperation({
-          type: FlowOperationType.SAVE_SAMPLE_DATA,
+          type: WorkflowOperationType.SAVE_SAMPLE_DATA,
           request: {
             stepName: step.name,
             payload: input,
@@ -378,7 +384,7 @@ export const createRunState = (
     isStepBeingTested: (stepName: string) => {
       return !isNil(get().stepTestListeners[stepName]);
     },
-    beforeStepTestPreparation: (step: FlowAction) => {
+    beforeStepTestPreparation: (step: WorkflowAction) => {
       const stepName = step.name;
       get().removeStepTestListener(stepName);
       const currentSampleData = get().outputSampleData[stepName];

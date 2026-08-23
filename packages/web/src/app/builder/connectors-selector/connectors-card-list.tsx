@@ -1,7 +1,7 @@
 import {
-  FlowActionType,
-  FlowOperationType,
-  FlowTriggerType,
+  WorkflowActionType,
+  WorkflowOperationType,
+  WorkflowTriggerType,
 } from '@fema/shared';
 import React, { useState } from 'react';
 
@@ -47,7 +47,7 @@ export const ConnectorsCardList: React.FC<ConnectorsCardListProps> = ({
       shouldCaptureEvent: true,
       searchQuery,
       type:
-        operation.type === FlowOperationType.UPDATE_TRIGGER
+        operation.type === WorkflowOperationType.UPDATE_TRIGGER
           ? 'trigger'
           : 'action',
     });
@@ -196,7 +196,7 @@ const getItemHeight = (
   const { ACTION_OR_TRIGGER_ITEM_HEIGHT, CONNECTOR_ITEM_HEIGHT } =
     CONNECTOR_SELECTOR_ELEMENTS_HEIGHTS;
   if (
-    connectorMetadata.type === FlowActionType.CONNECTOR &&
+    connectorMetadata.type === WorkflowActionType.CONNECTOR &&
     showActionsOrTriggersInsideConnectorsList
   ) {
     const actionsListWithoutHiddenActions =
@@ -208,7 +208,7 @@ const getItemHeight = (
     );
   }
   if (
-    connectorMetadata.type === FlowTriggerType.CONNECTOR &&
+    connectorMetadata.type === WorkflowTriggerType.CONNECTOR &&
     showActionsOrTriggersInsideConnectorsList
   ) {
     return (
@@ -218,9 +218,9 @@ const getItemHeight = (
     );
   }
   const isCoreAction =
-    connectorMetadata.type === FlowActionType.CODE ||
-    connectorMetadata.type === FlowActionType.LOOP_ON_ITEMS ||
-    connectorMetadata.type === FlowActionType.ROUTER;
+    connectorMetadata.type === WorkflowActionType.CODE ||
+    connectorMetadata.type === WorkflowActionType.LOOP_ON_ITEMS ||
+    connectorMetadata.type === WorkflowActionType.ROUTER;
   if (isCoreAction && showActionsOrTriggersInsideConnectorsList) {
     return ACTION_OR_TRIGGER_ITEM_HEIGHT + CONNECTOR_ITEM_HEIGHT;
   }

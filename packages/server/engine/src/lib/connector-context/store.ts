@@ -1,28 +1,28 @@
 import { URL } from 'node:url'
 import { Store, StoreScope } from '@fema/connector-sdk'
-import { FlowId, isNil } from '@fema/core-utils'
+import { isNil, WorkflowId } from '@fema/core-utils'
 import { DeleteStoreEntryRequest, ExecutionError, FetchError, PutStoreEntryRequest, StorageError, StorageInvalidKeyError, StorageLimitError, STORE_KEY_MAX_LENGTH, STORE_VALUE_MAX_SIZE, StoreEntry } from '@fema/shared'
 import { retryFetch } from '../api/retry-fetch'
 import { utils } from '../utils'
 
-export function createContextStore({ apiUrl, prefix, flowId, engineToken }: { apiUrl: string, prefix: string, flowId: FlowId, engineToken: string }): Store {
+export function createContextStore({ apiUrl, prefix, workflowId, engineToken }: { apiUrl: string, prefix: string, workflowId: WorkflowId, engineToken: string }): Store {
     return {
-        async put<T>(key: string, value: T, scope = StoreScope.FLOW): Promise<T> {
-            const modifiedKey = createKey(prefix, scope, flowId, key)
+        async put<T>(key: string, value: T, scope = StoreScope.WORKFLOW): Promise<T> {
+            const modifiedKey = createKey(prefix, scope, workflowId, key)
             await createStoreClient({ apiUrl, engineToken }).put({
                 key: modifiedKey,
                 value,
             })
             return value
         },
-        async delete(key: string, scope = StoreScope.FLOW): Promise<void> {
-            const modifiedKey = createKey(prefix, scope, flowId, key)
+        async delete(key: string, scope = StoreScope.WORKFLOW): Promise<void> {
+            const modifiedKey = createKey(prefix, scope, workflowId, key)
             await createStoreClient({ apiUrl, engineToken }).delete({
                 key: modifiedKey,
             })
         },
-        async get<T>(key: string, scope = StoreScope.FLOW): Promise<T | null> {
-            const modifiedKey = createKey(prefix, scope, flowId, key)
+        async get<T>(key: string, scope = StoreScope.WORKFLOW): Promise<T | null> {
+            const modifiedKey = createKey(prefix, scope, workflowId, key)
             const storeEntry = await createStoreClient({ apiUrl, engineToken }).get(modifiedKey)
             if (storeEntry === null) {
                 return null
@@ -136,15 +136,15 @@ function createStoreClient({ engineToken, apiUrl }: CreateStoreClientParams): St
     }
 }
 
-function createKey(prefix: string, scope: StoreScope, flowId: FlowId, key: string): string {
+function createKey(prefix: string, scope: StoreScope, workflowId: WorkflowId, key: string): string {
     if (isNil(key) || typeof key !== 'string' || key.length === 0 || key.length > STORE_KEY_MAX_LENGTH) {
         throw new StorageInvalidKeyError(key)
     }
     switch (scope) {
         case StoreScope.WORKSPACE:
             return prefix + key
-        case StoreScope.FLOW:
-            return prefix + 'flow_' + flowId + '/' + key
+        case StoreScope.WORKFLOW:
+            return prefix + 'workflow_' + workflowId + '/' + key
     }
 }
 
@@ -172,7 +172,7 @@ const handleResponseError = async ({ key, response }: HandleResponseErrorParams)
     }
     const cause = await response.text()
     // A 4xx from the store API means the request itself was invalid — typically a key that resolved to
-    // undefined/empty from the flow's own data (the API rejects it with a 400 validation error). That is a
+    // undefined/empty from the workflow's own data (the API rejects it with a 400 validation error). That is a
     // user/data error (FAILED step), not a storage outage. Only 5xx is a genuine store-API failure, which
     // stays an ENGINE error so it retries + pages.
     if (response.status >= 400 && response.status < 500) {

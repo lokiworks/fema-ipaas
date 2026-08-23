@@ -58,7 +58,7 @@
          "destination": "/install/configure-operate/production-setup"
       },
       {
-         "source": "/flows/known-limits",
+         "source": "/workflows/known-limits",
          "destination": "/install/reference/limits"
       },
       {
@@ -105,16 +105,16 @@
                   ]
                },
                {
-                  "group": "Flows",
+                  "group": "Workflows",
                   "pages": [
-                     "flows/building-flows",
-                     "flows/passing-data",
-                     "flows/using-formulas",
-                     "flows/formula-reference",
-                     "flows/project-variables",
-                     "flows/publishing-flows",
-                     "flows/debugging-runs",
-                     "flows/versioning"
+                     "workflows/building-workflows",
+                     "workflows/passing-data",
+                     "workflows/using-formulas",
+                     "workflows/formula-reference",
+                     "workflows/project-variables",
+                     "workflows/publishing-workflows",
+                     "workflows/debugging-runs",
+                     "workflows/versioning"
                   ]
                },
                {
@@ -182,12 +182,12 @@
                         "icon": "book",
                         "pages": [
                            "admin-guide/security/audit-logs/overview",
-                           "admin-guide/security/audit-logs/flow-created",
-                           "admin-guide/security/audit-logs/flow-updated",
-                           "admin-guide/security/audit-logs/flow-deleted",
-                           "admin-guide/security/audit-logs/flow-published",
-                           "admin-guide/security/audit-logs/flow-activated",
-                           "admin-guide/security/audit-logs/flow-deactivated",
+                           "admin-guide/security/audit-logs/workflow-created",
+                           "admin-guide/security/audit-logs/workflow-updated",
+                           "admin-guide/security/audit-logs/workflow-deleted",
+                           "admin-guide/security/audit-logs/workflow-published",
+                           "admin-guide/security/audit-logs/workflow-activated",
+                           "admin-guide/security/audit-logs/workflow-deactivated",
                            "admin-guide/security/audit-logs/connection-upserted",
                            "admin-guide/security/audit-logs/connection-deleted",
                            "admin-guide/security/audit-logs/execution-started",
@@ -368,7 +368,7 @@
                      },
                      "build-connectors/connector-reference/properties",
                      "build-connectors/connector-reference/properties-validation",
-                     "build-connectors/connector-reference/flow-control",
+                     "build-connectors/connector-reference/workflow-control",
                      "build-connectors/connector-reference/persistent-storage",
                      "build-connectors/connector-reference/files",
                      "build-connectors/connector-reference/large-file-streaming",
@@ -462,19 +462,19 @@
                         ]
                      },
                      {
-                        "group": "Flows",
+                        "group": "Workflows",
                         "icon": "bolt",
                         "pages": [
-                           "endpoints/flows/schema",
-                           "endpoints/flows/create",
-                           "endpoints/flows/update",
-                           "endpoints/flows/get",
-                           "endpoints/flows/list",
-                           "endpoints/flows/delete"
+                           "endpoints/workflows/schema",
+                           "endpoints/workflows/create",
+                           "endpoints/workflows/update",
+                           "endpoints/workflows/get",
+                           "endpoints/workflows/list",
+                           "endpoints/workflows/delete"
                         ]
                      },
                      {
-                        "group": "Flow Runs",
+                        "group": "Workflow Runs",
                         "icon": "play",
                         "pages": [
                            "endpoints/executions/schema",

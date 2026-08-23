@@ -4,12 +4,12 @@ icon: 🔓
 status: accepted
 ---
 
-An agent flow step runs unattended. Before this, that meant it could not write at all: a
-`FLOW_STEP` run starts permanently tainted, so `requiresActionPreview` sends every action
+An agent workflow step runs unattended. Before this, that meant it could not write at all: a
+`WORKFLOW_STEP` run starts permanently tainted, so `requiresActionPreview` sends every action
 that is not provably read-only to the approval gate, and `waitForApproval` auto-declines
 for any non-chat run. The gate was the whole control.
 
-Connector actions the flow author attaches to the step are exempt from that gate. Applying it
+Connector actions the workflow author attaches to the step are exempt from that gate. Applying it
 would decline the tools the author deliberately configured, which is the entire feature.
 The line drawn: **choosing an action on the step authorises that action.** The gate remains
 for actions the agent discovers at runtime, which is what taint was added for.
@@ -52,7 +52,7 @@ decision rather than the code:
 - **A tool is capped per turn**, because nothing else bounds how often one turn fires an
   action, and chat's email tool already had two such limits.
 - **The resolved input is logged.** It was computed, redacted and discarded, and the adhoc
-  flow holding it is deleted, so an incident showed that an email went out but not to whom.
+  workflow holding it is deleted, so an incident showed that an email went out but not to whom.
 
 ## Revisit when
 

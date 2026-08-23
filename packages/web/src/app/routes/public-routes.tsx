@@ -46,7 +46,7 @@ export const publicRoutes = [
     element: <TemplateDetailsWrapper />,
   },
   {
-    path: '/forms/:flowId',
+    path: '/forms/:workflowId',
     element: (
       <PageTitle title="Forms">
         <SuspenseWrapper>

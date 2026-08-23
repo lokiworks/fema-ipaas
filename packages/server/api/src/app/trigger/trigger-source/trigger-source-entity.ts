@@ -1,9 +1,9 @@
-import { Flow, TriggerSource, Workspace } from '@fema/shared'
+import { TriggerSource, Workflow, Workspace } from '@fema/shared'
 import { EntitySchema } from 'typeorm'
 import { BaseColumnSchemaPart } from '../../database/database-common'
 
 export type TriggerSourceSchema = TriggerSource & {
-    flow: Flow
+    workflow: Workflow
     workspace: Workspace
 }
 
@@ -16,11 +16,11 @@ export const TriggerSourceEntity = new EntitySchema<TriggerSourceSchema>({
             deleteDate: true,
             nullable: true,
         },
-        flowId: {
+        workflowId: {
             type: String,
             nullable: false,
         },
-        flowVersionId: {
+        workflowVersionId: {
             type: String,
             nullable: false,
         },
@@ -55,20 +55,20 @@ export const TriggerSourceEntity = new EntitySchema<TriggerSourceSchema>({
     },
     indices: [
         {
-            columns: ['workspaceId', 'flowId', 'simulate'],
-            name: 'idx_trigger_workspace_id_flow_id_simulate',
+            columns: ['workspaceId', 'workflowId', 'simulate'],
+            name: 'idx_trigger_workspace_id_workflow_id_simulate',
             where: 'deleted IS NULL',
             unique: true,
         },
         {
-            columns: ['flowId', 'simulate'],
-            name: 'idx_trigger_flow_id_simulate',
+            columns: ['workflowId', 'simulate'],
+            name: 'idx_trigger_workflow_id_simulate',
             where: 'deleted IS NULL',
             unique: true,
         },
         {
-            columns: ['flowId'],
-            name: 'idx_trigger_flow_id',
+            columns: ['workflowId'],
+            name: 'idx_trigger_workflow_id',
             unique: false,
         },
         {
@@ -77,16 +77,16 @@ export const TriggerSourceEntity = new EntitySchema<TriggerSourceSchema>({
             unique: false,
         },
         {
-            columns: ['flowVersionId'],
-            name: 'idx_trigger_flow_version_id',
+            columns: ['workflowVersionId'],
+            name: 'idx_trigger_workflow_version_id',
             where: 'deleted IS NULL',
             unique: false,
         },
     ],
     relations: {
-        flow: {
+        workflow: {
             type: 'many-to-one',
-            target: 'flow',
+            target: 'workflow',
             inverseSide: 'triggers',
             cascade: true,
             onDelete: 'CASCADE',

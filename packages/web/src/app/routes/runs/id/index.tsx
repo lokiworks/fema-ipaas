@@ -1,4 +1,4 @@
-import { Execution, PopulatedFlow } from '@fema/shared';
+import { Execution, PopulatedWorkflow } from '@fema/shared';
 import { useQuery } from '@tanstack/react-query';
 import { ReactFlowProvider } from '@xyflow/react';
 import { useParams } from 'react-router-dom';
@@ -7,26 +7,26 @@ import { BuilderPage } from '@/app/builder';
 import { BuilderStateProvider } from '@/app/builder/state/builder-state-provider';
 import { LoadingSpinner } from '@/components/custom/spinner';
 import { executionsApi } from '@/features/executions';
-import { flowsApi, sampleDataHooks } from '@/features/flows';
+import { workflowsApi, sampleDataHooks } from '@/features/workflows';
 
 const ExecutionPage = () => {
   const { runId, workspaceId } = useParams();
   const { data, isLoading } = useQuery<
     {
       run: Execution;
-      flow: PopulatedFlow;
+      workflow: PopulatedWorkflow;
     },
     Error
   >({
     queryKey: ['run', runId],
     queryFn: async () => {
       const execution = await executionsApi.getPopulated(runId!);
-      const flow = await flowsApi.get(execution.flowId, {
-        versionId: execution.flowVersionId,
+      const workflow = await workflowsApi.get(execution.workflowId, {
+        versionId: execution.workflowVersionId,
       });
       return {
         run: execution,
-        flow: flow,
+        workflow: workflow,
       };
     },
     enabled: runId !== undefined,
@@ -34,10 +34,16 @@ const ExecutionPage = () => {
   });
 
   const { data: sampleData, isLoading: isSampleDataLoading } =
-    sampleDataHooks.useSampleDataForFlow(data?.flow?.version, workspaceId);
+    sampleDataHooks.useSampleDataForWorkflow(
+      data?.workflow?.version,
+      workspaceId,
+    );
 
   const { data: sampleDataInput, isLoading: isSampleDataInputLoading } =
-    sampleDataHooks.useSampleDataInputForFlow(data?.flow?.version, workspaceId);
+    sampleDataHooks.useSampleDataInputForWorkflow(
+      data?.workflow?.version,
+      workspaceId,
+    );
 
   if (isLoading || isSampleDataLoading || isSampleDataInputLoading) {
     return (
@@ -51,8 +57,8 @@ const ExecutionPage = () => {
     data && (
       <ReactFlowProvider>
         <BuilderStateProvider
-          flow={data.flow}
-          flowVersion={data.flow.version}
+          workflow={data.workflow}
+          workflowVersion={data.workflow.version}
           readonly={true}
           hideTestWidget={false}
           run={data.run}

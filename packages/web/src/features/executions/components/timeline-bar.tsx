@@ -38,7 +38,7 @@ function phaseDescription(name: TimelinePhase['name']): string {
     case 'BOOT':
       return t('Starting the engine');
     case 'RUN':
-      return t('Executing your flow');
+      return t('Executing your workflow');
   }
 }
 

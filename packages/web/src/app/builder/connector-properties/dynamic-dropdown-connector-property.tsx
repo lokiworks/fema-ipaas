@@ -18,8 +18,8 @@ import { DynamicPropertiesContext } from './dynamic-properties-context';
 
 const DynamicDropdownConnectorPropertyImplementation = React.memo(
   (props: DynamicDropdownProps) => {
-    const [flowVersion, readonly] = useBuilderStateContext((state) => [
-      state.flowVersion,
+    const [workflowVersion, readonly] = useBuilderStateContext((state) => [
+      state.workflowVersion,
       state.readonly,
     ]);
 
@@ -82,8 +82,8 @@ const DynamicDropdownConnectorPropertyImplementation = React.memo(
             propertyName: props.propertyName,
             actionOrTriggerName: props.actionOrTriggerName,
             input,
-            flowVersionId: flowVersion.id,
-            flowId: flowVersion.flowId,
+            workflowVersionId: workflowVersion.id,
+            workflowId: workflowVersion.workflowId,
             searchValue: term,
           },
           propertyType: PropertyType.DROPDOWN,

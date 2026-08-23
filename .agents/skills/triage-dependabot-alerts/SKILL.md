@@ -13,7 +13,7 @@ dismiss / escalate.
 For human-reported vulnerabilities (Security tab advisories), use the
 **triage-security-advisories** skill. The two share the `.security-triage/` workspace. Dependency
 CVEs are already public, so there is no scope-check against SECURITY.md and fixes may use normal
-PRs (not the private-fork flow).
+PRs (not the private-fork workflow).
 
 ## Privacy note
 
@@ -185,7 +185,7 @@ library). If the only available fix is an external source (e.g. SheetJS off npm 
 flag the **self-hosting rule** — an install that depends on a third-party CDN at build time may
 break zero-setup self-hosting; call it out for a maintainer decision.
 
-Dependency CVEs are public, so a normal PR is fine (no private-fork flow). Patch-bump scope — do
+Dependency CVEs are public, so a normal PR is fine (no private-fork workflow). Patch-bump scope — do
 not bundle unrelated upgrades.
 
 ## Output recap

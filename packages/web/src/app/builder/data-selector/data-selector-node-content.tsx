@@ -1,4 +1,8 @@
-import { FlowAction, FlowTrigger, flowStructureUtil } from '@fema/shared';
+import {
+  WorkflowAction,
+  WorkflowTrigger,
+  workflowStructureUtil,
+} from '@fema/shared';
 import { t } from 'i18next';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 
@@ -38,7 +42,9 @@ const DataSelectorNodeContent = ({
   setExpanded,
   depth,
 }: DataSelectorNodeContentProps) => {
-  const flowVersion = useBuilderStateContext((state) => state.flowVersion);
+  const workflowVersion = useBuilderStateContext(
+    (state) => state.workflowVersion,
+  );
   const insertMention = useBuilderStateContext((state) => state.insertMention);
 
   const [ripple, rippleEvent] = useApRipple();
@@ -48,7 +54,7 @@ const DataSelectorNodeContent = ({
       ? node.data.stepName
       : undefined;
   const stepForRoot = rootStepName
-    ? flowStructureUtil.getStep(rootStepName, flowVersion.trigger)
+    ? workflowStructureUtil.getStep(rootStepName, workflowVersion.trigger)
     : undefined;
 
   const isExpandable = !!node.children && node.children.length > 0;
@@ -190,7 +196,7 @@ const DataSelectorNodeContent = ({
   );
 };
 
-const StepRootIcon = ({ step }: { step: FlowAction | FlowTrigger }) => {
+const StepRootIcon = ({ step }: { step: WorkflowAction | WorkflowTrigger }) => {
   const { stepMetadata } = stepsHooks.useStepMetadata({ step });
   if (!stepMetadata) return null;
   return (

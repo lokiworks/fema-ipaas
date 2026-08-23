@@ -1,13 +1,13 @@
 import { isNil, parseToJsonIfPossible, tryCatch } from '@fema/core-utils'
-import { ConnectorTrigger, EngineOperationType, EngineResponseStatus, ExecuteTriggerResponse, FlowVersion, StreamStepProgress, TriggerHookType, WebhookJobData, WorkerJobType } from '@fema/shared'
+import { ConnectorTrigger, EngineOperationType, EngineResponseStatus, ExecuteTriggerResponse, StreamStepProgress, TriggerHookType, WebhookJobData, WorkerJobType, WorkflowVersion } from '@fema/shared'
 import { workerSettings } from '../../config/worker-settings'
 import { FireAndForgetJobResult, JobContext, JobHandler, JobResultKind } from '../types'
 import { isSandboxTimeout } from '../utils/sandbox-helpers'
 import { recordTriggerRun } from '../utils/trigger-run-recorder'
 import { getAppWebhookUrl, getWebhookUrl } from '../utils/webhook-url'
 
-function getAppWebhookDetails(flowVersion: FlowVersion, publicApiUrl: string, appWebhookSecretsJson: string): { appWebhookUrl?: string, webhookSecret?: string | Record<string, string> } {
-    const trigger = flowVersion.trigger as ConnectorTrigger
+function getAppWebhookDetails(workflowVersion: WorkflowVersion, publicApiUrl: string, appWebhookSecretsJson: string): { appWebhookUrl?: string, webhookSecret?: string | Record<string, string> } {
+    const trigger = workflowVersion.trigger as ConnectorTrigger
     const connectorName = trigger?.settings?.connectorName
     if (isNil(connectorName)) {
         return {}
@@ -27,10 +27,10 @@ export const executeWebhookJob: JobHandler<WebhookJobData, FireAndForgetJobResul
         const settings = workerSettings.getSettings()
         const timeoutInSeconds = settings.TRIGGER_TIMEOUT_SECONDS
 
-        const resolved = await ctx.resolver.resolve({ platformId: data.platformId, publicApiUrl: ctx.publicApiUrl, engineToken: ctx.engineToken, flow: { id: data.flowId, versionId: data.flowVersionIdToRun, workspaceId: data.workspaceId } })
+        const resolved = await ctx.resolver.resolve({ platformId: data.platformId, publicApiUrl: ctx.publicApiUrl, engineToken: ctx.engineToken, workflow: { id: data.workflowId, versionId: data.workflowVersionIdToRun, workspaceId: data.workspaceId } })
 
-        if (resolved.kind === 'flow-not-found') {
-            ctx.log.info({ flowVersion: { id: data.flowVersionIdToRun } }, 'Flow version not found for webhook, skipping')
+        if (resolved.kind === 'workflow-not-found') {
+            ctx.log.info({ workflowVersion: { id: data.workflowVersionIdToRun } }, 'Workflow version not found for webhook, skipping')
             return { kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.OK }
         }
 
@@ -38,13 +38,13 @@ export const executeWebhookJob: JobHandler<WebhookJobData, FireAndForgetJobResul
             return { kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.OK }
         }
 
-        // resolved.kind === 'ready' — flowVersion is guaranteed present when flow: is passed to resolve
-        if (isNil(resolved.flowVersion)) {
+        // resolved.kind === 'ready' — workflowVersion is guaranteed present when workflow: is passed to resolve
+        if (isNil(resolved.workflowVersion)) {
             return { kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.INTERNAL_ERROR }
         }
-        const flowVersion: FlowVersion = resolved.flowVersion
+        const workflowVersion: WorkflowVersion = resolved.workflowVersion
 
-        const { appWebhookUrl, webhookSecret } = getAppWebhookDetails(flowVersion, ctx.publicApiUrl, settings.APP_WEBHOOK_SECRETS)
+        const { appWebhookUrl, webhookSecret } = getAppWebhookDetails(workflowVersion, ctx.publicApiUrl, settings.APP_WEBHOOK_SECRETS)
 
         let realExecutionStarted = false
         const { data: execResult, error } = await tryCatch(async () => {
@@ -55,8 +55,8 @@ export const executeWebhookJob: JobHandler<WebhookJobData, FireAndForgetJobResul
                     operationType: EngineOperationType.EXECUTE_TRIGGER_HOOK,
                     operation: {
                         hookType: TriggerHookType.RUN,
-                        flowVersion,
-                        webhookUrl: getWebhookUrl(ctx.publicApiUrl, data.flowId, true),
+                        workflowVersion,
+                        webhookUrl: getWebhookUrl(ctx.publicApiUrl, data.workflowId, true),
                         triggerPayload: data.payload,
                         test: true,
                         workspaceId: data.workspaceId,
@@ -76,8 +76,8 @@ export const executeWebhookJob: JobHandler<WebhookJobData, FireAndForgetJobResul
                     const sampleTriggerResult = sampleResult.response as ExecuteTriggerResponse<TriggerHookType.RUN>
                     if (sampleTriggerResult.output.length > 0) {
                         await ctx.apiClient.savePayloads({
-                            flowId: data.flowId,
-                            flowVersionId: flowVersion.id,
+                            workflowId: data.workflowId,
+                            workflowVersionId: workflowVersion.id,
                             workspaceId: data.workspaceId,
                             payloads: sampleTriggerResult.output,
                         })
@@ -96,8 +96,8 @@ export const executeWebhookJob: JobHandler<WebhookJobData, FireAndForgetJobResul
                 operationType: EngineOperationType.EXECUTE_TRIGGER_HOOK,
                 operation: {
                     hookType: TriggerHookType.RUN,
-                    flowVersion,
-                    webhookUrl: getWebhookUrl(ctx.publicApiUrl, data.flowId),
+                    workflowVersion,
+                    webhookUrl: getWebhookUrl(ctx.publicApiUrl, data.workflowId),
                     triggerPayload: data.payload,
                     test: false,
                     workspaceId: data.workspaceId,
@@ -118,10 +118,10 @@ export const executeWebhookJob: JobHandler<WebhookJobData, FireAndForgetJobResul
 
         if (error) {
             if (realExecutionStarted) {
-                await recordTriggerRun({ apiClient: ctx.apiClient, log: ctx.log, flowVersion, platformId: data.platformId, status: EngineResponseStatus.INTERNAL_ERROR })
+                await recordTriggerRun({ apiClient: ctx.apiClient, log: ctx.log, workflowVersion, platformId: data.platformId, status: EngineResponseStatus.INTERNAL_ERROR })
             }
             if (isSandboxTimeout(error)) {
-                ctx.log.warn({ flowVersion: { id: data.flowVersionIdToRun } }, 'Webhook execution timed out in sandbox')
+                ctx.log.warn({ workflowVersion: { id: data.workflowVersionIdToRun } }, 'Webhook execution timed out in sandbox')
                 return { kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.OK }
             }
             throw error
@@ -135,7 +135,7 @@ export const executeWebhookJob: JobHandler<WebhookJobData, FireAndForgetJobResul
             const triggerResult = execResult.response as ExecuteTriggerResponse<TriggerHookType.RUN>
             if (triggerResult.output.length > 0) {
                 await ctx.apiClient.submitPayloads({
-                    flowVersionId: flowVersion.id,
+                    workflowVersionId: workflowVersion.id,
                     workspaceId: data.workspaceId,
                     payloads: triggerResult.output,
                     httpRequestId: data.requestId,
@@ -147,7 +147,7 @@ export const executeWebhookJob: JobHandler<WebhookJobData, FireAndForgetJobResul
             }
         }
 
-        await recordTriggerRun({ apiClient: ctx.apiClient, log: ctx.log, flowVersion, platformId: data.platformId, status: execResult.status })
+        await recordTriggerRun({ apiClient: ctx.apiClient, log: ctx.log, workflowVersion, platformId: data.platformId, status: execResult.status })
 
         return { kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.OK, logs: execResult.logs }
     },

@@ -80,7 +80,7 @@ const fakeGetSettings = () => ({
     DEV_CONNECTORS: [] as string[],
     ENVIRONMENT: 'production',
     REUSE_SANDBOX: undefined,
-    FLOW_TIMEOUT_SECONDS: 600,
+    WORKFLOW_TIMEOUT_SECONDS: 600,
     MAX_FILE_SIZE_MB: 10,
     MAX_EXECUTION_LOG_SIZE_MB: 10,
     NETWORK_MODE: 'UNRESTRICTED' as never,

@@ -254,7 +254,7 @@ export function WorkspaceDashboardSidebar({
                     variant="icon"
                     workspaces={workspaces ?? []}
                     onCreate={(workspace) => {
-                      navigate(`/workspaces/${workspace.id}/flows`);
+                      navigate(`/workspaces/${workspace.id}/workflows`);
                     }}
                   />
                 )}
@@ -338,7 +338,7 @@ export function WorkspaceDashboardSidebar({
                       variant="sidebar-menu"
                       workspaces={workspaces ?? []}
                       onCreate={(workspace) => {
-                        navigate(`/workspaces/${workspace.id}/flows`);
+                        navigate(`/workspaces/${workspace.id}/workflows`);
                       }}
                     />
                   </SidebarMenuItem>

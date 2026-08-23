@@ -1,5 +1,5 @@
 import { createAction } from '@fema/connector-sdk';
-import { buildFlowOriginContextBlock, slackSendMessage, textToSectionBlocks } from '../common/utils';
+import { buildWorkflowOriginContextBlock, slackSendMessage, textToSectionBlocks } from '../common/utils';
 import { slackAuth } from '../auth';
 import { assertNotNullOrUndefined } from '@fema/connector-sdk';
 import { ExecutionType } from '@fema/connector-sdk';
@@ -9,7 +9,7 @@ import {
   slackChannel,
   text,
   username,
-  mentionOriginFlow,
+  mentionOriginWorkflow,
 } from '../common/props';
 import { ChatPostMessageResponse, WebClient } from '@slack/web-api';
 import { getBotToken, SlackAuthValue } from '../common/auth-helpers';
@@ -23,7 +23,7 @@ export const requestSendApprovalMessageAction = createAction({
   description:
     'Send approval message to a channel and then wait until the message is approved or disapproved',
   audience: 'both',
-  aiMetadata: { description: 'Post a message with Approve/Disapprove buttons to a channel and pause the flow until someone clicks one, then resume with the boolean outcome. Use this for a simple approval gate visible to a channel; use Request Action from A User for a private DM with custom action choices. Posts a new message each run, so it is not idempotent.', idempotent: false },
+  aiMetadata: { description: 'Post a message with Approve/Disapprove buttons to a channel and pause the workflow until someone clicks one, then resume with the boolean outcome. Use this for a simple approval gate visible to a channel; use Request Action from A User for a private DM with custom action choices. Posts a new message each run, so it is not idempotent.', idempotent: false },
   outputSchema: approvalActionOutputSchema,
   props: {
     info: singleSelectChannelInfo,
@@ -31,12 +31,12 @@ export const requestSendApprovalMessageAction = createAction({
     text,
     username,
     profilePicture,
-    mentionOriginFlow,
+    mentionOriginWorkflow,
   },
   async run(context) {
     if (context.executionType === ExecutionType.BEGIN) {
       const token = getBotToken(context.auth as SlackAuthValue);
-      const { channel, username, profilePicture, mentionOriginFlow } = context.propsValue;
+      const { channel, username, profilePicture, mentionOriginWorkflow } = context.propsValue;
 
       assertNotNullOrUndefined(token, 'token');
       assertNotNullOrUndefined(text, 'text');
@@ -95,7 +95,7 @@ export const requestSendApprovalMessageAction = createAction({
               },
             ],
           },
-          ...(mentionOriginFlow ? [buildFlowOriginContextBlock(context)] : []),
+          ...(mentionOriginWorkflow ? [buildWorkflowOriginContextBlock(context)] : []),
         ],
       });
 

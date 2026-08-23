@@ -53,14 +53,14 @@ export const MigrateJobsRequest = z.object({
 export type MigrateJobsRequest = z.infer<typeof MigrateJobsRequest>
 
 export const SavePayloadRequest = z.object({
-    flowId: z.string(),
+    workflowId: z.string(),
     workspaceId: z.string(),
     payloads: z.array(z.unknown()),
 })
 export type SavePayloadRequest = z.infer<typeof SavePayloadRequest>
 
 export const SubmitPayloadsRequest = z.object({
-    flowVersionId: z.string(),
+    workflowVersionId: z.string(),
     workspaceId: z.string(),
     streamStepProgress: z.nativeEnum(StreamStepProgress),
     workerHandlerId: z.string().optional(),

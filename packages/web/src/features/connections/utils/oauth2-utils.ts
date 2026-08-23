@@ -21,7 +21,7 @@ function useThirdPartyLogin() {
   const [searchParams] = useSearchParams();
 
   return (loginUrl: string, providerName: ThirdPartyAuthnProviderEnum) => {
-    const from = searchParams.get(FROM_QUERY_PARAM) || '/flows';
+    const from = searchParams.get(FROM_QUERY_PARAM) || '/workflows';
     const state = {
       [PROVIDER_NAME_QUERY_PARAM]: providerName,
       [FROM_QUERY_PARAM]: from,

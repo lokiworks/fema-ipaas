@@ -33,7 +33,7 @@ export const TemplateEntity = new EntitySchema<TemplateSchema>({
             type: String,
             nullable: false,
         },
-        flows: {
+        workflows: {
             type: 'jsonb',
             nullable: true,
         },

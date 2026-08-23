@@ -6,7 +6,7 @@ import { returnResponse } from './lib/actions/return-response';
 
 export const forms = createConnector({
   displayName: 'Human Input',
-  description: 'Trigger a flow through human input.',
+  description: 'Trigger a workflow through human input.',
   auth: ConnectorAuth.None(),
   minimumSupportedRelease: '0.65.0',
   categories: [ConnectorCategory.CORE],

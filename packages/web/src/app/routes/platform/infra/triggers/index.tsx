@@ -24,7 +24,7 @@ import {
   ConnectorDisplayName,
   ConnectorIconWithConnectorName,
 } from '@/features/connectors';
-import { triggerRunHooks } from '@/features/flows';
+import { triggerRunHooks } from '@/features/workflows';
 import { cn } from '@/lib/utils';
 
 import { StatusProgressBar, type DayStatus } from './status-progress-bar';

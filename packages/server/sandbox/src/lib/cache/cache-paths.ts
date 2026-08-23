@@ -24,8 +24,8 @@ export const cacheUtils = (basePath: string) => ({
         return path.resolve(this.getGlobalCachePathLatestVersion(), 'connectors-metadata')
     },
 
-    getGlobalCacheFlowsPath(): string {
-        return path.resolve(this.getGlobalCachePathLatestVersion(), 'flows')
+    getGlobalCacheWorkflowsPath(): string {
+        return path.resolve(this.getGlobalCachePathLatestVersion(), 'workflows')
     },
 
     getGlobalCacheBundlesPath(): string {

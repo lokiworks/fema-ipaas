@@ -31,13 +31,13 @@ export class AutomationsPage extends BasePage {
       .waitFor();
   }
 
-  async newFlowFromScratch() {
+  async newWorkflowFromScratch() {
     const createNewButton = this.page.getByRole('button', { name: 'Create New' });
     if (await createNewButton.isVisible()) {
       await createNewButton.click();
-      await this.page.getByRole('menuitem', { name: 'New Flow' }).click();
+      await this.page.getByRole('menuitem', { name: 'New Workflow' }).click();
     } else {
-      // Empty state - click "Start from scratch" in the "Build a Flow" card
+      // Empty state - click "Start from scratch" in the "Build a Workflow" card
       await this.page.getByRole('button', { name: 'Start from scratch' }).first().click();
     }
   }

@@ -1,9 +1,9 @@
 import {
-  FlowAction,
-  FlowActionType,
-  FlowTrigger,
-  FlowTriggerType,
-  flowStructureUtil,
+  WorkflowAction,
+  WorkflowActionType,
+  WorkflowTrigger,
+  WorkflowTriggerType,
+  workflowStructureUtil,
 } from '@fema/shared';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { PanelImperativeHandle } from 'react-resizable-panels';
@@ -11,9 +11,9 @@ import { usePrevious } from 'react-use';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { DataSelector } from '@/app/builder/data-selector';
-import { CanvasControls } from '@/app/builder/flow-canvas/canvas-controls';
 import { StepSettingsProvider } from '@/app/builder/step-settings/step-settings-context';
 import { RightSideBarType } from '@/app/builder/types';
+import { CanvasControls } from '@/app/builder/workflow-canvas/canvas-controls';
 import { ShowPoweredBy } from '@/components/custom/show-powered-by';
 import {
   ResizableHandle,
@@ -26,14 +26,14 @@ import { useElementSize } from '@/hooks/use-element-size';
 import { cn } from '@/lib/utils';
 
 import { BuilderHeader } from './builder-header/builder-header';
-import { FlowCanvas } from './flow-canvas';
-import { flowCanvasHooks } from './flow-canvas/hooks';
-import { flowCanvasConsts } from './flow-canvas/utils/consts';
-import { BuilderBanner } from './flow-canvas/widgets/builder-banner';
-import { FlowVersionsList } from './flow-versions';
 import { RunsList } from './run-list';
 import { CursorPositionProvider } from './state/cursor-position-context';
 import { StepSettingsContainer } from './step-settings';
+import { WorkflowCanvas } from './workflow-canvas';
+import { workflowCanvasHooks } from './workflow-canvas/hooks';
+import { workflowCanvasConsts } from './workflow-canvas/utils/consts';
+import { BuilderBanner } from './workflow-canvas/widgets/builder-banner';
+import { WorkflowVersionsList } from './workflow-versions';
 const animateResizeClassName = `transition-all `;
 
 const SPLIT_MODE_INITIAL_OPEN_SIZE_PX = 1000;
@@ -45,7 +45,7 @@ const SPLIT_MODE_COLLAPSE_THRESHOLD_PX = 700;
 const BuilderPage = () => {
   const { platform } = platformHooks.useCurrentPlatform();
   const [
-    flowVersion,
+    workflowVersion,
     rightSidebar,
     selectedStepName,
     removeAllStepTestsListeners,
@@ -55,13 +55,13 @@ const BuilderPage = () => {
     setStepDataPanelView,
     setStepDataPanelOpen,
   ] = useBuilderStateContext((state) => [
-    state.flowVersion,
+    state.workflowVersion,
     state.rightSidebar,
     state.selectedStep,
     state.removeAllStepTestsListeners,
-    flowStructureUtil.getStep(
+    workflowStructureUtil.getStep(
       state.selectedStep ?? '',
-      state.flowVersion.trigger,
+      state.workflowVersion.trigger,
     ),
     state.stepDataPanelView,
     state.isStepDataPanelOpen,
@@ -73,7 +73,7 @@ const BuilderPage = () => {
       removeAllStepTestsListeners();
     };
   }, [removeAllStepTestsListeners]);
-  flowCanvasHooks.useShowBuilderIsSavingWarningBeforeLeaving();
+  workflowCanvasHooks.useShowBuilderIsSavingWarningBeforeLeaving();
   const middlePanelRef = useRef<HTMLDivElement>(null);
   const middlePanelSize = useElementSize(middlePanelRef);
   const [isDraggingHandle, setIsDraggingHandle] = useState(false);
@@ -139,11 +139,11 @@ const BuilderPage = () => {
     name: selectedStep?.settings.connectorName,
     version: selectedStep?.settings.connectorVersion,
     enabled:
-      selectedStep?.type === FlowActionType.CONNECTOR ||
-      selectedStep?.type === FlowTriggerType.CONNECTOR,
+      selectedStep?.type === WorkflowActionType.CONNECTOR ||
+      selectedStep?.type === WorkflowTriggerType.CONNECTOR,
   });
-  flowCanvasHooks.useSetSocketListener(refetchConnector);
-  flowCanvasHooks.useListenToExistingRun();
+  workflowCanvasHooks.useSetSocketListener(refetchConnector);
+  workflowCanvasHooks.useListenToExistingRun();
 
   const [hasCanvasBeenInitialised, setHasCanvasBeenInitialised] =
     useState(false);
@@ -154,12 +154,12 @@ const BuilderPage = () => {
         <BuilderHeader />
       </div>
       <ResizablePanelGroup orientation="horizontal">
-        <ResizablePanel defaultSize="100%" id="flow-canvas">
+        <ResizablePanel defaultSize="100%" id="workflow-canvas">
           <div ref={middlePanelRef} className="relative h-full w-full">
             <CursorPositionProvider>
-              <FlowCanvas
+              <WorkflowCanvas
                 setHasCanvasBeenInitialised={setHasCanvasBeenInitialised}
-              ></FlowCanvas>
+              ></WorkflowCanvas>
             </CursorPositionProvider>
 
             <BuilderBanner />
@@ -215,7 +215,9 @@ const BuilderPage = () => {
           })}
           style={{
             transitionDuration: `${
-              isDraggingHandle ? 0 : flowCanvasConsts.SIDEBAR_ANIMATION_DURATION
+              isDraggingHandle
+                ? 0
+                : workflowCanvasConsts.SIDEBAR_ANIMATION_DURATION
             }ms`,
           }}
         >
@@ -227,7 +229,7 @@ const BuilderPage = () => {
                   connectorModelNotFound={connectorModelNotFound}
                   selectedStep={selectedStep}
                   key={constructContainerKey({
-                    flowVersionId: flowVersion.id,
+                    workflowVersionId: workflowVersion.id,
                     step: selectedStep,
                     hasConnectorModelLoaded: !!connectorModel,
                   })}
@@ -236,7 +238,9 @@ const BuilderPage = () => {
                 </StepSettingsProvider>
               )}
             {rightSidebar === RightSideBarType.RUNS && <RunsList />}
-            {rightSidebar === RightSideBarType.VERSIONS && <FlowVersionsList />}
+            {rightSidebar === RightSideBarType.VERSIONS && (
+              <WorkflowVersionsList />
+            )}
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>
@@ -248,35 +252,35 @@ BuilderPage.displayName = 'BuilderPage';
 export { BuilderPage };
 
 function constructContainerKey({
-  flowVersionId,
+  workflowVersionId,
   step,
   hasConnectorModelLoaded,
 }: {
-  flowVersionId: string;
-  step?: FlowAction | FlowTrigger;
+  workflowVersionId: string;
+  step?: WorkflowAction | WorkflowTrigger;
   hasConnectorModelLoaded: boolean;
 }) {
   const stepName = step?.name;
   const triggerOrActionName =
-    step?.type === FlowTriggerType.CONNECTOR
+    step?.type === WorkflowTriggerType.CONNECTOR
       ? step?.settings.triggerName
       : step?.settings.actionName;
   const connectorName =
-    step?.type === FlowTriggerType.CONNECTOR ||
-    step?.type === FlowActionType.CONNECTOR
+    step?.type === WorkflowTriggerType.CONNECTOR ||
+    step?.type === WorkflowActionType.CONNECTOR
       ? step?.settings.connectorName
       : undefined;
   const connectorVersion =
-    step?.type === FlowTriggerType.CONNECTOR ||
-    step?.type === FlowActionType.CONNECTOR
+    step?.type === WorkflowTriggerType.CONNECTOR ||
+    step?.type === WorkflowActionType.CONNECTOR
       ? step?.settings.connectorVersion
       : undefined;
   //we need to re-render the step settings form when the step is skipped, so when the user edits the settings after setting it to skipped the changes are reflected in the update request
   const isSkipped =
-    step?.type != FlowTriggerType.EMPTY &&
-    step?.type != FlowTriggerType.CONNECTOR &&
+    step?.type != WorkflowTriggerType.EMPTY &&
+    step?.type != WorkflowTriggerType.CONNECTOR &&
     step?.skip;
-  return `${flowVersionId}-${stepName ?? ''}-${triggerOrActionName ?? ''}-${
+  return `${workflowVersionId}-${stepName ?? ''}-${triggerOrActionName ?? ''}-${
     connectorName ?? ''
   }-${connectorVersion ?? ''}-${'skipped-' + !!isSkipped}-${
     hasConnectorModelLoaded ? 'loaded' : 'not-loaded'

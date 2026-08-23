@@ -1,6 +1,6 @@
 import { Metadata, Nullable, OptionalArrayFromQuery } from '@fema/core-utils'
 import { z } from 'zod'
-import { FlowVersionTemplate, TemplateStatus, TemplateTag, TemplateType } from './template'
+import { TemplateStatus, TemplateTag, TemplateType, WorkflowVersionTemplate } from './template'
 
 export const CreateTemplateRequestBody = z.object({
     name: z.string(),
@@ -12,11 +12,11 @@ export const CreateTemplateRequestBody = z.object({
     author: z.string(),
     categories: z.array(z.string()),
     type: z.nativeEnum(TemplateType),
-    flows: z.array(FlowVersionTemplate).optional(),
+    workflows: z.array(WorkflowVersionTemplate).optional(),
 })
 export type CreateTemplateRequestBody = z.infer<typeof CreateTemplateRequestBody>
 
-export const UpdateFlowTemplateRequestBody = z.object({
+export const UpdateWorkflowTemplateRequestBody = z.object({
     name: z.string().optional(),
     summary: z.string().optional(),
     description: z.string().optional(),
@@ -25,21 +25,21 @@ export const UpdateFlowTemplateRequestBody = z.object({
     metadata: Nullable(Metadata),
     status: z.nativeEnum(TemplateStatus).optional(),
     categories: z.array(z.string()).optional(),
-    flows: z.array(FlowVersionTemplate).optional(),
+    workflows: z.array(WorkflowVersionTemplate).optional(),
 })
-export type UpdateFlowTemplateRequestBody = z.infer<typeof UpdateFlowTemplateRequestBody>
+export type UpdateWorkflowTemplateRequestBody = z.infer<typeof UpdateWorkflowTemplateRequestBody>
 
-export const UpdateTemplateRequestBody = UpdateFlowTemplateRequestBody
+export const UpdateTemplateRequestBody = UpdateWorkflowTemplateRequestBody
 export type UpdateTemplateRequestBody = z.infer<typeof UpdateTemplateRequestBody>
 
-export const ListFlowTemplatesRequestQuery = z.object({
+export const ListWorkflowTemplatesRequestQuery = z.object({
     type: z.nativeEnum(TemplateType).optional(),
     connectors: OptionalArrayFromQuery(z.string()),
     tags: OptionalArrayFromQuery(z.string()),
     search: z.string().optional(),
     category: z.string().optional(),
 })
-export type ListFlowTemplatesRequestQuery = z.infer<typeof ListFlowTemplatesRequestQuery>
+export type ListWorkflowTemplatesRequestQuery = z.infer<typeof ListWorkflowTemplatesRequestQuery>
 
-export const ListTemplatesRequestQuery = ListFlowTemplatesRequestQuery
+export const ListTemplatesRequestQuery = ListWorkflowTemplatesRequestQuery
 export type ListTemplatesRequestQuery = z.infer<typeof ListTemplatesRequestQuery>

@@ -7,7 +7,7 @@ import {
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { WorkspaceResourceType } from '../../core/security/authorization/common'
 import { securityAccess } from '../../core/security/authorization/fastify-security'
-import { flowService } from '../../flows/flow/flow.service'
+import { workflowService } from '../../workflows/workflow/workflow.service'
 import { triggerEventService } from './trigger-event.service'
 
 const DEFAULT_PAGE_SIZE = 10
@@ -18,20 +18,20 @@ export const triggerEventController: FastifyPluginAsyncZod = async (fastify) => 
     fastify.post('/', SaveTriggerEventRequestParams, async (request) => {
         return triggerEventService(request.log).saveEvent({
             workspaceId: request.workspaceId,
-            flowId: request.body.flowId,
+            workflowId: request.body.workflowId,
             payload: request.body.mockData,
         })
     })
 
     fastify.get('/', ListTriggerEventsRequestParams, async (request) => {
-        const flow = await flowService(request.log).getOnePopulatedOrThrow({
-            id: request.query.flowId,
+        const workflow = await workflowService(request.log).getOnePopulatedOrThrow({
+            id: request.query.workflowId,
             workspaceId: request.workspaceId,
         })
 
         return triggerEventService(request.log).list({
             workspaceId: request.workspaceId,
-            flow,
+            workflow,
             cursor: request.query.cursor ?? null,
             limit: request.query.limit ?? DEFAULT_PAGE_SIZE,
         })

@@ -62,7 +62,7 @@ describe('bucketFor', () => {
 describe('collectSizes', () => {
     it('counts additions plus deletions into the matching area', () => {
         const numstat = numstatOf([
-            [10, 5, 'packages/server/api/src/app/flow/flow.service.ts'],
+            [10, 5, 'packages/server/api/src/app/workflow/workflow.service.ts'],
             [3, 2, 'packages/web/src/app/routes.tsx'],
         ])
         const report = prSizeCheck.collectSizes({ numstat })

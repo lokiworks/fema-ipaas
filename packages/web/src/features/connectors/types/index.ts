@@ -6,11 +6,11 @@ import {
   TriggerBase,
 } from '@fema/connector-sdk';
 import {
-  FlowActionType,
+  WorkflowActionType,
   PackageType,
   ConnectorType,
-  FlowTriggerType,
-  FlowOperationType,
+  WorkflowTriggerType,
+  WorkflowOperationType,
   StepLocationRelativeToParent,
 } from '@fema/shared';
 
@@ -21,7 +21,7 @@ type BaseStepMetadata = {
 };
 
 export type ConnectorStepMetadata = BaseStepMetadata & {
-  type: FlowActionType.CONNECTOR | FlowTriggerType.CONNECTOR;
+  type: WorkflowActionType.CONNECTOR | WorkflowTriggerType.CONNECTOR;
   connectorName: string;
   connectorVersion: string;
   categories: string[];
@@ -33,10 +33,10 @@ export type ConnectorStepMetadata = BaseStepMetadata & {
 
 export type PrimitiveStepMetadata = BaseStepMetadata & {
   type:
-    | FlowActionType.CODE
-    | FlowActionType.LOOP_ON_ITEMS
-    | FlowActionType.ROUTER
-    | FlowTriggerType.EMPTY;
+    | WorkflowActionType.CODE
+    | WorkflowActionType.LOOP_ON_ITEMS
+    | WorkflowActionType.ROUTER
+    | WorkflowTriggerType.EMPTY;
 };
 
 export type ConnectorStepMetadataWithSuggestions = ConnectorStepMetadata &
@@ -60,7 +60,7 @@ export type StepMetadataWithActionOrTriggerOrAgentDisplayName = StepMetadata & {
 
 export type ConnectorSelectorOperation =
   | {
-      type: FlowOperationType.ADD_ACTION;
+      type: WorkflowOperationType.ADD_ACTION;
       actionLocation: {
         branchIndex: number;
         parentStep: string;
@@ -68,7 +68,7 @@ export type ConnectorSelectorOperation =
       };
     }
   | {
-      type: FlowOperationType.ADD_ACTION;
+      type: WorkflowOperationType.ADD_ACTION;
       actionLocation: {
         parentStep: string;
         stepLocationRelativeToParent: Exclude<
@@ -77,21 +77,21 @@ export type ConnectorSelectorOperation =
         >;
       };
     }
-  | { type: FlowOperationType.UPDATE_TRIGGER }
+  | { type: WorkflowOperationType.UPDATE_TRIGGER }
   | {
-      type: FlowOperationType.UPDATE_ACTION;
+      type: WorkflowOperationType.UPDATE_ACTION;
       stepName: string;
     };
 
 export type ConnectorSelectorConnectorItem =
   | {
       actionOrTrigger: TriggerBase;
-      type: FlowTriggerType.CONNECTOR;
+      type: WorkflowTriggerType.CONNECTOR;
       connectorMetadata: ConnectorStepMetadata;
     }
   | ({
       actionOrTrigger: ActionBase;
-      type: FlowActionType.CONNECTOR;
+      type: WorkflowActionType.CONNECTOR;
       connectorMetadata: ConnectorStepMetadata;
     } & {
       auth?: ConnectorAuthProperty;

@@ -14,7 +14,7 @@ Railway simplifies your infrastructure stack from servers to observability with 
 The Railway template deploys FEMA Integration Platform with the following components:
 
 - **FEMA Integration Platform Application**: The main FEMA Integration Platform container running the latest version from [Docker Hub](https://hub.docker.com/r/lokiworks/fema-ipaas)
-- **PostgreSQL Database**: Managed PostgreSQL database for storing flows, executions, and application data
+- **PostgreSQL Database**: Managed PostgreSQL database for storing workflows, executions, and application data
 - **Redis Cache**: Redis instance for job queuing and caching (optional, can use in-memory cache)
 - **Automatic SSL**: Railway provides automatic HTTPS with SSL certificates
 - **Custom Domain Support**: Configure your own domain through Railway's dashboard
@@ -86,7 +86,7 @@ To upgrade to a new version of FEMA Integration Platform on Railway:
 4. Railway will pull the latest FEMA Integration Platform image and redeploy
 
 <Warning>
-Before upgrading, review the [Breaking Changes](/install/reference/breaking-changes) documentation to ensure compatibility with your flows and configuration.
+Before upgrading, review the [Breaking Changes](/install/reference/breaking-changes) documentation to ensure compatibility with your workflows and configuration.
 </Warning>
 
 ## Next Steps
@@ -94,7 +94,7 @@ Before upgrading, review the [Breaking Changes](/install/reference/breaking-chan
 After deploying FEMA Integration Platform on Railway:
 
 1. **Access your instance** using the Railway-provided URL
-2. **Create your first flow** - see [Building Flows](/flows/building-flows)
+2. **Create your first workflow** - see [Building Workflows](/workflows/building-workflows)
 3. **Configure webhooks** - see [Setup App Webhooks](/install/configure-operate/setup-app-webhooks)
 4. **Explore connectors** - browse available integrations in the connector library
 

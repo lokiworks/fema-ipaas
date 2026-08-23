@@ -38,7 +38,7 @@ export type FormValues = {
   icon: WorkspaceIcon;
   externalId?: string;
   maxConcurrentJobs?: number | null;
-  activeFlowsLimit?: number | null;
+  activeWorkflowsLimit?: number | null;
 };
 
 type GeneralSettingsProps = {
@@ -210,7 +210,7 @@ export const GeneralSettings = ({ form }: GeneralSettingsProps) => {
                           'The rate limiting feature is disabled. Enable the WORKSPACE_RATE_LIMITER_ENABLED environment variable to use this feature.',
                         )
                       : t(
-                          'Maximum number of flows that can run at the same time for this workspace',
+                          'Maximum number of workflows that can run at the same time for this workspace',
                         )}
                   </FormDescription>
                   <FormMessage />
@@ -221,18 +221,18 @@ export const GeneralSettings = ({ form }: GeneralSettingsProps) => {
         {platform.plan.billedTeamWorkspacesLimit !== 0 &&
           platformRole === PlatformRole.ADMIN && (
             <FormField
-              name="activeFlowsLimit"
+              name="activeWorkflowsLimit"
               render={({ field }) => (
                 <FormItem>
                   <Label
-                    htmlFor="activeFlowsLimit"
+                    htmlFor="activeWorkflowsLimit"
                     className="text-sm font-medium"
                   >
-                    {t('Active Flows Limit')}
+                    {t('Active Workflows Limit')}
                   </Label>
                   <ClearableInput
                     {...field}
-                    id="activeFlowsLimit"
+                    id="activeWorkflowsLimit"
                     type="number"
                     min={1}
                     placeholder={t('Unlimited')}
@@ -247,7 +247,7 @@ export const GeneralSettings = ({ form }: GeneralSettingsProps) => {
                   />
                   <FormDescription className="text-xs text-muted-foreground">
                     {t(
-                      'Maximum number of enabled flows in this workspace. Leave empty for no limit.',
+                      'Maximum number of enabled workflows in this workspace. Leave empty for no limit.',
                     )}
                   </FormDescription>
                   <FormMessage />

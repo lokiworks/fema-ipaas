@@ -73,7 +73,7 @@ const keys = Object.keys(cache)
 //   distinct @fema/connector-* packages, and process.memoryUsage()
 ```
 
-Run it against the `sandbox-<id>` pid while a flow holds the sandbox open. To *get* that window, end the probe flow with a CODE step that sleeps — a `delay` connector step over 10 s creates a waitpoint and **pauses the run**, releasing the sandbox, so the process you wanted is gone before you arrive.
+Run it against the `sandbox-<id>` pid while a workflow holds the sandbox open. To *get* that window, end the probe workflow with a CODE step that sleeps — a `delay` connector step over 10 s creates a waitpoint and **pauses the run**, releasing the sandbox, so the process you wanted is gone before you arrive.
 
 ## 4. Parse it off the worker process
 
@@ -94,15 +94,15 @@ The 2026-08 worker leak resolved to exactly this, and the last two edges were th
 
 ```
 Object
-  property:/usr/src/app/cache/v13/bundles/<flowVersionId> -> Object
-  property:<flowVersionId> -> string "{\"flowVersion\":…"   [90 MB]
+  property:/usr/src/app/cache/v13/bundles/<workflowVersionId> -> Object
+  property:<workflowVersionId> -> string "{\"workflowVersion\":…"   [90 MB]
 ```
 
-A module-level object keyed by cache path, holding whole flow-bundle manifests, never evicted (`cache-state.ts`). See the Gotchas on [[workers]].
+A module-level object keyed by cache path, holding whole workflow-bundle manifests, never evicted (`cache-state.ts`). See the Gotchas on [[workers]].
 
 ## Redact before you publish the findings
 
-The snapshot never leaves the box — but **its output carries the same data in miniature**. Constructor histograms and retainer paths are full of real `flowVersionId`s, and a retained string's preview can expose flow names, step config, and timestamps. Replace them with placeholders (`<flow-version-a>`) before they go into a PR description, an issue, a Slack message, or a doc. This repo's PRs are public. Getting this right at the snapshot step and then pasting the raw histogram into a public PR undoes the whole point.
+The snapshot never leaves the box — but **its output carries the same data in miniature**. Constructor histograms and retainer paths are full of real `workflowVersionId`s, and a retained string's preview can expose workflow names, step config, and timestamps. Replace them with placeholders (`<workflow-version-a>`) before they go into a PR description, an issue, a Slack message, or a doc. This repo's PRs are public. Getting this right at the snapshot step and then pasting the raw histogram into a public PR undoes the whole point.
 
 ## Clean up
 

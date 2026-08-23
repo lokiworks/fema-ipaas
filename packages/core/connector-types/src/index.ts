@@ -47,11 +47,11 @@ export * from './lib/tool-execution'
 export * from './lib/forms'
 
 
-export * from './lib/flow-contracts'
+export * from './lib/workflow-contracts'
 
 
 export * from './lib/engine-tools'
 
-export type { PopulatedFlowSummary } from './lib/flows'
+export type { PopulatedWorkflowSummary } from './lib/workflows'
 
 export * from './lib/execution-contracts'

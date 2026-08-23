@@ -1,5 +1,5 @@
 import { isNil } from '@fema/core-utils'
-import { FlowActionType } from '../../flows/actions/action'
+import { WorkflowActionType } from '../../workflows/actions/action'
 import { BaseStepOutput, LoopStepOutput, StepOutput, StepOutputStatus } from './step-output'
 
 export const executionJournal = {
@@ -13,7 +13,7 @@ export const executionJournal = {
         if (isNil(parentStep)) {
             throw new Error(`Step ${parentStepName} not found in path ${path}`)
         }
-        if (parentStep.type !== FlowActionType.LOOP_ON_ITEMS) {
+        if (parentStep.type !== WorkflowActionType.LOOP_ON_ITEMS) {
             throw new Error(`Step ${parentStepName} is not a loop on items step in path ${path}`)
         }
         const iterations = [...parentStep.output?.iterations ?? []]
@@ -56,7 +56,7 @@ export const executionJournal = {
             if (!step) {
                 throw new Error(`Step ${parentStepName} not found in path ${path}`)
             }
-            if (step.type !== FlowActionType.LOOP_ON_ITEMS) {
+            if (step.type !== WorkflowActionType.LOOP_ON_ITEMS) {
                 throw new Error(`Step ${parentStepName} is not a loop on items step in path ${path}`)
             }
             const loopStepOutput = step as LoopStepOutput
@@ -72,7 +72,7 @@ export const executionJournal = {
     findLastStepWithStatus(steps: Record<string, StepOutput>, status: StepOutputStatus | undefined): string | null {
         let lastStepWithStatus: string | null = null
         Object.entries(steps).forEach(([stepName, step]) => {
-            if ( step.type === FlowActionType.LOOP_ON_ITEMS && step.output ) {
+            if ( step.type === WorkflowActionType.LOOP_ON_ITEMS && step.output ) {
                 const iterations = step.output.iterations
                 iterations.forEach((iteration) => {
                     const lastOneInIteration = this.findLastStepWithStatus(iteration, status)
@@ -96,7 +96,7 @@ export const executionJournal = {
     getLoopSteps(steps: Record<string, StepOutput>): Record<string, LoopStepOutput> {
         let result: Record<string, LoopStepOutput> = {}
         Object.entries(steps).forEach(([stepName, step]) => {
-            if (step.type === FlowActionType.LOOP_ON_ITEMS) {
+            if (step.type === WorkflowActionType.LOOP_ON_ITEMS) {
                 const iterationsResult = step.output?.iterations.reduce((acc, iteration) => {
                     return {
                         ...acc,
@@ -118,7 +118,7 @@ export const executionJournal = {
     },
 
     isChildOf(parent: StepOutput, child: string): boolean {
-        if (parent.type !== FlowActionType.LOOP_ON_ITEMS) return false
+        if (parent.type !== WorkflowActionType.LOOP_ON_ITEMS) return false
         if (!parent.output?.iterations) return false
         for (const iteration of parent.output.iterations) {
             for (const [name, output] of Object.entries(iteration)) {
@@ -142,7 +142,7 @@ export const executionJournal = {
                 return currentPath
             }
 
-            if (step.type !== FlowActionType.LOOP_ON_ITEMS) continue
+            if (step.type !== WorkflowActionType.LOOP_ON_ITEMS) continue
             if (!step.output?.iterations) continue
 
             for (const iteration of step.output.iterations) {

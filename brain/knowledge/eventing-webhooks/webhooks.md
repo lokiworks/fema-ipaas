@@ -4,23 +4,23 @@ icon: 🪝
 
 # Webhooks
 
-Webhooks are the primary entry point for event-driven flow execution from outside FEMA Integration Platform. The module ingests inbound HTTP requests, normalizes payloads (multipart/binary/JSON/text), routes them to flows, and supports both sync (blocking) and async (fire-and-forget) execution.
+Webhooks are the primary entry point for event-driven workflow execution from outside FEMA Integration Platform. The module ingests inbound HTTP requests, normalizes payloads (multipart/binary/JSON/text), routes them to workflows, and supports both sync (blocking) and async (fire-and-forget) execution.
 
 ### Entities & services
-- `webhook.service.ts` — routing, sync/async execution, flow resolution.
+- `webhook.service.ts` — routing, sync/async execution, workflow resolution.
 - `webhook-request-converter.ts` — payload normalization + file upload.
 - `webhook-handshake.ts` — ownership-challenge verification.
 - **engineResponseWatcher** — one-time listener bridging the BullMQ engine response back to the waiting HTTP connection for sync mode.
-- **flowExecutionCache** — Redis fast path for resolving flow metadata without hitting Postgres per request.
+- **workflowExecutionCache** — Redis fast path for resolving workflow metadata without hitting Postgres per request.
 
 ### How it works
 - **5 public routes** (all accept GET/POST/PUT/DELETE/PATCH):
-  - `/:flowId/sync` — production sync, blocks and returns flow response (LOCKED_FALL_BACK_TO_LATEST).
-  - `/:flowId` — production async, queues job, returns 200 + `x-webhook-id`.
-  - `/:flowId/draft/sync` and `/:flowId/draft` — testing against the draft version.
-  - `/:flowId/test` — captures request as sample data, no execution.
+  - `/:workflowId/sync` — production sync, blocks and returns workflow response (LOCKED_FALL_BACK_TO_LATEST).
+  - `/:workflowId` — production async, queues job, returns 200 + `x-webhook-id`.
+  - `/:workflowId/draft/sync` and `/:workflowId/draft` — testing against the draft version.
+  - `/:workflowId/test` — captures request as sample data, no execution.
 - **Async**: offload payload to S3/DB if over `FEMA_WEBHOOK_PAYLOAD_INLINE_THRESHOLD_KB` (default 512KB) → queue `EXECUTE_WEBHOOK` → return 200. Job carries a `JobPayload` union (`inline` or `ref`); the **engine** resolves it at execution time (workers no longer fetch payloads).
-- **Sync**: create Execution with `WEBHOOK_RESPONSE` → register `engineResponseWatcher` → wait (`FEMA_WEBHOOK_TIMEOUT_SECONDS`, default 30; callers can override, e.g. MCP uses 5 min) → return flow response or 204 on timeout.
+- **Sync**: create Execution with `WEBHOOK_RESPONSE` → register `engineResponseWatcher` → wait (`FEMA_WEBHOOK_TIMEOUT_SECONDS`, default 30; callers can override, e.g. MCP uses 5 min) → return workflow response or 204 on timeout.
 - **Version resolution** `LOCKED_FALL_BACK_TO_LATEST`: uses `publishedVersionId` if set, else latest draft.
 - **Payload normalization** (`convertRequest`): multipart parts and binary bodies upload to the File service and the payload carries URLs; JSON/text pass through. `BINARY_CONTENT_TYPE_PATTERNS` covers `image/*`, `video/*`, `audio/*`, `application/pdf|zip|gzip|octet-stream` and `text/csv` (each also needs a `addContentTypeParser` entry in `webhook-module.ts` to stream rather than parse). Subflow linkage is read off `x-parent-run-id` / `x-fail-parent-on-failure`.
 
@@ -28,8 +28,8 @@ Webhooks are the primary entry point for event-driven flow execution from outsid
 - **Streaming ingestion**: webhook files stream straight to S3 (only when `FILE_STORAGE_LOCATION=S3`; DB storage still buffers to bytea). `attachFieldsToBody` is NOT registered globally — each multipart route must opt in (webhook uses `request.parts()`); a route expecting `ApMultipartFile` without the hook fails with `400 body/ Invalid input`.
 - **rawBody / signatures**: captured only for small signed types (JSON/XML/text) via a scoped `preParsing` hook. Streamed types (multipart, binary) forgo rawBody — multipart signature verification is a dropped trade-off.
 - **Size guard**: `FEMA_MAX_WEBHOOK_PAYLOAD_SIZE_MB` (default 5MB) → 413. Raw-binary bodies pipe through `enforceByteLimit`; oversized multipart parts are failed at end-of-stream (busboy flags `truncated` cleanly rather than erroring).
-- **Handshake** runs BEFORE the disabled-flow guard, so ownership pings work both during the publish window and for re-verification on enabled flows. Strategies: `HEADER_PRESENT`, `QUERY_PRESENT`, `BODY_PARAM_PRESENT`, `NONE`, `HEAD_REQUEST` (e.g. Trello).
-- Flow resolution returns 410 GONE if not found; 404 if disabled (unless the request matches the flow's handshake config).
+- **Handshake** runs BEFORE the disabled-workflow guard, so ownership pings work both during the publish window and for re-verification on enabled workflows. Strategies: `HEADER_PRESENT`, `QUERY_PRESENT`, `BODY_PARAM_PRESENT`, `NONE`, `HEAD_REQUEST` (e.g. Trello).
+- Workflow resolution returns 410 GONE if not found; 404 if disabled (unless the request matches the workflow's handshake config).
 
 ### Editions
 Full functionality in CE/EE/Cloud; Cloud makes payload size and timeout configurable per environment.

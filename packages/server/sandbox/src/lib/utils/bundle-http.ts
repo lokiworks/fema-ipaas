@@ -7,7 +7,7 @@ export const bundleHttp = {
     async getBuffer(url: string): Promise<Buffer> {
         const response = await fetch(url)
         if (!response.ok) {
-            throw new Error(`Flow bundle download failed: ${response.status} ${response.statusText}`)
+            throw new Error(`Workflow bundle download failed: ${response.status} ${response.statusText}`)
         }
         return Buffer.from(await response.arrayBuffer())
     },
@@ -18,7 +18,7 @@ export const bundleHttp = {
             body: data,
         })
         if (!response.ok) {
-            throw new Error(`Flow bundle upload failed: ${response.status} ${response.statusText}`)
+            throw new Error(`Workflow bundle upload failed: ${response.status} ${response.statusText}`)
         }
     },
 }

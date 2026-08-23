@@ -2,7 +2,7 @@ import { Property, StoreScope } from "@fema/connector-sdk"
 
 export enum ConnectorStoreScope {
     WORKSPACE = 'COLLECTION',
-    FLOW = 'FLOW',
+    WORKFLOW = 'WORKFLOW',
     RUN = 'RUN',
 }
 
@@ -11,13 +11,13 @@ export function getScopeAndKey(params: Params): { scope: StoreScope, key: string
     switch (params.scope) {
         case ConnectorStoreScope.WORKSPACE:
             return { scope: StoreScope.WORKSPACE, key: params.key }
-        case ConnectorStoreScope.FLOW:
-            return { scope: StoreScope.FLOW, key: params.key }
+        case ConnectorStoreScope.WORKFLOW:
+            return { scope: StoreScope.WORKFLOW, key: params.key }
         case ConnectorStoreScope.RUN:
             // Use a consistent test run ID when testing to allow store operations to work together
             {
                 const runId = params.isTestMode ? testRunId : params.runId
-                return { scope: StoreScope.FLOW, key: `run_${runId}/${params.key}` }
+                return { scope: StoreScope.WORKFLOW, key: `run_${runId}/${params.key}` }
             }
     }
 }
@@ -41,8 +41,8 @@ export const common = {
                     value: ConnectorStoreScope.WORKSPACE,
                 },
                 {
-                    label: 'Flow',
-                    value: ConnectorStoreScope.FLOW,
+                    label: 'Workflow',
+                    value: ConnectorStoreScope.WORKFLOW,
                 },
                 {
                     label: 'Run',

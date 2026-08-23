@@ -28,7 +28,7 @@ function unescapeInputKeys<T>(value: T): T {
 
 // Escaped keys carry the ESCAPED_KEY_MARKER prefix so unescaping only ever touches keys
 // this module produced: a literal key like `field~1name` that never went through
-// escapeKey (schema-less tool calls, API-created flows) passes through unchanged.
+// escapeKey (schema-less tool calls, API-created workflows) passes through unchanged.
 // The mapping stays bijective because unescaped keys can never contain `~` (any `~`
 // triggers escaping), so they can never start with the marker.
 function escapeKey(key: string): string {

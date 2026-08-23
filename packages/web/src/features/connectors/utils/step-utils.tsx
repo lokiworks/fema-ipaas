@@ -5,12 +5,12 @@ import {
 } from '@fema/connector-sdk';
 import { LocalesEnum, spreadIfDefined } from '@fema/core-utils';
 import {
-  FlowAction,
-  FlowActionType,
-  flowStructureUtil,
+  WorkflowAction,
+  WorkflowActionType,
+  workflowStructureUtil,
   Step,
-  FlowTriggerType,
-  FlowTrigger,
+  WorkflowTriggerType,
+  WorkflowTrigger,
   StepOutput,
   StepRunResponse,
 } from '@fema/shared';
@@ -25,48 +25,51 @@ import {
 } from '../types';
 
 export const CORE_STEP_METADATA: Record<
-  Exclude<FlowActionType, FlowActionType.CONNECTOR> | FlowTriggerType.EMPTY,
+  | Exclude<WorkflowActionType, WorkflowActionType.CONNECTOR>
+  | WorkflowTriggerType.EMPTY,
   PrimitiveStepMetadata
 > = {
-  [FlowActionType.CODE]: {
+  [WorkflowActionType.CODE]: {
     displayName: t('Code'),
     logoUrl: 'https://cdn.fema.local/connectors/new-core/code.svg',
     description: t('Powerful Node.js & TypeScript code with npm'),
-    type: FlowActionType.CODE as const,
+    type: WorkflowActionType.CODE as const,
   },
-  [FlowActionType.LOOP_ON_ITEMS]: {
+  [WorkflowActionType.LOOP_ON_ITEMS]: {
     displayName: t('Loop on Items'),
     logoUrl: 'https://cdn.fema.local/connectors/new-core/loop.svg',
     description: 'Iterate over a list of items',
-    type: FlowActionType.LOOP_ON_ITEMS as const,
+    type: WorkflowActionType.LOOP_ON_ITEMS as const,
   },
-  [FlowActionType.ROUTER]: {
+  [WorkflowActionType.ROUTER]: {
     displayName: t('Router'),
     logoUrl: 'https://cdn.fema.local/connectors/new-core/router.svg',
-    description: t('Split your flow into branches depending on condition(s)'),
-    type: FlowActionType.ROUTER as const,
+    description: t(
+      'Split your workflow into branches depending on condition(s)',
+    ),
+    type: WorkflowActionType.ROUTER as const,
   },
-  [FlowTriggerType.EMPTY]: {
+  [WorkflowTriggerType.EMPTY]: {
     displayName: t('Empty Trigger'),
     logoUrl: 'https://cdn.fema.local/connectors/new-core/empty-trigger.svg',
     description: t('Empty Trigger'),
-    type: FlowTriggerType.EMPTY as const,
+    type: WorkflowTriggerType.EMPTY as const,
   },
 } as const;
 export const CORE_ACTIONS_METADATA = [
-  CORE_STEP_METADATA[FlowActionType.CODE],
-  CORE_STEP_METADATA[FlowActionType.LOOP_ON_ITEMS],
-  CORE_STEP_METADATA[FlowActionType.ROUTER],
+  CORE_STEP_METADATA[WorkflowActionType.CODE],
+  CORE_STEP_METADATA[WorkflowActionType.LOOP_ON_ITEMS],
+  CORE_STEP_METADATA[WorkflowActionType.ROUTER],
 ] as const;
 
 export const stepUtils = {
   getKeys(
-    step: FlowAction | FlowTrigger,
+    step: WorkflowAction | WorkflowTrigger,
     locale: LocalesEnum,
   ): (string | undefined)[] {
     const isConnectorStep =
-      step.type === FlowActionType.CONNECTOR ||
-      step.type === FlowTriggerType.CONNECTOR;
+      step.type === WorkflowActionType.CONNECTOR ||
+      step.type === WorkflowTriggerType.CONNECTOR;
     const connectorName = isConnectorStep
       ? step.settings.connectorName
       : undefined;
@@ -82,24 +85,24 @@ export const stepUtils = {
     return [connectorName, connectorVersion, customLogoUrl, locale, step.type];
   },
   async getMetadata(
-    step: FlowAction | FlowTrigger,
+    step: WorkflowAction | WorkflowTrigger,
     locale: LocalesEnum,
   ): Promise<StepMetadataWithActionOrTriggerOrAgentDisplayName> {
     const customLogoUrl =
       'customLogoUrl' in step ? step.customLogoUrl : undefined;
     switch (step.type) {
-      case FlowActionType.ROUTER:
-      case FlowActionType.LOOP_ON_ITEMS:
-      case FlowActionType.CODE:
-      case FlowTriggerType.EMPTY:
+      case WorkflowActionType.ROUTER:
+      case WorkflowActionType.LOOP_ON_ITEMS:
+      case WorkflowActionType.CODE:
+      case WorkflowTriggerType.EMPTY:
         return {
           ...CORE_STEP_METADATA[step.type],
           ...spreadIfDefined('logoUrl', customLogoUrl),
           actionOrTriggerOrAgentDisplayName: '',
           actionOrTriggerOrAgentDescription: '',
         };
-      case FlowActionType.CONNECTOR:
-      case FlowTriggerType.CONNECTOR: {
+      case WorkflowActionType.CONNECTOR:
+      case WorkflowTriggerType.CONNECTOR: {
         const connector = await connectorsApi.get({
           name: step.settings.connectorName,
           version: step.settings.connectorVersion,
@@ -113,14 +116,15 @@ export const stepUtils = {
         connector.logoUrl = latestConnectorVersion.logoUrl;
         const metadata = stepUtils.mapConnectorToMetadata({
           connector,
-          type: step.type === FlowActionType.CONNECTOR ? 'action' : 'trigger',
+          type:
+            step.type === WorkflowActionType.CONNECTOR ? 'action' : 'trigger',
         });
         const actionOrTriggerDisplayName =
-          step.type === FlowActionType.CONNECTOR
+          step.type === WorkflowActionType.CONNECTOR
             ? connector.actions[step.settings.actionName!].displayName
             : connector.triggers[step.settings.triggerName!].displayName;
         const actionOrTriggerDescription =
-          step.type === FlowActionType.CONNECTOR
+          step.type === WorkflowActionType.CONNECTOR
             ? connector.actions[step.settings.actionName!].description
             : connector.triggers[step.settings.triggerName!].description;
         return {
@@ -145,8 +149,8 @@ export const stepUtils = {
       description: connector.description,
       type:
         type === 'action'
-          ? FlowActionType.CONNECTOR
-          : FlowTriggerType.CONNECTOR,
+          ? WorkflowActionType.CONNECTOR
+          : WorkflowTriggerType.CONNECTOR,
       connectorType: connector.connectorType,
       connectorName: connector.name,
       connectorVersion: connector.version,
@@ -167,7 +171,7 @@ export const stepUtils = {
 };
 
 export function extractConnectorNamesAndCoreMetadata(
-  steps: ReturnType<typeof flowStructureUtil.getAllSteps>,
+  steps: ReturnType<typeof workflowStructureUtil.getAllSteps>,
   excludeCore: boolean,
 ): { connectorNames: string[]; coreMetadata: StepMetadata[] } {
   const connectorNamesSet = new Set<string>();
@@ -175,8 +179,8 @@ export function extractConnectorNamesAndCoreMetadata(
 
   for (const step of steps) {
     if (
-      step.type === FlowActionType.CONNECTOR ||
-      step.type === FlowTriggerType.CONNECTOR
+      step.type === WorkflowActionType.CONNECTOR ||
+      step.type === WorkflowTriggerType.CONNECTOR
     ) {
       connectorNamesSet.add(step.settings.connectorName);
     } else if (!excludeCore) {
@@ -195,7 +199,7 @@ function mapErrorHandlingOptions(
   connector: ConnectorMetadataModel,
   step: Step,
 ): ErrorHandlingOptionsParam {
-  if (flowStructureUtil.isTrigger(step.type)) {
+  if (workflowStructureUtil.isTrigger(step.type)) {
     return {
       continueOnFailure: {
         hide: true,
@@ -206,7 +210,7 @@ function mapErrorHandlingOptions(
     };
   }
   const selectedAction =
-    step.type === FlowActionType.CONNECTOR
+    step.type === WorkflowActionType.CONNECTOR
       ? connector.actions[step.settings.actionName!]
       : null;
   const errorHandlingOptions = selectedAction?.errorHandlingOptions;

@@ -1,14 +1,14 @@
 import { inspect } from 'util'
 import { formatConnectorError, tryCatch } from '@fema/core-utils'
-import { EngineOperation, EngineOperationType, EngineResponse, EngineResponseStatus, ExecuteActionOperation, ExecuteExtractConnectorMetadataOperation, ExecuteFlowOperation, ExecutePropsOptions, ExecuteRefreshTokenAuthOperation, ExecuteResolveConnectionIdentifierOperation, ExecuteTriggerOperation, ExecuteValidateAuthOperation, ExecutionError, ExecutionErrorType, TriggerHookType } from '@fema/shared'
+import { EngineOperation, EngineOperationType, EngineResponse, EngineResponseStatus, ExecuteActionOperation, ExecuteExtractConnectorMetadataOperation, ExecutePropsOptions, ExecuteRefreshTokenAuthOperation, ExecuteResolveConnectionIdentifierOperation, ExecuteTriggerOperation, ExecuteValidateAuthOperation, ExecuteWorkflowOperation, ExecutionError, ExecutionErrorType, TriggerHookType } from '@fema/shared'
 import { actionOperation } from './action.operation'
 import { authRefreshOperation } from './auth-refresh.operation'
 import { authValidationOperation } from './auth-validation.operation'
 import { connectorMetadataOperation } from './connector-metadata.operation'
-import { flowOperation } from './flow.operation'
 import { propertyOperation } from './property.operation'
 import { resolveConnectionIdentifierOperation } from './resolve-connection-identifier.operation'
 import { triggerHookOperation } from './trigger-hook.operation'
+import { workflowOperation } from './workflow.operation'
 
 
 export async function execute(operationType: EngineOperationType, operation: EngineOperation): Promise<EngineResponse<unknown>> {
@@ -17,8 +17,8 @@ export async function execute(operationType: EngineOperationType, operation: Eng
             case EngineOperationType.EXTRACT_CONNECTOR_METADATA: {
                 return connectorMetadataOperation.extract(operation as ExecuteExtractConnectorMetadataOperation)
             }
-            case EngineOperationType.EXECUTE_FLOW: {
-                return flowOperation.execute(operation as ExecuteFlowOperation)
+            case EngineOperationType.EXECUTE_WORKFLOW: {
+                return workflowOperation.execute(operation as ExecuteWorkflowOperation)
             }
             case EngineOperationType.EXECUTE_ACTION: {
                 return actionOperation.execute(operation as ExecuteActionOperation)

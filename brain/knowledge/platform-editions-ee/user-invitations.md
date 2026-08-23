@@ -30,7 +30,7 @@ Entry point: `userInvitationsService`, defined in `user-invitation.service.ts` a
 - `packages/server/api/src/app/user-invitations/` — the whole backend slice: module + routes, service lifecycle (create, accept, list, delete, provision), TypeORM entity
 - `packages/core/shared/src/lib/management/invitations/index.ts` — `UserInvitation`, `InvitationType`, `InvitationStatus`, and the request contracts
 - `packages/server/api/src/app/ee/platform/platform-plan/platform-plan.service.ts` — `checkUsersExceededLimit` + `countUsedSeats` (the seat-reservation counter)
-- `packages/web/src/features/members/components/` — invite dialog, invitation card with revoke, accept flow for incoming links
+- `packages/web/src/features/members/components/` — invite dialog, invitation card with revoke, accept workflow for incoming links
 - `packages/web/src/features/members/api/` — frontend API client
 - `packages/web/src/features/members/hooks/` — TanStack Query hooks
 

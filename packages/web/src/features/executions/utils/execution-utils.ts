@@ -1,7 +1,7 @@
 import { isNil } from '@fema/core-utils';
 import {
   executionJournal,
-  FlowActionType,
+  WorkflowActionType,
   Execution,
   ExecutionStatus,
   isFailedState,
@@ -57,7 +57,7 @@ export const executionUtils = {
         lastStepWithStatus = stepName;
       }
 
-      if (step.type === FlowActionType.LOOP_ON_ITEMS && step.output) {
+      if (step.type === WorkflowActionType.LOOP_ON_ITEMS && step.output) {
         const iterations = step.output.iterations;
         iterations.forEach((iteration) => {
           const lastOneInIteration = executionUtils.findLastStepWithStatus(

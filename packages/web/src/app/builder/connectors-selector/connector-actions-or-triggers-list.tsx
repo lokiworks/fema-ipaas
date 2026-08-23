@@ -1,7 +1,7 @@
 import { isNil } from '@fema/core-utils';
 import {
-  FlowActionType,
-  FlowTriggerType,
+  WorkflowActionType,
+  WorkflowTriggerType,
   TelemetryEventName,
 } from '@fema/shared';
 import { t } from 'i18next';
@@ -32,29 +32,29 @@ export const convertStepMetadataToConnectorSelectorItems = (
   stepMetadataWithSuggestions: StepMetadataWithSuggestions,
 ): ConnectorSelectorItem[] => {
   switch (stepMetadataWithSuggestions.type) {
-    case FlowActionType.CONNECTOR: {
+    case WorkflowActionType.CONNECTOR: {
       const actions = connectorSelectorUtils.removeHiddenActions(
         stepMetadataWithSuggestions,
       );
       return actions.map((action) => ({
         actionOrTrigger: action,
-        type: FlowActionType.CONNECTOR,
+        type: WorkflowActionType.CONNECTOR,
         connectorMetadata: stepMetadataWithSuggestions,
       }));
     }
-    case FlowTriggerType.CONNECTOR: {
+    case WorkflowTriggerType.CONNECTOR: {
       const triggers = Object.values(
         stepMetadataWithSuggestions.suggestedTriggers ?? {},
       );
       return triggers.map((trigger) => ({
         actionOrTrigger: trigger,
-        type: FlowTriggerType.CONNECTOR,
+        type: WorkflowTriggerType.CONNECTOR,
         connectorMetadata: stepMetadataWithSuggestions,
       }));
     }
-    case FlowActionType.CODE:
-    case FlowActionType.LOOP_ON_ITEMS:
-    case FlowActionType.ROUTER: {
+    case WorkflowActionType.CODE:
+    case WorkflowActionType.LOOP_ON_ITEMS:
+    case WorkflowActionType.ROUTER: {
       return CORE_ACTIONS_METADATA.filter(
         (step) => step.type === stepMetadataWithSuggestions.type,
       );
@@ -104,14 +104,14 @@ export const ConnectorActionsOrTriggersList: React.FC<
                 stepMetadataWithSuggestions={stepMetadataWithSuggestions}
                 onClick={() => {
                   if (
-                    item.type === FlowActionType.CONNECTOR ||
-                    item.type === FlowTriggerType.CONNECTOR
+                    item.type === WorkflowActionType.CONNECTOR ||
+                    item.type === WorkflowTriggerType.CONNECTOR
                   ) {
                     capture({
                       name: TelemetryEventName.CONNECTOR_SELECTOR_SEARCH,
                       payload: {
                         search: searchQuery,
-                        isTrigger: item.type === FlowTriggerType.CONNECTOR,
+                        isTrigger: item.type === WorkflowTriggerType.CONNECTOR,
                         selectedActionOrTriggerName: item.actionOrTrigger.name,
                       },
                     });

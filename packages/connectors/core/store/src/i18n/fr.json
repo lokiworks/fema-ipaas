@@ -21,6 +21,6 @@
   "The storage scope of the value.": "Le périmètre de stockage de la valeur.",
   "Separator between added values, use \\n for newlines": "Séparateur entre les valeurs ajoutées, utilisez \\n pour les nouvelles lignes",
   "Project": "Votre compte",
-  "Flow": "Votre Flow",
-  "Run": "Exécution de votre Flow"
+  "Workflow": "Votre Workflow",
+  "Run": "Exécution de votre Workflow"
 }

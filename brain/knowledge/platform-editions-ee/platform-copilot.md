@@ -4,7 +4,7 @@ icon: 🧑‍✈️
 
 # Platform Copilot
 
-A backend-only RAG chat assistant that answers questions about the FEMA Integration Platform platform itself — codebase, docs, config — aimed at developers building on FEMA Integration Platform, not flow end-users. Enhances the query, retrieves from a pre-indexed vector+full-text store, and streams responses via the Vercel AI SDK UI message stream. All editions (no plan-flag guard); both endpoints require `publicPlatform` scope (any authenticated USER).
+A backend-only RAG chat assistant that answers questions about the FEMA Integration Platform platform itself — codebase, docs, config — aimed at developers building on FEMA Integration Platform, not workflow end-users. Enhances the query, retrieves from a pre-indexed vector+full-text store, and streams responses via the Vercel AI SDK UI message stream. All editions (no plan-flag guard); both endpoints require `publicPlatform` scope (any authenticated USER).
 
 ### Entities & services
 - **copilot_code_chunks** — parsed segments of the AP codebase/docs: `path`, `content`, `embedding` `vector(768)`, `embeddingModel` (filters queries so embeddings from different models don't mix), `chunkType` (`function`/`class`/`module`/`block`/`section`), `searchVector` `tsvector` (populated by a background UPDATE, not selected by default).

@@ -1,10 +1,10 @@
 import { isNil } from '@fema/core-utils';
 import {
-  FlowAction,
+  WorkflowAction,
   Execution,
   ExecutionStatus,
-  FlowTrigger,
-  flowStructureUtil,
+  WorkflowTrigger,
+  workflowStructureUtil,
 } from '@fema/shared';
 import { useQuery } from '@tanstack/react-query';
 import { t } from 'i18next';
@@ -26,7 +26,7 @@ import { stepsHooks } from '@/features/connectors';
 import { ConnectorIcon } from '@/features/connectors/components/connector-icon';
 import { executionsApi } from '@/features/executions/api/executions-api';
 import { executionUtils } from '@/features/executions/utils/execution-utils';
-import { flowHooks } from '@/features/flows/hooks/flow-hooks';
+import { workflowHooks } from '@/features/workflows/hooks/workflow-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 import { formatUtils } from '@/lib/format-utils';
 
@@ -46,9 +46,9 @@ export const FailedStepDialog = ({
   const isInternalError =
     run?.status === ExecutionStatus.INTERNAL_ERROR && isNil(failedStep);
 
-  const { data: populatedFlow } = flowHooks.useGetFlow({
-    flowId: run?.flowId ?? '',
-    versionId: run?.flowVersionId,
+  const { data: populatedWorkflow } = workflowHooks.useGetWorkflow({
+    workflowId: run?.workflowId ?? '',
+    versionId: run?.workflowVersionId,
     enabled: open && !isNil(run) && !isNil(failedStep),
   });
 
@@ -68,7 +68,7 @@ export const FailedStepDialog = ({
 
   if (isInternalError) {
     const internalError = populatedRun?.internalError;
-    const flowName = run.flowVersion?.displayName ?? '';
+    const workflowName = run.workflowVersion?.displayName ?? '';
     const failureTimestamp = run.finishTime ?? run.startTime ?? run.created;
     const { Icon: RunStatusIcon } = executionUtils.getStatusIcon(run.status);
     return (
@@ -81,7 +81,7 @@ export const FailedStepDialog = ({
             <DialogTitle className="flex items-center gap-2 text-base">
               <RunStatusIcon className="size-4 shrink-0 text-destructive-800 dark:text-destructive-200" />
               <span className="truncate">
-                {flowName || t('Internal error')}
+                {workflowName || t('Internal error')}
               </span>
             </DialogTitle>
             <DialogDescription className="text-xs">
@@ -136,15 +136,18 @@ export const FailedStepDialog = ({
     );
   }
 
-  const flowVersion = populatedFlow?.version;
-  const stepNode = flowVersion
-    ? flowStructureUtil.getStep(failedStep.name, flowVersion.trigger)
+  const workflowVersion = populatedWorkflow?.version;
+  const stepNode = workflowVersion
+    ? workflowStructureUtil.getStep(failedStep.name, workflowVersion.trigger)
     : undefined;
-  const stepNumber = flowVersion
-    ? flowStructureUtil.getStepNumber(flowVersion.trigger, failedStep.name)
+  const stepNumber = workflowVersion
+    ? workflowStructureUtil.getStepNumber(
+        workflowVersion.trigger,
+        failedStep.name,
+      )
     : null;
-  const flowName =
-    run.flowVersion?.displayName ?? flowVersion?.displayName ?? '';
+  const workflowName =
+    run.workflowVersion?.displayName ?? workflowVersion?.displayName ?? '';
   const failureTimestamp = run.finishTime ?? run.startTime ?? run.created;
   const { Icon: RunStatusIcon } = executionUtils.getStatusIcon(run.status);
 
@@ -154,7 +157,7 @@ export const FailedStepDialog = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
             <RunStatusIcon className="size-4 shrink-0 text-destructive-800 dark:text-destructive-200" />
-            <span className="truncate">{flowName || t('Run Failed')}</span>
+            <span className="truncate">{workflowName || t('Run Failed')}</span>
           </DialogTitle>
           <DialogDescription className="text-xs">
             {failureTimestamp
@@ -206,7 +209,11 @@ export const FailedStepDialog = ({
   );
 };
 
-const StepIconBadge = ({ step }: { step: FlowAction | FlowTrigger }) => {
+const StepIconBadge = ({
+  step,
+}: {
+  step: WorkflowAction | WorkflowTrigger;
+}) => {
   const { stepMetadata, isLoading } = stepsHooks.useStepMetadata({ step });
   if (isLoading || !stepMetadata) {
     return <Skeleton className="size-[25px] rounded-md shrink-0" />;

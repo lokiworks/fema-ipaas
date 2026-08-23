@@ -37,9 +37,9 @@ export {
   HumanInputFormResultTypes,
   createKeyForFormInput,
   // tables
-  // flow contracts
-  FlowStatus,
-  FlowTriggerType,
+  // workflow contracts
+  WorkflowStatus,
+  WorkflowTriggerType,
   Workspace,
   StopResponse,
   USE_DRAFT_QUERY_PARAM_NAME,
@@ -50,7 +50,7 @@ export {
 export type {
   BasicAuthConnectionValue,
   CustomAuthConnectionValue,
-  PopulatedFlowSummary,
+  PopulatedWorkflowSummary,
   ExecuteToolResponse,
-  PopulatedFlow,
+  PopulatedWorkflow,
 } from '@fema/connector-types';

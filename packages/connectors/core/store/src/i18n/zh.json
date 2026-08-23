@@ -21,6 +21,6 @@
   "The storage scope of the value.": "值的存储范围。",
   "Separator between added values, use \\n for newlines": "添加值之间的分隔符，换行符为 \\n",
   "Project": "项目",
-  "Flow": "流",
+  "Workflow": "流",
   "Run": "运行"
 }

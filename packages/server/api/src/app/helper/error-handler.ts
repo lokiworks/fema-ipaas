@@ -87,7 +87,7 @@ const statusCodeMap: Partial<Record<ErrorCode, StatusCodes>> = {
     [ErrorCode.ENTITY_NOT_FOUND]: StatusCodes.NOT_FOUND,
     [ErrorCode.EXISTING_USER]: StatusCodes.CONFLICT,
     [ErrorCode.EXISTING_ALERT_CHANNEL]: StatusCodes.CONFLICT,
-    [ErrorCode.FLOW_OPERATION_IN_PROGRESS]: StatusCodes.CONFLICT,
+    [ErrorCode.WORKFLOW_OPERATION_IN_PROGRESS]: StatusCodes.CONFLICT,
     [ErrorCode.AUTHORIZATION]: StatusCodes.FORBIDDEN,
     [ErrorCode.SIGN_UP_DISABLED]: StatusCodes.FORBIDDEN,
     [ErrorCode.WORKSPACE_EXTERNAL_ID_ALREADY_EXISTS]: StatusCodes.CONFLICT,

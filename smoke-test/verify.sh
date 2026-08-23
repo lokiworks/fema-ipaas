@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-FLOW_ID="${1:?Usage: verify.sh <flow_id> [base_url] [num_requests]}"
+WORKFLOW_ID="${1:?Usage: verify.sh <workflow_id> [base_url] [num_requests]}"
 BASE_URL="${2:-localhost:8080}"
 NUM_REQUESTS="${3:-5}"
 
@@ -9,7 +9,7 @@ PASS=0
 FAIL=0
 
 echo "=== Smoke Test ==="
-echo "Flow ID:      $FLOW_ID"
+echo "Workflow ID:      $WORKFLOW_ID"
 echo "Base URL:     $BASE_URL"
 echo "Requests:     $NUM_REQUESTS"
 echo ""
@@ -34,7 +34,7 @@ for i in $(seq 1 "$NUM_REQUESTS"); do
     -X POST \
     -H "Content-Type: application/json" \
     -d '{"test":true}' \
-    "http://$BASE_URL/api/v1/webhooks/$FLOW_ID/sync")
+    "http://$BASE_URL/api/v1/webhooks/$WORKFLOW_ID/sync")
 
   BODY=$(echo "$RESPONSE" | sed '$d')
   STATUS=$(echo "$RESPONSE" | tail -n 1)

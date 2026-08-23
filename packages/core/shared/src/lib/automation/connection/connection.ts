@@ -135,7 +135,7 @@ export const ConnectionWithoutSensitiveData = z.object({
     ownerId: Nullable(z.string()),
     owner: Nullable(UserWithMetaInformation),
     metadata: Nullable(Metadata),
-    flowIds: Nullable(z.array(ApId)),
+    workflowIds: Nullable(z.array(ApId)),
     connectorVersion: z.string(),
     preSelectForNewWorkspaces: z.boolean(),
 }).describe('App connection is a connection to an external app.')

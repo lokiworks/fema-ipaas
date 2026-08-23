@@ -20,7 +20,7 @@ The metadata catalog of automation integrations ("connectors") — each a named 
 
 ### Gotchas
 - Available all editions; base listing + install is Community-level.
-- EE/Cloud per-connector and per-action/trigger visibility flows through `resolveVisibility` (`ee/connectors/filters/connector-filtering-utils.ts`), which returns a `VisibilityPolicy` or `null` on CE / when `platformId`/`projectId` is nil (callers treat `null` as no filtering). The policy is derived from the project's **connector set** (via `project.connectorSetId`, falling back to the platform Default).
+- EE/Cloud per-connector and per-action/trigger visibility workflows through `resolveVisibility` (`ee/connectors/filters/connector-filtering-utils.ts`), which returns a `VisibilityPolicy` or `null` on CE / when `platformId`/`projectId` is nil (callers treat `null` as no filtering). The policy is derived from the project's **connector set** (via `project.connectorSetId`, falling back to the platform Default).
 - Install and sync also enqueue a tool-search reindex, but only when `isToolSearchEnabled()`; no-op otherwise.
 - `delete` removes all versions sharing the name on that platform, and only for `CUSTOM` connectors the caller owns.
 - **A connector silently vanishes from the list when its `minimumSupportedRelease` is ahead of the root `package.json` version.** `fetchLatestConnectors` filters every connector through `isSupportedRelease(apVersionUtil.getCurrentRelease(), connector)`. Connectors are routinely merged targeting the *next* release, so on `main` a couple dozen are invisible locally until the version bump lands. No warning is logged — it just isn't there.

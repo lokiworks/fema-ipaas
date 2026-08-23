@@ -4,12 +4,12 @@ set -euo pipefail
 # Exercises the S3 file-storage path end to end against a stack started with
 # FEMA_FILE_STORAGE_LOCATION=S3 (and optionally FEMA_S3_USE_SIGNED_URLS=true).
 #
-# It runs the webhook flow (which writes the run log to S3 — the WRITE path),
-# then fetches the populated flow run, which forces the app to read that run
+# It runs the webhook workflow (which writes the run log to S3 — the WRITE path),
+# then fetches the populated workflow run, which forces the app to read that run
 # log back out of S3 (the READ path; a 307 redirect to a presigned URL when
 # signed URLs are enabled). Both must work for the run to come back populated.
 
-FLOW_ID="${1:?Usage: verify-s3.sh <flow_id> [base_url] [num_requests]}"
+WORKFLOW_ID="${1:?Usage: verify-s3.sh <workflow_id> [base_url] [num_requests]}"
 BASE_URL="${2:-localhost:8080}"
 NUM_REQUESTS="${3:-5}"
 API_URL="http://$BASE_URL/api/v1"
@@ -18,7 +18,7 @@ PASS=0
 FAIL=0
 
 echo "=== S3 Storage Smoke Test ==="
-echo "Flow ID:  $FLOW_ID"
+echo "Workflow ID:  $WORKFLOW_ID"
 echo "Base URL: $BASE_URL"
 echo "Requests: $NUM_REQUESTS"
 echo ""
@@ -40,7 +40,7 @@ echo "Signed in. Project: $PROJECT_ID"
 AUTH="Authorization: Bearer $TOKEN"
 echo ""
 
-# WRITE path: run the flow. Each sync run persists its run log to S3.
+# WRITE path: run the workflow. Each sync run persists its run log to S3.
 echo "--- Webhook requests (S3 write path) ---"
 EXPECTED_BODY='{"hello":"world"}'
 for i in $(seq 1 "$NUM_REQUESTS"); do
@@ -48,7 +48,7 @@ for i in $(seq 1 "$NUM_REQUESTS"); do
     -X POST \
     -H "Content-Type: application/json" \
     -d '{"test":true}' \
-    "$API_URL/webhooks/$FLOW_ID/sync")
+    "$API_URL/webhooks/$WORKFLOW_ID/sync")
 
   BODY=$(echo "$RESPONSE" | sed '$d')
   STATUS=$(echo "$RESPONSE" | tail -n 1)
@@ -65,10 +65,10 @@ echo ""
 
 # READ path: fetch the latest run, then load it fully so the app reads the run
 # log back out of S3 and hydrates the steps.
-echo "--- Flow run read-back (S3 read path) ---"
+echo "--- Workflow run read-back (S3 read path) ---"
 RUN_ID=""
 for i in $(seq 1 30); do
-  RUN_ID=$(curl -s "$API_URL/executions?flowId=$FLOW_ID&projectId=$PROJECT_ID&limit=1" \
+  RUN_ID=$(curl -s "$API_URL/executions?workflowId=$WORKFLOW_ID&projectId=$PROJECT_ID&limit=1" \
     -H "$AUTH" 2>/dev/null | jq -r '.data[0].id // empty' 2>/dev/null || echo "")
   if [ -n "$RUN_ID" ]; then
     break
@@ -77,7 +77,7 @@ for i in $(seq 1 30); do
 done
 
 if [ -z "$RUN_ID" ]; then
-  echo "FAIL: No flow run found for flow $FLOW_ID"
+  echo "FAIL: No workflow run found for workflow $WORKFLOW_ID"
   FAIL=$((FAIL + 1))
 else
   echo "Latest run: $RUN_ID"

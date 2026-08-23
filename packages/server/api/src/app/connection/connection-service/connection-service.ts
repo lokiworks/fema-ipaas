@@ -9,7 +9,6 @@ import {
     getConnectorPackageWithoutArchive,
 } from '../../connectors/metadata/connector-metadata-service'
 import { repoFactory } from '../../core/db/repo-factory'
-import { flowService } from '../../flows/flow/flow.service'
 import { encryptUtils } from '../../helper/encryption'
 import { jwtUtils } from '../../helper/jwt-utils'
 import { buildPaginator } from '../../helper/pagination/build-paginator'
@@ -18,6 +17,7 @@ import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
 import { userService } from '../../user/user-service'
 import { userInteractionWatcher } from '../../workers/user-interaction-watcher'
+import { workflowService } from '../../workflows/workflow/workflow.service'
 import { workspaceRepo } from '../../workspace/workspace-service'
 import {
     ConnectionEntity,
@@ -208,10 +208,10 @@ export const connectionService = (log: FastifyBaseLogger) => ({
 
     async getOnePublicOrThrow(params: GetOneParams): Promise<ConnectionWithoutSensitiveData> {
         const connection = await this.getOneOrThrowWithoutValue(params)
-        const flowIdsByExternalId = await fetchFlowIdsForConnections(log, [connection])
+        const workflowIdsByExternalId = await fetchWorkflowIdsForConnections(log, [connection])
         return {
             ...connection,
-            flowIds: flowIdsByExternalId.get(connection.externalId) ?? [],
+            workflowIds: workflowIdsByExternalId.get(connection.externalId) ?? [],
         }
     },
 
@@ -277,35 +277,35 @@ export const connectionService = (log: FastifyBaseLogger) => ({
             })
         }
 
-        // Reject up-front (before mutating any flow) when published versions this
+        // Reject up-front (before mutating any workflow) when published versions this
         // replace won't touch still use the source connection. When
         // applyToPublishedVersions is set, that is only the published versions
-        // invisible to the replace (their flow's latest version no longer
+        // invisible to the replace (their workflow's latest version no longer
         // references the connection); updating those in place would overwrite
         // the newer draft, so the user has to publish or repoint them first.
         // Without it, a delete would orphan every published reference.
-        const publishedFlowsUsingConnection = deleteSourceConnection || applyToPublishedVersions
-            ? await connectionHandler(log).countPublishedFlowsReferencingConnection({ workspaceId, externalId: sourceConnection.externalId, applyToPublishedVersions })
+        const publishedWorkflowsUsingConnection = deleteSourceConnection || applyToPublishedVersions
+            ? await connectionHandler(log).countPublishedWorkflowsReferencingConnection({ workspaceId, externalId: sourceConnection.externalId, applyToPublishedVersions })
             : 0
-        if (publishedFlowsUsingConnection > 0) {
+        if (publishedWorkflowsUsingConnection > 0) {
             throw new PlatformError({
                 code: ErrorCode.VALIDATION,
                 params: {
                     message: deleteSourceConnection
-                        ? 'Cannot delete the old connection because it is still used by published flows that were not updated'
-                        : 'Some published flows still use the old connection but have unpublished draft changes — publish those flows first',
+                        ? 'Cannot delete the old connection because it is still used by published workflows that were not updated'
+                        : 'Some published workflows still use the old connection but have unpublished draft changes — publish those workflows first',
                 },
             })
         }
 
-        // Repoint page by page: each repointed flow drops out of the connection
+        // Repoint page by page: each repointed workflow drops out of the connection
         // filter, so re-fetching the first page walks the whole set without the
         // cursor skew of paginating rows that are being mutated. The seen-set
-        // stops the loop if a flow fails to leave the filter (e.g. an auth
+        // stops the loop if a workflow fails to leave the filter (e.g. an auth
         // string the rewrite does not understand) instead of spinning forever.
-        const repointedFlowIds = new Set<string>()
+        const repointedWorkflowIds = new Set<string>()
         for (;;) {
-            const flowsPage = await flowService(log).list({
+            const workflowsPage = await workflowService(log).list({
                 workspaceIds: [workspaceId],
                 cursorRequest: null,
                 limit: 1000,
@@ -314,34 +314,34 @@ export const connectionService = (log: FastifyBaseLogger) => ({
                 status: undefined,
                 connectionExternalIds: [sourceConnection.externalId],
             })
-            const flowsToRepoint = flowsPage.data.filter((flow) => !repointedFlowIds.has(flow.id))
-            if (flowsToRepoint.length === 0) {
-                if (flowsPage.data.length > 0) {
-                    log.warn({ oldConnectionId: sourceConnectionId, stuckFlowIds: flowsPage.data.map((flow) => flow.id) }, 'Replace could not rewrite some flow references; they keep the old connection')
+            const workflowsToRepoint = workflowsPage.data.filter((workflow) => !repointedWorkflowIds.has(workflow.id))
+            if (workflowsToRepoint.length === 0) {
+                if (workflowsPage.data.length > 0) {
+                    log.warn({ oldConnectionId: sourceConnectionId, stuckWorkflowIds: workflowsPage.data.map((workflow) => workflow.id) }, 'Replace could not rewrite some workflow references; they keep the old connection')
                 }
                 break
             }
-            await connectionHandler(log).updateFlowsWithConnection(flowsToRepoint, {
+            await connectionHandler(log).updateWorkflowsWithConnection(workflowsToRepoint, {
                 connection: sourceConnection,
                 newConnection: targetConnection,
                 userId,
                 applyToPublishedVersions,
             })
-            flowsToRepoint.forEach((flow) => repointedFlowIds.add(flow.id))
+            workflowsToRepoint.forEach((workflow) => repointedWorkflowIds.add(workflow.id))
         }
 
-        log.info({ oldConnectionId: sourceConnectionId, newConnectionId: targetConnectionId, affectedFlows: repointedFlowIds.size, deleteSourceConnection, applyToPublishedVersions }, 'App connection replaced')
+        log.info({ oldConnectionId: sourceConnectionId, newConnectionId: targetConnectionId, affectedWorkflows: repointedWorkflowIds.size, deleteSourceConnection, applyToPublishedVersions }, 'App connection replaced')
 
         if (!deleteSourceConnection) {
             return
         }
 
-        // Final integrity gate before the irreversible delete: a flow whose
+        // Final integrity gate before the irreversible delete: a workflow whose
         // reference could not be rewritten or that was edited or published
         // concurrently may still use the connection, and deleting it would
-        // orphan that flow. The list covers latest-version references; the
+        // orphan that workflow. The list covers latest-version references; the
         // count covers published versions the list cannot see.
-        const remainingFlows = await flowService(log).list({
+        const remainingWorkflows = await workflowService(log).list({
             workspaceIds: [workspaceId],
             cursorRequest: null,
             limit: 1,
@@ -350,14 +350,14 @@ export const connectionService = (log: FastifyBaseLogger) => ({
             status: undefined,
             connectionExternalIds: [sourceConnection.externalId],
         })
-        const remainingPublishedFlows = remainingFlows.data.length > 0
+        const remainingPublishedWorkflows = remainingWorkflows.data.length > 0
             ? 0
-            : await connectionHandler(log).countPublishedFlowsReferencingConnection({ workspaceId, externalId: sourceConnection.externalId, applyToPublishedVersions: false })
-        if (remainingFlows.data.length > 0 || remainingPublishedFlows > 0) {
+            : await connectionHandler(log).countPublishedWorkflowsReferencingConnection({ workspaceId, externalId: sourceConnection.externalId, applyToPublishedVersions: false })
+        if (remainingWorkflows.data.length > 0 || remainingPublishedWorkflows > 0) {
             throw new PlatformError({
                 code: ErrorCode.VALIDATION,
                 params: {
-                    message: 'Cannot delete the old connection because some flows still use it',
+                    message: 'Cannot delete the old connection because some workflows still use it',
                 },
             })
         }
@@ -434,17 +434,17 @@ export const connectionService = (log: FastifyBaseLogger) => ({
         }
         const { data, cursor } = await paginator.paginate(queryBuilder)
 
-        const flowIdsByExternalId = await fetchFlowIdsForConnections(log, data)
+        const workflowIdsByExternalId = await fetchWorkflowIdsForConnections(log, data)
 
         const promises = data.map(async (encryptedConnection) => {
             const apConnection: Connection = await connectionHandler(log).decryptConnection(encryptedConnection)
             const owner = mapToUserWithMetaInformation(encryptedConnection.owner)
-            const flowIds = flowIdsByExternalId.get(apConnection.externalId) ?? []
+            const workflowIds = workflowIdsByExternalId.get(apConnection.externalId) ?? []
 
             return {
                 ...apConnection,
                 owner,
-                flowIds,
+                workflowIds,
             }
         })
         const refreshConnections = await Promise.all(promises)
@@ -849,7 +849,7 @@ const engineResolveConnectionIdentifier = async (
     return identifier ?? undefined
 }
 
-async function fetchFlowIdsForConnections(
+async function fetchWorkflowIdsForConnections(
     log: FastifyBaseLogger,
     connections: Pick<ConnectionSchema, 'externalId' | 'workspaceIds'>[],
 ): Promise<Map<string, string[]>> {
@@ -867,25 +867,25 @@ async function fetchFlowIdsForConnections(
         return new Map<string, string[]>()
     }
 
-    const flowsPage = await flowService(log).list({
+    const workflowsPage = await workflowService(log).list({
         workspaceIds: Array.from(allWorkspaceIds),
         cursorRequest: null,
         connectionExternalIds: Array.from(allExternalIds),
     })
 
-    const flowIdsByExternalId = new Map<string, string[]>()
-    flowsPage.data.forEach((flow) => {
-        if (flow.version?.connectionIds) {
-            flow.version.connectionIds.forEach((connectionExternalId) => {
-                if (!flowIdsByExternalId.has(connectionExternalId)) {
-                    flowIdsByExternalId.set(connectionExternalId, [])
+    const workflowIdsByExternalId = new Map<string, string[]>()
+    workflowsPage.data.forEach((workflow) => {
+        if (workflow.version?.connectionIds) {
+            workflow.version.connectionIds.forEach((connectionExternalId) => {
+                if (!workflowIdsByExternalId.has(connectionExternalId)) {
+                    workflowIdsByExternalId.set(connectionExternalId, [])
                 }
-                flowIdsByExternalId.get(connectionExternalId)!.push(flow.id)
+                workflowIdsByExternalId.get(connectionExternalId)!.push(workflow.id)
             })
         }
     })
 
-    return flowIdsByExternalId
+    return workflowIdsByExternalId
 }
 
 function mapToUserWithMetaInformation(owner: (User & { identity?: UserIdentity }) | null): UserWithMetaInformation | null {

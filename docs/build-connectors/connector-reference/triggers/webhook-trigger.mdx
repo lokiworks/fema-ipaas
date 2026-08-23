@@ -18,8 +18,8 @@ You can find the HTTP body inside `context.payload.body`. If needed, alter the b
 Using the `context.store`, fetch the webhook ID from the enable step and delete the webhook on the third-party app.
 
 **Testing:**
-You cannot test it with Test Flow, as it uses static sample data provided in the connector.
-To test the trigger, publish the flow, perform the event. Then check the flow runs from the main dashboard.
+You cannot test it with Test Workflow, as it uses static sample data provided in the connector.
+To test the trigger, publish the workflow, perform the event. Then check the workflow runs from the main dashboard.
 
 **Examples:**
 
@@ -33,6 +33,6 @@ To make your webhook accessible from the internet, you need to expose your local
 3. Copy the tunnel domain, i.e wozcsvaint.loclx.io, and replace the `FEMA_FRONTEND_URL` environment variable in `.env.dev` with the exposed url, i.e https://wozcsvaint.loclx.io
 4. Go to /packages/web/vite.config.ts, uncomment allowedHosts and replace the value with the same tunnel domain, i.e wozcsvaint.loclx.io.
 
-Once you have completed these configurations, you will be able to test webhook triggers and run published flows that have them.
+Once you have completed these configurations, you will be able to test webhook triggers and run published workflows that have them.
 
 </Warning>

@@ -5,12 +5,12 @@ import { cn } from '@/lib/utils';
 type EmbeddingState = {
   isEmbedded: boolean;
   hideSideNav: boolean;
-  hideFlowsPageNavbar: boolean;
+  hideWorkflowsPageNavbar: boolean;
   disableNavigationInBuilder: boolean;
   hideFolders: boolean;
   hideTables: boolean;
-  hideFlowNameInBuilder: boolean;
-  hideExportAndImportFlow: boolean;
+  hideWorkflowNameInBuilder: boolean;
+  hideExportAndImportWorkflow: boolean;
   sdkVersion?: string;
   predefinedConnectionName?: string;
   fontUrl?: string;
@@ -19,7 +19,7 @@ type EmbeddingState = {
   hideHomeButtonInBuilder: boolean;
   emitHomeButtonClickedEvent: boolean;
   homeButtonIcon: 'back' | 'logo';
-  hideDuplicateFlow: boolean;
+  hideDuplicateWorkflow: boolean;
   hidePageHeader: boolean;
   hideActiveUsers: boolean;
   hideGlobalSearch: boolean;
@@ -29,17 +29,17 @@ type EmbeddingState = {
 const defaultState: EmbeddingState = {
   isEmbedded: false,
   hideSideNav: false,
-  hideFlowsPageNavbar: false,
+  hideWorkflowsPageNavbar: false,
   disableNavigationInBuilder: false,
   hideFolders: false,
   hideTables: false,
-  hideFlowNameInBuilder: false,
-  hideExportAndImportFlow: false,
+  hideWorkflowNameInBuilder: false,
+  hideExportAndImportWorkflow: false,
   useDarkBackground: window.opener !== null,
   hideHomeButtonInBuilder: false,
   emitHomeButtonClickedEvent: false,
   homeButtonIcon: 'logo',
-  hideDuplicateFlow: false,
+  hideDuplicateWorkflow: false,
   hidePageHeader: false,
   hideActiveUsers: false,
   hideGlobalSearch: false,

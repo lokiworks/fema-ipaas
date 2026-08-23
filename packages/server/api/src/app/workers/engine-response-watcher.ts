@@ -4,7 +4,7 @@ import { pubsub } from '../helper/pubsub'
 
 type EngineResponseWithId<T> = { requestId: string, response: T }
 
-const listeners = new Map<string, (flowResponse: EngineResponseWithId<unknown>) => void>()
+const listeners = new Map<string, (workflowResponse: EngineResponseWithId<unknown>) => void>()
 const SERVER_ID = apId()
 
 export const engineResponseWatcher = (log: FastifyBaseLogger) => ({
@@ -46,13 +46,13 @@ export const engineResponseWatcher = (log: FastifyBaseLogger) => ({
                 }, timeoutMs)
             }
 
-            const responseHandler = (flowResponse: EngineResponseWithId<unknown>) => {
+            const responseHandler = (workflowResponse: EngineResponseWithId<unknown>) => {
                 if (timeout) {
                     clearTimeout(timeout)
                 }
                 listeners.delete(requestId)
                 log.info({ requestId }, '[engineWatcher#listen] Response received')
-                resolve(flowResponse.response as T)
+                resolve(workflowResponse.response as T)
             }
 
             listeners.set(requestId, responseHandler)

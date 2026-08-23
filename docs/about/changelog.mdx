@@ -41,20 +41,20 @@ connectors by describing the task — then inspect its schema and run it.
 
 ### Production setup: lightweight workers, bundled connectors, and predictable scaling
 
-A ground-up overhaul of how FEMA Integration Platform runs in production. The new shape is sized from a single number, your peak concurrent flows, and every connector of it is cheaper to run and easier to reason about. See the updated [Production Setup](/install/configure-operate/production-setup).
+A ground-up overhaul of how FEMA Integration Platform runs in production. The new shape is sized from a single number, your peak concurrent workflows, and every connector of it is cheaper to run and easier to reason about. See the updated [Production Setup](/install/configure-operate/production-setup).
 
 **Workers**
 
 - **New lightweight worker image**: a dedicated, slimmer Docker image for the execution tier.
-- **One flow per worker**: run workers at `FEMA_WORKER_CONCURRENCY=1` so each worker handles a single flow at a time. Recommended size is **0.5 vCPU / 1 GB** per worker; about 300 MB is warm-process overhead, leaving ~700 MB for the flow.
-- **No noisy neighbours**: every flow gets its own guaranteed CPU and memory slice, so one flow can't starve or crash another. See [Reserved Resources](/install/guarantees/reserved-resources).
+- **One workflow per worker**: run workers at `FEMA_WORKER_CONCURRENCY=1` so each worker handles a single workflow at a time. Recommended size is **0.5 vCPU / 1 GB** per worker; about 300 MB is warm-process overhead, leaving ~700 MB for the workflow.
+- **No noisy neighbours**: every workflow gets its own guaranteed CPU and memory slice, so one workflow can't starve or crash another. See [Reserved Resources](/install/guarantees/reserved-resources).
 - **Less to provision**: the pre-warm feature and worker persistent disks are no longer required; each worker fills its cache lazily and reaches steady-state on its own.
 
-**Connectors & flows**
+**Connectors & workflows**
 
 - **Connectors are now bundled**: each connector (and its dependencies) is compiled into a single small artifact, KB-scale instead of multi-megabyte module trees. Bundling is applied uniformly, so existing connectors shrink too.
 - **Faster cold boot**: less code to compile and only a trivial amount of ephemeral disk needed per run.
-- **Served from S3**: flow bundles and connectors are served and cached from your in-region object store (npm registry stays as a fallback), cutting install time from seconds to under 100 ms. See [S3 Storage](/install/configure-operate/setup-s3).
+- **Served from S3**: workflow bundles and connectors are served and cached from your in-region object store (npm registry stays as a fallback), cutting install time from seconds to under 100 ms. See [S3 Storage](/install/configure-operate/setup-s3).
 
 **Scaling**
 
@@ -67,16 +67,16 @@ Reserve dedicated worker capacity for specific projects. A worker group is a **f
 
 </Update>
 
-<Update label="April 2026" description="Waitpoints — Durable Pause & Resume for Flow Runs">
+<Update label="April 2026" description="Waitpoints — Durable Pause & Resume for Workflow Runs">
 
-### Waitpoints — durable pause and resume for flow runs
+### Waitpoints — durable pause and resume for workflow runs
 
-Flows can now **pause mid-execution and resume later** without losing any state. The execution context is fully persisted so restarts, deployments, or extended wait times do not affect in-progress runs.
+Workflows can now **pause mid-execution and resume later** without losing any state. The execution context is fully persisted so restarts, deployments, or extended wait times do not affect in-progress runs.
 
 Two pause types are available out of the box:
 
-- **Webhook waitpoints** — the flow pauses and resumes the moment a specific callback URL is called. The URL is unique to the run, carries the caller's request body, headers, and query parameters through to the next step, and supports both async and synchronous (respond-when-done) modes.
-- **Delay waitpoints** — the flow pauses until a scheduled timestamp and then resumes automatically, freeing up worker capacity during the wait.
+- **Webhook waitpoints** — the workflow pauses and resumes the moment a specific callback URL is called. The URL is unique to the run, carries the caller's request body, headers, and query parameters through to the next step, and supports both async and synchronous (respond-when-done) modes.
+- **Delay waitpoints** — the workflow pauses until a scheduled timestamp and then resumes automatically, freeing up worker capacity during the wait.
 
 Both types survive worker restarts. If a resume signal arrives before the run has finished writing its paused state, it is buffered and replayed automatically — no lost callbacks.
 
@@ -91,7 +91,7 @@ Read more: [Waitpoints](/install/architecture/waitpoints) · [Durable Execution]
 FEMA Integration Platform now ships with a built-in **network proxy that protects your automations from network attacks**.
 
 - **One switch to turn it on** — set `FEMA_NETWORK_MODE=STRICT` and the protection is active. It's **opt-in today**, but in an upcoming release it will become **opt-out** (on by default).
-- **Allow list for trusted internal services** — if a flow legitimately needs to reach an internal API or database, add its address (or a whole subnet like `10.10.0.0/24`) to `FEMA_SSRF_ALLOW_LIST`.
+- **Allow list for trusted internal services** — if a workflow legitimately needs to reach an internal API or database, add its address (or a whole subnet like `10.10.0.0/24`) to `FEMA_SSRF_ALLOW_LIST`.
 - **Works with your corporate proxy** — if you already use `HTTP_PROXY` / `HTTPS_PROXY`, FEMA Integration Platform respects them automatically.
 
 See the [Network Security](/install/architecture/network-security) architecture page for the full breakdown.
@@ -118,7 +118,7 @@ Learn more in the [Manage Concurrency](/admin-guide/guides/manage-concurrency) g
 
 ### Stability & reliability improvements
 
-Major investments in worker architecture, testing, and resilience to ensure more reliable flow execution.
+Major investments in worker architecture, testing, and resilience to ensure more reliable workflow execution.
 
 **Worker Architecture**
 - Complete worker rewrite (worker v2) focused on stability and reliability
@@ -130,7 +130,7 @@ Race condition tests:
 - **Queue dispatcher** (12 tests) — tests orphaned job handling when a job is dequeued but all waiters have timed out, prevents double-loop spawn during close with in-flight dequeue, verifies single dequeue concurrency control, tests waiter timeout and retry behavior
 - **Subflow resume** (8 tests) — tests the race condition where the engine writes pause metadata to Redis before it's persisted to DB, verifies Redis fallback when DB is stale, simulates concurrent reads/writes with spy mocks, covers sync endpoint with concurrent Redis updates
 - **Rate limiter** (5+ tests) — tests concurrent job slot allocation, idempotency with concurrent dispatch, per-project isolation so different projects don't interfere
-- **Concurrent flow execution** — end-to-end test creating 5 concurrent flow runs verifying none get stuck or deadlocked
+- **Concurrent workflow execution** — end-to-end test creating 5 concurrent workflow runs verifying none get stuck or deadlocked
 - **Memory lock** — verifies mutual exclusion (two concurrent lock acquire calls on same key are serialized)
 
 Worker unit tests:
@@ -141,7 +141,7 @@ Worker unit tests:
 - **Configuration** — tests config loading for different container types (WORKER_AND_APP vs WORKER)
 
 End-to-end validation:
-- **[Smoke tests](https://github.com/lokiworks/fema-ipaas/blob/main/.github/workflows/smoke-test.yml) in GitHub Actions** — validates health checks and webhook flow execution on AMD64 and ARM64
+- **[Smoke tests](https://github.com/lokiworks/fema-ipaas/blob/main/.github/workflows/smoke-test.yml) in GitHub Actions** — validates health checks and webhook workflow execution on AMD64 and ARM64
 - **[Benchmark tests](https://github.com/lokiworks/fema-ipaas/blob/main/.github/workflows/benchmark.yml) in GitHub Actions** — load testing across 6 app/worker configurations measuring throughput, mean latency, P50, P99 ([see results](/install/architecture/benchmark))
 
 **Resilience**
@@ -168,8 +168,8 @@ A comprehensive visual refresh across all Platform Admin and Project pages with 
 
 **Project pages**
 
-- **Automations** — renamed from "Flows", with Type and Owner filters, search, step icon details, status toggles, and favorites
-- **Connections** — Connectors and Owner filters, flow usage count, inline edit and refresh actions
+- **Automations** — renamed from "Workflows", with Type and Owner filters, search, step icon details, status toggles, and favorites
+- **Connections** — Connectors and Owner filters, workflow usage count, inline edit and refresh actions
 - **Runs** — updated tab navigation and consistent styling
 
 **General improvements**

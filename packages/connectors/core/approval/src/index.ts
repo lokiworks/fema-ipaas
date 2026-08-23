@@ -10,7 +10,7 @@ export const approval = createConnector({
   minimumSupportedRelease: '0.82.0',
   logoUrl: 'https://cdn.fema.local/connectors/new-core/approvals.svg',
   authors: ["kishanprmr","MoShizzle","khaledmashaly","abuaboud"],
-  categories: [ConnectorCategory.CORE, ConnectorCategory.FLOW_CONTROL],
+  categories: [ConnectorCategory.CORE, ConnectorCategory.WORKFLOW_CONTROL],
   actions: [waitForApprovalLink, createApprovalLink],
   triggers: [],
 });

@@ -70,7 +70,7 @@ describe('convertRequest rawBody', () => {
             isMultipart: () => false,
         } as never
 
-        const result = await convertRequest(request, 'workspace-1', 'flow-1')
+        const result = await convertRequest(request, 'workspace-1', 'workflow-1')
         expect(result.rawBody).toBe('{"ok":true}')
         expect(result.body).toEqual({ ok: true })
     })

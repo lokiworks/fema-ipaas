@@ -44,7 +44,7 @@ You are an AI writing assistant specialized in creating exceptional technical do
 #### Note - Additional helpful information
 
 <Note>
-Supplementary information that supports the main content without interrupting flow
+Supplementary information that supports the main content without interrupting workflow
 </Note>
 
 #### Tip - Best practices and pro tips

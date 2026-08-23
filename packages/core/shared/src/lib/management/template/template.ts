@@ -1,5 +1,5 @@
 import { BaseModelSchema, ColorHex, Metadata, Nullable } from '@fema/core-utils'
-import { FlowVersion, Note } from '@fema/workflow-core'
+import { Note, WorkflowVersion } from '@fema/workflow-core'
 import { z } from 'zod'
 
 export const TemplateTag = z.object({
@@ -16,11 +16,11 @@ export enum TemplateType {
     CUSTOM = 'CUSTOM',
 }
 
-export const FlowVersionTemplate = FlowVersion.omit({
+export const WorkflowVersionTemplate = WorkflowVersion.omit({
     id: true,
     created: true,
     updated: true,
-    flowId: true,
+    workflowId: true,
     state: true,
     updatedBy: true,
     agentIds: true,
@@ -32,7 +32,7 @@ export const FlowVersionTemplate = FlowVersion.omit({
     //notes were optional for old json templates
     notes: z.array(Note).optional(),
 })
-export type FlowVersionTemplate = z.infer<typeof FlowVersionTemplate>
+export type WorkflowVersionTemplate = z.infer<typeof WorkflowVersionTemplate>
 
 export enum TemplateStatus {
     PUBLISHED = 'PUBLISHED',
@@ -84,7 +84,7 @@ export const Template = z.object({
     categories: z.array(z.string()),
     connectors: z.array(z.string()),
     platformId: Nullable(z.string()),
-    flows: z.array(FlowVersionTemplate).optional(),
+    workflows: z.array(WorkflowVersionTemplate).optional(),
     tables: z.array(TableTemplate).optional(),
     status: z.nativeEnum(TemplateStatus),
 })

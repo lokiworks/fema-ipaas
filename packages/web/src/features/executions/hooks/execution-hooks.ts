@@ -2,13 +2,13 @@ import { ApErrorParams, ErrorCode } from '@fema/core-utils';
 import {
   BulkActionOnRunsRequestBody,
   BulkArchiveActionOnRunsRequestBody,
-  BulkCancelFlowRequestBody,
+  BulkCancelWorkflowRequestBody,
   ExecutionCountByStatus,
   ExecutionStatus,
-  FlowRetryStrategy,
+  WorkflowRetryStrategy,
   Execution,
   ExecutionWithRetryError,
-  PopulatedFlow,
+  PopulatedWorkflow,
 } from '@fema/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { t } from 'i18next';
@@ -17,7 +17,7 @@ import { toast } from 'sonner';
 
 import { getDefaultRange } from '@/components/custom/date-time-picker-range';
 import { internalErrorToast } from '@/components/ui/sonner';
-import { flowsApi } from '@/features/flows/api/flows-api';
+import { workflowsApi } from '@/features/workflows/api/workflows-api';
 import { api } from '@/lib/api';
 import { authenticationSession } from '@/lib/authentication-session';
 
@@ -122,28 +122,28 @@ export const executionMutations = {
   }: {
     onSuccess: (result: {
       run: Execution;
-      populatedFlow: PopulatedFlow;
+      populatedWorkflow: PopulatedWorkflow;
     }) => void;
   }) => {
     return useMutation<
-      { run: Execution; populatedFlow: PopulatedFlow },
+      { run: Execution; populatedWorkflow: PopulatedWorkflow },
       Error,
       {
         runId: string;
-        flowId: string;
+        workflowId: string;
         workspaceId: string;
-        retryStrategy: FlowRetryStrategy;
+        retryStrategy: WorkflowRetryStrategy;
       }
     >({
-      mutationFn: async ({ runId, flowId, workspaceId, retryStrategy }) => {
+      mutationFn: async ({ runId, workflowId, workspaceId, retryStrategy }) => {
         const updatedRun = await executionsApi.retry(runId, {
           workspaceId,
           strategy: retryStrategy,
         });
-        const populatedFlow = await flowsApi.get(flowId, {
-          versionId: updatedRun.flowVersionId,
+        const populatedWorkflow = await workflowsApi.get(workflowId, {
+          versionId: updatedRun.workflowVersionId,
         });
-        return { run: updatedRun, populatedFlow };
+        return { run: updatedRun, populatedWorkflow };
       },
       onSuccess,
       onError: (error: unknown) => {
@@ -194,7 +194,7 @@ export const executionMutations = {
   },
   useBulkCancelRuns: ({ onSuccess }: { onSuccess: () => void }) => {
     return useMutation({
-      mutationFn: (request: BulkCancelFlowRequestBody) =>
+      mutationFn: (request: BulkCancelWorkflowRequestBody) =>
         executionsApi.bulkCancel(request),
       onSuccess,
     });

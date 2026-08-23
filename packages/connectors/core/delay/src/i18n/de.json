@@ -8,7 +8,7 @@
   "Unit": "Einheit",
   "Amount": "Betrag",
   "Date and Time": "Datum und Uhrzeit",
-  "\n**Note:** The maximum duration per step is {{pausedFlowTimeoutDays}} days.\n": "\n**Hinweis:** Die maximale Dauer pro Schritt beträgt {{pausedFlowTimeoutDays}} Tage.\n",
+  "\n**Note:** The maximum duration per step is {{pausedWorkflowTimeoutDays}} days.\n": "\n**Hinweis:** Die maximale Dauer pro Schritt beträgt {{pausedWorkflowTimeoutDays}} Tage.\n",
   "The unit of time to delay the execution of the next action": "Die Zeiteinheit um die Ausführung der nächsten Aktion zu verschieben",
   "The number of units to delay the execution of the next action": "Die Anzahl der Einheiten, die die Ausführung der nächsten Aktion verzögern",
   "Specifies the date and time until which the execution of the next action should be delayed. It supports multiple formats, including ISO format.": "Gibt das Datum und die Uhrzeit an, bis die Ausführung der nächsten Aktion verschoben werden soll. Es unterstützt mehrere Formate, einschließlich des ISO-Formats.",

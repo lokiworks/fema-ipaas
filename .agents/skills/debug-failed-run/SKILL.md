@@ -1,18 +1,18 @@
 ---
 name: debug-failed-run
-description: "Debug a failed FEMA Integration Platform flow run end-to-end: given a flow run id (or BullMQ job id), find why it failed, cross-referencing the live BullMQ job + Postgres rows (SSH script on the DevOps box), the centralized ClickHouse logs (ClickStack MCP), and the code in this repo, then categorize the failed-job backlog on request."
+description: "Debug a failed FEMA Integration Platform workflow run end-to-end: given a workflow run id (or BullMQ job id), find why it failed, cross-referencing the live BullMQ job + Postgres rows (SSH script on the DevOps box), the centralized ClickHouse logs (ClickStack MCP), and the code in this repo, then categorize the failed-job backlog on request."
 ---
 
-# Debug a Failed Flow Run
+# Debug a Failed Workflow Run
 
-Investigate why a flow run failed by combining two sources of truth:
+Investigate why a workflow run failed by combining two sources of truth:
 
-1. **The DevOps debug script** — live BullMQ job + Postgres (`execution`, `flow_version`, `flow`) + the run log file, joined into one JSON report. Run over SSH.
+1. **The DevOps debug script** — live BullMQ job + Postgres (`execution`, `workflow_version`, `workflow`) + the run log file, joined into one JSON report. Run over SSH.
 2. **ClickHouse logs** — the centralized server/worker logs, queried via the ClickStack MCP. These fill in what the script can't: surrounding log lines, infra errors, and the decompressed run body when the script's host can't unzip it (see Node note below).
 
 ## Inputs
 
-- **`id`** (required) — the flow run id. For flow executions the BullMQ `jobId === execution.id`, so this works for both `--run` and `--job`.
+- **`id`** (required) — the workflow run id. For workflow executions the BullMQ `jobId === execution.id`, so this works for both `--run` and `--job`.
 - **`host`** (required) — SSH target for the DevOps box, e.g. `user@host`. Always ask the user for this (or read it from their local SSH config / `~/.ssh/config` alias) — never assume one. The examples below use `<host>` as a placeholder; substitute the real target at run time.
 - **`--queue`** (optional) — BullMQ queue name. Default `workerJobs`. Dedicated worker-group jobs may live in `platform-<workerGroupId>-jobs`.
 
@@ -32,16 +32,16 @@ stdout is a single-line JSON report (pipe-friendly); all progress chatter goes t
 - `summary` / `diagnostics` — human-readable verdict and caveats.
 - `job.failedReason` + `job.stacktrace` — the BullMQ failure. `"Internal error"` is a generic wrapper; the real cause is in the stacktrace.
 - `execution.status` and the failing step (`steps[].isFailedStep`, `runLogs.steps[].errorMessage`).
-- `flow` / `flowVersion` — which flow/version/connectors ran; `flowVersion.connectionIds` for connection issues.
+- `workflow` / `workflowVersion` — which workflow/version/connectors ran; `workflowVersion.connectionIds` for connection issues.
 - `triggerPayload` — what triggered the run.
 
 > **Node caveat:** the box runs Node v20, but run-log bodies are ZSTD-compressed and need Node ≥ 22.15 to decompress. When `runLogs` comes back with a "lacks node:zlib zstd support" note, the job/run/DB data is still complete — get the actual log lines from ClickHouse in Step 2 instead.
 
 ## Step 2 — Correlate with ClickHouse logs (ClickStack MCP)
 
-Use the **`Logs`** source (`id: 6a2a91b1d37162f45ad78233`; key columns `Body`, `ServiceName`, `SeverityText`, `TraceId`, attrs in `LogAttributes`). Search around the run's failure time for the run id, flow id, project id, or platform id from Step 1:
+Use the **`Logs`** source (`id: 6a2a91b1d37162f45ad78233`; key columns `Body`, `ServiceName`, `SeverityText`, `TraceId`, attrs in `LogAttributes`). Search around the run's failure time for the run id, workflow id, project id, or platform id from Step 1:
 
-- `clickstack_search` — keyword/Lucene-style search of `Body` + attributes over a time range. Start with the flow run `id`, then widen to `projectId` / `platformId` / the connector name. Filter `SeverityText` to `error`/`warn` to cut noise.
+- `clickstack_search` — keyword/Lucene-style search of `Body` + attributes over a time range. Start with the workflow run `id`, then widen to `projectId` / `platformId` / the connector name. Filter `SeverityText` to `error`/`warn` to cut noise.
 - `clickstack_sql` — raw ClickHouse SQL (needs the connection id from `clickstack_list_sources`) when you need exact `LogAttributes` filtering or aggregation.
 
 Scope the time window to the job's `processedAt`/`finishedAt` from Step 1 (± a few minutes) to keep queries cheap. You're looking for the engine/worker log lines that bracket the failure — sandbox crashes, OOM ("no space"/heap), RPC timeouts, connection refresh failures.
@@ -55,7 +55,7 @@ Steps 1–2 tell you *what* failed at runtime; this step finds *where* in the co
 - For engine/worker failures, look under `packages/server/{api,worker}` and `packages/engine`. Read the throwing code path and the surrounding error handling to see whether the input that triggered it (from `triggerPayload` / step `input`) is being mishandled.
 - Classify the outcome:
   - **Product bug** — the code mishandles valid input (unguarded `undefined`, bad assumption, regression). Identify the file:line, explain the path that reaches it, and propose a fix. Only edit code if the user asks.
-  - **User/config issue** — expired/missing connection, invalid flow config, bad trigger payload, account limits. Point to the responsible config and what the user must change.
+  - **User/config issue** — expired/missing connection, invalid workflow config, bad trigger payload, account limits. Point to the responsible config and what the user must change.
   - **Infra** — OOM, stalled jobs, Redis/Postgres/S3 errors. Not a code change; flag for ops (and Step 4 shows how widespread it is).
 
 ## Step 4 — Aggregate the failed backlog (only when asked)

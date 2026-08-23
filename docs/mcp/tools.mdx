@@ -8,53 +8,53 @@ description: "Complete catalog of all MCP tools available in FEMA Integration Pl
 
 These tools are always available (locked) and read-only. They help AI agents understand what's in the project before making changes.
 
-### ap_list_flows
+### ap_list_workflows
 
-List flows in the current project with status, trigger type, and published state.
+List workflows in the current project with status, trigger type, and published state.
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `limit` | number | No | Max flows to return (default 100, max 500) |
+| `limit` | number | No | Max workflows to return (default 100, max 500) |
 | `status` | string | No | Filter by status: `ENABLED` or `DISABLED` |
-| `name` | string | No | Filter by flow name (partial match) |
+| `name` | string | No | Filter by workflow name (partial match) |
 
-### ap_flow_structure
+### ap_workflow_structure
 
-Get the full structure of a flow: step tree, configuration status, step input values, router branch conditions, and valid insert locations. Shows the actual configured inputs for each step (URL, body, headers, etc.) so the AI can read and edit existing configurations.
+Get the full structure of a workflow: step tree, configuration status, step input values, router branch conditions, and valid insert locations. Shows the actual configured inputs for each step (URL, body, headers, etc.) so the AI can read and edit existing configurations.
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `flowId` | string | Yes | The flow ID |
+| `workflowId` | string | Yes | The workflow ID |
 
 ### ap_read_step_code
 
-Read the full source code, package.json, and input mappings of a CODE step. Returns untruncated content — unlike `ap_flow_structure` which truncates code to 300 characters.
+Read the full source code, package.json, and input mappings of a CODE step. Returns untruncated content — unlike `ap_workflow_structure` which truncates code to 300 characters.
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `flowId` | string | Yes | The flow ID |
+| `workflowId` | string | Yes | The workflow ID |
 | `stepName` | string | Yes | The name of the CODE step (e.g., `step_1`) |
 
 <Tip>
-Use this tool when you need to read or edit a CODE step's full source. `ap_flow_structure` truncates code for overview purposes, so always call `ap_read_step_code` before modifying a code step.
+Use this tool when you need to read or edit a CODE step's full source. `ap_workflow_structure` truncates code for overview purposes, so always call `ap_read_step_code` before modifying a code step.
 </Tip>
 
 ### ap_read_step_settings
 
-Read the full untruncated settings of any step, including the trigger: connector input, action/trigger name, loop items, router branches, and error handling options. Use this to see a step's current configuration before updating it — `ap_flow_structure` truncates connector input.
+Read the full untruncated settings of any step, including the trigger: connector input, action/trigger name, loop items, router branches, and error handling options. Use this to see a step's current configuration before updating it — `ap_workflow_structure` truncates connector input.
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `flowId` | string | Yes | The flow ID |
-| `stepName` | string | Yes | The step name (e.g., `trigger`, `step_1`). Use `ap_flow_structure` to get valid values. |
+| `workflowId` | string | Yes | The workflow ID |
+| `stepName` | string | Yes | The step name (e.g., `trigger`, `step_1`). Use `ap_workflow_structure` to get valid values. |
 
-### ap_validate_flow
+### ap_validate_workflow
 
-Validate a flow for structural issues without publishing. Checks step validity, template references, and empty branches.
+Validate a workflow for structural issues without publishing. Checks step validity, template references, and empty branches.
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `flowId` | string | Yes | The flow ID |
+| `workflowId` | string | Yes | The workflow ID |
 
 ### ap_research_connectors
 
@@ -85,13 +85,13 @@ This is the discovery step of the run-action workflow: take a result's `connecto
 
 ### ap_search_triggers
 
-Find connector triggers (the event that starts a flow) by describing when the flow should run (e.g. *"when a new row is added to a Google Sheet"*). Same behavior and result shape as `ap_search_actions`, returning trigger names instead of action names.
+Find connector triggers (the event that starts a workflow) by describing when the workflow should run (e.g. *"when a new row is added to a Google Sheet"*). Same behavior and result shape as `ap_search_actions`, returning trigger names instead of action names.
 
 Available when [tool search](/mcp/tool-search) is enabled on the instance.
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `query` | string | Yes | Natural-language description of the event that should start the flow |
+| `query` | string | Yes | Natural-language description of the event that should start the workflow |
 | `limit` | number | No | Max matches to return (default 5, max 20) |
 | `connectorName` | string | No | Restrict results to a single connector. Omit to search the whole catalog. |
 
@@ -105,7 +105,7 @@ Get the detailed input property schema for a specific connector action or trigge
 | `actionOrTriggerName` | string | Yes | Action or trigger name (e.g., `send_channel_message`) |
 | `type` | string | Yes | `action` or `trigger` |
 | `auth` | string | No | Connection externalId. When provided, dynamic dropdowns and DYNAMIC sub-fields are resolved. |
-| `flowId` | string | No | Flow ID for resolving dependent dropdowns that need step context. |
+| `workflowId` | string | No | Workflow ID for resolving dependent dropdowns that need step context. |
 | `input` | object | No | Known input values for resolving dependent DYNAMIC properties (e.g., `{"body_type": "json"}`). |
 
 ### ap_resolve_property_options
@@ -145,7 +145,7 @@ Use this instead of multiple `ap_resolve_property_options` calls when fields dep
 
 ### ap_validate_step_config
 
-Validate a step configuration before applying it. Returns field-level errors without modifying any flow.
+Validate a step configuration before applying it. Returns field-level errors without modifying any workflow.
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -200,17 +200,17 @@ Query records from a table with optional filtering.
 
 ### ap_list_runs
 
-List recent flow runs with optional filters.
+List recent workflow runs with optional filters.
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `flowId` | string | No | Filter by flow |
+| `workflowId` | string | No | Filter by workflow |
 | `status` | string | No | Filter by status (SUCCEEDED, FAILED, RUNNING, etc.) |
 | `limit` | number | No | Max runs (default 10, max 50) |
 
 ### ap_get_run
 
-Get detailed results of a flow run including step-by-step outputs, errors, and durations.
+Get detailed results of a workflow run including step-by-step outputs, errors, and durations.
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -235,80 +235,80 @@ Set or clear the active project context. All tools require a project context to 
 
 ---
 
-## Flow Management
+## Workflow Management
 
-Create and manage flows.
+Create and manage workflows.
 
-### ap_create_flow
+### ap_create_workflow
 
-Create a new empty flow.
-
-| Input | Type | Required | Description |
-|-------|------|----------|-------------|
-| `flowName` | string | Yes | Display name for the flow |
-
-### ap_duplicate_flow
-
-Duplicate an existing flow. Creates a new copy with all steps, configuration, and canvas notes. Connections and sample data are not copied.
+Create a new empty workflow.
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `flowId` | string | Yes | The flow ID to duplicate |
+| `workflowName` | string | Yes | Display name for the workflow |
+
+### ap_duplicate_workflow
+
+Duplicate an existing workflow. Creates a new copy with all steps, configuration, and canvas notes. Connections and sample data are not copied.
+
+| Input | Type | Required | Description |
+|-------|------|----------|-------------|
+| `workflowId` | string | Yes | The workflow ID to duplicate |
 | `name` | string | No | Name for the copy (defaults to "Copy of \{original name\}") |
 
 <Tip>
-After duplicating, use `ap_flow_structure` on the new flow to check configuration status. Steps that reference connections will need to be re-configured with `ap_update_step`.
+After duplicating, use `ap_workflow_structure` on the new workflow to check configuration status. Steps that reference connections will need to be re-configured with `ap_update_step`.
 </Tip>
 
-### ap_rename_flow
+### ap_rename_workflow
 
-Rename an existing flow.
+Rename an existing workflow.
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `flowId` | string | Yes | The flow ID |
+| `workflowId` | string | Yes | The workflow ID |
 | `displayName` | string | Yes | New name |
 
-### ap_change_flow_status
+### ap_change_workflow_status
 
-Enable or disable a flow.
+Enable or disable a workflow.
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `flowId` | string | Yes | The flow ID |
+| `workflowId` | string | Yes | The workflow ID |
 | `status` | string | Yes | `ENABLED` or `DISABLED` |
 
-### ap_delete_flow
+### ap_delete_workflow
 
-Permanently delete a flow and all its versions. This cannot be undone.
+Permanently delete a workflow and all its versions. This cannot be undone.
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `flowId` | string | Yes | The ID of the flow to delete |
+| `workflowId` | string | Yes | The ID of the workflow to delete |
 
 ### ap_lock_and_publish
 
-Publish the current draft of a flow. Validates all steps are configured.
+Publish the current draft of a workflow. Validates all steps are configured.
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `flowId` | string | Yes | The flow ID |
+| `workflowId` | string | Yes | The workflow ID |
 
 ---
 
-## Flow Building
+## Workflow Building
 
-Add, configure, and remove steps in a flow.
+Add, configure, and remove steps in a workflow.
 
-### ap_build_flow
+### ap_build_workflow
 
-Create a complete flow in one call — trigger plus any number of steps. Steps are added sequentially (trigger → step_1 → step_2 → ...). All steps are validated on creation. Use granular tools (`ap_add_step`, `ap_update_step`) to modify existing flows or add nested structures (loop contents, router branches).
+Create a complete workflow in one call — trigger plus any number of steps. Steps are added sequentially (trigger → step_1 → step_2 → ...). All steps are validated on creation. Use granular tools (`ap_add_step`, `ap_update_step`) to modify existing workflows or add nested structures (loop contents, router branches).
 
-Returns the flow ID, a direct `flowUrl` link to the flow in the editor, step count, and validation status.
+Returns the workflow ID, a direct `workflowUrl` link to the workflow in the editor, step count, and validation status.
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `flowName` | string | Yes | Name for the new flow |
+| `workflowName` | string | Yes | Name for the new workflow |
 | `trigger` | object | Yes | `{connectorName, triggerName, input?, auth?}` |
 | `steps` | array | Yes | Array of step specs, each with `type`, `displayName`, and type-specific fields |
 
@@ -320,11 +320,11 @@ Returns the flow ID, a direct `flowUrl` link to the flow in the editor, step cou
 
 ### ap_update_trigger
 
-Set or update the trigger for a flow.
+Set or update the trigger for a workflow.
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `flowId` | string | Yes | The flow ID |
+| `workflowId` | string | Yes | The workflow ID |
 | `connectorName` | string | Yes | Connector name (e.g., `@fema/connector-gmail`) |
 | `triggerName` | string | Yes | Trigger name from the connector |
 | `input` | object | No | Trigger configuration |
@@ -333,11 +333,11 @@ Set or update the trigger for a flow.
 
 ### ap_add_step
 
-Add a new step to a flow. Optionally configure it in the same call by providing `input`, `auth`, `sourceCode`, or `loopItems`.
+Add a new step to a workflow. Optionally configure it in the same call by providing `input`, `auth`, `sourceCode`, or `loopItems`.
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `flowId` | string | Yes | The flow ID |
+| `workflowId` | string | Yes | The workflow ID |
 | `parentStepName` | string | Yes | Step to insert after/into |
 | `stepLocationRelativeToParent` | string | Yes | `AFTER`, `INSIDE_LOOP`, or `INSIDE_BRANCH` |
 | `stepType` | string | Yes | `CODE`, `CONNECTOR`, `LOOP_ON_ITEMS`, or `ROUTER` |
@@ -350,7 +350,7 @@ Add a new step to a flow. Optionally configure it in the same call by providing 
 | `sourceCode` | string | No | For CODE steps: JavaScript/TypeScript source |
 | `packageJson` | string | No | For CODE steps: npm dependencies |
 | `loopItems` | string | No | For LOOP steps: items expression |
-| `continueOnFailure` | boolean | No | For CODE/CONNECTOR steps: continue flow if this step fails (default: false) |
+| `continueOnFailure` | boolean | No | For CODE/CONNECTOR steps: continue workflow if this step fails (default: false) |
 | `retryOnFailure` | boolean | No | For CODE/CONNECTOR steps: retry this step on failure (default: false) |
 
 ### ap_update_step
@@ -359,7 +359,7 @@ Update an existing step's settings. Auto-fills default values for optional prope
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `flowId` | string | Yes | The flow ID |
+| `workflowId` | string | Yes | The workflow ID |
 | `stepName` | string | Yes | Step name (e.g., `step_1`) |
 | `displayName` | string | No | New display name |
 | `input` | object | No | Step configuration |
@@ -369,7 +369,7 @@ Update an existing step's settings. Auto-fills default values for optional prope
 | `sourceCode` | string | No | For CODE steps: JavaScript/TypeScript source code |
 | `packageJson` | string | No | For CODE steps: npm dependencies as JSON string |
 | `skip` | boolean | No | Skip this step |
-| `continueOnFailure` | boolean | No | For CODE/CONNECTOR steps: continue flow if this step fails |
+| `continueOnFailure` | boolean | No | For CODE/CONNECTOR steps: continue workflow if this step fails |
 | `retryOnFailure` | boolean | No | For CODE/CONNECTOR steps: retry this step on failure |
 
 <Tip>
@@ -378,11 +378,11 @@ Use `{{stepName.field}}` syntax in input values to reference data from previous 
 
 ### ap_delete_step
 
-Delete a step from a flow.
+Delete a step from a workflow.
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `flowId` | string | Yes | The flow ID |
+| `workflowId` | string | Yes | The workflow ID |
 | `stepName` | string | Yes | Step to delete |
 | `displayName` | string | No | Short approval prompt shown to the user |
 
@@ -390,7 +390,7 @@ Delete a step from a flow.
 
 ## Router & Branching
 
-Manage conditional branches in router steps. Use `ap_flow_structure` to see existing branch conditions and indices.
+Manage conditional branches in router steps. Use `ap_workflow_structure` to see existing branch conditions and indices.
 
 ### ap_add_branch
 
@@ -398,7 +398,7 @@ Add a conditional branch to a router step. The branch is inserted before the fal
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `flowId` | string | Yes | The flow ID |
+| `workflowId` | string | Yes | The workflow ID |
 | `routerStepName` | string | Yes | The router step name |
 | `branchName` | string | Yes | Display name for the branch |
 | `conditions` | array | No | Conditions array (see below) |
@@ -415,7 +415,7 @@ Update the conditions and/or name of an existing router branch without affecting
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `flowId` | string | Yes | The flow ID |
+| `workflowId` | string | Yes | The workflow ID |
 | `routerStepName` | string | Yes | The router step name |
 | `branchIndex` | number | Yes | Branch index (0-based) |
 | `branchName` | string | No | New display name |
@@ -431,7 +431,7 @@ Delete a branch from a router step. Cannot delete the fallback (last) branch.
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `flowId` | string | Yes | The flow ID |
+| `workflowId` | string | Yes | The workflow ID |
 | `routerStepName` | string | Yes | The router step name |
 | `branchIndex` | number | Yes | Branch index to delete (0-based) |
 | `displayName` | string | No | Short approval prompt shown to the user |
@@ -442,11 +442,11 @@ Delete a branch from a router step. Cannot delete the fallback (last) branch.
 
 ### ap_manage_notes
 
-Add, update, or delete canvas notes on a flow.
+Add, update, or delete canvas notes on a workflow.
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `flowId` | string | Yes | The flow ID |
+| `workflowId` | string | Yes | The workflow ID |
 | `operation` | string | Yes | `ADD`, `UPDATE`, or `DELETE` |
 | `noteId` | string | No | Required for UPDATE/DELETE |
 | `content` | string | No | Note text (required for ADD) |
@@ -525,36 +525,36 @@ Permanently delete one or more records.
 
 ## Testing & Runs
 
-Test flows, inspect results, and retry failures. Test tools poll for up to 120 seconds and return step-by-step results.
+Test workflows, inspect results, and retry failures. Test tools poll for up to 120 seconds and return step-by-step results.
 
-### ap_test_flow
+### ap_test_workflow
 
-Test a flow end-to-end in the test environment. Pass `triggerTestData` to provide mock trigger output when no sample data exists (e.g., for webhook triggers).
+Test a workflow end-to-end in the test environment. Pass `triggerTestData` to provide mock trigger output when no sample data exists (e.g., for webhook triggers).
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `flowId` | string | Yes | The flow ID |
+| `workflowId` | string | Yes | The workflow ID |
 | `displayName` | string | No | Short approval prompt shown to the user |
 | `triggerTestData` | object | No | Mock trigger output data. Saved as sample data before running the test. |
 
 <Warning>
-The flow must have a configured trigger. The tool validates this before running and returns a clear error if not.
+The workflow must have a configured trigger. The tool validates this before running and returns a clear error if not.
 </Warning>
 
 ### ap_test_step
 
-Test a single step within a flow. Runs all steps up to and including the target step. Pass `triggerTestData` when no sample data exists.
+Test a single step within a workflow. Runs all steps up to and including the target step. Pass `triggerTestData` when no sample data exists.
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `flowId` | string | Yes | The flow ID |
+| `workflowId` | string | Yes | The workflow ID |
 | `stepName` | string | Yes | Step to test |
 | `displayName` | string | No | Short approval prompt shown to the user |
 | `triggerTestData` | object | No | Mock trigger output data. |
 
 ### ap_retry_run
 
-Retry a failed flow run.
+Retry a failed workflow run.
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -562,11 +562,11 @@ Retry a failed flow run.
 | `strategy` | string | Yes | `FROM_FAILED_STEP` or `ON_LATEST_VERSION` |
 
 - **FROM_FAILED_STEP**: Resume from where it failed, keeping previous step outputs
-- **ON_LATEST_VERSION**: Re-run the entire flow with the current published version
+- **ON_LATEST_VERSION**: Re-run the entire workflow with the current published version
 
 ### ap_run_action
 
-Execute a single connector action once without building or saving a flow. Designed for one-shot tasks like *"check my inbox"* or *"send one Slack message"* where building a full automation would be overkill. Under the hood the action runs directly in the engine and the result is returned immediately — no flow is created, and nothing appears in the user's flow list.
+Execute a single connector action once without building or saving a workflow. Designed for one-shot tasks like *"check my inbox"* or *"send one Slack message"* where building a full automation would be overkill. Under the hood the action runs directly in the engine and the result is returned immediately — no workflow is created, and nothing appears in the user's workflow list.
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -576,9 +576,9 @@ Execute a single connector action once without building or saving a flow. Design
 | `connectionExternalId` | string | No | `externalId` from `ap_list_connections`. Required if the connector needs auth. Auto-wrapped server-side as `{{connections['externalId']}}`. Must be a plain ID — special characters are rejected. |
 
 <Info>
-When to pick this vs. `ap_build_flow`:
+When to pick this vs. `ap_build_workflow`:
 - **`ap_run_action`** — one-off, throwaway, returns a result now.
-- **`ap_build_flow`** — persistent automation that should repeat, run on a schedule, or trigger on external events.
+- **`ap_build_workflow`** — persistent automation that should repeat, run on a schedule, or trigger on external events.
 </Info>
 
 Prefer calling `ap_list_connections` and `ap_get_connector_props` first so you know the exact `actionName`, the expected props, and the right `connectionExternalId` before invoking. Missing required inputs or unknown actions produce a friendly error before dispatch — no run is created and nothing is billed.

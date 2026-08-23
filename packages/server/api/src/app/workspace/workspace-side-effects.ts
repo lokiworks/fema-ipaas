@@ -1,12 +1,12 @@
 import { ErrorCode, isNil, PlatformError, WorkspaceId } from '@fema/core-utils'
 import { Workspace, WorkspaceType, WorkspaceWithLimits } from '@fema/shared'
-import { FlowStatus } from '@fema/workflow-core'
+import { WorkflowStatus } from '@fema/workflow-core'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { IsNull } from 'typeorm'
-import { flowRepo } from '../flows/flow/flow.repo'
 import { SystemJobName } from '../helper/system-jobs/common'
 import { systemJobsSchedule } from '../helper/system-jobs/system-job'
+import { workflowRepo } from '../workflows/workflow/workflow.repo'
 import { workspaceRepo } from './workspace-repo'
 import { workspaceService } from './workspace-service'
 
@@ -14,30 +14,30 @@ const HARD_DELETE_GRACE_PERIOD_DAYS = 7
 
 export const workspaceSideEffects = (log: FastifyBaseLogger) => ({
     async enrich(workspace: Workspace): Promise<WorkspaceWithLimits> {
-        const [totalFlows, activeFlows] = await Promise.all([
-            flowRepo().countBy({ workspaceId: workspace.id }),
-            flowRepo().countBy({ workspaceId: workspace.id, status: FlowStatus.ENABLED }),
+        const [totalWorkflows, activeWorkflows] = await Promise.all([
+            workflowRepo().countBy({ workspaceId: workspace.id }),
+            workflowRepo().countBy({ workspaceId: workspace.id, status: WorkflowStatus.ENABLED }),
         ])
         const { deleted: _deleted, ...rest } = workspace
         return {
             ...rest,
             analytics: {
-                totalFlows,
-                activeFlows,
+                totalWorkflows,
+                activeWorkflows,
             },
         }
     },
 
     async assertDeletable(workspaceId: WorkspaceId): Promise<void> {
-        const activeFlows = await flowRepo().countBy({
+        const activeWorkflows = await workflowRepo().countBy({
             workspaceId,
-            status: FlowStatus.ENABLED,
+            status: WorkflowStatus.ENABLED,
         })
-        if (activeFlows > 0) {
+        if (activeWorkflows > 0) {
             throw new PlatformError({
                 code: ErrorCode.VALIDATION,
                 params: {
-                    message: `Workspace has ${activeFlows} enabled flow(s). Disable them before deleting the workspace.`,
+                    message: `Workspace has ${activeWorkflows} enabled workflow(s). Disable them before deleting the workspace.`,
                 },
             })
         }
@@ -45,17 +45,17 @@ export const workspaceSideEffects = (log: FastifyBaseLogger) => ({
 
     async scheduleHardDelete(workspaceId: WorkspaceId): Promise<void> {
         const platformId = await workspaceService(log).getPlatformId(workspaceId)
-        const preDeletedFlowIds = await flowRepo()
-            .createQueryBuilder('flow')
-            .select('flow.id')
+        const preDeletedWorkflowIds = await workflowRepo()
+            .createQueryBuilder('workflow')
+            .select('workflow.id')
             .where({ workspaceId, deleted: IsNull() })
             .getMany()
-            .then((flows) => flows.map((flow) => flow.id))
+            .then((workflows) => workflows.map((workflow) => workflow.id))
 
         await systemJobsSchedule(log).upsertJob({
             job: {
                 name: SystemJobName.HARD_DELETE_WORKSPACE,
-                data: { workspaceId, platformId, preDeletedFlowIds },
+                data: { workspaceId, platformId, preDeletedWorkflowIds },
                 jobId: `hard-delete-workspace-${workspaceId}`,
             },
             schedule: {

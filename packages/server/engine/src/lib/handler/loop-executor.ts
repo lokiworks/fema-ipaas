@@ -3,7 +3,7 @@ import { isNil } from '@fema/core-utils'
 import { ExecutionStatus, LoopOnItemsAction, LoopStepOutput } from '@fema/shared'
 import { utils } from '../utils'
 import { BaseExecutor, failStep } from './base-executor'
-import { flowExecutor } from './flow-executor'
+import { workflowExecutor } from './workflow-executor'
 
 type LoopOnActionResolvedSettings = {
     items: readonly unknown[]
@@ -64,7 +64,7 @@ export const loopExecutor: BaseExecutor<LoopOnItemsAction> = {
             }
             newExecutionContext = (await newExecutionContext.upsertStep(action.name, stepOutput)).setCurrentPath(newCurrentPath)
             if (!isNil(firstLoopAction) && !testSingleStepMode) {
-                newExecutionContext = await flowExecutor.execute({
+                newExecutionContext = await workflowExecutor.execute({
                     action: firstLoopAction,
                     executionState: newExecutionContext,
                     constants,

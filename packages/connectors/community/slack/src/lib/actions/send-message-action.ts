@@ -6,10 +6,10 @@ import {
   blocks,
   threadTs,
   singleSelectChannelInfo,
-  mentionOriginFlow,
+  mentionOriginWorkflow,
   iconEmoji,
 } from '../common/props';
-import { buildFlowOriginContextBlock, processMessageTimestamp, slackSendMessage, textToSectionBlocks } from '../common/utils';
+import { buildWorkflowOriginContextBlock, processMessageTimestamp, slackSendMessage, textToSectionBlocks } from '../common/utils';
 import { slackAuth } from '../auth';
 import { Block,KnownBlock } from '@slack/web-api';
 import { getBotToken, requireUserToken, SlackAuthValue } from '../common/auth-helpers';
@@ -52,7 +52,7 @@ export const slackSendMessageAction = createAction({
       required: false,
       defaultValue: false,
     }),
-    mentionOriginFlow,
+    mentionOriginWorkflow,
     unfurlLinks: Property.Checkbox({
       displayName: 'Unfurl Links',
       description: 'Enable link unfurling for this message',
@@ -62,7 +62,7 @@ export const slackSendMessageAction = createAction({
     blocks,
   },
   async run(context) {
-    const { text, channel,sendAsBot, username, profilePicture, iconEmoji, threadTs, file, mentionOriginFlow, blocks, replyBroadcast, unfurlLinks } =
+    const { text, channel,sendAsBot, username, profilePicture, iconEmoji, threadTs, file, mentionOriginWorkflow, blocks, replyBroadcast, unfurlLinks } =
       context.propsValue;
 
     const token = sendAsBot ? getBotToken(context.auth as SlackAuthValue) : requireUserToken(context.auth as SlackAuthValue);
@@ -82,8 +82,8 @@ export const slackSendMessageAction = createAction({
       blockList.push(...(blocks as unknown as (KnownBlock | Block)[]))
     }
 
-    if(mentionOriginFlow) {
-      blockList.push(buildFlowOriginContextBlock(context));
+    if(mentionOriginWorkflow) {
+      blockList.push(buildWorkflowOriginContextBlock(context));
     }
 
     return slackSendMessage({

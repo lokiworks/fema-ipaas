@@ -1,4 +1,4 @@
-import { FlowOperationType, FlowTriggerType } from '@fema/shared';
+import { WorkflowOperationType, WorkflowTriggerType } from '@fema/shared';
 import { t } from 'i18next';
 import {
   CheckCircle2Icon,
@@ -38,7 +38,7 @@ import { ConnectorsCardList } from './connectors-card-list';
 import { ExploreTabContent } from './explore-tab-content';
 
 const getTabsList = (
-  operationType: FlowOperationType,
+  operationType: WorkflowOperationType,
   aiAndAgentsAvailable: boolean,
 ) => {
   const baseTabs = [
@@ -60,8 +60,8 @@ const getTabsList = (
   ];
 
   const replaceOrAddAction = [
-    FlowOperationType.ADD_ACTION,
-    FlowOperationType.UPDATE_ACTION,
+    WorkflowOperationType.ADD_ACTION,
+    WorkflowOperationType.UPDATE_ACTION,
   ].includes(operationType);
 
   if (replaceOrAddAction && aiAndAgentsAvailable) {
@@ -114,14 +114,15 @@ const ConnectorSelectorContent = ({
     state.openedConnectorSelectorStepNameOrAddButtonId,
     state.setOpenedConnectorSelectorStepNameOrAddButtonId,
     state.setSelectedConnectorMetadataInConnectorSelector,
-    state.flowVersion.trigger.type === FlowTriggerType.EMPTY &&
+    state.workflowVersion.trigger.type === WorkflowTriggerType.EMPTY &&
       id === 'trigger',
     state.deselectStep,
   ]);
   const { searchQuery, setSearchQuery } = useConnectorSearchContext();
   const isForReplace =
-    operation.type === FlowOperationType.UPDATE_ACTION ||
-    (operation.type === FlowOperationType.UPDATE_TRIGGER && !isForEmptyTrigger);
+    operation.type === WorkflowOperationType.UPDATE_ACTION ||
+    (operation.type === WorkflowOperationType.UPDATE_TRIGGER &&
+      !isForEmptyTrigger);
   const [debouncedQuery] = useDebounce(searchQuery, 300);
   const isOpen = openedConnectorSelectorStepNameOrAddButtonId === id;
   const isMobile = useIsMobile();

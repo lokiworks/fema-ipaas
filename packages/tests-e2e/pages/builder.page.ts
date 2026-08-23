@@ -17,8 +17,8 @@ export class BuilderPage extends BasePage {
     await this.page.getByText(params.action).nth(1).click();
   }
 
-  async testFlowAndWaitForSuccess() {
-    await this.page.getByRole('button', { name: 'Test Flow' }).click();
+  async testWorkflowAndWaitForSuccess() {
+    await this.page.getByRole('button', { name: 'Test Workflow' }).click();
     await this.page.waitForTimeout(1000);
     const runSuccessLocator = this.page.locator('text=Run Succeeded');
     const runSuccessText = await runSuccessLocator.textContent({ timeout: 60000 });
@@ -47,20 +47,20 @@ export class BuilderPage extends BasePage {
     await this.page.waitForTimeout(8000);
   }
 
-  async publishFlow() {
+  async publishWorkflow() {
     await this.page.getByRole('button', { name: 'Publish' }).click();
     await this.page.waitForTimeout(15000);
   }
 
   async waitFor() {
-    await this.page.waitForURL('**/flows/**');
-    await this.page.waitForSelector('.react-flow__nodes', { state: 'visible' });
-    await this.page.waitForSelector('.react-flow__node', { state: 'visible' });
+    await this.page.waitForURL('**/workflows/**');
+    await this.page.waitForSelector('.react-workflow__nodes', { state: 'visible' });
+    await this.page.waitForSelector('.react-workflow__node', { state: 'visible' });
   }
 
   // A freshly published version may not serve synchronous requests immediately
   // (the sync URL can briefly 404), so poll until the Return Response reflects
-  // the published flow.
+  // the published workflow.
   async expectSyncWebhookResponse(params: { url: string; key: string; expected: string }) {
     await expect
       .poll(

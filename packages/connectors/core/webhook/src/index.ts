@@ -6,7 +6,7 @@ import { returnResponseAndWaitForNextWebhook } from './lib/actions/return-respon
 
 export const webhook = createConnector({
   displayName: 'Webhook',
-  description: 'Receive HTTP requests and trigger flows using unique URLs.',
+  description: 'Receive HTTP requests and trigger workflows using unique URLs.',
   auth: ConnectorAuth.None(),
   categories: [ConnectorCategory.CORE],
   minimumSupportedRelease: '0.82.0',

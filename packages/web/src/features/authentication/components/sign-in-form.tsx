@@ -166,7 +166,7 @@ const SignInForm = ({ onForgotPassword }: SignInFormProps) => {
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">{t('Password')}</Label>
                   {false &&
-                    // Inside the auth card the reset flow is another step, not
+                    // Inside the auth card the reset workflow is another step, not
                     // another page — the caller hands us a handler for it.
                     (onForgotPassword ? (
                       <button

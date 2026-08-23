@@ -21,6 +21,6 @@
   "The storage scope of the value.": "Het opslagbereik van de waarde.",
   "Separator between added values, use \\n for newlines": "Scheidingsteken tussen toegevoegde waarden, gebruik \\n voor nieuwe regels",
   "Project": "Project",
-  "Flow": "Stroom",
+  "Workflow": "Stroom",
   "Run": "Uitvoeren"
 }

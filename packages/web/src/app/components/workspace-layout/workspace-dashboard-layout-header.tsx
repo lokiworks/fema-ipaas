@@ -75,7 +75,7 @@ export const WorkspaceDashboardLayoutHeader = () => {
       to: authenticationSession.appendWorkspaceRoutePrefix('/automations'),
       label: t('Automations'),
       icon: WorkflowIcon,
-      hasPermission: checkAccess(Permission.READ_FLOW),
+      hasPermission: checkAccess(Permission.READ_WORKFLOW),
       show: true,
     },
   ];

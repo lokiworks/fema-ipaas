@@ -30,6 +30,6 @@
   "JSON": "JSON",
   "Raw": "Сырье",
   "Retry on all errors (4xx, 5xx)": "Повторить все ошибки (4xx, 5xx)",
-  "Continue flow": "Продолжить поток",
+  "Continue workflow": "Продолжить поток",
   "Retry on internal errors (5xx)": "Повторить внутренние ошибки (5xx)"
 }

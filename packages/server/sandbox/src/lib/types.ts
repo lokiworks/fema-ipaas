@@ -1,10 +1,10 @@
 import { type ApLogger } from '@fema/server-utils'
-import { ConnectorPackage, EngineOperation, EngineOperationType, EngineResponse, FailedStep, FlowVersion, FlowVersionState, NetworkMode, SourceCode, WorkerToApiContract } from '@fema/shared'
+import { ConnectorPackage, EngineOperation, EngineOperationType, EngineResponse, FailedStep, NetworkMode, SourceCode, WorkerToApiContract, WorkflowVersion, WorkflowVersionState } from '@fema/shared'
 
 // Two roles:
 //   - Resolver (worker-side, owns the only apiClient): turns a job into a fully-materialized
-//     `ProvisionInput` — resolve the flowVersion, connector metadata, and a ready (compiled) flow bundle,
-//     disabling the flow on a missing connector. Always runs before `execute`.
+//     `ProvisionInput` — resolve the workflowVersion, connector metadata, and a ready (compiled) workflow bundle,
+//     disabling the workflow on a missing connector. Always runs before `execute`.
 //   - Runtime: the in-process single sandbox box. It never reaches the app; it materializes the passed
 //     ProvisionInput, runs one engine operation, and releases (or invalidates on throw).
 
@@ -16,14 +16,14 @@ export type ResolveInput = {
     platformId: string
     publicApiUrl: string
     engineToken: string
-    flow?: { id: string, versionId: string, workspaceId: string }
+    workflow?: { id: string, versionId: string, workspaceId: string }
     connectors?: ConnectorPackage[]
     codes?: CodeArtifact[]
 }
 
 export type ResolveResult =
-    | { kind: 'ready', provision: ProvisionInput, flowVersion?: FlowVersion }
-    | { kind: 'flow-not-found' }
+    | { kind: 'ready', provision: ProvisionInput, workflowVersion?: WorkflowVersion }
+    | { kind: 'workflow-not-found' }
     | { kind: 'disabled', failedStep?: FailedStep }
 
 export type Runtime = {
@@ -50,8 +50,8 @@ export type PreWarmSandboxParams = {
     log: ApLogger
     apiClient?: WorkerToApiContract
     publicApiUrl?: string
-    // Warm just this flow (e.g. on publish) instead of the platform's whole active set.
-    flow?: { id: string, versionId: string, workspaceId: string }
+    // Warm just this workflow (e.g. on publish) instead of the platform's whole active set.
+    workflow?: { id: string, versionId: string, workspaceId: string }
 }
 
 // The Resolver's output and the pool's input. The pool installs each connector straight from a link: it
@@ -61,7 +61,7 @@ export type PreWarmSandboxParams = {
 // is publicApiUrl-based so it is reachable from a remote pool (Cloud Run). See ADR 0002.
 export type ProvisionInput = {
     platformId: string
-    flowVersionId?: string
+    workflowVersionId?: string
     connectors: ConnectorPackage[]
     codes: CodeArtifact[]
     publicApiUrl: string
@@ -91,8 +91,8 @@ export type RuntimeExecutorInfo = {
 export type CodeArtifact = {
     name: string
     sourceCode: SourceCode
-    flowVersionId: string
-    flowVersionState: FlowVersionState
+    workflowVersionId: string
+    workflowVersionState: WorkflowVersionState
 }
 
 // Structural subset of WorkerSettingsResponse used by the local-pool runtime tree.
@@ -105,7 +105,7 @@ export type SandboxSettings = {
     DEV_CONNECTORS: string[]
     ENVIRONMENT: string
     REUSE_SANDBOX: string | undefined
-    FLOW_TIMEOUT_SECONDS: number
+    WORKFLOW_TIMEOUT_SECONDS: number
     MAX_FILE_SIZE_MB: number
     MAX_EXECUTION_LOG_SIZE_MB: number
     NETWORK_MODE: NetworkMode

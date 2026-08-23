@@ -1,7 +1,7 @@
 import { ConnectorMetadataModelSummary } from '@fema/connector-sdk';
 import {
   ConnectionWithoutSensitiveData,
-  FlowStatus,
+  WorkflowStatus,
   FolderDto,
 } from '@fema/shared';
 import { t } from 'i18next';
@@ -56,14 +56,14 @@ type AutomationsFiltersProps = {
   folders: FolderDto[];
   connections: ConnectionWithoutSensitiveData[] | undefined;
   connectors: ConnectorMetadataModelSummary[] | undefined;
-  userHasPermissionToWriteFlow: boolean;
+  userHasPermissionToWriteWorkflow: boolean;
   userHasPermissionToWriteFolder: boolean;
-  onCreateFlow: () => void;
+  onCreateWorkflow: () => void;
   onCreateFolder: () => void;
-  onImportFlow: () => void;
+  onImportWorkflow: () => void;
   onClearAllFilters: () => void;
   hasActiveFilters: boolean;
-  isCreatingFlow?: boolean;
+  isCreatingWorkflow?: boolean;
 };
 
 export const AutomationsFilters = ({
@@ -83,23 +83,23 @@ export const AutomationsFilters = ({
   folders,
   connections,
   connectors,
-  userHasPermissionToWriteFlow,
+  userHasPermissionToWriteWorkflow,
   userHasPermissionToWriteFolder,
-  onCreateFlow,
+  onCreateWorkflow,
   onCreateFolder,
-  onImportFlow,
+  onImportWorkflow,
   onClearAllFilters,
   hasActiveFilters,
-  isCreatingFlow = false,
+  isCreatingWorkflow = false,
 }: AutomationsFiltersProps) => {
   const navigate = useNavigate();
   const { embedState } = useEmbedding();
   const ownerOptions = useOwnerOptions();
   const [isTemplatesBrowseDialogOpen, setIsTemplatesBrowseDialogOpen] =
     useState(false);
-  const typeOptions = [{ value: 'flow', label: t('Flows') }];
+  const typeOptions = [{ value: 'workflow', label: t('Workflows') }];
 
-  const statusOptions = Object.values(FlowStatus).map((status) => ({
+  const statusOptions = Object.values(WorkflowStatus).map((status) => ({
     value: status,
     label: formatUtils.convertEnumToHumanReadable(status),
   }));
@@ -132,7 +132,7 @@ export const AutomationsFilters = ({
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder={t('Search flows...')}
+                placeholder={t('Search workflows...')}
                 value={searchTerm}
                 onChange={(e) => {
                   onSearchChange(e.target.value);
@@ -232,7 +232,7 @@ export const AutomationsFilters = ({
           </div>
 
           <div className="flex items-center gap-2">
-            {!embedState.hideExportAndImportFlow && (
+            {!embedState.hideExportAndImportWorkflow && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <AnimatedIconButton
@@ -247,15 +247,15 @@ export const AutomationsFilters = ({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <PermissionNeededTooltip
-                    hasPermission={userHasPermissionToWriteFlow}
+                    hasPermission={userHasPermissionToWriteWorkflow}
                   >
                     <DropdownMenuItem
-                      disabled={!userHasPermissionToWriteFlow}
-                      onClick={onImportFlow}
+                      disabled={!userHasPermissionToWriteWorkflow}
+                      onClick={onImportWorkflow}
                       className="cursor-pointer"
                     >
                       <Workflow className="h-4 w-4 mr-2" />
-                      {t('Import Flow')}
+                      {t('Import Workflow')}
                     </DropdownMenuItem>
                   </PermissionNeededTooltip>
                 </DropdownMenuContent>
@@ -265,12 +265,14 @@ export const AutomationsFilters = ({
             <CreateNewMenu
               scope="root"
               align="end"
-              userHasPermissionToWriteFlow={userHasPermissionToWriteFlow}
+              userHasPermissionToWriteWorkflow={
+                userHasPermissionToWriteWorkflow
+              }
               userHasPermissionToWriteFolder={userHasPermissionToWriteFolder}
-              isCreatingFlow={isCreatingFlow}
-              onCreateFlow={onCreateFlow}
+              isCreatingWorkflow={isCreatingWorkflow}
+              onCreateWorkflow={onCreateWorkflow}
               onCreateFolder={onCreateFolder}
-              onImportFlow={onImportFlow}
+              onImportWorkflow={onImportWorkflow}
               onSelectTemplate={() => {
                 if (embedState.isEmbedded) {
                   setIsTemplatesBrowseDialogOpen(true);

@@ -1,5 +1,5 @@
 import { assertNotNullOrUndefined, isNil, parseToJsonIfPossible } from '@fema/core-utils'
-import { FlowVersion } from '@fema/shared'
+import { WorkflowVersion } from '@fema/shared'
 
 let webhookSecrets:
 | Record<string, { webhookSecret: string | Record<string, string> }>
@@ -35,9 +35,9 @@ string,
 }
 
 async function getWebhookSecret(
-    flowVersion: FlowVersion,
+    workflowVersion: WorkflowVersion,
 ): Promise<string | Record<string, string> | undefined> {
-    const appName = flowVersion.trigger.settings.connectorName
+    const appName = workflowVersion.trigger.settings.connectorName
     if (!appName) {
         return undefined
     }

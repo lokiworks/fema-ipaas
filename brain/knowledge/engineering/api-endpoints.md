@@ -17,7 +17,7 @@ Each group has a schema page plus CRUD operations:
 - **User Invitations** — upsert, list, delete.
 - **Project Members** — list, delete.
 - **Connections** — upsert, list, get, delete; **Global Connections** — upsert, update, list, delete.
-- **Flows** — create, update, get, list, delete; **Flow Runs** — get, list.
+- **Workflows** — create, update, get, list, delete; **Workflow Runs** — get, list.
 - **Sample Data** — get.
 - **Connectors** — schema, install.
 - **Project Releases** — create.

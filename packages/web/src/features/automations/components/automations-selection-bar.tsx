@@ -54,7 +54,7 @@ export const AutomationsSelectionBar = ({
                 {t('Move to')}
               </Button>
             )}
-            {!embedState.hideExportAndImportFlow && (
+            {!embedState.hideExportAndImportWorkflow && (
               <Button
                 variant="ghost"
                 size="sm"

@@ -157,8 +157,8 @@ function buildColumns({
       ),
     },
     {
-      accessorKey: 'analytics.totalFlows',
-      header: () => t('Flows'),
+      accessorKey: 'analytics.totalWorkflows',
+      header: () => t('Workflows'),
       size: 100,
       cell: ({
         row,
@@ -166,7 +166,7 @@ function buildColumns({
         row: { original: RowDataWithActions<WorkspaceWithLimits> };
       }) => (
         <span className="text-sm text-muted-foreground">
-          {row.original.analytics.totalFlows}
+          {row.original.analytics.totalWorkflows}
         </span>
       ),
     },

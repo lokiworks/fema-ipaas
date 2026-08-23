@@ -212,9 +212,9 @@ function TableSvg() {
   );
 }
 
-// ── Flow Node (reusable card for flow builder) ──
+// ── Workflow Node (reusable card for workflow builder) ──
 
-function FlowNode({
+function WorkflowNode({
   icon,
   label,
   subtitle,
@@ -545,7 +545,7 @@ function Scene1({
   );
 }
 
-// ── Scene 2: Flow View (Custom Logic) ──
+// ── Scene 2: Workflow View (Custom Logic) ──
 
 function Scene2({
   visible,
@@ -571,7 +571,7 @@ function Scene2({
           width="390"
           height="400"
         >
-          {/* Main flow: Trigger -> Agent -> Condition */}
+          {/* Main workflow: Trigger -> Agent -> Condition */}
           <path
             d="M 195 52 L 195 87"
             stroke="#9ca3af"
@@ -630,7 +630,7 @@ function Scene2({
           <div className="absolute -top-5 left-0 text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded border border-green-200 z-10">
             {'⚡'} Trigger
           </div>
-          <FlowNode
+          <WorkflowNode
             icon={
               <img
                 src={`${CDN}/hubspot.png`}
@@ -661,7 +661,7 @@ function Scene2({
           className="absolute"
           style={{ left: '115px', top: '174px', width: '160px' }}
         >
-          <FlowNode
+          <WorkflowNode
             icon={<ConditionSvg />}
             label="3. Qualified?"
             subtitle="Condition"
@@ -675,7 +675,7 @@ function Scene2({
           className="absolute"
           style={{ left: '0px', top: '265px', width: '160px' }}
         >
-          <FlowNode
+          <WorkflowNode
             icon={
               <img
                 src={`${CDN}/salesforce.png`}
@@ -694,7 +694,7 @@ function Scene2({
           className="absolute"
           style={{ left: '0px', top: '347px', width: '160px' }}
         >
-          <FlowNode
+          <WorkflowNode
             icon={
               <img
                 src={`${CDN}/slack.png`}
@@ -713,7 +713,7 @@ function Scene2({
           className="absolute"
           style={{ left: '230px', top: '265px', width: '160px' }}
         >
-          <FlowNode
+          <WorkflowNode
             icon={<LoopSvg />}
             label="6. Nurture Loop"
             subtitle="Loop"
@@ -727,7 +727,7 @@ function Scene2({
           className="absolute"
           style={{ left: '230px', top: '347px', width: '160px' }}
         >
-          <FlowNode
+          <WorkflowNode
             icon={
               <img
                 src={`${CDN}/gmail.png`}
@@ -1256,7 +1256,7 @@ function AuthAnimation() {
         {/* Scene 1: Integrations */}
         <Scene1 visible={activeIndex === 1} slotRef={slot1Ref} />
 
-        {/* Scene 2: Custom Logic (Flow View) */}
+        {/* Scene 2: Custom Logic (Workflow View) */}
         <Scene2 visible={activeIndex === 2} slotRef={slot2Ref} />
 
         {/* Scene 3: Human Approval (Slack) */}

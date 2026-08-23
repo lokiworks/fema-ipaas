@@ -1,81 +1,81 @@
-import { FAIL_PARENT_ON_FAILURE_HEADER, FlowStatus, FlowTriggerType, isNil, PARENT_RUN_ID_HEADER, ConnectorAuth, PopulatedFlow, Property } from "@fema/connector-sdk";
-import { FlowsContext, ListFlowsContextParams } from "@fema/connector-sdk";
+import { FAIL_PARENT_ON_FAILURE_HEADER, WorkflowStatus, WorkflowTriggerType, isNil, PARENT_RUN_ID_HEADER, ConnectorAuth, PopulatedWorkflow, Property } from "@fema/connector-sdk";
+import { WorkflowsContext, ListWorkflowsContextParams } from "@fema/connector-sdk";
 import { httpClient, HttpMethod } from "@fema/connector-common";
 
 
-export const callableFlowKey = (runId: string) => `callableFlow_${runId}`;
+export const callableWorkflowKey = (runId: string) => `callableWorkflow_${runId}`;
 
-export type CallableFlowRequest = {
+export type CallableWorkflowRequest = {
     data: unknown;
     callbackUrl: string;
 }
-export type CallableFlowResponse = {
+export type CallableWorkflowResponse = {
     status: 'success' | 'error';
     data: unknown;
 }
 
-export const MOCK_CALLBACK_IN_TEST_FLOW_URL = 'MOCK';
+export const MOCK_CALLBACK_IN_TEST_WORKFLOW_URL = 'MOCK';
 
-export async function listFlowsWithSubflowTrigger({
-    flowsContext,
+export async function listWorkflowsWithSubflowTrigger({
+    workflowsContext,
     params,
-}: ListParams): Promise<PopulatedFlow[]> {
-    // The framework context types this leanly as PopulatedFlowSummary, but the
-    // engine returns full PopulatedFlow records (with version) at runtime.
-    const allFlows = (await flowsContext.list(params)).data as unknown as PopulatedFlow[];
-    const flows = allFlows.filter(
-        (flow) =>
-            flow.version.trigger.type === FlowTriggerType.CONNECTOR &&
-            flow.version.trigger.settings.connectorName ==
+}: ListParams): Promise<PopulatedWorkflow[]> {
+    // The framework context types this leanly as PopulatedWorkflowSummary, but the
+    // engine returns full PopulatedWorkflow records (with version) at runtime.
+    const allWorkflows = (await workflowsContext.list(params)).data as unknown as PopulatedWorkflow[];
+    const workflows = allWorkflows.filter(
+        (workflow) =>
+            workflow.version.trigger.type === WorkflowTriggerType.CONNECTOR &&
+            workflow.version.trigger.settings.connectorName ==
             '@fema/connector-subflows'
     );
-    return flows;
+    return workflows;
 }
 
-export async function findFlowByExternalIdOrThrow({
-    flowsContext,
+export async function findWorkflowByExternalIdOrThrow({
+    workflowsContext,
     externalId,
 }: {
-    flowsContext: FlowsContext;
+    workflowsContext: WorkflowsContext;
     externalId: string | undefined;
-}): Promise<PopulatedFlow> {
+}): Promise<PopulatedWorkflow> {
     if (isNil(externalId)) {
         throw new Error(JSON.stringify({
-            message: 'Please select a flow',
+            message: 'Please select a workflow',
         }));
     }
     const externalIds = [externalId];
-    const allFlows = await listFlowsWithSubflowTrigger({
-        flowsContext,
+    const allWorkflows = await listWorkflowsWithSubflowTrigger({
+        workflowsContext,
         params: {
             externalIds
         }
     });
-    if (allFlows.length === 0) {
+    if (allWorkflows.length === 0) {
         throw new Error(JSON.stringify({
-            message: 'Flow not found',
+            message: 'Workflow not found',
             externalId,
         }));
     }
-    return allFlows[0];
+    return allWorkflows[0];
 }
 
 export async function findEnabledSubflowOrThrow({
-    flowsContext,
+    workflowsContext,
     externalId,
 }: {
-    flowsContext: FlowsContext;
+    workflowsContext: WorkflowsContext;
     externalId: string | undefined;
-}): Promise<PopulatedFlow> {
-    const flow = await findFlowByExternalIdOrThrow({ flowsContext, externalId });
-    if (flow.status !== FlowStatus.ENABLED) {
+}): Promise<PopulatedWorkflow> {
+    const workflow = await findWorkflowByExternalIdOrThrow({ workflowsContext, externalId });
+    if (workflow.status !== WorkflowStatus.ENABLED) {
         throw new Error(JSON.stringify({
-            message: 'The selected subflow is disabled. Enable it before calling it from a parent flow.',
+            message: 'The selected subflow is disabled. Enable it before calling it from a parent workflow.',
             externalId,
-            flowName: flow.version.displayName,
+            workflowName: workflow.version.displayName,
         }));
     }
-    return flow;
+    return workflow;
 }
 
 export function subflowDropdown({
@@ -92,16 +92,16 @@ export function subflowDropdown({
         required: true,
         refreshers: [],
         options: async (_, context) => {
-            const flows = await listFlowsWithSubflowTrigger({
-                flowsContext: context.flows,
+            const workflows = await listWorkflowsWithSubflowTrigger({
+                workflowsContext: context.workflows,
             });
             return {
-                options: flows.map((flow) => ({
-                    value: flow.externalId ?? flow.id,
+                options: workflows.map((workflow) => ({
+                    value: workflow.externalId ?? workflow.id,
                     label:
-                        flow.status === FlowStatus.ENABLED
-                            ? flow.version.displayName
-                            : `${flow.version.displayName} (inactive)`,
+                        workflow.status === WorkflowStatus.ENABLED
+                            ? workflow.version.displayName
+                            : `${workflow.version.displayName} (inactive)`,
                 })),
             };
         },
@@ -110,7 +110,7 @@ export function subflowDropdown({
 
 export async function dispatchToSubflow({
     apiUrl,
-    flowId,
+    workflowId,
     parentRunId,
     failParentOnFailure,
     data,
@@ -119,7 +119,7 @@ export async function dispatchToSubflow({
 }: DispatchToSubflowParams): Promise<unknown> {
     const response = await httpClient.sendRequest({
         method: HttpMethod.POST,
-        url: `${apiUrl.replace(/\/$/, '')}/v1/webhooks/${flowId}`,
+        url: `${apiUrl.replace(/\/$/, '')}/v1/webhooks/${workflowId}`,
         headers: {
             'Content-Type': 'application/json',
             [PARENT_RUN_ID_HEADER]: parentRunId,
@@ -135,13 +135,13 @@ export async function dispatchToSubflow({
 }
 
 type ListParams = {
-    flowsContext: FlowsContext,
-    params?: ListFlowsContextParams
+    workflowsContext: WorkflowsContext,
+    params?: ListWorkflowsContextParams
 }
 
 type DispatchToSubflowParams = {
     apiUrl: string;
-    flowId: string;
+    workflowId: string;
     parentRunId: string;
     failParentOnFailure: boolean;
     data: unknown;

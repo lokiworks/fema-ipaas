@@ -2,7 +2,7 @@ import { ApId } from '@fema/core-utils'
 import { z } from 'zod'
 
 export const WebhookUrlParams = z.object({
-    flowId: ApId,
+    workflowId: ApId,
 })
 
 export type WebhookUrlParams = z.infer<typeof WebhookUrlParams>

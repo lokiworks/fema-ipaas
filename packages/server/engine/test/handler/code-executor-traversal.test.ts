@@ -1,6 +1,6 @@
 import { CodeAction, ExecutionStatus } from '@fema/shared'
 import { codeExecutor } from '../../src/lib/handler/code-executor'
-import { FlowExecutorContext } from '../../src/lib/handler/context/flow-execution-context'
+import { WorkflowExecutorContext } from '../../src/lib/handler/context/workflow-execution-context'
 import { buildCodeAction, generateMockEngineConstants } from './test-helper'
 
 describe('code executor step-name path traversal', () => {
@@ -13,7 +13,7 @@ describe('code executor step-name path traversal', () => {
 
         const result = await codeExecutor.handle({
             action,
-            executionState: FlowExecutorContext.empty(),
+            executionState: WorkflowExecutorContext.empty(),
             constants: generateMockEngineConstants(),
         })
 

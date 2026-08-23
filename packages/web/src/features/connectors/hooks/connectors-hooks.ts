@@ -7,11 +7,11 @@ import {
 import { LocalesEnum } from '@fema/core-utils';
 import {
   AddConnectorRequestBody,
-  FlowActionType,
-  flowConnectorUtil,
+  WorkflowActionType,
+  workflowConnectorUtil,
   ConnectorOptionRequest,
   PlatformWithoutSensitiveData,
-  FlowTriggerType,
+  WorkflowTriggerType,
   ApFlagId,
   ApEnvironment,
   TelemetryEventName,
@@ -55,7 +55,7 @@ const {
   isUtilityConnector,
   isAppConnector,
   getHighlightedConnectors,
-  isFlowController,
+  isWorkflowController,
 } = connectorSearchUtils;
 
 type UseConnectorModelForStepSettings = {
@@ -129,7 +129,7 @@ export const connectorsHooks = {
     enabled = true,
   }: UseConnectorModelForStepSettings) => {
     const exactVersion = version
-      ? flowConnectorUtil.getExactVersion(version)
+      ? workflowConnectorUtil.getExactVersion(version)
       : undefined;
     const connectorQuery = connectorsHooks.useConnector({
       name,
@@ -248,8 +248,8 @@ export const connectorsHooks = {
       platform.pinnedConnectors ?? [],
     );
 
-    const flowControllerConnectors =
-      connectorsMetadataWithoutEmptySuggestions.filter(isFlowController);
+    const workflowControllerConnectors =
+      connectorsMetadataWithoutEmptySuggestions.filter(isWorkflowController);
 
     const utilityConnectors =
       connectorsMetadataWithoutEmptySuggestions.filter(isUtilityConnector);
@@ -266,9 +266,9 @@ export const connectorsHooks = {
       title: t('Utility'),
       metadata: utilityConnectors,
     };
-    const flowControllerCategory = {
-      title: t('Flow Controller'),
-      metadata: flowControllerConnectors,
+    const workflowControllerCategory = {
+      title: t('Workflow Controller'),
+      metadata: workflowControllerConnectors,
     };
     const appsCategory = {
       title: t('Apps'),
@@ -297,7 +297,7 @@ export const connectorsHooks = {
       case ConnectorSelectorTabType.UTILITY:
         return {
           isLoading: false,
-          data: [utilitiesCategory, flowControllerCategory],
+          data: [utilitiesCategory, workflowControllerCategory],
         };
       case ConnectorSelectorTabType.AI_AND_AGENTS:
         return {
@@ -486,18 +486,18 @@ const filterOutConnectorsWithNoSuggestions = (
 ) => {
   return stepsMetadata.filter((metadata) => {
     const isActionWithSuggestions =
-      metadata.type === FlowActionType.CONNECTOR &&
+      metadata.type === WorkflowActionType.CONNECTOR &&
       metadata.suggestedActions &&
       metadata.suggestedActions.length > 0;
 
     const isTriggerWithSuggestions =
-      metadata.type === FlowTriggerType.CONNECTOR &&
+      metadata.type === WorkflowTriggerType.CONNECTOR &&
       metadata.suggestedTriggers &&
       metadata.suggestedTriggers.length > 0;
 
     const isNotConnectorType =
-      metadata.type !== FlowActionType.CONNECTOR &&
-      metadata.type !== FlowTriggerType.CONNECTOR;
+      metadata.type !== WorkflowActionType.CONNECTOR &&
+      metadata.type !== WorkflowTriggerType.CONNECTOR;
     return (
       isActionWithSuggestions || isTriggerWithSuggestions || isNotConnectorType
     );
@@ -540,13 +540,13 @@ const getExploreTabContent = (
     };
   const highlightedConnectors = getHighlightedConnectors(queryResult, type);
   const codeConnector = queryResult.find(
-    (connector) => connector.type === FlowActionType.CODE,
+    (connector) => connector.type === WorkflowActionType.CODE,
   );
   const branchConnector = queryResult.find(
-    (connector) => connector.type === FlowActionType.ROUTER,
+    (connector) => connector.type === WorkflowActionType.ROUTER,
   );
   const loopConnector = queryResult.find(
-    (connector) => connector.type === FlowActionType.LOOP_ON_ITEMS,
+    (connector) => connector.type === WorkflowActionType.LOOP_ON_ITEMS,
   );
 
   if (highlightedConnectors.length > 0) {

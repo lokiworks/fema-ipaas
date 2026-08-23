@@ -1,5 +1,5 @@
 
-import { FileType, FlowVersion, GetFlowVersionForWorkerRequest, ListFlowsRequest, PrincipalType, SendFlowResponseRequest, UpdateStepProgressRequest, UploadRunLogsRequest } from '@fema/shared'
+import { FileType, GetWorkflowVersionForWorkerRequest, ListWorkflowsRequest, PrincipalType, SendWorkflowResponseRequest, UpdateStepProgressRequest, UploadRunLogsRequest, WorkflowVersion } from '@fema/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
@@ -7,16 +7,16 @@ import { entitiesMustBeOwnedByCurrentWorkspace } from '../authentication/authori
 import { connectorBundle } from '../connectors/connector-bundle'
 import { securityAccess } from '../core/security/authorization/fastify-security'
 import { fileService } from '../file/file.service'
-import { engineRunCallbackService } from '../flows/execution/engine-run-callback-service'
-import { flowService } from '../flows/flow/flow.service'
-import { flowVersionService } from '../flows/flow-version/flow-version.service'
+import { engineRunCallbackService } from '../workflows/execution/engine-run-callback-service'
+import { workflowService } from '../workflows/workflow/workflow.service'
+import { workflowVersionService } from '../workflows/workflow-version/workflow-version.service'
 
-export const flowEngineWorker: FastifyPluginAsyncZod = async (app) => {
+export const workflowEngineWorker: FastifyPluginAsyncZod = async (app) => {
 
     app.addHook('preSerialization', entitiesMustBeOwnedByCurrentWorkspace)
 
-    app.get('/populated-flows', GetAllFlowsByWorkspaceParams, async (request) => {
-        return flowService(request.log).list({
+    app.get('/populated-workflows', GetAllWorkflowsByWorkspaceParams, async (request) => {
+        return workflowService(request.log).list({
             workspaceIds: [request.principal.workspaceId],
             limit: request.query.limit ?? 1000000,
             cursorRequest: request.query.cursor ?? null,
@@ -30,13 +30,13 @@ export const flowEngineWorker: FastifyPluginAsyncZod = async (app) => {
         })
     })
 
-    app.get('/flows', GetLockedVersionRequest, async (request) => {
-        const flowVersion = await flowVersionService(request.log).getOneOrThrow(request.query.versionId)
-        await flowService(request.log).getOneOrThrow({
-            id: flowVersion.flowId,
+    app.get('/workflows', GetLockedVersionRequest, async (request) => {
+        const workflowVersion = await workflowVersionService(request.log).getOneOrThrow(request.query.versionId)
+        await workflowService(request.log).getOneOrThrow({
+            id: workflowVersion.workflowId,
             workspaceId: request.principal.workspaceId,
         })
-        return flowVersion
+        return workflowVersion
     })
 
     // The pool downloads this with the engine token in the Authorization header (Bearer) and follows
@@ -93,8 +93,8 @@ export const flowEngineWorker: FastifyPluginAsyncZod = async (app) => {
         return reply.status(StatusCodes.OK).send()
     })
 
-    app.post('/flow-response', FlowResponseRequest, async (request, reply) => {
-        await engineRunCallbackService(request.log).sendFlowResponse({
+    app.post('/workflow-response', WorkflowResponseRequest, async (request, reply) => {
+        await engineRunCallbackService(request.log).sendWorkflowResponse({
             request: request.body,
         })
         return reply.status(StatusCodes.OK).send()
@@ -103,12 +103,12 @@ export const flowEngineWorker: FastifyPluginAsyncZod = async (app) => {
 }
 
 
-const GetAllFlowsByWorkspaceParams = {
+const GetAllWorkflowsByWorkspaceParams = {
     config: {
         security: securityAccess.engine(),
     },
     schema: {
-        querystring: ListFlowsRequest.omit({ workspaceId: true }),
+        querystring: ListWorkflowsRequest.omit({ workspaceId: true }),
     },
 }
 
@@ -117,9 +117,9 @@ const GetLockedVersionRequest = {
         security: securityAccess.engine(),
     },
     schema: {
-        querystring: GetFlowVersionForWorkerRequest,
+        querystring: GetWorkflowVersionForWorkerRequest,
         response: {
-            [StatusCodes.OK]: FlowVersion,
+            [StatusCodes.OK]: WorkflowVersion,
         },
     },
 }
@@ -164,11 +164,11 @@ const RunLogsRequest = {
     },
 }
 
-const FlowResponseRequest = {
+const WorkflowResponseRequest = {
     config: {
         security: securityAccess.engine(),
     },
     schema: {
-        body: SendFlowResponseRequest,
+        body: SendWorkflowResponseRequest,
     },
 }

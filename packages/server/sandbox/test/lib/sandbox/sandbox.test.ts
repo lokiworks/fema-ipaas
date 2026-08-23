@@ -76,7 +76,7 @@ const defaultOptions = {
 }
 
 const startOptions = {
-    flowVersionId: 'fv-1',
+    workflowVersionId: 'fv-1',
     platformId: 'plat-1',
     mounts: [],
 }
@@ -132,7 +132,7 @@ describe('createSandbox', () => {
             testPM = createTestProcessMaker()
             sandbox = createSandbox(log, 'sb-no-mount', defaultOptions, testPM.maker)
 
-            await sandbox.start({ flowVersionId: 'fv-1', platformId: '', mounts: [] })
+            await sandbox.start({ workflowVersionId: 'fv-1', platformId: '', mounts: [] })
 
             const createCall = (testPM.maker.create as ReturnType<typeof vi.fn>).mock.calls[0][0]
             const customConnectorMount = createCall.mounts.find((m: { sandboxPath: string }) => m.sandboxPath === '/root/custom_connectors')
@@ -140,12 +140,12 @@ describe('createSandbox', () => {
             expect(createCall.env.FEMA_CUSTOM_CONNECTORS_PATHS).toBeUndefined()
         })
 
-        it('scopes code mount to flowVersionId when non-reusable', async () => {
+        it('scopes code mount to workflowVersionId when non-reusable', async () => {
             const log = createMockLogger()
             testPM = createTestProcessMaker()
             sandbox = createSandbox(log, 'sb-scoped', { ...defaultOptions, reusable: false }, testPM.maker)
 
-            await sandbox.start({ flowVersionId: 'fv-1', platformId: '', mounts: [] })
+            await sandbox.start({ workflowVersionId: 'fv-1', platformId: '', mounts: [] })
 
             const createCall = (testPM.maker.create as ReturnType<typeof vi.fn>).mock.calls[0][0]
             const codeMount = createCall.mounts.find((m: { sandboxPath: string }) => m.sandboxPath.startsWith('/root/codes'))
@@ -161,7 +161,7 @@ describe('createSandbox', () => {
             testPM = createTestProcessMaker()
             sandbox = createSandbox(log, 'sb-action-run', { ...defaultOptions, reusable: false }, testPM.maker)
 
-            await sandbox.start({ flowVersionId: 'action-runs/plat-xyz_deadbeef', platformId: '', mounts: [] })
+            await sandbox.start({ workflowVersionId: 'action-runs/plat-xyz_deadbeef', platformId: '', mounts: [] })
 
             const createCall = (testPM.maker.create as ReturnType<typeof vi.fn>).mock.calls[0][0]
             const codeMount = createCall.mounts.find((m: { sandboxPath: string }) => m.sandboxPath.startsWith('/root/codes'))
@@ -172,12 +172,12 @@ describe('createSandbox', () => {
             })
         })
 
-        it('mounts full codes directory when reusable even with flowVersionId', async () => {
+        it('mounts full codes directory when reusable even with workflowVersionId', async () => {
             const log = createMockLogger()
             testPM = createTestProcessMaker()
             sandbox = createSandbox(log, 'sb-reuse', { ...defaultOptions, reusable: true }, testPM.maker)
 
-            await sandbox.start({ flowVersionId: 'fv-1', platformId: '', mounts: [] })
+            await sandbox.start({ workflowVersionId: 'fv-1', platformId: '', mounts: [] })
 
             const createCall = (testPM.maker.create as ReturnType<typeof vi.fn>).mock.calls[0][0]
             const codeMount = createCall.mounts.find((m: { sandboxPath: string }) => m.sandboxPath.startsWith('/root/codes'))
@@ -188,12 +188,12 @@ describe('createSandbox', () => {
             })
         })
 
-        it('omits code mount when non-reusable without flowVersionId', async () => {
+        it('omits code mount when non-reusable without workflowVersionId', async () => {
             const log = createMockLogger()
             testPM = createTestProcessMaker()
             sandbox = createSandbox(log, 'sb-no-fv', { ...defaultOptions, reusable: false }, testPM.maker)
 
-            await sandbox.start({ flowVersionId: undefined, platformId: '', mounts: [] })
+            await sandbox.start({ workflowVersionId: undefined, platformId: '', mounts: [] })
 
             const createCall = (testPM.maker.create as ReturnType<typeof vi.fn>).mock.calls[0][0]
             const codeMount = createCall.mounts.find((m: { sandboxPath: string }) => m.sandboxPath.startsWith('/root/codes'))
@@ -205,7 +205,7 @@ describe('createSandbox', () => {
             testPM = createTestProcessMaker()
             sandbox = createSandbox(log, 'sb-plat', defaultOptions, testPM.maker)
 
-            await sandbox.start({ flowVersionId: 'fv-1', platformId: 'plat-xyz', mounts: [] })
+            await sandbox.start({ workflowVersionId: 'fv-1', platformId: 'plat-xyz', mounts: [] })
 
             const createCall = (testPM.maker.create as ReturnType<typeof vi.fn>).mock.calls[0][0]
             const customConnectorMount = createCall.mounts.find((m: SandboxMount) => m.sandboxPath === '/root/custom_connectors')
@@ -229,14 +229,14 @@ describe('createSandbox', () => {
             ['fv\\1'],
             ['fv\0null'],
             [''],
-        ])('rejects an unsafe code namespace in flowVersionId: %s', async (flowVersionId) => {
+        ])('rejects an unsafe code namespace in workflowVersionId: %s', async (workflowVersionId) => {
             const log = createMockLogger()
             testPM = createTestProcessMaker()
             sandbox = createSandbox(log, 'sb-fv-trav', defaultOptions, testPM.maker)
 
             let caughtErr: unknown
             try {
-                await sandbox.start({ flowVersionId, platformId: '', mounts: [] })
+                await sandbox.start({ workflowVersionId, platformId: '', mounts: [] })
             }
             catch (err) {
                 caughtErr = err
@@ -260,7 +260,7 @@ describe('createSandbox', () => {
 
             let caughtErr: unknown
             try {
-                await sandbox.start({ flowVersionId: 'fv-1', platformId, mounts: [] })
+                await sandbox.start({ workflowVersionId: 'fv-1', platformId, mounts: [] })
             }
             catch (err) {
                 caughtErr = err
@@ -278,7 +278,7 @@ describe('createSandbox', () => {
             const maliciousMount: SandboxMount = { hostPath: '/host/evil', sandboxPath: '/root/../etc' }
 
             await expect(
-                sandbox.start({ flowVersionId: 'fv-1', platformId: '', mounts: [maliciousMount] }),
+                sandbox.start({ workflowVersionId: 'fv-1', platformId: '', mounts: [maliciousMount] }),
             ).rejects.toThrow()
             expect(testPM.maker.create).not.toHaveBeenCalled()
         })
@@ -290,7 +290,7 @@ describe('createSandbox', () => {
             sandbox = createSandbox(log, 'sb-base-escape', { ...defaultOptions, baseMounts }, testPM.maker)
 
             await expect(
-                sandbox.start({ flowVersionId: 'fv-1', platformId: '', mounts: [] }),
+                sandbox.start({ workflowVersionId: 'fv-1', platformId: '', mounts: [] }),
             ).rejects.toThrow()
             expect(testPM.maker.create).not.toHaveBeenCalled()
         })
@@ -302,7 +302,7 @@ describe('createSandbox', () => {
             sandbox = createSandbox(log, 'sb-order', { ...defaultOptions, baseMounts }, testPM.maker)
 
             const callerMount: SandboxMount = { hostPath: '/host/x', sandboxPath: '/root/x' }
-            await sandbox.start({ flowVersionId: 'fv-1', platformId: 'plat-1', mounts: [callerMount] })
+            await sandbox.start({ workflowVersionId: 'fv-1', platformId: 'plat-1', mounts: [callerMount] })
 
             const createCall = (testPM.maker.create as ReturnType<typeof vi.fn>).mock.calls[0][0]
             expect(createCall.mounts).toEqual([
@@ -334,7 +334,7 @@ describe('createSandbox', () => {
             testPM = createTestProcessMaker()
             sandbox = createSandbox(log, 'sb-no-plat-env', defaultOptions, testPM.maker)
 
-            await sandbox.start({ flowVersionId: 'fv-1', platformId: '', mounts: [] })
+            await sandbox.start({ workflowVersionId: 'fv-1', platformId: '', mounts: [] })
 
             const createCall = (testPM.maker.create as ReturnType<typeof vi.fn>).mock.calls[0][0]
             expect(createCall.env.FEMA_CUSTOM_CONNECTORS_PATHS).toBeUndefined()
@@ -505,7 +505,7 @@ describe('createSandbox', () => {
             })
 
             const result = await sandbox.execute(
-                'EXECUTE_FLOW' as any,
+                'EXECUTE_WORKFLOW' as any,
                 {} as any,
                 { timeoutInSeconds: 10 },
             )
@@ -535,7 +535,7 @@ describe('createSandbox', () => {
             })
 
             const firstResult = await sandbox.execute(
-                'EXECUTE_FLOW' as any,
+                'EXECUTE_WORKFLOW' as any,
                 {} as any,
                 { timeoutInSeconds: 10 },
             )
@@ -543,7 +543,7 @@ describe('createSandbox', () => {
             expect(firstResult.error).toBe('Engine error: AppWebhookUrlNotAvailableError')
 
             const secondResult = await sandbox.execute(
-                'EXECUTE_FLOW' as any,
+                'EXECUTE_WORKFLOW' as any,
                 {} as any,
                 { timeoutInSeconds: 10 },
             )
@@ -568,7 +568,7 @@ describe('createSandbox', () => {
             })
 
             const result = await sandbox.execute(
-                'EXECUTE_FLOW' as any,
+                'EXECUTE_WORKFLOW' as any,
                 {} as any,
                 { timeoutInSeconds: 10 },
             )
@@ -587,7 +587,7 @@ describe('createSandbox', () => {
             })
 
             const executePromise = sandbox.execute(
-                'EXECUTE_FLOW' as any,
+                'EXECUTE_WORKFLOW' as any,
                 {} as any,
                 { timeoutInSeconds: 0.5 },
             )
@@ -611,7 +611,7 @@ describe('createSandbox', () => {
             })
 
             const executePromise = sandbox.execute(
-                'EXECUTE_FLOW' as any,
+                'EXECUTE_WORKFLOW' as any,
                 {} as any,
                 { timeoutInSeconds: 10 },
             )
@@ -631,14 +631,14 @@ describe('createSandbox', () => {
             const child = testPM.getChild()
 
             client.on('rpc', () => {
-                client.emit('rpc-notify', { method: 'stderr', payload: { message: 'Flow run data size exceeded the maximum allowed size' } })
+                client.emit('rpc-notify', { method: 'stderr', payload: { message: 'Workflow run data size exceeded the maximum allowed size' } })
                 setTimeout(() => {
                     child.emit('close', 1, null)
                 }, 50)
             })
 
             const executePromise = sandbox.execute(
-                'EXECUTE_FLOW' as any,
+                'EXECUTE_WORKFLOW' as any,
                 {} as any,
                 { timeoutInSeconds: 10 },
             )
@@ -662,7 +662,7 @@ describe('createSandbox', () => {
             })
 
             const executePromise = sandbox.execute(
-                'EXECUTE_FLOW' as any,
+                'EXECUTE_WORKFLOW' as any,
                 {} as any,
                 { timeoutInSeconds: 10 },
             )
@@ -740,7 +740,7 @@ describe('createSandbox', () => {
             })
 
             const executePromise = sandbox.execute(
-                'EXECUTE_FLOW' as any,
+                'EXECUTE_WORKFLOW' as any,
                 {} as any,
                 { timeoutInSeconds: 10 },
             )
@@ -756,7 +756,7 @@ describe('createSandbox', () => {
 
         // We SIGKILL the sandbox ourselves on shutdown, and isolate prints the same "Caught fatal
         // signal 9" it prints for an OOM kill — so a deploy-time abort must not be reported as the
-        // user's flow exhausting memory.
+        // user's workflow exhausting memory.
         it('does NOT classify a shutdown-initiated SIGKILL as SANDBOX_MEMORY_ISSUE', async () => {
             const { sandbox } = await startSandbox()
             const client = testPM.getClient()
@@ -769,7 +769,7 @@ describe('createSandbox', () => {
             })
 
             const executePromise = sandbox.execute(
-                'EXECUTE_FLOW' as any,
+                'EXECUTE_WORKFLOW' as any,
                 {} as any,
                 { timeoutInSeconds: 10 },
             )
@@ -798,7 +798,7 @@ describe('createSandbox', () => {
             })
 
             const executePromise = sandbox.execute(
-                'EXECUTE_FLOW' as any,
+                'EXECUTE_WORKFLOW' as any,
                 {} as any,
                 { timeoutInSeconds: 10 },
             )
@@ -825,7 +825,7 @@ describe('createSandbox', () => {
             })
 
             await sandbox.execute(
-                'EXECUTE_FLOW' as any,
+                'EXECUTE_WORKFLOW' as any,
                 {} as any,
                 { timeoutInSeconds: 10 },
             )

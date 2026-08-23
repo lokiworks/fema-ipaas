@@ -67,7 +67,7 @@ The kit is plain React via Babel standalone — no build step. Single `app.css` 
 | `Tooltip` | 400ms show delay, 120ms fade. |
 | `ToastProvider` + `useToast()` + `ToastHost` | Bottom-right stack; `.toast / .success / .error / .warning / .info` helpers; auto-dismiss. |
 
-**Screen views**: `Sidebar.jsx`, `TopBar.jsx`, `FlowsView.jsx`, `BuilderView.jsx`, `RunsView.jsx`, `ConnectionsView.jsx`, `AskAIView.jsx`, `Icons.jsx`.
+**Screen views**: `Sidebar.jsx`, `TopBar.jsx`, `WorkflowsView.jsx`, `BuilderView.jsx`, `RunsView.jsx`, `ConnectionsView.jsx`, `AskAIView.jsx`, `Icons.jsx`.
 
 **Entry points**: `ui_kits/web/index.html` (full app shell) and `ui_kits/web/forms.html` (form-controls showcase).
 
@@ -75,12 +75,12 @@ The kit is plain React via Babel standalone — no build step. Single `app.css` 
 
 ## Brand & product context
 
-**Product**: FEMA Integration Platform is an all-in-one AI automation platform. The core surface is a visual **flow builder** (React + XYFlow) where users assemble triggers + actions from 280+ open-source **connectors** into runnable flows. Every connector doubles as an MCP server, so LLM agents can call them directly.
+**Product**: FEMA Integration Platform is an all-in-one AI automation platform. The core surface is a visual **workflow builder** (React + XYWorkflow) where users assemble triggers + actions from 280+ open-source **connectors** into runnable workflows. Every connector doubles as an MCP server, so LLM agents can call them directly.
 
 **Audience**: mixed — "developers set up the tools, and anyone in the organization can use the no-code builder" (from README). Non-technical users live in the builder; developers contribute new connectors as typed npm packages.
 
 **Products / surfaces represented in this design system**:
-1. **Web app** (`packages/web`) — the authenticated product: flow builder, runs, connections, tables, agents, settings. This is the only UI in scope; the marketing site is not in the repo.
+1. **Web app** (`packages/web`) — the authenticated product: workflow builder, runs, connections, tables, agents, settings. This is the only UI in scope; the marketing site is not in the repo.
 
 ---
 
@@ -88,16 +88,16 @@ The kit is plain React via Babel standalone — no build step. Single `app.css` 
 
 FEMA Integration Platform copy is **functional, direct, and product-led**. It talks about workflows, connectors, and runs in concrete terms — no marketing puffery inside the app.
 
-- **Voice**: second-person ("**you** can build", "**your** flows"). Feature names and verbs lead; adjectives are rare.
-- **Casing**: **Sentence case** for every UI string — headings, buttons, menu items, page titles. Proper nouns are the feature itself: "Connectors", "Flows", "Runs", "MCP", "Agents", "Connections".
+- **Voice**: second-person ("**you** can build", "**your** workflows"). Feature names and verbs lead; adjectives are rare.
+- **Casing**: **Sentence case** for every UI string — headings, buttons, menu items, page titles. Proper nouns are the feature itself: "Connectors", "Workflows", "Runs", "MCP", "Agents", "Connections".
 - **Tone**: matter-of-fact and a little nerdy. The product README uses emoji headers (🤯 🔥 🧠 🛠️) but the *in-app UI does not* — inside the app, emoji are essentially absent and all iconography is Lucide.
-- **Buttons**: verb-first, terse. "New flow", "Publish", "Connect", "Test step", "Run", "Save". No "Click here", no "Please".
-- **Empty states / errors**: explain the state, then say what the user can do. Example pattern: *"No flows yet. Create your first flow to start automating."*
+- **Buttons**: verb-first, terse. "New workflow", "Publish", "Connect", "Test step", "Run", "Save". No "Click here", no "Please".
+- **Empty states / errors**: explain the state, then say what the user can do. Example pattern: *"No workflows yet. Create your first workflow to start automating."*
 - **Microcopy examples (from repo strings & feature names)**: "Create a Connector", "Deploy", "Hot reloading for local connector development", "Chat Interface", "Form Interface", "Ask AI in Code Connector", "Human in the Loop".
 - **Docs / README vibe**: slightly more playful, uses emoji section markers ("💖 Loved by Everyone", "🔒 Secure by Design"), short bullet explainers, bold lead-ins. Good for landing/docs — **not** for in-product UI.
 
-**Do**: "Your flow is live.", "Add a step", "Connect your Google account"
-**Don't**: "Awesome! 🎉 Your flow is now live!", "Click here to add a step", "Please authorize Google"
+**Do**: "Your workflow is live.", "Add a step", "Connect your Google account"
+**Don't**: "Awesome! 🎉 Your workflow is now live!", "Click here to add a step", "Please authorize Google"
 
 ---
 
@@ -145,14 +145,14 @@ FEMA Integration Platform copy is **functional, direct, and product-led**. It ta
 ### Imagery & backgrounds
 - **Minimal imagery** inside the product. No hero photos, no illustrations in the main app.
 - **Connector tiles**: small rounded-square icons (48×48) with an 8% tinted background and the connector's own logo. Code connector uses amber `#E5AE43`, etc. Each connector owns its colour.
-- Marketing/docs imagery (not in-app): screenshots of the builder with the dotted canvas, animated GIFs showing flow creation. No abstract gradients, no AI "bluish-purple glow" tropes — just the real UI.
+- Marketing/docs imagery (not in-app): screenshots of the builder with the dotted canvas, animated GIFs showing workflow creation. No abstract gradients, no AI "bluish-purple glow" tropes — just the real UI.
 - **No full-bleed photography** anywhere in the app.
 
 ### Transparency & blur
 - Used very sparingly. Sidebar accent fill is `color-mix(in srgb, neutral-200 60%, transparent)` — a tinted translucent wash. Overlays on dialogs use `black/50`. **No backdrop-blur** in the shipping UI.
 
 ### Layout rules
-- Fixed left sidebar, fluid content. Top bar only in the builder (it shows flow name + publish/test).
+- Fixed left sidebar, fluid content. Top bar only in the builder (it shows workflow name + publish/test).
 - Max content width ~1400px; dense tables break out wider.
 - **`cn()` from `@/lib/utils`** is mandatory for className composition (clsx + tailwind-merge).
 

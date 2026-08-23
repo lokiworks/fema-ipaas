@@ -1,38 +1,38 @@
 import { isNil, tryCatch, unique } from '@fema/core-utils'
 import { type ApLogger, fileSystemUtils } from '@fema/server-utils'
-import { FlowVersion, WorkerToApiContract } from '@fema/shared'
+import { WorkerToApiContract, WorkflowVersion } from '@fema/shared'
 import { cacheUtils } from './cache/cache-paths'
-import { codeBuilder } from './cache/flow/code/code-builder'
-import { flowProvisioning } from './cache/flow/flow-provisioning'
+import { codeBuilder } from './cache/workflow/code/code-builder'
+import { workflowProvisioning } from './cache/workflow/workflow-provisioning'
 import { CodeArtifact, ProvisionInput, ResolveInput, Resolver, ResolveResult, SandboxSettings } from './types'
 
 // The Resolver is the worker-side, Runtime-Kind-independent half of the seam. It owns the only
 // apiClient and turns a job into a fully-materialized ProvisionInput before `execute` is ever called,
 // so the pool only sees healthy, complete inputs. On a cold path it compiles the code and publishes
-// the flow bundle here (apiClient + bun build live on the worker); fetchArchive is bound to the
+// the workflow bundle here (apiClient + bun build live on the worker); fetchArchive is bound to the
 // apiClient and handed to the pool as an opaque thunk — the pool never imports WorkerToApiContract.
 export function createResolver({ apiClient, basePath, getSettings, log }: CreateResolverParams): Resolver {
     return {
         async resolve(input: ResolveInput): Promise<ResolveResult> {
             let connectors = input.connectors ?? []
             let codes: CodeArtifact[] = input.codes ?? []
-            let flowVersion: FlowVersion | undefined
+            let workflowVersion: WorkflowVersion | undefined
 
-            if (!isNil(input.flow)) {
-                const resolved = await flowProvisioning(log, apiClient, basePath, getSettings).resolve({ flow: input.flow, platformId: input.platformId })
-                if (resolved.kind === 'flow-not-found') {
-                    return { kind: 'flow-not-found' }
+            if (!isNil(input.workflow)) {
+                const resolved = await workflowProvisioning(log, apiClient, basePath, getSettings).resolve({ workflow: input.workflow, platformId: input.platformId })
+                if (resolved.kind === 'workflow-not-found') {
+                    return { kind: 'workflow-not-found' }
                 }
                 if (resolved.kind === 'disabled') {
                     return { kind: 'disabled', failedStep: resolved.failedStep }
                 }
-                flowVersion = resolved.flowVersion
+                workflowVersion = resolved.workflowVersion
                 connectors = [...connectors, ...resolved.connectors]
                 if (resolved.code.kind === 'source') {
                     codes = [...codes, ...resolved.code.steps]
                     // Cold path: compile here so the bundle can be published. Publish only when every
                     // code step built cleanly — a transient bun install failure must never be baked into
-                    // the shared flow bundle (GIT-1608). A failed compile/publish never fails the run;
+                    // the shared workflow bundle (GIT-1608). A failed compile/publish never fails the run;
                     // the pool recompiles from source.
                     const allStepsBuilt = await compileCodeSteps({ codes, basePath, getSettings, log })
                     if (allStepsBuilt && !isNil(resolved.publishBundle)) {
@@ -45,13 +45,13 @@ export function createResolver({ apiClient, basePath, getSettings, log }: Create
 
             const provision: ProvisionInput = {
                 platformId: input.platformId,
-                flowVersionId: flowVersion?.id,
+                workflowVersionId: workflowVersion?.id,
                 connectors: uniqueConnectors,
                 codes,
                 publicApiUrl: input.publicApiUrl,
                 engineToken: input.engineToken,
             }
-            return { kind: 'ready', provision, flowVersion }
+            return { kind: 'ready', provision, workflowVersion }
         },
     }
 }

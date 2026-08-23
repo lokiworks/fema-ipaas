@@ -6,18 +6,18 @@ import { redisConnections } from '../database/redis-connections'
 const DUPLICATE_RECORD_EXPIRATION_SECONDS = 30
 
 export const dedupeService = {
-    filterUniquePayloads: async (flowVersionId: string, payloads: unknown[]): Promise<unknown[]> => {
-        const filteredPayloads = await Promise.all(payloads.map(async (payload) => isDuplicated(flowVersionId, payload)))
+    filterUniquePayloads: async (workflowVersionId: string, payloads: unknown[]): Promise<unknown[]> => {
+        const filteredPayloads = await Promise.all(payloads.map(async (payload) => isDuplicated(workflowVersionId, payload)))
         return payloads.filter((_, index) => !filteredPayloads[index]).map(removeDedupeKey)
     },
 }
 
-const isDuplicated = async (flowVersionId: string, payload: unknown) => {
+const isDuplicated = async (workflowVersionId: string, payload: unknown) => {
     const dedupeKeyValue = extractDedupeKey(payload)
     if (isNil(dedupeKeyValue)) {
         return false
     }
-    const key = `${flowVersionId}:${dedupeKeyValue}`
+    const key = `${workflowVersionId}:${dedupeKeyValue}`
     const value = await incrementInRedis(key, DUPLICATE_RECORD_EXPIRATION_SECONDS)
     return value > 1
 }

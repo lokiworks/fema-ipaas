@@ -1,31 +1,31 @@
 import { LATEST_CONTEXT_VERSION } from '@fema/connector-sdk'
 import { isNil, spreadIfDefined } from '@fema/core-utils'
-import { FlowActionType, flowStructureUtil, FlowTriggerType, FlowVersion, GenericStepOutput, LoopStepOutput, RouterStepOutput, StepOutputStatus } from '@fema/shared'
+import { GenericStepOutput, LoopStepOutput, RouterStepOutput, StepOutputStatus, WorkflowActionType, workflowStructureUtil, WorkflowTriggerType, WorkflowVersion } from '@fema/shared'
 import { createPropsResolver } from '../../variables/props-resolver'
 import { EngineConstants } from './engine-constants'
-import { FlowExecutorContext } from './flow-execution-context'
+import { WorkflowExecutorContext } from './workflow-execution-context'
 
 export const testExecutionContext = {
-    async stateFromFlowVersion({
-        flowVersion,
+    async stateFromWorkflowVersion({
+        workflowVersion,
         excludedStepName,
         workspaceId,
         engineToken,
         apiUrl,
         sampleData,
         engineConstants,
-    }: TestExecutionParams): Promise<FlowExecutorContext> {
-        let flowExecutionContext = FlowExecutorContext.empty({
+    }: TestExecutionParams): Promise<WorkflowExecutorContext> {
+        let workflowExecutionContext = WorkflowExecutorContext.empty({
             engineApi: { engineToken, internalApiUrl: apiUrl },
             slicingEnabled: false,
         })
-        if (isNil(flowVersion)) {
-            return flowExecutionContext
+        if (isNil(workflowVersion)) {
+            return workflowExecutionContext
         }
         
-        const flowSteps = flowStructureUtil.getAllSteps(flowVersion.trigger)
+        const workflowSteps = workflowStructureUtil.getAllSteps(workflowVersion.trigger)
 
-        for (const step of flowSteps) {
+        for (const step of workflowSteps) {
             const { name } = step
             if (name === excludedStepName) {
                 continue
@@ -33,8 +33,8 @@ export const testExecutionContext = {
 
             const stepType = step.type
             switch (stepType) {
-                case FlowActionType.ROUTER:
-                    flowExecutionContext = await flowExecutionContext.upsertStep(
+                case WorkflowActionType.ROUTER:
+                    workflowExecutionContext = await workflowExecutionContext.upsertStep(
                         step.name,
                         RouterStepOutput.create({
                             input: step.settings,
@@ -44,7 +44,7 @@ export const testExecutionContext = {
                         }),
                     )
                     break
-                case FlowActionType.LOOP_ON_ITEMS: {
+                case WorkflowActionType.LOOP_ON_ITEMS: {
                     const { resolvedInput } = await createPropsResolver({
                         apiUrl,
                         workspaceId,
@@ -53,9 +53,9 @@ export const testExecutionContext = {
                         stepNames: engineConstants.stepNames,
                     }).resolve<{ items: unknown[] }>({
                         unresolvedInput: step.settings,
-                        executionState: flowExecutionContext,
+                        executionState: workflowExecutionContext,
                     })
-                    flowExecutionContext = await flowExecutionContext.upsertStep(
+                    workflowExecutionContext = await workflowExecutionContext.upsertStep(
                         step.name,
                         LoopStepOutput.init({
                             input: step.settings,
@@ -67,11 +67,11 @@ export const testExecutionContext = {
                     )
                     break
                 }
-                case FlowActionType.CONNECTOR:
-                case FlowActionType.CODE:
-                case FlowTriggerType.EMPTY:
-                case FlowTriggerType.CONNECTOR:
-                    flowExecutionContext = await flowExecutionContext.upsertStep(step.name, GenericStepOutput.create({
+                case WorkflowActionType.CONNECTOR:
+                case WorkflowActionType.CODE:
+                case WorkflowTriggerType.EMPTY:
+                case WorkflowTriggerType.CONNECTOR:
+                    workflowExecutionContext = await workflowExecutionContext.upsertStep(step.name, GenericStepOutput.create({
                         input: {},
                         type: stepType,
                         status: StepOutputStatus.SUCCEEDED,
@@ -80,14 +80,14 @@ export const testExecutionContext = {
                     break
             }
         }
-        return flowExecutionContext
+        return workflowExecutionContext
     },
 }
 
 
 type TestExecutionParams = {
     engineConstants: EngineConstants
-    flowVersion?: FlowVersion
+    workflowVersion?: WorkflowVersion
     excludedStepName?: string
     workspaceId: string
     apiUrl: string

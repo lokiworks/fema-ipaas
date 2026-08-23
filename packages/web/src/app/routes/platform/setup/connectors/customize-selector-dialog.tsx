@@ -167,7 +167,7 @@ const SelectorTabsEditor = ({ onClose }: { onClose: () => void }) => {
         <SheetTitle>{t('Customize Connector Selector')}</SheetTitle>
         <SheetDescription>
           {t(
-            'Reorder, rename, hide tabs, or add custom tabs to highlight specific connectors in the flow builder.',
+            'Reorder, rename, hide tabs, or add custom tabs to highlight specific connectors in the workflow builder.',
           )}
         </SheetDescription>
       </SheetHeader>

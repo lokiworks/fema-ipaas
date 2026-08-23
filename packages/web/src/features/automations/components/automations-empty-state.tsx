@@ -11,12 +11,12 @@ import { useEmbedding } from '@/components/providers/embed-provider';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ConnectorIconList } from '@/features/connectors/components/connector-icon-list';
-import { ImportFlowDialog } from '@/features/flows/components/import-flow-dialog';
-import { flowHooks } from '@/features/flows/hooks/flow-hooks';
 import { TemplatesBrowseDialog } from '@/features/templates';
 import { UseTemplateDialog } from '@/features/templates/components/use-template-dialog';
 import { templatesHooks } from '@/features/templates/hooks/templates-hook';
 import { useGradientFromConnectors } from '@/features/templates/hooks/use-gradient-from-connectors';
+import { ImportWorkflowDialog } from '@/features/workflows/components/import-workflow-dialog';
+import { workflowHooks } from '@/features/workflows/hooks/workflow-hooks';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { platformHooks } from '@/hooks/platform-hooks';
@@ -105,9 +105,9 @@ const SuggestedTemplateCard = ({
   template,
   onSelect,
 }: SuggestedTemplateCardProps) => {
-  const hasFlows = template.flows && template.flows.length > 0;
+  const hasWorkflows = template.workflows && template.workflows.length > 0;
   const { gradient } = useGradientFromConnectors(
-    hasFlows ? template.flows![0]?.trigger : undefined,
+    hasWorkflows ? template.workflows![0]?.trigger : undefined,
   );
 
   const displayTags = template.tags.slice(0, 1);
@@ -152,9 +152,9 @@ const SuggestedTemplateCard = ({
           background: gradient || 'rgba(0,0,0,0.02)',
         }}
       >
-        {hasFlows && template.flows![0]?.trigger && (
+        {hasWorkflows && template.workflows![0]?.trigger && (
           <ConnectorIconList
-            trigger={template.flows![0]?.trigger}
+            trigger={template.workflows![0]?.trigger}
             maxNumberOfIconsToShow={4}
             size="md"
             className="flex gap-0.5"
@@ -198,7 +198,9 @@ export const AutomationsEmptyState = ({
   const [useTemplateDialogOpen, setUseTemplateDialogOpen] = useState(false);
 
   const { checkAccess } = useAuthorization();
-  const userHasPermissionToWriteFlow = checkAccess(Permission.WRITE_FLOW);
+  const userHasPermissionToWriteWorkflow = checkAccess(
+    Permission.WRITE_WORKFLOW,
+  );
 
   const { platform } = platformHooks.useCurrentPlatform();
   const isShowingOfficialTemplates = !platform.plan.manageTemplatesEnabled;
@@ -208,8 +210,8 @@ export const AutomationsEmptyState = ({
       isShowingOfficialTemplates ? TemplateType.OFFICIAL : TemplateType.CUSTOM,
     );
 
-  const { mutate: createFlow, isPending: isCreateFlowPending } =
-    flowHooks.useStartFromScratch(UncategorizedFolderId);
+  const { mutate: createWorkflow, isPending: isCreateWorkflowPending } =
+    workflowHooks.useStartFromScratch(UncategorizedFolderId);
 
   const handleTemplateSelect = (template: Template) => {
     if (embedState.isEmbedded) {
@@ -244,26 +246,26 @@ export const AutomationsEmptyState = ({
           <GetStartedCard
             icon={<Workflow className="h-5 w-5 text-primary" />}
             iconBgClass="bg-primary-100"
-            title={t('Build a Flow')}
+            title={t('Build a Workflow')}
             description={t('Create automated workflows')}
           >
             <ActionRow
               icon={<Plus className="h-4 w-4" />}
               label={t('Start from scratch')}
-              onClick={() => createFlow()}
-              disabled={isCreateFlowPending}
-              hasPermission={userHasPermissionToWriteFlow}
+              onClick={() => createWorkflow()}
+              disabled={isCreateWorkflowPending}
+              hasPermission={userHasPermissionToWriteWorkflow}
             />
             <PermissionNeededTooltip
-              hasPermission={userHasPermissionToWriteFlow}
+              hasPermission={userHasPermissionToWriteWorkflow}
             >
-              <ImportFlowDialog
+              <ImportWorkflowDialog
                 insideBuilder={false}
                 onRefresh={onRefresh}
                 folderId={UncategorizedFolderId}
               >
                 <button
-                  disabled={!userHasPermissionToWriteFlow}
+                  disabled={!userHasPermissionToWriteWorkflow}
                   className="flex items-center justify-between w-full px-4 py-3 text-left hover:bg-muted/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed border-t"
                 >
                   <div className="flex items-center gap-3">
@@ -274,7 +276,7 @@ export const AutomationsEmptyState = ({
                   </div>
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </button>
-              </ImportFlowDialog>
+              </ImportWorkflowDialog>
             </PermissionNeededTooltip>
             <ActionRow
               icon={<Sparkles className="h-4 w-4" />}
@@ -286,7 +288,7 @@ export const AutomationsEmptyState = ({
                   navigate('/templates');
                 }
               }}
-              hasPermission={userHasPermissionToWriteFlow}
+              hasPermission={userHasPermissionToWriteWorkflow}
             />
           </GetStartedCard>
         </div>

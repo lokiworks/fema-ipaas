@@ -6,26 +6,26 @@ import { testTriggerService } from '../../trigger/test-trigger/test-trigger-serv
 
 export const testTriggerController: FastifyPluginAsyncZod = async (app) => {
     app.post('/', TestTriggerRequest, async (req) => {
-        const { flowId, flowVersionId, testStrategy } = req.body
+        const { workflowId, workflowVersionId, testStrategy } = req.body
 
         const logWithContext = req.log.child({
-            flow: { id: flowId },
-            flowVersion: { id: flowVersionId },
+            workflow: { id: workflowId },
+            workflowVersion: { id: workflowVersionId },
             workspace: { id: req.workspaceId },
             testStrategy,
         })
         return testTriggerService(logWithContext).test({
-            flowId,
-            flowVersionId,
+            workflowId,
+            workflowVersionId,
             workspaceId: req.workspaceId,
             testStrategy,
         })
     })
     app.delete('/', CancelTestTriggerRequest, async (req) => {
-        const { flowId } = req.body
+        const { workflowId } = req.body
 
         return testTriggerService(req.log).cancel({
-            flowId,
+            workflowId,
             workspaceId: req.workspaceId,
         })
     })

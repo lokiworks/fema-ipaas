@@ -1,19 +1,19 @@
 {
-  "Trigger and call another sub flow.": "Trigger und rufen Sie einen anderen Subfluss.",
-  "Call Flow": "Anruffluss",
+  "Trigger and call another sub workflow.": "Trigger und rufen Sie einen anderen Subfluss.",
+  "Call Workflow": "Anruffluss",
   "Return Response": "Rückgabeantwort",
-  "Call a flow that has \"Callable Flow\" trigger": "Rufe einen Fluss auf, der \"Callable Flow\" auslöst",
-  "Return response to the original flow": "Zurück zur Antwort auf den ursprünglichen Fluss",
-  "Flow": "Ablauf",
+  "Call a workflow that has \"Callable Workflow\" trigger": "Rufe einen Fluss auf, der \"Callable Workflow\" auslöst",
+  "Return response to the original workflow": "Zurück zur Antwort auf den ursprünglichen Fluss",
+  "Workflow": "Ablauf",
   "Mode": "Modus",
   "Wait for Response": "Warte auf Antwort",
   "Response": "Antwort",
-  "The flow to execute. Only published flows with a \"Callable Flow\" trigger appear here — unpublished or disabled subflows are hidden.": "Der auszuführende Strömung. Nur veröffentlichte Ströme mit einem \"Callable Flow\" Trigger erscheinen hier — unveröffentlichte oder deaktivierte Subflows werden ausgeblendet.",
+  "The workflow to execute. Only published workflows with a \"Callable Workflow\" trigger appear here — unpublished or disabled subflows are hidden.": "Der auszuführende Strömung. Nur veröffentlichte Ströme mit einem \"Callable Workflow\" Trigger erscheinen hier — unveröffentlichte oder deaktivierte Subflows werden ausgeblendet.",
   "Choose Simple for key-value or Advanced for JSON.": "Wählen Sie Einfache für den Schlüsselwert oder Erweitert für JSON.",
   "Simple": "Einfach",
   "Advanced": "Erweitert",
-  "Callable Flow": "Anrufbarer Flow",
-  "Waiting to be triggered from another flow": "Warte auf Auslösung von einem anderen Fluss",
+  "Callable Workflow": "Anrufbarer Workflow",
+  "Waiting to be triggered from another workflow": "Warte auf Auslösung von einem anderen Fluss",
   "Sample Data": "Beispieldaten",
-  "The schema to be passed to the flow": "Das Schema, das an den Fluss übergeben werden soll"
+  "The schema to be passed to the workflow": "Das Schema, das an den Fluss übergeben werden soll"
 }

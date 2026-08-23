@@ -5,10 +5,10 @@ status: accepted
 # Approval links require a POST confirmation on a dedicated route
 
 ## Decision
-Approval emails link to a dedicated `/:id/waitpoints/:waitpointId/confirm` route that serves an HTML confirmation page on GET/HEAD (never consuming the waitpoint), with Approve/Disapprove buttons; only the resulting POST resumes the flow. A single button replaces the two bare GET links across email, Telegram, Discord, and Teams, every channel whose buttons are browser `url:` links. The existing resume routes keep resuming on a bare GET, now marked `@deprecated`.
+Approval emails link to a dedicated `/:id/waitpoints/:waitpointId/confirm` route that serves an HTML confirmation page on GET/HEAD (never consuming the waitpoint), with Approve/Disapprove buttons; only the resulting POST resumes the workflow. A single button replaces the two bare GET links across email, Telegram, Discord, and Teams, every channel whose buttons are browser `url:` links. The existing resume routes keep resuming on a bare GET, now marked `@deprecated`.
 
 ## Context
-Paused flows resume via an unauthenticated, single-use endpoint whose only guard is an unguessable id (`executionId` + `waitpointId`). The approval connectors embedded two bare GET links in emails. Email security scanners (Microsoft Safe Links, Mimecast, Proofpoint) pre-fetch URLs with a GET before delivery, indistinguishable from a human click, so the prefetch consumed the waitpoint and could resume with an arbitrary outcome, while the human's later click saw "expired" (Pylon #5253, a regression since the 0.82.0 waitpoint rewrite).
+Paused workflows resume via an unauthenticated, single-use endpoint whose only guard is an unguessable id (`executionId` + `waitpointId`). The approval connectors embedded two bare GET links in emails. Email security scanners (Microsoft Safe Links, Mimecast, Proofpoint) pre-fetch URLs with a GET before delivery, indistinguishable from a human click, so the prefetch consumed the waitpoint and could resume with an arbitrary outcome, while the human's later click saw "expired" (Pylon #5253, a regression since the 0.82.0 waitpoint rewrite).
 
 ## Why
 A GET that never mutates is scanner-safe; only a deliberate POST decides the outcome. A new route is the surgical fix:

@@ -1,13 +1,13 @@
 import { ConnectorMetadata, ConnectorMetadataModel, ConnectorMetadataModelSummary, ConnectorPackageInformation, connectorTranslation } from '@fema/connector-sdk'
 import { apId, assertNotNullOrUndefined, ErrorCode, isNil, LocalesEnum, PlatformError, PlatformId } from '@fema/core-utils'
 import { apVersionUtil } from '@fema/server-utils'
-import { ConnectorAudienceFilter, ConnectorCategory, ConnectorOrderBy, ConnectorPackage, ConnectorSortBy, ConnectorType, EXACT_VERSION_REGEX, flowConnectorUtil, PackageType, PrivateConnectorPackage, PublicConnectorPackage, SuggestionType } from '@fema/shared'
+import { ConnectorAudienceFilter, ConnectorCategory, ConnectorOrderBy, ConnectorPackage, ConnectorSortBy, ConnectorType, EXACT_VERSION_REGEX, PackageType, PrivateConnectorPackage, PublicConnectorPackage, SuggestionType, workflowConnectorUtil } from '@fema/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import semVer from 'semver'
 import { EntityManager, In, IsNull } from 'typeorm'
 import { repoFactory } from '../../core/db/repo-factory'
-import { flowVersionRepo } from '../../flows/flow-version/flow-version.service'
+import { workflowVersionRepo } from '../../workflows/workflow-version/workflow-version.service'
 import { workspaceService } from '../../workspace/workspace-service'
 import { resolveVisibility } from '../connector-visibility'
 import { connectorCache, ConnectorRegistryEntry } from './connector-cache'
@@ -178,11 +178,11 @@ export const connectorMetadataService = (log: FastifyBaseLogger) => {
                     params: { message: 'Only custom connectors can be deleted' },
                 })
             }
-            const flowsUsingConnector = await findFlowsUsingConnector({ connectorName: connector.name, platformId, log })
-            if (flowsUsingConnector.length > 0) {
+            const workflowsUsingConnector = await findWorkflowsUsingConnector({ connectorName: connector.name, platformId, log })
+            if (workflowsUsingConnector.length > 0) {
                 throw new PlatformError({
                     code: ErrorCode.VALIDATION,
-                    params: { message: buildConnectorInUseMessage(flowsUsingConnector) },
+                    params: { message: buildConnectorInUseMessage(workflowsUsingConnector) },
                 })
             }
             await connectorRepos().delete({ name: connector.name, platformId, connectorType: ConnectorType.CUSTOM })
@@ -191,43 +191,43 @@ export const connectorMetadataService = (log: FastifyBaseLogger) => {
     }
 }
 
-async function findFlowsUsingConnector({ connectorName, platformId, log }: FindFlowsUsingConnectorParams): Promise<string[]> {
+async function findWorkflowsUsingConnector({ connectorName, platformId, log }: FindWorkflowsUsingConnectorParams): Promise<string[]> {
     const workspaceIds = await workspaceService(log).getWorkspaceIdsByPlatform(platformId)
     if (workspaceIds.length === 0) {
         return []
     }
-    const latestVersionSubquery = flowVersionRepo()
+    const latestVersionSubquery = workflowVersionRepo()
         .createQueryBuilder('fv_latest')
         .select('fv_latest.id')
-        .where('fv_latest."flowId" = flow.id')
+        .where('fv_latest."workflowId" = workflow.id')
         .orderBy('fv_latest.created', 'DESC')
         .limit(1)
 
-    const candidates = await flowVersionRepo().createQueryBuilder('flow_version')
-        .innerJoin('flow_version.flow', 'flow')
-        .where('flow."workspaceId" IN (:...workspaceIds)', { workspaceIds })
-        .andWhere('flow_version.trigger::text LIKE :needle', { needle: `%"${connectorName}"%` })
-        .andWhere(`(flow_version.id = flow."publishedVersionId" OR flow_version.id = (${latestVersionSubquery.getQuery()}))`)
+    const candidates = await workflowVersionRepo().createQueryBuilder('workflow_version')
+        .innerJoin('workflow_version.workflow', 'workflow')
+        .where('workflow."workspaceId" IN (:...workspaceIds)', { workspaceIds })
+        .andWhere('workflow_version.trigger::text LIKE :needle', { needle: `%"${connectorName}"%` })
+        .andWhere(`(workflow_version.id = workflow."publishedVersionId" OR workflow_version.id = (${latestVersionSubquery.getQuery()}))`)
         .getMany()
 
-    const flowNamesById = new Map<string, string>()
-    for (const flowVersion of candidates) {
-        if (!flowNamesById.has(flowVersion.flowId) && flowConnectorUtil.getUsedConnectors(flowVersion.trigger).includes(connectorName)) {
-            flowNamesById.set(flowVersion.flowId, flowVersion.displayName)
+    const workflowNamesById = new Map<string, string>()
+    for (const workflowVersion of candidates) {
+        if (!workflowNamesById.has(workflowVersion.workflowId) && workflowConnectorUtil.getUsedConnectors(workflowVersion.trigger).includes(connectorName)) {
+            workflowNamesById.set(workflowVersion.workflowId, workflowVersion.displayName)
         }
     }
-    return [...flowNamesById.values()]
+    return [...workflowNamesById.values()]
 }
 
-function buildConnectorInUseMessage(flowNames: string[]): string {
+function buildConnectorInUseMessage(workflowNames: string[]): string {
     const previewLimit = 3
-    const preview = flowNames.slice(0, previewLimit).map((name) => `"${name}"`).join(', ')
-    const remaining = flowNames.length - previewLimit
-    const flowList = remaining > 0 ? `${preview} and ${remaining} more` : preview
-    if (flowNames.length === 1) {
-        return `Cannot delete this connector because it is still used by the flow ${flowList}. Remove the connector from that flow first.`
+    const preview = workflowNames.slice(0, previewLimit).map((name) => `"${name}"`).join(', ')
+    const remaining = workflowNames.length - previewLimit
+    const workflowList = remaining > 0 ? `${preview} and ${remaining} more` : preview
+    if (workflowNames.length === 1) {
+        return `Cannot delete this connector because it is still used by the workflow ${workflowList}. Remove the connector from that workflow first.`
     }
-    return `Cannot delete this connector because it is still used by ${flowNames.length} flows: ${flowList}. Remove the connector from those flows first.`
+    return `Cannot delete this connector because it is still used by ${workflowNames.length} workflows: ${workflowList}. Remove the connector from those workflows first.`
 }
 
 export const getConnectorPackageWithoutArchive = async (
@@ -529,7 +529,7 @@ type DeleteParams = {
     platformId: string
 }
 
-type FindFlowsUsingConnectorParams = {
+type FindWorkflowsUsingConnectorParams = {
     connectorName: string
     platformId: string
     log: FastifyBaseLogger

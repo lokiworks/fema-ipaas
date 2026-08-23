@@ -16,7 +16,7 @@ progressive_disclosure:
     when_to_use:
       - "When testing web applications end-to-end"
       - "When needing cross-browser testing"
-      - "When testing user flows and interactions"
+      - "When testing user workflows and interactions"
       - "When needing screenshot/video recording"
     quick_start:
       - "npm init playwright@latest"
@@ -308,7 +308,7 @@ import { test, expect } from '@playwright/test';
 import { LoginPage } from '../pages/LoginPage';
 import { DashboardPage } from '../pages/DashboardPage';
 
-test('successful login flow', async ({ page }) => {
+test('successful login workflow', async ({ page }) => {
   const loginPage = new LoginPage(page);
   const dashboard = new DashboardPage(page);
 

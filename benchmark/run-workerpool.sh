@@ -43,10 +43,10 @@ echo "Waiting for the stack to settle..."
 sleep 8
 $COMPOSE ps
 
-echo "=== Setting up flow ==="
-FLOW_ID=$(FLOW_ENABLE_TIMEOUT=30 "$ROOT/benchmark/setup.sh")
-echo "Flow ID: $FLOW_ID"
-WEBHOOK="http://localhost:8080/api/v1/webhooks/$FLOW_ID/sync"
+echo "=== Setting up workflow ==="
+WORKFLOW_ID=$(WORKFLOW_ENABLE_TIMEOUT=30 "$ROOT/benchmark/setup.sh")
+echo "Workflow ID: $WORKFLOW_ID"
+WEBHOOK="http://localhost:8080/api/v1/webhooks/$WORKFLOW_ID/sync"
 
 echo "=== COLD BOOT: first request (cold process + cold cache) ==="
 COLD_MS=$(curl -s -o /dev/null -w '%{time_total}' -m 120 \
@@ -60,17 +60,17 @@ hey -n "$TOTAL_REQUESTS" -c "$WORKER_REPLICAS" -t 120 \
     "$WEBHOOK" | tee /tmp/hey-workerpool.txt
 
 echo ""
-echo "=== PER-RUN BREAKDOWN (avg ms across all flow runs, from worker timings) ==="
-# Each EXECUTE_FLOW log line carries a `timings` object. Average the key phases across every run.
+echo "=== PER-RUN BREAKDOWN (avg ms across all workflow runs, from worker timings) ==="
+# Each EXECUTE_WORKFLOW log line carries a `timings` object. Average the key phases across every run.
 $COMPOSE logs --no-log-prefix worker 2>/dev/null \
   | jq -rR 'fromjson? | select(.event=="job.execute" and .timings)
-            | [.timings.flowBundleDownloadMs, .timings.installConnectorsMs, .timings.installEngineMs, .timings.executionMs, .timings.provisionMs] | @tsv' 2>/dev/null \
+            | [.timings.workflowBundleDownloadMs, .timings.installConnectorsMs, .timings.installEngineMs, .timings.executionMs, .timings.provisionMs] | @tsv' 2>/dev/null \
   | awk 'BEGIN{FS="\t"}
          {for(i=1;i<=5;i++){if($i!=""){s[i]+=$i;n[i]++}} runs++}
          END{
            if(runs==0){print "  (no timing samples found)"; exit}
            printf "  samples            : %d runs\n", runs
-           printf "  flow bundle download: %.1f ms\n", (n[1]?s[1]/n[1]:0)
+           printf "  workflow bundle download: %.1f ms\n", (n[1]?s[1]/n[1]:0)
            printf "  connectors install     : %.1f ms\n", (n[2]?s[2]/n[2]:0)
            printf "  engine install     : %.1f ms  (kept across runs -> cache hit)\n", (n[3]?s[3]/n[3]:0)
            printf "  execution          : %.1f ms\n", (n[4]?s[4]/n[4]:0)

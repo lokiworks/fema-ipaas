@@ -1,5 +1,5 @@
 import { isNil } from '@fema/core-utils'
-import { EngineOperationType, EngineResponseStatus, ExecuteTriggerResponse, FlowVersion, PollingJobData, RunEnvironment, StreamStepProgress, TriggerHookType, WorkerJobType } from '@fema/shared'
+import { EngineOperationType, EngineResponseStatus, ExecuteTriggerResponse, PollingJobData, RunEnvironment, StreamStepProgress, TriggerHookType, WorkerJobType, WorkflowVersion } from '@fema/shared'
 import { workerSettings } from '../../config/worker-settings'
 import { FireAndForgetJobResult, JobContext, JobHandler, JobResultKind } from '../types'
 import { recordTriggerRun } from '../utils/trigger-run-recorder'
@@ -10,10 +10,10 @@ export const executePollingJob: JobHandler<PollingJobData, FireAndForgetJobResul
     async execute(ctx: JobContext, data: PollingJobData): Promise<FireAndForgetJobResult> {
         const timeoutInSeconds = workerSettings.getSettings().TRIGGER_TIMEOUT_SECONDS
 
-        const resolved = await ctx.resolver.resolve({ platformId: data.platformId, publicApiUrl: ctx.publicApiUrl, engineToken: ctx.engineToken, flow: { id: data.flowId, versionId: data.flowVersionId, workspaceId: data.workspaceId } })
+        const resolved = await ctx.resolver.resolve({ platformId: data.platformId, publicApiUrl: ctx.publicApiUrl, engineToken: ctx.engineToken, workflow: { id: data.workflowId, versionId: data.workflowVersionId, workspaceId: data.workspaceId } })
 
-        if (resolved.kind === 'flow-not-found') {
-            ctx.log.info({ flowVersion: { id: data.flowVersionId } }, 'Flow version not found for polling trigger, skipping')
+        if (resolved.kind === 'workflow-not-found') {
+            ctx.log.info({ workflowVersion: { id: data.workflowVersionId } }, 'Workflow version not found for polling trigger, skipping')
             return { kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.OK }
         }
 
@@ -21,11 +21,11 @@ export const executePollingJob: JobHandler<PollingJobData, FireAndForgetJobResul
             return { kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.OK }
         }
 
-        // resolved.kind === 'ready' — flowVersion is guaranteed present when flow: is passed to resolve
-        if (isNil(resolved.flowVersion)) {
-            throw new Error('flowVersion missing after resolve')
+        // resolved.kind === 'ready' — workflowVersion is guaranteed present when workflow: is passed to resolve
+        if (isNil(resolved.workflowVersion)) {
+            throw new Error('workflowVersion missing after resolve')
         }
-        const flowVersion: FlowVersion = resolved.flowVersion
+        const workflowVersion: WorkflowVersion = resolved.workflowVersion
 
         try {
             const result = await ctx.runtime.execute({
@@ -34,8 +34,8 @@ export const executePollingJob: JobHandler<PollingJobData, FireAndForgetJobResul
                 operationType: EngineOperationType.EXECUTE_TRIGGER_HOOK,
                 operation: {
                     hookType: TriggerHookType.RUN,
-                    flowVersion,
-                    webhookUrl: getWebhookUrl(ctx.publicApiUrl, data.flowId),
+                    workflowVersion,
+                    webhookUrl: getWebhookUrl(ctx.publicApiUrl, data.workflowId),
                     test: false,
                     workspaceId: data.workspaceId,
                     platformId: data.platformId,
@@ -52,7 +52,7 @@ export const executePollingJob: JobHandler<PollingJobData, FireAndForgetJobResul
                 const triggerResult = result.response as ExecuteTriggerResponse<TriggerHookType.RUN>
                 if (triggerResult.output.length > 0) {
                     await ctx.apiClient.submitPayloads({
-                        flowVersionId: data.flowVersionId,
+                        workflowVersionId: data.workflowVersionId,
                         workspaceId: data.workspaceId,
                         payloads: triggerResult.output,
                         environment: RunEnvironment.PRODUCTION,
@@ -61,13 +61,13 @@ export const executePollingJob: JobHandler<PollingJobData, FireAndForgetJobResul
                 }
             }
 
-            await recordTriggerRun({ apiClient: ctx.apiClient, log: ctx.log, flowVersion, platformId: data.platformId, status: result.status })
+            await recordTriggerRun({ apiClient: ctx.apiClient, log: ctx.log, workflowVersion, platformId: data.platformId, status: result.status })
 
             return { kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.OK, logs: result.logs }
         }
         catch (e) {
             ctx.log.error({ error: String(e) }, 'Polling trigger failed, will retry on next scheduled cycle')
-            await recordTriggerRun({ apiClient: ctx.apiClient, log: ctx.log, flowVersion, platformId: data.platformId, status: EngineResponseStatus.INTERNAL_ERROR })
+            await recordTriggerRun({ apiClient: ctx.apiClient, log: ctx.log, workflowVersion, platformId: data.platformId, status: EngineResponseStatus.INTERNAL_ERROR })
             return { kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.OK }
         }
     },

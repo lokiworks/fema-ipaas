@@ -1,18 +1,12 @@
 import { assertNotNullOrUndefined, isNil } from '@fema/core-utils'
 import { apVersionUtil, onCallService, UNKNOWN_VERSION } from '@fema/server-utils'
-import { ExecutionType, FileCompression, FileLocation, FileType, FlowOperationType, FlowStatus, WorkerGroupScope, WorkerToApiContract } from '@fema/shared'
+import { ExecutionType, FileCompression, FileLocation, FileType, WorkerGroupScope, WorkerToApiContract, WorkflowOperationType, WorkflowStatus } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { connectorMetadataService } from '../../connectors/metadata/connector-metadata-service'
 import { redisConnections } from '../../database/redis-connections'
 import { fileService, getLocationForFile } from '../../file/file.service'
 import { s3Helper } from '../../file/s3-helper'
 import { signedFileTransport } from '../../file/signed-file-transport'
-import { engineRunCallbackService } from '../../flows/execution/engine-run-callback-service'
-import { executionService } from '../../flows/execution/execution-service'
-import { flowSideEffects } from '../../flows/flow/flow-service-side-effects'
-import { flowService } from '../../flows/flow/flow.service'
-import { flowVersionService } from '../../flows/flow-version/flow-version.service'
-import { preWarmWorkersService } from '../../flows/pre-warm-workers'
 import { rejectedPromiseHandler } from '../../helper/promise-handler'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
@@ -20,6 +14,12 @@ import { dedupeService } from '../../trigger/dedupe-service'
 import { triggerEventService } from '../../trigger/trigger-events/trigger-event.service'
 import { triggerRunStats } from '../../trigger/trigger-run/trigger-run-stats'
 import { triggerSourceService } from '../../trigger/trigger-source/trigger-source-service'
+import { engineRunCallbackService } from '../../workflows/execution/engine-run-callback-service'
+import { executionService } from '../../workflows/execution/execution-service'
+import { preWarmWorkersService } from '../../workflows/pre-warm-workers'
+import { workflowSideEffects } from '../../workflows/workflow/workflow-service-side-effects'
+import { workflowService } from '../../workflows/workflow/workflow.service'
+import { workflowVersionService } from '../../workflows/workflow-version/workflow-version.service'
 import { workspaceService } from '../../workspace/workspace-service'
 import { getPlatformGroupQueueName, getWorkspaceGroupQueueName, QueueName, WorkerGroupAssignment } from '../job'
 import { jobBroker } from '../job-queue/job-broker'
@@ -91,15 +91,15 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
         },
 
         async submitPayloads(input) {
-            const { flowVersionId, workspaceId, payloads, httpRequestId, streamStepProgress, environment, parentRunId, failParentOnFailure } = input
+            const { workflowVersionId, workspaceId, payloads, httpRequestId, streamStepProgress, environment, parentRunId, failParentOnFailure } = input
 
-            const flowVersion = await flowVersionService(log).getOne(flowVersionId)
-            if (!flowVersion) {
+            const workflowVersion = await workflowVersionService(log).getOne(workflowVersionId)
+            if (!workflowVersion) {
                 return []
             }
 
             const platformId = await workspaceService(log).getPlatformId(workspaceId)
-            const filterPayloads = await dedupeService.filterUniquePayloads(flowVersionId, payloads)
+            const filterPayloads = await dedupeService.filterUniquePayloads(workflowVersionId, payloads)
 
             const creditsExhausted = false
 
@@ -107,7 +107,7 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
                 filterPayloads.map((payload) =>
                     creditsExhausted
                         ? executionService(log).createQuotaExceededRun({
-                            flowVersion,
+                            workflowVersion,
                             payload,
                             workspaceId,
                             environment,
@@ -116,9 +116,9 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
                             shouldExecuteTriggerOnRetry: false,
                         })
                         : executionService(log).start({
-                            flowId: flowVersion.flowId,
+                            workflowId: workflowVersion.workflowId,
                             environment,
-                            flowVersionId,
+                            workflowVersionId,
                             payload,
                             workspaceId,
                             platformId,
@@ -136,10 +136,10 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
         },
 
         async savePayloads(input) {
-            const { flowId, workspaceId, payloads } = input
+            const { workflowId, workspaceId, payloads } = input
             const savePayloads = payloads.map((payload) =>
                 rejectedPromiseHandler(triggerEventService(log).saveEvent({
-                    flowId,
+                    workflowId,
                     payload,
                     workspaceId,
                 }), log),
@@ -147,7 +147,7 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
             rejectedPromiseHandler(Promise.all(savePayloads), log)
             if (payloads.length > 0) {
                 await triggerSourceService(log).disable({
-                    flowId,
+                    workflowId,
                     workspaceId,
                     simulate: true,
                     ignoreError: true,
@@ -155,16 +155,16 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
             }
         },
 
-        async getFlowVersion(input) {
-            const flowVersion = await flowVersionService(log).getOne(input.versionId)
-            if (isNil(flowVersion)) {
+        async getWorkflowVersion(input) {
+            const workflowVersion = await workflowVersionService(log).getOne(input.versionId)
+            if (isNil(workflowVersion)) {
                 return null
             }
-            const flow = await flowService(log).getOneById(flowVersion.flowId)
-            if (isNil(flow)) {
+            const workflow = await workflowService(log).getOneById(workflowVersion.workflowId)
+            if (isNil(workflow)) {
                 return null
             }
-            return flowVersion
+            return workflowVersion
         },
 
         async getConnector(input) {
@@ -197,14 +197,14 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
             return data
         },
 
-        async getFlowBundle(input) {
+        async getWorkflowBundle(input) {
             // Two intentional lookups (not the redundant double-read): the metadata
             // read decides the transport, so S3-backed bundles never load their bytes
             // into app memory — the worker pulls them straight from S3 via a signed URL.
             const file = await fileService(log).getFile({
-                fileId: input.flowVersionId,
+                fileId: input.workflowVersionId,
                 workspaceId: input.workspaceId,
-                type: FileType.FLOW_BUNDLE,
+                type: FileType.WORKFLOW_BUNDLE,
             })
             if (isNil(file)) {
                 return null
@@ -215,31 +215,31 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
                 return { kind: 'url', url }
             }
             const { data } = await fileService(log).getDataOrThrow({
-                fileId: input.flowVersionId,
+                fileId: input.workflowVersionId,
                 workspaceId: input.workspaceId,
-                type: FileType.FLOW_BUNDLE,
+                type: FileType.WORKFLOW_BUNDLE,
             })
             return { kind: 'inline', data }
         },
 
-        async prepareFlowBundleUpload(input) {
+        async prepareWorkflowBundleUpload(input) {
             // Bundles are only worth persisting on S3-backed storage. On DB storage the
             // bundle would just bloat the database (and a null-data pre-save would throw),
             // so tell the worker to skip publishing and always build inline.
-            if (getLocationForFile(FileType.FLOW_BUNDLE) !== FileLocation.S3) {
+            if (getLocationForFile(FileType.WORKFLOW_BUNDLE) !== FileLocation.S3) {
                 return { kind: 'skip' }
             }
-            // S3 without signed URLs: the worker streams the bytes back via uploadFlowBundle.
-            if (!signedFileTransport.shouldRedirectForType(FileType.FLOW_BUNDLE)) {
+            // S3 without signed URLs: the worker streams the bytes back via uploadWorkflowBundle.
+            if (!signedFileTransport.shouldRedirectForType(FileType.WORKFLOW_BUNDLE)) {
                 return { kind: 'inline' }
             }
             // Signed-PUT path: persist the row (data null) so the s3Key exists, then
             // hand back a signed PUT URL for a direct-to-S3 upload.
             const file = await fileService(log).save({
-                fileId: input.flowVersionId,
+                fileId: input.workflowVersionId,
                 workspaceId: input.workspaceId,
                 platformId: input.platformId,
-                type: FileType.FLOW_BUNDLE,
+                type: FileType.WORKFLOW_BUNDLE,
                 data: null,
                 size: input.size,
                 compression: FileCompression.NONE,
@@ -252,38 +252,38 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
             return { kind: 'url', url }
         },
 
-        async uploadFlowBundle(input) {
+        async uploadWorkflowBundle(input) {
             await fileService(log).save({
-                fileId: input.flowVersionId,
+                fileId: input.workflowVersionId,
                 workspaceId: input.workspaceId,
                 platformId: input.platformId,
-                type: FileType.FLOW_BUNDLE,
+                type: FileType.WORKFLOW_BUNDLE,
                 data: input.data,
                 size: input.data.length,
                 compression: FileCompression.NONE,
             })
         },
 
-        async disableFlow(input) {
-            const { flowId, workspaceId } = input
-            const flow = await flowService(log).getOneOrThrow({ id: flowId, workspaceId })
-            if (flow.status === FlowStatus.DISABLED) {
+        async disableWorkflow(input) {
+            const { workflowId, workspaceId } = input
+            const workflow = await workflowService(log).getOneOrThrow({ id: workflowId, workspaceId })
+            if (workflow.status === WorkflowStatus.DISABLED) {
                 return
             }
             const platformId = await workspaceService(log).getPlatformId(workspaceId)
-            const disabledFlow = await flowService(log).update({
-                id: flowId,
+            const disabledWorkflow = await workflowService(log).update({
+                id: workflowId,
                 userId: null,
                 workspaceId,
                 platformId,
                 emitEvents: false,
                 operation: {
-                    type: FlowOperationType.CHANGE_STATUS,
-                    request: { status: FlowStatus.DISABLED },
+                    type: WorkflowOperationType.CHANGE_STATUS,
+                    request: { status: WorkflowStatus.DISABLED },
                 },
             })
-            flowSideEffects(log).onDisabledByWorker({ flow: disabledFlow, workspaceId, platformId })
-            log.info({ flow: { id: flowId }, workspace: { id: workspaceId } }, '[workerRpc#disableFlow] Flow disabled by worker request')
+            workflowSideEffects(log).onDisabledByWorker({ workflow: disabledWorkflow, workspaceId, platformId })
+            log.info({ workflow: { id: workflowId }, workspace: { id: workspaceId } }, '[workerRpc#disableWorkflow] Workflow disabled by worker request')
         },
 
     }

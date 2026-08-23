@@ -11,7 +11,7 @@ A license key is a self-hosted customer's **activation/recovery handle** for the
 ### How it works
 - `autumnBilling.activateLicense({ platformId, licenseKey })` — calls `autumnConsole.activate({ licenseKey })` (`POST {console}/api/v1/billing/activate`, key as Bearer token), then saves `platform_plan.licenseKey`, stores the returned credentials via `platformPlanService.setAutumnCredentials`, and runs `refreshEntitlements`.
 - Console `/activate` is idempotent — a key maps to one Autumn customer, so re-activating on a fresh instance returns the same customer + creds (support hands the key back to a customer who lost their instance).
-- `refreshEntitlements` — fetches the Autumn customer and writes `mapAutumnFeaturesToPlatformPlan` output onto `platform_plan`: `plan`, `billedTeamProjectsLimit`, `usersLimit`, `activeFlowsLimit`, `includedCredits`, and every boolean flag feature.
+- `refreshEntitlements` — fetches the Autumn customer and writes `mapAutumnFeaturesToPlatformPlan` output onto `platform_plan`: `plan`, `billedTeamProjectsLimit`, `usersLimit`, `activeWorkflowsLimit`, `includedCredits`, and every boolean flag feature.
 - `ensureEnrolled` — lazy enrollment under a `distributedLock`; if a `licenseKey` is already stored it re-activates through the console, otherwise `enrollFree` with the platform owner's email.
 - `provisionLicenseKeyIfPaid` — during `refreshEntitlements`, self-serve paid customers who never entered a key get one minted by the console and saved, so every paying platform ends up with a recovery handle.
 
@@ -39,7 +39,7 @@ Entry point: `activateLicense` on `billingProvider` (CE no-op in billing-provide
 - `packages/server/api/src/app/ee/platform/platform-plan/billing-providers/autumn-utils.ts` — `autumnConsole.activate`, `ensureEnrolled`, `refreshEntitlements`, `provisionLicenseKeyIfPaid`
 - `packages/server/api/src/app/ee/platform/admin/` — admin controller (`/platforms/apply-license-key`) and `applyLicenseKeyByEmail` service
 - `packages/core/shared/src/lib/management/platform/platform.request.ts` — `ApplyLicenseKeyByEmailRequestBody`
-- `packages/web/src/features/billing/components/` — `activate-license-dialog.tsx` (activation flow) and `license-key.tsx` (key display)
+- `packages/web/src/features/billing/components/` — `activate-license-dialog.tsx` (activation workflow) and `license-key.tsx` (key display)
 - `packages/web/src/api/platforms-api.ts` — `activateLicenseKey()`; mutation in `packages/web/src/hooks/platform-hooks.ts`
 
 Paths verified 2026-07-26. An earlier version described the pre-Autumn world (`packages/server/api/src/app/ee/license-keys/`, remote verification against `secrets.fema.local`, `applyLimits`, `TRIAL_TRACKER`); that module was removed.

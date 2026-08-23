@@ -1,4 +1,4 @@
-import { FolderDto, PopulatedFlow } from '@fema/shared';
+import { FolderDto, PopulatedWorkflow } from '@fema/shared';
 
 import { AutomationsFilters, FolderContent, TreeItem } from './types';
 
@@ -6,23 +6,23 @@ export const DEFAULT_PAGE_SIZE = 10;
 export const PAGE_SIZE_OPTIONS = [10, 20, 50];
 export const FOLDER_PAGE_SIZE = 50;
 
-export function getUpdatedDate(item: PopulatedFlow | FolderDto): number {
+export function getUpdatedDate(item: PopulatedWorkflow | FolderDto): number {
   return new Date(item.updated).getTime();
 }
 
-export function getItemName(item: PopulatedFlow): string {
+export function getItemName(item: PopulatedWorkflow): string {
   return item.version.displayName;
 }
 
-export function mergeAndSortItems(flows: PopulatedFlow[]): TreeItem[] {
+export function mergeAndSortItems(workflows: PopulatedWorkflow[]): TreeItem[] {
   const items: TreeItem[] = [];
 
-  flows.forEach((flow) => {
+  workflows.forEach((workflow) => {
     items.push({
-      id: flow.id,
-      type: 'flow',
-      name: flow.version.displayName,
-      data: flow,
+      id: workflow.id,
+      type: 'workflow',
+      name: workflow.version.displayName,
+      data: workflow,
       depth: 0,
       folderId: null,
     });
@@ -40,12 +40,12 @@ export function buildFolderChildren(
 ): TreeItem[] {
   const children: TreeItem[] = [];
 
-  content.flows.forEach((flow) => {
+  content.workflows.forEach((workflow) => {
     children.push({
-      id: flow.id,
-      type: 'flow',
-      name: flow.version.displayName,
-      data: flow,
+      id: workflow.id,
+      type: 'workflow',
+      name: workflow.version.displayName,
+      data: workflow,
       depth: 1,
       folderId,
     });
@@ -73,7 +73,7 @@ export function buildFolderChildren(
 
 export function buildTreeItems(
   folders: FolderDto[],
-  rootFlows: PopulatedFlow[],
+  rootWorkflows: PopulatedWorkflow[],
   folderContents: Map<string, FolderContent>,
   folderCounts: Map<string, number>,
   folderVisibleCounts: Map<string, number>,
@@ -96,10 +96,10 @@ export function buildTreeItems(
   });
 
   const folderIdSet = new Set(folders.map((f) => f.id));
-  const dedupedFlows = rootFlows.filter(
+  const dedupedWorkflows = rootWorkflows.filter(
     (f) => !f.folderId || !folderIdSet.has(f.folderId),
   );
-  const rootItems = mergeAndSortItems(dedupedFlows);
+  const rootItems = mergeAndSortItems(dedupedWorkflows);
   const allTopLevel = [...folderItems, ...rootItems];
   allTopLevel.sort((a, b) => {
     const aOrder = pinnedList ? pinnedList.indexOf(a.id) : -1;
@@ -149,7 +149,7 @@ export function buildTreeItems(
 }
 
 export function buildFilteredTreeItems(
-  flows: PopulatedFlow[],
+  workflows: PopulatedWorkflow[],
   folders: FolderDto[],
   folderVisibleCounts: Map<string, number>,
   page: number,
@@ -165,14 +165,16 @@ export function buildFilteredTreeItems(
   const folderChildren = new Map<string, TreeItem[]>();
   const rootItems: TreeItem[] = [];
 
-  flows.forEach((flow) => {
+  workflows.forEach((workflow) => {
     const itemFolderId =
-      flow.folderId && folderMap.has(flow.folderId) ? flow.folderId : null;
+      workflow.folderId && folderMap.has(workflow.folderId)
+        ? workflow.folderId
+        : null;
     const item: TreeItem = {
-      id: flow.id,
-      type: 'flow',
-      name: flow.version.displayName,
-      data: flow,
+      id: workflow.id,
+      type: 'workflow',
+      name: workflow.version.displayName,
+      data: workflow,
       depth: itemFolderId ? 1 : 0,
       folderId: itemFolderId,
     };

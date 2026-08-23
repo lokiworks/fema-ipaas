@@ -13,9 +13,9 @@ WORKER_REPLICAS=${WORKER_REPLICAS:-2}
 
 # SANDBOXED mode needs more time for sandbox initialization
 if [ "$EXECUTION_MODE" = "SANDBOXED" ]; then
-  export FLOW_ENABLE_TIMEOUT=120
+  export WORKFLOW_ENABLE_TIMEOUT=120
 else
-  export FLOW_ENABLE_TIMEOUT=30
+  export WORKFLOW_ENABLE_TIMEOUT=30
 fi
 
 COMPOSE="docker compose -f $(dirname "$0")/docker-compose.yml"
@@ -39,16 +39,16 @@ echo "Waiting for containers to settle..."
 sleep 5
 $COMPOSE ps
 
-echo "=== Setting up flow ==="
-FLOW_ID=$(FLOW_ENABLE_TIMEOUT=$FLOW_ENABLE_TIMEOUT benchmark/setup.sh)
-echo "Flow ID: $FLOW_ID"
+echo "=== Setting up workflow ==="
+WORKFLOW_ID=$(WORKFLOW_ENABLE_TIMEOUT=$WORKFLOW_ENABLE_TIMEOUT benchmark/setup.sh)
+echo "Workflow ID: $WORKFLOW_ID"
 
 echo "=== Warmup ==="
 hey -n 500 -c "$WORKER_REPLICAS" -t 60 \
     -m POST \
     -H "Content-Type: application/json" \
     -d '{"test":true}' \
-    "http://localhost:8080/api/v1/webhooks/$FLOW_ID/sync" \
+    "http://localhost:8080/api/v1/webhooks/$WORKFLOW_ID/sync" \
     | tail -5
 
 echo "=== Benchmark ($TOTAL_REQUESTS requests, $WORKER_REPLICAS concurrency) ==="
@@ -58,7 +58,7 @@ hey -n "$TOTAL_REQUESTS" \
     -m POST \
     -H "Content-Type: application/json" \
     -d '{"test":true}' \
-    "http://localhost:8080/api/v1/webhooks/$FLOW_ID/sync" \
+    "http://localhost:8080/api/v1/webhooks/$WORKFLOW_ID/sync" \
     | tee /tmp/hey-output.txt
 
 echo "=== Parsing results ==="

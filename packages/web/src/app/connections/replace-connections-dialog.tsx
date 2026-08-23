@@ -1,5 +1,5 @@
 import { isNil } from '@fema/core-utils';
-import { ConnectionScope, PopulatedFlow } from '@fema/shared';
+import { ConnectionScope, PopulatedWorkflow } from '@fema/shared';
 import { useMutation } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { ChevronDown, GlobeIcon, Info, WorkflowIcon } from 'lucide-react';
@@ -49,7 +49,7 @@ import {
   ConnectorIconWithConnectorName,
   connectorsHooks,
 } from '@/features/connectors';
-import { flowsApi } from '@/features/flows';
+import { workflowsApi } from '@/features/workflows';
 
 type ReplaceConnectionsDialogProps = {
   onConnectionMerged: () => void;
@@ -78,7 +78,9 @@ const ReplaceConnectionsDialog = ({
 }: ReplaceConnectionsDialogProps) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [step, setStep] = useState<STEP>(STEP.SELECT);
-  const [affectedFlows, setAffectedFlows] = useState<Array<PopulatedFlow>>([]);
+  const [affectedWorkflows, setAffectedWorkflows] = useState<
+    Array<PopulatedWorkflow>
+  >([]);
   const [versionScope, setVersionScope] = useState<VersionScope>('draft');
   const [oldConnectionAction, setOldConnectionAction] =
     useState<OldConnectionAction>('keep');
@@ -101,27 +103,29 @@ const ReplaceConnectionsDialog = ({
       refetch: onConnectionMerged,
     });
 
-  const { mutate: fetchAffectedFlows, isPending: isFetchingAffectedFlows } =
-    useMutation({
-      mutationFn: async (externalId: string) => {
-        const response = await flowsApi.list({
-          workspaceId: workspaceId,
-          connectionExternalIds: [externalId],
-          cursor: undefined,
-          limit: 1000,
-        });
-        return response;
-      },
-      onSuccess: (data) => {
-        setAffectedFlows(data.data);
-        setStep(STEP.CONFIRM);
-      },
-      onError: () => {
-        toast.error(t('Error'), {
-          description: t('Failed to get affected flows'),
-        });
-      },
-    });
+  const {
+    mutate: fetchAffectedWorkflows,
+    isPending: isFetchingAffectedWorkflows,
+  } = useMutation({
+    mutationFn: async (externalId: string) => {
+      const response = await workflowsApi.list({
+        workspaceId: workspaceId,
+        connectionExternalIds: [externalId],
+        cursor: undefined,
+        limit: 1000,
+      });
+      return response;
+    },
+    onSuccess: (data) => {
+      setAffectedWorkflows(data.data);
+      setStep(STEP.CONFIRM);
+    },
+    onError: () => {
+      toast.error(t('Error'), {
+        description: t('Failed to get affected workflows'),
+      });
+    },
+  });
 
   const form = useForm<FormData>({
     defaultValues: {
@@ -203,20 +207,20 @@ const ReplaceConnectionsDialog = ({
       }));
   }, [filteredConnections, sourceConnectionId]);
 
-  const publishedAffectedCount = affectedFlows.filter(
-    (flow) => !isNil(flow.publishedVersionId),
+  const publishedAffectedCount = affectedWorkflows.filter(
+    (workflow) => !isNil(workflow.publishedVersionId),
   ).length;
   const applyToPublishedVersions = versionScope === 'published';
-  const deleteBlockedByPublishedFlows =
+  const deleteBlockedByPublishedWorkflows =
     !applyToPublishedVersions && publishedAffectedCount > 0;
   const effectiveDeleteSourceConnection =
     oldConnectionAction === 'delete' &&
-    !deleteBlockedByPublishedFlows &&
+    !deleteBlockedByPublishedWorkflows &&
     !sourceIsGlobalConnection;
 
   const handleBack = () => {
     setStep(STEP.SELECT);
-    setAffectedFlows([]);
+    setAffectedWorkflows([]);
     setVersionScope('draft');
     setOldConnectionAction('keep');
   };
@@ -245,7 +249,7 @@ const ReplaceConnectionsDialog = ({
     setDialogOpen(open);
     form.reset();
     setStep(STEP.SELECT);
-    setAffectedFlows([]);
+    setAffectedWorkflows([]);
     setVersionScope('draft');
     setOldConnectionAction('keep');
   };
@@ -264,7 +268,7 @@ const ReplaceConnectionsDialog = ({
           <DialogDescription>
             {step === STEP.SELECT
               ? t(
-                  'Switch flows from one connection to another. Choose the connection to replace and the one to use instead.',
+                  'Switch workflows from one connection to another. Choose the connection to replace and the one to use instead.',
                 )
               : t('Review what changes, then replace.')}
           </DialogDescription>
@@ -274,7 +278,7 @@ const ReplaceConnectionsDialog = ({
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit((data) =>
-                fetchAffectedFlows(data.sourceConnections.externalId),
+                fetchAffectedWorkflows(data.sourceConnections.externalId),
               )}
               className="flex flex-col gap-4"
             >
@@ -429,7 +433,7 @@ const ReplaceConnectionsDialog = ({
                     {t('Cancel')}
                   </Button>
                 </DialogClose>
-                <Button type="submit" loading={isFetchingAffectedFlows}>
+                <Button type="submit" loading={isFetchingAffectedWorkflows}>
                   {t('Next')}
                 </Button>
               </DialogFooter>
@@ -437,36 +441,38 @@ const ReplaceConnectionsDialog = ({
           </Form>
         ) : (
           <div className="flex flex-col gap-4">
-            {affectedFlows.length === 0 ? (
+            {affectedWorkflows.length === 0 ? (
               <div className="flex items-center gap-2 rounded-md border border-dashed px-3 py-2.5 text-sm text-muted-foreground">
                 <WorkflowIcon className="w-4 h-4 shrink-0" />
-                {t('No flows use this connection yet')}
+                {t('No workflows use this connection yet')}
               </div>
             ) : (
               <Collapsible defaultOpen className="rounded-md border">
                 <CollapsibleTrigger className="group flex w-full items-center justify-between gap-2 px-3 py-2.5 text-sm font-medium">
                   <span>
-                    {t('flowsUsingConnection', { count: affectedFlows.length })}
+                    {t('workflowsUsingConnection', {
+                      count: affectedWorkflows.length,
+                    })}
                   </span>
                   <ChevronDown className="w-4 h-4 shrink-0 text-muted-foreground transition-transform group-data-[state=closed]:-rotate-90" />
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <ScrollArea className="max-h-[140px] px-3 pb-3">
                     <div className="flex flex-wrap gap-1.5">
-                      {affectedFlows.map((flow) => (
+                      {affectedWorkflows.map((workflow) => (
                         <Badge
-                          key={flow.id}
+                          key={workflow.id}
                           variant="secondary"
                           className="max-w-[200px] cursor-pointer hover:bg-secondary/70"
                           onClick={() =>
                             navigate(
-                              `/workspaces/${flow.workspaceId}/flows/${flow.id}`,
+                              `/workspaces/${workflow.workspaceId}/workflows/${workflow.id}`,
                             )
                           }
                         >
                           <WorkflowIcon className="w-3 h-3 shrink-0" />
                           <span className="truncate">
-                            {flow.version.displayName}
+                            {workflow.version.displayName}
                           </span>
                         </Badge>
                       ))}
@@ -480,7 +486,7 @@ const ReplaceConnectionsDialog = ({
               <LabelWithTooltip
                 label={t('Which versions to update')}
                 tooltip={t(
-                  'Draft only updates your working copy. Live flows keep using the old connection until you publish them again. Draft and published republishes affected flows now, which can interrupt running automations.',
+                  'Draft only updates your working copy. Live workflows keep using the old connection until you publish them again. Draft and published republishes affected workflows now, which can interrupt running automations.',
                 )}
               />
               <Select
@@ -509,7 +515,7 @@ const ReplaceConnectionsDialog = ({
               <LabelWithTooltip
                 label={t('After replacing')}
                 tooltip={t(
-                  'Keep the old connection to reuse it later, or delete it for good. Deleting is unavailable while published flows still use it — switch the option above to Draft and published first. Global connections can only be deleted from the platform admin page.',
+                  'Keep the old connection to reuse it later, or delete it for good. Deleting is unavailable while published workflows still use it — switch the option above to Draft and published first. Global connections can only be deleted from the platform admin page.',
                 )}
               />
               <Select
@@ -528,7 +534,8 @@ const ReplaceConnectionsDialog = ({
                   <SelectItem
                     value="delete"
                     disabled={
-                      deleteBlockedByPublishedFlows || sourceIsGlobalConnection
+                      deleteBlockedByPublishedWorkflows ||
+                      sourceIsGlobalConnection
                     }
                   >
                     {t('Delete the old connection')}

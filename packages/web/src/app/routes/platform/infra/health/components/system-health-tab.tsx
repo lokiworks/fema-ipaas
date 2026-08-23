@@ -177,7 +177,7 @@ export function SystemHealthTab({ onSeeRuns }: SystemHealthTabProps) {
         />
         <HealthCard
           title={t('Workers')}
-          description={t('Machines that execute your flows')}
+          description={t('Machines that execute your workflows')}
           icon={<Boxes className="size-4" />}
           rows={workerRows}
           loading={isPending}

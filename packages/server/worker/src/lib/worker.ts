@@ -199,7 +199,7 @@ async function startPollingWorkers(apiClient: WorkerToApiContract): Promise<void
         getSettings: () => sandboxConfig.getSandboxSettings(),
     })
 
-    // Fire-and-forget: warm the connector cache for this platform's flows without blocking the poll loop.
+    // Fire-and-forget: warm the connector cache for this platform's workflows without blocking the poll loop.
     void runtime.prewarm({
         log: logger, 
         apiClient,
@@ -338,10 +338,10 @@ async function executeJob(apiClient: WorkerToApiContract, job: ConsumeJobRequest
         ...spreadIfDefined('requestId', 'requestId' in jobData ? jobData.requestId : 'httpRequestId' in jobData ? jobData.httpRequestId : undefined),
         ...spreadIfDefined('workspace', 'workspaceId' in jobData && jobData.workspaceId != null ? { id: jobData.workspaceId } : undefined),
         ...spreadIfDefined('platform', 'platformId' in jobData ? { id: jobData.platformId } : undefined),
-        ...spreadIfDefined('flow', 'flowId' in jobData ? { id: jobData.flowId } : undefined),
+        ...spreadIfDefined('workflow', 'workflowId' in jobData ? { id: jobData.workflowId } : undefined),
         ...spreadIfDefined('execution', 'runId' in jobData ? { id: jobData.runId } : undefined),
         ...spreadIfDefined('conversation', 'conversationId' in jobData ? { id: jobData.conversationId } : undefined),
-        ...spreadIfDefined('flowVersion', 'flowVersionId' in jobData ? { id: jobData.flowVersionId } : undefined),
+        ...spreadIfDefined('workflowVersion', 'workflowVersionId' in jobData ? { id: jobData.workflowVersionId } : undefined),
     })
     return wideEvent.run({
         logger: jobLogger,

@@ -22,7 +22,7 @@ export const useNewWindow = () => {
 };
 
 export const FROM_QUERY_PARAM = 'from';
-/**State param is for oauth2 flow, it is used to redirect to the page after login*/
+/**State param is for oauth2 workflow, it is used to redirect to the page after login*/
 export const STATE_QUERY_PARAM = 'state';
 export const LOGIN_QUERY_PARAM = 'femaLogin';
 export const PROVIDER_NAME_QUERY_PARAM = 'providerName';

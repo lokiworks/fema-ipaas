@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-FLOW_ID="${1:?Usage: verify-memory.sh <flow_id> [base_url] [total_iterations] [sample_interval]}"
+WORKFLOW_ID="${1:?Usage: verify-memory.sh <workflow_id> [base_url] [total_iterations] [sample_interval]}"
 BASE_URL="${2:-localhost:8080}"
 TOTAL_ITERATIONS="${3:-5000}"
 SAMPLE_INTERVAL="${4:-500}"
 WARMUP_REQUESTS=100
 
-WEBHOOK_URL="http://$BASE_URL/api/v1/webhooks/$FLOW_ID/sync"
+WEBHOOK_URL="http://$BASE_URL/api/v1/webhooks/$WORKFLOW_ID/sync"
 WORKER_CONTAINER=""
 
 echo "=== Engine Memory Stability Test ==="
-echo "Flow ID:          $FLOW_ID"
+echo "Workflow ID:          $WORKFLOW_ID"
 echo "Base URL:         $BASE_URL"
 echo "Total iterations: $TOTAL_ITERATIONS"
 echo "Sample interval:  $SAMPLE_INTERVAL"

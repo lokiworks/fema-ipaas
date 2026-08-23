@@ -172,7 +172,7 @@ grep for them catches the systemic cluster, not just the reported instance:
   `AuthorizationType.PROJECT`; under `publicPlatform`/PLATFORM it is `undefined`, and downstream
   code that reads it as a scope key then "fails open".
 - **Websocket handlers with no per-event RBAC** — the dispatcher validates only the *handshake*
-  `projectId`; individual `addListener` handlers trust client-supplied `resourceId`/`flowVersionId`
+  `projectId`; individual `addListener` handlers trust client-supplied `resourceId`/`workflowVersionId`
   with no per-event permission or resource→project ownership check.
 - **Egress not via `safeHttp`** — AI-provider/connector outbound calls using `connectors-common`
   `httpClient` (native `fetch`/undici) instead of `safeHttp`; user-controlled `baseUrl`/host/
@@ -234,7 +234,7 @@ actionable list sorted by urgency.
 
 ## Step 6 — Fix on approval (never before the user approves)
 
-After the user picks which advisories to fix, follow the playbook's private flow:
+After the user picks which advisories to fix, follow the playbook's private workflow:
 - Draft the patch + a **regression test** that fails before / passes after.
 - Stage it on a `security/<ghsa-id>` branch (private fork), patch-bump only — never bundle
   features. Do not open a public PR before the embargo.

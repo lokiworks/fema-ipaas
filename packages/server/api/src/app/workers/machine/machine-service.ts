@@ -25,10 +25,10 @@ async function buildSettingsResponse(_log: FastifyBaseLogger): Promise<WorkerSet
     const executionMode = system.getOrThrow<ExecutionMode>(AppSystemProp.EXECUTION_MODE)
     const settings = {
         TRIGGER_TIMEOUT_SECONDS: system.getNumberOrThrow(AppSystemProp.TRIGGER_TIMEOUT_SECONDS),
-        PAUSED_FLOW_TIMEOUT_DAYS: system.getNumberOrThrow(AppSystemProp.PAUSED_FLOW_TIMEOUT_DAYS),
+        PAUSED_WORKFLOW_TIMEOUT_DAYS: system.getNumberOrThrow(AppSystemProp.PAUSED_WORKFLOW_TIMEOUT_DAYS),
         EXECUTION_MODE: executionMode,
         TRIGGER_HOOKS_TIMEOUT_SECONDS: system.getNumberOrThrow(AppSystemProp.TRIGGER_HOOKS_TIMEOUT_SECONDS),
-        FLOW_TIMEOUT_SECONDS: system.getNumberOrThrow(AppSystemProp.FLOW_TIMEOUT_SECONDS),
+        WORKFLOW_TIMEOUT_SECONDS: system.getNumberOrThrow(AppSystemProp.WORKFLOW_TIMEOUT_SECONDS),
         LOG_LEVEL: system.getOrThrow(AppSystemProp.LOG_LEVEL),
         LOG_PRETTY: system.getOrThrow(AppSystemProp.LOG_PRETTY),
         ENVIRONMENT: system.getOrThrow(AppSystemProp.ENVIRONMENT),

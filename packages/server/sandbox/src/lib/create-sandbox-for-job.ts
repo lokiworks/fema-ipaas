@@ -37,7 +37,7 @@ export function createSandboxForJob(params: {
             env: buildSandboxEnv({ settings }),
             memoryLimitMb,
             cpuMsPerSec: 1000,
-            timeLimitSeconds: settings.FLOW_TIMEOUT_SECONDS,
+            timeLimitSeconds: settings.WORKFLOW_TIMEOUT_SECONDS,
             reusable,
             maxHttpBufferSizeBytes: maxSocketHttpBufferSizeBytes(settings.MAX_FILE_SIZE_MB),
             basePath,

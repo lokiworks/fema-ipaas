@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { internalErrorToast } from '@/components/ui/sonner';
-import { flowHooks } from '@/features/flows/hooks/flow-hooks';
+import { workflowHooks } from '@/features/workflows/hooks/workflow-hooks';
 import { api } from '@/lib/api';
 import { authenticationSession } from '@/lib/authentication-session';
 import { FROM_QUERY_PARAM } from '@/lib/navigation-utils';
@@ -24,14 +24,14 @@ const TemplateViewer = ({ template }: { template: Template }) => {
 
   const { mutate, isPending } = useMutation({
     mutationFn: async () => {
-      const flows = await flowHooks.importFlowsFromTemplates({
+      const workflows = await workflowHooks.importWorkflowsFromTemplates({
         templates: [template],
         workspaceId: authenticationSession.getWorkspaceId()!,
       });
-      return flows[0];
+      return workflows[0];
     },
     onSuccess: (data) => {
-      navigate(`/flows/${data.id}`);
+      navigate(`/workflows/${data.id}`);
     },
     onError: (error) => {
       if (api.isError(error)) {
@@ -69,11 +69,11 @@ const TemplateViewer = ({ template }: { template: Template }) => {
           <div className="space-y-4">
             <div className="flex flex-row w-full justify-between items-center py-2">
               <span className="text-sm font-medium text-muted-foreground">
-                {t('Steps in this flow')}
+                {t('Steps in this workflow')}
               </span>
-              {template.flows?.[0]?.trigger && (
+              {template.workflows?.[0]?.trigger && (
                 <ConnectorIconList
-                  trigger={template.flows[0].trigger}
+                  trigger={template.workflows[0].trigger}
                   maxNumberOfIconsToShow={5}
                 />
               )}

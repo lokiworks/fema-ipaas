@@ -287,8 +287,10 @@ export default function WorkspacesPage() {
     if (validationUtils.isValidationError(error)) {
       console.error(t('Validation error'), error);
       switch (error.response?.data?.params?.message) {
-        case 'WORKSPACE_HAS_ENABLED_FLOWS':
-          return t('Workspace has enabled flows. Please disable them first.');
+        case 'WORKSPACE_HAS_ENABLED_WORKFLOWS':
+          return t(
+            'Workspace has enabled workflows. Please disable them first.',
+          );
         case 'ACTIVE_WORKSPACE':
           return t(
             'This workspace is active. Please switch to another workspace first.',
@@ -333,7 +335,7 @@ export default function WorkspacesPage() {
       locked={!isEnabled}
       lockTitle={t('Unlock Workspaces')}
       lockDescription={t(
-        'Orchestrate your automation teams across workspaces with their own flows, connections and usage quotas',
+        'Orchestrate your automation teams across workspaces with their own workflows, connections and usage quotas',
       )}
     >
       <div className="flex flex-col w-full">

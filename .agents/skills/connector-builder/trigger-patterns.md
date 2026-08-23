@@ -14,7 +14,7 @@ Two deduplication strategies:
 - **TIMEBASED** -- Each item has a timestamp; only items newer than last poll are returned
 - **LAST_ITEM** -- Each item has an ID; items after the last known ID are returned
 
-**Always pass the whole `context`** to `pollingHelper.onEnable` / `onDisable` / `poll` / `test` -- never a subset like `{ store, auth, propsValue }`. Every field on the helper's param type is optional, so a partial object type-checks and whatever you left out is dropped in silence. The set also grows: `onEnable` now reads `context.isRepublish` to keep the existing `lastPoll`/`lastItem` when a running flow is republished, so a subset call still resets the checkpoint and drops every event since the last poll.
+**Always pass the whole `context`** to `pollingHelper.onEnable` / `onDisable` / `poll` / `test` -- never a subset like `{ store, auth, propsValue }`. Every field on the helper's param type is optional, so a partial object type-checks and whatever you left out is dropped in silence. The set also grows: `onEnable` now reads `context.isRepublish` to keep the existing `lastPoll`/`lastItem` when a running workflow is republished, so a subset call still resets the checkpoint and drops every event since the last poll.
 
 **Editing an existing polling trigger? Fix every `pollingHelper` call in the connector while you're there.** Most connectors in the repo still pass the subset — the SKILL.md carve-out explains why fix-on-touch beats a repo-wide codemod. Mention the fix in your PR description so it doesn't read as an unrelated change.
 
@@ -127,10 +127,10 @@ Pass `props` to `createTrigger` — everything else follows the same pattern as 
 
 ## Webhook Trigger
 
-Use when the API supports webhook registration. The flow:
+Use when the API supports webhook registration. The workflow:
 1. `onEnable` -- Register a webhook with the third-party API using `context.webhookUrl`
 2. `run` -- Process incoming webhook payloads
-3. `onDisable` -- Delete the webhook when the flow is turned off
+3. `onDisable` -- Delete the webhook when the workflow is turned off
 
 ```typescript
 import { createTrigger, TriggerStrategy } from '@fema/connector-sdk';
@@ -183,7 +183,7 @@ export const newRecordWebhookTrigger = createTrigger({
   },
 
   async run(context) {
-    // Return webhook payload as array (each element becomes a separate flow run)
+    // Return webhook payload as array (each element becomes a separate workflow run)
     return [context.payload.body];
   },
 

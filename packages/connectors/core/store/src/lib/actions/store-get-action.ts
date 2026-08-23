@@ -37,7 +37,7 @@ export const storageGetAction = createAction({
   classification: 'READ',
   displayName: 'Get',
   description: 'Get a value from storage',
-  aiMetadata: { description: 'Reads the value stored under a key in the key/value store, falling back to an optional default value when the key is missing. Use it to load state persisted by an earlier step, run, or flow; pair it with Put, which writes the value. Requires the key (max 128 characters) and the matching Store Scope, because a key written in one scope is invisible to the others; read-only and idempotent.', idempotent: true },
+  aiMetadata: { description: 'Reads the value stored under a key in the key/value store, falling back to an optional default value when the key is missing. Use it to load state persisted by an earlier step, run, or workflow; pair it with Put, which writes the value. Requires the key (max 128 characters) and the matching Store Scope, because a key written in one scope is invisible to the others; read-only and idempotent.', idempotent: true },
   errorHandlingOptions: {
     continueOnFailure: {
       hide: true,
@@ -66,8 +66,8 @@ export const storageGetAction = createAction({
             value: ConnectorStoreScope.WORKSPACE,
           },
           {
-            label: 'Flow',
-            value: ConnectorStoreScope.FLOW,
+            label: 'Workflow',
+            value: ConnectorStoreScope.WORKFLOW,
           },
           {
             label: 'Run',

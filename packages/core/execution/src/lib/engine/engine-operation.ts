@@ -4,15 +4,15 @@ import { ExecutionToolStatus, PredefinedInputsStructure } from '@fema/connector-
 import { ConnectionType, ConnectionValue } from '@fema/connector-types'
 import { ExecutionType } from '../execution/state/execution-output'
 import { RunEnvironment } from '../execution/execution'
-import { CodeAction, ConnectorAction } from '../flows/actions/action'
-import { FlowVersion } from '../flows/flow-version'
+import { CodeAction, ConnectorAction } from '../workflows/actions/action'
+import { WorkflowVersion } from '../workflows/workflow-version'
 import { ConnectorPackage } from '@fema/connector-types'
 import { ScheduleOptions } from '@fema/connector-types'
 import { JobPayload } from '../workers/job-data'
 
 export enum EngineOperationType {
     EXTRACT_CONNECTOR_METADATA = 'EXTRACT_CONNECTOR_METADATA',
-    EXECUTE_FLOW = 'EXECUTE_FLOW',
+    EXECUTE_WORKFLOW = 'EXECUTE_WORKFLOW',
     EXECUTE_ACTION = 'EXECUTE_ACTION',
     EXECUTE_PROPERTY = 'EXECUTE_PROPERTY',
     EXECUTE_TRIGGER_HOOK = 'EXECUTE_TRIGGER_HOOK',
@@ -33,7 +33,7 @@ export enum TriggerHookType {
 export type EngineOperation =
     | ExecuteToolOperation
     | ExecuteActionOperation
-    | ExecuteFlowOperation
+    | ExecuteWorkflowOperation
     | ExecutePropsOptions
     | ExecuteTriggerOperation<TriggerHookType>
     | ExecuteExtractConnectorMetadataOperation
@@ -95,21 +95,21 @@ export type ExecuteToolOperation = BaseEngineOperation & {
 
 export type ExecuteActionOperation = BaseEngineOperation & {
     step: ConnectorAction | CodeAction
-    flowVersionId?: string
+    workflowVersionId?: string
 }
 
 export type ExecutePropsOptions = BaseEngineOperation & {
     connector: ConnectorPackage
     propertyName: string
     actionOrTriggerName: string
-    flowVersion?: FlowVersion
+    workflowVersion?: WorkflowVersion
     input: Record<string, unknown>
     sampleData: Record<string, unknown>
     searchValue?: string
 }
 
-type BaseExecuteFlowOperation<T extends ExecutionType> = BaseEngineOperation & {
-    flowVersion: FlowVersion
+type BaseExecuteWorkflowOperation<T extends ExecutionType> = BaseEngineOperation & {
+    workflowVersion: WorkflowVersion
     executionId: ExecutionId
     executionType: T
     runEnvironment: RunEnvironment
@@ -126,17 +126,17 @@ export enum StreamStepProgress {
     NONE = 'NONE',
 }
 
-export type BeginExecuteFlowOperation = BaseExecuteFlowOperation<ExecutionType.BEGIN> & {
+export type BeginExecuteWorkflowOperation = BaseExecuteWorkflowOperation<ExecutionType.BEGIN> & {
     triggerPayload: JobPayload
     executeTrigger: boolean
 }
 
-export type ResumeExecuteFlowOperation = BaseExecuteFlowOperation<ExecutionType.RESUME> & {
+export type ResumeExecuteWorkflowOperation = BaseExecuteWorkflowOperation<ExecutionType.RESUME> & {
     resumePayload: JobPayload
     resumeReason: ResumeReason
 }
 
-export type ExecuteFlowOperation = BeginExecuteFlowOperation | ResumeExecuteFlowOperation
+export type ExecuteWorkflowOperation = BeginExecuteWorkflowOperation | ResumeExecuteWorkflowOperation
 
 export enum ResumeReason {
     WAITPOINT = 'WAITPOINT',
@@ -147,7 +147,7 @@ export enum ResumeReason {
 export type ExecuteTriggerOperation<HT extends TriggerHookType> = BaseEngineOperation & {
     hookType: HT
     test: boolean
-    flowVersion: FlowVersion
+    workflowVersion: WorkflowVersion
     webhookUrl: string
     triggerPayload?: JobPayload
     appWebhookUrl?: string

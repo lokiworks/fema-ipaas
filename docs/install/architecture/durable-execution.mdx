@@ -6,11 +6,11 @@ icon: "shield-check"
 
 <img src="/resources/diagrams/replay-and-skip.png" alt="Replay and skip: on the first attempt the trigger and step 2 are logged before the worker dies at step 3; on resume a fresh worker skips the logged trigger and step 2, re-runs the in-flight step 3, then continues fresh from step 4" />
 
-Without it, a worker that dies mid-flow would restart the whole run from the trigger and re-send emails, re-charge cards, and re-call APIs. Instead, a fresh worker reuses the saved output of every finished step and runs only the first step that had not completed. The same mechanism covers crashes, deploys, long pauses, and retries.
+Without it, a worker that dies mid-workflow would restart the whole run from the trigger and re-send emails, re-charge cards, and re-call APIs. Instead, a fresh worker reuses the saved output of every finished step and runs only the first step that had not completed. The same mechanism covers crashes, deploys, long pauses, and retries.
 
 ## The run log
 
-Every flow run has a **run log**: one compressed checkpoint file with everything needed to resume the run on a fresh worker.
+Every workflow run has a **run log**: one compressed checkpoint file with everything needed to resume the run on a fresh worker.
 
 What is in it:
 
@@ -28,7 +28,7 @@ Each write overwrites the previous copy. Only the latest checkpoint is kept, and
 
 ## Replay and skip
 
-Resume is not a special path. Each time a worker starts a run, it walks the flow graph from the trigger and asks at every step: is this step's output already in the log?
+Resume is not a special path. Each time a worker starts a run, it walks the workflow graph from the trigger and asks at every step: is this step's output already in the log?
 
 - If yes, and the step finished (`SUCCEEDED` or `PAUSED`), the engine returns the saved output and moves on.
 - If no, the engine runs the step, records its output, and continues.

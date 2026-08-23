@@ -44,7 +44,7 @@ FEMA_REUSE_SANDBOX=true               # or false, must be set explicitly
 Routing runs to worker group queues is done by the project rate limiter, so the app server must run with `FEMA_PROJECT_RATE_LIMITER_ENABLED=true`. Without it, assigned projects keep using the shared queue and grouped workers stay idle.
 </Warning>
 
-Once a project is assigned to a group, its flow and webhook runs are routed to that group's dedicated queue (`project-<group-name>-jobs`) and picked up only by workers carrying the matching `FEMA_WORKER_GROUP_ID` with `FEMA_PROJECT_WORKER=true`. Projects without a group keep drawing from the shared queue.
+Once a project is assigned to a group, its workflow and webhook runs are routed to that group's dedicated queue (`project-<group-name>-jobs`) and picked up only by workers carrying the matching `FEMA_WORKER_GROUP_ID` with `FEMA_PROJECT_WORKER=true`. Projects without a group keep drawing from the shared queue.
 
 ## Assigning projects to a group
 
@@ -53,7 +53,7 @@ You can assign a project to a project group in two ways:
 - **UI** — go to **Platform → Infrastructure → Workers** (`/platform/infrastructure/workers`), open the **Assignments** tab, and pick the group for each project.
 - **API** — set `workerGroupId` on the project via the projects API. Use the bare group name (the same value as the group's `FEMA_WORKER_GROUP_ID`); pass `null` to unassign and return the project to the shared queue.
 
-The same request also sets `maxConcurrentJobs` — the project's **concurrency limit** (the soft-cap ceiling). It's the maximum number of flow runs the project executes at once:
+The same request also sets `maxConcurrentJobs` — the project's **concurrency limit** (the soft-cap ceiling). It's the maximum number of workflow runs the project executes at once:
 
 - **Omit it** (or send `null`) and the project uses the default: `min(plan limit, group slots)` — i.e. it can use the group's full reserved capacity, up to the plan's limit.
 - **Set a number** to cap the project below that. The value is clamped to the group's slot count (a project can't run more concurrently than its pool can serve).

@@ -1,4 +1,4 @@
-import { FlowOperationType } from '@fema/shared';
+import { WorkflowOperationType } from '@fema/shared';
 
 import {
   ConnectorSelectorOperation,
@@ -25,7 +25,7 @@ export const handleAddingOrUpdatingCustomAgentConnectorSelectorItem = (
   return handleAddingOrUpdatingStep({
     connectorSelectorItem: agentConnectorSelectorItem,
     operation: {
-      type: FlowOperationType.UPDATE_ACTION,
+      type: WorkflowOperationType.UPDATE_ACTION,
       stepName,
     },
     selectStepAfter: false,

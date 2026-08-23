@@ -1,6 +1,6 @@
 ---
 title: "Queues Dashboard"
-description: "Inspect job queues to diagnose stuck schedules and flow runs"
+description: "Inspect job queues to diagnose stuck schedules and workflow runs"
 icon: "gauge-high"
 ---
 
@@ -8,7 +8,7 @@ icon: "gauge-high"
 This section collects fixes for things that go wrong at runtime. If you're still *setting up* a deployment, see [Configure & Operate](../configure-operate/production-setup) first.
 </Info>
 
-The Bull Board is a tool that allows you to check issues with scheduling and internal flow runs issues.
+The Bull Board is a tool that allows you to check issues with scheduling and internal workflow runs issues.
 
 ![BullBoard Overview](https://raw.githubusercontent.com/felixmosh/bull-board/master/screenshots/overview.png)
 
@@ -42,14 +42,14 @@ Checks external services for new data at regular intervals.
 
 ### Medium Priority Jobs
 
-#### EXECUTE_FLOW
-Runs flows when they're triggered.
+#### EXECUTE_WORKFLOW
+Runs workflows when they're triggered.
 
 #### EXECUTE_WEBHOOK
-Processes incoming webhook requests that start flow runs.
+Processes incoming webhook requests that start workflow runs.
 
-#### DELAYED_FLOW
-Runs flows that were scheduled for later, like paused flows or delayed executions.
+#### DELAYED_WORKFLOW
+Runs workflows that were scheduled for later, like paused workflows or delayed executions.
 
 ### High Priority Jobs
 
@@ -60,7 +60,7 @@ Loads dynamic properties for connectors that need them at runtime.
 Gets information about connectors when they're being installed or set up.
 
 #### EXECUTE_VALIDATION
-Checks that flow settings, inputs, or data are correct before running.
+Checks that workflow settings, inputs, or data are correct before running.
 
 #### EXECUTE_TRIGGER_HOOK
 Runs special logic before or after triggers fire.
@@ -72,5 +72,5 @@ They require immediate investigation as they represent executions that failed fo
 </Info>
 
 <Tip>
-Delayed jobs represent either paused flows scheduled for future execution, upcoming polling job iterations, or jobs being retried due to temporary failures. They indicate an internal system error occurred and the job will be retried automatically according to the backoff policy.
+Delayed jobs represent either paused workflows scheduled for future execution, upcoming polling job iterations, or jobs being retried due to temporary failures. They indicate an internal system error occurred and the job will be retried automatically according to the backoff policy.
 </Tip>

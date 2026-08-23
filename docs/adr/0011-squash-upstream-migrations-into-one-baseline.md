@@ -8,8 +8,8 @@ status: accepted
 
 删除上游全部 536 个迁移文件（`migration/postgres` 368 + `migration/common` 26 +
 `migration/sqlite` 142），用一个从实体生成的基线迁移取代，覆盖当前 20 张表。
-同时删除 flow-version 的 23 个历史 JSON 迁移，fork 基线直接从
-`LATEST_FLOW_SCHEMA_VERSION` 起步。
+同时删除 workflow-version 的 23 个历史 JSON 迁移，fork 基线直接从
+`LATEST_WORKFLOW_SCHEMA_VERSION` 起步。
 
 **后果是明确的：不存在从任何 FEMA Integration Platform 实例就地升级到本平台的路径。**
 新部署从空库开始。
@@ -21,7 +21,7 @@ status: accepted
 
 上游迁移里大量带有 `isNotOneOfTheseEditions([ApEdition.CLOUD, ...])` 这类版本门，
 是 Step 1「代码中不允许出现 Edition 判断」的最大残留来源。而且 Step 3 会把
-project → workspace、flow → workflow、connection → connection 等表全部改名，
+project → workspace、workflow → workflow、connection → connection 等表全部改名，
 这些历史迁移届时会全部失效。
 
 ## Why

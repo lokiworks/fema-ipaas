@@ -4,7 +4,7 @@ title: "Redis QueueEvents Overload — Mar 20, 2026"
 
 ## Summary
 
-On Friday, March 20, 2026, BullMQ's `QueueEvents` caused every worker to broadcast job lifecycle events to all connected app instances. As traffic grew, Redis output buffers grew faster than clients could consume them, eventually filling Redis memory. Once memory was exhausted, the `runsMetadata` queue stopped consuming, workers crashed, and flow execution logs were delayed up to **8 hours** before appearing in the UI.
+On Friday, March 20, 2026, BullMQ's `QueueEvents` caused every worker to broadcast job lifecycle events to all connected app instances. As traffic grew, Redis output buffers grew faster than clients could consume them, eventually filling Redis memory. Once memory was exhausted, the `runsMetadata` queue stopped consuming, workers crashed, and workflow execution logs were delayed up to **8 hours** before appearing in the UI.
 
 The incident lasted the entire day. Mitigation involved repeated server restarts and manual cleanup to minimize customer impact while the root cause was identified. The fix was to revert the `QueueEvents` change.
 
@@ -12,7 +12,7 @@ The incident lasted the entire day. Mitigation involved repeated server restarts
 
 - Redis memory filled up, causing all queue processing to stall.
 - Workers crashed and could not recover automatically.
-- Flow execution logs were delayed up to **8 hours** before appearing in the UI.
+- Workflow execution logs were delayed up to **8 hours** before appearing in the UI.
 - No executions were lost — all `runsMetadata` jobs were eventually resumed and indexed.
 
 ## Timeline

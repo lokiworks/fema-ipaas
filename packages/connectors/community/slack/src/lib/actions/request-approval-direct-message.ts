@@ -1,9 +1,9 @@
 import { createAction } from '@fema/connector-sdk';
-import { buildFlowOriginContextBlock, slackSendMessage, textToSectionBlocks } from '../common/utils';
+import { buildWorkflowOriginContextBlock, slackSendMessage, textToSectionBlocks } from '../common/utils';
 import { slackAuth } from '../auth';
 import { assertNotNullOrUndefined } from '@fema/connector-sdk';
 import { ExecutionType } from '@fema/connector-sdk';
-import { profilePicture, text, userId, username, mentionOriginFlow } from '../common/props';
+import { profilePicture, text, userId, username, mentionOriginWorkflow } from '../common/props';
 import { ChatPostMessageResponse, WebClient } from '@slack/web-api';
 import { getBotToken, SlackAuthValue } from '../common/auth-helpers';
 import { approvalActionOutputSchema } from '../output-schemas';
@@ -18,7 +18,7 @@ export const requestApprovalDirectMessageAction = createAction({
   audience: 'both',
   aiMetadata: {
     description:
-      'Direct-message one Slack user an approval request with Approve/Disapprove buttons and pause the flow until they respond. Pick this for a private one-to-one approval gate; use Request Action in A Channel to ask a whole channel. Not idempotent: each run sends a new DM and creates a fresh wait.',
+      'Direct-message one Slack user an approval request with Approve/Disapprove buttons and pause the workflow until they respond. Pick this for a private one-to-one approval gate; use Request Action in A Channel to ask a whole channel. Not idempotent: each run sends a new DM and creates a fresh wait.',
     idempotent: false,
   },
   outputSchema: approvalActionOutputSchema,
@@ -27,12 +27,12 @@ export const requestApprovalDirectMessageAction = createAction({
     text,
     username,
     profilePicture,
-    mentionOriginFlow,
+    mentionOriginWorkflow,
   },
   async run(context) {
     if (context.executionType === ExecutionType.BEGIN) {
       const token = getBotToken(context.auth as SlackAuthValue);
-      const { userId, username, profilePicture, mentionOriginFlow } = context.propsValue;
+      const { userId, username, profilePicture, mentionOriginWorkflow } = context.propsValue;
 
       assertNotNullOrUndefined(token, 'token');
       assertNotNullOrUndefined(text, 'text');
@@ -93,7 +93,7 @@ export const requestApprovalDirectMessageAction = createAction({
               },
             ],
           },
-          ...(mentionOriginFlow ? [buildFlowOriginContextBlock(context)] : []),
+          ...(mentionOriginWorkflow ? [buildWorkflowOriginContextBlock(context)] : []),
         ],
       });
 

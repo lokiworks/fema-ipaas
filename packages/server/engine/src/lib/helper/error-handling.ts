@@ -1,15 +1,15 @@
 import { isNil } from '@fema/core-utils'
 import { CodeAction, ConnectorAction, ExecutionStatus } from '@fema/shared'
 import { EngineConstants } from '../handler/context/engine-constants'
-import {  FlowExecutorContext } from '../handler/context/flow-execution-context'
+import {  WorkflowExecutorContext } from '../handler/context/workflow-execution-context'
 
 export async function runWithExponentialBackoff<T extends CodeAction | ConnectorAction>(
-    executionState: FlowExecutorContext,
+    executionState: WorkflowExecutorContext,
     action: T,
     constants: EngineConstants,
     requestFunction: RequestFunction<T>,
     attemptCount = 1,
-): Promise<FlowExecutorContext> {
+): Promise<WorkflowExecutorContext> {
     const resultExecutionState = await requestFunction({ action, executionState, constants })
     const retryEnabled = action.settings.errorHandlingOptions?.retryOnFailure?.value
     if (
@@ -27,10 +27,10 @@ export async function runWithExponentialBackoff<T extends CodeAction | Connector
 }
 
 export async function continueIfFailureHandler(
-    executionState: FlowExecutorContext,
+    executionState: WorkflowExecutorContext,
     action: CodeAction | ConnectorAction,
     constants: EngineConstants,
-): Promise<FlowExecutorContext> {
+): Promise<WorkflowExecutorContext> {
     const continueOnFailure = action.settings.errorHandlingOptions?.continueOnFailure?.value
 
     if (
@@ -46,15 +46,15 @@ export async function continueIfFailureHandler(
 }
 
 
-const executionFailedWithRetryableError = (flowExecutorContext: FlowExecutorContext): boolean => {
-    return flowExecutorContext.verdict.status === ExecutionStatus.FAILED
+const executionFailedWithRetryableError = (workflowExecutorContext: WorkflowExecutorContext): boolean => {
+    return workflowExecutorContext.verdict.status === ExecutionStatus.FAILED
 }
 
 type Request<T extends CodeAction | ConnectorAction> = {
     action: T
-    executionState: FlowExecutorContext
+    executionState: WorkflowExecutorContext
     constants: EngineConstants
 }
 
-type RequestFunction<T extends CodeAction | ConnectorAction> = (request: Request<T>) => Promise<FlowExecutorContext>
+type RequestFunction<T extends CodeAction | ConnectorAction> = (request: Request<T>) => Promise<WorkflowExecutorContext>
 

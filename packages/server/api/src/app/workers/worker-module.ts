@@ -1,17 +1,17 @@
 import { FastifyInstance } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
-import { runsMetadataQueue } from '../flows/execution/executions-queue'
 import { pubsub } from '../helper/pubsub'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
-import { flowEngineWorker } from './engine-controller'
+import { runsMetadataQueue } from '../workflows/execution/executions-queue'
+import { workflowEngineWorker } from './engine-controller'
 import { setupBullMQBoard } from './job-queue/bullboard'
 import { jobBroker } from './job-queue/job-broker'
 import { jobQueue } from './job-queue/job-queue'
 import { workerMachineController } from './machine/machine-controller'
 import { queueMigration } from './migrations/queue-migration-runner'
 export const workerModule: FastifyPluginAsyncZod = async (app) => {
-    await app.register(flowEngineWorker, {
+    await app.register(workflowEngineWorker, {
         prefix: '/v1/engine',
     })
     await app.register(workerMachineController, {

@@ -145,21 +145,21 @@ describe('actionRunCache.namespace', () => {
 })
 
 describe('actionRunCache namespace classification', () => {
-    it('never claims a flow-version namespace, because an apId is a single path segment', () => {
+    it('never claims a workflow-version namespace, because an apId is a single path segment', () => {
         for (let attempt = 0; attempt < 100; attempt++) {
             expect(actionRunCache.isActionRunNamespace(apId())).toBe(false)
         }
     })
 
-    it('uses a directory name no apId can produce, so a flow version can never land inside it', () => {
+    it('uses a directory name no apId can produce, so a workflow version can never land inside it', () => {
         expect(ACTION_RUN_CODE_DIR.length).not.toBe(apId().length)
     })
 })
 
 describe('actionRunCache.sweep', () => {
-    it('reclaims managed dirs past the TTL and leaves flow versions alone', async () => {
+    it('reclaims managed dirs past the TTL and leaves workflow versions alone', async () => {
         const basePath = uniqueBasePath()
-        const flowVersionDir = await seedStepDir({ basePath, namespace: apId(), ageMs: 90 * 24 * HOUR_MS })
+        const workflowVersionDir = await seedStepDir({ basePath, namespace: apId(), ageMs: 90 * 24 * HOUR_MS })
         const freshDir = await seedStepDir({
             basePath,
             namespace: actionRunCache.namespace({ platformId: apId(), sourceHash: '1'.repeat(64) }),
@@ -173,7 +173,7 @@ describe('actionRunCache.sweep', () => {
 
         await actionRunCache.sweep({ basePath, log: noopLog })
 
-        await expect(exists(flowVersionDir)).resolves.toBe(true)
+        await expect(exists(workflowVersionDir)).resolves.toBe(true)
         await expect(exists(freshDir)).resolves.toBe(true)
         await expect(exists(expiredDir)).resolves.toBe(false)
     })
@@ -182,7 +182,7 @@ describe('actionRunCache.sweep', () => {
         const basePath = uniqueBasePath()
         const codesPath = cacheUtils(basePath).getGlobalCodeCachePath()
         const ancient = 90 * 24 * HOUR_MS
-        const flowVersionDir = await seedStepDir({ basePath, namespace: apId(), ageMs: ancient })
+        const workflowVersionDir = await seedStepDir({ basePath, namespace: apId(), ageMs: ancient })
         const legacyPrefixedDir = await seedStepDir({ basePath, namespace: `ar_${apId()}_${'d'.repeat(64)}`, ageMs: ancient })
         const strayFile = join(codesPath, 'stray.txt')
         await writeFile(strayFile, 'not a cache dir', 'utf8')
@@ -194,7 +194,7 @@ describe('actionRunCache.sweep', () => {
 
         await actionRunCache.sweep({ basePath, log: noopLog })
 
-        await expect(exists(flowVersionDir)).resolves.toBe(true)
+        await expect(exists(workflowVersionDir)).resolves.toBe(true)
         await expect(exists(legacyPrefixedDir)).resolves.toBe(true)
         await expect(exists(strayFile)).resolves.toBe(true)
     })

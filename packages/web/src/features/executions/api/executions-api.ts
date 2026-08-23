@@ -5,14 +5,14 @@ import {
   Execution,
   ExecutionWithRetryError,
   ListExecutionsRequestQuery,
-  RetryFlowRequestBody,
+  RetryWorkflowRequestBody,
   TestExecutionRequestBody,
   WebsocketServerEvent,
   WebsocketClientEvent,
   CreateStepRunRequestBody,
   BulkActionOnRunsRequestBody,
   BulkArchiveActionOnRunsRequestBody,
-  BulkCancelFlowRequestBody,
+  BulkCancelWorkflowRequestBody,
   UpdateRunProgressRequest,
 } from '@fema/shared';
 import { Socket } from 'socket.io-client';
@@ -42,7 +42,7 @@ export const executionsApi = {
   ): Promise<ExecutionWithRetryError[]> {
     return api.post<ExecutionWithRetryError[]>('/v1/executions/retry', request);
   },
-  bulkCancel(request: BulkCancelFlowRequestBody): Promise<Execution[]> {
+  bulkCancel(request: BulkCancelWorkflowRequestBody): Promise<Execution[]> {
     return api.post<Execution[]>('/v1/executions/cancel', request);
   },
   bulkArchive(request: BulkArchiveActionOnRunsRequestBody): Promise<void> {
@@ -50,11 +50,11 @@ export const executionsApi = {
   },
   retry(
     executionId: string,
-    request: RetryFlowRequestBody,
+    request: RetryWorkflowRequestBody,
   ): Promise<Execution> {
     return api.post<Execution>(`/v1/executions/${executionId}/retry`, request);
   },
-  async subscribeToTestFlowOrManualRun(
+  async subscribeToTestWorkflowOrManualRun(
     socket: Socket,
     request: TestExecutionRequestBody,
     onUpdate: (response: UpdateRunProgressRequest) => void,
@@ -68,7 +68,7 @@ export const executionsApi = {
     );
     const initialRun = await getInitialRun(
       socket,
-      request.flowVersionId,
+      request.workflowVersionId,
       isForManualTrigger,
     );
     onUpdate({
@@ -101,12 +101,12 @@ export const executionsApi = {
 };
 function getInitialRun(
   socket: Socket,
-  flowVersionId: string,
+  workflowVersionId: string,
   forManualTrigger: boolean,
 ): Promise<Execution> {
   return new Promise<Execution>((resolve) => {
     const onRunStarted = (run: Execution) => {
-      if (run.flowVersionId !== flowVersionId) {
+      if (run.workflowVersionId !== workflowVersionId) {
         return;
       }
       if (forManualTrigger) {

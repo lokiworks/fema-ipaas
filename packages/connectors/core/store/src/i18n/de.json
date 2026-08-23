@@ -21,6 +21,6 @@
   "The storage scope of the value.": "Der Speicherbereich des Wertes.",
   "Separator between added values, use \\n for newlines": "Trennzeichen zwischen den hinzugefügten Werten verwenden Sie \\n für Zeilenumbrüche",
   "Project": "Projekt",
-  "Flow": "Ablauf",
+  "Workflow": "Ablauf",
   "Run": "Ausführung"
 }

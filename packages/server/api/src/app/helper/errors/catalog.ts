@@ -1,7 +1,7 @@
 import { defineErrorCatalog, ErrorCatalog } from '@fema/server-utils'
 
 // New server errors should be defined here using defineErrorCatalog so they carry
-// structured why/fix context that flows into the per-request wide event automatically.
+// structured why/fix context that workflows into the per-request wide event automatically.
 const apiErrors = {
     INTERNAL: {
         status: 500,

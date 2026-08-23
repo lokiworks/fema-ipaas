@@ -68,7 +68,7 @@ The primary app only needs to know where to proxy canary requests:
 
 Socket.IO is configured with a **Redis adapter** (`@socket.io/redis-adapter`). Events emitted on any app instance (primary or canary) are broadcast through Redis pub/sub to all connected instances. This means:
 
-- Users connected to the primary app receive real-time flow run updates even when the execution happened on the canary app.
+- Users connected to the primary app receive real-time workflow run updates even when the execution happened on the canary app.
 - No WebSocket proxying is required.
 
 ## Queue Isolation

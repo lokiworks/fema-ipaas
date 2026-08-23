@@ -1,16 +1,16 @@
 import { ErrorCode, PlatformError, PlatformId, sanitizeObjectForPostgresql } from '@fema/core-utils'
-import { flowConnectorUtil, FlowOperationRequest, flowOperations, FlowOperationType, FlowVersion, FlowVersionState, FlowVersionTemplate } from '@fema/shared'
+import { workflowConnectorUtil, WorkflowOperationRequest, workflowOperations, WorkflowOperationType, WorkflowVersion, WorkflowVersionState, WorkflowVersionTemplate } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
-import { flowVersionValidationUtil } from '../flows/flow-version/flow-version-validator-util'
+import { workflowVersionValidationUtil } from '../workflows/workflow-version/workflow-version-validator-util'
 
-function createMinimalFlowVersion(template: FlowVersionTemplate): FlowVersion {
+function createMinimalWorkflowVersion(template: WorkflowVersionTemplate): WorkflowVersion {
     return {
         ...template,
         id: 'temp-id',
-        flowId: 'temp-flow-id',
+        workflowId: 'temp-workflow-id',
         created: new Date().toISOString(),
         updated: new Date().toISOString(),
-        state: FlowVersionState.DRAFT,
+        state: WorkflowVersionState.DRAFT,
         updatedBy: null,
         agentIds: [],
         connectionIds: [],
@@ -20,54 +20,54 @@ function createMinimalFlowVersion(template: FlowVersionTemplate): FlowVersion {
 }
 
 type PreparedTemplate = {
-    flows: FlowVersionTemplate[]
+    workflows: WorkflowVersionTemplate[]
     connectors: string[]
 }
 
 export const templateValidator = {
-    async validateAndPrepare({ flows, platformId, log }: ValidateParams): Promise<PreparedTemplate> {
-        if (!flows || flows.length === 0) {
+    async validateAndPrepare({ workflows, platformId, log }: ValidateParams): Promise<PreparedTemplate> {
+        if (!workflows || workflows.length === 0) {
             throw new PlatformError({
                 code: ErrorCode.VALIDATION,
                 params: {
-                    message: 'Flows are required',
+                    message: 'Workflows are required',
                 },
             })
         }
         
-        await Promise.all(flows.map(async (flow) => {
-            const minimalFlowVersion = createMinimalFlowVersion(flow)
+        await Promise.all(workflows.map(async (workflow) => {
+            const minimalWorkflowVersion = createMinimalWorkflowVersion(workflow)
             
             const importRequest = {
-                displayName: flow.displayName,
-                trigger: flow.trigger,
-                schemaVersion: flow.schemaVersion,
+                displayName: workflow.displayName,
+                trigger: workflow.trigger,
+                schemaVersion: workflow.schemaVersion,
             }
 
-            const importOperation: FlowOperationRequest = { 
-                type: FlowOperationType.IMPORT_FLOW, 
+            const importOperation: WorkflowOperationRequest = { 
+                type: WorkflowOperationType.IMPORT_WORKFLOW, 
                 request: importRequest, 
             }
 
-            const validator = flowVersionValidationUtil(log)
+            const validator = workflowVersionValidationUtil(log)
 
             await validator.prepareRequest({ platformId, request: importOperation, userId: null })
             
-            flowOperations.apply(minimalFlowVersion, importOperation)
+            workflowOperations.apply(minimalWorkflowVersion, importOperation)
         }))
 
-        const sanitizedFlows = flows.map((flow) => sanitizeObjectForPostgresql(flow))
-        const connectors = Array.from(new Set(sanitizedFlows.map((flow) => flowConnectorUtil.getUsedConnectors(flow.trigger)).flat()))
+        const sanitizedWorkflows = workflows.map((workflow) => sanitizeObjectForPostgresql(workflow))
+        const connectors = Array.from(new Set(sanitizedWorkflows.map((workflow) => workflowConnectorUtil.getUsedConnectors(workflow.trigger)).flat()))
 
         return {
-            flows: sanitizedFlows,
+            workflows: sanitizedWorkflows,
             connectors,
         }
     },
 }
 
 type ValidateParams = {
-    flows: FlowVersionTemplate[] | undefined
+    workflows: WorkflowVersionTemplate[] | undefined
     platformId?: PlatformId
     log: FastifyBaseLogger
 }

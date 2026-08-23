@@ -1,10 +1,10 @@
 import { OAuth2Props, ConnectorPropertyMap } from '@fema/connector-sdk';
 import { isNil } from '@fema/core-utils';
 import {
-  FlowActionType,
-  FlowOperationRequest,
-  FlowOperationType,
-  FlowTriggerType,
+  WorkflowActionType,
+  WorkflowOperationRequest,
+  WorkflowOperationType,
+  WorkflowTriggerType,
   ConnectorAction,
   ConnectorTrigger,
 } from '@fema/shared';
@@ -168,11 +168,11 @@ async function applyConnectorVersionChange({
   step: ConnectorAction | ConnectorTrigger;
   targetVersion: string;
   currentVersion: string;
-  applyOperation: (operation: FlowOperationRequest) => void;
+  applyOperation: (operation: WorkflowOperationRequest) => void;
 }) {
   const connectorName = step.settings.connectorName;
   const actionOrTriggerName =
-    step.type === FlowTriggerType.CONNECTOR
+    step.type === WorkflowTriggerType.CONNECTOR
       ? step.settings.triggerName ?? ''
       : step.settings.actionName ?? '';
 
@@ -186,7 +186,7 @@ async function applyConnectorVersionChange({
   });
 
   const actionOrTriggerDef =
-    step.type === FlowTriggerType.CONNECTOR
+    step.type === WorkflowTriggerType.CONNECTOR
       ? connector.triggers[actionOrTriggerName]
       : connector.actions[actionOrTriggerName];
 
@@ -211,12 +211,12 @@ async function applyConnectorVersionChange({
     requireAuth: actionOrTriggerDef.requireAuth,
   });
 
-  if (step.type === FlowTriggerType.CONNECTOR) {
+  if (step.type === WorkflowTriggerType.CONNECTOR) {
     applyOperation({
-      type: FlowOperationType.UPDATE_TRIGGER,
+      type: WorkflowOperationType.UPDATE_TRIGGER,
       request: {
         ...step,
-        type: FlowTriggerType.CONNECTOR,
+        type: WorkflowTriggerType.CONNECTOR,
         valid,
         settings: {
           ...step.settings,
@@ -227,10 +227,10 @@ async function applyConnectorVersionChange({
     });
   } else {
     applyOperation({
-      type: FlowOperationType.UPDATE_ACTION,
+      type: WorkflowOperationType.UPDATE_ACTION,
       request: {
         ...step,
-        type: FlowActionType.CONNECTOR,
+        type: WorkflowActionType.CONNECTOR,
         valid,
         settings: {
           ...step.settings,
@@ -243,7 +243,7 @@ async function applyConnectorVersionChange({
 
   if (changeType === VersionChangeType.MINOR_OR_MAJOR) {
     applyOperation({
-      type: FlowOperationType.UPDATE_SAMPLE_DATA_INFO,
+      type: WorkflowOperationType.UPDATE_SAMPLE_DATA_INFO,
       request: {
         stepName: step.name,
         sampleDataSettings: undefined,

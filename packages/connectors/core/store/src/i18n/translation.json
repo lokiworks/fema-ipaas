@@ -21,6 +21,6 @@
   "The storage scope of the value.": "The storage scope of the value.",
   "Separator between added values, use \\n for newlines": "Separator between added values, use \\n for newlines",
   "Project": "Project",
-  "Flow": "Flow",
+  "Workflow": "Workflow",
   "Run": "Run"
 }

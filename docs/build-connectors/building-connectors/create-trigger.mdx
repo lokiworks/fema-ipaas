@@ -130,7 +130,7 @@ For more details, check out the [Connector Development](/build-connectors/buildi
 
 Once you edit the environment variable, restart the backend. The connector will be rebuilt. After this process, you'll need to **refresh** the frontend to see the changes.
 
-To test the trigger, use the load sample data from flow builder in FEMA Integration Platform. It should function as shown in the screenshot.
+To test the trigger, use the load sample data from workflow builder in FEMA Integration Platform. It should function as shown in the screenshot.
 
 <Warning>
 To make your webhook accessible from the internet, you need to expose your local development instance to the internet, do the following:
@@ -140,7 +140,7 @@ To make your webhook accessible from the internet, you need to expose your local
 3. Copy the tunnel domain, i.e wozcsvaint.loclx.io, and replace the `FEMA_FRONTEND_URL` environment variable in `.env.dev` with the exposed url, i.e https://wozcsvaint.loclx.io
 4. Go to /packages/web/vite.config.ts, uncomment allowedHosts and replace the value with the same tunnel domain, i.e wozcsvaint.loclx.io.
 
-Once you have completed these configurations, you will be able to test webhook triggers and run published flows that have them.
+Once you have completed these configurations, you will be able to test webhook triggers and run published workflows that have them.
 
 </Warning>
 

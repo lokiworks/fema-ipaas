@@ -1,6 +1,6 @@
 import { assertNotNullOrUndefined, isNil } from '@fema/core-utils';
 import { FEMA_FUNCTIONS, formulaEvaluator } from '@fema/expression';
-import { FlowAction, FlowTrigger } from '@fema/shared';
+import { WorkflowAction, WorkflowTrigger } from '@fema/shared';
 import { MentionNodeAttrs } from '@tiptap/extension-mention';
 import { JSONContent } from '@tiptap/react';
 import { Variable as VariableIcon } from 'lucide-react';
@@ -186,7 +186,7 @@ function tokenizeExpression(expr: string, allowBroken: boolean): ExprToken[] {
 
 function convertTextToTipTapJsonContent(
   userInputText: string,
-  steps: (FlowAction | FlowTrigger)[],
+  steps: (WorkflowAction | WorkflowTrigger)[],
   stepsMetadata: (StepMetadataWithDisplayName | undefined)[],
   variableByName?: Map<string, string>,
 ): { type: TipTapNodeTypes.paragraph; content: JSONContent[] }[] {
@@ -323,7 +323,7 @@ function parseStepAndNameFromMention(mention: string) {
 
 function parseLabelFromMention(
   mention: string,
-  steps: (FlowAction | FlowTrigger)[],
+  steps: (WorkflowAction | WorkflowTrigger)[],
   stepsMetadata: (StepMetadataWithDisplayName | undefined)[],
   variableByName?: Map<string, string>,
 ) {
@@ -371,7 +371,7 @@ function collapseEngineReservedPath(path: string[]): string[] {
 
 function createMentionNodeFromText(
   mention: string,
-  steps: (FlowAction | FlowTrigger)[],
+  steps: (WorkflowAction | WorkflowTrigger)[],
   stepsMetadata: (StepMetadataWithDisplayName | undefined)[],
   variableByName?: Map<string, string>,
 ) {

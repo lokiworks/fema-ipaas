@@ -2,7 +2,7 @@
 // regex. A naive /\{\{(.*?)\}\}/ stops at the first `}}` it sees, so expressions
 // with nested braces (object literals, function calls) or string literals that
 // contain `}}` get truncated. Every consumer that parses mentions (the engine's
-// props-resolver and the flow-version expression rewriter) MUST share this so
+// props-resolver and the workflow-version expression rewriter) MUST share this so
 // they tokenize identically — divergence silently breaks variable resolution.
 //
 // `inner` is the raw content between the braces, NOT trimmed: the rewriter

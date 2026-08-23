@@ -45,10 +45,10 @@ export const pinoLogging = {
         }
         return globalFacade
     },
-    createRunContextLog({ log, runId, webhookId, flowId, flowVersionId }: { log: FastifyBaseLogger, runId: string, webhookId: string | undefined, flowId: string, flowVersionId: string }): FastifyBaseLogger {
-        return log.child({ executionId: runId, webhookId, flowId, flowVersionId })
+    createRunContextLog({ log, runId, webhookId, workflowId, workflowVersionId }: { log: FastifyBaseLogger, runId: string, webhookId: string | undefined, workflowId: string, workflowVersionId: string }): FastifyBaseLogger {
+        return log.child({ executionId: runId, webhookId, workflowId, workflowVersionId })
     },
-    createWebhookContextLog({ log, webhookId, flowId }: { log: FastifyBaseLogger, webhookId: string, flowId: string }): FastifyBaseLogger {
-        return log.child({ webhookId, flowId })
+    createWebhookContextLog({ log, webhookId, workflowId }: { log: FastifyBaseLogger, webhookId: string, workflowId: string }): FastifyBaseLogger {
+        return log.child({ webhookId, workflowId })
     },
 }

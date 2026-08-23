@@ -1,6 +1,6 @@
 import { ApId, isNil, tryCatch } from '@fema/core-utils'
 import { apDayjsDuration, memoryLock } from '@fema/server-utils'
-import { ExecuteFlowJobData, getDefaultJobPriority, JOB_PRIORITY, JobData, PollingJobData, RenewWebhookJobData, ScheduleOptions, TriggerSourceScheduleType, UserInteractionJobData, WebhookJobData, WorkerJobType } from '@fema/shared'
+import { ExecuteWorkflowJobData, getDefaultJobPriority, JOB_PRIORITY, JobData, PollingJobData, RenewWebhookJobData, ScheduleOptions, TriggerSourceScheduleType, UserInteractionJobData, WebhookJobData, WorkerJobType } from '@fema/shared'
 import { Job, Queue } from 'bullmq'
 import { FastifyBaseLogger } from 'fastify'
 import { redisConnections } from '../../database/redis-connections'
@@ -32,14 +32,14 @@ export const jobQueue = (log: FastifyBaseLogger) => ({
         switch (type) {
             case JobType.REPEATING: {
                 const { scheduleOptions } = params
-                await queue.upsertJobScheduler(data.flowVersionId, scheduleOptions.type === TriggerSourceScheduleType.INTERVAL ? {
+                await queue.upsertJobScheduler(data.workflowVersionId, scheduleOptions.type === TriggerSourceScheduleType.INTERVAL ? {
                     every: scheduleOptions.intervalMs,
                     startDate: Date.now() + scheduleOptions.intervalMs,
                 } : {
                     pattern: scheduleOptions.cronExpression,
                     tz: scheduleOptions.timezone,
                 }, {
-                    name: data.flowVersionId,
+                    name: data.workflowVersionId,
                     data,
                     opts: {
                         priority: JOB_PRIORITY[getDefaultJobPriority(data)],
@@ -62,15 +62,15 @@ export const jobQueue = (log: FastifyBaseLogger) => ({
         }
     },
 
-    async removeRepeatingJob({ flowVersionId }: { flowVersionId: ApId }): Promise<void> {
+    async removeRepeatingJob({ workflowVersionId }: { workflowVersionId: ApId }): Promise<void> {
         const allQueues = [...dedicatedWorkersQueues.values()].filter(queue => !isNil(queue))
 
         await Promise.allSettled(
-            allQueues.map(queue => queue.removeJobScheduler(flowVersionId)),
+            allQueues.map(queue => queue.removeJobScheduler(workflowVersionId)),
         )
 
         log.info({
-            flowVersion: { id: flowVersionId },
+            workflowVersion: { id: workflowVersionId },
         }, '[jobQueue#removeRepeatingJob] removed jobs from all queues')
     },
 
@@ -127,7 +127,7 @@ export const jobQueue = (log: FastifyBaseLogger) => ({
         return queue
     },
     async removeAllExecutionJobs({ executionId, platformId, workspaceId }: RemoveAllExecutionJobsParams): Promise<void> {
-        const queueName = await getQueueName({ platformId, workspaceId, jobType: WorkerJobType.EXECUTE_FLOW }, log)
+        const queueName = await getQueueName({ platformId, workspaceId, jobType: WorkerJobType.EXECUTE_WORKFLOW }, log)
         const queue = await ensureQueueExists({ log, queueName })
         const allJobs = await queue.getJobs(['waiting', 'delayed'])
         const matching = allJobs.filter((j) => j.id?.startsWith(executionId))
@@ -205,7 +205,7 @@ export function isUserInteractionJobData(jobData: JobData): jobData is UserInter
 }
 
 const WORKSPACE_GROUP_ROUTABLE_JOB_TYPES = new Set<WorkerJobType>([
-    WorkerJobType.EXECUTE_FLOW,
+    WorkerJobType.EXECUTE_WORKFLOW,
     WorkerJobType.EXECUTE_WEBHOOK,
 ])
 
@@ -259,6 +259,6 @@ type BaseAddParams<JD extends Omit<JobData, 'engineToken'>, JT extends JobType> 
 type RepeatingJobAddParams = BaseAddParams<PollingJobData | RenewWebhookJobData, JobType.REPEATING> & {
     scheduleOptions: ScheduleOptions
 }
-type OneTimeJobAddParams = BaseAddParams<ExecuteFlowJobData | WebhookJobData | UserInteractionJobData, JobType.ONE_TIME>
+type OneTimeJobAddParams = BaseAddParams<ExecuteWorkflowJobData | WebhookJobData | UserInteractionJobData, JobType.ONE_TIME>
 
 export type AddJobParams<type extends JobType> = type extends JobType.REPEATING ? RepeatingJobAddParams : OneTimeJobAddParams

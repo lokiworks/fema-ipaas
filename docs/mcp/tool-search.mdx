@@ -12,9 +12,9 @@ Search is the first step of the three-step workflow the MCP server is built arou
 
 1. **Discover** — `ap_search_actions` returns candidate actions: connector name, action name, a one-line description, whether the action needs a connection, and whether the project already has one for that connector.
 2. **Inspect** — `ap_get_connector_props` returns the full input schema for the chosen action.
-3. **Execute** — `ap_run_action` runs it once, or `ap_build_flow` wires it into a persistent automation.
+3. **Execute** — `ap_run_action` runs it once, or `ap_build_workflow` wires it into a persistent automation.
 
-`ap_search_triggers` plays the same discovery role when the agent is building a flow and needs the event that should start it.
+`ap_search_triggers` plays the same discovery role when the agent is building a workflow and needs the event that should start it.
 
 ## How results are ranked
 

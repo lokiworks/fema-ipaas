@@ -16,12 +16,12 @@ export const CreateNewMenu = ({
   children,
   scope = 'root',
   align = 'end',
-  userHasPermissionToWriteFlow,
+  userHasPermissionToWriteWorkflow,
   userHasPermissionToWriteFolder,
-  isCreatingFlow = false,
-  onCreateFlow,
+  isCreatingWorkflow = false,
+  onCreateWorkflow,
   onCreateFolder,
-  onImportFlow,
+  onImportWorkflow,
   onSelectTemplate,
   onOpenChange,
 }: CreateNewMenuProps) => {
@@ -30,7 +30,7 @@ export const CreateNewMenu = ({
 
   const showFolder = scope === 'root' && !embedState.hideFolders;
   const showTemplate = scope === 'root';
-  const busy = isCreatingFlow;
+  const busy = isCreatingWorkflow;
 
   return (
     <DropdownMenu
@@ -43,28 +43,32 @@ export const CreateNewMenu = ({
     >
       <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
       <DropdownMenuContent align={align} className="w-48">
-        <PermissionNeededTooltip hasPermission={userHasPermissionToWriteFlow}>
+        <PermissionNeededTooltip
+          hasPermission={userHasPermissionToWriteWorkflow}
+        >
           <DropdownMenuItem
-            disabled={!userHasPermissionToWriteFlow || busy}
+            disabled={!userHasPermissionToWriteWorkflow || busy}
             onSelect={(e) => {
               e.preventDefault();
-              onCreateFlow();
+              onCreateWorkflow();
             }}
             className="cursor-pointer"
           >
-            {isCreatingFlow ? (
+            {isCreatingWorkflow ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
             ) : (
               <Workflow className="h-4 w-4 mr-2" />
             )}
-            {isCreatingFlow ? t('Creating...') : t('New Flow')}
+            {isCreatingWorkflow ? t('Creating...') : t('New Workflow')}
           </DropdownMenuItem>
         </PermissionNeededTooltip>
 
         {showTemplate && onSelectTemplate && (
-          <PermissionNeededTooltip hasPermission={userHasPermissionToWriteFlow}>
+          <PermissionNeededTooltip
+            hasPermission={userHasPermissionToWriteWorkflow}
+          >
             <DropdownMenuItem
-              disabled={!userHasPermissionToWriteFlow || busy}
+              disabled={!userHasPermissionToWriteWorkflow || busy}
               onSelect={() => onSelectTemplate()}
               className="cursor-pointer"
             >
@@ -74,19 +78,19 @@ export const CreateNewMenu = ({
           </PermissionNeededTooltip>
         )}
 
-        {scope === 'folder' && !embedState.hideExportAndImportFlow && (
+        {scope === 'folder' && !embedState.hideExportAndImportWorkflow && (
           <>
             <DropdownMenuSeparator />
             <PermissionNeededTooltip
-              hasPermission={userHasPermissionToWriteFlow}
+              hasPermission={userHasPermissionToWriteWorkflow}
             >
               <DropdownMenuItem
-                disabled={!userHasPermissionToWriteFlow}
-                onClick={onImportFlow}
+                disabled={!userHasPermissionToWriteWorkflow}
+                onClick={onImportWorkflow}
                 className="cursor-pointer"
               >
                 <Upload className="h-4 w-4 mr-2" />
-                {t('Import Flow')}
+                {t('Import Workflow')}
               </DropdownMenuItem>
             </PermissionNeededTooltip>
           </>
@@ -117,14 +121,14 @@ type CreateNewMenuProps = {
   children: React.ReactNode;
   scope?: 'root' | 'folder';
   align?: 'start' | 'end' | 'center';
-  userHasPermissionToWriteFlow: boolean;
+  userHasPermissionToWriteWorkflow: boolean;
   userHasPermissionToWriteFolder: boolean;
-  isCreatingFlow?: boolean;
-  onCreateFlow: () => void;
+  isCreatingWorkflow?: boolean;
+  onCreateWorkflow: () => void;
   onCreateFolder?: () => void;
-  onImportFlow: () => void;
+  onImportWorkflow: () => void;
   onSelectTemplate?: () => void;
   onOpenChange?: (open: boolean) => void;
 };
 
-export type CreateInFolderKind = 'flow' | 'import-flow';
+export type CreateInFolderKind = 'workflow' | 'import-workflow';

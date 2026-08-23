@@ -48,14 +48,14 @@ rm -f "$MANIFEST"
 # JWT secret they booted with while each run substitutes a fresh one into the configmap and into the
 # worker token. Restarting only the worker leaves the two signed with different secrets — the app then
 # rejects every worker connection, no worker consumes jobs, and the first thing to fail is publishing
-# the flow ("Worker did not respond within the safety timeout") ~5 minutes later. Both, or neither.
+# the workflow ("Worker did not respond within the safety timeout") ~5 minutes later. Both, or neither.
 echo "=== Forcing fresh app rollout (re-read JWT secret) ==="
 kubectl rollout restart deployment/app
 kubectl rollout status deployment/app --timeout=600s
 
 # Strictly after the app is fully rolled out. A worker that hits an old app pod still holding the
 # previous run's JWT secret gets "Authentication error" on the socket handshake and then sits there —
-# it does not recover on its own, so the fleet is silently dead and the flow publish times out.
+# it does not recover on its own, so the fleet is silently dead and the workflow publish times out.
 echo "=== Forcing fresh worker rollout (re-pull image) ==="
 kubectl rollout restart deployment/worker
 kubectl rollout status deployment/worker --timeout=600s
@@ -77,7 +77,7 @@ kubectl get pods -o wide | awk 'NR==1 || (/app|worker|minio|postgres|redis/ && +
 WORKERS_READY=$(kubectl get deployment worker -o jsonpath='{.status.readyReplicas}')
 echo "Workers ready: ${WORKERS_READY:-0}"
 
-echo "=== IDLE WORKER RAM (connected, before any flow runs) ==="
+echo "=== IDLE WORKER RAM (connected, before any workflow runs) ==="
 # Let workers connect + settle, then wait for metrics-server to report, then read working-set memory.
 sleep 30
 IDLE=""
@@ -88,20 +88,20 @@ for _ in $(seq 1 12); do
 done
 if [ -n "$IDLE" ]; then
   echo "$IDLE" | awk '{gsub(/Mi/,"",$3); s+=$3; n++; if($3>mx)mx=$3; if(mn==""||$3<mn)mn=$3}
-                       END{printf "  idle RSS per worker: avg %.0f Mi | min %s Mi | max %s Mi  (across %d workers, no flow running)\n", s/n, mn, mx, n}'
+                       END{printf "  idle RSS per worker: avg %.0f Mi | min %s Mi | max %s Mi  (across %d workers, no workflow running)\n", s/n, mn, mx, n}'
 else
   echo "  (metrics-server not reporting yet)"
 fi
 
-echo "=== Setting up flow ==="
-FLOW_ID=$(BASE_URL="$BASE_URL" FLOW_ENABLE_TIMEOUT=60 "$ROOT/benchmark/setup.sh")
-echo "Flow ID: $FLOW_ID"
+echo "=== Setting up workflow ==="
+WORKFLOW_ID=$(BASE_URL="$BASE_URL" WORKFLOW_ENABLE_TIMEOUT=60 "$ROOT/benchmark/setup.sh")
+echo "Workflow ID: $WORKFLOW_ID"
 # Load is generated INSIDE the cluster, against the app Service — not from the operator's laptop over the
 # public LoadBalancer. Driving 120+ concurrent sync webhooks from a workstation exhausts its ephemeral
 # port range (macOS gives ~16k ports; hey then fails with "can't assign requested address") and the run
 # collapses in a way that looks exactly like a server-side ceiling. The 120-worker tier is where it bites.
 # In-cluster load also drops the internet RTT and the LB hop, so what is measured is server service time.
-WEBHOOK="http://app:80/api/v1/webhooks/$FLOW_ID/sync"
+WEBHOOK="http://app:80/api/v1/webhooks/$WORKFLOW_ID/sync"
 HEY_IMAGE=${HEY_IMAGE:-williamyeh/hey}
 
 # Runs hey in a one-shot pod and echoes its stdout. The image's entrypoint IS hey, so only args are passed.
@@ -187,13 +187,13 @@ echo "=== PER-RUN BREAKDOWN (avg ms across the measured pass only, from worker p
            if(runs==0){print "  (no timing samples found)"; exit}
            printf "  samples              : %d runs\n", runs
            printf "  -- provisioning --\n"
-           printf "  flow bundle download : %.1f ms\n", (n["flowBundleDownloadMs"]?s["flowBundleDownloadMs"]/n["flowBundleDownloadMs"]:0)
+           printf "  workflow bundle download : %.1f ms\n", (n["workflowBundleDownloadMs"]?s["workflowBundleDownloadMs"]/n["workflowBundleDownloadMs"]:0)
            printf "  connectors install       : %.1f ms\n", (n["installConnectorsMs"]?s["installConnectorsMs"]/n["installConnectorsMs"]:0)
            printf "  engine install       : %.1f ms  (V8-cached)\n", (n["installEngineMs"]?s["installEngineMs"]/n["installEngineMs"]:0)
            printf "  provision (total)    : %.1f ms\n", (n["provisionMs"]?s["provisionMs"]/n["provisionMs"]:0)
            printf "  -- engine execution timeline --\n"
            printf "  sandbox start (boot) : %.1f ms  (fork + Node + parse + isolated-vm init + connect)\n", (n["sandboxStartMs"]?s["sandboxStartMs"]/n["sandboxStartMs"]:0)
-           printf "  sandbox run (flow)   : %.1f ms  (webhook -> math -> code -> response)\n", (n["sandboxRunMs"]?s["sandboxRunMs"]/n["sandboxRunMs"]:0)
+           printf "  sandbox run (workflow)   : %.1f ms  (webhook -> math -> code -> response)\n", (n["sandboxRunMs"]?s["sandboxRunMs"]/n["sandboxRunMs"]:0)
            printf "  execution (total)    : %.1f ms\n", (n["executionMs"]?s["executionMs"]/n["executionMs"]:0)
          }'
 

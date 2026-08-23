@@ -1,7 +1,7 @@
 import {
-  FlowTrigger,
-  FlowActionType,
-  flowStructureUtil,
+  WorkflowTrigger,
+  WorkflowActionType,
+  workflowStructureUtil,
   ConnectorCategory,
 } from '@fema/shared';
 import { useQueries } from '@tanstack/react-query';
@@ -136,11 +136,11 @@ const buildGradientFromColors = (colors: string[]): string => {
 };
 
 export const useGradientFromConnectors = (
-  trigger: FlowTrigger | undefined,
+  trigger: WorkflowTrigger | undefined,
   excludeCore = false,
 ) => {
   const steps = useMemo(
-    () => (trigger ? flowStructureUtil.getAllSteps(trigger) : []),
+    () => (trigger ? workflowStructureUtil.getAllSteps(trigger) : []),
     [trigger],
   );
 
@@ -164,7 +164,7 @@ export const useGradientFromConnectors = (
         displayName: connector.displayName,
         logoUrl: connector.logoUrl,
         description: connector.description,
-        type: FlowActionType.CONNECTOR as const,
+        type: WorkflowActionType.CONNECTOR as const,
         connectorType: connector.connectorType,
         connectorName: connector.name,
         connectorVersion: connector.version,

@@ -22,7 +22,7 @@ A backward-compat bridge toward the concurrency-1 destination. It restores exact
 
 ## Consequences
 
-OOM blast radius inverts at N&gt;1: the N engine children share one container cgroup, so a single runaway flow can OOM-kill the container and take down all N in-flight jobs. That is the shared-cap ratchet "Worker is the Sandbox" removed.
+OOM blast radius inverts at N&gt;1: the N engine children share one container cgroup, so a single runaway workflow can OOM-kill the container and take down all N in-flight jobs. That is the shared-cap ratchet "Worker is the Sandbox" removed.
 
 - Documented only: the 0.5 CPU / 1 GB cap is sized for concurrency 1, so operators running N must size the container \~N times themselves.
 - Provision concurrency is already safe: the on-disk cache layer is the same code `main` ran with N boxes.

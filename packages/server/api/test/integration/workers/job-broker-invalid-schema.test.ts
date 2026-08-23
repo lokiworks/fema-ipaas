@@ -1,5 +1,5 @@
 import { apId } from '@fema/core-utils'
-import { ExecuteFlowJobData, ExecutionType, LATEST_JOB_DATA_SCHEMA_VERSION, RunEnvironment, StreamStepProgress, WorkerJobType } from '@fema/shared'
+import { ExecuteWorkflowJobData, ExecutionType, LATEST_JOB_DATA_SCHEMA_VERSION, RunEnvironment, StreamStepProgress, WorkerJobType } from '@fema/shared'
 import { FastifyInstance } from 'fastify'
 import { redisConnections } from '../../../../src/app/database/redis-connections'
 import { QueueName } from '../../../../src/app/workers/job'
@@ -29,13 +29,13 @@ describe('jobBroker.tryDequeue — invalid-schema poison handling', () => {
     it('fails the job as unrecoverable when migrated data still fails JobData.parse, instead of recycling', async () => {
         const { mockPlatform, mockWorkspace } = await mockAndSaveBasicSetup()
 
-        const validJobData: ExecuteFlowJobData = {
-            jobType: WorkerJobType.EXECUTE_FLOW,
+        const validJobData: ExecuteWorkflowJobData = {
+            jobType: WorkerJobType.EXECUTE_WORKFLOW,
             schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
             workspaceId: mockWorkspace.id,
             platformId: mockPlatform.id,
-            flowId: apId(),
-            flowVersionId: apId(),
+            workflowId: apId(),
+            workflowVersionId: apId(),
             runId: apId(),
             environment: RunEnvironment.PRODUCTION,
             executionType: ExecutionType.BEGIN,
@@ -55,7 +55,7 @@ describe('jobBroker.tryDequeue — invalid-schema poison handling', () => {
         const redis = await redisConnections.useExisting()
 
         const poisonedRaw = JSON.stringify({
-            jobType: WorkerJobType.EXECUTE_FLOW,
+            jobType: WorkerJobType.EXECUTE_WORKFLOW,
             schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
             workspaceId: mockWorkspace.id,
             platformId: mockPlatform.id,

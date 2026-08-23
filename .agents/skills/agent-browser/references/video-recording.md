@@ -125,7 +125,7 @@ agent-browser wait 500  # Let viewer see result
 
 ```bash
 # Include context in filename
-agent-browser record start ./recordings/login-flow-2024-01-15.webm
+agent-browser record start ./recordings/login-workflow-2024-01-15.webm
 agent-browser record start ./recordings/checkout-test-run-42.webm
 ```
 
@@ -149,7 +149,7 @@ agent-browser record start ./automation.webm
 
 ```bash
 # Record video AND capture key frames
-agent-browser record start ./flow.webm
+agent-browser record start ./workflow.webm
 
 agent-browser open https://example.com
 agent-browser screenshot ./screenshots/step1-homepage.png

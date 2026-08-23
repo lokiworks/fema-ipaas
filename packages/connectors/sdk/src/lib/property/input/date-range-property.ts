@@ -45,7 +45,7 @@ function startOfThisMonth(): string {
     return new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 }
 
-// Relative presets are resolved against "now" so recurring flows roll forward.
+// Relative presets are resolved against "now" so recurring workflows roll forward.
 function resolve(
     value: DateRangeValue | null | undefined,
 ): { after?: string; before?: string } {

@@ -78,10 +78,10 @@ describe('acquisitionUtils', () => {
   });
 
   it('falls back to the current URL when there is no stash', () => {
-    stubLocation('?utm_campaign=spring&utm_term=flows');
+    stubLocation('?utm_campaign=spring&utm_term=workflows');
     expect(acquisitionUtils.getAcquisitionParams()).toEqual({
       utm_campaign: 'spring',
-      utm_term: 'flows',
+      utm_term: 'workflows',
     });
   });
 

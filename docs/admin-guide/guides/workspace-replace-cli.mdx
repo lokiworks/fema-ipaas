@@ -4,7 +4,7 @@ description: 'Mirror a project across FEMA Integration Platform deployments from
 icon: 'arrow-right-arrow-left'
 ---
 
-The `ap project replace` CLI mirrors a project's flows, table schemas, and folders from one FEMA Integration Platform deployment to another using direct API calls. Use it from CI/CD to promote work between independent staging and production instances when Git-based [Project Releases](/admin-guide/guides/project-releases) aren't a fit.
+The `ap project replace` CLI mirrors a project's workflows, table schemas, and folders from one FEMA Integration Platform deployment to another using direct API calls. Use it from CI/CD to promote work between independent staging and production instances when Git-based [Project Releases](/admin-guide/guides/project-releases) aren't a fit.
 
 <Tip>
 **Use case:** A nightly GitHub Action runs `ap project replace --source-url=staging --dest-url=prod`. Staging is treated as the source of truth; production becomes a byte-for-byte mirror. The job fails before any write if the destination is missing required connectors or referenced connections.
@@ -20,11 +20,11 @@ The `ap project replace` CLI mirrors a project's flows, table schemas, and folde
 
 | Resource | Behavior |
 | --- | --- |
-| Flows | Created / updated / deleted on the destination by `externalId`. |
+| Workflows | Created / updated / deleted on the destination by `externalId`. |
 | Table schemas | Schema only — fields, name, externalId. **Row data is never copied.** |
 | Folders | Mirrored by `externalId`. |
 | Required connectors | Auto-installed on the destination at the source's exact pinned version (official + custom from npm). Replace aborts before any other writes if any install fails. |
-| Connections | **Metadata auto-mirrored** (externalId, connectorName, displayName); secret values never cross the wire. New connections land on the destination as placeholders with `status: MISSING`. Operator authorizes each one in the destination UI before flows can run. |
+| Connections | **Metadata auto-mirrored** (externalId, connectorName, displayName); secret values never cross the wire. New connections land on the destination as placeholders with `status: MISSING`. Operator authorizes each one in the destination UI before workflows can run. |
 | MCP servers, agents, project metadata, custom domains, app credentials | **Out of scope.** Not touched. |
 
 ## Installation
@@ -78,14 +78,14 @@ ap project replace \
 
 ## What happens when you run it
 
-1. **CLI** lists the source project's flows, folders, and table schemas via the source instance's REST API.
+1. **CLI** lists the source project's workflows, folders, and table schemas via the source instance's REST API.
 2. **CLI** packages them into a `ProjectReplaceRequest` and `POST`s to `/v1/projects/:projectId/replace` on the destination.
 3. **Destination** acquires a per-project `NoWait` lock. If another replace is in flight, it returns `409 REPLACE_IN_PROGRESS`.
 4. **Destination preflight** (no writes if any of these fail):
     - FEMA Integration Platform version is parsed; same major + `dest >= source`.
     - For every source connection: if the destination already has one with the same `externalId`, its `connectorName` must match.
-5. **Install phase** — for each entry in `requiredConnectors` not already on dest at the exact pinned version, the server installs it from npm (`packageType: REGISTRY`, scope: platform). All installs are attempted; if any fail, the response aborts with `502` listing every failure. **No other writes have happened at this point** — folders, tables, flows, and connections are still untouched.
-6. **Apply phase** — connections, then folders, then tables, then flows are created/updated. Deletes run in reverse order. Each item runs in its own try/catch; per-item failures are collected, systemic 5xx errors abort the run.
+5. **Install phase** — for each entry in `requiredConnectors` not already on dest at the exact pinned version, the server installs it from npm (`packageType: REGISTRY`, scope: platform). All installs are attempted; if any fail, the response aborts with `502` listing every failure. **No other writes have happened at this point** — folders, tables, workflows, and connections are still untouched.
+6. **Apply phase** — connections, then folders, then tables, then workflows are created/updated. Deletes run in reverse order. Each item runs in its own try/catch; per-item failures are collected, systemic 5xx errors abort the run.
 6. **Audit event** `project.replaced` is emitted only when the apply phase ran — on `SUCCESS` or `PARTIAL_FAILURE`. Rejected attempts (preflight failure, install failure, lock contention) are not audited.
 
 ## Output
@@ -95,7 +95,7 @@ ap project replace \
 ```text
 Replace finished in 1240ms
   connectors      : 1 installed
-  flows       : 1 created, 2 updated, 0 deleted, 47 unchanged
+  workflows       : 1 created, 2 updated, 0 deleted, 47 unchanged
   tables      : 0 created, 0 updated, 0 deleted, 5 unchanged
   folders     : 0 created, 1 updated, 0 deleted, 3 unchanged
   connections : 1 created, 0 updated, 4 unchanged
@@ -103,7 +103,7 @@ Replace finished in 1240ms
 1 connector(s) installed on destination:
   - fema-onlinepay@0.0.7 (CUSTOM)
 
-1 connection(s) need authorization on destination before flows can run:
+1 connection(s) need authorization on destination before workflows can run:
   - Slack Main (@fema/connector-slack) [externalId=slack_main]
 ```
 
@@ -112,13 +112,13 @@ Replace finished in 1240ms
 ```jsonc
 {
   "applied": {
-    "flowsCreated": 1, "flowsUpdated": 2, "flowsDeleted": 0, "flowsUnchanged": 47,
+    "workflowsCreated": 1, "workflowsUpdated": 2, "workflowsDeleted": 0, "workflowsUnchanged": 47,
     "tablesCreated": 0, "tablesUpdated": 0, "tablesDeleted": 0, "tablesUnchanged": 5,
     "foldersCreated": 0, "foldersUpdated": 1, "foldersDeleted": 0, "foldersUnchanged": 3,
     "connectionsCreated": 1, "connectionsUpdated": 0, "connectionsUnchanged": 4
   },
   "failed": [
-    { "kind": "flow", "externalId": "...", "op": "UPDATE", "error": "..." }
+    { "kind": "workflow", "externalId": "...", "op": "UPDATE", "error": "..." }
   ],
   "connectorsInstalled": [
     { "name": "fema-onlinepay", "version": "0.0.7", "connectorType": "CUSTOM" }
@@ -154,7 +154,7 @@ The full set of preflight error kinds: `FEMA_VERSION_MISMATCH`, `CONNECTOR_VERSI
 }
 ```
 
-When this happens, no flows / tables / folders / connections have been touched yet — the run aborted before the apply phase. Common causes: connector not on npm at that version, npm registry unreachable, engine crashed during metadata extraction, npm auth token missing on the destination platform for a private package.
+When this happens, no workflows / tables / folders / connections have been touched yet — the run aborted before the apply phase. Common causes: connector not on npm at that version, npm registry unreachable, engine crashed during metadata extraction, npm auth token missing on the destination platform for a private package.
 
 ## Idempotency and retries
 
@@ -162,8 +162,8 @@ Re-running the CLI after a partial failure converges to the source state. Items 
 
 The apply phase is **not wrapped in a single database transaction**, and that's deliberate:
 
-- Partial-success semantics (`207` + `failed[]`) require successfully-applied items to persist across a sibling failure. A single transaction would roll back every successful folder/table/connection just because one flow's republish failed.
-- Flow republish dispatches BullMQ jobs and trigger-source registrations that can't sit inside a SQL transaction.
+- Partial-success semantics (`207` + `failed[]`) require successfully-applied items to persist across a sibling failure. A single transaction would roll back every successful folder/table/connection just because one workflow's republish failed.
+- Workflow republish dispatches BullMQ jobs and trigger-source registrations that can't sit inside a SQL transaction.
 - Recovery is by re-run, not rollback. Every operation matches by `externalId`, so a process crash mid-apply leaves the destination in some intermediate state that the next run's diff phase detects and finishes. CI/CD's natural retry handles process-level failures (OOM, SIGKILL, deploy timeout).
 
 If your CI does want a clean "all-or-nothing" property at the workflow level, drive replace from a job step that retries on non-zero exit and treat success only as exit `0`.
@@ -175,13 +175,13 @@ Connection metadata (externalId, connectorName, displayName) is mirrored to the 
 After a replace, the CLI prints any connections that still need authorization on the destination:
 
 ```text
-1 connection(s) need authorization on destination before flows can run:
+1 connection(s) need authorization on destination before workflows can run:
   - Slack Main (@fema/connector-slack) [externalId=slack_main]
 ```
 
-The operator opens the destination UI → **Connections** → reconnects each placeholder using the destination's credentials (a different Slack workspace, prod-grade API key, etc.). Until that's done, any flow run that uses the connection will fail at execution time. Re-running the CLI after authorization is a no-op for connections that are already `ACTIVE`.
+The operator opens the destination UI → **Connections** → reconnects each placeholder using the destination's credentials (a different Slack workspace, prod-grade API key, etc.). Until that's done, any workflow run that uses the connection will fail at execution time. Re-running the CLI after authorization is a no-op for connections that are already `ACTIVE`.
 
-If a connection on the destination already exists with the same `externalId` but a different `connectorName`, the replace fails preflight with `CONNECTION_CONNECTOR_MISMATCH` so the conflict can be resolved without overwriting unrelated flows.
+If a connection on the destination already exists with the same `externalId` but a different `connectorName`, the replace fails preflight with `CONNECTION_CONNECTOR_MISMATCH` so the conflict can be resolved without overwriting unrelated workflows.
 
 ## GitHub Actions example
 
@@ -223,9 +223,9 @@ A non-zero exit code fails the job — preflight errors, server errors, or trans
     The CLI passed preflight but a required connector couldn't be installed on the destination. Check `failures[*].message` in the response — most commonly the connector doesn't exist on npm at that version, the registry is unreachable, or the engine crashed during metadata extraction. The replace aborted before any writes; fix the install issue and re-run.
   </Accordion>
   <Accordion title="CONNECTOR_VERSION_MISMATCH">
-    The destination already has the connector installed at a different version than the source. Either upgrade/downgrade the destination connector manually, or update the source flow to use a version compatible with what's on the destination.
+    The destination already has the connector installed at a different version than the source. Either upgrade/downgrade the destination connector manually, or update the source workflow to use a version compatible with what's on the destination.
   </Accordion>
-  <Accordion title="Flows fail at runtime with 'connection not authorized'">
+  <Accordion title="Workflows fail at runtime with 'connection not authorized'">
     The replace mirrored the connection metadata as a placeholder; the destination still needs the secret. Open the destination UI → **Connections** → reconnect each placeholder. The replace response and CLI output list every connection that needs authorization.
   </Accordion>
   <Accordion title="CONNECTION_CONNECTOR_MISMATCH">

@@ -1,4 +1,4 @@
-import { FolderDto, PopulatedFlow } from '@fema/shared';
+import { FolderDto, PopulatedWorkflow } from '@fema/shared';
 import { t } from 'i18next';
 import {
   ArrowDown,
@@ -43,9 +43,9 @@ import {
 } from '@/components/ui/tooltip';
 import { MoveToFolderDialog } from '@/features/automations/components/move-to-folder-dialog';
 import { ConnectorIconList } from '@/features/connectors/components/connector-icon-list';
-import { FlowCreatedByBadge } from '@/features/flows/components/flow-created-by-badge';
-import { FlowStatusToggle } from '@/features/flows/components/flow-status-toggle';
-import { ShareTemplateDialog } from '@/features/flows/components/share-template-dialog';
+import { ShareTemplateDialog } from '@/features/workflows/components/share-template-dialog';
+import { WorkflowCreatedByBadge } from '@/features/workflows/components/workflow-created-by-badge';
+import { WorkflowStatusToggle } from '@/features/workflows/components/workflow-status-toggle';
 import { cn } from '@/lib/utils';
 
 import { TreeItem } from '../lib/types';
@@ -64,12 +64,12 @@ type AutomationsTableRowProps = {
   onTogglePin: () => void;
   onRename: () => void;
   onDelete: () => void;
-  onDuplicate: (flow: PopulatedFlow) => void;
+  onDuplicate: (workflow: PopulatedWorkflow) => void;
   onMoveTo: (item: TreeItem, folderId: string) => void;
-  onExportFlow: (flow: PopulatedFlow) => void;
+  onExportWorkflow: (workflow: PopulatedWorkflow) => void;
   onCreateInFolder?: (folderId: string, kind: CreateInFolderKind) => void;
-  userHasPermissionToWriteFlow?: boolean;
-  isCreatingFlow?: boolean;
+  userHasPermissionToWriteWorkflow?: boolean;
+  isCreatingWorkflow?: boolean;
   isMoving: boolean;
   isDuplicating: boolean;
   onLoadMore?: () => void;
@@ -87,10 +87,10 @@ export const AutomationsTableRow = ({
   onDelete,
   onDuplicate,
   onMoveTo,
-  onExportFlow,
+  onExportWorkflow,
   onCreateInFolder,
-  userHasPermissionToWriteFlow = true,
-  isCreatingFlow,
+  userHasPermissionToWriteWorkflow = true,
+  isCreatingWorkflow,
   isMoving,
   isDuplicating,
   onLoadMore,
@@ -199,10 +199,10 @@ export const AutomationsTableRow = ({
         className="w-[160px] shrink-0 px-2 flex items-center gap-2"
         onClick={(e) => e.stopPropagation()}
       >
-        {isFlowItem(item) && (
+        {isWorkflowItem(item) && (
           <>
-            <FlowStatusToggle flow={item.data} />
-            <FlowCreatedByBadge createdBy={item.data.createdBy} />
+            <WorkflowStatusToggle workflow={item.data} />
+            <WorkflowCreatedByBadge createdBy={item.data.createdBy} />
           </>
         )}
       </div>
@@ -218,11 +218,15 @@ export const AutomationsTableRow = ({
             <CreateNewMenu
               scope="folder"
               align="end"
-              userHasPermissionToWriteFlow={userHasPermissionToWriteFlow}
+              userHasPermissionToWriteWorkflow={
+                userHasPermissionToWriteWorkflow
+              }
               userHasPermissionToWriteFolder={false}
-              isCreatingFlow={isCreatingFlow}
-              onCreateFlow={() => onCreateInFolder(item.id, 'flow')}
-              onImportFlow={() => onCreateInFolder(item.id, 'import-flow')}
+              isCreatingWorkflow={isCreatingWorkflow}
+              onCreateWorkflow={() => onCreateInFolder(item.id, 'workflow')}
+              onImportWorkflow={() =>
+                onCreateInFolder(item.id, 'import-workflow')
+              }
               onOpenChange={(open) => {
                 if (open) setIsCreateTooltipOpen(false);
               }}
@@ -269,7 +273,7 @@ export const AutomationsTableRow = ({
               {t('Rename')}
             </DropdownMenuItem>
 
-            {isFlowItem(item) && !embedState.hideDuplicateFlow && (
+            {isWorkflowItem(item) && !embedState.hideDuplicateWorkflow && (
               <DropdownMenuItem
                 onClick={() => onDuplicate(item.data)}
                 disabled={isDuplicating}
@@ -283,7 +287,7 @@ export const AutomationsTableRow = ({
               </DropdownMenuItem>
             )}
 
-            {item.type === 'flow' && !embedState.hideFolders && (
+            {item.type === 'workflow' && !embedState.hideFolders && (
               <DropdownMenuItem
                 onClick={() => {
                   setMoveFolderId('');
@@ -295,17 +299,18 @@ export const AutomationsTableRow = ({
               </DropdownMenuItem>
             )}
 
-            {isFlowItem(item) && !embedState.hideExportAndImportFlow && (
-              <DropdownMenuItem onClick={() => onExportFlow(item.data)}>
-                <Download className="h-4 w-4 mr-2" />
-                {t('Export')}
-              </DropdownMenuItem>
-            )}
+            {isWorkflowItem(item) &&
+              !embedState.hideExportAndImportWorkflow && (
+                <DropdownMenuItem onClick={() => onExportWorkflow(item.data)}>
+                  <Download className="h-4 w-4 mr-2" />
+                  {t('Export')}
+                </DropdownMenuItem>
+              )}
 
-            {isFlowItem(item) && !embedState.isEmbedded && (
+            {isWorkflowItem(item) && !embedState.isEmbedded && (
               <ShareTemplateDialog
-                flowId={item.id}
-                flowVersionId={item.data.version.id}
+                workflowId={item.id}
+                workflowVersionId={item.data.version.id}
               >
                 <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                   <Share2 className="h-4 w-4 mr-2" />
@@ -356,7 +361,7 @@ const RowItemIcon = ({ item }: { item: TreeItem }) => {
   switch (item.type) {
     case 'folder':
       return <Folder className="h-4 w-4 text-gray-400 fill-gray-400" />;
-    case 'flow':
+    case 'workflow':
       return <Workflow className="h-4 w-4 text-primary" />;
     default:
       return <Table2 className="h-4 w-4 text-emerald-500" />;
@@ -371,7 +376,7 @@ const RowItemDetails = ({ item }: { item: TreeItem }) => {
       </span>
     );
   }
-  if (isFlowItem(item)) {
+  if (isWorkflowItem(item)) {
     return (
       <ConnectorIconList
         trigger={item.data.version.trigger}
@@ -384,7 +389,7 @@ const RowItemDetails = ({ item }: { item: TreeItem }) => {
 };
 
 const RowItemOwner = ({ item }: { item: TreeItem }) => {
-  if (isFlowItem(item)) {
+  if (isWorkflowItem(item)) {
     if (item.data.ownerId) {
       return (
         <ApAvatar
@@ -399,8 +404,8 @@ const RowItemOwner = ({ item }: { item: TreeItem }) => {
   return <span className="text-muted-foreground">-</span>;
 };
 
-function isFlowItem(
+function isWorkflowItem(
   item: TreeItem,
-): item is Omit<TreeItem, 'data'> & { data: PopulatedFlow } {
-  return item.type === 'flow';
+): item is Omit<TreeItem, 'data'> & { data: PopulatedWorkflow } {
+  return item.type === 'workflow';
 }

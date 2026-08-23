@@ -9,7 +9,7 @@ export const PlatformUsage = z.object({
     creditsNextResetAt: Nullable(z.string()),
     appSumoAiCreditsUsed: Nullable(z.number()),
     appSumoAiCreditsRemaining: Nullable(z.number()),
-    activeFlows: z.number(),
+    activeWorkflows: z.number(),
     teamWorkspaces: z.number(),
     users: z.number(),
     activeUsers: z.number(),
@@ -43,7 +43,7 @@ export enum ConsumableFeatureId {
 export enum UnconsumableFeatureId {
     TEAM_WORKSPACES_LIMIT = 'teamWorkspacesLimit',
     USERS_LIMIT = 'usersLimit',
-    ACTIVE_FLOWS_LIMIT = 'activeFlowsLimit',
+    ACTIVE_WORKFLOWS_LIMIT = 'activeWorkflowsLimit',
 }
 
 export enum FeatureFlagId {
@@ -113,7 +113,7 @@ export const PlatformPlan = z.object({
     licenseExpiresAt: Nullable(DateOrString),
 
     workspacesLimit: Nullable(z.number()),
-    activeFlowsLimit: Nullable(z.number()),
+    activeWorkflowsLimit: Nullable(z.number()),
 
     /** @deprecated use workerGroupId instead — will be removed in 0.83.0 */
     dedicatedWorkers: Nullable(z.object({

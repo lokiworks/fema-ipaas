@@ -6,7 +6,7 @@ icon: 🚦
 
 The CI gates that shape *how a PR is reviewed*, as opposed to whether it builds. Lives in `.github/workflows/`.
 
-## Draft-first flow
+## Draft-first workflow
 We open PRs as drafts so no human reviewer is auto-assigned until "Ready for review". Greptile's **Review draft pull requests** setting is enabled, so its first pass lands on draft open with no CI glue — first-pass AI review while it is still a draft, human review after. Unlike a once-per-PR CI nudge, the native setting also re-reviews as commits land on the draft.
 
 ## Per-area size gate

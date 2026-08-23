@@ -27,7 +27,7 @@ body{background:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Rob
 <div class="stage">
   <div class="head">
     <h1>Warm vs cold: where a sync webhook's time goes</h1>
-    <p>Cold is the first request on a fresh worker that has never seen this flow. Installing connectors and booting the engine dominate. After it, the worker is warm.</p>
+    <p>Cold is the first request on a fresh worker that has never seen this workflow. Installing connectors and booting the engine dominate. After it, the worker is warm.</p>
   </div>
 
   <div class="chart">
@@ -68,9 +68,9 @@ body{background:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Rob
     <div class="legend">
       <div class="lg"><i style="background:#94a3b8"></i>Queue + route to a worker</div>
       <div class="lg"><i style="background:#f59e0b"></i>Install connectors (bun install)</div>
-      <div class="lg"><i style="background:#38bdf8"></i>Fetch flow bundle</div>
+      <div class="lg"><i style="background:#38bdf8"></i>Fetch workflow bundle</div>
       <div class="lg"><i style="background:#8b5cf6"></i>Boot engine (fork + isolated-vm)</div>
-      <div class="lg"><i style="background:#10b981"></i>Run flow</div>
+      <div class="lg"><i style="background:#10b981"></i>Run workflow</div>
     </div>
   </div>
 

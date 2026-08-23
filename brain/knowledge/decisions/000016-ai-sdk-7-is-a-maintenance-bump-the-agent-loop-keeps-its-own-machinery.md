@@ -43,7 +43,7 @@ API** — bumping it breaks every out-of-tree connector and needs its own PR wit
   whenever a user pauses to think. Only per-tool `timeout.tools` is safe here, and it was not
   worth swapping a working `Promise.race` for.
 - **`HarnessAgent`** — runs the `claude-code`/`codex` CLI in a *networked* sandbox that
-  installs itself and leases a bridge port. Our agent has no repo; a flow is Postgres rows
+  installs itself and leases a bridge port. Our agent has no repo; a workflow is Postgres rows
   behind MCP tools. It cannot run on our `isolate` sandbox, which exists to deny network.
   The honest fit is **connector development** (real files, real `tsc`, real tests, and
   `/connector-builder` already encodes the procedure as a skill) — not the chat agent.

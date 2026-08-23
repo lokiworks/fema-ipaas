@@ -103,7 +103,7 @@ Common TS errors: missing import in `src/index.ts`, missing `tsconfig.base.json`
 
 ## Versioning an existing connector
 
-Every change to an existing connector needs a version bump in its `package.json`. Without it, live flows never pick up your change.
+Every change to an existing connector needs a version bump in its `package.json`. Without it, live workflows never pick up your change.
 
 | Bump | When |
 |---|---|
@@ -210,7 +210,7 @@ Full patterns and examples: read `ux-guidelines.md`
 
 ## Output Quality: Table-Ready Data
 
-Users pipe connector outputs into Google Sheets and FEMA Integration Platform Tables constantly — nested or inconsistent output breaks their flows.
+Users pipe connector outputs into Google Sheets and FEMA Integration Platform Tables constantly — nested or inconsistent output breaks their workflows.
 
 1. **Flatten nested objects** — `{ user: { name: "Jo" } }` → `{ user_name: "Jo" }`.
 2. **Arrays of records must have consistent flat keys** — same keys on every object so each maps to a column.
@@ -235,5 +235,5 @@ A new action or trigger without these is a regression. Writing rules, `idempoten
 
 Two things the step-by-step won't catch:
 
-1. **Action/trigger `name` fields are permanent** — never change them after publishing; flows store them by name.
+1. **Action/trigger `name` fields are permanent** — never change them after publishing; workflows store them by name.
 2. **Auth stays imported, never re-exported** — actions/triggers do `import { myAppAuth } from '../auth'`; the auth object itself never appears in `index.ts` exports.

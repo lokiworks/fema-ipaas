@@ -1,12 +1,12 @@
 import { JobData, WorkerJobType } from '@fema/shared'
 import { executeActionJob } from './jobs/execute-action'
-import { executeFlowJob } from './jobs/execute-flow'
 import { executePollingJob } from './jobs/execute-polling'
 import { executePropertyJob } from './jobs/execute-property'
 import { executeTokenRefreshJob } from './jobs/execute-token-refresh'
 import { executeTriggerHookJob } from './jobs/execute-trigger-hook'
 import { executeValidationJob } from './jobs/execute-validation'
 import { executeWebhookJob } from './jobs/execute-webhook'
+import { executeWorkflowJob } from './jobs/execute-workflow'
 import { extractConnectorInfoJob } from './jobs/extract-connector-info'
 import { renewWebhookJob } from './jobs/renew-webhook'
 import { resolveConnectionIdentifierJob } from './jobs/resolve-connection-identifier'
@@ -31,7 +31,7 @@ export async function getHandler(jobType: WorkerJobType): Promise<JobHandler<Job
 }
 
 const registry: Partial<Record<WorkerJobType, JobHandler>> = {
-    [WorkerJobType.EXECUTE_FLOW]: executeFlowJob,
+    [WorkerJobType.EXECUTE_WORKFLOW]: executeWorkflowJob,
     [WorkerJobType.EXECUTE_POLLING]: executePollingJob,
     [WorkerJobType.EXECUTE_WEBHOOK]: executeWebhookJob,
     [WorkerJobType.RENEW_WEBHOOK]: renewWebhookJob,

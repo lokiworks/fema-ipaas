@@ -67,7 +67,7 @@ export const runsMetadataQueueFactory = ({
 }
 
 const RUNS_METADATA_UPSERT_KEYS: (keyof RunsMetadataUpsertData)[] = [
-    'id', 'workspaceId', 'created', 'flowId', 'flowVersionId', 'environment',
+    'id', 'workspaceId', 'created', 'workflowId', 'workflowVersionId', 'environment',
     'triggeredBy', 'startTime', 'finishTime', 'status', 'tags',
     'failedStep', 'stepNameToTest', 'parentRunId', 'failParentOnFailure',
     'logsFileId', 'updated', 'stepsCount', 'requestId',
@@ -103,8 +103,8 @@ export type RunsMetadataUpsertData = {
     id: string
     workspaceId: string
     created?: string
-    flowId?: string
-    flowVersionId?: string
+    workflowId?: string
+    workflowVersionId?: string
     environment?: RunEnvironment
     triggeredBy?: string
     startTime?: string | null

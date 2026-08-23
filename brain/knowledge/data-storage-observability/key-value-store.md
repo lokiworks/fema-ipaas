@@ -4,7 +4,7 @@ icon: 🔑
 
 # Key-Value Store
 
-A persistent, project-scoped key-value store that connector steps read/write during flow execution. Backend-only, no UI. Values are arbitrary JSON (`jsonb`). Available in CE, EE, Cloud.
+A persistent, project-scoped key-value store that connector steps read/write during workflow execution. Backend-only, no UI. Values are arbitrary JSON (`jsonb`). Available in CE, EE, Cloud.
 
 ### Entities & services
 - **StoreEntry**: `(projectId, key)` unique, `value` is any JSON. `store-entry.service.ts`: `upsert`, `getOne`, `delete`.

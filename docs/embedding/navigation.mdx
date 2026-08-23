@@ -25,7 +25,7 @@ fema.configure({
     containerId,
     builder: {
       disableNavigation: false,
-      hideFlowName: false
+      hideWorkflowName: false
     },
     dashboard: {
       hideSidebar: false
@@ -50,14 +50,14 @@ window.addEventListener("popstate", () => {
 
 ## Navigate Method
 
-If you use `fema.navigate({ route: '/flows' })` this will tell the embedded sdk where to navigate to.
+If you use `fema.navigate({ route: '/workflows' })` this will tell the embedded sdk where to navigate to.
 
 Here is the list for routes the sdk can navigate to:
 
 | Route | Description |
 | --- | --- |
-| `/flows` | Flows table
-| `/flows/{flowId}` | Opens up a flow in the builder
+| `/workflows` | Workflows table
+| `/workflows/{workflowId}` | Opens up a workflow in the builder
 | `/runs` | Runs table
 | `/runs/{runId}` | Opens up a run in the builder
 | `/connections` | Connections table
@@ -70,7 +70,7 @@ Here is the list for routes the sdk can navigate to:
 You can call the `navigate` method after initializing the sdk using the `configure` sdk:
 
 ```js
-const flowId = '1234';
+const workflowId = '1234';
 const instanceUrl = 'YOUR_INSTANCE_URL';
 const jwtToken = 'YOUR_GENERATED_JWT_TOKEN';
 fema.configure({
@@ -78,7 +78,7 @@ fema.configure({
 	jwtToken,
 }).then(() => {
 	fema.navigate({
-		route: `/flows/${flowId}`
+		route: `/workflows/${workflowId}`
 	})
 });
 ```

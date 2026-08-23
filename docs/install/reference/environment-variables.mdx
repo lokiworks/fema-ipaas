@@ -43,7 +43,7 @@ Variables marked ❗ are required for a self-hosted production deployment.
   <Card title="Authentication & SSO" icon="lock" href="#authentication-&-sso">
     Google sign-in, SCIM, cloud OAuth.
   </Card>
-  <Card title="Connectors & flows" icon="puzzle-connector" href="#connectors-&-flows">
+  <Card title="Connectors & workflows" icon="puzzle-connector" href="#connectors-&-workflows">
     Connector syncing, polling, publish behavior.
   </Card>
   <Card title="Tool search" icon="magnifying-glass" href="#tool-search">
@@ -136,7 +136,7 @@ applies to `FEMA_REDIS_SENTINEL_HOSTS` when running in Sentinel mode.
 
 ### Execution & sandboxing
 
-Controls how flows run: the sandbox mode, per-process memory and concurrency,
+Controls how workflows run: the sandbox mode, per-process memory and concurrency,
 run timeouts, and the network egress posture for user code. Read
 [Sandboxing](/install/architecture/sandboxing) before changing `FEMA_EXECUTION_MODE`.
 
@@ -147,7 +147,7 @@ run timeouts, and the network egress posture for user code. Read
 | `FEMA_WORKER_CONCURRENCY` | Concurrent jobs a worker processes at once. Each job uses one sandbox instance. | `5` |
 | `FEMA_SANDBOX_MEMORY_LIMIT` | Maximum memory (KB) a single sandboxed engine process can use. Each process runs at most one execution at a time. | `1048576` |
 | `FEMA_SANDBOX_PROPAGATED_ENV_VARS` | Comma-separated environment variables propagated into sandboxed code. For connectors, keep everything in the authentication object so it works across instances. | `None` |
-| `FEMA_FLOW_TIMEOUT_SECONDS` | Maximum runtime for a single flow run, in seconds. | `600` |
+| `FEMA_WORKFLOW_TIMEOUT_SECONDS` | Maximum runtime for a single workflow run, in seconds. | `600` |
 | `FEMA_TRIGGER_TIMEOUT_SECONDS` | Maximum runtime for a trigger's polling, in seconds. | `60` |
 | `FEMA_DEFAULT_CONCURRENT_JOBS_LIMIT` | Default maximum concurrent runs per project. Can be overridden per project in settings. | `5` |
 | `FEMA_PROJECT_RATE_LIMITER_ENABLED` | Enforce per-project rate limits to prevent excessive usage. | `false` |
@@ -165,7 +165,7 @@ run data is kept. The **Cloud** values and how these interact are covered in
 | Variable | Description | Default |
 |---|---|---|
 | `FEMA_EXECUTION_DATA_RETENTION_DAYS` | Days to retain execution data, logs, and events. | `30` |
-| `FEMA_PAUSED_FLOW_TIMEOUT_DAYS` | Maximum pause duration for a paused flow, in days. Cannot exceed `FEMA_EXECUTION_DATA_RETENTION_DAYS`. | `30` |
+| `FEMA_PAUSED_WORKFLOW_TIMEOUT_DAYS` | Maximum pause duration for a paused workflow, in days. Cannot exceed `FEMA_EXECUTION_DATA_RETENTION_DAYS`. | `30` |
 | `FEMA_ISSUE_ARCHIVE_DAYS` | Issues not updated for this many days are automatically archived. | `7` |
 | `FEMA_MAX_FILE_SIZE_MB` | Maximum size (MB) for files uploaded in steps or triggers. Larger files are rejected. | `25` |
 | `FEMA_MAX_STORE_ENTRY_VALUE_SIZE_KB` | Maximum size (KB) of a single value written by the Store connector or `context.store`. Larger writes are rejected with HTTP 413. | `512` |
@@ -247,16 +247,16 @@ Sign-in providers and SCIM provisioning.
 
 ---
 
-### Connectors & flows
+### Connectors & workflows
 
 How connector metadata is synced, how often scheduled triggers poll, and
-flow-authoring defaults.
+workflow-authoring defaults.
 
 | Variable | Description | Default |
 |---|---|---|
 | `FEMA_CONNECTORS_SYNC_MODE` | `OFFICIAL_AUTO` syncs connector metadata automatically from the cloud; `NONE` disables syncing. | `OFFICIAL_AUTO` |
 | `FEMA_TRIGGER_DEFAULT_POLL_INTERVAL` | Minutes between checks for new data on connectors with scheduled triggers (e.g. new Google Contacts). | `5` |
-| `FEMA_ENABLE_FLOW_ON_PUBLISH` | Automatically enable a flow when a new version is published. | `true` |
+| `FEMA_ENABLE_WORKFLOW_ON_PUBLISH` | Automatically enable a workflow when a new version is published. | `true` |
 | `FEMA_ENFORCE_CONNECTION_CONNECTOR_BINDING` | Reject a step's connection at runtime unless the connection was created for the same connector as the step. | `false` |
 | `FEMA_LOAD_TRANSLATIONS_FOR_DEV_CONNECTORS` | Load translations for dev connectors (configured via `FEMA_DEV_CONNECTORS`). Affects development mode only. | `false` |
 

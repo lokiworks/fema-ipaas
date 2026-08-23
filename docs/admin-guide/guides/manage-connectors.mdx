@@ -8,7 +8,7 @@ icon: "puzzle-connector"
 
 ## Overview
 
-**Connectors** are the building blocks of FEMA Integration Platform — they are integrations and connectors (like Google Sheets, Slack, OpenAI, etc.) that users can use in their automation flows.
+**Connectors** are the building blocks of FEMA Integration Platform — they are integrations and connectors (like Google Sheets, Slack, OpenAI, etc.) that users can use in their automation workflows.
 
 As a platform administrator, you have full control over which connectors are available to your users. This allows you to:
 
@@ -24,7 +24,7 @@ There are **two levels** of connector management:
 | **Project Level** | Project Admin | Show/hide specific connectors for specfic project |
 
 <Note>
-Connectors are standard npm packages — official connectors are **auto-synced from the registry hourly**, so you don't need to upgrade the server to get new versions. Each step in a flow is pinned to a specific connector version, and drafts can be upgraded from the builder. See [Connector Syncing & Versioning](/install/architecture/connector-syncing) for the full pipeline.
+Connectors are standard npm packages — official connectors are **auto-synced from the registry hourly**, so you don't need to upgrade the server to get new versions. Each step in a workflow is pinned to a specific connector version, and drafts can be upgraded from the builder. See [Connector Syncing & Versioning](/install/architecture/connector-syncing) for the full pipeline.
 </Note>
 
 ---
@@ -49,7 +49,7 @@ Project administrators can further restrict which connectors are available withi
     - **Disabled**: The connector is hidden from users in this project
   </Step>
   <Step title="Save Changes">
-    Changes take effect immediately — users will only see the enabled connectors when building their flows.
+    Changes take effect immediately — users will only see the enabled connectors when building their workflows.
   </Step>
 </Steps>
 

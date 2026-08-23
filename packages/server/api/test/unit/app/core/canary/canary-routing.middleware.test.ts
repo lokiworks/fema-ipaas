@@ -22,11 +22,11 @@ vi.mock('../../../../../src/app/ee/platform/platform-plan/worker-group.service',
     }),
 }))
 
-const mockFlowExecutionCacheGet = vi.fn()
+const mockWorkflowExecutionCacheGet = vi.fn()
 
-vi.mock('../../../../../src/app/flows/flow/flow-execution-cache', () => ({
-    flowExecutionCache: () => ({
-        get: (...args: unknown[]) => mockFlowExecutionCacheGet(...args),
+vi.mock('../../../../../src/app/workflows/workflow/workflow-execution-cache', () => ({
+    workflowExecutionCache: () => ({
+        get: (...args: unknown[]) => mockWorkflowExecutionCacheGet(...args),
     }),
 }))
 
@@ -159,7 +159,7 @@ describe('canaryRoutingMiddleware', () => {
 
         const request = makeRequest({
             method: 'GET',
-            url: '/v1/flows',
+            url: '/v1/workflows',
             principal: { type: PrincipalType.USER, platform: { id: 'platform-abc' } } as never,
         })
         const reply = makeReply()
@@ -167,27 +167,27 @@ describe('canaryRoutingMiddleware', () => {
         await canaryRoutingMiddleware(request, reply)
 
         expect(reply.from).toHaveBeenCalledWith(
-            '/v1/flows',
+            '/v1/workflows',
             expect.objectContaining({ onError: expect.any(Function) }),
         )
     })
 
-    it('proxies request for a canary platform resolved from flowId cache', async () => {
+    it('proxies request for a canary platform resolved from workflowId cache', async () => {
         mockSystemGet.mockImplementation((prop: AppSystemProp) =>
             prop === AppSystemProp.CANARY_APP_URL ? 'http://canary:3000' : undefined,
         )
         mockIsCanaryPlatform.mockResolvedValue(true)
-        mockFlowExecutionCacheGet.mockResolvedValue({ exists: true, platformId: 'platform-xyz' })
+        mockWorkflowExecutionCacheGet.mockResolvedValue({ exists: true, platformId: 'platform-xyz' })
 
         const request = makeRequest({
             method: 'POST',
-            url: '/v1/webhooks/flow-1',
-            params: { flowId: 'flow-1' },
+            url: '/v1/webhooks/workflow-1',
+            params: { workflowId: 'workflow-1' },
         })
         const reply = makeReply()
 
         await canaryRoutingMiddleware(request, reply)
 
-        expect(reply.from).toHaveBeenCalledWith('/v1/webhooks/flow-1', expect.anything())
+        expect(reply.from).toHaveBeenCalledWith('/v1/webhooks/workflow-1', expect.anything())
     })
 })

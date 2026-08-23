@@ -13,7 +13,7 @@ icon: 🧭
 | 0001 | [FEMA Integration Platform CE 是工程底座，不是最终领域模型](0001-fork-fema-ce.md) | accepted |
 | 0002 | [只有一个开源版本，不保留 Edition 分支](0002-remove-enterprise-edition.md) | accepted |
 | 0003 | [Connector 概念彻底删除，统一为 Connector](0003-connector-to-connector.md) | accepted |
-| 0004 | [Connector 与 Flow Component 是两类不同的节点](0004-separate-connector-and-flow-component.md) | accepted |
+| 0004 | [Connector 与 Workflow Component 是两类不同的节点](0004-separate-connector-and-workflow-component.md) | accepted |
 | 0005 | [Connection 是一等领域对象，不只是凭证](0005-connection-domain-model.md) | accepted |
 | 0006 | [WorkflowVersion 锁定 ConnectorVersion，运行时不漂移到 latest](0006-workflow-version-and-connector-version-lock.md) | accepted |
 | 0007 | [Runtime 保留 Worker / Sandbox / Engine，不推倒重写](0007-runtime-keeps-worker-sandbox-engine.md) | accepted |

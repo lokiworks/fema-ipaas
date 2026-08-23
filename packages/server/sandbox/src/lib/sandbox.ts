@@ -56,7 +56,7 @@ export function createSandboxRuntime({ concurrency = 1, basePath, getSettings }:
                 // Break the engine timeline into its two worker-observable phases:
                 //   sandboxStart = fork the engine child + Node boot + parse main.js (V8-cached) +
                 //                  isolated-vm init + socket connect handshake.
-                //   sandboxRun   = send the operation + the engine runs the flow steps + returns.
+                //   sandboxRun   = send the operation + the engine runs the workflow steps + returns.
                 // executionMs wraps both (total), so the report shows execution = start + run.
                 const result = await wideEvent.timed({
                     name: 'execution',
@@ -65,7 +65,7 @@ export function createSandboxRuntime({ concurrency = 1, basePath, getSettings }:
                         await wideEvent.timed({
                             name: 'sandboxStart',
                             fn: () => sandbox.start({
-                                flowVersionId: provision.flowVersionId,
+                                workflowVersionId: provision.workflowVersionId,
                                 platformId: provision.platformId,
                                 mounts: [],
                             }),
@@ -110,23 +110,23 @@ export function createSandboxRuntime({ concurrency = 1, basePath, getSettings }:
                     busy: info.busy,
                 }))
         },
-        async prewarm({ log, apiClient, publicApiUrl, flow }: PreWarmSandboxParams): Promise<void> {
+        async prewarm({ log, apiClient, publicApiUrl, workflow }: PreWarmSandboxParams): Promise<void> {
             if (isNil(apiClient) || isNil(publicApiUrl)) {
                 return
             }
             const { error } = await tryCatch(async () => {
-                const { flows, platformId, engineToken } = await apiClient.getPrewarmData({
+                const { workflows, platformId, engineToken } = await apiClient.getPrewarmData({
                     workerGroupId: getSettings().WORKER_GROUP_ID,
                     workspaceWorker: getSettings().WORKSPACE_WORKER,
-                    flow,
+                    workflow,
                 })
                 const resolver = createResolver({ apiClient, basePath, getSettings, log })
                 const connectors: ConnectorPackage[] = []
                 const codeSteps: CodeArtifact[] = []
-                for (const flow of flows) {
-                    const { data: resolved, error: flowError } = await tryCatch(() => resolver.resolve({ flow, platformId, publicApiUrl, engineToken }))
-                    if (flowError) {
-                        log.warn({ error: String(flowError), flow: { id: flow.id } }, 'Failed to resolve flow for prewarm')
+                for (const workflow of workflows) {
+                    const { data: resolved, error: workflowError } = await tryCatch(() => resolver.resolve({ workflow, platformId, publicApiUrl, engineToken }))
+                    if (workflowError) {
+                        log.warn({ error: String(workflowError), workflow: { id: workflow.id } }, 'Failed to resolve workflow for prewarm')
                         continue
                     }
                     if (resolved.kind !== 'ready') {
@@ -136,7 +136,7 @@ export function createSandboxRuntime({ concurrency = 1, basePath, getSettings }:
                     codeSteps.push(...resolved.provision.codes)
                 }
                 await localExecutionCache(log, basePath, getSettings).provision({ connectors, codeSteps, publicApiUrl, engineToken })
-                log.info({ flowCount: flows.length, connectorCount: connectors.length }, 'Prewarmed sandbox cache')
+                log.info({ workflowCount: workflows.length, connectorCount: connectors.length }, 'Prewarmed sandbox cache')
             })
             if (error) {
                 log.warn({ error: String(error) }, 'Cache prewarm failed')

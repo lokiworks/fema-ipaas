@@ -6,9 +6,9 @@ import {
   tryParseFriendlyConnectorError,
 } from '@fema/core-utils';
 import {
-  FlowAction,
+  WorkflowAction,
   StepRunResponse,
-  FlowTrigger,
+  WorkflowTrigger,
   TriggerEventWithPayload,
   TriggerTestStrategy,
 } from '@fema/shared';
@@ -19,7 +19,7 @@ import { useFormContext } from 'react-hook-form';
 
 import { internalErrorToast } from '@/components/ui/sonner';
 import { executionsApi } from '@/features/executions';
-import { triggerEventsApi } from '@/features/flows';
+import { triggerEventsApi } from '@/features/workflows';
 import { api } from '@/lib/api';
 import { authenticationSession } from '@/lib/authentication-session';
 import { wait } from '@/lib/dom-utils';
@@ -37,8 +37,8 @@ export const testStepHooks = {
     onSuccess: () => void;
   }) => {
     const { form, builderState } = useRequiredStateToTestSteps();
-    const flowId = builderState.flow.id;
-    const flowVersionId = builderState.flowVersionId;
+    const workflowId = builderState.workflow.id;
+    const workflowVersionId = builderState.workflowVersionId;
     const stepName = form.getValues().name;
 
     return useMutation<TriggerEventWithPayload[], Error, AbortSignal>({
@@ -47,15 +47,15 @@ export const testStepHooks = {
         const ids = (
           await triggerEventsApi.list({
             workspaceId: authenticationSession.getWorkspaceId()!,
-            flowId,
+            workflowId,
             cursor: undefined,
             limit: 5,
           })
         ).data.map((triggerEvent) => triggerEvent.id);
         await triggerEventsApi.test({
           workspaceId: authenticationSession.getWorkspaceId()!,
-          flowId,
-          flowVersionId,
+          workflowId,
+          workflowVersionId,
           testStrategy: TriggerTestStrategy.SIMULATION,
         });
         let attempt = 0;
@@ -65,7 +65,7 @@ export const testStepHooks = {
           }
           const newData = await triggerEventsApi.list({
             workspaceId: authenticationSession.getWorkspaceId()!,
-            flowId,
+            workflowId,
             cursor: undefined,
             limit: 5,
           });
@@ -101,14 +101,14 @@ export const testStepHooks = {
   },
   useSaveMockData: ({ onSuccess }: { onSuccess: () => void }) => {
     const { form, builderState } = useRequiredStateToTestSteps();
-    const flowId = builderState.flow.id;
+    const workflowId = builderState.workflow.id;
     const stepName = form.getValues().name;
 
     return useMutation({
       mutationFn: async (mockData: unknown) => {
         const data = await triggerEventsApi.saveTriggerMockdata({
           workspaceId: authenticationSession.getWorkspaceId()!,
-          flowId,
+          workflowId,
           mockData,
         });
         builderState.updateSampleData({
@@ -128,8 +128,8 @@ export const testStepHooks = {
     onSuccess: () => void;
   }) => {
     const { form, builderState } = useRequiredStateToTestSteps();
-    const flowId = builderState.flow.id;
-    const flowVersionId = builderState.flowVersionId;
+    const workflowId = builderState.workflow.id;
+    const workflowVersionId = builderState.workflowVersionId;
     const stepName = form.getValues().name;
 
     return useMutation<TriggerEventWithPayload[], Error, void>({
@@ -137,8 +137,8 @@ export const testStepHooks = {
         setErrorMessage(undefined);
         const { data } = await triggerEventsApi.test({
           workspaceId: authenticationSession.getWorkspaceId()!,
-          flowId,
-          flowVersionId,
+          workflowId,
+          workflowVersionId,
           testStrategy: TriggerTestStrategy.TEST_FUNCTION,
         });
         if (data.length > 0) {
@@ -181,15 +181,15 @@ export const testStepHooks = {
     });
   },
   /**To reset the loading state of the mutation use a new mutation key, but to make sure sucess never gets called, use the abortSignal */
-  useTestAction: ({ currentStep }: { currentStep: FlowAction }) => {
-    const { flowVersionId, addActionTestListener } =
+  useTestAction: ({ currentStep }: { currentStep: WorkflowAction }) => {
+    const { workflowVersionId, addActionTestListener } =
       useRequiredStateToTestSteps().builderState;
     return useMutation<{ runId: string }, Error, TestActionMutationParams>({
       mutationFn: async () => {
         const response = await executionsApi.testStep({
           request: {
             workspaceId: authenticationSession.getWorkspaceId()!,
-            flowVersionId,
+            workflowVersionId,
             stepName: currentStep.name,
           },
         });
@@ -209,11 +209,11 @@ export const testStepHooks = {
 };
 
 const useRequiredStateToTestSteps = () => {
-  const form = useFormContext<FlowTrigger>();
+  const form = useFormContext<WorkflowTrigger>();
   const builderState = useBuilderStateContext((state) => ({
-    flow: state.flow,
-    flowVersion: state.flowVersion,
-    flowVersionId: state.flowVersion.id,
+    workflow: state.workflow,
+    workflowVersion: state.workflowVersion,
+    workflowVersionId: state.workflowVersion.id,
     addActionTestListener: state.addActionTestListener,
     updateSampleData: state.updateSampleData,
   }));

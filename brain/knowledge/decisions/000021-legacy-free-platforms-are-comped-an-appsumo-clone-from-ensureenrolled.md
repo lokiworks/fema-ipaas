@@ -8,9 +8,9 @@ status: accepted
 
 Cloud platforms that were on the free tier before 30 July 2026 are mostly from before the Autumn
 billing migration, whose catalog went live 23 July 2026. Pre-Autumn the Cloud free tier was `plan = 'standard'`
-(`STANDARD_CLOUD_PLAN`): 200 credits a month, 10 active flows, 1 team project, `showPoweredBy: false`,
+(`STANDARD_CLOUD_PLAN`): 200 credits a month, 10 active workflows, 1 team project, `showPoweredBy: false`,
 `apiKeysEnabled: false`. The Autumn `free` plan they were auto-enrolled onto is more generous on
-credits (100 a day) and active flows (unlimited), but takes away the one team project
+credits (100 a day) and active workflows (unlimited), but takes away the one team project
 (`teamProjectsLimit` 0) and puts FEMA Integration Platform branding back on their embeds (`showPoweredBy` true).
 
 They need grandfathering, and the grant has to reach platforms that have been dormant since the
@@ -19,7 +19,7 @@ migration as well as active ones.
 ## Decision
 
 **A new Autumn plan `free_legacy`, a verbatim clone of `appsumo` under a different name.** Unlimited
-`apCredits`, 200 a month `appSumoAiCredits`, unlimited active flows, 1 user, 1 team project, plus
+`apCredits`, 200 a month `appSumoAiCredits`, unlimited active workflows, 1 user, 1 team project, plus
 AppSumo's flags. AP's AppSumo metering extends to cover it.
 
 **The console endpoint takes an Autumn customer id and nothing else.**
@@ -34,7 +34,7 @@ customer's current base plan is not `free`. It must not read `autumn_customers.p
 who upgraded, and guarding on it would comp a paying customer.
 
 **AP decides who is eligible, from `ensureEnrolled`.** `getAutumnCredentials` widens to return `plan`
-and `created` alongside the credentials. The flow is enrol-first, then check:
+and `created` alongside the credentials. The workflow is enrol-first, then check:
 
 1. No credentials: enrol as today, which writes credentials and refreshes entitlements.
 2. Then, on the refreshed row, comp `free_legacy` when `plan` is `free` and
@@ -69,7 +69,7 @@ The enrolled branch therefore also fires the comp, gated so it costs nothing whe
 `triggerLazyBillingProviderSync` hangs off `getOrCreateForPlatform`, which the billing page, the
 dashboard and both AI usage trackers reach, but the per-production-run credit does not:
 `execution-hooks` goes `trackProductionRunCredit` to `trackCredits` to `resolveClientForPlatform` to
-`loadAutumnCreds`, never touching `getOrCreateForPlatform`. A platform running only non-AI flows on a
+`loadAutumnCreds`, never touching `getOrCreateForPlatform`. A platform running only non-AI workflows on a
 schedule, with nobody logging in, was therefore never comped. The check is now also on
 `loadAutumnCreds`, the choke point every EE billing path funnels through, so one production run is
 enough. It is free there for the same reason as at the other site: `getAutumnCredentials` already
@@ -97,7 +97,7 @@ gain a dayjs import for one comparison.
 **The comp is Cloud only**, gated on `edition === ApEdition.CLOUD`. `ensureEnrolled` runs on
 Enterprise as well as Cloud (only Community and Testing are skipped) and `getInitialPlanByEdition`
 returns `plan: 'free'` for both, so a self-hosted EE box that never activated a license key would
-otherwise match the predicate and be comped unlimited credits and unlimited active flows on its own
+otherwise match the predicate and be comped unlimited credits and unlimited active workflows on its own
 hardware.
 
 Enrol-first ordering is what makes the plan name safe to test. A dormant platform still carries the

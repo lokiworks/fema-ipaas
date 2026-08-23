@@ -9,7 +9,7 @@ import dayjs from 'dayjs'
 import { engineFileApi } from '../api/engine-file-api'
 import { engineRunApi } from '../api/engine-run-api'
 import { EngineConstants } from '../handler/context/engine-constants'
-import { FlowExecutorContext } from '../handler/context/flow-execution-context'
+import { WorkflowExecutorContext } from '../handler/context/workflow-execution-context'
 import { utils } from '../utils'
 
 
@@ -32,15 +32,15 @@ export const executionProgressReporter = {
     },
     sendUpdate: async (params: UpdateStepProgressParams): Promise<void> => {
         return stateLock.runExclusive(async () => {
-            const { engineConstants, flowExecutorContext, stepNameToUpdate } = params
+            const { engineConstants, workflowExecutorContext, stepNameToUpdate } = params
             if (params.startTime) {
                 savedStartTime = params.startTime
             }
             latestUpdateParams = params
-            if (!stepNameToUpdate || !engineConstants.isTestFlow) { // live runs are updated by backup job
+            if (!stepNameToUpdate || !engineConstants.isTestWorkflow) { // live runs are updated by backup job
                 return
             }
-            const step = flowExecutorContext.getStepOutput(stepNameToUpdate)
+            const step = workflowExecutorContext.getStepOutput(stepNameToUpdate)
             if (isNil(step)) {
                 return
             }
@@ -49,21 +49,21 @@ export const executionProgressReporter = {
                 request: {
                     step: {
                         name: stepNameToUpdate,
-                        path: flowExecutorContext.currentPath.path,
+                        path: workflowExecutorContext.currentPath.path,
                         output: step,
                     },
                     execution: {
                         workspaceId: engineConstants.workspaceId,
-                        flowId: engineConstants.flowId,
-                        flowVersionId: engineConstants.flowVersionId,
+                        workflowId: engineConstants.workflowId,
+                        workflowVersionId: engineConstants.workflowVersionId,
                         id: engineConstants.executionId,
                         created: dayjs().toISOString(),
                         updated: dayjs().toISOString(),
-                        status: flowExecutorContext.verdict.status,
+                        status: workflowExecutorContext.verdict.status,
                         environment: engineConstants.runEnvironment ?? RunEnvironment.TESTING,
                         failParentOnFailure: false,
                         triggeredBy: engineConstants.triggerConnectorName,
-                        tags: Array.from(flowExecutorContext.tags),
+                        tags: Array.from(workflowExecutorContext.tags),
                         startTime: params.startTime,
                     },
                 },
@@ -95,17 +95,17 @@ export const executionProgressReporter = {
             if (isNil(params)) {
                 return
             }
-            const { flowExecutorContext, engineConstants } = params
+            const { workflowExecutorContext, engineConstants } = params
             if (engineConstants.executionId === DEFAULT_MCP_DATA.executionId) {
                 return
             }
-            const status = flowExecutorContext.verdict.status
+            const status = workflowExecutorContext.verdict.status
             const isTerminal = isExecutionStateTerminal({ status, ignoreInternalError: false })
 
             const serialized = await logSerializer.serialize({
                 executionState: {
-                    steps: flowExecutorContext.steps,
-                    tags: Array.from(flowExecutorContext.tags),
+                    steps: workflowExecutorContext.steps,
+                    tags: Array.from(workflowExecutorContext.tags),
                 },
             })
             const executionState = await zstdCompress(serialized)
@@ -124,7 +124,7 @@ export const executionProgressReporter = {
             })
 
             const stepResponse = extractStepResponse({
-                flowExecutorContext,
+                workflowExecutorContext,
                 runId: engineConstants.executionId,
                 stepName: engineConstants.stepNameToTest,
             })
@@ -135,13 +135,13 @@ export const executionProgressReporter = {
                 status,
                 streamStepProgress: engineConstants.streamStepProgress,
                 logsFileId: engineConstants.logsFileId,
-                failedStep: 'failedStep' in flowExecutorContext.verdict ? flowExecutorContext.verdict.failedStep : undefined,
+                failedStep: 'failedStep' in workflowExecutorContext.verdict ? workflowExecutorContext.verdict.failedStep : undefined,
                 stepNameToTest: engineConstants.stepNameToTest,
                 stepResponse,
                 startTime: savedStartTime ?? undefined,
                 finishTime: isTerminal ? dayjs().toISOString() : undefined,
-                tags: Array.from(flowExecutorContext.tags),
-                stepsCount: flowExecutorContext.stepsCount,
+                tags: Array.from(workflowExecutorContext.tags),
+                stepsCount: workflowExecutorContext.stepsCount,
             }
             await sendLogsUpdate({ engineConstants, request })
         })
@@ -210,7 +210,7 @@ const extractStepResponse = (params: ExtractStepResponse): StepRunResponse | und
         return undefined
     }
 
-    const stepOutput = params.flowExecutorContext.getStepOutput(params.stepName)
+    const stepOutput = params.workflowExecutorContext.getStepOutput(params.stepName)
     if (isNil(stepOutput)) {
         return undefined
     }
@@ -237,7 +237,7 @@ type SendLogsUpdateParams = {
 
 type UpdateStepProgressParams = {
     engineConstants: EngineConstants
-    flowExecutorContext: FlowExecutorContext
+    workflowExecutorContext: WorkflowExecutorContext
     stepNameToUpdate?: string
     startTime?: string
 }
@@ -250,7 +250,7 @@ type CreateOutputContextParams = {
 }
 
 type ExtractStepResponse = {
-    flowExecutorContext: FlowExecutorContext
+    workflowExecutorContext: WorkflowExecutorContext
     runId: string
     stepName?: string
 }

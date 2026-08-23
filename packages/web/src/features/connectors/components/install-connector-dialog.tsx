@@ -186,7 +186,7 @@ const InstallConnectorDialog = ({
           <DialogDescription>
             <ApMarkdown
               markdown={
-                'Use this to install a [custom connector](https://github.com/lokiworks/fema-ipaas/docs/build-connectors/building-connectors/create-action) that you (or someone else) created. Once the connector is installed, you can use it in the flow builder.\n\nWarning: Make sure you trust the author as the connector will have access to your flow data and it might not be compatible with the current version of FEMA Integration Platform.'
+                'Use this to install a [custom connector](https://github.com/lokiworks/fema-ipaas/docs/build-connectors/building-connectors/create-action) that you (or someone else) created. Once the connector is installed, you can use it in the workflow builder.\n\nWarning: Make sure you trust the author as the connector will have access to your workflow data and it might not be compatible with the current version of FEMA Integration Platform.'
               }
             />
           </DialogDescription>

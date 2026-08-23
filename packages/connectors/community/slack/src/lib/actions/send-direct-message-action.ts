@@ -1,5 +1,5 @@
 import { createAction, Property } from '@fema/connector-sdk';
-import { buildFlowOriginContextBlock, slackSendMessage, textToSectionBlocks } from '../common/utils';
+import { buildWorkflowOriginContextBlock, slackSendMessage, textToSectionBlocks } from '../common/utils';
 import { slackAuth } from '../auth';
 import { assertNotNullOrUndefined } from '@fema/connector-sdk';
 import {
@@ -8,7 +8,7 @@ import {
   userId,
   username,
   blocks,
-  mentionOriginFlow,
+  mentionOriginWorkflow,
   iconEmoji,
 } from '../common/props';
 import { Block,KnownBlock } from '@slack/web-api';
@@ -31,7 +31,7 @@ export const slackSendDirectMessageAction = createAction({
     username,
     profilePicture,
     iconEmoji,
-    mentionOriginFlow,
+    mentionOriginWorkflow,
     blocks,
     unfurlLinks: Property.Checkbox({
       displayName: 'Unfurl Links',
@@ -42,7 +42,7 @@ export const slackSendDirectMessageAction = createAction({
   },
   async run(context) {
     const token = getBotToken(context.auth as SlackAuthValue);
-    const { text, userId, blocks, unfurlLinks, mentionOriginFlow } = context.propsValue;
+    const { text, userId, blocks, unfurlLinks, mentionOriginWorkflow } = context.propsValue;
 
     assertNotNullOrUndefined(token, 'token');
     assertNotNullOrUndefined(text, 'text');
@@ -54,8 +54,8 @@ export const slackSendDirectMessageAction = createAction({
       blockList.push(...(blocks as unknown as (KnownBlock | Block)[]))
     }
 
-    if(mentionOriginFlow) {
-      blockList.push(buildFlowOriginContextBlock(context));
+    if(mentionOriginWorkflow) {
+      blockList.push(buildWorkflowOriginContextBlock(context));
     }
 
     return slackSendMessage({

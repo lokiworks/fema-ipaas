@@ -21,6 +21,6 @@
   "The storage scope of the value.": "O escopo de armazenamento do valor.",
   "Separator between added values, use \\n for newlines": "Separador entre valores adicionados, use \\n para novas linhas",
   "Project": "Projecto",
-  "Flow": "Fluxo",
+  "Workflow": "Fluxo",
   "Run": "Executar"
 }

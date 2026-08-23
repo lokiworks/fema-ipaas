@@ -206,17 +206,17 @@ export const runsTableColumns = ({
     },
   },
   {
-    accessorKey: 'flowId',
+    accessorKey: 'workflowId',
     header: ({ column }) => (
       <DataTableColumnHeader
         column={column}
-        title={t('Flow')}
+        title={t('Workflow')}
         icon={Workflow}
       />
     ),
     cell: ({ row }) => {
-      const { archivedAt, flowVersion } = row.original;
-      const displayName = flowVersion?.displayName ?? '—';
+      const { archivedAt, workflowVersion } = row.original;
+      const displayName = workflowVersion?.displayName ?? '—';
 
       return (
         <div className="flex items-center gap-2 text-left">

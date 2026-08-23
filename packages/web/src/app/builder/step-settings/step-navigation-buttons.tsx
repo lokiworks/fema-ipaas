@@ -1,5 +1,5 @@
 import { isNil } from '@fema/core-utils';
-import { FlowTriggerType, flowStructureUtil } from '@fema/shared';
+import { WorkflowTriggerType, workflowStructureUtil } from '@fema/shared';
 import { t } from 'i18next';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMemo } from 'react';
@@ -14,13 +14,16 @@ import {
 } from '@/components/ui/tooltip';
 
 const StepNavigationButtons = () => {
-  const [selectedStep, flowVersion, selectStepByName] = useBuilderStateContext(
-    (state) => [state.selectedStep, state.flowVersion, state.selectStepByName],
-  );
+  const [selectedStep, workflowVersion, selectStepByName] =
+    useBuilderStateContext((state) => [
+      state.selectedStep,
+      state.workflowVersion,
+      state.selectStepByName,
+    ]);
 
   const orderedSteps = useMemo(
-    () => flowStructureUtil.getAllSteps(flowVersion.trigger),
-    [flowVersion.trigger],
+    () => workflowStructureUtil.getAllSteps(workflowVersion.trigger),
+    [workflowVersion.trigger],
   );
 
   const currentIndex = useMemo(() => {
@@ -81,7 +84,7 @@ const StepNavigationButtons = () => {
   );
 };
 
-const isEmptyStep = (type: string) => type === FlowTriggerType.EMPTY;
+const isEmptyStep = (type: string) => type === WorkflowTriggerType.EMPTY;
 
 StepNavigationButtons.displayName = 'StepNavigationButtons';
 export { StepNavigationButtons };

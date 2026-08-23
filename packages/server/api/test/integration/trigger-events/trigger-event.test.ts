@@ -1,5 +1,5 @@
 import {
-    PopulatedFlow,
+    PopulatedWorkflow,
 } from '@fema/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
@@ -21,21 +21,21 @@ describe('Trigger Events API', () => {
         it('should save a trigger event', async () => {
             const ctx = await createTestContext(app!)
 
-            const flowResponse = await ctx.post('/v1/flows', {
-                displayName: 'trigger event test flow',
+            const workflowResponse = await ctx.post('/v1/workflows', {
+                displayName: 'trigger event test workflow',
                 workspaceId: ctx.workspace.id,
             }, { query: { workspaceId: ctx.workspace.id } })
-            const flow: PopulatedFlow = flowResponse?.json()
+            const workflow: PopulatedWorkflow = workflowResponse?.json()
 
             const response = await ctx.post('/v1/trigger-events', {
                 workspaceId: ctx.workspace.id,
-                flowId: flow.id,
+                workflowId: workflow.id,
                 mockData: { key: 'value', nested: { a: 1 } },
             })
 
             expect(response?.statusCode).toBe(StatusCodes.OK)
             const body = response?.json()
-            expect(body.flowId).toBe(flow.id)
+            expect(body.workflowId).toBe(workflow.id)
             expect(body.workspaceId).toBe(ctx.workspace.id)
         })
     })
@@ -44,26 +44,26 @@ describe('Trigger Events API', () => {
         it('should list trigger events', async () => {
             const ctx = await createTestContext(app!)
 
-            const flowResponse = await ctx.post('/v1/flows', {
-                displayName: 'list trigger events flow',
+            const workflowResponse = await ctx.post('/v1/workflows', {
+                displayName: 'list trigger events workflow',
                 workspaceId: ctx.workspace.id,
             }, { query: { workspaceId: ctx.workspace.id } })
-            const flow: PopulatedFlow = flowResponse?.json()
+            const workflow: PopulatedWorkflow = workflowResponse?.json()
 
             await ctx.post('/v1/trigger-events', {
-                flowId: flow.id,
+                workflowId: workflow.id,
                 workspaceId: ctx.workspace.id,
                 mockData: { event: 'one' },
             })
             await ctx.post('/v1/trigger-events', {
                 workspaceId: ctx.workspace.id,
-                flowId: flow.id,
+                workflowId: workflow.id,
                 mockData: { event: 'two' },
             })
 
             const response = await ctx.get('/v1/trigger-events', {
                 workspaceId: ctx.workspace.id,
-                flowId: flow.id,
+                workflowId: workflow.id,
             })
 
             expect(response?.statusCode).toBe(StatusCodes.OK)
@@ -71,18 +71,18 @@ describe('Trigger Events API', () => {
             expect(body.data.length).toBeGreaterThanOrEqual(2)
         })
 
-        it('should return empty for flow with no events', async () => {
+        it('should return empty for workflow with no events', async () => {
             const ctx = await createTestContext(app!)
 
-            const flowResponse = await ctx.post('/v1/flows', {
-                displayName: 'empty trigger events flow',
+            const workflowResponse = await ctx.post('/v1/workflows', {
+                displayName: 'empty trigger events workflow',
                 workspaceId: ctx.workspace.id,
             }, { query: { workspaceId: ctx.workspace.id } })
-            const flow: PopulatedFlow = flowResponse?.json()
+            const workflow: PopulatedWorkflow = workflowResponse?.json()
 
             const response = await ctx.get('/v1/trigger-events', {
                 workspaceId: ctx.workspace.id,
-                flowId: flow.id,
+                workflowId: workflow.id,
             })
 
             expect(response?.statusCode).toBe(StatusCodes.OK)
@@ -93,19 +93,19 @@ describe('Trigger Events API', () => {
         it('should respect limit parameter', async () => {
             const ctx = await createTestContext(app!)
 
-            const flowResponse = await ctx.post('/v1/flows', {
-                displayName: 'paginate trigger events flow',
+            const workflowResponse = await ctx.post('/v1/workflows', {
+                displayName: 'paginate trigger events workflow',
                 workspaceId: ctx.workspace.id,
             }, { query: { workspaceId: ctx.workspace.id } })
-            const flow: PopulatedFlow = flowResponse?.json()
+            const workflow: PopulatedWorkflow = workflowResponse?.json()
 
-            await ctx.post('/v1/trigger-events', { workspaceId: ctx.workspace.id, flowId: flow.id, mockData: { n: 1 } })
-            await ctx.post('/v1/trigger-events', { workspaceId: ctx.workspace.id, flowId: flow.id, mockData: { n: 2 } })
-            await ctx.post('/v1/trigger-events', { workspaceId: ctx.workspace.id, flowId: flow.id, mockData: { n: 3 } })
+            await ctx.post('/v1/trigger-events', { workspaceId: ctx.workspace.id, workflowId: workflow.id, mockData: { n: 1 } })
+            await ctx.post('/v1/trigger-events', { workspaceId: ctx.workspace.id, workflowId: workflow.id, mockData: { n: 2 } })
+            await ctx.post('/v1/trigger-events', { workspaceId: ctx.workspace.id, workflowId: workflow.id, mockData: { n: 3 } })
 
             const response = await ctx.get('/v1/trigger-events', {
                 workspaceId: ctx.workspace.id,
-                flowId: flow.id,
+                workflowId: workflow.id,
                 limit: '2',
             })
 
@@ -116,19 +116,19 @@ describe('Trigger Events API', () => {
     })
 
     describe('Cross-workspace isolation', () => {
-        it('should not allow saving events for another workspace flow', async () => {
+        it('should not allow saving events for another workspace workflow', async () => {
             const ctx1 = await createTestContext(app!)
             const ctx2 = await createTestContext(app!)
 
-            const flowResponse = await ctx1.post('/v1/flows', {
-                displayName: 'cross workspace flow',
+            const workflowResponse = await ctx1.post('/v1/workflows', {
+                displayName: 'cross workspace workflow',
                 workspaceId: ctx1.workspace.id,
             }, { query: { workspaceId: ctx1.workspace.id } })
-            const flow: PopulatedFlow = flowResponse?.json()
+            const workflow: PopulatedWorkflow = workflowResponse?.json()
 
             const response = await ctx2.post('/v1/trigger-events', {
                 workspaceId: ctx2.workspace.id,
-                flowId: flow.id,
+                workflowId: workflow.id,
                 mockData: { unauthorized: true },
             })
 

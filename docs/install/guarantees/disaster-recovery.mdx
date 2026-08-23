@@ -6,8 +6,8 @@ icon: "life-ring"
 
 FEMA Integration Platform runs on three backing stores. Two are systems of record; one is rebuildable state:
 
-- **Postgres** — flows, runs, trigger schedules, waitpoints, connections. System of record.
-- **S3** — run logs (step checkpoints), large webhook payloads, flow bundles. System of record for execution history.
+- **Postgres** — workflows, runs, trigger schedules, waitpoints, connections. System of record.
+- **S3** — run logs (step checkpoints), large webhook payloads, workflow bundles. System of record for execution history.
 - **Redis** — the BullMQ job queue and caches. Everything in Redis except the queue itself can be rebuilt from Postgres.
 
 This page describes what happens when each one fails, how to recover, and how to compute your RPO/RTO from your own infrastructure choices. Recovery targets are stated as formulas because on a self-hosted deployment they are properties of *your* Postgres, Redis, and S3 setup, not of FEMA Integration Platform.
@@ -17,7 +17,7 @@ This page describes what happens when each one fails, how to recover, and how to
 | Store | Holds | RPO | RTO | Recovery action |
 |-------|-------|-----|-----|-----------------|
 | Redis | Job queue, schedules, caches | Your Redis persistence window (≤1s with AOF `everysec`; entire queue with no persistence) | Redis failover + app restart | Restart app, then bulk-retry stranded runs |
-| Postgres | Flows, runs, schedules, connections | Your Postgres HA/backup config (≈0 with a synchronous replica) | Provider failover + app/worker restart | Restart app and workers after failover |
+| Postgres | Workflows, runs, schedules, connections | Your Postgres HA/backup config (≈0 with a synchronous replica) | Provider failover + app/worker restart | Restart app and workers after failover |
 | S3 | Run logs, large payloads, bundles | Your bucket versioning/replication config | Provider-dependent | None (runs retry automatically) |
 
 ## Redis loss
@@ -51,7 +51,7 @@ Sync webhooks are not exposed this way — the run is recorded in Postgres befor
 During a managed-Postgres failover (typically 1–5 minutes on Azure/AWS/GCP), the control plane is down but the data plane degrades gracefully:
 
 - **The API and UI are unavailable or erratic.** Expected for the duration of the failover.
-- **Async webhooks for recently-active flows keep being accepted.** Flow resolution for the webhook ingest path is served from a Redis cache, and the enqueue itself is Redis-only — so most production webhook traffic continues to be accepted and queues up. Webhooks for flows not in the cache, and all sync webhooks, fail with a `5xx` the sender can see and retry.
+- **Async webhooks for recently-active workflows keep being accepted.** Workflow resolution for the webhook ingest path is served from a Redis cache, and the enqueue itself is Redis-only — so most production webhook traffic continues to be accepted and queues up. Webhooks for workflows not in the cache, and all sync webhooks, fail with a `5xx` the sender can see and retry.
 - **Runs executing during the outage fail and retry automatically.** Queue jobs retry once with an exponential backoff that starts at 8 minutes — longer than a typical failover — so the retry lands after recovery, and completed steps are not re-run.
 
 ### Runbook
@@ -67,7 +67,7 @@ Protect Postgres with your provider's point-in-time recovery. It is the system o
 
 ## S3 outage
 
-S3 (or R2/GCS/MinIO) holds run logs — the step checkpoints that make [crash recovery](/install/guarantees/crash-recovery) work — plus webhook payloads over the inline threshold and flow bundles.
+S3 (or R2/GCS/MinIO) holds run logs — the step checkpoints that make [crash recovery](/install/guarantees/crash-recovery) work — plus webhook payloads over the inline threshold and workflow bundles.
 
 - **During an outage**, runs that need to read or write files fail and retry on the same 8-minute backoff. Run history is unavailable in the UI.
 - **After recovery**, retries drain automatically. No operator action is needed.

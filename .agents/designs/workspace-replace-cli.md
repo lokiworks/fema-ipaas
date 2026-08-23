@@ -15,13 +15,13 @@ Move a project's content from one FEMA Integration Platform instance to another 
 - Connection writes (preflight only)
 - Connector installation (deployment concern)
 - Interactive prompts (this is a CI tool)
-- Standalone rollback command (existing flow-version history covers it)
+- Standalone rollback command (existing workflow-version history covers it)
 - Pull/push split commands (single `replace` only)
 - Dry-run mode (server-side preflight is enough)
 
 ## Scope (v1)
 
-Mirrored: **flows + table schemas + folders + connector validation**.
+Mirrored: **workflows + table schemas + folders + connector validation**.
 
 - Connections — preflight only (validate referenced externalIds exist on dest); no payload writes; secrets never cross the wire
 - Tables — schema only; never row data, ever
@@ -36,7 +36,7 @@ Source and destination are **separate FEMA Integration Platform deployments**, e
 | Resource | Match key |
 |---|---|
 | Project | Explicit DB id passed via `--source-project` / `--dest-project` |
-| Flow | `externalId` (auto-set to `apId()` if unset on create) |
+| Workflow | `externalId` (auto-set to `apId()` if unset on create) |
 | Table | `externalId` |
 | Folder | `externalId` (**new column — DB migration in v1**, backfill `externalId = id`) |
 | Connection | `externalId` (preflight read-only on both sides) |
@@ -58,7 +58,7 @@ Source and destination are **separate FEMA Integration Platform deployments**, e
 {
   "schemaVersion": 1,
   "sourceFEMA Integration PlatformVersion": "0.45.0",
-  "flows":   [ /* full flow states with externalId */ ],
+  "workflows":   [ /* full workflow states with externalId */ ],
   "tables":  [ /* schema only — name, externalId, fields[], status, trigger */ ],
   "folders": [ /* externalId, displayName, displayOrder */ ],
   "requiredConnectors": [ { "name": "@fema/connector-slack", "version": "1.2.3" } ]
@@ -70,7 +70,7 @@ Source and destination are **separate FEMA Integration Platform deployments**, e
 1. **AP version**: `dest >= source` on same major. No override flag. Source version comes from `sourceFEMA Integration PlatformVersion`.
 2. **Connector versions**: every entry in `requiredConnectors` must match a connector on dest's registry **exactly**. No flag.
 3. **Custom-connector presence**: any `requiredConnectors` entry with `connectorType: 'CUSTOM'` missing on dest → hard fail.
-4. **Connection externalIds**: for every connection externalId referenced inside any source flow's content, dest must have a connection with the same externalId + same `connectorName`. If missing → hard fail.
+4. **Connection externalIds**: for every connection externalId referenced inside any source workflow's content, dest must have a connection with the same externalId + same `connectorName`. If missing → hard fail.
 
 Failure → 4xx with structured `{ errors: [{ kind, ... }] }`. No writes. CLI exits with code 2.
 
@@ -80,8 +80,8 @@ Order (dependencies before dependents on creates; reversed on deletes):
 
 1. Folders CREATE/UPDATE
 2. Tables CREATE/UPDATE
-3. Flows CREATE/UPDATE
-4. Flows DELETE
+3. Workflows CREATE/UPDATE
+4. Workflows DELETE
 5. Tables DELETE
 6. Folders DELETE
 
@@ -91,7 +91,7 @@ For each item:
 - UPDATE — typed-fingerprint deep-equality check first; if equal → skip (`unchanged++`); else write
 - DELETE — always writes
 
-**No-op detection** uses a typed `FlowFingerprint` / `TableFingerprint` / `FolderFingerprint` struct (extracted comparable fields) plus deep-equality. No hashing, no canonical JSON.
+**No-op detection** uses a typed `WorkflowFingerprint` / `TableFingerprint` / `FolderFingerprint` struct (extracted comparable fields) plus deep-equality. No hashing, no canonical JSON.
 
 **Error semantics**: continue on per-item errors (4xx-class), abort on systemic errors (5xx-class). All per-item errors collected and returned.
 
@@ -100,12 +100,12 @@ For each item:
 ```jsonc
 {
   "applied": {
-    "flowsCreated": 1, "flowsUpdated": 2, "flowsDeleted": 0, "flowsUnchanged": 47,
+    "workflowsCreated": 1, "workflowsUpdated": 2, "workflowsDeleted": 0, "workflowsUnchanged": 47,
     "tablesCreated": 0, "tablesUpdated": 0, "tablesDeleted": 0, "tablesUnchanged": 5,
     "foldersCreated": 0, "foldersUpdated": 1, "foldersDeleted": 0, "foldersUnchanged": 3
   },
   "failed": [
-    { "kind": "flow", "externalId": "...", "op": "UPDATE", "error": "..." }
+    { "kind": "workflow", "externalId": "...", "op": "UPDATE", "error": "..." }
   ],
   "durationMs": 1200
 }
@@ -140,7 +140,7 @@ CLI itself is thin: GET source state, POST dest endpoint, render response. No di
 
 ## DB migrations (v1)
 
-- Add `externalId` (string, unique per project) column to `flow_folder` entity. Backfill `externalId = id` for existing rows.
+- Add `externalId` (string, unique per project) column to `workflow_folder` entity. Backfill `externalId = id` for existing rows.
 
 ## Code reuse
 
@@ -151,8 +151,8 @@ CLI itself is thin: GET source state, POST dest endpoint, render response. No di
 - `applicationEvents` for audit logging
 
 Not reused:
-- The diff UI / `selectedFlowsIds` filter
-- `ProjectRelease` records and snapshot files (no rollback table; flow-version history covers it)
+- The diff UI / `selectedWorkflowsIds` filter
+- `ProjectRelease` records and snapshot files (no rollback table; workflow-version history covers it)
 - GIT / ROLLBACK input paths
 
 ## Idempotency / failure recovery
@@ -163,14 +163,14 @@ Not reused:
 
 ## Known limitations / accepted risks
 
-- **Inter-flow dependency window during partial failure**: if flow A (calls subflow B) is updated before B's update succeeds, A may briefly call an old version of B. Small window; converges on retry.
+- **Inter-workflow dependency window during partial failure**: if workflow A (calls subflow B) is updated before B's update succeeds, A may briefly call an old version of B. Small window; converges on retry.
 - **Connection re-creation on first push**: operator must manually create the connection record on dest with the matching externalId before the first push that references it. Subsequent pushes match by externalId.
 - **Folder rename** (covered by externalId): folders mirror by externalId, so renames are clean.
 - **Custom connector installation** is out of scope. CLI fails preflight loudly; deploy/admin handles install separately.
 
 ## Future work (v2+, if needed)
 
-- Agent mirror (currently `agentIds` is auto-derived from flow content; treat as covered until it isn't)
+- Agent mirror (currently `agentIds` is auto-derived from workflow content; treat as covered until it isn't)
 - MCP server mirror
 - Optional `--allow-connector-version-skew` (only if exact-match proves too strict in practice)
 - Snapshot artifact for GHA (if the no-pull/push decision is revisited)

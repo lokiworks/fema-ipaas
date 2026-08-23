@@ -11,7 +11,7 @@ services:
       bench:
         # Static IP so the SANDBOX_PROCESS engine (whose sandbox /etc/resolv.conf points at public
         # DNS 8.8.8.8 and can't resolve the docker-internal "nginx" name) can still reach the server
-        # by IP to report flow results. FEMA_FRONTEND_URL points here.
+        # by IP to report workflow results. FEMA_FRONTEND_URL points here.
         ipv4_address: 172.30.0.10
 
   app:

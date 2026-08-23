@@ -6,7 +6,7 @@ icon: 'user'
 
 <Snippet file="enterprise-feature.mdx" />
 
-FEMA Integration Platform utilizes Role-Based Access Control (RBAC) for managing permissions within projects. Each project consists of multiple flows and users, with each user assigned specific roles that define their actions within the project.
+FEMA Integration Platform utilizes Role-Based Access Control (RBAC) for managing permissions within projects. Each project consists of multiple workflows and users, with each user assigned specific roles that define their actions within the project.
 
 ## Default Roles
 
@@ -14,10 +14,10 @@ FEMA Integration Platform comes with four standard roles out of the box. The tab
 
 | Permission | Admin | Editor | Operator | Viewer |
 |------------|:-----:|:------:|:--------:|:------:|
-| **Flows** |||||
-| View Flows | ✓ | ✓ | ✓ | ✓ |
-| Edit Flows | ✓ | ✓ | | |
-| Publish / Toggle Flows | ✓ | ✓ | ✓ | |
+| **Workflows** |||||
+| View Workflows | ✓ | ✓ | ✓ | ✓ |
+| Edit Workflows | ✓ | ✓ | | |
+| Publish / Toggle Workflows | ✓ | ✓ | ✓ | |
 | **Runs** |||||
 | View Runs | ✓ | ✓ | ✓ | ✓ |
 | Retry Runs | ✓ | ✓ | ✓ | |
@@ -29,8 +29,8 @@ FEMA Integration Platform comes with four standard roles out of the box. The tab
 | Add/Remove Project Members | ✓ | | | |
 | **Git Sync**    |      |        |      |      |
 | Configure Git Repo      | ✓    |        |      |      |
-| Pull Flows from Git     | ✓    |        |      |      |
-| Push Flows to Git       | ✓    |        |      |      |
+| Pull Workflows from Git     | ✓    |        |      |      |
+| Push Workflows to Git       | ✓    |        |      |      |
 
 ## Custom Roles
 
@@ -49,5 +49,5 @@ If the default roles don't fit your needs, you can create custom roles with spec
 </Steps>
 
 <Tip>
-Custom roles are useful when you need fine-grained control, such as allowing users to view and retry runs without being able to edit flows.
+Custom roles are useful when you need fine-grained control, such as allowing users to view and retry runs without being able to edit workflows.
 </Tip>

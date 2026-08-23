@@ -11,14 +11,14 @@ You are working in the FEMA Integration Platform web application (`packages/web`
 - **Data Fetching**: TanStack Query (React Query)
 - **Forms**: React Hook Form + Zod validation
 - **Styling**: Tailwind CSS
-- **Flow Builder**: XYFlow for visual flow editor
+- **Workflow Builder**: XYWorkflow for visual workflow editor
 - **Internationalization**: i18next with ICU MessageFormat (`i18next-icu`)
 - **Language**: TypeScript (strict)
 
 ## Project Structure
 
 - `src/components/ui/` — Shared Shadcn/Radix UI primitives
-- `src/features/` — Feature-based folders (flows, connectors, tables, auth, billing, etc.)
+- `src/features/` — Feature-based folders (workflows, connectors, tables, auth, billing, etc.)
 - `src/lib/` — Shared utilities and helpers
 - `src/app/` — App-level routing and layout
 - `test/` — Unit tests (see **Testing** below)

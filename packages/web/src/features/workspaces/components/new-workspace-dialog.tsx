@@ -156,7 +156,7 @@ const NewWorkspaceForm = ({
                   value={field.value ?? ''}
                 />
                 <span className="text-xs text-muted-foreground">
-                  {t('Receives flow failure emails for this workspace.')}
+                  {t('Receives workflow failure emails for this workspace.')}
                 </span>
                 <FormMessage />
               </FormItem>

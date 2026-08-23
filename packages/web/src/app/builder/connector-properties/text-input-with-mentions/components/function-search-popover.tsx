@@ -263,4 +263,4 @@ export function FunctionSearchPopover({
 }
 
 export const DEFAULT_FORMULAS_DOCS_URL =
-  'https://github.com/lokiworks/fema-ipaas/docs/flows/using-formulas';
+  'https://github.com/lokiworks/fema-ipaas/docs/workflows/using-formulas';

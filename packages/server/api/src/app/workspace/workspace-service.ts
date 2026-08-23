@@ -20,7 +20,7 @@ export const workspaceService = (log: FastifyBaseLogger) => ({
             ...rest,
             icon,
             releasesEnabled: false,
-            notifyFlowOwnerOnFailure: false,
+            notifyWorkflowOwnerOnFailure: false,
         }
         const savedWorkspace = await workspaceRepo(entityManager).save(newWorkspace)
         if (callPostCreateHooks) {
@@ -73,7 +73,7 @@ export const workspaceService = (log: FastifyBaseLogger) => ({
         const baseUpdate = {
             ...spreadIfDefined('externalId', externalId),
             ...spreadIfDefined('releasesEnabled', request.releasesEnabled),
-            ...spreadIfDefined('notifyFlowOwnerOnFailure', request.notifyFlowOwnerOnFailure),
+            ...spreadIfDefined('notifyWorkflowOwnerOnFailure', request.notifyWorkflowOwnerOnFailure),
             ...spreadIfDefined('metadata', request.metadata),
             ...(request.poolId !== undefined ? { poolId: request.poolId } : {}),
             ...(request.maxConcurrentJobs !== undefined ? { maxConcurrentJobs: request.maxConcurrentJobs } : {}),
@@ -254,12 +254,12 @@ function assertRetentionDaysWithinInstanceBounds(executionDataRetentionDays: num
         return
     }
     const instanceRetentionDays = system.getNumberOrThrow(AppSystemProp.EXECUTION_DATA_RETENTION_DAYS)
-    const pausedFlowTimeoutDays = system.getNumberOrThrow(AppSystemProp.PAUSED_FLOW_TIMEOUT_DAYS)
-    if (executionDataRetentionDays < pausedFlowTimeoutDays || executionDataRetentionDays > instanceRetentionDays) {
+    const pausedWorkflowTimeoutDays = system.getNumberOrThrow(AppSystemProp.PAUSED_WORKFLOW_TIMEOUT_DAYS)
+    if (executionDataRetentionDays < pausedWorkflowTimeoutDays || executionDataRetentionDays > instanceRetentionDays) {
         throw new PlatformError({
             code: ErrorCode.VALIDATION,
             params: {
-                message: `executionDataRetentionDays must be between FEMA_PAUSED_FLOW_TIMEOUT_DAYS (${pausedFlowTimeoutDays}) and FEMA_EXECUTION_DATA_RETENTION_DAYS (${instanceRetentionDays})`,
+                message: `executionDataRetentionDays must be between FEMA_PAUSED_WORKFLOW_TIMEOUT_DAYS (${pausedWorkflowTimeoutDays}) and FEMA_EXECUTION_DATA_RETENTION_DAYS (${instanceRetentionDays})`,
             },
         })
     }
@@ -287,7 +287,7 @@ type UpdateTeamWorkspaceParams = {
     displayName?: string
     externalId?: string
     releasesEnabled?: boolean
-    notifyFlowOwnerOnFailure?: boolean
+    notifyWorkflowOwnerOnFailure?: boolean
     metadata?: Metadata
     poolId?: string | null
     maxConcurrentJobs?: number | null
@@ -300,7 +300,7 @@ type UpdatePersonalWorkspaceParams = {
     type: WorkspaceType.PERSONAL
     externalId?: string
     releasesEnabled?: boolean
-    notifyFlowOwnerOnFailure?: boolean
+    notifyWorkflowOwnerOnFailure?: boolean
     metadata?: Metadata
     poolId?: string | null
     maxConcurrentJobs?: number | null

@@ -27,7 +27,7 @@ vi.mock('@/app/builder/builder-hooks', () => ({
     selector: (state: Record<string, unknown>) => unknown,
   ) =>
     selector({
-      flowVersion: { id: 'flow-version-id', flowId: 'flow-id' },
+      workflowVersion: { id: 'workflow-version-id', workflowId: 'workflow-id' },
       readonly: false,
     }),
 }));

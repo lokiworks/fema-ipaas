@@ -1,7 +1,7 @@
 import { formulaEvaluator } from '@fema/expression'
 import { ApFile, LATEST_CONTEXT_VERSION, ConnectorAuth, Property } from '@fema/connector-sdk'
-import { FlowActionType, FlowTriggerType, GenericStepOutput, PropertyExecutionType, PropertySettings, StepOutputStatus } from '@fema/shared'
-import { FlowExecutorContext } from '../../src/lib/handler/context/flow-execution-context'
+import { WorkflowActionType, WorkflowTriggerType, GenericStepOutput, PropertyExecutionType, PropertySettings, StepOutputStatus } from '@fema/shared'
+import { WorkflowExecutorContext } from '../../src/lib/handler/context/workflow-execution-context'
 import { StepExecutionPath } from '../../src/lib/handler/context/step-execution-path'
 import { propsProcessor } from '../../src/lib/variables/props-processor'
 import { createPropsResolver } from '../../src/lib/variables/props-resolver'
@@ -14,11 +14,11 @@ const propsResolverService = createPropsResolver({
     stepNames: ['trigger', 'step_1', 'step_2', 'step_3', 'step_4', 'step_5', 'step_6', 'step_7', 'step_8'],
 })
 
-const buildExecutionState = async (): Promise<FlowExecutorContext> => {
-    let state = await FlowExecutorContext.empty().upsertStep(
+const buildExecutionState = async (): Promise<WorkflowExecutorContext> => {
+    let state = await WorkflowExecutorContext.empty().upsertStep(
         'trigger',
         GenericStepOutput.create({
-            type: FlowTriggerType.CONNECTOR,
+            type: WorkflowTriggerType.CONNECTOR,
             status: StepOutputStatus.SUCCEEDED,
             input: {},
             output: {
@@ -43,7 +43,7 @@ const buildExecutionState = async (): Promise<FlowExecutorContext> => {
     state = await state.upsertStep('step_1',
         GenericStepOutput.create({
 
-            type: FlowActionType.CONNECTOR,
+            type: WorkflowActionType.CONNECTOR,
             status: StepOutputStatus.SUCCEEDED,
             input: {},
             output: {
@@ -51,21 +51,21 @@ const buildExecutionState = async (): Promise<FlowExecutorContext> => {
             },
         }))
     state = await state.upsertStep('step_2', GenericStepOutput.create({
-        type: FlowActionType.CONNECTOR,
+        type: WorkflowActionType.CONNECTOR,
         status: StepOutputStatus.SUCCEEDED,
         input: {},
         output: 'memory://{"fileName":"hello.png","data":"iVBORw0KGgoAAAANSUhEUgAAAiAAAAC4CAYAAADaI1cbAAA0h0lEQVR4AezdA5AlPx7A8Zxt27Z9r5PB2SidWTqbr26S9Hr/tm3btu3723eDJD3r15ec17vzXr+Z"}',
     }))
     return state
 }
-let executionState: FlowExecutorContext
+let executionState: WorkflowExecutorContext
 beforeAll(async () => {
     executionState = await buildExecutionState()
 })
 
 const buildStateWithFailedStep = (stepName: string, message: string) =>
-    FlowExecutorContext.empty().upsertStep(stepName, GenericStepOutput.create({
-        type: FlowActionType.CONNECTOR,
+    WorkflowExecutorContext.empty().upsertStep(stepName, GenericStepOutput.create({
+        type: WorkflowActionType.CONNECTOR,
         status: StepOutputStatus.FAILED,
         input: {},
     }).setErrorMessage(message))
@@ -78,14 +78,14 @@ describe('Props resolver', () => {
     test('Test resolve inside nested loops', async () => {
 
         const upserted = await executionState.upsertStep('step_3', GenericStepOutput.create({
-            type: FlowActionType.LOOP_ON_ITEMS,
+            type: WorkflowActionType.LOOP_ON_ITEMS,
             status: StepOutputStatus.SUCCEEDED,
             input: {},
             output: {
                 iterations: [
                     {
                         'step_8': GenericStepOutput.create({
-                            type: FlowActionType.CONNECTOR,
+                            type: WorkflowActionType.CONNECTOR,
                             status: StepOutputStatus.SUCCEEDED,
                             input: {},
                             output: {
@@ -94,14 +94,14 @@ describe('Props resolver', () => {
                             },
                         }),
                         'step_4': GenericStepOutput.create({
-                            type: FlowActionType.LOOP_ON_ITEMS,
+                            type: WorkflowActionType.LOOP_ON_ITEMS,
                             status: StepOutputStatus.SUCCEEDED,
                             input: {},
                             output: {
                                 iterations: [
                                     {
                                         'step_7': GenericStepOutput.create({
-                                            'type': FlowActionType.CONNECTOR,
+                                            'type': WorkflowActionType.CONNECTOR,
                                             'status': StepOutputStatus.SUCCEEDED,
                                             'input': {
                                                 'unit': 'seconds',
@@ -298,21 +298,21 @@ describe('Props resolver', () => {
     test('non-existent step resolves to empty string', async () => {
         const { resolvedInput } = await propsResolverService.resolve({
             unresolvedInput: '{{step_99}}',
-            executionState: FlowExecutorContext.empty(),
+            executionState: WorkflowExecutorContext.empty(),
         })
         expect(resolvedInput).toEqual('')
     })
 
     test('error channel resolves a failure inside a loop iteration', async () => {
-        const stateWithLoopFailure = (await FlowExecutorContext.empty().upsertStep('step_3', GenericStepOutput.create({
-            type: FlowActionType.LOOP_ON_ITEMS,
+        const stateWithLoopFailure = (await WorkflowExecutorContext.empty().upsertStep('step_3', GenericStepOutput.create({
+            type: WorkflowActionType.LOOP_ON_ITEMS,
             status: StepOutputStatus.SUCCEEDED,
             input: {},
             output: {
                 iterations: [
                     {
                         step_8: GenericStepOutput.create({
-                            type: FlowActionType.CONNECTOR,
+                            type: WorkflowActionType.CONNECTOR,
                             status: StepOutputStatus.FAILED,
                             input: {},
                         }).setErrorMessage('inner failure'),
@@ -333,8 +333,8 @@ describe('Props resolver', () => {
     })
 
     test('Q5. loop current-iteration item from inside loop subgraph', async () => {
-        const stateInsideLoop = (await FlowExecutorContext.empty().upsertStep('step_3', GenericStepOutput.create({
-            type: FlowActionType.LOOP_ON_ITEMS,
+        const stateInsideLoop = (await WorkflowExecutorContext.empty().upsertStep('step_3', GenericStepOutput.create({
+            type: WorkflowActionType.LOOP_ON_ITEMS,
             status: StepOutputStatus.SUCCEEDED,
             input: {},
             output: {
@@ -354,8 +354,8 @@ describe('Props resolver', () => {
     })
 
     test('Q7. step output is null (resolver normalizes nullish to empty string)', async () => {
-        const stateWithNullOutput = await FlowExecutorContext.empty().upsertStep('step_1', GenericStepOutput.create({
-            type: FlowActionType.CONNECTOR,
+        const stateWithNullOutput = await WorkflowExecutorContext.empty().upsertStep('step_1', GenericStepOutput.create({
+            type: WorkflowActionType.CONNECTOR,
             status: StepOutputStatus.SUCCEEDED,
             input: {},
             output: null,
@@ -368,8 +368,8 @@ describe('Props resolver', () => {
     })
 
     test('Q8. step output is a primitive number', async () => {
-        const stateWithPrimitive = await FlowExecutorContext.empty().upsertStep('step_1', GenericStepOutput.create({
-            type: FlowActionType.CONNECTOR,
+        const stateWithPrimitive = await WorkflowExecutorContext.empty().upsertStep('step_1', GenericStepOutput.create({
+            type: WorkflowActionType.CONNECTOR,
             status: StepOutputStatus.SUCCEEDED,
             input: {},
             output: 42,
@@ -382,8 +382,8 @@ describe('Props resolver', () => {
     })
 
     test('Q9. step output is an array', async () => {
-        const stateWithArray = await FlowExecutorContext.empty().upsertStep('step_1', GenericStepOutput.create({
-            type: FlowActionType.CONNECTOR,
+        const stateWithArray = await WorkflowExecutorContext.empty().upsertStep('step_1', GenericStepOutput.create({
+            type: WorkflowActionType.CONNECTOR,
             status: StepOutputStatus.SUCCEEDED,
             input: {},
             output: ['a', 'b', 'c'],
@@ -407,8 +407,8 @@ describe('Props resolver', () => {
     })
 
     test('unicode-escaped bracket key falls back to the sandbox and reads the decoded key', async () => {
-        const stateWithShortKey = await FlowExecutorContext.empty().upsertStep('step_1', GenericStepOutput.create({
-            type: FlowActionType.CONNECTOR,
+        const stateWithShortKey = await WorkflowExecutorContext.empty().upsertStep('step_1', GenericStepOutput.create({
+            type: WorkflowActionType.CONNECTOR,
             status: StepOutputStatus.SUCCEEDED,
             input: {},
             output: { a: 'decoded' },
@@ -421,8 +421,8 @@ describe('Props resolver', () => {
     })
 
     test('bracket path with special-character key resolves through the fast path', async () => {
-        const stateWithWeirdKeys = await FlowExecutorContext.empty().upsertStep('step_1', GenericStepOutput.create({
-            type: FlowActionType.CONNECTOR,
+        const stateWithWeirdKeys = await WorkflowExecutorContext.empty().upsertStep('step_1', GenericStepOutput.create({
+            type: WorkflowActionType.CONNECTOR,
             status: StepOutputStatus.SUCCEEDED,
             input: {},
             output: { 'weird key': { 'a.b': 42 } },

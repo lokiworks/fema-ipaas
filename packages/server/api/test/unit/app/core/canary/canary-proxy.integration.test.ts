@@ -39,8 +39,8 @@ vi.mock('../../../../../src/app/ee/platform/platform-plan/worker-group.service',
     }),
 }))
 
-vi.mock('../../../../../src/app/flows/flow/flow-execution-cache', () => ({
-    flowExecutionCache: () => ({
+vi.mock('../../../../../src/app/workflows/workflow/workflow-execution-cache', () => ({
+    workflowExecutionCache: () => ({
         get: vi.fn().mockResolvedValue({ exists: false }),
     }),
 }))

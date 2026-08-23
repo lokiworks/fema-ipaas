@@ -1,4 +1,4 @@
-import type { ApId, FlowId, ExecutionId, FlowVersionId, WorkspaceId, UserId } from './id-generator'
+import type { ApId, WorkflowId, ExecutionId, WorkflowVersionId, WorkspaceId, UserId } from './id-generator'
 import type { Permission, PlatformUsageMetric } from './permission'
 import type { WorkspaceRole } from './workspace-role'
 
@@ -23,8 +23,8 @@ export type ApErrorParams =
     | EngineOperationFailureParams
     | EntityNotFoundErrorParams
     | ExistingUserErrorParams
-    | FlowOperationErrorParams
-    | FlowOperationInProgressErrorParams
+    | WorkflowOperationErrorParams
+    | WorkflowOperationInProgressErrorParams
     | ExecutionRetryOutsideRetentionErrorParams
     | InvalidApiKeyParams
     | InvalidConnectionParams
@@ -86,14 +86,14 @@ export type ApErrorParams =
     | SecretManagerGetSecretFailedParams
     | SecretManagerKeyNotSecretParams
     | InvalidAIProviderCredentialsParams
-    | FlowMigrationFailedParams
+    | WorkflowMigrationFailedParams
     | ResumeLogsFileMissingParams
     | ExecutionStateMissingParams
     | GenericErrorParams
     | SandboxCapacityExceededParams
 
 export type TriggerExecutionFailedParams = BaseErrorParams<ErrorCode.TRIGGER_EXECUTION_FAILED, {
-    flowId: FlowId
+    workflowId: WorkflowId
     message?: string
     connectorName: string
     connectorVersion: string
@@ -236,7 +236,7 @@ ErrorCode.TRIGGER_FAILED,
 export type JobRemovalFailureErrorParams = BaseErrorParams<
 ErrorCode.JOB_REMOVAL_FAILURE,
 {
-    flowVersionId: ApId
+    workflowVersionId: ApId
 }
 >
 
@@ -252,15 +252,15 @@ ErrorCode.OPEN_AI_FAILED,
 Record<string, never>
 >
 
-export type FlowOperationErrorParams = BaseErrorParams<
-ErrorCode.FLOW_OPERATION_INVALID,
+export type WorkflowOperationErrorParams = BaseErrorParams<
+ErrorCode.WORKFLOW_OPERATION_INVALID,
 {
     message: string
 }
 >
 
-export type FlowOperationInProgressErrorParams = BaseErrorParams<
-ErrorCode.FLOW_OPERATION_IN_PROGRESS, {
+export type WorkflowOperationInProgressErrorParams = BaseErrorParams<
+ErrorCode.WORKFLOW_OPERATION_IN_PROGRESS, {
     message: string
 }>
 
@@ -310,8 +310,8 @@ ErrorCode.VALIDATION,
 export type TriggerUpdateStatusErrorParams = BaseErrorParams<
 ErrorCode.TRIGGER_UPDATE_STATUS,
 {
-    flowId?: FlowId
-    flowVersionId?: FlowVersionId
+    workflowId?: WorkflowId
+    workflowVersionId?: WorkflowVersionId
     message?: string
     standardOutput?: string
     standardError?: string
@@ -477,8 +477,8 @@ export type InvalidAIProviderCredentialsParams = BaseErrorParams<ErrorCode.INVAL
     httpErrorResponse: string
 }>
 
-export type FlowMigrationFailedParams = BaseErrorParams<ErrorCode.FLOW_MIGRATION_FAILED, {
-    flowVersionId: string
+export type WorkflowMigrationFailedParams = BaseErrorParams<ErrorCode.WORKFLOW_MIGRATION_FAILED, {
+    workflowVersionId: string
     message: string
 }>
 
@@ -523,8 +523,8 @@ export enum ErrorCode {
     EXISTING_USER = 'EXISTING_USER',
     EXISTING_ALERT_CHANNEL = 'EXISTING_ALERT_CHANNEL',
     WORKSPACE_EXTERNAL_ID_ALREADY_EXISTS = 'WORKSPACE_EXTERNAL_ID_ALREADY_EXISTS',
-    FLOW_OPERATION_INVALID = 'FLOW_OPERATION_INVALID',
-    FLOW_OPERATION_IN_PROGRESS = 'FLOW_OPERATION_IN_PROGRESS',
+    WORKFLOW_OPERATION_INVALID = 'WORKFLOW_OPERATION_INVALID',
+    WORKFLOW_OPERATION_IN_PROGRESS = 'WORKFLOW_OPERATION_IN_PROGRESS',
     EXECUTION_RETRY_OUTSIDE_RETENTION = 'EXECUTION_RETRY_OUTSIDE_RETENTION',
     INVALID_API_KEY = 'INVALID_API_KEY',
     INVALID_CONNECTION = 'INVALID_CONNECTION',
@@ -567,7 +567,7 @@ export enum ErrorCode {
     SECRET_MANAGER_GET_SECRET_FAILED = 'SECRET_MANAGER_GET_SECRET_FAILED',
     SECRET_MANAGER_KEY_NOT_SECRET = 'SECRET_MANAGER_KEY_NOT_SECRET',
     INVALID_AI_PROVIDER_CREDENTIALS = 'INVALID_AI_PROVIDER_CREDENTIALS',
-    FLOW_MIGRATION_FAILED = 'FLOW_MIGRATION_FAILED',
+    WORKFLOW_MIGRATION_FAILED = 'WORKFLOW_MIGRATION_FAILED',
     RESUME_LOGS_FILE_MISSING = 'RESUME_LOGS_FILE_MISSING',
     EXECUTION_STATE_MISSING = 'EXECUTION_STATE_MISSING',
     GENERIC_ERROR = 'GENERIC_ERROR',

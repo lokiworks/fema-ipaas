@@ -1,4 +1,4 @@
-import { FlowTriggerType } from '@fema/shared';
+import { WorkflowTriggerType } from '@fema/shared';
 import { StoreApi } from 'zustand';
 
 import { RightSideBarType } from '@/app/builder/types';
@@ -28,7 +28,7 @@ export const createConnectorSelectorState = (
     ) => {
       return set((state) => {
         const isReplacingEmptyTrigger =
-          state.flowVersion.trigger.type === FlowTriggerType.EMPTY &&
+          state.workflowVersion.trigger.type === WorkflowTriggerType.EMPTY &&
           stepNameOrAddButtonId === 'trigger';
         return {
           openedConnectorSelectorStepNameOrAddButtonId: stepNameOrAddButtonId,

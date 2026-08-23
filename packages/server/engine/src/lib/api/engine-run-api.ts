@@ -1,4 +1,4 @@
-import { EngineGenericError, SendFlowResponseRequest, UpdateRunProgressRequest, UpdateStepProgressRequest, UploadRunLogsRequest } from '@fema/shared'
+import { EngineGenericError, SendWorkflowResponseRequest, UpdateRunProgressRequest, UpdateStepProgressRequest, UploadRunLogsRequest } from '@fema/shared'
 import { retryFetch } from './retry-fetch'
 
 export const engineRunApi = {
@@ -11,8 +11,8 @@ export const engineRunApi = {
     async uploadRunLog({ apiUrl, engineToken, request }: RunLogParams): Promise<void> {
         await post({ apiUrl, engineToken, path: 'run-logs', body: request })
     },
-    async sendFlowResponse({ apiUrl, engineToken, request }: FlowResponseParams): Promise<void> {
-        await post({ apiUrl, engineToken, path: 'flow-response', body: request })
+    async sendWorkflowResponse({ apiUrl, engineToken, request }: WorkflowResponseParams): Promise<void> {
+        await post({ apiUrl, engineToken, path: 'workflow-response', body: request })
     },
 }
 
@@ -41,7 +41,7 @@ type BaseParams = {
 type RunProgressParams = BaseParams & { request: UpdateRunProgressRequest }
 type StepProgressParams = BaseParams & { request: UpdateStepProgressRequest }
 type RunLogParams = BaseParams & { request: UploadRunLogsRequest }
-type FlowResponseParams = BaseParams & { request: SendFlowResponseRequest }
+type WorkflowResponseParams = BaseParams & { request: SendWorkflowResponseRequest }
 
 type PostParams = BaseParams & {
     path: string

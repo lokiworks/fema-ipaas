@@ -44,6 +44,6 @@ container; workers receive it through settings.
   connection access.
 - **Code, loop and router steps have no connector, so they lose connection access entirely.**
   Deliberate — a code step runs arbitrary JS, so exempting it would leave the widest hole in
-  the boundary. Enabling the flag breaks flows that feed a connection into custom JS.
+  the boundary. Enabling the flag breaks workflows that feed a connection into custom JS.
 - A worker on a stale `WorkerSettings` cache runs with the old value until it refetches.
 - **The denial is invisible with the flag off (the default), so a dropped `connectorName` thread passes every test and dev run and only breaks where enforcement is on.** This actually happened: a props-resolver perf refactor dropped `connectorName` from `PropsResolverParams` while `getPropsResolver` kept passing it, so `createConnectionResolver` got `undefined` and rejected every valid connection in enforcing environments. When touching the resolve chain, keep `connectorName` threaded end-to-end (`createPropsResolver` → `resolveSingleToken` → `connectionToken.handle` → `createConnectionResolver`) and cover it with a test that sets `FEMA_ENFORCE_CONNECTION_CONNECTOR_BINDING=true`.

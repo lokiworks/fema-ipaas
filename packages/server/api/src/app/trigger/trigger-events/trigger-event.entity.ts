@@ -1,4 +1,4 @@
-import { File, Flow, TriggerEvent, Workspace } from '@fema/shared'
+import { File, TriggerEvent, Workflow, Workspace } from '@fema/shared'
 import { EntitySchema } from 'typeorm'
 import {
     ApIdSchema,
@@ -6,7 +6,7 @@ import {
 } from '../../database/database-common'
 
 type TriggerEventSchema = {
-    flow: Flow
+    workflow: Workflow
     workspace: Workspace
     file: File
 } & TriggerEvent
@@ -15,7 +15,7 @@ export const TriggerEventEntity = new EntitySchema<TriggerEventSchema>({
     name: 'trigger_event',
     columns: {
         ...BaseColumnSchemaPart,
-        flowId: ApIdSchema,
+        workflowId: ApIdSchema,
         workspaceId: ApIdSchema,
         sourceName: {
             type: String,
@@ -26,13 +26,13 @@ export const TriggerEventEntity = new EntitySchema<TriggerEventSchema>({
     },
     indices: [
         {
-            name: 'idx_trigger_event_workspace_id_flow_id',
-            columns: ['workspaceId', 'flowId'],
+            name: 'idx_trigger_event_workspace_id_workflow_id',
+            columns: ['workspaceId', 'workflowId'],
             unique: false,
         },
         {
-            name: 'idx_trigger_event_flow_id',
-            columns: ['flowId'],
+            name: 'idx_trigger_event_workflow_id',
+            columns: ['workflowId'],
             unique: false,
         },
         {
@@ -62,14 +62,14 @@ export const TriggerEventEntity = new EntitySchema<TriggerEventSchema>({
                 foreignKeyConstraintName: 'fk_trigger_event_file_id',
             },
         },
-        flow: {
+        workflow: {
             type: 'many-to-one',
-            target: 'flow',
+            target: 'workflow',
             cascade: true,
             onDelete: 'CASCADE',
             joinColumn: {
-                name: 'flowId',
-                foreignKeyConstraintName: 'fk_trigger_event_flow_id',
+                name: 'workflowId',
+                foreignKeyConstraintName: 'fk_trigger_event_workflow_id',
             },
         },
     },

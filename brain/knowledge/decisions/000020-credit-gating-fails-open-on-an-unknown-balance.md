@@ -79,7 +79,7 @@ Two deliberate exceptions, both of which still fail open on an *unknown* balance
 
 - AppSumo credits block on a **known** exhausted balance regardless of `billingEnforced` — a lifetime
   grant has no renewal to wait for.
-- Chat and managed-AI hard-block (402) on known exhaustion, where flow runs would only be
+- Chat and managed-AI hard-block (402) on known exhaustion, where workflow runs would only be
   `QUOTA_EXCEEDED`-marked.
 
 ### Self-hosted EE skips the run gate entirely (temporary)
@@ -99,11 +99,11 @@ process and the answer is always "allow".
 This is a stopgap. Remove the edition branch once the gate can answer from in-process state (an
 in-memory TTL cache in front of Redis, or an enrollment flag resolved once at platform load) so an
 unenrolled platform costs nothing per run. Until then, an enrolled self-hosted EE platform is not
-credit-gated on flow runs — usage is still tracked, only enforcement is off.
+credit-gated on workflow runs — usage is still tracked, only enforcement is off.
 
 ## Consequences
 
-- During an Autumn outage, an enforced platform with an exhausted balance keeps running flows and
+- During an Autumn outage, an enforced platform with an exhausted balance keeps running workflows and
   spending managed AI. That leakage is accepted; the in-flight backstop is the OpenRouter key's own
   monthly cap (decision 000016), and enforcement resumes on the next successful refresh.
 - Redis, not Autumn, is the gate's hard dependency — and if Redis is down the queues are down anyway,
@@ -114,7 +114,7 @@ credit-gated on flow runs — usage is still tracked, only enforcement is off.
   it cost a RedLock acquire that retries every 200 ms for up to its full TTL when contended, plus a
   `getCustomer`, on the webhook path.
 - Self-hosted EE run admission does no billing I/O at all, so an EE box needs neither Redis credit keys
-  nor Autumn reachability to start a flow. Chat and managed-AI keep their gates on every edition.
+  nor Autumn reachability to start a workflow. Chat and managed-AI keep their gates on every edition.
 - `packages/server/api/test/unit/app/ee/platform-plan/credits-gate.test.ts` pins the invariant
   (`computeCreditState({ balance: null, enforced: true }).blocked === false`, and the AppSumo
   equivalent), plus fail-open on a failed cache read and the fact that the failed read schedules no
@@ -125,7 +125,7 @@ credit-gated on flow runs — usage is still tracked, only enforcement is off.
 
 - **Fail closed on an unknown balance.** Converts a third-party or Redis-cache outage into a full
   automation outage for every customer, including those well inside their limits. Billing accuracy is
-  recoverable after the fact; a day of unrun flows is not.
+  recoverable after the fact; a day of unrun workflows is not.
 - **Blocking refresh when the cached value is stale.** Puts an Autumn round-trip on the run-admission
   path for one request every 180s per platform, with no benefit — 3-minute-old credit data cannot
   change an admission decision that the next refresh will correct.

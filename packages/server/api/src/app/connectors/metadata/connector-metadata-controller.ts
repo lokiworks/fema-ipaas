@@ -6,9 +6,9 @@ import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
 import { WorkspaceResourceType } from '../../core/security/authorization/common'
 import { securityAccess } from '../../core/security/authorization/fastify-security'
-import { flowService } from '../../flows/flow/flow.service'
-import { sampleDataService } from '../../flows/step-run/sample-data.service'
 import { userInteractionWatcher } from '../../workers/user-interaction-watcher'
+import { sampleDataService } from '../../workflows/step-run/sample-data.service'
+import { workflowService } from '../../workflows/workflow/workflow.service'
 import { connectorSyncService } from '../connector-sync-service'
 import { resolveVisibility } from '../connector-visibility'
 import { connectorMetadataService, getConnectorPackageWithoutArchive } from './connector-metadata-service'
@@ -127,17 +127,17 @@ const baseConnectorsController: FastifyPluginAsyncZod = async (app) => {
         async (req) => {
             const workspaceId = req.workspaceId
             const platform = req.principal.platform
-            const flow = await flowService(req.log).getOnePopulatedOrThrow({
+            const workflow = await workflowService(req.log).getOnePopulatedOrThrow({
                 workspaceId,
-                id: req.body.flowId,
-                versionId: req.body.flowVersionId,
+                id: req.body.workflowId,
+                versionId: req.body.workflowVersionId,
             })
-            const sampleData = await sampleDataService(req.log).getSampleDataForFlow(workspaceId, flow.version, SampleDataFileType.OUTPUT)
+            const sampleData = await sampleDataService(req.log).getSampleDataForWorkflow(workspaceId, workflow.version, SampleDataFileType.OUTPUT)
             const { response } = await userInteractionWatcher.submitAndWaitForResponse<EngineResponse<unknown>>({
                 jobType: WorkerJobType.EXECUTE_PROPERTY,
                 platformId: platform.id,
                 workspaceId,
-                flowVersion: flow.version,
+                workflowVersion: workflow.version,
                 propertyName: req.body.propertyName,
                 actionOrTriggerName: req.body.actionOrTriggerName,
                 input: req.body.input,

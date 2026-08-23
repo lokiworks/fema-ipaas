@@ -1,9 +1,9 @@
 import { isNil } from '@fema/core-utils';
 import {
-  FlowAction,
-  FlowActionType,
+  WorkflowAction,
+  WorkflowActionType,
   Step,
-  flowStructureUtil,
+  workflowStructureUtil,
 } from '@fema/shared';
 import { t } from 'i18next';
 import { FlaskConical, Play } from 'lucide-react';
@@ -27,7 +27,7 @@ const TestStepSectionImplementation = React.memo(
   ({
     isSaving,
     currentStep,
-  }: TestActionComponentProps & { currentStep: FlowAction }) => {
+  }: TestActionComponentProps & { currentStep: WorkflowAction }) => {
     const [
       sampleData,
       sampleDataInput,
@@ -41,7 +41,7 @@ const TestStepSectionImplementation = React.memo(
         state.outputSampleData[currentStep.name],
         state.inputSampleData[currentStep.name],
         state.errorLogs[currentStep.name],
-        currentStep.type === FlowActionType.CODE
+        currentStep.type === WorkflowActionType.CODE
           ? state.consoleLogs[currentStep.name]
           : null,
         state.isStepBeingTested,
@@ -64,11 +64,11 @@ const TestStepSectionImplementation = React.memo(
     const { isLoadingDynamicProperties } = useContext(DynamicPropertiesContext);
 
     const connectorName =
-      currentStep.type === FlowActionType.CONNECTOR
+      currentStep.type === WorkflowActionType.CONNECTOR
         ? currentStep.settings.connectorName
         : undefined;
     const connectorVersion =
-      currentStep.type === FlowActionType.CONNECTOR
+      currentStep.type === WorkflowActionType.CONNECTOR
         ? currentStep.settings.connectorVersion
         : undefined;
     const { connectorModel } = connectorsHooks.useConnector({
@@ -78,11 +78,11 @@ const TestStepSectionImplementation = React.memo(
     });
     const stepKind = 'action';
     const stepName =
-      currentStep.type === FlowActionType.CONNECTOR
+      currentStep.type === WorkflowActionType.CONNECTOR
         ? currentStep.settings.actionName
         : currentStep.type;
     const stepInput =
-      currentStep.type === FlowActionType.CONNECTOR
+      currentStep.type === WorkflowActionType.CONNECTOR
         ? (currentStep.settings.input as Record<string, unknown> | undefined)
         : undefined;
     const explanationContext: ErrorExplanationContext = {
@@ -172,13 +172,16 @@ const TestStepSectionImplementation = React.memo(
   },
 );
 
-const isAction = (step: Step): step is FlowAction => {
-  return flowStructureUtil.isAction(step.type);
+const isAction = (step: Step): step is WorkflowAction => {
+  return workflowStructureUtil.isAction(step.type);
 };
 const TestActionSection = React.memo((props: TestActionComponentProps) => {
   const currentStep = useBuilderStateContext((state) =>
     state.selectedStep
-      ? flowStructureUtil.getStep(state.selectedStep, state.flowVersion.trigger)
+      ? workflowStructureUtil.getStep(
+          state.selectedStep,
+          state.workflowVersion.trigger,
+        )
       : null,
   );
   if (isNil(currentStep) || !isAction(currentStep)) {
@@ -193,7 +196,7 @@ TestActionSection.displayName = 'TestActionSection';
 
 type TestActionComponentProps = {
   isSaving: boolean;
-  flowVersionId: string;
+  workflowVersionId: string;
   workspaceId: string;
 };
 

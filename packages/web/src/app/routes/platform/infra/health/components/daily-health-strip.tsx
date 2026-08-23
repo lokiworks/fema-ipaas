@@ -99,10 +99,10 @@ export function DailyHealthStrip({ onSeeRuns }: DailyHealthStripProps) {
                         </div>
                         <div className="flex items-center justify-between gap-6">
                           <span className="text-muted-foreground">
-                            {t('Affected flows')}
+                            {t('Affected workflows')}
                           </span>
                           <span className="font-medium tabular-nums">
-                            {day.affectedFlows}
+                            {day.affectedWorkflows}
                           </span>
                         </div>
                         <div className="flex items-center justify-between gap-6">

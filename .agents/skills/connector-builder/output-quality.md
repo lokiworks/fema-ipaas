@@ -147,7 +147,7 @@ async run(context) {
 
 ### Trigger Outputs
 
-Each element in the returned array becomes a separate flow run — keep them flat:
+Each element in the returned array becomes a separate workflow run — keep them flat:
 
 ```typescript
 async run(context) {

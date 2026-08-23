@@ -47,7 +47,7 @@ export function InternalErrorsTable({
         </CardTitle>
         <CardDescription>
           {t(
-            'Internal errors are failures inside FEMA Integration Platform itself (engine or worker), not in your flow logic. Grouped by the workspace and flow they affected.',
+            'Internal errors are failures inside FEMA Integration Platform itself (engine or worker), not in your workflow logic. Grouped by the workspace and workflow they affected.',
           )}
         </CardDescription>
       </CardHeader>
@@ -64,7 +64,7 @@ export function InternalErrorsTable({
             <TableHeader>
               <TableRow>
                 <TableHead>{t('Workspace')}</TableHead>
-                <TableHead>{t('Flow')}</TableHead>
+                <TableHead>{t('Workflow')}</TableHead>
                 <TableHead className="text-right">{t('Errors')}</TableHead>
                 <TableHead className="text-right">{t('Share')}</TableHead>
               </TableRow>
@@ -72,11 +72,11 @@ export function InternalErrorsTable({
             <TableBody>
               {errors.map((error) => (
                 <TableRow
-                  key={`${error.workspaceId}-${error.flowId}`}
+                  key={`${error.workspaceId}-${error.workflowId}`}
                   className="cursor-pointer"
                   onClick={() =>
                     navigate(
-                      `/workspaces/${error.workspaceId}/runs?flowId=${error.flowId}`,
+                      `/workspaces/${error.workspaceId}/runs?workflowId=${error.workflowId}`,
                     )
                   }
                 >
@@ -84,7 +84,7 @@ export function InternalErrorsTable({
                     {error.workspaceName}
                   </TableCell>
                   <TableCell className="font-medium">
-                    {error.flowName}
+                    {error.workflowName}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
                     {formatUtils.formatNumber(error.count)}

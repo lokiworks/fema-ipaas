@@ -18,7 +18,7 @@
 #
 # Setup steps:
 #   1. Run once to see form structure (discovery mode)
-#   2. Update refs in LOGIN FLOW section below
+#   2. Update refs in LOGIN WORKFLOW section below
 #   3. Set APP_USERNAME and APP_PASSWORD
 #   4. Delete the DISCOVERY section
 
@@ -66,7 +66,7 @@ echo "---"
 echo ""
 echo "Next steps:"
 echo "  1. Note the refs: username=@e?, password=@e?, submit=@e?"
-echo "  2. Update the LOGIN FLOW section below with your refs"
+echo "  2. Update the LOGIN WORKFLOW section below with your refs"
 echo "  3. Set: export APP_USERNAME='...' APP_PASSWORD='...'"
 echo "  4. Delete this DISCOVERY MODE section"
 echo ""
@@ -74,7 +74,7 @@ agent-browser close
 exit 0
 
 # ================================================================
-# LOGIN FLOW: Uncomment and customize after discovery
+# LOGIN WORKFLOW: Uncomment and customize after discovery
 # ================================================================
 # : "${APP_USERNAME:?Set APP_USERNAME environment variable}"
 # : "${APP_PASSWORD:?Set APP_PASSWORD environment variable}"

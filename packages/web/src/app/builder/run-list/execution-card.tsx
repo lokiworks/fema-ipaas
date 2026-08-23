@@ -1,6 +1,6 @@
 import { Permission } from '@fema/core-utils';
 import {
-  FlowRetryStrategy,
+  WorkflowRetryStrategy,
   Execution,
   ExecutionStatus,
   isFailedState,
@@ -40,7 +40,7 @@ type ExecutionCardProps = {
   refetchRuns: () => void;
 };
 
-export const FLOW_CARD_HEIGHT = 70;
+export const WORKFLOW_CARD_HEIGHT = 70;
 const ExecutionCard = React.memo(
   ({ run, viewedRunId, refetchRuns }: ExecutionCardProps) => {
     const { Icon, variant } = executionUtils.getStatusIcon(run.status);
@@ -64,7 +64,7 @@ const ExecutionCard = React.memo(
         className={cn('px-3 group', {
           'bg-accent text-accent-foreground': run.id === viewedRunId,
         })}
-        style={{ height: `${FLOW_CARD_HEIGHT}px` }}
+        style={{ height: `${WORKFLOW_CARD_HEIGHT}px` }}
         onClick={() => {
           navigate(`/runs/${run.id}`);
         }}
@@ -175,9 +175,9 @@ const ExecutionCard = React.memo(
                       e.stopPropagation();
                       retryRun({
                         runId: run.id,
-                        flowId: run.flowId,
+                        workflowId: run.workflowId,
                         workspaceId: workspaceId!,
-                        retryStrategy: FlowRetryStrategy.ON_LATEST_VERSION,
+                        retryStrategy: WorkflowRetryStrategy.ON_LATEST_VERSION,
                       });
                     }}
                     className="cursor-pointer"
@@ -195,9 +195,10 @@ const ExecutionCard = React.memo(
                         if (!isRetryingRun) {
                           retryRun({
                             runId: run.id,
-                            flowId: run.flowId,
+                            workflowId: run.workflowId,
                             workspaceId: workspaceId!,
-                            retryStrategy: FlowRetryStrategy.FROM_FAILED_STEP,
+                            retryStrategy:
+                              WorkflowRetryStrategy.FROM_FAILED_STEP,
                           });
                         }
                       }}

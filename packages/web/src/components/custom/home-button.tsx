@@ -20,7 +20,7 @@ const HomeButtonWrapper = ({ children }: { children: React.ReactNode }) => {
         {
           type: 'CLIENT_BUILDER_HOME_BUTTON_CLICKED',
           data: {
-            route: '/flows',
+            route: '/workflows',
           },
         },
         '*',
@@ -29,7 +29,7 @@ const HomeButtonWrapper = ({ children }: { children: React.ReactNode }) => {
     return <div onClick={handleClick}>{children}</div>;
   }
   return (
-    <Link to={authenticationSession.appendWorkspaceRoutePrefix('/flows')}>
+    <Link to={authenticationSession.appendWorkspaceRoutePrefix('/workflows')}>
       {children}
     </Link>
   );

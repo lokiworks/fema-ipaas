@@ -107,8 +107,8 @@ export const flagService = (log: FastifyBaseLogger) => ({
                 updated,
             },
             {
-                id: ApFlagId.ENABLE_FLOW_ON_PUBLISH,
-                value: system.getBoolean(AppSystemProp.ENABLE_FLOW_ON_PUBLISH) ?? true,
+                id: ApFlagId.ENABLE_WORKFLOW_ON_PUBLISH,
+                value: system.getBoolean(AppSystemProp.ENABLE_WORKFLOW_ON_PUBLISH) ?? true,
                 created,
                 updated,
             },
@@ -200,7 +200,7 @@ export const flagService = (log: FastifyBaseLogger) => ({
             },
             {
                 id: ApFlagId.EXECUTION_TIME_SECONDS,
-                value: system.getNumberOrThrow(AppSystemProp.FLOW_TIMEOUT_SECONDS),
+                value: system.getNumberOrThrow(AppSystemProp.WORKFLOW_TIMEOUT_SECONDS),
                 created,
                 updated,
             },
@@ -223,8 +223,8 @@ export const flagService = (log: FastifyBaseLogger) => ({
                 updated,
             },
             {
-                id: ApFlagId.PAUSED_FLOW_TIMEOUT_DAYS,
-                value: system.getNumber(AppSystemProp.PAUSED_FLOW_TIMEOUT_DAYS),
+                id: ApFlagId.PAUSED_WORKFLOW_TIMEOUT_DAYS,
+                value: system.getNumber(AppSystemProp.PAUSED_WORKFLOW_TIMEOUT_DAYS),
                 created,
                 updated,
             },

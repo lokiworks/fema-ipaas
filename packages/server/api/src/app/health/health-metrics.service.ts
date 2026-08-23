@@ -4,9 +4,9 @@ import { ExecutionStatus, InternalErrorImpactItem, PlatformMetricsHealthDay, Pla
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { distributedStore } from '../database/redis-connections'
-import { executionRepo } from '../flows/execution/execution-service'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
+import { executionRepo } from '../workflows/execution/execution-service'
 import { workspaceService } from '../workspace/workspace-service'
 
 type ReportWindow = {
@@ -53,14 +53,14 @@ async function buildStatusTimeseries(workspaceIds: string[], window: ReportWindo
 }
 
 async function buildInternalErrorImpact(workspaceIds: string[], window: ReportWindow): Promise<InternalErrorImpactItem[]> {
-    const rows: Array<{ workspaceId: string, flowId: string, workspaceName: string | null, flowName: string | null, count: string }> = await executionRepo().query(`
+    const rows: Array<{ workspaceId: string, workflowId: string, workspaceName: string | null, workflowName: string | null, count: string }> = await executionRepo().query(`
         SELECT fr."workspaceId" AS "workspaceId",
-               fr."flowId" AS "flowId",
+               fr."workflowId" AS "workflowId",
                MAX(p."displayName") AS "workspaceName",
-               MAX(fv."displayName") AS "flowName",
+               MAX(fv."displayName") AS "workflowName",
                COUNT(*) AS count
         FROM execution fr
-        LEFT JOIN flow_version fv ON fv.id = fr."flowVersionId"
+        LEFT JOIN workflow_version fv ON fv.id = fr."workflowVersionId"
         LEFT JOIN workspace p ON p.id = fr."workspaceId"
         WHERE fr."workspaceId" = ANY($1)
           AND fr.environment = $2
@@ -68,15 +68,15 @@ async function buildInternalErrorImpact(workspaceIds: string[], window: ReportWi
           AND fr.status = $3
           AND fr.created >= $4
           AND fr.created <= $5
-        GROUP BY fr."workspaceId", fr."flowId"
+        GROUP BY fr."workspaceId", fr."workflowId"
         ORDER BY COUNT(*) DESC
         LIMIT $6
     `, [workspaceIds, RunEnvironment.PRODUCTION, ExecutionStatus.INTERNAL_ERROR, window.createdAfter, window.createdBefore, INTERNAL_ERROR_LIMIT])
     return rows.map((row) => ({
         workspaceId: row.workspaceId,
         workspaceName: row.workspaceName ?? '',
-        flowId: row.flowId,
-        flowName: row.flowName ?? '',
+        workflowId: row.workflowId,
+        workflowName: row.workflowName ?? '',
         count: Number(row.count),
     }))
 }
@@ -113,20 +113,20 @@ async function queueStatusCounts(workspaceIds: string[], window: ReportWindow): 
 }
 
 function stuckBeforeIso(): string {
-    const flowTimeoutSeconds = system.getNumberOrThrow(AppSystemProp.FLOW_TIMEOUT_SECONDS)
-    return dayjs().subtract(flowTimeoutSeconds, 'second').toISOString()
+    const workflowTimeoutSeconds = system.getNumberOrThrow(AppSystemProp.WORKFLOW_TIMEOUT_SECONDS)
+    return dayjs().subtract(workflowTimeoutSeconds, 'second').toISOString()
 }
 
 async function buildStuckJobs(workspaceIds: string[], window: ReportWindow): Promise<StuckJob[]> {
-    const rows: Array<{ executionId: string, flowId: string, workspaceId: string, status: ExecutionStatus, flowName: string | null, workspaceName: string | null }> = await executionRepo().query(`
+    const rows: Array<{ executionId: string, workflowId: string, workspaceId: string, status: ExecutionStatus, workflowName: string | null, workspaceName: string | null }> = await executionRepo().query(`
         SELECT fr.id AS "executionId",
-               fr."flowId" AS "flowId",
+               fr."workflowId" AS "workflowId",
                fr."workspaceId" AS "workspaceId",
                fr.status AS status,
-               fv."displayName" AS "flowName",
+               fv."displayName" AS "workflowName",
                p."displayName" AS "workspaceName"
         FROM execution fr
-        LEFT JOIN flow_version fv ON fv.id = fr."flowVersionId"
+        LEFT JOIN workflow_version fv ON fv.id = fr."workflowVersionId"
         LEFT JOIN workspace p ON p.id = fr."workspaceId"
         WHERE fr."workspaceId" = ANY($1)
           AND fr.environment = $2
@@ -142,8 +142,8 @@ async function buildStuckJobs(workspaceIds: string[], window: ReportWindow): Pro
     `, [workspaceIds, RunEnvironment.PRODUCTION, ExecutionStatus.RUNNING, stuckBeforeIso(), window.createdAfter, window.createdBefore, STUCK_JOBS_LIMIT])
     return rows.map((row) => ({
         executionId: row.executionId,
-        flowId: row.flowId,
-        flowName: row.flowName ?? '',
+        workflowId: row.workflowId,
+        workflowName: row.workflowName ?? '',
         workspaceId: row.workspaceId,
         workspaceName: row.workspaceName ?? '',
         status: row.status,
@@ -154,7 +154,7 @@ function buildEmptyHealthHistory(): PlatformMetricsHealthDay[] {
     return Array.from({ length: HEALTH_HISTORY_DAYS }, (_unused, index) => ({
         day: dayjs().startOf('day').subtract(HEALTH_HISTORY_DAYS - 1 - index, 'day').toISOString(),
         internalErrors: 0,
-        affectedFlows: 0,
+        affectedWorkflows: 0,
         stuckJobs: 0,
     }))
 }
@@ -162,10 +162,10 @@ function buildEmptyHealthHistory(): PlatformMetricsHealthDay[] {
 async function buildHealthHistory(workspaceIds: string[]): Promise<PlatformMetricsHealthDay[]> {
     const windowStart = dayjs().startOf('day').subtract(HEALTH_HISTORY_DAYS - 1, 'day').toISOString()
 
-    const errorRows: Array<{ day: Date, internalErrors: string, affectedFlows: string }> = await executionRepo().query(`
+    const errorRows: Array<{ day: Date, internalErrors: string, affectedWorkflows: string }> = await executionRepo().query(`
         SELECT DATE_TRUNC('day', created) AS day,
                COUNT(*) AS "internalErrors",
-               COUNT(DISTINCT "flowId") AS "affectedFlows"
+               COUNT(DISTINCT "workflowId") AS "affectedWorkflows"
         FROM execution
         WHERE "workspaceId" = ANY($1)
           AND environment = $2
@@ -200,7 +200,7 @@ async function buildHealthHistory(workspaceIds: string[]): Promise<PlatformMetri
         return {
             day: date.toISOString(),
             internalErrors: Number(error?.internalErrors ?? 0),
-            affectedFlows: Number(error?.affectedFlows ?? 0),
+            affectedWorkflows: Number(error?.affectedWorkflows ?? 0),
             stuckJobs: Number(stuck?.stuckJobs ?? 0),
         }
     })

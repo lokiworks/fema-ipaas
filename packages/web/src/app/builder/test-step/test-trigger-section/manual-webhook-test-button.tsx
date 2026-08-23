@@ -1,4 +1,4 @@
-import { FlowTrigger } from '@fema/shared';
+import { WorkflowTrigger } from '@fema/shared';
 import { t } from 'i18next';
 import React, { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
@@ -17,7 +17,7 @@ export const ManualWebhookTestButton = ({
   setIsWebhookTestingDialogOpen,
 }: ManualWebhookTestButtonProps) => {
   const [id, setId] = useState<number>(0);
-  const formValues = useFormContext<FlowTrigger>().getValues();
+  const formValues = useFormContext<WorkflowTrigger>().getValues();
 
   return (
     <>

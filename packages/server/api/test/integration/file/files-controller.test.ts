@@ -41,7 +41,7 @@ describe('Files Controller', () => {
                     query: { token: engineToken },
                     headers: {
                         'content-type': 'application/octet-stream',
-                        'x-ap-file-type': FileType.FLOW_STEP_FILE,
+                        'x-ap-file-type': FileType.WORKFLOW_STEP_FILE,
                         'x-ap-file-name': 'hello.txt',
                     },
                     payload: body,
@@ -75,7 +75,7 @@ describe('Files Controller', () => {
                 query: { token: engineToken },
                 headers: {
                     'content-type': 'application/octet-stream',
-                    'x-ap-file-type': FileType.FLOW_STEP_FILE,
+                    'x-ap-file-type': FileType.WORKFLOW_STEP_FILE,
                     'x-ap-file-name': 'big.txt',
                 },
                 payload: body,
@@ -109,7 +109,7 @@ describe('Files Controller', () => {
                     query: { token: engineToken },
                     headers: {
                         'content-type': 'application/octet-stream',
-                        'x-ap-file-type': FileType.FLOW_STEP_FILE,
+                        'x-ap-file-type': FileType.WORKFLOW_STEP_FILE,
                     },
                     payload: Buffer.from('x'.repeat(1024)),
                 })
@@ -142,7 +142,7 @@ describe('Files Controller', () => {
                 query: { token: userToken },
                 headers: {
                     'content-type': 'application/octet-stream',
-                    'x-ap-file-type': FileType.FLOW_STEP_FILE,
+                    'x-ap-file-type': FileType.WORKFLOW_STEP_FILE,
                 },
                 payload: Buffer.from('x'),
             })
@@ -222,7 +222,7 @@ describe('Files Controller', () => {
                 query: { token: engineToken },
                 headers: {
                     'content-type': 'application/octet-stream',
-                    'x-ap-file-type': FileType.FLOW_STEP_FILE,
+                    'x-ap-file-type': FileType.WORKFLOW_STEP_FILE,
                 },
                 payload: body,
             })
@@ -274,7 +274,7 @@ describe('Files Controller', () => {
 
         it.each([
             { type: FileType.EXECUTION_LOG_SLICE, extension: 'json' },
-            { type: FileType.FLOW_STEP_FILE, extension: 'bin' },
+            { type: FileType.WORKFLOW_STEP_FILE, extension: 'bin' },
         ])('names an unnamed $type download <id>.$extension', async ({ type, extension }) => {
             const { mockWorkspace, mockPlatform } = await mockAndSaveBasicSetup()
             const engineToken = await generateMockToken({
@@ -323,7 +323,7 @@ describe('Files Controller', () => {
                 query: { token: engineToken },
                 headers: {
                     'content-type': 'application/octet-stream',
-                    'x-ap-file-type': FileType.FLOW_STEP_FILE,
+                    'x-ap-file-type': FileType.WORKFLOW_STEP_FILE,
                     'x-ap-file-name': 'invoice.pdf',
                 },
                 payload: Buffer.from('%PDF-1.4', 'utf-8'),
@@ -347,14 +347,14 @@ describe('Files Controller', () => {
             const file = await fileService(app!.log).save({
                 workspaceId: mockWorkspace.id,
                 platformId: mockPlatform.id,
-                type: FileType.FLOW_STEP_FILE,
+                type: FileType.WORKFLOW_STEP_FILE,
                 compression: FileCompression.NONE,
                 fileName,
                 data: Buffer.from('payload', 'utf-8'),
             })
             const readUrl = await filesService.constructReadUrl({
                 fileId: file.id,
-                fileType: FileType.FLOW_STEP_FILE,
+                fileType: FileType.WORKFLOW_STEP_FILE,
                 platformId: mockPlatform.id,
             })
 
@@ -372,7 +372,7 @@ describe('Files Controller', () => {
         it('rejects a download with a read token bound to a different fileId', async () => {
             const otherFileReadUrl = await filesService.constructReadUrl({
                 fileId: apId(),
-                fileType: FileType.FLOW_STEP_FILE,
+                fileType: FileType.WORKFLOW_STEP_FILE,
                 platformId: null,
             })
             const otherFileToken = new URL(otherFileReadUrl).searchParams.get('token') as string
@@ -404,7 +404,7 @@ describe('Files Controller', () => {
                 query: { token: engineToken },
                 headers: {
                     'content-type': 'application/octet-stream',
-                    'x-ap-file-type': FileType.FLOW_STEP_FILE,
+                    'x-ap-file-type': FileType.WORKFLOW_STEP_FILE,
                     'x-ap-file-name': 'attachment.bin',
                 },
                 payload: Buffer.from('legacy reader'),
@@ -412,7 +412,7 @@ describe('Files Controller', () => {
 
             const oldUrl = await filesService.constructReadUrl({
                 fileId,
-                fileType: FileType.FLOW_STEP_FILE,
+                fileType: FileType.WORKFLOW_STEP_FILE,
                 platformId: mockPlatform.id,
             })
             const readToken = new URL(oldUrl).searchParams.get('token') as string

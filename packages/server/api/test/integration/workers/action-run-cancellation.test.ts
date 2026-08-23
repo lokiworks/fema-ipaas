@@ -1,5 +1,5 @@
 import { apId } from '@fema/core-utils'
-import { ExecuteActionJobData, FlowActionType, LATEST_JOB_DATA_SCHEMA_VERSION, WorkerJobType } from '@fema/shared'
+import { ExecuteActionJobData, WorkflowActionType, LATEST_JOB_DATA_SCHEMA_VERSION, WorkerJobType } from '@fema/shared'
 import { FastifyInstance } from 'fastify'
 import { Job } from 'bullmq'
 import { redisConnections } from '../../../../src/app/database/redis-connections'
@@ -36,7 +36,7 @@ async function enqueueActionRunJob(): Promise<EnqueuedActionRunJob> {
             valid: true,
             displayName: 'Test Code',
             lastUpdatedDate: new Date().toISOString(),
-            type: FlowActionType.CODE,
+            type: WorkflowActionType.CODE,
             settings: {
                 sourceCode: { packageJson: '{}', code: 'export const code = async () => true' },
                 input: {},

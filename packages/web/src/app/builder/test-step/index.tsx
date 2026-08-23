@@ -1,37 +1,37 @@
-import { FlowActionType, FlowTriggerType } from '@fema/shared';
+import { WorkflowActionType, WorkflowTriggerType } from '@fema/shared';
 import React from 'react';
 
 import { TestActionSection } from './test-action-section';
 import { TestTriggerSection } from './test-trigger-section';
 
 type TestStepContainerProps = {
-  flowVersionId: string;
+  workflowVersionId: string;
   isSaving: boolean;
-  flowId: string;
-  type: FlowActionType | FlowTriggerType;
+  workflowId: string;
+  type: WorkflowActionType | WorkflowTriggerType;
   workspaceId: string;
 };
 
 const TestStepContainer = React.memo(
   ({
-    flowVersionId,
+    workflowVersionId,
     isSaving,
     type,
-    flowId,
+    workflowId,
     workspaceId,
   }: TestStepContainerProps) => {
     return (
       <div className="flex flex-col h-full">
-        {type === FlowTriggerType.CONNECTOR ? (
+        {type === WorkflowTriggerType.CONNECTOR ? (
           <TestTriggerSection
-            flowId={flowId}
+            workflowId={workflowId}
             isSaving={isSaving}
-            flowVersionId={flowVersionId}
+            workflowVersionId={workflowVersionId}
             workspaceId={workspaceId}
           ></TestTriggerSection>
         ) : (
           <TestActionSection
-            flowVersionId={flowVersionId}
+            workflowVersionId={workflowVersionId}
             isSaving={isSaving}
             workspaceId={workspaceId}
           ></TestActionSection>

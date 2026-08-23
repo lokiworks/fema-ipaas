@@ -1,4 +1,4 @@
-import { FlowId, WorkspaceId } from '@fema/core-utils'
+import { WorkflowId, WorkspaceId } from '@fema/core-utils'
 import { EntitySchema } from 'typeorm'
 import { ApIdSchema, BaseColumnSchemaPart } from '../../database/database-common'
 
@@ -10,7 +10,7 @@ export type AppEventRouting = {
     updated: string
     appName: string
     workspaceId: WorkspaceId
-    flowId: FlowId
+    workflowId: WorkflowId
     identifierValue: string
     event: string
 }
@@ -23,7 +23,7 @@ export const AppEventRoutingEntity = new EntitySchema<AppEventRouting>({
             type: String,
         },
         workspaceId: ApIdSchema,
-        flowId: ApIdSchema,
+        workflowId: ApIdSchema,
         identifierValue: {
             type: String,
         },
@@ -33,13 +33,13 @@ export const AppEventRoutingEntity = new EntitySchema<AppEventRouting>({
     },
     indices: [
         {
-            name: 'idx_app_event_routing_flow_id',
-            columns: ['flowId'],
+            name: 'idx_app_event_routing_workflow_id',
+            columns: ['workflowId'],
             unique: false,
         },
         {
-            name: 'idx_app_event_flow_id_workspace_id_appName_identifier_value_event',
-            columns: ['appName', 'workspaceId', 'flowId', 'identifierValue', 'event'],
+            name: 'idx_app_event_workflow_id_workspace_id_appName_identifier_value_event',
+            columns: ['appName', 'workspaceId', 'workflowId', 'identifierValue', 'event'],
             unique: true,
         },
         {

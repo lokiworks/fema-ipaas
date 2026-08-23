@@ -1,6 +1,6 @@
 import { Permission } from '@fema/core-utils';
 import {
-  FlowRetryStrategy,
+  WorkflowRetryStrategy,
   Execution,
   ExecutionStatus,
   ExecutionWithRetryError,
@@ -46,7 +46,7 @@ import {
   executionMutations,
 } from '@/features/executions/hooks/execution-hooks';
 import { executionUtils } from '@/features/executions/utils/execution-utils';
-import { flowHooks } from '@/features/flows/hooks/flow-hooks';
+import { workflowHooks } from '@/features/workflows/hooks/workflow-hooks';
 import {
   useAuthorization,
   useIsPlatformAdmin,
@@ -110,7 +110,7 @@ export const RunsTable = () => {
     meta: { showErrorDialog: true, loadSubsetOptions: {} },
     queryFn: () => {
       const status = searchParams.getAll('status') as ExecutionStatus[];
-      const flowId = searchParams.getAll('flowId');
+      const workflowId = searchParams.getAll('workflowId');
       const cursor = searchParams.get(CURSOR_QUERY_PARAM);
       const executionIds = searchParams.getAll(RUN_IDS_QUERY_PARAM);
       const failedStepName = searchParams.get('failedStepName') || undefined;
@@ -127,7 +127,7 @@ export const RunsTable = () => {
       return executionsApi.list({
         status: status ?? undefined,
         workspaceId,
-        flowId,
+        workflowId,
         cursor: cursor ?? undefined,
         limit,
         includeArchived: archivedParam === 'true',
@@ -169,12 +169,13 @@ export const RunsTable = () => {
       ),
   });
 
-  const { data: flowsData, isFetching: isFetchingFlows } = flowHooks.useFlows({
-    limit: 1000,
-    cursor: undefined,
-  });
+  const { data: workflowsData, isFetching: isFetchingWorkflows } =
+    workflowHooks.useWorkflows({
+      limit: 1000,
+      cursor: undefined,
+    });
   const openNewWindow = useNewWindow();
-  const flows = flowsData?.data;
+  const workflows = workflowsData?.data;
   const { checkAccess } = useAuthorization();
   const userHasPermissionToRetryRun = checkAccess(Permission.WRITE_RUN);
 
@@ -183,12 +184,12 @@ export const RunsTable = () => {
       () => [
         {
           type: 'select',
-          title: t('Flow name'),
-          accessorKey: 'flowId',
+          title: t('Workflow name'),
+          accessorKey: 'workflowId',
           options:
-            flows?.map((flow) => ({
-              label: flow.version.displayName,
-              value: flow.id,
+            workflows?.map((workflow) => ({
+              label: workflow.version.displayName,
+              value: workflow.id,
             })) || [],
           icon: CheckIcon,
         },
@@ -226,7 +227,7 @@ export const RunsTable = () => {
           accessorKey: 'archivedAt',
         },
       ],
-      [flows],
+      [workflows],
     );
 
   const retryRuns = executionMutations.useBulkRetryRuns({
@@ -301,7 +302,7 @@ export const RunsTable = () => {
                       searchParams.getAll('status').length > 0
                         ? (searchParams.getAll('status') as ExecutionStatus[])
                         : undefined,
-                    flowId: searchParams.getAll('flowId'),
+                    workflowId: searchParams.getAll('workflowId'),
                     createdAfter: searchParams.get('createdAfter') || undefined,
                     createdBefore:
                       searchParams.get('createdBefore') || undefined,
@@ -379,7 +380,7 @@ export const RunsTable = () => {
                                 | typeof ExecutionStatus.QUEUED
                               )[])
                             : undefined,
-                        flowId: searchParams.getAll('flowId'),
+                        workflowId: searchParams.getAll('workflowId'),
                         createdAfter:
                           searchParams.get('createdAfter') || undefined,
                         createdBefore:
@@ -452,14 +453,14 @@ export const RunsTable = () => {
                           retryRuns.mutate({
                             workspaceId,
                             executionIds: selectedAll ? undefined : runIds,
-                            strategy: FlowRetryStrategy.ON_LATEST_VERSION,
+                            strategy: WorkflowRetryStrategy.ON_LATEST_VERSION,
                             excludeExecutionIds: selectedAll
                               ? Array.from(excludedRows)
                               : undefined,
                             status: searchParams.getAll(
                               'status',
                             ) as ExecutionStatus[],
-                            flowId: searchParams.getAll('flowId'),
+                            workflowId: searchParams.getAll('workflowId'),
                             createdAfter:
                               searchParams.get('createdAfter') || undefined,
                             createdBefore:
@@ -496,14 +497,14 @@ export const RunsTable = () => {
                             retryRuns.mutate({
                               workspaceId,
                               executionIds: selectedAll ? undefined : runIds,
-                              strategy: FlowRetryStrategy.FROM_FAILED_STEP,
+                              strategy: WorkflowRetryStrategy.FROM_FAILED_STEP,
                               excludeExecutionIds: selectedAll
                                 ? Array.from(excludedRows)
                                 : undefined,
                               status: searchParams.getAll(
                                 'status',
                               ) as ExecutionStatus[],
-                              flowId: searchParams.getAll('flowId'),
+                              workflowId: searchParams.getAll('workflowId'),
                               createdAfter:
                                 searchParams.get('createdAfter') || undefined,
                               createdBefore:
@@ -587,14 +588,14 @@ export const RunsTable = () => {
   return (
     <div className="relative">
       <DataTable
-        emptyStateTextTitle={t('No flow runs found')}
+        emptyStateTextTitle={t('No workflow runs found')}
         emptyStateTextDescription={t(
           'Come back later when your automations start running',
         )}
         emptyStateIcon={<History className="size-14" />}
         columns={columns}
         page={data}
-        isLoading={isLoading || isFetchingFlows}
+        isLoading={isLoading || isFetchingWorkflows}
         filters={customFilters.length > 0 ? [] : filters}
         bulkActions={bulkActions}
         onRowClick={(row, newWindow) => handleRowClick(row, newWindow)}

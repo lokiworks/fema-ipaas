@@ -17,14 +17,14 @@ import { authenticationSession } from '@/lib/authentication-session';
 
 import { SidebarHeader } from '../sidebar-header';
 
-import { FLOW_CARD_HEIGHT, ExecutionCard } from './execution-card';
+import { WORKFLOW_CARD_HEIGHT, ExecutionCard } from './execution-card';
 
 type RunsListItem =
   | { type: 'execution'; run: Execution }
   | { type: 'loadMoreButton'; id: 'loadMoreButton' };
 const RunsList = React.memo(() => {
-  const [flow, setRightSidebar, run] = useBuilderStateContext((state) => [
-    state.flow,
+  const [workflow, setRightSidebar, run] = useBuilderStateContext((state) => [
+    state.workflow,
     state.setRightSidebar,
     state.run,
   ]);
@@ -43,12 +43,12 @@ const RunsList = React.memo(() => {
     Error,
     InfiniteData<SeekPage<Execution>>
   >({
-    queryKey: ['executions', flow.id],
+    queryKey: ['executions', workflow.id],
     getNextPageParam: (lastPage) => lastPage.next,
     initialPageParam: undefined,
     queryFn: ({ pageParam }) =>
       executionsApi.list({
-        flowId: [flow.id],
+        workflowId: [workflow.id],
         workspaceId: authenticationSession.getWorkspaceId()!,
         limit: 15,
         cursor: pageParam as string | undefined,
@@ -110,7 +110,7 @@ const RunsList = React.memo(() => {
         <VirtualizedScrollArea
           className="w-full grow max-w-[calc(100%-6px)]"
           items={allViewedRuns}
-          estimateSize={() => FLOW_CARD_HEIGHT}
+          estimateSize={() => WORKFLOW_CARD_HEIGHT}
           getItemKey={(index) => index}
           renderItem={(item) => {
             if (item.type === 'execution') {

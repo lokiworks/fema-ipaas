@@ -1,10 +1,10 @@
 import { FastifyBaseLogger } from 'fastify'
 import { ArrayContains } from 'typeorm'
 import { connectionsRepo } from '../connection/connection-service/connection-service'
-import { batchDeleteByFlowId } from '../flows/flow/flow.jobs'
-import { flowRepo } from '../flows/flow/flow.repo'
-import { folderRepo } from '../flows/folder/folder.service'
 import { SystemJobData, SystemJobName } from '../helper/system-jobs/common'
+import { folderRepo } from '../workflows/folder/folder.service'
+import { batchDeleteByWorkflowId } from '../workflows/workflow/workflow.jobs'
+import { workflowRepo } from '../workflows/workflow/workflow.repo'
 import { workspaceRepo } from './workspace-repo'
 
 export const workspaceBackgroundJobs = (log: FastifyBaseLogger) => ({
@@ -20,16 +20,16 @@ export const workspaceBackgroundJobs = (log: FastifyBaseLogger) => ({
             return
         }
 
-        const flows = await flowRepo().find({ where: { workspaceId }, select: ['id'], withDeleted: true })
-        for (const flow of flows) {
-            await batchDeleteByFlowId(flow.id)
-            await flowRepo().delete({ id: flow.id })
+        const workflows = await workflowRepo().find({ where: { workspaceId }, select: ['id'], withDeleted: true })
+        for (const workflow of workflows) {
+            await batchDeleteByWorkflowId(workflow.id)
+            await workflowRepo().delete({ id: workflow.id })
         }
         await folderRepo().delete({ workspaceId })
         await connectionsRepo().delete({ workspaceIds: ArrayContains([workspaceId]) })
         await workspaceRepo().delete({ id: workspaceId })
 
-        log.info({ workspace: { id: workspaceId }, flowCount: flows.length }, '[hardDeleteWorkspaceHandler] Workspace permanently deleted')
+        log.info({ workspace: { id: workspaceId }, workflowCount: workflows.length }, '[hardDeleteWorkspaceHandler] Workspace permanently deleted')
     },
 
 })

@@ -5,7 +5,7 @@ status: accepted
 # Engine posts run-time callbacks directly to the app
 
 ## Decision
-The engine posts all four run-time callbacks (`updateRunProgress`, `updateStepProgress`, `sendFlowResponse`, `uploadRunLog`) directly to the app over HTTP (`internalApiUrl` + `engineToken`, `POST /v1/engine/*`, ENGINE principal). The worker is removed from the data path; the engine→worker relay is deleted.
+The engine posts all four run-time callbacks (`updateRunProgress`, `updateStepProgress`, `sendWorkflowResponse`, `uploadRunLog`) directly to the app over HTTP (`internalApiUrl` + `engineToken`, `POST /v1/engine/*`, ENGINE principal). The worker is removed from the data path; the engine→worker relay is deleted.
 
 ## Context
 Historically the engine sent these over Socket.IO to the worker, which forwarded each verbatim to the app over a second hop — a 1:1 relay adding no value. The engine already talks to the app directly over HTTP for store/files/connections on that same channel.

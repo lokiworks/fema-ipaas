@@ -1,0 +1,1056 @@
+packages/server/api/test/integration/webhooks/webhook.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 21,23,72,74,103,105,135,137,166,168,198,200,229,231,262,264,291,293,325,327,357,359,390,413,428,461,484,499,532,534
+packages/server/api/src/app/workers/machine/machine-service.ts
+  s_94864882421579::t_3cde9bcd68e5dc 105,118,128
+packages/web/src/app/components/global-search/access-history.ts
+  s_94864882421579::t_3cde9bcd68e5dc 45,55
+packages/server/api/src/app/app.ts
+  s_94864882421579::t_8383ff74c8485b 5,57-58
+  s_94864882421579::t_3cde9bcd68e5dc 129,132,168,183,284-285,310
+packages/server/api/src/app/flows/folder/folder.module.ts
+  s_94864882421579::t_3cde9bcd68e5dc 6-7,19,23,41,64,75,87,97,108,111,124,127,144,147,163,166,179,182
+packages/server/api/test/integration/authentication/passwordless-authn.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 80,227,247,253-254,291
+packages/server/api/test/integration/workers/job-broker-seed-cause.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 45,51,109,115,161,167
+packages/server/engine/src/lib/utils.ts
+  s_94864882421579::t_3cde9bcd68e5dc 64,95
+packages/web/src/app/routes/platform/users/index.tsx
+  s_94864882421579::t_8383ff74c8485b 112-114,125-127
+packages/core/shared/src/lib/management/workspace-role/workspace-role.request.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1-24
+packages/core/utils/src/lib/permission.ts
+  s_94864882421579::t_3cde9bcd68e5dc 10-13,22-23
+packages/server/api/src/app/trigger/trigger-events/trigger-event.service.ts
+  s_94864882421579::t_8383ff74c8485b 1,11
+  s_94864882421579::t_3cde9bcd68e5dc 18,24,29,41,52,56,66,71,85,92,104,122,159,164,170
+packages/web/src/app/components/request-trial.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 9
+packages/server/worker/src/lib/api-notify-service.ts
+  s_94864882421579::t_3cde9bcd68e5dc 7-8,13
+packages/web/src/app/components/global-search/global-search-context.tsx
+  s_94864882421579::t_8383ff74c8485b 86-87
+  s_94864882421579::t_3cde9bcd68e5dc 22,84-85,105
+packages/web/src/features/flows/components/change-owner-dialog.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 49,112-113,121-123
+packages/core/shared/src/lib/governance/system-limits.ts
+  s_94864882421579::t_3cde9bcd68e5dc 21,24,31
+packages/server/api/src/app/webhooks/webhook-handshake.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1,16,23,36,43,92
+  s_94864882421579::t_8383ff74c8485b 6
+packages/web/src/api/authentication-api.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1,39-40
+packages/web/src/features/connections/api/connections.ts
+  s_94864882421579::t_8383ff74c8485b 66-67
+  s_94864882421579::t_3cde9bcd68e5dc 61-62,65,70
+packages/server/utils/test/evlog-wide-event.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 167,176
+packages/web/src/app/routes/workspace-routes.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 1-158
+packages/web/src/app/routes/platform/infra/health/components/stuck-jobs-table.tsx
+  s_94864882421579::t_8383ff74c8485b 64-66
+  s_94864882421579::t_3cde9bcd68e5dc 54,71
+packages/web/src/features/automations/components/automations-table.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 22,88,187,223,263
+packages/server/api/src/app/flows/folder/folder.service.ts
+  s_94864882421579::t_8383ff74c8485b 1
+  s_94864882421579::t_3cde9bcd68e5dc 14-15,18,22-23,25,37,40,42,47,55,58-59,65-67,70-71,77,82,87,90-91,95,98,112,122,124,129-130,139,148,153,159,164,170,175,180,184,191
+packages/server/api/src/app/helper/system/system.ts
+  s_94864882421579::t_3cde9bcd68e5dc 4,56,63
+packages/web/src/app/components/global-search/static-pages.ts
+  s_94864882421579::t_3cde9bcd68e5dc 55-56,132-133,182
+  s_94864882421579::t_bde459ac51e0ce 54,131
+packages/server/api/test/unit/app/file/s3-helper-checksum.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 83,95
+packages/core/execution/src/lib/flows/dto/count-flows-request.ts
+  s_94864882421579::t_3cde9bcd68e5dc 4
+packages/core/shared/src/index.ts
+  s_94864882421579::t_3cde9bcd68e5dc 26-27,53
+packages/server/api/src/app/flows/flow-run/flow-run-controller.ts
+  s_94864882421579::t_3cde9bcd68e5dc 7,18,36,48,61,79,92,107,133,136,152,155,174,177,191,194,207,210,220,223,239,242
+packages/server/api/src/app/workers/rpc/worker-rpc-service.ts
+  s_94864882421579::t_8383ff74c8485b 23
+  s_94864882421579::t_3cde9bcd68e5dc 24,32-33,90,94,101,112,123,139,144,151,174,206,219,240,258,268-269,273,277,285-286
+packages/server/api/test/helpers/flow-generator.ts
+  s_94864882421579::t_3cde9bcd68e5dc 23
+packages/server/engine/src/lib/operations/flow.operation.ts
+  s_94864882421579::t_3cde9bcd68e5dc 96
+packages/web/src/features/workspaces/components/create-workspace-button.tsx
+  s_94864882421579::t_bde459ac51e0ce 10
+  s_94864882421579::t_3cde9bcd68e5dc 1-9,11-85
+packages/server/api/src/app/flows/step-run/sample-data.service.ts
+  s_94864882421579::t_8383ff74c8485b 1
+  s_94864882421579::t_3cde9bcd68e5dc 28,48,54,58,62,75,84,88,103,109,122,130,136,143
+packages/server/api/test/integration/trigger-events/trigger-event.test.ts
+  s_94864882421579::t_bde459ac51e0ce 118
+  s_94864882421579::t_3cde9bcd68e5dc 26-27,31,39,49-50,55,59,65,79-80,84,98-99,102-104,107,119,124-126,130
+packages/server/api/test/integration/connection/connection-events.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 57,80,106,113
+packages/connectors/community/github/src/lib/trigger/index.ts
+  s_94864882421579::t_3cde9bcd68e5dc 236,411,652,864,1096,1405
+packages/server/api/src/app/connection/connection-worker-controller.ts
+  s_94864882421579::t_3cde9bcd68e5dc 11,13
+packages/web/src/app/builder/connector-properties/dynamic-connector-property.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 138
+packages/connectors/sdk/src/lib/context/index.ts
+  s_94864882421579::t_3cde9bcd68e5dc 14,38-39,164-165,289-290
+packages/server/api/src/app/database/seeds/dev-seeds.ts
+  s_94864882421579::t_3cde9bcd68e5dc 49
+packages/server/api/src/app/flows/flow/flow-version.controller.ts
+  s_94864882421579::t_3cde9bcd68e5dc 6,19,32-33
+packages/server/engine/src/lib/core/connector/connector-protocol.ts
+  s_94864882421579::t_3cde9bcd68e5dc 79
+packages/connectors/core/text-helper/src/lib/utilities/html-to-markdown/turndown-table-normalizer-plugin.ts
+  s_94864882421579::t_3cde9bcd68e5dc 42
+packages/web/src/app/builder/step-data/step-data-panel-host.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 24,35,86,91
+packages/server/api/src/app/trigger/trigger-run/trigger-run-stats.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1,89
+packages/server/api/test/integration/platform/first-platform-provisioning.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 11,17,46,57,92-93,108,156,158,161,164,169
+packages/web/src/features/templates/components/share-template.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 29
+packages/server/api/src/app/trigger/app-event-routing/app-event-routing.entity.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1,12,25,41-42
+packages/server/api/test/integration/webhooks/webhook-xml-parsing.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 19,21
+packages/web/src/features/platform-admin/api/workers-api.ts
+  s_94864882421579::t_3cde9bcd68e5dc 10
+packages/server/api/src/app/file/s3-helper.ts
+  s_94864882421579::t_8383ff74c8485b 5
+  s_94864882421579::t_3cde9bcd68e5dc 17,25-26,29
+packages/server/api/test/integration/webhooks/webhook-multipart-file.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1,21,43,49,53,78,82,93,106,114-116,121,128
+packages/core/shared/src/lib/automation/connectors/dto/connector-requests.ts
+  s_94864882421579::t_3cde9bcd68e5dc 51,74,82
+packages/server/worker/src/lib/worker.ts
+  s_94864882421579::t_3cde9bcd68e5dc 93,95,339
+packages/server/api/src/app/connection/connection.module.ts
+  s_94864882421579::t_3cde9bcd68e5dc 2,7
+packages/web/src/features/workspaces/stores/workspace-collection.ts
+  s_94864882421579::t_8383ff74c8485b 29-32,134-135
+  s_94864882421579::t_3cde9bcd68e5dc 1-28,33-133,136-294
+packages/core/execution/src/lib/flows/triggers/trigger-events/trigger-event.ts
+  s_94864882421579::t_3cde9bcd68e5dc 8
+packages/server/api/src/app/connectors/metadata/connector-metadata-service.ts
+  s_94864882421579::t_3cde9bcd68e5dc 11,31,55,71,100,195-196,208,506,522,541
+packages/server/api/test/integration/workspace/workspace.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1-72
+packages/server/api/test/unit/app/authentication/generate-engine-token.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 42,54
+packages/server/api/src/app/trigger/app-event-routing/app-event-routing.service.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1,23,34,36,43,47,59,68
+packages/web/src/features/platform-admin/hooks/platform-connections-hooks.ts
+  s_94864882421579::t_3cde9bcd68e5dc 30,38
+packages/server/api/test/integration/helper/pagination.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 24,40,71-72,87,92,98,112,135,149
+tools/scripts/migrate-custom-connector-to-turbo.ts
+  s_94864882421579::t_3cde9bcd68e5dc 12,196-200
+packages/server/api/test/integration/connection/connection.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 44,76,104,133,150,177,188,219,263,309,319,349,361,368,395,422,436,438,445,454,468,470,499,520,526
+  s_94864882421579::t_bde459ac51e0ce 467
+packages/server/api/src/app/database/redis/keys.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1,17
+packages/server/api/test/integration/file/files-controller.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 28,32,62,66,98,102,129,133,154,158,180,184,209,213,244,248,279,283,311,315,346,348,392,396
+packages/server/api/src/app/core/security/authorization/fastify-security.ts
+  s_94864882421579::t_8383ff74c8485b 3
+  s_94864882421579::t_3cde9bcd68e5dc 7,80,83,90,110,113-117,121-122,125,129-130,132,136,139,145,147,149,155,174
+packages/web/src/app/guards/workspace-route-wrapper.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 1-25,29-110
+  s_94864882421579::t_8383ff74c8485b 26-28
+packages/server/api/test/integration/connectors/connector-bundle.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 20,24,45,53,70,85-86,104,111-112
+packages/web/src/app/components/workspace-settings-layout.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 1-18
+packages/core/shared/src/lib/core/authentication/dto/authentication-response.ts
+  s_94864882421579::t_3cde9bcd68e5dc 14
+packages/server/api/src/app/platform/platform.service.ts
+  s_94864882421579::t_3cde9bcd68e5dc 17,20,24,29,32,73,99-100,103,108-109,112,231,245,256-257,262,266,281,284,286,290,295,297-298,301,306,309,343,348,387
+  s_94864882421579::t_8383ff74c8485b 2,11
+packages/web/src/app/connections/replace-connections-dialog.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 57,77,91,94,108,238,463
+packages/server/api/src/app/workers/migrations/refill-paused-jobs.ts
+  s_94864882421579::t_3cde9bcd68e5dc 70
+packages/server/worker/src/lib/execute/jobs/execute-action.ts
+  s_94864882421579::t_3cde9bcd68e5dc 26
+packages/server/api/test/integration/webhooks/webhook-handshake-double-consume.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1,31,43,51-53,58
+packages/connectors/community/slack/src/lib/common/utils.ts
+  s_94864882421579::t_3cde9bcd68e5dc 37,45
+packages/core/execution/src/lib/flow-run/dto/list-flow-runs-request.ts
+  s_94864882421579::t_3cde9bcd68e5dc 14,24
+packages/server/api/test/integration/file/file-cleanup.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 7,24,26,39,41,46,51,56,58-67,72-75,87-88
+  s_94864882421579::t_bde459ac51e0ce 38
+packages/server/api/test/unit/app/flows/flow/flow-publish-utils.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 12,14,43-44,64-65
+packages/server/api/test/integration/flows/flow-run/retry-flow-run.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 26,30,40,56,61,74,81,94,99,111,118,121,136,162,171,184,200,203,231,240,251
+packages/tests-e2e/fixtures/users.ts
+  s_94864882421579::t_3cde9bcd68e5dc 49
+packages/server/worker/src/lib/execute/jobs/execute-flow.ts
+  s_94864882421579::t_3cde9bcd68e5dc 16,69,121,172,184
+packages/web/src/app/builder/connector-properties/text-input-with-mentions/tiptap-editor.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 256,259,262-263
+packages/server/api/src/app/helper/application-events.ts
+  s_94864882421579::t_8383ff74c8485b 1,7
+  s_94864882421579::t_3cde9bcd68e5dc 15,30,51,56,62,73-74,83-84,89,108,111,127
+packages/web/src/app/builder/run-list/flow-run-card.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 50,179,199
+packages/server/api/src/app/workspace/workspace-entity.ts
+  s_94864882421579::t_8383ff74c8485b 9
+  s_94864882421579::t_3cde9bcd68e5dc 1-8,10-157
+packages/server/api/src/app/flows/flow/flow.service.ts
+  s_94864882421579::t_8383ff74c8485b 1,19
+  s_94864882421579::t_3cde9bcd68e5dc 32-33,36,60,69,76-77,87,118-119,123-124,205,230-231,233,238-240,242,247,259,268,272-273,275,285,290,305,313,327,335,342,362,369,374,389,419,429,436,452,457,471,474,484,494,511,515,517,521,535,538-539,548,550,552,559,563,588,590,595,600-601,604,611,616,625,629,632,661-662,666,668-669,672,675-676,680,682,685,688,696,707,721,732,763,769,771,791,814-815,820,833,838,846,856,861,877,883-884,891,897,904,910,949
+packages/server/api/src/app/core/security/authorization/common.ts
+  s_94864882421579::t_3cde9bcd68e5dc 7,12,30-31,40-42,45-47,50-52,55,62,65-66,68
+packages/server/api/src/app/flows/flow-run/waitpoint/waitpoint-entity.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1,7,18,71-72,76,78,82-83
+packages/web/src/app/routes/platform/infra/health/components/internal-errors-table.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 50,66,75,79,84
+packages/web/src/app/builder/test-step/utils/test-step-hooks.ts
+  s_94864882421579::t_3cde9bcd68e5dc 49,56,67,110,139,191
+packages/core/utils/src/lib/metadata.ts
+  s_94864882421579::t_3cde9bcd68e5dc 14
+packages/server/api/test/integration/flows/flow/flow-lifecycle-events.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 64,265,280,336
+packages/web/src/features/connections/hooks/global-connections-hooks.ts
+  s_94864882421579::t_3cde9bcd68e5dc 15,75-76,85-86,93-94,106-107,111-112,127-128
+packages/core/shared/src/lib/automation/trigger/index.ts
+  s_94864882421579::t_3cde9bcd68e5dc 46
+packages/web/src/features/connectors/utils/form-utils.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 242,244-245,250,252,254,303,305,309-310,337,342-343,352,357-358,368,373-374,386,402
+  s_94864882421579::t_8383ff74c8485b 403-405
+packages/web/src/features/flow-runs/components/runs-table/failed-retry-runs-dialog.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 83
+packages/web/src/features/variables/hooks/variables-hooks.ts
+  s_94864882421579::t_3cde9bcd68e5dc 54,56,58,61
+packages/web/src/app/builder/step-settings/index.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 26,50,337
+packages/server/api/test/integration/flows/flow-run/mark-parent-run-cross-tenant.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 19-20,30,42,54-56,58,63,74-75,77,82
+packages/web/src/app/components/workspace-layout/workspace-dashboard-layout-header.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 1-162
+packages/web/src/app/routes/platform/workspaces/index.tsx
+  s_94864882421579::t_8383ff74c8485b 78-79,160-161
+  s_94864882421579::t_bde459ac51e0ce 278
+  s_94864882421579::t_3cde9bcd68e5dc 1-77,80-159,162-277,279-398
+packages/core/shared/src/lib/automation/connection/dto/upsert-connection-request.ts
+  s_94864882421579::t_3cde9bcd68e5dc 10,151,153,160,163,167-174,181,198,206
+packages/server/api/src/app/connectors/connector-bundle.ts
+  s_94864882421579::t_3cde9bcd68e5dc 15,26,94
+packages/server/api/test/integration/workers/job-broker-error-propagation.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 24,31,75,82,125,132,176,183,228,235
+packages/server/engine/src/lib/helper/flow-run-progress-reporter.ts
+  s_94864882421579::t_3cde9bcd68e5dc 56,73,81,134,248
+packages/web/src/features/flows/components/import-flow-dialog.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 118
+packages/server/api/src/app/core/security/v2/authz/authorize.ts
+  s_94864882421579::t_3cde9bcd68e5dc 7,15,17,86-87,91,95
+  s_94864882421579::t_8383ff74c8485b 6
+packages/server/api/test/integration/workers/flow-worker.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 10,26-27,29,34,37
+packages/web/src/app/components/workspace-settings/general/index.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 1-261
+packages/web/src/features/workspaces/components/ap-workspace-display.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 1,7-106
+  s_94864882421579::t_8383ff74c8485b 2-6
+packages/server/api/src/app/workers/engine-controller.ts
+  s_94864882421579::t_3cde9bcd68e5dc 6,16,18,20,37,53,63,74,82,90,106,111
+packages/web/src/app/routes/public-routes.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 7,35,41
+packages/connectors/community/slack/src/lib/actions/rename-channel.action.ts
+  s_94864882421579::t_3cde9bcd68e5dc 30
+packages/server/api/src/app/trigger/trigger-events/trigger-event-controller.ts
+  s_94864882421579::t_3cde9bcd68e5dc 8,20,29,33,48-49,59-60
+packages/core/shared/src/lib/core/health/health-metrics-request.ts
+  s_94864882421579::t_3cde9bcd68e5dc 24-25,42-43
+packages/web/src/hooks/authorization-hooks.ts
+  s_94864882421579::t_3cde9bcd68e5dc 11
+packages/web/src/app/components/sidebar/sidebar-header.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 14
+packages/server/api/src/app/workers/job-queue/interceptors/rate-limiter-interceptor.ts
+  s_94864882421579::t_3cde9bcd68e5dc 9,16,29-30,33,35,39-40,42,48-49,51,91-92,115,120,133
+packages/web/src/features/flow-runs/components/runs-table/failed-step-dialog.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 116,194
+packages/server/api/test/integration/workers/action-run-cancellation.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 27,32,50,53,57,73,78,137
+packages/web/src/lib/authentication-session.ts
+  s_94864882421579::t_8383ff74c8485b 55-58,77-79
+  s_94864882421579::t_3cde9bcd68e5dc 11,13-14,21-22,45,50-52,59,71-72,74,108-109,113-114,117,128
+packages/core/execution/src/lib/flow-run/waitpoint/index.ts
+  s_94864882421579::t_3cde9bcd68e5dc 9
+packages/server/api/src/app/core/security/authorization/authorization.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1,4-5,10
+  s_94864882421579::t_8383ff74c8485b 2
+packages/server/api/src/app/connectors/metadata/connector-metadata-entity.ts
+  s_94864882421579::t_3cde9bcd68e5dc 34
+packages/server/api/test/unit/app/knowledge-base/knowledge-base-service.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 63,67,69-71,77,85,89,95,108,124,140,158,173,187,201,212,219,233
+packages/web/src/app/components/workspace-settings/index.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 1-14,16-97,100-214
+  s_94864882421579::t_bde459ac51e0ce 15
+  s_94864882421579::t_8383ff74c8485b 98-99
+packages/web/src/app/routes/connections/index.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 83,100,107,311,324,329-330,354,403
+packages/web/src/app/components/sidebar/platform/index.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 130-131,133,161-162,164
+packages/server/api/src/app/workers/machine/machine-controller.ts
+  s_94864882421579::t_3cde9bcd68e5dc 17,19-20
+packages/server/api/src/app/trigger/trigger-source/flow-trigger-side-effect.ts
+  s_94864882421579::t_8383ff74c8485b 13
+  s_94864882421579::t_3cde9bcd68e5dc 26,28,35,75-76,84,100,126,129,141,145,151,173,180,186,220
+packages/web/src/app/routes/platform/infra/workers/by-workspace-view.tsx
+  s_94864882421579::t_8383ff74c8485b 370-373
+  s_94864882421579::t_bde459ac51e0ce 120
+  s_94864882421579::t_3cde9bcd68e5dc 1-119,121-369,374-378
+packages/server/api/src/app/core/collaborative/lock/lock.module.ts
+  s_94864882421579::t_3cde9bcd68e5dc 10,27,34,45,53,65,78,89
+packages/cli/src/lib/commands/benchmark.ts
+  s_94864882421579::t_3cde9bcd68e5dc 6,38-39,41-42,69,74-77,86-87,235,239,359-363,366-367,370,373,377,380,389,397,400,411,415-416,429-430,460-465,467,470,475-476,479-482,484,490,496,639,682-685,687-689,691,733-734,737-738,740-741,754,761,763,804,911,921,933,938,954-956,1017,1020,1023-1024,1028-1029,1076,1145
+packages/core/execution/src/lib/flows/sample-data/index.ts
+  s_94864882421579::t_3cde9bcd68e5dc 28,34
+packages/server/api/src/app/workspace/workspace-side-effects.ts
+  s_94864882421579::t_bde459ac51e0ce 59,81
+  s_94864882421579::t_3cde9bcd68e5dc 1-58,60-80,82-92
+packages/web/src/app/routes/variables/index.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 54,79,89,97
+packages/connectors/core/store/src/lib/actions/store-get-action.ts
+  s_94864882421579::t_3cde9bcd68e5dc 65-66,78
+packages/server/api/test/integration/flows/flow-run/resume-service.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 28,32,42,54,68,87,94,115,122,137,151
+packages/server/sandbox/src/lib/cache/flow/flow-bundle-store.ts
+  s_94864882421579::t_3cde9bcd68e5dc 14,26,52,62,75,109,115
+packages/web/src/app/guards/index.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 19,46,50
+  s_94864882421579::t_8383ff74c8485b 12
+packages/server/api/src/app/user-invitations/user-invitation.service.ts
+  s_94864882421579::t_3cde9bcd68e5dc 56,70-72,84,86,98-101,119,172,179,245,250,308,344,347,370
+packages/server/api/src/app/workers/migrations/delete-legacy-redis-keys.ts
+  s_94864882421579::t_3cde9bcd68e5dc 10,12-13
+packages/server/api/src/app/core/security/platform-guards.ts
+  s_94864882421579::t_8383ff74c8485b 5
+  s_94864882421579::t_3cde9bcd68e5dc 2,22-23,26-27,41-42
+packages/web/src/app/guards/template-details-wrapper.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 6,28,30,45-46
+packages/web/src/features/folders/components/rename-folder-dialog.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 59
+packages/server/api/src/app/trigger/trigger-source/trigger-utils.ts
+  s_94864882421579::t_3cde9bcd68e5dc 2,6,9,13,33,45,48-49,67,72
+packages/server/api/test/unit/app/workers/migrations/job-data-migrations.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 32,50
+packages/web/src/app/builder/builder-header/builder-header.tsx
+  s_94864882421579::t_8383ff74c8485b 38-41,97-98
+  s_94864882421579::t_3cde9bcd68e5dc 81,116
+packages/server/api/src/app/flows/flow-run/flow-run-service.ts
+  s_94864882421579::t_8383ff74c8485b 1,18
+  s_94864882421579::t_3cde9bcd68e5dc 34-35,37,58,114,117,121-122,147,154,188,196,203,206,236,246,271,280,310,314,317,320,337,341,343,346,352,367,370,373,375,377,384,394,418,443,451,472,492,496,543,606,609,615,678,695,697,707,724,727,740,769,780,797,826,837,849,864,872,879,883,894,908,921,927
+packages/server/api/types/fastify.d.ts
+  s_94864882421579::t_3cde9bcd68e5dc 5,39
+packages/server/api/src/app/workers/job/runs-metadata-queue-factory.ts
+  s_94864882421579::t_3cde9bcd68e5dc 51,70,94,104
+packages/server/api/src/app/workspace/workspace.module.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1-8
+packages/server/api/src/app/core/security/oidc/oidc-token.controller.ts
+  s_94864882421579::t_3cde9bcd68e5dc 12,20
+packages/server/api/test/integration/flows/folder/folder-list.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 28,36,45,53,67-69,80,94,96,107,119-120,129,143,149,159,165
+packages/core/shared/src/lib/core/user/user.ts
+  s_94864882421579::t_3cde9bcd68e5dc 7,11,16
+packages/server/api/test/integration/connectors/connector-options-e2e.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 57,60,106
+packages/server/engine/src/lib/core/connector/connector-context-builder.ts
+  s_94864882421579::t_3cde9bcd68e5dc 83,128,147,180,189,191,193,196-197,228
+packages/web/src/app/components/workspace-layout/index.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 1-147
+packages/server/api/src/app/flows/flow-run/waitpoint/resume-controller.ts
+  s_94864882421579::t_3cde9bcd68e5dc 8,84,117,160-161
+packages/server/api/src/app/database/database-connection.ts
+  s_94864882421579::t_3cde9bcd68e5dc 44
+  s_94864882421579::t_8383ff74c8485b 28
+packages/web/src/app/connections/create-edit-connection-dialog.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 48,75,107,110-111,176,210,212,216,220,225,228,429,470,483,501,593,605,623-624
+packages/server/api/src/app/flows/flow-run/flow-run-entity.ts
+  s_94864882421579::t_3cde9bcd68e5dc 16,29,99-100,103-104,107-108,111-112,115-116,150,152,156-157
+  s_94864882421579::t_8383ff74c8485b 7
+packages/server/api/src/app/authentication/lib/access-token-manager.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1,21,25,124
+packages/core/connector-types/src/lib/execution-contracts.ts
+  s_94864882421579::t_3cde9bcd68e5dc 77,102,123
+packages/web/src/features/authentication/components/auth-landing/auth-drawer-body.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 822-823
+packages/web/src/features/invitations/components/invitation-card.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 39
+packages/server/api/test/integration/workers/job-broker-invalid-schema.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 30,35,60
+packages/server/api/src/app/authentication/authentication.controller.ts
+  s_94864882421579::t_3cde9bcd68e5dc 41,67,108,136
+packages/server/api/src/app/file/file.entity.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1,9,16,55-56,63,65,77,79,83-84
+packages/server/api/src/app/trigger/trigger-source/trigger-source-entity.ts
+  s_94864882421579::t_3cde9bcd68e5dc 7,31,58-59,75-76,94,96
+  s_94864882421579::t_8383ff74c8485b 1
+packages/core/execution/src/lib/engine/requests.ts
+  s_94864882421579::t_3cde9bcd68e5dc 17,36
+packages/server/api/src/app/connectors/metadata/connector-metadata-controller.ts
+  s_94864882421579::t_3cde9bcd68e5dc 7,45,48,80,100,128,131,135,139,231-232
+packages/server/api/src/app/workers/job/index.ts
+  s_94864882421579::t_3cde9bcd68e5dc 10,15,37-38,57,64
+packages/web/src/features/automations/components/create-folder-dialog.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 60
+packages/core/shared/src/lib/automation/connection/connection.ts
+  s_94864882421579::t_3cde9bcd68e5dc 16,105,113,131,140
+packages/core/shared/src/lib/automation/variable/variable.ts
+  s_94864882421579::t_3cde9bcd68e5dc 15,26,31
+packages/core/shared/src/lib/management/workspace/index.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1-3
+packages/web/src/app/builder/test-step/test-action-section.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 197
+packages/server/api/src/app/trigger/test-trigger/test-trigger-service.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1,23,39,47,55,63,70,79,92,98
+packages/server/api/src/app/workspace/workspace.jobs.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1-35
+packages/server/engine/src/lib/connector-context/connection-resolver.ts
+  s_94864882421579::t_3cde9bcd68e5dc 6,9,95
+packages/server/api/src/app/workspace/workspace-hooks.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1-16
+packages/server/sandbox/src/lib/cache/flow/flow-provisioning.ts
+  s_94864882421579::t_3cde9bcd68e5dc 18,40,54,59,61,112,131
+packages/server/worker/test/lib/execute/jobs/execute-flow.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 63
+packages/server/api/src/app/workspace/workspace-repo.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1-4
+packages/server/api/src/app/helper/email/email-service.ts
+  s_94864882421579::t_3cde9bcd68e5dc 5,47,54,60,62,65-66,69-70,102
+packages/web/src/app/routes/platform/connections/index.tsx
+  s_94864882421579::t_8383ff74c8485b 45-48,54-55,173-175
+  s_94864882421579::t_3cde9bcd68e5dc 89-90,92-94,164,169,236,249,270,273-274,276,278,281-283,285,294-295,306-308
+packages/web/src/app/routes/platform/infra/workers/workspace-avatar.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 1-8,13-36
+  s_94864882421579::t_8383ff74c8485b 9-12
+packages/web/src/app/variables/variable-dialog.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 83,98-99,105
+packages/web/src/features/workspaces/index.ts
+  s_94864882421579::t_3cde9bcd68e5dc 5-10
+  s_94864882421579::t_bde459ac51e0ce 1-4
+packages/web/test/app/components/global-search/global-search-context.test.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 47-48
+packages/server/api/test/helpers/test-context.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1-2,8,14,17,30,47-48,51,54-55,57,69,87,121,142,146,157,165
+packages/web/src/app/routes/platform/infra/workers/worker-assignments-tab.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 7,32,48,56,64
+  s_94864882421579::t_bde459ac51e0ce 11,45,47,55
+  s_94864882421579::t_8383ff74c8485b 15-16
+packages/core/execution/src/lib/flows/test-trigger.ts
+  s_94864882421579::t_3cde9bcd68e5dc 10,20
+packages/server/api/src/app/flows/flow-run/engine-run-callback-service.ts
+  s_94864882421579::t_3cde9bcd68e5dc 13-14,17-18,28,35,42,58,60,63,69,72,81,92,95,105,110,115,124,130
+  s_94864882421579::t_8383ff74c8485b 9
+packages/server/api/src/app/variable/variable.entity.ts
+  s_94864882421579::t_3cde9bcd68e5dc 22,44-45
+packages/web/src/features/flows/hooks/flow-hooks.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 42,46,49,51,55,236,401,449,453,476
+packages/web/src/app/components/sidebar/dashboard/index.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 4,6,41-45,64,70,86-87,91,94,98,101,108,111-112,115-122,124,126-127,129,135-136,139,250,252-253,255-257,279,297,305,311,313-316,318,321,329,337,339-341,383,408
+  s_94864882421579::t_8383ff74c8485b 62,103-104,307-309,392-393
+packages/server/api/src/app/store-entry/store-entry.controller.ts
+  s_94864882421579::t_3cde9bcd68e5dc 21,30,44
+packages/web/src/app/components/sidebar/workspace/index.tsx
+  s_94864882421579::t_8383ff74c8485b 46-47,61-63
+  s_94864882421579::t_3cde9bcd68e5dc 1-45,48-60,64-71
+packages/server/api/test/unit/app/workers/job-queue/job-broker.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 48
+packages/server/api/test/integration/authentication/authentication.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 22,54,58,73,76,107
+packages/server/engine/test/variables/props-resolver.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 10
+packages/server/api/src/app/flows/folder/folder.entity.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1,10,20,32-33,37-38,49,51,55,57
+packages/server/api/src/app/webhooks/webhook-controller.ts
+  s_94864882421579::t_3cde9bcd68e5dc 29,62,85,93,105,122
+packages/web/src/app/routes/platform/infra/workers/index.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 263,287,290
+packages/server/api/test/integration/connectors/connector-install.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 4,105
+packages/server/api/test/integration/webhooks/webhook-oversized-file.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 4,26,45,51,64,70,89,96-98,103
+packages/server/engine/src/lib/handler/context/test-execution-context.ts
+  s_94864882421579::t_3cde9bcd68e5dc 12,50,92
+packages/server/api/src/app/flows/flow-run/flow-run-side-effects.ts
+  s_94864882421579::t_3cde9bcd68e5dc 22,32,42,52
+packages/server/api/src/app/connectors/metadata/utils/connector-sorting.ts
+  s_94864882421579::t_3cde9bcd68e5dc 53
+packages/server/api/src/app/file/file.module.ts
+  s_94864882421579::t_3cde9bcd68e5dc 3,11
+packages/web/src/app/builder/run-list/index.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 52
+packages/web/src/app/builder/test-step/index.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 12,21,30,36
+packages/web/src/app/builder/connectors-selector/index.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 148
+packages/connectors/sdk/src/lib/property/input/custom-property.ts
+  s_94864882421579::t_3cde9bcd68e5dc 8,27
+packages/server/api/src/app/flows/flow/flow-execution-cache.ts
+  s_94864882421579::t_8383ff74c8485b 8
+  s_94864882421579::t_3cde9bcd68e5dc 42,49
+packages/web/src/components/custom/home-button.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 32
+packages/web/src/app/routes/templates/id/index.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 63
+packages/server/api/test/unit/app/flows/trigger/flow-trigger-side-effect.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 20-21,65,265
+packages/server/api/src/app/store-entry/store-entry.service.ts
+  s_94864882421579::t_8383ff74c8485b 1
+  s_94864882421579::t_3cde9bcd68e5dc 9,15-16,19,28,31,35,40,43,47
+packages/server/worker/src/lib/execute/jobs/renew-webhook.ts
+  s_94864882421579::t_3cde9bcd68e5dc 12,38
+packages/core/shared/src/lib/core/health/index.ts
+  s_94864882421579::t_3cde9bcd68e5dc 40
+packages/server/api/src/app/flows/flow-version/migrations/index.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1,7
+packages/server/api/src/app/health/health-metrics.service.ts
+  s_94864882421579::t_3cde9bcd68e5dc 10,21,25,31,36,40,47,55-57,59,64-65,71,74,76-77,100,104,111,120-121,124,127,130-131,142,147-148,162,170,176,181,190,218-219,224-227,247-248,252-253,262-263,266
+packages/server/api/test/unit/app/knowledge-base/file-service-delete.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 60,63,70,73,82
+packages/core/execution/src/lib/flows/dto/list-flows-request.ts
+  s_94864882421579::t_3cde9bcd68e5dc 13
+packages/server/api/src/app/helper/audit-events.ts
+  s_94864882421579::t_3cde9bcd68e5dc 4
+packages/server/engine/src/lib/connector-context/store.ts
+  s_94864882421579::t_3cde9bcd68e5dc 144
+packages/server/engine/test/operations/trigger-hook-operation.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 60
+packages/server/worker/src/lib/execute/jobs/execute-trigger-hook.ts
+  s_94864882421579::t_3cde9bcd68e5dc 14,44
+packages/web/src/app/routes/runs/id/index.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 13,37,40
+packages/server/api/src/app/workspace/workspace-access.ts
+  s_94864882421579::t_8383ff74c8485b 1
+  s_94864882421579::t_3cde9bcd68e5dc 2-72
+packages/core/shared/src/lib/core/authentication/model/principal.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1,34
+packages/server/sandbox/test/lib/cache/flow/flow-bundle-store.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 94,97,111,113-114,124,134,136,150,167,181,195-196
+packages/web/src/features/invitations/hooks/user-invitations-hooks.ts
+  s_94864882421579::t_3cde9bcd68e5dc 14
+packages/server/api/src/app/connection/platform-connection.controller.ts
+  s_94864882421579::t_3cde9bcd68e5dc 10,17
+packages/web/src/features/flows/hooks/trigger-event-hooks.ts
+  s_94864882421579::t_3cde9bcd68e5dc 17
+packages/core/shared/src/lib/governance/audit-events/index.ts
+  s_94864882421579::t_3cde9bcd68e5dc 9,47-48,65,101,140,192,235,256,278,296
+packages/server/api/src/app/flows/flow-run/flow-run-hooks.ts
+  s_94864882421579::t_3cde9bcd68e5dc 19,27
+packages/server/api/src/app/helper/system-validator.ts
+  s_94864882421579::t_3cde9bcd68e5dc 3,56,122,171
+packages/server/api/test/integration/connectors/connector-metadata.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 3,187,366,414,455,501
+packages/connectors/sdk/src/index.ts
+  s_94864882421579::t_3cde9bcd68e5dc 43
+packages/server/engine/src/lib/variables/variable-token.ts
+  s_94864882421579::t_3cde9bcd68e5dc 7,15,35
+packages/server/sandbox/src/lib/types.ts
+  s_94864882421579::t_3cde9bcd68e5dc 19,54,117
+packages/server/api/src/app/variable/variable.service.ts
+  s_94864882421579::t_3cde9bcd68e5dc 15,20,37-38,42-44,48-49,53,70,80-81,89,101-102,117-118,134-135,141,146,181,214,224,232,237,242
+  s_94864882421579::t_8383ff74c8485b 1
+packages/core/shared/src/lib/automation/connection/dto/read-connection-request.ts
+  s_94864882421579::t_3cde9bcd68e5dc 3,8,27,31,42,47,50,52,55
+packages/web/src/components/custom/global-connection-utils.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 19
+packages/server/worker/src/lib/execute/jobs/execute-polling.ts
+  s_94864882421579::t_3cde9bcd68e5dc 13,40,56
+packages/web/src/app/components/flow-actions-menu.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 79,121,219
+packages/server/api/src/app/trigger/trigger-events/trigger-event.entity.ts
+  s_94864882421579::t_3cde9bcd68e5dc 10,19,29-30,45,47,51-52
+  s_94864882421579::t_8383ff74c8485b 1
+packages/core/shared/src/lib/core/flag/flag.ts
+  s_94864882421579::t_3cde9bcd68e5dc 37,52,56,58
+packages/server/api/src/app/workers/job-queue/job-broker.ts
+  s_94864882421579::t_3cde9bcd68e5dc 145
+packages/web/src/features/automations/hooks/use-pinned-items.ts
+  s_94864882421579::t_8383ff74c8485b 41-44,48-52
+  s_94864882421579::t_3cde9bcd68e5dc 10-11,18,20,37,56,85,94,102,106
+packages/core/utils/src/index.ts
+  s_94864882421579::t_3cde9bcd68e5dc 16
+packages/server/engine/test/helper/flow-run-progress-reporter.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 9,183
+packages/server/engine/test/handler/test-helper.ts
+  s_94864882421579::t_3cde9bcd68e5dc 21,130
+packages/web/src/app/components/builder-layout/index.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 9,25
+packages/core/shared/src/lib/core/authentication/model/principal-type.ts
+  s_94864882421579::t_3cde9bcd68e5dc 18
+packages/server/api/src/app/store-entry/store-entry-entity.ts
+  s_94864882421579::t_3cde9bcd68e5dc 18,26
+packages/server/api/src/app/flows/flow-run/flow-runs-queue.ts
+  s_94864882421579::t_8383ff74c8485b 11
+  s_94864882421579::t_3cde9bcd68e5dc 63,108,117,159,194,199,206,222,244
+tools/scripts/utils/publish-npm-package.ts
+  s_94864882421579::t_3cde9bcd68e5dc 97
+packages/core/shared/src/lib/core/common/telemetry.ts
+  s_94864882421579::t_8383ff74c8485b 1
+  s_94864882421579::t_3cde9bcd68e5dc 19,34,123,132,138,143,150,161
+packages/web/src/app/routes/automations/index.tsx
+  s_94864882421579::t_8383ff74c8485b 30-33,38-42
+  s_94864882421579::t_3cde9bcd68e5dc 44,47,51-54,131-132,172,188,201,288
+packages/cli/src/index.ts
+  s_94864882421579::t_3cde9bcd68e5dc 41-42,53
+packages/core/shared/src/lib/management/workspace/workspace-requests.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1-37
+packages/server/api/src/app/core/collaborative/presence/presence.module.ts
+  s_94864882421579::t_3cde9bcd68e5dc 10,25,30,41,50,62,75,86
+packages/server/api/test/integration/flows/folder/folder-events.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 45,56,71
+packages/server/sandbox/src/lib/sandbox.ts
+  s_94864882421579::t_3cde9bcd68e5dc 120
+packages/server/api/src/app/flows/flow-run/waitpoint/waitpoint-controller.ts
+  s_94864882421579::t_3cde9bcd68e5dc 10,13
+packages/server/worker/src/lib/execute/jobs/execute-property.ts
+  s_94864882421579::t_3cde9bcd68e5dc 30
+packages/web/src/features/connections/components/edit-global-connection-dialog.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 28,33-34,42-43,51-52,62-63,110-111,134,136,140,144,149,152
+packages/server/api/src/app/flows/flow/flow-service-side-effects.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1,20,30,49,55,61,111,113,158
+packages/server/api/src/app/flows/flow-run/waitpoint/resume-service.ts
+  s_94864882421579::t_8383ff74c8485b 7
+  s_94864882421579::t_3cde9bcd68e5dc 28,77,133
+packages/web/src/features/variables/api/variables.ts
+  s_94864882421579::t_3cde9bcd68e5dc 43
+packages/web/src/features/authentication/components/sign-up-form.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 77
+packages/server/api/test/unit/app/flows/flow-version/flow-version.service.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 32-33,160,182,212
+packages/server/api/src/app/helper/system-jobs/common.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1,25-26,37,53
+  s_94864882421579::t_bde459ac51e0ce 12
+packages/server/api/src/app/workspace/workspace-worker-group.service.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1-38
+packages/connectors/community/slack/src/lib/actions/create-channel-ai.ts
+  s_94864882421579::t_3cde9bcd68e5dc 24
+packages/server/api/src/app/flows/flow-version/flow-version-migration.service.ts
+  s_94864882421579::t_8383ff74c8485b 1
+  s_94864882421579::t_3cde9bcd68e5dc 12,25
+packages/web/src/app/builder/test-step/test-trigger-section/index.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 27
+packages/server/api/src/app/webhooks/webhook.service.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1,92,98,113,181,210,219,246,281,302,338,346,374
+packages/server/api/src/app/workspace/workspace-service.ts
+  s_94864882421579::t_8383ff74c8485b 1
+  s_94864882421579::t_3cde9bcd68e5dc 2-342
+packages/web/src/app/builder/step-settings/connector-settings/connection-select.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 71,75,87
+packages/web/src/features/workspaces/components/platform-switcher.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 1-100
+packages/server/api/src/app/connection/connection.entity.ts
+  s_94864882421579::t_3cde9bcd68e5dc 46,64,80-81
+packages/server/api/src/app/helper/telemetry.utils.ts
+  s_94864882421579::t_3cde9bcd68e5dc 6,9,12
+  s_94864882421579::t_8383ff74c8485b 1
+packages/web/src/app/routes/platform/setup/connections/index.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 160,165,171,180,184-186,324
+packages/core/utils/src/lib/platform-error.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1,3,70,170-171,425,525
+packages/web/src/lib/error-reporting.ts
+  s_94864882421579::t_3cde9bcd68e5dc 54,66
+packages/server/api/src/app/workers/machine/worker-capacity.ts
+  s_94864882421579::t_3cde9bcd68e5dc 45,52-54,61,80
+packages/server/api/src/app/user-invitations/user-invitation.entity.ts
+  s_94864882421579::t_3cde9bcd68e5dc 6,27,35,42-43,48,50,54-55
+  s_94864882421579::t_8383ff74c8485b 1
+packages/server/api/test/unit/app/webhooks/webhook-payload-size.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 78,87,98,106
+packages/server/api/src/app/file/file.service.ts
+  s_94864882421579::t_3cde9bcd68e5dc 3-4,13,25,39,59,80,86,88,108,110,120,122,146,149,162,169,171,175,197,331-334,338-340,342,379,390,402,413
+packages/core/shared/src/lib/management/workspace/workspace.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1-135
+packages/server/engine/src/lib/core/connector/trigger-runner.ts
+  s_94864882421579::t_3cde9bcd68e5dc 104
+packages/server/engine/src/lib/variables/props-resolver.ts
+  s_94864882421579::t_3cde9bcd68e5dc 34,49,89,92,104,140,142,145,187,249,293,305,328
+packages/server/api/src/app/connectors/metadata/utils/connector-cache-utils.ts
+  s_94864882421579::t_3cde9bcd68e5dc 65
+packages/server/worker/test/lib/worker.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 84
+packages/web/src/features/flow-runs/hooks/flow-run-hooks.ts
+  s_94864882421579::t_3cde9bcd68e5dc 92,95,99,131,135,137
+packages/server/api/src/app/helper/error-handler.ts
+  s_94864882421579::t_3cde9bcd68e5dc 93
+packages/server/engine/src/lib/operations/property.operation.ts
+  s_94864882421579::t_3cde9bcd68e5dc 46,54
+packages/server/api/test/integration/flows/flow-run/run-logs-file-fk.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 24-25,30,62,67,70,90,97,104,107,110
+packages/server/api/src/app/flows/flow.module.ts
+  s_94864882421579::t_3cde9bcd68e5dc 16,18,26,28
+packages/core/shared/src/lib/management/invitations/index.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1,7,22-24,37,39-40,62
+packages/server/api/test/integration/workers/platform-queue-migration.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 257
+packages/web/src/app/connections/oauth2-connection-settings.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 321,328
+packages/cli/src/lib/commands/benchmark.spec.ts
+  s_94864882421579::t_3cde9bcd68e5dc 136-140,143-144
+packages/server/api/src/app/authentication/authentication-utils.ts
+  s_94864882421579::t_8383ff74c8485b 2,9
+  s_94864882421579::t_3cde9bcd68e5dc 14,17,33,35,40-43,47,85,118,137,141,145,181-184,188-189,195,213,222,225
+packages/server/api/test/integration/flows/flow-run/resume-flow-run.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 44,46,56,67,80,90,111,121,134,144,158,175,185,203,214,239,253,264,275,298,312,323,335,353,360,369,373,386,401,411,421,438,448,458,473,486,506,538,555,577,587,599,627,653,670,680,702,722,744,766,785,795,816,826,839
+packages/web/src/features/automations/hooks/use-automations-mutations.ts
+  s_94864882421579::t_3cde9bcd68e5dc 36,42,157
+packages/server/api/test/integration/flows/flow/flow.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 45,47,56,108,148,161,184,222,262,280,284,294,308,314,327,330,345,374
+packages/server/api/src/app/variable/variable.controller.ts
+  s_94864882421579::t_3cde9bcd68e5dc 6,17,34,48,58,67,72,85,100,103,109,119,122,128,139,142,149,158,161,167-168,181,184,200,203,209
+packages/core/shared/src/lib/core/store-entry/store-entry.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1,10
+packages/server/api/src/app/trigger/test-trigger/test-trigger-controller.ts
+  s_94864882421579::t_3cde9bcd68e5dc 3,14,20,29,39-40,50-51
+packages/server/api/test/helpers/permission-test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1,18,30,40,48-49
+packages/tests-e2e/playwright.config.ts
+  s_94864882421579::t_3cde9bcd68e5dc 26,38-39
+packages/web/src/features/workspaces/components/new-workspace-dialog.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 1-198
+packages/server/api/src/app/connection/connection.controller.ts
+  s_94864882421579::t_3cde9bcd68e5dc 7,21,26,57-58,61,77,90-91,103,111,117,133,146,159-160,178,190,194,211,215,233,237,254,258,274,278,298,302,322,326,343,347
+packages/web/src/app/components/allow-logged-in-user-only-guard.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 5,31
+packages/web/src/features/connectors/hooks/connectors-hooks.ts
+  s_94864882421579::t_3cde9bcd68e5dc 71,82,96,100,106,185,188,190,196-197,202,446
+packages/core/utils/src/lib/workspace-role.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1-13
+packages/web/src/features/workspaces/components/edit-workspace-dialog.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 1-196
+packages/server/api/src/app/authentication/authorization.ts
+  s_94864882421579::t_3cde9bcd68e5dc 14-15,18,21,23,25,28-29,34-35,38,45,47,51,61
+packages/server/api/src/app/trigger/trigger-source/trigger-source-service.ts
+  s_94864882421579::t_3cde9bcd68e5dc 18,22,25,29,39,46,58,80,84,88-89,94,99,106,127,131,153,156,161,168,173,183,204,210,213,215,220,225,234
+packages/server/api/src/app/helper/multipart-body.ts
+  s_94864882421579::t_3cde9bcd68e5dc 40
+packages/server/api/src/app/connection/connection-service/connection-service.ts
+  s_94864882421579::t_3cde9bcd68e5dc 34,40,47,59,72,79,100,103,112,119,121-122,129,139,145,152,158,167,182,184,195,218-219,223,225,238,249,255,268,270,288,309,345,355,369,378,384-385,408,432-433,466,474,480,482-483,487,504-505,512-513,517-520,548-549,552-553,556,559-561,564,568,582,589,602,644,655,678,701,719,734,750,763,819,835,854,857,861-862,866,871,925,937,942,948,955,960,970,975-976,994,1001,1007,1009,1015,1027
+  s_94864882421579::t_8383ff74c8485b 2-3,21
+packages/server/api/src/app/core/security/v2/authz/authorization-middleware.ts
+  s_94864882421579::t_3cde9bcd68e5dc 7,20,22,34,38,41,73,75,84,87-88,92-100
+  s_94864882421579::t_8383ff74c8485b 5
+packages/server/engine/src/lib/variables/connection-token.ts
+  s_94864882421579::t_3cde9bcd68e5dc 9,17,62
+packages/connectors/core/subflows/src/lib/actions/call-flow.ts
+  s_94864882421579::t_3cde9bcd68e5dc 16
+packages/web/test/app/builder/connector-properties/dynamic-connector-property.test.tsx
+  s_94864882421579::t_bde459ac51e0ce 22
+packages/connectors/sdk/src/lib/test/index.ts
+  s_94864882421579::t_3cde9bcd68e5dc 61
+  s_94864882421579::t_bde459ac51e0ce 62
+packages/web/src/app/components/workspace-layout/workspace-dashboard-page-header.tsx
+  s_94864882421579::t_bde459ac51e0ce 22
+  s_94864882421579::t_3cde9bcd68e5dc 1-17,23-166
+  s_94864882421579::t_8383ff74c8485b 18-21
+packages/web/src/features/automations/components/automations-table-row.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 60
+packages/server/api/test/integration/connection/custom-auth-refresh.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 52,57,64
+packages/web/src/features/connections/index.ts
+  s_94864882421579::t_3cde9bcd68e5dc 2
+packages/core/execution/src/lib/flows/flow.ts
+  s_94864882421579::t_3cde9bcd68e5dc 48
+packages/web/src/app/routes/platform/infra/workers/by-group-view.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 2,15,18,23,28,35,46,54,57,63,101,114,120-121,123,125,133,137,143,146-148,155,162
+  s_94864882421579::t_8383ff74c8485b 115-117
+  s_94864882421579::t_bde459ac51e0ce 14
+packages/server/api/src/app/health/health.service.ts
+  s_94864882421579::t_3cde9bcd68e5dc 101
+packages/server/api/src/app/webhooks/webhook-request-converter.ts
+  s_94864882421579::t_3cde9bcd68e5dc 10,35,43,60,64,75,88,97,106,113,148
+packages/core/execution/src/lib/flow-run/flow-run.ts
+  s_94864882421579::t_3cde9bcd68e5dc 65
+packages/server/api/src/app/workspace/workspace-worker-controller.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1-18
+packages/web/test/app/builder/shortcuts.test.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 39
+packages/server/api/src/app/file/files-controller.ts
+  s_94864882421579::t_3cde9bcd68e5dc 55,91,117-118,129,178
+packages/core/execution/src/lib/workers/job-data.ts
+  s_94864882421579::t_3cde9bcd68e5dc 101,111,122,155,173,185,198,211,226,244,257
+packages/core/execution/src/lib/flows/folders/folder-requests.ts
+  s_94864882421579::t_3cde9bcd68e5dc 6,27
+packages/core/execution/src/lib/flows/triggers/trigger-events/trigger-events-dto.ts
+  s_94864882421579::t_3cde9bcd68e5dc 7,19
+packages/server/api/src/app/connectors/connector-visibility.ts
+  s_94864882421579::t_3cde9bcd68e5dc 18
+packages/server/api/src/app/database/migration/postgres/1787465061531-InitialSchema.ts
+  s_94864882421579::t_3cde9bcd68e5dc 16,23,37,48,50,64,78,84-85,101,118,127,162,184-185,194-195,203-204,211-212,220-221,244,265,268,272,275,278,287,289,328,333,349,358,369,376,379,391,453,455,460,494,504,515,527,544,596,608,622,644,660-661,664-665,683,695,703,707,730,739,748,760,763,775,790,799,808,829,841,850,862,880,883,892,922,925,928,931,934,937,955,958,961,964,967,985,994,1003,1009,1018,1033
+packages/web/src/app/builder/data-selector/variables-tab.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 23,30,34-35
+packages/core/execution/src/lib/flows/folders/folder.ts
+  s_94864882421579::t_3cde9bcd68e5dc 9
+packages/core/execution/src/lib/workers/index.ts
+  s_94864882421579::t_3cde9bcd68e5dc 18,138
+packages/server/api/src/app/connection/connection-service/oauth2/services/credentials-oauth2-service.ts
+  s_94864882421579::t_3cde9bcd68e5dc 109
+packages/server/api/src/app/flows/flow-version/flow-version.service.ts
+  s_94864882421579::t_8383ff74c8485b 1
+  s_94864882421579::t_3cde9bcd68e5dc 21,62,84,139,152,227,238,310,315,320,329,371,385,402
+packages/web/test/app/variables/variable-dialog.test.tsx
+  s_94864882421579::t_bde459ac51e0ce 27
+packages/web/src/features/folders/hooks/folders-hooks.ts
+  s_94864882421579::t_3cde9bcd68e5dc 11,62
+packages/server/api/src/app/variable/variable.module.ts
+  s_94864882421579::t_3cde9bcd68e5dc 2,7
+packages/server/api/src/app/store-entry/store-entry.module.ts
+  s_94864882421579::t_3cde9bcd68e5dc 3,8
+packages/web/src/features/connections/hooks/connections-hooks.ts
+  s_94864882421579::t_3cde9bcd68e5dc 34,59-60,82,92-93,97,102,117-118,387,390,393
+packages/server/api/src/app/workspace/workspace.controller.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1,3-149
+  s_94864882421579::t_8383ff74c8485b 2
+packages/server/api/src/app/flows/flow-run/waitpoint/waitpoint-types.ts
+  s_94864882421579::t_3cde9bcd68e5dc 25,39,56,71
+packages/connectors/community/postgres/src/lib/actions/run-query.ts
+  s_94864882421579::t_3cde9bcd68e5dc 58
+packages/core/connector-types/src/lib/flow-contracts.ts
+  s_94864882421579::t_3cde9bcd68e5dc 21,29
+packages/core/execution/src/lib/flows/dto/create-flow-request.ts
+  s_94864882421579::t_3cde9bcd68e5dc 9
+packages/server/api/src/app/variable/variable-worker.controller.ts
+  s_94864882421579::t_3cde9bcd68e5dc 11,13
+packages/server/api/test/integration/flows/flow/flow-operations.test.ts
+  s_94864882421579::t_bde459ac51e0ce 67,136
+  s_94864882421579::t_3cde9bcd68e5dc 42,53,68,72,85,88-89,97,110,121,137,141,159-160,180,185-186,203,208,210,239-240,273-274,313-314,366-367,428-429,484-485,526-527,569-570,637-638,668-669,719,764,814
+packages/server/api/test/integration/user/platform-user-community.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 2,8,243,252,255,257
+packages/server/sandbox/test/lib/cache/flow/flow-provisioning.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 53,150
+packages/web/src/features/folders/api/folders-api.ts
+  s_94864882421579::t_3cde9bcd68e5dc 17
+packages/web/src/app/components/global-search/use-global-search-results.ts
+  s_94864882421579::t_8383ff74c8485b 8-11,114-116,138-154
+  s_94864882421579::t_3cde9bcd68e5dc 1,42,46-49,60,62,65,68,76,79,95,120,133,135,181,205,272,311-313,329,339
+packages/server/engine/src/lib/handler/context/engine-constants.ts
+  s_94864882421579::t_3cde9bcd68e5dc 2,23,64,74,109,168,176-178,181,183,189-190,193-195,204,242
+  s_94864882421579::t_8383ff74c8485b 3
+packages/web/src/features/connectors/api/connectors-api.ts
+  s_94864882421579::t_3cde9bcd68e5dc 33
+packages/server/api/test/integration/flows/flow-run/execute-flow-e2e.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 71,139,211,236,240,282,375,402,405,411,423,432,497,532,544,554,625,658,664,673,702,740,770,787,798,804,819,833,839,849,904,938,944,952,1026,1060,1066,1082,1093,1100
+packages/server/worker/src/lib/config/configs.ts
+  s_94864882421579::t_3cde9bcd68e5dc 48
+deploy/pulumi/index.ts
+  s_94864882421579::t_3cde9bcd68e5dc 35
+packages/core/shared/src/lib/management/workspace/workspace-member.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1-6
+packages/server/api/src/app/workers/job-queue/job-queue.ts
+  s_94864882421579::t_3cde9bcd68e5dc 9-10,28-29,77-78,95-96,129-130,207,212-215,218-219,221,236,243,250
+packages/server/api/test/integration/oidc/oidc-token.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 14,27,29,33,68,118,129,131
+packages/web/src/app/components/global-search/search-result-item.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 35,83,87,91,95,100-101,112,180
+packages/web/src/lib/route-utils.ts
+  s_94864882421579::t_3cde9bcd68e5dc 5,35,38,40
+packages/web/src/features/authentication/components/sign-in-form.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 62
+packages/core/execution/src/lib/workers/worker-contract.ts
+  s_94864882421579::t_3cde9bcd68e5dc 10,22,29,35,44,56,87,92-93,97,103
+packages/server/api/src/app/authentication/passwordless-auth.service.ts
+  s_94864882421579::t_3cde9bcd68e5dc 96,101,104,110,114,117,129
+packages/server/api/src/app/platform/platform.controller.ts
+  s_94864882421579::t_3cde9bcd68e5dc 27
+packages/server/api/src/app/workers/migrations/refill-polling-jobs.ts
+  s_94864882421579::t_8383ff74c8485b 5
+  s_94864882421579::t_3cde9bcd68e5dc 30-31
+packages/server/api/src/app/trigger/app-event-routing/app-event-routing.module.ts
+  s_94864882421579::t_3cde9bcd68e5dc 107,119-120,126
+  s_94864882421579::t_8383ff74c8485b 15
+packages/web/src/app/builder/connector-properties/dynamic-dropdown-connector-property.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 79
+packages/web/src/features/connectors/components/install-connector-dialog.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 199
+packages/server/api/src/app/flows/flow-version/flow-version-side-effects.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1,11,20,26-27,35,44,58,68,83,93,109,113
+packages/web/src/components/providers/socket-provider.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 19,24,58
+packages/web/src/components/custom/array-input.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 65
+packages/web/src/app/routes/platform/infra/workers/assign-workspaces-dialog.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 1-207
+packages/server/api/src/app/core/security/v2/authz/workspaceIdExtractor.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1-101
+packages/server/api/src/app/workers/payload-offloader.ts
+  s_94864882421579::t_3cde9bcd68e5dc 24,31,45,58
+packages/server/api/test/integration/engine-services/engine-services.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 39,44-45,52,63,93,114-115,161,172,197,208,221,240,251,271,290,305,322,379,389,394-395
+packages/core/shared/src/lib/automation/variable/dto/read-variable-request.ts
+  s_94864882421579::t_3cde9bcd68e5dc 4
+packages/server/api/src/app/connection/connection-service/connection.handler.ts
+  s_94864882421579::t_8383ff74c8485b 2,15
+  s_94864882421579::t_3cde9bcd68e5dc 26,30,32,45,49,64,70,78,86,143,148,161,171,195,198,210,223,345,355,367,377,393,435
+packages/server/api/src/app/user/user-service.ts
+  s_94864882421579::t_8383ff74c8485b 1-2
+  s_94864882421579::t_3cde9bcd68e5dc 13-14,33,45-46,49,160,175,199-200,268,280-281,348
+packages/server/api/test/integration/flows/flow-run/waitpoint.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 33,43,61,77,84,91,107,115,122,138,157,183,203,210,225,242,249,268,278,290,299,318,330,341,362,374,396,413,421,427,447,453,473,483,501,511,534,555,573,583,601,612,622,644,651,669,690,709
+packages/core/utils/src/lib/id-generator.ts
+  s_94864882421579::t_3cde9bcd68e5dc 15
+packages/server/engine/test/operations/flow-operation-invariants.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 83,152
+packages/web/src/features/connections/utils/utils.ts
+  s_94864882421579::t_3cde9bcd68e5dc 35,37-38,111,115,123,261,265,272,289
+  s_94864882421579::t_8383ff74c8485b 113-114
+packages/core/execution/src/lib/engine/engine-operation.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1,59,67,72
+packages/server/api/src/app/workers/migrations/unify-old-queues-to-one.ts
+  s_94864882421579::t_3cde9bcd68e5dc 7,10-11,74,105
+packages/web/src/features/templates/components/use-template-dialog.tsx
+  s_94864882421579::t_8383ff74c8485b 35-39,125-128
+  s_94864882421579::t_3cde9bcd68e5dc 54,57,62-66,70,75,77,86,96,121-122,156,162,164-165,167-168,171-176,218
+packages/server/api/test/integration/workers/workspace-worker.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1-54
+packages/connectors/sdk/src/lib/connector-metadata.ts
+  s_94864882421579::t_3cde9bcd68e5dc 163
+packages/server/api/src/app/workers/migrations/job-data-migrations.ts
+  s_94864882421579::t_3cde9bcd68e5dc 130
+packages/server/engine/test/connector-context/connection-resolver.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 6
+packages/web/src/app/components/workspace-avatar.tsx
+  s_94864882421579::t_8383ff74c8485b 1-5
+  s_94864882421579::t_3cde9bcd68e5dc 6-141
+packages/server/engine/src/lib/handler/connector-executor.ts
+  s_94864882421579::t_3cde9bcd68e5dc 161
+packages/web/src/app/builder/connector-properties/custom-property.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 5,31,42
+packages/core/shared/src/lib/authentication/authn/access-control-list.ts
+  s_94864882421579::t_3cde9bcd68e5dc 2,4-5,11-12,15-16,21-22,36,42,44-45,48,62,65,67
+packages/server/api/src/app/flags/flag.service.ts
+  s_94864882421579::t_3cde9bcd68e5dc 46,92,268-269
+packages/server/api/src/app/user-invitations/user-invitation.module.ts
+  s_94864882421579::t_8383ff74c8485b 1
+  s_94864882421579::t_3cde9bcd68e5dc 8,12-13,25-27,35,41-43,57-58,60,63,87-89,105,112,120,123-124,126,150,153-155,159,163,170-171,214
+packages/core/shared/src/lib/management/platform/platform.model.ts
+  s_94864882421579::t_3cde9bcd68e5dc 13,44,65,102,105,115,281-283,287
+packages/core/shared/src/lib/core/file/index.ts
+  s_94864882421579::t_3cde9bcd68e5dc 52,55,111
+packages/server/api/src/app/workers/migrations/refill-renew-webhook-jobs.ts
+  s_94864882421579::t_3cde9bcd68e5dc 29,39-40
+  s_94864882421579::t_8383ff74c8485b 8
+packages/connectors/core/connections/src/lib/actions/read-connection.ts
+  s_94864882421579::t_3cde9bcd68e5dc 11,21
+packages/server/api/src/app/authentication/authentication.service.ts
+  s_94864882421579::t_3cde9bcd68e5dc 32,41,48,51,68,73,76,78,108,111,158,163,166,170,177,180
+packages/core/shared/src/lib/automation/variable/dto/upsert-variable-request.ts
+  s_94864882421579::t_3cde9bcd68e5dc 6
+packages/server/api/src/app/flows/flow/flow.entity.ts
+  s_94864882421579::t_3cde9bcd68e5dc 20,32,83-84,98-99,140,142,146-147
+  s_94864882421579::t_8383ff74c8485b 10
+packages/server/api/test/integration/connection/connection-replace.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 31,36,44,57,62,70,84,92,101,107,114,122,137,144,150,164,177,182,188,202,219,224,230,246,260,265,275,298,312,317,323,346,359,364,373,396
+packages/web/src/features/flows/hooks/sample-data-hooks.ts
+  s_94864882421579::t_3cde9bcd68e5dc 13,29,45,62,88,96
+packages/web/src/features/platform-admin/hooks/platform-user-hooks.ts
+  s_94864882421579::t_3cde9bcd68e5dc 26,29,49
+packages/web/src/features/connectors/hooks/steps-hooks.ts
+  s_94864882421579::t_3cde9bcd68e5dc 59,65,70
+packages/server/api/test/helpers/mocks/index.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1,3,90,95,112-113,119-120,124-138,149,183,186,248-250,252-253,255-261,312-313,316,388,410,455,459,470,474,479,485,496,501,507,511,518,533-539,541,605,615-616,620,626,646,653,665,667-673,677,679-687,730,741,750,760,782,791
+packages/web/src/features/automations/hooks/use-automations-data.ts
+  s_94864882421579::t_8383ff74c8485b 28-32
+  s_94864882421579::t_3cde9bcd68e5dc 46,61,65,81,84
+packages/server/engine/test/connector-context/store.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 119,126
+packages/server/api/src/app/core/websockets.service.ts
+  s_94864882421579::t_3cde9bcd68e5dc 1,10,35-36,39,43,45,73,77-78,81,110-111,115,119-120,128,135,139,141
+  s_94864882421579::t_8383ff74c8485b 8
+packages/core/shared/src/lib/management/analytics/index.ts
+  s_94864882421579::t_3cde9bcd68e5dc 27-28
+packages/server/api/test/integration/flows/flow-run/bulk-retry-flow-run.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 26,31-33,37,44,56-59,62,67,71-72,74,79,85,91-93,96,108-111,114,120,126-128,130-131,134,139-140,148,152,156,166,184-185,215-216
+deploy/pulumi/taggable.ts
+  s_94864882421579::t_3cde9bcd68e5dc 45
+packages/web/src/app/routes/platform-routes.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 14,68,73
+packages/server/engine/src/lib/connector-context/variable-resolver.ts
+  s_94864882421579::t_3cde9bcd68e5dc 5,50
+packages/server/api/src/app/connection/connection-service/oauth2/oauth2-service.ts
+  s_94864882421579::t_3cde9bcd68e5dc 17,36
+packages/core/execution/src/lib/flows/form.ts
+  s_94864882421579::t_3cde9bcd68e5dc 31,47
+packages/server/api/src/app/flows/pre-warm-workers.ts
+  s_94864882421579::t_3cde9bcd68e5dc 8,25,27-28,37,78-80,87
+packages/web/src/app/routes/redirect.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 42
+packages/server/api/src/app/flows/flow-run/waitpoint/waitpoint-service.ts
+  s_94864882421579::t_3cde9bcd68e5dc 34,60,100,126
+packages/server/api/src/app/flows/step-run/sample-data.controller.ts
+  s_94864882421579::t_3cde9bcd68e5dc 3,13,23,27,38,41,53,56
+packages/server/api/test/unit/app/workers/machine/machine-list-filter.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 186,190-191,193,199-200
+packages/server/api/test/integration/flows/flow-run/list-flow-runs.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 20
+packages/web/src/app/builder/state/builder-state-provider.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 12,29
+packages/web/src/features/flow-runs/components/runs-table/index.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 77,106,129,168,239,295,366,453,497,554,558
+  s_94864882421579::t_8383ff74c8485b 574-576
+packages/web/src/features/flow-runs/components/runs-table/retried-runs-snackbar.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 37
+packages/web/src/features/workspaces/components/workspaces-selector.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 1-50
+packages/web/src/app/routes/flows/id/index.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 25,33,36
+packages/web/test/lib/route-utils.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 8
+packages/core/execution/src/lib/flow-run/test-flow-run-request.ts
+  s_94864882421579::t_3cde9bcd68e5dc 14,21,36,51
+packages/server/worker/src/lib/execute/jobs/execute-webhook.ts
+  s_94864882421579::t_3cde9bcd68e5dc 30,62,81,103,139
+packages/core/shared/src/lib/automation/websocket/index.ts
+  s_94864882421579::t_3cde9bcd68e5dc 77
+packages/server/api/src/app/connection/connection-service/oauth2/oauth2-util.ts
+  s_94864882421579::t_3cde9bcd68e5dc 101,255
+packages/server/api/test/integration/flows/flow/human-input/human-input.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 44,109,145
+packages/server/api/test/unit/app/webhooks/webhook-request-converter.test.ts
+  s_94864882421579::t_3cde9bcd68e5dc 73
+packages/server/api/src/app/flows/flow-run/flow-run-module.ts
+  s_94864882421579::t_3cde9bcd68e5dc 6,23,36,39,43,46,48,54,57,79
+packages/server/api/src/app/user/user-entity.ts
+  s_94864882421579::t_3cde9bcd68e5dc 6,55,57
+  s_94864882421579::t_8383ff74c8485b 1
+packages/web/src/app/routes/platform/workspaces/columns.tsx
+  s_94864882421579::t_3cde9bcd68e5dc 1-172
+packages/server/api/src/app/connectors/connector-install-service.ts
+  s_94864882421579::t_3cde9bcd68e5dc 2,64,92,105,108,121
+packages/server/api/src/app/helper/system/system-props.ts
+  s_94864882421579::t_3cde9bcd68e5dc 82,110,113
+packages/connectors/core/store/src/lib/actions/common.ts
+  s_94864882421579::t_3cde9bcd68e5dc 4,12-13,40-41,53
+packages/server/api/src/app/flows/flow/human-input/human-input.service.ts
+  s_94864882421579::t_3cde9bcd68e5dc 6,53,60,78,84
+packages/server/api/test/helpers/auth.ts
+  s_94864882421579::t_3cde9bcd68e5dc 2,95-96
+packages/web/src/features/workspaces/stores/workspaces-collection.test.ts
+  s_94864882421579::t_8383ff74c8485b 101-105,226-231,298-300,306-309
+  s_94864882421579::t_3cde9bcd68e5dc 1-100,106-225,232-297,301-305,310-421
+packages/core/shared/src/lib/automation/knowledge-base/index.ts
+  s_94864882421579::t_3cde9bcd68e5dc 6
+packages/server/api/src/app/flows/flow/flow.controller.ts
+  s_94864882421579::t_3cde9bcd68e5dc 7-8,19,22,34,37,72,79,88,105,114,122,130,134,177,180,197,200,216,219,229,232,252,255,275,278
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "253f3148f8ba7eeaf50e7351b0627b057fb739aa",
+  "prompts": {},
+  "sessions": {
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

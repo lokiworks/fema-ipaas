@@ -4,7 +4,7 @@ icon: 🔗
 status: accepted
 ---
 
-`AP_ENFORCE_CONNECTION_PIECE_BINDING` (default `false`) rejects a step that resolves a
+`FEMA_ENFORCE_CONNECTION_PIECE_BINDING` (default `false`) rejects a step that resolves a
 connection created for a different piece — a Slack credential handed to a Google Sheets
 step. Two places could hold the check: the server endpoint that hands out the decrypted
 value (`app-connection-worker-controller.ts`), or the engine's `connection-resolver`.
@@ -26,10 +26,10 @@ trip of an error code back into an engine error class were pure cost.
 `process.env` is **not** inherited by the engine: sandbox env is an explicit allowlist built
 in `create-sandbox-for-job.ts` (`buildSandboxEnv`) from `SandboxSettings`, which comes from
 `WorkerSettings` served by the app over the socket. So the flag follows the same path
-`AP_DEV_PIECES` and `AP_SSRF_ALLOW_LIST` already take:
+`FEMA_DEV_PIECES` and `FEMA_SSRF_ALLOW_LIST` already take:
 
 `AppSystemProp` → `machine-service.ts` (`WorkerSettingsResponse`) → `SandboxSettings` →
-`buildSandboxEnv` → `process.env.AP_ENFORCE_CONNECTION_PIECE_BINDING` in the engine.
+`buildSandboxEnv` → `process.env.FEMA_ENFORCE_CONNECTION_PIECE_BINDING` in the engine.
 
 The var is emitted **only when true**, so the engine can read `=== 'true'` and an absent var
 means disabled — never the `String(undefined)` → `'undefined'` trap. It is read at call
@@ -46,4 +46,4 @@ container; workers receive it through settings.
   Deliberate — a code step runs arbitrary JS, so exempting it would leave the widest hole in
   the boundary. Enabling the flag breaks flows that feed a connection into custom JS.
 - A worker on a stale `WorkerSettings` cache runs with the old value until it refetches.
-- **The denial is invisible with the flag off (the default), so a dropped `pieceName` thread passes every test and dev run and only breaks where enforcement is on.** This actually happened: a props-resolver perf refactor dropped `pieceName` from `PropsResolverParams` while `getPropsResolver` kept passing it, so `createConnectionResolver` got `undefined` and rejected every valid connection in enforcing environments. When touching the resolve chain, keep `pieceName` threaded end-to-end (`createPropsResolver` → `resolveSingleToken` → `connectionToken.handle` → `createConnectionResolver`) and cover it with a test that sets `AP_ENFORCE_CONNECTION_PIECE_BINDING=true`.
+- **The denial is invisible with the flag off (the default), so a dropped `pieceName` thread passes every test and dev run and only breaks where enforcement is on.** This actually happened: a props-resolver perf refactor dropped `pieceName` from `PropsResolverParams` while `getPropsResolver` kept passing it, so `createConnectionResolver` got `undefined` and rejected every valid connection in enforcing environments. When touching the resolve chain, keep `pieceName` threaded end-to-end (`createPropsResolver` → `resolveSingleToken` → `connectionToken.handle` → `createConnectionResolver`) and cover it with a test that sets `FEMA_ENFORCE_CONNECTION_PIECE_BINDING=true`.

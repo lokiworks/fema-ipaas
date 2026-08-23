@@ -61,10 +61,10 @@ describe('safeHttp end-to-end blocking', () => {
         })
     })
 
-    it('rewraps filter errors with the AP_SSRF_ALLOW_LIST remediation hint so operators know how to recover', async () => {
+    it('rewraps filter errors with the FEMA_SSRF_ALLOW_LIST remediation hint so operators know how to recover', async () => {
         const instance = safeHttp.createAxios({ timeout: 2000 })
         await expect(instance.get('http://10.0.0.1/')).rejects.toMatchObject({
-            message: expect.stringContaining('AP_SSRF_ALLOW_LIST'),
+            message: expect.stringContaining('FEMA_SSRF_ALLOW_LIST'),
         })
     })
 })

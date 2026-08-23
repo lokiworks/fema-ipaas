@@ -29,8 +29,8 @@ jobs:
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 35
     env:
-      AP_EXECUTION_MODE: ${{ matrix.executionMode }}
-      AP_WORKER_CONCURRENCY: 1
+      FEMA_EXECUTION_MODE: ${{ matrix.executionMode }}
+      FEMA_WORKER_CONCURRENCY: 1
 
     steps:
       - name: Checkout
@@ -80,7 +80,7 @@ jobs:
       # locally with `benchmark/probe-fs.js` + `smoke-test/verify-isolation.sh` (both kept in repo).
 
       # Memory-limit detection gate (same SANDBOX_CODE_ONLY stack): the OOM input expression blows
-      # the ENGINE heap via the isolate->engine result copy, and AP_WORKER_CONCURRENCY=1 (job env)
+      # the ENGINE heap via the isolate->engine result copy, and FEMA_WORKER_CONCURRENCY=1 (job env)
       # gives that single sandbox the full 1G worker container. Every run must end
       # MEMORY_LIMIT_EXCEEDED — this pins the detection path for production code-only engine OOMs.
       - name: Setup OOM flow
@@ -101,14 +101,14 @@ jobs:
         if: matrix.executionMode == 'SANDBOX_CODE_ONLY'
         run: |
           docker compose -f benchmark/docker-compose.yml -f benchmark/docker-compose.minio.yml down -v
-          AP_EXECUTION_MODE=SANDBOX_CODE_ONLY \
-          AP_FILE_STORAGE_LOCATION=S3 \
-          AP_S3_BUCKET=activepieces \
-          AP_S3_ACCESS_KEY_ID=minioadmin \
-          AP_S3_SECRET_ACCESS_KEY=minioadmin \
-          AP_S3_ENDPOINT=http://minio:9000 \
-          AP_S3_REGION=us-east-1 \
-          AP_S3_USE_SIGNED_URLS=false \
+          FEMA_EXECUTION_MODE=SANDBOX_CODE_ONLY \
+          FEMA_FILE_STORAGE_LOCATION=S3 \
+          FEMA_S3_BUCKET=activepieces \
+          FEMA_S3_ACCESS_KEY_ID=minioadmin \
+          FEMA_S3_SECRET_ACCESS_KEY=minioadmin \
+          FEMA_S3_ENDPOINT=http://minio:9000 \
+          FEMA_S3_REGION=us-east-1 \
+          FEMA_S3_USE_SIGNED_URLS=false \
           APP_REPLICAS=1 \
           WORKER_REPLICAS=1 \
             docker compose -f benchmark/docker-compose.yml -f benchmark/docker-compose.minio.yml up -d
@@ -136,14 +136,14 @@ jobs:
         if: matrix.executionMode == 'SANDBOX_CODE_ONLY'
         run: |
           docker compose -f benchmark/docker-compose.yml -f benchmark/docker-compose.minio.yml down -v
-          AP_EXECUTION_MODE=SANDBOX_CODE_ONLY \
-          AP_FILE_STORAGE_LOCATION=S3 \
-          AP_S3_BUCKET=activepieces \
-          AP_S3_ACCESS_KEY_ID=minioadmin \
-          AP_S3_SECRET_ACCESS_KEY=minioadmin \
-          AP_S3_ENDPOINT=http://minio:9000 \
-          AP_S3_REGION=us-east-1 \
-          AP_S3_USE_SIGNED_URLS=true \
+          FEMA_EXECUTION_MODE=SANDBOX_CODE_ONLY \
+          FEMA_FILE_STORAGE_LOCATION=S3 \
+          FEMA_S3_BUCKET=activepieces \
+          FEMA_S3_ACCESS_KEY_ID=minioadmin \
+          FEMA_S3_SECRET_ACCESS_KEY=minioadmin \
+          FEMA_S3_ENDPOINT=http://minio:9000 \
+          FEMA_S3_REGION=us-east-1 \
+          FEMA_S3_USE_SIGNED_URLS=true \
           APP_REPLICAS=1 \
           WORKER_REPLICAS=1 \
             docker compose -f benchmark/docker-compose.yml -f benchmark/docker-compose.minio.yml up -d

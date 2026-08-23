@@ -10,7 +10,7 @@ async function globalSetup() {
 
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({
-    baseURL: process.env.AP_FRONTEND_URL,
+    baseURL: process.env.FEMA_FRONTEND_URL,
   });
   const page = await context.newPage();
 

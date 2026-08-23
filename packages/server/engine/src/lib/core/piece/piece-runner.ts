@@ -118,7 +118,7 @@ function withOutput(message: string, output: string): string {
 }
 
 function childEntryPath(): string {
-    return process.env.AP_PIECE_CHILD_ENTRY ?? path.join(__dirname, 'piece-child.js')
+    return process.env.FEMA_PIECE_CHILD_ENTRY ?? path.join(__dirname, 'piece-child.js')
 }
 
 const descriptions = new Map<string, Promise<PieceDescription>>()

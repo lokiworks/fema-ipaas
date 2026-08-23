@@ -239,7 +239,7 @@ export async function appPostBoot(app: FastifyInstance): Promise<void> {
     app.log.info(`Integration platform started on ${await domainHelper.getPublicApiUrl({ path: '' })}`)
 
     const environment = system.get(AppSystemProp.ENVIRONMENT)
-    const pieces = process.env.AP_DEV_PIECES
+    const pieces = process.env.FEMA_DEV_PIECES
 
     assertReleaseReadable(app.log)
     systemSnapshot.start({ log: app.log })
@@ -250,7 +250,7 @@ export async function appPostBoot(app: FastifyInstance): Promise<void> {
             `[WARNING]: The application is running in ${environment} mode.`,
         )
         app.log.warn(
-            `[WARNING]: This is only shows pieces specified in AP_DEV_PIECES ${pieces} environment variable.`,
+            `[WARNING]: This is only shows pieces specified in FEMA_DEV_PIECES ${pieces} environment variable.`,
         )
     }
     void startDevPieceWatcher(app)

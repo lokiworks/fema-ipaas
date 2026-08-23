@@ -7,7 +7,7 @@ status: accepted
 ## Decision
 
 删除 `packages/ee/` 与 `packages/server/api/src/app/ee/`，并清除整个 Edition 判断体系：
-`AP_EDITION` 环境变量、`ApEdition` 枚举、edition guard、feature gate、EE 迁移、EE 测试、
+`FEMA_EDITION` 环境变量、`ApEdition` 枚举、edition guard、feature gate、EE 迁移、EE 测试、
 EE Web 路由与 EE shared schema。代码中不允许出现 `if (edition === 'EE')` 形态的分支。
 
 被 EE 覆盖但属于开源集成平台核心目标的能力（RBAC、审计日志、SSO、Git Sync、

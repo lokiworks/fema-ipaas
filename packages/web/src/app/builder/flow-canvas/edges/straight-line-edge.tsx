@@ -40,13 +40,15 @@ export const ApStraightLineCanvasEdge = ({
       {!data.hideAddButton && (
         <foreignObject
           x={
-            buttonCenter.x - flowCanvasConsts.AP_NODE_SIZE.ADD_BUTTON.width / 2
+            buttonCenter.x -
+            flowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.width / 2
           }
           y={
-            buttonCenter.y - flowCanvasConsts.AP_NODE_SIZE.ADD_BUTTON.height / 2
+            buttonCenter.y -
+            flowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.height / 2
           }
-          width={flowCanvasConsts.AP_NODE_SIZE.ADD_BUTTON.width}
-          height={flowCanvasConsts.AP_NODE_SIZE.ADD_BUTTON.height}
+          width={flowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.width}
+          height={flowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.height}
           className="overflow-visible cursor-default"
         >
           <ApAddButton

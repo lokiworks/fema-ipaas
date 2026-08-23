@@ -31,7 +31,7 @@ All traffic enters the primary app. The `canaryRoutingMiddleware` runs as a Fast
 
 Canary platform membership is stored in the `platform_plan.canary` boolean column. On each lookup, the list of canary platform IDs is fetched from Redis (`canary-platform-ids` key). On cache miss the list is read from the database and cached. When the canary flag is changed via the API, the cache is invalidated immediately.
 
-This removes the need to keep `AP_CANARY_PLATFORM_IDS` in sync across services and allows runtime changes without a redeploy.
+This removes the need to keep `FEMA_CANARY_PLATFORM_IDS` in sync across services and allows runtime changes without a redeploy.
 
 ## Components
 
@@ -41,7 +41,7 @@ A second instance of the server API running a different image tag. No special en
 
 | Env var | Value |
 |---|---|
-| `AP_FRONTEND_URL` | canary app's public URL |
+| `FEMA_FRONTEND_URL` | canary app's public URL |
 
 The canary app runs as a full app instance. Global queue consumers (`runsMetadata`, `system-job-queue`) run on both the primary and canary app — this is safe because BullMQ ensures each job is processed by exactly one consumer.
 
@@ -51,9 +51,9 @@ Dedicated workers that connect to the canary app instead of the primary app:
 
 | Env var | Value |
 |---|---|
-| `AP_WORKER_GROUP_ID` | `canary` |
+| `FEMA_WORKER_GROUP_ID` | `canary` |
 
-Workers use `AP_FRONTEND_URL` for their Socket.IO RPC channel and for posting engine results back to the app. Canary workers are registered with the canary app, so the RPC path is fully isolated.
+Workers use `FEMA_FRONTEND_URL` for their Socket.IO RPC channel and for posting engine results back to the app. Canary workers are registered with the canary app, so the RPC path is fully isolated.
 
 ### Primary App Config
 
@@ -61,7 +61,7 @@ The primary app only needs to know where to proxy canary requests:
 
 | Env var | Description |
 |---|---|
-| `AP_CANARY_APP_URL` | Internal URL of the canary app |
+| `FEMA_CANARY_APP_URL` | Internal URL of the canary app |
 
 
 ## WebSocket / Real-time Updates
@@ -92,7 +92,7 @@ The workflow:
 2. Checks if any new migrations are breaking — fails the workflow if they are (no override)
 3. Deploys the canary app (`config/app-canary.yml`) and canary workers
 
-Required GitHub secrets: `AP_API_KEY` (the primary app's `AP_API_KEY` value).
+Required GitHub secrets: `FEMA_API_KEY` (the primary app's `FEMA_API_KEY` value).
 
 ## Rolling Back a Canary Deployment
 
@@ -117,7 +117,7 @@ Canary is a validation environment, not a promotion path. Full promotion happens
 
 ```bash
 curl -X POST https://cloud.activepieces.com/v1/admin/platforms/canary \
-  -H "api-key: <AP_API_KEY>" \
+  -H "api-key: <FEMA_API_KEY>" \
   -H "Content-Type: application/json" \
   -d '{"platformId": "<platformId>", "canary": true}'
 ```
@@ -126,7 +126,7 @@ curl -X POST https://cloud.activepieces.com/v1/admin/platforms/canary \
 
 ```bash
 curl -X POST https://cloud.activepieces.com/v1/admin/platforms/canary \
-  -H "api-key: <AP_API_KEY>" \
+  -H "api-key: <FEMA_API_KEY>" \
   -H "Content-Type: application/json" \
   -d '{"platformId": "<platformId>", "canary": false}'
 ```

@@ -12,12 +12,12 @@ services:
     # all-in-one activepieces-benchmark:local instead.
     image: ${WORKER_IMAGE:-ap-worker:local}
     environment:
-      AP_EXECUTION_MODE: SANDBOX_CODE_ONLY
-      AP_REUSE_SANDBOX: 'false'
-      AP_WORKER_CONCURRENCY: '1'
-      # The all-in-one image's entrypoint auto-generates this from AP_JWT_SECRET; the minimal worker
+      FEMA_EXECUTION_MODE: SANDBOX_CODE_ONLY
+      FEMA_REUSE_SANDBOX: 'false'
+      FEMA_WORKER_CONCURRENCY: '1'
+      # The all-in-one image's entrypoint auto-generates this from FEMA_JWT_SECRET; the minimal worker
       # image has no entrypoint, so the runner pre-generates and injects it.
-      AP_WORKER_TOKEN: ${AP_WORKER_TOKEN:-}
+      FEMA_WORKER_TOKEN: ${FEMA_WORKER_TOKEN:-}
     deploy:
       replicas: ${WORKER_REPLICAS:-5}
       resources:
@@ -27,4 +27,4 @@ services:
 
   app:
     environment:
-      AP_EXECUTION_MODE: SANDBOX_CODE_ONLY
+      FEMA_EXECUTION_MODE: SANDBOX_CODE_ONLY

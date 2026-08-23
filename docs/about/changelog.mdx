@@ -20,7 +20,7 @@ pieces by describing the task — then inspect its schema and run it.
   See [Tool Search](/mcp/tool-search).
 - **Honest no-match**: results below a relevance threshold are dropped rather than
   padded, so agents don't grab a wrong tool when nothing fits.
-- **Self-host ready**: turn it on with `AP_TOOL_SEARCH_ENABLED`; semantic ranking uses
+- **Self-host ready**: turn it on with `FEMA_TOOL_SEARCH_ENABLED`; semantic ranking uses
   an OpenAI key, with a keyword fallback when none is configured.
 
 **AI metadata & audience**
@@ -46,7 +46,7 @@ A ground-up overhaul of how Activepieces runs in production. The new shape is si
 **Workers**
 
 - **New lightweight worker image**: a dedicated, slimmer Docker image for the execution tier.
-- **One flow per worker**: run workers at `AP_WORKER_CONCURRENCY=1` so each worker handles a single flow at a time. Recommended size is **0.5 vCPU / 1 GB** per worker; about 300 MB is warm-process overhead, leaving ~700 MB for the flow.
+- **One flow per worker**: run workers at `FEMA_WORKER_CONCURRENCY=1` so each worker handles a single flow at a time. Recommended size is **0.5 vCPU / 1 GB** per worker; about 300 MB is warm-process overhead, leaving ~700 MB for the flow.
 - **No noisy neighbours**: every flow gets its own guaranteed CPU and memory slice, so one flow can't starve or crash another. See [Reserved Resources](/install/guarantees/reserved-resources).
 - **Less to provision**: the pre-warm feature and worker persistent disks are no longer required; each worker fills its cache lazily and reaches steady-state on its own.
 
@@ -90,8 +90,8 @@ Read more: [Waitpoints](/install/architecture/waitpoints) · [Durable Execution]
 
 Activepieces now ships with a built-in **network proxy that protects your automations from network attacks**.
 
-- **One switch to turn it on** — set `AP_NETWORK_MODE=STRICT` and the protection is active. It's **opt-in today**, but in an upcoming release it will become **opt-out** (on by default).
-- **Allow list for trusted internal services** — if a flow legitimately needs to reach an internal API or database, add its address (or a whole subnet like `10.10.0.0/24`) to `AP_SSRF_ALLOW_LIST`.
+- **One switch to turn it on** — set `FEMA_NETWORK_MODE=STRICT` and the protection is active. It's **opt-in today**, but in an upcoming release it will become **opt-out** (on by default).
+- **Allow list for trusted internal services** — if a flow legitimately needs to reach an internal API or database, add its address (or a whole subnet like `10.10.0.0/24`) to `FEMA_SSRF_ALLOW_LIST`.
 - **Works with your corporate proxy** — if you already use `HTTP_PROXY` / `HTTPS_PROXY`, Activepieces respects them automatically.
 
 See the [Network Security](/install/architecture/network-security) architecture page for the full breakdown.

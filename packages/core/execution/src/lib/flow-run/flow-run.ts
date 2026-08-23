@@ -79,7 +79,7 @@ export const FlowRun = z.object({
     timeline: RunTimeline.nullish(),
     environment: z.nativeEnum(RunEnvironment),
     // The steps data may be missing if the flow has not started yet,
-    // or if the run is older than AP_EXECUTION_DATA_RETENTION_DAYS and its execution data has been purged.
+    // or if the run is older than FEMA_EXECUTION_DATA_RETENTION_DAYS and its execution data has been purged.
     steps: Nullable(z.record(z.string(), z.unknown())),
     failedStep: FailedStep.optional(),
     stepNameToTest: z.string().optional(),

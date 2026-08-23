@@ -1,5 +1,5 @@
 import {
-  AP_MAXIMUM_PROFILE_PICTURE_SIZE,
+  FEMA_MAXIMUM_PROFILE_PICTURE_SIZE,
   PROFILE_PICTURE_ALLOWED_TYPES,
 } from '@fema/shared';
 import { useQueryClient } from '@tanstack/react-query';
@@ -49,7 +49,7 @@ export function AccountSettingsDialog({
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.size > AP_MAXIMUM_PROFILE_PICTURE_SIZE) {
+      if (file.size > FEMA_MAXIMUM_PROFILE_PICTURE_SIZE) {
         toast.error(t('File size exceeds 5MB limit'));
         return;
       }

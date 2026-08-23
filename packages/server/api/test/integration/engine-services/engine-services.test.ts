@@ -257,11 +257,11 @@ describe('Engine Services Integration', () => {
             await expect(connectionService.obtain(externalId)).rejects.toThrow(ConnectionExpiredError)
         })
 
-        describe('AP_ENFORCE_CONNECTION_PIECE_BINDING', () => {
+        describe('FEMA_ENFORCE_CONNECTION_PIECE_BINDING', () => {
             const pieceName = '@fema/connector-slack'
 
             afterEach(() => {
-                delete process.env.AP_ENFORCE_CONNECTION_PIECE_BINDING
+                delete process.env.FEMA_ENFORCE_CONNECTION_PIECE_BINDING
             })
 
             const saveConnection = async (connectionPieceName: string): Promise<string> => {
@@ -283,7 +283,7 @@ describe('Engine Services Integration', () => {
             }
 
             it('should reject a connection belonging to another piece when enabled', async () => {
-                process.env.AP_ENFORCE_CONNECTION_PIECE_BINDING = 'true'
+                process.env.FEMA_ENFORCE_CONNECTION_PIECE_BINDING = 'true'
                 const externalId = await saveConnection('@fema/connector-google-sheets')
 
                 const connectionService = createConnectionResolver({
@@ -298,7 +298,7 @@ describe('Engine Services Integration', () => {
             })
 
             it('should allow a connection belonging to the same piece when enabled', async () => {
-                process.env.AP_ENFORCE_CONNECTION_PIECE_BINDING = 'true'
+                process.env.FEMA_ENFORCE_CONNECTION_PIECE_BINDING = 'true'
                 const externalId = await saveConnection(pieceName)
 
                 const connectionService = createConnectionResolver({
@@ -398,8 +398,8 @@ describe('Engine Services Integration', () => {
 
     describe('step-files.service — createFileUploader().write()', () => {
         it('should upload a file and return a URL', async () => {
-            const originalMaxFileSize = process.env.AP_MAX_FILE_SIZE_MB
-            process.env.AP_MAX_FILE_SIZE_MB = '10'
+            const originalMaxFileSize = process.env.FEMA_MAX_FILE_SIZE_MB
+            process.env.FEMA_MAX_FILE_SIZE_MB = '10'
 
             try {
                 const uploader = createFileUploader({
@@ -417,17 +417,17 @@ describe('Engine Services Integration', () => {
             }
             finally {
                 if (originalMaxFileSize === undefined) {
-                    delete process.env.AP_MAX_FILE_SIZE_MB
+                    delete process.env.FEMA_MAX_FILE_SIZE_MB
                 }
                 else {
-                    process.env.AP_MAX_FILE_SIZE_MB = originalMaxFileSize
+                    process.env.FEMA_MAX_FILE_SIZE_MB = originalMaxFileSize
                 }
             }
         })
 
         it('should throw FileSizeError when data exceeds max size', async () => {
-            const originalMaxFileSize = process.env.AP_MAX_FILE_SIZE_MB
-            process.env.AP_MAX_FILE_SIZE_MB = '0.000001'
+            const originalMaxFileSize = process.env.FEMA_MAX_FILE_SIZE_MB
+            process.env.FEMA_MAX_FILE_SIZE_MB = '0.000001'
 
             try {
                 const uploader = createFileUploader({
@@ -444,10 +444,10 @@ describe('Engine Services Integration', () => {
             }
             finally {
                 if (originalMaxFileSize === undefined) {
-                    delete process.env.AP_MAX_FILE_SIZE_MB
+                    delete process.env.FEMA_MAX_FILE_SIZE_MB
                 }
                 else {
-                    process.env.AP_MAX_FILE_SIZE_MB = originalMaxFileSize
+                    process.env.FEMA_MAX_FILE_SIZE_MB = originalMaxFileSize
                 }
             }
         })

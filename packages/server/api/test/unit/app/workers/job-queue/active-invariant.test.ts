@@ -22,8 +22,8 @@ import { createQueueDispatcher } from '../../../../../src/app/workers/job-queue/
  * dispatcher + REAL BullMQ against the local test redis, contrasting abandon-on-stop vs reclaim.
  */
 
-const REDIS_HOST = process.env.AP_REDIS_HOST ?? 'localhost'
-const REDIS_PORT = Number(process.env.AP_REDIS_PORT ?? '6379')
+const REDIS_HOST = process.env.FEMA_REDIS_HOST ?? 'localhost'
+const REDIS_PORT = Number(process.env.FEMA_REDIS_PORT ?? '6379')
 const PREFIX = 'ap-active-invariant-test'
 
 const log: FastifyBaseLogger = {

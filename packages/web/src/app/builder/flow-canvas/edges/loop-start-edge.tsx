@@ -37,7 +37,7 @@ export const ApLoopStartLineCanvasEdge = ({
   const layoutButtonPosition = {
     x:
       layoutSource.x -
-      flowCanvasConsts.AP_NODE_SIZE.ADD_BUTTON.width / 2 +
+      flowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.width / 2 +
       horizontalLineLength +
       flowCanvasConsts.ARC_LENGTH * 2,
     y: layoutStartY + verticalLineLength + flowCanvasConsts.ARC_LENGTH,
@@ -57,8 +57,8 @@ export const ApLoopStartLineCanvasEdge = ({
         <foreignObject
           x={buttonPosition.x}
           y={buttonPosition.y}
-          width={flowCanvasConsts.AP_NODE_SIZE.ADD_BUTTON.width}
-          height={flowCanvasConsts.AP_NODE_SIZE.ADD_BUTTON.height}
+          width={flowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.width}
+          height={flowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.height}
           className="overflow-visible cursor-default"
         >
           <ApAddButton

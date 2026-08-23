@@ -24,7 +24,7 @@ Named, reusable piece/action/trigger visibility config a platform admin assigns 
 
 User-facing data transforms (81+ functions) inside any builder text input via a `/` slash editor; saved inline as `ap-formula-v1::{<expr>}::ap-formula-v1` so they round-trip through flow JSON.
 
-- **Where**: shared lib `packages/core/shared/src/lib/formula/` (`AP_FUNCTIONS` registry is the single source of truth; `formulaEvaluator.evaluate`, type checker). Editor is the TipTap `text-input-with-mentions`. Runtime hooks in the engine's `props-resolver.ts` pre-pass.
+- **Where**: shared lib `packages/core/shared/src/lib/formula/` (`FEMA_FUNCTIONS` registry is the single source of truth; `formulaEvaluator.evaluate`, type checker). Editor is the TipTap `text-input-with-mentions`. Runtime hooks in the engine's `props-resolver.ts` pre-pass.
 - **Gotchas**: no HTTP endpoints, no DB tables, no worker job — evaluation is synchronous in the engine. Runs on **every** edition, unconditionally (even if the editor flag is off, saved formulas still evaluate). Uses `expr-eval`; preprocess normalizes `;`→`,`, `and/or/not`, and rewrites `if()` to lazy ternary. Changing a function = bump `@fema/shared` minor; never hard-remove a function (mark `deprecated`).
 
 ### Nothing typechecks the engine
@@ -36,7 +36,7 @@ User-facing data transforms (81+ functions) inside any builder text input via a 
 
 ### The engine gets only 64 file descriptors
 
-Under `AP_EXECUTION_MODE=SANDBOX_PROCESS` / `SANDBOX_CODE_AND_PROCESS` the engine runs inside the `isolate` binary (`create-sandbox-for-job.ts` → `isolateProcess`). **The bundled isolate is 1.8.1, which hardcodes** `RLIMIT_NOFILE` **to 64 — soft *and* hard — with no flag to change it.** Verified: `ulimit -n` inside is `64`, outside `1048576`; upstream added `--open-files` only after 1.8.1, so our binary rejects it.
+Under `FEMA_EXECUTION_MODE=SANDBOX_PROCESS` / `SANDBOX_CODE_AND_PROCESS` the engine runs inside the `isolate` binary (`create-sandbox-for-job.ts` → `isolateProcess`). **The bundled isolate is 1.8.1, which hardcodes** `RLIMIT_NOFILE` **to 64 — soft *and* hard — with no flag to change it.** Verified: `ulimit -n` inside is `64`, outside `1048576`; upstream added `--open-files` only after 1.8.1, so our binary rejects it.
 
 That 64 is the real budget for everything the engine does at once: every HTTP socket to every piece, S3, plus 4 fds per CODE-step child process. An idle sandbox already sits around 23. Big flows (100+ steps, loops, several HTTP pieces) blow through it.
 
@@ -60,7 +60,7 @@ Node processes that poll the app over Socket.IO and execute flows. The worker *i
 
 - **Version gate**: app and worker refuse to exchange jobs unless releases match exactly (fail-closed; auto-recovers once fleets converge).
 - **Disconnect** returns in-flight jobs to the queue (`releaseConnectionJobs`) to avoid post-deploy "Job stalled" storms.
-- **Worker groups** (`AP_WORKER_GROUP_ID` + `AP_PROJECT_WORKER`) route dedicated pools; per-project routing gated by `workerGroupsEnabled`.
+- **Worker groups** (`FEMA_WORKER_GROUP_ID` + `FEMA_PROJECT_WORKER`) route dedicated pools; per-project routing gated by `workerGroupsEnabled`.
 - **Failed code-step** install/compile degrades to a throwing stub (user-attributed FAILED, not INTERNAL_ERROR + retries).
 - Prod is deployed with Kamal from the ops box (`~/mrsk/prod`, `config/worker.yml`), not from this repo. To poke one live worker: `kamal app exec --config-file=config/worker.yml --hosts=<ip> --roles=shared05_<n> --reuse '<cmd>'`. `--reuse` is essential — without it Kamal boots a *new* container that starts taking real jobs. Dense hosts run 28 containers (one role each), so `--hosts` alone fans out. Base64 anything with pipes; quoting dies through ssh → bash -ic → kamal → docker exec → sh.
 

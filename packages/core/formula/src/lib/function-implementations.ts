@@ -3,7 +3,7 @@ import relativeTimeDayjs from 'dayjs/plugin/relativeTime'
 import timezoneDayjs from 'dayjs/plugin/timezone'
 import utcDayjs from 'dayjs/plugin/utc'
 import { Parser } from 'expr-eval'
-import { AP_FUNCTIONS } from './function-registry'
+import { FEMA_FUNCTIONS } from './function-registry'
 
 dayjs.extend(relativeTimeDayjs)
 dayjs.extend(timezoneDayjs)
@@ -410,7 +410,7 @@ parser.functions.is_list = (v: unknown) => Array.isArray(v)
 // declares `argCompatibility.defaultArgs` so older saved flows that were saved
 // before a new arg was added keep working at runtime instead of throwing a
 // "wrong number of arguments" error.
-for (const fn of AP_FUNCTIONS) {
+for (const fn of FEMA_FUNCTIONS) {
     const defaults = fn.argCompatibility?.defaultArgs
     if (!defaults || defaults.length === 0) continue
     const impl = parser.functions[fn.name] as ((...args: unknown[]) => unknown) | undefined

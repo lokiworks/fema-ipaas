@@ -84,13 +84,13 @@ export const ApRouterEndCanvasEdge = ({
         x: targetX - endLineAlongLength,
         y:
           targetY -
-          flowCanvasConsts.AP_NODE_SIZE.ADD_BUTTON.height / 2 -
+          flowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.height / 2 -
           flowCanvasConsts.LINE_WIDTH / 2,
       }
     : {
         x:
           targetX -
-          flowCanvasConsts.AP_NODE_SIZE.ADD_BUTTON.width / 2 -
+          flowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.width / 2 -
           flowCanvasConsts.LINE_WIDTH / 2,
         y: targetY - endLineAlongLength,
       };
@@ -106,8 +106,8 @@ export const ApRouterEndCanvasEdge = ({
         <foreignObject
           x={buttonPosition.x}
           y={buttonPosition.y}
-          width={flowCanvasConsts.AP_NODE_SIZE.ADD_BUTTON.width}
-          height={flowCanvasConsts.AP_NODE_SIZE.ADD_BUTTON.height}
+          width={flowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.width}
+          height={flowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.height}
           className="overflow-visible"
         >
           <ApAddButton

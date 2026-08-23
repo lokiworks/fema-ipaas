@@ -7,7 +7,7 @@ icon: "stopwatch"
 A **synchronous webhook** holds the connection open until your flow returns, so the caller waits for the orchestration around your flow plus your flow's own work. These are floor numbers, slow paths included.
 
 <Note>
-**Scope:** the recommended production setup (`SANDBOX_CODE_ONLY`, `AP_REUSE_SANDBOX=true`, one flow per worker), which self-hosted deployments and **dedicated Cloud workers** run. The shared Cloud freemium pool uses a different sandbox. See [Production Setup](/install/configure-operate/production-setup).
+**Scope:** the recommended production setup (`SANDBOX_CODE_ONLY`, `FEMA_REUSE_SANDBOX=true`, one flow per worker), which self-hosted deployments and **dedicated Cloud workers** run. The shared Cloud freemium pool uses a different sandbox. See [Production Setup](/install/configure-operate/production-setup).
 </Note>
 
 ## What to expect
@@ -26,7 +26,7 @@ A **synchronous webhook** holds the connection open until your flow returns, so 
 **Cold** means a worker that has never seen this flow: it installs the pieces, fetches the bundle, and forks an engine first. **Warm** reuses all three. You hit cold when:
 
 - It is the first request after a deploy, restart, or scale-up.
-- `AP_REUSE_SANDBOX` is off (then every request is cold).
+- `FEMA_REUSE_SANDBOX` is off (then every request is cold).
 - A burst exceeds your warm worker count. Each worker runs one flow at a time, so the surplus queues or starts cold.
 
 <Tip>
@@ -77,7 +77,7 @@ The same setup measures ~165 ms unloaded and ~200 ms average under sustained pea
 
 ## Reduce it
 
-- **Keep workers warm:** `AP_REUSE_SANDBOX=true` plus a statically sized, always-on fleet.
+- **Keep workers warm:** `FEMA_REUSE_SANDBOX=true` plus a statically sized, always-on fleet.
 - **Put the object store next to the workers:** a bare warm run spends most of its Run phase on two log-backup writes to S3/GCS. In-region, same-zone, private connectivity to the object store is the biggest lever on that overhead — a distant or public endpoint multiplies it.
 - **Size for peak concurrency:** N concurrent requests need N warm workers ([sizing](/install/configure-operate/production-setup#sizing)).
 - **Fewer, heavier steps:** each step adds overhead.

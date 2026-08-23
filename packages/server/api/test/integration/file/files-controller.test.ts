@@ -92,8 +92,8 @@ describe('Files Controller', () => {
         })
 
         it('rejects a body that exceeds the maximum file size while streaming', async () => {
-            const originalMaxFileSize = process.env.AP_MAX_FILE_SIZE_MB
-            process.env.AP_MAX_FILE_SIZE_MB = '0.000001'
+            const originalMaxFileSize = process.env.FEMA_MAX_FILE_SIZE_MB
+            process.env.FEMA_MAX_FILE_SIZE_MB = '0.000001'
             try {
                 const { mockProject, mockPlatform } = await mockAndSaveBasicSetup()
                 const engineToken = await generateMockToken({
@@ -117,10 +117,10 @@ describe('Files Controller', () => {
             }
             finally {
                 if (originalMaxFileSize === undefined) {
-                    delete process.env.AP_MAX_FILE_SIZE_MB
+                    delete process.env.FEMA_MAX_FILE_SIZE_MB
                 }
                 else {
-                    process.env.AP_MAX_FILE_SIZE_MB = originalMaxFileSize
+                    process.env.FEMA_MAX_FILE_SIZE_MB = originalMaxFileSize
                 }
             }
         })

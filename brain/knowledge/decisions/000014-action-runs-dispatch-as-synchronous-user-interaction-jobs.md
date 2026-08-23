@@ -36,7 +36,7 @@ correct for an idempotent flow step are wrong for a bare user-initiated write.
 
 Priority is `high`, not `critical`, so these never outrank the builder interactions a human is
 actively waiting on. Note this governs dequeue *order* only: all job types share one worker pool
-(`AP_WORKER_CONCURRENCY` poll loops), so a long action run still occupies a slot. That is unchanged
+(`FEMA_WORKER_CONCURRENCY` poll loops), so a long action run still occupies a slot. That is unchanged
 from the old path, which held a slot for the same 120s.
 
 ## Consequences

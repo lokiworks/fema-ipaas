@@ -28,7 +28,7 @@ export function WorkerAssignmentsTab() {
         <Info className="size-4" />
         <AlertDescription className="text-sm">
           {t(
-            'Worker groups reserve a dedicated queue for the projects you assign. Defined in your deployment with AP_WORKER_GROUP_ID.',
+            'Worker groups reserve a dedicated queue for the projects you assign. Defined in your deployment with FEMA_WORKER_GROUP_ID.',
           )}{' '}
           <a
             href="https://www.activepieces.com/docs/install/configure-operate/worker-groups"

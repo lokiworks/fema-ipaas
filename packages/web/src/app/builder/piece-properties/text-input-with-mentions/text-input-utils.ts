@@ -1,5 +1,5 @@
 import { assertNotNullOrUndefined, isNil } from '@fema/core-utils';
-import { AP_FUNCTIONS, formulaEvaluator } from '@fema/expression';
+import { FEMA_FUNCTIONS, formulaEvaluator } from '@fema/expression';
 import { FlowAction, FlowTrigger } from '@fema/shared';
 import { MentionNodeAttrs } from '@tiptap/extension-mention';
 import { JSONContent } from '@tiptap/react';
@@ -92,7 +92,7 @@ function stringStateAfter({
 
 function tokenizeExpression(expr: string, allowBroken: boolean): ExprToken[] {
   const tokens: ExprToken[] = [];
-  const fnNames = new Set(AP_FUNCTIONS.map((f) => f.name));
+  const fnNames = new Set(FEMA_FUNCTIONS.map((f) => f.name));
   let i = 0;
   let fnDepth = 0;
 

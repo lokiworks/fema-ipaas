@@ -11,7 +11,7 @@ services:
       bench:
         # Static IP so the SANDBOX_PROCESS engine (whose sandbox /etc/resolv.conf points at public
         # DNS 8.8.8.8 and can't resolve the docker-internal "nginx" name) can still reach the server
-        # by IP to report flow results. AP_FRONTEND_URL points here.
+        # by IP to report flow results. FEMA_FRONTEND_URL points here.
         ipv4_address: 172.30.0.10
 
   app:
@@ -23,31 +23,31 @@ services:
       redis:
         condition: service_started
     environment:
-      AP_CONTAINER_TYPE: APP
-      AP_POSTGRES_DATABASE: activepieces
-      AP_POSTGRES_PASSWORD: password
-      AP_POSTGRES_USERNAME: postgres
-      AP_POSTGRES_HOST: postgres
-      AP_POSTGRES_PORT: 5432
-      AP_JWT_SECRET: benchmark-secret-key-for-testing
-      AP_ENCRYPTION_KEY: 11020ebf480a9b1648ceec6400beaf26
-      AP_FRONTEND_URL: http://172.30.0.10:80
-      AP_EXECUTION_MODE: ${AP_EXECUTION_MODE:-SANDBOX_CODE_ONLY}
-      AP_REDIS_HOST: redis
-      AP_REDIS_PORT: 6379
-      AP_ENVIRONMENT: prod
-      AP_LOG_LEVEL: error
-      AP_TELEMETRY_ENABLED: false
-      AP_PROJECT_RATE_LIMITER_ENABLED: false
-      AP_SANDBOX_MEMORY_LIMIT: ${AP_SANDBOX_MEMORY_LIMIT:-}
-      AP_DEFAULT_CONCURRENT_JOBS_LIMIT: 1000
-      AP_FILE_STORAGE_LOCATION: ${AP_FILE_STORAGE_LOCATION:-DB}
-      AP_S3_BUCKET: ${AP_S3_BUCKET:-}
-      AP_S3_ACCESS_KEY_ID: ${AP_S3_ACCESS_KEY_ID:-}
-      AP_S3_SECRET_ACCESS_KEY: ${AP_S3_SECRET_ACCESS_KEY:-}
-      AP_S3_ENDPOINT: ${AP_S3_ENDPOINT:-}
-      AP_S3_REGION: ${AP_S3_REGION:-}
-      AP_S3_USE_SIGNED_URLS: ${AP_S3_USE_SIGNED_URLS:-false}
+      FEMA_CONTAINER_TYPE: APP
+      FEMA_POSTGRES_DATABASE: activepieces
+      FEMA_POSTGRES_PASSWORD: password
+      FEMA_POSTGRES_USERNAME: postgres
+      FEMA_POSTGRES_HOST: postgres
+      FEMA_POSTGRES_PORT: 5432
+      FEMA_JWT_SECRET: benchmark-secret-key-for-testing
+      FEMA_ENCRYPTION_KEY: 11020ebf480a9b1648ceec6400beaf26
+      FEMA_FRONTEND_URL: http://172.30.0.10:80
+      FEMA_EXECUTION_MODE: ${FEMA_EXECUTION_MODE:-SANDBOX_CODE_ONLY}
+      FEMA_REDIS_HOST: redis
+      FEMA_REDIS_PORT: 6379
+      FEMA_ENVIRONMENT: prod
+      FEMA_LOG_LEVEL: error
+      FEMA_TELEMETRY_ENABLED: false
+      FEMA_PROJECT_RATE_LIMITER_ENABLED: false
+      FEMA_SANDBOX_MEMORY_LIMIT: ${FEMA_SANDBOX_MEMORY_LIMIT:-}
+      FEMA_DEFAULT_CONCURRENT_JOBS_LIMIT: 1000
+      FEMA_FILE_STORAGE_LOCATION: ${FEMA_FILE_STORAGE_LOCATION:-DB}
+      FEMA_S3_BUCKET: ${FEMA_S3_BUCKET:-}
+      FEMA_S3_ACCESS_KEY_ID: ${FEMA_S3_ACCESS_KEY_ID:-}
+      FEMA_S3_SECRET_ACCESS_KEY: ${FEMA_S3_SECRET_ACCESS_KEY:-}
+      FEMA_S3_ENDPOINT: ${FEMA_S3_ENDPOINT:-}
+      FEMA_S3_REGION: ${FEMA_S3_REGION:-}
+      FEMA_S3_USE_SIGNED_URLS: ${FEMA_S3_USE_SIGNED_URLS:-false}
     deploy:
       replicas: ${APP_REPLICAS:-1}
       resources:
@@ -62,28 +62,28 @@ services:
     depends_on:
       - app
     environment:
-      AP_CONTAINER_TYPE: WORKER
-      AP_FRONTEND_URL: http://172.30.0.10:80
-      AP_JWT_SECRET: benchmark-secret-key-for-testing
-      AP_ENCRYPTION_KEY: 11020ebf480a9b1648ceec6400beaf26
-      AP_EXECUTION_MODE: ${AP_EXECUTION_MODE:-SANDBOX_CODE_ONLY}
-      AP_REDIS_HOST: redis
-      AP_REDIS_PORT: 6379
-      AP_POSTGRES_DATABASE: activepieces
-      AP_POSTGRES_PASSWORD: password
-      AP_POSTGRES_USERNAME: postgres
-      AP_POSTGRES_HOST: postgres
-      AP_POSTGRES_PORT: 5432
-      AP_LOG_LEVEL: error
-      AP_TELEMETRY_ENABLED: false
-      AP_WORKER_CONCURRENCY: ${AP_WORKER_CONCURRENCY:-}
-      AP_FILE_STORAGE_LOCATION: ${AP_FILE_STORAGE_LOCATION:-DB}
-      AP_S3_BUCKET: ${AP_S3_BUCKET:-}
-      AP_S3_ACCESS_KEY_ID: ${AP_S3_ACCESS_KEY_ID:-}
-      AP_S3_SECRET_ACCESS_KEY: ${AP_S3_SECRET_ACCESS_KEY:-}
-      AP_S3_ENDPOINT: ${AP_S3_ENDPOINT:-}
-      AP_S3_REGION: ${AP_S3_REGION:-}
-      AP_S3_USE_SIGNED_URLS: ${AP_S3_USE_SIGNED_URLS:-false}
+      FEMA_CONTAINER_TYPE: WORKER
+      FEMA_FRONTEND_URL: http://172.30.0.10:80
+      FEMA_JWT_SECRET: benchmark-secret-key-for-testing
+      FEMA_ENCRYPTION_KEY: 11020ebf480a9b1648ceec6400beaf26
+      FEMA_EXECUTION_MODE: ${FEMA_EXECUTION_MODE:-SANDBOX_CODE_ONLY}
+      FEMA_REDIS_HOST: redis
+      FEMA_REDIS_PORT: 6379
+      FEMA_POSTGRES_DATABASE: activepieces
+      FEMA_POSTGRES_PASSWORD: password
+      FEMA_POSTGRES_USERNAME: postgres
+      FEMA_POSTGRES_HOST: postgres
+      FEMA_POSTGRES_PORT: 5432
+      FEMA_LOG_LEVEL: error
+      FEMA_TELEMETRY_ENABLED: false
+      FEMA_WORKER_CONCURRENCY: ${FEMA_WORKER_CONCURRENCY:-}
+      FEMA_FILE_STORAGE_LOCATION: ${FEMA_FILE_STORAGE_LOCATION:-DB}
+      FEMA_S3_BUCKET: ${FEMA_S3_BUCKET:-}
+      FEMA_S3_ACCESS_KEY_ID: ${FEMA_S3_ACCESS_KEY_ID:-}
+      FEMA_S3_SECRET_ACCESS_KEY: ${FEMA_S3_SECRET_ACCESS_KEY:-}
+      FEMA_S3_ENDPOINT: ${FEMA_S3_ENDPOINT:-}
+      FEMA_S3_REGION: ${FEMA_S3_REGION:-}
+      FEMA_S3_USE_SIGNED_URLS: ${FEMA_S3_USE_SIGNED_URLS:-false}
     privileged: true
     deploy:
       replicas: ${WORKER_REPLICAS:-2}

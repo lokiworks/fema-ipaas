@@ -435,7 +435,7 @@
   "My Tools": "My Tools",
   "Create Flow": "Create Flow",
   "Note": "Note",
-  "If you would like to expose your MCP server to the internet, please set the AP_FRONTEND_URL environment variable to the public URL of your Activepieces instance.": "If you would like to expose your MCP server to the internet, please set the AP_FRONTEND_URL environment variable to the public URL of your Activepieces instance.",
+  "If you would like to expose your MCP server to the internet, please set the FEMA_FRONTEND_URL environment variable to the public URL of your Activepieces instance.": "If you would like to expose your MCP server to the internet, please set the FEMA_FRONTEND_URL environment variable to the public URL of your Activepieces instance.",
   "This URL grants access to your tools and data. Only share with trusted applications.": "This URL grants access to your tools and data. Only share with trusted applications.",
   "Server Configuration": "Server Configuration",
   "Hide sensitive data": "Hide sensitive data",

@@ -272,12 +272,12 @@ function assertDelayWithinTimeout(resumeDateTime?: string): void {
     if (isNil(resumeDateTime)) {
         return
     }
-    if (dayjs(resumeDateTime).diff(dayjs(), 'days') > AP_PAUSED_FLOW_TIMEOUT_DAYS) {
-        throw new PausedFlowTimeoutError(undefined, AP_PAUSED_FLOW_TIMEOUT_DAYS)
+    if (dayjs(resumeDateTime).diff(dayjs(), 'days') > FEMA_PAUSED_FLOW_TIMEOUT_DAYS) {
+        throw new PausedFlowTimeoutError(undefined, FEMA_PAUSED_FLOW_TIMEOUT_DAYS)
     }
 }
 
-const AP_PAUSED_FLOW_TIMEOUT_DAYS = Number(process.env.AP_PAUSED_FLOW_TIMEOUT_DAYS)
+const FEMA_PAUSED_FLOW_TIMEOUT_DAYS = Number(process.env.FEMA_PAUSED_FLOW_TIMEOUT_DAYS)
 
 
 type BuildContextParams = {

@@ -26,7 +26,7 @@ function clearInitialConnectWatchdog(): void {
 
 export const workerSocket = {
     init: (sandboxId: string): void => {
-        const wsUrl = `ws://127.0.0.1:${process.env.AP_SANDBOX_WS_PORT ?? '12345'}`
+        const wsUrl = `ws://127.0.0.1:${process.env.FEMA_SANDBOX_WS_PORT ?? '12345'}`
         socket = io(wsUrl, buildSocketOptions(sandboxId))
 
         // Without this watchdog, if the parent worker is SIGKILLed (OOM, crash) before
@@ -127,7 +127,7 @@ function buildSocketOptions(sandboxId: string): Partial<ManagerOptions & SocketO
         transports: ['websocket'],
         auth: {
             sandboxId,
-            connectionToken: process.env.AP_SANDBOX_WS_TOKEN,
+            connectionToken: process.env.FEMA_SANDBOX_WS_TOKEN,
         },
         autoConnect: false,
         // Engines are one-shot per sandbox. The worker rotates the handshake token on

@@ -54,12 +54,12 @@ assert "/root visible"                   '.paths."/root".ok == true and .paths."
 assert "/root/codes visible"             '.paths."/root/codes".ok == true and .paths."/root/codes".isDir == true'
 
 # Worker-process env vars MUST NOT leak into the sandbox.
-for SECRET in AP_JWT_SECRET AP_ENCRYPTION_KEY AP_WORKER_TOKEN AP_POSTGRES_PASSWORD AP_POSTGRES_USERNAME AP_POSTGRES_HOST AP_POSTGRES_DATABASE AP_REDIS_HOST AP_REDIS_PORT AP_FRONTEND_URL; do
+for SECRET in FEMA_JWT_SECRET FEMA_ENCRYPTION_KEY FEMA_WORKER_TOKEN FEMA_POSTGRES_PASSWORD FEMA_POSTGRES_USERNAME FEMA_POSTGRES_HOST FEMA_POSTGRES_DATABASE FEMA_REDIS_HOST FEMA_REDIS_PORT FEMA_FRONTEND_URL; do
   assert "$SECRET not leaked" ".envKeys | index(\"$SECRET\") == null"
 done
 
 # Required sandbox env vars must be set.
-for REQUIRED in HOME NODE_PATH AP_EXECUTION_MODE AP_SANDBOX_WS_PORT AP_BASE_CODE_DIRECTORY SANDBOX_ID; do
+for REQUIRED in HOME NODE_PATH FEMA_EXECUTION_MODE FEMA_SANDBOX_WS_PORT FEMA_BASE_CODE_DIRECTORY SANDBOX_ID; do
   assert "$REQUIRED is set" ".envKeys | index(\"$REQUIRED\") != null"
 done
 

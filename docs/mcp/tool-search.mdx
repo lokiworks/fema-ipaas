@@ -34,14 +34,14 @@ Every response includes the active `mode`, so a degraded instance is always dete
 Tool search is enabled on Activepieces Cloud. Self-hosted instances turn it on with an environment variable:
 
 ```bash
-AP_TOOL_SEARCH_ENABLED=true
+FEMA_TOOL_SEARCH_ENABLED=true
 ```
 
 When the flag is off, `ap_search_actions` and `ap_search_triggers` are not registered on the MCP server. The flag is read live, so flipping it does not require a restart.
 
 Semantic mode needs two more things:
 
-- **An OpenAI API key** to fund the embeddings — either set `AP_OPENAI_API_KEY`, or configure OpenAI as an [AI provider](/admin-guide/guides/setup-ai-providers) in the platform admin. The environment variable takes precedence and is the simplest path for single-tenant deployments.
+- **An OpenAI API key** to fund the embeddings — either set `FEMA_OPENAI_API_KEY`, or configure OpenAI as an [AI provider](/admin-guide/guides/setup-ai-providers) in the platform admin. The environment variable takes precedence and is the simplest path for single-tenant deployments.
 - **The pgvector extension** available in your Postgres server. Activepieces creates the extension automatically at startup when the server supports it (for example the official `pgvector/pgvector` images and most managed Postgres offerings).
 
 If either is missing, tool search serves keyword mode instead of failing. The search index is built automatically on startup and kept in sync with the piece catalog — there is nothing to maintain by hand.

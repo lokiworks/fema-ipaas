@@ -190,10 +190,10 @@ export function createSandbox(
                 mounts: allMounts,
                 env: {
                     ...options.env,
-                    AP_SANDBOX_WS_PORT: String(port),
-                    AP_SANDBOX_WS_TOKEN: wsRpcToken,
+                    FEMA_SANDBOX_WS_PORT: String(port),
+                    FEMA_SANDBOX_WS_TOKEN: wsRpcToken,
                     ...(customPieceMounts.length > 0
-                        ? { AP_CUSTOM_PIECES_PATHS: '/root/custom_pieces' }
+                        ? { FEMA_CUSTOM_PIECES_PATHS: '/root/custom_pieces' }
                         : {}),
                 },
                 resourceLimits: {

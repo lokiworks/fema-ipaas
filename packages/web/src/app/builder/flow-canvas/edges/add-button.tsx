@@ -46,8 +46,8 @@ const ApAddButton = React.memo((props: ApButtonData) => {
       {showDropIndicator && !readonly && (
         <div
           style={{
-            width: flowCanvasConsts.AP_NODE_SIZE.ADD_BUTTON.width + 'px',
-            height: flowCanvasConsts.AP_NODE_SIZE.ADD_BUTTON.height + 'px',
+            width: flowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.width + 'px',
+            height: flowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.height + 'px',
           }}
           className={cn('transition-all bg-primary/90  rounded-md', {
             'shadow-add-button': isStepInsideDropZone,
@@ -88,14 +88,15 @@ const ApAddButton = React.memo((props: ApButtonData) => {
         >
           <div
             style={{
-              width: flowCanvasConsts.AP_NODE_SIZE.ADD_BUTTON.width + 'px',
-              height: flowCanvasConsts.AP_NODE_SIZE.ADD_BUTTON.height + 'px',
+              width: flowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.width + 'px',
+              height: flowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.height + 'px',
             }}
           >
             <div
               style={{
-                width: flowCanvasConsts.AP_NODE_SIZE.ADD_BUTTON.width + 'px',
-                height: flowCanvasConsts.AP_NODE_SIZE.ADD_BUTTON.height + 'px',
+                width: flowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.width + 'px',
+                height:
+                  flowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.height + 'px',
               }}
               className={cn('rounded-md cursor-pointer transition-all z-50', {
                 'shadow-add-button': isPieceSelectorOpen,
@@ -103,9 +104,10 @@ const ApAddButton = React.memo((props: ApButtonData) => {
             >
               <div
                 style={{
-                  width: flowCanvasConsts.AP_NODE_SIZE.ADD_BUTTON.width + 'px',
+                  width:
+                    flowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.width + 'px',
                   height:
-                    flowCanvasConsts.AP_NODE_SIZE.ADD_BUTTON.height + 'px',
+                    flowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.height + 'px',
                 }}
                 className={cn(
                   'bg-background  border border-border border-solid relative group overflow-visible rounded-md cursor-pointer  flex items-center justify-center  transition-all duration-300 ease-in-out',

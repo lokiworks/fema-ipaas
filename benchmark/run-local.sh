@@ -30,7 +30,7 @@ echo "=== Building image ==="
 docker build -t activepieces-benchmark:local .
 
 echo "=== Starting stack (mode=$EXECUTION_MODE, apps=$APP_REPLICAS, workers=$WORKER_REPLICAS) ==="
-AP_EXECUTION_MODE=$EXECUTION_MODE \
+FEMA_EXECUTION_MODE=$EXECUTION_MODE \
 APP_REPLICAS=$APP_REPLICAS \
 WORKER_REPLICAS=$WORKER_REPLICAS \
   $COMPOSE up -d

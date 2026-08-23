@@ -12,7 +12,7 @@ export const benchmarkCommand = new Command('benchmark')
     .option('--url <url>', 'Activepieces base URL (dev env API port)', 'http://localhost:3000')
     .option('--requests <n>', 'Total requests to fire (default: 40 x concurrency)')
     .option('--concurrency <c>', 'Concurrent connections (default: auto = sum of worker execution slots)')
-    .option('--api-key <key>', 'Platform API key (Bearer). Or set AP_API_KEY.')
+    .option('--api-key <key>', 'Platform API key (Bearer). Or set FEMA_API_KEY.')
     .option('--body <json>', 'JSON request body sent to the webhook', '{"test":true}')
     .option('--json', 'Emit machine-readable JSON output')
     .action(async (opts) => {
@@ -450,9 +450,9 @@ async function waitForReady(client: AxiosInstance): Promise<void> {
 }
 
 function authenticate({ config }: { config: BenchmarkConfig }): AuthResult {
-    const apiKey = config.apiKey ?? process.env.AP_API_KEY;
+    const apiKey = config.apiKey ?? process.env.FEMA_API_KEY;
     if (!apiKey) {
-        throw new Error('Provide a platform API key via --api-key or the AP_API_KEY env var.');
+        throw new Error('Provide a platform API key via --api-key or the FEMA_API_KEY env var.');
     }
     return { token: apiKey };
 }

@@ -20,7 +20,7 @@ An env var isn't a feature flag for the user. It's a tax on every install, and a
 
 **1. "Requires manual setup" shipped as enabled.** A feature needs a per-instance key. Cloud has it, so it works; self-hosters don't, so it fails — but the UI shows it as available.
 
-- *S3 IAM Role / OIDC (PR #13439)* depends on `AP_OIDC_RSA_PRIVATE_KEY`. Unset, every connection fails: `/api/v1/worker/oidc-token` → `400`, `/.well-known/jwks.json` → `400 SYSTEM_PROP_INVALID`. The discovery doc returns `200`, so it *looks* deployed. The fix is to **auto-generate the key**, not document the env var.
+- *S3 IAM Role / OIDC (PR #13439)* depends on `FEMA_OIDC_RSA_PRIVATE_KEY`. Unset, every connection fails: `/api/v1/worker/oidc-token` → `400`, `/.well-known/jwks.json` → `400 SYSTEM_PROP_INVALID`. The discovery doc returns `200`, so it *looks* deployed. The fix is to **auto-generate the key**, not document the env var.
 - *Pipefy* shipped the same shape — enabled in the UI, broken until an undocumented setup step is done.
 
 **2. Data-layer changes that break self-hosted upgrades.** *pgvector:* we added a dependency on the extension. Cloud's Postgres had it; many self-hosted instances didn't. Upgrades failed on migration — and it never reached breaking-changes, *because the people who hit it self-host and we don't test that path.* Either don't depend on what self-hosted Postgres may lack, or flag it as breaking, fail the migration with an actionable error, and document the step.

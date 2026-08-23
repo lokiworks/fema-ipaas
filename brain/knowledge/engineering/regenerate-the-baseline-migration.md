@@ -23,11 +23,11 @@ icon: 🗜️
 
    ```bash
    cd packages/server/api
-   AP_POSTGRES_HOST=127.0.0.1 AP_POSTGRES_PORT=15432 AP_POSTGRES_USERNAME=postgres \
-   AP_POSTGRES_PASSWORD=fema_baseline AP_POSTGRES_DATABASE=fema \
-   AP_POSTGRES_IDLE_TIMEOUT_MS=30000 AP_ENVIRONMENT=dev AP_DEV_PIECES='' \
-   AP_ENCRYPTION_KEY=0123456789abcdef0123456789abcdef AP_JWT_SECRET=test-secret \
-   AP_FRONTEND_URL=http://localhost:4200 AP_CONTAINER_TYPE=WORKER_AND_APP \
+   FEMA_POSTGRES_HOST=127.0.0.1 FEMA_POSTGRES_PORT=15432 FEMA_POSTGRES_USERNAME=postgres \
+   FEMA_POSTGRES_PASSWORD=fema_baseline FEMA_POSTGRES_DATABASE=fema \
+   FEMA_POSTGRES_IDLE_TIMEOUT_MS=30000 FEMA_ENVIRONMENT=dev FEMA_DEV_PIECES='' \
+   FEMA_ENCRYPTION_KEY=0123456789abcdef0123456789abcdef FEMA_JWT_SECRET=test-secret \
+   FEMA_FRONTEND_URL=http://localhost:4200 FEMA_CONTAINER_TYPE=WORKER_AND_APP \
    npx ts-node --transpile-only -r tsconfig-paths/register -P tsconfig.app.json \
      node_modules/typeorm/cli.js migration:generate -p \
      -d src/app/database/migration-data-source.ts \

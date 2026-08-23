@@ -1,7 +1,7 @@
 FROM node:24.14.0-bullseye-slim AS base
 
 # C.UTF-8 ships with Debian, so no locale generation is needed.
-# REDISMS_VERSION pins the Redis that redis-memory-server (AP_REDIS_TYPE=MEMORY)
+# REDISMS_VERSION pins the Redis that redis-memory-server (FEMA_REDIS_TYPE=MEMORY)
 # compiles at image build and looks up at runtime — the default "stable" drifted
 # to Redis 8, whose in-tree modules need cmake/pkg-config and break the build;
 # Redis 7.x compiles with gcc/make alone. Keep this pin in the base stage so the
@@ -138,7 +138,7 @@ LABEL service=activepieces
 
 # WORKER containers have no HTTP server; treat them as healthy (probe only the app).
 HEALTHCHECK --interval=10s --timeout=5s --start-period=60s --retries=5 \
-    CMD [ "$AP_CONTAINER_TYPE" = "WORKER" ] && exit 0 || curl -fsS "http://localhost:${AP_PORT:-80}/api/v1/health" || exit 1
+    CMD [ "$FEMA_CONTAINER_TYPE" = "WORKER" ] && exit 0 || curl -fsS "http://localhost:${FEMA_PORT:-80}/api/v1/health" || exit 1
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
 EXPOSE 80

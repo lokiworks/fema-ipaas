@@ -10,7 +10,7 @@ const SERVICE_PARAMS = {
 describe('file-uploader service', () => {
 
     beforeEach(() => {
-        process.env.AP_MAX_FILE_SIZE_MB = '10'
+        process.env.FEMA_MAX_FILE_SIZE_MB = '10'
         vi.restoreAllMocks()
     })
 
@@ -50,7 +50,7 @@ describe('file-uploader service', () => {
     })
 
     it('throws when file exceeds size limit', async () => {
-        process.env.AP_MAX_FILE_SIZE_MB = '1'
+        process.env.FEMA_MAX_FILE_SIZE_MB = '1'
         const files = createFileUploader(SERVICE_PARAMS)
         const twoMbBuffer = Buffer.alloc(2 * 1024 * 1024)
         await expect(

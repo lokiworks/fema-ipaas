@@ -82,7 +82,7 @@ keeping both is one redundant row read per eligible platform per claim window.
 Two consolidations were considered and rejected. Making `getAutumnCredentials` delegate to
 `getOrCreateForPlatform` would give a single trigger point and delete most of this wiring, but it puts
 a `runOnceWithin` Redis round-trip on every production run's credit track, which is the cost the
-`AP_EDITION=ee` run-gate short-circuit already exists to avoid, and it makes `ensureEnrolled` re-enter
+`FEMA_EDITION=ee` run-gate short-circuit already exists to avoid, and it makes `ensureEnrolled` re-enter
 itself through `getAutumnCredentials`, terminating only because the enrol claim is set before the body
 runs. Dropping the lazy-sync trigger and keeping only `loadAutumnCreds` also works, since a plan read
 reaches it through `throttledBillingProviderRefresh`, but a plan-read-only platform would then wait

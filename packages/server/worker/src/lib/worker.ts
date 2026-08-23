@@ -15,7 +15,7 @@ import { JobContext, JobResult, JobResultKind } from './execute/types'
 import { sandboxConfig } from './runtime/sandbox-config'
 
 
-const AP_VERSION = apVersionUtil.getCurrentRelease()
+const FEMA_VERSION = apVersionUtil.getCurrentRelease()
 
 const VERSION_MISMATCH_POLL_PAUSE_MS = 10_000
 
@@ -29,7 +29,7 @@ function pageOnceForUnreadableWorkerVersion(workerLog: typeof logger): void {
     onCallService(workerLog, workerSettings.getSettings().PAGE_ONCALL_WEBHOOK).page({
         code: 'WORKER_VERSION_READ_FAILED',
         message: 'Worker could not read its release version from package.json (reported as 0.0.0); polling is paused and will NOT self-heal on reconnect until the deployment is fixed (check cwd/packaging)',
-        params: { workerVersion: AP_VERSION },
+        params: { workerVersion: FEMA_VERSION },
     }).catch((pageError) => {
         workerLog.error({ pageError }, 'Failed to send on-call page for unreadable worker version')
     })
@@ -42,11 +42,11 @@ function pageOnceForUnreadableWorkerVersion(workerLog: typeof logger): void {
 // pageOnceForUnreadableWorkerVersion, once-guarded, as soon as settings are loaded). A '0.0.0' read
 // pauses polling and will NOT self-heal on reconnect until the deployment is fixed.
 function assertReleaseReadable(): void {
-    if (AP_VERSION !== UNKNOWN_VERSION) {
-        logger.info({ release: { version: AP_VERSION } }, 'Release version detected from package.json')
+    if (FEMA_VERSION !== UNKNOWN_VERSION) {
+        logger.info({ release: { version: FEMA_VERSION } }, 'Release version detected from package.json')
         return
     }
-    logger.error({ release: { version: AP_VERSION } }, 'Worker could not read its release version from package.json (reported as 0.0.0); polling is paused and will NOT self-heal on reconnect until the deployment is fixed (check cwd/packaging)')
+    logger.error({ release: { version: FEMA_VERSION } }, 'Worker could not read its release version from package.json (reported as 0.0.0); polling is paused and will NOT self-heal on reconnect until the deployment is fixed (check cwd/packaging)')
 }
 
 let socket: Socket | null = null
@@ -175,7 +175,7 @@ async function startPollingWorkers(apiClient: WorkerToApiContract): Promise<void
     const generation = connectionGeneration
 
     // The destination is one box per worker (concurrency 1), scaling out with replicas (ADR 0003).
-    // Transitional compatibility mode (ADR 0004): honor AP_WORKER_CONCURRENCY=N by running N poll
+    // Transitional compatibility mode (ADR 0004): honor FEMA_WORKER_CONCURRENCY=N by running N poll
     // loops over N in-process boxes, each routed by its workerIndex. The default (5, main's historical
     // value) is registered in configs.ts to preserve old behavior, so system.get always returns it; the
     // '1' below is an unreachable belt-and-suspenders fallback. At N>1 an OOM takes down all N in-flight
@@ -183,7 +183,7 @@ async function startPollingWorkers(apiClient: WorkerToApiContract): Promise<void
     const rawConcurrency = Number(system.get(WorkerSystemProp.WORKER_CONCURRENCY) ?? '1')
     const concurrency = Number.isInteger(rawConcurrency) && rawConcurrency > 0 ? rawConcurrency : 1
     if (!Number.isInteger(rawConcurrency) || rawConcurrency < 1) {
-        logger.warn({ rawConcurrency }, 'Invalid AP_WORKER_CONCURRENCY value, falling back to 1')
+        logger.warn({ rawConcurrency }, 'Invalid FEMA_WORKER_CONCURRENCY value, falling back to 1')
     }
     // Bring up a fresh runtime on every (re)connect — a prior connection's in-flight job is killed
     // along with its box (usually already done by the disconnect handler), so it fails fast and is
@@ -222,15 +222,15 @@ async function pollAndExecute(apiClient: WorkerToApiContract, runtime: Runtime, 
     while (polling && connectionGeneration === generation) {
         markPollLoopIteration({ workerIndex, busy: false })
         const appVersion = workerSettings.getSettings().APP_VERSION
-        if (!apVersionUtil.versionsAreCompatible({ versionA: appVersion, versionB: AP_VERSION })) {
-            const versionUnreadable = appVersion === UNKNOWN_VERSION || AP_VERSION === UNKNOWN_VERSION
+        if (!apVersionUtil.versionsAreCompatible({ versionA: appVersion, versionB: FEMA_VERSION })) {
+            const versionUnreadable = appVersion === UNKNOWN_VERSION || FEMA_VERSION === UNKNOWN_VERSION
             if (versionUnreadable) {
-                workerLog.error({ appVersion, workerVersion: AP_VERSION }, 'Pausing polling — a release version could not be read from package.json (reported as 0.0.0); this will NOT self-heal on reconnect, check the worker/app deployment (cwd/packaging)')
+                workerLog.error({ appVersion, workerVersion: FEMA_VERSION }, 'Pausing polling — a release version could not be read from package.json (reported as 0.0.0); this will NOT self-heal on reconnect, check the worker/app deployment (cwd/packaging)')
             }
             else {
-                workerLog.warn({ appVersion, workerVersion: AP_VERSION }, 'Connected app version mismatch — pausing polling until reconnect to a compatible app')
+                workerLog.warn({ appVersion, workerVersion: FEMA_VERSION }, 'Connected app version mismatch — pausing polling until reconnect to a compatible app')
             }
-            if (AP_VERSION === UNKNOWN_VERSION) {
+            if (FEMA_VERSION === UNKNOWN_VERSION) {
                 pageOnceForUnreadableWorkerVersion(workerLog)
             }
             await sleep(VERSION_MISMATCH_POLL_PAUSE_MS)
@@ -414,11 +414,11 @@ async function fetchAndStoreSettings(sock: Socket): Promise<void> {
             if (!isNil(workerGroupId)) {
                 const processSandboxedModes = [ExecutionMode.SANDBOX_PROCESS, ExecutionMode.SANDBOX_CODE_AND_PROCESS]
                 if (!processSandboxedModes.includes(response.EXECUTION_MODE as ExecutionMode)) {
-                    throw new Error(`Worker group "${workerGroupId}" requires AP_EXECUTION_MODE to be one of: ${processSandboxedModes.join(', ')}. Got: ${response.EXECUTION_MODE}`)
+                    throw new Error(`Worker group "${workerGroupId}" requires FEMA_EXECUTION_MODE to be one of: ${processSandboxedModes.join(', ')}. Got: ${response.EXECUTION_MODE}`)
                 }
                 const reuseSandbox = system.get(WorkerSystemProp.REUSE_SANDBOX)
                 if (isNil(reuseSandbox)) {
-                    throw new Error(`Worker group "${workerGroupId}" requires AP_REUSE_SANDBOX to be set (true or false)`)
+                    throw new Error(`Worker group "${workerGroupId}" requires FEMA_REUSE_SANDBOX to be set (true or false)`)
                 }
             }
             workerSettings.set(response)
@@ -436,7 +436,7 @@ function getWorkerProps(): WorkerProps {
             WORKER_CONCURRENCY: system.get(WorkerSystemProp.WORKER_CONCURRENCY)!,
             SANDBOX_MEMORY_LIMIT: settings.SANDBOX_MEMORY_LIMIT,
             REUSE_SANDBOX: system.get(WorkerSystemProp.REUSE_SANDBOX) ?? 'false',
-            version: AP_VERSION,
+            version: FEMA_VERSION,
         }
     }
     catch {

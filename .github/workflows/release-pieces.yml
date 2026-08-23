@@ -89,7 +89,7 @@ jobs:
         if: steps.changed.outputs.has_changes == 'true'
         run: npx ts-node -r tsconfig-paths/register -P packages/server/engine/tsconfig.lib.json tools/scripts/pieces/update-pieces-metadata.ts packages/pieces/framework
         env:
-          AP_CLOUD_API_KEY: ${{ secrets.AP_CLOUD_API_KEY }}
+          FEMA_CLOUD_API_KEY: ${{ secrets.FEMA_CLOUD_API_KEY }}
           NODE_OPTIONS: "--max-old-space-size=8192"
           CHANGED_PIECES: ${{ steps.changed.outputs.changed_dirs }}
 

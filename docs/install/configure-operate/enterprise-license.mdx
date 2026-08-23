@@ -15,7 +15,7 @@ For licensing inquiries regarding the self-hosted enterprise edition, please rea
 <Note>You can request a trial key from within the app or in the cloud by filling out the form. Alternatively, you can contact sales at [https://www.activepieces.com/sales](https://www.activepieces.com/sales).<br></br>Please know that when your trial runs out, all enterprise [features](https://www.activepieces.com/pricing) will be shut down meaning any user other than the platform admin will be deactivated, and your private pieces will be deleted, which could result in flows using them to fail.</Note>
 
 <Warning>
-Before version 0.73.0, you cannot switch from CE to EE directly. We suggest upgrading to 0.73.0 with the same edition first, then switch `AP_EDITION`.
+Before version 0.73.0, you cannot switch from CE to EE directly. We suggest upgrading to 0.73.0 with the same edition first, then switch `FEMA_EDITION`.
 </Warning>
 
 <Warning>
@@ -24,8 +24,8 @@ Enterprise edition must use `PostgreSQL` as the database backend and `Redis` as 
 
 ## Installation
 
-1. Set the `AP_EDITION` environment variable to `ee`.
-2. Set `AP_EXECUTION_MODE` to anything other than `UNSANDBOXED` (see [Sandboxing Mode](./sandboxing)).
+1. Set the `FEMA_EDITION` environment variable to `ee`.
+2. Set `FEMA_EXECUTION_MODE` to anything other than `UNSANDBOXED` (see [Sandboxing Mode](./sandboxing)).
 3. Once your instance is up, activate the license key under **Platform Admin → Setup → License Keys**.
 
 ![Activation License Key](/resources/screenshots/activation-license-key-settings.png)

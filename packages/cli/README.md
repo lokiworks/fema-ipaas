@@ -16,7 +16,7 @@ Authenticate with a platform-admin API key. The CLI provisions a throwaway proje
 (with a high concurrency cap so a project rate limiter can't skew the numbers) and deletes it after:
 
 ```bash
-AP_API_KEY=<key> npx @fema/cli benchmark --url https://your-instance.example.com
+FEMA_API_KEY=<key> npx @fema/cli benchmark --url https://your-instance.example.com
 ```
 
 | Option | Default | Description |
@@ -24,7 +24,7 @@ AP_API_KEY=<key> npx @fema/cli benchmark --url https://your-instance.example.com
 | `--url` | `http://localhost:3000` | Activepieces base URL (dev env API port) |
 | `--requests` | `40 × concurrency` | Total requests to fire |
 | `--concurrency` | auto = execution slots | Concurrent connections |
-| `--api-key` | `AP_API_KEY` env | Platform-admin API key (Bearer) |
+| `--api-key` | `FEMA_API_KEY` env | Platform-admin API key (Bearer) |
 | `--body` | `{"test":true}` | JSON body sent to the webhook |
 | `--json` | | Machine-readable output |
 

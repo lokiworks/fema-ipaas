@@ -97,15 +97,15 @@ export const ApRouterStartCanvasEdge = ({
         x:
           targetX -
           HORIZONTAL_BUTTON_END_MARGIN -
-          flowCanvasConsts.AP_NODE_SIZE.ADD_BUTTON.width,
-        y: targetY - flowCanvasConsts.AP_NODE_SIZE.ADD_BUTTON.height / 2,
+          flowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.width,
+        y: targetY - flowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.height / 2,
       }
     : {
-        x: targetX - flowCanvasConsts.AP_NODE_SIZE.ADD_BUTTON.width / 2,
+        x: targetX - flowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.width / 2,
         y: targetY - verticalLineLength / 2,
       };
 
-  const labelBoxWidth = flowCanvasConsts.AP_NODE_SIZE.STEP.width - 10;
+  const labelBoxWidth = flowCanvasConsts.FEMA_NODE_SIZE.STEP.width - 10;
   const labelBoxHeight =
     flowCanvasConsts.LABEL_HEIGHT + flowCanvasConsts.LABEL_VERTICAL_PADDING;
   const getLabelBoxPosition = () => {
@@ -116,7 +116,7 @@ export const ApRouterStartCanvasEdge = ({
         ? targetX - HORIZONTAL_BUTTON_END_MARGIN + 4
         : targetX -
           HORIZONTAL_BUTTON_END_MARGIN -
-          flowCanvasConsts.AP_NODE_SIZE.ADD_BUTTON.width -
+          flowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.width -
           HORIZONTAL_LABEL_BUTTON_GAP;
       return {
         x: labelEndX - labelBoxWidth,
@@ -128,7 +128,7 @@ export const ApRouterStartCanvasEdge = ({
       y:
         targetY -
         verticalLineLength / 2 -
-        flowCanvasConsts.AP_NODE_SIZE.ADD_BUTTON.height -
+        flowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.height -
         30,
     };
   };
@@ -161,8 +161,8 @@ export const ApRouterStartCanvasEdge = ({
         <foreignObject
           x={buttonPosition.x}
           y={buttonPosition.y}
-          width={flowCanvasConsts.AP_NODE_SIZE.ADD_BUTTON.width}
-          height={flowCanvasConsts.AP_NODE_SIZE.ADD_BUTTON.height}
+          width={flowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.width}
+          height={flowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.height}
           className="overflow-visible"
         >
           {data.stepLocationRelativeToParent !==

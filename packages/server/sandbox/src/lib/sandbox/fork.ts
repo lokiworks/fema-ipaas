@@ -14,7 +14,7 @@ export function simpleProcess(enginePath: string, codeDirectory: string): Sandbo
                 execArgv: engineNodeArgs(params.resourceLimits),
                 env: {
                     ...params.env,
-                    AP_BASE_CODE_DIRECTORY: codeDirectory,
+                    FEMA_BASE_CODE_DIRECTORY: codeDirectory,
                     SANDBOX_ID: params.sandboxId,
                 },
             })

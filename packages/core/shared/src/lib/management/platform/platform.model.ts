@@ -36,7 +36,7 @@ export enum AiCreditsAutoTopUpState {
 }
 
 export enum ConsumableFeatureId {
-    AP_CREDITS = 'apCredits',
+    FEMA_CREDITS = 'apCredits',
     APP_SUMO_AI_CREDITS = 'appSumoAiCredits',
 }
 
@@ -259,7 +259,7 @@ const ConsumableBillableFeatureShape = {
 }
 
 export const CreditsBillableFeature = z.object({
-    featureId: z.literal(ConsumableFeatureId.AP_CREDITS),
+    featureId: z.literal(ConsumableFeatureId.FEMA_CREDITS),
     ...ConsumableBillableFeatureShape,
 })
 export type CreditsBillableFeature = z.infer<typeof CreditsBillableFeature>

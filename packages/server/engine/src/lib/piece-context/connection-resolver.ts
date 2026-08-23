@@ -53,7 +53,7 @@ const handleResponseError = ({ externalId, httpStatus }: HandleResponseErrorPara
 }
 
 const assertPieceBinding = ({ externalId, pieceName, connection }: AssertPieceBindingParams): void => {
-    const enforced = process.env.AP_ENFORCE_CONNECTION_PIECE_BINDING === 'true'
+    const enforced = process.env.FEMA_ENFORCE_CONNECTION_PIECE_BINDING === 'true'
     if (!enforced || connection.pieceName === pieceName) {
         return
     }

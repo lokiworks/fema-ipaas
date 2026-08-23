@@ -2,15 +2,15 @@
 status: accepted
 ---
 
-# Transitional multi-box concurrency (honor AP_WORKER_CONCURRENCY)
+# Transitional multi-box concurrency (honor FEMA_WORKER_CONCURRENCY)
 
 ## Decision
 
-A worker honors `AP_WORKER_CONCURRENCY=N` by running N poll loops over N in-process sandbox boxes in one container: `createSandboxRuntime({ concurrency })` holds the array of boxes, and `execute` routes each job to its box by `workerIndex`. Default restored to 5 (main's historical value), so the default deployment preserves the old multi-box behavior exactly. Amends, does not supersede, "Worker is the Sandbox".
+A worker honors `FEMA_WORKER_CONCURRENCY=N` by running N poll loops over N in-process sandbox boxes in one container: `createSandboxRuntime({ concurrency })` holds the array of boxes, and `execute` routes each job to its box by `workerIndex`. Default restored to 5 (main's historical value), so the default deployment preserves the old multi-box behavior exactly. Amends, does not supersede, "Worker is the Sandbox".
 
 ## Context
 
-"Worker is the Sandbox" collapsed worker+sandbox at concurrency 1 and scaled by replicas, and that is still the destination. But shipping concurrency-1-only would silently drop existing `AP_WORKER_CONCURRENCY=N` deployments to 1/N of their per-container throughput overnight.
+"Worker is the Sandbox" collapsed worker+sandbox at concurrency 1 and scaled by replicas, and that is still the destination. But shipping concurrency-1-only would silently drop existing `FEMA_WORKER_CONCURRENCY=N` deployments to 1/N of their per-container throughput overnight.
 
 ## Why
 

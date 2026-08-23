@@ -160,31 +160,31 @@ describe('createSandboxForJob', () => {
             const env = createSandboxMock.mock.calls[0][2].env
             expect(env).toMatchObject({
                 HOME: '/tmp/',
-                AP_EXECUTION_MODE: ExecutionMode.SANDBOX_PROCESS,
-                AP_MAX_FLOW_RUN_LOG_SIZE_MB: '25',
-                AP_MAX_FILE_SIZE_MB: '50',
+                FEMA_EXECUTION_MODE: ExecutionMode.SANDBOX_PROCESS,
+                FEMA_MAX_FLOW_RUN_LOG_SIZE_MB: '25',
+                FEMA_MAX_FILE_SIZE_MB: '50',
                 NODE_PATH: '/usr/src/node_modules',
-                AP_NETWORK_MODE: NetworkMode.STRICT,
+                FEMA_NETWORK_MODE: NetworkMode.STRICT,
             })
-            expect('AP_EGRESS_PROXY_URL' in env).toBe(false)
+            expect('FEMA_EGRESS_PROXY_URL' in env).toBe(false)
         })
 
-        it('forwards AP_ENFORCE_CONNECTION_PIECE_BINDING only when enabled', () => {
+        it('forwards FEMA_ENFORCE_CONNECTION_PIECE_BINDING only when enabled', () => {
             const disabled = buildSettings({ ENFORCE_CONNECTION_PIECE_BINDING: false })
             createSandboxForJob({ log, boxId: 1, reusable: false, basePath: '/tmp', getSettings: () => disabled })
-            expect('AP_ENFORCE_CONNECTION_PIECE_BINDING' in createSandboxMock.mock.calls[0][2].env).toBe(false)
+            expect('FEMA_ENFORCE_CONNECTION_PIECE_BINDING' in createSandboxMock.mock.calls[0][2].env).toBe(false)
 
             const enabled = buildSettings({ ENFORCE_CONNECTION_PIECE_BINDING: true })
             createSandboxForJob({ log, boxId: 1, reusable: false, basePath: '/tmp', getSettings: () => enabled })
-            expect(createSandboxMock.mock.calls[1][2].env.AP_ENFORCE_CONNECTION_PIECE_BINDING).toBe('true')
+            expect(createSandboxMock.mock.calls[1][2].env.FEMA_ENFORCE_CONNECTION_PIECE_BINDING).toBe('true')
         })
 
-        it('omits AP_DEV_PIECES when DEV_PIECES is empty', () => {
+        it('omits FEMA_DEV_PIECES when DEV_PIECES is empty', () => {
             const settings = buildSettings({ DEV_PIECES: [] })
             createSandboxForJob({ log, boxId: 1, reusable: false, basePath: '/tmp', getSettings: () => settings })
 
             const env = createSandboxMock.mock.calls[0][2].env
-            expect(env.AP_DEV_PIECES).toBeUndefined()
+            expect(env.FEMA_DEV_PIECES).toBeUndefined()
         })
 
         it('joins DEV_PIECES with comma', () => {
@@ -192,7 +192,7 @@ describe('createSandboxForJob', () => {
             createSandboxForJob({ log, boxId: 1, reusable: false, basePath: '/tmp', getSettings: () => settings })
 
             const env = createSandboxMock.mock.calls[0][2].env
-            expect(env.AP_DEV_PIECES).toBe('a,b,c')
+            expect(env.FEMA_DEV_PIECES).toBe('a,b,c')
         })
 
         it('only propagates env vars that exist in process.env (no undefined leak)', () => {
@@ -238,9 +238,9 @@ describe('createSandboxForJob', () => {
         expect(createSandboxMock.mock.calls[0][2].reusable).toBe(true)
     })
 
-    // AP_NETWORK_MODE in the sandbox env now mirrors the live workerSettings.NETWORK_MODE
+    // FEMA_NETWORK_MODE in the sandbox env now mirrors the live workerSettings.NETWORK_MODE
     // directly. There is no egress proxy or kernel firewall to drift against, so the
-    // proxyPort axis (and AP_EGRESS_PROXY_URL) is gone — STRICT only toggles the engine's
+    // proxyPort axis (and FEMA_EGRESS_PROXY_URL) is gone — STRICT only toggles the engine's
     // best-effort in-process ssrfGuard.
     describe('sandbox network mode mirrors settings', () => {
         it('NETWORK_MODE=STRICT in settings → engine sees STRICT, no proxy URL', () => {
@@ -248,8 +248,8 @@ describe('createSandboxForJob', () => {
             createSandboxForJob({ log, boxId: 1, reusable: false, basePath: '/tmp', getSettings: () => settings })
 
             const env = createSandboxMock.mock.calls[0][2].env
-            expect(env.AP_NETWORK_MODE).toBe(NetworkMode.STRICT)
-            expect('AP_EGRESS_PROXY_URL' in env).toBe(false)
+            expect(env.FEMA_NETWORK_MODE).toBe(NetworkMode.STRICT)
+            expect('FEMA_EGRESS_PROXY_URL' in env).toBe(false)
         })
 
         it('NETWORK_MODE=UNRESTRICTED in settings → engine sees UNRESTRICTED', () => {
@@ -257,7 +257,7 @@ describe('createSandboxForJob', () => {
             createSandboxForJob({ log, boxId: 1, reusable: false, basePath: '/tmp', getSettings: () => settings })
 
             const env = createSandboxMock.mock.calls[0][2].env
-            expect(env.AP_NETWORK_MODE).toBe(NetworkMode.UNRESTRICTED)
+            expect(env.FEMA_NETWORK_MODE).toBe(NetworkMode.UNRESTRICTED)
         })
     })
 })

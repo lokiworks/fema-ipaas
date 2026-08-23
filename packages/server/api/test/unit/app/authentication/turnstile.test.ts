@@ -17,16 +17,16 @@ const log = { warn: vi.fn(), info: vi.fn(), error: vi.fn() } as unknown as Fasti
 
 function configure({ site, secret }: { site?: string, secret?: string }): void {
     if (site === undefined) {
-        delete process.env.AP_TURNSTILE_SITE_KEY
+        delete process.env.FEMA_TURNSTILE_SITE_KEY
     }
     else {
-        process.env.AP_TURNSTILE_SITE_KEY = site
+        process.env.FEMA_TURNSTILE_SITE_KEY = site
     }
     if (secret === undefined) {
-        delete process.env.AP_TURNSTILE_SECRET_KEY
+        delete process.env.FEMA_TURNSTILE_SECRET_KEY
     }
     else {
-        process.env.AP_TURNSTILE_SECRET_KEY = secret
+        process.env.FEMA_TURNSTILE_SECRET_KEY = secret
     }
 }
 

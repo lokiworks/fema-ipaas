@@ -68,7 +68,7 @@ try {
   envConfig = dotenv.parse(fs.readFileSync('.env.dev', 'utf-8'));
 } catch { }
 
-const devPieces = process.env.AP_DEV_PIECES || envConfig.AP_DEV_PIECES;
+const devPieces = process.env.FEMA_DEV_PIECES || envConfig.FEMA_DEV_PIECES;
 
 if (devPieces) {
   const pieceNames = [...new Set(devPieces.split(',').map(n => n.trim()))];

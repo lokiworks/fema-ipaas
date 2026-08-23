@@ -193,13 +193,13 @@ jobs:
     env:
       # dotenv (vitest.setup.ts) loads .env.tests WITHOUT overriding values already
       # present in the environment, so these job-level vars win over the PGLITE defaults.
-      AP_DB_TYPE: POSTGRES
-      AP_POSTGRES_HOST: localhost
-      AP_POSTGRES_PORT: "5432"
-      AP_POSTGRES_DATABASE: activepieces
-      AP_POSTGRES_USERNAME: postgres
-      AP_POSTGRES_PASSWORD: postgres
-      AP_POSTGRES_USE_SSL: "false"
+      FEMA_DB_TYPE: POSTGRES
+      FEMA_POSTGRES_HOST: localhost
+      FEMA_POSTGRES_PORT: "5432"
+      FEMA_POSTGRES_DATABASE: activepieces
+      FEMA_POSTGRES_USERNAME: postgres
+      FEMA_POSTGRES_PASSWORD: postgres
+      FEMA_POSTGRES_USE_SSL: "false"
     steps:
       - uses: actions/checkout@v5
         with:

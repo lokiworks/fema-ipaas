@@ -1,6 +1,6 @@
 ---
 title: "Sandboxing Mode"
-description: "Choose how flow code is isolated and set AP_EXECUTION_MODE accordingly"
+description: "Choose how flow code is isolated and set FEMA_EXECUTION_MODE accordingly"
 icon: "code"
 ---
 
@@ -14,7 +14,7 @@ Decide how flow code is isolated before you go to production. Here is a simplifi
 **Single-tenant** → use No Sandboxing. Faster, and needs no privileged Docker access.
 </Tip>
 
-Set the mode with the `AP_EXECUTION_MODE` environment variable. The table below lists every mode and its exact value:
+Set the mode with the `FEMA_EXECUTION_MODE` environment variable. The table below lists every mode and its exact value:
 
 <Snippet file="execution-mode.mdx" />
 

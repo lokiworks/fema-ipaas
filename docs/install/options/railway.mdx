@@ -47,7 +47,7 @@ See the [Sandboxing](/install/architecture/sandboxing) documentation for details
 
 #### Other Important Variables
 
-- `AP_TELEMETRY_ENABLED`: Enable/disable telemetry (default: `false`)
+- `FEMA_TELEMETRY_ENABLED`: Enable/disable telemetry (default: `false`)
 
 For a complete list of all available environment variables, see the [Environment Variables](/install/reference/environment-variables) documentation.
 
@@ -58,7 +58,7 @@ Railway supports custom domains with automatic SSL:
 1. Go to your Railway project dashboard
 2. Navigate to **Settings** → **Networking**
 3. Add your custom domain
-4. Update `AP_FRONTEND_URL` environment variable to match your custom domain
+4. Update `FEMA_FRONTEND_URL` environment variable to match your custom domain
 5. Railway will automatically provision SSL certificates
 
 For more details on SSL configuration, see the [Setup SSL](/install/configure-operate/setup-ssl) guide.
@@ -68,7 +68,7 @@ For more details on SSL configuration, see the [Setup SSL](/install/configure-op
 Before deploying to production, review these important points:
 
 - [ ] Review [Security Practices](/admin-guide/security/practices) documentation
-- [ ] Configure `AP_WORKER_CONCURRENCY` based on your workload and hardware resources
+- [ ] Configure `FEMA_WORKER_CONCURRENCY` based on your workload and hardware resources
 - [ ] Ensure PostgreSQL backups are configured in Railway
 - [ ] Consider database scaling options in Railway
 

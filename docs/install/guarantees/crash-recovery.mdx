@@ -7,7 +7,7 @@ icon: "shield-check"
 When infrastructure fails mid-flow, your runs survive. A worker can crash, get OOM-killed, be evicted, or be rolled in a deploy, and the run continues on another worker. It picks up where it left off, without repeating completed work and without being dropped.
 
 <Note>
-These guarantees describe the [recommended production setup](/install/configure-operate/production-setup): one flow per worker (`AP_WORKER_CONCURRENCY=1`), S3 file storage, and a reused engine process. They are converging with the shipped defaults. Activepieces Cloud upholds the same guarantees through a different sandbox mechanism; see [Sandboxing](/install/architecture/sandboxing).
+These guarantees describe the [recommended production setup](/install/configure-operate/production-setup): one flow per worker (`FEMA_WORKER_CONCURRENCY=1`), S3 file storage, and a reused engine process. They are converging with the shipped defaults. Activepieces Cloud upholds the same guarantees through a different sandbox mechanism; see [Sandboxing](/install/architecture/sandboxing).
 </Note>
 
 Three promises follow from one mechanism:

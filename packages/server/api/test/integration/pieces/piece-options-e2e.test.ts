@@ -7,7 +7,7 @@
  * Prerequisites:
  *   - Engine must be built (cache/v8/common/main.js)
  *   - bun must be available for piece installation
- *   - Redis (in-memory via AP_REDIS_TYPE=MEMORY) is started automatically
+ *   - Redis (in-memory via FEMA_REDIS_TYPE=MEMORY) is started automatically
  */
 import { apDayjs } from '@fema/server-utils'
 import {

@@ -54,7 +54,7 @@ it keeps the cache warm across a customer's own projects. Purging a customer is 
 
 **A constant directory level, not a variable one, and not a name prefix.** The first shape of this
 decision used a flat `ar_<platformId>_<hash>` segment, on the grounds that a directory level would mean
-threading `platformId` into the process maker — in fork mode `AP_BASE_CODE_DIRECTORY` is fixed at
+threading `platformId` into the process maker — in fork mode `FEMA_BASE_CODE_DIRECTORY` is fixed at
 `getProcessMaker` time, before `platformId` is known — and changing the engine's read path. That objection
 is real but applies only to a **variable** first level like `codes/<platformId>/<hash>/`. `action-runs/` is
 a **constant**, so the base code directory stays `/root/codes`, both process makers are untouched, and
@@ -67,7 +67,7 @@ empty platform directories whose pruning races peer replicas creating them. Per-
 **The nesting cannot be hidden from the engine.** The tempting version is host-side only — keep the
 directory at `codes/action-runs/<ns>` but mount it back to `/root/codes/<ns>` so the namespace the engine
 holds stays a single segment. That works in isolate mode and breaks in fork mode, where
-`AP_BASE_CODE_DIRECTORY` is the real host `codes/` path with no mount indirection and the engine reads
+`FEMA_BASE_CODE_DIRECTORY` is the real host `codes/` path with no mount indirection and the engine reads
 `<codes>/<namespace>/<stepName>/index.js` straight off the host filesystem. The namespace string the engine
 receives must therefore literally contain `action-runs/`, which is why `assertSafePathSegment` could no
 longer gate it alone.
@@ -106,7 +106,7 @@ inside `ACTION_RUN_CACHE_ACTIVE_WINDOW_MS`**, set at 15 minutes because provisio
 is left above the cap until it ages out, so disk overshoots instead of a run dying. That case still logs,
 carrying `activeCount`, so a permanently blocked eviction is never silent.
 
-**`ACTION_RUN_CACHE_MAX_DIRS` should still exceed `AP_WORKER_CONCURRENCY` × replicas sharing the mount** — 25 on the
+**`ACTION_RUN_CACHE_MAX_DIRS` should still exceed `FEMA_WORKER_CONCURRENCY` × replicas sharing the mount** — 25 on the
 reference topology (`replicas: 5`, configs.ts concurrency default 5) against a cap of 200, an 8× margin. That
 is now a *utilization* invariant rather than a safety one: below it the active-window skip blocks every
 eviction and the cap stops holding. ADR 0002 pushes operators *down* on concurrency rather than up, since at
@@ -126,7 +126,7 @@ longer TTL buys near-zero hit rate for proportionally more residency.
 every 30 minutes, once" is a system job on the shared `system-job-queue`, or a `distributedLock` so only one
 replica sweeps. Neither is available here, for three independent reasons:
 
-- **A dedicated worker has no Redis and cannot be given one cheaply.** `AP_CONTAINER_TYPE=WORKER` boots only
+- **A dedicated worker has no Redis and cannot be given one cheaply.** `FEMA_CONTAINER_TYPE=WORKER` boots only
   `packages/server/worker` under PM2 — no Fastify app, no TypeORM connection, no Redis client anywhere in the
   process. `distributedLock` is defined in `packages/server/api/src/app/database/redis-connections.ts`, and
   `worker`'s `package.json` depends on `sandbox`, `server-utils`, `shared` and the `core-*` members — not on
@@ -135,7 +135,7 @@ replica sweeps. Neither is available here, for three independent reasons:
   bundle. This is already observed in production — workers carry no Redis env at all and reach the queue only
   through the app over Socket.IO ([[workers]]).
 - **Redis in the worker would widen the trust boundary.** A worker's only credential is a scoped
-  `AP_WORKER_TOKEN` over a socket, which is what lets one run on a machine not trusted with the platform's
+  `FEMA_WORKER_TOKEN` over a socket, which is what lets one run on a machine not trusted with the platform's
   queue. Redis holds every queue and every lock for the whole deployment; handing that to each replica in
   order to schedule a `readdir` is not a trade worth making.
 - **A system job is the wrong shape even where Redis is present.** `systemJobsSchedule(...).startWorker()` is

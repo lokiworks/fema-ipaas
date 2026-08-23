@@ -11,8 +11,8 @@ import customHtmlPlugin from './vite-plugins/html-plugin';
 export default defineConfig(({ command, mode }) => {
   const isDev = command === 'serve' || mode === 'development';
 
-  const AP_TITLE = 'Activepieces';
-  const AP_FAVICON = 'https://activepieces.com/favicon.ico';
+  const FEMA_TITLE = 'Activepieces';
+  const FEMA_FAVICON = 'https://activepieces.com/favicon.ico';
 
   return {
     root: __dirname,
@@ -132,8 +132,8 @@ export default defineConfig(({ command, mode }) => {
       tailwindcss(),
       tsconfigPaths(),
       customHtmlPlugin({
-        title: AP_TITLE,
-        icon: AP_FAVICON,
+        title: FEMA_TITLE,
+        icon: FEMA_FAVICON,
       }),
       ...(isDev
         ? [

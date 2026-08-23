@@ -38,16 +38,16 @@ it.
 
 | Limit | Cloud | Env var | Self-hosted default |
 |---|---|---|---|
-| Flow run timeout | 10 min | `AP_FLOW_TIMEOUT_SECONDS` | `600` |
+| Flow run timeout | 10 min | `FEMA_FLOW_TIMEOUT_SECONDS` | `600` |
 | Worker process memory | 1 GB | the worker container's memory cap | `1 GB` |
-| Paused flow lifetime | 30 days | `AP_PAUSED_FLOW_TIMEOUT_DAYS` | `30` |
-| Execution data retention | 30 days | `AP_EXECUTION_DATA_RETENTION_DAYS` | `30` |
-| Worker concurrency (per worker) | 1 | `AP_WORKER_CONCURRENCY` | `5` (set to `1` — see [Production Setup](/install/configure-operate/production-setup)) |
+| Paused flow lifetime | 30 days | `FEMA_PAUSED_FLOW_TIMEOUT_DAYS` | `30` |
+| Execution data retention | 30 days | `FEMA_EXECUTION_DATA_RETENTION_DAYS` | `30` |
+| Worker concurrency (per worker) | 1 | `FEMA_WORKER_CONCURRENCY` | `5` (set to `1` — see [Production Setup](/install/configure-operate/production-setup)) |
 
 <Tip>
 Run logs, step files, and execution events are deleted after the retention
-window. `AP_PAUSED_FLOW_TIMEOUT_DAYS` **cannot exceed**
-`AP_EXECUTION_DATA_RETENTION_DAYS` — a paused flow can't outlive the data it
+window. `FEMA_PAUSED_FLOW_TIMEOUT_DAYS` **cannot exceed**
+`FEMA_EXECUTION_DATA_RETENTION_DAYS` — a paused flow can't outlive the data it
 needs to resume.
 </Tip>
 
@@ -55,8 +55,8 @@ Platform admins can shorten the execution-data retention window for a single
 project by setting `executionDataRetentionDays` on the
 [update project endpoint](/endpoints/projects/update); `null` reverts the
 project to the instance-wide value. The value must be between
-`AP_PAUSED_FLOW_TIMEOUT_DAYS` (a shorter window would delete the data a
-still-paused run needs to resume) and `AP_EXECUTION_DATA_RETENTION_DAYS` (the
+`FEMA_PAUSED_FLOW_TIMEOUT_DAYS` (a shorter window would delete the data a
+still-paused run needs to resume) and `FEMA_EXECUTION_DATA_RETENTION_DAYS` (the
 instance value is the ceiling). Raise the instance value if you need a wider
 range to place projects in. If either variable changes after an override was
 saved, the override is clamped back into the new bounds at cleanup time.
@@ -80,25 +80,25 @@ and outputs of every step in a single run.
 
 | Limit | Cloud | Env var | Self-hosted default |
 |---|---|---|---|
-| Step file size | 10 MB | `AP_MAX_FILE_SIZE_MB` | `25` |
-| Flow run log size (combined inputs + outputs, includes sliced payloads) | 25 MB | `AP_MAX_FLOW_RUN_LOG_SIZE_MB` | `50` |
-| Step output slice threshold | 32 KB | `AP_FLOW_RUN_LOG_SLICE_THRESHOLD_KB` | `32` |
-| Step input truncate threshold | 2 KB | `AP_FLOW_RUN_LOG_INPUT_TRUNCATE_THRESHOLD_KB` | `2` |
+| Step file size | 10 MB | `FEMA_MAX_FILE_SIZE_MB` | `25` |
+| Flow run log size (combined inputs + outputs, includes sliced payloads) | 25 MB | `FEMA_MAX_FLOW_RUN_LOG_SIZE_MB` | `50` |
+| Step output slice threshold | 32 KB | `FEMA_FLOW_RUN_LOG_SLICE_THRESHOLD_KB` | `32` |
+| Step input truncate threshold | 2 KB | `FEMA_FLOW_RUN_LOG_INPUT_TRUNCATE_THRESHOLD_KB` | `2` |
 
 **How it works**
 
-- **Input** — values above `AP_FLOW_RUN_LOG_INPUT_TRUNCATE_THRESHOLD_KB` are
+- **Input** — values above `FEMA_FLOW_RUN_LOG_INPUT_TRUNCATE_THRESHOLD_KB` are
   replaced with a placeholder in the log; the step still receives the full
   value at runtime.
-- **Output** — outputs above `AP_FLOW_RUN_LOG_SLICE_THRESHOLD_KB` are offloaded
+- **Output** — outputs above `FEMA_FLOW_RUN_LOG_SLICE_THRESHOLD_KB` are offloaded
   to object storage and replaced with a reference in the log; the payload is
   re-hydrated on demand.
 - **Total** — the cumulative size of inputs and outputs (counting the
   **original** size of offloaded outputs) is capped by
-  `AP_MAX_FLOW_RUN_LOG_SIZE_MB`. Runs that exceed it end with status
+  `FEMA_MAX_FLOW_RUN_LOG_SIZE_MB`. Runs that exceed it end with status
   `LOG_SIZE_EXCEEDED` — regardless of how many outputs were offloaded to object
-  storage. Lowering `AP_FLOW_RUN_LOG_SLICE_THRESHOLD_KB` will **not** buy more
-  log headroom; only raising `AP_MAX_FLOW_RUN_LOG_SIZE_MB` does.
+  storage. Lowering `FEMA_FLOW_RUN_LOG_SLICE_THRESHOLD_KB` will **not** buy more
+  log headroom; only raising `FEMA_MAX_FLOW_RUN_LOG_SIZE_MB` does.
 
 ---
 
@@ -109,9 +109,9 @@ incoming payload can be.
 
 | Limit | Cloud | Env var | Self-hosted default |
 |---|---|---|---|
-| Sync webhook response timeout | 30 s | `AP_WEBHOOK_TIMEOUT_SECONDS` | `30` |
-| Max webhook payload size | 5 MB | `AP_MAX_WEBHOOK_PAYLOAD_SIZE_MB` | `25` |
-| Webhook payload inline threshold | 1024 KB | `AP_WEBHOOK_PAYLOAD_INLINE_THRESHOLD_KB` | `512` |
+| Sync webhook response timeout | 30 s | `FEMA_WEBHOOK_TIMEOUT_SECONDS` | `30` |
+| Max webhook payload size | 5 MB | `FEMA_MAX_WEBHOOK_PAYLOAD_SIZE_MB` | `25` |
+| Webhook payload inline threshold | 1024 KB | `FEMA_WEBHOOK_PAYLOAD_INLINE_THRESHOLD_KB` | `512` |
 
 <Tip>
 For synchronous webhook requests (URLs ending in `/sync`), Activepieces will
@@ -132,7 +132,7 @@ your database size and is read and written in full on each access.
 | Limit | Cloud | Env var | Self-hosted default |
 |---|---|---|---|
 | Maximum key length | 128 characters | not configurable | `128` |
-| Maximum value size | 512 KB | `AP_MAX_STORE_ENTRY_VALUE_SIZE_KB` | `512` |
+| Maximum value size | 512 KB | `FEMA_MAX_STORE_ENTRY_VALUE_SIZE_KB` | `512` |
 
 <Tip>
 Raising the value size lets a flow stash bigger payloads (for example, data

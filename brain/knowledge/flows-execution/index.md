@@ -38,7 +38,7 @@ Defines how/when a flow starts. Registered as a `TriggerSource` (unique per proj
 Primary entry point for inbound HTTP → flow execution. 5 public routes: sync/async × prod/draft + test-only.
 - Sync (`/:flowId/sync`) blocks the connection and returns the flow response via `engineResponseWatcher` (default 30s timeout). Async returns 200 + `x-webhook-id` and queues a BullMQ job.
 - Payloads >512KB offloaded to a `WEBHOOK_PAYLOAD` file; job carries an inline-or-ref `JobPayload`. Engine resolves the ref at exec time — workers no longer fetch payloads.
-- Handshake verification (HEADER/QUERY/BODY_PARAM/HEAD_REQUEST) runs BEFORE the disabled-flow guard. Version resolution = `LOCKED_FALL_BACK_TO_LATEST`. Payload cap `AP_MAX_WEBHOOK_PAYLOAD_SIZE_MB` (5MB → 413).
+- Handshake verification (HEADER/QUERY/BODY_PARAM/HEAD_REQUEST) runs BEFORE the disabled-flow guard. Version resolution = `LOCKED_FALL_BACK_TO_LATEST`. Payload cap `FEMA_MAX_WEBHOOK_PAYLOAD_SIZE_MB` (5MB → 413).
 
 ### Human Input (Forms & Chat)
 Public read-only endpoints returning UI metadata for flows whose trigger is `@fema/connector-forms`. Triggers: `form_submission`, `file_submission`, `chat_submission`.

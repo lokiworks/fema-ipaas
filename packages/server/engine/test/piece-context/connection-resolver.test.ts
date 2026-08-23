@@ -163,11 +163,11 @@ describe('connection-resolver service', () => {
         expect(fetchSpy).toHaveBeenCalledTimes(4)
     })
 
-    describe('AP_ENFORCE_CONNECTION_PIECE_BINDING', () => {
+    describe('FEMA_ENFORCE_CONNECTION_PIECE_BINDING', () => {
         const pieceName = '@fema/connector-slack'
 
         afterEach(() => {
-            delete process.env.AP_ENFORCE_CONNECTION_PIECE_BINDING
+            delete process.env.FEMA_ENFORCE_CONNECTION_PIECE_BINDING
         })
 
         const mockFetchReturning = (connectionPieceName: string) => {
@@ -178,7 +178,7 @@ describe('connection-resolver service', () => {
         }
 
         it('throws ConnectionPieceMismatchError for another piece when enabled', async () => {
-            process.env.AP_ENFORCE_CONNECTION_PIECE_BINDING = 'true'
+            process.env.FEMA_ENFORCE_CONNECTION_PIECE_BINDING = 'true'
             mockFetchReturning('@fema/connector-google-sheets')
 
             const resolver = createConnectionResolver({ ...RESOLVER_PARAMS, pieceName })
@@ -186,7 +186,7 @@ describe('connection-resolver service', () => {
         })
 
         it('resolves a connection for the same piece when enabled', async () => {
-            process.env.AP_ENFORCE_CONNECTION_PIECE_BINDING = 'true'
+            process.env.FEMA_ENFORCE_CONNECTION_PIECE_BINDING = 'true'
             mockFetchReturning(pieceName)
 
             const resolver = createConnectionResolver({ ...RESOLVER_PARAMS, pieceName })
@@ -207,7 +207,7 @@ describe('connection-resolver service', () => {
         })
 
         it('throws ConnectionPieceMismatchError for a step with no piece of its own when enabled', async () => {
-            process.env.AP_ENFORCE_CONNECTION_PIECE_BINDING = 'true'
+            process.env.FEMA_ENFORCE_CONNECTION_PIECE_BINDING = 'true'
             mockFetchReturning('@fema/connector-google-sheets')
 
             const resolver = createConnectionResolver(RESOLVER_PARAMS)

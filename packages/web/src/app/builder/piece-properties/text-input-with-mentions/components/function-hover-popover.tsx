@@ -1,4 +1,4 @@
-import { AP_FUNCTIONS } from '@fema/expression';
+import { FEMA_FUNCTIONS } from '@fema/expression';
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
@@ -154,7 +154,7 @@ export function FunctionEditorTooltip({
   }
 
   const fnDef = displayState
-    ? AP_FUNCTIONS.find((f) => f.name === displayState!.functionName)
+    ? FEMA_FUNCTIONS.find((f) => f.name === displayState!.functionName)
     : null;
 
   const lastRenderRef = useRef<
@@ -196,7 +196,7 @@ export function FunctionEditorTooltip({
   );
 }
 
-type FnDef = (typeof AP_FUNCTIONS)[number];
+type FnDef = (typeof FEMA_FUNCTIONS)[number];
 
 type FunctionTooltipCardProps = {
   fnDef: FnDef;

@@ -39,8 +39,8 @@ The `activepieces` CLI is shipped with each Activepieces release; pin the versio
 
 ```bash
 # API keys via env vars (recommended for CI — keeps secrets out of process args and shell history)
-export AP_SOURCE_API_KEY="$STAGING_API_KEY"
-export AP_DEST_API_KEY="$PROD_API_KEY"
+export FEMA_SOURCE_API_KEY="$STAGING_API_KEY"
+export FEMA_DEST_API_KEY="$PROD_API_KEY"
 
 ap project replace \
   --source-url    https://staging.activepieces.com \
@@ -55,15 +55,15 @@ ap project replace \
 | Flag | Required | Purpose |
 | --- | --- | --- |
 | `--source-url` | yes | Base URL of the source instance (no trailing slash needed). |
-| `--source-api-key` | flag *or* env | Platform API key for the source. Falls back to `AP_SOURCE_API_KEY`. |
+| `--source-api-key` | flag *or* env | Platform API key for the source. Falls back to `FEMA_SOURCE_API_KEY`. |
 | `--source-project` | yes | Project id on the source instance. |
 | `--dest-url` | yes | Base URL of the destination instance. |
-| `--dest-api-key` | flag *or* env | Platform API key for the destination. Falls back to `AP_DEST_API_KEY`. |
+| `--dest-api-key` | flag *or* env | Platform API key for the destination. Falls back to `FEMA_DEST_API_KEY`. |
 | `--dest-project` | yes | Project id on the destination instance. |
 | `--json` | no | Emit machine-readable JSON instead of a human summary. |
 
 <Warning>
-**Don't pass API keys via `--source-api-key` / `--dest-api-key` flags in CI or production scripts.** Process arguments are visible to other users on the host (`ps aux`), get captured in CI log output, and persist in shell history. Use `AP_SOURCE_API_KEY` / `AP_DEST_API_KEY` environment variables instead — they don't show up in any of those places.
+**Don't pass API keys via `--source-api-key` / `--dest-api-key` flags in CI or production scripts.** Process arguments are visible to other users on the host (`ps aux`), get captured in CI log output, and persist in shell history. Use `FEMA_SOURCE_API_KEY` / `FEMA_DEST_API_KEY` environment variables instead — they don't show up in any of those places.
 </Warning>
 
 ## Exit codes
@@ -135,13 +135,13 @@ Replace finished in 1240ms
 ```jsonc
 {
   "errors": [
-    { "kind": "AP_VERSION_MISMATCH", "sourceVersion": "1.2.0", "destVersion": "1.1.5", "message": "..." },
+    { "kind": "FEMA_VERSION_MISMATCH", "sourceVersion": "1.2.0", "destVersion": "1.1.5", "message": "..." },
     { "kind": "CONNECTION_PIECE_MISMATCH", "externalId": "slack_main", "expectedPieceName": "@activepieces/piece-slack", "foundPieceName": "@activepieces/piece-discord" }
   ]
 }
 ```
 
-The full set of preflight error kinds: `AP_VERSION_MISMATCH`, `PIECE_VERSION_MISMATCH`, `CONNECTION_PIECE_MISMATCH`.
+The full set of preflight error kinds: `FEMA_VERSION_MISMATCH`, `PIECE_VERSION_MISMATCH`, `CONNECTION_PIECE_MISMATCH`.
 
 ### Install failures (exit 3, HTTP 502)
 
@@ -207,8 +207,8 @@ jobs:
             --dest-project "${{ vars.PROD_PROJECT_ID }}" \
             --json
         env:
-          AP_SOURCE_API_KEY: ${{ secrets.STAGING_API_KEY }}
-          AP_DEST_API_KEY: ${{ secrets.PROD_API_KEY }}
+          FEMA_SOURCE_API_KEY: ${{ secrets.STAGING_API_KEY }}
+          FEMA_DEST_API_KEY: ${{ secrets.PROD_API_KEY }}
 ```
 
 A non-zero exit code fails the job — preflight errors, server errors, or transport errors all surface naturally to GitHub Actions without extra wiring.
@@ -231,7 +231,7 @@ A non-zero exit code fails the job — preflight errors, server errors, or trans
   <Accordion title="CONNECTION_PIECE_MISMATCH">
     The destination already has a connection with the same `externalId` but for a different piece. Either rename the source's externalId or delete/replace the conflicting connection on the destination before re-running.
   </Accordion>
-  <Accordion title="AP_VERSION_MISMATCH">
+  <Accordion title="FEMA_VERSION_MISMATCH">
     The destination is on an older version or a different major than the source. Upgrade the destination first.
   </Accordion>
   <Accordion title="Feature is disabled">

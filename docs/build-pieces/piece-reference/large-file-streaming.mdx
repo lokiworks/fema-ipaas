@@ -23,7 +23,7 @@ extra "chunk" steps in your flow; a streaming action looks and behaves like any 
 
 <Warning>
 **Requires S3 file storage.** Full streaming only works when file storage is set to S3
-(`AP_FILE_STORAGE_LOCATION=S3`). With the default database (`DB`) storage a stream **can't**
+(`FEMA_FILE_STORAGE_LOCATION=S3`). With the default database (`DB`) storage a stream **can't**
 be written into a column incrementally, so the server buffers the whole file in memory
 before saving it — which defeats the memory savings and means very large files can still
 fail. Self-hosted installs default to `DB`; set S3 to get the benefit. See
@@ -191,11 +191,11 @@ advertised length. Don't require it: prefer pattern 1 or 2, which never need it.
 ## Limits & storage
 
 - **Writing into storage is capped.** A stream passed to `ctx.files.write` is counted against
-  `AP_MAX_FILE_SIZE_MB` (Cloud: 10&nbsp;MB, self-hosted default: 25&nbsp;MB) *while* the bytes
+  `FEMA_MAX_FILE_SIZE_MB` (Cloud: 10&nbsp;MB, self-hosted default: 25&nbsp;MB) *while* the bytes
   flow; exceeding it aborts the transfer and fails the step. See
   [Limits](/install/reference/limits).
 - **Reading a streamed input is not capped.** A `streaming: true` file input has no
-  `AP_MAX_FILE_SIZE_MB` ceiling — that is deliberate, since the point of the feature is to move
+  `FEMA_MAX_FILE_SIZE_MB` ceiling — that is deliberate, since the point of the feature is to move
   files larger than the cap out to an external service.
 - **Storage backend.** Streaming end-to-end requires S3 file storage — see the callout at
   the top of this page.

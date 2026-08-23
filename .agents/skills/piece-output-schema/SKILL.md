@@ -23,7 +23,7 @@ Because the schema describes **what the action's `run()` returns** (not the raw 
 
 1. A **running local dev instance** (`npm start` / `npm run dev`). Dev pieces load from each piece's built `dist/` — see [capture-recipes.md](./capture-recipes.md#dev-piece-reload) if a piece doesn't appear.
 2. A **real, active connection** for the target piece — OAuth sign-in, API key, or whatever the piece's auth type requires. The user provides credentials.
-3. A piece not yet loaded as a dev piece gets its folder name appended to `AP_DEV_PIECES`.
+3. A piece not yet loaded as a dev piece gets its folder name appended to `FEMA_DEV_PIECES`.
 
 **Ask the user** for the piece(s) and the connection to use before starting.
 

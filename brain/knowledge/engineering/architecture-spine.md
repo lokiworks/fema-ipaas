@@ -8,7 +8,7 @@ Activepieces: open-source AI-first workflow automation platform (self-hosted or 
 
 ## Non-obvious architecture rules
 - **Multi-tenant**: Platform → Projects → Users. ALL DB queries MUST filter by `projectId` or `platformId`. Connections with multi-project access use `ArrayContains([projectId])` on `projectIds`.
-- **Editions**: CE / EE / Cloud via `AP_EDITION`; EE extends CE through the hooksFactory seam (the mechanic lives on Platform & Editions). **Never import `src/app/ee/` from CE code.**
+- **Editions**: CE / EE / Cloud via `FEMA_EDITION`; EE extends CE through the hooksFactory seam (the mechanic lives on Platform & Editions). **Never import `src/app/ee/` from CE code.**
 - **Entity registration**: new TypeORM entity MUST be added to `getEntities()` in `database-connection.ts` + migration imported in `postgres-connection.ts` + added to `getMigrations()`. No auto-discovery.
 - **HTTP**: POST for all create/update, DELETE for deletes. Never PUT/PATCH. Every endpoint needs `securityAccess`.
 - **Side effects**: separated into `*-side-effects.ts`, called explicitly after mutations.

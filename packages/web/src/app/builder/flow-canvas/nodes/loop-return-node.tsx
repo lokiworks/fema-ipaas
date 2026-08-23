@@ -21,7 +21,7 @@ const ApLoopReturnCanvasNode = () => {
               }
             : {
                 height: '1px',
-                width: flowCanvasConsts.AP_NODE_SIZE.LOOP_RETURN_NODE.width,
+                width: flowCanvasConsts.FEMA_NODE_SIZE.LOOP_RETURN_NODE.width,
               }
         }
       ></div>

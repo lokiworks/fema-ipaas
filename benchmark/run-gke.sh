@@ -26,10 +26,10 @@ echo "=== Getting cluster credentials ($CLUSTER / $ZONE) ==="
 gcloud container clusters get-credentials "$CLUSTER" --zone "$ZONE" --quiet
 
 echo "=== Minting worker token + injecting into manifest ==="
-# The JWT secret is sync'd between the signed worker token and the cluster's AP_JWT_SECRET. Override via
+# The JWT secret is sync'd between the signed worker token and the cluster's FEMA_JWT_SECRET. Override via
 # env for a non-default secret; the fallback is a throwaway value for this ephemeral, torn-down cluster.
 # Short-lived (1 day) — a benchmark run is minutes, so there is no reason to mint a long-lived token.
-JWT_SECRET="${AP_JWT_SECRET:-benchmark-$(openssl rand -hex 12)}"
+JWT_SECRET="${FEMA_JWT_SECRET:-benchmark-$(openssl rand -hex 12)}"
 TOKEN=$(JWT_SECRET="$JWT_SECRET" node -e "const jwt=require('jsonwebtoken'),crypto=require('crypto');process.stdout.write(jwt.sign({id:crypto.randomUUID(),type:'WORKER'},process.env.JWT_SECRET,{expiresIn:'1d',keyid:'1',algorithm:'HS256',issuer:'activepieces'}))")
 MANIFEST=$(mktemp)
 sed -e "s|__AP_WORKER_TOKEN__|${TOKEN}|" -e "s|__WORKER_CPU__|${WORKER_CPU}|g" -e "s|__WORKER_REPLICAS__|${WORKER_REPLICAS}|" \
@@ -138,7 +138,7 @@ echo "=== COLD BOOT: first request (cold process + cold cache) ==="
 COLD_MS=$(run_load hey-cold 1 1 | awk '/Average:/{printf "%.0f", $2 * 1000}')
 echo "Cold boot latency: ${COLD_MS} ms"
 
-# Warmup so the engine processes are hot before the measured pass (warm = AP_REUSE_SANDBOX=true).
+# Warmup so the engine processes are hot before the measured pass (warm = FEMA_REUSE_SANDBOX=true).
 # Without it the first ~CONCURRENCY cold forks drag the average down and muddy the warm number.
 WARMUP_REQUESTS=${WARMUP_REQUESTS:-500}
 echo "=== WARMUP: $WARMUP_REQUESTS requests @ concurrency $CONCURRENCY (not measured) ==="
@@ -169,7 +169,7 @@ echo ""
 echo "=== PER-RUN BREAKDOWN (avg ms across the measured pass only, from worker pod logs) ==="
 # --since-time is the measured pass's start, so the cold first request and the warmup pass are excluded
 # from the averages — this block describes warm steady state, nothing else.
-# Format-agnostic on purpose. The worker ignores AP_LOG_PRETTY and renders the `job.execute` wide event
+# Format-agnostic on purpose. The worker ignores FEMA_LOG_PRETTY and renders the `job.execute` wide event
 # with the pretty renderer (`timings: sandboxRunMs=125 ...`), but a JSON drain writes the same keys as
 # `"sandboxRunMs":125`. Strip ANSI, then harvest every `<name>Ms` number off the timings line either way —
 # parsing the keys rather than the container makes this survive the next renderer change.

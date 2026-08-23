@@ -7,7 +7,7 @@ import { StepExecutionPath } from './step-execution-path'
 
 const DEFAULT_THRESHOLD_KB = 32
 const SLICE_THRESHOLD_BYTES = Number(
-    process.env.AP_FLOW_RUN_LOG_SLICE_THRESHOLD_KB ?? DEFAULT_THRESHOLD_KB,
+    process.env.FEMA_FLOW_RUN_LOG_SLICE_THRESHOLD_KB ?? DEFAULT_THRESHOLD_KB,
 ) * 1024
 const SLICE_CACHE_BUDGET_BYTES = 64 * 1024 * 1024
 

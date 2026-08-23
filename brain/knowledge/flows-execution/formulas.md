@@ -12,7 +12,7 @@ In-builder data transformation: users transform any text input using ~104 functi
 - `preprocessExpression` pipeline: `replaceJsonArrays` → `preResolveVarsToPlaceholders` → `wrapStringArgs` (auto-quote args the registry expects as string) → `rewriteLazyIf` (`if(c;t;e)` → `(c)?(t):(e)` for short-circuit) → `normalizeExpression` (`;`→`,`, `and`/`or`/`not`→`&&`/`||`/`!`). Then `expr-eval`'s singleton `Parser` evaluates, with impls on `parser.functions.<name>`.
 
 ### Entities & files
-- `core/shared/src/lib/formula/` — `formula-evaluator.ts`, `function-registry.ts` (`AP_FUNCTIONS`, the single source of truth), `function-implementations.ts`, `function-type-checker.ts`.
+- `core/shared/src/lib/formula/` — `formula-evaluator.ts`, `function-registry.ts` (`FEMA_FUNCTIONS`, the single source of truth), `function-implementations.ts`, `function-type-checker.ts`.
 - Editor: `web/.../text-input-with-mentions/tiptap-editor.tsx` (always registers `FunctionSlashExtension` + the three inline atom badge nodes — no plan flag), search/hover popovers, `text-input-utils.ts` (doc ⇄ wrapped-string serializer). An `outputFormat: 'text' | 'html'` prop (default `'text'`) switches it into a rich-text WYSIWYG (StarterKit + toolbar) that serializes to/from HTML with mentions kept as `{{...}}` tokens; consumed by the `RICH_TEXT` property widget.
 
 ### Gotchas
@@ -28,7 +28,7 @@ In-builder data transformation: users transform any text input using ~104 functi
 ### Key files
 Entry point: `formulaEvaluator`, exported from `packages/core/formula/src/lib/formula-evaluator.ts` and imported by the engine's `props-resolver.ts` as `@fema/expression`.
 
-- `packages/core/formula/src/lib/` — the whole formula library: evaluator + wrapper format, `AP_FUNCTIONS` registry, function implementations, type checker.
+- `packages/core/formula/src/lib/` — the whole formula library: evaluator + wrapper format, `FEMA_FUNCTIONS` registry, function implementations, type checker.
 - `packages/server/engine/src/lib/variables/props-resolver.ts` — the runtime pre-pass that detects the wrapper and evaluates before normal `{{var}}` resolution.
 - `packages/web/src/app/builder/piece-properties/text-input-with-mentions/` — the editor: `tiptap-editor.tsx`, `text-input-utils.ts` serializer, and `index.tsx` re-export.
 - `packages/web/src/app/builder/piece-properties/text-input-with-mentions/extensions/` — the three inline atom badge nodes plus the `/` slash extension.

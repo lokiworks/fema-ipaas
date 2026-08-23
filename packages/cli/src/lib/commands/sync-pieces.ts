@@ -27,11 +27,11 @@ export const syncPieceCommand = new Command('sync')
       'If not provided, all custom pieces in the directory will be synced.')
     .option('-f, --fail-on-error', 'Exit the process if an error occurs while syncing a piece', false)
     .action(async (options) => {
-        const apiKey = process.env.AP_API_KEY;
+        const apiKey = process.env.FEMA_API_KEY;
         const pieces = options.pieces ? [...new Set<string>(options.pieces)] : null;
         const failOnError = options.failOnError;
         if (!apiKey) {
-            console.error(chalk.red('AP_API_KEY environment variable is required'));
+            console.error(chalk.red('FEMA_API_KEY environment variable is required'));
             process.exit(1);
         }
         await syncPieces({

@@ -108,10 +108,10 @@ function main(): void {
 }
 
 function runSelfCheck(): void {
-    assert(hasBreakingEntry(['#### AP_FOO removed', 'It is gone — remove it from your env.']) === true, 'titled entry with a body is a real entry')
-    assert(hasBreakingEntry(['#### AP_FOO removed']) === false, 'a bare heading with no body is not an entry')
+    assert(hasBreakingEntry(['#### FEMA_FOO removed', 'It is gone — remove it from your env.']) === true, 'titled entry with a body is a real entry')
+    assert(hasBreakingEntry(['#### FEMA_FOO removed']) === false, 'a bare heading with no body is not an entry')
     assert(hasBreakingEntry(['---']) === false, 'a separator is not an entry')
-    assert(hasBreakingEntry(['## 0.87.0', 'Set AP_FOO is gone.']) === false, 'a version bump without a #### title is not an entry')
+    assert(hasBreakingEntry(['## 0.87.0', 'Set FEMA_FOO is gone.']) === false, 'a version bump without a #### title is not an entry')
     assert(hasBreakingEntry(['Just a stray sentence.']) === false, 'placeholder prose without a title is not an entry')
     console.log('breaking-change-check self-check passed')
 }

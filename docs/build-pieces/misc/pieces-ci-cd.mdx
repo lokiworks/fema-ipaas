@@ -21,7 +21,7 @@ To use the CLI, follow these steps:
 
 
 ```bash
-AP_API_KEY=your_api_key_here bun run sync-pieces -- --apiUrl https://INSTANCE_URL/api
+FEMA_API_KEY=your_api_key_here bun run sync-pieces -- --apiUrl https://INSTANCE_URL/api
 ```
 
 ### Developer Workflow
@@ -75,7 +75,7 @@ jobs:
       # Step 5: Sync Custom Pieces
       - name: Sync Custom Pieces
         env:
-          AP_API_KEY: ${{ secrets.AP_API_KEY }}
+          FEMA_API_KEY: ${{ secrets.FEMA_API_KEY }}
         run: bun run sync-pieces -- --apiUrl ${{ secrets.INSTANCE_URL }}/api
 
 ```

@@ -44,11 +44,11 @@ const DEFAULT_TRIGGER_EXECUTION = 'execute-trigger'
 const DEFAULT_EXECUTE_PROPERTY = 'execute-property'
 
 export class EngineConstants {
-    public static readonly BASE_CODE_DIRECTORY = process.env.AP_BASE_CODE_DIRECTORY ?? './codes'
+    public static readonly BASE_CODE_DIRECTORY = process.env.FEMA_BASE_CODE_DIRECTORY ?? './codes'
     public static readonly INPUT_FILE = './input.json'
     public static readonly OUTPUT_FILE = './output.json'
-    public static readonly DEV_PIECES = process.env.AP_DEV_PIECES?.split(',') ?? []
-    public static readonly TEST_MODE = process.env.AP_TEST_MODE === 'true'
+    public static readonly DEV_PIECES = process.env.FEMA_DEV_PIECES?.split(',') ?? []
+    public static readonly TEST_MODE = process.env.FEMA_TEST_MODE === 'true'
 
     public readonly platformId: string
     public readonly timeoutInSeconds: number

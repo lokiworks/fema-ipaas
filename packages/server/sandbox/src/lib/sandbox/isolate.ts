@@ -27,10 +27,10 @@ const FORBIDDEN_VALUE_CHARS = /[\n\r\0]/
 const REQUIRED_SANDBOX_ENV_KEYS: readonly string[] = [
     'HOME',
     'NODE_PATH',
-    'AP_EXECUTION_MODE',
-    'AP_SANDBOX_WS_PORT',
-    'AP_SANDBOX_WS_TOKEN',
-    'AP_BASE_CODE_DIRECTORY',
+    'FEMA_EXECUTION_MODE',
+    'FEMA_SANDBOX_WS_PORT',
+    'FEMA_SANDBOX_WS_TOKEN',
+    'FEMA_BASE_CODE_DIRECTORY',
     'SANDBOX_ID',
 ]
 
@@ -68,7 +68,7 @@ export function isolateProcess(log: SandboxLogger, enginePath: string, _codeDire
             const engineSandboxPath = path.join('/root/common', path.basename(enginePath))
             const sandboxEnv = {
                 ...env,
-                AP_BASE_CODE_DIRECTORY: '/root/codes',
+                FEMA_BASE_CODE_DIRECTORY: '/root/codes',
                 SANDBOX_ID: sandboxId,
                 // /tmp is not mounted in the isolate sandbox (--no-default-dirs), so Node's
                 // os.tmpdir() default of /tmp fails with EACCES for pieces that write temp

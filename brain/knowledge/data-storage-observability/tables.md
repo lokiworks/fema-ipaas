@@ -8,7 +8,7 @@ A built-in relational database inside Activepieces: users store structured data 
 
 ### Entities & services
 - **Table** → **Field** (column) → **Record** (row) → **Cell** (value at record×field, stored as VARCHAR). All scoped to a project.
-- **FieldType**: `TEXT`, `NUMBER`, `DATE`, `DATETIME`, `STATIC_DROPDOWN`. Field limit `AP_MAX_FIELDS_PER_TABLE` (default 100), enforced by `field.validateCount({ insertCount })`.
+- **FieldType**: `TEXT`, `NUMBER`, `DATE`, `DATETIME`, `STATIC_DROPDOWN`. Field limit `FEMA_MAX_FIELDS_PER_TABLE` (default 100), enforced by `field.validateCount({ insertCount })`.
 - **position** (canonical term; avoid: order, displayOrder, index) — 0-based column order within a table. Fields list `position ASC, created ASC`, and `table.exportTable()` follows the same order.
 - **TableWebhook**: links a table event to a flow. Events: `RECORD_CREATED`, `RECORD_UPDATED`, `RECORD_DELETED`.
 - Services: `table.service.ts`, `field.service.ts`, `record.service.ts`, `record-side-effects.ts`.

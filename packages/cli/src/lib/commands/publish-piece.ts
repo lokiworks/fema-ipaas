@@ -51,8 +51,8 @@ export const publishPieceCommand = new Command('publish')
                 type: 'list',
                 name: 'apiKeySource',
                 message: 'Select the API Key source',
-                choices: ['Env Variable (AP_API_KEY)', 'Manually'],
-                default: 'Env Variable (AP_API_KEY)'
+                choices: ['Env Variable (FEMA_API_KEY)', 'Manually'],
+                default: 'Env Variable (FEMA_API_KEY)'
             }
         ]
 
@@ -65,7 +65,7 @@ export const publishPieceCommand = new Command('publish')
             }]);
             answers.apiKey = apiKeyAnswers.apiKey;
         }
-        const apiKey = answers.apiKeySource === 'Env Variable (AP_API_KEY)' ? process.env.AP_API_KEY : answers.apiKey;
+        const apiKey = answers.apiKeySource === 'Env Variable (FEMA_API_KEY)' ? process.env.FEMA_API_KEY : answers.apiKey;
         assertNullOrUndefinedOrEmpty(answers.name, 'Piece name is required');
         assertNullOrUndefinedOrEmpty(answers.apiUrl, 'API URL is required');
         assertNullOrUndefinedOrEmpty(apiKey, 'API Key is required');

@@ -5,7 +5,7 @@ Open-source AI-first workflow automation platform. Self-hosted or cloud. 400+ pi
 ## Architecture (Non-Obvious Rules)
 
 - **Multi-tenant**: Platform → Projects → Users. ALL queries MUST filter by `projectId` or `platformId`.
-- **Editions**: CE (`ce`), EE (`ee`), Cloud (`cloud`) via `AP_EDITION`. EE extends CE via `hooksFactory` — **never import `src/app/ee/` in CE code**.
+- **Editions**: CE (`ce`), EE (`ee`), Cloud (`cloud`) via `FEMA_EDITION`. EE extends CE via `hooksFactory` — **never import `src/app/ee/` in CE code**.
 - **Feature gating**: `platformMustHaveFeatureEnabled((p) => p.plan.myFlag)` on EE modules.
 - **Entity registration**: New entities MUST be added to `getEntities()` in `database-connection.ts` — TypeORM does NOT auto-discover.
 - **HTTP**: `POST` for all create/update mutations. `DELETE` for deletes. Never PUT/PATCH.
@@ -115,11 +115,11 @@ When running in `--mode=cloud`, do not use OAuth2 connections — the OAuth prov
 
 - **All customer-facing UI must be white-labeled.** Sign-in/signup pages, email templates, logos, and any user-visible branding must use the platform's configured appearance (name, colors, logos) — never hardcode "Activepieces" in user-facing surfaces.
 - **Test across all edition paths.** Every customer-facing feature must be verified on:
-  - **Community Edition** (self-hosted, `AP_EDITION=ce`) — no custom branding, open-source plan
-  - **Enterprise Edition** (self-hosted, `AP_EDITION=ee`) — custom branding behind `customAppearanceEnabled` flag
-  - **Cloud Freemium** (`AP_EDITION=cloud`, standard plan) — always applies platform branding
-  - **Cloud Self-Serve Paid** (`AP_EDITION=cloud`, upgraded plan) — same as freemium with higher limits
-  - **Cloud Enterprise** (`AP_EDITION=cloud`, enterprise plan) — full feature set
+  - **Community Edition** (self-hosted, `FEMA_EDITION=ce`) — no custom branding, open-source plan
+  - **Enterprise Edition** (self-hosted, `FEMA_EDITION=ee`) — custom branding behind `customAppearanceEnabled` flag
+  - **Cloud Freemium** (`FEMA_EDITION=cloud`, standard plan) — always applies platform branding
+  - **Cloud Self-Serve Paid** (`FEMA_EDITION=cloud`, upgraded plan) — same as freemium with higher limits
+  - **Cloud Enterprise** (`FEMA_EDITION=cloud`, enterprise plan) — full feature set
 - **Appearance is edition-gated.** Community always uses the default theme. Cloud always applies custom branding. Enterprise requires `platform.plan.customAppearanceEnabled`. See `packages/server/api/src/app/ee/helper/appearance-helper.ts`.
 - **Feature gating pattern:** Backend uses `platformMustHaveFeatureEnabled()` middleware (returns 402). Frontend uses `LockedFeatureGuard` component and `enabled: platform.plan.<flag>` on queries.
 

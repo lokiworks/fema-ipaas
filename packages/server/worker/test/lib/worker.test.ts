@@ -22,7 +22,7 @@ vi.mock('../../src/lib/execute/job-registry', () => ({
     getHandler: (...args: unknown[]) => mockGetHandler(...args),
 }))
 
-// APP_VERSION must match the worker's own AP_VERSION (apVersionUtil.getCurrentRelease, read from the
+// APP_VERSION must match the worker's own FEMA_VERSION (apVersionUtil.getCurrentRelease, read from the
 // same cwd package.json) or the worker↔app version gate fail-closes and pauses polling forever.
 // These are plain functions, not vi.fn().mockReturnValue(...) — afterEach calls vi.restoreAllMocks(),
 // which strips a mock's return value and would make getSettings() return undefined from the second
@@ -124,12 +124,12 @@ describe('worker integration', () => {
                 resolve()
             })
         })
-        process.env.AP_FRONTEND_URL = `http://127.0.0.1:${port}`
-        process.env.AP_CONTAINER_TYPE = 'WORKER'
+        process.env.FEMA_FRONTEND_URL = `http://127.0.0.1:${port}`
+        process.env.FEMA_CONTAINER_TYPE = 'WORKER'
         // These integration tests assert strict per-job ordering, which only holds with a single
         // poll loop. Pin concurrency to 1 so the multi-box transitional default (5) doesn't drain
         // the queued poll sequence out of order. See ADR 0004.
-        process.env.AP_WORKER_CONCURRENCY = '1'
+        process.env.FEMA_WORKER_CONCURRENCY = '1'
         createdRuntimes.length = 0
     })
 
@@ -137,7 +137,7 @@ describe('worker integration', () => {
         await worker.stop()
         mockGetHandler.mockReset()
         vi.restoreAllMocks()
-        delete process.env.AP_WORKER_CONCURRENCY
+        delete process.env.FEMA_WORKER_CONCURRENCY
         await new Promise<void>((resolve) => {
             ioServer.close(() => resolve())
         })
@@ -576,11 +576,11 @@ describe('worker integration', () => {
 
         beforeEach(async () => {
             healthPort = await getFreePort()
-            process.env.AP_PORT = String(healthPort)
+            process.env.FEMA_PORT = String(healthPort)
         })
 
         afterEach(() => {
-            delete process.env.AP_PORT
+            delete process.env.FEMA_PORT
         })
 
         async function startWithHealthServer(): Promise<void> {

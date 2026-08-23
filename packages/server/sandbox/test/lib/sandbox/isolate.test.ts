@@ -42,9 +42,9 @@ function createMockChild() {
 const BASE_ENV: Record<string, string> = {
     HOME: '/tmp/',
     NODE_PATH: '/usr/src/node_modules',
-    AP_EXECUTION_MODE: 'SANDBOX_PROCESS',
-    AP_SANDBOX_WS_PORT: '12345',
-    AP_SANDBOX_WS_TOKEN: 'test-token-aaaaaaaaaaaaaaaaaaaaaaaa',
+    FEMA_EXECUTION_MODE: 'SANDBOX_PROCESS',
+    FEMA_SANDBOX_WS_PORT: '12345',
+    FEMA_SANDBOX_WS_TOKEN: 'test-token-aaaaaaaaaaaaaaaaaaaaaaaa',
 }
 
 const etcDir = path.resolve(process.cwd(), 'packages/server/api/src/assets/etc')
@@ -234,10 +234,10 @@ describe('isolateProcess', () => {
     })
 
     describe('env', () => {
-        it('injects AP_BASE_CODE_DIRECTORY=/root/codes and SANDBOX_ID=<sandboxId>', async () => {
+        it('injects FEMA_BASE_CODE_DIRECTORY=/root/codes and SANDBOX_ID=<sandboxId>', async () => {
             await callCreate({ sandboxId: 'sb-xyz' })
             const args: string[] = spawnMock.mock.calls[0][1]
-            expect(args).toContain('--env=AP_BASE_CODE_DIRECTORY=/root/codes')
+            expect(args).toContain('--env=FEMA_BASE_CODE_DIRECTORY=/root/codes')
             expect(args).toContain('--env=SANDBOX_ID=sb-xyz')
         })
 
@@ -275,31 +275,31 @@ describe('isolateProcess', () => {
             expect(args).toContain('--env=MY_SECRET=hunter2')
             expect(args).toContain('--env=HOME=/tmp/')
             expect(args).toContain('--env=NODE_PATH=/usr/src/node_modules')
-            expect(args).toContain('--env=AP_EXECUTION_MODE=SANDBOX_PROCESS')
+            expect(args).toContain('--env=FEMA_EXECUTION_MODE=SANDBOX_PROCESS')
         })
 
-        it('does not allow caller-supplied env to override injected AP_BASE_CODE_DIRECTORY or SANDBOX_ID', async () => {
+        it('does not allow caller-supplied env to override injected FEMA_BASE_CODE_DIRECTORY or SANDBOX_ID', async () => {
             await callCreate({
                 sandboxId: 'sb-xyz',
                 env: {
                     ...BASE_ENV,
-                    AP_BASE_CODE_DIRECTORY: '/etc',
+                    FEMA_BASE_CODE_DIRECTORY: '/etc',
                     SANDBOX_ID: 'spoofed',
                 },
             })
             const args: string[] = spawnMock.mock.calls[0][1]
-            const baseCodeDirArgs = args.filter((a) => a.startsWith('--env=AP_BASE_CODE_DIRECTORY='))
+            const baseCodeDirArgs = args.filter((a) => a.startsWith('--env=FEMA_BASE_CODE_DIRECTORY='))
             const sandboxIdArgs = args.filter((a) => a.startsWith('--env=SANDBOX_ID='))
-            expect(baseCodeDirArgs).toEqual(['--env=AP_BASE_CODE_DIRECTORY=/root/codes'])
+            expect(baseCodeDirArgs).toEqual(['--env=FEMA_BASE_CODE_DIRECTORY=/root/codes'])
             expect(sandboxIdArgs).toEqual(['--env=SANDBOX_ID=sb-xyz'])
         })
 
         it.each([
             'HOME',
             'NODE_PATH',
-            'AP_EXECUTION_MODE',
-            'AP_SANDBOX_WS_PORT',
-            'AP_SANDBOX_WS_TOKEN',
+            'FEMA_EXECUTION_MODE',
+            'FEMA_SANDBOX_WS_PORT',
+            'FEMA_SANDBOX_WS_TOKEN',
         ])('throws when required env "%s" is missing', async (missingKey) => {
             const env = { ...BASE_ENV } as Record<string, string>
             delete env[missingKey]
@@ -312,8 +312,8 @@ describe('isolateProcess', () => {
         it.each([
             'HOME',
             'NODE_PATH',
-            'AP_EXECUTION_MODE',
-            'AP_SANDBOX_WS_TOKEN',
+            'FEMA_EXECUTION_MODE',
+            'FEMA_SANDBOX_WS_TOKEN',
         ])('throws when required env "%s" is empty string', async (key) => {
             const env = { ...BASE_ENV, [key]: '' }
             await expect(callCreate({ env })).rejects.toThrow(/Required sandbox env/)

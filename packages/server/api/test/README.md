@@ -28,8 +28,8 @@ Key helpers live under `test/helpers/`:
 ```bash
 npm run test             # runs test-ce && test-ee && test-cloud sequentially
 npm run test-unit        # vitest run test/unit --bail 1
-npm run test-ce          # loads .env.tests, AP_EDITION=ce, runs test/integration/ce
-npm run test-ee          # same, AP_EDITION=ee, runs test/integration/ee
+npm run test-ce          # loads .env.tests, FEMA_EDITION=ce, runs test/integration/ce
+npm run test-ee          # same, FEMA_EDITION=ee, runs test/integration/ee
 npm run test-cloud       # same, runs test/integration/cloud
 ```
 

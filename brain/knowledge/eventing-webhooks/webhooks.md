@@ -19,15 +19,15 @@ Webhooks are the primary entry point for event-driven flow execution from outsid
   - `/:flowId` — production async, queues job, returns 200 + `x-webhook-id`.
   - `/:flowId/draft/sync` and `/:flowId/draft` — testing against the draft version.
   - `/:flowId/test` — captures request as sample data, no execution.
-- **Async**: offload payload to S3/DB if over `AP_WEBHOOK_PAYLOAD_INLINE_THRESHOLD_KB` (default 512KB) → queue `EXECUTE_WEBHOOK` → return 200. Job carries a `JobPayload` union (`inline` or `ref`); the **engine** resolves it at execution time (workers no longer fetch payloads).
-- **Sync**: create FlowRun with `WEBHOOK_RESPONSE` → register `engineResponseWatcher` → wait (`AP_WEBHOOK_TIMEOUT_SECONDS`, default 30; callers can override, e.g. MCP uses 5 min) → return flow response or 204 on timeout.
+- **Async**: offload payload to S3/DB if over `FEMA_WEBHOOK_PAYLOAD_INLINE_THRESHOLD_KB` (default 512KB) → queue `EXECUTE_WEBHOOK` → return 200. Job carries a `JobPayload` union (`inline` or `ref`); the **engine** resolves it at execution time (workers no longer fetch payloads).
+- **Sync**: create FlowRun with `WEBHOOK_RESPONSE` → register `engineResponseWatcher` → wait (`FEMA_WEBHOOK_TIMEOUT_SECONDS`, default 30; callers can override, e.g. MCP uses 5 min) → return flow response or 204 on timeout.
 - **Version resolution** `LOCKED_FALL_BACK_TO_LATEST`: uses `publishedVersionId` if set, else latest draft.
 - **Payload normalization** (`convertRequest`): multipart parts and binary bodies upload to the File service and the payload carries URLs; JSON/text pass through. `BINARY_CONTENT_TYPE_PATTERNS` covers `image/*`, `video/*`, `audio/*`, `application/pdf|zip|gzip|octet-stream` and `text/csv` (each also needs a `addContentTypeParser` entry in `webhook-module.ts` to stream rather than parse). Subflow linkage is read off `x-parent-run-id` / `x-fail-parent-on-failure`.
 
 ### Gotchas
 - **Streaming ingestion**: webhook files stream straight to S3 (only when `FILE_STORAGE_LOCATION=S3`; DB storage still buffers to bytea). `attachFieldsToBody` is NOT registered globally — each multipart route must opt in (webhook uses `request.parts()`); a route expecting `ApMultipartFile` without the hook fails with `400 body/ Invalid input`.
 - **rawBody / signatures**: captured only for small signed types (JSON/XML/text) via a scoped `preParsing` hook. Streamed types (multipart, binary) forgo rawBody — multipart signature verification is a dropped trade-off.
-- **Size guard**: `AP_MAX_WEBHOOK_PAYLOAD_SIZE_MB` (default 5MB) → 413. Raw-binary bodies pipe through `enforceByteLimit`; oversized multipart parts are failed at end-of-stream (busboy flags `truncated` cleanly rather than erroring).
+- **Size guard**: `FEMA_MAX_WEBHOOK_PAYLOAD_SIZE_MB` (default 5MB) → 413. Raw-binary bodies pipe through `enforceByteLimit`; oversized multipart parts are failed at end-of-stream (busboy flags `truncated` cleanly rather than erroring).
 - **Handshake** runs BEFORE the disabled-flow guard, so ownership pings work both during the publish window and for re-verification on enabled flows. Strategies: `HEADER_PRESENT`, `QUERY_PRESENT`, `BODY_PARAM_PRESENT`, `NONE`, `HEAD_REQUEST` (e.g. Trello).
 - Flow resolution returns 410 GONE if not found; 404 if disabled (unless the request matches the flow's handshake config).
 

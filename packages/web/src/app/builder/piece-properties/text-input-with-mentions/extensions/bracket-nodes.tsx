@@ -1,4 +1,4 @@
-import { AP_FUNCTIONS, ApFunction } from '@fema/expression';
+import { FEMA_FUNCTIONS, ApFunction } from '@fema/expression';
 import { InputRule, Node, mergeAttributes } from '@tiptap/core';
 import { JSONContent } from '@tiptap/react';
 
@@ -11,7 +11,7 @@ const BADGE_CLASS =
 
 const ZWS = '​';
 
-const fnNamePattern = AP_FUNCTIONS.map((f) => f.name).join('|');
+const fnNamePattern = FEMA_FUNCTIONS.map((f) => f.name).join('|');
 const inputRuleRegex = new RegExp(`(${fnNamePattern})\\($`);
 
 function buildInputRuleContent(fn: ApFunction, id: string): JSONContent[] {
@@ -51,7 +51,9 @@ export const FunctionStartNode = Node.create({
   renderHTML({ node, HTMLAttributes }) {
     const broken = node.attrs.broken === true;
     const fnName = node.attrs.functionName as string;
-    const deprecated = AP_FUNCTIONS.find((f) => f.name === fnName)?.deprecated;
+    const deprecated = FEMA_FUNCTIONS.find(
+      (f) => f.name === fnName,
+    )?.deprecated;
     const classes = [BADGE_CLASS];
     if (broken) classes.push('ap-fn-broken');
     if (deprecated) classes.push('ap-fn-deprecated');
@@ -76,7 +78,7 @@ export const FunctionStartNode = Node.create({
         find: inputRuleRegex,
         handler: ({ range, match, chain }) => {
           const fnName = match[1];
-          const fn = AP_FUNCTIONS.find((f) => f.name === fnName);
+          const fn = FEMA_FUNCTIONS.find((f) => f.name === fnName);
           if (!fn) return;
           const id = crypto.randomUUID();
           const content = buildInputRuleContent(fn, id);

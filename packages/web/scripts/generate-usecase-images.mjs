@@ -242,7 +242,7 @@ async function resolveFalKeyFromDb() {
     const candidateKeys = collectEncryptionKeys()
     if (candidateKeys.length === 0) {
         throw new Error(
-            'No AP_ENCRYPTION_KEY found (env, .env.dev, .env, or settings.json). Pass FAL_KEY=... to skip the DB.',
+            'No FEMA_ENCRYPTION_KEY found (env, .env.dev, .env, or settings.json). Pass FAL_KEY=... to skip the DB.',
         )
     }
     const client = new pg.Client(buildPgConfig())
@@ -299,10 +299,10 @@ function collectEncryptionKeys() {
             keys.push({ source, key: trimmed })
         }
     }
-    push('env AP_ENCRYPTION_KEY', process.env.AP_ENCRYPTION_KEY)
+    push('env FEMA_ENCRYPTION_KEY', process.env.FEMA_ENCRYPTION_KEY)
     const settingsFiles = [
-        process.env.AP_CONFIG_PATH &&
-            path.resolve(REPO_ROOT, process.env.AP_CONFIG_PATH, 'settings.json'),
+        process.env.FEMA_CONFIG_PATH &&
+            path.resolve(REPO_ROOT, process.env.FEMA_CONFIG_PATH, 'settings.json'),
         path.join(REPO_ROOT, 'dev/config/settings.json'),
         path.join(os.homedir(), '.activepieces', 'settings.json'),
     ].filter(Boolean)
@@ -319,16 +319,16 @@ function collectEncryptionKeys() {
 }
 
 function buildPgConfig() {
-    if (process.env.AP_POSTGRES_URL) {
-        return { connectionString: process.env.AP_POSTGRES_URL }
+    if (process.env.FEMA_POSTGRES_URL) {
+        return { connectionString: process.env.FEMA_POSTGRES_URL }
     }
-    const host = process.env.AP_POSTGRES_HOST ?? 'localhost'
+    const host = process.env.FEMA_POSTGRES_HOST ?? 'localhost'
     return {
         host: host === 'postgres' ? 'localhost' : host,
-        port: Number(process.env.AP_POSTGRES_PORT ?? 5432),
-        database: process.env.AP_POSTGRES_DATABASE ?? 'activepieces',
-        user: process.env.AP_POSTGRES_USERNAME ?? 'postgres',
-        password: process.env.AP_POSTGRES_PASSWORD ?? 'A79Vm5D4p2VQHOp2gd5',
+        port: Number(process.env.FEMA_POSTGRES_PORT ?? 5432),
+        database: process.env.FEMA_POSTGRES_DATABASE ?? 'activepieces',
+        user: process.env.FEMA_POSTGRES_USERNAME ?? 'postgres',
+        password: process.env.FEMA_POSTGRES_PASSWORD ?? 'A79Vm5D4p2VQHOp2gd5',
     }
 }
 

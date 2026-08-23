@@ -15,7 +15,7 @@ import {
 } from './types'
 
 // One box per worker at the destination (concurrency 1), or N independent boxes in the transitional
-// compatibility mode that honors AP_WORKER_CONCURRENCY. Each box is its own manager, holding one
+// compatibility mode that honors FEMA_WORKER_CONCURRENCY. Each box is its own manager, holding one
 // in-flight operation at a time; the worker runs one poll loop per box and routes each execute to its
 // box by workerIndex. The boxes share the on-disk caches, which are already concurrency-safe
 // (threadSafeMkdir / cache-state), so there is no per-key provision dedup here. execute owns the slot

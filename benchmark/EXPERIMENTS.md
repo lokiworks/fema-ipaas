@@ -31,8 +31,8 @@ traffic?
 
 **Warm vs cold:**
 
-- `warm` = `AP_REUSE_SANDBOX=true` — engine process reused between jobs.
-- `cold` = `AP_REUSE_SANDBOX=false` — fresh engine fork + boot every job (the realistic isolation guarantee).
+- `warm` = `FEMA_REUSE_SANDBOX=true` — engine process reused between jobs.
+- `cold` = `FEMA_REUSE_SANDBOX=false` — fresh engine fork + boot every job (the realistic isolation guarantee).
 
 ### The flow under test
 
@@ -116,7 +116,7 @@ default** — the extra apps in 1:10 buy headroom, not a proportional throughput
 ### Notes on caching
 
 Provisioning is cheap because pieces are cached. A worker is its own sandbox and fills its piece cache
-lazily on first use (the old `AP_PRE_WARM_CACHE` up-front install step no longer exists). After first
+lazily on first use (the old `FEMA_PRE_WARM_CACHE` up-front install step no longer exists). After first
 use the piece + flow bundle live on the worker's local disk, so warm runs do zero install work — here
 flow-bundle download ≈ 2 ms and piece install ≈ 3–13 ms. On a cold/first install the archive is pulled
 from the same-region S3 bucket via a signed link (fast in-region fetch, not a slow npm round-trip).
@@ -142,9 +142,9 @@ Written up for users in `docs/install/architecture/autoscaling.mdx`.
 | Component | Configuration |
 |---|---|
 | Cluster | GKE standard, `e2-standard-4`, `--enable-autoscaling --min-nodes 2 --max-nodes 5`, `europe-west1-b` |
-| Worker | 0.5 vCPU / 1 GB, concurrency 1, `SANDBOX_CODE_ONLY`, `AP_REUSE_SANDBOX=true`, v0.85.4 |
+| Worker | 0.5 vCPU / 1 GB, concurrency 1, `SANDBOX_CODE_ONLY`, `FEMA_REUSE_SANDBOX=true`, v0.85.4 |
 | Images | worker 126 MiB compressed (13 layers), app 551 MiB (24 layers); worker registry cross-region (us-central1 → europe-west1), so pull times are an upper bound |
-| Method | `kubectl scale` timestamped, then pod events (`Scheduled`/`Pulling`/`Pulled`/`Started`) + the worker's `"Worker started, polling for jobs..."` log line (needs `AP_LOG_LEVEL=info`; the benchmark manifest defaults to `error`) |
+| Method | `kubectl scale` timestamped, then pod events (`Scheduled`/`Pulling`/`Pulled`/`Started`) + the worker's `"Worker started, polling for jobs..."` log line (needs `FEMA_LOG_LEVEL=info`; the benchmark manifest defaults to `error`) |
 
 Workers have **no readiness probe** — pod `Ready` only means the container started. The honest
 "capacity available" marker is the polling log line, which is what all numbers below use.
@@ -218,7 +218,7 @@ fleet grows from 40 to 160 workers, and which tier runs out first?
 | Component | Configuration |
 |---|---|
 | Cluster | GKE, `n2-standard-16` × 10 nodes, `europe-west1-b`, `pd-standard` boot disks |
-| Worker | concurrency 1, `SANDBOX_CODE_ONLY`, hard cap **0.5 vCPU / 1 GB**, `AP_REUSE_SANDBOX=true`. Idle RSS ~145 Mi |
+| Worker | concurrency 1, `SANDBOX_CODE_ONLY`, hard cap **0.5 vCPU / 1 GB**, `FEMA_REUSE_SANDBOX=true`. Idle RSS ~145 Mi |
 | App | `1 vCPU / 1 GB` per pod |
 | Object store | GCS `europe-west1` over the S3-interop endpoint, SigV4 presigned URLs |
 | Postgres / Redis | In-cluster singletons: PG 3 vCPU / 3 GB, `max_connections=2000`, fsync off, data dir on tmpfs; Redis 2 vCPU / 2 GB, `io-threads 4` |
@@ -271,12 +271,12 @@ assumed to be the laptop until reproduced in-cluster.
 
 ### Rig bugs fixed during this run
 
-- `run-gke.sh` minted a fresh random `AP_JWT_SECRET` per run but restarted only the worker. `envFrom` is
+- `run-gke.sh` minted a fresh random `FEMA_JWT_SECRET` per run but restarted only the worker. `envFrom` is
   read once at container start, so app pods kept the old secret and every worker socket handshake failed
   with `Authentication error` — and workers do not recover from it. Symptom: pods `Running`, fleet
   "ready", nothing consuming jobs, flow publish dying after 300 s. Fix: restart app, **wait for its
   rollout**, then restart workers.
-- The per-run breakdown parsed JSON, but the worker ignores `AP_LOG_PRETTY` and always uses the pretty
+- The per-run breakdown parsed JSON, but the worker ignores `FEMA_LOG_PRETTY` and always uses the pretty
   renderer, so it silently reported "no timing samples". Now parses the `<name>Ms` keys from either shape.
 - The breakdown scraped `--since=20m`, folding cold boot and warmup into "warm" averages. Now scoped to
   the measured pass via `--since-time`.

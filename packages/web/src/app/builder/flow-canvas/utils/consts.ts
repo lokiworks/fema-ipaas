@@ -48,7 +48,7 @@ const LINE_WIDTH = 1.5;
 const DRAGGED_STEP_TAG = 'dragged-step';
 const DRAGGED_NOTE_TAG = 'dragged-note';
 const HORIZONTAL_SPACE_BETWEEN_NODES = FLOW_CANVAS_HSPACE;
-const AP_NODE_SIZE: Record<
+const FEMA_NODE_SIZE: Record<
   Exclude<ApNodeType, ApNodeType.GRAPH_START_WIDGET | ApNodeType.NOTE>,
   { height: number; width: number }
 > = {
@@ -84,7 +84,7 @@ export const flowCanvasConsts = {
   ARC_LEFT_DOWN,
   ARC_RIGHT_DOWN,
   VERTICAL_OFFSET_BETWEEN_LOOP_AND_CHILD,
-  AP_NODE_SIZE,
+  FEMA_NODE_SIZE,
   VERTICAL_SPACE_BETWEEN_STEP_AND_LINE,
   ARROW_DOWN,
   VERTICAL_SPACE_BETWEEN_STEPS,

@@ -23,7 +23,7 @@ A Cloud-only custom hostname registered with Cloudflare so the embed is served f
 ### 🛡️ Allowed embed origins
 The list that becomes `Content-Security-Policy: frame-ancestors`. Two sources, merged and de-duplicated per request:
 1. `platform.allowedEmbedOrigins` — set via `POST /v1/embed-subdomain/allowed-embed-origins`
-2. `AP_ALLOWED_EMBED_ORIGINS` — the env list (`AppSystemProp.ALLOWED_EMBED_ORIGINS`)
+2. `FEMA_ALLOWED_EMBED_ORIGINS` — the env list (`AppSystemProp.ALLOWED_EMBED_ORIGINS`)
 
 Each entry must be a bare origin — validated by `new URL(v).origin === v`, so a value with a path or trailing slash is silently dropped.
 - *Avoid:* `allowedEmbedDomains` — the old field name, gone. It is `allowedEmbedOrigins`, and it holds origins, not domains.

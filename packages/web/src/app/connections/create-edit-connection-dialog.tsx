@@ -132,7 +132,7 @@ function CreateOrEditConnectionSection({
     });
 
   // The OIDC issuer the server signs into the token's `iss` claim is derived from the
-  // server's configured public URL (AP_FRONTEND_URL), exposed here as the PUBLIC_URL flag —
+  // server's configured public URL (FEMA_FRONTEND_URL), exposed here as the PUBLIC_URL flag —
   // NOT the browser origin, which can differ behind a proxy/custom host and would make the
   // provider URL the user registers in AWS mismatch the token issuer.
   const publicOrigin = publicUrl ?? window.location.origin;

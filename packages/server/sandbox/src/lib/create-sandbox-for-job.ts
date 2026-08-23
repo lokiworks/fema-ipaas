@@ -87,22 +87,22 @@ function buildSandboxEnv({ settings }: {
 function baseEnv({ settings, networkMode }: { settings: SandboxSettings, networkMode: NetworkMode }): Record<string, string> {
     return {
         HOME: '/tmp/',
-        AP_EXECUTION_MODE: settings.EXECUTION_MODE,
-        AP_MAX_FLOW_RUN_LOG_SIZE_MB: String(settings.MAX_FLOW_RUN_LOG_SIZE_MB),
-        AP_MAX_FILE_SIZE_MB: String(settings.MAX_FILE_SIZE_MB),
+        FEMA_EXECUTION_MODE: settings.EXECUTION_MODE,
+        FEMA_MAX_FLOW_RUN_LOG_SIZE_MB: String(settings.MAX_FLOW_RUN_LOG_SIZE_MB),
+        FEMA_MAX_FILE_SIZE_MB: String(settings.MAX_FILE_SIZE_MB),
         NODE_PATH: '/usr/src/node_modules',
-        AP_NETWORK_MODE: networkMode,
-        ...(settings.ENFORCE_CONNECTION_PIECE_BINDING ? { AP_ENFORCE_CONNECTION_PIECE_BINDING: 'true' } : {}),
+        FEMA_NETWORK_MODE: networkMode,
+        ...(settings.ENFORCE_CONNECTION_PIECE_BINDING ? { FEMA_ENFORCE_CONNECTION_PIECE_BINDING: 'true' } : {}),
     }
 }
 
 function ssrfEnv(settings: SandboxSettings): Record<string, string> {
     const env: Record<string, string> = {}
     if (settings.DEV_PIECES.length > 0) {
-        env['AP_DEV_PIECES'] = settings.DEV_PIECES.join(',')
+        env['FEMA_DEV_PIECES'] = settings.DEV_PIECES.join(',')
     }
     if (settings.SSRF_ALLOW_LIST.length > 0) {
-        env['AP_SSRF_ALLOW_LIST'] = settings.SSRF_ALLOW_LIST.join(',')
+        env['FEMA_SSRF_ALLOW_LIST'] = settings.SSRF_ALLOW_LIST.join(',')
     }
     return env
 }

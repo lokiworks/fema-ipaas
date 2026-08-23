@@ -59,7 +59,7 @@ export const UserWithMetaInformation = z.object({
 
 export type UserWithMetaInformation = z.infer<typeof UserWithMetaInformation>
 
-export const AP_MAXIMUM_PROFILE_PICTURE_SIZE = 5 * 1024 * 1024 // 5 MB
+export const FEMA_MAXIMUM_PROFILE_PICTURE_SIZE = 5 * 1024 * 1024 // 5 MB
 
 export const PROFILE_PICTURE_ALLOWED_TYPES = [
     'image/jpeg',

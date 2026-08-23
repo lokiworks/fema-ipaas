@@ -1,5 +1,5 @@
 import { evaluateRaw } from './function-implementations'
-import { AP_FUNCTIONS } from './function-registry'
+import { FEMA_FUNCTIONS } from './function-registry'
 
 const CURRENT_FORMULA_VERSION = 1
 const FORMULA_PREFIX = `ap-formula-v${CURRENT_FORMULA_VERSION}::{`
@@ -180,7 +180,7 @@ function replaceInlineJsonArrays(
 }
 
 function wrapStringArgs(expr: string): string {
-    const fnNames = new Set(AP_FUNCTIONS.map((f) => f.name))
+    const fnNames = new Set(FEMA_FUNCTIONS.map((f) => f.name))
     let result = ''
     let pos = 0
 
@@ -195,7 +195,7 @@ function wrapStringArgs(expr: string): string {
         result += expr.slice(pos, next.start)
 
         const fnName = expr.slice(next.start, next.openParen).trim()
-        const fn = AP_FUNCTIONS.find((f) => f.name === fnName)
+        const fn = FEMA_FUNCTIONS.find((f) => f.name === fnName)
         const closePos = findMatchingParen(expr, next.openParen)
 
         if (closePos === -1) {
@@ -229,7 +229,7 @@ function quoteIfBare(arg: string): string {
         (trimmed.startsWith('\'') && trimmed.endsWith('\''))) return arg
     if (trimmed.startsWith('__ap_')) return arg
     const fnCallMatch = trimmed.match(/^([a-z_][a-z0-9_]*)\s*\(/i)
-    if (fnCallMatch && AP_FUNCTIONS.some((f) => f.name === fnCallMatch[1])) return arg
+    if (fnCallMatch && FEMA_FUNCTIONS.some((f) => f.name === fnCallMatch[1])) return arg
     return '"' + arg.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"'
 }
 
@@ -289,7 +289,7 @@ function normalizeExpression(expr: string): string {
 }
 
 function validateFunctionArgs(expr: string): string | null {
-    const fnNames = new Set(AP_FUNCTIONS.map((f) => f.name))
+    const fnNames = new Set(FEMA_FUNCTIONS.map((f) => f.name))
     let pos = 0
     while (pos < expr.length) {
         const next = findNextFunctionCall(expr, pos, fnNames)

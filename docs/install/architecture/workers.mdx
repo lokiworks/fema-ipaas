@@ -17,7 +17,7 @@ Workers scale **horizontally**: add replicas behind any orchestrator (Docker Com
 For the full sizing recommendation (worker and app sizes, the 1:10 app-to-worker ratio, the slot-based capacity formula, and database sizing), see [Production Setup](../configure-operate/production-setup).
 
 <Warning>
-The shipped default `AP_WORKER_CONCURRENCY=5` runs multiple sandboxes in one container as a transitional compatibility mode. It widens the OOM blast radius to all in-flight jobs in that container. Prefer `AP_WORKER_CONCURRENCY=1` and scale by replicas.
+The shipped default `FEMA_WORKER_CONCURRENCY=5` runs multiple sandboxes in one container as a transitional compatibility mode. It widens the OOM blast radius to all in-flight jobs in that container. Prefer `FEMA_WORKER_CONCURRENCY=1` and scale by replicas.
 </Warning>
 
 ## Failure Behaviour
@@ -30,5 +30,5 @@ For the exact promises (what re-runs, what runs at-least-once, and where each bo
 
 How flows are isolated from the worker container and the outside world is two independent choices:
 
-- [**Sandboxing**](./sandboxing): `AP_EXECUTION_MODE` decides how user code is isolated from the host kernel. This is the most important security decision for multi-tenant deployments.
-- [**Network Security**](./network-security): `AP_NETWORK_MODE` decides what the sandbox is allowed to reach on the network.
+- [**Sandboxing**](./sandboxing): `FEMA_EXECUTION_MODE` decides how user code is isolated from the host kernel. This is the most important security decision for multi-tenant deployments.
+- [**Network Security**](./network-security): `FEMA_NETWORK_MODE` decides what the sandbox is allowed to reach on the network.

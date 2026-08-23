@@ -1,5 +1,5 @@
 import { readPackageJson } from '../utils/files'
-import { findAllPiecesDirectoryInSource, NON_PIECES_PACKAGES, AP_CLOUD_API_BASE } from '../utils/piece-script-utils'
+import { findAllPiecesDirectoryInSource, NON_PIECES_PACKAGES, FEMA_CLOUD_API_BASE } from '../utils/piece-script-utils'
 
 const main = async () => {
   const release = (await readPackageJson('.')).version
@@ -43,7 +43,7 @@ const main = async () => {
 }
 
 async function fetchRegistry(release: string): Promise<Set<string>> {
-  const url = `${AP_CLOUD_API_BASE}/pieces/registry?release=${release}&edition=ee`
+  const url = `${FEMA_CLOUD_API_BASE}/pieces/registry?release=${release}&edition=ee`
   console.info(`[fetchRegistry] fetching ${url}`)
   const response = await fetch(url)
   if (!response.ok) {

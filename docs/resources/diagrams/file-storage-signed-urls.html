@@ -113,10 +113,10 @@ svg.lines{position:absolute;inset:0;z-index:2}
     </g>
 </svg></div><div class="t">PostgreSQL</div><div class="pill">bytea</div></div>
 
-<div class="elabel mono strong" style="left:706px;top:578px;color:#b45309;border-color:#fde68a">AP_FILE_STORAGE_LOCATION=S3</div>
+<div class="elabel mono strong" style="left:706px;top:578px;color:#b45309;border-color:#fde68a">FEMA_FILE_STORAGE_LOCATION=S3</div>
 <div class="elabel" style="left:600px;top:690px">or DB (default)</div>
 <div class="elabel strong" style="left:706px;top:728px;color:#4338ca;border-color:#c7d2fe">always Postgres</div>
 
-<div class="note" style="bottom:46px;font-size:12.5px"><b>Opt-in:</b> set <code>AP_FILE_STORAGE_LOCATION=S3</code> + <code>AP_S3_USE_SIGNED_URLS=true</code>. Self-host defaults to Postgres. Presigned URLs expire in <b>7 days</b> (configurable).</div>
+<div class="note" style="bottom:46px;font-size:12.5px"><b>Opt-in:</b> set <code>FEMA_FILE_STORAGE_LOCATION=S3</code> + <code>FEMA_S3_USE_SIGNED_URLS=true</code>. Self-host defaults to Postgres. Presigned URLs expire in <b>7 days</b> (configurable).</div>
 <div class="note" style="bottom:24px;font-size:11px;color:#94a3b8">The app issues a JWT read-link <code>/v1/files/:id?token</code> that 307-redirects to the S3 presigned URL. Worker-writable: run logs, log slices, step files. Without signed URLs the app proxies bytes (Worker &rarr; App &rarr; S3).</div>
 </div></body></html>

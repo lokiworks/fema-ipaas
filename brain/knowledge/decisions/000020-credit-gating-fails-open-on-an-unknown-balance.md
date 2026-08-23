@@ -84,7 +84,7 @@ Two deliberate exceptions, both of which still fail open on an *unknown* balance
 
 ### Self-hosted EE skips the run gate entirely (temporary)
 
-`shouldBlockRunOnCredits` returns `false` immediately when `AP_EDITION=ee`, before any provider call.
+`shouldBlockRunOnCredits` returns `false` immediately when `FEMA_EDITION=ee`, before any provider call.
 That one branch covers every flow-run credit gate — run admission from the worker RPC
 (`submitPayloads`), the webhook path, `startManualTrigger`, and the retry assert all funnel through it.
 Cloud is unaffected; CE already resolved to the no-op default provider.

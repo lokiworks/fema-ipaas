@@ -61,15 +61,15 @@ const ApBigAddButtonCanvasNode = React.memo(
               <div className="bg-builder-background">
                 <div
                   style={{
-                    height: `${flowCanvasConsts.AP_NODE_SIZE.BIG_ADD_BUTTON.height}px`,
-                    width: `${flowCanvasConsts.AP_NODE_SIZE.BIG_ADD_BUTTON.width}px`,
+                    height: `${flowCanvasConsts.FEMA_NODE_SIZE.BIG_ADD_BUTTON.height}px`,
+                    width: `${flowCanvasConsts.FEMA_NODE_SIZE.BIG_ADD_BUTTON.width}px`,
                   }}
                   className=" cursor-auto border-none flex items-center justify-center relative "
                 >
                   <div
                     style={{
-                      height: `${flowCanvasConsts.AP_NODE_SIZE.BIG_ADD_BUTTON.height}px`,
-                      width: `${flowCanvasConsts.AP_NODE_SIZE.BIG_ADD_BUTTON.width}px`,
+                      height: `${flowCanvasConsts.FEMA_NODE_SIZE.BIG_ADD_BUTTON.height}px`,
+                      width: `${flowCanvasConsts.FEMA_NODE_SIZE.BIG_ADD_BUTTON.width}px`,
                     }}
                     id={id}
                     className={cn('rounded-lg bg-background relative', {
@@ -115,7 +115,8 @@ const ApBigAddButtonCanvasNode = React.memo(
                         width: `${stepNodeSize.width}px`,
                         top: `-${
                           stepNodeSize.height / 2 -
-                          flowCanvasConsts.AP_NODE_SIZE.BIG_ADD_BUTTON.width / 2
+                          flowCanvasConsts.FEMA_NODE_SIZE.BIG_ADD_BUTTON.width /
+                            2
                         }px`,
                       }}
                       className=" absolute "

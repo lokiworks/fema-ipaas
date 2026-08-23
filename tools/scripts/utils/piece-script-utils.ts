@@ -24,7 +24,7 @@ type LoadedPieceChildPayload = {
     authors: string[];
 };
 
-export const AP_CLOUD_API_BASE = 'https://cloud.activepieces.com/api/v1';
+export const FEMA_CLOUD_API_BASE = 'https://cloud.activepieces.com/api/v1';
 export const PIECES_FOLDER = 'packages/pieces'
 export const COMMUNITY_PIECE_FOLDER = 'packages/pieces/community'
 export const NON_PIECES_PACKAGES = ['@fema/connector-sdk', '@fema/connector-common']
@@ -68,7 +68,7 @@ export const pieceMetadataExists = async (
     pieceVersion: string
 ): Promise<boolean> => {
     const cloudResponse = await fetch(
-        `${AP_CLOUD_API_BASE}/pieces/${pieceName}?version=${pieceVersion}`
+        `${FEMA_CLOUD_API_BASE}/pieces/${pieceName}?version=${pieceVersion}`
     );
 
     const pieceExist: Record<number, boolean> = {

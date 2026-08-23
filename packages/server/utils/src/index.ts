@@ -11,7 +11,6 @@ export { evlog as evlogFastify, useLogger as useWideEventLogger } from 'evlog/fa
 export { apVersionUtil, UNKNOWN_VERSION } from './ap-version'
 export { cryptoUtils } from './crypto'
 export { DatabaseType } from './database-type'
-export { environmentMigrations } from './env-migrations'
 export { onCallService } from './on-call.service'
 export { apDayjs, apDayjsDuration } from './dayjs-helper'
 export { fileSystemUtils, INFINITE_LOCK_TIMEOUT } from './file-system-utils'

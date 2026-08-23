@@ -44,18 +44,18 @@ export const ssrfGuard = {
 }
 
 function isGuardEnabled(options: InstallOptions): boolean {
-    return options.enabled ?? process.env['AP_NETWORK_MODE'] === NetworkMode.STRICT
+    return options.enabled ?? process.env['FEMA_NETWORK_MODE'] === NetworkMode.STRICT
 }
 
 function buildGuardPolicy(options: InstallOptions): GuardPolicy {
     return {
-        allowList: options.allowList ?? splitCsv(process.env['AP_SSRF_ALLOW_LIST']),
+        allowList: options.allowList ?? splitCsv(process.env['FEMA_SSRF_ALLOW_LIST']),
         allowedLoopbackPorts: new Set(options.allowedLoopbackPorts ?? readSandboxRpcPortFromEnv()),
     }
 }
 
 function readSandboxRpcPortFromEnv(): number[] {
-    const rpcPort = parseInt(process.env['AP_SANDBOX_WS_PORT'] ?? '', 10)
+    const rpcPort = parseInt(process.env['FEMA_SANDBOX_WS_PORT'] ?? '', 10)
     return Number.isFinite(rpcPort) ? [rpcPort] : []
 }
 

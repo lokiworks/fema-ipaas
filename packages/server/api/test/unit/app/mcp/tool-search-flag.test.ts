@@ -12,13 +12,13 @@ function toolTitles(): string[] {
     return activepiecesTools(mockMcp, undefined, log).map((tool) => tool.title)
 }
 
-describe('tool-search rollout flag (AP_TOOL_SEARCH_ENABLED)', () => {
+describe('tool-search rollout flag (FEMA_TOOL_SEARCH_ENABLED)', () => {
     afterEach(() => {
-        delete process.env.AP_TOOL_SEARCH_ENABLED
+        delete process.env.FEMA_TOOL_SEARCH_ENABLED
     })
 
     it('omits ap_search_actions and ap_search_triggers by default (flag unset → off)', () => {
-        delete process.env.AP_TOOL_SEARCH_ENABLED
+        delete process.env.FEMA_TOOL_SEARCH_ENABLED
 
         const titles = toolTitles()
 
@@ -27,7 +27,7 @@ describe('tool-search rollout flag (AP_TOOL_SEARCH_ENABLED)', () => {
     })
 
     it('registers both tool-search tools when the flag is on', () => {
-        process.env.AP_TOOL_SEARCH_ENABLED = 'true'
+        process.env.FEMA_TOOL_SEARCH_ENABLED = 'true'
 
         const titles = toolTitles()
 

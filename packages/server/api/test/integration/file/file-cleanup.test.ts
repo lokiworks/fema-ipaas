@@ -10,12 +10,12 @@ import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/
 let app: FastifyInstance | null = null
 
 beforeAll(async () => {
-    process.env.AP_PAUSED_FLOW_TIMEOUT_DAYS = '5'
+    process.env.FEMA_PAUSED_FLOW_TIMEOUT_DAYS = '5'
     app = await setupTestEnvironment()
 })
 
 afterAll(async () => {
-    delete process.env.AP_PAUSED_FLOW_TIMEOUT_DAYS
+    delete process.env.FEMA_PAUSED_FLOW_TIMEOUT_DAYS
     await teardownTestEnvironment()
 })
 

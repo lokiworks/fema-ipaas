@@ -5,7 +5,7 @@
 //   node scripts/chat-logs.mjs <conversationId> [runId]
 //   npm run chat:logs -- <conversationId> [runId]
 //
-// Reads .evlog/logs/*.jsonl (written when LOG_FILE=true / AP_LOG_FILE=true),
+// Reads .evlog/logs/*.jsonl (written when LOG_FILE=true / FEMA_LOG_FILE=true),
 // merges api + worker + web (source:"client") events for the conversation,
 // sorts by timestamp, and prints a unified timeline.
 
@@ -26,7 +26,7 @@ try {
     files = readdirSync(logsDir).filter((f) => f.endsWith('.jsonl'))
 }
 catch {
-    console.error(`No logs found at ${logsDir}. Run with LOG_FILE=true / AP_LOG_FILE=true and trigger a chat turn first.`)
+    console.error(`No logs found at ${logsDir}. Run with LOG_FILE=true / FEMA_LOG_FILE=true and trigger a chat turn first.`)
     process.exit(1)
 }
 

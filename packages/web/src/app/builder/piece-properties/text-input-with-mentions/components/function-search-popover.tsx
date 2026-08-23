@@ -1,4 +1,4 @@
-import { AP_FUNCTIONS, ApFunction } from '@fema/expression';
+import { FEMA_FUNCTIONS, ApFunction } from '@fema/expression';
 import { ExternalLink } from 'lucide-react';
 import { RefObject, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -44,7 +44,7 @@ export function FunctionSearchPopover({
   const popoverRef = useRef<HTMLDivElement>(null);
 
   const filtered = query
-    ? AP_FUNCTIONS.filter((fn) =>
+    ? FEMA_FUNCTIONS.filter((fn) =>
         fn.name.toLowerCase().includes(query.toLowerCase()),
       )
     : [];

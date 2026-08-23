@@ -6,10 +6,10 @@ import { defineConfig } from 'vitest/config'
 const repoRoot = path.resolve(__dirname, '../../..')
 process.chdir(repoRoot)
 
-process.env.AP_EXECUTION_MODE = 'UNSANDBOXED'
-process.env.AP_BASE_CODE_DIRECTORY = 'packages/server/engine/test/resources/codes'
-process.env.AP_TEST_MODE = 'true'
-process.env.AP_DEV_PIECES = 'http,data-mapper,approval,webhook,delay'
+process.env.FEMA_EXECUTION_MODE = 'UNSANDBOXED'
+process.env.FEMA_BASE_CODE_DIRECTORY = 'packages/server/engine/test/resources/codes'
+process.env.FEMA_TEST_MODE = 'true'
+process.env.FEMA_DEV_PIECES = 'http,data-mapper,approval,webhook,delay'
 
 const alias = {
   '@fema/shared': path.resolve(__dirname, '../../core/shared/src/index.ts'),
@@ -32,7 +32,7 @@ buildSync({
   alias,
   external: ['isolated-vm', 'utf-8-validate', 'bufferutil'],
 })
-process.env.AP_PIECE_CHILD_ENTRY = pieceChildEntry
+process.env.FEMA_PIECE_CHILD_ENTRY = pieceChildEntry
 
 export default defineConfig({
   // esbuild injects this at bundle time; vitest runs the source directly, so define it here too.

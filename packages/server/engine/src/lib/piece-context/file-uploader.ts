@@ -5,7 +5,7 @@ import { FileSizeError, FileType } from '@fema/shared'
 import { engineFileApi } from '../api/engine-file-api'
 
 export function createFileUploader({ engineToken, apiUrl }: CreateFileUploaderParams): FilesService {
-    const maxFileSizeMb = Number(process.env.AP_MAX_FILE_SIZE_MB)
+    const maxFileSizeMb = Number(process.env.FEMA_MAX_FILE_SIZE_MB)
     return {
         write: async ({ fileName, data }: { fileName: string, data: Buffer | Readable }): Promise<string> => {
             if (!Buffer.isBuffer(data) && !(data instanceof Readable)) {

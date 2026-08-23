@@ -25,7 +25,7 @@ const AboveFlowWidgets = React.memo(() => {
       <WidgetWrapper>
         <div
           style={{
-            transform: `translate(0px,-${flowCanvasConsts.AP_NODE_SIZE.STEP.height}px )`,
+            transform: `translate(0px,-${flowCanvasConsts.FEMA_NODE_SIZE.STEP.height}px )`,
             position: 'absolute',
             pointerEvents: 'auto',
           }}
@@ -59,7 +59,7 @@ const BelowFlowWidget = React.memo(() => {
         >
           <div
             className="flex items-center justify-center gap-2"
-            style={{ width: flowCanvasConsts.AP_NODE_SIZE.STEP.width + 'px' }}
+            style={{ width: flowCanvasConsts.FEMA_NODE_SIZE.STEP.width + 'px' }}
           >
             <FlowEndWidget></FlowEndWidget>
           </div>

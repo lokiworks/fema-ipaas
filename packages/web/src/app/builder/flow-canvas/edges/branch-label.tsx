@@ -129,7 +129,7 @@ const BranchLabel = (props: BaseBranchLabel) => {
           )}
           style={{
             height: flowCanvasConsts.LABEL_HEIGHT + 'px',
-            maxWidth: flowCanvasConsts.AP_NODE_SIZE.STEP.width - 10 + 'px',
+            maxWidth: flowCanvasConsts.FEMA_NODE_SIZE.STEP.width - 10 + 'px',
           }}
           onClick={() => {
             if (branchIndex !== null && !isOtherwiseBranch) {

@@ -55,8 +55,8 @@ RUN npm install --prefix / --no-fund --no-audit --no-save esbuild@0.25.0 && npm 
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV AP_CONTAINER_TYPE=WORKER
-ENV AP_CACHE_BASE_PATH=/tmp/cache
+ENV FEMA_CONTAINER_TYPE=WORKER
+ENV FEMA_CACHE_BASE_PATH=/tmp/cache
 
 COPY --from=build /usr/local/bin/bun /usr/local/bin/bun
 # isolated-vm at the filesystem-root node_modules so the forked engine resolves it by ancestor walk

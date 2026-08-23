@@ -56,7 +56,7 @@ export const ApLoopReturnLineCanvasEdge = ({
       layoutSource.x -
       horizontalLineLength / 2 -
       flowCanvasConsts.ARC_LENGTH -
-      flowCanvasConsts.AP_NODE_SIZE.ADD_BUTTON.width / 2,
+      flowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.width / 2,
     y: layoutSource.y + endLineLength / 2,
   };
   const buttonPosition = isHorizontal
@@ -73,8 +73,8 @@ export const ApLoopReturnLineCanvasEdge = ({
         <foreignObject
           x={buttonPosition.x}
           y={buttonPosition.y}
-          width={flowCanvasConsts.AP_NODE_SIZE.ADD_BUTTON.width}
-          height={flowCanvasConsts.AP_NODE_SIZE.ADD_BUTTON.height}
+          width={flowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.width}
+          height={flowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.height}
           className="overflow-visible"
         >
           <ApAddButton

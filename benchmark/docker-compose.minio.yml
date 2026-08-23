@@ -1,7 +1,7 @@
 # Overlay that adds a local MinIO (S3-compatible) object store to the benchmark
 # stack so the smoke test can exercise the S3 file-storage path end to end.
 #
-# Usage (the smoke workflow sets AP_FILE_STORAGE_LOCATION=S3 and the AP_S3_* vars):
+# Usage (the smoke workflow sets FEMA_FILE_STORAGE_LOCATION=S3 and the FEMA_S3_* vars):
 #   docker compose -f benchmark/docker-compose.yml -f benchmark/docker-compose.minio.yml up -d
 #
 # The app validates its S3 configuration on boot (system-validator), so the

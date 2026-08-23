@@ -29,7 +29,7 @@ describe('networkUtils request URL derivation', () => {
         ['bare hostname', 'ap.example.com'],
         ['non-http scheme', 'file:///opt/ap'],
         ['empty', ''],
-    ])('always returns a parseable http(s) URL when AP_FRONTEND_URL is misconfigured (%s)', (_name, frontendUrl) => {
+    ])('always returns a parseable http(s) URL when FEMA_FRONTEND_URL is misconfigured (%s)', (_name, frontendUrl) => {
         vi.spyOn(system, 'get').mockReturnValue(frontendUrl)
 
         const baseUrl = networkUtils.getRequestBaseUrl(request({ host: 'a b.com' }))
@@ -50,7 +50,7 @@ describe('networkUtils request URL derivation', () => {
         expect(networkUtils.getRequestHost(request({ host: 'a b.com', forwardedHost: '[foo' }))).toBe('configured.example.com')
     })
 
-    it('never throws from getRequestHost even when AP_FRONTEND_URL is unusable, since it runs on every response', () => {
+    it('never throws from getRequestHost even when FEMA_FRONTEND_URL is unusable, since it runs on every response', () => {
         vi.spyOn(system, 'get').mockReturnValue('localhost:8080')
 
         expect(networkUtils.getRequestHost(request({ host: 'a b.com' }))).toBe('localhost')

@@ -1,4 +1,4 @@
-import { AP_FUNCTIONS } from './function-registry'
+import { FEMA_FUNCTIONS } from './function-registry'
 import type { ApFunctionArgType } from './function-registry'
 
 type DocNode = {
@@ -32,7 +32,7 @@ export function typeCheckTiptapDoc(doc: DocNode): Map<string, string> {
         if (!id || !fnName) continue
         if (!closedIds.has(id)) continue
 
-        const fn = AP_FUNCTIONS.find((f) => f.name === fnName)
+        const fn = FEMA_FUNCTIONS.find((f) => f.name === fnName)
         if (!fn) continue
 
         const between = getNodesBetween(flat, id)
@@ -196,7 +196,7 @@ function inferArgType(argNodes: DocNode[]): ApFunctionArgType | null {
     }
 
     if (topLevelCount === 1 && topLevelFnName) {
-        const fn = AP_FUNCTIONS.find((f) => f.name === topLevelFnName)
+        const fn = FEMA_FUNCTIONS.find((f) => f.name === topLevelFnName)
         const rt = fn?.returnType
         if (!rt || Array.isArray(rt)) return null
         return rt

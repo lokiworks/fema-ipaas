@@ -1,5 +1,4 @@
 import { assertNotNullOrUndefined } from '@fema/core-utils'
-import { environmentMigrations } from '@fema/server-utils'
 
 export type SystemProp = AppSystemProp
 
@@ -164,7 +163,7 @@ export const environmentVariables = {
         return value ? value === 'true' : undefined
     },
     getEnvironment: (prop: AppSystemProp): string | undefined => {
-        return environmentMigrations.migrate('AP_' + prop)
+        return process.env[ENV_PREFIX + prop]
     },
     getEnvironmentOrThrow: (prop: AppSystemProp): string => {
         const value = environmentVariables.getEnvironment(prop)
@@ -173,3 +172,4 @@ export const environmentVariables = {
     },
 }
 
+export const ENV_PREFIX = 'FEMA_'

@@ -418,7 +418,7 @@
   "Create a new URL. The current one will stop working.": "Создайте новый URL. Текущий URL перестанет работать.",
   "Copy configuration": "Копировать конфигурацию",
   "Note": "Примечание",
-  "If you would like to expose your MCP server to the internet, please set the AP_FRONTEND_URL environment variable to the public URL of your Activepieces instance.": "Если вы хотите показать свой MCP сервер в интернете, пожалуйста, установите переменную окружения AP_FRONTEND_URL на публичный URL экземпляра Activepieces .",
+  "If you would like to expose your MCP server to the internet, please set the FEMA_FRONTEND_URL environment variable to the public URL of your Activepieces instance.": "Если вы хотите показать свой MCP сервер в интернете, пожалуйста, установите переменную окружения FEMA_FRONTEND_URL на публичный URL экземпляра Activepieces .",
   "Token rotated successfully": "Токен успешно повернут",
   "Failed to rotate token": "Не удалось повернуть токен",
   "Claude": "Клод",

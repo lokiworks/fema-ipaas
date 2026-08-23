@@ -1,0 +1,2317 @@
+packages/web/src/app/routes/platform/setup/connectors/connector-actions.tsx
+  s_94864882421579::t_1eaf041fbe59d8 10,13-14,18-21,25,27,31,47,58,65,67
+docs/flows/formula-reference.mdx
+  s_94864882421579::t_2b587ddac8c9fe 26,124
+docs/install/configure-operate/enterprise-license.mdx
+  s_94864882421579::t_a8b2b8ace15632 15
+docs/mcp/tools.mdx
+  s_94864882421579::t_a8b2b8ace15632 4,104,117,135,179,328,573
+  s_94864882421579::t_2b587ddac8c9fe 44,59,61,65-66,72,80,83,88,96,98,100,113,152-157,169,226,312,316,329,343,345-346,353-354,367,372-373,569,574-576,584
+packages/core/shared/src/lib/core/feedback-url.ts
+  s_94864882421579::t_80a7eda71bff25 1
+brain/knowledge/engineering/engineering-handbook-playbooks.md
+  s_94864882421579::t_2b587ddac8c9fe 24
+  s_94864882421579::t_a8b2b8ace15632 7
+docs/install/guarantees/execution-isolation.mdx
+  s_94864882421579::t_a8b2b8ace15632 10
+packages/server/api/test/integration/workers/platform-queue-migration.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 262
+packages/web/public/locales/fr/translation.json
+  s_94864882421579::t_2b587ddac8c9fe 14,218,228-229,321-322,342,391,505,535,537-542,623,630,1260-1262,1325-1326,1329,1337,1344-1345,1347-1353,1355,1358-1359,1365-1367,1371-1372,1375-1376,1385,1388,1392,1394-1395,1498,1551,1575,2055,2090,2151-2155,2160-2165,2169,2189
+  s_94864882421579::t_a8b2b8ace15632 413,511,769,792,980,1085-1086,1232,1872,1881,1890,1892,1894,2190
+packages/core/execution/src/lib/engine/engine-constants.ts
+  s_94864882421579::t_2b587ddac8c9fe 8
+packages/server/engine/test/handler/flow-with-delay.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 5,23,25,55,57,99,101,123,125,155,157
+packages/web/tsconfig.spec.json
+  s_94864882421579::t_0dd01fb0d99230 15
+packages/server/api/src/app/app-connection/app-connection-service/oauth2/services/cloud-oauth2-service.ts
+  s_94864882421579::t_2b587ddac8c9fe 10
+.github/workflows/setup-environment.yml
+  s_94864882421579::t_a8b2b8ace15632 66
+packages/server/api/src/app/template/template.entity.ts
+  s_94864882421579::t_2b587ddac8c9fe 65,72-73
+docs/handbook/engineering/playbooks/pr-review-sla.mdx
+  s_94864882421579::t_a8b2b8ace15632 16-18
+  s_94864882421579::t_2b587ddac8c9fe 23
+docs/install/guarantees/crash-recovery.mdx
+  s_94864882421579::t_a8b2b8ace15632 10,21
+packages/web/src/app/builder/run-details/flow-step-input-output.tsx
+  s_94864882421579::t_2b587ddac8c9fe 1,25,83,86-89,91-94,96-99,185,187,189,193-194,197-199,202-205,210,215,272,278
+  s_94864882421579::t_a8b2b8ace15632 339
+packages/web/src/app/builder/connector-properties/dynamic-dropdown-connector-property.tsx
+  s_94864882421579::t_1eaf041fbe59d8 11,14,16,19,43,80-81,121,160,164,169-173,184-185
+benchmark/cloudbuild.worker.yaml
+  s_94864882421579::t_a8b2b8ace15632 13,16
+packages/web/src/app/components/help-and-feedback.tsx
+  s_94864882421579::t_a8b2b8ace15632 28
+packages/cli/assets/db.json
+  s_94864882421579::t_2b587ddac8c9fe 427
+packages/server/sandbox/src/lib/types.ts
+  s_94864882421579::t_2b587ddac8c9fe 6-7,20,57-58,65,105,115
+  s_94864882421579::t_1eaf041fbe59d8 2
+docker-compose.test.yml
+  s_94864882421579::t_a8b2b8ace15632 28
+packages/server/api/test/unit/app/flows/trigger/flow-trigger-side-effect.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 64,121,136,159,172,185,196,212,228,243,257
+packages/server/api/test/unit/app/authentication/disposable-email.test.ts
+  s_94864882421579::t_a8b2b8ace15632 24
+docs/admin-guide/guides/manage-concurrency.mdx
+  s_94864882421579::t_a8b2b8ace15632 40
+.github/workflows/benchmark.yml
+  s_94864882421579::t_a8b2b8ace15632 50
+packages/server/api/src/app/database/database-connection.ts
+  s_94864882421579::t_2b587ddac8c9fe 50
+  s_94864882421579::t_1eaf041fbe59d8 9
+packages/web/src/lib/dom-utils.ts
+  s_94864882421579::t_a8b2b8ace15632 7
+docs/install/options/elestio.mdx
+  s_94864882421579::t_a8b2b8ace15632 3,6,8
+packages/server/worker/src/lib/execute/jobs/execute-property.ts
+  s_94864882421579::t_2b587ddac8c9fe 13,15,24
+docs/handbook/hiring/hiring.mdx
+  s_94864882421579::t_a8b2b8ace15632 6,10
+packages/web/src/features/templates/hooks/use-gradient-from-connectors.ts
+  s_94864882421579::t_1eaf041fbe59d8 5,10-12,138,147-148,152-153,157,159-161,163-173,176,219
+brain/knowledge/flows-execution/subflows.md
+  s_94864882421579::t_2b587ddac8c9fe 7,21-22,37,42-48
+docs/docs.json
+  s_94864882421579::t_a8b2b8ace15632 4,18,24,331,658,667,669
+  s_94864882421579::t_2b587ddac8c9fe 17,145,295,318,330,334,336-343,345,348-351,357,359,364-366,369-381,387-396,493,496-497
+docs/install/architecture/autoscaling.mdx
+  s_94864882421579::t_2b587ddac8c9fe 26
+  s_94864882421579::t_a8b2b8ace15632 42
+packages/core/execution/src/lib/engine/requests.ts
+  s_94864882421579::t_2b587ddac8c9fe 58
+packages/server/api/src/app/trigger/app-event-routing/app-event-routing.module.ts
+  s_94864882421579::t_2b587ddac8c9fe 1,19,22,34,45,50,58-59,63-65,69-71,81
+docs/overview/welcome.mdx
+  s_94864882421579::t_2b587ddac8c9fe 21-22,25,36-37,41,52,54,66
+  s_94864882421579::t_a8b2b8ace15632 17,20,33,46,60
+brain/knowledge/connections-auth/secret-managers.md
+  s_94864882421579::t_a8b2b8ace15632 7
+packages/web/src/app/builder/step-settings/index.tsx
+  s_94864882421579::t_1eaf041fbe59d8 40,425-426,431-434
+  s_94864882421579::t_2b587ddac8c9fe 8,21,23-25,29-30,46,49,105-107,121,145-147,159,165,188-189,193,198-199,203,208,214,239,250-254,256,305-307,411,413,417,419,421-422,471,473-475
+packages/server/api/src/app/database/migration/postgres/1787465061531-InitialSchema.ts
+  s_94864882421579::t_2b587ddac8c9fe 326,332,383,400,411,434-435,497-498,581,586,686-687,745,817,874,877
+packages/server/api/src/app/connectors/connector-install-service.ts
+  s_94864882421579::t_1eaf041fbe59d8 1,3,7,9-10,12-13,15-17,20-23,25,27-30,34,38,40,43,59,66,70,80,87-89,91,102,119
+packages/server/engine/src/lib/core/connector/connector-runner.ts
+  s_94864882421579::t_1eaf041fbe59d8 4-6,8-10,15,21-22,26-27,58,66,69,77,82,86,97,99,121,124,127,137-140,144
+packages/web/src/app/connections/multi-auth-list.tsx
+  s_94864882421579::t_2b587ddac8c9fe 3,29,35,38-39,42,47-48,94,175,186,189,191
+packages/server/engine/test/handler/flow-rerun.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 4,6,8,20,22
+  s_94864882421579::t_ccabd312493691 25
+  s_94864882421579::t_33e21a7147c653 11
+.zap/dast-plan.yaml
+  s_94864882421579::t_a8b2b8ace15632 1-2,11,13,15,17-22,34-36,41-42,48-49,64,78,83,87,93-94,97-98,106,114
+deploy/fema-helm/templates/tests/test-connection.yaml
+  s_94864882421579::t_a8b2b8ace15632 4,6,14
+tools/scripts/connectors/update-connectors-metadata.ts
+  s_94864882421579::t_0dd01fb0d99230 2,4-5,11-12,14,21,34,36,39-41,45,49,52-53,61,63,66,72,78
+brain/knowledge/engineering/regenerate-the-baseline-migration.md
+  s_94864882421579::t_2b587ddac8c9fe 28,60
+.agents/skills/triage-security-advisories/SKILL.md
+  s_94864882421579::t_a8b2b8ace15632 3,8,151
+  s_94864882421579::t_2b587ddac8c9fe 160,177
+docs/handbook/engineering/playbooks/structured-logging.mdx
+  s_94864882421579::t_a8b2b8ace15632 3,7
+  s_94864882421579::t_2b587ddac8c9fe 39,66
+packages/web/src/app/builder/flow-canvas/nodes/step-node/step-node-status-in-draft.tsx
+  s_94864882421579::t_2b587ddac8c9fe 18,48-50
+packages/server/api/src/app/workers/engine-controller.ts
+  s_94864882421579::t_2b587ddac8c9fe 43-44,48,127
+  s_94864882421579::t_1eaf041fbe59d8 7
+packages/web/src/app/builder/flow-canvas/widgets/minimap.tsx
+  s_94864882421579::t_2b587ddac8c9fe 6
+docs/handbook/engineering/onboarding/how-we-work.mdx
+  s_94864882421579::t_a8b2b8ace15632 6
+brain/knowledge/data-storage-observability/key-value-store.md
+  s_94864882421579::t_2b587ddac8c9fe 7,12,22,29
+.github/workflows/reusable-generate-translations-shard.yml
+  s_94864882421579::t_2b587ddac8c9fe 67
+packages/server/sandbox/test/lib/sandbox/sandbox.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 22,113,119,130,138-140,203,211-214,298,312,332,340
+packages/server/engine/esbuild.config.mjs
+  s_94864882421579::t_0dd01fb0d99230 72
+  s_94864882421579::t_2b587ddac8c9fe 9,73,75,86
+docs/admin-guide/guides/scim/providers/microsoft-entra-id.mdx
+  s_94864882421579::t_a8b2b8ace15632 3,12,15,21,31,47,69,74-75,92,98
+.zap/README.md
+  s_94864882421579::t_a8b2b8ace15632 12
+.github/workflows/tests-e2e-ee.yml
+  s_94864882421579::t_2b587ddac8c9fe 9-11
+  s_94864882421579::t_a8b2b8ace15632 19,41
+packages/server/api/test/unit/app/flows/flow-version/flow-version.service.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 7,12,26-28,83,85-86,106-107,113,115-116,143,154-155,170-171,192-193
+packages/connectors/core/schedule/vitest.config.ts
+  s_94864882421579::t_0dd01fb0d99230 13
+docs/install/architecture/latency.mdx
+  s_94864882421579::t_2b587ddac8c9fe 24,26,40,47
+  s_94864882421579::t_a8b2b8ace15632 3,55
+packages/server/api/src/app/connectors/dev-connector-watcher.ts
+  s_94864882421579::t_1eaf041fbe59d8 11-12,14,16-17,19-21,25,30,33,35,43-47,49,53-54,65-67,69-70,72-75,78-79,81,83,89-91,94-95,97,100,102-104,111-118,121,129-130,178,180-181
+packages/web/src/features/connectors/utils/connector-selector-utils.ts
+  s_94864882421579::t_1eaf041fbe59d8 2-4,9,16-17,34-38,46,48,52-54,56-58,62,68-69,73,81,84,87-88,93-97,99,126-127,132,140,145,158,160,166-168,176,233-234,236-238,241,243,245-249,266-267,269-271,274,276,278-282,298,302-304,325,332,342-343,345,348-350,352,357-358,361,363-364,369,381,383-384,389-390
+packages/core/execution/src/lib/flows/operations/update-trigger.ts
+  s_94864882421579::t_2b587ddac8c9fe 28,31,46
+packages/web/src/features/connectors/api/connectors-api.ts
+  s_94864882421579::t_1eaf041fbe59d8 2-4,9-12,14,21-25,28-30,43,47,69,71,74-75,79,81,84-91,93-94,99
+docs/admin-guide/guides/secret-managers/cyberark-conjur.mdx
+  s_94864882421579::t_a8b2b8ace15632 3,6,13,15,17,19,21,25,27,40-41,43,45,47-48,53,68,71-72,74,76,83-84,87,103,112,131-132,134
+.github/workflows/continuous-delivery-stg.yml
+  s_94864882421579::t_a8b2b8ace15632 104,132
+packages/server/sandbox/src/lib/cache/connectors/connector-cache.ts
+  s_94864882421579::t_1eaf041fbe59d8 4,8,10-12,15,18,21,24-25,34-35,42,44-46,53,55,59-62,64,66-67,71-74,77,80,82,85,89,92,95-98,102-104
+packages/server/api/test/README.md
+  s_94864882421579::t_a8b2b8ace15632 1
+packages/web/src/features/connections/hooks/oauth-apps-hooks.ts
+  s_94864882421579::t_2b587ddac8c9fe 3,6,12-13
+packages/web/src/app/routes/templates/id/connector-card.tsx
+  s_94864882421579::t_1eaf041fbe59d8 2-5,8-9,12-15,20-23,26
+docs/adr/0010-license-and-upstream-notice-policy.md
+  s_94864882421579::t_a8b2b8ace15632 9
+.github/workflows/publish-embed-sdk.yml
+  s_94864882421579::t_a8b2b8ace15632 35,91
+brain/knowledge/decisions/000013-active-user-seat-floor-is-enforced-db-authoritatively.md
+  s_94864882421579::t_a8b2b8ace15632 14
+brain/knowledge/decisions/000016-ai-sdk-7-is-a-maintenance-bump-the-agent-loop-keeps-its-own-machinery.md
+  s_94864882421579::t_0dd01fb0d99230 17-18
+  s_94864882421579::t_2b587ddac8c9fe 19,48-49
+UPSTREAM.md
+  s_94864882421579::t_a8b2b8ace15632 3,16,25,31
+.claude/rules/safe-http.md
+  s_94864882421579::t_a8b2b8ace15632 3
+packages/connectors/core/file-helper/vitest.config.ts
+  s_94864882421579::t_0dd01fb0d99230 1-18
+packages/web/src/app/connections/replace-connections-dialog.tsx
+  s_94864882421579::t_2b587ddac8c9fe 61,128,136-137,139,164,166-167,170-171,173-176,178-180,228,283,286,300-302,310-311,314,324,360-361,379,406-407
+  s_94864882421579::t_1eaf041fbe59d8 48-51,85-86,184-186,304-306
+docs/handbook/engineering/playbooks/run-ee.mdx
+  s_94864882421579::t_2b587ddac8c9fe 11,21,27
+  s_94864882421579::t_a8b2b8ace15632 34
+packages/server/api/src/app/helper/error-handler.ts
+  s_94864882421579::t_2b587ddac8c9fe 82,108-109
+docs/embedding/provision-users.mdx
+  s_94864882421579::t_2b587ddac8c9fe 54,70-73,102
+  s_94864882421579::t_a8b2b8ace15632 3,11,19,23,28,68,105
+deploy/pulumi/Pulumi.yaml
+  s_94864882421579::t_a8b2b8ace15632 2-4,6,48
+benchmark/run-workerpool.sh
+  s_94864882421579::t_2b587ddac8c9fe 67,74
+  s_94864882421579::t_a8b2b8ace15632 11,25-26,28,38
+packages/web/src/app/routes/connections/index.tsx
+  s_94864882421579::t_2b587ddac8c9fe 78-81,91,104,151-152,154,193-194
+  s_94864882421579::t_1eaf041fbe59d8 58-61
+scripts/run-sandbox-e2e.sh
+  s_94864882421579::t_a8b2b8ace15632 15
+packages/server/engine/src/lib/variables/props-processor.ts
+  s_94864882421579::t_2b587ddac8c9fe 15,17,20,139,186,192
+  s_94864882421579::t_1eaf041fbe59d8 2
+packages/server/api/test/integration/system-jobs/system-jobs.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 33,174,179,184,188,193,200,203
+packages/core/shared/src/lib/management/platform/platform.request.ts
+  s_94864882421579::t_2b587ddac8c9fe 4,49,64-65
+brain/knowledge/decisions/000015-streaming-csv-fanout-is-a-bounded-fire-and-forget-action.md
+  s_94864882421579::t_2b587ddac8c9fe 5,9,13,18,26
+docs/handbook/engineering/playbooks/security-advisory-response.mdx
+  s_94864882421579::t_a8b2b8ace15632 113
+brain/knowledge/ai-intelligence/ai-agents.md
+  s_94864882421579::t_a8b2b8ace15632 26
+  s_94864882421579::t_2b587ddac8c9fe 11,16,24,27-28,30,34,37,41,43-44,53
+packages/server/engine/vitest.config.ts
+  s_94864882421579::t_0dd01fb0d99230 16
+  s_94864882421579::t_2b587ddac8c9fe 5,12,17,19,24,26,30,35
+  s_94864882421579::t_33e21a7147c653 48
+.agents/skills/design/README.md
+  s_94864882421579::t_a8b2b8ace15632 1,3,5,14,20,32,78,89,180,190,192
+  s_94864882421579::t_2b587ddac8c9fe 30,80,92,96,147,171
+packages/connectors/core/http/vitest.config.ts
+  s_94864882421579::t_0dd01fb0d99230 1-18
+docs/flows/passing-data.mdx
+  s_94864882421579::t_a8b2b8ace15632 9
+  s_94864882421579::t_2b587ddac8c9fe 72,106
+packages/server/api/src/assets/prompts/guides/error_handling.md
+  s_94864882421579::t_2b587ddac8c9fe 3,11-12,17,29,34
+packages/web/public/locales/ar/translation.json
+  s_94864882421579::t_a8b2b8ace15632 97-99,102,104,438,569,572,655,660,668,670,697,753,861,973
+  s_94864882421579::t_2b587ddac8c9fe 115-117,231,263,319,327-329,341-344,346,348-349,351-352,355,427-428,497-498,500,544,672-673,743-752,879-883,910,1107-1112,1116
+docs/handbook/engineering/playbooks/canary-deployment.mdx
+  s_94864882421579::t_a8b2b8ace15632 119,128
+packages/web/src/app/builder/flow-canvas/hooks.tsx
+  s_94864882421579::t_2b587ddac8c9fe 23,27,31-32,35
+packages/server/api/test/unit/app/app-connection/custom-auth-staleness.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 10
+packages/server/worker/src/lib/execute/utils/trigger-run-recorder.ts
+  s_94864882421579::t_2b587ddac8c9fe 6,9,11,13
+packages/cli/src/index.ts
+  s_94864882421579::t_2b587ddac8c9fe 3,5-9,11,14-24,49
+  s_94864882421579::t_a8b2b8ace15632 47
+packages/server/api/src/app/helper/multipart-body.ts
+  s_94864882421579::t_2b587ddac8c9fe 6
+docs/handbook/customer-support/pylon.mdx
+  s_94864882421579::t_a8b2b8ace15632 7
+crowdin.yml
+  s_94864882421579::t_2b587ddac8c9fe 13-14
+.agents/skills/profile-worker-memory/SKILL.md
+  s_94864882421579::t_2b587ddac8c9fe 48,72,76
+packages/server/engine/src/lib/handler/context/test-execution-context.ts
+  s_94864882421579::t_2b587ddac8c9fe 70,73
+packages/web/src/features/projects/components/projects-selector.tsx
+  s_94864882421579::t_2b587ddac8c9fe 10,29
+packages/server/api/src/app/helper/system/system-props.ts
+  s_94864882421579::t_2b587ddac8c9fe 35,37,53,70
+packages/web/public/locales/de/translation.json
+  s_94864882421579::t_2b587ddac8c9fe 14,218,228-229,321-322,342,391,505,535,537-542,623,630,1260-1262,1325-1326,1329,1337,1344-1345,1347-1353,1355,1358-1359,1365-1367,1371-1372,1375-1376,1385,1388,1392,1394-1395,1498,1551,1575,2055,2090,2151-2155,2160-2165,2169,2189
+  s_94864882421579::t_a8b2b8ace15632 413,511,769,792,980,1085-1086,1232,1872,1881,1890,1892,1894,2190
+packages/web/src/app/builder/data-display/copy-ai-prompt.tsx
+  s_94864882421579::t_2b587ddac8c9fe 1,16
+docs/install/options/railway.mdx
+  s_94864882421579::t_a8b2b8ace15632 3,6,14,16,35,41,77,81,86,94,106
+  s_94864882421579::t_2b587ddac8c9fe 99
+packages/web/src/features/connectors/components/connector-display-name.tsx
+  s_94864882421579::t_1eaf041fbe59d8 1,3-4,8-14,16,19
+packages/server/AGENTS.md
+  s_94864882421579::t_2b587ddac8c9fe 16,74,79
+  s_94864882421579::t_a8b2b8ace15632 45
+packages/server/api/src/app/flows/flow-version/flow-version.service.ts
+  s_94864882421579::t_2b587ddac8c9fe 47
+.github/workflows/continuous-delivery-cloud.yml
+  s_94864882421579::t_a8b2b8ace15632 97
+packages/server/engine/src/lib/operations/index.ts
+  s_94864882421579::t_2b587ddac8c9fe 2-3,7,17-18,51
+packages/web/src/features/flow-runs/components/timeline-bar.tsx
+  s_94864882421579::t_2b587ddac8c9fe 37
+packages/server/api/src/assets/prompts/guides/http_fallback.md
+  s_94864882421579::t_2b587ddac8c9fe 3,5,7,70,72
+packages/core/shared/src/lib/automation/websocket/index.ts
+  s_94864882421579::t_2b587ddac8c9fe 9
+packages/server/api/src/app/platform/platform.entity.ts
+  s_94864882421579::t_2b587ddac8c9fe 84,89
+packages/web/src/app/routes/templates/id/index.tsx
+  s_94864882421579::t_2b587ddac8c9fe 29,237
+  s_94864882421579::t_1eaf041fbe59d8 240-247
+benchmark/k8s-sandbox.yaml
+  s_94864882421579::t_a8b2b8ace15632 10,42,84,178
+  s_94864882421579::t_2b587ddac8c9fe 4,30
+docs/install/architecture/sandboxing.mdx
+  s_94864882421579::t_2b587ddac8c9fe 7
+  s_94864882421579::t_a8b2b8ace15632 14,23,31
+packages/web/src/app/builder/connector-properties/properties-utils.tsx
+  s_94864882421579::t_1eaf041fbe59d8 2-3,16,23,28-29,65,70,213,224,244,248-249,258,382-383,434,445-446,453,456
+packages/server/engine/src/lib/variables/processors/types.ts
+  s_94864882421579::t_2b587ddac8c9fe 3,6
+packages/server/api/test/integration/engine-services/engine-services.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 4,6-9,260-261,264,267,273,285-286,294,297,300-302,309,318,326
+.claude/agents/changelog.md
+  s_94864882421579::t_a8b2b8ace15632 3,17
+docs/install/architecture/network-security.mdx
+  s_94864882421579::t_2b587ddac8c9fe 11,18,43
+  s_94864882421579::t_a8b2b8ace15632 3,9,70
+packages/web/src/app/builder/index.tsx
+  s_94864882421579::t_1eaf041fbe59d8 265-266,270-271
+  s_94864882421579::t_2b587ddac8c9fe 23,85-86,90,116,129,135-140,142-143,145,223,226-227,232,253,257,261,264,267,269,272,277,280-282
+docs/handbook/team.mdx
+  s_94864882421579::t_2b587ddac8c9fe 19,41-43
+  s_94864882421579::t_a8b2b8ace15632 6,16
+packages/web/public/locales/ru/translation.json
+  s_94864882421579::t_a8b2b8ace15632 104,117-119,231,262,270,325,332-333,363,365,404,421,470,533,561,565,644,649,657,659,661,663-664,687,719-729,849-853,893,895,903,978,1015,1023,1228-1233,1263-1264,1266
+docs/admin-guide/guides/project-replace-cli.mdx
+  s_94864882421579::t_a8b2b8ace15632 3,7,17,33,36,46,48,85,104,107,124,127,139,151-152,179,201
+  s_94864882421579::t_2b587ddac8c9fe 10,26-27,76,86-87,97,103,123,144,157,173,184,223,225-226,231-232
+benchmark/setup-math.sh
+  s_94864882421579::t_2b587ddac8c9fe 30,32,41,44-45,53,56-57
+packages/server/engine/test/variables/file-processor.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 2,15,96,114,135
+brain/knowledge/decisions/000024-configuring-an-agent-step-tool-authorises-the-action-not-its-arguments.md
+  s_94864882421579::t_2b587ddac8c9fe 12,19,21,37,44-45
+packages/server/worker/test/lib/worker-settings-override.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 59,82-83
+brain/knowledge/connectors-engine/connectors.md
+  s_94864882421579::t_0dd01fb0d99230 5,7,10-14,17,19,23,25-26,29-30,33-41
+docs/embedding/embeddable-mcp.mdx
+  s_94864882421579::t_a8b2b8ace15632 11,13,20,23,31,49,51,57,66,122,191
+packages/server/sandbox/test/lib/cache/engine-installer-identity.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 19-20,56
+packages/server/engine/test/handler/test-helper.ts
+  s_94864882421579::t_2b587ddac8c9fe 1,22,104,108,112-113
+packages/web/src/app/builder/flow-canvas/nodes/big-add-button-node.tsx
+  s_94864882421579::t_2b587ddac8c9fe 7,22,27,60,77,79,82,87,102,107
+deploy/fema-helm/templates/pvc.yaml
+  s_94864882421579::t_a8b2b8ace15632 5,7
+.github/workflows/dast.yml
+  s_94864882421579::t_a8b2b8ace15632 4,23,113
+brain/knowledge/ai-intelligence/ai-providers.md
+  s_94864882421579::t_2b587ddac8c9fe 17,43,56,60
+  s_94864882421579::t_a8b2b8ace15632 7,12,15-16,18-19,28,33-34,36,39-41,44-45
+brain/knowledge/platform-editions-ee/platform-configuration.md
+  s_94864882421579::t_a8b2b8ace15632 7
+  s_94864882421579::t_2b587ddac8c9fe 10,15,20,25-26,36
+docs/admin-guide/guides/secret-managers/overview.mdx
+  s_94864882421579::t_a8b2b8ace15632 6,70-71,100,108
+  s_94864882421579::t_2b587ddac8c9fe 51
+packages/server/api/src/app/flows/flow/flow.service.ts
+  s_94864882421579::t_1eaf041fbe59d8 3
+  s_94864882421579::t_2b587ddac8c9fe 573,927
+benchmark/setup.sh
+  s_94864882421579::t_2b587ddac8c9fe 22-23,25,27,31,138,140-141,156,160,162,192,200,203
+docs/embedding/overview.mdx
+  s_94864882421579::t_a8b2b8ace15632 9,18,23,31
+docs/admin-guide/guides/structure-projects.mdx
+  s_94864882421579::t_a8b2b8ace15632 9
+packages/core/execution/src/lib/flows/operations/update-action.ts
+  s_94864882421579::t_2b587ddac8c9fe 30,41-43,47
+docs/_snippets/enterprise-feature.mdx
+  s_94864882421579::t_a8b2b8ace15632 2
+packages/server/api/src/app/connectors/connector-bundle.ts
+  s_94864882421579::t_1eaf041fbe59d8 3,8,10-12,14-17,26,33-34,44-45,48,57,65,69,77,79,97
+packages/web/src/features/connectors/stores/connector-selector-tabs-provider.tsx
+  s_94864882421579::t_1eaf041fbe59d8 3,5,15-16,19,23-26,29,36-37,45,49,52,56-57,59,62,76,80-81,84
+brain/knowledge/platform-editions-ee/index.md
+  s_94864882421579::t_2b587ddac8c9fe 14,17,26
+  s_94864882421579::t_a8b2b8ace15632 9,11,33
+packages/web/src/features/connectors/stores/connector-search-context.tsx
+  s_94864882421579::t_1eaf041fbe59d8 3,8,13,20,22,26-27
+deploy/fema-helm/templates/ingress.yaml
+  s_94864882421579::t_a8b2b8ace15632 5,7,38
+docs/handbook/engineering/playbooks/releases.mdx
+  s_94864882421579::t_a8b2b8ace15632 12,23-26,101
+packages/web/src/features/platform-admin/hooks/platform-connectors-hooks.ts
+  s_94864882421579::t_1eaf041fbe59d8 1,7,9-10,12,16,21-28,32,37,46-49,53,61,65,68-70
+.vscode/settings.json
+  s_94864882421579::t_a8b2b8ace15632 3
+packages/server/api/src/app/flows/flow/flow-publish-utils.ts
+  s_94864882421579::t_2b587ddac8c9fe 5-7
+packages/web/src/app/connections/oauth2-connection-settings.tsx
+  s_94864882421579::t_2b587ddac8c9fe 4-5,48,53,250,252,270,272,312-313,323,326,365,375-376
+  s_94864882421579::t_a8b2b8ace15632 81
+packages/server/api/src/app/connectors/metadata/connector-metadata-controller.ts
+  s_94864882421579::t_1eaf041fbe59d8 1,3,12-14,17-18,21,26-27,31,37,46,58-59,66,74,81-82,88-89,94,101-102,106-107,111,114,116-117,126,146,158,160-161,165,167,169,172,175,178,183,187,192,197,202-203,207,212-213,222,226,228,237,243,248
+.github/workflows/continuous-delivery-release.yml
+  s_94864882421579::t_a8b2b8ace15632 119
+brain/knowledge/flows-execution/human-input.md
+  s_94864882421579::t_2b587ddac8c9fe 7,12,16
+packages/core/shared/src/lib/management/template/template.requests.ts
+  s_94864882421579::t_2b587ddac8c9fe 37
+packages/web/public/locales/en/translation.json
+  s_94864882421579::t_2b587ddac8c9fe 14,218,228-229,321-322,342,391,505,535,537-542,623,630,1260-1262,1325-1326,1329,1337,1344-1345,1347-1353,1355,1358-1359,1365-1367,1371-1372,1375-1376,1385,1388,1392,1394-1395,1498,1551,1575,2055,2090,2151-2155,2160-2165,2169,2189
+  s_94864882421579::t_a8b2b8ace15632 413,511,769,792,980,1085-1086,1232,1872,1881,1890,1892,1894,2190
+packages/core/formula/src/lib/function-registry.ts
+  s_94864882421579::t_2b587ddac8c9fe 5,929
+docs/handbook/engineering/playbooks/infrastructure.mdx
+  s_94864882421579::t_a8b2b8ace15632 23-24
+packages/server/api/src/app/connectors/metadata/utils/connector-cache-utils.ts
+  s_94864882421579::t_1eaf041fbe59d8 2,7-9,26-31,37,39-40,43-45,48-49,51-53,55,58-60,62,66,73-74,77-78,81,85,88,92,95
+brain/knowledge/decisions/000011-webhook-files-stream-to-s3-by-dropping-global-multipart-buffering.md
+  s_94864882421579::t_2b587ddac8c9fe 11
+brain/knowledge/data-storage-observability/analytics.md
+  s_94864882421579::t_2b587ddac8c9fe 13,20
+packages/web/src/lib/api.ts
+  s_94864882421579::t_a8b2b8ace15632 16
+packages/server/api/src/app/app-connection/platform-app-connection.controller.ts
+  s_94864882421579::t_2b587ddac8c9fe 10,13
+packages/web/src/app/builder/builder-hooks.ts
+  s_94864882421579::t_2b587ddac8c9fe 8-10,32,55,64
+  s_94864882421579::t_5d58003390ee6c 7
+packages/server/api/src/app/webhooks/webhook-handshake.ts
+  s_94864882421579::t_2b587ddac8c9fe 36,39-41,45,48
+docs/admin-guide/guides/secret-managers/aws.mdx
+  s_94864882421579::t_a8b2b8ace15632 3,15,38,41,46,52,72
+packages/server/api/src/assets/prompts/guides/ai.md
+  s_94864882421579::t_a8b2b8ace15632 3,23
+  s_94864882421579::t_2b587ddac8c9fe 5,7,41,48
+packages/core/shared/src/lib/automation/connectors/dto/connector-requests.ts
+  s_94864882421579::t_1eaf041fbe59d8 3,18,25,30,36,41,44,48,50,54,56-58,63,66,70,72,76,79,81,83-84,93,95,99,102-106,109-112,115
+packages/web/src/app/builder/connectors-selector/connector-actions-or-triggers-list.tsx
+  s_94864882421579::t_1eaf041fbe59d8 15-16,18,20-21,25-27,29,31,33,35-36,41-42,45,51-52,68-69,72,76,84,89,101-103,107-108,111,114,121
+packages/web/public/locales/nl/translation.json
+  s_94864882421579::t_a8b2b8ace15632 413,511,769,792,980,1085-1086,1232,1872,1881,1890,1892,1894,2190
+  s_94864882421579::t_2b587ddac8c9fe 14,218,228-229,321-322,342,391,505,535,537-542,623,630,1260-1262,1325-1326,1329,1337,1344-1345,1347-1353,1355,1358-1359,1365-1367,1371-1372,1375-1376,1385,1388,1392,1394-1395,1498,1551,1575,2055,2090,2151-2155,2160-2165,2169,2189
+.github/ISSUE_TEMPLATE/mcp_bounty.md
+  s_94864882421579::t_a8b2b8ace15632 3,19
+  s_94864882421579::t_2b587ddac8c9fe 4-5
+packages/tests-e2e/README.md
+  s_94864882421579::t_a8b2b8ace15632 1,3,35
+brain/knowledge/decisions/000014-action-runs-dispatch-as-synchronous-user-interaction-jobs.md
+  s_94864882421579::t_2b587ddac8c9fe 47-48
+docs/install/options/easypanel.mdx
+  s_94864882421579::t_a8b2b8ace15632 3,6,8,15
+packages/cli/src/lib/utils/workspace-utils.ts
+  s_94864882421579::t_2b587ddac8c9fe 4
+brain/knowledge/platform-editions-ee/platform-copilot.md
+  s_94864882421579::t_a8b2b8ace15632 7
+  s_94864882421579::t_2b587ddac8c9fe 12
+packages/web/src/app/builder/test-step/test-action-section.tsx
+  s_94864882421579::t_2b587ddac8c9fe 13,66-68,70-72,74-77,81,85,89-91,98,103,160-162
+  s_94864882421579::t_1eaf041fbe59d8 16,92-93
+packages/web/src/app/builder/flow-canvas/context-menu/canvas-context-menu-content.tsx
+  s_94864882421579::t_2b587ddac8c9fe 69,77,108,171
+docs/install/reference/environment-variables.mdx
+  s_94864882421579::t_2b587ddac8c9fe 46-47,149,171,250,252,257-258,260-261,267
+  s_94864882421579::t_a8b2b8ace15632 7,66-67,84,245
+packages/web/test/lib/dom-utils.test.ts
+  s_94864882421579::t_a8b2b8ace15632 12,21
+packages/server/engine/src/lib/operations/resolve-connection-identifier.operation.ts
+  s_94864882421579::t_2b587ddac8c9fe 7,11
+packages/server/api/src/app/app-connection/app-connection-service/oauth2/oauth2-util.ts
+  s_94864882421579::t_2b587ddac8c9fe 8,67-68,71-72,74,76-78,81,83,85,97-98,105-106,108,110-114,122,124,126,128,139,142,151,153,194-195,208,250-251
+brain/knowledge/platform-editions-ee/ee-overview.md
+  s_94864882421579::t_2b587ddac8c9fe 15
+brain/knowledge/execution-runtime/benchmark-cli.md
+  s_94864882421579::t_a8b2b8ace15632 7
+  s_94864882421579::t_2b587ddac8c9fe 19,35
+packages/core/utils/AGENTS.md
+  s_94864882421579::t_2b587ddac8c9fe 8,11
+packages/cli/scripts/build-publish.mjs
+  s_94864882421579::t_0dd01fb0d99230 15
+  s_94864882421579::t_2b587ddac8c9fe 12,16,18,47
+  s_94864882421579::t_a8b2b8ace15632 46
+packages/core/execution/src/lib/workers/index.ts
+  s_94864882421579::t_2b587ddac8c9fe 121,135
+AGENTS.md
+  s_94864882421579::t_2b587ddac8c9fe 3,17,22,45,63,98-100,228
+  s_94864882421579::t_a8b2b8ace15632 1,90,108,116,128
+packages/server/api/test/integration/webhooks/webhook.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 1,6,393-394,396,398-400,410,429-430,464-465,467,469-471,481,500-501
+packages/server/sandbox/src/lib/sandbox/sandbox.ts
+  s_94864882421579::t_2b587ddac8c9fe 166,169-172,181,195-196
+packages/web/src/app/builder/data-display/build-step-properties-snapshot.ts
+  s_94864882421579::t_2b587ddac8c9fe 1,7,16,21,26-27,50,54,58,63-64,68-69,71,74-76,83
+packages/web/src/app/builder/flow-canvas/nodes/step-node/step-node-run-duration-and-connector-name.tsx
+  s_94864882421579::t_1eaf041fbe59d8 19,21,24,48-49,57,66-68
+packages/server/api/src/app/trigger/trigger-source/trigger-source-entity.ts
+  s_94864882421579::t_2b587ddac8c9fe 43,47
+packages/cli/package.json
+  s_94864882421579::t_2b587ddac8c9fe 5
+.github/release-drafter.yml
+  s_94864882421579::t_a8b2b8ace15632 36
+  s_94864882421579::t_2b587ddac8c9fe 7,9-10
+brain/knowledge/data-storage-observability/index.md
+  s_94864882421579::t_2b587ddac8c9fe 11,15,23,35,53
+  s_94864882421579::t_a8b2b8ace15632 7,47
+deploy/fema-helm/templates/hpa.yaml
+  s_94864882421579::t_a8b2b8ace15632 5,7,12
+packages/server/engine/test/global-setup.ts
+  s_94864882421579::t_33e21a7147c653 1-10
+deploy/pulumi/README.md
+  s_94864882421579::t_a8b2b8ace15632 3
+packages/web/src/components/custom/smart-output-viewer/index.tsx
+  s_94864882421579::t_2b587ddac8c9fe 125,127,143,171,177,201
+.devcontainer/docker-compose.yml
+  s_94864882421579::t_a8b2b8ace15632 4,20,37,41,50
+packages/server/api/src/app/workers/job-queue/job-broker.ts
+  s_94864882421579::t_2b587ddac8c9fe 251
+packages/server/api/test/unit/app/flows/flow-version/migrate-v22-agent-step-to-thin-client.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 5,16,19,26,34,38,40,48,52-53,70,73,80,84
+packages/tests-e2e/pages/automations.page.ts
+  s_94864882421579::t_80a7eda71bff25 28
+docs/adr/0011-squash-upstream-migrations-into-one-baseline.md
+  s_94864882421579::t_a8b2b8ace15632 2,14,41
+  s_94864882421579::t_2b587ddac8c9fe 39
+tools/scripts/validate-publishable-packages.ts
+  s_94864882421579::t_0dd01fb0d99230 1,15-19,21
+packages/server/api/src/app/trigger/trigger-events/trigger-event.service.ts
+  s_94864882421579::t_1eaf041fbe59d8 2
+  s_94864882421579::t_2b587ddac8c9fe 59,143-147,149-150
+brain/knowledge/flows-execution/flows.md
+  s_94864882421579::t_2b587ddac8c9fe 25,30-31,33,36,41
+docs/admin-guide/security/audit-logs/overview.mdx
+  s_94864882421579::t_a8b2b8ace15632 10
+packages/server/api/src/app/helper/jwt-utils.ts
+  s_94864882421579::t_a8b2b8ace15632 31
+packages/core/shared/src/index.ts
+  s_94864882421579::t_2b587ddac8c9fe 40
+packages/web/src/app/components/sidebar/platform/index.tsx
+  s_94864882421579::t_2b587ddac8c9fe 86-87,89
+docs/handbook/engineering/playbooks/building-for-self-hosting.mdx
+  s_94864882421579::t_a8b2b8ace15632 28
+packages/server/engine/src/lib/network/ssrf-guard.ts
+  s_94864882421579::t_2b587ddac8c9fe 21
+deploy/fema-helm/templates/secret.yaml
+  s_94864882421579::t_a8b2b8ace15632 4,6,17,19
+deploy/fema-helm/values.yaml
+  s_94864882421579::t_a8b2b8ace15632 1,129-130,134,142,153-154,173,179-180,189-191,199,203,208,212,220,224,230,239,246,254,261,264
+docs/install/configure-operate/separate-workers.mdx
+  s_94864882421579::t_a8b2b8ace15632 15,18
+docs/install/configure-operate/telemetry.mdx
+  s_94864882421579::t_a8b2b8ace15632 7,11,16
+packages/server/api/test/unit/app/flows/migrations/migrate-v21-step-output-nesting.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 28,34-35,49,56-57,74,81-82,100,107-108,206,213-214,252,259-260,276,283-284,301,308-309,370,377-378,394,401-402,426,433-434,460,467-468,489,496-497,541,548-549
+brain/knowledge/platform-editions-ee/ee-platform-plans-billing.md
+  s_94864882421579::t_a8b2b8ace15632 7,29,43
+packages/web/src/features/templates/components/share-template.tsx
+  s_94864882421579::t_2b587ddac8c9fe 18,75
+docs/build-connectors/misc/testing-connectors.mdx
+  s_94864882421579::t_0dd01fb0d99230 2,4,7,9,13,15,32,47-49,60,80-81,83-84
+brain/knowledge/connectors-engine/building-connectors.md
+  s_94864882421579::t_0dd01fb0d99230 5,7,9,11-12,16-17,21-24,26-28,30,33-34
+brain/knowledge/flows-execution/flow-runs.md
+  s_94864882421579::t_2b587ddac8c9fe 18,28
+  s_94864882421579::t_a8b2b8ace15632 23,34
+packages/server/engine/src/lib/operations/property.operation.ts
+  s_94864882421579::t_1eaf041fbe59d8 1,12
+  s_94864882421579::t_2b587ddac8c9fe 10-11,31-32,34-37,39,58-59,63-64,68,136
+packages/web/src/app/builder/test-step/test-step-cta-button.tsx
+  s_94864882421579::t_2b587ddac8c9fe 16,18,72,74-75,99,101-102
+.claude/rules/core-packages.md
+  s_94864882421579::t_2b587ddac8c9fe 3,5,7
+brain/knowledge/execution-runtime/workers.md
+  s_94864882421579::t_a8b2b8ace15632 42,50,52,58,93
+  s_94864882421579::t_2b587ddac8c9fe 30-32,36,39-41,106
+packages/server/engine/test/handler/flow-with-pause.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 7,11,13,22,24,30,32,225,227,235,237
+packages/web/test/app/builder/data-selector/flatten-visible-rows.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 2
+packages/server/api/src/app/health/health.service.ts
+  s_94864882421579::t_a8b2b8ace15632 142
+packages/server/engine/src/lib/operations/trigger-hook.operation.ts
+  s_94864882421579::t_2b587ddac8c9fe 2,4,30
+packages/server/worker/src/lib/config/configs.ts
+  s_94864882421579::t_2b587ddac8c9fe 46
+packages/web/tsconfig.app.json
+  s_94864882421579::t_0dd01fb0d99230 19
+brain/knowledge/ai-intelligence/index.md
+  s_94864882421579::t_a8b2b8ace15632 10,20
+  s_94864882421579::t_2b587ddac8c9fe 17
+brain/knowledge/engineering/index.md
+  s_94864882421579::t_a8b2b8ace15632 7,11-18
+brain/knowledge/execution-runtime/gotcha-code-cache-is-namespaced-by-flowversionid-never-reuse-a-constant.md
+  s_94864882421579::t_2b587ddac8c9fe 27,67
+packages/core/execution/AGENTS.md
+  s_94864882421579::t_2b587ddac8c9fe 15
+packages/server/api/test/integration/flows/flow/flow-lifecycle-events.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 13,25,313,330,333,374,376-377
+packages/server/api/src/app/app-connection/app-connection-service/app-connection.handler.ts
+  s_94864882421579::t_2b587ddac8c9fe 68,76,84,91-93,95,97,103,111-114,122,200,244,281-284,288-290,293,295,306,334-335
+  s_94864882421579::t_1eaf041fbe59d8 8
+packages/web/src/features/flows/hooks/flow-hooks.tsx
+  s_94864882421579::t_2b587ddac8c9fe 27-29,137,239,242,246,248,250-252
+brain/knowledge/decisions/000026-delete-platform-is-a-cloud-owner-action-purged-by-one-cascading-job.md
+  s_94864882421579::t_a8b2b8ace15632 11,61
+  s_94864882421579::t_2b587ddac8c9fe 15,21,27,32,43,45
+packages/server/api/test/helpers/auth.ts
+  s_94864882421579::t_a8b2b8ace15632 15,34
+  s_94864882421579::t_2b587ddac8c9fe 103-105
+deploy/fema-helm/templates/serviceaccount.yaml
+  s_94864882421579::t_a8b2b8ace15632 5,7
+packages/web/src/app/builder/step-settings/connector-settings/connection-select.tsx
+  s_94864882421579::t_1eaf041fbe59d8 2-3,10-11,19,42,55-63,73,77-78,121,138-139,141,153,192,355
+packages/server/engine/test/handler/flow-waitpoint-response.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 6,40,42,59,87-88,90,107
+brain/knowledge/decisions/000021-legacy-free-platforms-are-comped-an-appsumo-clone-from-ensureenrolled.md
+  s_94864882421579::t_a8b2b8ace15632 14
+brain/knowledge/engineering/architecture-spine.md
+  s_94864882421579::t_2b587ddac8c9fe 17,20
+  s_94864882421579::t_a8b2b8ace15632 7,42
+docs/flows/project-variables.mdx
+  s_94864882421579::t_2b587ddac8c9fe 12
+benchmark/docker-compose.workerpool.yml
+  s_94864882421579::t_a8b2b8ace15632 12
+packages/cli/src/lib/commands/generate-worker-token.ts
+  s_94864882421579::t_a8b2b8ace15632 8
+packages/web/src/features/templates/index.ts
+  s_94864882421579::t_2b587ddac8c9fe 12
+.github/actions/sbom/action.yml
+  s_94864882421579::t_a8b2b8ace15632 33-34,40,77-78,85-86
+.agents/skills/design/SKILL.md
+  s_94864882421579::t_2b587ddac8c9fe 18,21,54,141
+  s_94864882421579::t_a8b2b8ace15632 2-3,6,8,20,53,171
+brain/knowledge/flows-execution/formulas.md
+  s_94864882421579::t_2b587ddac8c9fe 33-35,37
+packages/server/engine/test/fixture-server.ts
+  s_94864882421579::t_ccabd312493691 20-24
+  s_94864882421579::t_c1355249d44629 1-19,25-50
+packages/web/src/app/builder/step-settings/connector-settings/index.tsx
+  s_94864882421579::t_1eaf041fbe59d8 2-3,9-12,19-23,28,30-31,37-38,40,42-43,45,81,83-85,131,145,147,150,166-167,187-188,217-218,238-239,255-256,259-260,265,295,314,318-319,322,324-325,334-335,339-340
+docs/flows/debugging-runs.mdx
+  s_94864882421579::t_a8b2b8ace15632 15
+packages/core/execution/src/lib/flows/operations/import-flow.ts
+  s_94864882421579::t_2b587ddac8c9fe 77,103,149
+docs/install/options/docker.mdx
+  s_94864882421579::t_a8b2b8ace15632 11,15,21,24,29,50,52,54,57,59,64,69,71,73-74,77,79,82,86
+tools/reset-dev.sh
+  s_94864882421579::t_a8b2b8ace15632 1,3-7,9
+packages/server/api/src/app/app-connection/app-connection.controller.ts
+  s_94864882421579::t_2b587ddac8c9fe 24,28,69,72,173-174
+docs/admin-guide/guides/secret-managers/hashicorp.mdx
+  s_94864882421579::t_2b587ddac8c9fe 55
+  s_94864882421579::t_a8b2b8ace15632 3,10,40
+packages/server/engine/src/lib/core/connector/connector-auth.ts
+  s_94864882421579::t_1eaf041fbe59d8 1,3,5-6,8,10-13,15,35,45,74,79,84,90,100-101
+packages/web/scripts/generate-usecase-images.mjs
+  s_94864882421579::t_a8b2b8ace15632 307,329
+packages/server/engine/test/handler/flow-skip-progress.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 4,90,94
+docs/install/overview.mdx
+  s_94864882421579::t_a8b2b8ace15632 4,7,12,23,27,82,105
+packages/web/src/app/builder/flow-canvas/widgets/test-flow-widget.tsx
+  s_94864882421579::t_1eaf041fbe59d8 14
+  s_94864882421579::t_2b587ddac8c9fe 36,39-40
+packages/server/engine/test/operations/trigger-hook-operation.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 22
+CONTRIBUTING.md
+  s_94864882421579::t_a8b2b8ace15632 2,6,16
+packages/server/engine/src/lib/connector-context/connection-resolver.ts
+  s_94864882421579::t_1eaf041fbe59d8 2,6,29,55-57,60,99,107,109
+packages/core/utils/src/lib/utils.ts
+  s_94864882421579::t_2b587ddac8c9fe 194-195
+.claude/rules/self-hosting.md
+  s_94864882421579::t_2b587ddac8c9fe 1
+packages/server/worker/test/lib/worker.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 7,15,80,83,86-88,90,100,192-193,205,217,235,249,265,279,293,313,326,345,364,370,387,408,429,451,477,481,500,543-544,735
+brain/knowledge/flows-execution/chat.md
+  s_94864882421579::t_a8b2b8ace15632 7,24
+  s_94864882421579::t_2b587ddac8c9fe 35
+  s_94864882421579::t_0dd01fb0d99230 42
+packages/web/src/app/builder/step-settings/branch-settings/branch-single-condition.tsx
+  s_94864882421579::t_2b587ddac8c9fe 23
+packages/server/api/test/integration/app-connection/app-connection-events.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 6,11,14,51,56,63,74,79,86,118-119,122,124-126
+docs/install/troubleshooting/reset-password.mdx
+  s_94864882421579::t_a8b2b8ace15632 27
+  s_94864882421579::t_2b587ddac8c9fe 24-25
+packages/server/sandbox/test/lib/cache/flow/flow-provisioning.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 6,22,34,43-44,51,64-65,67,70,79,82,86,90,109,112-113,122-123,130-131,138,142-143
+packages/core/shared/src/lib/management/platform/platform.model.ts
+  s_94864882421579::t_2b587ddac8c9fe 62,99,160,162,165,167,169,172,176-177,182,184-185,187,207-208,236-237
+brain/knowledge/platform-editions-ee/embed.md
+  s_94864882421579::t_a8b2b8ace15632 7,9,33,74
+docs/handbook/engineering/playbooks/database-migration.mdx
+  s_94864882421579::t_2b587ddac8c9fe 25
+  s_94864882421579::t_a8b2b8ace15632 3,7,40
+brain/knowledge/decisions/000013-sandbox-pool-is-a-pure-execute-cloud-run-pool-superseded.md
+  s_94864882421579::t_2b587ddac8c9fe 8,18-19
+packages/server/api/test/integration/app-connection/app-connection-replace.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 23,32,37,58,63,85,108,115,138,145,178,183,220,225,261,266,313,318,360,365
+docs/admin-guide/guides/event-streaming.mdx
+  s_94864882421579::t_a8b2b8ace15632 11,57
+  s_94864882421579::t_2b587ddac8c9fe 24
+packages/server/engine/CLAUDE.md
+  s_94864882421579::t_2b587ddac8c9fe 12
+docs/handbook/overview.mdx
+  s_94864882421579::t_a8b2b8ace15632 2,6
+.github/workflows/validate-publishable-packages.yml
+  s_94864882421579::t_2b587ddac8c9fe 9
+packages/server/worker/src/lib/execute/jobs/execute-trigger-hook.ts
+  s_94864882421579::t_2b587ddac8c9fe 22
+packages/server/api/test/integration/app-connection/app-connection.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 2,5,10,32,35,37-38,43,50,56,64,67,69-70,75,81,92,95,97-98,103,106,114,121,124,126-127,132,139,149,152,165,168,170-171,176,179,187,194,207,210,212-213,218,225,251,254,256-257,262,269,297,300,302-303,308,315,327,330-331,334,336-337,340,342-343,348,352,355,360,364,369,375,383,386,388-389,394,398,426,429,431-432,437,441,458,461,463-464,469,473,487,490,492-493,498,502
+packages/server/sandbox/test/lib/sandbox-manager.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 42
+packages/cli/src/lib/commands/benchmark.ts
+  s_94864882421579::t_a8b2b8ace15632 12
+  s_94864882421579::t_2b587ddac8c9fe 385,390,418,421-422,492-493,511-512,515,547,549-550,559,563-564,574,578-579,718,804,908-909,935,1025
+packages/web/src/app/builder/step-settings/loops-settings.tsx
+  s_94864882421579::t_2b587ddac8c9fe 9
+tsconfig.base.json
+  s_94864882421579::t_0dd01fb0d99230 30,39,42,45,48,51,54,57,60,63,66,69,72,75,78,81,84,87,90,93,96,99,102,105,108,111,114,120,123,138
+packages/web/src/app/builder/connectors-selector/index.tsx
+  s_94864882421579::t_1eaf041fbe59d8 21-31,37,46,51,56,69,76,84,87,89,92,94-96,100,105-106,108-110,114-116,121,126,129,132,143-146,150-153,156,160,163,165,176,181,192,199,202-203,228,231,237,249,253-254,260,265
+brain/knowledge/connections-auth/managed-auth.md
+  s_94864882421579::t_a8b2b8ace15632 7
+  s_94864882421579::t_2b587ddac8c9fe 18,24-26,30
+packages/cli/README.md
+  s_94864882421579::t_a8b2b8ace15632 24
+packages/core/execution/src/index.ts
+  s_94864882421579::t_2b587ddac8c9fe 21
+packages/cli/src/lib/commands/create-trigger.ts
+  s_94864882421579::t_a8b2b8ace15632 36,63
+  s_94864882421579::t_2b587ddac8c9fe 8,10-11,22,91,94-96,98,114-115,138
+packages/core/formula/AGENTS.md
+  s_94864882421579::t_2b587ddac8c9fe 8,11
+packages/server/engine/src/lib/variables/connection-token.ts
+  s_94864882421579::t_2b587ddac8c9fe 4,9,17,66
+packages/web/src/app/connections/new-connection-dialog.tsx
+  s_94864882421579::t_2b587ddac8c9fe 1,19,37-38,40,43,45-46,50,60,63,97-98,101-102,105,110,113
+  s_94864882421579::t_1eaf041fbe59d8 52-54
+packages/web/vitest.config.ts
+  s_94864882421579::t_0dd01fb0d99230 19,31
+brain/knowledge/decisions/000014-streaming-file-inputs-resolve-to-a-lazy-apstreamingfile.md
+  s_94864882421579::t_2b587ddac8c9fe 13,25,27
+packages/server/api/src/assets/prompts/guides/tables.md
+  s_94864882421579::t_a8b2b8ace15632 1,3,14
+  s_94864882421579::t_2b587ddac8c9fe 43,48,53
+packages/core/shared/CLAUDE.md
+  s_94864882421579::t_2b587ddac8c9fe 19
+packages/core/execution/.eslintrc.json
+  s_94864882421579::t_2b587ddac8c9fe 16,19
+packages/web/src/app/builder/data-selector/index.tsx
+  s_94864882421579::t_1eaf041fbe59d8 185-187
+  s_94864882421579::t_2b587ddac8c9fe 1,17,22,131,135,138-139,143,146-147,158-159,163,169-171,173-175,184,189-190,194
+packages/server/worker/src/lib/execute/jobs/resolve-connection-identifier.ts
+  s_94864882421579::t_2b587ddac8c9fe 11,13,22
+packages/web/public/locales/zh/translation.json
+  s_94864882421579::t_2b587ddac8c9fe 14,218,228-229,321-322,342,391,505,535,537-542,623,630,1260-1262,1325-1326,1329,1337,1344-1345,1347-1353,1355,1358-1359,1365-1367,1371-1372,1375-1376,1385,1388,1392,1394-1395,1498,1551,1575,2055,2090,2151-2155,2160-2165,2169,2189
+  s_94864882421579::t_a8b2b8ace15632 413,511,769,792,980,1085-1086,1232,1872,1881,1890,1892,1894,2190
+packages/web/src/app/routes/platform/setup/connectors/index.tsx
+  s_94864882421579::t_1eaf041fbe59d8 1,3,21-23,32-36,40,42,44,48-49,51,57-58,60-85,87-88,90-102,104-116,118-145,147-157,159-162,166,168,175,181,188-189,191-192,201,204,208,219-222,225,228,230,234,250,252,254,256,260,263,271-272
+docs/handbook/engineering/playbooks/product-announcement.mdx
+  s_94864882421579::t_2b587ddac8c9fe 19
+packages/server/api/test/unit/app/helper/system-jobs/remove-deprecated-jobs.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 51-52,60-61
+packages/server/engine/src/lib/handler/connector-executor.ts
+  s_94864882421579::t_1eaf041fbe59d8 1,3,5-6,13,27,31,36,41-42,49-50,56,73-74,78,92-93,156,165,175-176
+packages/web/src/features/connectors/components/connector-icon-from-name.tsx
+  s_94864882421579::t_1eaf041fbe59d8 1,3,5-6,12-13,17-20,23,33
+benchmark/docker-compose.yml
+  s_94864882421579::t_a8b2b8ace15632 18,27,61,72,100
+CLAUDE.md
+  s_94864882421579::t_a8b2b8ace15632 1,90,108,116,128
+  s_94864882421579::t_2b587ddac8c9fe 3,17,22,45,63,98-100,228
+packages/web/src/components/custom/multi-select.tsx
+  s_94864882421579::t_2b587ddac8c9fe 291,293,362,364-365
+docs/admin-guide/guides/secret-managers/onepassword.mdx
+  s_94864882421579::t_a8b2b8ace15632 3,17-18,25,46
+packages/server/worker/src/lib/execute/jobs/execute-validation.ts
+  s_94864882421579::t_2b587ddac8c9fe 12,14,23
+packages/server/api/src/app/connectors/metadata/connector-metadata-service.ts
+  s_94864882421579::t_1eaf041fbe59d8 1,4,12-15,17,19,22,24,26,32-34,36,39-40,42,45,50-52,55,60-61,67,73,75,78,80-82,86,91,93,96,99,105,112,118,121,124,127-130,137,142,145,148,152,155,157,160-162,164,168-169,172,175,178,181-182,185,188-189,194,209,215,222,228,230,233,236-240,243,245,247-252,255-257,259-263,267-270,274,279-280,283-286,288,292,294,300,309,406,409-410,412-414,417-421,424-428,431,433,438,441-442,445,447,449,452-455,457-458,464-465,467-468,493-494,497,499-500,509-511,515,532-533,539,543,553,564,570-571,577
+.mcp.json
+  s_94864882421579::t_a8b2b8ace15632 3,5
+packages/server/sandbox/src/lib/cache/local-execution-cache.ts
+  s_94864882421579::t_1eaf041fbe59d8 7
+  s_94864882421579::t_2b587ddac8c9fe 3,14,50-51,53,55-56,62,64,113
+.github/workflows/smoke-test.yml
+  s_94864882421579::t_a8b2b8ace15632 40,106,141
+packages/server/api/package.json
+  s_94864882421579::t_0dd01fb0d99230 138
+  s_94864882421579::t_2b587ddac8c9fe 142,144
+packages/web/src/app/builder/data-selector/data-selector-node-content.tsx
+  s_94864882421579::t_2b587ddac8c9fe 9,198
+packages/web/src/app/routes/platform/infra/triggers/index.tsx
+  s_94864882421579::t_2b587ddac8c9fe 59,63,67,154,167-168,174
+  s_94864882421579::t_1eaf041fbe59d8 23-26,86-120,157-161
+packages/server/worker/test/lib/execute/jobs/execute-flow.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 27,29-30,40,42-43,80,88,174,194
+packages/server/api/src/app/template/template-telemetry/template-telemetry.service.ts
+  s_94864882421579::t_a8b2b8ace15632 8
+packages/server/api/src/app/trigger/trigger-run/trigger-run-stats.ts
+  s_94864882421579::t_2b587ddac8c9fe 9,12,22,30,33,43,52,55-56,58,71-72,79,85,94
+packages/web/src/features/connectors/hooks/connectors-hooks.ts
+  s_94864882421579::t_1eaf041fbe59d8 2-3,9,11-12,35,41,43-47,52-57,59,61,67,74,78,84,91-97,99-100,102,111,118,122,126,130,132,134,140-144,147,151,153,162-163,165-166,169-170,173-174,176-177,181,186,191,193,201,213,218-219,224,229,232,238-239,241-243,246-248,251-252,254-255,257-259,262-263,267,271,275,279,283,287,291,297,302,305-307,309,314-316,320-322,324,327,331-333,335,338,347,350,356,359,365,368,383,400,404,412,417-418,420,423,428,432-433,436,439-440,444,452,454-456,464-465,473-474,481,484,489,494,498-500,502,520,522,524,526,529-533,536-543,545-546,548-549,552-553,556-557,560-561,563-564,566-569,573,576-581,584,590
+packages/web/public/locales/zh-TW/translation.json
+  s_94864882421579::t_2b587ddac8c9fe 14,218,228-229,321-322,342,391,505,535,537-542,623,630,1260-1262,1325-1326,1329,1337,1344-1345,1347-1353,1355,1358-1359,1365-1367,1371-1372,1375-1376,1385,1388,1392,1394-1395,1498,1551,1575,2055,2090,2151-2155,2160-2165,2169,2189
+  s_94864882421579::t_a8b2b8ace15632 413,511,769,792,980,1085-1086,1232,1872,1881,1890,1892,1894,2190
+packages/server/engine/test/variables/dynamic-prop-keys.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 48
+brain/knowledge/flows-execution/variables.md
+  s_94864882421579::t_2b587ddac8c9fe 28
+packages/server/api/src/assets/prompts/chat-system-prompt.md
+  s_94864882421579::t_2b587ddac8c9fe 32,60,67-68,92,110,117,151,174,183-186,208,210,213,216-219,241-242,257,300-301,325,337,346,351
+  s_94864882421579::t_a8b2b8ace15632 2,105,107,115,119,121,123,125,283,285
+packages/web/src/app/builder/flow-canvas/index.tsx
+  s_94864882421579::t_2b587ddac8c9fe 285,319-321
+docs/embedding/embed-connections.mdx
+  s_94864882421579::t_a8b2b8ace15632 9,20,23,30,34
+  s_94864882421579::t_2b587ddac8c9fe 42,69-71
+package.json
+  s_94864882421579::t_0dd01fb0d99230 130
+  s_94864882421579::t_2b587ddac8c9fe 32,41,44-48,53-54,131-134
+packages/web/AGENTS.md
+  s_94864882421579::t_2b587ddac8c9fe 21
+  s_94864882421579::t_a8b2b8ace15632 3
+packages/server/api/src/app/flows/flow/human-input/human-input.service.ts
+  s_94864882421579::t_2b587ddac8c9fe 4,10,34,50-52,61,68
+packages/server/api/src/app/template/template.service.ts
+  s_94864882421579::t_2b587ddac8c9fe 37,58,74,82,98,107,110-111
+packages/server/api/src/app/workers/machine/machine-service.ts
+  s_94864882421579::t_2b587ddac8c9fe 40,54
+packages/server/api/test/integration/app-connection/oauth2-placeholder.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 3,7,28,34-36,39,53,59,68-69,81,90-91,103,112-113,125,134-135,144,153-154
+packages/core/shared/src/lib/core/file/index.ts
+  s_94864882421579::t_80a7eda71bff25 38
+  s_94864882421579::t_82003433f1a853 23-24,80
+.agents/skills/triage-dependabot-alerts/SKILL.md
+  s_94864882421579::t_a8b2b8ace15632 3
+brain/knowledge/decisions/000009-approval-links-require-a-post-confirmation-on-a-dedicated-route.md
+  s_94864882421579::t_2b587ddac8c9fe 11
+docs/install/options/docker-compose.mdx
+  s_94864882421579::t_a8b2b8ace15632 7,11,15,17,26,41,48,53,74
+packages/core/execution/src/lib/engine/execution-errors.ts
+  s_94864882421579::t_2b587ddac8c9fe 38-43,87,89-90
+packages/server/engine/src/lib/handler/action-run-step-runner.ts
+  s_94864882421579::t_2b587ddac8c9fe 1,18
+packages/web/src/app/builder/data-display/explanation-prompt.ts
+  s_94864882421579::t_1eaf041fbe59d8 177-179,181-183
+  s_94864882421579::t_2b587ddac8c9fe 1,128,133-134,176,186-187,237-240,249
+tools/update.sh
+  s_94864882421579::t_a8b2b8ace15632 1-2,6
+packages/connectors/core/csv/vitest.config.ts
+  s_94864882421579::t_0dd01fb0d99230 14-15
+packages/web/vite.config.mts
+  s_94864882421579::t_0dd01fb0d99230 110
+  s_94864882421579::t_a8b2b8ace15632 14-15,122
+packages/connectors/core/crypto/vitest.config.ts
+  s_94864882421579::t_0dd01fb0d99230 14-15
+packages/server/api/src/app/app.ts
+  s_94864882421579::t_2b587ddac8c9fe 2,150-153,242,253,256,314
+  s_94864882421579::t_1eaf041fbe59d8 16-20
+brain/knowledge/eventing-webhooks/webhooks.md
+  s_94864882421579::t_a8b2b8ace15632 7
+packages/server/api/test/integration/workers/job-broker-seed-cause.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 31
+packages/server/sandbox/src/lib/cache/cache-paths.ts
+  s_94864882421579::t_2b587ddac8c9fe 23-24
+packages/web/src/app/builder/state/canvas-state.ts
+  s_94864882421579::t_2b587ddac8c9fe 94,132,140
+packages/core/execution/src/lib/workers/job-data.ts
+  s_94864882421579::t_2b587ddac8c9fe 7,10,60,81,92,175,187,200,231,241,243,246,250,252,261,274,285
+packages/server/engine/src/lib/utils.ts
+  s_94864882421579::t_2b587ddac8c9fe 5,7,47,50,64,95
+docs/mcp/overview.mdx
+  s_94864882421579::t_2b587ddac8c9fe 54
+  s_94864882421579::t_a8b2b8ace15632 4,7,24,66,68,71
+packages/server/api/src/app/trigger/trigger-source/trigger-utils.ts
+  s_94864882421579::t_2b587ddac8c9fe 5,9,11,16,20,22,24-25,31,33-34,37,41-43,48,50,52-53,55,58-59,63-65,70
+brain/knowledge/connections-auth/oauth-apps.md
+  s_94864882421579::t_a8b2b8ace15632 7
+  s_94864882421579::t_2b587ddac8c9fe 10,17,19,29
+packages/server/api/src/app/helper/system-jobs/system-job.ts
+  s_94864882421579::t_2b587ddac8c9fe 125
+packages/server/api/src/app/workers/migrations/refill-renew-webhook-jobs.ts
+  s_94864882421579::t_2b587ddac8c9fe 6,26-28,31-32,48
+brain/knowledge/connections-auth/app-connections.md
+  s_94864882421579::t_2b587ddac8c9fe 10,17-18,28
+  s_94864882421579::t_a8b2b8ace15632 13
+docs/install/guarantees/reserved-resources.mdx
+  s_94864882421579::t_a8b2b8ace15632 12
+  s_94864882421579::t_2b587ddac8c9fe 29
+packages/server/api/src/app/workers/rpc/worker-rpc-service.ts
+  s_94864882421579::t_1eaf041fbe59d8 5
+  s_94864882421579::t_2b587ddac8c9fe 170-171,192
+packages/web/src/app/components/global-search/static-pages.ts
+  s_94864882421579::t_2b587ddac8c9fe 89-91
+packages/web/src/app/routes/platform/setup/connections/index.tsx
+  s_94864882421579::t_2b587ddac8c9fe 51,108-109
+packages/server/api/vitest.config.ts
+  s_94864882421579::t_0dd01fb0d99230 22
+  s_94864882421579::t_2b587ddac8c9fe 4,23
+packages/server/api/src/app/app-connection/app-connection-service/oauth2/oauth2-service.ts
+  s_94864882421579::t_2b587ddac8c9fe 16,38
+packages/server/sandbox/test/lib/sandbox/isolate.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 183,188
+packages/web/src/app/routes/platform/infra/workers/worker-assignments-tab.tsx
+  s_94864882421579::t_a8b2b8ace15632 34
+brain/knowledge/decisions/000016-managed-ai-metering-moves-to-centralized-worker-execution.md
+  s_94864882421579::t_2b587ddac8c9fe 15-16
+  s_94864882421579::t_a8b2b8ace15632 11
+NOTICE.md
+  s_94864882421579::t_a8b2b8ace15632 5,7,9,16,39,53
+brain/knowledge/engineering/ci-pr-review-hygiene.md
+  s_94864882421579::t_2b587ddac8c9fe 13,18,24,32
+docs/embedding/sdk-changelog.mdx
+  s_94864882421579::t_a8b2b8ace15632 3,10,22-23,26,32-33,36-37,40-41,45-46,50,54-55,62-63,67-68,77-78,89-90,97-98,116,141,147-148
+  s_94864882421579::t_2b587ddac8c9fe 14,47
+packages/web/src/features/automations/components/automations-empty-state.tsx
+  s_94864882421579::t_1eaf041fbe59d8 13
+  s_94864882421579::t_2b587ddac8c9fe 19,109,156
+packages/connectors/core/data-mapper/vitest.config.ts
+  s_94864882421579::t_0dd01fb0d99230 14-15
+brain/knowledge/ai-intelligence/ai-mcp.md
+  s_94864882421579::t_a8b2b8ace15632 7,19,21,42
+  s_94864882421579::t_2b587ddac8c9fe 11,14
+packages/server/engine/test/handler/flow-connector.test.ts
+  s_94864882421579::t_33e21a7147c653 36
+  s_94864882421579::t_426a7d2b0a09d9 1,5-6,8,11-12,14,29-31,33,54,59,70,72,76,85,87,95,99,101
+docs/adr/0008-ui-follows-enterprise-integration-mental-model.md
+  s_94864882421579::t_a8b2b8ace15632 16,30
+scripts/chat-logs.mjs
+  s_94864882421579::t_a8b2b8ace15632 58
+packages/web/public/locales/pt/translation.json
+  s_94864882421579::t_a8b2b8ace15632 413,511,769,792,980,1085-1086,1232,1872,1881,1890,1892,1894,2190
+  s_94864882421579::t_2b587ddac8c9fe 14,218,228-229,321-322,342,391,505,535,537-542,623,630,1260-1262,1325-1326,1329,1337,1344-1345,1347-1353,1355,1358-1359,1365-1367,1371-1372,1375-1376,1385,1388,1392,1394-1395,1498,1551,1575,2055,2090,2151-2155,2160-2165,2169,2189
+packages/server/api/src/app/app-connection/app-connection-service/app-connection-service.ts
+  s_94864882421579::t_1eaf041fbe59d8 7-10
+  s_94864882421579::t_2b587ddac8c9fe 1,34-36,39,50,57-58,78,96,104,115,225,259,387,412-413,499,575,581,588,602,644,649-650,657,672-673,680,694-695,703,718,733,750,752-753,759-761,796-798,819,821-822,826-827,831-833,914-915,919,934,936,968-969,979,990,1014
+packages/web/src/app/connections/reconnect-button-dialog.tsx
+  s_94864882421579::t_2b587ddac8c9fe 16,30-32,58,62
+docs/handbook/hiring/levels.mdx
+  s_94864882421579::t_a8b2b8ace15632 17
+packages/core/utils/src/index.ts
+  s_94864882421579::t_2b587ddac8c9fe 12
+packages/web/src/features/automations/components/automations-filters.tsx
+  s_94864882421579::t_2b587ddac8c9fe 1,58,85,113-114,119-120
+packages/server/api/src/app/helper/otel-queue-metrics.ts
+  s_94864882421579::t_a8b2b8ace15632 46
+packages/server/worker/test/lib/configs.test.ts
+  s_94864882421579::t_a8b2b8ace15632 30-31,36-37,52-53
+docs/embedding/embed-builder.mdx
+  s_94864882421579::t_2b587ddac8c9fe 80
+  s_94864882421579::t_a8b2b8ace15632 9,13,24,30,67-70,83,90
+packages/core/shared/src/lib/core/common/telemetry.ts
+  s_94864882421579::t_2b587ddac8c9fe 7,15,114,145-146,165,229,246,306,344
+brain/knowledge/execution-runtime/index.md
+  s_94864882421579::t_a8b2b8ace15632 37,46
+  s_94864882421579::t_2b587ddac8c9fe 14,18,21,35-36,44-45,47-49,51-52,57
+packages/core/utils/.eslintrc.json
+  s_94864882421579::t_2b587ddac8c9fe 16,19
+brain/knowledge/flows-execution/index.md
+  s_94864882421579::t_a8b2b8ace15632 7,62-63
+  s_94864882421579::t_2b587ddac8c9fe 24,64
+packages/web/src/app/builder/connectors-selector/connectors-card-list.tsx
+  s_94864882421579::t_1eaf041fbe59d8 12-15,18-20,26-27,30,32-33,36,39,42-43,45-46,55,57,59,61,64-65,67,69,72,75-77,86,98,102,120-121,137-141,160,163,165,168,172,176,178,180-181,184-185,193-194,196-197,199-200,203,207,211-212,216-217,221-225,227
+brain/knowledge/decisions/000016-action-run-code-cache-is-namespaced-per-platform.md
+  s_94864882421579::t_2b587ddac8c9fe 49,52,89
+packages/web/src/app/builder/test-step/test-runner-context.tsx
+  s_94864882421579::t_1eaf041fbe59d8 103-115,117-119,246-248
+  s_94864882421579::t_2b587ddac8c9fe 17,19,32-33,101-102,123-124,128-129,169,194-195,249
+packages/web/src/app/builder/step-settings/update-connector-version-dialog/update-connector-version-utils.tsx
+  s_94864882421579::t_1eaf041fbe59d8 1,8-9,16-20,73,162,168,173,175,179-180,189-191,207,209,214,219,223,233,237,260
+packages/server/api/src/app/workers/migrations/refill-polling-jobs.ts
+  s_94864882421579::t_2b587ddac8c9fe 35
+packages/server/engine/src/lib/operations/auth-validation.operation.ts
+  s_94864882421579::t_2b587ddac8c9fe 8,12,17
+brain/knowledge/decisions/000008-streaming-file-writes-go-through-the-app-one-path.md
+  s_94864882421579::t_2b587ddac8c9fe 14
+packages/server/sandbox/src/lib/cache/connectors/connector-installer.ts
+  s_94864882421579::t_1eaf041fbe59d8 5,11,14-21,26-27,31,36,45-49,52-53,55,57-58,63-64,67,69-71,76-77,83,85,87,95,99,102-103,107-109,115,117,119,121-123,128-129,137,139,141,150,152-153,157-158,164,166,168-170,174,179,181-183,186,192,194-195,197,199-200,217,222,224,226,229-230,232,239-240,243,248-252,256,259,266-269,271,274-278,282,285,289-291,294,298,300,303,307-310,312,320,331-332
+packages/core/execution/src/lib/flows/util/flow-structure-util.ts
+  s_94864882421579::t_2b587ddac8c9fe 8,21,108,240,249,251,290
+packages/core/formula/.eslintrc.json
+  s_94864882421579::t_2b587ddac8c9fe 16,19
+packages/core/execution/src/lib/flows/operations/delete-action.ts
+  s_94864882421579::t_2b587ddac8c9fe 38
+brain/knowledge/decisions/000030-this-fork-has-no-editions-the-ee-pages-are-history.md
+  s_94864882421579::t_a8b2b8ace15632 9
+.github/workflows/crowdin-pr-merger.yml
+  s_94864882421579::t_2b587ddac8c9fe 66,83
+packages/server/api/src/app/helper/system/system.ts
+  s_94864882421579::t_2b587ddac8c9fe 29,34,60
+  s_94864882421579::t_a8b2b8ace15632 21,24
+  s_94864882421579::t_1eaf041fbe59d8 4
+.github/CODE_OF_CONDUCT.md
+  s_94864882421579::t_a8b2b8ace15632 5,9,11-16,18,43,56,74,79,84,86
+packages/server/engine/src/lib/operations/auth-refresh.operation.ts
+  s_94864882421579::t_2b587ddac8c9fe 10,25
+packages/core/utils/src/lib/platform-error.ts
+  s_94864882421579::t_2b587ddac8c9fe 75-76,83,98-99,132,228-229,298,429-430,433-435,560-561,564
+packages/server/api/src/assets/prompts/guides/state.md
+  s_94864882421579::t_2b587ddac8c9fe 13,40
+packages/server/worker/src/lib/execute/job-registry.ts
+  s_94864882421579::t_2b587ddac8c9fe 10,43
+docker-compose.yml
+  s_94864882421579::t_a8b2b8ace15632 4,17,31,44,52,57
+.github/workflows/release-connectors.yml
+  s_94864882421579::t_0dd01fb0d99230 1,9,13,17,49-50,52,55,61,67,69,71,74,78,80,83,88,90,94,101
+packages/server/engine/test/helper/flow-run-progress-reporter.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 219
+docs/admin-guide/guides/setup-ai-providers.mdx
+  s_94864882421579::t_a8b2b8ace15632 7
+packages/server/api/src/app/flags/webhook-secrets-util.ts
+  s_94864882421579::t_2b587ddac8c9fe 40
+packages/server/sandbox/test/lib/cache/flow/flow-bundle-store.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 7,61,87,94,100,111,134,150,167,175
+docs/handbook/engineering/postmortems/2026-03-16-infrastructure-upgrade.mdx
+  s_94864882421579::t_a8b2b8ace15632 7,59
+packages/web/src/app/components/project-settings/index.tsx
+  s_94864882421579::t_2b587ddac8c9fe 29
+docs/handbook/engineering/postmortems/2026-03-19-redis-and-delay-overload.mdx
+  s_94864882421579::t_a8b2b8ace15632 48
+deploy/fema-helm/Chart.yaml
+  s_94864882421579::t_a8b2b8ace15632 2-4
+packages/core/execution/src/lib/flows/util/flow-canvas-util.ts
+  s_94864882421579::t_2b587ddac8c9fe 1,172-173,179
+docs/handbook/engineering/onboarding/stack.mdx
+  s_94864882421579::t_a8b2b8ace15632 8
+packages/cli/src/lib/commands/create-action.ts
+  s_94864882421579::t_2b587ddac8c9fe 5,34,37-40,56-57,73
+  s_94864882421579::t_a8b2b8ace15632 14
+packages/server/api/src/app/helper/system-validator.ts
+  s_94864882421579::t_2b587ddac8c9fe 106,111,160,189
+  s_94864882421579::t_1eaf041fbe59d8 3
+  s_94864882421579::t_a8b2b8ace15632 257,273,281,299
+packages/server/engine/src/lib/core/connector/connector-path.ts
+  s_94864882421579::t_1eaf041fbe59d8 4,6,8-11,13-15,17,22-24,27-29,34-35,38,83,85,87,97,111,114-115,121-122,124
+docs/admin-guide/security/practices.mdx
+  s_94864882421579::t_a8b2b8ace15632 23,35,39,43,56
+packages/web/src/features/connectors/utils/connector-search-utils.ts
+  s_94864882421579::t_1eaf041fbe59d8 2,5,11,14,18-19,21,29-31,33-34,43-44,46-47,50-51,53-54,60,62-63,67-69,75-77,79,82,84-85,90,92,94-96,98,101,112,114,116-120,122,125,129-131,135,139-140,142-145,147-148,150-151,154,158-162,165,173-174,183,185-191
+packages/web/src/features/connectors/components/install-connector-dialog.tsx
+  s_94864882421579::t_1eaf041fbe59d8 3,6,50,53-56,59-61,63-64,66,68,71-72,95-96,98,104,109,115-119,124-126,129-131,134,139,144-145,154,180,185,189,201,217-218,234,249,253-254,259,269,273-274,279,293,299,304,337
+packages/server/api/test/unit/app/workers/migrations/job-data-migrations.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 54,86
+packages/web/src/app/builder/flow-canvas/nodes/step-node/step-node-display-name.tsx
+  s_94864882421579::t_2b587ddac8c9fe 5,11,17,48,50
+packages/server/worker/src/lib/execute/jobs/execute-token-refresh.ts
+  s_94864882421579::t_2b587ddac8c9fe 18,20,29
+deploy/fema-helm/templates/service.yaml
+  s_94864882421579::t_a8b2b8ace15632 4,6,19,25,27,40
+docker-entrypoint.sh
+  s_94864882421579::t_a8b2b8ace15632 22,31
+packages/server/api/test/integration/flows/flow/human-input/human-input.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 2,6,11,33-34,37,40-41,53,55-56,134-135,138,141-142,154,156-157
+packages/core/shared/src/lib/automation/trigger/index.ts
+  s_94864882421579::t_2b587ddac8c9fe 51-52
+packages/web/src/app/routes/platform/connections/index.tsx
+  s_94864882421579::t_1eaf041fbe59d8 40-43
+  s_94864882421579::t_2b587ddac8c9fe 53,76-77,79-81,125-126
+packages/web/src/app/builder/flow-canvas/nodes/step-node/index.tsx
+  s_94864882421579::t_2b587ddac8c9fe 12,15,39-40,50-51,67,92,121-122,149,164,166,171,198,206,220,251
+packages/web/src/features/platform-admin/hooks/platform-app-connections-hooks.ts
+  s_94864882421579::t_2b587ddac8c9fe 36
+packages/server/api/src/app/flows/flow-version/flow-version-validator-util.ts
+  s_94864882421579::t_1eaf041fbe59d8 7
+  s_94864882421579::t_2b587ddac8c9fe 2-4,10,40-41,70-71,98-99,141-142,149,151-152,155,159,166,171-172,179,181-182,184,187,193,197,199,203,222,228
+packages/core/execution/src/lib/flows/actions/action.ts
+  s_94864882421579::t_2b587ddac8c9fe 9,76,79-80,86-87,90,92,94-95,296,327,343,361-363
+docs/admin-guide/guides/sso.mdx
+  s_94864882421579::t_a8b2b8ace15632 3,11,17,19,23,60,74,76-77,92-93,96,104-105,122,125-126,144,160,167-168,182,185,191,202,207,238-239,272,285
+docs/admin-guide/guides/manage-oauth2.mdx
+  s_94864882421579::t_a8b2b8ace15632 3,11,15
+  s_94864882421579::t_2b587ddac8c9fe 21-22
+packages/server/api/test/integration/flows/flow/flow-operations.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 10,22,226,229,232,235,247,249-250,262-263,415,418,421,424,437-438,441-442,457-458,461-462
+packages/connectors/core/data-summarizer/vitest.config.ts
+  s_94864882421579::t_0dd01fb0d99230 1-18
+.claude/agents/server.md
+  s_94864882421579::t_a8b2b8ace15632 3
+.github/workflows/ci.yml
+  s_94864882421579::t_2b587ddac8c9fe 47,60,62,104,114-115,117-120,122,128-129,131,133-136,143
+  s_94864882421579::t_0dd01fb0d99230 51,108
+  s_94864882421579::t_a8b2b8ace15632 185,199,242,250
+docs/handbook/engineering/playbooks/testing-strategy.mdx
+  s_94864882421579::t_a8b2b8ace15632 3,9,72
+  s_94864882421579::t_2b587ddac8c9fe 34,74
+packages/server/api/src/app/flows/flow-run/flow-run-hooks.ts
+  s_94864882421579::t_2b587ddac8c9fe 1,16-17
+docs/flows/versioning.mdx
+  s_94864882421579::t_a8b2b8ace15632 4,7,12
+docs/mcp/tool-search.mdx
+  s_94864882421579::t_a8b2b8ace15632 34,45
+  s_94864882421579::t_2b587ddac8c9fe 4,7,13-14,21,47
+packages/web/src/components/custom/show-powered-by.tsx
+  s_94864882421579::t_a8b2b8ace15632 38
+packages/web/src/app/builder/test-step/index.tsx
+  s_94864882421579::t_2b587ddac8c9fe 25
+packages/web/src/app/builder/test-step/utils/test-step-hooks.ts
+  s_94864882421579::t_2b587ddac8c9fe 4,6,163-164
+packages/web/src/app/routes/platform/security/sso/saml-dialog.tsx
+  s_94864882421579::t_a8b2b8ace15632 409,417
+docs/openapi.json
+  s_94864882421579::t_a8b2b8ace15632 1
+packages/web/src/features/connectors/hooks/steps-hooks.ts
+  s_94864882421579::t_1eaf041fbe59d8 14,62,69,77-80,83-95,102,105,147-155,161-163,165-167,171-172
+packages/core/shared/src/lib/governance/system-limits.ts
+  s_94864882421579::t_2b587ddac8c9fe 18
+packages/web/src/app/components/account-settings/language-toggle.tsx
+  s_94864882421579::t_a8b2b8ace15632 119,121
+packages/connectors/core/math-helper/vitest.config.ts
+  s_94864882421579::t_0dd01fb0d99230 1-18
+docs/admin-guide/guides/permissions.mdx
+  s_94864882421579::t_a8b2b8ace15632 3,9,13
+packages/server/engine/src/lib/core/connector/connector-child.ts
+  s_94864882421579::t_1eaf041fbe59d8 1,3-5,7,11-12,18,20,23-24,30,35,39-41,44,46-47,51,53-56,60,62,65,71
+packages/core/shared/src/lib/automation/app-connection/dto/read-app-connection-request.ts
+  s_94864882421579::t_2b587ddac8c9fe 10,39
+docs/install/troubleshooting/bullboard.mdx
+  s_94864882421579::t_2b587ddac8c9fe 38,57,59-60
+packages/server/engine/src/lib/operations/flow.operation.ts
+  s_94864882421579::t_2b587ddac8c9fe 4,33
+packages/tests-e2e/pages/builder.page.ts
+  s_94864882421579::t_2b587ddac8c9fe 7,9,13,15-16
+brain/knowledge/ai-intelligence/mcp-server.md
+  s_94864882421579::t_a8b2b8ace15632 7
+  s_94864882421579::t_2b587ddac8c9fe 17,20,26,36,43
+docs/install/options/gcp.mdx
+  s_94864882421579::t_a8b2b8ace15632 6
+  s_94864882421579::t_2b587ddac8c9fe 25,29
+packages/server/sandbox/src/lib/cache/flow/flow-bundle-store.ts
+  s_94864882421579::t_1eaf041fbe59d8 4
+  s_94864882421579::t_2b587ddac8c9fe 49,52,58,114,126,131
+docs/custom.css
+  s_94864882421579::t_2b587ddac8c9fe 2
+  s_94864882421579::t_a8b2b8ace15632 3
+.github/ISSUE_TEMPLATE/bug_report.md
+  s_94864882421579::t_2b587ddac8c9fe 4
+.github/workflows/tests-e2e-ce.yml
+  s_94864882421579::t_2b587ddac8c9fe 8-10
+  s_94864882421579::t_a8b2b8ace15632 17,41
+docs/handbook/customer-support/overview.mdx
+  s_94864882421579::t_a8b2b8ace15632 6
+  s_94864882421579::t_80a7eda71bff25 17
+docs/handbook/customer-support/tone.mdx
+  s_94864882421579::t_a8b2b8ace15632 7
+packages/web/src/features/connections/hooks/app-connections-hooks.ts
+  s_94864882421579::t_2b587ddac8c9fe 3,332,342,352,360,384
+docs/handbook/engineering/playbooks/ai-engineering-guide.mdx
+  s_94864882421579::t_2b587ddac8c9fe 24,98,183
+  s_94864882421579::t_a8b2b8ace15632 133
+docs/install/configure-operate/setup-opentelemetry.mdx
+  s_94864882421579::t_a8b2b8ace15632 7
+docs/install/reference/limits.mdx
+  s_94864882421579::t_a8b2b8ace15632 4,9,117
+  s_94864882421579::t_2b587ddac8c9fe 26,68,127,141
+packages/core/execution/src/lib/flows/triggers/trigger.ts
+  s_94864882421579::t_2b587ddac8c9fe 4,11,15-16,21-22,25,30,51,53-54,57,60,69-70
+docs/install/guarantees/disaster-recovery.mdx
+  s_94864882421579::t_a8b2b8ace15632 7,13,27
+packages/server/engine/src/lib/handler/flow-executor.ts
+  s_94864882421579::t_1eaf041fbe59d8 10
+  s_94864882421579::t_2b587ddac8c9fe 5,24,138
+packages/server/engine/test/handler/flow-with-response.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 4,33,35
+packages/web/src/app/builder/step-settings/editable-step-name.tsx
+  s_94864882421579::t_2b587ddac8c9fe 28,44,51,134,136,141,143
+packages/core/execution/src/lib/flows/triggers/trigger-run.ts
+  s_94864882421579::t_2b587ddac8c9fe 12
+packages/server/api/src/app/file/s3-helper.ts
+  s_94864882421579::t_a8b2b8ace15632 166,171
+packages/web/src/app/components/request-trial.tsx
+  s_94864882421579::t_2b587ddac8c9fe 11,24
+  s_94864882421579::t_a8b2b8ace15632 67
+packages/web/src/features/connectors/components/connector-selector-search.tsx
+  s_94864882421579::t_1eaf041fbe59d8 6,8-10,12,17,20-21,25,27-28,30-31,39,48,56,63-64
+docs/install/troubleshooting/truncated-logs.mdx
+  s_94864882421579::t_a8b2b8ace15632 9
+brain/knowledge/connections-auth/scim.md
+  s_94864882421579::t_a8b2b8ace15632 13
+packages/server/api/src/assets/prompts/guides/build_flow.md
+  s_94864882421579::t_2b587ddac8c9fe 52,55,62,69,125,145,148,150,157,162,166-167,170
+  s_94864882421579::t_a8b2b8ace15632 39,43,53
+packages/server/api/test/helpers/flow-generator.ts
+  s_94864882421579::t_2b587ddac8c9fe 69,76-77,87,92-93
+.agents/skills/connector-output-schema/schema-reference.md
+  s_94864882421579::t_0dd01fb0d99230 3,121,139,179,195
+docs/handbook/engineering/onboarding/onboarding-check-list.mdx
+  s_94864882421579::t_a8b2b8ace15632 6,16,52
+brain/knowledge/flows-execution/triggers.md
+  s_94864882421579::t_2b587ddac8c9fe 12,18,24,26,28
+packages/web/src/app/builder/flow-canvas/edges/add-button.tsx
+  s_94864882421579::t_1eaf041fbe59d8 16-26
+  s_94864882421579::t_2b587ddac8c9fe 6,89,106,119,124,130
+.claude/agents/web.md
+  s_94864882421579::t_a8b2b8ace15632 3
+docker-compose.dev.yml
+  s_94864882421579::t_a8b2b8ace15632 5
+docs/handbook/engineering/onboarding/downtime-incident.mdx
+  s_94864882421579::t_80a7eda71bff25 26
+docs/adr/0005-connection-domain-model.md
+  s_94864882421579::t_2b587ddac8c9fe 10
+packages/server/api/src/assets/prompts/chat-compaction-prompt.md
+  s_94864882421579::t_2b587ddac8c9fe 5-6,15
+  s_94864882421579::t_a8b2b8ace15632 1
+README.md
+  s_94864882421579::t_a8b2b8ace15632 5,9,27,31,33,35,49,51-52,57,63,65,67,71,77,90,94,99,101,103,105,115,118,134,138,161
+.agents/skills/triage-image-cves/SKILL.md
+  s_94864882421579::t_a8b2b8ace15632 3,8
+  s_94864882421579::t_2b587ddac8c9fe 120,140
+packages/server/engine/src/lib/variables/props-resolver.ts
+  s_94864882421579::t_2b587ddac8c9fe 34,54,89,92,110,140,145,187,249,299,312,332
+docs/install/architecture/overview.mdx
+  s_94864882421579::t_2b587ddac8c9fe 53,63
+  s_94864882421579::t_a8b2b8ace15632 3,7,13,15,24,35
+docs/install/architecture/waitpoints.mdx
+  s_94864882421579::t_2b587ddac8c9fe 25,34,41,47,51,55,75,77
+packages/web/src/app/builder/test-step/test-trigger-section/index.tsx
+  s_94864882421579::t_1eaf041fbe59d8 58-62,110-111,230-231
+  s_94864882421579::t_2b587ddac8c9fe 67-68,88,107-109,116,121,131-132,134,229,234
+packages/server/engine/test/variables/props-resolver.test.ts
+  s_94864882421579::t_33e21a7147c653 646,707,726,748
+  s_94864882421579::t_2b587ddac8c9fe 2,21,46,54,68,88,104,315,358,372,386,411,425,630,663,693,716,744,773,802,856,892,925,958,992,1025
+docs/install/reference/breaking-changes.mdx
+  s_94864882421579::t_80a7eda71bff25 304,379
+  s_94864882421579::t_a8b2b8ace15632 11,13,17,38,60,111-112,119,121-122,125,137-138,141,143,147-148,161,186,198-199,201-202,205-207,216,261,274,281,285,305,372,378,389
+packages/web/src/app/routes/platform/infra/health/components/system-health-tab.tsx
+  s_94864882421579::t_a8b2b8ace15632 26,29,103
+packages/web/src/app/builder/connectors-selector/explore-tab-content.tsx
+  s_94864882421579::t_1eaf041fbe59d8 9-14,16,21,23-29,37,40,48,51-53,69,72-73,76-78,83
+packages/web/src/features/automations/components/automations-table-row.tsx
+  s_94864882421579::t_2b587ddac8c9fe 376
+  s_94864882421579::t_1eaf041fbe59d8 45
+docs/embedding/predefined-connection.mdx
+  s_94864882421579::t_a8b2b8ace15632 32,36,179,182,185
+  s_94864882421579::t_2b587ddac8c9fe 6,10,15,37-38,40,53,55,122,124,130,132,146,148,150,168,192,202
+packages/server/api/src/app/flags/flag.service.ts
+  s_94864882421579::t_2b587ddac8c9fe 40-41,104-105,158
+  s_94864882421579::t_a8b2b8ace15632 165,171
+docs/adr/index.md
+  s_94864882421579::t_2b587ddac8c9fe 15
+  s_94864882421579::t_a8b2b8ace15632 13,23
+packages/server/worker/test/lib/execute/utils/webhook-url.test.ts
+  s_94864882421579::t_a8b2b8ace15632 99,103-105,107,109,113,116,120,123
+docs/adr/0004-separate-connector-and-flow-component.md
+  s_94864882421579::t_2b587ddac8c9fe 9,15,22-23,33,39
+packages/core/execution/src/lib/flows/operations/add-action.ts
+  s_94864882421579::t_2b587ddac8c9fe 46,49,115,119
+brain/knowledge/data-storage-observability/tables.md
+  s_94864882421579::t_a8b2b8ace15632 7
+  s_94864882421579::t_2b587ddac8c9fe 18,26,43
+packages/server/engine/src/lib/handler/context/engine-constants.ts
+  s_94864882421579::t_2b587ddac8c9fe 17,50,58,88-89,107,149,154,166,173,220,228,235
+packages/web/src/app/components/project-layout/project-dashboard-page-header.tsx
+  s_94864882421579::t_2b587ddac8c9fe 38,69,78
+packages/server/engine/src/lib/helper/error-handling.ts
+  s_94864882421579::t_2b587ddac8c9fe 6,31,53,59
+  s_94864882421579::t_1eaf041fbe59d8 2
+brain/knowledge/connections-auth/index.md
+  s_94864882421579::t_a8b2b8ace15632 7,11
+  s_94864882421579::t_2b587ddac8c9fe 14-15,24,36,58
+brain/knowledge/platform-editions-ee/license-keys.md
+  s_94864882421579::t_a8b2b8ace15632 7,9,45
+packages/server/sandbox/test/lib/create-sandbox-for-job.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 50,58,78,86,172-173,175,177,179,182-183,187,190-191,195
+SECURITY.md
+  s_94864882421579::t_a8b2b8ace15632 3,45,49
+packages/server/sandbox/test/lib/sandbox.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 70
+packages/server/worker/src/lib/execute/jobs/execute-action.ts
+  s_94864882421579::t_2b587ddac8c9fe 13
+packages/web/src/app/builder/connector-properties/filter-property-utils.ts
+  s_94864882421579::t_1eaf041fbe59d8 1,10-12,19,53,90
+brain/knowledge/engineering/cloud-deployment-paths.md
+  s_94864882421579::t_a8b2b8ace15632 7
+.github/workflows/close-external-prs.yml
+  s_94864882421579::t_a8b2b8ace15632 49
+packages/server/sandbox/src/lib/sandbox.ts
+  s_94864882421579::t_2b587ddac8c9fe 3,42,124,135,138-139
+docs/install/options/helm.mdx
+  s_94864882421579::t_a8b2b8ace15632 3,6,29,102,113,117,120,150,153,160,169,172,180,184,189,193,197,206,209
+benchmark/docker-compose.minio.yml
+  s_94864882421579::t_a8b2b8ace15632 34-35
+packages/web/src/features/connections/utils/utils.ts
+  s_94864882421579::t_2b587ddac8c9fe 5-7,22,77,99,107,121,283,285
+tools/reset.sh
+  s_94864882421579::t_a8b2b8ace15632 1,3-5
+packages/server/sandbox/src/lib/create-sandbox-for-job.ts
+  s_94864882421579::t_2b587ddac8c9fe 95,101-102
+docs/embedding/sdk-server-requests.mdx
+  s_94864882421579::t_a8b2b8ace15632 3,9,28
+packages/web/src/app/builder/step-settings/step-settings-context.tsx
+  s_94864882421579::t_2b587ddac8c9fe 2-4,19,39-40,42,44,52-53,63-64,73,76,83,85,101,120-121,136
+packages/web/src/app/routes/templates/id/flow-card.tsx
+  s_94864882421579::t_2b587ddac8c9fe 5,43
+packages/connectors/core/webhook/vitest.config.ts
+  s_94864882421579::t_0dd01fb0d99230 1-18
+packages/server/engine/src/lib/core/connector/trigger-runner.ts
+  s_94864882421579::t_1eaf041fbe59d8 1,3-4,8-9,13,16-17,21-22,25,39,42-46,50,63,74,78,91-92,101,108-109,116,128,130,133,138-139,188,202-203,205
+packages/web/src/app/connections/custom-auth-connection-settings.tsx
+  s_94864882421579::t_2b587ddac8c9fe 4
+packages/server/api/src/app/flows/flow-run/waitpoint/resume-controller.ts
+  s_94864882421579::t_2b587ddac8c9fe 51
+docs/handbook/engineering/playbooks/e2e-tests.mdx
+  s_94864882421579::t_2b587ddac8c9fe 199,401
+packages/web/src/app/builder/flow-canvas/widgets/incomplete-settings-widget.tsx
+  s_94864882421579::t_2b587ddac8c9fe 20,26,44
+packages/core/execution/test/flow/cof-branches.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 12,52,64,67,72-73,412-413,416-417,423,428-429,441,472,483,488-489,501-502
+benchmark/run-gke.sh
+  s_94864882421579::t_2b587ddac8c9fe 191
+  s_94864882421579::t_a8b2b8ace15632 19,33
+packages/web/src/app/builder/test-step/test-trigger-section/trigger-event-utils.ts
+  s_94864882421579::t_2b587ddac8c9fe 4,16,20,23,26,30
+packages/web/src/app/routes/platform/infra/health/components/internal-errors-table.tsx
+  s_94864882421579::t_a8b2b8ace15632 50
+packages/web/src/features/connections/index.ts
+  s_94864882421579::t_2b587ddac8c9fe 15
+packages/server/engine/src/lib/helper/flow-run-progress-reporter.ts
+  s_94864882421579::t_2b587ddac8c9fe 65
+deploy/fema-helm/templates/deployment.yaml
+  s_94864882421579::t_a8b2b8ace15632 9,11,17,22,31,40,57,59,63,101,134-135
+brain/knowledge/platform-editions-ee/ee-projects-rbac.md
+  s_94864882421579::t_2b587ddac8c9fe 7,22,27
+packages/server/api/test/integration/flows/flow/flow.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 8,23,87,102,105,117,119-120,199,216,219,232,234-235
+packages/connectors/core/date-helper/vitest.config.ts
+  s_94864882421579::t_0dd01fb0d99230 1-18
+benchmark/run-local.sh
+  s_94864882421579::t_a8b2b8ace15632 30
+packages/web/src/app/routes/automations/index.tsx
+  s_94864882421579::t_2b587ddac8c9fe 28,129,259
+docs/embedding/navigation.mdx
+  s_94864882421579::t_a8b2b8ace15632 7,11,14,21,46-47,53,76,80
+packages/server/api/src/app/flows/flow-version/flow-version-side-effects.ts
+  s_94864882421579::t_2b587ddac8c9fe 54
+packages/connectors/core/xml/vitest.config.ts
+  s_94864882421579::t_0dd01fb0d99230 1-18
+packages/server/engine/test/variables/props-validator.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 1,16,25,36,56,65,76,96,105,125,134,145,165,174,194,203,212,221,230,241,252,263,283,292,301,310,321,340,349,360,371,380,407,436,464,508,563,577,597,631,644
+.agents/designs/project-replace-cli.md
+  s_94864882421579::t_2b587ddac8c9fe 16,24,64,71-73,169,175
+  s_94864882421579::t_a8b2b8ace15632 8,32,60,70,122,125
+packages/server/engine/test/handler/context/flow-execution-context-log-size.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 6,8,23-24,33-34,38
+packages/web/src/features/authentication/components/auth-animation.tsx
+  s_94864882421579::t_2b587ddac8c9fe 414,416,420
+  s_94864882421579::t_a8b2b8ace15632 12
+docs/_snippets/execution-mode.mdx
+  s_94864882421579::t_2b587ddac8c9fe 1
+packages/server/api/src/app/helper/system-jobs/common.ts
+  s_94864882421579::t_2b587ddac8c9fe 7-8,48-49
+packages/web/src/app/connections/create-edit-connection-dialog.tsx
+  s_94864882421579::t_2b587ddac8c9fe 3-5,52,55,67,88,103,112,153,352,363,365,367,369-370,375,385-386,423,445,455,464-465,478,489,495-496,508-509,511,514-515,517,528,530,535,544,546-547,561-562,576,587,602-603,623
+  s_94864882421579::t_1eaf041fbe59d8 251-254,320-323,379-382,398-414,431-434,436-440,485-488
+brain/knowledge/flows-execution/action-run.md
+  s_94864882421579::t_2b587ddac8c9fe 7,12,18,20-21,43,45,64
+  s_94864882421579::t_0dd01fb0d99230 44
+benchmark/EXPERIMENTS.md
+  s_94864882421579::t_2b587ddac8c9fe 23,78,118,120-121,176
+packages/web/src/features/connectors/types/index.ts
+  s_94864882421579::t_1eaf041fbe59d8 4-5,11,23-26,29-30,42-43,46,54,61,86,89-90,94-95,97,100-102,104
+brain/knowledge/engineering/server-module-anatomy.md
+  s_94864882421579::t_2b587ddac8c9fe 130
+  s_94864882421579::t_a8b2b8ace15632 58
+docs/admin-guide/guides/scim/providers/okta.mdx
+  s_94864882421579::t_a8b2b8ace15632 3,12,15,21,30,50,72,91,94,119,124,128,130,141,147,152
+docs/install/architecture/benchmark.mdx
+  s_94864882421579::t_2b587ddac8c9fe 7,106,111,203
+  s_94864882421579::t_a8b2b8ace15632 11,121,138,146
+packages/core/shared/src/lib/core/support-url.ts
+  s_94864882421579::t_80a7eda71bff25 1
+packages/web/src/app/builder/flow-canvas/nodes/step-node/step-drag-overlay.tsx
+  s_94864882421579::t_2b587ddac8c9fe 6
+packages/web/src/app/builder/step-settings/code-settings/index.tsx
+  s_94864882421579::t_2b587ddac8c9fe 15
+docs/admin-guide/guides/scim/overview.mdx
+  s_94864882421579::t_a8b2b8ace15632 3,10,29
+packages/core/execution/src/lib/workers/worker-contract.ts
+  s_94864882421579::t_2b587ddac8c9fe 26,63,74,76
+docs/install/configure-operate/rollback.mdx
+  s_94864882421579::t_a8b2b8ace15632 3,9,37,67,71,82-84,87
+packages/web/src/app/builder/test-step/test-step-tooltip.tsx
+  s_94864882421579::t_2b587ddac8c9fe 11
+packages/web/src/features/flow-runs/components/runs-table/failed-step-dialog.tsx
+  s_94864882421579::t_1eaf041fbe59d8 25-26
+  s_94864882421579::t_2b587ddac8c9fe 215
+packages/web/src/features/projects/stores/projects-collection.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 2,66-67
+packages/core/execution/tsconfig.json
+  s_94864882421579::t_2b587ddac8c9fe 18
+packages/server/engine/src/lib/core/connector/connector-context-builder.ts
+  s_94864882421579::t_1eaf041fbe59d8 1,7-10,14,16,24,26,32,34,38,40,92,94,98,163,167,177,185,189,265,284,289,296,305,309,316
+packages/web/src/app/connections/oidc-connection-settings.tsx
+  s_94864882421579::t_2b587ddac8c9fe 4
+docs/about/license.mdx
+  s_94864882421579::t_a8b2b8ace15632 7,11
+packages/web/src/features/forms/components/ap-form.tsx
+  s_94864882421579::t_a8b2b8ace15632 49
+docs/about/changelog.mdx
+  s_94864882421579::t_2b587ddac8c9fe 7,9,11,13,30,33-34,36,40,42,53,55,57,172
+  s_94864882421579::t_a8b2b8ace15632 3,44,91,95
+packages/web/src/app/routes/platform-routes.tsx
+  s_94864882421579::t_1eaf041fbe59d8 91-95
+  s_94864882421579::t_2b587ddac8c9fe 28-30
+packages/connectors/core/approval/vitest.config.ts
+  s_94864882421579::t_0dd01fb0d99230 14-15
+packages/server/api/test/integration/app-connection/custom-auth-refresh.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 3,8,31-34,36,44,47,53-54,69-70,72,76-77,85-86,88,92-93,103-105,109-110,114-115,120-121,134-135,139-140,147-148
+packages/web/src/app/builder/data-selector/utils.ts
+  s_94864882421579::t_2b587ddac8c9fe 11,285-287
+docs/install/architecture/durable-execution.mdx
+  s_94864882421579::t_2b587ddac8c9fe 45
+packages/web/src/app/builder/flow-canvas/utils/flow-canvas-utils.ts
+  s_94864882421579::t_2b587ddac8c9fe 489,644
+packages/core/shared/src/lib/management/template/template.ts
+  s_94864882421579::t_2b587ddac8c9fe 85
+brain/knowledge/data-storage-observability/file-storage.md
+  s_94864882421579::t_2b587ddac8c9fe 21,26,28,31-32,35-36,40,50
+brain/knowledge/engineering/web-feature-anatomy.md
+  s_94864882421579::t_a8b2b8ace15632 59,73-74
+  s_94864882421579::t_2b587ddac8c9fe 28,69,71
+packages/server/engine/test/operations/flow-operation-invariants.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 34,107,112-113,121,126-127,273,287,293,336,357,379,384,409-410,428,434
+packages/web/src/features/connectors/components/connector-icon-list.tsx
+  s_94864882421579::t_1eaf041fbe59d8 5,16,18,20,38,55-56,60-61,65,67-69,71-81,83,93,99,109,113
+packages/server/api/src/app/authentication/authentication-utils.ts
+  s_94864882421579::t_a8b2b8ace15632 161
+brain/knowledge/engineering/e2e-tests-and-monitors.md
+  s_94864882421579::t_2b587ddac8c9fe 21
+  s_94864882421579::t_a8b2b8ace15632 10
+packages/server/sandbox/src/lib/cache/flow/flow-provisioning.ts
+  s_94864882421579::t_2b587ddac8c9fe 5,26,34,36,39,42,44,51,54,59,61,68-71,73-77,83-85,90,94-95,97,116,130,135-137,140,142,154
+  s_94864882421579::t_1eaf041fbe59d8 3
+packages/web/src/features/flows/utils/flows-utils.tsx
+  s_94864882421579::t_2b587ddac8c9fe 42,70
+packages/core/execution/src/lib/flows/operations/index.ts
+  s_94864882421579::t_2b587ddac8c9fe 4,9-10,154,186,362-363,373-374,388-389,429
+packages/core/shared/src/lib/governance/audit-events/index.ts
+  s_94864882421579::t_2b587ddac8c9fe 58
+.github/workflows/generate-translations.yml
+  s_94864882421579::t_2b587ddac8c9fe 1
+packages/server/engine/src/lib/helper/dynamic-prop-keys.ts
+  s_94864882421579::t_2b587ddac8c9fe 7
+packages/web/src/app/builder/step-settings/update-connector-version-dialog/update-connector-version-dialog.tsx
+  s_94864882421579::t_1eaf041fbe59d8 1,25,35-36,40-42,44-46,49,96,100,125,127-128,138,140-141,148,156-158,162,210,317
+packages/server/worker/src/lib/worker.ts
+  s_94864882421579::t_2b587ddac8c9fe 202
+docs/install/configure-operate/setup-app-webhooks.mdx
+  s_94864882421579::t_a8b2b8ace15632 15,17
+packages/core/shared/src/lib/core/flag/flag.ts
+  s_94864882421579::t_2b587ddac8c9fe 28-29
+.github/workflows/reusable-finalize-translations-pr.yml
+  s_94864882421579::t_2b587ddac8c9fe 98
+packages/core/shared/src/lib/automation/app-connection/app-connection.ts
+  s_94864882421579::t_2b587ddac8c9fe 103,112,130,139
+packages/server/engine/src/lib/variables/variable-token.ts
+  s_94864882421579::t_2b587ddac8c9fe 3
+packages/web/src/features/templates/components/explore-template-card.tsx
+  s_94864882421579::t_2b587ddac8c9fe 7-8,19,71
+packages/server/sandbox/src/lib/cache/flow/flow-steps.ts
+  s_94864882421579::t_2b587ddac8c9fe 7,9
+packages/server/worker/src/lib/execute/jobs/execute-webhook.ts
+  s_94864882421579::t_1eaf041fbe59d8 2
+  s_94864882421579::t_2b587ddac8c9fe 10-12,16-17,19
+packages/server/engine/src/lib/core/connector/connector-protocol.ts
+  s_94864882421579::t_1eaf041fbe59d8 1,6,12,18,69-72,75,83,92,103,116,124,130-131,155-156
+packages/server/worker/test/lib/execute/utils/trigger-run-recorder.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 5,22,27-28,43,45,52,54,57,60,73
+packages/web/src/features/platform-admin/index.ts
+  s_94864882421579::t_2b587ddac8c9fe 4
+brain/knowledge/platform-editions-ee/projects.md
+  s_94864882421579::t_2b587ddac8c9fe 25
+brain/knowledge/eventing-webhooks/event-destinations.md
+  s_94864882421579::t_a8b2b8ace15632 7
+packages/web/src/app/builder/flow-canvas/widgets/index.tsx
+  s_94864882421579::t_2b587ddac8c9fe 16,21,39-40
+packages/core/execution/test/flow/nested-flow-validation.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 85
+packages/server/sandbox/src/lib/cache/engine/engine-installer.ts
+  s_94864882421579::t_2b587ddac8c9fe 12
+packages/server/worker/vitest.config.ts
+  s_94864882421579::t_0dd01fb0d99230 15
+packages/server/api/test/unit/app/flows/flow/flow-publish-utils.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 5,7,9-10,34,36-37,43-44,50-51,55,57-58,64-65,71-72,76
+packages/web/src/app/builder/test-step/test-trigger-section/first-time-testing-section.tsx
+  s_94864882421579::t_2b587ddac8c9fe 8
+packages/web/public/locales/es/translation.json
+  s_94864882421579::t_a8b2b8ace15632 413,511,769,792,980,1085-1086,1232,1872,1881,1890,1892,1894,2190
+  s_94864882421579::t_2b587ddac8c9fe 14,218,228-229,321-322,342,391,505,535,537-542,623,630,1260-1262,1325-1326,1329,1337,1344-1345,1347-1353,1355,1358-1359,1365-1367,1371-1372,1375-1376,1385,1388,1392,1394-1395,1498,1551,1575,2040,2055,2090,2151-2155,2160-2165,2169,2189
+packages/server/STYLE.md
+  s_94864882421579::t_2b587ddac8c9fe 158
+packages/server/sandbox/src/lib/resolver.ts
+  s_94864882421579::t_2b587ddac8c9fe 17,30,44,49
+packages/core/execution/test/flow/flow-helper.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 17,37,43-44,77,83-84,111,118-119,167,173-174,220,226-227,238,244-245,303,309-310,518,528-529,666,670-671,728,731,738-739,794-795,799-800,803-804,809,813-814,818
+  s_94864882421579::t_a8b2b8ace15632 523-524
+docs/about/i18n.mdx
+  s_94864882421579::t_a8b2b8ace15632 10,15
+packages/core/shared/src/lib/automation/app-connection/dto/upsert-app-connection-request.ts
+  s_94864882421579::t_2b587ddac8c9fe 9,12,179-180
+packages/web/src/features/connectors/utils/step-utils.tsx
+  s_94864882421579::t_1eaf041fbe59d8 3-4,19,21,28,33,39,45,51,67-76,82,101-105,108-109,113-116,119-121,123-125,128,135-136,139,141,143-155,169,172-173,178-179,181,191,195,209-210
+brain/knowledge/flows-execution/templates.md
+  s_94864882421579::t_a8b2b8ace15632 17
+  s_94864882421579::t_2b587ddac8c9fe 7,10,18,25
+docs/resources/diagrams/cold-vs-warm.html
+  s_94864882421579::t_2b587ddac8c9fe 30,59,70
+benchmark/cloudbuild.app.yaml
+  s_94864882421579::t_a8b2b8ace15632 12,15
+packages/server/engine/test/handler/router-branching.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 4,20,22,30,32,64,66,74,76,108,110,118,120,165,167,175,177,185,187,221,223,231,233,241,243,277,279,287,289,316,318,326,328,336,338,372,375,396,399
+packages/tests-e2e/scenarios/flows/webhook-should-return-response.spec.ts
+  s_94864882421579::t_2b587ddac8c9fe 12,27
+.devcontainer/devcontainer.json
+  s_94864882421579::t_a8b2b8ace15632 3
+packages/server/api/src/app/app-connection/app-connection.entity.ts
+  s_94864882421579::t_2b587ddac8c9fe 39,61
+packages/server/api/test/integration/flows/flow-run/execute-flow-e2e.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 8,12,25-26,42,46-48,73,78,80,85,87,91,96-97,147,153-154,177,182-183,219,225-226,242,247,249,254,256,260,265-266,291,296-297,320,325-326,343,348-349,384,390-391,434-435,440,442,447,449,476,481-482,505,511-512,575,578,580,583-584,587-588,590,594,601,606,608,611,616-617,632,638-639,651,668,675,680,682,710,716-717,851,856,858,863,865,885,890-891,912,918-919,954,959,961,966,968,991,996-997,1034,1040-1041
+packages/web/src/app/builder/types/index.ts
+  s_94864882421579::t_2b587ddac8c9fe 3
+packages/server/api/src/app/trigger/trigger-source/trigger-source-service.ts
+  s_94864882421579::t_2b587ddac8c9fe 25,45,48,50-51,59-60,168-169,174-175
+packages/web/src/app/builder/test-step/test-sample-data-viewer.tsx
+  s_94864882421579::t_2b587ddac8c9fe 1,33-34,78-79,109,138,144
+packages/connectors/core/text-helper/vitest.config.ts
+  s_94864882421579::t_0dd01fb0d99230 1-18
+packages/server/engine/test/handler/flow-log-size.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 16
+packages/server/api/src/assets/prompts/guides/one_time_task.md
+  s_94864882421579::t_2b587ddac8c9fe 10,12-13,15,17,21-22
+packages/server/engine/test/handler/flow-error-handling.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 2,7,9,11,37,39-41,43,69
+  s_94864882421579::t_33e21a7147c653 47
+docs/install/options/aws.mdx
+  s_94864882421579::t_2b587ddac8c9fe 88
+  s_94864882421579::t_a8b2b8ace15632 3,12-13,19,22,35,37,41,48,64,67,74,89,95,99,101,105,115,117,120,124,130,137
+packages/web/public/locales/ja/translation.json
+  s_94864882421579::t_2b587ddac8c9fe 14,218,228-229,321-322,342,391,505,535,537-542,623,630,1260-1262,1325-1326,1329,1337,1344-1345,1347-1353,1355,1358-1359,1365-1367,1371-1372,1375-1376,1385,1388,1392,1394-1395,1498,1551,1575,2055,2090,2151-2155,2160-2165,2169,2189
+  s_94864882421579::t_a8b2b8ace15632 413,511,769,792,980,1085-1086,1232,1872,1881,1890,1892,1894,2190
+packages/web/src/features/connections/utils/oauth2-utils.ts
+  s_94864882421579::t_2b587ddac8c9fe 98-99,101-102,105-106,108-109,133
+docs/admin-guide/overview.mdx
+  s_94864882421579::t_a8b2b8ace15632 4,7,13
+  s_94864882421579::t_2b587ddac8c9fe 17
+packages/web/src/app/builder/data-display/friendly-error-view.tsx
+  s_94864882421579::t_2b587ddac8c9fe 1,23,25,32,41-42,98
+  s_94864882421579::t_1eaf041fbe59d8 106-108
+packages/server/api/test/helpers/mocks/index.ts
+  s_94864882421579::t_2b587ddac8c9fe 2-3,14-15,61,74,98-99,173,210,311-313,315,317-332,334-337,456,469,714,716,720-722
+  s_94864882421579::t_a8b2b8ace15632 703
+.github/workflows/closed-issue-reply.yaml
+  s_94864882421579::t_a8b2b8ace15632 12,21
+packages/web/src/app/builder/state/flow-state.ts
+  s_94864882421579::t_2b587ddac8c9fe 18-21,68-69,281,308,318,321-322,326,331,341,418
+  s_94864882421579::t_1eaf041fbe59d8 22
+brain/knowledge/eventing-webhooks/index.md
+  s_94864882421579::t_a8b2b8ace15632 10
+packages/web/src/app/routes/platform/setup/connectors/customize-selector-dialog.tsx
+  s_94864882421579::t_1eaf041fbe59d8 1,4-5,55-60,96-99,101,104-108,110,125,127,138-139,167,170,184,209-211,234,238-240,244,247-248,257,262,325,338-339,341-343,361-365,407,410-411,416-418,426-428,457,476-478,481-483,485-487,489-493,495,497-499,510,514,517-519,523-528,537-539,544,550,562,564,566-569,572-574,577-579,583-585
+packages/server/sandbox/test/lib/cache/flow/code/code-builder.test.ts
+  s_94864882421579::t_2b587ddac8c9fe 50
+docs/handbook/engineering/onboarding/on-call.mdx
+  s_94864882421579::t_a8b2b8ace15632 45
+brain/knowledge/engineering/api-endpoints.md
+  s_94864882421579::t_2b587ddac8c9fe 22
+  s_94864882421579::t_a8b2b8ace15632 7
+packages/server/api/src/app/template/template-validator.ts
+  s_94864882421579::t_1eaf041fbe59d8 2
+  s_94864882421579::t_2b587ddac8c9fe 24,60,64
+packages/web/src/features/connectors/components/connector-icon.tsx
+  s_94864882421579::t_1eaf041fbe59d8 13,35,50-51,58,66,72,82,101-102
+packages/web/src/app/routes/platform/setup/templates/index.tsx
+  s_94864882421579::t_2b587ddac8c9fe 29,140,145
+  s_94864882421579::t_1eaf041fbe59d8 152-154
+packages/server/api/src/app/workers/job-queue/job-queue.ts
+  s_94864882421579::t_2b587ddac8c9fe 194
+.agents/skills/debug-failed-run/SKILL.md
+  s_94864882421579::t_2b587ddac8c9fe 35,44,53-54
+  s_94864882421579::t_a8b2b8ace15632 3,51
+deploy/pulumi/index.ts
+  s_94864882421579::t_2b587ddac8c9fe 464
+  s_94864882421579::t_a8b2b8ace15632 431,449,465
+packages/core/shared/src/lib/management/project/project.ts
+  s_94864882421579::t_2b587ddac8c9fe 19
+packages/core/execution/src/lib/engine/engine-operation.ts
+  s_94864882421579::t_2b587ddac8c9fe 7,9,14,39,68,73,84,86,90-91,97,102
+packages/server/api/src/app/platform/platform.service.ts
+  s_94864882421579::t_2b587ddac8c9fe 58-59,167-168
+docs/install/configure-operate/production-setup.mdx
+  s_94864882421579::t_2b587ddac8c9fe 23
+  s_94864882421579::t_a8b2b8ace15632 13
+packages/server/api/src/app/trigger/trigger-source/flow-trigger-side-effect.ts
+  s_94864882421579::t_2b587ddac8c9fe 26,42,75,97,105,126,131,141-142,189,219,221
+packages/server/sandbox/src/lib/sandbox/isolate.ts
+  s_94864882421579::t_2b587ddac8c9fe 74
+packages/server/api/src/app/flows/flow-version/migrations/flow-migration-util.ts
+  s_94864882421579::t_2b587ddac8c9fe 4,6,11
+.agents/skills/connector-builder/SKILL.md
+  s_94864882421579::t_ff2ec9ba252ae3 2-3,6,12-14,16,18,20,31,38,54,58,60,66,85,91,100,104,106,117,121-123,125,133,135-139,147,151,153,162,164,169,173-174,195,213,228
+.agents/skills/connector-builder/action-patterns.md
+  s_94864882421579::t_afe814362a32b2 52,54
+.agents/skills/connector-builder/ai-metadata.md
+  s_94864882421579::t_945d9b4a96d905 3,35,89,106,108
+.agents/skills/connector-builder/auth-patterns.md
+  s_94864882421579::t_d7b3ee9e08c815 10,13,34,43,45,84,93,95,134,136,145,179,187,190,196,233,242,260,264,270,273-274,282
+.agents/skills/connector-builder/common-patterns.md
+  s_94864882421579::t_71536bf22b6361 71,166-167,209,220
+.agents/skills/connector-builder/connector-types.md
+  s_94864882421579::t_fa1049789fbc4d 1,9,19,21,24,43-45,47,49,51,70,73
+.agents/skills/connector-builder/new-connector-scaffold.md
+  s_94864882421579::t_0d143314e62d81 1,3
+.agents/skills/connector-builder/output-quality.md
+  s_94864882421579::t_16ec074973c715 146
+.agents/skills/connector-builder/property-ui-selection.md
+  s_94864882421579::t_bac447bcd7dd26 185
+.agents/skills/connector-builder/props-patterns.md
+  s_94864882421579::t_8313033bad6415 132,187,301
+.agents/skills/connector-builder/trigger-patterns.md
+  s_94864882421579::t_0441514d7a2466 11,19,74,163,206
+.agents/skills/connector-builder/ux-guidelines.md
+  s_94864882421579::t_f4153a1b9bee67 1,108,115,217,231
+.agents/skills/connector-output-schema/SKILL.md
+  s_94864882421579::t_aa9601b56dba55 2-3,6,8,10,24-26,28,32-33,48,52,63,67-68,77,80,83
+.agents/skills/connector-output-schema/capture-recipes.md
+  s_94864882421579::t_20af54729f452d 5,12,18-19,28,32,51,53,78,80,83,86-89,92,94
+.github/ISSUE_TEMPLATE/connector-request.md
+  s_94864882421579::t_0ee0a9bcea3ee0 2,5,11
+brain/knowledge/connectors-engine/connector-sets.md
+  s_94864882421579::t_2aac327518624d 5,7,10-12,14,17-19,22-26,29,31-34,36-38
+brain/knowledge/connectors-engine/index.md
+  s_94864882421579::t_8c1b1b1848b8cd 5,7,9,11,13-14,16,18,20-21,32,41,59,71,76-78
+brain/knowledge/decisions/000005-freeze-connector-versions-in-the-flow-bundle-manifest.md
+  s_94864882421579::t_01bf94a2dc9d3a 5,8,11,14,17
+brain/knowledge/decisions/000006-connectors-are-distributed-as-links-resolved-lazily.md
+  s_94864882421579::t_e593ccf8703baf 5,8,11,16,21,23-24
+brain/knowledge/decisions/000007-connector-set-visibility-is-derived-at-read-time.md
+  s_94864882421579::t_13dfb02958411a 5,8,11,17
+brain/knowledge/decisions/000025-connection-connector-binding-is-enforced-in-the-engine.md
+  s_94864882421579::t_193fe34f434c6c 2,7-8,13,20,29,32,41-42,45,49
+brain/knowledge/decisions/000028-connector-tarballs-are-never-mirrored-into-our-own-s3.md
+  s_94864882421579::t_b19b701ded5245 5,8,11,13,15,18,20,25
+brain/knowledge/decisions/000029-the-engine-never-imports-a-connector-a-fresh-child-process-does.md
+  s_94864882421579::t_a30bffc554dc6f 5,9,13,17,23-27,30-31
+bun.lock
+  s_94864882421579::t_c193e57828719c 74,98,111,128,144,162,178,194,208,221,238,256,270,284,300,315,332,348,365,378,393,407,427,444,460,475,488,512,526,543,559-644,1482,1484,1486,1488,1490,1492,1494,1496,1498,1500,1502,1504,1506,1508,1510,1512,1514,1516,1518,1520,1522,1524,1526,1528,1530,1532,1534,1536,1538,1540
+deploy/pulumi/Pulumi.activeconnectors-dev.yaml
+  s_94864882421579::t_6cb76889a34df3 3-15,17-21
+deploy/pulumi/Pulumi.activeconnectors-prod.yaml
+  s_94864882421579::t_cff0d135a756a1 3-14,16-18
+docs/admin-guide/guides/manage-connectors.mdx
+  s_94864882421579::t_601770e11781a4 2,4,11,13,16-17,19,24,27,34,38,40,44,47-49,52,56-57,60,64,67,71,74-75,77,79,81-82,92
+docs/adr/0001-fork-activeconnectors-ce.md
+  s_94864882421579::t_06fb4e6f3612ca 2,9,17
+docs/adr/0003-connector-to-connector.md
+  s_94864882421579::t_45503c9ae32d82 2,9-10,16,21,26-27,29,34
+docs/build-connectors/building-connectors/connector-authentication.mdx
+  s_94864882421579::t_0f15c9801e0ed5 2,8,10,12,17,19,25,27
+docs/build-connectors/building-connectors/connector-definition.mdx
+  s_94864882421579::t_33014e015bf341 2,8,10,13,15,18,21,23-25,30,32-34,37,41,43,45-46
+docs/build-connectors/building-connectors/create-action.mdx
+  s_94864882421579::t_4bee1f4166f969 15,17,28,33,41-43,47,55,76,81,84,88,90,101,103,105,108,112
+docs/build-connectors/building-connectors/create-trigger.mdx
+  s_94864882421579::t_23da033b1c78a5 7,17,20,27,33,46,51,62,106,109,114,116,127,129,131,133
+docs/build-connectors/building-connectors/development-setup.mdx
+  s_94864882421579::t_37452683e42456 21,28-29,32,42,44,46,49
+docs/build-connectors/building-connectors/overview.mdx
+  s_94864882421579::t_467bd72de5476d 3,7,10,20,26
+docs/build-connectors/building-connectors/setup-fork.mdx
+  s_94864882421579::t_c9e945196042ba 6,21,30
+docs/build-connectors/building-connectors/start-building.mdx
+  s_94864882421579::t_a8c41616a81138 6,21-22,24-25,33-34,40
+docs/build-connectors/connector-reference/ai-metadata.mdx
+  s_94864882421579::t_ace7949868bfa3 4,7,25,59,61,72-74
+docs/build-connectors/connector-reference/authentication.mdx
+  s_94864882421579::t_0b2cc9e600d6b6 2-3,7-8,13,23,49,83,92,118,123,134,179,189,210,228
+docs/build-connectors/connector-reference/connector-versioning.mdx
+  s_94864882421579::t_dd7fe11ce722ba 2,4,7,10
+docs/build-connectors/connector-reference/custom-api-calls.mdx
+  s_94864882421579::t_e718a6c7b631bf 3,9,13,19,37
+docs/build-connectors/connector-reference/examples.mdx
+  s_94864882421579::t_9ec01067b512fe 2,12,15,18-19,24-25,28,31
+docs/build-connectors/connector-reference/external-libraries.mdx
+  s_94864882421579::t_af22e8619e7525 7,9,12,16,20,24,28
+docs/build-connectors/connector-reference/flow-control.mdx
+  s_94864882421579::t_1efdaacb8c55bc 4,38,165
+docs/build-connectors/connector-reference/i18n.mdx
+  s_94864882421579::t_097b343ec8572b 2-3,9,11,15,17,22,24,27,32
+docs/build-connectors/connector-reference/large-file-streaming.mdx
+  s_94864882421579::t_93999f76a1a248 7,15,48,53,64,77,91,209,213
+docs/build-connectors/connector-reference/output-schema.mdx
+  s_94864882421579::t_f5250fa36260f7 14,21
+docs/build-connectors/connector-reference/persistent-storage.mdx
+  s_94864882421579::t_5f4a485548c732 7
+docs/build-connectors/connector-reference/properties-validation.mdx
+  s_94864882421579::t_52d5ddd0db7c69 7,9,16-17
+docs/build-connectors/connector-reference/properties.mdx
+  s_94864882421579::t_e2bb615ada310c 180,414,441,457,481,496,504,643,652,659,692
+docs/build-connectors/connector-reference/triggers/overview.mdx
+  s_94864882421579::t_8a3f61da5874ab 18,27-28,56
+docs/build-connectors/connector-reference/triggers/polling-trigger.mdx
+  s_94864882421579::t_bdd710994f1e30 20-21
+docs/build-connectors/connector-reference/triggers/webhook-trigger.mdx
+  s_94864882421579::t_71588016860c12 21,26
+docs/build-connectors/misc/build-connector.mdx
+  s_94864882421579::t_ad59be22472113 2,6,10,14,20,23,26,29,32,35,37
+docs/build-connectors/misc/bundling-connectors.mdx
+  s_94864882421579::t_500505707b0e9d 2,6,8,12,14-15,22,26,36,40,44,51,55,62,66,68-69
+docs/build-connectors/misc/codespaces.mdx
+  s_94864882421579::t_2413c23ffe5a32 11,18-19,22
+docs/build-connectors/misc/connectors-ci-cd.mdx
+  s_94864882421579::t_41f40ddda214f8 2,6,10,12,24,29-30,37,46,75-76,79
+docs/build-connectors/misc/create-new-ai-provider.mdx
+  s_94864882421579::t_4649bcd5e07af7 6,15,44,49,66,75,93,99
+docs/build-connectors/misc/dev-container.mdx
+  s_94864882421579::t_c8559ca89f1a6a 21,23,30-31,34
+docs/build-connectors/misc/migrate-connectors-to-bundles.mdx
+  s_94864882421579::t_ac7c3b0006b0c7 2,7,10,16-17,19,21,25,29,32,35-36,38,41,50,54,57,60,64,69-72,79,87,97-100,110,113,118
+docs/build-connectors/misc/migrate-nx-to-turbo.mdx
+  s_94864882421579::t_91a1efd615e9d9 7,10,14,18-20,24,32,35,38,40,42,45,50,52,59,62,68,71
+docs/build-connectors/misc/private-fork.mdx
+  s_94864882421579::t_e1418cb18b020b 11,14,16,32,35-36,43,48,52,67-68,84
+docs/build-connectors/misc/publish-connector.mdx
+  s_94864882421579::t_309a26bf11d1ca 2,6,10,14,21,24,26,28,41,43-44,50,52-53
+docs/build-connectors/sharing-connectors/community.mdx
+  s_94864882421579::t_b8adecf4917f4b 3,6,15-16,23,27,32
+docs/build-connectors/sharing-connectors/contribute.mdx
+  s_94864882421579::t_de006e84d06704 3,8,14
+docs/build-connectors/sharing-connectors/overview.mdx
+  s_94864882421579::t_d593e9878cc8a0 3,7-9
+docs/build-connectors/sharing-connectors/private.mdx
+  s_94864882421579::t_cd3d9519d11cec 3,8,11,17-18,21,25,29,31
+docs/embedding/customize-connectors.mdx
+  s_94864882421579::t_6a0a08cc829189 2,9,11,13,16-17,20,26,30,36,39-40,42,45,47,52-53,57-58,60
+docs/endpoints/connectors/install.mdx
+  s_94864882421579::t_42c6ea554e165e 2-3
+docs/endpoints/connectors/schema.mdx
+  s_94864882421579::t_e315aa6f3e1e6f 2-3
+docs/install/architecture/connector-syncing.mdx
+  s_94864882421579::t_1054032f4b1430 2-4,7,9,14-16,35,39,43,47,51,54,59,63-64
+docs/resources/diagrams/activeconnectors-architecture.html
+  s_94864882421579::t_b57899d9266870 30
+packages/cli/src/lib/commands/build-connector.ts
+  s_94864882421579::t_dffa4ec09d41d1 2,6-9,12-15,17,22,25,30
+packages/cli/src/lib/commands/bundle-connector.ts
+  s_94864882421579::t_0b9d82a9622c79 4,6-8,11-15
+packages/cli/src/lib/commands/create-connector.ts
+  s_94864882421579::t_910d9ead9fff9f 7-10,13,33-34,36-37,48-49,51,53,80,163,173,175-176,178,180,190-191,193,195,197-198,202,207-208,213-214,221,223,227-228,235
+packages/cli/src/lib/commands/generate-translation-file-for-connector.ts
+  s_94864882421579::t_56b341e17b310b 4,8,11-12,15,20,23-26,42,44-45,59,67-69,72-75,78,80,85-89,91-92,96-97,99-102,106-107,109,111
+packages/cli/src/lib/commands/migrate-connector.ts
+  s_94864882421579::t_c0e2b788e91033 5-6,8-9,27-30,33,37-38,40,44-48,56-57,59,62
+packages/cli/src/lib/commands/publish-connector.ts
+  s_94864882421579::t_16051b29e2667d 2,9-10,13,16-19,33-35,41,48,69,75,78
+packages/cli/src/lib/commands/sync-connectors.ts
+  s_94864882421579::t_e615125066c87c 2,6,10,13-17,23-28,31,37,40
+packages/cli/src/lib/utils/bundle-connector-utils.test.ts
+  s_94864882421579::t_6d1d71fb8ff881 5,7,25-29,32,49-53,56,72-76,79,86,96,104-107,112-117,121,123,126,132-133,135,140-141,143,148-152,158,163-167,173
+packages/cli/src/lib/utils/bundle-connector-utils.ts
+  s_94864882421579::t_e920de40b748e6 6-7,9,12,22-23,35,39-40,45,49-50,59,64,68,70,74,77,90,92,101,105,108,113-114,141-143,155-156,169,295,322,324,326-327,329,339,343,347,351,353,398,400-401,436,443,446,458,460,477
+packages/cli/src/lib/utils/connector-utils.ts
+  s_94864882421579::t_d117cbb2509373 10,12-13,16,18-20,22-27,29,37,42,44-45,47-48,51-52,56,58,75-77,82,86,90-92,97,103,108,110,112,118,125,168-170
+packages/cli/src/lib/utils/migrate-connector-utils.ts
+  s_94864882421579::t_613480cfd96967 4,6,19-20,38,50-51,86-87,145,147,149-150
+packages/cli/src/lib/utils/prepare-connector-utils.test.ts
+  s_94864882421579::t_1afdb2c3f76ad8 5,69,84
+packages/cli/src/lib/utils/prepare-connector-utils.ts
+  s_94864882421579::t_e67ac1a81ca4aa 5,7-8,10,15-16,30-31,34,37-38,42,50,56,66,71,76,84,182,184-185
+packages/connectors/CLAUDE.md
+  s_94864882421579::t_f0ddc5873ae1af 1,6,11,16-17,25,29,31,38
+packages/connectors/common/.eslintrc.json
+  s_94864882421579::t_da1210c119d25e 18
+packages/connectors/common/README.md
+  s_94864882421579::t_46ba2ce6b68659 1
+packages/connectors/common/src/lib/helpers/index.ts
+  s_94864882421579::t_a87cb621a4a831 4,12,26,112,114,116,134,137,141,154-155,158
+packages/connectors/common/src/lib/http/core/fetch-http-client.ts
+  s_94864882421579::t_6c21166841a76b 16
+packages/connectors/community/github/README.md
+  s_94864882421579::t_6a16f106ceae71 1
+packages/connectors/community/github/package.json
+  s_94864882421579::t_4409a7ed38b166 8
+packages/connectors/community/github/src/index.ts
+  s_94864882421579::t_da5b4be4d1a01f 2-3,104,110-111,220
+packages/connectors/community/github/src/lib/auth.ts
+  s_94864882421579::t_aba81cfc10ae31 1,8,17,35,55
+packages/connectors/community/github/src/lib/trigger/index.ts
+  s_94864882421579::t_ccd626af13a27f 121,258,263-265,267-268,270,272-274,276,278,298,303-305,307,309,311,313-315,317,319,433,438-440,442-443,445,447-449,451,453,537,674,679-681,683-684,686,688-690,692,694,749,886,891-893,895-896,898,900-902,904,906
+packages/connectors/community/mysql/README.md
+  s_94864882421579::t_2ce296dded6647 1
+packages/connectors/community/mysql/package.json
+  s_94864882421579::t_f846deacca96f8 16
+packages/connectors/community/mysql/src/index.ts
+  s_94864882421579::t_aee9d5297e613d 2,4,6,9,27,41,46-47
+packages/connectors/community/mysql/src/lib/common/index.ts
+  s_94864882421579::t_a4555717117cac 3
+packages/connectors/community/postgres/README.md
+  s_94864882421579::t_4533d7365c40c4 1
+packages/connectors/community/postgres/package.json
+  s_94864882421579::t_b170a7f4bbf841 17
+packages/connectors/community/postgres/src/index.ts
+  s_94864882421579::t_08acb6d5861ef0 2,4,6,16,37,91,95-97
+packages/connectors/community/rabbitmq/README.md
+  s_94864882421579::t_ed170fd40ab763 1
+packages/connectors/community/rabbitmq/package.json
+  s_94864882421579::t_4b55b1c7ea4464 20
+packages/connectors/community/rabbitmq/src/index.ts
+  s_94864882421579::t_a80e440098dab4 1,7,11
+packages/connectors/community/rabbitmq/src/lib/auth.ts
+  s_94864882421579::t_1f15970aa48495 1,3,17
+packages/connectors/community/rabbitmq/src/lib/common/index.ts
+  s_94864882421579::t_e01c64e17cb7af 1,6,17
+packages/connectors/community/rabbitmq/src/lib/triggers/message-received.ts
+  s_94864882421579::t_7858d50f53cdc5 4
+packages/connectors/community/slack/README.md
+  s_94864882421579::t_267dfa0c36f8ae 1
+packages/connectors/community/slack/package.json
+  s_94864882421579::t_202a48c7895a21 20
+packages/connectors/community/slack/src/i18n/translation.json
+  s_94864882421579::t_5b425ad6b6e796 365,374
+packages/connectors/community/slack/src/index.ts
+  s_94864882421579::t_d3bdc4a6833094 3,7,100,104-105,187
+packages/connectors/community/slack/src/lib/actions/get-channel-history.ts
+  s_94864882421579::t_0e0f830dcc06b8 9
+packages/connectors/community/slack/src/lib/actions/list-users.ts
+  s_94864882421579::t_fa8cdff813984b 9
+packages/connectors/community/slack/src/lib/actions/update-message.ts
+  s_94864882421579::t_bbf6b84a3dd617 10
+packages/connectors/community/slack/src/lib/auth.ts
+  s_94864882421579::t_a3a498d91b6a8f 1,11,82,87,92
+packages/connectors/community/slack/src/lib/common/props.ts
+  s_94864882421579::t_55d00ec79bd82e 27,33
+packages/connectors/core/approval/README.md
+  s_94864882421579::t_67e11045048f1d 1
+packages/connectors/core/approval/package.json
+  s_94864882421579::t_526753c7068a3d 8
+packages/connectors/core/approval/src/i18n/translation.json
+  s_94864882421579::t_2424af46883941 8-9
+packages/connectors/core/approval/src/index.ts
+  s_94864882421579::t_90cc4eea70ca4a 1-2,6,9,11,13
+packages/connectors/core/approval/src/lib/actions/create-approval-link.ts
+  s_94864882421579::t_21fc7f2b40aab8 1,6,12,16
+packages/connectors/core/approval/src/lib/actions/wait-for-approval.ts
+  s_94864882421579::t_2b986155a59ab8 1,6,11,15
+packages/connectors/core/approval/test/create-approval-link.test.ts
+  s_94864882421579::t_3d9b7081f47c46 7
+packages/connectors/core/connections/README.md
+  s_94864882421579::t_e826671468b751 1
+packages/connectors/core/connections/package.json
+  s_94864882421579::t_e9b12ea5d3e155 8
+packages/connectors/core/connections/src/i18n/ca.json
+  s_94864882421579::t_c361530abb8d68 8
+packages/connectors/core/connections/src/i18n/de.json
+  s_94864882421579::t_6ce9f91123bbb7 7
+packages/connectors/core/connections/src/i18n/es.json
+  s_94864882421579::t_ea83aebe1fd911 7
+packages/connectors/core/connections/src/i18n/fr.json
+  s_94864882421579::t_cbb2b9d4dcb026 7
+packages/connectors/core/connections/src/i18n/hi.json
+  s_94864882421579::t_f04f9e303c707c 8
+packages/connectors/core/connections/src/i18n/id.json
+  s_94864882421579::t_9ef4b1bfd320ac 8
+packages/connectors/core/connections/src/i18n/ja.json
+  s_94864882421579::t_918bc0ad1e69f5 7
+packages/connectors/core/connections/src/i18n/nl.json
+  s_94864882421579::t_0dfa0d37782d92 7
+packages/connectors/core/connections/src/i18n/pt.json
+  s_94864882421579::t_1875ace9d1290e 7
+packages/connectors/core/connections/src/i18n/ru.json
+  s_94864882421579::t_80488cd79de420 8
+packages/connectors/core/connections/src/i18n/translation.json
+  s_94864882421579::t_709d32e69bfe3d 7
+packages/connectors/core/connections/src/i18n/vi.json
+  s_94864882421579::t_48bd8a599995b5 8
+packages/connectors/core/connections/src/i18n/zh.json
+  s_94864882421579::t_edcb7f4943a24d 7
+packages/connectors/core/connections/src/index.ts
+  s_94864882421579::t_4e9a15b61ae7e9 1-2,5,9-12
+packages/connectors/core/connections/src/lib/actions/read-connection.ts
+  s_94864882421579::t_42033162a3bcfa 5,7,12,21
+packages/connectors/core/crypto/README.md
+  s_94864882421579::t_4444a39053f5f9 1
+packages/connectors/core/crypto/package.json
+  s_94864882421579::t_4db2c6ad865a71 17
+packages/connectors/core/crypto/src/index.ts
+  s_94864882421579::t_afa282616ca4c9 1-2,11,14,16-17
+packages/connectors/core/crypto/src/lib/actions/openpgp-encrypt.ts
+  s_94864882421579::t_6db8e3cd97b209 10
+packages/connectors/core/csv/README.md
+  s_94864882421579::t_87b17093fed885 1
+packages/connectors/core/csv/package.json
+  s_94864882421579::t_545a477dfd4f88 18
+packages/connectors/core/csv/src/index.ts
+  s_94864882421579::t_85292fa3d1739b 1-2,7,11-13
+packages/connectors/core/data-mapper/README.md
+  s_94864882421579::t_18d7a59e3c7651 1
+packages/connectors/core/data-mapper/package.json
+  s_94864882421579::t_ff3b188884f061 8
+packages/connectors/core/data-mapper/src/index.ts
+  s_94864882421579::t_b26553acbdea6a 1-2,5,10-13
+packages/connectors/core/data-mapper/src/lib/actions/advanced-mapping.ts
+  s_94864882421579::t_d362d67462133d 9
+packages/connectors/core/data-summarizer/README.md
+  s_94864882421579::t_4f84d8af6e4b3f 1
+packages/connectors/core/data-summarizer/package.json
+  s_94864882421579::t_1b68013ddbcb9a 8
+packages/connectors/core/data-summarizer/src/index.ts
+  s_94864882421579::t_d7efe1dd2ad07d 1,6,8,10,12,16
+packages/connectors/core/date-helper/README.md
+  s_94864882421579::t_cfe7f5eeb9d0c3 1
+packages/connectors/core/date-helper/package.json
+  s_94864882421579::t_34c891d3fbd308 8
+packages/connectors/core/date-helper/src/index.ts
+  s_94864882421579::t_336d69ec3ce414 1-2,15,17,19-20,26
+packages/connectors/core/delay/README.md
+  s_94864882421579::t_55e150a52e0769 1
+packages/connectors/core/delay/package.json
+  s_94864882421579::t_ce2d3d9ccec43d 8
+packages/connectors/core/delay/src/index.ts
+  s_94864882421579::t_848414965eb4b1 1-2,6,10-13
+packages/connectors/core/file-helper/README.md
+  s_94864882421579::t_7d3499292f8b81 1
+packages/connectors/core/file-helper/package.json
+  s_94864882421579::t_3dc79200290a6d 16
+packages/connectors/core/file-helper/src/index.ts
+  s_94864882421579::t_5e38196b30d93c 1-2,11,14,16-17
+packages/connectors/core/file-helper/src/lib/actions/create-file.ts
+  s_94864882421579::t_c51708b8572e52 6
+packages/connectors/core/file-helper/src/lib/actions/read-file.ts
+  s_94864882421579::t_aa1ab4c6301e4e 15
+packages/connectors/core/file-helper/src/lib/actions/unzip-file.ts
+  s_94864882421579::t_19b09cc3ebf8ba 4,51
+packages/connectors/core/file-helper/src/lib/actions/zip-files.ts
+  s_94864882421579::t_95c862956ce92d 5,66
+packages/connectors/core/forms/README.md
+  s_94864882421579::t_3e243b3d9d9c89 1
+packages/connectors/core/forms/package.json
+  s_94864882421579::t_52d4e775f2630f 8
+packages/connectors/core/forms/src/index.ts
+  s_94864882421579::t_3c5239eb347073 1-2,7,10,12-13
+packages/connectors/core/http/README.md
+  s_94864882421579::t_335a2784f78cb9 1
+packages/connectors/core/http/package.json
+  s_94864882421579::t_20edf6d3dae66f 17
+packages/connectors/core/http/src/index.ts
+  s_94864882421579::t_91e7934c856a4c 1,5,8-10,19
+packages/connectors/core/http/src/lib/actions/send-http-request-action.ts
+  s_94864882421579::t_f9eacd58cc0c0c 14,34,65,136,208
+packages/connectors/core/manual-trigger/README.md
+  s_94864882421579::t_8c481081017827 1
+packages/connectors/core/manual-trigger/package.json
+  s_94864882421579::t_fdc1efb561691e 18
+packages/connectors/core/manual-trigger/src/index.ts
+  s_94864882421579::t_6ffc598eac45c3 2,4,6,8,10-11,14
+packages/connectors/core/math-helper/README.md
+  s_94864882421579::t_ee7f9335156d38 1
+packages/connectors/core/math-helper/package.json
+  s_94864882421579::t_b6c08eecfb8fd5 9
+packages/connectors/core/math-helper/src/index.ts
+  s_94864882421579::t_47d6f038c6a000 1,13,16,18-19
+packages/connectors/core/math-helper/src/lib/actions/addition.ts
+  s_94864882421579::t_dd90939aa98d1b 3,13,16
+packages/connectors/core/math-helper/src/lib/actions/division.ts
+  s_94864882421579::t_d8bc7469f376a2 3,15
+packages/connectors/core/math-helper/src/lib/actions/generateRandom.ts
+  s_94864882421579::t_48044467ff744c 2,13,16
+packages/connectors/core/math-helper/src/lib/actions/modulo.ts
+  s_94864882421579::t_8bf797f5eac972 3,13
+packages/connectors/core/math-helper/src/lib/actions/multiplication.ts
+  s_94864882421579::t_b4f0ebc913f4df 2,13,16
+packages/connectors/core/math-helper/src/lib/actions/subtraction.ts
+  s_94864882421579::t_d249ed92132e04 3,13,16
+packages/connectors/core/schedule/README.md
+  s_94864882421579::t_93c96d57831d2d 1
+packages/connectors/core/schedule/package.json
+  s_94864882421579::t_b396bd75e31731 8
+packages/connectors/core/schedule/src/index.ts
+  s_94864882421579::t_2e8e62ac14de01 1-2,10,12,14-15,17
+packages/connectors/core/sftp/README.md
+  s_94864882421579::t_de8ed170c38cc4 1
+packages/connectors/core/sftp/package.json
+  s_94864882421579::t_ec5dd831fbf907 24
+packages/connectors/core/sftp/src/index.ts
+  s_94864882421579::t_08d8dfd13c077a 2,4,17,21-22,26
+packages/connectors/core/sftp/src/lib/auth.ts
+  s_94864882421579::t_ae859269b20f96 1,6,50,55
+packages/connectors/core/sftp/src/lib/triggers/new-modified-file.ts
+  s_94864882421579::t_397ff761eaa418 1
+packages/connectors/core/smtp/README.md
+  s_94864882421579::t_3838a493dcd544 1
+packages/connectors/core/smtp/package.json
+  s_94864882421579::t_c0e9574890f092 8
+packages/connectors/core/smtp/src/index.ts
+  s_94864882421579::t_2f69d1146384c9 2,4,6,12,24,85,89-90
+packages/connectors/core/smtp/src/lib/actions/send-email.ts
+  s_94864882421579::t_1909a1d1c841c4 14
+packages/connectors/core/store/README.md
+  s_94864882421579::t_10fff7737767c6 1
+packages/connectors/core/store/package.json
+  s_94864882421579::t_0a12deaf3ea288 8
+packages/connectors/core/store/src/index.ts
+  s_94864882421579::t_c435ecd2a2121e 1-2,10,14-16
+packages/connectors/core/store/src/lib/actions/common.ts
+  s_94864882421579::t_e572fc35cb7897 3,12,14,16,28,41,45,49,53
+packages/connectors/core/store/src/lib/actions/store-add-to-list.ts
+  s_94864882421579::t_da714acf8785d9 1,5,7,11
+packages/connectors/core/store/src/lib/actions/store-append-action.ts
+  s_94864882421579::t_ba947c6bfba7a1 4,9,14,18
+packages/connectors/core/store/src/lib/actions/store-get-action.ts
+  s_94864882421579::t_531374881509aa 4,10,14,17,66,70,74
+packages/connectors/core/store/src/lib/actions/store-put-action.ts
+  s_94864882421579::t_10bff7ba2cbae5 4,9,13,16
+packages/connectors/core/store/src/lib/actions/store-remove-from-list.ts
+  s_94864882421579::t_2710a1ed01a933 4,12,14,17
+packages/connectors/core/store/src/lib/actions/store-remove-value.ts
+  s_94864882421579::t_927e151ce7550b 4,9,13,15
+packages/connectors/core/subflows/README.md
+  s_94864882421579::t_b50a72022e6c0f 1
+packages/connectors/core/subflows/package.json
+  s_94864882421579::t_f757b29afa8cc6 8
+packages/connectors/core/subflows/src/index.ts
+  s_94864882421579::t_617fa8252b2a94 1,6,8,11,13-14
+packages/connectors/core/subflows/src/lib/actions/call-flow.ts
+  s_94864882421579::t_8af3cd1324d6b9 4,42
+packages/connectors/core/subflows/src/lib/actions/respond.ts
+  s_94864882421579::t_504987c3aed2e3 1,35
+packages/connectors/core/subflows/src/lib/common.ts
+  s_94864882421579::t_41d7670c6adddc 1,28-29,89
+packages/connectors/core/subflows/src/lib/triggers/callable-flow.ts
+  s_94864882421579::t_0ef348598dcab1 4,40
+packages/connectors/core/tags/README.md
+  s_94864882421579::t_fb3e1cc5027b83 1
+packages/connectors/core/tags/package.json
+  s_94864882421579::t_ff871db05531f2 8
+packages/connectors/core/tags/src/index.ts
+  s_94864882421579::t_7d53178acf3792 1-2,5,8,10-11
+packages/connectors/core/tags/src/lib/add-tag.ts
+  s_94864882421579::t_1c41e24d1d45f6 15
+packages/connectors/core/text-helper/README.md
+  s_94864882421579::t_eec50d1530c120 1
+packages/connectors/core/text-helper/package.json
+  s_94864882421579::t_734456e79ad004 21
+packages/connectors/core/text-helper/src/index.ts
+  s_94864882421579::t_20e09f0e4d6b9b 1-2,16,19,21,26,34
+packages/connectors/core/text-helper/src/lib/actions/default-value.ts
+  s_94864882421579::t_d9e9fe9eba6fd3 6
+packages/connectors/core/webhook/README.md
+  s_94864882421579::t_871cc2f33a97cb 1
+packages/connectors/core/webhook/package.json
+  s_94864882421579::t_ad1d44dd0c9a1f 8
+packages/connectors/core/webhook/src/index.ts
+  s_94864882421579::t_1334e7229b364a 1,3,7,10-11,13-14
+packages/connectors/core/webhook/src/lib/actions/return-response-and-wait-for-next-webhook.ts
+  s_94864882421579::t_9ea2ebac960d22 3,26,56
+packages/connectors/core/webhook/src/lib/actions/return-response.ts
+  s_94864882421579::t_e89f89387c15ab 3,29,54
+packages/connectors/core/webhook/src/lib/triggers/catch-hook.ts
+  s_94864882421579::t_c53b59df19aaf5 4,80
+packages/connectors/core/xml/README.md
+  s_94864882421579::t_c22baade523527 1
+packages/connectors/core/xml/package.json
+  s_94864882421579::t_88708101aa5ecd 16
+packages/connectors/core/xml/src/index.ts
+  s_94864882421579::t_b2b5cb34e025b6 1-2,6,11-14
+packages/connectors/sdk/.eslintrc.json
+  s_94864882421579::t_c45aebdf97f787 18
+packages/connectors/sdk/README.md
+  s_94864882421579::t_1543cc50591fa5 1
+packages/connectors/sdk/src/index.ts
+  s_94864882421579::t_0077b3cfd4a658 3-4,24
+packages/connectors/sdk/src/lib/action/action.ts
+  s_94864882421579::t_78f872e2392358 4,6,8-9,23,25,29,31,36-37,47,54-55,67,69,72,76
+packages/connectors/sdk/src/lib/connector-metadata.ts
+  s_94864882421579::t_08d578b9f46892 1,4,7,11-13,22,24,28,31,40,42,86,100,114,134-135,140,147-148,154,162,164,169,171-173,175,177-179,181,183,187
+packages/connectors/sdk/src/lib/connector.ts
+  s_94864882421579::t_fa9f9932c263b3 6,8-9,15-16,26,29-30,44,78-79,89,105-106,112-113,118,122,131-133,137-138,145
+packages/connectors/sdk/src/lib/context/index.ts
+  s_94864882421579::t_34cce231f0067e 26,30,35,53-55,58,66,68,83,85,92,94,100,104,106,108,114,117,206,208,224,226,241,243,246,248,253,256-257
+packages/connectors/sdk/src/lib/context/versioning.ts
+  s_94864882421579::t_ad2d7cebda5f91 3,11,15,21,33,44,48,52,54,68,70,80
+packages/connectors/sdk/src/lib/i18n.ts
+  s_94864882421579::t_a355e3f47ac00d 1,7-9,11,14,16,18-20,22,25-26,30-31,34,37,46,75,77,81,84,86,93,96,109-110,121,123,128-129
+packages/connectors/sdk/src/lib/index.ts
+  s_94864882421579::t_f8631a94bc2dca 5-6
+packages/connectors/sdk/src/lib/property/authentication/basic-auth-prop.ts
+  s_94864882421579::t_7b989852bd3d7d 4,14,27
+packages/connectors/sdk/src/lib/property/authentication/common.ts
+  s_94864882421579::t_f12dff288c49f3 4,10,24
+packages/connectors/sdk/src/lib/property/authentication/custom-auth-prop.ts
+  s_94864882421579::t_32c7a00a671d92 10,35,57
+packages/connectors/sdk/src/lib/property/authentication/index.ts
+  s_94864882421579::t_8f328dd8ee326a 12,21,33,89,91-93,96,101
+packages/connectors/sdk/src/lib/property/authentication/oauth2-prop.ts
+  s_94864882421579::t_75c2677c64fc97 5,79,86
+packages/connectors/sdk/src/lib/property/authentication/oidc-prop.ts
+  s_94864882421579::t_9a1f8c1d6e7f07 10,37,44
+packages/connectors/sdk/src/lib/property/authentication/secret-text-property.ts
+  s_94864882421579::t_dc385e22bf6910 2,7,15
+packages/connectors/sdk/src/lib/property/index.ts
+  s_94864882421579::t_217046f4322655 2,14-15,19,44-45,48-50,57,59,66-67
+packages/connectors/sdk/src/lib/property/input/dropdown/dropdown-prop.ts
+  s_94864882421579::t_9f48f018ed6379 6,8,10,21,23,25,28,41,44,46,49
+packages/connectors/sdk/src/lib/property/input/dynamic-prop.ts
+  s_94864882421579::t_aee29d1d052f9e 9,37,40-41,50,52
+packages/connectors/sdk/src/lib/property/input/index.ts
+  s_94864882421579::t_a46781c575417e 26,56,62,64,176-178,184-185,200-201,203-204,210-211,213-215,221-222
+packages/connectors/sdk/src/lib/property/util.ts
+  s_94864882421579::t_7da99e41b97697 1-2,8,121
+packages/connectors/sdk/src/lib/trigger/trigger.ts
+  s_94864882421579::t_db473ccfee1899 4,6,20,42,50,54-58,66,69,71,73,77,81-82,86,97,99-104,116,119,124,126
+packages/connectors/sdk/src/mime-db-min.cjs
+  s_94864882421579::t_b33dff4f4e6fa3 2,4
+packages/connectors/sdk/test/auth-property-for-value.test.ts
+  s_94864882421579::t_3a135a876e2863 4,6,9,20,24,31,36-37
+packages/connectors/sdk/test/connection-identifier-flag.test.ts
+  s_94864882421579::t_82b096dff8d77e 2-3,5-6,15,29,42,46
+packages/core/connector-types/.eslintrc.json
+  s_94864882421579::t_ecd4914eb47255 16,19
+packages/core/connector-types/AGENTS.md
+  s_94864882421579::t_ed6e19118dcc3f 3-5,9,11
+packages/core/connector-types/src/index.ts
+  s_94864882421579::t_ebf91445375c6c 1
+packages/core/connector-types/src/lib/connector.ts
+  s_94864882421579::t_d9a92dede3bfb4 6,11
+packages/core/connector-types/src/lib/execution-contracts.ts
+  s_94864882421579::t_a68065df2c5155 3,7,13,21-22,24-26,30,32,34-36,38,40,42-44,47,49-50,52-53,82-83
+packages/core/connector-types/src/lib/flow-contracts.ts
+  s_94864882421579::t_897c38bb494c09 11,46
+packages/core/connector-types/src/lib/flows.ts
+  s_94864882421579::t_792da213f05b1f 2,4
+packages/core/execution/src/lib/flows/util/flow-connector-util.ts
+  s_94864882421579::t_ee6e49df1aac7c 5-8,10,12,14-15
+packages/core/shared/src/lib/automation/connectors/connector.ts
+  s_94864882421579::t_2f5f61e819d1b9 8,13,15-17,22,24,26-28,31,33,35-37,41,43-44,46-47,49
+packages/core/shared/src/lib/automation/connectors/index.ts
+  s_94864882421579::t_14a1609b46c614 1-2,5
+packages/core/shared/src/lib/automation/connectors/utils.ts
+  s_94864882421579::t_442adc13140ee6 4-6,8-10,15,17-21,23,27-28,36-37,41,50-53,58,60-62,65,67-68
+packages/core/shared/src/lib/automation/connectors/version-utils.ts
+  s_94864882421579::t_f2ed659d82ac51 5-6,9
+packages/core/shared/test/core/common/friendly-connector-error.test.ts
+  s_94864882421579::t_0ec6a2a702ac89 1,24,39,58,70,82,99,110,123,135,149,161,173,191,205,215,225,233-234,240,246-248,253,256,263,265,274,283,290,296,303-305,307,313-315,319-320,324-325
+packages/core/utils/src/lib/friendly-connector-error.ts
+  s_94864882421579::t_6bba3c2f348227 3,243,247,250,252,261,269,276,281,291,298,303,316,330
+packages/server/api/src/app/connectors/community-connector-module.ts
+  s_94864882421579::t_b77c39f3ea248e 1-2,7,9-10,13,22,25,27,31
+packages/server/api/src/app/connectors/connector-sync-service.ts
+  s_94864882421579::t_120b82a7bcb37d 1,4,13-15,21,23,25-26,28,31,33,42-43,47,49,53,55-58,64,73,78-82,85-87,89-91,96-99,102-105,109,113-114,116,120,127-129,133,142,148,154
+packages/server/api/src/app/connectors/connector-visibility.ts
+  s_94864882421579::t_703475f600a95b 1,3,10-13
+packages/server/api/src/app/connectors/metadata/connector-cache.ts
+  s_94864882421579::t_61bc38a07a819a 2,8-9,11,15,18,21,23,26,31,33-34,41,47,63,65-70,74,77-78,81,83,85
+packages/server/api/src/app/connectors/metadata/connector-metadata-entity.ts
+  s_94864882421579::t_4aaa0d995b5bc4 1,10,12-14,74,102,116
+packages/server/api/src/app/connectors/metadata/utils/connector-searching.ts
+  s_94864882421579::t_eafbdd91744979 4,8,10-11,17,19,24,26,28,31,36,39,45,63,72-73,76-78,81,105,107,110,118,120,123,127,130,138
+packages/server/api/src/app/connectors/metadata/utils/connector-sorting.ts
+  s_94864882421579::t_fb52dd054522db 1,3,6,8-14,16,21-25,27-28,30-31,33-34,36-37,42-46,48,51-52,58-59,64-65,70-71
+packages/server/api/src/app/connectors/metadata/utils/file-connectors-utils.ts
+  s_94864882421579::t_241d64e966601c 5-6,11,13,20,33-34,37,44,46,52-55,58,60-63,67,73,81,93,102-103,114,120,122,129-130,132-133,135-138,140-142
+packages/server/api/src/app/connectors/metadata/utils/index.ts
+  s_94864882421579::t_09fb753dd0d9c2 2,4-6,8-10,13,16,19,27,32,34,36,46,48-51,55
+packages/server/api/src/assets/prompts/guides/about_activeconnectors.md
+  s_94864882421579::t_0c539a79db0007 1,3,6,10,13,15,17,20,25,31-32
+packages/server/api/test/integration/connectors/connector-bundle.test.ts
+  s_94864882421579::t_6b060c746121d7 2,7,33,38,44,46,50,59,62,76-77,80,88,92,115
+packages/server/api/test/integration/connectors/connector-install.test.ts
+  s_94864882421579::t_55458ac273f476 7-8,14,19-20,23,26-31,56,59,68-69,74,76,78-79,81,85,91-93,96-98,109,111,113-114,116,120
+packages/server/api/test/integration/connectors/connector-metadata.test.ts
+  s_94864882421579::t_1ae82ccd7bb5da 3,7-8,14,32,35-37,45,57-61,65-66,75,85,88-92,95-98,101-102,111,120,124-128,132-133,142,150,154-155,164,174-175,178-180,184-185,187,191,195-196,199,207-208,210,216,218,224-225,228,234-237,243-245,251-252,260,265,270-271,273,279-280,283,289-290,292-294,299-300,302,305,309,311,313,318,320-322,327-329,334-335,337,340,344,346-348,353-354,356,359,368,370,375-376,378,381,385,387-389,394-395,397,400,404,406-408,413,421,424-425,435,437,441,445,447-449,454,462,465-466,481,483,486,490,493-495,500,507,510-511,521,523,526,531-532,534-536,541-542,544-545,551,553-555,560-561,563-564,569,581-584,588-589,594,604-607,611-612,617,626-629,633-634,639,649,651-653,657-658,660,668-671,675-676,681,686,693-696,700-701,706,711,718-721,725-726,731,736,742-745,749-750,755,760
+packages/server/api/test/integration/connectors/connector-options-e2e.test.ts
+  s_94864882421579::t_5fc53997360717 2,5,9,17,30,55,68,72-73,84,89,91,101,109-110
+packages/server/api/test/integration/connectors/connector-sync-service.test.ts
+  s_94864882421579::t_e7b21f53e4f2dd 3,7,24,27-29,32-34,44,48-51,54-55,58-60,70,75-77,87,92-93,96,108,113,125,131-134
+packages/server/api/test/unit/app/connectors/connector-searching.test.ts
+  s_94864882421579::t_9bf12c62b0dc5f 3-4,6-9,12,14,17,23-24,27,33-34,37,40
+packages/server/engine/src/connector-child.ts
+  s_94864882421579::t_162e2cbbd3c0fc 1,3
+packages/server/engine/src/lib/operations/connector-metadata.operation.ts
+  s_94864882421579::t_9ae80cf8e5cae4 2,6,8-9,12-17,19-21,26-27
+packages/server/engine/test/connector-context/connection-resolver.test.ts
+  s_94864882421579::t_d708bf54c9a8ee 2-3,12,16,21,166-167,170,173,175,180-181,184-185,188-190,192,199,202,209-210,214,217
+packages/server/engine/test/connector-context/file-uploader.test.ts
+  s_94864882421579::t_4b1fb76cda9b49 3
+packages/server/engine/test/connector-context/store.test.ts
+  s_94864882421579::t_19630d66a6c272 3
+packages/server/engine/test/core/connector/connector-auth.test.ts
+  s_94864882421579::t_78199b0cf7934b 1-5,7,11-12,17,19,27,34,39-41,43,49-50,52,58-59,61,64,70-72,74,79-81,83,90-91,93,100-101,103,111
+packages/server/engine/test/core/connector/connector-memory.test.ts
+  s_94864882421579::t_ccb91da476f3ea 2,6,16-17,23
+packages/server/engine/test/core/connector/connector-protocol.test.ts
+  s_94864882421579::t_e536de2751b30a 2,4,7,14,21,28,34
+packages/server/sandbox/test/lib/cache/connector-cache-traversal.test.ts
+  s_94864882421579::t_2724daae613f49 8,24,36-39,46-47,50-52,64,66
+packages/server/sandbox/test/lib/cache/connector-installer.test.ts
+  s_94864882421579::t_a72e8f5235118d 6-7,29,31,34-36,40,43-45,51-52,55-56,75,80,93,96,112-116,120,123-124,127-130,137,145,148-151,155-156,158,165-166,169-171,175,178,181-183,185-186,188-189,194-196,200,203-210,213-219,223,232-234,236,241-246,250,256-258,262-264,272,281,284,293,297,306-308
+packages/server/worker/src/lib/execute/jobs/extract-connector-info.ts
+  s_94864882421579::t_9230d51d16dcde 3,10-12,15,17,23,25
+packages/tests-e2e/scenarios/connectors/connector-isolation.spec.ts
+  s_94864882421579::t_9a316b7aa37bb8 6,8,11-12,15,17,25,39
+packages/web/src/app/builder/connector-properties/array-property-in-inline-item-mode.tsx
+  s_94864882421579::t_85d68c1086e37f 19,29-30,76-78,86
+packages/web/src/app/builder/connector-properties/array-property.tsx
+  s_94864882421579::t_f8bcf602dcb67a 66,218-219
+packages/web/src/app/builder/connector-properties/auto-form-field-wrapper.tsx
+  s_94864882421579::t_c739c207f8eb92 2-3,23,26,46,91,155,159,248,296,312,318,326-328
+packages/web/src/app/builder/connector-properties/builder-json-wrapper.tsx
+  s_94864882421579::t_1833481270a337 4
+packages/web/src/app/builder/connector-properties/dynamic-connector-property.tsx
+  s_94864882421579::t_226f2dbb17750a 1,12,15,20-21,32,67,72,139-140,239-240,245,250
+packages/web/src/app/builder/connector-properties/filter-builder-layout.tsx
+  s_94864882421579::t_b391b9237076b5 2,422,435,443-444,452-453,459,468
+packages/web/src/app/builder/connector-properties/filter-layout.tsx
+  s_94864882421579::t_b02f04054c3eef 2,218,288,296,305,313
+packages/web/src/app/builder/connector-properties/generic-properties-form.tsx
+  s_94864882421579::t_9af51241360e62 3,6,130,171
+packages/web/src/app/builder/connector-properties/property-group-tabs.tsx
+  s_94864882421579::t_5e704172e16fdf 2,301
+packages/web/src/app/builder/connector-properties/text-input-with-mentions/components/function-search-popover.tsx
+  s_94864882421579::t_7319dc50a171d1 266
+packages/web/src/app/builder/connector-properties/text-input-with-mentions/text-input-utils.ts
+  s_94864882421579::t_b8331570fc54e7 10
+packages/web/src/app/builder/connector-properties/text-input-with-mentions/tiptap-editor.tsx
+  s_94864882421579::t_3e14e1abe66f43 35
+packages/web/src/app/builder/connectors-selector/approvals-tab-content.tsx
+  s_94864882421579::t_aebff0864bedd5 6-9,11,15,17,19,26,30,37,41,45,53,55,60-61,64-65,70,78,86,89-90,93-94,104,114,117-118,120,122,128,130-131
+packages/web/src/app/builder/connectors-selector/connector-card-item.tsx
+  s_94864882421579::t_b988bb09443150 5-6,8-9,16,18-19,21,25-26,30,34,41,45-46,48-49,51,60-61,64-65,68,74-75,78-80,85,92-94,103-104
+packages/web/src/app/builder/connectors-selector/custom-connector-selector-items-utils.ts
+  s_94864882421579::t_9e70db1da37dd6 4-7,11-13,17,21,23,26
+packages/web/src/app/builder/connectors-selector/generic-connector-selector-item.tsx
+  s_94864882421579::t_f7a4c44f2b1da9 8-9,11-12,15-16,21,23-24,41,45-46,48-49,54,60,63,74,77,79,82,88,95,98-100
+packages/web/src/app/builder/connectors-selector/no-results-found.tsx
+  s_94864882421579::t_fcd4a25bb36c8d 14,29,39
+packages/web/src/app/builder/state/connector-selector-state.ts
+  s_94864882421579::t_0b78202ce4a12a 5,9-11,14-15,20,23,25-26,34,41-42,46
+packages/web/src/app/builder/step-settings/connector-not-available-alert.tsx
+  s_94864882421579::t_227fc4b96c6c18 6-8,11-14,17,19-21
+packages/web/src/app/builder/step-settings/update-connector-version-dialog/upgrade-connector-version-dialog.tsx
+  s_94864882421579::t_cf0dec5e6770c5 1,14,16-17,34,85-86
+packages/web/src/app/routes/platform/setup/connectors/sync-connectors.tsx
+  s_94864882421579::t_485492992918c8 1,5,8-10,12-13,17,20,31-32
+packages/web/src/components/custom/multi-select-connector-property.tsx
+  s_94864882421579::t_52bc9973eae954 16,38,51,171-172
+packages/web/src/features/connectors/components/connector-selector-tabs.tsx
+  s_94864882421579::t_1d07aa5b995039 4-7,9,12,15,17
+packages/web/src/features/connectors/hooks/use-connector-output-schema.ts
+  s_94864882421579::t_e0a91751705635 4,6-8,11-12,15-18,21-22,24,29
+packages/web/src/features/connectors/index.ts
+  s_94864882421579::t_255b90378a9447 1-8,10-13,15,17-19,21-24,26-28,31,33,40-42,45,49-52
+packages/web/src/features/connectors/utils/connector-selector-customization.tsx
+  s_94864882421579::t_c45306cc9b7dc7 2-4,59,62,67,119,127,136-137,152,177,210-211,227,229,241,250,253,258,260,266
+packages/web/src/features/connectors/utils/form-utils.tsx
+  s_94864882421579::t_cf023c5df4f26c 2,4-8,17-19,37,44,53,55,61,65,67,69,72-74,79,81,83,86-88,102,121,199,243,265,379,439,446,451,458,464,534-535,549,552,574-575,577,585,593-594,596,604
+packages/web/test/app/builder/connector-properties/dynamic-connector-property.test.tsx
+  s_94864882421579::t_ab886f269a8103 5,40,47,58,64,66-67,70-71,81,83-84,112-113,145
+packages/web/test/app/builder/connector-properties/filter-property-utils.test.ts
+  s_94864882421579::t_4502f1637ad393 4
+packages/web/test/app/builder/connector-properties/text-input-with-mentions/components/function-search-popover-dismiss.test.tsx
+  s_94864882421579::t_805558c937016c 17
+packages/web/test/app/builder/connector-properties/text-input-with-mentions/components/function-search-popover.test.tsx
+  s_94864882421579::t_e25a84616c2c80 6,21,76,79
+packages/web/test/app/builder/connector-properties/text-input-with-mentions/extensions/formula-backspace.test.ts
+  s_94864882421579::t_f3f7c4247f8245 18-20
+packages/web/test/app/builder/connector-properties/text-input-with-mentions/extensions/function-slash-blur.test.ts
+  s_94864882421579::t_8972bd0cf268f7 12
+packages/web/test/app/builder/connector-properties/text-input-with-mentions/extensions/function-slash-extension.test.ts
+  s_94864882421579::t_e5a7ba5518d9ef 14
+packages/web/test/app/builder/connector-properties/text-input-with-mentions/text-input-utils.test.ts
+  s_94864882421579::t_1ea6a1cce014bd 3
+packages/web/test/app/builder/data-selector/utils.test.ts
+  s_94864882421579::t_df0113c42d7890 2
+packages/web/test/app/builder/step-settings/branch-settings/branch-single-condition.test.tsx
+  s_94864882421579::t_568d382c76d188 47
+packages/web/test/features/connectors/connectors-api.test.ts
+  s_94864882421579::t_6b53e546bc21f8 2,15,17,19,30,37
+packages/web/test/features/connectors/parse-dynamic-value.test.ts
+  s_94864882421579::t_c6d8b11f7cc17d 4
+smoke-test/verify-delay.sh
+  s_94864882421579::t_c6367ebe591171 30-31,33,35,39,70,72-73,85,89-90
+tools/format-bundle-table.mjs
+  s_94864882421579::t_eed96546c5bc4a 7,14,26
+tools/scripts/connectors/bump-all-connectors-patch-version.ts
+  s_94864882421579::t_73afed95dfff72 62-64,66,73,75,77-78,80,87-88,97,102-103
+tools/scripts/connectors/bump-translated-connectors.ts
+  s_94864882421579::t_c602b284f7f3b5 56-57,59-60,70-72,76-77,80,90-91,93,136-138,140,147,149-150,152-153,155,157-160,162,164,166-167,169-170,173,176,179,183-184,188-189,196-197,207,213-214
+tools/scripts/connectors/find-changed-connectors.ts
+  s_94864882421579::t_285ffc188d19a8 2,6,9,11,15,17,24,28,46
+tools/scripts/connectors/load-connector-metadata-child.mjs
+  s_94864882421579::t_a70a22b1284505 2,4,6,10,12,20,28,30-31,36-37,42-45
+tools/scripts/connectors/prepare-connectors-for-publish.ts
+  s_94864882421579::t_03a0f183914129 1-2,5-7,10,14-15,17,20-21,23,26
+tools/scripts/connectors/publish-connector.ts
+  s_94864882421579::t_6351b4ab496be0 5,11-12,14,17,26,30-31
+tools/scripts/connectors/publish-connectors-to-npm.ts
+  s_94864882421579::t_e715dddc9cc1a1 2,5-7,10,14-15,17,19,22,26,34
+tools/scripts/migrate-custom-connector-to-turbo.ts
+  s_94864882421579::t_d155776819a0a2 4,6,15,17,23,25-28,30,34-36,38,43,104,177,197,205,219,235-238,241,243-245,247-248,252,254-255
+tools/scripts/pr-size-check.test.ts
+  s_94864882421579::t_695270b11acf1a 55-56,79,111
+tools/scripts/pr-size-check.ts
+  s_94864882421579::t_82966a68b10d36 15-16,26
+tools/scripts/utils/connector-script-utils.ts
+  s_94864882421579::t_8f3e4ea6a531b7 11,13,16-17,20-21,27-30,46-47,49-50,55-56,60-62,66-68,71,74,80-81,86,89-90,93,95-96,98,105,108,112,115,128,133,136-138,141,146,153-154,187,189-192,207-208,213,216,221-223
+tools/scripts/utils/publish-npm-package.ts
+  s_94864882421579::t_ca5bcf92f9097e 7,34,82,86
+tools/setup-dev.js
+  s_94864882421579::t_9a0760bac0cbb4 49,58,64,71,73-75,77,80,86-87
+turbo.json
+  s_94864882421579::t_b16061abbba364 24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "b7b13d1fb87a2beaece27db69946430b62800968",
+  "prompts": {},
+  "sessions": {
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

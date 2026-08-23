@@ -1,5 +1,5 @@
-import { ApId, ErrorCode, isNil, omit, Permission, PlatformError, SeekPage } from '@fema/core-utils'
-import { BulkActionOnRunsRequestBody, BulkArchiveActionOnRunsRequestBody, BulkCancelWorkflowRequestBody, CountExecutionsByStatusRequest, CountExecutionsByStatusResponse, Execution, ListExecutionsRequestQuery, PlatformRole, PrincipalType, RetryWorkflowRequestBody, RunEnvironment, RunInternalErrorSource, SERVICE_KEY_SECURITY_OPENAPI } from '@fema/shared'
+import { ApId, ApplicationError, ErrorCode, isNil, omit, Permission, SeekPage } from '@fema/core-utils'
+import { BulkActionOnRunsRequestBody, BulkArchiveActionOnRunsRequestBody, BulkCancelWorkflowRequestBody, CountExecutionsByStatusRequest, CountExecutionsByStatusResponse, Execution, ListExecutionsRequestQuery, PrincipalType, RetryWorkflowRequestBody, RunEnvironment, RunInternalErrorSource, SERVICE_KEY_SECURITY_OPENAPI, TenantRole } from '@fema/shared'
 import { FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
@@ -49,7 +49,7 @@ export const executionController: FastifyPluginAsyncZod = async (app) => {
                 id: request.params.id,
             })
             const internalErrorEnabled = execution.internalError?.source === RunInternalErrorSource.ENGINE || true
-            const canViewInternalError = internalErrorEnabled && await isRequesterPlatformAdmin(request)
+            const canViewInternalError = internalErrorEnabled && await isRequesterTenantAdmin(request)
             await reply.send(canViewInternalError ? execution : omit(execution, ['internalError']))
         },
     )
@@ -62,7 +62,7 @@ export const executionController: FastifyPluginAsyncZod = async (app) => {
         })
 
         if (isNil(execution)) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityType: 'execution',
@@ -77,7 +77,7 @@ export const executionController: FastifyPluginAsyncZod = async (app) => {
     app.post('/cancel', BulkCancelWorkflowRequest, async (req) => {
         return executionService(req.log).cancel({
             workspaceId: req.workspaceId,
-            platformId: req.principal.platform.id,
+            tenantId: req.principal.tenant.id,
             executionIds: req.body.executionIds,
             excludeExecutionIds: req.body.excludeExecutionIds,
             status: req.body.status,
@@ -118,12 +118,12 @@ export const executionController: FastifyPluginAsyncZod = async (app) => {
 
 }
 
-async function isRequesterPlatformAdmin(request: FastifyRequest): Promise<boolean> {
+async function isRequesterTenantAdmin(request: FastifyRequest): Promise<boolean> {
     if (request.principal.type !== PrincipalType.USER) {
         return false
     }
     const user = await userService(request.log).getOneOrFail({ id: request.principal.id })
-    return user.platformRole === PlatformRole.ADMIN
+    return user.tenantRole === TenantRole.ADMIN
 }
 
 const ExecutionFilteredWithNoSteps = Execution.omit({ steps: true })

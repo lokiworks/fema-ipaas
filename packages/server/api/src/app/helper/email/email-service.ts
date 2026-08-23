@@ -1,7 +1,7 @@
-import { isNil, PlatformId } from '@fema/core-utils'
+import { isNil, TenantId } from '@fema/core-utils'
 import { OtpType, UserIdentity, UserInvitation } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
-import { platformService } from '../../platform/platform.service'
+import { tenantService } from '../../tenant/tenant.service'
 import { workspaceService } from '../../workspace/workspace-service'
 import { domainHelper } from '../domain-helper'
 import { mailSender, MailTemplateVariables } from './mail-sender'
@@ -12,13 +12,13 @@ const OTP_TEMPLATES: Record<OtpType, { template: string, subject: string }> = {
     [OtpType.EMAIL_LOGIN]: { template: 'login-code', subject: 'Your sign-in code' },
 }
 
-async function brandingFor(platformId: PlatformId | null, log: FastifyBaseLogger): Promise<MailTemplateVariables> {
-    const platform = isNil(platformId) ? null : await platformService(log).getOne(platformId)
+async function brandingFor(tenantId: TenantId | null, log: FastifyBaseLogger): Promise<MailTemplateVariables> {
+    const tenant = isNil(tenantId) ? null : await tenantService(log).getOne(tenantId)
     return {
-        platformName: platform?.name ?? 'Integration Platform',
-        fullLogoUrl: platform?.fullLogoUrl ?? '',
-        primaryColor: platform?.primaryColor ?? '#1F2329',
-        primaryColorLight: platform?.primaryColor ?? '#F5F6F7',
+        tenantName: tenant?.name ?? 'Integration Tenant',
+        fullLogoUrl: tenant?.fullLogoUrl ?? '',
+        primaryColor: tenant?.primaryColor ?? '#1F2329',
+        primaryColorLight: tenant?.primaryColor ?? '#F5F6F7',
     }
 }
 
@@ -27,9 +27,9 @@ export const emailService = (log: FastifyBaseLogger) => ({
         return mailSender(log).isConfigured()
     },
 
-    async sendOtp({ platformId, userIdentity, otp, type }: SendOtpParams): Promise<void> {
+    async sendOtp({ tenantId, userIdentity, otp, type }: SendOtpParams): Promise<void> {
         const { template, subject } = OTP_TEMPLATES[type]
-        const branding = await brandingFor(platformId, log)
+        const branding = await brandingFor(tenantId, log)
         await mailSender(log).send({
             to: userIdentity.email,
             subject,
@@ -43,42 +43,42 @@ export const emailService = (log: FastifyBaseLogger) => ({
     },
 
     async sendInvitation({ userInvitation, invitationLink }: SendInvitationParams): Promise<void> {
-        const branding = await brandingFor(userInvitation.platformId, log)
+        const branding = await brandingFor(userInvitation.tenantId, log)
         const workspace = isNil(userInvitation.workspaceId) ? null : await workspaceService(log).getOne(userInvitation.workspaceId)
         await mailSender(log).send({
             to: userInvitation.email,
-            subject: `You have been invited to ${branding.platformName}`,
+            subject: `You have been invited to ${branding.tenantName}`,
             template: 'invitation-email',
             variables: {
                 ...branding,
-                workspaceName: workspace?.displayName ?? branding.platformName,
+                workspaceName: workspace?.displayName ?? branding.tenantName,
                 setupLink: invitationLink,
             },
         })
     },
 
     async sendWorkspaceMemberAdded({ userInvitation }: SendWorkspaceMemberAddedParams): Promise<void> {
-        const branding = await brandingFor(userInvitation.platformId, log)
+        const branding = await brandingFor(userInvitation.tenantId, log)
         const workspace = isNil(userInvitation.workspaceId) ? null : await workspaceService(log).getOne(userInvitation.workspaceId)
         await mailSender(log).send({
             to: userInvitation.email,
-            subject: `You now have access to ${workspace?.displayName ?? branding.platformName}`,
+            subject: `You now have access to ${workspace?.displayName ?? branding.tenantName}`,
             template: 'workspace-member-added',
             variables: {
                 ...branding,
-                workspaceName: workspace?.displayName ?? branding.platformName,
+                workspaceName: workspace?.displayName ?? branding.tenantName,
                 role: userInvitation.workspaceRoleId ?? 'Member',
                 loginLink: await domainHelper.getPublicUrl({ path: '' }),
             },
         })
     },
 
-    async sendPlatformDeleted({ platformId, email, purgeDate }: SendPlatformDeletedParams): Promise<void> {
-        const branding = await brandingFor(platformId, log)
+    async sendTenantDeleted({ tenantId, email, purgeDate }: SendTenantDeletedParams): Promise<void> {
+        const branding = await brandingFor(tenantId, log)
         await mailSender(log).send({
             to: email,
-            subject: `${branding.platformName} has been scheduled for deletion`,
-            template: 'platform-deleted',
+            subject: `${branding.tenantName} has been scheduled for deletion`,
+            template: 'tenant-deleted',
             variables: {
                 ...branding,
                 purgeDate,
@@ -88,7 +88,7 @@ export const emailService = (log: FastifyBaseLogger) => ({
 })
 
 type SendOtpParams = {
-    platformId: PlatformId | null
+    tenantId: TenantId | null
     userIdentity: UserIdentity
     otp: string
     type: OtpType
@@ -103,8 +103,8 @@ type SendWorkspaceMemberAddedParams = {
     userInvitation: UserInvitation
 }
 
-type SendPlatformDeletedParams = {
-    platformId: PlatformId
+type SendTenantDeletedParams = {
+    tenantId: TenantId
     email: string
     purgeDate: string
 }

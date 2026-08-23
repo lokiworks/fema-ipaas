@@ -1,4 +1,4 @@
-import { apId, assertNotNullOrUndefined, Cursor, ErrorCode, isNil, Metadata, PlatformError, PlatformId, SeekPage, tryCatch, UserId, WorkflowId, WorkflowVersionId, WorkspaceId } from '@fema/core-utils'
+import { apId, ApplicationError, assertNotNullOrUndefined, Cursor, ErrorCode, isNil, Metadata, SeekPage, TenantId, tryCatch, UserId, WorkflowId, WorkflowVersionId, WorkspaceId } from '@fema/core-utils'
 import { apDayjs, apDayjsDuration } from '@fema/server-utils'
 import { CreateWorkflowRequest, PopulatedWorkflow, SharedTemplate, TelemetryEventName, TemplateStatus, TemplateType, TriggerSource, UncategorizedFolderId, UserWithMetaInformation, Workflow, workflowConnectorUtil, WorkflowCreator, WorkflowOperationRequest, WorkflowOperationStatus, WorkflowOperationType, WorkflowStatus, WorkflowTriggerType, WorkflowVersion, WorkflowVersionState } from '@fema/shared'
 import dayjs from 'dayjs'
@@ -73,7 +73,7 @@ export const workflowService = (log: FastifyBaseLogger) => ({
         }
         if (emitEvents) {
             workflowSideEffects(log).onCreated({
-                platformId: await workspaceService(log).getPlatformId(workspaceId),
+                tenantId: await workspaceService(log).getTenantId(workspaceId),
                 workspaceId,
                 userId: ownerId,
                 ip,
@@ -85,7 +85,7 @@ export const workflowService = (log: FastifyBaseLogger) => ({
 
     async list({
         workspaceIds,
-        platformId,
+        tenantId,
         cursorRequest,
         limit = Paginator.NO_LIMIT,
         folderId,
@@ -121,7 +121,7 @@ export const workflowService = (log: FastifyBaseLogger) => ({
         else {
             queryBuilder
                 .innerJoin('workspace', 'workspace', 'workspace.id = ff."workspaceId"')
-                .andWhere('workspace."platformId" = :platformId', { platformId })
+                .andWhere('workspace."tenantId" = :tenantId', { tenantId })
         }
 
         if (folderId !== undefined) {
@@ -194,7 +194,7 @@ export const workflowService = (log: FastifyBaseLogger) => ({
 
         const populatedWorkflows = await Promise.all(paginationResult.data.map(async (workflow) => {
             if (isNil(workflow.version)) {
-                throw new PlatformError({
+                throw new ApplicationError({
                     code: ErrorCode.ENTITY_NOT_FOUND,
                     params: {
                         entityType: 'WorkflowVersion',
@@ -325,7 +325,7 @@ export const workflowService = (log: FastifyBaseLogger) => ({
         id,
         userId = null,
         workspaceId,
-        platformId,
+        tenantId,
         operation,
         previousWorkflow,
         ip,
@@ -342,7 +342,7 @@ export const workflowService = (log: FastifyBaseLogger) => ({
                 workspaceId,
             })
             if (workflow.operationStatus === WorkflowOperationStatus.DELETING) {
-                throw new PlatformError({
+                throw new ApplicationError({
                     code: ErrorCode.WORKFLOW_OPERATION_IN_PROGRESS,
                     params: {
                         message: 'This workflow is getting deleted.',
@@ -360,7 +360,7 @@ export const workflowService = (log: FastifyBaseLogger) => ({
                     id,
                     userId,
                     workspaceId,
-                    platformId,
+                    tenantId,
                 })
                 const isRepublish = !isNil(previouslyPublishedVersion) && workflowPublishUtils.isSameTrigger({
                     published: previouslyPublishedVersion.trigger,
@@ -417,7 +417,7 @@ export const workflowService = (log: FastifyBaseLogger) => ({
                 await workflowVersionService(log).applyOperation({
                     userId,
                     workspaceId,
-                    platformId,
+                    tenantId,
                     workflowVersion: lastVersion,
                     userOperation: operation,
                 })
@@ -427,14 +427,14 @@ export const workflowService = (log: FastifyBaseLogger) => ({
                 const { version: lastVersion, createdNewDraft } = await createNewDraftIfVersionIsPublished({
                     workflowId: id,
                     workspaceId,
-                    platformId,
+                    tenantId,
                     userId,
                     log,
                 })
                 const { error } = await tryCatch(() => workflowVersionService(log).applyOperation({
                     userId,
                     workspaceId,
-                    platformId,
+                    tenantId,
                     workflowVersion: lastVersion,
                     userOperation: operation,
                 }))
@@ -453,7 +453,7 @@ export const workflowService = (log: FastifyBaseLogger) => ({
         })
         if (!isNil(workflowBeforeOperation)) {
             workflowSideEffects(log).onOperationApplied({
-                platformId,
+                tenantId,
                 workspaceId,
                 userId,
                 ip,
@@ -469,7 +469,7 @@ export const workflowService = (log: FastifyBaseLogger) => ({
         id,
         userId,
         workspaceId,
-        platformId,
+        tenantId,
     }: UpdatePublishedVersionIdParams): Promise<PopulatedWorkflow> {
         const workflowToUpdate = await this.getOneOrThrow({ id, workspaceId })
 
@@ -492,7 +492,7 @@ export const workflowService = (log: FastifyBaseLogger) => ({
                 workflowVersion: workflowVersionToPublish,
                 userId,
                 workspaceId,
-                platformId,
+                tenantId,
                 entityManager,
                 log,
             })
@@ -521,7 +521,7 @@ export const workflowService = (log: FastifyBaseLogger) => ({
             workspaceId,
         })
         if (workflow.operationStatus !== WorkflowOperationStatus.NONE) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.WORKFLOW_OPERATION_IN_PROGRESS,
                 params: {
                     message: `Workflow ${id} is already being ${workflow.operationStatus}`,
@@ -535,7 +535,7 @@ export const workflowService = (log: FastifyBaseLogger) => ({
         log.info({ workflow: { id }, workspace: { id: workspaceId } }, 'Workflow deletion requested')
         if (!isNil(deletedWorkflow)) {
             workflowSideEffects(log).onDeleted({
-                platformId: await workspaceService(log).getPlatformId(workspaceId),
+                tenantId: await workspaceService(log).getTenantId(workspaceId),
                 workspaceId,
                 userId,
                 ip,
@@ -544,8 +544,8 @@ export const workflowService = (log: FastifyBaseLogger) => ({
         }
     },
 
-    async deleteAllByPlatformId(platformId: PlatformId): Promise<void> {
-        const workspaceIds = await workspaceService(log).getWorkspaceIdsByPlatform(platformId)
+    async deleteAllByTenantId(tenantId: TenantId): Promise<void> {
+        const workspaceIds = await workspaceService(log).getWorkspaceIdsByTenant(tenantId)
         const workflows = await workflowRepo().findBy({
             workspaceId: In(workspaceIds),
         })
@@ -694,7 +694,7 @@ const lockWorkflowVersionIfNotLocked = async ({
     workflowVersion,
     userId,
     workspaceId,
-    platformId,
+    tenantId,
     entityManager,
     log,
 }: LockWorkflowVersionIfNotLockedParams): Promise<WorkflowVersion> => {
@@ -705,7 +705,7 @@ const lockWorkflowVersionIfNotLocked = async ({
     return workflowVersionService(log).applyOperation({
         userId,
         workspaceId,
-        platformId,
+        tenantId,
         workflowVersion,
         userOperation: {
             type: WorkflowOperationType.LOCK_WORKFLOW,
@@ -780,7 +780,7 @@ const assertWorkflowIsNotNull: <T extends Workflow>(
     workflow: T | null
 ) => asserts workflow is T = <T>(workflow: T | null) => {
     if (isNil(workflow)) {
-        throw new PlatformError({
+        throw new ApplicationError({
             code: ErrorCode.ENTITY_NOT_FOUND,
             params: {},
         })
@@ -811,8 +811,8 @@ type ListParamsBase = {
 }
 
 type ListParams = ListParamsBase & (
-    | { workspaceIds: WorkspaceId[], platformId?: never }
-    | { workspaceIds?: never, platformId: PlatformId }
+    | { workspaceIds: WorkspaceId[], tenantId?: never }
+    | { workspaceIds?: never, tenantId: TenantId }
 )
 
 type GetOneParams = {
@@ -845,14 +845,14 @@ type UpdateParams = EventEmissionParams & {
     userId?: UserId | null
     workspaceId: WorkspaceId
     operation: WorkflowOperationRequest
-    platformId: PlatformId
+    tenantId: TenantId
     previousWorkflow?: PopulatedWorkflow
 }
 
 type UpdatePublishedVersionIdParams = {
     id: WorkflowId
     userId: UserId | null
-    platformId: PlatformId
+    tenantId: TenantId
     workspaceId: WorkspaceId
 }
 
@@ -875,7 +875,7 @@ type LockWorkflowVersionIfNotLockedParams = {
     workflowVersion: WorkflowVersion
     userId: UserId | null
     workspaceId: WorkspaceId
-    platformId: PlatformId
+    tenantId: TenantId
     entityManager: EntityManager
     log: FastifyBaseLogger
 }
@@ -902,13 +902,13 @@ type UpdateLastModifiedParams = {
 async function createNewDraftIfVersionIsPublished({
     workflowId,
     workspaceId,
-    platformId,
+    tenantId,
     userId,
     log,
 }: {
     workflowId: WorkflowId
     workspaceId: WorkspaceId
-    platformId: PlatformId
+    tenantId: TenantId
     userId: UserId | null
     log: FastifyBaseLogger
 }): Promise<{ version: WorkflowVersion, createdNewDraft: boolean }> {
@@ -947,7 +947,7 @@ async function createNewDraftIfVersionIsPublished({
                 draftVersion = await workflowVersionService(log).applyOperation({
                     userId,
                     workspaceId,
-                    platformId,
+                    tenantId,
                     workflowVersion: draftVersion,
                     userOperation: operation,
                     entityManager,

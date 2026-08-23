@@ -26,7 +26,7 @@ export const refillRenewWebhookJobs = (log: FastifyBaseLogger) => ({
                 const connectorMetadata = await connectorMetadataService(log).get({
                     name: triggerSource.connectorName,
                     version: triggerSource.connectorVersion,
-                    platformId: await workspaceService(log).getPlatformId(triggerSource.workspaceId),
+                    tenantId: await workspaceService(log).getTenantId(triggerSource.workspaceId),
                 })
                 const connectorTrigger = connectorMetadata?.triggers?.[triggerSource.triggerName]
                 if (isNil(connectorTrigger) || isNil(connectorTrigger.renewConfiguration) || connectorTrigger.renewConfiguration.strategy !== WebhookRenewStrategy.CRON) {
@@ -37,7 +37,7 @@ export const refillRenewWebhookJobs = (log: FastifyBaseLogger) => ({
                     type: JobType.REPEATING,
                     data: {
                         workspaceId: triggerSource.workspaceId,
-                        platformId: await workspaceService(log).getPlatformId(triggerSource.workspaceId),
+                        tenantId: await workspaceService(log).getTenantId(triggerSource.workspaceId),
                         schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
                         workflowVersionId: triggerSource.workflowVersionId,
                         workflowId: triggerSource.workflowId,

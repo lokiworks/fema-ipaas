@@ -13,7 +13,7 @@ import {
   OAuth2GrantType,
   UpsertCloudOAuth2Request,
   UpsertOAuth2Request,
-  UpsertPlatformOAuth2Request,
+  UpsertTenantOAuth2Request,
 } from '@fema/shared';
 import { t } from 'i18next';
 import { ChevronDown } from 'lucide-react';
@@ -57,7 +57,7 @@ function OAuth2ConnectionSettings({
     request:
       | UpsertCloudOAuth2Request
       | UpsertOAuth2Request
-      | UpsertPlatformOAuth2Request;
+      | UpsertTenantOAuth2Request;
   }>();
 
   const isClientIdValid = isNil(
@@ -379,7 +379,7 @@ type OpenPopupParams = {
     request:
       | UpsertCloudOAuth2Request
       | UpsertOAuth2Request
-      | UpsertPlatformOAuth2Request;
+      | UpsertTenantOAuth2Request;
   }>;
   setLoading: Dispatch<SetStateAction<boolean>>;
 };

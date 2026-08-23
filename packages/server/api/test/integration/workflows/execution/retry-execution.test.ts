@@ -116,7 +116,7 @@ describe('Retry workflow run', () => {
 
     it('should materialize a sliced trigger output on ON_LATEST_VERSION retry instead of replaying the LogSliceRef', async () => {
         const workspaceId = ctx.workspace.id
-        const platformId = ctx.platform.id
+        const tenantId = ctx.tenant.id
 
         const workflow = createMockWorkflow({ workspaceId })
         await db.save('workflow', workflow)
@@ -134,7 +134,7 @@ describe('Retry workflow run', () => {
         const sliceData = Buffer.from(JSON.stringify(realTriggerOutput), 'utf-8')
         const sliceFile = await fileService(app.log).save({
             workspaceId,
-            platformId,
+            tenantId,
             type: FileType.EXECUTION_LOG_SLICE,
             data: sliceData,
             size: sliceData.length,
@@ -160,7 +160,7 @@ describe('Retry workflow run', () => {
         const logData = Buffer.from(JSON.stringify(logContent), 'utf-8')
         const logFile = await fileService(app.log).save({
             workspaceId,
-            platformId,
+            tenantId,
             type: FileType.EXECUTION_LOG,
             data: logData,
             size: logData.length,
@@ -198,7 +198,7 @@ describe('Retry workflow run', () => {
 
     it('should fail with 404 on ON_LATEST_VERSION retry when the sliced trigger output file is gone', async () => {
         const workspaceId = ctx.workspace.id
-        const platformId = ctx.platform.id
+        const tenantId = ctx.tenant.id
 
         const workflow = createMockWorkflow({ workspaceId })
         await db.save('workflow', workflow)
@@ -229,7 +229,7 @@ describe('Retry workflow run', () => {
         const logData = Buffer.from(JSON.stringify(logContent), 'utf-8')
         const logFile = await fileService(app.log).save({
             workspaceId,
-            platformId,
+            tenantId,
             type: FileType.EXECUTION_LOG,
             data: logData,
             size: logData.length,

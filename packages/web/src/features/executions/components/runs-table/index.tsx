@@ -49,7 +49,7 @@ import { executionUtils } from '@/features/executions/utils/execution-utils';
 import { workflowHooks } from '@/features/workflows/hooks/workflow-hooks';
 import {
   useAuthorization,
-  useIsPlatformAdmin,
+  useIsTenantAdmin,
 } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 import { formatUtils } from '@/lib/format-utils';
@@ -151,8 +151,8 @@ export const RunsTable = () => {
     },
   });
   const navigate = useNavigate();
-  const isPlatformAdmin = useIsPlatformAdmin();
-  const canViewInternalError = isPlatformAdmin;
+  const isTenantAdmin = useIsTenantAdmin();
+  const canViewInternalError = isTenantAdmin;
   const columns = runsTableColumns({
     data,
     selectedRows,

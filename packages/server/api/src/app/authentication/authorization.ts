@@ -1,4 +1,4 @@
-import { ErrorCode, isNil, isObject, PlatformError } from '@fema/core-utils'
+import { ApplicationError, ErrorCode, isNil, isObject } from '@fema/core-utils'
 import { PrincipalType } from '@fema/shared'
 import { preSerializationHookHandler } from 'fastify'
 
@@ -45,7 +45,7 @@ export const entitiesMustBeOwnedByCurrentWorkspace: preSerializationHookHandler<
                 principalWorkspaceId,
                 route: request.routeOptions.config,
             }, 'Authorization denied: entity not owned by current workspace')
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.AUTHORIZATION,
                 params: {
                     message: 'not owned by current workspace',

@@ -117,7 +117,7 @@ describe('App connection application events', () => {
 
 async function seedConnectorMetadata(ctx: TestContext): Promise<{ name: string, version: string }> {
     const connector = createMockConnectorMetadata({
-        platformId: ctx.platform.id,
+        tenantId: ctx.tenant.id,
         packageType: PackageType.REGISTRY,
         connectorType: ConnectorType.OFFICIAL,
     })

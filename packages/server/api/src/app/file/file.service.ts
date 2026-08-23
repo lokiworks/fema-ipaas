@@ -1,6 +1,6 @@
 import { Readable } from 'node:stream'
 import { buffer as streamToBuffer } from 'node:stream/consumers'
-import { apId, assertNotNullOrUndefined, ErrorCode, isMultipartFile, isNil, PlatformError, WorkspaceId } from '@fema/core-utils'
+import { apId, ApplicationError, assertNotNullOrUndefined, ErrorCode, isMultipartFile, isNil, WorkspaceId } from '@fema/core-utils'
 import { File, FileCompression, FileId, FileLocation, FileType, Workspace } from '@fema/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
@@ -22,7 +22,7 @@ const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 
 export const fileRepo = repoFactory<File>(FileEntity)
 const EXECUTION_DATA_RETENTION_DAYS = system.getNumberOrThrow(AppSystemProp.EXECUTION_DATA_RETENTION_DAYS)
 
-type BaseFile = Pick<File, 'id' | 'workspaceId' | 'platformId' | 'type' | 'fileName' | 'compression' | 'size' | 'metadata' | 'created' | 'updated'>
+type BaseFile = Pick<File, 'id' | 'workspaceId' | 'tenantId' | 'type' | 'fileName' | 'compression' | 'size' | 'metadata' | 'created' | 'updated'>
 
 const saveFileToDb = async (baseFile: BaseFile, data: Buffer | null) => {
     assertNotNullOrUndefined(data, 'data is required')
@@ -37,7 +37,7 @@ export const fileService = (log: FastifyBaseLogger) => ({
         const baseFile: BaseFile = {
             id: params.fileId ?? apId(),
             workspaceId: params.workspaceId,
-            platformId: params.platformId,
+            tenantId: params.tenantId,
             type: params.type,
             fileName: params.fileName,
             compression: params.compression,
@@ -56,7 +56,7 @@ export const fileService = (log: FastifyBaseLogger) => ({
                 return saveFileToDb(baseFile, params.data)
             }
             case FileLocation.S3: {
-                const s3Key = await s3Helper(log).constructS3Key(params.platformId, params.workspaceId, params.type, baseFile.id)
+                const s3Key = await s3Helper(log).constructS3Key(params.tenantId, params.workspaceId, params.type, baseFile.id)
                 // A stream can be consumed once, so it has no S3-error DB fallback.
                 if (params.data instanceof Readable) {
                     const size = await s3Helper(log).uploadStream(s3Key, params.data)
@@ -94,7 +94,7 @@ export const fileService = (log: FastifyBaseLogger) => ({
     async getFileOrThrow(params: GetOneParams): Promise<File> {
         const file = !isNil(params.fileId) ? await this.getFile(params) : undefined
         if (isNil(file)) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityType: 'file',
@@ -124,7 +124,7 @@ export const fileService = (log: FastifyBaseLogger) => ({
             type: normalizeTypeFilter(type),
         })
         if (isNil(file)) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityType: 'file',
@@ -241,7 +241,7 @@ export const fileService = (log: FastifyBaseLogger) => ({
             })
         }
         catch (e) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.INVALID_BEARER_TOKEN,
                 params: {
                     message: 'invalid token or expired for the step file',
@@ -262,20 +262,20 @@ export const fileService = (log: FastifyBaseLogger) => ({
         if (value instanceof Uint8Array) {
             return Buffer.from(value)
         }
-        throw new PlatformError({
+        throw new ApplicationError({
             code: ErrorCode.VALIDATION,
             params: { message: 'File data must be a Buffer' },
         })
     },
     async uploadPublicAsset(params: UploadPublicAssetParams): Promise<string | undefined> {
-        const { file, type, platformId, allowedMimeTypes = IMAGE_MIME_TYPES, maxFileSizeInBytes, metadata } = params
+        const { file, type, tenantId, allowedMimeTypes = IMAGE_MIME_TYPES, maxFileSizeInBytes, metadata } = params
 
         if (isNil(file)) {
             return undefined
         }
 
         if (!isMultipartFile(file)) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.VALIDATION,
                 params: {
                     message: 'File must be a multipart file',
@@ -284,7 +284,7 @@ export const fileService = (log: FastifyBaseLogger) => ({
         }
 
         if (!allowedMimeTypes.includes(file.mimetype ?? '')) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.VALIDATION,
                 params: {
                     message: `Invalid file type. Allowed types: ${allowedMimeTypes.join(', ')}`,
@@ -293,7 +293,7 @@ export const fileService = (log: FastifyBaseLogger) => ({
         }
 
         if (!isNil(maxFileSizeInBytes) && file.data.length > maxFileSizeInBytes) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.VALIDATION,
                 params: {
                     message: `File size exceeds ${Math.round(maxFileSizeInBytes / (1024 * 1024))}MB limit`,
@@ -306,7 +306,7 @@ export const fileService = (log: FastifyBaseLogger) => ({
             size: file.data.length,
             type,
             compression: FileCompression.NONE,
-            platformId,
+            tenantId,
             fileName: file.filename,
             metadata: {
                 ...metadata,
@@ -314,7 +314,7 @@ export const fileService = (log: FastifyBaseLogger) => ({
             },
         })
 
-        return `${system.get(AppSystemProp.FRONTEND_URL)}/api/v1/platforms/assets/${savedFile.id}`
+        return `${system.get(AppSystemProp.FRONTEND_URL)}/api/v1/tenants/assets/${savedFile.id}`
     },
 })
 
@@ -371,7 +371,7 @@ function isExecutionDataFileThatExpires(type: FileType) {
         case FileType.TRIGGER_EVENT_FILE:
         case FileType.WEBHOOK_PAYLOAD:
             return true
-        case FileType.PLATFORM_ASSET:
+        case FileType.TENANT_ASSET:
         case FileType.USER_PROFILE_PICTURE:
         case FileType.SAMPLE_DATA:
         case FileType.SAMPLE_DATA_INPUT:
@@ -391,7 +391,7 @@ type SaveParams = {
     data: Buffer | Readable | null
     size?: number
     type: FileType
-    platformId?: string
+    tenantId?: string
     fileName?: string
     compression: FileCompression
     metadata?: Record<string, string>
@@ -416,7 +416,7 @@ type CleanupPass = {
 type UploadPublicAssetParams = {
     file: unknown
     type: FileType
-    platformId: string
+    tenantId: string
     allowedMimeTypes?: string[]
     maxFileSizeInBytes?: number
     metadata?: Record<string, string>

@@ -14,7 +14,7 @@ export const UserEntity = new EntitySchema<UserSchema>({
         status: {
             type: String,
         },
-        platformRole: {
+        tenantRole: {
             type: String,
             nullable: false,
         },
@@ -26,7 +26,7 @@ export const UserEntity = new EntitySchema<UserSchema>({
             type: String,
             nullable: true,
         },
-        platformId: {
+        tenantId: {
             type: String,
             nullable: true,
         },
@@ -37,13 +37,13 @@ export const UserEntity = new EntitySchema<UserSchema>({
     },
     indices: [
         {
-            name: 'idx_user_platform_id_email',
-            columns: ['platformId', 'identityId'],
+            name: 'idx_user_tenant_id_email',
+            columns: ['tenantId', 'identityId'],
             unique: true,
         },
         {
-            name: 'idx_user_platform_id_external_id',
-            columns: ['platformId', 'externalId'],
+            name: 'idx_user_tenant_id_external_id',
+            columns: ['tenantId', 'externalId'],
             unique: true,
         },
         {

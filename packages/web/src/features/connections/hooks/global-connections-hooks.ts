@@ -8,7 +8,7 @@ import { UseFormReturn } from 'react-hook-form';
 import { toast } from 'sonner';
 
 import { internalErrorToast } from '@/components/ui/sonner';
-import { platformHooks } from '@/hooks/platform-hooks';
+import { tenantHooks } from '@/hooks/tenant-hooks';
 
 import { globalConnectionsApi } from '../api/global-connections';
 import {
@@ -38,12 +38,12 @@ export const globalConnectionsQueries = {
     gcTime,
     showErrorDialog,
   }: UseGlobalConnectionsProps) => {
-    const { platform } = platformHooks.useCurrentPlatform();
+    const { tenant } = tenantHooks.useCurrentTenant();
     return useQuery({
       queryKey: [GLOBAL_CONNECTIONS_QUERY_KEY, ...extraKeys],
       staleTime,
       gcTime,
-      enabled: platform.plan.globalConnectionsEnabled,
+      enabled: tenant.plan.globalConnectionsEnabled,
       meta: showErrorDialog
         ? { showErrorDialog: true, loadSubsetOptions: {} }
         : undefined,

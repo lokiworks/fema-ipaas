@@ -2,7 +2,7 @@ import {
     Connection,
     File,
     Folder,
-    Platform,
+    Tenant,
     TriggerEvent,
     User,
     Workflow,
@@ -21,7 +21,7 @@ type WorkspaceSchema = Workspace & {
     folders: Folder[]
     events: TriggerEvent[]
     connections: Connection[]
-    platform: Platform
+    tenant: Tenant
 }
 
 export const WorkspaceEntity = new EntitySchema<WorkspaceSchema>({
@@ -41,7 +41,7 @@ export const WorkspaceEntity = new EntitySchema<WorkspaceSchema>({
             type: String,
             nullable: false,
         },
-        platformId: {
+        tenantId: {
             ...ApIdSchema,
         },
         externalId: {
@@ -86,14 +86,14 @@ export const WorkspaceEntity = new EntitySchema<WorkspaceSchema>({
             unique: false,
         },
         {
-            name: 'idx_workspace_platform_id_external_id',
-            columns: ['platformId', 'externalId'],
+            name: 'idx_workspace_tenant_id_external_id',
+            columns: ['tenantId', 'externalId'],
             where: 'deleted IS NULL',
             unique: true,
         },
         {
-            name: 'idx_workspace_platform_id',
-            columns: ['platformId'],
+            name: 'idx_workspace_tenant_id',
+            columns: ['tenantId'],
             unique: false,
         },
         {
@@ -117,15 +117,15 @@ export const WorkspaceEntity = new EntitySchema<WorkspaceSchema>({
                 foreignKeyConstraintName: 'fk_workspace_owner_id',
             },
         },
-        platform: {
+        tenant: {
             type: 'many-to-one',
-            target: 'platform',
+            target: 'tenant',
             cascade: true,
             onDelete: 'RESTRICT',
             onUpdate: 'RESTRICT',
             joinColumn: {
-                name: 'platformId',
-                foreignKeyConstraintName: 'fk_workspace_platform_id',
+                name: 'tenantId',
+                foreignKeyConstraintName: 'fk_workspace_tenant_id',
             },
         },
         folders: {

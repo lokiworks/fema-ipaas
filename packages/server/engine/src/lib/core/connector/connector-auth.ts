@@ -56,7 +56,7 @@ function select({ description, authValueType }: SelectParams): SelectedAuth | un
 function argumentFor({ property, value }: ArgumentParams): { argument: unknown } | undefined {
     switch (property.type) {
         case PropertyType.OAUTH2:
-            return [ConnectionType.OAUTH2, ConnectionType.CLOUD_OAUTH2, ConnectionType.PLATFORM_OAUTH2].includes(value.type) ? { argument: value } : undefined
+            return [ConnectionType.OAUTH2, ConnectionType.CLOUD_OAUTH2, ConnectionType.TENANT_OAUTH2].includes(value.type) ? { argument: value } : undefined
         case PropertyType.BASIC_AUTH:
             return value.type === ConnectionType.BASIC_AUTH ? { argument: value } : undefined
         case PropertyType.SECRET_TEXT:

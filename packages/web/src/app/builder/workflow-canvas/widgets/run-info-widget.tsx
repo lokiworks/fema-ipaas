@@ -49,7 +49,7 @@ function getStatusText({
       return t('Run Paused');
     case ExecutionStatus.QUOTA_EXCEEDED:
       return t(
-        'This run stopped because your platform ran out of credits. It can be retried once credits are available.',
+        'This run stopped because your tenant ran out of credits. It can be retried once credits are available.',
       );
     case ExecutionStatus.LOG_SIZE_EXCEEDED:
       return t(

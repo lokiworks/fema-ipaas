@@ -10,7 +10,7 @@ import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/
 
 let app: FastifyInstance | null = null
 let engineToken: string
-let platformId: string
+let tenantId: string
 let workspaceId: string
 
 const DEFAULT_BODY = { audience: 'sts.amazonaws.com' }
@@ -24,14 +24,14 @@ afterAll(async () => {
 })
 
 beforeEach(async () => {
-    const { mockPlatform, mockWorkspace } = await mockAndSaveBasicSetup()
-    platformId = mockPlatform.id
+    const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
+    tenantId = mockTenant.id
     workspaceId = mockWorkspace.id
     engineToken = await generateMockToken({
         type: PrincipalType.ENGINE,
         id: apId(),
         workspaceId,
-        platform: { id: platformId },
+        tenant: { id: tenantId },
     })
 })
 
@@ -66,7 +66,7 @@ describe('OIDC Token Endpoint', () => {
                 type: PrincipalType.USER,
                 id: apId(),
                 workspaceId,
-                platform: { id: platformId },
+                tenant: { id: tenantId },
             })
 
             const response = await app!.inject({
@@ -115,7 +115,7 @@ describe('OIDC Token Endpoint', () => {
             expect(decoded.payload.aud).toBe('vault.example.com')
         })
 
-        it('should include platform and workspace in the sub claim', async () => {
+        it('should include tenant and workspace in the sub claim', async () => {
             const response = await app!.inject({
                 method: 'POST',
                 url: '/api/v1/worker/oidc-token',
@@ -126,8 +126,8 @@ describe('OIDC Token Endpoint', () => {
             const { token } = response.json()
             const decoded = jwtUtils.decode<{ sub: string }>({ jwt: token })
 
-            expect(decoded.payload.sub).toMatch(/^platform:.+:workspace:.+$/)
-            expect(decoded.payload.sub).toContain(platformId)
+            expect(decoded.payload.sub).toMatch(/^tenant:.+:workspace:.+$/)
+            expect(decoded.payload.sub).toContain(tenantId)
             expect(decoded.payload.sub).toContain(workspaceId)
         })
 

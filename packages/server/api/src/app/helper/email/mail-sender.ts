@@ -52,7 +52,7 @@ export const mailSender = (log: FastifyBaseLogger) => ({
         const [body, footer] = await Promise.all([readTemplate(template), readTemplate('footer')])
         const html = Mustache.render(body, variables, { footer })
         const senderEmail = system.get(AppSystemProp.SMTP_SENDER_EMAIL) ?? 'no-reply@localhost'
-        const senderName = system.get(AppSystemProp.SMTP_SENDER_NAME) ?? variables.platformName
+        const senderName = system.get(AppSystemProp.SMTP_SENDER_NAME) ?? variables.tenantName
 
         const { error } = await tryCatch(() => transport.sendMail({
             from: `${senderName} <${senderEmail}>`,
@@ -69,7 +69,7 @@ export const mailSender = (log: FastifyBaseLogger) => ({
 })
 
 export type MailTemplateVariables = {
-    platformName: string
+    tenantName: string
     fullLogoUrl: string
     primaryColor: string
     primaryColorLight: string

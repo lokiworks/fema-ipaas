@@ -13,7 +13,7 @@ export const webhookHandshake = {
             return null
         }
 
-        const platformId = await workspaceService(logger).getPlatformId(params.workspaceId)
+        const tenantId = await workspaceService(logger).getTenantId(params.workspaceId)
 
         const engineHelperResponse = await userInteractionWatcher.submitAndWaitForResponse<EngineResponse<ExecuteTriggerResponse<TriggerHookType.HANDSHAKE>>>({
             jobType: WorkerJobType.EXECUTE_TRIGGER_HOOK,
@@ -22,7 +22,7 @@ export const webhookHandshake = {
             workflowVersionId: params.workflowVersionId,
             workspaceId: params.workspaceId,
             test: false,
-            platformId,
+            tenantId,
             triggerPayload: payload,
         }, logger)
 

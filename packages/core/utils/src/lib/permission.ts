@@ -36,7 +36,7 @@ export enum RoleType {
     CUSTOM = 'CUSTOM',
 }
 
-export enum PlatformUsageMetric {
+export enum TenantUsageMetric {
     CREDITS = 'credits',
     ACTIVE_WORKFLOWS = 'active-workflows',
     USERS = 'users',

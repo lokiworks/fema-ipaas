@@ -1,4 +1,4 @@
-import { apId, Cursor, ErrorCode, isNil, PlatformError, PlatformId, sanitizeObjectForPostgresql, SeekPage, UserId, WorkflowId, WorkflowVersionId, WorkspaceId } from '@fema/core-utils'
+import { apId, ApplicationError, Cursor, ErrorCode, isNil, sanitizeObjectForPostgresql, SeekPage, TenantId, UserId, WorkflowId, WorkflowVersionId, WorkspaceId } from '@fema/core-utils'
 import { LATEST_WORKFLOW_SCHEMA_VERSION, Note, WorkflowOperationRequest, workflowOperations, WorkflowOperationType, workflowStructureUtil, WorkflowTriggerType, WorkflowVersion, WorkflowVersionState } from '@fema/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
@@ -22,7 +22,7 @@ export const workflowVersionService = (log: FastifyBaseLogger) => ({
         userId,
         userOperation,
         entityManager,
-        platformId,
+        tenantId,
     }: ApplyOperationParams): Promise<WorkflowVersion> {
         let operations: WorkflowOperationRequest[] = []
         let mutatedWorkflowVersion: WorkflowVersion = workflowVersion
@@ -84,7 +84,7 @@ export const workflowVersionService = (log: FastifyBaseLogger) => ({
                 workspaceId,
                 workflowVersion: mutatedWorkflowVersion,
                 operation,
-                platformId,
+                tenantId,
                 log,
                 userId,
                 entityManager,
@@ -159,7 +159,7 @@ export const workflowVersionService = (log: FastifyBaseLogger) => ({
     async getLatestLockedVersionOrThrow(workflowId: WorkflowId): Promise<WorkflowVersion> {
         const lockedVersion = await this.getLatestVersion(workflowId, WorkflowVersionState.LOCKED)
         if (isNil(lockedVersion)) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityId: workflowId,
@@ -173,7 +173,7 @@ export const workflowVersionService = (log: FastifyBaseLogger) => ({
         const workflowVersion = await workflowVersionService(log).getOne(id)
 
         if (isNil(workflowVersion)) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityId: id,
@@ -238,7 +238,7 @@ export const workflowVersionService = (log: FastifyBaseLogger) => ({
         }, entityManager, workspaceId)
 
         if (isNil(workflowVersion)) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityId: versionId,
@@ -320,7 +320,7 @@ async function applySingleOperation({
     workspaceId,
     workflowVersion,
     operation,
-    platformId,
+    tenantId,
     log,
     userId,
     entityManager,
@@ -331,7 +331,7 @@ async function applySingleOperation({
         operation,
         entityManager,
     })
-    const preparedOperation = await workflowVersionValidationUtil(log).prepareRequest({ platformId, request: operation, userId })
+    const preparedOperation = await workflowVersionValidationUtil(log).prepareRequest({ tenantId, request: operation, userId })
     const updatedWorkflowVersion = workflowOperations.apply(workflowVersion, preparedOperation)
     return updatedWorkflowVersion
 }
@@ -385,7 +385,7 @@ type ApplySingleOperationParams = {
     workspaceId: WorkspaceId
     workflowVersion: WorkflowVersion
     operation: WorkflowOperationRequest
-    platformId: PlatformId
+    tenantId: TenantId
     log: FastifyBaseLogger
     userId: UserId | null
     entityManager?: EntityManager
@@ -400,7 +400,7 @@ type ListWorkflowVersionParams = {
 type ApplyOperationParams = {
     userId: UserId | null
     workspaceId: WorkspaceId
-    platformId: PlatformId
+    tenantId: TenantId
     workflowVersion: WorkflowVersion
     userOperation: WorkflowOperationRequest
     entityManager?: EntityManager

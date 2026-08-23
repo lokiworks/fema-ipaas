@@ -1,6 +1,6 @@
 import { ApId, Permission, SeekPage } from '@fema/core-utils'
 import { wideEvent } from '@fema/server-utils'
-import { ApplicationEventName, ConnectionOwners, ConnectionScope, ConnectionStatus, ConnectionType, ConnectionWithoutSensitiveData, ErrorCode, GetOAuth2AuthorizationUrlRequestBody, GetOAuth2AuthorizationUrlResponse, ListConnectionOwnersRequestQuery, ListConnectionsRequestQuery, PLACEHOLDER_CONNECTION_TYPE, PlatformError, PrincipalType, ReplaceConnectionsRequestBody, SERVICE_KEY_SECURITY_OPENAPI, UpdateConnectionValueRequestBody, UpsertConnectionRequestBody } from '@fema/shared'
+import { ApplicationError, ApplicationEventName, ConnectionOwners, ConnectionScope, ConnectionStatus, ConnectionType, ConnectionWithoutSensitiveData, ErrorCode, GetOAuth2AuthorizationUrlRequestBody, GetOAuth2AuthorizationUrlResponse, ListConnectionOwnersRequestQuery, ListConnectionsRequestQuery, PLACEHOLDER_CONNECTION_TYPE, PrincipalType, ReplaceConnectionsRequestBody, SERVICE_KEY_SECURITY_OPENAPI, UpdateConnectionValueRequestBody, UpsertConnectionRequestBody } from '@fema/shared'
 import { FastifyPluginCallbackZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
@@ -17,7 +17,7 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
     app.post('/', UpsertConnectionRequest, async (request, reply) => {
         const ownerId = await securityHelper.getUserIdFromRequest(request)
         const baseUpsert = {
-            platformId: request.principal.platform.id,
+            tenantId: request.principal.tenant.id,
             workspaceIds: [request.workspaceId],
             externalId: request.body.externalId,
             displayName: request.body.displayName,
@@ -53,7 +53,7 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
     app.post('/:id', UpdateConnectionValueRequest, async (request) => {
         const connection = await connectionService(request.log).update({
             id: request.params.id,
-            platformId: request.principal.platform.id,
+            tenantId: request.principal.tenant.id,
             workspaceIds: [request.workspaceId],
             scope: ConnectionScope.WORKSPACE,
             request: {
@@ -73,7 +73,7 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
             displayName,
             status,
             scope,
-            platformId: request.principal.platform.id,
+            tenantId: request.principal.tenant.id,
             workspaceId: request.workspaceId,
             cursorRequest: cursor ?? null,
             limit: limit ?? DEFAULT_PAGE_SIZE,
@@ -89,7 +89,7 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
             target: {
                 type: 'workspace',
                 id: request.workspaceId,
-                platformId: request.principal.platform.id,
+                tenantId: request.principal.tenant.id,
                 connectionCount: connectionsWithoutSensitiveData.data.length,
             },
         }))
@@ -99,7 +99,7 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
     app.get('/:id', GetConnectionRequest, async (request): Promise<ConnectionWithoutSensitiveData> => {
         return connectionService(request.log).getOnePublicOrThrow({
             id: request.params.id,
-            platformId: request.principal.platform.id,
+            tenantId: request.principal.tenant.id,
             workspaceId: request.workspaceId,
         })
     })
@@ -107,7 +107,7 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
     app.post('/:id/revalidate', RevalidateConnectionRequest, async (request): Promise<ConnectionWithoutSensitiveData> => {
         return connectionService(request.log).revalidate({
             id: request.params.id,
-            platformId: request.principal.platform.id,
+            tenantId: request.principal.tenant.id,
             workspaceId: request.workspaceId,
         })
     })
@@ -115,7 +115,7 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
     app.get('/owners', ListConnectionOwnersRequest, async (request): Promise<SeekPage<ConnectionOwners>> => {
         const owners = await connectionService(request.log).getOwners({
             workspaceId: request.workspaceId,
-            platformId: request.principal.platform.id,
+            tenantId: request.principal.tenant.id,
         })
         return {
             data: owners,
@@ -131,7 +131,7 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
             sourceConnectionId,
             targetConnectionId,
             workspaceId: request.workspaceId,
-            platformId: request.principal.platform.id,
+            tenantId: request.principal.tenant.id,
             userId: request.principal.id,
             deleteSourceConnection,
             applyToPublishedVersions,
@@ -142,20 +142,20 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
     app.delete('/:id', DeleteConnectionRequest, async (request, reply): Promise<void> => {
         const connection = await connectionService(request.log).getOneOrThrowWithoutValue({
             id: request.params.id,
-            platformId: request.principal.platform.id,
+            tenantId: request.principal.tenant.id,
             workspaceId: request.workspaceId,
         })
-        if (connection.scope === ConnectionScope.PLATFORM) {
-            throw new PlatformError({
+        if (connection.scope === ConnectionScope.TENANT) {
+            throw new ApplicationError({
                 code: ErrorCode.AUTHORIZATION,
                 params: {
-                    message: 'Platform connections must be deleted from the platform admin connections page',
+                    message: 'Tenant connections must be deleted from the tenant admin connections page',
                 },
             })
         }
         await connectionService(request.log).delete({
             id: request.params.id,
-            platformId: request.principal.platform.id,
+            tenantId: request.principal.tenant.id,
             scope: ConnectionScope.WORKSPACE,
             workspaceId: request.workspaceId,
         })
@@ -169,7 +169,7 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
     })
     app.post('/oauth2/authorization-url', GetOAuth2AuthorizationUrlRequest, async (request) => {
         return oauth2Util(request.log).buildAuthorizationUrl({
-            platformId: request.principal.platform.id,
+            tenantId: request.principal.tenant.id,
             connectorName: request.body.connectorName,
             connectorVersion: request.body.connectorVersion,
             clientId: request.body.clientId,
@@ -364,7 +364,7 @@ const DeleteConnectionRequest = {
 
 const GetOAuth2AuthorizationUrlRequest = {
     config: {
-        security: securityAccess.publicPlatform(
+        security: securityAccess.publicTenant(
             [PrincipalType.USER],
         ),
     },

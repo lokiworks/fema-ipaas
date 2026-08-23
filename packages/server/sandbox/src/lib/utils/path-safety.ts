@@ -1,4 +1,4 @@
-import { ErrorCode, PlatformError } from '@fema/core-utils'
+import { ApplicationError, ErrorCode } from '@fema/core-utils'
 
 export function assertSafePathSegment(value: string, field: string): void {
     const isUnsafe = value.length === 0
@@ -9,7 +9,7 @@ export function assertSafePathSegment(value: string, field: string): void {
         || value.includes('\\')
         || value.includes('\0')
     if (isUnsafe) {
-        throw new PlatformError({
+        throw new ApplicationError({
             code: ErrorCode.VALIDATION,
             params: { message: `Invalid ${field}: "${value}" is not a safe path segment` },
         })
@@ -19,7 +19,7 @@ export function assertSafePathSegment(value: string, field: string): void {
 export function assertSafeCodeNamespace(namespace: string): void {
     const segments = namespace.split('/')
     if (segments.length > MAX_CODE_NAMESPACE_DEPTH) {
-        throw new PlatformError({
+        throw new ApplicationError({
             code: ErrorCode.VALIDATION,
             params: { message: `Invalid code namespace: "${namespace}" exceeds ${MAX_CODE_NAMESPACE_DEPTH} segments` },
         })

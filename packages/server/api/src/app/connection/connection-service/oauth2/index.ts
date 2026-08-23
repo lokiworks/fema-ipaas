@@ -1,6 +1,6 @@
 import {
     ConnectionType,
-    PlatformOAuth2ConnectionValue,
+    TenantOAuth2ConnectionValue,
 } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import {
@@ -11,25 +11,25 @@ import {
 import { cloudOAuth2Service } from './services/cloud-oauth2-service'
 import { credentialsOauth2Service } from './services/credentials-oauth2-service'
 
-const unimplementedService = (_log: FastifyBaseLogger): OAuth2Service<PlatformOAuth2ConnectionValue> => ({
+const unimplementedService = (_log: FastifyBaseLogger): OAuth2Service<TenantOAuth2ConnectionValue> => ({
     claim: async (
         _req: ClaimOAuth2Request,
-    ): Promise<PlatformOAuth2ConnectionValue> => {
-        throw new Error('Unimplemented platform oauth')
+    ): Promise<TenantOAuth2ConnectionValue> => {
+        throw new Error('Unimplemented tenant oauth')
     },
     refresh: async (
-        _req: RefreshOAuth2Request<PlatformOAuth2ConnectionValue>,
-    ): Promise<PlatformOAuth2ConnectionValue> => {
-        throw new Error('Unimplemented platform oauth')
+        _req: RefreshOAuth2Request<TenantOAuth2ConnectionValue>,
+    ): Promise<TenantOAuth2ConnectionValue> => {
+        throw new Error('Unimplemented tenant oauth')
     },
 })
 
 export const oauth2Handler = {
     [ConnectionType.CLOUD_OAUTH2]: cloudOAuth2Service,
     [ConnectionType.OAUTH2]: credentialsOauth2Service,
-    [ConnectionType.PLATFORM_OAUTH2]: unimplementedService,
+    [ConnectionType.TENANT_OAUTH2]: unimplementedService,
 }
 
-export function setPlatformOAuthService(service: OAuth2Service<PlatformOAuth2ConnectionValue>) {
-    oauth2Handler[ConnectionType.PLATFORM_OAUTH2] = (_log: FastifyBaseLogger) => service
+export function setTenantOAuthService(service: OAuth2Service<TenantOAuth2ConnectionValue>) {
+    oauth2Handler[ConnectionType.TENANT_OAUTH2] = (_log: FastifyBaseLogger) => service
 }

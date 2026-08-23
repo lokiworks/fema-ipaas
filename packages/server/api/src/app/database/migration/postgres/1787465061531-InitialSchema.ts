@@ -62,7 +62,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
                 "created" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
                 "updated" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
                 "workspaceId" character varying(21),
-                "platformId" character varying(21),
+                "tenantId" character varying(21),
                 "data" bytea,
                 "location" character varying NOT NULL,
                 "fileName" character varying,
@@ -81,7 +81,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             CREATE INDEX "idx_file_type_created_desc" ON "file" ("type", "created")
         `)
         await queryRunner.query(`
-            CREATE INDEX "idx_file_platform_id_null_workspace" ON "file" ("platformId")
+            CREATE INDEX "idx_file_tenant_id_null_workspace" ON "file" ("tenantId")
             WHERE "workspaceId" IS NULL
         `)
         await queryRunner.query(`
@@ -249,7 +249,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
                 "ownerId" character varying(21) NOT NULL,
                 "displayName" character varying NOT NULL,
                 "type" character varying NOT NULL,
-                "platformId" character varying(21) NOT NULL,
+                "tenantId" character varying(21) NOT NULL,
                 "externalId" character varying,
                 "maxConcurrentJobs" integer,
                 "icon" jsonb NOT NULL,
@@ -265,11 +265,11 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             CREATE INDEX "idx_workspace_owner_id" ON "workspace" ("ownerId")
         `)
         await queryRunner.query(`
-            CREATE UNIQUE INDEX "idx_workspace_platform_id_external_id" ON "workspace" ("platformId", "externalId")
+            CREATE UNIQUE INDEX "idx_workspace_tenant_id_external_id" ON "workspace" ("tenantId", "externalId")
             WHERE deleted IS NULL
         `)
         await queryRunner.query(`
-            CREATE INDEX "idx_workspace_platform_id" ON "workspace" ("platformId")
+            CREATE INDEX "idx_workspace_tenant_id" ON "workspace" ("tenantId")
         `)
         await queryRunner.query(`
             CREATE INDEX "idx_workspace_worker_group" ON "workspace" ("workerGroupId")
@@ -296,19 +296,19 @@ export class InitialSchema1787465061531 implements MigrationInterface {
                 "created" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
                 "updated" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
                 "status" character varying NOT NULL,
-                "platformRole" character varying NOT NULL,
+                "tenantRole" character varying NOT NULL,
                 "identityId" character varying NOT NULL,
                 "externalId" character varying,
-                "platformId" character varying,
+                "tenantId" character varying,
                 "lastActiveDate" TIMESTAMP WITH TIME ZONE,
                 CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id")
             )
         `)
         await queryRunner.query(`
-            CREATE UNIQUE INDEX "idx_user_platform_id_email" ON "user" ("platformId", "identityId")
+            CREATE UNIQUE INDEX "idx_user_tenant_id_email" ON "user" ("tenantId", "identityId")
         `)
         await queryRunner.query(`
-            CREATE UNIQUE INDEX "idx_user_platform_id_external_id" ON "user" ("platformId", "externalId")
+            CREATE UNIQUE INDEX "idx_user_tenant_id_external_id" ON "user" ("tenantId", "externalId")
         `)
         await queryRunner.query(`
             CREATE INDEX "idx_user_identity_id" ON "user" ("identityId")
@@ -322,7 +322,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
                 "externalId" character varying NOT NULL,
                 "type" character varying NOT NULL,
                 "status" character varying NOT NULL DEFAULT 'ACTIVE',
-                "platformId" character varying NOT NULL,
+                "tenantId" character varying NOT NULL,
                 "connectorName" character varying NOT NULL,
                 "ownerId" character varying,
                 "workspaceIds" character varying array NOT NULL,
@@ -335,7 +335,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             )
         `)
         await queryRunner.query(`
-            CREATE INDEX "idx_connection_platform_id_and_external_id" ON "connection" ("platformId", "externalId")
+            CREATE INDEX "idx_connection_tenant_id_and_external_id" ON "connection" ("tenantId", "externalId")
         `)
         await queryRunner.query(`
             CREATE INDEX "idx_connection_owner_id" ON "connection" ("ownerId")
@@ -347,7 +347,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
                 "updated" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
                 "name" character varying NOT NULL,
                 "workspaceId" character varying NOT NULL,
-                "platformId" character varying NOT NULL,
+                "tenantId" character varying NOT NULL,
                 "ownerId" character varying,
                 "value" jsonb NOT NULL,
                 "metadata" jsonb,
@@ -390,7 +390,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
                 "logoUrl" character varying NOT NULL,
                 "workspaceUsage" integer NOT NULL DEFAULT '0',
                 "description" character varying,
-                "platformId" character varying,
+                "tenantId" character varying,
                 "version" character varying COLLATE "en_natural" NOT NULL,
                 "minimumSupportedRelease" character varying COLLATE "en_natural" NOT NULL,
                 "maximumSupportedRelease" character varying COLLATE "en_natural" NOT NULL,
@@ -408,10 +408,10 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             )
         `)
         await queryRunner.query(`
-            CREATE UNIQUE INDEX "idx_connector_metadata_name_platform_id_version" ON "connector_metadata" ("name", "version", "platformId")
+            CREATE UNIQUE INDEX "idx_connector_metadata_name_tenant_id_version" ON "connector_metadata" ("name", "version", "tenantId")
         `)
         await queryRunner.query(`
-            CREATE TABLE "platform" (
+            CREATE TABLE "tenant" (
                 "id" character varying(21) NOT NULL,
                 "created" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
                 "updated" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -438,7 +438,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             )
         `)
         await queryRunner.query(`
-            CREATE UNIQUE INDEX "idx_platform_sso_domain" ON "platform" ("ssoDomain")
+            CREATE UNIQUE INDEX "idx_tenant_sso_domain" ON "tenant" ("ssoDomain")
             WHERE "ssoDomain" IS NOT NULL
         `)
         await queryRunner.query(`
@@ -446,9 +446,9 @@ export class InitialSchema1787465061531 implements MigrationInterface {
                 "id" character varying(21) NOT NULL,
                 "created" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
                 "updated" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-                "platformId" character varying NOT NULL,
+                "tenantId" character varying NOT NULL,
                 "type" character varying NOT NULL,
-                "platformRole" character varying,
+                "tenantRole" character varying,
                 "email" character varying NOT NULL,
                 "workspaceId" character varying,
                 "status" character varying NOT NULL,
@@ -457,7 +457,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             )
         `)
         await queryRunner.query(`
-            CREATE UNIQUE INDEX "idx_user_invitation_email_platform_workspace" ON "user_invitation" ("email", "platformId", "workspaceId")
+            CREATE UNIQUE INDEX "idx_user_invitation_email_tenant_workspace" ON "user_invitation" ("email", "tenantId", "workspaceId")
         `)
         await queryRunner.query(`
             CREATE TABLE "user_identity" (
@@ -474,7 +474,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
                 "tokenVersion" character varying,
                 "provider" character varying NOT NULL,
                 "imageUrl" character varying,
-                "lastLoggedInPlatformId" character varying(21),
+                "lastLoggedInTenantId" character varying(21),
                 CONSTRAINT "UQ_7ad44f9fcbfc95e0a8436bbb029" UNIQUE ("email"),
                 CONSTRAINT "PK_87b5856b206b5b77e6e2fa29508" PRIMARY KEY ("id")
             )
@@ -569,7 +569,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
                 "summary" character varying NOT NULL,
                 "description" character varying NOT NULL,
                 "type" character varying NOT NULL,
-                "platformId" character varying,
+                "tenantId" character varying,
                 "status" character varying NOT NULL,
                 "workflows" jsonb,
                 "tables" jsonb,
@@ -589,7 +589,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             CREATE INDEX "idx_template_categories" ON "template" ("categories")
         `)
         await queryRunner.query(`
-            CREATE INDEX "idx_template_platform_id" ON "template" ("platformId")
+            CREATE INDEX "idx_template_tenant_id" ON "template" ("tenantId")
         `)
         await queryRunner.query(`
             ALTER TABLE "trigger_event"
@@ -662,7 +662,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
         `)
         await queryRunner.query(`
             ALTER TABLE "workspace"
-            ADD CONSTRAINT "fk_workspace_platform_id" FOREIGN KEY ("platformId") REFERENCES "platform"("id") ON DELETE RESTRICT ON UPDATE RESTRICT
+            ADD CONSTRAINT "fk_workspace_tenant_id" FOREIGN KEY ("tenantId") REFERENCES "tenant"("id") ON DELETE RESTRICT ON UPDATE RESTRICT
         `)
         await queryRunner.query(`
             ALTER TABLE "user"
@@ -687,8 +687,8 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             ADD CONSTRAINT "fk_connector_metadata_file" FOREIGN KEY ("archiveId") REFERENCES "file"("id") ON DELETE RESTRICT ON UPDATE RESTRICT
         `)
         await queryRunner.query(`
-            ALTER TABLE "platform"
-            ADD CONSTRAINT "fk_platform_user" FOREIGN KEY ("ownerId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE RESTRICT
+            ALTER TABLE "tenant"
+            ADD CONSTRAINT "fk_tenant_user" FOREIGN KEY ("ownerId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE RESTRICT
         `)
         await queryRunner.query(`
             ALTER TABLE "user_invitation"
@@ -712,7 +712,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
         `)
         await queryRunner.query(`
             ALTER TABLE "template"
-            ADD CONSTRAINT "fk_template_platform_id" FOREIGN KEY ("platformId") REFERENCES "platform"("id") ON DELETE CASCADE ON UPDATE NO ACTION
+            ADD CONSTRAINT "fk_template_tenant_id" FOREIGN KEY ("tenantId") REFERENCES "tenant"("id") ON DELETE CASCADE ON UPDATE NO ACTION
         `)
     }
 
@@ -721,7 +721,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             DROP COLLATION IF EXISTS en_natural
         `)
         await queryRunner.query(`
-            ALTER TABLE "template" DROP CONSTRAINT "fk_template_platform_id"
+            ALTER TABLE "template" DROP CONSTRAINT "fk_template_tenant_id"
         `)
         await queryRunner.query(`
             ALTER TABLE "otp" DROP CONSTRAINT "fk_otp_identity_id"
@@ -739,7 +739,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             ALTER TABLE "user_invitation" DROP CONSTRAINT "fk_user_invitation_workspace_id"
         `)
         await queryRunner.query(`
-            ALTER TABLE "platform" DROP CONSTRAINT "fk_platform_user"
+            ALTER TABLE "tenant" DROP CONSTRAINT "fk_tenant_user"
         `)
         await queryRunner.query(`
             ALTER TABLE "connector_metadata" DROP CONSTRAINT "fk_connector_metadata_file"
@@ -757,7 +757,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             ALTER TABLE "user" DROP CONSTRAINT "FK_dea97e26c765a4cdb575957a146"
         `)
         await queryRunner.query(`
-            ALTER TABLE "workspace" DROP CONSTRAINT "fk_workspace_platform_id"
+            ALTER TABLE "workspace" DROP CONSTRAINT "fk_workspace_tenant_id"
         `)
         await queryRunner.query(`
             ALTER TABLE "workspace" DROP CONSTRAINT "fk_workspace_owner_id"
@@ -808,7 +808,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             ALTER TABLE "trigger_event" DROP CONSTRAINT "fk_trigger_event_workspace_id"
         `)
         await queryRunner.query(`
-            DROP INDEX "public"."idx_template_platform_id"
+            DROP INDEX "public"."idx_template_tenant_id"
         `)
         await queryRunner.query(`
             DROP INDEX "public"."idx_template_categories"
@@ -859,19 +859,19 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             DROP TABLE "user_identity"
         `)
         await queryRunner.query(`
-            DROP INDEX "public"."idx_user_invitation_email_platform_workspace"
+            DROP INDEX "public"."idx_user_invitation_email_tenant_workspace"
         `)
         await queryRunner.query(`
             DROP TABLE "user_invitation"
         `)
         await queryRunner.query(`
-            DROP INDEX "public"."idx_platform_sso_domain"
+            DROP INDEX "public"."idx_tenant_sso_domain"
         `)
         await queryRunner.query(`
-            DROP TABLE "platform"
+            DROP TABLE "tenant"
         `)
         await queryRunner.query(`
-            DROP INDEX "public"."idx_connector_metadata_name_platform_id_version"
+            DROP INDEX "public"."idx_connector_metadata_name_tenant_id_version"
         `)
         await queryRunner.query(`
             DROP TABLE "connector_metadata"
@@ -898,7 +898,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             DROP INDEX "public"."idx_connection_owner_id"
         `)
         await queryRunner.query(`
-            DROP INDEX "public"."idx_connection_platform_id_and_external_id"
+            DROP INDEX "public"."idx_connection_tenant_id_and_external_id"
         `)
         await queryRunner.query(`
             DROP TABLE "connection"
@@ -907,10 +907,10 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             DROP INDEX "public"."idx_user_identity_id"
         `)
         await queryRunner.query(`
-            DROP INDEX "public"."idx_user_platform_id_external_id"
+            DROP INDEX "public"."idx_user_tenant_id_external_id"
         `)
         await queryRunner.query(`
-            DROP INDEX "public"."idx_user_platform_id_email"
+            DROP INDEX "public"."idx_user_tenant_id_email"
         `)
         await queryRunner.query(`
             DROP TABLE "user"
@@ -925,10 +925,10 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             DROP INDEX "public"."idx_workspace_worker_group"
         `)
         await queryRunner.query(`
-            DROP INDEX "public"."idx_workspace_platform_id"
+            DROP INDEX "public"."idx_workspace_tenant_id"
         `)
         await queryRunner.query(`
-            DROP INDEX "public"."idx_workspace_platform_id_external_id"
+            DROP INDEX "public"."idx_workspace_tenant_id_external_id"
         `)
         await queryRunner.query(`
             DROP INDEX "public"."idx_workspace_owner_id"
@@ -1000,7 +1000,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             DROP TABLE "flag"
         `)
         await queryRunner.query(`
-            DROP INDEX "public"."idx_file_platform_id_null_workspace"
+            DROP INDEX "public"."idx_file_tenant_id_null_workspace"
         `)
         await queryRunner.query(`
             DROP INDEX "public"."idx_file_type_created_desc"

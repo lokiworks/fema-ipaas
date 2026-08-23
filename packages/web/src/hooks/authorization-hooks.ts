@@ -1,5 +1,5 @@
 import { Permission } from '@fema/core-utils';
-import { PlatformRole } from '@fema/shared';
+import { TenantRole } from '@fema/shared';
 
 import { userHooks } from '@/hooks/user-hooks';
 
@@ -11,7 +11,7 @@ export const useAuthorization = () => {
   return { checkAccess, isFetchingWorkspaceRole: false };
 };
 
-export const useIsPlatformAdmin = () => {
-  const platformRole = userHooks.getCurrentUserPlatformRole();
-  return platformRole === PlatformRole.ADMIN;
+export const useIsTenantAdmin = () => {
+  const tenantRole = userHooks.getCurrentUserTenantRole();
+  return tenantRole === TenantRole.ADMIN;
 };

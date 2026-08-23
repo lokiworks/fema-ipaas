@@ -9,7 +9,7 @@ import {
   workspaceCollectionUtils,
   getWorkspaceName,
 } from '@/features/workspaces';
-import { useIsPlatformAdmin } from '@/hooks/authorization-hooks';
+import { useIsTenantAdmin } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 
 import { getAccessHistory } from './access-history';
@@ -40,7 +40,7 @@ function getTimePeriod(
 
 export function useGlobalSearchResults(query: string, open: boolean) {
   const workspaceId = authenticationSession.getWorkspaceId() ?? '';
-  const isPlatformAdmin = useIsPlatformAdmin();
+  const isTenantAdmin = useIsTenantAdmin();
   const { embedState } = useEmbedding();
   const hideTables = embedState.hideTables;
   const { data: allWorkspaces = [] } = workspaceCollectionUtils.useAll();
@@ -88,7 +88,7 @@ export function useGlobalSearchResults(query: string, open: boolean) {
 
   const matchedPages = STATIC_PAGES.filter(
     (p) =>
-      (!p.requiresPlatformAdmin || isPlatformAdmin) &&
+      (!p.requiresTenantAdmin || isTenantAdmin) &&
       (!hasQuery || p.label.toLowerCase().includes(query.toLowerCase())),
   ).slice(0, SEARCH_LIMIT);
 

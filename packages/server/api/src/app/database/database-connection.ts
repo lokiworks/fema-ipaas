@@ -11,9 +11,9 @@ import { FileEntity } from '../file/file.entity'
 import { FlagEntity } from '../flags/flag.entity'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
-import { PlatformEntity } from '../platform/platform.entity'
 import { StoreEntryEntity } from '../store-entry/store-entry-entity'
 import { TemplateEntity } from '../template/template.entity'
+import { TenantEntity } from '../tenant/tenant.entity'
 import { AppEventRoutingEntity } from '../trigger/app-event-routing/app-event-routing.entity'
 import { TriggerEventEntity } from '../trigger/trigger-events/trigger-event.entity'
 import { TriggerSourceEntity } from '../trigger/trigger-source/trigger-source-entity'
@@ -48,7 +48,7 @@ function getEntities(): EntitySchema<unknown>[] {
         VariableEntity,
         FolderEntity,
         ConnectorMetadataEntity,
-        PlatformEntity,
+        TenantEntity,
         UserInvitationEntity,
         UserIdentityEntity,
         TriggerSourceEntity,

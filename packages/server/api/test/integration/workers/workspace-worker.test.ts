@@ -18,13 +18,13 @@ afterAll(async () => {
 describe('Workspace Worker API', () => {
     describe('Get worker workspace endpoint', () => {
         it('should return worker workspace with correct id', async () => {
-            const { mockWorkspace, mockPlatform } = await mockAndSaveBasicSetup()
+            const { mockWorkspace, mockTenant } = await mockAndSaveBasicSetup()
 
             const mockToken = await generateMockToken({
                 type: PrincipalType.ENGINE,
                 id: apId(),
-                platform: {
-                    id: mockPlatform.id,
+                tenant: {
+                    id: mockTenant.id,
                 },
                 workspaceId: mockWorkspace.id,
             })

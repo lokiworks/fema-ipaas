@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { chmod, mkdir, rm, stat, utimes, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
-import { PlatformError, apId, ApId, ErrorCode } from '@fema/core-utils'
+import { ApplicationError, apId, ApId, ErrorCode } from '@fema/core-utils'
 import { ApLogger } from '@fema/server-utils'
 import { afterEach, describe, expect, it } from 'vitest'
 import { actionRunCache, ACTION_RUN_CACHE_ACTIVE_WINDOW_MS, ACTION_RUN_CACHE_MAX_DIRS } from '../../../src/lib/cache/action-run-cache'
@@ -75,7 +75,7 @@ async function seedOldestFirst({ basePath, total, ageOffsetMs = ACTION_RUN_CACHE
     return Promise.all(
         Array.from({ length: total }, (_, index) => seedStepDir({
             basePath,
-            namespace: actionRunCache.namespace({ platformId: apId(), sourceHash: `${label}${index.toString(16)}`.padStart(64, '0') }),
+            namespace: actionRunCache.namespace({ tenantId: apId(), sourceHash: `${label}${index.toString(16)}`.padStart(64, '0') }),
             ageMs: ageOffsetMs + (total - index) * SECOND_MS,
         })),
     )
@@ -114,32 +114,32 @@ afterEach(async () => {
 })
 
 describe('actionRunCache.namespace', () => {
-    it('prefixes the platform so two platforms never share a directory for identical source', () => {
+    it('prefixes the tenant so two tenants never share a directory for identical source', () => {
         const sourceHash = 'a'.repeat(64)
-        const platformA = apId()
-        const platformB = apId()
+        const tenantA = apId()
+        const tenantB = apId()
 
-        const nameA = actionRunCache.namespace({ platformId: platformA, sourceHash })
-        const nameB = actionRunCache.namespace({ platformId: platformB, sourceHash })
+        const nameA = actionRunCache.namespace({ tenantId: tenantA, sourceHash })
+        const nameB = actionRunCache.namespace({ tenantId: tenantB, sourceHash })
 
-        expect(nameA).toBe(`${ACTION_RUN_CODE_DIR}/${platformA}_${sourceHash}`)
+        expect(nameA).toBe(`${ACTION_RUN_CODE_DIR}/${tenantA}_${sourceHash}`)
         expect(nameA).not.toBe(nameB)
         expect(actionRunCache.isActionRunNamespace(nameA)).toBe(true)
     })
 
-    it('refuses to build a namespace without a platformId', () => {
+    it('refuses to build a namespace without a tenantId', () => {
         let thrown: unknown = null
         try {
-            actionRunCache.namespace({ platformId: '', sourceHash: 'a'.repeat(64) })
+            actionRunCache.namespace({ tenantId: '', sourceHash: 'a'.repeat(64) })
         }
         catch (error) {
             thrown = error
         }
 
-        expect(thrown).toBeInstanceOf(PlatformError)
-        if (thrown instanceof PlatformError) {
+        expect(thrown).toBeInstanceOf(ApplicationError)
+        if (thrown instanceof ApplicationError) {
             expect(thrown.error.code).toBe(ErrorCode.VALIDATION)
-            expect(thrown.error.params).toMatchObject({ message: expect.stringContaining('platformId') })
+            expect(thrown.error.params).toMatchObject({ message: expect.stringContaining('tenantId') })
         }
     })
 })
@@ -162,12 +162,12 @@ describe('actionRunCache.sweep', () => {
         const workflowVersionDir = await seedStepDir({ basePath, namespace: apId(), ageMs: 90 * 24 * HOUR_MS })
         const freshDir = await seedStepDir({
             basePath,
-            namespace: actionRunCache.namespace({ platformId: apId(), sourceHash: '1'.repeat(64) }),
+            namespace: actionRunCache.namespace({ tenantId: apId(), sourceHash: '1'.repeat(64) }),
             ageMs: HOUR_MS,
         })
         const expiredDir = await seedStepDir({
             basePath,
-            namespace: actionRunCache.namespace({ platformId: apId(), sourceHash: '2'.repeat(64) }),
+            namespace: actionRunCache.namespace({ tenantId: apId(), sourceHash: '2'.repeat(64) }),
             ageMs: 3 * HOUR_MS,
         })
 
@@ -188,7 +188,7 @@ describe('actionRunCache.sweep', () => {
         await writeFile(strayFile, 'not a cache dir', 'utf8')
         await seedStepDir({
             basePath,
-            namespace: actionRunCache.namespace({ platformId: apId(), sourceHash: 'e'.repeat(64) }),
+            namespace: actionRunCache.namespace({ tenantId: apId(), sourceHash: 'e'.repeat(64) }),
             ageMs: ancient,
         })
 
@@ -250,7 +250,7 @@ describe('actionRunCache.sweep', () => {
 
         const freshDir = await seedStepDir({
             basePath,
-            namespace: actionRunCache.namespace({ platformId: apId(), sourceHash: '7'.repeat(64) }),
+            namespace: actionRunCache.namespace({ tenantId: apId(), sourceHash: '7'.repeat(64) }),
         })
 
         await actionRunCache.sweep({ basePath, log: noopLog })
@@ -294,7 +294,7 @@ describe('actionRunCache.sweep observability', () => {
         const basePath = uniqueBasePath()
         await seedStepDir({
             basePath,
-            namespace: actionRunCache.namespace({ platformId: apId(), sourceHash: '3'.repeat(64) }),
+            namespace: actionRunCache.namespace({ tenantId: apId(), sourceHash: '3'.repeat(64) }),
         })
         const recording = createRecordingLog()
 
@@ -309,12 +309,12 @@ describe('actionRunCache.sweep observability', () => {
         const basePath = uniqueBasePath()
         await seedStepDir({
             basePath,
-            namespace: actionRunCache.namespace({ platformId: apId(), sourceHash: '4'.repeat(64) }),
+            namespace: actionRunCache.namespace({ tenantId: apId(), sourceHash: '4'.repeat(64) }),
             ageMs: 3 * HOUR_MS,
         })
         await seedStepDir({
             basePath,
-            namespace: actionRunCache.namespace({ platformId: apId(), sourceHash: '5'.repeat(64) }),
+            namespace: actionRunCache.namespace({ tenantId: apId(), sourceHash: '5'.repeat(64) }),
         })
         const recording = createRecordingLog()
 
@@ -335,7 +335,7 @@ describe('actionRunCache.sweep observability', () => {
         const actionRunsPath = cacheUtils(basePath).getActionRunCodeCachePath()
         const expiredDir = await seedStepDir({
             basePath,
-            namespace: actionRunCache.namespace({ platformId: apId(), sourceHash: '6'.repeat(64) }),
+            namespace: actionRunCache.namespace({ tenantId: apId(), sourceHash: '6'.repeat(64) }),
             ageMs: 3 * HOUR_MS,
         })
         const recording = createRecordingLog()
@@ -357,7 +357,7 @@ describe('actionRunCache.sweep observability', () => {
 describe('actionRunCache.touch', () => {
     it('advances the directory mtime so a reused build survives the next sweep', async () => {
         const basePath = uniqueBasePath()
-        const namespace = actionRunCache.namespace({ platformId: apId(), sourceHash: '8'.repeat(64) })
+        const namespace = actionRunCache.namespace({ tenantId: apId(), sourceHash: '8'.repeat(64) })
         const dirPath = await seedStepDir({ basePath, namespace, ageMs: 3 * HOUR_MS })
 
         await actionRunCache.touch(dirPath)
@@ -376,7 +376,7 @@ describe('actionRunCache.touch', () => {
 describe('actionRunCache.settlePendingRemoval', () => {
     it('reports nothing pending for a directory no sweep is touching', async () => {
         const basePath = uniqueBasePath()
-        const namespace = actionRunCache.namespace({ platformId: apId(), sourceHash: '9'.repeat(64) })
+        const namespace = actionRunCache.namespace({ tenantId: apId(), sourceHash: '9'.repeat(64) })
         const dirPath = await seedStepDir({ basePath, namespace })
 
         await expect(actionRunCache.settlePendingRemoval(dirPath)).resolves.toBe(false)
@@ -384,7 +384,7 @@ describe('actionRunCache.settlePendingRemoval', () => {
 
     it('waits out a removal that is already past its mtime re-check, so a provision can rebuild instead of running deleted code', async () => {
         const basePath = uniqueBasePath()
-        const namespace = actionRunCache.namespace({ platformId: apId(), sourceHash: 'b'.repeat(64) })
+        const namespace = actionRunCache.namespace({ tenantId: apId(), sourceHash: 'b'.repeat(64) })
         const dirPath = await seedStepDir({ basePath, namespace, ageMs: 3 * HOUR_MS, extraFiles: 1000 })
 
         const sweeping = actionRunCache.sweep({ basePath, log: noopLog })

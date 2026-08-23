@@ -8,10 +8,10 @@ const DELETE_LEGACY_REDIS_KEYS_KEY = 'delete_legacy_redis_keys_v2'
 
 const LEGACY_PATTERNS = [
     'tasks:workspace:*',
-    'tasks:platform:*',
+    'tasks:tenant:*',
     'workspace-usage:*',
     'workspace-*-usage-tasks:*',
-    'platform:*:worker_group_id',
+    'tenant:*:worker_group_id',
 ]
 
 export const deleteLegacyRedisKeys = (log: FastifyBaseLogger) => ({

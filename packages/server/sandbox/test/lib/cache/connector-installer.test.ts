@@ -44,7 +44,7 @@ function makeArchiveConnector(name: string, version = '1.0.0'): PrivateConnector
         connectorName: name,
         connectorVersion: version,
         archiveId: randomUUID(),
-        platformId: 'platform-1',
+        tenantId: 'tenant-1',
     }
 }
 

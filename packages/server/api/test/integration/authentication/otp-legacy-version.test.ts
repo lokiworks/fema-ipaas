@@ -65,7 +65,7 @@ describe('one-time codes written before hashing', () => {
         const identity = createMockUserIdentity({ email, verified: true })
         await databaseConnection().getRepository('user_identity').save(identity)
 
-        await otpService(app!.log).createAndSend({ platformId: null, email, type: OtpType.EMAIL_LOGIN })
+        await otpService(app!.log).createAndSend({ tenantId: null, email, type: OtpType.EMAIL_LOGIN })
 
         const row = await databaseConnection().getRepository('otp').findOneBy({ identityId: identity.id })
         expect(row?.version).toBe(1)

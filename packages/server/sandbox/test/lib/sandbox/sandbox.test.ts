@@ -2,7 +2,7 @@ import { ChildProcess } from 'child_process'
 import { EventEmitter } from 'node:events'
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { io as ioClient, type Socket as ClientSocket } from 'socket.io-client'
-import { PlatformError, ErrorCode } from '@fema/core-utils'
+import { ApplicationError, ErrorCode } from '@fema/core-utils'
 import { EngineResponseStatus } from '@fema/shared'
 import { createSandbox } from '../../../src/lib/sandbox/sandbox'
 import { Sandbox, SandboxLogger, SandboxMount, SandboxProcessMaker } from '../../../src/lib/sandbox/types'
@@ -19,7 +19,7 @@ vi.mock('../../../src/lib/cache/cache-paths', () => ({
     cacheUtils: vi.fn(() => ({
         getGlobalCachePathLatestVersion: vi.fn(() => '/tmp/test-cache'),
         getGlobalCodeCachePath: vi.fn(() => '/tmp/test-cache/codes'),
-        getCustomConnectorsPath: vi.fn((platformId: string) => `/tmp/test-cache/custom_connectors/${platformId}`),
+        getCustomConnectorsPath: vi.fn((tenantId: string) => `/tmp/test-cache/custom_connectors/${tenantId}`),
     })),
 }))
 
@@ -77,7 +77,7 @@ const defaultOptions = {
 
 const startOptions = {
     workflowVersionId: 'fv-1',
-    platformId: 'plat-1',
+    tenantId: 'plat-1',
     mounts: [],
 }
 
@@ -127,12 +127,12 @@ describe('createSandbox', () => {
             )
         })
 
-        it('does not add custom connector mount when platformId is empty', async () => {
+        it('does not add custom connector mount when tenantId is empty', async () => {
             const log = createMockLogger()
             testPM = createTestProcessMaker()
             sandbox = createSandbox(log, 'sb-no-mount', defaultOptions, testPM.maker)
 
-            await sandbox.start({ workflowVersionId: 'fv-1', platformId: '', mounts: [] })
+            await sandbox.start({ workflowVersionId: 'fv-1', tenantId: '', mounts: [] })
 
             const createCall = (testPM.maker.create as ReturnType<typeof vi.fn>).mock.calls[0][0]
             const customConnectorMount = createCall.mounts.find((m: { sandboxPath: string }) => m.sandboxPath === '/root/custom_connectors')
@@ -145,7 +145,7 @@ describe('createSandbox', () => {
             testPM = createTestProcessMaker()
             sandbox = createSandbox(log, 'sb-scoped', { ...defaultOptions, reusable: false }, testPM.maker)
 
-            await sandbox.start({ workflowVersionId: 'fv-1', platformId: '', mounts: [] })
+            await sandbox.start({ workflowVersionId: 'fv-1', tenantId: '', mounts: [] })
 
             const createCall = (testPM.maker.create as ReturnType<typeof vi.fn>).mock.calls[0][0]
             const codeMount = createCall.mounts.find((m: { sandboxPath: string }) => m.sandboxPath.startsWith('/root/codes'))
@@ -161,7 +161,7 @@ describe('createSandbox', () => {
             testPM = createTestProcessMaker()
             sandbox = createSandbox(log, 'sb-action-run', { ...defaultOptions, reusable: false }, testPM.maker)
 
-            await sandbox.start({ workflowVersionId: 'action-runs/plat-xyz_deadbeef', platformId: '', mounts: [] })
+            await sandbox.start({ workflowVersionId: 'action-runs/plat-xyz_deadbeef', tenantId: '', mounts: [] })
 
             const createCall = (testPM.maker.create as ReturnType<typeof vi.fn>).mock.calls[0][0]
             const codeMount = createCall.mounts.find((m: { sandboxPath: string }) => m.sandboxPath.startsWith('/root/codes'))
@@ -177,7 +177,7 @@ describe('createSandbox', () => {
             testPM = createTestProcessMaker()
             sandbox = createSandbox(log, 'sb-reuse', { ...defaultOptions, reusable: true }, testPM.maker)
 
-            await sandbox.start({ workflowVersionId: 'fv-1', platformId: '', mounts: [] })
+            await sandbox.start({ workflowVersionId: 'fv-1', tenantId: '', mounts: [] })
 
             const createCall = (testPM.maker.create as ReturnType<typeof vi.fn>).mock.calls[0][0]
             const codeMount = createCall.mounts.find((m: { sandboxPath: string }) => m.sandboxPath.startsWith('/root/codes'))
@@ -193,19 +193,19 @@ describe('createSandbox', () => {
             testPM = createTestProcessMaker()
             sandbox = createSandbox(log, 'sb-no-fv', { ...defaultOptions, reusable: false }, testPM.maker)
 
-            await sandbox.start({ workflowVersionId: undefined, platformId: '', mounts: [] })
+            await sandbox.start({ workflowVersionId: undefined, tenantId: '', mounts: [] })
 
             const createCall = (testPM.maker.create as ReturnType<typeof vi.fn>).mock.calls[0][0]
             const codeMount = createCall.mounts.find((m: { sandboxPath: string }) => m.sandboxPath.startsWith('/root/codes'))
             expect(codeMount).toBeUndefined()
         })
 
-        it('resolves custom_connectors hostPath to cache/custom_connectors/<platformId>', async () => {
+        it('resolves custom_connectors hostPath to cache/custom_connectors/<tenantId>', async () => {
             const log = createMockLogger()
             testPM = createTestProcessMaker()
             sandbox = createSandbox(log, 'sb-plat', defaultOptions, testPM.maker)
 
-            await sandbox.start({ workflowVersionId: 'fv-1', platformId: 'plat-xyz', mounts: [] })
+            await sandbox.start({ workflowVersionId: 'fv-1', tenantId: 'plat-xyz', mounts: [] })
 
             const createCall = (testPM.maker.create as ReturnType<typeof vi.fn>).mock.calls[0][0]
             const customConnectorMount = createCall.mounts.find((m: SandboxMount) => m.sandboxPath === '/root/custom_connectors')
@@ -236,13 +236,13 @@ describe('createSandbox', () => {
 
             let caughtErr: unknown
             try {
-                await sandbox.start({ workflowVersionId, platformId: '', mounts: [] })
+                await sandbox.start({ workflowVersionId, tenantId: '', mounts: [] })
             }
             catch (err) {
                 caughtErr = err
             }
             expect(caughtErr).toBeDefined()
-            expect((caughtErr as PlatformError).error.code).toBe(ErrorCode.VALIDATION)
+            expect((caughtErr as ApplicationError).error.code).toBe(ErrorCode.VALIDATION)
             expect(testPM.maker.create).not.toHaveBeenCalled()
         })
 
@@ -253,20 +253,20 @@ describe('createSandbox', () => {
             ['plat/sub'],
             ['plat\\x'],
             ['plat\0null'],
-        ])('rejects path traversal in platformId: %s', async (platformId) => {
+        ])('rejects path traversal in tenantId: %s', async (tenantId) => {
             const log = createMockLogger()
             testPM = createTestProcessMaker()
             sandbox = createSandbox(log, 'sb-plat-trav', defaultOptions, testPM.maker)
 
             let caughtErr: unknown
             try {
-                await sandbox.start({ workflowVersionId: 'fv-1', platformId, mounts: [] })
+                await sandbox.start({ workflowVersionId: 'fv-1', tenantId, mounts: [] })
             }
             catch (err) {
                 caughtErr = err
             }
             expect(caughtErr).toBeDefined()
-            expect((caughtErr as PlatformError).error.code).toBe(ErrorCode.VALIDATION)
+            expect((caughtErr as ApplicationError).error.code).toBe(ErrorCode.VALIDATION)
             expect(testPM.maker.create).not.toHaveBeenCalled()
         })
 
@@ -278,7 +278,7 @@ describe('createSandbox', () => {
             const maliciousMount: SandboxMount = { hostPath: '/host/evil', sandboxPath: '/root/../etc' }
 
             await expect(
-                sandbox.start({ workflowVersionId: 'fv-1', platformId: '', mounts: [maliciousMount] }),
+                sandbox.start({ workflowVersionId: 'fv-1', tenantId: '', mounts: [maliciousMount] }),
             ).rejects.toThrow()
             expect(testPM.maker.create).not.toHaveBeenCalled()
         })
@@ -290,7 +290,7 @@ describe('createSandbox', () => {
             sandbox = createSandbox(log, 'sb-base-escape', { ...defaultOptions, baseMounts }, testPM.maker)
 
             await expect(
-                sandbox.start({ workflowVersionId: 'fv-1', platformId: '', mounts: [] }),
+                sandbox.start({ workflowVersionId: 'fv-1', tenantId: '', mounts: [] }),
             ).rejects.toThrow()
             expect(testPM.maker.create).not.toHaveBeenCalled()
         })
@@ -302,7 +302,7 @@ describe('createSandbox', () => {
             sandbox = createSandbox(log, 'sb-order', { ...defaultOptions, baseMounts }, testPM.maker)
 
             const callerMount: SandboxMount = { hostPath: '/host/x', sandboxPath: '/root/x' }
-            await sandbox.start({ workflowVersionId: 'fv-1', platformId: 'plat-1', mounts: [callerMount] })
+            await sandbox.start({ workflowVersionId: 'fv-1', tenantId: 'plat-1', mounts: [callerMount] })
 
             const createCall = (testPM.maker.create as ReturnType<typeof vi.fn>).mock.calls[0][0]
             expect(createCall.mounts).toEqual([
@@ -329,12 +329,12 @@ describe('createSandbox', () => {
             }
         })
 
-        it('does not inject FEMA_CUSTOM_CONNECTORS_PATHS when platformId is undefined', async () => {
+        it('does not inject FEMA_CUSTOM_CONNECTORS_PATHS when tenantId is undefined', async () => {
             const log = createMockLogger()
             testPM = createTestProcessMaker()
             sandbox = createSandbox(log, 'sb-no-plat-env', defaultOptions, testPM.maker)
 
-            await sandbox.start({ workflowVersionId: 'fv-1', platformId: '', mounts: [] })
+            await sandbox.start({ workflowVersionId: 'fv-1', tenantId: '', mounts: [] })
 
             const createCall = (testPM.maker.create as ReturnType<typeof vi.fn>).mock.calls[0][0]
             expect(createCall.env.FEMA_CUSTOM_CONNECTORS_PATHS).toBeUndefined()
@@ -357,7 +357,7 @@ describe('createSandbox', () => {
                 await sandboxB.start(startOptions)
             }
             catch (err) {
-                code = (err as PlatformError).error.code
+                code = (err as ApplicationError).error.code
             }
             // A catchable error, NOT an uncaught crash (the test process is still running).
             expect(code).toBe(ErrorCode.SANDBOX_INTERNAL_ERROR)
@@ -597,7 +597,7 @@ describe('createSandbox', () => {
                 await executePromise
             }
             catch (err) {
-                expect((err as PlatformError).error.code).toBe(ErrorCode.SANDBOX_EXECUTION_TIMEOUT)
+                expect((err as ApplicationError).error.code).toBe(ErrorCode.SANDBOX_EXECUTION_TIMEOUT)
             }
         })
 
@@ -621,7 +621,7 @@ describe('createSandbox', () => {
                 await executePromise
             }
             catch (err) {
-                expect((err as PlatformError).error.code).toBe(ErrorCode.SANDBOX_MEMORY_ISSUE)
+                expect((err as ApplicationError).error.code).toBe(ErrorCode.SANDBOX_MEMORY_ISSUE)
             }
         })
 
@@ -648,7 +648,7 @@ describe('createSandbox', () => {
                 await executePromise
             }
             catch (err) {
-                expect((err as PlatformError).error.code).toBe(ErrorCode.SANDBOX_LOG_SIZE_EXCEEDED)
+                expect((err as ApplicationError).error.code).toBe(ErrorCode.SANDBOX_LOG_SIZE_EXCEEDED)
             }
         })
 
@@ -672,7 +672,7 @@ describe('createSandbox', () => {
                 await executePromise
             }
             catch (err) {
-                expect((err as PlatformError).error.code).toBe(ErrorCode.SANDBOX_INTERNAL_ERROR)
+                expect((err as ApplicationError).error.code).toBe(ErrorCode.SANDBOX_INTERNAL_ERROR)
             }
         })
 
@@ -698,9 +698,9 @@ describe('createSandbox', () => {
                 await executePromise
             }
             catch (err) {
-                const platformError = err as PlatformError
-                expect(platformError.error.code).toBe(ErrorCode.SANDBOX_INTERNAL_ERROR)
-                expect((platformError.error.params as { standardError: string }).standardError).toContain('Boom inside engine trigger hook')
+                const applicationError = err as ApplicationError
+                expect(applicationError.error.code).toBe(ErrorCode.SANDBOX_INTERNAL_ERROR)
+                expect((applicationError.error.params as { standardError: string }).standardError).toContain('Boom inside engine trigger hook')
             }
         })
 
@@ -725,7 +725,7 @@ describe('createSandbox', () => {
                 await executePromise
             }
             catch (err) {
-                expect((err as PlatformError).error.code).toBe(ErrorCode.SANDBOX_MEMORY_ISSUE)
+                expect((err as ApplicationError).error.code).toBe(ErrorCode.SANDBOX_MEMORY_ISSUE)
             }
         })
 
@@ -750,7 +750,7 @@ describe('createSandbox', () => {
                 await executePromise
             }
             catch (err) {
-                expect((err as PlatformError).error.code).toBe(ErrorCode.SANDBOX_MEMORY_ISSUE)
+                expect((err as ApplicationError).error.code).toBe(ErrorCode.SANDBOX_MEMORY_ISSUE)
             }
         })
 
@@ -779,8 +779,8 @@ describe('createSandbox', () => {
                 await executePromise
             }
             catch (err) {
-                expect((err as PlatformError).error.code).not.toBe(ErrorCode.SANDBOX_MEMORY_ISSUE)
-                expect((err as PlatformError).error.code).toBe(ErrorCode.SANDBOX_INTERNAL_ERROR)
+                expect((err as ApplicationError).error.code).not.toBe(ErrorCode.SANDBOX_MEMORY_ISSUE)
+                expect((err as ApplicationError).error.code).toBe(ErrorCode.SANDBOX_INTERNAL_ERROR)
             }
         })
 
@@ -808,7 +808,7 @@ describe('createSandbox', () => {
                 await executePromise
             }
             catch (err) {
-                expect((err as PlatformError).error.code).toBe(ErrorCode.SANDBOX_MEMORY_ISSUE)
+                expect((err as ApplicationError).error.code).toBe(ErrorCode.SANDBOX_MEMORY_ISSUE)
             }
         })
 

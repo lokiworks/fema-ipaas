@@ -114,8 +114,8 @@ export const runsMetadataQueue = (log: FastifyBaseLogger) => ({
                                 await distributedStore.deleteKeyIfFieldValueMatches(key, 'requestId', runMetadata.requestId)
                             }
                             if (!isNil(runMetadata.finishTime)) {
-                                const platformId = await workspaceService(log).getPlatformId(savedExecution.workspaceId)
-                                await executionSideEffects(log).onFinish({ execution: savedExecution, platformId })
+                                const tenantId = await workspaceService(log).getTenantId(savedExecution.workspaceId)
+                                await executionSideEffects(log).onFinish({ execution: savedExecution, tenantId })
                             }
 
                             if (savedExecution.status === ExecutionStatus.PAUSED) {

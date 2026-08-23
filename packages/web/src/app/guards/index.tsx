@@ -7,8 +7,8 @@ import {
 
 import { PageTitle } from '@/app/components/page-title';
 import { authRoutes } from '@/app/routes/auth-routes';
-import { platformRoutes } from '@/app/routes/platform-routes';
 import { publicRoutes } from '@/app/routes/public-routes';
+import { tenantRoutes } from '@/app/routes/tenant-routes';
 import { workspaceRoutes } from '@/app/routes/workspace-routes';
 import { RouteLoadingBar } from '@/components/custom/route-loading-bar';
 import { useEmbedding } from '@/components/providers/embed-provider';
@@ -45,7 +45,7 @@ const routes = [
   ...publicRoutes,
   ...workspaceRoutes,
   ...authRoutes,
-  ...platformRoutes,
+  ...tenantRoutes,
   {
     path: '/workspaces/:workspaceId',
     element: (

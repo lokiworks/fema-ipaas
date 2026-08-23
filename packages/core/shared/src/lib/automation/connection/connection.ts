@@ -14,12 +14,12 @@ export enum ConnectionStatus {
 
 export enum ConnectionScope {
     WORKSPACE = 'WORKSPACE',
-    PLATFORM = 'PLATFORM',
+    TENANT = 'TENANT',
 }
 
 export enum ConnectionType {
     OAUTH2 = 'OAUTH2',
-    PLATFORM_OAUTH2 = 'PLATFORM_OAUTH2',
+    TENANT_OAUTH2 = 'TENANT_OAUTH2',
     CLOUD_OAUTH2 = 'CLOUD_OAUTH2',
     SECRET_TEXT = 'SECRET_TEXT',
     BASIC_AUTH = 'BASIC_AUTH',
@@ -70,8 +70,8 @@ export type CloudOAuth2ConnectionValue = {
     type: ConnectionType.CLOUD_OAUTH2
 } & BaseOAuth2ConnectionValue
 
-export type PlatformOAuth2ConnectionValue = {
-    type: ConnectionType.PLATFORM_OAUTH2
+export type TenantOAuth2ConnectionValue = {
+    type: ConnectionType.TENANT_OAUTH2
     redirect_url: string
 } & BaseOAuth2ConnectionValue
 
@@ -89,7 +89,7 @@ export type ConnectionValue<T extends ConnectionType = ConnectionType, PropsType
     T extends ConnectionType.SECRET_TEXT ? SecretTextConnectionValue :
         T extends ConnectionType.BASIC_AUTH ? BasicAuthConnectionValue :
             T extends ConnectionType.CLOUD_OAUTH2 ? CloudOAuth2ConnectionValue :
-                T extends ConnectionType.PLATFORM_OAUTH2 ? PlatformOAuth2ConnectionValue :
+                T extends ConnectionType.TENANT_OAUTH2 ? TenantOAuth2ConnectionValue :
                     T extends ConnectionType.OAUTH2 ? OAuth2ConnectionValueWithApp :
                         T extends ConnectionType.CUSTOM_AUTH ? CustomAuthConnectionValue<PropsType> :
                             T extends ConnectionType.OIDC ? OIDCConnectionValue<PropsType> :
@@ -103,7 +103,7 @@ export type Connection<Type extends ConnectionType = ConnectionType> = BaseModel
     connectorName: string
     displayName: string
     workspaceIds: string[]
-    platformId: string
+    tenantId: string
     status: ConnectionStatus
     ownerId: string
     owner: UserWithMetaInformation | null
@@ -116,7 +116,7 @@ export type Connection<Type extends ConnectionType = ConnectionType> = BaseModel
 export type OAuth2Connection = Connection<ConnectionType.OAUTH2>
 export type SecretKeyConnection = Connection<ConnectionType.SECRET_TEXT>
 export type CloudAuth2Connection = Connection<ConnectionType.CLOUD_OAUTH2>
-export type PlatformOAuth2Connection = Connection<ConnectionType.PLATFORM_OAUTH2>
+export type TenantOAuth2Connection = Connection<ConnectionType.TENANT_OAUTH2>
 export type BasicAuthConnection = Connection<ConnectionType.BASIC_AUTH>
 export type CustomAuthConnection = Connection<ConnectionType.CUSTOM_AUTH>
 export type OIDCConnection = Connection<ConnectionType.OIDC>
@@ -129,7 +129,7 @@ export const ConnectionWithoutSensitiveData = z.object({
     type: z.nativeEnum(ConnectionType),
     connectorName: z.string(),
     workspaceIds: z.array(ApId),
-    platformId: Nullable(z.string()),
+    tenantId: Nullable(z.string()),
     scope: z.nativeEnum(ConnectionScope),
     status: z.nativeEnum(ConnectionStatus),
     ownerId: Nullable(z.string()),

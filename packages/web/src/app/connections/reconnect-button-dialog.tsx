@@ -55,7 +55,7 @@ const ReconnectButtonDialog = ({
       {open && !isLoading && connectorModel && (
         <CreateOrEditConnectionDialog
           reconnectConnection={connection}
-          isGlobalConnection={connection.scope === ConnectionScope.PLATFORM}
+          isGlobalConnection={connection.scope === ConnectionScope.TENANT}
           connector={connectorModel}
           open={open}
           key={`CreateOrEditConnectionDialog-open-${open}`}

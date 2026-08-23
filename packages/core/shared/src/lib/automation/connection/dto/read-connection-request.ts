@@ -32,7 +32,7 @@ export const ListConnectionOwnersRequestQuery = z.object({
 })
 export type ListConnectionOwnersRequestQuery = z.infer<typeof ListConnectionOwnersRequestQuery>
 
-export const ListPlatformConnectionsRequestQuery = z.object({
+export const ListTenantConnectionsRequestQuery = z.object({
     cursor: z.string().optional(),
     limit: z.coerce.number().optional(),
     displayName: z.string().optional(),
@@ -42,32 +42,32 @@ export const ListPlatformConnectionsRequestQuery = z.object({
     workspaceIds: OptionalArrayFromQuery(z.string()),
     ownerIds: OptionalArrayFromQuery(z.string()),
 })
-export type ListPlatformConnectionsRequestQuery = z.infer<typeof ListPlatformConnectionsRequestQuery>
+export type ListTenantConnectionsRequestQuery = z.infer<typeof ListTenantConnectionsRequestQuery>
 
-export const PlatformConnectionWorkspaceInfo = z.object({
+export const TenantConnectionWorkspaceInfo = z.object({
     id: z.string(),
     displayName: z.string(),
     type: z.nativeEnum(WorkspaceType),
 })
-export type PlatformConnectionWorkspaceInfo = z.infer<typeof PlatformConnectionWorkspaceInfo>
+export type TenantConnectionWorkspaceInfo = z.infer<typeof TenantConnectionWorkspaceInfo>
 
-export const PlatformConnectionsListItem = ConnectionWithoutSensitiveData.extend({
-    workspaces: z.array(PlatformConnectionWorkspaceInfo),
+export const TenantConnectionsListItem = ConnectionWithoutSensitiveData.extend({
+    workspaces: z.array(TenantConnectionWorkspaceInfo),
 })
-export type PlatformConnectionsListItem = z.infer<typeof PlatformConnectionsListItem>
+export type TenantConnectionsListItem = z.infer<typeof TenantConnectionsListItem>
 
-export const PlatformConnectionOwner = z.object({
+export const TenantConnectionOwner = z.object({
     id: z.string(),
     firstName: z.string(),
     lastName: z.string(),
     email: z.string(),
 })
-export type PlatformConnectionOwner = z.infer<typeof PlatformConnectionOwner>
+export type TenantConnectionOwner = z.infer<typeof TenantConnectionOwner>
 
-export const PlatformConnectionOwnersResponse = z.object({
-    data: z.array(PlatformConnectionOwner),
+export const TenantConnectionOwnersResponse = z.object({
+    data: z.array(TenantConnectionOwner),
     truncated: z.boolean(),
 })
-export type PlatformConnectionOwnersResponse = z.infer<typeof PlatformConnectionOwnersResponse>
+export type TenantConnectionOwnersResponse = z.infer<typeof TenantConnectionOwnersResponse>
 
-export const MAX_PLATFORM_CONNECTION_OWNERS = 1000
+export const MAX_TENANT_CONNECTION_OWNERS = 1000

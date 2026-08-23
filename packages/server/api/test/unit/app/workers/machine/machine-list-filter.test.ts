@@ -30,7 +30,7 @@ vi.mock('../../../../../src/app/workers/machine/machine-cache', () => ({
 
 const mockGetWorkerGroupId = vi.fn()
 
-vi.mock('../../../../../src/app/ee/platform/platform-plan/worker-group.service', () => ({
+vi.mock('../../../../../src/app/ee/tenant/tenant-plan/worker-group.service', () => ({
     workerGroupService: () => ({
         getWorkerGroupId: (...args: unknown[]) => mockGetWorkerGroupId(...args),
     }),
@@ -57,13 +57,13 @@ function fakeMachineInfo(workerId: string): MachineInformation {
     }
 }
 
-describe('machineService.list — platform filtering', () => {
+describe('machineService.list — tenant filtering', () => {
     beforeEach(() => {
         mockGetWorkerGroupId.mockReset()
         inMemoryStore = new Map()
     })
 
-    it('should return shared workers for any platform', async () => {
+    it('should return shared workers for any tenant', async () => {
         mockGetWorkerGroupId.mockResolvedValue(null)
         await workerMachineCache().upsert({
             id: 'shared-1',
@@ -71,7 +71,7 @@ describe('machineService.list — platform filtering', () => {
             type: 'SHARED',
         })
 
-        const result = await machineService(mockLogger).list('platform-A')
+        const result = await machineService(mockLogger).list('tenant-A')
 
         expect(result).toHaveLength(1)
         expect(result[0].id).toBe('shared-1')
@@ -79,10 +79,10 @@ describe('machineService.list — platform filtering', () => {
         expect(result[0].status).toBe(WorkerMachineStatus.ONLINE)
     })
 
-    it('should return dedicated workers only for the matching platform', async () => {
-        mockGetWorkerGroupId.mockImplementation(({ platformId }: { platformId: string }) => {
-            if (platformId === 'platform-A') return Promise.resolve('group-A')
-            if (platformId === 'platform-B') return Promise.resolve('group-B')
+    it('should return dedicated workers only for the matching tenant', async () => {
+        mockGetWorkerGroupId.mockImplementation(({ tenantId }: { tenantId: string }) => {
+            if (tenantId === 'tenant-A') return Promise.resolve('group-A')
+            if (tenantId === 'tenant-B') return Promise.resolve('group-B')
             return Promise.resolve(null)
         })
 
@@ -90,7 +90,7 @@ describe('machineService.list — platform filtering', () => {
             id: 'dedicated-A',
             information: fakeMachineInfo('dedicated-A'),
             type: 'DEDICATED',
-            workerGroupScope: WorkerGroupScope.PLATFORM,
+            workerGroupScope: WorkerGroupScope.TENANT,
             workerGroupId: 'group-A',
         })
 
@@ -98,37 +98,37 @@ describe('machineService.list — platform filtering', () => {
             id: 'dedicated-B',
             information: fakeMachineInfo('dedicated-B'),
             type: 'DEDICATED',
-            workerGroupScope: WorkerGroupScope.PLATFORM,
+            workerGroupScope: WorkerGroupScope.TENANT,
             workerGroupId: 'group-B',
         })
 
-        const resultA = await machineService(mockLogger).list('platform-A')
+        const resultA = await machineService(mockLogger).list('tenant-A')
         expect(resultA).toHaveLength(1)
         expect(resultA[0].id).toBe('dedicated-A')
         expect(resultA[0].type).toBe(WorkerMachineType.DEDICATED)
 
-        const resultB = await machineService(mockLogger).list('platform-B')
+        const resultB = await machineService(mockLogger).list('tenant-B')
         expect(resultB).toHaveLength(1)
         expect(resultB[0].id).toBe('dedicated-B')
     })
 
-    it('should not return other platforms dedicated workers', async () => {
+    it('should not return other tenants dedicated workers', async () => {
         mockGetWorkerGroupId.mockResolvedValue(null)
         await workerMachineCache().upsert({
             id: 'dedicated-other',
             information: fakeMachineInfo('dedicated-other'),
             type: 'DEDICATED',
-            workerGroupScope: WorkerGroupScope.PLATFORM,
+            workerGroupScope: WorkerGroupScope.TENANT,
             workerGroupId: 'group-other',
         })
 
-        const result = await machineService(mockLogger).list('platform-mine')
+        const result = await machineService(mockLogger).list('tenant-mine')
         expect(result).toHaveLength(0)
     })
 
-    it('should return only dedicated workers when platform has a worker group', async () => {
-        mockGetWorkerGroupId.mockImplementation(({ platformId }: { platformId: string }) => {
-            if (platformId === 'platform-X') return Promise.resolve('group-X')
+    it('should return only dedicated workers when tenant has a worker group', async () => {
+        mockGetWorkerGroupId.mockImplementation(({ tenantId }: { tenantId: string }) => {
+            if (tenantId === 'tenant-X') return Promise.resolve('group-X')
             return Promise.resolve(null)
         })
 
@@ -142,7 +142,7 @@ describe('machineService.list — platform filtering', () => {
             id: 'dedicated-mine',
             information: fakeMachineInfo('dedicated-mine'),
             type: 'DEDICATED',
-            workerGroupScope: WorkerGroupScope.PLATFORM,
+            workerGroupScope: WorkerGroupScope.TENANT,
             workerGroupId: 'group-X',
         })
 
@@ -150,17 +150,17 @@ describe('machineService.list — platform filtering', () => {
             id: 'dedicated-other',
             information: fakeMachineInfo('dedicated-other'),
             type: 'DEDICATED',
-            workerGroupScope: WorkerGroupScope.PLATFORM,
+            workerGroupScope: WorkerGroupScope.TENANT,
             workerGroupId: 'group-Y',
         })
 
-        const result = await machineService(mockLogger).list('platform-X')
+        const result = await machineService(mockLogger).list('tenant-X')
         expect(result).toHaveLength(1)
         expect(result[0].id).toBe('dedicated-mine')
         expect(result[0].type).toBe(WorkerMachineType.DEDICATED)
     })
 
-    it('should return shared workers when platform has no worker group', async () => {
+    it('should return shared workers when tenant has no worker group', async () => {
         mockGetWorkerGroupId.mockResolvedValue(null)
 
         await workerMachineCache().upsert({
@@ -173,17 +173,17 @@ describe('machineService.list — platform filtering', () => {
             id: 'dedicated-other',
             information: fakeMachineInfo('dedicated-other'),
             type: 'DEDICATED',
-            workerGroupScope: WorkerGroupScope.PLATFORM,
+            workerGroupScope: WorkerGroupScope.TENANT,
             workerGroupId: 'group-Y',
         })
 
-        const result = await machineService(mockLogger).list('platform-no-group')
+        const result = await machineService(mockLogger).list('tenant-no-group')
         expect(result).toHaveLength(1)
         expect(result[0].id).toBe('shared-1')
         expect(result[0].type).toBe(WorkerMachineType.SHARED)
     })
 
-    it('should return workspace-scope workers to any platform', async () => {
+    it('should return workspace-scope workers to any tenant', async () => {
         mockGetWorkerGroupId.mockResolvedValue(null)
 
         await workerMachineCache().upsert({
@@ -194,7 +194,7 @@ describe('machineService.list — platform filtering', () => {
             workerGroupId: '1cpu_machine',
         })
 
-        const result = await machineService(mockLogger).list('any-platform');
+        const result = await machineService(mockLogger).list('any-tenant');
         expect(result).toHaveLength(1)
         expect(result[0].id).toBe('workspace-worker')
         expect(result[0].workerGroupScope).toBe(WorkerGroupScope.WORKSPACE)
@@ -207,7 +207,7 @@ describe('machineService.list — platform filtering', () => {
             information: fakeMachineInfo('legacy-worker'),
         })
 
-        const result = await machineService(mockLogger).list('any-platform')
+        const result = await machineService(mockLogger).list('any-tenant')
         expect(result).toHaveLength(1)
         expect(result[0].id).toBe('legacy-worker')
         expect(result[0].type).toBe(WorkerMachineType.SHARED)

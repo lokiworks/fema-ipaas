@@ -43,7 +43,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { flagsHooks } from '@/hooks/flags-hooks';
-import { platformHooks } from '@/hooks/platform-hooks';
+import { tenantHooks } from '@/hooks/tenant-hooks';
 import { api } from '@/lib/api';
 import { authenticationSession } from '@/lib/authentication-session';
 
@@ -64,8 +64,8 @@ const InstallConnectorDialog = ({
   onInstallConnector,
   scope,
 }: InstallConnectorDialogProps) => {
-  const { platform } = platformHooks.useCurrentPlatform();
-  const isEnabled = platform.plan.manageConnectorsEnabled;
+  const { tenant } = tenantHooks.useCurrentTenant();
+  const isEnabled = tenant.plan.manageConnectorsEnabled;
   const [isOpen, setIsOpen] = useState(false);
 
   const { data: privateConnectorsEnabled } = flagsHooks.useFlag<boolean>(
@@ -186,7 +186,7 @@ const InstallConnectorDialog = ({
           <DialogDescription>
             <ApMarkdown
               markdown={
-                'Use this to install a [custom connector](https://github.com/lokiworks/fema-ipaas/docs/build-connectors/building-connectors/create-action) that you (or someone else) created. Once the connector is installed, you can use it in the workflow builder.\n\nWarning: Make sure you trust the author as the connector will have access to your workflow data and it might not be compatible with the current version of FEMA Integration Platform.'
+                'Use this to install a [custom connector](https://github.com/lokiworks/fema-ipaas/docs/build-connectors/building-connectors/create-action) that you (or someone else) created. Once the connector is installed, you can use it in the workflow builder.\n\nWarning: Make sure you trust the author as the connector will have access to your workflow data and it might not be compatible with the current version of FEMA Integration Tenant.'
               }
             />
           </DialogDescription>

@@ -1,4 +1,4 @@
-import { PlatformId, WorkspaceId } from '@fema/core-utils'
+import { TenantId, WorkspaceId } from '@fema/core-utils'
 import { apDayjs, apDayjsDuration } from '@fema/server-utils'
 import { TriggerRunStatus, TriggerStatusReport } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
@@ -6,18 +6,18 @@ import Redis from 'ioredis'
 import { redisHelper } from '../../database/redis'
 
 export const triggerRunStats = (_log: FastifyBaseLogger, redisConnection: Redis) => ({
-    async save({ platformId, connectorName, status }: SaveParams): Promise<void> {
+    async save({ tenantId, connectorName, status }: SaveParams): Promise<void> {
         const day = apDayjs().format('YYYY-MM-DD')
         const statusToStore = status === TriggerRunStatus.COMPLETED ? status : TriggerRunStatus.FAILED
-        const redisKey = triggerRunRedisKey(platformId, connectorName, day, statusToStore)
+        const redisKey = triggerRunRedisKey(tenantId, connectorName, day, statusToStore)
 
         await redisConnection.incr(redisKey)
         await redisConnection.expire(redisKey, apDayjsDuration(14, 'days').asSeconds())
     },
 
     async getStatusReport(params: GetStatusReportParams): Promise<TriggerStatusReport> {
-        const { platformId } = params
-        const redisKeys = await redisHelper.scanAll(redisConnection, triggerRunRedisKey(platformId, '*', '*', '*'))
+        const { tenantId } = params
+        const redisKeys = await redisHelper.scanAll(redisConnection, triggerRunRedisKey(tenantId, '*', '*', '*'))
         if (redisKeys.length === 0) {
             return { connectors: {} }
         }
@@ -27,7 +27,7 @@ export const triggerRunStats = (_log: FastifyBaseLogger, redisConnection: Redis)
     },
 })
 
-export const triggerRunRedisKey = (platformId: PlatformId, connectorName: string, formattedDate: string, status: TriggerRunStatus | '*') => `trigger_run:${platformId}:${connectorName}:${formattedDate}:${status}`
+export const triggerRunRedisKey = (tenantId: TenantId, connectorName: string, formattedDate: string, status: TriggerRunStatus | '*') => `trigger_run:${tenantId}:${connectorName}:${formattedDate}:${status}`
 
 type ParsedRedisRecord = {
     connectorName: string
@@ -86,11 +86,11 @@ const aggregateRecords = (records: ParsedRedisRecord[]): TriggerStatusReport => 
 }
 
 type GetStatusReportParams = {
-    platformId: WorkspaceId
+    tenantId: WorkspaceId
 }
 
 type SaveParams = {
-    platformId: PlatformId
+    tenantId: TenantId
     connectorName: string
     status: TriggerRunStatus
 }

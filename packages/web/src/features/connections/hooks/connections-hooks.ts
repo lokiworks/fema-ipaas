@@ -100,7 +100,7 @@ export const connectionsMutations = {
           return globalConnectionsApi.upsert({
             ...formValues,
             workspaceIds: formValues.workspaceIds,
-            scope: ConnectionScope.PLATFORM,
+            scope: ConnectionScope.TENANT,
           });
         }
         return connectionsApi.upsert(formValues);

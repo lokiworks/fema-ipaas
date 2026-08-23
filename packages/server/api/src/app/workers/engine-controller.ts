@@ -40,7 +40,7 @@ export const workflowEngineWorker: FastifyPluginAsyncZod = async (app) => {
     })
 
     // The pool downloads this with the engine token in the Authorization header (Bearer) and follows
-    // the redirect. The engine token is platform-scoped, which scopes custom-connector resolution.
+    // the redirect. The engine token is tenant-scoped, which scopes custom-connector resolution.
     app.get('/connectors/bundle', ConnectorBundleRequest, async (request, reply) => {
         if (request.principal.type !== PrincipalType.ENGINE) {
             return reply.status(StatusCodes.UNAUTHORIZED).send()
@@ -49,7 +49,7 @@ export const workflowEngineWorker: FastifyPluginAsyncZod = async (app) => {
             name: request.query.name,
             version: request.query.version,
             archiveId: request.query.archiveId,
-            platformId: request.principal.platform.id,
+            tenantId: request.principal.tenant.id,
             workspaceId: request.principal.workspaceId,
         })
         if (resolution.type === 'not-found') {

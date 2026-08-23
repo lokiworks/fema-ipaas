@@ -42,12 +42,12 @@ const failedKey = (): string => `bull:${QueueName.WORKER_JOBS}:failed`
  */
 describe('jobBroker.completeJob — seed cause for stuck-active zombies', () => {
     it('SEED: silently swallows "Missing lock" on moveToCompleted, leaving job in active', async () => {
-        const { mockPlatform, mockWorkspace } = await mockAndSaveBasicSetup()
+        const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
         const requestId = apId()
 
         const jobData = {
             jobType: WorkerJobType.EXECUTE_TRIGGER_HOOK,
-            platformId: mockPlatform.id,
+            tenantId: mockTenant.id,
             workspaceId: mockWorkspace.id,
             schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
             workflowId: apId(),
@@ -106,12 +106,12 @@ describe('jobBroker.completeJob — seed cause for stuck-active zombies', () => 
     })
 
     it('SEED: same swallow happens on the INTERNAL_ERROR -> moveToFailed path', async () => {
-        const { mockPlatform, mockWorkspace } = await mockAndSaveBasicSetup()
+        const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
         const requestId = apId()
 
         const jobData = {
             jobType: WorkerJobType.EXECUTE_TRIGGER_HOOK,
-            platformId: mockPlatform.id,
+            tenantId: mockTenant.id,
             workspaceId: mockWorkspace.id,
             schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
             workflowId: apId(),
@@ -158,12 +158,12 @@ describe('jobBroker.completeJob — seed cause for stuck-active zombies', () => 
     })
 
     it('CONTROL: when the lock IS still valid, completeJob removes the job from active and increments atm', async () => {
-        const { mockPlatform, mockWorkspace } = await mockAndSaveBasicSetup()
+        const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
         const requestId = apId()
 
         const jobData = {
             jobType: WorkerJobType.EXECUTE_TRIGGER_HOOK,
-            platformId: mockPlatform.id,
+            tenantId: mockTenant.id,
             workspaceId: mockWorkspace.id,
             schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
             workflowId: apId(),

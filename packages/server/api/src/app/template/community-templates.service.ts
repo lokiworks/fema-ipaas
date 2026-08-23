@@ -1,4 +1,4 @@
-import { ErrorCode, isNil, PlatformError, SeekPage } from '@fema/core-utils'
+import { ApplicationError, ErrorCode, isNil, SeekPage } from '@fema/core-utils'
 import { safeHttp } from '@fema/server-utils'
 import { ListTemplatesRequestQuery, Template } from '@fema/shared'
 import { system } from '../helper/system/system'
@@ -17,7 +17,7 @@ export const communityTemplates = {
     getOrThrow: async (id: string): Promise<Template> => {
         const base = registryUrl()
         if (isNil(base)) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityType: 'template',

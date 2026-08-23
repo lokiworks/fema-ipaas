@@ -1,6 +1,6 @@
-import { PlatformId } from '@fema/core-utils'
+import { TenantId } from '@fema/core-utils'
 import { apDayjsDuration } from '@fema/server-utils'
-import { ExecutionStatus, InternalErrorImpactItem, PlatformMetricsHealthDay, PlatformMetricsHealthHistory, PlatformMetricsLive, PlatformMetricsReport, PlatformMetricsStatusPoint, RunEnvironment, StuckJob } from '@fema/shared'
+import { ExecutionStatus, InternalErrorImpactItem, RunEnvironment, StuckJob, TenantMetricsHealthDay, TenantMetricsHealthHistory, TenantMetricsLive, TenantMetricsReport, TenantMetricsStatusPoint } from '@fema/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { distributedStore } from '../database/redis-connections'
@@ -14,8 +14,8 @@ type ReportWindow = {
     createdBefore: string
 }
 
-function buildReportCacheKey(platformId: PlatformId, window: ReportWindow): string {
-    return `${REPORT_CACHE_PREFIX}:${platformId}:${window.createdAfter}:${window.createdBefore}`
+function buildReportCacheKey(tenantId: TenantId, window: ReportWindow): string {
+    return `${REPORT_CACHE_PREFIX}:${tenantId}:${window.createdAfter}:${window.createdBefore}`
 }
 
 async function countsByStatus(workspaceIds: string[], window: ReportWindow): Promise<Map<ExecutionStatus, number>> {
@@ -33,7 +33,7 @@ async function countsByStatus(workspaceIds: string[], window: ReportWindow): Pro
     return new Map(rows.map((row) => [row.status, Number(row.count)]))
 }
 
-async function buildStatusTimeseries(workspaceIds: string[], window: ReportWindow): Promise<PlatformMetricsStatusPoint[]> {
+async function buildStatusTimeseries(workspaceIds: string[], window: ReportWindow): Promise<TenantMetricsStatusPoint[]> {
     const rows: Array<{ day: Date, status: ExecutionStatus, count: string }> = await executionRepo().query(`
         SELECT DATE_TRUNC('day', created) AS day, status, COUNT(*) AS count
         FROM execution
@@ -150,7 +150,7 @@ async function buildStuckJobs(workspaceIds: string[], window: ReportWindow): Pro
     }))
 }
 
-function buildEmptyHealthHistory(): PlatformMetricsHealthDay[] {
+function buildEmptyHealthHistory(): TenantMetricsHealthDay[] {
     return Array.from({ length: HEALTH_HISTORY_DAYS }, (_unused, index) => ({
         day: dayjs().startOf('day').subtract(HEALTH_HISTORY_DAYS - 1 - index, 'day').toISOString(),
         internalErrors: 0,
@@ -159,7 +159,7 @@ function buildEmptyHealthHistory(): PlatformMetricsHealthDay[] {
     }))
 }
 
-async function buildHealthHistory(workspaceIds: string[]): Promise<PlatformMetricsHealthDay[]> {
+async function buildHealthHistory(workspaceIds: string[]): Promise<TenantMetricsHealthDay[]> {
     const windowStart = dayjs().startOf('day').subtract(HEALTH_HISTORY_DAYS - 1, 'day').toISOString()
 
     const errorRows: Array<{ day: Date, internalErrors: string, affectedWorkflows: string }> = await executionRepo().query(`
@@ -207,15 +207,15 @@ async function buildHealthHistory(workspaceIds: string[]): Promise<PlatformMetri
 }
 
 export const healthMetricsService = (log: FastifyBaseLogger) => ({
-    getRunMetrics: async (platformId: PlatformId, window: ReportWindow): Promise<PlatformMetricsReport> => {
-        const cacheKey = buildReportCacheKey(platformId, window)
-        const cached = await distributedStore.get<PlatformMetricsReport>(cacheKey)
+    getRunMetrics: async (tenantId: TenantId, window: ReportWindow): Promise<TenantMetricsReport> => {
+        const cacheKey = buildReportCacheKey(tenantId, window)
+        const cached = await distributedStore.get<TenantMetricsReport>(cacheKey)
         if (cached) {
             return cached
         }
 
         const nextRefreshAt = dayjs().add(REPORT_TTL_SECONDS, 'second').toISOString()
-        const workspaceIds = await workspaceService(log).getWorkspaceIdsByPlatform(platformId)
+        const workspaceIds = await workspaceService(log).getWorkspaceIdsByTenant(tenantId)
         if (workspaceIds.length === 0) {
             return { summary: { completed: 0, successRate: 0, previousCompleted: 0, previousSuccessRate: 0 }, statusTimeseries: [], internalErrors: [], nextRefreshAt }
         }
@@ -229,7 +229,7 @@ export const healthMetricsService = (log: FastifyBaseLogger) => ({
 
         const current = summarize(currentCounts)
         const previous = summarize(previousCounts)
-        const value: PlatformMetricsReport = {
+        const value: TenantMetricsReport = {
             summary: {
                 completed: current.completed,
                 successRate: current.successRate,
@@ -243,8 +243,8 @@ export const healthMetricsService = (log: FastifyBaseLogger) => ({
         await distributedStore.put(cacheKey, value, REPORT_TTL_SECONDS)
         return value
     },
-    getQueueMetrics: async (platformId: PlatformId, window: ReportWindow): Promise<PlatformMetricsLive> => {
-        const workspaceIds = await workspaceService(log).getWorkspaceIdsByPlatform(platformId)
+    getQueueMetrics: async (tenantId: TenantId, window: ReportWindow): Promise<TenantMetricsLive> => {
+        const workspaceIds = await workspaceService(log).getWorkspaceIdsByTenant(tenantId)
         if (workspaceIds.length === 0) {
             return { running: 0, queued: 0, stuckJobs: [] }
         }
@@ -258,8 +258,8 @@ export const healthMetricsService = (log: FastifyBaseLogger) => ({
             stuckJobs,
         }
     },
-    getHealthHistory: async (platformId: PlatformId): Promise<PlatformMetricsHealthHistory> => {
-        const workspaceIds = await workspaceService(log).getWorkspaceIdsByPlatform(platformId)
+    getHealthHistory: async (tenantId: TenantId): Promise<TenantMetricsHealthHistory> => {
+        const workspaceIds = await workspaceService(log).getWorkspaceIdsByTenant(tenantId)
         if (workspaceIds.length === 0) {
             return { days: buildEmptyHealthHistory() }
         }

@@ -82,7 +82,7 @@ function buildExtractConnectorJob(): ExecuteExtractConnectorMetadataJobData {
         schemaVersion: 4,
         jobType: WorkerJobType.EXECUTE_EXTRACT_CONNECTOR_INFORMATION,
         workspaceId: undefined,
-        platformId: 'plat-1',
+        tenantId: 'plat-1',
         connector: {
             connectorName: '@fema/connector-test',
             connectorVersion: '0.1.0',
@@ -390,7 +390,7 @@ describe('worker integration', () => {
 
             const invalidJob = buildConsumeJobRequest({
                 jobId: 'job-bad-type',
-                jobData: { jobType: 'NONEXISTENT_TYPE', schemaVersion: 4, platformId: 'p' } as any,
+                jobData: { jobType: 'NONEXISTENT_TYPE', schemaVersion: 4, tenantId: 'p' } as any,
             })
             const validJob = buildConsumeJobRequest({ jobId: 'job-valid' })
 

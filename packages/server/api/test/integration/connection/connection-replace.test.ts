@@ -27,12 +27,12 @@ describe('POST /v1/connections/replace', () => {
         const ctx = await createTestContext(app!)
 
         const source = createMockConnection({
-            platformId: ctx.platform.id,
+            tenantId: ctx.tenant.id,
             workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         const target = createMockConnection({
-            platformId: ctx.platform.id,
+            tenantId: ctx.tenant.id,
             workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
@@ -53,12 +53,12 @@ describe('POST /v1/connections/replace', () => {
         const ctx = await createTestContext(app!)
 
         const source = createMockConnection({
-            platformId: ctx.platform.id,
+            tenantId: ctx.tenant.id,
             workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         const target = createMockConnection({
-            platformId: ctx.platform.id,
+            tenantId: ctx.tenant.id,
             workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
@@ -80,7 +80,7 @@ describe('POST /v1/connections/replace', () => {
         const ctx = await createTestContext(app!)
 
         const source = createMockConnection({
-            platformId: ctx.platform.id,
+            tenantId: ctx.tenant.id,
             workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
@@ -98,19 +98,19 @@ describe('POST /v1/connections/replace', () => {
         expect(stillThere?.id).toBe(source.id)
     })
 
-    it('rejects deleting a platform source from the workspace replace', async () => {
+    it('rejects deleting a tenant source from the workspace replace', async () => {
         const ctx = await createTestContext(app!)
 
         const source: Connection = {
             ...createMockConnection({
-                platformId: ctx.platform.id,
+                tenantId: ctx.tenant.id,
                 workspaceIds: [ctx.workspace.id],
                 connectorName: CONNECTOR_NAME,
             }, ctx.user.id),
-            scope: ConnectionScope.PLATFORM,
+            scope: ConnectionScope.TENANT,
         }
         const target = createMockConnection({
-            platformId: ctx.platform.id,
+            tenantId: ctx.tenant.id,
             workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
@@ -128,19 +128,19 @@ describe('POST /v1/connections/replace', () => {
         expect(stillThere?.id).toBe(source.id)
     })
 
-    it('replaces workflows off a platform source without deleting it', async () => {
+    it('replaces workflows off a tenant source without deleting it', async () => {
         const ctx = await createTestContext(app!)
 
         const source: Connection = {
             ...createMockConnection({
-                platformId: ctx.platform.id,
+                tenantId: ctx.tenant.id,
                 workspaceIds: [ctx.workspace.id],
                 connectorName: CONNECTOR_NAME,
             }, ctx.user.id),
-            scope: ConnectionScope.PLATFORM,
+            scope: ConnectionScope.TENANT,
         }
         const target = createMockConnection({
-            platformId: ctx.platform.id,
+            tenantId: ctx.tenant.id,
             workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
@@ -173,12 +173,12 @@ describe('POST /v1/connections/replace', () => {
         const ctx = await createTestContext(app!)
 
         const source = createMockConnection({
-            platformId: ctx.platform.id,
+            tenantId: ctx.tenant.id,
             workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         const target = createMockConnection({
-            platformId: ctx.platform.id,
+            tenantId: ctx.tenant.id,
             workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
@@ -215,12 +215,12 @@ describe('POST /v1/connections/replace', () => {
         const ctx = await createTestContext(app!)
 
         const source = createMockConnection({
-            platformId: ctx.platform.id,
+            tenantId: ctx.tenant.id,
             workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         const target = createMockConnection({
-            platformId: ctx.platform.id,
+            tenantId: ctx.tenant.id,
             workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
@@ -256,12 +256,12 @@ describe('POST /v1/connections/replace', () => {
         const ctx = await createTestContext(app!)
 
         const source = createMockConnection({
-            platformId: ctx.platform.id,
+            tenantId: ctx.tenant.id,
             workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         const target = createMockConnection({
-            platformId: ctx.platform.id,
+            tenantId: ctx.tenant.id,
             workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
@@ -308,12 +308,12 @@ describe('POST /v1/connections/replace', () => {
         const ctx = await createTestContext(app!)
 
         const source = createMockConnection({
-            platformId: ctx.platform.id,
+            tenantId: ctx.tenant.id,
             workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         const target = createMockConnection({
-            platformId: ctx.platform.id,
+            tenantId: ctx.tenant.id,
             workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
@@ -355,12 +355,12 @@ describe('POST /v1/connections/replace', () => {
         const ctx = await createTestContext(app!)
 
         const source = createMockConnection({
-            platformId: ctx.platform.id,
+            tenantId: ctx.tenant.id,
             workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         const target = createMockConnection({
-            platformId: ctx.platform.id,
+            tenantId: ctx.tenant.id,
             workspaceIds: [ctx.workspace.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)

@@ -45,8 +45,8 @@ export const ChatUIResponse = z.object({
     title: z.string(),
     props: ChatUIProps,
     workspaceId: z.string(),
-    platformLogoUrl: z.string(),
-    platformName: z.string(),
+    tenantLogoUrl: z.string(),
+    tenantName: z.string(),
 })
 
 export type ChatUIResponse = z.infer<typeof ChatUIResponse>

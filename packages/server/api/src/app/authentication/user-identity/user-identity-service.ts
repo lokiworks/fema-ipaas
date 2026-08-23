@@ -1,4 +1,4 @@
-import { apId, ErrorCode, isNil, PlatformError, spreadIfDefined } from '@fema/core-utils'
+import { apId, ApplicationError, ErrorCode, isNil, spreadIfDefined } from '@fema/core-utils'
 import { cryptoUtils } from '@fema/server-utils'
 import { UserIdentity } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
@@ -19,11 +19,11 @@ export const userIdentityService = (log: FastifyBaseLogger) => ({
         const hashedPassword = await passwordHasher.hash(params.password)
         const userByEmail = await userIdentityRepository().findOne({ where: { email: cleanedEmail } })
         if (userByEmail) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.EXISTING_USER,
                 params: {
                     email: cleanedEmail,
-                    platformId: null,
+                    tenantId: null,
                 },
             })
         }
@@ -48,13 +48,13 @@ export const userIdentityService = (log: FastifyBaseLogger) => ({
     async verifyIdentityPassword(params: VerifyIdentityPasswordParams): Promise<UserIdentity> {
         const userIdentity = await getIdentityByEmail(params.email)
         if (isNil(userIdentity)) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.INVALID_CREDENTIALS,
                 params: null,
             })
         }
         if (!userIdentity.verified) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.EMAIL_IS_NOT_VERIFIED,
                 params: {
                     email: userIdentity.email,
@@ -64,7 +64,7 @@ export const userIdentityService = (log: FastifyBaseLogger) => ({
 
         const passwordMatches = await passwordHasher.compare(params.password, userIdentity.password)
         if (!passwordMatches) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.INVALID_CREDENTIALS,
                 params: null,
             })
@@ -105,7 +105,7 @@ export const userIdentityService = (log: FastifyBaseLogger) => ({
     async verify(id: string): Promise<UserIdentity> {
         const user = await userIdentityRepository().findOneByOrFail({ id })
         if (user.verified) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.AUTHORIZATION,
                 params: {
                     message: 'User is already verified',
@@ -124,7 +124,7 @@ export const userIdentityService = (log: FastifyBaseLogger) => ({
     async verifyAndDiscardPassword(id: string): Promise<UserIdentity> {
         const user = await userIdentityRepository().findOneByOrFail({ id })
         if (user.verified) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.AUTHORIZATION,
                 params: {
                     message: 'User is already verified',
@@ -144,8 +144,8 @@ export const userIdentityService = (log: FastifyBaseLogger) => ({
             ...spreadIfDefined('password', params.password ? await passwordHasher.hash(params.password) : undefined),
         })
     },
-    async updateLastLoggedInPlatformId({ id, lastLoggedInPlatformId }: UpdateLastLoggedInPlatformIdParams): Promise<void> {
-        await userIdentityRepository().update(id, { lastLoggedInPlatformId })
+    async updateLastLoggedInTenantId({ id, lastLoggedInTenantId }: UpdateLastLoggedInTenantIdParams): Promise<void> {
+        await userIdentityRepository().update(id, { lastLoggedInTenantId })
     },
 })
 
@@ -177,9 +177,9 @@ type UpdateParams = {
     imageUrl?: string | null
 }
 
-type UpdateLastLoggedInPlatformIdParams = {
+type UpdateLastLoggedInTenantIdParams = {
     id: string
-    lastLoggedInPlatformId: string
+    lastLoggedInTenantId: string
 }
 
 type VerifyIdentityPasswordParams = {

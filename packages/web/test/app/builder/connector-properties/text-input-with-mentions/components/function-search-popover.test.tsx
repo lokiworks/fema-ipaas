@@ -3,7 +3,7 @@
  *
  * The formula editor's "See All" docs link is driven entirely by `docsUrl`:
  * embedders who set `embedding.formulasDocsUrl` get their own reference, those
- * who don't get no link at all, and non-embedded users get the FEMA Integration Platform
+ * who don't get no link at all, and non-embedded users get the FEMA Integration Tenant
  * docs. Without this, an embedded user is silently sent to our docs.
  *
  * This file uses raw `react-dom` + React's `act` rather than
@@ -73,7 +73,7 @@ describe('FunctionSearchPopover docs link', () => {
     );
   });
 
-  it('points at the FEMA Integration Platform docs outside embed', () => {
+  it('points at the FEMA Integration Tenant docs outside embed', () => {
     renderPopover({ docsUrl: DEFAULT_FORMULAS_DOCS_URL });
     expect(renderedDocsLink()?.getAttribute('href')).toBe(
       'https://github.com/lokiworks/fema-ipaas/docs/workflows/using-formulas',

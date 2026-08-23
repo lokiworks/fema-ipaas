@@ -1,0 +1,132 @@
+import { TenantRole, UpdateUserRequestBody, User } from '@fema/shared';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation } from '@tanstack/react-query';
+import { t } from 'i18next';
+import { useState } from 'react';
+import { Resolver, useForm } from 'react-hook-form';
+
+import { tenantUserApi } from '@/api/tenant-user-api';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+
+export const UpdateUserDialog = ({
+  children,
+  onUpdate,
+  userId,
+  role,
+  externalId,
+}: {
+  children: React.ReactNode;
+  onUpdate: (role: TenantRole) => void;
+  userId: string;
+  role: TenantRole;
+  externalId?: string;
+}) => {
+  const [open, setOpen] = useState(false);
+  const form = useForm<{ role: TenantRole; externalId?: string }>({
+    defaultValues: {
+      role,
+      externalId,
+    },
+    resolver: zodResolver(UpdateUserRequestBody) as unknown as Resolver<{
+      role: TenantRole;
+      externalId?: string;
+    }>,
+  });
+  const { mutate, isPending } = useMutation<User, Error, UpdateUserRequestBody>(
+    {
+      mutationKey: ['update-user'],
+      mutationFn: (request) => tenantUserApi.update(userId, request),
+      onSuccess: (user) => {
+        onUpdate(user.tenantRole);
+        setOpen(false);
+      },
+    },
+  );
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(open) => {
+        form.reset();
+        setOpen(open);
+      }}
+    >
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{t('Update User Role')}</DialogTitle>
+        </DialogHeader>
+        <Form {...form}>
+          <form className="grid space-y-4" onSubmit={(e) => e.preventDefault()}>
+            <FormField
+              name="role"
+              render={({ field }) => (
+                <FormItem className="grid space-y-2">
+                  <Label htmlFor="role">{t('Role')}</Label>
+                  <input type="hidden" value={field.value} />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              name="externalId"
+              render={({ field }) => (
+                <FormItem className="grid space-y-2">
+                  <Label htmlFor="externalId">{t('External ID')}</Label>
+                  <Input
+                    id="externalId"
+                    value={field.value}
+                    onChange={field.onChange}
+                  ></Input>
+                </FormItem>
+              )}
+            />
+
+            {form?.formState?.errors?.root?.serverError && (
+              <FormMessage>
+                {form.formState.errors.root.serverError.message}
+              </FormMessage>
+            )}
+          </form>
+        </Form>
+        <DialogFooter>
+          <Button
+            variant={'outline'}
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              setOpen(false);
+            }}
+          >
+            {t('Cancel')}
+          </Button>
+          <Button
+            disabled={isPending}
+            loading={isPending}
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              mutate({
+                tenantRole: form.getValues().role,
+                externalId: form.getValues().externalId,
+              });
+            }}
+          >
+            {t('Save')}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};

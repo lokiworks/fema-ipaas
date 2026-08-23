@@ -1,5 +1,5 @@
 import { isNil, Permission, tryCatch } from '@fema/core-utils';
-import { PlatformRole, WorkspaceType } from '@fema/shared';
+import { TenantRole, WorkspaceType } from '@fema/shared';
 import { t } from 'i18next';
 import { Settings } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
@@ -51,7 +51,7 @@ export function WorkspaceSettingsDialog({
   const { workspace } = workspaceCollectionUtils.useCurrentWorkspace();
   const previousOpenRef = useRef(open);
 
-  const platformRole = userHooks.getCurrentUserPlatformRole();
+  const tenantRole = userHooks.getCurrentUserTenantRole();
 
   const form = useForm<FormValues>({
     defaultValues: {
@@ -95,8 +95,7 @@ export function WorkspaceSettingsDialog({
   }, [open, workspace]);
 
   const hasGeneralSettings =
-    workspace.type === WorkspaceType.TEAM ||
-    platformRole === PlatformRole.ADMIN;
+    workspace.type === WorkspaceType.TEAM || tenantRole === TenantRole.ADMIN;
 
   const tabs = [
     {

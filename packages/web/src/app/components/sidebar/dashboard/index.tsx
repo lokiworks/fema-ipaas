@@ -2,7 +2,7 @@ import { Permission, isNil } from '@fema/core-utils';
 import {
   ApFlagId,
   WORKSPACE_COLOR_PALETTE,
-  PlatformRole,
+  TenantRole,
   WorkspaceType,
   TemplateTelemetryEventType,
 } from '@fema/shared';
@@ -45,10 +45,10 @@ import {
 } from '@/features/workspaces';
 import {
   useAuthorization,
-  useIsPlatformAdmin,
+  useIsTenantAdmin,
 } from '@/hooks/authorization-hooks';
 import { flagsHooks } from '@/hooks/flags-hooks';
-import { platformHooks } from '@/hooks/platform-hooks';
+import { tenantHooks } from '@/hooks/tenant-hooks';
 import { userHooks } from '@/hooks/user-hooks';
 import { cn } from '@/lib/utils';
 
@@ -76,7 +76,7 @@ export function WorkspaceDashboardSidebar({
   const [searchOpen, setSearchOpen] = useState(false);
   const navigate = useNavigate();
   const { data: currentUser } = userHooks.useCurrentUser();
-  const { platform } = platformHooks.useCurrentPlatform();
+  const { tenant } = tenantHooks.useCurrentTenant();
   useEffect(() => {
     if (!searchOpen) {
       setSearchQuery('');
@@ -84,22 +84,22 @@ export function WorkspaceDashboardSidebar({
   }, [searchOpen]);
 
   const shouldShowNewWorkspaceButton = useMemo(() => {
-    if (platform.plan.billedTeamWorkspacesLimit === 0) {
+    if (tenant.plan.billedTeamWorkspacesLimit === 0) {
       return false;
     }
-    return currentUser?.platformRole === PlatformRole.ADMIN;
-  }, [platform.plan.billedTeamWorkspacesLimit]);
+    return currentUser?.tenantRole === TenantRole.ADMIN;
+  }, [tenant.plan.billedTeamWorkspacesLimit]);
 
   const shouldShowSearchButton = useMemo(() => {
-    if (platform.plan.billedTeamWorkspacesLimit === 0) {
+    if (tenant.plan.billedTeamWorkspacesLimit === 0) {
       return false;
     }
     return true;
-  }, [platform.plan.billedTeamWorkspacesLimit]);
+  }, [tenant.plan.billedTeamWorkspacesLimit]);
 
   const shouldShowInlineAddButton =
-    platform.plan.billedTeamWorkspacesLimit !== 0 &&
-    currentUser?.platformRole === PlatformRole.ADMIN &&
+    tenant.plan.billedTeamWorkspacesLimit !== 0 &&
+    currentUser?.tenantRole === TenantRole.ADMIN &&
     workspaces.filter((workspace) => workspace.type === WorkspaceType.TEAM)
       .length === 0;
 
@@ -158,7 +158,7 @@ export function WorkspaceDashboardSidebar({
     type: 'link',
     to: '/chat',
     label: t('Chat'),
-    show: platform.plan.chatEnabled,
+    show: tenant.plan.chatEnabled,
     icon: SendIcon,
     hasPermission: true,
     isSubItem: false,
@@ -171,7 +171,7 @@ export function WorkspaceDashboardSidebar({
     type: 'link',
     to: '/agents',
     label: t('Agents'),
-    show: platform.plan.agentsEnabled && agentsEnabledFlag === true,
+    show: tenant.plan.agentsEnabled && agentsEnabledFlag === true,
     icon: BotIcon,
     hasPermission: checkAccess(Permission.READ_AGENT),
     isSubItem: false,
@@ -349,7 +349,7 @@ export function WorkspaceDashboardSidebar({
         </SidebarContent>
         <SidebarFooter>
           {state === 'expanded' && <DelayedSidebarUsageLimits />}
-          <SidebarPlatformAdminLink />
+          <SidebarTenantAdminLink />
           <SidebarUser />
         </SidebarFooter>
       </Sidebar>
@@ -368,11 +368,11 @@ function DelayedSidebarUsageLimits() {
   return show ? null : null;
 }
 
-function SidebarPlatformAdminLink() {
-  const showPlatformAdmin = useIsPlatformAdmin();
+function SidebarTenantAdminLink() {
+  const showTenantAdmin = useIsTenantAdmin();
   const { embedState } = useEmbedding();
 
-  if (embedState.isEmbedded || !showPlatformAdmin) {
+  if (embedState.isEmbedded || !showTenantAdmin) {
     return null;
   }
 
@@ -380,8 +380,8 @@ function SidebarPlatformAdminLink() {
     <SidebarMenu>
       <ApSidebarItem
         type="link"
-        to="/platform/workspaces"
-        label={t('Platform Admin')}
+        to="/tenant/workspaces"
+        label={t('Tenant Admin')}
         icon={ShieldIcon}
         isSubItem={false}
         show={true}
@@ -389,8 +389,7 @@ function SidebarPlatformAdminLink() {
         onClick={() => {
           const page = STATIC_PAGES.find(
             (p) =>
-              p.href === '/platform/workspaces' &&
-              p.id === 'page-platform-admin',
+              p.href === '/tenant/workspaces' && p.id === 'page-tenant-admin',
           );
           if (page)
             recordAccess({

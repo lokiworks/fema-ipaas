@@ -1,4 +1,4 @@
-import { assertNotNullOrUndefined, ErrorCode, isNil, isObject, PlatformError } from '@fema/core-utils'
+import { ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil, isObject } from '@fema/core-utils'
 import { FastifyRequest } from 'fastify'
 import { databaseConnection } from '../../../../database/database-connection'
 import { EntitySourceType, WorkspaceBodyResource, WorkspaceParamResource, WorkspaceQueryResource, WorkspaceTableResource } from '../../authorization/common'
@@ -32,7 +32,7 @@ export const workspaceIdExtractor = {
             [entityField]: entityValue,
         })
         if (isNil(entity)) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityId: entityValue,

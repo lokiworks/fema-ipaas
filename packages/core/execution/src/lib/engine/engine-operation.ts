@@ -1,4 +1,4 @@
-import { ExecutionId, PlatformId, WorkspaceId } from '@fema/core-utils'
+import { ExecutionId, TenantId, WorkspaceId } from '@fema/core-utils'
 import { z } from 'zod'
 import { ExecutionToolStatus, PredefinedInputsStructure } from '@fema/connector-types'
 import { ConnectionType, ConnectionValue } from '@fema/connector-types'
@@ -61,7 +61,7 @@ export type BaseEngineOperation = {
     internalApiUrl: string
     publicApiUrl: string
     timeoutInSeconds: number
-    platformId: PlatformId
+    tenantId: TenantId
 }
 
 export type ExecuteValidateAuthOperation = Omit<BaseEngineOperation, 'workspaceId'> & {
@@ -81,9 +81,9 @@ export type ExecuteRefreshTokenAuthResponse =
     | { skipped: true }
     | { skipped: false, access_token: string, expires_in: number }
 
-export type ExecuteExtractConnectorMetadata = ConnectorPackage & { platformId: PlatformId }
+export type ExecuteExtractConnectorMetadata = ConnectorPackage & { tenantId: TenantId }
 
-export type ExecuteExtractConnectorMetadataOperation = ExecuteExtractConnectorMetadata & { timeoutInSeconds: number, platformId: PlatformId }
+export type ExecuteExtractConnectorMetadataOperation = ExecuteExtractConnectorMetadata & { timeoutInSeconds: number, tenantId: TenantId }
 
 export type ExecuteToolOperation = BaseEngineOperation & {
     actionName: string

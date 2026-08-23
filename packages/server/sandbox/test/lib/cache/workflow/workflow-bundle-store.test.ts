@@ -91,7 +91,7 @@ describe('workflowBundleStore', () => {
         const codes = codeCache(cacheUtils(basePath).getGlobalCodeCachePath())
         await codes.writeCompiledStep({ workflowVersionId: workflowVersion.id, stepName: 'step_1', compiledJs: 'exports.code = () => 1' })
 
-        await workflowBundleStore(fakeLog, apiClient, basePath).publish({ workflowVersion, connectors: [connector], workspaceId: 'p1', platformId: 'plat1' })
+        await workflowBundleStore(fakeLog, apiClient, basePath).publish({ workflowVersion, connectors: [connector], workspaceId: 'p1', tenantId: 'plat1' })
 
         const fetchBasePath = uniqueBasePath()
         const fetched = await workflowBundleStore(fakeLog, apiClient, fetchBasePath).tryFetch({ workflowVersionId: workflowVersion.id, workspaceId: 'p1' })
@@ -108,7 +108,7 @@ describe('workflowBundleStore', () => {
         const workflowVersion = buildWorkflowVersion()
         const codes = codeCache(cacheUtils(basePath).getGlobalCodeCachePath())
         await codes.writeCompiledStep({ workflowVersionId: workflowVersion.id, stepName: 'step_1', compiledJs: 'exports.code = () => 1' })
-        await workflowBundleStore(fakeLog, apiClient, basePath).publish({ workflowVersion, connectors: [connector], workspaceId: 'p1', platformId: 'plat1' })
+        await workflowBundleStore(fakeLog, apiClient, basePath).publish({ workflowVersion, connectors: [connector], workspaceId: 'p1', tenantId: 'plat1' })
 
         const first = await workflowBundleStore(fakeLog, apiClient, basePath).tryFetch({ workflowVersionId: workflowVersion.id, workspaceId: 'p1' })
         const second = await workflowBundleStore(fakeLog, apiClient, basePath).tryFetch({ workflowVersionId: workflowVersion.id, workspaceId: 'p1' })
@@ -131,7 +131,7 @@ describe('workflowBundleStore', () => {
         const codes = codeCache(cacheUtils(basePath).getGlobalCodeCachePath())
         await codes.writeCompiledStep({ workflowVersionId: staleWorkflowVersion.id, stepName: 'step_1', compiledJs: 'old' })
 
-        await workflowBundleStore(fakeLog, apiClient, basePath).publish({ workflowVersion: staleWorkflowVersion, connectors: [connector], workspaceId: 'p1', platformId: 'plat1' })
+        await workflowBundleStore(fakeLog, apiClient, basePath).publish({ workflowVersion: staleWorkflowVersion, connectors: [connector], workspaceId: 'p1', tenantId: 'plat1' })
 
         expect(await workflowBundleStore(fakeLog, apiClient, basePath).tryFetch({ workflowVersionId: staleWorkflowVersion.id, workspaceId: 'p1' })).toBeNull()
     })
@@ -147,7 +147,7 @@ describe('workflowBundleStore', () => {
         const codes = codeCache(cacheUtils(basePath).getGlobalCodeCachePath())
         await codes.writeCompiledStep({ workflowVersionId: workflowVersion.id, stepName: 'step_1', compiledJs: 'exports.code = () => 1' })
 
-        await workflowBundleStore(fakeLog, apiClient, basePath).publish({ workflowVersion, connectors: [connector], workspaceId: 'p1', platformId: 'plat1' })
+        await workflowBundleStore(fakeLog, apiClient, basePath).publish({ workflowVersion, connectors: [connector], workspaceId: 'p1', tenantId: 'plat1' })
 
         expect(put).toHaveBeenCalledOnce()
         expect(put.mock.calls[0][0]).toBe('https://s3/put')
@@ -164,7 +164,7 @@ describe('workflowBundleStore', () => {
         const codes = codeCache(cacheUtils(basePath).getGlobalCodeCachePath())
         await codes.writeCompiledStep({ workflowVersionId: workflowVersion.id, stepName: 'step_1', compiledJs: 'exports.code = () => 1' })
 
-        await workflowBundleStore(fakeLog, apiClient, basePath).publish({ workflowVersion, connectors: [connector], workspaceId: 'p1', platformId: 'plat1' })
+        await workflowBundleStore(fakeLog, apiClient, basePath).publish({ workflowVersion, connectors: [connector], workspaceId: 'p1', tenantId: 'plat1' })
 
         expect(put).not.toHaveBeenCalled()
     })

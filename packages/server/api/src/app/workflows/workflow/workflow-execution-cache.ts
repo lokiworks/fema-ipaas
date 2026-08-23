@@ -46,7 +46,7 @@ async function getWorkflowExecutionCache(params: GetParams, log: FastifyBaseLogg
         exists: true,
         handshakeConfiguration: await webhookHandshake.getWebhookHandshakeConfiguration({ triggerSource, logger: log }) ?? undefined,
         workflow,
-        platformId: await workspaceService(log).getPlatformId(workflow.workspaceId),
+        tenantId: await workspaceService(log).getTenantId(workflow.workspaceId),
     }
 }
 

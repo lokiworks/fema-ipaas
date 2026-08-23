@@ -14,7 +14,7 @@ export const FileEntity = new EntitySchema<FileSchema>({
     columns: {
         ...BaseColumnSchemaPart,
         workspaceId: { ...ApIdSchema, nullable: true },
-        platformId: { ...ApIdSchema, nullable: true },
+        tenantId: { ...ApIdSchema, nullable: true },
         data: {
             type: 'bytea',
             nullable: true,
@@ -60,8 +60,8 @@ export const FileEntity = new EntitySchema<FileSchema>({
             columns: ['type', 'created'],
         },
         {
-            name: 'idx_file_platform_id_null_workspace',
-            columns: ['platformId'],
+            name: 'idx_file_tenant_id_null_workspace',
+            columns: ['tenantId'],
             where: '"workspaceId" IS NULL',
         },
         {

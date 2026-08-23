@@ -3,7 +3,7 @@ import {
     TriggerStrategy,
     WebhookRenewStrategy,
 } from '@fema/connector-sdk'
-import { ErrorCode, isNil, PlatformError, tryCatch, WorkflowId, WorkflowVersionId } from '@fema/core-utils'
+import { ApplicationError, ErrorCode, isNil, tryCatch, WorkflowId, WorkflowVersionId } from '@fema/core-utils'
 import { ApEnvironment, EngineResponse, EngineResponseStatus, ExecuteTriggerResponse, LATEST_JOB_DATA_SCHEMA_VERSION, ScheduleOptions, TriggerHookType, TriggerSourceScheduleType, WorkerJobType, WorkflowTriggerType } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { system } from '../../helper/system/system'
@@ -25,13 +25,13 @@ export const workflowTriggerSideEffect = (log: FastifyBaseLogger) => {
             }
             const { workflowId, workflowVersionId, workspaceId, simulate, connectorTrigger, isRepublish } = params
 
-            const platformId = await workspaceService(log).getPlatformId(workspaceId)
+            const tenantId = await workspaceService(log).getTenantId(workspaceId)
             const engineHelperResponse = await userInteractionWatcher.submitAndWaitForResponse<EngineResponse<ExecuteTriggerResponse<TriggerHookType.ON_ENABLE>>>({
                 jobType: WorkerJobType.EXECUTE_TRIGGER_HOOK,
                 hookType: TriggerHookType.ON_ENABLE,
                 workflowId,
                 workflowVersionId,
-                platformId,
+                tenantId,
                 workspaceId,
                 test: simulate,
                 isRepublish,
@@ -73,7 +73,7 @@ export const workflowTriggerSideEffect = (log: FastifyBaseLogger) => {
                 return
             }
             const { workflowId, workflowVersionId, workspaceId, simulate, connectorTrigger } = params
-            const platformId = await workspaceService(log).getPlatformId(workspaceId)
+            const tenantId = await workspaceService(log).getTenantId(workspaceId)
             const { error, data: engineHelperResponse } = await tryCatch(
                 () => userInteractionWatcher.submitAndWaitForResponse<EngineResponse<ExecuteTriggerResponse<TriggerHookType.ON_DISABLE>>>({
                     jobType: WorkerJobType.EXECUTE_TRIGGER_HOOK,
@@ -82,7 +82,7 @@ export const workflowTriggerSideEffect = (log: FastifyBaseLogger) => {
                     workflowVersionId,
                     test: simulate,
                     workspaceId,
-                    platformId,
+                    tenantId,
                 }, log),
             )
             if (!isNil(error)) {
@@ -142,7 +142,7 @@ async function handleWebhookTrigger({ workflowId, workflowVersionId, workspaceId
     const renewConfiguration = connectorTrigger.renewConfiguration
     switch (renewConfiguration?.strategy) {
         case WebhookRenewStrategy.CRON: {
-            const platformId = await workspaceService(log).getPlatformId(workspaceId)
+            const tenantId = await workspaceService(log).getTenantId(workspaceId)
             await jobQueue(log).add({
                 id: workflowVersionId,
                 type: JobType.REPEATING,
@@ -152,7 +152,7 @@ async function handleWebhookTrigger({ workflowId, workflowVersionId, workspaceId
                     workflowVersionId,
                     workflowId,
                     jobType: WorkerJobType.RENEW_WEBHOOK,
-                    platformId,
+                    tenantId,
                 },
                 scheduleOptions: {
                     type: TriggerSourceScheduleType.CRON_EXPRESSION,
@@ -177,7 +177,7 @@ async function handlePollingTrigger({ engineHelperResponse, workflowId, workflow
         intervalMs: pollIntervalMinutes * 60_000,
     }
     const scheduleOptions = engineHelperResponse.response?.scheduleOptions ?? defaultScheduleOptions
-    const platformId = await workspaceService(log).getPlatformId(workspaceId)
+    const tenantId = await workspaceService(log).getTenantId(workspaceId)
     await jobQueue(log).add({
         id: workflowVersionId,
         type: JobType.REPEATING,
@@ -188,7 +188,7 @@ async function handlePollingTrigger({ engineHelperResponse, workflowId, workflow
             workflowId,
             triggerType: WorkflowTriggerType.CONNECTOR,
             jobType: WorkerJobType.EXECUTE_POLLING,
-            platformId,
+            tenantId,
         },
         scheduleOptions,
     })
@@ -199,7 +199,7 @@ async function handlePollingTrigger({ engineHelperResponse, workflowId, workflow
 
 function assertEngineResponseIsOk(engineHelperResponse: EngineResponse<ExecuteTriggerResponse<TriggerHookType.ON_ENABLE | TriggerHookType.ON_DISABLE>>, workflowId: WorkflowId, workflowVersionId: WorkflowVersionId) {
     if (isNil(engineHelperResponse) || engineHelperResponse.status !== EngineResponseStatus.OK) {
-        throw new PlatformError({
+        throw new ApplicationError({
             code: ErrorCode.TRIGGER_UPDATE_STATUS,
             params: {
                 workflowId,

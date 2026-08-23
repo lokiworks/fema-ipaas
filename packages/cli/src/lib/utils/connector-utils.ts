@@ -91,7 +91,7 @@ export async function publishConnectorFromFolder(
     formData.append('connectorName', packageJson.name);
     formData.append('connectorVersion', packageJson.version);
     formData.append('packageType', 'ARCHIVE');
-    formData.append('scope', 'PLATFORM');
+    formData.append('scope', 'TENANT');
 
     try {
         await axios.post(`${apiUrl}/v1/connectors`, formData, {

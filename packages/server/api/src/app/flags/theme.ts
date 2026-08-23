@@ -1,4 +1,4 @@
-import { PlatformThemeColors } from '@fema/shared'
+import { TenantThemeColors } from '@fema/shared'
 import tinycolor from 'tinycolor2'
 
 function generateColorVariations(defaultColor: string) {
@@ -38,7 +38,7 @@ export function generateTheme({
     favIconUrl: string
     logoIconUrl: string
     websiteName: string
-    themeColors?: PlatformThemeColors
+    themeColors?: TenantThemeColors
 }) {
     const primary = generateColorVariations(primaryColor)
     return {
@@ -74,7 +74,7 @@ export function generateTheme({
 
 export const defaultTheme = generateTheme({
     primaryColor: '#2D6CDF',
-    websiteName: 'Integration Platform',
+    websiteName: 'Integration Tenant',
     fullLogoUrl: '/assets/full-logo.svg',
     favIconUrl: '/assets/logo.svg',
     logoIconUrl: '/assets/logo.svg',

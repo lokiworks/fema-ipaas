@@ -4,7 +4,7 @@ import { EngineConstants, ResolvedBeginExecuteWorkflowOperation } from '../../sr
 export const generateMockEngineConstants = (params?: Partial<EngineConstants>): EngineConstants => {
     return new EngineConstants(
         {
-            platformId: params?.platformId ?? 'platformId',
+            tenantId: params?.tenantId ?? 'tenantId',
             timeoutInSeconds: params?.timeoutInSeconds ?? 10,
             workflowId: params?.workflowId ?? 'workflowId',
             workflowVersionId: params?.workflowVersionId ?? 'workflowVersionId',
@@ -132,7 +132,7 @@ export function buildMockBeginExecuteWorkflowOperation(
         internalApiUrl: 'http://127.0.0.1:3000/',
         publicApiUrl: 'http://127.0.0.1:4200/api/',
         timeoutInSeconds: 10,
-        platformId: 'platformId',
+        tenantId: 'tenantId',
         executionId: 'executionId',
         executionType: ExecutionType.BEGIN,
         runEnvironment: RunEnvironment.TESTING,

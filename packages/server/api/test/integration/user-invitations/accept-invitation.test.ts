@@ -1,5 +1,5 @@
 import { apId } from '@fema/core-utils'
-import { InvitationStatus, InvitationType, PlatformRole } from '@fema/shared'
+import { InvitationStatus, InvitationType, TenantRole } from '@fema/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { JwtAudience, jwtUtils } from '../../../../src/app/helper/jwt-utils'
@@ -24,10 +24,10 @@ afterAll(async () => {
 describe('Accept User Invitation API', () => {
     it('Reports registered false when no identity claims the email yet', async () => {
         // arrange
-        const { mockPlatform } = await mockAndSaveBasicSetup()
+        const { mockTenant } = await mockAndSaveBasicSetup()
         const invitationToken = await saveInvitationAndSignToken({
             email: `${apId().toLowerCase()}@example.com`,
-            platformId: mockPlatform.id,
+            tenantId: mockTenant.id,
         })
 
         // act
@@ -44,18 +44,18 @@ describe('Accept User Invitation API', () => {
 
     it('Reports registered true when the email already has an identity', async () => {
         // arrange
-        const { mockPlatform } = await mockAndSaveBasicSetup()
+        const { mockTenant } = await mockAndSaveBasicSetup()
         const email = `${apId().toLowerCase()}@example.com`
         await mockBasicUser({
             userIdentity: { email },
             user: {
-                platformId: mockPlatform.id,
-                platformRole: PlatformRole.MEMBER,
+                tenantId: mockTenant.id,
+                tenantRole: TenantRole.MEMBER,
             },
         })
         const invitationToken = await saveInvitationAndSignToken({
             email,
-            platformId: mockPlatform.id,
+            tenantId: mockTenant.id,
         })
 
         // act
@@ -71,12 +71,12 @@ describe('Accept User Invitation API', () => {
     })
 })
 
-async function saveInvitationAndSignToken({ email, platformId }: { email: string, platformId: string }): Promise<string> {
+async function saveInvitationAndSignToken({ email, tenantId }: { email: string, tenantId: string }): Promise<string> {
     const invitation = createMockUserInvitation({
         email,
-        platformId,
-        type: InvitationType.PLATFORM,
-        platformRole: PlatformRole.MEMBER,
+        tenantId,
+        type: InvitationType.TENANT,
+        tenantRole: TenantRole.MEMBER,
         status: InvitationStatus.PENDING,
     })
     await db.save('user_invitation', invitation)

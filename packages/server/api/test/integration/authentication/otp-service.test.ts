@@ -22,7 +22,7 @@ async function seedIdentityWithCode(): Promise<string> {
     const identity = createMockUserIdentity({ email: EMAIL, verified: true })
     await databaseConnection().getRepository('user_identity').save(identity)
     await otpService(app!.log).createAndSend({
-        platformId: null,
+        tenantId: null,
         email: EMAIL,
         type: OtpType.EMAIL_LOGIN,
     })
@@ -53,7 +53,7 @@ function wrongVersionOf(value: string): string {
 
 async function sendCode(): Promise<void> {
     await otpService(app!.log).createAndSend({
-        platformId: null,
+        tenantId: null,
         email: EMAIL,
         type: OtpType.EMAIL_LOGIN,
     })

@@ -3,7 +3,7 @@ import { authenticationService } from '../../authentication/authentication.servi
 import { FlagEntity } from '../../flags/flag.entity'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
-import { platformService } from '../../platform/platform.service'
+import { tenantService } from '../../tenant/tenant.service'
 import { databaseConnection } from '../database-connection'
 import { DataSeed } from './data-seed'
 
@@ -41,20 +41,20 @@ const seedDevUser = async (): Promise<void> => {
         firstName: 'Dev',
         lastName: 'User',
         trackEvents: false,
-        platformId: null,
+        tenantId: null,
         newsLetter: false,
         provider: UserIdentityProvider.EMAIL,
     })
 
-    await platformService(log).createPlatformWithWorkspace({
+    await tenantService(log).createTenantWithWorkspace({
         identityId: response.id,
-        name: 'dev\'s Platform',
+        name: 'dev\'s Tenant',
         invalidatePreviousTokens: true,
-        isFirstPlatform: true,
+        isFirstTenant: true,
         callerTokenVersion: undefined,
     })
 
-    log.info({ email: DEV_EMAIL, password: DEV_PASSWORD }, '[devSeeds#seedDevUser] Dev user and platform created')
+    log.info({ email: DEV_EMAIL, password: DEV_PASSWORD }, '[devSeeds#seedDevUser] Dev user and tenant created')
 }
 const seedDevData = async (): Promise<void> => {
     if (currentEnvIsNotDev()) {

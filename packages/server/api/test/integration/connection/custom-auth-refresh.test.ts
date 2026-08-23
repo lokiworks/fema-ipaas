@@ -28,12 +28,12 @@ const customAuthOf = (overrides: Record<string, unknown>) => ({
     ...overrides,
 })
 
-const saveCustomAuthConnector = async ({ connectorName, connectorVersion, platformId, hasRefresh }: { connectorName: string, connectorVersion: string, platformId: string | undefined, hasRefresh: boolean }): Promise<void> => {
+const saveCustomAuthConnector = async ({ connectorName, connectorVersion, tenantId, hasRefresh }: { connectorName: string, connectorVersion: string, tenantId: string | undefined, hasRefresh: boolean }): Promise<void> => {
     const mockConnector = createMockConnectorMetadata({
         name: connectorName,
         version: connectorVersion,
-        platformId,
-        connectorType: isNil(platformId) ? ConnectorType.OFFICIAL : ConnectorType.CUSTOM,
+        tenantId,
+        connectorType: isNil(tenantId) ? ConnectorType.OFFICIAL : ConnectorType.CUSTOM,
         packageType: PackageType.REGISTRY,
         minimumSupportedRelease: '0.0.0',
         maximumSupportedRelease: '999.999.999',
@@ -44,11 +44,11 @@ const saveCustomAuthConnector = async ({ connectorName, connectorVersion, platfo
     await db.save('connector_metadata', mockConnector)
 }
 
-const customAuthConnection = ({ platformId, connectorName, connectorVersion, value }: { platformId: string, connectorName: string, connectorVersion: string, value: CustomAuthConnectionValue }): Connection => ({
+const customAuthConnection = ({ tenantId, connectorName, connectorVersion, value }: { tenantId: string, connectorName: string, connectorVersion: string, value: CustomAuthConnectionValue }): Connection => ({
     id: apId(),
     created: dayjs().toISOString(),
     updated: dayjs().toISOString(),
-    platformId,
+    tenantId,
     workspaceIds: [apId()],
     connectorName,
     connectorVersion,
@@ -68,11 +68,11 @@ describe('Custom auth token refresh — needRefresh', () => {
     describe('refresh-support detection from stored metadata', () => {
         it('returns true when the connector metadata declares a refresh callback', async () => {
             const connectorName = `connector-${apId()}`
-            const platformId = apId()
-            await saveCustomAuthConnector({ connectorName, connectorVersion: '1.0.0', platformId, hasRefresh: true })
+            const tenantId = apId()
+            await saveCustomAuthConnector({ connectorName, connectorVersion: '1.0.0', tenantId, hasRefresh: true })
 
             const connection = customAuthConnection({
-                platformId,
+                tenantId,
                 connectorName,
                 connectorVersion: '1.0.0',
                 value: { type: ConnectionType.CUSTOM_AUTH, props: {} },
@@ -84,11 +84,11 @@ describe('Custom auth token refresh — needRefresh', () => {
 
         it('returns false when the connector metadata has no refresh callback', async () => {
             const connectorName = `connector-${apId()}`
-            const platformId = apId()
-            await saveCustomAuthConnector({ connectorName, connectorVersion: '1.0.0', platformId, hasRefresh: false })
+            const tenantId = apId()
+            await saveCustomAuthConnector({ connectorName, connectorVersion: '1.0.0', tenantId, hasRefresh: false })
 
             const connection = customAuthConnection({
-                platformId,
+                tenantId,
                 connectorName,
                 connectorVersion: '1.0.0',
                 value: { type: ConnectionType.CUSTOM_AUTH, props: {} },
@@ -99,31 +99,31 @@ describe('Custom auth token refresh — needRefresh', () => {
         })
     })
 
-    describe('per-platform cache scoping', () => {
-        it('resolves each platform independently when two platforms share a connector name@version with different refresh support', async () => {
+    describe('per-tenant cache scoping', () => {
+        it('resolves each tenant independently when two tenants share a connector name@version with different refresh support', async () => {
             const connectorName = `connector-${apId()}`
             const connectorVersion = '1.0.0'
-            const platformWithRefresh = apId()
-            const platformWithoutRefresh = apId()
+            const tenantWithRefresh = apId()
+            const tenantWithoutRefresh = apId()
 
-            await saveCustomAuthConnector({ connectorName, connectorVersion, platformId: platformWithRefresh, hasRefresh: true })
-            await saveCustomAuthConnector({ connectorName, connectorVersion, platformId: platformWithoutRefresh, hasRefresh: false })
+            await saveCustomAuthConnector({ connectorName, connectorVersion, tenantId: tenantWithRefresh, hasRefresh: true })
+            await saveCustomAuthConnector({ connectorName, connectorVersion, tenantId: tenantWithoutRefresh, hasRefresh: false })
 
             const connWithRefresh = customAuthConnection({
-                platformId: platformWithRefresh,
+                tenantId: tenantWithRefresh,
                 connectorName,
                 connectorVersion,
                 value: { type: ConnectionType.CUSTOM_AUTH, props: {} },
             })
             const connWithoutRefresh = customAuthConnection({
-                platformId: platformWithoutRefresh,
+                tenantId: tenantWithoutRefresh,
                 connectorName,
                 connectorVersion,
                 value: { type: ConnectionType.CUSTOM_AUTH, props: {} },
             })
 
-            // Warm the cache for the refresh-supporting platform first; a key that
-            // ignored platformId would then leak `true` to the other platform.
+            // Warm the cache for the refresh-supporting tenant first; a key that
+            // ignored tenantId would then leak `true` to the other tenant.
             expect(await connectionHandler(mockLog).needRefresh(connWithRefresh, mockLog)).toBe(true)
             expect(await connectionHandler(mockLog).needRefresh(connWithoutRefresh, mockLog)).toBe(false)
         })
@@ -135,7 +135,7 @@ describe('Custom auth token refresh — needRefresh', () => {
             const connectorName = `connector-${apId()}`
 
             const staleConnection = customAuthConnection({
-                platformId: apId(),
+                tenantId: apId(),
                 connectorName,
                 connectorVersion: '1.0.0',
                 value: { type: ConnectionType.CUSTOM_AUTH, props: {}, access_token: 'tok', token_refresh_at: dayjs().unix() - 60 },
@@ -143,7 +143,7 @@ describe('Custom auth token refresh — needRefresh', () => {
             expect(await connectionHandler(mockLog).needRefresh(staleConnection, mockLog)).toBe(true)
 
             const freshConnection = customAuthConnection({
-                platformId: apId(),
+                tenantId: apId(),
                 connectorName,
                 connectorVersion: '1.0.0',
                 value: { type: ConnectionType.CUSTOM_AUTH, props: {}, access_token: 'tok', token_refresh_at: dayjs().unix() + 3600 },

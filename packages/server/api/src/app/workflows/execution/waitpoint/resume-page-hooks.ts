@@ -10,5 +10,5 @@ export const resumePageHooks = hooksFactory.create<ResumePageHooks>(() => ({
 export type ResumePageTheme = ReturnType<typeof generateTheme>
 
 export type ResumePageHooks = {
-    getTheme(params: { platformId: string | null }): Promise<ResumePageTheme>
+    getTheme(params: { tenantId: string | null }): Promise<ResumePageTheme>
 }

@@ -12,7 +12,7 @@ export const parseWorkerGroupValue = ({ value, workspaceWorker }: { value: strin
         return null
     }
     return {
-        scope: workspaceWorker ? WorkerGroupScope.WORKSPACE : WorkerGroupScope.PLATFORM,
+        scope: workspaceWorker ? WorkerGroupScope.WORKSPACE : WorkerGroupScope.TENANT,
         id: value,
     }
 }
@@ -29,9 +29,9 @@ export enum QueueName {
     RUNS_METADATA = 'runsMetadata',
 }
 
-export const getPlatformGroupQueueName = (workerGroupId: string): string => {
+export const getTenantGroupQueueName = (workerGroupId: string): string => {
     // TODO Rename this to workerGroups-workerGroupId-jobs in the future and migrate existings jobs there.
-    return `platform-${workerGroupId}-jobs`
+    return `tenant-${workerGroupId}-jobs`
 }
 
 export const getWorkspaceGroupQueueName = (workerGroupId: string): string => {
@@ -69,7 +69,7 @@ export const SubmitPayloadsRequest = z.object({
     environment: z.nativeEnum(RunEnvironment),
     parentRunId: z.string().optional(),
     failParentOnFailure: z.boolean().optional(),
-    platformId: z.string(),
+    tenantId: z.string(),
 })
 
 export type SubmitPayloadsRequest = z.infer<typeof SubmitPayloadsRequest>

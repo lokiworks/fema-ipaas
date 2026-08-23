@@ -71,7 +71,7 @@ async function migrateOneTimeJobs(log: FastifyBaseLogger): Promise<boolean> {
                     ...restCasedData,
                     streamStepProgress: legacyProgressUpdateType === 'TEST_WORKFLOW' ? StreamStepProgress.WEBSOCKET : StreamStepProgress.NONE,
                     workflowId: workflowVersion.workflowId,
-                    platformId: await workspaceService(log).getPlatformId(casedData.workspaceId),
+                    tenantId: await workspaceService(log).getTenantId(casedData.workspaceId),
                     schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
                     jobType: WorkerJobType.EXECUTE_WORKFLOW,
                 } as ExecuteWorkflowJobData,
@@ -102,7 +102,7 @@ async function migrateWebhookJobs(log: FastifyBaseLogger): Promise<boolean> {
             type: JobType.ONE_TIME,
             data: {
                 ...casedData,
-                platformId: await workspaceService(log).getPlatformId(casedData.workspaceId),
+                tenantId: await workspaceService(log).getTenantId(casedData.workspaceId),
                 jobType: WorkerJobType.EXECUTE_WEBHOOK,
             },
         })

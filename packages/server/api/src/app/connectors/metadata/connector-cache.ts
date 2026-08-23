@@ -66,7 +66,7 @@ function toRegistryEntry(connector: ConnectorMetadataSchema): ConnectorRegistryE
         version: connector.version,
         minimumSupportedRelease: connector.minimumSupportedRelease,
         maximumSupportedRelease: connector.maximumSupportedRelease,
-        platformId: connector.platformId,
+        tenantId: connector.tenantId,
         connectorType: connector.connectorType,
     }
 }
@@ -74,14 +74,14 @@ function toRegistryEntry(connector: ConnectorMetadataSchema): ConnectorRegistryE
 async function fetchRegistryFromDB(): Promise<ConnectorRegistryEntry[]> {
     return repo()
         .createQueryBuilder('pm')
-        .select(['pm."name"', 'pm."version"', 'pm."platformId"', 'pm."connectorType"', 'pm."minimumSupportedRelease"', 'pm."maximumSupportedRelease"'])
+        .select(['pm."name"', 'pm."version"', 'pm."tenantId"', 'pm."connectorType"', 'pm."minimumSupportedRelease"', 'pm."maximumSupportedRelease"'])
         .getRawMany<ConnectorRegistryEntry>()
 }
 
 export const CONNECTOR_REGISTRY_INVALIDATION_CHANNEL = 'connector-registry-invalidation'
 
 export type ConnectorRegistryEntry = {
-    platformId?: string
+    tenantId?: string
     connectorType: ConnectorType
     name: string
     version: string

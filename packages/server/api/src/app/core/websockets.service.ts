@@ -1,4 +1,4 @@
-import { ErrorCode, isNil, Permission, PlatformError, WorkspaceRole } from '@fema/core-utils'
+import { ApplicationError, ErrorCode, isNil, Permission, WorkspaceRole } from '@fema/core-utils'
 import { ApiToWorkerContract, createNotifyClient, Principal, PrincipalForType, PrincipalType, WebsocketServerEvent } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { Socket } from 'socket.io'
@@ -57,7 +57,7 @@ export const websocketService = {
                 break
             }
             default: {
-                throw new PlatformError({
+                throw new ApplicationError({
                     code: ErrorCode.AUTHENTICATION,
                     params: {
                         message: 'Invalid principal type',
@@ -109,7 +109,7 @@ export const websocketService = {
 
 const validateWorkspaceId = async ({ userId, workspaceId, log }: ValidateWorkspaceIdArgs): Promise<WorkspaceRole> => {
     if (isNil(workspaceId)) {
-        throw new PlatformError({
+        throw new ApplicationError({
             code: ErrorCode.AUTHENTICATION,
             params: {
                 message: 'Workspace ID is required',
@@ -122,7 +122,7 @@ const validateWorkspaceId = async ({ userId, workspaceId, log }: ValidateWorkspa
     })
 
     if (isNil(role)) {
-        throw new PlatformError({
+        throw new ApplicationError({
             code: ErrorCode.AUTHORIZATION,
             params: {
                 message: 'User not allowed to access this workspace',

@@ -1,4 +1,4 @@
-import { PlatformError, ErrorCode } from '@fema/core-utils'
+import { ApplicationError, ErrorCode } from '@fema/core-utils'
 import { EngineResponseStatus } from '@fema/shared'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -65,7 +65,7 @@ function buildExecuteParams(workerIndex: number, expiresAt?: number) {
         timeoutInSeconds: 60,
         expiresAt,
         provision: {
-            platformId: 'p1',
+            tenantId: 'p1',
             workflowVersionId: 'fv1',
             connectors: [],
             codes: [],
@@ -113,8 +113,8 @@ describe('createSandboxRuntime', () => {
     it('throws VALIDATION when workerIndex is out of bounds', async () => {
         const runtime = createSandboxRuntime({ concurrency: 2, basePath: '/tmp', getSettings: () => ({} as never), log })
         const error = await runtime.execute(buildExecuteParams(5)).catch((e: unknown) => e)
-        expect(error).toBeInstanceOf(PlatformError)
-        expect((error as PlatformError).error.code).toBe(ErrorCode.VALIDATION)
+        expect(error).toBeInstanceOf(ApplicationError)
+        expect((error as ApplicationError).error.code).toBe(ErrorCode.VALIDATION)
     })
 
     it('defaults to a single box when concurrency is omitted', async () => {
@@ -146,8 +146,8 @@ describe('createSandboxRuntime', () => {
         bootAdvanceMs = bootAdvance
         const runtime = createSandboxRuntime({ basePath: '/tmp', getSettings: () => ({} as never), log })
         const error = await runtime.execute(buildExecuteParams(0, Date.now() + deadlineMs)).catch((e: unknown) => e)
-        expect((error as PlatformError).error.code).toBe(ErrorCode.SANDBOX_EXECUTION_TIMEOUT)
-        expect((error as PlatformError).error.params).toMatchObject({ neverStarted: true })
+        expect((error as ApplicationError).error.code).toBe(ErrorCode.SANDBOX_EXECUTION_TIMEOUT)
+        expect((error as ApplicationError).error.params).toMatchObject({ neverStarted: true })
         expect(runTimeouts).toEqual([])
         expect(managerCalls.invalidate).toBe(1)
         expect(managerCalls.release).toBe(0)

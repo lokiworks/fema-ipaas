@@ -1,5 +1,5 @@
 import { ContextVersion } from '@fema/connector-sdk'
-import { ensureTrailingSlash, isNil, PlatformId, WorkspaceId } from '@fema/core-utils'
+import { ensureTrailingSlash, isNil, TenantId, WorkspaceId } from '@fema/core-utils'
 import { BaseEngineOperation, BeginExecuteWorkflowOperation, DEFAULT_MCP_DATA, EngineGenericError, ExecutePropsOptions, ExecuteTriggerOperation, ExecutionState, ExecutionType, ResumeExecuteWorkflowOperation, ResumePayload, RunEnvironment, StreamStepProgress, TriggerHookType, workflowStructureUtil, WorkflowTrigger, WorkflowVersionState, Workspace } from '@fema/shared'
 import { retryFetch } from '../../api/retry-fetch'
 import { createPropsResolver, PropsResolver } from '../../variables/props-resolver'
@@ -29,7 +29,7 @@ type EngineConstantsParams = {
     stepNameToTest?: string
     logsFileId?: string
     timeoutInSeconds: number
-    platformId: PlatformId
+    tenantId: TenantId
     stepNames: string[]
     actionRunMode?: boolean
 }
@@ -50,7 +50,7 @@ export class EngineConstants {
     public static readonly DEV_CONNECTORS = process.env.FEMA_DEV_CONNECTORS?.split(',') ?? []
     public static readonly TEST_MODE = process.env.FEMA_TEST_MODE === 'true'
 
-    public readonly platformId: string
+    public readonly tenantId: string
     public readonly timeoutInSeconds: number
     public readonly workflowId: string
     public readonly workflowVersionId: string
@@ -114,7 +114,7 @@ export class EngineConstants {
         this.runEnvironment = params.runEnvironment
         this.stepNameToTest = params.stepNameToTest
         this.logsFileId = params.logsFileId
-        this.platformId = params.platformId
+        this.tenantId = params.tenantId
         this.timeoutInSeconds = params.timeoutInSeconds
         this.stepNames = params.stepNames
         this.actionRunMode = params.actionRunMode ?? false
@@ -203,7 +203,7 @@ function sharedFields(input: SharedFieldsSource) {
         engineToken: input.engineToken,
         workspaceId: input.workspaceId,
         timeoutInSeconds: input.timeoutInSeconds,
-        platformId: input.platformId,
+        tenantId: input.tenantId,
         retryConstants: DEFAULT_RETRY_CONSTANTS,
         streamStepProgress: StreamStepProgress.NONE,
         workerHandlerId: null,
@@ -241,7 +241,7 @@ type SharedFieldsSource = {
     engineToken: string
     workspaceId: WorkspaceId
     timeoutInSeconds: number
-    platformId: PlatformId
+    tenantId: TenantId
 }
 
 type WorkflowFieldsSource = {

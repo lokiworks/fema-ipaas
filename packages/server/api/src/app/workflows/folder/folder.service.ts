@@ -1,4 +1,4 @@
-import { apId, Cursor, ErrorCode, isNil, PlatformError, SeekPage, WorkspaceId } from '@fema/core-utils'
+import { apId, ApplicationError, Cursor, ErrorCode, isNil, SeekPage, WorkspaceId } from '@fema/core-utils'
 import { CreateFolderRequest, Folder, FolderDto, FolderId, UpdateFolderRequest } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { repoFactory } from '../../core/db/repo-factory'
@@ -26,7 +26,7 @@ export const workflowFolderService = (log: FastifyBaseLogger) => ({
             displayName: request.displayName,
         })
         if (folderWithDisplayName && folderWithDisplayName.id !== folderId) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.VALIDATION,
                 params: { message: 'Folder displayName is used' },
             })
@@ -129,7 +129,7 @@ export const workflowFolderService = (log: FastifyBaseLogger) => ({
         const { workspaceId, folderId } = params
         const folder = await folderRepo().findOneBy({ workspaceId, id: folderId })
         if (!folder) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     message: `Folder ${folderId} is not found`,

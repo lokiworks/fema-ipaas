@@ -1,6 +1,6 @@
-import { PlatformPlanLimits } from '../management/platform/platform.model'
+import { TenantPlanLimits } from '../management/tenant/tenant.model'
 
-export const SYSTEM_LIMITS: PlatformPlanLimits = {
+export const SYSTEM_LIMITS: TenantPlanLimits = {
     tablesEnabled: false,
     embeddingEnabled: false,
     aiProvidersEnabled: false,

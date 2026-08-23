@@ -95,7 +95,7 @@ describe('uploadRunLog — execution.logsFileId FK safety', () => {
         const data = Buffer.from(JSON.stringify({ executionState: { steps: {}, tags: [] } }), 'utf-8')
         const logFile = await fileService(app.log).save({
             workspaceId: ctx.workspace.id,
-            platformId: ctx.platform.id,
+            tenantId: ctx.tenant.id,
             type: FileType.EXECUTION_LOG,
             data,
             size: data.length,

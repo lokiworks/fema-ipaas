@@ -13,7 +13,7 @@ export type VariableValue = {
 export type Variable = BaseModel<VariableId> & {
     name: string
     workspaceId: string
-    platformId: string
+    tenantId: string
     ownerId: string | null
     owner: UserWithMetaInformation | null
     metadata: Metadata | null
@@ -24,7 +24,7 @@ export const VariableWithoutSensitiveData = z.object({
     ...BaseModelSchema,
     name: z.string(),
     workspaceId: z.string(),
-    platformId: z.string(),
+    tenantId: z.string(),
     ownerId: Nullable(z.string()),
     owner: Nullable(UserWithMetaInformation),
     metadata: Nullable(Metadata),

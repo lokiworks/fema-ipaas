@@ -3,14 +3,14 @@ import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { securityAccess } from '../../core/security/authorization/fastify-security'
 import { authnRateLimit } from '../../core/security/rate-limit'
-import { platformUtils } from '../../platform/platform.utils'
+import { tenantUtils } from '../../tenant/tenant.utils'
 import { otpService } from './otp-service'
 
 export const otpController: FastifyPluginAsyncZod = async (app) => {
     app.post('/', CreateOtpRequest, async (req, res) => {
-        const platformId = await platformUtils.getPlatformIdForRequest(req)
+        const tenantId = await tenantUtils.getTenantIdForRequest(req)
         await otpService(req.log).createAndSend({
-            platformId,
+            tenantId,
             email: req.body.email,
             type: req.body.type,
         })

@@ -14,19 +14,19 @@ import { AppSystemProp } from '../helper/system/system-props'
 import { fileRepo } from './file.service'
 
 export const s3Helper = (log: FastifyBaseLogger) => ({
-    async constructS3Key(platformId: string | undefined, workspaceId: WorkspaceId | undefined, type: FileType, fileId: string): Promise<string> {
+    async constructS3Key(tenantId: string | undefined, workspaceId: WorkspaceId | undefined, type: FileType, fileId: string): Promise<string> {
         const existingFile = await fileRepo().findOneBy({ id: fileId })
         if (!isNil(existingFile?.s3Key)) {
             return existingFile.s3Key
         }
-        if (!isNil(platformId)) {
-            return `platform/${platformId}/${type}/${fileId}`
+        if (!isNil(tenantId)) {
+            return `tenant/${tenantId}/${type}/${fileId}`
         }
         else if (!isNil(workspaceId)) {
             return `workspace/${workspaceId}/${type}/${fileId}`
         }
         else {
-            throw new Error('Either platformId or workspaceId must be provided')
+            throw new Error('Either tenantId or workspaceId must be provided')
         }
     },
     async uploadStream(s3Key: string, body: Readable): Promise<number> {

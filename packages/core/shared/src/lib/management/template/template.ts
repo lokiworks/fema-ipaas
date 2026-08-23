@@ -83,12 +83,12 @@ export const Template = z.object({
     author: z.string(),
     categories: z.array(z.string()),
     connectors: z.array(z.string()),
-    platformId: Nullable(z.string()),
+    tenantId: Nullable(z.string()),
     workflows: z.array(WorkflowVersionTemplate).optional(),
     tables: z.array(TableTemplate).optional(),
     status: z.nativeEnum(TemplateStatus),
 })
 export type Template = z.infer<typeof Template>
 
-export const SharedTemplate = Template.omit({ platformId: true, id: true, created: true, updated: true })
+export const SharedTemplate = Template.omit({ tenantId: true, id: true, created: true, updated: true })
 export type SharedTemplate = z.infer<typeof SharedTemplate>

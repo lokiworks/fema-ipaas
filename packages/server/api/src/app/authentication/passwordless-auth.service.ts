@@ -1,4 +1,4 @@
-import { ErrorCode, isNil, PlatformError } from '@fema/core-utils'
+import { ApplicationError, ErrorCode, isNil } from '@fema/core-utils'
 import { cryptoUtils } from '@fema/server-utils'
 import { ApFlagId, AuthenticationResponse, OtpType, TelemetryEventName, UserIdentity, UserIdentityProvider } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
@@ -7,7 +7,7 @@ import { rejectedPromiseHandler } from '../helper/promise-handler'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
 import { telemetry } from '../helper/telemetry.utils'
-import { platformService } from '../platform/platform.service'
+import { tenantService } from '../tenant/tenant.service'
 import { userService } from '../user/user-service'
 import { userInvitationsService } from '../user-invitations/user-invitation.service'
 import { authenticationUtils } from './authentication-utils'
@@ -19,15 +19,15 @@ import { otpService } from './otp/otp-service'
 import { userIdentityService } from './user-identity/user-identity-service'
 
 export const passwordlessAuthService = (log: FastifyBaseLogger) => ({
-    async requestCode({ email, platformId, captchaToken, remoteIp }: RequestCodeParams): Promise<void> {
+    async requestCode({ email, tenantId, captchaToken, remoteIp }: RequestCodeParams): Promise<void> {
         await turnstile.assertSolved({ token: captchaToken, remoteIp, log })
         const existingIdentity = await userIdentityService(log).getIdentityByEmail(email)
         if (isNil(existingIdentity)) {
             await disposableEmail.assertMaySignUp({ email, log })
         }
-        if (!isNil(platformId)) {
-            await assertPlatformAuthIsOpenTo({ email, platformId, log })
-            const mayJoin = await mayJoinPlatform({ email, platformId, identity: existingIdentity, log })
+        if (!isNil(tenantId)) {
+            await assertTenantAuthIsOpenTo({ email, tenantId, log })
+            const mayJoin = await mayJoinTenant({ email, tenantId, identity: existingIdentity, log })
             if (!mayJoin) {
                 return
             }
@@ -45,7 +45,7 @@ export const passwordlessAuthService = (log: FastifyBaseLogger) => ({
             })
         }
         await otpService(log).createAndSend({
-            platformId,
+            tenantId,
             email,
             type: OtpType.EMAIL_LOGIN,
         })
@@ -58,13 +58,13 @@ export const passwordlessAuthService = (log: FastifyBaseLogger) => ({
         }
     },
 
-    async verifyCode({ email, code, platformId }: VerifyCodeParams): Promise<AuthenticationResponse> {
+    async verifyCode({ email, code, tenantId }: VerifyCodeParams): Promise<AuthenticationResponse> {
         const identity = await userIdentityService(log).getIdentityByEmail(email)
         if (isNil(identity)) {
-            throw new PlatformError({ code: ErrorCode.INVALID_OTP, params: {} })
+            throw new ApplicationError({ code: ErrorCode.INVALID_OTP, params: {} })
         }
-        if (!isNil(platformId)) {
-            await assertPlatformAuthIsOpenTo({ email, platformId, log })
+        if (!isNil(tenantId)) {
+            await assertTenantAuthIsOpenTo({ email, tenantId, log })
         }
         const codeIsValid = await otpService(log).confirm({
             identityId: identity.id,
@@ -72,48 +72,48 @@ export const passwordlessAuthService = (log: FastifyBaseLogger) => ({
             value: code,
         })
         if (!codeIsValid) {
-            throw new PlatformError({ code: ErrorCode.INVALID_OTP, params: {} })
+            throw new ApplicationError({ code: ErrorCode.INVALID_OTP, params: {} })
         }
         const verifiedIdentity = identity.verified ? identity : await userIdentityService(log).verifyAndDiscardPassword(identity.id)
         await flagService(log).save({ id: ApFlagId.USER_CREATED, value: true })
 
-        const preferredPlatformId = isNil(platformId)
-            ? await authenticationService(log).resolvePreferredPlatformId({ identityId: verifiedIdentity.id })
-            : platformId
+        const preferredTenantId = isNil(tenantId)
+            ? await authenticationService(log).resolvePreferredTenantId({ identityId: verifiedIdentity.id })
+            : tenantId
         rejectedPromiseHandler(telemetry(log).trackIdentity(verifiedIdentity.id, {
             name: TelemetryEventName.EMAIL_CODE_VERIFIED,
-            payload: { needsNameStep: isNil(preferredPlatformId) },
+            payload: { needsNameStep: isNil(preferredTenantId) },
         }), log)
 
-        if (!isNil(platformId)) {
-            const mayJoin = await mayJoinPlatform({ email, platformId, identity: verifiedIdentity, log })
+        if (!isNil(tenantId)) {
+            const mayJoin = await mayJoinTenant({ email, tenantId, identity: verifiedIdentity, log })
             if (!mayJoin) {
-                throw new PlatformError({
+                throw new ApplicationError({
                     code: ErrorCode.INVITATION_ONLY_SIGN_UP,
-                    params: { message: 'User is not invited to the platform' },
+                    params: { message: 'User is not invited to the tenant' },
                 })
             }
             const user = await userService(log).getOrCreateWithWorkspace({
                 identity: verifiedIdentity,
-                platformId,
+                tenantId,
             })
             await userInvitationsService(log).provisionUserInvitation({ email })
             return authenticationUtils(log).getWorkspaceAndToken({
                 userId: user.id,
-                platformId,
+                tenantId,
                 workspaceId: null,
             })
         }
 
-        if (!isNil(preferredPlatformId)) {
-            await assertPlatformAuthIsOpenTo({ email, platformId: preferredPlatformId, log })
+        if (!isNil(preferredTenantId)) {
+            await assertTenantAuthIsOpenTo({ email, tenantId: preferredTenantId, log })
             const user = await userService(log).getOrCreateWithWorkspace({
                 identity: verifiedIdentity,
-                platformId: preferredPlatformId,
+                tenantId: preferredTenantId,
             })
             return authenticationUtils(log).getWorkspaceAndToken({
                 userId: user.id,
-                platformId: preferredPlatformId,
+                tenantId: preferredTenantId,
                 workspaceId: null,
             })
         }
@@ -126,11 +126,11 @@ export const passwordlessAuthService = (log: FastifyBaseLogger) => ({
         const writeNames = async (): Promise<void> => {
             await userIdentityService(log).updateNames({ id: identityId, firstName, lastName })
         }
-        const { response, provisioned } = await platformService(log).createPlatformWithWorkspace({
+        const { response, provisioned } = await tenantService(log).createTenantWithWorkspace({
             identityId,
-            name: signupNames.platformNameFromPerson({ firstName, email: identity.email }),
+            name: signupNames.tenantNameFromPerson({ firstName, email: identity.email }),
             invalidatePreviousTokens: false,
-            isFirstPlatform: true,
+            isFirstTenant: true,
             callerTokenVersion: undefined,
             beforeProvision: writeNames,
         })
@@ -138,29 +138,29 @@ export const passwordlessAuthService = (log: FastifyBaseLogger) => ({
     },
 })
 
-async function assertPlatformAuthIsOpenTo({ email, platformId, log }: PlatformGateParams): Promise<void> {
+async function assertTenantAuthIsOpenTo({ email, tenantId, log }: TenantGateParams): Promise<void> {
     await authenticationUtils(log).assertEmailAuthIsEnabled({
-        platformId,
+        tenantId,
         provider: UserIdentityProvider.EMAIL,
     })
-    await authenticationUtils(log).assertDomainIsAllowed({ email, platformId })
+    await authenticationUtils(log).assertDomainIsAllowed({ email, tenantId })
 }
 
-async function mayJoinPlatform({ email, platformId, identity, log }: MayJoinPlatformParams): Promise<boolean> {
+async function mayJoinTenant({ email, tenantId, identity, log }: MayJoinTenantParams): Promise<boolean> {
     if (system.get(AppSystemProp.ALLOW_OPEN_SIGN_UP) === 'true') {
         return true
     }
     const isExistingMember = !isNil(identity)
-        && !isNil(await userService(log).getOneByIdentityAndPlatform({ identityId: identity.id, platformId }))
+        && !isNil(await userService(log).getOneByIdentityAndTenant({ identityId: identity.id, tenantId }))
     if (isExistingMember) {
         return true
     }
-    return userInvitationsService(log).hasAnyAcceptedInvitations({ platformId, email })
+    return userInvitationsService(log).hasAnyAcceptedInvitations({ tenantId, email })
 }
 
 type RequestCodeParams = {
     email: string
-    platformId: string | null
+    tenantId: string | null
     captchaToken: string | undefined
     remoteIp: string | undefined
 }
@@ -178,15 +178,15 @@ type CompleteSignUpParams = {
 type VerifyCodeParams = {
     email: string
     code: string
-    platformId: string | null
+    tenantId: string | null
 }
 
-type PlatformGateParams = {
+type TenantGateParams = {
     email: string
-    platformId: string
+    tenantId: string
     log: FastifyBaseLogger
 }
 
-type MayJoinPlatformParams = PlatformGateParams & {
+type MayJoinTenantParams = TenantGateParams & {
     identity: UserIdentity | null
 }

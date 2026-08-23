@@ -1,5 +1,5 @@
-import { assertNotNullOrUndefined, ErrorCode, isNil, PlatformError } from '@fema/core-utils'
-import { ApEnvironment, AuthenticationResponse, EndpointScope, PlatformRole, PrincipalType, TelemetryEventName, User, UserIdentity, UserIdentityProvider, UserStatus, Workspace, WorkspaceType } from '@fema/shared'
+import { ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil } from '@fema/core-utils'
+import { ApEnvironment, AuthenticationResponse, EndpointScope, PrincipalType, TelemetryEventName, TenantRole, User, UserIdentity, UserIdentityProvider, UserStatus, Workspace, WorkspaceType } from '@fema/shared'
 import { FastifyBaseLogger, FastifyRequest } from 'fastify'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
@@ -11,20 +11,20 @@ import { accessTokenManager } from './lib/access-token-manager'
 import { userIdentityService } from './user-identity/user-identity-service'
 
 export const authenticationUtils = (log: FastifyBaseLogger) => ({
-    async assertUserIsInvitedToPlatformOrWorkspace({
+    async assertUserIsInvitedToTenantOrWorkspace({
         email,
-        platformId,
-    }: AssertUserIsInvitedToPlatformOrWorkspaceParams): Promise<void> {
+        tenantId,
+    }: AssertUserIsInvitedToTenantOrWorkspaceParams): Promise<void> {
         const isInvited = await userInvitationsService(log).hasAnyAcceptedInvitations({
-            platformId,
+            tenantId,
             email,
 
         })
         if (!isInvited) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.INVITATION_ONLY_SIGN_UP,
                 params: {
-                    message: 'User is not invited to the platform',
+                    message: 'User is not invited to the tenant',
                 },
             })
         }
@@ -33,7 +33,7 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
     async getWorkspaceAndToken(params: GetWorkspaceAndTokenParams): Promise<AuthenticationResponse> {
         const user = await userService(log).getOneOrFail({ id: params.userId })
         const workspaces = await workspaceService(log).getAllForUser({
-            platformId: params.platformId,
+            tenantId: params.tenantId,
             userId: params.userId,
             isPrivileged: userService(log).isUserPrivileged(user),
         })
@@ -41,7 +41,7 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
             ? findPersonalWorkspace(workspaces, params.userId) ?? workspaces?.[0]
             : workspaces.find((workspace) => workspace.id === params.workspaceId)
         if (isNil(workspace)) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.INVITATION_ONLY_SIGN_UP,
                 params: {
                     message: 'No workspace found for user',
@@ -50,7 +50,7 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
         }
         const identity = await userIdentityService(log).getOneOrFail({ id: user.identityId })
         if (!identity.verified) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.EMAIL_IS_NOT_VERIFIED,
                 params: {
                     email: identity.email,
@@ -58,7 +58,7 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
             })
         }
         if (user.status === UserStatus.INACTIVE) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.USER_IS_INACTIVE,
                 params: {
                     email: identity.email,
@@ -68,8 +68,8 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
         const token = await accessTokenManager(log).generateToken({
             id: user.id,
             type: PrincipalType.USER,
-            platform: {
-                id: params.platformId,
+            tenant: {
+                id: params.tenantId,
             },
             tokenVersion: identity.tokenVersion,
         })
@@ -89,7 +89,7 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
     async getOnboardingResponse({ identityId }: GetOnboardingResponseParams): Promise<AuthenticationResponse> {
         const identity = await userIdentityService(log).getOneOrFail({ id: identityId })
         if (!identity.verified) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.EMAIL_IS_NOT_VERIFIED,
                 params: {
                     email: identity.email,
@@ -104,8 +104,8 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
         })
         return {
             id: identity.id,
-            platformId: null,
-            platformRole: PlatformRole.ADMIN,
+            tenantId: null,
+            tenantRole: TenantRole.ADMIN,
             status: UserStatus.ACTIVE,
             externalId: null,
             firstName: identity.firstName,
@@ -197,22 +197,22 @@ type SendTelemetryParams = {
 
 type AssertDomainIsAllowedParams = {
     email: string
-    platformId: string
+    tenantId: string
 }
 
 type AssertEmailAuthIsEnabledParams = {
-    platformId: string
+    tenantId: string
     provider: UserIdentityProvider
 }
 
 type AssertEmailMatchesSsoDomainParams = {
     email: string
-    platformId: string
+    tenantId: string
 }
 
-type AssertUserIsInvitedToPlatformOrWorkspaceParams = {
+type AssertUserIsInvitedToTenantOrWorkspaceParams = {
     email: string
-    platformId: string
+    tenantId: string
 }
 
 type GetOnboardingResponseParams = {
@@ -221,7 +221,7 @@ type GetOnboardingResponseParams = {
 
 type GetWorkspaceAndTokenParams = {
     userId: string
-    platformId: string
+    tenantId: string
     workspaceId: string | null
     scope?: EndpointScope
 }

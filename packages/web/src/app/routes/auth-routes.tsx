@@ -3,7 +3,7 @@ import { VerifyEmail } from '@/features/authentication';
 import { AcceptInvitation } from '@/features/invitations';
 
 import { ChangePasswordPage } from './change-password';
-import { CreatePlatformPage } from './create-platform';
+import { CreateTenantPage } from './create-tenant';
 import { ResetPasswordPage } from './forget-password';
 import { SignInPage } from './sign-in';
 import { SignUpPage } from './sign-up';
@@ -50,10 +50,10 @@ export const authRoutes = [
     ),
   },
   {
-    path: '/create-platform',
+    path: '/create-tenant',
     element: (
-      <PageTitle title="Create Platform">
-        <CreatePlatformPage />
+      <PageTitle title="Create Tenant">
+        <CreateTenantPage />
       </PageTitle>
     ),
   },

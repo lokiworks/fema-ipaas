@@ -1,4 +1,4 @@
-import { apId, isNil, PlatformId, tryCatch, UserId, WorkspaceId } from '@fema/core-utils'
+import { apId, isNil, TenantId, tryCatch, UserId, WorkspaceId } from '@fema/core-utils'
 import { ApplicationEvent, PrincipalType } from '@fema/shared'
 import { FastifyBaseLogger, FastifyRequest } from 'fastify'
 import { authenticationUtils } from '../authentication/authentication-utils'
@@ -28,7 +28,7 @@ type RawAuditEventParam = Pick<ApplicationEvent, 'data' | 'action'>
 
 type SendWorkerEventParams = RawAuditEventParam & {
     workspaceId: WorkspaceId
-    platformId: PlatformId
+    tenantId: TenantId
 }
 
 export const applicationEvents = (log: FastifyBaseLogger) => ({
@@ -48,13 +48,13 @@ export const applicationEvents = (log: FastifyBaseLogger) => ({
             }
         }), log)
     },
-    sendWorkerEvent({ workspaceId, platformId, action, data }: SendWorkerEventParams): void {
+    sendWorkerEvent({ workspaceId, tenantId, action, data }: SendWorkerEventParams): void {
         for (const listener of listeners.workerEventListeners) {
             const event = {
                 action,
                 data,
                 workspaceId,
-                platformId,
+                tenantId,
                 id: apId(),
                 created: new Date().toISOString(),
                 updated: new Date().toISOString(),
@@ -82,7 +82,7 @@ async function enrichAuditEventParam(requestOrMeta: ApplicationEventSource, para
         userEmail: identity?.email,
         workspaceId: meta.workspaceId,
         workspaceDisplayName: workspace?.displayName,
-        platformId: meta.platformId,
+        tenantId: meta.tenantId,
         ip: meta.ip,
         data: {
             ...params.data,
@@ -107,7 +107,7 @@ async function extractMetaInformation(requestOrMeta: ApplicationEventSource, log
         const extractedUserId = await authenticationUtils(log).extractUserIdFromRequest(request)
         const workspaceId = request.workspaceId ?? principal.workspaceId
         const meta: MetaInformation = {
-            platformId: principal.platform.id,
+            tenantId: principal.tenant.id,
             workspaceId,
             userId: extractedUserId,
             ip: networkUtils.extractClientRealIp(request, system.get(AppSystemProp.CLIENT_REAL_IP_HEADER)),
@@ -122,7 +122,7 @@ function isFastifyRequest(requestOrMeta: ApplicationEventSource): requestOrMeta 
 }
 
 export type MetaInformation = {
-    platformId: PlatformId
+    tenantId: TenantId
     userId?: UserId | null
     workspaceId?: WorkspaceId
     ip?: string

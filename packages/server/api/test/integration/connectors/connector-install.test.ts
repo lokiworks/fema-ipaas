@@ -78,7 +78,7 @@ describe('POST /v1/connectors — private connector installation', () => {
         formData.append('connectorName', CONNECTOR_NAME)
         formData.append('connectorVersion', CONNECTOR_VERSION)
         formData.append('packageType', PackageType.ARCHIVE)
-        formData.append('scope', ConnectorScope.PLATFORM)
+        formData.append('scope', ConnectorScope.TENANT)
 
         const response = await ctx.inject({
             method: 'POST',
@@ -91,7 +91,7 @@ describe('POST /v1/connectors — private connector installation', () => {
         const saved = await connectorMetadataService(mockLog).getOrThrow({
             name: CONNECTOR_NAME,
             version: CONNECTOR_VERSION,
-            platformId: ctx.platform.id,
+            tenantId: ctx.tenant.id,
         })
         expect(saved.name).toBe(CONNECTOR_NAME)
         expect(saved.version).toBe(CONNECTOR_VERSION)
@@ -100,7 +100,7 @@ describe('POST /v1/connectors — private connector installation', () => {
         expect(saved.archiveId).toBeDefined()
     })
 
-    it('should reject installation by a non-platform-admin user', async () => {
+    it('should reject installation by a non-tenant-admin user', async () => {
         const ctx = await createTestContext(app!)
         const memberCtx = await createMemberContext(app!, ctx, { workspaceRole: DefaultWorkspaceRole.EDITOR })
 
@@ -113,7 +113,7 @@ describe('POST /v1/connectors — private connector installation', () => {
         formData.append('connectorName', CONNECTOR_NAME)
         formData.append('connectorVersion', CONNECTOR_VERSION)
         formData.append('packageType', PackageType.ARCHIVE)
-        formData.append('scope', ConnectorScope.PLATFORM)
+        formData.append('scope', ConnectorScope.TENANT)
 
         const response = await memberCtx.inject({
             method: 'POST',

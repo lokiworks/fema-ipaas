@@ -28,7 +28,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { platformHooks } from '@/hooks/platform-hooks';
+import { tenantHooks } from '@/hooks/tenant-hooks';
 import { cn } from '@/lib/utils';
 
 import { templatesApi } from '../api/templates-api';
@@ -66,8 +66,8 @@ export const TemplatesBrowseDialog = ({
 
   const [debouncedSearch] = useDebounce(search, 300);
 
-  const { platform } = platformHooks.useCurrentPlatform();
-  const isShowingOfficialTemplates = !platform.plan.manageTemplatesEnabled;
+  const { tenant } = tenantHooks.useCurrentTenant();
+  const isShowingOfficialTemplates = !tenant.plan.manageTemplatesEnabled;
   const templateType = isShowingOfficialTemplates
     ? TemplateType.OFFICIAL
     : TemplateType.CUSTOM;

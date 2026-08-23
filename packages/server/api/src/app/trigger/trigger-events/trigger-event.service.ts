@@ -1,4 +1,4 @@
-import { apId, Cursor, ErrorCode, PlatformError, SeekPage, WorkflowId, WorkspaceId } from '@fema/core-utils'
+import { apId, ApplicationError, Cursor, ErrorCode, SeekPage, WorkflowId, WorkspaceId } from '@fema/core-utils'
 import { ConnectorTrigger, EngineResponse, EngineResponseStatus, ExecuteTriggerResponse, FileCompression, FileType, getConnectorMajorAndMinorVersion, PopulatedWorkflow, TriggerEventWithPayload, TriggerHookType, WorkerJobType, WorkflowTrigger, WorkflowTriggerType } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { repoFactory } from '../../core/db/repo-factory'
@@ -53,7 +53,7 @@ export const triggerEventService = (log: FastifyBaseLogger) => ({
         workflow,
     }: TestParams): Promise<SeekPage<TriggerEventWithPayload>> {
         const trigger = workflow.version.trigger
-        const platformId = await workspaceService(log).getPlatformId(workspaceId)
+        const tenantId = await workspaceService(log).getTenantId(workspaceId)
         const emptyPage = paginationHelper.createPage<TriggerEventWithPayload>([], null)
         switch (trigger.type) {
             case WorkflowTriggerType.CONNECTOR: {
@@ -65,14 +65,14 @@ export const triggerEventService = (log: FastifyBaseLogger) => ({
                     test: true,
                     workspaceId,
                     jobType: WorkerJobType.EXECUTE_TRIGGER_HOOK,
-                    platformId,
+                    tenantId,
                 }, log)
                 await triggerEventRepo().delete({
                     workspaceId,
                     workflowId: workflow.id,
                 })
                 if (engineResponse.status !== EngineResponseStatus.OK) {
-                    throw new PlatformError({
+                    throw new ApplicationError({
                         code: ErrorCode.TEST_TRIGGER_FAILED,
                         params: {
                             message: engineResponse.error ?? 'Unknown trigger error',

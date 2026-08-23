@@ -21,7 +21,7 @@ import {
   ResizablePanelGroup,
 } from '@/components/ui/resizable-panel';
 import { connectorsHooks } from '@/features/connectors';
-import { platformHooks } from '@/hooks/platform-hooks';
+import { tenantHooks } from '@/hooks/tenant-hooks';
 import { useElementSize } from '@/hooks/use-element-size';
 import { cn } from '@/lib/utils';
 
@@ -43,7 +43,7 @@ const DEFAULT_MIN_SIZE = '400px';
 const SPLIT_MODE_COLLAPSE_THRESHOLD_PX = 700;
 
 const BuilderPage = () => {
-  const { platform } = platformHooks.useCurrentPlatform();
+  const { tenant } = tenantHooks.useCurrentTenant();
   const [
     workflowVersion,
     rightSidebar,
@@ -175,7 +175,7 @@ const BuilderPage = () => {
 
             <ShowPoweredBy
               position="absolute"
-              show={platform?.plan.showPoweredBy}
+              show={tenant?.plan.showPoweredBy}
             />
             <DataSelector
               parentHeight={middlePanelSize.height}

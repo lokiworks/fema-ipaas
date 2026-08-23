@@ -61,16 +61,16 @@ const commonOAuth2ValueProps = {
     scope: z.string(),
     authorization_method: z.nativeEnum(OAuth2AuthorizationMethod).optional(),
 }
-export const UpsertPlatformOAuth2Request = z.object({
+export const UpsertTenantOAuth2Request = z.object({
     ...commonAuthProps,
-    type: z.literal(ConnectionType.PLATFORM_OAUTH2),
+    type: z.literal(ConnectionType.TENANT_OAUTH2),
     value: z.object({
         ...commonOAuth2ValueProps,
         props: propsSchema.optional(),
-        type: z.literal(ConnectionType.PLATFORM_OAUTH2),
+        type: z.literal(ConnectionType.TENANT_OAUTH2),
         redirect_url: z.string().min(1),
     }),
-}).describe('Platform OAuth2')
+}).describe('Tenant OAuth2')
 
 
 export const UpsertCloudOAuth2Request = z.object({
@@ -121,7 +121,7 @@ export const UpsertConnectionRequestBody = z.union([
     UpsertSecretTextRequest,
     UpsertOAuth2Request,
     UpsertCloudOAuth2Request,
-    UpsertPlatformOAuth2Request,
+    UpsertTenantOAuth2Request,
     UpsertBasicAuthRequest,
     UpsertCustomAuthRequest,
     UpsertOIDCRequest,
@@ -130,7 +130,7 @@ export const UpsertConnectionRequestBody = z.union([
 ])
 
 export type UpsertCloudOAuth2Request = z.infer<typeof UpsertCloudOAuth2Request>
-export type UpsertPlatformOAuth2Request = z.infer<typeof UpsertPlatformOAuth2Request>
+export type UpsertTenantOAuth2Request = z.infer<typeof UpsertTenantOAuth2Request>
 export type UpsertOAuth2Request = z.infer<typeof UpsertOAuth2Request>
 export type UpsertSecretTextRequest = z.infer<typeof UpsertSecretTextRequest>
 export type UpsertBasicAuthRequest = z.infer<typeof UpsertBasicAuthRequest>
@@ -156,7 +156,7 @@ export const UpdateGlobalConnectionValueRequestBody = z.object({
 export type UpdateConnectionValueRequestBody = z.infer<typeof UpdateConnectionValueRequestBody>
 export type UpdateGlobalConnectionValueRequestBody = z.infer<typeof UpdateGlobalConnectionValueRequestBody>
 const GlobalConnectionExtras = z.object({
-    scope: z.literal(ConnectionScope.PLATFORM),
+    scope: z.literal(ConnectionScope.TENANT),
     workspaceIds: z.array(z.string()),
     externalId: z.string().optional(),
     metadata: z.optional(Metadata),
@@ -167,7 +167,7 @@ export const UpsertGlobalConnectionRequestBody =
         UpsertSecretTextRequest.omit({ workspaceId: true, externalId: true }).merge(GlobalConnectionExtras),
         UpsertOAuth2Request.omit({ workspaceId: true, externalId: true }).merge(GlobalConnectionExtras),
         UpsertCloudOAuth2Request.omit({ workspaceId: true, externalId: true }).merge(GlobalConnectionExtras),
-        UpsertPlatformOAuth2Request.omit({ workspaceId: true, externalId: true }).merge(GlobalConnectionExtras),
+        UpsertTenantOAuth2Request.omit({ workspaceId: true, externalId: true }).merge(GlobalConnectionExtras),
         UpsertBasicAuthRequest.omit({ workspaceId: true, externalId: true }).merge(GlobalConnectionExtras),
         UpsertCustomAuthRequest.omit({ workspaceId: true, externalId: true }).merge(GlobalConnectionExtras),
         UpsertOIDCRequest.omit({ workspaceId: true, externalId: true }).merge(GlobalConnectionExtras),

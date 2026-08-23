@@ -26,7 +26,7 @@ import {
   UpsertBasicAuthRequest,
   UpsertNoAuthRequest,
   UpsertOAuth2Request,
-  UpsertPlatformOAuth2Request,
+  UpsertTenantOAuth2Request,
   UpsertSecretTextRequest,
   WorkflowTriggerType,
   WorkflowActionType,
@@ -246,7 +246,7 @@ const WORKSPACE_FORM_EXTRAS_SCHEMA = z.object({
 });
 
 const GLOBAL_CONNECTION_EXTRAS_SCHEMA = z.object({
-  scope: z.literal(ConnectionScope.PLATFORM),
+  scope: z.literal(ConnectionScope.TENANT),
   workspaceIds: z
     .array(z.string())
     .min(1, { error: t('Please select at least one workspace') }),
@@ -266,7 +266,7 @@ function buildOAuth2ValueSchema(
   connectionType:
     | ConnectionType.OAUTH2
     | ConnectionType.CLOUD_OAUTH2
-    | ConnectionType.PLATFORM_OAUTH2,
+    | ConnectionType.TENANT_OAUTH2,
 ) {
   if (auth.type !== PropertyType.OAUTH2) {
     throw new Error('buildOAuth2ValueSchema expects OAuth2 auth');
@@ -293,8 +293,8 @@ function buildOAuth2ValueSchema(
       return UpsertCloudOAuth2Request.shape.value
         .omit({ props: true })
         .extend(withPropsAndCode);
-    case ConnectionType.PLATFORM_OAUTH2:
-      return UpsertPlatformOAuth2Request.shape.value
+    case ConnectionType.TENANT_OAUTH2:
+      return UpsertTenantOAuth2Request.shape.value
         .omit({ props: true })
         .extend(withPropsAndCode);
   }
@@ -389,7 +389,7 @@ function buildOAuth2RequestSchema(
     connectionType:
       | ConnectionType.OAUTH2
       | ConnectionType.CLOUD_OAUTH2
-      | ConnectionType.PLATFORM_OAUTH2,
+      | ConnectionType.TENANT_OAUTH2,
   ) => {
     const valueShape = z.object({
       value: buildOAuth2ValueSchema(auth, connectionType),
@@ -409,7 +409,7 @@ function buildOAuth2RequestSchema(
     request: z.discriminatedUnion('type', [
       buildBranch(UpsertOAuth2Request, ConnectionType.OAUTH2),
       buildBranch(UpsertCloudOAuth2Request, ConnectionType.CLOUD_OAUTH2),
-      buildBranch(UpsertPlatformOAuth2Request, ConnectionType.PLATFORM_OAUTH2),
+      buildBranch(UpsertTenantOAuth2Request, ConnectionType.TENANT_OAUTH2),
     ]),
   });
 }
@@ -426,7 +426,7 @@ function buildFallbackConnectionSchema(options: {
       extendUpsertSchema(UpsertSecretTextRequest, names, isGlobal),
       extendUpsertSchema(UpsertOAuth2Request, names, isGlobal),
       extendUpsertSchema(UpsertCloudOAuth2Request, names, isGlobal),
-      extendUpsertSchema(UpsertPlatformOAuth2Request, names, isGlobal),
+      extendUpsertSchema(UpsertTenantOAuth2Request, names, isGlobal),
       extendUpsertSchema(UpsertBasicAuthRequest, names, isGlobal),
       extendCustomAuthUpsertSchema(names, isGlobal),
       extendOIDCUpsertSchema(names, isGlobal),

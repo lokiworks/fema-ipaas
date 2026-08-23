@@ -8,7 +8,7 @@ export async function signUp(request: APIRequestContext, page: Page): Promise<Au
     firstName: 'Test',
     lastName: 'User',
     trackEvents: false,
-    platformId: null,
+    tenantId: null,
     newsLetter: false,
     provider: UserIdentityProvider.EMAIL,
   };
@@ -35,10 +35,10 @@ export enum UserIdentityProvider {
 
 export type AuthenticationResponse = {
   id: string;
-  platformRole: string;
+  tenantRole: string;
   status: string;
   externalId: string;
-  platformId: string;
+  tenantId: string;
   verified: boolean;
   firstName: string;
   lastName: string;

@@ -1,6 +1,6 @@
 import { AIProviderName, apId, assertNotNullOrUndefined, WorkspaceRole, RoleType } from '@fema/core-utils'
 import { LATEST_CONTEXT_VERSION, ConnectorMetadata } from '@fema/connector-sdk'
-import { AIProvider, Connection, ConnectionScope, ConnectionStatus, ConnectionType, ApplicationEvent, ApplicationEventName, ColorName, File, FileCompression, FileLocation, FileType, Workflow, WorkflowOperationStatus, Execution, ExecutionStatus, WorkflowStatus, WorkflowTriggerType, WorkflowVersion, WorkflowVersionState, Folder, InvitationStatus, InvitationType, LATEST_WORKFLOW_SCHEMA_VERSION, OtpModel, OtpState, OtpType, PackageType, ConnectorsFilterType, ConnectorType, Platform, PlatformPlan, PlatformRole, Workspace, WorkspaceIcon, WorkspaceType, RunEnvironment, Template, TemplateStatus, TemplateType, User, UserIdentity, UserIdentityProvider, UserInvitation, UserStatus } from '@fema/shared'
+import { AIProvider, Connection, ConnectionScope, ConnectionStatus, ConnectionType, ApplicationEvent, ApplicationEventName, ColorName, File, FileCompression, FileLocation, FileType, Workflow, WorkflowOperationStatus, Execution, ExecutionStatus, WorkflowStatus, WorkflowTriggerType, WorkflowVersion, WorkflowVersionState, Folder, InvitationStatus, InvitationType, LATEST_WORKFLOW_SCHEMA_VERSION, OtpModel, OtpState, OtpType, PackageType, ConnectorsFilterType, ConnectorType, Tenant, TenantPlan, TenantRole, Workspace, WorkspaceIcon, WorkspaceType, RunEnvironment, Template, TemplateStatus, TemplateType, User, UserIdentity, UserIdentityProvider, UserInvitation, UserStatus } from '@fema/shared'
 import { faker } from '@faker-js/faker'
 import bcrypt from 'bcrypt'
 import dayjs from 'dayjs'
@@ -9,12 +9,12 @@ import { AIProviderSchema } from '../../../src/app/ai/ai-provider-entity'
 import { databaseConnection } from '../../../src/app/database/database-connection'
 import { generateApiKey } from '../../../src/app/ee/api-keys/api-key-service'
 import { OAuthAppWithEncryptedSecret } from '../../../src/app/ee/oauth-apps/oauth-app.entity'
-import { PlatformPlanEntity } from '../../../src/app/ee/platform/platform-plan/platform-plan.entity'
+import { TenantPlanEntity } from '../../../src/app/ee/tenant/tenant-plan/tenant-plan.entity'
 import { encryptUtils } from '../../../src/app/helper/encryption'
 import { ConnectorMetadataSchema } from '../../../src/app/connectors/metadata/connector-metadata-entity'
 import { connectorMetadataService } from '../../../src/app/connectors/metadata/connector-metadata-service'
 
-export const CLOUD_PLATFORM_ID = 'cloud-id'
+export const CLOUD_TENANT_ID = 'cloud-id'
 
 const HASHED_OTP_VERSION = 1
 
@@ -43,10 +43,10 @@ export const createMockUser = (user?: Partial<User>): User => {
         created: user?.created ?? faker.date.recent().toISOString(),
         updated: user?.updated ?? faker.date.recent().toISOString(),
         status: user?.status ?? UserStatus.ACTIVE,
-        platformRole: user?.platformRole ?? faker.helpers.enumValue(PlatformRole),
+        tenantRole: user?.tenantRole ?? faker.helpers.enumValue(TenantRole),
         externalId: user?.externalId,
         identityId: user?.identityId ?? apId(),
-        platformId: user?.platformId ?? null,
+        tenantId: user?.tenantId ?? null,
     }
 }
 
@@ -57,7 +57,7 @@ export const createMockOAuthApp = async (
         id: oAuthApp?.id ?? apId(),
         created: oAuthApp?.created ?? faker.date.recent().toISOString(),
         updated: oAuthApp?.updated ?? faker.date.recent().toISOString(),
-        platformId: oAuthApp?.platformId ?? apId(),
+        tenantId: oAuthApp?.tenantId ?? apId(),
         connectorName: oAuthApp?.connectorName ?? faker.lorem.word(),
         clientId: oAuthApp?.clientId ?? apId(),
         clientSecret: await encryptUtils.encryptString(faker.lorem.word()),
@@ -73,7 +73,7 @@ export const createMockTemplate = (
         updated: template?.updated ?? faker.date.recent().toISOString(),
         connectors: template?.connectors ?? [],
         workflows: template?.workflows ?? [createMockWorkflowVersion()],
-        platformId: template?.platformId ?? apId(),
+        tenantId: template?.tenantId ?? apId(),
         name: template?.name ?? faker.lorem.word(),
         type: template?.type ?? TemplateType.CUSTOM,
         description: template?.description ?? faker.lorem.sentence(),
@@ -108,10 +108,10 @@ export const createMockUserInvitation = (userInvitation: Partial<UserInvitation>
         updated: userInvitation.updated ?? faker.date.recent().toISOString(),
         email: userInvitation.email ?? faker.internet.email(),
         type: userInvitation.type ?? faker.helpers.enumValue(InvitationType),
-        platformId: userInvitation.platformId ?? apId(),
+        tenantId: userInvitation.tenantId ?? apId(),
         workspaceId: userInvitation.workspaceId,
         workspaceRole: userInvitation.workspaceRole,
-        platformRole: userInvitation.platformRole,
+        tenantRole: userInvitation.tenantRole,
         status: userInvitation.status ?? faker.helpers.enumValue(InvitationStatus),
     }
 }
@@ -127,7 +127,7 @@ export const createMockWorkspace = (workspace?: Partial<Workspace>): Workspace =
         deleted: workspace?.deleted ?? null,
         ownerId: workspace?.ownerId ?? apId(),
         displayName: workspace?.displayName ?? faker.lorem.word(),
-        platformId: workspace?.platformId ?? apId(),
+        tenantId: workspace?.tenantId ?? apId(),
         externalId: workspace?.externalId ?? apId(),
         releasesEnabled: workspace?.releasesEnabled ?? false,
         notifyWorkflowOwnerOnFailure: workspace?.notifyWorkflowOwnerOnFailure ?? false,
@@ -154,73 +154,73 @@ export const createMockGitRepo = (gitRepo?: Partial<GitRepo>): GitRepo => {
     }
 }
 
-export const createMockPlatformPlan = (platformPlan?: Partial<PlatformPlan>): PlatformPlan => {
+export const createMockTenantPlan = (tenantPlan?: Partial<TenantPlan>): TenantPlan => {
     return {
-        id: platformPlan?.id ?? apId(),
-        created: platformPlan?.created ?? faker.date.recent().toISOString(),
-        updated: platformPlan?.updated ?? faker.date.recent().toISOString(),
-        platformId: platformPlan?.platformId ?? apId(),
-        tablesEnabled: platformPlan?.tablesEnabled ?? false,
-        includedCredits: platformPlan?.includedCredits ?? 0,
-        licenseKey: platformPlan?.licenseKey ?? faker.lorem.word(),
-        ssoEnabled: platformPlan?.ssoEnabled ?? false,
-        eventStreamingEnabled: platformPlan?.eventStreamingEnabled ?? false,
-        environmentsEnabled: platformPlan?.environmentsEnabled ?? false,
-        analyticsEnabled: platformPlan?.analyticsEnabled ?? false,
-        auditLogEnabled: platformPlan?.auditLogEnabled ?? false,
-        globalConnectionsEnabled: platformPlan?.globalConnectionsEnabled ?? false,
-        customRolesEnabled: platformPlan?.customRolesEnabled ?? false,
-        manageConnectorsEnabled: platformPlan?.manageConnectorsEnabled ?? false,
-        manageTemplatesEnabled: platformPlan?.manageTemplatesEnabled ?? false,
-        customAppearanceEnabled: platformPlan?.customAppearanceEnabled ?? false,
-        apiKeysEnabled: platformPlan?.apiKeysEnabled ?? false,
-        showPoweredBy: platformPlan?.showPoweredBy ?? false,
-        embeddingEnabled: platformPlan?.embeddingEnabled ?? false,
-        aiProvidersEnabled: platformPlan?.aiProvidersEnabled ?? false,
-        chatEnabled: platformPlan?.chatEnabled ?? false,
-        agentsEnabled: platformPlan?.agentsEnabled ?? false,
-        workerGroupsEnabled: platformPlan?.workerGroupsEnabled ?? false,
-        billedTeamWorkspacesLimit: platformPlan?.billedTeamWorkspacesLimit === undefined ? 0 : platformPlan.billedTeamWorkspacesLimit,
-        usersLimit: platformPlan?.usersLimit ?? null,
-        scheduledUsersLimit: platformPlan?.scheduledUsersLimit ?? null,
-        workspaceRolesEnabled: platformPlan?.workspaceRolesEnabled ?? false,
-        plan: platformPlan?.plan,
-        secretManagersEnabled: platformPlan?.secretManagersEnabled ?? false,
-        scimEnabled: platformPlan?.scimEnabled ?? false,
-        canary: platformPlan?.canary ?? false,
+        id: tenantPlan?.id ?? apId(),
+        created: tenantPlan?.created ?? faker.date.recent().toISOString(),
+        updated: tenantPlan?.updated ?? faker.date.recent().toISOString(),
+        tenantId: tenantPlan?.tenantId ?? apId(),
+        tablesEnabled: tenantPlan?.tablesEnabled ?? false,
+        includedCredits: tenantPlan?.includedCredits ?? 0,
+        licenseKey: tenantPlan?.licenseKey ?? faker.lorem.word(),
+        ssoEnabled: tenantPlan?.ssoEnabled ?? false,
+        eventStreamingEnabled: tenantPlan?.eventStreamingEnabled ?? false,
+        environmentsEnabled: tenantPlan?.environmentsEnabled ?? false,
+        analyticsEnabled: tenantPlan?.analyticsEnabled ?? false,
+        auditLogEnabled: tenantPlan?.auditLogEnabled ?? false,
+        globalConnectionsEnabled: tenantPlan?.globalConnectionsEnabled ?? false,
+        customRolesEnabled: tenantPlan?.customRolesEnabled ?? false,
+        manageConnectorsEnabled: tenantPlan?.manageConnectorsEnabled ?? false,
+        manageTemplatesEnabled: tenantPlan?.manageTemplatesEnabled ?? false,
+        customAppearanceEnabled: tenantPlan?.customAppearanceEnabled ?? false,
+        apiKeysEnabled: tenantPlan?.apiKeysEnabled ?? false,
+        showPoweredBy: tenantPlan?.showPoweredBy ?? false,
+        embeddingEnabled: tenantPlan?.embeddingEnabled ?? false,
+        aiProvidersEnabled: tenantPlan?.aiProvidersEnabled ?? false,
+        chatEnabled: tenantPlan?.chatEnabled ?? false,
+        agentsEnabled: tenantPlan?.agentsEnabled ?? false,
+        workerGroupsEnabled: tenantPlan?.workerGroupsEnabled ?? false,
+        billedTeamWorkspacesLimit: tenantPlan?.billedTeamWorkspacesLimit === undefined ? 0 : tenantPlan.billedTeamWorkspacesLimit,
+        usersLimit: tenantPlan?.usersLimit ?? null,
+        scheduledUsersLimit: tenantPlan?.scheduledUsersLimit ?? null,
+        workspaceRolesEnabled: tenantPlan?.workspaceRolesEnabled ?? false,
+        plan: tenantPlan?.plan,
+        secretManagersEnabled: tenantPlan?.secretManagersEnabled ?? false,
+        scimEnabled: tenantPlan?.scimEnabled ?? false,
+        canary: tenantPlan?.canary ?? false,
         customDomainsEnabled: false,
     }
 }
-export const createMockPlatform = (platform?: Partial<Platform>): Platform => {
+export const createMockTenant = (tenant?: Partial<Tenant>): Tenant => {
     return {
-        id: platform?.id ?? apId(),
-        created: platform?.created ?? faker.date.recent().toISOString(),
-        updated: platform?.updated ?? faker.date.recent().toISOString(),
-        ownerId: platform?.ownerId ?? apId(),
-        enforceAllowedAuthDomains: platform?.enforceAllowedAuthDomains ?? false,
-        federatedAuthProviders: platform?.federatedAuthProviders ?? { saml: null },
-        allowedAuthDomains: platform?.allowedAuthDomains ?? [],
-        allowedEmbedOrigins: platform?.allowedEmbedOrigins ?? [],
-        name: platform?.name ?? faker.lorem.word(),
-        primaryColor: platform?.primaryColor ?? faker.color.rgb(),
-        themeColors: platform?.themeColors ?? null,
-        logoIconUrl: platform?.logoIconUrl ?? faker.image.urlPlaceholder(),
-        fullLogoUrl: platform?.fullLogoUrl ?? faker.image.urlPlaceholder(),
-        emailAuthEnabled: platform?.emailAuthEnabled ?? faker.datatype.boolean(),
-        pinnedConnectors: platform?.pinnedConnectors ?? [],
-        favIconUrl: platform?.favIconUrl ?? faker.image.urlPlaceholder(),
-        cloudAuthEnabled: platform?.cloudAuthEnabled ?? faker.datatype.boolean(),
-        googleAuthEnabled: platform?.googleAuthEnabled ?? true,
-        ssoDomain: platform?.ssoDomain ?? null,
-        ssoDomainVerification: platform?.ssoDomainVerification ?? null,
+        id: tenant?.id ?? apId(),
+        created: tenant?.created ?? faker.date.recent().toISOString(),
+        updated: tenant?.updated ?? faker.date.recent().toISOString(),
+        ownerId: tenant?.ownerId ?? apId(),
+        enforceAllowedAuthDomains: tenant?.enforceAllowedAuthDomains ?? false,
+        federatedAuthProviders: tenant?.federatedAuthProviders ?? { saml: null },
+        allowedAuthDomains: tenant?.allowedAuthDomains ?? [],
+        allowedEmbedOrigins: tenant?.allowedEmbedOrigins ?? [],
+        name: tenant?.name ?? faker.lorem.word(),
+        primaryColor: tenant?.primaryColor ?? faker.color.rgb(),
+        themeColors: tenant?.themeColors ?? null,
+        logoIconUrl: tenant?.logoIconUrl ?? faker.image.urlPlaceholder(),
+        fullLogoUrl: tenant?.fullLogoUrl ?? faker.image.urlPlaceholder(),
+        emailAuthEnabled: tenant?.emailAuthEnabled ?? faker.datatype.boolean(),
+        pinnedConnectors: tenant?.pinnedConnectors ?? [],
+        favIconUrl: tenant?.favIconUrl ?? faker.image.urlPlaceholder(),
+        cloudAuthEnabled: tenant?.cloudAuthEnabled ?? faker.datatype.boolean(),
+        googleAuthEnabled: tenant?.googleAuthEnabled ?? true,
+        ssoDomain: tenant?.ssoDomain ?? null,
+        ssoDomainVerification: tenant?.ssoDomainVerification ?? null,
     }
 }
 
-export const createMockPlatformWithOwner = (
-    params?: CreateMockPlatformWithOwnerParams,
-): CreateMockPlatformWithOwnerReturn => {
+export const createMockTenantWithOwner = (
+    params?: CreateMockTenantWithOwnerParams,
+): CreateMockTenantWithOwnerReturn => {
     const mockOwnerId = params?.owner?.id ?? apId()
-    const mockPlatformId = params?.platform?.id ?? apId()
+    const mockTenantId = params?.tenant?.id ?? apId()
 
     const mockUserIdentity = createMockUserIdentity({})
 
@@ -228,19 +228,19 @@ export const createMockPlatformWithOwner = (
         identityId: mockUserIdentity.id,
         ...params?.owner,
         id: mockOwnerId,
-        platformId: mockPlatformId,
-        platformRole: PlatformRole.ADMIN,
+        tenantId: mockTenantId,
+        tenantRole: TenantRole.ADMIN,
     })
 
-    const mockPlatform = createMockPlatform({
-        ...params?.platform,
-        id: mockPlatformId,
+    const mockTenant = createMockTenant({
+        ...params?.tenant,
+        id: mockTenantId,
         ownerId: mockOwnerId,
     })
 
     return {
         mockUserIdentity,
-        mockPlatform,
+        mockTenant,
         mockOwner,
     }
 }
@@ -255,7 +255,7 @@ export const createMockWorkspaceMember = (
         id: workspaceMember?.id ?? apId(),
         created: workspaceMember?.created ?? faker.date.recent().toISOString(),
         updated: workspaceMember?.updated ?? faker.date.recent().toISOString(),
-        platformId: workspaceMember?.platformId ?? apId(),
+        tenantId: workspaceMember?.tenantId ?? apId(),
         workspaceRoleId: workspaceMember.workspaceRoleId,
         userId: workspaceMember?.userId,
         workspaceId: workspaceMember?.workspaceId ?? apId(),
@@ -285,7 +285,7 @@ export const createMockApiKey = (
         created: apiKey?.created ?? faker.date.recent().toISOString(),
         updated: apiKey?.updated ?? faker.date.recent().toISOString(),
         displayName: apiKey?.displayName ?? faker.lorem.word(),
-        platformId: apiKey?.platformId ?? apId(),
+        tenantId: apiKey?.tenantId ?? apId(),
         hashedValue: secretHashed,
         value: secret,
         truncatedValue: secretTruncated,
@@ -301,7 +301,7 @@ export const createMockSigningKey = (
         created: signingKey?.created ?? faker.date.recent().toISOString(),
         updated: signingKey?.updated ?? faker.date.recent().toISOString(),
         displayName: signingKey?.displayName ?? faker.lorem.word(),
-        platformId: signingKey?.platformId ?? apId(),
+        tenantId: signingKey?.tenantId ?? apId(),
         publicKey: signingKey?.publicKey ?? MOCK_SIGNING_KEY_PUBLIC_KEY,
         algorithm: signingKey?.algorithm ?? KeyAlgorithm.RSA,
     }
@@ -323,7 +323,7 @@ export const createMockConnectorMetadata = (
         directoryPath: connectorMetadata?.directoryPath,
         auth: connectorMetadata?.auth,
         authors: connectorMetadata?.authors ?? [],
-        platformId: connectorMetadata?.platformId,
+        tenantId: connectorMetadata?.tenantId,
         version: connectorMetadata?.version ?? faker.system.semver(),
         minimumSupportedRelease: connectorMetadata?.minimumSupportedRelease ?? '0.0.0',
         maximumSupportedRelease: connectorMetadata?.maximumSupportedRelease ?? '9.9.9',
@@ -344,7 +344,7 @@ export const createAuditEvent = (auditEvent: Partial<ApplicationEvent>) => {
         created: auditEvent.created ?? faker.date.recent().toISOString(),
         updated: auditEvent.updated ?? faker.date.recent().toISOString(),
         ip: auditEvent.ip ?? faker.internet.ip(),
-        platformId: auditEvent.platformId,
+        tenantId: auditEvent.tenantId,
         userId: auditEvent.userId,
         userEmail: auditEvent.userEmail ?? faker.internet.email(),
         action: auditEvent.action ?? faker.helpers.enumValue(ApplicationEventName),
@@ -451,7 +451,7 @@ export const createMockConnection = (connection: Partial<Connection>, ownerId: s
         id: connection?.id ?? apId(),
         created: connection?.created ?? faker.date.recent().toISOString(),
         updated: connection?.updated ?? faker.date.recent().toISOString(),
-        platformId: connection?.platformId ?? apId(),
+        tenantId: connection?.tenantId ?? apId(),
         workspaceIds: connection?.workspaceIds ?? [],
         connectorName: connection?.connectorName ?? faker.lorem.word(),
         displayName: connection?.displayName ?? faker.lorem.word(),
@@ -530,12 +530,12 @@ type Solution = {
     cell: Cell
 }
 
-export const createMockSolutionAndSave = async ({ workspaceId, platformId, userId }: { workspaceId: string, platformId: string, userId: string }): Promise<Solution> => {
+export const createMockSolutionAndSave = async ({ workspaceId, tenantId, userId }: { workspaceId: string, tenantId: string, userId: string }): Promise<Solution> => {
     const table = createMockTable({ workspaceId })
     const field = createMockField({ tableId: table.id, workspaceId })
     const record = createMockRecord({ tableId: table.id, workspaceId })
     const cell = createMockCell({ recordId: record.id, fieldId: field.id, workspaceId })
-    const connection = createMockConnection({ workspaceIds: [workspaceId], platformId }, userId)
+    const connection = createMockConnection({ workspaceIds: [workspaceId], tenantId }, userId)
     const workflow = createMockWorkflow({ workspaceId })
     const workflowVersion = createMockWorkflowVersion({ workflowId: workflow.id })
     const execution = createMockExecution({ workspaceId, workflowId: workflow.id, workflowVersionId: workflowVersion.id })
@@ -585,20 +585,20 @@ export const mockAndSaveBasicSetup = async (params?: MockBasicSetupParams): Prom
     const mockOwner = createMockUser({
         ...params?.user,
         identityId: mockUserIdentity.id,
-        platformRole: PlatformRole.ADMIN,
+        tenantRole: TenantRole.ADMIN,
     })
     await databaseConnection().getRepository('user').save(mockOwner)
 
-    const mockPlatform = createMockPlatform({
-        ...params?.platform,
+    const mockTenant = createMockTenant({
+        ...params?.tenant,
         ownerId: mockOwner.id,
     })
 
-    await databaseConnection().getRepository('platform').save(mockPlatform)
-    const hasPlanTable = databaseConnection().hasMetadata(PlatformPlanEntity)
+    await databaseConnection().getRepository('tenant').save(mockTenant)
+    const hasPlanTable = databaseConnection().hasMetadata(TenantPlanEntity)
     if (hasPlanTable) {
-        const mockPlatformPlan = createMockPlatformPlan({
-            platformId: mockPlatform.id,
+        const mockTenantPlan = createMockTenantPlan({
+            tenantId: mockTenant.id,
             auditLogEnabled: true,
             apiKeysEnabled: true,
             customRolesEnabled: true,
@@ -606,23 +606,23 @@ export const mockAndSaveBasicSetup = async (params?: MockBasicSetupParams): Prom
             includedCredits: 1000,
             ...params?.plan,
         })
-        await databaseConnection().getRepository('platform_plan').upsert(mockPlatformPlan, ['platformId'])
+        await databaseConnection().getRepository('tenant_plan').upsert(mockTenantPlan, ['tenantId'])
     }
 
-    mockOwner.platformId = mockPlatform.id
+    mockOwner.tenantId = mockTenant.id
     await databaseConnection().getRepository('user').save(mockOwner)
 
     const mockWorkspace = createMockWorkspace({
         ...params?.workspace,
         ownerId: mockOwner.id,
-        platformId: mockPlatform.id,
+        tenantId: mockTenant.id,
     })
     await databaseConnection().getRepository('workspace').save(mockWorkspace)
 
     return {
         mockUserIdentity,
         mockOwner,
-        mockPlatform,
+        mockTenant,
         mockWorkspace,
     }
 }
@@ -632,7 +632,7 @@ export const mockAndSaveBasicSetupWithApiKey = async (params?: MockBasicSetupPar
     const basicSetup = await mockAndSaveBasicSetup(params)
 
     const mockApiKey = createMockApiKey({
-        platformId: basicSetup.mockPlatform.id,
+        tenantId: basicSetup.mockTenant.id,
     })
     await databaseConnection().getRepository('api_key').save(mockApiKey)
 
@@ -644,12 +644,12 @@ export const mockAndSaveBasicSetupWithApiKey = async (params?: MockBasicSetupPar
 
 export const createMockFile = (file?: Partial<File>): File => {
     const hasExplicitWorkspaceId = file !== undefined && 'workspaceId' in file
-    const hasExplicitPlatformId = file !== undefined && 'platformId' in file
+    const hasExplicitTenantId = file !== undefined && 'tenantId' in file
     return {
         id: file?.id ?? apId(),
         created: file?.created ?? faker.date.recent().toISOString(),
         updated: file?.updated ?? faker.date.recent().toISOString(),
-        platformId: hasExplicitPlatformId ? (file?.platformId ?? null) : apId(),
+        tenantId: hasExplicitTenantId ? (file?.tenantId ?? null) : apId(),
         workspaceId: hasExplicitWorkspaceId ? (file?.workspaceId ?? null) : apId(),
         location: file?.location ?? FileLocation.DB,
         compression: file?.compression ?? faker.helpers.enumValue(FileCompression),
@@ -669,7 +669,7 @@ export const createMockWorkspaceRole = (workspaceRole?: Partial<WorkspaceRole>):
         created: workspaceRole?.created ?? faker.date.recent().toISOString(),
         updated: workspaceRole?.updated ?? faker.date.recent().toISOString(),
         permissions: workspaceRole?.permissions ?? [],
-        platformId: workspaceRole?.platformId ?? apId(),
+        tenantId: workspaceRole?.tenantId ?? apId(),
         type: workspaceRole?.type ?? faker.helpers.enumValue(RoleType),
     }
 }
@@ -688,12 +688,12 @@ export const createMockWorkspaceRelease = (workspaceRelease?: Partial<WorkspaceR
     }
 }
 
-export const createMockAIProvider = async (aiProvider?: Partial<AIProvider> & { enabledForChat?: boolean }): Promise<Omit<AIProviderSchema, 'platform'>> => {
+export const createMockAIProvider = async (aiProvider?: Partial<AIProvider> & { enabledForChat?: boolean }): Promise<Omit<AIProviderSchema, 'tenant'>> => {
     return {
         id: aiProvider?.id ?? apId(),
         created: aiProvider?.created ?? faker.date.recent().toISOString(),
         updated: aiProvider?.updated ?? faker.date.recent().toISOString(),
-        platformId: aiProvider?.platformId ?? apId(),
+        tenantId: aiProvider?.tenantId ?? apId(),
         provider: aiProvider?.provider ?? faker.helpers.enumValue(AIProviderName),
         displayName: aiProvider?.displayName ?? faker.lorem.word(),
         auth: await encryptUtils.encryptObject({
@@ -705,16 +705,16 @@ export const createMockAIProvider = async (aiProvider?: Partial<AIProvider> & { 
 
 }
 
-export const mockAndSaveAIProvider = async (params?: Partial<AIProvider> & { enabledForChat?: boolean }): Promise<Omit<AIProviderSchema, 'platform'>> => {
+export const mockAndSaveAIProvider = async (params?: Partial<AIProvider> & { enabledForChat?: boolean }): Promise<Omit<AIProviderSchema, 'tenant'>> => {
     const mockAIProvider = await createMockAIProvider(params)
-    await databaseConnection().getRepository('ai_provider').upsert(mockAIProvider, ['platformId', 'provider'])
+    await databaseConnection().getRepository('ai_provider').upsert(mockAIProvider, ['tenantId', 'provider'])
     return mockAIProvider
 }
 
 export const mockConnectorMetadata = async (mockLog: FastifyBaseLogger): Promise<ConnectorMetadata> => {
-    const { mockPlatform } = await mockAndSaveBasicSetup()
+    const { mockTenant } = await mockAndSaveBasicSetup()
     const mockConnectorMetadata = createMockConnectorMetadata({
-        platformId: mockPlatform.id,
+        tenantId: mockTenant.id,
         packageType: PackageType.REGISTRY,
     })
     await databaseConnection().getRepository('connector_metadata').save([mockConnectorMetadata])
@@ -737,7 +737,7 @@ export const createMockEventDestination = (eventDestination?: Partial<{
     id: string
     created: string
     updated: string
-    platformId: string
+    tenantId: string
     workspaceId: string | null
     events: ApplicationEventName[]
     url: string
@@ -746,7 +746,7 @@ export const createMockEventDestination = (eventDestination?: Partial<{
     id: string
     created: string
     updated: string
-    platformId: string
+    tenantId: string
     workspaceId: string | null
     events: ApplicationEventName[]
     url: string
@@ -756,21 +756,21 @@ export const createMockEventDestination = (eventDestination?: Partial<{
         id: eventDestination?.id ?? apId(),
         created: eventDestination?.created ?? faker.date.recent().toISOString(),
         updated: eventDestination?.updated ?? faker.date.recent().toISOString(),
-        platformId: eventDestination?.platformId ?? apId(),
+        tenantId: eventDestination?.tenantId ?? apId(),
         workspaceId: eventDestination?.workspaceId ?? null,
         events: eventDestination?.events ?? [faker.helpers.enumValue(ApplicationEventName)],
         url: eventDestination?.url ?? faker.internet.url(),
-        scope: eventDestination?.scope ?? EventDestinationScope.PLATFORM,
+        scope: eventDestination?.scope ?? EventDestinationScope.TENANT,
     }
 }
 
-type CreateMockPlatformWithOwnerParams = {
-    platform?: Partial<Omit<Platform, 'ownerId'>>
-    owner?: Partial<Omit<User, 'platformId'>>
+type CreateMockTenantWithOwnerParams = {
+    tenant?: Partial<Omit<Tenant, 'ownerId'>>
+    owner?: Partial<Omit<User, 'tenantId'>>
 }
 
-type CreateMockPlatformWithOwnerReturn = {
-    mockPlatform: Platform
+type CreateMockTenantWithOwnerReturn = {
+    mockTenant: Tenant
     mockOwner: User
     mockUserIdentity: UserIdentity
 }
@@ -778,7 +778,7 @@ type CreateMockPlatformWithOwnerReturn = {
 
 type MockBasicSetup = {
     mockOwner: User
-    mockPlatform: Platform
+    mockTenant: Tenant
     mockWorkspace: Workspace
     mockUserIdentity: UserIdentity
 }
@@ -786,8 +786,8 @@ type MockBasicSetup = {
 type MockBasicSetupParams = {
     userIdentity?: Partial<UserIdentity>
     user?: Partial<User>
-    plan?: Partial<PlatformPlan>
-    platform?: Partial<Platform>
+    plan?: Partial<TenantPlan>
+    tenant?: Partial<Tenant>
     workspace?: Partial<Workspace>
 }
 

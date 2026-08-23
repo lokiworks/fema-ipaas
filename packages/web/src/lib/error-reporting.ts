@@ -52,7 +52,7 @@ function init(): void {
 function buildCaptureContext(report: FrontendErrorReport) {
   const userId = authenticationSession.getCurrentUserId();
   const workspaceId = authenticationSession.getWorkspaceId();
-  const platformId = authenticationSession.getPlatformId();
+  const tenantId = authenticationSession.getTenantId();
 
   return {
     tags: {
@@ -63,7 +63,7 @@ function buildCaptureContext(report: FrontendErrorReport) {
     },
     user: isNil(userId)
       ? undefined
-      : { id: userId, workspace_id: workspaceId, platform_id: platformId },
+      : { id: userId, workspace_id: workspaceId, tenant_id: tenantId },
     contexts: {
       page: {
         url: window.location.href,

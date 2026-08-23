@@ -21,7 +21,7 @@ describe('otelQueueMetrics.buildGaugePayload', () => {
         const payload = otelQueueMetrics.buildGaugePayload({
             queueCounts: {
                 workerJobs: { waiting: 3, active: 1 },
-                'platform-group-jobs': { failed: 2 },
+                'tenant-group-jobs': { failed: 2 },
             },
             timeUnixNano: '1720000000000000000',
             hostName: 'api-1',
@@ -57,7 +57,7 @@ describe('otelQueueMetrics.buildGaugePayload', () => {
                 timeUnixNano: '1720000000000000000',
                 asInt: '2',
                 attributes: [
-                    { key: 'queue', value: { stringValue: 'platform-group-jobs' } },
+                    { key: 'queue', value: { stringValue: 'tenant-group-jobs' } },
                     { key: 'state', value: { stringValue: 'failed' } },
                 ],
             },

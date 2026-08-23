@@ -1,11 +1,11 @@
 import { z } from 'zod'
-import { PlatformRole, UserStatus } from './user'
+import { TenantRole, UserStatus } from './user'
 
 export * from './user'
 
 export const UpdateUserRequestBody = z.object({
     status: z.nativeEnum(UserStatus).optional(),
-    platformRole: z.nativeEnum(PlatformRole).optional(),
+    tenantRole: z.nativeEnum(TenantRole).optional(),
     externalId: z.string().optional(),
 })
 

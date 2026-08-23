@@ -18,7 +18,7 @@ afterAll(async () => {
 })
 describe('Webhook Service', () => {
     it('should accept webhook for enabled workflow', async () => {
-        const { mockWorkspace, mockPlatform, mockOwner } = await mockAndSaveBasicSetup()
+        const { mockWorkspace, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
         const mockWorkflow = createMockWorkflow({
             workspaceId: mockWorkspace.id,
             status: WorkflowStatus.ENABLED,
@@ -33,8 +33,8 @@ describe('Webhook Service', () => {
         })
         const mockToken = await generateMockToken({
             type: PrincipalType.USER,
-            platform: {
-                id: mockPlatform.id,
+            tenant: {
+                id: mockTenant.id,
             },
             id: mockOwner.id,
         })
@@ -50,12 +50,12 @@ describe('Webhook Service', () => {
     })
 
     it('should return GONE if the workflow is not found', async () => {
-        const { mockOwner, mockPlatform } = await mockAndSaveBasicSetup()
+        const { mockOwner, mockTenant } = await mockAndSaveBasicSetup()
         const mockToken = await generateMockToken({
             type: PrincipalType.USER,
             id: mockOwner.id,
-            platform: {
-                id: mockPlatform.id,
+            tenant: {
+                id: mockTenant.id,
             },
         })
 
@@ -69,7 +69,7 @@ describe('Webhook Service', () => {
         expect(response?.statusCode).toBe(StatusCodes.GONE)
     })
     it('should return NOT FOUND if the workflow is disabled', async () => {
-        const { mockWorkspace, mockPlatform, mockOwner } = await mockAndSaveBasicSetup()
+        const { mockWorkspace, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
         const mockWorkflow = createMockWorkflow({
             workspaceId: mockWorkspace.id,
             status: WorkflowStatus.DISABLED,
@@ -84,8 +84,8 @@ describe('Webhook Service', () => {
         })
         const mockToken = await generateMockToken({
             type: PrincipalType.USER,
-            platform: {
-                id: mockPlatform.id,
+            tenant: {
+                id: mockTenant.id,
             },
             id: mockOwner.id,
         })
@@ -100,7 +100,7 @@ describe('Webhook Service', () => {
     })
 
     it('should pass query parameters in webhook payload', async () => {
-        const { mockWorkspace, mockPlatform, mockOwner } = await mockAndSaveBasicSetup()
+        const { mockWorkspace, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
         const mockWorkflow = createMockWorkflow({
             workspaceId: mockWorkspace.id,
             status: WorkflowStatus.ENABLED,
@@ -115,8 +115,8 @@ describe('Webhook Service', () => {
         })
         const mockToken = await generateMockToken({
             type: PrincipalType.USER,
-            platform: {
-                id: mockPlatform.id,
+            tenant: {
+                id: mockTenant.id,
             },
             id: mockOwner.id,
         })
@@ -132,7 +132,7 @@ describe('Webhook Service', () => {
     })
 
     it('should accept GET method', async () => {
-        const { mockWorkspace, mockPlatform, mockOwner } = await mockAndSaveBasicSetup()
+        const { mockWorkspace, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
         const mockWorkflow = createMockWorkflow({
             workspaceId: mockWorkspace.id,
             status: WorkflowStatus.ENABLED,
@@ -147,8 +147,8 @@ describe('Webhook Service', () => {
         })
         const mockToken = await generateMockToken({
             type: PrincipalType.USER,
-            platform: {
-                id: mockPlatform.id,
+            tenant: {
+                id: mockTenant.id,
             },
             id: mockOwner.id,
         })
@@ -163,7 +163,7 @@ describe('Webhook Service', () => {
     })
 
     it('should accept PUT method', async () => {
-        const { mockWorkspace, mockPlatform, mockOwner } = await mockAndSaveBasicSetup()
+        const { mockWorkspace, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
         const mockWorkflow = createMockWorkflow({
             workspaceId: mockWorkspace.id,
             status: WorkflowStatus.ENABLED,
@@ -178,8 +178,8 @@ describe('Webhook Service', () => {
         })
         const mockToken = await generateMockToken({
             type: PrincipalType.USER,
-            platform: {
-                id: mockPlatform.id,
+            tenant: {
+                id: mockTenant.id,
             },
             id: mockOwner.id,
         })
@@ -195,7 +195,7 @@ describe('Webhook Service', () => {
     })
 
     it('should accept DELETE method', async () => {
-        const { mockWorkspace, mockPlatform, mockOwner } = await mockAndSaveBasicSetup()
+        const { mockWorkspace, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
         const mockWorkflow = createMockWorkflow({
             workspaceId: mockWorkspace.id,
             status: WorkflowStatus.ENABLED,
@@ -210,8 +210,8 @@ describe('Webhook Service', () => {
         })
         const mockToken = await generateMockToken({
             type: PrincipalType.USER,
-            platform: {
-                id: mockPlatform.id,
+            tenant: {
+                id: mockTenant.id,
             },
             id: mockOwner.id,
         })
@@ -226,7 +226,7 @@ describe('Webhook Service', () => {
     })
 
     it('should return x-webhook-id header in response', async () => {
-        const { mockWorkspace, mockPlatform, mockOwner } = await mockAndSaveBasicSetup()
+        const { mockWorkspace, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
         const mockWorkflow = createMockWorkflow({
             workspaceId: mockWorkspace.id,
             status: WorkflowStatus.ENABLED,
@@ -241,8 +241,8 @@ describe('Webhook Service', () => {
         })
         const mockToken = await generateMockToken({
             type: PrincipalType.USER,
-            platform: {
-                id: mockPlatform.id,
+            tenant: {
+                id: mockTenant.id,
             },
             id: mockOwner.id,
         })
@@ -259,7 +259,7 @@ describe('Webhook Service', () => {
     })
 
     it('should accept webhook on draft endpoint', async () => {
-        const { mockWorkspace, mockPlatform, mockOwner } = await mockAndSaveBasicSetup()
+        const { mockWorkspace, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
         const mockWorkflow = createMockWorkflow({
             workspaceId: mockWorkspace.id,
             status: WorkflowStatus.DISABLED,
@@ -271,8 +271,8 @@ describe('Webhook Service', () => {
         await db.save('workflow_version', [mockWorkflowVersion])
         const mockToken = await generateMockToken({
             type: PrincipalType.USER,
-            platform: {
-                id: mockPlatform.id,
+            tenant: {
+                id: mockTenant.id,
             },
             id: mockOwner.id,
         })
@@ -288,7 +288,7 @@ describe('Webhook Service', () => {
     })
 
     it('should return 413 when webhook payload exceeds MAX_WEBHOOK_PAYLOAD_SIZE_MB', async () => {
-        const { mockWorkspace, mockPlatform, mockOwner } = await mockAndSaveBasicSetup()
+        const { mockWorkspace, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
         const mockWorkflow = createMockWorkflow({
             workspaceId: mockWorkspace.id,
             status: WorkflowStatus.ENABLED,
@@ -303,8 +303,8 @@ describe('Webhook Service', () => {
         })
         const mockToken = await generateMockToken({
             type: PrincipalType.USER,
-            platform: {
-                id: mockPlatform.id,
+            tenant: {
+                id: mockTenant.id,
             },
             id: mockOwner.id,
         })
@@ -322,7 +322,7 @@ describe('Webhook Service', () => {
     })
 
     it('should accept webhook payload under MAX_WEBHOOK_PAYLOAD_SIZE_MB', async () => {
-        const { mockWorkspace, mockPlatform, mockOwner } = await mockAndSaveBasicSetup()
+        const { mockWorkspace, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
         const mockWorkflow = createMockWorkflow({
             workspaceId: mockWorkspace.id,
             status: WorkflowStatus.ENABLED,
@@ -337,8 +337,8 @@ describe('Webhook Service', () => {
         })
         const mockToken = await generateMockToken({
             type: PrincipalType.USER,
-            platform: {
-                id: mockPlatform.id,
+            tenant: {
+                id: mockTenant.id,
             },
             id: mockOwner.id,
         })
@@ -354,7 +354,7 @@ describe('Webhook Service', () => {
     })
 
     it('should return 413 for sync webhook when payload exceeds limit', async () => {
-        const { mockWorkspace, mockPlatform, mockOwner } = await mockAndSaveBasicSetup()
+        const { mockWorkspace, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
         const mockWorkflow = createMockWorkflow({
             workspaceId: mockWorkspace.id,
             status: WorkflowStatus.ENABLED,
@@ -369,8 +369,8 @@ describe('Webhook Service', () => {
         })
         const mockToken = await generateMockToken({
             type: PrincipalType.USER,
-            platform: {
-                id: mockPlatform.id,
+            tenant: {
+                id: mockTenant.id,
             },
             id: mockOwner.id,
         })
@@ -387,14 +387,14 @@ describe('Webhook Service', () => {
     })
 
     it('should process handshake for DISABLED workflow during publish window', async () => {
-        const { mockWorkspace, mockPlatform } = await mockAndSaveBasicSetup()
+        const { mockWorkspace, mockTenant } = await mockAndSaveBasicSetup()
 
         const triggerName = 'new_webhook'
         const connectorName = 'test-handshake-connector'
         const connectorVersion = '1.0.0'
 
         const mockConnector = createMockConnectorMetadata({
-            platformId: mockPlatform.id,
+            tenantId: mockTenant.id,
             connectorType: ConnectorType.CUSTOM,
             name: connectorName,
             version: connectorVersion,
@@ -458,14 +458,14 @@ describe('Webhook Service', () => {
     })
 
     it('should process handshake for ENABLED workflow on re-verification ping', async () => {
-        const { mockWorkspace, mockPlatform } = await mockAndSaveBasicSetup()
+        const { mockWorkspace, mockTenant } = await mockAndSaveBasicSetup()
 
         const triggerName = 'new_webhook'
         const connectorName = 'test-handshake-connector-enabled'
         const connectorVersion = '1.0.0'
 
         const mockConnector = createMockConnectorMetadata({
-            platformId: mockPlatform.id,
+            tenantId: mockTenant.id,
             connectorType: ConnectorType.CUSTOM,
             name: connectorName,
             version: connectorVersion,
@@ -529,7 +529,7 @@ describe('Webhook Service', () => {
     })
 
     it('should accept webhook on test endpoint without execution', async () => {
-        const { mockWorkspace, mockPlatform, mockOwner } = await mockAndSaveBasicSetup()
+        const { mockWorkspace, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
         const mockWorkflow = createMockWorkflow({
             workspaceId: mockWorkspace.id,
             status: WorkflowStatus.DISABLED,
@@ -541,8 +541,8 @@ describe('Webhook Service', () => {
         await db.save('workflow_version', [mockWorkflowVersion])
         const mockToken = await generateMockToken({
             type: PrincipalType.USER,
-            platform: {
-                id: mockPlatform.id,
+            tenant: {
+                id: mockTenant.id,
             },
             id: mockOwner.id,
         })

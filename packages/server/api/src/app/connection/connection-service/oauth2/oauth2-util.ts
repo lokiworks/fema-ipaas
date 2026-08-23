@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from 'crypto'
 import { OAuth2Props, PropertyType } from '@fema/connector-sdk'
-import { assertNotNullOrUndefined, deleteProps, ErrorCode, isNil, PlatformError, PlatformId, unique } from '@fema/core-utils'
+import { ApplicationError, assertNotNullOrUndefined, deleteProps, ErrorCode, isNil, TenantId, unique } from '@fema/core-utils'
 import { BaseOAuth2ConnectionValue, Connection, ConnectionType, GetOAuth2AuthorizationUrlResponse, OAuth2GrantType, resolveValueFromProps } from '@fema/shared'
 import { isAxiosError } from 'axios'
 import { FastifyBaseLogger } from 'fastify'
@@ -63,14 +63,14 @@ export const oauth2Util = (log: FastifyBaseLogger) => ({
         return false
     },
     getOAuth2TokenUrl: async ({
-        platformId,
+        tenantId,
         connectorName,
         connectorVersion,
         props,
     }: OAuth2TokenUrlParams): Promise<string> => {
         const connectorMetadata = await connectorMetadataService(log).getOrThrow({
             name: connectorName,
-            platformId,
+            tenantId,
             version: connectorVersion,
         })
         const connectorAuth = Array.isArray(connectorMetadata.auth) ? connectorMetadata.auth.find(auth => auth.type === PropertyType.OAUTH2) : connectorMetadata.auth
@@ -84,7 +84,7 @@ export const oauth2Util = (log: FastifyBaseLogger) => ({
                 })
                 return resolveValueFromProps(props, connectorAuth.tokenUrl)
             default:
-                throw new PlatformError({
+                throw new ApplicationError({
                     code: ErrorCode.INVALID_CONNECTION,
                     params: {
                         error: 'invalid auth type',
@@ -93,7 +93,7 @@ export const oauth2Util = (log: FastifyBaseLogger) => ({
         }
     },
     buildAuthorizationUrl: async ({
-        platformId,
+        tenantId,
         connectorName,
         connectorVersion,
         clientId,
@@ -104,7 +104,7 @@ export const oauth2Util = (log: FastifyBaseLogger) => ({
     }: BuildAuthorizationUrlParams): Promise<GetOAuth2AuthorizationUrlResponse> => {
         const connectorMetadata = await connectorMetadataService(log).getOrThrow({
             name: connectorName,
-            platformId,
+            tenantId,
             version: connectorVersion,
         })
         const connectorAuth = Array.isArray(connectorMetadata.auth)
@@ -112,7 +112,7 @@ export const oauth2Util = (log: FastifyBaseLogger) => ({
             : connectorMetadata.auth
         assertNotNullOrUndefined(connectorAuth, 'auth')
         if (connectorAuth.type !== PropertyType.OAUTH2) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.INVALID_CONNECTION,
                 params: { error: 'invalid auth type' },
             })
@@ -179,7 +179,7 @@ export const oauth2Util = (log: FastifyBaseLogger) => ({
         }
         if (connection.value.type === ConnectionType.OAUTH2
             || connection.value.type === ConnectionType.CLOUD_OAUTH2
-            || connection.value.type === ConnectionType.PLATFORM_OAUTH2) {
+            || connection.value.type === ConnectionType.TENANT_OAUTH2) {
             connection.value = {
                 ...connection.value,
                 refresh_token: '(REDACTED)',
@@ -190,7 +190,7 @@ export const oauth2Util = (log: FastifyBaseLogger) => ({
 })
 
 type OAuth2TokenUrlParams = {
-    platformId: PlatformId
+    tenantId: TenantId
     connectorName: string
     connectorVersion?: string
     props?: Record<string, unknown>
@@ -203,13 +203,13 @@ const resolveSelectedScopes = (requested: string[] | undefined, allowed: string[
     const allowedSet = new Set(allowed)
     const invalid = requested.filter(scope => !allowedSet.has(scope))
     if (invalid.length > 0) {
-        throw new PlatformError({
+        throw new ApplicationError({
             code: ErrorCode.INVALID_CONNECTION,
             params: { error: `requested scopes are not declared by the connector: ${invalid.join(', ')}` },
         })
     }
     if (requested.length === 0) {
-        throw new PlatformError({
+        throw new ApplicationError({
             code: ErrorCode.INVALID_CONNECTION,
             params: { error: 'at least one scope must be selected' },
         })
@@ -233,7 +233,7 @@ const assertPlaceholdersResolved = ({ templates, props, authProps }: AssertPlace
         return
     }
     const labels = missing.map(key => declaredProps[key].displayName).join(', ')
-    throw new PlatformError({
+    throw new ApplicationError({
         code: ErrorCode.INVALID_CONNECTION,
         params: { error: `missing required connection settings: ${labels}` },
     })
@@ -246,7 +246,7 @@ type AssertPlaceholdersResolvedParams = {
 }
 
 type BuildAuthorizationUrlParams = {
-    platformId: PlatformId
+    tenantId: TenantId
     connectorName: string
     connectorVersion?: string
     clientId: string

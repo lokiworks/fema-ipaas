@@ -1,7 +1,7 @@
 import { Navigate, useLocation } from 'react-router-dom';
 
 import { useAuthorization } from '@/hooks/authorization-hooks';
-import { platformHooks } from '@/hooks/platform-hooks';
+import { tenantHooks } from '@/hooks/tenant-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 import { determineDefaultRoute } from '@/lib/route-utils';
 
@@ -19,19 +19,19 @@ export const DefaultRoute = () => {
     );
   }
   if (authenticationSession.isOnboarding()) {
-    return <Navigate to="/create-platform" replace />;
+    return <Navigate to="/create-tenant" replace />;
   }
   return <AuthenticatedDefaultRoute />;
 };
 
 const AuthenticatedDefaultRoute = () => {
   const { checkAccess } = useAuthorization();
-  const { platform } = platformHooks.useCurrentPlatform();
+  const { tenant } = tenantHooks.useCurrentTenant();
   return (
     <Navigate
       to={determineDefaultRoute({
         checkAccess,
-        chatEnabled: platform.plan.chatEnabled,
+        chatEnabled: tenant.plan.chatEnabled,
       })}
       replace
     ></Navigate>

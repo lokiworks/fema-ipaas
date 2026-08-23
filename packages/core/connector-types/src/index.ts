@@ -13,7 +13,7 @@ export type {
     CustomAuthConnectionValue,
     OIDCConnectionValue,
     CloudOAuth2ConnectionValue,
-    PlatformOAuth2ConnectionValue,
+    TenantOAuth2ConnectionValue,
     OAuth2ConnectionValueWithApp,
     NoAuthConnectionValue,
 } from './lib/connection'

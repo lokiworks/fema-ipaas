@@ -1,6 +1,6 @@
 import { randomBytes } from 'crypto'
 import { promisify } from 'util'
-import { ErrorCode, isNil, PlatformError, spreadIfDefined } from '@fema/core-utils'
+import { ApplicationError, ErrorCode, isNil, spreadIfDefined } from '@fema/core-utils'
 import { Mutex } from 'async-mutex'
 import jwtLibrary, {
     DecodeOptions,
@@ -58,7 +58,7 @@ export const jwtUtils = {
 
                 if (isNil(token)) {
                     return reject(
-                        new PlatformError({
+                        new ApplicationError({
                             code: ErrorCode.INVALID_BEARER_TOKEN,
                             params: {},
                         }),
@@ -77,7 +77,7 @@ export const jwtUtils = {
         if (redisType === RedisType.MEMORY) {
             return getOrGenerateAndStoreSecret()
         }
-        throw new PlatformError(
+        throw new ApplicationError(
             {
                 code: ErrorCode.SYSTEM_PROP_INVALID,
                 params: {

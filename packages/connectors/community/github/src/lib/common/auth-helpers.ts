@@ -162,7 +162,7 @@ type GithubOAuth2Auth = {
   type:
     | ConnectionType.OAUTH2
     | ConnectionType.CLOUD_OAUTH2
-    | ConnectionType.PLATFORM_OAUTH2;
+    | ConnectionType.TENANT_OAUTH2;
   access_token: string;
   data: Record<string, unknown>;
 };

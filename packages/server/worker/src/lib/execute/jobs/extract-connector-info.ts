@@ -12,7 +12,7 @@ export const extractConnectorInfoJob: JobHandler<ExecuteExtractConnectorMetadata
     async execute(ctx: JobContext, data: ExecuteExtractConnectorMetadataJobData): Promise<SynchronousJobResult> {
         const timeoutInSeconds = workerSettings.getSettings().TRIGGER_TIMEOUT_SECONDS
 
-        const resolved = await ctx.resolver.resolve({ platformId: data.platformId, publicApiUrl: ctx.publicApiUrl, engineToken: ctx.engineToken, connectors: [data.connector] })
+        const resolved = await ctx.resolver.resolve({ tenantId: data.tenantId, publicApiUrl: ctx.publicApiUrl, engineToken: ctx.engineToken, connectors: [data.connector] })
         if (resolved.kind !== 'ready') {
             throw new Error(`Unexpected resolve outcome "${resolved.kind}" for connector-only job`)
         }
@@ -23,7 +23,7 @@ export const extractConnectorInfoJob: JobHandler<ExecuteExtractConnectorMetadata
             operationType: EngineOperationType.EXTRACT_CONNECTOR_METADATA,
             operation: {
                 ...data.connector,
-                platformId: data.platformId,
+                tenantId: data.tenantId,
                 timeoutInSeconds,
             },
             timeoutInSeconds,

@@ -2,8 +2,8 @@ import { isNil } from '@fema/core-utils'
 
 const MAX_NAME_PART_LENGTH = 50
 const FALLBACK_FIRST_NAME = 'there'
-const PLATFORM_NAME_NOUN = 'Platform'
-const FALLBACK_PLATFORM_NAME = 'My Platform'
+const TENANT_NAME_NOUN = 'Tenant'
+const FALLBACK_TENANT_NAME = 'My Tenant'
 const SAFE_STRING_CHARS = /[./]/g
 
 function localPartTokens(email: string): string[] {
@@ -21,17 +21,17 @@ function firstNameFromEmail(email: string): string {
     return first ?? FALLBACK_FIRST_NAME
 }
 
-function platformNameFromPerson({ firstName, email }: PlatformNameFromPersonParams): string {
+function tenantNameFromPerson({ firstName, email }: TenantNameFromPersonParams): string {
     const [given] = firstName.replace(SAFE_STRING_CHARS, '').trim().split(/\s+/)
     if (isNil(given) || given.length === 0) {
         const [fromEmail] = localPartTokens(email)
-        return isNil(fromEmail) ? FALLBACK_PLATFORM_NAME : platformNameFor(fromEmail)
+        return isNil(fromEmail) ? FALLBACK_TENANT_NAME : tenantNameFor(fromEmail)
     }
-    return platformNameFor(given)
+    return tenantNameFor(given)
 }
 
-function platformNameFor(name: string): string {
-    return `${possessive(name.slice(0, MAX_NAME_PART_LENGTH))} ${PLATFORM_NAME_NOUN}`
+function tenantNameFor(name: string): string {
+    return `${possessive(name.slice(0, MAX_NAME_PART_LENGTH))} ${TENANT_NAME_NOUN}`
 }
 
 function possessive(name: string): string {
@@ -55,11 +55,11 @@ function splitFullName({ fullName, email }: SplitFullNameParams): SplitName {
 
 export const signupNames = {
     firstNameFromEmail,
-    platformNameFromPerson,
+    tenantNameFromPerson,
     splitFullName,
 }
 
-type PlatformNameFromPersonParams = {
+type TenantNameFromPersonParams = {
     firstName: string
     email: string
 }

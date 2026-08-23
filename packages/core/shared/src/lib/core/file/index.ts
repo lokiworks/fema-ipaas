@@ -35,7 +35,7 @@ export enum FileType {
      */
     SAMPLE_DATA = 'SAMPLE_DATA',
     /*
-    @deprecated the platform no longer stores trigger payload
+    @deprecated the tenant no longer stores trigger payload
     */
     TRIGGER_PAYLOAD = 'TRIGGER_PAYLOAD',
     /**
@@ -60,9 +60,9 @@ export enum FileType {
     WORKFLOW_VERSION_BACKUP = 'WORKFLOW_VERSION_BACKUP',
 
     /**
-     * Platform public assets, like logos, should be stored in the database.
+     * Tenant public assets, like logos, should be stored in the database.
      */
-    PLATFORM_ASSET = 'PLATFORM_ASSET',
+    TENANT_ASSET = 'TENANT_ASSET',
     /**
      * User profile pictures, should be stored in the database.
      */
@@ -109,7 +109,7 @@ export enum FileLocation {
 export const File = z.object({
     ...BaseModelSchema,
     workspaceId: Nullable(z.string()),
-    platformId: Nullable(z.string()),
+    tenantId: Nullable(z.string()),
     type: z.nativeEnum(FileType),
     compression: z.nativeEnum(FileCompression),
     data: z.unknown().optional(),

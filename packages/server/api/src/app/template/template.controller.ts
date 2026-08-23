@@ -1,12 +1,12 @@
-import { ErrorCode, isNil, PlatformError } from '@fema/core-utils'
+import { ApplicationError, ErrorCode, isNil } from '@fema/core-utils'
 import { ALL_PRINCIPAL_TYPES, CreateTemplateRequestBody, ListTemplatesRequestQuery, Principal, PrincipalType, SERVICE_KEY_SECURITY_OPENAPI, Template, TemplateType, UpdateTemplateRequestBody } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
 import { securityAccess } from '../core/security/authorization/fastify-security'
-import { platformGuards } from '../core/security/platform-guards'
-import { platformService } from '../platform/platform.service'
+import { tenantGuards } from '../core/security/tenant-guards'
+import { tenantService } from '../tenant/tenant.service'
 import { migrateWorkflowVersionTemplateList } from '../workflows/workflow-version/migrations'
 import { communityTemplates } from './community-templates.service'
 import { templateService } from './template.service'
@@ -44,18 +44,18 @@ export const templateController: FastifyPluginAsyncZod = async (app) => {
         },
     }, async (request, reply) => {
         const { type } = request.body
-        let platformId: string | undefined
+        let tenantId: string | undefined
 
         switch (type) {
             case TemplateType.CUSTOM: {
-                await platformGuards.assertPrincipalIsPlatformAdmin({ principal: request.principal, log: request.log })
-                platformId = request.principal.platform.id
+                await tenantGuards.assertPrincipalIsTenantAdmin({ principal: request.principal, log: request.log })
+                tenantId = request.principal.tenant.id
             }
                 break
             case TemplateType.SHARED:
                 break
             case TemplateType.OFFICIAL: {
-                throw new PlatformError({
+                throw new ApplicationError({
                     code: ErrorCode.VALIDATION,
                     params: {
                         message: 'Official templates are not supported to being created',
@@ -63,7 +63,7 @@ export const templateController: FastifyPluginAsyncZod = async (app) => {
                 })
             }
         }
-        const result = await templateService(app.log).create({ platformId, params: request.body })
+        const result = await templateService(app.log).create({ tenantId, params: request.body })
         return reply.status(StatusCodes.CREATED).send(result)
     })
 
@@ -78,15 +78,15 @@ export const templateController: FastifyPluginAsyncZod = async (app) => {
         switch (template.type) {
             case TemplateType.OFFICIAL:
             case TemplateType.SHARED:
-                throw new PlatformError({
+                throw new ApplicationError({
                     code: ErrorCode.AUTHORIZATION,
                     params: { message: 'Cannot update official or shared templates' },
                 })
             case TemplateType.CUSTOM: {
-                await platformGuards.assertPrincipalIsPlatformAdmin({ principal: request.principal, log: request.log })
-                assertTemplateBelongsToPlatform({
-                    templatePlatformId: template.platformId,
-                    principalPlatformId: request.principal.platform.id,
+                await tenantGuards.assertPrincipalIsTenantAdmin({ principal: request.principal, log: request.log })
+                assertTemplateBelongsToTenant({
+                    templateTenantId: template.tenantId,
+                    principalTenantId: request.principal.tenant.id,
                 })
                 break
             }
@@ -102,15 +102,15 @@ export const templateController: FastifyPluginAsyncZod = async (app) => {
         switch (template.type) {
             case TemplateType.OFFICIAL:
             case TemplateType.SHARED:
-                throw new PlatformError({
+                throw new ApplicationError({
                     code: ErrorCode.AUTHORIZATION,
                     params: { message: 'Cannot delete official or shared templates' },
                 })
             case TemplateType.CUSTOM: {
-                await platformGuards.assertPrincipalIsPlatformAdmin({ principal: request.principal, log: request.log })
-                assertTemplateBelongsToPlatform({
-                    templatePlatformId: template.platformId,
-                    principalPlatformId: request.principal.platform.id,
+                await tenantGuards.assertPrincipalIsTenantAdmin({ principal: request.principal, log: request.log })
+                assertTemplateBelongsToTenant({
+                    templateTenantId: template.tenantId,
+                    principalTenantId: request.principal.tenant.id,
                 })
                 break
             }
@@ -166,7 +166,7 @@ const ListTemplatesParams = {
 
 const DeleteParams = {
     config: {
-        security: securityAccess.publicPlatform([PrincipalType.USER, PrincipalType.SERVICE]),
+        security: securityAccess.publicTenant([PrincipalType.USER, PrincipalType.SERVICE]),
     },
     schema: {
         description: 'Delete a template.',
@@ -178,7 +178,7 @@ const DeleteParams = {
 
 const CreateParams = {
     config: {
-        security: securityAccess.publicPlatform([PrincipalType.USER, PrincipalType.SERVICE]),
+        security: securityAccess.publicTenant([PrincipalType.USER, PrincipalType.SERVICE]),
     },
     schema: {
         description: 'Create a template.',
@@ -190,7 +190,7 @@ const CreateParams = {
 
 const UpdateParams = {
     config: {
-        security: securityAccess.publicPlatform([PrincipalType.USER, PrincipalType.SERVICE]),
+        security: securityAccess.publicTenant([PrincipalType.USER, PrincipalType.SERVICE]),
     },
     schema: {
         description: 'Update a template.',
@@ -201,14 +201,14 @@ const UpdateParams = {
     },
 }
 
-function assertTemplateBelongsToPlatform({ templatePlatformId, principalPlatformId }: {
-    templatePlatformId: string | null | undefined
-    principalPlatformId: string
+function assertTemplateBelongsToTenant({ templateTenantId, principalTenantId }: {
+    templateTenantId: string | null | undefined
+    principalTenantId: string
 }): void {
-    if (templatePlatformId !== principalPlatformId) {
-        throw new PlatformError({
+    if (templateTenantId !== principalTenantId) {
+        throw new ApplicationError({
             code: ErrorCode.AUTHORIZATION,
-            params: { message: 'Template does not belong to your platform' },
+            params: { message: 'Template does not belong to your tenant' },
         })
     }
 }
@@ -232,14 +232,14 @@ async function loadCustomTemplatesOrReturnEmpty(
     if ((!isNil(query.type) && query.type !== TemplateType.CUSTOM)) {
         return []
     }
-    const platformId = principal.type === PrincipalType.UNKNOWN || principal.type === PrincipalType.WORKER || principal.type === PrincipalType.ONBOARDING ? null : principal.platform.id
-    if (isNil(platformId)) {
+    const tenantId = principal.type === PrincipalType.UNKNOWN || principal.type === PrincipalType.WORKER || principal.type === PrincipalType.ONBOARDING ? null : principal.tenant.id
+    if (isNil(tenantId)) {
         return []
     }
-    const platform = await platformService(log).getOneWithPlanOrThrow(platformId)
-    if (!platform.plan.manageTemplatesEnabled) {
+    const tenant = await tenantService(log).getOneWithPlanOrThrow(tenantId)
+    if (!tenant.plan.manageTemplatesEnabled) {
         return []
     }
-    const customTemplates = await templateService(log).list({ platformId, type: TemplateType.CUSTOM, ...query })
+    const customTemplates = await templateService(log).list({ tenantId, type: TemplateType.CUSTOM, ...query })
     return customTemplates.data
 }

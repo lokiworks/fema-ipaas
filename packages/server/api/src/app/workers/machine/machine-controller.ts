@@ -37,7 +37,7 @@ export const workerMachineController: FastifyPluginAsyncZod = async (app) => {
     })
 
     app.get('/', ListWorkersParams, async (request) => {
-        return machineService(app.log).list(request.principal.platform.id)
+        return machineService(app.log).list(request.principal.tenant.id)
     })
 
     app.get('/queue-metrics', QueueMetricsParams, async () => {
@@ -65,13 +65,13 @@ export const workerMachineController: FastifyPluginAsyncZod = async (app) => {
 
 const ListWorkersParams = {
     config: {
-        security: securityAccess.platformAdminOnly([PrincipalType.USER, PrincipalType.SERVICE]),
+        security: securityAccess.tenantAdminOnly([PrincipalType.USER, PrincipalType.SERVICE]),
     },
 }
 
 const QueueMetricsParams = {
     config: {
-        security: securityAccess.platformAdminOnly([PrincipalType.USER, PrincipalType.SERVICE]),
+        security: securityAccess.tenantAdminOnly([PrincipalType.USER, PrincipalType.SERVICE]),
     },
     schema: {
         tags: ['worker-machines'],
@@ -89,7 +89,7 @@ const QueueMetricsParams = {
 
 const PrometheusQueueMetricsParams = {
     config: {
-        security: securityAccess.platformAdminOnly([PrincipalType.USER, PrincipalType.SERVICE]),
+        security: securityAccess.tenantAdminOnly([PrincipalType.USER, PrincipalType.SERVICE]),
     },
     schema: {
         params: z.object({

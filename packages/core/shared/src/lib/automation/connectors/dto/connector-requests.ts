@@ -93,20 +93,20 @@ export const ConnectorOptionRequest = z.object({
 export type ConnectorOptionRequest = z.infer<typeof ConnectorOptionRequest>
 
 export enum ConnectorScope {
-    PLATFORM = 'PLATFORM',
+    TENANT = 'TENANT',
 }
 
 export const AddConnectorRequestBody = z.union([
     z.object({
         packageType: z.literal(PackageType.ARCHIVE),
-        scope: z.literal(ConnectorScope.PLATFORM),
+        scope: z.literal(ConnectorScope.TENANT),
         connectorName: z.string().min(1),
         connectorVersion: ExactVersionType,
         connectorArchive: ApMultipartFile,
     }).describe('Private Connector'),
     z.object({
         packageType: z.literal(PackageType.REGISTRY),
-        scope: z.literal(ConnectorScope.PLATFORM),
+        scope: z.literal(ConnectorScope.TENANT),
         connectorName: z.string().min(1),
         connectorVersion: ExactVersionType,
     }).describe('NPM Connector'),

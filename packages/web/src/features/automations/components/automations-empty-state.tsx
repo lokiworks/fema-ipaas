@@ -19,7 +19,7 @@ import { ImportWorkflowDialog } from '@/features/workflows/components/import-wor
 import { workflowHooks } from '@/features/workflows/hooks/workflow-hooks';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { flagsHooks } from '@/hooks/flags-hooks';
-import { platformHooks } from '@/hooks/platform-hooks';
+import { tenantHooks } from '@/hooks/tenant-hooks';
 
 type ActionRowProps = {
   icon: React.ReactNode;
@@ -202,8 +202,8 @@ export const AutomationsEmptyState = ({
     Permission.WRITE_WORKFLOW,
   );
 
-  const { platform } = platformHooks.useCurrentPlatform();
-  const isShowingOfficialTemplates = !platform.plan.manageTemplatesEnabled;
+  const { tenant } = tenantHooks.useCurrentTenant();
+  const isShowingOfficialTemplates = !tenant.plan.manageTemplatesEnabled;
 
   const { templates, isLoading: isLoadingTemplates } =
     templatesHooks.useTemplates(
@@ -239,7 +239,7 @@ export const AutomationsEmptyState = ({
       <div>
         <h2 className="text-sm font-medium text-muted-foreground mb-4">
           {t('Get started with {brandName}', {
-            brandName: branding.websiteName ?? platform.name,
+            brandName: branding.websiteName ?? tenant.name,
           })}
         </h2>
         <div className="flex gap-4">

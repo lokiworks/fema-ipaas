@@ -1,11 +1,11 @@
-import { Platform, Template } from '@fema/shared'
+import { Template, Tenant } from '@fema/shared'
 import { EntitySchema } from 'typeorm'
 import {
     BaseColumnSchemaPart,
 } from '../database/database-common'
 
 type TemplateSchema = Template & {
-    platform: Platform
+    tenant: Tenant
 }
 
 export const TemplateEntity = new EntitySchema<TemplateSchema>({
@@ -25,7 +25,7 @@ export const TemplateEntity = new EntitySchema<TemplateSchema>({
         type: {
             type: String,
         },
-        platformId: {
+        tenantId: {
             type: String,
             nullable: true,
         },
@@ -79,21 +79,21 @@ export const TemplateEntity = new EntitySchema<TemplateSchema>({
             unique: false,
         },
         {
-            name: 'idx_template_platform_id',
-            columns: ['platformId'],
+            name: 'idx_template_tenant_id',
+            columns: ['tenantId'],
             unique: false,
         },
     ],
     relations: {
-        platform: {
+        tenant: {
             type: 'many-to-one',
-            target: 'platform',
+            target: 'tenant',
             cascade: true,
             onDelete: 'CASCADE',
             nullable: true,
             joinColumn: {
-                name: 'platformId',
-                foreignKeyConstraintName: 'fk_template_platform_id',
+                name: 'tenantId',
+                foreignKeyConstraintName: 'fk_template_tenant_id',
             },
         },
     },

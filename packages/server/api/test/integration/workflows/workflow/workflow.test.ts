@@ -386,7 +386,7 @@ describe('Workflow API', () => {
             const mockToken = await generateMockToken({
                 type: PrincipalType.SERVICE,
                 id: mockApiKey,
-                platform: { id: ctx.platform.id },
+                tenant: { id: ctx.tenant.id },
             })
 
             const response = await app?.inject({

@@ -23,7 +23,7 @@ export const VariableEntity = new EntitySchema<VariableSchema>({
             type: String,
             nullable: false,
         },
-        platformId: {
+        tenantId: {
             type: String,
             nullable: false,
         },

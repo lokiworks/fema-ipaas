@@ -1,5 +1,5 @@
 import { ConnectorMetadata, ConnectorMetadataModel, ConnectorMetadataModelSummary, ConnectorPackageInformation, connectorTranslation } from '@fema/connector-sdk'
-import { apId, assertNotNullOrUndefined, ErrorCode, isNil, LocalesEnum, PlatformError, PlatformId } from '@fema/core-utils'
+import { apId, ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil, LocalesEnum, TenantId } from '@fema/core-utils'
 import { apVersionUtil } from '@fema/server-utils'
 import { ConnectorAudienceFilter, ConnectorCategory, ConnectorOrderBy, ConnectorPackage, ConnectorSortBy, ConnectorType, EXACT_VERSION_REGEX, PackageType, PrivateConnectorPackage, PublicConnectorPackage, SuggestionType, workflowConnectorUtil } from '@fema/shared'
 import dayjs from 'dayjs'
@@ -23,12 +23,12 @@ export const connectorMetadataService = (log: FastifyBaseLogger) => {
         },
         async list(params: ListParams): Promise<ConnectorMetadataModelSummary[]> {
             const locale = params.locale ?? LocalesEnum.ENGLISH
-            const translatedConnectors = await dedupe(`list:${params.platformId ?? ''}:${locale}`, () => fetchLatestConnectors({
-                platformId: params.platformId,
+            const translatedConnectors = await dedupe(`list:${params.tenantId ?? ''}:${locale}`, () => fetchLatestConnectors({
+                tenantId: params.tenantId,
                 locale,
                 log,
             }))
-            const policy = await resolveVisibility({ platformId: params.platformId, workspaceId: params.workspaceId, log })
+            const policy = await resolveVisibility({ tenantId: params.tenantId, workspaceId: params.workspaceId, log })
             const audience = params.audience ?? ConnectorAudienceFilter.HUMAN
             const audienceConnectors = translatedConnectors.map((connector) => ({ ...connector, actions: filterActionsByAudience(connector.actions, audience) }))
             const sortedConnectors = await connectorListUtils(log).sortAndSearchConnectors({
@@ -45,22 +45,22 @@ export const connectorMetadataService = (log: FastifyBaseLogger) => {
         async registry(params: RegistryParams): Promise<ConnectorPackageInformation[]> {
             const registry = filterRegistry(await loadRegistry(log), {
                 release: params.release,
-                platformId: params.platformId,
+                tenantId: params.tenantId,
             })
             return registry.map((connector) => ({
                 name: connector.name,
                 version: connector.version,
             }))
         },
-        async get({ workspaceId, platformId, version, name }: GetOrThrowParams): Promise<ConnectorMetadataModel | undefined> {
-            const bestMatch = await findExactVersion(log, { name, version, platformId })
+        async get({ workspaceId, tenantId, version, name }: GetOrThrowParams): Promise<ConnectorMetadataModel | undefined> {
+            const bestMatch = await findExactVersion(log, { name, version, tenantId })
             if (isNil(bestMatch)) {
                 return undefined
             }
-            const connector = await dedupe(`connector:${bestMatch.name}:${bestMatch.version}:${bestMatch.platformId ?? ''}`, () => fetchConnectorVersion({
+            const connector = await dedupe(`connector:${bestMatch.name}:${bestMatch.version}:${bestMatch.tenantId ?? ''}`, () => fetchConnectorVersion({
                 connectorName: bestMatch.name,
                 version: bestMatch.version,
-                platformId: bestMatch.platformId,
+                tenantId: bestMatch.tenantId,
                 log,
             }))
 
@@ -68,7 +68,7 @@ export const connectorMetadataService = (log: FastifyBaseLogger) => {
                 return undefined
             }
 
-            const policy = await resolveVisibility({ platformId, workspaceId, log })
+            const policy = await resolveVisibility({ tenantId, workspaceId, log })
             if (isNil(policy)) {
                 return connector
             }
@@ -77,10 +77,10 @@ export const connectorMetadataService = (log: FastifyBaseLogger) => {
             }
             return policy.filterConnectorComponents(connector)
         },
-        async getOrThrow({ version, name, platformId, locale }: GetOrThrowParams): Promise<ConnectorMetadataModel> {
-            const connector = await this.get({ version, name, platformId })
+        async getOrThrow({ version, name, tenantId, locale }: GetOrThrowParams): Promise<ConnectorMetadataModel> {
+            const connector = await this.get({ version, name, tenantId })
             if (isNil(connector)) {
-                throw new PlatformError({
+                throw new ApplicationError({
                     code: ErrorCode.ENTITY_NOT_FOUND,
                     params: {
                         message: `connector_metadata_not_found connectorName=${name}`,
@@ -102,7 +102,7 @@ export const connectorMetadataService = (log: FastifyBaseLogger) => {
                 created: existingMetadata.created,
             })
         },
-        async resolveExactVersion({ name, version, platformId }: GetExactConnectorVersionParams): Promise<string> {
+        async resolveExactVersion({ name, version, tenantId }: GetExactConnectorVersionParams): Promise<string> {
             const isExactVersion = EXACT_VERSION_REGEX.test(version)
 
             if (isExactVersion) {
@@ -112,14 +112,14 @@ export const connectorMetadataService = (log: FastifyBaseLogger) => {
             const connectorMetadata = await this.getOrThrow({
                 name,
                 version,
-                platformId,
+                tenantId,
             })
 
             return connectorMetadata.version
         },
         async create({
             connectorMetadata,
-            platformId,
+            tenantId,
             packageType,
             connectorType,
             archiveId,
@@ -128,10 +128,10 @@ export const connectorMetadataService = (log: FastifyBaseLogger) => {
             const existingMetadata = await connectorRepos().findOneBy({
                 name: connectorMetadata.name,
                 version: connectorMetadata.version,
-                platformId: platformId ?? IsNull(),
+                tenantId: tenantId ?? IsNull(),
             })
             if (!isNil(existingMetadata)) {
-                throw new PlatformError({
+                throw new ApplicationError({
                     code: ErrorCode.VALIDATION,
                     params: {
                         message: `connector_metadata_already_exists name=${connectorMetadata.name} version=${connectorMetadata.version}`,
@@ -140,14 +140,14 @@ export const connectorMetadataService = (log: FastifyBaseLogger) => {
             }
             const createdDate = await findOldestCreatedDate({
                 name: connectorMetadata.name,
-                platformId,
+                tenantId,
             })
             const savedConnector = await connectorRepos().save({
                 id: apId(),
                 packageType,
                 connectorType,
                 archiveId,
-                platformId,
+                tenantId,
                 created: createdDate,
                 ...connectorMetadata,
             })
@@ -164,35 +164,35 @@ export const connectorMetadataService = (log: FastifyBaseLogger) => {
             await connectorCache(log).invalidate()
         },
 
-        async delete({ id, platformId }: DeleteParams): Promise<void> {
+        async delete({ id, tenantId }: DeleteParams): Promise<void> {
             const connector = await connectorRepos().findOneBy({ id })
-            if (isNil(connector) || connector.platformId !== platformId) {
-                throw new PlatformError({
+            if (isNil(connector) || connector.tenantId !== tenantId) {
+                throw new ApplicationError({
                     code: ErrorCode.ENTITY_NOT_FOUND,
                     params: { entityType: 'connector', entityId: id },
                 })
             }
             if (connector.connectorType !== ConnectorType.CUSTOM) {
-                throw new PlatformError({
+                throw new ApplicationError({
                     code: ErrorCode.AUTHORIZATION,
                     params: { message: 'Only custom connectors can be deleted' },
                 })
             }
-            const workflowsUsingConnector = await findWorkflowsUsingConnector({ connectorName: connector.name, platformId, log })
+            const workflowsUsingConnector = await findWorkflowsUsingConnector({ connectorName: connector.name, tenantId, log })
             if (workflowsUsingConnector.length > 0) {
-                throw new PlatformError({
+                throw new ApplicationError({
                     code: ErrorCode.VALIDATION,
                     params: { message: buildConnectorInUseMessage(workflowsUsingConnector) },
                 })
             }
-            await connectorRepos().delete({ name: connector.name, platformId, connectorType: ConnectorType.CUSTOM })
+            await connectorRepos().delete({ name: connector.name, tenantId, connectorType: ConnectorType.CUSTOM })
             await connectorCache(log).invalidate()
         },
     }
 }
 
-async function findWorkflowsUsingConnector({ connectorName, platformId, log }: FindWorkflowsUsingConnectorParams): Promise<string[]> {
-    const workspaceIds = await workspaceService(log).getWorkspaceIdsByPlatform(platformId)
+async function findWorkflowsUsingConnector({ connectorName, tenantId, log }: FindWorkflowsUsingConnectorParams): Promise<string[]> {
+    const workspaceIds = await workspaceService(log).getWorkspaceIdsByTenant(tenantId)
     if (workspaceIds.length === 0) {
         return []
     }
@@ -232,35 +232,35 @@ function buildConnectorInUseMessage(workflowNames: string[]): string {
 
 export const getConnectorPackageWithoutArchive = async (
     log: FastifyBaseLogger,
-    platformId: PlatformId | undefined,
+    tenantId: TenantId | undefined,
     pkg: Omit<PublicConnectorPackage, 'directoryPath' | 'connectorType' | 'packageType'> | Omit<PrivateConnectorPackage, 'archiveId' | 'archive' | 'connectorType' | 'packageType'>,
 ): Promise<ConnectorPackage> => {
     const connectorMetadata = await connectorMetadataService(log).getOrThrow({
         name: pkg.connectorName,
         version: pkg.connectorVersion,
-        platformId,
+        tenantId,
     })
     switch (connectorMetadata.packageType) {
         case PackageType.ARCHIVE:
-            assertNotNullOrUndefined(connectorMetadata.platformId, 'platformId is required')
+            assertNotNullOrUndefined(connectorMetadata.tenantId, 'tenantId is required')
             return {
                 connectorName: connectorMetadata.name,
                 connectorVersion: connectorMetadata.version,
                 connectorType: connectorMetadata.connectorType,
                 packageType: connectorMetadata.packageType,
                 archiveId: connectorMetadata.archiveId!,
-                platformId: connectorMetadata.platformId,
+                tenantId: connectorMetadata.tenantId,
             }
         case PackageType.REGISTRY: {
-            const connectorPlatformId = connectorMetadata.platformId
+            const connectorTenantId = connectorMetadata.tenantId
             if (connectorMetadata.connectorType === ConnectorType.CUSTOM) {
-                assertNotNullOrUndefined(connectorPlatformId, 'platformId is required')
+                assertNotNullOrUndefined(connectorTenantId, 'tenantId is required')
                 return {
                     connectorName: connectorMetadata.name,
                     connectorVersion: connectorMetadata.version,
                     packageType: connectorMetadata.packageType,
                     connectorType: connectorMetadata.connectorType,
-                    platformId: connectorPlatformId,
+                    tenantId: connectorTenantId,
                 }
             }
             return {
@@ -296,11 +296,11 @@ export function toConnectorMetadataModelSummary<T extends ConnectorMetadataSchem
     })
 }
 
-const findOldestCreatedDate = async ({ name, platformId }: { name: string, platformId?: string }): Promise<string> => {
+const findOldestCreatedDate = async ({ name, tenantId }: { name: string, tenantId?: string }): Promise<string> => {
     const connector = await connectorRepos().findOne({
         where: {
             name,
-            platformId: platformId ?? IsNull(),
+            tenantId: tenantId ?? IsNull(),
         },
         order: {
             created: 'ASC',
@@ -326,12 +326,12 @@ const sortByVersionDescending = <T extends { version: string }>(a: T, b: T): num
 
 const findExactVersion = async (
     log: FastifyBaseLogger,
-    params: { name: string, version: string | undefined, platformId: string | undefined },
-): Promise<{ name: string, version: string, platformId: string | undefined } | undefined> => {
-    const { name, version, platformId } = params
+    params: { name: string, version: string | undefined, tenantId: string | undefined },
+): Promise<{ name: string, version: string, tenantId: string | undefined } | undefined> => {
+    const { name, version, tenantId } = params
     const versionToSearch = findNextExcludedVersion(version)
     const currentRelease = apVersionUtil.getCurrentRelease()
-    const registry = filterRegistry(await loadRegistry(log), { release: currentRelease, platformId })
+    const registry = filterRegistry(await loadRegistry(log), { release: currentRelease, tenantId })
     const matchingRegistryEntries = registry.filter((entry) => {
         if (entry.name !== name) {
             return false
@@ -351,7 +351,7 @@ const findExactVersion = async (
     return {
         name: sortedEntries[0].name,
         version: sortedEntries[0].version,
-        platformId: sortedEntries[0].platformId,
+        tenantId: sortedEntries[0].tenantId,
     }
 }
 
@@ -403,7 +403,7 @@ const increaseMajorVersion = (version: string): string => {
     return incrementedVersion
 }
 
-async function fetchLatestConnectors({ platformId, locale = LocalesEnum.ENGLISH, log }: FetchLatestConnectorsParams): Promise<ConnectorMetadataSchema[]> {
+async function fetchLatestConnectors({ tenantId, locale = LocalesEnum.ENGLISH, log }: FetchLatestConnectorsParams): Promise<ConnectorMetadataSchema[]> {
     const currentRelease = apVersionUtil.getCurrentRelease()
 
     const latestConnectors = await dedupe(`latest-connectors:${currentRelease}`, () => fetchLatestCompatibleConnectorsFromDB(currentRelease))
@@ -416,12 +416,12 @@ async function fetchLatestConnectors({ platformId, locale = LocalesEnum.ENGLISH,
 
     const devConnectorNames = new Set(translatedDevConnectors.map((p) => p.name))
     const merged = [...translatedConnectors.filter((p) => !devConnectorNames.has(p.name)), ...translatedDevConnectors]
-        .filter((connector) => filterConnectorBasedOnType(platformId, connector))
+        .filter((connector) => filterConnectorBasedOnType(tenantId, connector))
         .filter((connector) => isSupportedRelease(currentRelease, connector))
     return lastVersionOfEachConnector(merged)
 }
 
-async function fetchConnectorVersion({ connectorName, version, platformId, log }: FetchConnectorVersionParams): Promise<ConnectorMetadataSchema | null> {
+async function fetchConnectorVersion({ connectorName, version, tenantId, log }: FetchConnectorVersionParams): Promise<ConnectorMetadataSchema | null> {
     const devConnectors = await loadDevConnectorsIfEnabled(log)
     const devConnector = devConnectors.find((p) => p.name === connectorName && p.version === version)
     if (!isNil(devConnector)) {
@@ -432,7 +432,7 @@ async function fetchConnectorVersion({ connectorName, version, platformId, log }
         where: {
             name: connectorName,
             version,
-            platformId: platformId ?? IsNull(),
+            tenantId: tenantId ?? IsNull(),
         },
     })
     return foundConnector ?? null
@@ -441,7 +441,7 @@ async function fetchConnectorVersion({ connectorName, version, platformId, log }
 export async function fetchLatestCompatibleConnectorsFromDB(currentRelease: string): Promise<ConnectorMetadataSchema[]> {
     const allKeys = await connectorRepos()
         .createQueryBuilder('pm')
-        .select(['pm."id"', 'pm."name"', 'pm."version"', 'pm."platformId"', 'pm."minimumSupportedRelease"', 'pm."maximumSupportedRelease"'])
+        .select(['pm."id"', 'pm."name"', 'pm."version"', 'pm."tenantId"', 'pm."minimumSupportedRelease"', 'pm."maximumSupportedRelease"'])
         .getRawMany<ConnectorKey>()
 
     const compatibleKeys = allKeys.filter((connector) => isSupportedRelease(currentRelease, connector))
@@ -452,7 +452,7 @@ export async function fetchLatestCompatibleConnectorsFromDB(currentRelease: stri
 function pickLatestVersionIds(connectors: ConnectorKey[]): string[] {
     const latest = new Map<string, ConnectorKey>()
     for (const connector of connectors) {
-        const key = `${connector.name}:${connector.platformId ?? ''}`
+        const key = `${connector.name}:${connector.tenantId ?? ''}`
         const existing = latest.get(key)
         if (isNil(existing) || isNewerVersion(connector.version, existing.version)) {
             latest.set(key, connector)
@@ -494,9 +494,9 @@ function loadRegistry(log: FastifyBaseLogger): Promise<ConnectorRegistryEntry[]>
     return dedupe('registry-load', () => connectorCache(log).loadRegistry())
 }
 
-function filterRegistry(registry: ConnectorRegistryEntry[], params: { release: string | undefined, platformId: string | undefined }): ConnectorRegistryEntry[] {
+function filterRegistry(registry: ConnectorRegistryEntry[], params: { release: string | undefined, tenantId: string | undefined }): ConnectorRegistryEntry[] {
     return registry
-        .filter((connector) => filterConnectorBasedOnType(params.platformId, connector))
+        .filter((connector) => filterConnectorBasedOnType(params.tenantId, connector))
         .filter((connector) => isNil(params.release) || isSupportedRelease(params.release, connector))
 }
 
@@ -504,7 +504,7 @@ function filterRegistry(registry: ConnectorRegistryEntry[], params: { release: s
 
 type ListParams = {
     workspaceId?: string
-    platformId?: string
+    tenantId?: string
     includeHidden: boolean
     categories?: ConnectorCategory[]
     sortBy?: ConnectorSortBy
@@ -520,24 +520,24 @@ type GetOrThrowParams = {
     version?: string
     entityManager?: EntityManager
     workspaceId?: string
-    platformId?: string
+    tenantId?: string
     locale?: LocalesEnum
 }
 
 type DeleteParams = {
     id: string
-    platformId: string
+    tenantId: string
 }
 
 type FindWorkflowsUsingConnectorParams = {
     connectorName: string
-    platformId: string
+    tenantId: string
     log: FastifyBaseLogger
 }
 
 type CreateParams = {
     connectorMetadata: ConnectorMetadata
-    platformId?: string
+    tenantId?: string
     workspaceId?: string
     packageType: PackageType
     connectorType: ConnectorType
@@ -553,16 +553,16 @@ type UpdateUsage = {
 type GetExactConnectorVersionParams = {
     name: string
     version: string
-    platformId: PlatformId
+    tenantId: TenantId
 }
 
 type RegistryParams = {
     release: string
-    platformId?: string
+    tenantId?: string
 }
 
 type FetchLatestConnectorsParams = {
-    platformId?: string
+    tenantId?: string
     locale?: LocalesEnum
     log: FastifyBaseLogger
 }
@@ -570,7 +570,7 @@ type FetchLatestConnectorsParams = {
 type FetchConnectorVersionParams = {
     connectorName: string
     version: string
-    platformId?: string
+    tenantId?: string
     log: FastifyBaseLogger
 }
 
@@ -578,7 +578,7 @@ type ConnectorKey = {
     id: string
     name: string
     version: string
-    platformId: string | null
+    tenantId: string | null
     minimumSupportedRelease?: string
     maximumSupportedRelease?: string
 }

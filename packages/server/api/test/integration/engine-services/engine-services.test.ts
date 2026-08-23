@@ -37,20 +37,20 @@ afterAll(async () => {
 describe('Engine Services Integration', () => {
     let engineToken: string
     let workspaceId: string
-    let platformId: string
+    let tenantId: string
     let ownerId: string
 
     beforeEach(async () => {
-        const { mockPlatform, mockWorkspace, mockOwner } = await mockAndSaveBasicSetup()
+        const { mockTenant, mockWorkspace, mockOwner } = await mockAndSaveBasicSetup()
         workspaceId = mockWorkspace.id
-        platformId = mockPlatform.id
+        tenantId = mockTenant.id
         ownerId = mockOwner.id
 
         engineToken = await generateMockToken({
             type: PrincipalType.ENGINE,
             id: apId(),
             workspaceId,
-            platform: { id: platformId },
+            tenant: { id: tenantId },
         })
     })
 
@@ -157,7 +157,7 @@ describe('Engine Services Integration', () => {
             const encryptedValue = await encryptUtils.encryptObject(connectionValue)
 
             const mockConn = createMockConnection({
-                platformId,
+                tenantId,
                 workspaceIds: [workspaceId],
                 externalId,
                 status: ConnectionStatus.ACTIVE,
@@ -193,7 +193,7 @@ describe('Engine Services Integration', () => {
             const encryptedValue = await encryptUtils.encryptObject(connectionValue)
 
             const mockConn = createMockConnection({
-                platformId,
+                tenantId,
                 workspaceIds: [workspaceId],
                 externalId,
                 status: ConnectionStatus.ACTIVE,
@@ -236,7 +236,7 @@ describe('Engine Services Integration', () => {
             const encryptedValue = await encryptUtils.encryptObject(connectionValue)
 
             const mockConn = createMockConnection({
-                platformId,
+                tenantId,
                 workspaceIds: [workspaceId],
                 externalId,
             }, ownerId)
@@ -267,7 +267,7 @@ describe('Engine Services Integration', () => {
             const saveConnection = async (connectionConnectorName: string): Promise<string> => {
                 const externalId = apId()
                 const mockConn = createMockConnection({
-                    platformId,
+                    tenantId,
                     workspaceIds: [workspaceId],
                     externalId,
                     connectorName: connectionConnectorName,

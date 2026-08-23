@@ -8,7 +8,7 @@ import { workflowCache } from './workflow-cache'
 import { workflowSteps } from './workflow-steps'
 
 export const workflowProvisioning = (log: ApLogger, apiClient: WorkerToApiContract, basePath: string, getSettings: () => SandboxSettings) => ({
-    async resolve({ workflow, platformId }: ResolveParams): Promise<ResolvedWorkflow> {
+    async resolve({ workflow, tenantId }: ResolveParams): Promise<ResolvedWorkflow> {
         // A bundle is an optimization: never let a fetch error fail the run — fall through to resolve.
         // Timed as workflowBundleDownloadMs so a run's breakdown shows the bundle fetch cost.
         const { data: bundle, error: bundleError } = await tryCatch(() => wideEvent.timed({
@@ -31,7 +31,7 @@ export const workflowProvisioning = (log: ApLogger, apiClient: WorkerToApiContra
             return { kind: 'workflow-not-found' }
         }
 
-        const { data: connectors, error } = await tryCatch(() => resolveConnectors({ workflowVersion, platformId, log, apiClient, basePath, getSettings }))
+        const { data: connectors, error } = await tryCatch(() => resolveConnectors({ workflowVersion, tenantId, log, apiClient, basePath, getSettings }))
         if (error) {
             if (!(error instanceof ConnectorNotFoundError)) {
                 throw error
@@ -51,21 +51,21 @@ export const workflowProvisioning = (log: ApLogger, apiClient: WorkerToApiContra
             connectors,
             code: { kind: 'source', steps: extractCodeArtifacts(workflowVersion) },
             // The compiled code only exists on disk after install, so the caller invokes this afterwards.
-            publishBundle: shouldPublish ? buildPublishBundle({ log, apiClient, basePath, workflowVersion, connectors, workspaceId: workflow.workspaceId, platformId }) : null,
+            publishBundle: shouldPublish ? buildPublishBundle({ log, apiClient, basePath, workflowVersion, connectors, workspaceId: workflow.workspaceId, tenantId }) : null,
         }
     },
 })
 
-function buildPublishBundle({ log, apiClient, basePath, workflowVersion, connectors, workspaceId, platformId }: BuildPublishBundleParams): PublishBundle {
+function buildPublishBundle({ log, apiClient, basePath, workflowVersion, connectors, workspaceId, tenantId }: BuildPublishBundleParams): PublishBundle {
     return async () => {
-        const { error } = await tryCatch(() => workflowBundleStore(log, apiClient, basePath).publish({ workflowVersion, connectors, workspaceId, platformId }))
+        const { error } = await tryCatch(() => workflowBundleStore(log, apiClient, basePath).publish({ workflowVersion, connectors, workspaceId, tenantId }))
         if (error) {
             log.warn({ error: String(error), workflowVersion: { id: workflowVersion.id } }, 'Failed to publish workflow bundle')
         }
     }
 }
 
-async function resolveConnectors({ workflowVersion, platformId, log, apiClient, basePath, getSettings }: ResolveConnectorsParams): Promise<ConnectorPackage[]> {
+async function resolveConnectors({ workflowVersion, tenantId, log, apiClient, basePath, getSettings }: ResolveConnectorsParams): Promise<ConnectorPackage[]> {
     const stepConnectorRefs = workflowSteps.connector(workflowVersion).map((step) => ({
         connectorName: step.settings.connectorName,
         connectorVersion: step.settings.connectorVersion,
@@ -75,7 +75,7 @@ async function resolveConnectors({ workflowVersion, platformId, log, apiClient, 
         connectorCache(log, apiClient, basePath, getSettings).getConnector({
             connectorName: ref.connectorName,
             connectorVersion: ref.connectorVersion,
-            platformId,
+            tenantId,
         }),
     ))
 }
@@ -110,12 +110,12 @@ function extractCodeArtifacts(workflowVersion: WorkflowVersion): CodeArtifact[] 
 
 type ResolveParams = {
     workflow: { id: string, versionId: string, workspaceId: string }
-    platformId: string
+    tenantId: string
 }
 
 type ResolveConnectorsParams = {
     workflowVersion: WorkflowVersion
-    platformId: string
+    tenantId: string
     log: ApLogger
     apiClient: WorkerToApiContract
     basePath: string
@@ -129,7 +129,7 @@ type BuildPublishBundleParams = {
     workflowVersion: WorkflowVersion
     connectors: ConnectorPackage[]
     workspaceId: string
-    platformId: string
+    tenantId: string
 }
 
 type ConnectorRef = {

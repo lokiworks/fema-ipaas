@@ -15,7 +15,7 @@ export const variableController: FastifyPluginCallbackZod = (app, _opts, done) =
         const ownerId = await securityHelper.getUserIdFromRequest(request)
         const variable = await variableService(request.log).create({
             workspaceId: request.workspaceId,
-            platformId: request.principal.platform.id,
+            tenantId: request.principal.tenant.id,
             name: request.body.name,
             value: request.body.value,
             metadata: request.body.metadata,
@@ -32,7 +32,7 @@ export const variableController: FastifyPluginCallbackZod = (app, _opts, done) =
         const variable = await variableService(request.log).update({
             id: request.params.id,
             workspaceId: request.workspaceId,
-            platformId: request.principal.platform.id,
+            tenantId: request.principal.tenant.id,
             value: request.body.value,
             metadata: request.body.metadata,
         })
@@ -46,7 +46,7 @@ export const variableController: FastifyPluginCallbackZod = (app, _opts, done) =
     app.get('/', ListVariablesRequest, async (request): Promise<SeekPage<VariableWithoutSensitiveData>> => {
         return variableService(request.log).list({
             workspaceId: request.workspaceId,
-            platformId: request.principal.platform.id,
+            tenantId: request.principal.tenant.id,
             cursor: request.query.cursor,
             limit: request.query.limit,
             name: request.query.name,
@@ -56,7 +56,7 @@ export const variableController: FastifyPluginCallbackZod = (app, _opts, done) =
     app.get('/owners', ListVariableOwnersRequest, async (request): Promise<SeekPage<ConnectionOwners>> => {
         const owners = await variableService(request.log).getOwners({
             workspaceId: request.workspaceId,
-            platformId: request.principal.platform.id,
+            tenantId: request.principal.tenant.id,
         })
         return { data: owners, next: null, previous: null }
     })
@@ -65,12 +65,12 @@ export const variableController: FastifyPluginCallbackZod = (app, _opts, done) =
         const variable = await variableService(request.log).getOneOrThrowWithoutValue({
             id: request.params.id,
             workspaceId: request.workspaceId,
-            platformId: request.principal.platform.id,
+            tenantId: request.principal.tenant.id,
         })
         const value = await variableService(request.log).getDecryptedValue({
             id: request.params.id,
             workspaceId: request.workspaceId,
-            platformId: request.principal.platform.id,
+            tenantId: request.principal.tenant.id,
         })
         applicationEvents(request.log).sendUserEvent(request, {
             action: ApplicationEventName.VARIABLE_VALUE_REVEALED,
@@ -83,7 +83,7 @@ export const variableController: FastifyPluginCallbackZod = (app, _opts, done) =
         const variable = await variableService(request.log).delete({
             id: request.params.id,
             workspaceId: request.workspaceId,
-            platformId: request.principal.platform.id,
+            tenantId: request.principal.tenant.id,
         })
         applicationEvents(request.log).sendUserEvent(request, {
             action: ApplicationEventName.VARIABLE_DELETED,

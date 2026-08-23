@@ -14,7 +14,7 @@ import { SearchInput } from '@/components/custom/search-input';
 import { Button } from '@/components/ui/button';
 import { templatesTelemetryApi, templatesHooks } from '@/features/templates';
 import { workflowHooks } from '@/features/workflows';
-import { platformHooks } from '@/hooks/platform-hooks';
+import { tenantHooks } from '@/hooks/tenant-hooks';
 import { DASHBOARD_CONTENT_PADDING_X } from '@/lib/utils';
 
 import { AllCategoriesView } from './all-categories-view';
@@ -25,8 +25,8 @@ import { SelectedCategoryView } from './selected-category-view';
 const TemplatesPage = () => {
   const navigate = useNavigate();
   const { data: templateCategories } = templatesHooks.useTemplateCategories();
-  const { platform } = platformHooks.useCurrentPlatform();
-  const isShowingOfficialTemplates = !platform.plan.manageTemplatesEnabled;
+  const { tenant } = tenantHooks.useCurrentTenant();
+  const isShowingOfficialTemplates = !tenant.plan.manageTemplatesEnabled;
   const { templates, isLoading, search, setSearch, category, setCategory } =
     templatesHooks.useTemplates(
       isShowingOfficialTemplates ? TemplateType.OFFICIAL : TemplateType.CUSTOM,

@@ -135,4 +135,4 @@ export class AuthenticationPage extends BasePage {
   }
 }
 
-const ONBOARDING_PATHS = ['/sign-in', '/sign-up', '/create-platform'];
+const ONBOARDING_PATHS = ['/sign-in', '/sign-up', '/create-tenant'];

@@ -1,5 +1,5 @@
 import { Transform } from 'node:stream'
-import { ErrorCode, PlatformError } from '@fema/core-utils'
+import { ApplicationError, ErrorCode } from '@fema/core-utils'
 import { FileReadToken, FileType } from '@fema/shared'
 import dayjs from 'dayjs'
 import { domainHelper } from '../helper/domain-helper'
@@ -35,8 +35,8 @@ export const filesService = {
     },
 }
 
-export function fileTooLargeError(maxBytes: number): PlatformError {
-    return new PlatformError({
+export function fileTooLargeError(maxBytes: number): ApplicationError {
+    return new ApplicationError({
         code: ErrorCode.VALIDATION,
         params: { message: `File exceeds the maximum allowed size of ${maxBytes} bytes` },
     })
@@ -71,5 +71,5 @@ export const ENGINE_WRITABLE_FILE_TYPES: ReadonlySet<FileType> = new Set([
 type ConstructReadUrlParams = {
     fileId: string
     fileType?: FileType
-    platformId: string | null | undefined
+    tenantId: string | null | undefined
 }

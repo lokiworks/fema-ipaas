@@ -2,19 +2,19 @@ import { ApId } from '@fema/core-utils'
 import { ExecutionStatus } from '@fema/workflow-core'
 import { z } from 'zod'
 
-export const PlatformMetricsReportRequest = z.object({
+export const TenantMetricsReportRequest = z.object({
     createdAfter: z.string(),
     createdBefore: z.string(),
 })
 
-export const PlatformMetricsSummary = z.object({
+export const TenantMetricsSummary = z.object({
     completed: z.number(),
     successRate: z.number(),
     previousCompleted: z.number(),
     previousSuccessRate: z.number(),
 })
 
-export const PlatformMetricsStatusPoint = z.object({
+export const TenantMetricsStatusPoint = z.object({
     day: z.string(),
     status: z.enum(ExecutionStatus),
     count: z.number(),
@@ -28,9 +28,9 @@ export const InternalErrorImpactItem = z.object({
     count: z.number(),
 })
 
-export const PlatformMetricsReport = z.object({
-    summary: PlatformMetricsSummary,
-    statusTimeseries: z.array(PlatformMetricsStatusPoint),
+export const TenantMetricsReport = z.object({
+    summary: TenantMetricsSummary,
+    statusTimeseries: z.array(TenantMetricsStatusPoint),
     internalErrors: z.array(InternalErrorImpactItem),
     nextRefreshAt: z.string(),
 })
@@ -44,29 +44,29 @@ export const StuckJob = z.object({
     status: z.enum(ExecutionStatus),
 })
 
-export const PlatformMetricsLive = z.object({
+export const TenantMetricsLive = z.object({
     running: z.number(),
     queued: z.number(),
     stuckJobs: z.array(StuckJob),
 })
 
-export const PlatformMetricsHealthDay = z.object({
+export const TenantMetricsHealthDay = z.object({
     day: z.string(),
     internalErrors: z.number(),
     affectedWorkflows: z.number(),
     stuckJobs: z.number(),
 })
 
-export const PlatformMetricsHealthHistory = z.object({
-    days: z.array(PlatformMetricsHealthDay),
+export const TenantMetricsHealthHistory = z.object({
+    days: z.array(TenantMetricsHealthDay),
 })
 
-export type PlatformMetricsReportRequest = z.infer<typeof PlatformMetricsReportRequest>
-export type PlatformMetricsSummary = z.infer<typeof PlatformMetricsSummary>
-export type PlatformMetricsStatusPoint = z.infer<typeof PlatformMetricsStatusPoint>
+export type TenantMetricsReportRequest = z.infer<typeof TenantMetricsReportRequest>
+export type TenantMetricsSummary = z.infer<typeof TenantMetricsSummary>
+export type TenantMetricsStatusPoint = z.infer<typeof TenantMetricsStatusPoint>
 export type InternalErrorImpactItem = z.infer<typeof InternalErrorImpactItem>
-export type PlatformMetricsReport = z.infer<typeof PlatformMetricsReport>
+export type TenantMetricsReport = z.infer<typeof TenantMetricsReport>
 export type StuckJob = z.infer<typeof StuckJob>
-export type PlatformMetricsLive = z.infer<typeof PlatformMetricsLive>
-export type PlatformMetricsHealthDay = z.infer<typeof PlatformMetricsHealthDay>
-export type PlatformMetricsHealthHistory = z.infer<typeof PlatformMetricsHealthHistory>
+export type TenantMetricsLive = z.infer<typeof TenantMetricsLive>
+export type TenantMetricsHealthDay = z.infer<typeof TenantMetricsHealthDay>
+export type TenantMetricsHealthHistory = z.infer<typeof TenantMetricsHealthHistory>

@@ -41,7 +41,7 @@ export type WorkflowExecutionState = {
     exists: true
     handshakeConfiguration: WebhookHandshakeConfiguration | undefined
     workflow: Workflow
-    platformId: string
+    tenantId: string
 }
 export const Workflow = z.object({
     ...BaseModelSchema,

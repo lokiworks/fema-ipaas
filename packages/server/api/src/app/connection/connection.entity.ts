@@ -32,7 +32,7 @@ export const ConnectionEntity = new EntitySchema<ConnectionSchema>({
             type: String,
             default: ConnectionStatus.ACTIVE,
         },
-        platformId: {
+        tenantId: {
             type: String,
             nullable: false,
         },
@@ -69,8 +69,8 @@ export const ConnectionEntity = new EntitySchema<ConnectionSchema>({
     },
     indices: [
         {
-            name: 'idx_connection_platform_id_and_external_id',
-            columns: ['platformId', 'externalId'],
+            name: 'idx_connection_tenant_id_and_external_id',
+            columns: ['tenantId', 'externalId'],
         },
         {
             name: 'idx_connection_owner_id',

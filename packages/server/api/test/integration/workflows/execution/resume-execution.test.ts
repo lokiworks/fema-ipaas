@@ -358,7 +358,7 @@ describe('Resume workflow run', () => {
 
         await db.update('execution', execution.id, { status: ExecutionStatus.SUCCEEDED })
         const updatedRun = await db.findOneByOrFail<{ id: string, status: string, workspaceId: string }>('execution', { id: execution.id })
-        await executionSideEffects(app.log).onFinish({ execution: updatedRun as any, platformId: ctx.platform.id })
+        await executionSideEffects(app.log).onFinish({ execution: updatedRun as any, tenantId: ctx.tenant.id })
 
         const waitpointAfter = await db.findOneBy('waitpoint', { executionId: execution.id })
         expect(waitpointAfter).toBeNull()

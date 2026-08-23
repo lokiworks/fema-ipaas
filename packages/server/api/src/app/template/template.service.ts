@@ -1,4 +1,4 @@
-import { apId, ErrorCode, isNil, PlatformError, SeekPage, spreadIfDefined } from '@fema/core-utils'
+import { apId, ApplicationError, ErrorCode, isNil, SeekPage, spreadIfDefined } from '@fema/core-utils'
 import { CreateTemplateRequestBody, ListTemplatesRequestQuery, Template, TemplateStatus, TemplateType, UpdateTemplateRequestBody, WorkflowVersionTemplate } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { ArrayContains, ArrayOverlap, Equal, IsNull } from 'typeorm'
@@ -16,7 +16,7 @@ export const templateService = (log: FastifyBaseLogger) => ({
     async getOneOrThrow({ id }: GetParams): Promise<Template> {
         const template = await templateRepo().findOneBy({ id })
         if (isNil(template)) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityType: 'template',
@@ -27,10 +27,10 @@ export const templateService = (log: FastifyBaseLogger) => ({
         }
         return template
     },
-    async create({ platformId, params }: CreateParams): Promise<Template> {
+    async create({ tenantId, params }: CreateParams): Promise<Template> {
         const preparedTemplate = await templateValidator.validateAndPrepare({
             workflows: params.workflows,
-            platformId,
+            tenantId,
             log,
         })
 
@@ -49,7 +49,7 @@ export const templateService = (log: FastifyBaseLogger) => ({
                     type,
                     summary,
                     description,
-                    platformId,
+                    tenantId,
                     tags: newTags,
                     blogUrl,
                     metadata,
@@ -75,7 +75,7 @@ export const templateService = (log: FastifyBaseLogger) => ({
         if (!isNil(params.workflows) && params.workflows.length > 0) {
             const preparedTemplate = await templateValidator.validateAndPrepare({
                 workflows: params.workflows,
-                platformId: undefined,
+                tenantId: undefined,
                 log,
             })
             sanatizedWorkflows = preparedTemplate.workflows
@@ -104,7 +104,7 @@ export const templateService = (log: FastifyBaseLogger) => ({
         }
     },
 
-    async list({ platformId, connectors, tags, search, type, category }: ListParams): Promise<SeekPage<Template>> {
+    async list({ tenantId, connectors, tags, search, type, category }: ListParams): Promise<SeekPage<Template>> {
         const commonFilters: Record<string, unknown> = {}
 
         if (connectors) {
@@ -116,22 +116,22 @@ export const templateService = (log: FastifyBaseLogger) => ({
         switch (type) {
             case TemplateType.OFFICIAL:
                 commonFilters.type = Equal(TemplateType.OFFICIAL)
-                commonFilters.platformId = IsNull()
+                commonFilters.tenantId = IsNull()
                 break
             case TemplateType.CUSTOM:
                 commonFilters.type = Equal(TemplateType.CUSTOM)
-                if (isNil(platformId)) {
-                    throw new PlatformError({
+                if (isNil(tenantId)) {
+                    throw new ApplicationError({
                         code: ErrorCode.VALIDATION,
                         params: {
-                            message: 'Platform ID is required to list custom templates',
+                            message: 'Tenant ID is required to list custom templates',
                         },
                     })
                 }
-                commonFilters.platformId = Equal(platformId)
+                commonFilters.tenantId = Equal(tenantId)
                 break
             case TemplateType.SHARED:
-                throw new PlatformError({
+                throw new ApplicationError({
                     code: ErrorCode.VALIDATION,
                     params: {
                         message: 'Shared templates are not supported to being listed',
@@ -170,14 +170,14 @@ type GetParams = {
 }
 
 type CreateParams = {
-    platformId: string | undefined
+    tenantId: string | undefined
     params: CreateTemplateRequestBody
 }
 
 type NewTemplate = Omit<Template, 'created' | 'updated'>
 
 type ListParams = Omit<ListTemplatesRequestQuery, 'type'> & {
-    platformId: string | null
+    tenantId: string | null
     type: TemplateType
 }
 

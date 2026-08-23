@@ -38,7 +38,7 @@ export const Workspace = z.object({
     deleted: Nullable(DateOrString),
     ownerId: z.string(),
     displayName: z.string(),
-    platformId: ApId,
+    tenantId: ApId,
     maxConcurrentJobs: Nullable(z.number()),
     type: z.nativeEnum(WorkspaceType),
     icon: WorkspaceIcon,
@@ -69,12 +69,12 @@ export const WorkspaceMetaData = z.object({
 
 export type WorkspaceMetaData = z.infer<typeof WorkspaceMetaData>
 
-export const WorkspaceWithLimitsWithPlatform = z.object({
-    platformName: z.string(),
+export const WorkspaceWithLimitsWithTenant = z.object({
+    tenantName: z.string(),
     workspaces: z.array(WorkspaceWithLimits),
 })
 
-export type WorkspaceWithLimitsWithPlatform = z.infer<typeof WorkspaceWithLimitsWithPlatform>
+export type WorkspaceWithLimitsWithTenant = z.infer<typeof WorkspaceWithLimitsWithTenant>
 
 
 const WorkspaceColor = z.object({

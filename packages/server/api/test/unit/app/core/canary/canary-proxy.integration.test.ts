@@ -22,9 +22,9 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 
 // --- module mocks (must appear before the import under test) ---
 
-const { mockSystemGet, mockIsCanaryPlatform } = vi.hoisted(() => ({
+const { mockSystemGet, mockIsCanaryTenant } = vi.hoisted(() => ({
     mockSystemGet: vi.fn(),
-    mockIsCanaryPlatform: vi.fn(),
+    mockIsCanaryTenant: vi.fn(),
 }))
 
 vi.mock('../../../../../src/app/helper/system/system', () => ({
@@ -33,9 +33,9 @@ vi.mock('../../../../../src/app/helper/system/system', () => ({
     },
 }))
 
-vi.mock('../../../../../src/app/ee/platform/platform-plan/worker-group.service', () => ({
+vi.mock('../../../../../src/app/ee/tenant/tenant-plan/worker-group.service', () => ({
     workerGroupService: () => ({
-        isCanaryPlatform: mockIsCanaryPlatform,
+        isCanaryTenant: mockIsCanaryTenant,
     }),
 }))
 
@@ -93,7 +93,7 @@ afterAll(async () => {
 
 let primaryApp: FastifyInstance
 
-async function buildPrimaryApp(platformId = 'canary-platform'): Promise<FastifyInstance> {
+async function buildPrimaryApp(tenantId = 'canary-tenant'): Promise<FastifyInstance> {
     const app = fastify()
 
     await app.register(replyFrom, { base: canaryUrl })
@@ -101,7 +101,7 @@ async function buildPrimaryApp(platformId = 'canary-platform'): Promise<FastifyI
     app.addHook('onRequest', async (request: FastifyRequest) => {
         request.principal = {
             type: PrincipalType.USER,
-            platform: { id: platformId },
+            tenant: { id: tenantId },
         } as never
     })
 
@@ -121,7 +121,7 @@ beforeEach(async () => {
     mockSystemGet.mockImplementation((prop: string) =>
         prop === 'CANARY_APP_URL' ? canaryUrl : undefined,
     )
-    mockIsCanaryPlatform.mockResolvedValue(true)
+    mockIsCanaryTenant.mockResolvedValue(true)
 
     primaryApp = await buildPrimaryApp()
     await primaryApp.ready()
@@ -194,8 +194,8 @@ describe('canary proxy — actual HTTP forwarding', () => {
         expect(response.json()).toEqual({ error: 'invalid payload' })
     })
 
-    it('falls through to primary handler when platform is not in canary list', async () => {
-        mockIsCanaryPlatform.mockResolvedValue(false)
+    it('falls through to primary handler when tenant is not in canary list', async () => {
+        mockIsCanaryTenant.mockResolvedValue(false)
 
         const response = await primaryApp.inject({ method: 'GET', url: '/v1/test' })
 

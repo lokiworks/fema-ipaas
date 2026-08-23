@@ -1,7 +1,7 @@
 import {
   ApFlagId,
   ColorName,
-  PlatformRole,
+  TenantRole,
   WORKSPACE_COLOR_PALETTE,
   WorkspaceIcon,
   WorkspaceType,
@@ -29,7 +29,7 @@ import {
 } from '@/components/ui/popover';
 import { workspaceCollectionUtils } from '@/features/workspaces';
 import { flagsHooks } from '@/hooks/flags-hooks';
-import { platformHooks } from '@/hooks/platform-hooks';
+import { tenantHooks } from '@/hooks/tenant-hooks';
 import { userHooks } from '@/hooks/user-hooks';
 import { cn } from '@/lib/utils';
 
@@ -46,8 +46,8 @@ type GeneralSettingsProps = {
 };
 
 export const GeneralSettings = ({ form }: GeneralSettingsProps) => {
-  const { platform } = platformHooks.useCurrentPlatform();
-  const platformRole = userHooks.getCurrentUserPlatformRole();
+  const { tenant } = tenantHooks.useCurrentTenant();
+  const tenantRole = userHooks.getCurrentUserTenantRole();
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
   const { workspace } = workspaceCollectionUtils.useCurrentWorkspace();
   const { data: isRateLimiterEnabled } = flagsHooks.useFlag<boolean>(
@@ -58,7 +58,7 @@ export const GeneralSettings = ({ form }: GeneralSettingsProps) => {
   );
   const showGeneralSettings = workspace.type === WorkspaceType.TEAM;
   const showExternalIdSettings =
-    platform.plan.embeddingEnabled && platformRole === PlatformRole.ADMIN;
+    tenant.plan.embeddingEnabled && tenantRole === TenantRole.ADMIN;
   const colorOptions = Object.values(ColorName);
 
   return (
@@ -171,8 +171,8 @@ export const GeneralSettings = ({ form }: GeneralSettingsProps) => {
             )}
           />
         )}
-        {!platform.plan.workerGroupsEnabled &&
-          platformRole === PlatformRole.ADMIN && (
+        {!tenant.plan.workerGroupsEnabled &&
+          tenantRole === TenantRole.ADMIN && (
             <FormField
               name="maxConcurrentJobs"
               render={({ field }) => (
@@ -218,8 +218,8 @@ export const GeneralSettings = ({ form }: GeneralSettingsProps) => {
               )}
             />
           )}
-        {platform.plan.billedTeamWorkspacesLimit !== 0 &&
-          platformRole === PlatformRole.ADMIN && (
+        {tenant.plan.billedTeamWorkspacesLimit !== 0 &&
+          tenantRole === TenantRole.ADMIN && (
             <FormField
               name="activeWorkflowsLimit"
               render={({ field }) => (

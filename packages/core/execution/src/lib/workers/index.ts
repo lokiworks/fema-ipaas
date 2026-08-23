@@ -14,7 +14,7 @@ export enum WorkerMachineType {
 }
 
 export enum WorkerGroupScope {
-    PLATFORM = 'platform',
+    TENANT = 'tenant',
     WORKSPACE = 'workspace',
 }
 

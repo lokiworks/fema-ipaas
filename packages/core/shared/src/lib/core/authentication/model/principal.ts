@@ -1,4 +1,4 @@
-import type { ApId, PlatformId, WorkspaceId } from '@fema/core-utils'
+import type { ApId, TenantId, WorkspaceId } from '@fema/core-utils'
 import { PrincipalType } from './principal-type'
 
 export type WorkerPrincipal = {
@@ -14,7 +14,7 @@ export type AnnonymousPrincipal = {
 export type ServicePrincipal = {
     id: ApId
     type: PrincipalType.SERVICE
-    platform: {
+    tenant: {
         id: ApId
     }
 }
@@ -22,7 +22,7 @@ export type ServicePrincipal = {
 export type UserPrincipal = {
     id: ApId
     type: PrincipalType.USER
-    platform: {
+    tenant: {
         id: ApId
     }
     tokenVersion?: string
@@ -32,8 +32,8 @@ export type EnginePrincipal = {
     id: ApId
     type: PrincipalType.ENGINE
     workspaceId: WorkspaceId
-    platform: {
-        id: PlatformId
+    tenant: {
+        id: TenantId
     }
 }
 

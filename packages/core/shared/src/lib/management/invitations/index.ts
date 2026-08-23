@@ -1,9 +1,9 @@
 import { BaseModelSchema, Nullable, NullableEnum, WorkspaceRole } from '@fema/core-utils'
 import { z } from 'zod'
-import { PlatformRole } from '../../core/user/index'
+import { TenantRole } from '../../core/user/index'
 
 export enum InvitationType {
-    PLATFORM = 'PLATFORM',
+    TENANT = 'TENANT',
     WORKSPACE = 'WORKSPACE',
 }
 
@@ -17,8 +17,8 @@ export const UserInvitation = z.object({
     email: z.string(),
     status: z.nativeEnum(InvitationStatus),
     type: z.nativeEnum(InvitationType),
-    platformId: z.string(),
-    platformRole: NullableEnum(PlatformRole),
+    tenantId: z.string(),
+    tenantRole: NullableEnum(TenantRole),
     workspaceId: Nullable(z.string()),
     workspaceRoleId: Nullable(z.string()),
     workspaceRole: Nullable(WorkspaceRole),
@@ -40,9 +40,9 @@ export const SendUserInvitationRequest = z.union([
         workspaceRole: z.string(),
     }),
     z.object({
-        type: z.literal(InvitationType.PLATFORM),
+        type: z.literal(InvitationType.TENANT),
         email: z.string(),
-        platformRole: z.nativeEnum(PlatformRole),
+        tenantRole: z.nativeEnum(TenantRole),
     }),
 ])
 

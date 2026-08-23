@@ -193,7 +193,7 @@ describe('Connector Metadata CE API', () => {
     })
 
     describe('POST /v1/connectors/sync', () => {
-        it('should sync connectors as platform admin', async () => {
+        it('should sync connectors as tenant admin', async () => {
             const ctx = await createTestContext(app!)
 
             const response = await ctx.post('/v1/connectors/sync', {})
@@ -287,13 +287,13 @@ describe('Connector Metadata CE API', () => {
     })
 
     describe('DELETE /v1/connectors/:id', () => {
-        it('should delete a custom connector owned by the platform', async () => {
+        it('should delete a custom connector owned by the tenant', async () => {
             const ctx = await createTestContext(app!)
             const mockConnector = createMockConnectorMetadata({
                 name: '@custom/deletable-connector',
                 connectorType: ConnectorType.CUSTOM,
                 packageType: PackageType.REGISTRY,
-                platformId: ctx.platform.id,
+                tenantId: ctx.tenant.id,
                 version: '0.1.0',
             })
             await db.save('connector_metadata', mockConnector)
@@ -321,14 +321,14 @@ describe('Connector Metadata CE API', () => {
                 name: '@custom/multi-version-connector',
                 connectorType: ConnectorType.CUSTOM,
                 packageType: PackageType.REGISTRY,
-                platformId: ctx.platform.id,
+                tenantId: ctx.tenant.id,
                 version: '0.1.0',
             })
             const versionTwo = createMockConnectorMetadata({
                 name: '@custom/multi-version-connector',
                 connectorType: ConnectorType.CUSTOM,
                 packageType: PackageType.REGISTRY,
-                platformId: ctx.platform.id,
+                tenantId: ctx.tenant.id,
                 version: '0.2.0',
             })
             await db.save('connector_metadata', [versionOne, versionTwo])
@@ -341,13 +341,13 @@ describe('Connector Metadata CE API', () => {
             expect(remaining).toHaveLength(0)
         })
 
-        it('should reject deleting a platform-owned official connector with 403', async () => {
+        it('should reject deleting a tenant-owned official connector with 403', async () => {
             const ctx = await createTestContext(app!)
             const mockConnector = createMockConnectorMetadata({
                 name: '@fema/official-connector',
                 connectorType: ConnectorType.OFFICIAL,
                 packageType: PackageType.REGISTRY,
-                platformId: ctx.platform.id,
+                tenantId: ctx.tenant.id,
                 version: '0.1.0',
             })
             await db.save('connector_metadata', mockConnector)
@@ -360,7 +360,7 @@ describe('Connector Metadata CE API', () => {
             expect(remaining).not.toBeNull()
         })
 
-        it('should reject deletion by a non-admin platform member with 403', async () => {
+        it('should reject deletion by a non-admin tenant member with 403', async () => {
             const ownerCtx = await createTestContext(app!)
             const memberCtx = await createMemberContext(app!, ownerCtx, {
                 workspaceRole: DefaultWorkspaceRole.EDITOR,
@@ -369,7 +369,7 @@ describe('Connector Metadata CE API', () => {
                 name: '@custom/member-cannot-delete',
                 connectorType: ConnectorType.CUSTOM,
                 packageType: PackageType.REGISTRY,
-                platformId: ownerCtx.platform.id,
+                tenantId: ownerCtx.tenant.id,
                 version: '0.1.0',
             })
             await db.save('connector_metadata', mockConnector)
@@ -382,13 +382,13 @@ describe('Connector Metadata CE API', () => {
             expect(remaining).not.toBeNull()
         })
 
-        it('should not delete a custom connector owned by another platform', async () => {
+        it('should not delete a custom connector owned by another tenant', async () => {
             const ctx = await createTestContext(app!)
             const mockConnector = createMockConnectorMetadata({
-                name: '@custom/other-platform-connector',
+                name: '@custom/other-tenant-connector',
                 connectorType: ConnectorType.CUSTOM,
                 packageType: PackageType.REGISTRY,
-                platformId: apId(),
+                tenantId: apId(),
                 version: '0.1.0',
             })
             await db.save('connector_metadata', mockConnector)
@@ -407,7 +407,7 @@ describe('Connector Metadata CE API', () => {
                 name: '@custom/in-use-connector',
                 connectorType: ConnectorType.CUSTOM,
                 packageType: PackageType.REGISTRY,
-                platformId: ctx.platform.id,
+                tenantId: ctx.tenant.id,
                 version: '0.1.0',
             })
             await db.save('connector_metadata', mockConnector)
@@ -448,7 +448,7 @@ describe('Connector Metadata CE API', () => {
                 name: '@custom/stale-version-connector',
                 connectorType: ConnectorType.CUSTOM,
                 packageType: PackageType.REGISTRY,
-                platformId: ctx.platform.id,
+                tenantId: ctx.tenant.id,
                 version: '0.1.0',
             })
             await db.save('connector_metadata', mockConnector)
@@ -487,14 +487,14 @@ describe('Connector Metadata CE API', () => {
             expect(remaining).toBeNull()
         })
 
-        it('should allow deleting a custom connector used only by a workflow in another platform', async () => {
+        it('should allow deleting a custom connector used only by a workflow in another tenant', async () => {
             const ctx = await createTestContext(app!)
             const otherCtx = await createTestContext(app!)
             const mockConnector = createMockConnectorMetadata({
-                name: '@custom/cross-platform-usage-connector',
+                name: '@custom/cross-tenant-usage-connector',
                 connectorType: ConnectorType.CUSTOM,
                 packageType: PackageType.REGISTRY,
-                platformId: ctx.platform.id,
+                tenantId: ctx.tenant.id,
                 version: '0.1.0',
             })
             await db.save('connector_metadata', mockConnector)
@@ -529,13 +529,13 @@ describe('Connector Metadata CE API', () => {
     })
 
     describe('connectorMetadataService.get() — custom connectors', () => {
-        it('should return undefined for custom connector when platformId is not provided', async () => {
-            const platformId = apId()
+        it('should return undefined for custom connector when tenantId is not provided', async () => {
+            const tenantId = apId()
             const mockConnector = createMockConnectorMetadata({
                 name: '@custom/my-connector',
                 connectorType: ConnectorType.CUSTOM,
                 packageType: PackageType.REGISTRY,
-                platformId,
+                tenantId,
                 version: '0.1.0',
             })
             await db.save('connector_metadata', mockConnector)
@@ -548,13 +548,13 @@ describe('Connector Metadata CE API', () => {
             expect(result).toBeUndefined()
         })
 
-        it('should return custom connector when platformId is provided', async () => {
-            const platformId = apId()
+        it('should return custom connector when tenantId is provided', async () => {
+            const tenantId = apId()
             const mockConnector = createMockConnectorMetadata({
                 name: '@custom/my-connector',
                 connectorType: ConnectorType.CUSTOM,
                 packageType: PackageType.REGISTRY,
-                platformId,
+                tenantId,
                 version: '0.1.0',
             })
             await db.save('connector_metadata', mockConnector)
@@ -563,7 +563,7 @@ describe('Connector Metadata CE API', () => {
             const result = await connectorMetadataService(mockLog).get({
                 name: '@custom/my-connector',
                 version: '0.1.0',
-                platformId,
+                tenantId,
             })
             expect(result).toBeDefined()
             expect(result?.name).toBe('@custom/my-connector')

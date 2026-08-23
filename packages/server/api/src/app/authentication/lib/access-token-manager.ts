@@ -1,4 +1,4 @@
-import { apId, ErrorCode, PlatformError, PlatformId, WorkspaceId } from '@fema/core-utils'
+import { apId, ApplicationError, ErrorCode, TenantId, WorkspaceId } from '@fema/core-utils'
 import { ALL_PRINCIPAL_TYPES, EnginePrincipal, Principal, PrincipalType, UserStatus, WorkerPrincipal } from '@fema/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
@@ -18,13 +18,13 @@ export const accessTokenManager = (log: FastifyBaseLogger) => ({
         })
     },
 
-    async generateEngineToken({ jobId, workspaceId, platformId }: GenerateEngineTokenParams): Promise<string> {
+    async generateEngineToken({ jobId, workspaceId, tenantId }: GenerateEngineTokenParams): Promise<string> {
         const enginePrincipal: EnginePrincipal = {
             id: jobId ?? apId(),
             type: PrincipalType.ENGINE,
             workspaceId,
-            platform: {
-                id: platformId,
+            tenant: {
+                id: tenantId,
             },
         }
 
@@ -63,7 +63,7 @@ export const accessTokenManager = (log: FastifyBaseLogger) => ({
                 key: secret,
             })
             if (!ALL_PRINCIPAL_TYPES.includes(decoded.type)) {
-                throw new PlatformError({
+                throw new ApplicationError({
                     code: ErrorCode.INVALID_BEARER_TOKEN,
                     params: {
                         message: 'invalid principal type',
@@ -74,10 +74,10 @@ export const accessTokenManager = (log: FastifyBaseLogger) => ({
             return decoded
         }
         catch (e) {
-            if (e instanceof PlatformError) {
+            if (e instanceof ApplicationError) {
                 throw e
             }
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.INVALID_BEARER_TOKEN,
                 params: {
                     message: 'invalid access token or session expired',
@@ -94,7 +94,7 @@ async function assertUserSession(log: FastifyBaseLogger, decoded: Principal | Pr
         const identity = await userIdentityService(log).getOneOrFail({ id: decoded.id })
         const isExpired = (identity.tokenVersion ?? null) !== (decoded.tokenVersion ?? null)
         if (isExpired || !identity.verified) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.SESSION_EXPIRED,
                 params: {
                     message: 'The session has expired or the user is not verified.',
@@ -108,20 +108,20 @@ async function assertUserSession(log: FastifyBaseLogger, decoded: Principal | Pr
     const identity = await userIdentityService(log).getOneOrFail({ id: user.identityId })
     const isExpired = (identity.tokenVersion ?? null) !== (decoded.tokenVersion ?? null)
     if (isExpired || user.status === UserStatus.INACTIVE || !identity.verified) {
-        throw new PlatformError({
+        throw new ApplicationError({
             code: ErrorCode.SESSION_EXPIRED,
             params: {
                 message: 'The session has expired or the user is not verified.',
             },
         })
     }
-    if (identity.lastLoggedInPlatformId !== decoded.platform.id) {
-        await userIdentityService(log).updateLastLoggedInPlatformId({ id: identity.id, lastLoggedInPlatformId: decoded.platform.id })
+    if (identity.lastLoggedInTenantId !== decoded.tenant.id) {
+        await userIdentityService(log).updateLastLoggedInTenantId({ id: identity.id, lastLoggedInTenantId: decoded.tenant.id })
     }
 }
 
 type GenerateEngineTokenParams = {
     workspaceId: WorkspaceId
     jobId?: string
-    platformId: PlatformId
+    tenantId: TenantId
 }

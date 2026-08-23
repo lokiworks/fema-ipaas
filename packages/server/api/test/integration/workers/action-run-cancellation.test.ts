@@ -24,13 +24,13 @@ afterAll(async () => {
 const jobKey = (jobId: string): string => `bull:${QueueName.WORKER_JOBS}:${jobId}`
 
 async function enqueueActionRunJob(): Promise<EnqueuedActionRunJob> {
-    const { mockPlatform, mockWorkspace } = await mockAndSaveBasicSetup()
+    const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
     const jobId = apId()
     const data: ExecuteActionJobData = {
         jobType: WorkerJobType.EXECUTE_ACTION,
         schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
         workspaceId: mockWorkspace.id,
-        platformId: mockPlatform.id,
+        tenantId: mockTenant.id,
         step: {
             name: 'step_1',
             valid: true,
@@ -47,13 +47,13 @@ async function enqueueActionRunJob(): Promise<EnqueuedActionRunJob> {
         webserverId: 'test-webserver',
     }
     await jobQueue(app.log).add({ type: JobType.ONE_TIME, id: jobId, data })
-    return { jobId, platformId: mockPlatform.id, workspaceId: mockWorkspace.id }
+    return { jobId, tenantId: mockTenant.id, workspaceId: mockWorkspace.id }
 }
 
-async function cancelAndReport({ jobId, platformId, workspaceId }: EnqueuedActionRunJob): Promise<boolean> {
+async function cancelAndReport({ jobId, tenantId, workspaceId }: EnqueuedActionRunJob): Promise<boolean> {
     return jobQueue(app.log).cancelAndReportNeverStarted({
         jobId,
-        platformId,
+        tenantId,
         workspaceId,
         jobType: WorkerJobType.EXECUTE_ACTION,
     })
@@ -70,11 +70,11 @@ async function pollOwnJob(expectedJobId: string): Promise<{ token: string, job: 
 
 describe('jobQueue.cancelAndReportNeverStarted', () => {
     it('returns false for a job that does not exist', async () => {
-        const { mockPlatform, mockWorkspace } = await mockAndSaveBasicSetup()
+        const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
 
         const result = await jobQueue(app.log).cancelAndReportNeverStarted({
             jobId: apId(),
-            platformId: mockPlatform.id,
+            tenantId: mockTenant.id,
             workspaceId: mockWorkspace.id,
             jobType: WorkerJobType.EXECUTE_ACTION,
         })
@@ -133,6 +133,6 @@ describe('jobQueue.cancelAndReportNeverStarted', () => {
 
 type EnqueuedActionRunJob = {
     jobId: string
-    platformId: string
+    tenantId: string
     workspaceId: string
 }

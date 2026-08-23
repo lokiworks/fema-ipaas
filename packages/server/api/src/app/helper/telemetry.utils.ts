@@ -6,7 +6,7 @@ export const telemetry = (_log: FastifyBaseLogger) => ({
     async identify(_identity: UserIdentity, _user?: User, _workspaceId?: WorkspaceId): Promise<void> {
         return
     },
-    async trackPlatform(_platformId: WorkspaceId, _event: TelemetryEvent): Promise<void> {
+    async trackTenant(_tenantId: WorkspaceId, _event: TelemetryEvent): Promise<void> {
         return
     },
     async trackWorkspace(_workspaceId: WorkspaceId, _event: TelemetryEvent): Promise<void> {

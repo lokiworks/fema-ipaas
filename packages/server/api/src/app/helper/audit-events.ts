@@ -2,7 +2,7 @@ import { AuditActor, defineAuditAction } from '@fema/server-utils'
 import { Principal, PrincipalType } from '@fema/shared'
 
 const connectionListed = defineAuditAction('connection.listed', { target: 'workspace' })
-const globalConnectionListed = defineAuditAction('global-connection.listed', { target: 'platform' })
+const globalConnectionListed = defineAuditAction('global-connection.listed', { target: 'tenant' })
 
 export const auditEvents = {
     connectionListed,

@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import { isNil } from '@fema/core-utils'
-import { PlatformError, ErrorCode } from '@fema/core-utils'
+import { ApplicationError, ErrorCode } from '@fema/core-utils'
 import { WorkflowAction, WorkflowActionType, LoopOnItemsAction, RouterAction, SingleActionSchema } from '../actions/action'
 import { WorkflowVersion } from '../workflow-version'
 import { workflowStructureUtil, Step } from '../util/workflow-structure-util'
@@ -78,7 +78,7 @@ function handleLoopOnItems(parentStep: LoopOnItemsAction, request: AddActionRequ
         })
     }
     else {
-        throw new PlatformError(
+        throw new ApplicationError(
             {
                 code: ErrorCode.WORKFLOW_OPERATION_INVALID,
                 params: {
@@ -101,7 +101,7 @@ function handleRouter(parentStep: RouterAction, request: AddActionRequest): Step
         })
     }
     else {
-        throw new PlatformError({
+        throw new ApplicationError({
             code: ErrorCode.WORKFLOW_OPERATION_INVALID,
             params: {
                 message: `Router step parent ${request.stepLocationRelativeToParent} not found`,
@@ -113,7 +113,7 @@ function handleRouter(parentStep: RouterAction, request: AddActionRequest): Step
 
 function handleContinueOnFailureBranches(parentStep: Step, request: AddActionRequest): Step {
     if (parentStep.type !== WorkflowActionType.CODE && parentStep.type !== WorkflowActionType.CONNECTOR) {
-        throw new PlatformError({
+        throw new ApplicationError({
             code: ErrorCode.WORKFLOW_OPERATION_INVALID,
             params: {
                 message: `Continue-on-failure branches are only available on Code and Connector actions, got ${parentStep.type}`,

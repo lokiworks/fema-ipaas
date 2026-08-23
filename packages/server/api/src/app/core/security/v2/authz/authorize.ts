@@ -1,5 +1,5 @@
-import { ErrorCode, isNil, PlatformError } from '@fema/core-utils'
-import { PlatformRole, Principal, PrincipalType, UserIdentityProvider } from '@fema/shared'
+import { ApplicationError, ErrorCode, isNil } from '@fema/core-utils'
+import { Principal, PrincipalType, TenantRole, UserIdentityProvider } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { userIdentityService } from '../../../../authentication/user-identity/user-identity-service'
 import { userService } from '../../../../user/user-service'
@@ -16,10 +16,10 @@ export const authorizeOrThrow = async (principal: Principal, security: Authoriza
             await assertPrinicpalIsOneOf(security.authorization.allowedPrincipals, principal.type)
             await assertAccessToWorkspace(principal, security.authorization, log)
             break
-        case AuthorizationType.PLATFORM:
+        case AuthorizationType.TENANT:
             await assertPrinicpalIsOneOf(security.authorization.allowedPrincipals, principal.type)
             if (security.authorization.adminOnly) {
-                await assertPlatformIsOwnedByCurrentPrincipal(principal, log)
+                await assertTenantIsOwnedByCurrentPrincipal(principal, log)
             }
             if (security.authorization.nonEmbedUsersOnly) {
                 await assertNonEmbedOrAdmin(principal, log)
@@ -39,27 +39,27 @@ async function assertNonEmbedOrAdmin(principal: Principal, log: FastifyBaseLogge
         return
     }
     const user = await userService(log).getOneOrFail({ id: principal.id })
-    if (user.platformRole === PlatformRole.ADMIN) {
+    if (user.tenantRole === TenantRole.ADMIN) {
         return
     }
     const identity = await userIdentityService(log).getOneOrFail({ id: user.identityId })
     if (identity.provider === UserIdentityProvider.JWT) {
-        throw new PlatformError({
+        throw new ApplicationError({
             code: ErrorCode.AUTHORIZATION,
             params: {
                 message: 'Embed users are not allowed to access this resource.',
             },
         })
     }
-    if (isNil(user.platformId)) {
-        throw new PlatformError({
+    if (isNil(user.tenantId)) {
+        throw new ApplicationError({
             code: ErrorCode.AUTHORIZATION,
             params: {
-                message: 'User is not associated with a platform.',
+                message: 'User is not associated with a tenant.',
             },
         })
     }
-    throw new PlatformError({
+    throw new ApplicationError({
         code: ErrorCode.AUTHORIZATION,
         params: {
             message: 'User does not have invite permission.',
@@ -67,16 +67,16 @@ async function assertNonEmbedOrAdmin(principal: Principal, log: FastifyBaseLogge
     })
 }
 
-async function assertPlatformIsOwnedByCurrentPrincipal(principal: Principal, log: FastifyBaseLogger): Promise<void> {
+async function assertTenantIsOwnedByCurrentPrincipal(principal: Principal, log: FastifyBaseLogger): Promise<void> {
     if (principal.type === PrincipalType.SERVICE) {
         return
     }
     const user = await userService(log).getOneOrFail({ id: principal.id })
-    if (user.platformRole !== PlatformRole.ADMIN) {
-        throw new PlatformError({
+    if (user.tenantRole !== TenantRole.ADMIN) {
+        throw new ApplicationError({
             code: ErrorCode.AUTHORIZATION,
             params: {
-                message: 'User is not an admin/owner of the platform.',
+                message: 'User is not an admin/owner of the tenant.',
             },
         })
     }
@@ -85,7 +85,7 @@ async function assertPlatformIsOwnedByCurrentPrincipal(principal: Principal, log
 
 async function assertAccessToWorkspace(principal: Principal, workspaceSecurity: WorkspaceAuthorizationConfig, log: FastifyBaseLogger): Promise<void> {
     if (isNil(workspaceSecurity.workspaceId)) {
-        throw new PlatformError({
+        throw new ApplicationError({
             code: ErrorCode.AUTHORIZATION,
             params: {
                 message: 'Workspace ID is required',
@@ -98,7 +98,7 @@ async function assertAccessToWorkspace(principal: Principal, workspaceSecurity: 
 
 async function assertPrinicpalIsOneOf< T extends readonly PrincipalType[]>(allowedPrincipals: T, currentPrincipal: PrincipalType): Promise<void> {
     if (!allowedPrincipals.includes(currentPrincipal)) {
-        throw new PlatformError({
+        throw new ApplicationError({
             code: ErrorCode.AUTHORIZATION,
             params: {
                 message: 'principal is not allowed for this route',

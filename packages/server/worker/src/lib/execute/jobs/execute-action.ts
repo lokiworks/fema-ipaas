@@ -9,8 +9,8 @@ import { buildSynchronousResult } from '../utils/synchronous-result'
 export const executeActionJob: JobHandler<ExecuteActionJobData, SynchronousJobResult> = {
     jobType: WorkerJobType.EXECUTE_ACTION,
     async execute(ctx: JobContext, data: ExecuteActionJobData): Promise<SynchronousJobResult> {
-        const { codes, namespace: codeNamespace } = await resolveCodeStep({ step: data.step, platformId: data.platformId })
-        const resolved = await ctx.resolver.resolve({ platformId: data.platformId, publicApiUrl: ctx.publicApiUrl, engineToken: ctx.engineToken, connectors: data.connector ? [data.connector] : [], codes })
+        const { codes, namespace: codeNamespace } = await resolveCodeStep({ step: data.step, tenantId: data.tenantId })
+        const resolved = await ctx.resolver.resolve({ tenantId: data.tenantId, publicApiUrl: ctx.publicApiUrl, engineToken: ctx.engineToken, connectors: data.connector ? [data.connector] : [], codes })
         if (resolved.kind !== 'ready') {
             throw new Error(`Unexpected resolve outcome "${resolved.kind}" for action-run action job`)
         }
@@ -24,7 +24,7 @@ export const executeActionJob: JobHandler<ExecuteActionJobData, SynchronousJobRe
                 operation: {
                     step: data.step,
                     workspaceId: data.workspaceId,
-                    platformId: data.platformId,
+                    tenantId: data.tenantId,
                     engineToken: ctx.engineToken,
                     internalApiUrl: ctx.internalApiUrl,
                     publicApiUrl: ctx.publicApiUrl,
@@ -52,12 +52,12 @@ export const executeActionJob: JobHandler<ExecuteActionJobData, SynchronousJobRe
     },
 }
 
-async function resolveCodeStep({ step, platformId }: ResolveCodeStepParams): Promise<{ codes: CodeArtifact[], namespace?: string }> {
+async function resolveCodeStep({ step, tenantId }: ResolveCodeStepParams): Promise<{ codes: CodeArtifact[], namespace?: string }> {
     if (step.type !== WorkflowActionType.CODE) {
         return { codes: [] }
     }
     const sourceHash = await cryptoUtils.hashObject(step.settings.sourceCode)
-    const namespace = actionRunCache.namespace({ platformId, sourceHash })
+    const namespace = actionRunCache.namespace({ tenantId, sourceHash })
     return {
         namespace,
         codes: [{
@@ -71,5 +71,5 @@ async function resolveCodeStep({ step, platformId }: ResolveCodeStepParams): Pro
 
 type ResolveCodeStepParams = {
     step: ExecuteActionJobData['step']
-    platformId: string
+    tenantId: string
 }

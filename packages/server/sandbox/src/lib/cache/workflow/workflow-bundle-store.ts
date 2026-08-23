@@ -49,7 +49,7 @@ export const workflowBundleStore = (log: ApLogger, apiClient: WorkerToApiContrac
         return isNil(manifest) ? null : { workflowVersion: manifest.workflowVersion, connectors: manifest.connectors }
     },
 
-    async publish({ workflowVersion, connectors, workspaceId, platformId }: PublishParams): Promise<void> {
+    async publish({ workflowVersion, connectors, workspaceId, tenantId }: PublishParams): Promise<void> {
         const codes = codeCache(cacheUtils(basePath).getGlobalCodeCachePath())
         const compiledSteps = await Promise.all(workflowSteps.code(workflowVersion).map(async ({ name: stepName }) => ({
             stepName,
@@ -60,7 +60,7 @@ export const workflowBundleStore = (log: ApLogger, apiClient: WorkerToApiContrac
         const prepared = await apiClient.prepareWorkflowBundleUpload({
             workflowVersionId: workflowVersion.id,
             workspaceId,
-            platformId,
+            tenantId,
             size: data.length,
         })
         if (prepared.kind === 'skip') {
@@ -73,7 +73,7 @@ export const workflowBundleStore = (log: ApLogger, apiClient: WorkerToApiContrac
         await apiClient.uploadWorkflowBundle({
             workflowVersionId: workflowVersion.id,
             workspaceId,
-            platformId,
+            tenantId,
             data,
         })
     },
@@ -113,7 +113,7 @@ type PublishParams = {
     workflowVersion: WorkflowVersion
     connectors: ConnectorPackage[]
     workspaceId: string
-    platformId: string
+    tenantId: string
 }
 
 type MaterializeCodeParams = {

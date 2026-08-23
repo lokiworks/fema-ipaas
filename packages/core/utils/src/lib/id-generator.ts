@@ -16,5 +16,5 @@ export type WorkspaceId = ApId
 export type ExecutionId = ApId
 export type WorkflowId = ApId
 export type WorkflowVersionId = ApId
-export type PlatformId = ApId
+export type TenantId = ApId
 export type UserId = ApId

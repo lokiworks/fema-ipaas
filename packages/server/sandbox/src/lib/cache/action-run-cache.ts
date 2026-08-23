@@ -1,18 +1,18 @@
 import { readdir, rm, stat, utimes } from 'node:fs/promises'
 import path from 'node:path'
-import { ErrorCode, isNil, PlatformError, tryCatch } from '@fema/core-utils'
+import { ApplicationError, ErrorCode, isNil, tryCatch } from '@fema/core-utils'
 import { type ApLogger } from '@fema/server-utils'
 import { ACTION_RUN_CODE_DIR, cacheUtils } from './cache-paths'
 
 export const actionRunCache = {
-    namespace({ platformId, sourceHash }: NamespaceParams): string {
-        if (platformId.length === 0) {
-            throw new PlatformError({
+    namespace({ tenantId, sourceHash }: NamespaceParams): string {
+        if (tenantId.length === 0) {
+            throw new ApplicationError({
                 code: ErrorCode.VALIDATION,
-                params: { message: 'Cannot namespace an action-run code cache without a platformId' },
+                params: { message: 'Cannot namespace an action-run code cache without a tenantId' },
             })
         }
-        return `${ACTION_RUN_CODE_DIR}/${platformId}_${sourceHash}`
+        return `${ACTION_RUN_CODE_DIR}/${tenantId}_${sourceHash}`
     },
 
     isActionRunNamespace(namespace: string): boolean {
@@ -148,7 +148,7 @@ export const ACTION_RUN_CACHE_SWEEP_INTERVAL_MS = 30 * 60 * 1000
 export const ACTION_RUN_CACHE_FIRST_SWEEP_DELAY_MS = 60 * 1000
 
 type NamespaceParams = {
-    platformId: string
+    tenantId: string
     sourceHash: string
 }
 

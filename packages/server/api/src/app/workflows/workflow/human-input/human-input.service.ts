@@ -1,8 +1,8 @@
-import { ErrorCode, isNil, PlatformError, WorkflowId } from '@fema/core-utils'
+import { ApplicationError, ErrorCode, isNil, WorkflowId } from '@fema/core-utils'
 import { ChatUIResponse, FormInputType, FormResponse, PopulatedWorkflow } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { connectorMetadataService } from '../../../connectors/metadata/connector-metadata-service'
-import { platformService } from '../../../platform/platform.service'
+import { tenantService } from '../../../tenant/tenant.service'
 import { workspaceService } from '../../../workspace/workspace-service'
 import { workflowVersionService } from '../../workflow-version/workflow-version.service'
 import { workflowRepo } from '../workflow.repo'
@@ -38,7 +38,7 @@ export const humanInputService = (log: FastifyBaseLogger) => ({
     getFormByWorkflowIdOrThrow: async (workflowId: string, useDraft: boolean): Promise<FormResponse> => {
         const workflow = await getPopulatedWorkflowById(log, workflowId, useDraft)
         if (!isFormTrigger(workflow)) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityType: 'workflow_form',
@@ -50,7 +50,7 @@ export const humanInputService = (log: FastifyBaseLogger) => ({
         const connectorVersion = await connectorMetadataService(log).resolveExactVersion({
             name: FORMS_CONNECTOR_NAME,
             version: workflow.version.trigger.settings.connectorVersion,
-            platformId: await workspaceService(log).getPlatformId(workflow.workspaceId),
+            tenantId: await workspaceService(log).getTenantId(workflow.workspaceId),
         })
         const triggerSettings = workflow.version.trigger.settings
         return {
@@ -66,7 +66,7 @@ export const humanInputService = (log: FastifyBaseLogger) => ({
         if (!workflow
             || workflow.version.trigger.settings.triggerName !== 'chat_submission'
             || workflow.version.trigger.settings.connectorName !== FORMS_CONNECTOR_NAME) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityType: 'workflow_form',
@@ -75,15 +75,15 @@ export const humanInputService = (log: FastifyBaseLogger) => ({
                 },
             })
         }
-        const platformId = await workspaceService(log).getPlatformId(workflow.workspaceId)
-        const platform = await platformService(log).getOneOrThrow(platformId)
+        const tenantId = await workspaceService(log).getTenantId(workflow.workspaceId)
+        const tenant = await tenantService(log).getOneOrThrow(tenantId)
         return {
             id: workflow.id,
             title: workflow.version.displayName,
             props: workflow.version.trigger.settings.input,
             workspaceId: workflow.workspaceId,
-            platformLogoUrl: platform.logoIconUrl,
-            platformName: platform.name,
+            tenantLogoUrl: tenant.logoIconUrl,
+            tenantName: tenant.name,
         }
     },
 })

@@ -30,7 +30,7 @@ describe('Connection CE API', () => {
             const ctx = await setup()
 
             const mockConnector = createMockConnectorMetadata({
-                platformId: ctx.platform.id,
+                tenantId: ctx.tenant.id,
                 packageType: PackageType.REGISTRY,
                 connectorType: ConnectorType.OFFICIAL,
             })
@@ -62,7 +62,7 @@ describe('Connection CE API', () => {
             const ctx = await setup()
 
             const mockConnector = createMockConnectorMetadata({
-                platformId: ctx.platform.id,
+                tenantId: ctx.tenant.id,
                 packageType: PackageType.REGISTRY,
                 connectorType: ConnectorType.OFFICIAL,
             })
@@ -90,7 +90,7 @@ describe('Connection CE API', () => {
             const ctx = await setup()
 
             const mockConnector = createMockConnectorMetadata({
-                platformId: ctx.platform.id,
+                tenantId: ctx.tenant.id,
                 packageType: PackageType.REGISTRY,
                 connectorType: ConnectorType.OFFICIAL,
             })
@@ -119,7 +119,7 @@ describe('Connection CE API', () => {
             const ctx = await setup()
 
             const mockConnector = createMockConnectorMetadata({
-                platformId: ctx.platform.id,
+                tenantId: ctx.tenant.id,
                 packageType: PackageType.REGISTRY,
                 connectorType: ConnectorType.OFFICIAL,
             })
@@ -163,7 +163,7 @@ describe('Connection CE API', () => {
             const ctx = await setup()
 
             const mockConnector = createMockConnectorMetadata({
-                platformId: ctx.platform.id,
+                tenantId: ctx.tenant.id,
                 packageType: PackageType.REGISTRY,
                 connectorType: ConnectorType.OFFICIAL,
             })
@@ -205,7 +205,7 @@ describe('Connection CE API', () => {
             const ctx = await setup()
 
             const mockConnector = createMockConnectorMetadata({
-                platformId: ctx.platform.id,
+                tenantId: ctx.tenant.id,
                 packageType: PackageType.REGISTRY,
                 connectorType: ConnectorType.OFFICIAL,
             })
@@ -249,7 +249,7 @@ describe('Connection CE API', () => {
             const ctx = await setup()
 
             const mockConnector = createMockConnectorMetadata({
-                platformId: ctx.platform.id,
+                tenantId: ctx.tenant.id,
                 packageType: PackageType.REGISTRY,
                 connectorType: ConnectorType.OFFICIAL,
             })
@@ -295,7 +295,7 @@ describe('Connection CE API', () => {
             const ctx = await setup()
 
             const mockConnector = createMockConnectorMetadata({
-                platformId: ctx.platform.id,
+                tenantId: ctx.tenant.id,
                 packageType: PackageType.REGISTRY,
                 connectorType: ConnectorType.OFFICIAL,
             })
@@ -329,13 +329,13 @@ describe('Connection CE API', () => {
 
             const mockConnectorA = createMockConnectorMetadata({
                 name: 'connector-a-filter',
-                platformId: ctx.platform.id,
+                tenantId: ctx.tenant.id,
                 packageType: PackageType.REGISTRY,
                 connectorType: ConnectorType.OFFICIAL,
             })
             const mockConnectorB = createMockConnectorMetadata({
                 name: 'connector-b-filter',
-                platformId: ctx.platform.id,
+                tenantId: ctx.tenant.id,
                 packageType: PackageType.REGISTRY,
                 connectorType: ConnectorType.OFFICIAL,
             })
@@ -381,7 +381,7 @@ describe('Connection CE API', () => {
             const ctx = await setup()
 
             const mockConnector = createMockConnectorMetadata({
-                platformId: ctx.platform.id,
+                tenantId: ctx.tenant.id,
                 packageType: PackageType.REGISTRY,
                 connectorType: ConnectorType.OFFICIAL,
             })
@@ -424,7 +424,7 @@ describe('Connection CE API', () => {
             const ctx2 = await createTestContext(app!)
 
             const mockConnector = createMockConnectorMetadata({
-                platformId: ctx1.platform.id,
+                tenantId: ctx1.tenant.id,
                 packageType: PackageType.REGISTRY,
                 connectorType: ConnectorType.OFFICIAL,
             })
@@ -456,7 +456,7 @@ describe('Connection CE API', () => {
             const ctx2 = await createTestContext(app!)
 
             const mockConnector = createMockConnectorMetadata({
-                platformId: ctx1.platform.id,
+                tenantId: ctx1.tenant.id,
                 packageType: PackageType.REGISTRY,
                 connectorType: ConnectorType.OFFICIAL,
             })
@@ -485,7 +485,7 @@ describe('Connection CE API', () => {
             const ctx = await setup()
 
             const mockConnector = createMockConnectorMetadata({
-                platformId: ctx.platform.id,
+                tenantId: ctx.tenant.id,
                 packageType: PackageType.REGISTRY,
                 connectorType: ConnectorType.OFFICIAL,
             })
@@ -517,24 +517,24 @@ describe('Connection CE API', () => {
             expect(response?.statusCode).toBe(StatusCodes.NOT_FOUND)
         })
 
-        it('should not delete a platform-scoped connection from the workspace route', async () => {
+        it('should not delete a tenant-scoped connection from the workspace route', async () => {
             const ctx = await setup()
 
-            const platformConnection = {
+            const tenantConnection = {
                 ...createMockConnection({
-                    platformId: ctx.platform.id,
+                    tenantId: ctx.tenant.id,
                     workspaceIds: [ctx.workspace.id],
-                    externalId: 'platform-delete-test',
+                    externalId: 'tenant-delete-test',
                 }, ctx.user.id),
-                scope: ConnectionScope.PLATFORM,
+                scope: ConnectionScope.TENANT,
             }
-            await db.save('connection', platformConnection)
+            await db.save('connection', tenantConnection)
 
-            const response = await ctx.delete(`/v1/connections/${platformConnection.id}`)
+            const response = await ctx.delete(`/v1/connections/${tenantConnection.id}`)
 
             expect(response?.statusCode).toBe(StatusCodes.FORBIDDEN)
 
-            const stillExists = await db.findOneBy('connection', { id: platformConnection.id })
+            const stillExists = await db.findOneBy('connection', { id: tenantConnection.id })
             expect(stillExists).not.toBeNull()
         })
     })

@@ -35,16 +35,16 @@ export type AnalyticsWorkflowReportItem = z.infer<typeof AnalyticsWorkflowReport
 export const AnalyticsWorkflowReport = z.array(AnalyticsWorkflowReportItem)
 export type AnalyticsWorkflowReport = z.infer<typeof AnalyticsWorkflowReport>
 
-export const PlatformAnalyticsReport = z.object({
+export const TenantAnalyticsReport = z.object({
     ...BaseModelSchema,
     cachedAt: DateOrString,
     runs: AnalyticsRunsUsage,
     outdated: z.boolean(),
     workflows: AnalyticsWorkflowReport,
-    platformId: z.string(),
+    tenantId: z.string(),
     users: z.array(UserWithMetaInformation),
 })
-export type PlatformAnalyticsReport = z.infer<typeof PlatformAnalyticsReport>
+export type TenantAnalyticsReport = z.infer<typeof TenantAnalyticsReport>
 
 export const AnalyticsReportRequest = z.object({
     timePeriod: z.nativeEnum(AnalyticsTimePeriod).optional(),

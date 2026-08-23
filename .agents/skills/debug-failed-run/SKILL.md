@@ -50,7 +50,7 @@ Scope the time window to the job's `processedAt`/`finishedAt` from Step 1 (± a 
 
 Steps 1–2 tell you *what* failed at runtime; this step finds *where* in the code and decides **product bug vs. user/config issue**. Work from this repo (the FEMA Integration Platform source you're already in):
 
-- Take the distinctive part of the stacktrace / `failedReason` / log `Body` — the exact thrown message, an `PlatformError` `code` (e.g. `ENTITY_NOT_FOUND`, `CONNECTOR_NOT_FOUND`), or a function name — and `Grep` for it across `packages/`. Quoted error strings and error `code` enums are the fastest anchors.
+- Take the distinctive part of the stacktrace / `failedReason` / log `Body` — the exact thrown message, an `ApplicationError` `code` (e.g. `ENTITY_NOT_FOUND`, `CONNECTOR_NOT_FOUND`), or a function name — and `Grep` for it across `packages/`. Quoted error strings and error `code` enums are the fastest anchors.
 - For a connector failure, the failing step's `settings.connectorName`/`connectorVersion` (from Step 1) points at `packages/connectors/**/<connector>`; open the failing action/trigger.
 - For engine/worker failures, look under `packages/server/{api,worker}` and `packages/engine`. Read the throwing code path and the surrounding error handling to see whether the input that triggered it (from `triggerPayload` / step `input`) is being mishandled.
 - Classify the outcome:

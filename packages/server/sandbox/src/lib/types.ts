@@ -13,7 +13,7 @@ export type Resolver = {
 }
 
 export type ResolveInput = {
-    platformId: string
+    tenantId: string
     publicApiUrl: string
     engineToken: string
     workflow?: { id: string, versionId: string, workspaceId: string }
@@ -29,7 +29,7 @@ export type ResolveResult =
 export type Runtime = {
     // Materialize provision, run one engine operation, return its result. Owns the box lifecycle
     // internally: acquire -> run -> release on success / invalidate on throw. Re-raises the sandbox
-    // PlatformError codes (timeout / memory / log-size) that handlers already catch.
+    // ApplicationError codes (timeout / memory / log-size) that handlers already catch.
     execute(params: ExecuteParams): Promise<RuntimeExecutionResult>
     getActiveExecutors(): RuntimeExecutorInfo[]
     prewarm(params: PreWarmSandboxParams): Promise<void>
@@ -50,7 +50,7 @@ export type PreWarmSandboxParams = {
     log: ApLogger
     apiClient?: WorkerToApiContract
     publicApiUrl?: string
-    // Warm just this workflow (e.g. on publish) instead of the platform's whole active set.
+    // Warm just this workflow (e.g. on publish) instead of the tenant's whole active set.
     workflow?: { id: string, versionId: string, workspaceId: string }
 }
 
@@ -60,7 +60,7 @@ export type PreWarmSandboxParams = {
 // archive). No bytes cross the worker socket and the pool never imports WorkerToApiContract; the link
 // is publicApiUrl-based so it is reachable from a remote pool (Cloud Run). See ADR 0002.
 export type ProvisionInput = {
-    platformId: string
+    tenantId: string
     workflowVersionId?: string
     connectors: ConnectorPackage[]
     codes: CodeArtifact[]

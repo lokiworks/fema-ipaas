@@ -1,5 +1,5 @@
 import { TriggerBase } from '@fema/connector-sdk'
-import { ErrorCode, isNil, PlatformError, WorkspaceId } from '@fema/core-utils'
+import { ApplicationError, ErrorCode, isNil, WorkspaceId } from '@fema/core-utils'
 import { WorkflowTriggerType, WorkflowVersion } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { connectorMetadataService } from '../../connectors/metadata/connector-metadata-service'
@@ -14,7 +14,7 @@ export const triggerUtils = (log: FastifyBaseLogger) => ({
 
         })
         if (isNil(connectorTrigger)) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityType: 'connector_trigger',
@@ -46,9 +46,9 @@ export const triggerUtils = (log: FastifyBaseLogger) => ({
         })
     },
     async getConnectorTriggerByName({ connectorName, connectorVersion, triggerName, workspaceId }: GetConnectorTriggerByNameParams): Promise<TriggerBase | null> {
-        const platformId = await workspaceService(log).getPlatformId(workspaceId)
+        const tenantId = await workspaceService(log).getTenantId(workspaceId)
         const connector = await connectorMetadataService(log).get({
-            platformId,
+            tenantId,
             name: connectorName,
             version: connectorVersion,
         })

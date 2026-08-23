@@ -20,7 +20,7 @@ afterAll(async () => {
 beforeEach(async () => {
     await databaseConnection().getRepository('flag').createQueryBuilder().delete().execute()
     await databaseConnection().getRepository('workspace').createQueryBuilder().delete().execute()
-    await databaseConnection().getRepository('platform').createQueryBuilder().delete().execute()
+    await databaseConnection().getRepository('tenant').createQueryBuilder().delete().execute()
     await databaseConnection().getRepository('user').createQueryBuilder().delete().execute()
     await databaseConnection().getRepository('user_identity').createQueryBuilder().delete().execute()
 })
@@ -49,13 +49,13 @@ describe('Authentication API', () => {
             expect(responseBody?.trackEvents).toBe(mockSignUpRequest.trackEvents)
             expect(responseBody?.newsLetter).toBe(mockSignUpRequest.newsLetter)
             expect(responseBody?.status).toBe('ACTIVE')
-            expect(responseBody?.platformId).toBeNull()
+            expect(responseBody?.tenantId).toBeNull()
             expect(responseBody?.externalId).toBe(null)
             expect(responseBody?.workspaceId).toBeNull()
             expect(responseBody?.token).toBeDefined()
         })
 
-        it('Does not create workspace or platform on signup', async () => {
+        it('Does not create workspace or tenant on signup', async () => {
             // arrange
             const mockSignUpRequest = createMockSignUpRequest()
 
@@ -69,16 +69,16 @@ describe('Authentication API', () => {
             // assert
             expect(response?.statusCode).toBe(StatusCodes.OK)
 
-            const platformCount = await databaseConnection().getRepository('platform').count()
+            const tenantCount = await databaseConnection().getRepository('tenant').count()
             const workspaceCount = await databaseConnection().getRepository('workspace').count()
 
-            expect(platformCount).toBe(0)
+            expect(tenantCount).toBe(0)
             expect(workspaceCount).toBe(0)
         })
     })
 
     describe('Sign in Endpoint', () => {
-        it('Logs in with onboarding token when no platform exists', async () => {
+        it('Logs in with onboarding token when no tenant exists', async () => {
             // arrange
             const mockSignUpRequest = createMockSignUpRequest()
             await app?.inject({
@@ -103,7 +103,7 @@ describe('Authentication API', () => {
             const responseBody = response?.json()
 
             expect(response?.statusCode).toBe(StatusCodes.OK)
-            expect(responseBody?.platformId).toBeNull()
+            expect(responseBody?.tenantId).toBeNull()
             expect(responseBody?.workspaceId).toBeNull()
             expect(responseBody?.token).toBeDefined()
         })

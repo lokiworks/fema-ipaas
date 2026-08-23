@@ -23,7 +23,7 @@ export const Workspace = z.object({
     deleted: Nullable(DateOrString),
     ownerId: z.string(),
     displayName: z.string(),
-    platformId: z.string(),
+    tenantId: z.string(),
     externalId: Nullable(z.string()),
 })
 export type Workspace = z.infer<typeof Workspace>

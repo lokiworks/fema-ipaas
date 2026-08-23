@@ -48,7 +48,7 @@ export function WorkspaceDashboardLayout({
   const currentWorkspaceId = authenticationSession.getWorkspaceId();
   const { t } = useTranslation();
   const location = useLocation();
-  const isPlatformPage = location.pathname.includes('/platform/');
+  const isTenantPage = location.pathname.includes('/tenant/');
   const isEmbedded = useEmbedding().embedState.isEmbedded;
   if (isNil(currentWorkspaceId) || currentWorkspaceId === '') {
     return <Navigate to="/sign-in" replace />;
@@ -87,7 +87,7 @@ export function WorkspaceDashboardLayout({
 
   const hideHeader =
     itemsWithoutHeader.some((item) => location.pathname.includes(item.to)) ||
-    isPlatformPage;
+    isTenantPage;
 
   return (
     <WorkspaceChangedRedirector currentWorkspaceId={currentWorkspaceId}>

@@ -99,7 +99,7 @@ export { slackAuth, slackOAuth2Auth } from './lib/auth';
 
 export const slack = createConnector({
   displayName: 'Slack',
-  description: 'Channel-based messaging platform',
+  description: 'Channel-based messaging tenant',
   minimumSupportedRelease: '0.86.4',
   logoUrl: 'https://cdn.fema.local/connectors/slack.png',
   categories: [ConnectorCategory.COMMUNICATION],

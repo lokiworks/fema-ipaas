@@ -16,7 +16,7 @@ export const PrivateConnectorPackage = z.object({
     connectorName: z.string(),
     connectorVersion: z.string(),
     archiveId: z.string(),
-    platformId: z.string(),
+    tenantId: z.string(),
 })
 
 export type PrivateConnectorPackage = z.infer<typeof PrivateConnectorPackage>
@@ -35,7 +35,7 @@ export const CustomNpmConnectorPackage = z.object({
     connectorType: z.literal(ConnectorType.CUSTOM),
     connectorName: z.string(),
     connectorVersion: z.string(),
-    platformId: z.string(),
+    tenantId: z.string(),
 })
 
 export type CustomNpmConnectorPackage = z.infer<typeof CustomNpmConnectorPackage>

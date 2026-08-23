@@ -9,21 +9,21 @@ import { connectorMetadataService } from './metadata/connector-metadata-service'
 
 // Resolves a connector to a single downloadable link (see ADR 0002 — "Connectors are distributed as links").
 // Official/registry connectors resolve to the CDN tarball when available, else to the npm tarball. Custom
-// (ARCHIVE) connectors are served straight from the file store. Always platform-scoped via the engine
-// token's platformId.
+// (ARCHIVE) connectors are served straight from the file store. Always tenant-scoped via the engine
+// token's tenantId.
 export const connectorBundle = (log: FastifyBaseLogger) => ({
-    async resolve({ name, version, archiveId, platformId, workspaceId }: ResolveParams): Promise<ConnectorBundleResolution> {
+    async resolve({ name, version, archiveId, tenantId, workspaceId }: ResolveParams): Promise<ConnectorBundleResolution> {
         // ARCHIVE connectors are addressed by archiveId — they may not be registered in metadata yet
         // (e.g. during EXTRACT_CONNECTOR_METADATA of a freshly uploaded .tgz). Scope to the token's
-        // platform so one platform cannot read another's private archive.
+        // tenant so one tenant cannot read another's private archive.
         if (!isNil(archiveId)) {
-            const file = await fileRepo().findOneBy({ id: archiveId, platformId, type: FileType.PACKAGE_ARCHIVE })
+            const file = await fileRepo().findOneBy({ id: archiveId, tenantId, type: FileType.PACKAGE_ARCHIVE })
             return isNil(file) ? { type: 'not-found' } : { type: 'stream', archiveId }
         }
         if (isNil(name) || isNil(version)) {
             return { type: 'not-found' }
         }
-        const metadata = await connectorMetadataService(log).get({ name, version, platformId, workspaceId })
+        const metadata = await connectorMetadataService(log).get({ name, version, tenantId, workspaceId })
         if (isNil(metadata)) {
             return { type: 'not-found' }
         }
@@ -90,7 +90,7 @@ type ResolveParams = {
     name?: string
     version?: string
     archiveId?: string
-    platformId: string
+    tenantId: string
     workspaceId: string
 }
 

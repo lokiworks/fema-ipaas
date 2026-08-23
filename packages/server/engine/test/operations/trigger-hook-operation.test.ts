@@ -58,7 +58,7 @@ function makeOperation(triggerPayload: ExecuteTriggerOperation<TriggerHookType.R
         webhookUrl: 'http://localhost:4200/webhook',
         triggerPayload,
         workspaceId: 'workspace-1',
-        platformId: 'platform-1',
+        tenantId: 'tenant-1',
         engineToken: 'test-token',
         internalApiUrl: 'http://localhost:3000/',
         publicApiUrl: 'http://localhost:4200/api/',

@@ -158,8 +158,8 @@ async function handleLegacySyncResume({ executionId, body, headers, queryParams,
 }
 
 async function resolveResumePageTheme({ workspaceId, log }: { workspaceId: string, log: FastifyBaseLogger }): Promise<ResumePageTheme> {
-    const platformId = await workspaceService(log).getPlatformId(workspaceId)
-    return resumePageHooks.get(log).getTheme({ platformId })
+    const tenantId = await workspaceService(log).getTenantId(workspaceId)
+    return resumePageHooks.get(log).getTheme({ tenantId })
 }
 
 async function resolveWorkflowName({ workflowVersionId, log }: { workflowVersionId: string, log: FastifyBaseLogger }): Promise<string | undefined> {

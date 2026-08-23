@@ -30,7 +30,7 @@ describe('signupNames', () => {
             ).toEqual({ firstName, lastName })
         })
 
-        it('strips the characters the platform name rule rejects', () => {
+        it('strips the characters the tenant name rule rejects', () => {
             expect(
                 signupNames.splitFullName({ fullName: 'J. Smith', email: 'j@fema.local' }),
             ).toEqual({ firstName: 'J', lastName: 'Smith' })
@@ -43,32 +43,32 @@ describe('signupNames', () => {
         })
     })
 
-    describe('platformNameFromPerson', () => {
+    describe('tenantNameFromPerson', () => {
         it.each([
-            ['Ahmad', "Ahmad's Platform"],
-            ['Ahmad Bin', "Ahmad's Platform"],
-            ['Chris', "Chris's Platform"],
-            ["Ahmad's", "Ahmad's Platform"],
-        ])('names the platform from %s -> %s', (firstName, expected) => {
+            ['Ahmad', "Ahmad's Tenant"],
+            ['Ahmad Bin', "Ahmad's Tenant"],
+            ['Chris', "Chris's Tenant"],
+            ["Ahmad's", "Ahmad's Tenant"],
+        ])('names the tenant from %s -> %s', (firstName, expected) => {
             expect(
-                signupNames.platformNameFromPerson({ firstName, email: 'a.b@fema.local' }),
+                signupNames.tenantNameFromPerson({ firstName, email: 'a.b@fema.local' }),
             ).toBe(expected)
         })
 
         it('falls back to the email local part when the person has no usable name', () => {
             expect(
-                signupNames.platformNameFromPerson({ firstName: '', email: 'ahmad.tash@fema.local' }),
-            ).toBe("Ahmad's Platform")
+                signupNames.tenantNameFromPerson({ firstName: '', email: 'ahmad.tash@fema.local' }),
+            ).toBe("Ahmad's Tenant")
         })
 
         it('uses the whole fallback when neither the name nor the address yields a word', () => {
             expect(
-                signupNames.platformNameFromPerson({ firstName: '', email: '___@fema.local' }),
-            ).toBe('My Platform')
+                signupNames.tenantNameFromPerson({ firstName: '', email: '___@fema.local' }),
+            ).toBe('My Tenant')
         })
 
-        it('stays inside the platform name limit when the address is one long word', () => {
-            const name = signupNames.platformNameFromPerson({
+        it('stays inside the tenant name limit when the address is one long word', () => {
+            const name = signupNames.tenantNameFromPerson({
                 firstName: '',
                 email: `${'a'.repeat(120)}@fema.local`,
             })
@@ -76,9 +76,9 @@ describe('signupNames', () => {
             expect(name.length).toBeLessThanOrEqual(100)
         })
 
-        it('never produces a name the platform name rule rejects', () => {
+        it('never produces a name the tenant name rule rejects', () => {
             const safeString = new RegExp('^[^./]+$')
-            const name = signupNames.platformNameFromPerson({
+            const name = signupNames.tenantNameFromPerson({
                 firstName: 'J./Smith',
                 email: 'j@fema.local',
             })

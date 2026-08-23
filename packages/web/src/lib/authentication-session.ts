@@ -78,14 +78,14 @@ export const authenticationSession = {
       path.startsWith('/') ? path : `/${path}`
     }`;
   },
-  getPlatformId(): string | null {
+  getTenantId(): string | null {
     const token = this.getToken();
     if (isNil(token)) {
       return null;
     }
     const decodedJwt = getDecodedJwt(token);
-    if ('platform' in decodedJwt && decodedJwt.platform) {
-      return decodedJwt.platform.id;
+    if ('tenant' in decodedJwt && decodedJwt.tenant) {
+      return decodedJwt.tenant.id;
     }
     return null;
   },
@@ -97,12 +97,12 @@ export const authenticationSession = {
     const decodedJwt = jwtDecode<{ type: string }>(token);
     return decodedJwt.type === PrincipalType.ONBOARDING;
   },
-  async switchToPlatform(platformId: string) {
-    if (authenticationSession.getPlatformId() === platformId) {
+  async switchToTenant(tenantId: string) {
+    if (authenticationSession.getTenantId() === tenantId) {
       return;
     }
-    const result = await authenticationApi.switchPlatform({
-      platformId,
+    const result = await authenticationApi.switchTenant({
+      tenantId,
     });
     ApStorage.getInstance().setItem(tokenKey, result.token);
     if (!isNil(result.workspaceId)) {

@@ -1,5 +1,5 @@
 import path from 'path'
-import { ErrorCode, PlatformError } from '@fema/core-utils'
+import { ApplicationError, ErrorCode } from '@fema/core-utils'
 import { type ApLogger, wideEvent } from '@fema/server-utils'
 import { ApEnvironment, ConnectorPackage, ConnectorType, EXACT_VERSION_REGEX, PackageType, WorkerToApiContract } from '@fema/shared'
 import { SandboxSettings } from '../../types'
@@ -8,9 +8,9 @@ import { cacheState, NO_SAVE_GUARD } from '../cache-state'
 import { isValidPackageName } from './connector-installer'
 
 export const connectorCache = (log: ApLogger, apiClient: WorkerToApiContract, basePath: string, getSettings: () => SandboxSettings) => ({
-    async getConnector({ connectorName, connectorVersion, platformId }: ConnectorCacheKey): Promise<ConnectorPackage> {
+    async getConnector({ connectorName, connectorVersion, tenantId }: ConnectorCacheKey): Promise<ConnectorPackage> {
         if (!isValidPackageName(connectorName)) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.VALIDATION,
                 params: { message: `Invalid connectorName: "${connectorName}" is not a valid package name` },
             })
@@ -18,10 +18,10 @@ export const connectorCache = (log: ApLogger, apiClient: WorkerToApiContract, ba
         const isExactVersion = EXACT_VERSION_REGEX.test(connectorVersion)
 
         if (!isExactVersion) {
-            return getConnectorPackage({ connectorName, connectorVersion, platformId }, apiClient)
+            return getConnectorPackage({ connectorName, connectorVersion, tenantId }, apiClient)
         }
 
-        const cacheKey = `${connectorName}-${connectorVersion}-${platformId}`
+        const cacheKey = `${connectorName}-${connectorVersion}-${tenantId}`
         const cache = cacheState(path.join(cacheUtils(basePath).getGlobalCacheConnectorsPath(), cacheKey))
 
         const { state, cacheHit } = await cache.getOrSetCache({
@@ -41,8 +41,8 @@ export const connectorCache = (log: ApLogger, apiClient: WorkerToApiContract, ba
                 return wideEvent.timed({
                     name: 'connectorFetch',
                     fn: async () => {
-                        const connectorPackage = await getConnectorPackage({ connectorName, connectorVersion, platformId }, apiClient)
-                        log.info({ connector: { name: connectorName, version: connectorVersion }, platform: { id: platformId } }, 'Cached connector')
+                        const connectorPackage = await getConnectorPackage({ connectorName, connectorVersion, tenantId }, apiClient)
+                        log.info({ connector: { name: connectorName, version: connectorVersion }, tenant: { id: tenantId } }, 'Cached connector')
                         return JSON.stringify(connectorPackage)
                     },
                 })
@@ -60,7 +60,7 @@ async function getConnectorPackage(query: ConnectorCacheKey, apiClient: WorkerTo
     const connectorMetadata = await apiClient.getConnector({
         name: query.connectorName,
         version: query.connectorVersion,
-        platformId: query.platformId,
+        tenantId: query.tenantId,
     }) as { packageType: PackageType, name: string, version: string, connectorType: ConnectorType, archiveId?: string } | null
 
     if (!connectorMetadata) {
@@ -78,14 +78,14 @@ async function getConnectorPackage(query: ConnectorCacheKey, apiClient: WorkerTo
         return {
             ...baseProps,
             archiveId: connectorMetadata.archiveId!,
-            platformId: query.platformId,
+            tenantId: query.tenantId,
         } as ConnectorPackage
     }
 
     if (connectorMetadata.connectorType === ConnectorType.CUSTOM) {
         return {
             ...baseProps,
-            platformId: query.platformId,
+            tenantId: query.tenantId,
         } as ConnectorPackage
     }
 
@@ -102,5 +102,5 @@ export class ConnectorNotFoundError extends Error {
 type ConnectorCacheKey = {
     connectorName: string
     connectorVersion: string
-    platformId: string
+    tenantId: string
 }

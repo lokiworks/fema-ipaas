@@ -1,10 +1,10 @@
-import { PlatformError, ErrorCode } from '@fema/core-utils'
+import { ApplicationError, ErrorCode } from '@fema/core-utils'
 import { TriggerStrategy } from '@fema/connector-sdk'
 import { ApEnvironment, EngineResponseStatus, TriggerSourceScheduleType } from '@fema/shared'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mockSubmitAndWaitForResponse = vi.fn()
-const mockGetPlatformId = vi.fn().mockResolvedValue('platform-1')
+const mockGetTenantId = vi.fn().mockResolvedValue('tenant-1')
 const mockDeleteListeners = vi.fn()
 const mockRemoveRepeatingJob = vi.fn()
 const mockAddJob = vi.fn()
@@ -19,7 +19,7 @@ vi.mock('../../../../../src/app/helper/system/system', () => ({
 
 vi.mock('../../../../../src/app/workspace/workspace-service', () => ({
     workspaceService: vi.fn(() => ({
-        getPlatformId: mockGetPlatformId,
+        getTenantId: mockGetTenantId,
     })),
 }))
 
@@ -105,7 +105,7 @@ function failedEngineResponse() {
 describe('workflowTriggerSideEffect', () => {
     beforeEach(() => {
         vi.clearAllMocks()
-        mockGetPlatformId.mockResolvedValue('platform-1')
+        mockGetTenantId.mockResolvedValue('tenant-1')
     })
 
     describe('enable', () => {
@@ -185,7 +185,7 @@ describe('workflowTriggerSideEffect', () => {
                     connectorTrigger: makeManualTrigger(),
                     ignoreError: false,
                 }),
-            ).rejects.toThrow(PlatformError)
+            ).rejects.toThrow(ApplicationError)
         })
 
         it('should not throw when engine response is bad and ignoreError is true', async () => {
@@ -200,7 +200,7 @@ describe('workflowTriggerSideEffect', () => {
 
         it('should throw when submitAndWaitForResponse throws and ignoreError is false', async () => {
             mockSubmitAndWaitForResponse.mockRejectedValue(
-                new PlatformError({
+                new ApplicationError({
                     code: ErrorCode.ENGINE_OPERATION_FAILURE,
                     params: { message: 'Worker did not respond within the safety timeout' },
                 }),
@@ -212,12 +212,12 @@ describe('workflowTriggerSideEffect', () => {
                     connectorTrigger: makeManualTrigger(),
                     ignoreError: false,
                 }),
-            ).rejects.toThrow(PlatformError)
+            ).rejects.toThrow(ApplicationError)
         })
 
         it('should not throw when submitAndWaitForResponse throws and ignoreError is true', async () => {
             mockSubmitAndWaitForResponse.mockRejectedValue(
-                new PlatformError({
+                new ApplicationError({
                     code: ErrorCode.ENGINE_OPERATION_FAILURE,
                     params: { message: 'Worker did not respond within the safety timeout' },
                 }),

@@ -2,7 +2,7 @@ import { Metadata, Nullable, OptionalArrayFromQuery, SAFE_STRING_PATTERN } from 
 import { z } from 'zod'
 import { WorkspaceIcon, WorkspaceType } from './workspace'
 
-export const UpdateWorkspacePlatformRequest = z.object({
+export const UpdateWorkspaceTenantRequest = z.object({
     releasesEnabled: z.boolean().optional(),
     notifyWorkflowOwnerOnFailure: z.boolean().optional(),
     displayName: z.string().regex(new RegExp(SAFE_STRING_PATTERN)).optional(),
@@ -14,18 +14,18 @@ export const UpdateWorkspacePlatformRequest = z.object({
     executionDataRetentionDays: z.optional(Nullable(z.number().int().positive())),
 })
 
-export type UpdateWorkspacePlatformRequest = z.infer<typeof UpdateWorkspacePlatformRequest>
+export type UpdateWorkspaceTenantRequest = z.infer<typeof UpdateWorkspaceTenantRequest>
 
-export const CreatePlatformWorkspaceRequest = z.object({
+export const CreateTenantWorkspaceRequest = z.object({
     displayName: z.string().regex(new RegExp(SAFE_STRING_PATTERN)),
     externalId: Nullable(z.string()),
     metadata: Nullable(Metadata),
     maxConcurrentJobs: Nullable(z.number()),
 })
 
-export type CreatePlatformWorkspaceRequest = z.infer<typeof CreatePlatformWorkspaceRequest>
+export type CreateTenantWorkspaceRequest = z.infer<typeof CreateTenantWorkspaceRequest>
 
-export const ListWorkspaceRequestForPlatformQueryParams = z.object({
+export const ListWorkspaceRequestForTenantQueryParams = z.object({
     externalId: z.string().optional(),
     externalUserId: z.string().optional(),
     limit: z.coerce.number().optional(),
@@ -34,4 +34,4 @@ export const ListWorkspaceRequestForPlatformQueryParams = z.object({
     types: OptionalArrayFromQuery(z.nativeEnum(WorkspaceType)),
 })
 
-export type ListWorkspaceRequestForPlatformQueryParams = z.infer<typeof ListWorkspaceRequestForPlatformQueryParams>
+export type ListWorkspaceRequestForTenantQueryParams = z.infer<typeof ListWorkspaceRequestForTenantQueryParams>

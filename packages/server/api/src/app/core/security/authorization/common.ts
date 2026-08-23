@@ -3,7 +3,7 @@ import { PrincipalType } from '@fema/shared'
 import { EntitySchema } from 'typeorm'
 
 export enum AuthorizationType {
-    PLATFORM = 'PLATFORM',
+    TENANT = 'TENANT',
     WORKSPACE = 'WORKSPACE',
     UNSCOPED = 'UNSCOPED',
     NONE = 'NONE',
@@ -54,8 +54,8 @@ export type WorkspaceParamResource = {
 
 export type WorkspaceResource = WorkspaceTableResource | WorkspaceQueryResource | WorkspaceBodyResource | WorkspaceParamResource
 
-export type PlatformAuthorization = {
-    type: AuthorizationType.PLATFORM
+export type TenantAuthorization = {
+    type: AuthorizationType.TENANT
     adminOnly: boolean
     nonEmbedUsersOnly?: boolean
     allowedPrincipals: readonly (PrincipalType.USER | PrincipalType.ENGINE | PrincipalType.SERVICE)[]

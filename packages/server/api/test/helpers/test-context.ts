@@ -1,5 +1,5 @@
 import { WorkspaceRole } from '@fema/core-utils'
-import { DefaultWorkspaceRole, Platform, PlatformPlan, PlatformRole, PrincipalType, Workspace, User, UserIdentity } from '@fema/shared'
+import { DefaultWorkspaceRole, Tenant, TenantPlan, TenantRole, PrincipalType, Workspace, User, UserIdentity } from '@fema/shared'
 import { FastifyInstance, InjectOptions } from 'fastify'
 import { generateMockToken } from './auth'
 import { db } from './db'
@@ -11,8 +11,8 @@ import {
 } from './mocks'
 
 export async function createTestContext(app: FastifyInstance, params?: TestContextParams): Promise<TestContext> {
-    const { mockUserIdentity, mockOwner, mockPlatform, mockWorkspace } = await mockAndSaveBasicSetup({
-        platform: params?.platform,
+    const { mockUserIdentity, mockOwner, mockTenant, mockWorkspace } = await mockAndSaveBasicSetup({
+        tenant: params?.tenant,
         plan: params?.plan,
         workspace: params?.workspace,
     })
@@ -20,13 +20,13 @@ export async function createTestContext(app: FastifyInstance, params?: TestConte
     const token = await generateMockToken({
         id: mockOwner.id,
         type: PrincipalType.USER,
-        platform: { id: mockPlatform.id },
+        tenant: { id: mockTenant.id },
     })
 
     return buildContext(app, {
         userIdentity: mockUserIdentity,
         user: mockOwner,
-        platform: mockPlatform,
+        tenant: mockTenant,
         workspace: mockWorkspace,
         token,
     })
@@ -39,8 +39,8 @@ export async function createMemberContext(
 ): Promise<TestContext> {
     const { mockUser, mockUserIdentity } = await mockBasicUser({
         user: {
-            platformId: parentCtx.platform.id,
-            platformRole: PlatformRole.MEMBER,
+            tenantId: parentCtx.tenant.id,
+            tenantRole: TenantRole.MEMBER,
         },
     })
 
@@ -50,7 +50,7 @@ export async function createMemberContext(
 
     const mockWorkspaceMember = createMockWorkspaceMember({
         userId: mockUser.id,
-        platformId: parentCtx.platform.id,
+        tenantId: parentCtx.tenant.id,
         workspaceId: parentCtx.workspace.id,
         workspaceRoleId: workspaceRole.id,
     })
@@ -59,13 +59,13 @@ export async function createMemberContext(
     const token = await generateMockToken({
         id: mockUser.id,
         type: PrincipalType.USER,
-        platform: { id: parentCtx.platform.id },
+        tenant: { id: parentCtx.tenant.id },
     })
 
     return buildContext(app, {
         userIdentity: mockUserIdentity,
         user: mockUser,
-        platform: parentCtx.platform,
+        tenant: parentCtx.tenant,
         workspace: parentCtx.workspace,
         token,
     })
@@ -76,14 +76,14 @@ export async function createServiceContext(
     parentCtx: TestContext,
 ): Promise<TestContext> {
     const mockApiKey = createMockApiKey({
-        platformId: parentCtx.platform.id,
+        tenantId: parentCtx.tenant.id,
     })
     await db.save('api_key', mockApiKey)
 
     return buildContext(app, {
         userIdentity: parentCtx.userIdentity,
         user: parentCtx.user,
-        platform: parentCtx.platform,
+        tenant: parentCtx.tenant,
         workspace: parentCtx.workspace,
         token: mockApiKey.value,
     })
@@ -117,7 +117,7 @@ function buildContext(app: FastifyInstance, data: ContextData): TestContext {
     return {
         userIdentity: data.userIdentity,
         user: data.user,
-        platform: data.platform,
+        tenant: data.tenant,
         workspace: data.workspace,
         token: data.token,
         get: makeRequest('GET'),
@@ -137,8 +137,8 @@ function buildContext(app: FastifyInstance, data: ContextData): TestContext {
 }
 
 export type TestContextParams = {
-    platform?: Partial<Platform>
-    plan?: Partial<PlatformPlan>
+    tenant?: Partial<Tenant>
+    plan?: Partial<TenantPlan>
     workspace?: Partial<Workspace>
 }
 
@@ -153,7 +153,7 @@ type RequestOptions = {
 type ContextData = {
     userIdentity: UserIdentity
     user: User
-    platform: Platform
+    tenant: Tenant
     workspace: Workspace
     token: string
 }
@@ -161,7 +161,7 @@ type ContextData = {
 export type TestContext = {
     userIdentity: UserIdentity
     user: User
-    platform: Platform
+    tenant: Tenant
     workspace: Workspace
     token: string
     get: (url: string, query?: Record<string, unknown>, opts?: RequestOptions) => ReturnType<FastifyInstance['inject']>

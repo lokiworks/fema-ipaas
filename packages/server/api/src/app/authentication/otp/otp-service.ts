@@ -1,4 +1,4 @@
-import { apId, isNil, PlatformId } from '@fema/core-utils'
+import { apId, isNil, TenantId } from '@fema/core-utils'
 import { OtpModel, OtpState, OtpType } from '@fema/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
@@ -24,7 +24,7 @@ const repo = repoFactory(OtpEntity)
 
 export const otpService = (log: FastifyBaseLogger) => ({
     async createAndSend({
-        platformId,
+        tenantId,
         email,
         type,
     }: CreateParams): Promise<void> {
@@ -60,7 +60,7 @@ export const otpService = (log: FastifyBaseLogger) => ({
             },
         })
         await emailService(log).sendOtp({
-            platformId,
+            tenantId,
             userIdentity,
             otp: code,
             type,
@@ -171,7 +171,7 @@ async function clearIdentityBudget({ identityId, type }: IdentityBudgetParams): 
 }
 
 type CreateParams = {
-    platformId: PlatformId | null
+    tenantId: TenantId | null
     email: string
     type: OtpType
 }

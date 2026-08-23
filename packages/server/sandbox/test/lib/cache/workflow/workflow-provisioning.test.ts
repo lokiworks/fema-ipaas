@@ -70,7 +70,7 @@ describe('workflowProvisioning.resolve', () => {
             getWorkflowVersion, getConnector,
         } as unknown as WorkerToApiContract
 
-        const resolved = await workflowProvisioning(fakeLog, apiClient, uniqueBasePath(), getSettings).resolve({ workflow, platformId: 'plat1' })
+        const resolved = await workflowProvisioning(fakeLog, apiClient, uniqueBasePath(), getSettings).resolve({ workflow, tenantId: 'plat1' })
 
         expect(resolved.kind).toBe('ready')
         if (resolved.kind === 'ready') {
@@ -90,7 +90,7 @@ describe('workflowProvisioning.resolve', () => {
             async getConnector() { return httpConnector },
         } as unknown as WorkerToApiContract
 
-        const resolved = await workflowProvisioning(fakeLog, apiClient, uniqueBasePath(), getSettings).resolve({ workflow, platformId: 'plat1' })
+        const resolved = await workflowProvisioning(fakeLog, apiClient, uniqueBasePath(), getSettings).resolve({ workflow, tenantId: 'plat1' })
 
         expect(resolved.kind).toBe('ready')
         expect(getWorkflowVersion).toHaveBeenCalled()
@@ -102,7 +102,7 @@ describe('workflowProvisioning.resolve', () => {
             async getWorkflowVersion() { return null },
         } as unknown as WorkerToApiContract
 
-        const resolved = await workflowProvisioning(fakeLog, apiClient, uniqueBasePath(), getSettings).resolve({ workflow, platformId: 'plat1' })
+        const resolved = await workflowProvisioning(fakeLog, apiClient, uniqueBasePath(), getSettings).resolve({ workflow, tenantId: 'plat1' })
         expect(resolved.kind).toBe('workflow-not-found')
     })
 
@@ -113,7 +113,7 @@ describe('workflowProvisioning.resolve', () => {
             async getConnector() { return httpConnector },
         } as unknown as WorkerToApiContract
 
-        const resolved = await workflowProvisioning(fakeLog, apiClient, uniqueBasePath(), getSettings).resolve({ workflow, platformId: 'plat1' })
+        const resolved = await workflowProvisioning(fakeLog, apiClient, uniqueBasePath(), getSettings).resolve({ workflow, tenantId: 'plat1' })
 
         expect(resolved.kind).toBe('ready')
         if (resolved.kind === 'ready') {
@@ -131,7 +131,7 @@ describe('workflowProvisioning.resolve', () => {
             async getConnector() { return httpConnector },
         } as unknown as WorkerToApiContract
 
-        const resolved = await workflowProvisioning(fakeLog, apiClient, uniqueBasePath(), getSettings).resolve({ workflow, platformId: 'plat1' })
+        const resolved = await workflowProvisioning(fakeLog, apiClient, uniqueBasePath(), getSettings).resolve({ workflow, tenantId: 'plat1' })
         expect(resolved.kind === 'ready' && resolved.publishBundle === null).toBe(true)
     })
 
@@ -144,7 +144,7 @@ describe('workflowProvisioning.resolve', () => {
             disableWorkflow,
         } as unknown as WorkerToApiContract
 
-        const resolved = await workflowProvisioning(fakeLog, apiClient, uniqueBasePath(), getSettings).resolve({ workflow, platformId: 'plat1' })
+        const resolved = await workflowProvisioning(fakeLog, apiClient, uniqueBasePath(), getSettings).resolve({ workflow, tenantId: 'plat1' })
 
         expect(resolved.kind).toBe('disabled')
         expect(disableWorkflow).toHaveBeenCalledWith({ workflowId: 'workflow1', workspaceId: 'p1' })

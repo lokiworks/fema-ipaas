@@ -1,12 +1,12 @@
 import { WorkspaceId } from '@fema/core-utils'
-import { NoneAuthorization, PlatformAuthorization, PublicRoute, RouteKind, UnscopedAuthorization, WorkspaceAuthorization } from './common'
+import { NoneAuthorization, PublicRoute, RouteKind, TenantAuthorization, UnscopedAuthorization, WorkspaceAuthorization } from './common'
 
 export type WorkspaceAuthorizationConfig = Omit<WorkspaceAuthorization, 'workspaceResource'> & {
     workspaceId: WorkspaceId | undefined
 }
 
 type AuthorizationRuleConfig =
-    | PlatformAuthorization
+    | TenantAuthorization
     | WorkspaceAuthorizationConfig
     | UnscopedAuthorization
     | NoneAuthorization

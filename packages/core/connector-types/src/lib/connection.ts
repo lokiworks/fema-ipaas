@@ -1,6 +1,6 @@
 export enum ConnectionType {
     OAUTH2 = 'OAUTH2',
-    PLATFORM_OAUTH2 = 'PLATFORM_OAUTH2',
+    TENANT_OAUTH2 = 'TENANT_OAUTH2',
     CLOUD_OAUTH2 = 'CLOUD_OAUTH2',
     SECRET_TEXT = 'SECRET_TEXT',
     BASIC_AUTH = 'BASIC_AUTH',
@@ -58,8 +58,8 @@ export type CloudOAuth2ConnectionValue = {
     type: ConnectionType.CLOUD_OAUTH2
 } & BaseOAuth2ConnectionValue
 
-export type PlatformOAuth2ConnectionValue = {
-    type: ConnectionType.PLATFORM_OAUTH2
+export type TenantOAuth2ConnectionValue = {
+    type: ConnectionType.TENANT_OAUTH2
     redirect_url: string
 } & BaseOAuth2ConnectionValue
 
@@ -80,7 +80,7 @@ export type ConnectionValue<
     T extends ConnectionType.SECRET_TEXT ? SecretTextConnectionValue :
         T extends ConnectionType.BASIC_AUTH ? BasicAuthConnectionValue :
             T extends ConnectionType.CLOUD_OAUTH2 ? CloudOAuth2ConnectionValue :
-                T extends ConnectionType.PLATFORM_OAUTH2 ? PlatformOAuth2ConnectionValue :
+                T extends ConnectionType.TENANT_OAUTH2 ? TenantOAuth2ConnectionValue :
                     T extends ConnectionType.OAUTH2 ? OAuth2ConnectionValueWithApp :
                         T extends ConnectionType.CUSTOM_AUTH ? CustomAuthConnectionValue<PropsType> :
                             T extends ConnectionType.OIDC ? OIDCConnectionValue<PropsType> :

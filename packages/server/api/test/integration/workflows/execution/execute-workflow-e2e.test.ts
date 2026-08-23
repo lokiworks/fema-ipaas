@@ -68,19 +68,19 @@ afterAll(async () => {
 }, 15_000)
 
 async function setupSubflowFixtures({ childAlwaysFails = false, retryOnFailure = false }: { childAlwaysFails?: boolean, retryOnFailure?: boolean } = {}) {
-    const { mockPlatform, mockWorkspace } = await mockAndSaveBasicSetup()
+    const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
 
     const webhookConnector = createMockConnectorMetadata({
         name: '@fema/connector-webhook',
         version: '0.1.29',
-        platformId: undefined,
+        tenantId: undefined,
         packageType: PackageType.REGISTRY,
         connectorType: ConnectorType.OFFICIAL,
     })
     const subflowsConnector = createMockConnectorMetadata({
         name: '@fema/connector-subflows',
         version: '0.4.11',
-        platformId: undefined,
+        tenantId: undefined,
         packageType: PackageType.REGISTRY,
         connectorType: ConnectorType.OFFICIAL,
     })
@@ -233,23 +233,23 @@ async function setupSubflowFixtures({ childAlwaysFails = false, retryOnFailure =
     })
     await db.save('workflow_version', parentWorkflowVersion)
 
-    return { parentWorkflow, parentWorkflowVersion, childWorkflow, mockPlatform, mockWorkspace }
+    return { parentWorkflow, parentWorkflowVersion, childWorkflow, mockTenant, mockWorkspace }
 }
 
 async function setupSubflowWithWebhookResponseFixtures() {
-    const { mockPlatform, mockWorkspace } = await mockAndSaveBasicSetup()
+    const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
 
     const webhookConnector = createMockConnectorMetadata({
         name: '@fema/connector-webhook',
         version: '0.1.29',
-        platformId: undefined,
+        tenantId: undefined,
         packageType: PackageType.REGISTRY,
         connectorType: ConnectorType.OFFICIAL,
     })
     const subflowsConnector = createMockConnectorMetadata({
         name: '@fema/connector-subflows',
         version: '0.4.11',
-        platformId: undefined,
+        tenantId: undefined,
         packageType: PackageType.REGISTRY,
         connectorType: ConnectorType.OFFICIAL,
     })
@@ -399,7 +399,7 @@ async function setupSubflowWithWebhookResponseFixtures() {
     await db.save('workflow_version', parentWorkflowVersion)
     await db.update('workflow', parentWorkflow.id, { publishedVersionId: parentWorkflowVersion.id })
 
-    return { parentWorkflow, parentWorkflowVersion, mockPlatform, mockWorkspace }
+    return { parentWorkflow, parentWorkflowVersion, mockTenant, mockWorkspace }
 }
 
 async function pollExecutionToCompletion(executionId: string, workspaceId: string) {
@@ -429,20 +429,20 @@ async function pollExecutionToCompletion(executionId: string, workspaceId: strin
 
 describe('Execute Workflow E2E', () => {
     it('executes a webhook → data mapper → code workflow end-to-end', async () => {
-        const { mockPlatform, mockWorkspace } = await mockAndSaveBasicSetup()
+        const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
 
         // Save connector metadata records
         const webhookConnector = createMockConnectorMetadata({
             name: '@fema/connector-webhook',
             version: '0.1.29',
-            platformId: undefined,
+            tenantId: undefined,
             packageType: PackageType.REGISTRY,
             connectorType: ConnectorType.OFFICIAL,
         })
         const dataMapperConnector = createMockConnectorMetadata({
             name: '@fema/connector-data-mapper',
             version: '0.3.15',
-            platformId: undefined,
+            tenantId: undefined,
             packageType: PackageType.REGISTRY,
             connectorType: ConnectorType.OFFICIAL,
         })
@@ -523,7 +523,7 @@ describe('Execute Workflow E2E', () => {
         const execution = await executionService(app.log).start({
             workflowId: mockWorkflow.id,
             payload: { body: { name: 'John Doe', email: 'john@example.com' } },
-            platformId: mockPlatform.id,
+            tenantId: mockTenant.id,
             executionType: ExecutionType.BEGIN,
             environment: RunEnvironment.TESTING,
             streamStepProgress: StreamStepProgress.NONE,
@@ -587,7 +587,7 @@ describe('Execute Workflow E2E', () => {
         formData.append('connectorName', CUSTOM_CONNECTOR_NAME)
         formData.append('connectorVersion', CUSTOM_CONNECTOR_VERSION)
         formData.append('packageType', PackageType.ARCHIVE)
-        formData.append('scope', ConnectorScope.PLATFORM)
+        formData.append('scope', ConnectorScope.TENANT)
 
         const installResponse = await ctx.inject({
             method: 'POST',
@@ -601,7 +601,7 @@ describe('Execute Workflow E2E', () => {
         const webhookConnector = createMockConnectorMetadata({
             name: '@fema/connector-webhook',
             version: '0.1.29',
-            platformId: undefined,
+            tenantId: undefined,
             packageType: PackageType.REGISTRY,
             connectorType: ConnectorType.OFFICIAL,
         })
@@ -649,7 +649,7 @@ describe('Execute Workflow E2E', () => {
         const execution = await executionService(app.log).start({
             workflowId: mockWorkflow.id,
             payload: { body: { trigger: 'custom-connector' } },
-            platformId: ctx.platform.id,
+            tenantId: ctx.tenant.id,
             executionType: ExecutionType.BEGIN,
             environment: RunEnvironment.TESTING,
             streamStepProgress: StreamStepProgress.NONE,
@@ -670,12 +670,12 @@ describe('Execute Workflow E2E', () => {
     }, 180_000)
 
     it('handles concurrent workflow run executions without jobs getting stuck', async () => {
-        const { mockPlatform, mockWorkspace } = await mockAndSaveBasicSetup()
+        const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
 
         const webhookConnector = createMockConnectorMetadata({
             name: '@fema/connector-webhook',
             version: '0.1.29',
-            platformId: undefined,
+            tenantId: undefined,
             packageType: PackageType.REGISTRY,
             connectorType: ConnectorType.OFFICIAL,
         })
@@ -731,7 +731,7 @@ describe('Execute Workflow E2E', () => {
                 executionService(app.log).start({
                     workflowId: mockWorkflow.id,
                     payload: { body: { index: i } },
-                    platformId: mockPlatform.id,
+                    tenantId: mockTenant.id,
                     executionType: ExecutionType.BEGIN,
                     environment: RunEnvironment.TESTING,
                     streamStepProgress: StreamStepProgress.NONE,
@@ -784,12 +784,12 @@ describe('Execute Workflow E2E', () => {
     }, 30_000)
 
     it('executes parent → child subflow with wait-for-response', async () => {
-        const { parentWorkflow, parentWorkflowVersion, mockPlatform, mockWorkspace } = await setupSubflowFixtures()
+        const { parentWorkflow, parentWorkflowVersion, mockTenant, mockWorkspace } = await setupSubflowFixtures()
 
         const execution = await executionService(app.log).start({
             workflowId: parentWorkflow.id,
             payload: { body: { name: 'Alice' } },
-            platformId: mockPlatform.id,
+            tenantId: mockTenant.id,
             executionType: ExecutionType.BEGIN,
             environment: RunEnvironment.TESTING,
             streamStepProgress: StreamStepProgress.NONE,
@@ -816,7 +816,7 @@ describe('Execute Workflow E2E', () => {
     }, 180_000)
 
     it('retry-on-failure of a wait-for-response Call Workflow retries the parent step and fails after maxAttempts without re-invoking the child subflow', async () => {
-        const { parentWorkflow, parentWorkflowVersion, childWorkflow, mockPlatform, mockWorkspace } = await setupSubflowFixtures({
+        const { parentWorkflow, parentWorkflowVersion, childWorkflow, mockTenant, mockWorkspace } = await setupSubflowFixtures({
             childAlwaysFails: true,
             retryOnFailure: true,
         })
@@ -824,7 +824,7 @@ describe('Execute Workflow E2E', () => {
         const execution = await executionService(app.log).start({
             workflowId: parentWorkflow.id,
             payload: { body: { name: 'Alice' } },
-            platformId: mockPlatform.id,
+            tenantId: mockTenant.id,
             executionType: ExecutionType.BEGIN,
             environment: RunEnvironment.TESTING,
             streamStepProgress: StreamStepProgress.NONE,
@@ -846,19 +846,19 @@ describe('Execute Workflow E2E', () => {
     }, 180_000)
 
     it('executes a webhook → delay_for → code workflow without infinite loop', async () => {
-        const { mockPlatform, mockWorkspace } = await mockAndSaveBasicSetup()
+        const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
 
         const webhookConnector = createMockConnectorMetadata({
             name: '@fema/connector-webhook',
             version: '0.1.29',
-            platformId: undefined,
+            tenantId: undefined,
             packageType: PackageType.REGISTRY,
             connectorType: ConnectorType.OFFICIAL,
         })
         const delayConnector = createMockConnectorMetadata({
             name: '@fema/connector-delay',
             version: '0.3.26',
-            platformId: undefined,
+            tenantId: undefined,
             packageType: PackageType.REGISTRY,
             connectorType: ConnectorType.OFFICIAL,
         })
@@ -929,7 +929,7 @@ describe('Execute Workflow E2E', () => {
         const execution = await executionService(app.log).start({
             workflowId: mockWorkflow.id,
             payload: { body: { test: true } },
-            platformId: mockPlatform.id,
+            tenantId: mockTenant.id,
             executionType: ExecutionType.BEGIN,
             environment: RunEnvironment.TESTING,
             streamStepProgress: StreamStepProgress.NONE,
@@ -949,19 +949,19 @@ describe('Execute Workflow E2E', () => {
     }, 60_000)
 
     it('slices a >32 KB step output, persists it across a delay/resume, and materializes it for a downstream step', async () => {
-        const { mockPlatform, mockWorkspace } = await mockAndSaveBasicSetup()
+        const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
 
         const webhookConnector = createMockConnectorMetadata({
             name: '@fema/connector-webhook',
             version: '0.1.29',
-            platformId: undefined,
+            tenantId: undefined,
             packageType: PackageType.REGISTRY,
             connectorType: ConnectorType.OFFICIAL,
         })
         const delayConnector = createMockConnectorMetadata({
             name: '@fema/connector-delay',
             version: '0.3.26',
-            platformId: undefined,
+            tenantId: undefined,
             packageType: PackageType.REGISTRY,
             connectorType: ConnectorType.OFFICIAL,
         })
@@ -1051,7 +1051,7 @@ describe('Execute Workflow E2E', () => {
         const execution = await executionService(app.log).start({
             workflowId: mockWorkflow.id,
             payload: { body: { test: true } },
-            platformId: mockPlatform.id,
+            tenantId: mockTenant.id,
             executionType: ExecutionType.BEGIN,
             environment: RunEnvironment.TESTING,
             streamStepProgress: StreamStepProgress.NONE,
@@ -1079,12 +1079,12 @@ describe('Execute Workflow E2E', () => {
     }, 60_000)
 
     it('executes parent → child subflow with wait-for-response in test step mode', async () => {
-        const { parentWorkflow, parentWorkflowVersion, mockPlatform, mockWorkspace } = await setupSubflowFixtures()
+        const { parentWorkflow, parentWorkflowVersion, mockTenant, mockWorkspace } = await setupSubflowFixtures()
 
         const execution = await executionService(app.log).start({
             workflowId: parentWorkflow.id,
             payload: { body: { name: 'Alice' } },
-            platformId: mockPlatform.id,
+            tenantId: mockTenant.id,
             executionType: ExecutionType.BEGIN,
             environment: RunEnvironment.TESTING,
             streamStepProgress: StreamStepProgress.WEBSOCKET,

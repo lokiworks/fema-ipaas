@@ -27,7 +27,7 @@ export type GetConnectorRequest = {
     name: string
     version?: string
     workspaceId?: string
-    platformId?: string
+    tenantId?: string
 }
 
 export type GetWorkflowBundleRequest = {
@@ -42,7 +42,7 @@ export type GetWorkflowBundleResponse =
 export type PrepareWorkflowBundleUploadRequest = {
     workflowVersionId: string
     workspaceId: string
-    platformId: string
+    tenantId: string
     size: number
 }
 
@@ -54,12 +54,12 @@ export type PrepareWorkflowBundleUploadResponse =
 export type UploadWorkflowBundleRequest = {
     workflowVersionId: string
     workspaceId: string
-    platformId: string
+    tenantId: string
     data: Buffer
 }
 
 export type RecordTriggerRunRequest = {
-    platformId: string
+    tenantId: string
     connectorName: string
     status: TriggerRunStatus
 }
@@ -95,7 +95,7 @@ export type PrewarmDataRequest = {
 
 export type PrewarmDataResponse = {
     workflows: { id: string, versionId: string, workspaceId: string }[]
-    platformId: string
+    tenantId: string
     engineToken: string
 }
 

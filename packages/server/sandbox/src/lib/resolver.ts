@@ -19,7 +19,7 @@ export function createResolver({ apiClient, basePath, getSettings, log }: Create
             let workflowVersion: WorkflowVersion | undefined
 
             if (!isNil(input.workflow)) {
-                const resolved = await workflowProvisioning(log, apiClient, basePath, getSettings).resolve({ workflow: input.workflow, platformId: input.platformId })
+                const resolved = await workflowProvisioning(log, apiClient, basePath, getSettings).resolve({ workflow: input.workflow, tenantId: input.tenantId })
                 if (resolved.kind === 'workflow-not-found') {
                     return { kind: 'workflow-not-found' }
                 }
@@ -44,7 +44,7 @@ export function createResolver({ apiClient, basePath, getSettings, log }: Create
             const uniqueConnectors = unique(connectors)
 
             const provision: ProvisionInput = {
-                platformId: input.platformId,
+                tenantId: input.tenantId,
                 workflowVersionId: workflowVersion?.id,
                 connectors: uniqueConnectors,
                 codes,

@@ -1,20 +1,20 @@
 import { BaseModelSchema, DateOrString, Nullable } from '@fema/core-utils'
 import { z } from 'zod'
 
-export enum PlatformRole {
+export enum TenantRole {
     /**
-     * Platform administrator with full control over platform settings,
+     * Tenant administrator with full control over tenant settings,
      * users, and all workspaces
      */
     ADMIN = 'ADMIN',
     /**
-     * Regular platform member with access only to workspaces they are
+     * Regular tenant member with access only to workspaces they are
      * explicitly invited to
      */
     MEMBER = 'MEMBER',
     /**
-     * Platform operator with automatic access to all workspaces without editior permission, except (others' private workspaces) in the
-     * platform but no platform administration capabilities
+     * Tenant operator with automatic access to all workspaces without editior permission, except (others' private workspaces) in the
+     * tenant but no tenant administration capabilities
      */
     OPERATOR = 'OPERATOR',
 }
@@ -32,11 +32,11 @@ export const PasswordType = z.string().min(8).max(64)
 
 export const User = z.object({
     ...BaseModelSchema,
-    platformRole: z.nativeEnum(PlatformRole),
+    tenantRole: z.nativeEnum(TenantRole),
     status: z.nativeEnum(UserStatus),
     identityId: z.string(),
     externalId: Nullable(z.string()),
-    platformId: Nullable(z.string()),
+    tenantId: Nullable(z.string()),
     lastActiveDate: Nullable(DateOrString),
 })
 
@@ -48,8 +48,8 @@ export const UserWithMetaInformation = z.object({
     firstName: z.string(),
     status: z.enum(UserStatus),
     externalId: Nullable(z.string()),
-    platformId: Nullable(z.string()),
-    platformRole: z.enum(PlatformRole),
+    tenantId: Nullable(z.string()),
+    tenantRole: z.enum(TenantRole),
     lastName: z.string(),
     created: DateOrString,
     updated: DateOrString,

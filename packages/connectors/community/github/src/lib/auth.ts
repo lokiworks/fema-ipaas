@@ -7,7 +7,7 @@ import {
 
 export const githubOAuth2Auth = ConnectorAuth.OAuth2({
   description:
-    "Authenticate to GitHub. Platform admins can configure this with either OAuth App credentials or GitHub App credentials (Apps use the same authorize/token endpoints — only the client_id differs). When using a GitHub App, the listed scopes are ignored and the App's installation permissions apply instead.",
+    "Authenticate to GitHub. Tenant admins can configure this with either OAuth App credentials or GitHub App credentials (Apps use the same authorize/token endpoints — only the client_id differs). When using a GitHub App, the listed scopes are ignored and the App's installation permissions apply instead.",
   required: true,
   authUrl: 'https://github.com/login/oauth/authorize',
   tokenUrl: 'https://github.com/login/oauth/access_token',

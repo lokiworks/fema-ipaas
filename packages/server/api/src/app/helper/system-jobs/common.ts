@@ -1,4 +1,4 @@
-import { ExecutionId, PlatformId, WorkflowId, WorkspaceId } from '@fema/core-utils'
+import { ExecutionId, TenantId, WorkflowId, WorkspaceId } from '@fema/core-utils'
 import { Workflow } from '@fema/shared'
 import { Job, JobsOptions } from 'bullmq'
 import { Dayjs } from 'dayjs'
@@ -10,7 +10,7 @@ export enum SystemJobName {
     RUN_TELEMETRY = 'run-telemetry',
     DELETE_WORKFLOW = 'delete-workflow',
     HARD_DELETE_WORKSPACE = 'hard-delete-workspace',
-    HARD_DELETE_PLATFORM = 'hard-delete-platform',
+    HARD_DELETE_TENANT = 'hard-delete-tenant',
     BILLING_USAGE_REPORT = 'billing-usage-report',
     RESUME_DELAY_WAITPOINT = 'resume-delay-waitpoint',
     TOOL_SEARCH_REINDEX = 'tool-search-reindex',
@@ -24,12 +24,12 @@ type DeleteWorkflowDurableSystemJobData =  {
 
 type HardDeleteWorkspaceSystemJobData = {
     workspaceId: WorkspaceId
-    platformId: PlatformId
+    tenantId: TenantId
     preDeletedWorkflowIds: WorkflowId[]
 }
 
-type HardDeletePlatformSystemJobData = {
-    platformId: PlatformId
+type HardDeleteTenantSystemJobData = {
+    tenantId: TenantId
 }
 
 type ResumeDelayWaitpointSystemJobData = {
@@ -41,7 +41,7 @@ type ResumeDelayWaitpointSystemJobData = {
 // Scope shape kept inline (structurally equal to tool-search's ReindexScope) so this generic
 // job framework does not depend on the tool-search feature module.
 type ToolSearchReindexSystemJobData = {
-    scope: { type: 'all' } | { type: 'platform', platformId: PlatformId }
+    scope: { type: 'all' } | { type: 'tenant', tenantId: TenantId }
 }
 
 type SystemJobDataMap = {
@@ -51,7 +51,7 @@ type SystemJobDataMap = {
     [SystemJobName.RUN_TELEMETRY]: Record<string, never>
     [SystemJobName.DELETE_WORKFLOW]: DeleteWorkflowDurableSystemJobData
     [SystemJobName.HARD_DELETE_WORKSPACE]: HardDeleteWorkspaceSystemJobData
-    [SystemJobName.HARD_DELETE_PLATFORM]: HardDeletePlatformSystemJobData
+    [SystemJobName.HARD_DELETE_TENANT]: HardDeleteTenantSystemJobData
     [SystemJobName.BILLING_USAGE_REPORT]: Record<string, never>
     [SystemJobName.RESUME_DELAY_WAITPOINT]: ResumeDelayWaitpointSystemJobData
     [SystemJobName.TOOL_SEARCH_REINDEX]: ToolSearchReindexSystemJobData

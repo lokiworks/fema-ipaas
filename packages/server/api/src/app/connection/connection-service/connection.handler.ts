@@ -1,5 +1,5 @@
 import { PropertyType } from '@fema/connector-sdk'
-import { assertNotNullOrUndefined, ErrorCode, isNil, PlatformError, PlatformId, tryCatch, UserId, WorkspaceId } from '@fema/core-utils'
+import { ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil, TenantId, tryCatch, UserId, WorkspaceId } from '@fema/core-utils'
 import { Connection, ConnectionStatus, ConnectionType, ConnectionValue, ConnectionWithoutSensitiveData, EngineResponse, EngineResponseStatus, ExecuteRefreshTokenAuthResponse, PopulatedWorkflow, WorkerJobType, Workflow, WorkflowOperationType, workflowStructureUtil, WorkflowVersion, WorkflowVersionState } from '@fema/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
@@ -27,9 +27,9 @@ export const connectionHandler = (log: FastifyBaseLogger) => ({
             // Don't change the order: republish first (when opted in), then make sure the
             // draft also points to the new connection.
             if (applyToPublishedVersions) {
-                await handleLockedVersion(workflow, userId, workflow.workspaceId, workspace.platformId, connection, newConnection, log)
+                await handleLockedVersion(workflow, userId, workflow.workspaceId, workspace.tenantId, connection, newConnection, log)
             }
-            await handleDraftVersion(workflow, userId, workflow.workspaceId, workspace.platformId, connection, newConnection, log)
+            await handleDraftVersion(workflow, userId, workflow.workspaceId, workspace.tenantId, connection, newConnection, log)
         }))
     },
 
@@ -63,10 +63,10 @@ export const connectionHandler = (log: FastifyBaseLogger) => ({
 
     async refresh(connection: Connection, workspaceId: WorkspaceId, log: FastifyBaseLogger): Promise<Connection> {
         switch (connection.value.type) {
-            case ConnectionType.PLATFORM_OAUTH2:
+            case ConnectionType.TENANT_OAUTH2:
                 connection.value = await oauth2Handler[connection.value.type](log).refresh({
                     connectorName: connection.connectorName,
-                    platformId: connection.platformId,
+                    tenantId: connection.tenantId,
                     workspaceId,
                     connectionValue: connection.value,
                 })
@@ -74,7 +74,7 @@ export const connectionHandler = (log: FastifyBaseLogger) => ({
             case ConnectionType.CLOUD_OAUTH2:
                 connection.value = await oauth2Handler[connection.value.type](log).refresh({
                     connectorName: connection.connectorName,
-                    platformId: connection.platformId,
+                    tenantId: connection.tenantId,
                     workspaceId,
                     connectionValue: connection.value,
                 })
@@ -82,20 +82,20 @@ export const connectionHandler = (log: FastifyBaseLogger) => ({
             case ConnectionType.OAUTH2:
                 connection.value = await oauth2Handler[connection.value.type](log).refresh({
                     connectorName: connection.connectorName,
-                    platformId: connection.platformId,
+                    tenantId: connection.tenantId,
                     workspaceId,
                     connectionValue: connection.value,
                 })
                 break
             case ConnectionType.CUSTOM_AUTH: {
-                const connector = await getConnectorPackageWithoutArchive(log, connection.platformId, {
+                const connector = await getConnectorPackageWithoutArchive(log, connection.tenantId, {
                     connectorName: connection.connectorName,
                     connectorVersion: connection.connectorVersion,
                 })
                 log.info({ connectorName: connection.connectorName, externalId: connection.externalId }, '[custom-auth-refresh] submitting token refresh job')
                 const engineResponse = await userInteractionWatcher.submitAndWaitForResponse<EngineResponse<ExecuteRefreshTokenAuthResponse>>({
                     connector,
-                    platformId: connection.platformId,
+                    tenantId: connection.tenantId,
                     connectionValue: connection.value,
                     jobType: WorkerJobType.EXECUTE_TOKEN_REFRESH,
                 }, log)
@@ -139,19 +139,19 @@ export const connectionHandler = (log: FastifyBaseLogger) => ({
  * refreshed and it gets accessed at the same time, which could result in the wrong request saving incorrect data.
  */
     async lockAndRefreshConnection({
-        platformId,
+        tenantId,
         workspaceId,
         externalId,
         log,
     }: {
-        platformId: PlatformId
+        tenantId: TenantId
         workspaceId: WorkspaceId
         externalId: string
         log: FastifyBaseLogger
     }) {
 
         return distributedLock(log).runExclusive({
-            key: `${platformId}_${externalId}`,
+            key: `${tenantId}_${externalId}`,
             timeoutInSeconds: 60,
             fn: async () => {
                 let connection: Connection | null = null
@@ -192,21 +192,21 @@ export const connectionHandler = (log: FastifyBaseLogger) => ({
             },
         })
     },
-    async revalidateConnection({ id, platformId, workspaceId, externalId, validate, log }: {
+    async revalidateConnection({ id, tenantId, workspaceId, externalId, validate, log }: {
         id: string
-        platformId: PlatformId
+        tenantId: TenantId
         workspaceId: WorkspaceId
         externalId: string
         validate: (params: { connectorName: string, value: ConnectionValue }) => Promise<void>
         log: FastifyBaseLogger
     }): Promise<Connection | null> {
         return distributedLock(log).runExclusive({
-            key: `${platformId}_${externalId}`,
+            key: `${tenantId}_${externalId}`,
             timeoutInSeconds: 60,
             fn: async () => {
                 const encryptedConnection = await connectionsRepo().findOneBy({
                     id,
-                    platformId,
+                    tenantId,
                     workspaceIds: ArrayContains([workspaceId]),
                 })
                 if (isNil(encryptedConnection)) {
@@ -217,7 +217,7 @@ export const connectionHandler = (log: FastifyBaseLogger) => ({
                     return connection
                 }
                 const forceRefresh = REVALIDATE_FORCE_REFRESH_TYPES.has(connection.value.type)
-                const skipRefresh = connection.value.type === ConnectionType.PLATFORM_OAUTH2
+                const skipRefresh = connection.value.type === ConnectionType.TENANT_OAUTH2
                 try {
                     if (!skipRefresh && (forceRefresh || await this.needRefresh(connection, log))) {
                         connection = await this.refresh(connection, workspaceId, log)
@@ -242,7 +242,7 @@ export const connectionHandler = (log: FastifyBaseLogger) => ({
                     return connection
                 }
                 const { error } = await tryCatch(() => validate({ connectorName: connection.connectorName, value: connection.value }))
-                if (!isNil(error) && !(error instanceof PlatformError && error.error.code === ErrorCode.INVALID_CONNECTION)) {
+                if (!isNil(error) && !(error instanceof ApplicationError && error.error.code === ErrorCode.INVALID_CONNECTION)) {
                     throw error
                 }
                 connection.status = isNil(error) ? ConnectionStatus.ACTIVE : ConnectionStatus.ERROR
@@ -269,7 +269,7 @@ export const connectionHandler = (log: FastifyBaseLogger) => ({
             return false
         }
         switch (connection.value.type) {
-            case ConnectionType.PLATFORM_OAUTH2:
+            case ConnectionType.TENANT_OAUTH2:
             case ConnectionType.CLOUD_OAUTH2:
             case ConnectionType.OAUTH2:
                 return oauth2Util(log).isExpired(connection.value)
@@ -288,7 +288,7 @@ export const connectionHandler = (log: FastifyBaseLogger) => ({
                 const connectorMetadata = await connectorMetadataService(log).getOrThrow({
                     name: connection.connectorName,
                     version: connection.connectorVersion,
-                    platformId: connection.platformId,
+                    tenantId: connection.tenantId,
                 })
                 const auth = Array.isArray(connectorMetadata.auth) ? connectorMetadata.auth[0] : connectorMetadata.auth
                 const hasRefresh = auth?.type === PropertyType.CUSTOM_AUTH && !isNil(auth.refresh)
@@ -331,8 +331,8 @@ export function computeTokenRefreshAt(expiresIn: unknown): number | undefined {
     return dayjs().unix() + expiresInSeconds - buffer
 }
 
-function connectorRefreshSupportCacheKey(connection: Pick<Connection, 'platformId' | 'connectorName' | 'connectorVersion'>): string {
-    return `${connection.platformId}:${connection.connectorName}@${connection.connectorVersion}`
+function connectorRefreshSupportCacheKey(connection: Pick<Connection, 'tenantId' | 'connectorName' | 'connectorVersion'>): string {
+    return `${connection.tenantId}:${connection.connectorName}@${connection.connectorVersion}`
 }
 
 class CustomAuthRefreshError extends Error {
@@ -342,7 +342,7 @@ class CustomAuthRefreshError extends Error {
     }
 }
 
-async function handleLockedVersion(workflow: PopulatedWorkflow, userId: UserId, workspaceId: WorkspaceId, platformId: PlatformId, connection: ConnectionWithoutSensitiveData, newConnection: ConnectionWithoutSensitiveData, log: FastifyBaseLogger) {
+async function handleLockedVersion(workflow: PopulatedWorkflow, userId: UserId, workspaceId: WorkspaceId, tenantId: TenantId, connection: ConnectionWithoutSensitiveData, newConnection: ConnectionWithoutSensitiveData, log: FastifyBaseLogger) {
     if (isNil(workflow.publishedVersionId)) {
         return
     }
@@ -353,7 +353,7 @@ async function handleLockedVersion(workflow: PopulatedWorkflow, userId: UserId, 
     await workflowService(log).update({
         id: workflow.id,
         workspaceId,
-        platformId,
+        tenantId,
         userId,
         previousWorkflow: workflow,
         operation: {
@@ -365,7 +365,7 @@ async function handleLockedVersion(workflow: PopulatedWorkflow, userId: UserId, 
     await workflowService(log).update({
         id: workflow.id,
         workspaceId,
-        platformId,
+        tenantId,
         userId,
         operation: {
             type: WorkflowOperationType.LOCK_AND_PUBLISH,
@@ -374,7 +374,7 @@ async function handleLockedVersion(workflow: PopulatedWorkflow, userId: UserId, 
     })
 }
 
-async function handleDraftVersion(workflow: Workflow, userId: UserId, workspaceId: WorkspaceId, platformId: PlatformId, connection: ConnectionWithoutSensitiveData, newConnection: ConnectionWithoutSensitiveData, log: FastifyBaseLogger) {
+async function handleDraftVersion(workflow: Workflow, userId: UserId, workspaceId: WorkspaceId, tenantId: TenantId, connection: ConnectionWithoutSensitiveData, newConnection: ConnectionWithoutSensitiveData, log: FastifyBaseLogger) {
     const latestVersion = await workflowVersionService(log).getWorkflowVersionOrThrow({
         workflowId: workflow.id,
         versionId: undefined,
@@ -391,7 +391,7 @@ async function handleDraftVersion(workflow: Workflow, userId: UserId, workspaceI
     await workflowService(log).update({
         id: workflow.id,
         workspaceId,
-        platformId,
+        tenantId,
         userId,
         operation: {
             type: WorkflowOperationType.IMPORT_WORKFLOW,

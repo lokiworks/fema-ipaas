@@ -187,12 +187,12 @@ export const newConnectionUtils = {
                 }),
               },
             };
-          case ConnectionType.PLATFORM_OAUTH2:
+          case ConnectionType.TENANT_OAUTH2:
             return {
               ...commmonProps,
-              type: ConnectionType.PLATFORM_OAUTH2,
+              type: ConnectionType.TENANT_OAUTH2,
               value: {
-                type: ConnectionType.PLATFORM_OAUTH2,
+                type: ConnectionType.TENANT_OAUTH2,
                 client_id: oauth2App.clientId,
                 redirect_url: redirectUrl,
                 code: '',

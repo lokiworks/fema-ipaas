@@ -43,7 +43,7 @@ export enum ApplicationEventName {
 
 const BaseAuditEventProps = {
     ...BaseModelSchema,
-    platformId: z.string(),
+    tenantId: z.string(),
     workspaceId: z.string().optional(),
     workspaceDisplayName: z.string().optional(),
     userId: z.string().optional(),

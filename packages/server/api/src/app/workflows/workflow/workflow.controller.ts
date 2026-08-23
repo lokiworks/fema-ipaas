@@ -75,7 +75,7 @@ export const workflowController: FastifyPluginAsyncZod = async (app) => {
         return workflowService(request.log).update({
             id: request.params.id,
             userId: actorUserId(request),
-            platformId: request.principal.platform.id,
+            tenantId: request.principal.tenant.id,
             workspaceId: request.workspaceId,
             operation: cleanOperation(request.body),
             previousWorkflow: workflow,

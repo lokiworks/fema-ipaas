@@ -47,7 +47,7 @@ export const clientLogsController: FastifyPluginAsyncZod = async (app) => {
 
 const IngestClientLogsRequest = {
     config: {
-        security: securityAccess.publicPlatform([PrincipalType.USER]),
+        security: securityAccess.publicTenant([PrincipalType.USER]),
     },
     schema: {
         tags: ['logs'],

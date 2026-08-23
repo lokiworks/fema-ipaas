@@ -1,4 +1,4 @@
-import { apId, Cursor, ErrorCode, ExecutionId, isNil, PlatformError, PlatformId, SeekPage, WorkflowId, WorkflowVersionId, WorkspaceId } from '@fema/core-utils'
+import { apId, ApplicationError, Cursor, ErrorCode, ExecutionId, isNil, SeekPage, TenantId, WorkflowId, WorkflowVersionId, WorkspaceId } from '@fema/core-utils'
 import { apDayjs, wideEvent } from '@fema/server-utils'
 import { ExecuteWorkflowJobData, Execution, ExecutionCountByStatus, ExecutionStatus, ExecutionType, ExecutionWithRetryError, ExecutioOutputFile, FileCompression, FileType, GenericStepOutput, isExecutionStateTerminal, JobPayload, LATEST_JOB_DATA_SCHEMA_VERSION, logSerializer, LogSliceRef, ResumeReason, RunEnvironment, RunInternalError, SampleDataFileType, StepOutput, StepOutputStatus, StepOutputType, StreamStepProgress, WorkerJobType, WorkflowRetryStrategy, WorkflowVersion } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
@@ -124,7 +124,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
             isExecutionStateTerminal({ status: oldExecution.status, ignoreInternalError: false }) &&
             isOutsideRetentionWindow(oldExecution.created, retentionDays)
         ) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.EXECUTION_RETRY_OUTSIDE_RETENTION,
                 params: {
                     executionId: oldExecution.id,
@@ -151,12 +151,12 @@ export const executionService = (log: FastifyBaseLogger) => ({
                     finishTime: null,
                 })
                 const updatedExecution = await findExecutionOrThrow(oldExecution.id)
-                const platformId = await workspaceService(log).getPlatformId(updatedExecution.workspaceId)
-                await executionSideEffects(log).onRetry({ execution: updatedExecution, platformId })
+                const tenantId = await workspaceService(log).getTenantId(updatedExecution.workspaceId)
+                await executionSideEffects(log).onRetry({ execution: updatedExecution, tenantId })
                 if (triggerFailed) {
                     return addToQueue({
                         execution: updatedExecution,
-                        platformId,
+                        tenantId,
                         payload: triggerPayload,
                         streamStepProgress: StreamStepProgress.NONE,
                         executeTrigger: true,
@@ -167,7 +167,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
                 }
                 return addToQueue({
                     execution: updatedExecution,
-                    platformId,
+                    tenantId,
                     streamStepProgress: StreamStepProgress.NONE,
                     executionType: ExecutionType.RESUME,
                     resumeReason: ResumeReason.RETRY,
@@ -185,7 +185,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
                 return this.start({
                     workflowId: oldExecution.workflowId,
                     payload,
-                    platformId: await workspaceService(log).getPlatformId(oldExecution.workspaceId),
+                    tenantId: await workspaceService(log).getTenantId(oldExecution.workspaceId),
                     executionType: ExecutionType.BEGIN,
                     streamStepProgress: StreamStepProgress.NONE,
                     workerHandlerId: undefined,
@@ -200,7 +200,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
             }
         }
     },
-    async cancel({ workspaceId, platformId, executionIds, excludeExecutionIds, status, workflowId, createdAfter, createdBefore }: CancelParams): Promise<void> {
+    async cancel({ workspaceId, tenantId, executionIds, excludeExecutionIds, status, workflowId, createdAfter, createdBefore }: CancelParams): Promise<void> {
         const filteredStatus = status ?? CANCELLABLE_STATUSES
         const executions = await filterExecutionsAndApplyFilters({
             workspaceId,
@@ -211,14 +211,14 @@ export const executionService = (log: FastifyBaseLogger) => ({
             createdBefore,
             excludeExecutionIds,
         })
-        const cancelParentExecutions = await Promise.allSettled(executions.map(execution => cancelSingleRun(log, execution, platformId)))
+        const cancelParentExecutions = await Promise.allSettled(executions.map(execution => cancelSingleRun(log, execution, tenantId)))
         const childWorkflows = await getAllChildRuns(executions.map(execution => execution.id))
         log.info({
             executionsCount: executions.length,
             childWorkflowCount: childWorkflows.length,
         }, 'Found cancellable descendant workflows')
 
-        const canceChildlPromises = await Promise.allSettled(childWorkflows.map(execution => cancelSingleRun(log, execution, platformId)))
+        const canceChildlPromises = await Promise.allSettled(childWorkflows.map(execution => cancelSingleRun(log, execution, tenantId)))
         if (cancelParentExecutions.some(r => r.status === 'rejected')) {
             throw cancelParentExecutions.find(r => r.status === 'rejected')!.reason
         }
@@ -250,7 +250,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
             if (result.status === 'fulfilled') {
                 return result.value
             }
-            const error = result.reason instanceof PlatformError ? result.reason : undefined
+            const error = result.reason instanceof ApplicationError ? result.reason : undefined
             return {
                 ...filteredExecutions[i],
                 error: {
@@ -272,7 +272,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
         workflowVersionId,
         parentRunId,
         failParentOnFailure,
-        platformId,
+        tenantId,
         stepNameToTest,
         environment,
     }: StartParams): Promise<Execution> {
@@ -297,7 +297,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
 
         await addToQueue({
             execution: newExecution,
-            platformId,
+            tenantId,
             payload,
             executeTrigger,
             executionType,
@@ -306,7 +306,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
             streamStepProgress,
         }, log)
 
-        await executionSideEffects(log).onStart({ execution: newExecution, platformId })
+        await executionSideEffects(log).onStart({ execution: newExecution, tenantId })
         log.info({ execution: { id: newExecution.id }, workflow: { id: workflowId }, workspace: { id: workspaceId }, executionType }, 'Workflow run started')
         return newExecution
     },
@@ -364,7 +364,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
             executionType: ExecutionType.BEGIN,
             workerHandlerId: undefined,
             httpRequestId: undefined,
-            platformId: await workspaceService(log).getPlatformId(workspaceId),
+            tenantId: await workspaceService(log).getTenantId(workspaceId),
             executeTrigger: false,
             streamStepProgress: StreamStepProgress.WEBSOCKET,
             sampleData: !isNil(stepNameToTest) ? await sampleDataService(log).getSampleDataForWorkflow(workspaceId, workflowVersion, SampleDataFileType.OUTPUT) : undefined,
@@ -374,7 +374,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
         const workflowVersion = await workflowVersionService(log).getOneOrThrow(workflowVersionId)
         await workflowService(log).getOneOrThrow({ id: workflowVersion.workflowId, workspaceId })
         const triggerPayload = {}
-        const platformId = await workspaceService(log).getPlatformId(workspaceId)
+        const tenantId = await workspaceService(log).getTenantId(workspaceId)
 
         const creditsExhausted = false
         if (creditsExhausted) {
@@ -406,7 +406,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
             executionType: ExecutionType.BEGIN,
             workerHandlerId: undefined,
             httpRequestId: undefined,
-            platformId,
+            tenantId,
             executeTrigger: false,
             streamStepProgress: StreamStepProgress.WEBSOCKET,
             sampleData: undefined,
@@ -424,7 +424,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
         const execution = await this.getOne(params)
 
         if (isNil(execution)) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityType: 'execution',
@@ -484,12 +484,12 @@ export const executionService = (log: FastifyBaseLogger) => ({
 })
 
 
-async function cancelSingleRun(log: FastifyBaseLogger, execution: Execution, platformId: string): Promise<void> {
+async function cancelSingleRun(log: FastifyBaseLogger, execution: Execution, tenantId: string): Promise<void> {
     await distributedLock(log).runExclusive({
         key: `runs_metadata_${execution.id}`,
         timeoutInSeconds: 30,
         fn: async () => {
-            await jobQueue(log).removeAllExecutionJobs({ executionId: execution.id, platformId, workspaceId: execution.workspaceId })
+            await jobQueue(log).removeAllExecutionJobs({ executionId: execution.id, tenantId, workspaceId: execution.workspaceId })
             await waitpointService(log).deleteByExecutionId(execution.id)
             await runsMetadataQueue(log).add({
                 id: execution.id,
@@ -603,17 +603,17 @@ export async function addToQueue(params: AddToQueueParams, log: FastifyBaseLogge
 
     let jobPayload: JobPayload = { type: 'inline', value: null }
     if (!isNil(params.payload) && isNil(params.workerHandlerId)) {
-        jobPayload = await payloadOffloader.offloadPayload(log, params.payload, params.execution.workspaceId, params.platformId)
+        jobPayload = await payloadOffloader.offloadPayload(log, params.payload, params.execution.workspaceId, params.tenantId)
     }
     else if (!isNil(params.payload)) {
-        jobPayload = await payloadOffloader.maybeOffloadPayload(log, params.payload, params.execution.workspaceId, params.platformId)
+        jobPayload = await payloadOffloader.maybeOffloadPayload(log, params.payload, params.execution.workspaceId, params.tenantId)
     }
 
     const commonJobData = {
         schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
         workerHandlerId: params.workerHandlerId ?? null,
         workspaceId: params.execution.workspaceId,
-        platformId: params.platformId,
+        tenantId: params.tenantId,
         environment: params.execution.environment,
         workflowId: params.execution.workflowId,
         runId: params.execution.id,
@@ -648,7 +648,7 @@ export async function addToQueue(params: AddToQueueParams, log: FastifyBaseLogge
 export async function findExecutionOrThrow(executionId: ExecutionId): Promise<Execution> {
     const execution = await queryBuilderForExecution(executionRepo()).where({ id: executionId }).getOne()
     if (isNil(execution)) {
-        throw new PlatformError({
+        throw new ApplicationError({
             code: ErrorCode.ENTITY_NOT_FOUND,
             params: {
                 entityType: 'execution',
@@ -680,7 +680,7 @@ async function resolveStepOutput({ step, execution, log }: ResolveStepOutputPara
         type: FileType.EXECUTION_LOG_SLICE,
     })
     if (isNil(file)) {
-        throw new PlatformError({
+        throw new ApplicationError({
             code: ErrorCode.ENTITY_NOT_FOUND,
             params: {
                 entityType: 'file',
@@ -721,11 +721,11 @@ async function persistQuotaExceededTriggerLog({ log, workflowVersion, workspaceI
         data: await logSerializer.serialize(outputFile),
         compression: FileCompression.ZSTD,
     })
-    const platformId = await workspaceService(log).getPlatformId(workspaceId)
+    const tenantId = await workspaceService(log).getTenantId(workspaceId)
     await fileService(log).save({
         fileId: logsFileId,
         workspaceId,
-        platformId,
+        tenantId,
         type: FileType.EXECUTION_LOG,
         data,
         size: data.length,
@@ -805,7 +805,7 @@ type ResolveStepOutputParams = {
 
 type AddToQueueParamsCommon = {
     execution: Execution
-    platformId: PlatformId
+    tenantId: TenantId
     payload?: unknown
     workerHandlerId: string | undefined
     httpRequestId: string | undefined
@@ -843,7 +843,7 @@ type PersistQuotaExceededTriggerLogParams = {
 type StartParams = {
     workflowId: WorkflowId
     payload: unknown
-    platformId: PlatformId
+    tenantId: TenantId
     environment: RunEnvironment
     workflowVersionId: WorkflowVersionId
     workspaceId: WorkspaceId
@@ -881,7 +881,7 @@ type RetryParams = {
 
 type CancelParams = {
     workspaceId: WorkspaceId
-    platformId: PlatformId
+    tenantId: TenantId
     executionIds?: ExecutionId[]
     excludeExecutionIds?: ExecutionId[]
     status?: ExecutionStatus[]

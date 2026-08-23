@@ -14,7 +14,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { samlSsoApi } from '@/features/platform-admin';
+import { samlSsoApi } from '@/features/tenant-admin';
 import { formatUtils } from '@/lib/format-utils';
 
 const FormValues = z.object({
@@ -43,12 +43,12 @@ export const SamlLoginForm = ({
   const { mutate, isPending } = useMutation({
     mutationFn: async (values: FormValues) => {
       const domain = values.email.trim().toLowerCase().split('@')[1];
-      const { platformId } = await samlSsoApi.discover(domain);
-      if (!platformId) {
+      const { tenantId } = await samlSsoApi.discover(domain);
+      if (!tenantId) {
         throw new Error(t('No SAML provider found for this domain'));
       }
-      window.location.href = `/api/v1/authn/saml/login?platformId=${encodeURIComponent(
-        platformId,
+      window.location.href = `/api/v1/authn/saml/login?tenantId=${encodeURIComponent(
+        tenantId,
       )}`;
     },
     onError: (error) => {

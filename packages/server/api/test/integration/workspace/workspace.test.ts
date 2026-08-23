@@ -20,7 +20,7 @@ afterAll(async () => {
 describe('Workspace API (CE)', () => {
     describe('Create Workspace', () => {
         it('should create one team workspace', async () => {
-            const { mockOwner, mockPlatform } = await mockAndSaveBasicSetup({
+            const { mockOwner, mockTenant } = await mockAndSaveBasicSetup({
                 workspace: { type: WorkspaceType.PERSONAL },
                 plan: { billedTeamWorkspacesLimit: 1 },
             })
@@ -28,7 +28,7 @@ describe('Workspace API (CE)', () => {
             const testToken = await generateMockToken({
                 type: PrincipalType.USER,
                 id: mockOwner.id,
-                platform: { id: mockPlatform.id },
+                tenant: { id: mockTenant.id },
             })
 
             const displayName = faker.animal.bird()
@@ -43,18 +43,18 @@ describe('Workspace API (CE)', () => {
             const responseBody = response?.json()
             expect(responseBody.displayName).toBe(displayName)
             expect(responseBody.ownerId).toBe(mockOwner.id)
-            expect(responseBody.platformId).toBe(mockPlatform.id)
+            expect(responseBody.tenantId).toBe(mockTenant.id)
         })
 
         it('should fail to create a second team workspace', async () => {
-            const { mockOwner, mockPlatform } = await mockAndSaveBasicSetup({
+            const { mockOwner, mockTenant } = await mockAndSaveBasicSetup({
                 plan: { billedTeamWorkspacesLimit: 1 },
             })
 
             const testToken = await generateMockToken({
                 type: PrincipalType.USER,
                 id: mockOwner.id,
-                platform: { id: mockPlatform.id },
+                tenant: { id: mockTenant.id },
             })
 
             const response = await app?.inject({

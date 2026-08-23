@@ -102,8 +102,8 @@ function getPredefinedOAuth2App(
   if (isNil(connectorOAuth2Apps)) {
     return null;
   }
-  if (connectorOAuth2Apps.platformOAuth2App) {
-    return connectorOAuth2Apps.platformOAuth2App;
+  if (connectorOAuth2Apps.tenantOAuth2App) {
+    return connectorOAuth2Apps.tenantOAuth2App;
   }
   if (connectorOAuth2Apps.cloudOAuth2App) {
     return connectorOAuth2Apps.cloudOAuth2App;
@@ -120,7 +120,7 @@ export const oauth2Utils = {
 
 export type OAuth2App =
   | {
-      oauth2Type: ConnectionType.CLOUD_OAUTH2 | ConnectionType.PLATFORM_OAUTH2;
+      oauth2Type: ConnectionType.CLOUD_OAUTH2 | ConnectionType.TENANT_OAUTH2;
       clientId: string;
     }
   | {
@@ -132,7 +132,7 @@ export type ConnectorsOAuth2AppsMap = Record<
   string,
   | {
       cloudOAuth2App: OAuth2App | null;
-      platformOAuth2App: OAuth2App | null;
+      tenantOAuth2App: OAuth2App | null;
     }
   | undefined
 >;

@@ -1,5 +1,5 @@
 import { ConnectorPropertyMap, StaticPropsValue } from '@fema/connector-sdk'
-import { ErrorCode, isNil, PlatformError } from '@fema/core-utils'
+import { ApplicationError, ErrorCode, isNil } from '@fema/core-utils'
 import { ConnectorAction, EngineGenericError, ExecutionStatus, ExecutionType, GenericStepOutput, RespondResponse, StepOutputStatus, WorkflowActionType } from '@fema/shared'
 import { engineRunApi } from '../api/engine-run-api'
 import { ConnectorRuntime } from '../core/connector/connector-protocol'
@@ -41,7 +41,7 @@ const executeAction: ActionHandler<ConnectorAction> = async ({ action, execution
         const connector = { connectorName, connectorVersion, devConnectors: constants.devConnectors }
         const description = await connectorRunner.describe(connector)
         if (isNil(description.metadata.actions[actionName])) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityType: 'step',

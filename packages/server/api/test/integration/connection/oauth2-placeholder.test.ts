@@ -25,8 +25,8 @@ const shortText = (displayName: string) => ({
     required: true,
 })
 
-const saveOAuth2Connector = async ({ platformId, tokenUrl, scope, props }: {
-    platformId: string
+const saveOAuth2Connector = async ({ tenantId, tokenUrl, scope, props }: {
+    tenantId: string
     tokenUrl: string
     scope: string[]
     props: Record<string, unknown>
@@ -35,7 +35,7 @@ const saveOAuth2Connector = async ({ platformId, tokenUrl, scope, props }: {
     await db.save('connector_metadata', createMockConnectorMetadata({
         name: connectorName,
         version: '1.0.0',
-        platformId,
+        tenantId,
         connectorType: ConnectorType.CUSTOM,
         packageType: PackageType.REGISTRY,
         minimumSupportedRelease: '0.0.0',
@@ -55,16 +55,16 @@ const saveOAuth2Connector = async ({ platformId, tokenUrl, scope, props }: {
 
 describe('OAuth2 unresolved placeholder guard', () => {
     it('rejects a token url whose placeholder has no matching prop, naming the prop label', async () => {
-        const platformId = apId()
+        const tenantId = apId()
         const connectorName = await saveOAuth2Connector({
-            platformId,
+            tenantId,
             tokenUrl: 'https://{cloud}/{tenant}/oauth2/v2.0/token',
             scope: ['Mail.Read'],
             props: { cloud: shortText('Cloud Environment'), tenant: shortText('Tenant ID') },
         })
 
         await expect(oauth2Util(mockLog).getOAuth2TokenUrl({
-            platformId,
+            tenantId,
             connectorName,
             connectorVersion: '1.0.0',
             props: { cloud: 'login.microsoftonline.com' },
@@ -77,16 +77,16 @@ describe('OAuth2 unresolved placeholder guard', () => {
     })
 
     it('rejects a prop that is present but empty', async () => {
-        const platformId = apId()
+        const tenantId = apId()
         const connectorName = await saveOAuth2Connector({
-            platformId,
+            tenantId,
             tokenUrl: 'https://{cloud}/{tenant}/oauth2/v2.0/token',
             scope: ['Mail.Read'],
             props: { cloud: shortText('Cloud Environment'), tenant: shortText('Tenant ID') },
         })
 
         await expect(oauth2Util(mockLog).getOAuth2TokenUrl({
-            platformId,
+            tenantId,
             connectorName,
             connectorVersion: '1.0.0',
             props: { cloud: 'login.microsoftonline.com', tenant: '   ' },
@@ -99,16 +99,16 @@ describe('OAuth2 unresolved placeholder guard', () => {
     })
 
     it('rejects a placeholder that only appears in the declared scope', async () => {
-        const platformId = apId()
+        const tenantId = apId()
         const connectorName = await saveOAuth2Connector({
-            platformId,
+            tenantId,
             tokenUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
             scope: ['{accessMode}'],
             props: { accessMode: shortText('Access Mode') },
         })
 
         await expect(oauth2Util(mockLog).getOAuth2TokenUrl({
-            platformId,
+            tenantId,
             connectorName,
             connectorVersion: '1.0.0',
             props: {},
@@ -121,16 +121,16 @@ describe('OAuth2 unresolved placeholder guard', () => {
     })
 
     it('resolves the token url when every placeholder is supplied', async () => {
-        const platformId = apId()
+        const tenantId = apId()
         const connectorName = await saveOAuth2Connector({
-            platformId,
+            tenantId,
             tokenUrl: 'https://{cloud}/{tenant}/oauth2/v2.0/token',
             scope: ['Mail.Read'],
             props: { cloud: shortText('Cloud Environment'), tenant: shortText('Tenant ID') },
         })
 
         const tokenUrl = await oauth2Util(mockLog).getOAuth2TokenUrl({
-            platformId,
+            tenantId,
             connectorName,
             connectorVersion: '1.0.0',
             props: { cloud: 'login.microsoftonline.com', tenant: 'common' },
@@ -140,16 +140,16 @@ describe('OAuth2 unresolved placeholder guard', () => {
     })
 
     it('accepts braces that come from a prop value rather than the template', async () => {
-        const platformId = apId()
+        const tenantId = apId()
         const connectorName = await saveOAuth2Connector({
-            platformId,
+            tenantId,
             tokenUrl: '{tokenUrl}',
             scope: ['{scopes}'],
             props: { tokenUrl: shortText('Token URL'), scopes: shortText('Scopes') },
         })
 
         const tokenUrl = await oauth2Util(mockLog).getOAuth2TokenUrl({
-            platformId,
+            tenantId,
             connectorName,
             connectorVersion: '1.0.0',
             props: { tokenUrl: 'https://id.example.com/{realm}/token', scopes: 'openid' },

@@ -25,7 +25,7 @@ export const PrivateConnectorPackage = z.object({
     connectorName: z.string(),
     connectorVersion: z.string(),
     archiveId: z.string(),
-    platformId: z.string(),
+    tenantId: z.string(),
 })
 export type PrivateConnectorPackage = z.infer<typeof PrivateConnectorPackage>
 
@@ -42,7 +42,7 @@ export const CustomNpmConnectorPackage = z.object({
     connectorType: z.literal(ConnectorType.CUSTOM),
     connectorName: z.string(),
     connectorVersion: z.string(),
-    platformId: z.string(),
+    tenantId: z.string(),
 })
 export type CustomNpmConnectorPackage = z.infer<typeof CustomNpmConnectorPackage>
 
@@ -101,7 +101,7 @@ export enum FileType {
     TRIGGER_EVENT_FILE = 'TRIGGER_EVENT_FILE',
     WORKSPACE_RELEASE = 'WORKSPACE_RELEASE',
     WORKFLOW_VERSION_BACKUP = 'WORKFLOW_VERSION_BACKUP',
-    PLATFORM_ASSET = 'PLATFORM_ASSET',
+    TENANT_ASSET = 'TENANT_ASSET',
     USER_PROFILE_PICTURE = 'USER_PROFILE_PICTURE',
     WEBHOOK_PAYLOAD = 'WEBHOOK_PAYLOAD',
     KNOWLEDGE_BASE = 'KNOWLEDGE_BASE',
@@ -121,7 +121,7 @@ export enum FileLocation {
 export const File = z.object({
     ...BaseModelSchema,
     workspaceId: Nullable(z.string()),
-    platformId: Nullable(z.string()),
+    tenantId: Nullable(z.string()),
     type: z.enum(FileType),
     compression: z.enum(FileCompression),
     data: z.optional(z.unknown()),
@@ -136,7 +136,7 @@ export type File = z.infer<typeof File> & {
 }
 
 // ── user (meta) ────────────────────────────────────────────────────────────
-export enum PlatformRole {
+export enum TenantRole {
     ADMIN = 'ADMIN',
     MEMBER = 'MEMBER',
     OPERATOR = 'OPERATOR',
@@ -153,8 +153,8 @@ export const UserWithMetaInformation = z.object({
     firstName: z.string(),
     status: z.enum(UserStatus),
     externalId: Nullable(z.string()),
-    platformId: Nullable(z.string()),
-    platformRole: z.enum(PlatformRole),
+    tenantId: Nullable(z.string()),
+    tenantRole: z.enum(TenantRole),
     lastName: z.string(),
     created: DateOrString,
     updated: DateOrString,

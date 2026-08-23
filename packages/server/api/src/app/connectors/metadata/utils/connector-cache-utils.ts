@@ -70,19 +70,19 @@ async function loadDevConnectors(log: FastifyBaseLogger, devConnectorsConfig: st
     }))
 }
 
-export function filterConnectorBasedOnType(platformId: string | undefined, connector: ConnectorMetadataSchema | ConnectorRegistryEntry): boolean {
-    return isOfficialConnector(connector) || isCustomConnector(platformId, connector)
+export function filterConnectorBasedOnType(tenantId: string | undefined, connector: ConnectorMetadataSchema | ConnectorRegistryEntry): boolean {
+    return isOfficialConnector(connector) || isCustomConnector(tenantId, connector)
 }
 
 export function isOfficialConnector(connector: ConnectorMetadataSchema | ConnectorRegistryEntry): boolean {
-    return connector.connectorType === ConnectorType.OFFICIAL && isNil(connector.platformId)
+    return connector.connectorType === ConnectorType.OFFICIAL && isNil(connector.tenantId)
 }
 
-export function isCustomConnector(platformId: string | undefined, connector: ConnectorMetadataSchema | ConnectorRegistryEntry): boolean {
-    if (isNil(platformId)) {
+export function isCustomConnector(tenantId: string | undefined, connector: ConnectorMetadataSchema | ConnectorRegistryEntry): boolean {
+    if (isNil(tenantId)) {
         return false
     }
-    return connector.platformId === platformId && connector.connectorType === ConnectorType.CUSTOM
+    return connector.tenantId === tenantId && connector.connectorType === ConnectorType.CUSTOM
 }
 
 export function isSupportedRelease(release: string | undefined, connector: { minimumSupportedRelease?: string, maximumSupportedRelease?: string }): boolean {

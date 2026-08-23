@@ -1,4 +1,4 @@
-import { ErrorCode, isNil, PlatformError, WorkspaceId } from '@fema/core-utils'
+import { ApplicationError, ErrorCode, isNil, WorkspaceId } from '@fema/core-utils'
 import { Workspace, WorkspaceType, WorkspaceWithLimits } from '@fema/shared'
 import { WorkflowStatus } from '@fema/workflow-core'
 import dayjs from 'dayjs'
@@ -34,7 +34,7 @@ export const workspaceSideEffects = (log: FastifyBaseLogger) => ({
             status: WorkflowStatus.ENABLED,
         })
         if (activeWorkflows > 0) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.VALIDATION,
                 params: {
                     message: `Workspace has ${activeWorkflows} enabled workflow(s). Disable them before deleting the workspace.`,
@@ -44,7 +44,7 @@ export const workspaceSideEffects = (log: FastifyBaseLogger) => ({
     },
 
     async scheduleHardDelete(workspaceId: WorkspaceId): Promise<void> {
-        const platformId = await workspaceService(log).getPlatformId(workspaceId)
+        const tenantId = await workspaceService(log).getTenantId(workspaceId)
         const preDeletedWorkflowIds = await workflowRepo()
             .createQueryBuilder('workflow')
             .select('workflow.id')
@@ -55,7 +55,7 @@ export const workspaceSideEffects = (log: FastifyBaseLogger) => ({
         await systemJobsSchedule(log).upsertJob({
             job: {
                 name: SystemJobName.HARD_DELETE_WORKSPACE,
-                data: { workspaceId, platformId, preDeletedWorkflowIds },
+                data: { workspaceId, tenantId, preDeletedWorkflowIds },
                 jobId: `hard-delete-workspace-${workspaceId}`,
             },
             schedule: {
@@ -65,10 +65,10 @@ export const workspaceSideEffects = (log: FastifyBaseLogger) => ({
         })
     },
 
-    async deletePersonalWorkspaceForUser({ userId, platformId }: DeletePersonalWorkspaceParams): Promise<void> {
+    async deletePersonalWorkspaceForUser({ userId, tenantId }: DeletePersonalWorkspaceParams): Promise<void> {
         const personalWorkspaces = await workspaceRepo().findBy({
             ownerId: userId,
-            platformId,
+            tenantId,
             type: WorkspaceType.PERSONAL,
         })
         for (const workspace of personalWorkspaces) {
@@ -88,5 +88,5 @@ export const workspaceSideEffects = (log: FastifyBaseLogger) => ({
 
 type DeletePersonalWorkspaceParams = {
     userId: string
-    platformId: string
+    tenantId: string
 }

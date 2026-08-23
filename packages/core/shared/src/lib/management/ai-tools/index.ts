@@ -31,7 +31,7 @@ export type AiToolProviderConfig = z.infer<typeof AiToolProviderConfig>
 
 export const AiToolConfig = z.object({
     ...BaseModelSchema,
-    platformId: z.string(),
+    tenantId: z.string(),
     capability: z.enum(AiToolCapability),
     provider: z.enum(AiToolProvider),
     config: AiToolProviderConfig.nullable(),

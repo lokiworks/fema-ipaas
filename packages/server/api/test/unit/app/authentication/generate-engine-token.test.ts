@@ -40,7 +40,7 @@ describe('generateEngineToken', () => {
         const token = await manager.generateEngineToken({
             jobId: 'job-1',
             workspaceId: 'proj-1',
-            platformId: 'plat-1',
+            tenantId: 'plat-1',
         })
 
         const decoded = await jwtUtils.decodeAndVerify<EnginePrincipal & { iat: number, exp: number }>({
@@ -52,6 +52,6 @@ describe('generateEngineToken', () => {
         expect(decoded.exp - decoded.iat).toBe(expectedSeconds)
         expect(decoded.type).toBe(PrincipalType.ENGINE)
         expect(decoded.workspaceId).toBe('proj-1')
-        expect(decoded.platform.id).toBe('plat-1')
+        expect(decoded.tenant.id).toBe('plat-1')
     })
 })

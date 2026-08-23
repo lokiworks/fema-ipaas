@@ -1,5 +1,5 @@
 import { isNil, Permission } from '@fema/core-utils';
-import { ApFlagId, PlatformRole, WorkspaceType } from '@fema/shared';
+import { ApFlagId, TenantRole, WorkspaceType } from '@fema/shared';
 import { t } from 'i18next';
 import { UsersRound, Lock } from 'lucide-react';
 import { useState } from 'react';
@@ -22,7 +22,7 @@ import {
 import { ApWorkspaceDisplay } from '@/features/workspaces/components/ap-workspace-display';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { flagsHooks } from '@/hooks/flags-hooks';
-import { platformHooks } from '@/hooks/platform-hooks';
+import { tenantHooks } from '@/hooks/tenant-hooks';
 import { userHooks } from '@/hooks/user-hooks';
 
 import { WorkspaceSettingsDialog } from '../workspace-settings';
@@ -35,7 +35,7 @@ export const WorkspaceDashboardPageHeader = ({
   description?: React.ReactNode;
 }) => {
   const { workspace } = workspaceCollectionUtils.useCurrentWorkspace();
-  const { platform } = platformHooks.useCurrentPlatform();
+  const { tenant } = tenantHooks.useCurrentTenant();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsInitialTab, setSettingsInitialTab] = useState<
     'general' | 'members' | 'alerts' | 'connectors' | 'environment'
@@ -62,8 +62,7 @@ export const WorkspaceDashboardPageHeader = ({
 
   const hasGeneralSettings =
     workspace.type === WorkspaceType.TEAM ||
-    (platform.plan.embeddingEnabled &&
-      user?.platformRole === PlatformRole.ADMIN);
+    (tenant.plan.embeddingEnabled && user?.tenantRole === TenantRole.ADMIN);
 
   const getFirstAvailableTab = ():
     | 'general'

@@ -1,4 +1,4 @@
-import { ApId, apId, assertNotNullOrUndefined, ErrorCode, isNil, Metadata, PlatformError, spreadIfDefined, spreadIfNotUndefined, UserId, WorkspaceId } from '@fema/core-utils'
+import { apId, ApId, ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil, Metadata, spreadIfDefined, spreadIfNotUndefined, UserId, WorkspaceId } from '@fema/core-utils'
 import { ColorName, Workspace, WorkspaceIcon, WorkspaceType } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { Brackets, EntityManager, IsNull, Not, ObjectLiteral, SelectQueryBuilder } from 'typeorm'
@@ -28,10 +28,10 @@ export const workspaceService = (log: FastifyBaseLogger) => ({
         }
         return savedWorkspace
     },
-    async getOneByOwnerAndPlatform(params: GetOneByOwnerAndPlatformParams): Promise<Workspace | null> {
+    async getOneByOwnerAndTenant(params: GetOneByOwnerAndTenantParams): Promise<Workspace | null> {
         return workspaceRepo().findOneBy({
             ownerId: params.ownerId,
-            platformId: params.platformId,
+            tenantId: params.tenantId,
         })
     },
 
@@ -45,11 +45,11 @@ export const workspaceService = (log: FastifyBaseLogger) => ({
         })
     },
 
-    async getWorkspaceIdsByPlatform(platformId: string): Promise<string[]> {
+    async getWorkspaceIdsByTenant(tenantId: string): Promise<string[]> {
         const workspaces = await workspaceRepo()
             .createQueryBuilder('workspace')
             .select('workspace.id')
-            .where({ platformId })
+            .where({ tenantId })
             .orderBy('workspace.type', 'ASC')
             .addOrderBy('workspace.displayName', 'ASC')
             .addOrderBy('workspace.id', 'ASC')
@@ -58,9 +58,9 @@ export const workspaceService = (log: FastifyBaseLogger) => ({
         return workspaces.map((workspace) => workspace.id)
     },
 
-    async countByPlatformIdAndType(platformId: string, type: WorkspaceType): Promise<number> {
+    async countByTenantIdAndType(tenantId: string, type: WorkspaceType): Promise<number> {
         return workspaceRepo().countBy({
-            platformId,
+            tenantId,
             type,
         })
     },
@@ -93,21 +93,21 @@ export const workspaceService = (log: FastifyBaseLogger) => ({
         return this.getOneOrThrow(workspaceId)
     },
 
-    async getPlatformId(workspaceId: WorkspaceId): Promise<string> {
-        const result = await workspaceRepo().createQueryBuilder('workspace').withDeleted().select('"platformId"').where({
+    async getTenantId(workspaceId: WorkspaceId): Promise<string> {
+        const result = await workspaceRepo().createQueryBuilder('workspace').withDeleted().select('"tenantId"').where({
             id: workspaceId,
         }).getRawOne()
-        const platformId = result?.platformId
-        if (isNil(platformId)) {
-            throw new Error(`Platform ID for workspace ${workspaceId} is undefined in webhook.`)
+        const tenantId = result?.tenantId
+        if (isNil(tenantId)) {
+            throw new Error(`Tenant ID for workspace ${workspaceId} is undefined in webhook.`)
         }
-        return platformId
+        return tenantId
     },
     async getOneOrThrow(workspaceId: WorkspaceId): Promise<Workspace> {
         const workspace = await this.getOne(workspaceId)
 
         if (isNil(workspace)) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityId: workspaceId,
@@ -130,14 +130,14 @@ export const workspaceService = (log: FastifyBaseLogger) => ({
     },
     async getUserWorkspaceOrThrow(userId: UserId): Promise<Workspace> {
         const user = await userService(log).getOneOrFail({ id: userId })
-        assertNotNullOrUndefined(user.platformId, 'platformId is undefined')
+        assertNotNullOrUndefined(user.tenantId, 'tenantId is undefined')
         const workspaces = await this.getAllForUser({
-            platformId: user.platformId,
+            tenantId: user.tenantId,
             userId,
             isPrivileged: userService(log).isUserPrivileged(user),
         })
         if (isNil(workspaces) || workspaces.length === 0) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityId: userId,
@@ -149,11 +149,11 @@ export const workspaceService = (log: FastifyBaseLogger) => ({
     },
 
     async getAllForUser(params: GetAllForUserParams): Promise<Workspace[]> {
-        assertNotNullOrUndefined(params.platformId, 'platformId is undefined')
+        assertNotNullOrUndefined(params.tenantId, 'tenantId is undefined')
 
         const queryBuilder = workspaceRepo()
             .createQueryBuilder('workspace')
-            .where('workspace."platformId" = :platformId', { platformId: params.platformId })
+            .where('workspace."tenantId" = :tenantId', { tenantId: params.tenantId })
             .andWhere('workspace.deleted IS NULL')
             .orderBy('workspace.type', 'ASC')
             .addOrderBy('workspace.displayName', 'ASC')
@@ -168,34 +168,34 @@ export const workspaceService = (log: FastifyBaseLogger) => ({
         return queryBuilder.getMany()
     },
     async userHasWorkspaces(params: GetAllForUserParams): Promise<boolean> {
-        assertNotNullOrUndefined(params.platformId, 'platformId is undefined')
+        assertNotNullOrUndefined(params.tenantId, 'tenantId is undefined')
 
         const queryBuilder = workspaceRepo()
             .createQueryBuilder('workspace')
-            .where('workspace."platformId" = :platformId', { platformId: params.platformId })
+            .where('workspace."tenantId" = :tenantId', { tenantId: params.tenantId })
 
         await applyWorkspacesAccessFilters(queryBuilder, params)
 
         return queryBuilder.getExists()
     },
-    async addWorkspaceToPlatform({ workspaceId, platformId }: AddWorkspaceToPlatformParams): Promise<void> {
+    async addWorkspaceToTenant({ workspaceId, tenantId }: AddWorkspaceToTenantParams): Promise<void> {
         const query = {
             id: workspaceId,
         }
 
         const update = {
-            platformId,
+            tenantId,
         }
 
         await workspaceRepo().update(query, update)
     },
 
-    async getByPlatformIdAndExternalId({
-        platformId,
+    async getByTenantIdAndExternalId({
+        tenantId,
         externalId,
-    }: GetByPlatformIdAndExternalIdParams): Promise<Workspace | null> {
+    }: GetByTenantIdAndExternalIdParams): Promise<Workspace | null> {
         return workspaceRepo().findOneBy({
-            platformId,
+            tenantId,
             externalId,
         })
     },
@@ -216,7 +216,7 @@ export async function applyWorkspacesAccessFilters<T extends ObjectLiteral>(
     queryBuilder: SelectQueryBuilder<T>,
     params: ApplyWorkspacesAccessFiltersParams,
 ): Promise<void> {
-    const { platformId, userId, isPrivileged } = params
+    const { tenantId, userId, isPrivileged } = params
     if (isPrivileged) {
         return
     }
@@ -226,8 +226,8 @@ export async function applyWorkspacesAccessFilters<T extends ObjectLiteral>(
             'workspace."ownerId" = :userId AND workspace.type = :personalType',
             { userId, personalType: WorkspaceType.PERSONAL },
         ).orWhere(
-            'workspace.id IN (SELECT "workspaceId" FROM workspace_member WHERE "userId" = :userId AND "platformId" = :platformId)',
-            { userId, platformId },
+            'workspace.id IN (SELECT "workspaceId" FROM workspace_member WHERE "userId" = :userId AND "tenantId" = :tenantId)',
+            { userId, tenantId },
         )
     }))
 }
@@ -239,7 +239,7 @@ async function assertExternalIdIsUnique(externalId: string | undefined | null, w
         })
 
         if (externalIdAlreadyExists) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.WORKSPACE_EXTERNAL_ID_ALREADY_EXISTS,
                 params: {
                     externalId,
@@ -256,7 +256,7 @@ function assertRetentionDaysWithinInstanceBounds(executionDataRetentionDays: num
     const instanceRetentionDays = system.getNumberOrThrow(AppSystemProp.EXECUTION_DATA_RETENTION_DAYS)
     const pausedWorkflowTimeoutDays = system.getNumberOrThrow(AppSystemProp.PAUSED_WORKFLOW_TIMEOUT_DAYS)
     if (executionDataRetentionDays < pausedWorkflowTimeoutDays || executionDataRetentionDays > instanceRetentionDays) {
-        throw new PlatformError({
+        throw new ApplicationError({
             code: ErrorCode.VALIDATION,
             params: {
                 message: `executionDataRetentionDays must be between FEMA_PAUSED_WORKFLOW_TIMEOUT_DAYS (${pausedWorkflowTimeoutDays}) and FEMA_EXECUTION_DATA_RETENTION_DAYS (${instanceRetentionDays})`,
@@ -266,15 +266,15 @@ function assertRetentionDaysWithinInstanceBounds(executionDataRetentionDays: num
 }
 
 type GetAllForUserParams = {
-    platformId: string
+    tenantId: string
     userId: string
     isPrivileged: boolean
     displayName?: string
 }
 
-type GetOneByOwnerAndPlatformParams = {
+type GetOneByOwnerAndTenantParams = {
     ownerId: UserId
-    platformId: string
+    tenantId: string
 }
 
 type ExistsParams = {
@@ -314,7 +314,7 @@ type CreateParams = {
     ownerId: UserId
     displayName: string
     type: WorkspaceType
-    platformId: string
+    tenantId: string
     externalId?: string
     metadata?: Metadata
     maxConcurrentJobs?: number
@@ -323,20 +323,20 @@ type CreateParams = {
     entityManager?: EntityManager
 }
 
-type GetByPlatformIdAndExternalIdParams = {
-    platformId: string
+type GetByTenantIdAndExternalIdParams = {
+    tenantId: string
     externalId: string
 }
 
-type AddWorkspaceToPlatformParams = {
+type AddWorkspaceToTenantParams = {
     workspaceId: WorkspaceId
-    platformId: ApId
+    tenantId: ApId
 }
 
 type NewWorkspace = Omit<Workspace, 'created' | 'updated' | 'deleted'>
 
 type ApplyWorkspacesAccessFiltersParams = {
-    platformId: string
+    tenantId: string
     userId: string
     isPrivileged: boolean
 }

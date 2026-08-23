@@ -1,7 +1,7 @@
 import { ApplicationEventName,
     Execution,
     isExecutionStateTerminal,
-    PlatformId,
+    TenantId,
 } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { applicationEvents } from '../../helper/application-events'
@@ -9,7 +9,7 @@ import { executionHooks } from './execution-hooks'
 import { waitpointService } from './waitpoint/waitpoint-service'
 
 export const executionSideEffects = (log: FastifyBaseLogger) => ({
-    async onFinish({ execution, platformId }: ExecutionSideEffectParams): Promise<void> {
+    async onFinish({ execution, tenantId }: ExecutionSideEffectParams): Promise<void> {
         if (!isExecutionStateTerminal({
             status: execution.status,
             ignoreInternalError: true,
@@ -20,37 +20,37 @@ export const executionSideEffects = (log: FastifyBaseLogger) => ({
         await executionHooks(log).onFinish(execution)
         applicationEvents(log).sendWorkerEvent({
             workspaceId: execution.workspaceId,
-            platformId,
+            tenantId,
             action: ApplicationEventName.EXECUTION_FINISHED,
             data: {
                 execution,
             },
         })
     },
-    async onResume({ execution, platformId }: ExecutionSideEffectParams): Promise<void> {
+    async onResume({ execution, tenantId }: ExecutionSideEffectParams): Promise<void> {
         applicationEvents(log).sendWorkerEvent({
             workspaceId: execution.workspaceId,
-            platformId,
+            tenantId,
             action: ApplicationEventName.EXECUTION_RESUMED,
             data: {
                 execution,
             },
         })
     },
-    async onRetry({ execution, platformId }: ExecutionSideEffectParams): Promise<void> {
+    async onRetry({ execution, tenantId }: ExecutionSideEffectParams): Promise<void> {
         applicationEvents(log).sendWorkerEvent({
             workspaceId: execution.workspaceId,
-            platformId,
+            tenantId,
             action: ApplicationEventName.EXECUTION_RETRIED,
             data: {
                 execution,
             },
         })
     },
-    async onStart({ execution, platformId }: ExecutionSideEffectParams): Promise<void> {
+    async onStart({ execution, tenantId }: ExecutionSideEffectParams): Promise<void> {
         applicationEvents(log).sendWorkerEvent({
             workspaceId: execution.workspaceId,
-            platformId,
+            tenantId,
             action: ApplicationEventName.EXECUTION_STARTED,
             data: {
                 execution,
@@ -61,5 +61,5 @@ export const executionSideEffects = (log: FastifyBaseLogger) => ({
 
 type ExecutionSideEffectParams = {
     execution: Execution
-    platformId: PlatformId
+    tenantId: TenantId
 }

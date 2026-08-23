@@ -303,7 +303,7 @@ const InternalErrorPanel = ({
         <span className="text-sm font-medium">{t('Internal error')}</span>
         <Badge variant="outline" className="gap-1">
           <ShieldAlert className="w-3 h-3" />
-          {t('Platform Admin Only')}
+          {t('Tenant Admin Only')}
         </Badge>
       </div>
       <div className="flex flex-col gap-1 text-xs text-muted-foreground">

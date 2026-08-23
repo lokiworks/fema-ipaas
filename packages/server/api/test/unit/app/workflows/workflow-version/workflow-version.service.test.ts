@@ -10,7 +10,7 @@ import {
 import type { WorkflowVersion } from '@fema/shared'
 
 const mockGetConnector = vi.fn()
-const mockGetPlatformId = vi.fn().mockResolvedValue('platform-1')
+const mockGetTenantId = vi.fn().mockResolvedValue('tenant-1')
 const mockRepoFindOne = vi.fn()
 const mockRepoSave = vi.fn()
 const mockRepoExists = vi.fn()
@@ -31,7 +31,7 @@ vi.mock('../../../../../src/app/connectors/metadata/connector-metadata-service',
 
 vi.mock('../../../../../src/app/workspace/workspace-service', () => ({
     workspaceService: vi.fn(() => ({
-        getPlatformId: mockGetPlatformId,
+        getTenantId: mockGetTenantId,
     })),
 }))
 
@@ -134,7 +134,7 @@ function makeWorkflowVersion(overrides: { id?: string, trigger?: WorkflowVersion
 describe('workflowVersionService.applyOperation - USE_AS_DRAFT', () => {
     beforeEach(() => {
         vi.clearAllMocks()
-        mockGetPlatformId.mockResolvedValue('platform-1')
+        mockGetTenantId.mockResolvedValue('tenant-1')
         mockRepoFindOne.mockResolvedValue(null)
         mockRepoSave.mockImplementation((v: WorkflowVersion) => Promise.resolve(v))
         mockRepoExists.mockResolvedValue(false)
@@ -158,7 +158,7 @@ describe('workflowVersionService.applyOperation - USE_AS_DRAFT', () => {
 
         const result = await workflowVersionService(mockLog).applyOperation({
             workspaceId: 'proj-1',
-            platformId: 'platform-1',
+            tenantId: 'tenant-1',
             userId: 'user-1',
             workflowVersion: currentDraft,
             userOperation: {
@@ -180,7 +180,7 @@ describe('workflowVersionService.applyOperation - USE_AS_DRAFT', () => {
 
         const result = await workflowVersionService(mockLog).applyOperation({
             workspaceId: 'proj-1',
-            platformId: 'platform-1',
+            tenantId: 'tenant-1',
             userId: 'user-1',
             workflowVersion: currentDraft,
             userOperation: {
@@ -210,7 +210,7 @@ describe('workflowVersionService.applyOperation - USE_AS_DRAFT', () => {
 
         const result = await workflowVersionService(mockLog).applyOperation({
             workspaceId: 'proj-1',
-            platformId: 'platform-1',
+            tenantId: 'tenant-1',
             userId: 'user-1',
             workflowVersion: currentDraft,
             userOperation: {

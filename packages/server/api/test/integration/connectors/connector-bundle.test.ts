@@ -17,12 +17,12 @@ afterAll(async () => {
     await teardownTestEnvironment()
 })
 
-async function engineToken(workspaceId: string, platformId: string): Promise<string> {
+async function engineToken(workspaceId: string, tenantId: string): Promise<string> {
     const principal: Principal = {
         id: apId(),
         type: PrincipalType.ENGINE,
         workspaceId,
-        platform: { id: platformId },
+        tenant: { id: tenantId },
     }
     return generateMockToken(principal)
 }
@@ -42,15 +42,15 @@ describe('Connector Bundle Endpoint', () => {
     })
 
     it('redirects a registry connector to the npm tarball, never to our own S3', async () => {
-        const { mockPlatform, mockWorkspace } = await mockAndSaveBasicSetup()
+        const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
         await db.save('connector_metadata', createMockConnectorMetadata({
             name: '@fema/connector-bundle-official',
             version: '1.2.3',
             packageType: PackageType.REGISTRY,
             connectorType: ConnectorType.OFFICIAL,
-            platformId: undefined,
+            tenantId: undefined,
         }))
-        const token = await engineToken(mockWorkspace.id, mockPlatform.id)
+        const token = await engineToken(mockWorkspace.id, mockTenant.id)
 
         const response = await app!.inject(bundleRequest('@fema/connector-bundle-official', '1.2.3', token))
 
@@ -59,14 +59,14 @@ describe('Connector Bundle Endpoint', () => {
         expect(response.headers.location).toContain('connector-bundle-official-1.2.3.tgz')
     })
 
-    it('scopes custom connectors by the token platform: owner can fetch, other platform gets 404', async () => {
-        const platformA = await mockAndSaveBasicSetup()
-        const platformB = await mockAndSaveBasicSetup()
+    it('scopes custom connectors by the token tenant: owner can fetch, other tenant gets 404', async () => {
+        const tenantA = await mockAndSaveBasicSetup()
+        const tenantB = await mockAndSaveBasicSetup()
 
         const archiveId = apId()
         await db.save('file', createMockFile({
             id: archiveId,
-            platformId: platformA.mockPlatform.id,
+            tenantId: tenantA.mockTenant.id,
             workspaceId: null,
             type: FileType.PACKAGE_ARCHIVE,
             location: FileLocation.DB,
@@ -78,29 +78,29 @@ describe('Connector Bundle Endpoint', () => {
             version: '0.0.1',
             packageType: PackageType.ARCHIVE,
             connectorType: ConnectorType.CUSTOM,
-            platformId: platformA.mockPlatform.id,
+            tenantId: tenantA.mockTenant.id,
             archiveId,
         }))
 
-        const tokenA = await engineToken(platformA.mockWorkspace.id, platformA.mockPlatform.id)
-        const tokenB = await engineToken(platformB.mockWorkspace.id, platformB.mockPlatform.id)
+        const tokenA = await engineToken(tenantA.mockWorkspace.id, tenantA.mockTenant.id)
+        const tokenB = await engineToken(tenantB.mockWorkspace.id, tenantB.mockTenant.id)
 
         const ownerResponse = await app!.inject(bundleRequest('@acme/connector-private', '0.0.1', tokenA))
         expect(ownerResponse.statusCode).toBe(StatusCodes.OK)
         expect(ownerResponse.rawPayload.toString()).toBe('fake-tgz-bytes')
 
-        const otherPlatformResponse = await app!.inject(bundleRequest('@acme/connector-private', '0.0.1', tokenB))
-        expect(otherPlatformResponse.statusCode).toBe(StatusCodes.NOT_FOUND)
+        const otherTenantResponse = await app!.inject(bundleRequest('@acme/connector-private', '0.0.1', tokenB))
+        expect(otherTenantResponse.statusCode).toBe(StatusCodes.NOT_FOUND)
     })
 
-    it('streams an archive by archiveId for the owning platform and 404s for others', async () => {
-        const platformA = await mockAndSaveBasicSetup()
-        const platformB = await mockAndSaveBasicSetup()
+    it('streams an archive by archiveId for the owning tenant and 404s for others', async () => {
+        const tenantA = await mockAndSaveBasicSetup()
+        const tenantB = await mockAndSaveBasicSetup()
 
         const archiveId = apId()
         await db.save('file', createMockFile({
             id: archiveId,
-            platformId: platformA.mockPlatform.id,
+            tenantId: tenantA.mockTenant.id,
             workspaceId: null,
             type: FileType.PACKAGE_ARCHIVE,
             location: FileLocation.DB,
@@ -108,8 +108,8 @@ describe('Connector Bundle Endpoint', () => {
             data: Buffer.from('archive-bytes'),
         }))
 
-        const tokenA = await engineToken(platformA.mockWorkspace.id, platformA.mockPlatform.id)
-        const tokenB = await engineToken(platformB.mockWorkspace.id, platformB.mockPlatform.id)
+        const tokenA = await engineToken(tenantA.mockWorkspace.id, tenantA.mockTenant.id)
+        const tokenB = await engineToken(tenantB.mockWorkspace.id, tenantB.mockTenant.id)
         const byArchive = (token: string) => ({
             method: 'GET' as const,
             url: `/api/v1/engine/connectors/bundle?archiveId=${archiveId}`,
@@ -120,7 +120,7 @@ describe('Connector Bundle Endpoint', () => {
         expect(ownerResponse.statusCode).toBe(StatusCodes.OK)
         expect(ownerResponse.rawPayload.toString()).toBe('archive-bytes')
 
-        const otherPlatformResponse = await app!.inject(byArchive(tokenB))
-        expect(otherPlatformResponse.statusCode).toBe(StatusCodes.NOT_FOUND)
+        const otherTenantResponse = await app!.inject(byArchive(tokenB))
+        expect(otherTenantResponse.statusCode).toBe(StatusCodes.NOT_FOUND)
     })
 })

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { PlatformError, ErrorCode } from '@fema/core-utils';
+import { ApplicationError, ErrorCode } from '@fema/core-utils';
 import { EngineResponseStatus, ExecutionType, WorkflowActionType, ExecutionStatus, WorkflowTriggerType, WorkflowVersionState, StreamStepProgress, RunEnvironment, WorkerJobType } from '@fema/shared';
 import type { ExecuteWorkflowJobData, WorkflowVersion } from '@fema/shared'
 
@@ -61,7 +61,7 @@ function makeWorkflowVersion(): WorkflowVersion {
 function makeResumeJobData(overrides?: Partial<ExecuteWorkflowJobData>): ExecuteWorkflowJobData {
     return {
         workspaceId: 'proj-1',
-        platformId: 'plat-1',
+        tenantId: 'plat-1',
         jobType: WorkerJobType.EXECUTE_WORKFLOW,
         environment: RunEnvironment.PRODUCTION,
         schemaVersion: 4,
@@ -85,7 +85,7 @@ function makeMockContext(opts?: { resolveResult?: unknown, apiOverrides?: Record
         resolve: vi.fn().mockResolvedValue(
             opts?.resolveResult ?? {
                 kind: 'ready',
-                provision: { platformId: 'plat-1', connectors: [], codes: [], publicApiUrl: 'http://localhost:3000/api/', engineToken: 'test-token' },
+                provision: { tenantId: 'plat-1', connectors: [], codes: [], publicApiUrl: 'http://localhost:3000/api/', engineToken: 'test-token' },
                 workflowVersion: makeWorkflowVersion(),
             },
         ),
@@ -161,8 +161,8 @@ describe('executeWorkflowJob', () => {
                 expect.fail('should have thrown')
             }
             catch (e) {
-                expect(e).toBeInstanceOf(PlatformError)
-                expect((e as PlatformError).error.code).toBe(ErrorCode.RESUME_LOGS_FILE_MISSING)
+                expect(e).toBeInstanceOf(ApplicationError)
+                expect((e as ApplicationError).error.code).toBe(ErrorCode.RESUME_LOGS_FILE_MISSING)
             }
 
             expect(ctx.apiClient.uploadRunLog).toHaveBeenCalledWith(

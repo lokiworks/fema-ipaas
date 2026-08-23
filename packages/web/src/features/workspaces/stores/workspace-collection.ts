@@ -1,11 +1,11 @@
 import { isNil, SeekPage } from '@fema/core-utils';
 import {
-  CreatePlatformWorkspaceRequest,
-  ListWorkspaceRequestForPlatformQueryParams,
-  UpdateWorkspacePlatformRequest,
+  CreateTenantWorkspaceRequest,
+  ListWorkspaceRequestForTenantQueryParams,
+  UpdateWorkspaceTenantRequest,
   WorkspaceType,
   WorkspaceWithLimits,
-  WorkspaceWithLimitsWithPlatform,
+  WorkspaceWithLimitsWithTenant,
 } from '@fema/shared';
 import { queryCollectionOptions } from '@tanstack/query-db-collection';
 import {
@@ -34,7 +34,7 @@ export const workspaceCollection = createCollection<
     queryKey: ['workspaces'],
     queryClient: collectionQueryClient,
     queryFn: async () => {
-      const request: ListWorkspaceRequestForPlatformQueryParams = {
+      const request: ListWorkspaceRequestForTenantQueryParams = {
         cursor: undefined,
         limit: 30000,
       };
@@ -49,7 +49,7 @@ export const workspaceCollection = createCollection<
       for (const { original, modified } of transaction.mutations) {
         // Only send fields that actually changed, so e.g. a name/icon edit never
         // re-writes maxConcurrentJobs/workerGroupId (which are edited elsewhere).
-        const request: UpdateWorkspacePlatformRequest = {};
+        const request: UpdateWorkspaceTenantRequest = {};
         if (modified.displayName !== original.displayName) {
           request.displayName = modified.displayName;
         }
@@ -109,7 +109,7 @@ export const workspaceCollectionUtils = {
     onError: (error: Error) => void,
   ) => {
     return useMutation({
-      mutationFn: (request: CreatePlatformWorkspaceRequest) =>
+      mutationFn: (request: CreateTenantWorkspaceRequest) =>
         api.post<WorkspaceWithLimits>('/v1/workspaces', request),
       onSuccess: async (data) => {
         await workspaceCollection.preload();
@@ -131,7 +131,7 @@ export const workspaceCollectionUtils = {
         request,
       }: {
         workspaceId: string;
-        request: UpdateWorkspacePlatformRequest;
+        request: UpdateWorkspaceTenantRequest;
       }) =>
         api.post<WorkspaceWithLimits>(`/v1/workspaces/${workspaceId}`, request),
       onSuccess: async (data) => {
@@ -142,7 +142,7 @@ export const workspaceCollectionUtils = {
       onError,
     });
   },
-  update: (workspaceId: string, request: UpdateWorkspacePlatformRequest) => {
+  update: (workspaceId: string, request: UpdateWorkspaceTenantRequest) => {
     return workspaceCollection.update(workspaceId, (draft) => {
       Object.assign(
         draft,
@@ -202,7 +202,7 @@ export const workspaceCollectionUtils = {
       [currentUserId],
     );
   },
-  useAllPlatformWorkspaces: (filters?: {
+  useAllTenantWorkspaces: (filters?: {
     displayName?: string;
     type?: WorkspaceType[];
   }) => {
@@ -259,11 +259,11 @@ export const getWorkspaceName = (
     : workspace.displayName;
 };
 export const workspaceHooks = {
-  useWorkspacesForPlatforms: () => {
-    return useQuery<WorkspaceWithLimitsWithPlatform[], Error>({
-      queryKey: ['workspaces-for-platforms'],
+  useWorkspacesForTenants: () => {
+    return useQuery<WorkspaceWithLimitsWithTenant[], Error>({
+      queryKey: ['workspaces-for-tenants'],
       queryFn: async () => {
-        return api.get<WorkspaceWithLimitsWithPlatform[]>('/v1/platforms');
+        return api.get<WorkspaceWithLimitsWithTenant[]>('/v1/tenants');
       },
     });
   },

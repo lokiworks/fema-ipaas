@@ -818,8 +818,8 @@ function CodeStep({
     authMutations.useVerifyEmailCode({
       onSuccess: (data) => {
         authenticationSession.saveResponse(data, false);
-        // A brand-new member arrives on the pre-platform onboarding token, so
-        // there is no workspace yet: ask their name before building the platform.
+        // A brand-new member arrives on the pre-tenant onboarding token, so
+        // there is no workspace yet: ask their name before building the tenant.
         if (isNil(data.workspaceId)) {
           onNeedsName();
           return;

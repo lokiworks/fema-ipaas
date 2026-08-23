@@ -25,7 +25,7 @@ describe('getAuthPropertyForValue', () => {
     const oauthTypes = [
       ConnectionType.OAUTH2,
       ConnectionType.CLOUD_OAUTH2,
-      ConnectionType.PLATFORM_OAUTH2,
+      ConnectionType.TENANT_OAUTH2,
     ];
     for (const authValueType of oauthTypes) {
       expect(getAuthPropertyForValue({ authValueType, connectorAuth })?.type).toBe(PropertyType.OAUTH2);

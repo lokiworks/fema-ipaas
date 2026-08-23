@@ -1,4 +1,4 @@
-import { ErrorCode, PlatformError } from '@fema/core-utils'
+import { ApplicationError, ErrorCode } from '@fema/core-utils'
 import { EngineOperationType, EngineResponseStatus, ExecuteResolveConnectionIdentifierJobData, WorkerJobType } from '@fema/shared'
 import { workerSettings } from '../../config/worker-settings'
 import { JobContext, JobHandler, JobResultKind, SynchronousJobResult } from '../types'
@@ -8,7 +8,7 @@ export const resolveConnectionIdentifierJob: JobHandler<ExecuteResolveConnection
     async execute(ctx: JobContext, data: ExecuteResolveConnectionIdentifierJobData): Promise<SynchronousJobResult> {
         const timeoutInSeconds = workerSettings.getSettings().TRIGGER_TIMEOUT_SECONDS
 
-        const resolved = await ctx.resolver.resolve({ platformId: data.platformId, publicApiUrl: ctx.publicApiUrl, engineToken: ctx.engineToken, connectors: [data.connector] })
+        const resolved = await ctx.resolver.resolve({ tenantId: data.tenantId, publicApiUrl: ctx.publicApiUrl, engineToken: ctx.engineToken, connectors: [data.connector] })
         if (resolved.kind !== 'ready') {
             throw new Error(`Unexpected resolve outcome "${resolved.kind}" for connector-only job`)
         }
@@ -22,7 +22,7 @@ export const resolveConnectionIdentifierJob: JobHandler<ExecuteResolveConnection
                     connector: data.connector,
                     auth: data.connectionValue,
                     connectionType: data.connectionType,
-                    platformId: data.platformId,
+                    tenantId: data.tenantId,
                     engineToken: ctx.engineToken,
                     internalApiUrl: ctx.internalApiUrl,
                     publicApiUrl: ctx.publicApiUrl,
@@ -41,7 +41,7 @@ export const resolveConnectionIdentifierJob: JobHandler<ExecuteResolveConnection
             }
         }
         catch (e) {
-            if (e instanceof PlatformError && e.error.code === ErrorCode.SANDBOX_EXECUTION_TIMEOUT) {
+            if (e instanceof ApplicationError && e.error.code === ErrorCode.SANDBOX_EXECUTION_TIMEOUT) {
                 return {
                     kind: JobResultKind.SYNCHRONOUS,
                     status: EngineResponseStatus.TIMEOUT,

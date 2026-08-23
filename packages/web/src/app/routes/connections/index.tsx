@@ -3,7 +3,7 @@ import {
   ConnectionScope,
   ConnectionStatus,
   ConnectionWithoutSensitiveData,
-  PlatformRole,
+  TenantRole,
 } from '@fema/shared';
 import { ColumnDef } from '@tanstack/react-table';
 import { t } from 'i18next';
@@ -73,7 +73,7 @@ function ConnectionsPage() {
   >([]);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { checkAccess } = useAuthorization();
-  const userPlatformRole = userHooks.getCurrentUserPlatformRole();
+  const userTenantRole = userHooks.getCurrentUserTenantRole();
   const location = useLocation();
   const { connectors } = connectorsHooks.useConnectors({});
   const connectorOptions = (connectors ?? []).map((connector) => ({
@@ -180,7 +180,7 @@ function ConnectionsPage() {
           />
         ),
         cell: ({ row }) => {
-          const isPlatformConnection = row.original.scope === 'PLATFORM';
+          const isTenantConnection = row.original.scope === 'TENANT';
           const accountIdentifier =
             connectionUtils.getConnectionAccountIdentifier(row.original);
           return (
@@ -207,7 +207,7 @@ function ConnectionsPage() {
                   </span>
                 )}
               </div>
-              {isPlatformConnection && (
+              {isTenantConnection && (
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Globe className="w-4 h-4 shrink-0" />
@@ -215,7 +215,7 @@ function ConnectionsPage() {
                   <TooltipContent>
                     <p>
                       {t(
-                        'This connection is global and can be managed in the platform admin',
+                        'This connection is global and can be managed in the tenant admin',
                       )}
                     </p>
                   </TooltipContent>
@@ -298,10 +298,10 @@ function ConnectionsPage() {
         id: 'actions',
         size: 100,
         cell: ({ row }) => {
-          const isPlatformConnection =
-            row.original.scope === ConnectionScope.PLATFORM;
-          const userHasPermissionToRename = isPlatformConnection
-            ? userPlatformRole === PlatformRole.ADMIN
+          const isTenantConnection =
+            row.original.scope === ConnectionScope.TENANT;
+          const userHasPermissionToRename = isTenantConnection
+            ? userTenantRole === TenantRole.ADMIN
             : userHasPermissionToWriteConnection;
           return (
             <div className="flex items-center gap-2 justify-end">

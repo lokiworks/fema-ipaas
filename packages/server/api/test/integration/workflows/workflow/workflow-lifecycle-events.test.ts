@@ -263,7 +263,7 @@ describe('Workflow application events', () => {
             await workflowService(app.log).update({
                 id: workflow.id,
                 workspaceId: ctx.workspace.id,
-                platformId: ctx.platform.id,
+                tenantId: ctx.tenant.id,
                 userId: ctx.user.id,
                 operation: renameOperation,
             })
@@ -278,7 +278,7 @@ describe('Workflow application events', () => {
             await workflowService(app.log).update({
                 id: workflow.id,
                 workspaceId: ctx.workspace.id,
-                platformId: ctx.platform.id,
+                tenantId: ctx.tenant.id,
                 userId: ctx.user.id,
                 operation: renameOperation,
                 emitEvents: false,

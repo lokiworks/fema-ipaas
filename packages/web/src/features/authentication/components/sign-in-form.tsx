@@ -60,7 +60,7 @@ const SignInForm = ({ onForgotPassword }: SignInFormProps) => {
       authenticationSession.saveResponse(data, false);
 
       if (isNil(data.workspaceId)) {
-        navigate('/create-platform');
+        navigate('/create-tenant');
         return;
       }
       redirectAfterLogin();

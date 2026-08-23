@@ -54,7 +54,7 @@ afterAll(async () => {
 
 describe('Connector Options E2E', () => {
     it('returns dynamic properties for webhook authFields via full worker round-trip', async () => {
-        const { mockPlatform, mockWorkspace, mockOwner } = await mockAndSaveBasicSetup()
+        const { mockTenant, mockWorkspace, mockOwner } = await mockAndSaveBasicSetup()
 
         const mockWorkflow = createMockWorkflow({
             workspaceId: mockWorkspace.id,
@@ -84,7 +84,7 @@ describe('Connector Options E2E', () => {
         const mockConnector = createMockConnectorMetadata({
             name: '@fema/connector-webhook',
             version: '0.1.29',
-            platformId: undefined,
+            tenantId: undefined,
             packageType: PackageType.REGISTRY,
             connectorType: ConnectorType.OFFICIAL,
         })
@@ -93,7 +93,7 @@ describe('Connector Options E2E', () => {
         const token = await generateMockToken({
             id: mockOwner.id,
             type: PrincipalType.USER,
-            platform: { id: mockPlatform.id },
+            tenant: { id: mockTenant.id },
         })
 
         const response = await app.inject({

@@ -17,7 +17,7 @@ export const ConnectorBase = z.object({
   logoUrl: z.string(),
   description: z.string(),
   authors: z.array(z.string()),
-  platformId: z.optional(z.string()),
+  tenantId: z.optional(z.string()),
   directoryPath: z.optional(z.string()),
   auth: z.optional(z.union([ConnectorAuthProperty, z.array(ConnectorAuthProperty)])),
   version: z.string(),
@@ -34,7 +34,7 @@ export type ConnectorBase = {
   displayName: string;
   logoUrl: string;
   description: string;
-  platformId?: string;
+  tenantId?: string;
   authors: string[],
   directoryPath?: string;
   auth?: ConnectorAuthProperty | ConnectorAuthProperty[];
@@ -163,7 +163,7 @@ const ConnectorPackageMetadata = z.object({
   workspaceUsage: z.number(),
   connectorType: z.enum(ConnectorType),
   packageType: z.enum(PackageType),
-  platformId: z.optional(z.string()),
+  tenantId: z.optional(z.string()),
   archiveId: z.optional(z.string()),
 })
 type ConnectorPackageMetadata = z.infer<typeof ConnectorPackageMetadata>

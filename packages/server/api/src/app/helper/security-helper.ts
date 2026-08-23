@@ -1,13 +1,13 @@
 import { PrincipalType } from '@fema/shared'
 import { FastifyRequest } from 'fastify'
-import { platformService } from '../platform/platform.service'
+import { tenantService } from '../tenant/tenant.service'
 
 export const securityHelper = {
     async getUserIdFromRequest(request: FastifyRequest): Promise<string | null> {
         switch (request.principal.type) {
             case PrincipalType.SERVICE: {
-                const platform = await platformService(request.log).getOneOrThrow(request.principal.platform.id)
-                return platform.ownerId
+                const tenant = await tenantService(request.log).getOneOrThrow(request.principal.tenant.id)
+                return tenant.ownerId
             }
             case PrincipalType.USER:
                 return request.principal.id

@@ -40,7 +40,7 @@ export const ConnectorMetadataEntity =
               type: String,
               nullable: true,
           },
-          platformId: {
+          tenantId: {
               type: String,
               nullable: true,
           },
@@ -99,8 +99,8 @@ export const ConnectorMetadataEntity =
       },
       indices: [
           {
-              name: 'idx_connector_metadata_name_platform_id_version',
-              columns: ['name', 'version', 'platformId'],
+              name: 'idx_connector_metadata_name_tenant_id_version',
+              columns: ['name', 'version', 'tenantId'],
               unique: true,
           },
       ],

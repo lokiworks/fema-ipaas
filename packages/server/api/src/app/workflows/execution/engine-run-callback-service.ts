@@ -89,11 +89,11 @@ async function ensureLogsFileExists({ log, workspaceId, logsFileId, internalErro
             compression: FileCompression.ZSTD,
         })
 
-        const platformId = await workspaceService(log).getPlatformId(workspaceId)
+        const tenantId = await workspaceService(log).getTenantId(workspaceId)
         await fileService(log).save({
             fileId: logsFileId,
             workspaceId,
-            platformId,
+            tenantId,
             type: FileType.EXECUTION_LOG,
             data,
             size: data.length,

@@ -55,9 +55,9 @@ export const userHooks = {
     const userId = authenticationSession.getCurrentUserId();
     queryClient.invalidateQueries({ queryKey: ['currentUser', userId] });
   },
-  getCurrentUserPlatformRole: () => {
+  getCurrentUserTenantRole: () => {
     const { data: user } = userHooks.useCurrentUser();
-    return user?.platformRole;
+    return user?.tenantRole;
   },
 };
 

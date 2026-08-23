@@ -10,7 +10,7 @@ import {
   FederatedAuthnLoginResponse,
   SignInRequest,
   SignUpRequest,
-  SwitchPlatformRequest,
+  SwitchTenantRequest,
   ThirdPartyAuthnProviderEnum,
   UserIdentity,
   VerifyEmailCodeRequest,
@@ -69,9 +69,9 @@ export const authenticationApi = {
   verifyEmail(request: VerifyEmailRequestBody) {
     return api.post<UserIdentity>('/v1/authn/local/verify-email', request);
   },
-  switchPlatform(request: SwitchPlatformRequest) {
+  switchTenant(request: SwitchTenantRequest) {
     return api.post<AuthenticationResponse>(
-      `/v1/authentication/switch-platform`,
+      `/v1/authentication/switch-tenant`,
       request,
     );
   },

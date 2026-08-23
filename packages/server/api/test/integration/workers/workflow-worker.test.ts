@@ -24,10 +24,10 @@ afterAll(async () => {
 describe('Workflow API for Worker', () => {
     describe('Get Workflow from Worker', () => {
         it('should deny worker access to workflow from another workspace', async () => {
-            const { mockPlatform, mockOwner, mockWorkspace } = await mockAndSaveBasicSetup()
+            const { mockTenant, mockOwner, mockWorkspace } = await mockAndSaveBasicSetup()
 
             const mockWorkspace2 = createMockWorkspace({
-                platformId: mockPlatform.id,
+                tenantId: mockTenant.id,
                 ownerId: mockOwner.id,
             })
 

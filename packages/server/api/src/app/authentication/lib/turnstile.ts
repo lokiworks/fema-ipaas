@@ -1,4 +1,4 @@
-import { ErrorCode, isNil, PlatformError, tryCatch } from '@fema/core-utils'
+import { ApplicationError, ErrorCode, isNil, tryCatch } from '@fema/core-utils'
 import { safeHttp } from '@fema/server-utils'
 import { isAxiosError } from 'axios'
 import { FastifyBaseLogger } from 'fastify'
@@ -26,8 +26,8 @@ function siteVerifyAnswered(error: unknown): boolean {
     return isAxiosError(error) && !isNil(error.response)
 }
 
-function rejected(): PlatformError {
-    return new PlatformError({
+function rejected(): ApplicationError {
+    return new ApplicationError({
         code: ErrorCode.VALIDATION,
         params: {
             message: 'captchaVerificationFailed',

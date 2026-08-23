@@ -1,6 +1,6 @@
 import { createServer } from 'http'
 import os from 'os'
-import { isNil, PlatformError, spreadIfDefined, tryCatch } from '@fema/core-utils'
+import { ApplicationError, isNil, spreadIfDefined, tryCatch } from '@fema/core-utils'
 import { ACTION_RUN_CACHE_FIRST_SWEEP_DELAY_MS, ACTION_RUN_CACHE_SWEEP_INTERVAL_MS, actionRunCache, cacheUtils, createResolver, createSandboxRuntime, Runtime } from '@fema/sandbox'
 import { apVersionUtil, createLogger, onCallService, systemUsage, UNKNOWN_VERSION, wideEvent } from '@fema/server-utils'
 import { ApiToWorkerContract, ConsumeJobRequest, createNotifyServer, createRpcClient, EngineResponseStatus, ExecutionMode, JobData, SandboxInformation, WebsocketServerEvent, WorkerMachineHealthcheckRequest, WorkerProps, WorkerSettingsResponse, WorkerToApiContract } from '@fema/shared'
@@ -199,7 +199,7 @@ async function startPollingWorkers(apiClient: WorkerToApiContract): Promise<void
         getSettings: () => sandboxConfig.getSandboxSettings(),
     })
 
-    // Fire-and-forget: warm the connector cache for this platform's workflows without blocking the poll loop.
+    // Fire-and-forget: warm the connector cache for this tenant's workflows without blocking the poll loop.
     void runtime.prewarm({
         log: logger, 
         apiClient,
@@ -337,7 +337,7 @@ async function executeJob(apiClient: WorkerToApiContract, job: ConsumeJobRequest
         job: { id: job.jobId, type: jobData.jobType },
         ...spreadIfDefined('requestId', 'requestId' in jobData ? jobData.requestId : 'httpRequestId' in jobData ? jobData.httpRequestId : undefined),
         ...spreadIfDefined('workspace', 'workspaceId' in jobData && jobData.workspaceId != null ? { id: jobData.workspaceId } : undefined),
-        ...spreadIfDefined('platform', 'platformId' in jobData ? { id: jobData.platformId } : undefined),
+        ...spreadIfDefined('tenant', 'tenantId' in jobData ? { id: jobData.tenantId } : undefined),
         ...spreadIfDefined('workflow', 'workflowId' in jobData ? { id: jobData.workflowId } : undefined),
         ...spreadIfDefined('execution', 'runId' in jobData ? { id: jobData.runId } : undefined),
         ...spreadIfDefined('conversation', 'conversationId' in jobData ? { id: jobData.conversationId } : undefined),
@@ -540,7 +540,7 @@ function buildErrorMessage(execError: Error | undefined, result: JobResult | und
 }
 
 function extractLogs(execError: Error | undefined, result: JobResult | undefined): string | undefined {
-    if (execError instanceof PlatformError) {
+    if (execError instanceof ApplicationError) {
         const params = execError.error.params as Record<string, unknown>
         const parts: string[] = []
         if (params?.['standardOutput']) parts.push(`stdout:\n${params['standardOutput']}`)

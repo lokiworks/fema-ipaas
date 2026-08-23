@@ -196,7 +196,7 @@ const ReplaceConnectionsDialog = ({
 
   const sourceIsGlobalConnection =
     filteredConnections.find((conn) => conn.id === sourceConnectionId)
-      ?.scope === ConnectionScope.PLATFORM;
+      ?.scope === ConnectionScope.TENANT;
 
   const replacedWithOptions = useMemo(() => {
     return filteredConnections
@@ -366,7 +366,7 @@ const ReplaceConnectionsDialog = ({
                                   size="xs"
                                   border={false}
                                 />
-                                {conn?.scope === ConnectionScope.PLATFORM && (
+                                {conn?.scope === ConnectionScope.TENANT && (
                                   <GlobeIcon className="w-4 h-4" />
                                 )}
                                 <span>{conn!.displayName}</span>
@@ -411,7 +411,7 @@ const ReplaceConnectionsDialog = ({
                                     size="xs"
                                     border={false}
                                   />
-                                  {conn?.scope === ConnectionScope.PLATFORM && (
+                                  {conn?.scope === ConnectionScope.TENANT && (
                                     <GlobeIcon className="w-4 h-4" />
                                   )}
                                   <span>{conn!.displayName}</span>
@@ -515,7 +515,7 @@ const ReplaceConnectionsDialog = ({
               <LabelWithTooltip
                 label={t('After replacing')}
                 tooltip={t(
-                  'Keep the old connection to reuse it later, or delete it for good. Deleting is unavailable while published workflows still use it — switch the option above to Draft and published first. Global connections can only be deleted from the platform admin page.',
+                  'Keep the old connection to reuse it later, or delete it for good. Deleting is unavailable while published workflows still use it — switch the option above to Draft and published first. Global connections can only be deleted from the tenant admin page.',
                 )}
               />
               <Select

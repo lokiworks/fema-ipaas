@@ -15,8 +15,8 @@ export const SignUpRequest = z.object({
 
 export type SignUpRequest = z.infer<typeof SignUpRequest>
 
-export const SwitchPlatformRequest = z.object({
-    platformId: ApId,
+export const SwitchTenantRequest = z.object({
+    tenantId: ApId,
 })
 
-export type SwitchPlatformRequest = z.infer<typeof SwitchPlatformRequest>
+export type SwitchTenantRequest = z.infer<typeof SwitchTenantRequest>

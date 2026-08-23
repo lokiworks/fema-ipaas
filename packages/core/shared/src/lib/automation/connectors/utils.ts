@@ -1,4 +1,4 @@
-import { assertNotNullOrUndefined, ErrorCode, PlatformError } from '@fema/core-utils'
+import { ApplicationError, assertNotNullOrUndefined, ErrorCode } from '@fema/core-utils'
 
 /**
  * @param {string} connectorName - starts with `@fema/connector-`
@@ -44,7 +44,7 @@ export const extractConnectorFromModule = <T>(params: ExtractConnectorFromModule
         constructors.push(e?.constructor?.name)
     }
 
-    throw new PlatformError({
+    throw new ApplicationError({
         code: ErrorCode.ENTITY_NOT_FOUND,
         params: {
             entityType: 'connector',

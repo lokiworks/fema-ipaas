@@ -1,6 +1,6 @@
 import { Connector, ConnectorAuthProperty } from '@fema/connector-sdk'
 import { slack } from '@fema/connector-slack'
-import { apId, assertNotNullOrUndefined, ErrorCode, isNil, PlatformError } from '@fema/core-utils'
+import { apId, ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil } from '@fema/core-utils'
 import { LATEST_JOB_DATA_SCHEMA_VERSION, RunEnvironment, WorkerJobType, WorkflowStatus } from '@fema/shared'
 import { FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
@@ -57,7 +57,7 @@ export const appEventRoutingController: FastifyPluginAsyncZod = async (
             }
             const connector = appWebhooks[connectorUrl]
             if (isNil(connector)) {
-                throw new PlatformError({
+                throw new ApplicationError({
                     code: ErrorCode.ENTITY_NOT_FOUND,
                     params: {
                         entityType: 'connector',
@@ -116,13 +116,13 @@ export const appEventRoutingController: FastifyPluginAsyncZod = async (
                     isSimulating ? WebhookWorkflowVersionToRun.LATEST : WebhookWorkflowVersionToRun.LOCKED_FALL_BACK_TO_LATEST,
                     workflow,
                 )
-                const platformId = await workspaceService(request.log).getPlatformId(listener.workspaceId)
-                const jobPayload = await payloadOffloader.offloadPayload(request.log, payload, listener.workspaceId, platformId)
+                const tenantId = await workspaceService(request.log).getTenantId(listener.workspaceId)
+                const jobPayload = await payloadOffloader.offloadPayload(request.log, payload, listener.workspaceId, tenantId)
                 return jobQueue(request.log).add({
                     id: requestId,
                     type: JobType.ONE_TIME,
                     data: {
-                        platformId,
+                        tenantId,
                         workspaceId: listener.workspaceId,
                         schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
                         requestId,

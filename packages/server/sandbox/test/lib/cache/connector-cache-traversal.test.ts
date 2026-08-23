@@ -1,7 +1,7 @@
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { randomUUID } from 'node:crypto'
-import { PlatformError, ErrorCode } from '@fema/core-utils'
+import { ApplicationError, ErrorCode } from '@fema/core-utils'
 import { describe, expect, it, vi } from 'vitest'
 import type { WorkerToApiContract } from '@fema/shared'
 import type { ApLogger } from '@fema/server-utils'
@@ -50,14 +50,14 @@ describe('connector-cache connectorName path traversal', () => {
             await connectorCache(fakeLog, apiClient, basePath, fakeGetSettings).getConnector({
                 connectorName,
                 connectorVersion: '1.0.0',
-                platformId: 'platform-1',
+                tenantId: 'tenant-1',
             })
         }
         catch (error) {
             thrown = error
         }
-        if (!(thrown instanceof PlatformError)) {
-            throw new Error(`expected an PlatformError, got: ${String(thrown)}`)
+        if (!(thrown instanceof ApplicationError)) {
+            throw new Error(`expected an ApplicationError, got: ${String(thrown)}`)
         }
         expect(thrown.error.code).toBe(ErrorCode.VALIDATION)
         if (thrown.error.code === ErrorCode.VALIDATION) {

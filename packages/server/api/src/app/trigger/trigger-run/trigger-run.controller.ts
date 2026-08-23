@@ -6,13 +6,13 @@ import { triggerRunStats } from './trigger-run-stats'
 
 export const triggerRunController: FastifyPluginAsyncZod = async (app) => {
     app.get('/status', GetStatusReportSchema, async (request) => {
-        const platformId = request.principal.platform.id
-        return triggerRunStats(app.log, await redisConnections.useExisting()).getStatusReport({ platformId })
+        const tenantId = request.principal.tenant.id
+        return triggerRunStats(app.log, await redisConnections.useExisting()).getStatusReport({ tenantId })
     })
 }
 
 const GetStatusReportSchema = {
     config: {
-        security: securityAccess.publicPlatform([PrincipalType.USER]),
+        security: securityAccess.publicTenant([PrincipalType.USER]),
     },
 }

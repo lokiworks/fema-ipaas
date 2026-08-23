@@ -118,7 +118,7 @@ export const LanguageToggle = () => {
             target="_blank"
             to="https://github.com/lokiworks/fema-ipaas/docs/about/i18n"
           >
-            {t('Help translate FEMA Integration Platform →')}
+            {t('Help translate FEMA Integration Tenant →')}
           </Link>
         </div>
       )}

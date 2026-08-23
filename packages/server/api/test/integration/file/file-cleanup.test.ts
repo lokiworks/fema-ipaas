@@ -21,10 +21,10 @@ afterAll(async () => {
 
 const daysAgo = (days: number): string => dayjs().subtract(days, 'days').toISOString()
 
-const saveLogFile = async ({ workspaceId, platformId, created }: { workspaceId: string | null, platformId: string, created: string }): Promise<string> => {
+const saveLogFile = async ({ workspaceId, tenantId, created }: { workspaceId: string | null, tenantId: string, created: string }): Promise<string> => {
     const file = createMockFile({
         workspaceId,
-        platformId,
+        tenantId,
         created,
         type: FileType.EXECUTION_LOG,
         location: FileLocation.DB,
@@ -36,35 +36,35 @@ const saveLogFile = async ({ workspaceId, platformId, created }: { workspaceId: 
 
 describe('fileService.deleteStaleBulk', () => {
     it('applies shorter per-workspace retention and treats the instance value as a ceiling', async () => {
-        const { mockOwner, mockPlatform, mockWorkspace: defaultWorkspace } = await mockAndSaveBasicSetup()
+        const { mockOwner, mockTenant, mockWorkspace: defaultWorkspace } = await mockAndSaveBasicSetup()
 
         const shortRetentionWorkspace = createMockWorkspace({
             ownerId: mockOwner.id,
-            platformId: mockPlatform.id,
+            tenantId: mockTenant.id,
             executionDataRetentionDays: 7,
         })
         const aboveCeilingWorkspace = createMockWorkspace({
             ownerId: mockOwner.id,
-            platformId: mockPlatform.id,
+            tenantId: mockTenant.id,
             executionDataRetentionDays: 60,
         })
         const belowFloorWorkspace = createMockWorkspace({
             ownerId: mockOwner.id,
-            platformId: mockPlatform.id,
+            tenantId: mockTenant.id,
             executionDataRetentionDays: 3,
         })
         await db.save('workspace', [shortRetentionWorkspace, aboveCeilingWorkspace, belowFloorWorkspace])
 
-        const defaultWorkspaceStale = await saveLogFile({ workspaceId: defaultWorkspace.id, platformId: mockPlatform.id, created: daysAgo(40) })
-        const defaultWorkspaceFresh = await saveLogFile({ workspaceId: defaultWorkspace.id, platformId: mockPlatform.id, created: daysAgo(10) })
-        const shortWorkspaceStale = await saveLogFile({ workspaceId: shortRetentionWorkspace.id, platformId: mockPlatform.id, created: daysAgo(10) })
-        const shortWorkspaceFresh = await saveLogFile({ workspaceId: shortRetentionWorkspace.id, platformId: mockPlatform.id, created: daysAgo(3) })
-        const aboveCeilingStale = await saveLogFile({ workspaceId: aboveCeilingWorkspace.id, platformId: mockPlatform.id, created: daysAgo(40) })
-        const aboveCeilingFresh = await saveLogFile({ workspaceId: aboveCeilingWorkspace.id, platformId: mockPlatform.id, created: daysAgo(10) })
-        const belowFloorStale = await saveLogFile({ workspaceId: belowFloorWorkspace.id, platformId: mockPlatform.id, created: daysAgo(10) })
-        const belowFloorClamped = await saveLogFile({ workspaceId: belowFloorWorkspace.id, platformId: mockPlatform.id, created: daysAgo(4) })
-        const orphanStale = await saveLogFile({ workspaceId: null, platformId: mockPlatform.id, created: daysAgo(40) })
-        const orphanFresh = await saveLogFile({ workspaceId: null, platformId: mockPlatform.id, created: daysAgo(10) })
+        const defaultWorkspaceStale = await saveLogFile({ workspaceId: defaultWorkspace.id, tenantId: mockTenant.id, created: daysAgo(40) })
+        const defaultWorkspaceFresh = await saveLogFile({ workspaceId: defaultWorkspace.id, tenantId: mockTenant.id, created: daysAgo(10) })
+        const shortWorkspaceStale = await saveLogFile({ workspaceId: shortRetentionWorkspace.id, tenantId: mockTenant.id, created: daysAgo(10) })
+        const shortWorkspaceFresh = await saveLogFile({ workspaceId: shortRetentionWorkspace.id, tenantId: mockTenant.id, created: daysAgo(3) })
+        const aboveCeilingStale = await saveLogFile({ workspaceId: aboveCeilingWorkspace.id, tenantId: mockTenant.id, created: daysAgo(40) })
+        const aboveCeilingFresh = await saveLogFile({ workspaceId: aboveCeilingWorkspace.id, tenantId: mockTenant.id, created: daysAgo(10) })
+        const belowFloorStale = await saveLogFile({ workspaceId: belowFloorWorkspace.id, tenantId: mockTenant.id, created: daysAgo(10) })
+        const belowFloorClamped = await saveLogFile({ workspaceId: belowFloorWorkspace.id, tenantId: mockTenant.id, created: daysAgo(4) })
+        const orphanStale = await saveLogFile({ workspaceId: null, tenantId: mockTenant.id, created: daysAgo(40) })
+        const orphanFresh = await saveLogFile({ workspaceId: null, tenantId: mockTenant.id, created: daysAgo(10) })
 
         await fileService(app!.log).deleteStaleBulk([FileType.EXECUTION_LOG])
 

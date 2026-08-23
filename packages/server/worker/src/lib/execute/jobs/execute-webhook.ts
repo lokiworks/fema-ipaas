@@ -27,7 +27,7 @@ export const executeWebhookJob: JobHandler<WebhookJobData, FireAndForgetJobResul
         const settings = workerSettings.getSettings()
         const timeoutInSeconds = settings.TRIGGER_TIMEOUT_SECONDS
 
-        const resolved = await ctx.resolver.resolve({ platformId: data.platformId, publicApiUrl: ctx.publicApiUrl, engineToken: ctx.engineToken, workflow: { id: data.workflowId, versionId: data.workflowVersionIdToRun, workspaceId: data.workspaceId } })
+        const resolved = await ctx.resolver.resolve({ tenantId: data.tenantId, publicApiUrl: ctx.publicApiUrl, engineToken: ctx.engineToken, workflow: { id: data.workflowId, versionId: data.workflowVersionIdToRun, workspaceId: data.workspaceId } })
 
         if (resolved.kind === 'workflow-not-found') {
             ctx.log.info({ workflowVersion: { id: data.workflowVersionIdToRun } }, 'Workflow version not found for webhook, skipping')
@@ -60,7 +60,7 @@ export const executeWebhookJob: JobHandler<WebhookJobData, FireAndForgetJobResul
                         triggerPayload: data.payload,
                         test: true,
                         workspaceId: data.workspaceId,
-                        platformId: data.platformId,
+                        tenantId: data.tenantId,
                         engineToken: ctx.engineToken,
                         internalApiUrl: ctx.internalApiUrl,
                         publicApiUrl: ctx.publicApiUrl,
@@ -101,7 +101,7 @@ export const executeWebhookJob: JobHandler<WebhookJobData, FireAndForgetJobResul
                     triggerPayload: data.payload,
                     test: false,
                     workspaceId: data.workspaceId,
-                    platformId: data.platformId,
+                    tenantId: data.tenantId,
                     engineToken: ctx.engineToken,
                     internalApiUrl: ctx.internalApiUrl,
                     publicApiUrl: ctx.publicApiUrl,
@@ -118,7 +118,7 @@ export const executeWebhookJob: JobHandler<WebhookJobData, FireAndForgetJobResul
 
         if (error) {
             if (realExecutionStarted) {
-                await recordTriggerRun({ apiClient: ctx.apiClient, log: ctx.log, workflowVersion, platformId: data.platformId, status: EngineResponseStatus.INTERNAL_ERROR })
+                await recordTriggerRun({ apiClient: ctx.apiClient, log: ctx.log, workflowVersion, tenantId: data.tenantId, status: EngineResponseStatus.INTERNAL_ERROR })
             }
             if (isSandboxTimeout(error)) {
                 ctx.log.warn({ workflowVersion: { id: data.workflowVersionIdToRun } }, 'Webhook execution timed out in sandbox')
@@ -147,7 +147,7 @@ export const executeWebhookJob: JobHandler<WebhookJobData, FireAndForgetJobResul
             }
         }
 
-        await recordTriggerRun({ apiClient: ctx.apiClient, log: ctx.log, workflowVersion, platformId: data.platformId, status: execResult.status })
+        await recordTriggerRun({ apiClient: ctx.apiClient, log: ctx.log, workflowVersion, tenantId: data.tenantId, status: execResult.status })
 
         return { kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.OK, logs: execResult.logs }
     },

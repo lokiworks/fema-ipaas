@@ -1,9 +1,9 @@
 import { Permission } from '@fema/core-utils'
 import { PrincipalType } from '@fema/shared'
-import { AuthorizationType, NoneAuthorization, PlatformAuthorization, PublicRoute, RouteKind, UnscopedAuthorization, WorkspaceAuthorization, WorkspaceResource } from './common'
+import { AuthorizationType, NoneAuthorization, PublicRoute, RouteKind, TenantAuthorization, UnscopedAuthorization, WorkspaceAuthorization, WorkspaceResource } from './common'
 
 type FastifySecurityAuthorization =
-    | PlatformAuthorization
+    | TenantAuthorization
     | WorkspaceAuthorization
     | UnscopedAuthorization
     | NoneAuthorization
@@ -18,23 +18,23 @@ export type FastifyRouteSecurity = RouteAccessRequest | PublicRoute
 export const securityAccess = {
 
     /**
-     * Creates a security configuration that restricts access to platform administrators only.
+     * Creates a security configuration that restricts access to tenant administrators only.
      *
      * **Conditions for access:**
      * - Principal type of token must be one of the allowedPrincipals
-     * - User with principal.id must be owner of the platform with id principal.platformId
+     * - User with principal.id must be owner of the tenant with id principal.tenantId
      *
      * **Effects:**
-     * - platformId field is available on the request.principal (request.principal.platformId)
+     * - tenantId field is available on the request.principal (request.principal.tenantId)
      *
      * @param allowedPrincipals - Array of allowed principal types (USER, ENGINE, or SERVICE)
-     * @returns Security configuration for platform admin-only routes
+     * @returns Security configuration for tenant admin-only routes
      */
-    platformAdminOnly: (allowedPrincipals: readonly (PrincipalType.USER | PrincipalType.ENGINE | PrincipalType.SERVICE)[]) => {
+    tenantAdminOnly: (allowedPrincipals: readonly (PrincipalType.USER | PrincipalType.ENGINE | PrincipalType.SERVICE)[]) => {
         return {
             kind: RouteKind.AUTHENTICATED,
             authorization: {
-                type: AuthorizationType.PLATFORM,
+                type: AuthorizationType.TENANT,
                 allowedPrincipals,
                 adminOnly: true,
             },
@@ -42,15 +42,15 @@ export const securityAccess = {
     },
     
     /**
-     * Creates a security configuration that allows platform administrators
+     * Creates a security configuration that allows tenant administrators
      * and non-embed (non-JWT) identity provider users.
      *
      * **Conditions for access:**
      * - Principal type of token must be one of the allowedPrincipals
-     * - User must be a platform admin OR have a non-JWT identity provider
+     * - User must be a tenant admin OR have a non-JWT identity provider
      *
      * **Effects:**
-     * - platformId field is available on the request.principal (request.principal.platformId)
+     * - tenantId field is available on the request.principal (request.principal.tenantId)
      *
      * @param allowedPrincipals - Array of allowed principal types (USER, ENGINE, or SERVICE)
      * @returns Security configuration for admin or non-embed user routes
@@ -59,7 +59,7 @@ export const securityAccess = {
         return {
             kind: RouteKind.AUTHENTICATED,
             authorization: {
-                type: AuthorizationType.PLATFORM,
+                type: AuthorizationType.TENANT,
                 allowedPrincipals,
                 adminOnly: false,
                 nonEmbedUsersOnly: true,
@@ -68,23 +68,23 @@ export const securityAccess = {
     },
 
     /**
-     * Creates a security configuration for public platform routes.
+     * Creates a security configuration for public tenant routes.
      *
      * **Conditions for access:**
      * - Principal type of token must be one of the allowedPrincipals
      *
      * **Effects:**
-     * - platformId field is available on the request.principal (request.principal.platformId)
+     * - tenantId field is available on the request.principal (request.principal.tenantId)
      *
      * @param allowedPrincipals - Array of allowed principal types (USER, ENGINE, or SERVICE)
      * @param workspaceResource - Optional resource configuration for extracting workspaceId from the request
-     * @returns Security configuration for public platform routes
+     * @returns Security configuration for public tenant routes
      */
-    publicPlatform: (allowedPrincipals: readonly (PrincipalType.USER | PrincipalType.ENGINE | PrincipalType.SERVICE)[], workspaceResource?: WorkspaceResource) => {
+    publicTenant: (allowedPrincipals: readonly (PrincipalType.USER | PrincipalType.ENGINE | PrincipalType.SERVICE)[], workspaceResource?: WorkspaceResource) => {
         return {
             kind: RouteKind.AUTHENTICATED,
             authorization: {
-                type: AuthorizationType.PLATFORM,
+                type: AuthorizationType.TENANT,
                 allowedPrincipals,
                 adminOnly: false,
                 workspaceResource,
@@ -142,17 +142,17 @@ export const securityAccess = {
     },
     
     /**
-     * Creates a security configuration for unscoped routes that do not require platformId or workspaceId.
+     * Creates a security configuration for unscoped routes that do not require tenantId or workspaceId.
      *
-     * Mainly used for routes that do not require platformId or workspaceId appended on the request object.
+     * Mainly used for routes that do not require tenantId or workspaceId appended on the request object.
      * This is useful when we need a route that allows Worker principal + other principals because the
-     * worker principal token does not contain platformId or workspaceId.
+     * worker principal token does not contain tenantId or workspaceId.
      *
      * **Conditions for access:**
      * - Principal type of token must be one of the allowedPrincipals
      *
      * **Effects:**
-     * - No effects (platformId and workspaceId are not available on the request object)
+     * - No effects (tenantId and workspaceId are not available on the request object)
      *
      * @param allowedPrincipals - Array of allowed principal types
      * @returns Security configuration for unscoped routes

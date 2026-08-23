@@ -40,18 +40,18 @@ describe('recordTriggerRun', () => {
         const recordTriggerRunRpc = vi.fn(async () => undefined)
         const apiClient = { recordTriggerRun: recordTriggerRunRpc } as unknown as WorkerToApiContract
 
-        await recordTriggerRun({ apiClient, log, workflowVersion: buildConnectorWorkflowVersion('@fema/connector-slack'), platformId: 'p1', status: EngineResponseStatus.OK })
+        await recordTriggerRun({ apiClient, log, workflowVersion: buildConnectorWorkflowVersion('@fema/connector-slack'), tenantId: 'p1', status: EngineResponseStatus.OK })
 
-        expect(recordTriggerRunRpc).toHaveBeenCalledWith({ platformId: 'p1', connectorName: '@fema/connector-slack', status: TriggerRunStatus.COMPLETED })
+        expect(recordTriggerRunRpc).toHaveBeenCalledWith({ tenantId: 'p1', connectorName: '@fema/connector-slack', status: TriggerRunStatus.COMPLETED })
     })
 
     it('maps non-OK statuses to FAILED', async () => {
         const recordTriggerRunRpc = vi.fn(async () => undefined)
         const apiClient = { recordTriggerRun: recordTriggerRunRpc } as unknown as WorkerToApiContract
 
-        await recordTriggerRun({ apiClient, log, workflowVersion: buildConnectorWorkflowVersion('@fema/connector-slack'), platformId: 'p1', status: EngineResponseStatus.INTERNAL_ERROR })
+        await recordTriggerRun({ apiClient, log, workflowVersion: buildConnectorWorkflowVersion('@fema/connector-slack'), tenantId: 'p1', status: EngineResponseStatus.INTERNAL_ERROR })
 
-        expect(recordTriggerRunRpc).toHaveBeenCalledWith({ platformId: 'p1', connectorName: '@fema/connector-slack', status: TriggerRunStatus.FAILED })
+        expect(recordTriggerRunRpc).toHaveBeenCalledWith({ tenantId: 'p1', connectorName: '@fema/connector-slack', status: TriggerRunStatus.FAILED })
     })
 
     it('skips non-connector triggers', async () => {
@@ -59,7 +59,7 @@ describe('recordTriggerRun', () => {
         const apiClient = { recordTriggerRun: recordTriggerRunRpc } as unknown as WorkerToApiContract
         const emptyTriggerWorkflowVersion = { ...buildConnectorWorkflowVersion('@fema/connector-slack'), trigger: { type: WorkflowTriggerType.EMPTY, settings: {} } } as unknown as WorkflowVersion
 
-        await recordTriggerRun({ apiClient, log, workflowVersion: emptyTriggerWorkflowVersion, platformId: 'p1', status: EngineResponseStatus.OK })
+        await recordTriggerRun({ apiClient, log, workflowVersion: emptyTriggerWorkflowVersion, tenantId: 'p1', status: EngineResponseStatus.OK })
 
         expect(recordTriggerRunRpc).not.toHaveBeenCalled()
     })
@@ -70,6 +70,6 @@ describe('recordTriggerRun', () => {
         })
         const apiClient = { recordTriggerRun: recordTriggerRunRpc } as unknown as WorkerToApiContract
 
-        await expect(recordTriggerRun({ apiClient, log, workflowVersion: buildConnectorWorkflowVersion('@fema/connector-slack'), platformId: 'p1', status: EngineResponseStatus.OK })).resolves.toBeUndefined()
+        await expect(recordTriggerRun({ apiClient, log, workflowVersion: buildConnectorWorkflowVersion('@fema/connector-slack'), tenantId: 'p1', status: EngineResponseStatus.OK })).resolves.toBeUndefined()
     })
 })

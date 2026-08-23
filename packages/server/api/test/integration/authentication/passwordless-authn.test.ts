@@ -1,5 +1,5 @@
 import { apId } from '@fema/core-utils'
-import { OtpState, OtpType, PlatformRole, UserIdentityProvider, UserStatus } from '@fema/shared'
+import { OtpState, OtpType, TenantRole, UserIdentityProvider, UserStatus } from '@fema/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { passwordHasher } from '../../../../src/app/authentication/lib/password-hasher'
@@ -8,8 +8,8 @@ import { userIdentityService } from '../../../../src/app/authentication/user-ide
 import { databaseConnection } from '../../../../src/app/database/database-connection'
 import { distributedStore } from '../../../../src/app/database/redis-connections'
 import { passwordlessAuthService } from '../../../../src/app/authentication/passwordless-auth.service'
-import { platformService } from '../../../../src/app/platform/platform.service'
-import { createMockPlatform } from '../../../helpers/mocks'
+import { tenantService } from '../../../../src/app/tenant/tenant.service'
+import { createMockTenant } from '../../../helpers/mocks'
 import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
 
 let app: FastifyInstance | null = null
@@ -78,7 +78,7 @@ beforeEach(async () => {
     await databaseConnection().getRepository('flag').createQueryBuilder().delete().execute()
     await databaseConnection().getRepository('otp').createQueryBuilder().delete().execute()
     await databaseConnection().getRepository('workspace').createQueryBuilder().delete().execute()
-    await databaseConnection().getRepository('platform').createQueryBuilder().delete().execute()
+    await databaseConnection().getRepository('tenant').createQueryBuilder().delete().execute()
     await databaseConnection().getRepository('user').createQueryBuilder().delete().execute()
     await databaseConnection().getRepository('user_identity').createQueryBuilder().delete().execute()
 })
@@ -127,10 +127,10 @@ describe('Passwordless Authentication API', () => {
             await databaseConnection().getRepository('user_invitation').save({
                 id: apId(),
                 email: invited,
-                type: 'PLATFORM',
-                platformId: apId(),
+                type: 'TENANT',
+                tenantId: apId(),
                 status: 'ACCEPTED',
-                platformRole: PlatformRole.MEMBER,
+                tenantRole: TenantRole.MEMBER,
             })
 
             const response = await app?.inject({
@@ -215,7 +215,7 @@ describe('Passwordless Authentication API', () => {
             expect(await passwordHasher.compare(plantedPassword, afterVerification!.password)).toBe(false)
         })
 
-        it('hands a brand-new member a pre-platform session so the name step can run', async () => {
+        it('hands a brand-new member a pre-tenant session so the name step can run', async () => {
             await requestCode(EMAIL)
             const otp = await storedOtp(EMAIL)
 
@@ -223,13 +223,13 @@ describe('Passwordless Authentication API', () => {
 
             expect(response?.statusCode).toBe(StatusCodes.OK)
             const body = response?.json()
-            expect(body?.platformId).toBeNull()
+            expect(body?.tenantId).toBeNull()
             expect(body?.workspaceId).toBeNull()
             expect(body?.token).toBeDefined()
-            expect(await databaseConnection().getRepository('platform').count()).toBe(0)
+            expect(await databaseConnection().getRepository('tenant').count()).toBe(0)
         })
 
-        it('creates the platform from the name once the name step completes', async () => {
+        it('creates the tenant from the name once the name step completes', async () => {
             await requestCode(EMAIL)
             const otp = await storedOtp(EMAIL)
             const onboarding = await verifyCode({ email: EMAIL, code: otp!.value })
@@ -248,9 +248,9 @@ describe('Passwordless Authentication API', () => {
             const identity = await databaseConnection().getRepository('user_identity').findOneBy({ email: EMAIL })
             expect(identity?.firstName).toBe('Ahmad')
             expect(identity?.lastName).toBe('Bin Tash')
-            const platform = await databaseConnection().getRepository('platform').findOneBy({ id: body?.platformId })
-            expect(platform?.name).toBe("Ahmad's Platform")
-            const workspace = await databaseConnection().getRepository('workspace').findOneBy({ platformId: body?.platformId })
+            const tenant = await databaseConnection().getRepository('tenant').findOneBy({ id: body?.tenantId })
+            expect(tenant?.name).toBe("Ahmad's Tenant")
+            const workspace = await databaseConnection().getRepository('workspace').findOneBy({ tenantId: body?.tenantId })
             expect(workspace?.displayName).toBe("Ahmad's Workspace")
         })
 
@@ -269,7 +269,7 @@ describe('Passwordless Authentication API', () => {
             expect(verdicts.filter((verdict) => verdict)).toHaveLength(1)
         })
 
-        it('creates one platform for one identity, even when the name step is submitted twice', async () => {
+        it('creates one tenant for one identity, even when the name step is submitted twice', async () => {
             await requestCode(EMAIL)
             const otp = await storedOtp(EMAIL)
             const onboarding = await verifyCode({ email: EMAIL, code: otp!.value })
@@ -286,13 +286,13 @@ describe('Passwordless Authentication API', () => {
 
             expect(first?.statusCode).toBe(StatusCodes.OK)
             expect(second?.statusCode).toBe(StatusCodes.OK)
-            expect(second?.json()?.platformId).toBe(first?.json()?.platformId)
-            expect(await databaseConnection().getRepository('platform').count()).toBe(1)
+            expect(second?.json()?.tenantId).toBe(first?.json()?.tenantId)
+            expect(await databaseConnection().getRepository('tenant').count()).toBe(1)
             expect(await databaseConnection().getRepository('workspace').count()).toBe(1)
             expect(await databaseConnection().getRepository('user').count()).toBe(1)
         })
 
-        it('creates one platform even when the other onboarding route races the name step', async () => {
+        it('creates one tenant even when the other onboarding route races the name step', async () => {
             await requestCode(EMAIL)
             const otp = await storedOtp(EMAIL)
             const onboarding = await verifyCode({ email: EMAIL, code: otp!.value })
@@ -304,17 +304,17 @@ describe('Passwordless Authentication API', () => {
                 headers: { authorization: `Bearer ${onboardingToken}` },
                 body: { fullName: 'Ahmad Bin Tash' },
             })
-            const viaPlatformRoute = await app?.inject({
+            const viaTenantRoute = await app?.inject({
                 method: 'POST',
-                url: '/api/v1/platforms',
+                url: '/api/v1/tenants',
                 headers: { authorization: `Bearer ${onboardingToken}` },
                 body: { name: 'Ahmad' },
             })
 
             expect(viaNameStep?.statusCode).toBe(StatusCodes.OK)
-            expect(viaPlatformRoute?.statusCode).toBe(StatusCodes.OK)
-            expect(viaPlatformRoute?.json()?.platformId).toBe(viaNameStep?.json()?.platformId)
-            expect(await databaseConnection().getRepository('platform').count()).toBe(1)
+            expect(viaTenantRoute?.statusCode).toBe(StatusCodes.OK)
+            expect(viaTenantRoute?.json()?.tenantId).toBe(viaNameStep?.json()?.tenantId)
+            expect(await databaseConnection().getRepository('tenant').count()).toBe(1)
             expect(await databaseConnection().getRepository('user').count()).toBe(1)
         })
 

@@ -130,14 +130,14 @@ export const resumeService = (log: FastifyBaseLogger) => ({
 
 async function enqueueResume(params: EnqueueResumeParams, log: FastifyBaseLogger): Promise<void> {
     const { execution, waitpoint, resumePayload, workerHandlerId, httpRequestId } = params
-    const platformId = await workspaceService(log).getPlatformId(execution.workspaceId)
+    const tenantId = await workspaceService(log).getTenantId(execution.workspaceId)
     // Namespace the BullMQ job with waitpoint id so it cannot be deduplicated
     // against the still-active BEGIN job or a consecutive resume for a different waitpoint
     const waitpointId = waitpoint?.id ?? 'legacy'
     await addToQueue({
         payload: resumePayload,
         execution,
-        platformId,
+        tenantId,
         workerHandlerId: workerHandlerId ?? waitpoint?.workerHandlerId ?? undefined,
         httpRequestId: httpRequestId ?? waitpoint?.httpRequestId ?? apId(),
         streamStepProgress: execution.environment === RunEnvironment.TESTING
@@ -147,7 +147,7 @@ async function enqueueResume(params: EnqueueResumeParams, log: FastifyBaseLogger
         resumeReason: ResumeReason.WAITPOINT,
         jobId: `${execution.id}-resume-${waitpointId}`,
     }, log)
-    await executionSideEffects(log).onResume({ execution, platformId })
+    await executionSideEffects(log).onResume({ execution, tenantId })
 }
 
 type SyncResumePayload = {

@@ -1,0 +1,378 @@
+import {
+  isNil,
+  SeekPage,
+  UpdateWorkspaceTenantRequest,
+  WorkspaceWithLimits,
+} from '@fema/shared';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { t } from 'i18next';
+import { BarChart3, Cpu, Search, Server } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { toast } from 'sonner';
+
+import { DataTable, RowDataWithActions } from '@/components/custom/data-table';
+import { TextWithTooltip } from '@/components/custom/text-with-tooltip';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { WorkerGroupInfo } from '@/features/tenant-admin/api/workers-api';
+import { api } from '@/lib/api';
+import { cn } from '@/lib/utils';
+
+import { WorkspaceAvatar } from './workspace-avatar';
+
+const SHARED_SENTINEL = '__shared__';
+
+type ByWorkspaceViewProps = {
+  workerGroups: WorkerGroupInfo[];
+  sharedSlots: number;
+};
+
+export function ByWorkspaceView({
+  workerGroups,
+  sharedSlots,
+}: ByWorkspaceViewProps) {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const cursor = searchParams.get('cursor') ?? undefined;
+  const limit = searchParams.get('limit') ?? '10';
+  const displayName = searchParams.get('displayName') ?? undefined;
+
+  const queryClient = useQueryClient();
+
+  const { data: page, isLoading } = useTenantWorkspacesPage({
+    cursor,
+    limit,
+    displayName,
+  });
+
+  const columns = useMemo(
+    () => buildColumns({ workerGroups, sharedSlots, queryClient }),
+    [workerGroups, sharedSlots, queryClient],
+  );
+
+  const searchBar = (
+    <div className="relative">
+      <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+      <Input
+        className="pl-8 w-[240px]"
+        placeholder={t('Search workspaces')}
+        defaultValue={displayName ?? ''}
+        onChange={(e) => {
+          const value = e.target.value;
+          setSearchParams(
+            (prev) => {
+              const next = new URLSearchParams(prev);
+              if (value) {
+                next.set('displayName', value);
+              } else {
+                next.delete('displayName');
+              }
+              next.delete('cursor');
+              return next;
+            },
+            { replace: true },
+          );
+        }}
+      />
+    </div>
+  );
+
+  return (
+    <div className="flex flex-col gap-3">
+      <p className="flex items-center gap-2 text-sm text-muted-foreground">
+        <BarChart3 className="size-4 shrink-0" />
+        {t(
+          'Allocate capacity per workspace — pick its worker group and concurrency limit. Leave the limit empty to inherit the tenant default. Workspace settings shows these read-only and links here.',
+        )}
+      </p>
+
+      <DataTable
+        columns={columns}
+        page={page}
+        isLoading={isLoading}
+        emptyStateTextTitle={t('No workspaces yet')}
+        emptyStateTextDescription={t(
+          'Start by creating workspaces to manage your automation teams',
+        )}
+        emptyStateIcon={<Server className="size-14" />}
+        toolbarButtons={[searchBar]}
+      />
+    </div>
+  );
+}
+
+function useTenantWorkspacesPage({
+  cursor,
+  limit,
+  displayName,
+}: {
+  cursor: string | undefined;
+  limit: string;
+  displayName: string | undefined;
+}) {
+  return useQuery<SeekPage<WorkspaceWithLimits>>({
+    queryKey: ['tenant-workspaces-page', cursor, limit, displayName],
+    queryFn: () =>
+      api.get<SeekPage<WorkspaceWithLimits>>('/v1/workspaces', {
+        cursor,
+        limit: Number(limit) || 10,
+        displayName,
+      }),
+    meta: { showErrorDialog: true, loadSubsetOptions: {} },
+  });
+}
+
+function buildColumns({
+  workerGroups,
+  sharedSlots,
+  queryClient,
+}: {
+  workerGroups: WorkerGroupInfo[];
+  sharedSlots: number;
+  queryClient: ReturnType<typeof useQueryClient>;
+}) {
+  return [
+    {
+      accessorKey: 'displayName',
+      header: () => t('Workspace'),
+      cell: ({
+        row,
+      }: {
+        row: { original: RowDataWithActions<WorkspaceWithLimits> };
+      }) => (
+        <div className="flex items-center gap-2.5 min-w-0">
+          <WorkspaceAvatar workspace={row.original} />
+          <TextWithTooltip tooltipMessage={row.original.displayName}>
+            <p className="text-sm font-medium truncate">
+              {row.original.displayName}
+            </p>
+          </TextWithTooltip>
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'analytics.totalWorkflows',
+      header: () => t('Workflows'),
+      size: 100,
+      cell: ({
+        row,
+      }: {
+        row: { original: RowDataWithActions<WorkspaceWithLimits> };
+      }) => (
+        <span className="text-sm text-muted-foreground">
+          {row.original.analytics.totalWorkflows}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'workerGroupId',
+      header: () => t('Assigned worker'),
+      size: 240,
+      cell: ({
+        row,
+      }: {
+        row: { original: RowDataWithActions<WorkspaceWithLimits> };
+      }) => (
+        <WorkerGroupCell
+          row={row.original}
+          workerGroups={workerGroups}
+          queryClient={queryClient}
+        />
+      ),
+    },
+    {
+      accessorKey: 'maxConcurrentJobs',
+      header: () => t('Concurrency limit'),
+      size: 200,
+      cell: ({
+        row,
+      }: {
+        row: { original: RowDataWithActions<WorkspaceWithLimits> };
+      }) => (
+        <ConcurrencyCell
+          row={row.original}
+          workerGroups={workerGroups}
+          sharedSlots={sharedSlots}
+          queryClient={queryClient}
+        />
+      ),
+    },
+  ];
+}
+
+function WorkerGroupCell({
+  row,
+  workerGroups,
+  queryClient,
+}: {
+  row: RowDataWithActions<WorkspaceWithLimits>;
+  workerGroups: WorkerGroupInfo[];
+  queryClient: ReturnType<typeof useQueryClient>;
+}) {
+  const selectValue = row.workerGroupId ?? SHARED_SENTINEL;
+  const isShared = selectValue === SHARED_SENTINEL;
+  const isOffline =
+    !isNil(row.workerGroupId) &&
+    !workerGroups.some((info) => info.label === row.workerGroupId);
+
+  const handleChange = async (value: string) => {
+    const workerGroupId = value === SHARED_SENTINEL ? null : value;
+    const result = await saveWorkspaceUpdate({
+      workspaceId: row.id!,
+      update: { workerGroupId },
+    });
+    if (result.success) {
+      row.update({ workerGroupId });
+      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+      toast.success(t('Saved'));
+    } else {
+      toast.error(t('Failed to save'));
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-1">
+      <Select value={selectValue} onValueChange={handleChange}>
+        <SelectTrigger
+          className={cn('w-[200px]', isOffline && 'border-destructive')}
+        >
+          <div className="flex items-center gap-2 min-w-0">
+            <Cpu
+              className={cn(
+                'size-3.5 shrink-0',
+                isOffline
+                  ? 'text-destructive'
+                  : isShared
+                  ? 'text-muted-foreground'
+                  : 'text-primary',
+              )}
+            />
+            <SelectValue />
+          </div>
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value={SHARED_SENTINEL}>
+            <span className="text-muted-foreground">{t('Shared')}</span>
+          </SelectItem>
+          {isOffline && (
+            <SelectItem value={row.workerGroupId!}>
+              {row.workerGroupId!.replaceAll('_', ' ')}
+            </SelectItem>
+          )}
+          {workerGroups.map((info) => (
+            <SelectItem key={info.label} value={info.label}>
+              {info.label.replaceAll('_', ' ')}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {isOffline && (
+        <p className="text-xs text-destructive">
+          {t('{group} has no workers online. Fallback to Shared', {
+            group: row.workerGroupId!.replaceAll('_', ' '),
+          })}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function ConcurrencyCell({
+  row,
+  workerGroups,
+  sharedSlots,
+  queryClient,
+}: {
+  row: RowDataWithActions<WorkspaceWithLimits>;
+  workerGroups: WorkerGroupInfo[];
+  sharedSlots: number;
+  queryClient: ReturnType<typeof useQueryClient>;
+}) {
+  const assignedGroup = workerGroups.find(
+    (info) => info.label === row.workerGroupId,
+  );
+  const poolSlots = assignedGroup ? assignedGroup.slots : sharedSlots;
+  const concurrencyPlaceholder = t('Default {count}', { count: poolSlots });
+
+  const [concurrencyInput, setConcurrencyInput] = useState(
+    row.maxConcurrentJobs != null ? String(row.maxConcurrentJobs) : '',
+  );
+
+  const commitConcurrency = async () => {
+    const parsed =
+      concurrencyInput.trim() === '' ? null : parseInt(concurrencyInput, 10);
+    if (parsed !== null && (isNaN(parsed) || parsed <= 0)) {
+      toast.error(t('Concurrency limit must be a positive number'));
+      setConcurrencyInput(
+        row.maxConcurrentJobs != null ? String(row.maxConcurrentJobs) : '',
+      );
+      return;
+    }
+    const result = await saveWorkspaceUpdate({
+      workspaceId: row.id!,
+      update: { maxConcurrentJobs: parsed },
+    });
+    if (result.success) {
+      row.update({ maxConcurrentJobs: parsed });
+      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+      toast.success(t('Saved'));
+    } else {
+      toast.error(t('Failed to save'));
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.currentTarget.blur();
+    }
+  };
+
+  const handleChange = (value: string) => {
+    const digits = value.replace(/[^0-9]/g, '');
+    if (digits === '') {
+      setConcurrencyInput('');
+      return;
+    }
+    const parsed = parseInt(digits, 10);
+    const capped = poolSlots > 0 ? Math.min(parsed, poolSlots) : parsed;
+    setConcurrencyInput(String(capped));
+  };
+
+  return (
+    <Input
+      type="text"
+      inputMode="numeric"
+      max={poolSlots > 0 ? poolSlots : undefined}
+      className="w-[150px]"
+      placeholder={concurrencyPlaceholder}
+      value={concurrencyInput}
+      onChange={(e) => handleChange(e.target.value)}
+      onBlur={commitConcurrency}
+      onKeyDown={handleKeyDown}
+    />
+  );
+}
+
+async function saveWorkspaceUpdate({
+  workspaceId,
+  update,
+}: {
+  workspaceId: string;
+  update: UpdateWorkspaceTenantRequest;
+}): Promise<{ success: boolean }> {
+  try {
+    await api.post<WorkspaceWithLimits>(
+      `/v1/workspaces/${workspaceId}`,
+      update,
+    );
+    return { success: true };
+  } catch {
+    return { success: false };
+  }
+}

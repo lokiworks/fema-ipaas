@@ -1,5 +1,5 @@
 import { isNil } from '@fema/core-utils'
-import { ApplicationEventName, CompleteSignUpRequest, PrincipalType, RequestEmailCodeRequest, SignInRequest, SignUpRequest, SwitchPlatformRequest, TelemetryEventName, UserIdentityProvider, VerifyEmailCodeRequest } from '@fema/shared'
+import { ApplicationEventName, CompleteSignUpRequest, PrincipalType, RequestEmailCodeRequest, SignInRequest, SignUpRequest, SwitchTenantRequest, TelemetryEventName, UserIdentityProvider, VerifyEmailCodeRequest } from '@fema/shared'
 import { FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
@@ -11,7 +11,7 @@ import { rejectedPromiseHandler } from '../helper/promise-handler'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
 import { telemetry } from '../helper/telemetry.utils'
-import { platformUtils } from '../platform/platform.utils'
+import { tenantUtils } from '../tenant/tenant.utils'
 import { userService } from '../user/user-service'
 import { authenticationService } from './authentication.service'
 import { turnstile } from './lib/turnstile'
@@ -22,7 +22,7 @@ export const authenticationController: FastifyPluginAsyncZod = async (
 ) => {
     app.post('/sign-up', SignUpRequestOptions, async (request) => {
 
-        const platformId = await platformUtils.getPlatformIdForRequest(request)
+        const tenantId = await tenantUtils.getTenantIdForRequest(request)
         await turnstile.assertSolved({
             token: request.body.captchaToken,
             remoteIp: clientIp(request),
@@ -31,12 +31,12 @@ export const authenticationController: FastifyPluginAsyncZod = async (
         const signUpResponse = await authenticationService(request.log).signUp({
             ...request.body,
             provider: UserIdentityProvider.EMAIL,
-            platformId: platformId ?? null,
+            tenantId: tenantId ?? null,
         })
 
-        if (!isNil(signUpResponse.platformId)) {
+        if (!isNil(signUpResponse.tenantId)) {
             applicationEvents(request.log).sendUserEvent({
-                platformId: signUpResponse.platformId,
+                tenantId: signUpResponse.tenantId,
                 userId: signUpResponse.id,
                 workspaceId: signUpResponse.workspaceId ?? undefined,
                 ip: networkUtils.extractClientRealIp(request, system.get(AppSystemProp.CLIENT_REAL_IP_HEADER)),
@@ -53,16 +53,16 @@ export const authenticationController: FastifyPluginAsyncZod = async (
 
     app.post('/sign-in', SignInRequestOptions, async (request) => {
 
-        const predefinedPlatformId = await platformUtils.getPlatformIdForRequest(request)
+        const predefinedTenantId = await tenantUtils.getTenantIdForRequest(request)
         const response = await authenticationService(request.log).signInWithPassword({
             email: request.body.email,
             password: request.body.password,
-            predefinedPlatformId,
+            predefinedTenantId,
         })
 
-        if (!isNil(response.platformId)) {
+        if (!isNil(response.tenantId)) {
             applicationEvents(request.log).sendUserEvent({
-                platformId: response.platformId,
+                tenantId: response.tenantId,
                 userId: response.id,
                 workspaceId: response.workspaceId ?? undefined,
                 ip: networkUtils.extractClientRealIp(request, system.get(AppSystemProp.CLIENT_REAL_IP_HEADER)),
@@ -74,19 +74,19 @@ export const authenticationController: FastifyPluginAsyncZod = async (
                 name: TelemetryEventName.SIGNED_IN,
                 payload: {
                     userId: response.id,
-                    platformId: response.platformId,
+                    tenantId: response.tenantId,
                 },
-            }, { platform: response.platformId }), request.log)
+            }, { tenant: response.tenantId }), request.log)
         }
 
         return response
     })
 
     app.post('/otp/request', RequestEmailCodeRequestOptions, async (request, reply) => {
-        const platformId = await platformUtils.getPlatformIdForRequest(request)
+        const tenantId = await tenantUtils.getTenantIdForRequest(request)
         await passwordlessAuthService(request.log).requestCode({
             email: request.body.email,
-            platformId: platformId ?? null,
+            tenantId: tenantId ?? null,
             captchaToken: request.body.captchaToken,
             remoteIp: clientIp(request),
         })
@@ -94,16 +94,16 @@ export const authenticationController: FastifyPluginAsyncZod = async (
     })
 
     app.post('/otp/verify', VerifyEmailCodeRequestOptions, async (request) => {
-        const platformId = await platformUtils.getPlatformIdForRequest(request)
+        const tenantId = await tenantUtils.getTenantIdForRequest(request)
         const response = await passwordlessAuthService(request.log).verifyCode({
             email: request.body.email,
             code: request.body.code,
-            platformId: platformId ?? null,
+            tenantId: tenantId ?? null,
         })
 
-        if (!isNil(response.platformId)) {
+        if (!isNil(response.tenantId)) {
             applicationEvents(request.log).sendUserEvent({
-                platformId: response.platformId,
+                tenantId: response.tenantId,
                 userId: response.id,
                 workspaceId: response.workspaceId ?? undefined,
                 ip: networkUtils.extractClientRealIp(request, system.get(AppSystemProp.CLIENT_REAL_IP_HEADER)),
@@ -115,9 +115,9 @@ export const authenticationController: FastifyPluginAsyncZod = async (
                 name: TelemetryEventName.SIGNED_IN,
                 payload: {
                     userId: response.id,
-                    platformId: response.platformId,
+                    tenantId: response.tenantId,
                 },
-            }, { platform: response.platformId }), request.log)
+            }, { tenant: response.tenantId }), request.log)
         }
 
         return response
@@ -129,9 +129,9 @@ export const authenticationController: FastifyPluginAsyncZod = async (
             fullName: request.body.fullName,
         })
 
-        if (signedUp && !isNil(response.platformId)) {
+        if (signedUp && !isNil(response.tenantId)) {
             applicationEvents(request.log).sendUserEvent({
-                platformId: response.platformId,
+                tenantId: response.tenantId,
                 userId: response.id,
                 workspaceId: response.workspaceId ?? undefined,
                 ip: networkUtils.extractClientRealIp(request, system.get(AppSystemProp.CLIENT_REAL_IP_HEADER)),
@@ -144,11 +144,11 @@ export const authenticationController: FastifyPluginAsyncZod = async (
         return response
     })
 
-    app.post('/switch-platform', SwitchPlatformRequestOptions, async (request) => {
+    app.post('/switch-tenant', SwitchTenantRequestOptions, async (request) => {
         const user = await userService(request.log).getOneOrFail({ id: request.principal.id })
-        return authenticationService(request.log).switchPlatform({
+        return authenticationService(request.log).switchTenant({
             identityId: user.identityId,
-            platformId: request.body.platformId,
+            tenantId: request.body.tenantId,
         })
     })
 
@@ -156,13 +156,13 @@ export const authenticationController: FastifyPluginAsyncZod = async (
 
 
 
-const SwitchPlatformRequestOptions = {
+const SwitchTenantRequestOptions = {
     config: {
-        security: securityAccess.publicPlatform([PrincipalType.USER]),
+        security: securityAccess.publicTenant([PrincipalType.USER]),
         rateLimit: authnRateLimit,
     },
     schema: {
-        body: SwitchPlatformRequest,
+        body: SwitchTenantRequest,
     },
 }
 

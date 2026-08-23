@@ -1,5 +1,5 @@
-import { assertNotNullOrUndefined, ErrorCode, isNil, PlatformError, SeekPage } from '@fema/core-utils'
-import { CreatePlatformWorkspaceRequest, ListWorkspaceRequestForPlatformQueryParams, PrincipalType, SERVICE_KEY_SECURITY_OPENAPI, UpdateWorkspacePlatformRequest, WorkspaceType, WorkspaceWithLimits } from '@fema/shared'
+import { ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil, SeekPage } from '@fema/core-utils'
+import { CreateTenantWorkspaceRequest, ListWorkspaceRequestForTenantQueryParams, PrincipalType, SERVICE_KEY_SECURITY_OPENAPI, UpdateWorkspaceTenantRequest, WorkspaceType, WorkspaceWithLimits } from '@fema/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
@@ -10,10 +10,10 @@ import { workspaceSideEffects } from './workspace-side-effects'
 
 export const workspaceController: FastifyPluginAsyncZod = async (app) => {
     app.get('/', ListWorkspacesRequest, async (request) => {
-        const platformId = request.principal.platform.id
+        const tenantId = request.principal.tenant.id
         const user = await userService(request.log).getOneOrFail({ id: request.principal.id })
         const workspaces = await workspaceService(request.log).getAllForUser({
-            platformId,
+            tenantId,
             userId: request.principal.id,
             isPrivileged: userService(request.log).isUserPrivileged(user),
             ...(isNil(request.query.displayName) ? {} : { displayName: request.query.displayName }),
@@ -30,12 +30,12 @@ export const workspaceController: FastifyPluginAsyncZod = async (app) => {
     })
 
     app.post('/', CreateWorkspaceRequest, async (request, reply) => {
-        const platformId = request.principal.platform.id
+        const tenantId = request.principal.tenant.id
         const workspace = await workspaceService(request.log).create({
             ownerId: request.principal.id,
             displayName: request.body.displayName,
             type: WorkspaceType.TEAM,
-            platformId,
+            tenantId,
             ...(isNil(request.body.externalId) ? {} : { externalId: request.body.externalId }),
             ...(isNil(request.body.metadata) ? {} : { metadata: request.body.metadata }),
             ...(isNil(request.body.maxConcurrentJobs) ? {} : { maxConcurrentJobs: request.body.maxConcurrentJobs }),
@@ -44,9 +44,9 @@ export const workspaceController: FastifyPluginAsyncZod = async (app) => {
     })
 
     app.post('/:id', UpdateWorkspaceRequest, async (request) => {
-        const workspace = await assertWorkspaceBelongsToPlatform({
+        const workspace = await assertWorkspaceBelongsToTenant({
             workspaceId: request.params.id,
-            platformId: request.principal.platform.id,
+            tenantId: request.principal.tenant.id,
             log: request.log,
         })
         const updated = await workspaceService(request.log).update(workspace.id, {
@@ -57,9 +57,9 @@ export const workspaceController: FastifyPluginAsyncZod = async (app) => {
     })
 
     app.delete('/:id', DeleteWorkspaceRequest, async (request, reply) => {
-        const workspace = await assertWorkspaceBelongsToPlatform({
+        const workspace = await assertWorkspaceBelongsToTenant({
             workspaceId: request.params.id,
-            platformId: request.principal.platform.id,
+            tenantId: request.principal.tenant.id,
             log: request.log,
         })
         await workspaceSideEffects(request.log).assertDeletable(workspace.id)
@@ -69,11 +69,11 @@ export const workspaceController: FastifyPluginAsyncZod = async (app) => {
     })
 }
 
-async function assertWorkspaceBelongsToPlatform({ workspaceId, platformId, log }: AssertParams) {
+async function assertWorkspaceBelongsToTenant({ workspaceId, tenantId, log }: AssertParams) {
     const workspace = await workspaceService(log).getOneOrThrow(workspaceId)
-    assertNotNullOrUndefined(workspace.platformId, 'platformId')
-    if (workspace.platformId !== platformId) {
-        throw new PlatformError({
+    assertNotNullOrUndefined(workspace.tenantId, 'tenantId')
+    if (workspace.tenantId !== tenantId) {
+        throw new ApplicationError({
             code: ErrorCode.ENTITY_NOT_FOUND,
             params: { entityId: workspaceId, entityType: 'workspace' },
         })
@@ -83,13 +83,13 @@ async function assertWorkspaceBelongsToPlatform({ workspaceId, platformId, log }
 
 const ListWorkspacesRequest = {
     config: {
-        security: securityAccess.publicPlatform([PrincipalType.USER, PrincipalType.SERVICE]),
+        security: securityAccess.publicTenant([PrincipalType.USER, PrincipalType.SERVICE]),
     },
     schema: {
         tags: ['workspaces'],
-        description: 'List the workspaces the caller can access inside the current platform.',
+        description: 'List the workspaces the caller can access inside the current tenant.',
         security: [SERVICE_KEY_SECURITY_OPENAPI],
-        querystring: ListWorkspaceRequestForPlatformQueryParams,
+        querystring: ListWorkspaceRequestForTenantQueryParams,
         response: {
             [StatusCodes.OK]: SeekPage(WorkspaceWithLimits),
         },
@@ -98,13 +98,13 @@ const ListWorkspacesRequest = {
 
 const CreateWorkspaceRequest = {
     config: {
-        security: securityAccess.platformAdminOnly([PrincipalType.USER, PrincipalType.SERVICE]),
+        security: securityAccess.tenantAdminOnly([PrincipalType.USER, PrincipalType.SERVICE]),
     },
     schema: {
         tags: ['workspaces'],
-        description: 'Create a workspace inside the current platform.',
+        description: 'Create a workspace inside the current tenant.',
         security: [SERVICE_KEY_SECURITY_OPENAPI],
-        body: CreatePlatformWorkspaceRequest,
+        body: CreateTenantWorkspaceRequest,
         response: {
             [StatusCodes.CREATED]: WorkspaceWithLimits,
         },
@@ -113,14 +113,14 @@ const CreateWorkspaceRequest = {
 
 const UpdateWorkspaceRequest = {
     config: {
-        security: securityAccess.platformAdminOnly([PrincipalType.USER, PrincipalType.SERVICE]),
+        security: securityAccess.tenantAdminOnly([PrincipalType.USER, PrincipalType.SERVICE]),
     },
     schema: {
         tags: ['workspaces'],
-        description: 'Update a workspace inside the current platform.',
+        description: 'Update a workspace inside the current tenant.',
         security: [SERVICE_KEY_SECURITY_OPENAPI],
         params: z.object({ id: z.string() }),
-        body: UpdateWorkspacePlatformRequest,
+        body: UpdateWorkspaceTenantRequest,
         response: {
             [StatusCodes.OK]: WorkspaceWithLimits,
         },
@@ -129,7 +129,7 @@ const UpdateWorkspaceRequest = {
 
 const DeleteWorkspaceRequest = {
     config: {
-        security: securityAccess.platformAdminOnly([PrincipalType.USER, PrincipalType.SERVICE]),
+        security: securityAccess.tenantAdminOnly([PrincipalType.USER, PrincipalType.SERVICE]),
     },
     schema: {
         tags: ['workspaces'],
@@ -144,6 +144,6 @@ const DeleteWorkspaceRequest = {
 
 type AssertParams = {
     workspaceId: string
-    platformId: string
+    tenantId: string
     log: Parameters<typeof workspaceService>[0]
 }

@@ -104,7 +104,7 @@ type GetAuthPropertyForValue = {
 const authConnectionTypeToPropertyType: Record<ConnectionType, PropertyType | undefined> = {
   [ConnectionType.OAUTH2]: PropertyType.OAUTH2,
   [ConnectionType.CLOUD_OAUTH2]: PropertyType.OAUTH2,
-  [ConnectionType.PLATFORM_OAUTH2]: PropertyType.OAUTH2,
+  [ConnectionType.TENANT_OAUTH2]: PropertyType.OAUTH2,
   [ConnectionType.BASIC_AUTH]: PropertyType.BASIC_AUTH,
   [ConnectionType.CUSTOM_AUTH]: PropertyType.CUSTOM_AUTH,
   [ConnectionType.OIDC]: PropertyType.OIDC,

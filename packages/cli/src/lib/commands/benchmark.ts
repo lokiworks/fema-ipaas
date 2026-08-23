@@ -9,10 +9,10 @@ const BENCHMARK_DOC = 'Load-test a deployment\'s sync-webhook path, auto-discove
 
 export const benchmarkCommand = new Command('benchmark')
     .description(BENCHMARK_DOC)
-    .option('--url <url>', 'FEMA Integration Platform base URL (dev env API port)', 'http://localhost:3000')
+    .option('--url <url>', 'FEMA Integration Tenant base URL (dev env API port)', 'http://localhost:3000')
     .option('--requests <n>', 'Total requests to fire (default: 40 x concurrency)')
     .option('--concurrency <c>', 'Concurrent connections (default: auto = sum of worker execution slots)')
-    .option('--api-key <key>', 'Platform API key (Bearer). Or set FEMA_API_KEY.')
+    .option('--api-key <key>', 'Tenant API key (Bearer). Or set FEMA_API_KEY.')
     .option('--body <json>', 'JSON request body sent to the webhook', '{"test":true}')
     .option('--json', 'Emit machine-readable JSON output')
     .action(async (opts) => {
@@ -128,7 +128,7 @@ function resolvePhases({ concurrency, slots }: ResolvePhasesParams): Phase[] {
 
 function validateSetup(machines: WorkerMachineWithStatus[]): SetupCheck[] {
     if (machines.length === 0) {
-        return [{ dimension: 'workers', status: 'WARN', detail: 'No connected workers reported (need a platform-admin token, or no workers online).' }];
+        return [{ dimension: 'workers', status: 'WARN', detail: 'No connected workers reported (need a tenant-admin token, or no workers online).' }];
     }
     const props = machines.map((m) => m.information.workerProps);
     const modes = unique(props.map((p) => p.EXECUTION_MODE ?? 'unset'));
@@ -206,7 +206,7 @@ function aggregateTimeline(runs: ExecutionLike[]): TimelineAggregate {
 async function discoverSetup(client: AxiosInstance): Promise<SetupDiscovery> {
     const res = await client.get('/api/v1/worker-machines');
     if (res.status !== 200 || !Array.isArray(res.data)) {
-        return { available: false, reason: `worker-machines returned HTTP ${res.status} (platform-admin token required)`, machines: [], executionSlots: undefined, checks: validateSetup([]) };
+        return { available: false, reason: `worker-machines returned HTTP ${res.status} (tenant-admin token required)`, machines: [], executionSlots: undefined, checks: validateSetup([]) };
     }
     const machines: WorkerMachineWithStatus[] = res.data;
     const usable = machines.filter((m) => m.status === 'ONLINE' && typeof m.information?.workerProps?.WORKER_CONCURRENCY === 'string');
@@ -255,7 +255,7 @@ async function collectRuns({ client, workspaceId, workflowId, since }: CollectRu
 async function collectHealth(client: AxiosInstance): Promise<HealthInfo> {
     const res = await client.get('/api/v1/health/system');
     if (res.status !== 200 || typeof res.data !== 'object') {
-        return { available: false, reason: `health/system returned HTTP ${res.status} (platform-admin token required)` };
+        return { available: false, reason: `health/system returned HTTP ${res.status} (tenant-admin token required)` };
     }
     return { available: true, ...res.data };
 }
@@ -263,7 +263,7 @@ async function collectHealth(client: AxiosInstance): Promise<HealthInfo> {
 async function collectDiagnostics(client: AxiosInstance): Promise<DiagnosticsInfo> {
     const res = await client.get('/api/v1/health/diagnostics');
     if (res.status !== 200 || typeof res.data !== 'object') {
-        return { available: false, reason: `health/diagnostics returned HTTP ${res.status} (needs platform-admin; server may predate this endpoint)` };
+        return { available: false, reason: `health/diagnostics returned HTTP ${res.status} (needs tenant-admin; server may predate this endpoint)` };
     }
     return { available: true, ...res.data };
 }
@@ -347,7 +347,7 @@ function buildMeta({ url }: { url: string }): RunMeta {
         target: url,
         cli: {
             node: process.version,
-            platform: `${os.platform()} ${os.arch()}`,
+            tenant: `${os.platform()} ${os.arch()}`,
             cpus: os.cpus().length,
             note: 'The CLI runs from a different host/region than the API and workers; all client-side latency below includes CLI→server network. Authoritative per-run latency is server-measured (Execution.timeline).',
         },
@@ -355,7 +355,7 @@ function buildMeta({ url }: { url: string }): RunMeta {
 }
 
 // Workflows the benchmark does NOT own that ran inside its window. They share the same execution slots,
-// so they are the answer to "why is QUEUE high on a deployment that looks idle". Scans every platform
+// so they are the answer to "why is QUEUE high on a deployment that looks idle". Scans every tenant
 // workspace except the benchmark's throwaway one.
 async function collectOutsideWorkflows({ client, benchmarkWorkspaceId, since }: CollectOutsideWorkflowsParams): Promise<OutsideWorkflowsReport> {
     const workspacesRes = await client.get('/api/v1/workspaces', { params: { limit: WORKSPACE_PAGE_SIZE } });
@@ -452,7 +452,7 @@ async function waitForReady(client: AxiosInstance): Promise<void> {
 function authenticate({ config }: { config: BenchmarkConfig }): AuthResult {
     const apiKey = config.apiKey ?? process.env.FEMA_API_KEY;
     if (!apiKey) {
-        throw new Error('Provide a platform API key via --api-key or the FEMA_API_KEY env var.');
+        throw new Error('Provide a tenant API key via --api-key or the FEMA_API_KEY env var.');
     }
     return { token: apiKey };
 }
@@ -467,7 +467,7 @@ async function provisionWorkspace({ client }: { client: AxiosInstance }): Promis
         maxConcurrentJobs: EPHEMERAL_WORKSPACE_MAX_CONCURRENCY,
     });
     if (res.status >= 400 || typeof res.data?.id !== 'string') {
-        throw new Error(`Could not create a benchmark workspace (HTTP ${res.status}: ${JSON.stringify(res.data)}). The API key must be a platform admin key, and the plan must allow team workspaces.`);
+        throw new Error(`Could not create a benchmark workspace (HTTP ${res.status}: ${JSON.stringify(res.data)}). The API key must be a tenant admin key, and the plan must allow team workspaces.`);
     }
     return { id: res.data.id };
 }
@@ -615,7 +615,7 @@ function toSummary({ result, workflowId, connections }: ToSummaryParams): Summar
 function renderReport(report: BenchmarkReport): void {
     console.log(chalk.bold(`\nBenchmark report (workflow ${report.workflowId})`));
     console.log(chalk.gray(`  ran ${report.meta.ranAt} against ${report.meta.target}`));
-    console.log(chalk.gray(`  CLI host: node ${report.meta.cli.node}, ${report.meta.cli.platform}, ${report.meta.cli.cpus} cpu — different region than API/workers`));
+    console.log(chalk.gray(`  CLI host: node ${report.meta.cli.node}, ${report.meta.cli.tenant}, ${report.meta.cli.cpus} cpu — different region than API/workers`));
 
     console.log(chalk.bold('\nVersion & health'));
     if (report.health.available) {
@@ -683,9 +683,9 @@ function renderReport(report: BenchmarkReport): void {
     console.log(`  throwaway workspace (auto-created, deleted after) : ${report.workspace.id}`);
     if (report.workspace.limits.available === true) {
         const cap = report.workspace.limits.maxConcurrentJobs;
-        const capLabel = cap === null ? 'unset (platform default)' : `${cap} concurrent jobs`;
+        const capLabel = cap === null ? 'unset (tenant default)' : `${cap} concurrent jobs`;
         // The benchmark workspace is uncapped on purpose, so these numbers can't throttle THIS run — they are
-        // reported so you can see whether the platform rate limiter would throttle your real workspaces.
+        // reported so you can see whether the tenant rate limiter would throttle your real workspaces.
         console.log(`  benchmark workspace cap : ${capLabel} (not a bottleneck here)`);
     } else {
         console.log(chalk.yellow(`  workspace limits skipped: ${report.workspace.limits.reason}`));
@@ -1056,7 +1056,7 @@ type HealthInfo = {
 type RunMeta = {
     ranAt: string;
     target: string;
-    cli: { node: string; platform: string; cpus: number; note: string };
+    cli: { node: string; tenant: string; cpus: number; note: string };
 };
 
 type InfraCheckInfo = { ok: boolean; latencyMs: number | null; detail?: string };

@@ -41,13 +41,13 @@ export async function convertToSecurityAccessRequest(request: FastifyRequest): P
                     workspaceId: await getWorkspaceIdFromRequest(request),
                 },
             }
-        case AuthorizationType.PLATFORM:
+        case AuthorizationType.TENANT:
             return {
                 kind: RouteKind.AUTHENTICATED,
                 authorization: {
                     adminOnly: security.authorization.adminOnly,
                     nonEmbedUsersOnly: security.authorization.nonEmbedUsersOnly,
-                    type: AuthorizationType.PLATFORM,
+                    type: AuthorizationType.TENANT,
                     allowedPrincipals: security.authorization.allowedPrincipals,
                 },
             }
@@ -81,7 +81,7 @@ export async function getWorkspaceIdFromRequest(request: FastifyRequest): Promis
     if (security.kind === RouteKind.PUBLIC) {
         return undefined
     }
-    if (security.authorization.type !== AuthorizationType.WORKSPACE && security.authorization.type !== AuthorizationType.PLATFORM) {
+    if (security.authorization.type !== AuthorizationType.WORKSPACE && security.authorization.type !== AuthorizationType.TENANT) {
         return undefined
     }
     const workspaceResource = security.authorization.workspaceResource

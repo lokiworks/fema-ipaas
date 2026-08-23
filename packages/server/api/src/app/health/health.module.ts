@@ -1,4 +1,4 @@
-import { GetDiagnosticsResponse, GetSystemHealthChecksResponse, PlatformMetricsHealthHistory, PlatformMetricsLive, PlatformMetricsReport, PlatformMetricsReportRequest, PrincipalType } from '@fema/shared'
+import { GetDiagnosticsResponse, GetSystemHealthChecksResponse, PrincipalType, TenantMetricsHealthHistory, TenantMetricsLive, TenantMetricsReport, TenantMetricsReportRequest } from '@fema/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { securityAccess } from '../core/security/authorization/fastify-security'
@@ -27,34 +27,34 @@ const healthController: FastifyPluginAsyncZod = async (app) => {
         },
     ),
     app.get('/system', GetSystemHealthChecks, async (request, reply) => {
-        await reply.status(StatusCodes.OK).send(await healthStatusService(app.log).getSystemHealthChecks(request.principal.platform.id))
+        await reply.status(StatusCodes.OK).send(await healthStatusService(app.log).getSystemHealthChecks(request.principal.tenant.id))
     })
 
     app.get('/run-metrics', GetRunMetricsRequest, async (request) => {
-        const { platform } = request.principal
+        const { tenant } = request.principal
         const { createdAfter, createdBefore } = request.query
-        return healthMetricsService(request.log).getRunMetrics(platform.id, { createdAfter, createdBefore })
+        return healthMetricsService(request.log).getRunMetrics(tenant.id, { createdAfter, createdBefore })
     })
 
     app.get('/queue-metrics', GetQueueMetricsRequest, async (request) => {
-        const { platform } = request.principal
+        const { tenant } = request.principal
         const { createdAfter, createdBefore } = request.query
-        return healthMetricsService(request.log).getQueueMetrics(platform.id, { createdAfter, createdBefore })
+        return healthMetricsService(request.log).getQueueMetrics(tenant.id, { createdAfter, createdBefore })
     })
 
     app.get('/history', GetHealthHistoryRequest, async (request) => {
-        const { platform } = request.principal
-        return healthMetricsService(request.log).getHealthHistory(platform.id)
+        const { tenant } = request.principal
+        return healthMetricsService(request.log).getHealthHistory(tenant.id)
     })
 
     app.get('/diagnostics', GetDiagnosticsRequest, async (request) => {
-        return healthStatusService(app.log).getDiagnostics(request.principal.platform.id)
+        return healthStatusService(app.log).getDiagnostics(request.principal.tenant.id)
     })
 }
 
 const GetSystemHealthChecks = {
     config: {
-        security: securityAccess.platformAdminOnly([PrincipalType.USER, PrincipalType.SERVICE]),
+        security: securityAccess.tenantAdminOnly([PrincipalType.USER, PrincipalType.SERVICE]),
     },
     response: {
         200: {
@@ -66,45 +66,45 @@ const GetSystemHealthChecks = {
 
 const GetRunMetricsRequest = {
     config: {
-        security: securityAccess.platformAdminOnly([PrincipalType.USER]),
+        security: securityAccess.tenantAdminOnly([PrincipalType.USER]),
     },
     schema: {
         tags: ['health'],
-        querystring: PlatformMetricsReportRequest,
+        querystring: TenantMetricsReportRequest,
         response: {
-            200: PlatformMetricsReport,
+            200: TenantMetricsReport,
         },
     },
 }
 
 const GetQueueMetricsRequest = {
     config: {
-        security: securityAccess.platformAdminOnly([PrincipalType.USER]),
+        security: securityAccess.tenantAdminOnly([PrincipalType.USER]),
     },
     schema: {
         tags: ['health'],
-        querystring: PlatformMetricsReportRequest,
+        querystring: TenantMetricsReportRequest,
         response: {
-            200: PlatformMetricsLive,
+            200: TenantMetricsLive,
         },
     },
 }
 
 const GetHealthHistoryRequest = {
     config: {
-        security: securityAccess.platformAdminOnly([PrincipalType.USER]),
+        security: securityAccess.tenantAdminOnly([PrincipalType.USER]),
     },
     schema: {
         tags: ['health'],
         response: {
-            200: PlatformMetricsHealthHistory,
+            200: TenantMetricsHealthHistory,
         },
     },
 }
 
 const GetDiagnosticsRequest = {
     config: {
-        security: securityAccess.platformAdminOnly([PrincipalType.USER, PrincipalType.SERVICE]),
+        security: securityAccess.tenantAdminOnly([PrincipalType.USER, PrincipalType.SERVICE]),
     },
     schema: {
         tags: ['health'],

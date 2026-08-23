@@ -1,8 +1,8 @@
 import { Permission } from '@fema/core-utils';
 import {
   ConnectionWithoutSensitiveData,
-  UpdateWorkspacePlatformRequest,
-  PlatformRole,
+  UpdateWorkspaceTenantRequest,
+  TenantRole,
 } from '@fema/shared';
 import { useQueryClient } from '@tanstack/react-query';
 import { t } from 'i18next';
@@ -32,7 +32,7 @@ import { internalErrorToast } from '@/components/ui/sonner';
 import { globalConnectionsQueries } from '@/features/connections/hooks/global-connections-hooks';
 import { workspaceCollectionUtils } from '@/features/workspaces/stores/workspace-collection';
 import { useAuthorization } from '@/hooks/authorization-hooks';
-import { platformHooks } from '@/hooks/platform-hooks';
+import { tenantHooks } from '@/hooks/tenant-hooks';
 import { userHooks } from '@/hooks/user-hooks';
 
 interface EditWorkspaceDialogProps {
@@ -51,8 +51,8 @@ export function EditWorkspaceDialog({
   workspaceId,
   initialValues,
 }: EditWorkspaceDialogProps) {
-  const { platform } = platformHooks.useCurrentPlatform();
-  const globalConnectionsEnabled = platform.plan.globalConnectionsEnabled;
+  const { tenant } = tenantHooks.useCurrentTenant();
+  const globalConnectionsEnabled = tenant.plan.globalConnectionsEnabled;
 
   const { data: globalConnectionsPage, isLoading: isLoadingConnections } =
     globalConnectionsQueries.useGlobalConnections({
@@ -101,8 +101,8 @@ const EditWorkspaceForm = ({
   globalConnectionsEnabled: boolean;
 }) => {
   const { checkAccess } = useAuthorization();
-  const { platform } = platformHooks.useCurrentPlatform();
-  const platformRole = userHooks.getCurrentUserPlatformRole();
+  const { tenant } = tenantHooks.useCurrentTenant();
+  const tenantRole = userHooks.getCurrentUserTenantRole();
   const queryClient = useQueryClient();
 
   const { mutate, isPending } = workspaceCollectionUtils.useUpdateWorkspace(
@@ -121,7 +121,7 @@ const EditWorkspaceForm = ({
     },
   );
 
-  const form = useForm<UpdateWorkspacePlatformRequest>({
+  const form = useForm<UpdateWorkspaceTenantRequest>({
     defaultValues: {
       displayName: initialValues?.workspaceName,
       externalId: initialValues?.externalId,
@@ -160,27 +160,26 @@ const EditWorkspaceForm = ({
           )}
         />
 
-        {platform.plan.embeddingEnabled &&
-          platformRole === PlatformRole.ADMIN && (
-            <FormField
-              name="externalId"
-              render={({ field }) => (
-                <FormItem>
-                  <Label htmlFor="externalId">{t('External ID')}</Label>
-                  <FormDescription>
-                    {t('Used to identify the workspace based on your SaaS ID')}
-                  </FormDescription>
-                  <Input
-                    {...field}
-                    id="externalId"
-                    placeholder={t('org-3412321')}
-                    className="rounded-sm"
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
+        {tenant.plan.embeddingEnabled && tenantRole === TenantRole.ADMIN && (
+          <FormField
+            name="externalId"
+            render={({ field }) => (
+              <FormItem>
+                <Label htmlFor="externalId">{t('External ID')}</Label>
+                <FormDescription>
+                  {t('Used to identify the workspace based on your SaaS ID')}
+                </FormDescription>
+                <Input
+                  {...field}
+                  id="externalId"
+                  placeholder={t('org-3412321')}
+                  className="rounded-sm"
+                />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
         <DialogFooter className="justify-end mt-6">
           <Button type="button" variant="outline" onClick={onClose}>

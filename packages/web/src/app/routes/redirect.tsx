@@ -40,7 +40,7 @@ const RedirectPage: React.FC = React.memo(() => {
           });
           authenticationSession.saveResponse(data, false);
           if (isNil(data.workspaceId)) {
-            navigate('/create-platform');
+            navigate('/create-tenant');
             return;
           }
           navigate(from);

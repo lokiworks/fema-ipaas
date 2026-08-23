@@ -5,9 +5,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 // --- mocks (must be before the import under test) ---
 
-const { mockSystemGet, mockIsCanaryPlatform } = vi.hoisted(() => ({
+const { mockSystemGet, mockIsCanaryTenant } = vi.hoisted(() => ({
     mockSystemGet: vi.fn(),
-    mockIsCanaryPlatform: vi.fn(),
+    mockIsCanaryTenant: vi.fn(),
 }))
 
 vi.mock('../../../../../src/app/helper/system/system', () => ({
@@ -16,9 +16,9 @@ vi.mock('../../../../../src/app/helper/system/system', () => ({
     },
 }))
 
-vi.mock('../../../../../src/app/ee/platform/platform-plan/worker-group.service', () => ({
+vi.mock('../../../../../src/app/ee/tenant/tenant-plan/worker-group.service', () => ({
     workerGroupService: () => ({
-        isCanaryPlatform: mockIsCanaryPlatform,
+        isCanaryTenant: mockIsCanaryTenant,
     }),
 }))
 
@@ -104,7 +104,7 @@ function makeReply(opts: { sent?: boolean, proxyError?: Error } = {}): FastifyRe
 describe('canaryRoutingMiddleware', () => {
     beforeEach(() => {
         vi.clearAllMocks()
-        mockIsCanaryPlatform.mockResolvedValue(false)
+        mockIsCanaryTenant.mockResolvedValue(false)
     })
 
     it('does nothing when CANARY_APP_URL is not set', async () => {
@@ -127,9 +127,9 @@ describe('canaryRoutingMiddleware', () => {
         expect(reply.from).not.toHaveBeenCalled()
     })
 
-    it('does nothing when platform ID cannot be resolved', async () => {
+    it('does nothing when tenant ID cannot be resolved', async () => {
         mockSystemGet.mockReturnValue('http://canary:3000')
-        mockIsCanaryPlatform.mockResolvedValue(true)
+        mockIsCanaryTenant.mockResolvedValue(true)
         const request = makeRequest({ params: {}, principal: undefined })
         const reply = makeReply()
 
@@ -138,11 +138,11 @@ describe('canaryRoutingMiddleware', () => {
         expect(reply.from).not.toHaveBeenCalled()
     })
 
-    it('does nothing when platform is not in canary list', async () => {
+    it('does nothing when tenant is not in canary list', async () => {
         mockSystemGet.mockReturnValue('http://canary:3000')
-        mockIsCanaryPlatform.mockResolvedValue(false)
+        mockIsCanaryTenant.mockResolvedValue(false)
         const request = makeRequest({
-            principal: { type: PrincipalType.USER, platform: { id: 'platform-abc' } } as never,
+            principal: { type: PrincipalType.USER, tenant: { id: 'tenant-abc' } } as never,
         })
         const reply = makeReply()
 
@@ -151,16 +151,16 @@ describe('canaryRoutingMiddleware', () => {
         expect(reply.from).not.toHaveBeenCalled()
     })
 
-    it('proxies request for a canary platform resolved from principal', async () => {
+    it('proxies request for a canary tenant resolved from principal', async () => {
         mockSystemGet.mockImplementation((prop: AppSystemProp) =>
             prop === AppSystemProp.CANARY_APP_URL ? 'http://canary:3000' : undefined,
         )
-        mockIsCanaryPlatform.mockResolvedValue(true)
+        mockIsCanaryTenant.mockResolvedValue(true)
 
         const request = makeRequest({
             method: 'GET',
             url: '/v1/workflows',
-            principal: { type: PrincipalType.USER, platform: { id: 'platform-abc' } } as never,
+            principal: { type: PrincipalType.USER, tenant: { id: 'tenant-abc' } } as never,
         })
         const reply = makeReply()
 
@@ -172,12 +172,12 @@ describe('canaryRoutingMiddleware', () => {
         )
     })
 
-    it('proxies request for a canary platform resolved from workflowId cache', async () => {
+    it('proxies request for a canary tenant resolved from workflowId cache', async () => {
         mockSystemGet.mockImplementation((prop: AppSystemProp) =>
             prop === AppSystemProp.CANARY_APP_URL ? 'http://canary:3000' : undefined,
         )
-        mockIsCanaryPlatform.mockResolvedValue(true)
-        mockWorkflowExecutionCacheGet.mockResolvedValue({ exists: true, platformId: 'platform-xyz' })
+        mockIsCanaryTenant.mockResolvedValue(true)
+        mockWorkflowExecutionCacheGet.mockResolvedValue({ exists: true, tenantId: 'tenant-xyz' })
 
         const request = makeRequest({
             method: 'POST',

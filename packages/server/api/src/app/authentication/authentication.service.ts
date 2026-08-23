@@ -1,11 +1,11 @@
-import { assertNotNullOrUndefined, ErrorCode, isNil, PlatformError } from '@fema/core-utils'
+import { ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil } from '@fema/core-utils'
 import { cryptoUtils } from '@fema/server-utils'
-import { ApFlagId, AuthenticationResponse, PlatformWithoutSensitiveData, User, UserIdentity, UserIdentityProvider } from '@fema/shared'
+import { ApFlagId, AuthenticationResponse, TenantWithoutSensitiveData, User, UserIdentity, UserIdentityProvider } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { flagService } from '../flags/flag.service'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
-import { platformService } from '../platform/platform.service'
+import { tenantService } from '../tenant/tenant.service'
 import { userService } from '../user/user-service'
 import { userInvitationsService } from '../user-invitations/user-invitation.service'
 import { authenticationUtils } from './authentication-utils'
@@ -17,21 +17,21 @@ export const authenticationService = (log: FastifyBaseLogger) => ({
         if (params.provider === UserIdentityProvider.EMAIL) {
             await disposableEmail.assertMaySignUp({ email: params.email, log })
         }
-        const platformId = params.platformId
+        const tenantId = params.tenantId
 
-        if (!isNil(platformId)) {
+        if (!isNil(tenantId)) {
             await authenticationUtils(log).assertEmailAuthIsEnabled({
-                platformId,
+                tenantId,
                 provider: params.provider,
             })
             await authenticationUtils(log).assertDomainIsAllowed({
                 email: params.email,
-                platformId,
+                tenantId,
             })
             if (system.get(AppSystemProp.ALLOW_OPEN_SIGN_UP) !== 'true') {
-                await authenticationUtils(log).assertUserIsInvitedToPlatformOrWorkspace({
+                await authenticationUtils(log).assertUserIsInvitedToTenantOrWorkspace({
                     email: params.email,
-                    platformId,
+                    tenantId,
                 })
             }
             const userIdentity = await userIdentityService(log).create({
@@ -40,14 +40,14 @@ export const authenticationService = (log: FastifyBaseLogger) => ({
             })
             const user = await userService(log).getOrCreateWithWorkspace({
                 identity: userIdentity,
-                platformId,
+                tenantId,
             })
             await userInvitationsService(log).provisionUserInvitation({ email: params.email })
 
-            log.info({ email: params.email, platform: { id: platformId } }, 'User signed up to existing platform')
+            log.info({ email: params.email, tenant: { id: tenantId } }, 'User signed up to existing tenant')
             return authenticationUtils(log).getWorkspaceAndToken({
                 userId: user.id,
-                platformId,
+                tenantId,
                 workspaceId: null,
             })
         }
@@ -63,62 +63,62 @@ export const authenticationService = (log: FastifyBaseLogger) => ({
         await authenticationUtils(log).saveNewsLetterSubscriber(userIdentity)
         await userInvitationsService(log).provisionUserInvitation({ email: params.email })
 
-        const preferredPlatformId = await getPreferredPlatformId(userIdentity.id, log)
-        if (!isNil(preferredPlatformId)) {
+        const preferredTenantId = await getPreferredTenantId(userIdentity.id, log)
+        if (!isNil(preferredTenantId)) {
             const user = await userService(log).getOrCreateWithWorkspace({
                 identity: userIdentity,
-                platformId: preferredPlatformId,
+                tenantId: preferredTenantId,
             })
-            log.info({ email: params.email, provider: params.provider, preferredPlatformId }, 'User signed up with invitation, returning preferred platform token')
+            log.info({ email: params.email, provider: params.provider, preferredTenantId }, 'User signed up with invitation, returning preferred tenant token')
             const authResponse =  await authenticationUtils(log).getWorkspaceAndToken({
                 userId: user.id,
-                platformId: preferredPlatformId,
+                tenantId: preferredTenantId,
                 workspaceId: null,
             })
             await authenticationUtils(log).sendTelemetry({ identity: userIdentity, user, workspaceId: authResponse.workspaceId ?? '' })
             return authResponse
         }
-        log.info({ email: params.email, provider: params.provider }, 'User signed up without platform')
+        log.info({ email: params.email, provider: params.provider }, 'User signed up without tenant')
         return authenticationUtils(log).getOnboardingResponse({ identityId: userIdentity.id })
 
     },
     async signInWithPassword(params: SignInWithPasswordParams): Promise<AuthenticationResponse> {
         const identity = await userIdentityService(log).verifyIdentityPassword(params)
-        const platformId = isNil(params.predefinedPlatformId) ? await getPreferredPlatformId(identity.id, log) : params.predefinedPlatformId
+        const tenantId = isNil(params.predefinedTenantId) ? await getPreferredTenantId(identity.id, log) : params.predefinedTenantId
 
-        if (isNil(platformId)) { // always cloud
-            log.info({ email: params.email }, 'User signed in without an active platform on cloud, returning onboarding token')
+        if (isNil(tenantId)) { // always cloud
+            log.info({ email: params.email }, 'User signed in without an active tenant on cloud, returning onboarding token')
             return authenticationUtils(log).getOnboardingResponse({ identityId: identity.id })
         }
 
         await authenticationUtils(log).assertEmailAuthIsEnabled({
-            platformId,
+            tenantId,
             provider: UserIdentityProvider.EMAIL,
         })
         await authenticationUtils(log).assertDomainIsAllowed({
             email: params.email,
-            platformId,
+            tenantId,
         })
-        const user = await userService(log).getOneByIdentityAndPlatform({
+        const user = await userService(log).getOneByIdentityAndTenant({
             identityId: identity.id,
-            platformId,
+            tenantId,
         })
         assertNotNullOrUndefined(user, 'User not found')
-        log.info({ email: params.email, platform: { id: platformId } }, 'User signed in with password')
+        log.info({ email: params.email, tenant: { id: tenantId } }, 'User signed in with password')
         return authenticationUtils(log).getWorkspaceAndToken({
             userId: user.id,
-            platformId,
+            tenantId,
             workspaceId: null,
         })
     },
-    async resolvePreferredPlatformId({ identityId }: ResolvePreferredPlatformIdParams): Promise<string | null> {
-        return getPreferredPlatformId(identityId, log)
+    async resolvePreferredTenantId({ identityId }: ResolvePreferredTenantIdParams): Promise<string | null> {
+        return getPreferredTenantId(identityId, log)
     },
     async federatedAuthn(params: FederatedAuthnParams): Promise<AuthenticationResponse> {
-        const platformId = isNil(params.predefinedPlatformId) ? await getPreferredPlatformIdForFederatedAuthn(params.email, log) : params.predefinedPlatformId
+        const tenantId = isNil(params.predefinedTenantId) ? await getPreferredTenantIdForFederatedAuthn(params.email, log) : params.predefinedTenantId
         const userIdentity = await userIdentityService(log).getIdentityByEmail(params.email)
 
-        if (isNil(platformId)) { // always cloud
+        if (isNil(tenantId)) { // always cloud
             if (!isNil(userIdentity)) {
                 return authenticationUtils(log).getOnboardingResponse({ identityId: userIdentity.id })
             }
@@ -129,7 +129,7 @@ export const authenticationService = (log: FastifyBaseLogger) => ({
                 newsLetter: params.newsLetter,
                 trackEvents: params.trackEvents,
                 provider: params.provider,
-                platformId: null,
+                tenantId: null,
                 password: await cryptoUtils.generateRandomPassword(),
                 imageUrl: params.imageUrl,
             })
@@ -138,7 +138,7 @@ export const authenticationService = (log: FastifyBaseLogger) => ({
         if (params.provider == UserIdentityProvider.SAML) {
             await authenticationUtils(log).assertEmailMatchesSsoDomain({
                 email: params.email,
-                platformId,
+                tenantId,
             })
         }
 
@@ -150,59 +150,59 @@ export const authenticationService = (log: FastifyBaseLogger) => ({
                 newsLetter: params.newsLetter,
                 trackEvents: params.trackEvents,
                 provider: params.provider,
-                platformId,
+                tenantId,
                 password: await cryptoUtils.generateRandomPassword(),
                 imageUrl: params.imageUrl,
             })
         }
         const user = await userService(log).getOrCreateWithWorkspace({
             identity: userIdentity,
-            platformId,
+            tenantId,
         })
         await userInvitationsService(log).provisionUserInvitation({ email: params.email })
         return authenticationUtils(log).getWorkspaceAndToken({
             userId: user.id,
-            platformId,
+            tenantId,
             workspaceId: null,
         })
     },
-    async switchPlatform(params: SwitchPlatformParams): Promise<AuthenticationResponse> {
-        const platforms = await platformService(log).listPlatformsForIdentityWithAtleastWorkspace({ identityId: params.identityId })
-        const platform = platforms.find((platform) => platform.id === params.platformId)
-        await assertUserCanSwitchToPlatform(platform)
+    async switchTenant(params: SwitchTenantParams): Promise<AuthenticationResponse> {
+        const tenants = await tenantService(log).listTenantsForIdentityWithAtleastWorkspace({ identityId: params.identityId })
+        const tenant = tenants.find((tenant) => tenant.id === params.tenantId)
+        await assertUserCanSwitchToTenant(tenant)
 
-        assertNotNullOrUndefined(platform, 'Platform not found')
-        const user = await getUserForPlatform(params.identityId, platform, log)
-        log.info({ user: { id: user.id }, platform: { id: platform.id } }, 'User switched platform')
+        assertNotNullOrUndefined(tenant, 'Tenant not found')
+        const user = await getUserForTenant(params.identityId, tenant, log)
+        log.info({ user: { id: user.id }, tenant: { id: tenant.id } }, 'User switched tenant')
         return authenticationUtils(log).getWorkspaceAndToken({
             userId: user.id,
-            platformId: platform.id,
+            tenantId: tenant.id,
             workspaceId: null,
         })
     },
 })
 
-async function assertUserCanSwitchToPlatform(platform: PlatformWithoutSensitiveData | undefined): Promise<void> {
-    if (isNil(platform)) {
-        throw new PlatformError({
+async function assertUserCanSwitchToTenant(tenant: TenantWithoutSensitiveData | undefined): Promise<void> {
+    if (isNil(tenant)) {
+        throw new ApplicationError({
             code: ErrorCode.AUTHORIZATION,
             params: {
-                message: 'The user is not a member of the platform',
+                message: 'The user is not a member of the tenant',
             },
         })
     }
 }
 
-async function getUserForPlatform(identityId: string, platform: PlatformWithoutSensitiveData, log: FastifyBaseLogger): Promise<User> {
-    const user = await userService(log).getOneByIdentityAndPlatform({
+async function getUserForTenant(identityId: string, tenant: TenantWithoutSensitiveData, log: FastifyBaseLogger): Promise<User> {
+    const user = await userService(log).getOneByIdentityAndTenant({
         identityId,
-        platformId: platform.id,
+        tenantId: tenant.id,
     })
     if (isNil(user)) {
-        throw new PlatformError({
+        throw new ApplicationError({
             code: ErrorCode.AUTHORIZATION,
             params: {
-                message: 'User is not member of the platform',
+                message: 'User is not member of the tenant',
             },
         })
     }
@@ -213,21 +213,21 @@ async function sendVerificationOrAutoVerify(userIdentity: UserIdentity, log: Fas
     await userIdentityService(log).verify(userIdentity.id)
 }
 
-async function getPreferredPlatformIdForFederatedAuthn(email: string, log: FastifyBaseLogger): Promise<string | null> {
+async function getPreferredTenantIdForFederatedAuthn(email: string, log: FastifyBaseLogger): Promise<string | null> {
     const identity = await userIdentityService(log).getIdentityByEmail(email)
     if (isNil(identity)) {
         return null
     }
-    return getPreferredPlatformId(identity.id, log)
+    return getPreferredTenantId(identity.id, log)
 }
 
-async function getPreferredPlatformId(_identityId: string, _log: FastifyBaseLogger): Promise<string | null> {
+async function getPreferredTenantId(_identityId: string, _log: FastifyBaseLogger): Promise<string | null> {
     return null
 }
 
 
 
-type ResolvePreferredPlatformIdParams = {
+type ResolvePreferredTenantIdParams = {
     identityId: string
 }
 
@@ -238,7 +238,7 @@ type FederatedAuthnParams = {
     newsLetter: boolean
     trackEvents: boolean
     provider: UserIdentityProvider
-    predefinedPlatformId: string | null
+    predefinedTenantId: string | null
     imageUrl?: string
 }
 
@@ -247,7 +247,7 @@ type SignUpParams = {
     firstName: string
     lastName: string
     password: string
-    platformId: string | null
+    tenantId: string | null
     trackEvents: boolean
     newsLetter: boolean
     provider: UserIdentityProvider
@@ -257,10 +257,10 @@ type SignUpParams = {
 type SignInWithPasswordParams = {
     email: string
     password: string
-    predefinedPlatformId: string | null
+    predefinedTenantId: string | null
 }
 
-type SwitchPlatformParams = {
+type SwitchTenantParams = {
     identityId: string
-    platformId: string
+    tenantId: string
 }

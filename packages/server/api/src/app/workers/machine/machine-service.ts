@@ -87,7 +87,7 @@ export const machineService = (log: FastifyBaseLogger) => {
             }
             return buildSettingsResponse(log)
         },
-        async list(_platformId: string): Promise<WorkerMachineWithStatus[]> {
+        async list(_tenantId: string): Promise<WorkerMachineWithStatus[]> {
             const allWorkers = await workerMachineCache().find()
 
             const offlineThreshold = dayjs().subtract(60, 'seconds').utc()
@@ -96,16 +96,16 @@ export const machineService = (log: FastifyBaseLogger) => {
 
             await workerMachineCache().delete(offLineWorkers.map(worker => worker.id))
 
-            const platformWorkerGroupId = null
+            const tenantWorkerGroupId = null
             return onlineWorkers
                 .filter(worker => {
-                    if (worker.workerGroupScope === WorkerGroupScope.PLATFORM) {
-                        return !isNil(platformWorkerGroupId) && worker.workerGroupId === platformWorkerGroupId
+                    if (worker.workerGroupScope === WorkerGroupScope.TENANT) {
+                        return !isNil(tenantWorkerGroupId) && worker.workerGroupId === tenantWorkerGroupId
                     }
                     if (worker.workerGroupScope === WorkerGroupScope.WORKSPACE) {
                         return true
                     }
-                    return isNil(platformWorkerGroupId)
+                    return isNil(tenantWorkerGroupId)
                 })
                 .map(worker => ({
                     ...worker,

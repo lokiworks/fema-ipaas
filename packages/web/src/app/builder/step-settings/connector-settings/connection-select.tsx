@@ -39,7 +39,7 @@ import { connectionsQueries, connectionUtils } from '@/features/connections';
 import { connectorsHooks } from '@/features/connectors';
 import {
   useAuthorization,
-  useIsPlatformAdmin,
+  useIsTenantAdmin,
 } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 import { cn } from '@/lib/utils';
@@ -81,23 +81,23 @@ function ConnectionSelect(params: ConnectionSelectProps) {
       removeBrackets(form.getValues().settings.input.auth ?? ''),
   );
   const isSelectedConnectionGlobal =
-    selectedConnection?.scope === ConnectionScope.PLATFORM;
-  // The create/reconnect dialog runs in global (PLATFORM) scope ONLY when
+    selectedConnection?.scope === ConnectionScope.TENANT;
+  // The create/reconnect dialog runs in global (TENANT) scope ONLY when
   // reconnecting an existing global connection. Creating a brand-new connection
   // from a workspace workflow must default to WORKSPACE scope, otherwise it silently
-  // inherits the selected connection's platform scope and (for non-admins) hits
-  // the platform-admin-only global-connections endpoint (GIT-1587).
+  // inherits the selected connection's tenant scope and (for non-admins) hits
+  // the tenant-admin-only global-connections endpoint (GIT-1587).
   const isReconnectingGlobalConnection =
-    reconnectConnection?.scope === ConnectionScope.PLATFORM;
+    reconnectConnection?.scope === ConnectionScope.TENANT;
   const dynamicInputModeToggled =
     form.getValues().settings.propertySettings['auth']?.type ===
     PropertyExecutionType.DYNAMIC;
-  const isPlatformAdmin = useIsPlatformAdmin();
+  const isTenantAdmin = useIsTenantAdmin();
   const statusDisplay = selectedConnection
     ? getConnectionStatusDisplay(selectedConnection.status)
     : null;
   const canShowConnectionStatus =
-    !!selectedConnection && (!isSelectedConnectionGlobal || isPlatformAdmin);
+    !!selectedConnection && (!isSelectedConnectionGlobal || isTenantAdmin);
   const openReconnectDialog = () => {
     setReconnectConnection(selectedConnection ?? null);
     setSelectConnectionOpen(false);
@@ -225,7 +225,7 @@ function ConnectionSelect(params: ConnectionSelectProps) {
                               (connection) =>
                                 connection.externalId ===
                                 removeBrackets(field.value),
-                            )?.scope === ConnectionScope.PLATFORM && (
+                            )?.scope === ConnectionScope.TENANT && (
                               <Globe size={16} className="shrink-0" />
                             )}
                             {
@@ -302,8 +302,7 @@ function ConnectionSelect(params: ConnectionSelectProps) {
                             className="*:[span]:last:w-full"
                           >
                             <div className="flex items-center gap-2 w-full min-w-0">
-                              {connection.scope ===
-                                ConnectionScope.PLATFORM && (
+                              {connection.scope === ConnectionScope.TENANT && (
                                 <Globe size={16} className="shrink-0" />
                               )}
                               <span className="truncate min-w-0">

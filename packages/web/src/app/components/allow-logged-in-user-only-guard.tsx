@@ -4,7 +4,7 @@ import { SocketProvider } from '@/components/providers/socket-provider';
 import { useTelemetry } from '@/components/providers/telemetry-provider';
 import { workspaceCollectionUtils } from '@/features/workspaces';
 import { flagsHooks } from '@/hooks/flags-hooks';
-import { platformHooks } from '@/hooks/platform-hooks';
+import { tenantHooks } from '@/hooks/tenant-hooks';
 
 import { authenticationSession } from '../../lib/authentication-session';
 
@@ -24,9 +24,9 @@ export const AllowOnlyLoggedInUserOnlyGuard = ({
     return <Navigate to={`/sign-in?${searchParams.toString()}`} replace />;
   }
   if (authenticationSession.isOnboarding()) {
-    return <Navigate to="/create-platform" replace />;
+    return <Navigate to="/create-tenant" replace />;
   }
-  platformHooks.useCurrentPlatform();
+  tenantHooks.useCurrentTenant();
   flagsHooks.useFlags();
   workspaceCollectionUtils.useCurrentWorkspace();
   return <SocketProvider>{children}</SocketProvider>;

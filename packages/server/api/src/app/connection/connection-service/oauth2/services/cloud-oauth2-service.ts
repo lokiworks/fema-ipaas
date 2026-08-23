@@ -1,10 +1,10 @@
-import { ErrorCode, PlatformError } from '@fema/core-utils'
+import { ApplicationError, ErrorCode } from '@fema/core-utils'
 import { CloudOAuth2ConnectionValue } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { OAuth2Service } from '../oauth2-service'
 
 function notAvailable(): never {
-    throw new PlatformError({
+    throw new ApplicationError({
         code: ErrorCode.INVALID_CLOUD_CLAIM,
         params: {
             connectorName: 'unknown',

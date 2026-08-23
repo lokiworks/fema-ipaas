@@ -1,5 +1,5 @@
 import { isNil } from '@fema/core-utils'
-import { PlatformError, ErrorCode } from '@fema/core-utils'
+import { ApplicationError, ErrorCode } from '@fema/core-utils'
 import { BranchCondition, BranchExecutionType, emptyCondition, WorkflowAction, WorkflowActionType } from '../actions/action'
 import { WorkflowVersion } from '../workflow-version'
 import { WorkflowTrigger, WorkflowTriggerType } from '../triggers/trigger'
@@ -30,7 +30,7 @@ function isTrigger(type: WorkflowActionType | WorkflowTriggerType | undefined): 
 function getActionOrThrow(name: string, workflowRoot: Step): WorkflowAction {
     const step = getStepOrThrow(name, workflowRoot)
     if (!isAction(step.type)) {
-        throw new PlatformError({
+        throw new ApplicationError({
             code: ErrorCode.ENTITY_NOT_FOUND,
             params: {
                 entityType: 'step',
@@ -45,7 +45,7 @@ function getActionOrThrow(name: string, workflowRoot: Step): WorkflowAction {
 function getTriggerOrThrow(name: string, workflowRoot: Step): WorkflowTrigger {
     const step = getStepOrThrow(name, workflowRoot)
     if (!isTrigger(step.type)) {
-        throw new PlatformError({
+        throw new ApplicationError({
             code: ErrorCode.ENTITY_NOT_FOUND,
             params: {
                 entityType: 'step',
@@ -64,7 +64,7 @@ function getStep(name: string, workflowRoot: Step): Step | undefined {
 function getStepOrThrow(name: string, workflowRoot: Step): Step {
     const step = getStep(name, workflowRoot)
     if (isNil(step)) {
-        throw new PlatformError({
+        throw new ApplicationError({
             code: ErrorCode.ENTITY_NOT_FOUND,
             params: {
                 entityType: 'step',

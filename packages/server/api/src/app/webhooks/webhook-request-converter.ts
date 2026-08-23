@@ -61,7 +61,7 @@ async function convertBody(
     workflowId: string,
 ): Promise<unknown> {
     if (request.isMultipart()) {
-        const platformId = await workspaceService(request.log).getPlatformId(workspaceId)
+        const tenantId = await workspaceService(request.log).getTenantId(workspaceId)
         const maxFileSizeInBytes = system.getNumberOrThrow(AppSystemProp.MAX_FILE_SIZE_MB) * 1024 * 1024
         const jsonResult: Record<string, unknown> = {}
         for await (const part of request.parts()) {
@@ -71,7 +71,7 @@ async function convertBody(
                     data: failIfTruncated(part.file, maxFileSizeInBytes),
                     fileName: part.filename,
                     workflowId,
-                    platformId,
+                    tenantId,
                     workspaceId,
                 })
                 jsonResult[part.fieldname] = appendMultiValue(jsonResult[part.fieldname], url)
@@ -85,7 +85,7 @@ async function convertBody(
 
     const contentType = request.headers['content-type']
     if (isBinaryContentType(contentType)) {
-        const platformId = await workspaceService(request.log).getPlatformId(workspaceId)
+        const tenantId = await workspaceService(request.log).getTenantId(workspaceId)
         const extension = mime.extension(contentType?.split(';')[0] || '') || 'bin'
         const maxFileSizeInBytes = system.getNumberOrThrow(AppSystemProp.MAX_FILE_SIZE_MB) * 1024 * 1024
         const url = await saveStepFileAndConstructUrl({
@@ -93,7 +93,7 @@ async function convertBody(
             data: (request.body as Readable).pipe(enforceByteLimit(maxFileSizeInBytes)),
             fileName: `file.${extension}`,
             workflowId,
-            platformId,
+            tenantId,
             workspaceId,
         })
         return { fileUrl: url }
@@ -103,7 +103,7 @@ async function convertBody(
 }
 
 async function saveStepFileAndConstructUrl(params: SaveStepFileParams): Promise<string> {
-    const { log, data, fileName, workflowId, platformId, workspaceId } = params
+    const { log, data, fileName, workflowId, tenantId, workspaceId } = params
     const file = await fileService(log).save({
         data,
         metadata: { stepName: 'trigger', workflowId },
@@ -111,12 +111,12 @@ async function saveStepFileAndConstructUrl(params: SaveStepFileParams): Promise<
         type: FileType.WORKFLOW_STEP_FILE,
         compression: FileCompression.NONE,
         workspaceId,
-        platformId,
+        tenantId,
     })
     return filesService.constructReadUrl({
         fileId: file.id,
         fileType: FileType.WORKFLOW_STEP_FILE,
-        platformId,
+        tenantId,
     })
 }
 
@@ -144,6 +144,6 @@ type SaveStepFileParams = {
     data: Readable
     fileName: string
     workflowId: string
-    platformId: string
+    tenantId: string
     workspaceId: string
 }

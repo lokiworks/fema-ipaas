@@ -29,7 +29,7 @@ import {
   useConnectorSearchContext,
   connectorsHooks,
 } from '@/features/connectors';
-import { platformHooks } from '@/hooks/platform-hooks';
+import { tenantHooks } from '@/hooks/tenant-hooks';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { authenticationSession } from '@/lib/authentication-session';
 
@@ -157,13 +157,13 @@ const ConnectorSelectorContent = ({
     setSelectedConnectorMetadataInConnectorSelector(null);
   };
 
-  const { platform } = platformHooks.useCurrentPlatform();
+  const { tenant } = tenantHooks.useCurrentTenant();
   const tabsList = connectorSelectorCustomization.buildResolvedTabs({
     availableBuiltinTabs: getTabsList(
       operation.type,
       aiProviders.length > 0 && !isAiConnectorUnavailable,
     ),
-    config: platform.connectorSelectorConfig,
+    config: tenant.connectorSelectorConfig,
   });
   const firstTab = tabsList[0];
 

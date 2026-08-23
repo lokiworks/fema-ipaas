@@ -1,5 +1,5 @@
-import { apId, assertNotNullOrUndefined, Cursor, ErrorCode, isNil, PlatformError, PlatformId, SeekPage, spreadIfDefined, UserId, WorkspaceId } from '@fema/core-utils'
-import { PlatformRole, User, UserIdentity, UserStatus, UserWithMetaInformation, WorkspaceType } from '@fema/shared'
+import { apId, ApplicationError, assertNotNullOrUndefined, Cursor, ErrorCode, isNil, SeekPage, spreadIfDefined, TenantId, UserId, WorkspaceId } from '@fema/core-utils'
+import { TenantRole, User, UserIdentity, UserStatus, UserWithMetaInformation, WorkspaceType } from '@fema/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { nanoid } from 'nanoid'
@@ -9,7 +9,7 @@ import { repoFactory } from '../core/db/repo-factory'
 import { transaction } from '../core/db/transaction'
 import { buildPaginator } from '../helper/pagination/build-paginator'
 import { paginationHelper } from '../helper/pagination/pagination-utils'
-import { platformService } from '../platform/platform.service'
+import { tenantService } from '../tenant/tenant.service'
 import { workspaceService } from '../workspace/workspace-service'
 import { workspaceSideEffects } from '../workspace/workspace-side-effects'
 import { UserEntity, UserSchema } from './user-entity'
@@ -23,29 +23,29 @@ export const userService = (log: FastifyBaseLogger) => ({
         const user: NewUser = {
             id: apId(),
             identityId: params.identityId,
-            platformRole: params.platformRole,
+            tenantRole: params.tenantRole,
             status: isActive ? UserStatus.ACTIVE : UserStatus.INACTIVE,
             externalId: params.externalId,
-            platformId: params.platformId,
+            tenantId: params.tenantId,
         }
         return userRepo().save(user)
     },
-    async getOrCreateWithWorkspace({ identity, platformId }: GetOrCreateWithWorkspaceParams): Promise<User> {
-        const user = await this.getOneByIdentityAndPlatform({
+    async getOrCreateWithWorkspace({ identity, tenantId }: GetOrCreateWithWorkspaceParams): Promise<User> {
+        const user = await this.getOneByIdentityAndTenant({
             identityId: identity.id,
-            platformId,
+            tenantId,
         })
         if (isNil(user)) {
             const newUser = await this.create({
                 identityId: identity.id,
-                platformId,
-                platformRole: PlatformRole.MEMBER,
+                tenantId,
+                tenantRole: TenantRole.MEMBER,
             })
 
             await workspaceService(log).create({
                 displayName: identity.firstName + '\'s Workspace',
                 ownerId: newUser.id,
-                platformId,
+                tenantId,
                 type: WorkspaceType.PERSONAL,
             })
             return newUser
@@ -55,12 +55,12 @@ export const userService = (log: FastifyBaseLogger) => ({
     async updateLastActiveDate({ id }: UpdateLastActiveDateParams): Promise<void> {
         await userRepo().update({ id }, { lastActiveDate: dayjs().toISOString() })
     },
-    async update({ id, status, platformId, platformRole, externalId }: UpdateParams): Promise<UserWithMetaInformation> {
+    async update({ id, status, tenantId, tenantRole, externalId }: UpdateParams): Promise<UserWithMetaInformation> {
         const user = await this.getOrThrow({ id })
-        assertNotNullOrUndefined(user.platformId, 'platformId')
+        assertNotNullOrUndefined(user.tenantId, 'tenantId')
 
-        if (user.platformId !== platformId) {
-            throw new PlatformError({
+        if (user.tenantId !== tenantId) {
+            throw new ApplicationError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityType: 'user',
@@ -69,9 +69,9 @@ export const userService = (log: FastifyBaseLogger) => ({
             })
         }
 
-        const platform = await platformService(log).getOneOrThrow(user.platformId)
-        if (platform.ownerId === user.id && status === UserStatus.INACTIVE) {
-            throw new PlatformError({
+        const tenant = await tenantService(log).getOneOrThrow(user.tenantId)
+        if (tenant.ownerId === user.id && status === UserStatus.INACTIVE) {
+            throw new ApplicationError({
                 code: ErrorCode.VALIDATION,
                 params: {
                     message: 'Admin cannot be deactivated',
@@ -81,10 +81,10 @@ export const userService = (log: FastifyBaseLogger) => ({
 
         const applyUpdate = (entityManager?: EntityManager): Promise<unknown> => userRepo(entityManager).update({
             id,
-            platformId,
+            tenantId,
         }, {
             ...spreadIfDefined('status', status),
-            ...spreadIfDefined('platformRole', platformRole),
+            ...spreadIfDefined('tenantRole', tenantRole),
             ...spreadIfDefined('externalId', externalId),
         })
 
@@ -92,16 +92,16 @@ export const userService = (log: FastifyBaseLogger) => ({
 
         return this.getMetaInformation({ id })
     },
-    async getUsersByIdentityId({ identityId }: GetUsersByIdentityIdParams): Promise<Pick<User, 'id' | 'platformId'>[]> {
-        return userRepo().find({ where: { identityId } }).then((users) => users.map((user) => ({ id: user.id, platformId: user.platformId })))
+    async getUsersByIdentityId({ identityId }: GetUsersByIdentityIdParams): Promise<Pick<User, 'id' | 'tenantId'>[]> {
+        return userRepo().find({ where: { identityId } }).then((users) => users.map((user) => ({ id: user.id, tenantId: user.tenantId })))
     },
-    async countByPlatformId(platformId: string): Promise<number> {
-        return userRepo().countBy({ platformId })
+    async countByTenantId(tenantId: string): Promise<number> {
+        return userRepo().countBy({ tenantId })
     },
-    async countActiveByPlatformId({ platformId, entityManager }: CountActiveByPlatformIdParams): Promise<number> {
-        return userRepo(entityManager).countBy({ platformId, status: UserStatus.ACTIVE })
+    async countActiveByTenantId({ tenantId, entityManager }: CountActiveByTenantIdParams): Promise<number> {
+        return userRepo(entityManager).countBy({ tenantId, status: UserStatus.ACTIVE })
     },
-    async list({ platformId, externalId, cursorRequest, limit }: ListParams): Promise<SeekPage<UserWithMetaInformation>> {
+    async list({ tenantId, externalId, cursorRequest, limit }: ListParams): Promise<SeekPage<UserWithMetaInformation>> {
         const decodedCursor = paginationHelper.decodeCursor(cursorRequest)
         const paginator = buildPaginator({
             entity: UserEntity,
@@ -112,7 +112,7 @@ export const userService = (log: FastifyBaseLogger) => ({
             },
         })
         const { data, cursor } = await paginator.paginate(userRepo().createQueryBuilder('user').where({
-            platformId,
+            tenantId,
             ...spreadIfDefined('externalId', externalId),
         }))
 
@@ -122,8 +122,8 @@ export const userService = (log: FastifyBaseLogger) => ({
     async getByIdentityId({ identityId }: GetByIdentityId): Promise<UserSchema[]> {
         return userRepo().find({ where: { identityId } })
     },
-    async getOneByIdentityAndPlatform({ identityId, platformId }: GetOneByIdentityIdParams): Promise<User | null> {
-        return userRepo().findOneBy({ identityId, platformId: isNil(platformId) ? IsNull() : platformId })
+    async getOneByIdentityAndTenant({ identityId, tenantId }: GetOneByIdentityIdParams): Promise<User | null> {
+        return userRepo().findOneBy({ identityId, tenantId: isNil(tenantId) ? IsNull() : tenantId })
     },
     async get({ id }: IdParams): Promise<User | null> {
         return userRepo().findOneBy({ id })
@@ -131,7 +131,7 @@ export const userService = (log: FastifyBaseLogger) => ({
     async getOrThrow({ id }: IdParams): Promise<User> {
         const user = await userRepo().findOneBy({ id })
         if (isNil(user)) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: { entityType: 'user', entityId: id },
             })
@@ -141,72 +141,72 @@ export const userService = (log: FastifyBaseLogger) => ({
     async getOneOrFail({ id }: IdParams): Promise<User> {
         return userRepo().findOneOrFail({ where: { id } })
     },
-    async getOneByIdAndPlatformIdOrThrow({ id, platformId }: GetOneByIdAndPlatformIdParams): Promise<UserWithMetaInformation> {
-        const user = await userRepo().findOne({ where: { id, platformId } })
+    async getOneByIdAndTenantIdOrThrow({ id, tenantId }: GetOneByIdAndTenantIdParams): Promise<UserWithMetaInformation> {
+        const user = await userRepo().findOne({ where: { id, tenantId } })
         if (isNil(user)) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: { entityType: 'user', entityId: id },
             })
         }
         return this.getMetaInformation({ id })
     },
-    async delete({ id, platformId }: DeleteParams): Promise<void> {
-        await assertNotPlatformOwner({ id, platformId, log })
-        const user = await userRepo().findOneBy({ id, platformId })
+    async delete({ id, tenantId }: DeleteParams): Promise<void> {
+        await assertNotTenantOwner({ id, tenantId, log })
+        const user = await userRepo().findOneBy({ id, tenantId })
         if (isNil(user)) {
             return
         }
         await workspaceSideEffects(log).deletePersonalWorkspaceForUser({
             userId: id,
-            platformId,
+            tenantId,
         })
         await transaction(async (entityManager) => {
             await userRepo(entityManager).delete({
                 id,
-                platformId,
+                tenantId,
             })
             await deleteIdentityIfOrphaned({ identityId: user.identityId, entityManager })
         })
     },
-    async removeFromPlatform({ id, platformId }: DeleteParams): Promise<void> {
-        await assertNotPlatformOwner({ id, platformId, log })
+    async removeFromTenant({ id, tenantId }: DeleteParams): Promise<void> {
+        await assertNotTenantOwner({ id, tenantId, log })
         const user = await this.getOneOrFail({ id })
         await workspaceSideEffects(log).deletePersonalWorkspaceForUser({
             userId: id,
-            platformId,
+            tenantId,
         })
         await userRepo().update({
             id,
-            platformId,
+            tenantId,
         }, {
-            platformId: null,
+            tenantId: null,
         })
         await userIdentityRepository().update(user.identityId, {
             tokenVersion: nanoid(),
         })
         await userIdentityRepository().update({
             id: user.identityId,
-            lastLoggedInPlatformId: platformId,
+            lastLoggedInTenantId: tenantId,
         }, {
-            lastLoggedInPlatformId: null,
+            lastLoggedInTenantId: null,
         })
     },
 
-    async getByPlatformRole(id: PlatformId, role: PlatformRole): Promise<UserSchema[]> {
-        return userRepo().find({ where: { platformId: id, platformRole: role }, relations: { identity: true } })
+    async getByTenantRole(id: TenantId, role: TenantRole): Promise<UserSchema[]> {
+        return userRepo().find({ where: { tenantId: id, tenantRole: role }, relations: { identity: true } })
     },
-    async listWorkspaceUsers({ platformId, workspaceId }: ListUsersForWorkspaceParams): Promise<UserWithMetaInformation[]> {
-        const users = await getUsersForWorkspace(platformId, workspaceId)
-        const usersWithMetaInformation = await userRepo().find({ where: { platformId, id: In(users) }, relations: { identity: true } }).then((users) => users.map(this.getMetaInformation))
+    async listWorkspaceUsers({ tenantId, workspaceId }: ListUsersForWorkspaceParams): Promise<UserWithMetaInformation[]> {
+        const users = await getUsersForWorkspace(tenantId, workspaceId)
+        const usersWithMetaInformation = await userRepo().find({ where: { tenantId, id: In(users) }, relations: { identity: true } }).then((users) => users.map(this.getMetaInformation))
         return Promise.all(usersWithMetaInformation)
     },
-    async getByPlatformAndExternalId({
-        platformId,
+    async getByTenantAndExternalId({
+        tenantId,
         externalId,
-    }: GetByPlatformAndExternalIdParams): Promise<User | null> {
+    }: GetByTenantAndExternalIdParams): Promise<User | null> {
         return userRepo().findOneBy({
-            platformId,
+            tenantId,
             externalId,
         })
     },
@@ -218,8 +218,8 @@ export const userService = (log: FastifyBaseLogger) => ({
             email: identity.email,
             firstName: identity.firstName,
             lastName: identity.lastName,
-            platformId: user.platformId,
-            platformRole: user.platformRole,
+            tenantId: user.tenantId,
+            tenantRole: user.tenantRole,
             status: user.status,
             externalId: user.externalId,
             created: user.created,
@@ -229,30 +229,30 @@ export const userService = (log: FastifyBaseLogger) => ({
         }
     },
 
-    async addOwnerToPlatform({
+    async addOwnerToTenant({
         id,
-        platformId,
-    }: UpdatePlatformIdParams): Promise<void> {
+        tenantId,
+    }: UpdateTenantIdParams): Promise<void> {
         await userRepo().update(id, {
             updated: dayjs().toISOString(),
-            platformRole: PlatformRole.ADMIN,
-            platformId,
+            tenantRole: TenantRole.ADMIN,
+            tenantId,
         })
     },
 
     isUserPrivileged(user: User): boolean {
-        return user.platformRole === PlatformRole.ADMIN || user.platformRole === PlatformRole.OPERATOR
+        return user.tenantRole === TenantRole.ADMIN || user.tenantRole === TenantRole.OPERATOR
     },
 })
 
 
-async function assertNotPlatformOwner({ id, platformId, log }: DeleteParams & { log: FastifyBaseLogger }): Promise<void> {
-    const platform = await platformService(log).getOneOrThrow(platformId)
-    if (platform.ownerId === id) {
-        throw new PlatformError({
+async function assertNotTenantOwner({ id, tenantId, log }: DeleteParams & { log: FastifyBaseLogger }): Promise<void> {
+    const tenant = await tenantService(log).getOneOrThrow(tenantId)
+    if (tenant.ownerId === id) {
+        throw new ApplicationError({
             code: ErrorCode.VALIDATION,
             params: {
-                message: 'Platform owner cannot be deleted',
+                message: 'Tenant owner cannot be deleted',
             },
         })
     }
@@ -265,31 +265,31 @@ async function deleteIdentityIfOrphaned({ identityId, entityManager }: { identit
     }
 }
 
-async function getUsersForWorkspace(platformId: PlatformId, _workspaceId: string): Promise<UserId[]> {
-    return userRepo().find({ where: { platformId, platformRole: PlatformRole.ADMIN } }).then((users) => users.map((user) => user.id))
+async function getUsersForWorkspace(tenantId: TenantId, _workspaceId: string): Promise<UserId[]> {
+    return userRepo().find({ where: { tenantId, tenantRole: TenantRole.ADMIN } }).then((users) => users.map((user) => user.id))
 }
 
 type UpdateLastActiveDateParams = {
     id: UserId
 }
 
-type GetOneByIdAndPlatformIdParams = {
+type GetOneByIdAndTenantIdParams = {
     id: UserId
-    platformId: PlatformId
+    tenantId: TenantId
 }
 type ListUsersForWorkspaceParams = {
     workspaceId: WorkspaceId
-    platformId: PlatformId
+    tenantId: TenantId
 }
 
 type DeleteParams = {
     id: UserId
-    platformId: PlatformId
+    tenantId: TenantId
 }
 
 
 type ListParams = {
-    platformId: PlatformId
+    tenantId: TenantId
     externalId?: string
     cursorRequest: Cursor
     limit?: number
@@ -302,37 +302,37 @@ type GetByIdentityId = {
 
 type GetOneByIdentityIdParams = {
     identityId: string
-    platformId: PlatformId | null
+    tenantId: TenantId | null
 }
 
 type UpdateParams = {
     id: UserId
     status?: UserStatus
-    platformId: PlatformId
-    platformRole?: PlatformRole
+    tenantId: TenantId
+    tenantRole?: TenantRole
     externalId?: string
 }
 
 type CreateParams = {
     identityId: string
-    platformId: string | null
+    tenantId: string | null
     externalId?: string
-    platformRole: PlatformRole
+    tenantRole: TenantRole
     isActive?: boolean
 }
 type GetUsersByIdentityIdParams = {
     identityId: string
 }
 
-type CountActiveByPlatformIdParams = {
-    platformId: string
+type CountActiveByTenantIdParams = {
+    tenantId: string
     entityManager?: EntityManager
 }
 
 type NewUser = Omit<User, 'created' | 'updated'>
 
-type GetByPlatformAndExternalIdParams = {
-    platformId: string
+type GetByTenantAndExternalIdParams = {
+    tenantId: string
     externalId: string
 }
 
@@ -340,12 +340,12 @@ type IdParams = {
     id: UserId
 }
 
-type UpdatePlatformIdParams = {
+type UpdateTenantIdParams = {
     id: UserId
-    platformId: string
+    tenantId: string
 }
 
 type GetOrCreateWithWorkspaceParams = {
     identity: UserIdentity
-    platformId: string
+    tenantId: string
 }

@@ -10,7 +10,7 @@ import {
   WorkflowActionType,
   workflowConnectorUtil,
   ConnectorOptionRequest,
-  PlatformWithoutSensitiveData,
+  TenantWithoutSensitiveData,
   WorkflowTriggerType,
   ApFlagId,
   ApEnvironment,
@@ -34,7 +34,7 @@ import {
   CategorizedStepMetadataWithSuggestions,
 } from '@/features/connectors/types';
 import { flagsHooks } from '@/hooks/flags-hooks';
-import { platformHooks } from '@/hooks/platform-hooks';
+import { tenantHooks } from '@/hooks/tenant-hooks';
 import { api } from '@/lib/api';
 import { authenticationSession } from '@/lib/authentication-session';
 
@@ -228,7 +228,7 @@ export const connectorsHooks = {
     );
     const { metadata, isLoading: isLoadingConnectors } =
       stepsHooks.useAllStepsMetadata(props);
-    const { platform } = platformHooks.useCurrentPlatform();
+    const { tenant } = tenantHooks.useCurrentTenant();
     if (!metadata || isLoadingConnectors) {
       return {
         isLoading: true,
@@ -240,12 +240,12 @@ export const connectorsHooks = {
 
     const pinnedConnectors = getPinnedConnectors(
       connectorsMetadataWithoutEmptySuggestions,
-      platform.pinnedConnectors ?? [],
+      tenant.pinnedConnectors ?? [],
     );
 
     const popularConnectors = getPopularConnectors(
       connectorsMetadataWithoutEmptySuggestions,
-      platform.pinnedConnectors ?? [],
+      tenant.pinnedConnectors ?? [],
     );
 
     const workflowControllerConnectors =
@@ -289,7 +289,7 @@ export const connectorsHooks = {
           isLoading: false,
           data: getExploreTabContent(
             connectorsMetadataWithoutEmptySuggestions,
-            platform,
+            tenant,
             props.type,
             environment,
           ),
@@ -313,7 +313,7 @@ export const connectorsHooks = {
         };
       case ConnectorSelectorTabType.CUSTOM: {
         const customTab = connectorSelectorCustomization.getCustomTab({
-          config: platform.connectorSelectorConfig,
+          config: tenant.connectorSelectorConfig,
           customTabId: selectedCustomTabId,
         });
         const categories: CategorizedStepMetadataWithSuggestions[] = [];
@@ -506,7 +506,7 @@ const filterOutConnectorsWithNoSuggestions = (
 
 const getExploreTabContent = (
   queryResult: StepMetadataWithSuggestions[],
-  platform: PlatformWithoutSensitiveData,
+  tenant: TenantWithoutSensitiveData,
   type: 'action' | 'trigger',
   environment: ApEnvironment | null,
 ) => {
@@ -519,11 +519,11 @@ const getExploreTabContent = (
   }
   const pinnedConnectors = getPinnedConnectors(
     queryResult,
-    platform.pinnedConnectors ?? [],
+    tenant.pinnedConnectors ?? [],
   );
   const popularConnectors = getPopularConnectors(
     queryResult,
-    platform.pinnedConnectors ?? [],
+    tenant.pinnedConnectors ?? [],
   );
 
   if (popularConnectors.length > 0) {

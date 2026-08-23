@@ -23,17 +23,17 @@ export const connectorInstaller = (log: ApLogger, basePath: string, getSettings:
         await Promise.all(installPromises)
     },
 
-    getCustomConnectorsPath(platformId: string): string {
-        return getCustomConnectorsPath(basePath, platformId, getSettings)
+    getCustomConnectorsPath(tenantId: string): string {
+        return getCustomConnectorsPath(basePath, tenantId, getSettings)
     },
 })
 
-function getCustomConnectorsPath(basePath: string, platformId: string, getSettings: () => SandboxSettings): string {
+function getCustomConnectorsPath(basePath: string, tenantId: string, getSettings: () => SandboxSettings): string {
     const paths = cacheUtils(basePath)
     switch (getSettings().EXECUTION_MODE) {
         case ExecutionMode.SANDBOX_PROCESS:
         case ExecutionMode.SANDBOX_CODE_AND_PROCESS:
-            return path.resolve(paths.getGlobalCachePathLatestVersion(), 'custom_connectors', platformId)
+            return path.resolve(paths.getGlobalCachePathLatestVersion(), 'custom_connectors', tenantId)
         case ExecutionMode.UNSANDBOXED:
         case ExecutionMode.SANDBOX_CODE_ONLY:
             return paths.getGlobalCacheCommonPath()
@@ -138,7 +138,7 @@ async function installConnectors(rootWorkspace: string, connectors: ConnectorPac
 // from a since-reverted build — makes bun write an unparseable resolution token into the SHARED
 // bun.lock. That lock then fails to parse on the next install and takes down EVERY connector in the
 // workspace (so cache pre-warm and the deploy fail). Worse, because the install joins the name onto
-// `<workspace>/connectors/`, a `..` name escapes a per-platform `custom_connectors/<id>` workspace and lands
+// `<workspace>/connectors/`, a `..` name escapes a per-tenant `custom_connectors/<id>` workspace and lands
 // the poisoned member inside the shared `common` workspace. Such names are skipped at the source.
 export function isValidPackageName(name: string): boolean {
     if (name.includes('..')) {
@@ -194,10 +194,10 @@ function groupConnectorsByPackagePath(connectors: ConnectorPackage[], basePath: 
     return groupBy(connectors, (connector) => {
         switch (connector.packageType) {
             case PackageType.ARCHIVE:
-                return getCustomConnectorsPath(basePath, connector.platformId, getSettings)
+                return getCustomConnectorsPath(basePath, connector.tenantId, getSettings)
             case PackageType.REGISTRY: {
-                if (connector.connectorType === ConnectorType.CUSTOM && !isNil(connector.platformId)) {
-                    return getCustomConnectorsPath(basePath, connector.platformId, getSettings)
+                if (connector.connectorType === ConnectorType.CUSTOM && !isNil(connector.tenantId)) {
+                    return getCustomConnectorsPath(basePath, connector.tenantId, getSettings)
                 }
                 return paths.getGlobalCacheCommonPath()
             }

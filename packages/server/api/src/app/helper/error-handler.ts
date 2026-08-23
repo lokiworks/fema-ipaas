@@ -1,4 +1,4 @@
-import { ErrorCode, PlatformError } from '@fema/core-utils'
+import { ApplicationError, ErrorCode } from '@fema/core-utils'
 import { parseError, wideEvent } from '@fema/server-utils'
 import { FastifyError, FastifyReply, FastifyRequest } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
@@ -10,7 +10,7 @@ export const errorHandler = async (
     request: FastifyRequest,
     reply: FastifyReply,
 ): Promise<void> => {
-    if (error instanceof PlatformError) {
+    if (error instanceof ApplicationError) {
         const statusCode = statusCodeMap[error.error.code] ?? StatusCodes.BAD_REQUEST
 
         await reply.status(statusCode).send({
@@ -34,7 +34,7 @@ export const errorHandler = async (
 // Runs from an onError hook registered BEFORE the evlog fastify plugin, so the
 // fields land on the wide event before the plugin's own onError hook emits it.
 export const enrichWideEventWithError = (error: unknown): void => {
-    if (error instanceof PlatformError) {
+    if (error instanceof ApplicationError) {
         const statusCode = statusCodeMap[error.error.code] ?? StatusCodes.BAD_REQUEST
         const wideErrorFields: WideErrorFields = {
             code: error.error.code,

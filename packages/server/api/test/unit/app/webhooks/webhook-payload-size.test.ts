@@ -75,7 +75,7 @@ describe('payloadOffloader', () => {
     describe('offloadPayload', () => {
         it('should always offload small payloads to file storage', async () => {
             const payload = { test: true }
-            const result = await payloadOffloader.offloadPayload(mockLogger, payload, 'workspace-1', 'platform-1')
+            const result = await payloadOffloader.offloadPayload(mockLogger, payload, 'workspace-1', 'tenant-1')
 
             expect(result.type).toBe('ref')
             expect('fileId' in result && result.fileId).toBeDefined()
@@ -84,7 +84,7 @@ describe('payloadOffloader', () => {
 
         it('should always offload large payloads to file storage', async () => {
             const payload = { data: 'x'.repeat(600 * 1024) }
-            const result = await payloadOffloader.offloadPayload(mockLogger, payload, 'workspace-1', 'platform-1')
+            const result = await payloadOffloader.offloadPayload(mockLogger, payload, 'workspace-1', 'tenant-1')
 
             expect(result.type).toBe('ref')
             expect('fileId' in result && result.fileId).toBeDefined()
@@ -95,7 +95,7 @@ describe('payloadOffloader', () => {
     describe('maybeOffloadPayload', () => {
         it('should return inline payload when size is below threshold', async () => {
             const payload = { test: true }
-            const result = await payloadOffloader.maybeOffloadPayload(mockLogger, payload, 'workspace-1', 'platform-1')
+            const result = await payloadOffloader.maybeOffloadPayload(mockLogger, payload, 'workspace-1', 'tenant-1')
 
             expect(result).toEqual({ type: 'inline', value: payload })
             expect(mockSave).not.toHaveBeenCalled()
@@ -103,7 +103,7 @@ describe('payloadOffloader', () => {
 
         it('should return ref payload when size exceeds inline threshold', async () => {
             const payload = { data: 'x'.repeat(600 * 1024) }
-            const result = await payloadOffloader.maybeOffloadPayload(mockLogger, payload, 'workspace-1', 'platform-1')
+            const result = await payloadOffloader.maybeOffloadPayload(mockLogger, payload, 'workspace-1', 'tenant-1')
 
             expect(result.type).toBe('ref')
             expect('fileId' in result && result.fileId).toBeDefined()

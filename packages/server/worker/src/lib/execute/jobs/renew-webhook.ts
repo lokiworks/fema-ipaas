@@ -9,7 +9,7 @@ export const renewWebhookJob: JobHandler<RenewWebhookJobData, FireAndForgetJobRe
     async execute(ctx: JobContext, data: RenewWebhookJobData): Promise<FireAndForgetJobResult> {
         const timeoutInSeconds = workerSettings.getSettings().TRIGGER_HOOKS_TIMEOUT_SECONDS
 
-        const resolved = await ctx.resolver.resolve({ platformId: data.platformId, publicApiUrl: ctx.publicApiUrl, engineToken: ctx.engineToken, workflow: { id: data.workflowId, versionId: data.workflowVersionId, workspaceId: data.workspaceId } })
+        const resolved = await ctx.resolver.resolve({ tenantId: data.tenantId, publicApiUrl: ctx.publicApiUrl, engineToken: ctx.engineToken, workflow: { id: data.workflowId, versionId: data.workflowVersionId, workspaceId: data.workspaceId } })
 
         if (resolved.kind === 'workflow-not-found') {
             ctx.log.info({ workflowVersion: { id: data.workflowVersionId } }, 'Workflow version not found for renew webhook, skipping')
@@ -36,7 +36,7 @@ export const renewWebhookJob: JobHandler<RenewWebhookJobData, FireAndForgetJobRe
                 webhookUrl: getWebhookUrl(ctx.publicApiUrl, data.workflowId),
                 test: false,
                 workspaceId: data.workspaceId,
-                platformId: data.platformId,
+                tenantId: data.tenantId,
                 engineToken: ctx.engineToken,
                 internalApiUrl: ctx.internalApiUrl,
                 publicApiUrl: ctx.publicApiUrl,

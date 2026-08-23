@@ -12,7 +12,7 @@ import { authenticationModule } from './authentication/authentication.module'
 import { localAuthnModule } from './authentication/local-authn/local-authn.module'
 import { otpModule } from './authentication/otp/otp-module'
 import { connectionModule } from './connection/connection.module'
-import { platformConnectionModule } from './connection/platform-connection.module'
+import { tenantConnectionModule } from './connection/tenant-connection.module'
 import { communityConnectorsModule } from './connectors/community-connector-module'
 import { connectorSyncService } from './connectors/connector-sync-service'
 import { startDevConnectorWatcher } from './connectors/dev-connector-watcher'
@@ -37,12 +37,12 @@ import { systemJobsSchedule } from './helper/system-jobs/system-job'
 import { systemSnapshot } from './helper/system-snapshot'
 import { validateEnvPropsOnStartup } from './helper/system-validator'
 import { shutdownTelemetry } from './helper/telemetry.utils'
-import { platformModule } from './platform/platform.module'
 import { storeEntryModule } from './store-entry/store-entry.module'
 import { templateModule } from './template/template.module'
+import { tenantModule } from './tenant/tenant.module'
 import { appEventRoutingModule } from './trigger/app-event-routing/app-event-routing.module'
 import { triggerModule } from './trigger/trigger.module'
-import { platformUserModule } from './user/platform/platform-user-module'
+import { tenantUserModule } from './user/tenant/tenant-user-module'
 import { invitationModule } from './user-invitations/user-invitation.module'
 import { variableModule } from './variable/variable.module'
 import { webhookModule } from './webhooks/webhook-module'
@@ -91,7 +91,7 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
                 },
             },
             info: {
-                title: 'FEMA Integration Platform API',
+                title: 'FEMA Integration Tenant API',
                 version: '0.0.0',
             },
         },
@@ -127,10 +127,10 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
         try {
             const principal = request.principal
             const workspaceId = extractWorkspaceId(principal)
-            const platformId = extractPlatformId(principal)
+            const tenantId = extractTenantId(principal)
             wideEvent.set({
                 ...spreadIfDefined('workspace', isNil(workspaceId) ? undefined : { id: workspaceId }),
-                ...spreadIfDefined('platform', isNil(platformId) ? undefined : { id: platformId }),
+                ...spreadIfDefined('tenant', isNil(tenantId) ? undefined : { id: tenantId }),
                 ...spreadIfDefined('principalType', principal?.type),
             })
         }
@@ -156,7 +156,7 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     await app.register(executionModule)
     await app.register(webhookModule)
     await app.register(connectionModule)
-    await app.register(platformConnectionModule)
+    await app.register(tenantConnectionModule)
     await app.register(variableModule)
     await app.register(openapiModule)
     await app.register(appEventRoutingModule)
@@ -164,10 +164,10 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     await app.register(otpModule)
     await app.register(localAuthnModule)
     await app.register(triggerModule)
-    await app.register(platformModule)
+    await app.register(tenantModule)
     await app.register(workspaceModule)
     await app.register(humanInputModule)
-    await app.register(platformUserModule)
+    await app.register(tenantUserModule)
     await app.register(invitationModule)
     await app.register(workerModule)
     await workerCapacity.setup()
@@ -236,7 +236,7 @@ export async function getAdapter() {
 
 export async function appPostBoot(app: FastifyInstance): Promise<void> {
 
-    app.log.info(`Integration platform started on ${await domainHelper.getPublicApiUrl({ path: '' })}`)
+    app.log.info(`Integration tenant started on ${await domainHelper.getPublicApiUrl({ path: '' })}`)
 
     const environment = system.get(AppSystemProp.ENVIRONMENT)
     const connectors = process.env.FEMA_DEV_CONNECTORS
@@ -277,8 +277,8 @@ function assertReleaseReadable(log: FastifyBaseLogger): void {
     })
 }
 
-function extractPlatformId(principal: { platform?: { id?: string } } | null | undefined): string | undefined {
-    return principal?.platform?.id
+function extractTenantId(principal: { tenant?: { id?: string } } | null | undefined): string | undefined {
+    return principal?.tenant?.id
 }
 
 function extractWorkspaceId(principal: { workspaceId?: string } | null | undefined): string | undefined {

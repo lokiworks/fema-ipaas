@@ -1,4 +1,4 @@
-import { ErrorCode, PlatformError, PlatformId, sanitizeObjectForPostgresql } from '@fema/core-utils'
+import { ApplicationError, ErrorCode, sanitizeObjectForPostgresql, TenantId } from '@fema/core-utils'
 import { workflowConnectorUtil, WorkflowOperationRequest, workflowOperations, WorkflowOperationType, WorkflowVersion, WorkflowVersionState, WorkflowVersionTemplate } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { workflowVersionValidationUtil } from '../workflows/workflow-version/workflow-version-validator-util'
@@ -25,9 +25,9 @@ type PreparedTemplate = {
 }
 
 export const templateValidator = {
-    async validateAndPrepare({ workflows, platformId, log }: ValidateParams): Promise<PreparedTemplate> {
+    async validateAndPrepare({ workflows, tenantId, log }: ValidateParams): Promise<PreparedTemplate> {
         if (!workflows || workflows.length === 0) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.VALIDATION,
                 params: {
                     message: 'Workflows are required',
@@ -51,7 +51,7 @@ export const templateValidator = {
 
             const validator = workflowVersionValidationUtil(log)
 
-            await validator.prepareRequest({ platformId, request: importOperation, userId: null })
+            await validator.prepareRequest({ tenantId, request: importOperation, userId: null })
             
             workflowOperations.apply(minimalWorkflowVersion, importOperation)
         }))
@@ -68,6 +68,6 @@ export const templateValidator = {
 
 type ValidateParams = {
     workflows: WorkflowVersionTemplate[] | undefined
-    platformId?: PlatformId
+    tenantId?: TenantId
     log: FastifyBaseLogger
 }

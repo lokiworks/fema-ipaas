@@ -104,7 +104,7 @@ import { githubAuth } from './lib/auth';
 export const github = createConnector({
   displayName: 'GitHub',
   description:
-    'Developer platform that allows developers to create, store, manage and share their code',
+    'Developer tenant that allows developers to create, store, manage and share their code',
 
   minimumSupportedRelease: '0.86.4',
   logoUrl: 'https://cdn.fema.local/connectors/github.png',

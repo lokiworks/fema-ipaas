@@ -1,4 +1,4 @@
-import { assertNotNullOrUndefined, ErrorCode, isNil, PlatformError } from '@fema/core-utils'
+import { ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil } from '@fema/core-utils'
 import { Connection, EnginePrincipal, GetConnectionForWorkerRequestQuery } from '@fema/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { securityAccess } from '../core/security/authorization/fastify-security'
@@ -11,12 +11,12 @@ export const connectionWorkerController: FastifyPluginAsyncZod = async (app) => 
         assertNotNullOrUndefined(enginePrincipal.workspaceId, 'workspaceId')
         const connection = await connectionService(request.log).getOne({
             workspaceId: enginePrincipal.workspaceId,
-            platformId: enginePrincipal.platform.id,
+            tenantId: enginePrincipal.tenant.id,
             externalId: request.params.externalId,
         })
 
         if (isNil(connection)) {
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityId: `externalId=${request.params.externalId}`,

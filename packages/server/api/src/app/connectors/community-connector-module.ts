@@ -15,7 +15,7 @@ const communityConnectorsController: FastifyPluginAsyncZod = async (app) => {
         '/',
         {
             config: {
-                security: securityAccess.platformAdminOnly([PrincipalType.USER, PrincipalType.SERVICE]),
+                security: securityAccess.tenantAdminOnly([PrincipalType.USER, PrincipalType.SERVICE]),
             },
             preValidation: attachMultipartFieldsToBody,
             schema: {
@@ -23,9 +23,9 @@ const communityConnectorsController: FastifyPluginAsyncZod = async (app) => {
             },
         },
         async (req, res): Promise<ConnectorMetadataModel> => {
-            const platformId = req.principal.platform.id
+            const tenantId = req.principal.tenant.id
             const connectorMetadata = await connectorInstallService(req.log).installConnector(
-                platformId,
+                tenantId,
                 req.body,
             )
             return res.code(StatusCodes.CREATED).send(connectorMetadata)

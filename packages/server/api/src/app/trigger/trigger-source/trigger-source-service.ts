@@ -1,4 +1,4 @@
-import { apId, ErrorCode, isNil, PlatformError, WorkflowId } from '@fema/core-utils'
+import { apId, ApplicationError, ErrorCode, isNil, WorkflowId } from '@fema/core-utils'
 import { PopulatedTriggerSource, TemplateTelemetryEventType, TriggerSource, WorkflowVersion } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { In } from 'typeorm'
@@ -132,7 +132,7 @@ export const triggerSourceService = (log: FastifyBaseLogger) => {
                 },
             })
             if (isNil(triggerSource)) {
-                throw new PlatformError({
+                throw new ApplicationError({
                     code: ErrorCode.ENTITY_NOT_FOUND,
                     params: {
                         entityType: 'trigger',

@@ -31,7 +31,7 @@ function assertNullOrUndefinedOrEmpty(value: any, message: string) {
 }
 
 export const publishConnectorCommand = new Command('publish')
-    .description('Publish connectors to the platform')
+    .description('Publish connectors to the tenant')
     .option('-f, --fail-on-error', 'Exit the process if an error occurs while syncing a connector', false)
     .action(async (command) => {
         const questions = [

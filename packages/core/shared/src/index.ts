@@ -22,7 +22,7 @@ export * from './lib/core/health'
 export * from '@fema/core-utils'
 
 // management
-export * from './lib/management/platform'
+export * from './lib/management/tenant'
 export * from './lib/management/workspace'
 export * from './lib/management/workspace-role/workspace-role.request'
 export * from './lib/management/invitations'

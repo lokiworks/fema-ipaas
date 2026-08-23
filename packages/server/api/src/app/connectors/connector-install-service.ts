@@ -1,5 +1,5 @@
 import { ConnectorMetadata, ConnectorMetadataModel } from '@fema/connector-sdk'
-import { ErrorCode, isNil, PlatformError, PlatformId, WorkspaceId } from '@fema/core-utils'
+import { ApplicationError, ErrorCode, isNil, TenantId, WorkspaceId } from '@fema/core-utils'
 import { AddConnectorRequestBody, ConnectorPackage, ConnectorType, EngineResponse, EngineResponseStatus, ExecuteExtractConnectorMetadata, FileCompression, FileId, FileType, PackageType, WorkerJobType } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { fileService } from '../file/file.service'
@@ -8,14 +8,14 @@ import { connectorMetadataService } from './metadata/connector-metadata-service'
 
 export const connectorInstallService = (log: FastifyBaseLogger) => ({
     async installConnector(
-        platformId: string,
+        tenantId: string,
         params: AddConnectorRequestBody,
     ): Promise<ConnectorMetadataModel> {
         try {
-            const connectorPackage = await saveConnectorPackage(platformId, params, log)
+            const connectorPackage = await saveConnectorPackage(tenantId, params, log)
             const connectorInformation = await extractConnectorInformation({
                 ...connectorPackage,
-                platformId,
+                tenantId,
             }, log)
             const archiveId = connectorPackage.packageType === PackageType.ARCHIVE ? connectorPackage.archiveId : undefined
             const savedConnector = await connectorMetadataService(log).create({
@@ -30,7 +30,7 @@ export const connectorInstallService = (log: FastifyBaseLogger) => ({
                     i18n: connectorInformation.i18n,
                 },
                 packageType: params.packageType,
-                platformId,
+                tenantId,
                 connectorType: ConnectorType.CUSTOM,
                 archiveId,
             })
@@ -42,10 +42,10 @@ export const connectorInstallService = (log: FastifyBaseLogger) => ({
         catch (error) {
             log.error({ error }, '[connectorInstallService#add] Failed to add connector')
 
-            if (error instanceof PlatformError && error.error.code === ErrorCode.VALIDATION) {
+            if (error instanceof ApplicationError && error.error.code === ErrorCode.VALIDATION) {
                 throw error
             }
-            throw new PlatformError({
+            throw new ApplicationError({
                 code: ErrorCode.ENGINE_OPERATION_FAILURE,
                 params: {
                     message: error instanceof Error ? error.message : String(error),
@@ -56,20 +56,20 @@ export const connectorInstallService = (log: FastifyBaseLogger) => ({
 })
 
 
-async function saveConnectorPackage(platformId: string | undefined, params: AddConnectorRequestBody, log: FastifyBaseLogger): Promise<ConnectorPackage> {
+async function saveConnectorPackage(tenantId: string | undefined, params: AddConnectorRequestBody, log: FastifyBaseLogger): Promise<ConnectorPackage> {
 
     switch (params.packageType) {
         case PackageType.ARCHIVE: {
             const archiveId = await saveArchive({
                 workspaceId: undefined,
-                platformId,
+                tenantId,
                 archive: params.connectorArchive.data as Buffer,
             }, log)
             return {
                 ...params,
                 connectorType: ConnectorType.CUSTOM,
                 archiveId,
-                platformId: platformId!,
+                tenantId: tenantId!,
                 packageType: params.packageType,
             }
         }
@@ -78,7 +78,7 @@ async function saveConnectorPackage(platformId: string | undefined, params: AddC
             return {
                 ...params,
                 connectorType: ConnectorType.CUSTOM,
-                platformId: platformId!,
+                tenantId: tenantId!,
             }
         }
     }
@@ -87,7 +87,7 @@ async function saveConnectorPackage(platformId: string | undefined, params: AddC
 const extractConnectorInformation = async (request: ExecuteExtractConnectorMetadata, log: FastifyBaseLogger): Promise<ConnectorMetadata> => {
     const engineResponse = await userInteractionWatcher.submitAndWaitForResponse<EngineResponse<ConnectorMetadata>>({
         jobType: WorkerJobType.EXECUTE_EXTRACT_CONNECTOR_INFORMATION,
-        platformId: request.platformId,
+        tenantId: request.tenantId,
         connector: request,
         workspaceId: undefined,
     }, log)
@@ -102,11 +102,11 @@ const saveArchive = async (
     params: GetConnectorArchivePackageParams,
     log: FastifyBaseLogger,
 ): Promise<FileId> => {
-    const { workspaceId, platformId, archive } = params
+    const { workspaceId, tenantId, archive } = params
 
     const archiveFile = await fileService(log).save({
-        workspaceId: isNil(platformId) ? workspaceId : undefined,
-        platformId,
+        workspaceId: isNil(tenantId) ? workspaceId : undefined,
+        tenantId,
         data: archive,
         size: archive.length,
         type: FileType.PACKAGE_ARCHIVE,
@@ -119,6 +119,6 @@ const saveArchive = async (
 type GetConnectorArchivePackageParams = {
     archive: Buffer
     workspaceId?: WorkspaceId
-    platformId?: PlatformId
+    tenantId?: TenantId
 }
 

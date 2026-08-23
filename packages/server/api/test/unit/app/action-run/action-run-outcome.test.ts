@@ -1,4 +1,4 @@
-import { PlatformError, ErrorCode } from '@fema/core-utils'
+import { ApplicationError, ErrorCode } from '@fema/core-utils'
 import { EngineResponseStatus, ExecutionStatus } from '@fema/shared'
 import { deriveActionRunOutcome } from '../../../../src/app/action-run/action-run-outcome'
 import { WORKER_DID_NOT_RESPOND_MESSAGE } from '../../../../src/app/workers/user-interaction-watcher'
@@ -41,14 +41,14 @@ describe('deriveActionRunOutcome', () => {
             expect(outcome.status).toBe(ExecutionStatus.INTERNAL_ERROR)
         })
         it('watcher timeout maps to TIMEOUT, not INTERNAL_ERROR', () => {
-            const error = new PlatformError({
+            const error = new ApplicationError({
                 code: ErrorCode.ENGINE_OPERATION_FAILURE,
                 params: { message: WORKER_DID_NOT_RESPOND_MESSAGE },
             })
             expect(deriveActionRunOutcome({ result: { data: null, error } }).status).toBe(ExecutionStatus.TIMEOUT)
         })
         it('other ENGINE_OPERATION_FAILURE errors stay INTERNAL_ERROR', () => {
-            const error = new PlatformError({
+            const error = new ApplicationError({
                 code: ErrorCode.ENGINE_OPERATION_FAILURE,
                 params: { message: 'sandbox failed to boot' },
             })
@@ -119,7 +119,7 @@ describe('deriveActionRunOutcome', () => {
             expect(deriveActionRunOutcome(ok({ success: true })).neverStarted).toBe(false)
         })
         it('is false on the watcher-timeout channel', () => {
-            const error = new PlatformError({
+            const error = new ApplicationError({
                 code: ErrorCode.ENGINE_OPERATION_FAILURE,
                 params: { message: WORKER_DID_NOT_RESPOND_MESSAGE },
             })

@@ -9,7 +9,7 @@ export const UserInvitationEntity = new EntitySchema<UserInvitationSchema>({
     name: 'user_invitation',
     columns: {
         ...BaseColumnSchemaPart,
-        platformId: {
+        tenantId: {
             type: String,
             nullable: false,
         },
@@ -17,7 +17,7 @@ export const UserInvitationEntity = new EntitySchema<UserInvitationSchema>({
             type: String,
             nullable: false,
         },
-        platformRole: {
+        tenantRole: {
             type: String,
             nullable: true,
         },
@@ -39,8 +39,8 @@ export const UserInvitationEntity = new EntitySchema<UserInvitationSchema>({
     },
     indices: [
         {
-            name: 'idx_user_invitation_email_platform_workspace',
-            columns: ['email', 'platformId', 'workspaceId'],
+            name: 'idx_user_invitation_email_tenant_workspace',
+            columns: ['email', 'tenantId', 'workspaceId'],
             unique: true,
         },
     ],

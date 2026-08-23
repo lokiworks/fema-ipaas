@@ -21,7 +21,7 @@ import { workflowSideEffects } from '../../workflows/workflow/workflow-service-s
 import { workflowService } from '../../workflows/workflow/workflow.service'
 import { workflowVersionService } from '../../workflows/workflow-version/workflow-version.service'
 import { workspaceService } from '../../workspace/workspace-service'
-import { getPlatformGroupQueueName, getWorkspaceGroupQueueName, QueueName, WorkerGroupAssignment } from '../job'
+import { getTenantGroupQueueName, getWorkspaceGroupQueueName, QueueName, WorkerGroupAssignment } from '../job'
 import { jobBroker } from '../job-queue/job-broker'
 import { machineService } from '../machine/machine-service'
 
@@ -31,7 +31,7 @@ const getPollQueueName = (assignment: WorkerGroupAssignment | null): string => {
     }
     return assignment.scope === WorkerGroupScope.WORKSPACE
         ? getWorkspaceGroupQueueName(assignment.id)
-        : getPlatformGroupQueueName(assignment.id)
+        : getTenantGroupQueueName(assignment.id)
 }
 
 let pagedForUnreadableAppVersion = false
@@ -98,7 +98,7 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
                 return []
             }
 
-            const platformId = await workspaceService(log).getPlatformId(workspaceId)
+            const tenantId = await workspaceService(log).getTenantId(workspaceId)
             const filterPayloads = await dedupeService.filterUniquePayloads(workflowVersionId, payloads)
 
             const creditsExhausted = false
@@ -121,7 +121,7 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
                             workflowVersionId,
                             payload,
                             workspaceId,
-                            platformId,
+                            tenantId,
                             httpRequestId,
                             workerHandlerId: undefined,
                             executionType: ExecutionType.BEGIN,
@@ -172,7 +172,7 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
                 name: input.name,
                 version: input.version,
                 workspaceId: input.workspaceId,
-                platformId: input.platformId,
+                tenantId: input.tenantId,
             })
         },
 
@@ -238,7 +238,7 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
             const file = await fileService(log).save({
                 fileId: input.workflowVersionId,
                 workspaceId: input.workspaceId,
-                platformId: input.platformId,
+                tenantId: input.tenantId,
                 type: FileType.WORKFLOW_BUNDLE,
                 data: null,
                 size: input.size,
@@ -256,7 +256,7 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
             await fileService(log).save({
                 fileId: input.workflowVersionId,
                 workspaceId: input.workspaceId,
-                platformId: input.platformId,
+                tenantId: input.tenantId,
                 type: FileType.WORKFLOW_BUNDLE,
                 data: input.data,
                 size: input.data.length,
@@ -270,19 +270,19 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
             if (workflow.status === WorkflowStatus.DISABLED) {
                 return
             }
-            const platformId = await workspaceService(log).getPlatformId(workspaceId)
+            const tenantId = await workspaceService(log).getTenantId(workspaceId)
             const disabledWorkflow = await workflowService(log).update({
                 id: workflowId,
                 userId: null,
                 workspaceId,
-                platformId,
+                tenantId,
                 emitEvents: false,
                 operation: {
                     type: WorkflowOperationType.CHANGE_STATUS,
                     request: { status: WorkflowStatus.DISABLED },
                 },
             })
-            workflowSideEffects(log).onDisabledByWorker({ workflow: disabledWorkflow, workspaceId, platformId })
+            workflowSideEffects(log).onDisabledByWorker({ workflow: disabledWorkflow, workspaceId, tenantId })
             log.info({ workflow: { id: workflowId }, workspace: { id: workspaceId } }, '[workerRpc#disableWorkflow] Workflow disabled by worker request')
         },
 

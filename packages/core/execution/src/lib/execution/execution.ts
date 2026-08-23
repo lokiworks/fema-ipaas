@@ -85,7 +85,7 @@ export const Execution = z.object({
     stepNameToTest: z.string().optional(),
     archivedAt: Nullable(z.string()),
     stepsCount: z.number().optional(),
-    // Populated only for platform admins on INTERNAL_ERROR runs; stripped from the response otherwise.
+    // Populated only for tenant admins on INTERNAL_ERROR runs; stripped from the response otherwise.
     internalError: RunInternalError.optional(),
 })
 

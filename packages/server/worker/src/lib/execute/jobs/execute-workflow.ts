@@ -1,5 +1,5 @@
 import { inspect } from 'node:util'
-import { ErrorCode, isNil, PlatformError, tryCatch } from '@fema/core-utils'
+import { ApplicationError, ErrorCode, isNil, tryCatch } from '@fema/core-utils'
 import { onCallService } from '@fema/server-utils'
 import { BeginExecuteWorkflowOperation, EngineOperationType, EngineResponseStatus, ExecuteWorkflowJobData, ExecutionStatus, ExecutionType, FailedStep, ResumeExecuteWorkflowOperation, RunInternalError, RunInternalErrorSource, WorkerJobType, WorkflowVersion } from '@fema/shared'
 import { system, WorkerSystemProp } from '../../config/configs'
@@ -13,7 +13,7 @@ export const executeWorkflowJob: JobHandler<ExecuteWorkflowJobData, FireAndForge
         const timeoutInSeconds = workerSettings.getSettings().WORKFLOW_TIMEOUT_SECONDS
 
         const { data: resolved, error: provisionError } = await tryCatch(() =>
-            ctx.resolver.resolve({ platformId: data.platformId, publicApiUrl: ctx.publicApiUrl, engineToken: ctx.engineToken, workflow: { id: data.workflowId, versionId: data.workflowVersionId, workspaceId: data.workspaceId } }),
+            ctx.resolver.resolve({ tenantId: data.tenantId, publicApiUrl: ctx.publicApiUrl, engineToken: ctx.engineToken, workflow: { id: data.workflowId, versionId: data.workflowVersionId, workspaceId: data.workspaceId } }),
         )
         if (provisionError) {
             await reportWorkflowStatus({ ctx, data, status: ExecutionStatus.INTERNAL_ERROR, internalError: toInternalError(RunInternalErrorSource.WORKER, provisionError) })
@@ -36,14 +36,14 @@ export const executeWorkflowJob: JobHandler<ExecuteWorkflowJobData, FireAndForge
 
         // resolved.kind === 'ready' — workflowVersion is guaranteed present when workflow: is passed to resolve
         if (isNil(resolved.workflowVersion)) {
-            const error = new PlatformError({ code: ErrorCode.VALIDATION, params: { message: 'workflowVersion missing after resolve' } })
+            const error = new ApplicationError({ code: ErrorCode.VALIDATION, params: { message: 'workflowVersion missing after resolve' } })
             await reportWorkflowStatus({ ctx, data, status: ExecutionStatus.INTERNAL_ERROR, internalError: toInternalError(RunInternalErrorSource.WORKER, error) })
             throw error
         }
         const workflowVersion: WorkflowVersion = resolved.workflowVersion
 
         if (data.executionType === ExecutionType.RESUME && isNil(data.logsFileId)) {
-            const error = new PlatformError({
+            const error = new ApplicationError({
                 code: ErrorCode.RESUME_LOGS_FILE_MISSING,
                 params: { runId: data.runId },
             }, 'logsFileId is missing for RESUME operation')
@@ -93,7 +93,7 @@ export const executeWorkflowJob: JobHandler<ExecuteWorkflowJobData, FireAndForge
                 await reportWorkflowStatus({ ctx, data, status: ExecutionStatus.TIMEOUT })
                 return { kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.TIMEOUT }
             }
-            if (e instanceof PlatformError) {
+            if (e instanceof ApplicationError) {
                 if (e.error.code === ErrorCode.SANDBOX_MEMORY_ISSUE) {
                     await reportWorkflowStatus({ ctx, data, status: ExecutionStatus.MEMORY_LIMIT_EXCEEDED })
                     return { kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.MEMORY_ISSUE }
@@ -126,7 +126,7 @@ function buildWorkflowOperation(
         stepNameToTest: data.stepNameToTest ?? null,
         logsFileId: data.logsFileId,
         timeoutInSeconds,
-        platformId: data.platformId,
+        tenantId: data.tenantId,
         engineToken: ctx.engineToken,
         internalApiUrl: ctx.internalApiUrl,
         publicApiUrl: ctx.publicApiUrl,
@@ -151,7 +151,7 @@ function buildWorkflowOperation(
 }
 
 function toInternalError(source: RunInternalErrorSource, error: unknown): RunInternalError {
-    const isApError = error instanceof PlatformError
+    const isApError = error instanceof ApplicationError
     const base = error instanceof Error
         ? [error.name, error.message, error.stack].filter(Boolean).join('\n')
         : inspect(error, { depth: 1 })

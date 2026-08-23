@@ -3,7 +3,7 @@ import {
     connectorPropertiesUtils,
     ConnectorPropertyMap,
 } from '@fema/connector-sdk'
-import { ErrorCode, isNil, PlatformError, PlatformId, STEP_NAME_REGEX, UserId } from '@fema/core-utils'
+import { ApplicationError, ErrorCode, isNil, STEP_NAME_REGEX, TenantId, UserId } from '@fema/core-utils'
 import { CodeActionSettings, ConnectorActionSettings, ConnectorTriggerSettings, LoopOnItemsActionSettings, RouterActionSettingsWithValidation, SourceCode, WorkflowActionType, workflowConnectorUtil, WorkflowOperationRequest, WorkflowOperationType, workflowStructureUtil, WorkflowTrigger, WorkflowTriggerType } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { z } from 'zod'
@@ -26,7 +26,7 @@ type ValidationResult = {
 }
 
 export const workflowVersionValidationUtil = (log: FastifyBaseLogger) => ({
-    async prepareRequest({ platformId, request, userId }: PrepareRequestParams): Promise<WorkflowOperationRequest> {
+    async prepareRequest({ tenantId, request, userId }: PrepareRequestParams): Promise<WorkflowOperationRequest> {
         const clonedRequest: WorkflowOperationRequest = JSON.parse(JSON.stringify(request))
 
         switch (clonedRequest.type) {
@@ -40,7 +40,7 @@ export const workflowVersionValidationUtil = (log: FastifyBaseLogger) => ({
                     case WorkflowActionType.CONNECTOR: {
                         clonedRequest.request.action.settings.connectorVersion = workflowConnectorUtil.getExactVersion(clonedRequest.request.action.settings.connectorVersion)
                         const result = await validateAction(
-                            { settings: clonedRequest.request.action.settings, platformId, log },
+                            { settings: clonedRequest.request.action.settings, tenantId, log },
                         )
                         clonedRequest.request.action.valid = result.valid
                         if (!isNil(result.cleanInput)) {
@@ -70,7 +70,7 @@ export const workflowVersionValidationUtil = (log: FastifyBaseLogger) => ({
                     case WorkflowActionType.CONNECTOR: {
                         clonedRequest.request.settings.connectorVersion = workflowConnectorUtil.getExactVersion(clonedRequest.request.settings.connectorVersion)
                         const result = await validateAction(
-                            { settings: clonedRequest.request.settings, platformId, log },
+                            { settings: clonedRequest.request.settings, tenantId, log },
                         )
                         clonedRequest.request.valid = result.valid
                         if (!isNil(result.cleanInput)) {
@@ -98,7 +98,7 @@ export const workflowVersionValidationUtil = (log: FastifyBaseLogger) => ({
                     case WorkflowTriggerType.CONNECTOR: {
                         clonedRequest.request.settings.connectorVersion = workflowConnectorUtil.getExactVersion(clonedRequest.request.settings.connectorVersion)
                         const result = await validateTrigger(
-                            { settings: clonedRequest.request.settings, platformId, log },
+                            { settings: clonedRequest.request.settings, tenantId, log },
                         )
                         clonedRequest.request.valid = result.valid
                         if (result.valid && result.cleanInput) {
@@ -129,14 +129,14 @@ export const workflowVersionValidationUtil = (log: FastifyBaseLogger) => ({
 function assertImportedStepNamesAreSafe(trigger: WorkflowTrigger): void {
     const invalidStep = workflowStructureUtil.getAllSteps(trigger).find((step) => !STEP_NAME_REGEX.test(step.name))
     if (!isNil(invalidStep)) {
-        throw new PlatformError({
+        throw new ApplicationError({
             code: ErrorCode.VALIDATION,
             params: { message: `Invalid step name: "${invalidStep.name}"` },
         })
     }
 }
 
-async function validateAction({ settings, platformId, log }: ValidateActionParams): Promise<ValidationResult> {
+async function validateAction({ settings, tenantId, log }: ValidateActionParams): Promise<ValidationResult> {
     if (
         isNil(settings.connectorName) ||
         isNil(settings.connectorVersion) ||
@@ -147,7 +147,7 @@ async function validateAction({ settings, platformId, log }: ValidateActionParam
     }
 
     const connector = await connectorMetadataService(log).getOrThrow({
-        platformId,
+        tenantId,
         name: settings.connectorName,
         version: settings.connectorVersion,
     })
@@ -166,7 +166,7 @@ async function validateAction({ settings, platformId, log }: ValidateActionParam
     return validateProps(props, settings.input, connector.auth, action.requireAuth)
 }
 
-async function validateTrigger({ settings, platformId, log }: ValidateTriggerParams): Promise<ValidationResult> {
+async function validateTrigger({ settings, tenantId, log }: ValidateTriggerParams): Promise<ValidationResult> {
     if (
         isNil(settings.connectorName) ||
         isNil(settings.connectorVersion) ||
@@ -177,7 +177,7 @@ async function validateTrigger({ settings, platformId, log }: ValidateTriggerPar
     }
 
     const connector = await connectorMetadataService(log).getOrThrow({
-        platformId,
+        tenantId,
         name: settings.connectorName,
         version: settings.connectorVersion,
     })
@@ -213,19 +213,19 @@ function validateProps(
 
 
 type PrepareRequestParams = {
-    platformId?: PlatformId
+    tenantId?: TenantId
     request: WorkflowOperationRequest
     userId: UserId | null
 }
 
 type ValidateActionParams = {
     settings: ConnectorActionSettings
-    platformId?: PlatformId
+    tenantId?: TenantId
     log: FastifyBaseLogger
 }
 
 type ValidateTriggerParams = {
     settings: ConnectorTriggerSettings
-    platformId?: PlatformId
+    tenantId?: TenantId
     log: FastifyBaseLogger
 }

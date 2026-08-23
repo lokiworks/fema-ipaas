@@ -47,7 +47,7 @@ export const UserIdentityEntity = new EntitySchema<UserIdentity>({
             type: String,
             nullable: true,
         },
-        lastLoggedInPlatformId: {
+        lastLoggedInTenantId: {
             ...ApIdSchema,
             nullable: true,
         },

@@ -1,6 +1,6 @@
 import os from 'os'
 import path from 'path'
-import { ErrorCode, isNil, PlatformError } from '@fema/core-utils'
+import { ApplicationError, ErrorCode, isNil } from '@fema/core-utils'
 import { ConnectorSyncMode, DefaultWorkspaceRole, ExecutionMode, FileLocation, NetworkMode } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { DatabaseType } from '../../database/database-type'
@@ -82,7 +82,7 @@ export const system = {
         const value = system.getNumber(prop)
 
         if (isNil(value)) {
-            throw new PlatformError(
+            throw new ApplicationError(
                 {
                     code: ErrorCode.SYSTEM_PROP_NOT_DEFINED,
                     params: {
@@ -123,7 +123,7 @@ export const system = {
     getBooleanOrThrow(prop: SystemProp): boolean {
         const value = this.getBoolean(prop)
         if (isNil(value)) {
-            throw new PlatformError(
+            throw new ApplicationError(
                 {
                     code: ErrorCode.SYSTEM_PROP_NOT_DEFINED,
                     params: {
@@ -147,7 +147,7 @@ export const system = {
         const value = getEnvVarOrReturnDefaultValue(prop) as T | undefined
 
         if (value === undefined) {
-            throw new PlatformError(
+            throw new ApplicationError(
                 {
                     code: ErrorCode.SYSTEM_PROP_NOT_DEFINED,
                     params: {

@@ -1,4 +1,4 @@
-import { ErrorCode, isNil, PlatformError, tryCatch } from '@fema/core-utils'
+import { ApplicationError, ErrorCode, isNil, tryCatch } from '@fema/core-utils'
 import { type ApLogger, wideEvent } from '@fema/server-utils'
 import { ConnectorPackage } from '@fema/shared'
 import { localExecutionCache } from './cache/local-execution-cache'
@@ -20,7 +20,7 @@ import {
 // box by workerIndex. The boxes share the on-disk caches, which are already concurrency-safe
 // (threadSafeMkdir / cache-state), so there is no per-key provision dedup here. execute owns the slot
 // lifecycle: acquire -> provision -> run -> release on success / invalidate on throw, re-raising the
-// sandbox PlatformError codes (timeout / memory / log-size) that handlers already catch. See ADR 0004.
+// sandbox ApplicationError codes (timeout / memory / log-size) that handlers already catch. See ADR 0004.
 export function createSandboxRuntime({ concurrency = 1, basePath, getSettings }: CreateSandboxRuntimeParams): Runtime {
     const managers: SandboxManager[] = Array.from({ length: concurrency }, (_, index) =>
         createSandboxManager({ boxId: index + 1, basePath, getSettings }),
@@ -30,7 +30,7 @@ export function createSandboxRuntime({ concurrency = 1, basePath, getSettings }:
         async execute({ workerIndex, log, operationType, operation, timeoutInSeconds, expiresAt, provision }: ExecuteParams): Promise<RuntimeExecutionResult> {
             const manager = managers[workerIndex]
             if (isNil(manager)) {
-                throw new PlatformError({
+                throw new ApplicationError({
                     code: ErrorCode.VALIDATION,
                     params: { message: `No sandbox manager for worker index ${workerIndex} (concurrency=${concurrency})` },
                 })
@@ -66,14 +66,14 @@ export function createSandboxRuntime({ concurrency = 1, basePath, getSettings }:
                             name: 'sandboxStart',
                             fn: () => sandbox.start({
                                 workflowVersionId: provision.workflowVersionId,
-                                platformId: provision.platformId,
+                                tenantId: provision.tenantId,
                                 mounts: [],
                             }),
                         })
                         bootMs = Date.now() - bootStartedAt
                         const runTimeoutInSeconds = remainingTimeoutInSeconds({ timeoutInSeconds, expiresAt })
                         if (runTimeoutInSeconds <= 0) {
-                            throw new PlatformError({
+                            throw new ApplicationError({
                                 code: ErrorCode.SANDBOX_EXECUTION_TIMEOUT,
                                 params: {
                                     standardOutput: '',
@@ -115,7 +115,7 @@ export function createSandboxRuntime({ concurrency = 1, basePath, getSettings }:
                 return
             }
             const { error } = await tryCatch(async () => {
-                const { workflows, platformId, engineToken } = await apiClient.getPrewarmData({
+                const { workflows, tenantId, engineToken } = await apiClient.getPrewarmData({
                     workerGroupId: getSettings().WORKER_GROUP_ID,
                     workspaceWorker: getSettings().WORKSPACE_WORKER,
                     workflow,
@@ -124,7 +124,7 @@ export function createSandboxRuntime({ concurrency = 1, basePath, getSettings }:
                 const connectors: ConnectorPackage[] = []
                 const codeSteps: CodeArtifact[] = []
                 for (const workflow of workflows) {
-                    const { data: resolved, error: workflowError } = await tryCatch(() => resolver.resolve({ workflow, platformId, publicApiUrl, engineToken }))
+                    const { data: resolved, error: workflowError } = await tryCatch(() => resolver.resolve({ workflow, tenantId, publicApiUrl, engineToken }))
                     if (workflowError) {
                         log.warn({ error: String(workflowError), workflow: { id: workflow.id } }, 'Failed to resolve workflow for prewarm')
                         continue

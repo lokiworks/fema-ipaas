@@ -49,7 +49,7 @@ function makeWorkspace(
     type,
     ownerId,
     displayName,
-    platformId: 'platform1',
+    tenantId: 'tenant1',
     maxConcurrentJobs: null,
     icon: { color: 'BLUE' as never },
     externalId: null,
@@ -198,10 +198,10 @@ describe('useAll filter', () => {
     ).toHaveLength(0);
   });
 
-  it('shows TEAM workspaces and only own PERSONAL from a full platform collection', () => {
+  it('shows TEAM workspaces and only own PERSONAL from a full tenant collection', () => {
     const workspaces = [
-      makeWorkspace('teamA', WorkspaceType.TEAM, 'platformOwner'),
-      makeWorkspace('teamB', WorkspaceType.TEAM, 'platformOwner'),
+      makeWorkspace('teamA', WorkspaceType.TEAM, 'tenantOwner'),
+      makeWorkspace('teamB', WorkspaceType.TEAM, 'tenantOwner'),
       makeWorkspace('personalMine', WorkspaceType.PERSONAL, CURRENT_USER_ID),
       makeWorkspace('personalOther1', WorkspaceType.PERSONAL, OTHER_USER_ID),
       makeWorkspace('personalOther2', WorkspaceType.PERSONAL, 'userThird'),
@@ -218,7 +218,7 @@ describe('useAll filter', () => {
   });
 });
 
-describe('useAllPlatformWorkspaces filter', () => {
+describe('useAllTenantWorkspaces filter', () => {
   const allWorkspaces = [
     makeWorkspace('t1', WorkspaceType.TEAM, 'owner', 'Alpha'),
     makeWorkspace('t2', WorkspaceType.TEAM, 'owner', 'Beta'),
@@ -415,7 +415,7 @@ describe('setCurrentWorkspace', () => {
   });
 
   it('does not modify paths without a /workspaces/:id segment', () => {
-    setCurrentWorkspace('projNew', '/platform/workspaces');
-    expect(window.location.href).toBe('/platform/workspaces');
+    setCurrentWorkspace('projNew', '/tenant/workspaces');
+    expect(window.location.href).toBe('/tenant/workspaces');
   });
 });

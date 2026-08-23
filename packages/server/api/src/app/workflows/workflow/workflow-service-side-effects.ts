@@ -1,4 +1,4 @@
-import { isNil, PlatformId, WorkspaceId } from '@fema/core-utils'
+import { isNil, TenantId, WorkspaceId } from '@fema/core-utils'
 import { ApplicationEventName, FileType, PopulatedWorkflow, Workflow, WorkflowOperationRequest, WorkflowOperationType, WorkflowStatus, WorkflowVersion } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { applicationEvents, MetaInformation } from '../../helper/application-events'
@@ -108,10 +108,10 @@ export const workflowSideEffects = (log: FastifyBaseLogger) => ({
         })
     },
 
-    onDisabledByWorker({ workflow, workspaceId, platformId }: OnDisabledByWorkerParams): void {
+    onDisabledByWorker({ workflow, workspaceId, tenantId }: OnDisabledByWorkerParams): void {
         applicationEvents(log).sendWorkerEvent({
             workspaceId,
-            platformId,
+            tenantId,
             action: ApplicationEventName.WORKFLOW_DEACTIVATED,
             data: {
                 workflow,
@@ -156,7 +156,7 @@ type OnOperationAppliedParams = WorkflowEventParams & {
 type OnDisabledByWorkerParams = {
     workflow: PopulatedWorkflow
     workspaceId: WorkspaceId
-    platformId: PlatformId
+    tenantId: TenantId
 }
 
 type LifecycleActionsParams = {

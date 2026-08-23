@@ -24,9 +24,9 @@ export const jobQueue = (log: FastifyBaseLogger) => ({
     async add(params: AddJobParams<JobType>): Promise<Job | null> {
         const { type, data } = params
 
-        const platformId = data.platformId
+        const tenantId = data.tenantId
         const workspaceId = 'workspaceId' in data ? data.workspaceId : null
-        const queueName = await getQueueName({ platformId, workspaceId, jobType: data.jobType }, log)
+        const queueName = await getQueueName({ tenantId, workspaceId, jobType: data.jobType }, log)
         const queue = await ensureQueueExists({ log, queueName })
 
         switch (type) {
@@ -74,8 +74,8 @@ export const jobQueue = (log: FastifyBaseLogger) => ({
         }, '[jobQueue#removeRepeatingJob] removed jobs from all queues')
     },
 
-    async removeOneTimeJob({ jobId, platformId, workspaceId, jobType }: RemoveOneTimeJobParams): Promise<void> {
-        const queueName = await getQueueName({ platformId, workspaceId, jobType }, log)
+    async removeOneTimeJob({ jobId, tenantId, workspaceId, jobType }: RemoveOneTimeJobParams): Promise<void> {
+        const queueName = await getQueueName({ tenantId, workspaceId, jobType }, log)
         const queue = await ensureQueueExists({ log, queueName })
         const job = await queue.getJob(jobId)
         if (!isNil(job)) {
@@ -92,8 +92,8 @@ export const jobQueue = (log: FastifyBaseLogger) => ({
         }, '[jobQueue#removeOneTimeJob] job not found in queue')
     },
 
-    async cancelAndReportNeverStarted({ jobId, platformId, workspaceId, jobType }: RemoveOneTimeJobParams): Promise<boolean> {
-        const queueName = await getQueueName({ platformId, workspaceId, jobType }, log)
+    async cancelAndReportNeverStarted({ jobId, tenantId, workspaceId, jobType }: RemoveOneTimeJobParams): Promise<boolean> {
+        const queueName = await getQueueName({ tenantId, workspaceId, jobType }, log)
         const queue = await ensureQueueExists({ log, queueName })
         const job = await queue.getJob(jobId)
         if (isNil(job)) {
@@ -126,8 +126,8 @@ export const jobQueue = (log: FastifyBaseLogger) => ({
         }
         return queue
     },
-    async removeAllExecutionJobs({ executionId, platformId, workspaceId }: RemoveAllExecutionJobsParams): Promise<void> {
-        const queueName = await getQueueName({ platformId, workspaceId, jobType: WorkerJobType.EXECUTE_WORKFLOW }, log)
+    async removeAllExecutionJobs({ executionId, tenantId, workspaceId }: RemoveAllExecutionJobsParams): Promise<void> {
+        const queueName = await getQueueName({ tenantId, workspaceId, jobType: WorkerJobType.EXECUTE_WORKFLOW }, log)
         const queue = await ensureQueueExists({ log, queueName })
         const allJobs = await queue.getJobs(['waiting', 'delayed'])
         const matching = allJobs.filter((j) => j.id?.startsWith(executionId))
@@ -209,9 +209,9 @@ const WORKSPACE_GROUP_ROUTABLE_JOB_TYPES = new Set<WorkerJobType>([
     WorkerJobType.EXECUTE_WEBHOOK,
 ])
 
-async function getQueueName({ platformId, workspaceId, jobType }: GetQueueNameParams, log: FastifyBaseLogger): Promise<string> {
-    if (!isNil(platformId) && !isNil(workspaceId) && !isNil(jobType) && WORKSPACE_GROUP_ROUTABLE_JOB_TYPES.has(jobType)) {
-        const workspaceGroupId = await workspaceWorkerGroupService(log).getWorkspaceWorkerGroup({ workspaceId, platformId })
+async function getQueueName({ tenantId, workspaceId, jobType }: GetQueueNameParams, log: FastifyBaseLogger): Promise<string> {
+    if (!isNil(tenantId) && !isNil(workspaceId) && !isNil(jobType) && WORKSPACE_GROUP_ROUTABLE_JOB_TYPES.has(jobType)) {
+        const workspaceGroupId = await workspaceWorkerGroupService(log).getWorkspaceWorkerGroup({ workspaceId, tenantId })
         if (!isNil(workspaceGroupId)) {
             // Only route to the group's dedicated queue while it has a live worker; otherwise fall
             // through to the shared queue so runs still execute until a worker returns.
@@ -232,21 +232,21 @@ export enum JobType {
 }
 
 type GetQueueNameParams = {
-    platformId: string | null
+    tenantId: string | null
     workspaceId?: string | null
     jobType?: WorkerJobType
 }
 
 type RemoveOneTimeJobParams = {
     jobId: ApId
-    platformId: string | null
+    tenantId: string | null
     workspaceId?: string | null
     jobType?: WorkerJobType
 }
 
 type RemoveAllExecutionJobsParams = {
     executionId: string
-    platformId: string | null
+    tenantId: string | null
     workspaceId?: string | null
 }
 

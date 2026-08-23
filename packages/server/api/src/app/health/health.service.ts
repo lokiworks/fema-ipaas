@@ -41,9 +41,9 @@ export const healthStatusService = (log: FastifyBaseLogger) => ({
         }
         return  workerHealthy && databaseHealthy
     },
-    getSystemHealthChecks: async (platformId: string): Promise<GetSystemHealthChecksResponse> => {
+    getSystemHealthChecks: async (tenantId: string): Promise<GetSystemHealthChecksResponse> => {
         const [workers, databaseHealthy, latestVersion] = await Promise.all([
-            machineService(log).list(platformId),
+            machineService(log).list(tenantId),
             healthStatusService(log).checkDatabaseHealth(),
             apVersionUtil.getLatestRelease(),
         ])
@@ -61,15 +61,15 @@ export const healthStatusService = (log: FastifyBaseLogger) => ({
             release,
         }
     },
-    getDiagnostics: async (platformId: string): Promise<GetDiagnosticsResponse> => {
-        // Self-hosted only: a platform admin here is the infra operator. On Cloud a platform admin is a
+    getDiagnostics: async (tenantId: string): Promise<GetDiagnosticsResponse> => {
+        // Self-hosted only: a tenant admin here is the infra operator. On Cloud a tenant admin is a
         // tenant, so exposing shared Redis/S3/DB latency + the internal S3 endpoint would leak operator
         // infra and let tenants probe storage they don't own.
         const [database, redis, storage, machines, apps] = await Promise.all([
             measureDatabase(log),
             measureRedis(log),
             measureStorage(log),
-            machineService(log).list(platformId),
+            machineService(log).list(tenantId),
             appMachineCache.list(),
         ])
         return {

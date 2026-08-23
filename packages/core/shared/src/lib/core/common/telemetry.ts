@@ -134,7 +134,7 @@ type FormsViewed = {
 }
 
 type UserInvited = {
-    platformId: string
+    tenantId: string
     workspaceId?: string
     email: string
 }
@@ -148,7 +148,7 @@ type TriggerFailuresExceeded = {
 type AiProviderConfiguredOrUsed = {
     provider: string
     workspaceId: string
-    platformId: string
+    tenantId: string
 }
 
 type McpToolCalled = {
@@ -159,7 +159,7 @@ type McpToolCalled = {
 type McpServerConnected = {
     userId: string
     workspaceId?: string
-    platformId?: string
+    tenantId?: string
 }
 
 type ConnectorSelectorSearch = {
@@ -201,7 +201,7 @@ type FederatedLoginStarted = {
 
 type SignedIn = {
     userId: UserId
-    platformId: string
+    tenantId: string
 }
 export enum TelemetryEventName {
     SIGNED_UP = 'signed.up',

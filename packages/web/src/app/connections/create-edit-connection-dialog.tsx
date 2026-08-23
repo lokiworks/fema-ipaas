@@ -106,7 +106,7 @@ function CreateOrEditConnectionSection({
           redirectUrl: redirectUrl ?? '',
           workspaceId: workspaceIdOverride ?? undefined,
         }),
-        ...(isGlobalConnection ? { scope: ConnectionScope.PLATFORM } : {}),
+        ...(isGlobalConnection ? { scope: ConnectionScope.TENANT } : {}),
         workspaceIds: reconnectConnection?.workspaceIds ?? [],
         preSelectForNewWorkspaces: false,
         connectorVersion: connector.version,
@@ -172,7 +172,7 @@ function CreateOrEditConnectionSection({
               markdown={selectedAuth.authProperty.description}
               variables={{
                 redirectUrl: redirectUrl ?? '',
-                platformId: authenticationSession.getPlatformId() ?? '',
+                tenantId: authenticationSession.getTenantId() ?? '',
                 workspaceId: authenticationSession.getWorkspaceId() ?? '',
                 frontendUrl: oidcIssuerUrl,
                 frontendHost: oidcIssuerHost,

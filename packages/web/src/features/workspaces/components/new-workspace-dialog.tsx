@@ -1,6 +1,6 @@
 import {
   ConnectionWithoutSensitiveData,
-  CreatePlatformWorkspaceRequest,
+  CreateTenantWorkspaceRequest,
   WorkspaceWithLimits,
 } from '@fema/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -27,7 +27,7 @@ import { SkeletonList } from '@/components/ui/skeleton';
 import { internalErrorToast } from '@/components/ui/sonner';
 import { globalConnectionsQueries } from '@/features/connections';
 import { workspaceCollectionUtils } from '@/features/workspaces';
-import { platformHooks } from '@/hooks/platform-hooks';
+import { tenantHooks } from '@/hooks/tenant-hooks';
 
 type NewWorkspaceDialogProps = {
   children: React.ReactNode;
@@ -36,8 +36,8 @@ type NewWorkspaceDialogProps = {
 
 export const NewWorkspaceDialog = (props: NewWorkspaceDialogProps) => {
   const [open, setOpen] = useState(false);
-  const { platform } = platformHooks.useCurrentPlatform();
-  const globalConnectionsEnabled = platform.plan.globalConnectionsEnabled;
+  const { tenant } = tenantHooks.useCurrentTenant();
+  const globalConnectionsEnabled = tenant.plan.globalConnectionsEnabled;
 
   const { data: globalConnectionsPage, isLoading: isLoadingConnections } =
     globalConnectionsQueries.useGlobalConnections({
@@ -85,7 +85,7 @@ const NewWorkspaceForm = ({
 }) => {
   const queryClient = useQueryClient();
 
-  const form = useForm<CreatePlatformWorkspaceRequest>({
+  const form = useForm<CreateTenantWorkspaceRequest>({
     resolver: zodResolver(
       z.object({
         displayName: z.string().min(1, t('Name is required')),

@@ -9,7 +9,7 @@ const CACHE_TTL_SECONDS = apDayjsDuration(5, 'minute').asSeconds()
 const getWorkspaceWorkerGroupCacheKey = (workspaceId: string): string => `workspace:${workspaceId}:worker_group`
 
 export const workspaceWorkerGroupService = (_log: FastifyBaseLogger) => ({
-    async getWorkspaceWorkerGroup({ workspaceId, platformId }: { workspaceId: string, platformId?: string | null }): Promise<string | null> {
+    async getWorkspaceWorkerGroup({ workspaceId, tenantId }: { workspaceId: string, tenantId?: string | null }): Promise<string | null> {
         const cached = await distributedStore.get<string>(getWorkspaceWorkerGroupCacheKey(workspaceId))
         if (!isNil(cached)) {
             return cached === NO_WORKER_GROUP_SENTINEL ? null : cached
@@ -17,7 +17,7 @@ export const workspaceWorkerGroupService = (_log: FastifyBaseLogger) => ({
 
         const workspace = await workspaceRepo().findOne({
             select: ['workerGroupId'],
-            where: { id: workspaceId, ...spreadIfDefined('platformId', platformId ?? undefined) },
+            where: { id: workspaceId, ...spreadIfDefined('tenantId', tenantId ?? undefined) },
         })
 
         const workerGroupId = workspace?.workerGroupId ?? null

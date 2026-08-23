@@ -26,7 +26,7 @@ Metadata catalog of integrations (`@fema-ipaas/connector-*`), served from an in-
   - Join edges are filtered at save time: both endpoints must be existing steps and self-loops are dropped. Deleting a step otherwise leaves a dependency on a name nothing resolves to, and the Engine waits for it forever.
   - The trigger never participates in a join wait. It has no step output of its own, so `isCompleted` is permanently false for it and a join edge from the trigger would deadlock.
   - Nodes with one dependency or fewer skip the check entirely — that is nearly every node, and paying for the rare case everywhere is not worth it.
-  - **Not in the UI yet**: the canvas has no edge-drawing interaction. `SET_JOIN_EDGES` and the execution semantics both work, so join edges set through the API execute correctly.
+  - The builder edits join edges through a **"Wait for" checklist** in the step settings panel, not by dragging on the canvas — the canvas is a computed layout, not a free-form graph editor, and "wait for these steps" is the clearer phrasing of what a join edge means. The canvas renders each edge as a dashed labelled bezier drawn *on top of* the layout: it connects two nodes that already exist and must not shift any of them.
   - The cursor compiles per `execute()` call, which means once per branch boundary rather than once per step. A loop body is recompiled per iteration — cheap (a tree walk over the body) but not free, and worth knowing before putting a very large subtree inside a hot loop.
 
 ### Workflow Components

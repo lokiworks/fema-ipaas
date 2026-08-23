@@ -27,6 +27,29 @@ Platform-owned flow logic nodes (Branch, Loop, Delay, Code, Stop, Approval) — 
   - Adding a `WorkflowActionType` means touching more than `getExecutors()`: `test-execution-context.ts` (sample-data seeding for downstream step tests) and `workflow-version-validator-util.ts` (the `valid` flag, twice — ADD_ACTION and UPDATE_ACTION) both switch on it. The `switch-exhaustiveness-check` lint rule catches these; `turbo build` does not, because the engine is esbuild-only.
   - `@fema-ipaas/components` is a **built dist** dependency of the engine and api. After adding a component, `turbo run build --filter=@fema-ipaas/components` before running engine tests, or the registry lookup silently misses it.
 
+### Connector CLI
+
+`packages/cli` — `connectors create | validate | pack | build | bundle | publish | sync | migrate`, plus `actions create` and `triggers create` (design doc section 38).
+
+- `validate` checks the packaging rules that only bite after publish: scoped name, exact semver, a `main` entry, no dependency on `@fema-ipaas/shared`, and pinned third-party versions (workspace ranges are allowed).
+- `pack` builds the connector and writes `connector-manifest.json` beside the bundle — the section 39 manifest (schemaVersion, name, displayName, version, authTypes, action and trigger names, node range) so the registry can search and display a connector without executing its source.
+
+- **Gotchas**:
+  - The `__dirname` bundler guard compared paths against `process.cwd()` without resolving symlinks, so on macOS (`/var` → `/private/var`) every file fell outside the connector root and the guard silently passed. It is fixed, but the shape of the bug is worth remembering: a guard that skips everything looks exactly like a guard that finds nothing.
+  - `@fema-ipaas/cli` is in the root `test-unit` filter list. `api` is not — see the API test-suite task.
+
+### Registry Trust (source & checksum)
+
+`connector_metadata` carries `source` (`BUILT_IN` / `OFFICIAL` / `COMMUNITY` / `PRIVATE`) and a nullable `checksum`, per design doc section 23. This is the trust axis; `connectorType` (`OFFICIAL` / `CUSTOM`) remains the *ownership* axis and the two are not the same question.
+
+- Dev connectors loaded from disk are `BUILT_IN`; bundled-registry sync takes the registry's own `source` and falls back to `OFFICIAL`; uploads are `PRIVATE`.
+- `checksum` is a real sha256 of the uploaded archive, computed in `connectorInstallService`. It is **only** set for `PackageType.ARCHIVE` — a REGISTRY install has no local bytes to hash, so the column stays null there rather than storing something fabricated.
+
+- **Gotchas**:
+  - Nothing verifies the checksum yet — it is recorded at install so a later integrity check has something to compare against. Do not describe it as tamper detection until a verifier exists.
+  - `source` is `NOT NULL`; the migration backfills existing rows from `connectorType` (OFFICIAL → OFFICIAL, everything else → PRIVATE). A new insert path that forgets `source` fails at the DB, which is deliberate.
+  - Signature (section 23's optional `signature`) is not implemented.
+
 ### Connector Sets (EE/Cloud only, `manageConnectorsEnabled`)
 
 Named, reusable connector/action/trigger visibility config a platform admin assigns to many projects. Visibility is **derived at read time** — nothing written when a new connector installs.

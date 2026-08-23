@@ -88,6 +88,14 @@ export const ConnectorMetadataEntity =
               type: String,
               nullable: false,
           },
+          source: {
+              type: String,
+              nullable: false,
+          },
+          checksum: {
+              type: String,
+              nullable: true,
+          },
           archiveId: {
               ...ApIdSchema,
               nullable: true,

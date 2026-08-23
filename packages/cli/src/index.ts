@@ -7,6 +7,8 @@ import { publishConnectorCommand } from './lib/commands/publish-connector';
 import { buildConnectorCommand } from './lib/commands/build-connector';
 import { bundleConnectorCommand } from './lib/commands/bundle-connector';
 import { migrateConnectorCommand } from './lib/commands/migrate-connector';
+import { packConnectorCommand } from './lib/commands/pack-connector';
+import { validateConnectorCommand } from './lib/commands/validate-connector';
 import { generateWorkerTokenCommand } from './lib/commands/generate-worker-token';
 import { generateTranslationFileForAllConnectorsCommand, generateTranslationFileForConnectorCommand } from './lib/commands/generate-translation-file-for-connector';
 import { benchmarkCommand } from './lib/commands/benchmark';
@@ -20,6 +22,8 @@ connectorCommand.addCommand(publishConnectorCommand);
 connectorCommand.addCommand(buildConnectorCommand);
 connectorCommand.addCommand(bundleConnectorCommand);
 connectorCommand.addCommand(migrateConnectorCommand);
+connectorCommand.addCommand(validateConnectorCommand);
+connectorCommand.addCommand(packConnectorCommand);
 connectorCommand.addCommand(generateTranslationFileForConnectorCommand);
 connectorCommand.addCommand(generateTranslationFileForAllConnectorsCommand);
 const actionCommand = new Command('actions')

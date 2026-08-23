@@ -1,7 +1,7 @@
 import { ConnectorMetadata, ConnectorMetadataModel, ConnectorMetadataModelSummary, ConnectorPackageInformation, connectorTranslation } from '@fema-ipaas/connector-sdk'
 import { apId, ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil, LocalesEnum, TenantId } from '@fema-ipaas/core-utils'
 import { apVersionUtil } from '@fema-ipaas/server-utils'
-import { ConnectorAudienceFilter, ConnectorCategory, ConnectorOrderBy, ConnectorPackage, ConnectorSortBy, ConnectorType, EXACT_VERSION_REGEX, PackageType, PrivateConnectorPackage, PublicConnectorPackage, SuggestionType, workflowConnectorUtil } from '@fema-ipaas/shared'
+import { ConnectorAudienceFilter, ConnectorCategory, ConnectorOrderBy, ConnectorPackage, ConnectorSortBy, ConnectorSource, ConnectorType, EXACT_VERSION_REGEX, PackageType, PrivateConnectorPackage, PublicConnectorPackage, SuggestionType, workflowConnectorUtil } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import semVer from 'semver'
@@ -122,6 +122,8 @@ export const connectorMetadataService = (log: FastifyBaseLogger) => {
             tenantId,
             packageType,
             connectorType,
+            source,
+            checksum,
             archiveId,
             publishCacheRefresh = true,
         }: CreateParams): Promise<ConnectorMetadataSchema> {
@@ -146,6 +148,8 @@ export const connectorMetadataService = (log: FastifyBaseLogger) => {
                 id: apId(),
                 packageType,
                 connectorType,
+                source,
+                checksum,
                 archiveId,
                 tenantId,
                 created: createdDate,
@@ -541,6 +545,8 @@ type CreateParams = {
     workspaceId?: string
     packageType: PackageType
     connectorType: ConnectorType
+    source: ConnectorSource
+    checksum?: string
     archiveId?: string
     publishCacheRefresh?: boolean
 }

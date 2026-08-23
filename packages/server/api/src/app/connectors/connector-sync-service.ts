@@ -1,7 +1,7 @@
 import { ConnectorMetadataModel } from '@fema-ipaas/connector-sdk'
 import { groupBy, isNil, tryCatch } from '@fema-ipaas/core-utils'
 import { apVersionUtil, safeHttp } from '@fema-ipaas/server-utils'
-import { ConnectorSyncMode, ConnectorType } from '@fema-ipaas/shared'
+import { ConnectorSource, ConnectorSyncMode, ConnectorType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import semver from 'semver'
 import { rejectedPromiseHandler } from '../helper/promise-handler'
@@ -103,6 +103,8 @@ async function installNewConnectors(cloudConnectors: ConnectorRegistryResponse[]
                 connectorMetadata,
                 packageType: connectorMetadata.packageType,
                 connectorType: connectorMetadata.connectorType,
+                source: connectorMetadata.source ?? ConnectorSource.OFFICIAL,
+                checksum: connectorMetadata.checksum,
                 publishCacheRefresh: false,
             }))
             if (error) {

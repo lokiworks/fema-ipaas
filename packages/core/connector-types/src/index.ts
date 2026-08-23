@@ -1,4 +1,4 @@
-export { PackageType, ConnectorType, ConnectorCategory, MAX_KEY_LENGTH_FOR_CORWDIN } from './lib/connector'
+export { PackageType, ConnectorType, ConnectorSource, ConnectorCategory, MAX_KEY_LENGTH_FOR_CORWDIN } from './lib/connector'
 
 export {
     ConnectionType,

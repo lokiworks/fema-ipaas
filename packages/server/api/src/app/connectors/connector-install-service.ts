@@ -1,6 +1,7 @@
+import { createHash } from 'node:crypto'
 import { ConnectorMetadata, ConnectorMetadataModel } from '@fema-ipaas/connector-sdk'
 import { ApplicationError, ErrorCode, isNil, TenantId, WorkspaceId } from '@fema-ipaas/core-utils'
-import { AddConnectorRequestBody, ConnectorPackage, ConnectorType, EngineResponse, EngineResponseStatus, ExecuteExtractConnectorMetadata, FileCompression, FileId, FileType, PackageType, WorkerJobType } from '@fema-ipaas/shared'
+import { AddConnectorRequestBody, ConnectorPackage, ConnectorSource, ConnectorType, EngineResponse, EngineResponseStatus, ExecuteExtractConnectorMetadata, FileCompression, FileId, FileType, PackageType, WorkerJobType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { fileService } from '../file/file.service'
 import { userInteractionWatcher } from '../workers/user-interaction-watcher'
@@ -18,6 +19,9 @@ export const connectorInstallService = (log: FastifyBaseLogger) => ({
                 tenantId,
             }, log)
             const archiveId = connectorPackage.packageType === PackageType.ARCHIVE ? connectorPackage.archiveId : undefined
+            const checksum = params.packageType === PackageType.ARCHIVE && Buffer.isBuffer(params.connectorArchive.data)
+                ? createHash('sha256').update(params.connectorArchive.data).digest('hex')
+                : undefined
             const savedConnector = await connectorMetadataService(log).create({
                 connectorMetadata: {
                     ...connectorInformation,
@@ -32,6 +36,8 @@ export const connectorInstallService = (log: FastifyBaseLogger) => ({
                 packageType: params.packageType,
                 tenantId,
                 connectorType: ConnectorType.CUSTOM,
+                source: ConnectorSource.PRIVATE,
+                checksum,
                 archiveId,
             })
             // Reconcile tool-search for this tenant only (async, never blocking the install) so the new

@@ -8,6 +8,13 @@ export enum ConnectorType {
     OFFICIAL = 'OFFICIAL',
 }
 
+export enum ConnectorSource {
+    BUILT_IN = 'BUILT_IN',
+    OFFICIAL = 'OFFICIAL',
+    COMMUNITY = 'COMMUNITY',
+    PRIVATE = 'PRIVATE',
+}
+
 export enum ConnectorCategory {
     ARTIFICIAL_INTELLIGENCE = 'ARTIFICIAL_INTELLIGENCE',
     COMMUNICATION = 'COMMUNICATION',

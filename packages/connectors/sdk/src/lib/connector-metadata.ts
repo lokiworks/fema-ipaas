@@ -4,7 +4,7 @@ import { ErrorHandlingOptionsParam } from "./action/action";
 import { ConnectorAuthProperty } from "./property/authentication";
 import * as z from "zod/mini";
 import { LocalesEnum } from "@fema-ipaas/core-utils";
-import { PackageType, ConnectorCategory, ConnectorType, TriggerStrategy, TriggerTestStrategy, WebhookHandshakeConfiguration } from "@fema-ipaas/connector-types";
+import { PackageType, ConnectorCategory, ConnectorSource, ConnectorType, TriggerStrategy, TriggerTestStrategy, WebhookHandshakeConfiguration } from "@fema-ipaas/connector-types";
 import { ContextVersion } from "./context/versioning";
 import type { OutputSchema } from "./output-schema";
 
@@ -163,6 +163,8 @@ const ConnectorPackageMetadata = z.object({
   workspaceUsage: z.number(),
   connectorType: z.enum(ConnectorType),
   packageType: z.enum(PackageType),
+  source: z.enum(ConnectorSource),
+  checksum: z.optional(z.string()),
   tenantId: z.optional(z.string()),
   archiveId: z.optional(z.string()),
 })

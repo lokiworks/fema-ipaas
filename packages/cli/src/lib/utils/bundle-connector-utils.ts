@@ -1,4 +1,4 @@
-import { statSync, existsSync, readFileSync } from 'node:fs'
+import { statSync, existsSync, readFileSync, realpathSync } from 'node:fs'
 import { builtinModules } from 'node:module'
 import { join, resolve, isAbsolute, basename, sep } from 'node:path'
 import * as esbuild from 'esbuild'
@@ -102,9 +102,9 @@ function assertDirnameUsageDeclared({ connectorPath, metafile, manifest }: Dirna
     if ((manifest.bundleForkedEntries ?? []).length > 0) {
         return
     }
-    const connectorRoot = resolve(connectorPath)
+    const connectorRoot = realPath(connectorPath)
     for (const input of Object.keys(metafile.inputs)) {
-        const abs = resolve(process.cwd(), input)
+        const abs = realPath(resolve(process.cwd(), input))
         if (!abs.startsWith(connectorRoot + sep) || abs.includes(`${sep}node_modules${sep}`)) {
             continue
         }
@@ -115,6 +115,15 @@ function assertDirnameUsageDeclared({ connectorPath, metafile, manifest }: Dirna
                 + 'Declare the runtime-loaded file in package.json "bundleForkedEntries" (it will be emitted beside the bundle), or remove the __dirname usage.',
             )
         }
+    }
+}
+
+function realPath(file: string): string {
+    try {
+        return realpathSync(resolve(file))
+    }
+    catch {
+        return resolve(file)
     }
 }
 

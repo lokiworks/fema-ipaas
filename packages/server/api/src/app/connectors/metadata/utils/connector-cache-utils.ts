@@ -1,5 +1,5 @@
 import { apId, isEmpty, isNil } from '@fema-ipaas/core-utils'
-import { ConnectorType, PackageType } from '@fema-ipaas/shared'
+import { ConnectorSource, ConnectorType, PackageType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import semVer from 'semver'
 import { system } from '../../../helper/system/system'
@@ -65,6 +65,7 @@ async function loadDevConnectors(log: FastifyBaseLogger, devConnectorsConfig: st
         workspaceUsage: 0,
         connectorType: ConnectorType.OFFICIAL,
         packageType: PackageType.REGISTRY,
+        source: ConnectorSource.BUILT_IN,
         created: new Date().toISOString(),
         updated: new Date().toISOString(),
     }))

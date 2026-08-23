@@ -4,12 +4,12 @@ import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
 import { entitiesMustBeOwnedByCurrentProject } from '../authentication/authorization'
+import { connectorBundle } from '../connectors/connector-bundle'
 import { securityAccess } from '../core/security/authorization/fastify-security'
 import { fileService } from '../file/file.service'
 import { flowService } from '../flows/flow/flow.service'
 import { engineRunCallbackService } from '../flows/flow-run/engine-run-callback-service'
 import { flowVersionService } from '../flows/flow-version/flow-version.service'
-import { pieceBundle } from '../pieces/piece-bundle'
 
 export const flowEngineWorker: FastifyPluginAsyncZod = async (app) => {
 
@@ -40,12 +40,12 @@ export const flowEngineWorker: FastifyPluginAsyncZod = async (app) => {
     })
 
     // The pool downloads this with the engine token in the Authorization header (Bearer) and follows
-    // the redirect. The engine token is platform-scoped, which scopes custom-piece resolution.
-    app.get('/pieces/bundle', PieceBundleRequest, async (request, reply) => {
+    // the redirect. The engine token is platform-scoped, which scopes custom-connector resolution.
+    app.get('/connectors/bundle', ConnectorBundleRequest, async (request, reply) => {
         if (request.principal.type !== PrincipalType.ENGINE) {
             return reply.status(StatusCodes.UNAUTHORIZED).send()
         }
-        const resolution = await pieceBundle(request.log).resolve({
+        const resolution = await connectorBundle(request.log).resolve({
             name: request.query.name,
             version: request.query.version,
             archiveId: request.query.archiveId,
@@ -124,7 +124,7 @@ const GetLockedVersionRequest = {
     },
 }
 
-const PieceBundleRequest = {
+const ConnectorBundleRequest = {
     config: {
         security: securityAccess.engine(),
     },

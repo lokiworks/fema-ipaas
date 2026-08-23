@@ -199,7 +199,7 @@ async function startPollingWorkers(apiClient: WorkerToApiContract): Promise<void
         getSettings: () => sandboxConfig.getSandboxSettings(),
     })
 
-    // Fire-and-forget: warm the piece cache for this platform's flows without blocking the poll loop.
+    // Fire-and-forget: warm the connector cache for this platform's flows without blocking the poll loop.
     void runtime.prewarm({
         log: logger, 
         apiClient,

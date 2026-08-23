@@ -82,7 +82,7 @@ describe('Nested flow validation (GIT-1593)', () => {
                     valid: true,
                     displayName: 'Trigger',
                     lastUpdatedDate: '2026-05-02T00:00:00.000Z',
-                    type: FlowTriggerType.PIECE,
+                    type: FlowTriggerType.CONNECTOR,
                     settings: {},
                 },
             },

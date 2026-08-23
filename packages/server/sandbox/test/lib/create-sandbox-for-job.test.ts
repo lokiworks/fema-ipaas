@@ -47,7 +47,7 @@ type Settings = {
     MAX_FILE_SIZE_MB: number
     SANDBOX_MEMORY_LIMIT: string
     SANDBOX_PROPAGATED_ENV_VARS: string[]
-    DEV_PIECES: string[]
+    DEV_CONNECTORS: string[]
     OTEL_ENABLED: boolean
     FILE_STORAGE_LOCATION: string
     S3_USE_SIGNED_URLS: string
@@ -55,7 +55,7 @@ type Settings = {
     EDITION: string
     NETWORK_MODE: NetworkMode
     SSRF_ALLOW_LIST: string[]
-    ENFORCE_CONNECTION_PIECE_BINDING: boolean
+    ENFORCE_CONNECTION_CONNECTOR_BINDING: boolean
     REUSE_SANDBOX: string | undefined
 }
 
@@ -75,7 +75,7 @@ function buildSettings(overrides: Partial<Settings> = {}): Settings {
         MAX_FILE_SIZE_MB: 10,
         SANDBOX_MEMORY_LIMIT: '1048576',
         SANDBOX_PROPAGATED_ENV_VARS: [],
-        DEV_PIECES: [],
+        DEV_CONNECTORS: [],
         OTEL_ENABLED: false,
         FILE_STORAGE_LOCATION: '/tmp',
         S3_USE_SIGNED_URLS: 'false',
@@ -83,7 +83,7 @@ function buildSettings(overrides: Partial<Settings> = {}): Settings {
         EDITION: 'community',
         NETWORK_MODE: NetworkMode.UNRESTRICTED,
         SSRF_ALLOW_LIST: [],
-        ENFORCE_CONNECTION_PIECE_BINDING: false,
+        ENFORCE_CONNECTION_CONNECTOR_BINDING: false,
         REUSE_SANDBOX: undefined,
     }
     return { ...base, ...overrides }
@@ -169,30 +169,30 @@ describe('createSandboxForJob', () => {
             expect('FEMA_EGRESS_PROXY_URL' in env).toBe(false)
         })
 
-        it('forwards FEMA_ENFORCE_CONNECTION_PIECE_BINDING only when enabled', () => {
-            const disabled = buildSettings({ ENFORCE_CONNECTION_PIECE_BINDING: false })
+        it('forwards FEMA_ENFORCE_CONNECTION_CONNECTOR_BINDING only when enabled', () => {
+            const disabled = buildSettings({ ENFORCE_CONNECTION_CONNECTOR_BINDING: false })
             createSandboxForJob({ log, boxId: 1, reusable: false, basePath: '/tmp', getSettings: () => disabled })
-            expect('FEMA_ENFORCE_CONNECTION_PIECE_BINDING' in createSandboxMock.mock.calls[0][2].env).toBe(false)
+            expect('FEMA_ENFORCE_CONNECTION_CONNECTOR_BINDING' in createSandboxMock.mock.calls[0][2].env).toBe(false)
 
-            const enabled = buildSettings({ ENFORCE_CONNECTION_PIECE_BINDING: true })
+            const enabled = buildSettings({ ENFORCE_CONNECTION_CONNECTOR_BINDING: true })
             createSandboxForJob({ log, boxId: 1, reusable: false, basePath: '/tmp', getSettings: () => enabled })
-            expect(createSandboxMock.mock.calls[1][2].env.FEMA_ENFORCE_CONNECTION_PIECE_BINDING).toBe('true')
+            expect(createSandboxMock.mock.calls[1][2].env.FEMA_ENFORCE_CONNECTION_CONNECTOR_BINDING).toBe('true')
         })
 
-        it('omits FEMA_DEV_PIECES when DEV_PIECES is empty', () => {
-            const settings = buildSettings({ DEV_PIECES: [] })
+        it('omits FEMA_DEV_CONNECTORS when DEV_CONNECTORS is empty', () => {
+            const settings = buildSettings({ DEV_CONNECTORS: [] })
             createSandboxForJob({ log, boxId: 1, reusable: false, basePath: '/tmp', getSettings: () => settings })
 
             const env = createSandboxMock.mock.calls[0][2].env
-            expect(env.FEMA_DEV_PIECES).toBeUndefined()
+            expect(env.FEMA_DEV_CONNECTORS).toBeUndefined()
         })
 
-        it('joins DEV_PIECES with comma', () => {
-            const settings = buildSettings({ DEV_PIECES: ['a', 'b', 'c'] })
+        it('joins DEV_CONNECTORS with comma', () => {
+            const settings = buildSettings({ DEV_CONNECTORS: ['a', 'b', 'c'] })
             createSandboxForJob({ log, boxId: 1, reusable: false, basePath: '/tmp', getSettings: () => settings })
 
             const env = createSandboxMock.mock.calls[0][2].env
-            expect(env.FEMA_DEV_PIECES).toBe('a,b,c')
+            expect(env.FEMA_DEV_CONNECTORS).toBe('a,b,c')
         })
 
         it('only propagates env vars that exist in process.env (no undefined leak)', () => {

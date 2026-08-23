@@ -1,9 +1,9 @@
 import { isNil } from '@fema/core-utils'
-import { CodeAction, FlowRunStatus, PieceAction } from '@fema/shared'
+import { CodeAction, ConnectorAction, FlowRunStatus } from '@fema/shared'
 import { EngineConstants } from '../handler/context/engine-constants'
 import {  FlowExecutorContext } from '../handler/context/flow-execution-context'
 
-export async function runWithExponentialBackoff<T extends CodeAction | PieceAction>(
+export async function runWithExponentialBackoff<T extends CodeAction | ConnectorAction>(
     executionState: FlowExecutorContext,
     action: T,
     constants: EngineConstants,
@@ -28,7 +28,7 @@ export async function runWithExponentialBackoff<T extends CodeAction | PieceActi
 
 export async function continueIfFailureHandler(
     executionState: FlowExecutorContext,
-    action: CodeAction | PieceAction,
+    action: CodeAction | ConnectorAction,
     constants: EngineConstants,
 ): Promise<FlowExecutorContext> {
     const continueOnFailure = action.settings.errorHandlingOptions?.continueOnFailure?.value
@@ -50,11 +50,11 @@ const executionFailedWithRetryableError = (flowExecutorContext: FlowExecutorCont
     return flowExecutorContext.verdict.status === FlowRunStatus.FAILED
 }
 
-type Request<T extends CodeAction | PieceAction> = {
+type Request<T extends CodeAction | ConnectorAction> = {
     action: T
     executionState: FlowExecutorContext
     constants: EngineConstants
 }
 
-type RequestFunction<T extends CodeAction | PieceAction> = (request: Request<T>) => Promise<FlowExecutorContext>
+type RequestFunction<T extends CodeAction | ConnectorAction> = (request: Request<T>) => Promise<FlowExecutorContext>
 

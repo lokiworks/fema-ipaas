@@ -26,7 +26,7 @@ type TabId =
   | 'general'
   | 'members'
   | 'alerts'
-  | 'pieces'
+  | 'connectors'
   | 'environment'
   | 'mcp';
 

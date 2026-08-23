@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import { type ApLogger } from '@fema/server-utils'
-import { FlowActionType, FlowTriggerType, FlowVersion, FlowVersionState, LATEST_FLOW_SCHEMA_VERSION, PackageType, PieceType, WorkerToApiContract } from '@fema/shared'
+import { FlowActionType, FlowTriggerType, FlowVersion, FlowVersionState, LATEST_FLOW_SCHEMA_VERSION, PackageType, ConnectorType, WorkerToApiContract } from '@fema/shared'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { flowProvisioning } from '../../../../src/lib/cache/flow/flow-provisioning'
 
@@ -19,7 +19,7 @@ const fakeLog = { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), 
 
 const getSettings = () => ({
     EXECUTION_MODE: 'UNSANDBOXED',
-    DEV_PIECES: [] as string[],
+    DEV_CONNECTORS: [] as string[],
     ENVIRONMENT: 'production',
     REUSE_SANDBOX: undefined,
     FLOW_TIMEOUT_SECONDS: 600,
@@ -31,7 +31,7 @@ const getSettings = () => ({
     SSRF_ALLOW_LIST: [] as string[],
 })
 
-function flowWithPiece(overrides: Partial<FlowVersion> = {}): FlowVersion {
+function flowWithConnector(overrides: Partial<FlowVersion> = {}): FlowVersion {
     return {
         id: 'fv1', created: '2026-01-01T00:00:00.000Z', updated: '2026-01-01T00:00:00.000Z',
         flowId: 'flow1', displayName: 'Test', updatedBy: null, valid: true,
@@ -40,15 +40,15 @@ function flowWithPiece(overrides: Partial<FlowVersion> = {}): FlowVersion {
         trigger: {
             name: 'trigger', type: FlowTriggerType.EMPTY, displayName: 'Trigger', valid: true, settings: {},
             nextAction: {
-                name: 'step_1', type: FlowActionType.PIECE, displayName: 'HTTP', valid: true,
-                settings: { pieceName: '@fema/connector-http', pieceVersion: '^1.0.0', actionName: 'send', input: {}, inputUiInfo: {} },
+                name: 'step_1', type: FlowActionType.CONNECTOR, displayName: 'HTTP', valid: true,
+                settings: { connectorName: '@fema/connector-http', connectorVersion: '^1.0.0', actionName: 'send', input: {}, inputUiInfo: {} },
             },
         },
         ...overrides,
     } as unknown as FlowVersion
 }
 
-const httpPiece = { packageType: PackageType.REGISTRY, name: '@fema/connector-http', version: '1.0.5', pieceType: PieceType.OFFICIAL }
+const httpConnector = { packageType: PackageType.REGISTRY, name: '@fema/connector-http', version: '1.0.5', connectorType: ConnectorType.OFFICIAL }
 
 const flow = { id: 'flow1', versionId: 'fv1', projectId: 'p1' }
 
@@ -61,13 +61,13 @@ afterEach(async () => {
 })
 
 describe('flowProvisioning.resolve', () => {
-    it('bundle hit → ready with no codeSteps and no publish (zero flow/piece resolution)', async () => {
-        const manifest = { flowVersion: flowWithPiece(), pieces: [httpPiece], codes: [] }
+    it('bundle hit → ready with no codeSteps and no publish (zero flow/connector resolution)', async () => {
+        const manifest = { flowVersion: flowWithConnector(), connectors: [httpConnector], codes: [] }
         const getFlowVersion = vi.fn()
-        const getPiece = vi.fn()
+        const getConnector = vi.fn()
         const apiClient = {
             async getFlowBundle() { return { kind: 'inline', data: Buffer.from(JSON.stringify(manifest), 'utf8') } },
-            getFlowVersion, getPiece,
+            getFlowVersion, getConnector,
         } as unknown as WorkerToApiContract
 
         const resolved = await flowProvisioning(fakeLog, apiClient, uniqueBasePath(), getSettings).resolve({ flow, platformId: 'plat1' })
@@ -76,18 +76,18 @@ describe('flowProvisioning.resolve', () => {
         if (resolved.kind === 'ready') {
             expect(resolved.code).toEqual({ kind: 'materialized' })
             expect(resolved.publishBundle).toBeNull()
-            expect(resolved.pieces).toEqual([httpPiece])
+            expect(resolved.connectors).toEqual([httpConnector])
         }
         expect(getFlowVersion).not.toHaveBeenCalled()
-        expect(getPiece).not.toHaveBeenCalled()
+        expect(getConnector).not.toHaveBeenCalled()
     })
 
     it('bundle fetch error → falls back to resolve (never fails the run)', async () => {
-        const getFlowVersion = vi.fn(async () => flowWithPiece())
+        const getFlowVersion = vi.fn(async () => flowWithConnector())
         const apiClient = {
             async getFlowBundle() { throw new Error('rpc/s3 down') },
             getFlowVersion,
-            async getPiece() { return httpPiece },
+            async getConnector() { return httpConnector },
         } as unknown as WorkerToApiContract
 
         const resolved = await flowProvisioning(fakeLog, apiClient, uniqueBasePath(), getSettings).resolve({ flow, platformId: 'plat1' })
@@ -106,11 +106,11 @@ describe('flowProvisioning.resolve', () => {
         expect(resolved.kind).toBe('flow-not-found')
     })
 
-    it('miss + LOCKED flow with resolvable piece → ready, pieces resolved, needsPublish=true', async () => {
+    it('miss + LOCKED flow with resolvable connector → ready, connectors resolved, needsPublish=true', async () => {
         const apiClient = {
             async getFlowBundle() { return null },
-            async getFlowVersion() { return flowWithPiece() },
-            async getPiece() { return httpPiece },
+            async getFlowVersion() { return flowWithConnector() },
+            async getConnector() { return httpConnector },
         } as unknown as WorkerToApiContract
 
         const resolved = await flowProvisioning(fakeLog, apiClient, uniqueBasePath(), getSettings).resolve({ flow, platformId: 'plat1' })
@@ -119,28 +119,28 @@ describe('flowProvisioning.resolve', () => {
         if (resolved.kind === 'ready') {
             expect(resolved.publishBundle).not.toBeNull()
             expect(resolved.code.kind).toBe('source')
-            expect(resolved.pieces).toHaveLength(1)
-            expect(resolved.pieces[0].pieceVersion).toBe('1.0.5')
+            expect(resolved.connectors).toHaveLength(1)
+            expect(resolved.connectors[0].connectorVersion).toBe('1.0.5')
         }
     })
 
     it('miss + DRAFT flow → ready but no publish handle', async () => {
         const apiClient = {
             async getFlowBundle() { return null },
-            async getFlowVersion() { return flowWithPiece({ state: FlowVersionState.DRAFT }) },
-            async getPiece() { return httpPiece },
+            async getFlowVersion() { return flowWithConnector({ state: FlowVersionState.DRAFT }) },
+            async getConnector() { return httpConnector },
         } as unknown as WorkerToApiContract
 
         const resolved = await flowProvisioning(fakeLog, apiClient, uniqueBasePath(), getSettings).resolve({ flow, platformId: 'plat1' })
         expect(resolved.kind === 'ready' && resolved.publishBundle === null).toBe(true)
     })
 
-    it('miss + missing piece → disabled and the flow is disabled via apiClient', async () => {
+    it('miss + missing connector → disabled and the flow is disabled via apiClient', async () => {
         const disableFlow = vi.fn(async () => undefined)
         const apiClient = {
             async getFlowBundle() { return null },
-            async getFlowVersion() { return flowWithPiece() },
-            async getPiece() { return null },
+            async getFlowVersion() { return flowWithConnector() },
+            async getConnector() { return null },
             disableFlow,
         } as unknown as WorkerToApiContract
 

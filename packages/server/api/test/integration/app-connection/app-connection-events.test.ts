@@ -3,15 +3,15 @@ import {
     AppConnectionType,
     ApplicationEventName,
     PackageType,
-    PieceType,
+    ConnectorType,
 } from '@fema/shared'
 import { FastifyBaseLogger, FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import * as applicationEventsModule from '../../../../src/app/helper/application-events'
-import { pieceMetadataService } from '../../../../src/app/pieces/metadata/piece-metadata-service'
+import { connectorMetadataService } from '../../../../src/app/connectors/metadata/connector-metadata-service'
 import { actionsEmitted } from '../../../helpers/application-events'
 import { db } from '../../../helpers/db'
-import { createMockPieceMetadata } from '../../../helpers/mocks'
+import { createMockConnectorMetadata } from '../../../helpers/mocks'
 import { createTestContext, TestContext } from '../../../helpers/test-context'
 import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
 
@@ -48,19 +48,19 @@ describe('App connection application events', () => {
 
     it('emits CONNECTION_UPSERTED on POST /v1/app-connections', async () => {
         const ctx = await createTestContext(app)
-        const piece = await seedPieceMetadata(ctx)
+        const connector = await seedConnectorMetadata(ctx)
 
         const response = await ctx.post('/v1/app-connections', {
             externalId: 'event-test-connection',
             displayName: 'Event Test Connection',
-            pieceName: piece.name,
+            connectorName: connector.name,
             projectId: ctx.project.id,
             type: AppConnectionType.SECRET_TEXT,
             value: {
                 type: AppConnectionType.SECRET_TEXT,
                 secret_text: 'my-secret',
             },
-            pieceVersion: piece.version,
+            connectorVersion: connector.version,
         })
 
         expect(response?.statusCode).toBe(StatusCodes.CREATED)
@@ -71,19 +71,19 @@ describe('App connection application events', () => {
 
     it('emits CONNECTION_DELETED on DELETE /v1/app-connections/:id', async () => {
         const ctx = await createTestContext(app)
-        const piece = await seedPieceMetadata(ctx)
+        const connector = await seedConnectorMetadata(ctx)
 
         const createResponse = await ctx.post('/v1/app-connections', {
             externalId: 'event-test-connection-to-delete',
             displayName: 'Event Test Connection',
-            pieceName: piece.name,
+            connectorName: connector.name,
             projectId: ctx.project.id,
             type: AppConnectionType.SECRET_TEXT,
             value: {
                 type: AppConnectionType.SECRET_TEXT,
                 secret_text: 'my-secret',
             },
-            pieceVersion: piece.version,
+            connectorVersion: connector.version,
         })
         expect(createResponse?.statusCode).toBe(StatusCodes.CREATED)
         const connectionId = createResponse?.json().id
@@ -115,14 +115,14 @@ describe('App connection application events', () => {
     })
 })
 
-async function seedPieceMetadata(ctx: TestContext): Promise<{ name: string, version: string }> {
-    const piece = createMockPieceMetadata({
+async function seedConnectorMetadata(ctx: TestContext): Promise<{ name: string, version: string }> {
+    const connector = createMockConnectorMetadata({
         platformId: ctx.platform.id,
         packageType: PackageType.REGISTRY,
-        pieceType: PieceType.OFFICIAL,
+        connectorType: ConnectorType.OFFICIAL,
     })
-    await db.save('piece_metadata', piece)
-    pieceMetadataService(mockLog).getOrThrow = vi.fn().mockResolvedValue(piece)
-    return { name: piece.name, version: piece.version }
+    await db.save('connector_metadata', connector)
+    connectorMetadataService(mockLog).getOrThrow = vi.fn().mockResolvedValue(connector)
+    return { name: connector.name, version: connector.version }
 }
 

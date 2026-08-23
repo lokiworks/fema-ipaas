@@ -23,7 +23,7 @@ Functions that work with strings of text.
 
 | Function | Signature | Description | Example |
 |---|---|---|---|
-| `combine` | `combine(text1; text2; separator)` | Joins two or more values into one piece of text. | `combine(John; Smith; " ")` → `John Smith` |
+| `combine` | `combine(text1; text2; separator)` | Joins two or more values into one connector of text. | `combine(John; Smith; " ")` → `John Smith` |
 | `uppercase` | `uppercase(text)` | Changes all characters to uppercase. | `uppercase(acme inc)` → `ACME INC` |
 | `lowercase` | `lowercase(text)` | Changes all characters to lowercase. | `lowercase(John@ACME.com)` → `john@acme.com` |
 | `titlecase` | `titlecase(text)` | Capitalizes the first letter of every word. | `titlecase(john smith)` → `John Smith` |
@@ -121,7 +121,7 @@ Functions for working with collections (arrays of items).
 | `filter_list` | `filter_list(list; field; value)` | Keeps only the items where a field matches a value. | `filter_list(tickets; status; open)` → `[3 of 10 items]` |
 | `sort_list` | `sort_list(list; field; order)` | Sorts a list from highest to lowest, or A to Z, by a field. | `sort_list(orders; amount; desc)` → `[sorted: 500, 200, 50]` |
 | `pluck` | `pluck(list; field)` | Picks one field out of every item in a list. | `pluck(users; email)` → `[ana@x.com, bob@x.com]` |
-| `join_list` | `join_list(list; separator)` | Turns a list into a single piece of text with a separator. | `join_list([bug;urgent;backend]; ", ")` → `bug, urgent, backend` |
+| `join_list` | `join_list(list; separator)` | Turns a list into a single connector of text with a separator. | `join_list([bug;urgent;backend]; ", ")` → `bug, urgent, backend` |
 | `first_item` | `first_item(list)` | Returns the first item in a list. | `first_item([apple;banana;cherry])` → `apple` |
 | `last_item` | `last_item(list)` | Returns the last item in a list. | `last_item([apple;banana;cherry])` → `cherry` |
 | `item_at` | `item_at(list; index)` | Returns the item at a specific position in a list. | `item_at([apple;banana;cherry]; 1)` → `banana` |

@@ -1,12 +1,12 @@
 ---
 title: "Limits"
 icon: "ban"
-description: "Limits enforced on Activepieces Cloud, with self-hosted overrides"
+description: "Limits enforced on FEMA Integration Platform Cloud, with self-hosted overrides"
 ---
 
 <Note>
 The numbers in the **Cloud** column are the limits enforced on
-[cloud.activepieces.com](https://cloud.activepieces.com). On **self-hosted**
+[fema.local](https://github.com/lokiworks/fema-ipaas). On **self-hosted**
 installations every limit is configurable through the environment variable
 shown in the table — the **Self-hosted default** column lists the value applied
 when the variable is unset.
@@ -23,7 +23,7 @@ when the variable is unset.
     Response timeout, payload size, inline threshold.
   </Card>
   <Card title="Key / value storage" icon="database" href="#key-/-value-storage">
-    Store piece key length and value size.
+    Store connector key length and value size.
   </Card>
 </CardGroup>
 
@@ -65,7 +65,7 @@ saved, the override is clamped back into the new bounds at cleanup time.
 At the recommended concurrency of 1, the worker container's memory cap (1 GB) is
 the memory limit for the flow. If a flow exhausts it, that one worker is
 OOM-killed and the job is requeued (about 300 MB of the budget is overhead for a
-warm process with pieces loaded). To handle larger or longer processes, split
+warm process with connectors loaded). To handle larger or longer processes, split
 them into multiple flows — e.g. one flow calls another via webhook, or each flow
 processes a smaller batch of items.
 </Tip>
@@ -114,7 +114,7 @@ incoming payload can be.
 | Webhook payload inline threshold | 1024 KB | `FEMA_WEBHOOK_PAYLOAD_INLINE_THRESHOLD_KB` | `512` |
 
 <Tip>
-For synchronous webhook requests (URLs ending in `/sync`), Activepieces will
+For synchronous webhook requests (URLs ending in `/sync`), FEMA Integration Platform will
 wait up to the response timeout before returning HTTP 408. Payloads above the
 inline threshold are offloaded from Redis to file storage to protect Redis
 memory; smaller payloads stay inline for the fastest path.
@@ -124,7 +124,7 @@ memory; smaller payloads stay inline for the fastest path.
 
 ### Key / value storage
 
-Used by the built-in **Store** piece and any piece that calls `context.store`.
+Used by the built-in **Store** connector and any connector that calls `context.store`.
 Values are stored directly in Postgres (`jsonb`), so unlike files and run logs
 they are **not** offloaded to object storage. Every stored value counts toward
 your database size and is read and written in full on each access.
@@ -138,5 +138,5 @@ your database size and is read and written in full on each access.
 Raising the value size lets a flow stash bigger payloads (for example, data
 gathered inside router branches and re-read after the branches join). But large
 values live in the database with no object-storage offload. For payloads in the
-MB range, prefer the **Tables** piece or pass data as files between steps.
+MB range, prefer the **Tables** connector or pass data as files between steps.
 </Tip>

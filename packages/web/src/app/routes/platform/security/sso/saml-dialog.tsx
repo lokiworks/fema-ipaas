@@ -406,7 +406,7 @@ const SamlStep = ({
             markdown={t(
               `
 **Setup Instructions**:
-Please check the following documentation: [SAML SSO](https://activepieces.com/docs/security/sso)
+Please check the following documentation: [SAML SSO](https://fema.local/docs/security/sso)
 
 **Single sign-on URL**:
 \`\`\`text
@@ -414,7 +414,7 @@ Please check the following documentation: [SAML SSO](https://activepieces.com/do
 \`\`\`
 **Audience URI (SP Entity ID)**:
 \`\`\`text
-Activepieces
+FEMA Integration Platform
 \`\`\`
 `,
               { samlAcs: samlAcs ?? '' },

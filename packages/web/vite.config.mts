@@ -11,8 +11,8 @@ import customHtmlPlugin from './vite-plugins/html-plugin';
 export default defineConfig(({ command, mode }) => {
   const isDev = command === 'serve' || mode === 'development';
 
-  const FEMA_TITLE = 'Activepieces';
-  const FEMA_FAVICON = 'https://activepieces.com/favicon.ico';
+  const FEMA_TITLE = 'FEMA Integration Platform';
+  const FEMA_FAVICON = 'https://fema.local/favicon.ico';
 
   return {
     root: __dirname,
@@ -107,7 +107,7 @@ export default defineConfig(({ command, mode }) => {
         ),
         '@fema/connector-sdk': path.resolve(
           __dirname,
-          '../../packages/pieces/framework/src',
+          '../../packages/connectors/sdk/src',
         ),
         '@fema/core-utils': path.resolve(
           __dirname,
@@ -119,7 +119,7 @@ export default defineConfig(({ command, mode }) => {
         ),
         '@fema/connector-types': path.resolve(
           __dirname,
-          '../../packages/core/piece-types/src',
+          '../../packages/core/connector-types/src',
         ),
         '@fema/workflow-core': path.resolve(
           __dirname,

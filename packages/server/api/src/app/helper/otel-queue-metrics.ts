@@ -43,7 +43,7 @@ function buildGaugePayload({ queueCounts, timeUnixNano, hostName }: BuildGaugePa
                 ],
             },
             scopeMetrics: [{
-                scope: { name: 'activepieces.queue-metrics' },
+                scope: { name: 'fema.queue-metrics' },
                 metrics: [{
                     name: 'bullmq.job.count',
                     description: 'Number of jobs in the queue by state',

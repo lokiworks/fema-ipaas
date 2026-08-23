@@ -10,13 +10,13 @@ import { TagWithBright } from '@/components/custom/tag-with-bright';
 import { useEmbedding } from '@/components/providers/embed-provider';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ConnectorIconList } from '@/features/connectors/components/connector-icon-list';
 import { ImportFlowDialog } from '@/features/flows/components/import-flow-dialog';
 import { flowHooks } from '@/features/flows/hooks/flow-hooks';
-import { PieceIconList } from '@/features/pieces/components/piece-icon-list';
 import { TemplatesBrowseDialog } from '@/features/templates';
 import { UseTemplateDialog } from '@/features/templates/components/use-template-dialog';
 import { templatesHooks } from '@/features/templates/hooks/templates-hook';
-import { useGradientFromPieces } from '@/features/templates/hooks/use-gradient-from-pieces';
+import { useGradientFromConnectors } from '@/features/templates/hooks/use-gradient-from-connectors';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { platformHooks } from '@/hooks/platform-hooks';
@@ -106,7 +106,7 @@ const SuggestedTemplateCard = ({
   onSelect,
 }: SuggestedTemplateCardProps) => {
   const hasFlows = template.flows && template.flows.length > 0;
-  const { gradient } = useGradientFromPieces(
+  const { gradient } = useGradientFromConnectors(
     hasFlows ? template.flows![0]?.trigger : undefined,
   );
 
@@ -153,7 +153,7 @@ const SuggestedTemplateCard = ({
         }}
       >
         {hasFlows && template.flows![0]?.trigger && (
-          <PieceIconList
+          <ConnectorIconList
             trigger={template.flows![0]?.trigger}
             maxNumberOfIconsToShow={4}
             size="md"

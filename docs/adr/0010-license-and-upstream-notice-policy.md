@@ -6,7 +6,7 @@ status: accepted
 
 ## Decision
 
-本项目采用 **MIT**，与上游 MIT 部分保持一致，并保留 Activepieces 的版权声明。
+本项目采用 **MIT**，与上游 MIT 部分保持一致，并保留 FEMA Integration Platform 的版权声明。
 
 配套要求：
 

@@ -1,1 +1,1 @@
-export const feedbackUrl = 'https://feedback.activepieces.com'
+export const feedbackUrl = 'https://github.com/lokiworks/fema-ipaas/discussions'

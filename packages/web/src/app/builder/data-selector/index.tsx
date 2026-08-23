@@ -1,4 +1,4 @@
-import { PieceMetadataModel } from '@fema/connector-sdk';
+import { ConnectorMetadataModel } from '@fema/connector-sdk';
 import { LocalesEnum, isNil } from '@fema/core-utils';
 import {
   FlowAction,
@@ -14,12 +14,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDebounce } from 'use-debounce';
 
-import { textMentionUtils } from '@/app/builder/piece-properties/text-input-with-mentions/text-input-utils';
+import { textMentionUtils } from '@/app/builder/connector-properties/text-input-with-mentions/text-input-utils';
 import { SearchInput } from '@/components/custom/search-input';
 import { OutputSchema } from '@/components/custom/smart-output-viewer/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { VirtualizedList } from '@/components/ui/virtualized-list';
-import { piecesApi } from '@/features/pieces';
+import { connectorsApi } from '@/features/connectors';
 import { cn } from '@/lib/utils';
 
 import { ScrollArea } from '../../../components/ui/scroll-area';
@@ -128,23 +128,23 @@ const DataSelector = ({ parentHeight, parentWidth }: DataSelectorProps) => {
   );
   const defaultTab = isTriggerSelected ? 'variables' : 'data';
 
-  const piecePairs = useMemo(
+  const connectorPairs = useMemo(
     () =>
       steps
         .map((step) => {
-          if (step.type === FlowActionType.PIECE) {
+          if (step.type === FlowActionType.CONNECTOR) {
             return {
               stepName: step.name,
-              pieceName: step.settings.pieceName,
-              pieceVersion: step.settings.pieceVersion,
+              connectorName: step.settings.connectorName,
+              connectorVersion: step.settings.connectorVersion,
               stepKey: step.settings.actionName,
             };
           }
-          if (step.type === FlowTriggerType.PIECE) {
+          if (step.type === FlowTriggerType.CONNECTOR) {
             return {
               stepName: step.name,
-              pieceName: step.settings.pieceName,
-              pieceVersion: step.settings.pieceVersion,
+              connectorName: step.settings.connectorName,
+              connectorVersion: step.settings.connectorVersion,
               stepKey: step.settings.triggerName,
             };
           }
@@ -155,24 +155,24 @@ const DataSelector = ({ parentHeight, parentWidth }: DataSelectorProps) => {
             entry,
           ): entry is {
             stepName: string;
-            pieceName: string;
-            pieceVersion: string;
+            connectorName: string;
+            connectorVersion: string;
             stepKey: string;
           } =>
             entry !== null &&
-            Boolean(entry.pieceName) &&
+            Boolean(entry.connectorName) &&
             Boolean(entry.stepKey),
         ),
     [steps],
   );
 
-  const pieceQueries = useQueries({
-    queries: piecePairs.map(({ pieceName, pieceVersion }) => ({
-      queryKey: ['piece', pieceName, pieceVersion],
+  const connectorQueries = useQueries({
+    queries: connectorPairs.map(({ connectorName, connectorVersion }) => ({
+      queryKey: ['connector', connectorName, connectorVersion],
       queryFn: () =>
-        piecesApi.get({
-          name: pieceName,
-          version: pieceVersion,
+        connectorsApi.get({
+          name: connectorName,
+          version: connectorVersion,
           locale: i18n.language as LocalesEnum,
         }),
       staleTime: Infinity,
@@ -181,15 +181,17 @@ const DataSelector = ({ parentHeight, parentWidth }: DataSelectorProps) => {
 
   const schemaMap = useMemo<Record<string, OutputSchema | null>>(() => {
     const result: Record<string, OutputSchema | null> = {};
-    piecePairs.forEach(({ stepName, stepKey }, idx) => {
-      const piece = pieceQueries[idx]?.data as PieceMetadataModel | undefined;
+    connectorPairs.forEach(({ stepName, stepKey }, idx) => {
+      const connector = connectorQueries[idx]?.data as
+        | ConnectorMetadataModel
+        | undefined;
       result[stepName] =
-        piece?.triggers?.[stepKey]?.outputSchema ??
-        piece?.actions?.[stepKey]?.outputSchema ??
+        connector?.triggers?.[stepKey]?.outputSchema ??
+        connector?.actions?.[stepKey]?.outputSchema ??
         null;
     });
     return result;
-  }, [piecePairs, pieceQueries]);
+  }, [connectorPairs, connectorQueries]);
 
   const advancedStructure = useMemo(
     () =>

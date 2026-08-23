@@ -26,7 +26,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { PieceIconList } from '@/features/pieces';
+import { ConnectorIconList } from '@/features/connectors';
 import { templatesApi, templatesMutations } from '@/features/templates';
 import { platformHooks } from '@/hooks/platform-hooks';
 
@@ -137,19 +137,21 @@ const PlatformTemplatesPage = () => {
       },
     },
     {
-      accessorKey: 'pieces',
+      accessorKey: 'connectors',
       size: 100,
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          title={t('Pieces')}
+          title={t('Connectors')}
           icon={Puzzle}
         />
       ),
       cell: ({ row }) => {
         const trigger = row.original.flows?.[0]?.trigger;
         if (!trigger) return null;
-        return <PieceIconList trigger={trigger} maxNumberOfIconsToShow={2} />;
+        return (
+          <ConnectorIconList trigger={trigger} maxNumberOfIconsToShow={2} />
+        );
       },
     },
   ];

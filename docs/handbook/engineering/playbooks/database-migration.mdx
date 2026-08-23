@@ -1,10 +1,10 @@
 ---
 title: "Database Migrations"
-description: "Guide for creating database migrations in Activepieces"
+description: "Guide for creating database migrations in FEMA Integration Platform"
 icon: "database"
 ---
 
-Activepieces uses TypeORM as its database driver in Node.js. We support two database types across different editions of our platform.
+FEMA Integration Platform uses TypeORM as its database driver in Node.js. We support two database types across different editions of our platform.
 
 The database migration files contain both what to do to migrate (up method) and what to do when rolling back (down method).
 
@@ -22,7 +22,7 @@ https://orkhan.gitbook.io/typeorm/docs/migrations
 **Why Do we have PGlite?**
 We support PGlite to simplify development and self-hosting. It's particularly helpful for:
 
-- Developers creating pieces who want a quick setup
+- Developers creating connectors who want a quick setup
 - Self-hosters using platforms to manage docker images but doesn't support docker compose.
 
 PGlite is a lightweight PostgreSQL implementation that runs embedded, so migrations are compatible with PostgreSQL.
@@ -37,7 +37,7 @@ PGlite is a lightweight PostgreSQL implementation that runs embedded, so migrati
 
 <Steps>
   <Step title="Setup FEMA_DB_TYPE">
-    Set the `FEMA_DB_TYPE` environment variable to `POSTGRES` after making sure have latest state by running Activepieces first.
+    Set the `FEMA_DB_TYPE` environment variable to `POSTGRES` after making sure have latest state by running FEMA Integration Platform first.
   </Step>
 
   <Step title="Generate Migration">

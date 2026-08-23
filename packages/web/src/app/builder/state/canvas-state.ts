@@ -91,7 +91,7 @@ export const createCanvasState = (
     activeDraggingStep: null,
     rightSidebar:
       initiallySelectedStep && !isEmptyTriggerInitiallySelected
-        ? RightSideBarType.PIECE_SETTINGS
+        ? RightSideBarType.CONNECTOR_SETTINGS
         : RightSideBarType.NONE,
     removeStepSelection: () =>
       set({
@@ -129,7 +129,7 @@ export const createCanvasState = (
           selectedStep === 'trigger' &&
           state.flowVersion.trigger.type === FlowTriggerType.EMPTY
             ? RightSideBarType.NONE
-            : RightSideBarType.PIECE_SETTINGS;
+            : RightSideBarType.CONNECTOR_SETTINGS;
 
         const userPickedDifferentStepDuringRun =
           !options?.fromAutoFocus &&
@@ -137,7 +137,7 @@ export const createCanvasState = (
           state.selectedStep !== selectedStep;
 
         return {
-          openedPieceSelectorStepNameOrAddButtonId: null,
+          openedConnectorSelectorStepNameOrAddButtonId: null,
           selectedStep,
           rightSidebar,
           selectedBranchIndex: null,

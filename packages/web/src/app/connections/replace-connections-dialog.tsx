@@ -45,8 +45,11 @@ import {
   appConnectionsMutations,
   appConnectionsQueries,
 } from '@/features/connections';
+import {
+  ConnectorIconWithConnectorName,
+  connectorsHooks,
+} from '@/features/connectors';
 import { flowsApi } from '@/features/flows';
-import { PieceIconWithPieceName, piecesHooks } from '@/features/pieces';
 
 type ReplaceConnectionsDialogProps = {
   onConnectionMerged: () => void;
@@ -55,7 +58,7 @@ type ReplaceConnectionsDialogProps = {
 };
 
 type FormData = {
-  pieceName: string;
+  connectorName: string;
   sourceConnections: { id: string; externalId: string };
   replacedWithConnection: { id: string; externalId: string };
 };
@@ -79,7 +82,8 @@ const ReplaceConnectionsDialog = ({
   const [versionScope, setVersionScope] = useState<VersionScope>('draft');
   const [oldConnectionAction, setOldConnectionAction] =
     useState<OldConnectionAction>('keep');
-  const { pieces, isLoading: piecesLoading } = piecesHooks.usePieces({});
+  const { connectors, isLoading: connectorsLoading } =
+    connectorsHooks.useConnectors({});
 
   const { data: connections, isLoading: connectionsLoading } =
     appConnectionsQueries.useAppConnections({
@@ -121,7 +125,7 @@ const ReplaceConnectionsDialog = ({
 
   const form = useForm<FormData>({
     defaultValues: {
-      pieceName: '',
+      connectorName: '',
       sourceConnections: { id: '', externalId: '' },
       replacedWithConnection: { id: '', externalId: '' },
     },
@@ -129,10 +133,10 @@ const ReplaceConnectionsDialog = ({
     resolver: (values) => {
       const errors: FieldErrors<FormData> = {};
 
-      if (!values.pieceName) {
-        errors.pieceName = {
+      if (!values.connectorName) {
+        errors.connectorName = {
           type: 'required',
-          message: t('Please select a piece'),
+          message: t('Please select a connector'),
         };
       }
 
@@ -157,27 +161,29 @@ const ReplaceConnectionsDialog = ({
     },
   });
 
-  const selectedPiece = form.watch('pieceName');
+  const selectedConnector = form.watch('connectorName');
 
-  const connectionPieceNames = new Set(
-    connections?.data.map((conn) => conn.pieceName),
+  const connectionConnectorNames = new Set(
+    connections?.data.map((conn) => conn.connectorName),
   );
 
-  const piecesOptions =
-    pieces
+  const connectorsOptions =
+    connectors
       ?.filter(
-        (piece) =>
-          piece.name !== '@fema/connector-mcp' &&
-          piece.name !== '@fema/connector-webhook' &&
-          connectionPieceNames.has(piece.name),
+        (connector) =>
+          connector.name !== '@fema/connector-mcp' &&
+          connector.name !== '@fema/connector-webhook' &&
+          connectionConnectorNames.has(connector.name),
       )
-      .map((piece) => ({
-        label: piece.displayName,
-        value: piece.name,
+      .map((connector) => ({
+        label: connector.displayName,
+        value: connector.name,
       })) ?? [];
 
   const filteredConnections =
-    connections?.data.filter((conn) => conn.pieceName === selectedPiece) ?? [];
+    connections?.data.filter(
+      (conn) => conn.connectorName === selectedConnector,
+    ) ?? [];
 
   const sourceConnectionId = useWatch({
     control: form.control,
@@ -219,7 +225,7 @@ const ReplaceConnectionsDialog = ({
     const isValid = await form.trigger();
     if (!isValid) {
       form.trigger([
-        'pieceName',
+        'connectorName',
         'sourceConnections',
         'replacedWithConnection',
       ]);
@@ -274,10 +280,10 @@ const ReplaceConnectionsDialog = ({
             >
               <FormField
                 control={form.control}
-                name="pieceName"
+                name="connectorName"
                 render={({ field }) => (
                   <div className="flex flex-col gap-2">
-                    <Label>{t('Piece')}</Label>
+                    <Label>{t('Connector')}</Label>
                     <SearchableSelect
                       value={field.value}
                       onChange={(value) => {
@@ -291,19 +297,21 @@ const ReplaceConnectionsDialog = ({
                           externalId: '',
                         });
                       }}
-                      options={piecesOptions}
-                      placeholder={t('Select a piece')}
-                      loading={piecesLoading}
+                      options={connectorsOptions}
+                      placeholder={t('Select a connector')}
+                      loading={connectorsLoading}
                       valuesRendering={(value) => {
-                        const piece = pieces?.find((p) => p.name === value);
+                        const connector = connectors?.find(
+                          (p) => p.name === value,
+                        );
                         return (
                           <div className="flex gap-2 items-center">
                             <img
-                              src={piece!.logoUrl}
-                              alt={piece!.displayName}
+                              src={connector!.logoUrl}
+                              alt={connector!.displayName}
                               className="w-4 h-4 object-contain"
                             />
-                            <span>{piece!.displayName}</span>
+                            <span>{connector!.displayName}</span>
                           </div>
                         );
                       }}
@@ -313,7 +321,7 @@ const ReplaceConnectionsDialog = ({
                 )}
               />
 
-              {selectedPiece && (
+              {selectedConnector && (
                 <>
                   <FormField
                     control={form.control}
@@ -349,8 +357,8 @@ const ReplaceConnectionsDialog = ({
                             );
                             return (
                               <div className="flex gap-2 items-center">
-                                <PieceIconWithPieceName
-                                  pieceName={conn!.pieceName}
+                                <ConnectorIconWithConnectorName
+                                  connectorName={conn!.connectorName}
                                   size="xs"
                                   border={false}
                                 />
@@ -368,7 +376,7 @@ const ReplaceConnectionsDialog = ({
                     )}
                   />
 
-                  {selectedPiece && (
+                  {selectedConnector && (
                     <FormField
                       control={form.control}
                       name="replacedWithConnection"
@@ -395,8 +403,8 @@ const ReplaceConnectionsDialog = ({
                               );
                               return (
                                 <div className="flex gap-2 items-center">
-                                  <PieceIconWithPieceName
-                                    pieceName={conn!.pieceName}
+                                  <ConnectorIconWithConnectorName
+                                    connectorName={conn!.connectorName}
                                     size="xs"
                                     border={false}
                                   />

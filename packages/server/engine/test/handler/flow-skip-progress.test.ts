@@ -1,7 +1,7 @@
 import { FlowAction, FlowRunStatus, StepOutputStatus, StreamStepProgress, UpdateRunProgressRequest } from '@fema/shared'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { FlowExecutorContext } from '../../src/lib/handler/context/flow-execution-context'
-import { buildPieceAction, generateMockEngineConstants } from './test-helper'
+import { buildConnectorAction, generateMockEngineConstants } from './test-helper'
 
 const { updateRunProgressMock } = vi.hoisted(() => ({
     updateRunProgressMock: vi.fn<(params: { apiUrl: string, engineToken: string, request: UpdateRunProgressRequest }) => Promise<void>>().mockResolvedValue(undefined),
@@ -87,11 +87,11 @@ const buildMapper = ({ name, mapping, skip, nextAction }: {
     skip?: boolean
     nextAction?: FlowAction
 }): FlowAction => ({
-    ...buildPieceAction({
+    ...buildConnectorAction({
         name,
         input: { mapping: mapping ?? {} },
         skip,
-        pieceName: '@fema/connector-data-mapper',
+        connectorName: '@fema/connector-data-mapper',
         actionName: 'advanced_mapping',
     }),
     nextAction,

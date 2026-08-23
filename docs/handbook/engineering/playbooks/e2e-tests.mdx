@@ -196,7 +196,7 @@ test('should complete user workflow', async ({ page }) => {
   await flowsPage.actions.newFlowFromScratch(page);
   await builderPage.actions.waitFor(page);
   await builderPage.actions.selectInitialTrigger(page, {
-    piece: 'Schedule',
+    connector: 'Schedule',
     trigger: 'Every Hour'
   });
 
@@ -398,7 +398,7 @@ test('should create and test flow', async ({ page }) => {
   
   await builderPage.actions.waitFor(page);
   await builderPage.actions.selectInitialTrigger(page, {
-    piece: 'Schedule',
+    connector: 'Schedule',
     trigger: 'Every Hour'
   });
   

@@ -74,7 +74,7 @@ function _getImportOperationsForSteps(step: FlowAction | FlowTrigger | undefined
                 break
             }
             case FlowActionType.CODE:
-            case FlowActionType.PIECE: {
+            case FlowActionType.CONNECTOR: {
                 const branches = step.continueOnFailureBranches
                 if (!isNil(branches?.onSuccess)) {
                     steps.push({
@@ -100,7 +100,7 @@ function _getImportOperationsForSteps(step: FlowAction | FlowTrigger | undefined
                 }
                 break
             }
-            case FlowTriggerType.PIECE:
+            case FlowTriggerType.CONNECTOR:
             case FlowTriggerType.EMPTY: {
                 break
             }
@@ -146,7 +146,7 @@ function removeAnySubsequentAction(action: FlowAction): FlowAction {
             delete clonedAction.firstLoopAction
             break
         }
-        case FlowActionType.PIECE:
+        case FlowActionType.CONNECTOR:
         case FlowActionType.CODE: {
             delete clonedAction.continueOnFailureBranches
             break

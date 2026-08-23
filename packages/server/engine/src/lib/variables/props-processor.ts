@@ -1,5 +1,5 @@
 import { Readable } from 'node:stream'
-import { DateRangeValue, getAuthPropertyForValue, InputPropertyMap, PieceAuthProperty, PieceProperty, PiecePropertyMap, PropertyType, StaticPropsValue } from '@fema/connector-sdk'
+import { ConnectorAuthProperty, ConnectorProperty, ConnectorPropertyMap, DateRangeValue, getAuthPropertyForValue, InputPropertyMap, PropertyType, StaticPropsValue } from '@fema/connector-sdk'
 import { isNil, isObject } from '@fema/core-utils'
 import { AppConnectionValue, AUTHENTICATION_PROPERTY_NAME, PropertySettings } from '@fema/shared'
 import { dynamicPropKeys } from '../helper/dynamic-prop-keys'
@@ -12,12 +12,12 @@ type PropsValidationError = {
 
 export const propsProcessor = {
     applyProcessorsAndValidators: async (
-        resolvedInput: StaticPropsValue<PiecePropertyMap>,
+        resolvedInput: StaticPropsValue<ConnectorPropertyMap>,
         props: InputPropertyMap,
-        auth: PieceAuthProperty | PieceAuthProperty[] | undefined,
+        auth: ConnectorAuthProperty | ConnectorAuthProperty[] | undefined,
         requireAuth: boolean,
         propertySettings: Record<string, PropertySettings>,
-    ): Promise<{ processedInput: StaticPropsValue<PiecePropertyMap>, errors: PropsValidationError }> => {
+    ): Promise<{ processedInput: StaticPropsValue<ConnectorPropertyMap>, errors: PropsValidationError }> => {
         let dynamaicPropertiesSchema: Record<string, InputPropertyMap> | undefined = undefined
         if (Object.keys(propertySettings).length > 0) {
             dynamaicPropertiesSchema = Object.fromEntries(Object.entries(propertySettings).map(([key, propertySetting]) => [key, propertySetting.schema]))
@@ -136,7 +136,7 @@ function destroyOpenStreams(value: unknown): void {
     }
 }
 
-const validateProperty = (property: PieceProperty, value: unknown, originalValue: unknown): string[] => {
+const validateProperty = (property: ConnectorProperty, value: unknown, originalValue: unknown): string[] => {
     if (property.type === PropertyType.JSON) {
         if (!property.required && originalValue === '') {
             return []
@@ -183,13 +183,13 @@ const validateProperty = (property: PieceProperty, value: unknown, originalValue
     }
 }
 
-function getAuthPropsToProcess(authValue: AppConnectionValue, auth: PieceAuthProperty | PieceAuthProperty[] | undefined): | null {
+function getAuthPropsToProcess(authValue: AppConnectionValue, auth: ConnectorAuthProperty | ConnectorAuthProperty[] | undefined): | null {
     if (isNil(auth)) {
         return null
     }
     const usedAuthProperty = getAuthPropertyForValue({
         authValueType: authValue.type,
-        pieceAuth: auth,
+        connectorAuth: auth,
     })
     const doesAuthHaveProps = usedAuthProperty?.type === PropertyType.CUSTOM_AUTH || usedAuthProperty?.type === PropertyType.OAUTH2 || usedAuthProperty?.type === PropertyType.OIDC
     if (doesAuthHaveProps && !isNil(usedAuthProperty?.props)) {

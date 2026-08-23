@@ -46,10 +46,10 @@ it supplied itself, and isolate bind-mounts are read-only. Four other things wer
   milliseconds — enough to probe whether anyone else has run a byte-identical snippet.
 - **Shared dependency resolution.** `bun install` over unpinned semver means the artifact is not a pure
   function of the source; one tenant's months-old resolution of `^4.0.0` was served to another.
-- **House rule.** `custom_pieces/<platformId>`, built two lines away in the same function, already namespaces
+- **House rule.** `custom_connectors/<platformId>`, built two lines away in the same function, already namespaces
   by platform. This did not.
 
-**Platform, not project.** A platform is the customer boundary, matching the `custom_pieces` precedent, and
+**Platform, not project.** A platform is the customer boundary, matching the `custom_connectors` precedent, and
 it keeps the cache warm across a customer's own projects. Purging a customer is then one glob.
 
 **A constant directory level, not a variable one, and not a name prefix.** The first shape of this
@@ -86,7 +86,7 @@ large-dependency snippets cannot fill a disk, because `code-builder` deletes `no
 unconditionally after compile *and* on install failure — an action-run directory is the esbuild bundle, not the
 dependency tree, so reaching gigabytes needs thousands of distinct snippets inside one TTL window. The
 2 GiB budget it shipped with was also the size of the *entire* default Helm volume (`persistence.size:
-2Gi`, which also carries the engine, `pieces-metadata`, flow caches and bundles), so it could never fire.
+2Gi`, which also carries the engine, `connectors-metadata`, flow caches and bundles), so it could never fire.
 
 Second, and the reason not to simply retune it: **a byte budget cannot bound the number of survivors, and
 the number is what safety depends on.** At any instant some directories are bind-mounted into running

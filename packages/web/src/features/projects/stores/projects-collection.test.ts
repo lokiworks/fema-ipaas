@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { PiecesFilterType, ProjectType } from '@fema/shared';
+import { ConnectorsFilterType, ProjectType } from '@fema/shared';
 import type { ProjectWithLimits } from '@fema/shared';
 import {
   and,
@@ -63,8 +63,8 @@ function makeProject(
       projectId: id,
       locked: false,
       name: 'default',
-      piecesFilterType: PiecesFilterType.NONE,
-      pieces: [],
+      connectorsFilterType: ConnectorsFilterType.NONE,
+      connectors: [],
     },
     analytics: {
       totalUsers: 0,

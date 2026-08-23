@@ -8,7 +8,7 @@ icon: "webhook"
 
 ## Overview
 
-Event Streaming forwards platform [audit events](/admin-guide/security/audit-logs/overview) to a webhook URL of your choice. The most common pattern is to point that webhook at a flow inside Activepieces — your flow then routes each event to the channel you care about (Slack, Gmail, Microsoft Teams, custom HTTP, etc.).
+Event Streaming forwards platform [audit events](/admin-guide/security/audit-logs/overview) to a webhook URL of your choice. The most common pattern is to point that webhook at a flow inside FEMA Integration Platform — your flow then routes each event to the channel you care about (Slack, Gmail, Microsoft Teams, custom HTTP, etc.).
 
 Use it to react to flow run failures, new sign-ins, project releases, or any other audit event with the alerting tool of your choice.
 
@@ -21,7 +21,7 @@ The fastest way to get going is the **Generate handler flow** button in the New 
 ![Create event destination](/resources/screenshots/event-destination.png)
 3. The flow lands in your personal project with a webhook trigger and a router branch per selected event. Sample data is pre-baked so you can hit Test right away, you can add a router step under any event branch to check for specific projects/flows ids.
 ![Event destination handler flow](/resources/screenshots/event-destination-flow.png)
-4. Customize the branches with whatever pieces you like — Slack, Gmail, Microsoft Teams, custom HTTP, and so on.
+4. Customize the branches with whatever connectors you like — Slack, Gmail, Microsoft Teams, custom HTTP, and so on.
 5. Publish the flow, then go back to the New destination dialog and click **Create** to save the destination.
 6. Use the **Test webhook** dropdown in the dialog to fire a sample of any selected event and confirm the round-trip.
 
@@ -54,7 +54,7 @@ Every event is delivered as an HTTP POST with a JSON body. The top-level fields 
 - **Enterprise Edition**: Event Streaming requires an enterprise plan with Audit Logs enabled.
 - **Platform admin**: only platform admins can configure destinations.
 - **HTTPS endpoint**: webhook URLs must use HTTPS.
-- **Publicly accessible**: external endpoints must be reachable from your Activepieces server. Handler flows on this same instance are delivered internally, so they work even when the instance is not publicly reachable (for example, behind an internal load balancer).
+- **Publicly accessible**: external endpoints must be reachable from your FEMA Integration Platform server. Handler flows on this same instance are delivered internally, so they work even when the instance is not publicly reachable (for example, behind an internal load balancer).
 
 ## Troubleshooting
 

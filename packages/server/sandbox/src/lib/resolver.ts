@@ -14,7 +14,7 @@ import { CodeArtifact, ProvisionInput, ResolveInput, Resolver, ResolveResult, Sa
 export function createResolver({ apiClient, basePath, getSettings, log }: CreateResolverParams): Resolver {
     return {
         async resolve(input: ResolveInput): Promise<ResolveResult> {
-            let pieces = input.pieces ?? []
+            let connectors = input.connectors ?? []
             let codes: CodeArtifact[] = input.codes ?? []
             let flowVersion: FlowVersion | undefined
 
@@ -27,7 +27,7 @@ export function createResolver({ apiClient, basePath, getSettings, log }: Create
                     return { kind: 'disabled', failedStep: resolved.failedStep }
                 }
                 flowVersion = resolved.flowVersion
-                pieces = [...pieces, ...resolved.pieces]
+                connectors = [...connectors, ...resolved.connectors]
                 if (resolved.code.kind === 'source') {
                     codes = [...codes, ...resolved.code.steps]
                     // Cold path: compile here so the bundle can be published. Publish only when every
@@ -41,12 +41,12 @@ export function createResolver({ apiClient, basePath, getSettings, log }: Create
                 }
             }
 
-            const uniquePieces = unique(pieces)
+            const uniqueConnectors = unique(connectors)
 
             const provision: ProvisionInput = {
                 platformId: input.platformId,
                 flowVersionId: flowVersion?.id,
-                pieces: uniquePieces,
+                connectors: uniqueConnectors,
                 codes,
                 publicApiUrl: input.publicApiUrl,
                 engineToken: input.engineToken,

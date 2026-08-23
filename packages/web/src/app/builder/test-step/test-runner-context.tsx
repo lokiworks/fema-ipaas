@@ -14,9 +14,9 @@ import React, {
 } from 'react';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
-import { pieceSelectorUtils, piecesHooks } from '@/features/pieces';
+import { connectorSelectorUtils, connectorsHooks } from '@/features/connectors';
 
-import { DynamicPropertiesContext } from '../piece-properties/dynamic-properties-context';
+import { DynamicPropertiesContext } from '../connector-properties/dynamic-properties-context';
 
 import TestWebhookDialog from './custom-test-step/test-webhook-dialog';
 import {
@@ -29,8 +29,8 @@ const ActionTestRunnerContext =
   createContext<ActionTestRunnerContextValue | null>(null);
 
 const isReturnResponseAndWaitForWebhook = (step: FlowAction) =>
-  step.type === FlowActionType.PIECE &&
-  step.settings.pieceName === '@fema/connector-webhook' &&
+  step.type === FlowActionType.CONNECTOR &&
+  step.settings.connectorName === '@fema/connector-webhook' &&
   step.settings.actionName === 'return_response_and_wait_for_next_webhook';
 
 const ActionTestRunnerProvider = ({
@@ -98,28 +98,35 @@ const TriggerTestRunnerProvider = ({
   const { isLoadingDynamicProperties } = useContext(DynamicPropertiesContext);
   const queryClient = useQueryClient();
 
-  const isPieceTrigger = step.type === FlowTriggerType.PIECE;
-  const pieceName = isPieceTrigger ? step.settings.pieceName : '';
-  const pieceVersion = isPieceTrigger ? step.settings.pieceVersion : undefined;
-  const triggerName = isPieceTrigger ? step.settings.triggerName : undefined;
+  const isConnectorTrigger = step.type === FlowTriggerType.CONNECTOR;
+  const connectorName = isConnectorTrigger ? step.settings.connectorName : '';
+  const connectorVersion = isConnectorTrigger
+    ? step.settings.connectorVersion
+    : undefined;
+  const triggerName = isConnectorTrigger
+    ? step.settings.triggerName
+    : undefined;
 
-  const { pieceModel, isLoading: isPieceLoading } = piecesHooks.usePiece({
-    name: pieceName,
-    version: pieceVersion,
-    enabled: isPieceTrigger && !!pieceName,
-  });
+  const { connectorModel, isLoading: isConnectorLoading } =
+    connectorsHooks.useConnector({
+      name: connectorName,
+      version: connectorVersion,
+      enabled: isConnectorTrigger && !!connectorName,
+    });
 
-  const trigger = triggerName ? pieceModel?.triggers?.[triggerName] : undefined;
+  const trigger = triggerName
+    ? connectorModel?.triggers?.[triggerName]
+    : undefined;
   const mockData = trigger?.sampleData;
 
   const testType: TestType | null =
-    trigger && triggerName && pieceName
-      ? triggerEventUtils.getTestType({ triggerName, pieceName, trigger })
+    trigger && triggerName && connectorName
+      ? triggerEventUtils.getTestType({ triggerName, connectorName, trigger })
       : null;
 
   const isManualTrigger =
-    pieceName && triggerName
-      ? pieceSelectorUtils.isManualTrigger({ pieceName, triggerName })
+    connectorName && triggerName
+      ? connectorSelectorUtils.isManualTrigger({ connectorName, triggerName })
       : false;
 
   const onTestSuccess = useCallback(async () => {
@@ -159,7 +166,7 @@ const TriggerTestRunnerProvider = ({
     isValid &&
     !isTesting &&
     !isLoadingDynamicProperties &&
-    !isPieceLoading &&
+    !isConnectorLoading &&
     !isManualTrigger &&
     testType !== null;
 
@@ -184,8 +191,8 @@ const TriggerTestRunnerProvider = ({
     <TriggerTestRunnerContext.Provider
       value={{
         step,
-        pieceModel,
-        isPieceLoading,
+        connectorModel,
+        isConnectorLoading,
         testType,
         mockData,
         isValid,
@@ -236,8 +243,10 @@ type ActionTestRunnerProviderProps = {
 
 type TriggerTestRunnerContextValue = {
   step: FlowTrigger;
-  pieceModel: ReturnType<typeof piecesHooks.usePiece>['pieceModel'];
-  isPieceLoading: boolean;
+  connectorModel: ReturnType<
+    typeof connectorsHooks.useConnector
+  >['connectorModel'];
+  isConnectorLoading: boolean;
   testType: TestType | null;
   mockData: unknown;
   isValid: boolean;

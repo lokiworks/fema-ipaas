@@ -1,10 +1,10 @@
 # Guide: calling an API directly over HTTP
 
-Load this whenever the work needs a web API and either **no piece exists for that service at all**, or a piece exists but its connection is unavailable and the user can't/won't create one. Use the HTTP piece (`@fema/connector-http`, action `send_request`) to call the API directly and **carry the task to completion** — fetch the data, use it, finish the job. If the user declines the HTTP fallback too, report the limitation and stop.
+Load this whenever the work needs a web API and either **no connector exists for that service at all**, or a connector exists but its connection is unavailable and the user can't/won't create one. Use the HTTP connector (`@fema/connector-http`, action `send_request`) to call the API directly and **carry the task to completion** — fetch the data, use it, finish the job. If the user declines the HTTP fallback too, report the limitation and stop.
 
-**`ap_fetch_url` is NOT how you call an API.** `ap_fetch_url` reads a web *page* as text for your own reading; it is not the way to hit a JSON API and act on the result. To call an API (public or authed) and use its response in the task or an automation, ALWAYS use the HTTP piece `send_request` below — never stop at `ap_fetch_url` and hand back. A public API with no auth is the *easiest* case, not a reason to fall back to page-reading.
+**`ap_fetch_url` is NOT how you call an API.** `ap_fetch_url` reads a web *page* as text for your own reading; it is not the way to hit a JSON API and act on the result. To call an API (public or authed) and use its response in the task or an automation, ALWAYS use the HTTP connector `send_request` below — never stop at `ap_fetch_url` and hand back. A public API with no auth is the *easiest* case, not a reason to fall back to page-reading.
 
-**First, prefer a native piece.** Before falling back to HTTP, confirm there isn't a native action that does this with no connection — e.g. Discord's `send_message_webhook` (just `webhook_url` + `content`), Slack incoming webhooks, etc. A native action has simple, validated fields and is far less error-prone than a raw HTTP request. Only use HTTP when no native action fits.
+**First, prefer a native connector.** Before falling back to HTTP, confirm there isn't a native action that does this with no connection — e.g. Discord's `send_message_webhook` (just `webhook_url` + `content`), Slack incoming webhooks, etc. A native action has simple, validated fields and is far less error-prone than a raw HTTP request. Only use HTTP when no native action fits.
 
 1. Identify the API endpoint from the app/action name (e.g. `gmail` → Gmail API, `slack` → Slack API).
 2. Ask the user for their auth credentials (this is the one place a card is fine — a direct request for a specific value):
@@ -67,8 +67,8 @@ Load this whenever the work needs a web API and either **no piece exists for tha
 ```
 Then read the response and use it to finish the task (state the value, write it where it belongs, etc.) — the GET is the start, not the end.
 
-4. For automation builds, use the HTTP piece step with the same contract and inline auth pattern.
+4. For automation builds, use the HTTP connector step with the same contract and inline auth pattern.
 
-If anything still fails after one corrected attempt, call `ap_get_piece_props('@fema/connector-http', 'send_request')` (passing your current `body_type`) to resolve the dynamic `body` sub-fields, fix once, and report if it still won't go through — do not re-send the same request repeatedly.
+If anything still fails after one corrected attempt, call `ap_get_connector_props('@fema/connector-http', 'send_request')` (passing your current `body_type`) to resolve the dynamic `body` sub-fields, fix once, and report if it still won't go through — do not re-send the same request repeatedly.
 
 Always explain plainly: "Since we don't have a [App] connection set up, I'll call the [Service] API directly."

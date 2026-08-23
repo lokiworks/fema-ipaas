@@ -1,16 +1,16 @@
 ---
 title: "Changelog"
-description: "A log of all notable changes to Activepieces"
+description: "A log of all notable changes to FEMA Integration Platform"
 icon: "code-commit"
 ---
 
-<Update label="August 2026" description="AI-Ready Pieces: Tool Search, AI Metadata & Audience">
+<Update label="August 2026" description="AI-Ready Connectors: Tool Search, AI Metadata & Audience">
 
-### AI-ready pieces: tool search, AI metadata, and audience
+### AI-ready connectors: tool search, AI metadata, and audience
 
-The piece catalog is now built for AI agents as much as for humans. An agent connected
+The connector catalog is now built for AI agents as much as for humans. An agent connected
 through the [MCP server](/mcp/overview) can find the right action across hundreds of
-pieces by describing the task — then inspect its schema and run it.
+connectors by describing the task — then inspect its schema and run it.
 
 **Tool search**
 
@@ -27,21 +27,21 @@ pieces by describing the task — then inspect its schema and run it.
 
 - **Agent-oriented descriptions**: actions and triggers across the catalog carry
   `aiMetadata` — a description written for agents plus an idempotency declaration for
-  safe retries. See [AI Metadata](/build-pieces/piece-reference/ai-metadata).
+  safe retries. See [AI Metadata](/build-connectors/connector-reference/ai-metadata).
 - **Audience targeting**: actions can target humans, agents, or both — the visual
   builder shows the human view while agents discover the AI view, so agent-only
-  atomic actions don't clutter the piece selector.
-- **Output schemas**: pieces can declare a labelled, formatted presentation of their
+  atomic actions don't clutter the connector selector.
+- **Output schemas**: connectors can declare a labelled, formatted presentation of their
   step output, driving the builder's data selector and output viewer.
-  See [Output Schema](/build-pieces/piece-reference/output-schema).
+  See [Output Schema](/build-connectors/connector-reference/output-schema).
 
 </Update>
 
-<Update label="June 2026" description="Production Setup: Lightweight Workers, Bundled Pieces & Predictable Scaling">
+<Update label="June 2026" description="Production Setup: Lightweight Workers, Bundled Connectors & Predictable Scaling">
 
-### Production setup: lightweight workers, bundled pieces, and predictable scaling
+### Production setup: lightweight workers, bundled connectors, and predictable scaling
 
-A ground-up overhaul of how Activepieces runs in production. The new shape is sized from a single number, your peak concurrent flows, and every piece of it is cheaper to run and easier to reason about. See the updated [Production Setup](/install/configure-operate/production-setup).
+A ground-up overhaul of how FEMA Integration Platform runs in production. The new shape is sized from a single number, your peak concurrent flows, and every connector of it is cheaper to run and easier to reason about. See the updated [Production Setup](/install/configure-operate/production-setup).
 
 **Workers**
 
@@ -50,11 +50,11 @@ A ground-up overhaul of how Activepieces runs in production. The new shape is si
 - **No noisy neighbours**: every flow gets its own guaranteed CPU and memory slice, so one flow can't starve or crash another. See [Reserved Resources](/install/guarantees/reserved-resources).
 - **Less to provision**: the pre-warm feature and worker persistent disks are no longer required; each worker fills its cache lazily and reaches steady-state on its own.
 
-**Pieces & flows**
+**Connectors & flows**
 
-- **Pieces are now bundled**: each piece (and its dependencies) is compiled into a single small artifact, KB-scale instead of multi-megabyte module trees. Bundling is applied uniformly, so existing pieces shrink too.
+- **Connectors are now bundled**: each connector (and its dependencies) is compiled into a single small artifact, KB-scale instead of multi-megabyte module trees. Bundling is applied uniformly, so existing connectors shrink too.
 - **Faster cold boot**: less code to compile and only a trivial amount of ephemeral disk needed per run.
-- **Served from S3**: flow bundles and pieces are served and cached from your in-region object store (npm registry stays as a fallback), cutting install time from seconds to under 100 ms. See [S3 Storage](/install/configure-operate/setup-s3).
+- **Served from S3**: flow bundles and connectors are served and cached from your in-region object store (npm registry stays as a fallback), cutting install time from seconds to under 100 ms. See [S3 Storage](/install/configure-operate/setup-s3).
 
 **Scaling**
 
@@ -88,11 +88,11 @@ Read more: [Waitpoints](/install/architecture/waitpoints) · [Durable Execution]
 
 ### Network Security
 
-Activepieces now ships with a built-in **network proxy that protects your automations from network attacks**.
+FEMA Integration Platform now ships with a built-in **network proxy that protects your automations from network attacks**.
 
 - **One switch to turn it on** — set `FEMA_NETWORK_MODE=STRICT` and the protection is active. It's **opt-in today**, but in an upcoming release it will become **opt-out** (on by default).
 - **Allow list for trusted internal services** — if a flow legitimately needs to reach an internal API or database, add its address (or a whole subnet like `10.10.0.0/24`) to `FEMA_SSRF_ALLOW_LIST`.
-- **Works with your corporate proxy** — if you already use `HTTP_PROXY` / `HTTPS_PROXY`, Activepieces respects them automatically.
+- **Works with your corporate proxy** — if you already use `HTTP_PROXY` / `HTTPS_PROXY`, FEMA Integration Platform respects them automatically.
 
 See the [Network Security](/install/architecture/network-security) architecture page for the full breakdown.
 
@@ -169,7 +169,7 @@ A comprehensive visual refresh across all Platform Admin and Project pages with 
 **Project pages**
 
 - **Automations** — renamed from "Flows", with Type and Owner filters, search, step icon details, status toggles, and favorites
-- **Connections** — Pieces and Owner filters, flow usage count, inline edit and refresh actions
+- **Connections** — Connectors and Owner filters, flow usage count, inline edit and refresh actions
 - **Runs** — updated tab navigation and consistent styling
 
 **General improvements**

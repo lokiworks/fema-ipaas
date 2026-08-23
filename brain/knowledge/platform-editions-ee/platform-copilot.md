@@ -4,12 +4,12 @@ icon: 🧑‍✈️
 
 # Platform Copilot
 
-A backend-only RAG chat assistant that answers questions about the Activepieces platform itself — codebase, docs, config — aimed at developers building on Activepieces, not flow end-users. Enhances the query, retrieves from a pre-indexed vector+full-text store, and streams responses via the Vercel AI SDK UI message stream. All editions (no plan-flag guard); both endpoints require `publicPlatform` scope (any authenticated USER).
+A backend-only RAG chat assistant that answers questions about the FEMA Integration Platform platform itself — codebase, docs, config — aimed at developers building on FEMA Integration Platform, not flow end-users. Enhances the query, retrieves from a pre-indexed vector+full-text store, and streams responses via the Vercel AI SDK UI message stream. All editions (no plan-flag guard); both endpoints require `publicPlatform` scope (any authenticated USER).
 
 ### Entities & services
 - **copilot_code_chunks** — parsed segments of the AP codebase/docs: `path`, `content`, `embedding` `vector(768)`, `embeddingModel` (filters queries so embeddings from different models don't mix), `chunkType` (`function`/`class`/`module`/`block`/`section`), `searchVector` `tsvector` (populated by a background UPDATE, not selected by default).
 - `platformCopilotService.prepareChat` — enhance query → retrieve up to 8 chunks → load model → return `{ model, systemWithContext, messages }`.
-- `platformCopilotIndexer.indexAll` — globs `.ts/.tsx`, `.md/.mdx`, `package.json` (excludes dist, node_modules, tests, pieces, secrets); parses via AST TS parser or MD heading parser; embeds in batches of 50; upserts + deletes stale rows.
+- `platformCopilotIndexer.indexAll` — globs `.ts/.tsx`, `.md/.mdx`, `package.json` (excludes dist, node_modules, tests, connectors, secrets); parses via AST TS parser or MD heading parser; embeds in batches of 50; upserts + deletes stale rows.
 - `copilotSearchService.search` — runs vector cosine (`<=>`, top 20) and PostgreSQL `plainto_tsquery` full-text concurrently, then RRF merge (70% vector, 30% text).
 
 ### How it works

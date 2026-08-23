@@ -95,7 +95,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               title: 'feat: New translation files',
-              body: 'Automatically generated translation files for all pieces',
+              body: 'Automatically generated translation files for all connectors',
               head: branchName,
               base: 'main',
               draft: false

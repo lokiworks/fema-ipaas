@@ -59,7 +59,7 @@ export enum FeatureFlagId {
     CHAT_ENABLED = 'chatEnabled',
     AGENTS_ENABLED = 'agentsEnabled',
     WORKER_GROUPS_ENABLED = 'workerGroupsEnabled',
-    MANAGE_PIECES_ENABLED = 'managePiecesEnabled',
+    MANAGE_CONNECTORS_ENABLED = 'manageConnectorsEnabled',
     MANAGE_TEMPLATES_ENABLED = 'manageTemplatesEnabled',
     CUSTOM_APPEARANCE_ENABLED = 'customAppearanceEnabled',
     PROJECT_ROLES_ENABLED = 'projectRolesEnabled',
@@ -96,7 +96,7 @@ export const PlatformPlan = z.object({
     chatEnabled: z.boolean(),
     agentsEnabled: z.boolean(),
     workerGroupsEnabled: z.boolean(),
-    managePiecesEnabled: z.boolean(),
+    manageConnectorsEnabled: z.boolean(),
     manageTemplatesEnabled: z.boolean(),
     customAppearanceEnabled: z.boolean(),
     billedTeamProjectsLimit: Nullable(z.number()),
@@ -157,34 +157,34 @@ export const PlatformThemeColors = z.object({
 })
 export type PlatformThemeColors = z.infer<typeof PlatformThemeColors>
 
-export const PIECE_SELECTOR_BUILTIN_TABS = ['EXPLORE', 'APPS', 'UTILITY', 'AI_AND_AGENTS', 'APPROVALS'] as const
+export const CONNECTOR_SELECTOR_BUILTIN_TABS = ['EXPLORE', 'APPS', 'UTILITY', 'AI_AND_AGENTS', 'APPROVALS'] as const
 
-export const PieceSelectorTabSection = z.object({
+export const ConnectorSelectorTabSection = z.object({
     id: z.string(),
     title: z.string().min(1).max(40),
-    pieceNames: z.array(z.string()),
+    connectorNames: z.array(z.string()),
 })
-export type PieceSelectorTabSection = z.infer<typeof PieceSelectorTabSection>
+export type ConnectorSelectorTabSection = z.infer<typeof ConnectorSelectorTabSection>
 
-export const PieceSelectorTabConfig = z.object({
+export const ConnectorSelectorTabConfig = z.object({
     id: z.string(),
     kind: z.enum(['BUILTIN', 'CUSTOM']),
-    builtinTab: z.enum(PIECE_SELECTOR_BUILTIN_TABS).optional(),
+    builtinTab: z.enum(CONNECTOR_SELECTOR_BUILTIN_TABS).optional(),
     title: z.string().max(40).optional(),
     icon: z.string().optional(),
     hidden: z.boolean(),
-    pieceNames: z.array(z.string()).optional(),
-    sections: z.array(PieceSelectorTabSection).optional(),
+    connectorNames: z.array(z.string()).optional(),
+    sections: z.array(ConnectorSelectorTabSection).optional(),
 }).refine(
     (tab) => tab.kind !== 'CUSTOM' || (tab.title?.trim().length ?? 0) > 0,
     { message: 'Custom tabs must have a name', path: ['title'] },
 )
-export type PieceSelectorTabConfig = z.infer<typeof PieceSelectorTabConfig>
+export type ConnectorSelectorTabConfig = z.infer<typeof ConnectorSelectorTabConfig>
 
-export const PieceSelectorConfig = z.object({
-    tabs: z.array(PieceSelectorTabConfig),
+export const ConnectorSelectorConfig = z.object({
+    tabs: z.array(ConnectorSelectorTabConfig),
 })
-export type PieceSelectorConfig = z.infer<typeof PieceSelectorConfig>
+export type ConnectorSelectorConfig = z.infer<typeof ConnectorSelectorConfig>
 
 export const Platform = z.object({
     ...BaseModelSchema,
@@ -204,8 +204,8 @@ export const Platform = z.object({
     ssoDomainVerification: Nullable(SsoDomainVerification),
     federatedAuthProviders: FederatedAuthnProviderConfig,
     emailAuthEnabled: z.boolean(),
-    pinnedPieces: z.array(z.string()),
-    pieceSelectorConfig: Nullable(PieceSelectorConfig),
+    pinnedConnectors: z.array(z.string()),
+    connectorSelectorConfig: Nullable(ConnectorSelectorConfig),
 })
 export type Platform = z.infer<typeof Platform>
 export type PlatformWithoutFederatedAuth = Omit<Platform, 'federatedAuthProviders'>
@@ -233,8 +233,8 @@ export const PlatformWithoutSensitiveData = z.object({
     ssoDomain: Nullable(z.string()),
     ssoDomainVerification: Nullable(SsoDomainVerification),
     emailAuthEnabled: z.boolean(),
-    pinnedPieces: z.array(z.string()),
-    pieceSelectorConfig: Nullable(PieceSelectorConfig),
+    pinnedConnectors: z.array(z.string()),
+    connectorSelectorConfig: Nullable(ConnectorSelectorConfig),
 })
 export type PlatformWithoutSensitiveData = z.infer<typeof PlatformWithoutSensitiveData>
 

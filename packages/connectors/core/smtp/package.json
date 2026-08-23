@@ -1,0 +1,24 @@
+{
+  "name": "@fema/connector-smtp",
+  "version": "0.4.7",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.lib.json && cp package.json dist/",
+    "bundle": "node ../../../../dist/packages/cli/src/index.js connectors bundle",
+    "lint": "eslint 'src/**/*.ts'"
+  },
+  "dependencies": {
+    "@fema/connector-common": "workspace:*",
+    "@fema/connector-sdk": "workspace:*",
+    "mime-types": "2.1.35",
+    "nodemailer": "9.0.1",
+    "@fema/connector-types": "workspace:*",
+    "@fema/core-utils": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/mime-types": "2.1.1",
+    "@types/nodemailer": "7.0.11",
+    "tslib": "2.6.2"
+  }
+}

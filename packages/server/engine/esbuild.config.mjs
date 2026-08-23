@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const outdir = path.resolve(__dirname, '../../../dist/packages/engine');
 const proxyOutfile = path.join(outdir, 'main.js');
-const pieceChildOutfile = path.join(outdir, 'piece-child.js');
+const connectorChildOutfile = path.join(outdir, 'connector-child.js');
 
 const watch = process.argv.includes('--watch');
 
@@ -69,10 +69,10 @@ function buildOptions({ outfile, entry = 'src/main.ts' }) {
     treeShaking: true,
     alias: {
         '@fema/shared': path.resolve(__dirname, '../../core/shared/src'),
-        '@fema/connector-sdk': path.resolve(__dirname, '../../pieces/framework/src'),
-        '@fema/connector-common': path.resolve(__dirname, '../../pieces/common/src'),
+        '@fema/connector-sdk': path.resolve(__dirname, '../../connectors/sdk/src'),
+        '@fema/connector-common': path.resolve(__dirname, '../../connectors/common/src'),
         '@fema/core-utils': path.resolve(__dirname, '../../core/utils/src'),
-        '@fema/connector-types': path.resolve(__dirname, '../../core/piece-types/src'),
+        '@fema/connector-types': path.resolve(__dirname, '../../core/connector-types/src'),
         '@fema/expression': path.resolve(__dirname, '../../core/formula/src'),
         '@fema/workflow-core': path.resolve(__dirname, '../../core/execution/src'),
     },
@@ -83,7 +83,7 @@ function buildOptions({ outfile, entry = 'src/main.ts' }) {
 
 const targets = [
   buildOptions({ outfile: proxyOutfile }),
-  buildOptions({ outfile: pieceChildOutfile, entry: 'src/piece-child.ts' }),
+  buildOptions({ outfile: connectorChildOutfile, entry: 'src/connector-child.ts' }),
 ];
 
 if (watch) {

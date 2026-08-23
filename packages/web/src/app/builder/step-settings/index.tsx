@@ -5,7 +5,7 @@ import {
   FlowOperationType,
   FlowTrigger,
   FlowTriggerType,
-  flowPieceUtil,
+  flowConnectorUtil,
   flowStructureUtil,
 } from '@fema/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -18,16 +18,16 @@ import { Form } from '@/components/ui/form';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   stepsHooks,
-  pieceSelectorUtils,
+  connectorSelectorUtils,
   formUtils,
-  PieceIcon,
-  PieceStepMetadata,
-} from '@/features/pieces';
+  ConnectorIcon,
+  ConnectorStepMetadata,
+} from '@/features/connectors';
 import { projectCollectionUtils } from '@/features/projects';
 import { cn, GAP_SIZE_FOR_STEP_SETTINGS } from '@/lib/utils';
 
-import { ActionErrorHandlingForm } from '../piece-properties/action-error-handling';
-import { DynamicPropertiesProvider } from '../piece-properties/dynamic-properties-context';
+import { ActionErrorHandlingForm } from '../connector-properties/action-error-handling';
+import { DynamicPropertiesProvider } from '../connector-properties/dynamic-properties-context';
 import { SidebarHeader } from '../sidebar-header';
 import { StepDataPanelHost } from '../step-data/step-data-panel-host';
 import {
@@ -37,16 +37,16 @@ import {
 import { TestStepCTAButton } from '../test-step/test-step-cta-button';
 
 import { CodeSettings } from './code-settings';
+import { ConnectorSettings } from './connector-settings';
 import EditableStepName from './editable-step-name';
 import { LoopsSettings } from './loops-settings';
-import { PieceSettings } from './piece-settings';
 import { RouterSettings } from './router-settings';
 import { StepNavigationButtons } from './step-navigation-buttons';
 import { useStepSettingsContext } from './step-settings-context';
-import { UpdatePieceVersionDialog } from './update-piece-version-dialog/update-piece-version-dialog';
+import { UpdateConnectorVersionDialog } from './update-connector-version-dialog/update-connector-version-dialog';
 
 const StepSettingsContainer = () => {
-  const { selectedStep, pieceModel, formSchema } = useStepSettingsContext();
+  const { selectedStep, connectorModel, formSchema } = useStepSettingsContext();
   const { project } = projectCollectionUtils.useCurrentProject();
   const [
     readonly,
@@ -102,9 +102,9 @@ const StepSettingsContainer = () => {
       cleanedNewValues.valid = valid;
       if (
         cleanedNewValues.type === FlowTriggerType.EMPTY ||
-        (isNil(pieceModel) &&
-          (cleanedNewValues.type === FlowActionType.PIECE ||
-            cleanedNewValues.type === FlowTriggerType.PIECE))
+        (isNil(connectorModel) &&
+          (cleanedNewValues.type === FlowActionType.CONNECTOR ||
+            cleanedNewValues.type === FlowTriggerType.CONNECTOR))
       ) {
         return result;
       }
@@ -118,7 +118,7 @@ const StepSettingsContainer = () => {
       }
       //We need to copy the object because the form is using the same object reference
       currentValuesRef.current = JSON.parse(JSON.stringify(cleanedNewValues));
-      if (cleanedNewValues.type === FlowTriggerType.PIECE) {
+      if (cleanedNewValues.type === FlowTriggerType.CONNECTOR) {
         applyOperation({
           type: FlowOperationType.UPDATE_TRIGGER,
           request: {
@@ -142,9 +142,9 @@ const StepSettingsContainer = () => {
   const sidebarHeaderContainerRef = useRef<HTMLDivElement>(null);
   const modifiedStep = form.getValues();
   const isManualTrigger =
-    modifiedStep.type === FlowTriggerType.PIECE &&
-    pieceSelectorUtils.isManualTrigger({
-      pieceName: modifiedStep.settings.pieceName,
+    modifiedStep.type === FlowTriggerType.CONNECTOR &&
+    connectorSelectorUtils.isManualTrigger({
+      connectorName: modifiedStep.settings.connectorName,
       triggerName: modifiedStep.settings.triggerName ?? '',
     });
   const isEmptyTrigger = modifiedStep.type === FlowTriggerType.EMPTY;
@@ -156,13 +156,13 @@ const StepSettingsContainer = () => {
   const [isEditingStepOrBranchName, setIsEditingStepOrBranchName] =
     useState(false);
   const runAgentStep =
-    modifiedStep.settings.pieceName === '@fema/connector-ai' &&
+    modifiedStep.settings.connectorName === '@fema/connector-ai' &&
     modifiedStep.settings.actionName === 'run_agent';
 
   const showActionErrorHandlingForm =
     !isNil(stepMetadata) &&
     (modifiedStep.type === FlowActionType.CODE ||
-      (modifiedStep.type === FlowActionType.PIECE && runAgentStep));
+      (modifiedStep.type === FlowActionType.CONNECTOR && runAgentStep));
 
   useEffect(() => {
     //RHF doesn't automatically trigger validation when the form is rendered, so we need to trigger it manually
@@ -185,33 +185,33 @@ const StepSettingsContainer = () => {
         {modifiedStep.type === FlowActionType.CODE && (
           <CodeSettings readonly={readonly}></CodeSettings>
         )}
-        {modifiedStep.type === FlowActionType.PIECE && modifiedStep && (
-          <PieceSettings
+        {modifiedStep.type === FlowActionType.CONNECTOR && modifiedStep && (
+          <ConnectorSettings
             step={modifiedStep}
             flowId={flowVersion.flowId}
             readonly={readonly}
-          ></PieceSettings>
+          ></ConnectorSettings>
         )}
         {modifiedStep.type === FlowActionType.ROUTER && modifiedStep && (
           <RouterSettings readonly={readonly}></RouterSettings>
         )}
-        {modifiedStep.type === FlowTriggerType.PIECE && modifiedStep && (
-          <PieceSettings
+        {modifiedStep.type === FlowTriggerType.CONNECTOR && modifiedStep && (
+          <ConnectorSettings
             step={modifiedStep}
             flowId={flowVersion.flowId}
             readonly={readonly}
-          ></PieceSettings>
+          ></ConnectorSettings>
         )}
         {showActionErrorHandlingForm && (
           <ActionErrorHandlingForm
             hideContinueOnFailure={
-              stepMetadata.type === FlowActionType.PIECE
+              stepMetadata.type === FlowActionType.CONNECTOR
                 ? stepMetadata.errorHandlingOptions?.continueOnFailure?.hide
                 : false
             }
             disabled={readonly}
             hideRetryOnFailure={
-              stepMetadata.type === FlowActionType.PIECE
+              stepMetadata.type === FlowActionType.CONNECTOR
                 ? stepMetadata.errorHandlingOptions?.retryOnFailure?.hide
                 : false
             }
@@ -236,7 +236,7 @@ const StepSettingsContainer = () => {
             onClose={() => exitStepSettings()}
             leadingIcon={
               stepMetadata ? (
-                <PieceIcon
+                <ConnectorIcon
                   logoUrl={stepMetadata.logoUrl}
                   displayName={stepMetadata.displayName}
                   showTooltip={false}
@@ -247,13 +247,13 @@ const StepSettingsContainer = () => {
             }
             actions={
               <div className="flex items-center gap-1">
-                {isPieceMetadata(stepMetadata) &&
-                  stepMetadata.pieceVersion &&
-                  (modifiedStep.type === FlowActionType.PIECE ||
-                    modifiedStep.type === FlowTriggerType.PIECE) && (
-                    <PieceVersionInHeader
+                {isConnectorMetadata(stepMetadata) &&
+                  stepMetadata.connectorVersion &&
+                  (modifiedStep.type === FlowActionType.CONNECTOR ||
+                    modifiedStep.type === FlowTriggerType.CONNECTOR) && (
+                    <ConnectorVersionInHeader
                       step={modifiedStep}
-                      pieceVersion={stepMetadata.pieceVersion}
+                      connectorVersion={stepMetadata.connectorVersion}
                       readonly={readonly}
                     />
                   )}
@@ -302,9 +302,9 @@ const StepSettingsContainer = () => {
                 stepMetadata?.actionOrTriggerOrAgentDescription ||
                 stepMetadata?.description
               }
-              pieceVersion={
-                isPieceMetadata(stepMetadata)
-                  ? stepMetadata.pieceVersion
+              connectorVersion={
+                isConnectorMetadata(stepMetadata)
+                  ? stepMetadata.connectorVersion
                   : undefined
               }
             ></EditableStepName>
@@ -408,26 +408,30 @@ const StepSettingsLayout = ({
   );
 };
 
-type PieceVersionInHeaderProps = {
+type ConnectorVersionInHeaderProps = {
   step: FlowAction | FlowTrigger;
-  pieceVersion: string;
+  connectorVersion: string;
   readonly: boolean;
 };
 
-const PieceVersionInHeader = ({
+const ConnectorVersionInHeader = ({
   step,
-  pieceVersion,
+  connectorVersion,
   readonly,
-}: PieceVersionInHeaderProps) => {
-  const exactVersion = flowPieceUtil.getExactVersion(pieceVersion);
+}: ConnectorVersionInHeaderProps) => {
+  const exactVersion = flowConnectorUtil.getExactVersion(connectorVersion);
   const showSwitcher =
     !readonly &&
-    (step.type === FlowActionType.PIECE || step.type === FlowTriggerType.PIECE);
+    (step.type === FlowActionType.CONNECTOR ||
+      step.type === FlowTriggerType.CONNECTOR);
   return (
     <div className="flex items-center gap-1 shrink-0">
       <span className="text-xs text-muted-foreground">v{exactVersion}</span>
       {showSwitcher && (
-        <UpdatePieceVersionDialog step={step} currentVersion={exactVersion} />
+        <UpdateConnectorVersionDialog
+          step={step}
+          currentVersion={exactVersion}
+        />
       )}
     </div>
   );
@@ -464,8 +468,8 @@ const stripSampleData = (step: FlowAction | FlowTrigger) => {
   return { ...stepWithoutMetadata, settings: settingsWithoutSampleData };
 };
 
-const isPieceMetadata = (
+const isConnectorMetadata = (
   metadata: { type: FlowActionType | FlowTriggerType } | undefined,
-): metadata is PieceStepMetadata =>
-  metadata?.type === FlowActionType.PIECE ||
-  metadata?.type === FlowTriggerType.PIECE;
+): metadata is ConnectorStepMetadata =>
+  metadata?.type === FlowActionType.CONNECTOR ||
+  metadata?.type === FlowTriggerType.CONNECTOR;

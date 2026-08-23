@@ -1,5 +1,5 @@
 import swagger from '@fastify/swagger'
-import { PieceMetadata } from '@fema/connector-sdk'
+import { ConnectorMetadata } from '@fema/connector-sdk'
 import { isNil, spreadIfDefined } from '@fema/core-utils'
 import { apVersionUtil, onCallService, UNKNOWN_VERSION, wideEvent } from '@fema/server-utils'
 import { ApEnvironment, AppConnectionWithoutSensitiveData, ApplicationEventName, ConnectionDeletedEvent, ConnectionUpsertedEvent, Flow, FlowActivatedEvent, FlowCreatedEvent, FlowDeactivatedEvent, FlowDeletedEvent, FlowPublishedEvent, FlowRun, FlowRunFinishedEvent, FlowRunRetriedEvent, FlowRunStartedEvent, FlowUpdatedEvent, Folder, FolderCreatedEvent, FolderDeletedEvent, FolderUpdatedEvent, ProjectWithLimits, Template, UserEmailVerifiedEvent, UserInvitation, UserPasswordResetEvent, UserSignedInEvent, UserWithMetaInformation } from '@fema/shared'
@@ -13,6 +13,11 @@ import { platformAppConnectionModule } from './app-connection/platform-app-conne
 import { authenticationModule } from './authentication/authentication.module'
 import { localAuthnModule } from './authentication/local-authn/local-authn.module'
 import { otpModule } from './authentication/otp/otp-module'
+import { communityConnectorsModule } from './connectors/community-connector-module'
+import { connectorSyncService } from './connectors/connector-sync-service'
+import { startDevConnectorWatcher } from './connectors/dev-connector-watcher'
+import { connectorModule } from './connectors/metadata/connector-metadata-controller'
+import { connectorMetadataService } from './connectors/metadata/connector-metadata-service'
 import { collaborativeModule } from './core/collaborative/collaborative.module'
 import { oidcModule } from './core/security/oidc/oidc.module'
 import { rateLimitModule } from './core/security/rate-limit'
@@ -37,11 +42,6 @@ import { systemJobsSchedule } from './helper/system-jobs/system-job'
 import { systemSnapshot } from './helper/system-snapshot'
 import { validateEnvPropsOnStartup } from './helper/system-validator'
 import { shutdownTelemetry } from './helper/telemetry.utils'
-import { communityPiecesModule } from './pieces/community-piece-module'
-import { startDevPieceWatcher } from './pieces/dev-piece-watcher'
-import { pieceModule } from './pieces/metadata/piece-metadata-controller'
-import { pieceMetadataService } from './pieces/metadata/piece-metadata-service'
-import { pieceSyncService } from './pieces/piece-sync-service'
 import { platformModule } from './platform/platform.module'
 import { projectBackgroundJobs } from './project/project.jobs'
 import { projectModule } from './project/project.module'
@@ -147,10 +147,10 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     await app.register(flagModule)
     await app.register(storeEntryModule)
     await app.register(folderModule)
-    await pieceSyncService(app.log).setup()
-    await pieceMetadataService(app.log).setup()
-    await app.register(pieceModule)
-    await app.register(communityPiecesModule)
+    await connectorSyncService(app.log).setup()
+    await connectorMetadataService(app.log).setup()
+    await app.register(connectorModule)
+    await app.register(communityConnectorsModule)
     await app.register(collaborativeModule)
     await app.register(flowModule)
     await app.register(flowRunModule)
@@ -239,7 +239,7 @@ export async function appPostBoot(app: FastifyInstance): Promise<void> {
     app.log.info(`Integration platform started on ${await domainHelper.getPublicApiUrl({ path: '' })}`)
 
     const environment = system.get(AppSystemProp.ENVIRONMENT)
-    const pieces = process.env.FEMA_DEV_PIECES
+    const connectors = process.env.FEMA_DEV_CONNECTORS
 
     assertReleaseReadable(app.log)
     systemSnapshot.start({ log: app.log })
@@ -250,10 +250,10 @@ export async function appPostBoot(app: FastifyInstance): Promise<void> {
             `[WARNING]: The application is running in ${environment} mode.`,
         )
         app.log.warn(
-            `[WARNING]: This is only shows pieces specified in FEMA_DEV_PIECES ${pieces} environment variable.`,
+            `[WARNING]: This is only shows connectors specified in FEMA_DEV_CONNECTORS ${connectors} environment variable.`,
         )
     }
-    void startDevPieceWatcher(app)
+    void startDevConnectorWatcher(app)
 }
 
 // Front-loads the release-read failure signal to boot time. Without this the only alert is
@@ -311,7 +311,7 @@ function registerOpenApiSchemas() {
     globalRegistry.add(Flow, { id: 'flow' })
     globalRegistry.add(FlowRun, { id: 'flow-run' })
     globalRegistry.add(AppConnectionWithoutSensitiveData, { id: 'app-connection' })
-    globalRegistry.add(PieceMetadata, { id: 'piece' })
+    globalRegistry.add(ConnectorMetadata, { id: 'connector' })
 }
 
 const REDIRECT_HTML_TEMPLATE = `<!DOCTYPE html>

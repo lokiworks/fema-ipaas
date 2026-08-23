@@ -48,7 +48,7 @@ import {
   globalConnectionsQueries,
   appConnectionUtils,
 } from '@/features/connections';
-import { PieceIconWithPieceName } from '@/features/pieces';
+import { ConnectorIconWithConnectorName } from '@/features/connectors';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { platformHooks } from '@/hooks/platform-hooks';
 import { formatUtils } from '@/lib/format-utils';
@@ -105,8 +105,8 @@ const GlobalConnectionsTable = () => {
             text={row.original.externalId || ''}
           >
             <div className="flex items-center gap-2 w-fit">
-              <PieceIconWithPieceName
-                pieceName={row.original.pieceName}
+              <ConnectorIconWithConnectorName
+                connectorName={row.original.connectorName}
                 showTooltip={false}
                 size="sm"
               />

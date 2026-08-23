@@ -8,12 +8,12 @@ Status: proposed (direction agreed; not yet built)
 
 ## Context
 
-Managed AI (the Activepieces-vended OpenRouter key) is currently gated and metered **around** the LLM
+Managed AI (the FEMA Integration Platform-vended OpenRouter key) is currently gated and metered **around** the LLM
 call, not on it:
 
 - The credit gate (`assertCreditsAndAppSumoNotExceeded`) fires at `GET /:provider/config`
-  (`ai-provider-controller.ts`). The AI piece fetches that config on **every AI action execution**
-  (`createAIModel` → `fetchProviderConfig`, `packages/pieces/community/ai/src/lib/common/ai-sdk.ts`),
+  (`ai-provider-controller.ts`). The AI connector fetches that config on **every AI action execution**
+  (`createAIModel` → `fetchProviderConfig`, `packages/connectors/community/ai/src/lib/common/ai-sdk.ts`),
   so the gate re-checks on each AI call — an AI step inside a 50k-iteration loop hits it 50k times.
 - The engine/worker then holds the raw OpenRouter key and calls OpenRouter **directly** — the AP server
   never sees the request/response, so it cannot count tokens.

@@ -9,7 +9,7 @@
 services:
   worker:
     # The optimized single-file worker image (Dockerfile.worker). Override WORKER_IMAGE to use the
-    # all-in-one activepieces-benchmark:local instead.
+    # all-in-one fema-benchmark:local instead.
     image: ${WORKER_IMAGE:-ap-worker:local}
     environment:
       FEMA_EXECUTION_MODE: SANDBOX_CODE_ONLY

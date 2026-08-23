@@ -4,13 +4,13 @@ import { FlowExecutorContext } from '../../src/lib/handler/context/flow-executio
 import { StepExecutionPath } from '../../src/lib/handler/context/step-execution-path'
 import { flowExecutor } from '../../src/lib/handler/flow-executor'
 import { EngineApiStub, startEngineApiStub } from '../helpers/engine-api-stub'
-import { buildCodeAction, buildPieceAction, buildRouterWithOneCondition, buildSimpleLoopAction, generateMockEngineConstants } from './test-helper'
+import { buildCodeAction, buildConnectorAction, buildRouterWithOneCondition, buildSimpleLoopAction, generateMockEngineConstants } from './test-helper'
 
 
 
-const simplePauseFlow = buildPieceAction({
+const simplePauseFlow = buildConnectorAction({
     name: 'approval',
-    pieceName: '@fema/connector-approval',
+    connectorName: '@fema/connector-approval',
     actionName: 'wait_for_approval',
     input: {},
     nextAction: buildCodeAction({
@@ -19,17 +19,17 @@ const simplePauseFlow = buildPieceAction({
     }),
 })
 
-const flawWithTwoPause = buildPieceAction({
+const flawWithTwoPause = buildConnectorAction({
     name: 'approval',
-    pieceName: '@fema/connector-approval',
+    connectorName: '@fema/connector-approval',
     actionName: 'wait_for_approval',
     input: {},
     nextAction: buildCodeAction({
         name: 'echo_step',
         input: {},
-        nextAction: buildPieceAction({
+        nextAction: buildConnectorAction({
             name: 'approval-1',
-            pieceName: '@fema/connector-approval',
+            connectorName: '@fema/connector-approval',
             actionName: 'wait_for_approval',
             input: {},
             nextAction: buildCodeAction({
@@ -222,9 +222,9 @@ describe('flow with pause', () => {
             ],
             executionType: RouterExecutionType.EXECUTE_ALL_MATCH,
             children: [
-                buildPieceAction({
+                buildConnectorAction({
                     name: 'approval_1',
-                    pieceName: '@fema/connector-approval',
+                    connectorName: '@fema/connector-approval',
                     actionName: 'wait_for_approval',
                     input: {},
                     nextAction: buildCodeAction({
@@ -232,9 +232,9 @@ describe('flow with pause', () => {
                         input: {},
                     }),
                 }),
-                buildPieceAction({
+                buildConnectorAction({
                     name: 'approval_2',
-                    pieceName: '@fema/connector-approval',
+                    connectorName: '@fema/connector-approval',
                     actionName: 'wait_for_approval',
                     input: {},
                     nextAction: buildCodeAction({

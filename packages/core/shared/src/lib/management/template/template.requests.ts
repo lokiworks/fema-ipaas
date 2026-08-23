@@ -34,7 +34,7 @@ export type UpdateTemplateRequestBody = z.infer<typeof UpdateTemplateRequestBody
 
 export const ListFlowTemplatesRequestQuery = z.object({
     type: z.nativeEnum(TemplateType).optional(),
-    pieces: OptionalArrayFromQuery(z.string()),
+    connectors: OptionalArrayFromQuery(z.string()),
     tags: OptionalArrayFromQuery(z.string()),
     search: z.string().optional(),
     category: z.string().optional(),

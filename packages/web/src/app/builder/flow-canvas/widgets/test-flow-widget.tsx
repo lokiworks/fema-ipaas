@@ -11,9 +11,9 @@ import {
   useBuilderStateContext,
   useBuilderStore,
 } from '@/app/builder/builder-hooks';
+import { connectorSelectorUtils } from '@/features/connectors';
 import { flowRunUtils } from '@/features/flow-runs';
 import { flowHooks } from '@/features/flows';
-import { pieceSelectorUtils } from '@/features/pieces';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 
 import { AboveTriggerButton } from './above-trigger-button';
@@ -33,11 +33,11 @@ const TestFlowWidget = () => {
   const userHasPermissionToRun = checkAccess(Permission.WRITE_RUN);
 
   const triggerHasSampleData =
-    flowVersion.trigger.type === FlowTriggerType.PIECE &&
+    flowVersion.trigger.type === FlowTriggerType.CONNECTOR &&
     !isNil(flowVersion.trigger.settings.sampleData?.lastTestDate);
 
-  const isManualTrigger = pieceSelectorUtils.isManualTrigger({
-    pieceName: flowVersion.trigger.settings.pieceName,
+  const isManualTrigger = connectorSelectorUtils.isManualTrigger({
+    connectorName: flowVersion.trigger.settings.connectorName,
     triggerName: flowVersion.trigger.settings.triggerName,
   });
 

@@ -1,4 +1,4 @@
-import { FriendlyPieceError, isNil } from '@fema/core-utils';
+import { FriendlyConnectorError, isNil } from '@fema/core-utils';
 import { t } from 'i18next';
 import {
   AlertOctagon,
@@ -20,16 +20,16 @@ import { CopyAiPromptButton } from './copy-ai-prompt';
 import { ErrorExplanationContext } from './explanation-prompt';
 
 type FriendlyErrorViewProps = {
-  error: FriendlyPieceError;
+  error: FriendlyConnectorError;
   explanationContext?: ErrorExplanationContext;
-  pieceDisplayName?: string;
+  connectorDisplayName?: string;
   className?: string;
 };
 
 const FriendlyErrorView = ({
   error,
   explanationContext,
-  pieceDisplayName,
+  connectorDisplayName,
   className,
 }: FriendlyErrorViewProps) => {
   const { status } = error;
@@ -38,8 +38,8 @@ const FriendlyErrorView = ({
   const messageText = pickDisplayMessage(error);
   const showMessage = !isNil(messageText) && messageText.length > 0;
   const messageLabel = isHttpError
-    ? pieceDisplayName
-      ? t('Response from {pieceDisplayName}', { pieceDisplayName })
+    ? connectorDisplayName
+      ? t('Response from {connectorDisplayName}', { connectorDisplayName })
       : t('What the service said')
     : t('Error message');
   const technicalPayload = stripInternalMarker(error);
@@ -95,7 +95,7 @@ const FriendlyErrorView = ({
 };
 
 const stripInternalMarker = (
-  error: FriendlyPieceError,
+  error: FriendlyConnectorError,
 ): Record<string, unknown> => {
   const entries = Object.entries(error).filter(
     ([key]) => key !== '__apErrorVersion',
@@ -103,7 +103,9 @@ const stripInternalMarker = (
   return Object.fromEntries(entries);
 };
 
-const pickDisplayMessage = (error: FriendlyPieceError): string | undefined => {
+const pickDisplayMessage = (
+  error: FriendlyConnectorError,
+): string | undefined => {
   const candidates = [error.apiMessage, error.message];
   for (const candidate of candidates) {
     if (typeof candidate === 'string' && candidate.trim().length > 0) {

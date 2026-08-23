@@ -27,16 +27,16 @@ echo "Signed in. Project: $PROJECT_ID"
 
 AUTH="Authorization: Bearer $TOKEN"
 
-# Wait for delay piece to be synced
-echo "--- Waiting for delay piece ---"
+# Wait for delay connector to be synced
+echo "--- Waiting for delay connector ---"
 for i in $(seq 1 300); do
-  HAS_DELAY=$(curl -sf "$API_URL/pieces" 2>/dev/null | jq '[.[].name] | any(. == "@fema/connector-delay")' 2>/dev/null || echo "false")
+  HAS_DELAY=$(curl -sf "$API_URL/connectors" 2>/dev/null | jq '[.[].name] | any(. == "@fema/connector-delay")' 2>/dev/null || echo "false")
   if [ "$HAS_DELAY" = "true" ]; then
-    echo "Delay piece is available (took ${i}s)"
+    echo "Delay connector is available (took ${i}s)"
     break
   fi
   if [ "$i" -eq 300 ]; then
-    echo "FAIL: Delay piece not available after 300s"
+    echo "FAIL: Delay connector not available after 300s"
     exit 1
   fi
   sleep 1
@@ -67,10 +67,10 @@ curl -s --fail-with-body "$API_URL/flows/$FLOW_ID" \
         "name": "trigger",
         "valid": true,
         "displayName": "Catch Webhook",
-        "type": "PIECE_TRIGGER",
+        "type": "CONNECTOR_TRIGGER",
         "settings": {
-          "pieceName": "@fema/connector-webhook",
-          "pieceVersion": "~0.1.29",
+          "connectorName": "@fema/connector-webhook",
+          "connectorVersion": "~0.1.29",
           "triggerName": "catch_webhook",
           "input": { "authType": "none", "authFields": {} },
           "propertySettings": {
@@ -82,12 +82,12 @@ curl -s --fail-with-body "$API_URL/flows/$FLOW_ID" \
         "nextAction": {
           "name": "step_1",
           "skip": false,
-          "type": "PIECE",
+          "type": "CONNECTOR",
           "valid": true,
           "displayName": "Delay For",
           "settings": {
-            "pieceName": "@fema/connector-delay",
-            "pieceVersion": "~0.3.26",
+            "connectorName": "@fema/connector-delay",
+            "connectorVersion": "~0.3.26",
             "actionName": "delayFor",
             "input": {
               "unit": "seconds",

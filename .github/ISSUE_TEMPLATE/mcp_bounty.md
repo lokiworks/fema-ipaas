@@ -1,8 +1,8 @@
 ---
 name: MCP Bounty
-about: Request a new Piece for Activepieces
-title: '[Piece Request] <Your Product Name>'
-labels: ['pieces']
+about: Request a new Connector for FEMA Integration Platform
+title: '[Connector Request] <Your Product Name>'
+labels: ['connectors']
 assignees: ''
 
 ---
@@ -16,7 +16,7 @@ What does your product do? Who uses it?
 
 ## ⚙️ Actions  
 These are the things you want AI agents to be able to do with your product.  
-They’ll also be available for automations in Activepieces.
+They’ll also be available for automations in FEMA Integration Platform.
 
 Examples:  
 - Create Contact  

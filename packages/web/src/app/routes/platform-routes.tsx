@@ -25,9 +25,9 @@ const GlobalConnectionsTable = React.lazy(() =>
     default: m.GlobalConnectionsTable,
   })),
 );
-const PlatformPiecesPage = React.lazy(() =>
-  import('./platform/setup/pieces').then((m) => ({
-    default: m.PlatformPiecesPage,
+const PlatformConnectorsPage = React.lazy(() =>
+  import('./platform/setup/connectors').then((m) => ({
+    default: m.PlatformConnectorsPage,
   })),
 );
 const PlatformTemplatesPage = React.lazy(() =>
@@ -88,7 +88,11 @@ export const platformRoutes = [
     ),
   },
   platformRoute('/platform/setup/general', 'General', GeneralPage),
-  platformRoute('/platform/setup/pieces', 'Connectors', PlatformPiecesPage),
+  platformRoute(
+    '/platform/setup/connectors',
+    'Connectors',
+    PlatformConnectorsPage,
+  ),
   platformRoute(
     '/platform/setup/connections',
     'Global Connections',

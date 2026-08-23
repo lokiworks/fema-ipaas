@@ -10,12 +10,12 @@ import { FlaskConical, Play } from 'lucide-react';
 import React, { useContext } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { piecesHooks } from '@/features/pieces';
+import { connectorsHooks } from '@/features/connectors';
 
 import { useBuilderStateContext } from '../builder-hooks';
+import { DynamicPropertiesContext } from '../connector-properties/dynamic-properties-context';
 import { stepPropertiesSnapshotUtils } from '../data-display/build-step-properties-snapshot';
 import { ErrorExplanationContext } from '../data-display/explanation-prompt';
-import { DynamicPropertiesContext } from '../piece-properties/dynamic-properties-context';
 import { StepDataPanelHeader } from '../step-data/step-data-panel-header';
 import { StepDataPanelViewToggle } from '../step-data/step-data-panel-view-toggle';
 
@@ -63,43 +63,44 @@ const TestStepSectionImplementation = React.memo(
     const isTesting = runner?.isTesting ?? false;
     const { isLoadingDynamicProperties } = useContext(DynamicPropertiesContext);
 
-    const pieceName =
-      currentStep.type === FlowActionType.PIECE
-        ? currentStep.settings.pieceName
+    const connectorName =
+      currentStep.type === FlowActionType.CONNECTOR
+        ? currentStep.settings.connectorName
         : undefined;
-    const pieceVersion =
-      currentStep.type === FlowActionType.PIECE
-        ? currentStep.settings.pieceVersion
+    const connectorVersion =
+      currentStep.type === FlowActionType.CONNECTOR
+        ? currentStep.settings.connectorVersion
         : undefined;
-    const { pieceModel } = piecesHooks.usePiece({
-      name: pieceName ?? '',
-      version: pieceVersion,
-      enabled: !isNil(pieceName),
+    const { connectorModel } = connectorsHooks.useConnector({
+      name: connectorName ?? '',
+      version: connectorVersion,
+      enabled: !isNil(connectorName),
     });
     const stepKind = 'action';
     const stepName =
-      currentStep.type === FlowActionType.PIECE
+      currentStep.type === FlowActionType.CONNECTOR
         ? currentStep.settings.actionName
         : currentStep.type;
     const stepInput =
-      currentStep.type === FlowActionType.PIECE
+      currentStep.type === FlowActionType.CONNECTOR
         ? (currentStep.settings.input as Record<string, unknown> | undefined)
         : undefined;
     const explanationContext: ErrorExplanationContext = {
-      pieceName,
-      pieceVersion,
-      pieceDisplayName: pieceModel?.displayName,
-      pieceAuthType: stepPropertiesSnapshotUtils.findAuthType(pieceModel),
+      connectorName,
+      connectorVersion,
+      connectorDisplayName: connectorModel?.displayName,
+      connectorAuthType:
+        stepPropertiesSnapshotUtils.findAuthType(connectorModel),
       stepKind,
       stepName,
       stepDisplayName: currentStep.displayName,
       stepDescription: stepPropertiesSnapshotUtils.findDescription({
-        pieceModel,
+        connectorModel,
         stepKind,
         stepName,
       }),
       stepProperties: stepPropertiesSnapshotUtils.build({
-        pieceModel,
+        connectorModel,
         stepKind,
         stepName,
         input: stepInput,
@@ -156,9 +157,9 @@ const TestStepSectionImplementation = React.memo(
             errorMessage={errorMessage}
             consoleLogs={consoleLogs}
             explanationContext={explanationContext}
-            pieceDisplayName={pieceModel?.displayName}
-            pieceSchema={
-              pieceModel?.actions[stepName ?? '']?.outputSchema ?? null
+            connectorDisplayName={connectorModel?.displayName}
+            connectorSchema={
+              connectorModel?.actions[stepName ?? '']?.outputSchema ?? null
             }
             onCancelTesting={() => {
               removeStepTestListener(currentStep.name);

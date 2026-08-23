@@ -6,7 +6,7 @@ status: accepted
 
 ## Decision
 
-本仓库自 Activepieces CE `eef1a1d4d2`（v0.88.3）分叉，重建为面向企业系统集成的
+本仓库自 FEMA Integration Platform CE `eef1a1d4d2`（v0.88.3）分叉，重建为面向企业系统集成的
 开源 iPaaS。Edition 体系已彻底删除：`packages/ee`、`src/app/ee`、`FEMA_EDITION`、
 `ApEdition`、`getEdition()` 在树中为 0 引用。
 

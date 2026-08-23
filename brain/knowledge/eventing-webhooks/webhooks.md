@@ -4,7 +4,7 @@ icon: 🪝
 
 # Webhooks
 
-Webhooks are the primary entry point for event-driven flow execution from outside Activepieces. The module ingests inbound HTTP requests, normalizes payloads (multipart/binary/JSON/text), routes them to flows, and supports both sync (blocking) and async (fire-and-forget) execution.
+Webhooks are the primary entry point for event-driven flow execution from outside FEMA Integration Platform. The module ingests inbound HTTP requests, normalizes payloads (multipart/binary/JSON/text), routes them to flows, and supports both sync (blocking) and async (fire-and-forget) execution.
 
 ### Entities & services
 - `webhook.service.ts` — routing, sync/async execution, flow resolution.

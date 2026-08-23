@@ -1,11 +1,11 @@
 import { inspect } from 'util'
-import { formatPieceError, tryCatch } from '@fema/core-utils'
-import { EngineOperation, EngineOperationType, EngineResponse, EngineResponseStatus, ExecuteActionOperation, ExecuteExtractPieceMetadataOperation, ExecuteFlowOperation, ExecutePropsOptions, ExecuteRefreshTokenAuthOperation, ExecuteResolveConnectionIdentifierOperation, ExecuteTriggerOperation, ExecuteValidateAuthOperation, ExecutionError, ExecutionErrorType, TriggerHookType } from '@fema/shared'
+import { formatConnectorError, tryCatch } from '@fema/core-utils'
+import { EngineOperation, EngineOperationType, EngineResponse, EngineResponseStatus, ExecuteActionOperation, ExecuteExtractConnectorMetadataOperation, ExecuteFlowOperation, ExecutePropsOptions, ExecuteRefreshTokenAuthOperation, ExecuteResolveConnectionIdentifierOperation, ExecuteTriggerOperation, ExecuteValidateAuthOperation, ExecutionError, ExecutionErrorType, TriggerHookType } from '@fema/shared'
 import { actionOperation } from './action.operation'
 import { authRefreshOperation } from './auth-refresh.operation'
 import { authValidationOperation } from './auth-validation.operation'
+import { connectorMetadataOperation } from './connector-metadata.operation'
 import { flowOperation } from './flow.operation'
-import { pieceMetadataOperation } from './piece-metadata.operation'
 import { propertyOperation } from './property.operation'
 import { resolveConnectionIdentifierOperation } from './resolve-connection-identifier.operation'
 import { triggerHookOperation } from './trigger-hook.operation'
@@ -14,8 +14,8 @@ import { triggerHookOperation } from './trigger-hook.operation'
 export async function execute(operationType: EngineOperationType, operation: EngineOperation): Promise<EngineResponse<unknown>> {
     const result = await tryCatch(async () => {
         switch (operationType) {
-            case EngineOperationType.EXTRACT_PIECE_METADATA: {
-                return pieceMetadataOperation.extract(operation as ExecuteExtractPieceMetadataOperation)
+            case EngineOperationType.EXTRACT_CONNECTOR_METADATA: {
+                return connectorMetadataOperation.extract(operation as ExecuteExtractConnectorMetadataOperation)
             }
             case EngineOperationType.EXECUTE_FLOW: {
                 return flowOperation.execute(operation as ExecuteFlowOperation)
@@ -48,7 +48,7 @@ export async function execute(operationType: EngineOperationType, operation: Eng
         return {
             response: undefined,
             status: EngineResponseStatus.INTERNAL_ERROR,
-            error: JSON.stringify(formatPieceError(result.error, { raw: inspect(result.error) })),
+            error: JSON.stringify(formatConnectorError(result.error, { raw: inspect(result.error) })),
         }
     }
     return result.data

@@ -1,13 +1,13 @@
 import { apId } from '@fema/core-utils'
-import { AppConnectionScope, AppConnectionStatus, AppConnectionType, PackageType, PieceType, PLACEHOLDER_CONNECTION_TYPE } from '@fema/shared'
+import { AppConnectionScope, AppConnectionStatus, AppConnectionType, PackageType, ConnectorType, PLACEHOLDER_CONNECTION_TYPE } from '@fema/shared'
 import { FastifyBaseLogger, FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
-import { pieceMetadataService } from '../../../../src/app/pieces/metadata/piece-metadata-service'
+import { connectorMetadataService } from '../../../../src/app/connectors/metadata/connector-metadata-service'
 import { db } from '../../../helpers/db'
 import { describeWithAuth } from '../../../helpers/describe-with-auth'
 import {
     createMockConnection,
-    createMockPieceMetadata,
+    createMockConnectorMetadata,
 } from '../../../helpers/mocks'
 import { createTestContext } from '../../../helpers/test-context'
 import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
@@ -29,31 +29,31 @@ describe('AppConnection CE API', () => {
         it('should create a SECRET_TEXT connection', async () => {
             const ctx = await setup()
 
-            const mockPiece = createMockPieceMetadata({
+            const mockConnector = createMockConnectorMetadata({
                 platformId: ctx.platform.id,
                 packageType: PackageType.REGISTRY,
-                pieceType: PieceType.OFFICIAL,
+                connectorType: ConnectorType.OFFICIAL,
             })
-            await db.save('piece_metadata', mockPiece)
-            pieceMetadataService(mockLog).getOrThrow = vi.fn().mockResolvedValue(mockPiece)
+            await db.save('connector_metadata', mockConnector)
+            connectorMetadataService(mockLog).getOrThrow = vi.fn().mockResolvedValue(mockConnector)
 
             const response = await ctx.post('/v1/app-connections', {
                 externalId: 'test-secret-connection',
                 displayName: 'Test Secret Connection',
-                pieceName: mockPiece.name,
+                connectorName: mockConnector.name,
                 projectId: ctx.project.id,
                 type: AppConnectionType.SECRET_TEXT,
                 value: {
                     type: AppConnectionType.SECRET_TEXT,
                     secret_text: 'my-secret',
                 },
-                pieceVersion: mockPiece.version,
+                connectorVersion: mockConnector.version,
             })
 
             expect(response?.statusCode).toBe(StatusCodes.CREATED)
             const body = response?.json()
             expect(body.displayName).toBe('Test Secret Connection')
-            expect(body.pieceName).toBe(mockPiece.name)
+            expect(body.connectorName).toBe(mockConnector.name)
             expect(body.externalId).toBe('test-secret-connection')
             expect(body.value).toBeUndefined()
         })
@@ -61,24 +61,24 @@ describe('AppConnection CE API', () => {
         it('should create a NO_AUTH connection', async () => {
             const ctx = await setup()
 
-            const mockPiece = createMockPieceMetadata({
+            const mockConnector = createMockConnectorMetadata({
                 platformId: ctx.platform.id,
                 packageType: PackageType.REGISTRY,
-                pieceType: PieceType.OFFICIAL,
+                connectorType: ConnectorType.OFFICIAL,
             })
-            await db.save('piece_metadata', mockPiece)
-            pieceMetadataService(mockLog).getOrThrow = vi.fn().mockResolvedValue(mockPiece)
+            await db.save('connector_metadata', mockConnector)
+            connectorMetadataService(mockLog).getOrThrow = vi.fn().mockResolvedValue(mockConnector)
 
             const response = await ctx.post('/v1/app-connections', {
                 externalId: 'test-no-auth-connection',
                 displayName: 'Test No Auth',
-                pieceName: mockPiece.name,
+                connectorName: mockConnector.name,
                 projectId: ctx.project.id,
                 type: AppConnectionType.NO_AUTH,
                 value: {
                     type: AppConnectionType.NO_AUTH,
                 },
-                pieceVersion: mockPiece.version,
+                connectorVersion: mockConnector.version,
             })
 
             expect(response?.statusCode).toBe(StatusCodes.CREATED)
@@ -89,21 +89,21 @@ describe('AppConnection CE API', () => {
         it('should create a placeholder connection with status MISSING', async () => {
             const ctx = await setup()
 
-            const mockPiece = createMockPieceMetadata({
+            const mockConnector = createMockConnectorMetadata({
                 platformId: ctx.platform.id,
                 packageType: PackageType.REGISTRY,
-                pieceType: PieceType.OFFICIAL,
+                connectorType: ConnectorType.OFFICIAL,
             })
-            await db.save('piece_metadata', mockPiece)
-            pieceMetadataService(mockLog).getOrThrow = vi.fn().mockResolvedValue(mockPiece)
+            await db.save('connector_metadata', mockConnector)
+            connectorMetadataService(mockLog).getOrThrow = vi.fn().mockResolvedValue(mockConnector)
 
             const response = await ctx.post('/v1/app-connections', {
                 externalId: 'test-placeholder-connection',
                 displayName: 'Placeholder Slack',
-                pieceName: mockPiece.name,
+                connectorName: mockConnector.name,
                 projectId: ctx.project.id,
                 type: PLACEHOLDER_CONNECTION_TYPE,
-                pieceVersion: mockPiece.version,
+                connectorVersion: mockConnector.version,
             })
 
             expect(response?.statusCode).toBe(StatusCodes.CREATED)
@@ -111,32 +111,32 @@ describe('AppConnection CE API', () => {
             expect(body.displayName).toBe('Placeholder Slack')
             expect(body.type).toBe(AppConnectionType.NO_AUTH)
             expect(body.status).toBe(AppConnectionStatus.MISSING)
-            expect(body.pieceName).toBe(mockPiece.name)
+            expect(body.connectorName).toBe(mockConnector.name)
             expect(body.externalId).toBe('test-placeholder-connection')
         })
 
         it('should not overwrite an active connection with a placeholder', async () => {
             const ctx = await setup()
 
-            const mockPiece = createMockPieceMetadata({
+            const mockConnector = createMockConnectorMetadata({
                 platformId: ctx.platform.id,
                 packageType: PackageType.REGISTRY,
-                pieceType: PieceType.OFFICIAL,
+                connectorType: ConnectorType.OFFICIAL,
             })
-            await db.save('piece_metadata', mockPiece)
-            pieceMetadataService(mockLog).getOrThrow = vi.fn().mockResolvedValue(mockPiece)
+            await db.save('connector_metadata', mockConnector)
+            connectorMetadataService(mockLog).getOrThrow = vi.fn().mockResolvedValue(mockConnector)
 
             const active = await ctx.post('/v1/app-connections', {
                 externalId: 'placeholder-no-clobber',
                 displayName: 'Active Secret',
-                pieceName: mockPiece.name,
+                connectorName: mockConnector.name,
                 projectId: ctx.project.id,
                 type: AppConnectionType.SECRET_TEXT,
                 value: {
                     type: AppConnectionType.SECRET_TEXT,
                     secret_text: 'real-secret',
                 },
-                pieceVersion: mockPiece.version,
+                connectorVersion: mockConnector.version,
             })
             expect(active?.statusCode).toBe(StatusCodes.CREATED)
             const activeBody = active?.json()
@@ -146,10 +146,10 @@ describe('AppConnection CE API', () => {
             const placeholder = await ctx.post('/v1/app-connections', {
                 externalId: 'placeholder-no-clobber',
                 displayName: 'Should Not Win',
-                pieceName: mockPiece.name,
+                connectorName: mockConnector.name,
                 projectId: ctx.project.id,
                 type: PLACEHOLDER_CONNECTION_TYPE,
-                pieceVersion: mockPiece.version,
+                connectorVersion: mockConnector.version,
             })
             expect(placeholder?.statusCode).toBe(StatusCodes.CREATED)
             const placeholderBody = placeholder?.json()
@@ -162,21 +162,21 @@ describe('AppConnection CE API', () => {
         it('should transition a placeholder to ACTIVE on real upsert', async () => {
             const ctx = await setup()
 
-            const mockPiece = createMockPieceMetadata({
+            const mockConnector = createMockConnectorMetadata({
                 platformId: ctx.platform.id,
                 packageType: PackageType.REGISTRY,
-                pieceType: PieceType.OFFICIAL,
+                connectorType: ConnectorType.OFFICIAL,
             })
-            await db.save('piece_metadata', mockPiece)
-            pieceMetadataService(mockLog).getOrThrow = vi.fn().mockResolvedValue(mockPiece)
+            await db.save('connector_metadata', mockConnector)
+            connectorMetadataService(mockLog).getOrThrow = vi.fn().mockResolvedValue(mockConnector)
 
             const placeholder = await ctx.post('/v1/app-connections', {
                 externalId: 'placeholder-fill-in',
                 displayName: 'Pending',
-                pieceName: mockPiece.name,
+                connectorName: mockConnector.name,
                 projectId: ctx.project.id,
                 type: PLACEHOLDER_CONNECTION_TYPE,
-                pieceVersion: mockPiece.version,
+                connectorVersion: mockConnector.version,
             })
             expect(placeholder?.statusCode).toBe(StatusCodes.CREATED)
             const placeholderId = placeholder?.json().id
@@ -184,14 +184,14 @@ describe('AppConnection CE API', () => {
             const filled = await ctx.post('/v1/app-connections', {
                 externalId: 'placeholder-fill-in',
                 displayName: 'Filled In',
-                pieceName: mockPiece.name,
+                connectorName: mockConnector.name,
                 projectId: ctx.project.id,
                 type: AppConnectionType.SECRET_TEXT,
                 value: {
                     type: AppConnectionType.SECRET_TEXT,
                     secret_text: 'real-secret',
                 },
-                pieceVersion: mockPiece.version,
+                connectorVersion: mockConnector.version,
             })
             expect(filled?.statusCode).toBe(StatusCodes.CREATED)
             const filledBody = filled?.json()
@@ -204,25 +204,25 @@ describe('AppConnection CE API', () => {
         it('should upsert on duplicate externalId', async () => {
             const ctx = await setup()
 
-            const mockPiece = createMockPieceMetadata({
+            const mockConnector = createMockConnectorMetadata({
                 platformId: ctx.platform.id,
                 packageType: PackageType.REGISTRY,
-                pieceType: PieceType.OFFICIAL,
+                connectorType: ConnectorType.OFFICIAL,
             })
-            await db.save('piece_metadata', mockPiece)
-            pieceMetadataService(mockLog).getOrThrow = vi.fn().mockResolvedValue(mockPiece)
+            await db.save('connector_metadata', mockConnector)
+            connectorMetadataService(mockLog).getOrThrow = vi.fn().mockResolvedValue(mockConnector)
 
             const createPayload = {
                 externalId: 'upsert-test-connection',
                 displayName: 'First Name',
-                pieceName: mockPiece.name,
+                connectorName: mockConnector.name,
                 projectId: ctx.project.id,
                 type: AppConnectionType.SECRET_TEXT,
                 value: {
                     type: AppConnectionType.SECRET_TEXT,
                     secret_text: 'secret1',
                 },
-                pieceVersion: mockPiece.version,
+                connectorVersion: mockConnector.version,
             }
 
             const first = await ctx.post('/v1/app-connections', createPayload)
@@ -248,25 +248,25 @@ describe('AppConnection CE API', () => {
         it('should update display name', async () => {
             const ctx = await setup()
 
-            const mockPiece = createMockPieceMetadata({
+            const mockConnector = createMockConnectorMetadata({
                 platformId: ctx.platform.id,
                 packageType: PackageType.REGISTRY,
-                pieceType: PieceType.OFFICIAL,
+                connectorType: ConnectorType.OFFICIAL,
             })
-            await db.save('piece_metadata', mockPiece)
-            pieceMetadataService(mockLog).getOrThrow = vi.fn().mockResolvedValue(mockPiece)
+            await db.save('connector_metadata', mockConnector)
+            connectorMetadataService(mockLog).getOrThrow = vi.fn().mockResolvedValue(mockConnector)
 
             const createResponse = await ctx.post('/v1/app-connections', {
                 externalId: 'update-test-connection',
                 displayName: 'Original Name',
-                pieceName: mockPiece.name,
+                connectorName: mockConnector.name,
                 projectId: ctx.project.id,
                 type: AppConnectionType.SECRET_TEXT,
                 value: {
                     type: AppConnectionType.SECRET_TEXT,
                     secret_text: 'my-secret',
                 },
-                pieceVersion: mockPiece.version,
+                connectorVersion: mockConnector.version,
             })
             const connectionId = createResponse?.json().id
 
@@ -294,25 +294,25 @@ describe('AppConnection CE API', () => {
         it('should list connections', async () => {
             const ctx = await setup()
 
-            const mockPiece = createMockPieceMetadata({
+            const mockConnector = createMockConnectorMetadata({
                 platformId: ctx.platform.id,
                 packageType: PackageType.REGISTRY,
-                pieceType: PieceType.OFFICIAL,
+                connectorType: ConnectorType.OFFICIAL,
             })
-            await db.save('piece_metadata', mockPiece)
-            pieceMetadataService(mockLog).getOrThrow = vi.fn().mockResolvedValue(mockPiece)
+            await db.save('connector_metadata', mockConnector)
+            connectorMetadataService(mockLog).getOrThrow = vi.fn().mockResolvedValue(mockConnector)
 
             await ctx.post('/v1/app-connections', {
                 externalId: 'list-test-connection',
                 displayName: 'Test Connection',
-                pieceName: mockPiece.name,
+                connectorName: mockConnector.name,
                 projectId: ctx.project.id,
                 type: AppConnectionType.SECRET_TEXT,
                 value: {
                     type: AppConnectionType.SECRET_TEXT,
                     secret_text: 'my-secret',
                 },
-                pieceVersion: mockPiece.version,
+                connectorVersion: mockConnector.version,
             })
 
             const response = await ctx.get('/v1/app-connections', {
@@ -324,55 +324,55 @@ describe('AppConnection CE API', () => {
             expect(body.data.length).toBeGreaterThanOrEqual(1)
         })
 
-        it('should filter by pieceName', async () => {
+        it('should filter by connectorName', async () => {
             const ctx = await setup()
 
-            const mockPieceA = createMockPieceMetadata({
-                name: 'piece-a-filter',
+            const mockConnectorA = createMockConnectorMetadata({
+                name: 'connector-a-filter',
                 platformId: ctx.platform.id,
                 packageType: PackageType.REGISTRY,
-                pieceType: PieceType.OFFICIAL,
+                connectorType: ConnectorType.OFFICIAL,
             })
-            const mockPieceB = createMockPieceMetadata({
-                name: 'piece-b-filter',
+            const mockConnectorB = createMockConnectorMetadata({
+                name: 'connector-b-filter',
                 platformId: ctx.platform.id,
                 packageType: PackageType.REGISTRY,
-                pieceType: PieceType.OFFICIAL,
+                connectorType: ConnectorType.OFFICIAL,
             })
-            await db.save('piece_metadata', [mockPieceA, mockPieceB])
-            pieceMetadataService(mockLog).getOrThrow = vi.fn().mockResolvedValue(mockPieceA)
+            await db.save('connector_metadata', [mockConnectorA, mockConnectorB])
+            connectorMetadataService(mockLog).getOrThrow = vi.fn().mockResolvedValue(mockConnectorA)
 
             await ctx.post('/v1/app-connections', {
                 externalId: 'filter-a',
                 displayName: 'Connection A',
-                pieceName: mockPieceA.name,
+                connectorName: mockConnectorA.name,
                 projectId: ctx.project.id,
                 type: AppConnectionType.SECRET_TEXT,
                 value: { type: AppConnectionType.SECRET_TEXT, secret_text: 's' },
-                pieceVersion: mockPieceA.version,
+                connectorVersion: mockConnectorA.version,
             })
 
-            pieceMetadataService(mockLog).getOrThrow = vi.fn().mockResolvedValue(mockPieceB)
+            connectorMetadataService(mockLog).getOrThrow = vi.fn().mockResolvedValue(mockConnectorB)
 
             await ctx.post('/v1/app-connections', {
                 externalId: 'filter-b',
                 displayName: 'Connection B',
-                pieceName: mockPieceB.name,
+                connectorName: mockConnectorB.name,
                 projectId: ctx.project.id,
                 type: AppConnectionType.SECRET_TEXT,
                 value: { type: AppConnectionType.SECRET_TEXT, secret_text: 's' },
-                pieceVersion: mockPieceB.version,
+                connectorVersion: mockConnectorB.version,
             })
 
             const response = await ctx.get('/v1/app-connections', {
                 projectId: ctx.project.id,
-                pieceName: mockPieceA.name,
+                connectorName: mockConnectorA.name,
             })
 
             expect(response?.statusCode).toBe(StatusCodes.OK)
             const body = response?.json()
             expect(body.data).toHaveLength(1)
-            expect(body.data[0].pieceName).toBe(mockPieceA.name)
+            expect(body.data[0].connectorName).toBe(mockConnectorA.name)
         })
     })
 
@@ -380,22 +380,22 @@ describe('AppConnection CE API', () => {
         it('should get a connection by id without sensitive data', async () => {
             const ctx = await setup()
 
-            const mockPiece = createMockPieceMetadata({
+            const mockConnector = createMockConnectorMetadata({
                 platformId: ctx.platform.id,
                 packageType: PackageType.REGISTRY,
-                pieceType: PieceType.OFFICIAL,
+                connectorType: ConnectorType.OFFICIAL,
             })
-            await db.save('piece_metadata', mockPiece)
-            pieceMetadataService(mockLog).getOrThrow = vi.fn().mockResolvedValue(mockPiece)
+            await db.save('connector_metadata', mockConnector)
+            connectorMetadataService(mockLog).getOrThrow = vi.fn().mockResolvedValue(mockConnector)
 
             const createResponse = await ctx.post('/v1/app-connections', {
                 externalId: 'get-by-id-test',
                 displayName: 'Get Me',
-                pieceName: mockPiece.name,
+                connectorName: mockConnector.name,
                 projectId: ctx.project.id,
                 type: AppConnectionType.SECRET_TEXT,
                 value: { type: AppConnectionType.SECRET_TEXT, secret_text: 'my-secret' },
-                pieceVersion: mockPiece.version,
+                connectorVersion: mockConnector.version,
             })
             const connectionId = createResponse?.json().id
 
@@ -423,22 +423,22 @@ describe('AppConnection CE API', () => {
             const ctx1 = await createTestContext(app!)
             const ctx2 = await createTestContext(app!)
 
-            const mockPiece = createMockPieceMetadata({
+            const mockConnector = createMockConnectorMetadata({
                 platformId: ctx1.platform.id,
                 packageType: PackageType.REGISTRY,
-                pieceType: PieceType.OFFICIAL,
+                connectorType: ConnectorType.OFFICIAL,
             })
-            await db.save('piece_metadata', mockPiece)
-            pieceMetadataService(mockLog).getOrThrow = vi.fn().mockResolvedValue(mockPiece)
+            await db.save('connector_metadata', mockConnector)
+            connectorMetadataService(mockLog).getOrThrow = vi.fn().mockResolvedValue(mockConnector)
 
             await ctx1.post('/v1/app-connections', {
                 externalId: 'isolation-test',
                 displayName: 'Project 1 Connection',
-                pieceName: mockPiece.name,
+                connectorName: mockConnector.name,
                 projectId: ctx1.project.id,
                 type: AppConnectionType.SECRET_TEXT,
                 value: { type: AppConnectionType.SECRET_TEXT, secret_text: 's' },
-                pieceVersion: mockPiece.version,
+                connectorVersion: mockConnector.version,
             })
 
             const response = await ctx2.get('/v1/app-connections', {
@@ -455,22 +455,22 @@ describe('AppConnection CE API', () => {
             const ctx1 = await createTestContext(app!)
             const ctx2 = await createTestContext(app!)
 
-            const mockPiece = createMockPieceMetadata({
+            const mockConnector = createMockConnectorMetadata({
                 platformId: ctx1.platform.id,
                 packageType: PackageType.REGISTRY,
-                pieceType: PieceType.OFFICIAL,
+                connectorType: ConnectorType.OFFICIAL,
             })
-            await db.save('piece_metadata', mockPiece)
-            pieceMetadataService(mockLog).getOrThrow = vi.fn().mockResolvedValue(mockPiece)
+            await db.save('connector_metadata', mockConnector)
+            connectorMetadataService(mockLog).getOrThrow = vi.fn().mockResolvedValue(mockConnector)
 
             const createResponse = await ctx1.post('/v1/app-connections', {
                 externalId: 'cross-project-get',
                 displayName: 'Project 1 Connection',
-                pieceName: mockPiece.name,
+                connectorName: mockConnector.name,
                 projectId: ctx1.project.id,
                 type: AppConnectionType.SECRET_TEXT,
                 value: { type: AppConnectionType.SECRET_TEXT, secret_text: 's' },
-                pieceVersion: mockPiece.version,
+                connectorVersion: mockConnector.version,
             })
             const connectionId = createResponse?.json().id
 
@@ -484,22 +484,22 @@ describe('AppConnection CE API', () => {
         it('should delete a connection', async () => {
             const ctx = await setup()
 
-            const mockPiece = createMockPieceMetadata({
+            const mockConnector = createMockConnectorMetadata({
                 platformId: ctx.platform.id,
                 packageType: PackageType.REGISTRY,
-                pieceType: PieceType.OFFICIAL,
+                connectorType: ConnectorType.OFFICIAL,
             })
-            await db.save('piece_metadata', mockPiece)
-            pieceMetadataService(mockLog).getOrThrow = vi.fn().mockResolvedValue(mockPiece)
+            await db.save('connector_metadata', mockConnector)
+            connectorMetadataService(mockLog).getOrThrow = vi.fn().mockResolvedValue(mockConnector)
 
             const createResponse = await ctx.post('/v1/app-connections', {
                 externalId: 'delete-test',
                 displayName: 'Delete Me',
-                pieceName: mockPiece.name,
+                connectorName: mockConnector.name,
                 projectId: ctx.project.id,
                 type: AppConnectionType.SECRET_TEXT,
                 value: { type: AppConnectionType.SECRET_TEXT, secret_text: 's' },
-                pieceVersion: mockPiece.version,
+                connectorVersion: mockConnector.version,
             })
             const connectionId = createResponse?.json().id
 

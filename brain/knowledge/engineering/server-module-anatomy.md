@@ -55,7 +55,7 @@ export class AddMyColumn1234567890 implements Migration {
 
 `breaking`, `release`, and a `down()` that actually reverses `up()` are all mandatory — CI rejects the migration without them. `release` is the upcoming version from the root `package.json`. Register the class at the end of `getMigrations()` in `database/postgres-connection.ts`, chronologically.
 
-Full procedure: the [Database Migrations Playbook](https://www.activepieces.com/docs/handbook/engineering/playbooks/database-migration).
+Full procedure: the [Database Migrations Playbook](https://github.com/lokiworks/fema-ipaas/docs/handbook/engineering/playbooks/database-migration).
 
 ## Repository
 
@@ -127,7 +127,7 @@ Queued work: add to `SystemJobName` or `WorkerJobType` in shared, register the h
 
 Verify with `npm run lint-dev` and `npm run test-api`.
 
-**`packages/server/api/test/unit/**` runs in no pipeline — do not trust it as a safety net.** The package defines a `test-unit` script, but CI only runs `turbo run test-ce test-ee test-cloud check-migrations --filter=api` (`ci.yml`), and the root `npm run test-unit` filters to `engine`/`shared`/`sandbox`/`core-utils`/`server-utils`/`pieces-framework`/`web`/`ee-embed-sdk` — `api` is not in that list. So those specs are only ever run by hand, and they rot: measured Aug 2026 on a clean `main`, **18 tests across 4 files already failed** (`workers/job-queue/job-broker`, `workers/machine/machine-service`, `core/canary/worker-group.service`, `knowledge-base/file-service-delete`). Two consequences: put a server test you actually want enforced under `test/integration/ce`, and when a local `test/unit` run goes red, check `main` before assuming your branch caused it.
+**`packages/server/api/test/unit/**` runs in no pipeline — do not trust it as a safety net.** The package defines a `test-unit` script, but CI only runs `turbo run test-ce test-ee test-cloud check-migrations --filter=api` (`ci.yml`), and the root `npm run test-unit` filters to `engine`/`shared`/`sandbox`/`core-utils`/`server-utils`/`connectors-framework`/`web`/`ee-embed-sdk` — `api` is not in that list. So those specs are only ever run by hand, and they rot: measured Aug 2026 on a clean `main`, **18 tests across 4 files already failed** (`workers/job-queue/job-broker`, `workers/machine/machine-service`, `core/canary/worker-group.service`, `knowledge-base/file-service-delete`). Two consequences: put a server test you actually want enforced under `test/integration/ce`, and when a local `test/unit` run goes red, check `main` before assuming your branch caused it.
 
 ## Gotchas
 

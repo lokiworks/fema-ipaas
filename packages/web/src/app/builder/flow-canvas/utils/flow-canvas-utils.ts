@@ -486,7 +486,7 @@ const buildContinueOnFailureBranchesGraph = ({
 }): ApGraph => {
   const layout = getLayout(orientation);
   const branches =
-    step.type === FlowActionType.CODE || step.type === FlowActionType.PIECE
+    step.type === FlowActionType.CODE || step.type === FlowActionType.CONNECTOR
       ? step.continueOnFailureBranches
       : undefined;
   const branchOrder = [
@@ -641,7 +641,7 @@ const isSkipped = (stepName: string, trigger: FlowTrigger) => {
   if (
     isNil(step) ||
     step.type === FlowTriggerType.EMPTY ||
-    step.type === FlowTriggerType.PIECE
+    step.type === FlowTriggerType.CONNECTOR
   ) {
     return false;
   }

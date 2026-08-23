@@ -35,7 +35,7 @@ function _deleteAction(
                     break
                 }
                 case FlowActionType.CODE:
-                case FlowActionType.PIECE: {
+                case FlowActionType.CONNECTOR: {
                     const branches = parentStep.continueOnFailureBranches
                     if (branches?.onSuccess?.name === name) {
                         branches.onSuccess = branches.onSuccess.nextAction

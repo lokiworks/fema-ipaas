@@ -10,9 +10,9 @@ export const executePropertyJob: JobHandler<ExecutePropertyJobData, SynchronousJ
     async execute(ctx: JobContext, data: ExecutePropertyJobData): Promise<SynchronousJobResult> {
         const timeoutInSeconds = workerSettings.getSettings().TRIGGER_TIMEOUT_SECONDS
 
-        const resolved = await ctx.resolver.resolve({ platformId: data.platformId, publicApiUrl: ctx.publicApiUrl, engineToken: ctx.engineToken, pieces: [data.piece] })
+        const resolved = await ctx.resolver.resolve({ platformId: data.platformId, publicApiUrl: ctx.publicApiUrl, engineToken: ctx.engineToken, connectors: [data.connector] })
         if (resolved.kind !== 'ready') {
-            throw new Error(`Unexpected resolve outcome "${resolved.kind}" for piece-only job`)
+            throw new Error(`Unexpected resolve outcome "${resolved.kind}" for connector-only job`)
         }
 
         const { data: result, error } = await tryCatch(async () => {
@@ -21,7 +21,7 @@ export const executePropertyJob: JobHandler<ExecutePropertyJobData, SynchronousJ
                 log: ctx.log,
                 operationType: EngineOperationType.EXECUTE_PROPERTY,
                 operation: {
-                    piece: data.piece,
+                    connector: data.connector,
                     propertyName: data.propertyName,
                     actionOrTriggerName: data.actionOrTriggerName,
                     flowVersion: data.flowVersion,

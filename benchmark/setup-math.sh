@@ -27,9 +27,9 @@ IMPORT_PAYLOAD=$(jq -n '{
     schemaVersion: "17",
     notes: [],
     trigger: {
-      name: "trigger", valid: true, displayName: "Catch Webhook", type: "PIECE_TRIGGER",
+      name: "trigger", valid: true, displayName: "Catch Webhook", type: "CONNECTOR_TRIGGER",
       settings: {
-        pieceName: "@fema/connector-webhook", pieceVersion: "~0.1.36",
+        connectorName: "@fema/connector-webhook", connectorVersion: "~0.1.36",
         triggerName: "catch_webhook", input: { authType: "none", authFields: {} },
         propertySettings: {
           authType: { type: "MANUAL" }, authFields: { type: "MANUAL", schema: {} },
@@ -38,11 +38,11 @@ IMPORT_PAYLOAD=$(jq -n '{
         sampleData: {}
       },
       nextAction: {
-        name: "step_1", skip: false, type: "PIECE", valid: true,
+        name: "step_1", skip: false, type: "CONNECTOR", valid: true,
         settings: {
           input: { first_number: 21, second_number: 21 },
-          pieceName: "@fema/connector-math-helper", actionName: "addition_math",
-          pieceVersion: "~0.0.24", sampleData: {},
+          connectorName: "@fema/connector-math-helper", actionName: "addition_math",
+          connectorVersion: "~0.0.24", sampleData: {},
           propertySettings: {
             first_number: { type: "MANUAL" }, second_number: { type: "MANUAL" }
           },
@@ -50,11 +50,11 @@ IMPORT_PAYLOAD=$(jq -n '{
         },
         displayName: "Add",
         nextAction: {
-          name: "step_2", skip: false, type: "PIECE", valid: true,
+          name: "step_2", skip: false, type: "CONNECTOR", valid: true,
           settings: {
             input: { fields: { body: { sum: "{{step_1}}" }, status: 200, headers: {} }, respond: "stop", responseType: "json" },
-            pieceName: "@fema/connector-webhook", actionName: "return_response",
-            sampleData: {}, pieceVersion: "~0.1.36",
+            connectorName: "@fema/connector-webhook", actionName: "return_response",
+            sampleData: {}, connectorVersion: "~0.1.36",
             propertySettings: {
               fields: { type: "MANUAL", schema: {
                 body: { type: "JSON", required: true, displayName: "JSON Body" },

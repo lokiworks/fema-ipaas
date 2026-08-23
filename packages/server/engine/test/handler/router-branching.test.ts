@@ -1,7 +1,7 @@
 import { BranchCondition, BranchOperator, FlowAction, FlowRunStatus, RouterExecutionType } from '@fema/shared'
 import { FlowExecutorContext } from '../../src/lib/handler/context/flow-execution-context'
 import { flowExecutor } from '../../src/lib/handler/flow-executor'
-import { buildCodeAction, buildPieceAction, buildRouterWithOneCondition, generateMockEngineConstants } from './test-helper'
+import { buildCodeAction, buildConnectorAction, buildRouterWithOneCondition, generateMockEngineConstants } from './test-helper'
 
 function executeRouterActionWithOneCondition(children: FlowAction[], conditions: (BranchCondition | null)[], executionType: RouterExecutionType): Promise<FlowExecutorContext> {
     return flowExecutor.execute({
@@ -17,9 +17,9 @@ function executeRouterActionWithOneCondition(children: FlowAction[], conditions:
 describe('router with branching different conditions', () => {
     it('should execute router with the first matching condition', async () => {
         const result = await executeRouterActionWithOneCondition([
-            buildPieceAction({
+            buildConnectorAction({
                 name: 'data_mapper',
-                pieceName: '@fema/connector-data-mapper',
+                connectorName: '@fema/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -27,9 +27,9 @@ describe('router with branching different conditions', () => {
                     },
                 },
             }),
-            buildPieceAction({
+            buildConnectorAction({
                 name: 'data_mapper_1',
-                pieceName: '@fema/connector-data-mapper',
+                connectorName: '@fema/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -61,9 +61,9 @@ describe('router with branching different conditions', () => {
 
     it('should execute router with the all matching conditions', async () => {
         const result = await executeRouterActionWithOneCondition([
-            buildPieceAction({
+            buildConnectorAction({
                 name: 'data_mapper',
-                pieceName: '@fema/connector-data-mapper',
+                connectorName: '@fema/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -71,9 +71,9 @@ describe('router with branching different conditions', () => {
                     },
                 },
             }),
-            buildPieceAction({
+            buildConnectorAction({
                 name: 'data_mapper_1',
-                pieceName: '@fema/connector-data-mapper',
+                connectorName: '@fema/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -105,9 +105,9 @@ describe('router with branching different conditions', () => {
     
     it('should execute router but no branch will match', async () => {
         const result = await executeRouterActionWithOneCondition([
-            buildPieceAction({
+            buildConnectorAction({
                 name: 'data_mapper',
-                pieceName: '@fema/connector-data-mapper',
+                connectorName: '@fema/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -115,9 +115,9 @@ describe('router with branching different conditions', () => {
                     },
                 },
             }),
-            buildPieceAction({
+            buildConnectorAction({
                 name: 'data_mapper_1',
-                pieceName: '@fema/connector-data-mapper',
+                connectorName: '@fema/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -162,9 +162,9 @@ describe('router with branching different conditions', () => {
 
     it('should execute fallback branch with first match execution type', async () => {
         const result = await executeRouterActionWithOneCondition([
-            buildPieceAction({
+            buildConnectorAction({
                 name: 'data_mapper',
-                pieceName: '@fema/connector-data-mapper',
+                connectorName: '@fema/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -172,9 +172,9 @@ describe('router with branching different conditions', () => {
                     },
                 },
             }),
-            buildPieceAction({
+            buildConnectorAction({
                 name: 'data_mapper_1',
-                pieceName: '@fema/connector-data-mapper',
+                connectorName: '@fema/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -182,9 +182,9 @@ describe('router with branching different conditions', () => {
                     },
                 },
             }),
-            buildPieceAction({
+            buildConnectorAction({
                 name: 'fallback_mapper',
-                pieceName: '@fema/connector-data-mapper',
+                connectorName: '@fema/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -218,9 +218,9 @@ describe('router with branching different conditions', () => {
 
     it('should execute fallback branch with all match execution type', async () => {
         const result = await executeRouterActionWithOneCondition([
-            buildPieceAction({
+            buildConnectorAction({
                 name: 'data_mapper',
-                pieceName: '@fema/connector-data-mapper',
+                connectorName: '@fema/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -228,9 +228,9 @@ describe('router with branching different conditions', () => {
                     },
                 },
             }),
-            buildPieceAction({
+            buildConnectorAction({
                 name: 'data_mapper_1',
-                pieceName: '@fema/connector-data-mapper',
+                connectorName: '@fema/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -238,9 +238,9 @@ describe('router with branching different conditions', () => {
                     },
                 },
             }),
-            buildPieceAction({
+            buildConnectorAction({
                 name: 'fallback_mapper',
-                pieceName: '@fema/connector-data-mapper',
+                connectorName: '@fema/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -274,9 +274,9 @@ describe('router with branching different conditions', () => {
 
     it('should not execute fallback branch when there is a matching condition in EXECUTE_FIRST_MATCH mode', async () => {
         const result = await executeRouterActionWithOneCondition([
-            buildPieceAction({
+            buildConnectorAction({
                 name: 'data_mapper',
-                pieceName: '@fema/connector-data-mapper',
+                connectorName: '@fema/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -284,9 +284,9 @@ describe('router with branching different conditions', () => {
                     },
                 },
             }),
-            buildPieceAction({
+            buildConnectorAction({
                 name: 'fallback_mapper',
-                pieceName: '@fema/connector-data-mapper',
+                connectorName: '@fema/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -313,9 +313,9 @@ describe('router with branching different conditions', () => {
 
     it('should not execute fallback branch when there is a matching condition in EXECUTE_ALL_MATCH mode', async () => {
         const result = await executeRouterActionWithOneCondition([
-            buildPieceAction({
+            buildConnectorAction({
                 name: 'data_mapper',
-                pieceName: '@fema/connector-data-mapper',
+                connectorName: '@fema/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -323,9 +323,9 @@ describe('router with branching different conditions', () => {
                     },
                 },
             }),
-            buildPieceAction({
+            buildConnectorAction({
                 name: 'data_mapper_1',
-                pieceName: '@fema/connector-data-mapper',
+                connectorName: '@fema/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -333,9 +333,9 @@ describe('router with branching different conditions', () => {
                     },
                 },
             }),
-            buildPieceAction({
+            buildConnectorAction({
                 name: 'fallback_mapper',
-                pieceName: '@fema/connector-data-mapper',
+                connectorName: '@fema/connector-data-mapper',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -369,10 +369,10 @@ describe('router with branching different conditions', () => {
     it('should skip router', async () => {
         const result = await flowExecutor.execute({
             action: buildRouterWithOneCondition({ children: [
-                buildPieceAction({
+                buildConnectorAction({
                     name: 'data_mapper',
                     skip: true,
-                    pieceName: '@fema/connector-data-mapper',
+                    connectorName: '@fema/connector-data-mapper',
                     actionName: 'advanced_mapping',
                     input: {},
                 }),
@@ -393,10 +393,10 @@ describe('router with branching different conditions', () => {
     it('should skip router action in flow', async () => {
         const router: FlowAction = {
             ...buildRouterWithOneCondition({ children: [
-                buildPieceAction({
+                buildConnectorAction({
                     name: 'data_mapper',
                     skip: true,
-                    pieceName: '@fema/connector-data-mapper',
+                    connectorName: '@fema/connector-data-mapper',
                     actionName: 'advanced_mapping',
                     input: {},
                 }),

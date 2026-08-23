@@ -1,7 +1,7 @@
 services:
   app:
     image: ghcr.io/lokiworks/fema-ipaas:0.88.3
-    container_name: activepieces-app
+    container_name: fema-app
     restart: unless-stopped
     ports:
       - '8080:80'
@@ -14,7 +14,7 @@ services:
     volumes:
       - ./cache:/usr/src/app/cache
     networks:
-      - activepieces
+      - fema
   worker:
     image: ghcr.io/lokiworks/fema-ipaas:0.88.3
     restart: unless-stopped
@@ -28,7 +28,7 @@ services:
     volumes:
       - ./cache:/usr/src/app/cache
     networks:
-      - activepieces
+      - fema
   postgres:
     image: 'pgvector/pgvector:0.8.0-pg14'
     container_name: postgres
@@ -41,7 +41,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - activepieces
+      - fema
   redis:
     image: 'redis:7.0.7'
     container_name: redis
@@ -49,9 +49,9 @@ services:
     volumes:
       - 'redis_data:/data'
     networks:
-      - activepieces
+      - fema
 volumes:
   postgres_data:
   redis_data:
 networks:
-  activepieces:
+  fema:

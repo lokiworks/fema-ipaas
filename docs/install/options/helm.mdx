@@ -1,9 +1,9 @@
 ---
 title: 'Helm'
-description: 'Deploy Activepieces on Kubernetes using Helm'
+description: 'Deploy FEMA Integration Platform on Kubernetes using Helm'
 ---
 
-This guide walks you through deploying Activepieces on Kubernetes using the official Helm chart.
+This guide walks you through deploying FEMA Integration Platform on Kubernetes using the official Helm chart.
 
 ## Prerequisites
 
@@ -26,7 +26,7 @@ postgresql:
   port: 5432
   useSSL: true  # Enable SSL if required
   auth:
-    database: "activepieces"
+    database: "fema"
     username: "postgres"
     password: "your-password"
     # Or use external secret reference:
@@ -99,7 +99,7 @@ redis:
 
 ```bash
 git clone https://github.com/lokiworks/fema-ipaas.git
-cd activepieces
+cd fema
 ```
 
 ### 2. Install Dependencies
@@ -110,14 +110,14 @@ helm dependency update
 
 ### 3. Create a Values File
 
-Create a `my-values.yaml` file with your configuration. You can use the [example values file](https://github.com/lokiworks/fema-ipaas/blob/main/deploy/activepieces-helm/values.yaml) as a reference.
+Create a `my-values.yaml` file with your configuration. You can use the [example values file](https://github.com/lokiworks/fema-ipaas/blob/main/deploy/fema-helm/values.yaml) as a reference.
 The Helm chart has sensible defaults for required values while leaving the optional ones empty, but you should customize these core values for production
 
 
-### 4. Install Activepieces
+### 4. Install FEMA Integration Platform
 
 ```bash
-helm install activepieces deploy/activepieces-helm -f my-values.yaml
+helm install fema deploy/fema-helm -f my-values.yaml
 ```
 
 ### 5. Verify Installation
@@ -147,17 +147,17 @@ kubectl get services
 helm dependency update
 
 # Upgrade release
-helm upgrade activepieces deploy/activepieces-helm -f my-values.yaml
+helm upgrade fema deploy/fema-helm -f my-values.yaml
 
 # Check upgrade status
-kubectl rollout status deployment/activepieces
+kubectl rollout status deployment/fema
 ```
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **Pod won't start**: Check logs with `kubectl logs deployment/activepieces`
+1. **Pod won't start**: Check logs with `kubectl logs deployment/fema`
 2. **Database connection**: Verify PostgreSQL credentials and connectivity
 3. **Frontend URL**: Ensure `frontendUrl` is accessible from external sources
 4. **Webhooks not working**: Check ingress configuration and DNS resolution
@@ -166,10 +166,10 @@ kubectl rollout status deployment/activepieces
 
 ```bash
 # View logs
-kubectl logs deployment/activepieces -f
+kubectl logs deployment/fema -f
 
 # Port forward for testing
-kubectl port-forward svc/activepieces 4200:80 --namespace default
+kubectl port-forward svc/fema 4200:80 --namespace default
 
 # Get all resources
 kubectl get all --namespace default
@@ -177,24 +177,24 @@ kubectl get all --namespace default
 
 ## Editions
 
-Activepieces supports three editions:
+FEMA Integration Platform supports three editions:
 
 - **`ce` (Community Edition)**: Open-source version with all core features (default)
 - **`ee` (Enterprise Edition)**: Self-hosted edition with advanced features like SSO, RBAC, and audit logs
-- **`cloud`**: For Activepieces Cloud deployments
+- **`cloud`**: For FEMA Integration Platform Cloud deployments
 
 Set the edition in your values file:
 
 ```yaml
-activepieces:
+fema:
   edition: "ce"  # or "ee" for Enterprise Edition
 ```
 
-For Enterprise Edition features and licensing, visit [activepieces.com](https://www.activepieces.com/docs/admin-console/overview).
+For Enterprise Edition features and licensing, visit [fema.local](https://github.com/lokiworks/fema-ipaas/docs/admin-console/overview).
 
 ## Environment Variables
 
-For a complete list of configuration options, see the [Environment Variables](/install/reference/environment-variables) documentation. Most environment variables can be configured through the Helm values file under the `activepieces` section.
+For a complete list of configuration options, see the [Environment Variables](/install/reference/environment-variables) documentation. Most environment variables can be configured through the Helm values file under the `fema` section.
 
 ## Execution Modes
 
@@ -203,8 +203,8 @@ Understanding execution modes is crucial for security and performance. See the [
 ## Uninstalling
 
 ```bash
-helm uninstall activepieces
+helm uninstall fema
 
 # Clean up persistent volumes (optional)
-kubectl delete pvc -l app.kubernetes.io/instance=activepieces
+kubectl delete pvc -l app.kubernetes.io/instance=fema
 ```

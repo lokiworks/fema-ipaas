@@ -1,6 +1,6 @@
 ---
 name: triage-dependabot-alerts
-description: Triage Dependabot dependency vulnerability alerts for the Activepieces repo — pull open alerts, dedupe to distinct (package, advisory), confirm the vulnerable package + API is actually used, and propose version-bump fixes proven non-breaking (build + tests) before any PR. Use when the user asks to triage Dependabot alerts, work the dependency-vulnerability backlog, or bump vulnerable dependencies. For human-reported vulnerabilities, use the triage-security-advisories skill instead.
+description: Triage Dependabot dependency vulnerability alerts for the FEMA Integration Platform repo — pull open alerts, dedupe to distinct (package, advisory), confirm the vulnerable package + API is actually used, and propose version-bump fixes proven non-breaking (build + tests) before any PR. Use when the user asks to triage Dependabot alerts, work the dependency-vulnerability backlog, or bump vulnerable dependencies. For human-reported vulnerabilities, use the triage-security-advisories skill instead.
 ---
 
 # Triage Dependabot Alerts (dependency vulnerabilities)

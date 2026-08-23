@@ -13,7 +13,7 @@ Fastify 5 + TypeORM (PostgreSQL) + BullMQ (Redis) + `fastify-type-provider-zod`.
 
 ## Project Structure
 
-- `src/app/` — Feature modules (flows, pieces, tables, authentication, webhooks, etc.)
+- `src/app/` — Feature modules (flows, connectors, tables, authentication, webhooks, etc.)
 - `src/app/ee/` — Enterprise features (SSO, SAML, SCIM, multi-tenancy)
 - `src/app/database/` — Database migrations and connection setup (TypeORM)
 - `src/app/helper/` — Shared server utilities
@@ -42,7 +42,7 @@ Email templates live in `src/assets/emails/`. When creating or modifying email t
 
 - **F-pattern layout** — All content (logo, heading, body, notes, fallback link, footer) must be **left-aligned**. The CTA button is auto-width, left-aligned.
 - **Design system consistency** — Use the same font scale as the web app: Inter font family, 32px/500 headings, 16px body, 14px closing, 11px muted text. Colors: `#0a0a0a` headings, `#2f2e2e` body, `#a3a3a3` muted.
-- **White-label ready** — Use `{{fullLogoUrl}}`, `{{primaryColor}}`, `{{primaryColorLight}}`, and `{{platformName}}` Mustache variables. Never hardcode "Activepieces" or brand colors.
+- **White-label ready** — Use `{{fullLogoUrl}}`, `{{primaryColor}}`, `{{primaryColorLight}}`, and `{{platformName}}` Mustache variables. Never hardcode "FEMA Integration Platform" or brand colors.
 - **Card-on-background layout** — White card (`560px`, `border-radius: 12px`) on `{{primaryColorLight}}` tinted background.
 - **CTA button** — Auto-width, left-aligned, `{{primaryColor}}` background, 16px/500 white text, `12px 18px` padding, `8px` border-radius.
 - **Fallback link** — Below the CTA: "If the button doesn't work, click here." at 11px `#a3a3a3`, with `click here` underlined in `{{primaryColor}}`.
@@ -71,12 +71,12 @@ All structured logging goes through evlog — `logger.{info,warn,error,debug}({ 
 **Rules:**
 
 1. **Group fields by entity; the entity's own id is `id` inside its group — never a top-level `<entity>Id`, `runId`, or bare `id`.** A flow run is `flowRun: { id }` (flattens to `flowRun.id`), not `flowRunId`/`runId`/`id`. The group is the camelCase singular entity from the domain model. This is the rule that matters most: the codebase previously logged the same flow-run id as `runId`, `flowRunId`, *and* `id`, which broke every correlation query.
-2. **An entity's attributes live beside `id` in the same group, merged into one object.** `{ jobId, jobType }` → `job: { id, type }`; `{ pieceName, pieceVersion }` → `piece: { name, version }`; `flowRun: { id, status, environment }`. Never bare `name`/`version`/`status`/`type` at the top level.
+2. **An entity's attributes live beside `id` in the same group, merged into one object.** `{ jobId, jobType }` → `job: { id, type }`; `{ connectorName, connectorVersion }` → `connector: { name, version }`; `flowRun: { id, status, environment }`. Never bare `name`/`version`/`status`/`type` at the top level.
 3. **Errors use `error`, not `err`.** `ap-logger.ts` normalizes `obj.err ?? obj.error` and emits the canonical `error` key. Descriptively-named error fields (`migrationError`, `pageError`) are fine and stay as-is.
 4. **Units as a suffix on leaf keys:** durations end in `Ms` (`durationMs`, `timings.{op}Ms`), bytes `Bytes`, counts `Count`/plural.
 5. **Do not nest, and never set, reserved / auto-populated keys:** `service`, `version`, `level`, `msg`, `timestamp`, `error`, `timings`, `requestId`, `traceId`, `method`, `path` (attached by `evlog-setup.ts` / `ap-logger.ts` / `wide-event.ts` and the evlog request middleware). `requestId` stays flat — do not fold it into a group.
 
-**Canonical groups:** `flowRun: { id, status, environment }`, `flow: { id, version }`, `flowVersion: { id }`, `project: { id }`, `platform: { id }`, `user: { id }`, `job: { id, type }`, `piece: { name, version }`, `connection: { id }` (`AppConnection`), `sandbox: { id }`, `worker: { id }`, `webhook: { id, requestId, mode, flowFound, responseStatus }`, `conversation: { id }`, `run: { id }` (the chat per-message run id — distinct from `flowRun`; threaded controller → job → worker → RPC so a chat turn correlates end-to-end), `tool: { name, callId, phase, durationMs, input, output }` (chat tool calls), `gate: { id }` (chat approval gate), `waitpoint: { id }`, `step: { name }`, `trigger: { name }`, `migration: { name }`.
+**Canonical groups:** `flowRun: { id, status, environment }`, `flow: { id, version }`, `flowVersion: { id }`, `project: { id }`, `platform: { id }`, `user: { id }`, `job: { id, type }`, `connector: { name, version }`, `connection: { id }` (`AppConnection`), `sandbox: { id }`, `worker: { id }`, `webhook: { id, requestId, mode, flowFound, responseStatus }`, `conversation: { id }`, `run: { id }` (the chat per-message run id — distinct from `flowRun`; threaded controller → job → worker → RPC so a chat turn correlates end-to-end), `tool: { name, callId, phase, durationMs, input, output }` (chat tool calls), `gate: { id }` (chat approval gate), `waitpoint: { id }`, `step: { name }`, `trigger: { name }`, `migration: { name }`.
 
 Only the metadata object of a logging call (`logger.*`, `log.child`, `createLogger`, `wideEvent.set`) is grouped. **Data-model / wire fields stay flat** — `JobData.runId`, DB query args (`findOneBy({ id })`), service-call arguments (`resumeFromWaitpoint({ flowRunId })`), DTOs, return objects, and client event payloads are NOT logs and keep their original keys.
 

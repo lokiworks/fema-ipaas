@@ -9,7 +9,7 @@ export enum TriggerRunStatus {
 }
 
 export const TriggerStatusReport = z.object({
-    pieces: z.record(z.string(), z.object({
+    connectors: z.record(z.string(), z.object({
         dailyStats: z.record(z.string(), z.object({
             success: z.number(),
             failure: z.number(),

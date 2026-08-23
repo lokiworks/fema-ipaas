@@ -2,19 +2,19 @@ import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { TextWithTooltip } from '@/components/custom/text-with-tooltip';
 import { cn } from '@/lib/utils';
 
-import { StepNodeRunDurationAndPieceName } from './step-node-run-duration-and-piece-name';
+import { StepNodeRunDurationAndConnectorName } from './step-node-run-duration-and-connector-name';
 
 const StepNodeDisplayName = ({
   stepDisplayName,
   stepIndex,
   isSkipped,
-  pieceDisplayName,
+  connectorDisplayName,
   stepName,
 }: {
   stepDisplayName: string;
   stepIndex: number;
   isSkipped: boolean;
-  pieceDisplayName: string;
+  connectorDisplayName: string;
   stepName: string;
 }) => {
   const canvasOrientation = useBuilderStateContext(
@@ -45,9 +45,9 @@ const StepNodeDisplayName = ({
           </div>
         </TextWithTooltip>
       </div>
-      <StepNodeRunDurationAndPieceName
+      <StepNodeRunDurationAndConnectorName
         stepName={stepName}
-        pieceDisplayName={pieceDisplayName}
+        connectorDisplayName={connectorDisplayName}
       />
     </div>
   );

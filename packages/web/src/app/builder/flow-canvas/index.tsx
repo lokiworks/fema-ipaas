@@ -282,7 +282,7 @@ const getChildrenKey = (step: Step) => {
         return `${routerKey}-${childrenKey}`;
       }, '');
     case FlowActionType.CODE:
-    case FlowActionType.PIECE: {
+    case FlowActionType.CONNECTOR: {
       const cofEnabled =
         sharedFlowCanvasUtils.hasContinueOnFailureBranches(step);
       const branches = step.continueOnFailureBranches;
@@ -316,9 +316,9 @@ const createGraphKey = (
       return `${acc}-${step.displayName}-${step.type}-${
         step.nextAction ? step.nextAction.name : ''
       }-${
-        step.type === FlowActionType.PIECE ||
-        step.type === FlowTriggerType.PIECE
-          ? `${step.settings.pieceName}-${step.settings.pieceVersion}`
+        step.type === FlowActionType.CONNECTOR ||
+        step.type === FlowTriggerType.CONNECTOR
+          ? `${step.settings.connectorName}-${step.settings.connectorVersion}`
           : ''
       }-${branchesNames}-${childrenKey}}`;
     }, '');

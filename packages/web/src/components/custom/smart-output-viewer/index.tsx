@@ -122,9 +122,9 @@ function OutputViewerShell({
 function SmartOutputViewer({
   json,
   title,
-  pieceSchema,
+  connectorSchema,
 }: SmartOutputViewerProps) {
-  const pieceDefinedSchema = pieceSchema ?? null;
+  const connectorDefinedSchema = connectorSchema ?? null;
   const isJsonObject = isObject(json);
 
   if (typeof json === 'string') {
@@ -140,7 +140,7 @@ function SmartOutputViewer({
   if (Array.isArray(json) && json.length > 0) {
     const arrayView = selectArrayFriendlyView({
       items: json,
-      schema: pieceDefinedSchema,
+      schema: connectorDefinedSchema,
     });
     const friendlyContent =
       arrayView.kind === 'object' ? (
@@ -168,13 +168,13 @@ function SmartOutputViewer({
     );
   }
 
-  if (pieceDefinedSchema && isJsonObject) {
+  if (connectorDefinedSchema && isJsonObject) {
     return (
       <OutputViewerShell
         json={json}
         title={title}
         friendlyContent={
-          <OutputFieldList json={json} schema={pieceDefinedSchema} />
+          <OutputFieldList json={json} schema={connectorDefinedSchema} />
         }
       />
     );
@@ -198,5 +198,5 @@ export { SmartOutputViewer };
 type SmartOutputViewerProps = {
   json: unknown;
   title: string;
-  pieceSchema?: OutputSchema | null;
+  connectorSchema?: OutputSchema | null;
 };

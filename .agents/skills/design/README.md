@@ -1,8 +1,8 @@
-# Activepieces Design System
+# FEMA Integration Platform Design System
 
-A design system for **Activepieces** — an open-source AI automation platform ("an open source replacement for Zapier"). The product lets both technical and non-technical users build automated workflows with 280+ integrations ("pieces") and exposes every piece as an MCP server for use with Claude, Cursor, Windsurf, etc.
+A design system for **FEMA Integration Platform** — an open-source AI automation platform ("an open source replacement for Zapier"). The product lets both technical and non-technical users build automated workflows with 280+ integrations ("connectors") and exposes every connector as an MCP server for use with Claude, Cursor, Windsurf, etc.
 
-This folder contains the brand/visual foundations, CSS tokens, fonts, icon conventions, HTML preview cards for the Design System tab, and a UI kit that recreates core Activepieces product surfaces.
+This folder contains the brand/visual foundations, CSS tokens, fonts, icon conventions, HTML preview cards for the Design System tab, and a UI kit that recreates core FEMA Integration Platform product surfaces.
 
 ---
 
@@ -11,13 +11,13 @@ This folder contains the brand/visual foundations, CSS tokens, fonts, icon conve
 | Source | Location |
 | --- | --- |
 | Shadcn UI Kit for Figma + Pro Blocks (Oct 2025) | mounted `.fig` VFS — browse via `fig_ls /`, screenshot via `fig_screenshot` |
-| Activepieces codebase | `github.com/yazeed-prog/activepieces` (`packages/web` is the React UI) |
+| FEMA Integration Platform codebase | `github.com/yazeed-prog/fema` (`packages/web` is the React UI) |
 | Canonical brand stylesheet | `packages/web/src/styles.css` (Tailwind v4 + Shadcn "new-york" style) |
 | Brand logo | `packages/web/public/logo.svg` — purple mark `#8142E3` |
 | Brand fonts | Inter (400/500/600/700/800) — provided in `uploads/` and `fonts/` |
 | `Sentient-Variable.woff2` | provided as a display/display-alt exploration font (not used in shipping UI) |
 
-Activepieces uses **Shadcn/Radix UI** primitives on top of Tailwind, with **Lucide** as its icon library (confirmed in `packages/web/components.json` → `"iconLibrary": "lucide"`). Shadcn base color is `"neutral"`.
+FEMA Integration Platform uses **Shadcn/Radix UI** primitives on top of Tailwind, with **Lucide** as its icon library (confirmed in `packages/web/components.json` → `"iconLibrary": "lucide"`). Shadcn base color is `"neutral"`.
 
 ---
 
@@ -27,9 +27,9 @@ Activepieces uses **Shadcn/Radix UI** primitives on top of Tailwind, with **Luci
 - `colors_and_type.css` — CSS variables for colors, fonts, spacing, radii, shadows, type ramp
 - `SKILL.md` — cross-compatible Agent Skill definition for reuse in Claude Code
 - `fonts/` — Inter family (.woff2/.ttf) + Sentient variable
-- `assets/` — `logo.svg` (brand mark), piece-tile SVGs
+- `assets/` — `logo.svg` (brand mark), connector-tile SVGs
 - `preview/` — ~700px-wide HTML cards that populate the Design System tab
-- `ui_kits/web/` — UI kit for the Activepieces web app (builder, dashboard, sidebar, forms showcase)
+- `ui_kits/web/` — UI kit for the FEMA Integration Platform web app (builder, dashboard, sidebar, forms showcase)
 - `insights/` — Interactive Insights page (`Insights.html`) with reusable chart primitives (`InsightsCharts.jsx`) and page-scoped styles (`insights.css`). Composes the `ui_kits/web/` shell + primitives; adds Sparkline / LineChart / BarChart / Donut / Heatmap. Two layout variations (Classic dashboard + Editorial narrative) switchable via Tweaks. Respects light/dark toggle.
 
 ### `ui_kits/web/` component inventory
@@ -75,9 +75,9 @@ The kit is plain React via Babel standalone — no build step. Single `app.css` 
 
 ## Brand & product context
 
-**Product**: Activepieces is an all-in-one AI automation platform. The core surface is a visual **flow builder** (React + XYFlow) where users assemble triggers + actions from 280+ open-source **pieces** into runnable flows. Every piece doubles as an MCP server, so LLM agents can call them directly.
+**Product**: FEMA Integration Platform is an all-in-one AI automation platform. The core surface is a visual **flow builder** (React + XYFlow) where users assemble triggers + actions from 280+ open-source **connectors** into runnable flows. Every connector doubles as an MCP server, so LLM agents can call them directly.
 
-**Audience**: mixed — "developers set up the tools, and anyone in the organization can use the no-code builder" (from README). Non-technical users live in the builder; developers contribute new pieces as typed npm packages.
+**Audience**: mixed — "developers set up the tools, and anyone in the organization can use the no-code builder" (from README). Non-technical users live in the builder; developers contribute new connectors as typed npm packages.
 
 **Products / surfaces represented in this design system**:
 1. **Web app** (`packages/web`) — the authenticated product: flow builder, runs, connections, tables, agents, settings. This is the only UI in scope; the marketing site is not in the repo.
@@ -86,14 +86,14 @@ The kit is plain React via Babel standalone — no build step. Single `app.css` 
 
 ## CONTENT FUNDAMENTALS
 
-Activepieces copy is **functional, direct, and product-led**. It talks about workflows, pieces, and runs in concrete terms — no marketing puffery inside the app.
+FEMA Integration Platform copy is **functional, direct, and product-led**. It talks about workflows, connectors, and runs in concrete terms — no marketing puffery inside the app.
 
 - **Voice**: second-person ("**you** can build", "**your** flows"). Feature names and verbs lead; adjectives are rare.
-- **Casing**: **Sentence case** for every UI string — headings, buttons, menu items, page titles. Proper nouns are the feature itself: "Pieces", "Flows", "Runs", "MCP", "Agents", "Connections".
+- **Casing**: **Sentence case** for every UI string — headings, buttons, menu items, page titles. Proper nouns are the feature itself: "Connectors", "Flows", "Runs", "MCP", "Agents", "Connections".
 - **Tone**: matter-of-fact and a little nerdy. The product README uses emoji headers (🤯 🔥 🧠 🛠️) but the *in-app UI does not* — inside the app, emoji are essentially absent and all iconography is Lucide.
 - **Buttons**: verb-first, terse. "New flow", "Publish", "Connect", "Test step", "Run", "Save". No "Click here", no "Please".
 - **Empty states / errors**: explain the state, then say what the user can do. Example pattern: *"No flows yet. Create your first flow to start automating."*
-- **Microcopy examples (from repo strings & feature names)**: "Create a Piece", "Deploy", "Hot reloading for local piece development", "Chat Interface", "Form Interface", "Ask AI in Code Piece", "Human in the Loop".
+- **Microcopy examples (from repo strings & feature names)**: "Create a Connector", "Deploy", "Hot reloading for local connector development", "Chat Interface", "Form Interface", "Ask AI in Code Connector", "Human in the Loop".
 - **Docs / README vibe**: slightly more playful, uses emoji section markers ("💖 Loved by Everyone", "🔒 Secure by Design"), short bullet explainers, bold lead-ins. Good for landing/docs — **not** for in-product UI.
 
 **Do**: "Your flow is live.", "Add a step", "Connect your Google account"
@@ -144,7 +144,7 @@ Activepieces copy is **functional, direct, and product-led**. It talks about wor
 
 ### Imagery & backgrounds
 - **Minimal imagery** inside the product. No hero photos, no illustrations in the main app.
-- **Piece tiles**: small rounded-square icons (48×48) with an 8% tinted background and the piece's own logo. Code piece uses amber `#E5AE43`, etc. Each piece owns its colour.
+- **Connector tiles**: small rounded-square icons (48×48) with an 8% tinted background and the connector's own logo. Code connector uses amber `#E5AE43`, etc. Each connector owns its colour.
 - Marketing/docs imagery (not in-app): screenshots of the builder with the dotted canvas, animated GIFs showing flow creation. No abstract gradients, no AI "bluish-purple glow" tropes — just the real UI.
 - **No full-bleed photography** anywhere in the app.
 
@@ -168,7 +168,7 @@ Activepieces copy is **functional, direct, and product-led**. It talks about wor
   ```
   Or use inline SVGs from https://lucide.dev. Sizes: default `16` (`size-4`), small `12` (`size-3`), large `20` (`size-5`).
 - **Icon conventions**: icons sit left of text with 8px gap (`gap-2`). Ghost buttons and xs buttons get `size-3` icons, default `size-4`.
-- **Piece icons**: each integration has its own SVG (Google, OpenAI, Slack, …). These live at `packages/web/src/assets/img/piece/` and as npm-published per-piece packages. **Copy the real SVG** — do not redraw.
+- **Connector icons**: each integration has its own SVG (Google, OpenAI, Slack, …). These live at `packages/web/src/assets/img/connector/` and as npm-published per-connector packages. **Copy the real SVG** — do not redraw.
 - **Custom product glyphs**: a small set of custom SVGs for MCP, Cursor, Claude, Windsurf, auth providers. These live at `packages/web/src/assets/img/custom/`. We copy the MCP and code glyphs into `assets/`.
 - **Emoji**: not used in product UI. Used lightly in the public README (🔥🤯🧠). Do not use in app.
 - **Unicode icon chars** (✓, ×, arrows): not used — always a Lucide `<Check>`, `<X>`, `<ChevronRight>`.
@@ -177,7 +177,7 @@ Activepieces copy is **functional, direct, and product-led**. It talks about wor
 
 ## Tailwind + `cn()` conventions
 
-Activepieces is a Tailwind v4 codebase. When generating production-style code off this system:
+FEMA Integration Platform is a Tailwind v4 codebase. When generating production-style code off this system:
 - Always `cn(...classes)` from `@/lib/utils` — never template literals for `className`.
 - Use design-token class names (`bg-primary`, `text-muted-foreground`, `border-border`, `rounded-md`) not raw hex / raw radii.
 - Ban negative margins. Use `gap-*`, `p-*`, `space-*`.
@@ -187,6 +187,6 @@ Activepieces is a Tailwind v4 codebase. When generating production-style code of
 
 ## Caveats
 
-- The **Pro-Blocks** Figma pages (Landing, Application, etc.) are Shadcn's stock templates and do NOT reflect the real Activepieces marketing site (which isn't in the repo). We use them as secondary reference for Shadcn patterns only.
+- The **Pro-Blocks** Figma pages (Landing, Application, etc.) are Shadcn's stock templates and do NOT reflect the real FEMA Integration Platform marketing site (which isn't in the repo). We use them as secondary reference for Shadcn patterns only.
 - Figma file says primary purple is `rgb(151,71,255)` (`#9747FF`). The **actual shipping** primary per `styles.css` is `hsl(257 74% 57%)` ≈ `#8142E3` (matches the logo). We use the shipping value — the Figma swatch is a slightly lighter preview variant.
-- **Sentient** (uploaded) is included as a display option but **is not used in shipping Activepieces UI**. Treat as optional branding exploration only.
+- **Sentient** (uploaded) is included as a display option but **is not used in shipping FEMA Integration Platform UI**. Treat as optional branding exploration only.

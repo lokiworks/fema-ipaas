@@ -1,12 +1,12 @@
 ---
 title: "Rollback"
-description: "How to rollback Activepieces to a previous version"
+description: "How to rollback FEMA Integration Platform to a previous version"
 icon: "rotate-left"
 ---
 
 ## Overview
 
-Activepieces ships a rollback command that reverses database migrations when you need to downgrade to a previous version. Most releases are fully rollback-safe — the release notes will let you know if one isn't.
+FEMA Integration Platform ships a rollback command that reverses database migrations when you need to downgrade to a previous version. Most releases are fully rollback-safe — the release notes will let you know if one isn't.
 
 ## Backups
 
@@ -34,7 +34,7 @@ Releases that include non-reversible database changes will have a note at the bo
 
 The rollback command runs against the **current (newer) image** since it has the migration reversal logic. After rolling back the database, you swap to the older image.
 
-### Step 1: Stop Activepieces
+### Step 1: Stop FEMA Integration Platform
 
 ```bash
 docker compose down
@@ -64,11 +64,11 @@ Update your `docker-compose.yml`:
 
 ```yaml
 services:
-  activepieces:
+  fema:
     image: lokiworks/fema-ipaas:0.77.0
 ```
 
-### Step 4: Start Activepieces
+### Step 4: Start FEMA Integration Platform
 
 ```bash
 docker compose up -d
@@ -79,12 +79,12 @@ docker compose up -d
 If you took a backup and prefer to restore from it:
 
 ```bash
-dropdb activepieces
-createdb activepieces
-pg_restore -d activepieces backup-pre-upgrade.dump
+dropdb fema
+createdb fema
+pg_restore -d fema backup-pre-upgrade.dump
 ```
 
-Then switch your `docker-compose.yml` to the previous image version and start Activepieces.
+Then switch your `docker-compose.yml` to the previous image version and start FEMA Integration Platform.
 
 ## For Contributors
 

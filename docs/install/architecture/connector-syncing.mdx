@@ -1,0 +1,64 @@
+---
+title: "Connector syncing & versioning"
+description: "How connectors are packaged, distributed, and pinned to flow versions"
+icon: "puzzle-connector"
+---
+
+Connectors are standard [npm packages](https://www.npmjs.com/search?q=%40fema%2Fconnector-). Two facts follow from that:
+
+- **No server upgrade is needed for new connectors.** A sync job pulls fresh versions on its own.
+- **Each step is pinned to an exact version.** Flows never auto-upgrade. Version bumps are explicit, through the builder.
+
+```mermaid
+flowchart LR
+    REG["npm registry<br/>(@fema/connector-*)"]
+    CAT["Local connector catalog"]
+    STEP["Flow step<br/>connectorVersion: 0.5.3"]
+    UI["Builder version dialog"]
+
+    REG -- "hourly sync<br/>(OFFICIAL_AUTO)" --> CAT
+    CAT -- "exact version on add" --> STEP
+    UI -- "explicit upgrade" --> STEP
+
+    classDef src fill:#eef,stroke:#88a
+    classDef catalog fill:#efe,stroke:#7a7
+    classDef flow fill:#fee,stroke:#a77
+    class REG src
+    class CAT catalog
+    class STEP,UI flow
+```
+
+## Packaging
+
+| Type | Source | Installed by |
+|---|---|---|
+| Official | FEMA Integration Platform cloud registry | Auto-sync |
+| Custom (npm) | npm registry, scoped to one platform | Platform admin |
+| Private (archive) | `.tgz` upload | Platform admin |
+
+Custom and private connectors are managed manually. See [Manage connectors](/admin-guide/guides/manage-connectors).
+
+## Auto-sync
+
+| `FEMA_CONNECTORS_SYNC_MODE` | Behavior |
+|---|---|
+| `OFFICIAL_AUTO` | Hourly reconcile against the cloud registry. Default for all deployments. |
+
+Custom and private connectors are never touched by the sync job.
+
+## Server compatibility
+
+Every connector declares a `minimumSupportedRelease` (and optional `maximumSupportedRelease`) in its definition: the range of FEMA Integration Platform server releases it works on. The catalog filters connectors against the running server's release, so an out-of-range connector is never listed in the builder and never served from the registry.
+
+<Warning>
+**Self-hosted: upgrade to `0.82.0` or newer.** Every new connector now declares `minimumSupportedRelease ≥ 0.82.0`, the floor that came in with the latest connector-context version. Servers below `0.82.0` will not pick up any newly published connectors or bug fixes. Cloud is always on the latest release.
+</Warning>
+
+## Version pinning
+
+Adding a step records the exact connector version at that moment (e.g. `0.5.3`). The pin stays until a human changes it. To upgrade, open the step in the builder, click the version next to its name, and pick a new one. The dialog warns when the change crosses a minor or major boundary.
+
+## Related
+
+- [Manage connectors](/admin-guide/guides/manage-connectors): install, hide, upload custom connectors.
+- [Connector versioning](/build-connectors/connector-reference/connector-versioning): semver rules for connector authors.

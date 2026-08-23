@@ -1,7 +1,7 @@
 import { inspect } from 'util'
-import { formatPieceError } from '@fema/core-utils'
+import { formatConnectorError } from '@fema/core-utils'
 import { EngineResponse, EngineResponseStatus, ExecuteTriggerOperation, ExecuteTriggerResponse, TriggerHookType } from '@fema/shared'
-import { triggerRunner } from '../core/piece/trigger-runner'
+import { triggerRunner } from '../core/connector/trigger-runner'
 import { EngineConstants, ResolvedExecuteTriggerOperation } from '../handler/context/engine-constants'
 import { utils } from '../utils'
 import { resolveJobPayload } from './utils/resolve-job-payload'
@@ -27,7 +27,7 @@ export const triggerHookOperation = {
             return {
                 status: EngineResponseStatus.USER_FAILURE,
                 response: undefined as unknown as ExecuteTriggerResponse<TriggerHookType>,
-                error: JSON.stringify(formatPieceError(error, { raw: inspect(error) })),
+                error: JSON.stringify(formatConnectorError(error, { raw: inspect(error) })),
             }
         }
         return {

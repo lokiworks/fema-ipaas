@@ -1,6 +1,6 @@
 import { ErrorCode, isNil, PlatformError, tryCatch } from '@fema/core-utils'
 import { type ApLogger, wideEvent } from '@fema/server-utils'
-import { PiecePackage } from '@fema/shared'
+import { ConnectorPackage } from '@fema/shared'
 import { localExecutionCache } from './cache/local-execution-cache'
 import { createResolver } from './resolver'
 import { createSandboxManager, SandboxManager } from './sandbox-manager'
@@ -39,7 +39,7 @@ export function createSandboxRuntime({ concurrency = 1, basePath, getSettings }:
 
             const provisionStartedAt = Date.now()
             const { error: provisionError } = await tryCatch(() => localExecutionCache(log, basePath, getSettings).provision({
-                pieces: provision.pieces,
+                connectors: provision.connectors,
                 codeSteps: provision.codes,
                 publicApiUrl: provision.publicApiUrl,
                 engineToken: provision.engineToken,
@@ -121,7 +121,7 @@ export function createSandboxRuntime({ concurrency = 1, basePath, getSettings }:
                     flow,
                 })
                 const resolver = createResolver({ apiClient, basePath, getSettings, log })
-                const pieces: PiecePackage[] = []
+                const connectors: ConnectorPackage[] = []
                 const codeSteps: CodeArtifact[] = []
                 for (const flow of flows) {
                     const { data: resolved, error: flowError } = await tryCatch(() => resolver.resolve({ flow, platformId, publicApiUrl, engineToken }))
@@ -132,11 +132,11 @@ export function createSandboxRuntime({ concurrency = 1, basePath, getSettings }:
                     if (resolved.kind !== 'ready') {
                         continue
                     }
-                    pieces.push(...resolved.provision.pieces)
+                    connectors.push(...resolved.provision.connectors)
                     codeSteps.push(...resolved.provision.codes)
                 }
-                await localExecutionCache(log, basePath, getSettings).provision({ pieces, codeSteps, publicApiUrl, engineToken })
-                log.info({ flowCount: flows.length, pieceCount: pieces.length }, 'Prewarmed sandbox cache')
+                await localExecutionCache(log, basePath, getSettings).provision({ connectors, codeSteps, publicApiUrl, engineToken })
+                log.info({ flowCount: flows.length, connectorCount: connectors.length }, 'Prewarmed sandbox cache')
             })
             if (error) {
                 log.warn({ error: String(error) }, 'Cache prewarm failed')

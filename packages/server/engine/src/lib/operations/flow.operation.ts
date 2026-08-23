@@ -1,7 +1,7 @@
 import { isNil, tryCatch } from '@fema/core-utils'
 import { EngineGenericError, EngineResponse, EngineResponseStatus, ExecuteFlowOperation, ExecuteTriggerResponse, ExecutionError, ExecutionErrorType, ExecutionState, ExecutionType, FlowActionType, FlowRunStatus, flowStructureUtil, GenericStepOutput, LoopStepOutput, ResumePayload, ResumeReason, StepOutput, StepOutputStatus, TriggerHookType, TriggerPayload } from '@fema/shared'
 import { engineFileApi } from '../api/engine-file-api'
-import { triggerRunner } from '../core/piece/trigger-runner'
+import { triggerRunner } from '../core/connector/trigger-runner'
 import { EngineConstants, ResolvedBeginExecuteFlowOperation, ResolvedExecuteFlowOperation } from '../handler/context/engine-constants'
 import { FlowExecutorContext } from '../handler/context/flow-execution-context'
 import { testExecutionContext } from '../handler/context/test-execution-context'
@@ -30,7 +30,7 @@ export const flowOperation = {
         if (executionError) {
             // Trigger run()/onStart() hooks and single-step test resolution can throw a plain Error/TypeError
             // or a non-ExecutionError (e.g. ENTITY_NOT_FOUND when testing a deleted step). Like an action step
-            // throwing, those are user/piece-level failures and must surface as a FAILED run, never
+            // throwing, those are user/connector-level failures and must surface as a FAILED run, never
             // INTERNAL_ERROR. Only genuine ENGINE errors keep paging + retrying.
             if (isEngineExecutionError(executionError)) {
                 throw executionError

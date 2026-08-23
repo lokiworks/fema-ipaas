@@ -4,13 +4,13 @@ description: "What each backing store holds, what a failure of it costs you, and
 icon: "life-ring"
 ---
 
-Activepieces runs on three backing stores. Two are systems of record; one is rebuildable state:
+FEMA Integration Platform runs on three backing stores. Two are systems of record; one is rebuildable state:
 
 - **Postgres** — flows, runs, trigger schedules, waitpoints, connections. System of record.
 - **S3** — run logs (step checkpoints), large webhook payloads, flow bundles. System of record for execution history.
 - **Redis** — the BullMQ job queue and caches. Everything in Redis except the queue itself can be rebuilt from Postgres.
 
-This page describes what happens when each one fails, how to recover, and how to compute your RPO/RTO from your own infrastructure choices. Recovery targets are stated as formulas because on a self-hosted deployment they are properties of *your* Postgres, Redis, and S3 setup, not of Activepieces.
+This page describes what happens when each one fails, how to recover, and how to compute your RPO/RTO from your own infrastructure choices. Recovery targets are stated as formulas because on a self-hosted deployment they are properties of *your* Postgres, Redis, and S3 setup, not of FEMA Integration Platform.
 
 ## Summary
 
@@ -24,7 +24,7 @@ This page describes what happens when each one fails, how to recover, and how to
 
 Redis is the only store where data can be lost that Postgres doesn't also have. The exposure is precisely scoped:
 
-**Lost permanently — queued jobs that no worker had picked up.** The critical case is async webhooks: Activepieces returns `200` with an `x-webhook-id` header after the job is enqueued to Redis, *before* any Postgres record exists. If Redis loses its dataset in that window, those requests vanish without a trace, and the sender — having received a `200` — will not retry. Your async-webhook RPO **is** your Redis persistence window:
+**Lost permanently — queued jobs that no worker had picked up.** The critical case is async webhooks: FEMA Integration Platform returns `200` with an `x-webhook-id` header after the job is enqueued to Redis, *before* any Postgres record exists. If Redis loses its dataset in that window, those requests vanish without a trace, and the sender — having received a `200` — will not retry. Your async-webhook RPO **is** your Redis persistence window:
 
 - Managed Redis with replication or AOF `everysec`: **≤1 second** of accepted webhooks.
 - No persistence: **the entire queue** at the moment of loss.

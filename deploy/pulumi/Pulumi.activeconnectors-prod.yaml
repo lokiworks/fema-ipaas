@@ -1,0 +1,19 @@
+encryptionsalt: v1:icXg2cmIvSc=:v1:y8+4YhdMCPPDY26J:5cNYmimH353n8sjUDDc6srvcPgb+8Q==
+config:
+  fema:environment: "prod"
+  fema:apEncryptionKey:  
+  fema:apJwtSecret: 
+  fema:deployLocalBuild: "true"
+  fema:repoName: "fema-prod-repo"
+  fema:containerCpu: "512"
+  fema:containerMemory: "1024"
+  fema:containerInstances: "1"
+  fema:usePostgres: "true"
+  fema:dbInstanceClass: "db.t3.small"
+  fema:dbIsPublic: "false"
+  fema:dbPassword:
+    secure: v1:MXNSOcqZCp10X2PX:mU2iTrcETjdisk8FkD5yHLJYUxRei/9l
+  fema:dbUsername: "postgres"
+  fema:useRedis: "true"
+  fema:redisNodeType: "cache.t3.small"
+  aws:region: "us-east-1"

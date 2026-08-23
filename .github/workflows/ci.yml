@@ -44,11 +44,11 @@ jobs:
           max-age: 3w
           max-size: 20gb
 
-      - name: Check if framework or common pieces are changed
+      - name: Check if framework or common connectors are changed
         id: check-framework-common
         run: |
           CHANGED_FILES="$(git diff --name-only HEAD origin/main | tr '\n' ' ')"
-          if echo "$CHANGED_FILES" | grep -q "pieces/framework\|pieces/common"; then
+          if echo "$CHANGED_FILES" | grep -q "connectors/sdk\|connectors/common"; then
             echo "framework_or_common_changed=true" >> $GITHUB_OUTPUT
           else
             echo "framework_or_common_changed=false" >> $GITHUB_OUTPUT
@@ -57,9 +57,9 @@ jobs:
       - name: Lint core projects
         run: npm run lint-core
 
-      - name: Lint all pieces projects
+      - name: Lint all connectors projects
         if: steps.check-framework-common.outputs.framework_or_common_changed == 'true'
-        run: npm run lint-pieces
+        run: npm run lint-connectors
 
   main:
     runs-on: ubuntu-latest
@@ -101,46 +101,46 @@ jobs:
         id: changed-files
         run: echo "files=$(git diff --name-only HEAD origin/main | tr '\n' ' ')" >> $GITHUB_OUTPUT
 
-      - name: Check if framework or common pieces are changed
+      - name: Check if framework or common connectors are changed
         id: check-framework-common
         run: |
           CHANGED_FILES="${{ steps.changed-files.outputs.files }}"
-          if echo "$CHANGED_FILES" | grep -q "pieces/framework\|pieces/common"; then
+          if echo "$CHANGED_FILES" | grep -q "connectors/sdk\|connectors/common"; then
             echo "framework_or_common_changed=true" >> $GITHUB_OUTPUT
           else
             echo "framework_or_common_changed=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Extract pieces package names from changed files
-        id: extract-pieces
+      - name: Extract connectors package names from changed files
+        id: extract-connectors
         run: |
-          PIECES=$(echo "${{ steps.changed-files.outputs.files }}" | grep -oE "packages/pieces/(community|core)/[^/]+" | awk -F'/' '{print $NF}' | sort -u | tr '\n' ',' | sed 's/,$//')
-          if [ -n "$PIECES" ]; then
-            FILTERS=$(echo "$PIECES" | tr ',' '\n' | sed 's/.*/{&}/' | tr '\n' ',' | sed 's/,$//')
-            echo "pieces_filters=$FILTERS" >> $GITHUB_OUTPUT
+          CONNECTORS=$(echo "${{ steps.changed-files.outputs.files }}" | grep -oE "packages/connectors/(community|core)/[^/]+" | awk -F'/' '{print $NF}' | sort -u | tr '\n' ',' | sed 's/,$//')
+          if [ -n "$CONNECTORS" ]; then
+            FILTERS=$(echo "$CONNECTORS" | tr ',' '\n' | sed 's/.*/{&}/' | tr '\n' ',' | sed 's/,$//')
+            echo "connectors_filters=$FILTERS" >> $GITHUB_OUTPUT
           else
-            echo "pieces_filters=" >> $GITHUB_OUTPUT
+            echo "connectors_filters=" >> $GITHUB_OUTPUT
           fi
 
       - name: Build core projects
         run: npx turbo run build --filter=web --filter=worker --filter=api --filter=@fema/engine --filter=@fema/connector-http --filter=@fema/connector-data-mapper --filter=@fema/connector-approval --filter=@fema/connector-webhook --filter=@fema/connector-delay
 
-      - name: Build changed pieces projects
-        if: steps.extract-pieces.outputs.pieces_filters != '' && steps.check-framework-common.outputs.framework_or_common_changed == 'false'
+      - name: Build changed connectors projects
+        if: steps.extract-connectors.outputs.connectors_filters != '' && steps.check-framework-common.outputs.framework_or_common_changed == 'false'
         run: |
-          IFS=',' read -ra PIECES <<< "${{ steps.extract-pieces.outputs.pieces_filters }}"
+          IFS=',' read -ra CONNECTORS <<< "${{ steps.extract-connectors.outputs.connectors_filters }}"
           FILTER_ARGS=""
-          for piece in "${PIECES[@]}"; do
-            piece_name=$(echo "$piece" | tr -d '{}')
-            if [ -f "packages/pieces/community/${piece_name}/package.json" ] || [ -f "packages/pieces/core/${piece_name}/package.json" ]; then
-              FILTER_ARGS="$FILTER_ARGS --filter=@fema/connector-${piece_name}"
+          for connector in "${CONNECTORS[@]}"; do
+            connector_name=$(echo "$connector" | tr -d '{}')
+            if [ -f "packages/connectors/community/${connector_name}/package.json" ] || [ -f "packages/connectors/core/${connector_name}/package.json" ]; then
+              FILTER_ARGS="$FILTER_ARGS --filter=@fema/connector-${connector_name}"
             fi
           done
           if [ -n "$FILTER_ARGS" ]; then
             npx turbo run build $FILTER_ARGS
           fi
 
-      - name: Build all pieces projects
+      - name: Build all connectors projects
         if: steps.check-framework-common.outputs.framework_or_common_changed == 'true'
         run: npx turbo run build --filter='@fema/connector-*'
 
@@ -182,7 +182,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: activepieces
+          POSTGRES_DB: fema
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -196,7 +196,7 @@ jobs:
       FEMA_DB_TYPE: POSTGRES
       FEMA_POSTGRES_HOST: localhost
       FEMA_POSTGRES_PORT: "5432"
-      FEMA_POSTGRES_DATABASE: activepieces
+      FEMA_POSTGRES_DATABASE: fema
       FEMA_POSTGRES_USERNAME: postgres
       FEMA_POSTGRES_PASSWORD: postgres
       FEMA_POSTGRES_USE_SSL: "false"
@@ -239,7 +239,7 @@ jobs:
         # absent, and the DB-only test never boots the server path that would CREATE it,
         # so create it explicitly before migrations run.
         run: |
-          PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d activepieces \
+          PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d fema \
             -c 'CREATE EXTENSION IF NOT EXISTS vector;'
 
       - name: Build api
@@ -247,7 +247,7 @@ jobs:
 
       - name: Run tool-search integration tests on Postgres
         working-directory: packages/server/api
-        # --no-file-parallelism: these files all point at the one shared `activepieces`
+        # --no-file-parallelism: these files all point at the one shared `fema`
         # service DB and each runs migrations on `DataSource.initialize()`. Vitest's default
         # forked parallelism runs those migration passes concurrently, which collide on
         # shared catalog objects (the migrations table, en_natural collation, added columns)

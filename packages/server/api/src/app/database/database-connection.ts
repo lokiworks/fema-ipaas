@@ -6,6 +6,7 @@ import {
 import { AppConnectionEntity } from '../app-connection/app-connection.entity'
 import { OtpEntity } from '../authentication/otp/otp-entity'
 import { UserIdentityEntity } from '../authentication/user-identity/user-identity-entity'
+import { ConnectorMetadataEntity } from '../connectors/metadata/connector-metadata-entity'
 import { FileEntity } from '../file/file.entity'
 import { FlagEntity } from '../flags/flag.entity'
 import { FlowEntity } from '../flows/flow/flow.entity'
@@ -15,7 +16,6 @@ import { FlowVersionEntity } from '../flows/flow-version/flow-version-entity'
 import { FolderEntity } from '../flows/folder/folder.entity'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
-import { PieceMetadataEntity } from '../pieces/metadata/piece-metadata-entity'
 import { PlatformEntity } from '../platform/platform.entity'
 import { ProjectEntity } from '../project/project-entity'
 import { StoreEntryEntity } from '../store-entry/store-entry-entity'
@@ -47,7 +47,7 @@ function getEntities(): EntitySchema<unknown>[] {
         AppConnectionEntity,
         VariableEntity,
         FolderEntity,
-        PieceMetadataEntity,
+        ConnectorMetadataEntity,
         PlatformEntity,
         UserInvitationEntity,
         UserIdentityEntity,

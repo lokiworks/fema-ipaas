@@ -83,10 +83,10 @@ export function PlatformSidebar() {
       locked: !platform.plan.globalConnectionsEnabled,
     },
     {
-      to: '/platform/setup/pieces',
-      label: t('Pieces'),
+      to: '/platform/setup/connectors',
+      label: t('Connectors'),
       icon: PuzzleIcon,
-      locked: !platform.plan.managePiecesEnabled,
+      locked: !platform.plan.manageConnectorsEnabled,
     },
     {
       to: '/platform/setup/templates',

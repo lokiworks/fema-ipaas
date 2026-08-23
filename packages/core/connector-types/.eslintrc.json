@@ -1,0 +1,27 @@
+{
+  "extends": ["../../../.eslintrc.json"],
+  "ignorePatterns": ["!**/*", "dist"],
+  "overrides": [
+    {
+      "files": ["*.ts", "*.tsx"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@fema/shared",
+                  "@fema/server*",
+                  "@fema/connectors*",
+                  "@fema/web*"
+                ],
+                "message": "core/* packages are the framework-agnostic foundation; they must not import shared, server, connectors, or web. core-connector-types may depend only on core-utils."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

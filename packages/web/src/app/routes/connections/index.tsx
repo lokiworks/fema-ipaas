@@ -55,7 +55,10 @@ import {
   appConnectionsQueries,
   appConnectionUtils,
 } from '@/features/connections';
-import { PieceIconWithPieceName, piecesHooks } from '@/features/pieces';
+import {
+  ConnectorIconWithConnectorName,
+  connectorsHooks,
+} from '@/features/connectors';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { ownerColumnHooks } from '@/hooks/owner-column-hooks';
 import { userHooks } from '@/hooks/user-hooks';
@@ -72,10 +75,10 @@ function AppConnectionsPage() {
   const { checkAccess } = useAuthorization();
   const userPlatformRole = userHooks.getCurrentUserPlatformRole();
   const location = useLocation();
-  const { pieces } = piecesHooks.usePieces({});
-  const pieceOptions = (pieces ?? []).map((piece) => ({
-    label: piece.displayName,
-    value: piece.name,
+  const { connectors } = connectorsHooks.useConnectors({});
+  const connectorOptions = (connectors ?? []).map((connector) => ({
+    label: connector.displayName,
+    value: connector.name,
   }));
   const projectId = authenticationSession.getProjectId()!;
 
@@ -85,7 +88,7 @@ function AppConnectionsPage() {
     ? parseInt(searchParams.get(LIMIT_QUERY_PARAM)!)
     : 10;
   const status = (searchParams.getAll('status') as AppConnectionStatus[]) ?? [];
-  const pieceName = searchParams.get('pieceName') ?? undefined;
+  const connectorName = searchParams.get('connectorName') ?? undefined;
   const displayName = searchParams.get('displayName') ?? undefined;
 
   const {
@@ -98,7 +101,7 @@ function AppConnectionsPage() {
       cursor,
       limit,
       status,
-      pieceName,
+      connectorName,
       displayName,
     },
     extraKeys: [location.search, projectId],
@@ -145,10 +148,10 @@ function AppConnectionsPage() {
         },
         {
           type: 'select',
-          title: t('Pieces'),
-          accessorKey: 'pieceName',
+          title: t('Connectors'),
+          accessorKey: 'connectorName',
           icon: Puzzle,
-          options: pieceOptions,
+          options: connectorOptions,
         },
         {
           type: 'input',
@@ -187,8 +190,8 @@ function AppConnectionsPage() {
                 text={row.original.externalId || ''}
               >
                 <span className="shrink-0">
-                  <PieceIconWithPieceName
-                    pieceName={row.original.pieceName}
+                  <ConnectorIconWithConnectorName
+                    connectorName={row.original.connectorName}
                     showTooltip={false}
                     size="sm"
                   />

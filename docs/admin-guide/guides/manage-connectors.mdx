@@ -1,0 +1,92 @@
+---
+title: "How to Manage Connectors"
+description: "Control which integrations are available to your users"
+icon: "puzzle-connector"
+---
+
+<Snippet file="enterprise-feature.mdx" />
+
+## Overview
+
+**Connectors** are the building blocks of FEMA Integration Platform — they are integrations and connectors (like Google Sheets, Slack, OpenAI, etc.) that users can use in their automation flows.
+
+As a platform administrator, you have full control over which connectors are available to your users. This allows you to:
+
+- **Enforce security policies** by restricting access to certain integrations
+- **Simplify the user experience** by showing only relevant connectors for your use case
+- **Deploy custom/private connectors** that are specific to your organization
+
+There are **two levels** of connector management:
+
+| Level | Who Can Manage | Scope |
+|-------|----------------|-------|
+| **Platform Level** | Platform Admin | Install and remove across the entire platform |
+| **Project Level** | Project Admin | Show/hide specific connectors for specfic project |
+
+<Note>
+Connectors are standard npm packages — official connectors are **auto-synced from the registry hourly**, so you don't need to upgrade the server to get new versions. Each step in a flow is pinned to a specific connector version, and drafts can be upgraded from the builder. See [Connector Syncing & Versioning](/install/architecture/connector-syncing) for the full pipeline.
+</Note>
+
+---
+
+## Platform-Level Management
+
+Platform administrators can manage connectors for the entire FEMA Integration Platform instance from **Platform Admin → Setup → Connectors**.
+
+## Project-Level Management
+
+Project administrators can further restrict which connectors are available within their specific project. This is useful when different teams or projects need access to different integrations.
+
+### Show/Hide Connectors in a Project
+
+<Steps>
+  <Step title="Open Project Settings">
+    Navigate to your project and go to **Settings → Connectors**.
+  </Step>
+  <Step title="Configure Visibility">
+    You'll see a list of all connectors installed on the platform. Toggle the visibility for each connector:
+    - **Enabled**: Users in this project can use the connector
+    - **Disabled**: The connector is hidden from users in this project
+  </Step>
+  <Step title="Save Changes">
+    Changes take effect immediately — users will only see the enabled connectors when building their flows.
+  </Step>
+</Steps>
+
+![Manage Connectors](/resources/screenshots/manage-connectors.png)
+![Manage Connectors](/resources/screenshots/manage-connectors-2.png)
+
+<Note>
+Project-level settings can only **hide** connectors that are installed at the platform level. You cannot add connectors at the project level that aren't already installed on the platform.
+</Note>
+
+
+### Install Private Connectors
+
+<Tip>
+For detailed instructions on building custom connectors, check the [Building Connectors](/build-connectors/building-connectors/overview) documentation.
+</Tip>
+
+
+If you've built a custom connector for your organization, you can upload it directly as a tarball (`.tgz`) file.
+
+<Steps>
+  <Step title="Build Your Connector">
+    Build your connector using the FEMA Integration Platform CLI:
+    ```bash
+    npm run connectors -- build --name=your-connector-name
+    ```
+    This generates a tarball in `dist/packages/connectors/your-connector-name`.
+  </Step>
+  <Step title="Navigate to Connectors Settings">
+    Go to **Platform Admin → Setup → Connectors** and click **Install Connector**.
+  </Step>
+  <Step title="Select File Upload">
+    Choose **Upload File** as the installation source.
+  </Step>
+  <Step title="Upload the Tarball">
+    Select the `.tgz` file from your build output and upload it.
+  </Step>
+</Steps>
+
+![Install Connector](/resources/screenshots/install-connector.png)

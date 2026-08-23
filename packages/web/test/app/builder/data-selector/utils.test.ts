@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// Importing the data-selector utils pulls in `@/features/pieces` → `src/lib/api.ts`,
+// Importing the data-selector utils pulls in `@/features/connectors` → `src/lib/api.ts`,
 // which reads `window.location.origin` at module load, so this suite needs a DOM.
 import { FlowAction, FlowActionType } from '@fema/shared';
 import { describe, expect, it } from 'vitest';

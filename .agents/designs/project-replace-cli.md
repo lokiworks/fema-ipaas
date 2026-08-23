@@ -5,7 +5,7 @@ Driver: Nedap. Replaces a Git-based GHA release pipeline with direct cross-insta
 
 ## Problem
 
-Move a project's content from one Activepieces instance to another (e.g. staging → prod) without using Git as a storage mechanism, and fail GitHub Actions cleanly on validation errors before any destructive write occurs.
+Move a project's content from one FEMA Integration Platform instance to another (e.g. staging → prod) without using Git as a storage mechanism, and fail GitHub Actions cleanly on validation errors before any destructive write occurs.
 
 ## Non-goals
 
@@ -13,7 +13,7 @@ Move a project's content from one Activepieces instance to another (e.g. staging
 - Replacement of the existing `project-releases` feature for users who want diffs
 - Project list/create/delete commands
 - Connection writes (preflight only)
-- Piece installation (deployment concern)
+- Connector installation (deployment concern)
 - Interactive prompts (this is a CI tool)
 - Standalone rollback command (existing flow-version history covers it)
 - Pull/push split commands (single `replace` only)
@@ -21,7 +21,7 @@ Move a project's content from one Activepieces instance to another (e.g. staging
 
 ## Scope (v1)
 
-Mirrored: **flows + table schemas + folders + piece validation**.
+Mirrored: **flows + table schemas + folders + connector validation**.
 
 - Connections — preflight only (validate referenced externalIds exist on dest); no payload writes; secrets never cross the wire
 - Tables — schema only; never row data, ever
@@ -29,7 +29,7 @@ Mirrored: **flows + table schemas + folders + piece validation**.
 
 ## Topology assumption
 
-Source and destination are **separate Activepieces deployments**, each with its own DB, platform, and API keys. There is no shared `projectId`/`platformId` namespace. Cross-instance is the design constraint; same-instance multi-project happens to work as a special case.
+Source and destination are **separate FEMA Integration Platform deployments**, each with its own DB, platform, and API keys. There is no shared `projectId`/`platformId` namespace. Cross-instance is the design constraint; same-instance multi-project happens to work as a special case.
 
 ## Identity / matching
 
@@ -57,20 +57,20 @@ Source and destination are **separate Activepieces deployments**, each with its 
 ```jsonc
 {
   "schemaVersion": 1,
-  "sourceActivepiecesVersion": "0.45.0",
+  "sourceFEMA Integration PlatformVersion": "0.45.0",
   "flows":   [ /* full flow states with externalId */ ],
   "tables":  [ /* schema only — name, externalId, fields[], status, trigger */ ],
   "folders": [ /* externalId, displayName, displayOrder */ ],
-  "requiredPieces": [ { "name": "@fema/connector-slack", "version": "1.2.3" } ]
+  "requiredConnectors": [ { "name": "@fema/connector-slack", "version": "1.2.3" } ]
 }
 ```
 
 ### Server-side preflight (hard fails before any write)
 
-1. **AP version**: `dest >= source` on same major. No override flag. Source version comes from `sourceActivepiecesVersion`.
-2. **Piece versions**: every entry in `requiredPieces` must match a piece on dest's registry **exactly**. No flag.
-3. **Custom-piece presence**: any `requiredPieces` entry with `pieceType: 'CUSTOM'` missing on dest → hard fail.
-4. **Connection externalIds**: for every connection externalId referenced inside any source flow's content, dest must have a connection with the same externalId + same `pieceName`. If missing → hard fail.
+1. **AP version**: `dest >= source` on same major. No override flag. Source version comes from `sourceFEMA Integration PlatformVersion`.
+2. **Connector versions**: every entry in `requiredConnectors` must match a connector on dest's registry **exactly**. No flag.
+3. **Custom-connector presence**: any `requiredConnectors` entry with `connectorType: 'CUSTOM'` missing on dest → hard fail.
+4. **Connection externalIds**: for every connection externalId referenced inside any source flow's content, dest must have a connection with the same externalId + same `connectorName`. If missing → hard fail.
 
 Failure → 4xx with structured `{ errors: [{ kind, ... }] }`. No writes. CLI exits with code 2.
 
@@ -119,10 +119,10 @@ Single command. No config file. No env-var auto-resolution. No dry-run. Per-call
 
 ```bash
 ap project replace \
-  --source-url   https://staging.activepieces.com \
+  --source-url   https://staging.fema.local \
   --source-token "$STAGING_TOKEN" \
   --source-project "$STAGING_PROJECT_ID" \
-  --dest-url     https://prod.activepieces.com \
+  --dest-url     https://prod.fema.local \
   --dest-token   "$PROD_TOKEN" \
   --dest-project "$PROD_PROJECT_ID"
 ```
@@ -166,11 +166,11 @@ Not reused:
 - **Inter-flow dependency window during partial failure**: if flow A (calls subflow B) is updated before B's update succeeds, A may briefly call an old version of B. Small window; converges on retry.
 - **Connection re-creation on first push**: operator must manually create the connection record on dest with the matching externalId before the first push that references it. Subsequent pushes match by externalId.
 - **Folder rename** (covered by externalId): folders mirror by externalId, so renames are clean.
-- **Custom piece installation** is out of scope. CLI fails preflight loudly; deploy/admin handles install separately.
+- **Custom connector installation** is out of scope. CLI fails preflight loudly; deploy/admin handles install separately.
 
 ## Future work (v2+, if needed)
 
 - Agent mirror (currently `agentIds` is auto-derived from flow content; treat as covered until it isn't)
 - MCP server mirror
-- Optional `--allow-piece-version-skew` (only if exact-match proves too strict in practice)
+- Optional `--allow-connector-version-skew` (only if exact-match proves too strict in practice)
 - Snapshot artifact for GHA (if the no-pull/push decision is revisited)

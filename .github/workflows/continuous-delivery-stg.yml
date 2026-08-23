@@ -101,7 +101,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: staging
-      url: https://stg.activepieces.com
+      url: https://stg.fema.local
     steps:
       - name: Configure SSH
         run: |
@@ -129,7 +129,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: staging
-      url: https://stg.activepieces.com
+      url: https://stg.fema.local
     steps:
       - name: Configure SSH
         run: |

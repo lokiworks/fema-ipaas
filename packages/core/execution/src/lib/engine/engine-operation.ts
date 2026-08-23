@@ -4,14 +4,14 @@ import { ExecutionToolStatus, PredefinedInputsStructure } from '@fema/connector-
 import { AppConnectionType, AppConnectionValue } from '@fema/connector-types'
 import { ExecutionType } from '../flow-run/execution/execution-output'
 import { RunEnvironment } from '../flow-run/flow-run'
-import { CodeAction, PieceAction } from '../flows/actions/action'
+import { CodeAction, ConnectorAction } from '../flows/actions/action'
 import { FlowVersion } from '../flows/flow-version'
-import { PiecePackage } from '@fema/connector-types'
+import { ConnectorPackage } from '@fema/connector-types'
 import { ScheduleOptions } from '@fema/connector-types'
 import { JobPayload } from '../workers/job-data'
 
 export enum EngineOperationType {
-    EXTRACT_PIECE_METADATA = 'EXTRACT_PIECE_METADATA',
+    EXTRACT_CONNECTOR_METADATA = 'EXTRACT_CONNECTOR_METADATA',
     EXECUTE_FLOW = 'EXECUTE_FLOW',
     EXECUTE_ACTION = 'EXECUTE_ACTION',
     EXECUTE_PROPERTY = 'EXECUTE_PROPERTY',
@@ -36,7 +36,7 @@ export type EngineOperation =
     | ExecuteFlowOperation
     | ExecutePropsOptions
     | ExecuteTriggerOperation<TriggerHookType>
-    | ExecuteExtractPieceMetadataOperation
+    | ExecuteExtractConnectorMetadataOperation
     | ExecuteValidateAuthOperation
     | ExecuteResolveConnectionIdentifierOperation
     | ExecuteRefreshTokenAuthOperation
@@ -65,12 +65,12 @@ export type BaseEngineOperation = {
 }
 
 export type ExecuteValidateAuthOperation = Omit<BaseEngineOperation, 'projectId'> & {
-    piece: PiecePackage
+    connector: ConnectorPackage
     auth: AppConnectionValue
 }
 
 export type ExecuteResolveConnectionIdentifierOperation = Omit<BaseEngineOperation, 'projectId'> & {
-    piece: PiecePackage
+    connector: ConnectorPackage
     auth: AppConnectionValue
     connectionType: AppConnectionType
 }
@@ -81,25 +81,25 @@ export type ExecuteRefreshTokenAuthResponse =
     | { skipped: true }
     | { skipped: false, access_token: string, expires_in: number }
 
-export type ExecuteExtractPieceMetadata = PiecePackage & { platformId: PlatformId }
+export type ExecuteExtractConnectorMetadata = ConnectorPackage & { platformId: PlatformId }
 
-export type ExecuteExtractPieceMetadataOperation = ExecuteExtractPieceMetadata & { timeoutInSeconds: number, platformId: PlatformId }
+export type ExecuteExtractConnectorMetadataOperation = ExecuteExtractConnectorMetadata & { timeoutInSeconds: number, platformId: PlatformId }
 
 export type ExecuteToolOperation = BaseEngineOperation & {
     actionName: string
-    pieceName: string
-    pieceVersion: string
+    connectorName: string
+    connectorVersion: string
     predefinedInput?: PredefinedInputsStructure
     instruction: string
 }
 
 export type ExecuteActionOperation = BaseEngineOperation & {
-    step: PieceAction | CodeAction
+    step: ConnectorAction | CodeAction
     flowVersionId?: string
 }
 
 export type ExecutePropsOptions = BaseEngineOperation & {
-    piece: PiecePackage
+    connector: ConnectorPackage
     propertyName: string
     actionOrTriggerName: string
     flowVersion?: FlowVersion

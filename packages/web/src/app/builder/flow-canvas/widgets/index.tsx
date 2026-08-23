@@ -13,12 +13,12 @@ const AboveFlowWidgets = React.memo(() => {
     flowVersion,
     selectStepByName,
     readonly,
-    setOpenedPieceSelectorStepNameOrAddButtonId,
+    setOpenedConnectorSelectorStepNameOrAddButtonId,
   ] = useBuilderStateContext((state) => [
     state.flowVersion,
     state.selectStepByName,
     state.readonly,
-    state.setOpenedPieceSelectorStepNameOrAddButtonId,
+    state.setOpenedConnectorSelectorStepNameOrAddButtonId,
   ]);
   return (
     <ViewportPortal>
@@ -36,8 +36,8 @@ const AboveFlowWidgets = React.memo(() => {
               <IncompleteSettingsButton
                 flowVersion={flowVersion}
                 selectStepByName={selectStepByName}
-                setOpenedPieceSelectorStepNameOrAddButtonId={
-                  setOpenedPieceSelectorStepNameOrAddButtonId
+                setOpenedConnectorSelectorStepNameOrAddButtonId={
+                  setOpenedConnectorSelectorStepNameOrAddButtonId
                 }
               ></IncompleteSettingsButton>
             )}

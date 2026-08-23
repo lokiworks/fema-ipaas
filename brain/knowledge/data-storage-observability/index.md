@@ -4,15 +4,15 @@ icon: 💾
 
 # Data, Storage & Observability
 
-How Activepieces stores data, secrets, files, and how it surfaces platform activity. One section per subsystem.
+How FEMA Integration Platform stores data, secrets, files, and how it surfaces platform activity. One section per subsystem.
 
 ### Tables
 
-Built-in relational store (no external DB needed) — typed fields, cell-level values, spreadsheet UI. Entities: `Table`, `Field` (TEXT/NUMBER/DATE/DATETIME/STATIC_DROPDOWN), `Record`, `Cell`, `TableWebhook`. `table.service.ts` + `record-side-effects.ts`. All CE/EE/Cloud. Gotchas: record filtering is in-memory, missing cell = `''` (so NEQ/NOT_EXISTS match unset columns); only GT/GTE/LT/LTE are date-aware, EQ compares raw strings; DATE and DATETIME store the identical ISO instant and differ only in editor and display; routes need `securityAccess.project(..., permission)` — passing `undefined` skips RBAC. Integrates with flows via the Tables piece (triggers register/delete a TableWebhook).
+Built-in relational store (no external DB needed) — typed fields, cell-level values, spreadsheet UI. Entities: `Table`, `Field` (TEXT/NUMBER/DATE/DATETIME/STATIC_DROPDOWN), `Record`, `Cell`, `TableWebhook`. `table.service.ts` + `record-side-effects.ts`. All CE/EE/Cloud. Gotchas: record filtering is in-memory, missing cell = `''` (so NEQ/NOT_EXISTS match unset columns); only GT/GTE/LT/LTE are date-aware, EQ compares raw strings; DATE and DATETIME store the identical ISO instant and differ only in editor and display; routes need `securityAccess.project(..., permission)` — passing `undefined` skips RBAC. Integrates with flows via the Tables connector (triggers register/delete a TableWebhook).
 
 ### Store Entry (key-value)
 
-Backend-only persistent KV cache for piece steps during execution — no UI. Project-scoped, `jsonb` value, upsert on `(projectId, key)`. Key ≤128 chars, value ≤512KB (413 if over). All 3 endpoints are `securityAccess.engine()` only; projectId comes from the engine principal. Pieces use `storage.get/put/delete`. No list endpoint — opaque cache, not queryable.
+Backend-only persistent KV cache for connector steps during execution — no UI. Project-scoped, `jsonb` value, upsert on `(projectId, key)`. Key ≤128 chars, value ≤512KB (413 if over). All 3 endpoints are `securityAccess.engine()` only; projectId comes from the engine principal. Connectors use `storage.get/put/delete`. No list endpoint — opaque cache, not queryable.
 
 ### Variables
 
@@ -20,7 +20,7 @@ Project-scoped encrypted secrets referenced in flows as `{{variables['NAME']}}`.
 
 ### File Storage
 
-Central binary persistence with two backends: DB (`bytea`) or S3-compatible (AWS/R2/MinIO/OCI). `FileType` decides location + retention — expiring execution files (logs, step files, payloads) follow `FILE_STORAGE_LOCATION`; non-expiring files (assets, avatars, releases) always DB. Optional Zstd compression, transparent on read. Hourly cleanup job deletes stale execution files past `EXECUTION_DATA_RETENTION_DAYS`. `FLOW_BUNDLE` is the one non-expiring type that's configurable (S3 signed URLs let workers fetch directly). Step files download via short-lived JWT. Files reach pieces in two shapes: **ApFile** (buffered `Buffer` + `base64`, from a plain `Property.File()`) and **ApStreamingFile** (`{ filename, extension?, size?, body: Readable }`, from `Property.File({ streaming: true })`) — a one-shot lazy file the engine never buffers, for uploading large files out to an external service.
+Central binary persistence with two backends: DB (`bytea`) or S3-compatible (AWS/R2/MinIO/OCI). `FileType` decides location + retention — expiring execution files (logs, step files, payloads) follow `FILE_STORAGE_LOCATION`; non-expiring files (assets, avatars, releases) always DB. Optional Zstd compression, transparent on read. Hourly cleanup job deletes stale execution files past `EXECUTION_DATA_RETENTION_DAYS`. `FLOW_BUNDLE` is the one non-expiring type that's configurable (S3 signed URLs let workers fetch directly). Step files download via short-lived JWT. Files reach connectors in two shapes: **ApFile** (buffered `Buffer` + `base64`, from a plain `Property.File()`) and **ApStreamingFile** (`{ filename, extension?, size?, body: Readable }`, from `Property.File({ streaming: true })`) — a one-shot lazy file the engine never buffers, for uploading large files out to an external service.
 
 ### Secret Managers (EE)
 
@@ -32,7 +32,7 @@ Security-relevant actions persisted to `audit_event`, queryable by platform admi
 
 ### Analytics / Impact (EE)
 
-Platform reporting: daily runs, active flows/users, time-saved estimates. `PlatformAnalyticsReport` cached (5-min TTL) refreshed under a distributed lock; separate daily cron (12:00 UTC) tallies per-piece usage into `pieceMetadata.usage`. minutesSaved = runs × flow.timeSavedPerRun. Powers `/impact` (Summary/Trends/Details). Gated by `analyticsEnabled` — NOT in CE. Frontend queries carry `enabled: platform.plan.analyticsEnabled`.
+Platform reporting: daily runs, active flows/users, time-saved estimates. `PlatformAnalyticsReport` cached (5-min TTL) refreshed under a distributed lock; separate daily cron (12:00 UTC) tallies per-connector usage into `connectorMetadata.usage`. minutesSaved = runs × flow.timeSavedPerRun. Powers `/impact` (Summary/Trends/Details). Gated by `analyticsEnabled` — NOT in CE. Frontend queries carry `enabled: platform.plan.analyticsEnabled`.
 
 ### Flow Failure Alerts (EE)
 
@@ -44,13 +44,13 @@ Streams platform/project events to webhook URLs in real time — internal AP flo
 
 ### Benchmark CLI
 
-`activepieces benchmark` load-tests the sync-webhook path and attributes latency to queue-wait vs service-time. Auto-discovers deployment shape (`GET /v1/worker-machines`) and drives load = execution slots (so a healthy deploy shows \~zero queue-wait; any reported queue-wait is a real finding). Authoritative latency is server/worker-measured (`FlowRun.timeline` QUEUE/PROVISION/BOOT/RUN + `/v1/health/diagnostics` in-region DB/Redis/S3 RTT); client-side numbers are observational only (cross-region). Auth via platform API key. Infra-diagnostics block is self-hosted only (`FEATURE_DISABLED` on Cloud). New App Instance Registry: apps self-register into Redis `appMachines` on their snapshot tick (no inbound healthcheck), kept separate from worker slots.
+`fema benchmark` load-tests the sync-webhook path and attributes latency to queue-wait vs service-time. Auto-discovers deployment shape (`GET /v1/worker-machines`) and drives load = execution slots (so a healthy deploy shows \~zero queue-wait; any reported queue-wait is a real finding). Authoritative latency is server/worker-measured (`FlowRun.timeline` QUEUE/PROVISION/BOOT/RUN + `/v1/health/diagnostics` in-region DB/Redis/S3 RTT); client-side numbers are observational only (cross-region). Auth via platform API key. Infra-diagnostics block is self-hosted only (`FEATURE_DISABLED` on Cloud). New App Instance Registry: apps self-register into Redis `appMachines` on their snapshot tick (no inbound healthcheck), kept separate from worker slots.
 
 ## Pages
 
 - **Tables** — Field / Record / Cell and TableWebhooks
 - **File Storage** — blobs in S3 or DB, compression, expiry
-- **Key-Value Store** — project-scoped state pieces persist across runs
+- **Key-Value Store** — project-scoped state connectors persist across runs
 - **Knowledge Base** — documents chunked into vector embeddings for AI search
 - **Analytics** — usage reporting
 - **Audit Logs** — the persisted security-action record

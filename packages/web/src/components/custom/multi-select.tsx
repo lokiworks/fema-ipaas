@@ -288,9 +288,9 @@ const MultiSelectValue = React.forwardRef<
   ) => {
     const { value, items, onDeselect, disabled } = useMultiSelect();
 
-    const remainingPiecesCount =
+    const remainingConnectorsCount =
       maxDisplay && value.length > maxDisplay ? value.length - maxDisplay : 0;
-    const renderItems = remainingPiecesCount
+    const renderItems = remainingConnectorsCount
       ? value.slice(0, maxDisplay)
       : value;
 
@@ -359,10 +359,10 @@ const MultiSelectValue = React.forwardRef<
 
             return el;
           })}
-          {remainingPiecesCount ? (
+          {remainingConnectorsCount ? (
             <span className="text-muted-foreground text-xs leading-4 py-.5">
-              {t('+{remainingPiecesCount} more', {
-                remainingPiecesCount: remainingPiecesCount,
+              {t('+{remainingConnectorsCount} more', {
+                remainingConnectorsCount: remainingConnectorsCount,
               })}
             </span>
           ) : null}

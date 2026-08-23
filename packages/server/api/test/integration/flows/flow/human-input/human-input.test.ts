@@ -1,14 +1,14 @@
 import { apId } from '@fema/core-utils'
-import { FlowStatus, FlowTriggerType, FlowVersionState, PackageType, PieceType } from '@fema/shared'
+import { FlowStatus, FlowTriggerType, FlowVersionState, PackageType, ConnectorType } from '@fema/shared'
 import { FastifyBaseLogger, FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { databaseConnection } from '../../../../../../src/app/database/database-connection'
-import { pieceCache } from '../../../../../../src/app/pieces/metadata/piece-cache'
+import { connectorCache } from '../../../../../../src/app/connectors/metadata/connector-cache'
 import { db } from '../../../../../helpers/db'
 import {
     createMockFlow,
     createMockFlowVersion,
-    createMockPieceMetadata,
+    createMockConnectorMetadata,
 } from '../../../../../helpers/mocks'
 import { createTestContext } from '../../../../../helpers/test-context'
 import { setupTestEnvironment, teardownTestEnvironment } from '../../../../../helpers/test-setup'
@@ -30,15 +30,15 @@ describe('Human Input API', () => {
         it('should return form config for flow with form trigger', async () => {
             const ctx = await createTestContext(app!)
 
-            await databaseConnection().getRepository('piece_metadata').createQueryBuilder().delete().execute()
-            const mockPiece = createMockPieceMetadata({
+            await databaseConnection().getRepository('connector_metadata').createQueryBuilder().delete().execute()
+            const mockConnector = createMockConnectorMetadata({
                 name: '@fema/connector-forms',
                 version: '0.2.0',
-                pieceType: PieceType.OFFICIAL,
+                connectorType: ConnectorType.OFFICIAL,
                 packageType: PackageType.REGISTRY,
             })
-            await db.save('piece_metadata', mockPiece)
-            await pieceCache(mockLog).setup()
+            await db.save('connector_metadata', mockConnector)
+            await connectorCache(mockLog).setup()
 
             const mockFlow = createMockFlow({
                 projectId: ctx.project.id,
@@ -50,10 +50,10 @@ describe('Human Input API', () => {
                 flowId: mockFlow.id,
                 state: FlowVersionState.LOCKED,
                 trigger: {
-                    type: FlowTriggerType.PIECE,
+                    type: FlowTriggerType.CONNECTOR,
                     settings: {
-                        pieceName: '@fema/connector-forms',
-                        pieceVersion: '0.2.0',
+                        connectorName: '@fema/connector-forms',
+                        connectorVersion: '0.2.0',
                         triggerName: 'form_submission',
                         input: {
                             inputs: [
@@ -131,15 +131,15 @@ describe('Human Input API', () => {
         it('should return chat config for flow with chat trigger', async () => {
             const ctx = await createTestContext(app!)
 
-            await databaseConnection().getRepository('piece_metadata').createQueryBuilder().delete().execute()
-            const mockPiece = createMockPieceMetadata({
+            await databaseConnection().getRepository('connector_metadata').createQueryBuilder().delete().execute()
+            const mockConnector = createMockConnectorMetadata({
                 name: '@fema/connector-forms',
                 version: '0.3.0',
-                pieceType: PieceType.OFFICIAL,
+                connectorType: ConnectorType.OFFICIAL,
                 packageType: PackageType.REGISTRY,
             })
-            await db.save('piece_metadata', mockPiece)
-            await pieceCache(mockLog).setup()
+            await db.save('connector_metadata', mockConnector)
+            await connectorCache(mockLog).setup()
 
             const mockFlow = createMockFlow({
                 projectId: ctx.project.id,
@@ -151,10 +151,10 @@ describe('Human Input API', () => {
                 flowId: mockFlow.id,
                 state: FlowVersionState.LOCKED,
                 trigger: {
-                    type: FlowTriggerType.PIECE,
+                    type: FlowTriggerType.CONNECTOR,
                     settings: {
-                        pieceName: '@fema/connector-forms',
-                        pieceVersion: '0.3.0',
+                        connectorName: '@fema/connector-forms',
+                        connectorVersion: '0.3.0',
                         triggerName: 'chat_submission',
                         input: {
                             botName: 'Test Bot',

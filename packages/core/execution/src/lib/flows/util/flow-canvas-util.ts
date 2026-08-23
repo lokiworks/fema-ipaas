@@ -1,4 +1,4 @@
-import { CodeAction, FlowAction, FlowActionType, PieceAction } from '../actions/action'
+import { CodeAction, FlowAction, FlowActionType, ConnectorAction } from '../actions/action'
 import { FlowTrigger } from '../triggers/trigger'
 import { flowStructureUtil } from './flow-structure-util'
 
@@ -169,14 +169,14 @@ function positionBranchedChildren({ children, offsetX, offsetY, positions }: {
     return FLOW_CANVAS_STEP_HEIGHT + FLOW_CANVAS_ROUTER_VOFFSET + maxChildHeight + FLOW_CANVAS_ARC + FLOW_CANVAS_VSPACE
 }
 
-function hasContinueOnFailureBranches(step: Step | FlowAction): step is CodeAction | PieceAction {
-    if (step.type !== FlowActionType.CODE && step.type !== FlowActionType.PIECE) {
+function hasContinueOnFailureBranches(step: Step | FlowAction): step is CodeAction | ConnectorAction {
+    if (step.type !== FlowActionType.CODE && step.type !== FlowActionType.CONNECTOR) {
         return false
     }
     return step.settings.errorHandlingOptions?.continueOnFailure?.value ?? false
 }
 
-function getContinueOnFailureBranchPair(step: CodeAction | PieceAction): (FlowAction | undefined)[] {
+function getContinueOnFailureBranchPair(step: CodeAction | ConnectorAction): (FlowAction | undefined)[] {
     const branches = step.continueOnFailureBranches
     return [branches?.onSuccess, branches?.onFailure]
 }

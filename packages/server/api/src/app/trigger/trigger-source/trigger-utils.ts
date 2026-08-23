@@ -2,72 +2,72 @@ import { TriggerBase } from '@fema/connector-sdk'
 import { ErrorCode, isNil, PlatformError, ProjectId } from '@fema/core-utils'
 import { FlowTriggerType, FlowVersion } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
-import { pieceMetadataService } from '../../pieces/metadata/piece-metadata-service'
+import { connectorMetadataService } from '../../connectors/metadata/connector-metadata-service'
 import { projectService } from '../../project/project-service'
 
 export const triggerUtils = (log: FastifyBaseLogger) => ({
-    async getPieceTriggerOrThrow({ flowVersion, projectId }: GetPieceTriggerOrThrowParams): Promise<TriggerBase> {
+    async getConnectorTriggerOrThrow({ flowVersion, projectId }: GetConnectorTriggerOrThrowParams): Promise<TriggerBase> {
 
-        const pieceTrigger = await this.getPieceTrigger({
+        const connectorTrigger = await this.getConnectorTrigger({
             flowVersion,
             projectId,
 
         })
-        if (isNil(pieceTrigger)) {
+        if (isNil(connectorTrigger)) {
             throw new PlatformError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
-                    entityType: 'piece_trigger',
+                    entityType: 'connector_trigger',
                     entityId: flowVersion.trigger.settings.triggerName,
-                    message: `Trigger not found for piece ${flowVersion.trigger.settings.pieceName}@${flowVersion.trigger.settings.pieceVersion}`,
+                    message: `Trigger not found for connector ${flowVersion.trigger.settings.connectorName}@${flowVersion.trigger.settings.connectorVersion}`,
                     extra: {
-                        pieceName: flowVersion.trigger.settings.pieceName,
-                        pieceVersion: flowVersion.trigger.settings.pieceVersion,
+                        connectorName: flowVersion.trigger.settings.connectorName,
+                        connectorVersion: flowVersion.trigger.settings.connectorVersion,
                         triggerName: flowVersion.trigger.settings.triggerName,
                     },
                 },
             })
         }
-        return pieceTrigger
+        return connectorTrigger
     },
-    async getPieceTrigger({ flowVersion, projectId }: GetPieceTriggerOrThrowParams): Promise<TriggerBase | null> {
-        if (flowVersion.trigger.type !== FlowTriggerType.PIECE) {
+    async getConnectorTrigger({ flowVersion, projectId }: GetConnectorTriggerOrThrowParams): Promise<TriggerBase | null> {
+        if (flowVersion.trigger.type !== FlowTriggerType.CONNECTOR) {
             return null
         }
-        const { pieceName, pieceVersion, triggerName } = flowVersion.trigger.settings
+        const { connectorName, connectorVersion, triggerName } = flowVersion.trigger.settings
         if (isNil(triggerName)) {
             return null
         }
-        return this.getPieceTriggerByName({
-            pieceName,
-            pieceVersion,
+        return this.getConnectorTriggerByName({
+            connectorName,
+            connectorVersion,
             triggerName,
             projectId,
         })
     },
-    async getPieceTriggerByName({ pieceName, pieceVersion, triggerName, projectId }: GetPieceTriggerByNameParams): Promise<TriggerBase | null> {
+    async getConnectorTriggerByName({ connectorName, connectorVersion, triggerName, projectId }: GetConnectorTriggerByNameParams): Promise<TriggerBase | null> {
         const platformId = await projectService(log).getPlatformId(projectId)
-        const piece = await pieceMetadataService(log).get({
+        const connector = await connectorMetadataService(log).get({
             platformId,
-            name: pieceName,
-            version: pieceVersion,
+            name: connectorName,
+            version: connectorVersion,
         })
-        if (isNil(piece) || isNil(triggerName)) {
+        if (isNil(connector) || isNil(triggerName)) {
             return null
         }
-        const pieceTrigger = piece.triggers[triggerName]
-        return pieceTrigger
+        const connectorTrigger = connector.triggers[triggerName]
+        return connectorTrigger
     },
 })
 
-type GetPieceTriggerByNameParams = {
-    pieceName: string
-    pieceVersion: string
+type GetConnectorTriggerByNameParams = {
+    connectorName: string
+    connectorVersion: string
     triggerName: string
     projectId: ProjectId
 }
 
-type GetPieceTriggerOrThrowParams = {
+type GetConnectorTriggerOrThrowParams = {
     flowVersion: FlowVersion
     projectId: ProjectId
 }

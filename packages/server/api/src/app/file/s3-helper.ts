@@ -163,12 +163,12 @@ export const s3Helper = (log: FastifyBaseLogger) => ({
     async validateS3Configuration(): Promise<void> {
         const client = getS3Client()
         const bucketName = getS3BucketName()
-        const testKey = `activepieces-${apId()}-validation-test-key`
+        const testKey = `fema-${apId()}-validation-test-key`
 
         await client.putObject({
             Bucket: bucketName,
             Key: testKey,
-            Body: 'activepieces-test',
+            Body: 'fema-test',
         })
 
         await client.headObject({

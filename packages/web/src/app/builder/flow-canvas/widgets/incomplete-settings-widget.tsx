@@ -17,13 +17,13 @@ import { flowCanvasUtils } from '../utils/flow-canvas-utils';
 type IncompleteSettingsButtonProps = {
   flowVersion: FlowVersion;
   selectStepByName: BuilderState['selectStepByName'];
-  setOpenedPieceSelectorStepNameOrAddButtonId: BuilderState['setOpenedPieceSelectorStepNameOrAddButtonId'];
+  setOpenedConnectorSelectorStepNameOrAddButtonId: BuilderState['setOpenedConnectorSelectorStepNameOrAddButtonId'];
 };
 
 const IncompleteSettingsButton: React.FC<IncompleteSettingsButtonProps> = ({
   flowVersion,
   selectStepByName,
-  setOpenedPieceSelectorStepNameOrAddButtonId,
+  setOpenedConnectorSelectorStepNameOrAddButtonId,
 }) => {
   const invalidSteps = useMemo(
     () =>
@@ -41,7 +41,7 @@ const IncompleteSettingsButton: React.FC<IncompleteSettingsButtonProps> = ({
       const stepToFocus = invalidSteps[0];
       selectStepByName(stepToFocus.name);
       if (stepToFocus.type === FlowTriggerType.EMPTY) {
-        setOpenedPieceSelectorStepNameOrAddButtonId(stepToFocus.name);
+        setOpenedConnectorSelectorStepNameOrAddButtonId(stepToFocus.name);
       }
       fitView(flowCanvasUtils.createFocusStepInGraphParams(stepToFocus.name));
     }

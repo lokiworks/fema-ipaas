@@ -1,17 +1,17 @@
 import { unique } from '@fema/core-utils'
 import { type ApLogger, fileSystemUtils, wideEvent } from '@fema/server-utils'
-import { PiecePackage } from '@fema/shared'
+import { ConnectorPackage } from '@fema/shared'
 import { CodeArtifact, SandboxSettings } from '../types'
 import { actionRunCache } from './action-run-cache'
 import { cacheUtils } from './cache-paths'
+import { connectorInstaller } from './connectors/connector-installer'
 import { engineInstaller } from './engine/engine-installer'
 import { codeBuilder } from './flow/code/code-builder'
 import { codeCache } from './flow/code/code-cache'
-import { pieceInstaller } from './pieces/piece-installer'
 
 export const localExecutionCache = (log: ApLogger, basePath: string, getSettings: () => SandboxSettings) => ({
     async provision({
-        pieces,
+        connectors,
         codeSteps,
         publicApiUrl,
         engineToken,
@@ -47,21 +47,21 @@ export const localExecutionCache = (log: ApLogger, basePath: string, getSettings
                     },
                 })
 
-                const uniquePieces = unique(pieces)
-                if (uniquePieces.length > 0) {
+                const uniqueConnectors = unique(connectors)
+                if (uniqueConnectors.length > 0) {
                     await wideEvent.timed({
-                        name: 'installPieces',
+                        name: 'installConnectors',
                         fn: async () => {
-                            await pieceInstaller(log, basePath, getSettings).install({
-                                pieces: uniquePieces,
+                            await connectorInstaller(log, basePath, getSettings).install({
+                                connectors: uniqueConnectors,
                                 includeFilters: true,
                                 publicApiUrl,
                                 engineToken,
                             })
                             log.info({
-                                pieces: uniquePieces.map(p => `${p.pieceName}@${p.pieceVersion}`),
+                                connectors: uniqueConnectors.map(p => `${p.connectorName}@${p.connectorVersion}`),
                                 path: commonPath,
-                            }, 'Installed pieces in sandbox')
+                            }, 'Installed connectors in sandbox')
                         },
                     })
                 }
@@ -110,7 +110,7 @@ type InstallCodeStepParams = {
 }
 
 type ProvisionParams = {
-    pieces: PiecePackage[]
+    connectors: ConnectorPackage[]
     codeSteps: CodeArtifact[]
     publicApiUrl: string
     engineToken: string

@@ -323,13 +323,13 @@ export class InitialSchema1787465061531 implements MigrationInterface {
                 "type" character varying NOT NULL,
                 "status" character varying NOT NULL DEFAULT 'ACTIVE',
                 "platformId" character varying NOT NULL,
-                "pieceName" character varying NOT NULL,
+                "connectorName" character varying NOT NULL,
                 "ownerId" character varying,
                 "projectIds" character varying array NOT NULL,
                 "scope" character varying NOT NULL,
                 "value" jsonb NOT NULL,
                 "metadata" jsonb,
-                "pieceVersion" character varying NOT NULL,
+                "connectorVersion" character varying NOT NULL,
                 "preSelectForNewProjects" boolean NOT NULL DEFAULT false,
                 CONSTRAINT "PK_9efa2d6633ecc57cc5adeafa039" PRIMARY KEY ("id")
             )
@@ -380,7 +380,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             WHERE "externalId" IS NOT NULL
         `)
         await queryRunner.query(`
-            CREATE TABLE "piece_metadata" (
+            CREATE TABLE "connector_metadata" (
                 "id" character varying(21) NOT NULL,
                 "created" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
                 "updated" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -397,7 +397,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
                 "auth" json,
                 "actions" json NOT NULL,
                 "triggers" json NOT NULL,
-                "pieceType" character varying NOT NULL,
+                "connectorType" character varying NOT NULL,
                 "categories" character varying array,
                 "deprecated" boolean,
                 "packageType" character varying NOT NULL,
@@ -408,7 +408,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             )
         `)
         await queryRunner.query(`
-            CREATE UNIQUE INDEX "idx_piece_metadata_name_platform_id_version" ON "piece_metadata" ("name", "version", "platformId")
+            CREATE UNIQUE INDEX "idx_connector_metadata_name_platform_id_version" ON "connector_metadata" ("name", "version", "platformId")
         `)
         await queryRunner.query(`
             CREATE TABLE "platform" (
@@ -431,8 +431,8 @@ export class InitialSchema1787465061531 implements MigrationInterface {
                 "enforceAllowedAuthDomains" boolean NOT NULL,
                 "emailAuthEnabled" boolean NOT NULL,
                 "federatedAuthProviders" jsonb NOT NULL,
-                "pinnedPieces" character varying array NOT NULL,
-                "pieceSelectorConfig" jsonb,
+                "pinnedConnectors" character varying array NOT NULL,
+                "connectorSelectorConfig" jsonb,
                 CONSTRAINT "REL_94d6fd6494f0322c6f0e099141" UNIQUE ("ownerId"),
                 CONSTRAINT "PK_c33d6abeebd214bd2850bfd6b8e" PRIMARY KEY ("id")
             )
@@ -494,8 +494,8 @@ export class InitialSchema1787465061531 implements MigrationInterface {
                 "projectId" character varying NOT NULL,
                 "type" character varying NOT NULL,
                 "schedule" jsonb,
-                "pieceName" character varying NOT NULL,
-                "pieceVersion" character varying NOT NULL,
+                "connectorName" character varying NOT NULL,
+                "connectorVersion" character varying NOT NULL,
                 "simulate" boolean NOT NULL,
                 CONSTRAINT "PK_aaccba5b6e8aa2f14f108504508" PRIMARY KEY ("id")
             )
@@ -578,12 +578,12 @@ export class InitialSchema1787465061531 implements MigrationInterface {
                 "metadata" jsonb,
                 "author" character varying NOT NULL,
                 "categories" character varying array NOT NULL,
-                "pieces" character varying array NOT NULL,
+                "connectors" character varying array NOT NULL,
                 CONSTRAINT "PK_fbae2ac36bd9b5e1e793b957b7f" PRIMARY KEY ("id")
             )
         `)
         await queryRunner.query(`
-            CREATE INDEX "idx_template_pieces" ON "template" ("pieces")
+            CREATE INDEX "idx_template_connectors" ON "template" ("connectors")
         `)
         await queryRunner.query(`
             CREATE INDEX "idx_template_categories" ON "template" ("categories")
@@ -683,8 +683,8 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             ADD CONSTRAINT "fk_folder_project" FOREIGN KEY ("projectId") REFERENCES "project"("id") ON DELETE CASCADE ON UPDATE NO ACTION
         `)
         await queryRunner.query(`
-            ALTER TABLE "piece_metadata"
-            ADD CONSTRAINT "fk_piece_metadata_file" FOREIGN KEY ("archiveId") REFERENCES "file"("id") ON DELETE RESTRICT ON UPDATE RESTRICT
+            ALTER TABLE "connector_metadata"
+            ADD CONSTRAINT "fk_connector_metadata_file" FOREIGN KEY ("archiveId") REFERENCES "file"("id") ON DELETE RESTRICT ON UPDATE RESTRICT
         `)
         await queryRunner.query(`
             ALTER TABLE "platform"
@@ -742,7 +742,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             ALTER TABLE "platform" DROP CONSTRAINT "fk_platform_user"
         `)
         await queryRunner.query(`
-            ALTER TABLE "piece_metadata" DROP CONSTRAINT "fk_piece_metadata_file"
+            ALTER TABLE "connector_metadata" DROP CONSTRAINT "fk_connector_metadata_file"
         `)
         await queryRunner.query(`
             ALTER TABLE "folder" DROP CONSTRAINT "fk_folder_project"
@@ -814,7 +814,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             DROP INDEX "public"."idx_template_categories"
         `)
         await queryRunner.query(`
-            DROP INDEX "public"."idx_template_pieces"
+            DROP INDEX "public"."idx_template_connectors"
         `)
         await queryRunner.query(`
             DROP TABLE "template"
@@ -871,10 +871,10 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             DROP TABLE "platform"
         `)
         await queryRunner.query(`
-            DROP INDEX "public"."idx_piece_metadata_name_platform_id_version"
+            DROP INDEX "public"."idx_connector_metadata_name_platform_id_version"
         `)
         await queryRunner.query(`
-            DROP TABLE "piece_metadata"
+            DROP TABLE "connector_metadata"
         `)
         await queryRunner.query(`
             DROP INDEX "public"."idx_folder_project_id_external_id"

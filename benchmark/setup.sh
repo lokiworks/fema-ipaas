@@ -19,16 +19,16 @@ for i in $(seq 1 $MAX_RETRIES); do
   sleep $RETRY_INTERVAL
 done
 
-# Wait for webhook piece to be synced (pieces sync from cloud in batches)
-echo "Waiting for webhook piece to be available..." >&2
+# Wait for webhook connector to be synced (connectors sync from cloud in batches)
+echo "Waiting for webhook connector to be available..." >&2
 for i in $(seq 1 300); do
-  HAS_WEBHOOK=$(curl -sf "$BASE_URL/pieces" 2>/dev/null | jq '[.[].name] | any(. == "@fema/connector-webhook")' 2>/dev/null || echo "false")
+  HAS_WEBHOOK=$(curl -sf "$BASE_URL/connectors" 2>/dev/null | jq '[.[].name] | any(. == "@fema/connector-webhook")' 2>/dev/null || echo "false")
   if [ "$HAS_WEBHOOK" = "true" ]; then
-    echo "Webhook piece is available (took ${i}s)" >&2
+    echo "Webhook connector is available (took ${i}s)" >&2
     break
   fi
   if [ "$i" -eq 300 ]; then
-    echo "ERROR: Webhook piece not available after 300s" >&2
+    echo "ERROR: Webhook connector not available after 300s" >&2
     exit 1
   fi
   sleep 1
@@ -135,10 +135,10 @@ IMPORT_PAYLOAD=$(jq -n \
         name: "trigger",
         valid: true,
         displayName: "Catch Webhook",
-        type: "PIECE_TRIGGER",
+        type: "CONNECTOR_TRIGGER",
         settings: {
-          pieceName: "@fema/connector-webhook",
-          pieceVersion: $webhookV,
+          connectorName: "@fema/connector-webhook",
+          connectorVersion: $webhookV,
           triggerName: "catch_webhook",
           input: { authType: "none", authFields: {} },
           propertySettings: {
@@ -153,13 +153,13 @@ IMPORT_PAYLOAD=$(jq -n \
         nextAction: {
           name: "step_3",
           skip: false,
-          type: "PIECE",
+          type: "CONNECTOR",
           valid: true,
           settings: {
             input: { first_number: 2, second_number: 3 },
-            pieceName: "@fema/connector-math-helper",
+            connectorName: "@fema/connector-math-helper",
             actionName: "addition_math",
-            pieceVersion: $mathV,
+            connectorVersion: $mathV,
             sampleData: {},
             propertySettings: {
               first_number: { type: "MANUAL" },
@@ -189,7 +189,7 @@ IMPORT_PAYLOAD=$(jq -n \
             nextAction: {
               name: "step_1",
               skip: false,
-              type: "PIECE",
+              type: "CONNECTOR",
               valid: true,
               settings: {
                 input: {
@@ -197,10 +197,10 @@ IMPORT_PAYLOAD=$(jq -n \
                   respond: "stop",
                   responseType: "json"
                 },
-                pieceName: "@fema/connector-webhook",
+                connectorName: "@fema/connector-webhook",
                 actionName: "return_response",
                 sampleData: {},
-                pieceVersion: $webhookV,
+                connectorVersion: $webhookV,
                 propertySettings: {
                   fields: {
                     type: "MANUAL",

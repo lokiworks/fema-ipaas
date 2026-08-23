@@ -12,9 +12,9 @@ Certain apps like Slack and Square only support one webhook per OAuth2 app. This
 
 1. Visit the "Basic Information" section of your Slack OAuth settings.
 2. Copy the "Signing Secret" and save it.
-3. Set the following environment variable in your activepieces environment: 
+3. Set the following environment variable in your fema environment: 
     ```
-    FEMA_APP_WEBHOOK_SECRETS={"@activepieces/piece-slack": {"webhookSecret": "SIGNING_SECRET"}}
+    FEMA_APP_WEBHOOK_SECRETS={"@fema/connector-slack": {"webhookSecret": "SIGNING_SECRET"}}
     ```
 4. Restart your application instance.
 

@@ -51,7 +51,7 @@ function basePollingJob(overrides: Partial<PollingJobData> = {}): PollingJobData
         platformId: 'plat-1',
         flowVersionId: 'fv-1',
         flowId: 'flow-1',
-        triggerType: FlowTriggerType.PIECE,
+        triggerType: FlowTriggerType.CONNECTOR,
         ...overrides,
     }
 }
@@ -83,7 +83,7 @@ describe('jobMigrations v6 → v7 (dropLogsUploadUrl)', () => {
 
         expect(migrated.schemaVersion).toBe(LATEST)
         expect(migrated.jobType).toBe(WorkerJobType.EXECUTE_POLLING)
-        expect((migrated as PollingJobData).triggerType).toBe(FlowTriggerType.PIECE)
+        expect((migrated as PollingJobData).triggerType).toBe(FlowTriggerType.CONNECTOR)
     })
 
     it('is a no-op for jobs already at the latest schemaVersion', async () => {

@@ -1,6 +1,6 @@
 import {
   getAuthPropertyForValue,
-  PieceAuthProperty,
+  ConnectorAuthProperty,
 } from '@fema/connector-sdk';
 import { ApErrorParams, ErrorCode, isNil, SeekPage } from '@fema/core-utils';
 import {
@@ -329,7 +329,7 @@ type UseConnectionsProps = {
   extraKeys: any[];
   enabled?: boolean;
   staleTime?: number;
-  pieceAuth?: PieceAuthProperty | PieceAuthProperty[] | undefined;
+  connectorAuth?: ConnectorAuthProperty | ConnectorAuthProperty[] | undefined;
   showErrorDialog?: boolean;
 };
 
@@ -339,7 +339,7 @@ export const appConnectionsQueries = {
     extraKeys,
     enabled,
     staleTime,
-    pieceAuth,
+    connectorAuth,
     showErrorDialog,
   }: UseConnectionsProps) => {
     return useQuery({
@@ -349,7 +349,7 @@ export const appConnectionsQueries = {
         : undefined,
       queryFn: async () => {
         const connections = await appConnectionsApi.list(request);
-        if (pieceAuth) {
+        if (connectorAuth) {
           return {
             ...connections,
             data: connections.data.filter(
@@ -357,7 +357,7 @@ export const appConnectionsQueries = {
                 !isNil(
                   getAuthPropertyForValue({
                     authValueType: connection.type,
-                    pieceAuth,
+                    connectorAuth,
                   }),
                 ),
             ),
@@ -381,7 +381,7 @@ export const appConnectionsQueries = {
         displayName: sp.get('displayName') ?? undefined,
         ownerEmails: sp.getAll('owner'),
         status: sp.getAll('status') as AppConnectionStatus[],
-        pieceName: sp.get('pieceName') ?? undefined,
+        connectorName: sp.get('connectorName') ?? undefined,
       };
     }, [search]);
   },

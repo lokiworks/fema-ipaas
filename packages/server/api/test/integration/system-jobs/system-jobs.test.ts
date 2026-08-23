@@ -30,7 +30,7 @@ afterEach(async () => {
     const schedulers = await systemJobsQueue.getJobSchedulers()
     for (const s of schedulers) {
         const key = s.id ?? s.key
-        if (key.startsWith(TEST_PREFIX) || key.includes('::') || key === 'pieces-analytics') {
+        if (key.startsWith(TEST_PREFIX) || key.includes('::') || key === 'connectors-analytics') {
             await systemJobsQueue.removeJobScheduler(key).catch(() => { /* already removed */ })
         }
     }
@@ -171,36 +171,36 @@ describe('System Jobs', () => {
 
     it('should keep new-format schedulers while removing legacy ones', async () => {
         // Create a legacy scheduler (key contains ::)
-        const legacyKey = `${SystemJobName.PIECES_ANALYTICS}::0:UTC:0 12 * * *`
+        const legacyKey = `${SystemJobName.CONNECTORS_ANALYTICS}::0:UTC:0 12 * * *`
         await systemJobsQueue.upsertJobScheduler(legacyKey, {
             pattern: '0 12 * * *',
             tz: 'UTC',
         }, {
-            name: SystemJobName.PIECES_ANALYTICS,
+            name: SystemJobName.CONNECTORS_ANALYTICS,
             data: {} as never,
         })
 
         // Create a new-format scheduler (key is just the jobId, no ::)
-        await systemJobsQueue.upsertJobScheduler('pieces-analytics', {
+        await systemJobsQueue.upsertJobScheduler('connectors-analytics', {
             pattern: '0 12 * * *',
             tz: 'UTC',
         }, {
-            name: SystemJobName.PIECES_ANALYTICS,
+            name: SystemJobName.CONNECTORS_ANALYTICS,
             data: {} as never,
         })
 
         const before = await systemJobsQueue.getJobSchedulers()
-        const analyticsBefore = before.filter(s => s.name === SystemJobName.PIECES_ANALYTICS)
+        const analyticsBefore = before.filter(s => s.name === SystemJobName.CONNECTORS_ANALYTICS)
         expect(analyticsBefore.length).toBeGreaterThanOrEqual(2)
 
         await schedule.init()
 
         const after = await systemJobsQueue.getJobSchedulers()
         const legacyAfter = after.filter(
-            s => s.name === SystemJobName.PIECES_ANALYTICS && s.key.includes('::'),
+            s => s.name === SystemJobName.CONNECTORS_ANALYTICS && s.key.includes('::'),
         )
         const newAfter = after.filter(
-            s => s.name === SystemJobName.PIECES_ANALYTICS && !s.key.includes('::'),
+            s => s.name === SystemJobName.CONNECTORS_ANALYTICS && !s.key.includes('::'),
         )
         expect(legacyAfter).toHaveLength(0)
         expect(newAfter.length).toBeGreaterThanOrEqual(1)

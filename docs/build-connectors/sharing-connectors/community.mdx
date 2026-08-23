@@ -1,0 +1,32 @@
+---
+title: "Community (Public NPM)"
+description: "Learn how to publish your connector to the community."
+---
+
+You can publish your connectors to the npm registry and share them with the community. Users can install your connector from Settings -> My Connectors -> Install Connector -> type in the name of your connector package.
+
+<Steps>
+  <Step title="Login to npm">
+    Make sure you are logged in to npm. If not, please run:
+    ```bash
+    npm login
+    ```
+  </Step>
+  <Step title="Rename Connector">
+    Rename the connector name in `package.json` to something unique or related to your organization's scope (e.g., `@my-org/connector-CONNECTOR_NAME`). You can find it at `packages/connectors/CONNECTOR_NAME/package.json`.
+    <Tip>
+    Don't forget to increase the version number in `package.json` for each new release.
+    </Tip>
+  </Step>
+  <Step title="Publish">
+    <Tip>
+    Replace `CONNECTOR_FOLDER_NAME` with the name of the folder.
+    </Tip>
+    Run the following command:
+    ```bash
+    npm run publish-connector CONNECTOR_FOLDER_NAME
+    ```
+  </Step>
+</Steps>
+
+**Congratulations! You can now import the connector from the settings page.**

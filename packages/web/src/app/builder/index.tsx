@@ -20,7 +20,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from '@/components/ui/resizable-panel';
-import { piecesHooks } from '@/features/pieces';
+import { connectorsHooks } from '@/features/connectors';
 import { platformHooks } from '@/hooks/platform-hooks';
 import { useElementSize } from '@/hooks/use-element-size';
 import { cn } from '@/lib/utils';
@@ -82,12 +82,12 @@ const BuilderPage = () => {
     window.addEventListener('pointerup', handlePointerUp);
     return () => window.removeEventListener('pointerup', handlePointerUp);
   }, []);
-  const isSplitForPiece =
-    rightSidebar === RightSideBarType.PIECE_SETTINGS &&
+  const isSplitForConnector =
+    rightSidebar === RightSideBarType.CONNECTOR_SETTINGS &&
     stepDataPanelView === 'split' &&
     isStepDataPanelOpen;
   const prefersSplitLayout =
-    rightSidebar === RightSideBarType.PIECE_SETTINGS &&
+    rightSidebar === RightSideBarType.CONNECTOR_SETTINGS &&
     stepDataPanelView === 'split';
 
   const rightHandleRef = useRef<PanelImperativeHandle>(null);
@@ -113,7 +113,7 @@ const BuilderPage = () => {
   }, [prefersSplitLayout, previousRightSidebar, rightSidebar]);
 
   useEffect(() => {
-    if (!isSplitForPiece || !isDraggingHandle) return;
+    if (!isSplitForConnector || !isDraggingHandle) return;
     const el = rightSidePanelRef.current;
     if (!el) return;
     const observer = new ResizeObserver((entries) => {
@@ -126,23 +126,23 @@ const BuilderPage = () => {
     observer.observe(el);
     return () => observer.disconnect();
   }, [
-    isSplitForPiece,
+    isSplitForConnector,
     isDraggingHandle,
     setStepDataPanelView,
     setStepDataPanelOpen,
   ]);
   const {
-    pieceModel,
-    isNotFound: pieceModelNotFound,
-    refetch: refetchPiece,
-  } = piecesHooks.usePieceModelForStepSettings({
-    name: selectedStep?.settings.pieceName,
-    version: selectedStep?.settings.pieceVersion,
+    connectorModel,
+    isNotFound: connectorModelNotFound,
+    refetch: refetchConnector,
+  } = connectorsHooks.useConnectorModelForStepSettings({
+    name: selectedStep?.settings.connectorName,
+    version: selectedStep?.settings.connectorVersion,
     enabled:
-      selectedStep?.type === FlowActionType.PIECE ||
-      selectedStep?.type === FlowTriggerType.PIECE,
+      selectedStep?.type === FlowActionType.CONNECTOR ||
+      selectedStep?.type === FlowTriggerType.CONNECTOR,
   });
-  flowCanvasHooks.useSetSocketListener(refetchPiece);
+  flowCanvasHooks.useSetSocketListener(refetchConnector);
   flowCanvasHooks.useListenToExistingRun();
 
   const [hasCanvasBeenInitialised, setHasCanvasBeenInitialised] =
@@ -220,16 +220,16 @@ const BuilderPage = () => {
           }}
         >
           <div ref={rightSidePanelRef} className="h-full w-full">
-            {rightSidebar === RightSideBarType.PIECE_SETTINGS &&
+            {rightSidebar === RightSideBarType.CONNECTOR_SETTINGS &&
               selectedStep && (
                 <StepSettingsProvider
-                  pieceModel={pieceModel}
-                  pieceModelNotFound={pieceModelNotFound}
+                  connectorModel={connectorModel}
+                  connectorModelNotFound={connectorModelNotFound}
                   selectedStep={selectedStep}
                   key={constructContainerKey({
                     flowVersionId: flowVersion.id,
                     step: selectedStep,
-                    hasPieceModelLoaded: !!pieceModel,
+                    hasConnectorModelLoaded: !!connectorModel,
                   })}
                 >
                   <StepSettingsContainer />
@@ -250,33 +250,35 @@ export { BuilderPage };
 function constructContainerKey({
   flowVersionId,
   step,
-  hasPieceModelLoaded,
+  hasConnectorModelLoaded,
 }: {
   flowVersionId: string;
   step?: FlowAction | FlowTrigger;
-  hasPieceModelLoaded: boolean;
+  hasConnectorModelLoaded: boolean;
 }) {
   const stepName = step?.name;
   const triggerOrActionName =
-    step?.type === FlowTriggerType.PIECE
+    step?.type === FlowTriggerType.CONNECTOR
       ? step?.settings.triggerName
       : step?.settings.actionName;
-  const pieceName =
-    step?.type === FlowTriggerType.PIECE || step?.type === FlowActionType.PIECE
-      ? step?.settings.pieceName
+  const connectorName =
+    step?.type === FlowTriggerType.CONNECTOR ||
+    step?.type === FlowActionType.CONNECTOR
+      ? step?.settings.connectorName
       : undefined;
-  const pieceVersion =
-    step?.type === FlowTriggerType.PIECE || step?.type === FlowActionType.PIECE
-      ? step?.settings.pieceVersion
+  const connectorVersion =
+    step?.type === FlowTriggerType.CONNECTOR ||
+    step?.type === FlowActionType.CONNECTOR
+      ? step?.settings.connectorVersion
       : undefined;
   //we need to re-render the step settings form when the step is skipped, so when the user edits the settings after setting it to skipped the changes are reflected in the update request
   const isSkipped =
     step?.type != FlowTriggerType.EMPTY &&
-    step?.type != FlowTriggerType.PIECE &&
+    step?.type != FlowTriggerType.CONNECTOR &&
     step?.skip;
   return `${flowVersionId}-${stepName ?? ''}-${triggerOrActionName ?? ''}-${
-    pieceName ?? ''
-  }-${pieceVersion ?? ''}-${'skipped-' + !!isSkipped}-${
-    hasPieceModelLoaded ? 'loaded' : 'not-loaded'
+    connectorName ?? ''
+  }-${connectorVersion ?? ''}-${'skipped-' + !!isSkipped}-${
+    hasConnectorModelLoaded ? 'loaded' : 'not-loaded'
   }`;
 }

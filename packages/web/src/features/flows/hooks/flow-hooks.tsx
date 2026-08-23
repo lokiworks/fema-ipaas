@@ -24,11 +24,11 @@ import { useApErrorDialogStore } from '@/components/custom/ap-error-dialog/ap-er
 import { useSocket } from '@/components/providers/socket-provider';
 import { useTelemetry } from '@/components/providers/telemetry-provider';
 import { internalErrorToast } from '@/components/ui/sonner';
+import { connectorsApi } from '@/features/connectors/api/connectors-api';
+import { connectorSelectorUtils } from '@/features/connectors/utils/connector-selector-utils';
+import { stepUtils } from '@/features/connectors/utils/step-utils';
 import { flowRunsApi } from '@/features/flow-runs/api/flow-runs-api';
 import { foldersApi } from '@/features/folders/api/folders-api';
-import { piecesApi } from '@/features/pieces/api/pieces-api';
-import { pieceSelectorUtils } from '@/features/pieces/utils/piece-selector-utils';
-import { stepUtils } from '@/features/pieces/utils/step-utils';
 import { templatesApi } from '@/features/templates/api/templates-api';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { api } from '@/lib/api';
@@ -134,7 +134,7 @@ export const flowHooks = {
             description: (
               <p>
                 {t(
-                  'An error occurred while changing the flow status. This may be due to an issue in the trigger piece or its settings.',
+                  'An error occurred while changing the flow status. This may be due to an issue in the trigger connector or its settings.',
                 )}
               </p>
             ),
@@ -236,20 +236,20 @@ export const flowHooks = {
           projectId: authenticationSession.getProjectId()!,
           displayName: t('Untitled'),
         });
-        const mcpPiece = await piecesApi.get({
+        const mcpConnector = await connectorsApi.get({
           name: '@fema/connector-mcp',
         });
-        const trigger = mcpPiece.triggers['mcp_tool'];
+        const trigger = mcpConnector.triggers['mcp_tool'];
         if (!trigger) {
           throw new Error('MCP trigger not found');
         }
-        const stepData = pieceSelectorUtils.getDefaultStepValues({
+        const stepData = connectorSelectorUtils.getDefaultStepValues({
           stepName: 'trigger',
-          pieceSelectorItem: {
+          connectorSelectorItem: {
             actionOrTrigger: trigger,
-            type: FlowTriggerType.PIECE,
-            pieceMetadata: stepUtils.mapPieceToMetadata({
-              piece: mcpPiece,
+            type: FlowTriggerType.CONNECTOR,
+            connectorMetadata: stepUtils.mapConnectorToMetadata({
+              connector: mcpConnector,
               type: 'trigger',
             }),
           },

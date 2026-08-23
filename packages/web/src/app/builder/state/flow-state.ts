@@ -14,12 +14,12 @@ import { QueryClient } from '@tanstack/react-query';
 import { StoreApi } from 'zustand';
 
 import { RightSideBarType } from '@/app/builder/types';
-import { flowsApi, sampleDataHooks } from '@/features/flows';
 import {
-  PieceSelectorItem,
-  PieceSelectorOperation,
-  pieceSelectorUtils,
-} from '@/features/pieces';
+  ConnectorSelectorItem,
+  ConnectorSelectorOperation,
+  connectorSelectorUtils,
+} from '@/features/connectors';
+import { flowsApi, sampleDataHooks } from '@/features/flows';
 import { PromiseQueue } from '@/lib/promise-queue';
 
 import { BuilderState } from '../builder-hooks';
@@ -65,8 +65,8 @@ export type FlowState = {
     (flowVersion: FlowVersion, operation: FlowOperationRequest) => void
   >;
   handleAddingOrUpdatingStep: (props: {
-    pieceSelectorItem: PieceSelectorItem;
-    operation: PieceSelectorOperation;
+    connectorSelectorItem: ConnectorSelectorItem;
+    operation: ConnectorSelectorOperation;
     overrideSettings?: StepSettings;
     selectStepAfter: boolean;
     customLogoUrl?: string;
@@ -278,7 +278,7 @@ export const createFlowState = (
           flowVersion.state === FlowVersionState.LOCKED,
         rightSidebar:
           initiallySelectedStep && !isEmptyTriggerInitiallySelected
-            ? RightSideBarType.PIECE_SETTINGS
+            ? RightSideBarType.CONNECTOR_SETTINGS
             : RightSideBarType.NONE,
         selectedBranchIndex: null,
       }));
@@ -305,7 +305,7 @@ export const createFlowState = (
         ),
       })),
     handleAddingOrUpdatingStep: ({
-      pieceSelectorItem,
+      connectorSelectorItem,
       operation,
       overrideSettings,
       selectStepAfter,
@@ -315,20 +315,20 @@ export const createFlowState = (
         applyOperation,
         selectStepByName,
         flowVersion,
-        setOpenedPieceSelectorStepNameOrAddButtonId,
+        setOpenedConnectorSelectorStepNameOrAddButtonId,
         removeStepTestListener,
       } = get();
-      const defaultValues = pieceSelectorUtils.getDefaultStepValues({
-        stepName: pieceSelectorUtils.getStepNameFromOperationType(
+      const defaultValues = connectorSelectorUtils.getDefaultStepValues({
+        stepName: connectorSelectorUtils.getStepNameFromOperationType(
           operation,
           flowVersion,
         ),
-        pieceSelectorItem,
+        connectorSelectorItem,
         overrideDefaultSettings: overrideSettings,
         customLogoUrl,
       });
       const isTrigger =
-        defaultValues.type === FlowTriggerType.PIECE ||
+        defaultValues.type === FlowTriggerType.CONNECTOR ||
         defaultValues.type === FlowTriggerType.EMPTY;
       switch (operation.type) {
         case FlowOperationType.UPDATE_TRIGGER: {
@@ -338,7 +338,7 @@ export const createFlowState = (
           if (flowVersion.trigger.type === FlowTriggerType.EMPTY) {
             set(() => {
               return {
-                rightSidebar: RightSideBarType.PIECE_SETTINGS,
+                rightSidebar: RightSideBarType.CONNECTOR_SETTINGS,
               };
             });
           }
@@ -415,7 +415,7 @@ export const createFlowState = (
           break;
         }
       }
-      setOpenedPieceSelectorStepNameOrAddButtonId(null);
+      setOpenedConnectorSelectorStepNameOrAddButtonId(null);
       return defaultValues.name;
     },
   };

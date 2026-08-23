@@ -15,9 +15,9 @@ export const executeTokenRefreshJob: JobHandler<ExecuteTokenRefreshJobData, Sync
     async execute(ctx: JobContext, data: ExecuteTokenRefreshJobData): Promise<SynchronousJobResult> {
         const timeoutInSeconds = workerSettings.getSettings().TRIGGER_TIMEOUT_SECONDS
 
-        const resolved = await ctx.resolver.resolve({ platformId: data.platformId, publicApiUrl: ctx.publicApiUrl, engineToken: ctx.engineToken, pieces: [data.piece] })
+        const resolved = await ctx.resolver.resolve({ platformId: data.platformId, publicApiUrl: ctx.publicApiUrl, engineToken: ctx.engineToken, connectors: [data.connector] })
         if (resolved.kind !== 'ready') {
-            throw new Error(`Unexpected resolve outcome "${resolved.kind}" for piece-only job`)
+            throw new Error(`Unexpected resolve outcome "${resolved.kind}" for connector-only job`)
         }
 
         try {
@@ -26,7 +26,7 @@ export const executeTokenRefreshJob: JobHandler<ExecuteTokenRefreshJobData, Sync
                 log: ctx.log,
                 operationType: EngineOperationType.EXECUTE_REFRESH_TOKEN_AUTH,
                 operation: {
-                    piece: data.piece,
+                    connector: data.connector,
                     auth: data.connectionValue as AppConnectionValue,
                     platformId: data.platformId,
                     engineToken: ctx.engineToken,

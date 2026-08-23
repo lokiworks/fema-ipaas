@@ -1,14 +1,14 @@
 import { FlowRunStatus } from '@fema/shared'
 import { FlowExecutorContext } from '../../src/lib/handler/context/flow-execution-context'
 import { flowExecutor } from '../../src/lib/handler/flow-executor'
-import { buildPieceAction, generateMockEngineConstants } from './test-helper'
+import { buildConnectorAction, generateMockEngineConstants } from './test-helper'
 
-const failedHttpAction = buildPieceAction({
+const failedHttpAction = buildConnectorAction({
     name: 'send_http',
-    pieceName: '@fema/connector-http',
+    connectorName: '@fema/connector-http',
     actionName: 'send_request',
     input: {
-        'url': 'https://cloud.activepieces.com/api/v1/asd',
+        'url': `${process.env.FEMA_TEST_FIXTURE_URL}/api/v1/asd`,
         'method': 'GET',
         'headers': {},
         'body_type': 'none', 
@@ -17,12 +17,12 @@ const failedHttpAction = buildPieceAction({
     },
 })
 
-const successHttpAction =  buildPieceAction({
+const successHttpAction =  buildConnectorAction({
     name: 'send_http',
-    pieceName: '@fema/connector-http',
+    connectorName: '@fema/connector-http',
     actionName: 'send_request',
     input: {
-        'url': 'https://cloud.activepieces.com/api/v1/pieces',
+        'url': `${process.env.FEMA_TEST_FIXTURE_URL}/api/v1/ok`,
         'method': 'GET',
         'headers': {},
         'body_type': 'none', 

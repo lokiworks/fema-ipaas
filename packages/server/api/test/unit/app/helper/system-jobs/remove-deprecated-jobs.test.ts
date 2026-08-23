@@ -48,8 +48,8 @@ describe('removeDeprecatedJobs', () => {
         await seedQueue.add('usage-report', {}, { repeat: { pattern: '0 * * * *', tz: 'UTC' } })
         await seedQueue.upsertJobScheduler('trial-tracker', { pattern: '0 * * * *', tz: 'UTC' }, { name: 'trial-tracker', data: {} })
         await seedQueue.add('issue-reminder', {}, { jobId: 'issue-reminder-one-off', delay: 60_000 })
-        await seedQueue.add('bundle-piece', { name: '@fema/connector-slack', version: '1.0.0' }, { jobId: 'bundle-piece:@fema/connector-slack:1.0.0', delay: 60_000 })
-        await seedQueue.upsertJobScheduler(SystemJobName.PIECES_ANALYTICS, { pattern: '0 * * * *', tz: 'UTC' }, { name: SystemJobName.PIECES_ANALYTICS, data: {} })
+        await seedQueue.add('bundle-connector', { name: '@fema/connector-slack', version: '1.0.0' }, { jobId: 'bundle-connector:@fema/connector-slack:1.0.0', delay: 60_000 })
+        await seedQueue.upsertJobScheduler(SystemJobName.CONNECTORS_ANALYTICS, { pattern: '0 * * * *', tz: 'UTC' }, { name: SystemJobName.CONNECTORS_ANALYTICS, data: {} })
 
         await systemJobsSchedule(log).init()
 
@@ -57,7 +57,7 @@ describe('removeDeprecatedJobs', () => {
         const jobNames = (await seedQueue.getJobs()).map(job => job.name)
 
         expect(loggedErrors).toHaveLength(0)
-        expect(schedulerNames).toEqual([SystemJobName.PIECES_ANALYTICS])
-        expect(jobNames).toEqual([SystemJobName.PIECES_ANALYTICS])
+        expect(schedulerNames).toEqual([SystemJobName.CONNECTORS_ANALYTICS])
+        expect(jobNames).toEqual([SystemJobName.CONNECTORS_ANALYTICS])
     })
 })

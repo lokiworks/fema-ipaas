@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "fema.fullname" . }}
+  labels:
+    {{- include "fema.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+    - port: 3000
+      targetPort: 3000
+      protocol: TCP
+      name: api
+  selector:
+    {{- include "fema.selectorLabels" . | nindent 4 }}
+{{- if ne (.Values.workloadType | default "rollout") "statefulset" }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "fema.fullname" . }}-preview
+  labels:
+    {{- include "fema.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+    - port: 3000
+      targetPort: 3000
+      protocol: TCP
+      name: api
+  selector:
+    {{- include "fema.selectorLabels" . | nindent 4 }}
+{{- end }}

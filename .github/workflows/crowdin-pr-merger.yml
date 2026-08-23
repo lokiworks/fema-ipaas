@@ -63,7 +63,7 @@ jobs:
       - name: Run Node.js script
         run: |
           echo "Running Node.js script..."
-          npm run bump-translated-pieces
+          npm run bump-translated-connectors
       
       - name: Check for changes and commit
         id: check-changes
@@ -80,7 +80,7 @@ jobs:
             git add .
             
             # Commit with a descriptive message
-            git commit -m "chore: auto bump translated pieces"
+            git commit -m "chore: auto bump translated connectors"
             
             # Push changes back to the PR branch
             git push origin HEAD:${{ github.event.pull_request.head.ref }}

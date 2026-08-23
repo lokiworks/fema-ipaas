@@ -21,7 +21,7 @@ FEMA_API_KEY=<key> npx @fema/cli benchmark --url https://your-instance.example.c
 
 | Option | Default | Description |
 |---|---|---|
-| `--url` | `http://localhost:3000` | Activepieces base URL (dev env API port) |
+| `--url` | `http://localhost:3000` | FEMA Integration Platform base URL (dev env API port) |
 | `--requests` | `40 × concurrency` | Total requests to fire |
 | `--concurrency` | auto = execution slots | Concurrent connections |
 | `--api-key` | `FEMA_API_KEY` env | Platform-admin API key (Bearer) |

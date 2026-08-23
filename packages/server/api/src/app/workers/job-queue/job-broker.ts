@@ -248,7 +248,7 @@ export const jobBroker = (log: FastifyBaseLogger) => ({
         const { error } = await tryCatch(async () => {
             if (input.status === EngineResponseStatus.INTERNAL_ERROR) {
                 if (userJobData) {
-                    // User-interaction jobs (piece-metadata extraction, validation, property/auth, trigger
+                    // User-interaction jobs (connector-metadata extraction, validation, property/auth, trigger
                     // hooks) are synchronous request/response — the caller awaits the result with a timeout.
                     // Return the error to that caller and COMPLETE the job instead of moving it to failed: the
                     // exponential-backoff retry only fires long after the caller has timed out, so it serves no

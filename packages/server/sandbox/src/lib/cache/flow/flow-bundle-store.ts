@@ -1,7 +1,7 @@
 import path from 'node:path'
 import { isNil, tryCatch, tryCatchSync } from '@fema/core-utils'
 import { type ApLogger } from '@fema/server-utils'
-import { FlowVersion, GetFlowBundleResponse, LATEST_FLOW_SCHEMA_VERSION, PiecePackage, WorkerToApiContract } from '@fema/shared'
+import { ConnectorPackage, FlowVersion, GetFlowBundleResponse, LATEST_FLOW_SCHEMA_VERSION, WorkerToApiContract } from '@fema/shared'
 import { bundleHttp } from '../../utils/bundle-http'
 import { cacheUtils } from '../cache-paths'
 import { cacheState } from '../cache-state'
@@ -46,16 +46,16 @@ export const flowBundleStore = (log: ApLogger, apiClient: WorkerToApiContract, b
             skipSave: (value) => value === MISS,
         })
         const manifest = parseManifest(state)
-        return isNil(manifest) ? null : { flowVersion: manifest.flowVersion, pieces: manifest.pieces }
+        return isNil(manifest) ? null : { flowVersion: manifest.flowVersion, connectors: manifest.connectors }
     },
 
-    async publish({ flowVersion, pieces, projectId, platformId }: PublishParams): Promise<void> {
+    async publish({ flowVersion, connectors, projectId, platformId }: PublishParams): Promise<void> {
         const codes = codeCache(cacheUtils(basePath).getGlobalCodeCachePath())
         const compiledSteps = await Promise.all(flowSteps.code(flowVersion).map(async ({ name: stepName }) => ({
             stepName,
             compiledJs: await codes.readCompiledStep({ flowVersionId: flowVersion.id, stepName }),
         })))
-        const manifest: FlowBundleManifest = { flowVersion, pieces, codes: compiledSteps }
+        const manifest: FlowBundleManifest = { flowVersion, connectors, codes: compiledSteps }
         const data = Buffer.from(JSON.stringify(manifest), 'utf8')
         const prepared = await apiClient.prepareFlowBundleUpload({
             flowVersionId: flowVersion.id,
@@ -111,7 +111,7 @@ type TryFetchParams = {
 
 type PublishParams = {
     flowVersion: FlowVersion
-    pieces: PiecePackage[]
+    connectors: ConnectorPackage[]
     projectId: string
     platformId: string
 }
@@ -123,12 +123,12 @@ type MaterializeCodeParams = {
 
 type MaterializedFlowBundle = {
     flowVersion: FlowVersion
-    pieces: PiecePackage[]
+    connectors: ConnectorPackage[]
 }
 
 type FlowBundleManifest = {
     flowVersion: FlowVersion
-    pieces: PiecePackage[]
+    connectors: ConnectorPackage[]
     codes: CompiledCodeStep[]
 }
 

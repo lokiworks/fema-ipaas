@@ -15,7 +15,7 @@
         "../utils/dist/index.d.ts"
       ],
       "@fema/connector-types": [
-        "../piece-types/dist/index.d.ts"
+        "../connector-types/dist/index.d.ts"
       ]
     }
   },

@@ -1,9 +1,9 @@
 ---
 title: "Railway"
-description: "Deploy Activepieces to the cloud in minutes using Railway's one-click template"
+description: "Deploy FEMA Integration Platform to the cloud in minutes using Railway's one-click template"
 ---
 
-Railway simplifies your infrastructure stack from servers to observability with a single, scalable, easy-to-use platform. With Railway's one-click deployment, you can get Activepieces up and running in minutes without managing servers, databases, or infrastructure.
+Railway simplifies your infrastructure stack from servers to observability with a single, scalable, easy-to-use platform. With Railway's one-click deployment, you can get FEMA Integration Platform up and running in minutes without managing servers, databases, or infrastructure.
 
 <a href="https://railway.com/deploy/kGEO1J" target="_blank">
   <img alt="Deploy on Railway" src="https://railway.app/button.svg" />
@@ -11,9 +11,9 @@ Railway simplifies your infrastructure stack from servers to observability with 
 
 ## What Gets Deployed
 
-The Railway template deploys Activepieces with the following components:
+The Railway template deploys FEMA Integration Platform with the following components:
 
-- **Activepieces Application**: The main Activepieces container running the latest version from [Docker Hub](https://hub.docker.com/r/lokiworks/fema-ipaas)
+- **FEMA Integration Platform Application**: The main FEMA Integration Platform container running the latest version from [Docker Hub](https://hub.docker.com/r/lokiworks/fema-ipaas)
 - **PostgreSQL Database**: Managed PostgreSQL database for storing flows, executions, and application data
 - **Redis Cache**: Redis instance for job queuing and caching (optional, can use in-memory cache)
 - **Automatic SSL**: Railway provides automatic HTTPS with SSL certificates
@@ -32,13 +32,13 @@ Before deploying, ensure you have:
 2. **Configure environment variables for advanced usage** (see [Configuration](#configuration) below)
 3. **Deploy** - Railway will automatically provision resources and start your instance
 
-Once deployed, Railway will provide you with a public URL where your Activepieces instance is accessible.
+Once deployed, Railway will provide you with a public URL where your FEMA Integration Platform instance is accessible.
 
 ## Configuration
 
 ### Environment Variables
 
-Railway allows you to configure Activepieces through environment variables. You can set these in the Railway dashboard under your project's **Variables** tab.
+Railway allows you to configure FEMA Integration Platform through environment variables. You can set these in the Railway dashboard under your project's **Variables** tab.
 
 #### Execution Mode
 
@@ -74,16 +74,16 @@ Before deploying to production, review these important points:
 
 ## Observability
 
-Railway provides built-in observability features for Activepieces. You can view logs and metrics in the Railway dashboard.
+Railway provides built-in observability features for FEMA Integration Platform. You can view logs and metrics in the Railway dashboard.
 
 ## Upgrading
 
-To upgrade to a new version of Activepieces on Railway:
+To upgrade to a new version of FEMA Integration Platform on Railway:
 
 1. Go to your Railway project dashboard
 2. Navigate to **Deployments**
 3. Click **Redeploy** on the latest deployment
-4. Railway will pull the latest Activepieces image and redeploy
+4. Railway will pull the latest FEMA Integration Platform image and redeploy
 
 <Warning>
 Before upgrading, review the [Breaking Changes](/install/reference/breaking-changes) documentation to ensure compatibility with your flows and configuration.
@@ -91,18 +91,18 @@ Before upgrading, review the [Breaking Changes](/install/reference/breaking-chan
 
 ## Next Steps
 
-After deploying Activepieces on Railway:
+After deploying FEMA Integration Platform on Railway:
 
 1. **Access your instance** using the Railway-provided URL
 2. **Create your first flow** - see [Building Flows](/flows/building-flows)
 3. **Configure webhooks** - see [Setup App Webhooks](/install/configure-operate/setup-app-webhooks)
-4. **Explore pieces** - browse available integrations in the piece library
+4. **Explore connectors** - browse available integrations in the connector library
 
 ## Additional Resources
 
 - [Troubleshooting](/install/troubleshooting/websocket-issues): Troubleshooting guide
 - [Configuration Guide](/install/configure-operate/production-setup): Comprehensive configuration documentation
 - [Environment Variables](/install/reference/environment-variables): Complete list of configuration options
-- [Architecture Overview](/install/architecture/overview): Understand Activepieces architecture
+- [Architecture Overview](/install/architecture/overview): Understand FEMA Integration Platform architecture
 - [Railway Documentation](https://docs.railway.app/): Official Railway platform documentation
 

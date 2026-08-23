@@ -2,7 +2,7 @@ import { EngineResponseStatus, FlowTriggerType, FlowVersion, FlowVersionState, L
 import { describe, expect, it, vi } from 'vitest'
 import { recordTriggerRun } from '../../../../src/lib/execute/utils/trigger-run-recorder'
 
-function buildPieceFlowVersion(pieceName: string): FlowVersion {
+function buildConnectorFlowVersion(connectorName: string): FlowVersion {
     return {
         id: 'fv1',
         created: '2026-01-01T00:00:00.000Z',
@@ -19,13 +19,13 @@ function buildPieceFlowVersion(pieceName: string): FlowVersion {
         notes: [],
         trigger: {
             name: 'trigger',
-            type: FlowTriggerType.PIECE,
+            type: FlowTriggerType.CONNECTOR,
             displayName: 'Trigger',
             valid: true,
             lastUpdatedDate: '2026-01-01T00:00:00.000Z',
             settings: {
-                pieceName,
-                pieceVersion: '0.0.1',
+                connectorName,
+                connectorVersion: '0.0.1',
                 propertySettings: {},
                 input: {},
             },
@@ -40,24 +40,24 @@ describe('recordTriggerRun', () => {
         const recordTriggerRunRpc = vi.fn(async () => undefined)
         const apiClient = { recordTriggerRun: recordTriggerRunRpc } as unknown as WorkerToApiContract
 
-        await recordTriggerRun({ apiClient, log, flowVersion: buildPieceFlowVersion('@fema/connector-slack'), platformId: 'p1', status: EngineResponseStatus.OK })
+        await recordTriggerRun({ apiClient, log, flowVersion: buildConnectorFlowVersion('@fema/connector-slack'), platformId: 'p1', status: EngineResponseStatus.OK })
 
-        expect(recordTriggerRunRpc).toHaveBeenCalledWith({ platformId: 'p1', pieceName: '@fema/connector-slack', status: TriggerRunStatus.COMPLETED })
+        expect(recordTriggerRunRpc).toHaveBeenCalledWith({ platformId: 'p1', connectorName: '@fema/connector-slack', status: TriggerRunStatus.COMPLETED })
     })
 
     it('maps non-OK statuses to FAILED', async () => {
         const recordTriggerRunRpc = vi.fn(async () => undefined)
         const apiClient = { recordTriggerRun: recordTriggerRunRpc } as unknown as WorkerToApiContract
 
-        await recordTriggerRun({ apiClient, log, flowVersion: buildPieceFlowVersion('@fema/connector-slack'), platformId: 'p1', status: EngineResponseStatus.INTERNAL_ERROR })
+        await recordTriggerRun({ apiClient, log, flowVersion: buildConnectorFlowVersion('@fema/connector-slack'), platformId: 'p1', status: EngineResponseStatus.INTERNAL_ERROR })
 
-        expect(recordTriggerRunRpc).toHaveBeenCalledWith({ platformId: 'p1', pieceName: '@fema/connector-slack', status: TriggerRunStatus.FAILED })
+        expect(recordTriggerRunRpc).toHaveBeenCalledWith({ platformId: 'p1', connectorName: '@fema/connector-slack', status: TriggerRunStatus.FAILED })
     })
 
-    it('skips non-piece triggers', async () => {
+    it('skips non-connector triggers', async () => {
         const recordTriggerRunRpc = vi.fn(async () => undefined)
         const apiClient = { recordTriggerRun: recordTriggerRunRpc } as unknown as WorkerToApiContract
-        const emptyTriggerFlowVersion = { ...buildPieceFlowVersion('@fema/connector-slack'), trigger: { type: FlowTriggerType.EMPTY, settings: {} } } as unknown as FlowVersion
+        const emptyTriggerFlowVersion = { ...buildConnectorFlowVersion('@fema/connector-slack'), trigger: { type: FlowTriggerType.EMPTY, settings: {} } } as unknown as FlowVersion
 
         await recordTriggerRun({ apiClient, log, flowVersion: emptyTriggerFlowVersion, platformId: 'p1', status: EngineResponseStatus.OK })
 
@@ -70,6 +70,6 @@ describe('recordTriggerRun', () => {
         })
         const apiClient = { recordTriggerRun: recordTriggerRunRpc } as unknown as WorkerToApiContract
 
-        await expect(recordTriggerRun({ apiClient, log, flowVersion: buildPieceFlowVersion('@fema/connector-slack'), platformId: 'p1', status: EngineResponseStatus.OK })).resolves.toBeUndefined()
+        await expect(recordTriggerRun({ apiClient, log, flowVersion: buildConnectorFlowVersion('@fema/connector-slack'), platformId: 'p1', status: EngineResponseStatus.OK })).resolves.toBeUndefined()
     })
 })

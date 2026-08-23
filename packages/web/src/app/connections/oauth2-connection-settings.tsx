@@ -1,8 +1,8 @@
 import {
   OAuth2Property,
   OAuth2Props,
-  PieceMetadataModel,
-  PieceMetadataModelSummary,
+  ConnectorMetadataModel,
+  ConnectorMetadataModelSummary,
 } from '@fema/connector-sdk';
 import { isNil } from '@fema/core-utils';
 import {
@@ -45,12 +45,12 @@ import { flagsHooks } from '@/hooks/flags-hooks';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
 
-import { GenericPropertiesForm } from '../builder/piece-properties/generic-properties-form';
+import { GenericPropertiesForm } from '../builder/connector-properties/generic-properties-form';
 
 function OAuth2ConnectionSettings({
   authProperty,
   oauth2App,
-  piece,
+  connector,
   grantType,
 }: OAuth2ConnectionSettingsProps) {
   const form = useFormContext<{
@@ -78,7 +78,7 @@ function OAuth2ConnectionSettings({
   );
   const redirectUrl =
     oauth2App.oauth2Type === AppConnectionType.CLOUD_OAUTH2
-      ? 'https://secrets.activepieces.com/redirect'
+      ? 'https://secrets.fema.local/redirect'
       : thirdPartyUrl ?? 'no_redirect_url_found';
 
   const showRedirectUrlInput =
@@ -247,9 +247,9 @@ function OAuth2ConnectionSettings({
                 </FormControl>
                 <div className="border border-solid p-2 rounded-lg gap-2 flex text-center items-center justify-center h-full">
                   <div className="rounded-full  border border-solid p-1 flex items-center justify-center">
-                    <img src={piece.logoUrl} className="w-5 h-5"></img>
+                    <img src={connector.logoUrl} className="w-5 h-5"></img>
                   </div>
-                  <div className="text-sm">{piece.displayName}</div>
+                  <div className="text-sm">{connector.displayName}</div>
                   <div className="grow"></div>
                   <Button
                     size={'sm'}
@@ -267,9 +267,9 @@ function OAuth2ConnectionSettings({
                           redirectUrl,
                           clientId: form.getValues().request.value.client_id,
                           props: form.getValues().request.value.props,
-                          pieceName: piece.name,
+                          connectorName: connector.name,
                           form,
-                          pieceVersion: piece.version,
+                          connectorVersion: connector.version,
                           scopes:
                             scopesList.length > 0 ? scopesList : undefined,
                           setLoading,
@@ -309,8 +309,8 @@ async function openPopup({
   redirectUrl,
   clientId,
   props,
-  pieceName,
-  pieceVersion,
+  connectorName,
+  connectorVersion,
   form,
   scopes,
   setLoading,
@@ -320,10 +320,10 @@ async function openPopup({
     setLoading(true);
     const formProjectId = form.getValues().request.projectId;
     const result = await appConnectionsApi.getOAuth2AuthorizationUrl({
-      pieceName,
+      connectorName,
       clientId,
       redirectUrl,
-      pieceVersion,
+      connectorVersion,
       props,
       projectId: formProjectId,
       scopes,
@@ -362,7 +362,7 @@ async function openPopup({
 }
 
 type OAuth2ConnectionSettingsProps = {
-  piece: PieceMetadataModelSummary | PieceMetadataModel;
+  connector: ConnectorMetadataModelSummary | ConnectorMetadataModel;
   authProperty: OAuth2Property<OAuth2Props>;
   oauth2App: OAuth2App;
   grantType: OAuth2GrantType;
@@ -372,8 +372,8 @@ type OpenPopupParams = {
   redirectUrl: string;
   clientId: string;
   props: Record<string, unknown> | undefined;
-  pieceName: string;
-  pieceVersion: string;
+  connectorName: string;
+  connectorVersion: string;
   scopes: string[] | undefined;
   form: UseFormReturn<{
     request:

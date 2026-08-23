@@ -55,7 +55,7 @@ const RESERVED = new Set(['timestamp', 'level', 'service', 'source', 'msg', 'con
 for (const event of events) {
     const ts = event.timestamp ?? ''
     const level = String(event.level ?? 'info').toUpperCase().padEnd(5)
-    const service = (event.source === 'client' ? 'web' : (event.service ?? 'unknown')).replace('activepieces-', '')
+    const service = (event.source === 'client' ? 'web' : (event.service ?? 'unknown')).replace('fema-', '')
     const rest = {}
     for (const [key, value] of Object.entries(event)) {
         if (!RESERVED.has(key)) rest[key] = value

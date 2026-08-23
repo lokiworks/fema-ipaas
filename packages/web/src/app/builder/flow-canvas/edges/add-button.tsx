@@ -3,7 +3,7 @@ import { isNil } from '@fema/core-utils';
 import { Plus } from 'lucide-react';
 import React, { useState } from 'react';
 
-import { PieceSelector } from '@/app/builder/pieces-selector';
+import { ConnectorSelector } from '@/app/builder/connectors-selector';
 import { cn } from '@/lib/utils';
 
 import { useBuilderStateContext } from '../../builder-hooks';
@@ -13,13 +13,17 @@ import { ApButtonData } from '../utils/types';
 
 const ApAddButton = React.memo((props: ApButtonData) => {
   const [isStepInsideDropZone, setIsStepInsideDropzone] = useState(false);
-  const [activeDraggingStep, readonly, isPieceSelectorOpen, canvasOrientation] =
-    useBuilderStateContext((state) => [
-      state.activeDraggingStep,
-      state.readonly,
-      state.openedPieceSelectorStepNameOrAddButtonId === props.edgeId,
-      state.canvasOrientation,
-    ]);
+  const [
+    activeDraggingStep,
+    readonly,
+    isConnectorSelectorOpen,
+    canvasOrientation,
+  ] = useBuilderStateContext((state) => [
+    state.activeDraggingStep,
+    state.readonly,
+    state.openedConnectorSelectorStepNameOrAddButtonId === props.edgeId,
+    state.canvasOrientation,
+  ]);
   const isHorizontal = canvasOrientation === 'horizontal';
 
   const { setNodeRef } = useDroppable({
@@ -82,7 +86,7 @@ const ApAddButton = React.memo((props: ApButtonData) => {
         </div>
       )}
       {!showDropIndicator && !readonly && (
-        <PieceSelector
+        <ConnectorSelector
           operation={flowCanvasUtils.createAddOperationFromAddButtonData(props)}
           id={props.edgeId}
         >
@@ -99,7 +103,7 @@ const ApAddButton = React.memo((props: ApButtonData) => {
                   flowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.height + 'px',
               }}
               className={cn('rounded-md cursor-pointer transition-all z-50', {
-                'shadow-add-button': isPieceSelectorOpen,
+                'shadow-add-button': isConnectorSelectorOpen,
               })}
             >
               <div
@@ -112,18 +116,18 @@ const ApAddButton = React.memo((props: ApButtonData) => {
                 className={cn(
                   'bg-background  border border-border border-solid relative group overflow-visible rounded-md cursor-pointer  flex items-center justify-center  transition-all duration-300 ease-in-out',
                   {
-                    'bg-primary border-primary': isPieceSelectorOpen,
+                    'bg-primary border-primary': isConnectorSelectorOpen,
                   },
                 )}
                 data-testid="add-action-button"
               >
-                {!isPieceSelectorOpen && (
+                {!isConnectorSelectorOpen && (
                   <Plus className="w-3 h-3 stroke-[3px] text-foreground" />
                 )}
               </div>
             </div>
           </div>
-        </PieceSelector>
+        </ConnectorSelector>
       )}
     </>
   );

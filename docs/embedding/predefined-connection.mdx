@@ -3,16 +3,16 @@ title: "Predefined Connection"
 icon: "Link"
 ---
 
-Use predefined connections to allow users to access your piece in the embedded app without re-entering authentication credentials.
+Use predefined connections to allow users to access your connector in the embedded app without re-entering authentication credentials.
 
 The high-level steps are:
 - Create a global connection for a project using the API in the platform admin. Only platform admins can edit or delete global connections.
-- (Optional) Hide the connections dropdown in the piece settings.
+- (Optional) Hide the connections dropdown in the connector settings.
 
 ### Prerequisites
 
 - [Run the Enterprise Edition](/handbook/engineering/playbooks/run-ee)
-- [Create your piece](/build-pieces/building-pieces/overview). Later we will customize the piece logic to use predefined connections.
+- [Create your connector](/build-connectors/building-connectors/overview). Later we will customize the connector logic to use predefined connections.
 
 ### Create a Predefined Connection
 
@@ -29,15 +29,15 @@ The high-level steps are:
         - Create a global connection for the project with certain naming convention.
 ```js
 const apiKey = 'YOUR_API_KEY';
-const instanceUrl = 'https://cloud.activepieces.com';
+const instanceUrl = 'https://github.com/lokiworks/fema-ipaas';
 
 // The name of the user / organization in your SAAS
 const externalProjectId = 'org_1234';
-const pieceName = '@activepieces/piece-gelato';
-// This will depend on what your piece auth type is, can be one of this ['PLATFORM_OAUTH2','SECRET_TEXT','BASIC_AUTH','CUSTOM_AUTH']
-const pieceAuthType = "CUSTOM_AUTH"
+const connectorName = '@fema/connector-gelato';
+// This will depend on what your connector auth type is, can be one of this ['PLATFORM_OAUTH2','SECRET_TEXT','BASIC_AUTH','CUSTOM_AUTH']
+const connectorAuthType = "CUSTOM_AUTH"
 const connectionProps = {
-    // Fill in the props required by your piece's auth
+    // Fill in the props required by your connector's auth
 }
 const { id: projectId, externalId } = await getOrCreateProject({
   projectExternalId: externalProjectId,
@@ -50,9 +50,9 @@ await createGlobalConnection({
   externalProjectId,
   apiKey,
   instanceUrl,
-  pieceName,
+  connectorName,
   props,
-  pieceAuthType
+  connectorAuthType
 });
 
 ```
@@ -119,17 +119,17 @@ async function createGlobalConnection({
     externalProjectId,
     apiKey,
     instanceUrl,
-    pieceName,
+    connectorName,
     props,
-    pieceAuthType
+    connectorAuthType
 }: {
     projectId: string,
     externalProjectId: string,
     apiKey: string,
     instanceUrl: string,
-    pieceName: string,
+    connectorName: string,
     props: Record<string, any>,
-    pieceAuthType
+    connectorAuthType
 }) {
 
     const displayName = 'Gelato Connection';
@@ -143,11 +143,11 @@ async function createGlobalConnection({
         },
         body: JSON.stringify({
             displayName,
-            pieceName,
+            connectorName,
             metadata: {},
-            type: pieceAuthType,
+            type: connectorAuthType,
             value: {
-                type: pieceAuthType,
+                type: connectorAuthType,
                 props
             },
             scope: 'PLATFORM',
@@ -165,7 +165,7 @@ async function createGlobalConnection({
 
 <Steps>
     <Step title="Modify Trigger / Action Definition">
-       Wherever you call `createTrigger` or `createAction` set `requireAuth` to `false`, this will hide the connections dropdown in the piece settings in the builder,
+       Wherever you call `createTrigger` or `createAction` set `requireAuth` to `false`, this will hide the connections dropdown in the connector settings in the builder,
        next we need to fetch it based on a naming convention.
     </Step>
     <Step title="Fetch the connection">
@@ -176,20 +176,20 @@ import {
    ConnectionsManager,
    Property,
    TriggerStrategy
-} from "@activepieces/pieces-framework";
+} from "@fema/connectors-framework";
 import {
    createTrigger
-} from "@activepieces/pieces-framework";
+} from "@fema/connectors-framework";
 import {
    isNil
-} from "@activepieces/shared";
+} from "@fema/shared";
 // Add this import from the index.ts file, where it contains the definition of the auth object.
 import { auth } from '../..';
 
 const fetchConnection = async (
 	connections: ConnectionsManager,
 	projectExternalId: string | undefined,
-): Promise<PiecePropValueSchema<typeof auth>> => {
+): Promise<ConnectorPropValueSchema<typeof auth>> => {
 	if (isNil(projectExternalId)) {
 		throw new Error('This project is missing an external id');
 	}
@@ -199,7 +199,7 @@ const fetchConnection = async (
 		throw new Error(`Connection not found for project ${projectExternalId}`);
 	}
 
-	return connection as PiecePropValueSchema<typeof auth>;
+	return connection as ConnectorPropValueSchema<typeof auth>;
 };
 
 

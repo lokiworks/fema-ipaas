@@ -47,7 +47,7 @@ const noopLog = createNoopLog()
 
 const getSettings = (): SandboxSettings => ({
     EXECUTION_MODE: ExecutionMode.SANDBOX_CODE_AND_PROCESS,
-    DEV_PIECES: [],
+    DEV_CONNECTORS: [],
     ENVIRONMENT: 'PRODUCTION',
     REUSE_SANDBOX: undefined,
     FLOW_TIMEOUT_SECONDS: 600,

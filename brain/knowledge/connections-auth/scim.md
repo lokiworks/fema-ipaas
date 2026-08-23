@@ -10,7 +10,7 @@ SCIM 2.0 provisioning: lets enterprise IdPs (Okta, Azure AD, Google Workspace) a
 - **SCIM User** → AP `User` + `UserIdentity` (new identities use `UserIdentityProvider.SAML`).
 - **SCIM Group** → AP `Project` with `type = TEAM` (personal projects excluded from listings).
 - `active` maps to `UserStatus.ACTIVE`/`INACTIVE`; `externalId` stored on the AP entity.
-- Custom extension schema `...activepieces:1.0:CustomUserAttributes` carries `platformRole`.
+- Custom extension schema `...fema:1.0:CustomUserAttributes` carries `platformRole`.
 
 ### How it works
 - Prefix `/v1/scim/v2`. Registers an `application/scim+json` content-type parser (most IdPs send SCIM+JSON).

@@ -32,7 +32,7 @@ export const refillPollingJobs = (log: FastifyBaseLogger) => ({
                         schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
                         flowVersionId: triggerSource.flowVersionId,
                         flowId: triggerSource.flowId,
-                        triggerType: FlowTriggerType.PIECE,
+                        triggerType: FlowTriggerType.CONNECTOR,
                         jobType: WorkerJobType.EXECUTE_POLLING,
                     },
                     scheduleOptions: triggerSource.schedule,

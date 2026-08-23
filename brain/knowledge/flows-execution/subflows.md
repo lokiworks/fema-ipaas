@@ -4,7 +4,7 @@ icon: 🪆
 
 # Subflows
 
-A **Subflow** is a flow invoked by another flow instead of by its own external trigger — a reusable function at flow granularity. The `@fema/connector-subflows` core piece supplies both halves: the **Callable Flow** trigger that makes a flow callable, and the actions a parent uses to reach it. A parent calls a subflow once (**Call Flow**, optionally waiting for a response through a waitpoint) or fans out many calls from one streaming step (**Stream CSV to Subflows**). The **Respond** action sends data back to a waiting parent. There is no dedicated transport: every call is a webhook `POST` to `/v1/webhooks/:flowId`.
+A **Subflow** is a flow invoked by another flow instead of by its own external trigger — a reusable function at flow granularity. The `@fema/connector-subflows` core connector supplies both halves: the **Callable Flow** trigger that makes a flow callable, and the actions a parent uses to reach it. A parent calls a subflow once (**Call Flow**, optionally waiting for a response through a waitpoint) or fans out many calls from one streaming step (**Stream CSV to Subflows**). The **Respond** action sends data back to a waiting parent. There is no dedicated transport: every call is a webhook `POST` to `/v1/webhooks/:flowId`.
 
 ### Entities & services
 No server entity of its own — subflows are ordinary flows plus two conventions on the webhook path.
@@ -18,8 +18,8 @@ No server entity of its own — subflows are ordinary flows plus two conventions
 ### How it works
 - **Call Flow**: resolves the target by `externalId` → POSTs `{ data, callbackUrl? }` to the subflow's production webhook. With wait-for-response it creates a `WEBHOOK` waitpoint, passes its resume URL as `callbackUrl`, and pauses until `Respond` calls back; the RESUME branch rethrows when the subflow answered `status: 'error'`. Without it the step returns as soon as the webhook is acknowledged.
 - **Stream CSV to Subflows**: input is a streaming `Property.File` (`streaming: true`, so it resolves to an `ApStreamingFile` and accepts a URL, an upload, or a previous step's file — a plain `Property.File` would materialize an `ApFile` Buffer before `run()` starts and OOM), a Callable Flow dropdown target, `batchSize` (default 100, capped at 10,000), delimiter (comma/tab) and optional `extraData` merged into every call.
-  - The action pipes `file.body` straight into a streaming `csv-parse` parser — the engine owns the fetch, so the piece carries no HTTP client.
-  - Parser construction lives in `subflows/csv.ts` (`createCsvParser`), pinned by `test/csv.test.ts`. Its `bom: true`, `relax_column_count: true` and `group_columns_by_name: true` are all load-bearing, not defensive — see the CSV gotchas in [building-pieces](../pieces-engine/building-pieces.md). Because of `group_columns_by_name`, a row value is `string | string[]`: duplicate header names arrive as an array rather than silently dropping a column.
+  - The action pipes `file.body` straight into a streaming `csv-parse` parser — the engine owns the fetch, so the connector carries no HTTP client.
+  - Parser construction lives in `subflows/csv.ts` (`createCsvParser`), pinned by `test/csv.test.ts`. Its `bom: true`, `relax_column_count: true` and `group_columns_by_name: true` are all load-bearing, not defensive — see the CSV gotchas in [building-connectors](../connectors-engine/building-connectors.md). Because of `group_columns_by_name`, a row value is `string | string[]`: duplicate header names arrive as an array rather than silently dropping a column.
   - Payload per call: `data = { batchIndex, headers, rows, extraData }`. Dispatch is fire-and-forget — no `callbackUrl`, `x-fail-parent-on-failure: false`. `extraData` is re-serialized into **every** batch, so a large `{{step.output}}` reference counts against the webhook `bodyLimit` independently of `batchSize`.
   - `fanOutBatches` bounds in-flight dispatches (5) and awaits `Promise.race` when the window is full, so parsing back-pressures instead of buffering the file.
   - Returns `{ headers, firstRow, rowsProcessed, batchesDispatched }`.
@@ -34,16 +34,16 @@ No server entity of its own — subflows are ordinary flows plus two conventions
 - The dropdown lists published flows carrying a Callable Flow trigger and labels disabled ones `(inactive)`; streaming to a disabled flow throws before the first request.
 
 ### Editions
-Community, Enterprise, Cloud — core piece, no plan flag.
+Community, Enterprise, Cloud — core connector, no plan flag.
 
 ### Key files
 Entry point: `streamCsvToSubflows.run`, which drives `fanOutBatches` over a streaming CSV parser.
 
-- `packages/pieces/core/subflows/src/index.ts` — piece definition
-- `packages/pieces/core/subflows/src/lib/actions/call-flow.ts` — Call Flow (one call, optional wait-for-response)
-- `packages/pieces/core/subflows/src/lib/actions/stream-csv-to-flow.ts` — Stream CSV to Subflows (streaming fan-out)
-- `packages/pieces/core/subflows/src/lib/actions/respond.ts` — Respond (subflow → parent)
-- `packages/pieces/core/subflows/src/lib/triggers/callable-flow.ts` — Callable Flow trigger
-- `packages/pieces/core/subflows/src/lib/fan-out.ts` — batching + bounded-concurrency dispatch loop, transport-agnostic
-- `packages/pieces/core/subflows/src/lib/common.ts` — flow dropdown, lookup helpers, request/response types
+- `packages/connectors/core/subflows/src/index.ts` — connector definition
+- `packages/connectors/core/subflows/src/lib/actions/call-flow.ts` — Call Flow (one call, optional wait-for-response)
+- `packages/connectors/core/subflows/src/lib/actions/stream-csv-to-flow.ts` — Stream CSV to Subflows (streaming fan-out)
+- `packages/connectors/core/subflows/src/lib/actions/respond.ts` — Respond (subflow → parent)
+- `packages/connectors/core/subflows/src/lib/triggers/callable-flow.ts` — Callable Flow trigger
+- `packages/connectors/core/subflows/src/lib/fan-out.ts` — batching + bounded-concurrency dispatch loop, transport-agnostic
+- `packages/connectors/core/subflows/src/lib/common.ts` — flow dropdown, lookup helpers, request/response types
 - `packages/server/api/src/app/webhooks/webhook-request-converter.ts` — `text/csv` in `BINARY_CONTENT_TYPE_PATTERNS`, parent-run headers

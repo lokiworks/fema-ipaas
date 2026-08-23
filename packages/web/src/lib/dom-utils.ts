@@ -4,7 +4,7 @@ export const isStepFileUrl = (json: unknown): json is string => {
   if (!json || typeof json !== 'string') {
     return false;
   }
-  // `/api/v1/step-files/` is an Activepieces-unique path, so the bare match is
+  // `/api/v1/step-files/` is an FEMA Integration Platform-unique path, so the bare match is
   // safe. `/api/v1/files/` (the unified storage route, GIT-1618) is a generic
   // REST shape a third-party output URL can also share — Pipedrive's own API is
   // literally `<domain>/api/v1/files/...`. So additionally require the signed

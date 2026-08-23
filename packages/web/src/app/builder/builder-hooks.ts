@@ -4,12 +4,12 @@ import { Socket } from 'socket.io-client';
 import { create, useStore } from 'zustand';
 
 import { CanvasState, createCanvasState } from './state/canvas-state';
+import {
+  createConnectorSelectorState,
+  ConnectorSelectorState,
+} from './state/connector-selector-state';
 import { createFlowState, FlowState } from './state/flow-state';
 import { createNotesState, NotesState } from './state/notes-state';
-import {
-  createPieceSelectorState,
-  PieceSelectorState,
-} from './state/piece-selector-state';
 import { createRunState, RunState } from './state/run-state';
 import { createStepFormState, StepFormState } from './state/step-form-state';
 
@@ -29,7 +29,7 @@ export function useBuilderStateContext<T>(
 }
 
 export type BuilderState = FlowState &
-  PieceSelectorState &
+  ConnectorSelectorState &
   RunState &
   CanvasState &
   StepFormState &
@@ -52,7 +52,7 @@ export type BuilderStore = ReturnType<typeof createBuilderStore>;
 export const createBuilderStore = (initialState: BuilderInitialState) =>
   create<BuilderState>((set, get) => {
     const flowState = createFlowState(initialState, get, set);
-    const pieceSelectorState = createPieceSelectorState(get, set);
+    const connectorSelectorState = createConnectorSelectorState(get, set);
     const runState = createRunState(initialState, get, set);
     const canvasState = createCanvasState(initialState, set);
     const stepFormState = createStepFormState(set);
@@ -61,7 +61,7 @@ export const createBuilderStore = (initialState: BuilderInitialState) =>
       ...flowState,
       ...notesState,
       ...runState,
-      ...pieceSelectorState,
+      ...connectorSelectorState,
       ...canvasState,
       ...stepFormState,
     };

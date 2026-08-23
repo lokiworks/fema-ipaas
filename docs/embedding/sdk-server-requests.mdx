@@ -1,12 +1,12 @@
 ---
 title: "API Requests"
-description: "Send requests to your Activepieces instance from the embedded app"
+description: "Send requests to your FEMA Integration Platform instance from the embedded app"
 icon: "server"
 ---
 
 <Info>
 **Requirements:**
-* Activepieces version 0.34.5 or higher
+* FEMA Integration Platform version 0.34.5 or higher
 * SDK version 0.3.6 or higher
 </Info>
 
@@ -25,7 +25,7 @@ You can use the embedded SDK to send requests to your instance and retrieve data
 
         ```html
         <script> 
-        activepieces.request({path:'/flows',method:'GET'}).then(console.log);
+        fema.request({path:'/flows',method:'GET'}).then(console.log);
         </script>
         ```
 

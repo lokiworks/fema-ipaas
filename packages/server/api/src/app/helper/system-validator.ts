@@ -1,6 +1,6 @@
 import { inspect } from 'util'
 import { isNil } from '@fema/core-utils'
-import { ApEnvironment, DefaultProjectRole, ExecutionMode, FileLocation, NetworkMode, PieceSyncMode } from '@fema/shared'
+import { ApEnvironment, ConnectorSyncMode, DefaultProjectRole, ExecutionMode, FileLocation, NetworkMode } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { DatabaseType } from '../database/database-type'
 import { RedisType } from '../database/redis/types'
@@ -103,12 +103,12 @@ const systemPropValidators: {
     [AppSystemProp.CLOUD_AUTH_ENABLED]: booleanValidator,
     [AppSystemProp.CONFIG_PATH]: stringValidator,
     [AppSystemProp.DB_TYPE]: enumValidator(Object.values(DatabaseType)),
-    [AppSystemProp.DEV_PIECES]: stringValidator,
+    [AppSystemProp.DEV_CONNECTORS]: stringValidator,
     [AppSystemProp.ENCRYPTION_KEY]: stringValidator,
     [AppSystemProp.EXECUTION_DATA_RETENTION_DAYS]: numberValidator,
     [AppSystemProp.JWT_SECRET]: stringValidator,
     [AppSystemProp.DEFAULT_CONCURRENT_JOBS_LIMIT]: numberValidator,
-    [AppSystemProp.PIECES_SYNC_MODE]: enumValidator(Object.values(PieceSyncMode)),
+    [AppSystemProp.CONNECTORS_SYNC_MODE]: enumValidator(Object.values(ConnectorSyncMode)),
     [AppSystemProp.POSTGRES_DATABASE]: stringValidator,
     [AppSystemProp.POSTGRES_HOST]: stringValidator,
     [AppSystemProp.POSTGRES_PASSWORD]: stringValidator,
@@ -157,7 +157,7 @@ const systemPropValidators: {
     [AppSystemProp.TOOL_SEARCH_ENABLED]: booleanValidator,
     [AppSystemProp.TRIGGER_DEFAULT_POLL_INTERVAL]: numberValidator,
     [AppSystemProp.WEBHOOK_TIMEOUT_SECONDS]: numberValidator,
-    [AppSystemProp.LOAD_TRANSLATIONS_FOR_DEV_PIECES]: booleanValidator,
+    [AppSystemProp.LOAD_TRANSLATIONS_FOR_DEV_CONNECTORS]: booleanValidator,
     [AppSystemProp.APPSUMO_TOKEN]: stringValidator,
     [AppSystemProp.AUTUMN_CONSOLE_URL]: urlValidator,
     [AppSystemProp.FILE_STORAGE_LOCATION]: enumValidator(Object.values(FileLocation)),
@@ -186,7 +186,7 @@ const systemPropValidators: {
     [AppSystemProp.MAX_FIELDS_PER_TABLE]: numberValidator,
 
     [AppSystemProp.ENABLE_FLOW_ON_PUBLISH]: booleanValidator,
-    [AppSystemProp.ENFORCE_CONNECTION_PIECE_BINDING]: booleanValidator,
+    [AppSystemProp.ENFORCE_CONNECTION_CONNECTOR_BINDING]: booleanValidator,
     [AppSystemProp.ISSUE_ARCHIVE_DAYS]: (value: string) => {
         const days = parseInt(value)
         if (isNaN(days) || days < 0) {
@@ -254,7 +254,7 @@ export const validateEnvPropsOnStartup = async (log: FastifyBaseLogger): Promise
             throw new Error(JSON.stringify({
                 error: inspect(error),
                 message: 'S3 validation failed. Check your configuration and credentials.',
-                docUrl: 'https://www.activepieces.com/docs/install/configuration/overview#configure-s3-optional',
+                docUrl: 'https://github.com/lokiworks/fema-ipaas/docs/install/configuration/overview#configure-s3-optional',
             }))
         }
     }
@@ -270,7 +270,7 @@ export const validateEnvPropsOnStartup = async (log: FastifyBaseLogger): Promise
     if (!isNil(codeSandboxType)) {
         throw new Error(JSON.stringify({
             message: 'FEMA_CODE_SANDBOX_TYPE is deprecated, please use FEMA_EXECUTION_MODE instead',
-            docUrl: 'https://www.activepieces.com/docs/install/configuration/overview',
+            docUrl: 'https://github.com/lokiworks/fema-ipaas/docs/install/configuration/overview',
         }))
     }
     const encryptionKey = await encryptUtils.getEncryptionKey()
@@ -278,7 +278,7 @@ export const validateEnvPropsOnStartup = async (log: FastifyBaseLogger): Promise
     if (!isValidHexKey) {
         throw new Error(JSON.stringify({
             message: 'FEMA_ENCRYPTION_KEY is missing or invalid. It must be a 32-character hexadecimal string (representing 16 bytes). You can generate one using the command: `openssl rand -hex 16`',
-            docUrl: 'https://www.activepieces.com/docs/install/configuration/environment-variables',
+            docUrl: 'https://github.com/lokiworks/fema-ipaas/docs/install/configuration/environment-variables',
         }))
     }
     const isApp = system.isApp()
@@ -296,7 +296,7 @@ export const validateEnvPropsOnStartup = async (log: FastifyBaseLogger): Promise
     if (isNil(jwtSecret)) {
         throw new Error(JSON.stringify({
             message: 'FEMA_JWT_SECRET is undefined, please define it in the environment variables',
-            docUrl: 'https://www.activepieces.com/docs/install/configuration/environment-variables',
+            docUrl: 'https://github.com/lokiworks/fema-ipaas/docs/install/configuration/environment-variables',
         }))
     }
 

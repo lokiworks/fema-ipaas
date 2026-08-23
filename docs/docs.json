@@ -1,7 +1,7 @@
 {
    "$schema": "https://mintlify.com/docs.json",
    "theme": "mint",
-   "name": "Activepieces",
+   "name": "FEMA Integration Platform",
    "colors": {
       "primary": "#9675FF",
       "light": "#9675FF",
@@ -14,14 +14,14 @@
             "href": "https://github.com/lokiworks/fema-ipaas"
          },
          {
-            "label": "Pieces",
-            "href": "https://www.activepieces.com/pieces"
+            "label": "Connectors",
+            "href": "https://github.com/lokiworks/fema-ipaas/connectors"
          }
       ],
       "primary": {
          "type": "button",
          "label": "Get Started",
-         "href": "https://www.activepieces.com/plans"
+         "href": "https://github.com/lokiworks/fema-ipaas/plans"
       }
    },
    "redirects": [
@@ -142,7 +142,7 @@
                   "group": "Guides",
                   "pages": [
                     "admin-guide/guides/structure-projects",
-                    "admin-guide/guides/manage-pieces",
+                    "admin-guide/guides/manage-connectors",
                     "admin-guide/guides/sso",
                   {
                      "group": "SCIM",
@@ -292,7 +292,7 @@
                      "install/architecture/durable-execution",
                      "install/architecture/waitpoints",
                      "install/architecture/network-security",
-                     "install/architecture/piece-syncing",
+                     "install/architecture/connector-syncing",
                      "install/architecture/benchmark",
                      "install/architecture/latency",
                      "install/architecture/autoscaling"
@@ -315,7 +315,7 @@
                {
                   "group": "Misc",
                   "pages": [
-                     "embedding/customize-pieces",
+                     "embedding/customize-connectors",
                      "embedding/embed-connections",
                      "embedding/embeddable-mcp",
                      "embedding/navigation",
@@ -327,73 +327,73 @@
             ]
          },
          {
-            "tab": "Build Pieces",
-            "description": "Learn how to build, test, and publish your own custom pieces in Activepieces.",
+            "tab": "Build Connectors",
+            "description": "Learn how to build, test, and publish your own custom connectors in FEMA Integration Platform.",
             "groups": [
                {
-                  "group": "Build a Piece",
+                  "group": "Build a Connector",
                   "pages": [
-                     "build-pieces/building-pieces/overview",
-                     "build-pieces/building-pieces/start-building",
-                     "build-pieces/building-pieces/setup-fork",
-                     "build-pieces/building-pieces/development-setup",
-                     "build-pieces/building-pieces/piece-definition",
-                     "build-pieces/building-pieces/piece-authentication",
-                     "build-pieces/building-pieces/create-action",
-                     "build-pieces/building-pieces/create-trigger",
+                     "build-connectors/building-connectors/overview",
+                     "build-connectors/building-connectors/start-building",
+                     "build-connectors/building-connectors/setup-fork",
+                     "build-connectors/building-connectors/development-setup",
+                     "build-connectors/building-connectors/connector-definition",
+                     "build-connectors/building-connectors/connector-authentication",
+                     "build-connectors/building-connectors/create-action",
+                     "build-connectors/building-connectors/create-trigger",
                      {
-                        "group": "Sharing Pieces",
+                        "group": "Sharing Connectors",
                         "icon": "circle-7",
                         "pages": [
-                           "build-pieces/sharing-pieces/overview",
-                           "build-pieces/sharing-pieces/contribute",
-                           "build-pieces/sharing-pieces/community",
-                           "build-pieces/sharing-pieces/private"
+                           "build-connectors/sharing-connectors/overview",
+                           "build-connectors/sharing-connectors/contribute",
+                           "build-connectors/sharing-connectors/community",
+                           "build-connectors/sharing-connectors/private"
                         ]
                      }
                   ]
                },
                {
-                  "group": "Piece Reference",
+                  "group": "Connector Reference",
                   "pages": [
-                     "build-pieces/piece-reference/authentication",
+                     "build-connectors/connector-reference/authentication",
                      {
                         "group": "Triggers",
                         "icon": "bolt",
                         "pages": [
-                           "build-pieces/piece-reference/triggers/overview",
-                           "build-pieces/piece-reference/triggers/polling-trigger",
-                           "build-pieces/piece-reference/triggers/webhook-trigger"
+                           "build-connectors/connector-reference/triggers/overview",
+                           "build-connectors/connector-reference/triggers/polling-trigger",
+                           "build-connectors/connector-reference/triggers/webhook-trigger"
                         ]
                      },
-                     "build-pieces/piece-reference/properties",
-                     "build-pieces/piece-reference/properties-validation",
-                     "build-pieces/piece-reference/flow-control",
-                     "build-pieces/piece-reference/persistent-storage",
-                     "build-pieces/piece-reference/files",
-                     "build-pieces/piece-reference/large-file-streaming",
-                     "build-pieces/piece-reference/external-libraries",
-                     "build-pieces/piece-reference/piece-versioning",
-                     "build-pieces/piece-reference/examples",
-                     "build-pieces/piece-reference/custom-api-calls",
-                     "build-pieces/piece-reference/output-schema",
-                     "build-pieces/piece-reference/ai-metadata",
-                     "build-pieces/piece-reference/i18n"
+                     "build-connectors/connector-reference/properties",
+                     "build-connectors/connector-reference/properties-validation",
+                     "build-connectors/connector-reference/flow-control",
+                     "build-connectors/connector-reference/persistent-storage",
+                     "build-connectors/connector-reference/files",
+                     "build-connectors/connector-reference/large-file-streaming",
+                     "build-connectors/connector-reference/external-libraries",
+                     "build-connectors/connector-reference/connector-versioning",
+                     "build-connectors/connector-reference/examples",
+                     "build-connectors/connector-reference/custom-api-calls",
+                     "build-connectors/connector-reference/output-schema",
+                     "build-connectors/connector-reference/ai-metadata",
+                     "build-connectors/connector-reference/i18n"
                   ]
                },
                {
                   "group": "Misc",
                   "pages": [
-                     "build-pieces/misc/build-piece",
-                     "build-pieces/misc/bundling-pieces",
-                     "build-pieces/misc/publish-piece",
-                     "build-pieces/misc/pieces-ci-cd",
-                     "build-pieces/misc/migrate-nx-to-turbo",
-                     "build-pieces/misc/migrate-pieces-to-bundles",
-                     "build-pieces/misc/private-fork",
-                     "build-pieces/misc/testing-pieces",
-                     "build-pieces/misc/dev-container",
-                     "build-pieces/misc/codespaces"
+                     "build-connectors/misc/build-connector",
+                     "build-connectors/misc/bundling-connectors",
+                     "build-connectors/misc/publish-connector",
+                     "build-connectors/misc/connectors-ci-cd",
+                     "build-connectors/misc/migrate-nx-to-turbo",
+                     "build-connectors/misc/migrate-connectors-to-bundles",
+                     "build-connectors/misc/private-fork",
+                     "build-connectors/misc/testing-connectors",
+                     "build-connectors/misc/dev-container",
+                     "build-connectors/misc/codespaces"
                   ]
                }
             ]
@@ -490,11 +490,11 @@
                         ]
                      },
                      {
-                        "group": "Pieces",
+                        "group": "Connectors",
                         "icon": "plug",
                         "pages": [
-                           "endpoints/pieces/schema",
-                           "endpoints/pieces/install"
+                           "endpoints/connectors/schema",
+                           "endpoints/connectors/install"
                         ]
                      },
                      {
@@ -655,7 +655,7 @@
    "logo": {
       "light": "./resources/logo/light.svg",
       "dark": "./resources/logo/dark.svg",
-      "href": "https://www.activepieces.com"
+      "href": "https://github.com/lokiworks/fema-ipaas"
    },
    "api": {
       "openapi": [
@@ -664,9 +664,9 @@
    },
    "footer": {
       "socials": {
-         "x": "https://x.com/activepieces",
+         "x": "https://x.com/fema",
          "github": "https://github.com/lokiworks/fema-ipaas",
-         "linkedin": "https://linkedin.com/company/activepieces"
+         "linkedin": "https://linkedin.com/company/fema"
       }
    }
 }

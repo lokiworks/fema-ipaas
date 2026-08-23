@@ -1,6 +1,6 @@
 ---
 name: debug-failed-run
-description: "Debug a failed Activepieces flow run end-to-end: given a flow run id (or BullMQ job id), find why it failed, cross-referencing the live BullMQ job + Postgres rows (SSH script on the DevOps box), the centralized ClickHouse logs (ClickStack MCP), and the code in this repo, then categorize the failed-job backlog on request."
+description: "Debug a failed FEMA Integration Platform flow run end-to-end: given a flow run id (or BullMQ job id), find why it failed, cross-referencing the live BullMQ job + Postgres rows (SSH script on the DevOps box), the centralized ClickHouse logs (ClickStack MCP), and the code in this repo, then categorize the failed-job backlog on request."
 ---
 
 # Debug a Failed Flow Run
@@ -32,7 +32,7 @@ stdout is a single-line JSON report (pipe-friendly); all progress chatter goes t
 - `summary` / `diagnostics` — human-readable verdict and caveats.
 - `job.failedReason` + `job.stacktrace` — the BullMQ failure. `"Internal error"` is a generic wrapper; the real cause is in the stacktrace.
 - `flowRun.status` and the failing step (`steps[].isFailedStep`, `runLogs.steps[].errorMessage`).
-- `flow` / `flowVersion` — which flow/version/pieces ran; `flowVersion.connectionIds` for connection issues.
+- `flow` / `flowVersion` — which flow/version/connectors ran; `flowVersion.connectionIds` for connection issues.
 - `triggerPayload` — what triggered the run.
 
 > **Node caveat:** the box runs Node v20, but run-log bodies are ZSTD-compressed and need Node ≥ 22.15 to decompress. When `runLogs` comes back with a "lacks node:zlib zstd support" note, the job/run/DB data is still complete — get the actual log lines from ClickHouse in Step 2 instead.
@@ -41,17 +41,17 @@ stdout is a single-line JSON report (pipe-friendly); all progress chatter goes t
 
 Use the **`Logs`** source (`id: 6a2a91b1d37162f45ad78233`; key columns `Body`, `ServiceName`, `SeverityText`, `TraceId`, attrs in `LogAttributes`). Search around the run's failure time for the run id, flow id, project id, or platform id from Step 1:
 
-- `clickstack_search` — keyword/Lucene-style search of `Body` + attributes over a time range. Start with the flow run `id`, then widen to `projectId` / `platformId` / the piece name. Filter `SeverityText` to `error`/`warn` to cut noise.
+- `clickstack_search` — keyword/Lucene-style search of `Body` + attributes over a time range. Start with the flow run `id`, then widen to `projectId` / `platformId` / the connector name. Filter `SeverityText` to `error`/`warn` to cut noise.
 - `clickstack_sql` — raw ClickHouse SQL (needs the connection id from `clickstack_list_sources`) when you need exact `LogAttributes` filtering or aggregation.
 
 Scope the time window to the job's `processedAt`/`finishedAt` from Step 1 (± a few minutes) to keep queries cheap. You're looking for the engine/worker log lines that bracket the failure — sandbox crashes, OOM ("no space"/heap), RPC timeouts, connection refresh failures.
 
 ## Step 3 — Trace the failure into this repo
 
-Steps 1–2 tell you *what* failed at runtime; this step finds *where* in the code and decides **product bug vs. user/config issue**. Work from this repo (the Activepieces source you're already in):
+Steps 1–2 tell you *what* failed at runtime; this step finds *where* in the code and decides **product bug vs. user/config issue**. Work from this repo (the FEMA Integration Platform source you're already in):
 
-- Take the distinctive part of the stacktrace / `failedReason` / log `Body` — the exact thrown message, an `PlatformError` `code` (e.g. `ENTITY_NOT_FOUND`, `PIECE_NOT_FOUND`), or a function name — and `Grep` for it across `packages/`. Quoted error strings and error `code` enums are the fastest anchors.
-- For a piece failure, the failing step's `settings.pieceName`/`pieceVersion` (from Step 1) points at `packages/pieces/**/<piece>`; open the failing action/trigger.
+- Take the distinctive part of the stacktrace / `failedReason` / log `Body` — the exact thrown message, an `PlatformError` `code` (e.g. `ENTITY_NOT_FOUND`, `CONNECTOR_NOT_FOUND`), or a function name — and `Grep` for it across `packages/`. Quoted error strings and error `code` enums are the fastest anchors.
+- For a connector failure, the failing step's `settings.connectorName`/`connectorVersion` (from Step 1) points at `packages/connectors/**/<connector>`; open the failing action/trigger.
 - For engine/worker failures, look under `packages/server/{api,worker}` and `packages/engine`. Read the throwing code path and the surrounding error handling to see whether the input that triggered it (from `triggerPayload` / step `input`) is being mishandled.
 - Classify the outcome:
   - **Product bug** — the code mishandles valid input (unguarded `undefined`, bad assumption, regression). Identify the file:line, explain the path that reaches it, and propose a fix. Only edit code if the user asks.

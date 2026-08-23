@@ -1,4 +1,4 @@
-import { findAllPiecesDirectoryInSource } from './utils/piece-script-utils';
+import { findAllConnectorsDirectoryInSource } from './utils/connector-script-utils';
 import { packagePrePublishChecks } from './utils/package-pre-publish-checks';
 
 async function processBatches<T>(items: T[], batchSize: number, processor: (item: T) => Promise<any>): Promise<any[]> {
@@ -12,13 +12,13 @@ async function processBatches<T>(items: T[], batchSize: number, processor: (item
 }
 
 const main = async () => {
-  const piecesMetadata = await findAllPiecesDirectoryInSource()
-  // pieces-framework, pieces-common and @fema/shared are no longer published to npm:
-  // pieces are self-contained bundles that inline these at build time. Exclude them from the
-  // publishable-package validation and only validate the pieces themselves.
-  const notPublished = ['packages/pieces/framework', 'packages/pieces/common']
+  const connectorsMetadata = await findAllConnectorsDirectoryInSource()
+  // connectors-framework, connectors-common and @fema/shared are no longer published to npm:
+  // connectors are self-contained bundles that inline these at build time. Exclude them from the
+  // publishable-package validation and only validate the connectors themselves.
+  const notPublished = ['packages/connectors/sdk', 'packages/connectors/common']
   await processBatches(
-    piecesMetadata.filter(p => !notPublished.includes(p)),
+    connectorsMetadata.filter(p => !notPublished.includes(p)),
     10,
     packagePrePublishChecks
   )

@@ -2,9 +2,9 @@ import {
   CustomAuthProps,
   OIDCAuthProps,
   OAuth2Props,
-  PieceAuthProperty,
-  PieceMetadataModel,
-  PieceMetadataModelSummary,
+  ConnectorAuthProperty,
+  ConnectorMetadataModel,
+  ConnectorMetadataModelSummary,
   PropertyType,
 } from '@fema/connector-sdk';
 import { assertNotNullOrUndefined, isNil, apId } from '@fema/core-utils';
@@ -19,7 +19,7 @@ import { t } from 'i18next';
 import { CheckIcon, UnplugIcon, XIcon } from 'lucide-react';
 
 import { OAuth2App } from '@/features/connections/utils/oauth2-utils';
-import { formUtils } from '@/features/pieces/utils/form-utils';
+import { formUtils } from '@/features/connectors/utils/form-utils';
 import { authenticationSession } from '@/lib/authentication-session';
 
 import { appConnectionsApi } from '../api/app-connections';
@@ -74,7 +74,7 @@ export const appConnectionUtils = {
 
 export const newConnectionUtils = {
   getConnectionName(
-    piece: PieceMetadataModelSummary | PieceMetadataModel,
+    connector: ConnectorMetadataModelSummary | ConnectorMetadataModel,
     reconnectConnection: AppConnectionWithoutSensitiveData | null,
     externalIdComingFromSdk?: string | null,
   ): {
@@ -96,7 +96,7 @@ export const newConnectionUtils = {
 
     return {
       externalId: apId(),
-      displayName: piece.displayName,
+      displayName: connector.displayName,
     };
   },
 
@@ -104,7 +104,7 @@ export const newConnectionUtils = {
     auth,
     suggestedExternalId,
     suggestedDisplayName,
-    pieceName,
+    connectorName,
     grantType,
     oauth2App,
     redirectUrl,
@@ -118,7 +118,7 @@ export const newConnectionUtils = {
     const commmonProps = {
       externalId: suggestedExternalId,
       displayName: suggestedDisplayName,
-      pieceName: pieceName,
+      connectorName: connectorName,
       projectId,
     };
 
@@ -280,9 +280,9 @@ export const isConnectionNameUnique = async ({
 type DefaultValuesParams = {
   suggestedExternalId: string;
   suggestedDisplayName: string;
-  pieceName: string;
+  connectorName: string;
   redirectUrl: string;
-  auth: PieceAuthProperty;
+  auth: ConnectorAuthProperty;
   oauth2App: OAuth2App | null;
   grantType: OAuth2GrantType | null;
   projectId?: string;

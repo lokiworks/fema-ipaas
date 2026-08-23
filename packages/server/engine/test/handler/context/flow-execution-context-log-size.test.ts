@@ -3,9 +3,9 @@ import { describe, expect, it } from 'vitest'
 import { FlowExecutorContext } from '../../../src/lib/handler/context/flow-execution-context'
 import { sizeofUtils } from '../../../src/lib/helper/sizeof'
 
-function pieceStep(output: unknown): GenericStepOutput<FlowActionType.PIECE, unknown> {
+function connectorStep(output: unknown): GenericStepOutput<FlowActionType.CONNECTOR, unknown> {
     return GenericStepOutput.create({
-        type: FlowActionType.PIECE,
+        type: FlowActionType.CONNECTOR,
         status: StepOutputStatus.SUCCEEDED,
         input: { key: 'value' },
     }).setOutput(output)
@@ -20,8 +20,8 @@ describe('FlowExecutorContext.logSizeBytes', () => {
     it('matches a full recursive walk across inserts, overwrites and nested loop steps', async () => {
         let ctx = FlowExecutorContext.empty()
 
-        ctx = await ctx.upsertStep('trigger', pieceStep({ payload: 'x'.repeat(100) }))
-        ctx = await ctx.upsertStep('trigger', pieceStep({ payload: 'tiny' }))
+        ctx = await ctx.upsertStep('trigger', connectorStep({ payload: 'x'.repeat(100) }))
+        ctx = await ctx.upsertStep('trigger', connectorStep({ payload: 'tiny' }))
 
         let loopOutput = LoopStepOutput.init({ input: { items: [1, 2] } })
         ctx = await ctx.upsertStep('loop', loopOutput)
@@ -30,12 +30,12 @@ describe('FlowExecutorContext.logSizeBytes', () => {
             loopOutput = loopOutput.setItemAndIndex({ item: iteration, index: iteration + 1 }).addIteration()
             ctx = (await ctx.upsertStep('loop', loopOutput))
                 .setCurrentPath(ctx.currentPath.loopIteration({ loopName: 'loop', iteration }))
-            ctx = await ctx.upsertStep('inner', pieceStep({ nested: ['a', 'b', iteration] }))
-            ctx = await ctx.upsertStep('inner', pieceStep({ nested: 'overwritten'.repeat(iteration + 1) }))
+            ctx = await ctx.upsertStep('inner', connectorStep({ nested: ['a', 'b', iteration] }))
+            ctx = await ctx.upsertStep('inner', connectorStep({ nested: 'overwritten'.repeat(iteration + 1) }))
             ctx = ctx.setCurrentPath(ctx.currentPath.removeLast())
         }
 
-        ctx = await ctx.upsertStep('last', pieceStep(undefined))
+        ctx = await ctx.upsertStep('last', connectorStep(undefined))
 
         expect(ctx.logSizeBytes).toBe(sizeofUtils.recursiveSizeof(ctx.steps))
     })

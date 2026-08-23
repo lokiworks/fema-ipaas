@@ -180,12 +180,12 @@ describe('isolateProcess', () => {
 
         it('appends :maybe suffix on optional mounts', async () => {
             const mounts: SandboxMount[] = [
-                { hostPath: '/host/custom', sandboxPath: '/root/custom_pieces', optional: true },
+                { hostPath: '/host/custom', sandboxPath: '/root/custom_connectors', optional: true },
             ]
             await callCreate({ mounts })
 
             const args: string[] = spawnMock.mock.calls[0][1]
-            expect(args).toContain('--dir=/root/custom_pieces=/host/custom:maybe')
+            expect(args).toContain('--dir=/root/custom_connectors=/host/custom:maybe')
         })
 
         it('emits exactly one --dir per mount, no duplicates', async () => {

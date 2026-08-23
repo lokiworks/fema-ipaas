@@ -8,19 +8,19 @@ icon: "plug"
 
 ## What it does
 
-Every Activepieces project can act as an [MCP](/mcp/overview) server — a place an AI can connect to in order to run that project's flows.
+Every FEMA Integration Platform project can act as an [MCP](/mcp/overview) server — a place an AI can connect to in order to run that project's flows.
 
-When you embed Activepieces, your users log in through **your** app, not Activepieces. So they can't use the normal "connect your AI" screen (it would ask them to log in to Activepieces, which they can't).
+When you embed FEMA Integration Platform, your users log in through **your** app, not FEMA Integration Platform. So they can't use the normal "connect your AI" screen (it would ask them to log in to FEMA Integration Platform, which they can't).
 
 Embeddable MCP fixes that. Your user clicks one **Authorize** button inside your app, and your backend gets a token it can use to run that user's automations through AI.
 
 **Who does what:**
 - **Your backend** runs the connect steps and keeps the token.
 - **Your user** just clicks Authorize in a small popup inside your app.
-- **Activepieces** checks everything and gives back a token for that one user's project.
+- **FEMA Integration Platform** checks everything and gives back a token for that one user's project.
 
 <Info>
-It's normal OAuth. The only Activepieces-specific part is one SDK call (`authorizeMcp`) that shows the Authorize popup inside your app.
+It's normal OAuth. The only FEMA Integration Platform-specific part is one SDK call (`authorizeMcp`) that shows the Authorize popup inside your app.
 </Info>
 
 ## Quick token (no OAuth)
@@ -28,7 +28,7 @@ It's normal OAuth. The only Activepieces-specific part is one SDK call (`authori
 If you don't need the full OAuth flow — you just want a token to point an AI at the embedded user's project — call `generateMcpToken()` from the frontend. It uses the embed session you already configured, so there's no app registration, no PKCE, and no popup.
 
 ```ts
-const { mcpServerUrl, mcpToken } = await activepieces.generateMcpToken();
+const { mcpServerUrl, mcpToken } = await fema.generateMcpToken();
 
 // Point your MCP client at mcpServerUrl with Authorization: Bearer <mcpToken>
 ```
@@ -46,15 +46,15 @@ Use this when your app holds the MCP client and the embedded user is already sig
 Embedding should already work for you:
 1. You created a **signing key**.
 2. Your backend **signs a user token (JWT)**.
-3. Your frontend called `activepieces.configure({ jwtToken, instanceUrl, … })`.
+3. Your frontend called `fema.configure({ jwtToken, instanceUrl, … })`.
 
-Below, `INSTANCE_URL` is your Activepieces address (like `https://app.your-company.com`).
+Below, `INSTANCE_URL` is your FEMA Integration Platform address (like `https://app.your-company.com`).
 
 ## The whole idea in 6 steps
 
 1. **Register your app once** → you get a `client_id`.
 2. **Make two random codes** (a "verifier" and a "challenge").
-3. **Ask Activepieces to start a connection** → you get an `authRequestId`.
+3. **Ask FEMA Integration Platform to start a connection** → you get an `authRequestId`.
 4. **Show the Authorize popup** in your app → the user clicks Authorize → you get a `code`.
 5. **Trade the `code` for a token.**
 6. **Use the token** to run the user's flows.
@@ -63,7 +63,7 @@ Below, `INSTANCE_URL` is your Activepieces address (like `https://app.your-compa
 
 <Steps>
   <Step title="1. Register your app (only once)">
-    This tells Activepieces who your app is. Save the `client_id` — it's the same for all users.
+    This tells FEMA Integration Platform who your app is. Save the `client_id` — it's the same for all users.
 
     ```bash
     curl -X POST "$INSTANCE_URL/register" \
@@ -119,7 +119,7 @@ Below, `INSTANCE_URL` is your Activepieces address (like `https://app.your-compa
     Send the `authRequestId` to your frontend and pass it to the SDK. A popup shows up inside your app and the user clicks Authorize.
 
     ```ts
-    const result = await activepieces.authorizeMcp({ authRequestId });
+    const result = await fema.authorizeMcp({ authRequestId });
 
     if (result.denied) {
       // user clicked Deny
@@ -188,7 +188,7 @@ curl -X POST "$INSTANCE_URL/revoke" -H "Content-Type: application/json" \
 Add a button so users can see their connection and turn tools on or off — inside your app:
 
 ```ts
-await activepieces.mcpSettings();
+await fema.mcpSettings();
 ```
 
 ## Good to know

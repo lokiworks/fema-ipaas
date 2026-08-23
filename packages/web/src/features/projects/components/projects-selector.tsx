@@ -7,7 +7,7 @@ import {
   projectCollectionUtils,
 } from '@/features/projects/stores/project-collection';
 
-import { MultiSelectPieceProperty } from '../../../components/custom/multi-select-piece-property';
+import { MultiSelectConnectorProperty } from '../../../components/custom/multi-select-connector-property';
 import { FormField, FormItem, FormMessage } from '../../../components/ui/form';
 import { Label } from '../../../components/ui/label';
 
@@ -26,7 +26,7 @@ export const ProjectSelector = ({
       render={({ field }) => (
         <FormItem className="flex flex-col gap-2">
           <Label>{t('Available for Projects')}</Label>
-          <MultiSelectPieceProperty
+          <MultiSelectConnectorProperty
             placeholder={t('Select projects')}
             options={
               projects?.map((project) => ({

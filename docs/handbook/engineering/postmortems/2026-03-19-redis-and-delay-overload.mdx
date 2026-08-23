@@ -45,7 +45,7 @@ The platform does enforce per-execution time limits, but because the job was mar
 |---|---|
 | Update job data to `executionType: RESUME` before calling `moveToDelayed()` so the worker continues from the correct step | Done |
 | Add test coverage for Delay step resume behavior to catch regressions where a delayed job restarts instead of resuming | Done |
-| Prevent a flow from entering an infinite state by detecting and halting repeated re-executions of the same run ([ENG-320](https://linear.app/activepieces/issue/ENG-320)) | Done |
+| Prevent a flow from entering an infinite state by detecting and halting repeated re-executions of the same run ([ENG-320](https://linear.app/fema/issue/ENG-320)) | Done |
 | Add alerting on abnormal queue depth growth to detect runaway job creation before customers are impacted | To do |
 | Add monitoring for repeated execution patterns on a single flow (e.g., same flow re-triggered N times within a short window) | To do |
 

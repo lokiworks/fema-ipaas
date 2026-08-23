@@ -43,10 +43,10 @@ function createAction(request: UpdateActionRequest, {
                 settings: request.settings,
             }
             break
-        case FlowActionType.PIECE:
+        case FlowActionType.CONNECTOR:
             action = {
                 ...baseProperties,
-                type: FlowActionType.PIECE,
+                type: FlowActionType.CONNECTOR,
                 settings: request.settings,
             }
             break
@@ -112,11 +112,11 @@ function handleRouter(parentStep: RouterAction, request: AddActionRequest): Step
 }
 
 function handleContinueOnFailureBranches(parentStep: Step, request: AddActionRequest): Step {
-    if (parentStep.type !== FlowActionType.CODE && parentStep.type !== FlowActionType.PIECE) {
+    if (parentStep.type !== FlowActionType.CODE && parentStep.type !== FlowActionType.CONNECTOR) {
         throw new PlatformError({
             code: ErrorCode.FLOW_OPERATION_INVALID,
             params: {
-                message: `Continue-on-failure branches are only available on Code and Piece actions, got ${parentStep.type}`,
+                message: `Continue-on-failure branches are only available on Code and Connector actions, got ${parentStep.type}`,
             },
         })
     }

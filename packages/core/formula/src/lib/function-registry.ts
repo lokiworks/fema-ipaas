@@ -2,7 +2,7 @@ export const FEMA_FUNCTIONS: ApFunction[] = [
     {
         name: 'combine',
         category: 'text',
-        description: 'Joins two or more values into one piece of text.',
+        description: 'Joins two or more values into one connector of text.',
         syntax: 'combine(text1; text2; separator)',
         example: 'combine( John ; Smith ; " " )',
         exampleResult: 'John Smith',
@@ -926,7 +926,7 @@ export const FEMA_FUNCTIONS: ApFunction[] = [
     {
         name: 'join_list',
         category: 'list',
-        description: 'Turns a list into a single piece of text with a separator.',
+        description: 'Turns a list into a single connector of text with a separator.',
         syntax: 'join_list(list; separator)',
         example: 'join_list( [bug;urgent;backend] ; ", " )',
         exampleResult: 'bug, urgent, backend',

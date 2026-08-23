@@ -116,9 +116,9 @@ export const LanguageToggle = () => {
             className="text-xs text-primary hover:underline font-medium"
             rel="noopener noreferrer"
             target="_blank"
-            to="https://www.activepieces.com/docs/about/i18n"
+            to="https://github.com/lokiworks/fema-ipaas/docs/about/i18n"
           >
-            {t('Help translate Activepieces →')}
+            {t('Help translate FEMA Integration Platform →')}
           </Link>
         </div>
       )}

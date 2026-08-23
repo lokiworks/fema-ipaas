@@ -1,27 +1,27 @@
 import { Command } from 'commander';
 import { createActionCommand } from './lib/commands/create-action';
-import { createPieceCommand } from './lib/commands/create-piece';
+import { createConnectorCommand } from './lib/commands/create-connector';
 import { createTriggerCommand } from './lib/commands/create-trigger';
-import { syncPieceCommand } from './lib/commands/sync-pieces';
-import { publishPieceCommand } from './lib/commands/publish-piece';
-import { buildPieceCommand } from './lib/commands/build-piece';
-import { bundlePieceCommand } from './lib/commands/bundle-piece';
-import { migratePieceCommand } from './lib/commands/migrate-piece';
+import { syncConnectorCommand } from './lib/commands/sync-connectors';
+import { publishConnectorCommand } from './lib/commands/publish-connector';
+import { buildConnectorCommand } from './lib/commands/build-connector';
+import { bundleConnectorCommand } from './lib/commands/bundle-connector';
+import { migrateConnectorCommand } from './lib/commands/migrate-connector';
 import { generateWorkerTokenCommand } from './lib/commands/generate-worker-token';
-import { generateTranslationFileForAllPiecesCommand, generateTranslationFileForPieceCommand } from './lib/commands/generate-translation-file-for-piece';
+import { generateTranslationFileForAllConnectorsCommand, generateTranslationFileForConnectorCommand } from './lib/commands/generate-translation-file-for-connector';
 import { benchmarkCommand } from './lib/commands/benchmark';
 
-const pieceCommand = new Command('pieces')
-  .description('Manage pieces');
+const connectorCommand = new Command('connectors')
+  .description('Manage connectors');
 
-pieceCommand.addCommand(createPieceCommand);
-pieceCommand.addCommand(syncPieceCommand);
-pieceCommand.addCommand(publishPieceCommand);
-pieceCommand.addCommand(buildPieceCommand);
-pieceCommand.addCommand(bundlePieceCommand);
-pieceCommand.addCommand(migratePieceCommand);
-pieceCommand.addCommand(generateTranslationFileForPieceCommand);
-pieceCommand.addCommand(generateTranslationFileForAllPiecesCommand);
+connectorCommand.addCommand(createConnectorCommand);
+connectorCommand.addCommand(syncConnectorCommand);
+connectorCommand.addCommand(publishConnectorCommand);
+connectorCommand.addCommand(buildConnectorCommand);
+connectorCommand.addCommand(bundleConnectorCommand);
+connectorCommand.addCommand(migrateConnectorCommand);
+connectorCommand.addCommand(generateTranslationFileForConnectorCommand);
+connectorCommand.addCommand(generateTranslationFileForAllConnectorsCommand);
 const actionCommand = new Command('actions')
   .description('Manage actions');
 
@@ -44,9 +44,9 @@ const projectCommand = new Command('project')
 
 const program = new Command();
 
-program.version('0.0.1').description('Activepieces CLI');
+program.version('0.0.1').description('FEMA Integration Platform CLI');
 
-program.addCommand(pieceCommand);
+program.addCommand(connectorCommand);
 program.addCommand(actionCommand);
 program.addCommand(triggerCommand);
 program.addCommand(workerCommand);

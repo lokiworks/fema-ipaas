@@ -9,16 +9,16 @@ An agent flow step runs unattended. Before this, that meant it could not write a
 that is not provably read-only to the approval gate, and `waitForApproval` auto-declines
 for any non-chat run. The gate was the whole control.
 
-Piece actions the flow author attaches to the step are exempt from that gate. Applying it
+Connector actions the flow author attaches to the step are exempt from that gate. Applying it
 would decline the tools the author deliberately configured, which is the entire feature.
 The line drawn: **choosing an action on the step authorises that action.** The gate remains
 for actions the agent discovers at runtime, which is what taint was added for.
 
 ## What that does and does not authorise
 
-It authorises the piece and the action, plus any field the author pinned
+It authorises the connector and the action, plus any field the author pinned
 (`FieldControlMode.CHOOSE_YOURSELF` / `LEAVE_EMPTY`, enforced server-side in
-`piece-input-plan.ts`, not merely in the prompt).
+`connector-input-plan.ts`, not merely in the prompt).
 
 It does **not** authorise the arguments. The step's instruction is model-authored and
 normally carries trigger data, so every unpinned field, including recipients and targets,
@@ -34,15 +34,15 @@ decision rather than the code:
 - **Model-written values cannot carry `{{ }}`.** The engine resolves templates in *every*
   step input, not just `auth`, so an authorised `send_message` would otherwise let the
   model put `{{connections['prod-stripe']}}` in the body and have the engine splice in the
-  decrypted secret. Neutralised in `piece-input-filler.ts`. Use a lookahead, not
+  decrypted secret. Neutralised in `connector-input-filler.ts`. Use a lookahead, not
   `replaceAll` — the latter is walked through with `{{{`, because it resumes after each
   match and the emitted brace re-pairs with the untouched one.
 - **Pinned values are applied after the model's answer.** Relying on the strict schema is
   not enough: `recoverFencedJson` parses fenced output with a bare `JSON.parse` and no zod.
 - **`custom_api_call` is allowed on a step, but only as a path.** It was refused outright at
   first, on the belief that the model chose the whole URL. Reading only
-  `joinBaseUrlWithRelativePath` in `pieces/common/src/lib/helpers/index.ts` seemed to disprove
-  that, since the piece fixes the host from its own auth. Both readings were wrong: its caller
+  `joinBaseUrlWithRelativePath` in `connectors/common/src/lib/helpers/index.ts` seemed to disprove
+  that, since the connector fixes the host from its own auth. Both readings were wrong: its caller
   at `:363` uses the value verbatim when it starts with `http://` or `https://`, and
   `authMapping` still attaches the connection's credentials, so an absolute URL sends them to a
   host the model picked. The action is allowed and an absolute URL is refused server-side

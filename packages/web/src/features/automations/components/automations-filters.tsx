@@ -1,4 +1,4 @@
-import { PieceMetadataModelSummary } from '@fema/connector-sdk';
+import { ConnectorMetadataModelSummary } from '@fema/connector-sdk';
 import {
   AppConnectionWithoutSensitiveData,
   FlowStatus,
@@ -55,7 +55,7 @@ type AutomationsFiltersProps = {
   onFilterChange?: () => void;
   folders: FolderDto[];
   connections: AppConnectionWithoutSensitiveData[] | undefined;
-  pieces: PieceMetadataModelSummary[] | undefined;
+  connectors: ConnectorMetadataModelSummary[] | undefined;
   userHasPermissionToWriteFlow: boolean;
   userHasPermissionToWriteFolder: boolean;
   onCreateFlow: () => void;
@@ -82,7 +82,7 @@ export const AutomationsFilters = ({
   onFilterChange,
   folders,
   connections,
-  pieces,
+  connectors,
   userHasPermissionToWriteFlow,
   userHasPermissionToWriteFolder,
   onCreateFlow,
@@ -110,14 +110,14 @@ export const AutomationsFilters = ({
   }));
 
   const connectionOptions = (connections || []).map((connection) => {
-    const pieceIcon = pieces?.find(
-      (p) => p.name === connection.pieceName,
+    const connectorIcon = connectors?.find(
+      (p) => p.name === connection.connectorName,
     )?.logoUrl;
     return {
       value: connection.externalId,
       label: connection.displayName,
-      icon: pieceIcon ? (
-        <img src={pieceIcon} alt="" className="h-4 w-4 object-contain" />
+      icon: connectorIcon ? (
+        <img src={connectorIcon} alt="" className="h-4 w-4 object-contain" />
       ) : undefined,
     };
   });

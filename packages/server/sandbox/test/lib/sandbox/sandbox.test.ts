@@ -19,7 +19,7 @@ vi.mock('../../../src/lib/cache/cache-paths', () => ({
     cacheUtils: vi.fn(() => ({
         getGlobalCachePathLatestVersion: vi.fn(() => '/tmp/test-cache'),
         getGlobalCodeCachePath: vi.fn(() => '/tmp/test-cache/codes'),
-        getCustomPiecesPath: vi.fn((platformId: string) => `/tmp/test-cache/custom_pieces/${platformId}`),
+        getCustomConnectorsPath: vi.fn((platformId: string) => `/tmp/test-cache/custom_connectors/${platformId}`),
     })),
 }))
 
@@ -110,13 +110,13 @@ describe('createSandbox', () => {
                     command: [],
                     mounts: expect.arrayContaining([
                         expect.objectContaining({
-                            sandboxPath: '/root/custom_pieces',
+                            sandboxPath: '/root/custom_connectors',
                         }),
                     ]),
                     env: expect.objectContaining({
                         MY_VAR: 'value',
                         FEMA_SANDBOX_WS_PORT: expect.any(String),
-                        FEMA_CUSTOM_PIECES_PATHS: '/root/custom_pieces',
+                        FEMA_CUSTOM_CONNECTORS_PATHS: '/root/custom_connectors',
                     }),
                     resourceLimits: {
                         memoryLimitMb: 256,
@@ -127,7 +127,7 @@ describe('createSandbox', () => {
             )
         })
 
-        it('does not add custom piece mount when platformId is empty', async () => {
+        it('does not add custom connector mount when platformId is empty', async () => {
             const log = createMockLogger()
             testPM = createTestProcessMaker()
             sandbox = createSandbox(log, 'sb-no-mount', defaultOptions, testPM.maker)
@@ -135,9 +135,9 @@ describe('createSandbox', () => {
             await sandbox.start({ flowVersionId: 'fv-1', platformId: '', mounts: [] })
 
             const createCall = (testPM.maker.create as ReturnType<typeof vi.fn>).mock.calls[0][0]
-            const customPieceMount = createCall.mounts.find((m: { sandboxPath: string }) => m.sandboxPath === '/root/custom_pieces')
-            expect(customPieceMount).toBeUndefined()
-            expect(createCall.env.FEMA_CUSTOM_PIECES_PATHS).toBeUndefined()
+            const customConnectorMount = createCall.mounts.find((m: { sandboxPath: string }) => m.sandboxPath === '/root/custom_connectors')
+            expect(customConnectorMount).toBeUndefined()
+            expect(createCall.env.FEMA_CUSTOM_CONNECTORS_PATHS).toBeUndefined()
         })
 
         it('scopes code mount to flowVersionId when non-reusable', async () => {
@@ -200,7 +200,7 @@ describe('createSandbox', () => {
             expect(codeMount).toBeUndefined()
         })
 
-        it('resolves custom_pieces hostPath to cache/custom_pieces/<platformId>', async () => {
+        it('resolves custom_connectors hostPath to cache/custom_connectors/<platformId>', async () => {
             const log = createMockLogger()
             testPM = createTestProcessMaker()
             sandbox = createSandbox(log, 'sb-plat', defaultOptions, testPM.maker)
@@ -208,10 +208,10 @@ describe('createSandbox', () => {
             await sandbox.start({ flowVersionId: 'fv-1', platformId: 'plat-xyz', mounts: [] })
 
             const createCall = (testPM.maker.create as ReturnType<typeof vi.fn>).mock.calls[0][0]
-            const customPieceMount = createCall.mounts.find((m: SandboxMount) => m.sandboxPath === '/root/custom_pieces')
-            expect(customPieceMount).toEqual({
-                hostPath: '/tmp/test-cache/custom_pieces/plat-xyz',
-                sandboxPath: '/root/custom_pieces',
+            const customConnectorMount = createCall.mounts.find((m: SandboxMount) => m.sandboxPath === '/root/custom_connectors')
+            expect(customConnectorMount).toEqual({
+                hostPath: '/tmp/test-cache/custom_connectors/plat-xyz',
+                sandboxPath: '/root/custom_connectors',
                 optional: true,
             })
         })
@@ -295,7 +295,7 @@ describe('createSandbox', () => {
             expect(testPM.maker.create).not.toHaveBeenCalled()
         })
 
-        it('composes mounts in order: baseMounts, codeMount, callerMounts, customPieceMounts', async () => {
+        it('composes mounts in order: baseMounts, codeMount, callerMounts, customConnectorMounts', async () => {
             const log = createMockLogger()
             testPM = createTestProcessMaker()
             const baseMounts: SandboxMount[] = [{ hostPath: '/host/common', sandboxPath: '/root/common' }]
@@ -309,7 +309,7 @@ describe('createSandbox', () => {
                 { hostPath: '/host/common', sandboxPath: '/root/common' },
                 { hostPath: '/tmp/test-cache/codes/fv-1', sandboxPath: '/root/codes/fv-1', optional: true },
                 { hostPath: '/host/x', sandboxPath: '/root/x' },
-                { hostPath: '/tmp/test-cache/custom_pieces/plat-1', sandboxPath: '/root/custom_pieces', optional: true },
+                { hostPath: '/tmp/test-cache/custom_connectors/plat-1', sandboxPath: '/root/custom_connectors', optional: true },
             ])
         })
 
@@ -329,7 +329,7 @@ describe('createSandbox', () => {
             }
         })
 
-        it('does not inject FEMA_CUSTOM_PIECES_PATHS when platformId is undefined', async () => {
+        it('does not inject FEMA_CUSTOM_CONNECTORS_PATHS when platformId is undefined', async () => {
             const log = createMockLogger()
             testPM = createTestProcessMaker()
             sandbox = createSandbox(log, 'sb-no-plat-env', defaultOptions, testPM.maker)
@@ -337,7 +337,7 @@ describe('createSandbox', () => {
             await sandbox.start({ flowVersionId: 'fv-1', platformId: '', mounts: [] })
 
             const createCall = (testPM.maker.create as ReturnType<typeof vi.fn>).mock.calls[0][0]
-            expect(createCall.env.FEMA_CUSTOM_PIECES_PATHS).toBeUndefined()
+            expect(createCall.env.FEMA_CUSTOM_CONNECTORS_PATHS).toBeUndefined()
         })
 
         it('does NOT crash the process when a fixed ws port is already bound — fails just that sandbox', async () => {

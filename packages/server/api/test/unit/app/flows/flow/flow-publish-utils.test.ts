@@ -2,12 +2,12 @@ import { FlowTriggerType, FlowVersion, PropertyExecutionType } from '@fema/share
 import { describe, expect, it } from 'vitest'
 import { flowPublishUtils } from '../../../../../src/app/flows/flow/flow-publish-utils'
 
-function pieceTrigger(overrides: { pieceName?: string, triggerName?: string, input?: Record<string, unknown> } = {}): FlowVersion['trigger'] {
+function connectorTrigger(overrides: { connectorName?: string, triggerName?: string, input?: Record<string, unknown> } = {}): FlowVersion['trigger'] {
     return {
-        type: FlowTriggerType.PIECE,
+        type: FlowTriggerType.CONNECTOR,
         settings: {
-            pieceName: overrides.pieceName ?? '@fema/connector-jira-cloud',
-            pieceVersion: '0.4.1',
+            connectorName: overrides.connectorName ?? '@fema/connector-jira-cloud',
+            connectorVersion: '0.4.1',
             triggerName: overrides.triggerName ?? 'new_issue',
             input: overrides.input ?? { projectId: 'AP', maxResults: 50 },
             propertySettings: {
@@ -31,49 +31,49 @@ const emptyTrigger: FlowVersion['trigger'] = {
 }
 
 describe('flowPublishUtils.isSameTrigger', () => {
-    it('is true when piece, trigger name and input all match', () => {
+    it('is true when connector, trigger name and input all match', () => {
         expect(flowPublishUtils.isSameTrigger({
-            published: pieceTrigger(),
-            toPublish: pieceTrigger(),
+            published: connectorTrigger(),
+            toPublish: connectorTrigger(),
         })).toBe(true)
     })
 
     it('ignores key order in the input', () => {
         expect(flowPublishUtils.isSameTrigger({
-            published: pieceTrigger({ input: { projectId: 'AP', maxResults: 50 } }),
-            toPublish: pieceTrigger({ input: { maxResults: 50, projectId: 'AP' } }),
+            published: connectorTrigger({ input: { projectId: 'AP', maxResults: 50 } }),
+            toPublish: connectorTrigger({ input: { maxResults: 50, projectId: 'AP' } }),
         })).toBe(true)
     })
 
     it('is false when the trigger was swapped', () => {
         expect(flowPublishUtils.isSameTrigger({
-            published: pieceTrigger({ triggerName: 'new_issue' }),
-            toPublish: pieceTrigger({ triggerName: 'updated_issue' }),
+            published: connectorTrigger({ triggerName: 'new_issue' }),
+            toPublish: connectorTrigger({ triggerName: 'updated_issue' }),
         })).toBe(false)
     })
 
-    it('is false when the piece was swapped', () => {
+    it('is false when the connector was swapped', () => {
         expect(flowPublishUtils.isSameTrigger({
-            published: pieceTrigger({ pieceName: '@fema/connector-jira-cloud' }),
-            toPublish: pieceTrigger({ pieceName: '@fema/connector-linear' }),
+            published: connectorTrigger({ connectorName: '@fema/connector-jira-cloud' }),
+            toPublish: connectorTrigger({ connectorName: '@fema/connector-linear' }),
         })).toBe(false)
     })
 
     it('is false when the input now points at a different resource', () => {
         expect(flowPublishUtils.isSameTrigger({
-            published: pieceTrigger({ input: { projectId: 'AP', maxResults: 50 } }),
-            toPublish: pieceTrigger({ input: { projectId: 'OPS', maxResults: 50 } }),
+            published: connectorTrigger({ input: { projectId: 'AP', maxResults: 50 } }),
+            toPublish: connectorTrigger({ input: { projectId: 'OPS', maxResults: 50 } }),
         })).toBe(false)
     })
 
     it('is false when a nested input value changed', () => {
         expect(flowPublishUtils.isSameTrigger({
-            published: pieceTrigger({ input: { filter: { status: ['open'] } } }),
-            toPublish: pieceTrigger({ input: { filter: { status: ['open', 'closed'] } } }),
+            published: connectorTrigger({ input: { filter: { status: ['open'] } } }),
+            toPublish: connectorTrigger({ input: { filter: { status: ['open', 'closed'] } } }),
         })).toBe(false)
     })
 
-    it('is false for a non-piece trigger', () => {
+    it('is false for a non-connector trigger', () => {
         expect(flowPublishUtils.isSameTrigger({
             published: emptyTrigger,
             toPublish: emptyTrigger,

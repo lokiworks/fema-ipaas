@@ -31,7 +31,7 @@ vi.mock('../../src/lib/helper/flow-run-progress-reporter', () => ({
 const { mockExecuteTrigger } = vi.hoisted(() => ({
     mockExecuteTrigger: vi.fn(),
 }))
-vi.mock('../../src/lib/core/piece/trigger-runner', () => ({
+vi.mock('../../src/lib/core/connector/trigger-runner', () => ({
     triggerRunner: {
         executeTrigger: mockExecuteTrigger,
         executeOnStart: vi.fn().mockResolvedValue(undefined),
@@ -104,13 +104,13 @@ function makeFlowVersionWithTwoApprovals(): FlowVersion {
     const step2: FlowAction = {
         name: 'step_2',
         displayName: 'Step 2 — Wait for Approval',
-        type: FlowActionType.PIECE,
+        type: FlowActionType.CONNECTOR,
         skip: false,
         valid: true,
         settings: {
             input: {},
-            pieceName: '@fema/connector-approval',
-            pieceVersion: '1.0.0',
+            connectorName: '@fema/connector-approval',
+            connectorVersion: '1.0.0',
             actionName: 'wait_for_approval',
             propertySettings: {},
         },
@@ -118,13 +118,13 @@ function makeFlowVersionWithTwoApprovals(): FlowVersion {
     const step1: FlowAction = {
         name: 'step_1',
         displayName: 'Step 1 — Wait for Approval',
-        type: FlowActionType.PIECE,
+        type: FlowActionType.CONNECTOR,
         skip: false,
         valid: true,
         settings: {
             input: {},
-            pieceName: '@fema/connector-approval',
-            pieceVersion: '1.0.0',
+            connectorName: '@fema/connector-approval',
+            connectorVersion: '1.0.0',
             actionName: 'wait_for_approval',
             propertySettings: {},
             errorHandlingOptions: {
@@ -270,7 +270,7 @@ describe('flow operation invariants', () => {
             // Setup: trigger → step_1 (FAILED with continueOnFailure) → step_2 (PAUSED waiting
             // for a webhook click). Resume is fired for step_2 with a non-null resumePayload
             // (waitpoint path). With the fix, step_1 stays FAILED in the restored state,
-            // `isCompleted` short-circuits piece-executor, and no new waitpoint is created.
+            // `isCompleted` short-circuits connector-executor, and no new waitpoint is created.
             mockDownload.mockReset()
 
             mockDownload.mockResolvedValue(
@@ -284,13 +284,13 @@ describe('flow operation invariants', () => {
                                 output: {},
                             },
                             step_1: {
-                                type: FlowActionType.PIECE,
+                                type: FlowActionType.CONNECTOR,
                                 status: StepOutputStatus.FAILED,
                                 input: {},
                                 errorMessage: 'Subflow execution failed',
                             },
                             step_2: {
-                                type: FlowActionType.PIECE,
+                                type: FlowActionType.CONNECTOR,
                                 status: StepOutputStatus.PAUSED,
                                 input: {},
                                 output: { approved: true },
@@ -333,7 +333,7 @@ describe('flow operation invariants', () => {
                                 output: {},
                             },
                             step_1: {
-                                type: FlowActionType.PIECE,
+                                type: FlowActionType.CONNECTOR,
                                 status: StepOutputStatus.FAILED,
                                 input: {},
                                 errorMessage: 'transient error',
@@ -354,7 +354,7 @@ describe('flow operation invariants', () => {
             await flowOperation.execute(operation)
 
             // step_1 (FAILED) was dropped because resumeReason=RETRY → engine replayed it from
-            // BEGIN, which creates a waitpoint via the approval piece.
+            // BEGIN, which creates a waitpoint via the approval connector.
             expect(engineApi.requestsFor('/v1/waitpoints').length).toBeGreaterThan(0)
         })
 
@@ -376,12 +376,12 @@ describe('flow operation invariants', () => {
                                 output: {},
                             },
                             step_1: {
-                                type: FlowActionType.PIECE,
+                                type: FlowActionType.CONNECTOR,
                                 status: StepOutputStatus.RUNNING,
                                 input: {},
                             },
                             step_2: {
-                                type: FlowActionType.PIECE,
+                                type: FlowActionType.CONNECTOR,
                                 status: StepOutputStatus.PAUSED,
                                 input: {},
                                 output: { approved: true },
@@ -406,8 +406,8 @@ describe('flow operation invariants', () => {
             expect(engineApi.requestsFor('/v1/waitpoints')).toHaveLength(1)
         })
 
-        it('preserves FAILED steps on a delay-piece waitpoint resume even though resumePayload is null', async () => {
-            // The Delay piece's scheduled resume (`flow-run-module.ts` RESUME_DELAY_WAITPOINT
+        it('preserves FAILED steps on a delay-connector waitpoint resume even though resumePayload is null', async () => {
+            // The Delay connector's scheduled resume (`flow-run-module.ts` RESUME_DELAY_WAITPOINT
             // handler) calls `resumeFromWaitpoint` with `resumePayload: null`. Prior to the
             // explicit `resumeReason` field this looked indistinguishable from a retry, and the
             // engine would drop FAILED — replaying any `continueOnFailure` step that preceded
@@ -425,13 +425,13 @@ describe('flow operation invariants', () => {
                                 output: {},
                             },
                             step_1: {
-                                type: FlowActionType.PIECE,
+                                type: FlowActionType.CONNECTOR,
                                 status: StepOutputStatus.FAILED,
                                 input: {},
                                 errorMessage: 'Subflow execution failed',
                             },
                             step_2: {
-                                type: FlowActionType.PIECE,
+                                type: FlowActionType.CONNECTOR,
                                 status: StepOutputStatus.PAUSED,
                                 input: {},
                                 output: {},

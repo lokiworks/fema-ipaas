@@ -5,16 +5,16 @@ import {
     ExecuteValidateAuthOperation,
     ExecuteValidateAuthResponse,
 } from '@fema/shared'
-import { pieceAuth } from '../core/piece/piece-auth'
+import { connectorAuth } from '../core/connector/connector-auth'
 
 export const authValidationOperation = {
     execute: async (operation: ExecuteValidateAuthOperation): Promise<EngineResponse<ExecuteValidateAuthResponse>> => {
-        const call = await pieceAuth.callMethod({ operation, authValueType: operation.auth.type, methodPath: ['validate'] })
+        const call = await connectorAuth.callMethod({ operation, authValueType: operation.auth.type, methodPath: ['validate'] })
         if (!call.called) {
             return {
                 status: EngineResponseStatus.OK,
                 response: call.mismatch
-                    ? { valid: false, error: `Connection value type does not match piece auth type: ${call.property?.type} !== ${operation.auth.type}` }
+                    ? { valid: false, error: `Connection value type does not match connector auth type: ${call.property?.type} !== ${operation.auth.type}` }
                     : { valid: true },
             }
         }

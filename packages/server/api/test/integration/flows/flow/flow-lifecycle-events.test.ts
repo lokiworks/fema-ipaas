@@ -10,7 +10,7 @@ import {
     FlowVersion,
     FlowVersionState,
     PackageType,
-    PieceType,
+    ConnectorType,
     PropertyExecutionType,
     TriggerStrategy,
     TriggerTestStrategy,
@@ -22,7 +22,7 @@ import { flowService } from '../../../../../src/app/flows/flow/flow.service'
 import * as applicationEventsModule from '../../../../../src/app/helper/application-events'
 import { actionsEmitted } from '../../../../helpers/application-events'
 import { db } from '../../../../helpers/db'
-import { createMockFlow, createMockFlowVersion, createMockPieceMetadata } from '../../../../helpers/mocks'
+import { createMockFlow, createMockFlowVersion, createMockConnectorMetadata } from '../../../../helpers/mocks'
 import { createTestContext, TestContext } from '../../../../helpers/test-context'
 import { setupTestEnvironment, teardownTestEnvironment } from '../../../../helpers/test-setup'
 
@@ -310,7 +310,7 @@ async function seedPublishableFlow({
     initialStatus,
     publishCurrentVersion,
 }: SeedPublishableFlowParams): Promise<{ flow: Flow, flowVersion: FlowVersion }> {
-    const pieceMetadata = createMockPieceMetadata({
+    const connectorMetadata = createMockConnectorMetadata({
         name: '@fema/connector-schedule',
         version: '0.1.5',
         triggers: {
@@ -327,10 +327,10 @@ async function seedPublishableFlow({
                 testStrategy: TriggerTestStrategy.TEST_FUNCTION,
             },
         },
-        pieceType: PieceType.OFFICIAL,
+        connectorType: ConnectorType.OFFICIAL,
         packageType: PackageType.REGISTRY,
     })
-    await db.save('piece_metadata', pieceMetadata)
+    await db.save('connector_metadata', connectorMetadata)
 
     const flow = createMockFlow({
         projectId: ctx.project.id,
@@ -371,10 +371,10 @@ async function seedAdditionalDraftVersion({
 
 function scheduleTrigger(): FlowTrigger {
     return {
-        type: FlowTriggerType.PIECE,
+        type: FlowTriggerType.CONNECTOR,
         settings: {
-            pieceName: '@fema/connector-schedule',
-            pieceVersion: '0.1.5',
+            connectorName: '@fema/connector-schedule',
+            connectorVersion: '0.1.5',
             input: { run_on_weekends: false },
             triggerName: 'every_hour',
             propertySettings: {

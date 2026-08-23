@@ -4,7 +4,7 @@ icon: 📡
 
 # Event Destinations
 
-Streams platform/project activity events to webhook URLs in real time. Internal Activepieces flow webhooks are valid targets, so operators can route events into a flow and fan out to Slack/Gmail/Teams/HTTP without leaving the platform. EE/Cloud only, gated by `auditLogEnabled` (shares audit-log gating). Lives under the **Observability** sidebar group.
+Streams platform/project activity events to webhook URLs in real time. Internal FEMA Integration Platform flow webhooks are valid targets, so operators can route events into a flow and fan out to Slack/Gmail/Teams/HTTP without leaving the platform. EE/Cloud only, gated by `auditLogEnabled` (shares audit-log gating). Lives under the **Observability** sidebar group.
 
 ### Entities & services
 - **EventDestination**: one URL receiving a chosen subset of the 27 `ApplicationEventName` events, at PLATFORM or PROJECT scope.

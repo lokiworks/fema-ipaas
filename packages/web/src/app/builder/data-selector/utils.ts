@@ -8,7 +8,7 @@ import {
 } from '@fema/shared';
 import { t } from 'i18next';
 
-import { pieceSelectorUtils } from '@/features/pieces';
+import { connectorSelectorUtils } from '@/features/connectors';
 
 import { pathHelpers } from './path-helpers';
 import {
@@ -282,9 +282,9 @@ function traverseStep(
   const displayName = `${step.dfsIndex + 1}. ${step.displayName}`;
   const stepNeedsTesting =
     isNil(step.settings.sampleData?.lastTestDate) &&
-    (step.type !== FlowTriggerType.PIECE ||
-      !pieceSelectorUtils.isManualTrigger({
-        pieceName: step.settings.pieceName,
+    (step.type !== FlowTriggerType.CONNECTOR ||
+      !connectorSelectorUtils.isManualTrigger({
+        connectorName: step.settings.connectorName,
         triggerName: step.settings.triggerName ?? '',
       }));
   if (stepNeedsTesting) {

@@ -1,7 +1,7 @@
 name: DAST (ZAP) — Staging
 
 # Dynamic Application Security Testing. Runs OWASP ZAP against the STAGING deployment
-# (https://stg.activepieces.com) — never production. Authenticated as a dedicated throwaway
+# (https://stg.fema.local) — never production. Authenticated as a dedicated throwaway
 # account whose USER-scoped JWT confines any data mutation to that account's own project.
 # Non-blocking: findings surface in the GitHub Security tab, the job does not fail the build.
 #
@@ -20,7 +20,7 @@ permissions:
   security-events: write
 
 env:
-  STAGING_URL: https://stg.activepieces.com
+  STAGING_URL: https://stg.fema.local
 
 jobs:
   zap-dast:
@@ -110,7 +110,7 @@ jobs:
             printf 'replacer.full_list(1).matchtype=REQ_HEADER\n'
             printf 'replacer.full_list(1).matchstr=User-Agent\n'
             printf 'replacer.full_list(1).regex=false\n'
-            printf 'replacer.full_list(1).replacement=Activepieces-DAST-ZAP\n'
+            printf 'replacer.full_list(1).replacement=FEMA Integration Platform-DAST-ZAP\n'
           } > "$CONF"
           # Readable by the container's zap user (uid 1000); host runner is single-tenant + ephemeral.
           chmod 644 "$CONF"

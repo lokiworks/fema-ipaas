@@ -1,6 +1,6 @@
 ---
 title: "How to Setup SSO"
-description: "Configure Single Sign-On (SSO) to enable secure, centralized authentication for your Activepieces platform"
+description: "Configure Single Sign-On (SSO) to enable secure, centralized authentication for your FEMA Integration Platform platform"
 icon: 'key'
 ---
 
@@ -8,19 +8,19 @@ icon: 'key'
 
 ## Overview
 
-Single Sign-On (SSO) allows your team to authenticate using your organization's existing identity provider, eliminating the need for separate Activepieces credentials. This improves security, simplifies user management, and provides a seamless login experience.
+Single Sign-On (SSO) allows your team to authenticate using your organization's existing identity provider, eliminating the need for separate FEMA Integration Platform credentials. This improves security, simplifies user management, and provides a seamless login experience.
 
 ## Prerequisites
 
 Before configuring SSO, ensure you have:
 
-- **Admin access** to your Activepieces platform
+- **Admin access** to your FEMA Integration Platform platform
 - **Admin access** to your identity provider (Google, GitHub, Okta, or JumpCloud)
-- The **redirect URL** from your Activepieces SSO configuration screen
+- The **redirect URL** from your FEMA Integration Platform SSO configuration screen
 
 ## Accessing SSO Configuration
 
-Navigate to **Platform Settings** → **SSO** in your Activepieces admin dashboard to access the SSO configuration screen.
+Navigate to **Platform Settings** → **SSO** in your FEMA Integration Platform admin dashboard to access the SSO configuration screen.
 
 ![SSO Configuration](/resources/screenshots/sso.png)
 
@@ -57,7 +57,7 @@ On self-hosted Enterprise instances the SAML button on the sign-in page redirect
 
 ## Supported SSO Providers
 
-Activepieces supports multiple SSO providers to integrate with your existing identity management system.
+FEMA Integration Platform supports multiple SSO providers to integrate with your existing identity management system.
 
 ### Google
 
@@ -71,10 +71,10 @@ Activepieces supports multiple SSO providers to integrate with your existing ide
         Select **Web application** as the application type.
     </Step>
     <Step title="Configure Redirect URI">
-        Copy the **Redirect URL** from the Activepieces SSO configuration screen and add it to the **Authorized redirect URIs** in Google Cloud Console.
+        Copy the **Redirect URL** from the FEMA Integration Platform SSO configuration screen and add it to the **Authorized redirect URIs** in Google Cloud Console.
     </Step>
-    <Step title="Copy Credentials to Activepieces">
-        Copy the **Client ID** and **Client Secret** from Google and paste them into the corresponding fields in Activepieces.
+    <Step title="Copy Credentials to FEMA Integration Platform">
+        Copy the **Client ID** and **Client Secret** from Google and paste them into the corresponding fields in FEMA Integration Platform.
     </Step>
     <Step title="Save Configuration">
         Click **Finish** to complete the setup.
@@ -89,11 +89,11 @@ Activepieces supports multiple SSO providers to integrate with your existing ide
     </Step>
     <Step title="Register New Application">
         Fill in the application details:
-        - **Application name**: Choose a recognizable name (e.g., "Activepieces SSO")
-        - **Homepage URL**: Enter your Activepieces instance URL
+        - **Application name**: Choose a recognizable name (e.g., "FEMA Integration Platform SSO")
+        - **Homepage URL**: Enter your FEMA Integration Platform instance URL
     </Step>
     <Step title="Configure Authorization Callback">
-        Copy the **Redirect URL** from the Activepieces SSO configuration screen and paste it into the **Authorization callback URL** field.
+        Copy the **Redirect URL** from the FEMA Integration Platform SSO configuration screen and paste it into the **Authorization callback URL** field.
     </Step>
     <Step title="Complete Registration">
         Click **Register application** to create the OAuth App.
@@ -101,8 +101,8 @@ Activepieces supports multiple SSO providers to integrate with your existing ide
     <Step title="Generate Client Secret">
         After registration, click **Generate a new client secret** and copy it immediately (it won't be shown again).
     </Step>
-    <Step title="Copy Credentials to Activepieces">
-        Copy the **Client ID** and **Client Secret** and paste them into the corresponding fields in Activepieces.
+    <Step title="Copy Credentials to FEMA Integration Platform">
+        Copy the **Client ID** and **Client Secret** and paste them into the corresponding fields in FEMA Integration Platform.
     </Step>
     <Step title="Save Configuration">
         Click **Finish** to complete the setup.
@@ -119,11 +119,11 @@ Activepieces supports multiple SSO providers to integrate with your existing ide
         Choose **SAML 2.0** as the sign-on method and click **Next**.
     </Step>
     <Step title="Configure General Settings">
-        Enter an **App name** (e.g., "Activepieces") and optionally upload a logo. Click **Next**.
+        Enter an **App name** (e.g., "FEMA Integration Platform") and optionally upload a logo. Click **Next**.
     </Step>
     <Step title="Configure SAML Settings">
-        - **Single sign-on URL**: Copy the SSO URL from the Activepieces configuration screen
-        - **Audience URI (SP Entity ID)**: Enter `Activepieces`
+        - **Single sign-on URL**: Copy the SSO URL from the FEMA Integration Platform configuration screen
+        - **Audience URI (SP Entity ID)**: Enter `FEMA Integration Platform`
         - **Name ID format**: Select `EmailAddress`
     </Step>
     <Step title="Add Attribute Statements">
@@ -141,7 +141,7 @@ Activepieces supports multiple SSO providers to integrate with your existing ide
     <Step title="Export IdP Metadata">
         Go to the **Sign On** tab → **View SAML setup instructions** or **View IdP metadata**. Copy the Identity Provider metadata XML.
     </Step>
-    <Step title="Configure Activepieces">
+    <Step title="Configure FEMA Integration Platform">
         - Paste the **IdP Metadata** XML into the corresponding field
         - Copy the **X.509 Certificate** from Okta and paste it into the **Signing Key** field
         - (Optional, Cloud) Set the **SSO Domain** to your organization's public domain (e.g. `acme.com`) so users can sign in by entering it on the cloud sign-in page. See [SSO Domain](#sso-domain) above.
@@ -157,15 +157,15 @@ Activepieces supports multiple SSO providers to integrate with your existing ide
     <Step title="Create an Enterprise Application">
         Go to the [Azure Portal](https://portal.azure.com/) → **Microsoft Entra ID** → **Enterprise applications** → **New application** → **Create your own application**.
 
-        Name it (e.g., "Activepieces") and select **Integrate any other application you don't find in the gallery (Non-gallery)**.
+        Name it (e.g., "FEMA Integration Platform") and select **Integrate any other application you don't find in the gallery (Non-gallery)**.
     </Step>
     <Step title="Configure SAML Single Sign-On">
         Open the application → **Single sign-on** → select **SAML**.
     </Step>
     <Step title="Set Identifier and Reply URL">
         Edit **Basic SAML Configuration**:
-        - **Identifier (Entity ID)**: `Activepieces`
-        - **Reply URL (Assertion Consumer Service URL)**: paste the SSO URL from the Activepieces configuration screen
+        - **Identifier (Entity ID)**: `FEMA Integration Platform`
+        - **Reply URL (Assertion Consumer Service URL)**: paste the SSO URL from the FEMA Integration Platform configuration screen
     </Step>
     <Step title="Configure User Attributes & Claims">
         Edit **Attributes & Claims** and add these additional claims (leave **Namespace** empty):
@@ -179,16 +179,16 @@ Activepieces supports multiple SSO providers to integrate with your existing ide
     <Step title="Copy the Federation Metadata">
         In the **SAML Certificates** section, copy the **App Federation Metadata Url**.
 
-        You can paste this URL directly into the **IdP Metadata** field in Activepieces — Activepieces will fetch the metadata XML automatically. Alternatively, open the URL in a browser, save the XML, and paste its contents.
+        You can paste this URL directly into the **IdP Metadata** field in FEMA Integration Platform — FEMA Integration Platform will fetch the metadata XML automatically. Alternatively, open the URL in a browser, save the XML, and paste its contents.
     </Step>
     <Step title="Copy the Signing Certificate">
-        Download the **Certificate (Base64)** from the **SAML Certificates** section. Open the file and copy its contents (including the `-----BEGIN CERTIFICATE-----` / `-----END CERTIFICATE-----` markers) into the **Signing Key** field in Activepieces.
+        Download the **Certificate (Base64)** from the **SAML Certificates** section. Open the file and copy its contents (including the `-----BEGIN CERTIFICATE-----` / `-----END CERTIFICATE-----` markers) into the **Signing Key** field in FEMA Integration Platform.
     </Step>
     <Step title="Assign Users">
         Go to **Users and groups** in the application and assign the users or groups that should be allowed to sign in.
     </Step>
     <Step title="Save Configuration">
-        Click **Save** in Activepieces to complete the setup.
+        Click **Save** in FEMA Integration Platform to complete the setup.
     </Step>
 </Steps>
 
@@ -199,12 +199,12 @@ Activepieces supports multiple SSO providers to integrate with your existing ide
         Go to the [JumpCloud Admin Portal](https://console.jumpcloud.com/) → **SSO Applications** → **Add New Application** → **Custom SAML App**.
     </Step>
     <Step title="Configure ACS URL">
-        Copy the **ACS URL** from the Activepieces configuration screen and paste it into the **ACS URLs** field in JumpCloud.
+        Copy the **ACS URL** from the FEMA Integration Platform configuration screen and paste it into the **ACS URLs** field in JumpCloud.
         
         ![JumpCloud ACS URL](/resources/screenshots/jumpcloud/acl-url.png)
     </Step>
     <Step title="Configure SP Entity ID">
-        Set the **SP Entity ID** (Audience URI) to `Activepieces`.
+        Set the **SP Entity ID** (Audience URI) to `FEMA Integration Platform`.
     </Step>
     <Step title="Add User Attributes">
         Configure the following attribute mappings:
@@ -235,8 +235,8 @@ Activepieces supports multiple SSO providers to integrate with your existing ide
         Verify that the exported XML contains `Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"` to ensure the binding was properly enabled.
         </Tip>
     </Step>
-    <Step title="Configure IdP Metadata in Activepieces">
-        Paste the exported metadata XML into the **IdP Metadata** field in Activepieces.
+    <Step title="Configure IdP Metadata in FEMA Integration Platform">
+        Paste the exported metadata XML into the **IdP Metadata** field in FEMA Integration Platform.
     </Step>
     <Step title="Configure Signing Certificate">
         Locate the `<ds:X509Certificate>` element in the IdP metadata and extract its value. Format it as a PEM certificate:
@@ -269,7 +269,7 @@ Activepieces supports multiple SSO providers to integrate with your existing ide
     </Accordion>
     <Accordion title="SAML authentication fails">
         - Confirm the IdP metadata is complete and correctly formatted
-        - If you pasted a metadata URL, make sure it is publicly reachable (Activepieces fetches it server-side)
+        - If you pasted a metadata URL, make sure it is publicly reachable (FEMA Integration Platform fetches it server-side)
         - Verify the signing certificate is properly formatted with BEGIN/END markers
         - Ensure all required attributes (firstName, lastName, email) are mapped
     </Accordion>
@@ -282,4 +282,4 @@ Activepieces supports multiple SSO providers to integrate with your existing ide
 
 ## Need Help?
 
-If you encounter issues during SSO setup, please contact our enterprise support or [sales team](https://www.activepieces.com/sales).
+If you encounter issues during SSO setup, please contact our enterprise support or [sales team](https://github.com/lokiworks/fema-ipaas/sales).

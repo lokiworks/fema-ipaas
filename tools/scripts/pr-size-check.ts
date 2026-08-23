@@ -12,8 +12,8 @@ const EXCLUDE_PATTERNS: RegExp[] = [
 ]
 
 // First matching bucket wins; `budget: null` means the area is exempt (measured, never gated).
-// packages/pieces is exempt on purpose: line count can't tell a cohesive new piece from a
-// codemod or a schema dump, and pieces are @pieces-owned, self-contained, and low blast radius.
+// packages/connectors is exempt on purpose: line count can't tell a cohesive new connector from a
+// codemod or a schema dump, and connectors are @connectors-owned, self-contained, and low blast radius.
 const BUCKETS: SizeBucket[] = [
     {
         name: 'engine / worker / execution',
@@ -23,7 +23,7 @@ const BUCKETS: SizeBucket[] = [
     { name: 'core/shared', tests: [/^packages\/core\/shared\//], budget: 250 },
     { name: 'server/api', tests: [/^packages\/server\/api\//], budget: 600 },
     { name: 'packages/web', tests: [/^packages\/web\//], budget: 1200 },
-    { name: 'packages/pieces', tests: [/^packages\/pieces\//], budget: null },
+    { name: 'packages/connectors', tests: [/^packages\/connectors\//], budget: null },
 ]
 
 // Everything outside the gated logic areas (docs, tooling, cli, ee, sandbox, utils, …) is exempt too.

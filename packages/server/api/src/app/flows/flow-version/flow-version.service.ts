@@ -44,7 +44,7 @@ export const flowVersionService = (log: FastifyBaseLogger) => ({
                     },
                 }]
                 if (
-                    previousVersion.trigger.type === FlowTriggerType.PIECE &&
+                    previousVersion.trigger.type === FlowTriggerType.CONNECTOR &&
                     !isNil(previousVersion.trigger.settings.sampleData)
                 ) {
                     operations.push({

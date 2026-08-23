@@ -62,7 +62,7 @@ export const flowRunProgressReporter = {
                         status: flowExecutorContext.verdict.status,
                         environment: engineConstants.runEnvironment ?? RunEnvironment.TESTING,
                         failParentOnFailure: false,
-                        triggeredBy: engineConstants.triggerPieceName,
+                        triggeredBy: engineConstants.triggerConnectorName,
                         tags: Array.from(flowExecutorContext.tags),
                         startTime: params.startTime,
                     },

@@ -11,7 +11,7 @@ A platform may not have more **active** Users than its plan's seat limit (`users
 need enforcing: (1) **adding/inviting** a user when already at the limit, and (2) **lowering** the limit
 (plan downgrade, cancel-to-Free, or seat decrease) below the current active-user count.
 
-The plan/seat catalog and billing live in Autumn (via `console.activepieces.com`, which holds the master
+The plan/seat catalog and billing live in Autumn (via `console.fema.local`, which holds the master
 key). An earlier design tried to make the console an independent **backstop** — the AP server pushed the
 active-user count into Autumn (`balances.update` / "setUsage") and the console re-read it to refuse
 over-floor plan changes. That was abandoned:

@@ -25,10 +25,10 @@ function createTrigger(name: string, request: UpdateTriggerRequest, nextAction: 
                 settings: request.settings,
             }
             break
-        case FlowTriggerType.PIECE:
+        case FlowTriggerType.CONNECTOR:
             trigger = {
                 ...baseProperties,
-                type: FlowTriggerType.PIECE,
+                type: FlowTriggerType.CONNECTOR,
                 settings: { ...request.settings, sampleData: existingSampleData },
             }
             break
@@ -43,7 +43,7 @@ function createTrigger(name: string, request: UpdateTriggerRequest, nextAction: 
 
 function _updateTrigger(flowVersion: FlowVersion, request: UpdateTriggerRequest): FlowVersion {
     const trigger = flowStructureUtil.getStepOrThrow(request.name, flowVersion.trigger)
-    const existingSampleData = trigger.type === FlowTriggerType.PIECE ? trigger.settings.sampleData : undefined
+    const existingSampleData = trigger.type === FlowTriggerType.CONNECTOR ? trigger.settings.sampleData : undefined
     const updatedTrigger = createTrigger(request.name, request, trigger.nextAction, existingSampleData)
     const next = flowStructureUtil.transferFlow(flowVersion, (parentStep) => {
         if (parentStep.name === request.name) {

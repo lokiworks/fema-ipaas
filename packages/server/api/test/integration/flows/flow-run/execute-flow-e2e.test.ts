@@ -5,11 +5,11 @@
  *   flowRunService.start() → BullMQ queue → worker poll → sandbox engine execution → flow run result
  *
  * Flow structure:
- *   Webhook Trigger → Data Mapper (piece action) → Code Action
+ *   Webhook Trigger → Data Mapper (connector action) → Code Action
  *
  * Prerequisites:
  *   - Engine must be built (cache/v7/common/main.js)
- *   - bun must be available for piece installation
+ *   - bun must be available for connector installation
  *   - Redis (in-memory via FEMA_REDIS_TYPE=MEMORY) is started automatically
  */
 import { readFileSync } from 'node:fs'
@@ -22,8 +22,8 @@ import {
     FlowTriggerType,
     FlowVersionState,
     PackageType,
-    PieceScope,
-    PieceType,
+    ConnectorScope,
+    ConnectorType,
     RunEnvironment,
     StepOutputType,
     StreamStepProgress,
@@ -39,13 +39,13 @@ import { setupE2eEnvironment } from '../../../../helpers/e2e-setup'
 import {
     createMockFlow,
     createMockFlowVersion,
-    createMockPieceMetadata,
+    createMockConnectorMetadata,
     mockAndSaveBasicSetup,
 } from '../../../../helpers/mocks'
 
-const CUSTOM_PIECE_NAME = 'e2e-custom-echo'
-const CUSTOM_PIECE_VERSION = '0.0.1'
-const customPieceArchive = readFileSync(
+const CUSTOM_CONNECTOR_NAME = 'e2e-custom-echo'
+const CUSTOM_CONNECTOR_VERSION = '0.0.1'
+const customConnectorArchive = readFileSync(
     join(__dirname, '../../../../../src/assets/e2e-custom-echo-0.0.1.tgz'),
 )
 
@@ -70,31 +70,31 @@ afterAll(async () => {
 async function setupSubflowFixtures({ childAlwaysFails = false, retryOnFailure = false }: { childAlwaysFails?: boolean, retryOnFailure?: boolean } = {}) {
     const { mockPlatform, mockProject } = await mockAndSaveBasicSetup()
 
-    const webhookPiece = createMockPieceMetadata({
+    const webhookConnector = createMockConnectorMetadata({
         name: '@fema/connector-webhook',
         version: '0.1.29',
         platformId: undefined,
         packageType: PackageType.REGISTRY,
-        pieceType: PieceType.OFFICIAL,
+        connectorType: ConnectorType.OFFICIAL,
     })
-    const subflowsPiece = createMockPieceMetadata({
+    const subflowsConnector = createMockConnectorMetadata({
         name: '@fema/connector-subflows',
         version: '0.4.11',
         platformId: undefined,
         packageType: PackageType.REGISTRY,
-        pieceType: PieceType.OFFICIAL,
+        connectorType: ConnectorType.OFFICIAL,
     })
-    await databaseConnection().getRepository('piece_metadata').save([webhookPiece, subflowsPiece])
+    await databaseConnection().getRepository('connector_metadata').save([webhookConnector, subflowsConnector])
 
     // Child Flow: callableFlow trigger → code action → returnResponse action
     const childReturnResponseAction = {
-        type: FlowActionType.PIECE as const,
+        type: FlowActionType.CONNECTOR as const,
         name: 'step_2',
         displayName: 'Return Response',
         valid: true,
         settings: {
-            pieceName: '@fema/connector-subflows',
-            pieceVersion: '0.4.11',
+            connectorName: '@fema/connector-subflows',
+            connectorVersion: '0.4.11',
             actionName: 'returnResponse',
             input: {
                 mode: 'simple',
@@ -144,14 +144,14 @@ async function setupSubflowFixtures({ childAlwaysFails = false, retryOnFailure =
         flowId: childFlow.id,
         state: FlowVersionState.LOCKED,
         trigger: {
-            type: FlowTriggerType.PIECE,
+            type: FlowTriggerType.CONNECTOR,
             name: 'trigger',
             displayName: 'Callable Flow',
             valid: true,
             lastUpdatedDate: new Date().toISOString(),
             settings: {
-                pieceName: '@fema/connector-subflows',
-                pieceVersion: '0.4.11',
+                connectorName: '@fema/connector-subflows',
+                connectorVersion: '0.4.11',
                 triggerName: 'callableFlow',
                 input: {
                     mode: 'simple',
@@ -174,13 +174,13 @@ async function setupSubflowFixtures({ childAlwaysFails = false, retryOnFailure =
 
     // Parent Flow: webhook trigger → callFlow action
     const parentCallFlowAction = {
-        type: FlowActionType.PIECE as const,
+        type: FlowActionType.CONNECTOR as const,
         name: 'step_1',
         displayName: 'Call Flow',
         valid: true,
         settings: {
-            pieceName: '@fema/connector-subflows',
-            pieceVersion: '0.4.11',
+            connectorName: '@fema/connector-subflows',
+            connectorVersion: '0.4.11',
             actionName: 'callFlow',
             input: {
                 flow: {
@@ -216,14 +216,14 @@ async function setupSubflowFixtures({ childAlwaysFails = false, retryOnFailure =
         flowId: parentFlow.id,
         state: FlowVersionState.DRAFT,
         trigger: {
-            type: FlowTriggerType.PIECE,
+            type: FlowTriggerType.CONNECTOR,
             name: 'trigger',
             displayName: 'Catch Webhook',
             valid: true,
             lastUpdatedDate: new Date().toISOString(),
             settings: {
-                pieceName: '@fema/connector-webhook',
-                pieceVersion: '0.1.29',
+                connectorName: '@fema/connector-webhook',
+                connectorVersion: '0.1.29',
                 triggerName: 'catch_webhook',
                 input: { authType: 'none' },
                 propertySettings: {},
@@ -239,31 +239,31 @@ async function setupSubflowFixtures({ childAlwaysFails = false, retryOnFailure =
 async function setupSubflowWithWebhookResponseFixtures() {
     const { mockPlatform, mockProject } = await mockAndSaveBasicSetup()
 
-    const webhookPiece = createMockPieceMetadata({
+    const webhookConnector = createMockConnectorMetadata({
         name: '@fema/connector-webhook',
         version: '0.1.29',
         platformId: undefined,
         packageType: PackageType.REGISTRY,
-        pieceType: PieceType.OFFICIAL,
+        connectorType: ConnectorType.OFFICIAL,
     })
-    const subflowsPiece = createMockPieceMetadata({
+    const subflowsConnector = createMockConnectorMetadata({
         name: '@fema/connector-subflows',
         version: '0.4.11',
         platformId: undefined,
         packageType: PackageType.REGISTRY,
-        pieceType: PieceType.OFFICIAL,
+        connectorType: ConnectorType.OFFICIAL,
     })
-    await databaseConnection().getRepository('piece_metadata').save([webhookPiece, subflowsPiece])
+    await databaseConnection().getRepository('connector_metadata').save([webhookConnector, subflowsConnector])
 
     // Child flow: callableFlow trigger → returnResponse (echoes back message)
     const childReturnResponseAction = {
-        type: FlowActionType.PIECE as const,
+        type: FlowActionType.CONNECTOR as const,
         name: 'step_1',
         displayName: 'Return Response',
         valid: true,
         settings: {
-            pieceName: '@fema/connector-subflows',
-            pieceVersion: '0.4.11',
+            connectorName: '@fema/connector-subflows',
+            connectorVersion: '0.4.11',
             actionName: 'returnResponse',
             input: {
                 mode: 'simple',
@@ -288,13 +288,13 @@ async function setupSubflowWithWebhookResponseFixtures() {
         state: FlowVersionState.LOCKED,
         trigger: {
             lastUpdatedDate: new Date().toISOString(),
-            type: FlowTriggerType.PIECE,
+            type: FlowTriggerType.CONNECTOR,
             name: 'trigger',
             displayName: 'Callable Flow',
             valid: true,
             settings: {
-                pieceName: '@fema/connector-subflows',
-                pieceVersion: '0.4.11',
+                connectorName: '@fema/connector-subflows',
+                connectorVersion: '0.4.11',
                 triggerName: 'callableFlow',
                 input: {
                     mode: 'simple',
@@ -317,13 +317,13 @@ async function setupSubflowWithWebhookResponseFixtures() {
     // Parent flow: catch_webhook → callFlow (waitForResponse) → return_response (webhook).
     // Flow must be ENABLED + LOCKED so the /sync webhook route accepts and executes it.
     const parentReturnResponseAction = {
-        type: FlowActionType.PIECE as const,
+        type: FlowActionType.CONNECTOR as const,
         name: 'step_2',
         displayName: 'Return Response',
         valid: true,
         settings: {
-            pieceName: '@fema/connector-webhook',
-            pieceVersion: '0.1.29',
+            connectorName: '@fema/connector-webhook',
+            connectorVersion: '0.1.29',
             actionName: 'return_response',
             input: {
                 responseType: 'json',
@@ -340,13 +340,13 @@ async function setupSubflowWithWebhookResponseFixtures() {
     }
 
     const parentCallFlowAction = {
-        type: FlowActionType.PIECE as const,
+        type: FlowActionType.CONNECTOR as const,
         name: 'step_1',
         displayName: 'Call Flow',
         valid: true,
         settings: {
-            pieceName: '@fema/connector-subflows',
-            pieceVersion: '0.4.11',
+            connectorName: '@fema/connector-subflows',
+            connectorVersion: '0.4.11',
             actionName: 'callFlow',
             input: {
                 flow: {
@@ -381,14 +381,14 @@ async function setupSubflowWithWebhookResponseFixtures() {
         flowId: parentFlow.id,
         state: FlowVersionState.LOCKED,
         trigger: {
-            type: FlowTriggerType.PIECE,
+            type: FlowTriggerType.CONNECTOR,
             name: 'trigger',
             displayName: 'Catch Webhook',
             valid: true,
             lastUpdatedDate: new Date().toISOString(),
             settings: {
-                pieceName: '@fema/connector-webhook',
-                pieceVersion: '0.1.29',
+                connectorName: '@fema/connector-webhook',
+                connectorVersion: '0.1.29',
                 triggerName: 'catch_webhook',
                 input: { authType: 'none' },
                 propertySettings: {},
@@ -431,22 +431,22 @@ describe('Execute Flow E2E', () => {
     it('executes a webhook → data mapper → code flow end-to-end', async () => {
         const { mockPlatform, mockProject } = await mockAndSaveBasicSetup()
 
-        // Save piece metadata records
-        const webhookPiece = createMockPieceMetadata({
+        // Save connector metadata records
+        const webhookConnector = createMockConnectorMetadata({
             name: '@fema/connector-webhook',
             version: '0.1.29',
             platformId: undefined,
             packageType: PackageType.REGISTRY,
-            pieceType: PieceType.OFFICIAL,
+            connectorType: ConnectorType.OFFICIAL,
         })
-        const dataMapperPiece = createMockPieceMetadata({
+        const dataMapperConnector = createMockConnectorMetadata({
             name: '@fema/connector-data-mapper',
             version: '0.3.15',
             platformId: undefined,
             packageType: PackageType.REGISTRY,
-            pieceType: PieceType.OFFICIAL,
+            connectorType: ConnectorType.OFFICIAL,
         })
-        await databaseConnection().getRepository('piece_metadata').save([webhookPiece, dataMapperPiece])
+        await databaseConnection().getRepository('connector_metadata').save([webhookConnector, dataMapperConnector])
 
         // Build the flow: trigger → data mapper → code
         const codeAction = {
@@ -473,13 +473,13 @@ describe('Execute Flow E2E', () => {
         }
 
         const dataMapperAction = {
-            type: FlowActionType.PIECE as const,
+            type: FlowActionType.CONNECTOR as const,
             name: 'step_1',
             displayName: 'Map Data',
             valid: true,
             settings: {
-                pieceName: '@fema/connector-data-mapper',
-                pieceVersion: '0.3.15',
+                connectorName: '@fema/connector-data-mapper',
+                connectorVersion: '0.3.15',
                 actionName: 'advanced_mapping',
                 input: {
                     mapping: {
@@ -502,14 +502,14 @@ describe('Execute Flow E2E', () => {
             flowId: mockFlow.id,
             state: FlowVersionState.DRAFT,
             trigger: {
-                type: FlowTriggerType.PIECE,
+                type: FlowTriggerType.CONNECTOR,
                 name: 'trigger',
                 displayName: 'Catch Webhook',
                 valid: true,
                 lastUpdatedDate: new Date().toISOString(),
                 settings: {
-                    pieceName: '@fema/connector-webhook',
-                    pieceVersion: '0.1.29',
+                    connectorName: '@fema/connector-webhook',
+                    connectorVersion: '0.1.29',
                     triggerName: 'catch_webhook',
                     input: { authType: 'none' },
                     propertySettings: {},
@@ -572,49 +572,49 @@ describe('Execute Flow E2E', () => {
         )
     }, 120_000)
 
-    it('installs a tar.gz custom piece and executes a flow that runs its action', async () => {
+    it('installs a tar.gz custom connector and executes a flow that runs its action', async () => {
         const ctx = await createTestContext(app)
 
-        // Install the custom piece straight from its packed .tgz archive through the
+        // Install the custom connector straight from its packed .tgz archive through the
         // real public API — this exercises archive upload → engine metadata extraction →
-        // worker install, the full private-piece path.
+        // worker install, the full private-connector path.
         const formData = new FormData()
         formData.append(
-            'pieceArchive',
-            new Blob([customPieceArchive], { type: 'application/gzip' }),
+            'connectorArchive',
+            new Blob([customConnectorArchive], { type: 'application/gzip' }),
             'e2e-custom-echo-0.0.1.tgz',
         )
-        formData.append('pieceName', CUSTOM_PIECE_NAME)
-        formData.append('pieceVersion', CUSTOM_PIECE_VERSION)
+        formData.append('connectorName', CUSTOM_CONNECTOR_NAME)
+        formData.append('connectorVersion', CUSTOM_CONNECTOR_VERSION)
         formData.append('packageType', PackageType.ARCHIVE)
-        formData.append('scope', PieceScope.PLATFORM)
+        formData.append('scope', ConnectorScope.PLATFORM)
 
         const installResponse = await ctx.inject({
             method: 'POST',
-            url: '/api/v1/pieces',
+            url: '/api/v1/connectors',
             body: formData,
         })
         // Surface the response body in the failure message so a regressed archive
         // upload is diagnosable from the CI log without re-running locally.
         expect(installResponse.statusCode, installResponse.body).toBe(StatusCodes.CREATED)
 
-        const webhookPiece = createMockPieceMetadata({
+        const webhookConnector = createMockConnectorMetadata({
             name: '@fema/connector-webhook',
             version: '0.1.29',
             platformId: undefined,
             packageType: PackageType.REGISTRY,
-            pieceType: PieceType.OFFICIAL,
+            connectorType: ConnectorType.OFFICIAL,
         })
-        await databaseConnection().getRepository('piece_metadata').save([webhookPiece])
+        await databaseConnection().getRepository('connector_metadata').save([webhookConnector])
 
         const echoAction = {
-            type: FlowActionType.PIECE as const,
+            type: FlowActionType.CONNECTOR as const,
             name: 'step_1',
             displayName: 'Echo Message',
             valid: true,
             settings: {
-                pieceName: CUSTOM_PIECE_NAME,
-                pieceVersion: CUSTOM_PIECE_VERSION,
+                connectorName: CUSTOM_CONNECTOR_NAME,
+                connectorVersion: CUSTOM_CONNECTOR_VERSION,
                 actionName: 'echo',
                 input: {},
                 propertySettings: {},
@@ -629,14 +629,14 @@ describe('Execute Flow E2E', () => {
             flowId: mockFlow.id,
             state: FlowVersionState.DRAFT,
             trigger: {
-                type: FlowTriggerType.PIECE,
+                type: FlowTriggerType.CONNECTOR,
                 name: 'trigger',
                 displayName: 'Catch Webhook',
                 valid: true,
                 lastUpdatedDate: new Date().toISOString(),
                 settings: {
-                    pieceName: '@fema/connector-webhook',
-                    pieceVersion: '0.1.29',
+                    connectorName: '@fema/connector-webhook',
+                    connectorVersion: '0.1.29',
                     triggerName: 'catch_webhook',
                     input: { authType: 'none' },
                     propertySettings: {},
@@ -648,7 +648,7 @@ describe('Execute Flow E2E', () => {
 
         const flowRun = await flowRunService(app.log).start({
             flowId: mockFlow.id,
-            payload: { body: { trigger: 'custom-piece' } },
+            payload: { body: { trigger: 'custom-connector' } },
             platformId: ctx.platform.id,
             executionType: ExecutionType.BEGIN,
             environment: RunEnvironment.TESTING,
@@ -665,21 +665,21 @@ describe('Execute Flow E2E', () => {
 
         expect(result.status).toBe(FlowRunStatus.SUCCEEDED)
         expect(result.steps.step_1.output).toEqual(
-            expect.objectContaining({ message: 'custom-piece-works' }),
+            expect.objectContaining({ message: 'custom-connector-works' }),
         )
     }, 180_000)
 
     it('handles concurrent flow run executions without jobs getting stuck', async () => {
         const { mockPlatform, mockProject } = await mockAndSaveBasicSetup()
 
-        const webhookPiece = createMockPieceMetadata({
+        const webhookConnector = createMockConnectorMetadata({
             name: '@fema/connector-webhook',
             version: '0.1.29',
             platformId: undefined,
             packageType: PackageType.REGISTRY,
-            pieceType: PieceType.OFFICIAL,
+            connectorType: ConnectorType.OFFICIAL,
         })
-        await databaseConnection().getRepository('piece_metadata').save([webhookPiece])
+        await databaseConnection().getRepository('connector_metadata').save([webhookConnector])
 
         const codeAction = {
             type: FlowActionType.CODE as const,
@@ -707,14 +707,14 @@ describe('Execute Flow E2E', () => {
             flowId: mockFlow.id,
             state: FlowVersionState.DRAFT,
             trigger: {
-                type: FlowTriggerType.PIECE,
+                type: FlowTriggerType.CONNECTOR,
                 name: 'trigger',
                 displayName: 'Catch Webhook',
                 valid: true,
                 lastUpdatedDate: new Date().toISOString(),
                 settings: {
-                    pieceName: '@fema/connector-webhook',
-                    pieceVersion: '0.1.29',
+                    connectorName: '@fema/connector-webhook',
+                    connectorVersion: '0.1.29',
                     triggerName: 'catch_webhook',
                     input: { authType: 'none' },
                     propertySettings: {},
@@ -848,21 +848,21 @@ describe('Execute Flow E2E', () => {
     it('executes a webhook → delay_for → code flow without infinite loop', async () => {
         const { mockPlatform, mockProject } = await mockAndSaveBasicSetup()
 
-        const webhookPiece = createMockPieceMetadata({
+        const webhookConnector = createMockConnectorMetadata({
             name: '@fema/connector-webhook',
             version: '0.1.29',
             platformId: undefined,
             packageType: PackageType.REGISTRY,
-            pieceType: PieceType.OFFICIAL,
+            connectorType: ConnectorType.OFFICIAL,
         })
-        const delayPiece = createMockPieceMetadata({
+        const delayConnector = createMockConnectorMetadata({
             name: '@fema/connector-delay',
             version: '0.3.26',
             platformId: undefined,
             packageType: PackageType.REGISTRY,
-            pieceType: PieceType.OFFICIAL,
+            connectorType: ConnectorType.OFFICIAL,
         })
-        await databaseConnection().getRepository('piece_metadata').save([webhookPiece, delayPiece])
+        await databaseConnection().getRepository('connector_metadata').save([webhookConnector, delayConnector])
 
         const codeAction = {
             type: FlowActionType.CODE as const,
@@ -882,13 +882,13 @@ describe('Execute Flow E2E', () => {
         }
 
         const delayAction = {
-            type: FlowActionType.PIECE as const,
+            type: FlowActionType.CONNECTOR as const,
             name: 'step_1',
             displayName: 'Delay For',
             valid: true,
             settings: {
-                pieceName: '@fema/connector-delay',
-                pieceVersion: '0.3.26',
+                connectorName: '@fema/connector-delay',
+                connectorVersion: '0.3.26',
                 actionName: 'delayFor',
                 input: {
                     unit: 'seconds',
@@ -909,14 +909,14 @@ describe('Execute Flow E2E', () => {
             flowId: mockFlow.id,
             state: FlowVersionState.DRAFT,
             trigger: {
-                type: FlowTriggerType.PIECE,
+                type: FlowTriggerType.CONNECTOR,
                 name: 'trigger',
                 displayName: 'Catch Webhook',
                 valid: true,
                 lastUpdatedDate: new Date().toISOString(),
                 settings: {
-                    pieceName: '@fema/connector-webhook',
-                    pieceVersion: '0.1.29',
+                    connectorName: '@fema/connector-webhook',
+                    connectorVersion: '0.1.29',
                     triggerName: 'catch_webhook',
                     input: { authType: 'none' },
                     propertySettings: {},
@@ -951,21 +951,21 @@ describe('Execute Flow E2E', () => {
     it('slices a >32 KB step output, persists it across a delay/resume, and materializes it for a downstream step', async () => {
         const { mockPlatform, mockProject } = await mockAndSaveBasicSetup()
 
-        const webhookPiece = createMockPieceMetadata({
+        const webhookConnector = createMockConnectorMetadata({
             name: '@fema/connector-webhook',
             version: '0.1.29',
             platformId: undefined,
             packageType: PackageType.REGISTRY,
-            pieceType: PieceType.OFFICIAL,
+            connectorType: ConnectorType.OFFICIAL,
         })
-        const delayPiece = createMockPieceMetadata({
+        const delayConnector = createMockConnectorMetadata({
             name: '@fema/connector-delay',
             version: '0.3.26',
             platformId: undefined,
             packageType: PackageType.REGISTRY,
-            pieceType: PieceType.OFFICIAL,
+            connectorType: ConnectorType.OFFICIAL,
         })
-        await databaseConnection().getRepository('piece_metadata').save([webhookPiece, delayPiece])
+        await databaseConnection().getRepository('connector_metadata').save([webhookConnector, delayConnector])
 
         const referenceAction = {
             type: FlowActionType.CODE as const,
@@ -988,13 +988,13 @@ describe('Execute Flow E2E', () => {
         }
 
         const delayAction = {
-            type: FlowActionType.PIECE as const,
+            type: FlowActionType.CONNECTOR as const,
             name: 'step_2',
             displayName: 'Delay For',
             valid: true,
             settings: {
-                pieceName: '@fema/connector-delay',
-                pieceVersion: '0.3.26',
+                connectorName: '@fema/connector-delay',
+                connectorVersion: '0.3.26',
                 actionName: 'delayFor',
                 input: {
                     unit: 'seconds',
@@ -1031,14 +1031,14 @@ describe('Execute Flow E2E', () => {
             flowId: mockFlow.id,
             state: FlowVersionState.DRAFT,
             trigger: {
-                type: FlowTriggerType.PIECE,
+                type: FlowTriggerType.CONNECTOR,
                 name: 'trigger',
                 displayName: 'Catch Webhook',
                 valid: true,
                 lastUpdatedDate: new Date().toISOString(),
                 settings: {
-                    pieceName: '@fema/connector-webhook',
-                    pieceVersion: '0.1.29',
+                    connectorName: '@fema/connector-webhook',
+                    connectorVersion: '0.1.29',
                     triggerName: 'catch_webhook',
                     input: { authType: 'none' },
                     propertySettings: {},

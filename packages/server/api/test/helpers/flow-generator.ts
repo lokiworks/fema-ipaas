@@ -66,15 +66,15 @@ function randomizeTriggerMetadata(trigger: FlowTrigger): FlowTrigger {
 }
 function generateAction(): FlowAction {
     return {
-        type: FlowActionType.PIECE,
+        type: FlowActionType.CONNECTOR,
         displayName: faker.hacker.noun(),
         name: apId(),
         skip: false,
         lastUpdatedDate: dayjs().toISOString(),
         settings: {
             input: {},
-            pieceName: faker.helpers.arrayElement(['@fema/connector-schedule', '@fema/connector-webhook']),
-            pieceVersion: faker.system.semver(),
+            connectorName: faker.helpers.arrayElement(['@fema/connector-schedule', '@fema/connector-webhook']),
+            connectorVersion: faker.system.semver(),
             actionName: faker.hacker.noun(),
             propertySettings: {},
         },
@@ -84,13 +84,13 @@ function generateAction(): FlowAction {
 
 function generateTrigger(): FlowTrigger {
     return {
-        type: FlowTriggerType.PIECE,
+        type: FlowTriggerType.CONNECTOR,
         displayName: faker.hacker.noun(),
         name: apId(),
         lastUpdatedDate: dayjs().toISOString(),
         settings: {
-            pieceName: faker.helpers.arrayElement(['@fema/connector-schedule', '@fema/connector-webhook']),
-            pieceVersion: faker.system.semver(),
+            connectorName: faker.helpers.arrayElement(['@fema/connector-schedule', '@fema/connector-webhook']),
+            connectorVersion: faker.system.semver(),
             triggerName: faker.hacker.noun(),
             input: {},
             propertySettings: {},

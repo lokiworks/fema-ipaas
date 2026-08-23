@@ -25,8 +25,8 @@ import {
 import { usePinnedItems } from '@/features/automations/hooks/use-pinned-items';
 import { TreeItem } from '@/features/automations/lib/types';
 import { appConnectionsQueries } from '@/features/connections';
+import { connectorsHooks } from '@/features/connectors';
 import { ImportFlowDialog } from '@/features/flows/components/import-flow-dialog';
-import { piecesHooks } from '@/features/pieces';
 import { projectCollectionUtils, getProjectName } from '@/features/projects';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
@@ -126,7 +126,7 @@ const AutomationsPageContent = ({ projectId }: { projectId: string }) => {
     extraKeys: [projectId],
   });
 
-  const { pieces } = piecesHooks.usePieces({});
+  const { connectors } = connectorsHooks.useConnectors({});
 
   // Bulk actions resolve selected items from the loaded treeItems, so the
   // selection must never outlive the view that produced it. Clearing it on
@@ -256,7 +256,7 @@ const AutomationsPageContent = ({ projectId }: { projectId: string }) => {
         onFilterChange={handleFiltersChange}
         folders={folders}
         connections={connections?.data}
-        pieces={pieces}
+        connectors={connectors}
         userHasPermissionToWriteFlow={userHasPermissionToWriteFlow}
         userHasPermissionToWriteFolder={userHasPermissionToWriteFolder}
         onCreateFlow={() => mutations.createFlow()}

@@ -1,0 +1,92 @@
+import { ConnectorAction, ConnectorTrigger } from '@fema/shared';
+import { useMutation } from '@tanstack/react-query';
+import { t } from 'i18next';
+import React, { useState } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { DialogFooter } from '@/components/ui/dialog';
+
+import { useBuilderStateContext } from '../../builder-hooks';
+
+import {
+  changeVersionUtils,
+  LatestVersionAvailableAlert,
+} from './update-connector-version-utils';
+
+export const UpgradeConnectorVersionContent: React.FC<
+  UpgradeConnectorVersionContentProps
+> = ({
+  step,
+  currentVersion,
+  latestVersion,
+  isLatestMinorOrMajor,
+  onClose,
+  onOpenAdvanced,
+}) => {
+  const [serverError, setServerError] = useState<string | undefined>(undefined);
+
+  const applyOperation = useBuilderStateContext(
+    (state) => state.applyOperation,
+  );
+
+  const { mutate: applyUpgrade, isPending: isUpgradePending } = useMutation({
+    mutationFn: async () => {
+      await changeVersionUtils.applyConnectorVersionChange({
+        step,
+        targetVersion: latestVersion,
+        currentVersion,
+        applyOperation,
+      });
+    },
+    onSuccess: () => {
+      onClose();
+    },
+    onError: (error) => {
+      setServerError(error.message);
+    },
+  });
+
+  return (
+    <div className="flex flex-col gap-4">
+      <LatestVersionAvailableAlert
+        isLatestMinorOrMajor={isLatestMinorOrMajor}
+      />
+
+      {serverError && (
+        <p className="text-sm font-medium text-destructive">{serverError}</p>
+      )}
+
+      <DialogFooter>
+        <Button
+          type="button"
+          variant="outline"
+          className="mr-auto"
+          onClick={onOpenAdvanced}
+        >
+          {t('Advanced')}
+        </Button>
+        <Button type="button" variant="outline" onClick={onClose}>
+          {t('Cancel')}
+        </Button>
+        <Button
+          type="button"
+          loading={isUpgradePending}
+          onClick={() => applyUpgrade()}
+        >
+          {isLatestMinorOrMajor
+            ? t('Upgrade to v{version}', { version: latestVersion })
+            : t('Update to v{version}', { version: latestVersion })}
+        </Button>
+      </DialogFooter>
+    </div>
+  );
+};
+
+export type UpgradeConnectorVersionContentProps = {
+  step: ConnectorAction | ConnectorTrigger;
+  currentVersion: string;
+  latestVersion: string;
+  isLatestMinorOrMajor: boolean;
+  onClose: () => void;
+  onOpenAdvanced: () => void;
+};

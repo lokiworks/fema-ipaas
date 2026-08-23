@@ -34,7 +34,7 @@ export const templateService = (log: FastifyBaseLogger) => ({
             log,
         })
 
-        const { flows, pieces } = preparedTemplate
+        const { flows, connectors } = preparedTemplate
         const { name, summary, description, tags, blogUrl, metadata, author, categories, type } = params
 
         const newTags = tags ?? []
@@ -55,7 +55,7 @@ export const templateService = (log: FastifyBaseLogger) => ({
                     metadata,
                     author,
                     categories,
-                    pieces,
+                    connectors,
                     flows,
                     status: TemplateStatus.PUBLISHED,
                 }
@@ -71,7 +71,7 @@ export const templateService = (log: FastifyBaseLogger) => ({
         const newTags = tags ?? []
 
         let sanatizedFlows: FlowVersionTemplate[] | undefined = undefined
-        let pieces: string[] | undefined = undefined
+        let connectors: string[] | undefined = undefined
         if (!isNil(params.flows) && params.flows.length > 0) {
             const preparedTemplate = await templateValidator.validateAndPrepare({
                 flows: params.flows,
@@ -79,7 +79,7 @@ export const templateService = (log: FastifyBaseLogger) => ({
                 log,
             })
             sanatizedFlows = preparedTemplate.flows
-            pieces = preparedTemplate.pieces
+            connectors = preparedTemplate.connectors
         }
 
         switch (template.type) {
@@ -95,7 +95,7 @@ export const templateService = (log: FastifyBaseLogger) => ({
                     ...spreadIfDefined('metadata', metadata),
                     ...spreadIfDefined('categories', categories),
                     ...spreadIfDefined('flows', sanatizedFlows),
-                    ...spreadIfDefined('pieces', pieces),
+                    ...spreadIfDefined('connectors', connectors),
                     ...spreadIfDefined('tags', newTags),
                     ...spreadIfDefined('status', status),
                 })
@@ -104,11 +104,11 @@ export const templateService = (log: FastifyBaseLogger) => ({
         }
     },
 
-    async list({ platformId, pieces, tags, search, type, category }: ListParams): Promise<SeekPage<Template>> {
+    async list({ platformId, connectors, tags, search, type, category }: ListParams): Promise<SeekPage<Template>> {
         const commonFilters: Record<string, unknown> = {}
 
-        if (pieces) {
-            commonFilters.pieces = ArrayOverlap(pieces)
+        if (connectors) {
+            commonFilters.connectors = ArrayOverlap(connectors)
         }
         if (category) {
             commonFilters.categories = ArrayContains([category])

@@ -4,7 +4,7 @@ import { execSync } from 'node:child_process'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { readPackageJson } from './files'
 import { packagePrePublishChecks } from './package-pre-publish-checks'
-import { preparePieceDistForPublish } from '../../../packages/cli/src/lib/utils/prepare-piece-utils'
+import { prepareConnectorDistForPublish } from '../../../packages/cli/src/lib/utils/prepare-connector-utils'
 import { isExactVersion } from '../../../packages/cli/src/lib/utils/workspace-utils'
 
 function assertNoSemverRanges(packageJsonPath: string): void {
@@ -31,7 +31,7 @@ function assertNoSemverRanges(packageJsonPath: string): void {
   }
 }
 
-// Final, bullet-proof publish gate. A published piece is a self-contained bundle: every
+// Final, bullet-proof publish gate. A published connector is a self-contained bundle: every
 // @fema/* library (shared, framework, common, core-*) is inlined and NONE of them is
 // published to npm, and there must be no unresolved workspace:* dep. So refuse to publish if any
 // dependency is either still a workspace:* range OR an @fema/* package — regardless of how
@@ -79,11 +79,11 @@ export const publishNpmPackage = async (path: string): Promise<void> => {
   }
   const { version } = await readPackageJson(path)
 
-  // Bundles the piece into a self-contained artifact and rewrites the manifest (strips the
+  // Bundles the connector into a self-contained artifact and rewrites the manifest (strips the
   // @fema/* + workspace deps that are now inlined). MUST be awaited — it copies the
   // source package.json (with workspace:* deps) before the async bundle+rewrite, so reading the
   // manifest before it resolves would see the un-stripped deps and fail the assertion below.
-  await preparePieceDistForPublish(path)
+  await prepareConnectorDistForPublish(path)
 
   const json = JSON.parse(readFileSync(`${outputPath}/package.json`).toString())
   json.version = version

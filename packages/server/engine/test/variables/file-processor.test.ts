@@ -1,5 +1,5 @@
 import { buffer as readableToBuffer } from 'node:stream/consumers'
-import { ApFile, ApStreamingFile, PieceAuth, Property } from '@fema/connector-sdk'
+import { ApFile, ApStreamingFile, ConnectorAuth, Property } from '@fema/connector-sdk'
 import { propsProcessor } from '../../src/lib/variables/props-processor'
 
 const HELLO_TXT_DATA_URL = 'data:text/plain;base64,aGVsbG8='
@@ -12,7 +12,7 @@ async function resolveStreamingFile(input: unknown, required = true): Promise<{ 
     return propsProcessor.applyProcessorsAndValidators(
         { file: input },
         props,
-        PieceAuth.None(),
+        ConnectorAuth.None(),
         false,
         {},
     )
@@ -93,7 +93,7 @@ describe('File Processor', () => {
         const { processedInput, errors } = await propsProcessor.applyProcessorsAndValidators(
             { file: FILE_URL, count: 'not-a-number' },
             props,
-            PieceAuth.None(),
+            ConnectorAuth.None(),
             false,
             {},
         )
@@ -111,7 +111,7 @@ describe('File Processor', () => {
         const { processedInput, errors } = await propsProcessor.applyProcessorsAndValidators(
             { file: HELLO_TXT_DATA_URL },
             props,
-            PieceAuth.None(),
+            ConnectorAuth.None(),
             false,
             {},
         )
@@ -132,7 +132,7 @@ describe('File Processor', () => {
         const { processedInput, errors } = await propsProcessor.applyProcessorsAndValidators(
             { file: HELLO_TXT_DATA_URL },
             props,
-            PieceAuth.None(),
+            ConnectorAuth.None(),
             false,
             {},
         )

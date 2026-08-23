@@ -1,4 +1,4 @@
-import { ActionErrorHandlingOptions, BeginExecuteFlowOperation, BranchCondition, BranchExecutionType, CodeAction, ExecutionType, FlowAction, FlowActionType, FlowVersionState, LoopOnItemsAction, PieceAction, PropertyExecutionType, RouterExecutionType, RunEnvironment, StreamStepProgress } from '@fema/shared'
+import { ActionErrorHandlingOptions, BeginExecuteFlowOperation, BranchCondition, BranchExecutionType, CodeAction, ExecutionType, FlowAction, FlowActionType, FlowVersionState, LoopOnItemsAction, ConnectorAction, PropertyExecutionType, RouterExecutionType, RunEnvironment, StreamStepProgress } from '@fema/shared'
 import { EngineConstants, ResolvedBeginExecuteFlowOperation } from '../../src/lib/handler/context/engine-constants'
 
 export const generateMockEngineConstants = (params?: Partial<EngineConstants>): EngineConstants => {
@@ -19,7 +19,7 @@ export const generateMockEngineConstants = (params?: Partial<EngineConstants>): 
             },
             engineToken: params?.engineToken ?? 'engineToken',
             projectId: params?.projectId ?? 'projectId',
-            triggerPieceName: params?.triggerPieceName ?? 'mcp-trigger-piece-name',
+            triggerConnectorName: params?.triggerConnectorName ?? 'mcp-trigger-connector-name',
             streamStepProgress: params?.streamStepProgress ?? StreamStepProgress.NONE,
             workerHandlerId: params?.workerHandlerId ?? null,
             httpRequestId: params?.httpRequestId ?? null,
@@ -101,16 +101,16 @@ export function buildCodeAction({ name, input, skip, nextAction, errorHandlingOp
     }
 }
 
-export function buildPieceAction({ name, input, skip, pieceName, actionName, nextAction, errorHandlingOptions }: { errorHandlingOptions?: ActionErrorHandlingOptions, name: string, input: Record<string, unknown>, skip?: boolean, pieceName: string, actionName: string, nextAction?: FlowAction }): PieceAction {
+export function buildConnectorAction({ name, input, skip, connectorName, actionName, nextAction, errorHandlingOptions }: { errorHandlingOptions?: ActionErrorHandlingOptions, name: string, input: Record<string, unknown>, skip?: boolean, connectorName: string, actionName: string, nextAction?: FlowAction }): ConnectorAction {
     return {
         name,
         displayName: 'Your Action Name',
-        type: FlowActionType.PIECE,
+        type: FlowActionType.CONNECTOR,
         skip: skip ?? false,
         settings: {
             input,
-            pieceName,
-            pieceVersion: '1.0.0', // Not required since it's running in development mode
+            connectorName,
+            connectorVersion: '1.0.0', // Not required since it's running in development mode
             actionName,
             propertySettings: Object.fromEntries(Object.entries(input).map(([key]) => [key, {
                 type: PropertyExecutionType.MANUAL,

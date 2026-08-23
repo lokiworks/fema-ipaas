@@ -2,7 +2,7 @@ import { FlowRunStatus } from '@fema/shared'
 import { FlowExecutorContext } from '../../src/lib/handler/context/flow-execution-context'
 import { flowExecutor } from '../../src/lib/handler/flow-executor'
 import { EngineApiStub, startEngineApiStub } from '../helpers/engine-api-stub'
-import { buildCodeAction, buildPieceAction, generateMockEngineConstants } from './test-helper'
+import { buildCodeAction, buildConnectorAction, generateMockEngineConstants } from './test-helper'
 
 const WAITPOINT_PATH = '/v1/waitpoints'
 
@@ -20,9 +20,9 @@ describe('flow with delay', () => {
     })
 
     it('delay-for pauses flow and calls waitpointClient.create with DELAY type', async () => {
-        const delayForFlow = buildPieceAction({
+        const delayForFlow = buildConnectorAction({
             name: 'delay_step',
-            pieceName: '@fema/connector-delay',
+            connectorName: '@fema/connector-delay',
             actionName: 'delayFor',
             input: {
                 unit: 'seconds',
@@ -52,9 +52,9 @@ describe('flow with delay', () => {
     })
 
     it('delay-for resumes successfully after pause', async () => {
-        const delayForFlow = buildPieceAction({
+        const delayForFlow = buildConnectorAction({
             name: 'delay_step',
-            pieceName: '@fema/connector-delay',
+            connectorName: '@fema/connector-delay',
             actionName: 'delayFor',
             input: {
                 unit: 'seconds',
@@ -96,9 +96,9 @@ describe('flow with delay', () => {
     })
 
     it('delay-for uses setTimeout for short delays without pausing', async () => {
-        const shortDelayFlow = buildPieceAction({
+        const shortDelayFlow = buildConnectorAction({
             name: 'delay_step',
-            pieceName: '@fema/connector-delay',
+            connectorName: '@fema/connector-delay',
             actionName: 'delayFor',
             input: {
                 unit: 'seconds',
@@ -120,9 +120,9 @@ describe('flow with delay', () => {
 
     it('delay-until pauses flow for future dates', async () => {
         const futureDate = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()
-        const delayUntilFlow = buildPieceAction({
+        const delayUntilFlow = buildConnectorAction({
             name: 'delay_step',
-            pieceName: '@fema/connector-delay',
+            connectorName: '@fema/connector-delay',
             actionName: 'delay_until',
             input: {
                 delayUntilTimestamp: futureDate,
@@ -152,9 +152,9 @@ describe('flow with delay', () => {
 
     it('delay-until completes immediately for past dates', async () => {
         const pastDate = new Date(Date.now() - 60 * 1000).toISOString()
-        const delayUntilFlow = buildPieceAction({
+        const delayUntilFlow = buildConnectorAction({
             name: 'delay_step',
-            pieceName: '@fema/connector-delay',
+            connectorName: '@fema/connector-delay',
             actionName: 'delay_until',
             input: {
                 delayUntilTimestamp: pastDate,

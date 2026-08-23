@@ -1,9 +1,9 @@
 import {
   ApErrorParams,
   ErrorCode,
-  formatPieceError,
+  formatConnectorError,
   isString,
-  tryParseFriendlyPieceError,
+  tryParseFriendlyConnectorError,
 } from '@fema/core-utils';
 import {
   FlowAction,
@@ -160,8 +160,8 @@ export const testStepHooks = {
           if (apError.code === ErrorCode.TEST_TRIGGER_FAILED) {
             const rawMessage = apError.params.message;
             const structured =
-              tryParseFriendlyPieceError(rawMessage) ??
-              formatPieceError(isString(rawMessage) ? rawMessage : apError);
+              tryParseFriendlyConnectorError(rawMessage) ??
+              formatConnectorError(isString(rawMessage) ? rawMessage : apError);
             setErrorMessage(JSON.stringify(structured));
             return;
           }

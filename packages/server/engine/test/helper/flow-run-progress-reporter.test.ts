@@ -216,7 +216,7 @@ describe('flow-run-progress-reporter slicing in single-step test mode', () => {
         })
         flowExecutorContext.verdict = { status: FlowRunStatus.RUNNING }
         flowExecutorContext = await flowExecutorContext.upsertStep('failing_step', GenericStepOutput.create({
-            type: FlowActionType.PIECE,
+            type: FlowActionType.CONNECTOR,
             status: StepOutputStatus.FAILED,
             input: {},
             output: undefined,

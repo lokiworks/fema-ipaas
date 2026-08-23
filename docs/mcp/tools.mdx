@@ -1,7 +1,7 @@
 ---
 title: "Tools Reference"
 icon: "wrench"
-description: "Complete catalog of all MCP tools available in Activepieces"
+description: "Complete catalog of all MCP tools available in FEMA Integration Platform"
 ---
 
 ## Discovery
@@ -41,7 +41,7 @@ Use this tool when you need to read or edit a CODE step's full source. `ap_flow_
 
 ### ap_read_step_settings
 
-Read the full untruncated settings of any step, including the trigger: piece input, action/trigger name, loop items, router branches, and error handling options. Use this to see a step's current configuration before updating it — `ap_flow_structure` truncates piece input.
+Read the full untruncated settings of any step, including the trigger: connector input, action/trigger name, loop items, router branches, and error handling options. Use this to see a step's current configuration before updating it — `ap_flow_structure` truncates connector input.
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -56,20 +56,20 @@ Validate a flow for structural issues without publishing. Checks step validity, 
 |-------|------|----------|-------------|
 | `flowId` | string | Yes | The flow ID |
 
-### ap_research_pieces
+### ap_research_connectors
 
-Research available pieces. Use `pieceNames` for bulk exact lookup (always returns actions and triggers). Use `searchQuery` for fuzzy discovery.
+Research available connectors. Use `connectorNames` for bulk exact lookup (always returns actions and triggers). Use `searchQuery` for fuzzy discovery.
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `pieceNames` | string[] | No | Exact piece names to look up (always returns actions and triggers) |
-| `searchQuery` | string | No | Filter pieces by name |
+| `connectorNames` | string[] | No | Exact connector names to look up (always returns actions and triggers) |
+| `searchQuery` | string | No | Filter connectors by name |
 | `includeActions` | boolean | No | Include action details (only applies to searchQuery mode) |
 | `includeTriggers` | boolean | No | Include trigger details (only applies to searchQuery mode) |
 
 ### ap_search_actions
 
-Find piece actions by describing the task in natural language (e.g. *"send a message to a Slack channel"*). Returns the most relevant actions ranked by semantic similarity, or an empty list when nothing in the catalog matches — the tool does not force a match. Each result includes the piece name, action name, a one-line description, whether the action needs a connection, and a `connected` flag indicating whether the project already has a connection for that piece.
+Find connector actions by describing the task in natural language (e.g. *"send a message to a Slack channel"*). Returns the most relevant actions ranked by semantic similarity, or an empty list when nothing in the catalog matches — the tool does not force a match. Each result includes the connector name, action name, a one-line description, whether the action needs a connection, and a `connected` flag indicating whether the project already has a connection for that connector.
 
 Available when [tool search](/mcp/tool-search) is enabled on the instance.
 
@@ -77,15 +77,15 @@ Available when [tool search](/mcp/tool-search) is enabled on the instance.
 |-------|------|----------|-------------|
 | `query` | string | Yes | Natural-language description of the task to accomplish |
 | `limit` | number | No | Max matches to return (default 5, max 20) |
-| `pieceName` | string | No | Restrict results to a single piece (e.g. `slack`). Omit to search the whole catalog. |
+| `connectorName` | string | No | Restrict results to a single connector (e.g. `slack`). Omit to search the whole catalog. |
 
 <Tip>
-This is the discovery step of the run-action workflow: take a result's `pieceName` + `actionName` to `ap_get_piece_props` for the input schema, then execute with `ap_run_action`.
+This is the discovery step of the run-action workflow: take a result's `connectorName` + `actionName` to `ap_get_connector_props` for the input schema, then execute with `ap_run_action`.
 </Tip>
 
 ### ap_search_triggers
 
-Find piece triggers (the event that starts a flow) by describing when the flow should run (e.g. *"when a new row is added to a Google Sheet"*). Same behavior and result shape as `ap_search_actions`, returning trigger names instead of action names.
+Find connector triggers (the event that starts a flow) by describing when the flow should run (e.g. *"when a new row is added to a Google Sheet"*). Same behavior and result shape as `ap_search_actions`, returning trigger names instead of action names.
 
 Available when [tool search](/mcp/tool-search) is enabled on the instance.
 
@@ -93,15 +93,15 @@ Available when [tool search](/mcp/tool-search) is enabled on the instance.
 |-------|------|----------|-------------|
 | `query` | string | Yes | Natural-language description of the event that should start the flow |
 | `limit` | number | No | Max matches to return (default 5, max 20) |
-| `pieceName` | string | No | Restrict results to a single piece. Omit to search the whole catalog. |
+| `connectorName` | string | No | Restrict results to a single connector. Omit to search the whole catalog. |
 
-### ap_get_piece_props
+### ap_get_connector_props
 
-Get the detailed input property schema for a specific piece action or trigger. Returns field names, types, required/optional, descriptions, default values, and dropdown options. When auth is required but not provided, automatically lists available connections. Use this before `ap_update_step` or `ap_update_trigger` to know exactly which fields to set.
+Get the detailed input property schema for a specific connector action or trigger. Returns field names, types, required/optional, descriptions, default values, and dropdown options. When auth is required but not provided, automatically lists available connections. Use this before `ap_update_step` or `ap_update_trigger` to know exactly which fields to set.
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `pieceName` | string | Yes | Piece name (e.g., `@activepieces/piece-slack`) |
+| `connectorName` | string | Yes | Connector name (e.g., `@fema/connector-slack`) |
 | `actionOrTriggerName` | string | Yes | Action or trigger name (e.g., `send_channel_message`) |
 | `type` | string | Yes | `action` or `trigger` |
 | `auth` | string | No | Connection externalId. When provided, dynamic dropdowns and DYNAMIC sub-fields are resolved. |
@@ -110,11 +110,11 @@ Get the detailed input property schema for a specific piece action or trigger. R
 
 ### ap_resolve_property_options
 
-Resolve dropdown options for a single piece property. Returns available choices with labels and internal IDs. Use this to discover valid values for dynamic dropdown fields (e.g., Slack channels, Google Sheets, email labels) before configuring a step.
+Resolve dropdown options for a single connector property. Returns available choices with labels and internal IDs. Use this to discover valid values for dynamic dropdown fields (e.g., Slack channels, Google Sheets, email labels) before configuring a step.
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `pieceName` | string | Yes | Piece name (e.g., `@activepieces/piece-slack`) |
+| `connectorName` | string | Yes | Connector name (e.g., `@fema/connector-slack`) |
 | `actionOrTriggerName` | string | Yes | Action or trigger name (e.g., `send_channel_message`) |
 | `type` | string | Yes | `action` or `trigger` |
 | `propertyName` | string | Yes | The exact property name to resolve (e.g., `channel`) |
@@ -132,7 +132,7 @@ Resolve a chain of dependent dropdown properties in one call. For actions with c
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `pieceName` | string | Yes | Piece name (e.g., `@activepieces/piece-google-sheets`) |
+| `connectorName` | string | Yes | Connector name (e.g., `@fema/connector-google-sheets`) |
 | `actionOrTriggerName` | string | Yes | Action or trigger name (e.g., `insert_row`) |
 | `type` | string | Yes | `action` or `trigger` |
 | `propertyChain` | array | Yes | Ordered list of properties to resolve (max 10). Each item has `propertyName` (string) and optional `selectedValue` (any). |
@@ -149,12 +149,12 @@ Validate a step configuration before applying it. Returns field-level errors wit
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `stepType` | string | Yes | `PIECE_ACTION`, `PIECE_TRIGGER`, `CODE`, `LOOP_ON_ITEMS`, or `ROUTER` |
-| `pieceName` | string | No | For PIECE types: piece name (short names like `slack` accepted) |
-| `actionName` | string | No | For PIECE_ACTION: action name |
-| `triggerName` | string | No | For PIECE_TRIGGER: trigger name |
-| `input` | object | No | For PIECE types: input config to validate |
-| `auth` | string | No | For PIECE types: any non-empty string indicates auth is provided |
+| `stepType` | string | Yes | `CONNECTOR_ACTION`, `CONNECTOR_TRIGGER`, `CODE`, `LOOP_ON_ITEMS`, or `ROUTER` |
+| `connectorName` | string | No | For CONNECTOR types: connector name (short names like `slack` accepted) |
+| `actionName` | string | No | For CONNECTOR_ACTION: action name |
+| `triggerName` | string | No | For CONNECTOR_TRIGGER: trigger name |
+| `input` | object | No | For CONNECTOR types: input config to validate |
+| `auth` | string | No | For CONNECTOR types: any non-empty string indicates auth is provided |
 | `sourceCode` | string | No | For CODE: JavaScript/TypeScript source code |
 | `packageJson` | string | No | For CODE: package.json as JSON string |
 | `loopItems` | string | No | For LOOP_ON_ITEMS: items expression |
@@ -166,7 +166,7 @@ List OAuth/app connections in the project. Required before adding steps that nee
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `pieceName` | string | No | Filter by piece name. Short names like `slack` or `google-sheets` are auto-expanded. |
+| `connectorName` | string | No | Filter by connector name. Short names like `slack` or `google-sheets` are auto-expanded. |
 | `displayName` | string | No | Filter by connection display name (partial match) |
 | `status` | array | No | Filter by status: `ACTIVE`, `MISSING`, or `ERROR` |
 
@@ -176,7 +176,7 @@ List configured AI providers and their available models. Use this to discover va
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `provider` | string | No | Filter by provider (`openai`, `anthropic`, `google`, `azure`, `openrouter`, `activepieces`, `cloudflare-gateway`, `custom`) |
+| `provider` | string | No | Filter by provider (`openai`, `anthropic`, `google`, `azure`, `openrouter`, `fema`, `cloudflare-gateway`, `custom`) |
 
 ### ap_list_tables
 
@@ -223,7 +223,7 @@ Get step-by-step instructions for setting up connections or AI providers. Return
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
 | `topic` | string | Yes | `connection` or `ai_provider` |
-| `pieceName` | string | No | For connections: which piece needs auth |
+| `connectorName` | string | No | For connections: which connector needs auth |
 
 ### ap_set_project_context
 
@@ -309,11 +309,11 @@ Returns the flow ID, a direct `flowUrl` link to the flow in the editor, step cou
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
 | `flowName` | string | Yes | Name for the new flow |
-| `trigger` | object | Yes | `{pieceName, triggerName, input?, auth?}` |
+| `trigger` | object | Yes | `{connectorName, triggerName, input?, auth?}` |
 | `steps` | array | Yes | Array of step specs, each with `type`, `displayName`, and type-specific fields |
 
 **Step types in the array:**
-- **PIECE**: `pieceName`, `actionName`, `input`, `auth`, `continueOnFailure`, `retryOnFailure`
+- **CONNECTOR**: `connectorName`, `actionName`, `input`, `auth`, `continueOnFailure`, `retryOnFailure`
 - **CODE**: `sourceCode`, `input`, `continueOnFailure`, `retryOnFailure`
 - **LOOP_ON_ITEMS**: `loopItems`
 - **ROUTER**: creates a router with Branch 1 + Otherwise
@@ -325,8 +325,8 @@ Set or update the trigger for a flow.
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
 | `flowId` | string | Yes | The flow ID |
-| `pieceName` | string | Yes | Piece name (e.g., `@activepieces/piece-gmail`) |
-| `triggerName` | string | Yes | Trigger name from the piece |
+| `connectorName` | string | Yes | Connector name (e.g., `@fema/connector-gmail`) |
+| `triggerName` | string | Yes | Trigger name from the connector |
 | `input` | object | No | Trigger configuration |
 | `auth` | string | No | Connection externalId |
 | `displayName` | string | No | Display name for the trigger step |
@@ -340,18 +340,18 @@ Add a new step to a flow. Optionally configure it in the same call by providing 
 | `flowId` | string | Yes | The flow ID |
 | `parentStepName` | string | Yes | Step to insert after/into |
 | `stepLocationRelativeToParent` | string | Yes | `AFTER`, `INSIDE_LOOP`, or `INSIDE_BRANCH` |
-| `stepType` | string | Yes | `CODE`, `PIECE`, `LOOP_ON_ITEMS`, or `ROUTER` |
+| `stepType` | string | Yes | `CODE`, `CONNECTOR`, `LOOP_ON_ITEMS`, or `ROUTER` |
 | `displayName` | string | Yes | Step display name |
-| `pieceName` | string | No | For PIECE steps |
-| `actionName` | string | No | For PIECE steps |
+| `connectorName` | string | No | For CONNECTOR steps |
+| `actionName` | string | No | For CONNECTOR steps |
 | `branchIndex` | number | No | For INSIDE_BRANCH |
 | `input` | object | No | Step input config (key-value pairs) |
 | `auth` | string | No | Connection externalId |
 | `sourceCode` | string | No | For CODE steps: JavaScript/TypeScript source |
 | `packageJson` | string | No | For CODE steps: npm dependencies |
 | `loopItems` | string | No | For LOOP steps: items expression |
-| `continueOnFailure` | boolean | No | For CODE/PIECE steps: continue flow if this step fails (default: false) |
-| `retryOnFailure` | boolean | No | For CODE/PIECE steps: retry this step on failure (default: false) |
+| `continueOnFailure` | boolean | No | For CODE/CONNECTOR steps: continue flow if this step fails (default: false) |
+| `retryOnFailure` | boolean | No | For CODE/CONNECTOR steps: retry this step on failure (default: false) |
 
 ### ap_update_step
 
@@ -364,13 +364,13 @@ Update an existing step's settings. Auto-fills default values for optional prope
 | `displayName` | string | No | New display name |
 | `input` | object | No | Step configuration |
 | `auth` | string | No | Connection externalId |
-| `actionName` | string | No | For PIECE steps |
+| `actionName` | string | No | For CONNECTOR steps |
 | `loopItems` | string | No | For LOOP steps |
 | `sourceCode` | string | No | For CODE steps: JavaScript/TypeScript source code |
 | `packageJson` | string | No | For CODE steps: npm dependencies as JSON string |
 | `skip` | boolean | No | Skip this step |
-| `continueOnFailure` | boolean | No | For CODE/PIECE steps: continue flow if this step fails |
-| `retryOnFailure` | boolean | No | For CODE/PIECE steps: retry this step on failure |
+| `continueOnFailure` | boolean | No | For CODE/CONNECTOR steps: continue flow if this step fails |
+| `retryOnFailure` | boolean | No | For CODE/CONNECTOR steps: retry this step on failure |
 
 <Tip>
 Use `{{stepName.field}}` syntax in input values to reference data from previous steps (e.g., `{{trigger.body.email}}`, `{{step_1.id}}`). Do NOT include `.output.` in the path.
@@ -566,14 +566,14 @@ Retry a failed flow run.
 
 ### ap_run_action
 
-Execute a single piece action once without building or saving a flow. Designed for one-shot tasks like *"check my inbox"* or *"send one Slack message"* where building a full automation would be overkill. Under the hood the action runs directly in the engine and the result is returned immediately — no flow is created, and nothing appears in the user's flow list.
+Execute a single connector action once without building or saving a flow. Designed for one-shot tasks like *"check my inbox"* or *"send one Slack message"* where building a full automation would be overkill. Under the hood the action runs directly in the engine and the result is returned immediately — no flow is created, and nothing appears in the user's flow list.
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `pieceName` | string | Yes | Piece name (e.g. `slack` or `@activepieces/piece-slack`). Use `ap_research_pieces` to discover. |
-| `actionName` | string | Yes | Action to run (e.g. `send_channel_message`). Use `ap_get_piece_props` for the input shape. |
-| `input` | object | No | Fully-resolved input for the action. Keys must match the piece action's props. Pass raw values — do **not** wrap them in `{{…}}`. Omit entirely if the action has no props. |
-| `connectionExternalId` | string | No | `externalId` from `ap_list_connections`. Required if the piece needs auth. Auto-wrapped server-side as `{{connections['externalId']}}`. Must be a plain ID — special characters are rejected. |
+| `connectorName` | string | Yes | Connector name (e.g. `slack` or `@fema/connector-slack`). Use `ap_research_connectors` to discover. |
+| `actionName` | string | Yes | Action to run (e.g. `send_channel_message`). Use `ap_get_connector_props` for the input shape. |
+| `input` | object | No | Fully-resolved input for the action. Keys must match the connector action's props. Pass raw values — do **not** wrap them in `{{…}}`. Omit entirely if the action has no props. |
+| `connectionExternalId` | string | No | `externalId` from `ap_list_connections`. Required if the connector needs auth. Auto-wrapped server-side as `{{connections['externalId']}}`. Must be a plain ID — special characters are rejected. |
 
 <Info>
 When to pick this vs. `ap_build_flow`:
@@ -581,4 +581,4 @@ When to pick this vs. `ap_build_flow`:
 - **`ap_build_flow`** — persistent automation that should repeat, run on a schedule, or trigger on external events.
 </Info>
 
-Prefer calling `ap_list_connections` and `ap_get_piece_props` first so you know the exact `actionName`, the expected props, and the right `connectionExternalId` before invoking. Missing required inputs or unknown actions produce a friendly error before dispatch — no run is created and nothing is billed.
+Prefer calling `ap_list_connections` and `ap_get_connector_props` first so you know the exact `actionName`, the expected props, and the right `connectionExternalId` before invoking. Missing required inputs or unknown actions produce a friendly error before dispatch — no run is created and nothing is billed.

@@ -3,7 +3,7 @@ import { isNil } from '@fema/core-utils'
 import { LATEST_JOB_DATA_SCHEMA_VERSION, TriggerSourceScheduleType, TriggerStrategy, WorkerJobType } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { IsNull } from 'typeorm'
-import { pieceMetadataService } from '../../pieces/metadata/piece-metadata-service'
+import { connectorMetadataService } from '../../connectors/metadata/connector-metadata-service'
 import { projectService } from '../../project/project-service'
 import { triggerSourceRepo } from '../../trigger/trigger-source/trigger-source-service'
 import { jobQueue, JobType } from '../job-queue/job-queue'
@@ -23,13 +23,13 @@ export const refillRenewWebhookJobs = (log: FastifyBaseLogger) => ({
         for (let i = 0; i < triggerSources.length; i += batchSize) {
             const batch = triggerSources.slice(i, i + batchSize)
             await Promise.all(batch.map(async (triggerSource) => {
-                const pieceMetadata = await pieceMetadataService(log).get({
-                    name: triggerSource.pieceName,
-                    version: triggerSource.pieceVersion,
+                const connectorMetadata = await connectorMetadataService(log).get({
+                    name: triggerSource.connectorName,
+                    version: triggerSource.connectorVersion,
                     platformId: await projectService(log).getPlatformId(triggerSource.projectId),
                 })
-                const pieceTrigger = pieceMetadata?.triggers?.[triggerSource.triggerName]
-                if (isNil(pieceTrigger) || isNil(pieceTrigger.renewConfiguration) || pieceTrigger.renewConfiguration.strategy !== WebhookRenewStrategy.CRON) {
+                const connectorTrigger = connectorMetadata?.triggers?.[triggerSource.triggerName]
+                if (isNil(connectorTrigger) || isNil(connectorTrigger.renewConfiguration) || connectorTrigger.renewConfiguration.strategy !== WebhookRenewStrategy.CRON) {
                     return
                 }
                 await jobQueue(log).add({
@@ -45,7 +45,7 @@ export const refillRenewWebhookJobs = (log: FastifyBaseLogger) => ({
                     },
                     scheduleOptions: {
                         type: TriggerSourceScheduleType.CRON_EXPRESSION,
-                        cronExpression: pieceTrigger.renewConfiguration.cronExpression,
+                        cronExpression: connectorTrigger.renewConfiguration.cronExpression,
                         timezone: 'UTC',
                     },
                 })

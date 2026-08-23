@@ -163,13 +163,13 @@ export function createSandbox(
             const port = await createSocketServer()
 
             const codeMount = buildCodeMount({ flowVersionId, reusable: options.reusable, basePath: options.basePath })
-            const customPieceMounts: SandboxMount[] = []
+            const customConnectorMounts: SandboxMount[] = []
             if (platformId) {
                 assertSafePathSegment(platformId, 'platformId')
-                const customPiecesHostPath = path.resolve(cacheUtils(options.basePath).getGlobalCachePathLatestVersion(), 'custom_pieces', platformId)
-                customPieceMounts.push({
-                    hostPath: customPiecesHostPath,
-                    sandboxPath: '/root/custom_pieces',
+                const customConnectorsHostPath = path.resolve(cacheUtils(options.basePath).getGlobalCachePathLatestVersion(), 'custom_connectors', platformId)
+                customConnectorMounts.push({
+                    hostPath: customConnectorsHostPath,
+                    sandboxPath: '/root/custom_connectors',
                     optional: true,
                 })
             }
@@ -178,7 +178,7 @@ export function createSandbox(
                 ...(options.baseMounts ?? []),
                 ...(codeMount ? [codeMount] : []),
                 ...mounts,
-                ...customPieceMounts,
+                ...customConnectorMounts,
             ]
             for (const mount of allMounts) {
                 assertSandboxPathUnderRoot(mount)
@@ -192,8 +192,8 @@ export function createSandbox(
                     ...options.env,
                     FEMA_SANDBOX_WS_PORT: String(port),
                     FEMA_SANDBOX_WS_TOKEN: wsRpcToken,
-                    ...(customPieceMounts.length > 0
-                        ? { FEMA_CUSTOM_PIECES_PATHS: '/root/custom_pieces' }
+                    ...(customConnectorMounts.length > 0
+                        ? { FEMA_CUSTOM_CONNECTORS_PATHS: '/root/custom_connectors' }
                         : {}),
                 },
                 resourceLimits: {

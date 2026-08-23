@@ -13,7 +13,7 @@ status: accepted
 首页回答四个问题：今天运行多少次、成功率多少、哪些工作流失败、哪些系统连接异常。
 不做上游那种 Automation Dashboard。
 
-移除：Activepieces 品牌紫、AI-first 导航、Cloud upsell、Locked Enterprise Feature、
+移除：FEMA Integration Platform 品牌紫、AI-first 导航、Cloud upsell、Locked Enterprise Feature、
 Upgrade plan、Pricing prompt。
 
 ## Context
@@ -27,7 +27,7 @@ Upgrade plan、Pricing prompt。
 二级页面，意味着产品的主路径和真实使用路径错位。
 
 考虑过**保留现有 IA、只做视觉换肤**。否决：§47 明确以「用户不应能判断平台是
-Activepieces 换皮」为完成判定，换肤达不到；且导航结构本身就在暗示产品是什么。
+FEMA Integration Platform 换皮」为完成判定，换肤达不到；且导航结构本身就在暗示产品是什么。
 
 ## Consequences
 

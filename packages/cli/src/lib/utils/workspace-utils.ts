@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 
-// Walk up from a piece folder to the monorepo root (the package.json that declares
+// Walk up from a connector folder to the monorepo root (the package.json that declares
 // `workspaces`). Lets bundling run from any cwd — e.g. a per-package turbo task.
 export function findRepoRoot(startDir: string): string {
   let dir = startDir

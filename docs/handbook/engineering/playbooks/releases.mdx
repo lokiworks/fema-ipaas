@@ -9,7 +9,7 @@ All changes flow through a staging environment before reaching production. There
 
 Five separate workflows cover the full delivery lifecycle:
 
-1. **Merge to `main`** (Mon–Thu, 9 AM–5 PM UTC) — `continuous-delivery-stg.yml` automatically builds a Docker image and deploys to **staging** (`stg.activepieces.com`).
+1. **Merge to `main`** (Mon–Thu, 9 AM–5 PM UTC) — `continuous-delivery-stg.yml` automatically builds a Docker image and deploys to **staging** (`stg.fema.local`).
 2. **Staging freeze (5 PM UTC)** — merges to `main` after 5 PM UTC are accepted but **not deployed** to staging. The content team uses the frozen staging environment overnight.
 3. **Daily 9 AM UTC** — `continuous-delivery-canary.yml` builds a `version.sha.canary` image from the latest `main` and deploys it to the **canary** environment. Breaking migrations block the deployment. See the [Canary Deployment playbook](/handbook/engineering/playbooks/canary-deployment) for details.
 4. **Thursday 5 PM UTC** — `tag-release-candidate` job tags the current staging image and commit as `release-candidate`.
@@ -20,10 +20,10 @@ Five separate workflows cover the full delivery lifecycle:
 
 | Environment | URL | Purpose |
 |---|---|---|
-| Preview | `branch-name.activepieces.com` | Per-PR ephemeral environment for review. *Requires the `preview` label on the PR.* |
-| Staging | `stg.activepieces.com` | Internal testing, content team daily use |
-| Canary | `canary.activepieces.com` | Daily cut from `main`; catches issues before they reach production |
-| Production | `cloud.activepieces.com` | Live customers |
+| Preview | `branch-name.fema.local` | Per-PR ephemeral environment for review. *Requires the `preview` label on the PR.* |
+| Staging | `stg.fema.local` | Internal testing, content team daily use |
+| Canary | `canary.fema.local` | Daily cut from `main`; catches issues before they reach production |
+| Production | `fema.local` | Live customers |
 
 ## Hotfix Workflow
 
@@ -98,7 +98,7 @@ Because the bump commit for an off-cycle release lives on its release branch, `m
 
 ### `publish-embed-sdk.yml`
 
-Publishes the embed SDK bundle (`packages/ee/embed-sdk`) to `https://cdn.activepieces.com/sdk/embed/<version>.js`. Runs on pushes to `main` that change `packages/ee/embed-sdk/package.json`, on a daily schedule, and on manual dispatch (`main` only). The check job compares the package version against the CDN and publishes only when that version is missing: a 200 skips, a 404 publishes, anything else fails the run. Bumping `version` in `packages/ee/embed-sdk/package.json` is the entire release procedure for the SDK; the daily schedule retries failed publishes, and already-published versions are never overwritten. Failures notify the on-call Discord channel. Requires the `CDN_S3_ENDPOINT`, `CDN_S3_BUCKET`, `CDN_S3_ACCESS_KEY_ID`, `CDN_S3_SECRET_ACCESS_KEY`, and `DISCORD_ON_CALL_WEBHOOK` secrets.
+Publishes the embed SDK bundle (`packages/ee/embed-sdk`) to `https://cdn.fema.local/sdk/embed/<version>.js`. Runs on pushes to `main` that change `packages/ee/embed-sdk/package.json`, on a daily schedule, and on manual dispatch (`main` only). The check job compares the package version against the CDN and publishes only when that version is missing: a 200 skips, a 404 publishes, anything else fails the run. Bumping `version` in `packages/ee/embed-sdk/package.json` is the entire release procedure for the SDK; the daily schedule retries failed publishes, and already-published versions are never overwritten. Failures notify the on-call Discord channel. Requires the `CDN_S3_ENDPOINT`, `CDN_S3_BUCKET`, `CDN_S3_ACCESS_KEY_ID`, `CDN_S3_SECRET_ACCESS_KEY`, and `DISCORD_ON_CALL_WEBHOOK` secrets.
 
 ## Changelog
 

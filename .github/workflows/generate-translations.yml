@@ -1,4 +1,4 @@
-name: Generate Translation Files for Community Pieces and UI
+name: Generate Translation Files for Community Connectors and UI
 
 on:
   schedule:

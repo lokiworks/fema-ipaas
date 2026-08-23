@@ -4,7 +4,7 @@ import type { RunEnvironment } from '@fema/workflow-core'
 type FlowCreated = {
     flowId: FlowId
 }
-type PiecesSearch = {
+type ConnectorsSearch = {
     target: 'steps' | 'triggers'
     search: string
 }
@@ -12,7 +12,7 @@ type PiecesSearch = {
 type TemplateSearch = {
     search: string
     tags: string[]
-    pieces: string[]
+    connectors: string[]
 }
 
 type RunCreated = {
@@ -111,7 +111,7 @@ type RewardButtonClicked = {
 }
 
 type RewardInstructionsClicked = {
-    type: 'share-template' | 'linkedin' | 'referral' | 'contribute-piece'
+    type: 'share-template' | 'linkedin' | 'referral' | 'contribute-connector'
 }
 
 type Referral = {
@@ -142,8 +142,8 @@ type UserInvited = {
 type TriggerFailuresExceeded = {
     projectId: string
     flowId: string
-    pieceName: string
-    pieceVersion: string
+    connectorName: string
+    connectorVersion: string
 }
 type AiProviderConfiguredOrUsed = {
     provider: string
@@ -162,7 +162,7 @@ type McpServerConnected = {
     platformId?: string
 }
 
-type PieceSelectorSearch = {
+type ConnectorSelectorSearch = {
     search: string
     isTrigger: boolean
     selectedActionOrTriggerName: string | null
@@ -226,7 +226,7 @@ export enum TelemetryEventName {
     FLOW_IMPORTED = 'flow.imported',
     /**used only with import flow dialog*/
     FLOW_IMPORTED_USING_FILE = 'flow.imported.using.file',
-    PIECES_SEARCH = 'pieces.search',
+    CONNECTORS_SEARCH = 'connectors.search',
     REFERRAL = 'referral',
     REFERRAL_LINK_COPIED = 'referral.link.copied',
     FLOW_SHARED = 'flow.shared',
@@ -243,7 +243,7 @@ export enum TelemetryEventName {
     UPGRADE_POPUP_OPENED = 'upgrade.popup.opened',
     UPGRADE_CLICKED = 'upgrade.clicked',
     OPENED_PRICING_FROM_DASHBOARD = 'opened.pricing.from.dashboard',
-    PIECE_SELECTOR_SEARCH = 'piece.selector.search',
+    CONNECTOR_SELECTOR_SEARCH = 'connector.selector.search',
     SIGN_UP_SUBMITTED = 'signup.submitted',
     SIGN_UP_FAILED = 'signup.failed',
     EMAIL_VERIFICATION_COMPLETED = 'email.verification.completed',
@@ -303,7 +303,7 @@ export type TelemetryEvent =
   | BaseTelemetryEvent<TelemetryEventName.QUOTA_ALERT, QuotaAlert>
   | BaseTelemetryEvent<TelemetryEventName.CREATED_FLOW, FlowCreated>
   | BaseTelemetryEvent<TelemetryEventName.TEMPLATE_SEARCH, TemplateSearch>
-  | BaseTelemetryEvent<TelemetryEventName.PIECES_SEARCH, PiecesSearch>
+  | BaseTelemetryEvent<TelemetryEventName.CONNECTORS_SEARCH, ConnectorsSearch>
   | BaseTelemetryEvent<TelemetryEventName.FLOW_IMPORTED, FlowImported>
   | BaseTelemetryEvent<
   TelemetryEventName.FLOW_IMPORTED_USING_FILE,
@@ -341,7 +341,7 @@ export type TelemetryEvent =
   >
   | BaseTelemetryEvent<TelemetryEventName.MCP_TOOL_CALLED, McpToolCalled>
   | BaseTelemetryEvent<TelemetryEventName.MCP_SERVER_CONNECTED, McpServerConnected>
-  | BaseTelemetryEvent<TelemetryEventName.PIECE_SELECTOR_SEARCH, PieceSelectorSearch>
+  | BaseTelemetryEvent<TelemetryEventName.CONNECTOR_SELECTOR_SEARCH, ConnectorSelectorSearch>
   | BaseTelemetryEvent<TelemetryEventName.SIGN_UP_SUBMITTED, SignUpSubmitted>
   | BaseTelemetryEvent<TelemetryEventName.SIGN_UP_FAILED, SignUpFailed>
   | BaseTelemetryEvent<

@@ -1,7 +1,7 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-title: "[BUG]: the code piece fails"
+title: "[BUG]: the code connector fails"
 labels: bug
 assignees: ''
 

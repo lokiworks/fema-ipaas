@@ -1,0 +1,43 @@
+import {
+  createConnector,
+} from '@fema/connector-sdk';
+import { ConnectorCategory } from '@fema/connector-sdk';
+import { createFile } from './lib/actions/create-file';
+import { uploadFileAction } from './lib/actions/upload-file';
+import { readFileContent } from './lib/actions/read-file';
+import { newOrModifiedFile } from './lib/triggers/new-modified-file';
+import { deleteFolderAction } from './lib/actions/delete-folder';
+import { deleteFileAction } from './lib/actions/delete-file';
+import { listFolderContentsAction } from './lib/actions/list-files';
+import { createFolderAction } from './lib/actions/create-folder';
+import { renameFileOrFolderAction } from './lib/actions/rename-file-or-folder';
+import { sftpAuth } from './lib/auth';
+export { getProtocolBackwardCompatibility, getClient, endClient } from './lib/common';
+
+export const ftpSftp = createConnector({
+  displayName: 'FTP/SFTP',
+  description: 'Connect to FTP, FTPS or SFTP servers',
+  minimumSupportedRelease: '0.30.0',
+  logoUrl: 'https://cdn.fema.local/connectors/new-core/sftp.svg',
+  categories: [ConnectorCategory.CORE, ConnectorCategory.DEVELOPER_TOOLS],
+  authors: [
+    'Abdallah-Alwarawreh',
+    'kishanprmr',
+    'AbdulTheActiveConnectorr',
+    'khaledmashaly',
+    'abuaboud',
+    'prasanna2000-max',
+  ],
+  auth: sftpAuth,
+  actions: [
+    createFile,
+    uploadFileAction,
+    readFileContent,
+    deleteFileAction,
+    createFolderAction,
+    deleteFolderAction,
+    listFolderContentsAction,
+    renameFileOrFolderAction,
+  ],
+  triggers: [newOrModifiedFile],
+});

@@ -21,7 +21,7 @@
     "FEMA_SMTP_SENDER_NAME",
     "FEMA_TOOL_SEARCH_ENABLED",
     "FEMA_OPENAI_API_KEY",
-    "FEMA_PIECES_SYNC_MODE"
+    "FEMA_CONNECTORS_SYNC_MODE"
   ],
   "tasks": {
     "build": {

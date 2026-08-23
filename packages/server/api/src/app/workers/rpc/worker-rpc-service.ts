@@ -2,6 +2,7 @@ import { assertNotNullOrUndefined, isNil } from '@fema/core-utils'
 import { apVersionUtil, onCallService, UNKNOWN_VERSION } from '@fema/server-utils'
 import { ExecutionType, FileCompression, FileLocation, FileType, FlowOperationType, FlowStatus, WorkerGroupScope, WorkerToApiContract } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
+import { connectorMetadataService } from '../../connectors/metadata/connector-metadata-service'
 import { redisConnections } from '../../database/redis-connections'
 import { fileService, getLocationForFile } from '../../file/file.service'
 import { s3Helper } from '../../file/s3-helper'
@@ -15,7 +16,6 @@ import { preWarmWorkersService } from '../../flows/pre-warm-workers'
 import { rejectedPromiseHandler } from '../../helper/promise-handler'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
-import { pieceMetadataService } from '../../pieces/metadata/piece-metadata-service'
 import { projectService } from '../../project/project-service'
 import { dedupeService } from '../../trigger/dedupe-service'
 import { triggerEventService } from '../../trigger/trigger-events/trigger-event.service'
@@ -167,8 +167,8 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
             return flowVersion
         },
 
-        async getPiece(input) {
-            return pieceMetadataService(log).get({
+        async getConnector(input) {
+            return connectorMetadataService(log).get({
                 name: input.name,
                 version: input.version,
                 projectId: input.projectId,
@@ -189,7 +189,7 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
             await jobBroker(log).extendLock(input)
         },
 
-        async getPieceArchive(input) {
+        async getConnectorArchive(input) {
             const { data } = await fileService(log).getDataOrThrow({
                 fileId: input.archiveId,
                 type: FileType.PACKAGE_ARCHIVE,

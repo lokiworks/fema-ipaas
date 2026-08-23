@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import { isNil } from '@fema/core-utils'
 import { type ApLogger } from '@fema/server-utils'
-import { FlowActionType, FlowTriggerType, FlowVersion, FlowVersionState, LATEST_FLOW_SCHEMA_VERSION, PackageType, PieceType, WorkerToApiContract } from '@fema/shared'
+import { FlowActionType, FlowTriggerType, FlowVersion, FlowVersionState, LATEST_FLOW_SCHEMA_VERSION, PackageType, ConnectorType, WorkerToApiContract } from '@fema/shared'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cacheUtils } from '../../../../src/lib/cache/cache-paths'
 import { codeCache } from '../../../../src/lib/cache/flow/code/code-cache'
@@ -58,7 +58,7 @@ function buildFlowVersion(overrides: Partial<FlowVersion> = {}): FlowVersion {
     } as unknown as FlowVersion
 }
 
-const piece = { packageType: PackageType.REGISTRY, pieceType: PieceType.OFFICIAL, pieceName: '@fema/connector-http', pieceVersion: '1.0.0' }
+const connector = { packageType: PackageType.REGISTRY, connectorType: ConnectorType.OFFICIAL, connectorName: '@fema/connector-http', connectorVersion: '1.0.0' }
 
 function inMemoryApiClient(): { apiClient: WorkerToApiContract, getFlowBundle: ReturnType<typeof vi.fn> } {
     let stored: Buffer | null = null
@@ -84,20 +84,20 @@ afterEach(async () => {
 })
 
 describe('flowBundleStore', () => {
-    it('publish then tryFetch round-trips flow + pieces and materializes compiled code on disk', async () => {
+    it('publish then tryFetch round-trips flow + connectors and materializes compiled code on disk', async () => {
         const basePath = uniqueBasePath()
         const { apiClient } = inMemoryApiClient()
         const flowVersion = buildFlowVersion()
         const codes = codeCache(cacheUtils(basePath).getGlobalCodeCachePath())
         await codes.writeCompiledStep({ flowVersionId: flowVersion.id, stepName: 'step_1', compiledJs: 'exports.code = () => 1' })
 
-        await flowBundleStore(fakeLog, apiClient, basePath).publish({ flowVersion, pieces: [piece], projectId: 'p1', platformId: 'plat1' })
+        await flowBundleStore(fakeLog, apiClient, basePath).publish({ flowVersion, connectors: [connector], projectId: 'p1', platformId: 'plat1' })
 
         const fetchBasePath = uniqueBasePath()
         const fetched = await flowBundleStore(fakeLog, apiClient, fetchBasePath).tryFetch({ flowVersionId: flowVersion.id, projectId: 'p1' })
 
         expect(fetched?.flowVersion.id).toBe('fv1')
-        expect(fetched?.pieces).toEqual([piece])
+        expect(fetched?.connectors).toEqual([connector])
         const fetchedCodes = codeCache(cacheUtils(fetchBasePath).getGlobalCodeCachePath())
         expect(await fetchedCodes.readCompiledStep({ flowVersionId: flowVersion.id, stepName: 'step_1' })).toBe('exports.code = () => 1')
     })
@@ -108,7 +108,7 @@ describe('flowBundleStore', () => {
         const flowVersion = buildFlowVersion()
         const codes = codeCache(cacheUtils(basePath).getGlobalCodeCachePath())
         await codes.writeCompiledStep({ flowVersionId: flowVersion.id, stepName: 'step_1', compiledJs: 'exports.code = () => 1' })
-        await flowBundleStore(fakeLog, apiClient, basePath).publish({ flowVersion, pieces: [piece], projectId: 'p1', platformId: 'plat1' })
+        await flowBundleStore(fakeLog, apiClient, basePath).publish({ flowVersion, connectors: [connector], projectId: 'p1', platformId: 'plat1' })
 
         const first = await flowBundleStore(fakeLog, apiClient, basePath).tryFetch({ flowVersionId: flowVersion.id, projectId: 'p1' })
         const second = await flowBundleStore(fakeLog, apiClient, basePath).tryFetch({ flowVersionId: flowVersion.id, projectId: 'p1' })
@@ -131,7 +131,7 @@ describe('flowBundleStore', () => {
         const codes = codeCache(cacheUtils(basePath).getGlobalCodeCachePath())
         await codes.writeCompiledStep({ flowVersionId: staleFlowVersion.id, stepName: 'step_1', compiledJs: 'old' })
 
-        await flowBundleStore(fakeLog, apiClient, basePath).publish({ flowVersion: staleFlowVersion, pieces: [piece], projectId: 'p1', platformId: 'plat1' })
+        await flowBundleStore(fakeLog, apiClient, basePath).publish({ flowVersion: staleFlowVersion, connectors: [connector], projectId: 'p1', platformId: 'plat1' })
 
         expect(await flowBundleStore(fakeLog, apiClient, basePath).tryFetch({ flowVersionId: staleFlowVersion.id, projectId: 'p1' })).toBeNull()
     })
@@ -147,7 +147,7 @@ describe('flowBundleStore', () => {
         const codes = codeCache(cacheUtils(basePath).getGlobalCodeCachePath())
         await codes.writeCompiledStep({ flowVersionId: flowVersion.id, stepName: 'step_1', compiledJs: 'exports.code = () => 1' })
 
-        await flowBundleStore(fakeLog, apiClient, basePath).publish({ flowVersion, pieces: [piece], projectId: 'p1', platformId: 'plat1' })
+        await flowBundleStore(fakeLog, apiClient, basePath).publish({ flowVersion, connectors: [connector], projectId: 'p1', platformId: 'plat1' })
 
         expect(put).toHaveBeenCalledOnce()
         expect(put.mock.calls[0][0]).toBe('https://s3/put')
@@ -164,7 +164,7 @@ describe('flowBundleStore', () => {
         const codes = codeCache(cacheUtils(basePath).getGlobalCodeCachePath())
         await codes.writeCompiledStep({ flowVersionId: flowVersion.id, stepName: 'step_1', compiledJs: 'exports.code = () => 1' })
 
-        await flowBundleStore(fakeLog, apiClient, basePath).publish({ flowVersion, pieces: [piece], projectId: 'p1', platformId: 'plat1' })
+        await flowBundleStore(fakeLog, apiClient, basePath).publish({ flowVersion, connectors: [connector], projectId: 'p1', platformId: 'plat1' })
 
         expect(put).not.toHaveBeenCalled()
     })
@@ -172,7 +172,7 @@ describe('flowBundleStore', () => {
     it('tryFetch downloads from a signed URL and materializes compiled code', async () => {
         const basePath = uniqueBasePath()
         const flowVersion = buildFlowVersion()
-        const manifest = { flowVersion, pieces: [piece], codes: [{ stepName: 'step_1', compiledJs: 'exports.code = () => 1' }] }
+        const manifest = { flowVersion, connectors: [connector], codes: [{ stepName: 'step_1', compiledJs: 'exports.code = () => 1' }] }
         vi.mocked(bundleHttp.getBuffer).mockResolvedValue(Buffer.from(JSON.stringify(manifest), 'utf8'))
         const apiClient = {
             getFlowBundle: vi.fn(async () => ({ kind: 'url', url: 'https://s3/get' })),

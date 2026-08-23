@@ -9,7 +9,7 @@
 ## USER vs ENGINE errors during input resolution
 
 - A USER-level `ExecutionError` (e.g. `ConnectionNotFoundError` from a stale `{{connections.X}}` reference) must surface as a **FAILED step**, never `INTERNAL_ERROR`. `INTERNAL_ERROR` fails the worker job and pages oncall — reserve it for genuine engine bugs.
-- **Actions**: resolve input (`getPropsResolver().resolve(...)`) **inside** the executor's `tryCatchAndThrowOnEngineError` wrapper. `code-executor`, `loop-executor`, and `router-executor` previously resolved outside it, leaking USER errors to `INTERNAL_ERROR`; `piece-executor` is the reference pattern.
+- **Actions**: resolve input (`getPropsResolver().resolve(...)`) **inside** the executor's `tryCatchAndThrowOnEngineError` wrapper. `code-executor`, `loop-executor`, and `router-executor` previously resolved outside it, leaking USER errors to `INTERNAL_ERROR`; `connector-executor` is the reference pattern.
 - **Triggers**: input resolution runs in `runOrReturnPayload` (`flow.operation.ts`). `resolveStateOrThrowOnNonUserError` catches USER errors and routes them to `buildFailedTriggerContext` (FAILED trigger step), while rethrowing ENGINE errors so real bugs still page.
 
 ## Trigger step output

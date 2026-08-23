@@ -55,7 +55,7 @@ export const SendFlowResponseRequest = z.object({
     workerHandlerId: z.string(),
     httpRequestId: z.string(),
     runResponse: z.object({
-        // The return_response piece stores status/headers as dynamic props that are not always coerced
+        // The return_response connector stores status/headers as dynamic props that are not always coerced
         // (e.g. a literal "200" or a {{...}} that resolves to a number). Coerce here so a valid user
         // response succeeds instead of 400ing — which the engine would mis-report as an INTERNAL_ERROR.
         status: z.coerce.number(),

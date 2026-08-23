@@ -1,0 +1,31 @@
+---
+title: 'GitHub Codespaces'
+icon: 'github'
+description: ''
+---
+
+GitHub Codespaces is a cloud development platform that enables developers to write, run, and debug code directly in their browsers, seamlessly integrated with GitHub.
+
+### Steps to setup Codespaces
+
+1. Go to [FEMA Integration Platform repo](https://github.com/lokiworks/fema-ipaas).
+
+2. Click Code `<>`, then under codespaces click create codespace on main.
+
+![Create Codespace](/resources/screenshots/development-setup_codespaces.png)
+
+<Note>
+  By default, the development setup only builds specific connectors.Open the file
+  `.env.dev` and add comma-separated list of connectors to make
+  available.
+
+For more details, check out the [Connector Development](/build-connectors/building-connectors/development-setup#connectors-development) section.
+
+</Note>
+
+3. Open the terminal and run `npm start`
+
+4. Access the frontend URL by opening port 4200 and signing in with these details:
+
+Email: `dev@ap.com`
+Password: `12345678`

@@ -1,6 +1,6 @@
 # Security
 
-At Activepieces.com, we consider the security of our systems a top priority. But no matter how much effort we put into system security, there can still be vulnerabilities present.
+At FEMA Integration Platform.com, we consider the security of our systems a top priority. But no matter how much effort we put into system security, there can still be vulnerabilities present.
 
 If you discover a vulnerability, we would like to know about it so we can take steps to address it as quickly as possible. We would like to ask you to help us better protect our clients and our systems.
 
@@ -42,8 +42,8 @@ If you discover a vulnerability, we would like to know about it so we can take s
 
 ## Disclosure Policy
 
-We follow coordinated disclosure. Every report follows the [Security Advisory Response playbook](https://www.activepieces.com/docs/handbook/engineering/playbooks/security-advisory-response).
+We follow coordinated disclosure. Every report follows the [Security Advisory Response playbook](https://github.com/lokiworks/fema-ipaas/docs/handbook/engineering/playbooks/security-advisory-response).
 
 > **Note:** Our bug bounty program is currently private and invitation-only. We welcome vulnerability reports from anyone through GitHub's private vulnerability reporting, but reward eligibility is limited to invited researchers at this time.
 
-We only publish advisories for vulnerabilities that affect users and warrant notifying them. Whether or not your report results in a published advisory has no bearing on reward eligibility. Reward ranges, eligibility, and terms are described in our [Vulnerability Disclosure Program](https://trust.activepieces.com).
+We only publish advisories for vulnerabilities that affect users and warrant notifying them. Whether or not your report results in a published advisory has no bearing on reward eligibility. Reward ranges, eligibility, and terms are described in our [Vulnerability Disclosure Program](https://trust.fema.local).

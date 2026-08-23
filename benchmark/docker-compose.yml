@@ -15,7 +15,7 @@ services:
         ipv4_address: 172.30.0.10
 
   app:
-    image: activepieces-benchmark:local
+    image: fema-benchmark:local
     build: .
     depends_on:
       postgres:
@@ -24,7 +24,7 @@ services:
         condition: service_started
     environment:
       FEMA_CONTAINER_TYPE: APP
-      FEMA_POSTGRES_DATABASE: activepieces
+      FEMA_POSTGRES_DATABASE: fema
       FEMA_POSTGRES_PASSWORD: password
       FEMA_POSTGRES_USERNAME: postgres
       FEMA_POSTGRES_HOST: postgres
@@ -58,7 +58,7 @@ services:
       - bench
 
   worker:
-    image: activepieces-benchmark:local
+    image: fema-benchmark:local
     depends_on:
       - app
     environment:
@@ -69,7 +69,7 @@ services:
       FEMA_EXECUTION_MODE: ${FEMA_EXECUTION_MODE:-SANDBOX_CODE_ONLY}
       FEMA_REDIS_HOST: redis
       FEMA_REDIS_PORT: 6379
-      FEMA_POSTGRES_DATABASE: activepieces
+      FEMA_POSTGRES_DATABASE: fema
       FEMA_POSTGRES_PASSWORD: password
       FEMA_POSTGRES_USERNAME: postgres
       FEMA_POSTGRES_HOST: postgres
@@ -97,7 +97,7 @@ services:
   postgres:
     image: postgres:14.4
     environment:
-      POSTGRES_DB: activepieces
+      POSTGRES_DB: fema
       POSTGRES_PASSWORD: password
       POSTGRES_USER: postgres
     volumes:

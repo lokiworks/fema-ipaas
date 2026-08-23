@@ -1,4 +1,4 @@
-import { isNil, tryParseFriendlyPieceError } from '@fema/core-utils';
+import { isNil, tryParseFriendlyConnectorError } from '@fema/core-utils';
 import {
   StepOutputStatus,
   flowStructureUtil,
@@ -22,8 +22,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { connectorsHooks } from '@/features/connectors';
 import { flowRunUtils } from '@/features/flow-runs';
-import { piecesHooks } from '@/features/pieces';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { formatUtils } from '@/lib/format-utils';
 
@@ -80,23 +80,23 @@ export const FlowStepInputOutput = () => {
   const slicedOutputRef = isSlicedOutput
     ? (selectedStepOutput?.output as LogSliceRef | undefined)
     : undefined;
-  const friendlyError = tryParseFriendlyPieceError(
+  const friendlyError = tryParseFriendlyConnectorError(
     selectedStepOutput?.errorMessage,
   );
-  const stepPieceName =
-    selectedStep?.type === FlowActionType.PIECE ||
-    selectedStep?.type === FlowTriggerType.PIECE
-      ? selectedStep.settings.pieceName
+  const stepConnectorName =
+    selectedStep?.type === FlowActionType.CONNECTOR ||
+    selectedStep?.type === FlowTriggerType.CONNECTOR
+      ? selectedStep.settings.connectorName
       : undefined;
-  const stepPieceVersion =
-    selectedStep?.type === FlowActionType.PIECE ||
-    selectedStep?.type === FlowTriggerType.PIECE
-      ? selectedStep.settings.pieceVersion
+  const stepConnectorVersion =
+    selectedStep?.type === FlowActionType.CONNECTOR ||
+    selectedStep?.type === FlowTriggerType.CONNECTOR
+      ? selectedStep.settings.connectorVersion
       : undefined;
-  const { pieceModel } = piecesHooks.usePiece({
-    name: stepPieceName ?? '',
-    version: stepPieceVersion,
-    enabled: !isNil(stepPieceName),
+  const { connectorModel } = connectorsHooks.useConnector({
+    name: stepConnectorName ?? '',
+    version: stepConnectorVersion,
+    enabled: !isNil(stepConnectorName),
   });
   const parsedOutput = isSlicedOutput
     ? undefined
@@ -182,37 +182,37 @@ export const FlowStepInputOutput = () => {
       : 'success';
 
   const stepKind: 'action' | 'trigger' =
-    selectedStep.type === FlowTriggerType.PIECE ? 'trigger' : 'action';
+    selectedStep.type === FlowTriggerType.CONNECTOR ? 'trigger' : 'action';
   const stepName =
-    selectedStep.type === FlowActionType.PIECE
+    selectedStep.type === FlowActionType.CONNECTOR
       ? selectedStep.settings.actionName
-      : selectedStep.type === FlowTriggerType.PIECE
+      : selectedStep.type === FlowTriggerType.CONNECTOR
       ? selectedStep.settings.triggerName
       : selectedStep.type;
   const stepInput =
-    selectedStep.type === FlowActionType.PIECE ||
-    selectedStep.type === FlowTriggerType.PIECE
+    selectedStep.type === FlowActionType.CONNECTOR ||
+    selectedStep.type === FlowTriggerType.CONNECTOR
       ? (selectedStep.settings.input as Record<string, unknown> | undefined)
       : undefined;
-  const pieceSchema =
-    pieceModel?.actions[stepName ?? '']?.outputSchema ??
-    pieceModel?.triggers[stepName ?? '']?.outputSchema ??
+  const connectorSchema =
+    connectorModel?.actions[stepName ?? '']?.outputSchema ??
+    connectorModel?.triggers[stepName ?? '']?.outputSchema ??
     null;
   const explanationContext: ErrorExplanationContext = {
-    pieceName: stepPieceName,
-    pieceVersion: stepPieceVersion,
-    pieceDisplayName: pieceModel?.displayName,
-    pieceAuthType: stepPropertiesSnapshotUtils.findAuthType(pieceModel),
+    connectorName: stepConnectorName,
+    connectorVersion: stepConnectorVersion,
+    connectorDisplayName: connectorModel?.displayName,
+    connectorAuthType: stepPropertiesSnapshotUtils.findAuthType(connectorModel),
     stepKind,
     stepName,
     stepDisplayName: selectedStep.displayName,
     stepDescription: stepPropertiesSnapshotUtils.findDescription({
-      pieceModel,
+      connectorModel,
       stepKind,
       stepName,
     }),
     stepProperties: stepPropertiesSnapshotUtils.build({
-      pieceModel,
+      connectorModel,
       stepKind,
       stepName,
       input: stepInput,
@@ -269,13 +269,13 @@ export const FlowStepInputOutput = () => {
               <FriendlyErrorView
                 error={friendlyError}
                 explanationContext={explanationContext}
-                pieceDisplayName={pieceModel?.displayName}
+                connectorDisplayName={connectorModel?.displayName}
               />
             ) : status === 'success' ? (
               <SmartOutputViewer
                 json={parsedOutput}
                 title={t('Output')}
-                pieceSchema={pieceSchema}
+                connectorSchema={connectorSchema}
               />
             ) : (
               <DataDisplayTabs
@@ -336,7 +336,7 @@ const TruncatedInputNotice = () => (
         'Some input values were too large to keep in the run logs and are shown as truncated. The step ran with the full values.',
       )}{' '}
       <a
-        href="https://www.activepieces.com/docs/install/troubleshooting/truncated-logs"
+        href="https://github.com/lokiworks/fema-ipaas/docs/install/troubleshooting/truncated-logs"
         target="_blank"
         rel="noreferrer"
         className="text-primary underline"

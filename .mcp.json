@@ -1,8 +1,8 @@
 {
   "mcpServers": {
-    "craftspace-activepieces": {
+    "craftspace-fema": {
       "type": "http",
-      "url": "https://craftspace.app/mcp/activepieces"
+      "url": "https://craftspace.app/mcp/fema"
     }
   }
 }

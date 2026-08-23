@@ -4,7 +4,7 @@ import { Handle, Position } from '@xyflow/react';
 import { Plus } from 'lucide-react';
 import React, { useId, useState } from 'react';
 
-import { PieceSelector } from '@/app/builder/pieces-selector';
+import { ConnectorSelector } from '@/app/builder/connectors-selector';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -19,12 +19,12 @@ const ApBigAddButtonCanvasNode = React.memo(
     const [
       readonly,
       activeDraggingStep,
-      isPieceSelectorOpened,
+      isConnectorSelectorOpened,
       canvasOrientation,
     ] = useBuilderStateContext((state) => [
       state.readonly,
       state.activeDraggingStep,
-      state.openedPieceSelectorStepNameOrAddButtonId === id,
+      state.openedConnectorSelectorStepNameOrAddButtonId === id,
       state.canvasOrientation,
     ]);
     const isHorizontal = canvasOrientation === 'horizontal';
@@ -57,7 +57,7 @@ const ApBigAddButtonCanvasNode = React.memo(
             className="flex justify-center items-center "
           >
             {!readonly && (
-              //we use transparent colors when opening the piece selector, so to not show the pattern of the background inside the button, we wrap the big add button in a div with the background color
+              //we use transparent colors when opening the connector selector, so to not show the pattern of the background inside the button, we wrap the big add button in a div with the background color
               <div className="bg-builder-background">
                 <div
                   style={{
@@ -74,17 +74,17 @@ const ApBigAddButtonCanvasNode = React.memo(
                     id={id}
                     className={cn('rounded-lg bg-background relative', {
                       'bg-primary/80':
-                        isShowingDropIndicator || isPieceSelectorOpened,
+                        isShowingDropIndicator || isConnectorSelectorOpened,
                       'shadow-add-button':
-                        isIsStepInsideDropzone || isPieceSelectorOpened,
+                        isIsStepInsideDropzone || isConnectorSelectorOpened,
                       'transition-all':
                         isIsStepInsideDropzone ||
-                        isPieceSelectorOpened ||
+                        isConnectorSelectorOpened ||
                         isShowingDropIndicator,
                     })}
                   >
                     {!isShowingDropIndicator && (
-                      <PieceSelector
+                      <ConnectorSelector
                         operation={flowCanvasUtils.createAddOperationFromAddButtonData(
                           data,
                         )}
@@ -99,12 +99,12 @@ const ApBigAddButtonCanvasNode = React.memo(
                               className={cn('w-6 h-6 text-foreground ', {
                                 'opacity-0':
                                   isShowingDropIndicator ||
-                                  isPieceSelectorOpened,
+                                  isConnectorSelectorOpened,
                               })}
                             />
                           </Button>
                         </span>
-                      </PieceSelector>
+                      </ConnectorSelector>
                     )}
                   </div>
                   {isShowingDropIndicator && (

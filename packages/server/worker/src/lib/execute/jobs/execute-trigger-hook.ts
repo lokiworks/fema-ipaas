@@ -19,7 +19,7 @@ export const executeTriggerHookJob: JobHandler<ExecuteTriggerHookJobData, Synchr
         }
 
         if (resolved.kind === 'disabled') {
-            ctx.log.info({ flow: { id: data.flowId } }, 'Failed to resolve pieces for trigger hook, skipping')
+            ctx.log.info({ flow: { id: data.flowId } }, 'Failed to resolve connectors for trigger hook, skipping')
             return { kind: JobResultKind.SYNCHRONOUS, status: EngineResponseStatus.OK, response: undefined }
         }
 

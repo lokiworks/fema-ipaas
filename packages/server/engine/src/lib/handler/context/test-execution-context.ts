@@ -67,10 +67,10 @@ export const testExecutionContext = {
                     )
                     break
                 }
-                case FlowActionType.PIECE:
+                case FlowActionType.CONNECTOR:
                 case FlowActionType.CODE:
                 case FlowTriggerType.EMPTY:
-                case FlowTriggerType.PIECE:
+                case FlowTriggerType.CONNECTOR:
                     flowExecutionContext = await flowExecutionContext.upsertStep(step.name, GenericStepOutput.create({
                         input: {},
                         type: stepType,

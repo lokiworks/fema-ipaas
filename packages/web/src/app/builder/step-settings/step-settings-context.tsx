@@ -1,7 +1,7 @@
 import {
-  PieceMetadataModel,
-  PiecePropertyMap,
-  piecePropertiesUtils,
+  ConnectorMetadataModel,
+  ConnectorPropertyMap,
+  connectorPropertiesUtils,
 } from '@fema/connector-sdk';
 import { setAtPath } from '@fema/core-utils';
 import { FlowAction, FlowTrigger, PropertyExecutionType } from '@fema/shared';
@@ -16,7 +16,7 @@ import {
 import { UseFormReturn } from 'react-hook-form';
 import { z, ZodObject } from 'zod';
 
-import { formUtils } from '@/features/pieces';
+import { formUtils } from '@/features/connectors';
 const numberReplacement = 'def.options.0.element';
 const stringReplacement = 'shape.';
 const createUpdatedSchemaKey = (propertyKey: string) => {
@@ -36,12 +36,12 @@ const createUpdatedSchemaKey = (propertyKey: string) => {
 
 export type StepSettingsContextState = {
   selectedStep: FlowAction | FlowTrigger;
-  pieceModel: PieceMetadataModel | undefined;
-  pieceModelNotFound: boolean;
+  connectorModel: ConnectorMetadataModel | undefined;
+  connectorModelNotFound: boolean;
   formSchema: ZodObject<any>;
-  updateFormSchema: (key: string, newFieldSchema: PiecePropertyMap) => void;
+  updateFormSchema: (key: string, newFieldSchema: ConnectorPropertyMap) => void;
   updatePropertySettingsSchema: (
-    schema: PiecePropertyMap,
+    schema: ConnectorPropertyMap,
     propertyName: string,
     form: UseFormReturn,
   ) => void;
@@ -49,8 +49,8 @@ export type StepSettingsContextState = {
 
 export type StepSettingsProviderProps = {
   selectedStep: FlowAction | FlowTrigger;
-  pieceModel: PieceMetadataModel | undefined;
-  pieceModelNotFound: boolean;
+  connectorModel: ConnectorMetadataModel | undefined;
+  connectorModelNotFound: boolean;
   children: ReactNode;
 };
 
@@ -60,8 +60,8 @@ const StepSettingsContext = createContext<StepSettingsContextState | undefined>(
 
 export const StepSettingsProvider = ({
   selectedStep,
-  pieceModel,
-  pieceModelNotFound,
+  connectorModel,
+  connectorModelNotFound,
   children,
 }: StepSettingsProviderProps) => {
   const [formSchema, setFormSchema] = useState<ZodObject<any>>(
@@ -70,19 +70,19 @@ export const StepSettingsProvider = ({
   const formSchemaInitializedRef = useRef<boolean>(false);
 
   if (!formSchemaInitializedRef.current && selectedStep) {
-    const schema = formUtils.buildPieceSchema(
+    const schema = formUtils.buildConnectorSchema(
       selectedStep.type,
       selectedStep.settings.actionName ?? selectedStep.settings.triggerName,
-      pieceModel ?? null,
+      connectorModel ?? null,
     );
     formSchemaInitializedRef.current = true;
     setFormSchema(schema as ZodObject<any>);
   }
 
   const updateFormSchema = useCallback(
-    (key: string, newFieldPropertyMap: PiecePropertyMap) => {
+    (key: string, newFieldPropertyMap: ConnectorPropertyMap) => {
       setFormSchema((prevSchema) => {
-        const newFieldSchema = piecePropertiesUtils.buildSchema(
+        const newFieldSchema = connectorPropertiesUtils.buildSchema(
           newFieldPropertyMap,
           undefined,
         );
@@ -98,7 +98,7 @@ export const StepSettingsProvider = ({
     [],
   );
   const updatePropertySettingsSchema = (
-    schema: PiecePropertyMap,
+    schema: ConnectorPropertyMap,
     propertyName: string,
     form: UseFormReturn,
   ) => {
@@ -117,8 +117,8 @@ export const StepSettingsProvider = ({
     <StepSettingsContext.Provider
       value={{
         selectedStep,
-        pieceModel,
-        pieceModelNotFound,
+        connectorModel,
+        connectorModelNotFound,
         formSchema,
         updateFormSchema,
         updatePropertySettingsSchema,
@@ -133,7 +133,7 @@ export const useStepSettingsContext = () => {
   const context = useContext(StepSettingsContext);
   if (context === undefined) {
     throw new Error(
-      'useStepSettingsContext must be used within a PieceSettingsProvider',
+      'useStepSettingsContext must be used within a ConnectorSettingsProvider',
     );
   }
   return context;

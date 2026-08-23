@@ -4,12 +4,12 @@ import {
     FlowOperationType,
     FlowTriggerType,
     FlowVersionState,
-    PieceTrigger,
+    ConnectorTrigger,
     SampleDataSettings,
 } from '@fema/shared'
 import type { FlowVersion } from '@fema/shared'
 
-const mockGetPiece = vi.fn()
+const mockGetConnector = vi.fn()
 const mockGetPlatformId = vi.fn().mockResolvedValue('platform-1')
 const mockRepoFindOne = vi.fn()
 const mockRepoSave = vi.fn()
@@ -23,9 +23,9 @@ vi.mock('../../../../../src/app/core/db/repo-factory', () => ({
     })),
 }))
 
-vi.mock('../../../../../src/app/pieces/metadata/piece-metadata-service', () => ({
-    pieceMetadataService: vi.fn(() => ({
-        get: mockGetPiece,
+vi.mock('../../../../../src/app/connectors/metadata/connector-metadata-service', () => ({
+    connectorMetadataService: vi.fn(() => ({
+        get: mockGetConnector,
     })),
 }))
 
@@ -80,10 +80,10 @@ const mockLog = {
     level: 'info',
 } as unknown as FastifyBaseLogger
 
-function makePieceTriggerSettings(extras: Partial<PieceTrigger['settings']> = {}): PieceTrigger['settings'] {
+function makeConnectorTriggerSettings(extras: Partial<ConnectorTrigger['settings']> = {}): ConnectorTrigger['settings'] {
     return {
-        pieceName: '@fema/connector-gmail',
-        pieceVersion: '~0.1.0',
+        connectorName: '@fema/connector-gmail',
+        connectorVersion: '~0.1.0',
         triggerName: 'new_email',
         input: {},
         propertySettings: {},
@@ -103,17 +103,17 @@ function makeFlowVersion(overrides: { id?: string, trigger?: FlowVersion['trigge
             valid: true,
             displayName: 'Gmail Trigger',
             lastUpdatedDate: '2024-01-01T00:00:00Z',
-            type: FlowTriggerType.PIECE,
-            settings: makePieceTriggerSettings(),
+            type: FlowTriggerType.CONNECTOR,
+            settings: makeConnectorTriggerSettings(),
             nextAction: {
                 name: 'step_1',
                 valid: true,
                 displayName: 'Slack Action',
                 lastUpdatedDate: '2024-01-01T00:00:00Z',
-                type: FlowActionType.PIECE,
+                type: FlowActionType.CONNECTOR,
                 settings: {
-                    pieceName: '@fema/connector-slack',
-                    pieceVersion: '~0.2.0',
+                    connectorName: '@fema/connector-slack',
+                    connectorVersion: '~0.2.0',
                     actionName: 'send_message',
                     input: {},
                     propertySettings: {},
@@ -140,7 +140,7 @@ describe('flowVersionService.applyOperation - USE_AS_DRAFT', () => {
         mockRepoExists.mockResolvedValue(false)
     })
 
-    it('preserves PIECE trigger sample data from the previous version', async () => {
+    it('preserves CONNECTOR trigger sample data from the previous version', async () => {
         const sampleData: SampleDataSettings = {
             sampleDataFileId: 'sd-file-1',
             sampleDataInputFileId: 'sdi-file-1',
@@ -151,8 +151,8 @@ describe('flowVersionService.applyOperation - USE_AS_DRAFT', () => {
             id: 'fv-prev',
             trigger: {
                 ...makeFlowVersion().trigger,
-                settings: makePieceTriggerSettings({ sampleData }),
-            } as PieceTrigger,
+                settings: makeConnectorTriggerSettings({ sampleData }),
+            } as ConnectorTrigger,
         })
         mockRepoFindOne.mockResolvedValue(previousVersion)
 
@@ -167,8 +167,8 @@ describe('flowVersionService.applyOperation - USE_AS_DRAFT', () => {
             },
         })
 
-        expect(result.trigger.type).toBe(FlowTriggerType.PIECE)
-        const settings = (result.trigger as PieceTrigger).settings
+        expect(result.trigger.type).toBe(FlowTriggerType.CONNECTOR)
+        const settings = (result.trigger as ConnectorTrigger).settings
         expect(settings.sampleData?.sampleDataFileId).toBe(sampleData.sampleDataFileId)
         expect(settings.sampleData?.sampleDataInputFileId).toBe(sampleData.sampleDataInputFileId)
     })
@@ -189,8 +189,8 @@ describe('flowVersionService.applyOperation - USE_AS_DRAFT', () => {
             },
         })
 
-        expect(result.trigger.type).toBe(FlowTriggerType.PIECE)
-        expect((result.trigger as PieceTrigger).settings.sampleData).toBeUndefined()
+        expect(result.trigger.type).toBe(FlowTriggerType.CONNECTOR)
+        expect((result.trigger as ConnectorTrigger).settings.sampleData).toBeUndefined()
     })
 
     it('skips the sample data preservation when previous version has an EMPTY trigger', async () => {

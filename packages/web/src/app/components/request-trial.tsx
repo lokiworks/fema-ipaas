@@ -8,7 +8,7 @@ import { userHooks } from '@/hooks/user-hooks';
 export type FeatureKey =
   | 'PROJECTS'
   | 'BRANDING'
-  | 'PIECES'
+  | 'CONNECTORS'
   | 'TEMPLATES'
   | 'TEAM'
   | 'GLOBAL_CONNECTIONS'
@@ -21,7 +21,7 @@ export type FeatureKey =
   | 'ISSUES'
   | 'ANALYTICS'
   | 'ALERTS'
-  | 'ENTERPRISE_PIECES'
+  | 'ENTERPRISE_CONNECTORS'
   | 'UNIVERSAL_AI'
   | 'SIGNING_KEYS'
   | 'CUSTOM_ROLES'
@@ -64,7 +64,7 @@ export const RequestTrial = ({
 
   const handleClick = () =>
     window.open(
-      `https://www.activepieces.com/sales?${createQueryParams()}`,
+      `https://github.com/lokiworks/fema-ipaas/sales?${createQueryParams()}`,
       '_blank',
       'noopener noreferrer',
     );

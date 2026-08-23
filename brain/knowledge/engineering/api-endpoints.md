@@ -4,7 +4,7 @@ icon: 🔌
 
 # API & Endpoints
 
-The Activepieces REST API reference. Source: `docs/endpoints/` plus generated `openapi.json`.
+The FEMA Integration Platform REST API reference. Source: `docs/endpoints/` plus generated `openapi.json`.
 
 ## Basics
 - **Auth** — API keys, generated in the Platform Dashboard (Platform/Enterprise editions; contact sales@fema.local). Pass as a Bearer token: `Authorization: Bearer {API_KEY}`.
@@ -19,7 +19,7 @@ Each group has a schema page plus CRUD operations:
 - **Connections** — upsert, list, get, delete; **Global Connections** — upsert, update, list, delete.
 - **Flows** — create, update, get, list, delete; **Flow Runs** — get, list.
 - **Sample Data** — get.
-- **Pieces** — schema, install.
+- **Connectors** — schema, install.
 - **Project Releases** — create.
 - **Git Sync** (git-repos) — configure.
 - **Folders** — create, update, get, list, delete.

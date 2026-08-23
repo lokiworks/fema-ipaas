@@ -1,5 +1,5 @@
 ---
-title: 上游迁移压缩为单一基线，放弃从 Activepieces 就地升级
+title: 上游迁移压缩为单一基线，放弃从 FEMA Integration Platform 就地升级
 icon: 🗜️
 status: accepted
 ---
@@ -11,7 +11,7 @@ status: accepted
 同时删除 flow-version 的 23 个历史 JSON 迁移，fork 基线直接从
 `LATEST_FLOW_SCHEMA_VERSION` 起步。
 
-**后果是明确的：不存在从任何 Activepieces 实例就地升级到本平台的路径。**
+**后果是明确的：不存在从任何 FEMA Integration Platform 实例就地升级到本平台的路径。**
 新部署从空库开始。
 
 同时确定 PostgreSQL 是唯一后端：无引用的 sqlite 连接删除，pglite（零配置开发库）
@@ -36,7 +36,7 @@ project → workspace、flow → workflow、app_connection → connection 等表
 ## Consequences
 
 - 迁移基线经过验证：对空库执行成功，且与实体比对无 schema 漂移。
-- 上游早期迁移创建的 `en_natural` ICU 排序规则已并入基线，piece_metadata 的
+- 上游早期迁移创建的 `en_natural` ICU 排序规则已并入基线，connector_metadata 的
   自然版本号排序行为保持不变。
-- 未来若确实需要迁移某个 Activepieces 实例的数据，走一次性的数据导出/导入工具，
+- 未来若确实需要迁移某个 FEMA Integration Platform 实例的数据，走一次性的数据导出/导入工具，
   而不是迁移链。

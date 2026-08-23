@@ -20,8 +20,8 @@ export enum FileType {
      */
     FLOW_RUN_LOG_SLICE = 'FLOW_RUN_LOG_SLICE',
     /**
-     * Tarball of a custom piece's source, downloaded and extracted by the worker
-     * to load piece code. Stored in DB, kept indefinitely.
+     * Tarball of a custom connector's source, downloaded and extracted by the worker
+     * to load connector code. Stored in DB, kept indefinitely.
      */
     PACKAGE_ARCHIVE = 'PACKAGE_ARCHIVE',
     /**
@@ -35,7 +35,7 @@ export enum FileType {
      */
     SAMPLE_DATA = 'SAMPLE_DATA',
     /*
-    @deprecated activepieces no longer stores trigger payload
+    @deprecated the platform no longer stores trigger payload
     */
     TRIGGER_PAYLOAD = 'TRIGGER_PAYLOAD',
     /**
@@ -77,7 +77,7 @@ export enum FileType {
     KNOWLEDGE_BASE = 'KNOWLEDGE_BASE',
     /**
      * Prebuilt per-locked-flow-version run artifact (flow definition + resolved
-     * piece manifest + compiled code steps), addressed by flowVersionId. Lets a
+     * connector manifest + compiled code steps), addressed by flowVersionId. Lets a
      * worker provision a flow by download + extract instead of fetch + compile.
      * Stored at the configured location (S3 when available). Kept indefinitely.
      */

@@ -428,7 +428,7 @@ const environmentVariables = [
     },
     {
         name: "FEMA_TEMPLATES_SOURCE_URL",
-        value: "https://cloud.activepieces.com/api/v1/templates"
+        value: "https://github.com/lokiworks/fema-ipaas/api/v1/templates"
     }
 ];
 
@@ -446,7 +446,7 @@ const fargateService = new awsx.ecs.FargateService(`${stack}-fg`, {
     taskDefinitionArgs: {
         family: `${stack}-fg-task-definition`,
         container: {
-            name: "activepieces",
+            name: "fema",
             image: imageName,
             cpu: containerCpu,
             memory: containerMemory,
@@ -461,6 +461,6 @@ const fargateService = new awsx.ecs.FargateService(`${stack}-fg`, {
 pulumi.log.info("Finished running Pulumi");
 
 export const _ = {
-    activePiecesUrl: frontendUrl,
-    activepiecesEnv: environmentVariables
+    activeConnectorsUrl: frontendUrl,
+    femaEnv: environmentVariables
 };

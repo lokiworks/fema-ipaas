@@ -1,7 +1,7 @@
 import { FlowRunStatus } from '@fema/shared'
 import { FlowExecutorContext } from '../../src/lib/handler/context/flow-execution-context'
 import { flowExecutor } from '../../src/lib/handler/flow-executor'
-import { buildPieceAction, generateMockEngineConstants } from './test-helper'
+import { buildConnectorAction, generateMockEngineConstants } from './test-helper'
 
 describe('flow with response', () => {
 
@@ -30,9 +30,9 @@ describe('flow with response', () => {
         }
 
         const result = await flowExecutor.execute({
-            action: buildPieceAction({
+            action: buildConnectorAction({
                 name: 'http',
-                pieceName: '@fema/connector-webhook',
+                connectorName: '@fema/connector-webhook',
                 actionName: 'return_response',
                 input,
             }), executionState: FlowExecutorContext.empty(), constants: generateMockEngineConstants(),

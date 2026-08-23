@@ -15,8 +15,8 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from '@/components/ui/tooltip';
+import { connectorSelectorUtils } from '@/features/connectors';
 import { StepStatusIcon, flowRunUtils } from '@/features/flow-runs';
-import { pieceSelectorUtils } from '@/features/pieces';
 
 import { useBuilderStateContext } from '../../../builder-hooks';
 import { flowCanvasUtils } from '../../utils/flow-canvas-utils';
@@ -45,9 +45,9 @@ const ApStepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
   ] = useBuilderStateContext((state) => {
     const step = flowStructureUtil.getStep(stepName, state.flowVersion.trigger);
     const isManualTrigger =
-      step?.type === FlowTriggerType.PIECE &&
-      pieceSelectorUtils.isManualTrigger({
-        pieceName: step?.settings.pieceName,
+      step?.type === FlowTriggerType.CONNECTOR &&
+      connectorSelectorUtils.isManualTrigger({
+        connectorName: step?.settings.connectorName,
         triggerName: step?.settings.triggerName ?? '',
       });
     return [

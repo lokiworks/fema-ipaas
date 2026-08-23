@@ -6,9 +6,9 @@ on:
 
 env:
   FEMA_EDITION: ee
-  FEMA_DEV_PIECES: store,webhook
-  FEMA_PIECES_SYNC_MODE: NONE
-  FEMA_PIECES_SOURCE: FILE
+  FEMA_DEV_CONNECTORS: store,webhook
+  FEMA_CONNECTORS_SYNC_MODE: NONE
+  FEMA_CONNECTORS_SOURCE: FILE
   FEMA_API_KEY: api-key
   FEMA_LICENSE_KEY: ${{ secrets.EE_LICENSE_KEY }}
   FEMA_DB_TYPE: POSTGRES
@@ -16,7 +16,7 @@ env:
   FEMA_POSTGRES_PORT: 5432
   FEMA_POSTGRES_USERNAME: postgres
   FEMA_POSTGRES_PASSWORD: postgres
-  FEMA_POSTGRES_DATABASE: activepieces
+  FEMA_POSTGRES_DATABASE: fema
   FEMA_POSTGRES_USE_SSL: "false"
   FEMA_JWT_SECRET: "secret"
   FEMA_ENCRYPTION_KEY: "fdbe51af3678563560972e4a912aee6d"
@@ -38,7 +38,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: activepieces
+          POSTGRES_DB: fema
         options: >-
           --health-cmd pg_isready
           --health-interval 10s

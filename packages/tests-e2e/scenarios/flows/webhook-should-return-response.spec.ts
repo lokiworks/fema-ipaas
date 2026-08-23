@@ -9,7 +9,7 @@ test.describe('Webhooks', () => {
     await automationsPage.newFlowFromScratch();
 
     await builderPage.selectInitialTrigger({
-      piece: 'Webhook',
+      connector: 'Webhook',
       trigger: 'Catch Webhook'
     });
 
@@ -24,7 +24,7 @@ test.describe('Webhooks', () => {
     await page.waitForTimeout(5000);
 
     await builderPage.addAction({
-      piece: 'Webhook',
+      connector: 'Webhook',
       action: 'Return Response'
     });
 

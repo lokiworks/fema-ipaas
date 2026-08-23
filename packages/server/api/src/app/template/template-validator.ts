@@ -1,5 +1,5 @@
 import { ErrorCode, PlatformError, PlatformId, sanitizeObjectForPostgresql } from '@fema/core-utils'
-import { FlowOperationRequest, flowOperations, FlowOperationType, flowPieceUtil, FlowVersion, FlowVersionState, FlowVersionTemplate } from '@fema/shared'
+import { flowConnectorUtil, FlowOperationRequest, flowOperations, FlowOperationType, FlowVersion, FlowVersionState, FlowVersionTemplate } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { flowVersionValidationUtil } from '../flows/flow-version/flow-version-validator-util'
 
@@ -21,7 +21,7 @@ function createMinimalFlowVersion(template: FlowVersionTemplate): FlowVersion {
 
 type PreparedTemplate = {
     flows: FlowVersionTemplate[]
-    pieces: string[]
+    connectors: string[]
 }
 
 export const templateValidator = {
@@ -57,11 +57,11 @@ export const templateValidator = {
         }))
 
         const sanitizedFlows = flows.map((flow) => sanitizeObjectForPostgresql(flow))
-        const pieces = Array.from(new Set(sanitizedFlows.map((flow) => flowPieceUtil.getUsedPieces(flow.trigger)).flat()))
+        const connectors = Array.from(new Set(sanitizedFlows.map((flow) => flowConnectorUtil.getUsedConnectors(flow.trigger)).flat()))
 
         return {
             flows: sanitizedFlows,
-            pieces,
+            connectors,
         }
     },
 }

@@ -4,7 +4,7 @@ description: 'The complete reference of every environment variable and its defau
 icon: 'gear'
 ---
 
-This is the exhaustive lookup — every variable Activepieces reads, grouped by
+This is the exhaustive lookup — every variable FEMA Integration Platform reads, grouped by
 concern, with its default. For *how* to apply them to a production deployment,
 see [Configure & Operate](/install/configure-operate/production-setup).
 
@@ -43,8 +43,8 @@ Variables marked ❗ are required for a self-hosted production deployment.
   <Card title="Authentication & SSO" icon="lock" href="#authentication-&-sso">
     Google sign-in, SCIM, cloud OAuth.
   </Card>
-  <Card title="Pieces & flows" icon="puzzle-piece" href="#pieces-&-flows">
-    Piece syncing, polling, publish behavior.
+  <Card title="Connectors & flows" icon="puzzle-connector" href="#connectors-&-flows">
+    Connector syncing, polling, publish behavior.
   </Card>
   <Card title="Tool search" icon="magnifying-glass" href="#tool-search">
     Semantic action discovery for AI agents.
@@ -63,8 +63,8 @@ protect connections and tokens, and telemetry.
 | ❗ `FEMA_FRONTEND_URL` | The public URL used to build redirect URLs and webhook URLs. It must be reachable by third parties for webhooks and app triggers to work. | `None` |
 | ❗ `FEMA_ENCRYPTION_KEY` | 32-character (16-byte) hexadecimal key used to encrypt connections. Generate one with `openssl rand -hex 16`. | `None` |
 | ❗ `FEMA_JWT_SECRET` | 32-character hexadecimal key used to sign JWT tokens. Generate one with `openssl rand -hex 32`. | `None` |
-| `FEMA_CONFIG_PATH` | Path where the PGLite database and local settings are stored. | `~/.activepieces` |
-| `FEMA_INTERNAL_URL` | (Beta) Internal URL used for SSO authentication, e.g. `https://demo.activepieces.com/api`. | `None` |
+| `FEMA_CONFIG_PATH` | Path where the PGLite database and local settings are stored. | `~/.fema` |
+| `FEMA_INTERNAL_URL` | (Beta) Internal URL used for SSO authentication, e.g. `https://demo.fema.local/api`. | `None` |
 | `FEMA_TELEMETRY_ENABLED` | Collect anonymous telemetry. | `true` |
 
 <Warning>
@@ -81,7 +81,7 @@ can expose the frontend port (4200) with a tunneling service such as
 
 ### Database
 
-Activepieces stores its data in PostgreSQL (recommended for production) or an
+FEMA Integration Platform stores its data in PostgreSQL (recommended for production) or an
 embedded PGLite database. Set the connection with discrete fields or a single
 `FEMA_POSTGRES_URL`.
 
@@ -146,7 +146,7 @@ run timeouts, and the network egress posture for user code. Read
 | `FEMA_CONTAINER_TYPE` | Which services run in the container: `APP` (API only), `WORKER` (worker only), or `WORKER_AND_APP` (both). | `WORKER_AND_APP` |
 | `FEMA_WORKER_CONCURRENCY` | Concurrent jobs a worker processes at once. Each job uses one sandbox instance. | `5` |
 | `FEMA_SANDBOX_MEMORY_LIMIT` | Maximum memory (KB) a single sandboxed engine process can use. Each process runs at most one execution at a time. | `1048576` |
-| `FEMA_SANDBOX_PROPAGATED_ENV_VARS` | Comma-separated environment variables propagated into sandboxed code. For pieces, keep everything in the authentication object so it works across instances. | `None` |
+| `FEMA_SANDBOX_PROPAGATED_ENV_VARS` | Comma-separated environment variables propagated into sandboxed code. For connectors, keep everything in the authentication object so it works across instances. | `None` |
 | `FEMA_FLOW_TIMEOUT_SECONDS` | Maximum runtime for a single flow run, in seconds. | `600` |
 | `FEMA_TRIGGER_TIMEOUT_SECONDS` | Maximum runtime for a trigger's polling, in seconds. | `60` |
 | `FEMA_DEFAULT_CONCURRENT_JOBS_LIMIT` | Default maximum concurrent runs per project. Can be overridden per project in settings. | `5` |
@@ -168,7 +168,7 @@ run data is kept. The **Cloud** values and how these interact are covered in
 | `FEMA_PAUSED_FLOW_TIMEOUT_DAYS` | Maximum pause duration for a paused flow, in days. Cannot exceed `FEMA_EXECUTION_DATA_RETENTION_DAYS`. | `30` |
 | `FEMA_ISSUE_ARCHIVE_DAYS` | Issues not updated for this many days are automatically archived. | `7` |
 | `FEMA_MAX_FILE_SIZE_MB` | Maximum size (MB) for files uploaded in steps or triggers. Larger files are rejected. | `25` |
-| `FEMA_MAX_STORE_ENTRY_VALUE_SIZE_KB` | Maximum size (KB) of a single value written by the Store piece or `context.store`. Larger writes are rejected with HTTP 413. | `512` |
+| `FEMA_MAX_STORE_ENTRY_VALUE_SIZE_KB` | Maximum size (KB) of a single value written by the Store connector or `context.store`. Larger writes are rejected with HTTP 413. | `512` |
 | `FEMA_MAX_FLOW_RUN_LOG_SIZE_MB` | Maximum combined size (MB) of all step inputs and outputs in a single run. Exceeding it ends the run with `LOG_SIZE_EXCEEDED`. | `50` |
 | `FEMA_FLOW_RUN_LOG_SLICE_THRESHOLD_KB` | Step outputs larger than this (KB) are offloaded to object storage instead of inlined in the run log. | `32` |
 | `FEMA_FLOW_RUN_LOG_INPUT_TRUNCATE_THRESHOLD_KB` | Step inputs larger than this (KB) are replaced with a placeholder in the run log; the step still receives the full value at runtime. | `2` |
@@ -242,29 +242,29 @@ Sign-in providers and SCIM provisioning.
 |---|---|---|
 | `FEMA_GOOGLE_CLIENT_ID` | Google OAuth2 client ID for "Sign in with Google". Both this and `FEMA_GOOGLE_CLIENT_SECRET` must be set for the button to appear; it can no longer be configured from the admin SSO page. | `None` |
 | `FEMA_GOOGLE_CLIENT_SECRET` | Google OAuth2 client secret. Required together with `FEMA_GOOGLE_CLIENT_ID`. | `None` |
-| `FEMA_CLOUD_AUTH_ENABLED` | Use Activepieces-hosted OAuth2 apps for piece connections. Set to `false` to disable them. | `true` |
+| `FEMA_CLOUD_AUTH_ENABLED` | Use FEMA Integration Platform-hosted OAuth2 apps for connector connections. Set to `false` to disable them. | `true` |
 | `FEMA_SCIM_DEFAULT_PROJECT_ROLE` | Default project role for members added via SCIM group sync. One of `Admin`, `Editor`, `Viewer`. | `Editor` |
 
 ---
 
-### Pieces & flows
+### Connectors & flows
 
-How piece metadata is synced, how often scheduled triggers poll, and
+How connector metadata is synced, how often scheduled triggers poll, and
 flow-authoring defaults.
 
 | Variable | Description | Default |
 |---|---|---|
-| `FEMA_PIECES_SYNC_MODE` | `OFFICIAL_AUTO` syncs piece metadata automatically from the cloud; `NONE` disables syncing. | `OFFICIAL_AUTO` |
-| `FEMA_TRIGGER_DEFAULT_POLL_INTERVAL` | Minutes between checks for new data on pieces with scheduled triggers (e.g. new Google Contacts). | `5` |
+| `FEMA_CONNECTORS_SYNC_MODE` | `OFFICIAL_AUTO` syncs connector metadata automatically from the cloud; `NONE` disables syncing. | `OFFICIAL_AUTO` |
+| `FEMA_TRIGGER_DEFAULT_POLL_INTERVAL` | Minutes between checks for new data on connectors with scheduled triggers (e.g. new Google Contacts). | `5` |
 | `FEMA_ENABLE_FLOW_ON_PUBLISH` | Automatically enable a flow when a new version is published. | `true` |
-| `FEMA_ENFORCE_CONNECTION_PIECE_BINDING` | Reject a step's connection at runtime unless the connection was created for the same piece as the step. | `false` |
-| `FEMA_LOAD_TRANSLATIONS_FOR_DEV_PIECES` | Load translations for dev pieces (configured via `FEMA_DEV_PIECES`). Affects development mode only. | `false` |
+| `FEMA_ENFORCE_CONNECTION_CONNECTOR_BINDING` | Reject a step's connection at runtime unless the connection was created for the same connector as the step. | `false` |
+| `FEMA_LOAD_TRANSLATIONS_FOR_DEV_CONNECTORS` | Load translations for dev connectors (configured via `FEMA_DEV_CONNECTORS`). Affects development mode only. | `false` |
 
 ---
 
 ### Tool search
 
-Semantic discovery of piece actions and triggers for AI agents connected
+Semantic discovery of connector actions and triggers for AI agents connected
 through the MCP server. See [Tool Search](/mcp/tool-search) for how it works.
 
 | Variable | Description | Default |

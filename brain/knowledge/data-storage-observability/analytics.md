@@ -10,14 +10,14 @@ Platform-level reporting on automation usage — daily run counts, active flows/
 
 - **PlatformAnalyticsReport**: cached entity holding `runs` (daily `{flowId, day, runs}`), `flows` (enabled-flow metadata), `users`, plus `outdated` flag and `cachedAt`.
 - `platform-analytics-report.service.ts`: `refreshReport`, `getOrGenerateReport`, `markAsOutdated`.
-- `pieces-analytics.service.ts`: separate daily service tracking per-piece usage.
+- `connectors-analytics.service.ts`: separate daily service tracking per-connector usage.
 - `AnalyticsTimePeriod`: LAST_WEEK / MONTH / THREE_MONTHS / SIX_MONTHS / YEAR.
 
 ### How it works
 
 - `getOrGenerateReport` serves a cached report (5-min TTL) filtered by time period. `refreshReport` runs under a distributed lock (400s), queries users + enabled flows + daily run counts (**PRODUCTION runs only**), and merges incrementally.
 - **Time saved**: `minutesSaved = runs × flow.timeSavedPerRun` (per-flow estimate in minutes, editable by the flow owner in the Details drill-down).
-- Pieces analytics (daily cron 12:00 UTC): for each enabled flow, extract piece steps, count unique projects per piece, write `pieceMetadata.usage = projectCount`.
+- Connectors analytics (daily cron 12:00 UTC): for each enabled flow, extract connector steps, count unique projects per connector, write `connectorMetadata.usage = projectCount`.
 
 ### Gotchas
 

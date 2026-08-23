@@ -5,7 +5,7 @@ import { rejectedPromiseHandler } from '../../helper/promise-handler'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
 
-const INTERNAL_TELEMETRY_URL = 'https://template-manager.activepieces.com/api/public/analytics/event'
+const INTERNAL_TELEMETRY_URL = 'https://template-manager.fema.local/api/public/analytics/event'
 const TEMPLATE_TELEMETRY_API_KEY = system.get(AppSystemProp.TEMPLATE_MANAGER_API_KEY)
 const TEMPLATE_TELEMETRY_API_KEY_HEADER = 'X-API-Key'
 

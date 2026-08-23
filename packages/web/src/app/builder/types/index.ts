@@ -1,6 +1,6 @@
 export enum RightSideBarType {
   NONE = 'none',
-  PIECE_SETTINGS = 'piece-settings',
+  CONNECTOR_SETTINGS = 'connector-settings',
   VERSIONS = 'versions',
   RUNS = 'runs',
 }

@@ -21,7 +21,7 @@ Our repo has a layered AI assistance system:
 | `brain/wiki/<area>/*.md` | one page per subsystem | When Claude explores that subsystem | Entity schemas, services, data flows, gotchas |
 | `brain/decisions/*.md` | numbered, flat | When Claude needs the *why* behind a design | One hard-to-reverse call each |
 | `.claude/rules/` | 3-5 lines each | Every session | Critical safety checks (entity registration, data isolation, edition safety) |
-| `.agents/skills/` | one folder each | When invoked | Investigations, not conventions — `/debug-failed-run`, `/triage-*`, `/piece-builder`. Code shapes and conventions live in the wiki, not here. |
+| `.agents/skills/` | one folder each | When invoked | Investigations, not conventions — `/debug-failed-run`, `/triage-*`, `/connector-builder`. Code shapes and conventions live in the wiki, not here. |
 
 Total context per session: ~150 lines. Claude has ~150 instruction slots — we use them all, nothing wasted.
 
@@ -95,7 +95,7 @@ Open multiple terminal tabs, each with its own Claude session:
 ```bash
 Tab 1: claude --worktree    # Feature A (backend-heavy)
 Tab 2: claude --worktree    # Feature B (frontend-heavy)
-Tab 3: claude --worktree    # Feature C (piece/integration)
+Tab 3: claude --worktree    # Feature C (connector/integration)
 ```
 
 Each tab gets its own git worktree (isolated branch, no conflicts). While Tab 1 is running tests, switch to Tab 2 and keep building.
@@ -130,7 +130,7 @@ If you've corrected Claude twice on the same thing, `/clear` and rewrite the pro
 - [ ] No `as SomeType` casting
 - [ ] No `any` types
 - [ ] Zod error messages use i18n keys
-- [ ] `@activepieces/shared` version bumped (if changed)
+- [ ] `@fema/shared` version bumped (if changed)
 </Accordion>
 </AccordionGroup>
 
@@ -180,7 +180,7 @@ claude                        # Opens Claude Code in current directory
 
 ```bash Custom skills
 /debug-failed-run <runId>     # Trace a failed run across BullMQ, Postgres, ClickHouse
-/piece-builder "app name"     # Build or extend a piece
+/connector-builder "app name"     # Build or extend a connector
 /triage-dependabot-alerts     # Work the dependency-vulnerability backlog
 ```
 

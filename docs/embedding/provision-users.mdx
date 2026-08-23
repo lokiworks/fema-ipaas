@@ -1,6 +1,6 @@
 ---
 title: "Provision Users"
-description: "Automatically authenticate your SaaS users to your Activepieces instance"
+description: "Automatically authenticate your SaaS users to your FEMA Integration Platform instance"
 icon: 'user'
 ---
 
@@ -8,7 +8,7 @@ icon: 'user'
 
 ## Overview
 
-In Activepieces, there are **Projects** and **Users**. Each project is provisioned with their corresponding workspace, project, or team in your SaaS. The users are then mapped to the respective users in Activepieces.
+In FEMA Integration Platform, there are **Projects** and **Users**. Each project is provisioned with their corresponding workspace, project, or team in your SaaS. The users are then mapped to the respective users in FEMA Integration Platform.
 
 To achieve this, the backend will generate a signed token that contains all the necessary information to automatically create a user and project. If the user or project already exists, it will skip the creation and log in the user directly.
 
@@ -16,16 +16,16 @@ To achieve this, the backend will generate a signed token that contains all the 
   <Step title="Step 1: Obtain Signing Key">
     You can generate a signing key by going to **Platform Settings -> Signing Keys -> Generate Signing Key**.
 
-    This will generate a public and private key pair. The public key will be used by Activepieces to verify the signature of the JWT tokens you send. The private key will be used by you to sign the JWT tokens.
+    This will generate a public and private key pair. The public key will be used by FEMA Integration Platform to verify the signature of the JWT tokens you send. The private key will be used by you to sign the JWT tokens.
 
     ![Create Signing Key](../resources/screenshots/create-signing-key.png)
     <Warning>
-      Please store your private key in a safe place, as it will not be stored in Activepieces.
+      Please store your private key in a safe place, as it will not be stored in FEMA Integration Platform.
     </Warning>
   </Step>
 
   <Step title="Step 2: Generate a JWT">
-    The signing key will be used to generate JWT tokens for the currently logged-in user on your website, which will then be sent to the Activepieces Iframe as a query parameter to authenticate the user and exchange the token for a longer lived token.
+    The signing key will be used to generate JWT tokens for the currently logged-in user on your website, which will then be sent to the FEMA Integration Platform Iframe as a query parameter to authenticate the user and exchange the token for a longer lived token.
 
     To generate these tokens, you will need to add code in your backend to generate the token using the RS256 algorithm, so the JWT header would look like this:
 
@@ -51,7 +51,7 @@ To achieve this, the backend will generate a signed token that contains all the 
       "firstName": "John",
       "lastName": "Doe",
       "role": "EDITOR",
-      "piecesFilterType": "NONE",
+      "connectorsFilterType": "NONE",
       "exp": 1856563200,
       "tasks": 50000,
       "aiCredits": 250
@@ -65,12 +65,12 @@ To achieve this, the backend will generate a signed token that contains all the 
     | projectDisplayName| Display name of the user's project |
     | firstName         | First name of the user                           |
     | lastName          | Last name of the user                            |
-    | role              | Role of the user in the Activepieces project (e.g., **EDITOR**, **VIEWER**, **ADMIN**)           |
+    | role              | Role of the user in the FEMA Integration Platform project (e.g., **EDITOR**, **VIEWER**, **ADMIN**)           |
     | exp               | Expiry timestamp for the token (Unix timestamp)  |
-    | version           | Token payload version. Use `"v4"` to assign a piece set via `pieceSet`, or `"v3"` for the legacy `piecesTags` approach |
-    | pieceSet          | (v4) Key of the piece set to assign to the project, check [customize pieces](/embedding/customize-pieces)  |
-    | piecesFilterType  | (v3, legacy) Customize the project pieces, check [customize pieces](/embedding/customize-pieces)  |
-    | piecesTags        | (v3, legacy) Customize the project pieces, check [customize pieces](/embedding/customize-pieces)  |
+    | version           | Token payload version. Use `"v4"` to assign a connector set via `connectorSet`, or `"v3"` for the legacy `connectorsTags` approach |
+    | connectorSet          | (v4) Key of the connector set to assign to the project, check [customize connectors](/embedding/customize-connectors)  |
+    | connectorsFilterType  | (v3, legacy) Customize the project connectors, check [customize connectors](/embedding/customize-connectors)  |
+    | connectorsTags        | (v3, legacy) Customize the project connectors, check [customize connectors](/embedding/customize-connectors)  |
     | tasks             | Customize the tasks limit for your user's project |
     | aiCredits         | Customize the ai credits limit for your user's project |
     | concurrencyPoolKey   | Pool identifier. Projects sharing the same key share the same concurrency limit. Must be used with `concurrencyPoolLimit`. See [Manage Concurrency](/admin-guide/guides/manage-concurrency) |
@@ -99,10 +99,10 @@ To achieve this, the backend will generate a signed token that contains all the 
         firstName: "John",
         lastName: "Doe",
         role: "EDITOR",
-        piecesFilterType: "NONE",
+        connectorsFilterType: "NONE",
         exp: currentTime + (60 * 60), // 1 hour from now
       },
-      process.env.ACTIVEPIECES_SIGNING_KEY,
+      process.env.FEMA_SIGNING_KEY,
       {
         algorithm: "RS256",
         header: {

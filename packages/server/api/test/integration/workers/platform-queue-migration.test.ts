@@ -259,7 +259,7 @@ function buildPollingJobData({ platformId, flowVersionId }: { platformId: string
         schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
         flowVersionId,
         flowId: apId(),
-        triggerType: FlowTriggerType.PIECE,
+        triggerType: FlowTriggerType.CONNECTOR,
         jobType: WorkerJobType.EXECUTE_POLLING,
     }
 }

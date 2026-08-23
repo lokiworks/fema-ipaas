@@ -5,10 +5,10 @@ import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { checkIfFileExists, makeFolderRecursive } from '../utils/files';
 import {
-    assertPieceExists,
+    assertConnectorExists,
   displayNameToCamelCase,
-  displayNameToKebabCase, findPiece,
-} from '../utils/piece-utils';
+  displayNameToKebabCase, findConnector,
+} from '../utils/connector-utils';
 
 function createTriggerTemplate(displayName: string, description: string, technique: string) {
     const camelCase = displayNameToCamelCase(displayName)
@@ -19,7 +19,7 @@ import { createTrigger, TriggerStrategy, AppConnectionValueForAuthProperty  } fr
 import { DedupeStrategy, Polling, pollingHelper } from '@fema/connector-common';
 import dayjs from 'dayjs';
 
-// replace auth with piece auth variable
+// replace auth with connector auth variable
 const polling: Polling<AppConnectionValueForAuthProperty<undefined>, Record<string, never> > = {
     strategy: DedupeStrategy.TIMEBASED,
     items: async ({ propsValue, lastFetchEpochMS }) => {
@@ -33,7 +33,7 @@ const polling: Polling<AppConnectionValueForAuthProperty<undefined>, Record<stri
 }
 
 export const ${camelCase} = createTrigger({
-// auth: check https://www.activepieces.com/docs/developers/piece-reference/authentication,
+// auth: check https://github.com/lokiworks/fema-ipaas/docs/developers/connector-reference/authentication,
 name: '${camelCase}',
 displayName: '${displayName}',
 description: '${description}',
@@ -60,7 +60,7 @@ async run(context) {
         triggerTemplate = `
 import { createTrigger, TriggerStrategy } from '@fema/connector-sdk';
 export const ${camelCase} = createTrigger({
-    // auth: check https://www.activepieces.com/docs/developers/piece-reference/authentication,
+    // auth: check https://github.com/lokiworks/fema-ipaas/docs/developers/connector-reference/authentication,
     name: '${camelCase}',
     displayName: '${displayName}',
     description: '${description}',
@@ -88,14 +88,14 @@ const checkIfTriggerExists = async (triggerPath: string) => {
         process.exit(1);
     }
 }
-const createTrigger = async (pieceName: string, displayTriggerName: string, triggerDescription: string, triggerTechnique: string) => {
+const createTrigger = async (connectorName: string, displayTriggerName: string, triggerDescription: string, triggerTechnique: string) => {
     const triggerTemplate = createTriggerTemplate(displayTriggerName, triggerDescription, triggerTechnique)
     const triggerName = displayNameToKebabCase(displayTriggerName)
-    const pieceFolder = await findPiece(pieceName);
-    assertPieceExists(pieceFolder)
-    console.log(chalk.blue(`Piece path: ${pieceFolder}`))
+    const connectorFolder = await findConnector(connectorName);
+    assertConnectorExists(connectorFolder)
+    console.log(chalk.blue(`Connector path: ${connectorFolder}`))
 
-    const triggersFolder = join(pieceFolder, 'src', 'lib', 'triggers')
+    const triggersFolder = join(connectorFolder, 'src', 'lib', 'triggers')
     const triggerPath = join(triggersFolder, `${triggerName}.ts`)
     await checkIfTriggerExists(triggerPath)
 
@@ -111,8 +111,8 @@ export const createTriggerCommand = new Command('create')
         const questions = [
             {
                 type: 'input',
-                name: 'pieceName',
-                message: 'Enter the piece folder name:',
+                name: 'connectorName',
+                message: 'Enter the connector folder name:',
                 placeholder: 'google-drive',
             },
             {
@@ -135,5 +135,5 @@ export const createTriggerCommand = new Command('create')
         ];
 
         const answers = await inquirer.prompt(questions);
-        createTrigger(answers.pieceName, answers.triggerName, answers.triggerDescription, answers.triggerTechnique);
+        createTrigger(answers.connectorName, answers.triggerName, answers.triggerDescription, answers.triggerTechnique);
     });

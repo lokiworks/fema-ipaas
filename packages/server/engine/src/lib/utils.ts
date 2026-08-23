@@ -2,9 +2,9 @@ import fs from 'fs/promises'
 import { inspect } from 'node:util'
 import path from 'path'
 import { ConnectionsManager, ContextVersion, RespondHookParams, StopHookParams } from '@fema/connector-sdk'
-import { formatPieceError, Result, tryCatch } from '@fema/core-utils'
+import { formatConnectorError, Result, tryCatch } from '@fema/core-utils'
 import { ExecutionError, ExecutionErrorType, RespondResponse } from '@fema/shared'
-import { createConnectionResolver } from './piece-context/connection-resolver'
+import { createConnectionResolver } from './connector-context/connection-resolver'
 
 export type FileEntry = {
     name: string
@@ -44,10 +44,10 @@ export const utils = {
         return entries
     },
     formatExecutionError(value: ExecutionError): string {
-        return JSON.stringify(formatPieceError(value, { raw: inspect(value) }))
+        return JSON.stringify(formatConnectorError(value, { raw: inspect(value) }))
     },
     formatError(value: Error): string {
-        return JSON.stringify(formatPieceError(value, { raw: inspect(value) }))
+        return JSON.stringify(formatConnectorError(value, { raw: inspect(value) }))
     },
     async folderExists(filePath: string): Promise<boolean> {
         try {
@@ -61,7 +61,7 @@ export const utils = {
     createConnectionManager(params: CreateConnectionManagerParams): ConnectionsManager {
         return {
             get: async (key: string) => {
-                const connection = await createConnectionResolver({ projectId: params.projectId, engineToken: params.engineToken, apiUrl: params.apiUrl, contextVersion: params.contextVersion, pieceName: params.pieceName }).obtain(key)
+                const connection = await createConnectionResolver({ projectId: params.projectId, engineToken: params.engineToken, apiUrl: params.apiUrl, contextVersion: params.contextVersion, connectorName: params.connectorName }).obtain(key)
                 if (params.target === 'actions') {
                     params.hookResponse.tags.push(`connection:${key}`)
                 }
@@ -92,4 +92,4 @@ export type HookResponse = {
 } | {
     type: 'none'
 })
-type CreateConnectionManagerParams = { projectId: string, engineToken: string, apiUrl: string, target: 'triggers' | 'properties', contextVersion: ContextVersion | undefined, pieceName?: string } | { projectId: string, engineToken: string, apiUrl: string, target: 'actions', hookResponse: HookResponse, contextVersion: ContextVersion | undefined, pieceName?: string }
+type CreateConnectionManagerParams = { projectId: string, engineToken: string, apiUrl: string, target: 'triggers' | 'properties', contextVersion: ContextVersion | undefined, connectorName?: string } | { projectId: string, engineToken: string, apiUrl: string, target: 'actions', hookResponse: HookResponse, contextVersion: ContextVersion | undefined, connectorName?: string }

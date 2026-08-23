@@ -116,7 +116,7 @@ jobs:
 
           ---
 
-          > **Note:** This release includes database changes that can't be automatically rolled back (${{ steps.migration-check.outputs.breaking_names }}). See the [rollback guide](https://www.activepieces.com/docs/install/guides/rollback) for details.
+          > **Note:** This release includes database changes that can't be automatically rolled back (${{ steps.migration-check.outputs.breaking_names }}). See the [rollback guide](https://github.com/lokiworks/fema-ipaas/docs/install/guides/rollback) for details.
           EOF
           )
 

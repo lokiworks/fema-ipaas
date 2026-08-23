@@ -191,8 +191,8 @@ export function validateIndexBound({
     return index
 }
 
-export function isManualPieceTrigger({ pieceName, triggerName }: { pieceName: string, triggerName: string }) {
-    return pieceName === '@fema/connector-manual-trigger' && triggerName === 'manual_trigger'
+export function isManualConnectorTrigger({ connectorName, triggerName }: { connectorName: string, triggerName: string }) {
+    return connectorName === '@fema/connector-manual-trigger' && triggerName === 'manual_trigger'
 }
 
 export function isEnumValue<T extends { [key: string]: string | number }>(

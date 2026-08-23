@@ -22,7 +22,7 @@ const TestStepContainer = React.memo(
   }: TestStepContainerProps) => {
     return (
       <div className="flex flex-col h-full">
-        {type === FlowTriggerType.PIECE ? (
+        {type === FlowTriggerType.CONNECTOR ? (
           <TestTriggerSection
             flowId={flowId}
             isSaving={isSaving}

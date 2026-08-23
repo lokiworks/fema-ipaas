@@ -1,0 +1,36 @@
+---
+title: 'Connector i18n'
+description: 'Learn about translating connectors to multiple locales'
+icon: 'globe'
+---
+
+<Steps>
+  <Step title="Generate">
+    Run the following command to create a translation file with all the strings that need translation in your connector
+    ```bash
+    npm run cli connectors generate-translation-file CONNECTOR_FOLDER_NAME
+    ```
+  </Step>
+  <Step title="Translate">
+     Make a copy of `packages/connectors/<community_or_custom>/<your_connector>/src/i18n/translation.json`, name it `<locale>.json` i.e fr.json and translate the values.
+    <Tip>
+      For open source connectors, you can use the [Crowdin project](https://crowdin.com/project/fema) to translate to different languages. These translations will automatically sync back to your code.
+    </Tip>
+  </Step>
+  
+   <Step title="Test Locally">
+    After following the steps to [setup your development environment](/build-connectors/building-connectors/development-setup), click the small cog icon next to the logo in your dashboard and change the locale.
+
+     ![Locales](/resources/i18n-connectors.png)
+    <br></br>
+  
+    In the builder your connector will now appear in the translated language:
+    ![French Webhooks](/resources/french-webhooks.png)
+  </Step>
+
+  <Step title="Publish">
+  Follow the docs here to [publish your connector](/build-connectors/sharing-connectors/overview)
+
+  </Step>
+
+</Steps>

@@ -7,7 +7,7 @@ import { executeTokenRefreshJob } from './jobs/execute-token-refresh'
 import { executeTriggerHookJob } from './jobs/execute-trigger-hook'
 import { executeValidationJob } from './jobs/execute-validation'
 import { executeWebhookJob } from './jobs/execute-webhook'
-import { extractPieceInfoJob } from './jobs/extract-piece-info'
+import { extractConnectorInfoJob } from './jobs/extract-connector-info'
 import { renewWebhookJob } from './jobs/renew-webhook'
 import { resolveConnectionIdentifierJob } from './jobs/resolve-connection-identifier'
 import { JobHandler } from './types'
@@ -40,7 +40,7 @@ const registry: Partial<Record<WorkerJobType, JobHandler>> = {
     [WorkerJobType.EXECUTE_VALIDATION]: executeValidationJob,
     [WorkerJobType.EXECUTE_RESOLVE_CONNECTION_IDENTIFIER]: resolveConnectionIdentifierJob,
     [WorkerJobType.EXECUTE_TOKEN_REFRESH]: executeTokenRefreshJob,
-    [WorkerJobType.EXECUTE_EXTRACT_PIECE_INFORMATION]: extractPieceInfoJob,
+    [WorkerJobType.EXECUTE_EXTRACT_CONNECTOR_INFORMATION]: extractConnectorInfoJob,
     [WorkerJobType.EXECUTE_ACTION]: executeActionJob,
 }
 

@@ -1,10 +1,10 @@
 import { apId, ErrorCode } from '@fema/core-utils'
 import { PropertyType } from '@fema/connector-sdk'
-import { PackageType, PieceType } from '@fema/shared'
+import { PackageType, ConnectorType } from '@fema/shared'
 import { FastifyBaseLogger, FastifyInstance } from 'fastify'
 import { oauth2Util } from '../../../../src/app/app-connection/app-connection-service/oauth2/oauth2-util'
 import { db } from '../../../helpers/db'
-import { createMockPieceMetadata } from '../../../helpers/mocks'
+import { createMockConnectorMetadata } from '../../../helpers/mocks'
 import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
 
 let app: FastifyInstance | null = null
@@ -25,18 +25,18 @@ const shortText = (displayName: string) => ({
     required: true,
 })
 
-const saveOAuth2Piece = async ({ platformId, tokenUrl, scope, props }: {
+const saveOAuth2Connector = async ({ platformId, tokenUrl, scope, props }: {
     platformId: string
     tokenUrl: string
     scope: string[]
     props: Record<string, unknown>
 }): Promise<string> => {
-    const pieceName = `piece-${apId()}`
-    await db.save('piece_metadata', createMockPieceMetadata({
-        name: pieceName,
+    const connectorName = `connector-${apId()}`
+    await db.save('connector_metadata', createMockConnectorMetadata({
+        name: connectorName,
         version: '1.0.0',
         platformId,
-        pieceType: PieceType.CUSTOM,
+        connectorType: ConnectorType.CUSTOM,
         packageType: PackageType.REGISTRY,
         minimumSupportedRelease: '0.0.0',
         maximumSupportedRelease: '999.999.999',
@@ -50,13 +50,13 @@ const saveOAuth2Piece = async ({ platformId, tokenUrl, scope, props }: {
             props,
         },
     }))
-    return pieceName
+    return connectorName
 }
 
 describe('OAuth2 unresolved placeholder guard', () => {
     it('rejects a token url whose placeholder has no matching prop, naming the prop label', async () => {
         const platformId = apId()
-        const pieceName = await saveOAuth2Piece({
+        const connectorName = await saveOAuth2Connector({
             platformId,
             tokenUrl: 'https://{cloud}/{tenant}/oauth2/v2.0/token',
             scope: ['Mail.Read'],
@@ -65,8 +65,8 @@ describe('OAuth2 unresolved placeholder guard', () => {
 
         await expect(oauth2Util(mockLog).getOAuth2TokenUrl({
             platformId,
-            pieceName,
-            pieceVersion: '1.0.0',
+            connectorName,
+            connectorVersion: '1.0.0',
             props: { cloud: 'login.microsoftonline.com' },
         })).rejects.toMatchObject({
             error: {
@@ -78,7 +78,7 @@ describe('OAuth2 unresolved placeholder guard', () => {
 
     it('rejects a prop that is present but empty', async () => {
         const platformId = apId()
-        const pieceName = await saveOAuth2Piece({
+        const connectorName = await saveOAuth2Connector({
             platformId,
             tokenUrl: 'https://{cloud}/{tenant}/oauth2/v2.0/token',
             scope: ['Mail.Read'],
@@ -87,8 +87,8 @@ describe('OAuth2 unresolved placeholder guard', () => {
 
         await expect(oauth2Util(mockLog).getOAuth2TokenUrl({
             platformId,
-            pieceName,
-            pieceVersion: '1.0.0',
+            connectorName,
+            connectorVersion: '1.0.0',
             props: { cloud: 'login.microsoftonline.com', tenant: '   ' },
         })).rejects.toMatchObject({
             error: {
@@ -100,7 +100,7 @@ describe('OAuth2 unresolved placeholder guard', () => {
 
     it('rejects a placeholder that only appears in the declared scope', async () => {
         const platformId = apId()
-        const pieceName = await saveOAuth2Piece({
+        const connectorName = await saveOAuth2Connector({
             platformId,
             tokenUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
             scope: ['{accessMode}'],
@@ -109,8 +109,8 @@ describe('OAuth2 unresolved placeholder guard', () => {
 
         await expect(oauth2Util(mockLog).getOAuth2TokenUrl({
             platformId,
-            pieceName,
-            pieceVersion: '1.0.0',
+            connectorName,
+            connectorVersion: '1.0.0',
             props: {},
         })).rejects.toMatchObject({
             error: {
@@ -122,7 +122,7 @@ describe('OAuth2 unresolved placeholder guard', () => {
 
     it('resolves the token url when every placeholder is supplied', async () => {
         const platformId = apId()
-        const pieceName = await saveOAuth2Piece({
+        const connectorName = await saveOAuth2Connector({
             platformId,
             tokenUrl: 'https://{cloud}/{tenant}/oauth2/v2.0/token',
             scope: ['Mail.Read'],
@@ -131,8 +131,8 @@ describe('OAuth2 unresolved placeholder guard', () => {
 
         const tokenUrl = await oauth2Util(mockLog).getOAuth2TokenUrl({
             platformId,
-            pieceName,
-            pieceVersion: '1.0.0',
+            connectorName,
+            connectorVersion: '1.0.0',
             props: { cloud: 'login.microsoftonline.com', tenant: 'common' },
         })
 
@@ -141,7 +141,7 @@ describe('OAuth2 unresolved placeholder guard', () => {
 
     it('accepts braces that come from a prop value rather than the template', async () => {
         const platformId = apId()
-        const pieceName = await saveOAuth2Piece({
+        const connectorName = await saveOAuth2Connector({
             platformId,
             tokenUrl: '{tokenUrl}',
             scope: ['{scopes}'],
@@ -150,8 +150,8 @@ describe('OAuth2 unresolved placeholder guard', () => {
 
         const tokenUrl = await oauth2Util(mockLog).getOAuth2TokenUrl({
             platformId,
-            pieceName,
-            pieceVersion: '1.0.0',
+            connectorName,
+            connectorVersion: '1.0.0',
             props: { tokenUrl: 'https://id.example.com/{realm}/token', scopes: 'openid' },
         })
 

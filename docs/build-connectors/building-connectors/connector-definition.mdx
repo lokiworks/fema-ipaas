@@ -1,0 +1,51 @@
+---
+title: 'Create Connector Definition'
+icon: 'circle-3'
+description: ''
+---
+
+
+This tutorial will guide you through the process of creating a Gelato connector with an action that fetches random icecream flavor and trigger that fetches new icecream flavor created. It assumes that you are familiar with the following:
+
+- [FEMA Integration Platform Local development](./development-setup) Or [GitHub Codespaces](../misc/codespaces).
+- TypeScript syntax.
+
+## Connector Definition
+
+To get started, let's generate a new connector for Gelato
+
+```bash
+npm run cli connectors create
+```
+
+You will be asked three questions to define your new connector:
+
+1. `Connector Name`: Specify a name for your connector. This name uniquely identifies your connector within the ActiveConnectors ecosystem.
+2. `Package Name`: Optionally, you can enter a name for the npm package associated with your connector. If left blank, the default name will be used.
+3. `Connector Type`: Choose the connector type based on your intention. It can be either "custom" if it's a tailored solution for your needs, or "community" if it's designed to be shared and used by the broader community.
+
+**Example:**
+
+```bash
+npm run cli connectors create
+
+? Enter the connector name: gelato
+? Enter the package name: @fema/connector-gelato
+? Select the connector type: community
+```
+
+The connector will be generated at `packages/connectors/community/gelato/`,
+the `src/index.ts` file should contain the following code
+
+```ts
+import { ConnectorAuth, createConnector } from '@fema/connectors-framework';
+
+export const gelato = createConnector({
+  displayName: 'Gelato',
+  logoUrl: 'https://cdn.fema.local/connectors/gelato.png',
+  auth: ConnectorAuth.None(),
+  authors: [],
+  actions: [],
+  triggers: [],
+});
+```

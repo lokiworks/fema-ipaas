@@ -24,10 +24,10 @@ function makeFlowVersion(): FlowVersion {
             valid: true,
             displayName: 'Gmail Trigger',
             lastUpdatedDate: '2024-01-01T00:00:00Z',
-            type: FlowTriggerType.PIECE,
+            type: FlowTriggerType.CONNECTOR,
             settings: {
-                pieceName: '@fema/connector-gmail',
-                pieceVersion: '~0.1.0',
+                connectorName: '@fema/connector-gmail',
+                connectorVersion: '~0.1.0',
                 triggerName: 'new_email',
                 input: {},
                 propertySettings: {},
@@ -37,10 +37,10 @@ function makeFlowVersion(): FlowVersion {
                 valid: true,
                 displayName: 'Slack Action',
                 lastUpdatedDate: '2024-01-01T00:00:00Z',
-                type: FlowActionType.PIECE,
+                type: FlowActionType.CONNECTOR,
                 settings: {
-                    pieceName: '@fema/connector-slack',
-                    pieceVersion: '~0.2.0',
+                    connectorName: '@fema/connector-slack',
+                    connectorVersion: '~0.2.0',
                     actionName: 'send_message',
                     input: {},
                     propertySettings: {},
@@ -77,7 +77,7 @@ function makeResumeJobData(overrides?: Partial<ExecuteFlowJobData>): ExecuteFlow
     }
 }
 
-// The flow handler now drives ctx.resolver.resolve(...) (which resolves the flow + pieces and
+// The flow handler now drives ctx.resolver.resolve(...) (which resolves the flow + connectors and
 // returns { kind, provision, flowVersion }) followed by ctx.runtime.execute(...), so the test mocks
 // the resolver and runtime directly.
 function makeMockContext(opts?: { resolveResult?: unknown, apiOverrides?: Record<string, vi.Mock> }) {
@@ -85,7 +85,7 @@ function makeMockContext(opts?: { resolveResult?: unknown, apiOverrides?: Record
         resolve: vi.fn().mockResolvedValue(
             opts?.resolveResult ?? {
                 kind: 'ready',
-                provision: { platformId: 'plat-1', pieces: [], codes: [], publicApiUrl: 'http://localhost:3000/api/', engineToken: 'test-token' },
+                provision: { platformId: 'plat-1', connectors: [], codes: [], publicApiUrl: 'http://localhost:3000/api/', engineToken: 'test-token' },
                 flowVersion: makeFlowVersion(),
             },
         ),
@@ -171,7 +171,7 @@ describe('executeFlowJob', () => {
         })
     })
 
-    describe('missing piece handling', () => {
+    describe('missing connector handling', () => {
         it('marks run as FAILED and never runs the engine when the flow version is not found', async () => {
             const ctx = makeMockContext({ resolveResult: { kind: 'flow-not-found' } })
             const data = makeResumeJobData({ executionType: ExecutionType.BEGIN })
@@ -191,7 +191,7 @@ describe('executeFlowJob', () => {
         })
 
         it('marks run as FAILED and completes the job (OK) when the flow is disabled', async () => {
-            const failedStep = { name: 'step_1', displayName: 'HTTP', message: 'The piece @fema/connector-http@1.0.0 is not installed' }
+            const failedStep = { name: 'step_1', displayName: 'HTTP', message: 'The connector @fema/connector-http@1.0.0 is not installed' }
             const ctx = makeMockContext({ resolveResult: { kind: 'disabled', failedStep } })
             const data = makeResumeJobData({ executionType: ExecutionType.BEGIN })
 

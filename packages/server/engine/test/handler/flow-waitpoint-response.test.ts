@@ -3,7 +3,7 @@ import { vi } from 'vitest'
 import { FlowExecutorContext } from '../../src/lib/handler/context/flow-execution-context'
 import { flowExecutor } from '../../src/lib/handler/flow-executor'
 import { EngineApiStub, startEngineApiStub } from '../helpers/engine-api-stub'
-import { buildPieceAction, generateMockEngineConstants } from './test-helper'
+import { buildConnectorAction, generateMockEngineConstants } from './test-helper'
 
 const { mockSendFlowResponse } = vi.hoisted(() => ({
     mockSendFlowResponse: vi.fn().mockResolvedValue(undefined),
@@ -37,9 +37,9 @@ describe('flow waitpoint response propagation', () => {
         const responseBody = { hello: 'world' }
         const responseHeaders = { 'x-custom': 'header' }
 
-        const action = buildPieceAction({
+        const action = buildConnectorAction({
             name: 'http',
-            pieceName: '@fema/connector-webhook',
+            connectorName: '@fema/connector-webhook',
             actionName: 'return_response_and_wait_for_next_webhook',
             input: {
                 responseType: 'json',
@@ -56,7 +56,7 @@ describe('flow waitpoint response propagation', () => {
             executionState: FlowExecutorContext.empty(),
             constants: generateMockEngineConstants({
                 internalApiUrl: engineApi.url,
-                triggerPieceName: '@fema/connector-webhook',
+                triggerConnectorName: '@fema/connector-webhook',
                 workerHandlerId: 'test-handler-id',
                 httpRequestId: 'test-request-id',
             }),
@@ -84,10 +84,10 @@ describe('flow waitpoint response propagation', () => {
         expect(sentHeaders['x-fema-resume-webhook-url']).toMatch(/^https?:\/\//)
     })
 
-    it('should not call sendFlowResponse when triggerPieceName does not match', async () => {
-        const action = buildPieceAction({
+    it('should not call sendFlowResponse when triggerConnectorName does not match', async () => {
+        const action = buildConnectorAction({
             name: 'http',
-            pieceName: '@fema/connector-webhook',
+            connectorName: '@fema/connector-webhook',
             actionName: 'return_response_and_wait_for_next_webhook',
             input: {
                 responseType: 'json',
@@ -104,7 +104,7 @@ describe('flow waitpoint response propagation', () => {
             executionState: FlowExecutorContext.empty(),
             constants: generateMockEngineConstants({
                 internalApiUrl: engineApi.url,
-                triggerPieceName: 'some-other-piece',
+                triggerConnectorName: 'some-other-connector',
                 workerHandlerId: 'test-handler-id',
                 httpRequestId: 'test-request-id',
             }),

@@ -7,7 +7,7 @@ import {
     ExecuteRefreshTokenAuthOperation,
     ExecuteRefreshTokenAuthResponse,
 } from '@fema/shared'
-import { pieceAuth } from '../core/piece/piece-auth'
+import { connectorAuth } from '../core/connector/connector-auth'
 
 export const authRefreshOperation = {
     execute: async (operation: ExecuteRefreshTokenAuthOperation): Promise<EngineResponse<ExecuteRefreshTokenAuthResponse>> => {
@@ -22,7 +22,7 @@ async function refreshAuth(operation: ExecuteRefreshTokenAuthOperation): Promise
     if (operation.auth.type !== AppConnectionType.CUSTOM_AUTH) {
         return { skipped: true }
     }
-    const call = await pieceAuth.callMethod({ operation, authValueType: operation.auth.type, methodPath: ['refresh', 'generate'] })
+    const call = await connectorAuth.callMethod({ operation, authValueType: operation.auth.type, methodPath: ['refresh', 'generate'] })
     if (!call.called || call.property.type !== PropertyType.CUSTOM_AUTH || !isObject(call.result) || typeof call.result.access_token !== 'string') {
         return { skipped: true }
     }

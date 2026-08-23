@@ -13,10 +13,10 @@
                 "group": [
                   "@fema/shared",
                   "@fema/server*",
-                  "@fema/pieces*",
+                  "@fema/connectors*",
                   "@fema/web*"
                 ],
-                "message": "core/* packages are the framework-agnostic foundation; they must not import shared, server, pieces, or web. Keep core/* acyclic."
+                "message": "core/* packages are the framework-agnostic foundation; they must not import shared, server, connectors, or web. Keep core/* acyclic."
               }
             ]
           }

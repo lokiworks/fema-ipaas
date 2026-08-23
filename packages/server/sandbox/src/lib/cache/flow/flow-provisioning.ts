@@ -1,8 +1,8 @@
 import { isNil, tryCatch } from '@fema/core-utils'
 import { type ApLogger, wideEvent } from '@fema/server-utils'
-import { FailedStep, FlowVersion, FlowVersionState, LATEST_FLOW_SCHEMA_VERSION, PiecePackage, WorkerToApiContract } from '@fema/shared'
+import { ConnectorPackage, FailedStep, FlowVersion, FlowVersionState, LATEST_FLOW_SCHEMA_VERSION, WorkerToApiContract } from '@fema/shared'
 import { CodeArtifact, SandboxSettings } from '../../types'
-import { pieceCache, PieceNotFoundError } from '../pieces/piece-cache'
+import { connectorCache, ConnectorNotFoundError } from '../connectors/connector-cache'
 import { flowBundleStore } from './flow-bundle-store'
 import { flowCache } from './flow-cache'
 import { flowSteps } from './flow-steps'
@@ -23,7 +23,7 @@ export const flowProvisioning = (log: ApLogger, apiClient: WorkerToApiContract, 
         }
         if (!isNil(bundle)) {
             // tryFetch already wrote the compiled code to the Code Cache; nothing to compile or republish.
-            return { kind: 'ready', flowVersion: bundle.flowVersion, pieces: bundle.pieces, code: { kind: 'materialized' }, publishBundle: null }
+            return { kind: 'ready', flowVersion: bundle.flowVersion, connectors: bundle.connectors, code: { kind: 'materialized' }, publishBundle: null }
         }
 
         const flowVersion = await flowCache(log, apiClient, basePath).getVersion({ flowVersionId: flow.versionId })
@@ -31,70 +31,70 @@ export const flowProvisioning = (log: ApLogger, apiClient: WorkerToApiContract, 
             return { kind: 'flow-not-found' }
         }
 
-        const { data: pieces, error } = await tryCatch(() => resolvePieces({ flowVersion, platformId, log, apiClient, basePath, getSettings }))
+        const { data: connectors, error } = await tryCatch(() => resolveConnectors({ flowVersion, platformId, log, apiClient, basePath, getSettings }))
         if (error) {
-            if (!(error instanceof PieceNotFoundError)) {
+            if (!(error instanceof ConnectorNotFoundError)) {
                 throw error
             }
-            log.warn({ error: String(error), flow: { id: flow.id } }, 'Flow disabled due to missing piece')
+            log.warn({ error: String(error), flow: { id: flow.id } }, 'Flow disabled due to missing connector')
             const { error: disableError } = await tryCatch(() => apiClient.disableFlow({ flowId: flow.id, projectId: flow.projectId }))
             if (disableError) {
-                log.error({ error: String(disableError), flow: { id: flow.id } }, 'Failed to disable flow after missing piece')
+                log.error({ error: String(disableError), flow: { id: flow.id } }, 'Failed to disable flow after missing connector')
             }
-            return { kind: 'disabled', failedStep: buildMissingPieceFailedStep({ flowVersion, missingPiece: error }) }
+            return { kind: 'disabled', failedStep: buildMissingConnectorFailedStep({ flowVersion, missingConnector: error }) }
         }
 
         const shouldPublish = flowVersion.state === FlowVersionState.LOCKED && flowVersion.schemaVersion === LATEST_FLOW_SCHEMA_VERSION
         return {
             kind: 'ready',
             flowVersion,
-            pieces,
+            connectors,
             code: { kind: 'source', steps: extractCodeArtifacts(flowVersion) },
             // The compiled code only exists on disk after install, so the caller invokes this afterwards.
-            publishBundle: shouldPublish ? buildPublishBundle({ log, apiClient, basePath, flowVersion, pieces, projectId: flow.projectId, platformId }) : null,
+            publishBundle: shouldPublish ? buildPublishBundle({ log, apiClient, basePath, flowVersion, connectors, projectId: flow.projectId, platformId }) : null,
         }
     },
 })
 
-function buildPublishBundle({ log, apiClient, basePath, flowVersion, pieces, projectId, platformId }: BuildPublishBundleParams): PublishBundle {
+function buildPublishBundle({ log, apiClient, basePath, flowVersion, connectors, projectId, platformId }: BuildPublishBundleParams): PublishBundle {
     return async () => {
-        const { error } = await tryCatch(() => flowBundleStore(log, apiClient, basePath).publish({ flowVersion, pieces, projectId, platformId }))
+        const { error } = await tryCatch(() => flowBundleStore(log, apiClient, basePath).publish({ flowVersion, connectors, projectId, platformId }))
         if (error) {
             log.warn({ error: String(error), flowVersion: { id: flowVersion.id } }, 'Failed to publish flow bundle')
         }
     }
 }
 
-async function resolvePieces({ flowVersion, platformId, log, apiClient, basePath, getSettings }: ResolvePiecesParams): Promise<PiecePackage[]> {
-    const stepPieceRefs = flowSteps.piece(flowVersion).map((step) => ({
-        pieceName: step.settings.pieceName,
-        pieceVersion: step.settings.pieceVersion,
+async function resolveConnectors({ flowVersion, platformId, log, apiClient, basePath, getSettings }: ResolveConnectorsParams): Promise<ConnectorPackage[]> {
+    const stepConnectorRefs = flowSteps.connector(flowVersion).map((step) => ({
+        connectorName: step.settings.connectorName,
+        connectorVersion: step.settings.connectorVersion,
     }))
-    const uniquePieceRefs = dedupePieceRefs(stepPieceRefs)
-    return Promise.all(uniquePieceRefs.map((ref) =>
-        pieceCache(log, apiClient, basePath, getSettings).getPiece({
-            pieceName: ref.pieceName,
-            pieceVersion: ref.pieceVersion,
+    const uniqueConnectorRefs = dedupeConnectorRefs(stepConnectorRefs)
+    return Promise.all(uniqueConnectorRefs.map((ref) =>
+        connectorCache(log, apiClient, basePath, getSettings).getConnector({
+            connectorName: ref.connectorName,
+            connectorVersion: ref.connectorVersion,
             platformId,
         }),
     ))
 }
 
-function buildMissingPieceFailedStep({ flowVersion, missingPiece }: BuildMissingPieceFailedStepParams): FailedStep {
-    const pieceSteps = flowSteps.piece(flowVersion)
-    const stepMatch = pieceSteps.find((step) => step.settings.pieceName === missingPiece.pieceName && step.settings.pieceVersion === missingPiece.pieceVersion)
+function buildMissingConnectorFailedStep({ flowVersion, missingConnector }: BuildMissingConnectorFailedStepParams): FailedStep {
+    const connectorSteps = flowSteps.connector(flowVersion)
+    const stepMatch = connectorSteps.find((step) => step.settings.connectorName === missingConnector.connectorName && step.settings.connectorVersion === missingConnector.connectorVersion)
     const step = stepMatch ?? flowVersion.trigger
     return {
         name: step.name,
         displayName: step.displayName,
-        message: `The piece ${missingPiece.pieceName}@${missingPiece.pieceVersion} is not installed on this instance or has been hidden by an admin, so the flow was turned off. Install the missing piece version or update the step to an installed version, then publish and re-enable the flow.`,
+        message: `The connector ${missingConnector.connectorName}@${missingConnector.connectorVersion} is not installed on this instance or has been hidden by an admin, so the flow was turned off. Install the missing connector version or update the step to an installed version, then publish and re-enable the flow.`,
     }
 }
 
-function dedupePieceRefs(refs: PieceRef[]): PieceRef[] {
-    const byKey = new Map<string, PieceRef>()
+function dedupeConnectorRefs(refs: ConnectorRef[]): ConnectorRef[] {
+    const byKey = new Map<string, ConnectorRef>()
     for (const ref of refs) {
-        byKey.set(`${ref.pieceName}@${ref.pieceVersion}`, ref)
+        byKey.set(`${ref.connectorName}@${ref.connectorVersion}`, ref)
     }
     return [...byKey.values()]
 }
@@ -113,7 +113,7 @@ type ResolveParams = {
     platformId: string
 }
 
-type ResolvePiecesParams = {
+type ResolveConnectorsParams = {
     flowVersion: FlowVersion
     platformId: string
     log: ApLogger
@@ -127,19 +127,19 @@ type BuildPublishBundleParams = {
     apiClient: WorkerToApiContract
     basePath: string
     flowVersion: FlowVersion
-    pieces: PiecePackage[]
+    connectors: ConnectorPackage[]
     projectId: string
     platformId: string
 }
 
-type PieceRef = {
-    pieceName: string
-    pieceVersion: string
+type ConnectorRef = {
+    connectorName: string
+    connectorVersion: string
 }
 
-type BuildMissingPieceFailedStepParams = {
+type BuildMissingConnectorFailedStepParams = {
     flowVersion: FlowVersion
-    missingPiece: PieceNotFoundError
+    missingConnector: ConnectorNotFoundError
 }
 
 export type PublishBundle = () => Promise<void>
@@ -151,4 +151,4 @@ export type ProvisionedCode =
 export type ResolvedFlow =
     | { kind: 'flow-not-found' }
     | { kind: 'disabled', failedStep?: FailedStep }
-    | { kind: 'ready', flowVersion: FlowVersion, pieces: PiecePackage[], code: ProvisionedCode, publishBundle: PublishBundle | null }
+    | { kind: 'ready', flowVersion: FlowVersion, connectors: ConnectorPackage[], code: ProvisionedCode, publishBundle: PublishBundle | null }

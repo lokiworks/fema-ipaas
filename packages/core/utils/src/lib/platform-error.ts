@@ -72,15 +72,15 @@ export type ApErrorParams =
     | SandboxExecutionTimeoutParams
     | SandboxInternalErrorParams
     | InvalidCustomDomainErrorParams
-    | McpPieceRequiresConnectionParams
-    | McpPieceConnectionMismatchParams
+    | McpConnectorRequiresConnectionParams
+    | McpConnectorConnectionMismatchParams
     | ErrorUpdatingSubscriptionParams
     | TriggerExecutionFailedParams
     | SubflowFailedParams
     | MachineNotAvailableParams
     | MachineNotConnectedParams
     | DoesNotMeetBusinessRequirementsParams
-    | PieceSyncNotSupportedErrorParams
+    | ConnectorSyncNotSupportedErrorParams
     | SandboxLogSizeExceededParams
     | SecretManagerConnectionFailedParams
     | SecretManagerGetSecretFailedParams
@@ -95,8 +95,8 @@ export type ApErrorParams =
 export type TriggerExecutionFailedParams = BaseErrorParams<ErrorCode.TRIGGER_EXECUTION_FAILED, {
     flowId: FlowId
     message?: string
-    pieceName: string
-    pieceVersion: string
+    connectorName: string
+    connectorVersion: string
 }>
 
 export type BaseErrorParams<T, V> = {
@@ -129,7 +129,7 @@ ErrorCode.INVITATION_ONLY_SIGN_UP,
 >
 
 export type InvalidClaimParams = BaseErrorParams<ErrorCode.INVALID_CLAIM, { redirectUrl: string, tokenUrl: string, clientId: string, message: string }>
-export type InvalidCloudClaimParams = BaseErrorParams<ErrorCode.INVALID_CLOUD_CLAIM, { pieceName: string }>
+export type InvalidCloudClaimParams = BaseErrorParams<ErrorCode.INVALID_CLOUD_CLAIM, { connectorName: string }>
 
 export type InvalidBearerTokenParams = BaseErrorParams<ErrorCode.INVALID_BEARER_TOKEN, {
     message?: string
@@ -225,8 +225,8 @@ ErrorCode.EXISTING_USER,
 export type TriggerFailedErrorParams = BaseErrorParams<
 ErrorCode.TRIGGER_FAILED,
 {
-    pieceName: string
-    pieceVersion: string
+    connectorName: string
+    connectorVersion: string
     triggerName: string
     error: string | undefined
 }
@@ -295,7 +295,7 @@ ErrorCode.INVALID_CUSTOM_DOMAIN,
 }
 >
 
-export type PieceSyncNotSupportedErrorParams = BaseErrorParams<ErrorCode.PIECE_SYNC_NOT_SUPPORTED, {
+export type ConnectorSyncNotSupportedErrorParams = BaseErrorParams<ErrorCode.CONNECTOR_SYNC_NOT_SUPPORTED, {
     release: string
     message: string
 }>
@@ -426,13 +426,13 @@ export type ProjectExternalIdAlreadyExistsParams = BaseErrorParams<ErrorCode.PRO
     externalId: string
 }>
 
-export type McpPieceRequiresConnectionParams = BaseErrorParams<ErrorCode.MCP_PIECE_REQUIRES_CONNECTION, {
-    pieceName: string
+export type McpConnectorRequiresConnectionParams = BaseErrorParams<ErrorCode.MCP_CONNECTOR_REQUIRES_CONNECTION, {
+    connectorName: string
 }>
 
-export type McpPieceConnectionMismatchParams = BaseErrorParams<ErrorCode.MCP_PIECE_CONNECTION_MISMATCH, {
-    pieceName: string
-    connectionPieceName: string
+export type McpConnectorConnectionMismatchParams = BaseErrorParams<ErrorCode.MCP_CONNECTOR_CONNECTION_MISMATCH, {
+    connectorName: string
+    connectionConnectorName: string
     connectionId: string
 }>
 
@@ -557,11 +557,11 @@ export enum ErrorCode {
     INVALID_SMTP_CREDENTIALS = 'INVALID_SMTP_CREDENTIALS',
     INVALID_GIT_CREDENTIALS = 'INVALID_GIT_CREDENTIALS',
     INVALID_RELEASE_TYPE = 'INVALID_RELEASE_TYPE',
-    MCP_PIECE_REQUIRES_CONNECTION = 'MCP_PIECE_REQUIRES_CONNECTION',
-    MCP_PIECE_CONNECTION_MISMATCH = 'MCP_PIECE_CONNECTION_MISMATCH',
+    MCP_CONNECTOR_REQUIRES_CONNECTION = 'MCP_CONNECTOR_REQUIRES_CONNECTION',
+    MCP_CONNECTOR_CONNECTION_MISMATCH = 'MCP_CONNECTOR_CONNECTION_MISMATCH',
     SUBFLOW_FAILED = 'SUBFLOW_FAILED',
     DOES_NOT_MEET_BUSINESS_REQUIREMENTS = 'DOES_NOT_MEET_BUSINESS_REQUIREMENTS',
-    PIECE_SYNC_NOT_SUPPORTED = 'PIECE_SYNC_NOT_SUPPORTED',
+    CONNECTOR_SYNC_NOT_SUPPORTED = 'CONNECTOR_SYNC_NOT_SUPPORTED',
     SANDBOX_LOG_SIZE_EXCEEDED = 'SANDBOX_LOG_SIZE_EXCEEDED',
     SECRET_MANAGER_CONNECTION_FAILED = 'SECRET_MANAGER_CONNECTION_FAILED',
     SECRET_MANAGER_GET_SECRET_FAILED = 'SECRET_MANAGER_GET_SECRET_FAILED',

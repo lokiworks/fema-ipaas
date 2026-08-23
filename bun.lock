@@ -71,7 +71,7 @@
       "name": "@fema/cli",
       "version": "1.3.0",
       "bin": {
-        "pieces-cli": "../../dist/packages/cli/src/index.js",
+        "connectors-cli": "../../dist/packages/cli/src/index.js",
       },
       "dependencies": {
         "@fema/connector-common": "workspace:*",
@@ -93,6 +93,480 @@
       "devDependencies": {
         "@types/autocannon": "7.12.7",
         "@types/node": "24.11.0",
+      },
+    },
+    "packages/connectors/common": {
+      "name": "@fema/connector-common",
+      "version": "0.12.9",
+      "dependencies": {
+        "@fema/connector-sdk": "workspace:*",
+        "@fema/core-utils": "workspace:*",
+        "form-data": "4.0.6",
+        "zod": "4.3.6",
+      },
+      "devDependencies": {
+        "tslib": "2.6.2",
+      },
+    },
+    "packages/connectors/community/github": {
+      "name": "@fema/connector-github",
+      "version": "0.8.11",
+      "dependencies": {
+        "@fema/connector-common": "workspace:*",
+        "@fema/connector-sdk": "workspace:*",
+        "@fema/connector-types": "workspace:*",
+        "@fema/core-utils": "workspace:*",
+        "jsonwebtoken": "9.0.1",
+        "yaml": "2.9.0",
+      },
+      "devDependencies": {
+        "@types/jsonwebtoken": "9.0.10",
+        "tslib": "2.6.2",
+        "vitest": "3.2.6",
+      },
+    },
+    "packages/connectors/community/mysql": {
+      "name": "@fema/connector-mysql",
+      "version": "0.2.7",
+      "dependencies": {
+        "@fema/connector-common": "workspace:*",
+        "@fema/connector-sdk": "workspace:*",
+        "@fema/connector-types": "workspace:*",
+        "@fema/core-utils": "workspace:*",
+        "promise-mysql": "5.2.0",
+        "sqlstring": "2.3.3",
+      },
+      "devDependencies": {
+        "@types/sqlstring": "2.3.2",
+        "tslib": "2.6.2",
+      },
+    },
+    "packages/connectors/community/postgres": {
+      "name": "@fema/connector-postgres",
+      "version": "0.3.1",
+      "dependencies": {
+        "@fema/connector-common": "workspace:*",
+        "@fema/connector-sdk": "workspace:*",
+        "@fema/connector-types": "workspace:*",
+        "@fema/core-utils": "workspace:*",
+        "dayjs": "1.11.9",
+        "pg": "8.11.3",
+        "pg-format": "1.0.4",
+      },
+      "devDependencies": {
+        "@types/pg": "8.16.0",
+        "@types/pg-format": "1.0.5",
+        "tslib": "2.6.2",
+      },
+    },
+    "packages/connectors/community/rabbitmq": {
+      "name": "@fema/connector-rabbitmq",
+      "version": "0.1.6",
+      "dependencies": {
+        "@fema/connector-common": "workspace:*",
+        "@fema/connector-sdk": "workspace:*",
+        "@fema/connector-types": "workspace:*",
+        "@fema/core-utils": "workspace:*",
+        "amqplib": "0.10.7",
+        "dayjs": "1.11.9",
+      },
+      "devDependencies": {
+        "@types/amqplib": "0.10.7",
+        "tslib": "2.6.2",
+      },
+    },
+    "packages/connectors/community/slack": {
+      "name": "@fema/connector-slack",
+      "version": "0.17.9",
+      "dependencies": {
+        "@fema/connector-common": "workspace:*",
+        "@fema/connector-sdk": "workspace:*",
+        "@fema/connector-types": "workspace:*",
+        "@fema/core-utils": "workspace:*",
+        "@slack/web-api": "7.9.0",
+        "slackify-markdown": "4.4.0",
+        "zod": "4.3.6",
+      },
+      "devDependencies": {
+        "tslib": "2.6.2",
+      },
+    },
+    "packages/connectors/core/approval": {
+      "name": "@fema/connector-approval",
+      "version": "0.1.27",
+      "dependencies": {
+        "@fema/connector-common": "workspace:*",
+        "@fema/connector-sdk": "workspace:*",
+        "@fema/connector-types": "workspace:*",
+        "@fema/core-utils": "workspace:*",
+      },
+      "devDependencies": {
+        "tslib": "2.6.2",
+        "vitest": "3.2.6",
+      },
+    },
+    "packages/connectors/core/connections": {
+      "name": "@fema/connector-connections",
+      "version": "0.5.10",
+      "dependencies": {
+        "@fema/connector-common": "workspace:*",
+        "@fema/connector-sdk": "workspace:*",
+        "@fema/connector-types": "workspace:*",
+        "@fema/core-utils": "workspace:*",
+      },
+      "devDependencies": {
+        "tslib": "2.6.2",
+      },
+    },
+    "packages/connectors/core/crypto": {
+      "name": "@fema/connector-crypto",
+      "version": "0.0.27",
+      "dependencies": {
+        "@fema/connector-common": "workspace:*",
+        "@fema/connector-sdk": "workspace:*",
+        "@fema/connector-types": "workspace:*",
+        "@fema/core-utils": "workspace:*",
+        "buffer": "6.0.3",
+        "openpgp": "^6.2.0",
+        "zod": "4.3.6",
+      },
+      "devDependencies": {
+        "tslib": "2.6.2",
+        "vitest": "3.2.6",
+      },
+    },
+    "packages/connectors/core/csv": {
+      "name": "@fema/connector-csv",
+      "version": "0.4.21",
+      "dependencies": {
+        "@fema/connector-common": "workspace:*",
+        "@fema/connector-sdk": "workspace:*",
+        "@fema/connector-types": "workspace:*",
+        "@fema/core-utils": "workspace:*",
+        "csv-parse": "5.6.0",
+        "csv-stringify": "6.5.2",
+        "safe-flat": "2.1.0",
+        "xlsx": "0.18.5",
+      },
+      "devDependencies": {
+        "tslib": "2.6.2",
+        "vitest": "3.2.6",
+      },
+    },
+    "packages/connectors/core/data-mapper": {
+      "name": "@fema/connector-data-mapper",
+      "version": "0.3.21",
+      "dependencies": {
+        "@fema/connector-common": "workspace:*",
+        "@fema/connector-sdk": "workspace:*",
+        "@fema/connector-types": "workspace:*",
+        "@fema/core-utils": "workspace:*",
+      },
+      "devDependencies": {
+        "tslib": "2.6.2",
+        "vitest": "3.2.6",
+      },
+    },
+    "packages/connectors/core/data-summarizer": {
+      "name": "@fema/connector-data-summarizer",
+      "version": "0.0.15",
+      "dependencies": {
+        "@fema/connector-common": "workspace:*",
+        "@fema/connector-sdk": "workspace:*",
+        "@fema/connector-types": "workspace:*",
+        "@fema/core-utils": "workspace:*",
+      },
+      "devDependencies": {
+        "tslib": "2.6.2",
+        "vitest": "3.2.6",
+      },
+    },
+    "packages/connectors/core/date-helper": {
+      "name": "@fema/connector-date-helper",
+      "version": "0.1.34",
+      "dependencies": {
+        "@fema/connector-common": "workspace:*",
+        "@fema/connector-sdk": "workspace:*",
+        "@fema/connector-types": "workspace:*",
+        "@fema/core-utils": "workspace:*",
+        "dayjs": "1.11.9",
+        "zod": "4.3.6",
+      },
+      "devDependencies": {
+        "tslib": "2.6.2",
+        "vitest": "3.2.6",
+      },
+    },
+    "packages/connectors/core/delay": {
+      "name": "@fema/connector-delay",
+      "version": "0.3.34",
+      "dependencies": {
+        "@fema/connector-common": "workspace:*",
+        "@fema/connector-sdk": "workspace:*",
+        "@fema/connector-types": "workspace:*",
+        "@fema/core-utils": "workspace:*",
+        "dayjs": "1.11.9",
+        "zod": "4.3.6",
+      },
+      "devDependencies": {
+        "tslib": "2.6.2",
+      },
+    },
+    "packages/connectors/core/file-helper": {
+      "name": "@fema/connector-file-helper",
+      "version": "0.1.29",
+      "dependencies": {
+        "@fema/connector-common": "workspace:*",
+        "@fema/connector-sdk": "workspace:*",
+        "@fema/connector-types": "workspace:*",
+        "@fema/core-utils": "workspace:*",
+        "@zip.js/zip.js": "^2.8.15",
+        "mime-types": "2.1.35",
+      },
+      "devDependencies": {
+        "@types/mime-types": "2.1.1",
+        "tslib": "2.6.2",
+        "vitest": "3.2.6",
+      },
+    },
+    "packages/connectors/core/forms": {
+      "name": "@fema/connector-forms",
+      "version": "0.4.21",
+      "dependencies": {
+        "@fema/connector-common": "workspace:*",
+        "@fema/connector-sdk": "workspace:*",
+        "@fema/connector-types": "workspace:*",
+        "@fema/core-utils": "workspace:*",
+        "http-status-codes": "2.2.0",
+        "mime-types": "2.1.35",
+      },
+      "devDependencies": {
+        "@types/mime-types": "2.1.1",
+        "tslib": "2.6.2",
+      },
+    },
+    "packages/connectors/core/http": {
+      "name": "@fema/connector-http",
+      "version": "0.11.19",
+      "dependencies": {
+        "@fema/connector-common": "workspace:*",
+        "@fema/connector-sdk": "workspace:*",
+        "@fema/connector-types": "workspace:*",
+        "@fema/core-utils": "workspace:*",
+        "axios": "1.18.0",
+        "form-data": "4.0.6",
+        "undici": "7.29.0",
+      },
+      "devDependencies": {
+        "tslib": "2.6.2",
+        "vitest": "3.2.6",
+      },
+    },
+    "packages/connectors/core/manual-trigger": {
+      "name": "@fema/connector-manual-trigger",
+      "version": "0.0.7",
+      "dependencies": {
+        "@fema/connector-common": "workspace:*",
+        "@fema/connector-sdk": "workspace:*",
+        "@fema/connector-types": "workspace:*",
+        "@fema/core-utils": "workspace:*",
+      },
+      "devDependencies": {
+        "tslib": "^2.3.0",
+      },
+    },
+    "packages/connectors/core/math-helper": {
+      "name": "@fema/connector-math-helper",
+      "version": "0.0.30",
+      "dependencies": {
+        "@fema/connector-common": "workspace:*",
+        "@fema/connector-sdk": "workspace:*",
+        "@fema/connector-types": "workspace:*",
+        "@fema/core-utils": "workspace:*",
+        "zod": "4.3.6",
+      },
+      "devDependencies": {
+        "tslib": "2.6.2",
+        "vitest": "3.2.6",
+      },
+    },
+    "packages/connectors/core/schedule": {
+      "name": "@fema/connector-schedule",
+      "version": "0.1.22",
+      "dependencies": {
+        "@fema/connector-common": "workspace:*",
+        "@fema/connector-sdk": "workspace:*",
+        "@fema/connector-types": "workspace:*",
+        "@fema/core-utils": "workspace:*",
+      },
+      "devDependencies": {
+        "tslib": "2.6.2",
+        "vitest": "3.2.6",
+      },
+    },
+    "packages/connectors/core/sftp": {
+      "name": "@fema/connector-sftp",
+      "version": "0.5.7",
+      "dependencies": {
+        "@fema/connector-common": "workspace:*",
+        "@fema/connector-sdk": "workspace:*",
+        "@fema/connector-types": "workspace:*",
+        "@fema/core-utils": "workspace:*",
+        "basic-ftp": "5.3.1",
+        "dayjs": "1.11.9",
+        "ssh2": "1.16.0",
+        "ssh2-sftp-client": "9.1.0",
+        "zod": "4.3.6",
+      },
+      "devDependencies": {
+        "@types/ssh2": "1.15.5",
+        "@types/ssh2-sftp-client": "9.0.6",
+        "tslib": "2.6.2",
+      },
+    },
+    "packages/connectors/core/smtp": {
+      "name": "@fema/connector-smtp",
+      "version": "0.4.7",
+      "dependencies": {
+        "@fema/connector-common": "workspace:*",
+        "@fema/connector-sdk": "workspace:*",
+        "@fema/connector-types": "workspace:*",
+        "@fema/core-utils": "workspace:*",
+        "mime-types": "2.1.35",
+        "nodemailer": "9.0.1",
+      },
+      "devDependencies": {
+        "@types/mime-types": "2.1.1",
+        "@types/nodemailer": "7.0.11",
+        "tslib": "2.6.2",
+      },
+    },
+    "packages/connectors/core/store": {
+      "name": "@fema/connector-store",
+      "version": "0.6.20",
+      "dependencies": {
+        "@fema/connector-common": "workspace:*",
+        "@fema/connector-sdk": "workspace:*",
+        "@fema/connector-types": "workspace:*",
+        "@fema/core-utils": "workspace:*",
+        "deep-equal": "2.2.2",
+        "zod": "4.3.6",
+      },
+      "devDependencies": {
+        "@types/deep-equal": "1.0.4",
+        "tslib": "2.6.2",
+      },
+    },
+    "packages/connectors/core/subflows": {
+      "name": "@fema/connector-subflows",
+      "version": "0.6.3",
+      "dependencies": {
+        "@fema/connector-common": "workspace:*",
+        "@fema/connector-sdk": "workspace:*",
+        "@fema/connector-types": "workspace:*",
+        "@fema/core-utils": "workspace:*",
+        "csv-parse": "5.6.0",
+      },
+      "devDependencies": {
+        "tslib": "2.6.2",
+        "vitest": "3.2.6",
+      },
+    },
+    "packages/connectors/core/tags": {
+      "name": "@fema/connector-tags",
+      "version": "0.0.22",
+      "dependencies": {
+        "@fema/connector-common": "workspace:*",
+        "@fema/connector-sdk": "workspace:*",
+        "@fema/connector-types": "workspace:*",
+        "@fema/core-utils": "workspace:*",
+      },
+      "devDependencies": {
+        "tslib": "2.6.2",
+      },
+    },
+    "packages/connectors/core/text-helper": {
+      "name": "@fema/connector-text-helper",
+      "version": "0.6.5",
+      "dependencies": {
+        "@fema/connector-common": "workspace:*",
+        "@fema/connector-sdk": "workspace:*",
+        "@fema/connector-types": "workspace:*",
+        "@fema/core-utils": "workspace:*",
+        "@joplin/turndown": "4.0.85",
+        "@joplin/turndown-plugin-gfm": "1.0.67",
+        "jsdom": "^24.0.0",
+        "showdown": "2.1.0",
+        "slugify": "1.6.6",
+        "string-strip-html": "8.5.0",
+        "zod": "4.3.6",
+      },
+      "devDependencies": {
+        "@types/jsdom": "^21.1.6",
+        "@types/showdown": "2.0.6",
+        "@types/turndown": "5.0.6",
+        "tslib": "2.6.2",
+        "vitest": "3.2.6",
+      },
+    },
+    "packages/connectors/core/webhook": {
+      "name": "@fema/connector-webhook",
+      "version": "0.1.41",
+      "dependencies": {
+        "@fema/connector-common": "workspace:*",
+        "@fema/connector-sdk": "workspace:*",
+        "@fema/connector-types": "workspace:*",
+        "@fema/core-utils": "workspace:*",
+      },
+      "devDependencies": {
+        "tslib": "2.6.2",
+        "vitest": "3.2.6",
+      },
+    },
+    "packages/connectors/core/xml": {
+      "name": "@fema/connector-xml",
+      "version": "0.1.20",
+      "dependencies": {
+        "@fema/connector-common": "workspace:*",
+        "@fema/connector-sdk": "workspace:*",
+        "@fema/connector-types": "workspace:*",
+        "@fema/core-utils": "workspace:*",
+        "fast-xml-parser": "5.7.0",
+        "json2xml": "0.1.3",
+      },
+      "devDependencies": {
+        "@types/json2xml": "0.1.4",
+        "tslib": "2.6.2",
+        "vitest": "3.2.6",
+      },
+    },
+    "packages/connectors/sdk": {
+      "name": "@fema/connector-sdk",
+      "version": "0.36.0",
+      "dependencies": {
+        "@fema/connector-types": "workspace:*",
+        "@fema/core-utils": "workspace:*",
+        "ai": "^6.0.0",
+        "semver": "7.6.0",
+        "zod": "4.3.6",
+      },
+      "devDependencies": {
+        "@types/semver": "7.5.6",
+        "tslib": "2.6.2",
+        "vitest": "3.2.6",
+      },
+    },
+    "packages/core/connector-types": {
+      "name": "@fema/connector-types",
+      "version": "0.4.0",
+      "dependencies": {
+        "@fema/core-utils": "workspace:*",
+        "tslib": "2.6.2",
+        "zod": "4.3.6",
+      },
+      "devDependencies": {
+        "@types/node": "24.11.0",
+        "typescript": "5.5.4",
       },
     },
     "packages/core/execution": {
@@ -121,19 +595,6 @@
         "dayjs": "1.11.9",
         "expr-eval": "2.0.2",
         "tslib": "2.6.2",
-      },
-      "devDependencies": {
-        "@types/node": "24.11.0",
-        "typescript": "5.5.4",
-      },
-    },
-    "packages/core/piece-types": {
-      "name": "@fema/connector-types",
-      "version": "0.4.0",
-      "dependencies": {
-        "@fema/core-utils": "workspace:*",
-        "tslib": "2.6.2",
-        "zod": "4.3.6",
       },
       "devDependencies": {
         "@types/node": "24.11.0",
@@ -178,467 +639,6 @@
       "devDependencies": {
         "@types/node": "24.11.0",
         "typescript": "5.5.4",
-        "vitest": "3.2.6",
-      },
-    },
-    "packages/pieces/common": {
-      "name": "@fema/connector-common",
-      "version": "0.12.9",
-      "dependencies": {
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-        "form-data": "4.0.6",
-        "zod": "4.3.6",
-      },
-      "devDependencies": {
-        "tslib": "2.6.2",
-      },
-    },
-    "packages/pieces/community/github": {
-      "name": "@fema/connector-github",
-      "version": "0.8.11",
-      "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-        "jsonwebtoken": "9.0.1",
-        "yaml": "2.9.0",
-      },
-      "devDependencies": {
-        "@types/jsonwebtoken": "9.0.10",
-        "tslib": "2.6.2",
-        "vitest": "3.2.6",
-      },
-    },
-    "packages/pieces/community/mysql": {
-      "name": "@fema/connector-mysql",
-      "version": "0.2.7",
-      "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-        "promise-mysql": "5.2.0",
-        "sqlstring": "2.3.3",
-      },
-      "devDependencies": {
-        "@types/sqlstring": "2.3.2",
-        "tslib": "2.6.2",
-      },
-    },
-    "packages/pieces/community/postgres": {
-      "name": "@fema/connector-postgres",
-      "version": "0.3.1",
-      "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-        "dayjs": "1.11.9",
-        "pg": "8.11.3",
-        "pg-format": "1.0.4",
-      },
-      "devDependencies": {
-        "@types/pg": "8.16.0",
-        "@types/pg-format": "1.0.5",
-        "tslib": "2.6.2",
-      },
-    },
-    "packages/pieces/community/rabbitmq": {
-      "name": "@fema/connector-rabbitmq",
-      "version": "0.1.6",
-      "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-        "amqplib": "0.10.7",
-        "dayjs": "1.11.9",
-      },
-      "devDependencies": {
-        "@types/amqplib": "0.10.7",
-        "tslib": "2.6.2",
-      },
-    },
-    "packages/pieces/community/slack": {
-      "name": "@fema/connector-slack",
-      "version": "0.17.9",
-      "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-        "@slack/web-api": "7.9.0",
-        "slackify-markdown": "4.4.0",
-        "zod": "4.3.6",
-      },
-      "devDependencies": {
-        "tslib": "2.6.2",
-      },
-    },
-    "packages/pieces/core/approval": {
-      "name": "@fema/connector-approval",
-      "version": "0.1.27",
-      "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-      },
-      "devDependencies": {
-        "tslib": "2.6.2",
-        "vitest": "3.2.6",
-      },
-    },
-    "packages/pieces/core/connections": {
-      "name": "@fema/connector-connections",
-      "version": "0.5.10",
-      "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-      },
-      "devDependencies": {
-        "tslib": "2.6.2",
-      },
-    },
-    "packages/pieces/core/crypto": {
-      "name": "@fema/connector-crypto",
-      "version": "0.0.27",
-      "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-        "buffer": "6.0.3",
-        "openpgp": "^6.2.0",
-        "zod": "4.3.6",
-      },
-      "devDependencies": {
-        "tslib": "2.6.2",
-        "vitest": "3.2.6",
-      },
-    },
-    "packages/pieces/core/csv": {
-      "name": "@fema/connector-csv",
-      "version": "0.4.21",
-      "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-        "csv-parse": "5.6.0",
-        "csv-stringify": "6.5.2",
-        "safe-flat": "2.1.0",
-        "xlsx": "0.18.5",
-      },
-      "devDependencies": {
-        "tslib": "2.6.2",
-        "vitest": "3.2.6",
-      },
-    },
-    "packages/pieces/core/data-mapper": {
-      "name": "@fema/connector-data-mapper",
-      "version": "0.3.21",
-      "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-      },
-      "devDependencies": {
-        "tslib": "2.6.2",
-        "vitest": "3.2.6",
-      },
-    },
-    "packages/pieces/core/data-summarizer": {
-      "name": "@fema/connector-data-summarizer",
-      "version": "0.0.15",
-      "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-      },
-      "devDependencies": {
-        "tslib": "2.6.2",
-        "vitest": "3.2.6",
-      },
-    },
-    "packages/pieces/core/date-helper": {
-      "name": "@fema/connector-date-helper",
-      "version": "0.1.34",
-      "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-        "dayjs": "1.11.9",
-        "zod": "4.3.6",
-      },
-      "devDependencies": {
-        "tslib": "2.6.2",
-        "vitest": "3.2.6",
-      },
-    },
-    "packages/pieces/core/delay": {
-      "name": "@fema/connector-delay",
-      "version": "0.3.34",
-      "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-        "dayjs": "1.11.9",
-        "zod": "4.3.6",
-      },
-      "devDependencies": {
-        "tslib": "2.6.2",
-      },
-    },
-    "packages/pieces/core/file-helper": {
-      "name": "@fema/connector-file-helper",
-      "version": "0.1.29",
-      "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-        "@zip.js/zip.js": "^2.8.15",
-        "mime-types": "2.1.35",
-      },
-      "devDependencies": {
-        "@types/mime-types": "2.1.1",
-        "tslib": "2.6.2",
-        "vitest": "3.2.6",
-      },
-    },
-    "packages/pieces/core/forms": {
-      "name": "@fema/connector-forms",
-      "version": "0.4.21",
-      "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-        "http-status-codes": "2.2.0",
-        "mime-types": "2.1.35",
-      },
-      "devDependencies": {
-        "@types/mime-types": "2.1.1",
-        "tslib": "2.6.2",
-      },
-    },
-    "packages/pieces/core/http": {
-      "name": "@fema/connector-http",
-      "version": "0.11.19",
-      "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-        "axios": "1.18.0",
-        "form-data": "4.0.6",
-        "undici": "7.29.0",
-      },
-      "devDependencies": {
-        "tslib": "2.6.2",
-        "vitest": "3.2.6",
-      },
-    },
-    "packages/pieces/core/manual-trigger": {
-      "name": "@fema/connector-manual-trigger",
-      "version": "0.0.7",
-      "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-      },
-      "devDependencies": {
-        "tslib": "^2.3.0",
-      },
-    },
-    "packages/pieces/core/math-helper": {
-      "name": "@fema/connector-math-helper",
-      "version": "0.0.30",
-      "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-        "zod": "4.3.6",
-      },
-      "devDependencies": {
-        "tslib": "2.6.2",
-        "vitest": "3.2.6",
-      },
-    },
-    "packages/pieces/core/schedule": {
-      "name": "@fema/connector-schedule",
-      "version": "0.1.22",
-      "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-      },
-      "devDependencies": {
-        "tslib": "2.6.2",
-        "vitest": "3.2.6",
-      },
-    },
-    "packages/pieces/core/sftp": {
-      "name": "@fema/connector-sftp",
-      "version": "0.5.7",
-      "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-        "basic-ftp": "5.3.1",
-        "dayjs": "1.11.9",
-        "ssh2": "1.16.0",
-        "ssh2-sftp-client": "9.1.0",
-        "zod": "4.3.6",
-      },
-      "devDependencies": {
-        "@types/ssh2": "1.15.5",
-        "@types/ssh2-sftp-client": "9.0.6",
-        "tslib": "2.6.2",
-      },
-    },
-    "packages/pieces/core/smtp": {
-      "name": "@fema/connector-smtp",
-      "version": "0.4.7",
-      "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-        "mime-types": "2.1.35",
-        "nodemailer": "9.0.1",
-      },
-      "devDependencies": {
-        "@types/mime-types": "2.1.1",
-        "@types/nodemailer": "7.0.11",
-        "tslib": "2.6.2",
-      },
-    },
-    "packages/pieces/core/store": {
-      "name": "@fema/connector-store",
-      "version": "0.6.20",
-      "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-        "deep-equal": "2.2.2",
-        "zod": "4.3.6",
-      },
-      "devDependencies": {
-        "@types/deep-equal": "1.0.4",
-        "tslib": "2.6.2",
-      },
-    },
-    "packages/pieces/core/subflows": {
-      "name": "@fema/connector-subflows",
-      "version": "0.6.3",
-      "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-        "csv-parse": "5.6.0",
-      },
-      "devDependencies": {
-        "tslib": "2.6.2",
-        "vitest": "3.2.6",
-      },
-    },
-    "packages/pieces/core/tags": {
-      "name": "@fema/connector-tags",
-      "version": "0.0.22",
-      "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-      },
-      "devDependencies": {
-        "tslib": "2.6.2",
-      },
-    },
-    "packages/pieces/core/text-helper": {
-      "name": "@fema/connector-text-helper",
-      "version": "0.6.5",
-      "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-        "@joplin/turndown": "4.0.85",
-        "@joplin/turndown-plugin-gfm": "1.0.67",
-        "jsdom": "^24.0.0",
-        "showdown": "2.1.0",
-        "slugify": "1.6.6",
-        "string-strip-html": "8.5.0",
-        "zod": "4.3.6",
-      },
-      "devDependencies": {
-        "@types/jsdom": "^21.1.6",
-        "@types/showdown": "2.0.6",
-        "@types/turndown": "5.0.6",
-        "tslib": "2.6.2",
-        "vitest": "3.2.6",
-      },
-    },
-    "packages/pieces/core/webhook": {
-      "name": "@fema/connector-webhook",
-      "version": "0.1.41",
-      "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-      },
-      "devDependencies": {
-        "tslib": "2.6.2",
-        "vitest": "3.2.6",
-      },
-    },
-    "packages/pieces/core/xml": {
-      "name": "@fema/connector-xml",
-      "version": "0.1.20",
-      "dependencies": {
-        "@fema/connector-common": "workspace:*",
-        "@fema/connector-sdk": "workspace:*",
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-        "fast-xml-parser": "5.7.0",
-        "json2xml": "0.1.3",
-      },
-      "devDependencies": {
-        "@types/json2xml": "0.1.4",
-        "tslib": "2.6.2",
-        "vitest": "3.2.6",
-      },
-    },
-    "packages/pieces/framework": {
-      "name": "@fema/connector-sdk",
-      "version": "0.36.0",
-      "dependencies": {
-        "@fema/connector-types": "workspace:*",
-        "@fema/core-utils": "workspace:*",
-        "ai": "^6.0.0",
-        "semver": "7.6.0",
-        "zod": "4.3.6",
-      },
-      "devDependencies": {
-        "@types/semver": "7.5.6",
-        "tslib": "2.6.2",
         "vitest": "3.2.6",
       },
     },
@@ -1479,65 +1479,65 @@
 
     "@fema/cli": ["@fema/cli@workspace:packages/cli"],
 
-    "@fema/connector-approval": ["@fema/connector-approval@workspace:packages/pieces/core/approval"],
+    "@fema/connector-approval": ["@fema/connector-approval@workspace:packages/connectors/core/approval"],
 
-    "@fema/connector-common": ["@fema/connector-common@workspace:packages/pieces/common"],
+    "@fema/connector-common": ["@fema/connector-common@workspace:packages/connectors/common"],
 
-    "@fema/connector-connections": ["@fema/connector-connections@workspace:packages/pieces/core/connections"],
+    "@fema/connector-connections": ["@fema/connector-connections@workspace:packages/connectors/core/connections"],
 
-    "@fema/connector-crypto": ["@fema/connector-crypto@workspace:packages/pieces/core/crypto"],
+    "@fema/connector-crypto": ["@fema/connector-crypto@workspace:packages/connectors/core/crypto"],
 
-    "@fema/connector-csv": ["@fema/connector-csv@workspace:packages/pieces/core/csv"],
+    "@fema/connector-csv": ["@fema/connector-csv@workspace:packages/connectors/core/csv"],
 
-    "@fema/connector-data-mapper": ["@fema/connector-data-mapper@workspace:packages/pieces/core/data-mapper"],
+    "@fema/connector-data-mapper": ["@fema/connector-data-mapper@workspace:packages/connectors/core/data-mapper"],
 
-    "@fema/connector-data-summarizer": ["@fema/connector-data-summarizer@workspace:packages/pieces/core/data-summarizer"],
+    "@fema/connector-data-summarizer": ["@fema/connector-data-summarizer@workspace:packages/connectors/core/data-summarizer"],
 
-    "@fema/connector-date-helper": ["@fema/connector-date-helper@workspace:packages/pieces/core/date-helper"],
+    "@fema/connector-date-helper": ["@fema/connector-date-helper@workspace:packages/connectors/core/date-helper"],
 
-    "@fema/connector-delay": ["@fema/connector-delay@workspace:packages/pieces/core/delay"],
+    "@fema/connector-delay": ["@fema/connector-delay@workspace:packages/connectors/core/delay"],
 
-    "@fema/connector-file-helper": ["@fema/connector-file-helper@workspace:packages/pieces/core/file-helper"],
+    "@fema/connector-file-helper": ["@fema/connector-file-helper@workspace:packages/connectors/core/file-helper"],
 
-    "@fema/connector-forms": ["@fema/connector-forms@workspace:packages/pieces/core/forms"],
+    "@fema/connector-forms": ["@fema/connector-forms@workspace:packages/connectors/core/forms"],
 
-    "@fema/connector-github": ["@fema/connector-github@workspace:packages/pieces/community/github"],
+    "@fema/connector-github": ["@fema/connector-github@workspace:packages/connectors/community/github"],
 
-    "@fema/connector-http": ["@fema/connector-http@workspace:packages/pieces/core/http"],
+    "@fema/connector-http": ["@fema/connector-http@workspace:packages/connectors/core/http"],
 
-    "@fema/connector-manual-trigger": ["@fema/connector-manual-trigger@workspace:packages/pieces/core/manual-trigger"],
+    "@fema/connector-manual-trigger": ["@fema/connector-manual-trigger@workspace:packages/connectors/core/manual-trigger"],
 
-    "@fema/connector-math-helper": ["@fema/connector-math-helper@workspace:packages/pieces/core/math-helper"],
+    "@fema/connector-math-helper": ["@fema/connector-math-helper@workspace:packages/connectors/core/math-helper"],
 
-    "@fema/connector-mysql": ["@fema/connector-mysql@workspace:packages/pieces/community/mysql"],
+    "@fema/connector-mysql": ["@fema/connector-mysql@workspace:packages/connectors/community/mysql"],
 
-    "@fema/connector-postgres": ["@fema/connector-postgres@workspace:packages/pieces/community/postgres"],
+    "@fema/connector-postgres": ["@fema/connector-postgres@workspace:packages/connectors/community/postgres"],
 
-    "@fema/connector-rabbitmq": ["@fema/connector-rabbitmq@workspace:packages/pieces/community/rabbitmq"],
+    "@fema/connector-rabbitmq": ["@fema/connector-rabbitmq@workspace:packages/connectors/community/rabbitmq"],
 
-    "@fema/connector-schedule": ["@fema/connector-schedule@workspace:packages/pieces/core/schedule"],
+    "@fema/connector-schedule": ["@fema/connector-schedule@workspace:packages/connectors/core/schedule"],
 
-    "@fema/connector-sdk": ["@fema/connector-sdk@workspace:packages/pieces/framework"],
+    "@fema/connector-sdk": ["@fema/connector-sdk@workspace:packages/connectors/sdk"],
 
-    "@fema/connector-sftp": ["@fema/connector-sftp@workspace:packages/pieces/core/sftp"],
+    "@fema/connector-sftp": ["@fema/connector-sftp@workspace:packages/connectors/core/sftp"],
 
-    "@fema/connector-slack": ["@fema/connector-slack@workspace:packages/pieces/community/slack"],
+    "@fema/connector-slack": ["@fema/connector-slack@workspace:packages/connectors/community/slack"],
 
-    "@fema/connector-smtp": ["@fema/connector-smtp@workspace:packages/pieces/core/smtp"],
+    "@fema/connector-smtp": ["@fema/connector-smtp@workspace:packages/connectors/core/smtp"],
 
-    "@fema/connector-store": ["@fema/connector-store@workspace:packages/pieces/core/store"],
+    "@fema/connector-store": ["@fema/connector-store@workspace:packages/connectors/core/store"],
 
-    "@fema/connector-subflows": ["@fema/connector-subflows@workspace:packages/pieces/core/subflows"],
+    "@fema/connector-subflows": ["@fema/connector-subflows@workspace:packages/connectors/core/subflows"],
 
-    "@fema/connector-tags": ["@fema/connector-tags@workspace:packages/pieces/core/tags"],
+    "@fema/connector-tags": ["@fema/connector-tags@workspace:packages/connectors/core/tags"],
 
-    "@fema/connector-text-helper": ["@fema/connector-text-helper@workspace:packages/pieces/core/text-helper"],
+    "@fema/connector-text-helper": ["@fema/connector-text-helper@workspace:packages/connectors/core/text-helper"],
 
-    "@fema/connector-types": ["@fema/connector-types@workspace:packages/core/piece-types"],
+    "@fema/connector-types": ["@fema/connector-types@workspace:packages/core/connector-types"],
 
-    "@fema/connector-webhook": ["@fema/connector-webhook@workspace:packages/pieces/core/webhook"],
+    "@fema/connector-webhook": ["@fema/connector-webhook@workspace:packages/connectors/core/webhook"],
 
-    "@fema/connector-xml": ["@fema/connector-xml@workspace:packages/pieces/core/xml"],
+    "@fema/connector-xml": ["@fema/connector-xml@workspace:packages/connectors/core/xml"],
 
     "@fema/core-utils": ["@fema/core-utils@workspace:packages/core/utils"],
 

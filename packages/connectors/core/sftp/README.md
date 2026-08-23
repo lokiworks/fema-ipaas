@@ -1,0 +1,5 @@
+# connectors-sftp
+
+## Building
+
+Run `turbo run build --filter=@fema/connector-sftp` to build the library.

@@ -9,10 +9,10 @@ import { Handle, NodeProps, Position } from '@xyflow/react';
 import React, { useMemo } from 'react';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
-import { PieceSelector } from '@/app/builder/pieces-selector';
+import { ConnectorSelector } from '@/app/builder/connectors-selector';
 import { LoopIterationInput } from '@/app/builder/run-details/loop-iteration-input';
 import { RightSideBarType } from '@/app/builder/types';
-import { stepsHooks } from '@/features/pieces';
+import { stepsHooks } from '@/features/connectors';
 import { cn } from '@/lib/utils';
 
 import { flowCanvasConsts } from '../../utils/consts';
@@ -36,8 +36,8 @@ const ApStepCanvasNode = React.memo(
       readonly,
       flowVersion,
       setSelectedBranchIndex,
-      isPieceSelectorOpened,
-      setOpenedPieceSelectorStepNameOrAddButtonId,
+      isConnectorSelectorOpened,
+      setOpenedConnectorSelectorStepNameOrAddButtonId,
       isRightSidebarOpen,
       canvasOrientation,
     ] = useBuilderStateContext((state) => [
@@ -47,8 +47,8 @@ const ApStepCanvasNode = React.memo(
       state.readonly,
       state.flowVersion,
       state.setSelectedBranchIndex,
-      state.openedPieceSelectorStepNameOrAddButtonId === step.name,
-      state.setOpenedPieceSelectorStepNameOrAddButtonId,
+      state.openedConnectorSelectorStepNameOrAddButtonId === step.name,
+      state.setOpenedConnectorSelectorStepNameOrAddButtonId,
       state.rightSidebar !== RightSideBarType.NONE,
       state.canvasOrientation,
     ]);
@@ -64,7 +64,7 @@ const ApStepCanvasNode = React.memo(
     const isSkipped = flowCanvasUtils.isSkipped(step.name, flowVersion.trigger);
     const chevronClickOverride =
       step.type === FlowTriggerType.EMPTY
-        ? () => setOpenedPieceSelectorStepNameOrAddButtonId(step.name)
+        ? () => setOpenedConnectorSelectorStepNameOrAddButtonId(step.name)
         : undefined;
 
     const { attributes, listeners, setNodeRef } = useDraggable({
@@ -89,7 +89,7 @@ const ApStepCanvasNode = React.memo(
       e: React.MouseEvent<HTMLDivElement, MouseEvent>,
     ) => {
       handleStepClick(e, false);
-      setOpenedPieceSelectorStepNameOrAddButtonId(null);
+      setOpenedConnectorSelectorStepNameOrAddButtonId(null);
       if (isRightSidebarOpen || !e.nativeEvent.isTrusted) {
         return;
       }
@@ -118,8 +118,8 @@ const ApStepCanvasNode = React.memo(
       }, flowCanvasConsts.SIDEBAR_ANIMATION_DURATION + 50);
     };
 
-    const stepNodeDivAttributes = isPieceSelectorOpened ? {} : attributes;
-    const stepNodeDivListeners = isPieceSelectorOpened ? {} : listeners;
+    const stepNodeDivAttributes = isConnectorSelectorOpened ? {} : attributes;
+    const stepNodeDivListeners = isConnectorSelectorOpened ? {} : listeners;
 
     return (
       <div
@@ -146,7 +146,7 @@ const ApStepCanvasNode = React.memo(
         )}
         onClick={(e) => handleStepClick(e)}
         key={step.name}
-        ref={isPieceSelectorOpened ? null : setNodeRef}
+        ref={isConnectorSelectorOpened ? null : setNodeRef}
         {...stepNodeDivAttributes}
         {...stepNodeDivListeners}
       >
@@ -161,14 +161,14 @@ const ApStepCanvasNode = React.memo(
           })}
         >
           {!isDragging && (
-            <PieceSelector
+            <ConnectorSelector
               operation={{
-                type: getPieceSelectorOperationType(step),
+                type: getConnectorSelectorOperationType(step),
                 stepName: step.name,
               }}
               id={step.name}
               openSelectorOnClick={false}
-              stepToReplacePieceDisplayName={stepMetadata?.displayName}
+              stepToReplaceConnectorDisplayName={stepMetadata?.displayName}
             >
               {isHorizontal ? (
                 <div
@@ -195,7 +195,7 @@ const ApStepCanvasNode = React.memo(
                     stepDisplayName={step.displayName}
                     stepIndex={stepIndex}
                     isSkipped={isSkipped}
-                    pieceDisplayName={stepMetadata?.displayName ?? ''}
+                    connectorDisplayName={stepMetadata?.displayName ?? ''}
                     stepName={step.name}
                   />
                   {!readonly && (
@@ -203,7 +203,7 @@ const ApStepCanvasNode = React.memo(
                   )}
                 </div>
               )}
-            </PieceSelector>
+            </ConnectorSelector>
           )}
           {isHorizontal && (
             <div
@@ -217,7 +217,7 @@ const ApStepCanvasNode = React.memo(
                   stepDisplayName={step.displayName}
                   stepIndex={stepIndex}
                   isSkipped={isSkipped}
-                  pieceDisplayName={stepMetadata?.displayName ?? ''}
+                  connectorDisplayName={stepMetadata?.displayName ?? ''}
                   stepName={step.name}
                 />
               </div>
@@ -248,7 +248,7 @@ const ApStepCanvasNode = React.memo(
 ApStepCanvasNode.displayName = 'ApStepCanvasNode';
 export { ApStepCanvasNode };
 
-function getPieceSelectorOperationType(step: Step) {
+function getConnectorSelectorOperationType(step: Step) {
   if (flowStructureUtil.isTrigger(step.type)) {
     return FlowOperationType.UPDATE_TRIGGER;
   }

@@ -13,7 +13,7 @@ vi.mock('../../src/lib/helper/flow-run-progress-reporter', () => ({
     },
 }))
 
-vi.mock('../../src/lib/core/piece/trigger-runner', () => ({
+vi.mock('../../src/lib/core/connector/trigger-runner', () => ({
     triggerRunner: {
         executeOnStart: vi.fn().mockResolvedValue(undefined),
     },

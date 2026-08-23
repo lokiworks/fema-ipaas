@@ -1,10 +1,10 @@
 import { type ApLogger } from '@fema/server-utils'
-import { EngineOperation, EngineOperationType, EngineResponse, FailedStep, FlowVersion, FlowVersionState, NetworkMode, PiecePackage, SourceCode, WorkerToApiContract } from '@fema/shared'
+import { ConnectorPackage, EngineOperation, EngineOperationType, EngineResponse, FailedStep, FlowVersion, FlowVersionState, NetworkMode, SourceCode, WorkerToApiContract } from '@fema/shared'
 
 // Two roles:
 //   - Resolver (worker-side, owns the only apiClient): turns a job into a fully-materialized
-//     `ProvisionInput` — resolve the flowVersion, piece metadata, and a ready (compiled) flow bundle,
-//     disabling the flow on a missing piece. Always runs before `execute`.
+//     `ProvisionInput` — resolve the flowVersion, connector metadata, and a ready (compiled) flow bundle,
+//     disabling the flow on a missing connector. Always runs before `execute`.
 //   - Runtime: the in-process single sandbox box. It never reaches the app; it materializes the passed
 //     ProvisionInput, runs one engine operation, and releases (or invalidates on throw).
 
@@ -17,7 +17,7 @@ export type ResolveInput = {
     publicApiUrl: string
     engineToken: string
     flow?: { id: string, versionId: string, projectId: string }
-    pieces?: PiecePackage[]
+    connectors?: ConnectorPackage[]
     codes?: CodeArtifact[]
 }
 
@@ -54,15 +54,15 @@ export type PreWarmSandboxParams = {
     flow?: { id: string, versionId: string, projectId: string }
 }
 
-// The Resolver's output and the pool's input. The pool installs each piece straight from a link: it
-// builds `${publicApiUrl}v1/engine/pieces/bundle?name=&version=&token=` per piece and hands that URL
+// The Resolver's output and the pool's input. The pool installs each connector straight from a link: it
+// builds `${publicApiUrl}v1/engine/connectors/bundle?name=&version=&token=` per connector and hands that URL
 // to `bun install`, which follows the endpoint's redirect to npm / signed-S3 (or streams the custom
 // archive). No bytes cross the worker socket and the pool never imports WorkerToApiContract; the link
 // is publicApiUrl-based so it is reachable from a remote pool (Cloud Run). See ADR 0002.
 export type ProvisionInput = {
     platformId: string
     flowVersionId?: string
-    pieces: PiecePackage[]
+    connectors: ConnectorPackage[]
     codes: CodeArtifact[]
     publicApiUrl: string
     engineToken: string
@@ -102,7 +102,7 @@ export type CodeArtifact = {
 // against ApEnvironment / ExecutionMode enum values still work because enum values are strings.
 export type SandboxSettings = {
     EXECUTION_MODE: string
-    DEV_PIECES: string[]
+    DEV_CONNECTORS: string[]
     ENVIRONMENT: string
     REUSE_SANDBOX: string | undefined
     FLOW_TIMEOUT_SECONDS: number
@@ -112,7 +112,7 @@ export type SandboxSettings = {
     SANDBOX_MEMORY_LIMIT: string
     SANDBOX_PROPAGATED_ENV_VARS: string[]
     SSRF_ALLOW_LIST: string[]
-    ENFORCE_CONNECTION_PIECE_BINDING: boolean
+    ENFORCE_CONNECTION_CONNECTOR_BINDING: boolean
     WORKER_GROUP_ID?: string | undefined
     PROJECT_WORKER?: boolean | undefined
 }

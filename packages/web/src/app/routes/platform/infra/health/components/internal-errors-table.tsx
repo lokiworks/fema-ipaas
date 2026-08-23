@@ -47,7 +47,7 @@ export function InternalErrorsTable({
         </CardTitle>
         <CardDescription>
           {t(
-            'Internal errors are failures inside Activepieces itself (engine or worker), not in your flow logic. Grouped by the project and flow they affected.',
+            'Internal errors are failures inside FEMA Integration Platform itself (engine or worker), not in your flow logic. Grouped by the project and flow they affected.',
           )}
         </CardDescription>
       </CardHeader>

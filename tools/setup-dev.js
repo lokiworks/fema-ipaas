@@ -46,7 +46,7 @@ execSync('bun install', { stdio: 'inherit' });
 
 const IGNORED_DIRS = new Set(['node_modules', 'dist', 'framework', 'common']);
 
-const findAllPieceFolders = (folderPath) => {
+const findAllConnectorFolders = (folderPath) => {
   const results = [];
   for (const entry of fs.readdirSync(folderPath)) {
     if (IGNORED_DIRS.has(entry)) continue;
@@ -55,34 +55,34 @@ const findAllPieceFolders = (folderPath) => {
     if (fs.existsSync(path.join(full, 'package.json'))) {
       results.push(full);
     } else {
-      results.push(...findAllPieceFolders(full));
+      results.push(...findAllConnectorFolders(full));
     }
   }
   return results;
 };
 
-// Pre-build dev pieces so dist/ exists before the server starts
+// Pre-build dev connectors so dist/ exists before the server starts
 const dotenv = require('dotenv');
 let envConfig = {};
 try {
   envConfig = dotenv.parse(fs.readFileSync('.env.dev', 'utf-8'));
 } catch { }
 
-const devPieces = process.env.FEMA_DEV_PIECES || envConfig.FEMA_DEV_PIECES;
+const devConnectors = process.env.FEMA_DEV_CONNECTORS || envConfig.FEMA_DEV_CONNECTORS;
 
-if (devPieces) {
-  const pieceNames = [...new Set(devPieces.split(',').map(n => n.trim()))];
-  const allFolders = findAllPieceFolders(path.resolve('packages', 'pieces'));
+if (devConnectors) {
+  const connectorNames = [...new Set(devConnectors.split(',').map(n => n.trim()))];
+  const allFolders = findAllConnectorFolders(path.resolve('packages', 'connectors'));
 
-  const pieceFilters = pieceNames.map(name => {
+  const connectorFilters = connectorNames.map(name => {
     const dir = allFolders.find(p => p.endsWith(path.sep + name));
     if (!dir) {
-      throw new Error(`❌ Piece folder not found for: "${name}".`);
+      throw new Error(`❌ Connector folder not found for: "${name}".`);
     }
     const packageName = JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf-8')).name;
     return `--filter=${packageName}`;
   }).join(' ');
 
-  console.log(`Building dev pieces: ${devPieces}`);
-  execSync(`npx turbo run build ${pieceFilters}`, { stdio: 'inherit' });
+  console.log(`Building dev connectors: ${devConnectors}`);
+  execSync(`npx turbo run build ${connectorFilters}`, { stdio: 'inherit' });
 }

@@ -20,8 +20,8 @@ export const cacheUtils = (basePath: string) => ({
         return path.resolve(this.getGlobalCodeCachePath(), ACTION_RUN_CODE_DIR)
     },
 
-    getGlobalCachePiecesPath(): string {
-        return path.resolve(this.getGlobalCachePathLatestVersion(), 'pieces-metadata')
+    getGlobalCacheConnectorsPath(): string {
+        return path.resolve(this.getGlobalCachePathLatestVersion(), 'connectors-metadata')
     },
 
     getGlobalCacheFlowsPath(): string {

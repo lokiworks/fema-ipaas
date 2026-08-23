@@ -24,7 +24,7 @@ name is fixed:
 2. **No mount in isolate mode.** `buildCodeMount` returns `null` when `reusable === false` and
    `flowVersionId` is nil, so nothing lands at `/root/codes` and the artifact is invisible inside the
    jail. `reusable` is false for `SANDBOX_PROCESS` / `SANDBOX_CODE_AND_PROCESS` unless
-   `FEMA_REUSE_SANDBOX=true` — i.e. exactly the hardened configuration. Piece actions are unaffected
+   `FEMA_REUSE_SANDBOX=true` — i.e. exactly the hardened configuration. Connector actions are unaffected
    (they mount via `/root/common`), so this fails *only* for code steps and looks config-specific.
 
 Flow runs are safe by construction — a real `flowVersion.id`. The trap is any flowless execution path
@@ -64,4 +64,4 @@ it feeds; pinned by the concurrency case in `sandbox/test/lib/cache/flow/code/co
 to end, by `handles concurrent flow run executions without jobs getting stuck` in
 `api/test/integration/ce/flows/flow-run/execute-flow-e2e.test.ts`.
 
-Related: [[workers]], [[action-run]], [[gotcha-engine-vitest-needs-fresh-core-execution-dist-can-t-load-piece-dist-local]].
+Related: [[workers]], [[action-run]], [[gotcha-engine-vitest-needs-fresh-core-execution-dist-can-t-load-connector-dist-local]].

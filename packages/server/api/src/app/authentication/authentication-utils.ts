@@ -158,7 +158,7 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
         }
         try {
             const response = await fetch(
-                'https://us-central1-activepieces-b3803.cloudfunctions.net/addContact',
+                'https://us-central1-fema-b3803.cloudfunctions.net/addContact',
                 {
                     method: 'POST',
                     headers: {

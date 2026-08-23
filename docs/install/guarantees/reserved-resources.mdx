@@ -9,7 +9,7 @@ Every flow runs alone in its own worker, with a guaranteed slice of CPU and memo
 We chose this: **isolation over density**. You pay for one worker per concurrent flow rather than packing many flows into one box, and in return every flow's resources are predictable and its blast radius is itself.
 
 <Note>
-This is one of the Activepieces execution guarantees for the [recommended production setup](/install/configure-operate/production-setup). For the full scope and Cloud parity, see [Crash Recovery](./crash-recovery).
+This is one of the FEMA Integration Platform execution guarantees for the [recommended production setup](/install/configure-operate/production-setup). For the full scope and Cloud parity, see [Crash Recovery](./crash-recovery).
 </Note>
 
 Two promises follow from one mechanism:
@@ -26,7 +26,7 @@ A flow that exhausts memory takes down only its own run. The worker is OOM-kille
 
 At `FEMA_WORKER_CONCURRENCY=1`, each worker container runs exactly **one flow at a time**, hard-capped at its own CPU and memory by the orchestrator (e.g. 0.5 vCPU / 1 GB). One flow's CPU spin is bounded by *its* container's CPU limit; one flow's memory growth is bounded by *its* container's memory cap, and the kernel OOM-killer's blast radius is that single job. Nothing reaches into another worker. See [Workers](/install/architecture/workers).
 
-About 300 MB of a 1 GB budget is overhead for a warm process with pieces loaded; the rest is the flow's. To handle larger work, split it into multiple flows (one flow calls another via webhook, or each processes a smaller batch).
+About 300 MB of a 1 GB budget is overhead for a warm process with connectors loaded; the rest is the flow's. To handle larger work, split it into multiple flows (one flow calls another via webhook, or each processes a smaller batch).
 
 ## Where it stops
 

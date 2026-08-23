@@ -25,7 +25,7 @@ Entry point: `variableModule`, registered in `packages/server/api/src/app/app.ts
 
 - `packages/server/api/src/app/variable/` — entity, service, REST + worker controllers, Fastify module
 - `packages/server/api/src/app/database/migration/postgres/1793000000000-AddVariableTable.ts` — schema migration
-- `packages/server/engine/src/lib/piece-context/variable-resolver.ts` — engine-side resolver, mirrors `connection-resolver.ts`
+- `packages/server/engine/src/lib/connector-context/variable-resolver.ts` — engine-side resolver, mirrors `connection-resolver.ts`
 - `packages/server/engine/src/lib/variables/props-resolver.ts` — the `variables` branch of `resolveSingleToken`
 - `packages/core/shared/src/lib/automation/variable/` — `Variable` types, name regex, upsert/read request DTOs
 - `packages/web/src/features/variables/` — frontend client + TanStack Query hooks

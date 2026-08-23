@@ -4,7 +4,7 @@ title: "Infrastructure Upgrade — Mar 16–17, 2026"
 
 ## Summary
 
-On March 16–17, 2026, Activepieces experienced a service disruption lasting approximately 12–24 hours (with the first ~6 hours being the most severe) after rolling out a new worker architecture on Kubernetes. Two cascading issues — a persistent volume provisioning problem and a dedicated worker misconfiguration — caused flow execution failures for most cloud customers and one enterprise customer.
+On March 16–17, 2026, FEMA Integration Platform experienced a service disruption lasting approximately 12–24 hours (with the first ~6 hours being the most severe) after rolling out a new worker architecture on Kubernetes. Two cascading issues — a persistent volume provisioning problem and a dedicated worker misconfiguration — caused flow execution failures for most cloud customers and one enterprise customer.
 
 ## Impact
 
@@ -56,7 +56,7 @@ When moving enterprise dedicated workers to the new server, a code change accide
 
 | Action Item | Status |
 |---|---|
-| Implement a documented and tested rollback plan for all infrastructure migrations ([GIT-911](https://linear.app/activepieces/issue/GIT-911)) | To do |
+| Implement a documented and tested rollback plan for all infrastructure migrations ([GIT-911](https://linear.app/fema/issue/GIT-911)) | To do |
 | Add test coverage for worker trust level and sandbox configuration | Done |
 | Support canary deployments | To do |
 

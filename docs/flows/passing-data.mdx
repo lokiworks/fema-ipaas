@@ -6,7 +6,7 @@ description: "Using data from previous steps in the current one"
 
 ## Data flow
 
-Any Activepieces flow is a vertical diagram that **starts with a trigger step** followed by **any number of action steps**.
+Any FEMA Integration Platform flow is a vertical diagram that **starts with a trigger step** followed by **any number of action steps**.
 
 Steps are connected vertically. Data flows from parent steps to the children. Children steps have access to the output data of the parent steps.
 
@@ -69,7 +69,7 @@ To fix this, go to the step and use the Generate Sample Data panel to test it. S
 - **Send Data:** Webhooks require you to send a sample request to the webhook URL to generate sample data.
 - **Test Action:** Action steps will let you run the action in order to generate sample data.
 
-Follow the instructions in the Generate Sample Data panel to know how your step should be tested. Some triggers will also let you Use Mock Data, which will generate static sample data from the piece. We recommend that you test the step instead of using mock data.
+Follow the instructions in the Generate Sample Data panel to know how your step should be tested. Some triggers will also let you Use Mock Data, which will generate static sample data from the connector. We recommend that you test the step instead of using mock data.
 
 This is an example for generating sample data for a trigger using the **Load Data** button:
 
@@ -103,7 +103,7 @@ passes a reference, and later steps read the file when they need it. For large f
 instead of loading it fully into memory, so your flow can move files larger than the
 worker's memory budget. This happens automatically — there's nothing to configure; just
 pick an action that supports it. On self-hosted installs this requires S3 file storage. See
-[Large File Streaming](/build-pieces/piece-reference/large-file-streaming) for the list of
+[Large File Streaming](/build-connectors/connector-reference/large-file-streaming) for the list of
 supported actions, storage requirements, and size limits.
 
 ### Accessing data by path

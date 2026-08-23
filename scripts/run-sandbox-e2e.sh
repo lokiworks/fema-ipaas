@@ -12,7 +12,7 @@ fi
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 DOCKERFILE="$ROOT/packages/server/worker/test/e2e/Dockerfile"
-IMAGE="activepieces-sandbox-e2e:local"
+IMAGE="fema-sandbox-e2e:local"
 
 echo "=> Building image $IMAGE"
 docker build -f "$DOCKERFILE" -t "$IMAGE" "$ROOT"

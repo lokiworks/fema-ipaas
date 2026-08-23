@@ -1,6 +1,6 @@
 /* ==========================================================================
-   Live property previews for build-pieces/piece-reference/properties
-   Faithful, theme-independent renders of the Activepieces step-settings form.
+   Live property previews for build-connectors/connector-reference/properties
+   Faithful, theme-independent renders of the FEMA Integration Platform step-settings form.
    All rules are scoped under .pp to avoid touching Mintlify's own styles.
    ========================================================================== */
 .pp {

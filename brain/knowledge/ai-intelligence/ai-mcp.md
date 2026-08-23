@@ -4,21 +4,21 @@ icon: 🤖
 
 # AI & MCP
 
-How Activepieces' AI and MCP surfaces fit together. One subsection per feature.
+How FEMA Integration Platform' AI and MCP surfaces fit together. One subsection per feature.
 
 ### MCP
 
-Exposes a project as a Model Context Protocol server so AI clients (Claude Desktop, Cursor, agent piece) can drive flows/tables/connections/runs via typed tools.
+Exposes a project as a Model Context Protocol server so AI clients (Claude Desktop, Cursor, agent connector) can drive flows/tables/connections/runs via typed tools.
 
 - **Entities/services**: one `McpServer` per project (UNIQUE projectId, 72-char bearer token, `disabledTools[]` JSONB). `mcp-service.ts` builds the server per-request; `mcp-server-controller.ts` for endpoints.
-- **Tools**: locked (always-on reads: list/structure/validate/research pieces) + controllable (toggleable writes: create/build/publish flows, tables, runs) + dynamic flow-tools (any flow using the `@fema/connector-mcp` trigger, named `{toolName}_{flowId[0..4]}`).
+- **Tools**: locked (always-on reads: list/structure/validate/research connectors) + controllable (toggleable writes: create/build/publish flows, tables, runs) + dynamic flow-tools (any flow using the `@fema/connector-mcp` trigger, named `{toolName}_{flowId[0..4]}`).
 - **Integration/gotchas**: auth via Bearer or `?token=`; OAuth 2.0 PKCE for clients that need it. StreamableHTTP is the main endpoint (`/v1/mcp/:projectId/http`). All editions. `x-ap-conversation-id` header lets EE chat re-scope the server to a conversation's project (token-scoped so it can't widen access). 401s carry RFC 9728 `WWW-Authenticate` for discovery.
 
 ### AI Providers
 
-Platform admins configure LLM backends for AI pieces; auto-provisions an "Activepieces" provider (via OpenRouter) when `aiCreditsEnabled` is set.
+Platform admins configure LLM backends for AI connectors; auto-provisions an "FEMA Integration Platform" provider (via OpenRouter) when `aiCreditsEnabled` is set.
 
-- **Entity/services**: `AIProvider` (platform-scoped, UNIQUE per (platform, provider); `auth` is AES-256 encrypted at rest, decrypted only for engine). 8 providers: openai, anthropic, google, azure, openrouter, cloudflare-gateway, custom, activepieces.
+- **Entity/services**: `AIProvider` (platform-scoped, UNIQUE per (platform, provider); `auth` is AES-256 encrypted at rest, decrypted only for engine). 8 providers: openai, anthropic, google, azure, openrouter, cloudflare-gateway, custom, fema.
 - **Integration/gotchas**: EE + Cloud only (not CE). Credits: 1000 = $1, metered via OpenRouter, monthly reset + Stripe auto-top-up via system job. Engine fetches creds at run time from `GET /v1/ai-providers/{provider}/config`. Models cached in-memory, cleared daily at midnight.
 - **Sibling**: `AiToolConfig` (same folder, distinct) gives the chat assistant capabilities — WEB_SEARCH/WEB_SCRAPING/IMAGE_GENERATION — via Tavily/Firecrawl/Apify/Fal keys (`/v1/ai-tools`, EE/Cloud, platform-admin only).
 
@@ -39,7 +39,7 @@ Project-scoped document store (PDF/DOCX/TXT/CSV) → text chunks → optional 76
 
 ### Platform Copilot
 
-Backend-only RAG chat that answers questions about the Activepieces platform (codebase + docs) — for developers building on AP, not flow end-users.
+Backend-only RAG chat that answers questions about the FEMA Integration Platform platform (codebase + docs) — for developers building on AP, not flow end-users.
 
 - **Entity/services**: `copilot_code_chunks` (vector(768) + `tsvector` full-text). Hybrid search = RRF merge of vector cosine (70%) + Postgres full-text (30%). `read_file` + `list_directory` tools hit GitHub raw/API at chat time.
 - **Integration/gotchas**: source lives only as compiled JS under `.../dist/src/app/platform-copilot/`. All editions, any authenticated USER (`publicPlatform`). Index rebuilt weekly (`COPILOT_INDEX_REFRESH`, Sun 03:00 UTC) or via `/index` / at startup if empty. Streams via Vercel AI SDK UI message protocol, capped at 5 LLM steps.

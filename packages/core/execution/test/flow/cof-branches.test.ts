@@ -9,7 +9,7 @@ import {
     FlowTriggerType,
     FlowVersion,
     FlowVersionState,
-    PieceAction,
+    ConnectorAction,
     StepLocationRelativeToParent,
 } from '../../src'
 import { FlowAction as FlowActionSchema } from '../../src/lib/flows/actions/action'
@@ -49,7 +49,7 @@ function buildCodeAction({
     }
 }
 
-function buildPieceAction({
+function buildConnectorAction({
     name,
     cof = false,
     onSuccess,
@@ -61,16 +61,16 @@ function buildPieceAction({
     onSuccess?: FlowAction
     onFailure?: FlowAction
     nextAction?: FlowAction
-}): PieceAction {
+}): ConnectorAction {
     return {
         name,
-        type: FlowActionType.PIECE,
+        type: FlowActionType.CONNECTOR,
         valid: true,
         displayName: name,
         lastUpdatedDate: '2026-05-02T00:00:00.000Z',
         settings: {
-            pieceName: '@fema/connector-store',
-            pieceVersion: '0.0.1',
+            connectorName: '@fema/connector-store',
+            connectorVersion: '0.0.1',
             actionName: 'get',
             input: {},
             propertySettings: {},
@@ -409,24 +409,24 @@ describe('Continue-on-Failure branches', () => {
             expect(branches?.onFailure?.name).toBe('failure_head')
         })
 
-        it('preserves CoF branches when updating a Piece action', () => {
-            const head = buildPieceAction({
+        it('preserves CoF branches when updating a Connector action', () => {
+            const head = buildConnectorAction({
                 name: 'step_1',
                 cof: true,
-                onSuccess: buildPieceAction({ name: 'success_head' }),
-                onFailure: buildPieceAction({ name: 'failure_head' }),
+                onSuccess: buildConnectorAction({ name: 'success_head' }),
+                onFailure: buildConnectorAction({ name: 'failure_head' }),
             })
             const flow = buildFlow(head)
             const op: FlowOperationRequest = {
                 type: FlowOperationType.UPDATE_ACTION,
                 request: {
-                    type: FlowActionType.PIECE,
+                    type: FlowActionType.CONNECTOR,
                     name: 'step_1',
                     displayName: 'step_1 (renamed)',
                     valid: true,
                     settings: {
-                        pieceName: '@fema/connector-store',
-                        pieceVersion: '0.0.1',
+                        connectorName: '@fema/connector-store',
+                        connectorVersion: '0.0.1',
                         actionName: 'put',
                         input: { changed: true },
                         propertySettings: {},
@@ -438,7 +438,7 @@ describe('Continue-on-Failure branches', () => {
                 },
             }
             const after = flowOperations.apply(flow, op)
-            const updatedHead = after.trigger.nextAction as PieceAction
+            const updatedHead = after.trigger.nextAction as ConnectorAction
             const branches = updatedHead.continueOnFailureBranches
             expect(branches?.onSuccess?.name).toBe('success_head')
             expect(branches?.onFailure?.name).toBe('failure_head')
@@ -469,7 +469,7 @@ describe('Continue-on-Failure branches', () => {
             expect(updatedHead.continueOnFailureBranches).toBeUndefined()
         })
 
-        it('preserves CoF branches when changing a step from Code to Piece', () => {
+        it('preserves CoF branches when changing a step from Code to Connector', () => {
             const head = buildCodeAction({
                 name: 'step_1',
                 cof: true,
@@ -480,13 +480,13 @@ describe('Continue-on-Failure branches', () => {
             const op: FlowOperationRequest = {
                 type: FlowOperationType.UPDATE_ACTION,
                 request: {
-                    type: FlowActionType.PIECE,
+                    type: FlowActionType.CONNECTOR,
                     name: 'step_1',
                     displayName: 'step_1',
                     valid: true,
                     settings: {
-                        pieceName: '@fema/connector-store',
-                        pieceVersion: '0.0.1',
+                        connectorName: '@fema/connector-store',
+                        connectorVersion: '0.0.1',
                         actionName: 'get',
                         input: {},
                         propertySettings: {},
@@ -498,8 +498,8 @@ describe('Continue-on-Failure branches', () => {
                 },
             }
             const after = flowOperations.apply(flow, op)
-            const updatedHead = after.trigger.nextAction as PieceAction
-            expect(updatedHead.type).toBe(FlowActionType.PIECE)
+            const updatedHead = after.trigger.nextAction as ConnectorAction
+            expect(updatedHead.type).toBe(FlowActionType.CONNECTOR)
             const branches = updatedHead.continueOnFailureBranches
             expect(branches?.onSuccess?.name).toBe('success_head')
             expect(branches?.onFailure?.name).toBe('failure_head')

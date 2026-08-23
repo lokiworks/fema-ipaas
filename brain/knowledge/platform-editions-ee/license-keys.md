@@ -4,9 +4,9 @@ icon: 🔑
 
 # License Keys
 
-A license key is a self-hosted customer's **activation/recovery handle** for their Autumn billing identity — an opaque string, not a bundle of feature flags. The user pastes it into the billing UI; the AP backend delegates activation to the Activepieces console, which resolves the key to an Autumn customer (creating one if needed), attaches the license's plan, and returns `autumnCustomerId` plus a customer-scoped Autumn key. Plan limits and feature flags are then projected from **Autumn entitlements** — never from the key itself. EE + Cloud; the whole seam is a CE no-op on `billingProvider`.
+A license key is a self-hosted customer's **activation/recovery handle** for their Autumn billing identity — an opaque string, not a bundle of feature flags. The user pastes it into the billing UI; the AP backend delegates activation to the FEMA Integration Platform console, which resolves the key to an Autumn customer (creating one if needed), attaches the license's plan, and returns `autumnCustomerId` plus a customer-scoped Autumn key. Plan limits and feature flags are then projected from **Autumn entitlements** — never from the key itself. EE + Cloud; the whole seam is a CE no-op on `billingProvider`.
 
-> **History:** the legacy system — public `/v1/license-keys/*` endpoints, `licenseKeysService` (`verifyKeyOrReturnNull`, `applyLimits`, `downgradeToFreePlan`), the daily `TRIAL_TRACKER` job, and all `secrets.activepieces.com` calls — was **deleted** when billing moved to Autumn. Already-released self-hosted builds bundle their own copy of that path; nothing in the current codebase serves them.
+> **History:** the legacy system — public `/v1/license-keys/*` endpoints, `licenseKeysService` (`verifyKeyOrReturnNull`, `applyLimits`, `downgradeToFreePlan`), the daily `TRIAL_TRACKER` job, and all `secrets.fema.local` calls — was **deleted** when billing moved to Autumn. Already-released self-hosted builds bundle their own copy of that path; nothing in the current codebase serves them.
 
 ### How it works
 - `autumnBilling.activateLicense({ platformId, licenseKey })` — calls `autumnConsole.activate({ licenseKey })` (`POST {console}/api/v1/billing/activate`, key as Bearer token), then saves `platform_plan.licenseKey`, stores the returned credentials via `platformPlanService.setAutumnCredentials`, and runs `refreshEntitlements`.
@@ -42,4 +42,4 @@ Entry point: `activateLicense` on `billingProvider` (CE no-op in billing-provide
 - `packages/web/src/features/billing/components/` — `activate-license-dialog.tsx` (activation flow) and `license-key.tsx` (key display)
 - `packages/web/src/api/platforms-api.ts` — `activateLicenseKey()`; mutation in `packages/web/src/hooks/platform-hooks.ts`
 
-Paths verified 2026-07-26. An earlier version described the pre-Autumn world (`packages/server/api/src/app/ee/license-keys/`, remote verification against `secrets.activepieces.com`, `applyLimits`, `TRIAL_TRACKER`); that module was removed.
+Paths verified 2026-07-26. An earlier version described the pre-Autumn world (`packages/server/api/src/app/ee/license-keys/`, remote verification against `secrets.fema.local`, `applyLimits`, `TRIAL_TRACKER`); that module was removed.

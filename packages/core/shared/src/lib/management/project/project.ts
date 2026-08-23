@@ -16,7 +16,7 @@ export enum ColorName {
     DEEP_ORANGE = 'DEEP_ORANGE',
 }
 
-export enum PiecesFilterType {
+export enum ConnectorsFilterType {
     NONE = 'NONE',
     ALLOWED = 'ALLOWED',
 }

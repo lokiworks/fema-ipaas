@@ -44,7 +44,7 @@ vi.mock('@/components/custom/searchable-select', () => ({
   },
 }));
 
-vi.mock('@/app/builder/piece-properties/text-input-with-mentions', () => ({
+vi.mock('@/app/builder/connector-properties/text-input-with-mentions', () => ({
   TextInputWithMentions: () => <input data-testid="mentions-input" />,
 }));
 

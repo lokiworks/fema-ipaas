@@ -4,11 +4,11 @@ import {
     ExecuteResolveConnectionIdentifierOperation,
     ExecuteResolveConnectionIdentifierResponse,
 } from '@fema/shared'
-import { pieceAuth } from '../core/piece/piece-auth'
+import { connectorAuth } from '../core/connector/connector-auth'
 
 export const resolveConnectionIdentifierOperation = {
     execute: async (operation: ExecuteResolveConnectionIdentifierOperation): Promise<EngineResponse<ExecuteResolveConnectionIdentifierResponse>> => {
-        const call = await pieceAuth.callMethod({ operation, authValueType: operation.connectionType, methodPath: ['getConnectionIdentifier'] })
+        const call = await connectorAuth.callMethod({ operation, authValueType: operation.connectionType, methodPath: ['getConnectionIdentifier'] })
         const identifier = call.called ? call.result : undefined
         return {
             status: EngineResponseStatus.OK,

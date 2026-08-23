@@ -20,19 +20,19 @@ import { flowsApi } from '@/features/flows';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 
 import { useBuilderStateContext } from '../builder-hooks';
-import { textMentionUtils } from '../piece-properties/text-input-with-mentions/text-input-utils';
+import { textMentionUtils } from '../connector-properties/text-input-with-mentions/text-input-utils';
 
 import { flowCanvasUtils } from './utils/flow-canvas-utils';
 
-const useSetSocketListener = (refetchPiece: () => void) => {
+const useSetSocketListener = (refetchConnector: () => void) => {
   const socket = useSocket();
   const [run] = useBuilderStateContext((state) => [state.run]);
   useEffect(() => {
-    socket.on(WebsocketClientEvent.REFRESH_PIECE, () => {
-      refetchPiece();
+    socket.on(WebsocketClientEvent.REFRESH_CONNECTOR, () => {
+      refetchConnector();
     });
     return () => {
-      socket.removeAllListeners(WebsocketClientEvent.REFRESH_PIECE);
+      socket.removeAllListeners(WebsocketClientEvent.REFRESH_CONNECTOR);
     };
   }, [socket.id, run?.id]);
 };

@@ -34,7 +34,7 @@ function phaseDescription(name: TimelinePhase['name']): string {
     case 'QUEUE':
       return t('Waiting for a free worker');
     case 'PROVISION':
-      return t('Installing pieces & engine');
+      return t('Installing connectors & engine');
     case 'BOOT':
       return t('Starting the engine');
     case 'RUN':

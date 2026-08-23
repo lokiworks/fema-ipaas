@@ -1,20 +1,20 @@
 ---
 title: 'Project Replace CLI'
-description: 'Mirror a project across Activepieces deployments from CI/CD without Git'
+description: 'Mirror a project across FEMA Integration Platform deployments from CI/CD without Git'
 icon: 'arrow-right-arrow-left'
 ---
 
-The `ap project replace` CLI mirrors a project's flows, table schemas, and folders from one Activepieces deployment to another using direct API calls. Use it from CI/CD to promote work between independent staging and production instances when Git-based [Project Releases](/admin-guide/guides/project-releases) aren't a fit.
+The `ap project replace` CLI mirrors a project's flows, table schemas, and folders from one FEMA Integration Platform deployment to another using direct API calls. Use it from CI/CD to promote work between independent staging and production instances when Git-based [Project Releases](/admin-guide/guides/project-releases) aren't a fit.
 
 <Tip>
-**Use case:** A nightly GitHub Action runs `ap project replace --source-url=staging --dest-url=prod`. Staging is treated as the source of truth; production becomes a byte-for-byte mirror. The job fails before any write if the destination is missing required pieces or referenced connections.
+**Use case:** A nightly GitHub Action runs `ap project replace --source-url=staging --dest-url=prod`. Staging is treated as the source of truth; production becomes a byte-for-byte mirror. The job fails before any write if the destination is missing required connectors or referenced connections.
 </Tip>
 
 ## Prerequisites
 
 - The **Environments** feature must be enabled on the destination platform's plan — see [Project Releases prerequisites](/admin-guide/guides/project-releases#prerequisites).
 - You need a **platform-scoped API key** (`SERVICE` principal) on **both** instances. The same project id format must be used on each side.
-- Both deployments must share the same major Activepieces version, and the destination version must be greater than or equal to the source version.
+- Both deployments must share the same major FEMA Integration Platform version, and the destination version must be greater than or equal to the source version.
 
 ## What gets mirrored
 
@@ -23,17 +23,17 @@ The `ap project replace` CLI mirrors a project's flows, table schemas, and folde
 | Flows | Created / updated / deleted on the destination by `externalId`. |
 | Table schemas | Schema only — fields, name, externalId. **Row data is never copied.** |
 | Folders | Mirrored by `externalId`. |
-| Required pieces | Auto-installed on the destination at the source's exact pinned version (official + custom from npm). Replace aborts before any other writes if any install fails. |
-| Connections | **Metadata auto-mirrored** (externalId, pieceName, displayName); secret values never cross the wire. New connections land on the destination as placeholders with `status: MISSING`. Operator authorizes each one in the destination UI before flows can run. |
+| Required connectors | Auto-installed on the destination at the source's exact pinned version (official + custom from npm). Replace aborts before any other writes if any install fails. |
+| Connections | **Metadata auto-mirrored** (externalId, connectorName, displayName); secret values never cross the wire. New connections land on the destination as placeholders with `status: MISSING`. Operator authorizes each one in the destination UI before flows can run. |
 | MCP servers, agents, project metadata, custom domains, app credentials | **Out of scope.** Not touched. |
 
 ## Installation
 
 ```bash
-npm install -g activepieces
+npm install -g fema
 ```
 
-The `activepieces` CLI is shipped with each Activepieces release; pin the version that matches your destination instance to keep request shapes aligned.
+The `fema` CLI is shipped with each FEMA Integration Platform release; pin the version that matches your destination instance to keep request shapes aligned.
 
 ## Command
 
@@ -43,9 +43,9 @@ export FEMA_SOURCE_API_KEY="$STAGING_API_KEY"
 export FEMA_DEST_API_KEY="$PROD_API_KEY"
 
 ap project replace \
-  --source-url    https://staging.activepieces.com \
+  --source-url    https://staging.fema.local \
   --source-project "$STAGING_PROJECT_ID" \
-  --dest-url      https://prod.activepieces.com \
+  --dest-url      https://prod.fema.local \
   --dest-project  "$PROD_PROJECT_ID" \
   [--json]
 ```
@@ -73,7 +73,7 @@ ap project replace \
 | `0` | Apply succeeded; every item applied cleanly. |
 | `1` | Apply succeeded but at least one item failed. Inspect `failed[]` in the response. |
 | `2` | Server-side preflight failed (`422`). No writes occurred. |
-| `3` | Server abort: piece install failed (`502`), generic 5xx, **or** another replace was already in progress on the destination project (`409`). |
+| `3` | Server abort: connector install failed (`502`), generic 5xx, **or** another replace was already in progress on the destination project (`409`). |
 | `4` | Local CLI / transport error — bad URL, unreachable host, invalid API key. |
 
 ## What happens when you run it
@@ -82,9 +82,9 @@ ap project replace \
 2. **CLI** packages them into a `ProjectReplaceRequest` and `POST`s to `/v1/projects/:projectId/replace` on the destination.
 3. **Destination** acquires a per-project `NoWait` lock. If another replace is in flight, it returns `409 REPLACE_IN_PROGRESS`.
 4. **Destination preflight** (no writes if any of these fail):
-    - Activepieces version is parsed; same major + `dest >= source`.
-    - For every source connection: if the destination already has one with the same `externalId`, its `pieceName` must match.
-5. **Install phase** — for each entry in `requiredPieces` not already on dest at the exact pinned version, the server installs it from npm (`packageType: REGISTRY`, scope: platform). All installs are attempted; if any fail, the response aborts with `502` listing every failure. **No other writes have happened at this point** — folders, tables, flows, and connections are still untouched.
+    - FEMA Integration Platform version is parsed; same major + `dest >= source`.
+    - For every source connection: if the destination already has one with the same `externalId`, its `connectorName` must match.
+5. **Install phase** — for each entry in `requiredConnectors` not already on dest at the exact pinned version, the server installs it from npm (`packageType: REGISTRY`, scope: platform). All installs are attempted; if any fail, the response aborts with `502` listing every failure. **No other writes have happened at this point** — folders, tables, flows, and connections are still untouched.
 6. **Apply phase** — connections, then folders, then tables, then flows are created/updated. Deletes run in reverse order. Each item runs in its own try/catch; per-item failures are collected, systemic 5xx errors abort the run.
 6. **Audit event** `project.replaced` is emitted only when the apply phase ran — on `SUCCESS` or `PARTIAL_FAILURE`. Rejected attempts (preflight failure, install failure, lock contention) are not audited.
 
@@ -94,17 +94,17 @@ ap project replace \
 
 ```text
 Replace finished in 1240ms
-  pieces      : 1 installed
+  connectors      : 1 installed
   flows       : 1 created, 2 updated, 0 deleted, 47 unchanged
   tables      : 0 created, 0 updated, 0 deleted, 5 unchanged
   folders     : 0 created, 1 updated, 0 deleted, 3 unchanged
   connections : 1 created, 0 updated, 4 unchanged
 
-1 piece(s) installed on destination:
-  - activepieces-onlinepay@0.0.7 (CUSTOM)
+1 connector(s) installed on destination:
+  - fema-onlinepay@0.0.7 (CUSTOM)
 
 1 connection(s) need authorization on destination before flows can run:
-  - Slack Main (@activepieces/piece-slack) [externalId=slack_main]
+  - Slack Main (@fema/connector-slack) [externalId=slack_main]
 ```
 
 ### `--json`
@@ -120,11 +120,11 @@ Replace finished in 1240ms
   "failed": [
     { "kind": "flow", "externalId": "...", "op": "UPDATE", "error": "..." }
   ],
-  "piecesInstalled": [
-    { "name": "activepieces-onlinepay", "version": "0.0.7", "pieceType": "CUSTOM" }
+  "connectorsInstalled": [
+    { "name": "fema-onlinepay", "version": "0.0.7", "connectorType": "CUSTOM" }
   ],
   "connectionsAwaitingAuthorization": [
-    { "externalId": "slack_main", "pieceName": "@activepieces/piece-slack", "displayName": "Slack Main" }
+    { "externalId": "slack_main", "connectorName": "@fema/connector-slack", "displayName": "Slack Main" }
   ],
   "durationMs": 1240
 }
@@ -136,25 +136,25 @@ Replace finished in 1240ms
 {
   "errors": [
     { "kind": "FEMA_VERSION_MISMATCH", "sourceVersion": "1.2.0", "destVersion": "1.1.5", "message": "..." },
-    { "kind": "CONNECTION_PIECE_MISMATCH", "externalId": "slack_main", "expectedPieceName": "@activepieces/piece-slack", "foundPieceName": "@activepieces/piece-discord" }
+    { "kind": "CONNECTION_CONNECTOR_MISMATCH", "externalId": "slack_main", "expectedConnectorName": "@fema/connector-slack", "foundConnectorName": "@fema/connector-discord" }
   ]
 }
 ```
 
-The full set of preflight error kinds: `FEMA_VERSION_MISMATCH`, `PIECE_VERSION_MISMATCH`, `CONNECTION_PIECE_MISMATCH`.
+The full set of preflight error kinds: `FEMA_VERSION_MISMATCH`, `CONNECTOR_VERSION_MISMATCH`, `CONNECTION_CONNECTOR_MISMATCH`.
 
 ### Install failures (exit 3, HTTP 502)
 
 ```jsonc
 {
   "failures": [
-    { "pieceName": "@activepieces/piece-slack", "version": "1.2.3", "pieceType": "OFFICIAL", "message": "ENGINE_OPERATION_FAILURE: ..." },
-    { "pieceName": "pdfcrowd-piece-activepieces", "version": "0.0.5", "pieceType": "CUSTOM", "message": "..." }
+    { "connectorName": "@fema/connector-slack", "version": "1.2.3", "connectorType": "OFFICIAL", "message": "ENGINE_OPERATION_FAILURE: ..." },
+    { "connectorName": "pdfcrowd-connector-fema", "version": "0.0.5", "connectorType": "CUSTOM", "message": "..." }
   ]
 }
 ```
 
-When this happens, no flows / tables / folders / connections have been touched yet — the run aborted before the apply phase. Common causes: piece not on npm at that version, npm registry unreachable, engine crashed during metadata extraction, npm auth token missing on the destination platform for a private package.
+When this happens, no flows / tables / folders / connections have been touched yet — the run aborted before the apply phase. Common causes: connector not on npm at that version, npm registry unreachable, engine crashed during metadata extraction, npm auth token missing on the destination platform for a private package.
 
 ## Idempotency and retries
 
@@ -170,18 +170,18 @@ If your CI does want a clean "all-or-nothing" property at the workflow level, dr
 
 ## Connections
 
-Connection metadata (externalId, pieceName, displayName) is mirrored to the destination as **placeholder records** with `status: MISSING`. Secret values (OAuth tokens, API keys, etc.) **never cross the wire** — each instance keeps its own.
+Connection metadata (externalId, connectorName, displayName) is mirrored to the destination as **placeholder records** with `status: MISSING`. Secret values (OAuth tokens, API keys, etc.) **never cross the wire** — each instance keeps its own.
 
 After a replace, the CLI prints any connections that still need authorization on the destination:
 
 ```text
 1 connection(s) need authorization on destination before flows can run:
-  - Slack Main (@activepieces/piece-slack) [externalId=slack_main]
+  - Slack Main (@fema/connector-slack) [externalId=slack_main]
 ```
 
 The operator opens the destination UI → **Connections** → reconnects each placeholder using the destination's credentials (a different Slack workspace, prod-grade API key, etc.). Until that's done, any flow run that uses the connection will fail at execution time. Re-running the CLI after authorization is a no-op for connections that are already `ACTIVE`.
 
-If a connection on the destination already exists with the same `externalId` but a different `pieceName`, the replace fails preflight with `CONNECTION_PIECE_MISMATCH` so the conflict can be resolved without overwriting unrelated flows.
+If a connection on the destination already exists with the same `externalId` but a different `connectorName`, the replace fails preflight with `CONNECTION_CONNECTOR_MISMATCH` so the conflict can be resolved without overwriting unrelated flows.
 
 ## GitHub Actions example
 
@@ -198,7 +198,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm install -g activepieces
+      - run: npm install -g fema
       - run: |
           ap project replace \
             --source-url   "${{ vars.STAGING_URL }}" \
@@ -220,16 +220,16 @@ A non-zero exit code fails the job — preflight errors, server errors, or trans
     Another replace is running against the same destination project. Wait a few seconds and retry — the lock is per-project and released as soon as the previous run finishes.
   </Accordion>
   <Accordion title="Install failed (502)">
-    The CLI passed preflight but a required piece couldn't be installed on the destination. Check `failures[*].message` in the response — most commonly the piece doesn't exist on npm at that version, the registry is unreachable, or the engine crashed during metadata extraction. The replace aborted before any writes; fix the install issue and re-run.
+    The CLI passed preflight but a required connector couldn't be installed on the destination. Check `failures[*].message` in the response — most commonly the connector doesn't exist on npm at that version, the registry is unreachable, or the engine crashed during metadata extraction. The replace aborted before any writes; fix the install issue and re-run.
   </Accordion>
-  <Accordion title="PIECE_VERSION_MISMATCH">
-    The destination already has the piece installed at a different version than the source. Either upgrade/downgrade the destination piece manually, or update the source flow to use a version compatible with what's on the destination.
+  <Accordion title="CONNECTOR_VERSION_MISMATCH">
+    The destination already has the connector installed at a different version than the source. Either upgrade/downgrade the destination connector manually, or update the source flow to use a version compatible with what's on the destination.
   </Accordion>
   <Accordion title="Flows fail at runtime with 'connection not authorized'">
     The replace mirrored the connection metadata as a placeholder; the destination still needs the secret. Open the destination UI → **Connections** → reconnect each placeholder. The replace response and CLI output list every connection that needs authorization.
   </Accordion>
-  <Accordion title="CONNECTION_PIECE_MISMATCH">
-    The destination already has a connection with the same `externalId` but for a different piece. Either rename the source's externalId or delete/replace the conflicting connection on the destination before re-running.
+  <Accordion title="CONNECTION_CONNECTOR_MISMATCH">
+    The destination already has a connection with the same `externalId` but for a different connector. Either rename the source's externalId or delete/replace the conflicting connection on the destination before re-running.
   </Accordion>
   <Accordion title="FEMA_VERSION_MISMATCH">
     The destination is on an older version or a different major than the source. Upgrade the destination first.

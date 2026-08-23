@@ -9,7 +9,7 @@ const BENCHMARK_DOC = 'Load-test a deployment\'s sync-webhook path, auto-discove
 
 export const benchmarkCommand = new Command('benchmark')
     .description(BENCHMARK_DOC)
-    .option('--url <url>', 'Activepieces base URL (dev env API port)', 'http://localhost:3000')
+    .option('--url <url>', 'FEMA Integration Platform base URL (dev env API port)', 'http://localhost:3000')
     .option('--requests <n>', 'Total requests to fire (default: 40 x concurrency)')
     .option('--concurrency <c>', 'Concurrent connections (default: auto = sum of worker execution slots)')
     .option('--api-key <key>', 'Platform API key (Bearer). Or set FEMA_API_KEY.')
@@ -382,12 +382,12 @@ async function collectOutsideFlows({ client, benchmarkProjectId, since }: Collec
     }
 
     const aggregates = aggregateOutsideRuns(outsideRuns);
-    if (aggregates.length > MAX_OUTSIDE_FLOWS_DETAILED) notes.push(`pieces/name resolved for the top ${MAX_OUTSIDE_FLOWS_DETAILED} of ${aggregates.length} flows only`);
+    if (aggregates.length > MAX_OUTSIDE_FLOWS_DETAILED) notes.push(`connectors/name resolved for the top ${MAX_OUTSIDE_FLOWS_DETAILED} of ${aggregates.length} flows only`);
     const flows: OutsideFlow[] = [];
     for (const [index, aggregate] of aggregates.entries()) {
         const description = index < MAX_OUTSIDE_FLOWS_DETAILED
             ? await describeFlow({ client, flowId: aggregate.flowId, projectId: aggregate.projectId })
-            : { displayName: null, pieces: [] };
+            : { displayName: null, connectors: [] };
         flows.push({ ...aggregate, ...description });
     }
     return { available: true, flows, ...(notes.length > 0 ? { detail: notes.join('; ') } : {}) };
@@ -415,11 +415,11 @@ function aggregateOutsideRuns(runs: OutsideRunLike[]): OutsideFlowAggregate[] {
 async function describeFlow({ client, flowId, projectId }: DescribeFlowParams): Promise<FlowDescription> {
     const res = await client.get(`/api/v1/flows/${flowId}`, { params: { projectId } }).catch(() => null);
     if (!res || res.status !== 200 || isNilLike(res.data?.version)) {
-        return { displayName: null, pieces: [] };
+        return { displayName: null, connectors: [] };
     }
     const version = res.data.version;
-    const pieces = unique([...JSON.stringify(version).matchAll(/"pieceName"\s*:\s*"([^"]+)"/g)].map((m) => m[1]));
-    return { displayName: typeof version.displayName === 'string' ? version.displayName : null, pieces };
+    const connectors = unique([...JSON.stringify(version).matchAll(/"connectorName"\s*:\s*"([^"]+)"/g)].map((m) => m[1]));
+    return { displayName: typeof version.displayName === 'string' ? version.displayName : null, connectors };
 }
 
 function isNilLike(value: unknown): value is null | undefined {
@@ -489,8 +489,8 @@ async function collectProjectLimits({ client, projectId, rateLimiterEnabled }: C
 
 async function createBenchmarkFlow({ client, projectId }: { client: AxiosInstance; projectId: string }): Promise<string> {
     const [webhookVersion, mapperVersion] = await Promise.all([
-        resolvePieceVersion(client, WEBHOOK_PIECE),
-        resolvePieceVersion(client, DATA_MAPPER_PIECE),
+        resolveConnectorVersion(client, WEBHOOK_CONNECTOR),
+        resolveConnectorVersion(client, DATA_MAPPER_CONNECTOR),
     ]);
 
     const created = await client.post('/api/v1/flows', { displayName: 'Benchmark Flow', projectId });
@@ -508,11 +508,11 @@ async function createBenchmarkFlow({ client, projectId }: { client: AxiosInstanc
     return flowId;
 }
 
-async function resolvePieceVersion(client: AxiosInstance, name: string): Promise<string> {
-    const res = await client.get(`/api/v1/pieces/${encodeURIComponent(name)}`);
+async function resolveConnectorVersion(client: AxiosInstance, name: string): Promise<string> {
+    const res = await client.get(`/api/v1/connectors/${encodeURIComponent(name)}`);
     const version: string | undefined = res.data?.version;
     if (!version) {
-        throw new Error(`Piece ${name} not available on server (is it synced?): HTTP ${res.status}`);
+        throw new Error(`Connector ${name} not available on server (is it synced?): HTTP ${res.status}`);
     }
     return `~${version}`;
 }
@@ -544,10 +544,10 @@ function buildImportRequest({ webhookVersion, mapperVersion }: { webhookVersion:
             name: 'trigger',
             valid: true,
             displayName: 'Catch Webhook',
-            type: 'PIECE_TRIGGER',
+            type: 'CONNECTOR_TRIGGER',
             settings: {
-                pieceName: WEBHOOK_PIECE,
-                pieceVersion: webhookVersion,
+                connectorName: WEBHOOK_CONNECTOR,
+                connectorVersion: webhookVersion,
                 triggerName: 'catch_webhook',
                 input: { authType: 'none', authFields: {} },
                 propertySettings: {},
@@ -556,12 +556,12 @@ function buildImportRequest({ webhookVersion, mapperVersion }: { webhookVersion:
             nextAction: {
                 name: 'step_1',
                 skip: false,
-                type: 'PIECE',
+                type: 'CONNECTOR',
                 valid: true,
                 displayName: 'Advanced Mapping',
                 settings: {
-                    pieceName: DATA_MAPPER_PIECE,
-                    pieceVersion: mapperVersion,
+                    connectorName: DATA_MAPPER_CONNECTOR,
+                    connectorVersion: mapperVersion,
                     actionName: 'advanced_mapping',
                     input: { mapping: { echo: '{{trigger.body}}' } },
                     propertySettings: {},
@@ -571,12 +571,12 @@ function buildImportRequest({ webhookVersion, mapperVersion }: { webhookVersion:
                 nextAction: {
                     name: 'step_2',
                     skip: false,
-                    type: 'PIECE',
+                    type: 'CONNECTOR',
                     valid: true,
                     displayName: 'Return Response',
                     settings: {
-                        pieceName: WEBHOOK_PIECE,
-                        pieceVersion: webhookVersion,
+                        connectorName: WEBHOOK_CONNECTOR,
+                        connectorVersion: webhookVersion,
                         actionName: 'return_response',
                         input: { fields: { body: '{{step_1}}', status: 200, headers: {} }, respond: 'stop', responseType: 'json' },
                         propertySettings: {},
@@ -715,7 +715,7 @@ function renderReport(report: BenchmarkReport): void {
                 ? chalk.yellow(`   !! ${t.rateLimitedRunsCount} runs rate-limited (QUEUE >= ${RATE_LIMIT_DETECTION_MS / 1000}s backoff signature)`)
                 : '';
             console.log(`    QUEUE      p50/p90/max ${fmt(t.queueP50)} / ${fmt(t.queueP90)} / ${fmt(t.queueMax)} ms   — wait for a free execution slot  ${chalk.gray('(±app↔worker clock skew; cross-check the queue-depth above)')}${rateLimitNote}`);
-            console.log(`    PROVISION  p50 ${fmt(t.provisionP50)} ms   — piece install / cache provision`);
+            console.log(`    PROVISION  p50 ${fmt(t.provisionP50)} ms   — connector install / cache provision`);
             console.log(`    BOOT       p50 ${fmt(t.bootP50)} ms   — engine fork + Node boot + isolate + socket connect`);
             console.log(`    RUN        p50/p90 ${fmt(t.serviceP50)} / ${fmt(t.serviceP90)} ms   — engine executes the flow, incl. end-of-run S3 log backup`);
             console.log(`    => queue-wait p50 ${fmt(t.queueWaitP50)} ms (QUEUE+PROVISION+BOOT) vs service p50 ${fmt(t.serviceP50)} ms (RUN)`);
@@ -801,7 +801,7 @@ function renderOutsideFlows(report: BenchmarkReport): void {
     for (const flow of flows) {
         const avgRun = flow.avgRunMs === null ? 'n/a' : `${flow.avgRunMs} ms`;
         console.log(`  - ${flow.displayName ?? flow.flowId}: ${flow.runs} runs, avg run ${avgRun}`);
-        console.log(chalk.gray(`      flow ${flow.flowId}  project ${flow.projectId}  pieces [${flow.pieces.join(', ') || 'unknown'}]`));
+        console.log(chalk.gray(`      flow ${flow.flowId}  project ${flow.projectId}  connectors [${flow.connectors.join(', ') || 'unknown'}]`));
     }
     console.log(chalk.gray(`  window starts ${CLOCK_SKEW_BUFFER_MS / 60_000} min before the load (clock-skew tolerance), so slightly-earlier runs can appear.`));
     if (detail) console.log(chalk.gray(`  note: ${detail}`));
@@ -905,8 +905,8 @@ function log(config: BenchmarkConfig, message: string): void {
     if (!config.json) console.error(chalk.gray(message));
 }
 
-const WEBHOOK_PIECE = '@fema/connector-webhook';
-const DATA_MAPPER_PIECE = '@fema/connector-data-mapper';
+const WEBHOOK_CONNECTOR = '@fema/connector-webhook';
+const DATA_MAPPER_CONNECTOR = '@fema/connector-data-mapper';
 const DEFAULT_CONCURRENCY = 10;
 const EPHEMERAL_PROJECT_MAX_CONCURRENCY = 1000;
 const NETWORK_PROBES = 20;
@@ -932,7 +932,7 @@ const CPU_THROTTLE_WARN_PCT = 20;
 // Flags that matter for a perf triage — edition, version, execution mode, resource limits, and the
 // two throttles (project concurrency cap + rate limiter) that silently cap throughput and emit 429s.
 const DIAGNOSTIC_FLAGS = [
-    'EDITION', 'CURRENT_VERSION', 'ENVIRONMENT', 'PUBLIC_URL', 'PIECES_SYNC_MODE',
+    'EDITION', 'CURRENT_VERSION', 'ENVIRONMENT', 'PUBLIC_URL', 'CONNECTORS_SYNC_MODE',
     'FLOW_RUN_TIME_SECONDS', 'TRIGGER_TIMEOUT_SECONDS', 'WEBHOOK_TIMEOUT_SECONDS',
     'FLOW_RUN_MEMORY_LIMIT_KB', 'FLOW_RUN_LOG_SIZE_LIMIT_MB', 'ALLOW_NPM_PACKAGES_IN_CODE_STEP',
     'DEFAULT_CONCURRENT_JOBS_LIMIT', 'PROJECT_RATE_LIMITER_ENABLED', 'EXECUTION_DATA_RETENTION_DAYS',
@@ -1022,7 +1022,7 @@ type ProbeStorageParams = { client: AxiosInstance; projectId: string; flowId: st
 type QueueSample = { waiting: number; active: number };
 type OutsideRunLike = { flowId?: string; projectId: string; startTime?: string; finishTime?: string };
 type OutsideFlowAggregate = { flowId: string; projectId: string; runs: number; avgRunMs: number | null };
-type FlowDescription = { displayName: string | null; pieces: string[] };
+type FlowDescription = { displayName: string | null; connectors: string[] };
 type OutsideFlow = OutsideFlowAggregate & FlowDescription;
 type OutsideFlowsReport = { available: boolean; detail?: string; flows: OutsideFlow[] };
 type CollectOutsideFlowsParams = { client: AxiosInstance; benchmarkProjectId: string; since: string };

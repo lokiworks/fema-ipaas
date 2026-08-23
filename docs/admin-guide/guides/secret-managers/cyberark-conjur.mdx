@@ -1,30 +1,30 @@
 ---
 title: "CyberArk Conjur"
-description: "Connect CyberArk Conjur to Activepieces for centralized secret management"
+description: "Connect CyberArk Conjur to FEMA Integration Platform for centralized secret management"
 ---
 
-CyberArk Conjur is a secrets management solution that provides secure storage and access to credentials. Integration with Activepieces uses **host/API key authentication**: Activepieces authenticates as a Conjur host, receives a short-lived token, and uses it to retrieve secrets for which that host has `read` and `execute` permissions.
+CyberArk Conjur is a secrets management solution that provides secure storage and access to credentials. Integration with FEMA Integration Platform uses **host/API key authentication**: FEMA Integration Platform authenticates as a Conjur host, receives a short-lived token, and uses it to retrieve secrets for which that host has `read` and `execute` permissions.
 
 Conjur policies are defined in `.yml` files. For recommended structure and patterns, see [Policy best practices](https://docs.cyberark.com/conjur-enterprise/13.0/en/Content/Operations/Policy/policy-best-practices.htm) in the CyberArk Conjur documentation. For policy syntax and operators, see the [Policy syntax](https://docs.cyberark.com/conjur-open-source/Latest/en/Content/Operations/Policy/policy-syntax.htm) reference.
 
 ## Prerequisites
 
 - A Conjur server (Conjur Cloud, Conjur Enterprise, or Conjur Open Source)
-- A Conjur policy that defines a host for Activepieces and grants it access to the variables you want to use
+- A Conjur policy that defines a host for FEMA Integration Platform and grants it access to the variables you want to use
 
-## Conjur host configuration for Activepieces
+## Conjur host configuration for FEMA Integration Platform
 
-To allow Activepieces to read secrets, configure a Conjur policy that declares a group, variables, a host, a layer, and the right permissions. The steps below describe how to create that policy file.
+To allow FEMA Integration Platform to read secrets, configure a Conjur policy that declares a group, variables, a host, a layer, and the right permissions. The steps below describe how to create that policy file.
 
-### Example policy (Activepieces)
+### Example policy (FEMA Integration Platform)
 
-The following policy defines a policy `activepieces` with a group, two variables, a host, a layer, and the grants so the host can read the variables.
+The following policy defines a policy `fema` with a group, two variables, a host, a layer, and the grants so the host can read the variables.
 
 ```yaml
 - !policy
-  id: activepieces
+  id: fema
   body:
-    - !group activepieces-secrets
+    - !group fema-secrets
     - &variables
         - !variable
             id: key-1
@@ -37,20 +37,20 @@ The following policy defines a policy `activepieces` with a group, two variables
         privileges: [read, update, execute]
         resources: *variables
 
-    - !host activepieces
-    - !layer activepieces
+    - !host fema
+    - !layer fema
     - !grant
-        role: !layer activepieces
+        role: !layer fema
         members:
-            - !host activepieces
+            - !host fema
     - !grant
-        role: !group activepieces-secrets
-        member: !layer activepieces
+        role: !group fema-secrets
+        member: !layer fema
 ```
 
 ### Policy steps (summary)
 
-1. **Declare a group** at the root of the policy (e.g. `activepieces-secrets`). This group will be allowed to read (and optionally execute) the variables.
+1. **Declare a group** at the root of the policy (e.g. `fema-secrets`). This group will be allowed to read (and optionally execute) the variables.
 
 2. **Declare variables** and give the group `read` and `execute` on them (so the host can fetch secret values):
 
@@ -65,26 +65,26 @@ The following policy defines a policy `activepieces` with a group, two variables
        resources: *variables
    ```
 
-3. **Declare the host** that Activepieces will use (e.g. `activepieces`) and a **layer** (e.g. `activepieces`), and add the host to the layer:
+3. **Declare the host** that FEMA Integration Platform will use (e.g. `fema`) and a **layer** (e.g. `fema`), and add the host to the layer:
 
    ```yaml
-   - !host activepieces
-   - !layer activepieces
+   - !host fema
+   - !layer fema
    - !grant
-       role: !layer activepieces
+       role: !layer fema
        members:
-           - !host activepieces
+           - !host fema
    ```
 
 4. **Grant the layer membership in the group** that has access to the variables:
 
    ```yaml
    - !grant
-     role: !group activepieces-secrets
-     member: !layer activepieces
+     role: !group fema-secrets
+     member: !layer fema
    ```
 
-5. **Load the policy** into Conjur. Conjur will create the host and return an **API key** for that host. You will use this API key and the host identity when connecting Activepieces.
+5. **Load the policy** into Conjur. Conjur will create the host and return an **API key** for that host. You will use this API key and the host identity when connecting FEMA Integration Platform.
 
 After loading the policy, Conjur returns something like:
 
@@ -100,7 +100,7 @@ After loading the policy, Conjur returns something like:
 }
 ```
 
-Store the **api_key** securely; you will enter it in Activepieces as the **API Key**.
+Store the **api_key** securely; you will enter it in FEMA Integration Platform as the **API Key**.
 
 ## Server URL and organization
 
@@ -109,7 +109,7 @@ Store the **api_key** securely; you will enter it in Activepieces as the **API K
   and set **Organization account name** to `conjur` unless your Cloud tenant uses a different account.
 - **On-prem / Enterprise**: Use your Conjur server base URL (e.g. `https://conjur.example.com`) and your organization account name.
 
-## Connecting to Activepieces
+## Connecting to FEMA Integration Platform
 
 1. Go to **Platform Admin → Security → Secret Managers**.
 2. Select **CyberArk Conjur** from the provider list.
@@ -128,10 +128,10 @@ When configuring a connection that uses a secret:
 2. Select a **CyberArk Conjur** connection from the list.
 3. Enter the **Secret key**: the Conjur variable path in the form `policy_id/variable_id`.  
    For the example policy above, use:
-   - `activepieces/key-1`
-   - `activepieces/key-2`  
+   - `fema/key-1`
+   - `fema/key-2`  
 
-Activepieces will authenticate as the configured host and retrieve the secret from Conjur when the flow runs.
+FEMA Integration Platform will authenticate as the configured host and retrieve the secret from Conjur when the flow runs.
 
 <Warning>
   If you update existing secrets and you can't see the update reflected . refer to [caching](/admin-guide/guides/secret-managers/overview#caching)

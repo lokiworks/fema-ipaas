@@ -1,4 +1,4 @@
-import { BaseEngineOperation, CodeAction, PieceAction, StepOutput } from '@fema/shared'
+import { BaseEngineOperation, CodeAction, ConnectorAction, StepOutput } from '@fema/shared'
 import { EngineConstants } from './context/engine-constants'
 import { FlowExecutorContext } from './context/flow-execution-context'
 import { flowExecutor } from './flow-executor'
@@ -15,6 +15,6 @@ export const actionRunStepRunner = {
 }
 
 type ActionRunStepParams = {
-    step: PieceAction | CodeAction
+    step: ConnectorAction | CodeAction
     operation: BaseEngineOperation & { flowVersionId?: string }
 }

@@ -14,7 +14,7 @@ import {
     FlowVersion,
     FlowVersionState,
     LoopOnItemsAction,
-    PieceAction,
+    ConnectorAction,
     PropertyExecutionType,
     RouterAction,
     RouterExecutionType,
@@ -34,14 +34,14 @@ const flowVersionWithBranching: FlowVersion = {
     notes: [],
     trigger: {
         name: 'trigger',
-        type: FlowTriggerType.PIECE,
+        type: FlowTriggerType.CONNECTOR,
         valid: true,
         settings: {
             input: {
                 cronExpression: '25 10 * * 0,1,2,3,4',
             },
-            pieceName: 'schedule',
-            pieceVersion: '0.0.2',
+            connectorName: 'schedule',
+            connectorVersion: '0.0.2',
             propertySettings: {
                 'cronExpression': {
                     type: PropertyExecutionType.MANUAL,
@@ -74,14 +74,14 @@ const flowVersionWithBranching: FlowVersion = {
             },
             nextAction: {
                 name: 'step_4',
-                type: FlowActionType.PIECE,
+                type: FlowActionType.CONNECTOR,
                 valid: true,
                 settings: {
                     input: {
                         key: '1',
                     },
-                    pieceName: 'store',
-                    pieceVersion: '0.2.6',
+                    connectorName: 'store',
+                    connectorVersion: '0.2.6',
                     actionName: 'get',
                     propertySettings: {
                         'key': {
@@ -108,15 +108,15 @@ const flowVersionWithBranching: FlowVersion = {
                 },
                 {
                     name: 'step_2',
-                    type: FlowActionType.PIECE,
+                    type: FlowActionType.CONNECTOR,
                     valid: true,
                     settings: {
                         input: {
                             content: 'MESSAGE',
                             webhook_url: 'WEBHOOK_URL',
                         },
-                        pieceName: 'discord',
-                        pieceVersion: '0.2.1',
+                        connectorName: 'discord',
+                        connectorVersion: '0.2.1',
                         actionName: 'send_message_webhook',
                         propertySettings: {
                             'content': {
@@ -164,14 +164,14 @@ const emptyScheduleFlowVersion: FlowVersion = {
     agentIds: [],
     trigger: {
         name: 'trigger',
-        type: FlowTriggerType.PIECE,
+        type: FlowTriggerType.CONNECTOR,
         valid: true,
         settings: {
             input: {
                 cronExpression: '25 10 * * 0,1,2,3,4',
             },
-            pieceName: 'schedule',
-            pieceVersion: '0.0.2',
+            connectorName: 'schedule',
+            connectorVersion: '0.0.2',
             propertySettings: {
                 'cronExpression': {
                     type: PropertyExecutionType.MANUAL,
@@ -217,14 +217,14 @@ describe('Flow Helper', () => {
             agentIds: [],
             trigger: {
                 name: 'trigger',
-                type: FlowTriggerType.PIECE,
+                type: FlowTriggerType.CONNECTOR,
                 valid: true,
                 settings: {
                     input: {
                         cronExpression: '25 10 * * 0,1,2,3,4',
                     },
-                    pieceName: 'schedule',
-                    pieceVersion: '0.0.2',
+                    connectorName: 'schedule',
+                    connectorVersion: '0.0.2',
                     propertySettings: {
                         'cronExpression': {
                             type: PropertyExecutionType.MANUAL,
@@ -235,14 +235,14 @@ describe('Flow Helper', () => {
                 displayName: 'Cron Expression',
                 nextAction: {
                     name: 'step_4',
-                    type: FlowActionType.PIECE,
+                    type: FlowActionType.CONNECTOR,
                     valid: true,
                     settings: {
                         input: {
                             key: '1',
                         },
-                        pieceName: 'store',
-                        pieceVersion: '0.2.6',
+                        connectorName: 'store',
+                        connectorVersion: '0.2.6',
                         actionName: 'get',
                         propertySettings: {
                             'key': {
@@ -300,14 +300,14 @@ describe('Flow Helper', () => {
 
         const expectedTrigger: FlowTrigger = {
             name: 'trigger',
-            type: FlowTriggerType.PIECE,
+            type: FlowTriggerType.CONNECTOR,
             valid: true,
             settings: {
                 input: {
                     cronExpression: '25 10 * * 0,1,2,3,4',
                 },
-                pieceName: 'schedule',
-                pieceVersion: '0.0.2',
+                connectorName: 'schedule',
+                connectorVersion: '0.0.2',
                 propertySettings: {
                     'cronExpression': {
                         type: PropertyExecutionType.MANUAL,
@@ -515,18 +515,18 @@ test('Duplicate Flow With Loops using Import', () => {
         agentIds: [],
         trigger: {
             name: 'trigger',
-            type: FlowTriggerType.PIECE,
+            type: FlowTriggerType.CONNECTOR,
             valid: true,
             settings: {
                 input: {
                     repository: {
-                        repo: 'activepieces',
-                        owner: 'activepieces',
+                        repo: 'fema',
+                        owner: 'fema',
                     },
                     authentication: '{{connections.github}}',
                 },
-                pieceName: 'github',
-                pieceVersion: '0.1.3',
+                connectorName: 'github',
+                connectorVersion: '0.1.3',
                 propertySettings: {
                     'repository': {
                         type: PropertyExecutionType.MANUAL,
@@ -663,12 +663,12 @@ describe('Paste remaps references to copied steps (GIT-1075)', () => {
             connectionIds: [],
             trigger: {
                 name: 'trigger',
-                type: FlowTriggerType.PIECE,
+                type: FlowTriggerType.CONNECTOR,
                 valid: true,
                 settings: {
                     input: { cronExpression: '25 10 * * *' },
-                    pieceName: 'schedule',
-                    pieceVersion: '0.0.2',
+                    connectorName: 'schedule',
+                    connectorVersion: '0.0.2',
                     propertySettings: {
                         cronExpression: { type: PropertyExecutionType.MANUAL },
                     },
@@ -725,18 +725,18 @@ describe('Paste remaps references to copied steps (GIT-1075)', () => {
         }
     }
 
-    function pieceReferencingStepOne(): FlowAction {
+    function connectorReferencingStepOne(): FlowAction {
         return {
             name: 'step_2',
-            type: FlowActionType.PIECE,
+            type: FlowActionType.CONNECTOR,
             valid: true,
             settings: {
                 input: {
                     key: "{{ step_1['output'].id }}",
                     label: 'step_1',
                 },
-                pieceName: 'store',
-                pieceVersion: '0.2.6',
+                connectorName: 'store',
+                connectorVersion: '0.2.6',
                 actionName: 'get',
                 propertySettings: {
                     key: { type: PropertyExecutionType.MANUAL },
@@ -791,31 +791,31 @@ describe('Paste remaps references to copied steps (GIT-1075)', () => {
         expect(pastedLoop.settings.items).not.toContain('step_1')
     })
 
-    it('remaps a copied piece input reference and leaves bare step-name strings alone', () => {
-        const flowVersion = flowWith({ secondStep: pieceReferencingStepOne() })
+    it('remaps a copied connector input reference and leaves bare step-name strings alone', () => {
+        const flowVersion = flowWith({ secondStep: connectorReferencingStepOne() })
 
         const steps = flowStructureUtil.getAllSteps(paste(flowVersion).trigger)
         const pastedCode = steps.find((step): step is CodeAction => step.type === FlowActionType.CODE && !originalNames.includes(step.name))
-        const pastedPiece = steps.find((step): step is PieceAction => step.type === FlowActionType.PIECE && !originalNames.includes(step.name))
-        if (!pastedCode || !pastedPiece) {
+        const pastedConnector = steps.find((step): step is ConnectorAction => step.type === FlowActionType.CONNECTOR && !originalNames.includes(step.name))
+        if (!pastedCode || !pastedConnector) {
             throw new Error('paste did not create the copied steps')
         }
-        expect(pastedPiece.settings.input.key).toBe(`{{ ${pastedCode.name}['output'].id }}`)
-        expect(pastedPiece.settings.input.label).toBe('step_1')
+        expect(pastedConnector.settings.input.key).toBe(`{{ ${pastedCode.name}['output'].id }}`)
+        expect(pastedConnector.settings.input.label).toBe('step_1')
     })
 
     it('leaves a copied code step source untouched while still remapping its neighbours', () => {
         const sourceCode = { code: 'export const code = async (inputs) => `hi {{ step_1 }}` + inputs.step_1', packageJson: '{}' }
-        const flowVersion = flowWith({ secondStep: pieceReferencingStepOne(), codeSourceCode: sourceCode })
+        const flowVersion = flowWith({ secondStep: connectorReferencingStepOne(), codeSourceCode: sourceCode })
 
         const steps = flowStructureUtil.getAllSteps(paste(flowVersion).trigger)
         const pastedCode = steps.find((step): step is CodeAction => step.type === FlowActionType.CODE && !originalNames.includes(step.name))
-        const pastedPiece = steps.find((step): step is PieceAction => step.type === FlowActionType.PIECE && !originalNames.includes(step.name))
-        if (!pastedCode || !pastedPiece) {
+        const pastedConnector = steps.find((step): step is ConnectorAction => step.type === FlowActionType.CONNECTOR && !originalNames.includes(step.name))
+        if (!pastedCode || !pastedConnector) {
             throw new Error('paste did not create the copied steps')
         }
         expect(pastedCode.settings.sourceCode).toEqual(sourceCode)
-        expect(pastedPiece.settings.input.key).toBe(`{{ ${pastedCode.name}['output'].id }}`)
+        expect(pastedConnector.settings.input.key).toBe(`{{ ${pastedCode.name}['output'].id }}`)
     })
 
     it('remaps correctly when a pasted step takes over another copied step name', () => {

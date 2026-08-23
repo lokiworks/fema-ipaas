@@ -9,13 +9,13 @@ const repoRoot = resolve(packageDir, '../..')
 const distDir = resolve(packageDir, 'dist')
 
 // @fema/* workspace packages are no longer published to npm, so the published CLI must
-// inline them. esbuild resolves them from source via these aliases (mirrors the piece bundler).
+// inline them. esbuild resolves them from source via these aliases (mirrors the connector bundler).
 const alias = {
     '@fema/shared': resolve(repoRoot, 'packages/core/shared/src'),
-    '@fema/connector-sdk': resolve(repoRoot, 'packages/pieces/framework/src'),
-    '@fema/connector-common': resolve(repoRoot, 'packages/pieces/common/src'),
+    '@fema/connector-sdk': resolve(repoRoot, 'packages/connectors/sdk/src'),
+    '@fema/connector-common': resolve(repoRoot, 'packages/connectors/common/src'),
     '@fema/core-utils': resolve(repoRoot, 'packages/core/utils/src'),
-    '@fema/connector-types': resolve(repoRoot, 'packages/core/piece-types/src'),
+    '@fema/connector-types': resolve(repoRoot, 'packages/core/connector-types/src'),
     '@fema/expression': resolve(repoRoot, 'packages/core/formula/src'),
     '@fema/workflow-core': resolve(repoRoot, 'packages/core/execution/src'),
 }
@@ -43,8 +43,8 @@ const pkg = JSON.parse(readFileSync(resolve(packageDir, 'package.json'), 'utf-8'
 const publishManifest = {
     name: pkg.name,
     version: pkg.version,
-    description: 'Activepieces CLI',
-    bin: { 'pieces-cli': 'index.js' },
+    description: 'FEMA Integration Platform CLI',
+    bin: { 'connectors-cli': 'index.js' },
     files: ['index.js'],
     dependencies: {
         autocannon: pkg.dependencies.autocannon,

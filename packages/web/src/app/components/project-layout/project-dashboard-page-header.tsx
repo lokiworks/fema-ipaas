@@ -35,7 +35,7 @@ export const ProjectDashboardPageHeader = ({
   const { platform } = platformHooks.useCurrentPlatform();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsInitialTab, setSettingsInitialTab] = useState<
-    'general' | 'members' | 'alerts' | 'pieces' | 'environment'
+    'general' | 'members' | 'alerts' | 'connectors' | 'environment'
   >('general');
   const location = useLocation();
   const activeProjectMembers = undefined as { length: number } | undefined;
@@ -66,7 +66,7 @@ export const ProjectDashboardPageHeader = ({
     | 'general'
     | 'members'
     | 'alerts'
-    | 'pieces'
+    | 'connectors'
     | 'environment' => {
     if (hasGeneralSettings) return 'general';
     if (
@@ -75,7 +75,7 @@ export const ProjectDashboardPageHeader = ({
       userHasPermissionToReadProjectMembers
     )
       return 'members';
-    return 'pieces';
+    return 'connectors';
   };
 
   const titleContent = (

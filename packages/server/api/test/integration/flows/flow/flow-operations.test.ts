@@ -7,7 +7,7 @@ import {
     FlowVersion,
     FlowVersionState,
     PackageType,
-    PieceType,
+    ConnectorType,
     PopulatedFlow,
     StepLocationRelativeToParent,
 } from '@fema/shared'
@@ -19,7 +19,7 @@ import {
     createMockFlow,
     createMockFlowVersion,
     createMockFolder,
-    createMockPieceMetadata,
+    createMockConnectorMetadata,
 } from '../../../../helpers/mocks'
 import { createTestContext } from '../../../../helpers/test-context'
 import { setupTestEnvironment, teardownTestEnvironment } from '../../../../helpers/test-setup'
@@ -223,16 +223,16 @@ describe('Flow Operations API', () => {
     })
 
     describe('POST /v1/flows/:id UPDATE_TRIGGER', () => {
-        it('should update trigger to piece trigger', async () => {
+        it('should update trigger to connector trigger', async () => {
             const ctx = await createTestContext(app!)
 
-            const mockPiece = createMockPieceMetadata({
+            const mockConnector = createMockConnectorMetadata({
                 name: '@fema/connector-schedule',
                 version: '0.2.0',
-                pieceType: PieceType.OFFICIAL,
+                connectorType: ConnectorType.OFFICIAL,
                 packageType: PackageType.REGISTRY,
             })
-            await db.save('piece_metadata', mockPiece)
+            await db.save('connector_metadata', mockConnector)
 
             const createResponse = await ctx.post('/v1/flows', {
                 displayName: 'test flow',
@@ -244,10 +244,10 @@ describe('Flow Operations API', () => {
             const response = await ctx.post(`/v1/flows/${flow.id}`, {
                 type: FlowOperationType.UPDATE_TRIGGER,
                 request: {
-                    type: FlowTriggerType.PIECE,
+                    type: FlowTriggerType.CONNECTOR,
                     settings: {
-                        pieceName: '@fema/connector-schedule',
-                        pieceVersion: '0.2.0',
+                        connectorName: '@fema/connector-schedule',
+                        connectorVersion: '0.2.0',
                         input: {},
                         triggerName: 'every_hour',
                         propertySettings: {},
@@ -259,8 +259,8 @@ describe('Flow Operations API', () => {
             })
             expect(response?.statusCode).toBe(StatusCodes.OK)
             const body = response?.json()
-            expect(body.version.trigger.type).toBe(FlowTriggerType.PIECE)
-            expect(body.version.trigger.settings.pieceName).toBe('@fema/connector-schedule')
+            expect(body.version.trigger.type).toBe(FlowTriggerType.CONNECTOR)
+            expect(body.version.trigger.settings.connectorName).toBe('@fema/connector-schedule')
         })
     })
 
@@ -412,16 +412,16 @@ describe('Flow Operations API', () => {
             expect(body.version.trigger.nextAction.settings.input).toEqual(inputData)
         })
 
-        it('should preserve settings.input for PIECE action', async () => {
+        it('should preserve settings.input for CONNECTOR action', async () => {
             const ctx = await createTestContext(app!)
 
-            const mockPiece = createMockPieceMetadata({
+            const mockConnector = createMockConnectorMetadata({
                 name: '@fema/connector-test',
                 version: '0.1.0',
-                pieceType: PieceType.OFFICIAL,
+                connectorType: ConnectorType.OFFICIAL,
                 packageType: PackageType.REGISTRY,
             })
-            await db.save('piece_metadata', mockPiece)
+            await db.save('connector_metadata', mockConnector)
 
             const createResponse = await ctx.post('/v1/flows', {
                 displayName: 'test flow',
@@ -434,12 +434,12 @@ describe('Flow Operations API', () => {
                 request: {
                     parentStep: 'trigger',
                     action: {
-                        type: FlowActionType.PIECE,
-                        displayName: 'Piece Step',
+                        type: FlowActionType.CONNECTOR,
+                        displayName: 'Connector Step',
                         name: 'step_1',
                         settings: {
-                            pieceName: '@fema/connector-test',
-                            pieceVersion: '0.1.0',
+                            connectorName: '@fema/connector-test',
+                            connectorVersion: '0.1.0',
                             actionName: 'test_action',
                             input: {},
                             propertySettings: {},
@@ -454,12 +454,12 @@ describe('Flow Operations API', () => {
             const response = await ctx.post(`/v1/flows/${flow.id}`, {
                 type: FlowOperationType.UPDATE_ACTION,
                 request: {
-                    type: FlowActionType.PIECE,
-                    displayName: 'Piece Step',
+                    type: FlowActionType.CONNECTOR,
+                    displayName: 'Connector Step',
                     name: 'step_1',
                     settings: {
-                        pieceName: '@fema/connector-test',
-                        pieceVersion: '0.1.0',
+                        connectorName: '@fema/connector-test',
+                        connectorVersion: '0.1.0',
                         actionName: 'test_action',
                         input: inputData,
                         propertySettings: {},

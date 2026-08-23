@@ -62,15 +62,15 @@ export const TemplateEntity = new EntitySchema<TemplateSchema>({
             array: true,
             nullable: false,
         },
-        pieces: {
+        connectors: {
             type: String,
             array: true,
         },
     },
     indices: [
         {
-            name: 'idx_template_pieces',
-            columns: ['pieces'],
+            name: 'idx_template_connectors',
+            columns: ['connectors'],
             unique: false,
         },
         {

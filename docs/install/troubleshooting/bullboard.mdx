@@ -35,7 +35,7 @@ We have one main queue called `workerJobs` that handles all job types. Each job 
 ### Low Priority Jobs
 
 #### RENEW_WEBHOOK
-Renews webhooks for pieces that have webhooks channel with expiration like Google Sheets.
+Renews webhooks for connectors that have webhooks channel with expiration like Google Sheets.
 
 #### EXECUTE_POLLING
 Checks external services for new data at regular intervals.
@@ -54,10 +54,10 @@ Runs flows that were scheduled for later, like paused flows or delayed execution
 ### High Priority Jobs
 
 #### EXECUTE_PROPERTY
-Loads dynamic properties for pieces that need them at runtime.
+Loads dynamic properties for connectors that need them at runtime.
 
-#### EXECUTE_EXTRACT_PIECE_INFORMATION
-Gets information about pieces when they're being installed or set up.
+#### EXECUTE_EXTRACT_CONNECTOR_INFORMATION
+Gets information about connectors when they're being installed or set up.
 
 #### EXECUTE_VALIDATION
 Checks that flow settings, inputs, or data are correct before running.

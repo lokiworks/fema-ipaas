@@ -25,7 +25,7 @@ icon: 🗜️
    cd packages/server/api
    FEMA_POSTGRES_HOST=127.0.0.1 FEMA_POSTGRES_PORT=15432 FEMA_POSTGRES_USERNAME=postgres \
    FEMA_POSTGRES_PASSWORD=fema_baseline FEMA_POSTGRES_DATABASE=fema \
-   FEMA_POSTGRES_IDLE_TIMEOUT_MS=30000 FEMA_ENVIRONMENT=dev FEMA_DEV_PIECES='' \
+   FEMA_POSTGRES_IDLE_TIMEOUT_MS=30000 FEMA_ENVIRONMENT=dev FEMA_DEV_CONNECTORS='' \
    FEMA_ENCRYPTION_KEY=0123456789abcdef0123456789abcdef FEMA_JWT_SECRET=test-secret \
    FEMA_FRONTEND_URL=http://localhost:4200 FEMA_CONTAINER_TYPE=WORKER_AND_APP \
    npx ts-node --transpile-only -r tsconfig-paths/register -P tsconfig.app.json \
@@ -57,7 +57,7 @@ icon: 🗜️
 - **`en_natural` 不会被自动生成。** 它是上游一条早期迁移用 `CREATE COLLATION` 建的，
   `migration:generate` 只会在列上写 `COLLATE "en_natural"` 而不会创建它本身。
   漏掉的症状是 `collation "en_natural" for encoding "UTF8" does not exist`。
-  它给 `piece_metadata.version` 提供自然版本号排序，不能改成默认排序规则。
+  它给 `connector_metadata.version` 提供自然版本号排序，不能改成默认排序规则。
 - **实体里的悬空关系会让生成直接失败**，报
   `Entity metadata for X#y was not found`。删除实体后要顺手删掉别处指向它的
   `many-to-one` 关系块，只删 `getEntities()` 里的登记是不够的。

@@ -1,4 +1,4 @@
-import { Piece, PieceAuthProperty } from '@fema/connector-sdk'
+import { Connector, ConnectorAuthProperty } from '@fema/connector-sdk'
 import { slack } from '@fema/connector-slack'
 import { apId, assertNotNullOrUndefined, ErrorCode, isNil, PlatformError } from '@fema/core-utils'
 import { FlowStatus, LATEST_JOB_DATA_SCHEMA_VERSION, RunEnvironment, WorkerJobType } from '@fema/shared'
@@ -16,10 +16,10 @@ import { payloadOffloader } from '../../workers/payload-offloader'
 import { triggerSourceService } from '../trigger-source/trigger-source-service'
 import { appEventRoutingService } from './app-event-routing.service'
 
-const appWebhooks: Record<string, Piece<PieceAuthProperty | PieceAuthProperty[] | undefined>> = {
+const appWebhooks: Record<string, Connector<ConnectorAuthProperty | ConnectorAuthProperty[] | undefined>> = {
     slack,
 }
-const pieceNames: Record<string, string> = {
+const connectorNames: Record<string, string> = {
     slack: '@fema/connector-slack',
 }
 
@@ -31,7 +31,7 @@ export const appEventRoutingController: FastifyPluginAsyncZod = async (
     fastify,
 ) => {
     fastify.all(
-        '/:pieceUrl',
+        '/:connectorUrl',
         {
             config: {
                 rawBody: true,
@@ -42,12 +42,12 @@ export const appEventRoutingController: FastifyPluginAsyncZod = async (
             request: FastifyRequest<{
                 Body: unknown
                 Params: {
-                    pieceUrl: string
+                    connectorUrl: string
                 }
             }>,
             requestReply,
         ) => {
-            const pieceUrl = request.params.pieceUrl
+            const connectorUrl = request.params.connectorUrl
             const payload = {
                 headers: request.headers as Record<string, string>,
                 body: request.body,
@@ -55,20 +55,20 @@ export const appEventRoutingController: FastifyPluginAsyncZod = async (
                 method: request.method,
                 queryParams: request.query as Record<string, string>,
             }
-            const piece = appWebhooks[pieceUrl]
-            if (isNil(piece)) {
+            const connector = appWebhooks[connectorUrl]
+            if (isNil(connector)) {
                 throw new PlatformError({
                     code: ErrorCode.ENTITY_NOT_FOUND,
                     params: {
-                        entityType: 'piece',
-                        entityId: pieceUrl,
-                        message: 'Piece is not found in app event routing',
+                        entityType: 'connector',
+                        entityId: connectorUrl,
+                        message: 'Connector is not found in app event routing',
                     },
                 })
             }
-            const appName = pieceNames[pieceUrl]
-            assertNotNullOrUndefined(piece.events, 'Event is possible in this piece')
-            const { reply, event, identifierValue } = piece.events.parseAndReply({
+            const appName = connectorNames[connectorUrl]
+            assertNotNullOrUndefined(connector.events, 'Event is possible in this connector')
+            const { reply, event, identifierValue } = connector.events.parseAndReply({
                 payload,
                 server: {
                     publicUrl: await domainHelper.getPublicUrl({ path: '' }),
@@ -78,7 +78,7 @@ export const appEventRoutingController: FastifyPluginAsyncZod = async (
                 request.log.info(
                     {
                         reply,
-                        piece: pieceUrl,
+                        connector: connectorUrl,
                     },
                     '[AppEventRoutingController#event] reply',
                 )

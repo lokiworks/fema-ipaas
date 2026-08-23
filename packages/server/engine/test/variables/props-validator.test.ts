@@ -1,4 +1,4 @@
-import { PieceAuth, Property } from '@fema/connector-sdk'
+import { ConnectorAuth, Property } from '@fema/connector-sdk'
 import { propsProcessor } from '../../src/lib/variables/props-processor'
 describe('Property Validation', () => {
     describe('required properties', () => {
@@ -13,7 +13,7 @@ describe('Property Validation', () => {
             const { errors: validErrors } = await propsProcessor.applyProcessorsAndValidators(
                 { text: 'valid text' },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -22,7 +22,7 @@ describe('Property Validation', () => {
             const { errors: nullErrors } = await propsProcessor.applyProcessorsAndValidators(
                 { text: null },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -33,7 +33,7 @@ describe('Property Validation', () => {
             const { errors: undefinedErrors } = await propsProcessor.applyProcessorsAndValidators(
                 { text: undefined },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -53,7 +53,7 @@ describe('Property Validation', () => {
             const { errors: validErrors } = await propsProcessor.applyProcessorsAndValidators(
                 { number: 42 },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -62,7 +62,7 @@ describe('Property Validation', () => {
             const { errors: nullErrors } = await propsProcessor.applyProcessorsAndValidators(
                 { number: null },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -73,7 +73,7 @@ describe('Property Validation', () => {
             const { errors: typeErrors } = await propsProcessor.applyProcessorsAndValidators(
                 { number: 'not a number' },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -93,7 +93,7 @@ describe('Property Validation', () => {
             const { errors: validErrors } = await propsProcessor.applyProcessorsAndValidators(
                 { date: '2024-03-14T12:00:00.000Z' },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -102,7 +102,7 @@ describe('Property Validation', () => {
             const { errors: invalidErrors } = await propsProcessor.applyProcessorsAndValidators(
                 { date: 'not a date' },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -122,7 +122,7 @@ describe('Property Validation', () => {
             const { errors: validErrors } = await propsProcessor.applyProcessorsAndValidators(
                 { range: { preset: 'last_7_days' } },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -131,7 +131,7 @@ describe('Property Validation', () => {
             const { errors: nullErrors } = await propsProcessor.applyProcessorsAndValidators(
                 { range: null },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -142,7 +142,7 @@ describe('Property Validation', () => {
             const { errors: typeErrors } = await propsProcessor.applyProcessorsAndValidators(
                 { range: 'not a range' },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -162,7 +162,7 @@ describe('Property Validation', () => {
             const { errors: validErrors } = await propsProcessor.applyProcessorsAndValidators(
                 { array: [1, 2, 3] },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -171,7 +171,7 @@ describe('Property Validation', () => {
             const { errors: typeErrors } = await propsProcessor.applyProcessorsAndValidators(
                 { array: 'not an array' },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -191,7 +191,7 @@ describe('Property Validation', () => {
             const { errors: validErrors } = await propsProcessor.applyProcessorsAndValidators(
                 { json: { key: 'value' } },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -200,7 +200,7 @@ describe('Property Validation', () => {
             const { errors: validJsonStringErrors } = await propsProcessor.applyProcessorsAndValidators(
                 { json: '{"key": "value"}' },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -209,7 +209,7 @@ describe('Property Validation', () => {
             const { errors: validArrayErrors } = await propsProcessor.applyProcessorsAndValidators(
                 { json: [1, 2, 3] },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -218,7 +218,7 @@ describe('Property Validation', () => {
             const { errors: validArrayStringErrors } = await propsProcessor.applyProcessorsAndValidators(
                 { json: '[1, 2, 3]' },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -227,7 +227,7 @@ describe('Property Validation', () => {
             const { errors: invalidJsonErrors } = await propsProcessor.applyProcessorsAndValidators(
                 { json: 'not a json object' },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -238,7 +238,7 @@ describe('Property Validation', () => {
             const { errors: nullErrors } = await propsProcessor.applyProcessorsAndValidators(
                 { json: null },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -249,7 +249,7 @@ describe('Property Validation', () => {
             const { errors: emptyStringErrors } = await propsProcessor.applyProcessorsAndValidators(
                 { json: '' },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -260,7 +260,7 @@ describe('Property Validation', () => {
             const { errors: invalidTextErrors } = await propsProcessor.applyProcessorsAndValidators(
                 { json: 'asd' },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -280,7 +280,7 @@ describe('Property Validation', () => {
             const { errors: validNullErrors } = await propsProcessor.applyProcessorsAndValidators(
                 { json: null },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -289,7 +289,7 @@ describe('Property Validation', () => {
             const { errors: validUndefinedErrors } = await propsProcessor.applyProcessorsAndValidators(
                 { json: undefined },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -298,7 +298,7 @@ describe('Property Validation', () => {
             const { errors: emptyStringErrors } = await propsProcessor.applyProcessorsAndValidators(
                 { json: '' },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -307,7 +307,7 @@ describe('Property Validation', () => {
             const { errors: invalidJsonErrors } = await propsProcessor.applyProcessorsAndValidators(
                 { json: 'not a json object' },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -318,7 +318,7 @@ describe('Property Validation', () => {
             const { errors: invalidTextErrors } = await propsProcessor.applyProcessorsAndValidators(
                 { json: 'asd' },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -337,7 +337,7 @@ describe('Property Validation', () => {
             const { errors: validErrors } = await propsProcessor.applyProcessorsAndValidators(
                 { object: { key: 'value' } },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -346,7 +346,7 @@ describe('Property Validation', () => {
             const { errors: nullErrors } = await propsProcessor.applyProcessorsAndValidators(
                 { object: null },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -357,7 +357,7 @@ describe('Property Validation', () => {
             const { errors: typeErrors } = await propsProcessor.applyProcessorsAndValidators(
                 { object: 'not an object' },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -368,7 +368,7 @@ describe('Property Validation', () => {
             const { errors: jsonStringErrors } = await propsProcessor.applyProcessorsAndValidators(
                 { object: JSON.stringify({ key: 'value' }) },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -377,7 +377,7 @@ describe('Property Validation', () => {
             const { errors: undefinedErrors } = await propsProcessor.applyProcessorsAndValidators(
                 { object: { key: 'value' } },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -404,7 +404,7 @@ describe('Property Validation', () => {
                     number: undefined,
                 },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -433,7 +433,7 @@ describe('Property Validation', () => {
             const { processedInput, errors } = await propsProcessor.applyProcessorsAndValidators(
                 { staticDropdown: null, dropdown: null, text: null },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -461,7 +461,7 @@ describe('Property Validation', () => {
             const { processedInput } = await propsProcessor.applyProcessorsAndValidators(
                 { staticDropdown: 'a', requiredDropdown: null },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -505,7 +505,7 @@ describe('Property Validation', () => {
                     object: 'not an object',
                 },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -560,7 +560,7 @@ describe('Property Validation', () => {
             const { processedInput, errors } = await propsProcessor.applyProcessorsAndValidators(
                 { staticMultiSelect: input, multiSelect: input },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -574,7 +574,7 @@ describe('Property Validation', () => {
             const { processedInput, errors } = await propsProcessor.applyProcessorsAndValidators(
                 { staticMultiSelect: '', requiredMultiSelect: '' },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -594,7 +594,7 @@ describe('Property Validation', () => {
                     requiredMultiSelect: null,
                 },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -628,7 +628,7 @@ describe('Property Validation', () => {
             const { processedInput, errors } = await propsProcessor.applyProcessorsAndValidators(
                 { checkbox: input },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )
@@ -641,7 +641,7 @@ describe('Property Validation', () => {
             const { processedInput, errors } = await propsProcessor.applyProcessorsAndValidators(
                 { checkbox: '', optionalCheckbox: '' },
                 props,
-                PieceAuth.None(),
+                ConnectorAuth.None(),
                 false,
                 {},
             )

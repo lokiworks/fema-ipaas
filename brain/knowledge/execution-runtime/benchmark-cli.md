@@ -4,7 +4,7 @@ icon: ⏱️
 
 # Benchmark CLI
 
-`activepieces benchmark` load-tests a deployment's sync-webhook path and attributes *where* latency goes, so a self-hosted setup can be compared apples-to-apples against Activepieces' published reference numbers. Available in CE, EE, Cloud.
+`fema benchmark` load-tests a deployment's sync-webhook path and attributes *where* latency goes, so a self-hosted setup can be compared apples-to-apples against FEMA Integration Platform' published reference numbers. Available in CE, EE, Cloud.
 
 ### How it works
 - Builds a `webhook → data-mapper → return-response` flow. Instead of a raw `--concurrency`, it **auto-discovers the deployment shape** (`GET /v1/worker-machines`) and drives load = the effective **execution slot** count, so a healthy deploy queues ~zero by construction. Any queue-wait it reports is a real finding (usually driven concurrency > slots).
@@ -16,7 +16,7 @@ icon: ⏱️
 - Authoritative latency is server/worker-measured: per-run split from `FlowRun.timeline` (`wideEvent.timed` in `sandbox.ts`), in-region DB/Redis/S3 round-trip from `GET /v1/health/diagnostics`.
 - Caveat: the QUEUE phase absorbs app↔worker clock skew (can clamp to 0 or inflate) — hence the queue-depth cross-check.
 
-### Key pieces
+### Key connectors
 - `packages/cli/src/lib/commands/benchmark.ts` — the whole command.
 - `GET /v1/health/diagnostics` (new, platform-admin) — server-measured infra latency + config + **app tier** + worker summary; a self-contained support bundle.
 - **App Instance Registry** (`app-machine-cache.ts`): apps have no inbound healthcheck, so each self-registers into a Redis hash `appMachines` on its `systemSnapshot` tick; `list()` drops rows untouched >120s. Kept separate from `workerMachines` so an app is never counted as an execution slot. Write gated off on Cloud.
@@ -32,7 +32,7 @@ The published reference numbers in `docs/install/architecture/benchmark.mdx` com
 - **Database CPU scales with throughput; the workers don't run out.** Postgres tracks *throughput* at ~2.5 millicores per req/s (529m → 2738m across the sweep) while workers idle at ≤0.1 of their 0.5-core cap. Any doc text claiming the singletons stay "flat and near-idle as the fleet quadruples" is wrong — that claim was contradicted by the numbers printed directly beneath it. **But do not overclaim the converse:** in this rig only the worker has a CPU *limit*; Postgres/Redis/app declare *requests* they can burst past, so their figures are consumption, not saturation. "PG is the bottleneck" is a hypothesis consistent with the trend, not something this run measured — proving it needs a hard-limited DB plus wait-event analysis.
 - **Never publish numbers from two cluster shapes on the same page.** The docs once carried `93.5 / 148.9 req/s` (Experiment 1, `e2-standard-4` × 14) *and* `185.3 / 409.5 req/s` (a later `n2-standard-16` × 10 run) for the same `4 app · 40 w` / `8 app · 80 w` rows. Same ratio, same flow, different hardware — so the two disagreed by 2–3×. Every number on the page must come from one rig, and the diagram + `changelog.mdx` + `latency.mdx` cross-references have to move with it.
 - **The rig config drifts away from the docs.** Committed `k8s-sandbox.yaml` pointed at bucket `ap-bench-usc-b3803` / `FEMA_S3_REGION: us-central1` (a bucket that no longer exists) while its own header comment and the docs both said `europe-west1`; `run-gke.sh` defaulted to `ZONE=us-central1-a` and `APP_CPU=1500m` against a documented `europe-west1-b` / 1 vCPU. Diff the manifest against the "Test environment" section before trusting a re-run.
-- **`SSD_TOTAL_GB` is the quota that stops you**, not CPU. 10 × `n2-standard-16` with default `pd-balanced` 100 GB boot disks wants 1000 GB against a 500 GB regional limit and the cluster comes up `ERROR` with half its nodes. Use `--disk-type pd-standard` (4096 GB quota) — boot-disk type does not touch what is measured, since warm runs hit the local piece cache and Postgres runs on tmpfs.
+- **`SSD_TOTAL_GB` is the quota that stops you**, not CPU. 10 × `n2-standard-16` with default `pd-balanced` 100 GB boot disks wants 1000 GB against a 500 GB regional limit and the cluster comes up `ERROR` with half its nodes. Use `--disk-type pd-standard` (4096 GB quota) — boot-disk type does not touch what is measured, since warm runs hit the local connector cache and Postgres runs on tmpfs.
 - **Workers need `FEMA_LOG_LEVEL=info` or the per-run breakdown is empty.** The provision/boot/run split is read from the `job.execute` wide event, which evlog emits at info; the shared configmap sets `error`. Set it on the worker container only — putting the app at info makes webhook logging show up as app CPU and corrupts the app-vs-worker ratio finding.
 - **Scope the log scrape to the measured pass.** `kubectl logs --since=20m` folds the cold first request and the warmup pass into the "warm" averages; capture the load start and use `--since-time`.
 

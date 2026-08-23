@@ -16,7 +16,7 @@ WORKER_REPLICAS=${WORKER_REPLICAS:-16}
 REUSE_SANDBOX=${REUSE_SANDBOX:-false}
 APP_REPLICAS=${APP_REPLICAS:-2}
 APP_CPU=${APP_CPU:-1000m}
-APP_IMAGE=${APP_IMAGE:-europe-west1-docker.pkg.dev/activepieces-b3803/poolserver/ap-app:latest}
+APP_IMAGE=${APP_IMAGE:-europe-west1-docker.pkg.dev/fema-b3803/poolserver/ap-app:latest}
 CLUSTER=${CLUSTER:-ap-sandbox-bench}
 ZONE=${ZONE:-europe-west1-b}
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -30,7 +30,7 @@ echo "=== Minting worker token + injecting into manifest ==="
 # env for a non-default secret; the fallback is a throwaway value for this ephemeral, torn-down cluster.
 # Short-lived (1 day) — a benchmark run is minutes, so there is no reason to mint a long-lived token.
 JWT_SECRET="${FEMA_JWT_SECRET:-benchmark-$(openssl rand -hex 12)}"
-TOKEN=$(JWT_SECRET="$JWT_SECRET" node -e "const jwt=require('jsonwebtoken'),crypto=require('crypto');process.stdout.write(jwt.sign({id:crypto.randomUUID(),type:'WORKER'},process.env.JWT_SECRET,{expiresIn:'1d',keyid:'1',algorithm:'HS256',issuer:'activepieces'}))")
+TOKEN=$(JWT_SECRET="$JWT_SECRET" node -e "const jwt=require('jsonwebtoken'),crypto=require('crypto');process.stdout.write(jwt.sign({id:crypto.randomUUID(),type:'WORKER'},process.env.JWT_SECRET,{expiresIn:'1d',keyid:'1',algorithm:'HS256',issuer:'fema'}))")
 MANIFEST=$(mktemp)
 sed -e "s|__AP_WORKER_TOKEN__|${TOKEN}|" -e "s|__WORKER_CPU__|${WORKER_CPU}|g" -e "s|__WORKER_REPLICAS__|${WORKER_REPLICAS}|" \
     -e "s|__AP_JWT_SECRET__|${JWT_SECRET}|" \
@@ -188,7 +188,7 @@ echo "=== PER-RUN BREAKDOWN (avg ms across the measured pass only, from worker p
            printf "  samples              : %d runs\n", runs
            printf "  -- provisioning --\n"
            printf "  flow bundle download : %.1f ms\n", (n["flowBundleDownloadMs"]?s["flowBundleDownloadMs"]/n["flowBundleDownloadMs"]:0)
-           printf "  pieces install       : %.1f ms\n", (n["installPiecesMs"]?s["installPiecesMs"]/n["installPiecesMs"]:0)
+           printf "  connectors install       : %.1f ms\n", (n["installConnectorsMs"]?s["installConnectorsMs"]/n["installConnectorsMs"]:0)
            printf "  engine install       : %.1f ms  (V8-cached)\n", (n["installEngineMs"]?s["installEngineMs"]/n["installEngineMs"]:0)
            printf "  provision (total)    : %.1f ms\n", (n["provisionMs"]?s["provisionMs"]/n["provisionMs"]:0)
            printf "  -- engine execution timeline --\n"

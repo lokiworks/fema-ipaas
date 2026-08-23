@@ -1,5 +1,5 @@
 import { apId, Cursor, ErrorCode, FlowId, PlatformError, ProjectId, SeekPage } from '@fema/core-utils'
-import { EngineResponse, EngineResponseStatus, ExecuteTriggerResponse, FileCompression, FileType, FlowTrigger, FlowTriggerType, getPieceMajorAndMinorVersion, PieceTrigger, PopulatedFlow, TriggerEventWithPayload, TriggerHookType, WorkerJobType } from '@fema/shared'
+import { ConnectorTrigger, EngineResponse, EngineResponseStatus, ExecuteTriggerResponse, FileCompression, FileType, FlowTrigger, FlowTriggerType, getConnectorMajorAndMinorVersion, PopulatedFlow, TriggerEventWithPayload, TriggerHookType, WorkerJobType } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { repoFactory } from '../../core/db/repo-factory'
 import { fileService } from '../../file/file.service'
@@ -56,7 +56,7 @@ export const triggerEventService = (log: FastifyBaseLogger) => ({
         const platformId = await projectService(log).getPlatformId(projectId)
         const emptyPage = paginationHelper.createPage<TriggerEventWithPayload>([], null)
         switch (trigger.type) {
-            case FlowTriggerType.PIECE: {
+            case FlowTriggerType.CONNECTOR: {
 
                 const engineResponse = await userInteractionWatcher.submitAndWaitForResponse<EngineResponse<ExecuteTriggerResponse<TriggerHookType.TEST>>>({
                     hookType: TriggerHookType.TEST,
@@ -140,14 +140,14 @@ export const triggerEventService = (log: FastifyBaseLogger) => ({
 
 function getSourceName(trigger: FlowTrigger): string {
     switch (trigger.type) {
-        case FlowTriggerType.PIECE: {
-            const pieceTrigger = trigger as PieceTrigger
-            const pieceName = pieceTrigger.settings.pieceName
-            const pieceVersion = getPieceMajorAndMinorVersion(
-                pieceTrigger.settings.pieceVersion,
+        case FlowTriggerType.CONNECTOR: {
+            const connectorTrigger = trigger as ConnectorTrigger
+            const connectorName = connectorTrigger.settings.connectorName
+            const connectorVersion = getConnectorMajorAndMinorVersion(
+                connectorTrigger.settings.connectorVersion,
             )
-            const triggerName = pieceTrigger.settings.triggerName
-            return `${pieceName}@${pieceVersion}:${triggerName}`
+            const triggerName = connectorTrigger.settings.triggerName
+            return `${connectorName}@${connectorVersion}:${triggerName}`
         }
 
         case FlowTriggerType.EMPTY:

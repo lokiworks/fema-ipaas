@@ -21,7 +21,7 @@ describe('disposableEmail', () => {
 
         it('matches a subdomain of a wildcard provider', () => {
             const wildcardHit = disposableEmail.isDisposable('someone@mail.mailinator.com')
-            const unrelated = disposableEmail.isDisposable('someone@mailinator.com.activepieces.com')
+            const unrelated = disposableEmail.isDisposable('someone@mailinator.com.fema.local')
 
             expect(wildcardHit).toBe(true)
             expect(unrelated).toBe(false)

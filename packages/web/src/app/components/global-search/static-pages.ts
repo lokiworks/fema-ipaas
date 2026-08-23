@@ -86,9 +86,9 @@ export const STATIC_PAGES: StaticPage[] = [
     requiresPlatformAdmin: true,
   },
   {
-    id: 'page-platform-pieces',
-    label: 'Platform Admin — Pieces',
-    href: '/platform/setup/pieces',
+    id: 'page-platform-connectors',
+    label: 'Platform Admin — Connectors',
+    href: '/platform/setup/connectors',
     icon: PuzzleIcon,
     requiresPlatformAdmin: true,
   },

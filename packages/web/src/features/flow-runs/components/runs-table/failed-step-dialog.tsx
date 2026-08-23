@@ -22,11 +22,11 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
+import { stepsHooks } from '@/features/connectors';
+import { ConnectorIcon } from '@/features/connectors/components/connector-icon';
 import { flowRunsApi } from '@/features/flow-runs/api/flow-runs-api';
 import { flowRunUtils } from '@/features/flow-runs/utils/flow-run-utils';
 import { flowHooks } from '@/features/flows/hooks/flow-hooks';
-import { stepsHooks } from '@/features/pieces';
-import { PieceIcon } from '@/features/pieces/components/piece-icon';
 import { authenticationSession } from '@/lib/authentication-session';
 import { formatUtils } from '@/lib/format-utils';
 
@@ -212,7 +212,7 @@ const StepIconBadge = ({ step }: { step: FlowAction | FlowTrigger }) => {
     return <Skeleton className="size-[25px] rounded-md shrink-0" />;
   }
   return (
-    <PieceIcon
+    <ConnectorIcon
       logoUrl={stepMetadata.logoUrl}
       displayName={stepMetadata.displayName}
       size="xs"

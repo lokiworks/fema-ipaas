@@ -20,8 +20,11 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from '@/components/ui/tooltip';
+import {
+  ConnectorDisplayName,
+  ConnectorIconWithConnectorName,
+} from '@/features/connectors';
 import { triggerRunHooks } from '@/features/flows';
-import { PieceDisplayName, PieceIconWithPieceName } from '@/features/pieces';
 import { cn } from '@/lib/utils';
 
 import { StatusProgressBar, type DayStatus } from './status-progress-bar';
@@ -53,15 +56,15 @@ const STATUS_TOOLTIPS: Record<string, string> = {
 
 const percentageForLastXDays = (
   days: number,
-  pieceData: TriggerStatusReport['pieces'][string],
+  connectorData: TriggerStatusReport['connectors'][string],
 ) => {
   const lastXDays = generateLastXDays(days);
   const successRuns = lastXDays.reduce(
-    (acc, day) => acc + (pieceData.dailyStats[day]?.success ?? 0),
+    (acc, day) => acc + (connectorData.dailyStats[day]?.success ?? 0),
     0,
   );
   const failureRuns = lastXDays.reduce(
-    (acc, day) => acc + (pieceData.dailyStats[day]?.failure ?? 0),
+    (acc, day) => acc + (connectorData.dailyStats[day]?.failure ?? 0),
     0,
   );
   const percentage =
@@ -80,39 +83,41 @@ export default function TriggerHealthPage() {
 
   const triggerHealthData: TriggerHealthRow[] = isLoading
     ? []
-    : Object.entries(report?.pieces ?? {}).map(([pieceName, pieceData]) => {
-        const last7Days = percentageForLastXDays(7, pieceData);
-        const last14Days = percentageForLastXDays(14, pieceData);
-        const last24Hours = percentageForLastXDays(1, pieceData);
-        return {
-          id: pieceName,
-          status: {
-            type:
-              last14Days === 100
-                ? STATUS.SUCCESS
-                : last14Days > 0
-                ? STATUS.WARNING
-                : STATUS.FAULT,
-          },
-          last24Hours,
-          last7Days,
-          last14Days,
-          lastResults: generateLastXDays(14).map((day) => {
-            const success = pieceData.dailyStats[day]?.success ?? 0;
-            const failure = pieceData.dailyStats[day]?.failure ?? 0;
-            const totalRuns = success + failure;
-            return {
-              date: day,
-              success,
-              failure,
-              status:
-                failure > 0 ? (success > 0 ? 'warning' : 'fault') : 'success',
-              totalRuns: totalRuns,
-            };
-          }),
-          runs: pieceData.totalRuns,
-        };
-      });
+    : Object.entries(report?.connectors ?? {}).map(
+        ([connectorName, connectorData]) => {
+          const last7Days = percentageForLastXDays(7, connectorData);
+          const last14Days = percentageForLastXDays(14, connectorData);
+          const last24Hours = percentageForLastXDays(1, connectorData);
+          return {
+            id: connectorName,
+            status: {
+              type:
+                last14Days === 100
+                  ? STATUS.SUCCESS
+                  : last14Days > 0
+                  ? STATUS.WARNING
+                  : STATUS.FAULT,
+            },
+            last24Hours,
+            last7Days,
+            last14Days,
+            lastResults: generateLastXDays(14).map((day) => {
+              const success = connectorData.dailyStats[day]?.success ?? 0;
+              const failure = connectorData.dailyStats[day]?.failure ?? 0;
+              const totalRuns = success + failure;
+              return {
+                date: day,
+                success,
+                failure,
+                status:
+                  failure > 0 ? (success > 0 ? 'warning' : 'fault') : 'success',
+                totalRuns: totalRuns,
+              };
+            }),
+            runs: connectorData.totalRuns,
+          };
+        },
+      );
 
   const getStatusIcon = (statusType: string) => {
     switch (statusType) {
@@ -146,23 +151,27 @@ export default function TriggerHealthPage() {
 
   const columns = [
     {
-      accessorKey: 'pieceDisplayName',
+      accessorKey: 'connectorDisplayName',
       size: 220,
       header: ({ column }: any) => (
-        <DataTableColumnHeader column={column} title="Piece" icon={Puzzle} />
+        <DataTableColumnHeader
+          column={column}
+          title="Connector"
+          icon={Puzzle}
+        />
       ),
       cell: ({ row }: any) => {
         const status = row.original.status;
         return (
           <div className="flex items-center gap-2">
-            <PieceIconWithPieceName
-              pieceName={row.original.id}
+            <ConnectorIconWithConnectorName
+              connectorName={row.original.id}
               showTooltip={false}
               size="md"
             />
             <div className="flex flex-col">
               <div className="font-medium flex items-center gap-2">
-                <PieceDisplayName pieceName={row.original.id} />
+                <ConnectorDisplayName connectorName={row.original.id} />
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span

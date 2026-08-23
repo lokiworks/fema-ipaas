@@ -23,7 +23,7 @@ Measured from the scale command to the worker polling for jobs (workers have no 
 
 The worker image is **126 MB** compressed — a single pre-bundled `worker.js` with no `node_modules` — precisely because the pull sits on this critical path (the app image, which you scale rarely, is 551 MB). Keep it in a **same-region registry**; the pull times above include cross-region transfer.
 
-A new worker's first flow pays the one-time [cold start](/install/architecture/latency) (~2–3 s, piece install + engine boot); its second run is already warm.
+A new worker's first flow pays the one-time [cold start](/install/architecture/latency) (~2–3 s, connector install + engine boot); its second run is already warm.
 
 ## Scaling down is safe
 
@@ -39,4 +39,4 @@ On `SIGTERM` the worker stops polling, finishes its in-flight flow, and exits (f
 
 ## How this was measured
 
-GKE standard, `e2-standard-4` with the cluster autoscaler (2–5 nodes), Activepieces 0.85. Scale-ups timed from `kubectl scale` to the worker's "polling for jobs" log line via pod events and worker logs (7 warm samples, 4.6–5.0 s; new-node path timed end-to-end); drain timed from `kubectl delete pod` under `hey` load with server-side run statuses verified. Full methodology and raw logs: `benchmark/EXPERIMENTS.md` (Experiment 2) and `benchmark/data/autoscaling-2026-07-02/` in the repo. Throughput and latency for the same shape: [Benchmark](/install/architecture/benchmark), [Latency](/install/architecture/latency).
+GKE standard, `e2-standard-4` with the cluster autoscaler (2–5 nodes), FEMA Integration Platform 0.85. Scale-ups timed from `kubectl scale` to the worker's "polling for jobs" log line via pod events and worker logs (7 warm samples, 4.6–5.0 s; new-node path timed end-to-end); drain timed from `kubectl delete pod` under `hey` load with server-side run statuses verified. Full methodology and raw logs: `benchmark/EXPERIMENTS.md` (Experiment 2) and `benchmark/data/autoscaling-2026-07-02/` in the repo. Throughput and latency for the same shape: [Benchmark](/install/architecture/benchmark), [Latency](/install/architecture/latency).

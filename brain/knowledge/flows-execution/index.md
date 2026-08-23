@@ -4,7 +4,7 @@ icon: 🔀
 
 # Flows & Execution
 
-How flows are authored, triggered, executed, and organized in Activepieces. Skim map of the core automation domain.
+How flows are authored, triggered, executed, and organized in FEMA Integration Platform. Skim map of the core automation domain.
 
 ### Flows
 Versioned directed graph (trigger + actions) stored as JSONB. All 26 modification types go through ONE endpoint: `POST /v1/flows/:id` with a `FlowOperationRequest` discriminated union.
@@ -21,7 +21,7 @@ One execution instance per flow version, trigger → terminal state. 12 statuses
 - Paid editions emit AI usage billing (`ai_usage_per_run`) on terminal runs.
 
 ### Action Runs
-A single piece action or code step executed directly, outside any flow, synchronously — the unit behind MCP `ap_run_action` and the chat action/code tools. Execution only; nothing is persisted yet. Vocabulary for the job lifecycle, which four distinct stages share one overloaded word:
+A single connector action or code step executed directly, outside any flow, synchronously — the unit behind MCP `ap_run_action` and the chat action/code tools. Execution only; nothing is persisted yet. Vocabulary for the job lifecycle, which four distinct stages share one overloaded word:
 - **Never started** — a *proof that nothing could have written*, not a lifecycle stage. **Sound** (never true when a write was possible — up to one accepted, effectively unreachable race; see [Action Runs](action-run.md)), deliberately **not complete** (may be false when nothing in fact ran). Two independent producers feed it: the sandbox refusing a run whose deadline already passed, and the API proving the job was never dequeued. *Avoid:* "didn't run", "not executed" — both invite reading it as a stage and weakening it.
 - **Dequeued** — the app moved the job `wait → active` and owns it. Marked durably by BullMQ's `processedOn`. Precedes delivery to a worker, so it is **not** evidence that user code ran. *Avoid:* "picked up", "claimed".
 - **Dispatched** — handed to a live worker connection (`jobAssignmentTracker`). In-memory and per-app-instance, so it is not durable evidence.
@@ -59,9 +59,9 @@ Lightweight per-project grouping for flows and tables. Name unique case-insensit
 - Sentinel `"NULL"` (`UncategorizedFolderId`) filters flows with no folder. Deleting a folder does NOT delete its flows — they become uncategorized. Fires `FOLDER_CREATED/UPDATED/DELETED` audit events.
 
 ### Templates
-Reusable flow/table blueprints. Types: OFFICIAL (Activepieces-curated, platformId null), CUSTOM (platform-owned, needs `manageTemplatesEnabled` flag), SHARED (ad-hoc, not listable).
-- Self-hosted CE/EE proxy OFFICIAL templates from `cloud.activepieces.com/api/v1/templates`; Cloud stores them in DB. `pieces[]` and `categories[]` are denormalized + indexed for fast filtering.
-- Only platform owners manage CUSTOM templates; OFFICIAL/SHARED can't be edited/deleted. Flow validation + piece extraction run before save.
+Reusable flow/table blueprints. Types: OFFICIAL (FEMA Integration Platform-curated, platformId null), CUSTOM (platform-owned, needs `manageTemplatesEnabled` flag), SHARED (ad-hoc, not listable).
+- Self-hosted CE/EE proxy OFFICIAL templates from `fema.local/api/v1/templates`; Cloud stores them in DB. `connectors[]` and `categories[]` are denormalized + indexed for fast filtering.
+- Only platform owners manage CUSTOM templates; OFFICIAL/SHARED can't be edited/deleted. Flow validation + connector extraction run before save.
 
 ## Pages
 

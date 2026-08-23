@@ -45,7 +45,7 @@ docker inspect <container> --format '{{.HostConfig.Memory}}'   # confirm restore
 
 Two mechanics cost an hour each if you learn them the hard way:
 
-- **The engine process is renamed `sandbox-<nanoid>`.** Matching on `/usr/local/bin/node` finds the *code-step* child (~45 MB, its own module registry, `require.cache` of size 1) and tells you nothing about the pieces. Match `sandbox-*` in `/proc/<pid>/cmdline`. `ps` is not in the image; walk `/proc` directly.
+- **The engine process is renamed `sandbox-<nanoid>`.** Matching on `/usr/local/bin/node` finds the *code-step* child (~45 MB, its own module registry, `require.cache` of size 1) and tells you nothing about the connectors. Match `sandbox-*` in `/proc/<pid>/cmdline`. `ps` is not in the image; walk `/proc` directly.
 - **Node's global `WebSocket` cannot talk to the V8 inspector** — the handshake is accepted, then the socket dies with a bare error. Use the `ws` the image already ships: `find /usr/src/app/node_modules -type d -name ws -path "*node_modules/ws"`, and pass `{ perMessageDeflate: false, maxPayload: 0 }`.
 
 Send `SIGUSR1` to open the inspector, then drive CDP over `127.0.0.1:9229`:
@@ -69,11 +69,11 @@ A full snapshot of a ~950 MB heap kills the process mid-serialization (the cgrou
 // returnByValue: true, includeCommandLineAPI: true
 const cache = process.mainModule.constructor._cache
 const keys = Object.keys(cache)
-// → totalModules, count matching @fema/shared, pieces-framework,
+// → totalModules, count matching @fema/shared, connectors-framework,
 //   distinct @fema/connector-* packages, and process.memoryUsage()
 ```
 
-Run it against the `sandbox-<id>` pid while a flow holds the sandbox open. To *get* that window, end the probe flow with a CODE step that sleeps — a `delay` piece step over 10 s creates a waitpoint and **pauses the run**, releasing the sandbox, so the process you wanted is gone before you arrive.
+Run it against the `sandbox-<id>` pid while a flow holds the sandbox open. To *get* that window, end the probe flow with a CODE step that sleeps — a `delay` connector step over 10 s creates a waitpoint and **pauses the run**, releasing the sandbox, so the process you wanted is gone before you arrive.
 
 ## 4. Parse it off the worker process
 

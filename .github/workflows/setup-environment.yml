@@ -63,7 +63,7 @@ jobs:
         run: |
           BRANCH=${{ github.head_ref || github.ref_name }}
           ssh preview-server -t -t "bash -ic \"cd /root/environments && npm run build && node dist/index.js setup ${BRANCH}; exit\""
-          echo "environment_url=https://$(echo "${BRANCH}" | sed 's|/|-|g').preview.activepieces.dev" >> $GITHUB_OUTPUT
+          echo "environment_url=https://$(echo "${BRANCH}" | sed 's|/|-|g').preview.fema.dev" >> $GITHUB_OUTPUT
 
       - name: Comment on PR
         if: steps.check-label.outputs.should-setup == 'true' && github.event_name != 'workflow_dispatch'

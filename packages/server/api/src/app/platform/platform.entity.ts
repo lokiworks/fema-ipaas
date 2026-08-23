@@ -81,12 +81,12 @@ export const PlatformEntity = new EntitySchema<PlatformSchema>({
             type: 'jsonb',
             select: false,
         },
-        pinnedPieces: {
+        pinnedConnectors: {
             type: String,
             array: true,
             nullable: false,
         },
-        pieceSelectorConfig: {
+        connectorSelectorConfig: {
             type: 'jsonb',
             nullable: true,
         },

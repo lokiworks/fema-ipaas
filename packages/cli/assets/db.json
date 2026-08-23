@@ -424,7 +424,7 @@
     "info": {
       "title": "SlackTest",
       "version": "1.0",
-      "description": "OpenAPI specification generated from the Slack piece."
+      "description": "OpenAPI specification generated from the Slack connector."
     },
     "servers": [
       {

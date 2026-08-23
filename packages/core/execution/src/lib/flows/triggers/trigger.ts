@@ -1,33 +1,33 @@
 import { z } from 'zod'
 import { STEP_NAME_REGEX } from '@fema/core-utils'
 import { VersionType } from '@fema/connector-types'
-import { CodeActionSettings, LoopOnItemsActionSettings, PieceActionSettings, RouterActionSettings } from '../actions/action'
+import { CodeActionSettings, LoopOnItemsActionSettings, ConnectorActionSettings, RouterActionSettings } from '../actions/action'
 import { PropertySettings } from '../properties'
 import { SampleDataSetting } from '../sample-data'
 
 export const AUTHENTICATION_PROPERTY_NAME = 'auth'
 
 
-const pieceTriggerSettingsFields = {
+const connectorTriggerSettingsFields = {
     sampleData: SampleDataSetting.optional(),
     propertySettings: z.record(z.string(), PropertySettings),
     customLogoUrl: z.string().optional(),
-    pieceName: z.string(),
-    pieceVersion: VersionType,
+    connectorName: z.string(),
+    connectorVersion: VersionType,
     triggerName: z.string().optional(),
     input: z.record(z.string(), z.any()),
 }
 
-export const PieceTriggerSettings = z.object({
-    ...pieceTriggerSettingsFields,
+export const ConnectorTriggerSettings = z.object({
+    ...connectorTriggerSettingsFields,
 })
 
-export type PieceTriggerSettings = z.infer<typeof PieceTriggerSettings>
+export type ConnectorTriggerSettings = z.infer<typeof ConnectorTriggerSettings>
 
 
 export enum FlowTriggerType {
     EMPTY = 'EMPTY',
-    PIECE = 'PIECE_TRIGGER',
+    CONNECTOR = 'CONNECTOR_TRIGGER',
 }
 
 const commonProps = {
@@ -48,16 +48,16 @@ export const EmptyTrigger = z.object({
 export type EmptyTrigger = z.infer<typeof EmptyTrigger>
 
 
-export const PieceTrigger = z.object({
+export const ConnectorTrigger = z.object({
     ...commonProps,
-    type: z.literal(FlowTriggerType.PIECE),
-    settings: PieceTriggerSettings,
+    type: z.literal(FlowTriggerType.CONNECTOR),
+    settings: ConnectorTriggerSettings,
 })
 
-export type PieceTrigger = z.infer<typeof PieceTrigger>
+export type ConnectorTrigger = z.infer<typeof ConnectorTrigger>
 
 export const FlowTrigger = z.union([
-    PieceTrigger,
+    ConnectorTrigger,
     EmptyTrigger,
 ])
 
@@ -66,7 +66,7 @@ export type FlowTrigger = z.infer<typeof FlowTrigger>
 
 export type StepSettings =
   | CodeActionSettings
-  | PieceActionSettings
-  | PieceTriggerSettings
+  | ConnectorActionSettings
+  | ConnectorTriggerSettings
   | RouterActionSettings
   | LoopOnItemsActionSettings

@@ -1,12 +1,12 @@
 import { AddressInfo } from 'net'
 import { apId } from '@fema/core-utils'
 import { ContextVersion, StoreScope } from '@fema/connector-sdk'
-import { AppConnectionStatus, AppConnectionType, ConnectionExpiredError, ConnectionNotFoundError, ConnectionPieceMismatchError, FetchError, FlowStatus, FlowVersionState, PrincipalType } from '@fema/shared'
+import { AppConnectionStatus, AppConnectionType, ConnectionExpiredError, ConnectionNotFoundError, ConnectionConnectorMismatchError, FetchError, FlowStatus, FlowVersionState, PrincipalType } from '@fema/shared'
 import { FastifyInstance } from 'fastify'
-import { createConnectionResolver } from '../../../../../engine/src/lib/piece-context/connection-resolver'
-import { createFileUploader } from '../../../../../engine/src/lib/piece-context/file-uploader'
-import { createFlowsContext } from '../../../../../engine/src/lib/piece-context/flows'
-import { createContextStore } from '../../../../../engine/src/lib/piece-context/store'
+import { createConnectionResolver } from '../../../../../engine/src/lib/connector-context/connection-resolver'
+import { createFileUploader } from '../../../../../engine/src/lib/connector-context/file-uploader'
+import { createFlowsContext } from '../../../../../engine/src/lib/connector-context/flows'
+import { createContextStore } from '../../../../../engine/src/lib/connector-context/store'
 import { encryptUtils } from '../../../../src/app/helper/encryption'
 import { generateMockToken } from '../../../helpers/auth'
 import { db } from '../../../helpers/db'
@@ -257,20 +257,20 @@ describe('Engine Services Integration', () => {
             await expect(connectionService.obtain(externalId)).rejects.toThrow(ConnectionExpiredError)
         })
 
-        describe('FEMA_ENFORCE_CONNECTION_PIECE_BINDING', () => {
-            const pieceName = '@fema/connector-slack'
+        describe('FEMA_ENFORCE_CONNECTION_CONNECTOR_BINDING', () => {
+            const connectorName = '@fema/connector-slack'
 
             afterEach(() => {
-                delete process.env.FEMA_ENFORCE_CONNECTION_PIECE_BINDING
+                delete process.env.FEMA_ENFORCE_CONNECTION_CONNECTOR_BINDING
             })
 
-            const saveConnection = async (connectionPieceName: string): Promise<string> => {
+            const saveConnection = async (connectionConnectorName: string): Promise<string> => {
                 const externalId = apId()
                 const mockConn = createMockConnection({
                     platformId,
                     projectIds: [projectId],
                     externalId,
-                    pieceName: connectionPieceName,
+                    connectorName: connectionConnectorName,
                 }, ownerId)
                 await db.save('app_connection', {
                     ...mockConn,
@@ -282,8 +282,8 @@ describe('Engine Services Integration', () => {
                 return externalId
             }
 
-            it('should reject a connection belonging to another piece when enabled', async () => {
-                process.env.FEMA_ENFORCE_CONNECTION_PIECE_BINDING = 'true'
+            it('should reject a connection belonging to another connector when enabled', async () => {
+                process.env.FEMA_ENFORCE_CONNECTION_CONNECTOR_BINDING = 'true'
                 const externalId = await saveConnection('@fema/connector-google-sheets')
 
                 const connectionService = createConnectionResolver({
@@ -291,22 +291,22 @@ describe('Engine Services Integration', () => {
                     engineToken,
                     apiUrl,
                     contextVersion: ContextVersion.V1,
-                    pieceName,
+                    connectorName,
                 })
 
-                await expect(connectionService.obtain(externalId)).rejects.toThrow(ConnectionPieceMismatchError)
+                await expect(connectionService.obtain(externalId)).rejects.toThrow(ConnectionConnectorMismatchError)
             })
 
-            it('should allow a connection belonging to the same piece when enabled', async () => {
-                process.env.FEMA_ENFORCE_CONNECTION_PIECE_BINDING = 'true'
-                const externalId = await saveConnection(pieceName)
+            it('should allow a connection belonging to the same connector when enabled', async () => {
+                process.env.FEMA_ENFORCE_CONNECTION_CONNECTOR_BINDING = 'true'
+                const externalId = await saveConnection(connectorName)
 
                 const connectionService = createConnectionResolver({
                     projectId,
                     engineToken,
                     apiUrl,
                     contextVersion: ContextVersion.V1,
-                    pieceName,
+                    connectorName,
                 })
 
                 await expect(connectionService.obtain(externalId)).resolves.toEqual({
@@ -315,7 +315,7 @@ describe('Engine Services Integration', () => {
                 })
             })
 
-            it('should allow a connection belonging to another piece when disabled', async () => {
+            it('should allow a connection belonging to another connector when disabled', async () => {
                 const externalId = await saveConnection('@fema/connector-google-sheets')
 
                 const connectionService = createConnectionResolver({
@@ -323,7 +323,7 @@ describe('Engine Services Integration', () => {
                     engineToken,
                     apiUrl,
                     contextVersion: ContextVersion.V1,
-                    pieceName,
+                    connectorName,
                 })
 
                 await expect(connectionService.obtain(externalId)).resolves.toEqual({

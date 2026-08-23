@@ -4,10 +4,10 @@ exclude-labels:
   - 'release'
   - 'pre-release'
 categories:
-  - title: "🔌 Pieces"
+  - title: "🔌 Connectors"
     labels:
-      - "🧩 area/third-party-pieces"
-      - "🧩 area/core-pieces"
+      - "🧩 area/third-party-connectors"
+      - "🧩 area/core-connectors"
   - title: "⛓️‍💥 Breaking Changes"
     labels:
       - "⛓️‍💥 breaking-change"
@@ -33,7 +33,7 @@ template: |
 
   $CHANGES
 
-  > 📌 **Upgrading a self-hosted instance?** Review the [Breaking Changes](https://www.activepieces.com/docs/install/reference/breaking-changes) page for any actions required before you upgrade.
+  > 📌 **Upgrading a self-hosted instance?** Review the [Breaking Changes](https://github.com/lokiworks/fema-ipaas/docs/install/reference/breaking-changes) page for any actions required before you upgrade.
 
   ## Thanks ❤️
   $CONTRIBUTORS

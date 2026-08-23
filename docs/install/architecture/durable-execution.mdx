@@ -42,6 +42,6 @@ The most a crash can lose is the single step that was running when the worker di
 Every interruption resolves through the same replay path. Only the trigger differs.
 
 - **Worker crash or deployment.** The queue reassigns the run to another worker, which loads the log and replays.
-- **Paused step.** The piece creates a [waitpoint](/install/architecture/waitpoints). When the waitpoint fires, a resume job is queued and a worker replays the run.
+- **Paused step.** The connector creates a [waitpoint](/install/architecture/waitpoints). When the waitpoint fires, a resume job is queued and a worker replays the run.
 - **Retry from a failed step.** The same log is reused. The run is re-queued and a worker replays from the failure point.
 - **Normal progression within one worker.** Same replay model, without leaving the process.

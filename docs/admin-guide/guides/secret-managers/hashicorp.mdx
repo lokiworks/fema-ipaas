@@ -1,13 +1,13 @@
 ---
 title: "HashiCorp Vault"
-description: "Connect HashiCorp Vault to Activepieces for enterprise-grade secret management"
+description: "Connect HashiCorp Vault to FEMA Integration Platform for enterprise-grade secret management"
 ---
 
 HashiCorp Vault is an enterprise-grade secrets management system that provides secure storage and access to secrets, API keys, passwords, and other sensitive data.
 
 ## Prerequisites
 
-Before connecting HashiCorp Vault to Activepieces, ensure you have:
+Before connecting HashiCorp Vault to FEMA Integration Platform, ensure you have:
 
 - **HashiCorp Vault Key-value (KV) secrets engine** version 2
 - **AppRole auth method** [enabled](https://developer.hashicorp.com/vault/docs/auth/approle)
@@ -37,7 +37,7 @@ path "<secret_engine_name>/data/*" {
 }
 ```
 
-## Connecting to Activepieces
+## Connecting to FEMA Integration Platform
 
 1. Go to **Platform Admin → Security → Secret Managers**
 2. Click **New Connection** and select **HashiCorp Vault**
@@ -52,7 +52,7 @@ path "<secret_engine_name>/data/*" {
 
 ## Using HashiCorp Vault Secrets
 
-Once the connection is saved, you can reference Vault secrets inside any piece connection dialog — in global connections (Platform Admin) or directly in the flow builder.
+Once the connection is saved, you can reference Vault secrets inside any connector connection dialog — in global connections (Platform Admin) or directly in the flow builder.
 
 1. Open a connection dialog and click the **key icon** (🔑) next to a credential field
 2. Select your HashiCorp Vault connection from the dropdown

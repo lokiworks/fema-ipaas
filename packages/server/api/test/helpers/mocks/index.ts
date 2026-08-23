@@ -1,6 +1,6 @@
 import { AIProviderName, apId, assertNotNullOrUndefined, ProjectRole, RoleType } from '@fema/core-utils'
-import { LATEST_CONTEXT_VERSION, PieceMetadata } from '@fema/connector-sdk'
-import { AIProvider, AppConnection, AppConnectionScope, AppConnectionStatus, AppConnectionType, ApplicationEvent, ApplicationEventName, ColorName, File, FileCompression, FileLocation, FileType, Flow, FlowOperationStatus, FlowRun, FlowRunStatus, FlowStatus, FlowTriggerType, FlowVersion, FlowVersionState, Folder, InvitationStatus, InvitationType, LATEST_FLOW_SCHEMA_VERSION, OtpModel, OtpState, OtpType, PackageType, PiecesFilterType, PieceType, Platform, PlatformPlan, PlatformRole, Project, ProjectIcon, ProjectType, RunEnvironment, Template, TemplateStatus, TemplateType, User, UserIdentity, UserIdentityProvider, UserInvitation, UserStatus } from '@fema/shared'
+import { LATEST_CONTEXT_VERSION, ConnectorMetadata } from '@fema/connector-sdk'
+import { AIProvider, AppConnection, AppConnectionScope, AppConnectionStatus, AppConnectionType, ApplicationEvent, ApplicationEventName, ColorName, File, FileCompression, FileLocation, FileType, Flow, FlowOperationStatus, FlowRun, FlowRunStatus, FlowStatus, FlowTriggerType, FlowVersion, FlowVersionState, Folder, InvitationStatus, InvitationType, LATEST_FLOW_SCHEMA_VERSION, OtpModel, OtpState, OtpType, PackageType, ConnectorsFilterType, ConnectorType, Platform, PlatformPlan, PlatformRole, Project, ProjectIcon, ProjectType, RunEnvironment, Template, TemplateStatus, TemplateType, User, UserIdentity, UserIdentityProvider, UserInvitation, UserStatus } from '@fema/shared'
 import { faker } from '@faker-js/faker'
 import bcrypt from 'bcrypt'
 import dayjs from 'dayjs'
@@ -11,8 +11,8 @@ import { generateApiKey } from '../../../src/app/ee/api-keys/api-key-service'
 import { OAuthAppWithEncryptedSecret } from '../../../src/app/ee/oauth-apps/oauth-app.entity'
 import { PlatformPlanEntity } from '../../../src/app/ee/platform/platform-plan/platform-plan.entity'
 import { encryptUtils } from '../../../src/app/helper/encryption'
-import { PieceMetadataSchema } from '../../../src/app/pieces/metadata/piece-metadata-entity'
-import { pieceMetadataService } from '../../../src/app/pieces/metadata/piece-metadata-service'
+import { ConnectorMetadataSchema } from '../../../src/app/connectors/metadata/connector-metadata-entity'
+import { connectorMetadataService } from '../../../src/app/connectors/metadata/connector-metadata-service'
 
 export const CLOUD_PLATFORM_ID = 'cloud-id'
 
@@ -58,7 +58,7 @@ export const createMockOAuthApp = async (
         created: oAuthApp?.created ?? faker.date.recent().toISOString(),
         updated: oAuthApp?.updated ?? faker.date.recent().toISOString(),
         platformId: oAuthApp?.platformId ?? apId(),
-        pieceName: oAuthApp?.pieceName ?? faker.lorem.word(),
+        connectorName: oAuthApp?.connectorName ?? faker.lorem.word(),
         clientId: oAuthApp?.clientId ?? apId(),
         clientSecret: await encryptUtils.encryptString(faker.lorem.word()),
     }
@@ -71,7 +71,7 @@ export const createMockTemplate = (
         id: template?.id ?? apId(),
         created: template?.created ?? faker.date.recent().toISOString(),
         updated: template?.updated ?? faker.date.recent().toISOString(),
-        pieces: template?.pieces ?? [],
+        connectors: template?.connectors ?? [],
         flows: template?.flows ?? [createMockFlowVersion()],
         platformId: template?.platformId ?? apId(),
         name: template?.name ?? faker.lorem.word(),
@@ -95,8 +95,8 @@ export const createMockPlan = (plan?: Partial<ProjectPlan>): ProjectPlan => {
         projectId: plan?.projectId ?? apId(),
         name: plan?.name ?? faker.lorem.word(),
         locked: plan?.locked ?? false,
-        pieces: plan?.pieces ?? [],
-        piecesFilterType: plan?.piecesFilterType ?? PiecesFilterType.NONE,
+        connectors: plan?.connectors ?? [],
+        connectorsFilterType: plan?.connectorsFilterType ?? ConnectorsFilterType.NONE,
         activeFlowsLimit: plan?.activeFlowsLimit ?? null,
     }
 }
@@ -170,7 +170,7 @@ export const createMockPlatformPlan = (platformPlan?: Partial<PlatformPlan>): Pl
         auditLogEnabled: platformPlan?.auditLogEnabled ?? false,
         globalConnectionsEnabled: platformPlan?.globalConnectionsEnabled ?? false,
         customRolesEnabled: platformPlan?.customRolesEnabled ?? false,
-        managePiecesEnabled: platformPlan?.managePiecesEnabled ?? false,
+        manageConnectorsEnabled: platformPlan?.manageConnectorsEnabled ?? false,
         manageTemplatesEnabled: platformPlan?.manageTemplatesEnabled ?? false,
         customAppearanceEnabled: platformPlan?.customAppearanceEnabled ?? false,
         apiKeysEnabled: platformPlan?.apiKeysEnabled ?? false,
@@ -207,7 +207,7 @@ export const createMockPlatform = (platform?: Partial<Platform>): Platform => {
         logoIconUrl: platform?.logoIconUrl ?? faker.image.urlPlaceholder(),
         fullLogoUrl: platform?.fullLogoUrl ?? faker.image.urlPlaceholder(),
         emailAuthEnabled: platform?.emailAuthEnabled ?? faker.datatype.boolean(),
-        pinnedPieces: platform?.pinnedPieces ?? [],
+        pinnedConnectors: platform?.pinnedConnectors ?? [],
         favIconUrl: platform?.favIconUrl ?? faker.image.urlPlaceholder(),
         cloudAuthEnabled: platform?.cloudAuthEnabled ?? faker.datatype.boolean(),
         googleAuthEnabled: platform?.googleAuthEnabled ?? true,
@@ -308,33 +308,33 @@ export const createMockSigningKey = (
 }
 
 
-export const createMockPieceMetadata = (
-    pieceMetadata?: Partial<Omit<PieceMetadataSchema, 'project'>>,
-): Omit<PieceMetadataSchema, 'project'> => {
+export const createMockConnectorMetadata = (
+    connectorMetadata?: Partial<Omit<ConnectorMetadataSchema, 'project'>>,
+): Omit<ConnectorMetadataSchema, 'project'> => {
     return {
-        id: pieceMetadata?.id ?? apId(),
+        id: connectorMetadata?.id ?? apId(),
         projectUsage: 0,
-        created: pieceMetadata?.created ?? faker.date.recent().toISOString(),
-        updated: pieceMetadata?.updated ?? faker.date.recent().toISOString(),
-        name: pieceMetadata?.name ?? faker.lorem.word(),
-        displayName: pieceMetadata?.displayName ?? faker.lorem.word(),
-        logoUrl: pieceMetadata?.logoUrl ?? faker.image.urlPlaceholder(),
-        description: pieceMetadata?.description ?? faker.lorem.sentence(),
-        directoryPath: pieceMetadata?.directoryPath,
-        auth: pieceMetadata?.auth,
-        authors: pieceMetadata?.authors ?? [],
-        platformId: pieceMetadata?.platformId,
-        version: pieceMetadata?.version ?? faker.system.semver(),
-        minimumSupportedRelease: pieceMetadata?.minimumSupportedRelease ?? '0.0.0',
-        maximumSupportedRelease: pieceMetadata?.maximumSupportedRelease ?? '9.9.9',
-        actions: pieceMetadata?.actions ?? {},
-        triggers: pieceMetadata?.triggers ?? {},
-        pieceType: pieceMetadata?.pieceType ?? faker.helpers.enumValue(PieceType),
+        created: connectorMetadata?.created ?? faker.date.recent().toISOString(),
+        updated: connectorMetadata?.updated ?? faker.date.recent().toISOString(),
+        name: connectorMetadata?.name ?? faker.lorem.word(),
+        displayName: connectorMetadata?.displayName ?? faker.lorem.word(),
+        logoUrl: connectorMetadata?.logoUrl ?? faker.image.urlPlaceholder(),
+        description: connectorMetadata?.description ?? faker.lorem.sentence(),
+        directoryPath: connectorMetadata?.directoryPath,
+        auth: connectorMetadata?.auth,
+        authors: connectorMetadata?.authors ?? [],
+        platformId: connectorMetadata?.platformId,
+        version: connectorMetadata?.version ?? faker.system.semver(),
+        minimumSupportedRelease: connectorMetadata?.minimumSupportedRelease ?? '0.0.0',
+        maximumSupportedRelease: connectorMetadata?.maximumSupportedRelease ?? '9.9.9',
+        actions: connectorMetadata?.actions ?? {},
+        triggers: connectorMetadata?.triggers ?? {},
+        connectorType: connectorMetadata?.connectorType ?? faker.helpers.enumValue(ConnectorType),
         packageType:
-            pieceMetadata?.packageType ?? faker.helpers.enumValue(PackageType),
-        archiveId: pieceMetadata?.archiveId,
-        categories: pieceMetadata?.categories ?? [],
-        contextInfo: pieceMetadata?.contextInfo ?? { version: LATEST_CONTEXT_VERSION },
+            connectorMetadata?.packageType ?? faker.helpers.enumValue(PackageType),
+        archiveId: connectorMetadata?.archiveId,
+        categories: connectorMetadata?.categories ?? [],
+        contextInfo: connectorMetadata?.contextInfo ?? { version: LATEST_CONTEXT_VERSION },
     }
 }
 
@@ -453,7 +453,7 @@ export const createMockConnection = (connection: Partial<AppConnection>, ownerId
         updated: connection?.updated ?? faker.date.recent().toISOString(),
         platformId: connection?.platformId ?? apId(),
         projectIds: connection?.projectIds ?? [],
-        pieceName: connection?.pieceName ?? faker.lorem.word(),
+        connectorName: connection?.connectorName ?? faker.lorem.word(),
         displayName: connection?.displayName ?? faker.lorem.word(),
         type: AppConnectionType.SECRET_TEXT,
         scope: AppConnectionScope.PROJECT,
@@ -466,7 +466,7 @@ export const createMockConnection = (connection: Partial<AppConnection>, ownerId
         metadata: connection?.metadata ?? {},
         externalId: connection?.externalId ?? apId(),
         owner: null,
-        pieceVersion: connection?.pieceVersion ?? '0.0.0',
+        connectorVersion: connection?.connectorVersion ?? '0.0.0',
         preSelectForNewProjects: connection?.preSelectForNewProjects ?? false,
     }
 }
@@ -700,7 +700,7 @@ export const createMockAIProvider = async (aiProvider?: Partial<AIProvider> & { 
             apiKey: process.env.OPENAI_API_KEY || faker.string.uuid(),
         }),
         config: aiProvider?.config ?? {},
-        enabledForChat: aiProvider?.enabledForChat ?? aiProvider?.provider === AIProviderName.ACTIVEPIECES,
+        enabledForChat: aiProvider?.enabledForChat ?? aiProvider?.provider === AIProviderName.FEMA,
     }
 
 }
@@ -711,15 +711,15 @@ export const mockAndSaveAIProvider = async (params?: Partial<AIProvider> & { ena
     return mockAIProvider
 }
 
-export const mockPieceMetadata = async (mockLog: FastifyBaseLogger): Promise<PieceMetadata> => {
+export const mockConnectorMetadata = async (mockLog: FastifyBaseLogger): Promise<ConnectorMetadata> => {
     const { mockPlatform } = await mockAndSaveBasicSetup()
-    const mockPieceMetadata = createMockPieceMetadata({
+    const mockConnectorMetadata = createMockConnectorMetadata({
         platformId: mockPlatform.id,
         packageType: PackageType.REGISTRY,
     })
-    await databaseConnection().getRepository('piece_metadata').save([mockPieceMetadata])
-    pieceMetadataService(mockLog).getOrThrow = vi.fn().mockResolvedValue(mockPieceMetadata)
-    return mockPieceMetadata
+    await databaseConnection().getRepository('connector_metadata').save([mockConnectorMetadata])
+    connectorMetadataService(mockLog).getOrThrow = vi.fn().mockResolvedValue(mockConnectorMetadata)
+    return mockConnectorMetadata
 }
 
 export const createMockFolder = (folder?: Partial<Folder>): Folder => {

@@ -30,10 +30,10 @@ Entry point: `formulaEvaluator`, exported from `packages/core/formula/src/lib/fo
 
 - `packages/core/formula/src/lib/` — the whole formula library: evaluator + wrapper format, `FEMA_FUNCTIONS` registry, function implementations, type checker.
 - `packages/server/engine/src/lib/variables/props-resolver.ts` — the runtime pre-pass that detects the wrapper and evaluates before normal `{{var}}` resolution.
-- `packages/web/src/app/builder/piece-properties/text-input-with-mentions/` — the editor: `tiptap-editor.tsx`, `text-input-utils.ts` serializer, and `index.tsx` re-export.
-- `packages/web/src/app/builder/piece-properties/text-input-with-mentions/extensions/` — the three inline atom badge nodes plus the `/` slash extension.
-- `packages/web/src/app/builder/piece-properties/text-input-with-mentions/components/` — function search and hover popovers.
+- `packages/web/src/app/builder/connector-properties/text-input-with-mentions/` — the editor: `tiptap-editor.tsx`, `text-input-utils.ts` serializer, and `index.tsx` re-export.
+- `packages/web/src/app/builder/connector-properties/text-input-with-mentions/extensions/` — the three inline atom badge nodes plus the `/` slash extension.
+- `packages/web/src/app/builder/connector-properties/text-input-with-mentions/components/` — function search and hover popovers.
 - `packages/core/shared/test/formula/` — evaluator, type-checker, and serializer round-trip tests.
-- `packages/web/test/app/builder/piece-properties/text-input-with-mentions/` — serializer resilience and round-trip tests (unclosed `{{`, quoted references, quoted function args).
+- `packages/web/test/app/builder/connector-properties/text-input-with-mentions/` — serializer resilience and round-trip tests (unclosed `{{`, quoted references, quoted function args).
 
 Paths verified 2026-07-17. An earlier version pointed at `packages/core/shared/src/lib/formula/`; it moved to its own package at `packages/core/formula/src/lib/` (`@fema/expression`).

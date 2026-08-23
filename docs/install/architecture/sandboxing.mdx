@@ -4,14 +4,14 @@ description: "Choose the right isolation mode for running flow code"
 icon: "box"
 ---
 
-Flow code (Code steps and piece actions) always runs inside a **sandbox** that wraps the engine process. `FEMA_EXECUTION_MODE` decides which sandbox. It is the most important security choice in a self-hosted deployment: it decides whether a malicious flow is contained to one worker pod or can reach the kernel.
+Flow code (Code steps and connector actions) always runs inside a **sandbox** that wraps the engine process. `FEMA_EXECUTION_MODE` decides which sandbox. It is the most important security choice in a self-hosted deployment: it decides whether a malicious flow is contained to one worker pod or can reach the kernel.
 
 ## Execution Modes
 
 <Snippet file="execution-mode.mdx" />
 
 <Tip>
-**For enterprise deployments, use `SANDBOX_CODE_ONLY` (V8 isolation).** It is the only mode that is both multi-tenant-safe *and* runs as an unprivileged container. It is what Activepieces Cloud uses, and what fits inside a standard Kubernetes security baseline.
+**For enterprise deployments, use `SANDBOX_CODE_ONLY` (V8 isolation).** It is the only mode that is both multi-tenant-safe *and* runs as an unprivileged container. It is what FEMA Integration Platform Cloud uses, and what fits inside a standard Kubernetes security baseline.
 </Tip>
 
 ## Why V8 Sandboxing Exists
@@ -20,7 +20,7 @@ Flow code (Code steps and piece actions) always runs inside a **sandbox** that w
 
 ### A concrete K8s example
 
-You run Activepieces in your own Kubernetes cluster, next to a Salesforce-sync service and a finance-analytics pod. A customer ships a malicious Code step.
+You run FEMA Integration Platform in your own Kubernetes cluster, next to a Salesforce-sync service and a finance-analytics pod. A customer ships a malicious Code step.
 
 - **With `SANDBOX_PROCESS`**: the worker pod is privileged. A kernel exploit escapes to the host, reads the service-account token, hits the Kubernetes API, and pivots to the Salesforce pod and the finance DB. Blast radius: **your whole cluster**.
 - **With `SANDBOX_CODE_ONLY`**: the worker has no special capabilities. The Code step runs inside a fresh V8 isolate (no `require`, no filesystem, no npm). Blast radius: **that one worker pod**.
@@ -28,7 +28,7 @@ You run Activepieces in your own Kubernetes cluster, next to a Salesforce-sync s
 V8 isolation gives you multi-tenant code safety without handing a workflow engine kernel-level access to everything sharing the cluster.
 
 <Warning>
-Only choose `SANDBOX_PROCESS` if you genuinely need arbitrary `npm` packages in Code steps, and run it on a dedicated node pool. A privileged Activepieces worker should never share a node with unrelated workloads.
+Only choose `SANDBOX_PROCESS` if you genuinely need arbitrary `npm` packages in Code steps, and run it on a dedicated node pool. A privileged FEMA Integration Platform worker should never share a node with unrelated workloads.
 </Warning>
 
 ## How Each Mode Works

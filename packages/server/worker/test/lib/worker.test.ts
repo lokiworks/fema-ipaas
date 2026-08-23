@@ -4,7 +4,7 @@ import { Server as IOServer, Socket } from 'socket.io'
 import {
     createRpcServer,
     PackageType,
-    PieceType,
+    ConnectorType,
     WorkerJobType,
     EngineResponseStatus,
     WebsocketServerEvent,
@@ -12,7 +12,7 @@ import {
 import { JobResultKind } from '../../src/lib/execute/types'
 import type {
     WorkerToApiContract,
-    ExecuteExtractPieceMetadataJobData,
+    ExecuteExtractConnectorMetadataJobData,
     ConsumeJobRequest,
 } from '@fema/shared'
 
@@ -77,17 +77,17 @@ vi.mock('@fema/sandbox', () => ({
 
 import { findStalledLoopIndex, worker } from '../../src/lib/worker'
 
-function buildExtractPieceJob(): ExecuteExtractPieceMetadataJobData {
+function buildExtractConnectorJob(): ExecuteExtractConnectorMetadataJobData {
     return {
         schemaVersion: 4,
-        jobType: WorkerJobType.EXECUTE_EXTRACT_PIECE_INFORMATION,
+        jobType: WorkerJobType.EXECUTE_EXTRACT_CONNECTOR_INFORMATION,
         projectId: undefined,
         platformId: 'plat-1',
-        piece: {
-            pieceName: '@fema/connector-test',
-            pieceVersion: '0.1.0',
+        connector: {
+            connectorName: '@fema/connector-test',
+            connectorVersion: '0.1.0',
             packageType: PackageType.REGISTRY,
-            pieceType: PieceType.OFFICIAL,
+            connectorType: ConnectorType.OFFICIAL,
         },
         requestId: 'req-1',
         webserverId: 'ws-1',
@@ -97,7 +97,7 @@ function buildExtractPieceJob(): ExecuteExtractPieceMetadataJobData {
 function buildConsumeJobRequest(overrides?: Partial<ConsumeJobRequest>): ConsumeJobRequest {
     return {
         jobId: 'job-1',
-        jobData: buildExtractPieceJob(),
+        jobData: buildExtractConnectorJob(),
         timeoutInSeconds: 600,
         attempsStarted: 0,
         engineToken: 'tok-1',
@@ -189,8 +189,8 @@ describe('worker integration', () => {
                 submitPayloads: vi.fn(),
                 savePayloads: vi.fn(),
                 getFlowVersion: vi.fn(),
-                getPiece: vi.fn(),
-                getPieceArchive: vi.fn(),
+                getConnector: vi.fn(),
+                getConnectorArchive: vi.fn(),
                 extendLock: vi.fn(),
                 recordTriggerRun: vi.fn(),
                 disableFlow: vi.fn(),
@@ -202,7 +202,7 @@ describe('worker integration', () => {
     it('polls for a job, executes it, and reports completion', async () => {
         const expectedResult = { kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.OK }
         mockGetHandler.mockReturnValue({
-            jobType: WorkerJobType.EXECUTE_EXTRACT_PIECE_INFORMATION,
+            jobType: WorkerJobType.EXECUTE_EXTRACT_CONNECTOR_INFORMATION,
             execute: vi.fn().mockResolvedValue(expectedResult),
         })
 
@@ -214,7 +214,7 @@ describe('worker integration', () => {
         expect(completeJobCalls[0].token).toBe('token-123')
         expect(completeJobCalls[0].queueName).toBe('workerJobs')
         expect(completeJobCalls[0].status).toBe(EngineResponseStatus.OK)
-        expect(mockGetHandler).toHaveBeenCalledWith(WorkerJobType.EXECUTE_EXTRACT_PIECE_INFORMATION)
+        expect(mockGetHandler).toHaveBeenCalledWith(WorkerJobType.EXECUTE_EXTRACT_CONNECTOR_INFORMATION)
     }, 15_000)
 
     it('keeps polling when the server-ping probe never settles', async () => {
@@ -232,7 +232,7 @@ describe('worker integration', () => {
         })
 
         mockGetHandler.mockReturnValue({
-            jobType: WorkerJobType.EXECUTE_EXTRACT_PIECE_INFORMATION,
+            jobType: WorkerJobType.EXECUTE_EXTRACT_CONNECTOR_INFORMATION,
             execute: vi.fn().mockResolvedValue({ kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.OK }),
         })
 
@@ -246,7 +246,7 @@ describe('worker integration', () => {
 
     it('reports error when job execution fails', async () => {
         mockGetHandler.mockReturnValue({
-            jobType: WorkerJobType.EXECUTE_EXTRACT_PIECE_INFORMATION,
+            jobType: WorkerJobType.EXECUTE_EXTRACT_CONNECTOR_INFORMATION,
             execute: vi.fn().mockRejectedValue(new Error('boom')),
         })
 
@@ -262,7 +262,7 @@ describe('worker integration', () => {
     it('forwards response from job handler to completeJob', async () => {
         const handlerPayload = { foo: 'bar' }
         mockGetHandler.mockReturnValue({
-            jobType: WorkerJobType.EXECUTE_EXTRACT_PIECE_INFORMATION,
+            jobType: WorkerJobType.EXECUTE_EXTRACT_CONNECTOR_INFORMATION,
             execute: vi.fn().mockResolvedValue({ kind: JobResultKind.SYNCHRONOUS, status: EngineResponseStatus.OK, response: handlerPayload }),
         })
 
@@ -276,7 +276,7 @@ describe('worker integration', () => {
 
     it('skips null poll responses and re-polls', async () => {
         mockGetHandler.mockReturnValue({
-            jobType: WorkerJobType.EXECUTE_EXTRACT_PIECE_INFORMATION,
+            jobType: WorkerJobType.EXECUTE_EXTRACT_CONNECTOR_INFORMATION,
             execute: vi.fn().mockResolvedValue({ kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.OK }),
         })
 
@@ -290,7 +290,7 @@ describe('worker integration', () => {
 
     it('forwards USER_FAILURE status from synchronous job handler', async () => {
         mockGetHandler.mockReturnValue({
-            jobType: WorkerJobType.EXECUTE_EXTRACT_PIECE_INFORMATION,
+            jobType: WorkerJobType.EXECUTE_EXTRACT_CONNECTOR_INFORMATION,
             execute: vi.fn().mockResolvedValue({
                 kind: JobResultKind.SYNCHRONOUS,
                 status: EngineResponseStatus.USER_FAILURE,
@@ -310,7 +310,7 @@ describe('worker integration', () => {
 
     it('treats USER_FAILURE differently from INTERNAL_ERROR in fire-and-forget', async () => {
         mockGetHandler.mockReturnValue({
-            jobType: WorkerJobType.EXECUTE_EXTRACT_PIECE_INFORMATION,
+            jobType: WorkerJobType.EXECUTE_EXTRACT_CONNECTOR_INFORMATION,
             execute: vi.fn().mockResolvedValue({ kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.OK }),
         })
 
@@ -323,7 +323,7 @@ describe('worker integration', () => {
 
     it('propagates INTERNAL_ERROR status from fire-and-forget result to completeJob', async () => {
         mockGetHandler.mockReturnValue({
-            jobType: WorkerJobType.EXECUTE_EXTRACT_PIECE_INFORMATION,
+            jobType: WorkerJobType.EXECUTE_EXTRACT_CONNECTOR_INFORMATION,
             execute: vi.fn().mockResolvedValue({
                 kind: JobResultKind.FIRE_AND_FORGET,
                 status: EngineResponseStatus.INTERNAL_ERROR,
@@ -342,7 +342,7 @@ describe('worker integration', () => {
 
     it('propagates TIMEOUT status from fire-and-forget result to completeJob', async () => {
         mockGetHandler.mockReturnValue({
-            jobType: WorkerJobType.EXECUTE_EXTRACT_PIECE_INFORMATION,
+            jobType: WorkerJobType.EXECUTE_EXTRACT_CONNECTOR_INFORMATION,
             execute: vi.fn().mockResolvedValue({
                 kind: JobResultKind.FIRE_AND_FORGET,
                 status: EngineResponseStatus.TIMEOUT,
@@ -361,13 +361,13 @@ describe('worker integration', () => {
         it('survives a job with invalid jobData fields and continues processing', async () => {
             const expectedResult = { kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.OK }
             mockGetHandler.mockReturnValue({
-                jobType: WorkerJobType.EXECUTE_EXTRACT_PIECE_INFORMATION,
+                jobType: WorkerJobType.EXECUTE_EXTRACT_CONNECTOR_INFORMATION,
                 execute: vi.fn().mockResolvedValue(expectedResult),
             })
 
             const invalidJob = buildConsumeJobRequest({
                 jobId: 'job-invalid-fields',
-                jobData: { jobType: 'EXECUTE_EXTRACT_PIECE_INFORMATION', schemaVersion: 4 } as any,
+                jobData: { jobType: 'EXECUTE_EXTRACT_CONNECTOR_INFORMATION', schemaVersion: 4 } as any,
             })
             const validJob = buildConsumeJobRequest({ jobId: 'job-valid' })
 
@@ -384,7 +384,7 @@ describe('worker integration', () => {
         it('survives a job with an unrecognized jobType and continues polling', async () => {
             const expectedResult = { kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.OK }
             mockGetHandler.mockReturnValue({
-                jobType: WorkerJobType.EXECUTE_EXTRACT_PIECE_INFORMATION,
+                jobType: WorkerJobType.EXECUTE_EXTRACT_CONNECTOR_INFORMATION,
                 execute: vi.fn().mockResolvedValue(expectedResult),
             })
 
@@ -405,7 +405,7 @@ describe('worker integration', () => {
 
         it('survives a job with empty object as jobData and continues polling', async () => {
             mockGetHandler.mockReturnValue({
-                jobType: WorkerJobType.EXECUTE_EXTRACT_PIECE_INFORMATION,
+                jobType: WorkerJobType.EXECUTE_EXTRACT_CONNECTOR_INFORMATION,
                 execute: vi.fn().mockResolvedValue({ kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.OK }),
             })
 
@@ -426,7 +426,7 @@ describe('worker integration', () => {
 
         it('survives a job with non-object primitive jobData and continues polling', async () => {
             mockGetHandler.mockReturnValue({
-                jobType: WorkerJobType.EXECUTE_EXTRACT_PIECE_INFORMATION,
+                jobType: WorkerJobType.EXECUTE_EXTRACT_CONNECTOR_INFORMATION,
                 execute: vi.fn().mockResolvedValue({ kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.OK }),
             })
 
@@ -448,7 +448,7 @@ describe('worker integration', () => {
         it('survives multiple consecutive invalid jobs and still processes a valid one', async () => {
             const expectedResult = { kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.OK }
             mockGetHandler.mockReturnValue({
-                jobType: WorkerJobType.EXECUTE_EXTRACT_PIECE_INFORMATION,
+                jobType: WorkerJobType.EXECUTE_EXTRACT_CONNECTOR_INFORMATION,
                 execute: vi.fn().mockResolvedValue(expectedResult),
             })
 
@@ -474,11 +474,11 @@ describe('worker integration', () => {
         it('continues processing after a handler throws and handles the next job', async () => {
             mockGetHandler
                 .mockReturnValueOnce({
-                    jobType: WorkerJobType.EXECUTE_EXTRACT_PIECE_INFORMATION,
+                    jobType: WorkerJobType.EXECUTE_EXTRACT_CONNECTOR_INFORMATION,
                     execute: vi.fn().mockRejectedValue(new Error('handler crashed')),
                 })
                 .mockReturnValueOnce({
-                    jobType: WorkerJobType.EXECUTE_EXTRACT_PIECE_INFORMATION,
+                    jobType: WorkerJobType.EXECUTE_EXTRACT_CONNECTOR_INFORMATION,
                     execute: vi.fn().mockResolvedValue({ kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.OK }),
                 })
 
@@ -497,7 +497,7 @@ describe('worker integration', () => {
 
         it('handles interleaved nulls, invalid jobs, and valid jobs', async () => {
             mockGetHandler.mockReturnValue({
-                jobType: WorkerJobType.EXECUTE_EXTRACT_PIECE_INFORMATION,
+                jobType: WorkerJobType.EXECUTE_EXTRACT_CONNECTOR_INFORMATION,
                 execute: vi.fn().mockResolvedValue({ kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.OK }),
             })
 
@@ -540,8 +540,8 @@ describe('worker integration', () => {
                     submitPayloads: vi.fn(),
                     savePayloads: vi.fn(),
                     getFlowVersion: vi.fn(),
-                    getPiece: vi.fn(),
-                    getPieceArchive: vi.fn(),
+                    getConnector: vi.fn(),
+                    getConnectorArchive: vi.fn(),
                     extendLock: vi.fn(),
                     disableFlow: vi.fn(),
                 } as unknown as WorkerToApiContract)
@@ -732,7 +732,7 @@ const WORKER_SETTINGS = {
     MAX_FILE_SIZE_MB: 10,
     SANDBOX_MEMORY_LIMIT: '1024',
     SANDBOX_PROPAGATED_ENV_VARS: [],
-    DEV_PIECES: [],
+    DEV_CONNECTORS: [],
     OTEL_ENABLED: false,
     FILE_STORAGE_LOCATION: '/tmp',
     S3_USE_SIGNED_URLS: 'false',

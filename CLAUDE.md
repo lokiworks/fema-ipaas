@@ -1,6 +1,6 @@
-# Activepieces
+# FEMA Integration Platform
 
-Open-source AI-first workflow automation platform. Self-hosted or cloud. 400+ pieces. MCP support.
+Open-source AI-first workflow automation platform. Self-hosted or cloud. 400+ connectors. MCP support.
 
 ## Architecture (Non-Obvious Rules)
 
@@ -14,12 +14,12 @@ Open-source AI-first workflow automation platform. Self-hosted or cloud. 400+ pi
 - **Multi-server**: Use `distributedLock`, BullMQ deduplication, or `FOR UPDATE SKIP LOCKED` for concurrent operations.
 - **Managed PostgreSQL**: No custom extensions. Use `sanitizeObjectForPostgresql()` for external data.
 - **Before modifying a module**: Read its subsystem page in `brain/<area>/` (and that area's `index.md` glossary) for domain language, entities, services, and integration details.
-- **Cross-cutting libraries live in `packages/core/*`**, ordered thin → thick: `core-utils`, `core-piece-types`, `core-formula`, `core-execution` (thin, bundleable, framework-agnostic) and `core/shared` (the one thick, app-level member — **keeps the name `@fema/shared`**, carries DB/EE/management schemas + heavy deps). Pieces and the engine may import the thin members but **never** `@fema/shared`; pieces get what they need via `@fema/connector-sdk`. See `.claude/rules/core-packages.md`.
+- **Cross-cutting libraries live in `packages/core/*`**, ordered thin → thick: `core-utils`, `core-connector-types`, `core-formula`, `core-execution` (thin, bundleable, framework-agnostic) and `core/shared` (the one thick, app-level member — **keeps the name `@fema/shared`**, carries DB/EE/management schemas + heavy deps). Connectors and the engine may import the thin members but **never** `@fema/shared`; connectors get what they need via `@fema/connector-sdk`. See `.claude/rules/core-packages.md`.
 | `brain/<area>/index.md` | 9 areas | First stop for an unfamiliar subsystem | Area glossary + list of its pages |
 | `brain/<area>/*.md` | one page per subsystem | When Claude explores that subsystem | Entity schemas, services, data flows, gotchas |
 | `brain/decisions/*.md` | numbered, under `decisions/` | When Claude needs the *why* behind a design | One hard-to-reverse call each |
 | `.claude/rules/` | 3-5 lines each | Every session | Critical safety checks (entity registration, data isolation, edition safety) |
-| `.agents/skills/` | one folder each | When invoked | Investigations, not conventions — `/debug-failed-run`, `/triage-*`, `/piece-builder`. Code shapes and conventions live in the wiki, not here. |
+| `.agents/skills/` | one folder each | When invoked | Investigations, not conventions — `/debug-failed-run`, `/triage-*`, `/connector-builder`. Code shapes and conventions live in the wiki, not here. |
 - **Exported types and constants must be placed at the end of the file**, after all logic (functions, hooks, components, classes, etc.). This keeps the logic front and centre when reading a file, and groups the public contract at a predictable location.
 
   ```ts
@@ -42,7 +42,7 @@ Open-source AI-first workflow automation platform. Self-hosted or cloud. 400+ pi
 
 ## Coding Conventions
 
-- **npm dependencies go in the workspace that imports them, never the root `package.json`** — every workspace (api, worker, web, each piece, …) must declare what its own code imports, in its own `package.json` (`dependencies` for runtime imports, `devDependencies` for test/tooling-only). Bun's isolated linker resolves each workspace from its own manifest, and the Docker image installs only workspace manifests — an undeclared import that "works locally" will crash the production container. Root `dependencies` is only `jsonwebtoken` (required by `docker-entrypoint.sh`); root `devDependencies` is only for repo-level tooling under `scripts/` and `tools/`. Pin exact versions like the surrounding entries, and run `bun install` afterwards so `bun.lock` stays in sync.
+- **npm dependencies go in the workspace that imports them, never the root `package.json`** — every workspace (api, worker, web, each connector, …) must declare what its own code imports, in its own `package.json` (`dependencies` for runtime imports, `devDependencies` for test/tooling-only). Bun's isolated linker resolves each workspace from its own manifest, and the Docker image installs only workspace manifests — an undeclared import that "works locally" will crash the production container. Root `dependencies` is only `jsonwebtoken` (required by `docker-entrypoint.sh`); root `devDependencies` is only for repo-level tooling under `scripts/` and `tools/`. Pin exact versions like the surrounding entries, and run `bun install` afterwards so `bun.lock` stays in sync.
 - **No `any` type** — Use proper type definitions or `unknown` with type guards
 - **No type casting** — Do not use `as SomeType` to force types. If you encounter an unnecessary cast, remove it.
 - **No deprecated APIs** — Before using any library method or export, check its JSDoc. If it carries a `@deprecated` tag, use the recommended replacement instead. Examples: prefer `z.enum` over `z.nativeEnum`.
@@ -60,7 +60,7 @@ Open-source AI-first workflow automation platform. Self-hosted or cloud. 400+ pi
 ## Query Error Handling
 
 - **Global error dialog via `meta`** — `app.tsx` has a `QueryCache.onError` handler that shows an error dialog when `query.meta?.showErrorDialog` is truthy. When adding a new `useQuery` that fetches primary page data (e.g. table rows, list data), add `meta: { showErrorDialog: true }` to the query options.
-- **Do NOT add** `showErrorDialog` to minor/auxiliary queries (feature flags, piece metadata, single-item fetches, filter options, user details). These should fail silently.
+- **Do NOT add** `showErrorDialog` to minor/auxiliary queries (feature flags, connector metadata, single-item fetches, filter options, user details). These should fail silently.
 - Rule of thumb: if the query failure would leave the user staring at an empty table or blank page with no explanation, it should have `meta: { showErrorDialog: true }`.
 
 ## Key Utilities (`@fema/shared`)
@@ -87,7 +87,7 @@ npx turbo run lint --filter=<package>           # Lint a single package, e.g. --
 npx turbo run serve --filter=web -- --mode=cloud # Run local frontend against the cloud backend
 ```
 
-When running in `--mode=cloud`, do not use OAuth2 connections — the OAuth provider will redirect back to `cloud.activepieces.com` after sign-in instead of your local frontend, breaking the flow. Use API-key / basic-auth connections, or test OAuth2 against a fully local backend.
+When running in `--mode=cloud`, do not use OAuth2 connections — the OAuth provider will redirect back to `fema.local` after sign-in instead of your local frontend, breaking the flow. Use API-key / basic-auth connections, or test OAuth2 against a fully local backend.
 
 ## Pull Requests
 
@@ -95,9 +95,9 @@ When running in `--mode=cloud`, do not use OAuth2 connections — the OAuth prov
   - **`🌟 feature`** — new functionality
   - **`🐛 bug`** — bug fix
   - **`skip-changelog`** — changes that should not appear in the changelog (docs, CI tweaks, internal refactors, etc.)
-- If the PR includes any contributions to pieces (integrations under `packages/pieces`), also add the appropriate pieces label (in addition to the primary label above):
-  - **`🧩 area/third-party-pieces`** — for third-party integrations (most pieces under `packages/pieces/community/`)
-  - **`🧩 area/core-pieces`** — for core pieces (under `packages/pieces/core/`)
+- If the PR includes any contributions to connectors (integrations under `packages/connectors`), also add the appropriate connectors label (in addition to the primary label above):
+  - **`🧩 area/third-party-connectors`** — for third-party integrations (most connectors under `packages/connectors/community/`)
+  - **`🧩 area/core-connectors`** — for core connectors (under `packages/connectors/core/`)
 - **Always fill the "Breaking change?" section of the PR template** — tick exactly one box (the `breaking-change-check` CI job fails if it is left unedited). A change is breaking if a self-hoster or API consumer must take action: removed/renamed API fields or endpoints, dropped columns, new required fields, removed/required env vars, or default/limit/behaviour changes. If it is breaking:
   - also apply the **`⛓️‍💥 breaking-change`** label (in addition to the primary label above), and
   - add an entry to `docs/install/reference/breaking-changes.mdx` describing what changed and the action required. CI enforces that the label and the docs entry travel together.
@@ -105,7 +105,7 @@ When running in `--mode=cloud`, do not use OAuth2 connections — the OAuth prov
 
 ## Database Migrations
 
-- Before creating or modifying a database migration, **always read the [Database Migrations Playbook](https://www.activepieces.com/docs/handbook/engineering/playbooks/database-migration#database-migrations)** first. Follow its instructions for generating and structuring migrations.
+- Before creating or modifying a database migration, **always read the [Database Migrations Playbook](https://github.com/lokiworks/fema-ipaas/docs/handbook/engineering/playbooks/database-migration#database-migrations)** first. Follow its instructions for generating and structuring migrations.
 
 ## Verification
 
@@ -113,7 +113,7 @@ When running in `--mode=cloud`, do not use OAuth2 connections — the OAuth prov
 
 ## White-Labeling & Edition Paths
 
-- **All customer-facing UI must be white-labeled.** Sign-in/signup pages, email templates, logos, and any user-visible branding must use the platform's configured appearance (name, colors, logos) — never hardcode "Activepieces" in user-facing surfaces.
+- **All customer-facing UI must be white-labeled.** Sign-in/signup pages, email templates, logos, and any user-visible branding must use the platform's configured appearance (name, colors, logos) — never hardcode "FEMA Integration Platform" in user-facing surfaces.
 - **Test across all edition paths.** Every customer-facing feature must be verified on:
   - **Community Edition** (self-hosted, `FEMA_EDITION=ce`) — no custom branding, open-source plan
   - **Enterprise Edition** (self-hosted, `FEMA_EDITION=ee`) — custom branding behind `customAppearanceEnabled` flag
@@ -125,7 +125,7 @@ When running in `--mode=cloud`, do not use OAuth2 connections — the OAuth prov
 
 ## Useful Links
 
-- [Database Migrations Playbook](https://www.activepieces.com/docs/handbook/engineering/playbooks/database-migration)
+- [Database Migrations Playbook](https://github.com/lokiworks/fema-ipaas/docs/handbook/engineering/playbooks/database-migration)
 - [TypeORM Migrations Docs](https://orkhan.gitbook.io/typeorm/docs/migrations)
 
 <!-- craftspace:start -->
@@ -225,7 +225,7 @@ Title it as the claim itself, so the list reads as a set of positions:
 
 ~~~
 Worker is the Sandbox
-Pieces are distributed as links, resolved lazily
+Connectors are distributed as links, resolved lazily
 ~~~
 
 The body is four `## ` sections — **Decision**, **Context**, **Why** (the reasoning and the main rejected

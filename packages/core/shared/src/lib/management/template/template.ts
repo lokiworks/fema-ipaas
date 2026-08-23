@@ -82,7 +82,7 @@ export const Template = z.object({
     metadata: Nullable(Metadata),
     author: z.string(),
     categories: z.array(z.string()),
-    pieces: z.array(z.string()),
+    connectors: z.array(z.string()),
     platformId: Nullable(z.string()),
     flows: z.array(FlowVersionTemplate).optional(),
     tables: z.array(TableTemplate).optional(),

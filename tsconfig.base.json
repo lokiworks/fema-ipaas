@@ -27,7 +27,7 @@
         "packages/core/formula/src/index.ts"
       ],
       "@fema/connector-types": [
-        "packages/core/piece-types/src/index.ts"
+        "packages/core/connector-types/src/index.ts"
       ],
       "@fema/workflow-core": [
         "packages/core/execution/src/index.ts"
@@ -36,91 +36,91 @@
         "packages/server/engine/src/main.ts"
       ],
       "@fema/connector-approval": [
-        "packages/pieces/core/approval/src/index.ts"
+        "packages/connectors/core/approval/src/index.ts"
       ],
       "@fema/connector-connections": [
-        "packages/pieces/core/connections/src/index.ts"
+        "packages/connectors/core/connections/src/index.ts"
       ],
       "@fema/connector-crypto": [
-        "packages/pieces/core/crypto/src/index.ts"
+        "packages/connectors/core/crypto/src/index.ts"
       ],
       "@fema/connector-csv": [
-        "packages/pieces/core/csv/src/index.ts"
+        "packages/connectors/core/csv/src/index.ts"
       ],
       "@fema/connector-data-mapper": [
-        "packages/pieces/core/data-mapper/src/index.ts"
+        "packages/connectors/core/data-mapper/src/index.ts"
       ],
       "@fema/connector-data-summarizer": [
-        "packages/pieces/core/data-summarizer/src/index.ts"
+        "packages/connectors/core/data-summarizer/src/index.ts"
       ],
       "@fema/connector-date-helper": [
-        "packages/pieces/core/date-helper/src/index.ts"
+        "packages/connectors/core/date-helper/src/index.ts"
       ],
       "@fema/connector-delay": [
-        "packages/pieces/core/delay/src/index.ts"
+        "packages/connectors/core/delay/src/index.ts"
       ],
       "@fema/connector-file-helper": [
-        "packages/pieces/core/file-helper/src/index.ts"
+        "packages/connectors/core/file-helper/src/index.ts"
       ],
       "@fema/connector-forms": [
-        "packages/pieces/core/forms/src/index.ts"
+        "packages/connectors/core/forms/src/index.ts"
       ],
       "@fema/connector-github": [
-        "packages/pieces/community/github/src/index.ts"
+        "packages/connectors/community/github/src/index.ts"
       ],
       "@fema/connector-http": [
-        "packages/pieces/core/http/src/index.ts"
+        "packages/connectors/core/http/src/index.ts"
       ],
       "@fema/connector-math-helper": [
-        "packages/pieces/core/math-helper/src/index.ts"
+        "packages/connectors/core/math-helper/src/index.ts"
       ],
       "@fema/connector-mysql": [
-        "packages/pieces/community/mysql/src/index.ts"
+        "packages/connectors/community/mysql/src/index.ts"
       ],
       "@fema/connector-postgres": [
-        "packages/pieces/community/postgres/src/index.ts"
+        "packages/connectors/community/postgres/src/index.ts"
       ],
       "@fema/connector-rabbitmq": [
-        "packages/pieces/community/rabbitmq/src/index.ts"
+        "packages/connectors/community/rabbitmq/src/index.ts"
       ],
       "@fema/connector-schedule": [
-        "packages/pieces/core/schedule/src/index.ts"
+        "packages/connectors/core/schedule/src/index.ts"
       ],
       "@fema/connector-sftp": [
-        "packages/pieces/core/sftp/src/index.ts"
+        "packages/connectors/core/sftp/src/index.ts"
       ],
       "@fema/connector-slack": [
-        "packages/pieces/community/slack/src/index.ts"
+        "packages/connectors/community/slack/src/index.ts"
       ],
       "@fema/connector-smtp": [
-        "packages/pieces/core/smtp/src/index.ts"
+        "packages/connectors/core/smtp/src/index.ts"
       ],
       "@fema/connector-store": [
-        "packages/pieces/core/store/src/index.ts"
+        "packages/connectors/core/store/src/index.ts"
       ],
       "@fema/connector-subflows": [
-        "packages/pieces/core/subflows/src/index.ts"
+        "packages/connectors/core/subflows/src/index.ts"
       ],
       "@fema/connector-tags": [
-        "packages/pieces/core/tags/src/index.ts"
+        "packages/connectors/core/tags/src/index.ts"
       ],
       "@fema/connector-text-helper": [
-        "packages/pieces/core/text-helper/src/index.ts"
+        "packages/connectors/core/text-helper/src/index.ts"
       ],
       "@fema/connector-webhook": [
-        "packages/pieces/core/webhook/src/index.ts"
+        "packages/connectors/core/webhook/src/index.ts"
       ],
       "@fema/connector-xml": [
-        "packages/pieces/core/xml/src/index.ts"
+        "packages/connectors/core/xml/src/index.ts"
       ],
       "@fema/ai-providers": [
         "packages/core/ai-providers/src/index.ts"
       ],
       "@fema/connector-common": [
-        "packages/pieces/common/src/index.ts"
+        "packages/connectors/common/src/index.ts"
       ],
       "@fema/connector-sdk": [
-        "packages/pieces/framework/src/index.ts"
+        "packages/connectors/sdk/src/index.ts"
       ],
       "@fema/server-utils": [
         "packages/server/utils/src/index.ts"
@@ -135,7 +135,7 @@
         "packages/ee/embed-sdk/src/index.ts"
       ],
       "@fema/connector-manual-trigger": [
-        "packages/pieces/core/manual-trigger/src/index.ts"
+        "packages/connectors/core/manual-trigger/src/index.ts"
       ]
     },
     "resolveJsonModule": true

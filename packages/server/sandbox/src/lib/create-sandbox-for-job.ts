@@ -92,14 +92,14 @@ function baseEnv({ settings, networkMode }: { settings: SandboxSettings, network
         FEMA_MAX_FILE_SIZE_MB: String(settings.MAX_FILE_SIZE_MB),
         NODE_PATH: '/usr/src/node_modules',
         FEMA_NETWORK_MODE: networkMode,
-        ...(settings.ENFORCE_CONNECTION_PIECE_BINDING ? { FEMA_ENFORCE_CONNECTION_PIECE_BINDING: 'true' } : {}),
+        ...(settings.ENFORCE_CONNECTION_CONNECTOR_BINDING ? { FEMA_ENFORCE_CONNECTION_CONNECTOR_BINDING: 'true' } : {}),
     }
 }
 
 function ssrfEnv(settings: SandboxSettings): Record<string, string> {
     const env: Record<string, string> = {}
-    if (settings.DEV_PIECES.length > 0) {
-        env['FEMA_DEV_PIECES'] = settings.DEV_PIECES.join(',')
+    if (settings.DEV_CONNECTORS.length > 0) {
+        env['FEMA_DEV_CONNECTORS'] = settings.DEV_CONNECTORS.join(',')
     }
     if (settings.SSRF_ALLOW_LIST.length > 0) {
         env['FEMA_SSRF_ALLOW_LIST'] = settings.SSRF_ALLOW_LIST.join(',')

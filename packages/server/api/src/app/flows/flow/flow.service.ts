@@ -1,6 +1,6 @@
 import { apId, assertNotNullOrUndefined, Cursor, ErrorCode, FlowId, FlowVersionId, isNil, Metadata, PlatformError, PlatformId, ProjectId, SeekPage, tryCatch, UserId } from '@fema/core-utils'
 import { apDayjs, apDayjsDuration } from '@fema/server-utils'
-import { CreateFlowRequest, Flow, FlowCreator, FlowOperationRequest, FlowOperationStatus, FlowOperationType, flowPieceUtil, FlowStatus, FlowTriggerType, FlowVersion, FlowVersionState, PopulatedFlow, SharedTemplate, TelemetryEventName, TemplateStatus, TemplateType, TriggerSource, UncategorizedFolderId, UserWithMetaInformation } from '@fema/shared'
+import { CreateFlowRequest, Flow, flowConnectorUtil, FlowCreator, FlowOperationRequest, FlowOperationStatus, FlowOperationType, FlowStatus, FlowTriggerType, FlowVersion, FlowVersionState, PopulatedFlow, SharedTemplate, TelemetryEventName, TemplateStatus, TemplateType, TriggerSource, UncategorizedFolderId, UserWithMetaInformation } from '@fema/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { EntityManager, In, IsNull, Not } from 'typeorm'
@@ -570,7 +570,7 @@ export const flowService = (log: FastifyBaseLogger) => ({
             name: flow.version.displayName,
             summary: '',
             description: '',
-            pieces: Array.from(new Set(flowPieceUtil.getUsedPieces(flow.version.trigger))),
+            connectors: Array.from(new Set(flowConnectorUtil.getUsedConnectors(flow.version.trigger))),
             flows: [flow.version],
             tags: [],
             blogUrl: '',
@@ -924,7 +924,7 @@ async function createNewDraftIfVersionIsPublished({
             request: lockedVersion,
         }]
         if (
-            lockedVersion.trigger.type === FlowTriggerType.PIECE &&
+            lockedVersion.trigger.type === FlowTriggerType.CONNECTOR &&
             !isNil(lockedVersion.trigger.settings.sampleData)
         ) {
             operations.push({

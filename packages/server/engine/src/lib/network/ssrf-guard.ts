@@ -18,7 +18,7 @@ export const ssrfGuard = {
         const policy = buildGuardPolicy(options)
         // Best-effort, in-process only: DNS first so hostname targets fail at resolve
         // time before Socket.connect ever sees them; the socket guard then catches raw
-        // IP connects. These JS monkeypatches stop accidental SSRF (a piece naively
+        // IP connects. These JS monkeypatches stop accidental SSRF (a connector naively
         // fetching a user-supplied internal URL) but are NOT a boundary against
         // malicious code (worker_threads / process.binding / native addons bypass them).
         const uninstalls = [

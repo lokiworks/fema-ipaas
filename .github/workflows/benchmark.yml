@@ -47,7 +47,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Build Docker image
-        run: docker build -t activepieces-benchmark:local .
+        run: docker build -t fema-benchmark:local .
 
       - name: Start benchmark stack
         run: |

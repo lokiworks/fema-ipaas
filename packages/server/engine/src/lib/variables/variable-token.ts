@@ -1,6 +1,6 @@
 import { isNil } from '@fema/core-utils'
 
-import { createVariableResolver } from '../piece-context/variable-resolver'
+import { createVariableResolver } from '../connector-context/variable-resolver'
 
 export const variableToken = {
     async handle(params: VariableTokenParams): Promise<unknown> {

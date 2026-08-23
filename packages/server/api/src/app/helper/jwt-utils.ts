@@ -28,7 +28,7 @@ export enum JwtAudience {
 
 const ONE_WEEK = 7 * 24 * 3600
 const KEY_ID = '1'
-const ISSUER = 'activepieces'
+const ISSUER = 'fema'
 const ALGORITHM = JwtSignAlgorithm.HS256
 
 const redisType = redisConnections.getRedisType()

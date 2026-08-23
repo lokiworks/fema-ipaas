@@ -1,21 +1,21 @@
 ---
 title: "Network Security"
-description: "How Activepieces isolates outbound traffic from your internal network"
+description: "How FEMA Integration Platform isolates outbound traffic from your internal network"
 icon: "shield-halved"
 ---
 
 ## Overview
 
-Activepieces makes outbound HTTP from two surfaces, and each is hardened separately:
+FEMA Integration Platform makes outbound HTTP from two surfaces, and each is hardened separately:
 
-1. **User code in flows**: Code steps, piece actions, anything a flow author can write. Hardened by `FEMA_NETWORK_MODE`; see [User-code egress](#user-code-egress).
+1. **User code in flows**: Code steps, connector actions, anything a flow author can write. Hardened by `FEMA_NETWORK_MODE`; see [User-code egress](#user-code-egress).
 2. **Server-side HTTP from the API**: OAuth token claim and refresh, Vault, Conjur, event-destination webhooks, on-call pager, MCP tool validation. Always filtered, tuned via `FEMA_SSRF_ALLOW_LIST`; see [Server-side egress](#server-side-egress).
 
 Both surfaces block the same set of IPs (RFC1918 private, loopback, link-local, cloud-metadata, non-unicast) and share the `FEMA_SSRF_ALLOW_LIST` allow-list.
 
 ## User-code egress
 
-Every flow eventually runs **user-supplied code**: Code steps, piece actions, HTTP requests. Without an explicit boundary, that code can reach anything the host can reach: `127.0.0.1`, Redis, Postgres, the Kubernetes API, cloud-metadata endpoints (`169.254.169.254`), the VPC. `FEMA_NETWORK_MODE` is the switch that controls this boundary.
+Every flow eventually runs **user-supplied code**: Code steps, connector actions, HTTP requests. Without an explicit boundary, that code can reach anything the host can reach: `127.0.0.1`, Redis, Postgres, the Kubernetes API, cloud-metadata endpoints (`169.254.169.254`), the VPC. `FEMA_NETWORK_MODE` is the switch that controls this boundary.
 
 <Tip>
 `FEMA_NETWORK_MODE` defaults to `UNRESTRICTED`. Set it to `STRICT` to install the in-process SSRF guard described below.
@@ -40,7 +40,7 @@ In `STRICT` mode the engine installs an **in-process SSRF guard** before any use
 Together these cover `axios`, `fetch`, `undici`, and raw `http`/`net` in a single pass. A blocked target throws `SSRFBlockedError`. The blocklist is every non-`unicast` range (RFC1918, loopback, link-local, multicast, cloud metadata), minus anything in `FEMA_SSRF_ALLOW_LIST`.
 
 <Warning>
-The engine SSRF guard is **best-effort, in-process protection**. It reliably stops *accidental* SSRF, such as a flow or piece that naively follows a user-supplied URL to an internal host. It is **not** a hard boundary against deliberately malicious code: `worker_threads`, `child_process`, native addons, and `process.binding` can all sidestep the JavaScript-level monkey-patches.
+The engine SSRF guard is **best-effort, in-process protection**. It reliably stops *accidental* SSRF, such as a flow or connector that naively follows a user-supplied URL to an internal host. It is **not** a hard boundary against deliberately malicious code: `worker_threads`, `child_process`, native addons, and `process.binding` can all sidestep the JavaScript-level monkey-patches.
 
 For multi-tenant deployments that run untrusted code, enforce the real egress boundary in **infrastructure**: a VPC firewall, network policy, or egress gateway that blocks the cloud-metadata IP (`169.254.169.254`) and your private ranges independently of the application. Treat `FEMA_NETWORK_MODE=STRICT` as defense-in-depth on top of that, not as a replacement for it.
 </Warning>
@@ -67,7 +67,7 @@ With `FEMA_NETWORK_MODE=STRICT` you should see an `SSRFBlockedError`. With `UNRE
 
 Separate from flow code, the API server itself makes outbound HTTP on behalf of admins and users: OAuth token claim and refresh, Hashicorp Vault, CyberArk Conjur, event-destination webhooks, on-call pager, MCP tool validation. The URLs come from admin config (Vault server URL) or user input (webhook destination, MCP server URL), so the same SSRF risks apply.
 
-Unlike user-code egress, **this layer is always on**. It does not require `FEMA_NETWORK_MODE=STRICT`. It is implemented as a `request-filtering-agent` wrapper attached to the shared axios instances in `@activepieces/server-utils`, and every outbound request flows through it. The blocked ranges are identical to the engine guard (RFC1918, loopback, link-local, cloud metadata, non-unicast).
+Unlike user-code egress, **this layer is always on**. It does not require `FEMA_NETWORK_MODE=STRICT`. It is implemented as a `request-filtering-agent` wrapper attached to the shared axios instances in `@fema/server-utils`, and every outbound request flows through it. The blocked ranges are identical to the engine guard (RFC1918, loopback, link-local, cloud metadata, non-unicast).
 
 <Tip>
 `FEMA_SSRF_ALLOW_LIST` is shared between both surfaces. Add an IP or CIDR once and it applies to user-code egress **and** server-side HTTP. Restart the server after changing the value.

@@ -1,4 +1,4 @@
-import { FriendlyPieceError, isNil } from '@fema/core-utils';
+import { FriendlyConnectorError, isNil } from '@fema/core-utils';
 
 const MAX_BODY_PAYLOAD_CHARS = 4000;
 const MAX_PROPERTY_VALUE_CHARS = 400;
@@ -125,13 +125,13 @@ const formatPropertyLine = (prop: StepPropertySnapshot): string => {
 };
 
 const INSTRUCTIONS_BLOCK = [
-  'I\'m troubleshooting a failed step in a workflow automation tool. The tool connects to third-party services through integrations called "pieces". Please diagnose what went wrong and give me a concrete fix.',
+  'I\'m troubleshooting a failed step in a workflow automation tool. The tool connects to third-party services through integrations called "connectors". Please diagnose what went wrong and give me a concrete fix.',
   '',
   'Diagnostic priority — try in order, pick the first that matches:',
   '',
   '1. **Platform / OAuth app issue (not user-fixable from the step settings).** Applies when ANY of:',
-  '   - The API error literally says `invalid_request`, `invalid_scope`, `insufficient_scope`, `insufficient permission`, `invalid_grant`, `invalid_client`, `unauthorized_client`, `access_denied`, or mentions "scope", AND the piece uses OAUTH2.',
-  '   - The error is 4xx with an empty / near-empty response body on an OAUTH2 piece from Google/Microsoft/Slack/Discord/Notion/Hubspot/etc. — almost always a missing OAuth scope.',
+  '   - The API error literally says `invalid_request`, `invalid_scope`, `insufficient_scope`, `insufficient permission`, `invalid_grant`, `invalid_client`, `unauthorized_client`, `access_denied`, or mentions "scope", AND the connector uses OAUTH2.',
+  '   - The error is 4xx with an empty / near-empty response body on an OAUTH2 connector from Google/Microsoft/Slack/Discord/Notion/Hubspot/etc. — almost always a missing OAuth scope.',
   '   - The error mentions a specific scope name (e.g. `gmail.labels`, `drive.file`, `calendar.events`).',
   '   In this case, say plainly that this looks like a platform-side OAuth configuration issue, NOT a step setting. Suggest contacting platform support OR (self-hosted) configuring custom OAuth credentials with the required scope.',
   '',
@@ -173,14 +173,18 @@ const buildContextBlock = ({
   };
 
   const lines: string[] = [];
-  if (context.pieceDisplayName || context.pieceName) {
-    const version = context.pieceVersion ? ` v${context.pieceVersion}` : '';
+  if (context.connectorDisplayName || context.connectorName) {
+    const version = context.connectorVersion
+      ? ` v${context.connectorVersion}`
+      : '';
     lines.push(
-      `Piece: ${context.pieceDisplayName ?? context.pieceName}${version}`,
+      `Connector: ${
+        context.connectorDisplayName ?? context.connectorName
+      }${version}`,
     );
   }
-  if (context.pieceAuthType) {
-    lines.push(`Piece auth type: ${context.pieceAuthType}`);
+  if (context.connectorAuthType) {
+    lines.push(`Connector auth type: ${context.connectorAuthType}`);
   }
   if (context.stepDisplayName || context.stepName) {
     const label = context.stepKind === 'trigger' ? 'Trigger' : 'Action';
@@ -230,10 +234,10 @@ export type StepPropertySnapshot = {
 };
 
 export type ErrorExplanationContext = {
-  pieceName?: string;
-  pieceVersion?: string;
-  pieceDisplayName?: string;
-  pieceAuthType?: string;
+  connectorName?: string;
+  connectorVersion?: string;
+  connectorDisplayName?: string;
+  connectorAuthType?: string;
   stepKind: 'action' | 'trigger';
   stepName?: string;
   stepDisplayName?: string;
@@ -242,6 +246,6 @@ export type ErrorExplanationContext = {
 };
 
 type BuildExplanationPromptParams = {
-  error: FriendlyPieceError;
+  error: FriendlyConnectorError;
   context: ErrorExplanationContext;
 };

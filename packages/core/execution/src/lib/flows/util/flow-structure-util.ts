@@ -5,7 +5,7 @@ import { FlowVersion } from '../flow-version'
 import { FlowTrigger, FlowTriggerType } from '../triggers/trigger'
 
 
-export const AI_PIECE_NAME = '@fema/connector-ai'
+export const AI_CONNECTOR_NAME = '@fema/connector-ai'
 
 export type Step = FlowAction | FlowTrigger
 type StepWithIndex = Step & {
@@ -18,7 +18,7 @@ function isAction(type: FlowActionType | FlowTriggerType | undefined): type is F
 
 function isStepAction(step: Step): step is FlowAction {
     return step.type === FlowActionType.CODE
-        || step.type === FlowActionType.PIECE
+        || step.type === FlowActionType.CONNECTOR
         || step.type === FlowActionType.LOOP_ON_ITEMS
         || step.type === FlowActionType.ROUTER
 }
@@ -105,7 +105,7 @@ function transferStep<T extends Step>(
             break
     }
 
-    if (updatedStep.type === FlowActionType.CODE || updatedStep.type === FlowActionType.PIECE) {
+    if (updatedStep.type === FlowActionType.CODE || updatedStep.type === FlowActionType.CONNECTOR) {
         const branches = updatedStep.continueOnFailureBranches
         if (branches?.onSuccess) {
             const transferred = transferStep(branches.onSuccess, transferFunction)
@@ -237,7 +237,7 @@ function extractConnectionIdsFromAuth(auth: string): string[] {
 
 function extractAgentIds(flowVersion: FlowVersion): string[] {
     const getExternalAgentId = (action: Step) => {
-        if (isAgentPiece(action) && 'agentId' in action.settings.input) {
+        if (isAgentConnector(action) && 'agentId' in action.settings.input) {
             return action.settings.input.agentId
         }
         return null
@@ -246,9 +246,9 @@ function extractAgentIds(flowVersion: FlowVersion): string[] {
     return flowStructureUtil.getAllSteps(flowVersion.trigger).map(step => getExternalAgentId(step)).filter(step => step !== null && step !== '')
 }
 
-function isAgentPiece(action: Step) {
+function isAgentConnector(action: Step) {
     return (
-        action.type === FlowActionType.PIECE && action.settings.pieceName === AI_PIECE_NAME
+        action.type === FlowActionType.CONNECTOR && action.settings.connectorName === AI_CONNECTOR_NAME
     )
 }
 
@@ -287,6 +287,6 @@ export const flowStructureUtil = {
     getAllNextActionsWithoutChildren,
     getAllChildSteps,
     extractConnectionIds,
-    isAgentPiece,
+    isAgentConnector,
     extractAgentIds,
 }

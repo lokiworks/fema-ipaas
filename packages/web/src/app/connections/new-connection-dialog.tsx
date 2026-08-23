@@ -1,4 +1,4 @@
-import { PieceMetadataModelSummary } from '@fema/connector-sdk';
+import { ConnectorMetadataModelSummary } from '@fema/connector-sdk';
 import { isNil } from '@fema/core-utils';
 import { AppConnectionWithoutSensitiveData } from '@fema/shared';
 import { t } from 'i18next';
@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { piecesHooks } from '@/features/pieces';
+import { connectorsHooks } from '@/features/connectors';
 
 import { CreateOrEditConnectionDialog } from './create-edit-connection-dialog';
 
@@ -34,31 +34,33 @@ const NewConnectionDialog = React.memo(
   }: NewConnectionDialogProps) => {
     const [dialogTypesOpen, setDialogTypesOpen] = useState(false);
     const [connectionDialogOpen, setConnectionDialogOpen] = useState(false);
-    const [selectedPiece, setSelectedPiece] = useState<
-      PieceMetadataModelSummary | undefined
+    const [selectedConnector, setSelectedConnector] = useState<
+      ConnectorMetadataModelSummary | undefined
     >(undefined);
-    const { pieces, isLoading } = piecesHooks.usePieces({});
+    const { connectors, isLoading } = connectorsHooks.useConnectors({});
     const [searchTerm, setSearchTerm] = useState('');
 
-    const filteredPieces = pieces?.filter((piece) => {
+    const filteredConnectors = connectors?.filter((connector) => {
       return (
-        !isNil(piece.auth) &&
-        piece.displayName.toLowerCase().includes(searchTerm.toLowerCase())
+        !isNil(connector.auth) &&
+        connector.displayName.toLowerCase().includes(searchTerm.toLowerCase())
       );
     });
 
-    const clickPiece = (name: string) => {
+    const clickConnector = (name: string) => {
       setDialogTypesOpen(false);
-      setSelectedPiece(pieces?.find((piece) => piece.name === name));
+      setSelectedConnector(
+        connectors?.find((connector) => connector.name === name),
+      );
       setConnectionDialogOpen(true);
     };
 
     return (
       <>
-        {selectedPiece && (
+        {selectedConnector && (
           <CreateOrEditConnectionDialog
             reconnectConnection={null}
-            piece={selectedPiece}
+            connector={selectedConnector}
             open={connectionDialogOpen}
             isGlobalConnection={isGlobalConnection}
             key={`CreateOrEditConnectionDialog-open-${connectionDialogOpen}`}
@@ -92,23 +94,23 @@ const NewConnectionDialog = React.memo(
             <ScrollArea className="grow overflow-y-auto ">
               <div className="grid grid-cols-4 gap-4">
                 {(isLoading ||
-                  (filteredPieces && filteredPieces.length === 0)) && (
-                  <div className="text-center">{t('No pieces found')}</div>
+                  (filteredConnectors && filteredConnectors.length === 0)) && (
+                  <div className="text-center">{t('No connectors found')}</div>
                 )}
                 {!isLoading &&
-                  filteredPieces &&
-                  filteredPieces.map((piece, index) => (
+                  filteredConnectors &&
+                  filteredConnectors.map((connector, index) => (
                     <div
                       key={index}
-                      onClick={() => clickPiece(piece.name)}
+                      onClick={() => clickConnector(connector.name)}
                       className="border p-2 h-[150px] w-[150px] flex flex-col items-center justify-center hover:bg-accent hover:text-accent-foreground cursor-pointer rounded-lg"
                     >
                       <img
                         className="w-[40px] h-[40px]"
-                        src={piece.logoUrl}
+                        src={connector.logoUrl}
                       ></img>
                       <div className="mt-2 text-center text-md">
-                        {piece.displayName}
+                        {connector.displayName}
                       </div>
                     </div>
                   ))}

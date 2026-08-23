@@ -1,12 +1,12 @@
 import { ContextVersion } from '@fema/connector-sdk'
 import { isNil } from '@fema/core-utils'
 
-import { createConnectionResolver } from '../piece-context/connection-resolver'
+import { createConnectionResolver } from '../connector-context/connection-resolver'
 import { scriptEvaluator } from './script-evaluator'
 
 export const connectionToken = {
     async handle(params: ConnectionTokenParams): Promise<unknown> {
-        const { variableName, engineToken, projectId, apiUrl, censoredInput, contextVersion, pieceName } = params
+        const { variableName, engineToken, projectId, apiUrl, censoredInput, contextVersion, connectorName } = params
         const connectionName = parseConnectionNameOnly(variableName)
         if (isNil(connectionName)) {
             return ''
@@ -14,7 +14,7 @@ export const connectionToken = {
         if (censoredInput) {
             return '**REDACTED**'
         }
-        const connection = await createConnectionResolver({ engineToken, projectId, apiUrl, contextVersion, pieceName }).obtain(connectionName)
+        const connection = await createConnectionResolver({ engineToken, projectId, apiUrl, contextVersion, connectorName }).obtain(connectionName)
         const pathAfterConnectionName = parsePathAfterConnectionName(variableName, connectionName)
         if (isNil(pathAfterConnectionName) || pathAfterConnectionName.length === 0) {
             return connection
@@ -63,5 +63,5 @@ type ConnectionTokenParams = {
     apiUrl: string
     censoredInput: boolean
     contextVersion: ContextVersion | undefined
-    pieceName?: string
+    connectorName?: string
 }

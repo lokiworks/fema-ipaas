@@ -14,9 +14,9 @@ defaults and re-open closed bugs.
 ## Scope
 
 Only the agent path moved: `core/ai-providers`, `server/utils`, `server/api`,
-`server/worker`, `web`. `pieces/framework`, `pieces/community/ai` and `server/engine` stay
-on v6 because `pieces/framework` re-exports `LanguageModel` and `Tool` as **public piece
-API** — bumping it breaks every out-of-tree piece and needs its own PR with the
+`server/worker`, `web`. `connectors/sdk`, `connectors/community/ai` and `server/engine` stay
+on v6 because `connectors/sdk` re-exports `LanguageModel` and `Tool` as **public connector
+API** — bumping it breaks every out-of-tree connector and needs its own PR with the
 `⛓️‍💥 breaking-change` label and a `breaking-changes.mdx` entry. Mixed majors are safe:
 `bunfig.toml` sets `linker = "isolated"`.
 
@@ -45,8 +45,8 @@ API** — bumping it breaks every out-of-tree piece and needs its own PR with th
 - **`HarnessAgent`** — runs the `claude-code`/`codex` CLI in a *networked* sandbox that
   installs itself and leases a bridge port. Our agent has no repo; a flow is Postgres rows
   behind MCP tools. It cannot run on our `isolate` sandbox, which exists to deny network.
-  The honest fit is **piece development** (real files, real `tsc`, real tests, and
-  `/piece-builder` already encodes the procedure as a skill) — not the chat agent.
+  The honest fit is **connector development** (real files, real `tsc`, real tests, and
+  `/connector-builder` already encodes the procedure as a skill) — not the chat agent.
 - **`contextSchema` / `toolsContext`** — tools are RPC proxies sharing one conversation
   context; there are no per-tool credentials to scope.
 

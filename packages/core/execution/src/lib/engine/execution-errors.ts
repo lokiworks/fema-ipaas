@@ -35,12 +35,12 @@ export class ConnectionLoadingError extends ExecutionError {
     }
 }
 
-export class ConnectionPieceMismatchError extends ExecutionError {
-    constructor(connectionName: string, pieceName: string | undefined, cause?: unknown) {
-        const message = pieceName === undefined
-            ? `connection (${connectionName}) can't be used here: this step type has no piece identity to bind to`
-            : `connection (${connectionName}) does not belong to piece (${pieceName})`
-        super('ConnectionPieceMismatch', formatMessage(message), ExecutionErrorType.USER, cause)
+export class ConnectionConnectorMismatchError extends ExecutionError {
+    constructor(connectionName: string, connectorName: string | undefined, cause?: unknown) {
+        const message = connectorName === undefined
+            ? `connection (${connectionName}) can't be used here: this step type has no connector identity to bind to`
+            : `connection (${connectionName}) does not belong to connector (${connectorName})`
+        super('ConnectionConnectorMismatch', formatMessage(message), ExecutionErrorType.USER, cause)
     }
 }
 
@@ -84,10 +84,10 @@ export class PausedFlowTimeoutError extends ExecutionError {
     }
 }
 
-export class PieceMemoryLimitError extends ExecutionError {
+export class ConnectorMemoryLimitError extends ExecutionError {
     constructor(heapLimitMb: string | undefined, standardError?: string, cause?: unknown) {
-        super('PieceMemoryLimitError', JSON.stringify({
-            message: 'The piece ran out of memory',
+        super('ConnectorMemoryLimitError', JSON.stringify({
+            message: 'The connector ran out of memory',
             heapLimitMb,
             standardError,
         }), ExecutionErrorType.USER, cause)

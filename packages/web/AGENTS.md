@@ -1,6 +1,6 @@
 # Web Frontend
 
-You are working in the Activepieces web application (`packages/web`).
+You are working in the FEMA Integration Platform web application (`packages/web`).
 
 ## Tech Stack
 
@@ -18,7 +18,7 @@ You are working in the Activepieces web application (`packages/web`).
 ## Project Structure
 
 - `src/components/ui/` — Shared Shadcn/Radix UI primitives
-- `src/features/` — Feature-based folders (flows, pieces, tables, auth, billing, etc.)
+- `src/features/` — Feature-based folders (flows, connectors, tables, auth, billing, etc.)
 - `src/lib/` — Shared utilities and helpers
 - `src/app/` — App-level routing and layout
 - `test/` — Unit tests (see **Testing** below)

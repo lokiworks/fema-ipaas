@@ -19,7 +19,7 @@ if [ -z "$FEMA_WORKER_TOKEN" ] && [ -n "$FEMA_JWT_SECRET" ]; then
         const token = jwt.sign(
             { id: crypto.randomUUID(), type: 'WORKER' },
             process.env.FEMA_JWT_SECRET,
-            { expiresIn: '100y', keyid: '1', algorithm: 'HS256', issuer: 'activepieces' }
+            { expiresIn: '100y', keyid: '1', algorithm: 'HS256', issuer: 'fema' }
         );
         process.stdout.write(token);
     ")
@@ -28,7 +28,7 @@ fi
 APP_SCRIPT="packages/server/api/dist/src/bootstrap.js"
 WORKER_SCRIPT="packages/server/worker/dist/src/bootstrap.js"
 
-echo "Starting Activepieces (${FEMA_CONTAINER_TYPE} mode)"
+echo "Starting FEMA Integration Platform (${FEMA_CONTAINER_TYPE} mode)"
 
 case "$FEMA_CONTAINER_TYPE" in
     APP)

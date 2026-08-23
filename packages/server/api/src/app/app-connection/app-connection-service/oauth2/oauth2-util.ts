@@ -5,7 +5,7 @@ import { AppConnection, AppConnectionType, BaseOAuth2ConnectionValue, GetOAuth2A
 import { isAxiosError } from 'axios'
 import { FastifyBaseLogger } from 'fastify'
 import { nanoid } from 'nanoid'
-import { pieceMetadataService } from '../../../pieces/metadata/piece-metadata-service'
+import { connectorMetadataService } from '../../../connectors/metadata/connector-metadata-service'
 
 export const oauth2Util = (log: FastifyBaseLogger) => ({
     formatOAuth2Response: (response: Omit<BaseOAuth2ConnectionValue, 'claimed_at'>): BaseOAuth2ConnectionValue => {
@@ -64,25 +64,25 @@ export const oauth2Util = (log: FastifyBaseLogger) => ({
     },
     getOAuth2TokenUrl: async ({
         platformId,
-        pieceName,
-        pieceVersion,
+        connectorName,
+        connectorVersion,
         props,
     }: OAuth2TokenUrlParams): Promise<string> => {
-        const pieceMetadata = await pieceMetadataService(log).getOrThrow({
-            name: pieceName,
+        const connectorMetadata = await connectorMetadataService(log).getOrThrow({
+            name: connectorName,
             platformId,
-            version: pieceVersion,
+            version: connectorVersion,
         })
-        const pieceAuth = Array.isArray(pieceMetadata.auth) ? pieceMetadata.auth.find(auth => auth.type === PropertyType.OAUTH2) : pieceMetadata.auth
-        assertNotNullOrUndefined(pieceAuth, 'auth')
-        switch (pieceAuth.type) {
+        const connectorAuth = Array.isArray(connectorMetadata.auth) ? connectorMetadata.auth.find(auth => auth.type === PropertyType.OAUTH2) : connectorMetadata.auth
+        assertNotNullOrUndefined(connectorAuth, 'auth')
+        switch (connectorAuth.type) {
             case PropertyType.OAUTH2:
                 assertPlaceholdersResolved({
-                    templates: [pieceAuth.tokenUrl, ...pieceAuth.scope],
+                    templates: [connectorAuth.tokenUrl, ...connectorAuth.scope],
                     props,
-                    authProps: pieceAuth.props,
+                    authProps: connectorAuth.props,
                 })
-                return resolveValueFromProps(props, pieceAuth.tokenUrl)
+                return resolveValueFromProps(props, connectorAuth.tokenUrl)
             default:
                 throw new PlatformError({
                     code: ErrorCode.INVALID_APP_CONNECTION,
@@ -94,24 +94,24 @@ export const oauth2Util = (log: FastifyBaseLogger) => ({
     },
     buildAuthorizationUrl: async ({
         platformId,
-        pieceName,
-        pieceVersion,
+        connectorName,
+        connectorVersion,
         clientId,
         redirectUrl,
         projectId: _projectId,
         props,
         scopes,
     }: BuildAuthorizationUrlParams): Promise<GetOAuth2AuthorizationUrlResponse> => {
-        const pieceMetadata = await pieceMetadataService(log).getOrThrow({
-            name: pieceName,
+        const connectorMetadata = await connectorMetadataService(log).getOrThrow({
+            name: connectorName,
             platformId,
-            version: pieceVersion,
+            version: connectorVersion,
         })
-        const pieceAuth = Array.isArray(pieceMetadata.auth)
-            ? pieceMetadata.auth.find(auth => auth.type === PropertyType.OAUTH2)
-            : pieceMetadata.auth
-        assertNotNullOrUndefined(pieceAuth, 'auth')
-        if (pieceAuth.type !== PropertyType.OAUTH2) {
+        const connectorAuth = Array.isArray(connectorMetadata.auth)
+            ? connectorMetadata.auth.find(auth => auth.type === PropertyType.OAUTH2)
+            : connectorMetadata.auth
+        assertNotNullOrUndefined(connectorAuth, 'auth')
+        if (connectorAuth.type !== PropertyType.OAUTH2) {
             throw new PlatformError({
                 code: ErrorCode.INVALID_APP_CONNECTION,
                 params: { error: 'invalid auth type' },
@@ -119,13 +119,13 @@ export const oauth2Util = (log: FastifyBaseLogger) => ({
         }
 
         const resolvedClientId = clientId
-        const selectedScopes = resolveSelectedScopes(scopes, pieceAuth.scope)
+        const selectedScopes = resolveSelectedScopes(scopes, connectorAuth.scope)
         assertPlaceholdersResolved({
-            templates: [pieceAuth.authUrl, ...selectedScopes],
+            templates: [connectorAuth.authUrl, ...selectedScopes],
             props,
-            authProps: pieceAuth.props,
+            authProps: connectorAuth.props,
         })
-        const authUrl = resolveValueFromProps(props, pieceAuth.authUrl)
+        const authUrl = resolveValueFromProps(props, connectorAuth.authUrl)
         const scope = resolveValueFromProps(props, selectedScopes.join(' '))
 
         const queryParams: Record<string, string> = {
@@ -136,10 +136,10 @@ export const oauth2Util = (log: FastifyBaseLogger) => ({
             state: nanoid(),
             prompt: 'consent',
             scope,
-            ...(pieceAuth.extra ?? {}),
+            ...(connectorAuth.extra ?? {}),
         }
 
-        const prompt = pieceAuth.prompt
+        const prompt = connectorAuth.prompt
         if (prompt === 'omit') {
             delete queryParams['prompt']
         }
@@ -148,9 +148,9 @@ export const oauth2Util = (log: FastifyBaseLogger) => ({
         }
 
         let codeVerifier: string | undefined
-        if (pieceAuth.pkce) {
+        if (connectorAuth.pkce) {
             codeVerifier = randomBytes(32).toString('base64url').slice(0, 43)
-            const method = pieceAuth.pkceMethod ?? 'plain'
+            const method = connectorAuth.pkceMethod ?? 'plain'
             queryParams['code_challenge_method'] = method
             if (method === 'S256') {
                 const hash = createHash('sha256').update(codeVerifier).digest()
@@ -191,8 +191,8 @@ export const oauth2Util = (log: FastifyBaseLogger) => ({
 
 type OAuth2TokenUrlParams = {
     platformId: PlatformId
-    pieceName: string
-    pieceVersion?: string
+    connectorName: string
+    connectorVersion?: string
     props?: Record<string, unknown>
 }
 
@@ -205,7 +205,7 @@ const resolveSelectedScopes = (requested: string[] | undefined, allowed: string[
     if (invalid.length > 0) {
         throw new PlatformError({
             code: ErrorCode.INVALID_APP_CONNECTION,
-            params: { error: `requested scopes are not declared by the piece: ${invalid.join(', ')}` },
+            params: { error: `requested scopes are not declared by the connector: ${invalid.join(', ')}` },
         })
     }
     if (requested.length === 0) {
@@ -247,8 +247,8 @@ type AssertPlaceholdersResolvedParams = {
 
 type BuildAuthorizationUrlParams = {
     platformId: PlatformId
-    pieceName: string
-    pieceVersion?: string
+    connectorName: string
+    connectorVersion?: string
     clientId: string
     redirectUrl: string
     props?: Record<string, unknown>

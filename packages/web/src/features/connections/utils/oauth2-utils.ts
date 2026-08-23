@@ -95,18 +95,18 @@ function getGrantType(property: OAuth2Property<OAuth2Props>) {
 }
 
 function getPredefinedOAuth2App(
-  piecesOAuth2AppsMap: PiecesOAuth2AppsMap,
-  pieceName: string,
+  connectorsOAuth2AppsMap: ConnectorsOAuth2AppsMap,
+  connectorName: string,
 ): OAuth2App | null {
-  const pieceOAuth2Apps = piecesOAuth2AppsMap[pieceName];
-  if (isNil(pieceOAuth2Apps)) {
+  const connectorOAuth2Apps = connectorsOAuth2AppsMap[connectorName];
+  if (isNil(connectorOAuth2Apps)) {
     return null;
   }
-  if (pieceOAuth2Apps.platformOAuth2App) {
-    return pieceOAuth2Apps.platformOAuth2App;
+  if (connectorOAuth2Apps.platformOAuth2App) {
+    return connectorOAuth2Apps.platformOAuth2App;
   }
-  if (pieceOAuth2Apps.cloudOAuth2App) {
-    return pieceOAuth2Apps.cloudOAuth2App;
+  if (connectorOAuth2Apps.cloudOAuth2App) {
+    return connectorOAuth2Apps.cloudOAuth2App;
   }
   return null;
 }
@@ -130,7 +130,7 @@ export type OAuth2App =
       clientId: null;
     };
 
-export type PiecesOAuth2AppsMap = Record<
+export type ConnectorsOAuth2AppsMap = Record<
   string,
   | {
       cloudOAuth2App: OAuth2App | null;

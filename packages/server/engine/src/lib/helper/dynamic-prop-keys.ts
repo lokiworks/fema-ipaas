@@ -4,7 +4,7 @@ import { isObject } from '@fema/core-utils'
 // react-hook-form treats `.` and `[` as path separators and strips `]`, `"` and `'`
 // (see its stringToPath util), so dynamic-property keys containing any of these break
 // the builder form. Escape them (JSON-Pointer style, `~` escapes the escape char) before
-// keys reach the UI, and reverse the mapping before the piece consumes the values.
+// keys reach the UI, and reverse the mapping before the connector consumes the values.
 function escapePropsKeys(props: InputPropertyMap): InputPropertyMap {
     return Object.fromEntries(
         Object.entries(props).map(([key, property]) => [escapeKey(key), property]),

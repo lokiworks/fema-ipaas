@@ -27,7 +27,7 @@ cleanup() {
 trap cleanup EXIT
 
 echo "=== Building image ==="
-docker build -t activepieces-benchmark:local .
+docker build -t fema-benchmark:local .
 
 echo "=== Starting stack (mode=$EXECUTION_MODE, apps=$APP_REPLICAS, workers=$WORKER_REPLICAS) ==="
 FEMA_EXECUTION_MODE=$EXECUTION_MODE \

@@ -1,6 +1,6 @@
 ---
 title: "Latency"
-description: "What Activepieces adds to a synchronous webhook, warm versus cold, so you can set expectations before building on it"
+description: "What FEMA Integration Platform adds to a synchronous webhook, warm versus cold, so you can set expectations before building on it"
 icon: "stopwatch"
 ---
 
@@ -21,9 +21,9 @@ A **synchronous webhook** holds the connection open until your flow returns, so 
 
 ## Warm vs cold
 
-<img src="/resources/diagrams/cold-vs-warm.png" alt="Warm vs cold latency: a warm sync webhook returns in ~0.2 s, while a cold first request on a fresh worker takes ~2 s, dominated by installing pieces (~0.5 s) and booting the engine (~0.9 s)" />
+<img src="/resources/diagrams/cold-vs-warm.png" alt="Warm vs cold latency: a warm sync webhook returns in ~0.2 s, while a cold first request on a fresh worker takes ~2 s, dominated by installing connectors (~0.5 s) and booting the engine (~0.9 s)" />
 
-**Cold** means a worker that has never seen this flow: it installs the pieces, fetches the bundle, and forks an engine first. **Warm** reuses all three. You hit cold when:
+**Cold** means a worker that has never seen this flow: it installs the connectors, fetches the bundle, and forks an engine first. **Warm** reuses all three. You hit cold when:
 
 - It is the first request after a deploy, restart, or scale-up.
 - `FEMA_REUSE_SANDBOX` is off (then every request is cold).
@@ -37,14 +37,14 @@ Size **statically for peak** so a warm slot is always waiting. Autoscaling's boo
 
 Every run records where its wall-clock time went, shown as a four-phase bar. **To view it, open any run and hover the info icon next to the run's duration** ("Took") in the run header.
 
-<img src="/resources/diagrams/run-timeline-breakdown.png" alt="Run latency breakdown popover: a stacked bar split into Queue (20 ms, waiting for a free worker), Setup (19 ms, installing pieces and engine), Warm-up (0 ms, starting the engine), and Run (32 ms, executing your flow)" />
+<img src="/resources/diagrams/run-timeline-breakdown.png" alt="Run latency breakdown popover: a stacked bar split into Queue (20 ms, waiting for a free worker), Setup (19 ms, installing connectors and engine), Warm-up (0 ms, starting the engine), and Run (32 ms, executing your flow)" />
 
 The phases run in order:
 
 | Phase | What it covers | Warm | Cold |
 |---|---|---|---|
 | **Queue** | Waiting after the run is created until a worker picks it up and starts setup — contention (every worker busy) plus dispatch overhead. | ~0 | grows under load |
-| **Setup** | Fetching the flow bundle and installing the pieces, engine, and code steps into the sandbox (provisioning). | ~0 (cached) | ~0.5 s |
+| **Setup** | Fetching the flow bundle and installing the connectors, engine, and code steps into the sandbox (provisioning). | ~0 (cached) | ~0.5 s |
 | **Warm-up** | Forking the engine process, Node boot, `isolated-vm` init, and the socket handshake (engine boot). | ~0 (reused) | ~0.9 s |
 | **Run** | Executing the flow's trigger and steps — the same number reported as the run's duration (**Took**). Your own work and third-party calls dominate here. | your flow | your flow |
 
@@ -52,7 +52,7 @@ Queue, Setup, and Warm-up are the orchestration around your flow; **Run** is the
 
 ## Where the Run phase actually goes
 
-For a flow that does real work — a step calling a third-party API — that outbound call dominates **Run**, and the Activepieces overhead is the smaller number next to it.
+For a flow that does real work — a step calling a third-party API — that outbound call dominates **Run**, and the FEMA Integration Platform overhead is the smaller number next to it.
 
 For a *bare* flow (no external calls), **Run is mostly persisting the run, not executing it.** A production run makes a fixed set of network round-trips to the app and object store, independent of step count:
 

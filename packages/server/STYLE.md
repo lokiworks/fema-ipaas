@@ -155,7 +155,7 @@ When you need to *react* to a failure rather than propagate it (fallback path, r
 ```ts
 // packages/server/worker/src/lib/execute/jobs/execute-flow.ts
 const { data: provisioned, error: provisionError } = await tryCatch(
-    () => provisionFlowPieces({ flowVersion, platformId: data.platformId, flowId: data.flowId, projectId: data.projectId, log: ctx.log, apiClient: ctx.apiClient }),
+    () => provisionFlowConnectors({ flowVersion, platformId: data.platformId, flowId: data.flowId, projectId: data.projectId, log: ctx.log, apiClient: ctx.apiClient }),
 )
 if (provisionError) {
     await reportFlowStatus(ctx, data, FlowRunStatus.INTERNAL_ERROR)

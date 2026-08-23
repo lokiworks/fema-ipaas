@@ -15,7 +15,7 @@ export const SYSTEM_LIMITS: PlatformPlanLimits = {
     analyticsEnabled: true,
     showPoweredBy: false,
     auditLogEnabled: true,
-    managePiecesEnabled: true,
+    manageConnectorsEnabled: true,
     manageTemplatesEnabled: true,
     customAppearanceEnabled: true,
     billedTeamProjectsLimit: null,

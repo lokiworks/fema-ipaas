@@ -55,8 +55,8 @@ export const platformService = (log: FastifyBaseLogger) => ({
             allowedAuthDomains: [],
             federatedAuthProviders: { saml: null },
             cloudAuthEnabled: true,
-            pinnedPieces: [],
-            pieceSelectorConfig: null,
+            pinnedConnectors: [],
+            connectorSelectorConfig: null,
             allowedEmbedOrigins: [],
             googleAuthEnabled: true,
         }
@@ -164,8 +164,8 @@ export const platformService = (log: FastifyBaseLogger) => ({
             ...spreadIfDefined('allowedEmbedOrigins', params.allowedEmbedOrigins),
             ...spreadIfDefined('ssoDomain', params.ssoDomain),
             ...spreadIfDefined('ssoDomainVerification', params.ssoDomainVerification),
-            ...spreadIfDefined('pinnedPieces', params.pinnedPieces),
-            ...spreadIfNotUndefined('pieceSelectorConfig', params.pieceSelectorConfig),
+            ...spreadIfDefined('pinnedConnectors', params.pinnedConnectors),
+            ...spreadIfNotUndefined('connectorSelectorConfig', params.connectorSelectorConfig),
         }
         log.info({ platform: { id: params.id } }, 'Platform updated')
         const saved = await platformRepo().save(updatedPlatform)

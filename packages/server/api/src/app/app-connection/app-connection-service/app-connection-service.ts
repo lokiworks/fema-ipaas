@@ -1,9 +1,13 @@
-import { PieceMetadata } from '@fema/connector-sdk'
+import { ConnectorMetadata } from '@fema/connector-sdk'
 import { apId, Cursor, ErrorCode, isNil, Metadata, PlatformError, PlatformId, ProjectId, SeekPage, spreadIfDefined, tryCatch, tryCatchSync, unique, UserId } from '@fema/core-utils'
 import { ApEnvironment, AppConnection, AppConnectionId, AppConnectionOwners, AppConnectionScope, AppConnectionStatus, AppConnectionType, AppConnectionValue, AppConnectionWithoutSensitiveData, EngineResponse, EngineResponseStatus, ExecuteResolveConnectionIdentifierResponse, ExecuteValidateAuthResponse, MAX_PLATFORM_APP_CONNECTION_OWNERS, OAuth2GrantType, PlatformAppConnectionOwner, PlatformAppConnectionOwnersResponse, PlatformAppConnectionProjectInfo, PlatformAppConnectionsListItem, PlatformRole, UpsertAppConnectionRequestBody, User, UserIdentity, UserWithMetaInformation, WorkerJobType } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import semver from 'semver'
 import { ArrayContains, Equal, FindOperator, FindOptionsWhere, ILike, In } from 'typeorm'
+import {
+    connectorMetadataService,
+    getConnectorPackageWithoutArchive,
+} from '../../connectors/metadata/connector-metadata-service'
 import { repoFactory } from '../../core/db/repo-factory'
 import { flowService } from '../../flows/flow/flow.service'
 import { encryptUtils } from '../../helper/encryption'
@@ -12,10 +16,6 @@ import { buildPaginator } from '../../helper/pagination/build-paginator'
 import { paginationHelper } from '../../helper/pagination/pagination-utils'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
-import {
-    getPiecePackageWithoutArchive,
-    pieceMetadataService,
-} from '../../pieces/metadata/piece-metadata-service'
 import { projectRepo } from '../../project/project-service'
 import { userService } from '../../user/user-service'
 import { userInteractionWatcher } from '../../workers/user-interaction-watcher'
@@ -31,12 +31,12 @@ export const appConnectionsRepo = repoFactory(AppConnectionEntity)
 
 export const appConnectionService = (log: FastifyBaseLogger) => ({
     async upsert(params: UpsertParams): Promise<AppConnectionWithoutSensitiveData> {
-        const { projectIds, externalId, value, displayName, pieceName, ownerId, platformId, scope, type, status, metadata, preSelectForNewProjects } = params
-        const pieceVersion = params.pieceVersion ?? ( await pieceMetadataService(log).getOrThrow({
-            name: pieceName,
+        const { projectIds, externalId, value, displayName, connectorName, ownerId, platformId, scope, type, status, metadata, preSelectForNewProjects } = params
+        const connectorVersion = params.connectorVersion ?? ( await connectorMetadataService(log).getOrThrow({
+            name: connectorName,
             platformId,
         })).version
-        validatePieceVersion(pieceVersion)
+        validateConnectorVersion(connectorVersion)
         await assertProjectIds(projectIds, platformId)
 
         if (status === AppConnectionStatus.MISSING) {
@@ -47,15 +47,15 @@ export const appConnectionService = (log: FastifyBaseLogger) => ({
                 ...(projectIds ? { projectIds: ArrayContains(projectIds) } : {}),
             })
             if (!isNil(existingForPlaceholder) && existingForPlaceholder.status !== AppConnectionStatus.MISSING) {
-                log.info({ connection: { id: existingForPlaceholder.id }, piece: { name: pieceName }, platform: { id: platformId }, existingStatus: existingForPlaceholder.status }, 'Placeholder upsert skipped — non-missing connection already exists')
+                log.info({ connection: { id: existingForPlaceholder.id }, connector: { name: connectorName }, platform: { id: platformId }, existingStatus: existingForPlaceholder.status }, 'Placeholder upsert skipped — non-missing connection already exists')
                 return this.removeSensitiveData(existingForPlaceholder)
             }
         }
 
         const validatedConnectionValue = await validateConnectionValue({
             value,
-            pieceName,
-            pieceVersion,
+            connectorName,
+            connectorVersion,
             projectId: projectIds[0],
             platformId,
         }, log)
@@ -75,7 +75,7 @@ export const appConnectionService = (log: FastifyBaseLogger) => ({
         const accountIdentifier = await resolveConnectionAccountIdentifier({
             connectionType: type,
             auth: validatedConnectionValue,
-            pieceName,
+            connectorName,
             projectId: projectIds[0],
             platformId,
             log,
@@ -93,7 +93,7 @@ export const appConnectionService = (log: FastifyBaseLogger) => ({
             status: status ?? AppConnectionStatus.ACTIVE,
             value: encryptedConnectionValue,
             externalId,
-            pieceName,
+            connectorName,
             type,
             id: newId,
             scope,
@@ -101,7 +101,7 @@ export const appConnectionService = (log: FastifyBaseLogger) => ({
             platformId,
             ...spreadIfDefined('metadata', connectionMetadata),
             ...spreadIfDefined('preSelectForNewProjects', preSelectForNewProjects),
-            pieceVersion,
+            connectorVersion,
         }
 
         await appConnectionsRepo().upsert(connection, ['id'])
@@ -112,7 +112,7 @@ export const appConnectionService = (log: FastifyBaseLogger) => ({
             ...(projectIds ? { projectIds: ArrayContains(projectIds) } : {}),
             scope,
         })
-        log.info({ connection: { id: newId }, piece: { name: pieceName }, platform: { id: platformId }, isNew: isNil(existingConnection) }, 'App connection upserted')
+        log.info({ connection: { id: newId }, connector: { name: connectorName }, platform: { id: platformId }, isNew: isNil(existingConnection) }, 'App connection upserted')
         return this.removeSensitiveData(updatedConnection)
     },
     async update(params: UpdateParams): Promise<AppConnectionWithoutSensitiveData> {
@@ -222,7 +222,7 @@ export const appConnectionService = (log: FastifyBaseLogger) => ({
             platformId,
             projectId,
             externalId: metadata.externalId,
-            validate: ({ pieceName, value }) => engineValidateAuth({ pieceName, projectId, platformId, auth: value }, log),
+            validate: ({ connectorName, value }) => engineValidateAuth({ connectorName, projectId, platformId, auth: value }, log),
             log,
         })
         if (isNil(connection)) {
@@ -256,7 +256,7 @@ export const appConnectionService = (log: FastifyBaseLogger) => ({
             platformId,
         })
 
-        if (sourceAppConnection.pieceName !== targetAppConnection.pieceName) {
+        if (sourceAppConnection.connectorName !== targetAppConnection.connectorName) {
             throw new PlatformError({
                 code: ErrorCode.VALIDATION,
                 params: {
@@ -384,7 +384,7 @@ export const appConnectionService = (log: FastifyBaseLogger) => ({
         projectId,
         projectIds,
         ownerIds,
-        pieceName,
+        connectorName,
         cursorRequest,
         displayName,
         status,
@@ -409,8 +409,8 @@ export const appConnectionService = (log: FastifyBaseLogger) => ({
             ...spreadIfDefined('scope', scope),
             platformId,
         }
-        if (!isNil(pieceName)) {
-            querySelector.pieceName = Equal(pieceName)
+        if (!isNil(connectorName)) {
+            querySelector.connectorName = Equal(connectorName)
         }
         if (!isNil(displayName)) {
             querySelector.displayName = ILike(`%${displayName}%`)
@@ -496,7 +496,7 @@ export const appConnectionService = (log: FastifyBaseLogger) => ({
     async listForPlatform(params: ListForPlatformParams): Promise<SeekPage<PlatformAppConnectionsListItem>> {
         const service = appConnectionService(log)
         const page = await service.list({
-            pieceName: params.pieceName,
+            connectorName: params.connectorName,
             displayName: params.displayName,
             status: params.status,
             scope: params.scope,
@@ -572,20 +572,20 @@ async function assertProjectIds(projectIds: ProjectId[], platformId: string): Pr
 }
 // The generic path decodes the OIDC id_token / email claim from the token
 // response — this covers every provider that returns one (Google, Microsoft, …).
-// Anything provider-specific (Slack's workspace/user) lives in the piece's own
+// Anything provider-specific (Slack's workspace/user) lives in the connector's own
 // getConnectionIdentifier hook, resolved via the engine. Best-effort — never
 // throws, returns undefined on any miss.
 const resolveConnectionAccountIdentifier = async ({
     connectionType,
     auth,
-    pieceName,
+    connectorName,
     projectId,
     platformId,
     log,
 }: {
     connectionType: AppConnectionType
     auth: AppConnectionValue
-    pieceName: string
+    connectorName: string
     projectId: ProjectId | undefined
     platformId: string
     log: FastifyBaseLogger
@@ -599,7 +599,7 @@ const resolveConnectionAccountIdentifier = async ({
             return emailFromToken
         }
     }
-    return engineResolveConnectionIdentifier({ pieceName, projectId, platformId, auth, connectionType }, log)
+    return engineResolveConnectionIdentifier({ connectorName, projectId, platformId, auth, connectionType }, log)
 }
 
 const OAUTH_CONNECTION_TYPES = [
@@ -641,20 +641,20 @@ const validateConnectionValue = async (
     params: ValidateConnectionValueParams,
     log: FastifyBaseLogger,
 ): Promise<AppConnectionValue> => {
-    const { value, pieceName, pieceVersion, projectId, platformId } = params
+    const { value, connectorName, connectorVersion, projectId, platformId } = params
 
     switch (value.type) {
         case AppConnectionType.PLATFORM_OAUTH2: {
             const tokenUrl = await oauth2Util(log).getOAuth2TokenUrl({
-                pieceName,
-                pieceVersion,
+                connectorName,
+                connectorVersion,
                 platformId,
                 props: value.props,
             })
             return oauth2Handler[value.type](log).claim({
                 projectId,
                 platformId,
-                pieceName,
+                connectorName,
                 request: {
                     grantType: OAuth2GrantType.AUTHORIZATION_CODE,
                     code: value.code,
@@ -669,15 +669,15 @@ const validateConnectionValue = async (
         }
         case AppConnectionType.CLOUD_OAUTH2: {
             const tokenUrl = await oauth2Util(log).getOAuth2TokenUrl({
-                pieceName,
-                pieceVersion,
+                connectorName,
+                connectorVersion,
                 platformId,
                 props: value.props,
             })
             return oauth2Handler[value.type](log).claim({
                 projectId,
                 platformId,
-                pieceName,
+                connectorName,
                 request: {
                     tokenUrl,
                     grantType: OAuth2GrantType.AUTHORIZATION_CODE,
@@ -691,8 +691,8 @@ const validateConnectionValue = async (
         }
         case AppConnectionType.OAUTH2: {
             const tokenUrl = await oauth2Util(log).getOAuth2TokenUrl({
-                pieceName,
-                pieceVersion,
+                connectorName,
+                connectorVersion,
                 platformId,
                 props: value.props,
             })
@@ -700,7 +700,7 @@ const validateConnectionValue = async (
             const auth = await oauth2Handler[value.type](log).claim({
                 projectId,
                 platformId,
-                pieceName,
+                connectorName,
                 request: {
                     tokenUrl,
                     code: value.code,
@@ -715,7 +715,7 @@ const validateConnectionValue = async (
                 },
             })
             await engineValidateAuth({
-                pieceName,
+                connectorName,
                 projectId,
                 platformId,
                 auth,
@@ -730,7 +730,7 @@ const validateConnectionValue = async (
         case AppConnectionType.SECRET_TEXT:
             await engineValidateAuth({
                 platformId,
-                pieceName,
+                connectorName,
                 projectId,
                 auth: value,
             }, log)
@@ -747,18 +747,18 @@ const engineValidateAuth = async (
     if (environment === ApEnvironment.TESTING) {
         return
     }
-    const { pieceName, auth, projectId, platformId } = params
+    const { connectorName, auth, projectId, platformId } = params
 
-    const pieceMetadata = await pieceMetadataService(log).getOrThrow({
-        name: pieceName,
+    const connectorMetadata = await connectorMetadataService(log).getOrThrow({
+        name: connectorName,
         version: undefined,
         platformId,
     })
 
     const engineResponse = await userInteractionWatcher.submitAndWaitForResponse<EngineResponse<ExecuteValidateAuthResponse>>({
-        piece: await getPiecePackageWithoutArchive(log, platformId, {
-            pieceName,
-            pieceVersion: pieceMetadata.version,
+        connector: await getConnectorPackageWithoutArchive(log, platformId, {
+            connectorName,
+            connectorVersion: connectorMetadata.version,
         }),
         projectId,
         platformId,
@@ -793,9 +793,9 @@ const engineValidateAuth = async (
 }
 
 // The hook is a function, so it cannot survive metadata serialization — without
-// the flag Piece.metadata() derives from it, every OAuth connect would pay a
-// sandbox round-trip to ask a piece that has nothing to answer with.
-const declaresConnectionIdentifier = (auth: PieceMetadata['auth']): boolean => {
+// the flag Connector.metadata() derives from it, every OAuth connect would pay a
+// sandbox round-trip to ask a connector that has nothing to answer with.
+const declaresConnectionIdentifier = (auth: ConnectorMetadata['auth']): boolean => {
     if (isNil(auth)) {
         return false
     }
@@ -816,21 +816,21 @@ const engineResolveConnectionIdentifier = async (
     if (environment === ApEnvironment.TESTING) {
         return undefined
     }
-    const { pieceName, auth, projectId, platformId, connectionType } = params
+    const { connectorName, auth, projectId, platformId, connectionType } = params
     const { data: identifier } = await tryCatch(async () => {
-        const pieceMetadata = await pieceMetadataService(log).getOrThrow({
-            name: pieceName,
+        const connectorMetadata = await connectorMetadataService(log).getOrThrow({
+            name: connectorName,
             version: undefined,
             platformId,
         })
-        if (!declaresConnectionIdentifier(pieceMetadata.auth)) {
-            log.debug({ piece: { name: pieceName, version: pieceMetadata.version } }, 'Piece auth declares no getConnectionIdentifier, skipping engine round-trip')
+        if (!declaresConnectionIdentifier(connectorMetadata.auth)) {
+            log.debug({ connector: { name: connectorName, version: connectorMetadata.version } }, 'Connector auth declares no getConnectionIdentifier, skipping engine round-trip')
             return undefined
         }
         const enginePromise = userInteractionWatcher.submitAndWaitForResponse<EngineResponse<ExecuteResolveConnectionIdentifierResponse>>({
-            piece: await getPiecePackageWithoutArchive(log, platformId, {
-                pieceName,
-                pieceVersion: pieceMetadata.version,
+            connector: await getConnectorPackageWithoutArchive(log, platformId, {
+                connectorName,
+                connectorVersion: connectorMetadata.version,
             }),
             projectId,
             platformId,
@@ -911,12 +911,12 @@ function mapToUserWithMetaInformation(owner: (User & { identity?: UserIdentity }
     }
 }
 
-function validatePieceVersion(pieceVersion: string): void {
-    if (!semver.valid(pieceVersion)) {
+function validateConnectorVersion(connectorVersion: string): void {
+    if (!semver.valid(connectorVersion)) {
         throw new PlatformError({
             code: ErrorCode.VALIDATION,
             params: {
-                message: 'Invalid piece version',
+                message: 'Invalid connector version',
             },
         })
     }
@@ -931,9 +931,9 @@ type UpsertParams = {
     displayName: string
     type: AppConnectionType
     status?: AppConnectionStatus
-    pieceName: string
+    connectorName: string
     metadata?: Metadata
-    pieceVersion?: string
+    connectorVersion?: string
     preSelectForNewProjects?: boolean
 }
 
@@ -965,8 +965,8 @@ type DeleteParams = {
 
 type ValidateConnectionValueParams = {
     value: Extract<UpsertAppConnectionRequestBody, { value: unknown }>['value']
-    pieceName: string
-    pieceVersion: string
+    connectorName: string
+    connectorVersion: string
     projectId: ProjectId | undefined
     platformId: string
 }
@@ -976,7 +976,7 @@ type ListParams = {
     projectIds?: ProjectId[]
     ownerIds?: string[]
     platformId: string
-    pieceName: string | undefined
+    connectorName: string | undefined
     cursorRequest: Cursor | null
     scope: AppConnectionScope | undefined
     displayName: string | undefined
@@ -987,7 +987,7 @@ type ListParams = {
 
 type ListForPlatformParams = {
     platformId: string
-    pieceName: string | undefined
+    connectorName: string | undefined
     displayName: string | undefined
     status: AppConnectionStatus[] | undefined
     scope: AppConnectionScope | undefined
@@ -1011,7 +1011,7 @@ type UpdateParams = {
 }
 
 type EngineValidateAuthParams = {
-    pieceName: string
+    connectorName: string
     projectId: ProjectId | undefined
     platformId: string
     auth: AppConnectionValue

@@ -2,7 +2,7 @@ import { writeFile } from 'node:fs/promises';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import inquirer from 'inquirer';
-import { assertPieceExists, displayNameToCamelCase, displayNameToKebabCase, findPiece } from '../utils/piece-utils';
+import { assertConnectorExists, displayNameToCamelCase, displayNameToKebabCase, findConnector } from '../utils/connector-utils';
 import { checkIfFileExists, makeFolderRecursive } from '../utils/files';
 import { join } from 'node:path';
 
@@ -11,7 +11,7 @@ function createActionTemplate(displayName: string, description: string) {
   const actionTemplate = `import { createAction, Property } from '@fema/connector-sdk';
 
 export const ${camelCase} = createAction({
-  // auth: check https://www.activepieces.com/docs/developers/piece-reference/authentication,
+  // auth: check https://github.com/lokiworks/fema-ipaas/docs/developers/connector-reference/authentication,
   name: '${camelCase}',
   displayName: '${displayName}',
   description: '${description}',
@@ -31,13 +31,13 @@ const checkIfActionExists = async (actionPath: string) => {
     process.exit(1);
   }
 }
-const createAction = async (pieceName: string, displayActionName: string, actionDescription: string) => {
+const createAction = async (connectorName: string, displayActionName: string, actionDescription: string) => {
   const actionTemplate = createActionTemplate(displayActionName, actionDescription)
   const actionName = displayNameToKebabCase(displayActionName)
-  const pieceFolder = await findPiece(pieceName);
-  assertPieceExists(pieceFolder)
-  console.log(chalk.blue(`Piece path: ${pieceFolder}`))
-  const actionsFolder = join(pieceFolder, 'src', 'lib', 'actions')
+  const connectorFolder = await findConnector(connectorName);
+  assertConnectorExists(connectorFolder)
+  console.log(chalk.blue(`Connector path: ${connectorFolder}`))
+  const actionsFolder = join(connectorFolder, 'src', 'lib', 'actions')
   const actionPath = join(actionsFolder, `${actionName}.ts`)
   await checkIfActionExists(actionPath)
 
@@ -53,8 +53,8 @@ export const createActionCommand = new Command('create')
     const questions = [
       {
         type: 'input',
-        name: 'pieceName',
-        message: 'Enter the piece folder name:',
+        name: 'connectorName',
+        message: 'Enter the connector folder name:',
         placeholder: 'google-drive',
       },
       {
@@ -70,5 +70,5 @@ export const createActionCommand = new Command('create')
     ];
 
     const answers = await inquirer.prompt(questions);
-    createAction(answers.pieceName, answers.actionName, answers.actionDescription);
+    createAction(answers.connectorName, answers.actionName, answers.actionDescription);
   });

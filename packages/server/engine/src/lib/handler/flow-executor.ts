@@ -2,15 +2,15 @@ import { performance } from 'node:perf_hooks'
 import { isNil } from '@fema/core-utils'
 import { EngineGenericError, ExecutionType, FlowAction, FlowActionType, FlowRunStatus, FlowTrigger, GenericStepOutput, StepOutputStatus } from '@fema/shared'
 import dayjs from 'dayjs'
-import { triggerRunner } from '../core/piece/trigger-runner'
+import { triggerRunner } from '../core/connector/trigger-runner'
 import { flowRunProgressReporter } from '../helper/flow-run-progress-reporter'
 import { loggingUtils } from '../helper/logging-utils'
 import { BaseExecutor } from './base-executor'
 import { codeExecutor } from './code-executor'
+import { connectorExecutor } from './connector-executor'
 import { EngineConstants, ResolvedExecuteFlowOperation } from './context/engine-constants'
 import { FlowExecutorContext } from './context/flow-execution-context'
 import { loopExecutor } from './loop-executor'
-import { pieceExecutor } from './piece-executor'
 import { routerExecuter } from './router-executor'
 
 let executors: Record<FlowActionType, BaseExecutor<FlowAction>> | null = null
@@ -21,7 +21,7 @@ function getExecutors(): Record<FlowActionType, BaseExecutor<FlowAction>> {
     executors ??= {
         [FlowActionType.CODE]: codeExecutor,
         [FlowActionType.LOOP_ON_ITEMS]: loopExecutor,
-        [FlowActionType.PIECE]: pieceExecutor,
+        [FlowActionType.CONNECTOR]: connectorExecutor,
         [FlowActionType.ROUTER]: routerExecuter,
     }
     return executors
@@ -135,7 +135,7 @@ async function runContinueOnFailureBranchIfNeeded({ action, executionState, cons
     executionState: FlowExecutorContext
     constants: EngineConstants
 }): Promise<FlowExecutorContext> {
-    if (action.type !== FlowActionType.CODE && action.type !== FlowActionType.PIECE) {
+    if (action.type !== FlowActionType.CODE && action.type !== FlowActionType.CONNECTOR) {
         return executionState
     }
     const cofEnabled = action.settings.errorHandlingOptions?.continueOnFailure?.value

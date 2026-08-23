@@ -66,7 +66,7 @@ export const CanvasContextMenuContent = ({
     flowVersion,
     exitStepSettings,
     readonly,
-    setOpenedPieceSelectorStepNameOrAddButtonId,
+    setOpenedConnectorSelectorStepNameOrAddButtonId,
   ] = useBuilderStateContext((state) => [
     state.selectedNodes,
     state.applyOperation,
@@ -74,7 +74,7 @@ export const CanvasContextMenuContent = ({
     state.flowVersion,
     state.exitStepSettings,
     state.readonly,
-    state.setOpenedPieceSelectorStepNameOrAddButtonId,
+    state.setOpenedConnectorSelectorStepNameOrAddButtonId,
   ]);
   const disabled = selectedNodes.length === 0;
   const areAllStepsSkipped = selectedNodes.every(
@@ -105,7 +105,7 @@ export const CanvasContextMenuContent = ({
   const showPasteAsCofBranchChild =
     selectedNodes.length === 1 &&
     (firstSelectedStep?.type === FlowActionType.CODE ||
-      firstSelectedStep?.type === FlowActionType.PIECE) &&
+      firstSelectedStep?.type === FlowActionType.CONNECTOR) &&
     firstSelectedStep.settings.errorHandlingOptions?.continueOnFailure
       ?.value === true &&
     !readonly &&
@@ -168,7 +168,7 @@ export const CanvasContextMenuContent = ({
         <ContextMenuItem
           disabled={disabled}
           onClick={() => {
-            setOpenedPieceSelectorStepNameOrAddButtonId(selectedNodes[0]);
+            setOpenedConnectorSelectorStepNameOrAddButtonId(selectedNodes[0]);
           }}
           className="flex items-center gap-2"
         >

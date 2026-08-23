@@ -12,5 +12,5 @@ types the engine runs on.
 - **Must be tree-shakeable.** It is bundled into the engine, so keep it small,
   side-effect-free (`"sideEffects": false`), and acyclic.
 - **May import `@fema/core-*` packages only** — never `server`, `web`,
-  `pieces`, or `shared`. Enforced by the `no-restricted-imports` boundary lint in
+  `connectors`, or `shared`. Enforced by the `no-restricted-imports` boundary lint in
   `.eslintrc.json`.

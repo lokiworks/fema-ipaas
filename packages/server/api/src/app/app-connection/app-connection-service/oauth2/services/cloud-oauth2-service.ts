@@ -7,7 +7,7 @@ function notAvailable(): never {
     throw new PlatformError({
         code: ErrorCode.INVALID_CLOUD_CLAIM,
         params: {
-            pieceName: 'unknown',
+            connectorName: 'unknown',
         },
     })
 }

@@ -14,7 +14,7 @@ type EngineConstantsParams = {
     flowId: string
     flowVersionId: string
     flowVersionState: FlowVersionState
-    triggerPieceName: string
+    triggerConnectorName: string
     flowRunId: string
     publicApiUrl: string
     internalApiUrl: string
@@ -47,7 +47,7 @@ export class EngineConstants {
     public static readonly BASE_CODE_DIRECTORY = process.env.FEMA_BASE_CODE_DIRECTORY ?? './codes'
     public static readonly INPUT_FILE = './input.json'
     public static readonly OUTPUT_FILE = './output.json'
-    public static readonly DEV_PIECES = process.env.FEMA_DEV_PIECES?.split(',') ?? []
+    public static readonly DEV_CONNECTORS = process.env.FEMA_DEV_CONNECTORS?.split(',') ?? []
     public static readonly TEST_MODE = process.env.FEMA_TEST_MODE === 'true'
 
     public readonly platformId: string
@@ -55,7 +55,7 @@ export class EngineConstants {
     public readonly flowId: string
     public readonly flowVersionId: string
     public readonly flowVersionState: FlowVersionState
-    public readonly triggerPieceName: string
+    public readonly triggerConnectorName: string
     public readonly flowRunId: string
     public readonly publicApiUrl: string
     public readonly internalApiUrl: string
@@ -85,8 +85,8 @@ export class EngineConstants {
         return EngineConstants.BASE_CODE_DIRECTORY
     }
 
-    public get devPieces(): string[] {
-        return EngineConstants.DEV_PIECES
+    public get devConnectors(): string[] {
+        return EngineConstants.DEV_CONNECTORS
     }
 
     public constructor(params: EngineConstantsParams) {
@@ -104,7 +104,7 @@ export class EngineConstants {
         this.publicApiUrl = params.publicApiUrl
         this.internalApiUrl = params.internalApiUrl
         this.retryConstants = params.retryConstants
-        this.triggerPieceName = params.triggerPieceName
+        this.triggerConnectorName = params.triggerConnectorName
         this.engineToken = params.engineToken
         this.projectId = params.projectId
         this.streamStepProgress = params.streamStepProgress
@@ -146,12 +146,12 @@ export class EngineConstants {
         })
     }
 
-    public static fromExecutePropertyInput(input: Omit<ExecutePropsOptions, 'piece'> & { pieceName: string, pieceVersion: string }): EngineConstants {
+    public static fromExecutePropertyInput(input: Omit<ExecutePropsOptions, 'connector'> & { connectorName: string, connectorVersion: string }): EngineConstants {
         const flow = flowFields(input.flowVersion)
         return new EngineConstants({
             ...sharedFields(input),
             ...flow,
-            triggerPieceName: flow.triggerPieceName ?? DEFAULT_MCP_DATA.triggerPieceName,
+            triggerConnectorName: flow.triggerConnectorName ?? DEFAULT_MCP_DATA.triggerConnectorName,
             flowRunId: DEFAULT_EXECUTE_PROPERTY,
         })
     }
@@ -163,14 +163,14 @@ export class EngineConstants {
             flowRunId: DEFAULT_TRIGGER_EXECUTION,
         })
     }
-    public getPropsResolver({ contextVersion, pieceName }: GetPropsResolverParams): PropsResolver {
+    public getPropsResolver({ contextVersion, connectorName }: GetPropsResolverParams): PropsResolver {
         return createPropsResolver({
             projectId: this.projectId,
             engineToken: this.engineToken,
             apiUrl: this.internalApiUrl,
             contextVersion,
             stepNames: this.stepNames,
-            pieceName,
+            connectorName,
         })
     }
     private async getProject(): Promise<Project> {
@@ -217,7 +217,7 @@ function flowFields(flowVersion: FlowFieldsSource | undefined) {
             flowId: DEFAULT_MCP_DATA.flowId,
             flowVersionId: DEFAULT_MCP_DATA.flowVersionId,
             flowVersionState: DEFAULT_MCP_DATA.flowVersionState,
-            triggerPieceName: DEFAULT_MCP_DATA.triggerPieceName,
+            triggerConnectorName: DEFAULT_MCP_DATA.triggerConnectorName,
             stepNames: [],
         }
     }
@@ -225,14 +225,14 @@ function flowFields(flowVersion: FlowFieldsSource | undefined) {
         flowId: flowVersion.flowId,
         flowVersionId: flowVersion.id,
         flowVersionState: flowVersion.state,
-        triggerPieceName: flowVersion.trigger?.settings.pieceName,
+        triggerConnectorName: flowVersion.trigger?.settings.connectorName,
         stepNames: isNil(flowVersion.trigger) ? [] : flowStructureUtil.getAllSteps(flowVersion.trigger).map((step) => step.name),
     }
 }
 
 type GetPropsResolverParams = {
     contextVersion: ContextVersion | undefined
-    pieceName?: string
+    connectorName?: string
 }
 
 type SharedFieldsSource = {

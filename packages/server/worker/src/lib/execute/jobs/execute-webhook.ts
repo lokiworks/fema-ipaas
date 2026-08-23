@@ -1,5 +1,5 @@
 import { isNil, parseToJsonIfPossible, tryCatch } from '@fema/core-utils'
-import { EngineOperationType, EngineResponseStatus, ExecuteTriggerResponse, FlowVersion, PieceTrigger, StreamStepProgress, TriggerHookType, WebhookJobData, WorkerJobType } from '@fema/shared'
+import { ConnectorTrigger, EngineOperationType, EngineResponseStatus, ExecuteTriggerResponse, FlowVersion, StreamStepProgress, TriggerHookType, WebhookJobData, WorkerJobType } from '@fema/shared'
 import { workerSettings } from '../../config/worker-settings'
 import { FireAndForgetJobResult, JobContext, JobHandler, JobResultKind } from '../types'
 import { isSandboxTimeout } from '../utils/sandbox-helpers'
@@ -7,16 +7,16 @@ import { recordTriggerRun } from '../utils/trigger-run-recorder'
 import { getAppWebhookUrl, getWebhookUrl } from '../utils/webhook-url'
 
 function getAppWebhookDetails(flowVersion: FlowVersion, publicApiUrl: string, appWebhookSecretsJson: string): { appWebhookUrl?: string, webhookSecret?: string | Record<string, string> } {
-    const trigger = flowVersion.trigger as PieceTrigger
-    const pieceName = trigger?.settings?.pieceName
-    if (isNil(pieceName)) {
+    const trigger = flowVersion.trigger as ConnectorTrigger
+    const connectorName = trigger?.settings?.connectorName
+    if (isNil(connectorName)) {
         return {}
     }
     const secrets = parseToJsonIfPossible(appWebhookSecretsJson) as Record<string, { webhookSecret: string | Record<string, string> }> | undefined
-    const webhookSecret = secrets?.[pieceName]?.webhookSecret
-    const pieceUrlName = pieceName.replace('@fema/connector-', '')
+    const webhookSecret = secrets?.[connectorName]?.webhookSecret
+    const connectorUrlName = connectorName.replace('@fema/connector-', '')
     return {
-        appWebhookUrl: getAppWebhookUrl(publicApiUrl, pieceUrlName),
+        appWebhookUrl: getAppWebhookUrl(publicApiUrl, connectorUrlName),
         webhookSecret,
     }
 }

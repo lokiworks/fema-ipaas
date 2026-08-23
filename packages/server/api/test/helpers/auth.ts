@@ -12,7 +12,7 @@ const generateToken = ({
     algorithm = 'HS256',
     key = 'secret',
     keyId = '1',
-    issuer = 'activepieces',
+    issuer = 'fema',
 }: GenerateTokenParams): string => {
     const options: SignOptions = {
         algorithm,
@@ -31,7 +31,7 @@ export const generateMockToken = async (
 
     return generateToken({
         payload: mockPrincipal,
-        issuer: 'activepieces',
+        issuer: 'fema',
     })
 }
 
@@ -100,9 +100,9 @@ export const generateMockExternalToken = (
         concurrencyPoolLimit: params?.concurrencyPoolLimit,
     }
 
-    const mockExternalTokenPayload: ExternalTokenPayload = isNil(params?.pieceSetKey)
-        ? { ...commonPayload, pieces: params?.pieces ?? undefined }
-        : { ...commonPayload, version: 'v4', pieceSet: params.pieceSetKey }
+    const mockExternalTokenPayload: ExternalTokenPayload = isNil(params?.connectorSetKey)
+        ? { ...commonPayload, connectors: params?.connectors ?? undefined }
+        : { ...commonPayload, version: 'v4', connectorSet: params.connectorSetKey }
 
     const algorithm = 'RS256'
     const key = params?.privateKey ?? MOCK_SIGNING_KEY_PRIVATE_KEY

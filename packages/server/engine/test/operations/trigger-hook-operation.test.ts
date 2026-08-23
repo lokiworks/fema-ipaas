@@ -19,7 +19,7 @@ vi.mock('../../src/lib/api/engine-file-api', () => ({
 const { mockExecuteTrigger } = vi.hoisted(() => ({
     mockExecuteTrigger: vi.fn(),
 }))
-vi.mock('../../src/lib/core/piece/trigger-runner', () => ({
+vi.mock('../../src/lib/core/connector/trigger-runner', () => ({
     triggerRunner: {
         executeTrigger: mockExecuteTrigger,
     },

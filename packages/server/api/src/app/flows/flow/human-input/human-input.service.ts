@@ -1,13 +1,13 @@
 import { ErrorCode, FlowId, isNil, PlatformError } from '@fema/core-utils'
 import { ChatUIResponse, FormInputType, FormResponse, PopulatedFlow } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
-import { pieceMetadataService } from '../../../pieces/metadata/piece-metadata-service'
+import { connectorMetadataService } from '../../../connectors/metadata/connector-metadata-service'
 import { platformService } from '../../../platform/platform.service'
 import { projectService } from '../../../project/project-service'
 import { flowVersionService } from '../../flow-version/flow-version.service'
 import { flowRepo } from '../flow.repo'
 
-const FORMS_PIECE_NAME = '@fema/connector-forms'
+const FORMS_CONNECTOR_NAME = '@fema/connector-forms'
 const FORM_TRIIGGER = 'form_submission'
 const FILE_TRIGGER = 'file_submission'
 const SIMPLE_FILE_PROPS = {
@@ -31,7 +31,7 @@ function isFormTrigger(flow: PopulatedFlow | null): flow is PopulatedFlow {
         return false
     }
     const triggerSettings = flow.version.trigger.settings
-    return triggerSettings.pieceName === FORMS_PIECE_NAME && FORMS_TRIGGER_NAMES.includes(triggerSettings.triggerName)
+    return triggerSettings.connectorName === FORMS_CONNECTOR_NAME && FORMS_TRIGGER_NAMES.includes(triggerSettings.triggerName)
 }
 
 export const humanInputService = (log: FastifyBaseLogger) => ({
@@ -47,9 +47,9 @@ export const humanInputService = (log: FastifyBaseLogger) => ({
                 },
             })
         }
-        const pieceVersion = await pieceMetadataService(log).resolveExactVersion({
-            name: FORMS_PIECE_NAME,
-            version: flow.version.trigger.settings.pieceVersion,
+        const connectorVersion = await connectorMetadataService(log).resolveExactVersion({
+            name: FORMS_CONNECTOR_NAME,
+            version: flow.version.trigger.settings.connectorVersion,
             platformId: await projectService(log).getPlatformId(flow.projectId),
         })
         const triggerSettings = flow.version.trigger.settings
@@ -58,14 +58,14 @@ export const humanInputService = (log: FastifyBaseLogger) => ({
             title: flow.version.displayName,
             props: triggerSettings.triggerName === FILE_TRIGGER ? SIMPLE_FILE_PROPS : triggerSettings.input,
             projectId: flow.projectId,
-            version: pieceVersion,
+            version: connectorVersion,
         }
     },
     getChatUIByFlowIdOrThrow: async (flowId: string, useDraft: boolean): Promise<ChatUIResponse> => {
         const flow = await getPopulatedFlowById(log, flowId, useDraft)
         if (!flow
             || flow.version.trigger.settings.triggerName !== 'chat_submission'
-            || flow.version.trigger.settings.pieceName !== FORMS_PIECE_NAME) {
+            || flow.version.trigger.settings.connectorName !== FORMS_CONNECTOR_NAME) {
             throw new PlatformError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {

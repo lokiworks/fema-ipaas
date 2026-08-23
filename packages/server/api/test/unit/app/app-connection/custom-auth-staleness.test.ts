@@ -7,7 +7,7 @@ const NOW = dayjs().unix()
 
 describe('isCustomAuthTokenStale', () => {
     describe('when access_token is missing', () => {
-        it('returns true (piece never refreshed yet)', () => {
+        it('returns true (connector never refreshed yet)', () => {
             expect(isCustomAuthTokenStale({})).toBe(true)
             expect(isCustomAuthTokenStale({ access_token: undefined })).toBe(true)
         })

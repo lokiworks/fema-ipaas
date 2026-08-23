@@ -11,7 +11,7 @@ billing migration, whose catalog went live 23 July 2026. Pre-Autumn the Cloud fr
 (`STANDARD_CLOUD_PLAN`): 200 credits a month, 10 active flows, 1 team project, `showPoweredBy: false`,
 `apiKeysEnabled: false`. The Autumn `free` plan they were auto-enrolled onto is more generous on
 credits (100 a day) and active flows (unlimited), but takes away the one team project
-(`teamProjectsLimit` 0) and puts Activepieces branding back on their embeds (`showPoweredBy` true).
+(`teamProjectsLimit` 0) and puts FEMA Integration Platform branding back on their embeds (`showPoweredBy` true).
 
 They need grandfathering, and the grant has to reach platforms that have been dormant since the
 migration as well as active ones.

@@ -10,10 +10,10 @@ steps:
       - -f
       - Dockerfile.worker
       - -t
-      - us-central1-docker.pkg.dev/activepieces-b3803/sandbox-bench/ap-worker:sandbox-bench
+      - us-central1-docker.pkg.dev/fema-b3803/sandbox-bench/ap-worker:sandbox-bench
       - .
 images:
-  - us-central1-docker.pkg.dev/activepieces-b3803/sandbox-bench/ap-worker:sandbox-bench
+  - us-central1-docker.pkg.dev/fema-b3803/sandbox-bench/ap-worker:sandbox-bench
 options:
   machineType: E2_HIGHCPU_8
 timeout: 1800s

@@ -1,11 +1,11 @@
 ---
 name: triage-image-cves
-description: Scan an Activepieces Docker image with grype for OS/base-image (deb) and application (npm) CVEs of High/Critical severity. Lists the 3 most-recent published tags and lets the user pick which to scan, validates each finding is real and reachable, and proves candidate fixes in an isolated git worktree (rebuild image + re-scan + tests + container smoke-run + codebase diff) before proposing anything — fixes are NEVER auto-applied; the user decides per finding. Use when the user asks to grype-scan the image, triage container/image vulnerabilities, or check a shipped Docker image for CVEs.
+description: Scan an FEMA Integration Platform Docker image with grype for OS/base-image (deb) and application (npm) CVEs of High/Critical severity. Lists the 3 most-recent published tags and lets the user pick which to scan, validates each finding is real and reachable, and proves candidate fixes in an isolated git worktree (rebuild image + re-scan + tests + container smoke-run + codebase diff) before proposing anything — fixes are NEVER auto-applied; the user decides per finding. Use when the user asks to grype-scan the image, triage container/image vulnerabilities, or check a shipped Docker image for CVEs.
 ---
 
 # Triage Image CVEs (grype container scan)
 
-On-demand triage of vulnerabilities in a **published Activepieces Docker image** on Docker Hub
+On-demand triage of vulnerabilities in a **published FEMA Integration Platform Docker image** on Docker Hub
 (`lokiworks/fema-ipaas`) using [grype](https://github.com/anchore/grype). The skill lists the
 **3 most-recent tags** and lets the user pick which to scan. Produces a **review-ready** report
 per affected package and proposes fixes that are **proven non-breaking in an isolated worktree** —
@@ -117,7 +117,7 @@ For **every** finding, ground the version in the scan, not recall: the installed
 **OS / base-image (`deb`) findings:**
 - Confirm the package is in the **shipped** image (it is, if grype found it on the scanned tag) and
   whether it sits on a **runtime-reachable** path or is a build-tool leftover. Map it to how AP
-  uses it: `git` → git-sync; `python3`/`poppler-utils` → PDF/AI pieces; `ca-certificates`/`curl`
+  uses it: `git` → git-sync; `python3`/`poppler-utils` → PDF/AI connectors; `ca-certificates`/`curl`
   → outbound HTTP; `g++`/`build-essential`/`node-gyp` → native-module rebuild at install (build-
   time, but the binary still ships). State which.
 - Determine the fix path and its blast radius:
@@ -137,7 +137,7 @@ For **every** finding, ground the version in the scan, not recall: the installed
   transitive dead code). Read the installed version from `bun.lock` (this repo is **bun**), not
   from recall. For a package with multiple advisories, being ≥ one fix version does not mean safe.
 - **Confirm it on the built image, not just the lockfile.** The shipped image runs a trimmed
-  `bun install --production` over a regenerated lockfile (pieces are stripped in the build), so the
+  `bun install --production` over a regenerated lockfile (connectors are stripped in the build), so the
   set of installed npm packages in the image can differ from the dev `bun.lock`. The version grype
   reports is the one actually shipped — treat that as ground truth.
 

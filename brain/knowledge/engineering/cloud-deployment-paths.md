@@ -4,7 +4,7 @@ icon: 🚀
 
 # Cloud Deployment Paths
 
-How code reaches `cloud.activepieces.com`. Two workflows in `.github/workflows/`: `continuous-delivery-canary.yml` and `continuous-delivery-cloud.yml`.
+How code reaches `fema.local`. Two workflows in `.github/workflows/`: `continuous-delivery-canary.yml` and `continuous-delivery-cloud.yml`.
 
 ## The normal path
 Cloud's `workflow_call`/scheduled run calls the canary workflow as a job, then promotes the `release-candidate` tag to prod. Canary builds its own `.canary` image; prod deploys the `release-candidate` tag, not that image.

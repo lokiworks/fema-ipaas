@@ -16,7 +16,7 @@ export default defineConfig({
       ),
       '@fema/connector-sdk': path.resolve(
         __dirname,
-        '../../packages/pieces/framework/src',
+        '../../packages/connectors/sdk/src',
       ),
       '@fema/core-utils': path.resolve(
         __dirname,
@@ -28,7 +28,7 @@ export default defineConfig({
       ),
       '@fema/connector-types': path.resolve(
         __dirname,
-        '../../packages/core/piece-types/src',
+        '../../packages/core/connector-types/src',
       ),
       '@fema/workflow-core': path.resolve(
         __dirname,

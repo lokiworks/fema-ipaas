@@ -1,4 +1,4 @@
-import { FriendlyPieceError } from '@fema/core-utils';
+import { FriendlyConnectorError } from '@fema/core-utils';
 import { t } from 'i18next';
 import { Check, Sparkles } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -13,7 +13,7 @@ import {
 } from './explanation-prompt';
 
 type CopyAiPromptButtonProps = {
-  error: FriendlyPieceError;
+  error: FriendlyConnectorError;
   context: ErrorExplanationContext;
   className?: string;
 };

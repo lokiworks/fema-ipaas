@@ -9,7 +9,7 @@ describe('isStepFileUrl', () => {
   it('detects the unified /api/v1/files/ read URLs (GIT-1618 regression)', () => {
     expect(
       isStepFileUrl(
-        'https://cloud.activepieces.com/api/v1/files/abc123?token=eyJhbGci',
+        'https://github.com/lokiworks/fema-ipaas/api/v1/files/abc123?token=eyJhbGci',
       ),
     ).toBe(true);
     expect(isStepFileUrl('/api/v1/files/abc123?token=eyJhbGci')).toBe(true);
@@ -18,7 +18,7 @@ describe('isStepFileUrl', () => {
   it('still detects the legacy /api/v1/step-files/ URLs', () => {
     expect(
       isStepFileUrl(
-        'https://cloud.activepieces.com/api/v1/step-files/signed?token=eyJhbGci',
+        'https://github.com/lokiworks/fema-ipaas/api/v1/step-files/signed?token=eyJhbGci',
       ),
     ).toBe(true);
   });

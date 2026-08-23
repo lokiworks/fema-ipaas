@@ -1,4 +1,4 @@
-import { isNil, tryParseFriendlyPieceError } from '@fema/core-utils';
+import { isNil, tryParseFriendlyConnectorError } from '@fema/core-utils';
 import { FlowAction } from '@fema/shared';
 import { t } from 'i18next';
 import { Loader2, Play } from 'lucide-react';
@@ -30,8 +30,8 @@ type TestSampleDataViewerProps = {
   children?: React.ReactNode;
   consoleLogs: string | null;
   explanationContext?: ErrorExplanationContext;
-  pieceDisplayName?: string;
-  pieceSchema?: OutputSchema | null;
+  connectorDisplayName?: string;
+  connectorSchema?: OutputSchema | null;
 } & (
   | {
       hideCancel: true;
@@ -75,8 +75,8 @@ export const TestSampleDataViewer = React.memo(
       sampleDataInput,
       consoleLogs,
       explanationContext,
-      pieceDisplayName,
-      pieceSchema,
+      connectorDisplayName,
+      connectorSchema,
     } = props;
     const [requestedTab, setActiveTab] = useState<ActiveTab>('Output');
     const hasInput = !isNil(sampleDataInput);
@@ -106,7 +106,7 @@ export const TestSampleDataViewer = React.memo(
     const showAgentView = false;
     const friendlyError =
       !isTesting && !showAgentView && activeTab === 'Output'
-        ? tryParseFriendlyPieceError(errorMessage)
+        ? tryParseFriendlyConnectorError(errorMessage)
         : null;
 
     return (
@@ -135,13 +135,13 @@ export const TestSampleDataViewer = React.memo(
               <FriendlyErrorView
                 error={friendlyError}
                 explanationContext={explanationContext}
-                pieceDisplayName={pieceDisplayName}
+                connectorDisplayName={connectorDisplayName}
               />
             ) : activeTab === 'Output' && !errorMessage ? (
               <SmartOutputViewer
                 json={outputData}
                 title={t('Output')}
-                pieceSchema={pieceSchema ?? null}
+                connectorSchema={connectorSchema ?? null}
               />
             ) : (
               <DataDisplayTabs

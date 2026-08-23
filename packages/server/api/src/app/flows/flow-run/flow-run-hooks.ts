@@ -1,4 +1,4 @@
-import { isManualPieceTrigger, isNil } from '@fema/core-utils'
+import { isManualConnectorTrigger, isNil } from '@fema/core-utils'
 import { FlowRun, FlowTriggerType, isFailedState, isFlowRunStateTerminal, RunEnvironment, WebsocketClientEvent } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { websocketService } from '../../core/websockets.service'
@@ -13,8 +13,8 @@ export const flowRunHooks = (log: FastifyBaseLogger) => ({
             return
         }
         const flowVersion = await flowVersionService(log).getOne(flowRun.flowVersionId)
-        const isPieceTrigger = !isNil(flowVersion) && flowVersion.trigger.type === FlowTriggerType.PIECE && !isNil(flowVersion.trigger.settings.triggerName)
-        const isManualTrigger = isPieceTrigger && isManualPieceTrigger({ pieceName: flowVersion.trigger.settings.pieceName, triggerName: flowVersion.trigger.settings.triggerName })
+        const isConnectorTrigger = !isNil(flowVersion) && flowVersion.trigger.type === FlowTriggerType.CONNECTOR && !isNil(flowVersion.trigger.settings.triggerName)
+        const isManualTrigger = isConnectorTrigger && isManualConnectorTrigger({ connectorName: flowVersion.trigger.settings.connectorName, triggerName: flowVersion.trigger.settings.triggerName })
         if (flowRun.environment === RunEnvironment.TESTING || isManualTrigger) {
             websocketService.to(flowRun.projectId).emit(WebsocketClientEvent.UPDATE_RUN_PROGRESS, {
                 flowRun,

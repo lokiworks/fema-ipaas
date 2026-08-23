@@ -13,9 +13,9 @@ import { toast } from 'sonner';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { Button } from '@/components/ui/button';
-import { pieceSelectorUtils } from '@/features/pieces';
+import { connectorSelectorUtils } from '@/features/connectors';
 
-import { DynamicPropertiesContext } from '../piece-properties/dynamic-properties-context';
+import { DynamicPropertiesContext } from '../connector-properties/dynamic-properties-context';
 
 import {
   useActionTestRunner,
@@ -69,10 +69,10 @@ const TestStepCTAButton = () => {
     );
   }
 
-  if (isPieceTrigger(currentStep)) {
+  if (isConnectorTrigger(currentStep)) {
     if (
-      pieceSelectorUtils.isManualTrigger({
-        pieceName: currentStep.settings.pieceName,
+      connectorSelectorUtils.isManualTrigger({
+        connectorName: currentStep.settings.connectorName,
         triggerName: currentStep.settings.triggerName ?? '',
       })
     ) {
@@ -96,10 +96,10 @@ const TestStepCTAButton = () => {
 const isFlowAction = (step: Step): step is FlowAction =>
   flowStructureUtil.isAction(step.type);
 
-const isPieceTrigger = (
+const isConnectorTrigger = (
   step: Step,
-): step is Extract<FlowTrigger, { type: FlowTriggerType.PIECE }> =>
-  step.type === FlowTriggerType.PIECE;
+): step is Extract<FlowTrigger, { type: FlowTriggerType.CONNECTOR }> =>
+  step.type === FlowTriggerType.CONNECTOR;
 
 type ActionCTAButtonProps = {
   currentStep: FlowAction;

@@ -1,13 +1,13 @@
 import { z } from 'zod'
 import { Nullable } from '@fema/core-utils'
 import { Metadata } from '@fema/core-utils'
-import { BranchCondition, CodeActionSchema, CodeActionSettings, FlowActionType, LoopOnItemsActionSchema, LoopOnItemsActionSettings, PieceActionSchema, PieceActionSettings, RouterActionSchema, RouterActionSettings } from '../actions/action'
+import { BranchCondition, CodeActionSchema, CodeActionSettings, FlowActionType, LoopOnItemsActionSchema, LoopOnItemsActionSettings, ConnectorActionSchema, ConnectorActionSettings, RouterActionSchema, RouterActionSettings } from '../actions/action'
 import { FlowStatus } from '../flow'
 import { FlowVersion, FlowVersionState } from '../flow-version'
 import { Note } from '../note'
 import { SampleDataSetting, SaveSampleDataRequest } from '../sample-data'
-import { EmptyTrigger, FlowTrigger, FlowTriggerType, PieceTrigger, PieceTriggerSettings } from '../triggers/trigger'
-import { flowPieceUtil } from '../util/flow-piece-util'
+import { EmptyTrigger, FlowTrigger, FlowTriggerType, ConnectorTrigger, ConnectorTriggerSettings } from '../triggers/trigger'
+import { flowConnectorUtil } from '../util/flow-connector-util'
 import { flowStructureUtil } from '../util/flow-structure-util'
 import { _addAction } from './add-action'
 import { _addBranch } from './add-branch'
@@ -151,7 +151,7 @@ export type DeleteActionRequest = z.infer<typeof DeleteActionRequest>
 export const UpdateActionRequest = z.union([
     CodeActionSchema.omit({ lastUpdatedDate: true, settings: true }).and(z.object({ settings: CodeActionSettings.omit({ sampleData: true }) })),
     LoopOnItemsActionSchema.omit({ lastUpdatedDate: true, settings: true }).and(z.object({ settings: LoopOnItemsActionSettings.omit({ sampleData: true }) })),
-    PieceActionSchema.omit({ lastUpdatedDate: true, settings: true }).and(z.object({ settings: PieceActionSettings.omit({ sampleData: true }) })),
+    ConnectorActionSchema.omit({ lastUpdatedDate: true, settings: true }).and(z.object({ settings: ConnectorActionSettings.omit({ sampleData: true }) })),
     RouterActionSchema.omit({ lastUpdatedDate: true, settings: true }).and(z.object({ settings: RouterActionSettings.omit({ sampleData: true }) })),
 ])
 
@@ -183,7 +183,7 @@ export type AddActionRequest = z.infer<typeof AddActionRequest>
 
 export const UpdateTriggerRequest = z.union([
     EmptyTrigger.omit({ lastUpdatedDate: true }),
-    PieceTrigger.omit({ lastUpdatedDate: true, settings: true }).and(z.object({ settings: PieceTriggerSettings.omit({ sampleData: true }) })),
+    ConnectorTrigger.omit({ lastUpdatedDate: true, settings: true }).and(z.object({ settings: ConnectorTriggerSettings.omit({ sampleData: true }) })),
 ])
 export type UpdateTriggerRequest = z.infer<typeof UpdateTriggerRequest>
 
@@ -359,8 +359,8 @@ export const flowOperations = {
                 clonedVersion.state = FlowVersionState.LOCKED
                 break
             case FlowOperationType.ADD_ACTION: {
-                if (operation.request.action.type === FlowActionType.PIECE) {
-                    operation.request.action.settings.pieceVersion = flowPieceUtil.getExactVersion(operation.request.action.settings.pieceVersion)
+                if (operation.request.action.type === FlowActionType.CONNECTOR) {
+                    operation.request.action.settings.connectorVersion = flowConnectorUtil.getExactVersion(operation.request.action.settings.connectorVersion)
                 }
                 clonedVersion = _addAction(clonedVersion, operation.request)
                 break
@@ -370,8 +370,8 @@ export const flowOperations = {
                 break
             }
             case FlowOperationType.UPDATE_TRIGGER: {
-                if (operation.request.type === FlowTriggerType.PIECE) {
-                    operation.request.settings.pieceVersion = flowPieceUtil.getExactVersion(operation.request.settings.pieceVersion)
+                if (operation.request.type === FlowTriggerType.CONNECTOR) {
+                    operation.request.settings.connectorVersion = flowConnectorUtil.getExactVersion(operation.request.settings.connectorVersion)
                 }
                 clonedVersion = _updateTrigger(clonedVersion, operation.request)
                 break
@@ -385,8 +385,8 @@ export const flowOperations = {
                 break
             }
             case FlowOperationType.UPDATE_ACTION: {
-                if (operation.request.type === FlowActionType.PIECE) {
-                    operation.request.settings.pieceVersion = flowPieceUtil.getExactVersion(operation.request.settings.pieceVersion)
+                if (operation.request.type === FlowActionType.CONNECTOR) {
+                    operation.request.settings.connectorVersion = flowConnectorUtil.getExactVersion(operation.request.settings.connectorVersion)
                 }
                 clonedVersion = _updateAction(clonedVersion, operation.request)
                 break
@@ -426,7 +426,7 @@ export const flowOperations = {
                 break
         }
         clonedVersion.valid = flowStructureUtil.getAllSteps(clonedVersion.trigger).every((step) => {
-            const isSkipped = step.type != FlowTriggerType.EMPTY && step.type != FlowTriggerType.PIECE && step.skip
+            const isSkipped = step.type != FlowTriggerType.EMPTY && step.type != FlowTriggerType.CONNECTOR && step.skip
             return step.valid || isSkipped
         })
         return clonedVersion

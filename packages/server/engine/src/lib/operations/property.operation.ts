@@ -1,4 +1,4 @@
-import { DropdownState, ExecutePropsResult, InputPropertyMap, PiecePropertyMap, PropertyType, StaticPropsValue } from '@fema/connector-sdk'
+import { ConnectorPropertyMap, DropdownState, ExecutePropsResult, InputPropertyMap, PropertyType, StaticPropsValue } from '@fema/connector-sdk'
 import { isNil, isObject } from '@fema/core-utils'
 import {
     EngineGenericError,
@@ -7,11 +7,11 @@ import {
     ExecutePropsOptions,
 } from '@fema/shared'
 import * as z from 'zod/mini'
-import { PieceDescription } from '../core/piece/piece-protocol'
-import { pieceRunner } from '../core/piece/piece-runner'
+import { ConnectorDescription } from '../core/connector/connector-protocol'
+import { connectorRunner } from '../core/connector/connector-runner'
+import { buildRuntime } from '../handler/connector-executor'
 import { EngineConstants } from '../handler/context/engine-constants'
 import { testExecutionContext } from '../handler/context/test-execution-context'
-import { buildRuntime } from '../handler/piece-executor'
 import { dynamicPropKeys } from '../helper/dynamic-prop-keys'
 import { utils } from '../utils'
 import { createPropsResolver } from '../variables/props-resolver'
@@ -28,15 +28,15 @@ export const propertyOperation = {
 async function executeProps(operation: ExecutePropsOptions): Promise<ExecutePropsResult<ExecutablePropertyType>> {
     const constants = EngineConstants.fromExecutePropertyInput({
         ...operation,
-        pieceName: operation.piece.pieceName,
-        pieceVersion: operation.piece.pieceVersion,
+        connectorName: operation.connector.connectorName,
+        connectorVersion: operation.connector.connectorVersion,
     })
-    const piece = {
-        pieceName: operation.piece.pieceName,
-        pieceVersion: operation.piece.pieceVersion,
-        devPieces: EngineConstants.DEV_PIECES,
+    const connector = {
+        connectorName: operation.connector.connectorName,
+        connectorVersion: operation.connector.connectorVersion,
+        devConnectors: EngineConstants.DEV_CONNECTORS,
     }
-    const description = await pieceRunner.describe(piece)
+    const description = await connectorRunner.describe(connector)
     const { propertyType, path } = resolvePropertyPath({ description, operation })
 
     const { data: result, error } = await utils.tryCatchAndThrowOnEngineError(async () => {
@@ -55,17 +55,17 @@ async function executeProps(operation: ExecutePropsOptions): Promise<ExecuteProp
             engineToken: constants.engineToken,
             contextVersion,
             stepNames: constants.stepNames,
-            pieceName: piece.pieceName,
-        }).resolve<StaticPropsValue<PiecePropertyMap>>({
+            connectorName: connector.connectorName,
+        }).resolve<StaticPropsValue<ConnectorPropertyMap>>({
             unresolvedInput: operation.input,
             executionState,
         })
-        const { result } = await pieceRunner.call({
-            piece,
+        const { result } = await connectorRunner.call({
+            connector,
             path,
             context: {
                 kind: 'props',
-                runtime: buildRuntime({ constants, pieceName: piece.pieceName, contextVersion }),
+                runtime: buildRuntime({ constants, connectorName: connector.connectorName, contextVersion }),
                 stepName: operation.actionOrTriggerName,
                 resolvedInput,
                 searchValue: operation.searchValue,
@@ -133,6 +133,6 @@ const DropdownResult = z.custom<DropdownState<unknown>>((value) => isObject(valu
 type ExecutablePropertyType = PropertyType.DROPDOWN | PropertyType.MULTI_SELECT_DROPDOWN | PropertyType.DYNAMIC
 
 type ResolvePropertyPathParams = {
-    description: PieceDescription
+    description: ConnectorDescription
     operation: ExecutePropsOptions
 }

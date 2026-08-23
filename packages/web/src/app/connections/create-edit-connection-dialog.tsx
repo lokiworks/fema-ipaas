@@ -1,8 +1,8 @@
 import {
   getAuthPropertyForValue,
-  PieceAuthProperty,
-  PieceMetadataModel,
-  PieceMetadataModelSummary,
+  ConnectorAuthProperty,
+  ConnectorMetadataModel,
+  ConnectorMetadataModelSummary,
   PropertyType,
 } from '@fema/connector-sdk';
 import { isNil } from '@fema/core-utils';
@@ -49,10 +49,10 @@ import {
   appConnectionsMutations,
   oauthAppsQueries,
   oauth2Utils,
-  PiecesOAuth2AppsMap,
+  ConnectorsOAuth2AppsMap,
   newConnectionUtils,
 } from '@/features/connections';
-import { formUtils } from '@/features/pieces';
+import { formUtils } from '@/features/connectors';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 
@@ -64,7 +64,7 @@ import { OIDCConnectionSettings } from './oidc-connection-settings';
 import { SecretTextConnectionSettings } from './secret-text-connection-settings';
 
 function CreateOrEditConnectionSection({
-  piece,
+  connector,
   reconnectConnection,
   isGlobalConnection,
   externalIdComingFromSdk,
@@ -85,7 +85,7 @@ function CreateOrEditConnectionSection({
     },
   );
   const { externalId, displayName } = newConnectionUtils.getConnectionName(
-    piece,
+    connector,
     reconnectConnection,
     externalIdComingFromSdk,
   );
@@ -100,7 +100,7 @@ function CreateOrEditConnectionSection({
           auth: selectedAuth.authProperty,
           suggestedExternalId: externalId,
           suggestedDisplayName: displayName,
-          pieceName: piece.name,
+          connectorName: connector.name,
           oauth2App: selectedAuth.oauth2App,
           grantType: selectedAuth.grantType,
           redirectUrl: redirectUrl ?? '',
@@ -109,7 +109,7 @@ function CreateOrEditConnectionSection({
         ...(isGlobalConnection ? { scope: AppConnectionScope.PLATFORM } : {}),
         projectIds: reconnectConnection?.projectIds ?? [],
         preSelectForNewProjects: false,
-        pieceVersion: piece.version,
+        connectorVersion: connector.version,
       },
     },
     mode: 'onChange',
@@ -150,7 +150,7 @@ function CreateOrEditConnectionSection({
                     displayName: reconnectConnection.displayName,
                   })
                 : t('Connect to {displayName}', {
-                    displayName: piece.displayName,
+                    displayName: connector.displayName,
                   })}
             </div>
           </DialogTitle>
@@ -248,7 +248,10 @@ function CreateOrEditConnectionSection({
               </div>
             )}
             <div className="mt-3.5">
-              <ConnectionSettings selectedAuth={selectedAuth} piece={piece} />
+              <ConnectionSettings
+                selectedAuth={selectedAuth}
+                connector={connector}
+              />
             </div>
           </ScrollArea>
           {errorMessage && (
@@ -314,7 +317,10 @@ function CreateOrEditConnectionSection({
     </>
   );
 }
-function ConnectionSettings({ selectedAuth, piece }: ConnectionSettingsProps) {
+function ConnectionSettings({
+  selectedAuth,
+  connector,
+}: ConnectionSettingsProps) {
   switch (selectedAuth.authProperty.type) {
     case PropertyType.SECRET_TEXT:
       return (
@@ -343,7 +349,7 @@ function ConnectionSettings({ selectedAuth, piece }: ConnectionSettingsProps) {
       return (
         <OAuth2ConnectionSettings
           authProperty={selectedAuth.authProperty}
-          piece={piece}
+          connector={connector}
           grantType={selectedAuth.grantType}
           oauth2App={selectedAuth.oauth2App}
         />
@@ -354,27 +360,30 @@ function ConnectionSettings({ selectedAuth, piece }: ConnectionSettingsProps) {
 function CreateOrEditConnectionDialogContent(
   props: CreateOrEditConnectionDialogContentProps,
 ) {
-  const piece = props.piece;
+  const connector = props.connector;
   const [selectedAuth, setSelectedAuth] = useState<AuthListItem | null>(
-    piece.auth
+    connector.auth
       ? getInitiallySelectedAuthListItem(
-          piece.auth,
+          connector.auth,
           props.reconnectConnection,
-          props.piecesOAuth2AppsMap,
-          piece.name,
+          props.connectorsOAuth2AppsMap,
+          connector.name,
         )
       : null,
   );
   const [showMultiAuthList, setShowMultiAuthList] = useState(false);
-  if (isNil(piece.auth)) {
+  if (isNil(connector.auth)) {
     return null;
   }
   const hasPredefinedOAuth2App = !isNil(
-    oauth2Utils.getPredefinedOAuth2App(props.piecesOAuth2AppsMap, piece.name),
+    oauth2Utils.getPredefinedOAuth2App(
+      props.connectorsOAuth2AppsMap,
+      connector.name,
+    ),
   );
   const hasMultipleAuth =
-    Array.isArray(piece.auth) ||
-    doesAuthPropertySupportBothGrantTypes(piece.auth) ||
+    Array.isArray(connector.auth) ||
+    doesAuthPropertySupportBothGrantTypes(connector.auth) ||
     hasPredefinedOAuth2App;
   return (
     <>
@@ -386,18 +395,23 @@ function CreateOrEditConnectionDialogContent(
           showTryAnotherMethodButton={hasMultipleAuth}
         />
       )}
-      {showMultiAuthList && hasMultipleAuth && piece.auth && selectedAuth && (
-        <MutliAuthList
-          pieceName={piece.name}
-          piecesOAuth2AppsMap={props.piecesOAuth2AppsMap}
-          selectedItem={selectedAuth}
-          pieceAuth={Array.isArray(piece.auth) ? piece.auth : [piece.auth]}
-          setSelectedItem={setSelectedAuth}
-          confirmSelectedItem={() => {
-            setShowMultiAuthList(false);
-          }}
-        />
-      )}
+      {showMultiAuthList &&
+        hasMultipleAuth &&
+        connector.auth &&
+        selectedAuth && (
+          <MutliAuthList
+            connectorName={connector.name}
+            connectorsOAuth2AppsMap={props.connectorsOAuth2AppsMap}
+            selectedItem={selectedAuth}
+            connectorAuth={
+              Array.isArray(connector.auth) ? connector.auth : [connector.auth]
+            }
+            setSelectedItem={setSelectedAuth}
+            confirmSelectedItem={() => {
+              setShowMultiAuthList(false);
+            }}
+          />
+        )}
     </>
   );
 }
@@ -406,7 +420,7 @@ CreateOrEditConnectionDialogContent.displayName =
   'CreateOrEditConnectionDialogContent';
 
 function CreateOrEditConnectionDialog({
-  piece,
+  connector,
   open,
   setOpen,
   reconnectConnection,
@@ -414,15 +428,21 @@ function CreateOrEditConnectionDialog({
   externalIdComingFromSdk,
   projectId: projectIdOverride,
 }: ConnectionDialogProps) {
-  const { data: piecesOAuth2AppsMap, isPending: loadingPiecesOAuth2AppsMap } =
-    oauthAppsQueries.usePiecesOAuth2AppsMap();
+  const {
+    data: connectorsOAuth2AppsMap,
+    isPending: loadingConnectorsOAuth2AppsMap,
+  } = oauthAppsQueries.useConnectorsOAuth2AppsMap();
   return (
-    <Dialog open={open} onOpenChange={(open) => setOpen(open)} key={piece.name}>
+    <Dialog
+      open={open}
+      onOpenChange={(open) => setOpen(open)}
+      key={connector.name}
+    >
       <DialogContent
         onInteractOutside={(e) => e.preventDefault()}
         className="max-h-[70vh] px-0  min-w-[450px] max-w-[450px] lg:min-w-[650px] lg:max-w-[650px] overflow-y-auto"
       >
-        {loadingPiecesOAuth2AppsMap && hasOAuth2PieceAuth(piece) ? (
+        {loadingConnectorsOAuth2AppsMap && hasOAuth2ConnectorAuth(connector) ? (
           <>
             <DialogHeader className="mb-0">
               <DialogTitle className="px-5">
@@ -432,7 +452,7 @@ function CreateOrEditConnectionDialog({
                         displayName: reconnectConnection.displayName,
                       })
                     : t('Connect to {displayName}', {
-                        displayName: piece.displayName,
+                        displayName: connector.displayName,
                       })}
                 </div>
               </DialogTitle>
@@ -441,8 +461,8 @@ function CreateOrEditConnectionDialog({
           </>
         ) : (
           <CreateOrEditConnectionDialogContent
-            piece={piece}
-            piecesOAuth2AppsMap={piecesOAuth2AppsMap ?? {}}
+            connector={connector}
+            connectorsOAuth2AppsMap={connectorsOAuth2AppsMap ?? {}}
             setOpen={setOpen}
             reconnectConnection={reconnectConnection}
             isGlobalConnection={isGlobalConnection}
@@ -455,23 +475,25 @@ function CreateOrEditConnectionDialog({
   );
 }
 function CreateOrEditConnectionInline({
-  piece,
+  connector,
   setOpen,
   reconnectConnection,
   isGlobalConnection,
   externalIdComingFromSdk,
   projectId: projectIdOverride,
 }: InlineConnectionProps) {
-  const { data: piecesOAuth2AppsMap, isPending: loadingPiecesOAuth2AppsMap } =
-    oauthAppsQueries.usePiecesOAuth2AppsMap();
-  if (loadingPiecesOAuth2AppsMap && hasOAuth2PieceAuth(piece)) {
+  const {
+    data: connectorsOAuth2AppsMap,
+    isPending: loadingConnectorsOAuth2AppsMap,
+  } = oauthAppsQueries.useConnectorsOAuth2AppsMap();
+  if (loadingConnectorsOAuth2AppsMap && hasOAuth2ConnectorAuth(connector)) {
     return <SkeletonList numberOfItems={4} className="h-7" />;
   }
   return (
     <CreateOrEditConnectionDialogContent
       presentation="inline"
-      piece={piece}
-      piecesOAuth2AppsMap={piecesOAuth2AppsMap ?? {}}
+      connector={connector}
+      connectorsOAuth2AppsMap={connectorsOAuth2AppsMap ?? {}}
       setOpen={setOpen}
       reconnectConnection={reconnectConnection}
       isGlobalConnection={isGlobalConnection}
@@ -483,16 +505,16 @@ function CreateOrEditConnectionInline({
 
 CreateOrEditConnectionInline.displayName = 'CreateOrEditConnectionInline';
 
-function hasOAuth2PieceAuth(
-  piece: PieceMetadataModelSummary | PieceMetadataModel,
+function hasOAuth2ConnectorAuth(
+  connector: ConnectorMetadataModelSummary | ConnectorMetadataModel,
 ) {
-  if (isNil(piece.auth)) {
+  if (isNil(connector.auth)) {
     return false;
   }
-  if (Array.isArray(piece.auth)) {
-    return piece.auth.some((auth) => auth.type === PropertyType.OAUTH2);
+  if (Array.isArray(connector.auth)) {
+    return connector.auth.some((auth) => auth.type === PropertyType.OAUTH2);
   }
-  return piece.auth.type === PropertyType.OAUTH2;
+  return connector.auth.type === PropertyType.OAUTH2;
 }
 
 CreateOrEditConnectionDialog.displayName = 'CreateOrEditConnectionDialog';
@@ -503,14 +525,14 @@ export {
 };
 
 function getInitallySelectedAuthProperty(
-  auth: PieceAuthProperty[] | PieceAuthProperty,
+  auth: ConnectorAuthProperty[] | ConnectorAuthProperty,
   reconnectConnection: AppConnectionWithoutSensitiveData | null,
-): PieceAuthProperty | undefined {
+): ConnectorAuthProperty | undefined {
   if (Array.isArray(auth)) {
     if (reconnectConnection) {
       return getAuthPropertyForValue({
         authValueType: reconnectConnection.type,
-        pieceAuth: auth,
+        connectorAuth: auth,
       });
     }
     return auth.at(0);
@@ -519,10 +541,10 @@ function getInitallySelectedAuthProperty(
 }
 
 function getInitiallySelectedAuthListItem(
-  auth: PieceAuthProperty[] | PieceAuthProperty,
+  auth: ConnectorAuthProperty[] | ConnectorAuthProperty,
   reconnectConnection: AppConnectionWithoutSensitiveData | null,
-  piecesOAuth2AppsMap: PiecesOAuth2AppsMap,
-  pieceName: string,
+  connectorsOAuth2AppsMap: ConnectorsOAuth2AppsMap,
+  connectorName: string,
 ): AuthListItem | null {
   const authProperty = getInitallySelectedAuthProperty(
     auth,
@@ -536,8 +558,8 @@ function getInitiallySelectedAuthListItem(
       authProperty,
       grantType: oauth2Utils.getGrantType(authProperty),
       oauth2App: oauth2Utils.getPredefinedOAuth2App(
-        piecesOAuth2AppsMap,
-        pieceName,
+        connectorsOAuth2AppsMap,
+        connectorName,
       ) ?? {
         oauth2Type: AppConnectionType.OAUTH2,
         clientId: null,
@@ -551,7 +573,7 @@ function getInitiallySelectedAuthListItem(
   };
 }
 function doesAuthPropertySupportBothGrantTypes(
-  authProperty: PieceAuthProperty | PieceAuthProperty[],
+  authProperty: ConnectorAuthProperty | ConnectorAuthProperty[],
 ): boolean {
   if (Array.isArray(authProperty)) {
     return authProperty.some(doesAuthPropertySupportBothGrantTypes);
@@ -562,7 +584,7 @@ function doesAuthPropertySupportBothGrantTypes(
   );
 }
 type ConnectionDialogProps = {
-  piece: PieceMetadataModelSummary | PieceMetadataModel;
+  connector: ConnectorMetadataModelSummary | ConnectorMetadataModel;
   open: boolean;
   setOpen: (
     open: boolean,
@@ -577,8 +599,8 @@ type ConnectionDialogProps = {
 type InlineConnectionProps = Omit<ConnectionDialogProps, 'open'>;
 
 type CreateOrEditConnectionDialogContentProps = {
-  piece: PieceMetadataModelSummary | PieceMetadataModel;
-  piecesOAuth2AppsMap: PiecesOAuth2AppsMap;
+  connector: ConnectorMetadataModelSummary | ConnectorMetadataModel;
+  connectorsOAuth2AppsMap: ConnectorsOAuth2AppsMap;
   reconnectConnection: AppConnectionWithoutSensitiveData | null;
   isGlobalConnection: boolean;
   externalIdComingFromSdk?: string | null;
@@ -598,7 +620,7 @@ type CreateOrEditConnectionSectionProps =
   };
 
 type ConnectionSettingsProps = {
-  piece: PieceMetadataModelSummary | PieceMetadataModel;
+  connector: ConnectorMetadataModelSummary | ConnectorMetadataModel;
   selectedAuth: AuthListItem;
 };
 

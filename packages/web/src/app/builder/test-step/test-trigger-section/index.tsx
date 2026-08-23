@@ -55,13 +55,17 @@ const TestTriggerSection = React.memo(
       flowId,
     );
 
-    if (!runner || !currentStep || currentStep.type !== FlowTriggerType.PIECE) {
+    if (
+      !runner ||
+      !currentStep ||
+      currentStep.type !== FlowTriggerType.CONNECTOR
+    ) {
       return null;
     }
 
     const {
-      pieceModel,
-      isPieceLoading,
+      connectorModel,
+      isConnectorLoading,
       testType,
       mockData,
       isValid,
@@ -81,7 +85,7 @@ const TestTriggerSection = React.memo(
     const isTestedBefore = !isNil(lastTestDate);
     const showFirstTimeTestingSection = !isTestedBefore && !isSimulating;
 
-    if (isPieceLoading || isNil(testType)) {
+    if (isConnectorLoading || isNil(testType)) {
       return (
         <div className="flex flex-col h-full">
           <StepDataPanelHeader status="idle" />
@@ -100,20 +104,21 @@ const TestTriggerSection = React.memo(
       | Record<string, unknown>
       | undefined;
     const explanationContext: ErrorExplanationContext = {
-      pieceName: currentStep.settings.pieceName,
-      pieceVersion: currentStep.settings.pieceVersion,
-      pieceDisplayName: pieceModel?.displayName,
-      pieceAuthType: stepPropertiesSnapshotUtils.findAuthType(pieceModel),
+      connectorName: currentStep.settings.connectorName,
+      connectorVersion: currentStep.settings.connectorVersion,
+      connectorDisplayName: connectorModel?.displayName,
+      connectorAuthType:
+        stepPropertiesSnapshotUtils.findAuthType(connectorModel),
       stepKind: 'trigger',
       stepName: triggerName,
       stepDisplayName: currentStep.displayName,
       stepDescription: stepPropertiesSnapshotUtils.findDescription({
-        pieceModel,
+        connectorModel,
         stepKind: 'trigger',
         stepName: triggerName,
       }),
       stepProperties: stepPropertiesSnapshotUtils.build({
-        pieceModel,
+        connectorModel,
         stepKind: 'trigger',
         stepName: triggerName,
         input: triggerInput,
@@ -123,10 +128,10 @@ const TestTriggerSection = React.memo(
     const getSimulationNote = () => {
       switch (testType) {
         case 'simulation':
-          return t('testPieceWebhookTriggerNote', {
-            pieceName: pieceModel?.displayName,
+          return t('testConnectorWebhookTriggerNote', {
+            connectorName: connectorModel?.displayName,
             triggerName: triggerName
-              ? pieceModel?.triggers[triggerName]?.displayName
+              ? connectorModel?.triggers[triggerName]?.displayName
               : undefined,
           });
         case 'webhook':
@@ -221,11 +226,12 @@ const TestTriggerSection = React.memo(
                 errorMessage={errorMessage ?? null}
                 lastTestDate={lastTestDate}
                 isSaving={isSaving}
-                pieceSchema={
-                  pieceModel?.triggers[triggerName ?? '']?.outputSchema ?? null
+                connectorSchema={
+                  connectorModel?.triggers[triggerName ?? '']?.outputSchema ??
+                  null
                 }
                 explanationContext={explanationContext}
-                pieceDisplayName={pieceModel?.displayName}
+                connectorDisplayName={connectorModel?.displayName}
               >
                 {pollResults?.data && !errorMessage && (
                   <TriggerEventSelect

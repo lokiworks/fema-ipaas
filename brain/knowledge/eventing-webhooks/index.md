@@ -7,7 +7,7 @@ icon: 📨
 Getting data in and out over HTTP, plus the internal bus that carries domain events between subsystems. Glossary below; each page holds the detail.
 
 ### 🪝 Webhook
-An inbound HTTP trigger — the primary entry point for event-driven execution from outside Activepieces. **Sync** blocks the connection and returns the flow's response; **async** queues the job and returns `200` immediately with an `x-webhook-id`.
+An inbound HTTP trigger — the primary entry point for event-driven execution from outside FEMA Integration Platform. **Sync** blocks the connection and returns the flow's response; **async** queues the job and returns `200` immediately with an `x-webhook-id`.
 - *Avoid:* "callback" for inbound HTTP; a callback is what the engine posts to the app during a run (see [Execution Runtime](../execution-runtime/index.md)).
 
 ### 🤝 Handshake

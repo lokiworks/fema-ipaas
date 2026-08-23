@@ -1,0 +1,119 @@
+---
+title: 'Migrate Connectors to Self-Contained Bundles'
+icon: 'boxes-stacked'
+---
+
+<Note>
+This applies to forks with custom connectors created before connectors moved to self-contained bundles. Connectors created with `npm run cli connectors create` already use the bundle model — nothing to do.
+</Note>
+
+FEMA Integration Platform builds each connector into a single self-contained bundle — see [Bundling Connectors](./bundling-connectors) for how that works. If you maintain custom connectors from before this change, update them so they conform to the new model.
+
+## What changed
+
+| | **Before** | **Now** |
+|---|---|---|
+| Connector dependencies | `@fema/shared` + framework + common | framework + common only |
+| Imports in connector code | `@fema/shared` and `@fema/connectors-framework` | `@fema/connectors-framework` only |
+| Build output | compiled files + dependency tree | one self-contained bundle |
+| `@fema/shared` location | `packages/shared` | `packages/core/shared` (same package name) |
+
+Connectors now import only from `@fema/connectors-framework` and `@fema/connectors-common`. The framework re-exports the foundation symbols (`isNil`, `SeekPage`, `ConnectorCategory`, `AppConnectionType`, and so on) that used to come from `@fema/shared`.
+
+## Migrate with the CLI
+
+The `connectors migrate` command applies every change below for you:
+
+```bash
+# preview the changes without writing anything
+npm run cli -- connectors migrate <connector-name> --dry-run
+
+# apply them
+npm run cli -- connectors migrate <connector-name>
+```
+
+- Pass `--all` to migrate every connector under `packages/connectors`.
+- It is idempotent — re-running it on an already-migrated connector makes no changes.
+
+Then build the connector to verify:
+
+```bash
+npm run build-connector <connector-name>
+```
+
+To migrate by hand — or to see exactly what the command changes — follow the steps below.
+
+## What it changes (or migrate by hand)
+
+<Steps>
+<Step title="Repoint imports to the framework">
+Replace any `@fema/shared` (or `@fema/core-*`) import with `@fema/connectors-framework`:
+
+```ts
+// Before
+import { ConnectorCategory, ExecutionType } from '@fema/shared';
+
+// After
+import { ConnectorCategory, ExecutionType } from '@fema/connectors-framework';
+```
+
+If a symbol isn't re-exported by the framework, it was server-only and shouldn't be imported into a connector.
+</Step>
+
+<Step title="Update package.json dependencies and scripts">
+Remove `@fema/shared` and move `tslib` to `devDependencies`. Add `@fema/core-connector-types` and `@fema/core-utils` — these are build-time only (they let `tsc` emit portable type declarations; your source never imports them directly). Add the `bundle` script.
+
+```jsonc
+{
+  "dependencies": {
+    "@fema/connectors-common": "workspace:*",
+    "@fema/connectors-framework": "workspace:*",
+    "@fema/core-connector-types": "workspace:*",
+    "@fema/core-utils": "workspace:*"
+  },
+  "devDependencies": {
+    "tslib": "2.6.2"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.lib.json && cp package.json dist/",
+    "bundle": "node ../../../../dist/packages/cli/src/index.js connectors bundle",
+    "lint": "eslint 'src/**/*.ts'"
+  }
+}
+```
+</Step>
+
+<Step title="Add the import-boundary lint rule">
+Add a `no-restricted-imports` rule to the `*.ts`/`*.tsx` override in the connector's `.eslintrc.json` so it can't regress to importing packages that defeat bundling:
+
+```json
+{
+  "files": ["*.ts", "*.tsx"],
+  "rules": {
+    "no-restricted-imports": ["error", {
+      "patterns": [
+        "lodash",
+        "lodash/*",
+        "@fema/core-*",
+        "@fema/server*",
+        "@fema/engine",
+        "@fema/shared"
+      ]
+    }]
+  }
+}
+```
+</Step>
+
+<Step title="Build and verify">
+```bash
+npm run build-connector your-connector
+```
+
+The archive produced in `packages/connectors/<type>/your-connector/dist/` is now a self-contained bundle.
+</Step>
+</Steps>
+
+<Tip>
+A freshly scaffolded connector (`npm run cli connectors create`) already includes all of the above. Use one as a reference if you're unsure what a migrated connector should look like.
+</Tip>

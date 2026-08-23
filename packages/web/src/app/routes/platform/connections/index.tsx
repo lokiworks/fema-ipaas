@@ -37,7 +37,10 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { appConnectionUtils } from '@/features/connections';
-import { PieceIconWithPieceName, piecesHooks } from '@/features/pieces';
+import {
+  ConnectorIconWithConnectorName,
+  connectorsHooks,
+} from '@/features/connectors';
 import { platformAppConnectionsQueries } from '@/features/platform-admin/hooks/platform-app-connections-hooks';
 import { getProjectName, projectCollectionUtils } from '@/features/projects';
 import { formatUtils } from '@/lib/format-utils';
@@ -47,7 +50,7 @@ export default function PlatformConnectionsPage() {
     platformAppConnectionsQueries.useList();
   const { data: owners } = platformAppConnectionsQueries.useOwners();
   const { data: projects } = projectCollectionUtils.useAllPlatformProjects();
-  const { pieces } = piecesHooks.usePieces({});
+  const { connectors } = connectorsHooks.useConnectors({});
 
   const filters: DataTableFilters<
     keyof PlatformAppConnectionsListItem | 'ownerIds'
@@ -70,12 +73,12 @@ export default function PlatformConnectionsPage() {
     },
     {
       type: 'select',
-      title: t('Piece'),
-      accessorKey: 'pieceName',
+      title: t('Connector'),
+      accessorKey: 'connectorName',
       icon: Puzzle,
-      options: (pieces ?? []).map((piece) => ({
-        label: piece.displayName,
-        value: piece.name,
+      options: (connectors ?? []).map((connector) => ({
+        label: connector.displayName,
+        value: connector.name,
       })),
     },
     {
@@ -119,8 +122,8 @@ export default function PlatformConnectionsPage() {
           text={row.original.externalId || ''}
         >
           <div className="flex items-center gap-2 w-fit min-w-0">
-            <PieceIconWithPieceName
-              pieceName={row.original.pieceName}
+            <ConnectorIconWithConnectorName
+              connectorName={row.original.connectorName}
               showTooltip={false}
               size="sm"
             />

@@ -4,15 +4,15 @@ icon: 🔐
 
 # Connections & Auth
 
-How Activepieces stores credentials and authenticates users, across CE/EE/Cloud. Multi-tenant rule throughout: connection queries filter by project via `ArrayContains([projectId])` on the `projectIds[]` array (never a scalar `projectId`), or by `scope = PLATFORM` for shared ones.
+How FEMA Integration Platform stores credentials and authenticates users, across CE/EE/Cloud. Multi-tenant rule throughout: connection queries filter by project via `ArrayContains([projectId])` on the `projectIds[]` array (never a scalar `projectId`), or by `scope = PLATFORM` for shared ones.
 
 ### App Connections
 
-Encrypted credential records (AES-256) that flow steps use to call external services. Types: `OAUTH2`, `CLOUD_OAUTH2` (token exchange via secrets.activepieces.com), `PLATFORM_OAUTH2`, `SECRET_TEXT`, `BASIC_AUTH`, `CUSTOM_AUTH`, `NO_AUTH`, `OIDC`.
+Encrypted credential records (AES-256) that flow steps use to call external services. Types: `OAUTH2`, `CLOUD_OAUTH2` (token exchange via secrets.fema.local), `PLATFORM_OAUTH2`, `SECRET_TEXT`, `BASIC_AUTH`, `CUSTOM_AUTH`, `NO_AUTH`, `OIDC`.
 
 - **Entity/isolation**: `AppConnection` has `projectIds[]` (multi-project) + `scope` (PROJECT/PLATFORM). PROJECT connections queried with `ArrayContains([projectId])`; flows reference by stable `externalId` (survives rename).
-- **OAuth refresh**: auto on retrieval; distributed Redis lock keyed `${platformId}_${externalId}` (project-invariant so shared connections serialize). Refresh_token/client_secret always stripped from API responses. CUSTOM_AUTH pieces can opt into refresh via a `refresh` callback (worker `EXECUTE_TOKEN_REFRESH` job).
-- **OIDC**: AP acts as an OIDC IdP so pieces assume cloud roles (e.g. AWS AssumeRoleWithWebIdentity) without long-lived creds. Engine-only `POST /v1/worker/oidc-token` issues RS256 JWTs; public `/.well-known/openid-configuration` + `jwks.json`. Signing key auto-generated into the `flag` table (first-writer-wins, zero setup).
+- **OAuth refresh**: auto on retrieval; distributed Redis lock keyed `${platformId}_${externalId}` (project-invariant so shared connections serialize). Refresh_token/client_secret always stripped from API responses. CUSTOM_AUTH connectors can opt into refresh via a `refresh` callback (worker `EXECUTE_TOKEN_REFRESH` job).
+- **OIDC**: AP acts as an OIDC IdP so connectors assume cloud roles (e.g. AWS AssumeRoleWithWebIdentity) without long-lived creds. Engine-only `POST /v1/worker/oidc-token` issues RS256 JWTs; public `/.well-known/openid-configuration` + `jwks.json`. Signing key auto-generated into the `flag` table (first-writer-wins, zero setup).
 - **Gotcha**: `POST /replace` rewires flow refs between connections; PLATFORM source can't be deleted via replace (`403`); deleting a project source `409`s while a published flow still uses it. Deleting a connection does NOT cascade — flows fail at runtime.
 
 ### Global Connections (EE/Cloud)
@@ -21,7 +21,7 @@ App connections with `scope = PLATFORM`, shared across projects, managed from pl
 
 ### OAuth Apps (EE)
 
-Platform owners register their own OAuth client_id/secret per piece so connections use vendor-branded consent instead of AP's shared creds. Table `oauth_app`, unique `(platformId, pieceName)`, `clientSecret` encrypted (jsonb). No plan flag. List is readable by any platform member (dialog needs to know which pieces have custom creds); create/delete are admin-only. Secret only used server-side during token exchange.
+Platform owners register their own OAuth client_id/secret per connector so connections use vendor-branded consent instead of AP's shared creds. Table `oauth_app`, unique `(platformId, connectorName)`, `clientSecret` encrypted (jsonb). No plan flag. List is readable by any platform member (dialog needs to know which connectors have custom creds); create/delete are admin-only. Secret only used server-side during token exchange.
 
 ### CE Authentication
 
@@ -33,7 +33,7 @@ Extends CE with SSO + RBAC. SAML 2.0 (`/v1/authn/saml/login` → IdP → ACS `/a
 
 ### Managed Auth / Embedding (EE)
 
-Lets SaaS vendors embed the AP builder. Vendor backend signs a short-lived JWT with an RSA private key (Signing Key); SDK exchanges it at public `POST /v1/managed-authn/external-token`. AP verifies against stored public key (by `kid`), auto-provisions project + user + membership, returns a 7-day AP token. Managed user emails are deterministic SHA-256 of `managed_<platformId>_<externalUserId>` (never real emails). Token payload versions v2/v3/v4 (union ordered v4→v3→v2); v4 carries a `pieceSet` key. Gated by `embeddingEnabled` (via signing keys).
+Lets SaaS vendors embed the AP builder. Vendor backend signs a short-lived JWT with an RSA private key (Signing Key); SDK exchanges it at public `POST /v1/managed-authn/external-token`. AP verifies against stored public key (by `kid`), auto-provisions project + user + membership, returns a 7-day AP token. Managed user emails are deterministic SHA-256 of `managed_<platformId>_<externalUserId>` (never real emails). Token payload versions v2/v3/v4 (union ordered v4→v3→v2); v4 carries a `connectorSet` key. Gated by `embeddingEnabled` (via signing keys).
 
 ### API Keys (EE)
 
@@ -55,7 +55,7 @@ IdP-driven provisioning (Okta/Azure AD/Google). SCIM User → AP User+UserIdenti
 
 - **App Connections** — the 7 auth types and stored credentials
 - **Global Connections** — platform-shared connections
-- **OAuth Apps** — custom per-piece client credentials
+- **OAuth Apps** — custom per-connector client credentials
 - **Managed Auth** — embedded token → AP session, auto-provisioning
 - **Secret Managers** — external vaults (AWS, Vault, Conjur, 1Password)
 - **CE Authentication** — UserIdentity, OTP, federated login

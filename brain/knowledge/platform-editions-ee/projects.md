@@ -22,7 +22,7 @@ A **Project** is the workspace within a platform where flows, connections, table
 - `POST /v1/projects/:id` — update display name + metadata.
 
 ### Gotchas
-- `projectHooks.postCreate` is where EE creates the associated `ProjectPlan`, sets piece filters, and auto-subscribes an alert receiver (owner email for personal, `context.alertReceiverEmail` for team).
+- `projectHooks.postCreate` is where EE creates the associated `ProjectPlan`, sets connector filters, and auto-subscribes an alert receiver (owner email for personal, `context.alertReceiverEmail` for team).
 - Soft-deleted projects stay in DB; a background job hard-deletes them.
 
 ### Key files

@@ -67,7 +67,7 @@ function buildExecuteParams(workerIndex: number, expiresAt?: number) {
         provision: {
             platformId: 'p1',
             flowVersionId: 'fv1',
-            pieces: [],
+            connectors: [],
             codes: [],
             publicApiUrl: 'http://localhost/api/',
             engineToken: 't',

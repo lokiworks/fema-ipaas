@@ -1,11 +1,11 @@
 import { apId, isNil } from '@fema/core-utils'
 import { PropertyType } from '@fema/connector-sdk'
-import { AppConnection, AppConnectionScope, AppConnectionStatus, AppConnectionType, CustomAuthConnectionValue, PackageType, PieceType } from '@fema/shared'
+import { AppConnection, AppConnectionScope, AppConnectionStatus, AppConnectionType, CustomAuthConnectionValue, PackageType, ConnectorType } from '@fema/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger, FastifyInstance } from 'fastify'
 import { appConnectionHandler } from '../../../../src/app/app-connection/app-connection-service/app-connection.handler'
 import { db } from '../../../helpers/db'
-import { createMockPieceMetadata } from '../../../helpers/mocks'
+import { createMockConnectorMetadata } from '../../../helpers/mocks'
 import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
 
 let app: FastifyInstance | null = null
@@ -28,12 +28,12 @@ const customAuthOf = (overrides: Record<string, unknown>) => ({
     ...overrides,
 })
 
-const saveCustomAuthPiece = async ({ pieceName, pieceVersion, platformId, hasRefresh }: { pieceName: string, pieceVersion: string, platformId: string | undefined, hasRefresh: boolean }): Promise<void> => {
-    const mockPiece = createMockPieceMetadata({
-        name: pieceName,
-        version: pieceVersion,
+const saveCustomAuthConnector = async ({ connectorName, connectorVersion, platformId, hasRefresh }: { connectorName: string, connectorVersion: string, platformId: string | undefined, hasRefresh: boolean }): Promise<void> => {
+    const mockConnector = createMockConnectorMetadata({
+        name: connectorName,
+        version: connectorVersion,
         platformId,
-        pieceType: isNil(platformId) ? PieceType.OFFICIAL : PieceType.CUSTOM,
+        connectorType: isNil(platformId) ? ConnectorType.OFFICIAL : ConnectorType.CUSTOM,
         packageType: PackageType.REGISTRY,
         minimumSupportedRelease: '0.0.0',
         maximumSupportedRelease: '999.999.999',
@@ -41,17 +41,17 @@ const saveCustomAuthPiece = async ({ pieceName, pieceVersion, platformId, hasRef
         // refresh is a plain object, so detection only checks for its presence.
         auth: customAuthOf(hasRefresh ? { refresh: { defaultExpiresIn: 3300 } } : {}),
     })
-    await db.save('piece_metadata', mockPiece)
+    await db.save('connector_metadata', mockConnector)
 }
 
-const customAuthConnection = ({ platformId, pieceName, pieceVersion, value }: { platformId: string, pieceName: string, pieceVersion: string, value: CustomAuthConnectionValue }): AppConnection => ({
+const customAuthConnection = ({ platformId, connectorName, connectorVersion, value }: { platformId: string, connectorName: string, connectorVersion: string, value: CustomAuthConnectionValue }): AppConnection => ({
     id: apId(),
     created: dayjs().toISOString(),
     updated: dayjs().toISOString(),
     platformId,
     projectIds: [apId()],
-    pieceName,
-    pieceVersion,
+    connectorName,
+    connectorVersion,
     displayName: 'Test Custom Auth',
     type: AppConnectionType.CUSTOM_AUTH,
     scope: AppConnectionScope.PROJECT,
@@ -66,15 +66,15 @@ const customAuthConnection = ({ platformId, pieceName, pieceVersion, value }: { 
 
 describe('Custom auth token refresh — needRefresh', () => {
     describe('refresh-support detection from stored metadata', () => {
-        it('returns true when the piece metadata declares a refresh callback', async () => {
-            const pieceName = `piece-${apId()}`
+        it('returns true when the connector metadata declares a refresh callback', async () => {
+            const connectorName = `connector-${apId()}`
             const platformId = apId()
-            await saveCustomAuthPiece({ pieceName, pieceVersion: '1.0.0', platformId, hasRefresh: true })
+            await saveCustomAuthConnector({ connectorName, connectorVersion: '1.0.0', platformId, hasRefresh: true })
 
             const connection = customAuthConnection({
                 platformId,
-                pieceName,
-                pieceVersion: '1.0.0',
+                connectorName,
+                connectorVersion: '1.0.0',
                 value: { type: AppConnectionType.CUSTOM_AUTH, props: {} },
             })
 
@@ -82,15 +82,15 @@ describe('Custom auth token refresh — needRefresh', () => {
             expect(result).toBe(true)
         })
 
-        it('returns false when the piece metadata has no refresh callback', async () => {
-            const pieceName = `piece-${apId()}`
+        it('returns false when the connector metadata has no refresh callback', async () => {
+            const connectorName = `connector-${apId()}`
             const platformId = apId()
-            await saveCustomAuthPiece({ pieceName, pieceVersion: '1.0.0', platformId, hasRefresh: false })
+            await saveCustomAuthConnector({ connectorName, connectorVersion: '1.0.0', platformId, hasRefresh: false })
 
             const connection = customAuthConnection({
                 platformId,
-                pieceName,
-                pieceVersion: '1.0.0',
+                connectorName,
+                connectorVersion: '1.0.0',
                 value: { type: AppConnectionType.CUSTOM_AUTH, props: {} },
             })
 
@@ -100,25 +100,25 @@ describe('Custom auth token refresh — needRefresh', () => {
     })
 
     describe('per-platform cache scoping', () => {
-        it('resolves each platform independently when two platforms share a piece name@version with different refresh support', async () => {
-            const pieceName = `piece-${apId()}`
-            const pieceVersion = '1.0.0'
+        it('resolves each platform independently when two platforms share a connector name@version with different refresh support', async () => {
+            const connectorName = `connector-${apId()}`
+            const connectorVersion = '1.0.0'
             const platformWithRefresh = apId()
             const platformWithoutRefresh = apId()
 
-            await saveCustomAuthPiece({ pieceName, pieceVersion, platformId: platformWithRefresh, hasRefresh: true })
-            await saveCustomAuthPiece({ pieceName, pieceVersion, platformId: platformWithoutRefresh, hasRefresh: false })
+            await saveCustomAuthConnector({ connectorName, connectorVersion, platformId: platformWithRefresh, hasRefresh: true })
+            await saveCustomAuthConnector({ connectorName, connectorVersion, platformId: platformWithoutRefresh, hasRefresh: false })
 
             const connWithRefresh = customAuthConnection({
                 platformId: platformWithRefresh,
-                pieceName,
-                pieceVersion,
+                connectorName,
+                connectorVersion,
                 value: { type: AppConnectionType.CUSTOM_AUTH, props: {} },
             })
             const connWithoutRefresh = customAuthConnection({
                 platformId: platformWithoutRefresh,
-                pieceName,
-                pieceVersion,
+                connectorName,
+                connectorVersion,
                 value: { type: AppConnectionType.CUSTOM_AUTH, props: {} },
             })
 
@@ -131,21 +131,21 @@ describe('Custom auth token refresh — needRefresh', () => {
 
     describe('token branch', () => {
         it('uses token staleness without a metadata lookup when a token is already present', async () => {
-            // No piece_metadata row is saved — if needRefresh consulted metadata it would throw.
-            const pieceName = `piece-${apId()}`
+            // No connector_metadata row is saved — if needRefresh consulted metadata it would throw.
+            const connectorName = `connector-${apId()}`
 
             const staleConnection = customAuthConnection({
                 platformId: apId(),
-                pieceName,
-                pieceVersion: '1.0.0',
+                connectorName,
+                connectorVersion: '1.0.0',
                 value: { type: AppConnectionType.CUSTOM_AUTH, props: {}, access_token: 'tok', token_refresh_at: dayjs().unix() - 60 },
             })
             expect(await appConnectionHandler(mockLog).needRefresh(staleConnection, mockLog)).toBe(true)
 
             const freshConnection = customAuthConnection({
                 platformId: apId(),
-                pieceName,
-                pieceVersion: '1.0.0',
+                connectorName,
+                connectorVersion: '1.0.0',
                 value: { type: AppConnectionType.CUSTOM_AUTH, props: {}, access_token: 'tok', token_refresh_at: dayjs().unix() + 3600 },
             })
             expect(await appConnectionHandler(mockLog).needRefresh(freshConnection, mockLog)).toBe(false)

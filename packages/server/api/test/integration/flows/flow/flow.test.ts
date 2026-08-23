@@ -5,7 +5,7 @@ import {
     FlowTriggerType,
     FlowVersionState,
     PackageType,
-    PieceType,
+    ConnectorType,
     PopulatedFlow,
     PrincipalType,
     PropertyExecutionType,
@@ -20,7 +20,7 @@ import { db } from '../../../../helpers/db'
 import {
     createMockFlow,
     createMockFlowVersion,
-    createMockPieceMetadata,
+    createMockConnectorMetadata,
 } from '../../../../helpers/mocks'
 import { createTestContext } from '../../../../helpers/test-context'
 import { setupTestEnvironment, teardownTestEnvironment } from '../../../../helpers/test-setup'
@@ -84,7 +84,7 @@ describe('Flow API', () => {
         it('Enables a disabled Flow', async () => {
             const ctx = await createTestContext(app!)
 
-            const mockPieceMetadata1 = createMockPieceMetadata({
+            const mockConnectorMetadata1 = createMockConnectorMetadata({
                 name: '@fema/connector-schedule',
                 version: '0.1.5',
                 triggers: {
@@ -99,10 +99,10 @@ describe('Flow API', () => {
                         testStrategy: TriggerTestStrategy.TEST_FUNCTION,
                     },
                 },
-                pieceType: PieceType.OFFICIAL,
+                connectorType: ConnectorType.OFFICIAL,
                 packageType: PackageType.REGISTRY,
             })
-            await db.save('piece_metadata', mockPieceMetadata1)
+            await db.save('connector_metadata', mockConnectorMetadata1)
 
             const mockFlow = createMockFlow({
                 projectId: ctx.project.id,
@@ -114,10 +114,10 @@ describe('Flow API', () => {
                 flowId: mockFlow.id,
                 updatedBy: ctx.user.id,
                 trigger: {
-                    type: FlowTriggerType.PIECE,
+                    type: FlowTriggerType.CONNECTOR,
                     settings: {
-                        pieceName: '@fema/connector-schedule',
-                        pieceVersion: '0.1.5',
+                        connectorName: '@fema/connector-schedule',
+                        connectorVersion: '0.1.5',
                         input: { run_on_weekends: false },
                         triggerName: 'every_hour',
                         propertySettings: {
@@ -196,7 +196,7 @@ describe('Flow API', () => {
         it('Publishes latest draft version', async () => {
             const ctx = await createTestContext(app!)
 
-            const mockPieceMetadata1 = createMockPieceMetadata({
+            const mockConnectorMetadata1 = createMockConnectorMetadata({
                 name: '@fema/connector-schedule',
                 version: '0.1.5',
                 triggers: {
@@ -213,10 +213,10 @@ describe('Flow API', () => {
                         testStrategy: TriggerTestStrategy.TEST_FUNCTION,
                     },
                 },
-                pieceType: PieceType.OFFICIAL,
+                connectorType: ConnectorType.OFFICIAL,
                 packageType: PackageType.REGISTRY,
             })
-            await db.save('piece_metadata', mockPieceMetadata1)
+            await db.save('connector_metadata', mockConnectorMetadata1)
 
             const mockFlow = createMockFlow({
                 projectId: ctx.project.id,
@@ -229,10 +229,10 @@ describe('Flow API', () => {
                 updatedBy: ctx.user.id,
                 state: FlowVersionState.DRAFT,
                 trigger: {
-                    type: FlowTriggerType.PIECE,
+                    type: FlowTriggerType.CONNECTOR,
                     settings: {
-                        pieceName: '@fema/connector-schedule',
-                        pieceVersion: '0.1.5',
+                        connectorName: '@fema/connector-schedule',
+                        connectorVersion: '0.1.5',
                         input: { run_on_weekends: false },
                         triggerName: 'every_hour',
                         propertySettings: {

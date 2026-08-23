@@ -39,7 +39,7 @@ export const flowsUtils = {
   flowStatusToolTipRenderer: (flow: PopulatedFlow) => {
     const trigger = flow.version.trigger;
     switch (trigger?.type) {
-      case FlowTriggerType.PIECE: {
+      case FlowTriggerType.CONNECTOR: {
         const schedule = flow.triggerSource?.schedule;
         switch (schedule?.type) {
           case TriggerSourceScheduleType.INTERVAL:
@@ -67,7 +67,7 @@ export const flowsUtils = {
   flowStatusIconRenderer: (flow: PopulatedFlow) => {
     const trigger = flow.version.trigger;
     switch (trigger?.type) {
-      case FlowTriggerType.PIECE: {
+      case FlowTriggerType.CONNECTOR: {
         if (flow.triggerSource?.schedule) {
           return <TimerReset className="h-4 w-4 text-foreground" />;
         } else {

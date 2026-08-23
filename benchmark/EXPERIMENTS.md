@@ -20,7 +20,7 @@ traffic?
 | Cluster | GKE, `e2-standard-4` × 14 nodes, `europe-west1-b` |
 | Worker | One sandbox per worker, concurrency 1, in-process engine fork (`SANDBOX_CODE_ONLY`: Node child + isolated-vm). Hard cap **0.5 vCPU / 1 GB** |
 | App | `1 vCPU / 1 GB` per pod |
-| Object store | Real same-region **GCS** bucket (`europe-west1`) over the S3-interop endpoint (`storage.googleapis.com`, path-style + SigV4 presigned URLs). Engine pulls flow bundle + piece archives via signed links |
+| Object store | Real same-region **GCS** bucket (`europe-west1`) over the S3-interop endpoint (`storage.googleapis.com`, path-style + SigV4 presigned URLs). Engine pulls flow bundle + connector archives via signed links |
 | Postgres / Redis | In-cluster |
 | Load tool | [`hey`](https://github.com/rakyll/hey), `-c` = worker count (40 or 80) so requests don't queue behind the concurrency-1 workers — latency reflects real service time, not backlog |
 
@@ -75,7 +75,7 @@ saturates its cap first):
 | Layer | Warm | Cold | What it is |
 |---|---|---|---|
 | app ingress + Redis + worker poll | ~91 ms | ~39 ms | webhook→app→Redis enqueue→worker dequeue, + response delivery back |
-| provision | 24 ms | 16 ms | flow-bundle + piece + engine install — all disk-cache hits |
+| provision | 24 ms | 16 ms | flow-bundle + connector + engine install — all disk-cache hits |
 | sandbox boot | 18 ms | 1167 ms | warm = process reused; cold = fresh fork + Node start + bundle parse + isolated-vm init + socket connect |
 | flow run (4 steps) | 372 ms | 762 ms | per-step engine→app callbacks + isolated-vm code + response handshake |
 | **end-to-end avg** | **505 ms** | **1984 ms** | p50 446/1957 · p95 648/2183 · p99 3817/2986 ms |
@@ -115,10 +115,10 @@ default** — the extra apps in 1:10 buy headroom, not a proportional throughput
 
 ### Notes on caching
 
-Provisioning is cheap because pieces are cached. A worker is its own sandbox and fills its piece cache
+Provisioning is cheap because connectors are cached. A worker is its own sandbox and fills its connector cache
 lazily on first use (the old `FEMA_PRE_WARM_CACHE` up-front install step no longer exists). After first
-use the piece + flow bundle live on the worker's local disk, so warm runs do zero install work — here
-flow-bundle download ≈ 2 ms and piece install ≈ 3–13 ms. On a cold/first install the archive is pulled
+use the connector + flow bundle live on the worker's local disk, so warm runs do zero install work — here
+flow-bundle download ≈ 2 ms and connector install ≈ 3–13 ms. On a cold/first install the archive is pulled
 from the same-region S3 bucket via a signed link (fast in-region fetch, not a slow npm round-trip).
 **Cache warmth comes from running long-lived worker replicas, not a warm-up flag.**
 
@@ -173,7 +173,7 @@ pulls observed: 10.2–17.1 s (n=5).
 
 ### First job on a fresh worker
 
-First `job.execute`: 3.30 s = provision 1223 ms (pieces install 1153 ms) + sandbox boot 1103 ms +
+First `job.execute`: 3.30 s = provision 1223 ms (connectors install 1153 ms) + sandbox boot 1103 ms +
 run 786 ms. Second job on the same worker: 247 ms. One-time cold start per new worker, as
 documented in `docs/install/architecture/latency.mdx`.
 

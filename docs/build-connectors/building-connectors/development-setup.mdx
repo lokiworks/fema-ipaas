@@ -1,0 +1,50 @@
+---
+title: 'Development setup'
+icon: 'circle-2'
+---
+
+## Prerequisites
+
+- Node.js v18+
+- npm v9+
+
+## Instructions
+
+1. Setup the environment
+
+```bash
+node tools/setup-dev.js
+```
+
+2. Start the environment
+
+This command will start fema with sqlite3 and in memory queue.
+
+```bash
+npm start
+```
+
+<Note>
+  By default, the development setup only builds specific connectors.Open the file
+  `.env.dev` and add comma-separated list of connectors to make
+  available.
+
+For more details, check out the [Connector Development](/build-connectors/building-connectors/development-setup#connectors-development) section.
+
+</Note>
+
+3. Go to **_localhost:4200_** on your web browser and sign in with these details:
+
+Email: `dev@ap.com`
+Password: `12345678`
+
+
+## Connectors Development
+
+When [`FEMA_CONNECTORS_SYNC_MODE`](https://github.com/lokiworks/fema-ipaas/blob/main/.env.dev#L14) is set to `OFFICIAL_AUTO`, all connectors are automatically loaded from the cloud API and synced to the database on first launch. This process may take a few seconds to several minutes depending on your internet connection.
+
+For local development, connectors are loaded from your local `dist` folder instead of the database. To enable this, set the [`FEMA_DEV_CONNECTORS`](https://github.com/lokiworks/fema-ipaas/blob/main/.env.dev#L5) environment variable with a comma-separated list of connectors. For example, to develop with `google-sheets` and `cal-com`:
+
+```sh
+FEMA_DEV_CONNECTORS=google-sheets,cal-com npm start
+```

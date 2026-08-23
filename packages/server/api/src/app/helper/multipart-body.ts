@@ -3,7 +3,7 @@ import { ApMultipartFile } from '@fema/core-utils'
 
 /**
  * Rebuilds the body shape that `@fastify/multipart`'s `attachFieldsToBody: 'keyValues'` used to
- * produce, for routes whose schema expects files as `ApMultipartFile` (piece archives, platform
+ * produce, for routes whose schema expects files as `ApMultipartFile` (connector archives, platform
  * logos, knowledge-base uploads). That option is no longer registered globally, because its
  * `preValidation` hook buffered every part of every request — including webhook file uploads,
  * which must stream to storage.

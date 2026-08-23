@@ -44,8 +44,8 @@ The watcher's shared 5-minute `WATCHER_SAFETY_TIMEOUT_MS` is too coarse for a bl
 `submitAndWaitForResponse` takes an optional timeout and action runs pass 130s — just above the
 worker's 120s sandbox cap, so the sandbox normally answers first and the watcher is only the backstop
 for a worker that never replies at all. A watcher timeout maps to `TIMEOUT`, never `INTERNAL_ERROR`:
-telling an agent "the engine crashed while loading or executing the piece" when nothing ran sends it
-off debugging the piece instead of retrying.
+telling an agent "the engine crashed while loading or executing the connector" when nothing ran sends it
+off debugging the connector instead of retrying.
 
 `EXECUTE_ACTION` joins `UserInteractionJobData`, so it is bound by
 `LATEST_JOB_DATA_SCHEMA_VERSION` — changing its payload shape needs a job-data migration, which is

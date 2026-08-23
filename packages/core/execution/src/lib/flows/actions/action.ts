@@ -6,7 +6,7 @@ import { SampleDataSetting } from '../sample-data'
 
 export enum FlowActionType {
     CODE = 'CODE',
-    PIECE = 'PIECE',
+    CONNECTOR = 'CONNECTOR',
     LOOP_ON_ITEMS = 'LOOP_ON_ITEMS',
     ROUTER = 'ROUTER',
 }
@@ -73,26 +73,26 @@ export const CodeActionSchema = z.object({
     type: z.literal(FlowActionType.CODE),
     settings: CodeActionSettings,
 })
-const pieceActionSettingsFields = {
+const connectorActionSettingsFields = {
     ...commonActionSettings,
     propertySettings: z.record(z.string(), PropertySettings),
-    pieceName: z.string(),
-    pieceVersion: VersionType,
+    connectorName: z.string(),
+    connectorVersion: VersionType,
     actionName: z.string().optional(),
     input: z.record(z.string(), z.unknown()),
     errorHandlingOptions: ActionErrorHandlingOptions,
 }
 
-export const PieceActionSettings = z.object({
-    ...pieceActionSettingsFields,
+export const ConnectorActionSettings = z.object({
+    ...connectorActionSettingsFields,
 })
 
-export type PieceActionSettings = z.infer<typeof PieceActionSettings>
+export type ConnectorActionSettings = z.infer<typeof ConnectorActionSettings>
 
-export const PieceActionSchema = z.object({
+export const ConnectorActionSchema = z.object({
     ...commonActionProps,
-    type: z.literal(FlowActionType.PIECE),
-    settings: PieceActionSettings,
+    type: z.literal(FlowActionType.CONNECTOR),
+    settings: ConnectorActionSettings,
 })
 
 // Loop Items
@@ -293,7 +293,7 @@ export const FlowAction: z.ZodType<FlowAction> = z.lazy(() =>
             nextAction: FlowAction.optional(),
             continueOnFailureBranches: ContinueOnFailureBranches.optional(),
         }),
-        PieceActionSchema.extend({
+        ConnectorActionSchema.extend({
             nextAction: FlowAction.optional(),
             continueOnFailureBranches: ContinueOnFailureBranches.optional(),
         }),
@@ -324,7 +324,7 @@ export const RouterActionSchema = z.object({
 
 export const SingleActionSchema = z.discriminatedUnion('type', [
     CodeActionSchema,
-    PieceActionSchema,
+    ConnectorActionSchema,
     LoopOnItemsActionSchema,
     RouterActionSchema,
 ])
@@ -340,7 +340,7 @@ type BaseActionProps = {
 
 export type FlowAction =
     | (BaseActionProps & { type: FlowActionType.CODE, settings: CodeActionSettings, nextAction?: FlowAction, continueOnFailureBranches?: ContinueOnFailureBranches })
-    | (BaseActionProps & { type: FlowActionType.PIECE, settings: PieceActionSettings, nextAction?: FlowAction, continueOnFailureBranches?: ContinueOnFailureBranches })
+    | (BaseActionProps & { type: FlowActionType.CONNECTOR, settings: ConnectorActionSettings, nextAction?: FlowAction, continueOnFailureBranches?: ContinueOnFailureBranches })
     | (BaseActionProps & { type: FlowActionType.LOOP_ON_ITEMS, settings: LoopOnItemsActionSettings, nextAction?: FlowAction, firstLoopAction?: FlowAction })
     | (BaseActionProps & { type: FlowActionType.ROUTER, settings: RouterActionSettings, nextAction?: FlowAction, children: (FlowAction | null)[] })
 
@@ -358,9 +358,9 @@ export type LoopOnItemsAction = BaseActionProps & {
     firstLoopAction?: FlowAction
 }
 
-export type PieceAction = BaseActionProps & {
-    type: FlowActionType.PIECE
-    settings: PieceActionSettings
+export type ConnectorAction = BaseActionProps & {
+    type: FlowActionType.CONNECTOR
+    settings: ConnectorActionSettings
     nextAction?: FlowAction
     continueOnFailureBranches?: ContinueOnFailureBranches
 }

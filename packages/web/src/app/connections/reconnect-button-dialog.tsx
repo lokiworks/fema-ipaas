@@ -13,7 +13,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { piecesHooks } from '@/features/pieces';
+import { connectorsHooks } from '@/features/connectors';
 
 type ReconnectButtonDialogProps = {
   connection: AppConnectionWithoutSensitiveData;
@@ -27,9 +27,9 @@ const ReconnectButtonDialog = ({
   hasPermission,
 }: ReconnectButtonDialogProps) => {
   const [open, setOpen] = useState(false);
-  const { pieceModel, isLoading } = piecesHooks.usePiece({
-    name: connection.pieceName,
-    version: connection.pieceVersion,
+  const { connectorModel, isLoading } = connectorsHooks.useConnector({
+    name: connection.connectorName,
+    version: connection.connectorVersion,
     enabled: open,
   });
 
@@ -55,11 +55,11 @@ const ReconnectButtonDialog = ({
           )}
         </TooltipContent>
       </Tooltip>
-      {open && !isLoading && pieceModel && (
+      {open && !isLoading && connectorModel && (
         <CreateOrEditConnectionDialog
           reconnectConnection={connection}
           isGlobalConnection={connection.scope === AppConnectionScope.PLATFORM}
-          piece={pieceModel}
+          connector={connectorModel}
           open={open}
           key={`CreateOrEditConnectionDialog-open-${open}`}
           setOpen={(open, connection) => {

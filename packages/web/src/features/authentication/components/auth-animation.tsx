@@ -9,7 +9,7 @@ const TICKS_PER_SCENE = SCENE_DURATION_MS / TICK_INTERVAL_MS;
 const TYPING_INTERVAL_MS = 20;
 const MORPHING_DURATION_MS = 800;
 
-const CDN = 'https://cdn.activepieces.com/pieces';
+const CDN = 'https://cdn.fema.local/connectors';
 
 const FULL_PROMPT =
   'When a new lead arrives, research their company and role. Score them 1-10 based on fit. If score > 7, ask me on Slack before sending a discount.';
@@ -411,13 +411,13 @@ function AgentCard({
                   </p>
                   {showInstructions ? (
                     <div className="flex items-center gap-1">
-                      {BASE_TOOLS.map((piece) => (
+                      {BASE_TOOLS.map((connector) => (
                         <div
-                          key={piece}
+                          key={connector}
                           className="w-7 h-7 rounded-md bg-white border border-gray-200 flex items-center justify-center flex-shrink-0"
                         >
                           <img
-                            src={`${CDN}/${piece}.png`}
+                            src={`${CDN}/${connector}.png`}
                             className="w-4 h-4"
                             alt=""
                           />

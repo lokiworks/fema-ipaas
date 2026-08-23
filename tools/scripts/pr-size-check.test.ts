@@ -52,8 +52,8 @@ describe('bucketFor', () => {
         expect(prSizeCheck.bucketFor({ path: 'packages/core/shared/src/index.ts' }).name).toBe('core/shared')
     })
 
-    it('exempts pieces and anything unmatched', () => {
-        expect(prSizeCheck.bucketFor({ path: 'packages/pieces/community/slack/src/index.ts' }).budget).toBeNull()
+    it('exempts connectors and anything unmatched', () => {
+        expect(prSizeCheck.bucketFor({ path: 'packages/connectors/community/slack/src/index.ts' }).budget).toBeNull()
         expect(prSizeCheck.bucketFor({ path: 'docs/install/overview.mdx' }).name).toBe('other (default)')
         expect(prSizeCheck.bucketFor({ path: 'docs/install/overview.mdx' }).budget).toBeNull()
     })
@@ -76,7 +76,7 @@ describe('collectSizes', () => {
             [900, 100, 'bun.lock'],
             [50, 0, 'package-lock.json'],
             [40, 0, 'packages/web/public/locales/de/translation.json'],
-            [30, 0, 'packages/pieces/community/slack/src/i18n/translation.json'],
+            [30, 0, 'packages/connectors/community/slack/src/i18n/translation.json'],
             [20, 0, 'packages/web/src/__snapshots__/app.test.tsx.snap'],
             [10, 0, 'packages/web/dist/main.js'],
             [7, 3, 'packages/web/src/app/routes.tsx'],
@@ -108,7 +108,7 @@ describe('collectSizes', () => {
     it('never flags exempt areas, however large', () => {
         const report = prSizeCheck.collectSizes({
             numstat: numstatOf([
-                [50_000, 0, 'packages/pieces/community/slack/src/index.ts'],
+                [50_000, 0, 'packages/connectors/community/slack/src/index.ts'],
                 [50_000, 0, 'docs/install/overview.mdx'],
             ]),
         })

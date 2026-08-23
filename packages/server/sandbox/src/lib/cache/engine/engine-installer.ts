@@ -9,7 +9,7 @@ import { nanoid } from 'nanoid'
 import { SandboxSettings } from '../../types'
 
 const engineDistPath = 'dist/packages/engine'
-const engineBundles = ['main.js', 'piece-child.js']
+const engineBundles = ['main.js', 'connector-child.js']
 const installedPaths = new Map<string, Promise<void>>()
 
 export const engineInstaller = (_log: ApLogger, getSettings: () => SandboxSettings) => ({

@@ -1,6 +1,6 @@
 import {
   OAuth2Property,
-  PieceAuthProperty,
+  ConnectorAuthProperty,
   PropertyType,
   DEFAULT_CONNECTION_DISPLAY_NAME,
   OAuth2Props,
@@ -26,26 +26,26 @@ import {
 } from '@/components/ui/dialog';
 import {
   OAuth2App,
-  PiecesOAuth2AppsMap,
+  ConnectorsOAuth2AppsMap,
   oauth2Utils,
 } from '@/features/connections';
 import { formatUtils } from '@/lib/format-utils';
 
 export function MutliAuthList({
-  pieceAuth,
+  connectorAuth,
   setSelectedItem,
   confirmSelectedItem,
-  piecesOAuth2AppsMap,
-  pieceName,
+  connectorsOAuth2AppsMap,
+  connectorName,
   selectedItem,
 }: MutliAuthListProps) {
-  const authItems: RadioGroupListItem<AuthListItem>[] = pieceAuth.flatMap(
+  const authItems: RadioGroupListItem<AuthListItem>[] = connectorAuth.flatMap(
     (auth) => {
       const displayName = getDisplayName(auth);
       if (auth.type === PropertyType.OAUTH2) {
         const predefinedOAuth2App = oauth2Utils.getPredefinedOAuth2App(
-          piecesOAuth2AppsMap,
-          pieceName,
+          connectorsOAuth2AppsMap,
+          connectorName,
         );
         return createOAuth2Options(auth, predefinedOAuth2App);
       }
@@ -91,7 +91,7 @@ export function MutliAuthList({
   );
 }
 
-const getDisplayName = (auth: PieceAuthProperty): string => {
+const getDisplayName = (auth: ConnectorAuthProperty): string => {
   if (
     auth.displayName !== DEFAULT_CONNECTION_DISPLAY_NAME &&
     auth.type !== PropertyType.OAUTH2
@@ -172,7 +172,7 @@ function createOAuth2Options(
 
 export type AuthListItem =
   | {
-      authProperty: Exclude<PieceAuthProperty, OAuth2Property<any>>;
+      authProperty: Exclude<ConnectorAuthProperty, OAuth2Property<any>>;
       grantType: null;
       oauth2App: null;
     }
@@ -183,10 +183,10 @@ export type AuthListItem =
     };
 
 type MutliAuthListProps = {
-  pieceAuth: PieceAuthProperty[];
+  connectorAuth: ConnectorAuthProperty[];
   setSelectedItem: (auth: AuthListItem) => void;
   confirmSelectedItem: () => void;
-  piecesOAuth2AppsMap: PiecesOAuth2AppsMap;
+  connectorsOAuth2AppsMap: ConnectorsOAuth2AppsMap;
   selectedItem: AuthListItem;
-  pieceName: string;
+  connectorName: string;
 };

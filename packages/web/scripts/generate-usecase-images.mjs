@@ -304,7 +304,7 @@ function collectEncryptionKeys() {
         process.env.FEMA_CONFIG_PATH &&
             path.resolve(REPO_ROOT, process.env.FEMA_CONFIG_PATH, 'settings.json'),
         path.join(REPO_ROOT, 'dev/config/settings.json'),
-        path.join(os.homedir(), '.activepieces', 'settings.json'),
+        path.join(os.homedir(), '.fema', 'settings.json'),
     ].filter(Boolean)
     for (const file of settingsFiles) {
         try {
@@ -326,7 +326,7 @@ function buildPgConfig() {
     return {
         host: host === 'postgres' ? 'localhost' : host,
         port: Number(process.env.FEMA_POSTGRES_PORT ?? 5432),
-        database: process.env.FEMA_POSTGRES_DATABASE ?? 'activepieces',
+        database: process.env.FEMA_POSTGRES_DATABASE ?? 'fema',
         user: process.env.FEMA_POSTGRES_USERNAME ?? 'postgres',
         password: process.env.FEMA_POSTGRES_PASSWORD ?? 'A79Vm5D4p2VQHOp2gd5',
     }

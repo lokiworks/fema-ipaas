@@ -28,7 +28,7 @@ const failedKey = (): string => `bull:${QueueName.WORKER_JOBS}:failed`
 
 /**
  * Reproduces the seed cause behind the production "stuck-active" zombies:
- *   provisionFlowPieces (or any work between getNextJob and completeJob) takes
+ *   provisionFlowConnectors (or any work between getNextJob and completeJob) takes
  *   longer than `lockDuration` (120s in prod). The Redis lock for the job
  *   expires. By the time the worker calls completeJob with its original token,
  *   BullMQ's moveToFinished Lua script returns `-2 Missing lock`, which the

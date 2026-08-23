@@ -1,0 +1,22 @@
+encryptionsalt: v1:wHCVNl3bj/g=:v1:mxogi9ZeBjIcxNZC:q+bjpLv9rnJnu8qq7xwKGLd/GAZOqA==
+config:
+  fema:environment: "dev"
+  fema:apEncryptionKey:  
+  fema:apJwtSecret: 
+  fema:deployLocalBuild: "false"
+  fema:repoName:
+  fema:containerCpu: "256"
+  fema:containerMemory: "512"
+  fema:containerInstances: "1"
+  fema:usePostgres: "false"
+  fema:dbInstanceClass: "db.t3.small"
+  fema:dbUsername: "postgres"
+  fema:dbIsPublic: "false"
+  fema:dbPassword:
+    secure: v1:MXNSOcqZCp10X2PX:mU2iTrcETjdisk8FkD5yHLJYUxRei/9l
+  fema:addIpToPostgresSecurityGroup:
+  fema:useRedis: "false"
+  fema:redisNodeType: "cache.t3.small"
+  fema:domain:
+  fema:subDomain:
+  aws:region: "us-east-1"

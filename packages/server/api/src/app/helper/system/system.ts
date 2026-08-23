@@ -1,7 +1,7 @@
 import os from 'os'
 import path from 'path'
 import { ErrorCode, isNil, PlatformError } from '@fema/core-utils'
-import { DefaultProjectRole, ExecutionMode, FileLocation, NetworkMode, PieceSyncMode } from '@fema/shared'
+import { ConnectorSyncMode, DefaultProjectRole, ExecutionMode, FileLocation, NetworkMode } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { DatabaseType } from '../../database/database-type'
 import { RedisType } from '../../database/redis/types'
@@ -18,20 +18,20 @@ const systemPropDefaultValues: Partial<Record<SystemProp, string>> = {
     [AppSystemProp.WORKERS]: '1',
     [AppSystemProp.CLIENT_REAL_IP_HEADER]: 'x-real-ip',
     [AppSystemProp.CLOUD_AUTH_ENABLED]: 'true',
-    [AppSystemProp.CONFIG_PATH]: path.join(os.homedir(), '.activepieces'),
+    [AppSystemProp.CONFIG_PATH]: path.join(os.homedir(), '.fema'),
     [AppSystemProp.DB_TYPE]: DatabaseType.POSTGRES,
     [AppSystemProp.APP_WEBHOOK_SECRETS]: '{}',
-    [AppSystemProp.AUTUMN_CONSOLE_URL]: 'https://console.activepieces.com',
+    [AppSystemProp.AUTUMN_CONSOLE_URL]: 'https://console.fema.local',
     [AppSystemProp.CONTAINER_TYPE]: ContainerType.WORKER_AND_APP,
     [AppSystemProp.PORT]: '3000',
     [AppSystemProp.EXECUTION_DATA_RETENTION_DAYS]: '30',
     [AppSystemProp.PAUSED_FLOW_TIMEOUT_DAYS]: '30',
-    [AppSystemProp.PIECES_SYNC_MODE]: PieceSyncMode.OFFICIAL_AUTO,
+    [AppSystemProp.CONNECTORS_SYNC_MODE]: ConnectorSyncMode.OFFICIAL_AUTO,
     [AppSystemProp.USE_CDN_FOR_BUNDLES]: 'false',
     [AppSystemProp.ENVIRONMENT]: 'prod',
     [AppSystemProp.EXECUTION_MODE]: ExecutionMode.UNSANDBOXED,
     [AppSystemProp.WEBHOOK_TIMEOUT_SECONDS]: '30',
-    [AppSystemProp.LOAD_TRANSLATIONS_FOR_DEV_PIECES]: 'false',
+    [AppSystemProp.LOAD_TRANSLATIONS_FOR_DEV_CONNECTORS]: 'false',
     [AppSystemProp.LOG_LEVEL]: 'info',
     [AppSystemProp.ALLOW_DISPOSABLE_EMAILS]: 'false',
     [AppSystemProp.LOG_PRETTY]: 'false',
@@ -57,7 +57,7 @@ const systemPropDefaultValues: Partial<Record<SystemProp, string>> = {
     [AppSystemProp.MAX_RECORDS_PER_TABLE]: '10000',
     [AppSystemProp.MAX_FIELDS_PER_TABLE]: '100',
     [AppSystemProp.ENABLE_FLOW_ON_PUBLISH]: 'true',
-    [AppSystemProp.ENFORCE_CONNECTION_PIECE_BINDING]: 'false',
+    [AppSystemProp.ENFORCE_CONNECTION_CONNECTOR_BINDING]: 'false',
     [AppSystemProp.ISSUE_ARCHIVE_DAYS]: '7',
     [AppSystemProp.POSTGRES_IDLE_TIMEOUT_MS]: '300000',
     [AppSystemProp.SCIM_DEFAULT_PROJECT_ROLE]: DefaultProjectRole.EDITOR,

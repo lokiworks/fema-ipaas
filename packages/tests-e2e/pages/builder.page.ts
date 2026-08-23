@@ -4,16 +4,16 @@ import { BasePage } from './base';
 export class BuilderPage extends BasePage {
   url = `/builder`;
 
-  async selectInitialTrigger(params: { piece: string; trigger: string }) {
+  async selectInitialTrigger(params: { connector: string; trigger: string }) {
     await this.page.getByTestId('rf__node-trigger').filter({ hasText: 'Select Trigger' }).click();
-    await this.page.getByTestId('pieces-search-input').fill(params.trigger);
+    await this.page.getByTestId('connectors-search-input').fill(params.trigger);
     await this.page.getByText(params.trigger).click();
   }
 
-  async addAction(params: { piece: string; action: string }) {
+  async addAction(params: { connector: string; action: string }) {
     await this.page.getByTestId('add-action-button').click();
-    await this.page.getByTestId('pieces-search-input').fill(params.piece);    
-    await this.page.getByTestId(params.piece).click();
+    await this.page.getByTestId('connectors-search-input').fill(params.connector);    
+    await this.page.getByTestId(params.connector).click();
     await this.page.getByText(params.action).nth(1).click();
   }
 

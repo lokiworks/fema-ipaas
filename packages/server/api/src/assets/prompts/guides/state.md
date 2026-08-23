@@ -10,7 +10,7 @@ Steps already pass data forward via `{{stepN['output'].field}}` — that's per-r
 | Scratch shared across steps within a single run | **Store**, scope `RUN` | Auto-cleaned after the run |
 | Many rows of the same shape you'll query or inspect | **Tables** | Typed fields, filters, visible in the dashboard — see `ap_load_guide('tables')` |
 | Data the user edits as a spreadsheet | **Google Sheets / Airtable / Notion** | The human owns the source of truth |
-| A system of record that already exists | the external piece (HubSpot, Salesforce, Postgres…) | Don't duplicate state |
+| A system of record that already exists | the external connector (HubSpot, Salesforce, Postgres…) | Don't duplicate state |
 
 Rule of thumb: **Store** = "one value per key"; **Tables** = "many rows of the same shape".
 
@@ -37,6 +37,6 @@ step_2: ROUTER
 
 Use the provider's **stable event id** (Stripe event id, GitHub delivery id, Slack `event_id`) — never your run id, a hash, or a timestamp.
 
-**Alternative — dedup against the destination.** If the target is already a queryable Table/Sheet/CRM, skip Store: `ap_find_records` (or the piece's find action) to check whether the record exists, insert only if empty. This doubles as your audit trail. Common when the destination naturally holds the record anyway.
+**Alternative — dedup against the destination.** If the target is already a queryable Table/Sheet/CRM, skip Store: `ap_find_records` (or the connector's find action) to check whether the record exists, insert only if empty. This doubles as your audit trail. Common when the destination naturally holds the record anyway.
 
 State drift is separate from dedup: an event you haven't seen before may still refer to a now-cancelled resource. When the underlying record can change, re-check its current state after the dedup gate.

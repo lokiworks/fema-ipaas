@@ -139,7 +139,7 @@ async function measureStorage(log: FastifyBaseLogger): Promise<InfraCheck> {
     const s3Key = `diagnostics/healthcheck-${apId()}.txt`
     const startedAt = Date.now()
     const { error } = await tryCatch(async () => {
-        await s3Helper(log).uploadFile(s3Key, Buffer.from('activepieces-diagnostics'))
+        await s3Helper(log).uploadFile(s3Key, Buffer.from('fema-diagnostics'))
         await s3Helper(log).getFile(s3Key)
     })
     await tryCatch(() => s3Helper(log).deleteFiles([s3Key]))

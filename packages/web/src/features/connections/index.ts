@@ -12,6 +12,6 @@ export {
   globalConnectionsQueries,
 } from './hooks/global-connections-hooks';
 export { oauth2Utils } from './utils/oauth2-utils';
-export type { OAuth2App, PiecesOAuth2AppsMap } from './utils/oauth2-utils';
+export type { OAuth2App, ConnectorsOAuth2AppsMap } from './utils/oauth2-utils';
 export { appConnectionUtils, newConnectionUtils } from './utils/utils';
 export { oauthAppsQueries } from './hooks/oauth-apps-hooks';

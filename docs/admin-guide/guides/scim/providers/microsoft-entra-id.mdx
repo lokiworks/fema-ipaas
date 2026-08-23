@@ -1,6 +1,6 @@
 ---
 title: "SCIM with Microsoft Entra ID"
-description: "Configure SCIM provisioning from Microsoft Entra ID to Activepieces."
+description: "Configure SCIM provisioning from Microsoft Entra ID to FEMA Integration Platform."
 ---
 
 <Snippet file="enterprise-feature.mdx" />
@@ -9,16 +9,16 @@ description: "Configure SCIM provisioning from Microsoft Entra ID to Activepiece
 
 Before you start, make sure you have:
 
-- **Admin access** to your Activepieces platform
+- **Admin access** to your FEMA Integration Platform platform
 - **Admin access** to your Microsoft Entra ID
 - SSO already configured (recommended): [SAML with Microsoft Entra ID](/admin-guide/guides/sso#saml-with-microsoft-entra-id-azure-ad)
-- Generated an API key from `/platform/security/api-keys` route in the Activepieces app
+- Generated an API key from `/platform/security/api-keys` route in the FEMA Integration Platform app
 
 ## Configure SCIM Connection in Microsoft Entra ID
 
 <Steps>
   <Step title="Open your Entra ID app">
-    In Entra ID Admin Console, open your Activepieces application (created in first [SSO step](/admin-guide/guides/sso#saml-with-microsoft-entra-id-azure-ad)).
+    In Entra ID Admin Console, open your FEMA Integration Platform application (created in first [SSO step](/admin-guide/guides/sso#saml-with-microsoft-entra-id-azure-ad)).
   </Step>
 
   <Step title="Navigate to provisioning">
@@ -28,7 +28,7 @@ Before you start, make sure you have:
   <Step title="Add SCIM connection details">
     **New provisioning configuration** page show with a form:
     - **Authentication method** leave as deafult ( Bearer authentication )
-    - **Tenant URL** to `https://your-activepieces-domain/api/v1/scim/v2`
+    - **Tenant URL** to `https://your-fema-domain/api/v1/scim/v2`
     - **Secret token** to `<generated-api-key>`
   </Step>
 
@@ -44,7 +44,7 @@ Before you start, make sure you have:
 
 ## Attributes mapping
 
-Before you actually start provisioning, you need to map the attributes between Entra ID and Activepieces.
+Before you actually start provisioning, you need to map the attributes between Entra ID and FEMA Integration Platform.
 
 <Steps>
   <Step title="Go to attribute mapping">
@@ -66,13 +66,13 @@ Before you actually start provisioning, you need to map the attributes between E
                Scroll down to bottom of the page and check **Show advanced options** -> **Edit attribute list for customappsso**, A new page with attributes table will be opened.
             </Step>
             <Step title="Add a new attribute">
-               Scroll down to bottom of the table where there is a row with an input field, paste `urn:ietf:params:scim:schemas:activepieces:1.0:CustomUserAttributes:platformRole` and save
+               Scroll down to bottom of the table where there is a row with an input field, paste `urn:ietf:params:scim:schemas:fema:1.0:CustomUserAttributes:platformRole` and save
                ![Platform role attribute](/resources/screenshots/scim/entra-id/add-platform-role-attribute.png)
             </Step>
             <Step title="Add new mapping">
                 - After adding the attribute, you will be redirected back to the attribute mapping page. on the bottom of the table click **Add new mapping**, a form will be opened to map the attribute to the field that represents the platform role.
-                - in the **Target attribute** field, select the attribute you just added (`urn:ietf:params:scim:schemas:activepieces:1.0:CustomUserAttributes:platformRole`)
-                - Now the mapping is going to rely on how roles are represented in your entra ID. in Activepieces Platform role can be one of `MEMBER`, `OPERATOR`, `ADMIN`. this means that you need to map your entra ID role fields to these values.
+                - in the **Target attribute** field, select the attribute you just added (`urn:ietf:params:scim:schemas:fema:1.0:CustomUserAttributes:platformRole`)
+                - Now the mapping is going to rely on how roles are represented in your entra ID. in FEMA Integration Platform Platform role can be one of `MEMBER`, `OPERATOR`, `ADMIN`. this means that you need to map your entra ID role fields to these values.
                 - if you already use a field ( which is probably not the case ) that has exactly these values, you can map it directly by selecting **Mapping type** to **Direct** and selecting the field from the **Source attribute** field.
                 - else, you can map it by selecting **Mapping type** to **Expression** and writing an expression that maps your entra ID field(s) to one of `MEMBER`, `OPERATOR`, `ADMIN`. see [Expression mapping](https://learn.microsoft.com/en-us/entra/identity/app-provisioning/functions-for-customizing-application-data) for more details.
 
@@ -89,13 +89,13 @@ Before you actually start provisioning, you need to map the attributes between E
 
 ## Group provisioning
 
-Groups are mapped to Activepieces projects. Members of the groups in entra ID will be added as members of the project in Activepieces. The name of the group will also be the display name of the project.
+Groups are mapped to FEMA Integration Platform projects. Members of the groups in entra ID will be added as members of the project in FEMA Integration Platform. The name of the group will also be the display name of the project.
 
 By default, all group memebers will have `Editor` role for the project. for now this can't be mapped like platform role. for self hosted customers they can change the env var `SCIM_DEFAULT_PROJECT_ROLE` to `Admin` or `Viewer`.
 
 ## Users and groups assignments
 
-Assignments will allow you to select which users and groups that will be provisioned to Activepieces.
+Assignments will allow you to select which users and groups that will be provisioned to FEMA Integration Platform.
 ![Assignments](/resources/screenshots/scim/entra-id/assignment.png)
 
 ## Starting provisioning

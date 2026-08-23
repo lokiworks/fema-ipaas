@@ -5,16 +5,16 @@ on:
   workflow_dispatch:
 
 env:
-  FEMA_DEV_PIECES: store,webhook
-  FEMA_PIECES_SYNC_MODE: NONE
-  FEMA_PIECES_SOURCE: FILE
+  FEMA_DEV_CONNECTORS: store,webhook
+  FEMA_CONNECTORS_SYNC_MODE: NONE
+  FEMA_CONNECTORS_SOURCE: FILE
   FEMA_API_KEY: api-key
   FEMA_DB_TYPE: POSTGRES
   FEMA_POSTGRES_HOST: localhost
   FEMA_POSTGRES_PORT: 5432
   FEMA_POSTGRES_USERNAME: postgres
   FEMA_POSTGRES_PASSWORD: postgres
-  FEMA_POSTGRES_DATABASE: activepieces
+  FEMA_POSTGRES_DATABASE: fema
   FEMA_POSTGRES_USE_SSL: "false"
   FEMA_REDIS_URL: redis://localhost:6379
   FEMA_QUEUE_MODE: REDIS
@@ -38,7 +38,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: activepieces
+          POSTGRES_DB: fema
         options: >-
           --health-cmd pg_isready
           --health-interval 10s

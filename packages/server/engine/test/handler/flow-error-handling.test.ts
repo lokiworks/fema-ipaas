@@ -1,14 +1,14 @@
 
-import { tryParseFriendlyPieceError } from '@fema/core-utils'
+import { tryParseFriendlyConnectorError } from '@fema/core-utils'
 import { BranchOperator, FlowRunStatus, RouterExecutionType } from '@fema/shared'
 import { codeExecutor } from '../../src/lib/handler/code-executor'
 import { FlowExecutorContext } from '../../src/lib/handler/context/flow-execution-context'
 import { loopExecutor } from '../../src/lib/handler/loop-executor'
-import { pieceExecutor } from '../../src/lib/handler/piece-executor'
+import { connectorExecutor } from '../../src/lib/handler/connector-executor'
 import { routerExecuter } from '../../src/lib/handler/router-executor'
-import { buildCodeAction, buildPieceAction, buildRouterWithOneCondition, buildSimpleLoopAction, generateMockEngineConstants } from './test-helper'
+import { buildCodeAction, buildConnectorAction, buildRouterWithOneCondition, buildSimpleLoopAction, generateMockEngineConstants } from './test-helper'
 
-describe('code piece with error handling', () => {
+describe('code connector with error handling', () => {
 
     it('should continue on failure when execute code a code that throws an error', async () => {
         const result = await codeExecutor.handle({
@@ -34,17 +34,17 @@ describe('code piece with error handling', () => {
 
 })
 
-describe('piece with error handling', () => {
+describe('connector with error handling', () => {
 
-    it('should continue on failure when piece fails', async () => {
-        const result = await pieceExecutor.handle({
-            action: buildPieceAction({
+    it('should continue on failure when connector fails', async () => {
+        const result = await connectorExecutor.handle({
+            action: buildConnectorAction({
                 name: 'send_http',
-                pieceName: '@fema/connector-http',
+                connectorName: '@fema/connector-http',
                 actionName: 'send_request',
                 input: {
                     'method': 'POST',
-                    'url': 'https://cloud.activepieces.com/api/v1/flags',
+                    'url': `${process.env.FEMA_TEST_FIXTURE_URL}/api/v1/flags`,
                     'headers': {},
                     'queryParams': {},
                     'body_type': 'none',
@@ -66,7 +66,7 @@ describe('piece with error handling', () => {
         })
         expect(result.steps.send_http.status).toBe('FAILED')
 
-        const error = tryParseFriendlyPieceError(result.steps.send_http.errorMessage)
+        const error = tryParseFriendlyConnectorError(result.steps.send_http.errorMessage)
         expect(error?.status).toBe(404)
         expect(error?.errorName).toBe('HttpError')
         expect(error?.message).toBe('Route not found')

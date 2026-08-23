@@ -12,7 +12,7 @@ The Enterprise Edition extends CE with commercial features living under `package
 3. **Hooks pattern** — CE declares a no-op default interface; EE `.set()`s the real one; callers stay edition-agnostic.
 
 ### EE modules (with plan flag)
-- audit-logs (`auditLogEnabled`), api-keys (`apiKeysEnabled`), global-connections (`globalConnectionsEnabled`), secret-managers (`secretManagersEnabled`), scim (`scimEnabled`), template (`manageTemplatesEnabled`), pieces (`managePiecesEnabled`). (The custom-domains module is gone; the `customDomainsEnabled` column remains for backwards compatibility.)
+- audit-logs (`auditLogEnabled`), api-keys (`apiKeysEnabled`), global-connections (`globalConnectionsEnabled`), secret-managers (`secretManagersEnabled`), scim (`scimEnabled`), template (`manageTemplatesEnabled`), connectors (`manageConnectorsEnabled`). (The custom-domains module is gone; the `customDomainsEnabled` column remains for backwards compatibility.)
 - projects/project-role (`projectRolesEnabled` / `customRolesEnabled`), project-release git sync (`environmentsEnabled`), project-members + project-plan (ungated).
 - signing-key + managed-authn for embedding (`embeddingEnabled`); authentication saml + federated (`ssoEnabled`), otp, enterprise-local-authn, project-role RBAC.
 - platform-plan (Autumn billing + license-key activation), billing-usage-report, alerts, oauth-apps, platform-webhooks, appsumo, flags (`enterpriseFlagsHooks`), helper (SMTP + appearance), users, admin.

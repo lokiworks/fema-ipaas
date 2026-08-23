@@ -96,30 +96,30 @@ describe('end-to-end: ensurePublicApiUrl + getWebhookUrl', () => {
     })
 })
 
-describe('regression: cloud.activepieces.com double-slash bug', () => {
+describe('regression: fema.local double-slash bug', () => {
     const flowId = 'flow-abc'
 
     it('old behavior would produce double slash — fixed behavior produces correct URL', () => {
-        // Before the fix, PUBLIC_URL was used directly (e.g. "https://cloud.activepieces.com/")
-        // which produced "https://cloud.activepieces.com//v1/webhooks/flow-abc"
-        const publicUrl = 'https://cloud.activepieces.com/'
+        // Before the fix, PUBLIC_URL was used directly (e.g. "https://github.com/lokiworks/fema-ipaas/")
+        // which produced "https://github.com/lokiworks/fema-ipaas//v1/webhooks/flow-abc"
+        const publicUrl = 'https://github.com/lokiworks/fema-ipaas/'
         const apiUrl = ensurePublicApiUrl(publicUrl)
-        expect(apiUrl).toBe('https://cloud.activepieces.com/api/')
+        expect(apiUrl).toBe('https://github.com/lokiworks/fema-ipaas/api/')
         expect(getWebhookUrl(apiUrl, flowId))
-            .toBe('https://cloud.activepieces.com/api/v1/webhooks/flow-abc')
+            .toBe('https://github.com/lokiworks/fema-ipaas/api/v1/webhooks/flow-abc')
     })
 
     it('handles cloud URL without trailing slash', () => {
-        const publicUrl = 'https://cloud.activepieces.com'
+        const publicUrl = 'https://github.com/lokiworks/fema-ipaas'
         const apiUrl = ensurePublicApiUrl(publicUrl)
         expect(getWebhookUrl(apiUrl, flowId))
-            .toBe('https://cloud.activepieces.com/api/v1/webhooks/flow-abc')
+            .toBe('https://github.com/lokiworks/fema-ipaas/api/v1/webhooks/flow-abc')
     })
 
     it('produces correct app webhook URL for cloud', () => {
-        const publicUrl = 'https://cloud.activepieces.com'
+        const publicUrl = 'https://github.com/lokiworks/fema-ipaas'
         const apiUrl = ensurePublicApiUrl(publicUrl)
         expect(getAppWebhookUrl(apiUrl, 'slack'))
-            .toBe('https://cloud.activepieces.com/api/v1/app-events/slack')
+            .toBe('https://github.com/lokiworks/fema-ipaas/api/v1/app-events/slack')
     })
 })

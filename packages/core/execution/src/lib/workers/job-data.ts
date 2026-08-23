@@ -4,10 +4,10 @@ import { isNil } from '@fema/core-utils'
 import { ResumeReason, StreamStepProgress, TriggerHookType, TriggerPayload } from '../engine'
 import { ExecutionType } from '../flow-run/execution/execution-output'
 import { RunEnvironment } from '../flow-run/flow-run'
-import { CodeActionSchema, PieceActionSchema } from '../flows/actions/action'
+import { CodeActionSchema, ConnectorActionSchema } from '../flows/actions/action'
 import { FlowVersion } from '../flows/flow-version'
 import { FlowTriggerType } from '../flows/triggers/trigger'
-import { AppConnectionType, AppConnectionValue, PiecePackage } from '@fema/connector-types'
+import { AppConnectionType, AppConnectionValue, ConnectorPackage } from '@fema/connector-types'
 
 export const LATEST_JOB_DATA_SCHEMA_VERSION = 10
 
@@ -57,7 +57,7 @@ export function getDefaultJobPriority(job: JobData): keyof typeof JOB_PRIORITY {
         case WorkerJobType.EXECUTE_FLOW:
             return getExecuteFlowPriority(job.environment, job.workerHandlerId)
         case WorkerJobType.EXECUTE_PROPERTY:
-        case WorkerJobType.EXECUTE_EXTRACT_PIECE_INFORMATION:
+        case WorkerJobType.EXECUTE_EXTRACT_CONNECTOR_INFORMATION:
         case WorkerJobType.EXECUTE_VALIDATION:
         case WorkerJobType.EXECUTE_RESOLVE_CONNECTION_IDENTIFIER:
         case WorkerJobType.EXECUTE_TRIGGER_HOOK:
@@ -78,7 +78,7 @@ export enum WorkerJobType {
     EXECUTE_RESOLVE_CONNECTION_IDENTIFIER = 'EXECUTE_RESOLVE_CONNECTION_IDENTIFIER',
     EXECUTE_TRIGGER_HOOK = 'EXECUTE_TRIGGER_HOOK',
     EXECUTE_PROPERTY = 'EXECUTE_PROPERTY',
-    EXECUTE_EXTRACT_PIECE_INFORMATION = 'EXECUTE_EXTRACT_PIECE_INFORMATION',
+    EXECUTE_EXTRACT_CONNECTOR_INFORMATION = 'EXECUTE_EXTRACT_CONNECTOR_INFORMATION',
     EXECUTE_TOKEN_REFRESH = 'EXECUTE_TOKEN_REFRESH',
     EXECUTE_ACTION = 'EXECUTE_ACTION',
 }
@@ -89,7 +89,7 @@ export const NON_SCHEDULED_JOB_TYPES: WorkerJobType[] = [
     WorkerJobType.EXECUTE_VALIDATION,
     WorkerJobType.EXECUTE_TRIGGER_HOOK,
     WorkerJobType.EXECUTE_PROPERTY,
-    WorkerJobType.EXECUTE_EXTRACT_PIECE_INFORMATION,
+    WorkerJobType.EXECUTE_EXTRACT_CONNECTOR_INFORMATION,
     WorkerJobType.EXECUTE_TOKEN_REFRESH,
     WorkerJobType.EXECUTE_RESOLVE_CONNECTION_IDENTIFIER,
     WorkerJobType.EXECUTE_ACTION,
@@ -172,7 +172,7 @@ export const ExecuteValidateAuthJobData = z.object({
     jobType: z.literal(WorkerJobType.EXECUTE_VALIDATION),
     projectId: z.string().optional(),
     platformId: z.string(),
-    piece: PiecePackage,
+    connector: ConnectorPackage,
     schemaVersion: z.number(),
     connectionValue: z.unknown(),
     requestId: z.string(),
@@ -184,7 +184,7 @@ export const ExecuteResolveConnectionIdentifierJobData = z.object({
     jobType: z.literal(WorkerJobType.EXECUTE_RESOLVE_CONNECTION_IDENTIFIER),
     projectId: z.string().optional(),
     platformId: z.string(),
-    piece: PiecePackage,
+    connector: ConnectorPackage,
     schemaVersion: z.number(),
     connectionValue: z.custom<AppConnectionValue>(),
     connectionType: z.enum(AppConnectionType),
@@ -197,7 +197,7 @@ export const ExecuteTokenRefreshJobData = z.object({
     jobType: z.literal(WorkerJobType.EXECUTE_TOKEN_REFRESH),
     projectId: z.string().optional(),
     platformId: z.string(),
-    piece: PiecePackage,
+    connector: ConnectorPackage,
     schemaVersion: z.number(),
     connectionValue: z.custom<AppConnectionValue>(),
     requestId: z.string(),
@@ -228,7 +228,7 @@ export const ExecutePropertyJobData = z.object({
     schemaVersion: z.number(),
     flowVersion: FlowVersion.optional(),
     propertyName: z.string(),
-    piece: PiecePackage,
+    connector: ConnectorPackage,
     actionOrTriggerName: z.string(),
     input: z.record(z.string(), z.unknown()),
     sampleData: z.record(z.string(), z.unknown()),
@@ -238,18 +238,18 @@ export const ExecutePropertyJobData = z.object({
 })
 export type ExecutePropertyJobData = z.infer<typeof ExecutePropertyJobData>
 
-export const ExecuteExtractPieceMetadataJobData = z.object({
+export const ExecuteExtractConnectorMetadataJobData = z.object({
     schemaVersion: z.number(),
-    jobType: z.literal(WorkerJobType.EXECUTE_EXTRACT_PIECE_INFORMATION),
+    jobType: z.literal(WorkerJobType.EXECUTE_EXTRACT_CONNECTOR_INFORMATION),
     projectId: z.undefined(),
     platformId: z.string(),
-    piece: PiecePackage,
+    connector: ConnectorPackage,
     requestId: z.string(),
     webserverId: z.string(),
 })
-export type ExecuteExtractPieceMetadataJobData = z.infer<typeof ExecuteExtractPieceMetadataJobData>
+export type ExecuteExtractConnectorMetadataJobData = z.infer<typeof ExecuteExtractConnectorMetadataJobData>
 
-export const ActionRunStep = z.discriminatedUnion('type', [PieceActionSchema, CodeActionSchema])
+export const ActionRunStep = z.discriminatedUnion('type', [ConnectorActionSchema, CodeActionSchema])
 export type ActionRunStep = z.infer<typeof ActionRunStep>
 
 export const ExecuteActionJobData = z.object({
@@ -258,7 +258,7 @@ export const ExecuteActionJobData = z.object({
     platformId: z.string(),
     schemaVersion: z.number(),
     step: ActionRunStep,
-    piece: z.optional(PiecePackage),
+    connector: z.optional(ConnectorPackage),
     expiresAt: z.number(),
     requestId: z.string(),
     webserverId: z.string(),
@@ -271,7 +271,7 @@ export const UserInteractionJobData = z.union([
     ExecuteTokenRefreshJobData,
     ExecuteTriggerHookJobData,
     ExecutePropertyJobData,
-    ExecuteExtractPieceMetadataJobData,
+    ExecuteExtractConnectorMetadataJobData,
     ExecuteActionJobData,
 ])
 export type UserInteractionJobData = z.infer<typeof UserInteractionJobData>
@@ -282,7 +282,7 @@ export const UserInteractionJobDataWithoutWatchingInformation = z.union([
     ExecuteTokenRefreshJobData.omit({ schemaVersion: true, requestId: true, webserverId: true }),
     ExecuteTriggerHookJobData.omit({ schemaVersion: true, requestId: true, webserverId: true }),
     ExecutePropertyJobData.omit({ schemaVersion: true, requestId: true, webserverId: true }),
-    ExecuteExtractPieceMetadataJobData.omit({ schemaVersion: true, requestId: true, webserverId: true }),
+    ExecuteExtractConnectorMetadataJobData.omit({ schemaVersion: true, requestId: true, webserverId: true }),
     ExecuteActionJobData.omit({ schemaVersion: true, requestId: true, webserverId: true }),
 ])
 export type UserInteractionJobDataWithoutWatchingInformation = z.infer<typeof UserInteractionJobDataWithoutWatchingInformation>

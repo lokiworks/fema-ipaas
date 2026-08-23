@@ -5,12 +5,12 @@ import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { lru, LRU } from 'tiny-lru'
 import { ArrayContains } from 'typeorm'
+import { connectorMetadataService, getConnectorPackageWithoutArchive } from '../../connectors/metadata/connector-metadata-service'
 import { distributedLock } from '../../database/redis-connections'
 import { flowService } from '../../flows/flow/flow.service'
 import { flowVersionRepo, flowVersionService } from '../../flows/flow-version/flow-version.service'
 import { encryptUtils } from '../../helper/encryption'
 import { exceptionHandler } from '../../helper/exception-handler'
-import { getPiecePackageWithoutArchive, pieceMetadataService } from '../../pieces/metadata/piece-metadata-service'
 import { projectService } from '../../project/project-service'
 import { userInteractionWatcher } from '../../workers/user-interaction-watcher'
 import { AppConnectionSchema } from '../app-connection.entity'
@@ -65,7 +65,7 @@ export const appConnectionHandler = (log: FastifyBaseLogger) => ({
         switch (connection.value.type) {
             case AppConnectionType.PLATFORM_OAUTH2:
                 connection.value = await oauth2Handler[connection.value.type](log).refresh({
-                    pieceName: connection.pieceName,
+                    connectorName: connection.connectorName,
                     platformId: connection.platformId,
                     projectId,
                     connectionValue: connection.value,
@@ -73,7 +73,7 @@ export const appConnectionHandler = (log: FastifyBaseLogger) => ({
                 break
             case AppConnectionType.CLOUD_OAUTH2:
                 connection.value = await oauth2Handler[connection.value.type](log).refresh({
-                    pieceName: connection.pieceName,
+                    connectorName: connection.connectorName,
                     platformId: connection.platformId,
                     projectId,
                     connectionValue: connection.value,
@@ -81,26 +81,26 @@ export const appConnectionHandler = (log: FastifyBaseLogger) => ({
                 break
             case AppConnectionType.OAUTH2:
                 connection.value = await oauth2Handler[connection.value.type](log).refresh({
-                    pieceName: connection.pieceName,
+                    connectorName: connection.connectorName,
                     platformId: connection.platformId,
                     projectId,
                     connectionValue: connection.value,
                 })
                 break
             case AppConnectionType.CUSTOM_AUTH: {
-                const piece = await getPiecePackageWithoutArchive(log, connection.platformId, {
-                    pieceName: connection.pieceName,
-                    pieceVersion: connection.pieceVersion,
+                const connector = await getConnectorPackageWithoutArchive(log, connection.platformId, {
+                    connectorName: connection.connectorName,
+                    connectorVersion: connection.connectorVersion,
                 })
-                log.info({ pieceName: connection.pieceName, externalId: connection.externalId }, '[custom-auth-refresh] submitting token refresh job')
+                log.info({ connectorName: connection.connectorName, externalId: connection.externalId }, '[custom-auth-refresh] submitting token refresh job')
                 const engineResponse = await userInteractionWatcher.submitAndWaitForResponse<EngineResponse<ExecuteRefreshTokenAuthResponse>>({
-                    piece,
+                    connector,
                     platformId: connection.platformId,
                     connectionValue: connection.value,
                     jobType: WorkerJobType.EXECUTE_TOKEN_REFRESH,
                 }, log)
                 if (engineResponse.status === EngineResponseStatus.TIMEOUT) {
-                    log.warn({ pieceName: connection.pieceName }, '[custom-auth-refresh] token refresh timed out — using existing credentials')
+                    log.warn({ connectorName: connection.connectorName }, '[custom-auth-refresh] token refresh timed out — using existing credentials')
                     return connection
                 }
                 if (engineResponse.status !== EngineResponseStatus.OK) {
@@ -108,10 +108,10 @@ export const appConnectionHandler = (log: FastifyBaseLogger) => ({
                 }
                 const refreshResult = engineResponse.response
                 if (refreshResult.skipped) {
-                    // Piece no longer has onRefreshToken (e.g. piece was updated) — clear
-                    // the token so the next needRefresh call re-checks piece metadata.
-                    log.info({ pieceName: connection.pieceName }, '[custom-auth-refresh] piece has no refresh callback — clearing stale token')
-                    pieceRefreshSupportCache.set(pieceRefreshSupportCacheKey(connection), false)
+                    // Connector no longer has onRefreshToken (e.g. connector was updated) — clear
+                    // the token so the next needRefresh call re-checks connector metadata.
+                    log.info({ connectorName: connection.connectorName }, '[custom-auth-refresh] connector has no refresh callback — clearing stale token')
+                    connectorRefreshSupportCache.set(connectorRefreshSupportCacheKey(connection), false)
                     connection.value = {
                         ...connection.value,
                         access_token: undefined,
@@ -119,7 +119,7 @@ export const appConnectionHandler = (log: FastifyBaseLogger) => ({
                     }
                 }
                 else {
-                    log.info({ pieceName: connection.pieceName, expiresIn: refreshResult.expires_in }, '[custom-auth-refresh] token refreshed successfully')
+                    log.info({ connectorName: connection.connectorName, expiresIn: refreshResult.expires_in }, '[custom-auth-refresh] token refreshed successfully')
                     connection.value = {
                         ...connection.value,
                         access_token: refreshResult.access_token,
@@ -197,7 +197,7 @@ export const appConnectionHandler = (log: FastifyBaseLogger) => ({
         platformId: PlatformId
         projectId: ProjectId
         externalId: string
-        validate: (params: { pieceName: string, value: AppConnectionValue }) => Promise<void>
+        validate: (params: { connectorName: string, value: AppConnectionValue }) => Promise<void>
         log: FastifyBaseLogger
     }): Promise<AppConnection | null> {
         return distributedLock(log).runExclusive({
@@ -241,7 +241,7 @@ export const appConnectionHandler = (log: FastifyBaseLogger) => ({
                     })
                     return appConnection
                 }
-                const { error } = await tryCatch(() => validate({ pieceName: appConnection.pieceName, value: appConnection.value }))
+                const { error } = await tryCatch(() => validate({ connectorName: appConnection.connectorName, value: appConnection.value }))
                 if (!isNil(error) && !(error instanceof PlatformError && error.error.code === ErrorCode.INVALID_APP_CONNECTION)) {
                     throw error
                 }
@@ -278,21 +278,21 @@ export const appConnectionHandler = (log: FastifyBaseLogger) => ({
                 if (!isNil(connection.value.access_token)) {
                     return isCustomAuthTokenStale(connection.value)
                 }
-                // No token yet — only dispatch a refresh job if the piece implements onRefreshToken.
-                // Cache the result per piece version to avoid a metadata round-trip on every execution.
-                const cacheKey = pieceRefreshSupportCacheKey(connection)
-                const cached = pieceRefreshSupportCache.get(cacheKey)
+                // No token yet — only dispatch a refresh job if the connector implements onRefreshToken.
+                // Cache the result per connector version to avoid a metadata round-trip on every execution.
+                const cacheKey = connectorRefreshSupportCacheKey(connection)
+                const cached = connectorRefreshSupportCache.get(cacheKey)
                 if (!isNil(cached)) {
                     return cached
                 }
-                const pieceMetadata = await pieceMetadataService(log).getOrThrow({
-                    name: connection.pieceName,
-                    version: connection.pieceVersion,
+                const connectorMetadata = await connectorMetadataService(log).getOrThrow({
+                    name: connection.connectorName,
+                    version: connection.connectorVersion,
                     platformId: connection.platformId,
                 })
-                const auth = Array.isArray(pieceMetadata.auth) ? pieceMetadata.auth[0] : pieceMetadata.auth
+                const auth = Array.isArray(connectorMetadata.auth) ? connectorMetadata.auth[0] : connectorMetadata.auth
                 const hasRefresh = auth?.type === PropertyType.CUSTOM_AUTH && !isNil(auth.refresh)
-                pieceRefreshSupportCache.set(cacheKey, hasRefresh)
+                connectorRefreshSupportCache.set(cacheKey, hasRefresh)
                 return hasRefresh
             }
             default:
@@ -303,7 +303,7 @@ export const appConnectionHandler = (log: FastifyBaseLogger) => ({
 
 
 const TOKEN_REFRESH_BUFFER_SECONDS = 15 * 60
-const pieceRefreshSupportCache: LRU<boolean> = lru(1000, 0)
+const connectorRefreshSupportCache: LRU<boolean> = lru(1000, 0)
 const REVALIDATE_FORCE_REFRESH_TYPES: ReadonlySet<AppConnectionType> = new Set([
     AppConnectionType.OAUTH2,
     AppConnectionType.CLOUD_OAUTH2,
@@ -331,8 +331,8 @@ export function computeTokenRefreshAt(expiresIn: unknown): number | undefined {
     return dayjs().unix() + expiresInSeconds - buffer
 }
 
-function pieceRefreshSupportCacheKey(connection: Pick<AppConnection, 'platformId' | 'pieceName' | 'pieceVersion'>): string {
-    return `${connection.platformId}:${connection.pieceName}@${connection.pieceVersion}`
+function connectorRefreshSupportCacheKey(connection: Pick<AppConnection, 'platformId' | 'connectorName' | 'connectorVersion'>): string {
+    return `${connection.platformId}:${connection.connectorName}@${connection.connectorVersion}`
 }
 
 class CustomAuthRefreshError extends Error {

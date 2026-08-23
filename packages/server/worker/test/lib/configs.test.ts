@@ -27,14 +27,14 @@ describe('getApiUrl', () => {
 
     it('returns FRONTEND_URL/api/ when CONTAINER_TYPE is WORKER (with trailing slash)', () => {
         process.env.FEMA_CONTAINER_TYPE = 'WORKER'
-        process.env.FEMA_FRONTEND_URL = 'https://app.activepieces.com/'
-        expect(getApiUrl()).toBe('https://app.activepieces.com/api/')
+        process.env.FEMA_FRONTEND_URL = 'https://app.fema.local/'
+        expect(getApiUrl()).toBe('https://app.fema.local/api/')
     })
 
     it('returns FRONTEND_URL/api/ when CONTAINER_TYPE is WORKER (without trailing slash)', () => {
         process.env.FEMA_CONTAINER_TYPE = 'WORKER'
-        process.env.FEMA_FRONTEND_URL = 'https://app.activepieces.com'
-        expect(getApiUrl()).toBe('https://app.activepieces.com/api/')
+        process.env.FEMA_FRONTEND_URL = 'https://app.fema.local'
+        expect(getApiUrl()).toBe('https://app.fema.local/api/')
     })
 })
 
@@ -49,7 +49,7 @@ describe('getSocketUrl', () => {
 
     it('returns FRONTEND_URL socket for WORKER', () => {
         process.env.FEMA_CONTAINER_TYPE = 'WORKER'
-        process.env.FEMA_FRONTEND_URL = 'https://app.activepieces.com/'
-        expect(getSocketUrl()).toEqual({ url: 'https://app.activepieces.com', path: '/api/socket.io' })
+        process.env.FEMA_FRONTEND_URL = 'https://app.fema.local/'
+        expect(getSocketUrl()).toEqual({ url: 'https://app.fema.local', path: '/api/socket.io' })
     })
 })

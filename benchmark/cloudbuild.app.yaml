@@ -9,10 +9,10 @@ steps:
     args:
       - build
       - -t
-      - europe-west1-docker.pkg.dev/activepieces-b3803/poolserver/ap-app:${_TAG}
+      - europe-west1-docker.pkg.dev/fema-b3803/poolserver/ap-app:${_TAG}
       - .
 images:
-  - europe-west1-docker.pkg.dev/activepieces-b3803/poolserver/ap-app:${_TAG}
+  - europe-west1-docker.pkg.dev/fema-b3803/poolserver/ap-app:${_TAG}
 substitutions:
   _TAG: fixed
 options:

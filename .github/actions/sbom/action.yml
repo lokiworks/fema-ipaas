@@ -30,14 +30,14 @@ runs:
       shell: bash
       run: |
         syft "${{ inputs.image }}" \
-          -o "cyclonedx-json=activepieces-${{ inputs.version }}.cdx.json" \
-          -o "spdx-json=activepieces-${{ inputs.version }}.spdx.json"
+          -o "cyclonedx-json=fema-${{ inputs.version }}.cdx.json" \
+          -o "spdx-json=fema-${{ inputs.version }}.spdx.json"
 
     - name: Scan SBOM with Grype
       id: grype
       uses: anchore/scan-action@1638637db639e0ade3258b51db49a9a137574c3e # v6.5.1
       with:
-        sbom: activepieces-${{ inputs.version }}.cdx.json
+        sbom: fema-${{ inputs.version }}.cdx.json
         output-format: sarif
         fail-build: false
         severity-cutoff: critical
@@ -74,16 +74,16 @@ runs:
         GITHUB_TOKEN: ${{ inputs.github-token }}
       run: |
         gh release upload "${{ inputs.version }}" \
-          "activepieces-${{ inputs.version }}.cdx.json" \
-          "activepieces-${{ inputs.version }}.spdx.json"
+          "fema-${{ inputs.version }}.cdx.json" \
+          "fema-${{ inputs.version }}.spdx.json"
 
     - name: Upload SBOMs + SARIF as workflow artifact
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
         name: sbom-${{ inputs.version }}-${{ github.run_id }}-${{ github.run_attempt }}
         path: |
-          activepieces-${{ inputs.version }}.cdx.json
-          activepieces-${{ inputs.version }}.spdx.json
+          fema-${{ inputs.version }}.cdx.json
+          fema-${{ inputs.version }}.spdx.json
           ${{ steps.grype.outputs.sarif }}
           trivy-${{ inputs.version }}.sarif
         retention-days: 30

@@ -1,7 +1,7 @@
 import { ApId, ApMultipartFile, Nullable, OptionalArrayFromQuery, OptionalBooleanFromQuery, SAFE_STRING_PATTERN, tryCatchSync } from '@fema/core-utils'
 import { z } from 'zod'
 import { FederatedAuthnProviderConfig } from '../../core/federated-authn'
-import { PieceSelectorConfig, PlatformThemeColors } from './platform.model'
+import { ConnectorSelectorConfig, PlatformThemeColors } from './platform.model'
 
 export const MAX_EMBED_ORIGIN_LENGTH = 300
 
@@ -46,7 +46,7 @@ const jsonFromMultipart = (value: unknown): unknown => {
 
 const NullableThemeColorsFromMultipart = z.preprocess(jsonFromMultipart, Nullable(PlatformThemeColors))
 
-const NullablePieceSelectorConfigFromMultipart = z.preprocess(jsonFromMultipart, Nullable(PieceSelectorConfig))
+const NullableConnectorSelectorConfigFromMultipart = z.preprocess(jsonFromMultipart, Nullable(ConnectorSelectorConfig))
 
 export const UpdatePlatformRequestBody = z.object({
     name: z.string().regex(new RegExp(SAFE_STRING_PATTERN)).optional(),
@@ -61,8 +61,8 @@ export const UpdatePlatformRequestBody = z.object({
     emailAuthEnabled: OptionalBooleanFromQuery,
     allowedAuthDomains: OptionalArrayFromQuery(z.string()),
     enforceAllowedAuthDomains: OptionalBooleanFromQuery,
-    pinnedPieces: OptionalArrayFromQuery(z.string()),
-    pieceSelectorConfig: NullablePieceSelectorConfigFromMultipart.optional(),
+    pinnedConnectors: OptionalArrayFromQuery(z.string()),
+    connectorSelectorConfig: NullableConnectorSelectorConfigFromMultipart.optional(),
     allowedEmbedOrigins: z.array(allowedEmbedOriginSchema)
         .optional(),
 })

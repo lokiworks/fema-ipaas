@@ -1,11 +1,11 @@
 ---
 name: triage-security-advisories
-description: Triage the GitHub privately-reported vulnerability backlog for Activepieces — pull repository security advisories from the Security tab, scope-check against SECURITY.md, deeply validate each, compute SLA status, and propose fix plans for review. Use when the user asks to triage security advisories, work the reported-vulnerability backlog, or check SLA on reported vulns. For Dependabot dependency alerts, use the triage-dependabot-alerts skill instead.
+description: Triage the GitHub privately-reported vulnerability backlog for FEMA Integration Platform — pull repository security advisories from the Security tab, scope-check against SECURITY.md, deeply validate each, compute SLA status, and propose fix plans for review. Use when the user asks to triage security advisories, work the reported-vulnerability backlog, or check SLA on reported vulns. For Dependabot dependency alerts, use the triage-dependabot-alerts skill instead.
 ---
 
 # Triage Security Advisories (reported vulnerabilities)
 
-On-demand triage of privately-reported vulnerabilities in the Activepieces GitHub repo
+On-demand triage of privately-reported vulnerabilities in the FEMA Integration Platform GitHub repo
 (`lokiworks/fema-ipaas`) — the **repository security advisories** from the Security tab.
 Produces a **review-ready** report per advisory + an SLA dashboard, and proposes fix plans.
 The user reviews and decides per advisory: approve the fix / dismiss as out-of-scope / escalate.
@@ -148,7 +148,7 @@ Fan-out tips that paid off:
   `until [ "$(ls .security-triage/reports/*.md | wc -l)" -ge N ]; do sleep 3; done` and let it
   notify on completion; collect the streamed verdict notifications meanwhile.
 
-## Activepieces sink patterns — "looks guarded but isn't" (grep these first)
+## FEMA Integration Platform sink patterns — "looks guarded but isn't" (grep these first)
 
 High-yield recurring footguns in this codebase. Each surfaced as a confirmed advisory; a repo-wide
 grep for them catches the systemic cluster, not just the reported instance:
@@ -157,7 +157,7 @@ grep for them catches the systemic cluster, not just the reported instance:
   permission. `grantAccess()` returns `true` on a nil permission (`rbac-service.ts`), so the route
   collapses to **membership-only** — any project member (incl. VIEWER) passes. Confirm a dedicated
   permission *exists and is deliberately withheld* (the route is a bug) vs. genuinely membership-
-  only by design (e.g. piece-metadata reads). Compare against a sibling module that wires the
+  only by design (e.g. connector-metadata reads). Compare against a sibling module that wires the
   permission correctly (git-sync does).
 - **`securityAccess.publicPlatform([PrincipalType.USER])`** on a state-changing or platform-wide
   route where `platformAdminOnly` is required — `publicPlatform` sets `adminOnly:false`, so the
@@ -174,7 +174,7 @@ grep for them catches the systemic cluster, not just the reported instance:
 - **Websocket handlers with no per-event RBAC** — the dispatcher validates only the *handshake*
   `projectId`; individual `addListener` handlers trust client-supplied `resourceId`/`flowVersionId`
   with no per-event permission or resource→project ownership check.
-- **Egress not via `safeHttp`** — AI-provider/piece outbound calls using `pieces-common`
+- **Egress not via `safeHttp`** — AI-provider/connector outbound calls using `connectors-common`
   `httpClient` (native `fetch`/undici) instead of `safeHttp`; user-controlled `baseUrl`/host/
   `resourceName` interpolated into a URL = SSRF. The in-process dns/socket guards are opt-in
   (non-default network mode) and best-effort — verify they actually classify the transport in use.

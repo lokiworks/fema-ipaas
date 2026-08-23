@@ -4,16 +4,16 @@ icon: 📝
 
 # Human Input
 
-Human Input exposes public endpoints that let external users interact with flows via two modes: **Forms** (structured input fields) and **Chat** (conversational UI). Both are backed by flows whose trigger is the `@fema/connector-forms` piece. The backend endpoints are read-only and public — they return UI metadata (title, input schema, branding); the actual submission goes through the webhook endpoint.
+Human Input exposes public endpoints that let external users interact with flows via two modes: **Forms** (structured input fields) and **Chat** (conversational UI). Both are backed by flows whose trigger is the `@fema/connector-forms` connector. The backend endpoints are read-only and public — they return UI metadata (title, input schema, branding); the actual submission goes through the webhook endpoint.
 
 ### Entities & services
 - `human-input.service.ts` — resolves flow, validates trigger type, builds response.
 - Two controllers: `GET /v1/human-input/form/:flowId` and `GET /v1/human-input/chat/:flowId` (both `securityAccess.public()`).
-- **Forms piece** provides three triggers: `form_submission`, `file_submission`, `chat_submission`.
+- **Forms connector** provides three triggers: `form_submission`, `file_submission`, `chat_submission`.
 - Frontend renders forms at `/forms/<flowId>` and chat at `/chat/<flowId>`.
 
 ### How it works
-- **`getFormByFlowIdOrThrow`**: loads flow → if no published version and `useDraft` false, returns null (404) → asserts trigger is forms-piece `form_submission`/`file_submission` → resolves exact piece version. `file_submission` returns a hardcoded single-file schema (`SIMPLE_FILE_PROPS`); `form_submission` returns `trigger.settings.input`.
+- **`getFormByFlowIdOrThrow`**: loads flow → if no published version and `useDraft` false, returns null (404) → asserts trigger is forms-connector `form_submission`/`file_submission` → resolves exact connector version. `file_submission` returns a hardcoded single-file schema (`SIMPLE_FILE_PROPS`); `form_submission` returns `trigger.settings.input`.
 - **`getChatUIByFlowIdOrThrow`**: asserts `chat_submission` trigger → fetches platform logo + name → returns `ChatUIResponse` with branding embedded (supports white-labeled chat).
 - Form input types: `text`, `text_area`, `toggle`, `file`.
 - **`waitForResponse`**: when true, the flow run pauses after triggering and the frontend waits for a value to display back to the submitter.

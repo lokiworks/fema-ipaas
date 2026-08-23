@@ -1,6 +1,6 @@
-# Activepieces Tables
+# FEMA Integration Platform Tables
 
-Activepieces **Tables** are a lightweight database built into every project — no external database or connection needed. Use them to store and look up structured data across flow runs.
+FEMA Integration Platform **Tables** are a lightweight database built into every project — no external database or connection needed. Use them to store and look up structured data across flow runs.
 
 ## When to use a Table
 
@@ -11,7 +11,7 @@ Reach for a Table whenever a flow needs to **remember or look up data**:
 - Small datasets the flow reads from (lookup/mapping tables, allow-lists)
 - Collecting submissions to review later
 
-**Prefer Tables over Google Sheets** when the data lives inside Activepieces and doesn't need a spreadsheet UI — Tables are faster, typed, and need no connection/auth. Use **Google Sheets** only when the user already works in that sheet or needs to share/edit it as a spreadsheet. Use an **external database piece** (Postgres, MySQL, …) only for large or relational data.
+**Prefer Tables over Google Sheets** when the data lives inside FEMA Integration Platform and doesn't need a spreadsheet UI — Tables are faster, typed, and need no connection/auth. Use **Google Sheets** only when the user already works in that sheet or needs to share/edit it as a spreadsheet. Use an **external database connector** (Postgres, MySQL, …) only for large or relational data.
 
 ## Model
 
@@ -40,17 +40,17 @@ Tables belong to a project, so a project must be selected before you create or w
 
 ## Reading & writing a Table inside a flow
 
-The agent tools above are for setup and inspection. To read/write a Table from inside a running flow, add the built-in **Tables** piece as a step (create record, find records, update record) and map step/trigger outputs into the fields:
+The agent tools above are for setup and inspection. To read/write a Table from inside a running flow, add the built-in **Tables** connector as a step (create record, find records, update record) and map step/trigger outputs into the fields:
 
 > New email (trigger) → **Tables: Create Record** → map `{{trigger['output'].subject}}` to the `Subject` field, `{{trigger['output'].from}}` to `Sender`, etc.
 
 **The two-id rule (the #1 Tables failure).** Every table and field has an internal `id` *and* an `externalId` — `ap_list_tables` / `ap_create_table` print both. They are not interchangeable:
-- **Tables piece step config:** `table_id` = the table's **externalId**, and the `values` object is keyed by **field externalIds**. An internal id fails at runtime with "Table with externalId not found" (and validation will NOT catch it).
+- **Tables connector step config:** `table_id` = the table's **externalId**, and the `values` object is keyed by **field externalIds**. An internal id fails at runtime with "Table with externalId not found" (and validation will NOT catch it).
 - **ap_* table tools:** accept either table id, and reference fields by **name**.
 
 ## Gotchas
 
-- **Field _names_ for the ap_* tools; field _externalIds_ as the values keys in the Tables piece step.** Never field display labels.
+- **Field _names_ for the ap_* tools; field _externalIds_ as the values keys in the Tables connector step.** Never field display labels.
 - **Resolve the table and its fields with `ap_list_tables` first** — don't assume a table or field exists.
 - Only call `ap_create_table` after confirming the table isn't already there.
 - `STATIC_DROPDOWN` values must match one of the field's configured options.

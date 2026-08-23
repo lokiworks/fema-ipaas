@@ -2,18 +2,18 @@
 
 本产品包含由第三方开发并按其原始许可证授权的软件。
 
-## 1. Activepieces（上游基线）
+## 1. FEMA Integration Platform（上游基线）
 
-本项目派生自 Activepieces Community Edition。
+本项目派生自 FEMA Integration Platform Community Edition。
 
-- 项目：Activepieces
+- 项目：FEMA Integration Platform
 - 来源：https://github.com/lokiworks/fema-ipaas
 - 基线提交：`eef1a1d4d22e4181859792813bf855c4038a3d0b`（v0.88.3，2026-08-22）
 - 许可证：MIT
 - 版权声明：
 
 ```
-Copyright (c) 2020-2024 Activepieces Inc.
+Copyright (c) 2020-2024 FEMA Integration Platform Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,7 @@ SOFTWARE.
 
 ### 明确排除的部分
 
-上游 `packages/ee/` 与 `packages/server/api/src/app/ee/` 目录适用 Activepieces
+上游 `packages/ee/` 与 `packages/server/api/src/app/ee/` 目录适用 FEMA Integration Platform
 Enterprise License（**非** MIT）。本项目已完整删除这两个目录，未继承其中任何代码。
 详见 `UPSTREAM.md`。
 
@@ -50,7 +50,7 @@ Enterprise License（**非** MIT）。本项目已完整删除这两个目录，
 
 ## 3. 商标声明
 
-- Activepieces 是 Activepieces Inc. 的商标。本项目与 Activepieces Inc. 无隶属关系，
+- FEMA Integration Platform 是 FEMA Integration Platform Inc. 的商标。本项目与 FEMA Integration Platform Inc. 无隶属关系，
   亦未获其背书。
 - 飞书 / Feishu / Lark、企业微信、钉钉等为其各自权利人的商标。本项目仅在
   **交互与信息架构层面**参考公开产品文档，未复制其前端源码、图标资产、商标或

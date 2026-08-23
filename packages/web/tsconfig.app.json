@@ -16,7 +16,7 @@
         "../../packages/core/shared/src"
       ],
       "@fema/connector-sdk": [
-        "../../packages/pieces/framework/src"
+        "../../packages/connectors/sdk/src"
       ]
     }
   },

@@ -23,10 +23,10 @@ import { cn } from '@/lib/utils';
 import { DailyHealthStrip } from './daily-health-strip';
 
 const HARDWARE_DOCS_LINK =
-  'https://www.activepieces.com/docs/install/configuration/hardware#technical-specifications';
+  'https://github.com/lokiworks/fema-ipaas/docs/install/configuration/hardware#technical-specifications';
 
 const PRODUCTION_SETUP_LINK =
-  'https://www.activepieces.com/docs/install/configure-operate/production-setup#what-it-looks-like';
+  'https://github.com/lokiworks/fema-ipaas/docs/install/configure-operate/production-setup#what-it-looks-like';
 
 // Matches UNKNOWN_VERSION in @fema/server-utils: the sentinel the backend reports when
 // it could not read its release from package.json. Not importable here (server-only package).
@@ -100,7 +100,7 @@ export function SystemHealthTab({ onSeeRuns }: SystemHealthTabProps) {
       title: t('Release Integrity'),
       icon: <GitCompareArrows className="size-4" />,
       status: releaseIntegrityOk ? 'passed' : 'failed',
-      link: 'https://www.activepieces.com/docs/install/configuration/overview',
+      link: 'https://github.com/lokiworks/fema-ipaas/docs/install/configuration/overview',
       message: releaseIntegrityMessage,
     },
     {

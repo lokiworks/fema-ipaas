@@ -94,7 +94,7 @@ jobs:
       contents: write
     environment:
       name: production
-      url: https://cloud.activepieces.com
+      url: https://github.com/lokiworks/fema-ipaas
     concurrency:
       group: promote-production
       cancel-in-progress: false

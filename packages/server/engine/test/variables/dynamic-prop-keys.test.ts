@@ -45,7 +45,7 @@ describe('DYNAMIC property input keys', () => {
         }),
     }
 
-    it('hands the piece the original keys and validates against them', async () => {
+    it('hands the connector the original keys and validates against them', async () => {
         const { processedInput, errors } = await propsProcessor.applyProcessorsAndValidators(
             { fields: { '~ap~employee~1firstName': 'John', '~ap~employee~1age': '30' } },
             props,

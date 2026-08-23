@@ -1,0 +1,290 @@
+brain/knowledge/connections-auth/connections.md
+  s_94864882421579::t_3254fb2c9086e8 1-42
+packages/connectors/sdk/src/lib/property/authentication/index.ts
+  s_94864882421579::t_3254fb2c9086e8 10,100,104-112
+packages/server/api/src/app/project/project.jobs.ts
+  s_94864882421579::t_3254fb2c9086e8 3,29
+brain/knowledge/connections-auth/oauth-apps.md
+  s_94864882421579::t_3254fb2c9086e8 19,25
+packages/connectors/community/mysql/src/lib/common/index.ts
+  s_94864882421579::t_3254fb2c9086e8 2,19
+packages/connectors/sdk/src/index.ts
+  s_94864882421579::t_3254fb2c9086e8 25
+packages/connectors/community/postgres/src/lib/triggers/new-row.ts
+  s_94864882421579::t_3254fb2c9086e8 2,11
+packages/core/shared/src/lib/automation/connection/dto/read-connection-request.ts
+  s_94864882421579::t_3254fb2c9086e8 1-73
+docs/endpoints/connections/delete.mdx
+  s_94864882421579::t_3254fb2c9086e8 3
+packages/server/api/test/integration/connection/oauth2-placeholder.test.ts
+  s_94864882421579::t_3254fb2c9086e8 1-160
+packages/server/AGENTS.md
+  s_94864882421579::t_3254fb2c9086e8 79
+packages/server/engine/src/lib/core/connector/connector-auth.ts
+  s_94864882421579::t_3254fb2c9086e8 3,59,61,63,65,67,75,80,91,95
+packages/server/api/src/app/connection/platform-connection.controller.ts
+  s_94864882421579::t_3254fb2c9086e8 1-56
+packages/web/src/features/connections/hooks/connections-hooks.ts
+  s_94864882421579::t_b8218dfc0ca15f 63
+  s_94864882421579::t_3254fb2c9086e8 1-62,64-399
+packages/web/src/features/platform-admin/api/platform-connections-api.ts
+  s_94864882421579::t_3254fb2c9086e8 1-22
+docs/endpoints/connections/get.mdx
+  s_94864882421579::t_3254fb2c9086e8 3
+packages/server/api/test/unit/app/connection/oauth2-util.test.ts
+  s_94864882421579::t_3254fb2c9086e8 1-94
+packages/connectors/common/src/lib/polling/index.ts
+  s_94864882421579::t_3254fb2c9086e8 1,21,43,48,119,158,168
+docs/build-connectors/connector-reference/triggers/polling-trigger.mdx
+  s_94864882421579::t_3254fb2c9086e8 37,58
+packages/core/shared/src/index.ts
+  s_94864882421579::t_3254fb2c9086e8 36-38
+packages/server/api/src/app/connection/connection-worker-controller.ts
+  s_94864882421579::t_3254fb2c9086e8 1-44
+packages/web/src/features/projects/components/edit-project-dialog.tsx
+  s_94864882421579::t_3254fb2c9086e8 3,100
+docs/build-connectors/building-connectors/create-trigger.mdx
+  s_94864882421579::t_3254fb2c9086e8 50,55
+packages/server/api/src/app/database/migration/postgres/1787465061531-InitialSchema.ts
+  s_94864882421579::t_3254fb2c9086e8 317,338,341,672-673,754,898,901,904
+packages/web/src/app/connections/multi-auth-list.tsx
+  s_94864882421579::t_3254fb2c9086e8 9,114
+packages/web/src/app/routes/platform/setup/connections/index.tsx
+  s_94864882421579::t_b8218dfc0ca15f 2,128
+  s_94864882421579::t_3254fb2c9086e8 46,54,65,78,85,220,229-230,238,242,272
+packages/web/src/features/connections/index.ts
+  s_94864882421579::t_3254fb2c9086e8 1,7-9,16
+docs/build-connectors/misc/migrate-connectors-to-bundles.mdx
+  s_94864882421579::t_3254fb2c9086e8 21
+packages/web/src/app/routes/automations/index.tsx
+  s_94864882421579::t_3254fb2c9086e8 27,124
+packages/web/src/app/connections/create-edit-connection-dialog.tsx
+  s_94864882421579::t_3254fb2c9086e8 11-13,15,49,109,125,529,545,564,590,601,622,625
+  s_94864882421579::t_b8218dfc0ca15f 589,604
+packages/server/api/test/helpers/mocks/index.ts
+  s_94864882421579::t_3254fb2c9086e8 3,449,458-460,463,526,546,555
+packages/connectors/community/github/src/lib/common/auth-helpers.ts
+  s_94864882421579::t_3254fb2c9086e8 1-2,115,119,157,163-165,171,180
+packages/server/api/test/unit/app/connection/custom-auth-staleness.test.ts
+  s_94864882421579::t_3254fb2c9086e8 1-80
+packages/server/engine/src/lib/variables/props-processor.ts
+  s_94864882421579::t_3254fb2c9086e8 27,186
+  s_94864882421579::t_b8218dfc0ca15f 4
+brain/knowledge/platform-editions-ee/projects.md
+  s_94864882421579::t_3254fb2c9086e8 12
+packages/connectors/sdk/src/lib/context/index.ts
+  s_94864882421579::t_3254fb2c9086e8 2-3,35,53-55,58-63,275
+packages/server/api/test/integration/connection/connection.test.ts
+  s_94864882421579::t_3254fb2c9086e8 1-541
+packages/server/engine/src/lib/connector-context/connection-resolver.ts
+  s_94864882421579::t_b8218dfc0ca15f 2
+  s_94864882421579::t_3254fb2c9086e8 8-9,25-26,67,78,80-81,83-84,86,91,110
+docs/endpoints/connections/upsert.mdx
+  s_94864882421579::t_3254fb2c9086e8 3
+packages/server/api/src/app/connection/connection-service/oauth2/index.ts
+  s_94864882421579::t_3254fb2c9086e8 1-35
+packages/connectors/community/slack/src/lib/common/auth-helpers.ts
+  s_94864882421579::t_3254fb2c9086e8 1-2,6,12-14,20,30
+packages/connectors/common/src/lib/helpers/index.ts
+  s_94864882421579::t_3254fb2c9086e8 11,115,136,157
+docs/endpoints/connections/schema.mdx
+  s_94864882421579::t_3254fb2c9086e8 3
+packages/core/execution/src/lib/workers/job-data.ts
+  s_94864882421579::t_3254fb2c9086e8 10,189-190,202
+packages/server/api/src/app/connection/connection-service/oauth2/oauth2-util.ts
+  s_94864882421579::t_b8218dfc0ca15f 4
+  s_94864882421579::t_3254fb2c9086e8 1-3,5-257
+packages/web/src/features/automations/components/automations-filters.tsx
+  s_94864882421579::t_3254fb2c9086e8 3,57
+packages/web/src/features/connections/api/global-connections.ts
+  s_94864882421579::t_3254fb2c9086e8 3,14-15,22-23,34-35
+packages/core/shared/test/common/resolve-value-from-props.test.ts
+  s_94864882421579::t_3254fb2c9086e8 2
+packages/server/api/test/integration/connection/connection-events.test.ts
+  s_94864882421579::t_3254fb2c9086e8 1-128
+packages/server/api/src/app/variable/variable.service.ts
+  s_94864882421579::t_3254fb2c9086e8 2,80,93
+packages/server/api/src/app/app.ts
+  s_94864882421579::t_b8218dfc0ca15f 5,14-15
+  s_94864882421579::t_3254fb2c9086e8 90,158-159,313
+packages/server/worker/src/lib/execute/jobs/execute-token-refresh.ts
+  s_94864882421579::t_3254fb2c9086e8 2,30
+packages/server/api/src/app/project/project-entity.ts
+  s_94864882421579::t_3254fb2c9086e8 2,23,136,138
+packages/server/engine/test/core/connector/connector-auth.test.ts
+  s_94864882421579::t_3254fb2c9086e8 2,14-15,25,43,52,61,74,83,93,103
+brain/knowledge/decisions/000025-connection-connector-binding-is-enforced-in-the-engine.md
+  s_94864882421579::t_3254fb2c9086e8 10,12
+packages/web/src/features/connections/components/revalidate-connection-button.tsx
+  s_94864882421579::t_b8218dfc0ca15f 21
+  s_94864882421579::t_3254fb2c9086e8 12
+brain/knowledge/data-storage-observability/audit-logs.md
+  s_94864882421579::t_3254fb2c9086e8 20
+packages/core/shared/src/lib/automation/connection/dto/upsert-connection-request.ts
+  s_94864882421579::t_3254fb2c9086e8 1-208
+packages/server/api/src/app/connection/connection.module.ts
+  s_94864882421579::t_3254fb2c9086e8 1-14
+packages/core/utils/src/lib/permission.ts
+  s_94864882421579::t_3254fb2c9086e8 3-4
+packages/web/src/hooks/owner-column-hooks.tsx
+  s_94864882421579::t_3254fb2c9086e8 2,56
+packages/server/utils/src/logger-redact.ts
+  s_94864882421579::t_3254fb2c9086e8 79-82
+packages/server/api/test/integration/engine-services/engine-services.test.ts
+  s_94864882421579::t_3254fb2c9086e8 4,154,163,166,181,190,199,202,233,244,246,275,278,313,330
+packages/server/api/test/integration/connection/custom-auth-refresh.test.ts
+  s_94864882421579::t_3254fb2c9086e8 1-154
+packages/web/src/app/connections/reconnect-button-dialog.tsx
+  s_94864882421579::t_3254fb2c9086e8 16,58
+  s_94864882421579::t_b8218dfc0ca15f 1
+packages/server/api/src/app/connection/connection.entity.ts
+  s_94864882421579::t_3254fb2c9086e8 1-97
+brain/knowledge/platform-editions-ee/platform-configuration.md
+  s_94864882421579::t_3254fb2c9086e8 25
+packages/connectors/sdk/src/lib/property/input/dropdown/dropdown-prop.ts
+  s_94864882421579::t_3254fb2c9086e8 3,10
+packages/connectors/community/rabbitmq/src/lib/triggers/message-received.ts
+  s_94864882421579::t_3254fb2c9086e8 6,13
+packages/server/api/src/app/connection/platform-connection.module.ts
+  s_94864882421579::t_3254fb2c9086e8 1-8
+packages/server/api/test/integration/connection/connection-replace.test.ts
+  s_94864882421579::t_3254fb2c9086e8 1-405
+brain/knowledge/connections-auth/index.md
+  s_94864882421579::t_3254fb2c9086e8 13,20
+packages/web/src/features/connections/utils/utils.ts
+  s_94864882421579::t_3254fb2c9086e8 12-15,25,42-43,48,53,58,66,78,112,129,131,138,140,148,150,161,163,173,176,178,189,192,194,209,211,270
+packages/server/utils/src/evlog-setup.ts
+  s_94864882421579::t_3254fb2c9086e8 95-98
+brain/knowledge/data-storage-observability/index.md
+  s_94864882421579::t_3254fb2c9086e8 19
+packages/web/src/features/variables/api/variables.ts
+  s_94864882421579::t_3254fb2c9086e8 3,44
+  s_94864882421579::t_b8218dfc0ca15f 45
+.agents/skills/connector-builder/trigger-patterns.md
+  s_94864882421579::t_3254fb2c9086e8 24,28,105
+packages/server/api/src/app/database/database-connection.ts
+  s_94864882421579::t_b8218dfc0ca15f 8
+  s_94864882421579::t_3254fb2c9086e8 47
+docs/install/reference/breaking-changes.mdx
+  s_94864882421579::t_3254fb2c9086e8 395-396
+packages/web/src/app/connections/oauth2-connection-settings.tsx
+  s_94864882421579::t_3254fb2c9086e8 11,43,67,80,85,102,322,340
+packages/web/src/features/connections/api/connections.ts
+  s_94864882421579::t_b8218dfc0ca15f 29
+  s_94864882421579::t_3254fb2c9086e8 1-28,30-72
+packages/core/shared/src/lib/authentication/authn/access-control-list.ts
+  s_94864882421579::t_3254fb2c9086e8 6-7,37-38,63
+packages/core/connector-types/src/lib/connection.ts
+  s_94864882421579::t_3254fb2c9086e8 1-88
+packages/web/src/app/builder/step-settings/connector-settings/connection-select.tsx
+  s_94864882421579::t_3254fb2c9086e8 7-9,51,62,68,84,91,228,291,295,306,367,373,379,385
+  s_94864882421579::t_b8218dfc0ca15f 38
+packages/server/api/src/app/variable/variable.controller.ts
+  s_94864882421579::t_3254fb2c9086e8 56
+  s_94864882421579::t_b8218dfc0ca15f 2
+packages/web/src/features/connections/utils/oauth2-utils.ts
+  s_94864882421579::t_3254fb2c9086e8 4,127
+  s_94864882421579::t_b8218dfc0ca15f 123
+packages/web/src/features/connectors/utils/form-utils.tsx
+  s_94864882421579::t_3254fb2c9086e8 13-14,249,267-269,288,292,296,326,390-392,408-409,442,454
+  s_94864882421579::t_b8218dfc0ca15f 410
+packages/server/api/src/app/connection/connection-service/oauth2/services/credentials-oauth2-service.ts
+  s_94864882421579::t_3254fb2c9086e8 1-3,5-195
+  s_94864882421579::t_b8218dfc0ca15f 4
+packages/web/src/app/components/project-layout/project-dashboard-layout-header.tsx
+  s_94864882421579::t_3254fb2c9086e8 95
+packages/web/src/app/connections/new-connection-dialog.tsx
+  s_94864882421579::t_3254fb2c9086e8 3,24
+brain/knowledge/flows-execution/variables.md
+  s_94864882421579::t_3254fb2c9086e8 7
+packages/web/src/features/platform-admin/hooks/platform-connections-hooks.ts
+  s_94864882421579::t_3254fb2c9086e8 1-49
+packages/core/utils/src/lib/platform-error.ts
+  s_94864882421579::t_3254fb2c9086e8 30,339-340,530
+brain/knowledge/decisions/000026-delete-platform-is-a-cloud-owner-action-purged-by-one-cascading-job.md
+  s_94864882421579::t_3254fb2c9086e8 15,21
+packages/web/src/features/projects/components/new-project-dialog.tsx
+  s_94864882421579::t_3254fb2c9086e8 2,83
+packages/connectors/community/postgres/src/lib/common.ts
+  s_94864882421579::t_3254fb2c9086e8 1,6
+brain/knowledge/connections-auth/secret-managers.md
+  s_94864882421579::t_3254fb2c9086e8 34
+packages/connectors/community/postgres/src/index.ts
+  s_94864882421579::t_3254fb2c9086e8 6,74
+packages/cli/src/lib/commands/create-trigger.ts
+  s_94864882421579::t_3254fb2c9086e8 18,23
+packages/web/src/app/connections/replace-connections-dialog.tsx
+  s_94864882421579::t_3254fb2c9086e8 2,45-46,89,99,195,236-237
+  s_94864882421579::t_b8218dfc0ca15f 365,410
+packages/server/worker/src/lib/execute/jobs/execute-validation.ts
+  s_94864882421579::t_3254fb2c9086e8 1,24
+docs/adr/0005-connection-domain-model.md
+  s_94864882421579::t_3254fb2c9086e8 10
+docs/openapi.json
+  s_94864882421579::t_3254fb2c9086e8 1
+packages/connectors/sdk/src/lib/property/input/dynamic-prop.ts
+  s_94864882421579::t_3254fb2c9086e8 5,52
+packages/web/src/app/routes/platform/connections/index.tsx
+  s_94864882421579::t_3254fb2c9086e8 2-5,39,44,50,55,68,236,255-256,270
+  s_94864882421579::t_b8218dfc0ca15f 49,105-154,156-166,168-169,171-181,183-223
+packages/web/src/features/connections/hooks/global-connections-hooks.ts
+  s_94864882421579::t_3254fb2c9086e8 2,80
+brain/knowledge/connections-auth/global-connections.md
+  s_94864882421579::t_3254fb2c9086e8 7,10-11,26-28,32
+packages/server/api/src/app/connection/connection.controller.ts
+  s_94864882421579::t_b8218dfc0ca15f 3,45
+  s_94864882421579::t_3254fb2c9086e8 1-2,4-44,46-380
+packages/server/api/src/app/connection/connection-service/connection.handler.ts
+  s_94864882421579::t_3254fb2c9086e8 1-438
+docs/adr/0011-squash-upstream-migrations-into-one-baseline.md
+  s_94864882421579::t_3254fb2c9086e8 24
+packages/server/api/src/app/connection/connection-service/connection-service.ts
+  s_94864882421579::t_3254fb2c9086e8 1-26,28-1033
+  s_94864882421579::t_b8218dfc0ca15f 27
+packages/core/execution/src/lib/engine/engine-operation.ts
+  s_94864882421579::t_3254fb2c9086e8 4,69,74-75
+packages/server/api/test/unit/app/connection/connection-metadata.test.ts
+  s_94864882421579::t_3254fb2c9086e8 1-51
+docs/endpoints/connections/list.mdx
+  s_94864882421579::t_3254fb2c9086e8 3
+packages/connectors/sdk/test/auth-property-for-value.test.ts
+  s_94864882421579::t_3254fb2c9086e8 1,20,26-28,37
+.agents/skills/connector-output-schema/capture-recipes.md
+  s_94864882421579::t_3254fb2c9086e8 19
+packages/web/src/app/routes/project-routes.tsx
+  s_94864882421579::t_3254fb2c9086e8 29,129
+  s_94864882421579::t_b8218dfc0ca15f 30,126
+packages/connectors/core/sftp/src/lib/triggers/new-modified-file.ts
+  s_94864882421579::t_3254fb2c9086e8 1,15
+packages/server/engine/src/lib/operations/auth-refresh.operation.ts
+  s_94864882421579::t_3254fb2c9086e8 4,22
+packages/web/src/features/connectors/hooks/connectors-hooks.ts
+  s_94864882421579::t_3254fb2c9086e8 31,442-443,451,455-456
+packages/web/src/features/connections/components/rename-connection-dialog.tsx
+  s_94864882421579::t_3254fb2c9086e8 28,56
+packages/core/shared/src/lib/automation/connection/connection.ts
+  s_94864882421579::t_3254fb2c9086e8 1-160
+packages/core/connector-types/src/index.ts
+  s_94864882421579::t_3254fb2c9086e8 4,7,9,19
+packages/server/engine/test/connector-context/connection-resolver.test.ts
+  s_94864882421579::t_3254fb2c9086e8 2,12-14,53-54,70-71,86-87,108,194,204,222
+packages/web/src/app/routes/connections/index.tsx
+  s_94864882421579::t_3254fb2c9086e8 3-5,54-56,68,72,90,98,112,130-131,133-135,141,168,170,185,302,305,311,349,354,400,413,421,434,441,464
+  s_94864882421579::t_b8218dfc0ca15f 240
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "2a7f5644df06cb3b736d940eedbff571b2d92160",
+  "prompts": {},
+  "sessions": {
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

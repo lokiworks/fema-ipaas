@@ -1,0 +1,154 @@
+packages/server/api/src/app/app.ts
+  s_94864882421579::t_03405449498e1b 157
+  s_94864882421579::t_f804ccf4316f45 158
+packages/server/api/src/app/helper/system/system.ts
+  s_94864882421579::t_34e9a6691d72e4 63
+packages/web/src/features/workspace-members/api/workspace-members-api.ts
+  s_94864882421579::t_3648dd8b9c3a1e 1-3,5-27
+  s_94864882421579::t_424a7e9757cd62 4
+packages/server/api/src/app/database/migration/postgres/1787900000000-CreateWorkspaceMember.ts
+  s_94864882421579::t_4230e616d263ad 1-39
+packages/server/api/src/app/audit/audit-event-listener.ts
+  s_94864882421579::t_f804ccf4316f45 1-38
+packages/server/api/src/app/core/security/v2/authz/authorize.ts
+  s_94864882421579::t_86cde20b0f8365 95-99
+packages/server/api/src/app/database/postgres-connection.ts
+  s_94864882421579::t_4230e616d263ad 26
+  s_94864882421579::t_03405449498e1b 27
+packages/web/src/features/audit-events/api/audit-events-api.ts
+  s_94864882421579::t_bca47894c44d90 1-13
+packages/server/api/src/app/audit/audit-event.entity.ts
+  s_94864882421579::t_d8a084bd8caad9 1-3,5-12,14-16,20,22,24,26-28,30,32,34,36-44,47-50
+  s_94864882421579::t_90a5f854e2817e 66
+  s_94864882421579::t_735c19c96a12e2 13,17-19,21,23,25,29,31,33,35,45-46
+  s_94864882421579::t_6eeb6fddecb13b 4,51-62
+  s_94864882421579::t_97fda661f78e8f 63-65
+packages/server/api/src/app/audit/audit-event.service.ts
+  s_94864882421579::t_6eeb6fddecb13b 4,16,19-28,36,60,64-70
+  s_94864882421579::t_735c19c96a12e2 14,32,47,49-51,53-58,71,77-81
+  s_94864882421579::t_bf09a39e15f6e1 2,17-18,29
+  s_94864882421579::t_97fda661f78e8f 10,72
+  s_94864882421579::t_efae68e9dad028 1,5-9,11-13,15,30-31,33-35,37-46,48,52,59,61-63,73-76,82-84
+  s_94864882421579::t_7de319a13fdf1f 3
+packages/server/api/src/app/workspace/workspace-member.entity.ts
+  s_94864882421579::t_4230e616d263ad 1-48
+packages/web/test/lib/route-utils.test.ts
+  s_94864882421579::t_878ac1869b39e7 19-21,29-35
+  s_94864882421579::t_be7347a73eee5b 36
+brain/knowledge/connections-auth/index.md
+  s_94864882421579::t_bb1b1fc4e642e8 9-21
+packages/web/src/lib/route-utils.ts
+  s_94864882421579::t_69a814ae84ec3f 36-39
+docs/adr/index.md
+  s_94864882421579::t_beea99c6fe29a2 25
+packages/server/api/src/app/audit/audit-event.controller.ts
+  s_94864882421579::t_6eeb6fddecb13b 2,5,9
+  s_94864882421579::t_735c19c96a12e2 14-16
+  s_94864882421579::t_03405449498e1b 1,27
+  s_94864882421579::t_efae68e9dad028 3-4,6-8,10-13,17-26,28-32
+packages/core/shared/src/lib/management/workspace/workspace-member.ts
+  s_94864882421579::t_cb8c8047f7c3bc 1-3,6-7,11-18
+packages/web/src/hooks/authorization-hooks.ts
+  s_94864882421579::t_3648dd8b9c3a1e 4,23-28,31
+  s_94864882421579::t_9f7bf365806f81 2-3,7-19,22,29,38-42
+packages/server/api/src/app/database/migration/postgres/1787900000001-CreateAuditEvent.ts
+  s_94864882421579::t_03405449498e1b 1-13,18,20-23,25-27,29-32
+  s_94864882421579::t_735c19c96a12e2 14-17,19,24,28
+packages/web/src/app/components/sidebar/tenant/index.tsx
+  s_94864882421579::t_1484233ab4b69e 2
+  s_94864882421579::t_281c415551152e 155-159
+packages/server/api/src/app/workspace/workspace-member.controller.ts
+  s_94864882421579::t_90a5f854e2817e 8,28,33-37,41,44-47
+  s_94864882421579::t_8db5eed83d63ad 2
+  s_94864882421579::t_8f07fdba8b0cd0 1,3-7,9-27,29-32,38-40,42-43,48-113
+packages/web/i18next-parser.config.js
+  s_e1181beace9da7::t_d24737a4204edf 2
+docs/install/reference/breaking-changes.mdx
+  s_94864882421579::t_1014f5b2ff827c 11-20
+packages/server/api/src/app/trigger/app-event-routing/app-event-routing.module.ts
+  s_e1181beace9da7::t_2b3b1ddc1bc4f8 18-19
+packages/web/src/app/routes/tenant-routes.tsx
+  s_94864882421579::t_c2012ec6f8fdf5 72
+  s_94864882421579::t_85ab0a59e25b02 37
+packages/server/api/src/app/user-invitations/user-invitation.service.ts
+  s_94864882421579::t_1d6c5e6945c0bd 74-78,261-267
+  s_94864882421579::t_a73dbfd1589060 268
+packages/core/shared/package.json
+  s_94864882421579::t_f347367304a2bc 3
+docs/adr/0013-permissions-are-enforced-against-a-workspace-role.md
+  s_94864882421579::t_beea99c6fe29a2 1-48
+brain/knowledge/data-storage-observability/index.md
+  s_94864882421579::t_da5844d5b3ec99 29,31-40
+packages/web/src/app/routes/tenant/audit/index.tsx
+  s_94864882421579::t_c2012ec6f8fdf5 1-2,4-5,7-8,10-12,16,18-63,69,77-78
+  s_94864882421579::t_bca47894c44d90 6,9,13-15,17,64-68,70-76,79-84
+  s_94864882421579::t_28c95e8a8d5229 3
+packages/web/src/app/components/sidebar/dashboard/index.tsx
+  s_94864882421579::t_69a814ae84ec3f 186
+  s_94864882421579::t_91bc584c6399dd 1,43
+packages/server/api/src/app/workspace/workspace-member.repo.ts
+  s_94864882421579::t_86cde20b0f8365 1-4
+packages/server/api/src/app/workspace/workspace.module.ts
+  s_94864882421579::t_71465d93fcd3a7 2,8
+packages/server/api/src/app/database/database-connection.ts
+  s_94864882421579::t_03405449498e1b 46
+  s_94864882421579::t_4230e616d263ad 30,48
+packages/web/src/features/workspace-members/index.ts
+  s_94864882421579::t_3648dd8b9c3a1e 1-2
+packages/web/src/features/audit-events/index.ts
+  s_94864882421579::t_bca47894c44d90 1-2
+packages/server/api/src/app/audit/audit-event.repo.ts
+  s_94864882421579::t_d8a084bd8caad9 1-4
+packages/web/src/features/audit-events/hooks/audit-events-hooks.ts
+  s_94864882421579::t_bca47894c44d90 1-12
+packages/core/utils/src/lib/permission.ts
+  s_94864882421579::t_cb7e7e88115353 1-24,26-64
+packages/server/api/src/app/workspace/workspace-access.ts
+  s_94864882421579::t_50692e0ded1820 1-2,5,8-17,20-21,30,46-48,57,63-70
+  s_94864882421579::t_86cde20b0f8365 82
+packages/server/api/src/app/audit/audit-event.module.ts
+  s_94864882421579::t_03405449498e1b 1-6
+packages/web/src/features/workspace-members/hooks/workspace-members-hooks.ts
+  s_94864882421579::t_3648dd8b9c3a1e 1-16
+packages/server/api/src/app/workspace/workspace-member.service.ts
+  s_94864882421579::t_90a5f854e2817e 47,56
+  s_94864882421579::t_e140f18f1cbf01 1-46,48-55,57-85
+packages/core/utils/src/lib/locale.ts
+  s_e1181beace9da7::t_d24737a4204edf 4
+packages/core/shared/src/lib/governance/audit-events/index.ts
+  s_e1181beace9da7::t_5b2e3fa4786ffd 42-45,330-374,439-441,496-503
+packages/core/shared/src/lib/authentication/authn/access-control-list.ts
+  s_94864882421579::t_cb8c8047f7c3bc 4-47,49-52
+packages/core/shared/test/authentication/access-control-list.test.ts
+  s_94864882421579::t_ba0dfecc42608d 1-62
+bun.lock
+  s_e1181beace9da7::t_b791088884ee55 551,881,2281,2325,2577,2701,2705,2707,3171,3557,3559,3583,3597,3863,3907,3933,3935,3955,4231,4559,4563,4599,4951,5023,5029,5033,5035,5037,5239,5263,6241,6339-6340
+packages/web/public/locales/en/translation.json
+  s_94864882421579::t_f5708109de2405 2411-2417
+packages/web/public/locales/zh/translation.json
+  s_94864882421579::t_094dbdbdefbabd 2313-2319
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "856b378bbb0a1f7dc7d5e53060b4928e835b77a0",
+  "prompts": {},
+  "sessions": {
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    },
+    "s_e1181beace9da7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9bdb89bc-4f4e-4117-a8cb-185f5d94cc3d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

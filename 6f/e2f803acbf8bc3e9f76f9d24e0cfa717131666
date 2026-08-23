@@ -1,0 +1,70 @@
+packages/cli/src/lib/utils/bundle-connector-utils.ts
+  s_94864882421579::t_3332f0b36243f6 1,105,107,121-127
+  s_94864882421579::t_db8f784a5dc39e 128-129
+packages/core/connector-types/src/index.ts
+  s_94864882421579::t_8d435b3fb31d6d 1
+packages/cli/src/lib/commands/validate-connector.ts
+  s_94864882421579::t_c4ed852851bc21 23
+  s_94864882421579::t_48ab40241618ab 1-22,24-51
+packages/cli/src/lib/commands/pack-connector.ts
+  s_94864882421579::t_48ab40241618ab 1-18
+packages/server/api/src/app/connectors/connector-sync-service.ts
+  s_94864882421579::t_d1fc5d0444759f 4,106-107
+packages/core/connector-types/src/lib/connector.ts
+  s_94864882421579::t_468b97cdca154e 11-17
+brain/knowledge/connectors-engine/index.md
+  s_94864882421579::t_3441d5c8e7dd37 41-52
+  s_94864882421579::t_f6a34da4969fc9 30-40
+packages/server/api/src/app/database/migration/postgres/1787900000003-AddConnectorRegistryTrust.ts
+  s_94864882421579::t_7ca966e96a2dde 1-23
+packages/server/api/src/app/database/postgres-connection.ts
+  s_94864882421579::t_7ca966e96a2dde 31
+  s_05019b0fba23d6::t_b15a939a1b2a4f 13
+packages/cli/src/index.ts
+  s_94864882421579::t_48ab40241618ab 10-11,25-26
+packages/cli/src/lib/commands/validate-connector.test.ts
+  s_94864882421579::t_c4ed852851bc21 1-54
+packages/server/api/src/app/connectors/metadata/utils/connector-cache-utils.ts
+  s_94864882421579::t_9f46644d57432d 2,68
+packages/server/api/src/app/connectors/metadata/connector-metadata-entity.ts
+  s_94864882421579::t_7ca966e96a2dde 91-98
+packages/cli/src/lib/utils/connector-manifest.ts
+  s_94864882421579::t_21e18e710f33f8 1-80
+packages/server/api/src/app/connectors/connector-install-service.ts
+  s_94864882421579::t_31f60e05397dc5 22-23
+  s_94864882421579::t_7bbbde70f2d56c 1,4,24,39-40
+packages/server/api/src/app/connectors/metadata/connector-metadata-service.ts
+  s_94864882421579::t_7bbbde70f2d56c 4
+  s_94864882421579::t_8c69e9dd68fe9b 125-126,151-152,548-549
+packages/core/shared/src/lib/automation/connectors/connector.ts
+  s_94864882421579::t_468b97cdca154e 13-19
+packages/connectors/sdk/src/lib/connector-metadata.ts
+  s_94864882421579::t_df1e33eba86cdb 7
+  s_94864882421579::t_142448942b9d07 166-167
+package.json
+  s_94864882421579::t_88d75f910d2d89 35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "6fe2f803acbf8bc3e9f76f9d24e0cfa717131666",
+  "prompts": {},
+  "sessions": {
+    "s_05019b0fba23d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e10c4cdb-7c07-45f3-b342-da41bb100baa",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    },
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

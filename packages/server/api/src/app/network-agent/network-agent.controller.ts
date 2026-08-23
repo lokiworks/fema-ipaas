@@ -1,9 +1,10 @@
 import { SeekPage } from '@fema-ipaas/core-utils'
-import { ApplicationEventName, CreateNetworkAgentRequest, ListNetworkAgentsRequest, NetworkAgent, NetworkAgentIdParams, NetworkAgentWithToken, PrincipalType, UpdateNetworkAgentRequest } from '@fema-ipaas/shared'
+import { ApplicationEventName, CreateNetworkAgentRequest, ListNetworkAgentsRequest, NetworkAgent, NetworkAgentIdParams, NetworkAgentWithToken, PrincipalType, ProxyThroughAgentRequest, UpdateNetworkAgentRequest } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { securityAccess } from '../core/security/authorization/fastify-security'
 import { applicationEvents } from '../helper/application-events'
+import { networkAgentTunnel } from './network-agent-tunnel'
 import { networkAgentService } from './network-agent.service'
 
 export const networkAgentController: FastifyPluginAsyncZod = async (app) => {
@@ -46,6 +47,18 @@ export const networkAgentController: FastifyPluginAsyncZod = async (app) => {
         })
     })
 
+    app.post('/proxy', ProxyRequestConfig, async (request) => {
+        return networkAgentTunnel.proxy({
+            log: request.log,
+            tenantId: request.principal.tenant.id,
+            networkAgentId: request.body.networkAgentId,
+            method: request.body.method,
+            url: request.body.url,
+            headers: request.body.headers,
+            body: request.body.body,
+        })
+    })
+
     app.delete('/:id', GetRequest, async (request, reply) => {
         await networkAgentService(request.log).delete({
             id: request.params.id,
@@ -72,6 +85,13 @@ const CreateRequest = {
 const GetRequest = {
     config: { security: adminOnly },
     schema: { params: NetworkAgentIdParams },
+}
+
+const ProxyRequestConfig = {
+    config: {
+        security: securityAccess.unscoped([PrincipalType.ENGINE, PrincipalType.USER, PrincipalType.SERVICE]),
+    },
+    schema: { body: ProxyThroughAgentRequest },
 }
 
 const UpdateRequest = {

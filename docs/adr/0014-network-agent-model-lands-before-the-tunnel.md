@@ -1,7 +1,7 @@
 ---
 title: Network Agent 的数据模型先落地，隧道后做
 icon: 🛰️
-status: accepted
+status: superseded by 0016-the-network-agent-tunnel-is-an-outbound-socket-with-a-server-side-allowlist
 ---
 
 ## Decision

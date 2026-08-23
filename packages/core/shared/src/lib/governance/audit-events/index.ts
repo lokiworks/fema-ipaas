@@ -43,6 +43,7 @@ export enum ApplicationEventName {
     MEMBER_ADDED = 'member.added',
     MEMBER_REMOVED = 'member.removed',
     NETWORK_AGENT_CREATED = 'network.agent.created',
+    NETWORK_AGENT_REQUEST = 'network.agent.request',
 }
 
 const BaseAuditEventProps = {
@@ -365,6 +366,17 @@ const NetworkAgentEventData = z.object({
     }),
 })
 
+export const NetworkAgentRequestEvent = z.object({
+    ...BaseAuditEventProps,
+    action: z.literal(ApplicationEventName.NETWORK_AGENT_REQUEST),
+    data: z.object({
+        networkAgent: z.object({ id: z.string(), displayName: z.string() }),
+        request: z.object({ method: z.string(), url: z.string() }),
+        response: z.object({ status: z.number(), error: Nullable(z.string()) }),
+    }),
+})
+export type NetworkAgentRequestEvent = z.infer<typeof NetworkAgentRequestEvent>
+
 export const NetworkAgentCreatedEvent = z.object({
     ...BaseAuditEventProps,
     action: z.literal(ApplicationEventName.NETWORK_AGENT_CREATED),
@@ -439,6 +451,7 @@ export const ApplicationEvent = z.union([
     ConnectorPublishedEvent,
     MemberEvent,
     NetworkAgentCreatedEvent,
+    NetworkAgentRequestEvent,
 ])
 
 export type ApplicationEvent = z.infer<typeof ApplicationEvent>
@@ -501,6 +514,8 @@ export function summarizeApplicationEvent(event: ApplicationEvent) {
             return `User ${event.data.member.userId} was removed from the workspace`
         case ApplicationEventName.NETWORK_AGENT_CREATED:
             return `Network agent "${event.data.networkAgent.displayName}" was created`
+        case ApplicationEventName.NETWORK_AGENT_REQUEST:
+            return `${event.data.request.method} ${event.data.request.url} proxied through "${event.data.networkAgent.displayName}" (${event.data.response.status})`
     }
 }
 

@@ -132,7 +132,8 @@
     "packages/connectors/common",
     "packages/connectors/core/*",
     "packages/connectors/community/*",
-    "packages/connectors/custom/*"
+    "packages/connectors/custom/*",
+    "packages/network-agent"
   ],
   "resolutions": {
     "rollup": "npm:@rollup/wasm-node",

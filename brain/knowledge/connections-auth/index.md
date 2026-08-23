@@ -8,15 +8,17 @@ How FEMA Integration Platform stores credentials and authenticates users, across
 
 ### Network Agent
 
-Outbound-tunnel relay for reaching systems inside an enterprise intranet (design doc section 18). **The tunnel is not implemented** — only the data model, the binding on `Connection`, and CRUD exist ([ADR 0014](../../../docs/adr/0014-network-agent-model-lands-before-the-tunnel.md)).
+Reaches systems inside a customer intranet without asking them to open an inbound port (design doc section 18). The agent makes an **outbound** Socket.IO connection to the `/network-agent` namespace, authenticating with its token; the server dispatches proxy requests down that connection and the agent performs the real HTTP inside the network. See [ADR 0016](../../../docs/adr/0016-the-network-agent-tunnel-is-an-outbound-socket-with-a-server-side-allowlist.md), which supersedes 0014.
 
-- **Where**: `packages/server/api/src/app/network-agent`, table `network_agent`, binding column `connection.networkAgentId` (nullable, currently read by nothing).
-- Creating an agent returns a one-time token; only its HMAC is stored (`tokenHash` via `encryptUtils.hmacString`). The token is never retrievable again.
+- **Where**: `packages/server/api/src/app/network-agent` (tunnel, allowlist, service, controller), `packages/network-agent` (the agent binary, `fema-network-agent`).
+- Connecting sets `status` ONLINE and refreshes `lastSeenAt`; disconnecting sets OFFLINE. Heartbeat every 30s.
 
 - **Gotchas**:
-  - `status` stays `PENDING` forever and `lastSeenAt` stays `null` until the tunnel lands. Do not surface `PENDING` as a fault.
-  - `hostAllowlist` / `cidrAllowlist` are **stored but not enforced**. Nothing reads them yet, so do not describe them as network isolation in UI copy or docs.
-  - The model shipped early on purpose: adding a binding column to `connection` after production data exists would be a backfilling migration, whereas a nullable column now is free. That is what section 18 means by "reserve the schema from day one".
+  - **The allowlist is enforced on the server, before dispatch — never on the agent.** The agent runs on the customer's machines and can be patched or replaced; putting access control there would hand the "which internal addresses are reachable" decision to the side being controlled. The agent is a dumb pipe that only ever receives already-approved requests.
+  - **An empty allowlist denies everything.** A freshly created agent has authorised no targets, not all of them. Defaulting to allow would turn "forgot to configure the scope" into silent whole-network reach.
+  - The agent package deliberately does **not** depend on `@fema-ipaas/shared` and declares its own copy of the wire contract. It is a binary installed inside a customer network, and shared carries DB schemas and heavy deps irrelevant to forwarding one HTTP call. The two contract files are a protocol pair and must change together — changing one alone shows up at runtime as an event name that never matches and a request that silently never answers.
+  - Proxy requests time out after 30s rather than hanging on an agent that has gone away.
+  - **Not wired yet**: a Connection bound to an agent does not automatically route through the tunnel. `POST /v1/network-agents/proxy` works, but connector outbound HTTP still goes direct through `safeHttp`. Connecting them means changing the connector HTTP path.
 
 ### Encryption at Rest & Key Rotation
 

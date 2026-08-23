@@ -6,7 +6,7 @@ import fastifyMultipart from '@fastify/multipart'
 import fastifyStatic from '@fastify/static'
 import { apId, spreadIfDefined } from '@fema-ipaas/core-utils'
 import { apLogger, evlogFastify, useWideEventLogger, wideEvent } from '@fema-ipaas/server-utils'
-import { ApEnvironment, maxSocketHttpBufferSizeBytes } from '@fema-ipaas/shared'
+import { ApEnvironment, maxSocketHttpBufferSizeBytes, NETWORK_AGENT_NAMESPACE } from '@fema-ipaas/shared'
 import fastify, { FastifyInstance } from 'fastify'
 import { fastifyRawBody } from 'fastify-raw-body'
 import fastifySocketIO from 'fastify-socket'
@@ -22,6 +22,7 @@ import { exceptionHandler } from './helper/exception-handler'
 import { rejectedPromiseHandler } from './helper/promise-handler'
 import { system } from './helper/system/system'
 import { AppSystemProp } from './helper/system/system-props'
+import { networkAgentTunnel } from './network-agent/network-agent-tunnel'
 
 
 export let app: FastifyInstance | undefined = undefined
@@ -56,6 +57,11 @@ export const setupServer = async (): Promise<FastifyInstance> => {
                 .catch(() => next(new Error('Authentication error')))
         })
         app.io.on('connection', (socket: Socket) => rejectedPromiseHandler(websocketService.init(socket, app!.log), app!.log))
+        // Agents live on their own namespace: they authenticate with an agent token, not a user or
+        // worker principal, so they must not pass through the principal middleware above.
+        app.io.of(NETWORK_AGENT_NAMESPACE).on('connection', (socket: Socket) =>
+            rejectedPromiseHandler(networkAgentTunnel.onConnection(socket, app!.log), app!.log),
+        )
     }
 
     if (system.isApp()) {

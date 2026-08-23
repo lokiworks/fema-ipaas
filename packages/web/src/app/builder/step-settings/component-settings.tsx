@@ -11,7 +11,8 @@ import { useStepSettingsContext } from './step-settings-context';
 
 const ComponentSettings = React.memo(
   ({ step, readonly }: ComponentSettingsProps) => {
-    const { selectedStep } = useStepSettingsContext();
+    const { selectedStep, updateFormSchema, updatePropertySettingsSchema } =
+      useStepSettingsContext();
     const { data: components, isLoading } = componentsHooks.useComponents();
 
     const component = components?.find(
@@ -42,7 +43,13 @@ const ComponentSettings = React.memo(
             propertySettings={selectedStep.settings.propertySettings}
             disabled={readonly}
             useMentionTextInput={true}
-            dynamicPropsInfo={null}
+            dynamicPropsInfo={{
+              componentType: component.type,
+              actionOrTriggerName: component.type,
+              placedInside: 'stepSettings',
+              updateFormSchema,
+              updatePropertySettingsSchema,
+            }}
           />
         )}
         <ActionErrorHandlingForm

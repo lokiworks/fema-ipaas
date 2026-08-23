@@ -99,7 +99,8 @@ export type ExecuteActionOperation = BaseEngineOperation & {
 }
 
 export type ExecutePropsOptions = BaseEngineOperation & {
-    connector: ConnectorPackage
+    connector?: ConnectorPackage
+    componentType?: string
     propertyName: string
     actionOrTriggerName: string
     workflowVersion?: WorkflowVersion

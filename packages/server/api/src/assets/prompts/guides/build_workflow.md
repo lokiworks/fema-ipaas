@@ -60,8 +60,8 @@ FEMA Integration Platform ships connectors that need no external app or connecti
 | "save/track data here" | `@fema-ipaas/connector-tables` | built-in database — `ap_load_guide('tables')` |
 | "remember/count/dedup" | `@fema-ipaas/connector-store` | key-value store — `ap_load_guide('state')` |
 | "ask AI/classify/extract" | `@fema-ipaas/connector-ai` | native AI — use this, never the OpenAI/vendor connector — `ap_load_guide('ai')` |
-| "human sign-off" | `@fema-ipaas/connector-approval` | pause for approve/reject |
-| "wait/pause" | `@fema-ipaas/connector-delay` | delay step |
+| "human sign-off" | core component `human/approval` | pause for approve/reject |
+| "wait/pause" | core component `runtime/delay` | delay step |
 | "split big work" | `@fema-ipaas/connector-subflows` | call another workflow |
 
 ## CODE is the last resort — use inline expressions & conditions first

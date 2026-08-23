@@ -143,7 +143,13 @@ const baseConnectorsController: FastifyPluginAsyncZod = async (app) => {
                 input: req.body.input,
                 sampleData,
                 searchValue: req.body.searchValue,
-                connector: await getConnectorPackageWithoutArchive(req.log, tenant.id, req.body),
+                componentType: req.body.componentType,
+                connector: isNil(req.body.componentType) && !isNil(req.body.connectorName) && !isNil(req.body.connectorVersion)
+                    ? await getConnectorPackageWithoutArchive(req.log, tenant.id, {
+                        connectorName: req.body.connectorName,
+                        connectorVersion: req.body.connectorVersion,
+                    })
+                    : undefined,
             }, req.log)
             return response
         },

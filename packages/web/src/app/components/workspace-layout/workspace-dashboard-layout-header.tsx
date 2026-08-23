@@ -104,7 +104,7 @@ export const WorkspaceDashboardLayoutHeader = () => {
       show: true,
     },
     {
-      to: '/tenant/setup/connectors',
+      to: '/tenant/connectors',
       label: t('Connectors'),
       icon: PuzzleIcon,
       hasPermission: true,

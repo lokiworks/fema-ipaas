@@ -80,8 +80,9 @@ export type GetConnectorRequestQuery = z.infer<typeof GetConnectorRequestQuery>
 
 export const ConnectorOptionRequest = z.object({
     workspaceId: z.string(),
-    connectorName: z.string(),
-    connectorVersion: VersionType,
+    connectorName: z.string().optional(),
+    connectorVersion: z.optional(VersionType),
+    componentType: z.string().optional(),
     actionOrTriggerName: z.string(),
     propertyName: z.string(),
     workflowId: z.string(),

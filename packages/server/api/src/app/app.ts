@@ -21,6 +21,7 @@ import { connectorSyncService } from './connectors/connector-sync-service'
 import { startDevConnectorWatcher } from './connectors/dev-connector-watcher'
 import { connectorModule } from './connectors/metadata/connector-metadata-controller'
 import { connectorMetadataService } from './connectors/metadata/connector-metadata-service'
+import { openApiImportModule } from './connectors/openapi/openapi-import.module'
 import { collaborativeModule } from './core/collaborative/collaborative.module'
 import { encryptionModule } from './core/security/encryption/encryption.module'
 import { oidcModule } from './core/security/oidc/oidc.module'
@@ -159,6 +160,7 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     await app.register(auditEventModule)
     await app.register(encryptionModule)
     await app.register(networkAgentModule)
+    await app.register(openApiImportModule)
     registerAuditEventListener(app.log)
     await app.register(communityConnectorsModule)
     await app.register(collaborativeModule)

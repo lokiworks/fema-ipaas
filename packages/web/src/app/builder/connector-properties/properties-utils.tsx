@@ -247,6 +247,7 @@ export const selectGenericFormComponentForProperty = ({
               actionOrTriggerName={dynamicPropsInfo.actionOrTriggerName}
               connectorName={dynamicPropsInfo.connectorName}
               connectorVersion={dynamicPropsInfo.connectorVersion}
+              componentType={dynamicPropsInfo.componentType}
               form={form}
               placedInside={dynamicPropsInfo.placedInside}
               onChange={field.onChange}
@@ -381,6 +382,7 @@ export const selectGenericFormComponentForProperty = ({
           disabled={disabled}
           connectorName={dynamicPropsInfo.connectorName}
           connectorVersion={dynamicPropsInfo.connectorVersion}
+          componentType={dynamicPropsInfo.componentType}
           actionOrTriggerName={dynamicPropsInfo.actionOrTriggerName}
           placedInside={dynamicPropsInfo.placedInside}
           propertySettings={propertySettings}
@@ -442,8 +444,9 @@ export type SelectGenericFormComponentForPropertyParams = {
   enableMarkdownForInputWithMention?: boolean;
   dynamicPropsInfo:
     | ({
-        connectorName: string;
-        connectorVersion: string;
+        connectorName?: string;
+        connectorVersion?: string;
+        componentType?: string;
         actionOrTriggerName: string;
       } & (
         | {

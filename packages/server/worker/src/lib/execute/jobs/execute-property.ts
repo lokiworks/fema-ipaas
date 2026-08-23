@@ -1,4 +1,4 @@
-import { tryCatch } from '@fema-ipaas/core-utils'
+import { isNil, tryCatch } from '@fema-ipaas/core-utils'
 import { EngineOperationType, EngineResponseStatus, ExecutePropertyJobData, WorkerJobType } from '@fema-ipaas/shared'
 import { workerSettings } from '../../config/worker-settings'
 import { JobContext, JobHandler, JobResultKind, SynchronousJobResult } from '../types'
@@ -10,7 +10,12 @@ export const executePropertyJob: JobHandler<ExecutePropertyJobData, SynchronousJ
     async execute(ctx: JobContext, data: ExecutePropertyJobData): Promise<SynchronousJobResult> {
         const timeoutInSeconds = workerSettings.getSettings().TRIGGER_TIMEOUT_SECONDS
 
-        const resolved = await ctx.resolver.resolve({ tenantId: data.tenantId, publicApiUrl: ctx.publicApiUrl, engineToken: ctx.engineToken, connectors: [data.connector] })
+        const resolved = await ctx.resolver.resolve({
+            tenantId: data.tenantId,
+            publicApiUrl: ctx.publicApiUrl,
+            engineToken: ctx.engineToken,
+            connectors: isNil(data.connector) ? [] : [data.connector],
+        })
         if (resolved.kind !== 'ready') {
             throw new Error(`Unexpected resolve outcome "${resolved.kind}" for connector-only job`)
         }
@@ -22,6 +27,7 @@ export const executePropertyJob: JobHandler<ExecutePropertyJobData, SynchronousJ
                 operationType: EngineOperationType.EXECUTE_PROPERTY,
                 operation: {
                     connector: data.connector,
+                    componentType: data.componentType,
                     propertyName: data.propertyName,
                     actionOrTriggerName: data.actionOrTriggerName,
                     workflowVersion: data.workflowVersion,

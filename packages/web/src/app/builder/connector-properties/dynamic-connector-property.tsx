@@ -141,6 +141,7 @@ const DynamicPropertiesImplementation = React.memo(
             workspaceId: authenticationSession.getWorkspaceId()!,
             connectorName: props.connectorName,
             connectorVersion: props.connectorVersion,
+            componentType: props.componentType,
             propertyName: props.propertyName,
             actionOrTriggerName: props.actionOrTriggerName,
             input: refresherValues,
@@ -239,8 +240,9 @@ const prependPrefixToPropertyName = ({
 type DynamicPropertiesProps = {
   refreshers: string[];
   propertyName: string;
-  connectorName: string;
-  connectorVersion: string;
+  connectorName?: string;
+  connectorVersion?: string;
+  componentType?: string;
   actionOrTriggerName: string;
   disabled: boolean;
   placedInside: 'stepSettings' | 'predefinedAgentInputs';

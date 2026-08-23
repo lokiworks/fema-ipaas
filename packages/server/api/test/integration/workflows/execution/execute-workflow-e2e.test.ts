@@ -856,7 +856,7 @@ describe('Execute Workflow E2E', () => {
             connectorType: ConnectorType.OFFICIAL,
         })
         const delayConnector = createMockConnectorMetadata({
-            name: '@fema-ipaas/connector-delay',
+            name: '@fema-ipaas/connector-webhook',
             version: '0.3.26',
             tenantId: undefined,
             packageType: PackageType.REGISTRY,
@@ -887,7 +887,7 @@ describe('Execute Workflow E2E', () => {
             displayName: 'Delay For',
             valid: true,
             settings: {
-                connectorName: '@fema-ipaas/connector-delay',
+                connectorName: '@fema-ipaas/connector-webhook',
                 connectorVersion: '0.3.26',
                 actionName: 'delayFor',
                 input: {
@@ -959,7 +959,7 @@ describe('Execute Workflow E2E', () => {
             connectorType: ConnectorType.OFFICIAL,
         })
         const delayConnector = createMockConnectorMetadata({
-            name: '@fema-ipaas/connector-delay',
+            name: '@fema-ipaas/connector-webhook',
             version: '0.3.26',
             tenantId: undefined,
             packageType: PackageType.REGISTRY,
@@ -993,7 +993,7 @@ describe('Execute Workflow E2E', () => {
             displayName: 'Delay For',
             valid: true,
             settings: {
-                connectorName: '@fema-ipaas/connector-delay',
+                connectorName: '@fema-ipaas/connector-webhook',
                 connectorVersion: '0.3.26',
                 actionName: 'delayFor',
                 input: {

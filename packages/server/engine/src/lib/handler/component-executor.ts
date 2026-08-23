@@ -3,6 +3,8 @@ import { componentRegistry } from '@fema-ipaas/components'
 import { InputPropertyMap, StaticPropsValue } from '@fema-ipaas/connector-sdk'
 import { ApplicationError, ErrorCode, isNil } from '@fema-ipaas/core-utils'
 import { ComponentAction, ExecutionStatus, ExecutionType, GenericStepOutput, StepOutputStatus, WorkflowActionType } from '@fema-ipaas/shared'
+import { createContextStore } from '../connector-context/store'
+import { createWorkflowsContext } from '../connector-context/workflows'
 import { buildRunContext } from '../core/run-context'
 import { continueIfFailureHandler, runWithExponentialBackoff } from '../helper/error-handling'
 import { executionProgressReporter } from '../helper/execution-progress-reporter'
@@ -70,6 +72,18 @@ const executeAction: ActionHandler<ComponentAction> = async ({ action, execution
                 apiUrl: constants.internalApiUrl,
                 publicUrl: constants.publicApiUrl,
             },
+            store: createContextStore({
+                apiUrl: constants.internalApiUrl,
+                prefix: '',
+                workflowId: constants.workflowId,
+                engineToken: constants.engineToken,
+            }),
+            workflows: createWorkflowsContext({
+                engineToken: constants.engineToken,
+                internalApiUrl: constants.internalApiUrl,
+                workflowId: constants.workflowId,
+                workflowVersionId: constants.workflowVersionId,
+            }),
             workspaceId: constants.workspaceId,
             tenantId: constants.tenantId,
             step: { name: action.name, displayName: action.displayName },

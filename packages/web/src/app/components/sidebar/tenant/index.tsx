@@ -1,5 +1,5 @@
 import { t } from 'i18next';
-import { ScrollTextIcon } from 'lucide-react';
+import { ScrollTextIcon, TerminalIcon } from 'lucide-react';
 import { ComponentType, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -142,6 +142,21 @@ export function TenantSidebar() {
           to: '/tenant/connections',
           label: t('Connections'),
           icon: UnplugIcon,
+        },
+        {
+          to: '/tenant/connectors',
+          label: t('Connector Marketplace'),
+          icon: PuzzleIcon,
+        },
+        {
+          to: '/tenant/connectors/development',
+          label: t('Connector Development'),
+          icon: TerminalIcon,
+        },
+        {
+          to: '/tenant/connectors/openapi',
+          label: t('Import from OpenAPI'),
+          icon: FileJson2Icon,
         },
       ],
     },

@@ -1,5 +1,5 @@
 export * from './lib/component'
 export * from './lib/component-context'
 export * from './lib/component-registry'
-export { ExecutionType, Property } from '@fema-ipaas/connector-sdk'
-export type { InputPropertyMap, OutputSchema, RunContext, ServerContext, StaticPropsValue, StoreScope } from '@fema-ipaas/connector-sdk'
+export { ConnectorAuth, ExecutionType, Property, StoreScope } from '@fema-ipaas/connector-sdk'
+export type { InputPropertyMap, OutputSchema, RunContext, ServerContext, StaticPropsValue, Store, WorkflowsContext } from '@fema-ipaas/connector-sdk'

@@ -104,28 +104,24 @@ function makeWorkflowVersionWithTwoApprovals(): WorkflowVersion {
     const step2: WorkflowAction = {
         name: 'step_2',
         displayName: 'Step 2 — Wait for Approval',
-        type: WorkflowActionType.CONNECTOR,
+        type: WorkflowActionType.COMPONENT,
         skip: false,
         valid: true,
         settings: {
             input: {},
-            connectorName: '@fema-ipaas/connector-approval',
-            connectorVersion: '1.0.0',
-            actionName: 'wait_for_approval',
+            componentType: 'human/approval',
             propertySettings: {},
         },
     }
     const step1: WorkflowAction = {
         name: 'step_1',
         displayName: 'Step 1 — Wait for Approval',
-        type: WorkflowActionType.CONNECTOR,
+        type: WorkflowActionType.COMPONENT,
         skip: false,
         valid: true,
         settings: {
             input: {},
-            connectorName: '@fema-ipaas/connector-approval',
-            connectorVersion: '1.0.0',
-            actionName: 'wait_for_approval',
+            componentType: 'human/approval',
             propertySettings: {},
             errorHandlingOptions: {
                 continueOnFailure: { value: true },
@@ -354,7 +350,7 @@ describe('workflow operation invariants', () => {
             await workflowOperation.execute(operation)
 
             // step_1 (FAILED) was dropped because resumeReason=RETRY → engine replayed it from
-            // BEGIN, which creates a waitpoint via the approval connector.
+            // BEGIN, which creates a waitpoint via the approval component.
             expect(engineApi.requestsFor('/v1/waitpoints').length).toBeGreaterThan(0)
         })
 

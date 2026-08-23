@@ -79,6 +79,7 @@ const DynamicDropdownConnectorPropertyImplementation = React.memo(
             workspaceId: authenticationSession.getWorkspaceId()!,
             connectorName: props.connectorName,
             connectorVersion: props.connectorVersion,
+            componentType: props.componentType,
             propertyName: props.propertyName,
             actionOrTriggerName: props.actionOrTriggerName,
             input,
@@ -181,8 +182,9 @@ type DynamicDropdownProps = {
   showDeselect?: boolean;
   shouldRefreshOnSearch?: boolean;
   actionOrTriggerName: string;
-  connectorName: string;
-  connectorVersion: string;
+  connectorName?: string;
+  connectorVersion?: string;
+  componentType?: string;
   form: UseFormReturn;
   placedInside: 'stepSettings' | 'predefinedAgentInputs';
 };

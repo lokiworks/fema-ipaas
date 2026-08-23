@@ -27,6 +27,19 @@ Platform-owned flow logic nodes (Branch, Loop, Delay, Code, Stop, Approval) — 
   - Adding a `WorkflowActionType` means touching more than `getExecutors()`: `test-execution-context.ts` (sample-data seeding for downstream step tests) and `workflow-version-validator-util.ts` (the `valid` flag, twice — ADD_ACTION and UPDATE_ACTION) both switch on it. The `switch-exhaustiveness-check` lint rule catches these; `turbo build` does not, because the engine is esbuild-only.
   - `@fema-ipaas/components` is a **built dist** dependency of the engine and api. After adding a component, `turbo run build --filter=@fema-ipaas/components` before running engine tests, or the registry lookup silently misses it.
 
+### OpenAPI Import
+
+Turns an OpenAPI 3 or Swagger 2 document into a connector package (design doc section 24). Two tenant-admin endpoints under `/v1/connectors/openapi`: `parse` reads servers, security schemes and operations; `generate` emits the package files for the operations the user selected.
+
+- **Where**: `packages/server/api/src/app/connectors/openapi` (`openapi-parser.ts`, `openapi-connector-generator.ts`), UI at `/tenant/connectors/openapi`.
+- Path-level `parameters` are merged into every operation on that path, and a missing `operationId` is synthesised from method + path — both are common in hand-written specs.
+
+- **Gotchas**:
+  - The output is **source files, not an installed connector**. The user saves them under `packages/connectors` and runs `fema connectors validate` then `publish`. There is no path from the browser straight into the registry, deliberately: generated code should pass review and the validate rules before it runs.
+  - JSON only. YAML specs must be converted first; the endpoint returns a clear validation error rather than guessing.
+  - The generator emits `Property.ShortText` for every parameter regardless of the declared schema type. Numbers, enums and nested bodies come through as text and need hand-editing — the generated connector is a starting point, not a finished one.
+  - Only the **first** server and the **first** security scheme are used. Multi-server or multi-auth specs need manual adjustment.
+
 ### Connector CLI
 
 `packages/cli` — `connectors create | validate | pack | build | bundle | publish | sync | migrate`, plus `actions create` and `triggers create` (design doc section 38).

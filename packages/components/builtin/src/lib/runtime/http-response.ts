@@ -1,4 +1,4 @@
-import { createComponent, FlowComponentCategory, Property } from '@fema-ipaas/component-sdk'
+import { ConnectorAuth, createComponent, FlowComponentCategory, InputPropertyMap, Property } from '@fema-ipaas/component-sdk'
 
 export const httpResponseComponent = createComponent({
     type: 'runtime/http-response',
@@ -19,20 +19,38 @@ export const httpResponseComponent = createComponent({
                 ],
             },
         }),
-        body: Property.Json({
-            displayName: 'Body',
-            description: 'The JSON body, the raw body, or the redirect URL depending on the response type',
+        fields: Property.DynamicProperties({
+            auth: ConnectorAuth.None(),
+            displayName: 'Response',
             required: true,
-        }),
-        status: Property.Number({
-            displayName: 'Status',
-            description: 'Ignored for a redirect, which always answers 301',
-            required: false,
-            defaultValue: 200,
-        }),
-        headers: Property.Object({
-            displayName: 'Headers',
-            required: false,
+            refreshers: ['responseType'],
+            props: async ({ responseType }): Promise<InputPropertyMap> => {
+                if (!responseType) {
+                    return {}
+                }
+                if (responseType === 'redirect') {
+                    return {
+                        body: Property.ShortText({
+                            displayName: 'Redirect URL',
+                            required: true,
+                        }),
+                    }
+                }
+                return {
+                    status: Property.Number({
+                        displayName: 'Status',
+                        required: false,
+                        defaultValue: HTTP_STATUS_OK,
+                    }),
+                    headers: Property.Object({
+                        displayName: 'Headers',
+                        required: false,
+                    }),
+                    body: responseType === 'json'
+                        ? Property.Json({ displayName: 'JSON Body', required: true })
+                        : Property.LongText({ displayName: 'Raw Body', required: true }),
+                }
+            },
         }),
         afterResponding: Property.StaticDropdown({
             displayName: 'After Responding',
@@ -47,8 +65,14 @@ export const httpResponseComponent = createComponent({
         }),
     },
     async run(context) {
-        const { responseType, body, status, headers, afterResponding } = context.input
-        const response = buildResponse({ responseType: String(responseType), body, status, headers })
+        const { responseType, fields, afterResponding } = context.input
+        const values = isRecord(fields) ? fields : {}
+        const response = buildResponse({
+            responseType: String(responseType),
+            body: values['body'],
+            status: values['status'],
+            headers: values['headers'],
+        })
         if (afterResponding === 'continue') {
             context.run.respond({ response })
         }
@@ -105,10 +129,14 @@ function toStatus(status: unknown): number {
 }
 
 function toHeaders(headers: unknown): Record<string, string> {
-    if (typeof headers !== 'object' || headers === null || Array.isArray(headers)) {
+    if (!isRecord(headers)) {
         return {}
     }
     return Object.fromEntries(Object.entries(headers).map(([key, value]) => [key, String(value)]))
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 const HTTP_STATUS_OK = 200

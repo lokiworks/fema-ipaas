@@ -2,7 +2,7 @@ import { ExecutionStatus } from '@fema-ipaas/shared'
 import { WorkflowExecutorContext } from '../../src/lib/handler/context/workflow-execution-context'
 import { workflowExecutor } from '../../src/lib/handler/workflow-executor'
 import { EngineApiStub, startEngineApiStub } from '../helpers/engine-api-stub'
-import { buildCodeAction, buildConnectorAction, generateMockEngineConstants } from './test-helper'
+import { buildCodeAction, buildComponentAction, generateMockEngineConstants } from './test-helper'
 
 const WAITPOINT_PATH = '/v1/waitpoints'
 
@@ -20,13 +20,12 @@ describe('workflow with delay', () => {
     })
 
     it('delay-for pauses workflow and calls waitpointClient.create with DELAY type', async () => {
-        const delayForWorkflow = buildConnectorAction({
+        const delayForWorkflow = buildComponentAction({
             name: 'delay_step',
-            connectorName: '@fema-ipaas/connector-delay',
-            actionName: 'delayFor',
+            componentType: 'runtime/delay',
             input: {
                 unit: 'seconds',
-                delayFor: 60,
+                amount: 60,
             },
             nextAction: buildCodeAction({
                 name: 'echo_step',
@@ -52,13 +51,12 @@ describe('workflow with delay', () => {
     })
 
     it('delay-for resumes successfully after pause', async () => {
-        const delayForWorkflow = buildConnectorAction({
+        const delayForWorkflow = buildComponentAction({
             name: 'delay_step',
-            connectorName: '@fema-ipaas/connector-delay',
-            actionName: 'delayFor',
+            componentType: 'runtime/delay',
             input: {
                 unit: 'seconds',
-                delayFor: 60,
+                amount: 60,
             },
             nextAction: buildCodeAction({
                 name: 'echo_step',
@@ -91,18 +89,17 @@ describe('workflow with delay', () => {
             status: ExecutionStatus.RUNNING,
         })
         expect(resumeResult.steps.delay_step.output).toEqual(
-            expect.objectContaining({ success: true }),
+            expect.objectContaining({ resumed: true }),
         )
     })
 
     it('delay-for uses setTimeout for short delays without pausing', async () => {
-        const shortDelayWorkflow = buildConnectorAction({
+        const shortDelayWorkflow = buildComponentAction({
             name: 'delay_step',
-            connectorName: '@fema-ipaas/connector-delay',
-            actionName: 'delayFor',
+            componentType: 'runtime/delay',
             input: {
                 unit: 'seconds',
-                delayFor: 1,
+                amount: 1,
             },
         })
 
@@ -120,12 +117,11 @@ describe('workflow with delay', () => {
 
     it('delay-until pauses workflow for future dates', async () => {
         const futureDate = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()
-        const delayUntilWorkflow = buildConnectorAction({
+        const delayUntilWorkflow = buildComponentAction({
             name: 'delay_step',
-            connectorName: '@fema-ipaas/connector-delay',
-            actionName: 'delay_until',
+            componentType: 'runtime/delay-until',
             input: {
-                delayUntilTimestamp: futureDate,
+                timestamp: futureDate,
             },
             nextAction: buildCodeAction({
                 name: 'echo_step',
@@ -152,12 +148,11 @@ describe('workflow with delay', () => {
 
     it('delay-until completes immediately for past dates', async () => {
         const pastDate = new Date(Date.now() - 60 * 1000).toISOString()
-        const delayUntilWorkflow = buildConnectorAction({
+        const delayUntilWorkflow = buildComponentAction({
             name: 'delay_step',
-            connectorName: '@fema-ipaas/connector-delay',
-            actionName: 'delay_until',
+            componentType: 'runtime/delay-until',
             input: {
-                delayUntilTimestamp: pastDate,
+                timestamp: pastDate,
             },
         })
 

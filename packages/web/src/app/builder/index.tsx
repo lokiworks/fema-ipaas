@@ -27,6 +27,7 @@ import { useElementSize } from '@/hooks/use-element-size';
 import { cn } from '@/lib/utils';
 
 import { BuilderHeader } from './builder-header/builder-header';
+import { NodePalette } from './node-palette';
 import { RunsList } from './run-list';
 import { CursorPositionProvider } from './state/cursor-position-context';
 import { StepSettingsContainer } from './step-settings';
@@ -156,6 +157,7 @@ const BuilderPage = () => {
         <BuilderHeader />
       </div>
       <ResizablePanelGroup orientation="horizontal">
+        <NodePalette />
         <ResizablePanel defaultSize="100%" id="workflow-canvas">
           <div ref={middlePanelRef} className="relative h-full w-full">
             <CursorPositionProvider>

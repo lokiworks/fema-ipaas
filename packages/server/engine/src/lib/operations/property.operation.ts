@@ -1,3 +1,4 @@
+import { componentRegistry } from '@fema-ipaas/components'
 import { ConnectorPropertyMap, DropdownState, ExecutePropsResult, InputPropertyMap, PropertyType, StaticPropsValue } from '@fema-ipaas/connector-sdk'
 import { isNil, isObject } from '@fema-ipaas/core-utils'
 import {
@@ -26,14 +27,21 @@ export const propertyOperation = {
 }
 
 async function executeProps(operation: ExecutePropsOptions): Promise<ExecutePropsResult<ExecutablePropertyType>> {
+    if (!isNil(operation.componentType)) {
+        return executeComponentProps(operation, operation.componentType)
+    }
+    if (isNil(operation.connector)) {
+        throw new EngineGenericError('PropertySourceMissingError', 'executeProps needs either a connector or a componentType')
+    }
+    const connectorPackage = operation.connector
     const constants = EngineConstants.fromExecutePropertyInput({
         ...operation,
-        connectorName: operation.connector.connectorName,
-        connectorVersion: operation.connector.connectorVersion,
+        connectorName: connectorPackage.connectorName,
+        connectorVersion: connectorPackage.connectorVersion,
     })
     const connector = {
-        connectorName: operation.connector.connectorName,
-        connectorVersion: operation.connector.connectorVersion,
+        connectorName: connectorPackage.connectorName,
+        connectorVersion: connectorPackage.connectorVersion,
         devConnectors: EngineConstants.DEV_CONNECTORS,
     }
     const description = await connectorRunner.describe(connector)
@@ -89,6 +97,73 @@ async function executeProps(operation: ExecutePropsOptions): Promise<ExecuteProp
     return toPropsResult({ propertyType, result })
 }
 
+async function executeComponentProps(operation: ExecutePropsOptions, componentType: string): Promise<ExecutePropsResult<ExecutablePropertyType>> {
+    const component = componentRegistry.get(componentType)
+    if (isNil(component)) {
+        throw new EngineGenericError('ComponentNotFoundError', `Flow component not found, componentType=${componentType}`)
+    }
+    const property = component.props[operation.propertyName]
+    if (isNil(property)) {
+        throw new EngineGenericError('PropertyNotFoundError', `Property not found: ${componentType}.${operation.propertyName}`)
+    }
+    if (!isExecutableProperty(property)) {
+        throw new EngineGenericError('PropertyTypeNotExecutableError', `Property type is not executable: ${property.type} for ${property.displayName}`)
+    }
+
+    const constants = EngineConstants.fromExecutePropertyInput({
+        ...operation,
+        connectorName: componentType,
+        connectorVersion: '0.0.0',
+    })
+    const { data: result, error } = await utils.tryCatchAndThrowOnEngineError(async () => {
+        const executionState = await testExecutionContext.stateFromWorkflowVersion({
+            apiUrl: operation.internalApiUrl,
+            workflowVersion: operation.workflowVersion,
+            workspaceId: operation.workspaceId,
+            engineToken: operation.engineToken,
+            sampleData: operation.sampleData,
+            engineConstants: constants,
+        })
+        const { resolvedInput } = await createPropsResolver({
+            apiUrl: constants.internalApiUrl,
+            workspaceId: constants.workspaceId,
+            engineToken: constants.engineToken,
+            contextVersion: undefined,
+            stepNames: constants.stepNames,
+        }).resolve<StaticPropsValue<ConnectorPropertyMap>>({
+            unresolvedInput: operation.input,
+            executionState,
+        })
+        const executable = property.type === PropertyType.DYNAMIC ? property.props : property.options
+        return executable(resolvedInput, {
+            searchValue: operation.searchValue,
+            server: {
+                token: constants.engineToken,
+                apiUrl: constants.internalApiUrl,
+                publicUrl: constants.publicApiUrl,
+            },
+        })
+    })
+
+    if (error) {
+        return {
+            type: property.type,
+            options: {
+                disabled: true,
+                options: [],
+                placeholder: 'Throws an error, reconnect or refresh the page',
+            },
+        }
+    }
+    return toPropsResult({ propertyType: property.type, result })
+}
+
+function isExecutableProperty(property: { type: PropertyType }): property is ExecutableProperty {
+    return property.type === PropertyType.DROPDOWN
+        || property.type === PropertyType.MULTI_SELECT_DROPDOWN
+        || property.type === PropertyType.DYNAMIC
+}
+
 function resolvePropertyPath({ description, operation }: ResolvePropertyPathParams): { propertyType: ExecutablePropertyType, path: string[] } {
     const { actionOrTriggerName, propertyName } = operation
     const root = isNil(description.metadata.actions[actionOrTriggerName]) ? 'triggers' : 'actions'
@@ -131,6 +206,18 @@ const DynamicProps = z.custom<InputPropertyMap>((value) => isObject(value))
 const DropdownResult = z.custom<DropdownState<unknown>>((value) => isObject(value) && Array.isArray(Reflect.get(value, 'options')))
 
 type ExecutablePropertyType = PropertyType.DROPDOWN | PropertyType.MULTI_SELECT_DROPDOWN | PropertyType.DYNAMIC
+
+type ExecutableProperty = {
+    type: ExecutablePropertyType
+    displayName: string
+} & ({ type: PropertyType.DYNAMIC, props: PropertyExecutor } | { type: PropertyType.DROPDOWN | PropertyType.MULTI_SELECT_DROPDOWN, options: PropertyExecutor })
+
+type PropertyExecutor = (propsValue: StaticPropsValue<ConnectorPropertyMap>, context: PropertyExecutorContext) => Promise<unknown>
+
+type PropertyExecutorContext = {
+    searchValue?: string
+    server: { token: string, apiUrl: string, publicUrl: string }
+}
 
 type ResolvePropertyPathParams = {
     description: ConnectorDescription

@@ -35,6 +35,12 @@ const TenantTemplatesPage = React.lazy(() =>
 );
 const UsersPage = React.lazy(() => import('./tenant/users'));
 const AuditLogPage = React.lazy(() => import('./tenant/audit'));
+const ConnectorMarketplacePage = React.lazy(
+  () => import('./tenant/connectors/marketplace'),
+);
+const ConnectorDevelopmentPage = React.lazy(
+  () => import('./tenant/connectors/development'),
+);
 const TenantConnectionsPage = React.lazy(() => import('./tenant/connections'));
 
 function SuspenseWrapper({ children }: { children: React.ReactNode }) {
@@ -83,6 +89,16 @@ export const tenantRoutes = [
   },
   tenantRoute('/tenant/setup/general', 'General', GeneralPage),
   tenantRoute('/tenant/setup/connectors', 'Connectors', TenantConnectorsPage),
+  tenantRoute(
+    '/tenant/connectors',
+    'Connector Marketplace',
+    ConnectorMarketplacePage,
+  ),
+  tenantRoute(
+    '/tenant/connectors/development',
+    'Connector Development',
+    ConnectorDevelopmentPage,
+  ),
   tenantRoute(
     '/tenant/setup/connections',
     'Global Connections',

@@ -4,14 +4,13 @@ import { WorkflowExecutorContext } from '../../src/lib/handler/context/workflow-
 import { StepExecutionPath } from '../../src/lib/handler/context/step-execution-path'
 import { workflowExecutor } from '../../src/lib/handler/workflow-executor'
 import { EngineApiStub, startEngineApiStub } from '../helpers/engine-api-stub'
-import { buildCodeAction, buildConnectorAction, buildRouterWithOneCondition, buildSimpleLoopAction, generateMockEngineConstants } from './test-helper'
+import { buildCodeAction, buildComponentAction, buildRouterWithOneCondition, buildSimpleLoopAction, generateMockEngineConstants } from './test-helper'
 
 
 
-const simplePauseWorkflow = buildConnectorAction({
+const simplePauseWorkflow = buildComponentAction({
     name: 'approval',
-    connectorName: '@fema-ipaas/connector-approval',
-    actionName: 'wait_for_approval',
+    componentType: 'human/approval',
     input: {},
     nextAction: buildCodeAction({
         name: 'echo_step',
@@ -19,18 +18,16 @@ const simplePauseWorkflow = buildConnectorAction({
     }),
 })
 
-const flawWithTwoPause = buildConnectorAction({
+const flawWithTwoPause = buildComponentAction({
     name: 'approval',
-    connectorName: '@fema-ipaas/connector-approval',
-    actionName: 'wait_for_approval',
+    componentType: 'human/approval',
     input: {},
     nextAction: buildCodeAction({
         name: 'echo_step',
         input: {},
-        nextAction: buildConnectorAction({
+        nextAction: buildComponentAction({
             name: 'approval-1',
-            connectorName: '@fema-ipaas/connector-approval',
-            actionName: 'wait_for_approval',
+    componentType: 'human/approval',
             input: {},
             nextAction: buildCodeAction({
                 name: 'echo_step_1',
@@ -222,20 +219,18 @@ describe('workflow with pause', () => {
             ],
             executionType: RouterExecutionType.EXECUTE_ALL_MATCH,
             children: [
-                buildConnectorAction({
+                buildComponentAction({
                     name: 'approval_1',
-                    connectorName: '@fema-ipaas/connector-approval',
-                    actionName: 'wait_for_approval',
+    componentType: 'human/approval',
                     input: {},
                     nextAction: buildCodeAction({
                         name: 'echo_step',
                         input: {},
                     }),
                 }),
-                buildConnectorAction({
+                buildComponentAction({
                     name: 'approval_2',
-                    connectorName: '@fema-ipaas/connector-approval',
-                    actionName: 'wait_for_approval',
+    componentType: 'human/approval',
                     input: {},
                     nextAction: buildCodeAction({
                         name: 'echo_step_1',

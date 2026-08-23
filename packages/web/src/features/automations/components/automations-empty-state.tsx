@@ -9,7 +9,6 @@ import {
   ChevronRight,
   Plus,
   Sparkles,
-  Table2,
   Upload,
   Workflow,
 } from 'lucide-react';
@@ -201,7 +200,6 @@ export const AutomationsEmptyState = ({
 }: AutomationsEmptyStateProps) => {
   const navigate = useNavigate();
   const { embedState } = useEmbedding();
-  const [isImportTableDialogOpen, setIsImportTableDialogOpen] = useState(false);
   const [isTemplatesBrowseDialogOpen, setIsTemplatesBrowseDialogOpen] =
     useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(
@@ -211,7 +209,6 @@ export const AutomationsEmptyState = ({
 
   const { checkAccess } = useAuthorization();
   const userHasPermissionToWriteFlow = checkAccess(Permission.WRITE_FLOW);
-  const userHasPermissionToWriteTable = checkAccess(Permission.WRITE_TABLE);
 
   const { platform } = platformHooks.useCurrentPlatform();
   const isShowingOfficialTemplates = !platform.plan.manageTemplatesEnabled;
@@ -224,8 +221,6 @@ export const AutomationsEmptyState = ({
   const { mutate: createFlow, isPending: isCreateFlowPending } =
     flowHooks.useStartFromScratch(UncategorizedFolderId);
 
-  const { mutate: createTable, isPending: isCreateTablePending } =
-    tableHooks.useCreateTable(UncategorizedFolderId);
 
   const handleTemplateSelect = (template: Template) => {
     if (embedState.isEmbedded) {
@@ -306,28 +301,6 @@ export const AutomationsEmptyState = ({
             />
           </GetStartedCard>
 
-          {!embedState.hideTables && (
-            <GetStartedCard
-              icon={<Table2 className="h-5 w-5 text-primary" />}
-              iconBgClass="bg-primary-100"
-              title={t('Create a Table')}
-              description={t('Organize and manage data')}
-            >
-              <ActionRow
-                icon={<Plus className="h-4 w-4" />}
-                label={t('Start from scratch')}
-                onClick={() => createTable({ name: t('New Table') })}
-                disabled={isCreateTablePending}
-                hasPermission={userHasPermissionToWriteTable}
-              />
-              <ActionRow
-                icon={<Upload className="h-4 w-4" />}
-                label={t('Import')}
-                onClick={() => setIsImportTableDialogOpen(true)}
-                hasPermission={userHasPermissionToWriteTable}
-              />
-            </GetStartedCard>
-          )}
         </div>
       </div>
 
@@ -366,13 +339,6 @@ export const AutomationsEmptyState = ({
         </div>
       )}
 
-      {!embedState.hideTables && (
-        <ImportTableDialog
-          open={isImportTableDialogOpen}
-          setIsOpen={setIsImportTableDialogOpen}
-          showTrigger={false}
-        />
-      )}
       <TemplatesBrowseDialog
         open={isTemplatesBrowseDialogOpen}
         onOpenChange={setIsTemplatesBrowseDialogOpen}

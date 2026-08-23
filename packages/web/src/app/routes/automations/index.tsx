@@ -80,7 +80,6 @@ const AutomationsPageContent = ({ projectId }: { projectId: string }) => {
     treeItems,
     folders,
     rootFlows,
-    rootTables,
     isLoading,
     expandedFolders,
     toggleFolder,
@@ -131,7 +130,6 @@ const AutomationsPageContent = ({ projectId }: { projectId: string }) => {
     extraKeys: [projectId],
   });
 
-  const { projectMembers } = projectMembersHooks.useProjectMembers();
   const { pieces } = piecesHooks.usePieces({});
 
   // Bulk actions resolve selected items from the loaded treeItems, so the
@@ -192,26 +190,6 @@ const AutomationsPageContent = ({ projectId }: { projectId: string }) => {
         } else {
           navigate(href);
         }
-      } else if (item.type === 'table') {
-        const href = authenticationSession.appendProjectRoutePrefix(
-          `/tables/${item.id}`,
-        );
-        const folderName = item.folderId
-          ? folders.find((f) => f.id === item.folderId)?.displayName ?? null
-          : null;
-        recordAccess({
-          id: `table-${item.id}`,
-          type: 'table',
-          label: item.name,
-          href,
-          folderName,
-          projectName: currentProjectName,
-        });
-        if (ctrlKey) {
-          window.open(href, '_blank');
-        } else {
-          navigate(href);
-        }
       }
     },
     [
@@ -230,18 +208,10 @@ const AutomationsPageContent = ({ projectId }: { projectId: string }) => {
         case 'flow':
           mutations.createFlow(folderId);
           break;
-        case 'table':
-          mutations.createTable(t('New Table'), folderId);
-          break;
         case 'import-flow':
           expandFolderIfCollapsed(folderId);
           dialogs.setImportTargetFolderId(folderId);
           dialogs.setIsImportFlowDialogOpen(true);
-          break;
-        case 'import-table':
-          expandFolderIfCollapsed(folderId);
-          dialogs.setImportTargetFolderId(folderId);
-          dialogs.setIsImportTableDialogOpen(true);
           break;
       }
     },
@@ -293,23 +263,16 @@ const AutomationsPageContent = ({ projectId }: { projectId: string }) => {
         connections={connections?.data}
         pieces={pieces}
         userHasPermissionToWriteFlow={userHasPermissionToWriteFlow}
-        userHasPermissionToWriteTable={userHasPermissionToWriteTable}
         userHasPermissionToWriteFolder={userHasPermissionToWriteFolder}
         onCreateFlow={() => mutations.createFlow()}
-        onCreateTable={() => mutations.createTable(t('New Table'))}
         onCreateFolder={() => dialogs.setIsFolderDialogOpen(true)}
         onImportFlow={() => {
           dialogs.setImportTargetFolderId(undefined);
           dialogs.setIsImportFlowDialogOpen(true);
         }}
-        onImportTable={() => {
-          dialogs.setImportTargetFolderId(undefined);
-          dialogs.setIsImportTableDialogOpen(true);
-        }}
         onClearAllFilters={clearAllFilters}
         hasActiveFilters={filtersActive}
         isCreatingFlow={mutations.isCreateFlowPending}
-        isCreatingTable={mutations.isCreatingTable}
       />
 
       {isNoResultsState ? (
@@ -321,7 +284,7 @@ const AutomationsPageContent = ({ projectId }: { projectId: string }) => {
             isLoading={isLoading}
             selectedItems={selectedItems}
             expandedFolders={expandedFolders}
-            projectMembers={projectMembers}
+            projectMembers={undefined}
             folders={folders}
             selectableCount={selectableItems.length}
             isPinned={isPinned}
@@ -334,12 +297,9 @@ const AutomationsPageContent = ({ projectId }: { projectId: string }) => {
             onDuplicateFlow={mutations.handleDuplicateFlow}
             onMoveItem={mutations.handleMoveItem}
             onExportFlow={mutations.handleExportFlow}
-            onExportTable={mutations.handleExportTable}
             onCreateInFolder={handleCreateInFolder}
             userHasPermissionToWriteFlow={userHasPermissionToWriteFlow}
-            userHasPermissionToWriteTable={userHasPermissionToWriteTable}
             isCreatingFlow={mutations.isCreateFlowPending}
-            isCreatingTable={mutations.isCreatingTable}
             isMoving={mutations.isMoving}
             isDuplicating={mutations.isDuplicating}
             onLoadMoreInFolder={loadMoreInFolder}
@@ -412,18 +372,6 @@ const AutomationsPageContent = ({ projectId }: { projectId: string }) => {
         />
       </ImportFlowDialog>
 
-      {!embedState.hideTables && (
-        <ImportTableDialog
-          open={dialogs.isImportTableDialogOpen}
-          setIsOpen={(open) => {
-            dialogs.setIsImportTableDialogOpen(open);
-            if (!open) dialogs.setImportTargetFolderId(undefined);
-          }}
-          showTrigger={false}
-          folderId={dialogs.importTargetFolderId}
-          onImportSuccess={() => invalidateAll()}
-        />
-      )}
     </div>
   );
 };

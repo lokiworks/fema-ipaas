@@ -1,16 +1,13 @@
-import { SeekPage } from '@activepieces/core-utils';
 import {
   FlowStatus,
   FolderDto,
   PopulatedFlow,
-  Table,
   UncategorizedFolderId,
 } from '@activepieces/shared';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
-import { useEmbedding } from '@/components/providers/embed-provider';
 import { flowsApi } from '@/features/flows/api/flows-api';
 import { foldersApi } from '@/features/folders/api/folders-api';
 import { authenticationSession } from '@/lib/authentication-session';
@@ -31,8 +28,6 @@ export function useAutomationsData(
   const { projectId: projectIdFromUrl } = useParams<{ projectId: string }>();
   const projectId = projectIdFromUrl ?? authenticationSession.getProjectId()!;
   const queryClient = useQueryClient();
-  const { embedState } = useEmbedding();
-  const hideTables = embedState.hideTables;
   const isFiltered = hasNonFolderFilters(filters);
 
   const [rootPage, setRootPage] = useState(0);
@@ -57,37 +52,21 @@ export function useAutomationsData(
   const folderCounts = useMemo(() => {
     const folders = foldersQuery.data ?? [];
     return new Map(
-      folders.map((folder) => [
-        folder.id,
-        hideTables
-          ? folder.numberOfFlows
-          : folder.numberOfFlows + folder.numberOfTables,
-      ]),
+      folders.map((folder) => [folder.id, folder.numberOfFlows]),
     );
-  }, [foldersQuery.data, hideTables]);
+  }, [foldersQuery.data]);
 
   const folderContentsQuery = useQuery<FolderContentsMap>({
-    queryKey: ['all-folder-contents', projectId, folderIds, hideTables],
+    queryKey: ['all-folder-contents', projectId, folderIds],
     queryFn: async () => {
       const folders = foldersQuery.data!;
-      const allFolderIds = folders.map((f) => f.id);
-      const [flowsPage, tablesPage] = await Promise.all([
-        flowsApi.list({
-          projectId,
-          folderIds: allFolderIds,
-          limit: FOLDER_CONTENTS_LIMIT,
-          cursor: undefined,
-        }),
-        hideTables
-          ? Promise.resolve(emptyTablePage())
-          : tablesApi.list({
-              projectId,
-              folderIds: allFolderIds,
-              limit: FOLDER_CONTENTS_LIMIT,
-              cursor: undefined,
-            }),
-      ]);
-      return buildFolderContentsMap(folders, flowsPage.data, tablesPage.data);
+      const flowsPage = await flowsApi.list({
+        projectId,
+        folderIds: folders.map((f) => f.id),
+        limit: FOLDER_CONTENTS_LIMIT,
+        cursor: undefined,
+      });
+      return buildFolderContentsMap(folders, flowsPage.data);
     },
     enabled: !!foldersQuery.data && foldersQuery.data.length > 0,
     staleTime: STALE_TIME,
@@ -97,9 +76,6 @@ export function useAutomationsData(
 
   const skipFlows =
     filters.typeFilter.length > 0 && !filters.typeFilter.includes('flow');
-  const skipTables =
-    filters.typeFilter.length > 0 && !filters.typeFilter.includes('table');
-
   const rootFlowsQuery = useQuery({
     queryKey: ['root-flows', projectId, filters],
     queryFn: () =>
@@ -119,22 +95,6 @@ export function useAutomationsData(
             : undefined,
       }),
     enabled: !skipFlows,
-    staleTime: STALE_TIME,
-    refetchOnMount: 'always',
-    meta: { showErrorDialog: true, loadSubsetOptions: {} },
-  });
-
-  const rootTablesQuery = useQuery({
-    queryKey: ['root-tables', projectId, filters],
-    queryFn: () =>
-      tablesApi.list({
-        projectId,
-        folderId: isFiltered ? undefined : UncategorizedFolderId,
-        limit: 1000,
-        cursor: undefined,
-        name: filters.searchTerm || undefined,
-      }),
-    enabled: !skipTables && !hideTables,
     staleTime: STALE_TIME,
     refetchOnMount: 'always',
     meta: { showErrorDialog: true, loadSubsetOptions: {} },
@@ -182,7 +142,6 @@ export function useAutomationsData(
   const { treeItems, totalPageItems } = useMemo(() => {
     let folders = foldersQuery.data ?? [];
     let rootFlows = rootFlowsQuery.data?.data ?? [];
-    let rootTables = rootTablesQuery.data?.data ?? [];
     const folderContents = folderContentsQuery.data ?? new Map();
 
     const hasFolderFilter = filters.folderFilter.length > 0;
@@ -193,14 +152,10 @@ export function useAutomationsData(
         rootFlows = rootFlows.filter(
           (f) => f.folderId && folderSet.has(f.folderId),
         );
-        rootTables = rootTables.filter(
-          (t) => t.folderId && folderSet.has(t.folderId),
-        );
       }
 
       const { items, totalItems } = buildFilteredTreeItems(
         rootFlows,
-        rootTables,
         folders,
         folderVisibleCounts,
         rootPage,
@@ -217,13 +172,11 @@ export function useAutomationsData(
       const folderSet = new Set(filters.folderFilter);
       folders = folders.filter((f) => folderSet.has(f.id));
       rootFlows = [];
-      rootTables = [];
     }
 
     const { items, totalRootItems } = buildTreeItems(
       folders,
       rootFlows,
-      rootTables,
       folderContents,
       folderCounts,
       folderVisibleCounts,
@@ -236,7 +189,6 @@ export function useAutomationsData(
   }, [
     foldersQuery.data,
     rootFlowsQuery.data,
-    rootTablesQuery.data,
     folderContentsQuery.data,
     folderCounts,
     folderVisibleCounts,
@@ -264,19 +216,16 @@ export function useAutomationsData(
   const isLoading =
     foldersQuery.isLoading ||
     (rootFlowsQuery.isLoading && !skipFlows) ||
-    (rootTablesQuery.isLoading && !skipTables && !hideTables) ||
     folderContentsQuery.isLoading;
 
   const invalidateAll = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['folders'] });
     queryClient.invalidateQueries({ queryKey: ['root-flows'] });
-    queryClient.invalidateQueries({ queryKey: ['root-tables'] });
     queryClient.invalidateQueries({ queryKey: ['all-folder-contents'] });
   }, [queryClient]);
 
   const invalidateRoot = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['root-flows'] });
-    queryClient.invalidateQueries({ queryKey: ['root-tables'] });
   }, [queryClient]);
 
   const invalidateFolder = useCallback(
@@ -291,7 +240,6 @@ export function useAutomationsData(
     treeItems,
     folders: foldersQuery.data ?? [],
     rootFlows: rootFlowsQuery.data?.data ?? [],
-    rootTables: rootTablesQuery.data?.data ?? [],
     isLoading,
     isFiltered,
     expandedFolders: effectiveExpandedFolders,
@@ -315,26 +263,16 @@ type FolderContentsMap = Map<string, FolderContent>;
 function buildFolderContentsMap(
   folders: FolderDto[],
   flows: PopulatedFlow[],
-  tables: Table[],
 ): FolderContentsMap {
   const map: FolderContentsMap = new Map(
-    folders.map((folder) => [folder.id, { flows: [], tables: [] }]),
+    folders.map((folder) => [folder.id, { flows: [] }]),
   );
   flows.forEach((flow) => {
     if (flow.folderId) {
       map.get(flow.folderId)?.flows.push(flow);
     }
   });
-  tables.forEach((table) => {
-    if (table.folderId) {
-      map.get(table.folderId)?.tables.push(table);
-    }
-  });
   return map;
-}
-
-function emptyTablePage(): SeekPage<Table> {
-  return { data: [], next: null, previous: null };
 }
 
 const STALE_TIME = 30_000;

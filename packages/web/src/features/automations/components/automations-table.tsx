@@ -1,8 +1,6 @@
 import {
   FolderDto,
   PopulatedFlow,
-  ProjectMemberWithUser,
-  Table,
 } from '@activepieces/shared';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import { t } from 'i18next';
@@ -24,7 +22,7 @@ type AutomationsTableProps = {
   isLoading: boolean;
   selectedItems: SelectedItemsMap;
   expandedFolders: Set<string>;
-  projectMembers: ProjectMemberWithUser[] | undefined;
+  projectMembers: unknown[] | undefined;
   folders: FolderDto[];
   selectableCount: number;
   isPinned: (itemId: string) => boolean;
@@ -37,12 +35,9 @@ type AutomationsTableProps = {
   onDuplicateFlow: (flow: PopulatedFlow) => void;
   onMoveItem: (item: TreeItem, folderId: string) => void;
   onExportFlow: (flow: PopulatedFlow) => void;
-  onExportTable: (table: Table) => void;
   onCreateInFolder?: (folderId: string, kind: CreateInFolderKind) => void;
   userHasPermissionToWriteFlow?: boolean;
-  userHasPermissionToWriteTable?: boolean;
   isCreatingFlow?: boolean;
-  isCreatingTable?: boolean;
   isMoving: boolean;
   isDuplicating: boolean;
   onLoadMoreInFolder: (folderId: string) => void;
@@ -106,12 +101,9 @@ export const AutomationsTable = ({
   onDuplicateFlow,
   onMoveItem,
   onExportFlow,
-  onExportTable,
   onCreateInFolder,
   userHasPermissionToWriteFlow,
-  userHasPermissionToWriteTable,
   isCreatingFlow,
-  isCreatingTable,
   isMoving,
   isDuplicating,
   onLoadMoreInFolder,
@@ -207,16 +199,11 @@ export const AutomationsTable = ({
                         onDuplicate={onDuplicateFlow}
                         onMoveTo={onMoveItem}
                         onExportFlow={onExportFlow}
-                        onExportTable={onExportTable}
                         onCreateInFolder={onCreateInFolder}
                         userHasPermissionToWriteFlow={
                           userHasPermissionToWriteFlow
                         }
-                        userHasPermissionToWriteTable={
-                          userHasPermissionToWriteTable
-                        }
                         isCreatingFlow={isCreatingFlow}
-                        isCreatingTable={isCreatingTable}
                         isMoving={isMoving}
                         isDuplicating={isDuplicating}
                         onLoadMore={undefined}
@@ -248,8 +235,7 @@ export const AutomationsTable = ({
                             onDuplicate={onDuplicateFlow}
                             onMoveTo={onMoveItem}
                             onExportFlow={onExportFlow}
-                            onExportTable={onExportTable}
-                            isMoving={isMoving}
+                                isMoving={isMoving}
                             isDuplicating={isDuplicating}
                             onLoadMore={
                               child.type === 'load-more-folder'
@@ -287,7 +273,6 @@ export const AutomationsTable = ({
                     onDuplicate={onDuplicateFlow}
                     onMoveTo={onMoveItem}
                     onExportFlow={onExportFlow}
-                    onExportTable={onExportTable}
                     isMoving={isMoving}
                     isDuplicating={isDuplicating}
                     onLoadMore={undefined}

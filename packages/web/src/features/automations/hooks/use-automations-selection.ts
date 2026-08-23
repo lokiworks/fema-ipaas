@@ -114,7 +114,6 @@ export function useAutomationsSelection(treeItems: TreeItem[]) {
 
 export function getSelectedIdsByType(selected: SelectedItemsMap) {
   const flowIds: string[] = [];
-  const tableIds: string[] = [];
   const folderIds: string[] = [];
 
   for (const [key, type] of selected) {
@@ -123,21 +122,18 @@ export function getSelectedIdsByType(selected: SelectedItemsMap) {
       case 'flow':
         flowIds.push(id);
         break;
-      case 'table':
-        tableIds.push(id);
-        break;
       case 'folder':
         folderIds.push(id);
         break;
     }
   }
 
-  return { flowIds, tableIds, folderIds };
+  return { flowIds, folderIds };
 }
 
 export function hasMovableOrExportableItems(selected: SelectedItemsMap) {
   for (const type of selected.values()) {
-    if (type === 'flow' || type === 'table') {
+    if (type === 'flow') {
       return true;
     }
   }

@@ -3,7 +3,6 @@ import {
   FolderPlus,
   Loader2,
   Sparkles,
-  Table2,
   Upload,
   Workflow,
 } from 'lucide-react';
@@ -24,15 +23,11 @@ export const CreateNewMenu = ({
   scope = 'root',
   align = 'end',
   userHasPermissionToWriteFlow,
-  userHasPermissionToWriteTable,
   userHasPermissionToWriteFolder,
   isCreatingFlow = false,
-  isCreatingTable = false,
   onCreateFlow,
-  onCreateTable,
   onCreateFolder,
   onImportFlow,
-  onImportTable,
   onSelectTemplate,
   onOpenChange,
 }: CreateNewMenuProps) => {
@@ -41,7 +36,7 @@ export const CreateNewMenu = ({
 
   const showFolder = scope === 'root' && !embedState.hideFolders;
   const showTemplate = scope === 'root';
-  const busy = isCreatingFlow || isCreatingTable;
+  const busy = isCreatingFlow;
 
   return (
     <DropdownMenu
@@ -85,63 +80,23 @@ export const CreateNewMenu = ({
           </PermissionNeededTooltip>
         )}
 
-        {!embedState.hideTables && (
-          <PermissionNeededTooltip
-            hasPermission={userHasPermissionToWriteTable}
-          >
-            <DropdownMenuItem
-              disabled={!userHasPermissionToWriteTable || busy}
-              onSelect={(e) => {
-                e.preventDefault();
-                onCreateTable();
-              }}
-              className="cursor-pointer"
+        {scope === 'folder' && !embedState.hideExportAndImportFlow && (
+          <>
+            <DropdownMenuSeparator />
+            <PermissionNeededTooltip
+              hasPermission={userHasPermissionToWriteFlow}
             >
-              {isCreatingTable ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Table2 className="h-4 w-4 mr-2" />
-              )}
-              {isCreatingTable ? t('Creating...') : t('New Table')}
-            </DropdownMenuItem>
-          </PermissionNeededTooltip>
+              <DropdownMenuItem
+                disabled={!userHasPermissionToWriteFlow}
+                onClick={onImportFlow}
+                className="cursor-pointer"
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                {t('Import Flow')}
+              </DropdownMenuItem>
+            </PermissionNeededTooltip>
+          </>
         )}
-
-        {scope === 'folder' &&
-          (!embedState.hideExportAndImportFlow || !embedState.hideTables) && (
-            <>
-              <DropdownMenuSeparator />
-              {!embedState.hideExportAndImportFlow && (
-                <PermissionNeededTooltip
-                  hasPermission={userHasPermissionToWriteFlow}
-                >
-                  <DropdownMenuItem
-                    disabled={!userHasPermissionToWriteFlow}
-                    onClick={onImportFlow}
-                    className="cursor-pointer"
-                  >
-                    <Upload className="h-4 w-4 mr-2" />
-                    {t('Import Flow')}
-                  </DropdownMenuItem>
-                </PermissionNeededTooltip>
-              )}
-              {!embedState.hideTables && (
-                <PermissionNeededTooltip
-                  hasPermission={userHasPermissionToWriteTable}
-                >
-                  <DropdownMenuItem
-                    disabled={!userHasPermissionToWriteTable}
-                    onClick={onImportTable}
-                    className="cursor-pointer"
-                  >
-                    <Upload className="h-4 w-4 mr-2" />
-                    {t('Import Table')}
-                  </DropdownMenuItem>
-                </PermissionNeededTooltip>
-              )}
-            </>
-          )}
-
         {showFolder && onCreateFolder && (
           <>
             <DropdownMenuSeparator />
@@ -169,21 +124,13 @@ type CreateNewMenuProps = {
   scope?: 'root' | 'folder';
   align?: 'start' | 'end' | 'center';
   userHasPermissionToWriteFlow: boolean;
-  userHasPermissionToWriteTable: boolean;
   userHasPermissionToWriteFolder: boolean;
   isCreatingFlow?: boolean;
-  isCreatingTable?: boolean;
   onCreateFlow: () => void;
-  onCreateTable: () => void;
   onCreateFolder?: () => void;
   onImportFlow: () => void;
-  onImportTable: () => void;
   onSelectTemplate?: () => void;
   onOpenChange?: (open: boolean) => void;
 };
 
-export type CreateInFolderKind =
-  | 'flow'
-  | 'table'
-  | 'import-flow'
-  | 'import-table';
+export type CreateInFolderKind = 'flow' | 'import-flow';

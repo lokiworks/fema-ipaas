@@ -1,4 +1,4 @@
-import { FolderDto, PopulatedFlow, Table } from '@activepieces/shared';
+import { FolderDto, PopulatedFlow } from '@activepieces/shared';
 
 import { AutomationsFilters, FolderContent, TreeItem } from './types';
 
@@ -6,23 +6,15 @@ export const DEFAULT_PAGE_SIZE = 10;
 export const PAGE_SIZE_OPTIONS = [10, 20, 50];
 export const FOLDER_PAGE_SIZE = 50;
 
-export function getUpdatedDate(
-  item: PopulatedFlow | Table | FolderDto,
-): number {
+export function getUpdatedDate(item: PopulatedFlow | FolderDto): number {
   return new Date(item.updated).getTime();
 }
 
-export function getItemName(item: PopulatedFlow | Table): string {
-  if ('version' in item) {
-    return item.version.displayName;
-  }
-  return item.name;
+export function getItemName(item: PopulatedFlow): string {
+  return item.version.displayName;
 }
 
-export function mergeAndSortItems(
-  flows: PopulatedFlow[],
-  tables: Table[],
-): TreeItem[] {
+export function mergeAndSortItems(flows: PopulatedFlow[]): TreeItem[] {
   const items: TreeItem[] = [];
 
   flows.forEach((flow) => {
@@ -31,17 +23,6 @@ export function mergeAndSortItems(
       type: 'flow',
       name: flow.version.displayName,
       data: flow,
-      depth: 0,
-      folderId: null,
-    });
-  });
-
-  tables.forEach((table) => {
-    items.push({
-      id: table.id,
-      type: 'table',
-      name: table.name,
-      data: table,
       depth: 0,
       folderId: null,
     });
@@ -70,17 +51,6 @@ export function buildFolderChildren(
     });
   });
 
-  content.tables.forEach((table) => {
-    children.push({
-      id: table.id,
-      type: 'table',
-      name: table.name,
-      data: table,
-      depth: 1,
-      folderId,
-    });
-  });
-
   children.sort((a, b) => getUpdatedDate(b.data!) - getUpdatedDate(a.data!));
 
   const visible = children.slice(0, visibleCount);
@@ -104,7 +74,6 @@ export function buildFolderChildren(
 export function buildTreeItems(
   folders: FolderDto[],
   rootFlows: PopulatedFlow[],
-  rootTables: Table[],
   folderContents: Map<string, FolderContent>,
   folderCounts: Map<string, number>,
   folderVisibleCounts: Map<string, number>,
@@ -130,11 +99,7 @@ export function buildTreeItems(
   const dedupedFlows = rootFlows.filter(
     (f) => !f.folderId || !folderIdSet.has(f.folderId),
   );
-  const dedupedTables = rootTables.filter(
-    (t) => !t.folderId || !folderIdSet.has(t.folderId),
-  );
-
-  const rootItems = mergeAndSortItems(dedupedFlows, dedupedTables);
+  const rootItems = mergeAndSortItems(dedupedFlows);
   const allTopLevel = [...folderItems, ...rootItems];
   allTopLevel.sort((a, b) => {
     const aOrder = pinnedList ? pinnedList.indexOf(a.id) : -1;
@@ -185,7 +150,6 @@ export function buildTreeItems(
 
 export function buildFilteredTreeItems(
   flows: PopulatedFlow[],
-  tables: Table[],
   folders: FolderDto[],
   folderVisibleCounts: Map<string, number>,
   page: number,
@@ -209,26 +173,6 @@ export function buildFilteredTreeItems(
       type: 'flow',
       name: flow.version.displayName,
       data: flow,
-      depth: itemFolderId ? 1 : 0,
-      folderId: itemFolderId,
-    };
-    if (item.folderId) {
-      const list = folderChildren.get(item.folderId) ?? [];
-      list.push(item);
-      folderChildren.set(item.folderId, list);
-    } else {
-      rootItems.push(item);
-    }
-  });
-
-  tables.forEach((table) => {
-    const itemFolderId =
-      table.folderId && folderMap.has(table.folderId) ? table.folderId : null;
-    const item: TreeItem = {
-      id: table.id,
-      type: 'table',
-      name: table.name,
-      data: table,
       depth: itemFolderId ? 1 : 0,
       folderId: itemFolderId,
     };

@@ -11,6 +11,7 @@ import { globalRegistry } from 'zod/v4/core'
 import { appConnectionModule } from './app-connection/app-connection.module'
 import { platformAppConnectionModule } from './app-connection/platform-app-connection.module'
 import { authenticationModule } from './authentication/authentication.module'
+import { localAuthnModule } from './authentication/local-authn/local-authn.module'
 import { otpModule } from './authentication/otp/otp-module'
 import { collaborativeModule } from './core/collaborative/collaborative.module'
 import { oidcModule } from './core/security/oidc/oidc.module'
@@ -163,6 +164,7 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     await app.register(appEventRoutingModule)
     await app.register(authenticationModule)
     await app.register(otpModule)
+    await app.register(localAuthnModule)
     await app.register(triggerModule)
     await app.register(platformModule)
     await app.register(projectModule)

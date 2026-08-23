@@ -14,7 +14,6 @@ function avatarIcon(name: string, email: string, imageUrl?: string | null) {
 }
 
 export function useOwnerOptions() {
-  const { projectMembers } = projectMembersHooks.useProjectMembers();
   const { data: currentUser } = userHooks.useCurrentUser();
 
   return useMemo(() => {
@@ -35,18 +34,7 @@ export function useOwnerOptions() {
       seenIds.add(currentUser.id);
     }
 
-    for (const member of projectMembers ?? []) {
-      if (!seenIds.has(member.userId)) {
-        const name = `${member.user.firstName} ${member.user.lastName}`;
-        options.push({
-          value: member.userId,
-          label: name,
-          icon: avatarIcon(name, member.user.email, member.user.imageUrl),
-        });
-        seenIds.add(member.userId);
-      }
-    }
 
     return options;
-  }, [currentUser, projectMembers]);
+  }, [currentUser]);
 }

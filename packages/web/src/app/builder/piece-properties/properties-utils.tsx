@@ -1,3 +1,4 @@
+import { SecretInput } from '@/app/connections/secret-input';
 import { isNil } from '@activepieces/core-utils';
 import {
   PieceProperty,

@@ -382,19 +382,11 @@ export const createRunState = (
       const currentErrorLogs = get().errorLogs[stepName];
       const currentConsoleLogs = get().consoleLogs[stepName];
       const currentSampleDataInput = get().inputSampleData[stepName];
-      if (isRunAgent(step)) {
-        get().setSampleDataLocally({
-          stepName: stepName,
-          type: 'output',
-          value: defaultAgentOutput,
-        });
-      } else {
-        get().setSampleDataLocally({
-          stepName: stepName,
-          type: 'output',
-          value: null,
-        });
-      }
+      get().setSampleDataLocally({
+        stepName: stepName,
+        type: 'output',
+        value: null,
+      });
       get().setErrorLogs(stepName, null);
       get().setConsoleLogs(stepName, null);
       get().setSampleDataLocally({

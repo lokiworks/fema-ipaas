@@ -1,3 +1,4 @@
+import { SecretInput } from '@/app/connections/secret-input';
 import { SecretTextProperty } from '@activepieces/pieces-framework';
 import { UpsertSecretTextRequest } from '@activepieces/shared';
 import React from 'react';

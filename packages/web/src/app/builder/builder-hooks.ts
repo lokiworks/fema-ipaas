@@ -4,7 +4,6 @@ import { Socket } from 'socket.io-client';
 import { create, useStore } from 'zustand';
 
 import { CanvasState, createCanvasState } from './state/canvas-state';
-import { ChatState, createChatState } from './state/chat-state';
 import { createFlowState, FlowState } from './state/flow-state';
 import { createNotesState, NotesState } from './state/notes-state';
 import {
@@ -32,7 +31,6 @@ export function useBuilderStateContext<T>(
 export type BuilderState = FlowState &
   PieceSelectorState &
   RunState &
-  ChatState &
   CanvasState &
   StepFormState &
   NotesState;
@@ -56,7 +54,6 @@ export const createBuilderStore = (initialState: BuilderInitialState) =>
     const flowState = createFlowState(initialState, get, set);
     const pieceSelectorState = createPieceSelectorState(get, set);
     const runState = createRunState(initialState, get, set);
-    const chatState = createChatState(set);
     const canvasState = createCanvasState(initialState, set);
     const stepFormState = createStepFormState(set);
     const notesState = createNotesState(get, set);
@@ -65,7 +62,6 @@ export const createBuilderStore = (initialState: BuilderInitialState) =>
       ...notesState,
       ...runState,
       ...pieceSelectorState,
-      ...chatState,
       ...canvasState,
       ...stepFormState,
     };

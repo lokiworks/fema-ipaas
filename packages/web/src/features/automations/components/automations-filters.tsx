@@ -10,7 +10,6 @@ import {
   FolderIcon,
   Link2,
   Search,
-  Table2,
   ToggleLeft,
   User,
   Workflow,
@@ -58,17 +57,13 @@ type AutomationsFiltersProps = {
   connections: AppConnectionWithoutSensitiveData[] | undefined;
   pieces: PieceMetadataModelSummary[] | undefined;
   userHasPermissionToWriteFlow: boolean;
-  userHasPermissionToWriteTable: boolean;
   userHasPermissionToWriteFolder: boolean;
   onCreateFlow: () => void;
-  onCreateTable: () => void;
   onCreateFolder: () => void;
   onImportFlow: () => void;
-  onImportTable: () => void;
   onClearAllFilters: () => void;
   hasActiveFilters: boolean;
   isCreatingFlow?: boolean;
-  isCreatingTable?: boolean;
 };
 
 export const AutomationsFilters = ({
@@ -89,17 +84,13 @@ export const AutomationsFilters = ({
   connections,
   pieces,
   userHasPermissionToWriteFlow,
-  userHasPermissionToWriteTable,
   userHasPermissionToWriteFolder,
   onCreateFlow,
-  onCreateTable,
   onCreateFolder,
   onImportFlow,
-  onImportTable,
   onClearAllFilters,
   hasActiveFilters,
   isCreatingFlow = false,
-  isCreatingTable = false,
 }: AutomationsFiltersProps) => {
   const navigate = useNavigate();
   const { embedState } = useEmbedding();
@@ -108,7 +99,6 @@ export const AutomationsFilters = ({
     useState(false);
   const typeOptions = [
     { value: 'flow', label: t('Flows') },
-    ...(embedState.hideTables ? [] : [{ value: 'table', label: t('Tables') }]),
   ];
 
   const statusOptions = Object.values(FlowStatus).map((status) => ({
@@ -145,9 +135,7 @@ export const AutomationsFilters = ({
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder={
-                  embedState.hideTables
-                    ? t('Search flows...')
-                    : t('Search flows and tables...')
+                  t('Search flows...')
                 }
                 value={searchTerm}
                 onChange={(e) => {
@@ -274,20 +262,6 @@ export const AutomationsFilters = ({
                       {t('Import Flow')}
                     </DropdownMenuItem>
                   </PermissionNeededTooltip>
-                  {!embedState.hideTables && (
-                    <PermissionNeededTooltip
-                      hasPermission={userHasPermissionToWriteTable}
-                    >
-                      <DropdownMenuItem
-                        disabled={!userHasPermissionToWriteTable}
-                        onClick={onImportTable}
-                        className="cursor-pointer"
-                      >
-                        <Table2 className="h-4 w-4 mr-2" />
-                        {t('Import Table')}
-                      </DropdownMenuItem>
-                    </PermissionNeededTooltip>
-                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
@@ -296,15 +270,11 @@ export const AutomationsFilters = ({
               scope="root"
               align="end"
               userHasPermissionToWriteFlow={userHasPermissionToWriteFlow}
-              userHasPermissionToWriteTable={userHasPermissionToWriteTable}
               userHasPermissionToWriteFolder={userHasPermissionToWriteFolder}
               isCreatingFlow={isCreatingFlow}
-              isCreatingTable={isCreatingTable}
               onCreateFlow={onCreateFlow}
-              onCreateTable={onCreateTable}
               onCreateFolder={onCreateFolder}
               onImportFlow={onImportFlow}
-              onImportTable={onImportTable}
               onSelectTemplate={() => {
                 if (embedState.isEmbedded) {
                   setIsTemplatesBrowseDialogOpen(true);

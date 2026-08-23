@@ -37,6 +37,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { SecretInput } from '@/app/connections/secret-input';
 import { Input } from '@/components/ui/input';
 import { OAuth2App, oauth2Utils } from '@/features/connections';
 import { appConnectionsApi } from '@/features/connections/api/app-connections';

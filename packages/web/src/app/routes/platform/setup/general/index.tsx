@@ -8,7 +8,6 @@ import { flagsHooks } from '@/hooks/flags-hooks';
 import { platformHooks } from '@/hooks/platform-hooks';
 import { userHooks } from '@/hooks/user-hooks';
 
-import { DangerZoneSection } from './danger-zone-section';
 
 export const GeneralPage = () => {
   const { platform } = platformHooks.useCurrentPlatform();
@@ -27,7 +26,6 @@ export const GeneralPage = () => {
       {canDeletePlatform && (
         <>
           <Separator className="my-8" />
-          <DangerZoneSection platformName={platform.name} />
         </>
       )}
     </CenteredPage>

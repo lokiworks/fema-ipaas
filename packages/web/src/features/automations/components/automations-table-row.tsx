@@ -1,4 +1,4 @@
-import { FolderDto, PopulatedFlow, Table } from '@activepieces/shared';
+import { FolderDto, PopulatedFlow } from '@activepieces/shared';
 import { t } from 'i18next';
 import {
   ArrowDown,
@@ -67,12 +67,9 @@ type AutomationsTableRowProps = {
   onDuplicate: (flow: PopulatedFlow) => void;
   onMoveTo: (item: TreeItem, folderId: string) => void;
   onExportFlow: (flow: PopulatedFlow) => void;
-  onExportTable: (table: Table) => void;
   onCreateInFolder?: (folderId: string, kind: CreateInFolderKind) => void;
   userHasPermissionToWriteFlow?: boolean;
-  userHasPermissionToWriteTable?: boolean;
   isCreatingFlow?: boolean;
-  isCreatingTable?: boolean;
   isMoving: boolean;
   isDuplicating: boolean;
   onLoadMore?: () => void;
@@ -91,12 +88,9 @@ export const AutomationsTableRow = ({
   onDuplicate,
   onMoveTo,
   onExportFlow,
-  onExportTable,
   onCreateInFolder,
   userHasPermissionToWriteFlow = true,
-  userHasPermissionToWriteTable = true,
   isCreatingFlow,
-  isCreatingTable,
   isMoving,
   isDuplicating,
   onLoadMore,
@@ -225,14 +219,10 @@ export const AutomationsTableRow = ({
               scope="folder"
               align="end"
               userHasPermissionToWriteFlow={userHasPermissionToWriteFlow}
-              userHasPermissionToWriteTable={userHasPermissionToWriteTable}
               userHasPermissionToWriteFolder={false}
               isCreatingFlow={isCreatingFlow}
-              isCreatingTable={isCreatingTable}
               onCreateFlow={() => onCreateInFolder(item.id, 'flow')}
-              onCreateTable={() => onCreateInFolder(item.id, 'table')}
               onImportFlow={() => onCreateInFolder(item.id, 'import-flow')}
-              onImportTable={() => onCreateInFolder(item.id, 'import-table')}
               onOpenChange={(open) => {
                 if (open) setIsCreateTooltipOpen(false);
               }}
@@ -293,8 +283,7 @@ export const AutomationsTableRow = ({
               </DropdownMenuItem>
             )}
 
-            {(item.type === 'flow' || item.type === 'table') &&
-              !embedState.hideFolders && (
+            {item.type === 'flow' && !embedState.hideFolders && (
                 <DropdownMenuItem
                   onClick={() => {
                     setMoveFolderId('');
@@ -308,13 +297,6 @@ export const AutomationsTableRow = ({
 
             {isFlowItem(item) && !embedState.hideExportAndImportFlow && (
               <DropdownMenuItem onClick={() => onExportFlow(item.data)}>
-                <Download className="h-4 w-4 mr-2" />
-                {t('Export')}
-              </DropdownMenuItem>
-            )}
-
-            {isTableItem(item) && (
-              <DropdownMenuItem onClick={() => onExportTable(item.data)}>
                 <Download className="h-4 w-4 mr-2" />
                 {t('Export')}
               </DropdownMenuItem>
@@ -423,8 +405,3 @@ function isFlowItem(
   return item.type === 'flow';
 }
 
-function isTableItem(
-  item: TreeItem,
-): item is Omit<TreeItem, 'data'> & { data: Table } {
-  return item.type === 'table';
-}

@@ -1,0 +1,84 @@
+packages/core/shared/src/lib/automation/connectors/index.ts
+  s_94864882421579::t_c89e47f77a58c4 3
+packages/server/api/src/app/database/migration/postgres/1787900000004-CreateConnectorBlueprint.ts
+  s_94864882421579::t_3ebd1f0b35e71a 1-24
+brain/knowledge/engineering/e2e-tests-and-monitors.md
+  s_94864882421579::t_563985eeb9e20b 38-45
+packages/server/api/src/app/connectors/blueprint/connector-blueprint.module.ts
+  s_94864882421579::t_4fc492bd5b7085 1-6
+packages/server/api/test/helpers/describe-with-auth.ts
+  s_94864882421579::t_eced19b5cefe92 2,10-11
+packages/web/public/locales/en/translation.json
+  s_94864882421579::t_75a7d293e80326 2456-2472
+packages/web/src/app/routes/tenant/connectors/builder.tsx
+  s_94864882421579::t_7fc439c4f83d77 1-79,81-355,357-420,423-433,435-458,460-498
+  s_94864882421579::t_4f9504a4121875 80
+  s_94864882421579::t_16732adcf67a3c 356
+  s_94864882421579::t_8281b72d6c9f66 421-422
+  s_94864882421579::t_bb83b2b41efe83 434
+  s_94864882421579::t_b125e8f6d533eb 459
+packages/server/api/test/unit/app/connectors/connector-blueprint.test.ts
+  s_94864882421579::t_6959b0525b47d9 1-98
+packages/server/api/src/app/connectors/blueprint/connector-blueprint.controller.ts
+  s_94864882421579::t_4fc492bd5b7085 1-63
+package.json
+  s_94864882421579::t_88e78ee6c335f4 16,35
+packages/web/public/locales/zh/translation.json
+  s_94864882421579::t_75a7d293e80326 315,2359-2375
+brain/knowledge/connectors-engine/index.md
+  s_94864882421579::t_14a0749050e38c 30-42
+packages/server/api/src/app/connectors/blueprint/connector-blueprint.entity.ts
+  s_94864882421579::t_b38fecb642e1a1 1-22
+packages/server/api/src/app/connectors/blueprint/connector-blueprint-generator.ts
+  s_94864882421579::t_b38fecb642e1a1 1-169
+packages/server/api/src/app/database/database-connection.ts
+  s_94864882421579::t_3ebd1f0b35e71a 50
+  s_05019b0fba23d6::t_23598f2de02846 10
+packages/web/src/features/connector-blueprints/api/connector-blueprints-api.ts
+  s_94864882421579::t_371c54035ac4d9 1-17,19-31
+  s_94864882421579::t_b5b5085fbcfb61 18
+packages/server/api/src/app/connectors/blueprint/connector-blueprint.service.ts
+  s_94864882421579::t_4fc492bd5b7085 1-61
+turbo.json
+  s_94864882421579::t_88e78ee6c335f4 146-156
+packages/core/shared/src/lib/automation/connectors/dto/connector-blueprint.ts
+  s_94864882421579::t_c89e47f77a58c4 1-53,55-80
+  s_94864882421579::t_baaf384bfa9431 54
+packages/server/api/src/app/database/postgres-connection.ts
+  s_94864882421579::t_3ebd1f0b35e71a 33
+  s_05019b0fba23d6::t_8abcfeb8bd9697 14
+packages/web/src/features/connector-blueprints/index.ts
+  s_94864882421579::t_371c54035ac4d9 1
+packages/server/api/package.json
+  s_94864882421579::t_88e78ee6c335f4 142
+packages/server/api/src/app/app.ts
+  s_94864882421579::t_3ebd1f0b35e71a 165
+  s_05019b0fba23d6::t_6c6a86037524c6 19
+packages/web/src/app/components/sidebar/tenant/index.tsx
+  s_94864882421579::t_75a7d293e80326 157-160
+  s_94864882421579::t_8b048cb739a846 156
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "c91c9d9871a286302fe99eea6374fb96d94cc92a",
+  "prompts": {},
+  "sessions": {
+    "s_05019b0fba23d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e10c4cdb-7c07-45f3-b342-da41bb100baa",
+        "model": "claude-fable-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    },
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

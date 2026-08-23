@@ -1,0 +1,129 @@
+packages/web/src/app/builder/index.tsx
+  s_94864882421579::t_f7f2732e17f907 160
+packages/core/execution/src/lib/engine/engine-operation.ts
+  s_94864882421579::t_09c38bcf10664b 102-103
+packages/server/api/src/app/connectors/openapi/openapi-connector-generator.ts
+  s_94864882421579::t_460f9f94fbe65d 1-187
+packages/server/engine/test/operations/workflow-operation-invariants.test.ts
+  s_94864882421579::t_9b8b1157745ad2 107,112,119,124,353
+packages/server/engine/test/handler/workflow-with-pause.test.ts
+  s_94864882421579::t_9968ed7567ba8e 7,11,13,21,23,28,30,222,224,231,233
+packages/server/api/src/app/connectors/openapi/openapi-import.controller.ts
+  s_94864882421579::t_63ee24ae7a2692 1-59
+packages/core/shared/src/lib/automation/connectors/dto/connector-requests.ts
+  s_94864882421579::t_d80b1fbad7c682 83-85
+packages/server/api/src/assets/prompts/guides/build_workflow.md
+  s_94864882421579::t_a90d7f8c57657a 63-64
+packages/web/src/app/components/workspace-layout/workspace-dashboard-layout-header.tsx
+  s_94864882421579::t_4891f296af34af 107
+packages/server/api/test/integration/workflows/execution/execute-workflow-e2e.test.ts
+  s_94864882421579::t_1f0edcedf8262f 859,890,962,996
+packages/web/src/app/routes/tenant/connectors/development.tsx
+  s_94864882421579::t_45fd6d0ebe021e 1,8-16,20-25,29-34,38-43,47-88,92-93,95-109
+  s_94864882421579::t_88d78de218110a 2-7,17-19,26-28,35-37,44-46,89-91,94
+packages/web/src/app/builder/connector-properties/properties-utils.tsx
+  s_94864882421579::t_ef4cc949c91bd1 385,447-449
+  s_94864882421579::t_8f1103adbe9ac2 250
+packages/server/api/src/app/app.ts
+  s_94864882421579::t_63ee24ae7a2692 163
+  s_94864882421579::t_76b3afc072abd1 24
+packages/web/src/app/builder/step-settings/component-settings.tsx
+  s_94864882421579::t_9c2e9ebd672121 14-15,46-52
+packages/components/builtin/src/lib/runtime/http-response.ts
+  s_94864882421579::t_ce7dfc383ee3b6 22,24,26,28-53,68-71,75,132,138-139
+  s_94864882421579::t_c97e24823ca3b5 1,23
+  s_94864882421579::t_19243f0d0e6e0d 27,72-74
+  s_94864882421579::t_bb18dcb74ed929 140-141
+packages/server/api/src/app/connectors/openapi/openapi-parser.ts
+  s_94864882421579::t_14be216b28800b 1-136
+packages/server/engine/src/lib/operations/property.operation.ts
+  s_94864882421579::t_00ac5be703cf5a 30-36,39-40,43-44,100-108,110-160
+  s_94864882421579::t_33f5801b37b190 109,161-166,210-220
+  s_9c2d1c9bb83688::t_ca5173ffefd092 1,221
+packages/web/public/locales/en/translation.json
+  s_94864882421579::t_f521377259f41a 2434-2453
+  s_94864882421579::t_4891f296af34af 2417-2433
+  s_94864882421579::t_c9dd42f5641996 2454-2456
+packages/web/src/features/openapi-import/api/openapi-import-api.ts
+  s_94864882421579::t_50bd66f470fe4d 1-23
+packages/web/src/app/builder/connector-properties/dynamic-dropdown-connector-property.tsx
+  s_94864882421579::t_8f1103adbe9ac2 82,185-187
+packages/web/public/locales/zh/translation.json
+  s_94864882421579::t_4891f296af34af 2319-2336
+  s_94864882421579::t_f521377259f41a 2337-2356
+  s_94864882421579::t_0942e7c2629ea3 2357-2359
+brain/knowledge/connectors-engine/index.md
+  s_94864882421579::t_57988693f03b4b 30-42
+packages/web/src/app/routes/tenant/connectors/marketplace.tsx
+  s_94864882421579::t_f2320c84f000a1 3-11,13-23,30-37,41-67,72-111,115-120
+  s_94864882421579::t_88d78de218110a 12,38-40,68-71,112-114
+  s_94864882421579::t_a0fe89cc31f2ee 24-29
+  s_94864882421579::t_f0571c555d6a63 1-2
+packages/core/shared/src/lib/automation/connectors/index.ts
+  s_94864882421579::t_63ee24ae7a2692 2
+packages/web/src/app/builder/connector-properties/dynamic-connector-property.tsx
+  s_94864882421579::t_8f1103adbe9ac2 144,243-245
+packages/server/worker/src/lib/execute/jobs/execute-property.ts
+  s_94864882421579::t_9e15f91b0509ec 1,30
+  s_94864882421579::t_da1a93453bedf1 13-18
+packages/web/src/features/openapi-import/index.ts
+  s_94864882421579::t_50bd66f470fe4d 1
+packages/core/execution/src/lib/workers/job-data.ts
+  s_94864882421579::t_1be228024e59d7 231
+  s_94864882421579::t_fa11a7704aac7b 232
+packages/web/src/app/routes/tenant-routes.tsx
+  s_94864882421579::t_88d78de218110a 38-43,92-101
+packages/server/engine/src/lib/handler/component-executor.ts
+  s_94864882421579::t_5338f562f105c4 6,75-79,86
+  s_94864882421579::t_ee16a2370e7030 7,80-85
+packages/server/api/src/app/connectors/metadata/connector-metadata-controller.ts
+  s_94864882421579::t_437aed8554184b 146-152
+packages/core/shared/src/lib/automation/connectors/dto/openapi-import.ts
+  s_94864882421579::t_1321231864d24d 1-59
+packages/web/src/app/routes/tenant/connectors/openapi-import.tsx
+  s_94864882421579::t_50bd66f470fe4d 1-31,35-36,39-102,105-137,141-142,147-186,190-208,212-214,218-245
+  s_94864882421579::t_76b3afc072abd1 32-34,37-38,103-104,138-140,143-146,187-189,209-211,215-217
+packages/server/api/src/app/connectors/openapi/openapi-import.module.ts
+  s_94864882421579::t_63ee24ae7a2692 1-6
+packages/web/src/app/builder/node-palette/index.tsx
+  s_94864882421579::t_f7f2732e17f907 1-172
+packages/components/sdk/src/lib/component-context.ts
+  s_94864882421579::t_ee16a2370e7030 2,11
+  s_94864882421579::t_5338f562f105c4 10
+packages/components/sdk/src/index.ts
+  s_94864882421579::t_ee16a2370e7030 5
+  s_94864882421579::t_c97e24823ca3b5 4
+packages/web/src/app/components/sidebar/tenant/index.tsx
+  s_94864882421579::t_f521377259f41a 155-160
+  s_94864882421579::t_45fd6d0ebe021e 2,146-154
+packages/server/engine/test/handler/workflow-with-delay.test.ts
+  s_94864882421579::t_e0ab13ca645b6c 92
+  s_94864882421579::t_dc259dc0f04e7f 5,23,25,28,54,56,59,97,99,102,120,122,151,153
+  s_94864882421579::t_e0435c1cb77010 124,155
+packages/server/api/test/unit/app/connectors/openapi-import.test.ts
+  s_94864882421579::t_76fd95a342f903 1-151
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "890ac818fc52ada4dfe8b9cbba065217fb99a0cd",
+  "prompts": {},
+  "sessions": {
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    },
+    "s_9c2d1c9bb83688": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e3c058d4-7ba6-41d9-bf9f-3e26612dc3f0",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

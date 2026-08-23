@@ -1,0 +1,23 @@
+docs/about/license.mdx
+  s_94864882421579::t_1ebfc3d2c96451 3-4,7,9,11,13
+deploy/fema-helm/templates/_helpers.tpl
+  s_94864882421579::t_42fde8671332a0 4,13,29,36-38,48-49,56,58
+.github/CODEOWNERS
+  s_94864882421579::t_1ebfc3d2c96451 5,7-8,10-12,17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "67ae8f7e99d24552e1ca6dddb36310cb2337a715",
+  "prompts": {},
+  "sessions": {
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

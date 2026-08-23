@@ -34,9 +34,9 @@ jobs:
             linux/amd64
           push: true
           tags: |
-            ghcr.io/activepieces/activepieces-cloud:${{ env.RELEASE }}.${{ github.sha }}.beta
+            ghcr.io/lokiworks/fema-ipaas-cloud:${{ env.RELEASE }}.${{ github.sha }}.beta
 
       - uses: ./.github/actions/sbom
         with:
-          image: ghcr.io/activepieces/activepieces-cloud:${{ env.RELEASE }}.${{ github.sha }}.beta
+          image: ghcr.io/lokiworks/fema-ipaas-cloud:${{ env.RELEASE }}.${{ github.sha }}.beta
           version: ${{ env.RELEASE }}.${{ github.sha }}.beta

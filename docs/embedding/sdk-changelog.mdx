@@ -30,11 +30,11 @@ Change log format: MM/DD/YYYY (version)
 
 ### 07/09/2026 (0.13.0)
 - SDK URL: https://cdn.activepieces.com/sdk/embed/0.13.0.js
-- Added `embedding.hideGlobalSearch` parameter to the [configure](./embed-builder#configure-parameters) method **(value: true | false)**. When `true`, hides the global search button in the dashboard sidebar and disables the `CMD+K` / `Ctrl+K` command palette, so embedded users can't navigate to pages, flows, or tables through search. This version requires an Activepieces release that includes [#14135](https://github.com/activepieces/activepieces/pull/14135).
+- Added `embedding.hideGlobalSearch` parameter to the [configure](./embed-builder#configure-parameters) method **(value: true | false)**. When `true`, hides the global search button in the dashboard sidebar and disables the `CMD+K` / `Ctrl+K` command palette, so embedded users can't navigate to pages, flows, or tables through search. This version requires an Activepieces release that includes [#14135](https://github.com/lokiworks/fema-ipaas/pull/14135).
 
 ### 07/09/2026 (0.12.0)
 - SDK URL: https://cdn.activepieces.com/sdk/embed/0.12.0.js
-- Added `embedding.hideActiveUsers` parameter to the [configure](./embed-builder#configure-parameters) method **(value: true | false)**. When `true`, hides the active users (presence) avatars in the builder's header and the table editor's header. The embedded user will also not appear in other collaborators' active-users list. This version requires an Activepieces release that includes [#13630](https://github.com/activepieces/activepieces/pull/13630).
+- Added `embedding.hideActiveUsers` parameter to the [configure](./embed-builder#configure-parameters) method **(value: true | false)**. When `true`, hides the active users (presence) avatars in the builder's header and the table editor's header. The embedded user will also not appear in other collaborators' active-users list. This version requires an Activepieces release that includes [#13630](https://github.com/lokiworks/fema-ipaas/pull/13630).
 
 ### 06/18/2026 (0.10.0)
 - SDK URL: https://cdn.activepieces.com/sdk/embed/0.10.0.js
@@ -43,7 +43,7 @@ Change log format: MM/DD/YYYY (version)
 
 ### 04/21/2026 (0.9.0)
 - SDK URL: https://cdn.activepieces.com/sdk/embed/0.9.0.js
-- This version requires you to **upgrade Activepieces to [0.82.0](https://github.com/activepieces/activepieces/releases/tag/0.82.0)**.
+- This version requires you to **upgrade Activepieces to [0.82.0](https://github.com/lokiworks/fema-ipaas/releases/tag/0.82.0)**.
 - Added `embedding.hideTables` parameter to the [configure](./embed-builder#configure-parameters) method **(value: true | false)**. When `true`, hides the Tables UI from the dashboard (tree view, Type filter option, Create/Import Table buttons, empty-state card, global search results) and blocks direct access to the `/tables/:id` editor route. The Tables piece used inside flows is unaffected.
 
 ### 10/27/2025 (0.8.1)
@@ -52,7 +52,7 @@ Change log format: MM/DD/YYYY (version)
 
 ### 09/21/2025 (0.8.0)
 - SDK URL: https://cdn.activepieces.com/sdk/embed/0.8.0.js
-- This version requires you to **upgrade Activepieces to [0.70.0](https://github.com/activepieces/activepieces/releases/tag/0.70.0)**.
+- This version requires you to **upgrade Activepieces to [0.70.0](https://github.com/lokiworks/fema-ipaas/releases/tag/0.70.0)**.
 - Removed `embedding.dashboard.hideSettings`.
 - Added `embedding.dashboard.hidePageHeader` parameter to the [configure](./embed-builder#configure-parameters) method **(value: true | false)**. 
 
@@ -60,12 +60,12 @@ Change log format: MM/DD/YYYY (version)
 
 ### 07/30/2025 (0.7.0)
 - SDK URL: https://cdn.activepieces.com/sdk/embed/0.7.0.js
-- This version requires you to **upgrade Activepieces to [0.66.7](https://github.com/activepieces/activepieces/releases/tag/0.66.7)**
+- This version requires you to **upgrade Activepieces to [0.66.7](https://github.com/lokiworks/fema-ipaas/releases/tag/0.66.7)**
 - Added `embedding.dashboard.hideSettings` parameter to the [configure](./embed-builder#configure-parameters) method **(value: true | false)**. 
 
 ### 07/07/2025 (0.6.0)
 - SDK URL: https://cdn.activepieces.com/sdk/embed/0.6.0.js
-- This version requires you to **upgrade Activepieces to [0.66.1](https://github.com/activepieces/activepieces/releases/tag/0.66.1)**
+- This version requires you to **upgrade Activepieces to [0.66.1](https://github.com/lokiworks/fema-ipaas/releases/tag/0.66.1)**
 - Added `embedding.dashboard.hideFlowsPageNavbar` parameter to the [configure](./embed-builder#configure-parameters) method **(value: true | false)**. 
 - **(Breaking Change)** `embedding.dashboard.hideSidebar` used to hide the navbar above the flows table in the dashboard now it relies on `embedding.dashboard.hideFlowsPageNavbar`.
 
@@ -75,7 +75,7 @@ Change log format: MM/DD/YYYY (version)
 
 ### 03/07/2025 (0.5.0)
 - SDK URL: https://cdn.activepieces.com/sdk/embed/0.5.0.js
-- This version requires you to **upgrade Activepieces to [0.64.2](https://github.com/activepieces/activepieces/releases/tag/0.64.2)**
+- This version requires you to **upgrade Activepieces to [0.64.2](https://github.com/lokiworks/fema-ipaas/releases/tag/0.64.2)**
 - Added `embedding.hideDuplicateFlow` parameter to the [configure](./embed-builder#configure-parameters) method **(value: true | false)**. 
 - Added `embedding.builder.homeButtonIcon` parameter to the [configure](./embed-builder#configure-parameters) method **(value: 'logo' | 'back')**, if set to **'back'** the tooltip shown on hovering the home button is removed.
 - Added `embedding.locale` parameter to the [configure](./embed-builder#configure-parameters) method, it takes [ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes) locale codes, here are the ones supported: **('en' | 'nl' | 'it' | 'de' | 'fr' | 'bg' | 'uk' | 'hu' | 'es' | 'ja' | 'id' | 'vi' | 'zh' | 'pt')**
@@ -87,7 +87,7 @@ Change log format: MM/DD/YYYY (version)
 
 ### 17/06/2025 (0.5.0-rc.1)
 - SDK URL: https://cdn.activepieces.com/sdk/embed/0.5.0-rc.1.js
-- This version requires you to **upgrade Activepieces to [0.64.0-rc.0](https://github.com/activepieces/activepieces/pkgs/container/activepieces/438888138?tag=0.64.0-rc.0)**
+- This version requires you to **upgrade Activepieces to [0.64.0-rc.0](https://github.com/lokiworks/fema-ipaas/pkgs/container/activepieces/438888138?tag=0.64.0-rc.0)**
 - Revert back the `prefix` parameter from the [configure](./embed-builder#configure-parameters) method.
 
 
@@ -95,7 +95,7 @@ Change log format: MM/DD/YYYY (version)
 
 ### 16/06/2025 (0.5.0-rc.0)
 - SDK URL: https://cdn.activepieces.com/sdk/embed/0.5.0-rc.0.js
-- This version requires you to **upgrade Activepieces to [0.64.0-rc.0](https://github.com/activepieces/activepieces/pkgs/container/activepieces/438888138?tag=0.64.0-rc.0)**
+- This version requires you to **upgrade Activepieces to [0.64.0-rc.0](https://github.com/lokiworks/fema-ipaas/pkgs/container/activepieces/438888138?tag=0.64.0-rc.0)**
 - Added `embedding.hideDuplicateFlow` parameter to the [configure](./embed-builder#configure-parameters) method **(value: true | false)**. 
 - Added `embedding.builder.homeButtonIcon` parameter to the [configure](./embed-builder#configure-parameters) method **(value: 'logo' | 'back')**, if set to **'back'** the tooltip shown on hovering the home button is removed.
 - Added `embedding.locale` parameter to the [configure](./embed-builder#configure-parameters) method, it takes [ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes) locale codes, here are the ones supported: **('en' | 'nl' | 'it' | 'de' | 'fr' | 'bg' | 'uk' | 'hu' | 'es' | 'ja' | 'id' | 'vi' | 'zh' | 'pt')**
@@ -150,8 +150,8 @@ Change log format: MM/DD/YYYY (version)
 
 ### 04/12/2024 (0.3.0)
 
-- add custom navigation handler ([#4500](https://github.com/activepieces/activepieces/pull/4500))
-- allow passing a predefined name for connection in connect method ([#4485](https://github.com/activepieces/activepieces/pull/4485))
-- add changelog ([#4503](https://github.com/activepieces/activepieces/pull/4503))
+- add custom navigation handler ([#4500](https://github.com/lokiworks/fema-ipaas/pull/4500))
+- allow passing a predefined name for connection in connect method ([#4485](https://github.com/lokiworks/fema-ipaas/pull/4485))
+- add changelog ([#4503](https://github.com/lokiworks/fema-ipaas/pull/4503))
 
 

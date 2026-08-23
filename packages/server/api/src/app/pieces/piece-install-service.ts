@@ -1,5 +1,5 @@
 import { PieceMetadata, PieceMetadataModel } from '@fema/connector-sdk'
-import { ActivepiecesError, ErrorCode, isNil, PlatformId, ProjectId } from '@fema/core-utils'
+import { ErrorCode, isNil, PlatformError, PlatformId, ProjectId } from '@fema/core-utils'
 import { AddPieceRequestBody, EngineResponse, EngineResponseStatus, ExecuteExtractPieceMetadata, FileCompression, FileId, FileType, PackageType, PiecePackage, PieceType, WorkerJobType } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { fileService } from '../file/file.service'
@@ -42,10 +42,10 @@ export const pieceInstallService = (log: FastifyBaseLogger) => ({
         catch (error) {
             log.error({ error }, '[pieceInstallService#add] Failed to add piece')
 
-            if (error instanceof ActivepiecesError && error.error.code === ErrorCode.VALIDATION) {
+            if (error instanceof PlatformError && error.error.code === ErrorCode.VALIDATION) {
                 throw error
             }
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.ENGINE_OPERATION_FAILURE,
                 params: {
                     message: error instanceof Error ? error.message : String(error),

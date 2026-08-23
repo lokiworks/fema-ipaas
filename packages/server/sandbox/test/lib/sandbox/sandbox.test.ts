@@ -2,7 +2,7 @@ import { ChildProcess } from 'child_process'
 import { EventEmitter } from 'node:events'
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { io as ioClient, type Socket as ClientSocket } from 'socket.io-client'
-import { ActivepiecesError, ErrorCode } from '@fema/core-utils'
+import { PlatformError, ErrorCode } from '@fema/core-utils'
 import { EngineResponseStatus } from '@fema/shared'
 import { createSandbox } from '../../../src/lib/sandbox/sandbox'
 import { Sandbox, SandboxLogger, SandboxMount, SandboxProcessMaker } from '../../../src/lib/sandbox/types'
@@ -242,7 +242,7 @@ describe('createSandbox', () => {
                 caughtErr = err
             }
             expect(caughtErr).toBeDefined()
-            expect((caughtErr as ActivepiecesError).error.code).toBe(ErrorCode.VALIDATION)
+            expect((caughtErr as PlatformError).error.code).toBe(ErrorCode.VALIDATION)
             expect(testPM.maker.create).not.toHaveBeenCalled()
         })
 
@@ -266,7 +266,7 @@ describe('createSandbox', () => {
                 caughtErr = err
             }
             expect(caughtErr).toBeDefined()
-            expect((caughtErr as ActivepiecesError).error.code).toBe(ErrorCode.VALIDATION)
+            expect((caughtErr as PlatformError).error.code).toBe(ErrorCode.VALIDATION)
             expect(testPM.maker.create).not.toHaveBeenCalled()
         })
 
@@ -357,7 +357,7 @@ describe('createSandbox', () => {
                 await sandboxB.start(startOptions)
             }
             catch (err) {
-                code = (err as ActivepiecesError).error.code
+                code = (err as PlatformError).error.code
             }
             // A catchable error, NOT an uncaught crash (the test process is still running).
             expect(code).toBe(ErrorCode.SANDBOX_INTERNAL_ERROR)
@@ -597,7 +597,7 @@ describe('createSandbox', () => {
                 await executePromise
             }
             catch (err) {
-                expect((err as ActivepiecesError).error.code).toBe(ErrorCode.SANDBOX_EXECUTION_TIMEOUT)
+                expect((err as PlatformError).error.code).toBe(ErrorCode.SANDBOX_EXECUTION_TIMEOUT)
             }
         })
 
@@ -621,7 +621,7 @@ describe('createSandbox', () => {
                 await executePromise
             }
             catch (err) {
-                expect((err as ActivepiecesError).error.code).toBe(ErrorCode.SANDBOX_MEMORY_ISSUE)
+                expect((err as PlatformError).error.code).toBe(ErrorCode.SANDBOX_MEMORY_ISSUE)
             }
         })
 
@@ -648,7 +648,7 @@ describe('createSandbox', () => {
                 await executePromise
             }
             catch (err) {
-                expect((err as ActivepiecesError).error.code).toBe(ErrorCode.SANDBOX_LOG_SIZE_EXCEEDED)
+                expect((err as PlatformError).error.code).toBe(ErrorCode.SANDBOX_LOG_SIZE_EXCEEDED)
             }
         })
 
@@ -672,7 +672,7 @@ describe('createSandbox', () => {
                 await executePromise
             }
             catch (err) {
-                expect((err as ActivepiecesError).error.code).toBe(ErrorCode.SANDBOX_INTERNAL_ERROR)
+                expect((err as PlatformError).error.code).toBe(ErrorCode.SANDBOX_INTERNAL_ERROR)
             }
         })
 
@@ -698,9 +698,9 @@ describe('createSandbox', () => {
                 await executePromise
             }
             catch (err) {
-                const activepiecesError = err as ActivepiecesError
-                expect(activepiecesError.error.code).toBe(ErrorCode.SANDBOX_INTERNAL_ERROR)
-                expect((activepiecesError.error.params as { standardError: string }).standardError).toContain('Boom inside engine trigger hook')
+                const platformError = err as PlatformError
+                expect(platformError.error.code).toBe(ErrorCode.SANDBOX_INTERNAL_ERROR)
+                expect((platformError.error.params as { standardError: string }).standardError).toContain('Boom inside engine trigger hook')
             }
         })
 
@@ -725,7 +725,7 @@ describe('createSandbox', () => {
                 await executePromise
             }
             catch (err) {
-                expect((err as ActivepiecesError).error.code).toBe(ErrorCode.SANDBOX_MEMORY_ISSUE)
+                expect((err as PlatformError).error.code).toBe(ErrorCode.SANDBOX_MEMORY_ISSUE)
             }
         })
 
@@ -750,7 +750,7 @@ describe('createSandbox', () => {
                 await executePromise
             }
             catch (err) {
-                expect((err as ActivepiecesError).error.code).toBe(ErrorCode.SANDBOX_MEMORY_ISSUE)
+                expect((err as PlatformError).error.code).toBe(ErrorCode.SANDBOX_MEMORY_ISSUE)
             }
         })
 
@@ -779,8 +779,8 @@ describe('createSandbox', () => {
                 await executePromise
             }
             catch (err) {
-                expect((err as ActivepiecesError).error.code).not.toBe(ErrorCode.SANDBOX_MEMORY_ISSUE)
-                expect((err as ActivepiecesError).error.code).toBe(ErrorCode.SANDBOX_INTERNAL_ERROR)
+                expect((err as PlatformError).error.code).not.toBe(ErrorCode.SANDBOX_MEMORY_ISSUE)
+                expect((err as PlatformError).error.code).toBe(ErrorCode.SANDBOX_INTERNAL_ERROR)
             }
         })
 
@@ -808,7 +808,7 @@ describe('createSandbox', () => {
                 await executePromise
             }
             catch (err) {
-                expect((err as ActivepiecesError).error.code).toBe(ErrorCode.SANDBOX_MEMORY_ISSUE)
+                expect((err as PlatformError).error.code).toBe(ErrorCode.SANDBOX_MEMORY_ISSUE)
             }
         })
 

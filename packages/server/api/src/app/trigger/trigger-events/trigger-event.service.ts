@@ -1,4 +1,4 @@
-import { ActivepiecesError, apId, Cursor, ErrorCode, FlowId, ProjectId, SeekPage } from '@fema/core-utils'
+import { apId, Cursor, ErrorCode, FlowId, PlatformError, ProjectId, SeekPage } from '@fema/core-utils'
 import { EngineResponse, EngineResponseStatus, ExecuteTriggerResponse, FileCompression, FileType, FlowTrigger, FlowTriggerType, getPieceMajorAndMinorVersion, PieceTrigger, PopulatedFlow, TriggerEventWithPayload, TriggerHookType, WorkerJobType } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { repoFactory } from '../../core/db/repo-factory'
@@ -72,7 +72,7 @@ export const triggerEventService = (log: FastifyBaseLogger) => ({
                     flowId: flow.id,
                 })
                 if (engineResponse.status !== EngineResponseStatus.OK) {
-                    throw new ActivepiecesError({
+                    throw new PlatformError({
                         code: ErrorCode.TEST_TRIGGER_FAILED,
                         params: {
                             message: engineResponse.error ?? 'Unknown trigger error',

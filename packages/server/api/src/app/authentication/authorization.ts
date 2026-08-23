@@ -1,4 +1,4 @@
-import { ActivepiecesError, ErrorCode, isNil, isObject } from '@fema/core-utils'
+import { ErrorCode, isNil, isObject, PlatformError } from '@fema/core-utils'
 import { PrincipalType } from '@fema/shared'
 import { preSerializationHookHandler } from 'fastify'
 
@@ -45,7 +45,7 @@ export const entitiesMustBeOwnedByCurrentProject: preSerializationHookHandler<Pa
                 principalProjectId,
                 route: request.routeOptions.config,
             }, 'Authorization denied: entity not owned by current project')
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.AUTHORIZATION,
                 params: {
                     message: 'not owned by current project',

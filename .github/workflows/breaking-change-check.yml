@@ -11,7 +11,7 @@ jobs:
   breaking-change-check:
     name: Breaking change check
     runs-on: ubuntu-latest
-    if: github.repository == 'activepieces/activepieces'
+    if: github.repository == 'lokiworks/fema-ipaas'
     steps:
       - uses: actions/checkout@v5
         with:

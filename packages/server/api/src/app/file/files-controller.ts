@@ -1,5 +1,5 @@
 import { Readable } from 'node:stream'
-import { ActivepiecesError, ApId, assertNotNullOrUndefined, ErrorCode, isNil } from '@fema/core-utils'
+import { ApId, assertNotNullOrUndefined, ErrorCode, isNil, PlatformError } from '@fema/core-utils'
 import { ALL_PRINCIPAL_TYPES, EnginePrincipal, FileCompression, FileTransportQueryParams, FileType, Principal, PrincipalType } from '@fema/shared'
 import contentDisposition from 'content-disposition'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
@@ -67,7 +67,7 @@ export const filesController: FastifyPluginAsyncZod = async (app) => {
                 contentEncoding: compression === FileCompression.ZSTD ? 'zstd' : undefined,
             })
             if (!redirected) {
-                throw new ActivepiecesError({
+                throw new PlatformError({
                     code: ErrorCode.SYSTEM_PROP_INVALID,
                     params: {
                         prop: AppSystemProp.S3_USE_SIGNED_URLS,
@@ -177,7 +177,7 @@ async function authorizeRead({ token, fileId, log }: AuthorizeReadParams): Promi
     if (principal) {
         return principal.projectId
     }
-    throw new ActivepiecesError({
+    throw new PlatformError({
         code: ErrorCode.INVALID_BEARER_TOKEN,
         params: { message: 'invalid token or expired for the file' },
     })
@@ -186,7 +186,7 @@ async function authorizeRead({ token, fileId, log }: AuthorizeReadParams): Promi
 async function verifyEnginePrincipal(token: string, log: import('fastify').FastifyBaseLogger): Promise<EnginePrincipal> {
     const principal = await tryVerifyEnginePrincipal(token, log)
     if (!principal) {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.INVALID_BEARER_TOKEN,
             params: { message: 'invalid engine token' },
         })
@@ -223,7 +223,7 @@ async function tryVerifyReadToken(token: string, expectedFileId: string) {
 function parseFileTypeHeader(value: unknown): FileType {
     const raw = parseStringHeader(value)
     if (isNil(raw) || !ENGINE_WRITABLE_FILE_TYPES.has(raw as FileType)) {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.VALIDATION,
             params: { message: `Header ${fileTransportHeaders.TYPE} must be one of ${Array.from(ENGINE_WRITABLE_FILE_TYPES).join(', ')}` },
         })

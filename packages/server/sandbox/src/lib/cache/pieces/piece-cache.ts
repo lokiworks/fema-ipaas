@@ -1,5 +1,5 @@
 import path from 'path'
-import { ActivepiecesError, ErrorCode } from '@fema/core-utils'
+import { ErrorCode, PlatformError } from '@fema/core-utils'
 import { type ApLogger, wideEvent } from '@fema/server-utils'
 import { ApEnvironment, EXACT_VERSION_REGEX, PackageType, PiecePackage, PieceType, WorkerToApiContract } from '@fema/shared'
 import { SandboxSettings } from '../../types'
@@ -10,7 +10,7 @@ import { isValidPackageName } from './piece-installer'
 export const pieceCache = (log: ApLogger, apiClient: WorkerToApiContract, basePath: string, getSettings: () => SandboxSettings) => ({
     async getPiece({ pieceName, pieceVersion, platformId }: PieceCacheKey): Promise<PiecePackage> {
         if (!isValidPackageName(pieceName)) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.VALIDATION,
                 params: { message: `Invalid pieceName: "${pieceName}" is not a valid package name` },
             })

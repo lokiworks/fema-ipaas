@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { chmod, mkdir, rm, stat, utimes, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
-import { ActivepiecesError, apId, ApId, ErrorCode } from '@fema/core-utils'
+import { PlatformError, apId, ApId, ErrorCode } from '@fema/core-utils'
 import { ApLogger } from '@fema/server-utils'
 import { afterEach, describe, expect, it } from 'vitest'
 import { actionRunCache, ACTION_RUN_CACHE_ACTIVE_WINDOW_MS, ACTION_RUN_CACHE_MAX_DIRS } from '../../../src/lib/cache/action-run-cache'
@@ -136,8 +136,8 @@ describe('actionRunCache.namespace', () => {
             thrown = error
         }
 
-        expect(thrown).toBeInstanceOf(ActivepiecesError)
-        if (thrown instanceof ActivepiecesError) {
+        expect(thrown).toBeInstanceOf(PlatformError)
+        if (thrown instanceof PlatformError) {
             expect(thrown.error.code).toBe(ErrorCode.VALIDATION)
             expect(thrown.error.params).toMatchObject({ message: expect.stringContaining('platformId') })
         }

@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  *
- * Regression test for https://github.com/activepieces/activepieces/issues/13555
+ * Regression test for https://github.com/lokiworks/fema-ipaas/issues/13555
  * (GIT-1530): the global search trigger button must not render when the
  * embedding state sets `hideGlobalSearch`.
  *

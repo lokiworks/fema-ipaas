@@ -1,4 +1,4 @@
-import { ActivepiecesError, ApId, ErrorCode, isNil, omit, Permission, SeekPage } from '@fema/core-utils'
+import { ApId, ErrorCode, isNil, omit, Permission, PlatformError, SeekPage } from '@fema/core-utils'
 import { BulkActionOnRunsRequestBody, BulkArchiveActionOnRunsRequestBody, BulkCancelFlowRequestBody, CountFlowRunsByStatusRequest, CountFlowRunsByStatusResponse, FlowRun, ListFlowRunsRequestQuery, PlatformRole, PrincipalType, RetryFlowRequestBody, RunEnvironment, RunInternalErrorSource, SERVICE_KEY_SECURITY_OPENAPI } from '@fema/shared'
 import { FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
@@ -62,7 +62,7 @@ export const flowRunController: FastifyPluginAsyncZod = async (app) => {
         })
 
         if (isNil(flowRun)) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityType: 'flow_run',

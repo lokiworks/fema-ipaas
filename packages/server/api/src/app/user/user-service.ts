@@ -1,4 +1,4 @@
-import { ActivepiecesError, apId, assertNotNullOrUndefined, Cursor, ErrorCode, isNil, PlatformId, ProjectId, SeekPage, spreadIfDefined, UserId } from '@fema/core-utils'
+import { apId, assertNotNullOrUndefined, Cursor, ErrorCode, isNil, PlatformError, PlatformId, ProjectId, SeekPage, spreadIfDefined, UserId } from '@fema/core-utils'
 import { PlatformRole, ProjectType, User, UserIdentity, UserStatus, UserWithMetaInformation } from '@fema/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
@@ -60,7 +60,7 @@ export const userService = (log: FastifyBaseLogger) => ({
         assertNotNullOrUndefined(user.platformId, 'platformId')
 
         if (user.platformId !== platformId) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityType: 'user',
@@ -71,7 +71,7 @@ export const userService = (log: FastifyBaseLogger) => ({
 
         const platform = await platformService(log).getOneOrThrow(user.platformId)
         if (platform.ownerId === user.id && status === UserStatus.INACTIVE) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.VALIDATION,
                 params: {
                     message: 'Admin cannot be deactivated',
@@ -131,7 +131,7 @@ export const userService = (log: FastifyBaseLogger) => ({
     async getOrThrow({ id }: IdParams): Promise<User> {
         const user = await userRepo().findOneBy({ id })
         if (isNil(user)) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: { entityType: 'user', entityId: id },
             })
@@ -144,7 +144,7 @@ export const userService = (log: FastifyBaseLogger) => ({
     async getOneByIdAndPlatformIdOrThrow({ id, platformId }: GetOneByIdAndPlatformIdParams): Promise<UserWithMetaInformation> {
         const user = await userRepo().findOne({ where: { id, platformId } })
         if (isNil(user)) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: { entityType: 'user', entityId: id },
             })
@@ -249,7 +249,7 @@ export const userService = (log: FastifyBaseLogger) => ({
 async function assertNotPlatformOwner({ id, platformId, log }: DeleteParams & { log: FastifyBaseLogger }): Promise<void> {
     const platform = await platformService(log).getOneOrThrow(platformId)
     if (platform.ownerId === id) {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.VALIDATION,
             params: {
                 message: 'Platform owner cannot be deleted',

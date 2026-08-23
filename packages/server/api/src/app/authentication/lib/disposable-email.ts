@@ -1,4 +1,4 @@
-import { ActivepiecesError, ErrorCode } from '@fema/core-utils'
+import { ErrorCode, PlatformError } from '@fema/core-utils'
 import disposableDomains from 'disposable-email-domains'
 import wildcardDomains from 'disposable-email-domains/wildcard.json'
 import { FastifyBaseLogger } from 'fastify'
@@ -36,7 +36,7 @@ async function assertMaySignUp({ email, log }: AssertMaySignUpParams): Promise<v
     if (invited) {
         return
     }
-    throw new ActivepiecesError({
+    throw new PlatformError({
         code: ErrorCode.DOMAIN_NOT_ALLOWED,
         params: {
             domain: domainOf(email),

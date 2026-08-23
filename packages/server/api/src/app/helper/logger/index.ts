@@ -14,7 +14,7 @@ function buildFacade(): FastifyBaseLogger {
 
     return evlogSetup.init({
         params: {
-            serviceName: 'activepieces-api',
+            serviceName: 'fema-api',
             version: apVersionUtil.getCurrentRelease(),
             environment: environmentVariables.getEnvironment(AppSystemProp.ENVIRONMENT),
             logLevel,
@@ -22,7 +22,7 @@ function buildFacade(): FastifyBaseLogger {
             sampleRateInfo,
             keepSlowMs,
             drainConfig: {
-                serviceName: 'activepieces-api',
+                serviceName: 'fema-api',
                 hyperdxToken: environmentVariables.getEnvironment(AppSystemProp.HYPERDX_TOKEN),
                 axiomToken: environmentVariables.getEnvironment(AppSystemProp.AXIOM_TOKEN),
                 axiomDataset: environmentVariables.getEnvironment(AppSystemProp.AXIOM_DATASET),

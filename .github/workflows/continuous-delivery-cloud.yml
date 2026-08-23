@@ -70,7 +70,7 @@ jobs:
             linux/arm64
           push: true
           no-cache: true
-          tags: ghcr.io/activepieces/activepieces-cloud:${{ steps.set-tag.outputs.image_tag }}
+          tags: ghcr.io/lokiworks/fema-ipaas-cloud:${{ steps.set-tag.outputs.image_tag }}
 
   deploy-canary:
     needs: [build-image]

@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  *
- * Regression test for https://github.com/activepieces/activepieces/issues/13897
+ * Regression test for https://github.com/lokiworks/fema-ipaas/issues/13897
  *
  * Reordering an item in an ARRAY property and then adding/deleting another item
  * used to silently destroy values and leave blank rows behind, because the

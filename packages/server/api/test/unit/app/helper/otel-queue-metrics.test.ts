@@ -30,7 +30,7 @@ describe('otelQueueMetrics.buildGaugePayload', () => {
         expect(payload.resourceMetrics).toHaveLength(1)
         const { resource, scopeMetrics } = payload.resourceMetrics[0]
         expect(resource.attributes).toEqual([
-            { key: 'service.name', value: { stringValue: 'activepieces-api' } },
+            { key: 'service.name', value: { stringValue: 'fema-api' } },
             { key: 'host.name', value: { stringValue: 'api-1' } },
         ])
 

@@ -1,5 +1,5 @@
 import { inspect } from 'node:util'
-import { ActivepiecesError, ErrorCode, isNil, tryCatch } from '@fema/core-utils'
+import { ErrorCode, isNil, PlatformError, tryCatch } from '@fema/core-utils'
 import { onCallService } from '@fema/server-utils'
 import { BeginExecuteFlowOperation, EngineOperationType, EngineResponseStatus, ExecuteFlowJobData, ExecutionType, FailedStep, FlowRunStatus, FlowVersion, ResumeExecuteFlowOperation, RunInternalError, RunInternalErrorSource, WorkerJobType } from '@fema/shared'
 import { system, WorkerSystemProp } from '../../config/configs'
@@ -36,14 +36,14 @@ export const executeFlowJob: JobHandler<ExecuteFlowJobData, FireAndForgetJobResu
 
         // resolved.kind === 'ready' — flowVersion is guaranteed present when flow: is passed to resolve
         if (isNil(resolved.flowVersion)) {
-            const error = new ActivepiecesError({ code: ErrorCode.VALIDATION, params: { message: 'flowVersion missing after resolve' } })
+            const error = new PlatformError({ code: ErrorCode.VALIDATION, params: { message: 'flowVersion missing after resolve' } })
             await reportFlowStatus({ ctx, data, status: FlowRunStatus.INTERNAL_ERROR, internalError: toInternalError(RunInternalErrorSource.WORKER, error) })
             throw error
         }
         const flowVersion: FlowVersion = resolved.flowVersion
 
         if (data.executionType === ExecutionType.RESUME && isNil(data.logsFileId)) {
-            const error = new ActivepiecesError({
+            const error = new PlatformError({
                 code: ErrorCode.RESUME_LOGS_FILE_MISSING,
                 params: { runId: data.runId },
             }, 'logsFileId is missing for RESUME operation')
@@ -93,7 +93,7 @@ export const executeFlowJob: JobHandler<ExecuteFlowJobData, FireAndForgetJobResu
                 await reportFlowStatus({ ctx, data, status: FlowRunStatus.TIMEOUT })
                 return { kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.TIMEOUT }
             }
-            if (e instanceof ActivepiecesError) {
+            if (e instanceof PlatformError) {
                 if (e.error.code === ErrorCode.SANDBOX_MEMORY_ISSUE) {
                     await reportFlowStatus({ ctx, data, status: FlowRunStatus.MEMORY_LIMIT_EXCEEDED })
                     return { kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.MEMORY_ISSUE }
@@ -151,7 +151,7 @@ function buildFlowOperation(
 }
 
 function toInternalError(source: RunInternalErrorSource, error: unknown): RunInternalError {
-    const isApError = error instanceof ActivepiecesError
+    const isApError = error instanceof PlatformError
     const base = error instanceof Error
         ? [error.name, error.message, error.stack].filter(Boolean).join('\n')
         : inspect(error, { depth: 1 })

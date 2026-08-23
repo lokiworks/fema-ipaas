@@ -1,7 +1,7 @@
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { randomUUID } from 'node:crypto'
-import { ActivepiecesError, ErrorCode } from '@fema/core-utils'
+import { PlatformError, ErrorCode } from '@fema/core-utils'
 import { describe, expect, it, vi } from 'vitest'
 import type { WorkerToApiContract } from '@fema/shared'
 import type { ApLogger } from '@fema/server-utils'
@@ -56,8 +56,8 @@ describe('piece-cache pieceName path traversal', () => {
         catch (error) {
             thrown = error
         }
-        if (!(thrown instanceof ActivepiecesError)) {
-            throw new Error(`expected an ActivepiecesError, got: ${String(thrown)}`)
+        if (!(thrown instanceof PlatformError)) {
+            throw new Error(`expected an PlatformError, got: ${String(thrown)}`)
         }
         expect(thrown.error.code).toBe(ErrorCode.VALIDATION)
         if (thrown.error.code === ErrorCode.VALIDATION) {

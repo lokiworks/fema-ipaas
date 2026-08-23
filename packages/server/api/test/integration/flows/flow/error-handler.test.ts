@@ -32,7 +32,7 @@ describe('Error handler wire format', () => {
         expect(response?.statusCode).toBe(StatusCodes.UNAUTHORIZED)
     })
 
-    it('returns { code, params } with correct status for ENTITY_NOT_FOUND (ActivepiecesError)', async () => {
+    it('returns { code, params } with correct status for ENTITY_NOT_FOUND (PlatformError)', async () => {
         const ctx = await createTestContext(app!)
         const response = await ctx.get(`/v1/flows/${apId()}`)
 

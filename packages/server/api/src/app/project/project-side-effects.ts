@@ -1,4 +1,4 @@
-import { ActivepiecesError, ErrorCode, isNil, ProjectId } from '@fema/core-utils'
+import { ErrorCode, isNil, PlatformError, ProjectId } from '@fema/core-utils'
 import { Project, ProjectType, ProjectWithLimits } from '@fema/shared'
 import { FlowStatus } from '@fema/workflow-core'
 import dayjs from 'dayjs'
@@ -34,7 +34,7 @@ export const projectSideEffects = (log: FastifyBaseLogger) => ({
             status: FlowStatus.ENABLED,
         })
         if (activeFlows > 0) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.VALIDATION,
                 params: {
                     message: `Project has ${activeFlows} enabled flow(s). Disable them before deleting the project.`,

@@ -1,4 +1,4 @@
-import { ActivepiecesError, ErrorCode, isNil, tryCatch } from '@fema/core-utils'
+import { ErrorCode, isNil, PlatformError, tryCatch } from '@fema/core-utils'
 import { type ApLogger, wideEvent } from '@fema/server-utils'
 import { PiecePackage } from '@fema/shared'
 import { localExecutionCache } from './cache/local-execution-cache'
@@ -20,7 +20,7 @@ import {
 // box by workerIndex. The boxes share the on-disk caches, which are already concurrency-safe
 // (threadSafeMkdir / cache-state), so there is no per-key provision dedup here. execute owns the slot
 // lifecycle: acquire -> provision -> run -> release on success / invalidate on throw, re-raising the
-// sandbox ActivepiecesError codes (timeout / memory / log-size) that handlers already catch. See ADR 0004.
+// sandbox PlatformError codes (timeout / memory / log-size) that handlers already catch. See ADR 0004.
 export function createSandboxRuntime({ concurrency = 1, basePath, getSettings }: CreateSandboxRuntimeParams): Runtime {
     const managers: SandboxManager[] = Array.from({ length: concurrency }, (_, index) =>
         createSandboxManager({ boxId: index + 1, basePath, getSettings }),
@@ -30,7 +30,7 @@ export function createSandboxRuntime({ concurrency = 1, basePath, getSettings }:
         async execute({ workerIndex, log, operationType, operation, timeoutInSeconds, expiresAt, provision }: ExecuteParams): Promise<RuntimeExecutionResult> {
             const manager = managers[workerIndex]
             if (isNil(manager)) {
-                throw new ActivepiecesError({
+                throw new PlatformError({
                     code: ErrorCode.VALIDATION,
                     params: { message: `No sandbox manager for worker index ${workerIndex} (concurrency=${concurrency})` },
                 })
@@ -73,7 +73,7 @@ export function createSandboxRuntime({ concurrency = 1, basePath, getSettings }:
                         bootMs = Date.now() - bootStartedAt
                         const runTimeoutInSeconds = remainingTimeoutInSeconds({ timeoutInSeconds, expiresAt })
                         if (runTimeoutInSeconds <= 0) {
-                            throw new ActivepiecesError({
+                            throw new PlatformError({
                                 code: ErrorCode.SANDBOX_EXECUTION_TIMEOUT,
                                 params: {
                                     standardOutput: '',

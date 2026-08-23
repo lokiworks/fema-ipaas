@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { readdir, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path, { join } from 'node:path'
-import { ActivepiecesError, ErrorCode } from '@fema/core-utils'
+import { PlatformError, ErrorCode } from '@fema/core-utils'
 import { afterEach, describe, expect, it } from 'vitest'
 import { codeCache } from '../../../../../src/lib/cache/flow/code/code-cache'
 
@@ -22,8 +22,8 @@ async function expectPathSegmentRejection(run: () => unknown, field: string): Pr
     catch (error) {
         thrown = error
     }
-    if (!(thrown instanceof ActivepiecesError)) {
-        throw new Error(`expected an ActivepiecesError, got: ${String(thrown)}`)
+    if (!(thrown instanceof PlatformError)) {
+        throw new Error(`expected an PlatformError, got: ${String(thrown)}`)
     }
     expect(thrown.error.code).toBe(ErrorCode.VALIDATION)
     if (thrown.error.code === ErrorCode.VALIDATION) {
@@ -40,8 +40,8 @@ async function expectNamespaceRejection(run: () => unknown): Promise<void> {
     catch (error) {
         thrown = error
     }
-    if (!(thrown instanceof ActivepiecesError)) {
-        throw new Error(`expected an ActivepiecesError, got: ${String(thrown)}`)
+    if (!(thrown instanceof PlatformError)) {
+        throw new Error(`expected an PlatformError, got: ${String(thrown)}`)
     }
     expect(thrown.error.code).toBe(ErrorCode.VALIDATION)
     if (thrown.error.code === ErrorCode.VALIDATION) {

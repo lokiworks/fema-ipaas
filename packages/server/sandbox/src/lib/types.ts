@@ -29,7 +29,7 @@ export type ResolveResult =
 export type Runtime = {
     // Materialize provision, run one engine operation, return its result. Owns the box lifecycle
     // internally: acquire -> run -> release on success / invalidate on throw. Re-raises the sandbox
-    // ActivepiecesError codes (timeout / memory / log-size) that handlers already catch.
+    // PlatformError codes (timeout / memory / log-size) that handlers already catch.
     execute(params: ExecuteParams): Promise<RuntimeExecutionResult>
     getActiveExecutors(): RuntimeExecutorInfo[]
     prewarm(params: PreWarmSandboxParams): Promise<void>

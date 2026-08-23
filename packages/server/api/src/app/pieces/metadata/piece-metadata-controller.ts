@@ -1,5 +1,5 @@
 import { PieceMetadataModel, PieceMetadataModelSummary } from '@fema/connector-sdk'
-import { ActivepiecesError, ErrorCode, isNil, LocalesEnum } from '@fema/core-utils'
+import { ErrorCode, isNil, LocalesEnum, PlatformError } from '@fema/core-utils'
 import { ALL_PRINCIPAL_TYPES, EngineResponse, GetPieceRequestParams, GetPieceRequestQuery, GetPieceRequestWithScopeParams, ListPiecesRequestQuery, PieceAudienceFilter, PieceCategory, PieceOptionRequest, Principal, PrincipalType, RegistryPiecesRequestQuery, SampleDataFileType, WorkerJobType } from '@fema/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
@@ -33,7 +33,7 @@ const basePiecesController: FastifyPluginAsyncZod = async (app) => {
 
         const oldSyncCall = !isNil(query.release)
         if (oldSyncCall) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.PIECE_SYNC_NOT_SUPPORTED,
                 params: {
                     message: 'This endpoint is deprecated. Please use it without release parameter.',
@@ -167,7 +167,7 @@ function applyVisibilityPolicy({ policy, piece }: { policy: Awaited<ReturnType<t
         return piece
     }
     if (!policy.isPieceVisible(piece.name)) {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.ENTITY_NOT_FOUND,
             params: { message: `piece_metadata_not_found pieceName=${piece.name}` },
         })

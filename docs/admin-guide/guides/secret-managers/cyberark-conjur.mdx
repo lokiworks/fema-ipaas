@@ -33,7 +33,7 @@ The following policy defines a policy `activepieces` with a group, two variables
             id: key-2
             kind: password
     - !permit
-        role: !group /activepieces/activepieces-secrets
+        role: !group /lokiworks/fema-ipaas-secrets
         privileges: [read, update, execute]
         resources: *variables
 
@@ -91,8 +91,8 @@ After loading the policy, Conjur returns something like:
 ```json
 {
   "created_roles": {
-    "conjur:host:activepieces/activepieces": {
-      "id": "conjur:host:activepieces/activepieces",
+    "conjur:host:lokiworks/fema-ipaas": {
+      "id": "conjur:host:lokiworks/fema-ipaas",
       "api_key": "<your-host-api-key>"
     }
   },
@@ -116,7 +116,7 @@ Store the **api_key** securely; you will enter it in Activepieces as the **API K
 3. Enter the connection details:
    - **URL**: Conjur server URL (e.g. `https://conjur.example.com` or Conjur Cloud URL above). Do not add a trailing slash.
    - **Organization account name**: Your Conjur account (e.g. `conjur` for Conjur Cloud).
-   - **Login ID**: For host authentication this must be the Conjur host ID with a `host/` prefix, e.g. `host/activepieces/activepieces` (policy id and host name as in your policy).
+   - **Login ID**: For host authentication this must be the Conjur host ID with a `host/` prefix, e.g. `host/lokiworks/fema-ipaas` (policy id and host name as in your policy).
    - **API Key**: The host API key returned when the host was created (see policy load response above).
 4. Click **Connect** to test and save the connection.
 

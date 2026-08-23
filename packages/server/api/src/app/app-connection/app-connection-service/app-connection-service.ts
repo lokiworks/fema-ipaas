@@ -1,5 +1,5 @@
 import { PieceMetadata } from '@fema/connector-sdk'
-import { ActivepiecesError, apId, Cursor, ErrorCode, isNil, Metadata, PlatformId, ProjectId, SeekPage, spreadIfDefined, tryCatch, tryCatchSync, unique, UserId } from '@fema/core-utils'
+import { apId, Cursor, ErrorCode, isNil, Metadata, PlatformError, PlatformId, ProjectId, SeekPage, spreadIfDefined, tryCatch, tryCatchSync, unique, UserId } from '@fema/core-utils'
 import { ApEnvironment, AppConnection, AppConnectionId, AppConnectionOwners, AppConnectionScope, AppConnectionStatus, AppConnectionType, AppConnectionValue, AppConnectionWithoutSensitiveData, EngineResponse, EngineResponseStatus, ExecuteResolveConnectionIdentifierResponse, ExecuteValidateAuthResponse, MAX_PLATFORM_APP_CONNECTION_OWNERS, OAuth2GrantType, PlatformAppConnectionOwner, PlatformAppConnectionOwnersResponse, PlatformAppConnectionProjectInfo, PlatformAppConnectionsListItem, PlatformRole, UpsertAppConnectionRequestBody, User, UserIdentity, UserWithMetaInformation, WorkerJobType } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import semver from 'semver'
@@ -195,7 +195,7 @@ export const appConnectionService = (log: FastifyBaseLogger) => ({
             ...(params.projectId ? { projectIds: ArrayContains([params.projectId]) } : {}),
         })
         if (isNil(connectionById)) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityType: 'AppConnection',
@@ -226,7 +226,7 @@ export const appConnectionService = (log: FastifyBaseLogger) => ({
             log,
         })
         if (isNil(connection)) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: { entityType: 'AppConnection', entityId: id },
             })
@@ -237,7 +237,7 @@ export const appConnectionService = (log: FastifyBaseLogger) => ({
     async replace(params: ReplaceParams): Promise<void> {
         const { sourceAppConnectionId, targetAppConnectionId, projectId, platformId, userId, deleteSourceConnection, applyToPublishedVersions } = params
         if (sourceAppConnectionId === targetAppConnectionId) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.VALIDATION,
                 params: {
                     message: 'Cannot replace a connection with itself',
@@ -257,7 +257,7 @@ export const appConnectionService = (log: FastifyBaseLogger) => ({
         })
 
         if (sourceAppConnection.pieceName !== targetAppConnection.pieceName) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.VALIDATION,
                 params: {
                     message: 'Connections must be from the same app',
@@ -269,7 +269,7 @@ export const appConnectionService = (log: FastifyBaseLogger) => ({
         // from the platform admin page and must not be deletable through a
         // project-scoped replace, no matter which projects still use them.
         if (deleteSourceConnection && sourceAppConnection.scope === AppConnectionScope.PLATFORM) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.AUTHORIZATION,
                 params: {
                     message: 'Platform connections must be deleted from the platform admin connections page',
@@ -288,7 +288,7 @@ export const appConnectionService = (log: FastifyBaseLogger) => ({
             ? await appConnectionHandler(log).countPublishedFlowsReferencingConnection({ projectId, externalId: sourceAppConnection.externalId, applyToPublishedVersions })
             : 0
         if (publishedFlowsUsingConnection > 0) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.VALIDATION,
                 params: {
                     message: deleteSourceConnection
@@ -354,7 +354,7 @@ export const appConnectionService = (log: FastifyBaseLogger) => ({
             ? 0
             : await appConnectionHandler(log).countPublishedFlowsReferencingConnection({ projectId, externalId: sourceAppConnection.externalId, applyToPublishedVersions: false })
         if (remainingFlows.data.length > 0 || remainingPublishedFlows > 0) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.VALIDATION,
                 params: {
                     message: 'Cannot delete the old connection because some flows still use it',
@@ -562,7 +562,7 @@ async function assertProjectIds(projectIds: ProjectId[], platformId: string): Pr
         platformId,
     })
     if (filteredProjects !== projectIds.length) {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.ENTITY_NOT_FOUND,
             params: {
                 entityType: 'Project',
@@ -771,7 +771,7 @@ const engineValidateAuth = async (
             { engineResponse },
             'Engine validate auth failed',
         )
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.ENGINE_OPERATION_FAILURE,
             params: {
                 message: 'Failed to run engine validate auth',
@@ -783,7 +783,7 @@ const engineValidateAuth = async (
     const validateAuthResult = engineResponse.response
 
     if (!validateAuthResult.valid) {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.INVALID_APP_CONNECTION,
             params: {
                 error: validateAuthResult.error,
@@ -913,7 +913,7 @@ function mapToUserWithMetaInformation(owner: (User & { identity?: UserIdentity }
 
 function validatePieceVersion(pieceVersion: string): void {
     if (!semver.valid(pieceVersion)) {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.VALIDATION,
             params: {
                 message: 'Invalid piece version',

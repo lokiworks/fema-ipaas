@@ -11,7 +11,7 @@
       "links": [
          {
             "label": "GitHub",
-            "href": "https://github.com/activepieces/activepieces"
+            "href": "https://github.com/lokiworks/fema-ipaas"
          },
          {
             "label": "Pieces",
@@ -665,7 +665,7 @@
    "footer": {
       "socials": {
          "x": "https://x.com/activepieces",
-         "github": "https://github.com/activepieces/activepieces",
+         "github": "https://github.com/lokiworks/fema-ipaas",
          "linkedin": "https://linkedin.com/company/activepieces"
       }
    }

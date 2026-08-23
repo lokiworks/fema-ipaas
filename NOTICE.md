@@ -7,7 +7,7 @@
 本项目派生自 Activepieces Community Edition。
 
 - 项目：Activepieces
-- 来源：https://github.com/activepieces/activepieces
+- 来源：https://github.com/lokiworks/fema-ipaas
 - 基线提交：`eef1a1d4d22e4181859792813bf855c4038a3d0b`（v0.88.3，2026-08-22）
 - 许可证：MIT
 - 版权声明：

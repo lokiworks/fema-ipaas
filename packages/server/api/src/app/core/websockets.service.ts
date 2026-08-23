@@ -1,4 +1,4 @@
-import { ActivepiecesError, ErrorCode, isNil, Permission, ProjectRole } from '@fema/core-utils'
+import { ErrorCode, isNil, Permission, PlatformError, ProjectRole } from '@fema/core-utils'
 import { ApiToWorkerContract, createNotifyClient, Principal, PrincipalForType, PrincipalType, WebsocketServerEvent } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { Socket } from 'socket.io'
@@ -57,7 +57,7 @@ export const websocketService = {
                 break
             }
             default: {
-                throw new ActivepiecesError({
+                throw new PlatformError({
                     code: ErrorCode.AUTHENTICATION,
                     params: {
                         message: 'Invalid principal type',
@@ -109,7 +109,7 @@ export const websocketService = {
 
 const validateProjectId = async ({ userId, projectId, log }: ValidateProjectIdArgs): Promise<ProjectRole> => {
     if (isNil(projectId)) {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.AUTHENTICATION,
             params: {
                 message: 'Project ID is required',
@@ -122,7 +122,7 @@ const validateProjectId = async ({ userId, projectId, log }: ValidateProjectIdAr
     })
 
     if (isNil(role)) {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.AUTHORIZATION,
             params: {
                 message: 'User not allowed to access this project',

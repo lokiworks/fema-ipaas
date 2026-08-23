@@ -3,7 +3,7 @@ import {
     piecePropertiesUtils,
     PiecePropertyMap,
 } from '@fema/connector-sdk'
-import { ActivepiecesError, ErrorCode, isNil, PlatformId, STEP_NAME_REGEX, UserId } from '@fema/core-utils'
+import { ErrorCode, isNil, PlatformError, PlatformId, STEP_NAME_REGEX, UserId } from '@fema/core-utils'
 import { CodeActionSettings, FlowActionType, FlowOperationRequest, FlowOperationType, flowPieceUtil, flowStructureUtil, FlowTrigger, FlowTriggerType, LoopOnItemsActionSettings, PieceActionSettings, PieceTriggerSettings, RouterActionSettingsWithValidation, SourceCode } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { z } from 'zod'
@@ -129,7 +129,7 @@ export const flowVersionValidationUtil = (log: FastifyBaseLogger) => ({
 function assertImportedStepNamesAreSafe(trigger: FlowTrigger): void {
     const invalidStep = flowStructureUtil.getAllSteps(trigger).find((step) => !STEP_NAME_REGEX.test(step.name))
     if (!isNil(invalidStep)) {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.VALIDATION,
             params: { message: `Invalid step name: "${invalidStep.name}"` },
         })

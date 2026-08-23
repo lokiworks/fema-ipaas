@@ -36,7 +36,7 @@ export const apVersionUtil = {
     async getLatestRelease(): Promise<string> {
         try {
             const response = await fetch(
-                'https://raw.githubusercontent.com/activepieces/activepieces/main/package.json',
+                'https://raw.githubusercontent.com/lokiworks/fema-ipaas/main/package.json',
                 {
                     signal: AbortSignal.timeout(5000),
                 },

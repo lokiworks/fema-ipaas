@@ -1,4 +1,4 @@
-import { ActivepiecesError, ErrorCode, isNil } from '@fema/core-utils'
+import { ErrorCode, isNil, PlatformError } from '@fema/core-utils'
 import { cryptoUtils } from '@fema/server-utils'
 import { ApFlagId, AuthenticationResponse, OtpType, TelemetryEventName, UserIdentity, UserIdentityProvider } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
@@ -61,7 +61,7 @@ export const passwordlessAuthService = (log: FastifyBaseLogger) => ({
     async verifyCode({ email, code, platformId }: VerifyCodeParams): Promise<AuthenticationResponse> {
         const identity = await userIdentityService(log).getIdentityByEmail(email)
         if (isNil(identity)) {
-            throw new ActivepiecesError({ code: ErrorCode.INVALID_OTP, params: {} })
+            throw new PlatformError({ code: ErrorCode.INVALID_OTP, params: {} })
         }
         if (!isNil(platformId)) {
             await assertPlatformAuthIsOpenTo({ email, platformId, log })
@@ -72,7 +72,7 @@ export const passwordlessAuthService = (log: FastifyBaseLogger) => ({
             value: code,
         })
         if (!codeIsValid) {
-            throw new ActivepiecesError({ code: ErrorCode.INVALID_OTP, params: {} })
+            throw new PlatformError({ code: ErrorCode.INVALID_OTP, params: {} })
         }
         const verifiedIdentity = identity.verified ? identity : await userIdentityService(log).verifyAndDiscardPassword(identity.id)
         await flagService(log).save({ id: ApFlagId.USER_CREATED, value: true })
@@ -88,7 +88,7 @@ export const passwordlessAuthService = (log: FastifyBaseLogger) => ({
         if (!isNil(platformId)) {
             const mayJoin = await mayJoinPlatform({ email, platformId, identity: verifiedIdentity, log })
             if (!mayJoin) {
-                throw new ActivepiecesError({
+                throw new PlatformError({
                     code: ErrorCode.INVITATION_ONLY_SIGN_UP,
                     params: { message: 'User is not invited to the platform' },
                 })

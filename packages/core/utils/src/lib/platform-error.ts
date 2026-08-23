@@ -2,7 +2,7 @@ import type { ApId, FlowId, FlowRunId, FlowVersionId, ProjectId, UserId } from '
 import type { Permission, PlatformUsageMetric } from './permission'
 import type { ProjectRole } from './project-role'
 
-export class ActivepiecesError extends Error {
+export class PlatformError extends Error {
     constructor(public error: ApErrorParams, message?: string) {
         super(error.code + (message ? `: ${message}` : ''))
     }

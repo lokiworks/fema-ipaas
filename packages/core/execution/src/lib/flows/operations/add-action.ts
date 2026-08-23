@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import { isNil } from '@fema/core-utils'
-import { ActivepiecesError, ErrorCode } from '@fema/core-utils'
+import { PlatformError, ErrorCode } from '@fema/core-utils'
 import { FlowAction, FlowActionType, LoopOnItemsAction, RouterAction, SingleActionSchema } from '../actions/action'
 import { FlowVersion } from '../flow-version'
 import { flowStructureUtil, Step } from '../util/flow-structure-util'
@@ -78,7 +78,7 @@ function handleLoopOnItems(parentStep: LoopOnItemsAction, request: AddActionRequ
         })
     }
     else {
-        throw new ActivepiecesError(
+        throw new PlatformError(
             {
                 code: ErrorCode.FLOW_OPERATION_INVALID,
                 params: {
@@ -101,7 +101,7 @@ function handleRouter(parentStep: RouterAction, request: AddActionRequest): Step
         })
     }
     else {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.FLOW_OPERATION_INVALID,
             params: {
                 message: `Router step parent ${request.stepLocationRelativeToParent} not found`,
@@ -113,7 +113,7 @@ function handleRouter(parentStep: RouterAction, request: AddActionRequest): Step
 
 function handleContinueOnFailureBranches(parentStep: Step, request: AddActionRequest): Step {
     if (parentStep.type !== FlowActionType.CODE && parentStep.type !== FlowActionType.PIECE) {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.FLOW_OPERATION_INVALID,
             params: {
                 message: `Continue-on-failure branches are only available on Code and Piece actions, got ${parentStep.type}`,

@@ -38,7 +38,7 @@ function buildGaugePayload({ queueCounts, timeUnixNano, hostName }: BuildGaugePa
         resourceMetrics: [{
             resource: {
                 attributes: [
-                    { key: 'service.name', value: { stringValue: 'activepieces-api' } },
+                    { key: 'service.name', value: { stringValue: 'fema-api' } },
                     { key: 'host.name', value: { stringValue: hostName } },
                 ],
             },

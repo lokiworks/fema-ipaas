@@ -1,6 +1,6 @@
 import os from 'os'
 import path from 'path'
-import { ActivepiecesError, ErrorCode, isNil } from '@fema/core-utils'
+import { ErrorCode, isNil, PlatformError } from '@fema/core-utils'
 import { DefaultProjectRole, ExecutionMode, FileLocation, NetworkMode, PieceSyncMode } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { DatabaseType } from '../../database/database-type'
@@ -82,7 +82,7 @@ export const system = {
         const value = system.getNumber(prop)
 
         if (isNil(value)) {
-            throw new ActivepiecesError(
+            throw new PlatformError(
                 {
                     code: ErrorCode.SYSTEM_PROP_NOT_DEFINED,
                     params: {
@@ -123,7 +123,7 @@ export const system = {
     getBooleanOrThrow(prop: SystemProp): boolean {
         const value = this.getBoolean(prop)
         if (isNil(value)) {
-            throw new ActivepiecesError(
+            throw new PlatformError(
                 {
                     code: ErrorCode.SYSTEM_PROP_NOT_DEFINED,
                     params: {
@@ -147,7 +147,7 @@ export const system = {
         const value = getEnvVarOrReturnDefaultValue(prop) as T | undefined
 
         if (value === undefined) {
-            throw new ActivepiecesError(
+            throw new PlatformError(
                 {
                     code: ErrorCode.SYSTEM_PROP_NOT_DEFINED,
                     params: {

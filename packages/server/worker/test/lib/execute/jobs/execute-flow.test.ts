@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { ActivepiecesError, ErrorCode } from '@fema/core-utils';
+import { PlatformError, ErrorCode } from '@fema/core-utils';
 import { EngineResponseStatus, ExecutionType, FlowActionType, FlowRunStatus, FlowTriggerType, FlowVersionState, StreamStepProgress, RunEnvironment, WorkerJobType } from '@fema/shared';
 import type { ExecuteFlowJobData, FlowVersion } from '@fema/shared'
 
@@ -161,8 +161,8 @@ describe('executeFlowJob', () => {
                 expect.fail('should have thrown')
             }
             catch (e) {
-                expect(e).toBeInstanceOf(ActivepiecesError)
-                expect((e as ActivepiecesError).error.code).toBe(ErrorCode.RESUME_LOGS_FILE_MISSING)
+                expect(e).toBeInstanceOf(PlatformError)
+                expect((e as PlatformError).error.code).toBe(ErrorCode.RESUME_LOGS_FILE_MISSING)
             }
 
             expect(ctx.apiClient.uploadRunLog).toHaveBeenCalledWith(

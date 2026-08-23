@@ -1,15 +1,15 @@
-import { ActivepiecesError, apId, ErrorCode } from '@fema/core-utils'
+import { PlatformError, apId, ErrorCode } from '@fema/core-utils'
 import { describe, expect, it } from 'vitest'
 import { ACTION_RUN_CODE_DIR } from '../../../src/lib/cache/cache-paths'
 import { assertSafeCodeNamespace, assertSafePathSegment } from '../../../src/lib/utils/path-safety'
 
-function validationErrorFrom(run: () => void): ActivepiecesError | null {
+function validationErrorFrom(run: () => void): PlatformError | null {
     try {
         run()
         return null
     }
     catch (error) {
-        return error instanceof ActivepiecesError ? error : null
+        return error instanceof PlatformError ? error : null
     }
 }
 
@@ -31,22 +31,22 @@ describe('assertSafeCodeNamespace', () => {
     })
 
     it('rejects traversal in either segment', () => {
-        expect(() => assertSafeCodeNamespace('..')).toThrow(ActivepiecesError)
-        expect(() => assertSafeCodeNamespace('../etc')).toThrow(ActivepiecesError)
-        expect(() => assertSafeCodeNamespace(`${ACTION_RUN_CODE_DIR}/..`)).toThrow(ActivepiecesError)
-        expect(() => assertSafeCodeNamespace('..%2f/etc')).toThrow(ActivepiecesError)
+        expect(() => assertSafeCodeNamespace('..')).toThrow(PlatformError)
+        expect(() => assertSafeCodeNamespace('../etc')).toThrow(PlatformError)
+        expect(() => assertSafeCodeNamespace(`${ACTION_RUN_CODE_DIR}/..`)).toThrow(PlatformError)
+        expect(() => assertSafeCodeNamespace('..%2f/etc')).toThrow(PlatformError)
     })
 
     it('rejects the empty segment a leading, trailing, or doubled slash produces', () => {
-        expect(() => assertSafeCodeNamespace('')).toThrow(ActivepiecesError)
-        expect(() => assertSafeCodeNamespace('/a')).toThrow(ActivepiecesError)
-        expect(() => assertSafeCodeNamespace('a/')).toThrow(ActivepiecesError)
-        expect(() => assertSafeCodeNamespace('a//b')).toThrow(ActivepiecesError)
+        expect(() => assertSafeCodeNamespace('')).toThrow(PlatformError)
+        expect(() => assertSafeCodeNamespace('/a')).toThrow(PlatformError)
+        expect(() => assertSafeCodeNamespace('a/')).toThrow(PlatformError)
+        expect(() => assertSafeCodeNamespace('a//b')).toThrow(PlatformError)
     })
 
     it('rejects a backslash and a NUL byte in either segment', () => {
-        expect(() => assertSafeCodeNamespace('a\\b')).toThrow(ActivepiecesError)
-        expect(() => assertSafeCodeNamespace(`${ACTION_RUN_CODE_DIR}/a\0b`)).toThrow(ActivepiecesError)
+        expect(() => assertSafeCodeNamespace('a\\b')).toThrow(PlatformError)
+        expect(() => assertSafeCodeNamespace(`${ACTION_RUN_CODE_DIR}/a\0b`)).toThrow(PlatformError)
     })
 })
 

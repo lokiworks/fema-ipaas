@@ -1,4 +1,4 @@
-import { ActivepiecesError, ErrorCode, isNil } from '@fema/core-utils'
+import { ErrorCode, isNil, PlatformError } from '@fema/core-utils'
 import { PlatformRole, Principal, PrincipalType, UserIdentityProvider } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { userIdentityService } from '../../../../authentication/user-identity/user-identity-service'
@@ -44,7 +44,7 @@ async function assertNonEmbedOrAdmin(principal: Principal, log: FastifyBaseLogge
     }
     const identity = await userIdentityService(log).getOneOrFail({ id: user.identityId })
     if (identity.provider === UserIdentityProvider.JWT) {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.AUTHORIZATION,
             params: {
                 message: 'Embed users are not allowed to access this resource.',
@@ -52,14 +52,14 @@ async function assertNonEmbedOrAdmin(principal: Principal, log: FastifyBaseLogge
         })
     }
     if (isNil(user.platformId)) {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.AUTHORIZATION,
             params: {
                 message: 'User is not associated with a platform.',
             },
         })
     }
-    throw new ActivepiecesError({
+    throw new PlatformError({
         code: ErrorCode.AUTHORIZATION,
         params: {
             message: 'User does not have invite permission.',
@@ -73,7 +73,7 @@ async function assertPlatformIsOwnedByCurrentPrincipal(principal: Principal, log
     }
     const user = await userService(log).getOneOrFail({ id: principal.id })
     if (user.platformRole !== PlatformRole.ADMIN) {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.AUTHORIZATION,
             params: {
                 message: 'User is not an admin/owner of the platform.',
@@ -85,7 +85,7 @@ async function assertPlatformIsOwnedByCurrentPrincipal(principal: Principal, log
 
 async function assertAccessToProject(principal: Principal, projectSecurity: ProjectAuthorizationConfig, log: FastifyBaseLogger): Promise<void> {
     if (isNil(projectSecurity.projectId)) {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.AUTHORIZATION,
             params: {
                 message: 'Project ID is required',
@@ -98,7 +98,7 @@ async function assertAccessToProject(principal: Principal, projectSecurity: Proj
 
 async function assertPrinicpalIsOneOf< T extends readonly PrincipalType[]>(allowedPrincipals: T, currentPrincipal: PrincipalType): Promise<void> {
     if (!allowedPrincipals.includes(currentPrincipal)) {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.AUTHORIZATION,
             params: {
                 message: 'principal is not allowed for this route',

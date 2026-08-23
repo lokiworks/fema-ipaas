@@ -10,7 +10,7 @@ permissions:
 jobs:
   lint:
     runs-on: ubuntu-latest
-    if: github.repository == 'activepieces/activepieces'
+    if: github.repository == 'lokiworks/fema-ipaas'
     steps:
       - uses: actions/checkout@v5
         with:
@@ -63,7 +63,7 @@ jobs:
 
   main:
     runs-on: ubuntu-latest
-    if: github.repository == 'activepieces/activepieces'
+    if: github.repository == 'lokiworks/fema-ipaas'
     steps:
       - uses: actions/checkout@v5
         with:
@@ -175,7 +175,7 @@ jobs:
   tool-search-postgres:
     name: tool-search (postgres)
     runs-on: ubuntu-latest
-    if: github.repository == 'activepieces/activepieces'
+    if: github.repository == 'lokiworks/fema-ipaas'
     services:
       postgres:
         image: pgvector/pgvector:pg16

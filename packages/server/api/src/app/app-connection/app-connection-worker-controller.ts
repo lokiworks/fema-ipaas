@@ -1,4 +1,4 @@
-import { ActivepiecesError, assertNotNullOrUndefined, ErrorCode, isNil } from '@fema/core-utils'
+import { assertNotNullOrUndefined, ErrorCode, isNil, PlatformError } from '@fema/core-utils'
 import { AppConnection, EnginePrincipal, GetAppConnectionForWorkerRequestQuery } from '@fema/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { securityAccess } from '../core/security/authorization/fastify-security'
@@ -16,7 +16,7 @@ export const appConnectionWorkerController: FastifyPluginAsyncZod = async (app) 
         })
 
         if (isNil(appConnection)) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityId: `externalId=${request.params.externalId}`,

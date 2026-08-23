@@ -1,4 +1,4 @@
-import { ActivepiecesError, assertNotNullOrUndefined, ErrorCode } from '@fema/core-utils'
+import { assertNotNullOrUndefined, ErrorCode, PlatformError } from '@fema/core-utils'
 
 /**
  * @param {string} pieceName - starts with `@fema/connector-`
@@ -44,7 +44,7 @@ export const extractPieceFromModule = <T>(params: ExtractPieceFromModuleParams):
         constructors.push(e?.constructor?.name)
     }
 
-    throw new ActivepiecesError({
+    throw new PlatformError({
         code: ErrorCode.ENTITY_NOT_FOUND,
         params: {
             entityType: 'piece',

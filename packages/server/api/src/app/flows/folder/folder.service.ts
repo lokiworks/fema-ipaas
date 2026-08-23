@@ -1,4 +1,4 @@
-import { ActivepiecesError, apId, Cursor, ErrorCode, isNil, ProjectId, SeekPage } from '@fema/core-utils'
+import { apId, Cursor, ErrorCode, isNil, PlatformError, ProjectId, SeekPage } from '@fema/core-utils'
 import { CreateFolderRequest, Folder, FolderDto, FolderId, UpdateFolderRequest } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { repoFactory } from '../../core/db/repo-factory'
@@ -26,7 +26,7 @@ export const flowFolderService = (log: FastifyBaseLogger) => ({
             displayName: request.displayName,
         })
         if (folderWithDisplayName && folderWithDisplayName.id !== folderId) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.VALIDATION,
                 params: { message: 'Folder displayName is used' },
             })
@@ -129,7 +129,7 @@ export const flowFolderService = (log: FastifyBaseLogger) => ({
         const { projectId, folderId } = params
         const folder = await folderRepo().findOneBy({ projectId, id: folderId })
         if (!folder) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     message: `Folder ${folderId} is not found`,

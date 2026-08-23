@@ -1,6 +1,6 @@
 import { Piece, PieceAuthProperty } from '@fema/connector-sdk'
 import { slack } from '@fema/connector-slack'
-import { ActivepiecesError, apId, assertNotNullOrUndefined, ErrorCode, isNil } from '@fema/core-utils'
+import { apId, assertNotNullOrUndefined, ErrorCode, isNil, PlatformError } from '@fema/core-utils'
 import { FlowStatus, LATEST_JOB_DATA_SCHEMA_VERSION, RunEnvironment, WorkerJobType } from '@fema/shared'
 import { FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
@@ -57,7 +57,7 @@ export const appEventRoutingController: FastifyPluginAsyncZod = async (
             }
             const piece = appWebhooks[pieceUrl]
             if (isNil(piece)) {
-                throw new ActivepiecesError({
+                throw new PlatformError({
                     code: ErrorCode.ENTITY_NOT_FOUND,
                     params: {
                         entityType: 'piece',

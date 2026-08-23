@@ -39,7 +39,7 @@ jobs:
 
       - name: Configure git
         run: |
-          git config --local user.email "abdulyki+automatedcommits@activepieces.com"
+          git config --local user.email "abdulyki+automatedcommits@fema.local"
           git config --local user.name "automated-commits-ap"
           git checkout -- bun.lock
 

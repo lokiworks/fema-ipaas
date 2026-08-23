@@ -8,7 +8,7 @@
   "Response": "答复",
   "Flow Execution": "流执行",
   "Markdown": "Markdown",
-  "**Respond and Wait for Next Webhook**<br> \n            Check the response header (x-activepieces-resume-webhook-url) for the next webhook URL and call it to resume the flow. <br>\n            ": "**响应并等待下一个 Webhook**<br> \n            请检查下一个 webhook URL 的响应头(x-activethes-resume-webhook-url) 并调用它来恢复流程。 <br>\n            ",
+  "**Respond and Wait for Next Webhook**<br> \n            Check the response header (x-fema-resume-webhook-url) for the next webhook URL and call it to resume the flow. <br>\n            ": "**响应并等待下一个 Webhook**<br> \n            请检查下一个 webhook URL 的响应头(x-activethes-resume-webhook-url) 并调用它来恢复流程。 <br>\n            ",
   "JSON": "JSON",
   "Raw": "原始文件",
   "Redirect": "重定向",

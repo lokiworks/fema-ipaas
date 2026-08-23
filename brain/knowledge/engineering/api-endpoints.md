@@ -7,7 +7,7 @@ icon: 🔌
 The Activepieces REST API reference. Source: `docs/endpoints/` plus generated `openapi.json`.
 
 ## Basics
-- **Auth** — API keys, generated in the Platform Dashboard (Platform/Enterprise editions; contact sales@activepieces.com). Pass as a Bearer token: `Authorization: Bearer {API_KEY}`.
+- **Auth** — API keys, generated in the Platform Dashboard (Platform/Enterprise editions; contact sales@fema.local). Pass as a Bearer token: `Authorization: Bearer {API_KEY}`.
 - **Pagination** — seek pagination via `limit` and `cursor` query params. Responses are `{ data, next, previous }` where `next`/`previous` are cursors.
 
 ## Endpoint groups

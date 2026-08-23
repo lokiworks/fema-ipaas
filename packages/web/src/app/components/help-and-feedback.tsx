@@ -39,7 +39,7 @@ export const HelpAndFeedback = () => {
 
         <DropdownMenuItem asChild>
           <Link
-            to="https://github.com/activepieces/activepieces/releases"
+            to="https://github.com/lokiworks/fema-ipaas/releases"
             target="_blank"
             rel="noopener noreferrer"
             className="flex justify-between w-full"

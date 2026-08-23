@@ -1,5 +1,5 @@
 import { Transform } from 'node:stream'
-import { ActivepiecesError, ErrorCode } from '@fema/core-utils'
+import { ErrorCode, PlatformError } from '@fema/core-utils'
 import { FileReadToken, FileType } from '@fema/shared'
 import dayjs from 'dayjs'
 import { domainHelper } from '../helper/domain-helper'
@@ -35,8 +35,8 @@ export const filesService = {
     },
 }
 
-export function fileTooLargeError(maxBytes: number): ActivepiecesError {
-    return new ActivepiecesError({
+export function fileTooLargeError(maxBytes: number): PlatformError {
+    return new PlatformError({
         code: ErrorCode.VALIDATION,
         params: { message: `File exceeds the maximum allowed size of ${maxBytes} bytes` },
     })

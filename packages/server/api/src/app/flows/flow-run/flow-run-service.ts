@@ -1,4 +1,4 @@
-import { ActivepiecesError, apId, Cursor, ErrorCode, FlowId, FlowRunId, FlowVersionId, isNil, PlatformId, ProjectId, SeekPage } from '@fema/core-utils'
+import { apId, Cursor, ErrorCode, FlowId, FlowRunId, FlowVersionId, isNil, PlatformError, PlatformId, ProjectId, SeekPage } from '@fema/core-utils'
 import { apDayjs, wideEvent } from '@fema/server-utils'
 import { ExecuteFlowJobData, ExecutionType, ExecutioOutputFile, FileCompression, FileType, FlowRetryStrategy, FlowRun, FlowRunCountByStatus, FlowRunStatus, FlowRunWithRetryError, FlowVersion, GenericStepOutput, isFlowRunStateTerminal, JobPayload, LATEST_JOB_DATA_SCHEMA_VERSION, logSerializer, LogSliceRef, ResumeReason, RunEnvironment, RunInternalError, SampleDataFileType, StepOutput, StepOutputStatus, StepOutputType, StreamStepProgress, WorkerJobType } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
@@ -124,7 +124,7 @@ export const flowRunService = (log: FastifyBaseLogger) => ({
             isFlowRunStateTerminal({ status: oldFlowRun.status, ignoreInternalError: false }) &&
             isOutsideRetentionWindow(oldFlowRun.created, retentionDays)
         ) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.FLOW_RUN_RETRY_OUTSIDE_RETENTION,
                 params: {
                     flowRunId: oldFlowRun.id,
@@ -250,7 +250,7 @@ export const flowRunService = (log: FastifyBaseLogger) => ({
             if (result.status === 'fulfilled') {
                 return result.value
             }
-            const error = result.reason instanceof ActivepiecesError ? result.reason : undefined
+            const error = result.reason instanceof PlatformError ? result.reason : undefined
             return {
                 ...filteredFlowRuns[i],
                 error: {
@@ -424,7 +424,7 @@ export const flowRunService = (log: FastifyBaseLogger) => ({
         const flowRun = await this.getOne(params)
 
         if (isNil(flowRun)) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityType: 'flow_run',
@@ -648,7 +648,7 @@ export async function addToQueue(params: AddToQueueParams, log: FastifyBaseLogge
 export async function findFlowRunOrThrow(flowRunId: FlowRunId): Promise<FlowRun> {
     const flowRun = await queryBuilderForFlowRun(flowRunRepo()).where({ id: flowRunId }).getOne()
     if (isNil(flowRun)) {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.ENTITY_NOT_FOUND,
             params: {
                 entityType: 'flow_run',
@@ -680,7 +680,7 @@ async function resolveStepOutput({ step, flowRun, log }: ResolveStepOutputParams
         type: FileType.FLOW_RUN_LOG_SLICE,
     })
     if (isNil(file)) {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.ENTITY_NOT_FOUND,
             params: {
                 entityType: 'file',

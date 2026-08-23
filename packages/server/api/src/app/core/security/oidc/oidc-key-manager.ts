@@ -1,6 +1,6 @@
 import { createHash, createPublicKey, generateKeyPair, JsonWebKey } from 'crypto'
 import { promisify } from 'util'
-import { ActivepiecesError, ErrorCode, isNil } from '@fema/core-utils'
+import { ErrorCode, isNil, PlatformError } from '@fema/core-utils'
 import { Mutex } from 'async-mutex'
 import { FlagEntity } from '../../../flags/flag.entity'
 import { EncryptedObject, encryptUtils } from '../../../helper/encryption'
@@ -61,7 +61,7 @@ async function getOrGenerateStoredPrivateKey(): Promise<string> {
         .execute()
     const stored = await loadStoredPrivateKey()
     if (isNil(stored)) {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.GENERIC_ERROR,
             params: { message: 'OIDC signing key could not be persisted to or read back from the flag store' },
         })

@@ -52,8 +52,8 @@ jobs:
       - name: Fail if Docker tag already exists with a different digest
         run: |
           VERSION=${{ steps.version.outputs.release }}
-          CANDIDATE_DIGEST=$(docker buildx imagetools inspect --raw ghcr.io/activepieces/activepieces-cloud:release-candidate | sha256sum | awk '{print $1}')
-          EXISTING_RAW=$(docker buildx imagetools inspect --raw activepieces/activepieces:$VERSION 2>/dev/null || true)
+          CANDIDATE_DIGEST=$(docker buildx imagetools inspect --raw ghcr.io/lokiworks/fema-ipaas-cloud:release-candidate | sha256sum | awk '{print $1}')
+          EXISTING_RAW=$(docker buildx imagetools inspect --raw lokiworks/fema-ipaas:$VERSION 2>/dev/null || true)
           if [[ -z "$EXISTING_RAW" ]]; then
             echo "Tag $VERSION does not exist yet — proceeding."
             exit 0
@@ -91,11 +91,11 @@ jobs:
       - name: Publish release images
         run: |
           docker buildx imagetools create \
-            --tag activepieces/activepieces:${{ steps.version.outputs.release }} \
-            --tag activepieces/activepieces:latest \
-            --tag ghcr.io/activepieces/activepieces:${{ steps.version.outputs.release }} \
-            --tag ghcr.io/activepieces/activepieces:latest \
-            ghcr.io/activepieces/activepieces-cloud:release-candidate
+            --tag lokiworks/fema-ipaas:${{ steps.version.outputs.release }} \
+            --tag lokiworks/fema-ipaas:latest \
+            --tag ghcr.io/lokiworks/fema-ipaas:${{ steps.version.outputs.release }} \
+            --tag ghcr.io/lokiworks/fema-ipaas:latest \
+            ghcr.io/lokiworks/fema-ipaas-cloud:release-candidate
 
       # Internal-only for now.
       # To expose them on the GitHub Release for supply-chain audits,
@@ -103,7 +103,7 @@ jobs:
       # and pass github-token: ${{ secrets.GITHUB_TOKEN }}.
       - uses: ./.github/actions/sbom
         with:
-          image: ghcr.io/activepieces/activepieces:${{ steps.version.outputs.release }}
+          image: ghcr.io/lokiworks/fema-ipaas:${{ steps.version.outputs.release }}
           version: ${{ steps.version.outputs.release }}
 
       - name: Add breaking migration note to release

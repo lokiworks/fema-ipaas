@@ -1,5 +1,5 @@
 import { OAuth2AuthorizationMethod } from '@fema/connector-sdk'
-import { ActivepiecesError, ErrorCode, isNil } from '@fema/core-utils'
+import { ErrorCode, isNil, PlatformError } from '@fema/core-utils'
 import { safeHttp } from '@fema/server-utils'
 import { AppConnectionType, BaseOAuth2ConnectionValue, OAuth2ConnectionValueWithApp, OAuth2GrantType, resolveValueFromProps } from '@fema/shared'
 import { AxiosError } from 'axios'
@@ -92,7 +92,7 @@ export const credentialsOauth2Service = (log: FastifyBaseLogger): OAuth2Service<
                 log.error('Unknown Error:')
                 log.error(e)
             }
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.INVALID_CLAIM,
                 params: {
                     clientId: request.clientId,

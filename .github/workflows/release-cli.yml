@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   Check-Version:
-    if: github.repository == 'activepieces/activepieces'
+    if: github.repository == 'lokiworks/fema-ipaas'
     runs-on: ubuntu-latest
     outputs:
       publish: ${{ steps.version.outputs.publish }}

@@ -1,4 +1,4 @@
-import { ActivepiecesError, apId, ErrorCode, isNil } from '@fema/core-utils'
+import { apId, ErrorCode, isNil, PlatformError } from '@fema/core-utils'
 import { LATEST_JOB_DATA_SCHEMA_VERSION, UserInteractionJobDataWithoutWatchingInformation, WorkerJobType } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { engineResponseWatcher } from './engine-response-watcher'
@@ -25,7 +25,7 @@ export const userInteractionWatcher = {
             : WATCHER_SAFETY_TIMEOUT_MS
         const result = await engineResponseWatcher(log).oneTimeListener<T>(id, true, timeoutMs, undefined)
         if (isNil(result)) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.ENGINE_OPERATION_FAILURE,
                 params: { message: WORKER_DID_NOT_RESPOND_MESSAGE },
             })

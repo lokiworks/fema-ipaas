@@ -1,4 +1,4 @@
-import { ActivepiecesError, assertNotNullOrUndefined, ErrorCode, isNil, isObject } from '@fema/core-utils'
+import { assertNotNullOrUndefined, ErrorCode, isNil, isObject, PlatformError } from '@fema/core-utils'
 import { FastifyRequest } from 'fastify'
 import { databaseConnection } from '../../../../database/database-connection'
 import { EntitySourceType, ProjectBodyResource, ProjectParamResource, ProjectQueryResource, ProjectTableResource } from '../../authorization/common'
@@ -32,7 +32,7 @@ export const projectIdExtractor = {
             [entityField]: entityValue,
         })
         if (isNil(entity)) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityId: entityValue,

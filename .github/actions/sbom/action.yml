@@ -3,7 +3,7 @@ description: Generates CycloneDX + SPDX SBOMs for a Docker image, scans them wit
 
 inputs:
   image:
-    description: Full image reference with tag (e.g. ghcr.io/activepieces/activepieces:0.83.0).
+    description: Full image reference with tag (e.g. ghcr.io/lokiworks/fema-ipaas:0.83.0).
     required: true
   version:
     description: Version string used to name the SBOM files and as the Grype/Trivy SARIF category.

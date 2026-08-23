@@ -1,4 +1,4 @@
-import { ActivepiecesError, apId, assertNotNullOrUndefined, Cursor, ErrorCode, FlowId, FlowVersionId, isNil, Metadata, PlatformId, ProjectId, SeekPage, tryCatch, UserId } from '@fema/core-utils'
+import { apId, assertNotNullOrUndefined, Cursor, ErrorCode, FlowId, FlowVersionId, isNil, Metadata, PlatformError, PlatformId, ProjectId, SeekPage, tryCatch, UserId } from '@fema/core-utils'
 import { apDayjs, apDayjsDuration } from '@fema/server-utils'
 import { CreateFlowRequest, Flow, FlowCreator, FlowOperationRequest, FlowOperationStatus, FlowOperationType, flowPieceUtil, FlowStatus, FlowTriggerType, FlowVersion, FlowVersionState, PopulatedFlow, SharedTemplate, TelemetryEventName, TemplateStatus, TemplateType, TriggerSource, UncategorizedFolderId, UserWithMetaInformation } from '@fema/shared'
 import dayjs from 'dayjs'
@@ -194,7 +194,7 @@ export const flowService = (log: FastifyBaseLogger) => ({
 
         const populatedFlows = await Promise.all(paginationResult.data.map(async (flow) => {
             if (isNil(flow.version)) {
-                throw new ActivepiecesError({
+                throw new PlatformError({
                     code: ErrorCode.ENTITY_NOT_FOUND,
                     params: {
                         entityType: 'FlowVersion',
@@ -342,7 +342,7 @@ export const flowService = (log: FastifyBaseLogger) => ({
                 projectId,
             })
             if (flow.operationStatus === FlowOperationStatus.DELETING) {
-                throw new ActivepiecesError({
+                throw new PlatformError({
                     code: ErrorCode.FLOW_OPERATION_IN_PROGRESS,
                     params: {
                         message: 'This flow is getting deleted.',
@@ -521,7 +521,7 @@ export const flowService = (log: FastifyBaseLogger) => ({
             projectId,
         })
         if (flow.operationStatus !== FlowOperationStatus.NONE) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.FLOW_OPERATION_IN_PROGRESS,
                 params: {
                     message: `Flow ${id} is already being ${flow.operationStatus}`,
@@ -780,7 +780,7 @@ const assertFlowIsNotNull: <T extends Flow>(
     flow: T | null
 ) => asserts flow is T = <T>(flow: T | null) => {
     if (isNil(flow)) {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.ENTITY_NOT_FOUND,
             params: {},
         })

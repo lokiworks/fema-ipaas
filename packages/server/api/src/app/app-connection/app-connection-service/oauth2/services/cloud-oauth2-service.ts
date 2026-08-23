@@ -1,10 +1,10 @@
-import { ActivepiecesError, ErrorCode } from '@fema/core-utils'
+import { ErrorCode, PlatformError } from '@fema/core-utils'
 import { CloudOAuth2ConnectionValue } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { OAuth2Service } from '../oauth2-service'
 
 function notAvailable(): never {
-    throw new ActivepiecesError({
+    throw new PlatformError({
         code: ErrorCode.INVALID_CLOUD_CLAIM,
         params: {
             pieceName: 'unknown',

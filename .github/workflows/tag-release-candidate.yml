@@ -45,8 +45,8 @@ jobs:
           IMAGE_TAG: ${{ inputs.image_tag }}
         run: |
           docker buildx imagetools create \
-            --tag ghcr.io/activepieces/activepieces-cloud:release-candidate \
-            ghcr.io/activepieces/activepieces-cloud:$IMAGE_TAG
+            --tag ghcr.io/lokiworks/fema-ipaas-cloud:release-candidate \
+            ghcr.io/lokiworks/fema-ipaas-cloud:$IMAGE_TAG
 
       - name: Create release-candidate git tag
         run: |

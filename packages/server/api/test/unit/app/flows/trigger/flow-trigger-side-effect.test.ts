@@ -1,4 +1,4 @@
-import { ActivepiecesError, ErrorCode } from '@fema/core-utils'
+import { PlatformError, ErrorCode } from '@fema/core-utils'
 import { TriggerStrategy } from '@fema/connector-sdk'
 import { ApEnvironment, EngineResponseStatus, TriggerSourceScheduleType } from '@fema/shared'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -185,7 +185,7 @@ describe('flowTriggerSideEffect', () => {
                     pieceTrigger: makeManualTrigger(),
                     ignoreError: false,
                 }),
-            ).rejects.toThrow(ActivepiecesError)
+            ).rejects.toThrow(PlatformError)
         })
 
         it('should not throw when engine response is bad and ignoreError is true', async () => {
@@ -200,7 +200,7 @@ describe('flowTriggerSideEffect', () => {
 
         it('should throw when submitAndWaitForResponse throws and ignoreError is false', async () => {
             mockSubmitAndWaitForResponse.mockRejectedValue(
-                new ActivepiecesError({
+                new PlatformError({
                     code: ErrorCode.ENGINE_OPERATION_FAILURE,
                     params: { message: 'Worker did not respond within the safety timeout' },
                 }),
@@ -212,12 +212,12 @@ describe('flowTriggerSideEffect', () => {
                     pieceTrigger: makeManualTrigger(),
                     ignoreError: false,
                 }),
-            ).rejects.toThrow(ActivepiecesError)
+            ).rejects.toThrow(PlatformError)
         })
 
         it('should not throw when submitAndWaitForResponse throws and ignoreError is true', async () => {
             mockSubmitAndWaitForResponse.mockRejectedValue(
-                new ActivepiecesError({
+                new PlatformError({
                     code: ErrorCode.ENGINE_OPERATION_FAILURE,
                     params: { message: 'Worker did not respond within the safety timeout' },
                 }),

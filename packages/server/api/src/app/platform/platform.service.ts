@@ -1,4 +1,4 @@
-import { ActivepiecesError, apId, ErrorCode, isNil, PlatformId, spreadIfDefined, spreadIfNotUndefined, UserId } from '@fema/core-utils'
+import { apId, ErrorCode, isNil, PlatformError, PlatformId, spreadIfDefined, spreadIfNotUndefined, UserId } from '@fema/core-utils'
 import { AuthenticationResponse, Platform, PlatformPlanLimits, PlatformRole, PlatformWithoutFederatedAuth, PlatformWithoutSensitiveData, ProjectType, SsoDomainVerification, SYSTEM_LIMITS, UpdatePlatformRequestBody, User, UserStatus } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { nanoid } from 'nanoid'
@@ -128,7 +128,7 @@ export const platformService = (log: FastifyBaseLogger) => ({
     },
     async update(params: UpdateParams): Promise<PlatformWithoutFederatedAuth> {
         if (params.federatedAuthProviders?.saml !== undefined) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.FEATURE_DISABLED,
                 params: {
                     message: 'SAML SSO is not available in this build',

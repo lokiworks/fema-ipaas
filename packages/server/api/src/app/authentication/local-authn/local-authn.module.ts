@@ -1,4 +1,4 @@
-import { ActivepiecesError, ErrorCode } from '@fema/core-utils'
+import { ErrorCode, PlatformError } from '@fema/core-utils'
 import { OtpType, ResetPasswordRequestBody, UserIdentity, VerifyEmailRequestBody } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
@@ -41,7 +41,7 @@ const localAuthnController: FastifyPluginAsyncZod = async (app) => {
 async function assertOtpIsValid({ identityId, otp, type, log }: AssertOtpParams): Promise<void> {
     const valid = await otpService(log).confirm({ identityId, type, value: otp })
     if (!valid) {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.INVALID_OTP,
             params: {},
         })

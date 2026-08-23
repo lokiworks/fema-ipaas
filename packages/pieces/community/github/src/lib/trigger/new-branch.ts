@@ -29,7 +29,7 @@ export const newBranchTrigger = createTrigger({
     description: 'A repository for testing',
     pusher_type: 'user',
     repository: {
-      full_name: 'activepieces/activepieces',
+      full_name: 'lokiworks/fema-ipaas',
     },
     sender: {
       login: 'Logan',

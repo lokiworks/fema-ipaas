@@ -1,4 +1,4 @@
-import { ActivepiecesError, apId, ErrorCode, PlatformId, ProjectId } from '@fema/core-utils'
+import { apId, ErrorCode, PlatformError, PlatformId, ProjectId } from '@fema/core-utils'
 import { ALL_PRINCIPAL_TYPES, EnginePrincipal, Principal, PrincipalType, UserStatus, WorkerPrincipal } from '@fema/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
@@ -63,7 +63,7 @@ export const accessTokenManager = (log: FastifyBaseLogger) => ({
                 key: secret,
             })
             if (!ALL_PRINCIPAL_TYPES.includes(decoded.type)) {
-                throw new ActivepiecesError({
+                throw new PlatformError({
                     code: ErrorCode.INVALID_BEARER_TOKEN,
                     params: {
                         message: 'invalid principal type',
@@ -74,10 +74,10 @@ export const accessTokenManager = (log: FastifyBaseLogger) => ({
             return decoded
         }
         catch (e) {
-            if (e instanceof ActivepiecesError) {
+            if (e instanceof PlatformError) {
                 throw e
             }
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.INVALID_BEARER_TOKEN,
                 params: {
                     message: 'invalid access token or session expired',
@@ -94,7 +94,7 @@ async function assertUserSession(log: FastifyBaseLogger, decoded: Principal | Pr
         const identity = await userIdentityService(log).getOneOrFail({ id: decoded.id })
         const isExpired = (identity.tokenVersion ?? null) !== (decoded.tokenVersion ?? null)
         if (isExpired || !identity.verified) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.SESSION_EXPIRED,
                 params: {
                     message: 'The session has expired or the user is not verified.',
@@ -108,7 +108,7 @@ async function assertUserSession(log: FastifyBaseLogger, decoded: Principal | Pr
     const identity = await userIdentityService(log).getOneOrFail({ id: user.identityId })
     const isExpired = (identity.tokenVersion ?? null) !== (decoded.tokenVersion ?? null)
     if (isExpired || user.status === UserStatus.INACTIVE || !identity.verified) {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.SESSION_EXPIRED,
             params: {
                 message: 'The session has expired or the user is not verified.',

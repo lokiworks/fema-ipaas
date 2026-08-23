@@ -141,8 +141,8 @@ Worker unit tests:
 - **Configuration** — tests config loading for different container types (WORKER_AND_APP vs WORKER)
 
 End-to-end validation:
-- **[Smoke tests](https://github.com/activepieces/activepieces/blob/main/.github/workflows/smoke-test.yml) in GitHub Actions** — validates health checks and webhook flow execution on AMD64 and ARM64
-- **[Benchmark tests](https://github.com/activepieces/activepieces/blob/main/.github/workflows/benchmark.yml) in GitHub Actions** — load testing across 6 app/worker configurations measuring throughput, mean latency, P50, P99 ([see results](/install/architecture/benchmark))
+- **[Smoke tests](https://github.com/lokiworks/fema-ipaas/blob/main/.github/workflows/smoke-test.yml) in GitHub Actions** — validates health checks and webhook flow execution on AMD64 and ARM64
+- **[Benchmark tests](https://github.com/lokiworks/fema-ipaas/blob/main/.github/workflows/benchmark.yml) in GitHub Actions** — load testing across 6 app/worker configurations measuring throughput, mean latency, P50, P99 ([see results](/install/architecture/benchmark))
 
 **Resilience**
 - Worker gracefully handles invalid job data, null polls, and unrecognized job types
@@ -197,4 +197,4 @@ All changes now go through a dedicated staging environment before reaching produ
 
 </Update>
 
-For previous releases, see the [GitHub Releases](https://github.com/activepieces/activepieces/releases) page.
+For previous releases, see the [GitHub Releases](https://github.com/lokiworks/fema-ipaas/releases) page.

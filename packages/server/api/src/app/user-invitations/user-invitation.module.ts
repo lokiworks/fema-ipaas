@@ -1,4 +1,4 @@
-import { ActivepiecesError, assertNotNullOrUndefined, ErrorCode, isNil, Permission, ProjectRole, SeekPage } from '@fema/core-utils'
+import { assertNotNullOrUndefined, ErrorCode, isNil, Permission, PlatformError, ProjectRole, SeekPage } from '@fema/core-utils'
 import { InvitationStatus, InvitationType, ListUserInvitationsRequest, Principal, PrincipalType, SendUserInvitationRequest, SERVICE_KEY_SECURITY_OPENAPI, UserInvitation, UserInvitationWithLink } from '@fema/shared'
 import { FastifyBaseLogger, FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
@@ -153,7 +153,7 @@ async function assertPrincipalHasPermissionToProject<R extends Principal & { pla
     projectId: string, _permission: Permission): Promise<void> {
     const project = await projectService(request.log).getOneOrThrow(projectId)
     if (isNil(project) || project.platformId !== principal.platform.id) {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.AUTHORIZATION,
             params: {
                 message: 'user does not have access to the project',

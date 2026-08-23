@@ -1,4 +1,4 @@
-import { ActivepiecesError, ApId, ErrorCode } from '@fema/core-utils'
+import { ApId, ErrorCode, PlatformError } from '@fema/core-utils'
 import { AuthenticationResponse, CreatePlatformRequest, FileType, PlatformWithoutSensitiveData, PrincipalType, SERVICE_KEY_SECURITY_OPENAPI, UpdatePlatformRequestBody } from '@fema/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
@@ -14,7 +14,7 @@ export const platformController: FastifyPluginAsyncZod = async (app) => {
         const isOnboarding = req.principal.type === PrincipalType.ONBOARDING
         if (!isOnboarding) {
             // only first ee/ce user will be able to have onboarding token. which means any other principal type should not be able to create platform
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.AUTHORIZATION,
                 params: {
                     message: 'This action is unauthorized in non cloud editions',
@@ -36,7 +36,7 @@ export const platformController: FastifyPluginAsyncZod = async (app) => {
 
     app.post('/:id', UpdatePlatformRequest, async (req, _res) => {
         if (req.principal.platform.id !== req.params.id) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.AUTHORIZATION,
                 params: {
                     message: 'You are not authorized to access this platform',
@@ -78,7 +78,7 @@ export const platformController: FastifyPluginAsyncZod = async (app) => {
 
     app.get('/:id', GetPlatformRequest, async (req) => {
         if (req.principal.platform.id !== req.params.id) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.AUTHORIZATION,
                 params: {
                     message: 'You are not authorized to access this platform',

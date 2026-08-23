@@ -1,4 +1,4 @@
-import { ActivepiecesError, apId, ErrorCode, isNil, SeekPage, spreadIfDefined } from '@fema/core-utils'
+import { apId, ErrorCode, isNil, PlatformError, SeekPage, spreadIfDefined } from '@fema/core-utils'
 import { CreateTemplateRequestBody, FlowVersionTemplate, ListTemplatesRequestQuery, Template, TemplateStatus, TemplateType, UpdateTemplateRequestBody } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { ArrayContains, ArrayOverlap, Equal, IsNull } from 'typeorm'
@@ -16,7 +16,7 @@ export const templateService = (log: FastifyBaseLogger) => ({
     async getOneOrThrow({ id }: GetParams): Promise<Template> {
         const template = await templateRepo().findOneBy({ id })
         if (isNil(template)) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityType: 'template',
@@ -121,7 +121,7 @@ export const templateService = (log: FastifyBaseLogger) => ({
             case TemplateType.CUSTOM:
                 commonFilters.type = Equal(TemplateType.CUSTOM)
                 if (isNil(platformId)) {
-                    throw new ActivepiecesError({
+                    throw new PlatformError({
                         code: ErrorCode.VALIDATION,
                         params: {
                             message: 'Platform ID is required to list custom templates',
@@ -131,7 +131,7 @@ export const templateService = (log: FastifyBaseLogger) => ({
                 commonFilters.platformId = Equal(platformId)
                 break
             case TemplateType.SHARED:
-                throw new ActivepiecesError({
+                throw new PlatformError({
                     code: ErrorCode.VALIDATION,
                     params: {
                         message: 'Shared templates are not supported to being listed',

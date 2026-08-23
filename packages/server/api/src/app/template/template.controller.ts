@@ -1,4 +1,4 @@
-import { ActivepiecesError, ErrorCode, isNil } from '@fema/core-utils'
+import { ErrorCode, isNil, PlatformError } from '@fema/core-utils'
 import { ALL_PRINCIPAL_TYPES, CreateTemplateRequestBody, ListTemplatesRequestQuery, Principal, PrincipalType, SERVICE_KEY_SECURITY_OPENAPI, Template, TemplateType, UpdateTemplateRequestBody } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
@@ -55,7 +55,7 @@ export const templateController: FastifyPluginAsyncZod = async (app) => {
             case TemplateType.SHARED:
                 break
             case TemplateType.OFFICIAL: {
-                throw new ActivepiecesError({
+                throw new PlatformError({
                     code: ErrorCode.VALIDATION,
                     params: {
                         message: 'Official templates are not supported to being created',
@@ -78,7 +78,7 @@ export const templateController: FastifyPluginAsyncZod = async (app) => {
         switch (template.type) {
             case TemplateType.OFFICIAL:
             case TemplateType.SHARED:
-                throw new ActivepiecesError({
+                throw new PlatformError({
                     code: ErrorCode.AUTHORIZATION,
                     params: { message: 'Cannot update official or shared templates' },
                 })
@@ -102,7 +102,7 @@ export const templateController: FastifyPluginAsyncZod = async (app) => {
         switch (template.type) {
             case TemplateType.OFFICIAL:
             case TemplateType.SHARED:
-                throw new ActivepiecesError({
+                throw new PlatformError({
                     code: ErrorCode.AUTHORIZATION,
                     params: { message: 'Cannot delete official or shared templates' },
                 })
@@ -206,7 +206,7 @@ function assertTemplateBelongsToPlatform({ templatePlatformId, principalPlatform
     principalPlatformId: string
 }): void {
     if (templatePlatformId !== principalPlatformId) {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.AUTHORIZATION,
             params: { message: 'Template does not belong to your platform' },
         })

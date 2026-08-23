@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  *
- * Regression test for https://github.com/activepieces/activepieces/issues/13900
+ * Regression test for https://github.com/lokiworks/fema-ipaas/issues/13900
  *
  * Selecting a single-value operator (Exists / Does not exist / Boolean is
  * true|false / List is empty|not empty) must hide the "Second value" field

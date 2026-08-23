@@ -8,7 +8,7 @@
   "Response": "Respuesta",
   "Flow Execution": "Ejecutar Flow",
   "Markdown": "Markdown",
-  "**Respond and Wait for Next Webhook**<br> \n            Check the response header (x-activepieces-resume-webhook-url) for the next webhook URL and call it to resume the flow. <br>\n            ": "**Responde y espere a Next Webhook**<br> \n            Verifique la cabecera de respuesta (x-activepieces-resume-webhook-url) para la siguiente URL del webhook y llámelo para reanudar el flujo. <br>\n            ",
+  "**Respond and Wait for Next Webhook**<br> \n            Check the response header (x-fema-resume-webhook-url) for the next webhook URL and call it to resume the flow. <br>\n            ": "**Responde y espere a Next Webhook**<br> \n            Verifique la cabecera de respuesta (x-fema-resume-webhook-url) para la siguiente URL del webhook y llámelo para reanudar el flujo. <br>\n            ",
   "JSON": "JSON",
   "Raw": "Rápido",
   "Redirect": "Redirigir",

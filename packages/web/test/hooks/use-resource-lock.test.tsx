@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  *
- * Regression test for https://github.com/activepieces/activepieces/issues/13554
+ * Regression test for https://github.com/lokiworks/fema-ipaas/issues/13554
  *
  * Clicking "Take Over" on the resource-lock banner used to call
  * window.location.reload() after the force-lock succeeded. A document reload

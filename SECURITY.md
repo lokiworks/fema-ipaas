@@ -22,8 +22,8 @@ If you discover a vulnerability, we would like to know about it so we can take s
 
 ## Please do the following:
 
-- Report your findings privately through the **Security** tab of our GitHub repository using [Report a vulnerability](https://github.com/activepieces/activepieces/security/advisories/new).
-- Do not run automated scanners on our infrastructure or dashboard. If you wish to do this, contact us at security@activepieces.com and we will set up a sandbox for you.
+- Report your findings privately through the **Security** tab of our GitHub repository using [Report a vulnerability](https://github.com/lokiworks/fema-ipaas/security/advisories/new).
+- Do not run automated scanners on our infrastructure or dashboard. If you wish to do this, contact us at security@fema.local and we will set up a sandbox for you.
 - Do not take advantage of the vulnerability or problem you have discovered, for example by downloading more data than necessary to demonstrate the vulnerability or deleting or modifying other people's data,
 - Use your own test account and test data when investigating an issue; do not target or access other users' accounts or data,
 - If you encounter personal data belonging to others, stop immediately, do not store or share it, and tell us in your report,

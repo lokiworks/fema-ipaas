@@ -1,4 +1,4 @@
-import { ActivepiecesError, assertNotNullOrUndefined, ErrorCode, isNil, SeekPage } from '@fema/core-utils'
+import { assertNotNullOrUndefined, ErrorCode, isNil, PlatformError, SeekPage } from '@fema/core-utils'
 import { CreatePlatformProjectRequest, ListProjectRequestForPlatformQueryParams, PrincipalType, ProjectType, ProjectWithLimits, SERVICE_KEY_SECURITY_OPENAPI, UpdateProjectPlatformRequest } from '@fema/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
@@ -73,7 +73,7 @@ async function assertProjectBelongsToPlatform({ projectId, platformId, log }: As
     const project = await projectService(log).getOneOrThrow(projectId)
     assertNotNullOrUndefined(project.platformId, 'platformId')
     if (project.platformId !== platformId) {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.ENTITY_NOT_FOUND,
             params: { entityId: projectId, entityType: 'project' },
         })

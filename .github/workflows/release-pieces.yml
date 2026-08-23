@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   Release-Pieces:
-    if: github.repository == 'activepieces/activepieces'
+    if: github.repository == 'lokiworks/fema-ipaas'
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code

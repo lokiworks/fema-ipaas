@@ -5,7 +5,7 @@ description: Triage Dependabot dependency vulnerability alerts for the Activepie
 
 # Triage Dependabot Alerts (dependency vulnerabilities)
 
-On-demand triage of Dependabot dependency alerts for `activepieces/activepieces`. Produces a
+On-demand triage of Dependabot dependency alerts for `lokiworks/fema-ipaas`. Produces a
 **review-ready** report per affected package, and proposes version-bump fixes that are **proven
 non-breaking** before any PR. The user reviews and decides per package: approve the bump /
 dismiss / escalate.
@@ -24,7 +24,7 @@ private reports, but keep the workspace consistent and never commit triage artif
 
 ```
 mkdir -p .security-triage
-gh api -H "Accept: application/vnd.github+json" "/repos/activepieces/activepieces/dependabot/alerts?state=open" --paginate > .security-triage/dependabot.json
+gh api -H "Accept: application/vnd.github+json" "/repos/lokiworks/fema-ipaas/dependabot/alerts?state=open" --paginate > .security-triage/dependabot.json
 ```
 
 `gh api --paginate` emits one concatenated array per page — **always** merge:

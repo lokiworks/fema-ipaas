@@ -40,11 +40,11 @@ export const newCommitTrigger = createTrigger({
         id: 'def456',
         message: 'Add new feature',
         timestamp: '2026-02-15T12:34:56Z',
-        url: 'https://github.com/activepieces/activepieces/commit/def456',
+        url: 'https://github.com/lokiworks/fema-ipaas/commit/def456',
       },
     ],
     repository: {
-      full_name: 'activepieces/activepieces',
+      full_name: 'lokiworks/fema-ipaas',
     },
     sender: {
       login: 'Logan',

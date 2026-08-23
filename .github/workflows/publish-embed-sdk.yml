@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   check:
-    if: github.repository == 'activepieces/activepieces' && github.ref == 'refs/heads/main'
+    if: github.repository == 'lokiworks/fema-ipaas' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.version }}

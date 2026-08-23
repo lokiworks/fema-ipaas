@@ -1,4 +1,4 @@
-import { ActivepiecesError, ErrorCode } from '@fema/core-utils'
+import { ErrorCode, PlatformError } from '@fema/core-utils'
 import { EngineOperationType, EngineResponseStatus, ExecuteResolveConnectionIdentifierJobData, WorkerJobType } from '@fema/shared'
 import { workerSettings } from '../../config/worker-settings'
 import { JobContext, JobHandler, JobResultKind, SynchronousJobResult } from '../types'
@@ -41,7 +41,7 @@ export const resolveConnectionIdentifierJob: JobHandler<ExecuteResolveConnection
             }
         }
         catch (e) {
-            if (e instanceof ActivepiecesError && e.error.code === ErrorCode.SANDBOX_EXECUTION_TIMEOUT) {
+            if (e instanceof PlatformError && e.error.code === ErrorCode.SANDBOX_EXECUTION_TIMEOUT) {
                 return {
                     kind: JobResultKind.SYNCHRONOUS,
                     status: EngineResponseStatus.TIMEOUT,

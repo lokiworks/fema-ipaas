@@ -1,5 +1,5 @@
 import { PieceMetadata, PieceMetadataModel, PieceMetadataModelSummary, PiecePackageInformation, pieceTranslation } from '@fema/connector-sdk'
-import { ActivepiecesError, apId, assertNotNullOrUndefined, ErrorCode, isNil, LocalesEnum, PlatformId } from '@fema/core-utils'
+import { apId, assertNotNullOrUndefined, ErrorCode, isNil, LocalesEnum, PlatformError, PlatformId } from '@fema/core-utils'
 import { apVersionUtil } from '@fema/server-utils'
 import { EXACT_VERSION_REGEX, flowPieceUtil, PackageType, PieceAudienceFilter, PieceCategory, PieceOrderBy, PiecePackage, PieceSortBy, PieceType, PrivatePiecePackage, PublicPiecePackage, SuggestionType } from '@fema/shared'
 import dayjs from 'dayjs'
@@ -80,7 +80,7 @@ export const pieceMetadataService = (log: FastifyBaseLogger) => {
         async getOrThrow({ version, name, platformId, locale }: GetOrThrowParams): Promise<PieceMetadataModel> {
             const piece = await this.get({ version, name, platformId })
             if (isNil(piece)) {
-                throw new ActivepiecesError({
+                throw new PlatformError({
                     code: ErrorCode.ENTITY_NOT_FOUND,
                     params: {
                         message: `piece_metadata_not_found pieceName=${name}`,
@@ -131,7 +131,7 @@ export const pieceMetadataService = (log: FastifyBaseLogger) => {
                 platformId: platformId ?? IsNull(),
             })
             if (!isNil(existingMetadata)) {
-                throw new ActivepiecesError({
+                throw new PlatformError({
                     code: ErrorCode.VALIDATION,
                     params: {
                         message: `piece_metadata_already_exists name=${pieceMetadata.name} version=${pieceMetadata.version}`,
@@ -167,20 +167,20 @@ export const pieceMetadataService = (log: FastifyBaseLogger) => {
         async delete({ id, platformId }: DeleteParams): Promise<void> {
             const piece = await pieceRepos().findOneBy({ id })
             if (isNil(piece) || piece.platformId !== platformId) {
-                throw new ActivepiecesError({
+                throw new PlatformError({
                     code: ErrorCode.ENTITY_NOT_FOUND,
                     params: { entityType: 'piece', entityId: id },
                 })
             }
             if (piece.pieceType !== PieceType.CUSTOM) {
-                throw new ActivepiecesError({
+                throw new PlatformError({
                     code: ErrorCode.AUTHORIZATION,
                     params: { message: 'Only custom pieces can be deleted' },
                 })
             }
             const flowsUsingPiece = await findFlowsUsingPiece({ pieceName: piece.name, platformId, log })
             if (flowsUsingPiece.length > 0) {
-                throw new ActivepiecesError({
+                throw new PlatformError({
                     code: ErrorCode.VALIDATION,
                     params: { message: buildPieceInUseMessage(flowsUsingPiece) },
                 })

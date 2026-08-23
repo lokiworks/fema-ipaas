@@ -80,8 +80,8 @@ describe('flow waitpoint response propagation', () => {
             },
         })
         const sentHeaders = mockSendFlowResponse.mock.calls[0][0].request.runResponse.headers
-        expect(typeof sentHeaders['x-activepieces-resume-webhook-url']).toBe('string')
-        expect(sentHeaders['x-activepieces-resume-webhook-url']).toMatch(/^https?:\/\//)
+        expect(typeof sentHeaders['x-fema-resume-webhook-url']).toBe('string')
+        expect(sentHeaders['x-fema-resume-webhook-url']).toMatch(/^https?:\/\//)
     })
 
     it('should not call sendFlowResponse when triggerPieceName does not match', async () => {

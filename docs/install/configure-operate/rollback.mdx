@@ -46,7 +46,7 @@ Replace `0.78.0` with your current version and `0.77.0` with the version you wan
 
 ```bash
 docker run --rm --env-file .env --entrypoint npm \
-  activepieces/activepieces:0.78.0 \
+  lokiworks/fema-ipaas:0.78.0 \
   run rollback -- --to 0.77.0
 ```
 
@@ -54,7 +54,7 @@ If the release has breaking migrations, the command will ask you to confirm with
 
 ```bash
 docker run --rm --env-file .env --entrypoint npm \
-  activepieces/activepieces:0.78.0 \
+  lokiworks/fema-ipaas:0.78.0 \
   run rollback -- --to 0.77.0 --force
 ```
 
@@ -65,7 +65,7 @@ Update your `docker-compose.yml`:
 ```yaml
 services:
   activepieces:
-    image: activepieces/activepieces:0.77.0
+    image: lokiworks/fema-ipaas:0.77.0
 ```
 
 ### Step 4: Start Activepieces

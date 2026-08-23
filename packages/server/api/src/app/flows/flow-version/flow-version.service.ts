@@ -1,4 +1,4 @@
-import { ActivepiecesError, apId, Cursor, ErrorCode, FlowId, FlowVersionId, isNil, PlatformId, ProjectId, sanitizeObjectForPostgresql, SeekPage, UserId } from '@fema/core-utils'
+import { apId, Cursor, ErrorCode, FlowId, FlowVersionId, isNil, PlatformError, PlatformId, ProjectId, sanitizeObjectForPostgresql, SeekPage, UserId } from '@fema/core-utils'
 import { FlowOperationRequest, flowOperations, FlowOperationType, flowStructureUtil, FlowTriggerType, FlowVersion, FlowVersionState, LATEST_FLOW_SCHEMA_VERSION, Note } from '@fema/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
@@ -159,7 +159,7 @@ export const flowVersionService = (log: FastifyBaseLogger) => ({
     async getLatestLockedVersionOrThrow(flowId: FlowId): Promise<FlowVersion> {
         const lockedVersion = await this.getLatestVersion(flowId, FlowVersionState.LOCKED)
         if (isNil(lockedVersion)) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityId: flowId,
@@ -173,7 +173,7 @@ export const flowVersionService = (log: FastifyBaseLogger) => ({
         const flowVersion = await flowVersionService(log).getOne(id)
 
         if (isNil(flowVersion)) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityId: id,
@@ -238,7 +238,7 @@ export const flowVersionService = (log: FastifyBaseLogger) => ({
         }, entityManager, projectId)
 
         if (isNil(flowVersion)) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityId: versionId,

@@ -1,4 +1,4 @@
-import { ActivepiecesError, ErrorCode, isNil } from '@fema/core-utils'
+import { ErrorCode, isNil, PlatformError } from '@fema/core-utils'
 import { PlatformRole, Principal, PrincipalType, ProjectType } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { projectService } from '../../project/project-service'
@@ -12,7 +12,7 @@ export const platformGuards = {
         const user = await userService(log).getOneOrFail({ id: principal.id })
         const platformId = 'platform' in principal ? principal.platform.id : undefined
         if (isNil(platformId) || user.platformId !== platformId || user.platformRole !== PlatformRole.ADMIN) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.AUTHORIZATION,
                 params: { message: 'User is not an admin of the platform' },
             })
@@ -25,7 +25,7 @@ export const platformGuards = {
         }
         const project = await projectService(log).getOne(projectId)
         if (isNil(project) || project.type !== ProjectType.TEAM) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.AUTHORIZATION,
                 params: { message: 'Operation is only allowed on team workspaces' },
             })

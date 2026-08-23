@@ -11,7 +11,7 @@ describe('disposableEmail', () => {
         })
 
         it.each([
-            'ahmad@activepieces.com',
+            'ahmad@fema.local',
             'someone@gmail.com',
             'someone@outlook.com',
             'someone@googlemail.com',

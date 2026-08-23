@@ -1,4 +1,4 @@
-import { ActivepiecesError, ApId, apId, assertNotNullOrUndefined, ErrorCode, isNil, Metadata, ProjectId, spreadIfDefined, spreadIfNotUndefined, UserId } from '@fema/core-utils'
+import { apId, ApId, assertNotNullOrUndefined, ErrorCode, isNil, Metadata, PlatformError, ProjectId, spreadIfDefined, spreadIfNotUndefined, UserId } from '@fema/core-utils'
 import { ColorName, Project, ProjectIcon, ProjectType } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { Brackets, EntityManager, IsNull, Not, ObjectLiteral, SelectQueryBuilder } from 'typeorm'
@@ -107,7 +107,7 @@ export const projectService = (log: FastifyBaseLogger) => ({
         const project = await this.getOne(projectId)
 
         if (isNil(project)) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityId: projectId,
@@ -137,7 +137,7 @@ export const projectService = (log: FastifyBaseLogger) => ({
             isPrivileged: userService(log).isUserPrivileged(user),
         })
         if (isNil(projects) || projects.length === 0) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityId: userId,
@@ -239,7 +239,7 @@ async function assertExternalIdIsUnique(externalId: string | undefined | null, p
         })
 
         if (externalIdAlreadyExists) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.PROJECT_EXTERNAL_ID_ALREADY_EXISTS,
                 params: {
                     externalId,
@@ -256,7 +256,7 @@ function assertRetentionDaysWithinInstanceBounds(executionDataRetentionDays: num
     const instanceRetentionDays = system.getNumberOrThrow(AppSystemProp.EXECUTION_DATA_RETENTION_DAYS)
     const pausedFlowTimeoutDays = system.getNumberOrThrow(AppSystemProp.PAUSED_FLOW_TIMEOUT_DAYS)
     if (executionDataRetentionDays < pausedFlowTimeoutDays || executionDataRetentionDays > instanceRetentionDays) {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.VALIDATION,
             params: {
                 message: `executionDataRetentionDays must be between FEMA_PAUSED_FLOW_TIMEOUT_DAYS (${pausedFlowTimeoutDays}) and FEMA_EXECUTION_DATA_RETENTION_DAYS (${instanceRetentionDays})`,

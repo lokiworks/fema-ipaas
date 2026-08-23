@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from 'crypto'
 import { OAuth2Props, PropertyType } from '@fema/connector-sdk'
-import { ActivepiecesError, assertNotNullOrUndefined, deleteProps, ErrorCode, isNil, PlatformId, unique } from '@fema/core-utils'
+import { assertNotNullOrUndefined, deleteProps, ErrorCode, isNil, PlatformError, PlatformId, unique } from '@fema/core-utils'
 import { AppConnection, AppConnectionType, BaseOAuth2ConnectionValue, GetOAuth2AuthorizationUrlResponse, OAuth2GrantType, resolveValueFromProps } from '@fema/shared'
 import { isAxiosError } from 'axios'
 import { FastifyBaseLogger } from 'fastify'
@@ -84,7 +84,7 @@ export const oauth2Util = (log: FastifyBaseLogger) => ({
                 })
                 return resolveValueFromProps(props, pieceAuth.tokenUrl)
             default:
-                throw new ActivepiecesError({
+                throw new PlatformError({
                     code: ErrorCode.INVALID_APP_CONNECTION,
                     params: {
                         error: 'invalid auth type',
@@ -112,7 +112,7 @@ export const oauth2Util = (log: FastifyBaseLogger) => ({
             : pieceMetadata.auth
         assertNotNullOrUndefined(pieceAuth, 'auth')
         if (pieceAuth.type !== PropertyType.OAUTH2) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.INVALID_APP_CONNECTION,
                 params: { error: 'invalid auth type' },
             })
@@ -203,13 +203,13 @@ const resolveSelectedScopes = (requested: string[] | undefined, allowed: string[
     const allowedSet = new Set(allowed)
     const invalid = requested.filter(scope => !allowedSet.has(scope))
     if (invalid.length > 0) {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.INVALID_APP_CONNECTION,
             params: { error: `requested scopes are not declared by the piece: ${invalid.join(', ')}` },
         })
     }
     if (requested.length === 0) {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.INVALID_APP_CONNECTION,
             params: { error: 'at least one scope must be selected' },
         })
@@ -233,7 +233,7 @@ const assertPlaceholdersResolved = ({ templates, props, authProps }: AssertPlace
         return
     }
     const labels = missing.map(key => declaredProps[key].displayName).join(', ')
-    throw new ActivepiecesError({
+    throw new PlatformError({
         code: ErrorCode.INVALID_APP_CONNECTION,
         params: { error: `missing required connection settings: ${labels}` },
     })

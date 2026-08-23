@@ -9,7 +9,7 @@
 
 | 项 | 值 |
 | --- | --- |
-| `UPSTREAM_REPO` | https://github.com/activepieces/activepieces |
+| `UPSTREAM_REPO` | https://github.com/lokiworks/fema-ipaas |
 | `UPSTREAM_COMMIT` | `eef1a1d4d22e4181859792813bf855c4038a3d0b` |
 | `UPSTREAM_COMMIT_DATE` | 2026-08-22T15:42:39+03:00 |
 | `UPSTREAM_VERSION` | 0.88.3 |

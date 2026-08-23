@@ -73,7 +73,7 @@ jobs:
             echo "Changes detected, committing..."
             
             # Configure git
-            git config --local user.email "abdulyki+automatedcommits@activepieces.com"
+            git config --local user.email "abdulyki+automatedcommits@fema.local"
             git config --local user.name "automated-commits-ap"
             
             # Add all changes

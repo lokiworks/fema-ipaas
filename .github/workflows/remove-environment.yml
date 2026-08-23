@@ -7,7 +7,7 @@ on:
 jobs:
   Remove-Preview-Environment:
     runs-on: ubuntu-latest
-    if: github.repository == 'activepieces/activepieces' && github.event.pull_request.head.repo.full_name == 'activepieces/activepieces'
+    if: github.repository == 'lokiworks/fema-ipaas' && github.event.pull_request.head.repo.full_name == 'lokiworks/fema-ipaas'
     env:
       NX_NO_CLOUD: true 
     steps:

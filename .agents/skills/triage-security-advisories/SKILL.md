@@ -6,7 +6,7 @@ description: Triage the GitHub privately-reported vulnerability backlog for Acti
 # Triage Security Advisories (reported vulnerabilities)
 
 On-demand triage of privately-reported vulnerabilities in the Activepieces GitHub repo
-(`activepieces/activepieces`) — the **repository security advisories** from the Security tab.
+(`lokiworks/fema-ipaas`) — the **repository security advisories** from the Security tab.
 Produces a **review-ready** report per advisory + an SLA dashboard, and proposes fix plans.
 The user reviews and decides per advisory: approve the fix / dismiss as out-of-scope / escalate.
 
@@ -37,7 +37,7 @@ gh auth refresh -s security_events,repo
 
 ```
 mkdir -p .security-triage
-gh api /repos/activepieces/activepieces/security-advisories --paginate > .security-triage/advisories.json
+gh api /repos/lokiworks/fema-ipaas/security-advisories --paginate > .security-triage/advisories.json
 ```
 
 `gh api --paginate` may emit concatenated arrays (you'll see `jq` parse multiple top-level
@@ -242,7 +242,7 @@ After the user picks which advisories to fix, follow the playbook's private flow
 ## Closing / responding to a reporter
 
 The repository-security-advisory REST API exposes `state` (closeable via
-`PATCH /repos/activepieces/activepieces/security-advisories/<ghsa-id> -f state=closed`) but
+`PATCH /repos/lokiworks/fema-ipaas/security-advisories/<ghsa-id> -f state=closed`) but
 **no comments endpoint** — the conversation thread is UI-only. To respond with a reason, draft
 the message, have the user paste it into the advisory page, THEN close (so the reporter sees
 the reason, not a bare close notification).

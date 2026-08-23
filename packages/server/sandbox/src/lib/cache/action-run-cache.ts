@@ -1,13 +1,13 @@
 import { readdir, rm, stat, utimes } from 'node:fs/promises'
 import path from 'node:path'
-import { ActivepiecesError, ErrorCode, isNil, tryCatch } from '@fema/core-utils'
+import { ErrorCode, isNil, PlatformError, tryCatch } from '@fema/core-utils'
 import { type ApLogger } from '@fema/server-utils'
 import { ACTION_RUN_CODE_DIR, cacheUtils } from './cache-paths'
 
 export const actionRunCache = {
     namespace({ platformId, sourceHash }: NamespaceParams): string {
         if (platformId.length === 0) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.VALIDATION,
                 params: { message: 'Cannot namespace an action-run code cache without a platformId' },
             })

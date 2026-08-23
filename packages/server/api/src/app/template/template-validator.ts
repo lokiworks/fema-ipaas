@@ -1,4 +1,4 @@
-import { ActivepiecesError, ErrorCode, PlatformId, sanitizeObjectForPostgresql } from '@fema/core-utils'
+import { ErrorCode, PlatformError, PlatformId, sanitizeObjectForPostgresql } from '@fema/core-utils'
 import { FlowOperationRequest, flowOperations, FlowOperationType, flowPieceUtil, FlowVersion, FlowVersionState, FlowVersionTemplate } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { flowVersionValidationUtil } from '../flows/flow-version/flow-version-validator-util'
@@ -27,7 +27,7 @@ type PreparedTemplate = {
 export const templateValidator = {
     async validateAndPrepare({ flows, platformId, log }: ValidateParams): Promise<PreparedTemplate> {
         if (!flows || flows.length === 0) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.VALIDATION,
                 params: {
                     message: 'Flows are required',

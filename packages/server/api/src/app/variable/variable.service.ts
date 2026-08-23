@@ -1,4 +1,4 @@
-import { ActivepiecesError, ApId, apId, Cursor, ErrorCode, isNil, Metadata, PlatformId, ProjectId, SeekPage, spreadIfDefined, UserId } from '@fema/core-utils'
+import { apId, ApId, Cursor, ErrorCode, isNil, Metadata, PlatformError, PlatformId, ProjectId, SeekPage, spreadIfDefined, UserId } from '@fema/core-utils'
 import { AppConnectionOwners, User, UserIdentity, UserWithMetaInformation, Variable, VariableWithoutSensitiveData } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { Equal, ILike, QueryFailedError } from 'typeorm'
@@ -27,7 +27,7 @@ export const variableService = (log: FastifyBaseLogger) => ({
         }
         catch (error) {
             if (isUniqueViolation(error)) {
-                throw new ActivepiecesError({
+                throw new PlatformError({
                     code: ErrorCode.VALIDATION,
                     params: { message: 'Variable name already used' },
                 })
@@ -101,7 +101,7 @@ export const variableService = (log: FastifyBaseLogger) => ({
         const { id, projectId, platformId } = params
         const row = await variableRepo().findOneBy({ id, projectId, platformId })
         if (isNil(row)) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityId: id,
@@ -117,7 +117,7 @@ export const variableService = (log: FastifyBaseLogger) => ({
         const { projectId, name } = params
         const row = await variableRepo().findOneBy({ projectId, name })
         if (isNil(row)) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityId: `name=${name}`,
@@ -146,7 +146,7 @@ async function getOneOrThrowWithoutValue(params: GetOneParams): Promise<Variable
         .where({ id, projectId, platformId })
         .getOne()
     if (isNil(row)) {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.ENTITY_NOT_FOUND,
             params: {
                 entityId: id,

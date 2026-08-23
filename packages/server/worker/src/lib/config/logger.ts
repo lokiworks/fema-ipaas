@@ -11,7 +11,7 @@ function buildLogger(): ApLogger {
 
     return evlogSetup.init({
         params: {
-            serviceName: 'activepieces-worker',
+            serviceName: 'fema-worker',
             version: apVersionUtil.getCurrentRelease(),
             environment: system.get(WorkerSystemProp.ENVIRONMENT),
             logLevel,
@@ -19,7 +19,7 @@ function buildLogger(): ApLogger {
             sampleRateInfo,
             keepSlowMs,
             drainConfig: {
-                serviceName: 'activepieces-worker',
+                serviceName: 'fema-worker',
                 hyperdxToken: system.get(WorkerSystemProp.HYPERDX_TOKEN),
                 axiomToken: system.get(WorkerSystemProp.AXIOM_TOKEN),
                 axiomDataset: system.get(WorkerSystemProp.AXIOM_DATASET),

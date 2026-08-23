@@ -1,4 +1,4 @@
-import { ActivepiecesError, assertNotNullOrUndefined, ErrorCode, isNil } from '@fema/core-utils'
+import { assertNotNullOrUndefined, ErrorCode, isNil, PlatformError } from '@fema/core-utils'
 import { cryptoUtils } from '@fema/server-utils'
 import { ApFlagId, AuthenticationResponse, PlatformWithoutSensitiveData, User, UserIdentity, UserIdentityProvider } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
@@ -184,7 +184,7 @@ export const authenticationService = (log: FastifyBaseLogger) => ({
 
 async function assertUserCanSwitchToPlatform(platform: PlatformWithoutSensitiveData | undefined): Promise<void> {
     if (isNil(platform)) {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.AUTHORIZATION,
             params: {
                 message: 'The user is not a member of the platform',
@@ -199,7 +199,7 @@ async function getUserForPlatform(identityId: string, platform: PlatformWithoutS
         platformId: platform.id,
     })
     if (isNil(user)) {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.AUTHORIZATION,
             params: {
                 message: 'User is not member of the platform',

@@ -17,7 +17,6 @@ export {
   camelCase,
   startCase,
   tryCatch,
-  AIProviderName,
 } from '@fema/core-utils';
 export type { SeekPage } from '@fema/core-utils';
 
@@ -30,19 +29,6 @@ export {
   ExecutionType,
   ExecutionToolStatus,
   normalizeToolOutputToExecuteResponse,
-  // ai providers
-  AIProviderModel,
-  AIProviderWithoutSensitiveData,
-  AzureProviderConfig,
-  BaseAIProviderAuthConfig,
-  BedrockProviderAuthConfig,
-  BedrockProviderConfig,
-  CloudflareGatewayProviderConfig,
-  GetProviderConfigResponse,
-  OpenAICompatibleProviderConfig,
-  getEffectiveProviderAndModel,
-  splitCloudflareGatewayModelId,
-  AI_PROVIDER_CAPABILITIES,
   // mcp
   // forms
   ChatFormResponse,
@@ -60,8 +46,6 @@ export {
   RAW_PAYLOAD_HEADER,
   PARENT_RUN_ID_HEADER,
   FAIL_PARENT_ON_FAILURE_HEADER,
-  ACTIVEPIECES_CHAT_TIERS,
-  DEFAULT_CHAT_TIER_ID,
 } from '@fema/connector-types';
 export type {
   BasicAuthConnectionValue,

@@ -27,7 +27,6 @@ export * from './lib/management/project'
 export * from './lib/management/project-role/project-role.request'
 export * from './lib/management/invitations'
 export * from './lib/management/analytics'
-export * from './lib/management/ai-providers'
 export * from './lib/management/ai-tools'
 export * from './lib/management/template'
 

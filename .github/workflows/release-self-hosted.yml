@@ -55,7 +55,7 @@ jobs:
           echo "Release tag base '$TAG_BASE' matches package.json version '$PACKAGE_VERSION'."
 
       - name: Fail if tag already exists
-        run: '! docker manifest inspect activepieces/activepieces:${{ inputs.tag }}'
+        run: '! docker manifest inspect lokiworks/fema-ipaas:${{ inputs.tag }}'
 
       - name: Login to Docker Hub
         uses: docker/login-action@v4
@@ -84,8 +84,8 @@ jobs:
             linux/arm64
           push: true
           tags: |
-            activepieces/activepieces:${{ inputs.tag }}
-            ghcr.io/activepieces/activepieces:${{ inputs.tag }}
+            lokiworks/fema-ipaas:${{ inputs.tag }}
+            ghcr.io/lokiworks/fema-ipaas:${{ inputs.tag }}
 
       - name: Create git tag
         run: |
@@ -112,7 +112,7 @@ jobs:
       # and pass github-token: ${{ secrets.GITHUB_TOKEN }}.
       - uses: ./.github/actions/sbom
         with:
-          image: ghcr.io/activepieces/activepieces:${{ inputs.tag }}
+          image: ghcr.io/lokiworks/fema-ipaas:${{ inputs.tag }}
           version: ${{ inputs.tag }}
 
       - name: Notify on-call channel
@@ -123,7 +123,7 @@ jobs:
         run: |
           curl -H "Content-Type: application/json" \
             -X POST \
-            -d "{\"content\": \"📦 **Self-hosted $TAG released**\\n\\n**Docker image:** \`activepieces/activepieces:$TAG\` (also on ghcr.io)\\n**Changelog:** ${{ github.server_url }}/${{ github.repository }}/releases/tag/$TAG\\n**Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
+            -d "{\"content\": \"📦 **Self-hosted $TAG released**\\n\\n**Docker image:** \`lokiworks/fema-ipaas:$TAG\` (also on ghcr.io)\\n**Changelog:** ${{ github.server_url }}/${{ github.repository }}/releases/tag/$TAG\\n**Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
             "$WEBHOOK"
 
   sync-version-to-main:
@@ -159,11 +159,11 @@ jobs:
           TAG: ${{ inputs.tag }}
           TAG_BASE: ${{ steps.compare.outputs.tag_base }}
         run: |
-          git config --local user.email "abdulyki+automatedcommits@activepieces.com"
+          git config --local user.email "abdulyki+automatedcommits@fema.local"
           git config --local user.name "automated-commits-ap"
           npm pkg set version="$TAG_BASE"
-          sed -i -E "s|(image: ghcr.io/activepieces/activepieces:)[0-9][0-9a-zA-Z.-]*|\1$TAG|" docker-compose.yml
-          grep -q "image: ghcr.io/activepieces/activepieces:$TAG" docker-compose.yml
+          sed -i -E "s|(image: ghcr.io/lokiworks/fema-ipaas:)[0-9][0-9a-zA-Z.-]*|\1$TAG|" docker-compose.yml
+          grep -q "image: ghcr.io/lokiworks/fema-ipaas:$TAG" docker-compose.yml
           git checkout -b "automated/sync-version-$TAG_BASE"
           git add package.json docker-compose.yml
           git commit -m "chore(release): sync version to $TAG_BASE after off-cycle release"

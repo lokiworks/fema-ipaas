@@ -1,6 +1,6 @@
 import { Readable } from 'node:stream'
 import { buffer as streamToBuffer } from 'node:stream/consumers'
-import { ActivepiecesError, apId, assertNotNullOrUndefined, ErrorCode, isMultipartFile, isNil, ProjectId } from '@fema/core-utils'
+import { apId, assertNotNullOrUndefined, ErrorCode, isMultipartFile, isNil, PlatformError, ProjectId } from '@fema/core-utils'
 import { File, FileCompression, FileId, FileLocation, FileType, Project } from '@fema/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
@@ -94,7 +94,7 @@ export const fileService = (log: FastifyBaseLogger) => ({
     async getFileOrThrow(params: GetOneParams): Promise<File> {
         const file = !isNil(params.fileId) ? await this.getFile(params) : undefined
         if (isNil(file)) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityType: 'file',
@@ -124,7 +124,7 @@ export const fileService = (log: FastifyBaseLogger) => ({
             type: normalizeTypeFilter(type),
         })
         if (isNil(file)) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityType: 'file',
@@ -241,7 +241,7 @@ export const fileService = (log: FastifyBaseLogger) => ({
             })
         }
         catch (e) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.INVALID_BEARER_TOKEN,
                 params: {
                     message: 'invalid token or expired for the step file',
@@ -262,7 +262,7 @@ export const fileService = (log: FastifyBaseLogger) => ({
         if (value instanceof Uint8Array) {
             return Buffer.from(value)
         }
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.VALIDATION,
             params: { message: 'File data must be a Buffer' },
         })
@@ -275,7 +275,7 @@ export const fileService = (log: FastifyBaseLogger) => ({
         }
 
         if (!isMultipartFile(file)) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.VALIDATION,
                 params: {
                     message: 'File must be a multipart file',
@@ -284,7 +284,7 @@ export const fileService = (log: FastifyBaseLogger) => ({
         }
 
         if (!allowedMimeTypes.includes(file.mimetype ?? '')) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.VALIDATION,
                 params: {
                     message: `Invalid file type. Allowed types: ${allowedMimeTypes.join(', ')}`,
@@ -293,7 +293,7 @@ export const fileService = (log: FastifyBaseLogger) => ({
         }
 
         if (!isNil(maxFileSizeInBytes) && file.data.length > maxFileSizeInBytes) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.VALIDATION,
                 params: {
                     message: `File size exceeds ${Math.round(maxFileSizeInBytes / (1024 * 1024))}MB limit`,

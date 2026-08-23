@@ -23,7 +23,7 @@ When `FEMA_OTEL_QUEUE_METRICS_ENABLED=true` and `OTEL_EXPORTER_OTLP_ENDPOINT` is
 |--------|------|------------|-------------|
 | `bullmq.job.count` | Gauge | `queue`, `state` | Number of jobs per queue and state (`waiting`, `active`, `failed`, `delayed`, `paused`, and other BullMQ states) |
 
-The gauge covers all queues, including dedicated worker-group queues. Each data point carries `service.name=activepieces-api` and `host.name` resource attributes, so replicas of the app container produce distinguishable series.
+The gauge covers all queues, including dedicated worker-group queues. Each data point carries `service.name=fema-api` and `host.name` resource attributes, so replicas of the app container produce distinguishable series.
 
 <Warning>
 Outbound requests from the app go through an SSRF filter that blocks private, loopback, and link-local IPs. If your OTLP collector resolves to a private IP (for example an in-cluster collector), add its IP or CIDR to the `FEMA_SSRF_ALLOW_LIST` environment variable.

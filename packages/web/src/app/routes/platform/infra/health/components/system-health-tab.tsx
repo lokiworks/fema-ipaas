@@ -82,7 +82,7 @@ export function SystemHealthTab({ onSeeRuns }: SystemHealthTabProps) {
       title: t('Version'),
       icon: <Package className="size-4" />,
       status: isVersionUpToDate ? 'passed' : 'failed',
-      link: 'https://github.com/activepieces/activepieces/releases',
+      link: 'https://github.com/lokiworks/fema-ipaas/releases',
       message: (
         <span className="flex flex-wrap items-center gap-x-2">
           <span>

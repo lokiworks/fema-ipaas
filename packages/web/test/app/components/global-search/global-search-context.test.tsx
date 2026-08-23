@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  *
- * Regression test for https://github.com/activepieces/activepieces/issues/13555
+ * Regression test for https://github.com/lokiworks/fema-ipaas/issues/13555
  * (GIT-1530): in embed mode, hosts can hide every navigation surface, but the
  * global search palette still opened via CMD+K / Ctrl+K and let users navigate
  * to any page, flow, or table on their own. When the embedding state sets

@@ -1,5 +1,5 @@
 import { PropertyType } from '@fema/connector-sdk'
-import { ActivepiecesError, assertNotNullOrUndefined, ErrorCode, isNil, PlatformId, ProjectId, tryCatch, UserId } from '@fema/core-utils'
+import { assertNotNullOrUndefined, ErrorCode, isNil, PlatformError, PlatformId, ProjectId, tryCatch, UserId } from '@fema/core-utils'
 import { AppConnection, AppConnectionStatus, AppConnectionType, AppConnectionValue, AppConnectionWithoutSensitiveData, EngineResponse, EngineResponseStatus, ExecuteRefreshTokenAuthResponse, Flow, FlowOperationType, flowStructureUtil, FlowVersion, FlowVersionState, PopulatedFlow, WorkerJobType } from '@fema/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
@@ -242,7 +242,7 @@ export const appConnectionHandler = (log: FastifyBaseLogger) => ({
                     return appConnection
                 }
                 const { error } = await tryCatch(() => validate({ pieceName: appConnection.pieceName, value: appConnection.value }))
-                if (!isNil(error) && !(error instanceof ActivepiecesError && error.error.code === ErrorCode.INVALID_APP_CONNECTION)) {
+                if (!isNil(error) && !(error instanceof PlatformError && error.error.code === ErrorCode.INVALID_APP_CONNECTION)) {
                     throw error
                 }
                 appConnection.status = isNil(error) ? AppConnectionStatus.ACTIVE : AppConnectionStatus.ERROR

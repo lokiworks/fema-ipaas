@@ -1,4 +1,4 @@
-import { ActivepiecesError, apId, ErrorCode, isNil, Permission, ProjectRole, RoleType } from '@fema/core-utils'
+import { apId, ErrorCode, isNil, Permission, PlatformError, ProjectRole, RoleType } from '@fema/core-utils'
 import { PlatformRole, Principal, PrincipalType } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { userService } from '../user/user-service'
@@ -15,7 +15,7 @@ const WORKSPACE_ADMIN_ROLE: ProjectRole = {
 }
 
 function denied(message: string): never {
-    throw new ActivepiecesError({
+    throw new PlatformError({
         code: ErrorCode.AUTHORIZATION,
         params: { message },
     })

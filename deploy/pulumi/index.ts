@@ -84,7 +84,7 @@ if (config.getBoolean("deployLocalBuild")) {
 
     pulumi.log.info(`Finished pushing image to ECR`, image);
 } else {
-    imageName = process.env.IMAGE_NAME || config.get("imageName") || "activepieces/activepieces:latest";
+    imageName = process.env.IMAGE_NAME || config.get("imageName") || "lokiworks/fema-ipaas:latest";
 }
 
 const containerEnvironmentVars: awsx.types.input.ecs.TaskDefinitionKeyValuePairArgs[] = [];

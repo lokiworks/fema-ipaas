@@ -1,5 +1,5 @@
 import { TriggerBase } from '@fema/connector-sdk'
-import { ActivepiecesError, ErrorCode, isNil, ProjectId } from '@fema/core-utils'
+import { ErrorCode, isNil, PlatformError, ProjectId } from '@fema/core-utils'
 import { FlowTriggerType, FlowVersion } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { pieceMetadataService } from '../../pieces/metadata/piece-metadata-service'
@@ -14,7 +14,7 @@ export const triggerUtils = (log: FastifyBaseLogger) => ({
 
         })
         if (isNil(pieceTrigger)) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityType: 'piece_trigger',

@@ -4,7 +4,7 @@ description: "Internal lifecycle for handling security reports from intake to pu
 icon: "shield-halved"
 ---
 
-A security advisory is the public artifact we publish after a vulnerability is reported and fixed. This playbook is the lifecycle that produces one. Reporter-facing policy lives in [SECURITY.md](https://github.com/activepieces/activepieces/blob/main/SECURITY.md).
+A security advisory is the public artifact we publish after a vulnerability is reported and fixed. This playbook is the lifecycle that produces one. Reporter-facing policy lives in [SECURITY.md](https://github.com/lokiworks/fema-ipaas/blob/main/SECURITY.md).
 
 ## Triage
 
@@ -19,7 +19,7 @@ A security advisory is the public artifact we publish after a vulnerability is r
   </Step>
 
   <Step title="Check scope">
-    Compare against the **Out of scope** list in [SECURITY.md](https://github.com/activepieces/activepieces/blob/main/SECURITY.md). If out of scope, reply with the reason and close.
+    Compare against the **Out of scope** list in [SECURITY.md](https://github.com/lokiworks/fema-ipaas/blob/main/SECURITY.md). If out of scope, reply with the reason and close.
   </Step>
 
   <Step title="Score with CVSS 4.0">
@@ -86,7 +86,7 @@ Always a patch bump (e.g. `0.71.0` → `0.71.1`). Never bundle with feature comm
   </Step>
 
   <Step title="Bump versions">
-    Patch-bump root [package.json](https://github.com/activepieces/activepieces/blob/main/package.json). Bump `packages/core/shared` if touched. If the fix has a migration, set `release = '<patched-version>'` per [Database Migrations](/handbook/engineering/playbooks/database-migration).
+    Patch-bump root [package.json](https://github.com/lokiworks/fema-ipaas/blob/main/package.json). Bump `packages/core/shared` if touched. If the fix has a migration, set `release = '<patched-version>'` per [Database Migrations](/handbook/engineering/playbooks/database-migration).
   </Step>
 
   <Step title="Verify on canary">
@@ -94,7 +94,7 @@ Always a patch bump (e.g. `0.71.0` → `0.71.1`). Never bundle with feature comm
   </Step>
 
   <Step title="Draft the changelog entry">
-    Draft (don't post yet) for [docs/about/changelog.mdx](https://github.com/activepieces/activepieces/blob/main/docs/about/changelog.mdx):
+    Draft (don't post yet) for [docs/about/changelog.mdx](https://github.com/lokiworks/fema-ipaas/blob/main/docs/about/changelog.mdx):
 
     ```mdx
     <Update label="<Month Year>" description="Security advisory <CVE-ID>">
@@ -150,7 +150,7 @@ Create `docs/handbook/engineering/postmortems/YYYY-MM-DD-<slug>.mdx` using the e
 
 ## References
 
-- [SECURITY.md](https://github.com/activepieces/activepieces/blob/main/SECURITY.md)
+- [SECURITY.md](https://github.com/lokiworks/fema-ipaas/blob/main/SECURITY.md)
 - [GitHub Security Advisories docs](https://docs.github.com/en/code-security/security-advisories)
 - [FIRST CVSS 4.0 calculator](https://www.first.org/cvss/calculator/4-0)
 

@@ -59,7 +59,7 @@ jobs:
       - name: Extract migration manifest from target image
         id: manifest
         run: |
-          IMAGE="ghcr.io/activepieces/activepieces-cloud:${{ steps.target.outputs.image_tag }}"
+          IMAGE="ghcr.io/lokiworks/fema-ipaas-cloud:${{ steps.target.outputs.image_tag }}"
           docker pull "$IMAGE"
           MANIFEST=$(docker run --rm --entrypoint cat "$IMAGE" \
             /usr/src/app/packages/server/api/dist/src/migration-manifest.json)

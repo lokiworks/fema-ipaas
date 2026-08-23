@@ -1,4 +1,4 @@
-import { ActivepiecesError, apId, assertNotNullOrUndefined, ErrorCode, isNil, SeekPage, spreadIfDefined } from '@fema/core-utils'
+import { apId, assertNotNullOrUndefined, ErrorCode, isNil, PlatformError, SeekPage, spreadIfDefined } from '@fema/core-utils'
 import { InvitationStatus, InvitationType, PlatformRole, UserInvitation, UserInvitationWithLink } from '@fema/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
@@ -27,7 +27,7 @@ export const userInvitationsService = (log: FastifyBaseLogger) => ({
             id: decodedToken.id,
         })
         if (isNil(invitation)) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityId: `id=${decodedToken.id}`,
@@ -197,7 +197,7 @@ export const userInvitationsService = (log: FastifyBaseLogger) => ({
             },
         })
         if (isNil(invitation)) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityId: `id=${id}`,

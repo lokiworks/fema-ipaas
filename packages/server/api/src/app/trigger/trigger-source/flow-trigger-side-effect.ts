@@ -3,7 +3,7 @@ import {
     TriggerStrategy,
     WebhookRenewStrategy,
 } from '@fema/connector-sdk'
-import { ActivepiecesError, ErrorCode, FlowId, FlowVersionId, isNil, tryCatch } from '@fema/core-utils'
+import { ErrorCode, FlowId, FlowVersionId, isNil, PlatformError, tryCatch } from '@fema/core-utils'
 import { ApEnvironment, EngineResponse, EngineResponseStatus, ExecuteTriggerResponse, FlowTriggerType, LATEST_JOB_DATA_SCHEMA_VERSION, ScheduleOptions, TriggerHookType, TriggerSourceScheduleType, WorkerJobType } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { system } from '../../helper/system/system'
@@ -199,7 +199,7 @@ async function handlePollingTrigger({ engineHelperResponse, flowId, flowVersionI
 
 function assertEngineResponseIsOk(engineHelperResponse: EngineResponse<ExecuteTriggerResponse<TriggerHookType.ON_ENABLE | TriggerHookType.ON_DISABLE>>, flowId: FlowId, flowVersionId: FlowVersionId) {
     if (isNil(engineHelperResponse) || engineHelperResponse.status !== EngineResponseStatus.OK) {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.TRIGGER_UPDATE_STATUS,
             params: {
                 flowId,

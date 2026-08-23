@@ -1,6 +1,6 @@
 import { createServer } from 'http'
 import os from 'os'
-import { ActivepiecesError, isNil, spreadIfDefined, tryCatch } from '@fema/core-utils'
+import { isNil, PlatformError, spreadIfDefined, tryCatch } from '@fema/core-utils'
 import { ACTION_RUN_CACHE_FIRST_SWEEP_DELAY_MS, ACTION_RUN_CACHE_SWEEP_INTERVAL_MS, actionRunCache, cacheUtils, createResolver, createSandboxRuntime, Runtime } from '@fema/sandbox'
 import { apVersionUtil, createLogger, onCallService, systemUsage, UNKNOWN_VERSION, wideEvent } from '@fema/server-utils'
 import { ApiToWorkerContract, ConsumeJobRequest, createNotifyServer, createRpcClient, EngineResponseStatus, ExecutionMode, JobData, SandboxInformation, WebsocketServerEvent, WorkerMachineHealthcheckRequest, WorkerProps, WorkerSettingsResponse, WorkerToApiContract } from '@fema/shared'
@@ -540,7 +540,7 @@ function buildErrorMessage(execError: Error | undefined, result: JobResult | und
 }
 
 function extractLogs(execError: Error | undefined, result: JobResult | undefined): string | undefined {
-    if (execError instanceof ActivepiecesError) {
+    if (execError instanceof PlatformError) {
         const params = execError.error.params as Record<string, unknown>
         const parts: string[] = []
         if (params?.['standardOutput']) parts.push(`stdout:\n${params['standardOutput']}`)

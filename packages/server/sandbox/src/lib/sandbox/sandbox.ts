@@ -2,7 +2,7 @@ import { ChildProcess } from 'child_process'
 import { randomBytes, timingSafeEqual } from 'crypto'
 import { createServer, Server as HttpServer } from 'http'
 import path from 'path'
-import { ActivepiecesError, assertNotNullOrUndefined, ErrorCode, isNil, tryCatch } from '@fema/core-utils'
+import { assertNotNullOrUndefined, ErrorCode, isNil, PlatformError, tryCatch } from '@fema/core-utils'
 import { createNotifyServer, createRpcClient, EngineContract, EngineOperation, EngineOperationType, EngineResponse, EngineStderr, EngineStdout, WorkerNotifyContract } from '@fema/shared'
 import { Socket, Server as SocketIOServer } from 'socket.io'
 import treeKill from 'tree-kill'
@@ -13,7 +13,7 @@ import { Sandbox, SandboxInitOptions, SandboxLogger, SandboxMount, SandboxOption
 function assertSandboxPathUnderRoot(mount: SandboxMount): void {
     const normalized = path.posix.normalize(mount.sandboxPath)
     if (!normalized.startsWith('/root/') && normalized !== '/root') {
-        throw new ActivepiecesError({
+        throw new PlatformError({
             code: ErrorCode.VALIDATION,
             params: { message: `Mount sandboxPath "${mount.sandboxPath}" must be under /root/` },
         })
@@ -112,7 +112,7 @@ export function createSandbox(
 
             await tryCatch(() => closeServer(ioServer))
             if (attempt === maxAttempts) {
-                throw new ActivepiecesError({
+                throw new PlatformError({
                     code: ErrorCode.SANDBOX_INTERNAL_ERROR,
                     params: {
                         reason: `Failed to bind sandbox ws port ${requestedPort} after ${maxAttempts} attempts: ${String(error)}`,
@@ -394,26 +394,26 @@ function handleProcessExit(log: SandboxLogger, params: ProcessExitParams): void 
     const isLogSizeExceeded = stdError.includes('Flow run data size exceeded the maximum allowed size')
 
     if (killedByTimeout) {
-        reject(new ActivepiecesError({
+        reject(new PlatformError({
             code: ErrorCode.SANDBOX_EXECUTION_TIMEOUT,
             params: { standardOutput: stdOut, standardError: stdError },
         }))
     }
     else if (isRamIssue) {
-        reject(new ActivepiecesError({
+        reject(new PlatformError({
             code: ErrorCode.SANDBOX_MEMORY_ISSUE,
             params: { standardOutput: stdOut, standardError: stdError },
         }))
     }
     else if (isLogSizeExceeded) {
-        reject(new ActivepiecesError({
+        reject(new PlatformError({
             code: ErrorCode.SANDBOX_LOG_SIZE_EXCEEDED,
             params: { standardOutput: stdOut, standardError: stdError },
         }))
     }
     else {
         const reason = 'Worker exited with code ' + code + ' and signal ' + signal
-        reject(new ActivepiecesError({
+        reject(new PlatformError({
             code: ErrorCode.SANDBOX_INTERNAL_ERROR,
             params: {
                 reason,
@@ -480,5 +480,5 @@ type ProcessExitParams = {
     killedByShutdown: boolean
     stdOut: string
     stdError: string
-    reject: (error: ActivepiecesError) => void
+    reject: (error: PlatformError) => void
 }

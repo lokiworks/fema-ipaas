@@ -1,4 +1,4 @@
-import { ActivepiecesError, assertNotNullOrUndefined, ErrorCode, isNil } from '@fema/core-utils'
+import { assertNotNullOrUndefined, ErrorCode, isNil, PlatformError } from '@fema/core-utils'
 import { ApEnvironment, AuthenticationResponse, EndpointScope, PlatformRole, PrincipalType, Project, ProjectType, TelemetryEventName, User, UserIdentity, UserIdentityProvider, UserStatus } from '@fema/shared'
 import { FastifyBaseLogger, FastifyRequest } from 'fastify'
 import { system } from '../helper/system/system'
@@ -21,7 +21,7 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
 
         })
         if (!isInvited) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.INVITATION_ONLY_SIGN_UP,
                 params: {
                     message: 'User is not invited to the platform',
@@ -41,7 +41,7 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
             ? findPersonalProject(projects, params.userId) ?? projects?.[0]
             : projects.find((project) => project.id === params.projectId)
         if (isNil(project)) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.INVITATION_ONLY_SIGN_UP,
                 params: {
                     message: 'No project found for user',
@@ -50,7 +50,7 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
         }
         const identity = await userIdentityService(log).getOneOrFail({ id: user.identityId })
         if (!identity.verified) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.EMAIL_IS_NOT_VERIFIED,
                 params: {
                     email: identity.email,
@@ -58,7 +58,7 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
             })
         }
         if (user.status === UserStatus.INACTIVE) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.USER_IS_INACTIVE,
                 params: {
                     email: identity.email,
@@ -89,7 +89,7 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
     async getOnboardingResponse({ identityId }: GetOnboardingResponseParams): Promise<AuthenticationResponse> {
         const identity = await userIdentityService(log).getOneOrFail({ id: identityId })
         if (!identity.verified) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.EMAIL_IS_NOT_VERIFIED,
                 params: {
                     email: identity.email,

@@ -1,5 +1,5 @@
 import { PiecePropertyMap, StaticPropsValue } from '@fema/connector-sdk'
-import { ActivepiecesError, ErrorCode, isNil } from '@fema/core-utils'
+import { ErrorCode, isNil, PlatformError } from '@fema/core-utils'
 import { EngineGenericError, ExecutionType, FlowActionType, FlowRunStatus, GenericStepOutput, PieceAction, RespondResponse, StepOutputStatus } from '@fema/shared'
 import { engineRunApi } from '../api/engine-run-api'
 import { PieceRuntime } from '../core/piece/piece-protocol'
@@ -41,7 +41,7 @@ const executeAction: ActionHandler<PieceAction> = async ({ action, executionStat
         const piece = { pieceName, pieceVersion, devPieces: constants.devPieces }
         const description = await pieceRunner.describe(piece)
         if (isNil(description.metadata.actions[actionName])) {
-            throw new ActivepiecesError({
+            throw new PlatformError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityType: 'step',

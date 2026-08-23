@@ -20,7 +20,7 @@ By following these steps, you can create a private fork on GitHub, GitLab or ano
 Begin by creating a bare clone of the repository. Remember that this is a temporary step and will be deleted later.
 
 ```bash
-git clone --bare git@github.com:activepieces/activepieces.git
+git clone --bare git@github.com:lokiworks/fema-ipaas.git
  ```
 
 2. **Create a Private Git Repository**
@@ -57,7 +57,7 @@ git clone git@github.com:<your_username>/activepieces.git
 If desired, you can add the original repository as a remote to fetch potential future changes. However, remember to disable push operations for this remote, as you are not permitted to push changes to it.
 
 ```bash
-git remote add upstream git@github.com:activepieces/activepieces.git
+git remote add upstream git@github.com:lokiworks/fema-ipaas.git
 git remote set-url --push upstream DISABLE
 ```
 
@@ -66,7 +66,7 @@ You can view a list of all your remotes using `git remote -v`. It should resembl
 ```
 origin	git@github.com:<your_username>/activepieces.git (fetch)
 origin	git@github.com:<your_username>/activepieces.git (push)
-upstream	git@github.com:activepieces/activepieces.git (fetch)
+upstream	git@github.com:lokiworks/fema-ipaas.git (fetch)
 upstream	DISABLE (push)
 ```
 

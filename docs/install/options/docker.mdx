@@ -21,7 +21,7 @@ You need to have [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing
 Pull the Activepieces Docker image and run the container with the following command:
 
 ```bash
-docker run -d -p 8080:80 -v ~/.activepieces:/root/.activepieces -e FEMA_REDIS_TYPE=MEMORY -e FEMA_DB_TYPE=PGLITE -e FEMA_FRONTEND_URL="http://localhost:8080" activepieces/activepieces:latest
+docker run -d -p 8080:80 -v ~/.activepieces:/root/.activepieces -e FEMA_REDIS_TYPE=MEMORY -e FEMA_DB_TYPE=PGLITE -e FEMA_FRONTEND_URL="http://localhost:8080" lokiworks/fema-ipaas:latest
 ```
 
 ### Configure Webhook URL (Important for Triggers, Optional If you have public IP)
@@ -63,7 +63,7 @@ Before proceeding with the upgrade, it is always a good practice to back up your
 
 1. **Pull the Latest Activepieces Docker Image:** Run the following command to pull the latest Activepieces Docker image from Docker Hub:
    ```bash
-   docker pull activepieces/activepieces:latest
+   docker pull lokiworks/fema-ipaas:latest
    ```
 
 ### Step 3: Remove the Existing Activepieces Container
@@ -79,7 +79,7 @@ Before proceeding with the upgrade, it is always a good practice to back up your
 Now, run the updated Activepieces container with the latest image using the same command you used during the initial setup. Be sure to replace `activepieces_container_name` with the desired name for your new container.
 
 ```bash
-docker run -d -p 8080:80 -v ~/.activepieces:/root/.activepieces -e FEMA_REDIS_TYPE=MEMORY -e FEMA_DB_TYPE=PGLITE -e FEMA_FRONTEND_URL="http://localhost:8080" --name activepieces_container_name activepieces/activepieces:latest
+docker run -d -p 8080:80 -v ~/.activepieces:/root/.activepieces -e FEMA_REDIS_TYPE=MEMORY -e FEMA_DB_TYPE=PGLITE -e FEMA_FRONTEND_URL="http://localhost:8080" --name activepieces_container_name lokiworks/fema-ipaas:latest
 ```
 
 

@@ -19,6 +19,10 @@ const WorkflowBuilderPage = lazyWithRetry(
     import('./workflows/id').then((m) => ({ default: m.WorkflowBuilderPage })),
   'workflow-builder',
 );
+const HomePage = lazyWithRetry(
+  () => import('./home').then((m) => ({ default: m.HomePage })),
+  'home',
+);
 const RunsPage = lazyWithRetry(
   () => import('./runs').then((m) => ({ default: m.RunsPage })),
   'runs',
@@ -56,6 +60,20 @@ const automationsPagePermissions = [
 ];
 
 export const workspaceRoutes = [
+  ...WorkspaceRouterWrapper({
+    path: routesThatRequireWorkspaceId.home,
+    element: (
+      <WorkspaceDashboardLayout>
+        <RoutePermissionGuard requiredPermissions={Permission.READ_RUN}>
+          <PageTitle title="Home">
+            <SuspenseWrapper>
+              <HomePage />
+            </SuspenseWrapper>
+          </PageTitle>
+        </RoutePermissionGuard>
+      </WorkspaceDashboardLayout>
+    ),
+  }),
   ...WorkspaceRouterWrapper({
     path: routesThatRequireWorkspaceId.automations,
     element: (

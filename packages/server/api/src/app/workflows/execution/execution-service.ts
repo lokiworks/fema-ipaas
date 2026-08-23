@@ -17,6 +17,7 @@ import { jobQueue, JobType } from '../../workers/job-queue/job-queue'
 import { payloadOffloader } from '../../workers/payload-offloader'
 import { workspaceService } from '../../workspace/workspace-service'
 import { sampleDataService } from '../step-run/sample-data.service'
+import { workflowRepo } from '../workflow/workflow.repo'
 import { workflowService } from '../workflow/workflow.service'
 import { workflowVersionService } from '../workflow-version/workflow-version.service'
 import { ExecutionEntity } from './execution-entity'
@@ -463,6 +464,60 @@ export const executionService = (log: FastifyBaseLogger) => ({
 
         const results = await query.getRawMany()
         return results.map((r: { status: ExecutionStatus, count: string }) => ({ status: r.status, count: parseInt(r.count, 10) }))
+    },
+    async dailyTrend(params: DailyTrendParams): Promise<ExecutionDailyTrendRow[]> {
+        const results = await executionRepo().createQueryBuilder('execution')
+            .select('date_trunc(\'day\', execution.created)', 'day')
+            .addSelect('execution.status', 'status')
+            .addSelect('COUNT(*)', 'count')
+            .where({
+                workspaceId: params.workspaceId,
+                environment: RunEnvironment.PRODUCTION,
+                archivedAt: IsNull(),
+            })
+            .andWhere('execution.created >= :createdAfter', { createdAfter: params.createdAfter })
+            .groupBy('date_trunc(\'day\', execution.created)')
+            .addGroupBy('execution.status')
+            .orderBy('date_trunc(\'day\', execution.created)', 'ASC')
+            .getRawMany()
+        return results.map((row: { day: Date, status: ExecutionStatus, count: string }) => ({
+            day: apDayjs(row.day.toISOString()).toISOString(),
+            status: row.status,
+            count: parseInt(row.count, 10),
+        }))
+    },
+    async topFailingWorkflows(params: TopFailingWorkflowsParams): Promise<FailingWorkflowSummaryRow[]> {
+        const results = await executionRepo().createQueryBuilder('execution')
+            .select('execution.workflowId', 'workflowId')
+            .addSelect('COUNT(*)', 'count')
+            .addSelect('MAX(execution.created)', 'lastFailure')
+            .where({
+                workspaceId: params.workspaceId,
+                environment: RunEnvironment.PRODUCTION,
+                archivedAt: IsNull(),
+            })
+            .andWhere('execution.status IN (:...failedStatuses)', { failedStatuses: FAILED_STATUSES })
+            .andWhere('execution.created >= :createdAfter', { createdAfter: params.createdAfter })
+            .groupBy('execution.workflowId')
+            .orderBy('COUNT(*)', 'DESC')
+            .limit(params.limit)
+            .getRawMany()
+        if (results.length === 0) {
+            return []
+        }
+        const workflows = await workflowRepo().createQueryBuilder('workflow')
+            .leftJoin('workflow_version', 'version', 'version.id = workflow."publishedVersionId"')
+            .select('workflow.id', 'id')
+            .addSelect('version.displayName', 'displayName')
+            .where('workflow.id IN (:...workflowIds)', { workflowIds: results.map((row: { workflowId: string }) => row.workflowId) })
+            .getRawMany()
+        const displayNameById = new Map(workflows.map((workflow: { id: string, displayName: string | null }) => [workflow.id, workflow.displayName]))
+        return results.map((row: { workflowId: string, count: string, lastFailure: Date }) => ({
+            workflowId: row.workflowId,
+            displayName: displayNameById.get(row.workflowId) ?? row.workflowId,
+            count: parseInt(row.count, 10),
+            lastFailure: apDayjs(row.lastFailure.toISOString()).toISOString(),
+        }))
     },
     async getOnePopulatedOrThrow(params: GetOneParams): Promise<Execution> {
         const execution = await this.getOneOrThrow(params)
@@ -934,4 +989,36 @@ type FilterExecutionsAndApplyFiltersParams = {
     excludeExecutionIds?: ExecutionId[]
     failedStepName?: string
     failedStepMessage?: string
+}
+
+type ExecutionDailyTrendRow = {
+    day: string
+    status: ExecutionStatus
+    count: number
+}
+
+type FailingWorkflowSummaryRow = {
+    workflowId: string
+    displayName: string
+    count: number
+    lastFailure: string
+}
+
+const FAILED_STATUSES = [
+    ExecutionStatus.FAILED,
+    ExecutionStatus.INTERNAL_ERROR,
+    ExecutionStatus.TIMEOUT,
+    ExecutionStatus.MEMORY_LIMIT_EXCEEDED,
+    ExecutionStatus.QUOTA_EXCEEDED,
+]
+
+type DailyTrendParams = {
+    workspaceId: string
+    createdAfter: string
+}
+
+type TopFailingWorkflowsParams = {
+    workspaceId: string
+    createdAfter: string
+    limit: number
 }

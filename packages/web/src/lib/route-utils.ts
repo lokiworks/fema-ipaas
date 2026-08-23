@@ -3,6 +3,7 @@ import { Permission } from '@fema-ipaas/core-utils';
 import { authenticationSession } from './authentication-session';
 
 export const routesThatRequireWorkspaceId = {
+  home: '/home',
   runs: '/runs',
   singleRun: '/runs/:runId',
   workflows: '/workflows',

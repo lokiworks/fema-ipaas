@@ -2393,5 +2393,20 @@
   "Activate trial key": "Activate trial key",
   "Activate Trial Key": "Activate Trial Key",
   "Enter your trial key to unlock enterprise features.": "Enter your trial key to unlock enterprise features.",
-  "Enter your trial key": "Enter your trial key"
+  "Enter your trial key": "Enter your trial key",
+  "Home": "Home",
+  "Run Center": "Run Center",
+  "Solutions": "Solutions",
+  "Resources": "Resources",
+  "Core Components": "Core Components",
+  "Control": "Control",
+  "Runtime": "Runtime",
+  "Human": "Human",
+  "Runs over time": "Runs over time",
+  "Failing workflows": "Failing workflows",
+  "No failures in this period": "No failures in this period",
+  "Failed runs": "Failed runs",
+  "Last 24 hours": "Last 24 hours",
+  "No finished runs yet": "No finished runs yet",
+  "This core component is not available on this instance.": "This core component is not available on this instance."
 }

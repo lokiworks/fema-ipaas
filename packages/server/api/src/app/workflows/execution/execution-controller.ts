@@ -1,5 +1,6 @@
 import { ApId, ApplicationError, ErrorCode, isNil, omit, Permission, SeekPage } from '@fema-ipaas/core-utils'
-import { BulkActionOnRunsRequestBody, BulkArchiveActionOnRunsRequestBody, BulkCancelWorkflowRequestBody, CountExecutionsByStatusRequest, CountExecutionsByStatusResponse, Execution, ListExecutionsRequestQuery, PrincipalType, RetryWorkflowRequestBody, RunEnvironment, RunInternalErrorSource, SERVICE_KEY_SECURITY_OPENAPI, TenantRole } from '@fema-ipaas/shared'
+import { apDayjs } from '@fema-ipaas/server-utils'
+import { BulkActionOnRunsRequestBody, BulkArchiveActionOnRunsRequestBody, BulkCancelWorkflowRequestBody, CountExecutionsByStatusRequest, CountExecutionsByStatusResponse, Execution, ListExecutionsRequestQuery, PrincipalType, RetryWorkflowRequestBody, RunEnvironment, RunInternalErrorSource, SERVICE_KEY_SECURITY_OPENAPI, TenantRole, WorkspaceOverviewRequest, WorkspaceOverviewResponse } from '@fema-ipaas/shared'
 import { FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
@@ -38,6 +39,17 @@ export const executionController: FastifyPluginAsyncZod = async (app) => {
             createdBefore: request.query.createdBefore,
         })
         return { data }
+    })
+
+    app.get('/overview', WorkspaceOverviewRouteConfig, async (request) => {
+        const { workspaceId, days } = request.query
+        const createdAfter = apDayjs().subtract(days, 'day').toISOString()
+        const [countByStatus, dailyTrend, topFailingWorkflows] = await Promise.all([
+            executionService(request.log).countByStatus({ workspaceId, createdAfter }),
+            executionService(request.log).dailyTrend({ workspaceId, createdAfter }),
+            executionService(request.log).topFailingWorkflows({ workspaceId, createdAfter, limit: TOP_FAILING_WORKFLOWS_LIMIT }),
+        ])
+        return { countByStatus, dailyTrend, topFailingWorkflows }
     })
 
     app.get(
@@ -212,6 +224,27 @@ const ArchiveExecutionRequest = {
     },
     schema: {
         body: BulkArchiveActionOnRunsRequestBody,
+    },
+}
+
+const TOP_FAILING_WORKFLOWS_LIMIT = 5
+
+const WorkspaceOverviewRouteConfig = {
+    config: {
+        security: securityAccess.workspace(
+            [PrincipalType.USER, PrincipalType.SERVICE],
+            Permission.READ_RUN, {
+                type: WorkspaceResourceType.QUERY,
+            }),
+    },
+    schema: {
+        tags: ['executions'],
+        description: 'Workspace run overview',
+        security: [SERVICE_KEY_SECURITY_OPENAPI],
+        querystring: WorkspaceOverviewRequest,
+        response: {
+            [StatusCodes.OK]: WorkspaceOverviewResponse,
+        },
     },
 }
 

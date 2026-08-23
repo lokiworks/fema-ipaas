@@ -1,5 +1,6 @@
 import { Permission } from '@fema-ipaas/core-utils';
 import { t } from 'i18next';
+import { CompassIcon, HouseIcon, PuzzleIcon } from 'lucide-react';
 import { useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -72,8 +73,15 @@ export const WorkspaceDashboardLayoutHeader = () => {
 
   const primaryTabs: WorkspaceDashboardLayoutHeaderTab[] = [
     {
+      to: authenticationSession.appendWorkspaceRoutePrefix('/home'),
+      label: t('Home'),
+      icon: HouseIcon,
+      hasPermission: checkAccess(Permission.READ_RUN),
+      show: true,
+    },
+    {
       to: authenticationSession.appendWorkspaceRoutePrefix('/automations'),
-      label: t('Automations'),
+      label: t('Workflows'),
       icon: WorkflowIcon,
       hasPermission: checkAccess(Permission.READ_WORKFLOW),
       show: true,
@@ -83,7 +91,7 @@ export const WorkspaceDashboardLayoutHeader = () => {
   const secondaryTabs: WorkspaceDashboardLayoutHeaderTab[] = [
     {
       to: authenticationSession.appendWorkspaceRoutePrefix('/runs'),
-      label: t('Runs'),
+      label: t('Run Center'),
       icon: HistoryIcon,
       hasPermission: checkAccess(Permission.READ_RUN),
       show: true,
@@ -96,8 +104,22 @@ export const WorkspaceDashboardLayoutHeader = () => {
       show: true,
     },
     {
+      to: '/tenant/setup/connectors',
+      label: t('Connectors'),
+      icon: PuzzleIcon,
+      hasPermission: true,
+      show: !isEmbedded,
+    },
+    {
+      to: '/templates',
+      label: t('Solutions'),
+      icon: CompassIcon,
+      hasPermission: true,
+      show: !isEmbedded,
+    },
+    {
       to: authenticationSession.appendWorkspaceRoutePrefix('/variables'),
-      label: t('Variables'),
+      label: t('Resources'),
       icon: VariableIcon,
       hasPermission: checkAccess(Permission.READ_VARIABLE),
       show: true,

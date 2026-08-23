@@ -1,0 +1,449 @@
+.github/workflows/emergency-cloud-deploy.yml
+  s_94864882421579::t_7a7cc8bb0805fe 37
+packages/server/api/src/app/variable/variable.service.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,30,104,120,149
+docker-compose.yml
+  s_94864882421579::t_7a7cc8bb0805fe 3,19
+packages/pieces/core/webhook/src/i18n/translation.json
+  s_94864882421579::t_7a7cc8bb0805fe 11
+packages/server/worker/src/lib/execute/jobs/resolve-connection-identifier.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,44
+packages/pieces/core/webhook/src/i18n/es.json
+  s_94864882421579::t_7a7cc8bb0805fe 11
+docs/about/i18n.mdx
+  s_94864882421579::t_7a7cc8bb0805fe 29
+packages/server/api/src/app/project/project-service.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,110,140,242,259
+packages/server/api/src/app/trigger/trigger-events/trigger-event.service.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,75
+docs/install/configure-operate/telemetry.mdx
+  s_94864882421579::t_7a7cc8bb0805fe 20
+packages/pieces/core/webhook/src/i18n/de.json
+  s_94864882421579::t_7a7cc8bb0805fe 11
+.github/workflows/continuous-delivery-stg.yml
+  s_94864882421579::t_7a7cc8bb0805fe 96,211-212
+packages/server/api/src/app/app-connection/app-connection-worker-controller.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,19
+packages/server/api/src/app/user-invitations/user-invitation.service.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,30,200
+packages/server/api/src/app/authentication/user-identity/user-identity-service.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,22,51,57,67,108,127
+packages/pieces/core/webhook/src/i18n/fr.json
+  s_94864882421579::t_7a7cc8bb0805fe 11
+brain/knowledge/engineering/api-endpoints.md
+  s_94864882421579::t_7a7cc8bb0805fe 10
+packages/server/STYLE.md
+  s_94864882421579::t_7a7cc8bb0805fe 64,132,136,138,142
+packages/server/api/src/app/app-connection/app-connection-service/oauth2/oauth2-util.ts
+  s_94864882421579::t_7a7cc8bb0805fe 3,87,115,206,212,236
+packages/pieces/core/webhook/src/i18n/zh.json
+  s_94864882421579::t_7a7cc8bb0805fe 11
+packages/pieces/community/github/src/lib/trigger/new-branch.ts
+  s_94864882421579::t_7a7cc8bb0805fe 32
+docs/install/configure-operate/enterprise-license.mdx
+  s_94864882421579::t_7a7cc8bb0805fe 12
+packages/server/sandbox/test/lib/sandbox.test.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,116-117,149-150
+docs/install/configure-operate/setup-opentelemetry.mdx
+  s_94864882421579::t_7a7cc8bb0805fe 26
+packages/server/api/src/app/flows/flow-version/flow-version.service.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,162,176,241
+packages/server/api/src/app/helper/jwt-utils.ts
+  s_94864882421579::t_7a7cc8bb0805fe 3,61,80
+.github/workflows/setup-environment.yml
+  s_94864882421579::t_7a7cc8bb0805fe 15
+packages/server/api/src/app/platform/platform.service.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,131
+packages/server/api/src/app/authentication/authorization.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,48
+docs/build-pieces/misc/testing-pieces.mdx
+  s_94864882421579::t_7a7cc8bb0805fe 9
+packages/server/api/src/app/pieces/piece-install-service.ts
+  s_94864882421579::t_7a7cc8bb0805fe 2,45,48
+.github/workflows/build-cloud-image.yml
+  s_94864882421579::t_7a7cc8bb0805fe 37,41
+packages/server/api/src/app/file/files-service.ts
+  s_94864882421579::t_7a7cc8bb0805fe 2,38-39
+packages/server/api/test/unit/app/action-run/action-run-outcome.test.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,44,51,122
+brain/knowledge/ai-intelligence/ai-agents.md
+  s_94864882421579::t_7a7cc8bb0805fe 31
+.github/workflows/release-pieces.yml
+  s_94864882421579::t_7a7cc8bb0805fe 18
+.github/actions/sbom/action.yml
+  s_94864882421579::t_7a7cc8bb0805fe 6
+deploy/pulumi/index.ts
+  s_94864882421579::t_7a7cc8bb0805fe 87
+packages/pieces/core/webhook/src/i18n/hu.json
+  s_94864882421579::t_7a7cc8bb0805fe 12
+packages/server/engine/src/lib/handler/piece-executor.ts
+  s_94864882421579::t_7a7cc8bb0805fe 2,44
+.github/workflows/reusable-finalize-translations-pr.yml
+  s_94864882421579::t_7a7cc8bb0805fe 42
+packages/core/shared/src/lib/automation/pieces/utils.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,47
+packages/pieces/community/github/src/lib/trigger/index.ts
+  s_94864882421579::t_7a7cc8bb0805fe 29,32-34,36,79,81,83,85,87,122,148,151,153,155,157,159,161,163,165,167,169-170,172,174,176,178,180,182,184,186,188,190,192,194,196,198,200,202,204,206,208,210,212,214,216,218,220,222,226-229,295,323,326,328,330,332,334,336,338,340,342,344-345,347,349,351,353,355,357,359,361,363,365,367,369,371,373,375,377,379,381,383,385,387,389,391,393,395,397,401-404,466,468,470,472,474-475,518,530,538,564,567,569,571,573,575,577,579,581,583,585-586,588,590,592,594,596,598,600,602,604,606,608,610,612,614,616,618,620,622,624,626,628,630,632,634,636,638,642-645,750,776,779,781,783,785,787,789,791,793,795,797-798,800,802,804,806,808,810,812,814,816,818,820,822,824,826,828,830,832,834,836,838,840,842,844,846,848,850,854-857
+packages/pieces/core/webhook/src/i18n/nl.json
+  s_94864882421579::t_7a7cc8bb0805fe 11
+.github/workflows/remove-environment.yml
+  s_94864882421579::t_7a7cc8bb0805fe 10
+packages/server/api/src/app/core/security/v2/authz/projectIdExtractor.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,35
+packages/server/api/src/app/template/template.service.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,19,124,134
+packages/server/sandbox/src/lib/cache/action-run-cache.ts
+  s_94864882421579::t_7a7cc8bb0805fe 3,10
+NOTICE.md
+  s_94864882421579::t_7a7cc8bb0805fe 10
+packages/server/sandbox/src/lib/sandbox.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,23,33,76
+packages/server/worker/src/lib/worker.ts
+  s_94864882421579::t_7a7cc8bb0805fe 3,543
+packages/web/public/locales/ar/translation.json
+  s_94864882421579::t_7a7cc8bb0805fe 728
+docs/build-pieces/misc/private-fork.mdx
+  s_94864882421579::t_7a7cc8bb0805fe 23,60,69
+.github/workflows/agent-evals.yml
+  s_94864882421579::t_7a7cc8bb0805fe 74
+docs/build-pieces/building-pieces/development-setup.mdx
+  s_94864882421579::t_7a7cc8bb0805fe 44,46
+docs/admin-guide/security/practices.mdx
+  s_94864882421579::t_7a7cc8bb0805fe 25
+packages/pieces/community/github/src/lib/trigger/new-commit.ts
+  s_94864882421579::t_7a7cc8bb0805fe 43,47
+packages/server/worker/src/lib/config/logger.ts
+  s_94864882421579::t_7a7cc8bb0805fe 14,22
+packages/web/public/locales/en/translation.json
+  s_94864882421579::t_7a7cc8bb0805fe 870
+packages/web/test/app/components/global-search/global-search-context.test.tsx
+  s_94864882421579::t_7a7cc8bb0805fe 4
+.github/workflows/continuous-delivery-canary.yml
+  s_94864882421579::t_7a7cc8bb0805fe 48,52
+docs/install/options/helm.mdx
+  s_94864882421579::t_7a7cc8bb0805fe 101,113
+.github/workflows/publish-embed-sdk.yml
+  s_94864882421579::t_7a7cc8bb0805fe 18
+packages/pieces/core/webhook/src/i18n/ko.json
+  s_94864882421579::t_7a7cc8bb0805fe 12
+packages/server/api/src/app/app-connection/app-connection-service/oauth2/services/cloud-oauth2-service.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,7
+brain/knowledge/decisions/000014-streaming-file-inputs-resolve-to-a-lazy-apstreamingfile.md
+  s_94864882421579::t_7a7cc8bb0805fe 17
+packages/core/execution/src/lib/flows/operations/add-action.ts
+  s_94864882421579::t_7a7cc8bb0805fe 3,81,104,116
+packages/pieces/core/webhook/src/i18n/ca.json
+  s_94864882421579::t_7a7cc8bb0805fe 12
+brain/knowledge/data-storage-observability/file-storage.md
+  s_94864882421579::t_7a7cc8bb0805fe 28
+packages/server/api/src/app/core/security/v2/authz/authorize.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,47,55,62,76,88,101
+packages/server/api/src/app/flows/flow-run/flow-run-service.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,127,253,427,651,683
+docs/admin-guide/guides/secret-managers/cyberark-conjur.mdx
+  s_94864882421579::t_7a7cc8bb0805fe 36,94-95,119
+docs/handbook/engineering/playbooks/releases.mdx
+  s_94864882421579::t_7a7cc8bb0805fe 69
+packages/server/api/src/app/core/security/platform-guards.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,15,28
+packages/server/api/src/app/flows/flow/human-input/human-input.service.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,41,69
+packages/core/utils/src/lib/platform-error.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1-574
+packages/server/api/src/app/trigger/app-event-routing/app-event-routing.module.ts
+  s_94864882421579::t_7a7cc8bb0805fe 3,60
+packages/web/public/locales/ja/translation.json
+  s_94864882421579::t_7a7cc8bb0805fe 870
+packages/web/public/locales/zh/translation.json
+  s_94864882421579::t_7a7cc8bb0805fe 870
+packages/web/src/app/components/help-and-feedback.tsx
+  s_94864882421579::t_7a7cc8bb0805fe 42
+docs/build-pieces/piece-reference/triggers/webhook-trigger.mdx
+  s_94864882421579::t_7a7cc8bb0805fe 26
+docs/endpoints/overview.mdx
+  s_94864882421579::t_7a7cc8bb0805fe 8
+packages/server/api/src/app/trigger/trigger-source/trigger-source-service.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,135
+packages/server/api/src/app/workers/user-interaction-watcher.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,28
+.github/workflows/breaking-change-check.yml
+  s_94864882421579::t_7a7cc8bb0805fe 14
+.github/workflows/continuous-delivery-rollback-canary.yml
+  s_94864882421579::t_7a7cc8bb0805fe 62
+docs/handbook/engineering/playbooks/pr-review-sla.mdx
+  s_94864882421579::t_7a7cc8bb0805fe 10,33,43
+packages/core/utils/src/index.ts
+  s_94864882421579::t_7a7cc8bb0805fe 17
+docs/install/configure-operate/rollback.mdx
+  s_94864882421579::t_7a7cc8bb0805fe 49,57,68
+docs/admin-guide/security/audit-logs/overview.mdx
+  s_94864882421579::t_7a7cc8bb0805fe 26
+packages/pieces/core/webhook/src/i18n/ru.json
+  s_94864882421579::t_7a7cc8bb0805fe 12
+docs/install/reference/environment-variables.mdx
+  s_94864882421579::t_7a7cc8bb0805fe 12
+packages/server/api/test/integration/flows/flow/error-handler.test.ts
+  s_94864882421579::t_7a7cc8bb0805fe 35
+docs/handbook/customer-support/overview.mdx
+  s_94864882421579::t_7a7cc8bb0805fe 16
+packages/server/api/src/app/project/project.controller.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,76
+packages/pieces/core/webhook/src/i18n/vi.json
+  s_94864882421579::t_7a7cc8bb0805fe 12
+.agents/skills/debug-failed-run/SKILL.md
+  s_94864882421579::t_7a7cc8bb0805fe 53
+packages/server/api/src/app/authentication/authentication-utils.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,24,44,53,61,92
+packages/server/api/src/app/authentication/authentication.service.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,187,202
+packages/server/sandbox/src/lib/sandbox/sandbox.ts
+  s_94864882421579::t_7a7cc8bb0805fe 5,16,115,397,403,409,416,483
+packages/server/sandbox/test/lib/cache/piece-cache-traversal.test.ts
+  s_94864882421579::t_7a7cc8bb0805fe 4,59-60
+packages/server/worker/test/lib/execute/jobs/execute-flow.test.ts
+  s_94864882421579::t_7a7cc8bb0805fe 2,164-165
+docs/build-pieces/building-pieces/setup-fork.mdx
+  s_94864882421579::t_7a7cc8bb0805fe 13
+.github/workflows/continuous-delivery-rollback.yml
+  s_94864882421579::t_7a7cc8bb0805fe 46
+packages/server/api/src/app/authentication/passwordless-auth.service.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,64,75,91
+packages/tests-e2e/global-setup.ts
+  s_94864882421579::t_7a7cc8bb0805fe 5
+packages/web/public/locales/es/translation.json
+  s_94864882421579::t_7a7cc8bb0805fe 870
+packages/pieces/core/webhook/src/i18n/uk.json
+  s_94864882421579::t_7a7cc8bb0805fe 12
+docs/docs.json
+  s_94864882421579::t_7a7cc8bb0805fe 14,668
+.github/workflows/continuous-delivery-cloud.yml
+  s_94864882421579::t_7a7cc8bb0805fe 73
+docs/install/options/gcp.mdx
+  s_94864882421579::t_7a7cc8bb0805fe 14
+.github/workflows/release-self-hosted.yml
+  s_94864882421579::t_7a7cc8bb0805fe 58,87-88,115,126,162,165-166
+docs/install/options/railway.mdx
+  s_94864882421579::t_7a7cc8bb0805fe 16
+packages/server/api/src/app/flows/folder/folder.service.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,29,132
+packages/server/api/src/app/trigger/trigger-source/flow-trigger-side-effect.ts
+  s_94864882421579::t_7a7cc8bb0805fe 6,202
+packages/server/sandbox/src/lib/cache/pieces/piece-cache.ts
+  s_94864882421579::t_7a7cc8bb0805fe 2,13
+packages/server/sandbox/test/lib/utils/path-safety.test.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,6,12,34-37,41-44,48-49
+docs/handbook/engineering/onboarding/onboarding-check-list.mdx
+  s_94864882421579::t_7a7cc8bb0805fe 14
+packages/web/public/locales/de/translation.json
+  s_94864882421579::t_7a7cc8bb0805fe 870
+packages/pieces/core/webhook/src/lib/actions/return-response-and-wait-for-next-webhook.ts
+  s_94864882421579::t_7a7cc8bb0805fe 19,26
+packages/web/public/locales/zh-TW/translation.json
+  s_94864882421579::t_7a7cc8bb0805fe 870
+packages/server/api/src/app/project/project-side-effects.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,37
+.agents/skills/triage-security-advisories/SKILL.md
+  s_94864882421579::t_7a7cc8bb0805fe 9,40,245
+packages/web/test/app/components/global-search/global-search-command.test.tsx
+  s_94864882421579::t_7a7cc8bb0805fe 4
+packages/core/shared/CLAUDE.md
+  s_94864882421579::t_7a7cc8bb0805fe 11,16
+.github/workflows/ci.yml
+  s_94864882421579::t_7a7cc8bb0805fe 13,66,178
+packages/server/api/src/app/helper/otel-queue-metrics.ts
+  s_94864882421579::t_7a7cc8bb0805fe 41
+packages/server/worker/src/lib/execute/jobs/execute-flow.ts
+  s_94864882421579::t_7a7cc8bb0805fe 2,39,46,96,154
+docs/handbook/engineering/playbooks/security-advisory-response.mdx
+  s_94864882421579::t_7a7cc8bb0805fe 7,22,89,97,153
+.github/workflows/crowdin-pr-merger.yml
+  s_94864882421579::t_7a7cc8bb0805fe 76
+.github/workflows/generate-translations.yml
+  s_94864882421579::t_7a7cc8bb0805fe 10,19,29,39,49,59,69,78
+packages/pieces/core/webhook/src/i18n/bg.json
+  s_94864882421579::t_7a7cc8bb0805fe 12
+.github/workflows/release-cli.yml
+  s_94864882421579::t_7a7cc8bb0805fe 17
+packages/server/api/src/app/user-invitations/user-invitation.module.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,156
+packages/server/api/test/unit/app/authentication/disposable-email.test.ts
+  s_94864882421579::t_7a7cc8bb0805fe 14
+packages/web/src/lib/navigation-utils.tsx
+  s_94864882421579::t_7a7cc8bb0805fe 27
+.github/workflows/reusable-generate-translations-shard.yml
+  s_94864882421579::t_7a7cc8bb0805fe 50
+packages/server/sandbox/test/lib/cache/action-run-cache.test.ts
+  s_94864882421579::t_7a7cc8bb0805fe 5,139-140
+packages/pieces/core/webhook/src/i18n/ar.json
+  s_94864882421579::t_7a7cc8bb0805fe 12
+packages/pieces/core/webhook/src/i18n/it.json
+  s_94864882421579::t_7a7cc8bb0805fe 12
+.github/workflows/pr-size.yml
+  s_94864882421579::t_7a7cc8bb0805fe 14
+deploy/activepieces-helm/values.yaml
+  s_94864882421579::t_7a7cc8bb0805fe 10
+packages/pieces/core/webhook/src/i18n/ja.json
+  s_94864882421579::t_7a7cc8bb0805fe 11
+packages/server/api/src/app/app-connection/app-connection-service/app-connection.handler.ts
+  s_94864882421579::t_7a7cc8bb0805fe 2,245
+packages/server/api/src/app/authentication/lib/access-token-manager.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,66,77,80,97,111
+CLAUDE.md
+  s_94864882421579::t_7a7cc8bb0805fe 68
+packages/web/test/app/builder/step-settings/branch-settings/branch-single-condition.test.tsx
+  s_94864882421579::t_7a7cc8bb0805fe 4
+packages/server/api/src/app/authentication/local-authn/local-authn.module.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,44
+packages/web/test/hooks/use-resource-lock.test.tsx
+  s_94864882421579::t_7a7cc8bb0805fe 4
+packages/server/api/src/app/core/security/oidc/oidc-key-manager.ts
+  s_94864882421579::t_7a7cc8bb0805fe 3,64
+.agents/skills/triage-dependabot-alerts/SKILL.md
+  s_94864882421579::t_7a7cc8bb0805fe 8,27
+README.md
+  s_94864882421579::t_7a7cc8bb0805fe 10,19,115,173,180,183-184,188-189,191,197,206-207,215,217,224,228-229,235-237,244,246-247,250-254,256,259,262-263,268-270,274,280,282,287-292,295-296,298,304,309,314-317,325,327,331,335,337,342-343,361,370,373,381,389,391,397,404,406-407,416,418,421-424,434,436,440,449,453-454,457,462,468-469,476
+packages/server/api/src/app/pieces/metadata/piece-metadata-service.ts
+  s_94864882421579::t_7a7cc8bb0805fe 2,83,134,170,176,183
+packages/server/api/src/app/flows/flow-run/flow-run-controller.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,65
+.github/workflows/continuous-delivery-release.yml
+  s_94864882421579::t_7a7cc8bb0805fe 55-56,94-98,106
+docs/about/changelog.mdx
+  s_94864882421579::t_7a7cc8bb0805fe 144-145,200
+docs/embedding/sdk-changelog.mdx
+  s_94864882421579::t_7a7cc8bb0805fe 33,37,46,55,63,68,78,90,98,153-155
+packages/pieces/core/webhook/src/i18n/pl.json
+  s_94864882421579::t_7a7cc8bb0805fe 12
+packages/server/api/src/app/template/community-templates.service.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,20
+packages/server/api/src/app/trigger/trigger-source/trigger-utils.ts
+  s_94864882421579::t_7a7cc8bb0805fe 2,17
+docs/about/license.mdx
+  s_94864882421579::t_7a7cc8bb0805fe 7,11
+docs/build-pieces/piece-reference/examples.mdx
+  s_94864882421579::t_7a7cc8bb0805fe 12,15,18-19,24-25,28,31
+packages/server/api/src/app/flows/flow/flow.service.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,197,345,524,783
+packages/server/api/src/app/helper/error-handler.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,13,37
+packages/server/utils/src/ap-version.ts
+  s_94864882421579::t_7a7cc8bb0805fe 39
+packages/server/api/test/unit/app/authentication/signup-names.test.ts
+  s_94864882421579::t_7a7cc8bb0805fe 6-10,16,29,35,41,54,60,66,73,83
+packages/server/api/src/app/app-connection/app-connection.controller.ts
+  s_94864882421579::t_7a7cc8bb0805fe 3,149
+packages/server/api/src/app/file/files-controller.ts
+  s_94864882421579::t_7a7cc8bb0805fe 2,70,180,189,226
+packages/web/public/locales/fr/translation.json
+  s_94864882421579::t_7a7cc8bb0805fe 870
+packages/server/api/src/app/pieces/metadata/piece-metadata-controller.ts
+  s_94864882421579::t_7a7cc8bb0805fe 2,36,170
+packages/server/api/src/app/core/websockets.service.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,60,112,125
+packages/server/sandbox/test/lib/cache/flow/code/code-cache-traversal.test.ts
+  s_94864882421579::t_7a7cc8bb0805fe 5,25-26,43-44
+packages/server/api/src/app/user/user-service.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,63,74,134,147,252
+packages/web/public/locales/pt/translation.json
+  s_94864882421579::t_7a7cc8bb0805fe 870
+SECURITY.md
+  s_94864882421579::t_7a7cc8bb0805fe 25-26
+docs/build-pieces/piece-reference/triggers/polling-trigger.mdx
+  s_94864882421579::t_7a7cc8bb0805fe 20-21
+packages/server/api/src/app/file/file.service.ts
+  s_94864882421579::t_7a7cc8bb0805fe 3,97,127,244,265,278,287,296
+packages/web/test/app/builder/flow-canvas/widgets/use-flow-lock.test.tsx
+  s_94864882421579::t_7a7cc8bb0805fe 4
+packages/server/api/src/app/authentication/lib/turnstile.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,29-30
+packages/server/api/test/unit/app/helper/otel-queue-metrics.test.ts
+  s_94864882421579::t_7a7cc8bb0805fe 33
+packages/pieces/core/webhook/src/i18n/id.json
+  s_94864882421579::t_7a7cc8bb0805fe 12
+packages/pieces/core/webhook/src/i18n/hi.json
+  s_94864882421579::t_7a7cc8bb0805fe 12
+packages/pieces/core/webhook/src/i18n/sv.json
+  s_94864882421579::t_7a7cc8bb0805fe 12
+packages/server/api/src/app/platform/platform.controller.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,17,39,81
+packages/server/api/src/app/template/template-validator.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,30
+packages/server/api/src/app/project/project-access.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,18
+packages/server/api/src/app/template/template.controller.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,58,81,105,209
+docs/install/options/aws.mdx
+  s_94864882421579::t_7a7cc8bb0805fe 13,15,23,37,68,108
+.github/CODE_OF_CONDUCT.md
+  s_94864882421579::t_7a7cc8bb0805fe 74,79,89
+packages/pieces/core/webhook/src/i18n/pt.json
+  s_94864882421579::t_7a7cc8bb0805fe 11
+docs/build-pieces/misc/codespaces.mdx
+  s_94864882421579::t_7a7cc8bb0805fe 11
+docs/install/options/docker.mdx
+  s_94864882421579::t_7a7cc8bb0805fe 24,66,82
+packages/pieces/core/webhook/src/i18n/hy.json
+  s_94864882421579::t_7a7cc8bb0805fe 12
+.github/workflows/tag-release-candidate.yml
+  s_94864882421579::t_7a7cc8bb0805fe 48-49
+packages/server/sandbox/src/lib/types.ts
+  s_94864882421579::t_7a7cc8bb0805fe 32
+packages/server/api/test/unit/app/flows/trigger/flow-trigger-side-effect.test.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,188,203,215,220
+packages/server/api/src/app/authentication/lib/disposable-email.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,39
+packages/server/engine/test/handler/flow-waitpoint-response.test.ts
+  s_94864882421579::t_7a7cc8bb0805fe 83-84
+packages/server/api/src/app/app-connection/app-connection-service/oauth2/services/credentials-oauth2-service.ts
+  s_94864882421579::t_7a7cc8bb0805fe 2,95
+brain/knowledge/engineering/ci-pr-review-hygiene.md
+  s_94864882421579::t_7a7cc8bb0805fe 23-24,28
+.github/workflows/close-external-prs.yml
+  s_94864882421579::t_7a7cc8bb0805fe 49
+packages/server/api/src/app/helper/logger/index.ts
+  s_94864882421579::t_7a7cc8bb0805fe 17,25
+AGENTS.md
+  s_94864882421579::t_7a7cc8bb0805fe 68
+packages/core/execution/src/lib/flows/util/flow-structure-util.ts
+  s_94864882421579::t_7a7cc8bb0805fe 2,33,48,67
+packages/server/worker/src/lib/execute/utils/sandbox-helpers.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,3-4
+packages/web/src/app/routes/platform/infra/health/components/system-health-tab.tsx
+  s_94864882421579::t_7a7cc8bb0805fe 85
+packages/server/api/src/app/app-connection/app-connection-service/app-connection-service.ts
+  s_94864882421579::t_7a7cc8bb0805fe 2,198,229,240,260,272,291,357,565,774,786,916
+packages/server/api/src/app/flows/flow-version/flow-version-validator-util.ts
+  s_94864882421579::t_7a7cc8bb0805fe 6,132
+packages/web/test/components/custom/array-input.test.tsx
+  s_94864882421579::t_7a7cc8bb0805fe 4
+packages/server/api/src/app/helper/system/system.ts
+  s_94864882421579::t_7a7cc8bb0805fe 3,85,126,150
+UPSTREAM.md
+  s_94864882421579::t_7a7cc8bb0805fe 12
+docs/install/options/docker-compose.mdx
+  s_94864882421579::t_7a7cc8bb0805fe 20
+packages/server/sandbox/test/lib/sandbox/sandbox.test.ts
+  s_94864882421579::t_7a7cc8bb0805fe 5,245,269,360,600,624,651,675,701-703,728,753,782-783,811
+packages/server/sandbox/src/lib/utils/path-safety.ts
+  s_94864882421579::t_7a7cc8bb0805fe 1,12,22
+.agents/skills/triage-image-cves/SKILL.md
+  s_94864882421579::t_7a7cc8bb0805fe 9,17,50,60,63
+packages/web/public/locales/nl/translation.json
+  s_94864882421579::t_7a7cc8bb0805fe 870
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "fa317da4e60a0e086ac95200ee0649acdedb163b",
+  "prompts": {},
+  "sessions": {
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

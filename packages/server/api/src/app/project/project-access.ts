@@ -27,7 +27,8 @@ export const projectAccess = (log: FastifyBaseLogger) => ({
             denied('Project ID is required')
         }
         const project = await projectService(log).getOne(projectId)
-        if (isNil(project) || project.platformId !== principal.platform.id) {
+        const platformId = 'platform' in principal ? principal.platform.id : undefined
+        if (isNil(project) || isNil(platformId) || project.platformId !== platformId) {
             denied('User not allowed to access this project')
         }
         if (principal.type !== PrincipalType.USER) {

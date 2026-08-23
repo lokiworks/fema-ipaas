@@ -1,4 +1,5 @@
 import { FastifyBaseLogger } from 'fastify'
+import { ArrayContains } from 'typeorm'
 import { appConnectionsRepo } from '../app-connection/app-connection-service/app-connection-service'
 import { batchDeleteByFlowId } from '../flows/flow/flow.jobs'
 import { flowRepo } from '../flows/flow/flow.repo'
@@ -25,7 +26,7 @@ export const projectBackgroundJobs = (log: FastifyBaseLogger) => ({
             await flowRepo().delete({ id: flow.id })
         }
         await folderRepo().delete({ projectId })
-        await appConnectionsRepo().delete({ projectIds: [projectId] })
+        await appConnectionsRepo().delete({ projectIds: ArrayContains([projectId]) })
         await projectRepo().delete({ id: projectId })
 
         log.info({ project: { id: projectId }, flowCount: flows.length }, '[hardDeleteProjectHandler] Project permanently deleted')

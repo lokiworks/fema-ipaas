@@ -6,8 +6,6 @@ import { EntityManager, IsNull, ObjectLiteral, SelectQueryBuilder } from 'typeor
 import { userIdentityService } from '../authentication/user-identity/user-identity-service'
 import { repoFactory } from '../core/db/repo-factory'
 import { emailService } from '../helper/email/email-service'
-import { projectMemberService } from '../ee/projects/project-members/project-member.service'
-import { projectRoleService } from '../ee/projects/project-role/project-role.service'
 import { domainHelper } from '../helper/domain-helper'
 import { JwtAudience, jwtUtils } from '../helper/jwt-utils'
 import { buildPaginator } from '../helper/pagination/build-paginator'
@@ -72,27 +70,8 @@ export const userInvitationsService = (log: FastifyBaseLogger) => ({
                     break
                 }
                 case InvitationType.PROJECT: {
-                    const { projectId, projectRoleId } = invitation
+                    const { projectId } = invitation
                     assertNotNullOrUndefined(projectId, 'projectId')
-                    assertNotNullOrUndefined(projectRoleId, 'projectRoleId')
-                    const platform = await platformService(log).getOneWithPlanOrThrow(invitation.platformId)
-                    assertEqual(platform.plan.projectRolesEnabled, true, 'Project roles are not enabled', 'PROJECT_ROLES_NOT_ENABLED')
-
-                    const projectRole = await projectRoleService.getOneOrThrowById({
-                        id: projectRoleId,
-                    })
-
-                    const project = await projectService(log).exists({
-                        projectId,
-                        isSoftDeleted: false,
-                    })
-                    if (!isNil(project)) {
-                        await projectMemberService(log).upsert({
-                            projectId,
-                            userId: user.id,
-                            projectRoleName: projectRole.name,
-                        })
-                    }
                     break
                 }
             }
@@ -199,9 +178,7 @@ export const userInvitationsService = (log: FastifyBaseLogger) => ({
         const { data, cursor } = await paginator.paginate(queryBuilder)
         const enrichedData = await Promise.all(data.map(async (invitation) => {
             return {
-                projectRole: !isNil(invitation.projectRoleId) ? await projectRoleService.getOneOrThrowById({
-                    id: invitation.projectRoleId,
-                }) : null,
+                projectRole: null,
                 ...invitation,
             }
         }))

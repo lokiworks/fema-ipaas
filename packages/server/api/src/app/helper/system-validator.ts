@@ -86,6 +86,8 @@ const systemPropValidators: {
     [AppSystemProp.AXIOM_TOKEN]: stringValidator,
     [AppSystemProp.AXIOM_DATASET]: stringValidator,
     [AppSystemProp.FRONTEND_URL]: urlValidator,
+    [AppSystemProp.TEMPLATES_SOURCE_URL]: urlValidator,
+    [AppSystemProp.CONNECTOR_REGISTRY_URL]: urlValidator,
     [AppSystemProp.CONTAINER_TYPE]: enumValidator(Object.values(ContainerType)),
     [AppSystemProp.PORT]: numberValidator,
     [AppSystemProp.CONSOLE_API_SECRET_KEY]: stringValidator,

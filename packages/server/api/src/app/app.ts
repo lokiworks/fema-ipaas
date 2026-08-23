@@ -2,7 +2,6 @@ import { isNil, spreadIfDefined } from '@activepieces/core-utils'
 import { PieceMetadata } from '@activepieces/pieces-framework'
 import { apVersionUtil, onCallService, UNKNOWN_VERSION, wideEvent } from '@activepieces/server-utils'
 import { ApEnvironment, AppConnectionWithoutSensitiveData, ApplicationEventName, ConnectionDeletedEvent, ConnectionUpsertedEvent, Flow, FlowActivatedEvent, FlowCreatedEvent, FlowDeactivatedEvent, FlowDeletedEvent, FlowPublishedEvent, FlowRun, FlowRunFinishedEvent, FlowRunRetriedEvent, FlowRunStartedEvent, FlowUpdatedEvent, Folder, FolderCreatedEvent, FolderDeletedEvent, FolderUpdatedEvent, ProjectWithLimits, Template, UserEmailVerifiedEvent, UserInvitation, UserPasswordResetEvent, UserSignedInEvent, UserWithMetaInformation } from '@activepieces/shared'
-import replyFrom from '@fastify/reply-from'
 import swagger from '@fastify/swagger'
 import { createAdapter } from '@socket.io/redis-adapter'
 import { FastifyBaseLogger, FastifyInstance, FastifyRequest, HTTPMethods } from 'fastify'
@@ -13,7 +12,6 @@ import { appConnectionModule } from './app-connection/app-connection.module'
 import { platformAppConnectionModule } from './app-connection/platform-app-connection.module'
 import { authenticationModule } from './authentication/authentication.module'
 import { otpModule } from './authentication/otp/otp-module'
-import { canaryRoutingMiddleware } from './core/canary/canary-routing.middleware'
 import { collaborativeModule } from './core/collaborative/collaborative.module'
 import { oidcModule } from './core/security/oidc/oidc.module'
 import { rateLimitModule } from './core/security/rate-limit'
@@ -144,12 +142,6 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     })
 
     app.addHook('preHandler', authorizationMiddleware)
-
-    const canaryAppUrl = system.get(AppSystemProp.CANARY_APP_URL)
-    if (!isNil(canaryAppUrl)) {
-        await app.register(replyFrom, { base: canaryAppUrl })
-        app.addHook('preHandler', canaryRoutingMiddleware)
-    }
 
     await systemJobsSchedule(app.log).init()
     await app.register(fileModule)

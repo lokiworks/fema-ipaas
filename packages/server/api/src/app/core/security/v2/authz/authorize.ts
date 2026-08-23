@@ -59,14 +59,12 @@ async function assertNonEmbedOrAdmin(principal: Principal, log: FastifyBaseLogge
             },
         })
     }
-    if (user.platformRole !== PlatformRole.ADMIN) {
-        throw new ActivepiecesError({
-            code: ErrorCode.AUTHORIZATION,
-            params: {
-                message: 'User does not have invite permission.',
-            },
-        })
-    }
+    throw new ActivepiecesError({
+        code: ErrorCode.AUTHORIZATION,
+        params: {
+            message: 'User does not have invite permission.',
+        },
+    })
 }
 
 async function assertPlatformIsOwnedByCurrentPrincipal(principal: Principal, log: FastifyBaseLogger): Promise<void> {

@@ -1,8 +1,5 @@
 import { ActivepiecesError, apId, assertNotNullOrUndefined, ErrorCode, isNil } from '@activepieces/core-utils'
-import { facebookLeads } from '@activepieces/piece-facebook-leads'
-import { intercom } from '@activepieces/piece-intercom'
 import { slack } from '@activepieces/piece-slack'
-import { square } from '@activepieces/piece-square'
 import { Piece, PieceAuthProperty } from '@activepieces/pieces-framework'
 import { FlowStatus, LATEST_JOB_DATA_SCHEMA_VERSION, RunEnvironment, WorkerJobType } from '@activepieces/shared'
 import { FastifyRequest } from 'fastify'
@@ -21,15 +18,9 @@ import { appEventRoutingService } from './app-event-routing.service'
 
 const appWebhooks: Record<string, Piece<PieceAuthProperty | PieceAuthProperty[] | undefined>> = {
     slack,
-    square,
-    'facebook-leads': facebookLeads,
-    intercom,
 }
 const pieceNames: Record<string, string> = {
     slack: '@activepieces/piece-slack',
-    square: '@activepieces/piece-square',
-    'facebook-leads': '@activepieces/piece-facebook-leads',
-    intercom: '@activepieces/piece-intercom',
 }
 
 export const appEventRoutingModule: FastifyPluginAsyncZod = async (app) => {

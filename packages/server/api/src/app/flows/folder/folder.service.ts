@@ -60,7 +60,6 @@ export const flowFolderService = (log: FastifyBaseLogger) => ({
         return {
             ...folder,
             numberOfFlows: 0,
-            numberOfTables: 0,
         }
     },
     async listAllByProject(params: ListAllParams): Promise<Folder[]> {
@@ -115,10 +114,6 @@ export const flowFolderService = (log: FastifyBaseLogger) => ({
                 .select('COUNT(*)::int')
                 .from('flow', 'flow')
                 .where('flow."folderId" = folder.id'), 'numberOfFlows')
-            .addSelect((subQuery) => subQuery
-                .select('COUNT(*)::int')
-                .from('table', 'tbl')
-                .where('tbl."folderId" = folder.id'), 'numberOfTables')
 
         const paginationResponse = await paginator.paginate<FolderDto>(queryBuilder)
         return paginationHelper.createPage(paginationResponse.data, paginationResponse.cursor)

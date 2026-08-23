@@ -48,6 +48,7 @@ export * from './lib/automation/websocket'
 
 // ee
 export * from './lib/governance/audit-events'
+export * from './lib/governance/system-limits'
 export * from './lib/authentication/otp'
 export * from './lib/authentication/authn'
 export * from './lib/management/project/project-requests'

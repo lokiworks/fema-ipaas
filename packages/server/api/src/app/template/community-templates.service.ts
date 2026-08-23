@@ -1,71 +1,65 @@
 import { ActivepiecesError, ErrorCode, isNil, SeekPage } from '@activepieces/core-utils'
+import { safeHttp } from '@activepieces/server-utils'
 import { ListTemplatesRequestQuery, Template } from '@activepieces/shared'
+import { system } from '../helper/system/system'
+import { AppSystemProp } from '../helper/system/system-props'
 
-const TEMPLATES_SOURCE_URL = 'https://cloud.activepieces.com/api/v1/templates'
+function registryUrl(): string | null {
+    const configured = system.get(AppSystemProp.TEMPLATES_SOURCE_URL)
+    return isNil(configured) || configured.trim() === '' ? null : configured.replace(/\/+$/, '')
+}
+
+function emptyPage(): SeekPage<Template> {
+    return { data: [], next: null, previous: null }
+}
 
 export const communityTemplates = {
     getOrThrow: async (id: string): Promise<Template> => {
-        const url = `${TEMPLATES_SOURCE_URL}/${id}`
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        })
-        if (!response.ok) {
+        const base = registryUrl()
+        if (isNil(base)) {
             throw new ActivepiecesError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {
                     entityType: 'template',
                     entityId: id,
-                    message: `Template ${id} not found`,
+                    message: `Template ${id} not found, no template registry is configured`,
                 },
             })
         }
-        const template = await response.json()
-        return template
+        const response = await safeHttp.axios.get<Template>(`${base}/${id}`)
+        return response.data
     },
+
     getCategories: async (): Promise<string[]> => {
-        const url = `${TEMPLATES_SOURCE_URL}/categories`
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        })
-        const categories = await response.json()
-        return categories
+        const base = registryUrl()
+        if (isNil(base)) {
+            return []
+        }
+        const response = await safeHttp.axios.get<string[]>(`${base}/categories`)
+        return response.data
     },
+
     list: async (request: ListTemplatesRequestQuery): Promise<SeekPage<Template>> => {
-        const queryString = convertToQueryString(request)
-        const url = `${TEMPLATES_SOURCE_URL}?${queryString}`
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        })
-        const templates = await response.json()
-        return templates
+        const base = registryUrl()
+        if (isNil(base)) {
+            return emptyPage()
+        }
+        const response = await safeHttp.axios.get<SeekPage<Template>>(`${base}?${convertToQueryString(request)}`)
+        return response.data
     },
 }
 
-
 function convertToQueryString(params: ListTemplatesRequestQuery): string {
     const searchParams = new URLSearchParams()
-
     Object.entries(params).forEach(([key, value]) => {
+        if (isNil(value)) {
+            return
+        }
         if (Array.isArray(value)) {
-            value.forEach((val) => {
-                if (!isNil(val)) {
-                    searchParams.append(key, typeof val === 'string' ? val : JSON.stringify(val))
-                }
-            })
+            value.forEach((item) => searchParams.append(key, String(item)))
+            return
         }
-        else if (!isNil(value)) {
-            searchParams.set(key, value.toString())
-        }
+        searchParams.append(key, String(value))
     })
-
     return searchParams.toString()
 }

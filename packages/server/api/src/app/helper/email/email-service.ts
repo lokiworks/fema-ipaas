@@ -9,7 +9,7 @@ import { mailSender, MailTemplateVariables } from './mail-sender'
 const OTP_TEMPLATES: Record<OtpType, { template: string, subject: string }> = {
     [OtpType.EMAIL_VERIFICATION]: { template: 'verify-email', subject: 'Verify your email address' },
     [OtpType.PASSWORD_RESET]: { template: 'reset-password', subject: 'Reset your password' },
-    [OtpType.LOGIN]: { template: 'login-code', subject: 'Your sign-in code' },
+    [OtpType.EMAIL_LOGIN]: { template: 'login-code', subject: 'Your sign-in code' },
 }
 
 async function brandingFor(platformId: PlatformId | null, log: FastifyBaseLogger): Promise<MailTemplateVariables> {

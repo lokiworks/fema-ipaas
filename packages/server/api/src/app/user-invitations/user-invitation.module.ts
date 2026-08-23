@@ -7,11 +7,9 @@ import { z } from 'zod'
 import { userIdentityService } from '../authentication/user-identity/user-identity-service'
 import { transaction } from '../core/db/transaction'
 import { ProjectResourceType } from '../core/security/authorization/common'
+import { platformGuards } from '../core/security/platform-guards'
+import { projectAccess } from '../project/project-access'
 import { securityAccess } from '../core/security/authorization/fastify-security'
-import { platformMustBeOwnedByCurrentUser, platformMustHaveFeatureEnabled, projectMustBeTeamType } from '../ee/authentication/ee-authorization'
-import { assertRoleHasPermission } from '../ee/authentication/project-role/rbac-middleware'
-import { platformPlanService } from '../ee/platform/platform-plan/platform-plan.service'
-import { projectRoleService } from '../ee/projects/project-role/project-role.service'
 import { projectService } from '../project/project-service'
 import { userService } from '../user/user-service'
 import { INVITATION_EXPIRY_SECONDS, userInvitationsService } from './user-invitation.service'
@@ -26,11 +24,11 @@ const invitationController: FastifyPluginAsyncZod = async (app) => {
         const { email, type } = request.body
         switch (type) {
             case InvitationType.PROJECT:
-                await projectMustBeTeamType.call(app, request, reply)
+                await platformGuards.assertProjectIsTeamType({ projectId: request.body.projectId, log: request.log })
                 await assertPrincipalHasPermissionToProject(app, request, reply, request.principal, request.body.projectId, Permission.WRITE_INVITATION)
                 break
             case InvitationType.PLATFORM:
-                await platformMustBeOwnedByCurrentUser.call(app, request, reply)
+                await platformGuards.assertPrincipalIsPlatformAdmin({ principal: request.principal, log: request.log })
                 break
         }
         const platformId = request.principal.platform.id
@@ -47,18 +45,7 @@ const invitationController: FastifyPluginAsyncZod = async (app) => {
             status,
         }
 
-        const wouldAddNewUser = await userInvitationsService(request.log).wouldAddNewUser({ email, platformId })
-        const userInvitationRecord = wouldAddNewUser
-            ? await transaction(async (entityManager) => {
-                const additionalSeatsNeeded = await userInvitationsService(request.log).countAdditionalSeatsNeeded({
-                    email,
-                    platformId,
-                    entityManager,
-                })
-                await platformPlanService(request.log).checkUsersExceededLimit({ platformId, entityManager, additionalSeatsNeeded })
-                return userInvitationsService(request.log).createInvitationRecord({ ...invitationRecordParams, entityManager })
-            })
-            : await userInvitationsService(request.log).createInvitationRecord(invitationRecordParams)
+        const userInvitationRecord = await userInvitationsService(request.log).createInvitationRecord(invitationRecordParams)
 
         const invitation = await userInvitationsService(request.log).finalizeInvitation({
             userInvitation: userInvitationRecord,
@@ -69,7 +56,7 @@ const invitationController: FastifyPluginAsyncZod = async (app) => {
 
     app.get('/', ListUserInvitationsRequestParams, async (request, reply) => {
         if (!isNil(request.query.projectId) && request.query.type === InvitationType.PROJECT) {
-            await projectMustBeTeamType.call(app, request, reply)
+            await platformGuards.assertProjectIsTeamType({ projectId: request.query.projectId, log: request.log })
         }
         const projectId = await getProjectIdAndAssertPermission(app, request, reply, request.principal, request.query)
         const invitations = await userInvitationsService(request.log).list({
@@ -104,7 +91,7 @@ const invitationController: FastifyPluginAsyncZod = async (app) => {
                 break
             }
             case InvitationType.PLATFORM:
-                await platformMustBeOwnedByCurrentUser.call(app, request, reply)
+                await platformGuards.assertPrincipalIsPlatformAdmin({ principal: request.principal, log: request.log })
                 break
         }
         await userInvitationsService(request.log).delete({
@@ -121,13 +108,7 @@ const getProjectRoleAndAssertIfFound = async (platformId: string, request: SendU
     if (type === InvitationType.PLATFORM) {
         return null
     }
-    const projectRoleName = request.projectRole
-
-    const projectRole = await projectRoleService.getOneOrThrow({
-        name: projectRoleName,
-        platformId,
-    })
-    return projectRole
+    return null
 }
 async function getProjectIdAndAssertPermission<R extends Principal>(
     app: FastifyInstance,
@@ -180,8 +161,7 @@ async function assertPrincipalHasPermissionToProject<R extends Principal & { pla
             },
         })
     }
-    await platformMustHaveFeatureEnabled((platform) => platform.plan.projectRolesEnabled).call(fastify, request, reply)
-    await assertRoleHasPermission(request.principal, projectId, permission, request.log)
+    await projectAccess(request.log).assertPrincipalCanAccessProject({ principal: request.principal, projectId })
 }
 
 

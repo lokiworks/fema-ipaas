@@ -1,18 +1,15 @@
 import { ActivepiecesError, apId, ErrorCode, isNil, PlatformId, spreadIfDefined, spreadIfNotUndefined, tryCatch, UserId } from '@activepieces/core-utils'
-import { ApEdition, AuthenticationResponse, OPEN_SOURCE_PLAN, Platform, PlatformPlanLimits, PlatformRole, PlatformUsage, PlatformWithoutFederatedAuth, PlatformWithoutSensitiveData, ProjectType, SsoDomainVerification, SsoDomainVerificationStatus, UpdatePlatformRequestBody, User, UserStatus } from '@activepieces/shared'
+import { ApEdition, AuthenticationResponse, SYSTEM_LIMITS, Platform, PlatformPlanLimits, PlatformRole, PlatformUsage, PlatformWithoutFederatedAuth, PlatformWithoutSensitiveData, ProjectType, SsoDomainVerification, SsoDomainVerificationStatus, UpdatePlatformRequestBody, User, UserStatus } from '@activepieces/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { nanoid } from 'nanoid'
 import { authenticationUtils } from '../authentication/authentication-utils'
 import { userIdentityRepository, userIdentityService } from '../authentication/user-identity/user-identity-service'
 import { repoFactory } from '../core/db/repo-factory'
 import { distributedLock } from '../database/redis-connections'
-import { invalidateSamlClientCache } from '../ee/authentication/saml-authn/saml-client'
-import { platformPlanService } from '../ee/platform/platform-plan/platform-plan.service'
 import { defaultTheme } from '../flags/theme'
 import { system } from '../helper/system/system'
 import { projectService } from '../project/project-service'
 import { userService } from '../user/user-service'
-import { billingProvider } from './billing-provider'
 import { PlatformEntity } from './platform.entity'
 
 export const platformRepo = repoFactory<Platform>(PlatformEntity)
@@ -70,8 +67,6 @@ export const platformService = (log: FastifyBaseLogger) => ({
             id: ownerId,
             platformId: savedPlatform.id,
         })
-
-        await platformPlanService(log).onPlatformCreated(savedPlatform.id)
 
         log.info({ platform: { id: savedPlatform.id }, ownerId }, 'Platform created')
         return stripFederatedAuth(savedPlatform)
@@ -134,26 +129,12 @@ export const platformService = (log: FastifyBaseLogger) => ({
     },
     async update(params: UpdateParams): Promise<PlatformWithoutFederatedAuth> {
         if (params.federatedAuthProviders?.saml !== undefined) {
-            const plan = await platformPlanService(log).getOrCreateForPlatform(params.id)
-            if (!plan.ssoEnabled) {
-                throw new ActivepiecesError({
-                    code: ErrorCode.FEATURE_DISABLED,
-                    params: {
-                        message: 'SSO is not enabled for this platform',
-                    },
-                })
-            }
-            if (!isNil(params.federatedAuthProviders.saml)) {
-                const platform = await this.getOneOrThrow(params.id)
-                if (platform.ssoDomainVerification?.status !== SsoDomainVerificationStatus.VERIFIED) {
-                    throw new ActivepiecesError({
-                        code: ErrorCode.VALIDATION,
-                        params: {
-                            message: 'SSO domain must be verified before configuring SAML',
-                        },
-                    })
-                }
-            }
+            throw new ActivepiecesError({
+                code: ErrorCode.FEATURE_DISABLED,
+                params: {
+                    message: 'SAML SSO is not available in this build',
+                },
+            })
         }
         const platform = params.federatedAuthProviders !== undefined
             ? await this.getOneWithFederatedAuthOrThrow(params.id)
@@ -187,15 +168,6 @@ export const platformService = (log: FastifyBaseLogger) => ({
             ...spreadIfDefined('pinnedPieces', params.pinnedPieces),
             ...spreadIfNotUndefined('pieceSelectorConfig', params.pieceSelectorConfig),
         }
-        if (!isNil(params.plan)) {
-            await platformPlanService(log).update({
-                platformId: params.id,
-                ...params.plan,
-            })
-        }
-        if (!isNil(params.federatedAuthProviders?.saml)) {
-            invalidateSamlClientCache(params.id)
-        }
         log.info({ platform: { id: params.id } }, 'Platform updated')
         const saved = await platformRepo().save(updatedPlatform)
         return stripFederatedAuth(saved)
@@ -226,44 +198,29 @@ export const platformService = (log: FastifyBaseLogger) => ({
         if (isNil(platform)) {
             return null
         }
-        const [samlConfigured, plan, usage] = await Promise.all([
-            this.hasSamlConfigured(id),
-            getPlan(log, platform),
-            getUsage(log, platform),
-        ])
         return {
             ...platform,
-            federatedAuthProviders: { saml: samlConfigured ? {} : null },
-            usage,
-            plan,
+            federatedAuthProviders: { saml: null },
+            usage: undefined,
+            plan: SYSTEM_LIMITS,
         }
     },
     async getOneWithPlanOrThrow(id: PlatformId): Promise<Omit<PlatformWithoutSensitiveData, 'usage'>> {
         const platform = await this.getOneOrThrow(id)
-        const [samlConfigured, plan] = await Promise.all([
-            this.hasSamlConfigured(id),
-            getPlan(log, platform),
-        ])
         return {
             ...platform,
-            federatedAuthProviders: { saml: samlConfigured ? {} : null },
-            plan,
+            federatedAuthProviders: { saml: null },
+            plan: SYSTEM_LIMITS,
         }
     },
     async getOneWithPlanAndUsageOrThrow(id: PlatformId): Promise<PlatformWithoutSensitiveData> {
         const platform = await this.getOneOrThrow(id)
-        const [samlConfigured, usage, plan, billingEnforced] = await Promise.all([
-            this.hasSamlConfigured(id),
-            getUsage(log, platform),
-            getPlan(log, platform),
-            getBillingEnforced(log, id),
-        ])
         return {
             ...platform,
-            federatedAuthProviders: { saml: samlConfigured ? {} : null },
-            usage,
-            billingEnforced,
-            plan,
+            federatedAuthProviders: { saml: null },
+            usage: undefined,
+            billingEnforced: undefined,
+            plan: SYSTEM_LIMITS,
         }
     },
 })
@@ -352,36 +309,6 @@ async function finishExistingPlatform({ user, platformId, name, invalidatePrevio
         platformId,
         projectId: project?.id ?? null,
     })
-}
-
-async function getUsage(log: FastifyBaseLogger, platform: PlatformWithoutFederatedAuth): Promise<PlatformUsage | undefined> {
-    const edition = system.getEdition()
-    if (edition === ApEdition.COMMUNITY) {
-        return undefined
-    }
-    return platformPlanService(log).getUsage(platform.id)
-}
-
-async function getBillingEnforced(log: FastifyBaseLogger, platformId: PlatformId): Promise<boolean | undefined> {
-    if (system.getEdition() === ApEdition.COMMUNITY) {
-        return undefined
-    }
-    const { data, error } = await tryCatch(() => billingProvider.get(log).isBillingEnforced(platformId))
-    if (!isNil(error)) {
-        log.warn({ error, platform: { id: platformId } }, 'Failed to resolve billing enforcement for the platform payload')
-        return undefined
-    }
-    return data ?? undefined
-}
-
-async function getPlan(log: FastifyBaseLogger, platform: PlatformWithoutFederatedAuth): Promise<PlatformPlanLimits> {
-    const edition = system.getEdition()
-    if (edition === ApEdition.COMMUNITY) {
-        return {
-            ...OPEN_SOURCE_PLAN,
-        }
-    }
-    return platformPlanService(log).getOrCreateForPlatform(platform.id)
 }
 
 function stripFederatedAuth(platform: Platform): PlatformWithoutFederatedAuth {

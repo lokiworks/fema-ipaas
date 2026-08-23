@@ -3,7 +3,6 @@ import { CreateTemplateRequestBody, FlowVersionTemplate, ListTemplatesRequestQue
 import { FastifyBaseLogger } from 'fastify'
 import { ArrayContains, ArrayOverlap, Equal, IsNull } from 'typeorm'
 import { repoFactory } from '../core/db/repo-factory'
-import { platformTemplateService } from '../ee/template/platform-template.service'
 import { paginationHelper } from '../helper/pagination/pagination-utils'
 import { templateValidator } from './template-validator'
 import { TemplateEntity } from './template.entity'
@@ -42,6 +41,7 @@ export const templateService = (log: FastifyBaseLogger) => ({
 
         switch (type) {
             case TemplateType.OFFICIAL:
+            case TemplateType.CUSTOM:
             case TemplateType.SHARED: {
                 const newTemplate: NewTemplate = {
                     id: apId(),
@@ -60,9 +60,6 @@ export const templateService = (log: FastifyBaseLogger) => ({
                     status: TemplateStatus.PUBLISHED,
                 }
                 return templateRepo().save(newTemplate)
-            }
-            case TemplateType.CUSTOM: {
-                return platformTemplateService().create({ platformId, name, summary, description, pieces, tags: newTags, blogUrl, metadata, author, categories, flows })
             }
         }
     },
@@ -87,6 +84,7 @@ export const templateService = (log: FastifyBaseLogger) => ({
 
         switch (template.type) {
             case TemplateType.OFFICIAL:
+            case TemplateType.CUSTOM:
             case TemplateType.SHARED: {
                 await templateRepo().update(id, {
                     ...spreadIfDefined('name', name),
@@ -102,9 +100,6 @@ export const templateService = (log: FastifyBaseLogger) => ({
                     ...spreadIfDefined('status', status),
                 })
                 return templateRepo().findOneByOrFail({ id })
-            }
-            case TemplateType.CUSTOM: {
-                return platformTemplateService().update({ id, params })
             }
         }
     },

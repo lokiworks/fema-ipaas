@@ -1,6 +1,7 @@
-import { groupBy, tryCatch } from '@activepieces/core-utils'
-import { apVersionUtil } from '@activepieces/server-utils'
+import { groupBy, isNil, tryCatch } from '@activepieces/core-utils'
+import { apVersionUtil, safeHttp } from '@activepieces/server-utils'
 import { PieceSyncMode, PieceType } from '@activepieces/shared'
+import { PieceMetadataModel } from '@activepieces/pieces-framework'
 import { FastifyBaseLogger } from 'fastify'
 import semver from 'semver'
 import { rejectedPromiseHandler } from '../helper/promise-handler'
@@ -13,7 +14,10 @@ import { pieceCache } from './metadata/piece-cache'
 import { PieceMetadataSchema } from './metadata/piece-metadata-entity'
 import { pieceMetadataService, pieceRepos } from './metadata/piece-metadata-service'
 
-const CLOUD_API_URL = 'https://cloud.activepieces.com/api/v1/pieces'
+const registrySourceUrl = (): string | null => {
+    const configured = system.get(AppSystemProp.CONNECTOR_REGISTRY_URL)
+    return isNil(configured) || configured.trim() === '' ? null : configured.replace(/\/+$/, '')
+}
 const syncMode = system.get<PieceSyncMode>(AppSystemProp.PIECES_SYNC_MODE)
 
 export const pieceSyncService = (log: FastifyBaseLogger) => ({
@@ -85,13 +89,16 @@ async function installNewPieces(cloudPieces: PieceRegistryResponse[], dbPieces: 
     for (let done = 0; done < newPiecesToFetch.length; done += batchSize) {
         const currentBatch = newPiecesToFetch.slice(done, done + batchSize)
         await Promise.all(currentBatch.map(async (piece) => {
-            const url = `${CLOUD_API_URL}/${piece.name}${piece.version ? '?version=' + piece.version : ''}`
-            const response = await fetch(url)
-            if (!response.ok) {
-                log.warn({ piece: { name: piece.name, version: piece.version }, status: response.status }, '[pieceSyncService#installNewPieces] Error reading piece metadata')
+            const base = registrySourceUrl()
+            if (isNil(base)) {
                 return
             }
-            const pieceMetadata = await response.json()
+            const url = `${base}/${piece.name}${piece.version ? '?version=' + piece.version : ''}`
+            const { data: pieceMetadata, error: fetchError } = await tryCatch(() => safeHttp.axios.get<PieceMetadataModel>(url).then((res) => res.data))
+            if (!isNil(fetchError) || isNil(pieceMetadata)) {
+                log.warn({ piece: { name: piece.name, version: piece.version }, error: fetchError }, '[pieceSyncService#installNewPieces] Error reading piece metadata')
+                return
+            }
             const { error } = await tryCatch(() => pieceMetadataService(log).create({
                 pieceMetadata,
                 packageType: pieceMetadata.packageType,
@@ -114,11 +121,12 @@ async function listCloudPieces(): Promise<PieceRegistryResponse[]> {
     const queryParams = new URLSearchParams()
     queryParams.append('edition', system.getEdition())
     queryParams.append('release', apVersionUtil.getCurrentRelease())
-    const response = await fetch(`${CLOUD_API_URL}/registry?${queryParams.toString()}`)
-    if (!response.ok) {
-        throw new Error(`Failed to fetch cloud pieces: ${response.status}`)
+    const base = registrySourceUrl()
+    if (isNil(base)) {
+        return []
     }
-    const pieces: PieceRegistryResponse[] = await response.json()
+    const response = await safeHttp.axios.get<PieceRegistryResponse[]>(`${base}/registry?${queryParams.toString()}`)
+    const pieces = response.data
     const piecesByName = groupBy(pieces, p => p.name)
     const latest = []
     const others = []

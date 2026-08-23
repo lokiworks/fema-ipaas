@@ -7,14 +7,12 @@ import { EntityManager, In, IsNull } from 'typeorm'
 import { userIdentityRepository, userIdentityService } from '../authentication/user-identity/user-identity-service'
 import { repoFactory } from '../core/db/repo-factory'
 import { transaction } from '../core/db/transaction'
-import { platformPlanService } from '../ee/platform/platform-plan/platform-plan.service'
-import { platformProjectService } from '../ee/projects/platform-project-service'
-import { projectMemberRepo } from '../ee/projects/project-role/project-role.service'
 import { buildPaginator } from '../helper/pagination/build-paginator'
 import { paginationHelper } from '../helper/pagination/pagination-utils'
 import { system } from '../helper/system/system'
 import { platformService } from '../platform/platform.service'
 import { projectService } from '../project/project-service'
+import { projectSideEffects } from '../project/project-side-effects'
 import { UserEntity, UserSchema } from './user-entity'
 
 
@@ -91,17 +89,7 @@ export const userService = (log: FastifyBaseLogger) => ({
             ...spreadIfDefined('externalId', externalId),
         })
 
-        const isReactivation = user.status === UserStatus.INACTIVE && status === UserStatus.ACTIVE
-        if (isReactivation) {
-            const reactivatingPlatformId = user.platformId
-            await transaction(async (entityManager) => {
-                await platformPlanService(log).checkUsersExceededLimit({ platformId: reactivatingPlatformId, entityManager })
-                await applyUpdate(entityManager)
-            })
-        }
-        else {
-            await applyUpdate()
-        }
+        await applyUpdate()
 
         return this.getMetaInformation({ id })
     },
@@ -170,7 +158,7 @@ export const userService = (log: FastifyBaseLogger) => ({
         if (isNil(user)) {
             return
         }
-        await platformProjectService(log).deletePersonalProjectForUser({
+        await projectSideEffects(log).deletePersonalProjectForUser({
             userId: id,
             platformId,
         })
@@ -185,7 +173,7 @@ export const userService = (log: FastifyBaseLogger) => ({
     async removeFromPlatform({ id, platformId }: DeleteParams): Promise<void> {
         await assertNotPlatformOwner({ id, platformId, log })
         const user = await this.getOneOrFail({ id })
-        await platformProjectService(log).deletePersonalProjectForUser({
+        await projectSideEffects(log).deletePersonalProjectForUser({
             userId: id,
             platformId,
         })
@@ -279,13 +267,7 @@ async function deleteIdentityIfOrphaned({ identityId, entityManager }: { identit
 }
 
 async function getUsersForProject(platformId: PlatformId, projectId: string): Promise<UserId[]> {
-    const platformAdmins = await userRepo().find({ where: { platformId, platformRole: PlatformRole.ADMIN } }).then((users) => users.map((user) => user.id))
-    const edition = system.getEdition()
-    if (edition === ApEdition.COMMUNITY) {
-        return platformAdmins
-    }
-    const projectMembers = await projectMemberRepo().find({ where: { projectId, platformId } }).then((members) => members.map((member) => member.userId))
-    return [...platformAdmins, ...projectMembers]
+    return userRepo().find({ where: { platformId, platformRole: PlatformRole.ADMIN } }).then((users) => users.map((user) => user.id))
 }
 
 type UpdateLastActiveDateParams = {

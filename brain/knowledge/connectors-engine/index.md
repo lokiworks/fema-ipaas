@@ -22,7 +22,8 @@ Metadata catalog of integrations (`@fema-ipaas/connector-*`), served from an in-
 - **Gotchas**:
   - A paused branch must leave the **parallel step itself** `PAUSED`. `isCompleted()` treats any non-PAUSED status as done, so marking it SUCCEEDED makes the resume skip the whole node and strand the waiting branch. This was a real bug caught by a resume test, not a hypothetical.
   - Branch results are merged by **object identity**, not by presence. Every branch starts from the same base context, so untouched steps come back as the same object. Skipping on "already in base" instead drops the step a branch just moved off PAUSED — which is exactly what resume produces.
-  - The compiler exists and is tested, but the Engine still walks the tree directly. Moving the traversal onto the plan is the next step, and when it happens the Engine stops needing to know the tree at all.
+  - The Engine walks the **plan**, not the tree: `workflow-executor.ts` contains no `.nextAction` read at all. `executionPlanCursor` compiles the subtree it is handed and traverses by node id, so when persistence moves to nodes and edges a second compiler absorbs the change and the Engine does not move.
+  - The cursor compiles per `execute()` call, which means once per branch boundary rather than once per step. A loop body is recompiled per iteration — cheap (a tree walk over the body) but not free, and worth knowing before putting a very large subtree inside a hot loop.
 
 ### Workflow Components
 

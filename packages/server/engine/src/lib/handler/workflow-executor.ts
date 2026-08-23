@@ -11,6 +11,7 @@ import { componentExecutor } from './component-executor'
 import { connectorExecutor } from './connector-executor'
 import { EngineConstants, ResolvedExecuteWorkflowOperation } from './context/engine-constants'
 import { WorkflowExecutorContext } from './context/workflow-execution-context'
+import { executionPlanCursor } from './execution-plan-cursor'
 import { loopExecutor } from './loop-executor'
 import { parallelExecutor } from './parallel-executor'
 import { routerExecuter } from './router-executor'
@@ -65,8 +66,10 @@ export const workflowExecutor = {
                 return executionState
             }
         }
+        const plan = executionPlanCursor.forWorkflow(input.workflowVersion)
+        const firstNodeId = executionPlanCursor.nextOf({ plan, nodeId: trigger.name })
         return workflowExecutor.execute({
-            action: trigger.nextAction,
+            action: isNil(firstNodeId) ? null : executionPlanCursor.stepAt({ plan, nodeId: firstNodeId }),
             executionState,
             constants,
         })
@@ -78,13 +81,19 @@ export const workflowExecutor = {
     }): Promise<WorkflowExecutorContext> {
         const workflowStartTime = performance.now()
         let workflowExecutionContext = executionState
+        if (isNil(action)) {
+            return workflowExecutionContext.setDuration(performance.now() - workflowStartTime)
+        }
+        const plan = executionPlanCursor.forSubtree(action)
         let previousAction: WorkflowAction | null | undefined = action
-        let currentAction: WorkflowAction | null | undefined = action
+        let currentNodeId: string | null = action.name
+        let currentAction: WorkflowAction | null = executionPlanCursor.stepAt({ plan, nodeId: currentNodeId })
         const testSingleStepMode = !isNil(constants.stepNameToTest)
 
-        while (!isNil(currentAction)) {
+        while (!isNil(currentAction) && !isNil(currentNodeId)) {
             if (currentAction.skip && !testSingleStepMode) {
-                currentAction = currentAction.nextAction
+                currentNodeId = executionPlanCursor.nextOf({ plan, nodeId: currentNodeId })
+                currentAction = isNil(currentNodeId) ? null : executionPlanCursor.stepAt({ plan, nodeId: currentNodeId })
                 continue
             }
             const handler = this.getExecutorForAction(currentAction.type)
@@ -113,7 +122,8 @@ export const workflowExecutor = {
 
             const shouldBreakExecution = workflowExecutionContext.verdict.status !== ExecutionStatus.RUNNING || testSingleStepMode
             previousAction = currentAction
-            currentAction = currentAction.nextAction
+            currentNodeId = executionPlanCursor.nextOf({ plan, nodeId: currentNodeId })
+            currentAction = isNil(currentNodeId) ? null : executionPlanCursor.stepAt({ plan, nodeId: currentNodeId })
 
             if (shouldBreakExecution) {
                 break

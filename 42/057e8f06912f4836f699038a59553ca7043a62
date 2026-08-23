@@ -1,0 +1,28 @@
+packages/server/api/src/app/helper/system-snapshot.ts
+  s_94864882421579::t_31a711ee3354f1 7,65
+brain/knowledge/data-storage-observability/index.md
+  s_94864882421579::t_e984a6330c2ec1 29-41
+packages/server/api/src/app/helper/otel-execution-metrics.ts
+  s_94864882421579::t_2b700128878efe 1-184
+packages/server/api/src/app/workflows/execution/execution-side-effects.ts
+  s_94864882421579::t_3b20e16e2ad92a 1,9,23-26,72-77
+  s_94864882421579::t_f0787f1425f367 78
+packages/server/api/test/unit/app/helper/otel-execution-metrics.test.ts
+  s_94864882421579::t_4f4b22931c43e2 1-88
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "42057e8f06912f4836f699038a59553ca7043a62",
+  "prompts": {},
+  "sessions": {
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

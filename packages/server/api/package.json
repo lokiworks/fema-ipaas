@@ -111,10 +111,7 @@
     "zod": "4.3.6"
   },
   "devDependencies": {
-    "@activepieces/piece-facebook-leads": "workspace:*",
-    "@activepieces/piece-intercom": "workspace:*",
     "@activepieces/piece-slack": "workspace:*",
-    "@activepieces/piece-square": "workspace:*",
     "@faker-js/faker": "8.2.0",
     "@types/bcrypt": "5.0.0",
     "@types/content-disposition": "0.5.9",

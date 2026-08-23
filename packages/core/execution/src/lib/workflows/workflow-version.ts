@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { BaseModelSchema, Nullable } from '@fema-ipaas/core-utils'
 import { UserWithMetaInformation } from '@fema-ipaas/connector-types'
+import { WorkflowGraph } from './execution-plan/workflow-graph'
 import { Note } from './note'
 import { WorkflowTrigger } from './triggers/trigger'
 
@@ -24,6 +25,7 @@ export const WorkflowVersion = z.object({
     connectionIds: z.array(z.string()),
     backupFiles: Nullable(z.record(z.string(), z.string())),
     notes: z.array(Note),
+    graph: Nullable(WorkflowGraph),
 })
 
 export type WorkflowVersion = z.infer<typeof WorkflowVersion>

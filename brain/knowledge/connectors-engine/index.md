@@ -17,12 +17,16 @@ Metadata catalog of integrations (`@fema-ipaas/connector-*`), served from an in-
 
 `WorkflowActionType.PARALLEL` runs N branches concurrently and joins before continuing to `nextAction`. `workflowCompiler.compile(workflowVersion)` produces an `ExecutionPlan` (`entry` / `nodes` / `dependencies`) as an explicit boundary between the stored tree and what the Engine needs to know. See [ADR 0015](../../../docs/adr/0015-parallel-and-the-compiler-without-a-graph-persistence-rewrite.md), which supersedes 0012.
 
-- Persistence is still the `nextAction` tree. Parallel is fan-out + join, which the tree expresses — the same shape as Router's `children`. Arbitrary DAG re-convergence still is not supported.
+- Persistence is the `nextAction` tree **plus** a nullable `graph` column holding only join edges — the one shape the tree cannot express: a step waiting on two steps from otherwise unrelated paths ([ADR 0017](../../../docs/adr/0017-join-edges-extend-the-tree-instead-of-replacing-it.md)). A workflow with `graph = null`, which is every existing one, behaves byte-for-byte as before and needed no migration.
 
 - **Gotchas**:
   - A paused branch must leave the **parallel step itself** `PAUSED`. `isCompleted()` treats any non-PAUSED status as done, so marking it SUCCEEDED makes the resume skip the whole node and strand the waiting branch. This was a real bug caught by a resume test, not a hypothetical.
   - Branch results are merged by **object identity**, not by presence. Every branch starts from the same base context, so untouched steps come back as the same object. Skipping on "already in base" instead drops the step a branch just moved off PAUSED — which is exactly what resume produces.
   - The Engine walks the **plan**, not the tree: `workflow-executor.ts` contains no `.nextAction` read at all. `executionPlanCursor` compiles the subtree it is handed and traverses by node id, so when persistence moves to nodes and edges a second compiler absorbs the change and the Engine does not move.
+  - Join edges are filtered at save time: both endpoints must be existing steps and self-loops are dropped. Deleting a step otherwise leaves a dependency on a name nothing resolves to, and the Engine waits for it forever.
+  - The trigger never participates in a join wait. It has no step output of its own, so `isCompleted` is permanently false for it and a join edge from the trigger would deadlock.
+  - Nodes with one dependency or fewer skip the check entirely — that is nearly every node, and paying for the rare case everywhere is not worth it.
+  - **Not in the UI yet**: the canvas has no edge-drawing interaction. `SET_JOIN_EDGES` and the execution semantics both work, so join edges set through the API execute correctly.
   - The cursor compiles per `execute()` call, which means once per branch boundary rather than once per step. A loop body is recompiled per iteration — cheap (a tree walk over the body) but not free, and worth knowing before putting a very large subtree inside a hot loop.
 
 ### Workflow Components

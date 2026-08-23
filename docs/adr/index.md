@@ -24,3 +24,4 @@ icon: 🧭
 | 0012 | [节点分发用穷尽映射表，且暂不引入 UI Graph 编译层](0012-engine-dispatch-and-no-graph-compiler.md) | superseded by 0015 |
 | 0013 | [权限在工作空间角色上强制执行，成员关系是访问前提](0013-permissions-are-enforced-against-a-workspace-role.md) | accepted |
 | 0014 | [Network Agent 的数据模型先落地，隧道后做](0014-network-agent-model-lands-before-the-tunnel.md) | superseded by 0016 |
+| 0017 | [用 join edge 扩展 action 树，而不是换成 graph 持久化](0017-join-edges-extend-the-tree-instead-of-replacing-it.md) | accepted |

@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { Nullable } from '@fema-ipaas/core-utils'
 import { Metadata } from '@fema-ipaas/core-utils'
+import { WorkflowJoinEdge } from '../execution-plan/workflow-graph'
 import { BranchCondition, CodeActionSchema, CodeActionSettings, WorkflowActionType, LoopOnItemsActionSchema, LoopOnItemsActionSettings, ConnectorActionSchema, ConnectorActionSettings, ParallelActionSchema, ParallelActionSettings, RouterActionSchema, RouterActionSettings, ComponentActionSchema, ComponentActionSettings } from '../actions/action'
 import { WorkflowStatus } from '../workflow'
 import { WorkflowVersion, WorkflowVersionState } from '../workflow-version'
@@ -44,6 +45,7 @@ export enum WorkflowOperationType {
     DUPLICATE_BRANCH = 'DUPLICATE_BRANCH',
     SET_SKIP_ACTION = 'SET_SKIP_ACTION',
     UPDATE_METADATA = 'UPDATE_METADATA',
+    SET_JOIN_EDGES = 'SET_JOIN_EDGES',
     MOVE_BRANCH = 'MOVE_BRANCH',
     SAVE_SAMPLE_DATA = 'SAVE_SAMPLE_DATA',
     UPDATE_MINUTES_SAVED = 'UPDATE_MINUTES_SAVED',
@@ -175,6 +177,11 @@ export const MoveActionRequest = z.object({
 })
 export type MoveActionRequest = z.infer<typeof MoveActionRequest>
 
+export const SetJoinEdgesRequest = z.object({
+    joinEdges: z.array(WorkflowJoinEdge),
+})
+export type SetJoinEdgesRequest = z.infer<typeof SetJoinEdgesRequest>
+
 export const AddActionRequest = z.object({
     parentStep: z.string(),
     stepLocationRelativeToParent: z.nativeEnum(StepLocationRelativeToParent).optional(),
@@ -289,6 +296,10 @@ export const WorkflowOperationRequest = z.discriminatedUnion('type', [
         type: z.literal(WorkflowOperationType.UPDATE_METADATA),
         request: UpdateMetadataRequest,
     }).describe('Update Metadata'),
+    z.object({
+        type: z.literal(WorkflowOperationType.SET_JOIN_EDGES),
+        request: SetJoinEdgesRequest,
+    }).describe('Set Join Edges'),
     z.object({
         type: z.literal(WorkflowOperationType.MOVE_BRANCH),
         request: MoveBranchRequest,
@@ -424,6 +435,10 @@ export const workflowOperations = {
                 clonedVersion = _updateSampleDataInfo(clonedVersion, operation.request)
                 break
             }
+            case WorkflowOperationType.SET_JOIN_EDGES: {
+                clonedVersion = _setJoinEdges(clonedVersion, operation.request)
+                break
+            }
             default:
                 break
         }
@@ -433,4 +448,17 @@ export const workflowOperations = {
         })
         return clonedVersion
     },
+}
+
+// Join edges are kept only when both endpoints still exist, so deleting a step cannot leave a
+// dependency on a name nothing resolves to — the Engine would then wait forever for it.
+function _setJoinEdges(workflowVersion: WorkflowVersion, request: SetJoinEdgesRequest): WorkflowVersion {
+    const stepNames = new Set(workflowStructureUtil.getAllSteps(workflowVersion.trigger).map((step) => step.name))
+    const joinEdges = request.joinEdges.filter(
+        (edge) => edge.from !== edge.to && stepNames.has(edge.from) && stepNames.has(edge.to),
+    )
+    return {
+        ...workflowVersion,
+        graph: joinEdges.length === 0 ? null : { joinEdges },
+    }
 }

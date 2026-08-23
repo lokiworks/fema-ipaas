@@ -1,7 +1,7 @@
 ---
 title: Parallel 与编译层落地，但持久化仍是 action 树
 icon: 🔀
-status: accepted
+status: superseded by 0017-join-edges-extend-the-tree-instead-of-replacing-it
 ---
 
 ## Decision

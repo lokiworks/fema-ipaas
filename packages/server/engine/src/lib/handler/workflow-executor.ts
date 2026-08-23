@@ -84,13 +84,22 @@ export const workflowExecutor = {
         if (isNil(action)) {
             return workflowExecutionContext.setDuration(performance.now() - workflowStartTime)
         }
-        const plan = executionPlanCursor.forSubtree(action)
+        const plan = executionPlanCursor.forSubtree(action, constants.workflowGraph)
         let previousAction: WorkflowAction | null | undefined = action
         let currentNodeId: string | null = action.name
         let currentAction: WorkflowAction | null = executionPlanCursor.stepAt({ plan, nodeId: currentNodeId })
         const testSingleStepMode = !isNil(constants.stepNameToTest)
 
         while (!isNil(currentAction) && !isNil(currentNodeId)) {
+            if (!executionPlanCursor.dependenciesMet({
+                plan,
+                nodeId: currentNodeId,
+                hasCompleted: (dependency) => workflowExecutionContext.isCompleted({ stepName: dependency }),
+            })) {
+                // Another path still has to reach this step. Stop here; the path that completes
+                // last picks it up, so the join runs exactly once with every input present.
+                break
+            }
             if (currentAction.skip && !testSingleStepMode) {
                 currentNodeId = executionPlanCursor.nextOf({ plan, nodeId: currentNodeId })
                 currentAction = isNil(currentNodeId) ? null : executionPlanCursor.stepAt({ plan, nodeId: currentNodeId })

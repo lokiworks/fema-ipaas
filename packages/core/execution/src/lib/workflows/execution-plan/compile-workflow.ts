@@ -2,17 +2,30 @@ import { WorkflowAction, WorkflowActionType } from '../actions/action'
 import { WorkflowTrigger } from '../triggers/trigger'
 import { WorkflowVersion } from '../workflow-version'
 import { ExecutionNode, ExecutionPlan } from './execution-plan'
+import { WorkflowJoinEdge } from './workflow-graph'
 
 export const workflowCompiler = {
     compile(workflowVersion: WorkflowVersion): ExecutionPlan {
         const nodes: Record<string, ExecutionNode> = {}
         visitTrigger(workflowVersion.trigger, nodes)
+        const joinEdges = (workflowVersion.graph?.joinEdges ?? []).filter(
+            (edge) => nodes[edge.from] !== undefined && nodes[edge.to] !== undefined,
+        )
         return {
             entry: workflowVersion.trigger.name,
             nodes,
-            dependencies: buildDependencies(nodes),
+            dependencies: withJoinEdges(buildDependencies(nodes), joinEdges),
         }
     },
+}
+
+function withJoinEdges(dependencies: Record<string, string[]>, joinEdges: WorkflowJoinEdge[]): Record<string, string[]> {
+    const merged = { ...dependencies }
+    for (const edge of joinEdges) {
+        const existing = merged[edge.to] ?? []
+        merged[edge.to] = existing.includes(edge.from) ? existing : [...existing, edge.from]
+    }
+    return merged
 }
 
 function visitTrigger(trigger: WorkflowTrigger, nodes: Record<string, ExecutionNode>): void {

@@ -602,6 +602,8 @@ function convertUpdateActionToDetails(event: WorkflowUpdatedEvent) {
             return `Deleted note in workflow "${event.data.workflowVersion.displayName}".`
         case WorkflowOperationType.UPDATE_SAMPLE_DATA_INFO:
             return `Updated sample data info for step "${event.data.request.request.stepName}" in workflow "${event.data.workflowVersion.displayName}".`
+        case WorkflowOperationType.SET_JOIN_EDGES:
+            return `Set ${event.data.request.request.joinEdges.length} join edge(s) in workflow "${event.data.workflowVersion.displayName}".`
     }
 }
 

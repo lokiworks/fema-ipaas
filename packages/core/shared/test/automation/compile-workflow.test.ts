@@ -16,6 +16,7 @@ function version(trigger: WorkflowVersion['trigger']): WorkflowVersion {
         connectionIds: [],
         backupFiles: null,
         notes: [],
+        graph: null,
     }
 }
 
@@ -126,5 +127,28 @@ describe('workflowCompiler', () => {
             children: [shared, shared],
         })))
         expect(Object.keys(plan.nodes).sort()).toEqual(['fan_out', 'shared', 'trigger'])
+    })
+
+    it('merges join edges into dependencies without touching next edges', () => {
+        const base = version(emptyTrigger(codeAction('a', codeAction('b'))))
+        const plan = workflowCompiler.compile({ ...base, graph: { joinEdges: [{ from: 'trigger', to: 'b' }] } })
+
+        expect(plan.dependencies.b).toContain('a')
+        expect(plan.dependencies.b).toContain('trigger')
+        expect(plan.nodes.a.next).toEqual(['b'])
+    })
+
+    it('drops a join edge whose endpoint is not in the plan', () => {
+        const base = version(emptyTrigger(codeAction('a')))
+        const plan = workflowCompiler.compile({ ...base, graph: { joinEdges: [{ from: 'ghost', to: 'a' }] } })
+
+        expect(plan.dependencies.a).toEqual(['trigger'])
+    })
+
+    it('does not duplicate a join edge that repeats an existing dependency', () => {
+        const base = version(emptyTrigger(codeAction('a')))
+        const plan = workflowCompiler.compile({ ...base, graph: { joinEdges: [{ from: 'trigger', to: 'a' }] } })
+
+        expect(plan.dependencies.a).toEqual(['trigger'])
     })
 })

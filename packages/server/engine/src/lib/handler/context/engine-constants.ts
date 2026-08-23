@@ -1,6 +1,6 @@
 import { ContextVersion } from '@fema-ipaas/connector-sdk'
 import { ensureTrailingSlash, isNil, TenantId, WorkspaceId } from '@fema-ipaas/core-utils'
-import { BaseEngineOperation, BeginExecuteWorkflowOperation, DEFAULT_MCP_DATA, EngineGenericError, ExecutePropsOptions, ExecuteTriggerOperation, ExecutionState, ExecutionType, ResumeExecuteWorkflowOperation, ResumePayload, RunEnvironment, StreamStepProgress, TriggerHookType, workflowStructureUtil, WorkflowTrigger, WorkflowVersionState, Workspace } from '@fema-ipaas/shared'
+import { BaseEngineOperation, BeginExecuteWorkflowOperation, DEFAULT_MCP_DATA, EngineGenericError, ExecutePropsOptions, ExecuteTriggerOperation, ExecutionState, ExecutionType, ResumeExecuteWorkflowOperation, ResumePayload, RunEnvironment, StreamStepProgress, TriggerHookType, WorkflowGraph, workflowStructureUtil, WorkflowTrigger, WorkflowVersionState, Workspace } from '@fema-ipaas/shared'
 import { retryFetch } from '../../api/retry-fetch'
 import { createPropsResolver, PropsResolver } from '../../variables/props-resolver'
 
@@ -13,6 +13,7 @@ type RetryConstants = {
 type EngineConstantsParams = {
     workflowId: string
     workflowVersionId: string
+    workflowGraph?: WorkflowGraph | null
     workflowVersionState: WorkflowVersionState
     triggerConnectorName: string
     executionId: string
@@ -54,6 +55,7 @@ export class EngineConstants {
     public readonly timeoutInSeconds: number
     public readonly workflowId: string
     public readonly workflowVersionId: string
+    public readonly workflowGraph: WorkflowGraph | null
     public readonly workflowVersionState: WorkflowVersionState
     public readonly triggerConnectorName: string
     public readonly executionId: string
@@ -99,6 +101,7 @@ export class EngineConstants {
 
         this.workflowId = params.workflowId
         this.workflowVersionId = params.workflowVersionId
+        this.workflowGraph = params.workflowGraph ?? null
         this.workflowVersionState = params.workflowVersionState
         this.executionId = params.executionId
         this.publicApiUrl = params.publicApiUrl
@@ -219,6 +222,7 @@ function workflowFields(workflowVersion: WorkflowFieldsSource | undefined) {
             workflowVersionState: DEFAULT_MCP_DATA.workflowVersionState,
             triggerConnectorName: DEFAULT_MCP_DATA.triggerConnectorName,
             stepNames: [],
+            workflowGraph: null,
         }
     }
     return {
@@ -227,6 +231,7 @@ function workflowFields(workflowVersion: WorkflowFieldsSource | undefined) {
         workflowVersionState: workflowVersion.state,
         triggerConnectorName: workflowVersion.trigger?.settings.connectorName,
         stepNames: isNil(workflowVersion.trigger) ? [] : workflowStructureUtil.getAllSteps(workflowVersion.trigger).map((step) => step.name),
+        workflowGraph: workflowVersion.graph ?? null,
     }
 }
 
@@ -249,6 +254,7 @@ type WorkflowFieldsSource = {
     id: string
     state: WorkflowVersionState
     trigger?: WorkflowTrigger
+    graph?: WorkflowGraph | null
 }
 
 export type ResolvedBeginExecuteWorkflowOperation = Omit<BeginExecuteWorkflowOperation, 'triggerPayload'> & {

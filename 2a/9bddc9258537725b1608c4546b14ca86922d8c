@@ -1,0 +1,23 @@
+packages/core/connector-types/src/lib/workflows.ts
+  s_94864882421579::t_4d2a7d14dc0e6b 4-5,10,13,15
+packages/server/engine/src/lib/variables/props-processor.ts
+  s_94864882421579::t_4d2a7d14dc0e6b 127
+packages/server/engine/src/lib/network/dns-lookup-guard.ts
+  s_94864882421579::t_4d2a7d14dc0e6b 67-69,74-75
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "2a9bddc9258537725b1608c4546b14ca86922d8c",
+  "prompts": {},
+  "sessions": {
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

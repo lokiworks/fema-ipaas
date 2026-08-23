@@ -1,0 +1,124 @@
+packages/web/public/assets/steps/empty-trigger.svg
+  s_94864882421579::t_294be5d4ba1906 1
+packages/web/public/assets/steps/router.svg
+  s_94864882421579::t_294be5d4ba1906 1
+packages/components/sdk/src/lib/component.ts
+  s_94864882421579::t_26b9d5bceea1cc 10-14,34-35
+packages/server/api/src/app/app.ts
+  s_94864882421579::t_d93b1fc119f34f 154
+  s_6470fab2619f46::t_0255759f83c001 14
+packages/web/src/features/connectors/utils/step-utils.tsx
+  s_94864882421579::t_4f8154d4edf353 20,123
+  s_94864882421579::t_250b9f8367c159 31-34,40,46,52,60
+  s_94864882421579::t_a821510ff94cf1 1,21,110-122,124-127
+packages/server/api/package.json
+  s_94864882421579::t_bc421b73ceb328 36
+packages/web/vite.config.mts
+  s_94864882421579::t_0d2843815b8848 112-115
+packages/server/api/src/app/components/component.module.ts
+  s_94864882421579::t_e123f6051c65fb 1-6
+packages/web/src/features/connectors/utils/form-utils.tsx
+  s_94864882421579::t_3d4bfdd57e1e3d 16-17
+  s_94864882421579::t_b0f87fbc362653 554,557-564,566-570
+  s_94864882421579::t_19d036301fcff2 565
+brain/knowledge/connectors-engine/index.md
+  s_94864882421579::t_8ca1a6b9938a7f 44,46,48-50
+  s_94864882421579::t_d5b8ac29439eb3 51
+packages/web/src/features/components/index.ts
+  s_94864882421579::t_f0795e0ded63cd 1
+  s_94864882421579::t_4f8154d4edf353 2-6
+packages/web/public/assets/components/reply.svg
+  s_94864882421579::t_294be5d4ba1906 1
+packages/web/public/assets/components/fallback.svg
+  s_94864882421579::t_294be5d4ba1906 1
+packages/web/src/app/builder/index.tsx
+  s_94864882421579::t_4bea7259782d5e 231-239
+  s_94864882421579::t_b62a41d891f454 23,146
+packages/web/src/app/builder/workflow-canvas/nodes/note-node/note-drag-overlay.tsx
+  s_94864882421579::t_0a6d06a180fab8 65
+packages/web/src/features/connectors/stores/connector-selector-tabs-provider.tsx
+  s_94864882421579::t_e025096aac3ca8 11
+packages/web/public/assets/components/calendar-clock.svg
+  s_94864882421579::t_294be5d4ba1906 1
+packages/server/api/src/app/components/component.controller.ts
+  s_94864882421579::t_e123f6051c65fb 1-17
+packages/web/src/app/builder/workflow-canvas/workflow-drag-layer.tsx
+  s_94864882421579::t_0a6d06a180fab8 232
+packages/web/src/app/builder/step-settings/index.tsx
+  s_94864882421579::t_dba9c0d434d895 40,193-194
+  s_94864882421579::t_006c641ec8e587 195
+packages/web/public/assets/components/clock.svg
+  s_94864882421579::t_294be5d4ba1906 1
+packages/web/package.json
+  s_94864882421579::t_f0795e0ded63cd 16-20
+packages/web/src/features/components/hooks/components-hooks.ts
+  s_94864882421579::t_f0795e0ded63cd 1-14,30-36
+  s_94864882421579::t_4f8154d4edf353 15-29
+packages/web/src/features/connectors/hooks/connectors-hooks.ts
+  s_94864882421579::t_6acd36ef932447 310
+packages/components/sdk/src/lib/component-registry.ts
+  s_94864882421579::t_26b9d5bceea1cc 2,14,28
+packages/web/public/assets/steps/code.svg
+  s_94864882421579::t_294be5d4ba1906 1
+packages/web/src/app/builder/step-settings/component-settings.tsx
+  s_94864882421579::t_59a032979d5d6d 1-51,53-64
+  s_94864882421579::t_e1ec0d2cb78b09 52
+packages/web/public/assets/components/user-check.svg
+  s_94864882421579::t_294be5d4ba1906 1
+packages/web/src/app/builder/connectors-selector/components-tab-content.tsx
+  s_94864882421579::t_e025096aac3ca8 1-2,4-8,10-117,119-120,122-139
+  s_94864882421579::t_4f8154d4edf353 9,121
+  s_94864882421579::t_c451fcae8c8393 118
+  s_94864882421579::t_5b7933f2688a4d 3
+packages/web/src/features/components/api/components-api.ts
+  s_94864882421579::t_f0795e0ded63cd 1-9
+packages/web/src/features/connectors/types/index.ts
+  s_94864882421579::t_0d2843815b8848 1,7,44-47,49-51,57-58,65-68,116-117
+  s_94864882421579::t_c451fcae8c8393 48
+packages/web/src/features/connectors/utils/connector-selector-utils.ts
+  s_94864882421579::t_7ae06f686670f1 16
+  s_94864882421579::t_1389e44bd79bd2 124-134,139-144,250-268
+  s_94864882421579::t_6e1611e0a047c6 269-270
+packages/web/public/assets/steps/loop.svg
+  s_94864882421579::t_294be5d4ba1906 1
+packages/web/public/assets/components/link.svg
+  s_94864882421579::t_294be5d4ba1906 1
+packages/web/public/assets/components/circle-stop.svg
+  s_94864882421579::t_294be5d4ba1906 1
+packages/web/tsconfig.app.json
+  s_94864882421579::t_0a6d06a180fab8 20-22
+packages/web/src/app/builder/step-settings/step-settings-context.tsx
+  s_94864882421579::t_3d4bfdd57e1e3d 58,70,83
+packages/web/vitest.config.ts
+  s_94864882421579::t_ba66b4c429fc51 21-24
+packages/web/src/app/builder/connectors-selector/index.tsx
+  s_94864882421579::t_193f257e213a1e 39,143
+  s_94864882421579::t_c451fcae8c8393 4,35,65-67,227-230
+  s_94864882421579::t_b065c50de4c53a 63
+bun.lock
+  s_94864882421579::t_a9b8c4cffad44d 709
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "84d59d104f82717b3de958a7b21a58342ae36274",
+  "prompts": {},
+  "sessions": {
+    "s_6470fab2619f46": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a722cb41-e173-45cd-81d7-e73fef978f9c",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    },
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

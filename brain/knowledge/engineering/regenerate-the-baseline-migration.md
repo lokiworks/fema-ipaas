@@ -61,3 +61,15 @@ icon: 🗜️
 - **实体里的悬空关系会让生成直接失败**，报
   `Entity metadata for X#y was not found`。删除实体后要顺手删掉别处指向它的
   `many-to-one` 关系块，只删 `getEntities()` 里的登记是不够的。
+- **索引名不能超过 63 字节，否则 schema 会永久漂移。** Postgres 会把超长标识符截断，
+  而 TypeORM 拿未截断的名字去比对，于是每次 `migration:generate --check` 都产出同一对
+  `DROP INDEX` / `CREATE INDEX`，看起来像"改了没生效"。领域重命名最容易触发这个——
+  `flow`→`workflow`、`project`→`workspace` 会让本来 60 出头的名字集体越界。
+  生成前先跑一遍：
+
+  ```bash
+  grep -rhoE "name: '(idx|fk|uq)_[a-zA-Z_]*'" packages/server/api/src/app --include='*.ts' \
+    | sed "s/name: '//;s/'//" | awk '{ if (length($0) > 63) print length($0)": "$0 }'
+  ```
+
+  修在实体侧（缩短名字），不要修在迁移里，否则下次生成又会漂回去。

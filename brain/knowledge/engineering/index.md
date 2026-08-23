@@ -37,3 +37,5 @@ The **FEMA Integration Platform engineering brain**: how the system works, and *
 - **Architecture Spine** — the load-bearing structure of the codebase, and the gotchas that come with it: request-body `.max()` as data loss, TypeORM soft-delete across a canary window, and canary not proxying websockets
 
 **重新生成基线迁移** — 本仓库只有一个迁移，领域重命名后整体重生成，见 *regenerate-the-baseline-migration*。
+
+**执行一次全域重命名** — 领域词替换的顺序与陷阱清单，见 *execute-a-domain-wide-rename*。

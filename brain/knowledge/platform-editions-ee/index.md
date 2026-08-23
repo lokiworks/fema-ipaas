@@ -4,6 +4,10 @@ icon: 🏢
 
 # Platform & Editions (EE)
 
+> **历史资料。** 本仓库已删除整个 Edition 体系（见
+> [decisions/000030](../decisions/000030-this-fork-has-no-editions-the-ee-pages-are-history.md)）。
+> 本区所有页面描述的是上游 Activepieces 的设计，不是本仓库的现状。
+
 How Activepieces' tenancy (Platform → Project) and Community/Enterprise split work. Rule of thumb: CE never imports `src/app/ee/`; CE declares hook interfaces via `hooksFactory.create<T>(ceDefault)`, EE injects the real impl via `.set(eeImpl)` in the `app.ts` edition switch. Plan flags and numeric limits on `PlatformPlan` — projected from the platform's Autumn billing customer — gate features per-endpoint with `platformMustHaveFeatureEnabled()` (HTTP 402).
 
 ### Platform (CE)
@@ -47,3 +51,16 @@ Activation/recovery handle for a self-hosted platform's Autumn billing identity 
 - **License Keys** — activating self-hosted EE
 - **Embed** — signing keys, external tokens, the Cloudflare subdomain, and the frame-ancestors CSP
 - **Platform Copilot** — retired; kept for the migration trail
+
+## Gotchas
+
+- **「删掉 `packages/ee` 」不是一个能独立完成的步骤。** CE 的 `app.ts` 在 edition
+  switch *之外* 无条件注册了一批 EE 模块——`platformProjectModule`、`userModule`、
+  `alertsModule`、`billingUsageReportModule`，以及 `rbacMiddleware` 这个全局
+  preHandler。另有 40 个 CE 文件直接 `import` `./ee/*`（`secretManagersService`、
+  `projectMemberService`、`workerGroupService`、`emailService`…）。所以删除 EE 目录
+  必须同时在核心里**重写**这些能力，而不只是拿掉 import。本仓库执行这一步时，
+  project 模块、邮件服务、邀请流程、`verify-email` / `reset-password` 端点都是重写的。
+- **EE 迁移创建的是核心表。** `src/app/ee/database/migrations` 里有 `add-platform`
+  这类迁移，`platform` 表本身就是它建的。因此 EE 迁移不能单独删掉——本仓库的做法是
+  把整条迁移链压缩成一个基线（`docs/adr/0011`）。

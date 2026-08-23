@@ -1,0 +1,496 @@
+packages/server/engine/test/handler/flow-with-response.test.ts
+  s_94864882421579::t_4a2c25e7553059 1,41
+packages/server/api/src/app/server.ts
+  s_94864882421579::t_4a2c25e7553059 140,147
+packages/server/api/src/app/helper/system/system-props.ts
+  s_94864882421579::t_4a2c25e7553059 62
+packages/server/api/src/app/flows/execution/execution-hooks.ts
+  s_94864882421579::t_4a2c25e7553059 1-32
+packages/server/api/src/app/flows/execution/execution-side-effects.ts
+  s_94864882421579::t_4a2c25e7553059 1-65
+packages/server/api/test/unit/app/workers/migrations/job-data-migrations.test.ts
+  s_94864882421579::t_4a2c25e7553059 67
+packages/server/api/src/app/file/files-service.ts
+  s_94864882421579::t_4a2c25e7553059 66-67
+packages/core/execution/src/lib/execution/log-serializer.ts
+  s_94864882421579::t_9fb870b9d2f619 1-2
+  s_94864882421579::t_4a2c25e7553059 3-11
+packages/core/execution/src/lib/execution/test-execution-request.ts
+  s_94864882421579::t_4a2c25e7553059 1-2,4-62
+  s_94864882421579::t_9fb870b9d2f619 3
+packages/core/execution/src/index.ts
+  s_94864882421579::t_9fb870b9d2f619 26
+  s_94864882421579::t_4a2c25e7553059 2,24-25,27-29
+packages/connectors/core/approval/test/create-approval-link.test.ts
+  s_94864882421579::t_4a2c25e7553059 7
+packages/core/shared/src/lib/core/file/index.ts
+  s_94864882421579::t_4a2c25e7553059 16,18-19,21
+packages/core/execution/AGENTS.md
+  s_94864882421579::t_4a2c25e7553059 3
+packages/server/api/src/app/flows/execution/executions-queue.ts
+  s_94864882421579::t_4a2c25e7553059 1-246
+packages/server/api/src/app/workers/job-queue/bullboard.ts
+  s_94864882421579::t_4a2c25e7553059 7
+packages/server/worker/src/lib/worker.ts
+  s_94864882421579::t_4a2c25e7553059 342
+packages/server/engine/src/lib/core/connector/connector-protocol.ts
+  s_94864882421579::t_4a2c25e7553059 82
+packages/server/engine/src/main.ts
+  s_94864882421579::t_4a2c25e7553059 2,13
+packages/server/engine/test/handler/flow-branching.test.ts
+  s_94864882421579::t_4a2c25e7553059 1,42,63,84,105,126,147,168,189,210,231,252,273,294,315,336,357,376,395,414,433,453,473,493,518
+docs/install/troubleshooting/truncated-logs.mdx
+  s_94864882421579::t_4a2c25e7553059 31,34
+brain/knowledge/execution-runtime/gotcha-code-cache-is-namespaced-by-flowversionid-never-reuse-a-constant.md
+  s_94864882421579::t_4a2c25e7553059 65
+packages/cli/src/lib/commands/benchmark.ts
+  s_94864882421579::t_4a2c25e7553059 169,236,241,352,375,430-431,936-937,991
+packages/core/execution/src/lib/execution/execution.ts
+  s_94864882421579::t_9fb870b9d2f619 5-6
+  s_94864882421579::t_4a2c25e7553059 1-4,7-96
+brain/knowledge/data-storage-observability/file-storage.md
+  s_94864882421579::t_4a2c25e7553059 10,39
+packages/server/api/src/app/flows/execution/waitpoint/waitpoint-controller.ts
+  s_94864882421579::t_4a2c25e7553059 1-42
+packages/server/api/src/app/flows/execution/execution-service.ts
+  s_94864882421579::t_4a2c25e7553059 1-937
+packages/server/api/src/app/webhooks/webhook-controller.ts
+  s_94864882421579::t_4a2c25e7553059 93
+docs/handbook/engineering/playbooks/structured-logging.mdx
+  s_94864882421579::t_4a2c25e7553059 9,18,20,26,35,59,78
+packages/core/execution/test/execution/execution/execution-journal.test.ts
+  s_94864882421579::t_9fb870b9d2f619 1-2
+  s_94864882421579::t_4a2c25e7553059 3-259
+packages/server/engine/test/handler/flow-waitpoint-response.test.ts
+  s_94864882421579::t_4a2c25e7553059 1,66,114
+packages/server/api/src/app/database/migration/postgres/1787465061531-InitialSchema.ts
+  s_94864882421579::t_4a2c25e7553059 158,184,194,203,211,220,229,232,235,238,241,526,541,638-639,643-644,647-648,651-652,655-656,766,769,772,775,778,832,970
+packages/server/engine/test/helper/execution-progress-reporter.test.ts
+  s_94864882421579::t_4a2c25e7553059 1-232
+packages/core/execution/src/lib/engine/requests.ts
+  s_94864882421579::t_ecc17304eafcc4 2-4
+  s_94864882421579::t_4a2c25e7553059 5,16,74
+packages/core/execution/test/execution/execution/step-output.test.ts
+  s_94864882421579::t_9fb870b9d2f619 1
+  s_94864882421579::t_4a2c25e7553059 2-118
+packages/server/api/test/unit/app/action-run/action-run-outcome.test.ts
+  s_94864882421579::t_4a2c25e7553059 2,22,25,31,37,41,48,55,109
+packages/server/STYLE.md
+  s_94864882421579::t_4a2c25e7553059 161
+packages/server/sandbox/test/lib/create-sandbox-for-job.test.ts
+  s_94864882421579::t_4a2c25e7553059 46,74,154,164
+smoke-test/verify-delay.sh
+  s_94864882421579::t_4a2c25e7553059 173
+smoke-test/verify-s3.sh
+  s_94864882421579::t_4a2c25e7553059 71,89
+packages/server/api/src/app/app.ts
+  s_94864882421579::t_4a2c25e7553059 5,29,156,300-302,312
+packages/web/src/app/builder/state/canvas-state.ts
+  s_94864882421579::t_4a2c25e7553059 6,63,159
+packages/server/worker/src/lib/execute/jobs/execute-flow.ts
+  s_94864882421579::t_4a2c25e7553059 4,19,28,33,40,50,76,81,93,98,102,106,120,168,180,185,196
+packages/server/api/test/integration/flows/execution/resume-execution.test.ts
+  s_94864882421579::t_4a2c25e7553059 1-866
+packages/core/execution/src/lib/engine/engine-constants.ts
+  s_94864882421579::t_4a2c25e7553059 7
+packages/web/src/features/executions/components/runs-table/runs-status-chart.tsx
+  s_94864882421579::t_4a2c25e7553059 1-176
+docs/endpoints/executions/get.mdx
+  s_94864882421579::t_4a2c25e7553059 1-4
+docs/install/architecture/autoscaling.mdx
+  s_94864882421579::t_4a2c25e7553059 32
+packages/core/execution/src/lib/workers/index.ts
+  s_94864882421579::t_4a2c25e7553059 117
+packages/server/api/src/app/file/file.module.ts
+  s_94864882421579::t_4a2c25e7553059 13
+packages/server/api/src/app/flows/flow/flow.jobs.ts
+  s_94864882421579::t_4a2c25e7553059 6-7,21,26,29
+packages/server/engine/test/handler/router-branching.test.ts
+  s_94864882421579::t_4a2c25e7553059 1,56,100,144,212,268,308,363,389,428
+packages/server/engine/test/helper/error-handling.test.ts
+  s_94864882421579::t_4a2c25e7553059 1,33,47,68
+.github/workflows/delete-workexecutions.yml
+  s_94864882421579::t_4a2c25e7553059 1-26
+packages/web/src/app/builder/flow-canvas/nodes/step-node/step-node-skipped-status.tsx
+  s_94864882421579::t_4a2c25e7553059 10,38
+packages/server/engine/test/engine-file-api.test.ts
+  s_94864882421579::t_4a2c25e7553059 34
+packages/server/api/src/app/flows/execution/engine-run-callback-service.ts
+  s_94864882421579::t_4a2c25e7553059 1-133
+packages/server/engine/src/lib/handler/context/flow-execution-context.ts
+  s_94864882421579::t_4a2c25e7553059 2,10,37,52,55,221,258,260,263,266
+packages/server/engine/src/lib/handler/base-executor.ts
+  s_94864882421579::t_4a2c25e7553059 2,12
+packages/server/worker/test/lib/worker-settings-override.test.ts
+  s_94864882421579::t_4a2c25e7553059 55
+packages/server/api/src/app/file/file.service.ts
+  s_94864882421579::t_4a2c25e7553059 18,354,367-368
+packages/server/api/src/app/webhooks/webhook.service.ts
+  s_94864882421579::t_4a2c25e7553059 3,6,278,287,295,311,350,383
+packages/server/api/test/unit/app/helper/jwt-audience.test.ts
+  s_94864882421579::t_4a2c25e7553059 18,26,30,47,65
+packages/core/shared/src/index.ts
+  s_94864882421579::t_4a2c25e7553059 33
+packages/server/api/src/app/flows/execution/execution-controller.ts
+  s_94864882421579::t_4a2c25e7553059 1-250
+packages/server/engine/test/handler/flow-with-delay.test.ts
+  s_94864882421579::t_4a2c25e7553059 1,44,78,91,116,143,171
+docs/resources/diagrams/autoscaling-drain.html
+  s_94864882421579::t_4a2c25e7553059 69
+docs/install/reference/environment-variables.mdx
+  s_94864882421579::t_4a2c25e7553059 172-174
+packages/server/sandbox/src/lib/types.ts
+  s_94864882421579::t_4a2c25e7553059 110
+brain/knowledge/data-storage-observability/audit-logs.md
+  s_94864882421579::t_4a2c25e7553059 20
+packages/server/engine/test/handler/flow-codes.test.ts
+  s_94864882421579::t_4a2c25e7553059 1,18,33,45,66,83,94,105,116,126,140,162
+packages/server/engine/src/lib/handler/code-executor.ts
+  s_94864882421579::t_4a2c25e7553059 7,40
+packages/web/src/app/builder/run-list/execution-card.tsx
+  s_94864882421579::t_4a2c25e7553059 1-222
+deploy/fema-helm/values.yaml
+  s_94864882421579::t_4a2c25e7553059 217
+docs/endpoints/executions/schema.mdx
+  s_94864882421579::t_4a2c25e7553059 1-5
+packages/server/api/test/integration/file/file-cleanup.test.ts
+  s_94864882421579::t_4a2c25e7553059 29,69
+packages/server/api/src/app/flags/flag.service.ts
+  s_94864882421579::t_4a2c25e7553059 42,202,214,220-221
+packages/server/engine/src/lib/core/connector/connector-context-builder.ts
+  s_94864882421579::t_4a2c25e7553059 11,51,70,127,227
+packages/core/utils/src/lib/id-generator.ts
+  s_94864882421579::t_4a2c25e7553059 16
+packages/server/engine/src/lib/handler/connector-executor.ts
+  s_94864882421579::t_4a2c25e7553059 3,8,64,116,124,127,164
+packages/core/shared/src/lib/core/health/health-metrics-request.ts
+  s_94864882421579::t_4a2c25e7553059 2,19,39,44
+packages/server/api/src/app/flows/execution/execution-module.ts
+  s_94864882421579::t_4a2c25e7553059 1-99
+docs/admin-guide/security/audit-logs/overview.mdx
+  s_94864882421579::t_4a2c25e7553059 34-35
+packages/server/api/src/app/webhooks/webhook-request-converter.ts
+  s_94864882421579::t_4a2c25e7553059 3,51
+packages/server/engine/src/lib/handler/router-executor.ts
+  s_94864882421579::t_4a2c25e7553059 3,135
+packages/server/engine/test/handler/flow-connector.test.ts
+  s_94864882421579::t_4a2c25e7553059 2,24,47-48,81,113
+packages/server/engine/test/handler/flow-rerun.test.ts
+  s_94864882421579::t_4a2c25e7553059 1,45-46,59-60
+packages/server/api/src/app/helper/jwt-utils.ts
+  s_94864882421579::t_4a2c25e7553059 22
+packages/server/sandbox/src/lib/create-sandbox-for-job.ts
+  s_94864882421579::t_4a2c25e7553059 91
+packages/web/src/app/builder/flow-canvas/nodes/step-node/step-node-status-in-run.tsx
+  s_94864882421579::t_4a2c25e7553059 4,23,27
+  s_94864882421579::t_05960181d21074 28-29
+packages/web/src/features/executions/hooks/execution-hooks.ts
+  s_94864882421579::t_4a2c25e7553059 1-204
+  s_94864882421579::t_4be3a7576bd69b 205
+packages/server/api/src/app/health/health-metrics.service.ts
+  s_94864882421579::t_4a2c25e7553059 3,7,21-22,24,37,39,56,62,74,92-94,100-101,103,111,121-122,128,142,144,165,169,176,178,180,190,256-257
+docs/install/architecture/waitpoints.mdx
+  s_94864882421579::t_4a2c25e7553059 20,72-73
+docs/openapi.json
+  s_94864882421579::t_4a2c25e7553059 1
+brain/knowledge/eventing-webhooks/flow-failure-alerts.md
+  s_94864882421579::t_4a2c25e7553059 15,26
+packages/server/engine/test/handler/code-executor-traversal.test.ts
+  s_94864882421579::t_4a2c25e7553059 1,20
+packages/web/src/app/builder/flow-canvas/widgets/run-info-widget.tsx
+  s_94864882421579::t_4a2c25e7553059 3-4,17,21,38,44,46,48,50,54,59,66,68,70,74,76,84,87,90,93,98,105,227
+packages/server/api/src/app/workers/job-queue/job-queue.ts
+  s_94864882421579::t_4a2c25e7553059 129,133,135,247-248
+brain/knowledge/flows-execution/action-run.md
+  s_94864882421579::t_4a2c25e7553059 7,9,14,48,58
+packages/server/engine/src/lib/handler/loop-executor.ts
+  s_94864882421579::t_4a2c25e7553059 3,77
+.agents/skills/connector-output-schema/capture-recipes.md
+  s_94864882421579::t_4a2c25e7553059 41,45
+packages/web/src/app/builder/state/run-state.ts
+  s_94864882421579::t_4a2c25e7553059 6,20,31-32,60,79-81
+  s_94864882421579::t_11042e75090537 82,84,88,113,150
+packages/web/src/app/routes/runs/id/index.tsx
+  s_94864882421579::t_4a2c25e7553059 1,9,12,16,23-25,28,69
+packages/server/api/src/app/flows/step-run/sample-data.controller.ts
+  s_94864882421579::t_4a2c25e7553059 12
+  s_94864882421579::t_18d7c5d14fb8f5 5
+packages/server/api/src/app/helper/logger/index.ts
+  s_94864882421579::t_4a2c25e7553059 49
+packages/web/src/app/routes/workspace-routes.tsx
+  s_94864882421579::t_4a2c25e7553059 25-27,101
+packages/server/api/src/app/workers/job/runs-metadata-queue-factory.ts
+  s_94864882421579::t_4a2c25e7553059 3,112
+packages/web/src/features/executions/api/executions-api.ts
+  s_94864882421579::t_4a2c25e7553059 1-126
+packages/server/api/src/app/workers/worker-module.ts
+  s_94864882421579::t_4a2c25e7553059 3
+brain/knowledge/flows-execution/subflows.md
+  s_94864882421579::t_4a2c25e7553059 32-33
+brain/knowledge/decisions/000009-approval-links-require-a-post-confirmation-on-a-dedicated-route.md
+  s_94864882421579::t_4a2c25e7553059 11
+packages/server/engine/src/lib/helper/execution-progress-reporter.ts
+  s_94864882421579::t_4a2c25e7553059 1-256
+packages/connectors/community/github/src/lib/common/index.ts
+  s_94864882421579::t_4a2c25e7553059 465,470-471,587
+packages/server/api/src/app/database/database-connection.ts
+  s_94864882421579::t_4a2c25e7553059 43
+  s_94864882421579::t_1b2ab580a9e3d5 12-13
+packages/server/api/src/app/workers/migrations/refill-paused-jobs.ts
+  s_94864882421579::t_4a2c25e7553059 2,8-9,30,32,43-45,70
+packages/core/execution/src/lib/execution/dto/list-executions-request.ts
+  s_94864882421579::t_9fb870b9d2f619 4
+  s_94864882421579::t_4a2c25e7553059 1-3,5-40
+brain/knowledge/decisions/000021-legacy-free-platforms-are-comped-an-appsumo-clone-from-ensureenrolled.md
+  s_94864882421579::t_4a2c25e7553059 71,135
+brain/knowledge/execution-runtime/index.md
+  s_94864882421579::t_4a2c25e7553059 40-41,44
+packages/core/shared/src/lib/governance/audit-events/index.ts
+  s_94864882421579::t_4a2c25e7553059 26-29,178-179,197,200-203,205,207,209,211-212,214,216,218-219,221,223,225-226,228,386,399-402,404-405,407-408
+packages/server/api/test/unit/app/flows/execution/run-timeline.test.ts
+  s_94864882421579::t_4a2c25e7553059 1-105
+packages/web/src/app/builder/flow-canvas/widgets/publish-flow-reminder-widget.tsx
+  s_94864882421579::t_4a2c25e7553059 3,157
+packages/web/src/app/builder/flow-canvas/widgets/test-flow-widget.tsx
+  s_94864882421579::t_4a2c25e7553059 15,49,52,55,61
+packages/server/api/src/app/helper/error-handler.ts
+  s_94864882421579::t_4a2c25e7553059 111
+packages/web/src/features/executions/components/runs-table/index.tsx
+  s_94864882421579::t_4a2c25e7553059 1-623
+docs/install/architecture/benchmark.mdx
+  s_94864882421579::t_4a2c25e7553059 188,222-223
+packages/server/AGENTS.md
+  s_94864882421579::t_4a2c25e7553059 73-74,79,81
+brain/knowledge/decisions/000014-action-runs-dispatch-as-synchronous-user-interaction-jobs.md
+  s_94864882421579::t_4a2c25e7553059 16-18
+packages/server/engine/test/operations/flow-operation-invariants.test.ts
+  s_94864882421579::t_4a2c25e7553059 8,23-24,90,159,178,227,319,410,510,534,569
+packages/server/api/src/app/helper/system/system.ts
+  s_94864882421579::t_4a2c25e7553059 40
+docs/install/reference/limits.mdx
+  s_94864882421579::t_4a2c25e7553059 19,84-86,90,93,98,100-101
+packages/server/api/test/integration/flows/execution/bulk-retry-execution.test.ts
+  s_94864882421579::t_4a2c25e7553059 1-221
+packages/web/src/app/builder/flow-canvas/nodes/step-node/step-node-run-duration-and-connector-name.tsx
+  s_94864882421579::t_4a2c25e7553059 6,36
+packages/web/src/features/executions/utils/execution-utils.ts
+  s_94864882421579::t_4a2c25e7553059 1-247
+packages/core/shared/src/lib/core/flag/flag.ts
+  s_94864882421579::t_4a2c25e7553059 30-32
+packages/server/sandbox/test/lib/sandbox-manager.test.ts
+  s_94864882421579::t_4a2c25e7553059 38
+packages/web/src/app/builder/run-details/loop-iteration-input.tsx
+  s_94864882421579::t_4a2c25e7553059 19,36
+smoke-test/verify-memory-limit.sh
+  s_94864882421579::t_4a2c25e7553059 41
+packages/connectors/community/github/src/lib/actions/trigger-workflow-dispatch.ts
+  s_94864882421579::t_4a2c25e7553059 13,154,183,194,198
+packages/server/api/src/app/flows/execution/execution-entity.ts
+  s_94864882421579::t_4a2c25e7553059 1-190
+brain/knowledge/data-storage-observability/index.md
+  s_94864882421579::t_4a2c25e7553059 39,47
+docs/docs.json
+  s_94864882421579::t_4a2c25e7553059 193-194,480-482
+packages/core/shared/CLAUDE.md
+  s_94864882421579::t_4a2c25e7553059 20
+packages/server/engine/src/lib/worker-socket.ts
+  s_94864882421579::t_4a2c25e7553059 11,87,93
+packages/server/engine/src/lib/helper/logging-utils.ts
+  s_94864882421579::t_4a2c25e7553059 5,10
+packages/server/engine/src/lib/operations/flow.operation.ts
+  s_94864882421579::t_4a2c25e7553059 2,9,41,45-46,78,82,103,119,150
+packages/web/src/app/builder/flow-canvas/hooks.tsx
+  s_94864882421579::t_4a2c25e7553059 3,6,18,54-55,60,176-177
+packages/connectors/sdk/src/lib/context/versioning.ts
+  s_94864882421579::t_4a2c25e7553059 73
+packages/server/engine/test/handler/test-helper.ts
+  s_94864882421579::t_4a2c25e7553059 12,136
+packages/core/connector-types/src/lib/execution-contracts.ts
+  s_94864882421579::t_4a2c25e7553059 94-95
+brain/knowledge/connectors-engine/building-connectors.md
+  s_94864882421579::t_4a2c25e7553059 23
+packages/server/api/src/app/flows/flow/flow.entity.ts
+  s_94864882421579::t_4a2c25e7553059 21,106
+  s_94864882421579::t_420a8d94e6d1dc 2
+brain/knowledge/platform-editions-ee/ee-platform-plans-billing.md
+  s_94864882421579::t_4a2c25e7553059 17,29,44
+packages/server/api/test/integration/workers/job-broker-invalid-schema.test.ts
+  s_94864882421579::t_4a2c25e7553059 45
+brain/knowledge/flows-execution/executions.md
+  s_94864882421579::t_4a2c25e7553059 1-55
+packages/core/execution/src/lib/execution/waitpoint/index.ts
+  s_94864882421579::t_4a2c25e7553059 1,3-24
+  s_94864882421579::t_9fb870b9d2f619 2
+packages/server/api/src/app/flows/execution/waitpoint/resume-controller.ts
+  s_94864882421579::t_4a2c25e7553059 1-350
+packages/server/api/src/app/flows/execution/waitpoint/waitpoint-service.ts
+  s_94864882421579::t_4a2c25e7553059 1-163
+packages/server/api/src/app/helper/system-jobs/common.ts
+  s_94864882421579::t_4a2c25e7553059 1,36
+packages/server/api/src/app/helper/system-jobs/system-job.ts
+  s_94864882421579::t_4a2c25e7553059 121
+packages/server/api/test/integration/flows/execution/waitpoint.test.ts
+  s_94864882421579::t_4a2c25e7553059 1-722
+packages/core/shared/src/lib/automation/websocket/index.ts
+  s_94864882421579::t_4a2c25e7553059 5,10,19
+brain/knowledge/execution-runtime/benchmark-cli.md
+  s_94864882421579::t_4a2c25e7553059 11,16,48
+packages/web/src/app/routes/runs/index.tsx
+  s_94864882421579::t_4a2c25e7553059 1
+packages/web/src/features/executions/components/runs-table/columns.tsx
+  s_94864882421579::t_4a2c25e7553059 1-401
+packages/server/api/src/app/workers/machine/machine-service.ts
+  s_94864882421579::t_4a2c25e7553059 36
+packages/web/src/app/builder/run-list/index.tsx
+  s_94864882421579::t_4a2c25e7553059 2,15,20,23,42,44,46,50,62,71,84,116,118,125
+packages/server/worker/test/lib/execute/jobs/execute-flow.test.ts
+  s_94864882421579::t_4a2c25e7553059 3,169,186,203
+packages/web/src/features/executions/components/runs-table/failed-step-dialog.tsx
+  s_94864882421579::t_4a2c25e7553059 1-223
+brain/knowledge/flows-execution/index.md
+  s_94864882421579::t_4a2c25e7553059 18
+benchmark/EXPERIMENTS.md
+  s_94864882421579::t_4a2c25e7553059 91-92,105,126,195
+packages/server/api/src/app/flows/execution/waitpoint/resume-service.ts
+  s_94864882421579::t_4a2c25e7553059 1-197
+packages/server/api/test/integration/flows/execution/list-executions.test.ts
+  s_94864882421579::t_4a2c25e7553059 1-28
+packages/core/execution/src/lib/engine/engine-operation.ts
+  s_94864882421579::t_4a2c25e7553059 1,6,113
+  s_94864882421579::t_ecc17304eafcc4 5
+brain/knowledge/eventing-webhooks/webhooks.md
+  s_94864882421579::t_4a2c25e7553059 23
+docs/mcp/tools.mdx
+  s_94864882421579::t_4a2c25e7553059 217,561
+packages/server/engine/src/lib/helper/error-handling.ts
+  s_94864882421579::t_4a2c25e7553059 2,37,42,50
+packages/server/engine/test/handler/flow-error-handling.test.ts
+  s_94864882421579::t_4a2c25e7553059 3,29,65,104,121,142
+brain/knowledge/decisions/000029-the-engine-never-imports-a-connector-a-fresh-child-process-does.md
+  s_94864882421579::t_4a2c25e7553059 25
+packages/web/src/app/routes/platform/infra/health/components/stuck-jobs-table.tsx
+  s_94864882421579::t_4a2c25e7553059 61,65
+packages/server/api/src/app/helper/system-validator.ts
+  s_94864882421579::t_4a2c25e7553059 69
+packages/server/worker/test/lib/worker.test.ts
+  s_94864882421579::t_4a2c25e7553059 731
+packages/connectors/sdk/src/lib/context/index.ts
+  s_94864882421579::t_4a2c25e7553059 14,196
+packages/server/api/test/integration/flows/execution/mark-parent-run-cross-tenant.test.ts
+  s_94864882421579::t_4a2c25e7553059 1-89
+packages/web/src/features/flows/hooks/flow-hooks.tsx
+  s_94864882421579::t_4a2c25e7553059 30,357
+packages/web/test/app/builder/flow-canvas/utils/flow-canvas-utils.test.ts
+  s_94864882421579::t_4a2c25e7553059 15-16
+packages/web/src/app/builder/run-details/flow-step-input-output.tsx
+  s_94864882421579::t_4a2c25e7553059 7-9,26,70,110,119,128-129,136,380,385
+packages/server/engine/test/handler/flow-log-size.test.ts
+  s_94864882421579::t_4a2c25e7553059 1,7-8,29,55,72,94,141,159,179
+packages/server/api/src/app/flows/flow.module.ts
+  s_94864882421579::t_4a2c25e7553059 1,4,15-17,22,26-27,32
+packages/core/execution/src/lib/workers/worker-contract.ts
+  s_94864882421579::t_4a2c25e7553059 3,71
+packages/web/src/features/executions/components/runs-table/retried-runs-snackbar.tsx
+  s_94864882421579::t_4a2c25e7553059 1-50
+packages/server/api/test/integration/flows/execution/resume-service.test.ts
+  s_94864882421579::t_4a2c25e7553059 1-168
+brain/knowledge/eventing-webhooks/event-destinations.md
+  s_94864882421579::t_4a2c25e7553059 11,24
+packages/core/execution/src/lib/workers/job-data.ts
+  s_94864882421579::t_ecc17304eafcc4 5
+  s_94864882421579::t_4a2c25e7553059 6
+docs/endpoints/executions/list.mdx
+  s_94864882421579::t_4a2c25e7553059 1-4
+packages/server/engine/test/handler/flow-looping.test.ts
+  s_94864882421579::t_4a2c25e7553059 1,27,55,65,86
+packages/server/engine/src/lib/handler/context/engine-constants.ts
+  s_94864882421579::t_4a2c25e7553059 18,59,103,127,144,155,163
+packages/server/api/test/unit/app/file/s3-helper-checksum.test.ts
+  s_94864882421579::t_4a2c25e7553059 83,95
+packages/web/src/app/builder/flow-canvas/nodes/step-node/step-node-status-in-draft.tsx
+  s_94864882421579::t_4a2c25e7553059 19,152
+packages/server/api/src/app/flows/execution/waitpoint/waitpoint-entity.ts
+  s_94864882421579::t_4a2c25e7553059 1-87
+packages/server/api/test/integration/file/files-controller.test.ts
+  s_94864882421579::t_4a2c25e7553059 260,276
+packages/web/src/app/builder/flow-canvas/utils/flow-canvas-utils.ts
+  s_94864882421579::t_4a2c25e7553059 6,19,666,672
+packages/web/src/features/executions/components/step-status-icon.tsx
+  s_94864882421579::t_4a2c25e7553059 1-54
+packages/web/src/features/executions/index.ts
+  s_94864882421579::t_4a2c25e7553059 1-5
+docs/install/configure-operate/production-setup.mdx
+  s_94864882421579::t_4a2c25e7553059 74
+packages/core/shared/src/lib/core/common/telemetry.ts
+  s_94864882421579::t_4a2c25e7553059 223,301
+packages/core/utils/src/lib/platform-error.ts
+  s_94864882421579::t_4a2c25e7553059 1,28,183-184,186,528
+docs/install/reference/breaking-changes.mdx
+  s_94864882421579::t_4a2c25e7553059 132,147,176,178-181,269,275
+brain/knowledge/decisions/000020-credit-gating-fails-open-on-an-unknown-balance.md
+  s_94864882421579::t_4a2c25e7553059 35,88
+packages/server/api/src/app/flows/execution/waitpoint/waitpoint-types.ts
+  s_94864882421579::t_4a2c25e7553059 1-83
+packages/server/api/test/integration/flows/execution/execute-flow-e2e.test.ts
+  s_94864882421579::t_4a2c25e7553059 1-1128
+packages/web/src/app/builder/step-data/step-data-panel-header.tsx
+  s_94864882421579::t_4a2c25e7553059 5
+packages/server/api/src/app/workers/rpc/worker-rpc-service.ts
+  s_94864882421579::t_4a2c25e7553059 106,109,118,135
+  s_94864882421579::t_bcfc4c4ec65a3f 10-11
+brain/knowledge/decisions/000016-managed-ai-metering-moves-to-centralized-worker-execution.md
+  s_94864882421579::t_4a2c25e7553059 21
+packages/server/api/test/integration/flows/execution/retry-execution.test.ts
+  s_94864882421579::t_4a2c25e7553059 1-256
+packages/server/engine/src/lib/handler/flow-executor.ts
+  s_94864882421579::t_4a2c25e7553059 3,6,45,49,53,60,88,110,120,149,181
+packages/server/engine/test/handler/flow-with-pause.test.ts
+  s_94864882421579::t_4a2c25e7553059 1,83,97,113,147,152,166,179,199,255
+packages/server/sandbox/test/lib/cache/flow/code/code-builder.test.ts
+  s_94864882421579::t_4a2c25e7553059 55
+packages/server/api/test/integration/flows/execution/run-logs-file-fk.test.ts
+  s_94864882421579::t_4a2c25e7553059 1-125
+packages/server/sandbox/test/lib/cache/flow/flow-provisioning.test.ts
+  s_94864882421579::t_4a2c25e7553059 27
+packages/web/src/app/routes/platform/infra/health/components/status-line-chart.tsx
+  s_94864882421579::t_4a2c25e7553059 1,18-26
+  s_94864882421579::t_c20ed3530083cd 27-28,36,44
+packages/server/engine/test/handler/flow-skip-progress.test.ts
+  s_94864882421579::t_4a2c25e7553059 1,50
+packages/web/src/app/builder/test-step/utils/test-step-hooks.ts
+  s_94864882421579::t_4a2c25e7553059 21,189
+packages/server/sandbox/test/lib/cache/connector-cache-traversal.test.ts
+  s_94864882421579::t_4a2c25e7553059 29
+packages/server/api/test/helpers/mocks/index.ts
+  s_94864882421579::t_4a2c25e7553059 3,383,385-390,392-399,401,528,541,549-550,557,560
+packages/server/sandbox/test/lib/cache/connector-installer.test.ts
+  s_94864882421579::t_4a2c25e7553059 85
+.agents/skills/debug-failed-run/SKILL.md
+  s_94864882421579::t_4a2c25e7553059 10,15,34
+packages/server/engine/src/lib/api/engine-file-api.ts
+  s_94864882421579::t_4a2c25e7553059 85,146
+packages/web/src/features/executions/components/runs-table/failed-retry-runs-dialog.tsx
+  s_94864882421579::t_4a2c25e7553059 1-100
+packages/core/execution/src/lib/execution/state/flow-execution.ts
+  s_94864882421579::t_27ab47c2531e81 5,63,65-71,73,75-77,84-88,90
+packages/core/execution/src/lib/execution/state/step-output.ts
+  s_94864882421579::t_0e414b456a788e 105
+packages/server/api/src/app/workers/engine-controller.ts
+  s_94864882421579::t_db052454e97b52 10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "de3a9f806311c8bd220166c65113fd6e1879bf31",
+  "prompts": {},
+  "sessions": {
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

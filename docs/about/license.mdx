@@ -1,22 +1,13 @@
 ---
 title: "License"
-description: ""
-icon: 'file-contract'
+description: "How FEMA Integration Platform is licensed"
+icon: "scale-balanced"
 ---
 
-FEMA Integration Platform' **core** is released as open source under the [MIT license](https://github.com/lokiworks/fema-ipaas/blob/main/LICENSE) and enterprise / cloud editions features are released under [Commercial License](https://github.com/lokiworks/fema-ipaas/blob/main/packages/ee/LICENSE)
+FEMA Integration Platform is released under the [MIT license](https://github.com/lokiworks/fema-ipaas/blob/main/LICENSE).
 
-The MIT license is a permissive license that grants users the freedom to use, modify, or distribute the software without any significant restrictions. The only requirement is that you include the license notice along with the software when distributing it.
+There is no enterprise edition, no commercial tier, and no feature that requires a paid licence. Every capability in this repository is available to every self-hosted instance. Instance-wide caps live in `SYSTEM_LIMITS` and per-workspace caps live on the workspace row; neither is a paywall.
 
-Using the enterprise features (under the packages/ee and packages/server/api/src/app/ee folder) with a self-hosted instance requires an FEMA Integration Platform license. If you are looking for these features, contact us at [sales@fema.local](mailto:sales@fema.local).
+This is a deliberate departure from the upstream project this fork started from, which split its code between an MIT core and a commercially licensed `packages/ee` directory. That directory and its licence do not exist here — see [ADR 0002](https://github.com/lokiworks/fema-ipaas/blob/main/docs/adr/0002-remove-enterprise-edition.md).
 
-**Benefits of Dual Licensing Repo**
-
-- **Transparency** - Everyone can see what we are doing and contribute to the project.
-- **Clarity** - Everyone can see what the difference is between the open source and commercial versions of our software.
-- **Audit** - Everyone can audit our code and see what we are doing.
-- **Faster Development** - We can develop faster and more efficiently.
-
-<Tip>
-If you are still confused or have feedback, please open an issue on GitHub or send a message in the #contribution channel on Discord.
-</Tip>
+Attribution for the upstream work this fork builds on is in [NOTICE.md](https://github.com/lokiworks/fema-ipaas/blob/main/NOTICE.md).

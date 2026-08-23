@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "activepieces.name" -}}
+{{- define "fema-ipaas.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "activepieces.fullname" -}}
+{{- define "fema-ipaas.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +26,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "activepieces.chart" -}}
+{{- define "fema-ipaas.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "activepieces.labels" -}}
-helm.sh/chart: {{ include "activepieces.chart" . }}
-{{ include "activepieces.selectorLabels" . }}
+{{- define "fema-ipaas.labels" -}}
+helm.sh/chart: {{ include "fema-ipaas.chart" . }}
+{{ include "fema-ipaas.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,17 +45,17 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "activepieces.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "activepieces.name" . }}
+{{- define "fema-ipaas.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "fema-ipaas.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "activepieces.serviceAccountName" -}}
+{{- define "fema-ipaas.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "activepieces.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "fema-ipaas.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}

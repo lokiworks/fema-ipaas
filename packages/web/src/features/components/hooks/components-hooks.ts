@@ -25,6 +25,13 @@ const COMPONENT_ICONS = new Set([
   'circle-stop',
   'user-check',
   'link',
+  'variable',
+  'arrow-left-right',
+  'filter',
+  'braces',
+  'type',
+  'calendar',
+  'list',
 ]);
 
 export const COMPONENT_CATEGORY_LABELS: Record<FlowComponentCategory, string> =

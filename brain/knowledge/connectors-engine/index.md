@@ -64,6 +64,17 @@ Turns an OpenAPI 3 or Swagger 2 document into a connector package (design doc se
   - The `__dirname` bundler guard compared paths against `process.cwd()` without resolving symlinks, so on macOS (`/var` → `/private/var`) every file fell outside the connector root and the guard silently passed. It is fixed, but the shape of the bug is worth remembering: a guard that skips everything looks exactly like a guard that finds nothing.
   - `@fema-ipaas/cli` is in the root `test-unit` filter list. `api` is not — see the API test-suite task.
 
+### Data Components
+
+Seven `FlowComponentCategory.DATA` components implementing design doc section 4.3's second group: `data/set-variable`, `data/mapper`, `data/filter`, `data/json-transform`, `data/text-transform`, `data/date-transform`, `data/collection-transform`.
+
+- Each is **one component with an operation dropdown**, not one component per operation. Section 4.3 names seven concepts, not thirty actions, and a single Text Transform with eight operations is a smaller surface than eight separate nodes.
+
+- **Gotchas**:
+  - The `text-helper`, `date-helper`, `math-helper` and `data-mapper` connectors are **still installed and were not deleted**. They cover a long tail the components deliberately do not — `html-to-markdown`, `extract-from-html`, `json-to-ascii-table`, `strip-html`. Section 4.3's hard constraint names Branch, Loop, Code and Delay; the Data list is a taxonomy, not a deletion order. Deleting those connectors would remove capability nothing replaces.
+  - These components validate loudly rather than degrading: a non-list passed to Filter or Collection Transform throws, an unparseable date names which field failed, and an unknown operation throws instead of returning the input untouched. A data step that silently passes bad data through is worse than one that stops the run.
+  - `data/collection-transform` sum treats non-numeric values as `0`, but `data/filter` numeric comparison **throws** on them. The difference is deliberate: summing a mixed list is a reasonable request, comparing a word to a number is a mistake.
+
 ### Registry Trust (source & checksum)
 
 `connector_metadata` carries `source` (`BUILT_IN` / `OFFICIAL` / `COMMUNITY` / `PRIVATE`) and a nullable `checksum`, per design doc section 23. This is the trust axis; `connectorType` (`OFFICIAL` / `CUSTOM`) remains the *ownership* axis and the two are not the same question.

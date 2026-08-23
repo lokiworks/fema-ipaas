@@ -10,7 +10,6 @@ import { pinoLogging } from '../helper/logger'
 import { rejectedPromiseHandler } from '../helper/promise-handler'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
-import { shouldBlockRunOnCredits } from '../platform/billing-provider'
 import { triggerSourceService } from '../trigger/trigger-source/trigger-source-service'
 import { engineResponseWatcher } from '../workers/engine-response-watcher'
 import { jobQueue, JobType } from '../workers/job-queue/job-queue'
@@ -271,11 +270,7 @@ async function handleSync(params: SyncWebhookParams): Promise<EngineHttpResponse
         }
     }
 
-    const creditsExhausted = await shouldBlockRunOnCredits({
-        platformId,
-        environment: runEnvironment,
-        log: logger,
-    })
+    const creditsExhausted = false
 
     if (creditsExhausted) {
         const flowVersion = await flowVersionRepo().findOneBy({ id: flowVersionIdToRun })

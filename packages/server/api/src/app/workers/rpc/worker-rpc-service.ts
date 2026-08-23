@@ -4,7 +4,6 @@ import { ExecutionType, FileCompression, FileLocation, FileType, FlowOperationTy
 import { FastifyBaseLogger } from 'fastify'
 import { websocketService } from '../../core/websockets.service'
 import { redisConnections } from '../../database/redis-connections'
-import { agentRpcHandlers } from '../../ee/agent/agent-rpc-handlers'
 import { fileService, getLocationForFile } from '../../file/file.service'
 import { s3Helper } from '../../file/s3-helper'
 import { signedFileTransport } from '../../file/signed-file-transport'
@@ -18,7 +17,6 @@ import { rejectedPromiseHandler } from '../../helper/promise-handler'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
 import { pieceMetadataService } from '../../pieces/metadata/piece-metadata-service'
-import { shouldBlockRunOnCredits } from '../../platform/billing-provider'
 import { projectService } from '../../project/project-service'
 import { dedupeService } from '../../trigger/dedupe-service'
 import { triggerEventService } from '../../trigger/trigger-events/trigger-event.service'
@@ -104,11 +102,7 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
             const platformId = await projectService(log).getPlatformId(projectId)
             const filterPayloads = await dedupeService.filterUniquePayloads(flowVersionId, payloads)
 
-            const creditsExhausted = await shouldBlockRunOnCredits({
-                platformId,
-                environment,
-                log,
-            })
+            const creditsExhausted = false
 
             const flowRuns = await Promise.all(
                 filterPayloads.map((payload) =>
@@ -293,78 +287,6 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
             log.info({ flow: { id: flowId }, project: { id: projectId } }, '[workerRpc#disableFlow] Flow disabled by worker request')
         },
 
-        async sendAgentEvent(input) {
-            const { userId, conversationId, runId, event } = input
-            websocketService.to(userId).emit(WebsocketClientEvent.CHAT_MESSAGE_CHUNK, {
-                conversationId,
-                runId,
-                ...event,
-            })
-        },
-
-        async getAgentConfig(input) {
-            return agentRpcHandlers(agentRpcLog(log, input)).getAgentConfig(input)
-        },
-
-        async saveAgentMessages(input) {
-            return agentRpcHandlers(agentRpcLog(log, input)).saveAgentMessages(input)
-        },
-
-        async saveAgentFile(input) {
-            return agentRpcHandlers(agentRpcLog(log, input)).saveAgentFile(input)
-        },
-
-        async updateAgentProgress(input) {
-            return agentRpcHandlers(agentRpcLog(log, input)).updateAgentProgress(input)
-        },
-
-        async heartbeatAgentConversation(input) {
-            return agentRpcHandlers(agentRpcLog(log, input)).heartbeatAgentConversation(input)
-        },
-
-        async updateProjectContext(input) {
-            return agentRpcHandlers(agentRpcLog(log, input)).updateProjectContext(input)
-        },
-
-        async executeAgentTool(input) {
-            const runId = typeof input.toolInput.runId === 'string' ? input.toolInput.runId : undefined
-            const conversationId = input.conversationId ?? (typeof input.toolInput.conversationId === 'string' ? input.toolInput.conversationId : undefined)
-            return agentRpcHandlers(agentRpcLog(log, { conversationId, runId, platformId: input.platformId, userId: input.userId })).executeAgentTool(input)
-        },
-
-        async executePieceTool(input) {
-            return agentRpcHandlers(agentRpcLog(log, { conversationId: input.conversationId })).executePieceTool(input)
-        },
-
-        async executeKnowledgeBaseTool(input) {
-            return agentRpcHandlers(agentRpcLog(log, { conversationId: input.conversationId })).executeKnowledgeBaseTool(input)
-        },
-
-        async executeFlowTool(input) {
-            return agentRpcHandlers(agentRpcLog(log, { conversationId: input.conversationId })).executeFlowTool(input)
-        },
-
-        async updateFlowStepProgress(input) {
-            return agentRpcHandlers(agentRpcLog(log, { conversationId: input.conversationId })).updateFlowStepProgress(input)
-        },
-
-        async resumeFlowStep(input) {
-            return agentRpcHandlers(agentRpcLog(log, { conversationId: input.conversationId })).resumeFlowStep(input)
-        },
-
-        async sendAgentEmail(input) {
-            return agentRpcHandlers(agentRpcLog(log, { conversationId: input.conversationId, platformId: input.platformId, userId: input.userId })).sendAgentEmail(input)
-        },
     }
 }
 
-// Binds conversation/run/platform/user to the per-call logger so every chat RPC
-// log line correlates with the worker turn and the analyze-logs timeline.
-function agentRpcLog(log: FastifyBaseLogger, ids: { conversationId?: string, runId?: string, platformId?: string, userId?: string }): FastifyBaseLogger {
-    return log.child({
-        ...spreadIfDefined('conversation', isNil(ids.conversationId) ? undefined : { id: ids.conversationId }),
-        ...spreadIfDefined('run', isNil(ids.runId) ? undefined : { id: ids.runId }),
-        ...spreadIfDefined('platform', isNil(ids.platformId) ? undefined : { id: ids.platformId }),
-        ...spreadIfDefined('user', isNil(ids.userId) ? undefined : { id: ids.userId }),
-    })
-}

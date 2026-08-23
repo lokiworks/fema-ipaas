@@ -13,7 +13,6 @@ import { paginationHelper } from '../../helper/pagination/pagination-utils'
 import { Order } from '../../helper/pagination/paginator'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
-import { assertRunCreditsNotExceeded, shouldBlockRunOnCredits } from '../../platform/billing-provider'
 import { projectService } from '../../project/project-service'
 import { jobQueue, JobType } from '../../workers/job-queue/job-queue'
 import { payloadOffloader } from '../../workers/payload-offloader'
@@ -133,12 +132,6 @@ export const flowRunService = (log: FastifyBaseLogger) => ({
                 },
             })
         }
-
-        await assertRunCreditsNotExceeded({
-            platformId: project.platformId,
-            environment: oldFlowRun.environment,
-            log,
-        })
 
         switch (strategy) {
             case FlowRetryStrategy.FROM_FAILED_STEP: {
@@ -383,11 +376,7 @@ export const flowRunService = (log: FastifyBaseLogger) => ({
         const triggerPayload = {}
         const platformId = await projectService(log).getPlatformId(projectId)
 
-        const creditsExhausted = await shouldBlockRunOnCredits({
-            platformId,
-            environment: RunEnvironment.PRODUCTION,
-            log,
-        })
+        const creditsExhausted = false
         if (creditsExhausted) {
             return this.createQuotaExceededRun({
                 flowVersion,

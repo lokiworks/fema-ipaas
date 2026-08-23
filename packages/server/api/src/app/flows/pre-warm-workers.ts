@@ -3,7 +3,6 @@ import { ApEdition, FlowStatus, FlowVersionState, PrewarmDataRequest, PrewarmDat
 import { FastifyBaseLogger } from 'fastify'
 import { accessTokenManager } from '../authentication/lib/access-token-manager'
 import { distributedLock, distributedStore } from '../database/redis-connections'
-import { workerGroupService } from '../ee/platform/platform-plan/worker-group.service'
 import Paginator from '../helper/pagination/paginator'
 import { system } from '../helper/system/system'
 import { platformService } from '../platform/platform.service'
@@ -91,10 +90,7 @@ async function computeScope(input: PrewarmDataRequest, log: FastifyBaseLogger): 
             platformId = await projectService(log).getPlatformId(projectIds[0])
         }
         else {
-            platformId = await workerGroupService(log).getWorkerGroupPlatformId({ workerGroupId: input.workerGroupId }) ?? undefined
-            if (isNil(platformId)) {
-                return null
-            }
+            return null
         }
     }
     else {

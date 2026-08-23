@@ -80,22 +80,6 @@ export type WorkerToApiContract = {
     recordTriggerRun(input: RecordTriggerRunRequest): Promise<void>
     extendLock(input: { jobId: string, token: string, queueName: string }): Promise<void>
     disableFlow(input: DisableFlowRequest): Promise<void>
-    resumeFlowStep(input: ResumeFlowStepRequest): Promise<void>
-    updateFlowStepProgress(input: UpdateFlowStepProgressRequest): Promise<void>
-}
-
-export type UpdateFlowStepProgressRequest = {
-    conversationId: string
-    flowRunId: string
-    output: unknown
-    sequence: number
-}
-
-export type ResumeFlowStepRequest = {
-    conversationId: string
-    flowRunId: string
-    waitpointId: string
-    output: unknown
 }
 
 export type DisableFlowRequest = {

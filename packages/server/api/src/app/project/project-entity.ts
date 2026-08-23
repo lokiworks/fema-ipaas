@@ -1,17 +1,10 @@
 import {
     AppConnection,
-    Cell,
-    ConcurrencyPool,
-    Field,
     File,
     Flow,
     Folder,
-    PieceSet,
     Platform,
     Project,
-    Record,
-    Table,
-    TableWebhook,
     TriggerEvent,
     User,
 } from '@activepieces/shared'
@@ -29,13 +22,6 @@ type ProjectSchema = Project & {
     events: TriggerEvent[]
     appConnections: AppConnection[]
     platform: Platform
-    tables: Table[]
-    fields: Field[]
-    records: Record[]
-    cells: Cell[]
-    tableWebhooks: TableWebhook[]
-    pool?: ConcurrencyPool | null
-    pieceSet?: PieceSet | null
 }
 
 export const ProjectEntity = new EntitySchema<ProjectSchema>({
@@ -84,14 +70,6 @@ export const ProjectEntity = new EntitySchema<ProjectSchema>({
             type: 'jsonb',
             nullable: true,
         },
-        poolId: {
-            ...ApIdSchema,
-            nullable: true,
-        },
-        pieceSetId: {
-            ...ApIdSchema,
-            nullable: true,
-        },
         workerGroupId: {
             type: String,
             nullable: true,
@@ -116,16 +94,6 @@ export const ProjectEntity = new EntitySchema<ProjectSchema>({
         {
             name: 'idx_project_platform_id',
             columns: ['platformId'],
-            unique: false,
-        },
-        {
-            name: 'idx_project_pool_id',
-            columns: ['poolId'],
-            unique: false,
-        },
-        {
-            name: 'idx_project_piece_set_id',
-            columns: ['pieceSetId'],
             unique: false,
         },
         {
@@ -184,51 +152,6 @@ export const ProjectEntity = new EntitySchema<ProjectSchema>({
             type: 'one-to-many',
             target: 'flow',
             inverseSide: 'project',
-        },
-        tables: {
-            type: 'one-to-many',
-            target: 'table',
-            inverseSide: 'project',
-        },
-        fields: {
-            type: 'one-to-many',
-            target: 'field',
-            inverseSide: 'project',
-        },
-        records: {
-            type: 'one-to-many',
-            target: 'record',
-            inverseSide: 'project',
-        },
-        cells: {
-            type: 'one-to-many',
-            target: 'cell',
-            inverseSide: 'project',
-        },
-        tableWebhooks: {
-            type: 'one-to-many',
-            target: 'table_webhook',
-            inverseSide: 'project',
-        },
-        pool: {
-            type: 'many-to-one',
-            target: 'concurrency_pool',
-            onDelete: 'SET NULL',
-            nullable: true,
-            joinColumn: {
-                name: 'poolId',
-                foreignKeyConstraintName: 'fk_project_pool_id',
-            },
-        },
-        pieceSet: {
-            type: 'many-to-one',
-            target: 'piece_set',
-            onDelete: 'SET NULL',
-            nullable: true,
-            joinColumn: {
-                name: 'pieceSetId',
-                foreignKeyConstraintName: 'fk_project_piece_set_id',
-            },
         },
     },
 })

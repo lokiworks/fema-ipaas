@@ -4,8 +4,6 @@ import { AddPieceRequestBody, EngineResponse, EngineResponseStatus, ExecuteExtra
 import { FastifyBaseLogger } from 'fastify'
 import { fileService } from '../file/file.service'
 import { rejectedPromiseHandler } from '../helper/promise-handler'
-import { isToolSearchEnabled } from '../tool-search/tool-search-flag'
-import { toolSearchReindexJob } from '../tool-search/tool-search-reindex.job'
 import { userInteractionWatcher } from '../workers/user-interaction-watcher'
 import { pieceMetadataService } from './metadata/piece-metadata-service'
 
@@ -40,9 +38,6 @@ export const pieceInstallService = (log: FastifyBaseLogger) => ({
             // Reconcile tool-search for this tenant only (async, never blocking the install) so the new
             // custom piece's actions/triggers become searchable. Scoped → the shared catalog is untouched.
             // Gated on the flag so an install never enqueues a reconcile while tool-search is disabled.
-            if (isToolSearchEnabled()) {
-                rejectedPromiseHandler(toolSearchReindexJob(log).enqueue({ type: 'platform', platformId }), log)
-            }
             return savedPiece
         }
         catch (error) {

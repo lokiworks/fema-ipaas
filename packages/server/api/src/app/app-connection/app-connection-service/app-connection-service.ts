@@ -5,8 +5,6 @@ import { FastifyBaseLogger } from 'fastify'
 import semver from 'semver'
 import { ArrayContains, Equal, FindOperator, FindOptionsWhere, ILike, In } from 'typeorm'
 import { repoFactory } from '../../core/db/repo-factory'
-import { projectMemberService } from '../../ee/projects/project-members/project-member.service'
-import { containsSecretManagerReference, secretManagersService } from '../../ee/secret-managers/secret-managers.service'
 import { flowService } from '../../flows/flow/flow.service'
 import { encryptUtils } from '../../helper/encryption'
 import { jwtUtils } from '../../helper/jwt-utils'
@@ -55,7 +53,7 @@ export const appConnectionService = (log: FastifyBaseLogger) => ({
         }
 
         const validatedConnectionValue = await validateConnectionValue({
-            value: await secretManagersService(log).resolveObject({ value, platformId, projectIds }),
+            value,
             pieceName,
             pieceVersion,
             projectId: projectIds[0],
@@ -472,11 +470,8 @@ export const appConnectionService = (log: FastifyBaseLogger) => ({
     removeSensitiveData: (
         appConnection: AppConnection | AppConnectionSchema,
     ): AppConnectionWithoutSensitiveData => {
-        const { value, ...appConnectionWithoutSensitiveData } = appConnection
-        return {
-            ...appConnectionWithoutSensitiveData,
-            usingSecretManager: containsSecretManagerReference(value),
-        }
+        const { value: _value, ...appConnectionWithoutSensitiveData } = appConnection
+        return appConnectionWithoutSensitiveData
     },
 
     async decryptAndRefreshConnection(
@@ -508,23 +503,7 @@ export const appConnectionService = (log: FastifyBaseLogger) => ({
             lastName: user.identity.lastName,
             email: user.identity.email,
         }))
-        const edition = system.getOrThrow(AppSystemProp.EDITION)
-        if (edition === ApEdition.COMMUNITY) {
-            return platformAdmins
-        }
-        const projectMembers = await projectMemberService(log).list({
-            platformId,
-            projectId,
-            cursorRequest: null,
-            limit: 1000,
-            projectRoleId: undefined,
-        })
-        const projectMembersDetails = projectMembers.data.map(pm => ({
-            firstName: pm.user.firstName,
-            lastName: pm.user.lastName,
-            email: pm.user.email,
-        }))
-        return [...platformAdmins, ...projectMembersDetails]
+        return platformAdmins
     },
 
     async listForPlatform(params: ListForPlatformParams): Promise<SeekPage<PlatformAppConnectionsListItem>> {

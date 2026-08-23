@@ -47,6 +47,7 @@ export * from './lib/automation/knowledge-base'
 export * from './lib/automation/websocket'
 
 // ee
+export * from './lib/governance/audit-events'
 export * from './lib/authentication/otp'
 export * from './lib/authentication/authn'
 export * from './lib/management/project/project-requests'

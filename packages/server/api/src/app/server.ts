@@ -17,15 +17,12 @@ import { getAdapter, setupApp } from './app'
 import { oidcDiscoveryController } from './core/security/oidc/oidc-discovery.controller'
 import { websocketService } from './core/websockets.service'
 import { healthModule } from './health/health.module'
-import { embedSecurity } from './helper/embed-security'
 import { enrichWideEventWithError, errorHandler } from './helper/error-handler'
 import { exceptionHandler } from './helper/exception-handler'
 import { networkUtils } from './helper/network-utils'
 import { rejectedPromiseHandler } from './helper/promise-handler'
 import { system } from './helper/system/system'
 import { AppSystemProp } from './helper/system/system-props'
-import { mcpOAuthHttpController, mcpPlatformHttpController } from './mcp/oauth/mcp-oauth.controller'
-import { mcpOAuthRootModule } from './mcp/oauth/mcp-oauth.module'
 
 
 export let app: FastifyInstance | undefined = undefined
@@ -33,12 +30,8 @@ export let app: FastifyInstance | undefined = undefined
 export const setupServer = async (): Promise<FastifyInstance> => {
     app = await setupBaseApp()
 
-    // MCP OAuth endpoints at domain root (required by MCP spec)
     // OIDC discovery endpoints at domain root (required by OIDC spec)
     if (system.isApp()) {
-        await app.register(mcpOAuthRootModule)
-        await app.register(mcpOAuthHttpController, { prefix: '/mcp' })
-        await app.register(mcpPlatformHttpController, { prefix: '/mcp/platform' })
         await app.register(oidcDiscoveryController)
     }
 
@@ -136,10 +129,7 @@ export const setupServer = async (): Promise<FastifyInstance> => {
         void reply.header('X-Content-Type-Options', 'nosniff')
         void reply.header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload')
         if (!reply.hasHeader('Content-Security-Policy')) {
-            const frameAncestors = await embedSecurity(request.log).getFrameAncestorsHeader({
-                hostname: networkUtils.getRequestHost(request),
-            })
-            void reply.header('Content-Security-Policy', frameAncestors)
+            void reply.header('Content-Security-Policy', 'frame-ancestors \'self\'')
         }
     })
 

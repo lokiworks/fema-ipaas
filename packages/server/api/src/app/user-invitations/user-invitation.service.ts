@@ -5,8 +5,7 @@ import { FastifyBaseLogger } from 'fastify'
 import { EntityManager, IsNull, ObjectLiteral, SelectQueryBuilder } from 'typeorm'
 import { userIdentityService } from '../authentication/user-identity/user-identity-service'
 import { repoFactory } from '../core/db/repo-factory'
-import { smtpEmailSender } from '../ee/helper/email/email-sender/smtp-email-sender'
-import { emailService } from '../ee/helper/email/email-service'
+import { emailService } from '../helper/email/email-service'
 import { projectMemberService } from '../ee/projects/project-members/project-member.service'
 import { projectRoleService } from '../ee/projects/project-role/project-role.service'
 import { domainHelper } from '../helper/domain-helper'
@@ -139,7 +138,7 @@ export const userInvitationsService = (log: FastifyBaseLogger) => ({
                 invitationId: userInvitation.id,
                 platformId: userInvitation.platformId,
             })
-            if (smtpEmailSender(log).isSmtpConfigured()) {
+            if (emailService(log).isConfigured()) {
                 await emailService(log).sendProjectMemberAdded({
                     userInvitation,
                 })
@@ -316,7 +315,7 @@ async function generateInvitationLink(userInvitation: UserInvitation, expireyInS
 }
 const enrichWithInvitationLink = async (userInvitation: UserInvitation, expireyInSeconds: number, log: FastifyBaseLogger) => {
     const invitationLink = await generateInvitationLink(userInvitation, expireyInSeconds)
-    if (!smtpEmailSender(log).isSmtpConfigured()) {
+    if (!emailService(log).isConfigured()) {
         return {
             ...userInvitation,
             link: invitationLink,

@@ -5,7 +5,6 @@ import { ExecutionMode, NetworkMode, WorkerGroupScope, WorkerMachineHealthcheckR
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import { FastifyBaseLogger } from 'fastify'
-import { workerGroupService } from '../../ee/platform/platform-plan/worker-group.service'
 import { domainHelper } from '../../helper/domain-helper'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
@@ -98,7 +97,7 @@ export const machineService = (log: FastifyBaseLogger) => {
 
             await workerMachineCache().delete(offLineWorkers.map(worker => worker.id))
 
-            const platformWorkerGroupId = await workerGroupService(log).getWorkerGroupId({ platformId })
+            const platformWorkerGroupId = null
             return onlineWorkers
                 .filter(worker => {
                     if (worker.workerGroupScope === WorkerGroupScope.PLATFORM) {

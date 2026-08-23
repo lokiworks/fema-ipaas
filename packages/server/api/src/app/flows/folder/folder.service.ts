@@ -4,7 +4,6 @@ import { FastifyBaseLogger } from 'fastify'
 import { repoFactory } from '../../core/db/repo-factory'
 import { buildPaginator } from '../../helper/pagination/build-paginator'
 import { paginationHelper } from '../../helper/pagination/pagination-utils'
-import { tableService } from '../../tables/table/table.service'
 import { flowService } from '../flow/flow.service'
 import { FolderEntity } from './folder.entity'
 
@@ -142,14 +141,10 @@ export const flowFolderService = (log: FastifyBaseLogger) => ({
                 },
             })
         }
-        const [numberOfFlows, numberOfTables] = await Promise.all([
-            flowService(log).count({ projectId, folderId }),
-            tableService.count({ projectId, folderId }),
-        ])
+        const numberOfFlows = await flowService(log).count({ projectId, folderId })
         return {
             ...folder,
             numberOfFlows,
-            numberOfTables,
         }
     },
 })

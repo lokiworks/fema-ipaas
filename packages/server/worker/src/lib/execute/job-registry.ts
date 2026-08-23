@@ -1,5 +1,4 @@
 import { JobData, WorkerJobType } from '@activepieces/shared'
-import { eventDestinationJob } from './jobs/event-destination'
 import { executeActionJob } from './jobs/execute-action'
 import { executeFlowJob } from './jobs/execute-flow'
 import { executePollingJob } from './jobs/execute-polling'
@@ -42,15 +41,9 @@ const registry: Partial<Record<WorkerJobType, JobHandler>> = {
     [WorkerJobType.EXECUTE_RESOLVE_CONNECTION_IDENTIFIER]: resolveConnectionIdentifierJob,
     [WorkerJobType.EXECUTE_TOKEN_REFRESH]: executeTokenRefreshJob,
     [WorkerJobType.EXECUTE_EXTRACT_PIECE_INFORMATION]: extractPieceInfoJob,
-    [WorkerJobType.EVENT_DESTINATION]: eventDestinationJob,
     [WorkerJobType.EXECUTE_ACTION]: executeActionJob,
 }
 
-// Heavy handlers are loaded on first use so their dependency graph never enters worker memory unless
-// such a job actually runs. The agent run drags the whole ai-sdk cluster (@ai-sdk/*, ai, mcp) — by
-// far the largest weight — so deferring its evaluation keeps a flow-only worker's idle RSS small.
-const lazyLoaders: Partial<Record<WorkerJobType, () => Promise<JobHandler>>> = {
-    [WorkerJobType.EXECUTE_AGENT_RUN]: async () => (await import('./jobs/ee/agent/execute-agent-run')).executeAgentRunJob,
-}
+const lazyLoaders: Partial<Record<WorkerJobType, () => Promise<JobHandler>>> = {}
 
 const lazyCache = new Map<WorkerJobType, JobHandler>()

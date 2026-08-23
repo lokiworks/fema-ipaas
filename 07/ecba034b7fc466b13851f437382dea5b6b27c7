@@ -1,0 +1,3243 @@
+packages/pieces/core/crypto/.eslintrc.json
+  s_94864882421579::t_033095fa604271 30-33
+packages/web/src/app/builder/step-settings/step-settings-context.tsx
+  s_94864882421579::t_b71ed716e0001a 6-7
+  s_94864882421579::t_6ce9be1c21ece3 5
+.agents/skills/piece-builder/common-patterns.md
+  s_94864882421579::t_033095fa604271 5,8,80-81,218
+packages/server/api/src/app/authentication/lib/disposable-email.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/flows/flow/flow.service.ts
+  s_94864882421579::t_033095fa604271 1-3
+packages/server/api/src/app/trigger/trigger-events/trigger-event.service.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/core/date-helper/src/lib/output-schemas.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/helper/logger/index.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/github/src/lib/actions/ai/update-repository.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/server/api/src/app/trigger/app-event-routing/app-event-routing.service.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/mysql/src/lib/actions/get-tables.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/forms/src/lib/actions/return-response.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/framework/src/lib/property/util.ts
+  s_94864882421579::t_033095fa604271 5-6
+packages/server/api/src/app/flags/theme.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/math-helper/README.md
+  s_94864882421579::t_033095fa604271 5
+packages/server/engine/src/lib/handler/context/engine-constants.ts
+  s_94864882421579::t_b71ed716e0001a 2
+  s_94864882421579::t_deb0889a8062e1 1,3
+packages/pieces/core/csv/package.json
+  s_94864882421579::t_033095fa604271 2,7-8,13-14
+packages/pieces/community/slack/src/lib/actions/delete-scheduled-message.action.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/subflows/src/index.ts
+  s_94864882421579::t_033095fa604271 1,6
+benchmark/setup-math.sh
+  s_94864882421579::t_a11a3a9c6849df 11
+  s_94864882421579::t_033095fa604271 32,44,56
+packages/server/api/src/app/helper/pagination/pagination-utils.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/slack/src/lib/actions/archive-channel.action.ts
+  s_94864882421579::t_033095fa604271 2
+packages/server/api/src/app/file/signed-file-transport.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/core/text-helper/src/lib/actions/json-to-ascii-table.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/schedule/src/lib/triggers/cron-expression.trigger.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/test/integration/flows/flow-run/mark-parent-run-cross-tenant.test.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/community/github/src/lib/actions/ai/list-releases.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/core/file-helper/src/lib/actions/check-file-type.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/test/helpers/mocks/authn.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/slack/src/lib/actions/get-group-by-handle.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/data-mapper/vitest.config.ts
+  s_94864882421579::t_033095fa604271 13-15
+packages/pieces/core/file-helper/src/lib/actions/zip-files.ts
+  s_94864882421579::t_033095fa604271 6
+packages/pieces/core/math-helper/src/lib/output-schemas.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/github/src/lib/actions/lock-issue.ts
+  s_94864882421579::t_033095fa604271 2,4
+packages/pieces/core/text-helper/test/slugify.test.ts
+  s_94864882421579::t_033095fa604271 4
+.agents/skills/profile-worker-memory/SKILL.md
+  s_94864882421579::t_033095fa604271 72-73
+packages/server/api/src/app/trigger/dedupe-service.ts
+  s_94864882421579::t_b71ed716e0001a 3
+  s_94864882421579::t_033095fa604271 2
+packages/server/api/test/unit/app/flows/flow-version/flow-version.service.test.ts
+  s_94864882421579::t_033095fa604271 9-10,85,115
+packages/server/engine/src/lib/variables/props-resolver.ts
+  s_94864882421579::t_b71ed716e0001a 1-4
+packages/server/api/src/app/workers/migrations/remove-rate-limit-queue.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/trigger/trigger-events/trigger-event-controller.ts
+  s_94864882421579::t_033095fa604271 6
+packages/server/api/src/app/file/files-service.ts
+  s_94864882421579::t_033095fa604271 2-3
+packages/server/api/src/app/core/security/authorization/fastify-security.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/web/src/app/builder/piece-properties/array-property-in-inline-item-mode.tsx
+  s_94864882421579::t_b71ed716e0001a 1-2
+packages/server/engine/src/lib/handler/piece-executor.ts
+  s_94864882421579::t_b71ed716e0001a 2
+  s_94864882421579::t_554a8fe0da9f2d 1,3
+packages/web/src/app/components/flow-actions-menu.tsx
+  s_94864882421579::t_b71ed716e0001a 1-2
+packages/core/execution/src/lib/engine/execution-errors.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/core/security/v2/authz/authorize.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/core/smtp/README.md
+  s_94864882421579::t_033095fa604271 5
+packages/server/api/src/app/workers/job-queue/job-queue.ts
+  s_94864882421579::t_033095fa604271 1-3
+packages/server/api/src/app/pieces/piece-bundle.ts
+  s_94864882421579::t_033095fa604271 1-3
+packages/web/src/app/components/project-avatar.tsx
+  s_94864882421579::t_b71ed716e0001a 1
+brain/knowledge/engineering/architecture-spine.md
+  s_94864882421579::t_033095fa604271 16,20,24
+packages/pieces/core/text-helper/src/lib/actions/extract-from-html.ts
+  s_94864882421579::t_033095fa604271 1
+packages/web/src/app/builder/piece-properties/text-input-with-mentions/text-input-utils.ts
+  s_94864882421579::t_b71ed716e0001a 2
+  s_94864882421579::t_e628e32e2f56ba 1,3
+packages/pieces/core/approval/src/index.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/cli/src/lib/commands/create-piece.ts
+  s_94864882421579::t_033095fa604271 70-73,145-148,173,221
+packages/server/api/src/app/project/project.controller.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/helper/pagination/paginator.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/crypto/test/rsa-signature.test.ts
+  s_94864882421579::t_033095fa604271 4
+packages/pieces/community/slack/src/lib/actions/set-channel-topic-ai.ts
+  s_94864882421579::t_033095fa604271 2
+packages/pieces/core/manual-trigger/package.json
+  s_94864882421579::t_033095fa604271 2,8-11
+packages/core/execution/src/lib/flows/folders/folder-requests.ts
+  s_94864882421579::t_033095fa604271 2
+packages/core/shared/src/lib/core/authentication/user-identity.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/framework/src/lib/property/input/markdown-property.ts
+  s_94864882421579::t_033095fa604271 4
+packages/server/api/src/app/workers/migrations/refill-polling-jobs.ts
+  s_94864882421579::t_033095fa604271 1
+packages/core/shared/src/lib/automation/pieces/utils.ts
+  s_94864882421579::t_3878ceac85ea54 14-15,18,20-21
+  s_94864882421579::t_033095fa604271 1,4,6,27-28
+packages/pieces/core/delay/src/index.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/community/github/src/lib/actions/ai/list-starred-repositories.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/community/github/.eslintrc.json
+  s_94864882421579::t_033095fa604271 36-39
+packages/server/api/src/app/authentication/authentication-utils.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/core/xml/src/index.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/core/shared/src/lib/core/flag/flag.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/test/integration/webhooks/webhook-handshake-double-consume.test.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/variable/variable-worker.controller.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/core/security/oidc/oidc-key-manager.ts
+  s_94864882421579::t_033095fa604271 3
+packages/pieces/core/sftp/src/lib/actions/create-file.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/test/integration/pieces/piece-bundle.test.ts
+  s_94864882421579::t_033095fa604271 1-2,40,47,55
+packages/server/api/test/integration/flows/flow/flow-lifecycle-events.test.ts
+  s_94864882421579::t_033095fa604271 1,18,314,376
+packages/server/api/test/unit/app/authentication/verify-principal.test.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/flows/pre-warm-workers.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/community/github/src/lib/actions/ai/list-assignees.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/server/api/src/app/flows/step-run/sample-data.service.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/common/.eslintrc.json
+  s_94864882421579::t_033095fa604271 17-18
+packages/web/src/features/automations/components/automations-empty-state.tsx
+  s_94864882421579::t_b71ed716e0001a 1-2
+packages/core/execution/src/lib/flow-run/execution/execution-journal.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/rabbitmq/src/index.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/authentication/otp/otp-entity.ts
+  s_94864882421579::t_033095fa604271 1
+packages/core/execution/src/lib/flows/triggers/trigger-events/trigger-events-dto.ts
+  s_94864882421579::t_033095fa604271 1,3-4
+packages/server/api/src/app/workers/job-queue/interceptors/rate-limiter-interceptor.ts
+  s_94864882421579::t_033095fa604271 1-3
+packages/pieces/community/slack/src/lib/actions/search-all.action.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/crypto/src/lib/actions/base64-decode.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/math-helper/test/math-helper.test.ts
+  s_94864882421579::t_033095fa604271 9
+packages/pieces/core/store/src/lib/actions/store-append-action.ts
+  s_94864882421579::t_033095fa604271 8,11-12
+packages/pieces/community/rabbitmq/src/lib/triggers/message-received.ts
+  s_94864882421579::t_033095fa604271 7-8
+packages/pieces/community/slack/src/lib/triggers/new-command-in-direct-message.ts
+  s_94864882421579::t_033095fa604271 5
+packages/cli/README.md
+  s_94864882421579::t_033095fa604271 1,6,19,33
+packages/core/execution/AGENTS.md
+  s_94864882421579::t_033095fa604271 1,7,14
+packages/server/api/test/integration/flows/flow-run/run-logs-file-fk.test.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/test/integration/flows/flow-run/retry-flow-run.test.ts
+  s_94864882421579::t_033095fa604271 1
+brain/knowledge/data-storage-observability/file-storage.md
+  s_94864882421579::t_033095fa604271 36
+packages/server/api/src/app/webhooks/webhook-request-converter.ts
+  s_94864882421579::t_b71ed716e0001a 3
+packages/pieces/community/slack/src/lib/actions/list-users.ai.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/github/src/lib/actions/ai/get-reference.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/community/github/src/lib/actions/ai/create-issue-comment-ai.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/server/api/src/app/workers/job-queue/job-interceptor.ts
+  s_94864882421579::t_033095fa604271 1
+.agents/skills/piece-builder/action-patterns.md
+  s_94864882421579::t_033095fa604271 8-9
+brain/knowledge/ai-intelligence/mcp-server.md
+  s_94864882421579::t_033095fa604271 20
+packages/pieces/framework/test/auth-property-for-value.test.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/http/src/lib/common/props.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/community/github/src/lib/actions/ai/update-label.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/server/api/src/app/user-invitations/user-invitation.module.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/engine/src/lib/handler/router-executor.ts
+  s_94864882421579::t_b71ed716e0001a 1-3
+brain/knowledge/pieces-engine/index.md
+  s_94864882421579::t_033095fa604271 11,28,32,69
+packages/core/shared/src/lib/authentication/otp/otp-model.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/helper/audit-events.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/template/template.controller.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/core/schedule/src/lib/triggers/every-x-minutes.trigger.ts
+  s_94864882421579::t_033095fa604271 5
+packages/pieces/community/slack/src/lib/actions/list-user-groups.ai.ts
+  s_94864882421579::t_033095fa604271 2
+packages/pieces/core/crypto/src/lib/actions/rsa-signature.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/connections/package.json
+  s_94864882421579::t_033095fa604271 2,12-15
+packages/pieces/core/schedule/.eslintrc.json
+  s_94864882421579::t_033095fa604271 30-33
+packages/pieces/community/github/src/lib/actions/ai/list-organization-repositories.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/core/data-summarizer/vitest.config.ts
+  s_94864882421579::t_033095fa604271 13-15
+packages/server/api/src/app/flows/flow-run/flow-run-hooks.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/trigger/trigger-source/trigger-utils.ts
+  s_94864882421579::t_b71ed716e0001a 2
+  s_94864882421579::t_033095fa604271 1,3
+packages/server/api/src/app/webhooks/webhook-handshake.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/test/integration/authentication/passwordless-authn.test.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/web/src/app/builder/step-settings/code-settings/code-editor.tsx
+  s_94864882421579::t_b71ed716e0001a 3-4
+packages/server/api/src/assets/prompts/guides/error_handling.md
+  s_94864882421579::t_033095fa604271 12
+packages/server/api/src/app/app-connection/app-connection-service/oauth2/services/cloud-oauth2-service.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/project/project-side-effects.ts
+  s_94864882421579::t_b71ed716e0001a 3
+  s_94864882421579::t_033095fa604271 1-2
+brain/knowledge/flows-execution/flow-runs.md
+  s_94864882421579::t_033095fa604271 34
+packages/pieces/core/connections/.eslintrc.json
+  s_94864882421579::t_033095fa604271 30-33
+packages/server/api/src/app/authentication/lib/turnstile.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/community/github/src/lib/actions/ai/list-pull-request-commits.ts
+  s_94864882421579::t_033095fa604271 1,4
+.github/workflows/continuous-delivery-canary.yml
+  s_94864882421579::t_033095fa604271 76
+packages/pieces/core/text-helper/test/concat.test.ts
+  s_94864882421579::t_033095fa604271 4
+packages/server/api/src/app/authentication/authentication.controller.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/file/file.service.ts
+  s_94864882421579::t_033095fa604271 3-4
+packages/pieces/core/subflows/src/lib/actions/respond.ts
+  s_94864882421579::t_033095fa604271 1,3-4
+packages/server/api/test/integration/flows/folder/folder-list.test.ts
+  s_94864882421579::t_033095fa604271 1
+packages/web/src/app/builder/flow-canvas/edges/add-button.tsx
+  s_94864882421579::t_b71ed716e0001a 2
+packages/server/api/test/helpers/flow-generator.ts
+  s_94864882421579::t_033095fa604271 1-2,76,92
+packages/core/execution/src/lib/workers/index.ts
+  s_94864882421579::t_033095fa604271 2
+packages/pieces/community/mysql/package.json
+  s_94864882421579::t_033095fa604271 2,7-8,11-12
+packages/pieces/core/math-helper/src/lib/actions/modulo.ts
+  s_94864882421579::t_033095fa604271 5
+brain/knowledge/engineering/server-module-anatomy.md
+  s_94864882421579::t_033095fa604271 107
+packages/core/piece-types/.eslintrc.json
+  s_94864882421579::t_033095fa604271 14-17
+packages/pieces/core/xml/package.json
+  s_94864882421579::t_033095fa604271 2,7-8,11-12
+packages/pieces/core/file-helper/src/lib/actions/get-file-name.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/csv/test/json-to-csv-output-schema.test.ts
+  s_94864882421579::t_033095fa604271 3
+packages/pieces/core/delay/.eslintrc.json
+  s_94864882421579::t_033095fa604271 30-33
+packages/pieces/core/subflows/src/lib/triggers/callable-flow.ts
+  s_94864882421579::t_033095fa604271 8
+packages/pieces/core/http/src/lib/actions/send-http-request-action.ts
+  s_94864882421579::t_033095fa604271 9,16-17
+packages/pieces/framework/src/lib/test/index.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/store-entry/store-entry.service.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/community/github/src/lib/actions/find-branch.ts
+  s_94864882421579::t_033095fa604271 1,4
+brain/knowledge/flows-execution/subflows.md
+  s_94864882421579::t_033095fa604271 7
+packages/server/api/src/app/helper/network-utils.ts
+  s_94864882421579::t_033095fa604271 3
+packages/pieces/core/tags/README.md
+  s_94864882421579::t_033095fa604271 5
+packages/pieces/core/date-helper/test/add-subtract-date.test.ts
+  s_94864882421579::t_033095fa604271 4
+packages/core/shared/src/lib/core/federated-authn/index.ts
+  s_94864882421579::t_033095fa604271 1
+packages/core/piece-types/src/lib/flows.ts
+  s_94864882421579::t_033095fa604271 3
+packages/pieces/community/github/src/lib/actions/create-commit-comment.ts
+  s_94864882421579::t_033095fa604271 2,4
+packages/pieces/community/slack/src/lib/actions/list-channels.ts
+  s_94864882421579::t_033095fa604271 2
+packages/pieces/community/slack/src/lib/actions/get-reactions.ai.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/delay/src/lib/actions/delay-for-action.ts
+  s_94864882421579::t_033095fa604271 4-5,8
+packages/pieces/core/csv/vitest.config.ts
+  s_94864882421579::t_033095fa604271 13-15
+packages/server/api/src/app/flows/flow-version/flow-version-entity.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/helper/pubsub.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/text-helper/src/lib/actions/split.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/math-helper/vitest.config.ts
+  s_94864882421579::t_033095fa604271 13-15
+packages/core/execution/src/lib/flow-run/dto/list-flow-runs-request.ts
+  s_94864882421579::t_033095fa604271 2-3
+packages/server/api/src/app/database/seeds/dev-seeds.ts
+  s_94864882421579::t_033095fa604271 1
+packages/cli/src/lib/commands/benchmark.ts
+  s_94864882421579::t_033095fa604271 6,908-909
+packages/pieces/core/math-helper/src/lib/actions/multiplication.ts
+  s_94864882421579::t_033095fa604271 5
+packages/pieces/community/slack/src/lib/actions/find-user-by-email.ts
+  s_94864882421579::t_033095fa604271 2
+packages/core/execution/src/index.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/sftp/src/index.ts
+  s_94864882421579::t_033095fa604271 3-4
+packages/pieces/core/http/test/get-with-body.test.ts
+  s_94864882421579::t_033095fa604271 4,9
+packages/server/api/test/integration/flows/flow-run/resume-flow-run.test.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/user-invitations/user-invitation.entity.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/test/unit/app/app-connection/oauth2-util.test.ts
+  s_94864882421579::t_033095fa604271 1
+packages/web/src/app/builder/shortcuts.ts
+  s_94864882421579::t_b71ed716e0001a 1
+packages/server/api/src/app/database/redis/sentinel-redis.ts
+  s_94864882421579::t_033095fa604271 2
+packages/server/api/test/integration/pieces/piece-metadata.test.ts
+  s_94864882421579::t_033095fa604271 1-3,179,187,191,209,217,228,272,283,347,652,660
+packages/core/shared/package.json
+  s_94864882421579::t_033095fa604271 2,9-12,29
+packages/pieces/core/text-helper/src/lib/actions/strip-html.ts
+  s_94864882421579::t_033095fa604271 2
+CLAUDE.md
+  s_94864882421579::t_033095fa604271 17,49-51,58,66
+packages/server/engine/src/lib/handler/code-executor.ts
+  s_94864882421579::t_b71ed716e0001a 3
+  s_94864882421579::t_39de62af95a99d 2,4
+packages/server/api/src/app/flows/flow-run/waitpoint/waitpoint-entity.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/schedule/src/lib/triggers/every-hour.trigger.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/community/slack/src/lib/actions/list-files.ai.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/test/integration/flows/flow/flow-operations.test.ts
+  s_94864882421579::t_033095fa604271 13,230,249,263,419,441,461
+packages/pieces/community/rabbitmq/README.md
+  s_94864882421579::t_033095fa604271 5
+packages/pieces/community/slack/.eslintrc.json
+  s_94864882421579::t_033095fa604271 30-33
+packages/pieces/core/math-helper/src/lib/actions/division.ts
+  s_94864882421579::t_033095fa604271 5-6
+packages/pieces/core/file-helper/src/lib/actions/create-file.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/github/src/lib/actions/ai/unstar-repository.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/server/api/test/integration/webhooks/webhook-oversized-file.test.ts
+  s_94864882421579::t_033095fa604271 4
+packages/server/api/src/app/webhooks/webhook-controller.ts
+  s_94864882421579::t_033095fa604271 2,7
+packages/server/api/src/app/workers/platform-queue-migration.service.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/user/user-service.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/web/src/features/pieces/utils/piece-selector-utils.ts
+  s_94864882421579::t_b71ed716e0001a 6-10,30,349,354
+  s_94864882421579::t_f3664f45b9dae4 5
+packages/pieces/core/schedule/src/lib/triggers/every-month.trigger.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/web/tsconfig.app.json
+  s_94864882421579::t_c26a0e222a6eca 33-40
+  s_94864882421579::t_b1d3c705d5f897 15,18
+packages/pieces/core/tags/src/index.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/helper/multipart-body.ts
+  s_94864882421579::t_b71ed716e0001a 2
+.agents/skills/piece-output-schema/capture-recipes.md
+  s_94864882421579::t_033095fa604271 84-85
+packages/pieces/core/math-helper/.eslintrc.json
+  s_94864882421579::t_033095fa604271 30-33
+packages/pieces/core/text-helper/test/markdown-to-html.test.ts
+  s_94864882421579::t_033095fa604271 4
+packages/pieces/community/github/src/lib/actions/ai/create-or-update-file.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/framework/src/lib/context/index.ts
+  s_94864882421579::t_033095fa604271 12-14,27
+brain/knowledge/flows-execution/human-input.md
+  s_94864882421579::t_033095fa604271 7
+packages/core/shared/src/lib/core/file/index.ts
+  s_94864882421579::t_033095fa604271 1
+packages/core/shared/src/lib/management/project/project-requests.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/core/security/authorization/common.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/flows/flow/flow-service-side-effects.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/test/helpers/test-context.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/web/src/app/connections/create-edit-connection-dialog.tsx
+  s_94864882421579::t_b71ed716e0001a 8
+  s_94864882421579::t_ce82a95d38fc1b 7,16
+packages/server/api/src/app/flows/flow/flow.jobs.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/helper/user-identity-helper.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/delay/src/lib/output-schemas.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/slack/src/lib/actions/close-dm.action.ts
+  s_94864882421579::t_033095fa604271 2
+packages/server/api/src/app/flows/flow/human-input/form-controller.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/engine/src/lib/operations/auth-refresh.operation.ts
+  s_94864882421579::t_b71ed716e0001a 2
+  s_94864882421579::t_85ed03f1c4b5e7 1,9
+packages/server/api/src/app/pieces/metadata/utils/piece-searching.ts
+  s_94864882421579::t_033095fa604271 1,6
+brain/knowledge/engineering/ci-pr-review-hygiene.md
+  s_94864882421579::t_033095fa604271 18
+packages/pieces/community/github/src/lib/actions/ai/get-authenticated-user.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/core/date-helper/test/output-schemas.test.ts
+  s_94864882421579::t_033095fa604271 7
+packages/server/api/test/integration/workers/project-worker.test.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/cli/src/lib/commands/migrate-piece.ts
+  s_94864882421579::t_033095fa604271 17,45
+packages/core/shared/src/lib/automation/trigger/index.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/date-helper/src/index.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/core/date-helper/test/date-difference.test.ts
+  s_94864882421579::t_033095fa604271 4
+packages/core/shared/README.md
+  s_94864882421579::t_033095fa604271 5
+packages/pieces/core/math-helper/package.json
+  s_94864882421579::t_033095fa604271 2,14-15,17-18
+packages/pieces/core/date-helper/vitest.config.ts
+  s_94864882421579::t_033095fa604271 13-15
+packages/server/api/test/integration/file/file-cleanup.test.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/connections/README.md
+  s_94864882421579::t_033095fa604271 5
+packages/pieces/community/github/src/lib/actions/ai/list-pull-request-files.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/core/schedule/test/every-x-minutes.test.ts
+  s_94864882421579::t_033095fa604271 3
+packages/pieces/community/github/src/lib/trigger/new-release.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/server/api/test/integration/app-connection/app-connection-events.test.ts
+  s_94864882421579::t_033095fa604271 1,7
+packages/core/execution/src/lib/flows/operations/index.ts
+  s_94864882421579::t_033095fa604271 2-3
+packages/pieces/core/csv/src/index.ts
+  s_94864882421579::t_033095fa604271 1-2
+.github/workflows/release-cli.yml
+  s_94864882421579::t_033095fa604271 29
+packages/pieces/community/github/src/lib/actions/ai/create-milestone.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/community/github/src/lib/actions/create-discussion-comment.ts
+  s_94864882421579::t_033095fa604271 2,4
+packages/pieces/community/github/src/lib/actions/update-issue.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/server/api/src/app/app-connection/app-connection.entity.ts
+  s_94864882421579::t_033095fa604271 6
+packages/pieces/community/slack/src/lib/common/props.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/postgres/src/lib/actions/get-tables.ts
+  s_94864882421579::t_033095fa604271 1
+packages/core/shared/src/lib/management/platform/platform.request.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/github/src/lib/actions/create-branch.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/core/text-helper/test/split.test.ts
+  s_94864882421579::t_033095fa604271 4
+packages/server/api/src/app/flows/flow-version/flow-version-validator-util.ts
+  s_94864882421579::t_033095fa604271 5,7
+  s_94864882421579::t_b71ed716e0001a 6
+packages/server/api/src/app/helper/domain-helper.ts
+  s_94864882421579::t_033095fa604271 1
+packages/core/piece-types/src/lib/ai-providers.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/manual-trigger/.eslintrc.json
+  s_94864882421579::t_033095fa604271 30-33
+packages/server/api/src/app/flows/flow-run/flow-run-entity.ts
+  s_94864882421579::t_033095fa604271 8
+packages/pieces/core/webhook/src/index.ts
+  s_94864882421579::t_033095fa604271 1,3
+packages/pieces/community/slack/src/lib/actions/invite-user-to-channel.ts
+  s_94864882421579::t_033095fa604271 2
+packages/pieces/core/crypto/README.md
+  s_94864882421579::t_033095fa604271 5
+packages/pieces/community/slack/src/lib/actions/mark-conversation-read.action.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/pieces/piece-sync-service.ts
+  s_94864882421579::t_033095fa604271 1,3-4
+  s_94864882421579::t_b71ed716e0001a 2
+packages/pieces/core/forms/package.json
+  s_94864882421579::t_033095fa604271 2,12-13,16-17
+packages/pieces/core/connections/src/index.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/user/platform/platform-user-controller.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/web/src/app/builder/step-settings/update-piece-version-dialog/update-piece-version-utils.tsx
+  s_94864882421579::t_b71ed716e0001a 2
+  s_94864882421579::t_6057ad2199b166 1,10
+packages/server/engine/src/lib/handler/context/test-execution-context.ts
+  s_94864882421579::t_b71ed716e0001a 2
+  s_94864882421579::t_bea6cfc052f357 1,3
+packages/pieces/community/slack/src/lib/actions/create-channel-ai.ts
+  s_94864882421579::t_033095fa604271 2
+packages/web/src/app/builder/piece-properties/auto-form-field-wrapper.tsx
+  s_94864882421579::t_b71ed716e0001a 6
+  s_94864882421579::t_07a2b62838bac8 5
+packages/pieces/core/sftp/src/lib/actions/delete-file.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/data-summarizer/README.md
+  s_94864882421579::t_033095fa604271 5
+packages/pieces/community/github/src/lib/actions/ai/create-pull-request-review-comment-ai.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/community/slack/src/lib/triggers/new-user.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/slack/src/lib/triggers/new-mention.ts
+  s_94864882421579::t_033095fa604271 5
+packages/core/shared/src/lib/management/platform/concurrency-pool.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/file-helper/test/read-file.test.ts
+  s_94864882421579::t_033095fa604271 4
+packages/web/src/app/builder/data-display/build-step-properties-snapshot.ts
+  s_94864882421579::t_b71ed716e0001a 2
+  s_94864882421579::t_24368a6f3a1970 1
+packages/server/api/src/app/pieces/metadata/utils/piece-cache-utils.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/cli/package.json
+  s_94864882421579::t_033095fa604271 2,15-17
+packages/pieces/community/slack/src/lib/actions/request-action-direct-message.ts
+  s_94864882421579::t_033095fa604271 1,3
+packages/core/execution/tsconfig.json
+  s_94864882421579::t_033095fa604271 14,17
+packages/pieces/core/sftp/src/lib/actions/list-files.ts
+  s_94864882421579::t_033095fa604271 3
+packages/server/api/test/integration/project/project.test.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/core/csv/.eslintrc.json
+  s_94864882421579::t_033095fa604271 30-33
+packages/core/shared/src/lib/authentication/local-authn/index.ts
+  s_94864882421579::t_033095fa604271 1
+packages/core/shared/src/lib/automation/variable/dto/upsert-variable-request.ts
+  s_94864882421579::t_033095fa604271 1
+package.json
+  s_94864882421579::t_033095fa604271 18,22-24,31-32,34-35
+  s_94864882421579::t_beb13a662a5248 2
+packages/pieces/community/slack/src/lib/actions/get-message-permalink.action.ts
+  s_94864882421579::t_033095fa604271 1
+packages/core/shared/test/formula/function-evaluator.test.ts
+  s_94864882421579::t_033095fa604271 1
+packages/core/formula/src/lib/function-implementations.ts
+  s_94864882421579::t_033095fa604271 25
+packages/web/src/features/projects/components/ap-project-display.tsx
+  s_94864882421579::t_b71ed716e0001a 1-2
+packages/server/api/src/app/project/project-hooks.ts
+  s_94864882421579::t_033095fa604271 1
+brain/knowledge/decisions/000028-piece-tarballs-are-never-mirrored-into-our-own-s3.md
+  s_94864882421579::t_033095fa604271 15
+packages/pieces/community/slack/src/lib/actions/delete-message.action.ts
+  s_94864882421579::t_033095fa604271 1
+packages/web/src/app/builder/data-selector/index.tsx
+  s_94864882421579::t_b71ed716e0001a 2
+  s_94864882421579::t_2232345dab0b5d 1,9
+packages/pieces/framework/src/lib/trigger/trigger.ts
+  s_94864882421579::t_033095fa604271 7-8
+packages/pieces/community/slack/src/lib/triggers/new-direct-message.ts
+  s_94864882421579::t_033095fa604271 1
+packages/core/execution/src/lib/flows/note.ts
+  s_94864882421579::t_033095fa604271 2
+packages/pieces/core/text-helper/src/index.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/core/data-summarizer/src/index.ts
+  s_94864882421579::t_033095fa604271 1,6
+packages/server/AGENTS.md
+  s_94864882421579::t_033095fa604271 69,85
+packages/server/api/src/app/file/file.entity.ts
+  s_94864882421579::t_033095fa604271 1
+packages/core/execution/src/lib/flows/operations/update-action.ts
+  s_94864882421579::t_033095fa604271 2
+packages/pieces/core/text-helper/test/html-to-markdown.test.ts
+  s_94864882421579::t_033095fa604271 4
+packages/core/execution/src/lib/flows/operations/add-action-util.ts
+  s_94864882421579::t_033095fa604271 2,23
+packages/pieces/community/slack/src/lib/triggers/new-reaction-removed.ts
+  s_94864882421579::t_033095fa604271 5
+packages/pieces/community/rabbitmq/src/lib/actions/send-message-to-exchange.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/sftp/src/lib/triggers/new-modified-file.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/core/text-helper/src/lib/actions/replace.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/text-helper/test/find-all.test.ts
+  s_94864882421579::t_033095fa604271 4
+packages/pieces/community/github/src/lib/trigger/new-review-request.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/server/api/src/app/flows/flow/flow-publish-utils.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/workers/machine/machine-service.ts
+  s_94864882421579::t_033095fa604271 1-3
+packages/pieces/community/mysql/src/lib/output-schemas.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/framework/src/index.ts
+  s_94864882421579::t_033095fa604271 21-22,65,72
+packages/pieces/community/rabbitmq/src/lib/auth.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/app-connection/app-connection-service/connection-metadata.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/mysql/src/lib/actions/insert-row.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/date-helper/test/last-day-of-prior-month.test.ts
+  s_94864882421579::t_033095fa604271 4
+packages/pieces/community/slack/src/lib/actions/update-message.action.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/helper/system/system-props.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/core/schedule/vitest.config.ts
+  s_94864882421579::t_033095fa604271 13
+packages/pieces/core/sftp/README.md
+  s_94864882421579::t_033095fa604271 5
+packages/server/engine/src/lib/handler/loop-executor.ts
+  s_94864882421579::t_b71ed716e0001a 1-3
+packages/pieces/core/approval/test/create-approval-link.test.ts
+  s_94864882421579::t_033095fa604271 3
+packages/server/api/src/app/flows/flow-version/flow-version-backup.service.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/core/file-helper/src/lib/actions/change-file-encoding.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/test/integration/pieces/piece-sync-service.test.ts
+  s_94864882421579::t_033095fa604271 4
+packages/core/execution/src/lib/flows/util/flow-structure-util.ts
+  s_94864882421579::t_033095fa604271 1-2,8
+packages/pieces/community/github/src/lib/actions/ai/get-release.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/community/github/src/lib/actions/create-comment-on-a-issue.ts
+  s_94864882421579::t_033095fa604271 2,4
+packages/pieces/core/manual-trigger/src/lib/triggers/manual-trigger.ts
+  s_94864882421579::t_033095fa604271 2-3
+packages/pieces/community/slack/src/lib/actions/list-channel-members.ts
+  s_94864882421579::t_033095fa604271 2
+packages/server/api/src/app/project/project-service.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/platform/platform.utils.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/flows/flow-run/waitpoint/waitpoint-service.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/app-connection/app-connection-service/oauth2/services/credentials-oauth2-service.ts
+  s_94864882421579::t_b71ed716e0001a 2
+  s_94864882421579::t_033095fa604271 1,3-4
+packages/pieces/core/data-mapper/.eslintrc.json
+  s_94864882421579::t_033095fa604271 30-33
+packages/server/api/test/unit/app/authentication/generate-engine-token.test.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/file/file-compressor.ts
+  s_94864882421579::t_033095fa604271 3
+packages/pieces/core/manual-trigger/README.md
+  s_94864882421579::t_033095fa604271 5
+packages/server/api/src/app/helper/encryption.ts
+  s_94864882421579::t_033095fa604271 5
+packages/core/execution/src/lib/flows/triggers/trigger-events/trigger-event.ts
+  s_94864882421579::t_033095fa604271 2
+packages/pieces/community/github/src/lib/actions/ai/create-issue-ai.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/core/file-helper/test/create-file.test.ts
+  s_94864882421579::t_033095fa604271 4
+packages/server/api/src/app/trigger/trigger-run/trigger-run-stats.ts
+  s_94864882421579::t_033095fa604271 1-3
+packages/pieces/community/slack/src/lib/actions/send-ephemeral-message.action.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/github/src/lib/actions/ai/search-users.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/framework/src/lib/i18n.ts
+  s_94864882421579::t_033095fa604271 2-3
+packages/core/utils/AGENTS.md
+  s_94864882421579::t_033095fa604271 1,10
+packages/core/shared/src/lib/authentication/authn/access-control-list.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/authentication/user-identity/user-identity-entity.ts
+  s_94864882421579::t_033095fa604271 1
+packages/web/src/app/builder/step-settings/piece-settings/index.tsx
+  s_94864882421579::t_b71ed716e0001a 5-6,13
+packages/server/api/src/app/workers/job-queue/queue-dispatcher.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/web/src/features/pieces/utils/step-utils.tsx
+  s_94864882421579::t_b71ed716e0001a 6
+  s_94864882421579::t_f95c6e9212145e 5,16
+packages/web/src/features/connections/utils/utils.ts
+  s_94864882421579::t_b71ed716e0001a 9-10,17
+packages/pieces/community/github/src/lib/actions/ai/update-issue-ai.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/community/github/src/lib/actions/ai/list-pull-request-reviews.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/community/github/src/index.ts
+  s_94864882421579::t_033095fa604271 1-3
+packages/core/shared/src/lib/management/invitations/index.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/framework/README.md
+  s_94864882421579::t_033095fa604271 5
+packages/pieces/core/date-helper/src/lib/actions/get-current-date.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/crypto/package.json
+  s_94864882421579::t_033095fa604271 2,7-8,12-13
+packages/server/api/src/app/workers/payload-offloader.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/community/github/src/lib/actions/ai/list-issue-comments.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/server/api/src/app/core/security/v2/authz/projectIdExtractor.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/slack/src/lib/actions/get-channel-history.ts
+  s_94864882421579::t_033095fa604271 2
+packages/pieces/community/mysql/src/index.ts
+  s_94864882421579::t_033095fa604271 5-6
+packages/pieces/core/text-helper/src/lib/actions/markdown-to-html.ts
+  s_94864882421579::t_033095fa604271 1,3
+packages/server/api/test/unit/app/ai/providers/azure-provider.test.ts
+  s_94864882421579::t_033095fa604271 1,6
+packages/pieces/core/store/src/lib/actions/store-remove-from-list.ts
+  s_94864882421579::t_033095fa604271 8,10
+packages/pieces/core/store/src/lib/actions/common.ts
+  s_94864882421579::t_033095fa604271 1
+packages/core/shared/src/lib/automation/websocket/index.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/test/integration/workers/action-run-cancellation.test.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/community/github/src/lib/actions/ai/create-organization-repository.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/community/github/src/lib/actions/get-issue-information.ts
+  s_94864882421579::t_033095fa604271 2,4
+packages/server/api/test/integration/app-connection/oauth2-placeholder.test.ts
+  s_94864882421579::t_033095fa604271 1-3
+packages/pieces/community/github/src/lib/output-schemas.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/webhook/src/lib/actions/return-response-and-wait-for-next-webhook.ts
+  s_94864882421579::t_033095fa604271 6-7
+packages/pieces/community/github/src/lib/actions/ai/add-collaborator.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/community/slack/src/lib/actions/schedule-message.action.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/slack/src/lib/triggers/new-message-in-channel.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/sftp/src/lib/common.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/file-helper/.eslintrc.json
+  s_94864882421579::t_033095fa604271 30-33
+packages/server/api/src/app/store-entry/store-entry-entity.ts
+  s_94864882421579::t_033095fa604271 1
+packages/core/execution/.eslintrc.json
+  s_94864882421579::t_033095fa604271 14-17
+packages/pieces/core/csv/test/csv.test.ts
+  s_94864882421579::t_033095fa604271 7
+packages/server/api/src/app/flows/flow-run/run-timeline.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/core/execution/test/flow/cof-branches.test.ts
+  s_94864882421579::t_033095fa604271 72,428,488
+packages/pieces/core/text-helper/test/json-to-ascii-table.test.ts
+  s_94864882421579::t_033095fa604271 4
+packages/pieces/core/crypto/src/lib/actions/base64-encode.ts
+  s_94864882421579::t_033095fa604271 1
+packages/web/src/app/builder/data-selector/data-selector-node-content.tsx
+  s_94864882421579::t_b71ed716e0001a 1
+packages/pieces/core/crypto/src/lib/actions/hash-text.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/data-mapper/package.json
+  s_94864882421579::t_033095fa604271 2,13-16
+packages/pieces/core/file-helper/src/lib/actions/read-file.ts
+  s_94864882421579::t_033095fa604271 1
+packages/web/src/app/builder/flow-canvas/flow-drag-layer.tsx
+  s_94864882421579::t_b71ed716e0001a 13-18
+.agents/designs/project-replace-cli.md
+  s_94864882421579::t_033095fa604271 64
+packages/pieces/community/slack/src/lib/actions/find-user-by-handle.ts
+  s_94864882421579::t_033095fa604271 2
+packages/pieces/core/smtp/package.json
+  s_94864882421579::t_033095fa604271 2,12-13,16-17
+packages/pieces/community/slack/src/lib/triggers/new-reaction-added.ts
+  s_94864882421579::t_033095fa604271 5
+packages/pieces/core/data-summarizer/src/lib/actions/count-uniques.ts
+  s_94864882421579::t_033095fa604271 1,3
+packages/pieces/core/data-summarizer/.eslintrc.json
+  s_94864882421579::t_033095fa604271 30-33
+.claude/rules/safe-http.md
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/test/integration/user/platform-user-community.test.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/core/tags/package.json
+  s_94864882421579::t_033095fa604271 2,12-15
+packages/pieces/framework/src/lib/context/versioning.ts
+  s_94864882421579::t_033095fa604271 1
+packages/core/execution/src/lib/flows/flow.ts
+  s_94864882421579::t_033095fa604271 3-6
+packages/server/api/src/assets/prompts/guides/http_fallback.md
+  s_94864882421579::t_033095fa604271 3,72
+packages/server/api/test/integration/oidc/oidc-token.test.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/authentication/otp/lib/otp-generator.ts
+  s_94864882421579::t_033095fa604271 2
+packages/pieces/community/github/src/lib/actions/ai/update-pull-request.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/core/shared/src/lib/core/common/telemetry.ts
+  s_94864882421579::t_b71ed716e0001a 2
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/github/src/lib/common/auth-helpers.ts
+  s_94864882421579::t_033095fa604271 1-3
+packages/pieces/community/slack/src/lib/actions/search-messages.action.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/http/.eslintrc.json
+  s_94864882421579::t_033095fa604271 30-33
+brain/knowledge/pieces-engine/building-pieces.md
+  s_94864882421579::t_033095fa604271 20,23,29
+packages/pieces/core/text-helper/src/lib/actions/default-value.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/flows/step-run/sample-data.controller.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/postgres/src/lib/actions/run-query.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/date-helper/README.md
+  s_94864882421579::t_033095fa604271 5
+packages/server/api/src/app/helper/errors/catalog.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/helper/system-validator.ts
+  s_94864882421579::t_033095fa604271 2-3
+packages/core/shared/src/lib/automation/app-connection/dto/upsert-app-connection-request.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/github/src/lib/actions/ai/get-repository.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/server/api/src/app/helper/app-machine-cache.ts
+  s_94864882421579::t_033095fa604271 2-4
+packages/pieces/common/README.md
+  s_94864882421579::t_033095fa604271 5
+packages/server/api/src/app/trigger/trigger-events/trigger-event.entity.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/workers/machine/machine-cache.ts
+  s_94864882421579::t_033095fa604271 1-3
+.npmrc
+  s_94864882421579::t_a11a3a9c6849df 1
+packages/web/src/features/connections/hooks/app-connections-hooks.ts
+  s_94864882421579::t_b71ed716e0001a 5
+  s_94864882421579::t_ae424d42fe3e94 4,14
+packages/server/api/test/integration/platform/first-platform-provisioning.test.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/community/slack/src/lib/actions/find-channel.ts
+  s_94864882421579::t_033095fa604271 2
+packages/pieces/core/text-helper/test/replace.test.ts
+  s_94864882421579::t_033095fa604271 4
+packages/pieces/community/mysql/src/lib/actions/delete-row.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/github/src/lib/actions/ai/request-pull-request-reviewers.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/core/csv/src/lib/actions/convert-json-to-csv.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/slack/src/lib/actions/request-action-message.ts
+  s_94864882421579::t_033095fa604271 1,3
+packages/pieces/core/xml/test/convert-json-to-xml.test.ts
+  s_94864882421579::t_033095fa604271 4
+packages/pieces/community/slack/src/lib/actions/send-message-action.ts
+  s_94864882421579::t_033095fa604271 1
+packages/core/shared/src/lib/automation/app-connection/dto/read-app-connection-request.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/slack/src/lib/actions/list-user-conversations.ts
+  s_94864882421579::t_033095fa604271 2
+packages/server/api/src/app/flows/flow/flow-execution-cache.ts
+  s_94864882421579::t_033095fa604271 1-3
+packages/pieces/community/slack/src/lib/actions/upload-file.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/flows/flow-version/flow-version-side-effects.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/core/shared/src/lib/management/project/project.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/data-summarizer/test/data-summarizer.test.ts
+  s_94864882421579::t_033095fa604271 7
+packages/server/api/src/app/flows/flow-run/waitpoint/resume-controller.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/test/integration/system-jobs/system-jobs.test.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/github/src/lib/actions/ai/list-repository-issues.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/server/api/src/app/trigger/trigger-source/trigger-source-service.ts
+  s_94864882421579::t_033095fa604271 1-2
+.github/workflows/agent-evals.yml
+  s_94864882421579::t_033095fa604271 64
+.agents/skills/piece-output-schema/SKILL.md
+  s_94864882421579::t_033095fa604271 69
+packages/pieces/core/text-helper/src/lib/actions/find-all.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/test/unit/app/authentication/turnstile.test.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/engine/src/lib/helper/flow-run-progress-reporter.ts
+  s_94864882421579::t_b71ed716e0001a 5
+  s_94864882421579::t_39a1724823917e 4,6
+packages/server/api/src/app/workers/job/index.ts
+  s_94864882421579::t_033095fa604271 7
+packages/server/api/test/unit/app/ai/providers/google-provider.test.ts
+  s_94864882421579::t_033095fa604271 1-2,7
+packages/web/src/app/builder/flow-canvas/nodes/note-node/index.tsx
+  s_94864882421579::t_b71ed716e0001a 2
+packages/server/api/src/app/template/template-validator.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/community/github/src/lib/actions/ai/search-repositories.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/core/data-summarizer/src/lib/actions/calculate-sum.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/delay/package.json
+  s_94864882421579::t_033095fa604271 2,12-13,16-17
+packages/server/api/test/integration/workers/job-broker-seed-cause.test.ts
+  s_94864882421579::t_033095fa604271 1-2
+smoke-test/verify-s3.sh
+  s_94864882421579::t_a11a3a9c6849df 30
+packages/server/api/src/app/helper/email/email-service.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/engine/src/lib/piece-context/store.ts
+  s_94864882421579::t_b71ed716e0001a 3
+  s_94864882421579::t_58cdcf0ae14825 2,4
+packages/pieces/community/github/src/lib/actions/ai/get-pull-request.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/community/github/src/lib/actions/unlock-issue.ts
+  s_94864882421579::t_033095fa604271 2,4
+packages/server/api/src/app/flows/flow-run/flow-run-side-effects.ts
+  s_94864882421579::t_033095fa604271 5
+packages/server/api/src/app/database/redis/index.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/flags/flag.service.ts
+  s_94864882421579::t_033095fa604271 1-3
+packages/server/api/src/app/workers/migrations/unify-old-queues-to-one.ts
+  s_94864882421579::t_033095fa604271 1-2
+.agents/skills/piece-builder/SKILL.md
+  s_94864882421579::t_033095fa604271 85,92-93,151,162-164
+packages/pieces/community/github/src/lib/actions/ai/remove-assignees-from-issue.ts
+  s_94864882421579::t_033095fa604271 1,4
+brain/knowledge/pieces-engine/pieces.md
+  s_94864882421579::t_033095fa604271 7
+packages/server/api/src/app/core/security/v2/authn/authentication-middleware.ts
+  s_94864882421579::t_033095fa604271 1
+packages/core/execution/package.json
+  s_94864882421579::t_033095fa604271 2,12-13
+packages/pieces/community/github/src/lib/actions/ai/create-repository.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/core/date-helper/src/lib/actions/date-difference.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/flows/flow-run/engine-run-callback-service.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/web/src/app/builder/piece-properties/properties-utils.tsx
+  s_94864882421579::t_b71ed716e0001a 5-7
+packages/web/vite.config.mts
+  s_94864882421579::t_c26a0e222a6eca 104,108,112,116,120,124
+packages/pieces/core/subflows/src/lib/actions/call-flow.ts
+  s_94864882421579::t_033095fa604271 6-7
+packages/core/shared/test/core/common/utils/object-utils.test.ts
+  s_94864882421579::t_033095fa604271 12
+packages/pieces/community/slack/src/lib/actions/update-user-groups.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/test/unit/app/flows/flow/flow-publish-utils.test.ts
+  s_94864882421579::t_033095fa604271 1,9,57-58
+packages/server/engine/src/lib/core/piece/piece-protocol.ts
+  s_94864882421579::t_b71ed716e0001a 2
+  s_94864882421579::t_cbeeabdc546509 1,3
+packages/pieces/community/slack/src/lib/actions/unarchive-channel.action.ts
+  s_94864882421579::t_033095fa604271 2
+brain/knowledge/connections-auth/secret-managers.md
+  s_94864882421579::t_033095fa604271 21
+packages/pieces/core/file-helper/vitest.config.ts
+  s_94864882421579::t_033095fa604271 13-15
+packages/pieces/framework/src/lib/property/input/index.ts
+  s_94864882421579::t_033095fa604271 18
+packages/pieces/community/postgres/README.md
+  s_94864882421579::t_033095fa604271 5
+packages/server/api/src/app/flows/flow-version/migrations/expression-rewriter.ts
+  s_94864882421579::t_033095fa604271 1
+packages/core/utils/.eslintrc.json
+  s_94864882421579::t_033095fa604271 14-17
+packages/pieces/community/github/src/lib/actions/ai/create-pull-request.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/community/github/src/lib/actions/ai/create-label.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/community/slack/src/lib/actions/set-user-status.ts
+  s_94864882421579::t_033095fa604271 2,5
+packages/pieces/community/slack/src/lib/actions/leave-channel.action.ts
+  s_94864882421579::t_033095fa604271 2
+packages/pieces/core/http/vitest.config.ts
+  s_94864882421579::t_033095fa604271 13-15
+packages/server/api/src/app/workers/migrations/delete-legacy-redis-keys.ts
+  s_94864882421579::t_033095fa604271 2
+packages/pieces/community/github/src/lib/actions/create-gist.ts
+  s_94864882421579::t_033095fa604271 1,5
+packages/core/execution/src/lib/workers/job-data.ts
+  s_94864882421579::t_033095fa604271 3,10
+packages/server/api/test/integration/app-connection/custom-auth-refresh.test.ts
+  s_94864882421579::t_033095fa604271 1-3
+packages/pieces/core/text-helper/vitest.config.ts
+  s_94864882421579::t_033095fa604271 13-15
+packages/server/api/src/assets/prompts/guides/ai.md
+  s_94864882421579::t_033095fa604271 3,5,41
+packages/pieces/core/crypto/src/lib/actions/generate-password.ts
+  s_94864882421579::t_033095fa604271 4,6
+packages/server/engine/src/lib/variables/processors/file.ts
+  s_94864882421579::t_b71ed716e0001a 3
+  s_94864882421579::t_3713aba3b56e7c 2
+packages/pieces/common/src/lib/polling/index.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/pieces/metadata/utils/file-pieces-utils.ts
+  s_94864882421579::t_033095fa604271 5-6
+packages/pieces/community/slack/src/lib/actions/post-message.action.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/github/src/lib/actions/ai/list-my-repositories.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/community/slack/src/lib/actions/join-channel.action.ts
+  s_94864882421579::t_033095fa604271 2
+packages/server/api/test/integration/workers/flow-worker.test.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/core/subflows/src/lib/common.ts
+  s_94864882421579::t_033095fa604271 1-3,30
+packages/server/api/src/app/template/template-telemetry/template-telemetry.service.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/core/sftp/package.json
+  s_94864882421579::t_033095fa604271 2,7-8,14-15
+brain/knowledge/execution-runtime/workers.md
+  s_94864882421579::t_033095fa604271 7,31-32,39,41-42,106
+packages/server/engine/src/lib/core/piece/piece-auth.ts
+  s_94864882421579::t_b71ed716e0001a 1-3
+packages/server/engine/src/lib/core/piece/piece-child.ts
+  s_94864882421579::t_b71ed716e0001a 2
+  s_94864882421579::t_fb9ee35eff1062 1,3
+packages/server/api/src/app/app.ts
+  s_94864882421579::t_033095fa604271 2,4-5
+  s_94864882421579::t_b71ed716e0001a 3
+packages/pieces/core/subflows/src/lib/actions/stream-csv-to-flow.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/workers/job/runs-metadata-queue-factory.ts
+  s_94864882421579::t_033095fa604271 1-3
+packages/core/shared/test/common/effective-provider.test.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/web/src/app/builder/piece-properties/dynamic-piece-property.tsx
+  s_94864882421579::t_b71ed716e0001a 2-3
+  s_94864882421579::t_3b46f5a6bc5276 1
+packages/server/api/test/integration/workers/job-broker-invalid-schema.test.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/authentication/passwordless-auth.service.ts
+  s_94864882421579::t_033095fa604271 1-3
+packages/server/api/src/app/template/template.entity.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/framework/src/lib/piece-metadata.ts
+  s_94864882421579::t_033095fa604271 6-7
+packages/pieces/core/file-helper/src/index.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/engine/src/lib/core/piece/trigger-runner.ts
+  s_94864882421579::t_b71ed716e0001a 2
+  s_94864882421579::t_a9630489a581b5 1,3
+packages/pieces/core/math-helper/src/lib/actions/subtraction.ts
+  s_94864882421579::t_033095fa604271 5
+packages/server/api/src/app/workers/migrations/job-data-migrations.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/core/date-helper/.eslintrc.json
+  s_94864882421579::t_033095fa604271 30-33
+packages/pieces/community/slack/src/lib/common/request-action.ts
+  s_94864882421579::t_033095fa604271 7-8
+packages/pieces/community/github/src/lib/actions/ai/update-milestone.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/server/api/src/app/platform/platform.controller.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/core/forms/README.md
+  s_94864882421579::t_033095fa604271 5
+packages/core/piece-types/src/lib/execution-contracts.ts
+  s_94864882421579::t_033095fa604271 1,6-7
+packages/pieces/community/slack/src/lib/auth.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/web/src/app/builder/piece-properties/dynamic-dropdown-piece-property.tsx
+  s_94864882421579::t_b71ed716e0001a 2
+  s_94864882421579::t_8646de87a3216e 1,3
+packages/core/execution/src/lib/flows/dto/list-flows-request.ts
+  s_94864882421579::t_033095fa604271 2-3
+packages/core/formula/.eslintrc.json
+  s_94864882421579::t_033095fa604271 14-17
+packages/pieces/core/forms/src/lib/output-schemas.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/csv/src/lib/output-schemas.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/flows/folder/folder.service.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/workers/job-queue/interceptors/zombie-polling-interceptor.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/core/date-helper/test/get-current-date.test.ts
+  s_94864882421579::t_033095fa604271 4
+packages/pieces/core/data-mapper/README.md
+  s_94864882421579::t_033095fa604271 5
+packages/server/api/src/app/core/security/v2/authn/authenticate.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/flows/flow-version/migrations/flow-migration-util.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/flows/flow-version/migrations/index.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/community/github/src/lib/actions/ai/get-issue-ai.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/community/slack/src/lib/actions/send-direct-message.action.ts
+  s_94864882421579::t_033095fa604271 1,3
+packages/server/api/src/app/flows/flow/flow.entity.ts
+  s_94864882421579::t_033095fa604271 11
+packages/pieces/core/schedule/src/lib/triggers/every-week.trigger.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/web/src/app/builder/flow-canvas/nodes/big-add-button-node.tsx
+  s_94864882421579::t_b71ed716e0001a 2
+packages/pieces/community/slack/src/lib/common/utils.ts
+  s_94864882421579::t_033095fa604271 1
+packages/core/execution/src/lib/flows/operations/duplicate-step.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/helper/email/mail-sender.ts
+  s_94864882421579::t_033095fa604271 3
+packages/server/api/src/app/pieces/metadata/piece-metadata-service.ts
+  s_94864882421579::t_b71ed716e0001a 2
+  s_94864882421579::t_033095fa604271 1,3-4
+packages/server/api/src/app/webhooks/webhook.service.ts
+  s_94864882421579::t_033095fa604271 1-3
+packages/server/engine/src/lib/core/piece/piece-context-builder.ts
+  s_94864882421579::t_b71ed716e0001a 1-3
+packages/web/src/features/pieces/hooks/pieces-hooks.ts
+  s_94864882421579::t_b71ed716e0001a 7
+  s_94864882421579::t_f2f7c51619b72e 6,18
+packages/server/api/test/integration/flows/flow-run/bulk-retry-flow-run.test.ts
+  s_94864882421579::t_033095fa604271 1
+packages/core/shared/src/lib/core/store-entry/store-entry.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/slack/src/lib/triggers/new-team-custom-emoji.ts
+  s_94864882421579::t_033095fa604271 1
+brain/knowledge/ai-intelligence/ai-agents.md
+  s_94864882421579::t_033095fa604271 7,11,35
+packages/core/utils/src/lib/utils.ts
+  s_94864882421579::t_033095fa604271 195
+packages/pieces/community/postgres/src/lib/actions/delete-row.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/slack/src/lib/actions/rename-channel.action.ts
+  s_94864882421579::t_033095fa604271 2
+packages/server/api/src/app/app-connection/app-connection-service/oauth2/index.ts
+  s_94864882421579::t_033095fa604271 4
+packages/server/api/src/app/file/s3-helper.ts
+  s_94864882421579::t_b71ed716e0001a 5-6
+packages/server/api/src/app/database/redis/distributed-lock-factory.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/health/health.service.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/community/slack/src/lib/actions/request-approval-direct-message.ts
+  s_94864882421579::t_033095fa604271 1,4-5
+packages/pieces/community/github/README.md
+  s_94864882421579::t_033095fa604271 5
+packages/pieces/community/github/src/lib/trigger/new-label.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/core/file-helper/src/lib/actions/unzip-file.ts
+  s_94864882421579::t_033095fa604271 5
+brain/knowledge/engineering/e2e-tests-and-monitors.md
+  s_94864882421579::t_033095fa604271 21
+packages/pieces/core/subflows/package.json
+  s_94864882421579::t_033095fa604271 2,13-16
+packages/pieces/core/tags/.eslintrc.json
+  s_94864882421579::t_033095fa604271 30-33
+packages/pieces/core/date-helper/test/next-day-of-year.test.ts
+  s_94864882421579::t_033095fa604271 4
+packages/pieces/core/text-helper/src/lib/actions/slugify.ts
+  s_94864882421579::t_033095fa604271 2
+packages/server/api/src/app/flows/flow/human-input/chat-controller.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/community/slack/src/lib/actions/send-direct-message-action.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/community/slack/src/lib/actions/list-users.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/database/redis/default-redis.ts
+  s_94864882421579::t_033095fa604271 2
+packages/pieces/community/github/src/lib/actions/ai/list-pull-requests.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/community/slack/src/lib/actions/delete-message.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/pieces/metadata/utils/index.ts
+  s_94864882421579::t_033095fa604271 1-2
+brain/knowledge/decisions/000029-the-engine-never-imports-a-piece-a-fresh-child-process-does.md
+  s_94864882421579::t_033095fa604271 13,29
+packages/server/api/src/app/database/pglite-connection.ts
+  s_94864882421579::t_b71ed716e0001a 5-6
+packages/pieces/core/data-mapper/src/index.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/app-connection/platform-app-connection.controller.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/core/utils/package.json
+  s_94864882421579::t_033095fa604271 2
+brain/knowledge/connections-auth/oauth-apps.md
+  s_94864882421579::t_033095fa604271 10
+packages/pieces/community/slack/src/lib/actions/remove-reaction.ai.ts
+  s_94864882421579::t_033095fa604271 1
+.agents/skills/piece-builder/auth-patterns.md
+  s_94864882421579::t_033095fa604271 10-11,43,93,134
+packages/pieces/community/slack/src/lib/actions/get-channel-history.action.ts
+  s_94864882421579::t_033095fa604271 2
+packages/server/api/test/integration/workers/job-broker-error-propagation.test.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/core/csv/README.md
+  s_94864882421579::t_033095fa604271 5
+packages/pieces/core/crypto/test/hmac-signature.test.ts
+  s_94864882421579::t_033095fa604271 4
+AGENTS.md
+  s_94864882421579::t_033095fa604271 17,49-51,58,66
+packages/core/shared/src/lib/automation/knowledge-base/index.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/store/src/lib/actions/store-put-action.ts
+  s_94864882421579::t_033095fa604271 8,11
+packages/pieces/community/slack/src/lib/actions/update-profile.ai.ts
+  s_94864882421579::t_033095fa604271 1
+packages/web/src/app/builder/test-step/test-trigger-section/index.tsx
+  s_94864882421579::t_b71ed716e0001a 2
+  s_94864882421579::t_d967fcadbed62f 1
+packages/pieces/core/webhook/README.md
+  s_94864882421579::t_033095fa604271 5
+packages/pieces/core/csv/src/lib/actions/convert-excel-to-csv.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/file/file.module.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/test/helpers/auth.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/core/file-helper/README.md
+  s_94864882421579::t_033095fa604271 5
+packages/server/api/test/integration/pieces/piece-install.test.ts
+  s_94864882421579::t_033095fa604271 9
+packages/pieces/core/sftp/src/lib/actions/create-folder.ts
+  s_94864882421579::t_033095fa604271 3
+packages/server/engine/src/lib/helper/dynamic-prop-keys.ts
+  s_94864882421579::t_b71ed716e0001a 2
+  s_94864882421579::t_bafa98c52213c1 1
+packages/core/execution/src/lib/flow-run/test-flow-run-request.ts
+  s_94864882421579::t_033095fa604271 2
+packages/pieces/community/slack/src/lib/actions/list-custom-emoji.ai.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/slack/src/lib/actions/set-channel-purpose.action.ts
+  s_94864882421579::t_033095fa604271 2
+packages/server/api/src/app/flags/flag.module.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/template/template-telemetry/template-telemetry.controller.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/github/src/lib/actions/ai/get-latest-release.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/server/api/src/app/authentication/lib/password-hasher.ts
+  s_94864882421579::t_033095fa604271 1
+.agents/skills/piece-builder/trigger-patterns.md
+  s_94864882421579::t_033095fa604271 24-25,136-137,224,250
+packages/web/src/app/builder/piece-properties/text-input-with-mentions/extensions/function-slash-extension.ts
+  s_94864882421579::t_b71ed716e0001a 2
+  s_94864882421579::t_2a46654454a608 1
+packages/pieces/community/github/src/lib/actions/ai/get-user.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/core/shared/CLAUDE.md
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/github/src/lib/actions/ai/get-file-content.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/server/api/src/app/project/project-access.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/cli/src/lib/commands/create-action.ts
+  s_94864882421579::t_033095fa604271 11
+packages/pieces/community/slack/src/lib/actions/get-file.ai.ts
+  s_94864882421579::t_033095fa604271 1
+packages/core/execution/src/lib/flows/operations/import-flow.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/slack/src/lib/actions/retrieve-thread-messages.ts
+  s_94864882421579::t_033095fa604271 1
+packages/core/shared/src/lib/automation/webhook/dto.ts
+  s_94864882421579::t_033095fa604271 1
+packages/cli/src/lib/utils/prepare-piece-utils.test.ts
+  s_94864882421579::t_033095fa604271 73
+packages/pieces/community/postgres/src/lib/actions/update-row.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/framework/src/lib/property/authentication/oauth2-prop.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/tags/src/lib/add-tag.ts
+  s_94864882421579::t_033095fa604271 1
+packages/cli/src/lib/commands/create-trigger.ts
+  s_94864882421579::t_033095fa604271 18-19,61
+packages/pieces/community/rabbitmq/src/lib/actions/send-message-to-queue.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/date-helper/src/lib/actions/first-day-of-prior-month.ts
+  s_94864882421579::t_033095fa604271 1,11
+packages/pieces/community/github/src/lib/actions/ai/add-assignees-to-issue.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/community/github/src/lib/actions/ai/create-branch-ai.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/core/shared/test/core/common/utils/utils.test.ts
+  s_94864882421579::t_033095fa604271 18
+packages/server/api/src/app/helper/hooks-factory.ts
+  s_94864882421579::t_033095fa604271 1
+packages/web/src/app/routes/platform/users/actions/update-user-dialog.tsx
+  s_94864882421579::t_b71ed716e0001a 1
+packages/pieces/community/github/src/lib/actions/ai/get-commit.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/community/slack/src/lib/actions/list-user-reactions.ai.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/rabbitmq/.eslintrc.json
+  s_94864882421579::t_033095fa604271 30-33
+packages/web/src/app/builder/piece-properties/generic-properties-form.tsx
+  s_94864882421579::t_b71ed716e0001a 7-9
+packages/server/api/src/app/pieces/piece-visibility.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/text-helper/.eslintrc.json
+  s_94864882421579::t_033095fa604271 36-39
+packages/server/api/src/app/core/security/platform-guards.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/core/execution/src/lib/flows/operations/update-trigger.ts
+  s_94864882421579::t_033095fa604271 2
+packages/server/api/src/app/flows/flow-run/flow-run-controller.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/trigger/app-event-routing/app-event-routing.entity.ts
+  s_94864882421579::t_033095fa604271 1
+packages/core/shared/src/lib/management/ai-tools/index.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/github/src/lib/actions/ai/list-repository-labels.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/server/api/src/app/pieces/metadata/piece-metadata-controller.ts
+  s_94864882421579::t_033095fa604271 1,3
+  s_94864882421579::t_b71ed716e0001a 2
+packages/pieces/framework/.eslintrc.json
+  s_94864882421579::t_033095fa604271 17-18
+packages/server/api/src/app/database/redis/keys.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/assets/prompts/guides/state.md
+  s_94864882421579::t_033095fa604271 17
+packages/pieces/core/approval/src/lib/actions/create-approval-link.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/core/execution/src/lib/flows/triggers/trigger.ts
+  s_94864882421579::t_033095fa604271 2-3
+packages/server/api/test/unit/app/agent/agent-compaction.test.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/test/integration/flows/flow/human-input/human-input.test.ts
+  s_94864882421579::t_033095fa604271 1-2,35,55,136,156
+.agents/skills/piece-builder/property-ui-selection.md
+  s_94864882421579::t_033095fa604271 67
+packages/pieces/community/github/src/lib/actions/create-issue.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/core/smtp/.eslintrc.json
+  s_94864882421579::t_033095fa604271 30-33
+packages/pieces/core/webhook/src/lib/triggers/catch-hook.ts
+  s_94864882421579::t_033095fa604271 7,11
+packages/core/shared/src/lib/management/platform/platform.model.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/helper/error-handler.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/flows/flow/flow.controller.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/test/unit/app/core/canary/canary-routing.middleware.test.ts
+  s_94864882421579::t_033095fa604271 2
+packages/core/shared/src/lib/core/health/health-metrics-request.ts
+  s_94864882421579::t_b71ed716e0001a 2
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/postgres/src/index.ts
+  s_94864882421579::t_033095fa604271 5-6
+packages/pieces/community/github/src/lib/trigger/new-commit.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/core/date-helper/src/lib/actions/next-day-of-year.ts
+  s_94864882421579::t_033095fa604271 4,14
+packages/pieces/community/postgres/src/lib/triggers/new-row.ts
+  s_94864882421579::t_033095fa604271 2-3
+packages/pieces/community/github/src/lib/common/index.ts
+  s_94864882421579::t_033095fa604271 8-10
+packages/server/api/src/app/pieces/metadata/piece-metadata-entity.ts
+  s_94864882421579::t_033095fa604271 1
+  s_94864882421579::t_b71ed716e0001a 2
+packages/server/api/src/app/variable/variable.service.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/workers/migrations/refill-paused-jobs.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/core/shared/src/lib/management/analytics/index.ts
+  s_94864882421579::t_b71ed716e0001a 2
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/test/integration/authentication/otp-service.test.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/approval/src/lib/actions/wait-for-approval.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/database/postgres-connection.ts
+  s_94864882421579::t_033095fa604271 2
+packages/pieces/community/github/src/lib/actions/ai/search-issues-and-pull-requests.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/core/execution/src/lib/flows/flow-version.ts
+  s_94864882421579::t_033095fa604271 2-3
+packages/pieces/community/github/src/lib/actions/ai/list-organization-members.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/server/api/src/app/app-connection/app-connection-service/oauth2/oauth2-util.ts
+  s_94864882421579::t_b71ed716e0001a 3
+  s_94864882421579::t_033095fa604271 2,4
+packages/server/api/src/app/store-entry/store-entry.controller.ts
+  s_94864882421579::t_033095fa604271 6
+packages/server/engine/src/lib/variables/props-processor.ts
+  s_94864882421579::t_b71ed716e0001a 2-4
+packages/server/api/src/app/helper/system-jobs/job-handlers.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/xml/.eslintrc.json
+  s_94864882421579::t_033095fa604271 30-33
+packages/web/src/features/pieces/utils/form-utils.tsx
+  s_94864882421579::t_b71ed716e0001a 11
+  s_94864882421579::t_9ec6a3d0af294e 10,40
+packages/core/shared/src/lib/core/authentication/model/principal.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/postgres/package.json
+  s_94864882421579::t_033095fa604271 2,7-8,12-13
+packages/pieces/core/forms/src/lib/triggers/chat-trigger.ts
+  s_94864882421579::t_033095fa604271 5,10
+packages/pieces/core/crypto/test/base64.test.ts
+  s_94864882421579::t_033095fa604271 5
+packages/pieces/core/approval/.eslintrc.json
+  s_94864882421579::t_033095fa604271 30-33
+packages/server/api/src/app/core/collaborative/presence/presence.module.ts
+  s_94864882421579::t_033095fa604271 1
+Dockerfile.worker
+  s_94864882421579::t_033095fa604271 34
+smoke-test/verify-delay.sh
+  s_94864882421579::t_a11a3a9c6849df 17,33,72,89
+packages/core/shared/test/core/common/friendly-piece-error.test.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/crypto/src/index.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/flows/flow-run/waitpoint/waitpoint-controller.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/slack/src/lib/actions/find-user-by-handle.ai.ts
+  s_94864882421579::t_033095fa604271 1
+packages/core/shared/test/formula/type-checker.test.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/github/src/lib/actions/find-user.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/community/slack/src/lib/actions/create-channel.ts
+  s_94864882421579::t_033095fa604271 2
+packages/server/api/test/integration/trigger-events/trigger-event.test.ts
+  s_94864882421579::t_033095fa604271 3
+packages/pieces/core/schedule/src/index.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/community/rabbitmq/src/lib/common/index.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/test/integration/flows/flow-run/waitpoint.test.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/trigger/test-trigger/test-trigger-controller.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/variable/variable.entity.ts
+  s_94864882421579::t_033095fa604271 5
+packages/pieces/core/webhook/src/lib/actions/return-response.ts
+  s_94864882421579::t_033095fa604271 6-7
+packages/core/shared/src/lib/management/template/template.ts
+  s_94864882421579::t_b71ed716e0001a 2
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/text-helper/src/lib/actions/concat.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/date-helper/src/lib/actions/next-day-of-week.ts
+  s_94864882421579::t_033095fa604271 4,14
+packages/pieces/community/postgres/src/lib/actions/insert-row.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/date-helper/test/format-date.test.ts
+  s_94864882421579::t_033095fa604271 4
+packages/pieces/community/slack/src/lib/actions/find-user-by-email.ai.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/github/src/lib/actions/ai/list-tags.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/core/subflows/README.md
+  s_94864882421579::t_033095fa604271 5
+packages/pieces/core/smtp/src/lib/actions/send-email.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/flows/flow-run/flow-run-service.ts
+  s_94864882421579::t_033095fa604271 1-3
+.agents/skills/piece-output-schema/schema-reference.md
+  s_94864882421579::t_033095fa604271 3
+packages/pieces/core/file-helper/package.json
+  s_94864882421579::t_033095fa604271 2,7-8,11-12
+packages/server/api/src/app/pieces/metadata/piece-cache.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/core/csv/src/lib/actions/convert-csv-to-json.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/test/integration/webhooks/webhook-xml-parsing.test.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/webhook/vitest.config.ts
+  s_94864882421579::t_033095fa604271 13-15
+packages/pieces/community/slack/src/lib/actions/set-channel-topic.ts
+  s_94864882421579::t_033095fa604271 2
+packages/pieces/framework/src/lib/property/authentication/index.ts
+  s_94864882421579::t_033095fa604271 9-10
+packages/server/api/src/app/app-connection/app-connection.controller.ts
+  s_94864882421579::t_033095fa604271 1-3
+packages/server/api/src/app/trigger/trigger-source/trigger-source-entity.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/test/integration/webhooks/webhook.test.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/helper/otel-queue-metrics.ts
+  s_94864882421579::t_033095fa604271 2-3
+packages/pieces/core/delay/README.md
+  s_94864882421579::t_033095fa604271 5
+packages/web/src/app/connections/oauth2-connection-settings.tsx
+  s_94864882421579::t_b71ed716e0001a 6-7,17
+packages/core/piece-types/src/lib/flow-contracts.ts
+  s_94864882421579::t_033095fa604271 1
+packages/core/shared/test/formula/serializer-roundtrip.test.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/platform/platform.entity.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/csv/test/excel-to-csv-output-schema.test.ts
+  s_94864882421579::t_033095fa604271 4
+packages/pieces/community/slack/src/lib/actions/get-channel-info.ts
+  s_94864882421579::t_033095fa604271 2
+packages/core/shared/src/index.ts
+  s_94864882421579::t_033095fa604271 19,22,35-36
+packages/pieces/community/slack/src/lib/actions/list-scheduled-messages.action.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/test/integration/pieces/piece-options-e2e.test.ts
+  s_94864882421579::t_033095fa604271 12,19,72,85,109
+Dockerfile
+  s_94864882421579::t_033095fa604271 75
+packages/pieces/community/postgres/src/lib/output-schemas.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/trigger/test-trigger/test-trigger-service.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/community/github/src/lib/actions/raw-graphql-query.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/community/github/src/lib/actions/ai/star-repository.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/community/slack/README.md
+  s_94864882421579::t_033095fa604271 5
+packages/pieces/core/sftp/src/lib/auth.ts
+  s_94864882421579::t_033095fa604271 1
+packages/core/execution/src/lib/flows/sample-data/index.ts
+  s_94864882421579::t_033095fa604271 3
+packages/server/api/src/app/flows/flow.module.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/test/README.md
+  s_94864882421579::t_033095fa604271 3
+packages/server/api/src/app/trigger/trigger-run/trigger-run.controller.ts
+  s_94864882421579::t_033095fa604271 1
+packages/core/piece-types/src/index.ts
+  s_94864882421579::t_1f120c4b512388 44
+packages/pieces/community/github/src/lib/actions/trigger-workflow-dispatch.ts
+  s_94864882421579::t_033095fa604271 7,18
+packages/pieces/core/data-summarizer/package.json
+  s_94864882421579::t_033095fa604271 2,17-20
+packages/pieces/core/http/README.md
+  s_94864882421579::t_033095fa604271 5
+packages/core/execution/src/lib/flows/folders/folder.ts
+  s_94864882421579::t_033095fa604271 2
+packages/server/api/src/app/workers/job-queue/job-broker.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/core/execution/src/lib/engine/engine-operation.ts
+  s_94864882421579::t_033095fa604271 1,3-4,9-10
+packages/server/api/test/integration/user-invitations/accept-invitation.test.ts
+  s_94864882421579::t_033095fa604271 1-2
+.github/workflows/ci.yml
+  s_94864882421579::t_033095fa604271 126,136,145,152
+packages/pieces/core/date-helper/test/next-day-of-week.test.ts
+  s_94864882421579::t_033095fa604271 4
+packages/pieces/community/slack/src/lib/actions/update-message.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/sftp/src/lib/actions/rename-file-or-folder.ts
+  s_94864882421579::t_033095fa604271 3,6
+packages/pieces/core/text-helper/test/default-value.test.ts
+  s_94864882421579::t_033095fa604271 4
+packages/pieces/core/text-helper/test/find.test.ts
+  s_94864882421579::t_033095fa604271 4
+packages/pieces/core/text-helper/test/strip-html.test.ts
+  s_94864882421579::t_033095fa604271 4
+packages/server/api/src/app/app-connection/app-connection-worker-controller.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/helper/telemetry.utils.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/authentication/lib/signup-names.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/data-summarizer/src/lib/actions/calculate-average.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/workers/rpc/worker-rpc-service.ts
+  s_94864882421579::t_033095fa604271 1-3
+packages/pieces/community/github/src/lib/actions/ai/delete-branch-ai.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/core/execution/src/lib/flows/dto/create-flow-request.ts
+  s_94864882421579::t_033095fa604271 2
+packages/server/api/test/helpers/application-events.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/test/unit/app/ai/providers/openai-provider.test.ts
+  s_94864882421579::t_033095fa604271 1,6
+.agents/skills/piece-builder/new-piece-scaffold.md
+  s_94864882421579::t_033095fa604271 9,18-20
+packages/cli/scripts/build-publish.mjs
+  s_94864882421579::t_033095fa604271 11,14-20
+packages/pieces/community/github/src/lib/actions/ai/get-branch.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/server/api/src/app/platform/platform.service.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/core/execution/src/lib/flows/actions/action.ts
+  s_94864882421579::t_033095fa604271 2-3
+packages/pieces/community/github/src/lib/actions/ai/list-collaborators.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/core/date-helper/src/lib/actions/extract-date-parts.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/core/security/authorization/authorization.ts
+  s_94864882421579::t_033095fa604271 1
+.github/workflows/release-pieces.yml
+  s_94864882421579::t_033095fa604271 49
+packages/pieces/community/github/src/lib/actions/ai/list-pull-request-review-comments.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/community/mysql/src/lib/actions/find-rows.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/slack/src/lib/actions/search-messages.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/github/src/lib/actions/delete-branch.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/core/sftp/src/lib/actions/upload-file.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/postgres/.eslintrc.json
+  s_94864882421579::t_033095fa604271 30-33
+packages/server/api/src/app/authentication/otp/otp-controller.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/flags/webhook-secrets-util.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/variable/variable.controller.ts
+  s_94864882421579::t_033095fa604271 1-2
+.agents/skills/piece-builder/piece-types.md
+  s_94864882421579::t_033095fa604271 17-18,24
+brain/knowledge/flows-execution/formulas.md
+  s_94864882421579::t_033095fa604271 20,29,39
+packages/pieces/community/slack/src/lib/actions/add-reaction-to-message.ts
+  s_94864882421579::t_033095fa604271 2
+packages/server/api/src/app/workers/machine/worker-capacity.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/community/github/src/lib/actions/ai/add-labels-to-issue-ai.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/cli/src/lib/utils/prepare-piece-utils.ts
+  s_94864882421579::t_033095fa604271 53
+packages/pieces/core/forms/src/index.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/web/src/lib/authentication-session.ts
+  s_94864882421579::t_b71ed716e0001a 2
+  s_94864882421579::t_bfc4f070e74ec4 1
+packages/server/api/src/app/database/redis/distributed-store-factory.ts
+  s_94864882421579::t_033095fa604271 1
+brain/knowledge/ai-intelligence/ai-mcp.md
+  s_94864882421579::t_033095fa604271 14
+packages/core/execution/src/lib/flow-run/execution/step-output.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/date-helper/package.json
+  s_94864882421579::t_033095fa604271 2,17-18,21-22
+packages/web/src/hooks/owner-column-hooks.tsx
+  s_94864882421579::t_b71ed716e0001a 1-2
+packages/pieces/core/crypto/vitest.config.ts
+  s_94864882421579::t_033095fa604271 13-15
+brain/knowledge/ai-intelligence/ai-providers.md
+  s_94864882421579::t_033095fa604271 41,43
+packages/pieces/core/forms/src/lib/triggers/form-trigger.ts
+  s_94864882421579::t_033095fa604271 5,10
+packages/server/api/test/integration/engine-services/engine-services.test.ts
+  s_94864882421579::t_033095fa604271 2-4,261,287,319
+packages/pieces/core/text-helper/src/lib/actions/find.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/sftp/src/lib/actions/read-file.ts
+  s_94864882421579::t_033095fa604271 3
+packages/server/api/src/app/workers/machine/machine-controller.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/app-connection/app-connection-service/app-connection.handler.ts
+  s_94864882421579::t_b71ed716e0001a 2
+  s_94864882421579::t_033095fa604271 1,3
+packages/core/shared/test/common/is-base64.test.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/github/src/lib/actions/ai/common.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/core/security/v2/authz/authorization-middleware.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/community/github/src/lib/actions/ai/get-milestone.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/core/crypto/test/hash-text.test.ts
+  s_94864882421579::t_033095fa604271 4
+packages/pieces/core/approval/package.json
+  s_94864882421579::t_033095fa604271 2,13-16
+packages/server/api/src/app/helper/application-events.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/community/github/package.json
+  s_94864882421579::t_033095fa604271 2,13-14,17-18
+packages/pieces/core/date-helper/src/lib/actions/add-subtract-date.ts
+  s_94864882421579::t_033095fa604271 1,14
+packages/pieces/core/date-helper/src/lib/actions/last-day-of-prior-month.ts
+  s_94864882421579::t_033095fa604271 1,11
+docs/adr/0003-piece-to-connector.md
+  s_94864882421579::t_033095fa604271 13
+packages/pieces/core/http/src/index.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/github/src/lib/trigger/new-mention.ts
+  s_94864882421579::t_033095fa604271 1,5
+packages/core/shared/src/lib/governance/audit-events/index.ts
+  s_94864882421579::t_b71ed716e0001a 2
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/github/src/lib/trigger/new-branch.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/core/text-helper/README.md
+  s_94864882421579::t_033095fa604271 5
+packages/server/api/src/app/project/project-worker-group.service.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/test/integration/flows/folder/folder-events.test.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/engine/src/lib/utils.ts
+  s_94864882421579::t_b71ed716e0001a 4-6
+packages/pieces/community/slack/src/lib/actions/markdown-to-slack-format.ts
+  s_94864882421579::t_033095fa604271 4
+packages/pieces/core/text-helper/src/lib/actions/html-to-markdown.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/flows/flow-run/waitpoint/resume-service.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/community/github/src/lib/actions/ai/list-contributors.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/community/github/src/lib/trigger/new-milestone.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/core/schedule/package.json
+  s_94864882421579::t_033095fa604271 2,13-16
+packages/pieces/core/manual-trigger/src/index.ts
+  s_94864882421579::t_033095fa604271 2,4
+packages/server/api/src/app/authentication/otp/otp-service.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/helper/system/system.ts
+  s_94864882421579::t_033095fa604271 3-4
+packages/core/shared/tsconfig.json
+  s_94864882421579::t_033095fa604271 13,16,19
+packages/pieces/community/slack/src/lib/triggers/new-mention-in-direct-message.ts
+  s_94864882421579::t_033095fa604271 5
+packages/pieces/common/package.json
+  s_94864882421579::t_033095fa604271 2,13-14
+packages/pieces/core/webhook/.eslintrc.json
+  s_94864882421579::t_033095fa604271 30-33
+packages/pieces/community/slack/src/lib/triggers/new-channel.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/workers/user-interaction-watcher.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/web/src/app/builder/piece-properties/text-input-with-mentions/tiptap-editor.tsx
+  s_94864882421579::t_b71ed716e0001a 1,6-7
+packages/pieces/core/crypto/src/lib/actions/hmac-signature.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/crypto/src/lib/actions/openpgp-encrypt.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/math-helper/src/lib/actions/generateRandom.ts
+  s_94864882421579::t_033095fa604271 5
+packages/server/api/src/app/health/health-metrics.service.ts
+  s_94864882421579::t_033095fa604271 1-3
+packages/cli/src/lib/utils/bundle-piece-utils.ts
+  s_94864882421579::t_033095fa604271 57,181,196,325-331,354
+packages/server/api/src/app/health/health.module.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/test/unit/app/core/canary/canary-proxy.integration.test.ts
+  s_94864882421579::t_033095fa604271 18
+packages/pieces/core/math-helper/src/index.ts
+  s_94864882421579::t_033095fa604271 1
+packages/cli/src/lib/utils/migrate-piece-utils.ts
+  s_94864882421579::t_033095fa604271 38,61,122,124-128,131-134,139-142
+packages/server/api/src/app/helper/system-jobs/system-job.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/core/piece-types/src/lib/ai-providers.test.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/workers/job-queue/job-assignment-tracker.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/test/integration/webhooks/webhook-multipart-file.test.ts
+  s_94864882421579::t_033095fa604271 1
+packages/core/piece-types/src/lib/tool-execution.ts
+  s_94864882421579::t_1f120c4b512388 1,3-5
+packages/pieces/core/xml/test/convert-xml-to-json.test.ts
+  s_94864882421579::t_033095fa604271 4
+packages/server/api/src/app/workers/engine-controller.ts
+  s_94864882421579::t_033095fa604271 2
+packages/web/src/api/user-api.ts
+  s_94864882421579::t_b71ed716e0001a 1
+packages/server/api/src/app/flags/flag.entity.ts
+  s_94864882421579::t_033095fa604271 1
+.github/workflows/continuous-delivery-release.yml
+  s_94864882421579::t_033095fa604271 31
+packages/server/api/src/app/flows/folder/folder.entity.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/workers/engine-response-watcher.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/test/integration/flows/flow/error-handler.test.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/test/unit/app/action-run/action-run-outcome.test.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/helper/security-helper.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/core/collaborative/presence/presence.service.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/data-summarizer/src/lib/common.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/core/store/.eslintrc.json
+  s_94864882421579::t_033095fa604271 30-33
+packages/server/api/src/app/app-connection/app-connection-service/app-connection-service.ts
+  s_94864882421579::t_b71ed716e0001a 2
+  s_94864882421579::t_033095fa604271 1,3
+packages/server/api/src/app/helper/jwt-utils.ts
+  s_94864882421579::t_033095fa604271 3
+packages/server/api/package.json
+  s_94864882421579::t_033095fa604271 8-16,114
+packages/web/src/app/builder/flow-canvas/nodes/step-node/index.tsx
+  s_94864882421579::t_b71ed716e0001a 1
+  s_94864882421579::t_0301a60c6c6148 7
+packages/core/shared/src/lib/automation/pieces/dto/piece-requests.ts
+  s_94864882421579::t_033095fa604271 1
+.claude/rules/core-packages.md
+  s_94864882421579::t_033095fa604271 1,3,5,7
+packages/server/api/src/app/pieces/metadata/utils/piece-sorting.ts
+  s_94864882421579::t_033095fa604271 1
+packages/core/execution/src/lib/flows/operations/add-branch.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/test/helpers/mocks/index.ts
+  s_94864882421579::t_033095fa604271 1-3
+packages/pieces/community/github/src/lib/actions/find-issue.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/core/data-summarizer/src/lib/actions/get-min-max.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/test/integration/app-connection/app-connection-replace.test.ts
+  s_94864882421579::t_033095fa604271 1,23
+packages/core/execution/src/lib/flow-run/flow-run.ts
+  s_94864882421579::t_033095fa604271 2-4
+packages/pieces/community/github/src/lib/actions/ai/compare-commits.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/community/slack/src/lib/actions/get-user.ai.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/github/src/lib/trigger/new-collaborator.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/server/api/src/app/trigger/app-event-routing/app-event-routing.module.ts
+  s_94864882421579::t_b71ed716e0001a 2-3
+  s_94864882421579::t_033095fa604271 1,4,23
+packages/server/api/src/app/workers/job-queue/bullboard.ts
+  s_94864882421579::t_b71ed716e0001a 5
+packages/pieces/community/mysql/README.md
+  s_94864882421579::t_033095fa604271 5
+packages/server/api/src/app/flows/flow/flow-version.controller.ts
+  s_94864882421579::t_033095fa604271 1-2
+brain/knowledge/decisions/000021-legacy-free-platforms-are-comped-an-appsumo-clone-from-ensureenrolled.md
+  s_94864882421579::t_033095fa604271 91
+packages/server/engine/src/lib/operations/property.operation.ts
+  s_94864882421579::t_b71ed716e0001a 2
+  s_94864882421579::t_73f1c6c1ab70d9 1,8
+packages/pieces/core/store/package.json
+  s_94864882421579::t_033095fa604271 2,12-13,16-17
+packages/pieces/community/slack/src/lib/actions/invite-users-to-channel-ai.ts
+  s_94864882421579::t_033095fa604271 2
+packages/pieces/community/slack/src/lib/actions/add-reaction.ai.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/github/src/lib/actions/ai/unlock-issue-ai.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/community/slack/src/lib/actions/remove-user-from-channel.action.ts
+  s_94864882421579::t_033095fa604271 2
+packages/pieces/core/sftp/src/lib/actions/delete-folder.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/slack/src/lib/actions/update-profile.ts
+  s_94864882421579::t_033095fa604271 2
+packages/pieces/core/delay/src/lib/actions/delay-until-action.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/authentication/authorization.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/flows/flow/human-input/human-input.service.ts
+  s_94864882421579::t_033095fa604271 1-2,10
+packages/server/api/src/app/flows/flow-version/flow-version-migration.service.ts
+  s_94864882421579::t_033095fa604271 1-3
+packages/pieces/core/file-helper/test/check-file-type.test.ts
+  s_94864882421579::t_033095fa604271 4
+packages/pieces/core/sftp/.eslintrc.json
+  s_94864882421579::t_033095fa604271 30-33
+packages/core/shared/src/lib/management/project-role/project-role.request.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/engine/src/lib/variables/connection-token.ts
+  s_94864882421579::t_b71ed716e0001a 1-2
+packages/web/src/features/pieces/hooks/use-piece-output-schema.ts
+  s_94864882421579::t_b71ed716e0001a 2
+  s_94864882421579::t_0b95f1800e7dfd 1
+packages/server/api/src/app/core/collaborative/lock/lock.module.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/template/community-templates.service.ts
+  s_94864882421579::t_033095fa604271 1-3
+packages/pieces/core/smtp/src/index.ts
+  s_94864882421579::t_033095fa604271 5-6
+packages/server/api/src/app/user/user-entity.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/workers/migrations/refill-renew-webhook-jobs.ts
+  s_94864882421579::t_033095fa604271 1,3
+  s_94864882421579::t_b71ed716e0001a 2
+packages/pieces/common/src/lib/helpers/index.ts
+  s_94864882421579::t_033095fa604271 14,23
+packages/pieces/community/github/src/lib/actions/add-labels-to-issue.ts
+  s_94864882421579::t_033095fa604271 2,4
+packages/pieces/community/github/src/lib/actions/ai/list-user-repositories.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/server/engine/src/lib/piece-context/file-uploader.ts
+  s_94864882421579::t_b71ed716e0001a 2-4
+packages/server/api/src/app/template/template.service.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/core/piece-types/AGENTS.md
+  s_94864882421579::t_033095fa604271 1,11
+packages/server/api/src/main.ts
+  s_94864882421579::t_033095fa604271 1
+packages/web/src/app/connections/new-connection-dialog.tsx
+  s_94864882421579::t_b71ed716e0001a 2
+  s_94864882421579::t_78188cbb0e6c92 1,3
+packages/server/api/src/app/database/database-type.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/flows/flow-version/flow-version.service.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/web/src/features/connections/utils/oauth2-utils.ts
+  s_94864882421579::t_b71ed716e0001a 2
+  s_94864882421579::t_22ccb470656414 1,8
+packages/pieces/community/slack/src/lib/triggers/new-message.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/authentication/local-authn/local-authn.module.ts
+  s_94864882421579::t_033095fa604271 1-2
+benchmark/setup.sh
+  s_94864882421579::t_a11a3a9c6849df 39
+  s_94864882421579::t_033095fa604271 25,140,160,200
+packages/pieces/core/approval/README.md
+  s_94864882421579::t_033095fa604271 5
+packages/pieces/core/store/src/lib/actions/store-remove-value.ts
+  s_94864882421579::t_033095fa604271 8,11
+packages/pieces/core/xml/README.md
+  s_94864882421579::t_033095fa604271 5
+packages/pieces/framework/src/lib/piece.ts
+  s_94864882421579::t_033095fa604271 7
+packages/core/formula/AGENTS.md
+  s_94864882421579::t_033095fa604271 1,10
+packages/pieces/community/github/src/lib/actions/ai/set-issue-labels.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/server/api/src/app/file/files-controller.ts
+  s_94864882421579::t_033095fa604271 2-3
+packages/server/api/src/app/flows/flow-run/waitpoint/waitpoint-types.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/core/file-helper/test/change-file-encoding.test.ts
+  s_94864882421579::t_033095fa604271 4
+packages/server/api/test/integration/flows/flow-run/execute-flow-e2e.test.ts
+  s_94864882421579::t_033095fa604271 30,74,81,96,153,182,225,243,250,265,296,325,348,390,436,443,481,511,602,638,676,716,852,859,890,918,955,962,996,1040
+packages/server/api/src/app/helper/system-jobs/common.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/community/slack/package.json
+  s_94864882421579::t_033095fa604271 2,7-8,12-13
+packages/core/execution/src/lib/flows/operations/add-action.ts
+  s_94864882421579::t_033095fa604271 2-3
+packages/server/api/src/app/pieces/dev-piece-watcher.ts
+  s_94864882421579::t_033095fa604271 4-6,27-29
+packages/pieces/core/webhook/package.json
+  s_94864882421579::t_033095fa604271 2,17-20
+packages/core/shared/src/lib/automation/variable/variable.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/authentication/lib/access-token-manager.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/community/slack/src/lib/actions/get-file.ts
+  s_94864882421579::t_033095fa604271 2-3
+packages/core/piece-types/package.json
+  s_94864882421579::t_033095fa604271 2,11
+packages/pieces/community/github/src/lib/actions/ai/get-repository-tree.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/core/store/src/lib/actions/store-get-action.ts
+  s_94864882421579::t_033095fa604271 9,12
+packages/web/src/app/routes/platform/setup/pieces/index.tsx
+  s_94864882421579::t_b71ed716e0001a 1-3
+packages/pieces/community/slack/src/lib/actions/get-message.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/slack/src/lib/triggers/new-command.ts
+  s_94864882421579::t_033095fa604271 5
+packages/pieces/core/date-helper/test/extract-date-parts.test.ts
+  s_94864882421579::t_033095fa604271 4
+packages/pieces/core/xml/src/lib/actions/convert-xml-to-json.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/slack/src/lib/output-schemas.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/slack/src/lib/triggers/new-modal-interaction.ts
+  s_94864882421579::t_033095fa604271 1
+packages/core/shared/src/lib/management/ai-providers/index.ts
+  s_94864882421579::t_033095fa604271 1,351-352
+packages/server/engine/src/lib/piece-context/flows.ts
+  s_94864882421579::t_b71ed716e0001a 2
+  s_94864882421579::t_9e09d279be8101 1,3
+packages/pieces/community/github/src/lib/actions/ai/list-branches.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/core/data-mapper/test/advanced-mapping.test.ts
+  s_94864882421579::t_033095fa604271 4
+packages/pieces/community/mysql/.eslintrc.json
+  s_94864882421579::t_033095fa604271 30-33
+packages/pieces/community/github/src/lib/actions/ai/list-milestones.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/core/math-helper/src/lib/actions/addition.ts
+  s_94864882421579::t_033095fa604271 5
+brain/knowledge/flows-execution/index.md
+  s_94864882421579::t_033095fa604271 44,49
+packages/pieces/community/postgres/src/lib/common.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/test/integration/app-connection/app-connection.test.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/community/mysql/src/lib/actions/update-row.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/http/src/lib/output-schemas.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/slack/src/lib/actions/request-approval-message.ts
+  s_94864882421579::t_033095fa604271 1,4-5
+packages/pieces/framework/package.json
+  s_94864882421579::t_033095fa604271 2,13-14
+packages/pieces/core/http/test/http.test.ts
+  s_94864882421579::t_033095fa604271 4
+packages/server/api/src/app/workers/migrations/delete-stale-run-metadata.ts
+  s_94864882421579::t_033095fa604271 2
+packages/server/api/test/integration/flows/flow-run/resume-service.test.ts
+  s_94864882421579::t_033095fa604271 1-2
+brain/knowledge/decisions/000015-streaming-csv-fanout-is-a-bounded-fire-and-forget-action.md
+  s_94864882421579::t_033095fa604271 9
+packages/server/api/test/integration/workers/platform-queue-migration.test.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/core/data-mapper/src/lib/actions/advanced-mapping.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/schedule/README.md
+  s_94864882421579::t_033095fa604271 5
+packages/server/api/test/integration/flows/flow/flow.test.ts
+  s_94864882421579::t_033095fa604271 1,15,88,119,200,234
+packages/pieces/core/xml/vitest.config.ts
+  s_94864882421579::t_033095fa604271 13-15
+packages/server/api/src/assets/prompts/guides/build_flow.md
+  s_94864882421579::t_033095fa604271 57-65
+packages/server/api/test/integration/authentication/otp-legacy-version.test.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/slack/src/lib/actions/find-user-by-id.ts
+  s_94864882421579::t_033095fa604271 2
+packages/pieces/community/slack/src/lib/common/auth-helpers.ts
+  s_94864882421579::t_033095fa604271 1-3
+packages/pieces/community/github/src/lib/actions/ai/search-code.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/community/github/src/lib/trigger/register-trigger.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/core/connections/src/lib/actions/read-connection.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/community/github/src/lib/actions/ai/create-release.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/community/slack/src/lib/triggers/new-saved-message.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/authentication/user-identity/user-identity-service.ts
+  s_94864882421579::t_033095fa604271 1-3
+packages/pieces/core/http/test/parse-url-output-schema.test.ts
+  s_94864882421579::t_033095fa604271 3
+packages/pieces/core/schedule/src/lib/triggers/every-day.trigger.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/community/github/src/lib/actions/ai/list-languages.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/core/crypto/test/generate-password.test.ts
+  s_94864882421579::t_033095fa604271 4
+packages/pieces/community/rabbitmq/package.json
+  s_94864882421579::t_033095fa604271 2,7-8,11-12
+packages/core/shared/src/lib/core/user/user.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/flows/flow-run/flow-run-module.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/src/app/pieces/community-piece-module.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/server/api/test/integration/file/files-controller.test.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/community/github/src/lib/actions/ai/list-commits.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/server/api/src/app/helper/system-snapshot.ts
+  s_94864882421579::t_033095fa604271 3
+brain/knowledge/execution-runtime/index.md
+  s_94864882421579::t_033095fa604271 44,48,50
+packages/pieces/community/github/src/lib/actions/create-pull-request-review-comment.ts
+  s_94864882421579::t_033095fa604271 2,4
+packages/pieces/core/date-helper/src/lib/actions/format-date.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/authentication/authentication.service.ts
+  s_94864882421579::t_033095fa604271 1-3
+packages/pieces/core/http/package.json
+  s_94864882421579::t_033095fa604271 2,7-8,12-13
+packages/web/src/app/builder/step-settings/piece-settings/connection-select.tsx
+  s_94864882421579::t_b71ed716e0001a 5
+  s_94864882421579::t_bad3cd36588714 4,13
+packages/server/api/src/app/project/project-entity.ts
+  s_94864882421579::t_033095fa604271 10
+packages/pieces/community/github/src/lib/actions/ai/delete-file.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/core/subflows/.eslintrc.json
+  s_94864882421579::t_033095fa604271 30-33
+packages/pieces/core/text-helper/package.json
+  s_94864882421579::t_033095fa604271 2,7-10
+packages/pieces/community/postgres/src/lib/actions/find-rows.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/mysql/src/lib/common/index.ts
+  s_94864882421579::t_033095fa604271 6
+brain/knowledge/engineering/web-feature-anatomy.md
+  s_94864882421579::t_033095fa604271 55
+packages/pieces/core/http/src/lib/actions/parse-url.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/core/websockets.service.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/core/store/src/lib/actions/store-add-to-list.ts
+  s_94864882421579::t_033095fa604271 1,3
+packages/pieces/CLAUDE.md
+  s_94864882421579::t_033095fa604271 11,51
+packages/server/api/src/app/database/redis/types.ts
+  s_94864882421579::t_033095fa604271 3
+packages/pieces/community/github/src/lib/actions/ai/create-pull-request-review.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/server/api/src/app/trigger/trigger-source/flow-trigger-side-effect.ts
+  s_94864882421579::t_b71ed716e0001a 6
+  s_94864882421579::t_033095fa604271 5,7
+packages/server/api/src/app/server.ts
+  s_94864882421579::t_b71ed716e0001a 7-9
+packages/pieces/community/github/src/lib/actions/ai/merge-pull-request.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/community/github/src/lib/actions/ai/remove-label-from-issue.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/server/api/src/app/pieces/piece-install-service.ts
+  s_94864882421579::t_033095fa604271 1,3
+  s_94864882421579::t_b71ed716e0001a 2
+packages/server/api/src/app/user-invitations/user-invitation.service.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/core/approval/vitest.config.ts
+  s_94864882421579::t_033095fa604271 13-15
+packages/server/api/src/app/flows/folder/folder.module.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/community/github/src/lib/actions/ai/list-issue-labels.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/community/github/src/lib/actions/ai/check-repository-starred.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/core/store/README.md
+  s_94864882421579::t_033095fa604271 5
+packages/core/shared/src/lib/automation/app-connection/app-connection.ts
+  s_94864882421579::t_033095fa604271 1
+packages/core/shared/src/lib/core/authentication/dto/sign-up-request.ts
+  s_94864882421579::t_033095fa604271 1
+packages/core/formula/package.json
+  s_94864882421579::t_033095fa604271 2
+packages/core/shared/src/lib/management/template/template.requests.ts
+  s_94864882421579::t_033095fa604271 1
+packages/server/api/src/app/database/database-connection.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/slack/src/index.ts
+  s_94864882421579::t_033095fa604271 1,5,7
+packages/pieces/community/github/src/lib/actions/ai/remove-collaborator.ts
+  s_94864882421579::t_033095fa604271 1,4
+packages/pieces/community/slack/src/lib/actions/set-user-status.ai.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/core/xml/src/lib/actions/convert-json-to-xml.ts
+  s_94864882421579::t_033095fa604271 1
+packages/pieces/community/github/src/lib/actions/ai/lock-issue-ai.ts
+  s_94864882421579::t_033095fa604271 1,4
+smoke-test/verify-memory-limit.sh
+  s_94864882421579::t_a11a3a9c6849df 18
+packages/pieces/community/github/src/lib/auth.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/pieces/community/mysql/src/lib/actions/execute-query.ts
+  s_94864882421579::t_033095fa604271 1
+packages/core/piece-types/src/lib/engine-tools.ts
+  s_94864882421579::t_5c668139a9df4e 1
+packages/pieces/community/slack/src/lib/actions/get-thread-replies.action.ts
+  s_94864882421579::t_033095fa604271 1
+packages/cli/src/lib/commands/generate-translation-file-for-piece.ts
+  s_94864882421579::t_033095fa604271 8-9
+packages/pieces/core/forms/.eslintrc.json
+  s_94864882421579::t_033095fa604271 30-33
+packages/pieces/core/store/src/index.ts
+  s_94864882421579::t_033095fa604271 1-2
+packages/web/src/app/routes/platform/infra/health/components/status-line-chart.tsx
+  s_94864882421579::t_b71ed716e0001a 1
+packages/server/api/test/helpers/permission-test.ts
+  s_94864882421579::t_033095fa604271 1
+packages/core/execution/src/lib/flows/test-trigger.ts
+  s_94864882421579::t_033095fa604271 2
+packages/server/api/src/app/helper/logs/client-logs.controller.ts
+  s_94864882421579::t_033095fa604271 1
+packages/web/src/features/flows/hooks/flow-hooks.tsx
+  s_94864882421579::t_b71ed716e0001a 1
+  s_94864882421579::t_966cc435b2b04e 17,240
+packages/server/api/src/app/app-connection/app-connection-service/oauth2/oauth2-service.ts
+  s_94864882421579::t_033095fa604271 1,5
+packages/server/api/src/app/flows/flow-run/flow-runs-queue.ts
+  s_94864882421579::t_033095fa604271 1-2
+bun.lock
+  s_94864882421579::t_10e756d2529f46 71,77-79,99,102-103,118,131,134,144,147-150,162,169,185,188-189,198,201-204,215,218-221,231,234-237,249,252-255,265,268-271,281,284-287,295,298-301,308,311-314,325,328-331,343,346-349,357,360-363,371,374-377,387,390-393,402,405-408,419,422-425,435,438-441,452,455-458,465,468-471,480,483-486,494,497-500,514,517-520,531,534-537,547,550-553,562,565-568,575,578-581,599,602-605,613,616-619,630,633-634,678-686,757,780,783-787,811,814-816,832,842-844,876-881,933-936,1088,1108,1480-1555,2542,5356-5384,5386,5388,5390-5392,5396-5398,5616-5621,5674-5675,6008-6011,6014-6015,6028-6029,6728-6729,6738-6739,6768,6770,6772,6774,6776,6778,6780,6782,6784,6786,6788,6790,6792,6794,6796,6798,6800,6802,6804,6806,6808,6810,6812,6814,6816,6818,6820,6822,6824,6826,6828-6842,6898-6951,6962-6965,6974-6977,6980-6981,6986-6989,7596-7599,7602,7604,7606,7608,7630-7633,7636-7638,7644-7647,7816-7823
+packages/server/STYLE.md
+  s_94864882421579::t_3ef186ae686ee4 64,134
+packages/server/api/test/unit/app/flows/flow-version/migrate-v22-agent-step-to-thin-client.test.ts
+  s_94864882421579::t_bab1f0f443114e 1,19,34,80
+packages/server/api/test/unit/app/flows/flow-version/remove-connections-and-sample-data.test.ts
+  s_94864882421579::t_7f14152a0975cc 1
+packages/server/api/test/unit/app/flows/migrations/migrate-v21-step-output-nesting.test.ts
+  s_94864882421579::t_f0cabda5b35070 7,34,56,81,107,213,259,283,308,377,401,433,467,496,548
+packages/server/api/test/unit/app/flows/trigger/flow-trigger-side-effect.test.ts
+  s_94864882421579::t_3baca2445ec26c 1-3,64
+packages/server/api/test/unit/app/helper/otel-queue-metrics.test.ts
+  s_94864882421579::t_52b636f49db03e 7-8
+packages/server/api/test/unit/app/helper/system-jobs/remove-deprecated-jobs.test.ts
+  s_94864882421579::t_f9a876ada68cc2 51
+packages/server/api/test/unit/app/mcp/ap-search-tools.test.ts
+  s_94864882421579::t_0fbc3a938b95e7 1,60
+packages/server/api/test/unit/app/mcp/mcp-utils.test.ts
+  s_94864882421579::t_1aeb938c45d9f1 1
+packages/server/api/test/unit/app/mcp/piece-expertise.test.ts
+  s_94864882421579::t_36fa6b6df27e1b 7
+packages/server/api/test/unit/app/mcp/tool-search-flag.test.ts
+  s_94864882421579::t_2b896f71dd7f25 1
+packages/server/api/test/unit/app/pieces/piece-searching.test.ts
+  s_94864882421579::t_3253cf12d2d6b0 1,7-9
+packages/server/api/test/unit/app/webhooks/webhook-handshake.test.ts
+  s_94864882421579::t_f3e0a40f75d9f9 1
+packages/server/api/test/unit/app/webhooks/webhook-request-converter.test.ts
+  s_94864882421579::t_206f74b9425382 1
+packages/server/api/test/unit/app/workers/job-queue/active-invariant.test.ts
+  s_94864882421579::t_44603934dfc45f 1
+packages/server/api/test/unit/app/workers/job-queue/queue-dispatcher.test.ts
+  s_94864882421579::t_d374781fd4ce30 1
+packages/server/api/test/unit/app/workers/machine/machine-list-filter.test.ts
+  s_94864882421579::t_e9bb1d0cad29d8 1
+packages/server/api/test/unit/app/workers/machine/machine-service.test.ts
+  s_94864882421579::t_40ec36ad57932d 1
+packages/server/api/test/unit/app/workers/migrations/job-data-migrations.test.ts
+  s_94864882421579::t_95bb3bfde7d70a 1
+packages/server/api/types/fastify.d.ts
+  s_94864882421579::t_bf2421aa082af7 4-5
+packages/server/api/vitest.config.ts
+  s_94864882421579::t_0fe824a53da24c 21-25
+packages/server/engine/CLAUDE.md
+  s_94864882421579::t_fa61420de83521 5
+packages/server/engine/README.md
+  s_94864882421579::t_2267af8c7270f8 5
+packages/server/engine/esbuild.config.mjs
+  s_94864882421579::t_ac106ac5d3be9d 71-77
+packages/server/engine/package.json
+  s_94864882421579::t_85f8301a0b0c16 2,12-14,29-30
+packages/server/engine/src/lib/api/engine-file-api.ts
+  s_94864882421579::t_9d82e9212003aa 4
+packages/server/engine/src/lib/api/engine-run-api.ts
+  s_94864882421579::t_b5845dc03ee213 1
+packages/server/engine/src/lib/core/code/code-sandbox.ts
+  s_94864882421579::t_f2350548c35912 1-2
+packages/server/engine/src/lib/core/code/shared-script-session.ts
+  s_94864882421579::t_26a32991e47e46 1
+packages/server/engine/src/lib/core/piece/piece-path.ts
+  s_94864882421579::t_8a32895ab1b2a2 3-4
+packages/server/engine/src/lib/core/piece/piece-runner.ts
+  s_94864882421579::t_8b336b3ff9475b 3-4
+packages/server/engine/src/lib/handler/action-run-step-runner.ts
+  s_94864882421579::t_af247612c8e4c9 1
+packages/server/engine/src/lib/handler/base-executor.ts
+  s_94864882421579::t_c57c9b7ac46a39 1-2
+packages/server/engine/src/lib/handler/context/flow-execution-context.ts
+  s_94864882421579::t_c2b6d9cc373148 1-2
+packages/server/engine/src/lib/handler/flow-executor.ts
+  s_94864882421579::t_8e325b9d824dc1 2-3
+packages/server/engine/src/lib/helper/error-handling.ts
+  s_94864882421579::t_56ae1ab8098228 1-2
+packages/server/engine/src/lib/helper/sizeof.ts
+  s_94864882421579::t_d933b04de8de6c 1-2
+packages/server/engine/src/lib/network/dns-lookup-guard.ts
+  s_94864882421579::t_83800d012ccaac 2-3
+packages/server/engine/src/lib/network/socket-connect-guard.ts
+  s_94864882421579::t_674aa305f67e2e 2-3
+packages/server/engine/src/lib/network/ssrf-guard.ts
+  s_94864882421579::t_a4d7a32e853400 1-2
+packages/server/engine/src/lib/operations/action.operation.ts
+  s_94864882421579::t_93935239253191 1-2
+packages/server/engine/src/lib/operations/auth-validation.operation.ts
+  s_94864882421579::t_0743daa8f7a208 1,7
+packages/server/engine/src/lib/operations/flow.operation.ts
+  s_94864882421579::t_0a0dcf61020299 1-2
+packages/server/engine/src/lib/operations/index.ts
+  s_94864882421579::t_5c9b312be0a736 2-3
+packages/server/engine/src/lib/operations/piece-metadata.operation.ts
+  s_94864882421579::t_63026d11ac819f 2,7
+packages/server/engine/src/lib/operations/resolve-connection-identifier.operation.ts
+  s_94864882421579::t_1305a6afc42ece 6
+packages/server/engine/src/lib/operations/trigger-hook.operation.ts
+  s_94864882421579::t_b7fcbccb2b7588 2-3
+packages/server/engine/src/lib/operations/utils/resolve-job-payload.ts
+  s_94864882421579::t_9c669c8a112cfc 1-2
+packages/server/engine/src/lib/piece-context/connection-resolver.ts
+  s_94864882421579::t_b76dc70bd9a625 1-2
+packages/server/engine/src/lib/piece-context/variable-resolver.ts
+  s_94864882421579::t_2a7670a217b384 1
+packages/server/engine/src/lib/piece-context/waitpoint-client.ts
+  s_94864882421579::t_f28813a5d614f5 1
+packages/server/engine/src/lib/variables/processors/array-zipper.ts
+  s_94864882421579::t_7a9eb2f9b4fce6 1
+packages/server/engine/src/lib/variables/processors/checkbox.ts
+  s_94864882421579::t_545b9e114622fb 1
+packages/server/engine/src/lib/variables/processors/index.ts
+  s_94864882421579::t_f68ee4b7b825cb 1
+packages/server/engine/src/lib/variables/processors/json.ts
+  s_94864882421579::t_e3c077e3fc682b 1
+packages/server/engine/src/lib/variables/processors/multi-select.ts
+  s_94864882421579::t_0f68f0478455a6 1
+packages/server/engine/src/lib/variables/processors/number.ts
+  s_94864882421579::t_1259f01a9b6d16 1
+packages/server/engine/src/lib/variables/processors/object.ts
+  s_94864882421579::t_be5029e3a89fd8 1
+packages/server/engine/src/lib/variables/processors/text.ts
+  s_94864882421579::t_4b6a98731f2e12 1
+packages/server/engine/src/lib/variables/processors/types.ts
+  s_94864882421579::t_7e52c4c5a8edff 3
+packages/server/engine/src/lib/variables/property-path.ts
+  s_94864882421579::t_c44d27e23fd8de 1
+packages/server/engine/src/lib/variables/script-evaluator.ts
+  s_94864882421579::t_0ee2ca90a1a625 1
+packages/server/engine/src/lib/variables/variable-token.ts
+  s_94864882421579::t_0d6a916853f69b 1
+packages/server/engine/src/lib/worker-socket.ts
+  s_94864882421579::t_9242808bd30544 9
+packages/server/engine/src/main.ts
+  s_94864882421579::t_4db4255c929ebf 1
+packages/server/engine/test/core/piece/piece-auth.test.ts
+  s_94864882421579::t_b40155518fd29f 1-2,7,64
+packages/server/engine/test/core/piece/piece-memory.test.ts
+  s_94864882421579::t_c40b28636e47ec 1
+packages/server/engine/test/core/piece/piece-protocol.test.ts
+  s_94864882421579::t_7e3ca3d08be889 1
+packages/server/engine/test/handler/code-executor-traversal.test.ts
+  s_94864882421579::t_08cc9978d829c2 1
+packages/server/engine/test/handler/conditions-evaluate.test.ts
+  s_94864882421579::t_2ec780db3e71b2 2
+packages/server/engine/test/handler/context/flow-execution-context-log-size.test.ts
+  s_94864882421579::t_541f035bbcd257 1
+packages/server/engine/test/handler/context/flow-execution-context-slice.test.ts
+  s_94864882421579::t_13eed02bd22ef7 1
+packages/server/engine/test/handler/flow-branching.test.ts
+  s_94864882421579::t_0a28d0e6929760 1
+packages/server/engine/test/handler/flow-codes.test.ts
+  s_94864882421579::t_ca544d93675399 1
+packages/server/engine/test/handler/flow-error-handling.test.ts
+  s_94864882421579::t_52570694f803e9 2-3,43
+packages/server/engine/test/handler/flow-log-size.test.ts
+  s_94864882421579::t_8d4026ece858bc 1
+packages/server/engine/test/handler/flow-looping.test.ts
+  s_94864882421579::t_b5f942e98e5e57 1
+packages/server/engine/test/handler/flow-piece.test.ts
+  s_94864882421579::t_3a5cd9d3e95e6d 1-2,14,33,76,95,101
+packages/server/engine/test/handler/flow-rerun.test.ts
+  s_94864882421579::t_e0cb596d20b8a9 1,8,22
+packages/server/engine/test/handler/flow-skip-progress.test.ts
+  s_94864882421579::t_efa0b8d4ff4dc9 1,94
+packages/server/engine/test/handler/flow-waitpoint-response.test.ts
+  s_94864882421579::t_265865c23a1aef 1,42,59,90
+packages/server/engine/test/handler/flow-with-delay.test.ts
+  s_94864882421579::t_124956e1ece58c 1,25,57,101,125,157
+packages/server/engine/test/handler/flow-with-pause.test.ts
+  s_94864882421579::t_4d359235ce9a5d 1,13,24,32,227,237
+packages/server/engine/test/handler/flow-with-response.test.ts
+  s_94864882421579::t_c410f8bc43107d 1,35
+packages/server/engine/test/handler/router-branching.test.ts
+  s_94864882421579::t_3758bd5342d61b 1,22,32,66,76,110,120,167,177,187,223,233,243,279,289,318,328,338,375,399
+packages/server/engine/test/handler/test-helper.ts
+  s_94864882421579::t_6dcc94a2c7e8a0 1
+packages/server/engine/test/helper/error-handling.test.ts
+  s_94864882421579::t_d75402a8e7f7c7 1
+packages/server/engine/test/helper/flow-run-progress-reporter.test.ts
+  s_94864882421579::t_cce191f59dcc78 1
+packages/server/engine/test/helper/polling-helper.test.ts
+  s_94864882421579::t_fb0f153170968d 1-2
+packages/server/engine/test/http/formdata-multipart-claim-verify.test.ts
+  s_94864882421579::t_6183c75ff3f5e8 2
+packages/server/engine/test/network/ssrf-guard.test.ts
+  s_94864882421579::t_9cba28f384c168 3
+packages/server/engine/test/operations/flow-operation-invariants.test.ts
+  s_94864882421579::t_9293a89e98a174 15-16,112,126
+packages/server/engine/test/operations/trigger-hook-operation.test.ts
+  s_94864882421579::t_24024caf588950 5-6
+packages/server/engine/test/piece-context/connection-resolver.test.ts
+  s_94864882421579::t_d0075ad1fce6ea 1-2,12,167,182,200,211,218
+packages/server/engine/test/piece-context/file-uploader.test.ts
+  s_94864882421579::t_923abfbb03071f 2
+packages/server/engine/test/piece-context/store.test.ts
+  s_94864882421579::t_8228676c9ba976 1-2
+packages/server/engine/test/variables/dynamic-prop-keys.test.ts
+  s_94864882421579::t_db2b13ab03b3d1 1-2
+packages/server/engine/test/variables/file-processor.test.ts
+  s_94864882421579::t_f2e9fbc9a8d835 2
+packages/server/engine/test/variables/props-resolver.test.ts
+  s_94864882421579::t_3a6b87ca4324a5 1-3
+packages/server/engine/test/variables/props-validator.test.ts
+  s_94864882421579::t_65fbf7035af455 1
+packages/server/engine/vitest.config.ts
+  s_94864882421579::t_2b47813d9b2187 15-21
+packages/server/sandbox/package.json
+  s_94864882421579::t_b41e7dcbe2b538 2,13-15
+packages/server/sandbox/src/lib/cache/action-run-cache.ts
+  s_94864882421579::t_ef811a88b8522c 3-4
+packages/server/sandbox/src/lib/cache/cache-paths.ts
+  s_94864882421579::t_8317f52109eb45 3-4
+packages/server/sandbox/src/lib/cache/cache-state.ts
+  s_94864882421579::t_6a5f66b494f256 3-4
+packages/server/sandbox/src/lib/cache/engine/engine-installer.ts
+  s_94864882421579::t_1d8453814a10a1 4-7
+packages/server/sandbox/src/lib/cache/flow/code/code-builder.ts
+  s_94864882421579::t_70f97b2ca938b4 4-6
+packages/server/sandbox/src/lib/cache/flow/code/code-cache.ts
+  s_94864882421579::t_49029160f43eb8 3
+packages/server/sandbox/src/lib/cache/flow/flow-bundle-store.ts
+  s_94864882421579::t_a8d5a2a25b896a 2-4
+packages/server/sandbox/src/lib/cache/flow/flow-cache.ts
+  s_94864882421579::t_3b2f633ad49a80 2-4
+packages/server/sandbox/src/lib/cache/flow/flow-provisioning.ts
+  s_94864882421579::t_3380fe08cb8dc2 1-3
+packages/server/sandbox/src/lib/cache/flow/flow-steps.ts
+  s_94864882421579::t_8739510f4b86eb 1
+packages/server/sandbox/src/lib/cache/local-execution-cache.ts
+  s_94864882421579::t_110f8a2e20574c 1-3
+packages/server/sandbox/src/lib/cache/pieces/piece-cache.ts
+  s_94864882421579::t_9ffed823977a75 2-4
+packages/server/sandbox/src/lib/cache/pieces/piece-installer.ts
+  s_94864882421579::t_c96768e9d76b96 3-5,137
+packages/server/sandbox/src/lib/create-sandbox-for-job.ts
+  s_94864882421579::t_5d491920593c89 1-2
+packages/server/sandbox/src/lib/resolver.ts
+  s_94864882421579::t_e4a78acc2288e9 1-3
+packages/server/sandbox/src/lib/sandbox-manager.ts
+  s_94864882421579::t_5904e257cbc810 1-3
+packages/server/sandbox/src/lib/sandbox.ts
+  s_94864882421579::t_a94ee7f9122d2e 1-3
+packages/server/sandbox/src/lib/sandbox/sandbox.ts
+  s_94864882421579::t_209c27f880e484 5-6
+packages/server/sandbox/src/lib/sandbox/types.ts
+  s_94864882421579::t_d5c9a964c0242c 2
+packages/server/sandbox/src/lib/types.ts
+  s_94864882421579::t_82fbbd7268ff11 1-2
+packages/server/sandbox/src/lib/utils/bun-runner.ts
+  s_94864882421579::t_a0ea8142dcec49 2-4
+packages/server/sandbox/src/lib/utils/path-safety.ts
+  s_94864882421579::t_f63a7b7beb52ed 1
+packages/server/sandbox/test/lib/cache/action-run-cache.test.ts
+  s_94864882421579::t_6fc639c6616a18 5-6
+packages/server/sandbox/test/lib/cache/engine-installer-identity.test.ts
+  s_94864882421579::t_4771838c54f41f 5
+packages/server/sandbox/test/lib/cache/flow/code/code-builder.test.ts
+  s_94864882421579::t_5102f1ca0d07f0 5-6
+packages/server/sandbox/test/lib/cache/flow/code/code-cache-traversal.test.ts
+  s_94864882421579::t_31b0e3a4eea2b8 5
+packages/server/sandbox/test/lib/cache/flow/code/package-dependencies.test.ts
+  s_94864882421579::t_c7994ee6903e31 8,15
+packages/server/sandbox/test/lib/cache/flow/flow-bundle-store.test.ts
+  s_94864882421579::t_5812ac7f1cae22 5-7,61
+packages/server/sandbox/test/lib/cache/flow/flow-provisioning.test.ts
+  s_94864882421579::t_11e5da50d96689 5-6,44,51,154
+packages/server/sandbox/test/lib/cache/piece-cache-traversal.test.ts
+  s_94864882421579::t_137ad70b2ab049 4,6-7,45
+packages/server/sandbox/test/lib/cache/piece-installer.test.ts
+  s_94864882421579::t_e65c9a3079823a 6-8,114-115,128-129,140-141,149-150,161-162,170,182,214,218,227,233,242,244-245,255,262-263,291-292,295,307-308,313,315
+packages/server/sandbox/test/lib/create-sandbox-for-job.test.ts
+  s_94864882421579::t_7865e0934a2fa4 2
+packages/server/sandbox/test/lib/sandbox-manager.test.ts
+  s_94864882421579::t_a23406397e7f4d 2
+packages/server/sandbox/test/lib/sandbox.test.ts
+  s_94864882421579::t_1ce76ee471edb8 1-2,10-11
+packages/server/sandbox/test/lib/sandbox/sandbox.test.ts
+  s_94864882421579::t_7d35ffc7125456 5-6
+packages/server/sandbox/test/lib/utils/path-safety.test.ts
+  s_94864882421579::t_1b922f8be77c0f 1
+packages/server/sandbox/vitest.config.ts
+  s_94864882421579::t_381ff027b73335 14-16
+packages/server/utils/package.json
+  s_94864882421579::t_cad7be84d26431 2,12,33-34
+packages/server/utils/src/ap-version.ts
+  s_94864882421579::t_523f01ae902679 1
+packages/server/utils/src/env-migrations.ts
+  s_94864882421579::t_cc15fd427a233a 1
+packages/server/utils/src/file-system-utils.ts
+  s_94864882421579::t_ad667b113b945d 3
+packages/server/utils/src/large-result-utils.ts
+  s_94864882421579::t_61401f81fa3dab 1
+packages/server/utils/src/on-call.service.ts
+  s_94864882421579::t_a5c91362df801f 1
+packages/server/utils/src/safe-http.ts
+  s_94864882421579::t_3bc5d36b555317 3
+packages/server/utils/src/system-usage.ts
+  s_94864882421579::t_baa4dde21964ce 3-4
+packages/server/utils/test/evlog-single-owner.test.ts
+  s_94864882421579::t_f8024ba727ecbb 11,19
+packages/server/utils/vitest.config.ts
+  s_94864882421579::t_a6d365ab3f53b9 13
+packages/server/worker/package.json
+  s_94864882421579::t_fea32211082aea 14-17,42-43
+packages/server/worker/src/lib/api-notify-service.ts
+  s_94864882421579::t_dfa666408a3328 1-3
+packages/server/worker/src/lib/config/configs.ts
+  s_94864882421579::t_3d9b555518f229 1
+packages/server/worker/src/lib/config/logger.ts
+  s_94864882421579::t_917d93c9555660 1
+packages/server/worker/src/lib/config/worker-settings.ts
+  s_94864882421579::t_1aee83b8dc2f47 1-2
+packages/server/worker/src/lib/execute/job-registry.ts
+  s_94864882421579::t_271b29d3bd4fc1 1
+packages/server/worker/src/lib/execute/jobs/execute-action.ts
+  s_94864882421579::t_57fefc1047465c 1-4
+packages/server/worker/src/lib/execute/jobs/execute-flow.ts
+  s_94864882421579::t_15e2a6c652607e 2-4
+packages/server/worker/src/lib/execute/jobs/execute-polling.ts
+  s_94864882421579::t_ab7bf17f5dfffb 1-2
+packages/server/worker/src/lib/execute/jobs/execute-property.ts
+  s_94864882421579::t_2599d80e13059b 1-2
+packages/server/worker/src/lib/execute/jobs/execute-token-refresh.ts
+  s_94864882421579::t_197c453dbad437 7
+packages/server/worker/src/lib/execute/jobs/execute-trigger-hook.ts
+  s_94864882421579::t_970756dccf8036 1-2
+packages/server/worker/src/lib/execute/jobs/execute-validation.ts
+  s_94864882421579::t_b2954435aa7e5e 1
+packages/server/worker/src/lib/execute/jobs/execute-webhook.ts
+  s_94864882421579::t_a98418c19815e5 1-2,17
+packages/server/worker/src/lib/execute/jobs/extract-piece-info.ts
+  s_94864882421579::t_e1e60a7d4e6220 5
+packages/server/worker/src/lib/execute/jobs/renew-webhook.ts
+  s_94864882421579::t_87c6caee4ddc67 1-2
+packages/server/worker/src/lib/execute/jobs/resolve-connection-identifier.ts
+  s_94864882421579::t_117fde0487a2e1 1-2
+packages/server/worker/src/lib/execute/types.ts
+  s_94864882421579::t_580597cc8fc0a6 1-3
+packages/server/worker/src/lib/execute/utils/sandbox-helpers.ts
+  s_94864882421579::t_9077df3fdb47cb 1
+packages/server/worker/src/lib/execute/utils/synchronous-result.ts
+  s_94864882421579::t_b825bc95eae692 1
+packages/server/worker/src/lib/execute/utils/trigger-run-recorder.ts
+  s_94864882421579::t_3d4d2e068650c5 1-3
+packages/server/worker/src/lib/runtime/sandbox-config.ts
+  s_94864882421579::t_3495089bbd96d4 1
+packages/server/worker/src/lib/utils/system-snapshot.ts
+  s_94864882421579::t_0375b58033f0c0 3
+packages/server/worker/src/lib/worker.ts
+  s_94864882421579::t_044ab0c8113a79 3-6
+packages/server/worker/test/lib/execute/jobs/execute-flow.test.ts
+  s_94864882421579::t_b591344886e8ba 2-4,29,42,194
+packages/server/worker/test/lib/execute/utils/trigger-run-recorder.test.ts
+  s_94864882421579::t_73b2524d2e008d 1,43,45,52,54,60,73
+packages/server/worker/test/lib/worker-settings-override.test.ts
+  s_94864882421579::t_3c8e6ec2cd71a1 9-10
+packages/server/worker/test/lib/worker.test.ts
+  s_94864882421579::t_fdd2900c544742 11,17,31,61,87,330,340
+packages/server/worker/vitest.config.ts
+  s_94864882421579::t_b88a53392cbc07 14-16
+packages/web/AGENTS.md
+  s_94864882421579::t_7cda40ca83513d 46
+packages/web/package.json
+  s_94864882421579::t_27b279909af774 6-9
+packages/web/src/api/authentication-api.ts
+  s_94864882421579::t_80457f98d0af5e 1,17
+packages/web/src/api/health-api.ts
+  s_94864882421579::t_c92ddcd229ffc9 1
+packages/web/src/api/platform-user-api.ts
+  s_94864882421579::t_2a31c4de144ec0 1,7
+packages/web/src/api/platforms-api.ts
+  s_94864882421579::t_67037f8aced48d 5
+packages/web/src/app/builder/builder-header/builder-header.tsx
+  s_94864882421579::t_68030961d2af44 1,8
+packages/web/src/app/builder/builder-header/flow-status/index.tsx
+  s_94864882421579::t_e3b5f3205d08e7 1-2
+packages/web/src/app/builder/builder-header/flow-status/view-draft-or-edit-flow-button.tsx
+  s_94864882421579::t_dd9003c2e07ac5 1-2
+packages/web/src/app/builder/data-display/copy-ai-prompt.tsx
+  s_94864882421579::t_72e1853f37c048 1
+packages/web/src/app/builder/data-display/explanation-prompt.ts
+  s_94864882421579::t_ada99c9e15ccab 1
+packages/web/src/app/builder/data-display/friendly-error-view.tsx
+  s_94864882421579::t_67d57d8d177fa1 1
+packages/web/src/app/builder/data-selector/utils-schema.ts
+  s_94864882421579::t_ae6bc7adb30619 1
+packages/web/src/app/builder/data-selector/utils.ts
+  s_94864882421579::t_f612de3a8e24ad 1,8
+packages/web/src/app/builder/data-selector/variables-tab.tsx
+  s_94864882421579::t_d8b7c364b692ec 1
+packages/web/src/app/builder/flow-canvas/canvas-controls/index.tsx
+  s_94864882421579::t_acdff1e2e18645 1
+packages/web/src/app/builder/flow-canvas/context-menu/canvas-context-menu-content.tsx
+  s_94864882421579::t_4bd846285991c4 7
+packages/web/src/app/builder/flow-canvas/edges/branch-label.tsx
+  s_94864882421579::t_a3b91a2d3de3f2 1,8
+packages/web/src/app/builder/flow-canvas/edges/loop-return-edge.tsx
+  s_94864882421579::t_9a0cf944e36fac 1
+packages/web/src/app/builder/flow-canvas/edges/loop-start-edge.tsx
+  s_94864882421579::t_943adb7502b6e3 1
+packages/web/src/app/builder/flow-canvas/edges/router-end-edge.tsx
+  s_94864882421579::t_31d8be7183cb99 1
+packages/web/src/app/builder/flow-canvas/edges/router-start-edge.tsx
+  s_94864882421579::t_7d2d9a7585e0c1 1
+packages/web/src/app/builder/flow-canvas/edges/straight-line-edge.tsx
+  s_94864882421579::t_d0ee0ae0cddf1c 1
+packages/web/src/app/builder/flow-canvas/hooks.tsx
+  s_94864882421579::t_cbb46e8c57a3c5 1,7
+packages/web/src/app/builder/flow-canvas/index.tsx
+  s_94864882421579::t_1ec40cea51d35e 1,10
+packages/web/src/app/builder/flow-canvas/nodes/note-node/note-drag-overlay.tsx
+  s_94864882421579::t_267c87273a5909 1
+packages/web/src/app/builder/flow-canvas/nodes/note-node/note-footer.tsx
+  s_94864882421579::t_78a420959fff41 1
+packages/web/src/app/builder/flow-canvas/nodes/note-node/note-tools.tsx
+  s_94864882421579::t_fb47c3d1dca1b9 1
+packages/web/src/app/builder/flow-canvas/nodes/step-node/step-drag-overlay.tsx
+  s_94864882421579::t_50c704879822fd 1
+packages/web/src/app/builder/flow-canvas/nodes/step-node/step-node-skipped-status.tsx
+  s_94864882421579::t_a7c3b27d3c4265 1,6
+packages/web/src/app/builder/flow-canvas/nodes/step-node/step-node-status-in-draft.tsx
+  s_94864882421579::t_f12174fe3fb331 1,7
+packages/web/src/app/builder/flow-canvas/utils/bulk-actions.ts
+  s_94864882421579::t_dc19b8e9d48017 9
+packages/web/src/app/builder/flow-canvas/utils/consts.ts
+  s_94864882421579::t_1d09cfda12a95e 9
+packages/web/src/app/builder/flow-canvas/utils/flow-canvas-utils.ts
+  s_94864882421579::t_22a28f41657a3d 1,16
+packages/web/src/app/builder/flow-canvas/utils/flow-screenshot-utils.ts
+  s_94864882421579::t_31ddc36dff4ffa 1
+packages/web/src/app/builder/flow-canvas/utils/layout-consts.ts
+  s_94864882421579::t_fd8f1976bf86f3 9
+packages/web/src/app/builder/flow-canvas/utils/svg-path-utils.ts
+  s_94864882421579::t_422cb8edd84a2a 1
+packages/web/src/app/builder/flow-canvas/utils/types.ts
+  s_94864882421579::t_cd0625acb9519d 6
+packages/web/src/app/builder/flow-canvas/widgets/builder-banner.tsx
+  s_94864882421579::t_7568906d0737d0 1
+packages/web/src/app/builder/flow-canvas/widgets/incomplete-settings-widget.tsx
+  s_94864882421579::t_98d53b050fb6f0 7
+packages/web/src/app/builder/flow-canvas/widgets/minimap.tsx
+  s_94864882421579::t_c45009cc4d8d7d 1-2
+packages/web/src/app/builder/flow-canvas/widgets/publish-flow-reminder-widget.tsx
+  s_94864882421579::t_110c7f6c151793 1,7
+packages/web/src/app/builder/flow-canvas/widgets/run-info-widget.tsx
+  s_94864882421579::t_65e447823d9b4f 6
+packages/web/src/app/builder/flow-canvas/widgets/test-flow-widget.tsx
+  s_94864882421579::t_986a148da8a9ad 1,6
+packages/web/src/app/builder/flow-canvas/widgets/use-flow-lock.ts
+  s_94864882421579::t_ff0ae4c02d89de 1
+packages/web/src/app/builder/flow-canvas/widgets/viewing-old-version-widget.tsx
+  s_94864882421579::t_0f6421e9e3a532 1
+packages/web/src/app/builder/flow-versions/flow-versions-card.tsx
+  s_94864882421579::t_8259af039963ff 1-2
+packages/web/src/app/builder/flow-versions/overwrite-draft-dialog.tsx
+  s_94864882421579::t_1da86c814c8b30 1
+packages/web/src/app/builder/index.tsx
+  s_94864882421579::t_9403b4eb11ee8f 7
+packages/web/src/app/builder/piece-properties/action-error-handling.tsx
+  s_94864882421579::t_0448c5474665bd 1
+packages/web/src/app/builder/piece-properties/array-property.tsx
+  s_94864882421579::t_97a318ba3ec5c3 5
+packages/web/src/app/builder/piece-properties/custom-property.tsx
+  s_94864882421579::t_2a853c8b12e47e 1
+packages/web/src/app/builder/piece-properties/filter-builder-layout.tsx
+  s_94864882421579::t_82ab654a204906 5
+packages/web/src/app/builder/piece-properties/filter-layout.tsx
+  s_94864882421579::t_0c4a0f723e2158 5
+packages/web/src/app/builder/piece-properties/filter-property-utils.ts
+  s_94864882421579::t_3d08d2f259acba 1
+packages/web/src/app/builder/piece-properties/property-group-tabs.tsx
+  s_94864882421579::t_3705d2832783fb 5-6
+packages/web/src/app/builder/piece-properties/rich-text-property.tsx
+  s_94864882421579::t_e8eaad53f5b71f 1
+packages/web/src/app/builder/piece-properties/static-dropdown-cards.tsx
+  s_94864882421579::t_2f080389ad59c2 1
+packages/web/src/app/builder/piece-properties/text-input-with-mentions/components/function-hover-popover.tsx
+  s_94864882421579::t_e71f1ca1436f24 1
+packages/web/src/app/builder/piece-properties/text-input-with-mentions/components/function-search-popover.tsx
+  s_94864882421579::t_9e99491c4b8a86 1
+packages/web/src/app/builder/piece-properties/text-input-with-mentions/extensions/bracket-nodes.tsx
+  s_94864882421579::t_cdf4ce7bda949f 1
+packages/web/src/app/builder/pieces-selector/approvals-tab-content.tsx
+  s_94864882421579::t_06a1d3510b2aef 1-2,19,26,30,37,41,45
+packages/web/src/app/builder/pieces-selector/custom-piece-selector-items-utils.ts
+  s_94864882421579::t_92e85e0db99f5e 1
+packages/web/src/app/builder/pieces-selector/explore-tab-content.tsx
+  s_94864882421579::t_4ec46f1c029e9b 1
+packages/web/src/app/builder/pieces-selector/generic-piece-selector-item.tsx
+  s_94864882421579::t_0ce2503bfcc525 1-2
+packages/web/src/app/builder/pieces-selector/index.tsx
+  s_94864882421579::t_c5e9bc003076bb 1,147
+packages/web/src/app/builder/pieces-selector/no-results-found.tsx
+  s_94864882421579::t_17ff9d0cbb3784 1
+packages/web/src/app/builder/pieces-selector/piece-actions-or-triggers-list.tsx
+  s_94864882421579::t_f9732b7a5d4198 1,6
+packages/web/src/app/builder/pieces-selector/pieces-card-list.tsx
+  s_94864882421579::t_b622552beb695e 5
+packages/web/src/app/builder/run-details/flow-step-input-output.tsx
+  s_94864882421579::t_93e8a0718973e0 1,14
+packages/web/src/app/builder/run-details/loop-iteration-input.tsx
+  s_94864882421579::t_bcae2a0e514977 1,7
+packages/web/src/app/builder/run-details/truncated-input-utils.ts
+  s_94864882421579::t_a1b9bcb0a1dce6 1
+packages/web/src/app/builder/run-list/flow-run-card.tsx
+  s_94864882421579::t_d2d54e79740c27 1,8
+packages/web/src/app/builder/run-list/index.tsx
+  s_94864882421579::t_8ca67228ce5734 1-2
+packages/web/src/app/builder/state/builder-state-provider.tsx
+  s_94864882421579::t_028088b01c31e6 1
+packages/web/src/app/builder/state/canvas-state.ts
+  s_94864882421579::t_b082a3feca1688 1-2
+packages/web/src/app/builder/state/flow-state.ts
+  s_94864882421579::t_fb448ccddcde0d 1,12
+packages/web/src/app/builder/state/notes-state.tsx
+  s_94864882421579::t_95abcfb531ef5b 1,7
+packages/web/src/app/builder/state/piece-selector-state.ts
+  s_94864882421579::t_361a52ef23fe84 1
+packages/web/src/app/builder/state/run-state.ts
+  s_94864882421579::t_413b16773921a6 1,15
+packages/web/src/app/builder/step-data/step-data-panel-header.tsx
+  s_94864882421579::t_d804b49db4224d 1
+packages/web/src/app/builder/step-data/step-data-panel-host.tsx
+  s_94864882421579::t_64ad7fe1f0bfd8 1-2
+packages/web/src/app/builder/step-settings/branch-settings/branch-condition-group.tsx
+  s_94864882421579::t_30ee2cc603ee02 1
+packages/web/src/app/builder/step-settings/branch-settings/branch-single-condition.tsx
+  s_94864882421579::t_ceb406342524da 6
+packages/web/src/app/builder/step-settings/branch-settings/index.tsx
+  s_94864882421579::t_dde8ebcd0d60de 1
+packages/web/src/app/builder/step-settings/code-settings/index.tsx
+  s_94864882421579::t_8e15a7e60d3b28 1
+packages/web/src/app/builder/step-settings/editable-step-name.tsx
+  s_94864882421579::t_10c327332ac748 1
+packages/web/src/app/builder/step-settings/index.tsx
+  s_94864882421579::t_5142b97c88c21f 1,10,159
+packages/web/src/app/builder/step-settings/loops-settings.tsx
+  s_94864882421579::t_dd33007e1deeb2 1
+packages/web/src/app/builder/step-settings/router-settings/branches-list.tsx
+  s_94864882421579::t_4c4f78f91683fb 1,6
+packages/web/src/app/builder/step-settings/router-settings/index.tsx
+  s_94864882421579::t_e9cb18490dc9b7 1,10
+packages/web/src/app/builder/step-settings/step-navigation-buttons.tsx
+  s_94864882421579::t_c9b6bb7b60aa88 1-2
+packages/web/src/app/builder/step-settings/update-piece-version-dialog/update-piece-version-dialog.tsx
+  s_94864882421579::t_11e7312d06e02a 1
+packages/web/src/app/builder/step-settings/update-piece-version-dialog/upgrade-piece-version-dialog.tsx
+  s_94864882421579::t_08556949575eb3 1
+packages/web/src/app/builder/test-step/custom-test-step/test-webhook-dialog.tsx
+  s_94864882421579::t_5c17397f670c53 1
+packages/web/src/app/builder/test-step/index.tsx
+  s_94864882421579::t_29b56b3ea7b4a3 1
+packages/web/src/app/builder/test-step/test-action-section.tsx
+  s_94864882421579::t_64fddbb25231b0 1,7
+packages/web/src/app/builder/test-step/test-runner-context.tsx
+  s_94864882421579::t_2d4781adc775d8 6,33
+packages/web/src/app/builder/test-step/test-sample-data-viewer.tsx
+  s_94864882421579::t_2a0b208444e584 1-2
+packages/web/src/app/builder/test-step/test-step-cta-button.tsx
+  s_94864882421579::t_827d2ca5a5bbde 1,8
+packages/web/src/app/builder/test-step/test-trigger-section/first-time-testing-section.tsx
+  s_94864882421579::t_714e1a43657d2e 1
+packages/web/src/app/builder/test-step/test-trigger-section/manual-webhook-test-button.tsx
+  s_94864882421579::t_e34ed17fb1da71 1
+packages/web/src/app/builder/test-step/test-trigger-section/trigger-event-select.tsx
+  s_94864882421579::t_615ec24248d9e0 1
+packages/web/src/app/builder/test-step/test-trigger-section/trigger-event-utils.ts
+  s_94864882421579::t_1b7f20cbf5aaca 1-2,30
+packages/web/src/app/builder/test-step/utils/test-step-hooks.ts
+  s_94864882421579::t_84fcb6073c56d2 7,14
+packages/web/src/app/components/account-settings/index.tsx
+  s_94864882421579::t_d13030e4175be0 4
+packages/web/src/app/components/account-settings/language-toggle.tsx
+  s_94864882421579::t_767c562fa40c03 1
+packages/web/src/app/components/embedding-font-loader.tsx
+  s_94864882421579::t_458df562b8582d 1
+packages/web/src/app/components/flag-guard.tsx
+  s_94864882421579::t_4a3880d31620ae 1
+packages/web/src/app/components/global-search/use-global-search-results.ts
+  s_94864882421579::t_9aff275cd44c5f 1
+packages/web/src/app/components/help-and-feedback.tsx
+  s_94864882421579::t_39793a093e7005 1
+packages/web/src/app/components/project-layout/index.tsx
+  s_94864882421579::t_9fde83c4216239 1
+packages/web/src/app/components/project-layout/project-dashboard-layout-header.tsx
+  s_94864882421579::t_04999b9c5f98d0 1
+packages/web/src/app/components/project-layout/project-dashboard-page-header.tsx
+  s_94864882421579::t_ded327cf4b5c75 1-2
+packages/web/src/app/components/project-settings-layout.tsx
+  s_94864882421579::t_e8a84ba2eaa84a 1
+packages/web/src/app/components/project-settings/general/index.tsx
+  s_94864882421579::t_0ab16d6454266f 8
+packages/web/src/app/components/project-settings/index.tsx
+  s_94864882421579::t_14516e96aee1ec 1-2
+packages/web/src/app/components/sidebar/dashboard/index.tsx
+  s_94864882421579::t_fae9ef36c9c46a 1,8
+packages/web/src/app/components/sidebar/project/index.tsx
+  s_94864882421579::t_b8cddd99bd42e8 1,6
+packages/web/src/app/components/sidebar/sidebar-user.tsx
+  s_94864882421579::t_1effb0e5956ca0 1
+packages/web/src/app/connections/basic-secret-connection-settings.tsx
+  s_94864882421579::t_545c4a537f7a0e 1-2
+packages/web/src/app/connections/custom-auth-connection-settings.tsx
+  s_94864882421579::t_148e1dc15022b2 1
+packages/web/src/app/connections/multi-auth-list.tsx
+  s_94864882421579::t_0869e335c51c7b 7,12
+packages/web/src/app/connections/oidc-connection-settings.tsx
+  s_94864882421579::t_05bb88276c5c93 1
+packages/web/src/app/connections/reconnect-button-dialog.tsx
+  s_94864882421579::t_85c0064566fa21 4
+packages/web/src/app/connections/replace-connections-dialog.tsx
+  s_94864882421579::t_8ddabfbab9e002 1-2,170-171
+packages/web/src/app/connections/secret-text-connection-settings.tsx
+  s_94864882421579::t_dcac7b66512040 1-2
+packages/web/src/app/guards/agents-flag-guard.tsx
+  s_94864882421579::t_4e62a91d614721 1
+packages/web/src/app/guards/flag-route-guard.tsx
+  s_94864882421579::t_b0463ae00958c8 1
+packages/web/src/app/guards/permission-guard.tsx
+  s_94864882421579::t_9c414619f61ba1 1
+packages/web/src/app/guards/project-route-wrapper.tsx
+  s_94864882421579::t_7d308dde4a1f5e 1
+packages/web/src/app/guards/template-details-wrapper.tsx
+  s_94864882421579::t_e3bce315147c5f 1-2
+packages/web/src/app/query-client.ts
+  s_94864882421579::t_cd5d7929c8d5fe 1
+packages/web/src/app/routes/automations/index.tsx
+  s_94864882421579::t_65fb0ca918ee05 1-2
+packages/web/src/app/routes/connections/index.tsx
+  s_94864882421579::t_08ff49735b21ed 1,7
+packages/web/src/app/routes/flows/id/index.tsx
+  s_94864882421579::t_f5c6e3b8c0b18a 1-2
+packages/web/src/app/routes/forms/index.tsx
+  s_94864882421579::t_87a3b2be3c66a8 1-2
+packages/web/src/app/routes/platform/connections/index.tsx
+  s_94864882421579::t_ce6b79b8028e8d 6
+packages/web/src/app/routes/platform/infra/health/components/daily-health-strip.tsx
+  s_94864882421579::t_b31842c0ccd439 1
+packages/web/src/app/routes/platform/infra/health/components/internal-errors-table.tsx
+  s_94864882421579::t_8d402abf390325 1
+packages/web/src/app/routes/platform/infra/health/components/queue-tab.tsx
+  s_94864882421579::t_6a890d3fd8f00e 1
+packages/web/src/app/routes/platform/infra/health/components/runs-tab.tsx
+  s_94864882421579::t_f004a55bf8fa52 1
+packages/web/src/app/routes/platform/infra/health/components/stuck-jobs-table.tsx
+  s_94864882421579::t_9971ca191d8e47 1
+packages/web/src/app/routes/platform/infra/health/components/system-health-tab.tsx
+  s_94864882421579::t_6e6ee5a8db7449 1,31
+packages/web/src/app/routes/platform/infra/health/lib/health-metrics-api.ts
+  s_94864882421579::t_95a01829e22494 5
+packages/web/src/app/routes/platform/infra/triggers/index.tsx
+  s_94864882421579::t_1e3a864189355a 1
+packages/web/src/app/routes/platform/infra/workers/assign-projects-dialog.tsx
+  s_94864882421579::t_e86e6981f6d418 1
+packages/web/src/app/routes/platform/infra/workers/by-group-view.tsx
+  s_94864882421579::t_66333b17bbde0c 5
+packages/web/src/app/routes/platform/infra/workers/by-project-view.tsx
+  s_94864882421579::t_738d6612e454a8 6
+packages/web/src/app/routes/platform/infra/workers/index.tsx
+  s_94864882421579::t_4725e0a2df457e 6
+packages/web/src/app/routes/platform/infra/workers/project-avatar.tsx
+  s_94864882421579::t_7498e735d4e827 5
+packages/web/src/app/routes/platform/infra/workers/sandboxes-popover.tsx
+  s_94864882421579::t_60040697d5ef1a 1
+packages/web/src/app/routes/platform/infra/workers/worker-configs-popover.tsx
+  s_94864882421579::t_0784755fdd91c6 1
+packages/web/src/app/routes/platform/projects/columns.tsx
+  s_94864882421579::t_c380e11eede371 1,6
+packages/web/src/app/routes/platform/projects/index.tsx
+  s_94864882421579::t_fd5cfe676f2f32 1
+packages/web/src/app/routes/platform/security/sso/allowed-domain.tsx
+  s_94864882421579::t_3bfca793450ef5 4
+packages/web/src/app/routes/platform/security/sso/index.tsx
+  s_94864882421579::t_a8c789bf452039 1
+packages/web/src/app/routes/platform/security/sso/saml-dialog.tsx
+  s_94864882421579::t_773a1d1c433e94 8
+packages/web/src/app/routes/platform/setup/connections/index.tsx
+  s_94864882421579::t_e905d1c6a99b76 1,5
+packages/web/src/app/routes/platform/setup/general/appearance-section.tsx
+  s_94864882421579::t_2ef5d451d2eae0 1-2
+packages/web/src/app/routes/platform/setup/pieces/customize-selector-dialog.tsx
+  s_94864882421579::t_9357baf4b5b1b1 1,6
+packages/web/src/app/routes/platform/setup/pieces/sync-pieces.tsx
+  s_94864882421579::t_5e97e37d401ac4 1
+packages/web/src/app/routes/platform/setup/templates/create-template-dialog.tsx
+  s_94864882421579::t_ddba5d6aeb375c 5
+packages/web/src/app/routes/platform/setup/templates/index.tsx
+  s_94864882421579::t_dba9749a7b3118 1
+packages/web/src/app/routes/platform/setup/templates/update-template-dialog.tsx
+  s_94864882421579::t_0e3da6e31f639a 5
+packages/web/src/app/routes/platform/users/actions/toggle-user-status-action.tsx
+  s_94864882421579::t_5b98741f5c523b 1
+packages/web/src/app/routes/platform/users/actions/user-actions.tsx
+  s_94864882421579::t_df902e623383dc 1
+packages/web/src/app/routes/platform/users/columns.tsx
+  s_94864882421579::t_2eadd44c0d3bec 1
+packages/web/src/app/routes/platform/users/index.tsx
+  s_94864882421579::t_017a841cdf0e34 5
+packages/web/src/app/routes/project-routes.tsx
+  s_94864882421579::t_2977e498f18d6b 1
+packages/web/src/app/routes/redirect.tsx
+  s_94864882421579::t_722216c910d118 1
+packages/web/src/app/routes/runs/id/index.tsx
+  s_94864882421579::t_c1c0483fc86c1d 1
+packages/web/src/app/routes/templates/all-categories-view.tsx
+  s_94864882421579::t_710e370a9994e1 1
+packages/web/src/app/routes/templates/category-section.tsx
+  s_94864882421579::t_605cf97a7390e9 1
+packages/web/src/app/routes/templates/id/flow-card.tsx
+  s_94864882421579::t_2a8fccd71935f1 1
+packages/web/src/app/routes/templates/id/index.tsx
+  s_94864882421579::t_456e08e21bbd2f 1,9
+packages/web/src/app/routes/templates/index.tsx
+  s_94864882421579::t_bb532f02b8a20e 6
+packages/web/src/app/routes/templates/selected-category-view.tsx
+  s_94864882421579::t_eb366d8193e4ce 1
+packages/web/src/app/routes/variables/index.tsx
+  s_94864882421579::t_38373e3a726ed7 1-2
+packages/web/src/app/variables/variable-dialog.tsx
+  s_94864882421579::t_3cc16da3c0b6a1 1,6
+packages/web/src/components/custom/ap-avatar.tsx
+  s_94864882421579::t_2fbf15a277ade9 1
+packages/web/src/components/custom/ap-error-dialog/ap-error-dialog.tsx
+  s_94864882421579::t_7ab7a417209ed9 1
+packages/web/src/components/custom/clearable-input.tsx
+  s_94864882421579::t_8853e64d3e50ab 1
+packages/web/src/components/custom/data-table/index.tsx
+  s_94864882421579::t_30f8eeb18c056f 3
+packages/web/src/components/custom/editable-text.tsx
+  s_94864882421579::t_1cb2af685b385e 1
+packages/web/src/components/custom/json-viewer.tsx
+  s_94864882421579::t_718e14608e57a3 1
+packages/web/src/components/custom/markdown.tsx
+  s_94864882421579::t_fe068a50178ea9 1
+packages/web/src/components/custom/smart-output-viewer/field-type-icon.tsx
+  s_94864882421579::t_99f87b4ecc9bbc 1
+packages/web/src/components/custom/smart-output-viewer/format-value.tsx
+  s_94864882421579::t_19353bdb89caa7 1
+packages/web/src/components/custom/smart-output-viewer/index.tsx
+  s_94864882421579::t_708cc68075ca6e 1
+packages/web/src/components/custom/smart-output-viewer/output-array-list.tsx
+  s_94864882421579::t_2316ebf5a1aee1 1
+packages/web/src/components/custom/smart-output-viewer/output-field-row.tsx
+  s_94864882421579::t_8d9e02a7c6a6ba 1
+packages/web/src/components/custom/smart-output-viewer/output-schema-array-list.tsx
+  s_94864882421579::t_55cd7769edc998 1
+packages/web/src/components/custom/smart-output-viewer/output-table-view.tsx
+  s_94864882421579::t_edc69cc531fae0 1
+packages/web/src/components/custom/smart-output-viewer/resolve-schema.ts
+  s_94864882421579::t_f61d34f8ed016d 1
+packages/web/src/components/custom/smart-output-viewer/shared-value-rendering.tsx
+  s_94864882421579::t_7c7c6714758901 1
+packages/web/src/components/custom/smart-output-viewer/types.ts
+  s_94864882421579::t_403b5ef5eb1830 5
+packages/web/src/components/custom/time-picker.tsx
+  s_94864882421579::t_6b9d1c219e65d5 3
+packages/web/src/components/custom/time-unit-input.tsx
+  s_94864882421579::t_353c96f3a83e8a 1
+packages/web/src/components/custom/user-avatar.tsx
+  s_94864882421579::t_f443f9736d94b6 1
+packages/web/src/components/ui/virtualized-scroll-area.tsx
+  s_94864882421579::t_9dc817ee4a6535 3
+packages/web/src/features/authentication/components/auth-form-template.tsx
+  s_94864882421579::t_bd27c0a9ccf0f0 1
+packages/web/src/features/authentication/components/auth-landing/auth-drawer-body.tsx
+  s_94864882421579::t_356f6c69c91e2d 1,8
+packages/web/src/features/authentication/components/auth-landing/auth-landing.tsx
+  s_94864882421579::t_6399fcd53c6632 1
+packages/web/src/features/authentication/components/auth-landing/turnstile-widget.tsx
+  s_94864882421579::t_37c56dd374104c 1-2
+packages/web/src/features/authentication/components/change-password.tsx
+  s_94864882421579::t_f269fa539ef1a8 1
+packages/web/src/features/authentication/components/check-email-note.tsx
+  s_94864882421579::t_e6405e03e7313a 1
+packages/web/src/features/authentication/components/reset-password-form.tsx
+  s_94864882421579::t_8b9d89db4cb41e 1
+packages/web/src/features/authentication/components/sign-in-form.tsx
+  s_94864882421579::t_26ec1a8fcb1399 1,7
+packages/web/src/features/authentication/components/sign-up-form.tsx
+  s_94864882421579::t_145f4991dfc16e 1-2
+packages/web/src/features/authentication/components/third-party-logins.tsx
+  s_94864882421579::t_71d955840e43c4 6
+packages/web/src/features/authentication/components/verify-email.tsx
+  s_94864882421579::t_c4d5b380f9a332 1
+packages/web/src/features/authentication/hooks/auth-hooks.ts
+  s_94864882421579::t_fe683f51bfa406 12
+packages/web/src/features/authentication/utils/captcha-utils.ts
+  s_94864882421579::t_ad098767be4ce8 1
+packages/web/src/features/automations/components/automations-filters.tsx
+  s_94864882421579::t_c74583aadb08d2 1,6
+packages/web/src/features/automations/components/automations-table-row.tsx
+  s_94864882421579::t_ee165da4faac79 1
+packages/web/src/features/automations/components/automations-table.tsx
+  s_94864882421579::t_6973c0bc8c6091 1
+packages/web/src/features/automations/components/create-folder-dialog.tsx
+  s_94864882421579::t_f11e1ff9e75ed5 1
+packages/web/src/features/automations/components/move-to-folder-dialog.tsx
+  s_94864882421579::t_d1be1e24019714 1
+packages/web/src/features/automations/hooks/use-automations-data.ts
+  s_94864882421579::t_55650e670305fc 6
+packages/web/src/features/automations/hooks/use-automations-mutations.ts
+  s_94864882421579::t_638a8228e282ed 1,6
+packages/web/src/features/automations/lib/types.ts
+  s_94864882421579::t_6b68218b5142b1 1-2
+packages/web/src/features/automations/lib/utils.ts
+  s_94864882421579::t_c1d5e510bef8cc 1
+packages/web/src/features/connections/api/app-connections.ts
+  s_94864882421579::t_50d6c2ae028bf3 1,12
+packages/web/src/features/connections/api/global-connections.ts
+  s_94864882421579::t_784828fb5aa855 1,7
+packages/web/src/features/connections/hooks/global-connections-hooks.ts
+  s_94864882421579::t_df67a7551d55a0 4
+packages/web/src/features/flow-runs/api/flow-runs-api.ts
+  s_94864882421579::t_5a2c80622a2872 1,17
+packages/web/src/features/flow-runs/components/runs-table/columns.tsx
+  s_94864882421579::t_4e96100159c109 1-2
+packages/web/src/features/flow-runs/components/runs-table/failed-retry-runs-dialog.tsx
+  s_94864882421579::t_dc3e3f85a0a966 1-2
+packages/web/src/features/flow-runs/components/runs-table/failed-step-dialog.tsx
+  s_94864882421579::t_74f4d09a0bd9c1 1,8
+packages/web/src/features/flow-runs/components/runs-table/index.tsx
+  s_94864882421579::t_06fec15632f0e5 1,9
+packages/web/src/features/flow-runs/components/step-status-icon.tsx
+  s_94864882421579::t_f32e9312fc85a2 1
+packages/web/src/features/flow-runs/components/timeline-bar.tsx
+  s_94864882421579::t_8007a805982e94 1
+packages/web/src/features/flow-runs/hooks/flow-run-hooks.ts
+  s_94864882421579::t_a36c82b3c7d864 1,12
+packages/web/src/features/flow-runs/utils/flow-run-utils.ts
+  s_94864882421579::t_c1b65d4996ca4f 1,10
+packages/web/src/features/flows/api/flows-api.tsx
+  s_94864882421579::t_4a991177af957c 1,14
+packages/web/src/features/flows/api/sample-data-api.ts
+  s_94864882421579::t_450b38c09de778 1
+packages/web/src/features/flows/api/trigger-events-api.ts
+  s_94864882421579::t_ab56c1592a0497 1,7
+packages/web/src/features/flows/api/trigger-run-api.ts
+  s_94864882421579::t_756e20fa47ce20 1
+packages/web/src/features/flows/components/change-owner-dialog.tsx
+  s_94864882421579::t_607cfbb4080c8b 1
+packages/web/src/features/flows/components/flow-created-by-badge.tsx
+  s_94864882421579::t_f322e9e5830952 1
+packages/web/src/features/flows/components/flow-status-toggle.tsx
+  s_94864882421579::t_ca9f320db3a28a 1-2
+packages/web/src/features/flows/components/flow-version-state-dot.tsx
+  s_94864882421579::t_e854c7405efa0c 1
+packages/web/src/features/flows/components/import-flow-dialog.tsx
+  s_94864882421579::t_490d893481a5d8 1,7
+packages/web/src/features/flows/components/share-template-dialog.tsx
+  s_94864882421579::t_870176338e8008 1
+packages/web/src/features/flows/hooks/sample-data-hooks.ts
+  s_94864882421579::t_ab0b51af00400c 5
+packages/web/src/features/flows/hooks/trigger-event-hooks.ts
+  s_94864882421579::t_bc6254bdab5268 1-2
+packages/web/src/features/flows/utils/flows-utils.tsx
+  s_94864882421579::t_1547dbe42d492b 5
+packages/web/src/features/flows/utils/template-parser.ts
+  s_94864882421579::t_8c2addfcfc12fd 1
+packages/web/src/features/folders/api/folders-api.ts
+  s_94864882421579::t_a1ed5044dd7814 7
+packages/web/src/features/folders/components/rename-folder-dialog.tsx
+  s_94864882421579::t_6c0e5ba8eae199 1
+packages/web/src/features/folders/hooks/folders-hooks.ts
+  s_94864882421579::t_5bbd0621b9758f 1
+packages/web/src/features/forms/api/human-input-api.tsx
+  s_94864882421579::t_004ee5ce1bfc22 6
+packages/web/src/features/forms/components/ap-form.tsx
+  s_94864882421579::t_16954f5985e69d 10
+packages/web/src/features/forms/hooks/forms-hooks.ts
+  s_94864882421579::t_a326149893cd82 1
+packages/web/src/features/invitations/api/user-invitation.ts
+  s_94864882421579::t_7953dcac190ae5 1,7
+packages/web/src/features/invitations/components/invitation-card.tsx
+  s_94864882421579::t_c1399262b2deff 1-2
+packages/web/src/features/invitations/hooks/user-invitations-hooks.ts
+  s_94864882421579::t_b069b79c6913e4 1
+packages/web/src/features/pieces/api/pieces-api.ts
+  s_94864882421579::t_ecdf55dffdd0f9 7,15
+packages/web/src/features/pieces/components/install-piece-dialog.tsx
+  s_94864882421579::t_0bdc2bc8d3be81 1,7,257
+packages/web/src/features/pieces/components/piece-icon-list.tsx
+  s_94864882421579::t_1ad4fd14e17e9d 6
+packages/web/src/features/pieces/hooks/steps-hooks.ts
+  s_94864882421579::t_fbf90a12a9e51f 1,8
+packages/web/src/features/pieces/types/index.ts
+  s_94864882421579::t_78a90d25858407 7,15
+packages/web/src/features/pieces/utils/piece-search-utils.ts
+  s_94864882421579::t_1817db4769b2a2 6,100-108,162-166,171-176
+packages/web/src/features/pieces/utils/piece-selector-customization.tsx
+  s_94864882421579::t_342b1640f66d33 5
+packages/web/src/features/platform-admin/api/platform-app-connections-api.ts
+  s_94864882421579::t_56161cab5a5904 1,6
+packages/web/src/features/platform-admin/api/saml-sso-api.ts
+  s_94864882421579::t_f7b785f7907996 1
+packages/web/src/features/platform-admin/api/workers-api.ts
+  s_94864882421579::t_bb460407006e05 1
+packages/web/src/features/platform-admin/hooks/platform-app-connections-hooks.ts
+  s_94864882421579::t_e555bb95877523 1
+packages/web/src/features/platform-admin/hooks/platform-pieces-hooks.ts
+  s_94864882421579::t_062e7097845371 1
+packages/web/src/features/platform-admin/hooks/platform-user-hooks.ts
+  s_94864882421579::t_977c13c16e2bcc 1,8
+packages/web/src/features/platform-admin/hooks/sso-hooks.ts
+  s_94864882421579::t_318c835fb53417 1
+packages/web/src/features/platform-admin/hooks/workers-hooks.ts
+  s_94864882421579::t_7cec362bf76686 1
+packages/web/src/features/projects/components/create-platform-dialog.tsx
+  s_94864882421579::t_ed3b32745f993a 1
+packages/web/src/features/projects/components/create-project-button.tsx
+  s_94864882421579::t_3b04cd10767949 1
+packages/web/src/features/projects/components/edit-project-dialog.tsx
+  s_94864882421579::t_d258b187d3971c 1,6
+packages/web/src/features/projects/components/new-project-dialog.tsx
+  s_94864882421579::t_f86acf205cd169 5
+packages/web/src/features/projects/components/projects-selector.tsx
+  s_94864882421579::t_59b13dad3d77ea 1
+packages/web/src/features/projects/stores/project-collection.ts
+  s_94864882421579::t_6d0f73a02a5b53 1,9
+packages/web/src/features/projects/stores/projects-collection.test.ts
+  s_94864882421579::t_f9b76c0f07b88a 2-3
+packages/web/src/features/templates/api/templates-api.ts
+  s_94864882421579::t_b9c00253806a03 1,8
+packages/web/src/features/templates/api/templates-telemetry-api.ts
+  s_94864882421579::t_4d1d8f8104a26a 1
+packages/web/src/features/templates/components/explore-template-card.tsx
+  s_94864882421579::t_b3cfd8ecf6e379 1
+packages/web/src/features/templates/components/share-template.tsx
+  s_94864882421579::t_ce19e48545c61c 1-2
+packages/web/src/features/templates/components/templates-browse-dialog.tsx
+  s_94864882421579::t_6a8386b0d12833 1
+packages/web/src/features/templates/components/use-template-dialog.tsx
+  s_94864882421579::t_145fa37e09e7db 1,8
+packages/web/src/features/templates/hooks/templates-hook.ts
+  s_94864882421579::t_2bd0721b63bec6 1
+packages/web/src/features/templates/hooks/use-gradient-from-pieces.ts
+  s_94864882421579::t_ff5f1ed2afb74f 6
+packages/web/src/features/variables/api/variables.ts
+  s_94864882421579::t_3be29fb9955e1f 1,9
+packages/web/src/features/variables/hooks/variables-hooks.ts
+  s_94864882421579::t_1b4ad4be898284 1
+packages/web/src/hooks/authorization-hooks.ts
+  s_94864882421579::t_a8594bab8a575f 1-2
+packages/web/src/hooks/flags-hooks.ts
+  s_94864882421579::t_783b4df76ad10e 1
+packages/web/src/hooks/platform-hooks.ts
+  s_94864882421579::t_41de4f5d06b15c 1
+packages/web/src/hooks/use-presence.ts
+  s_94864882421579::t_f9a3817adc8574 6
+packages/web/src/hooks/use-resource-lock.ts
+  s_94864882421579::t_cdbd5760f0c02c 7
+packages/web/src/hooks/user-hooks.ts
+  s_94864882421579::t_4aee42b31d1c95 1-2
+packages/web/src/i18n.ts
+  s_94864882421579::t_728a7c7d2096eb 1
+packages/web/src/lib/acquisition-utils.ts
+  s_94864882421579::t_1ba5871efdea0c 1
+packages/web/src/lib/api.ts
+  s_94864882421579::t_e5b212c43fe309 1
+packages/web/src/lib/error-reporting.ts
+  s_94864882421579::t_9c7668e221a3d1 1-2
+packages/web/src/lib/locale-utils.ts
+  s_94864882421579::t_9b7d6b2068755e 1
+packages/web/src/lib/path-utils.ts
+  s_94864882421579::t_3e03af9445ccd0 1
+packages/web/src/lib/route-utils.ts
+  s_94864882421579::t_4278706406eb82 1
+packages/web/test/app/builder/data-selector/utils.test.ts
+  s_94864882421579::t_de2cdd95447562 4
+packages/web/test/app/builder/flow-canvas/utils/flow-canvas-utils.test.ts
+  s_94864882421579::t_80781e8ed45568 9
+packages/web/test/app/builder/piece-properties/dynamic-piece-property.test.tsx
+  s_94864882421579::t_a66eb607ae34ba 7,112
+packages/web/test/app/builder/piece-properties/filter-property-utils.test.ts
+  s_94864882421579::t_81d46b13228f58 1
+packages/web/test/app/builder/piece-properties/text-input-with-mentions/extensions/formula-backspace.test.ts
+  s_94864882421579::t_c83bc00a738bcd 2
+packages/web/test/app/builder/shortcuts.test.tsx
+  s_94864882421579::t_e81f96d1fae60d 12
+packages/web/test/app/builder/step-settings/branch-settings/branch-single-condition.test.tsx
+  s_94864882421579::t_ec1add88694ac4 21
+packages/web/test/app/routes/platform/infra/health/components/system-health-tab.test.tsx
+  s_94864882421579::t_fa540282c37727 5
+packages/web/test/features/pieces/parse-dynamic-value.test.ts
+  s_94864882421579::t_c1cbc7e53658fa 1
+packages/web/test/features/pieces/pieces-api.test.ts
+  s_94864882421579::t_13652ac89e40bb 1-2
+packages/web/test/hooks/use-resource-lock.test.tsx
+  s_94864882421579::t_7e7bbee68b5140 20
+packages/web/test/lib/route-utils.test.ts
+  s_94864882421579::t_7f3878452616f2 1
+packages/web/tsconfig.spec.json
+  s_94864882421579::t_c654a8b15b0094 11,14
+packages/web/vitest.config.ts
+  s_94864882421579::t_0c8bb5f796d998 13,17,21,25,29,33
+tools/scripts/migrate-custom-piece-to-turbo.ts
+  s_94864882421579::t_a6925cbbe20f56 75-76
+tools/scripts/pieces/load-piece-metadata-child.mjs
+  s_94864882421579::t_47b8dd112218fa 5
+tools/scripts/pieces/prepare-pieces-for-publish.ts
+  s_94864882421579::t_6d70e578facac3 3
+tools/scripts/pieces/publish-piece.ts
+  s_94864882421579::t_2309968180c3f4 6
+tools/scripts/pieces/publish-pieces-to-npm.ts
+  s_94864882421579::t_51446dd9d42b3e 3
+tools/scripts/pieces/update-pieces-metadata.ts
+  s_94864882421579::t_62402015fd6a00 6
+tools/scripts/utils/piece-script-utils.ts
+  s_94864882421579::t_adbac9b1c71191 8,11,30
+tools/scripts/utils/publish-npm-package.ts
+  s_94864882421579::t_1c3d46e97de587 35,37,52,83
+tools/scripts/validate-publishable-packages.ts
+  s_94864882421579::t_cd23205dcaa64a 16
+tsconfig.base.json
+  s_94864882421579::t_03ad8b4f91dfc4 23,26,29,32,35,38,41,44,47,50,53,56,59,62,65,68,71,74,77,80,83,86,89,92,95,98,101,104,107,110,113,116,119,122,125,128,131,137
+turbo.json
+  s_94864882421579::t_a591e75fba4bf0 75,106,117,120-123
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "07ecba034b7fc466b13851f437382dea5b6b27c7",
+  "prompts": {},
+  "sessions": {
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

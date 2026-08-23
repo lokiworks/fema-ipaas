@@ -13,8 +13,6 @@ import { DataTable } from '@/components/custom/data-table';
 import { UserRoundPlusIcon } from '@/components/icons/user-round-plus';
 import { Button } from '@/components/ui/button';
 import { internalErrorToast } from '@/components/ui/sonner';
-import { useSeatLimitGuard } from '@/features/billing';
-import { InviteUserDialog } from '@/features/members';
 import {
   platformUserHooks,
   platformUserMutations,

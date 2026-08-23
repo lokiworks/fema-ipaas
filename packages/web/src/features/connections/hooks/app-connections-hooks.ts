@@ -30,7 +30,6 @@ import {
 } from '@/components/custom/data-table';
 import { useEmbedding } from '@/components/providers/embed-provider';
 import { internalErrorToast } from '@/components/ui/sonner';
-import { projectMembersApi } from '@/features/members/api/project-members-api';
 import { api } from '@/lib/api';
 import { authenticationSession } from '@/lib/authentication-session';
 

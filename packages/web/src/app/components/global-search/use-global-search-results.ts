@@ -6,7 +6,6 @@ import { useEmbedding } from '@/components/providers/embed-provider';
 import { flowsApi } from '@/features/flows';
 import { foldersApi } from '@/features/folders';
 import { projectCollectionUtils, getProjectName } from '@/features/projects';
-import { tablesApi } from '@/features/tables';
 import { useIsPlatformAdmin } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 

@@ -36,7 +36,6 @@ import {
 } from '../test-step/test-runner-context';
 import { TestStepCTAButton } from '../test-step/test-step-cta-button';
 
-import { AgentSettings } from './agent-settings';
 import { CodeSettings } from './code-settings';
 import EditableStepName from './editable-step-name';
 import { LoopsSettings } from './loops-settings';

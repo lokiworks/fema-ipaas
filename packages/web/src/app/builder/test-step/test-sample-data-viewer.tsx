@@ -16,7 +16,6 @@ import { ClosePanelButton } from '../step-data/close-panel-button';
 import { StepDataPanelHeader } from '../step-data/step-data-panel-header';
 import { StepDataPanelViewToggle } from '../step-data/step-data-panel-view-toggle';
 
-import { AgentTestStep, isRunAgent } from './agent-test-step';
 import { JsonTreeSkeleton } from './json-tree-skeleton';
 import { TestButtonTooltip } from './test-step-tooltip';
 

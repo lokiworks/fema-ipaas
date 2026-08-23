@@ -21,7 +21,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { InviteUserDialog, projectMembersHooks } from '@/features/members';
 import { getProjectName, projectCollectionUtils } from '@/features/projects';
 import { ApProjectDisplay } from '@/features/projects/components/ap-project-display';
 import { useAuthorization } from '@/hooks/authorization-hooks';

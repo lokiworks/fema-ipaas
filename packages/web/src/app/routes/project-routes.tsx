@@ -4,39 +4,21 @@ import { Navigate, useLocation } from 'react-router-dom';
 
 import { PageTitle } from '@/app/components/page-title';
 import { RouteLoadingBar } from '@/components/custom/route-loading-bar';
-import { useEmbedding } from '@/components/providers/embed-provider';
-import { ApTableStateProvider } from '@/features/tables';
 import { lazyWithRetry } from '@/lib/lazy-with-retry';
 import { routesThatRequireProjectId } from '@/lib/route-utils';
 
 import { BuilderLayout } from '../components/builder-layout';
 import { ProjectDashboardLayout } from '../components/project-layout';
 import { AfterImportFlowRedirect } from '../guards/after-import-flow-redirect';
-import { AgentsFlagGuard } from '../guards/agents-flag-guard';
 import { RoutePermissionGuard } from '../guards/permission-guard';
 import { ProjectRouterWrapper } from '../guards/project-route-wrapper';
 
 import { AutomationsPage } from './automations';
-const AgentEditorPage = lazyWithRetry(
-  () => import('./agents/id').then((m) => ({ default: m.AgentEditorPage })),
-  'agent-editor',
-);
 const FlowBuilderPage = lazyWithRetry(
   () => import('./flows/id').then((m) => ({ default: m.FlowBuilderPage })),
   'flow-builder',
 );
 const AnalyticsPage = lazyWithRetry(() => import('./impact'), 'analytics');
-const ProjectReleasesPage = lazyWithRetry(
-  () =>
-    import('./project-release').then((m) => ({
-      default: m.ProjectReleasesPage,
-    })),
-  'project-releases',
-);
-const ViewRelease = lazyWithRetry(
-  () => import('./project-release/view-release'),
-  'view-release',
-);
 const RunsPage = lazyWithRetry(
   () => import('./runs').then((m) => ({ default: m.RunsPage })),
   'runs',
@@ -54,10 +36,6 @@ const VariablesPage = lazyWithRetry(
   () => import('./variables').then((m) => ({ default: m.VariablesPage })),
   'variables',
 );
-const ApTableEditorPage = lazyWithRetry(
-  () => import('./tables/id').then((m) => ({ default: m.ApTableEditorPage })),
-  'table-editor',
-);
 
 const SettingsRerouter = () => {
   const { hash } = useLocation();
@@ -73,37 +51,12 @@ function SuspenseWrapper({ children }: { children: React.ReactNode }) {
   return <Suspense fallback={<RouteLoadingBar />}>{children}</Suspense>;
 }
 
-function HideTablesGuard({ children }: { children: React.ReactNode }) {
-  const { embedState } = useEmbedding();
-  if (embedState.hideTables) {
-    return <Navigate to={routesThatRequireProjectId.automations} replace />;
-  }
-  return <>{children}</>;
-}
-
 const automationsPagePermissions = [
   Permission.READ_FLOW,
-  Permission.READ_TABLE,
   Permission.READ_FOLDER,
 ];
 
 export const projectRoutes = [
-  ...ProjectRouterWrapper({
-    path: routesThatRequireProjectId.singleAgent,
-    element: (
-      <AgentsFlagGuard>
-        <ProjectDashboardLayout>
-          <RoutePermissionGuard requiredPermissions={[Permission.READ_AGENT]}>
-            <PageTitle title="Agent">
-              <SuspenseWrapper>
-                <AgentEditorPage />
-              </SuspenseWrapper>
-            </PageTitle>
-          </RoutePermissionGuard>
-        </ProjectDashboardLayout>
-      </AgentsFlagGuard>
-    ),
-  }),
   ...ProjectRouterWrapper({
     path: routesThatRequireProjectId.automations,
     element: (
@@ -169,40 +122,6 @@ export const projectRoutes = [
     ),
   }),
   ...ProjectRouterWrapper({
-    path: routesThatRequireProjectId.singleRelease,
-    element: (
-      <ProjectDashboardLayout>
-        <PageTitle title="Releases">
-          <SuspenseWrapper>
-            <ViewRelease />
-          </SuspenseWrapper>
-        </PageTitle>
-      </ProjectDashboardLayout>
-    ),
-  }),
-  ...ProjectRouterWrapper({
-    path: routesThatRequireProjectId.tables,
-    element: <Navigate to={routesThatRequireProjectId.automations} replace />,
-  }),
-  ...ProjectRouterWrapper({
-    path: routesThatRequireProjectId.singleTable,
-    element: (
-      <HideTablesGuard>
-        <RoutePermissionGuard requiredPermissions={Permission.READ_TABLE}>
-          <PageTitle title="Table">
-            <BuilderLayout>
-              <ApTableStateProvider>
-                <SuspenseWrapper>
-                  <ApTableEditorPage />
-                </SuspenseWrapper>
-              </ApTableStateProvider>
-            </BuilderLayout>
-          </PageTitle>
-        </RoutePermissionGuard>
-      </HideTablesGuard>
-    ),
-  }),
-  ...ProjectRouterWrapper({
     path: routesThatRequireProjectId.connections,
     element: (
       <ProjectDashboardLayout>
@@ -229,18 +148,6 @@ export const projectRoutes = [
             </SuspenseWrapper>
           </PageTitle>
         </RoutePermissionGuard>
-      </ProjectDashboardLayout>
-    ),
-  }),
-  ...ProjectRouterWrapper({
-    path: routesThatRequireProjectId.releases,
-    element: (
-      <ProjectDashboardLayout>
-        <PageTitle title="Releases">
-          <SuspenseWrapper>
-            <ProjectReleasesPage />
-          </SuspenseWrapper>
-        </PageTitle>
       </ProjectDashboardLayout>
     ),
   }),

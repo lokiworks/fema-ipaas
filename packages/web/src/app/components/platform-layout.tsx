@@ -3,7 +3,6 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar-shadcn';
-import { ManagePlanDialog } from '@/features/billing';
 import { useIsPlatformAdmin } from '@/hooks/authorization-hooks';
 import { flagsHooks } from '@/hooks/flags-hooks';
 

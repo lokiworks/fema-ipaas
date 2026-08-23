@@ -20,7 +20,6 @@ import { internalErrorToast } from '@/components/ui/sonner';
 import { flowRunUtils } from '@/features/flow-runs';
 
 import { BuilderState } from '../builder-hooks';
-import { defaultAgentOutput, isRunAgent } from '../test-step/agent-test-step';
 
 export type UpdateSampleDataParams = {
   stepName: string;

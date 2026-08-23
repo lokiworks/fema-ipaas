@@ -41,7 +41,6 @@ import {
 import { platformHooks } from '@/hooks/platform-hooks';
 import { api } from '@/lib/api';
 
-import { PieceSetsTab } from './piece-sets/piece-sets-tab';
 
 type TabValue = 'pieces' | 'piece-sets';
 

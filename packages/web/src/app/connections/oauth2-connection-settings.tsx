@@ -46,7 +46,6 @@ import { cn } from '@/lib/utils';
 
 import { GenericPropertiesForm } from '../builder/piece-properties/generic-properties-form';
 
-import { SecretInput } from './secret-input';
 
 function OAuth2ConnectionSettings({
   authProperty,

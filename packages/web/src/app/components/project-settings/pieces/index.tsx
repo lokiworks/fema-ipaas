@@ -12,7 +12,6 @@ import { DataTableInputPopover } from '@/components/custom/data-table/data-table
 import { LockedAlert } from '@/components/custom/locked-alert';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { pieceSetQueries } from '@/features/piece-sets';
 import { PieceIcon, piecesHooks } from '@/features/pieces';
 import { projectCollectionUtils } from '@/features/projects';
 import { platformHooks } from '@/hooks/platform-hooks';

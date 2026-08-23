@@ -3,50 +3,18 @@ import { Navigate } from 'react-router-dom';
 
 import { PageTitle } from '@/app/components/page-title';
 import { RouteLoadingBar } from '@/components/custom/route-loading-bar';
-import { Error, Success } from '@/features/billing';
 
 import { PlatformLayout } from '../components/platform-layout';
 
-const SettingsBilling = React.lazy(() => import('./platform/billing'));
-const SettingsUsage = React.lazy(() => import('./platform/usage'));
-const EventDestinationsPage = React.lazy(
-  () => import('./platform/infra/event-destinations'),
-);
 const SettingsHealthPage = React.lazy(() => import('./platform/infra/health'));
 const TriggerHealthPage = React.lazy(() => import('./platform/infra/triggers'));
 const SettingsWorkersPage = React.lazy(
   () => import('./platform/infra/workers'),
 );
 const ProjectsPage = React.lazy(() => import('./platform/projects'));
-const ApiKeysPage = React.lazy(() =>
-  import('./platform/security/api-keys').then((m) => ({
-    default: m.ApiKeysPage,
-  })),
-);
-const AuditLogsPage = React.lazy(
-  () => import('./platform/security/audit-logs'),
-);
-const ProjectRolePage = React.lazy(() =>
-  import('./platform/security/project-role').then((m) => ({
-    default: m.ProjectRolePage,
-  })),
-);
-const SecretManagersPage = React.lazy(
-  () => import('./platform/security/secret-managers'),
-);
-const EmbedPage = React.lazy(() =>
-  import('./platform/security/embed').then((m) => ({
-    default: m.EmbedPage,
-  })),
-);
 const SSOPage = React.lazy(() =>
   import('./platform/security/sso').then((m) => ({ default: m.SSOPage })),
 );
-const AIProvidersPage = React.lazy(() => import('./platform/setup/ai'));
-const AiCapabilitiesPage = React.lazy(
-  () => import('./platform/setup/ai-capabilities'),
-);
-const PlatformMcpPage = React.lazy(() => import('./platform/setup/mcp'));
 const GeneralPage = React.lazy(() =>
   import('./platform/setup/general').then((m) => ({
     default: m.GeneralPage,
@@ -62,11 +30,6 @@ const PlatformPiecesPage = React.lazy(() =>
     default: m.PlatformPiecesPage,
   })),
 );
-const PieceSetDetailsPage = React.lazy(() =>
-  import('./platform/setup/pieces/piece-sets/piece-set-details-page').then(
-    (m) => ({ default: m.PieceSetDetailsPage }),
-  ),
-);
 const PlatformTemplatesPage = React.lazy(() =>
   import('./platform/setup/templates').then((m) => ({
     default: m.PlatformTemplatesPage,
@@ -81,6 +44,21 @@ function SuspenseWrapper({ children }: { children: React.ReactNode }) {
   return <Suspense fallback={<RouteLoadingBar />}>{children}</Suspense>;
 }
 
+function platformRoute(path: string, title: string, Page: React.ComponentType) {
+  return {
+    path,
+    element: (
+      <PlatformLayout>
+        <PageTitle title={title}>
+          <SuspenseWrapper>
+            <Page />
+          </SuspenseWrapper>
+        </PageTitle>
+      </PlatformLayout>
+    ),
+  };
+}
+
 export const platformRoutes = [
   {
     path: '/platform',
@@ -92,334 +70,49 @@ export const platformRoutes = [
       </PlatformLayout>
     ),
   },
-  {
-    path: '/platform/projects',
-    element: (
-      <PlatformLayout>
-        <PageTitle title="Projects">
-          <SuspenseWrapper>
-            <ProjectsPage />
-          </SuspenseWrapper>
-        </PageTitle>
-      </PlatformLayout>
-    ),
-  },
-  {
-    path: '/platform/users',
-    element: (
-      <PlatformLayout>
-        <PageTitle title="Users">
-          <SuspenseWrapper>
-            <UsersPage />
-          </SuspenseWrapper>
-        </PageTitle>
-      </PlatformLayout>
-    ),
-  },
-  {
-    path: '/platform/connections',
-    element: (
-      <PlatformLayout>
-        <PageTitle title="Connections">
-          <SuspenseWrapper>
-            <PlatformConnectionsPage />
-          </SuspenseWrapper>
-        </PageTitle>
-      </PlatformLayout>
-    ),
-  },
+  platformRoute('/platform/projects', 'Workspaces', ProjectsPage),
+  platformRoute('/platform/users', 'Members', UsersPage),
+  platformRoute('/platform/connections', 'Connections', PlatformConnectionsPage),
   {
     path: '/platform/setup',
     element: (
       <PlatformLayout>
         <PageTitle title="Platform Setup">
-          <Navigate to="/platform/setup/ai" replace />
+          <Navigate to="/platform/setup/general" replace />
         </PageTitle>
       </PlatformLayout>
     ),
   },
-  {
-    path: '/platform/setup/ai',
-    element: (
-      <PlatformLayout>
-        <PageTitle title="AI">
-          <SuspenseWrapper>
-            <AIProvidersPage />
-          </SuspenseWrapper>
-        </PageTitle>
-      </PlatformLayout>
-    ),
-  },
-  {
-    path: '/platform/setup/ai-capabilities',
-    element: (
-      <PlatformLayout>
-        <PageTitle title="AI Capabilities">
-          <SuspenseWrapper>
-            <AiCapabilitiesPage />
-          </SuspenseWrapper>
-        </PageTitle>
-      </PlatformLayout>
-    ),
-  },
-  {
-    path: '/platform/setup/mcp',
-    element: (
-      <PlatformLayout>
-        <PageTitle title="MCP Server">
-          <SuspenseWrapper>
-            <PlatformMcpPage />
-          </SuspenseWrapper>
-        </PageTitle>
-      </PlatformLayout>
-    ),
-  },
-  {
-    path: '/platform/setup/pieces',
-    element: (
-      <PlatformLayout>
-        <PageTitle title="Pieces">
-          <SuspenseWrapper>
-            <PlatformPiecesPage />
-          </SuspenseWrapper>
-        </PageTitle>
-      </PlatformLayout>
-    ),
-  },
-  {
-    path: '/platform/setup/pieces/piece-sets/:id',
-    element: (
-      <PlatformLayout>
-        <PageTitle title="Piece Set">
-          <SuspenseWrapper>
-            <PieceSetDetailsPage />
-          </SuspenseWrapper>
-        </PageTitle>
-      </PlatformLayout>
-    ),
-  },
-  {
-    path: '/platform/setup/connections',
-    element: (
-      <PlatformLayout>
-        <PageTitle title="Connections">
-          <SuspenseWrapper>
-            <GlobalConnectionsTable />
-          </SuspenseWrapper>
-        </PageTitle>
-      </PlatformLayout>
-    ),
-  },
-  {
-    path: '/platform/setup/templates',
-    element: (
-      <PlatformLayout>
-        <PageTitle title="Templates">
-          <SuspenseWrapper>
-            <PlatformTemplatesPage />
-          </SuspenseWrapper>
-        </PageTitle>
-      </PlatformLayout>
-    ),
-  },
-  {
-    path: '/platform/setup/general',
-    element: (
-      <PlatformLayout>
-        <PageTitle title="General">
-          <SuspenseWrapper>
-            <GeneralPage />
-          </SuspenseWrapper>
-        </PageTitle>
-      </PlatformLayout>
-    ),
-  },
-  {
-    path: '/platform/setup/branding',
-    element: <Navigate to="/platform/setup/general" replace />,
-  },
-  {
-    path: '/platform/setup/billing',
-    element: (
-      <PlatformLayout>
-        <PageTitle title="Billing">
-          <SuspenseWrapper>
-            <SettingsBilling />
-          </SuspenseWrapper>
-        </PageTitle>
-      </PlatformLayout>
-    ),
-  },
-  {
-    path: '/platform/setup/usage',
-    element: (
-      <PlatformLayout>
-        <PageTitle title="Usage">
-          <SuspenseWrapper>
-            <SettingsUsage />
-          </SuspenseWrapper>
-        </PageTitle>
-      </PlatformLayout>
-    ),
-  },
-  {
-    path: '/platform/setup/billing/success',
-    element: (
-      <PlatformLayout>
-        <PageTitle title="Billing">
-          <Success />
-        </PageTitle>
-      </PlatformLayout>
-    ),
-  },
-  {
-    path: '/platform/setup/billing/error',
-    element: (
-      <PlatformLayout>
-        <PageTitle title="Billing">
-          <Error />
-        </PageTitle>
-      </PlatformLayout>
-    ),
-  },
+  platformRoute('/platform/setup/general', 'General', GeneralPage),
+  platformRoute('/platform/setup/pieces', 'Connectors', PlatformPiecesPage),
+  platformRoute(
+    '/platform/setup/connections',
+    'Global Connections',
+    GlobalConnectionsTable,
+  ),
+  platformRoute('/platform/setup/templates', 'Templates', PlatformTemplatesPage),
   {
     path: '/platform/security',
     element: (
       <PlatformLayout>
-        <PageTitle title="Platform Security">
-          <Navigate to="/platform/security/audit-logs" replace />
+        <PageTitle title="Security">
+          <Navigate to="/platform/security/sso" replace />
         </PageTitle>
       </PlatformLayout>
     ),
   },
+  platformRoute('/platform/security/sso', 'Single Sign On', SSOPage),
   {
-    path: '/platform/security/api-keys',
+    path: '/platform/infra',
     element: (
       <PlatformLayout>
-        <PageTitle title="API Keys">
-          <SuspenseWrapper>
-            <ApiKeysPage />
-          </SuspenseWrapper>
+        <PageTitle title="Infrastructure">
+          <Navigate to="/platform/infra/health" replace />
         </PageTitle>
       </PlatformLayout>
     ),
   },
-  {
-    path: '/platform/security/secret-managers',
-    element: (
-      <PlatformLayout>
-        <PageTitle title="Secret managers">
-          <SuspenseWrapper>
-            <SecretManagersPage />
-          </SuspenseWrapper>
-        </PageTitle>
-      </PlatformLayout>
-    ),
-  },
-  {
-    path: '/platform/security/audit-logs',
-    element: (
-      <PlatformLayout>
-        <PageTitle title="Audit Logs">
-          <SuspenseWrapper>
-            <AuditLogsPage />
-          </SuspenseWrapper>
-        </PageTitle>
-      </PlatformLayout>
-    ),
-  },
-  {
-    path: '/platform/security/embed',
-    element: (
-      <PlatformLayout>
-        <PageTitle title="Embedding">
-          <SuspenseWrapper>
-            <EmbedPage />
-          </SuspenseWrapper>
-        </PageTitle>
-      </PlatformLayout>
-    ),
-  },
-  {
-    path: '/platform/security/sso',
-    element: (
-      <PlatformLayout>
-        <PageTitle title="SSO">
-          <SuspenseWrapper>
-            <SSOPage />
-          </SuspenseWrapper>
-        </PageTitle>
-      </PlatformLayout>
-    ),
-  },
-  {
-    path: '/platform/security/project-roles',
-    element: (
-      <PlatformLayout>
-        <PageTitle title="Project Roles">
-          <SuspenseWrapper>
-            <ProjectRolePage />
-          </SuspenseWrapper>
-        </PageTitle>
-      </PlatformLayout>
-    ),
-  },
-  {
-    path: '/platform/infrastructure',
-    element: (
-      <PlatformLayout>
-        <PageTitle title="Platform Infrastructure">
-          <Navigate to="/platform/infrastructure/workers" replace />
-        </PageTitle>
-      </PlatformLayout>
-    ),
-  },
-  {
-    path: '/platform/infrastructure/workers',
-    element: (
-      <PlatformLayout>
-        <PageTitle title="Workers">
-          <SuspenseWrapper>
-            <SettingsWorkersPage />
-          </SuspenseWrapper>
-        </PageTitle>
-      </PlatformLayout>
-    ),
-  },
-  {
-    path: '/platform/infrastructure/health',
-    element: (
-      <PlatformLayout>
-        <PageTitle title="Health">
-          <SuspenseWrapper>
-            <SettingsHealthPage />
-          </SuspenseWrapper>
-        </PageTitle>
-      </PlatformLayout>
-    ),
-  },
-  {
-    path: '/platform/infrastructure/triggers',
-    element: (
-      <PlatformLayout>
-        <PageTitle title="Trigger Health">
-          <SuspenseWrapper>
-            <TriggerHealthPage />
-          </SuspenseWrapper>
-        </PageTitle>
-      </PlatformLayout>
-    ),
-  },
-  {
-    path: '/platform/infrastructure/event-destinations',
-    element: (
-      <PlatformLayout>
-        <PageTitle title="Event Streaming">
-          <SuspenseWrapper>
-            <EventDestinationsPage />
-          </SuspenseWrapper>
-        </PageTitle>
-      </PlatformLayout>
-    ),
-  },
+  platformRoute('/platform/infra/health', 'System Health', SettingsHealthPage),
+  platformRoute('/platform/infra/triggers', 'Triggers', TriggerHealthPage),
+  platformRoute('/platform/infra/workers', 'Workers', SettingsWorkersPage),
 ];

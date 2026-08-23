@@ -37,8 +37,6 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar-shadcn';
 import { VirtualizedScrollArea } from '@/components/ui/virtualized-scroll-area';
-import { SidebarUsageLimits } from '@/features/billing';
-import { chatUtils } from '@/features/chat/lib/chat-utils';
 import {
   CreateProjectButton,
   projectCollectionUtils,

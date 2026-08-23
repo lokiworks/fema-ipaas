@@ -24,8 +24,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ImportFlowDialog } from '@/features/flows/components/import-flow-dialog';
 import { flowHooks } from '@/features/flows/hooks/flow-hooks';
 import { PieceIconList } from '@/features/pieces/components/piece-icon-list';
-import { ImportTableDialog } from '@/features/tables/components/import-table-dialog';
-import { tableHooks } from '@/features/tables/hooks/table-hooks';
 import { TemplatesBrowseDialog } from '@/features/templates';
 import { UseTemplateDialog } from '@/features/templates/components/use-template-dialog';
 import { templatesHooks } from '@/features/templates/hooks/templates-hook';

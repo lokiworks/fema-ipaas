@@ -26,7 +26,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { projectMembersHooks } from '@/features/members/hooks/project-members-hooks';
 
 import { flowsApi } from '../api/flows-api';
 

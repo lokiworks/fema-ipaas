@@ -11,7 +11,6 @@ import { t } from 'i18next';
 import { toast } from 'sonner';
 
 import { platformUserApi } from '@/api/platform-user-api';
-import { userInvitationApi } from '@/features/members/api/user-invitation';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { userHooks } from '@/hooks/user-hooks';
 

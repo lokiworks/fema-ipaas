@@ -5,11 +5,6 @@ import LockedFeatureGuard from '@/app/components/locked-feature-guard';
 import { LoadingSpinner } from '@/components/custom/spinner';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import {
-  ConnectGitDialog,
-  gitSyncHooks,
-  gitSyncMutations,
-} from '@/features/project-releases';
 import { platformHooks } from '@/hooks/platform-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 

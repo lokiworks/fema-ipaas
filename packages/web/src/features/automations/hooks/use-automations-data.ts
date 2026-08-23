@@ -13,7 +13,6 @@ import { useParams } from 'react-router-dom';
 import { useEmbedding } from '@/components/providers/embed-provider';
 import { flowsApi } from '@/features/flows/api/flows-api';
 import { foldersApi } from '@/features/folders/api/folders-api';
-import { tablesApi } from '@/features/tables/api/tables-api';
 import { authenticationSession } from '@/lib/authentication-session';
 
 import { AutomationsFilters, FolderContent } from '../lib/types';

@@ -23,7 +23,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AgentTimeline } from '@/features/agents';
 import { flowRunUtils } from '@/features/flow-runs';
 import { piecesHooks } from '@/features/pieces';
 import { flagsHooks } from '@/hooks/flags-hooks';
@@ -37,7 +36,6 @@ import { FriendlyErrorView } from '../data-display/friendly-error-view';
 import { ClosePanelButton } from '../step-data/close-panel-button';
 import { StepDataPanelHeader } from '../step-data/step-data-panel-header';
 import { StepDataPanelViewToggle } from '../step-data/step-data-panel-view-toggle';
-import { isRunAgent } from '../test-step/agent-test-step';
 
 import { truncatedInputUtils } from './truncated-input-utils';
 

@@ -6,7 +6,6 @@ import { AnimatedIconButton } from '@/components/custom/animated-icon-button';
 import { PlusIcon } from '@/components/icons/plus';
 import { Button } from '@/components/ui/button';
 import { SidebarMenuButton } from '@/components/ui/sidebar-shadcn';
-import { useTeamProjectLimitGuard } from '@/features/billing';
 
 import { NewProjectDialog } from './new-project-dialog';
 

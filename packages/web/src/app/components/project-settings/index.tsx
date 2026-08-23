@@ -23,11 +23,9 @@ import { cn } from '@/lib/utils';
 
 import { ProjectAvatar } from '../project-avatar';
 
-import { AlertsSettings } from './alerts';
 import { EnvironmentSettings } from './environment';
 import { GeneralSettings, FormValues } from './general';
 import { McpServerSettings } from './mcp-server';
-import { MembersSettings } from './members';
 import { PiecesSettings } from './pieces';
 
 type TabId =

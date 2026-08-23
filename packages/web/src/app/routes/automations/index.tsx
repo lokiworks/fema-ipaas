@@ -28,10 +28,8 @@ import { usePinnedItems } from '@/features/automations/hooks/use-pinned-items';
 import { TreeItem } from '@/features/automations/lib/types';
 import { appConnectionsQueries } from '@/features/connections';
 import { ImportFlowDialog } from '@/features/flows/components/import-flow-dialog';
-import { projectMembersHooks } from '@/features/members';
 import { piecesHooks } from '@/features/pieces';
 import { projectCollectionUtils, getProjectName } from '@/features/projects';
-import { ImportTableDialog } from '@/features/tables/components/import-table-dialog';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 

@@ -1,0 +1,69 @@
+packages/network-agent/tsconfig.json
+  s_94864882421579::t_4f7c29c9fdc1c9 2
+  s_94864882421579::t_dbe70f98e7b6a6 1,3-21
+package.json
+  s_94864882421579::t_8129b5df13d275 135-136
+docs/adr/0014-network-agent-model-lands-before-the-tunnel.md
+  s_94864882421579::t_6b3ea06d9c3feb 4
+brain/knowledge/connections-auth/index.md
+  s_94864882421579::t_59e98658e6f472 11,13-14,17-21
+packages/network-agent/package.json
+  s_94864882421579::t_dbe70f98e7b6a6 1-25
+packages/server/api/src/app/network-agent/network-agent.controller.ts
+  s_94864882421579::t_0f251b400bd3d6 2,7,50-61,90-94
+  s_94864882421579::t_226029428b9ce2 95-96
+packages/core/shared/src/lib/management/network-agent/index.ts
+  s_94864882421579::t_fef2c49b299cda 2
+packages/network-agent/src/lib/tunnel-contract.ts
+  s_94864882421579::t_dda4145404c6a9 1-30
+packages/server/api/test/unit/app/network-agent/network-agent-allowlist.test.ts
+  s_94864882421579::t_c5124a6a9dd53e 1-62
+packages/network-agent/src/main.ts
+  s_94864882421579::t_8129b5df13d275 1-2,5-19
+  s_94864882421579::t_4f7c29c9fdc1c9 3-4
+packages/server/api/src/app/network-agent/network-agent-tunnel.ts
+  s_94864882421579::t_fd45f2f0d6284b 1-155
+docs/adr/0016-the-network-agent-tunnel-is-an-outbound-socket-with-a-server-side-allowlist.md
+  s_94864882421579::t_6b3ea06d9c3feb 1-52
+packages/core/shared/src/lib/governance/audit-events/index.ts
+  s_94864882421579::t_fd45f2f0d6284b 46,369-379,454,517-518
+packages/network-agent/src/index.ts
+  s_94864882421579::t_8129b5df13d275 1-2
+packages/core/shared/src/lib/management/network-agent/tunnel-contract.ts
+  s_94864882421579::t_fef2c49b299cda 1-40
+packages/server/api/src/app/server.ts
+  s_94864882421579::t_60e4245d040379 60-64
+  s_94864882421579::t_5608e709ed0c38 9,25
+docs/adr/index.md
+  s_94864882421579::t_6b3ea06d9c3feb 26
+packages/server/api/src/app/network-agent/network-agent-allowlist.ts
+  s_94864882421579::t_fef2c49b299cda 1-85
+packages/network-agent/.eslintrc.json
+  s_94864882421579::t_31084f018d60ec 1,3-27
+  s_94864882421579::t_aa115e19e1f432 2
+packages/network-agent/README.md
+  s_94864882421579::t_bbfc7a050b116f 1-33
+packages/network-agent/tsconfig.lib.json
+  s_94864882421579::t_dbe70f98e7b6a6 1-23
+packages/network-agent/src/lib/network-agent.ts
+  s_94864882421579::t_dda4145404c6a9 1
+  s_94864882421579::t_8129b5df13d275 2-98
+bun.lock
+  s_94864882421579::t_0a8b50baaaed4b 112,562-579,1477-1478
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "f474a6ed243f50cac5137154c81982eb47bd4882",
+  "prompts": {},
+  "sessions": {
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

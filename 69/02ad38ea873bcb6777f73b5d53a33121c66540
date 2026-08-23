@@ -1,0 +1,977 @@
+packages/server/sandbox/src/lib/utils/path-safety.ts
+  s_94864882421579::t_76a3728364d1d2 12,22
+  s_94864882421579::t_54a572886b2f47 1
+packages/server/api/src/app/workers/job/index.ts
+  s_94864882421579::t_ee4e13e6018ae4 15,32,34,72
+packages/server/api/src/app/authentication/lib/turnstile.ts
+  s_94864882421579::t_54a572886b2f47 1
+  s_94864882421579::t_76a3728364d1d2 29-30
+AGENTS.md
+  s_94864882421579::t_76a3728364d1d2 68
+packages/server/api/test/integration/workflows/execution/retry-execution.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 119,137,163,201,232
+packages/server/api/src/app/trigger/trigger-source/trigger-source-service.ts
+  s_94864882421579::t_54a572886b2f47 1
+  s_94864882421579::t_76a3728364d1d2 135
+packages/server/api/src/app/trigger/trigger-run/trigger-run-stats.ts
+  s_94864882421579::t_ee4e13e6018ae4 1,9,12,19-20,30,89,93
+packages/server/api/test/integration/authentication/authentication.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 23,52,58,72,75,81,106
+packages/server/api/test/integration/file/file-cleanup.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 24,27,39,43,48,53,58-67
+packages/server/api/src/app/connection/connection-service/oauth2/services/credentials-oauth2-service.ts
+  s_94864882421579::t_ee4e13e6018ae4 108
+  s_94864882421579::t_54a572886b2f47 2
+  s_94864882421579::t_76a3728364d1d2 95
+packages/server/api/src/app/authentication/user-identity/user-identity-service.ts
+  s_94864882421579::t_54a572886b2f47 1
+  s_94864882421579::t_76a3728364d1d2 22,51,57,67,108,127
+  s_94864882421579::t_ee4e13e6018ae4 26,147-148,180,182
+packages/server/worker/test/lib/worker.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 85,393
+packages/server/api/test/integration/workflows/workflow/error-handler.test.ts
+  s_94864882421579::t_76a3728364d1d2 35
+packages/server/api/src/app/connectors/community-connector-module.ts
+  s_94864882421579::t_ee4e13e6018ae4 18,26,28
+packages/server/api/src/app/user/user-service.ts
+  s_94864882421579::t_76a3728364d1d2 63,74,134,147,252
+  s_94864882421579::t_ee4e13e6018ae4 2,12,26,29,33-34,36,41-42,48,58,60,62,72-73,84,87,95-96,98-99,101-102,104,115,125-126,144-145,154-156,162,167,172-173,177,181,183,190,192,196-197,199-201,204-205,207,209,221-222,232,234-235,238-239,244,249-251,255,268-269,276,278,282,287,292,305,311-312,318,320,327-328,334-335,343,345,350
+  s_94864882421579::t_54a572886b2f47 1
+packages/web/src/app/routes/tenant/infra/health/components/system-health-tab.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-317
+packages/web/src/app/guards/index.tsx
+  s_94864882421579::t_54a572886b2f47 11
+  s_94864882421579::t_ee4e13e6018ae4 48
+packages/server/api/src/app/authentication/otp/otp-service.ts
+  s_94864882421579::t_ee4e13e6018ae4 1,27,63,174
+packages/server/api/src/app/template/template.entity.ts
+  s_94864882421579::t_ee4e13e6018ae4 8,28,82-83,88,90,95-96
+  s_94864882421579::t_54a572886b2f47 1
+packages/server/engine/test/operations/trigger-hook-operation.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 61
+packages/server/sandbox/src/lib/cache/workflow/workflow-bundle-store.ts
+  s_94864882421579::t_ee4e13e6018ae4 52,63,76,116
+packages/web/src/app/components/sidebar/sidebar-header.tsx
+  s_94864882421579::t_ee4e13e6018ae4 14,17,44,48,74,77,81
+packages/server/api/src/app/connection/connection-service/oauth2/index.ts
+  s_94864882421579::t_ee4e13e6018ae4 3,14,17-18,21-23,30,33-34
+packages/cli/src/lib/utils/connector-utils.ts
+  s_94864882421579::t_ee4e13e6018ae4 94
+packages/server/api/src/app/helper/audit-events.ts
+  s_94864882421579::t_ee4e13e6018ae4 5
+packages/server/api/src/app/authentication/otp/otp-controller.ts
+  s_94864882421579::t_ee4e13e6018ae4 6,11,13
+packages/server/api/src/app/user-invitations/user-invitation.entity.ts
+  s_94864882421579::t_ee4e13e6018ae4 12,20,42-43
+packages/server/api/src/app/variable/variable.controller.ts
+  s_94864882421579::t_ee4e13e6018ae4 18,35,49,59,68,73,86
+packages/web/src/features/tenant-admin/hooks/branding-hooks.ts
+  s_94864882421579::t_ee4e13e6018ae4 1-19
+packages/web/src/app/components/global-search/use-global-search-results.ts
+  s_94864882421579::t_ee4e13e6018ae4 12,43,91
+packages/server/api/test/unit/app/workers/job-queue/job-broker.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 48
+packages/server/api/test/integration/workflows/execution/resume-execution.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 361
+packages/server/api/src/app/connection/connection-worker-controller.ts
+  s_94864882421579::t_54a572886b2f47 1
+  s_94864882421579::t_ee4e13e6018ae4 14
+  s_94864882421579::t_76a3728364d1d2 19
+packages/web/src/features/workspaces/stores/workspace-collection.ts
+  s_94864882421579::t_ee4e13e6018ae4 3-5,8,37,52,112,134,145,205,262-264,266
+packages/server/api/src/app/connectors/metadata/utils/connector-cache-utils.ts
+  s_94864882421579::t_ee4e13e6018ae4 73-74,78,81-82,85
+packages/server/api/test/integration/workers/tenant-queue-migration.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 1-265
+packages/server/api/test/unit/app/workers/machine/machine-list-filter.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 33,60,66,74,82-85,93,101,105,110,115,121,125,129-131,145,153,157,163,176,180,186,197,210
+packages/web/src/app/routes/tenant/workspaces/columns.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-172
+packages/core/shared/src/lib/automation/connectors/dto/connector-requests.ts
+  s_94864882421579::t_ee4e13e6018ae4 96,102,109
+packages/core/utils/src/lib/id-generator.ts
+  s_94864882421579::t_ee4e13e6018ae4 19
+packages/web/src/features/workspaces/components/create-tenant-dialog.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-129
+packages/server/api/src/app/trigger/trigger-source/workflow-trigger-side-effect.ts
+  s_94864882421579::t_54a572886b2f47 6
+  s_94864882421579::t_ee4e13e6018ae4 28,34,76,85,145,155,180,191
+  s_94864882421579::t_76a3728364d1d2 202
+packages/server/api/src/app/helper/multipart-body.ts
+  s_94864882421579::t_ee4e13e6018ae4 6
+packages/core/shared/src/lib/automation/connection/dto/read-connection-request.ts
+  s_94864882421579::t_ee4e13e6018ae4 35,45,47,52,54-55,57,59,65,67-68,71,73
+packages/server/engine/src/lib/handler/context/engine-constants.ts
+  s_94864882421579::t_ee4e13e6018ae4 2,32,53,117,206,244
+packages/web/src/app/routes/connections/index.tsx
+  s_94864882421579::t_ee4e13e6018ae4 6,76,183,210,218,301-304
+packages/server/api/test/integration/engine-services/engine-services.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 40,44,46,53,160,196,239,270
+packages/web/src/features/workspaces/stores/workspaces-collection.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 52,201,203-204,221,418-419
+packages/web/src/app/routes/tenant/users/actions/user-actions.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-109
+packages/server/sandbox/src/lib/resolver.ts
+  s_94864882421579::t_ee4e13e6018ae4 22,47
+packages/server/api/src/app/authentication/lib/access-token-manager.ts
+  s_94864882421579::t_76a3728364d1d2 66,77,80,97,111
+  s_94864882421579::t_ee4e13e6018ae4 21,26-27,118-119,126
+  s_94864882421579::t_54a572886b2f47 1
+packages/server/api/src/app/core/security/v2/authz/authorize.ts
+  s_94864882421579::t_54a572886b2f47 1-2
+  s_94864882421579::t_ee4e13e6018ae4 19,22,42,54,58,70,75,79
+  s_94864882421579::t_76a3728364d1d2 47,55,62,76,88,101
+packages/server/api/src/app/file/files-service.ts
+  s_94864882421579::t_ee4e13e6018ae4 74
+  s_94864882421579::t_54a572886b2f47 2
+  s_94864882421579::t_76a3728364d1d2 38-39
+packages/web/src/app/routes/tenant/security/sso/allowed-domain.tsx
+  s_94864882421579::t_54a572886b2f47 48-50
+  s_94864882421579::t_ee4e13e6018ae4 1-47,51-175
+packages/server/api/test/integration/workers/job-broker-error-propagation.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 24,30,75,81,125,131,176,182,228,234
+packages/web/src/app/routes/auth-routes.tsx
+  s_94864882421579::t_ee4e13e6018ae4 6,53,55-56
+packages/server/api/test/integration/workers/job-broker-seed-cause.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 45,50,109,114,161,166
+packages/server/api/src/app/trigger/trigger-events/trigger-event.service.ts
+  s_94864882421579::t_76a3728364d1d2 75
+  s_94864882421579::t_54a572886b2f47 1
+  s_94864882421579::t_ee4e13e6018ae4 56,68
+packages/server/api/src/app/workflows/execution/execution-controller.ts
+  s_94864882421579::t_76a3728364d1d2 65
+  s_94864882421579::t_54a572886b2f47 1-2
+  s_94864882421579::t_ee4e13e6018ae4 52,80,121,126
+packages/core/connector-types/src/lib/execution-contracts.ts
+  s_94864882421579::t_ee4e13e6018ae4 28,45,104,124,139,156-157
+packages/server/api/src/app/database/migration/postgres/1787465061531-InitialSchema.ts
+  s_94864882421579::t_ee4e13e6018ae4 65,84,252,268,272,299,302,308,311,325,338,350,393,411,414,441,449,451,460,477,572,592,665,690-691,715,724,742,760,811,862,868,871,874,901,910,913,928,931,1003
+packages/server/api/test/unit/app/helper/otel-queue-metrics.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 24,60
+packages/server/sandbox/src/lib/cache/connectors/connector-installer.ts
+  s_94864882421579::t_ee4e13e6018ae4 26-27,31,36,141,197,199-200
+packages/server/api/src/app/workflows/workflow-version/workflow-version.service.ts
+  s_94864882421579::t_54a572886b2f47 1
+  s_94864882421579::t_ee4e13e6018ae4 25,87,323,334,388,403
+  s_94864882421579::t_76a3728364d1d2 162,176,241
+packages/server/worker/src/lib/execute/jobs/resolve-connection-identifier.ts
+  s_94864882421579::t_ee4e13e6018ae4 11,25
+  s_94864882421579::t_76a3728364d1d2 44
+  s_94864882421579::t_54a572886b2f47 1
+packages/web/src/features/authentication/components/auth-landing/auth-drawer-body.tsx
+  s_94864882421579::t_ee4e13e6018ae4 821-822
+packages/server/sandbox/test/lib/cache/workflow/code/code-cache-traversal.test.ts
+  s_94864882421579::t_76a3728364d1d2 5,25-26,43-44
+packages/core/shared/src/index.ts
+  s_94864882421579::t_ee4e13e6018ae4 25
+packages/server/api/src/app/helper/system-jobs/system-job.ts
+  s_94864882421579::t_ee4e13e6018ae4 115
+packages/server/api/src/app/authentication/local-authn/local-authn.module.ts
+  s_94864882421579::t_76a3728364d1d2 44
+  s_94864882421579::t_54a572886b2f47 1
+packages/web/src/features/workspaces/index.ts
+  s_94864882421579::t_ee4e13e6018ae4 5
+packages/server/api/src/app/variable/variable.entity.ts
+  s_94864882421579::t_ee4e13e6018ae4 26
+packages/web/src/features/authentication/components/sign-in-form.tsx
+  s_94864882421579::t_ee4e13e6018ae4 63
+packages/server/sandbox/src/lib/cache/connectors/connector-cache.ts
+  s_94864882421579::t_ee4e13e6018ae4 11,21,24,44-45,63,81,88,105
+  s_94864882421579::t_76a3728364d1d2 13
+  s_94864882421579::t_54a572886b2f47 2
+packages/server/api/src/app/helper/telemetry.utils.ts
+  s_94864882421579::t_ee4e13e6018ae4 9
+packages/web/src/app/routes/tenant-routes.tsx
+  s_94864882421579::t_54a572886b2f47 11,37,71,83,89
+  s_94864882421579::t_ee4e13e6018ae4 1-10,12-36,38-70,72-82,84-88,90-114
+packages/web/src/features/workspaces/components/new-workspace-dialog.tsx
+  s_94864882421579::t_ee4e13e6018ae4 3,30,39-40,88
+packages/server/sandbox/test/lib/cache/workflow/workflow-bundle-store.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 94,111,134,150,167
+packages/web/src/app/routes/create-tenant.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-9
+packages/server/api/src/app/trigger/trigger-run/trigger-run.controller.ts
+  s_94864882421579::t_ee4e13e6018ae4 9-10,16
+packages/server/worker/test/lib/execute/jobs/execute-workflow.test.ts
+  s_94864882421579::t_76a3728364d1d2 2,164-165
+  s_94864882421579::t_ee4e13e6018ae4 64,88
+packages/server/api/test/helpers/test-context.ts
+  s_94864882421579::t_ee4e13e6018ae4 2,14-15,23,29,42-43,53,62,68,79,86,120,140-141,156,164
+packages/server/api/test/integration/workspace/workspace.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 23,31,46,50,57
+packages/server/worker/src/lib/worker.ts
+  s_94864882421579::t_54a572886b2f47 3
+  s_94864882421579::t_ee4e13e6018ae4 202,340
+  s_94864882421579::t_76a3728364d1d2 543
+packages/server/api/test/integration/connectors/connector-bundle.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 20,25,45,51,53,62-64,69,81,85-86,92-93,96-98,103,111-112,123-124
+packages/server/api/src/app/user-invitations/user-invitation.module.ts
+  s_94864882421579::t_54a572886b2f47 1
+  s_94864882421579::t_ee4e13e6018ae4 10,26,29-30,33-35,40-43,58,62,76,84,92-93,98,105,107,129,134,143,145,150,155,169,213
+  s_94864882421579::t_76a3728364d1d2 156
+packages/server/api/src/app/authentication/user-identity/user-identity-entity.ts
+  s_94864882421579::t_ee4e13e6018ae4 50
+packages/server/api/test/unit/app/authentication/signup-names.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 33,46,48-52,54,60-61,66-67,70-71,79,81
+packages/server/api/src/app/workflows/execution/waitpoint/resume-page-hooks.ts
+  s_94864882421579::t_ee4e13e6018ae4 13
+packages/server/api/src/app/workflows/workflow/workflow-service-side-effects.ts
+  s_94864882421579::t_ee4e13e6018ae4 1,111,114,159
+packages/server/api/test/integration/tenant/first-tenant-provisioning.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 1-226
+packages/web/src/app/routes/tenant/setup/connectors/index.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-272
+packages/server/api/src/app/core/security/oidc/oidc-token.controller.ts
+  s_94864882421579::t_ee4e13e6018ae4 12,20
+packages/core/execution/src/lib/workflows/operations/add-action.ts
+  s_94864882421579::t_76a3728364d1d2 3,81,104,116
+packages/server/api/test/integration/connection/connection-events.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 120
+packages/web/src/app/routes/tenant/infra/health/components/internal-errors-table.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-105
+packages/web/src/app/components/global-search/static-pages.ts
+  s_94864882421579::t_ee4e13e6018ae4 30,52,54-56,58,61-63,65,68-70,72,75-77,79,82-84,86,89-91,93,96-98,100,103-105,107,110-112,114,117-119,121,124-126,128,131-133,135,138-140,142,145-147,149,152-154,156,159-161,163,166-168,170,173-175,177,180-182,184
+packages/web/vite.config.mts
+  s_94864882421579::t_ee4e13e6018ae4 14
+packages/connectors/sdk/src/lib/connector-metadata.ts
+  s_94864882421579::t_ee4e13e6018ae4 20,37,166
+packages/web/src/app/components/workspace-settings/index.tsx
+  s_94864882421579::t_54a572886b2f47 98
+  s_94864882421579::t_ee4e13e6018ae4 2,54
+packages/server/sandbox/src/lib/types.ts
+  s_94864882421579::t_76a3728364d1d2 32
+  s_94864882421579::t_ee4e13e6018ae4 16,53,63
+packages/connectors/sdk/src/lib/property/authentication/index.ts
+  s_94864882421579::t_ee4e13e6018ae4 107
+packages/server/api/src/app/workflows/workflow/human-input/human-input.service.ts
+  s_94864882421579::t_54a572886b2f47 1
+  s_94864882421579::t_76a3728364d1d2 41,69
+  s_94864882421579::t_ee4e13e6018ae4 5,53,78-79,85-86
+packages/core/shared/src/lib/management/workspace/workspace.ts
+  s_94864882421579::t_ee4e13e6018ae4 41,72-73,77
+packages/server/engine/test/handler/test-helper.ts
+  s_94864882421579::t_ee4e13e6018ae4 7,135
+packages/core/shared/src/lib/core/common/telemetry.ts
+  s_94864882421579::t_ee4e13e6018ae4 137,151,162,204
+packages/server/api/src/app/variable/variable.service.ts
+  s_94864882421579::t_54a572886b2f47 1
+  s_94864882421579::t_ee4e13e6018ae4 15,21,38,42-44,49,53,71,80-81,90,101-102,134,141,146,182,204-205,215,225,233,243
+  s_94864882421579::t_76a3728364d1d2 30,104,120,149
+packages/server/api/src/app/connection/connection-service/oauth2/oauth2-util.ts
+  s_94864882421579::t_76a3728364d1d2 87,115,206,212,236
+  s_94864882421579::t_ee4e13e6018ae4 66,73,96,107,182,193,249
+  s_94864882421579::t_54a572886b2f47 3
+packages/core/utils/src/lib/application-error.ts
+  s_94864882421579::t_76a3728364d1d2 1,3-220,222-348,350-574
+  s_94864882421579::t_ee4e13e6018ae4 2,221,349
+packages/connectors/core/tags/src/lib/add-tag.ts
+  s_94864882421579::t_ee4e13e6018ae4 15
+packages/core/shared/src/lib/core/authentication/model/principal.ts
+  s_94864882421579::t_ee4e13e6018ae4 1,17,25,35-36
+packages/server/api/src/app/connectors/connector-visibility.ts
+  s_94864882421579::t_ee4e13e6018ae4 17
+packages/core/shared/CLAUDE.md
+  s_94864882421579::t_76a3728364d1d2 11,16
+packages/server/api/src/app/helper/email/email-service.ts
+  s_94864882421579::t_ee4e13e6018ae4 1,4,15-16,18-21,30,32,46,50,54,61,65,69,76-77,80-81,91,106-107
+packages/server/api/src/app/helper/logs/client-logs.controller.ts
+  s_94864882421579::t_ee4e13e6018ae4 50
+packages/server/api/src/app/connection/connection-service/oauth2/services/cloud-oauth2-service.ts
+  s_94864882421579::t_54a572886b2f47 1
+  s_94864882421579::t_76a3728364d1d2 7
+packages/server/api/test/integration/workers/action-run-cancellation.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 27,33,50,53,56,73,77,136
+packages/web/src/app/builder/workflow-canvas/widgets/run-info-widget.tsx
+  s_94864882421579::t_ee4e13e6018ae4 52
+packages/web/src/app/routes/tenant/users/actions/update-user-dialog.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-132
+packages/server/engine/src/lib/handler/connector-executor.ts
+  s_94864882421579::t_76a3728364d1d2 44
+  s_94864882421579::t_54a572886b2f47 2
+packages/server/worker/src/lib/execute/jobs/execute-validation.ts
+  s_94864882421579::t_ee4e13e6018ae4 12,25
+packages/server/api/test/unit/app/action-run/action-run-outcome.test.ts
+  s_94864882421579::t_76a3728364d1d2 1,44,51,122
+packages/server/worker/src/lib/execute/jobs/execute-webhook.ts
+  s_94864882421579::t_ee4e13e6018ae4 30,63,104,121,150
+packages/server/worker/src/lib/execute/jobs/extract-connector-info.ts
+  s_94864882421579::t_ee4e13e6018ae4 15,26
+packages/web/src/features/tenant-admin/hooks/tenant-user-hooks.ts
+  s_94864882421579::t_ee4e13e6018ae4 1-122
+packages/web/src/app/routes/tenant/infra/health/components/daily-health-strip.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-127
+packages/web/src/hooks/tenant-hooks.ts
+  s_94864882421579::t_ee4e13e6018ae4 1-77
+packages/core/shared/src/lib/core/user/index.ts
+  s_94864882421579::t_ee4e13e6018ae4 2,8
+packages/server/api/src/app/connection/connection-service/connection.handler.ts
+  s_94864882421579::t_ee4e13e6018ae4 30,32,66,69,77,85,91,98,142,147,154,195,197,204,209,220,272,291,334-335,345,356,368,377,394
+  s_94864882421579::t_54a572886b2f47 2
+  s_94864882421579::t_76a3728364d1d2 245
+packages/server/sandbox/test/lib/sandbox.test.ts
+  s_94864882421579::t_76a3728364d1d2 1,116-117,149-150
+  s_94864882421579::t_ee4e13e6018ae4 68
+packages/server/api/test/integration/connectors/connector-install.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 81,94,103,116
+packages/server/api/src/app/file/file.service.ts
+  s_94864882421579::t_ee4e13e6018ae4 25,40,59,271,309,317,374,394,419
+  s_94864882421579::t_76a3728364d1d2 97,127,244,265,278,287,296
+  s_94864882421579::t_54a572886b2f47 3
+packages/core/utils/src/lib/workspace-role.ts
+  s_94864882421579::t_ee4e13e6018ae4 8
+packages/web/src/features/authentication/components/sign-up-form.tsx
+  s_94864882421579::t_ee4e13e6018ae4 78
+packages/web/src/app/components/tenant-layout.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-39
+packages/web/src/app/routes/tenant/setup/connectors/sync-connectors.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-32
+packages/server/api/src/app/workspace/workspace-access.ts
+  s_94864882421579::t_ee4e13e6018ae4 13,30-31,52,55,58,60
+  s_94864882421579::t_76a3728364d1d2 18
+  s_94864882421579::t_54a572886b2f47 1-2
+packages/connectors/community/slack/src/lib/common/auth-helpers.ts
+  s_94864882421579::t_ee4e13e6018ae4 14
+packages/core/shared/src/lib/core/authentication/user-identity.ts
+  s_94864882421579::t_ee4e13e6018ae4 23
+packages/server/api/src/app/workers/migrations/delete-legacy-redis-keys.ts
+  s_94864882421579::t_ee4e13e6018ae4 11,14
+packages/server/api/src/app/workers/rpc/worker-rpc-service.ts
+  s_94864882421579::t_ee4e13e6018ae4 24,34,101,124,175,241,259,273,278,285
+packages/server/api/test/helpers/mocks/index.ts
+  s_94864882421579::t_ee4e13e6018ae4 3,12,17,46,49,60,76,111,114,130,157-190,194-221,223,231-232,235-237,243,258,288,304,326,347,454,533,538,588,592-593,597-598,600-601,609,612,618,625,635,647,652,672,691,696,708,710,715,717,740,749,759,763,767-769,772-773,781,789-790
+packages/server/sandbox/test/lib/cache/connector-cache-traversal.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 53
+  s_94864882421579::t_76a3728364d1d2 4,59-60
+packages/web/src/app/routes/tenant/infra/health/components/runs-tab.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-86
+packages/web/src/app/routes/tenant/infra/workers/worker-assignments-tab.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-72
+packages/web/src/features/workspaces/components/edit-workspace-dialog.tsx
+  s_94864882421579::t_54a572886b2f47 163-182
+  s_94864882421579::t_ee4e13e6018ae4 4-5,35,54-55,104-105,124
+packages/server/api/src/app/workflows/workflow/workflow-execution-cache.ts
+  s_94864882421579::t_ee4e13e6018ae4 49
+packages/server/api/src/app/tenant/tenant.module.ts
+  s_94864882421579::t_ee4e13e6018ae4 1-6
+packages/web/src/app/routes/tenant/workspaces/index.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-400
+packages/server/api/test/integration/authentication/otp-service.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 25,56
+packages/core/shared/src/lib/automation/connectors/utils.ts
+  s_94864882421579::t_76a3728364d1d2 47
+  s_94864882421579::t_54a572886b2f47 1
+packages/core/connector-types/src/lib/connection.ts
+  s_94864882421579::t_ee4e13e6018ae4 3,61-62,83
+packages/server/api/src/app/workflows/workflow-version/workflow-version-validator-util.ts
+  s_94864882421579::t_76a3728364d1d2 132
+  s_94864882421579::t_54a572886b2f47 6
+  s_94864882421579::t_ee4e13e6018ae4 29,43,73,101,139,150,169,180,216,223,229
+packages/connectors/community/slack/src/index.ts
+  s_94864882421579::t_ee4e13e6018ae4 102
+packages/web/src/app/routes/tenant/infra/workers/index.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-369
+packages/web/src/app/connections/oauth2-connection-settings.tsx
+  s_94864882421579::t_ee4e13e6018ae4 16,60,382
+packages/server/api/src/app/workflows/execution/waitpoint/resume-service.ts
+  s_94864882421579::t_ee4e13e6018ae4 133,140,150
+packages/server/api/src/app/workflows/workflow/workflow.controller.ts
+  s_94864882421579::t_ee4e13e6018ae4 78
+packages/web/src/app/guards/default-route.tsx
+  s_94864882421579::t_ee4e13e6018ae4 4,22,29,34
+packages/server/api/src/app/workers/user-interaction-watcher.ts
+  s_94864882421579::t_76a3728364d1d2 28
+  s_94864882421579::t_54a572886b2f47 1
+packages/server/api/src/app/webhooks/webhook.service.ts
+  s_94864882421579::t_ee4e13e6018ae4 1,99,165,183,208,210,218,246,254,296,323,334,360,376
+packages/server/api/src/app/database/database-connection.ts
+  s_94864882421579::t_54a572886b2f47 16
+  s_94864882421579::t_ee4e13e6018ae4 51
+packages/server/api/test/integration/user/tenant-user-community.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 1-417
+packages/server/api/src/app/core/security/oidc/oidc-key-manager.ts
+  s_94864882421579::t_76a3728364d1d2 64
+  s_94864882421579::t_54a572886b2f47 3
+packages/core/execution/src/lib/workflows/workflow.ts
+  s_94864882421579::t_ee4e13e6018ae4 44
+packages/cli/src/index.ts
+  s_94864882421579::t_ee4e13e6018ae4 47
+packages/core/shared/src/lib/management/tenant/tenant.model.ts
+  s_94864882421579::t_ee4e13e6018ae4 1-309
+packages/server/api/src/app/core/security/tenant-guards.ts
+  s_94864882421579::t_54a572886b2f47 1-2
+  s_94864882421579::t_ee4e13e6018ae4 7-8,13-15,17,28
+packages/server/api/src/app/connection/tenant-connection.module.ts
+  s_94864882421579::t_ee4e13e6018ae4 1-8
+packages/server/sandbox/test/lib/cache/action-run-cache.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 78,117,119-120,122-123,125,130,133,142,165,170,191,253,297,312,317,338,360,379,387
+  s_94864882421579::t_76a3728364d1d2 5,139-140
+packages/server/sandbox/test/lib/cache/connector-installer.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 47
+packages/core/shared/src/lib/governance/system-limits.ts
+  s_94864882421579::t_ee4e13e6018ae4 1,3
+packages/server/api/src/app/database/seeds/dev-seeds.ts
+  s_94864882421579::t_ee4e13e6018ae4 6,44,49,51,53,57
+packages/connectors/sdk/test/auth-property-for-value.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 28
+packages/server/api/src/app/workflows/execution/execution-side-effects.ts
+  s_94864882421579::t_ee4e13e6018ae4 4,12,23,30,33,40,43,50,53,64
+packages/server/api/test/integration/connection/oauth2-placeholder.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 28-29,38,58,60,67,80,82,89,102,104,111,124,126,133,143,145,152
+packages/server/api/test/integration/workflows/execution/execute-workflow-e2e.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 71,76,83,236,240,245,252,402,432,438,445,526,590,604,652,673,678,734,787,792,819,827,849,854,861,932,952,957,964,1054,1082,1087
+packages/tests-e2e/fixtures/users.ts
+  s_94864882421579::t_ee4e13e6018ae4 11,38,41
+packages/server/api/src/app/authentication/lib/signup-names.ts
+  s_94864882421579::t_ee4e13e6018ae4 5-6,24,28,30,33-34,58,62
+packages/server/api/test/unit/app/core/canary/canary-proxy.integration.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 25,27,36,38,96,104,124,197-198
+packages/server/api/src/app/workspace/workspace-entity.ts
+  s_94864882421579::t_ee4e13e6018ae4 5,24,44,89-90,95-96,120,122,127-128
+packages/core/shared/src/lib/management/tenant/tenant.request.ts
+  s_94864882421579::t_ee4e13e6018ae4 1-105
+packages/server/sandbox/test/lib/utils/path-safety.test.ts
+  s_94864882421579::t_76a3728364d1d2 1,6,12,34-37,41-44,48-49
+packages/server/api/src/app/core/security/v2/authz/workspaceIdExtractor.ts
+  s_94864882421579::t_76a3728364d1d2 35
+  s_94864882421579::t_54a572886b2f47 1
+packages/core/shared/src/lib/management/ai-tools/index.ts
+  s_94864882421579::t_ee4e13e6018ae4 34
+packages/server/api/src/app/workflows/execution/waitpoint/resume-controller.ts
+  s_94864882421579::t_ee4e13e6018ae4 161-162
+packages/server/api/src/app/app.ts
+  s_94864882421579::t_54a572886b2f47 42
+  s_94864882421579::t_ee4e13e6018ae4 15,45,94,130,133,159,167,170,239,280-281
+packages/core/shared/src/lib/management/tenant/concurrency-pool.ts
+  s_94864882421579::t_ee4e13e6018ae4 1-10
+packages/core/shared/src/lib/management/template/template.ts
+  s_94864882421579::t_ee4e13e6018ae4 86,93
+packages/web/src/app/routes/tenant/setup/general/appearance-section.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-327
+packages/web/test/app/routes/tenant/infra/health/components/system-health-tab.test.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-118
+packages/server/api/src/app/workspace/workspace.controller.ts
+  s_94864882421579::t_76a3728364d1d2 76
+  s_94864882421579::t_54a572886b2f47 1
+  s_94864882421579::t_ee4e13e6018ae4 2,13,16,33,38,47,49,60,62,72,74-75,86,90,92,101,105,107,116,120,123,132,147
+packages/server/api/src/app/helper/email/mail-sender.ts
+  s_94864882421579::t_ee4e13e6018ae4 55,72
+packages/server/sandbox/src/lib/sandbox/types.ts
+  s_94864882421579::t_ee4e13e6018ae4 44
+packages/server/api/src/app/helper/system/system.ts
+  s_94864882421579::t_54a572886b2f47 3
+  s_94864882421579::t_76a3728364d1d2 85,126,150
+packages/web/src/features/authentication/components/saml-login-form.tsx
+  s_94864882421579::t_ee4e13e6018ae4 17,46-47,50-51
+packages/server/api/src/app/workflows/workflow/workflow.service.ts
+  s_94864882421579::t_ee4e13e6018ae4 76,88,124,328,363,420,430,437,456,472,495,538,547-548,697,708,814-815,848,855,878,905,911,950
+  s_94864882421579::t_76a3728364d1d2 197,345,524,783
+  s_94864882421579::t_54a572886b2f47 1
+packages/server/api/src/app/workers/payload-offloader.ts
+  s_94864882421579::t_ee4e13e6018ae4 25,32,46,59
+packages/web/src/app/connections/create-edit-connection-dialog.tsx
+  s_94864882421579::t_ee4e13e6018ae4 109,175
+packages/web/src/app/components/allow-logged-in-user-only-guard.tsx
+  s_94864882421579::t_ee4e13e6018ae4 7,27,29
+packages/server/api/test/integration/connection/custom-auth-refresh.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 31,35-36,47,51,71-72,75,87-88,91,102-103,106-107,109-110,113,119,125-126,138,146
+packages/web/src/app/routes/tenant/setup/connectors/customize-selector-dialog.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-598
+packages/cli/src/lib/commands/benchmark.ts
+  s_94864882421579::t_ee4e13e6018ae4 12,15,131,209,258,266,350,358,455,470,618,686,688,1059
+packages/web/src/features/tenant-admin/hooks/tenant-connections-hooks.ts
+  s_94864882421579::t_ee4e13e6018ae4 1-12,14-48
+  s_94864882421579::t_54a572886b2f47 13
+packages/server/api/src/app/user/tenant/tenant-user-module.ts
+  s_94864882421579::t_ee4e13e6018ae4 1-6
+packages/web/src/app/routes/tenant/users/actions/toggle-user-status-action.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-62
+packages/core/shared/src/lib/management/tenant/index.ts
+  s_94864882421579::t_ee4e13e6018ae4 1-4
+packages/server/api/test/integration/connection/connection.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 33,65,93,122,166,208,252,298,332,338,384,427,459,488,520,523,525,527,529,531,533,537
+packages/web/src/app/routes/tenant/security/sso/saml-dialog.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-612
+packages/web/src/app/routes/tenant/security/sso/index.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-180
+packages/server/api/test/integration/connection/connection-replace.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 30,35,56,61,83,101,106,110,113,131,136,140,143,176,181,218,223,259,264,311,316,358,363
+packages/server/api/src/app/core/security/v2/authz/authorization-middleware.ts
+  s_94864882421579::t_ee4e13e6018ae4 44,50,84
+packages/server/api/src/app/authentication/authorization.ts
+  s_94864882421579::t_76a3728364d1d2 48
+  s_94864882421579::t_54a572886b2f47 1
+packages/server/api/src/app/workers/job-queue/job-queue.ts
+  s_94864882421579::t_ee4e13e6018ae4 27,29,77-78,95-96,129-130,212-214,235,242,249
+packages/tests-e2e/pages/authentication.page.ts
+  s_94864882421579::t_ee4e13e6018ae4 138
+packages/web/src/features/templates/components/templates-browse-dialog.tsx
+  s_94864882421579::t_ee4e13e6018ae4 31,69-70
+packages/web/src/features/tenant-admin/api/saml-sso-api.ts
+  s_94864882421579::t_ee4e13e6018ae4 1-24
+packages/web/test/app/builder/connector-properties/text-input-with-mentions/components/function-search-popover.test.tsx
+  s_94864882421579::t_ee4e13e6018ae4 6,76
+packages/core/utils/src/lib/permission.ts
+  s_94864882421579::t_ee4e13e6018ae4 39
+CLAUDE.md
+  s_94864882421579::t_76a3728364d1d2 68
+packages/server/api/src/app/connection/connection.controller.ts
+  s_94864882421579::t_76a3728364d1d2 149
+  s_94864882421579::t_54a572886b2f47 3
+  s_94864882421579::t_ee4e13e6018ae4 20,56,76,92,102,110,118,134,145,148,152,158,172,367
+packages/core/shared/src/lib/automation/connection/connection.ts
+  s_94864882421579::t_ee4e13e6018ae4 17,22,73-74,92,106,119,132
+packages/core/shared/src/lib/core/file/index.ts
+  s_94864882421579::t_ee4e13e6018ae4 38,63,65,112
+packages/web/src/features/connectors/utils/form-utils.tsx
+  s_94864882421579::t_ee4e13e6018ae4 29,249,269,296-297,392,412,429
+packages/core/execution/src/lib/workers/index.ts
+  s_94864882421579::t_ee4e13e6018ae4 17
+packages/web/src/app/routes/tenant/connections/index.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-108,130,135,158,208,225-310
+  s_94864882421579::t_54a572886b2f47 109-129,131-134,136-157,159-207,209-224
+packages/web/src/features/forms/components/ap-form.tsx
+  s_94864882421579::t_ee4e13e6018ae4 49
+packages/core/shared/src/lib/management/workspace/workspace-requests.ts
+  s_94864882421579::t_ee4e13e6018ae4 5,17,19,26,28,37
+packages/web/src/app/routes/tenant/setup/general/index.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-30
+packages/core/execution/src/lib/workflows/form.ts
+  s_94864882421579::t_ee4e13e6018ae4 48-49
+packages/web/src/lib/authentication-session.ts
+  s_94864882421579::t_ee4e13e6018ae4 81,87-88,100-101,104-105
+packages/server/sandbox/test/lib/cache/workflow/workflow-provisioning.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 73,93,105,116,134,147
+packages/server/api/src/app/authentication/passwordless-auth.service.ts
+  s_94864882421579::t_ee4e13e6018ae4 10,22,28-30,48,61,66-67,80-82,85,88-89,93,98,103,108-109,112,116,129,131,133,141,143,146,149,154,158,163,181,184,186,190
+  s_94864882421579::t_76a3728364d1d2 64,75,91
+  s_94864882421579::t_54a572886b2f47 1
+packages/core/utils/src/index.ts
+  s_94864882421579::t_76a3728364d1d2 17
+packages/server/api/test/unit/app/core/canary/canary-routing.middleware.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 8,10,19,21,107,130,132,141,143,145,154,158,163,175,179-180
+packages/web/src/features/connections/hooks/connections-hooks.ts
+  s_94864882421579::t_ee4e13e6018ae4 103
+packages/web/src/app/routes/tenant/setup/connections/index.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-315,317-339
+  s_94864882421579::t_54a572886b2f47 316
+packages/server/worker/src/lib/execute/utils/sandbox-helpers.ts
+  s_94864882421579::t_54a572886b2f47 1
+  s_94864882421579::t_76a3728364d1d2 3-4
+packages/server/api/src/app/authentication/authentication-utils.ts
+  s_94864882421579::t_76a3728364d1d2 24,44,53,61,92
+  s_94864882421579::t_54a572886b2f47 1-2
+  s_94864882421579::t_ee4e13e6018ae4 14,16-17,19,27,36,71-72,107-108,200,204,210,213,215,224
+packages/server/sandbox/src/lib/cache/action-run-cache.ts
+  s_94864882421579::t_54a572886b2f47 3
+  s_94864882421579::t_ee4e13e6018ae4 8-9,12,15,151
+  s_94864882421579::t_76a3728364d1d2 10
+packages/server/api/src/app/workers/machine/machine-service.ts
+  s_94864882421579::t_ee4e13e6018ae4 90,99,102-103,108
+packages/server/sandbox/test/lib/sandbox/sandbox.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 22,80,130,135,148,164,180,196,203,208,239,256,263,281,293,305,332,337
+  s_94864882421579::t_76a3728364d1d2 5,245,269,360,600,624,651,675,701-703,728,753,782-783,811
+packages/server/api/src/app/core/websockets.service.ts
+  s_94864882421579::t_54a572886b2f47 1
+  s_94864882421579::t_76a3728364d1d2 60,112,125
+packages/server/sandbox/src/lib/sandbox.ts
+  s_94864882421579::t_ee4e13e6018ae4 69,118,127
+  s_94864882421579::t_54a572886b2f47 1
+  s_94864882421579::t_76a3728364d1d2 23,33,76
+packages/server/api/test/integration/connectors/connector-metadata.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 196,290,296,324,331,344,350,363,372,385,388,391,410,451,490,494,497,532-533,538,551-552,557,566
+packages/server/api/test/unit/app/webhooks/webhook-payload-size.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 78,87,98,106
+packages/web/src/features/connections/utils/utils.ts
+  s_94864882421579::t_ee4e13e6018ae4 190,193,195
+packages/web/src/features/tenant-admin/hooks/tenant-connectors-hooks.ts
+  s_94864882421579::t_ee4e13e6018ae4 1-75
+packages/web/src/hooks/user-hooks.ts
+  s_94864882421579::t_ee4e13e6018ae4 58,60
+packages/server/api/src/app/connectors/connector-install-service.ts
+  s_94864882421579::t_ee4e13e6018ae4 11,15,18,33,59,65,72,81,90,105,108-109,122
+  s_94864882421579::t_54a572886b2f47 2
+  s_94864882421579::t_76a3728364d1d2 45,48
+packages/core/shared/src/lib/management/analytics/index.ts
+  s_94864882421579::t_ee4e13e6018ae4 38,44,47
+packages/server/api/src/app/flags/theme.ts
+  s_94864882421579::t_ee4e13e6018ae4 1,41,77
+packages/web/src/app/routes/tenant/infra/health/components/status-line-chart.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-214
+packages/web/src/features/tenant-admin/api/tenant-connections-api.ts
+  s_94864882421579::t_ee4e13e6018ae4 1-22
+packages/server/api/test/unit/app/authentication/generate-engine-token.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 43,55
+packages/connectors/community/github/src/lib/common/auth-helpers.ts
+  s_94864882421579::t_ee4e13e6018ae4 165
+packages/server/api/test/integration/workflows/execution/run-logs-file-fk.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 98
+packages/server/api/src/app/tenant/tenant.utils.ts
+  s_94864882421579::t_ee4e13e6018ae4 1-43
+packages/web/src/features/connectors/hooks/connectors-hooks.ts
+  s_94864882421579::t_ee4e13e6018ae4 13,37,231,243,248,292,316,509,522,526
+packages/server/api/src/app/workflows/pre-warm-workers.ts
+  s_94864882421579::t_ee4e13e6018ae4 7,15,27-29,38,40,71-72,75,77,79-80,86
+packages/server/api/test/integration/workers/workflow-worker.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 27,30
+packages/server/api/src/app/connectors/metadata/connector-cache.ts
+  s_94864882421579::t_ee4e13e6018ae4 69,77,84
+packages/core/shared/src/lib/management/invitations/index.ts
+  s_94864882421579::t_ee4e13e6018ae4 3,6,20-21,43,45
+packages/server/worker/src/lib/execute/jobs/execute-token-refresh.ts
+  s_94864882421579::t_ee4e13e6018ae4 18,31
+packages/server/api/src/app/helper/jwt-utils.ts
+  s_94864882421579::t_76a3728364d1d2 61,80
+  s_94864882421579::t_54a572886b2f47 3
+packages/server/api/src/app/user/user-entity.ts
+  s_94864882421579::t_ee4e13e6018ae4 17,29,40-41,45-46
+packages/server/worker/test/lib/execute/utils/trigger-run-recorder.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 43,45,52,54,62,73
+packages/web/src/app/routes/tenant/infra/workers/by-group-view.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-164
+packages/core/shared/src/lib/governance/audit-events/index.ts
+  s_94864882421579::t_ee4e13e6018ae4 46
+packages/web/src/app/routes/tenant/infra/health/lib/health-metrics-api.ts
+  s_94864882421579::t_ee4e13e6018ae4 1-25
+packages/server/api/src/app/connection/connection-service/oauth2/oauth2-service.ts
+  s_94864882421579::t_ee4e13e6018ae4 18,37
+packages/web/src/app/routes/tenant/users/index.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-75,79-153
+  s_94864882421579::t_54a572886b2f47 76-78
+packages/connectors/community/github/src/index.ts
+  s_94864882421579::t_ee4e13e6018ae4 107
+packages/server/api/src/app/user-invitations/user-invitation.service.ts
+  s_94864882421579::t_54a572886b2f47 1
+  s_94864882421579::t_ee4e13e6018ae4 2,58,61-62,65-66,83,87,97-101,105,116,127,132,135,139-140,146,149,153,171,185-186,189,192,196,210-211,233,236,242,244,246,249,261,263,268,273,306,316,322,324,333,342-343,358,363,367,369
+  s_94864882421579::t_76a3728364d1d2 30,200
+packages/server/api/src/app/workers/migrations/refill-renew-webhook-jobs.ts
+  s_94864882421579::t_ee4e13e6018ae4 29,40
+packages/server/api/test/integration/webhooks/webhook.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 21,36-37,53,57-58,72,87-88,103,118-119,135,150-151,166,181-182,198,213-214,229,244-245,262,274-275,291,306-307,325,340-341,357,372-373,390,397,461,468,532,544-545
+packages/web/src/app/components/workspace-layout/workspace-dashboard-page-header.tsx
+  s_94864882421579::t_ee4e13e6018ae4 2,25,38
+  s_94864882421579::t_54a572886b2f47 65
+packages/server/api/src/app/workers/tenant-queue-migration.service.ts
+  s_94864882421579::t_ee4e13e6018ae4 1-169
+packages/server/api/src/app/core/security/authorization/authorization.ts
+  s_94864882421579::t_54a572886b2f47 2
+  s_94864882421579::t_ee4e13e6018ae4 9
+packages/web/src/app/builder/index.tsx
+  s_94864882421579::t_ee4e13e6018ae4 24,46,178
+packages/web/src/app/routes/redirect.tsx
+  s_94864882421579::t_ee4e13e6018ae4 43
+packages/server/engine/src/lib/core/connector/connector-auth.ts
+  s_94864882421579::t_ee4e13e6018ae4 59
+packages/core/execution/src/lib/workers/worker-contract.ts
+  s_94864882421579::t_ee4e13e6018ae4 30,45,57,62,98
+packages/server/api/src/app/helper/error-handler.ts
+  s_94864882421579::t_76a3728364d1d2 13,37
+  s_94864882421579::t_54a572886b2f47 1
+packages/server/api/test/integration/authentication/otp-legacy-version.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 68
+packages/server/api/src/app/template/template.controller.ts
+  s_94864882421579::t_76a3728364d1d2 58,81,105,209
+  s_94864882421579::t_ee4e13e6018ae4 8-9,47,51-52,66,86-89,110-113,169,181,193,204-206,208,211,235-236,239-240,243
+  s_94864882421579::t_54a572886b2f47 1
+packages/web/src/app/routes/tenant/infra/workers/by-workspace-view.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-378
+packages/server/api/src/app/workers/migrations/refill-polling-jobs.ts
+  s_94864882421579::t_ee4e13e6018ae4 31
+packages/web/src/app/routes/templates/index.tsx
+  s_94864882421579::t_ee4e13e6018ae4 17,28-29
+packages/server/api/src/app/connectors/connector-bundle.ts
+  s_94864882421579::t_ee4e13e6018ae4 12-13,15,18,20,26,93
+packages/server/api/src/app/template/community-templates.service.ts
+  s_94864882421579::t_76a3728364d1d2 20
+  s_94864882421579::t_54a572886b2f47 1
+packages/server/api/src/app/authentication/authentication.service.ts
+  s_94864882421579::t_54a572886b2f47 1
+  s_94864882421579::t_76a3728364d1d2 187,202
+  s_94864882421579::t_ee4e13e6018ae4 3,8,20,22,24,29,32,34,43,47,50,66-67,70,72,75,81,87,89-90,95,100,102,104,107,110,114-115,118,121,132,141,153,160,165,169-172,174-176,179,185-186,190,196-197,199,205,216,221,224,230,241,250,260,263,265
+packages/server/api/src/app/authentication/lib/disposable-email.ts
+  s_94864882421579::t_76a3728364d1d2 39
+  s_94864882421579::t_54a572886b2f47 1
+packages/server/api/test/integration/workflows/workflow/workflow.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 389
+packages/web/src/app/connections/reconnect-button-dialog.tsx
+  s_94864882421579::t_ee4e13e6018ae4 58
+packages/server/api/src/app/workflows/execution/executions-queue.ts
+  s_94864882421579::t_ee4e13e6018ae4 117-118
+packages/web/src/app/routes/tenant/infra/health/components/queue-tab.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-40
+packages/server/api/src/app/template/template.service.ts
+  s_94864882421579::t_54a572886b2f47 1
+  s_94864882421579::t_76a3728364d1d2 19,124,134
+  s_94864882421579::t_ee4e13e6018ae4 30,33,52,78,107,119,123,127,131,173,180
+packages/core/execution/src/lib/engine/engine-operation.ts
+  s_94864882421579::t_ee4e13e6018ae4 1,64,84,86
+packages/core/shared/src/lib/automation/connection/dto/upsert-connection-request.ts
+  s_94864882421579::t_ee4e13e6018ae4 64,66,70,73,124,133,159,170
+packages/server/api/test/unit/app/core/canary/worker-group.service.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 8-9,40,43,61,64,67,71,74,80,89,96-98,100,105-106,108,114,116-117,123,129,133,144,149,152,155,162,166,172
+packages/server/api/test/unit/app/workers/migrations/job-data-migrations.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 33,51
+packages/web/src/lib/error-reporting.ts
+  s_94864882421579::t_ee4e13e6018ae4 55,66
+packages/server/api/src/app/workflows/execution/execution-service.ts
+  s_94864882421579::t_ee4e13e6018ae4 154-155,159,170,188,203,214,221,275,300,309,367,377,409,487,492,606,609,616,724,728,808,846,884
+  s_94864882421579::t_54a572886b2f47 1
+  s_94864882421579::t_76a3728364d1d2 127,253,427,651,683
+packages/server/api/src/app/file/file.entity.ts
+  s_94864882421579::t_ee4e13e6018ae4 17,63-64
+packages/server/api/src/app/health/health.module.ts
+  s_94864882421579::t_54a572886b2f47 1
+  s_94864882421579::t_ee4e13e6018ae4 30,34,36,40,42,46-47,51,57,69,73,75,82,86,88,95,100,107
+packages/web/src/app/routes/tenant/infra/health/lib/health-metrics-hooks.ts
+  s_94864882421579::t_ee4e13e6018ae4 1-45
+packages/web/src/app/routes/tenant/setup/connectors/connector-actions.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-67
+packages/server/api/src/app/workspace/workspace-side-effects.ts
+  s_94864882421579::t_54a572886b2f47 1
+  s_94864882421579::t_76a3728364d1d2 37
+  s_94864882421579::t_ee4e13e6018ae4 47,58,68,71,91
+packages/core/shared/src/lib/core/authentication/model/principal-type.ts
+  s_94864882421579::t_ee4e13e6018ae4 17
+packages/server/api/src/app/core/security/authorization/common.ts
+  s_94864882421579::t_ee4e13e6018ae4 6,57-58
+packages/server/api/src/app/connection/connection-service/connection-service.ts
+  s_94864882421579::t_ee4e13e6018ae4 3,34,37,40,46,50,60,71,80,101,111,115,119,122,128,153,160,182,186,194,218-219,222,225,238,250,256,268-269,271,275,367,376,380,393,410,474,487-488,493,496,503,513,515,517,519,526,531,538-539,541-542,548,553,559,562,583,590,602,608,644,647,651,656,674,679,696,702,720,732,750,755,759,764,819,824,831,836,905-906,927,943,949,956,963,971,978,988-989,1002,1016,1028
+  s_94864882421579::t_76a3728364d1d2 198,229,240,260,272,291,357,565,774,786,916
+  s_94864882421579::t_54a572886b2f47 2
+packages/server/api/src/app/tenant/tenant.controller.ts
+  s_94864882421579::t_54a572886b2f47 1-2
+  s_94864882421579::t_ee4e13e6018ae4 10,12-13,16-17,27,31,37-39,42,46,51-53,57-59,63-65,69-70,76,79-81,84,88-89,95,111,116,123,125,129,134,140,142,145,147,152
+packages/web/src/app/components/sidebar/dashboard/index.tsx
+  s_94864882421579::t_54a572886b2f47 392
+  s_94864882421579::t_ee4e13e6018ae4 5,48,51,79,87,90-91,94,98,101-102,161,174,352,371-372,375,383-384
+packages/server/worker/src/lib/execute/jobs/renew-webhook.ts
+  s_94864882421579::t_ee4e13e6018ae4 12,39
+packages/web/src/app/routes/tenant/infra/health/index.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-129
+packages/server/api/src/app/helper/security-helper.ts
+  s_94864882421579::t_ee4e13e6018ae4 3,9-10
+packages/server/api/test/integration/workflows/workflow/workflow-lifecycle-events.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 266,281
+packages/server/api/test/integration/user-invitations/accept-invitation.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 2,27,30,47,52-53,58,74,77-79
+packages/server/api/src/app/file/files-controller.ts
+  s_94864882421579::t_ee4e13e6018ae4 44,56,92,101,156
+  s_94864882421579::t_76a3728364d1d2 70,180,189,226
+  s_94864882421579::t_54a572886b2f47 2
+packages/web/src/app/components/workspace-settings/general/index.tsx
+  s_94864882421579::t_ee4e13e6018ae4 4,32,49-50,61,174-175,221-222
+packages/web/src/app/routes/tenant/setup/templates/index.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-268
+packages/web/src/features/connections/hooks/global-connections-hooks.ts
+  s_94864882421579::t_ee4e13e6018ae4 11,41,46
+packages/server/worker/src/lib/execute/jobs/execute-action.ts
+  s_94864882421579::t_ee4e13e6018ae4 12-13,27,55,60,74
+packages/server/api/src/app/health/health.service.ts
+  s_94864882421579::t_ee4e13e6018ae4 44,46,64-65,72
+packages/server/api/src/app/workflows/folder/folder.service.ts
+  s_94864882421579::t_76a3728364d1d2 29,132
+  s_94864882421579::t_54a572886b2f47 1
+packages/server/api/src/app/template/template-validator.ts
+  s_94864882421579::t_54a572886b2f47 1
+  s_94864882421579::t_76a3728364d1d2 30
+  s_94864882421579::t_ee4e13e6018ae4 28,54,71
+packages/server/worker/src/lib/execute/utils/trigger-run-recorder.ts
+  s_94864882421579::t_ee4e13e6018ae4 5,11,21
+packages/server/api/src/app/core/security/authorization/fastify-security.ts
+  s_94864882421579::t_ee4e13e6018ae4 6,21,25,28,31,33,37,45,50,53,62,71,77,81,83,87,145,147,149,155
+  s_94864882421579::t_54a572886b2f47 3
+packages/web/src/features/connectors/components/install-connector-dialog.tsx
+  s_94864882421579::t_ee4e13e6018ae4 46,67-68,189
+packages/server/api/src/app/webhooks/webhook-request-converter.ts
+  s_94864882421579::t_ee4e13e6018ae4 64,74,88,96,106,114,119,147
+packages/server/api/test/unit/app/workflows/trigger/workflow-trigger-side-effect.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 7,22,108
+  s_94864882421579::t_76a3728364d1d2 1,188,203,215,220
+packages/server/api/test/integration/file/files-controller.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 28,33,62,67,98,103,129,134,154,159,180,185,209,214,244,249,279,284,311,316,346,349,358,376,392,397,416
+packages/server/api/src/app/workspace/workspace-service.ts
+  s_94864882421579::t_54a572886b2f47 1
+  s_94864882421579::t_ee4e13e6018ae4 31,34,48,52,61,63,96-97,100-102,104,133,135,152,156,171,175,181,187,193-194,196,198,219,229-230,269,275,277,317,326-327,331,333,339
+  s_94864882421579::t_76a3728364d1d2 110,140,242,259
+packages/cli/src/lib/commands/publish-connector.ts
+  s_94864882421579::t_ee4e13e6018ae4 34
+packages/server/worker/src/lib/execute/jobs/execute-polling.ts
+  s_94864882421579::t_ee4e13e6018ae4 13,41,64,70
+packages/core/shared/src/lib/core/user/user.ts
+  s_94864882421579::t_ee4e13e6018ae4 4,6,11,16-17,35,39,51-52
+packages/web/src/features/connections/utils/oauth2-utils.ts
+  s_94864882421579::t_ee4e13e6018ae4 105-106,123,135
+packages/server/engine/test/operations/workflow-operation-invariants.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 88,157
+packages/connectors/community/github/src/lib/auth.ts
+  s_94864882421579::t_ee4e13e6018ae4 10
+packages/core/shared/src/lib/automation/connectors/connector.ts
+  s_94864882421579::t_ee4e13e6018ae4 19,38
+packages/core/shared/src/lib/automation/variable/variable.ts
+  s_94864882421579::t_ee4e13e6018ae4 16,27
+brain/knowledge/ai-intelligence/ai-agents.md
+  s_94864882421579::t_76a3728364d1d2 31
+packages/server/api/src/app/helper/system-jobs/common.ts
+  s_94864882421579::t_ee4e13e6018ae4 1,13,27,31-32,44,54
+packages/web/src/app/builder/data-display/explanation-prompt.ts
+  s_94864882421579::t_ee4e13e6018ae4 132,136
+packages/server/api/test/integration/authentication/passwordless-authn.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 2,11-12,81,130-131,133,218,226,229,232,251-253,272,289-290,295,307,309,315-317
+packages/server/api/src/app/workers/engine-controller.ts
+  s_94864882421579::t_ee4e13e6018ae4 43,52
+packages/server/api/src/app/health/health-metrics.service.ts
+  s_94864882421579::t_ee4e13e6018ae4 1,17-18,36,153,162,210-212,218,232,246-247,261-262
+  s_94864882421579::t_54a572886b2f47 3
+packages/web/src/features/tenant-admin/hooks/sso-hooks.ts
+  s_94864882421579::t_ee4e13e6018ae4 1-28
+packages/server/api/test/unit/app/workflows/workflow-version/workflow-version.service.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 13,34,137,161,183,213
+packages/server/api/src/app/connection/tenant-connection.controller.ts
+  s_94864882421579::t_ee4e13e6018ae4 1,3-56
+  s_94864882421579::t_54a572886b2f47 2
+packages/core/shared/src/lib/core/health/health-metrics-request.ts
+  s_94864882421579::t_ee4e13e6018ae4 5,10,17,31-33,47,53,60-61,64-66,68,70-72
+packages/server/worker/src/lib/execute/jobs/execute-trigger-hook.ts
+  s_94864882421579::t_ee4e13e6018ae4 14,45
+packages/server/api/src/app/database/redis/keys.ts
+  s_94864882421579::t_ee4e13e6018ae4 1,3-16,22
+packages/web/src/app/connections/replace-connections-dialog.tsx
+  s_94864882421579::t_ee4e13e6018ae4 199,369,414,518
+packages/server/api/src/app/workers/job-queue/job-broker.ts
+  s_94864882421579::t_ee4e13e6018ae4 146
+packages/server/api/src/app/workflows/execution/engine-run-callback-service.ts
+  s_94864882421579::t_ee4e13e6018ae4 92,96
+packages/server/api/src/app/user/tenant/tenant-user-controller.ts
+  s_94864882421579::t_ee4e13e6018ae4 1-101
+packages/web/src/app/components/sidebar/tenant/index.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-265
+packages/web/src/features/automations/components/automations-empty-state.tsx
+  s_94864882421579::t_ee4e13e6018ae4 22,205-206,242
+packages/core/execution/src/lib/execution/execution.ts
+  s_94864882421579::t_ee4e13e6018ae4 88
+packages/core/connector-types/src/index.ts
+  s_94864882421579::t_ee4e13e6018ae4 16
+packages/server/worker/src/lib/execute/jobs/execute-workflow.ts
+  s_94864882421579::t_ee4e13e6018ae4 16,129
+  s_94864882421579::t_54a572886b2f47 2
+  s_94864882421579::t_76a3728364d1d2 39,46,96,154
+packages/web/src/api/authentication-api.ts
+  s_94864882421579::t_ee4e13e6018ae4 13,72,74
+packages/web/src/features/tenant-admin/index.ts
+  s_94864882421579::t_ee4e13e6018ae4 1-12
+packages/server/api/src/app/trigger/app-event-routing/app-event-routing.module.ts
+  s_94864882421579::t_ee4e13e6018ae4 119-120,125
+  s_94864882421579::t_54a572886b2f47 3
+  s_94864882421579::t_76a3728364d1d2 60
+packages/server/api/src/app/tenant/tenant.service.ts
+  s_94864882421579::t_ee4e13e6018ae4 12,14,16-17,20-21,25,29,32-33,35,45,64-65,67,70-71,73,75,78,80-82,84-86,89,92,95-96,98,102,111,118-119,121-122,129,131,138,141,143,147-148,170-171,174-175,177-178,180-183,187-190,195-197,201,207-208,210,215-216,218,227-228,231,234,236,245-246,248,250,281-284,286,289,291,300,308,313-314,318-319,331,333-335,343,348,352,357-358,360-361,368,370,376,378,391
+  s_94864882421579::t_54a572886b2f47 1-2
+packages/server/api/src/app/connectors/metadata/connector-metadata-controller.ts
+  s_94864882421579::t_54a572886b2f47 2
+  s_94864882421579::t_ee4e13e6018ae4 44,49,73,75,80,93,95,100,109,119,129,138,146,154-155,239,245
+  s_94864882421579::t_76a3728364d1d2 36,170
+packages/server/api/test/integration/workers/workspace-worker.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 21,26-27
+packages/server/STYLE.md
+  s_94864882421579::t_76a3728364d1d2 64,132,136,138,142
+packages/server/api/src/app/connection/connection.entity.ts
+  s_94864882421579::t_ee4e13e6018ae4 35,72-73
+packages/server/api/test/integration/connectors/connector-options-e2e.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 57,87,96
+packages/core/execution/src/lib/workers/job-data.ts
+  s_94864882421579::t_ee4e13e6018ae4 102,112,123,156,174,186,199,210,227,245,258
+packages/web/src/app/routes/tenant/users/actions/edit-user-action.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-44
+packages/web/src/features/workspaces/components/tenant-switcher.tsx
+  s_94864882421579::t_54a572886b2f47 61
+  s_94864882421579::t_ee4e13e6018ae4 1-60,62-98
+packages/web/src/app/components/workspace-layout/index.tsx
+  s_94864882421579::t_ee4e13e6018ae4 51,90
+packages/core/connector-types/src/lib/workflow-contracts.ts
+  s_94864882421579::t_ee4e13e6018ae4 26
+packages/web/src/features/executions/components/runs-table/index.tsx
+  s_94864882421579::t_ee4e13e6018ae4 52,154-155
+packages/server/api/test/integration/workers/job-broker-invalid-schema.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 30,36,61
+packages/web/src/app/builder/run-details/workflow-step-input-output.tsx
+  s_94864882421579::t_ee4e13e6018ae4 306
+packages/core/execution/src/lib/workflows/util/workflow-structure-util.ts
+  s_94864882421579::t_76a3728364d1d2 2,33,48,67
+packages/web/src/api/tenants-api.ts
+  s_94864882421579::t_ee4e13e6018ae4 1-33,35-46
+  s_94864882421579::t_54a572886b2f47 34
+packages/web/src/app/builder/connectors-selector/index.tsx
+  s_94864882421579::t_ee4e13e6018ae4 32,160,166
+packages/web/src/app/routes/tenant/users/columns.tsx
+  s_94864882421579::t_ee4e13e6018ae4 1-193
+packages/web/src/lib/dom-utils.ts
+  s_94864882421579::t_ee4e13e6018ae4 7
+packages/server/api/src/app/connectors/metadata/connector-metadata-service.ts
+  s_94864882421579::t_76a3728364d1d2 83,134,170,176,183
+  s_94864882421579::t_54a572886b2f47 2
+  s_94864882421579::t_ee4e13e6018ae4 26-27,31,48,55-56,60,63,71,80-81,105,115,122,131,143,150,167,169,181,188,194-195,235,241,245,252,255,257,263,299,303,329-331,334,354,406,419,424,435,444,455,497,499,507,523,529,534,540,556,561,565,573,581
+packages/web/src/app/components/account-settings/language-toggle.tsx
+  s_94864882421579::t_ee4e13e6018ae4 121
+packages/web/src/hooks/authorization-hooks.ts
+  s_94864882421579::t_ee4e13e6018ae4 2,14-16
+packages/server/api/src/app/connectors/metadata/connector-metadata-entity.ts
+  s_94864882421579::t_ee4e13e6018ae4 43,102-103
+packages/core/shared/src/lib/core/authentication/dto/sign-up-request.ts
+  s_94864882421579::t_ee4e13e6018ae4 18-19,22
+packages/server/api/src/app/helper/application-events.ts
+  s_94864882421579::t_ee4e13e6018ae4 1,31,51,57,85,110,125
+packages/server/sandbox/src/lib/sandbox/sandbox.ts
+  s_94864882421579::t_54a572886b2f47 5
+  s_94864882421579::t_ee4e13e6018ae4 152,159,167-169,231
+  s_94864882421579::t_76a3728364d1d2 16,115,397,403,409,416,483
+packages/core/shared/src/lib/core/authentication/dto/authentication-response.ts
+  s_94864882421579::t_ee4e13e6018ae4 6
+.agents/skills/debug-failed-run/SKILL.md
+  s_94864882421579::t_76a3728364d1d2 53
+packages/server/api/src/app/authentication/authentication.controller.ts
+  s_94864882421579::t_ee4e13e6018ae4 2,14,25,34,37,39,56,60,63,65,77,79,86,89,97,101,104,106,118,120,132,134,147,149,151,159,161,165
+packages/server/api/src/app/workspace/workspace-worker-group.service.ts
+  s_94864882421579::t_ee4e13e6018ae4 12,20
+packages/web/src/app/builder/step-settings/connector-settings/connection-select.tsx
+  s_94864882421579::t_ee4e13e6018ae4 42,84-85,88-89,91,95,100,228
+  s_94864882421579::t_54a572886b2f47 305
+packages/server/api/src/app/tenant/tenant.entity.ts
+  s_94864882421579::t_ee4e13e6018ae4 1-115
+packages/server/api/src/app/webhooks/webhook-handshake.ts
+  s_94864882421579::t_ee4e13e6018ae4 16,25
+packages/server/sandbox/src/lib/cache/workflow/workflow-provisioning.ts
+  s_94864882421579::t_ee4e13e6018ae4 11,34,54,59,61,68,78,113,118,132
+packages/server/api/src/app/workers/migrations/unify-old-queues-to-one.ts
+  s_94864882421579::t_ee4e13e6018ae4 74,105
+packages/server/api/test/integration/oidc/oidc-token.test.ts
+  s_94864882421579::t_ee4e13e6018ae4 13,27-28,34,69,118,129-130
+packages/server/worker/src/lib/execute/jobs/execute-property.ts
+  s_94864882421579::t_ee4e13e6018ae4 13,32
+packages/web/src/api/tenant-user-api.ts
+  s_94864882421579::t_ee4e13e6018ae4 1-21
+packages/server/api/src/app/file/s3-helper.ts
+  s_94864882421579::t_ee4e13e6018ae4 17,22-23,29
+packages/server/api/src/app/trigger/trigger-source/trigger-utils.ts
+  s_94864882421579::t_76a3728364d1d2 17
+  s_94864882421579::t_54a572886b2f47 2
+  s_94864882421579::t_ee4e13e6018ae4 49,51
+packages/server/api/src/app/workers/machine/machine-controller.ts
+  s_94864882421579::t_ee4e13e6018ae4 40,68,74,92
+packages/tests-e2e/pages/automations.page.ts
+  s_94864882421579::t_ee4e13e6018ae4 18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "6902ad38ea873bcb6777f73b5d53a33121c66540",
+  "prompts": {},
+  "sessions": {
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

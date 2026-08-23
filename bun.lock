@@ -116,6 +116,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
         "@fema-ipaas/core-utils": "workspace:*",
         "tslib": "2.6.2",
         "zod": "4.3.6",
@@ -705,6 +706,7 @@
         "@fastify/reply-from": "12.6.2",
         "@fastify/static": "10.1.2",
         "@fastify/swagger": "9.5.1",
+        "@fema-ipaas/components": "workspace:*",
         "@fema-ipaas/connector-common": "workspace:*",
         "@fema-ipaas/connector-sdk": "workspace:*",
         "@fema-ipaas/connector-types": "workspace:*",
@@ -810,6 +812,8 @@
       "name": "@fema-ipaas/engine",
       "version": "0.7.0",
       "dependencies": {
+        "@fema-ipaas/component-sdk": "workspace:*",
+        "@fema-ipaas/components": "workspace:*",
         "@fema-ipaas/connector-common": "workspace:*",
         "@fema-ipaas/connector-sdk": "workspace:*",
         "@fema-ipaas/core-utils": "workspace:*",

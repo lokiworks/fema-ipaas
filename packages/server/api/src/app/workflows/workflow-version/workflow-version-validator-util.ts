@@ -1,10 +1,11 @@
+import { componentRegistry } from '@fema-ipaas/components'
 import {
     ConnectorAuthProperty,
     connectorPropertiesUtils,
     ConnectorPropertyMap,
 } from '@fema-ipaas/connector-sdk'
 import { ApplicationError, ErrorCode, isNil, STEP_NAME_REGEX, TenantId, UserId } from '@fema-ipaas/core-utils'
-import { CodeActionSettings, ConnectorActionSettings, ConnectorTriggerSettings, LoopOnItemsActionSettings, RouterActionSettingsWithValidation, SourceCode, WorkflowActionType, workflowConnectorUtil, WorkflowOperationRequest, WorkflowOperationType, workflowStructureUtil, WorkflowTrigger, WorkflowTriggerType } from '@fema-ipaas/shared'
+import { CodeActionSettings, ComponentActionSettings, ConnectorActionSettings, ConnectorTriggerSettings, LoopOnItemsActionSettings, RouterActionSettingsWithValidation, SourceCode, WorkflowActionType, workflowConnectorUtil, WorkflowOperationRequest, WorkflowOperationType, workflowStructureUtil, WorkflowTrigger, WorkflowTriggerType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { z } from 'zod'
 import { connectorMetadataService } from '../../connectors/metadata/connector-metadata-service'
@@ -58,6 +59,14 @@ export const workflowVersionValidationUtil = (log: FastifyBaseLogger) => ({
                             clonedRequest.request.action.settings,
                         ).success
                         break
+                    case WorkflowActionType.COMPONENT: {
+                        const result = await validateComponent({ settings: clonedRequest.request.action.settings })
+                        clonedRequest.request.action.valid = result.valid
+                        if (!isNil(result.cleanInput)) {
+                            clonedRequest.request.action.settings.input = result.cleanInput
+                        }
+                        break
+                    }
                 }
                 break
             case WorkflowOperationType.UPDATE_ACTION:
@@ -88,6 +97,14 @@ export const workflowVersionValidationUtil = (log: FastifyBaseLogger) => ({
                             clonedRequest.request.settings,
                         ).success
                         break
+                    case WorkflowActionType.COMPONENT: {
+                        const result = await validateComponent({ settings: clonedRequest.request.settings })
+                        clonedRequest.request.valid = result.valid
+                        if (!isNil(result.cleanInput)) {
+                            clonedRequest.request.settings.input = result.cleanInput
+                        }
+                        break
+                    }
                 }
                 break
             case WorkflowOperationType.UPDATE_TRIGGER:
@@ -166,6 +183,17 @@ async function validateAction({ settings, tenantId, log }: ValidateActionParams)
     return validateProps(props, settings.input, connector.auth, action.requireAuth)
 }
 
+async function validateComponent({ settings }: ValidateComponentParams): Promise<ValidationResult> {
+    if (isNil(settings.componentType) || isNil(settings.input)) {
+        return { valid: false }
+    }
+    const component = componentRegistry.get(settings.componentType)
+    if (isNil(component)) {
+        return { valid: false }
+    }
+    return validateProps(component.props, settings.input, undefined, false)
+}
+
 async function validateTrigger({ settings, tenantId, log }: ValidateTriggerParams): Promise<ValidationResult> {
     if (
         isNil(settings.connectorName) ||
@@ -228,4 +256,8 @@ type ValidateTriggerParams = {
     settings: ConnectorTriggerSettings
     tenantId?: TenantId
     log: FastifyBaseLogger
+}
+
+type ValidateComponentParams = {
+    settings: ComponentActionSettings
 }

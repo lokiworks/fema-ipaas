@@ -1,16 +1,15 @@
-import { ActionContext, backwardCompatabilityContextUtils, Connector, ConnectorAuthProperty, ConnectorPropertyMap, CreateWaitpointHook, CreateWaitpointParams, CreateWaitpointResult, InputPropertyMap, SetScheduleRequest, StaticPropsValue, StopHookParams, TagsManager } from '@fema-ipaas/connector-sdk'
+import { ActionContext, backwardCompatabilityContextUtils, Connector, ConnectorAuthProperty, ConnectorPropertyMap, InputPropertyMap, SetScheduleRequest, StaticPropsValue, TagsManager } from '@fema-ipaas/connector-sdk'
 import { isNil, isObject } from '@fema-ipaas/core-utils'
-import { AUTHENTICATION_PROPERTY_NAME, EngineGenericError, InvalidCronExpressionError, InvalidScheduleIntervalError, PausedWorkflowTimeoutError, ScheduleOptions, TriggerSourceScheduleType } from '@fema-ipaas/shared'
+import { AUTHENTICATION_PROPERTY_NAME, EngineGenericError, InvalidCronExpressionError, InvalidScheduleIntervalError, ScheduleOptions, TriggerSourceScheduleType } from '@fema-ipaas/shared'
 import { isValidCron } from 'cron-validator'
-import dayjs from 'dayjs'
 import { retryFetch } from '../../api/retry-fetch'
 import { createFileUploader } from '../../connector-context/file-uploader'
 import { createContextStore } from '../../connector-context/store'
-import { waitpointClient } from '../../connector-context/waitpoint-client'
 import { createWorkflowsContext } from '../../connector-context/workflows'
 import { executionProgressReporter } from '../../helper/execution-progress-reporter'
 import { utils } from '../../utils'
 import { propsProcessor } from '../../variables/props-processor'
+import { buildRunContext } from '../run-context'
 import { ActionContextRequest, CollectedHooks, ConnectorRuntime, ContextRequest, PropsContextRequest, TriggerContextRequest } from './connector-protocol'
 
 export async function buildContext({ connector, request }: BuildContextParams): Promise<BuiltContext> {
@@ -66,20 +65,7 @@ async function buildActionContext({ connector, request, hooks, pending }: Action
         propsValue,
         tags: createTagsManager(hooks),
         connections: createConnections({ runtime, target: 'actions', hooks }),
-        run: {
-            id: runtime.executionId,
-            stop: (request?: StopHookParams) => {
-                hooks.hookResponse = { ...hooks.hookResponse, type: 'stopped', response: request ?? { response: {} } }
-            },
-            respond: (request?: StopHookParams) => {
-                hooks.hookResponse = { ...hooks.hookResponse, type: 'respond', response: request ?? { response: {} } }
-            },
-            createWaitpoint: createWaitpointHook({ runtime, stepName, hooks, pending }),
-            waitForWaitpoint: () => {
-                assertCanSuspend(runtime)
-                hooks.hookResponse = { ...hooks.hookResponse, type: 'paused' }
-            },
-        },
+        run: buildRunContext({ runtime, stepName, hooks, pending }),
         workspace: createWorkspaceContext(runtime),
     }
 
@@ -207,43 +193,6 @@ function createTagsManager(hooks: CollectedHooks): TagsManager {
     }
 }
 
-function createWaitpointHook({ runtime, stepName, hooks, pending }: WaitpointHookParams): CreateWaitpointHook {
-    return (params: CreateWaitpointParams) => {
-        const created = createWaitpoint({ runtime, stepName, hooks, params })
-        pending.push(created)
-        return created
-    }
-}
-
-async function createWaitpoint({ runtime, stepName, hooks, params }: SubmitWaitpointParams): Promise<CreateWaitpointResult> {
-    assertCanSuspend(runtime)
-    assertDelayWithinTimeout(params.resumeDateTime)
-    if (!isNil(params.responseToSend)) {
-        hooks.hookResponse = { ...hooks.hookResponse, responseToSend: params.responseToSend }
-    }
-    const result = await waitpointClient.create({
-        apiUrl: runtime.internalApiUrl,
-        engineToken: runtime.engineToken,
-        executionId: runtime.executionId,
-        workspaceId: runtime.workspaceId,
-        stepName,
-        type: params.type,
-        version: params.version ?? 'V1',
-        resumeDateTime: params.resumeDateTime,
-        responseToSend: params.responseToSend,
-        workerHandlerId: runtime.workerHandlerId,
-        httpRequestId: runtime.httpRequestId,
-    })
-    return {
-        ...result,
-        buildResumeUrl: ({ queryParams, sync }) => {
-            const url = new URL(`${result.resumeUrl}${sync ? '/sync' : ''}`)
-            url.search = new URLSearchParams(queryParams).toString()
-            return url.toString()
-        },
-    }
-}
-
 function parseSchedule(request: SetScheduleRequest): ScheduleOptions {
     if ('intervalMs' in request) {
         const parsed = ScheduleOptions.safeParse({ type: TriggerSourceScheduleType.INTERVAL, intervalMs: request.intervalMs })
@@ -261,24 +210,6 @@ function parseSchedule(request: SetScheduleRequest): ScheduleOptions {
         timezone: request.timezone ?? 'UTC',
     }
 }
-
-function assertCanSuspend(runtime: ConnectorRuntime): void {
-    if (runtime.actionRunMode) {
-        throw new Error('This action pauses the run (waitpoint) and can only run inside a workflow, not as a action run.')
-    }
-}
-
-function assertDelayWithinTimeout(resumeDateTime?: string): void {
-    if (isNil(resumeDateTime)) {
-        return
-    }
-    if (dayjs(resumeDateTime).diff(dayjs(), 'days') > FEMA_PAUSED_WORKFLOW_TIMEOUT_DAYS) {
-        throw new PausedWorkflowTimeoutError(undefined, FEMA_PAUSED_WORKFLOW_TIMEOUT_DAYS)
-    }
-}
-
-const FEMA_PAUSED_WORKFLOW_TIMEOUT_DAYS = Number(process.env.FEMA_PAUSED_WORKFLOW_TIMEOUT_DAYS)
-
 
 type BuildContextParams = {
     connector: Connector
@@ -303,20 +234,6 @@ type ProcessPropsParams = {
     props: Parameters<typeof propsProcessor.applyProcessorsAndValidators>[1]
     requireAuth: boolean
     connector: Connector
-}
-
-type WaitpointHookParams = {
-    runtime: ConnectorRuntime
-    stepName: string
-    hooks: CollectedHooks
-    pending: Promise<unknown>[]
-}
-
-type SubmitWaitpointParams = {
-    runtime: ConnectorRuntime
-    stepName: string
-    hooks: CollectedHooks
-    params: CreateWaitpointParams
 }
 
 export type BuiltContext = {

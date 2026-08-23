@@ -12,8 +12,12 @@ status: accepted
 - **Workflow Component** —— 平台自己的流程逻辑节点，不代表任何外部系统
   （Branch、Switch、Loop、Parallel、Subflow、Mapper、Filter、Delay、Retry、Code、Stop）。
 
-Engine 不再假定所有节点都是 Connector，而是通过 `NodeExecutor` 接口分发到
-`ConnectorNodeExecutor` / `ComponentNodeExecutor` / `SubflowNodeExecutor`。
+Engine 不再假定所有节点都是 Connector，而是按节点类型分发到独立 executor。
+落地形态见 [ADR 0012](0012-engine-dispatch-and-no-graph-compiler.md)：
+分发用 `Record<WorkflowActionType, BaseExecutor>` 穷尽映射表，而不是 `supports()` 谓词数组。
+
+执行方式的差别是本 ADR 的实质：Connector 惰性解析、在**全新子进程**中执行；
+Workflow Component 是一等代码、永远存在、**在进程内**执行。
 
 硬约束：Branch、Loop、Code、Delay **不得**实现为 Connector。
 

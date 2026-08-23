@@ -6,6 +6,7 @@ import { SampleDataSetting } from '../sample-data'
 
 export enum WorkflowActionType {
     CODE = 'CODE',
+    COMPONENT = 'COMPONENT',
     CONNECTOR = 'CONNECTOR',
     LOOP_ON_ITEMS = 'LOOP_ON_ITEMS',
     ROUTER = 'ROUTER',
@@ -93,6 +94,22 @@ export const ConnectorActionSchema = z.object({
     ...commonActionProps,
     type: z.literal(WorkflowActionType.CONNECTOR),
     settings: ConnectorActionSettings,
+})
+
+export const ComponentActionSettings = z.object({
+    ...commonActionSettings,
+    propertySettings: z.record(z.string(), PropertySettings),
+    componentType: z.string(),
+    input: z.record(z.string(), z.unknown()),
+    errorHandlingOptions: ActionErrorHandlingOptions,
+})
+
+export type ComponentActionSettings = z.infer<typeof ComponentActionSettings>
+
+export const ComponentActionSchema = z.object({
+    ...commonActionProps,
+    type: z.literal(WorkflowActionType.COMPONENT),
+    settings: ComponentActionSettings,
 })
 
 // Loop Items
@@ -293,6 +310,10 @@ export const WorkflowAction: z.ZodType<WorkflowAction> = z.lazy(() =>
             nextAction: WorkflowAction.optional(),
             continueOnFailureBranches: ContinueOnFailureBranches.optional(),
         }),
+        ComponentActionSchema.extend({
+            nextAction: WorkflowAction.optional(),
+            continueOnFailureBranches: ContinueOnFailureBranches.optional(),
+        }),
         ConnectorActionSchema.extend({
             nextAction: WorkflowAction.optional(),
             continueOnFailureBranches: ContinueOnFailureBranches.optional(),
@@ -324,6 +345,7 @@ export const RouterActionSchema = z.object({
 
 export const SingleActionSchema = z.discriminatedUnion('type', [
     CodeActionSchema,
+    ComponentActionSchema,
     ConnectorActionSchema,
     LoopOnItemsActionSchema,
     RouterActionSchema,
@@ -340,6 +362,7 @@ type BaseActionProps = {
 
 export type WorkflowAction =
     | (BaseActionProps & { type: WorkflowActionType.CODE, settings: CodeActionSettings, nextAction?: WorkflowAction, continueOnFailureBranches?: ContinueOnFailureBranches })
+    | (BaseActionProps & { type: WorkflowActionType.COMPONENT, settings: ComponentActionSettings, nextAction?: WorkflowAction, continueOnFailureBranches?: ContinueOnFailureBranches })
     | (BaseActionProps & { type: WorkflowActionType.CONNECTOR, settings: ConnectorActionSettings, nextAction?: WorkflowAction, continueOnFailureBranches?: ContinueOnFailureBranches })
     | (BaseActionProps & { type: WorkflowActionType.LOOP_ON_ITEMS, settings: LoopOnItemsActionSettings, nextAction?: WorkflowAction, firstLoopAction?: WorkflowAction })
     | (BaseActionProps & { type: WorkflowActionType.ROUTER, settings: RouterActionSettings, nextAction?: WorkflowAction, children: (WorkflowAction | null)[] })
@@ -361,6 +384,13 @@ export type LoopOnItemsAction = BaseActionProps & {
 export type ConnectorAction = BaseActionProps & {
     type: WorkflowActionType.CONNECTOR
     settings: ConnectorActionSettings
+    nextAction?: WorkflowAction
+    continueOnFailureBranches?: ContinueOnFailureBranches
+}
+
+export type ComponentAction = BaseActionProps & {
+    type: WorkflowActionType.COMPONENT
+    settings: ComponentActionSettings
     nextAction?: WorkflowAction
     continueOnFailureBranches?: ContinueOnFailureBranches
 }

@@ -1,4 +1,4 @@
-import { ActionErrorHandlingOptions, BeginExecuteWorkflowOperation, BranchCondition, BranchExecutionType, CodeAction, ExecutionType, WorkflowAction, WorkflowActionType, WorkflowVersionState, LoopOnItemsAction, ConnectorAction, PropertyExecutionType, RouterExecutionType, RunEnvironment, StreamStepProgress } from '@fema-ipaas/shared'
+import { ActionErrorHandlingOptions, ComponentAction, BeginExecuteWorkflowOperation, BranchCondition, BranchExecutionType, CodeAction, ExecutionType, WorkflowAction, WorkflowActionType, WorkflowVersionState, LoopOnItemsAction, ConnectorAction, PropertyExecutionType, RouterExecutionType, RunEnvironment, StreamStepProgress } from '@fema-ipaas/shared'
 import { EngineConstants, ResolvedBeginExecuteWorkflowOperation } from '../../src/lib/handler/context/engine-constants'
 
 export const generateMockEngineConstants = (params?: Partial<EngineConstants>): EngineConstants => {
@@ -112,6 +112,26 @@ export function buildConnectorAction({ name, input, skip, connectorName, actionN
             connectorName,
             connectorVersion: '1.0.0', // Not required since it's running in development mode
             actionName,
+            propertySettings: Object.fromEntries(Object.entries(input).map(([key]) => [key, {
+                type: PropertyExecutionType.MANUAL,
+                schema: undefined,
+            }])),
+            errorHandlingOptions,
+        },
+        nextAction,
+        valid: true,
+    }
+}
+
+export function buildComponentAction({ name, input, skip, componentType, nextAction, errorHandlingOptions }: { errorHandlingOptions?: ActionErrorHandlingOptions, name: string, input: Record<string, unknown>, skip?: boolean, componentType: string, nextAction?: WorkflowAction }): ComponentAction {
+    return {
+        name,
+        displayName: 'Your Component Name',
+        type: WorkflowActionType.COMPONENT,
+        skip: skip ?? false,
+        settings: {
+            input,
+            componentType,
             propertySettings: Object.fromEntries(Object.entries(input).map(([key]) => [key, {
                 type: PropertyExecutionType.MANUAL,
                 schema: undefined,

@@ -50,6 +50,18 @@ function _updateAction(workflowVersion: WorkflowVersion, request: UpdateActionRe
                 }
                 break
             }
+            case WorkflowActionType.COMPONENT: {
+                const existingContinueOnFailureBranches = stepToUpdate.type === WorkflowActionType.COMPONENT ? stepToUpdate.continueOnFailureBranches : undefined
+                const existingSampleData = stepToUpdate.type === WorkflowActionType.COMPONENT ? stepToUpdate.settings.sampleData : undefined
+                updatedAction = {
+                    ...baseProps,
+                    settings: { ...request.settings, sampleData: existingSampleData },
+                    type: WorkflowActionType.COMPONENT,
+                    nextAction: stepToUpdate.nextAction,
+                    continueOnFailureBranches: existingContinueOnFailureBranches,
+                }
+                break
+            }
             case WorkflowActionType.LOOP_ON_ITEMS: {
                 const existingSampleData = stepToUpdate.type === WorkflowActionType.LOOP_ON_ITEMS ? stepToUpdate.settings.sampleData : undefined
                 const firstLoopAction = stepToUpdate.type === WorkflowActionType.LOOP_ON_ITEMS ? stepToUpdate.firstLoopAction : undefined

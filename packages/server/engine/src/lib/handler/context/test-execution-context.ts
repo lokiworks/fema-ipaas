@@ -69,6 +69,7 @@ export const testExecutionContext = {
                 }
                 case WorkflowActionType.CONNECTOR:
                 case WorkflowActionType.CODE:
+                case WorkflowActionType.COMPONENT:
                 case WorkflowTriggerType.EMPTY:
                 case WorkflowTriggerType.CONNECTOR:
                     workflowExecutionContext = await workflowExecutionContext.upsertStep(step.name, GenericStepOutput.create({

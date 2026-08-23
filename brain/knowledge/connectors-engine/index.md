@@ -13,6 +13,20 @@ Metadata catalog of integrations (`@fema-ipaas/connector-*`), served from an in-
 - **Entities/services**: `connector_metadata` (unique on name+version+platformId; `null` platformId = official, set = custom); `connectorMetadataService` (list/get/create/delete + cache), `connectorInstallService` (upload/NPM install → `EXECUTE_METADATA` engine job), `connectorSyncService` (bundled registry → DB).
 - **Gotchas**: routes under `/v1/connectors`; install/delete are `platformAdminOnly`; `options` runs dynamic prop eval on a worker. Per-connector/action visibility (EE/Cloud) resolved at read time by `resolveVisibility` → returns `null` on CE. Optional per-action `outputSchema` drives the builder's Smart Output Viewer (opt-in, non-breaking).
 
+### Workflow Components
+
+Platform-owned flow logic nodes (Branch, Loop, Delay, Code, Stop, Approval) — **not** connectors, and deliberately a separate concept ([ADR 0004](../../../docs/adr/0004-separate-connector-and-workflow-component.md)). The `WorkflowActionType.COMPONENT` action carries a `componentType` string resolved against a static registry.
+
+- **Where**: `packages/components/sdk` (`@fema-ipaas/component-sdk` — `createComponent`, `buildComponentRegistry`, `FlowComponentCategory`), `packages/components/builtin` (`@fema-ipaas/components` — the registry itself). Engine side is `component-executor.ts`; validation is `validateComponent` in `workflow-version-validator-util.ts`.
+- **The whole point is the execution model**: a connector is resolved lazily and runs in a **fresh child process**; a component is first-party, always present, and runs **in-process**. Component `run()` therefore has no IPC boundary — its `run` hooks (`stop`/`respond`/`createWaitpoint`/`waitForWaitpoint`) mutate a local `hooks.hookResponse` that the executor reads straight back.
+- `buildRunContext` in `core/run-context.ts` is shared by both paths — the connector context builder and the component executor construct the same `RunContext`. Change it once, both get it.
+
+- **Gotchas**:
+  - Components have **no store and no `DynamicProperties`**. `createContextStore` is connector-scoped, and `executeProps` only accepts `connectorName`/`connectorVersion`. `runtime/http-response` is therefore on static props (status/headers always visible) instead of the connector's dynamic ones.
+  - An unknown `componentType` must throw `ApplicationError({ code: ENTITY_NOT_FOUND })`, **not** `EngineGenericError`. `tryCatchAndThrowOnEngineError` rethrows ENGINE errors, which fails the worker job and pages oncall; a bad component type is a bad workflow, so it has to fail the *step*.
+  - Adding a `WorkflowActionType` means touching more than `getExecutors()`: `test-execution-context.ts` (sample-data seeding for downstream step tests) and `workflow-version-validator-util.ts` (the `valid` flag, twice — ADD_ACTION and UPDATE_ACTION) both switch on it. The `switch-exhaustiveness-check` lint rule catches these; `turbo build` does not, because the engine is esbuild-only.
+  - `@fema-ipaas/components` is a **built dist** dependency of the engine and api. After adding a component, `turbo run build --filter=@fema-ipaas/components` before running engine tests, or the registry lookup silently misses it.
+
 ### Connector Sets (EE/Cloud only, `manageConnectorsEnabled`)
 
 Named, reusable connector/action/trigger visibility config a platform admin assigns to many projects. Visibility is **derived at read time** — nothing written when a new connector installs.

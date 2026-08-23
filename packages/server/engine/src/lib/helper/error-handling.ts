@@ -1,9 +1,9 @@
 import { isNil } from '@fema-ipaas/core-utils'
-import { CodeAction, ConnectorAction, ExecutionStatus } from '@fema-ipaas/shared'
+import { CodeAction, ComponentAction, ConnectorAction, ExecutionStatus } from '@fema-ipaas/shared'
 import { EngineConstants } from '../handler/context/engine-constants'
 import {  WorkflowExecutorContext } from '../handler/context/workflow-execution-context'
 
-export async function runWithExponentialBackoff<T extends CodeAction | ConnectorAction>(
+export async function runWithExponentialBackoff<T extends RetryableAction>(
     executionState: WorkflowExecutorContext,
     action: T,
     constants: EngineConstants,
@@ -28,7 +28,7 @@ export async function runWithExponentialBackoff<T extends CodeAction | Connector
 
 export async function continueIfFailureHandler(
     executionState: WorkflowExecutorContext,
-    action: CodeAction | ConnectorAction,
+    action: RetryableAction,
     constants: EngineConstants,
 ): Promise<WorkflowExecutorContext> {
     const continueOnFailure = action.settings.errorHandlingOptions?.continueOnFailure?.value
@@ -50,11 +50,13 @@ const executionFailedWithRetryableError = (workflowExecutorContext: WorkflowExec
     return workflowExecutorContext.verdict.status === ExecutionStatus.FAILED
 }
 
-type Request<T extends CodeAction | ConnectorAction> = {
+type Request<T extends RetryableAction> = {
     action: T
     executionState: WorkflowExecutorContext
     constants: EngineConstants
 }
 
-type RequestFunction<T extends CodeAction | ConnectorAction> = (request: Request<T>) => Promise<WorkflowExecutorContext>
+type RequestFunction<T extends RetryableAction> = (request: Request<T>) => Promise<WorkflowExecutorContext>
 
+
+export type RetryableAction = CodeAction | ComponentAction | ConnectorAction

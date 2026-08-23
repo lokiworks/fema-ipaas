@@ -50,6 +50,13 @@ function createAction(request: UpdateActionRequest, {
                 settings: request.settings,
             }
             break
+        case WorkflowActionType.COMPONENT:
+            action = {
+                ...baseProperties,
+                type: WorkflowActionType.COMPONENT,
+                settings: request.settings,
+            }
+            break
         case WorkflowActionType.CODE:
             action = {
                 ...baseProperties,

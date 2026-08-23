@@ -9,8 +9,12 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@fema-ipaas/component-sdk": "workspace:*",
+    "@fema-ipaas/components": "workspace:*",
     "@fema-ipaas/connector-common": "workspace:*",
     "@fema-ipaas/connector-sdk": "workspace:*",
+    "@fema-ipaas/core-utils": "workspace:*",
+    "@fema-ipaas/expression": "workspace:*",
     "@fema-ipaas/shared": "workspace:*",
     "ai": "^6.0.0",
     "async-mutex": "0.4.0",
@@ -25,9 +29,7 @@
     "socket.io-client": "4.8.1",
     "tslib": "2.6.2",
     "undici": "7.29.0",
-    "zod": "4.3.6",
-    "@fema-ipaas/core-utils": "workspace:*",
-    "@fema-ipaas/expression": "workspace:*"
+    "zod": "4.3.6"
   },
   "devDependencies": {
     "@types/node": "24.11.0",

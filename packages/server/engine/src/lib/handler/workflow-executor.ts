@@ -7,6 +7,7 @@ import { executionProgressReporter } from '../helper/execution-progress-reporter
 import { loggingUtils } from '../helper/logging-utils'
 import { BaseExecutor } from './base-executor'
 import { codeExecutor } from './code-executor'
+import { componentExecutor } from './component-executor'
 import { connectorExecutor } from './connector-executor'
 import { EngineConstants, ResolvedExecuteWorkflowOperation } from './context/engine-constants'
 import { WorkflowExecutorContext } from './context/workflow-execution-context'
@@ -20,6 +21,7 @@ let executors: Record<WorkflowActionType, BaseExecutor<WorkflowAction>> | null =
 function getExecutors(): Record<WorkflowActionType, BaseExecutor<WorkflowAction>> {
     executors ??= {
         [WorkflowActionType.CODE]: codeExecutor,
+        [WorkflowActionType.COMPONENT]: componentExecutor,
         [WorkflowActionType.LOOP_ON_ITEMS]: loopExecutor,
         [WorkflowActionType.CONNECTOR]: connectorExecutor,
         [WorkflowActionType.ROUTER]: routerExecuter,
@@ -135,7 +137,7 @@ async function runContinueOnFailureBranchIfNeeded({ action, executionState, cons
     executionState: WorkflowExecutorContext
     constants: EngineConstants
 }): Promise<WorkflowExecutorContext> {
-    if (action.type !== WorkflowActionType.CODE && action.type !== WorkflowActionType.CONNECTOR) {
+    if (action.type !== WorkflowActionType.CODE && action.type !== WorkflowActionType.CONNECTOR && action.type !== WorkflowActionType.COMPONENT) {
         return executionState
     }
     const cofEnabled = action.settings.errorHandlingOptions?.continueOnFailure?.value

@@ -50,7 +50,7 @@ export const delayComponent = createComponent({
         if (delayMs > INLINE_SLEEP_CEILING_MS) {
             const waitpoint = await context.run.createWaitpoint({
                 type: 'DELAY',
-                resumeDateTime: new Date(Date.now() + delayMs).toUTCString(),
+                resumeDateTime: new Date(Date.now() + delayMs).toISOString(),
             })
             context.run.waitForWaitpoint(waitpoint.id)
             return {}

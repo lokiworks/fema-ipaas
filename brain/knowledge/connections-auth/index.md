@@ -10,14 +10,14 @@ How FEMA Integration Platform stores credentials and authenticates users, across
 
 Encrypted credential records (AES-256) that flow steps use to call external services. Types: `OAUTH2`, `CLOUD_OAUTH2` (token exchange via secrets.fema.local), `PLATFORM_OAUTH2`, `SECRET_TEXT`, `BASIC_AUTH`, `CUSTOM_AUTH`, `NO_AUTH`, `OIDC`.
 
-- **Entity/isolation**: `AppConnection` has `projectIds[]` (multi-project) + `scope` (PROJECT/PLATFORM). PROJECT connections queried with `ArrayContains([projectId])`; flows reference by stable `externalId` (survives rename).
+- **Entity/isolation**: `Connection` has `projectIds[]` (multi-project) + `scope` (PROJECT/PLATFORM). PROJECT connections queried with `ArrayContains([projectId])`; flows reference by stable `externalId` (survives rename).
 - **OAuth refresh**: auto on retrieval; distributed Redis lock keyed `${platformId}_${externalId}` (project-invariant so shared connections serialize). Refresh_token/client_secret always stripped from API responses. CUSTOM_AUTH connectors can opt into refresh via a `refresh` callback (worker `EXECUTE_TOKEN_REFRESH` job).
 - **OIDC**: AP acts as an OIDC IdP so connectors assume cloud roles (e.g. AWS AssumeRoleWithWebIdentity) without long-lived creds. Engine-only `POST /v1/worker/oidc-token` issues RS256 JWTs; public `/.well-known/openid-configuration` + `jwks.json`. Signing key auto-generated into the `flag` table (first-writer-wins, zero setup).
 - **Gotcha**: `POST /replace` rewires flow refs between connections; PLATFORM source can't be deleted via replace (`403`); deleting a project source `409`s while a published flow still uses it. Deleting a connection does NOT cascade — flows fail at runtime.
 
 ### Global Connections (EE/Cloud)
 
-App connections with `scope = PLATFORM`, shared across projects, managed from platform admin. Gated by `platform.plan.globalConnectionsEnabled`. Same `app_connection` table (the `scope` column distinguishes them); `projectIds[]` lists who can use it, `preSelectForNewProjects` auto-assigns new projects. All endpoints under `/v1/global-connections` require platform admin (USER or SERVICE key). Delegates to shared `appConnectionService` with `projectId: null`.
+App connections with `scope = PLATFORM`, shared across projects, managed from platform admin. Gated by `platform.plan.globalConnectionsEnabled`. Same `connection` table (the `scope` column distinguishes them); `projectIds[]` lists who can use it, `preSelectForNewProjects` auto-assigns new projects. All endpoints under `/v1/global-connections` require platform admin (USER or SERVICE key). Delegates to shared `connectionService` with `projectId: null`.
 
 ### OAuth Apps (EE)
 

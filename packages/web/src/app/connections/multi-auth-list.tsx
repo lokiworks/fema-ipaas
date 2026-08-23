@@ -6,7 +6,7 @@ import {
   OAuth2Props,
 } from '@fema/connector-sdk';
 import {
-  AppConnectionType,
+  ConnectionType,
   BOTH_CLIENT_CREDENTIALS_AND_AUTHORIZATION_CODE,
   OAuth2GrantType,
 } from '@fema/shared';
@@ -111,7 +111,7 @@ function createOAuth2Options(
   const grantType = auth.grantType ?? OAuth2GrantType.AUTHORIZATION_CODE;
 
   const emptyOAuth2App: OAuth2App = {
-    oauth2Type: AppConnectionType.OAUTH2,
+    oauth2Type: ConnectionType.OAUTH2,
     clientId: null,
   };
 

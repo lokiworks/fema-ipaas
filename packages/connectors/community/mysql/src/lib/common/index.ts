@@ -1,5 +1,5 @@
 import {
-  AppConnectionValueForAuthProperty,
+  ConnectionValueForAuthProperty,
   ConnectorPropValueSchema,
   Property,
   StaticPropsValue,
@@ -16,7 +16,7 @@ export const warningMarkdown = Property.MarkDown({
 });
 
 export async function mysqlConnect(
-  auth: AppConnectionValueForAuthProperty<typeof mysqlAuth>,
+  auth: ConnectionValueForAuthProperty<typeof mysqlAuth>,
   propsValue: StaticPropsValue<any>
 ): Promise<Connection> {
   const conn = await createConnection({

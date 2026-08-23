@@ -8,11 +8,11 @@ import {
 import { isNil } from '@fema/core-utils';
 import {
   ApFlagId,
-  AppConnectionScope,
-  AppConnectionType,
-  AppConnectionWithoutSensitiveData,
+  ConnectionScope,
+  ConnectionType,
+  ConnectionWithoutSensitiveData,
   BOTH_CLIENT_CREDENTIALS_AND_AUTHORIZATION_CODE,
-  UpsertAppConnectionRequestBody,
+  UpsertConnectionRequestBody,
 } from '@fema/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { t } from 'i18next';
@@ -46,7 +46,7 @@ import { Separator } from '@/components/ui/separator';
 import { SkeletonList } from '@/components/ui/skeleton';
 import {
   ProjectSelector,
-  appConnectionsMutations,
+  connectionsMutations,
   oauthAppsQueries,
   oauth2Utils,
   ConnectorsOAuth2AppsMap,
@@ -106,7 +106,7 @@ function CreateOrEditConnectionSection({
           redirectUrl: redirectUrl ?? '',
           projectId: projectIdOverride ?? undefined,
         }),
-        ...(isGlobalConnection ? { scope: AppConnectionScope.PLATFORM } : {}),
+        ...(isGlobalConnection ? { scope: ConnectionScope.PLATFORM } : {}),
         projectIds: reconnectConnection?.projectIds ?? [],
         preSelectForNewProjects: false,
         connectorVersion: connector.version,
@@ -122,7 +122,7 @@ function CreateOrEditConnectionSection({
   const [errorMessage, setErrorMessage] = useState('');
 
   const { mutate: upsertConnection, isPending } =
-    appConnectionsMutations.useUpsertAppConnection({
+    connectionsMutations.useUpsertConnection({
       isGlobalConnection,
       reconnectConnection,
       externalIdComingFromSdk,
@@ -526,7 +526,7 @@ export {
 
 function getInitallySelectedAuthProperty(
   auth: ConnectorAuthProperty[] | ConnectorAuthProperty,
-  reconnectConnection: AppConnectionWithoutSensitiveData | null,
+  reconnectConnection: ConnectionWithoutSensitiveData | null,
 ): ConnectorAuthProperty | undefined {
   if (Array.isArray(auth)) {
     if (reconnectConnection) {
@@ -542,7 +542,7 @@ function getInitallySelectedAuthProperty(
 
 function getInitiallySelectedAuthListItem(
   auth: ConnectorAuthProperty[] | ConnectorAuthProperty,
-  reconnectConnection: AppConnectionWithoutSensitiveData | null,
+  reconnectConnection: ConnectionWithoutSensitiveData | null,
   connectorsOAuth2AppsMap: ConnectorsOAuth2AppsMap,
   connectorName: string,
 ): AuthListItem | null {
@@ -561,7 +561,7 @@ function getInitiallySelectedAuthListItem(
         connectorsOAuth2AppsMap,
         connectorName,
       ) ?? {
-        oauth2Type: AppConnectionType.OAUTH2,
+        oauth2Type: ConnectionType.OAUTH2,
         clientId: null,
       },
     };
@@ -586,11 +586,8 @@ function doesAuthPropertySupportBothGrantTypes(
 type ConnectionDialogProps = {
   connector: ConnectorMetadataModelSummary | ConnectorMetadataModel;
   open: boolean;
-  setOpen: (
-    open: boolean,
-    connection?: AppConnectionWithoutSensitiveData,
-  ) => void;
-  reconnectConnection: AppConnectionWithoutSensitiveData | null;
+  setOpen: (open: boolean, connection?: ConnectionWithoutSensitiveData) => void;
+  reconnectConnection: ConnectionWithoutSensitiveData | null;
   isGlobalConnection: boolean;
   externalIdComingFromSdk?: string | null;
   projectId?: string | null;
@@ -601,13 +598,10 @@ type InlineConnectionProps = Omit<ConnectionDialogProps, 'open'>;
 type CreateOrEditConnectionDialogContentProps = {
   connector: ConnectorMetadataModelSummary | ConnectorMetadataModel;
   connectorsOAuth2AppsMap: ConnectorsOAuth2AppsMap;
-  reconnectConnection: AppConnectionWithoutSensitiveData | null;
+  reconnectConnection: ConnectionWithoutSensitiveData | null;
   isGlobalConnection: boolean;
   externalIdComingFromSdk?: string | null;
-  setOpen: (
-    open: boolean,
-    connection?: AppConnectionWithoutSensitiveData,
-  ) => void;
+  setOpen: (open: boolean, connection?: ConnectionWithoutSensitiveData) => void;
   projectId?: string | null;
   presentation?: 'dialog' | 'inline';
 };
@@ -625,9 +619,9 @@ type ConnectionSettingsProps = {
 };
 
 type ConnectionFormValues = {
-  request: UpsertAppConnectionRequestBody & {
+  request: UpsertConnectionRequestBody & {
     projectIds: string[];
     preSelectForNewProjects: boolean;
-    scope?: AppConnectionScope;
+    scope?: ConnectionScope;
   };
 };

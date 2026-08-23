@@ -1,5 +1,5 @@
 import {
-    AppConnectionValue,
+    ConnectionValue,
     EngineOperationType,
     EngineResponseStatus,
     ExecuteTokenRefreshJobData,
@@ -27,7 +27,7 @@ export const executeTokenRefreshJob: JobHandler<ExecuteTokenRefreshJobData, Sync
                 operationType: EngineOperationType.EXECUTE_REFRESH_TOKEN_AUTH,
                 operation: {
                     connector: data.connector,
-                    auth: data.connectionValue as AppConnectionValue,
+                    auth: data.connectionValue as ConnectionValue,
                     platformId: data.platformId,
                     engineToken: ctx.engineToken,
                     internalApiUrl: ctx.internalApiUrl,

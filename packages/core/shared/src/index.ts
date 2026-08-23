@@ -33,9 +33,9 @@ export * from './lib/management/template'
 // automation — flows / flow-run / engine / agents / workers were extracted to
 // @fema/workflow-core (SRE-163); shared re-exports them for backward compat.
 export * from '@fema/workflow-core'
-export * from './lib/automation/app-connection/app-connection'
-export * from './lib/automation/app-connection/dto/read-app-connection-request'
-export * from './lib/automation/app-connection/dto/upsert-app-connection-request'
+export * from './lib/automation/connection/connection'
+export * from './lib/automation/connection/dto/read-connection-request'
+export * from './lib/automation/connection/dto/upsert-connection-request'
 export * from './lib/automation/variable'
 export * from './lib/automation/connectors'
 export * from './lib/automation/webhook'

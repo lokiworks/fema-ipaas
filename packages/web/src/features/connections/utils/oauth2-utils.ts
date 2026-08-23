@@ -1,7 +1,7 @@
 import { OAuth2Property, OAuth2Props } from '@fema/connector-sdk';
 import { isNil } from '@fema/core-utils';
 import {
-  AppConnectionType,
+  ConnectionType,
   BOTH_CLIENT_CREDENTIALS_AND_AUTHORIZATION_CODE,
   OAuth2GrantType,
   ThirdPartyAuthnProviderEnum,
@@ -120,13 +120,11 @@ export const oauth2Utils = {
 
 export type OAuth2App =
   | {
-      oauth2Type:
-        | AppConnectionType.CLOUD_OAUTH2
-        | AppConnectionType.PLATFORM_OAUTH2;
+      oauth2Type: ConnectionType.CLOUD_OAUTH2 | ConnectionType.PLATFORM_OAUTH2;
       clientId: string;
     }
   | {
-      oauth2Type: AppConnectionType.OAUTH2;
+      oauth2Type: ConnectionType.OAUTH2;
       clientId: null;
     };
 

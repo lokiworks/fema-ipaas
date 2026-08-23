@@ -1,4 +1,4 @@
-import { AppConnectionType } from '@fema/connector-types';
+import { ConnectionType } from '@fema/connector-types';
 import { describe, expect, it } from 'vitest';
 import { PropertyType } from '../src/lib/property/input/property-type';
 import { getAuthPropertyForValue, ConnectorAuth } from '../src/lib/property';
@@ -17,15 +17,15 @@ const oauth2 = () =>
 describe('getAuthPropertyForValue', () => {
   it('returns a single auth property untouched, whatever the connection type', () => {
     const auth = secretText();
-    expect(getAuthPropertyForValue({ authValueType: AppConnectionType.CLOUD_OAUTH2, connectorAuth: auth })).toBe(auth);
+    expect(getAuthPropertyForValue({ authValueType: ConnectionType.CLOUD_OAUTH2, connectorAuth: auth })).toBe(auth);
   });
 
   it('maps every OAuth2 connection type onto the OAuth2 auth entry', () => {
     const connectorAuth = [secretText(), oauth2()];
     const oauthTypes = [
-      AppConnectionType.OAUTH2,
-      AppConnectionType.CLOUD_OAUTH2,
-      AppConnectionType.PLATFORM_OAUTH2,
+      ConnectionType.OAUTH2,
+      ConnectionType.CLOUD_OAUTH2,
+      ConnectionType.PLATFORM_OAUTH2,
     ];
     for (const authValueType of oauthTypes) {
       expect(getAuthPropertyForValue({ authValueType, connectorAuth })?.type).toBe(PropertyType.OAUTH2);
@@ -34,7 +34,7 @@ describe('getAuthPropertyForValue', () => {
 
   it('matches the secret-text entry for a secret-text connection', () => {
     const connectorAuth = [oauth2(), secretText()];
-    expect(getAuthPropertyForValue({ authValueType: AppConnectionType.SECRET_TEXT, connectorAuth })?.type)
+    expect(getAuthPropertyForValue({ authValueType: ConnectionType.SECRET_TEXT, connectorAuth })?.type)
       .toBe(PropertyType.SECRET_TEXT);
   });
 });

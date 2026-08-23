@@ -1,4 +1,4 @@
-import { AppConnectionValueForAuthProperty, FilesService, ServerContext, Store } from '@fema/connector-sdk';
+import { ConnectionValueForAuthProperty, FilesService, ServerContext, Store } from '@fema/connector-sdk';
 import { isNil } from '@fema/core-utils';
 
 
@@ -18,7 +18,7 @@ interface TimebasedPolling<AuthValue, PropsValue> {
   >;
 }
 
-interface LastItemPolling<AuthValue extends AppConnectionValueForAuthProperty<any>, PropsValue> {
+interface LastItemPolling<AuthValue extends ConnectionValueForAuthProperty<any>, PropsValue> {
   strategy: DedupeStrategy.LAST_ITEM;
   items: (params: {
     auth: AuthValue;
@@ -40,12 +40,12 @@ export enum DedupeStrategy {
   LAST_ITEM,
 }
 
-export type Polling<AuthValue extends AppConnectionValueForAuthProperty<any>, PropsValue> =
+export type Polling<AuthValue extends ConnectionValueForAuthProperty<any>, PropsValue> =
   | TimebasedPolling<AuthValue, PropsValue>
   | LastItemPolling<AuthValue, PropsValue>;
 
 export const pollingHelper = {
-  async poll<AuthValue extends AppConnectionValueForAuthProperty<any>, PropsValue>(
+  async poll<AuthValue extends ConnectionValueForAuthProperty<any>, PropsValue>(
     polling: Polling<AuthValue, PropsValue>,
     {
       store,
@@ -116,7 +116,7 @@ export const pollingHelper = {
       }
     }
   },
-  async onEnable<AuthValue extends AppConnectionValueForAuthProperty<any>, PropsValue>(
+  async onEnable<AuthValue extends ConnectionValueForAuthProperty<any>, PropsValue>(
     polling: Polling<AuthValue, PropsValue>,
     {
       store,
@@ -155,7 +155,7 @@ export const pollingHelper = {
       }
     }
   },
-  async onDisable<AuthValue extends AppConnectionValueForAuthProperty<any>, PropsValue>(
+  async onDisable<AuthValue extends ConnectionValueForAuthProperty<any>, PropsValue>(
     polling: Polling<AuthValue, PropsValue>,
     params: { store: Store; auth: AuthValue; propsValue: PropsValue }
   ): Promise<void> {
@@ -165,7 +165,7 @@ export const pollingHelper = {
         return;
     }
   },
-  async test<AuthValue extends AppConnectionValueForAuthProperty<any>, PropsValue>(
+  async test<AuthValue extends ConnectionValueForAuthProperty<any>, PropsValue>(
     polling: Polling<AuthValue, PropsValue>,
     {
       auth,

@@ -1,6 +1,6 @@
 import { ConnectorMetadataModelSummary } from '@fema/connector-sdk';
 import { isNil } from '@fema/core-utils';
-import { AppConnectionWithoutSensitiveData } from '@fema/shared';
+import { ConnectionWithoutSensitiveData } from '@fema/shared';
 import { t } from 'i18next';
 import React, { useState } from 'react';
 
@@ -21,7 +21,7 @@ import { connectorsHooks } from '@/features/connectors';
 import { CreateOrEditConnectionDialog } from './create-edit-connection-dialog';
 
 type NewConnectionDialogProps = {
-  onConnectionCreated: (connection: AppConnectionWithoutSensitiveData) => void;
+  onConnectionCreated: (connection: ConnectionWithoutSensitiveData) => void;
   children: React.ReactNode;
   isGlobalConnection: boolean;
 };

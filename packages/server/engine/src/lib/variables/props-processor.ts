@@ -1,7 +1,7 @@
 import { Readable } from 'node:stream'
 import { ConnectorAuthProperty, ConnectorProperty, ConnectorPropertyMap, DateRangeValue, getAuthPropertyForValue, InputPropertyMap, PropertyType, StaticPropsValue } from '@fema/connector-sdk'
 import { isNil, isObject } from '@fema/core-utils'
-import { AppConnectionValue, AUTHENTICATION_PROPERTY_NAME, PropertySettings } from '@fema/shared'
+import { AUTHENTICATION_PROPERTY_NAME, ConnectionValue, PropertySettings } from '@fema/shared'
 import { dynamicPropKeys } from '../helper/dynamic-prop-keys'
 import { processors } from './processors'
 import { arrayZipperProcessor } from './processors/array-zipper'
@@ -24,7 +24,7 @@ export const propsProcessor = {
         }
         const processedInput = { ...resolvedInput }
         const errors: PropsValidationError = {}
-        const authValue: AppConnectionValue | undefined = resolvedInput[AUTHENTICATION_PROPERTY_NAME]
+        const authValue: ConnectionValue | undefined = resolvedInput[AUTHENTICATION_PROPERTY_NAME]
         if (authValue && requireAuth) {
             const authPropsToProcess = getAuthPropsToProcess(authValue, auth)
             if (authPropsToProcess) {
@@ -183,7 +183,7 @@ const validateProperty = (property: ConnectorProperty, value: unknown, originalV
     }
 }
 
-function getAuthPropsToProcess(authValue: AppConnectionValue, auth: ConnectorAuthProperty | ConnectorAuthProperty[] | undefined): | null {
+function getAuthPropsToProcess(authValue: ConnectionValue, auth: ConnectorAuthProperty | ConnectorAuthProperty[] | undefined): | null {
     if (isNil(auth)) {
         return null
     }

@@ -15,12 +15,12 @@ function createTriggerTemplate(displayName: string, description: string, techniq
     let triggerTemplate = ''
     if (technique === 'polling') {
         triggerTemplate = `
-import { createTrigger, TriggerStrategy, AppConnectionValueForAuthProperty  } from '@fema/connector-sdk';
+import { createTrigger, TriggerStrategy, ConnectionValueForAuthProperty  } from '@fema/connector-sdk';
 import { DedupeStrategy, Polling, pollingHelper } from '@fema/connector-common';
 import dayjs from 'dayjs';
 
 // replace auth with connector auth variable
-const polling: Polling<AppConnectionValueForAuthProperty<undefined>, Record<string, never> > = {
+const polling: Polling<ConnectionValueForAuthProperty<undefined>, Record<string, never> > = {
     strategy: DedupeStrategy.TIMEBASED,
     items: async ({ propsValue, lastFetchEpochMS }) => {
         // implement the logic to fetch the items

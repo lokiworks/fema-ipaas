@@ -1,5 +1,5 @@
 import {
-    AppConnection,
+    Connection,
     File,
     Flow,
     Folder,
@@ -20,7 +20,7 @@ type ProjectSchema = Project & {
     files: File[]
     folders: Folder[]
     events: TriggerEvent[]
-    appConnections: AppConnection[]
+    connections: Connection[]
     platform: Platform
 }
 
@@ -133,9 +133,9 @@ export const ProjectEntity = new EntitySchema<ProjectSchema>({
             target: 'folder',
             inverseSide: 'project',
         },
-        appConnections: {
+        connections: {
             type: 'one-to-many',
-            target: 'app_connection',
+            target: 'connection',
             inverseSide: 'project',
         },
         events: {

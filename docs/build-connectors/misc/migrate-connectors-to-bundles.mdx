@@ -18,7 +18,7 @@ FEMA Integration Platform builds each connector into a single self-contained bun
 | Build output | compiled files + dependency tree | one self-contained bundle |
 | `@fema/shared` location | `packages/shared` | `packages/core/shared` (same package name) |
 
-Connectors now import only from `@fema/connectors-framework` and `@fema/connectors-common`. The framework re-exports the foundation symbols (`isNil`, `SeekPage`, `ConnectorCategory`, `AppConnectionType`, and so on) that used to come from `@fema/shared`.
+Connectors now import only from `@fema/connectors-framework` and `@fema/connectors-common`. The framework re-exports the foundation symbols (`isNil`, `SeekPage`, `ConnectorCategory`, `ConnectionType`, and so on) that used to come from `@fema/shared`.
 
 ## Migrate with the CLI
 

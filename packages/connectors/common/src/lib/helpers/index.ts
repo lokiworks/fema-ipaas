@@ -8,7 +8,7 @@ import {
   StaticPropsValue,
   InputPropertyMap,
   FilesService,
-  AppConnectionValueForAuthProperty,
+  ConnectionValueForAuthProperty,
   ExtractConnectorAuthPropertyTypeForMethods,
   ApFile,
 } from '@fema/connector-sdk';
@@ -112,7 +112,7 @@ const getBaseUrlForDescription = <
   ConnectorAuth extends ConnectorAuthProperty | ConnectorAuthProperty[] | undefined
 >(
   baseUrl: BaseUrlGetter<ConnectorAuth>,
-  auth?: AppConnectionValueForAuthProperty<
+  auth?: ConnectionValueForAuthProperty<
     ExtractConnectorAuthPropertyTypeForMethods<ConnectorAuth>
   >
 ) => {
@@ -133,7 +133,7 @@ const getBaseUrlForDescription = <
 type BaseUrlGetter<
   ConnectorAuth extends ConnectorAuthProperty | ConnectorAuthProperty[] | undefined
 > = (
-  auth?: AppConnectionValueForAuthProperty<
+  auth?: ConnectionValueForAuthProperty<
     ExtractConnectorAuthPropertyTypeForMethods<ConnectorAuth>
   >
 ) => string;
@@ -154,7 +154,7 @@ export function createCustomApiCallAction<
   auth?: ConnectorAuth;
   baseUrl: BaseUrlGetter<ConnectorAuth>;
   authMapping?: (
-    auth: AppConnectionValueForAuthProperty<
+    auth: ConnectionValueForAuthProperty<
       ExtractConnectorAuthPropertyTypeForMethods<ConnectorAuth>
     >,
     propsValue: StaticPropsValue<any>

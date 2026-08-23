@@ -16,7 +16,7 @@ OAuth caveat: some Google connectors construct a client that doesn't auto-refres
 Ask the user for credentials, then create the connection:
 
 - **OAuth2 connectors** (Gmail, the Google connectors, most social/CRM apps): connect through the **builder UI sign-in** (Connections → New → authorize) — the browser MCP can drive it. The API path yields no valid access token, so it must go through the UI. Run against a fully-local instance (never `--mode=cloud`) — OAuth redirects return to `fema.local`, not localhost.
-- **API-key / token / basic-auth connectors:** create via the UI or `POST /v1/app-connections` (body includes `externalId`, `connectorName`, `type`, `value`).
+- **API-key / token / basic-auth connectors:** create via the UI or `POST /v1/connections` (body includes `externalId`, `connectorName`, `type`, `value`).
 
 Note the connection's **external id** — step input references it as `{{connections['<externalId>']}}`.
 

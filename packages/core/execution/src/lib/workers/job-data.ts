@@ -7,7 +7,7 @@ import { RunEnvironment } from '../flow-run/flow-run'
 import { CodeActionSchema, ConnectorActionSchema } from '../flows/actions/action'
 import { FlowVersion } from '../flows/flow-version'
 import { FlowTriggerType } from '../flows/triggers/trigger'
-import { AppConnectionType, AppConnectionValue, ConnectorPackage } from '@fema/connector-types'
+import { ConnectionType, ConnectionValue, ConnectorPackage } from '@fema/connector-types'
 
 export const LATEST_JOB_DATA_SCHEMA_VERSION = 10
 
@@ -186,8 +186,8 @@ export const ExecuteResolveConnectionIdentifierJobData = z.object({
     platformId: z.string(),
     connector: ConnectorPackage,
     schemaVersion: z.number(),
-    connectionValue: z.custom<AppConnectionValue>(),
-    connectionType: z.enum(AppConnectionType),
+    connectionValue: z.custom<ConnectionValue>(),
+    connectionType: z.enum(ConnectionType),
     requestId: z.string(),
     webserverId: z.string(),
 })
@@ -199,7 +199,7 @@ export const ExecuteTokenRefreshJobData = z.object({
     platformId: z.string(),
     connector: ConnectorPackage,
     schemaVersion: z.number(),
-    connectionValue: z.custom<AppConnectionValue>(),
+    connectionValue: z.custom<ConnectionValue>(),
     requestId: z.string(),
     webserverId: z.string(),
 })

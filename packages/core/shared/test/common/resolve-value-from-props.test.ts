@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { resolveValueFromProps } from '../../src/lib/automation/app-connection/app-connection'
+import { resolveValueFromProps } from '../../src/lib/automation/connection/connection'
 
 describe('resolveValueFromProps', () => {
     it('substitutes every occurrence of a placeholder, not just the first', () => {

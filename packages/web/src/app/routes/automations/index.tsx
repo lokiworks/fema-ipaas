@@ -24,7 +24,7 @@ import {
 } from '@/features/automations/hooks/use-automations-selection';
 import { usePinnedItems } from '@/features/automations/hooks/use-pinned-items';
 import { TreeItem } from '@/features/automations/lib/types';
-import { appConnectionsQueries } from '@/features/connections';
+import { connectionsQueries } from '@/features/connections';
 import { connectorsHooks } from '@/features/connectors';
 import { ImportFlowDialog } from '@/features/flows/components/import-flow-dialog';
 import { projectCollectionUtils, getProjectName } from '@/features/projects';
@@ -121,7 +121,7 @@ const AutomationsPageContent = ({ projectId }: { projectId: string }) => {
 
   const dialogs = useAutomationsDialogs({ mutations, selectedItems });
 
-  const { data: connections } = appConnectionsQueries.useAppConnections({
+  const { data: connections } = connectionsQueries.useConnections({
     request: { projectId, limit: 10000 },
     extraKeys: [projectId],
   });

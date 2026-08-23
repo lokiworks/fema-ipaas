@@ -3,9 +3,9 @@ import {
     DataSource,
     EntitySchema,
 } from 'typeorm'
-import { AppConnectionEntity } from '../app-connection/app-connection.entity'
 import { OtpEntity } from '../authentication/otp/otp-entity'
 import { UserIdentityEntity } from '../authentication/user-identity/user-identity-entity'
+import { ConnectionEntity } from '../connection/connection.entity'
 import { ConnectorMetadataEntity } from '../connectors/metadata/connector-metadata-entity'
 import { FileEntity } from '../file/file.entity'
 import { FlagEntity } from '../flags/flag.entity'
@@ -44,7 +44,7 @@ function getEntities(): EntitySchema<unknown>[] {
         ProjectEntity,
         StoreEntryEntity,
         UserEntity,
-        AppConnectionEntity,
+        ConnectionEntity,
         VariableEntity,
         FolderEntity,
         ConnectorMetadataEntity,

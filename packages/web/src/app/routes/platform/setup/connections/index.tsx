@@ -1,8 +1,5 @@
 import { Permission } from '@fema/core-utils';
-import {
-  AppConnectionStatus,
-  AppConnectionWithoutSensitiveData,
-} from '@fema/shared';
+import { ConnectionStatus, ConnectionWithoutSensitiveData } from '@fema/shared';
 import { ColumnDef } from '@tanstack/react-table';
 import { t } from 'i18next';
 import {
@@ -46,7 +43,7 @@ import {
   EditGlobalConnectionDialog,
   globalConnectionsMutations,
   globalConnectionsQueries,
-  appConnectionUtils,
+  connectionUtils,
 } from '@/features/connections';
 import { ConnectorIconWithConnectorName } from '@/features/connectors';
 import { useAuthorization } from '@/hooks/authorization-hooks';
@@ -54,7 +51,7 @@ import { platformHooks } from '@/hooks/platform-hooks';
 import { formatUtils } from '@/lib/format-utils';
 
 const STATUS_QUERY_PARAM = 'status';
-const filters: DataTableFilters<keyof AppConnectionWithoutSensitiveData>[] = [
+const filters: DataTableFilters<keyof ConnectionWithoutSensitiveData>[] = [
   {
     type: 'input',
     title: t('Search'),
@@ -65,7 +62,7 @@ const filters: DataTableFilters<keyof AppConnectionWithoutSensitiveData>[] = [
     type: 'select',
     title: t('Status'),
     accessorKey: STATUS_QUERY_PARAM,
-    options: Object.values(AppConnectionStatus).map((status) => {
+    options: Object.values(ConnectionStatus).map((status) => {
       return {
         label: formatUtils.convertEnumToReadable(status),
         value: status,
@@ -78,14 +75,14 @@ const filters: DataTableFilters<keyof AppConnectionWithoutSensitiveData>[] = [
 const GlobalConnectionsTable = () => {
   const [refresh, setRefresh] = useState(0);
   const [selectedRows, setSelectedRows] = useState<
-    Array<AppConnectionWithoutSensitiveData>
+    Array<ConnectionWithoutSensitiveData>
   >([]);
   const { checkAccess } = useAuthorization();
   const location = useLocation();
   const { platform } = platformHooks.useCurrentPlatform();
 
   const columns: ColumnDef<
-    RowDataWithActions<AppConnectionWithoutSensitiveData>,
+    RowDataWithActions<ConnectionWithoutSensitiveData>,
     unknown
   >[] = [
     {
@@ -128,8 +125,7 @@ const GlobalConnectionsTable = () => {
       ),
       cell: ({ row }) => {
         const status = row.original.status;
-        const { variant, icon: Icon } =
-          appConnectionUtils.getStatusIcon(status);
+        const { variant, icon: Icon } = connectionUtils.getStatusIcon(status);
         return (
           <div className="text-left">
             <StatusIconWithText
@@ -221,7 +217,7 @@ const GlobalConnectionsTable = () => {
         : 10,
       status:
         (searchParams.getAll(STATUS_QUERY_PARAM) as
-          | AppConnectionStatus[]
+          | ConnectionStatus[]
           | undefined) ?? [],
     },
     extraKeys: [location.search],
@@ -230,8 +226,8 @@ const GlobalConnectionsTable = () => {
     showErrorDialog: true,
   });
 
-  const userHasPermissionToWriteAppConnection = checkAccess(
-    Permission.WRITE_APP_CONNECTION,
+  const userHasPermissionToWriteConnection = checkAccess(
+    Permission.WRITE_CONNECTION,
   );
 
   const bulkDeleteGlobalConnections =
@@ -239,11 +235,11 @@ const GlobalConnectionsTable = () => {
       refetchGlobalConnections,
     );
 
-  const bulkActions: BulkAction<AppConnectionWithoutSensitiveData>[] = useMemo(
+  const bulkActions: BulkAction<ConnectionWithoutSensitiveData>[] = useMemo(
     () => [
       {
         render: (
-          _selectedRows: RowDataWithActions<AppConnectionWithoutSensitiveData>[],
+          _selectedRows: RowDataWithActions<ConnectionWithoutSensitiveData>[],
           resetSelection: () => void,
         ) => {
           return (
@@ -273,7 +269,7 @@ const GlobalConnectionsTable = () => {
                     variant="ghost"
                     size="sm"
                     className="text-destructive hover:text-destructive"
-                    disabled={!userHasPermissionToWriteAppConnection}
+                    disabled={!userHasPermissionToWriteConnection}
                   >
                     <Trash className="mr-1 w-4" />
                     {`${t('Delete')} (${selectedRows.length})`}

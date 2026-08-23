@@ -1,9 +1,9 @@
-import { AppConnectionValueForAuthProperty, Property } from "@fema/connector-sdk";
+import { ConnectionValueForAuthProperty, Property } from "@fema/connector-sdk";
 import { postgresAuth } from "..";
 import { Client } from "pg";
 import format from "pg-format";
 
-export const pgClient = async (auth: AppConnectionValueForAuthProperty<typeof postgresAuth>, query_timeout = 30000, application_name: string | undefined = undefined , connectionTimeoutMillis = 30000) => {
+export const pgClient = async (auth: ConnectionValueForAuthProperty<typeof postgresAuth>, query_timeout = 30000, application_name: string | undefined = undefined , connectionTimeoutMillis = 30000) => {
     const {
         host,
         user,

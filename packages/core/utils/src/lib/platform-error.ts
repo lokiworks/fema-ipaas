@@ -27,7 +27,7 @@ export type ApErrorParams =
     | FlowOperationInProgressErrorParams
     | FlowRunRetryOutsideRetentionErrorParams
     | InvalidApiKeyParams
-    | InvalidAppConnectionParams
+    | InvalidConnectionParams
     | InvalidBearerTokenParams
     | InvalidClaimParams
     | InvalidCloudClaimParams
@@ -336,8 +336,8 @@ ErrorCode.ENGINE_OPERATION_FAILURE,
 }
 >
 
-export type InvalidAppConnectionParams = BaseErrorParams<
-ErrorCode.INVALID_APP_CONNECTION,
+export type InvalidConnectionParams = BaseErrorParams<
+ErrorCode.INVALID_CONNECTION,
 {
     error: string
 }
@@ -527,7 +527,7 @@ export enum ErrorCode {
     FLOW_OPERATION_IN_PROGRESS = 'FLOW_OPERATION_IN_PROGRESS',
     FLOW_RUN_RETRY_OUTSIDE_RETENTION = 'FLOW_RUN_RETRY_OUTSIDE_RETENTION',
     INVALID_API_KEY = 'INVALID_API_KEY',
-    INVALID_APP_CONNECTION = 'INVALID_APP_CONNECTION',
+    INVALID_CONNECTION = 'INVALID_CONNECTION',
     INVALID_BEARER_TOKEN = 'INVALID_BEARER_TOKEN',
     SESSION_EXPIRED = 'SESSION_EXPIRED',
     INVALID_CLAIM = 'INVALID_CLAIM',

@@ -2,7 +2,7 @@ import * as z from "zod/mini";
 import { StaticDropdownProperty, StaticMultiSelectDropdownProperty } from "./dropdown/static-dropdown";
 import { ShortTextProperty } from "./text-property";
 import { BasePropertySchema, TPropertyValue } from "./common";
-import { AppConnectionValueForAuthProperty, PropertyContext } from "../../context";
+import { ConnectionValueForAuthProperty, PropertyContext } from "../../context";
 import { PropertyType } from "./property-type";
 import { JsonProperty } from "./json-property";
 import { ArrayProperty } from "./array-property";
@@ -49,7 +49,7 @@ export type DynamicProperties<R extends boolean, ConnectorAuth extends Connector
 
   type DynamicPropertiesOptions<ConnectorAuth extends ConnectorAuthProperty | ConnectorAuthProperty[] | undefined = undefined> = (
     propsValue: Record<string, unknown> & {
-      auth?: AppConnectionValueForAuthProperty<ExtractConnectorAuthPropertyTypeForMethods<ConnectorAuth>>;
+      auth?: ConnectionValueForAuthProperty<ExtractConnectorAuthPropertyTypeForMethods<ConnectorAuth>>;
     },
     ctx: PropertyContext,
   ) => Promise<InputPropertyMap>;

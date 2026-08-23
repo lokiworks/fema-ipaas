@@ -3,8 +3,8 @@ import { DefaultProjectRole } from '../../management/project/project-member'
 
 export const rolePermissions: Record<DefaultProjectRole, Permission[]> = {
     [DefaultProjectRole.ADMIN]: [
-        Permission.READ_APP_CONNECTION,
-        Permission.WRITE_APP_CONNECTION,
+        Permission.READ_CONNECTION,
+        Permission.WRITE_CONNECTION,
         Permission.READ_FLOW,
         Permission.WRITE_FLOW,
         Permission.UPDATE_FLOW_STATUS,
@@ -34,8 +34,8 @@ export const rolePermissions: Record<DefaultProjectRole, Permission[]> = {
         Permission.WRITE_AGENT,
     ],
     [DefaultProjectRole.EDITOR]: [
-        Permission.READ_APP_CONNECTION,
-        Permission.WRITE_APP_CONNECTION,
+        Permission.READ_CONNECTION,
+        Permission.WRITE_CONNECTION,
         Permission.READ_FLOW,
         Permission.WRITE_FLOW,
         Permission.UPDATE_FLOW_STATUS,
@@ -60,7 +60,7 @@ export const rolePermissions: Record<DefaultProjectRole, Permission[]> = {
         Permission.WRITE_AGENT,
     ],
     [DefaultProjectRole.VIEWER]: [
-        Permission.READ_APP_CONNECTION,
+        Permission.READ_CONNECTION,
         Permission.READ_FLOW,
         Permission.READ_PROJECT_MEMBER,
         Permission.READ_INVITATION,

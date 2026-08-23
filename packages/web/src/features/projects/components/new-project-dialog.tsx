@@ -1,5 +1,5 @@
 import {
-  AppConnectionWithoutSensitiveData,
+  ConnectionWithoutSensitiveData,
   CreatePlatformProjectRequest,
   ProjectWithLimits,
 } from '@fema/shared';
@@ -80,7 +80,7 @@ const NewProjectForm = ({
   setOpen,
 }: Omit<NewProjectDialogProps, 'children'> & {
   setOpen: (open: boolean) => void;
-  globalConnections: AppConnectionWithoutSensitiveData[];
+  globalConnections: ConnectionWithoutSensitiveData[];
   globalConnectionsEnabled: boolean;
 }) => {
   const queryClient = useQueryClient();

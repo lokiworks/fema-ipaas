@@ -25,7 +25,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
-import { appConnectionsMutations } from '../hooks/app-connections-hooks';
+import { connectionsMutations } from '../hooks/connections-hooks';
 
 const RenameConnectionSchema = z.object({
   displayName: z.string(),
@@ -53,7 +53,7 @@ const RenameConnectionDialog = forwardRef<
   });
 
   const { mutate: renameConnection, isPending } =
-    appConnectionsMutations.useRenameAppConnection({
+    connectionsMutations.useRenameConnection({
       currentName,
       setIsRenameDialogOpen,
       renameConnectionForm,

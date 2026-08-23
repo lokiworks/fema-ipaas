@@ -21,11 +21,11 @@ Two deduplication strategies:
 ### TIMEBASED Polling (most common)
 
 ```typescript
-import { createTrigger, TriggerStrategy, AppConnectionValueForAuthProperty } from '@fema/connector-sdk';
+import { createTrigger, TriggerStrategy, ConnectionValueForAuthProperty } from '@fema/connector-sdk';
 import { DedupeStrategy, Polling, pollingHelper, httpClient, HttpMethod, AuthenticationType } from '@fema/connector-common';
 import { myAppAuth } from '../auth';
 
-const polling: Polling<AppConnectionValueForAuthProperty<typeof myAppAuth>, Record<string, never>> = {
+const polling: Polling<ConnectionValueForAuthProperty<typeof myAppAuth>, Record<string, never>> = {
   strategy: DedupeStrategy.TIMEBASED,
   items: async ({ auth, propsValue, lastFetchEpochMS }) => {
     const response = await httpClient.sendRequest<{ data: any[] }>({
@@ -102,7 +102,7 @@ When the trigger has user-configurable props (e.g., a project filter), update th
 const props = { projectId: Property.Dropdown({ /* ... */ }) };
 
 const polling: Polling<
-  AppConnectionValueForAuthProperty<typeof myAppAuth>,
+  ConnectionValueForAuthProperty<typeof myAppAuth>,
   StaticPropsValue<typeof props>  // ← add your props type here
 > = {
   strategy: DedupeStrategy.TIMEBASED,

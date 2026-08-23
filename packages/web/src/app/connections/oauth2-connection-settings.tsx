@@ -8,7 +8,7 @@ import { isNil } from '@fema/core-utils';
 import {
   ApErrorParams,
   ApFlagId,
-  AppConnectionType,
+  ConnectionType,
   ErrorCode,
   OAuth2GrantType,
   UpsertCloudOAuth2Request,
@@ -40,7 +40,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { OAuth2App, oauth2Utils } from '@/features/connections';
-import { appConnectionsApi } from '@/features/connections/api/app-connections';
+import { connectionsApi } from '@/features/connections/api/connections';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
@@ -64,7 +64,7 @@ function OAuth2ConnectionSettings({
     form.formState.errors.request?.value?.client_id,
   );
   const isClientSecretValid =
-    oauth2App.oauth2Type !== AppConnectionType.OAUTH2 ||
+    oauth2App.oauth2Type !== ConnectionType.OAUTH2 ||
     form.getValues('request.value.client_secret');
   const isPropsValid = isNil(form.formState.errors.request?.value?.props);
   const selectedScopeString = form.watch('request.value.scope') ?? '';
@@ -77,12 +77,12 @@ function OAuth2ConnectionSettings({
     ApFlagId.THIRD_PARTY_AUTH_PROVIDER_REDIRECT_URL,
   );
   const redirectUrl =
-    oauth2App.oauth2Type === AppConnectionType.CLOUD_OAUTH2
+    oauth2App.oauth2Type === ConnectionType.CLOUD_OAUTH2
       ? 'https://secrets.fema.local/redirect'
       : thirdPartyUrl ?? 'no_redirect_url_found';
 
   const showRedirectUrlInput =
-    oauth2App.oauth2Type === AppConnectionType.OAUTH2 &&
+    oauth2App.oauth2Type === ConnectionType.OAUTH2 &&
     grantType === OAuth2GrantType.AUTHORIZATION_CODE;
   const [loading, setLoading] = useState(false);
   const [scopesEditing, setScopesEditing] = useState(false);
@@ -99,7 +99,7 @@ function OAuth2ConnectionSettings({
         </div>
       )}
 
-      {oauth2App.oauth2Type === AppConnectionType.OAUTH2 && (
+      {oauth2App.oauth2Type === ConnectionType.OAUTH2 && (
         <>
           <FormField
             name="request.value.client_id"
@@ -319,7 +319,7 @@ async function openPopup({
   try {
     setLoading(true);
     const formProjectId = form.getValues().request.projectId;
-    const result = await appConnectionsApi.getOAuth2AuthorizationUrl({
+    const result = await connectionsApi.getOAuth2AuthorizationUrl({
       connectorName,
       clientId,
       redirectUrl,
@@ -337,7 +337,7 @@ async function openPopup({
     form.setError('request.value.code', {
       type: 'manual',
       message:
-        apError?.code === ErrorCode.INVALID_APP_CONNECTION
+        apError?.code === ErrorCode.INVALID_CONNECTION
           ? t('Connection failed with error {msg}', {
               msg: apError.params.error,
             })

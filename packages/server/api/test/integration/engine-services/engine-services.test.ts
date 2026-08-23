@@ -1,7 +1,7 @@
 import { AddressInfo } from 'net'
 import { apId } from '@fema/core-utils'
 import { ContextVersion, StoreScope } from '@fema/connector-sdk'
-import { AppConnectionStatus, AppConnectionType, ConnectionExpiredError, ConnectionNotFoundError, ConnectionConnectorMismatchError, FetchError, FlowStatus, FlowVersionState, PrincipalType } from '@fema/shared'
+import { ConnectionStatus, ConnectionType, ConnectionExpiredError, ConnectionNotFoundError, ConnectionConnectorMismatchError, FetchError, FlowStatus, FlowVersionState, PrincipalType } from '@fema/shared'
 import { FastifyInstance } from 'fastify'
 import { createConnectionResolver } from '../../../../../engine/src/lib/connector-context/connection-resolver'
 import { createFileUploader } from '../../../../../engine/src/lib/connector-context/file-uploader'
@@ -151,7 +151,7 @@ describe('Engine Services Integration', () => {
             const externalId = apId()
             const secretText = 'my-super-secret'
             const connectionValue = {
-                type: AppConnectionType.SECRET_TEXT,
+                type: ConnectionType.SECRET_TEXT,
                 secret_text: secretText,
             }
             const encryptedValue = await encryptUtils.encryptObject(connectionValue)
@@ -160,10 +160,10 @@ describe('Engine Services Integration', () => {
                 platformId,
                 projectIds: [projectId],
                 externalId,
-                status: AppConnectionStatus.ACTIVE,
+                status: ConnectionStatus.ACTIVE,
             }, ownerId)
 
-            await db.save('app_connection', {
+            await db.save('connection', {
                 ...mockConn,
                 value: encryptedValue,
             })
@@ -178,7 +178,7 @@ describe('Engine Services Integration', () => {
             const result = await connectionService.obtain(externalId)
 
             expect(result).toEqual({
-                type: AppConnectionType.SECRET_TEXT,
+                type: ConnectionType.SECRET_TEXT,
                 secret_text: secretText,
             })
         })
@@ -187,7 +187,7 @@ describe('Engine Services Integration', () => {
             const externalId = apId()
             const secretText = 'v0-secret-value'
             const connectionValue = {
-                type: AppConnectionType.SECRET_TEXT,
+                type: ConnectionType.SECRET_TEXT,
                 secret_text: secretText,
             }
             const encryptedValue = await encryptUtils.encryptObject(connectionValue)
@@ -196,10 +196,10 @@ describe('Engine Services Integration', () => {
                 platformId,
                 projectIds: [projectId],
                 externalId,
-                status: AppConnectionStatus.ACTIVE,
+                status: ConnectionStatus.ACTIVE,
             }, ownerId)
 
-            await db.save('app_connection', {
+            await db.save('connection', {
                 ...mockConn,
                 value: encryptedValue,
             })
@@ -230,7 +230,7 @@ describe('Engine Services Integration', () => {
         it('should throw ConnectionExpiredError when connection status is ERROR', async () => {
             const externalId = apId()
             const connectionValue = {
-                type: AppConnectionType.SECRET_TEXT,
+                type: ConnectionType.SECRET_TEXT,
                 secret_text: 'expired-secret',
             }
             const encryptedValue = await encryptUtils.encryptObject(connectionValue)
@@ -241,9 +241,9 @@ describe('Engine Services Integration', () => {
                 externalId,
             }, ownerId)
 
-            await db.save('app_connection', {
+            await db.save('connection', {
                 ...mockConn,
-                status: AppConnectionStatus.ERROR,
+                status: ConnectionStatus.ERROR,
                 value: encryptedValue,
             })
 
@@ -272,10 +272,10 @@ describe('Engine Services Integration', () => {
                     externalId,
                     connectorName: connectionConnectorName,
                 }, ownerId)
-                await db.save('app_connection', {
+                await db.save('connection', {
                     ...mockConn,
                     value: await encryptUtils.encryptObject({
-                        type: AppConnectionType.SECRET_TEXT,
+                        type: ConnectionType.SECRET_TEXT,
                         secret_text: 'bound-secret',
                     }),
                 })
@@ -310,7 +310,7 @@ describe('Engine Services Integration', () => {
                 })
 
                 await expect(connectionService.obtain(externalId)).resolves.toEqual({
-                    type: AppConnectionType.SECRET_TEXT,
+                    type: ConnectionType.SECRET_TEXT,
                     secret_text: 'bound-secret',
                 })
             })
@@ -327,7 +327,7 @@ describe('Engine Services Integration', () => {
                 })
 
                 await expect(connectionService.obtain(externalId)).resolves.toEqual({
-                    type: AppConnectionType.SECRET_TEXT,
+                    type: ConnectionType.SECRET_TEXT,
                     secret_text: 'bound-secret',
                 })
             })

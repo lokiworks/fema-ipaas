@@ -1,7 +1,7 @@
 import { FlowRunId, PlatformId, ProjectId } from '@fema/core-utils'
 import { z } from 'zod'
 import { ExecutionToolStatus, PredefinedInputsStructure } from '@fema/connector-types'
-import { AppConnectionType, AppConnectionValue } from '@fema/connector-types'
+import { ConnectionType, ConnectionValue } from '@fema/connector-types'
 import { ExecutionType } from '../flow-run/execution/execution-output'
 import { RunEnvironment } from '../flow-run/flow-run'
 import { CodeAction, ConnectorAction } from '../flows/actions/action'
@@ -66,13 +66,13 @@ export type BaseEngineOperation = {
 
 export type ExecuteValidateAuthOperation = Omit<BaseEngineOperation, 'projectId'> & {
     connector: ConnectorPackage
-    auth: AppConnectionValue
+    auth: ConnectionValue
 }
 
 export type ExecuteResolveConnectionIdentifierOperation = Omit<BaseEngineOperation, 'projectId'> & {
     connector: ConnectorPackage
-    auth: AppConnectionValue
-    connectionType: AppConnectionType
+    auth: ConnectionValue
+    connectionType: ConnectionType
 }
 
 export type ExecuteRefreshTokenAuthOperation = ExecuteValidateAuthOperation

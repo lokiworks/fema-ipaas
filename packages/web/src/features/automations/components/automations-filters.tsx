@@ -1,6 +1,6 @@
 import { ConnectorMetadataModelSummary } from '@fema/connector-sdk';
 import {
-  AppConnectionWithoutSensitiveData,
+  ConnectionWithoutSensitiveData,
   FlowStatus,
   FolderDto,
 } from '@fema/shared';
@@ -54,7 +54,7 @@ type AutomationsFiltersProps = {
   onFolderFilterChange: (value: string[]) => void;
   onFilterChange?: () => void;
   folders: FolderDto[];
-  connections: AppConnectionWithoutSensitiveData[] | undefined;
+  connections: ConnectionWithoutSensitiveData[] | undefined;
   connectors: ConnectorMetadataModelSummary[] | undefined;
   userHasPermissionToWriteFlow: boolean;
   userHasPermissionToWriteFolder: boolean;

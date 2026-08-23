@@ -7,7 +7,7 @@ import { SecretTextProperty } from "./secret-text-property";
 import { PropertyType } from "../input/property-type";
 import { OAuth2Property, OAuth2Props } from "./oauth2-prop";
 import { isNil } from "@fema/core-utils";
-import { AppConnectionType } from "@fema/connector-types";
+import { ConnectionType } from "@fema/connector-types";
 
 export const ConnectorAuthProperty = z.union([
   BasicAuthProperty,
@@ -97,17 +97,17 @@ export function getAuthPropertyForValue({ authValueType, connectorAuth }: GetAut
 }
 
 type GetAuthPropertyForValue = {
-  authValueType: AppConnectionType
+  authValueType: ConnectionType
   connectorAuth: ConnectorAuthProperty | ConnectorAuthProperty[] | undefined
 }
 
-const authConnectionTypeToPropertyType: Record<AppConnectionType, PropertyType | undefined> = {
-  [AppConnectionType.OAUTH2]: PropertyType.OAUTH2,
-  [AppConnectionType.CLOUD_OAUTH2]: PropertyType.OAUTH2,
-  [AppConnectionType.PLATFORM_OAUTH2]: PropertyType.OAUTH2,
-  [AppConnectionType.BASIC_AUTH]: PropertyType.BASIC_AUTH,
-  [AppConnectionType.CUSTOM_AUTH]: PropertyType.CUSTOM_AUTH,
-  [AppConnectionType.OIDC]: PropertyType.OIDC,
-  [AppConnectionType.SECRET_TEXT]: PropertyType.SECRET_TEXT,
-  [AppConnectionType.NO_AUTH]: undefined,
+const authConnectionTypeToPropertyType: Record<ConnectionType, PropertyType | undefined> = {
+  [ConnectionType.OAUTH2]: PropertyType.OAUTH2,
+  [ConnectionType.CLOUD_OAUTH2]: PropertyType.OAUTH2,
+  [ConnectionType.PLATFORM_OAUTH2]: PropertyType.OAUTH2,
+  [ConnectionType.BASIC_AUTH]: PropertyType.BASIC_AUTH,
+  [ConnectionType.CUSTOM_AUTH]: PropertyType.CUSTOM_AUTH,
+  [ConnectionType.OIDC]: PropertyType.OIDC,
+  [ConnectionType.SECRET_TEXT]: PropertyType.SECRET_TEXT,
+  [ConnectionType.NO_AUTH]: undefined,
 }

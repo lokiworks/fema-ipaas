@@ -4,7 +4,7 @@ icon: 🔒
 
 # Variables
 
-Project-scoped, encrypted secret values (API keys, tokens) users create once and reference in any flow input via `{{variables['NAME']}}`. Stored in a dedicated `variable` table, fully separate from `app_connection`. Ships in every edition (no plan flag).
+Project-scoped, encrypted secret values (API keys, tokens) users create once and reference in any flow input via `{{variables['NAME']}}`. Stored in a dedicated `variable` table, fully separate from `connection`. Ships in every edition (no plan flag).
 
 ### Entities & services
 - **Variable**: unique `(projectId, name)`. `name` is immutable, regex `^[a-zA-Z0-9_]+$`, used as both label and mention key. `value` stored as `EncryptedObject` (`{iv,data}`) wrapping `{secret_text}`.

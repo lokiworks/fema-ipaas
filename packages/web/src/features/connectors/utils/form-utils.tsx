@@ -10,8 +10,8 @@ import {
 } from '@fema/connector-sdk';
 import { Metadata, isNil, parseToJsonIfPossible } from '@fema/core-utils';
 import {
-  AppConnectionScope,
-  AppConnectionType,
+  ConnectionScope,
+  ConnectionType,
   CodeActionSchema,
   LoopOnItemsActionSchema,
   ConnectorActionSchema,
@@ -246,7 +246,7 @@ const PROJECT_FORM_EXTRAS_SCHEMA = z.object({
 });
 
 const GLOBAL_CONNECTION_EXTRAS_SCHEMA = z.object({
-  scope: z.literal(AppConnectionScope.PLATFORM),
+  scope: z.literal(ConnectionScope.PLATFORM),
   projectIds: z
     .array(z.string())
     .min(1, { error: t('Please select at least one project') }),
@@ -264,9 +264,9 @@ function connectionNameSchema(required: boolean) {
 function buildOAuth2ValueSchema(
   auth: ConnectorAuthProperty,
   connectionType:
-    | AppConnectionType.OAUTH2
-    | AppConnectionType.CLOUD_OAUTH2
-    | AppConnectionType.PLATFORM_OAUTH2,
+    | ConnectionType.OAUTH2
+    | ConnectionType.CLOUD_OAUTH2
+    | ConnectionType.PLATFORM_OAUTH2,
 ) {
   if (auth.type !== PropertyType.OAUTH2) {
     throw new Error('buildOAuth2ValueSchema expects OAuth2 auth');
@@ -285,15 +285,15 @@ function buildOAuth2ValueSchema(
   } as const;
 
   switch (connectionType) {
-    case AppConnectionType.OAUTH2:
+    case ConnectionType.OAUTH2:
       return UpsertOAuth2Request.shape.value
         .omit({ props: true })
         .extend(withPropsAndCode);
-    case AppConnectionType.CLOUD_OAUTH2:
+    case ConnectionType.CLOUD_OAUTH2:
       return UpsertCloudOAuth2Request.shape.value
         .omit({ props: true })
         .extend(withPropsAndCode);
-    case AppConnectionType.PLATFORM_OAUTH2:
+    case ConnectionType.PLATFORM_OAUTH2:
       return UpsertPlatformOAuth2Request.shape.value
         .omit({ props: true })
         .extend(withPropsAndCode);
@@ -323,7 +323,7 @@ const CUSTOM_AUTH_VALUE_PROPS = z.object({
 
 const OIDC_VALUE_PROPS = z.object({
   value: z.object({
-    type: z.literal(AppConnectionType.OIDC),
+    type: z.literal(ConnectionType.OIDC),
     props: z.record(z.string(), z.unknown()),
   }),
 });
@@ -387,9 +387,9 @@ function buildOAuth2RequestSchema(
   const buildBranch = (
     schema: ZodObject<z.ZodRawShape>,
     connectionType:
-      | AppConnectionType.OAUTH2
-      | AppConnectionType.CLOUD_OAUTH2
-      | AppConnectionType.PLATFORM_OAUTH2,
+      | ConnectionType.OAUTH2
+      | ConnectionType.CLOUD_OAUTH2
+      | ConnectionType.PLATFORM_OAUTH2,
   ) => {
     const valueShape = z.object({
       value: buildOAuth2ValueSchema(auth, connectionType),
@@ -405,12 +405,9 @@ function buildOAuth2RequestSchema(
 
   return z.object({
     request: z.discriminatedUnion('type', [
-      buildBranch(UpsertOAuth2Request, AppConnectionType.OAUTH2),
-      buildBranch(UpsertCloudOAuth2Request, AppConnectionType.CLOUD_OAUTH2),
-      buildBranch(
-        UpsertPlatformOAuth2Request,
-        AppConnectionType.PLATFORM_OAUTH2,
-      ),
+      buildBranch(UpsertOAuth2Request, ConnectionType.OAUTH2),
+      buildBranch(UpsertCloudOAuth2Request, ConnectionType.CLOUD_OAUTH2),
+      buildBranch(UpsertPlatformOAuth2Request, ConnectionType.PLATFORM_OAUTH2),
     ]),
   });
 }
@@ -442,7 +439,7 @@ function buildCustomAuthValueSchema(auth: ConnectorAuthProperty) {
   }
   return z.object({
     value: z.object({
-      type: z.literal(AppConnectionType.CUSTOM_AUTH),
+      type: z.literal(ConnectionType.CUSTOM_AUTH),
       props: connectorPropertiesUtils.buildSchema(auth.props, undefined),
     }),
   });
@@ -454,7 +451,7 @@ function buildOIDCValueSchema(auth: ConnectorAuthProperty) {
   }
   return z.object({
     value: z.object({
-      type: z.literal(AppConnectionType.OIDC),
+      type: z.literal(ConnectionType.OIDC),
       props: connectorPropertiesUtils.buildSchema(auth.props, undefined),
     }),
   });

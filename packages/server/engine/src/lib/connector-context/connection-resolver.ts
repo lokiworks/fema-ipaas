@@ -1,12 +1,12 @@
 import { ContextVersion } from '@fema/connector-sdk'
-import { AppConnection, AppConnectionStatus, AppConnectionType, AppConnectionValue, ConnectionConnectorMismatchError, ConnectionExpiredError, ConnectionLoadingError, ConnectionNotFoundError, ExecutionError, FetchError } from '@fema/shared'
+import { Connection, ConnectionConnectorMismatchError, ConnectionExpiredError, ConnectionLoadingError, ConnectionNotFoundError, ConnectionStatus, ConnectionType, ConnectionValue, ExecutionError, FetchError } from '@fema/shared'
 import { retryFetch } from '../api/retry-fetch'
 import { utils } from '../utils'
 
 export const createConnectionResolver = ({ projectId, engineToken, apiUrl, contextVersion, connectorName }: CreateConnectionResolverParams): ConnectionResolver => {
     return {
-        async obtain(externalId: string): Promise<AppConnectionValue> {
-            const url = `${apiUrl}v1/worker/app-connections/${encodeURIComponent(externalId)}?projectId=${projectId}`
+        async obtain(externalId: string): Promise<ConnectionValue> {
+            const url = `${apiUrl}v1/worker/connections/${encodeURIComponent(externalId)}?projectId=${projectId}`
 
             const { data: connectionValue, error: connectionValueError } = await utils.tryCatchAndThrowOnEngineError((async () => {
                 const response = await retryFetch(url, {
@@ -22,8 +22,8 @@ export const createConnectionResolver = ({ projectId, engineToken, apiUrl, conte
                         httpStatus: response.status,
                     })
                 }
-                const connection: AppConnection = await response.json()
-                if (connection.status === AppConnectionStatus.ERROR) {
+                const connection: Connection = await response.json()
+                if (connection.status === ConnectionStatus.ERROR) {
                     throw new ConnectionExpiredError(externalId)
                 }
                 assertConnectorBinding({ externalId, connectorName, connection })
@@ -64,7 +64,7 @@ const handleFetchError = ({ url, cause }: HandleFetchErrorParams): never => {
     throw new FetchError(url, cause)
 }
 
-const getConnectionValue = (connection: AppConnection, contextVersion: ContextVersion | undefined): AppConnectionValue => {
+const getConnectionValue = (connection: Connection, contextVersion: ContextVersion | undefined): ConnectionValue => {
     switch (contextVersion) {
         case undefined:
             return makeConnectionValueCompatibleWithContextV0(connection)
@@ -75,20 +75,20 @@ const getConnectionValue = (connection: AppConnection, contextVersion: ContextVe
     }
 }
 
-function makeConnectionValueCompatibleWithContextV0(connection: AppConnection): AppConnectionValue {
+function makeConnectionValueCompatibleWithContextV0(connection: Connection): ConnectionValue {
     switch (connection.value.type) {
-        case AppConnectionType.SECRET_TEXT:
-            return connection.value.secret_text as unknown as AppConnectionValue
+        case ConnectionType.SECRET_TEXT:
+            return connection.value.secret_text as unknown as ConnectionValue
 
-        case AppConnectionType.CUSTOM_AUTH:
-            return connection.value.props as unknown as AppConnectionValue
+        case ConnectionType.CUSTOM_AUTH:
+            return connection.value.props as unknown as ConnectionValue
         default:
-            return connection.value as unknown as AppConnectionValue
+            return connection.value as unknown as ConnectionValue
     }
 }
 
 type ConnectionResolver = {
-    obtain(externalId: string): Promise<AppConnectionValue>
+    obtain(externalId: string): Promise<ConnectionValue>
 }
 
 type CreateConnectionResolverParams = {
@@ -107,7 +107,7 @@ type HandleResponseErrorParams = {
 type AssertConnectorBindingParams = {
     externalId: string
     connectorName: string | undefined
-    connection: AppConnection
+    connection: Connection
 }
 
 type HandleFetchErrorParams = {

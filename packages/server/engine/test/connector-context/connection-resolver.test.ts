@@ -1,5 +1,5 @@
 import { ContextVersion } from '@fema/connector-sdk'
-import { AppConnectionStatus, AppConnectionType, ConnectionExpiredError, ConnectionLoadingError, ConnectionNotFoundError, ConnectionConnectorMismatchError, FetchError } from '@fema/shared'
+import { ConnectionStatus, ConnectionType, ConnectionExpiredError, ConnectionLoadingError, ConnectionNotFoundError, ConnectionConnectorMismatchError, FetchError } from '@fema/shared'
 import { createConnectionResolver } from '../../src/lib/connector-context/connection-resolver'
 
 const RESOLVER_PARAMS = {
@@ -9,9 +9,9 @@ const RESOLVER_PARAMS = {
     contextVersion: ContextVersion.V1,
 }
 
-function makeConnection({ status = AppConnectionStatus.ACTIVE, type = AppConnectionType.SECRET_TEXT, value = { type: AppConnectionType.SECRET_TEXT, secret_text: 'my-secret' }, connectorName = '@fema/connector-slack' }: {
-    status?: AppConnectionStatus
-    type?: AppConnectionType
+function makeConnection({ status = ConnectionStatus.ACTIVE, type = ConnectionType.SECRET_TEXT, value = { type: ConnectionType.SECRET_TEXT, secret_text: 'my-secret' }, connectorName = '@fema/connector-slack' }: {
+    status?: ConnectionStatus
+    type?: ConnectionType
     value?: Record<string, unknown>
     connectorName?: string
 } = {}) {
@@ -50,8 +50,8 @@ describe('connection-resolver service', () => {
 
     it('V0 SECRET_TEXT returns connection.value.secret_text', async () => {
         const connection = makeConnection({
-            type: AppConnectionType.SECRET_TEXT,
-            value: { type: AppConnectionType.SECRET_TEXT, secret_text: 'my-secret' },
+            type: ConnectionType.SECRET_TEXT,
+            value: { type: ConnectionType.SECRET_TEXT, secret_text: 'my-secret' },
         })
         vi.spyOn(global, 'fetch').mockResolvedValue(new Response(
             JSON.stringify(connection),
@@ -67,8 +67,8 @@ describe('connection-resolver service', () => {
     it('V0 CUSTOM_AUTH returns connection.value.props', async () => {
         const customProps = { apiKey: 'abc', domain: 'example.com' }
         const connection = makeConnection({
-            type: AppConnectionType.CUSTOM_AUTH,
-            value: { type: AppConnectionType.CUSTOM_AUTH, props: customProps },
+            type: ConnectionType.CUSTOM_AUTH,
+            value: { type: ConnectionType.CUSTOM_AUTH, props: customProps },
         })
         vi.spyOn(global, 'fetch').mockResolvedValue(new Response(
             JSON.stringify(connection),
@@ -83,8 +83,8 @@ describe('connection-resolver service', () => {
 
     it('V0 other types returns connection.value', async () => {
         const connection = makeConnection({
-            type: AppConnectionType.OAUTH2,
-            value: { type: AppConnectionType.OAUTH2, access_token: 'tok' },
+            type: ConnectionType.OAUTH2,
+            value: { type: ConnectionType.OAUTH2, access_token: 'tok' },
         })
         vi.spyOn(global, 'fetch').mockResolvedValue(new Response(
             JSON.stringify(connection),
@@ -105,7 +105,7 @@ describe('connection-resolver service', () => {
     })
 
     it('throws ConnectionExpiredError when status is ERROR', async () => {
-        const connection = makeConnection({ status: AppConnectionStatus.ERROR })
+        const connection = makeConnection({ status: ConnectionStatus.ERROR })
         vi.spyOn(global, 'fetch').mockResolvedValue(new Response(
             JSON.stringify(connection),
             { status: 200, headers: { 'Content-Type': 'application/json' } },
@@ -191,7 +191,7 @@ describe('connection-resolver service', () => {
 
             const resolver = createConnectionResolver({ ...RESOLVER_PARAMS, connectorName })
             await expect(resolver.obtain('my-connection')).resolves.toEqual({
-                type: AppConnectionType.SECRET_TEXT,
+                type: ConnectionType.SECRET_TEXT,
                 secret_text: 'my-secret',
             })
         })
@@ -201,7 +201,7 @@ describe('connection-resolver service', () => {
 
             const resolver = createConnectionResolver({ ...RESOLVER_PARAMS, connectorName })
             await expect(resolver.obtain('my-connection')).resolves.toEqual({
-                type: AppConnectionType.SECRET_TEXT,
+                type: ConnectionType.SECRET_TEXT,
                 secret_text: 'my-secret',
             })
         })
@@ -219,7 +219,7 @@ describe('connection-resolver service', () => {
 
             const resolver = createConnectionResolver(RESOLVER_PARAMS)
             await expect(resolver.obtain('my-connection')).resolves.toEqual({
-                type: AppConnectionType.SECRET_TEXT,
+                type: ConnectionType.SECRET_TEXT,
                 secret_text: 'my-secret',
             })
         })

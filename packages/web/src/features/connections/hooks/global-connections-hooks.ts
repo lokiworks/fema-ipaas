@@ -1,5 +1,5 @@
 import {
-  AppConnectionWithoutSensitiveData,
+  ConnectionWithoutSensitiveData,
   ListGlobalConnectionsRequestQuery,
 } from '@fema/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -77,7 +77,7 @@ export const globalConnectionsMutations = {
     }>,
   ) =>
     useMutation<
-      AppConnectionWithoutSensitiveData,
+      ConnectionWithoutSensitiveData,
       Error,
       {
         connectionId: string;

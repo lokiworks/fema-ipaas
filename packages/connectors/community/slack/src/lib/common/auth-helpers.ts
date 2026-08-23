@@ -1,23 +1,23 @@
-import { AppConnectionType } from '@fema/connector-sdk';
-import { AppConnectionValueForAuthProperty } from '@fema/connector-sdk';
+import { ConnectionType } from '@fema/connector-sdk';
+import { ConnectionValueForAuthProperty } from '@fema/connector-sdk';
 import { httpClient, HttpMethod } from '@fema/connector-common';
 import type { slackAuth } from '../auth';
 
-export type SlackAuthValue = AppConnectionValueForAuthProperty<
+export type SlackAuthValue = ConnectionValueForAuthProperty<
   typeof slackAuth
 >;
 
 type SlackOAuth2Auth = {
   type:
-    | AppConnectionType.OAUTH2
-    | AppConnectionType.CLOUD_OAUTH2
-    | AppConnectionType.PLATFORM_OAUTH2;
+    | ConnectionType.OAUTH2
+    | ConnectionType.CLOUD_OAUTH2
+    | ConnectionType.PLATFORM_OAUTH2;
   access_token: string;
   data: Record<string, unknown>;
 };
 
 type SlackCustomAuth = {
-  type: AppConnectionType.CUSTOM_AUTH;
+  type: ConnectionType.CUSTOM_AUTH;
   props: {
     botToken: string;
     userToken?: string;
@@ -27,7 +27,7 @@ type SlackCustomAuth = {
 type SlackAuth = SlackOAuth2Auth | SlackCustomAuth;
 
 function isCustomAuth(auth: SlackAuth): auth is SlackCustomAuth {
-  return auth.type === AppConnectionType.CUSTOM_AUTH;
+  return auth.type === ConnectionType.CUSTOM_AUTH;
 }
 
 export function getBotToken(auth: SlackAuthValue): string {

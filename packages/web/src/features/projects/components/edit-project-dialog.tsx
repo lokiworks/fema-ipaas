@@ -1,6 +1,6 @@
 import { Permission } from '@fema/core-utils';
 import {
-  AppConnectionWithoutSensitiveData,
+  ConnectionWithoutSensitiveData,
   UpdateProjectPlatformRequest,
   PlatformRole,
 } from '@fema/shared';
@@ -97,7 +97,7 @@ const EditProjectForm = ({
   onClose: () => void;
   projectId: string;
   initialValues?: EditProjectDialogProps['initialValues'];
-  globalConnections: AppConnectionWithoutSensitiveData[];
+  globalConnections: ConnectionWithoutSensitiveData[];
   globalConnectionsEnabled: boolean;
 }) => {
   const { checkAccess } = useAuthorization();

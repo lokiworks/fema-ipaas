@@ -1,12 +1,12 @@
 export { PackageType, ConnectorType, ConnectorCategory, MAX_KEY_LENGTH_FOR_CORWDIN } from './lib/connector'
 
 export {
-    AppConnectionType,
+    ConnectionType,
     OAuth2GrantType,
     BOTH_CLIENT_CREDENTIALS_AND_AUTHORIZATION_CODE,
-} from './lib/app-connection'
+} from './lib/connection'
 export type {
-    AppConnectionValue,
+    ConnectionValue,
     SecretTextConnectionValue,
     BasicAuthConnectionValue,
     BaseOAuth2ConnectionValue,
@@ -16,7 +16,7 @@ export type {
     PlatformOAuth2ConnectionValue,
     OAuth2ConnectionValueWithApp,
     NoAuthConnectionValue,
-} from './lib/app-connection'
+} from './lib/connection'
 
 export {
     TriggerStrategy,

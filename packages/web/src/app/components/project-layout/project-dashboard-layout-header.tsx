@@ -92,7 +92,7 @@ export const ProjectDashboardLayoutHeader = () => {
       to: authenticationSession.appendProjectRoutePrefix('/connections'),
       label: t('Connections'),
       icon: ConnectIcon,
-      hasPermission: checkAccess(Permission.READ_APP_CONNECTION),
+      hasPermission: checkAccess(Permission.READ_CONNECTION),
       show: true,
     },
     {

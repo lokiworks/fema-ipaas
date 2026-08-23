@@ -1,7 +1,4 @@
-import {
-  AppConnectionScope,
-  AppConnectionWithoutSensitiveData,
-} from '@fema/shared';
+import { ConnectionScope, ConnectionWithoutSensitiveData } from '@fema/shared';
 import { t } from 'i18next';
 import { Cable } from 'lucide-react';
 import { useState } from 'react';
@@ -16,7 +13,7 @@ import {
 import { connectorsHooks } from '@/features/connectors';
 
 type ReconnectButtonDialogProps = {
-  connection: AppConnectionWithoutSensitiveData;
+  connection: ConnectionWithoutSensitiveData;
   onConnectionCreated: () => void;
   hasPermission: boolean;
 };
@@ -58,7 +55,7 @@ const ReconnectButtonDialog = ({
       {open && !isLoading && connectorModel && (
         <CreateOrEditConnectionDialog
           reconnectConnection={connection}
-          isGlobalConnection={connection.scope === AppConnectionScope.PLATFORM}
+          isGlobalConnection={connection.scope === ConnectionScope.PLATFORM}
           connector={connectorModel}
           open={open}
           key={`CreateOrEditConnectionDialog-open-${open}`}

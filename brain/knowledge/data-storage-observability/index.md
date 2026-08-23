@@ -16,7 +16,7 @@ Backend-only persistent KV cache for connector steps during execution — no UI.
 
 ### Variables
 
-Project-scoped encrypted secrets referenced in flows as `{{variables['NAME']}}`. Separate `variable` table (not app_connection). AES-256-CBC at rest; plaintext only via reveal endpoint (USER-only, audit-logged `VARIABLE_VALUE_REVEALED`) or the engine-only `/v1/worker/variables/:name`. Perms: READ/WRITE_VARIABLE. Gotcha: the create dialog value field is deliberately `type="text"` + CSS masking, not `type="password"` — avoids Chrome's breach-check popup and password-manager save (GIT-1619).
+Project-scoped encrypted secrets referenced in flows as `{{variables['NAME']}}`. Separate `variable` table (not connection). AES-256-CBC at rest; plaintext only via reveal endpoint (USER-only, audit-logged `VARIABLE_VALUE_REVEALED`) or the engine-only `/v1/worker/variables/:name`. Perms: READ/WRITE_VARIABLE. Gotcha: the create dialog value field is deliberately `type="text"` + CSS masking, not `type="password"` — avoids Chrome's breach-check popup and password-manager save (GIT-1619).
 
 ### File Storage
 

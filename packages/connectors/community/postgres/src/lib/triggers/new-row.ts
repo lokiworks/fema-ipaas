@@ -1,5 +1,5 @@
 
-import { createTrigger, TriggerStrategy, Property, AppConnectionValueForAuthProperty } from '@fema/connector-sdk';
+import { createTrigger, TriggerStrategy, Property, ConnectionValueForAuthProperty } from '@fema/connector-sdk';
 import { DedupeStrategy, Polling, pollingHelper } from '@fema/connector-common';
 import crypto from 'crypto';
 import { postgresAuth } from '../..';
@@ -8,7 +8,7 @@ import format from 'pg-format';
 import dayjs from 'dayjs';
 
 type OrderDirection = 'ASC' | 'DESC';
-const polling: Polling<AppConnectionValueForAuthProperty<typeof postgresAuth>, {
+const polling: Polling<ConnectionValueForAuthProperty<typeof postgresAuth>, {
     table: {
         table_schema: string,
         table_name: string

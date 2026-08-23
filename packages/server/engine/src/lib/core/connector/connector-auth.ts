@@ -1,6 +1,6 @@
 import { ConnectorAuthProperty, getAuthPropertyForValue, PropertyType } from '@fema/connector-sdk'
 import { isNil } from '@fema/core-utils'
-import { AppConnectionType, AppConnectionValue, ConnectorPackage } from '@fema/shared'
+import { ConnectionType, ConnectionValue, ConnectorPackage } from '@fema/shared'
 import { EngineConstants } from '../../handler/context/engine-constants'
 import { ConnectorDescription } from './connector-protocol'
 import { ConnectorRef, connectorRunner } from './connector-runner'
@@ -56,15 +56,15 @@ function select({ description, authValueType }: SelectParams): SelectedAuth | un
 function argumentFor({ property, value }: ArgumentParams): { argument: unknown } | undefined {
     switch (property.type) {
         case PropertyType.OAUTH2:
-            return [AppConnectionType.OAUTH2, AppConnectionType.CLOUD_OAUTH2, AppConnectionType.PLATFORM_OAUTH2].includes(value.type) ? { argument: value } : undefined
+            return [ConnectionType.OAUTH2, ConnectionType.CLOUD_OAUTH2, ConnectionType.PLATFORM_OAUTH2].includes(value.type) ? { argument: value } : undefined
         case PropertyType.BASIC_AUTH:
-            return value.type === AppConnectionType.BASIC_AUTH ? { argument: value } : undefined
+            return value.type === ConnectionType.BASIC_AUTH ? { argument: value } : undefined
         case PropertyType.SECRET_TEXT:
-            return value.type === AppConnectionType.SECRET_TEXT ? { argument: value.secret_text } : undefined
+            return value.type === ConnectionType.SECRET_TEXT ? { argument: value.secret_text } : undefined
         case PropertyType.CUSTOM_AUTH:
-            return value.type === AppConnectionType.CUSTOM_AUTH ? { argument: value.props } : undefined
+            return value.type === ConnectionType.CUSTOM_AUTH ? { argument: value.props } : undefined
         case PropertyType.OIDC:
-            return value.type === AppConnectionType.OIDC ? { argument: value.props } : undefined
+            return value.type === ConnectionType.OIDC ? { argument: value.props } : undefined
         default:
             return undefined
     }
@@ -72,12 +72,12 @@ function argumentFor({ property, value }: ArgumentParams): { argument: unknown }
 
 type SelectParams = {
     description: ConnectorDescription
-    authValueType: AppConnectionType
+    authValueType: ConnectionType
 }
 
 type ArgumentParams = {
     property: ConnectorAuthProperty
-    value: AppConnectionValue
+    value: ConnectionValue
 }
 
 type SelectedAuth = {
@@ -88,11 +88,11 @@ type SelectedAuth = {
 type CallMethodParams = {
     operation: {
         connector: ConnectorPackage
-        auth: AppConnectionValue
+        auth: ConnectionValue
         internalApiUrl: string
         publicApiUrl: string
     }
-    authValueType: AppConnectionType
+    authValueType: ConnectionType
     methodPath: string[]
 }
 

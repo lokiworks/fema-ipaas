@@ -26,9 +26,8 @@ const FlowRunPage = lazyWithRetry(
   () => import('./runs/id').then((m) => ({ default: m.FlowRunPage })),
   'flow-run',
 );
-const AppConnectionsPage = lazyWithRetry(
-  () =>
-    import('./connections').then((m) => ({ default: m.AppConnectionsPage })),
+const ConnectionsPage = lazyWithRetry(
+  () => import('./connections').then((m) => ({ default: m.ConnectionsPage })),
   'connections',
 );
 const VariablesPage = lazyWithRetry(
@@ -124,12 +123,10 @@ export const projectRoutes = [
     path: routesThatRequireProjectId.connections,
     element: (
       <ProjectDashboardLayout>
-        <RoutePermissionGuard
-          requiredPermissions={Permission.READ_APP_CONNECTION}
-        >
+        <RoutePermissionGuard requiredPermissions={Permission.READ_CONNECTION}>
           <PageTitle title="Connections">
             <SuspenseWrapper>
-              <AppConnectionsPage />
+              <ConnectionsPage />
             </SuspenseWrapper>
           </PageTitle>
         </RoutePermissionGuard>

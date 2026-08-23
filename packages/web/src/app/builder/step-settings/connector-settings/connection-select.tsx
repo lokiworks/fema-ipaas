@@ -4,9 +4,9 @@ import {
 } from '@fema/connector-sdk';
 import { Permission, isNil } from '@fema/core-utils';
 import {
-  AppConnectionScope,
-  AppConnectionStatus,
-  AppConnectionWithoutSensitiveData,
+  ConnectionScope,
+  ConnectionStatus,
+  ConnectionWithoutSensitiveData,
   ConnectorAction,
   ConnectorTrigger,
   PropertyExecutionType,
@@ -35,10 +35,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import {
-  appConnectionsQueries,
-  appConnectionUtils,
-} from '@/features/connections';
+import { connectionsQueries, connectionUtils } from '@/features/connections';
 import { connectorsHooks } from '@/features/connectors';
 import {
   useAuthorization,
@@ -51,7 +48,7 @@ function ConnectionSelect(params: ConnectionSelectProps) {
   const [connectionDialogOpen, setConnectionDialogOpen] = useState(false);
   const [selectConnectionOpen, setSelectConnectionOpen] = useState(false);
   const [reconnectConnection, setReconnectConnection] =
-    useState<AppConnectionWithoutSensitiveData | null>(null);
+    useState<ConnectionWithoutSensitiveData | null>(null);
   //in case of reconnection we need to use the connector version from the connection
   const {
     connectorModel: connectorWithCorrectVersion,
@@ -62,13 +59,13 @@ function ConnectionSelect(params: ConnectionSelectProps) {
   });
   const form = useFormContext<ConnectorAction | ConnectorTrigger>();
   const hasPermissionToCreateConnection = useAuthorization().checkAccess(
-    Permission.WRITE_APP_CONNECTION,
+    Permission.WRITE_CONNECTION,
   );
   const {
     data: connections,
     isLoading: isLoadingConnections,
     refetch,
-  } = appConnectionsQueries.useAppConnections({
+  } = connectionsQueries.useConnections({
     request: {
       connectorName: params.connector.name,
       projectId: authenticationSession.getProjectId()!,
@@ -84,14 +81,14 @@ function ConnectionSelect(params: ConnectionSelectProps) {
       removeBrackets(form.getValues().settings.input.auth ?? ''),
   );
   const isSelectedConnectionGlobal =
-    selectedConnection?.scope === AppConnectionScope.PLATFORM;
+    selectedConnection?.scope === ConnectionScope.PLATFORM;
   // The create/reconnect dialog runs in global (PLATFORM) scope ONLY when
   // reconnecting an existing global connection. Creating a brand-new connection
   // from a project flow must default to PROJECT scope, otherwise it silently
   // inherits the selected connection's platform scope and (for non-admins) hits
   // the platform-admin-only global-connections endpoint (GIT-1587).
   const isReconnectingGlobalConnection =
-    reconnectConnection?.scope === AppConnectionScope.PLATFORM;
+    reconnectConnection?.scope === ConnectionScope.PLATFORM;
   const dynamicInputModeToggled =
     form.getValues().settings.propertySettings['auth']?.type ===
     PropertyExecutionType.DYNAMIC;
@@ -228,7 +225,7 @@ function ConnectionSelect(params: ConnectionSelectProps) {
                               (connection) =>
                                 connection.externalId ===
                                 removeBrackets(field.value),
-                            )?.scope === AppConnectionScope.PLATFORM && (
+                            )?.scope === ConnectionScope.PLATFORM && (
                               <Globe size={16} className="shrink-0" />
                             )}
                             {
@@ -291,11 +288,11 @@ function ConnectionSelect(params: ConnectionSelectProps) {
                       connections.data &&
                       connections.data?.map((connection) => {
                         const accountIdentifier =
-                          appConnectionUtils.getConnectionAccountIdentifier(
+                          connectionUtils.getConnectionAccountIdentifier(
                             connection,
                           );
                         const rowStatus =
-                          connection.status !== AppConnectionStatus.ACTIVE
+                          connection.status !== ConnectionStatus.ACTIVE
                             ? getConnectionStatusDisplay(connection.status)
                             : null;
                         return (
@@ -306,7 +303,7 @@ function ConnectionSelect(params: ConnectionSelectProps) {
                           >
                             <div className="flex items-center gap-2 w-full min-w-0">
                               {connection.scope ===
-                                AppConnectionScope.PLATFORM && (
+                                ConnectionScope.PLATFORM && (
                                 <Globe size={16} className="shrink-0" />
                               )}
                               <span className="truncate min-w-0">
@@ -367,25 +364,25 @@ function removeBrackets(str: string | undefined) {
     (_, connectionName) => connectionName,
   );
 }
-function getConnectionStatusDisplay(status: AppConnectionStatus): {
+function getConnectionStatusDisplay(status: ConnectionStatus): {
   Icon: LucideIcon;
   iconClassName: string;
   label: string;
 } {
   switch (status) {
-    case AppConnectionStatus.ACTIVE:
+    case ConnectionStatus.ACTIVE:
       return {
         Icon: Check,
         iconClassName: 'text-success',
         label: t('Connected'),
       };
-    case AppConnectionStatus.ERROR:
+    case ConnectionStatus.ERROR:
       return {
         Icon: X,
         iconClassName: 'text-destructive',
         label: t('Error'),
       };
-    case AppConnectionStatus.MISSING:
+    case ConnectionStatus.MISSING:
       return {
         Icon: Unplug,
         iconClassName: 'text-muted-foreground',

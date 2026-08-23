@@ -1,5 +1,5 @@
 import { apId, ApId, Cursor, ErrorCode, isNil, Metadata, PlatformError, PlatformId, ProjectId, SeekPage, spreadIfDefined, UserId } from '@fema/core-utils'
-import { AppConnectionOwners, User, UserIdentity, UserWithMetaInformation, Variable, VariableWithoutSensitiveData } from '@fema/shared'
+import { ConnectionOwners, User, UserIdentity, UserWithMetaInformation, Variable, VariableWithoutSensitiveData } from '@fema/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { Equal, ILike, QueryFailedError } from 'typeorm'
 import { repoFactory } from '../core/db/repo-factory'
@@ -77,7 +77,7 @@ export const variableService = (log: FastifyBaseLogger) => ({
         return paginationHelper.createPage<VariableWithoutSensitiveData>(sanitized, nextCursor)
     },
 
-    async getOwners(params: { projectId: ProjectId, platformId: PlatformId }): Promise<AppConnectionOwners[]> {
+    async getOwners(params: { projectId: ProjectId, platformId: PlatformId }): Promise<ConnectionOwners[]> {
         const { projectId, platformId } = params
         return variableRepo()
             .createQueryBuilder('variable')
@@ -90,7 +90,7 @@ export const variableService = (log: FastifyBaseLogger) => ({
             .andWhere('variable.platformId = :platformId', { platformId })
             .distinct(true)
             .limit(MAX_VARIABLE_OWNERS)
-            .getRawMany<AppConnectionOwners>()
+            .getRawMany<ConnectionOwners>()
     },
 
     async getOneOrThrowWithoutValue(params: GetOneParams): Promise<VariableWithoutSensitiveData> {

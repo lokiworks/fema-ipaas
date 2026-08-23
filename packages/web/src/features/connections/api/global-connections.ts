@@ -1,6 +1,6 @@
 import { SeekPage } from '@fema/core-utils';
 import {
-  AppConnectionWithoutSensitiveData,
+  ConnectionWithoutSensitiveData,
   ListGlobalConnectionsRequestQuery,
   UpdateGlobalConnectionValueRequestBody,
   UpsertGlobalConnectionRequestBody,
@@ -11,16 +11,16 @@ import { api } from '@/lib/api';
 export const globalConnectionsApi = {
   list(
     request: ListGlobalConnectionsRequestQuery,
-  ): Promise<SeekPage<AppConnectionWithoutSensitiveData>> {
-    return api.get<SeekPage<AppConnectionWithoutSensitiveData>>(
+  ): Promise<SeekPage<ConnectionWithoutSensitiveData>> {
+    return api.get<SeekPage<ConnectionWithoutSensitiveData>>(
       '/v1/global-connections',
       request,
     );
   },
   upsert(
     request: UpsertGlobalConnectionRequestBody,
-  ): Promise<AppConnectionWithoutSensitiveData> {
-    return api.post<AppConnectionWithoutSensitiveData>(
+  ): Promise<ConnectionWithoutSensitiveData> {
+    return api.post<ConnectionWithoutSensitiveData>(
       '/v1/global-connections',
       request,
     );
@@ -31,8 +31,8 @@ export const globalConnectionsApi = {
   update(
     id: string,
     request: UpdateGlobalConnectionValueRequestBody,
-  ): Promise<AppConnectionWithoutSensitiveData> {
-    return api.post<AppConnectionWithoutSensitiveData>(
+  ): Promise<ConnectionWithoutSensitiveData> {
+    return api.post<ConnectionWithoutSensitiveData>(
       `/v1/global-connections/${id}`,
       request,
     );

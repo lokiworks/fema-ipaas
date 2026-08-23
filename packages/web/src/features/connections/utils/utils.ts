@@ -9,10 +9,10 @@ import {
 } from '@fema/connector-sdk';
 import { assertNotNullOrUndefined, isNil, apId } from '@fema/core-utils';
 import {
-  AppConnectionType,
-  AppConnectionWithoutSensitiveData,
-  UpsertAppConnectionRequestBody,
-  AppConnectionStatus,
+  ConnectionType,
+  ConnectionWithoutSensitiveData,
+  UpsertConnectionRequestBody,
+  ConnectionStatus,
   OAuth2GrantType,
 } from '@fema/shared';
 import { t } from 'i18next';
@@ -22,7 +22,7 @@ import { OAuth2App } from '@/features/connections/utils/oauth2-utils';
 import { formUtils } from '@/features/connectors/utils/form-utils';
 import { authenticationSession } from '@/lib/authentication-session';
 
-import { appConnectionsApi } from '../api/app-connections';
+import { connectionsApi } from '../api/connections';
 import { globalConnectionsApi } from '../api/global-connections';
 
 export class ConnectionNameAlreadyExists extends Error {
@@ -39,23 +39,23 @@ export class NoProjectSelected extends Error {
   }
 }
 
-export const appConnectionUtils = {
-  getStatusIcon(status: AppConnectionStatus): {
+export const connectionUtils = {
+  getStatusIcon(status: ConnectionStatus): {
     variant: 'default' | 'success' | 'error';
     icon: React.ComponentType;
   } {
     switch (status) {
-      case AppConnectionStatus.ACTIVE:
+      case ConnectionStatus.ACTIVE:
         return {
           variant: 'success',
           icon: CheckIcon,
         };
-      case AppConnectionStatus.MISSING:
+      case ConnectionStatus.MISSING:
         return {
           variant: 'default',
           icon: UnplugIcon,
         };
-      case AppConnectionStatus.ERROR:
+      case ConnectionStatus.ERROR:
         return {
           variant: 'error',
           icon: XIcon,
@@ -63,7 +63,7 @@ export const appConnectionUtils = {
     }
   },
   getConnectionAccountIdentifier(
-    connection: AppConnectionWithoutSensitiveData,
+    connection: ConnectionWithoutSensitiveData,
   ): string | undefined {
     const accountIdentifier = connection.metadata?.accountIdentifier;
     return typeof accountIdentifier === 'string' && accountIdentifier.length > 0
@@ -75,7 +75,7 @@ export const appConnectionUtils = {
 export const newConnectionUtils = {
   getConnectionName(
     connector: ConnectorMetadataModelSummary | ConnectorMetadataModel,
-    reconnectConnection: AppConnectionWithoutSensitiveData | null,
+    reconnectConnection: ConnectionWithoutSensitiveData | null,
     externalIdComingFromSdk?: string | null,
   ): {
     externalId: string;
@@ -109,7 +109,7 @@ export const newConnectionUtils = {
     oauth2App,
     redirectUrl,
     projectId: projectIdOverride,
-  }: DefaultValuesParams): Partial<UpsertAppConnectionRequestBody> {
+  }: DefaultValuesParams): Partial<UpsertConnectionRequestBody> {
     const projectId = projectIdOverride ?? authenticationSession.getProjectId();
     assertNotNullOrUndefined(projectId, 'projectId');
     if (!auth) {
@@ -126,18 +126,18 @@ export const newConnectionUtils = {
       case PropertyType.SECRET_TEXT:
         return {
           ...commmonProps,
-          type: AppConnectionType.SECRET_TEXT,
+          type: ConnectionType.SECRET_TEXT,
           value: {
-            type: AppConnectionType.SECRET_TEXT,
+            type: ConnectionType.SECRET_TEXT,
             secret_text: '',
           },
         };
       case PropertyType.BASIC_AUTH:
         return {
           ...commmonProps,
-          type: AppConnectionType.BASIC_AUTH,
+          type: ConnectionType.BASIC_AUTH,
           value: {
-            type: AppConnectionType.BASIC_AUTH,
+            type: ConnectionType.BASIC_AUTH,
             username: '',
             password: '',
           },
@@ -145,9 +145,9 @@ export const newConnectionUtils = {
       case PropertyType.CUSTOM_AUTH: {
         return {
           ...commmonProps,
-          type: AppConnectionType.CUSTOM_AUTH,
+          type: ConnectionType.CUSTOM_AUTH,
           value: {
-            type: AppConnectionType.CUSTOM_AUTH,
+            type: ConnectionType.CUSTOM_AUTH,
             props: formUtils.getDefaultValueForProperties({
               props: auth.props ?? {},
               existingInput: {},
@@ -158,9 +158,9 @@ export const newConnectionUtils = {
       case PropertyType.OIDC: {
         return {
           ...commmonProps,
-          type: AppConnectionType.OIDC,
+          type: ConnectionType.OIDC,
           value: {
-            type: AppConnectionType.OIDC,
+            type: ConnectionType.OIDC,
             props: formUtils.getDefaultValueForProperties({
               props: auth.props ?? {},
               existingInput: {},
@@ -170,12 +170,12 @@ export const newConnectionUtils = {
       }
       case PropertyType.OAUTH2: {
         switch (oauth2App?.oauth2Type) {
-          case AppConnectionType.CLOUD_OAUTH2:
+          case ConnectionType.CLOUD_OAUTH2:
             return {
               ...commmonProps,
-              type: AppConnectionType.CLOUD_OAUTH2,
+              type: ConnectionType.CLOUD_OAUTH2,
               value: {
-                type: AppConnectionType.CLOUD_OAUTH2,
+                type: ConnectionType.CLOUD_OAUTH2,
                 client_id: oauth2App.clientId,
                 code: '',
                 scope: auth.scope.join(' '),
@@ -186,12 +186,12 @@ export const newConnectionUtils = {
                 }),
               },
             };
-          case AppConnectionType.PLATFORM_OAUTH2:
+          case ConnectionType.PLATFORM_OAUTH2:
             return {
               ...commmonProps,
-              type: AppConnectionType.PLATFORM_OAUTH2,
+              type: ConnectionType.PLATFORM_OAUTH2,
               value: {
-                type: AppConnectionType.PLATFORM_OAUTH2,
+                type: ConnectionType.PLATFORM_OAUTH2,
                 client_id: oauth2App.clientId,
                 redirect_url: redirectUrl,
                 code: '',
@@ -206,9 +206,9 @@ export const newConnectionUtils = {
           default:
             return {
               ...commmonProps,
-              type: AppConnectionType.OAUTH2,
+              type: ConnectionType.OAUTH2,
               value: {
-                type: AppConnectionType.OAUTH2,
+                type: ConnectionType.OAUTH2,
                 client_id: '',
                 redirect_url: redirectUrl,
                 code:
@@ -267,7 +267,7 @@ export const isConnectionNameUnique = async ({
     ? await globalConnectionsApi.list({
         limit: 10000,
       })
-    : await appConnectionsApi.list({
+    : await connectionsApi.list({
         projectId: projectId ?? authenticationSession.getProjectId()!,
         limit: 10000,
       });

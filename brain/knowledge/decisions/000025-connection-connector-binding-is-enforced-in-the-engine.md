@@ -7,9 +7,9 @@ status: accepted
 `FEMA_ENFORCE_CONNECTION_CONNECTOR_BINDING` (default `false`) rejects a step that resolves a
 connection created for a different connector — a Slack credential handed to a Google Sheets
 step. Two places could hold the check: the server endpoint that hands out the decrypted
-value (`app-connection-worker-controller.ts`), or the engine's `connection-resolver`.
+value (`connection-worker-controller.ts`), or the engine's `connection-resolver`.
 
-It lives in the **engine**. The resolver already receives the full `AppConnection`, so the
+It lives in the **engine**. The resolver already receives the full `Connection`, so the
 check is a local `connection.connectorName !== connectorName` comparison — no query param, no new
 error code, no change to the worker endpoint at all.
 

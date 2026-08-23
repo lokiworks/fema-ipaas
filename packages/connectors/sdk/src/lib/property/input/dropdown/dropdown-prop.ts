@@ -1,13 +1,13 @@
 import { BasePropertySchema, TPropertyValue } from "../common";
 import { DropdownState } from "./common";
-import { AppConnectionValueForAuthProperty, PropertyContext } from "../../../context";
+import { ConnectionValueForAuthProperty, PropertyContext } from "../../../context";
 import * as z from "zod/mini";
 import { PropertyType } from "../property-type";
 import { ConnectorAuthProperty } from "../../authentication";
 
 type DynamicDropdownOptions<T, ConnectorAuth extends ConnectorAuthProperty | ConnectorAuthProperty[] |  undefined = undefined> = (
   propsValue: Record<string, unknown> & {
-    auth?: ConnectorAuth extends undefined ? undefined : AppConnectionValueForAuthProperty<Exclude<ConnectorAuth, undefined>>;
+    auth?: ConnectorAuth extends undefined ? undefined : ConnectionValueForAuthProperty<Exclude<ConnectorAuth, undefined>>;
   },
   ctx: PropertyContext,
 ) => Promise<DropdownState<T>>;

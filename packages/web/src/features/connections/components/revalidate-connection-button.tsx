@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
-import { appConnectionsMutations } from '../hooks/app-connections-hooks';
+import { connectionsMutations } from '../hooks/connections-hooks';
 
 type RevalidateConnectionButtonProps = {
   connectionId: string;
@@ -18,8 +18,7 @@ type RevalidateConnectionButtonProps = {
 export const RevalidateConnectionButton = ({
   connectionId,
 }: RevalidateConnectionButtonProps) => {
-  const { mutate, isPending } =
-    appConnectionsMutations.useRevalidateConnection();
+  const { mutate, isPending } = connectionsMutations.useRevalidateConnection();
   return (
     <Tooltip>
       <TooltipTrigger asChild>

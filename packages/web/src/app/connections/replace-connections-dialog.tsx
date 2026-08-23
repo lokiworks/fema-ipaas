@@ -1,5 +1,5 @@
 import { isNil } from '@fema/core-utils';
-import { AppConnectionScope, PopulatedFlow } from '@fema/shared';
+import { ConnectionScope, PopulatedFlow } from '@fema/shared';
 import { useMutation } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { ChevronDown, GlobeIcon, Info, WorkflowIcon } from 'lucide-react';
@@ -42,8 +42,8 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import {
-  appConnectionsMutations,
-  appConnectionsQueries,
+  connectionsMutations,
+  connectionsQueries,
 } from '@/features/connections';
 import {
   ConnectorIconWithConnectorName,
@@ -86,7 +86,7 @@ const ReplaceConnectionsDialog = ({
     connectorsHooks.useConnectors({});
 
   const { data: connections, isLoading: connectionsLoading } =
-    appConnectionsQueries.useAppConnections({
+    connectionsQueries.useConnections({
       request: {
         projectId,
         limit: 1000,
@@ -96,7 +96,7 @@ const ReplaceConnectionsDialog = ({
     });
 
   const { mutate: replaceConnections, isPending: isReplacing } =
-    appConnectionsMutations.useReplaceConnections({
+    connectionsMutations.useReplaceConnections({
       setDialogOpen,
       refetch: onConnectionMerged,
     });
@@ -192,7 +192,7 @@ const ReplaceConnectionsDialog = ({
 
   const sourceIsGlobalConnection =
     filteredConnections.find((conn) => conn.id === sourceConnectionId)
-      ?.scope === AppConnectionScope.PLATFORM;
+      ?.scope === ConnectionScope.PLATFORM;
 
   const replacedWithOptions = useMemo(() => {
     return filteredConnections
@@ -233,8 +233,8 @@ const ReplaceConnectionsDialog = ({
     }
 
     replaceConnections({
-      sourceAppConnectionId: values.sourceConnections.id,
-      targetAppConnectionId: values.replacedWithConnection.id,
+      sourceConnectionId: values.sourceConnections.id,
+      targetConnectionId: values.replacedWithConnection.id,
       projectId: projectId,
       deleteSourceConnection: effectiveDeleteSourceConnection,
       applyToPublishedVersions,
@@ -362,8 +362,7 @@ const ReplaceConnectionsDialog = ({
                                   size="xs"
                                   border={false}
                                 />
-                                {conn?.scope ===
-                                  AppConnectionScope.PLATFORM && (
+                                {conn?.scope === ConnectionScope.PLATFORM && (
                                   <GlobeIcon className="w-4 h-4" />
                                 )}
                                 <span>{conn!.displayName}</span>
@@ -408,8 +407,7 @@ const ReplaceConnectionsDialog = ({
                                     size="xs"
                                     border={false}
                                   />
-                                  {conn?.scope ===
-                                    AppConnectionScope.PLATFORM && (
+                                  {conn?.scope === ConnectionScope.PLATFORM && (
                                     <GlobeIcon className="w-4 h-4" />
                                   )}
                                   <span>{conn!.displayName}</span>

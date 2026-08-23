@@ -47,12 +47,12 @@ import {
 import {
   TriggerStrategy,
   createTrigger,
-  AppConnectionValueForAuthProperty
+  ConnectionValueForAuthProperty
 } from '@fema/connectors-framework';
 import dayjs from 'dayjs';
 
 const polling: Polling<
-  AppConnectionValueForAuthProperty<typeof gelatoAuth>,
+  ConnectionValueForAuthProperty<typeof gelatoAuth>,
   Record<string, never>
 > = {
   strategy: DedupeStrategy.TIMEBASED,

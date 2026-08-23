@@ -1,8 +1,8 @@
 import {
-  AppConnectionScope,
-  AppConnectionStatus,
-  MAX_PLATFORM_APP_CONNECTION_OWNERS,
-  PlatformAppConnectionsListItem,
+  ConnectionScope,
+  ConnectionStatus,
+  MAX_PLATFORM_CONNECTION_OWNERS,
+  PlatformConnectionsListItem,
 } from '@fema/shared';
 import { ColumnDef } from '@tanstack/react-table';
 import { t } from 'i18next';
@@ -36,24 +36,23 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { appConnectionUtils } from '@/features/connections';
+import { connectionUtils } from '@/features/connections';
 import {
   ConnectorIconWithConnectorName,
   connectorsHooks,
 } from '@/features/connectors';
-import { platformAppConnectionsQueries } from '@/features/platform-admin/hooks/platform-app-connections-hooks';
+import { platformConnectionsQueries } from '@/features/platform-admin/hooks/platform-connections-hooks';
 import { getProjectName, projectCollectionUtils } from '@/features/projects';
 import { formatUtils } from '@/lib/format-utils';
 
 export default function PlatformConnectionsPage() {
-  const { data: connections, isLoading } =
-    platformAppConnectionsQueries.useList();
-  const { data: owners } = platformAppConnectionsQueries.useOwners();
+  const { data: connections, isLoading } = platformConnectionsQueries.useList();
+  const { data: owners } = platformConnectionsQueries.useOwners();
   const { data: projects } = projectCollectionUtils.useAllPlatformProjects();
   const { connectors } = connectorsHooks.useConnectors({});
 
   const filters: DataTableFilters<
-    keyof PlatformAppConnectionsListItem | 'ownerIds'
+    keyof PlatformConnectionsListItem | 'ownerIds'
   >[] = [
     {
       type: 'input',
@@ -66,7 +65,7 @@ export default function PlatformConnectionsPage() {
       title: t('Status'),
       accessorKey: 'status',
       icon: CheckIcon,
-      options: Object.values(AppConnectionStatus).map((status) => ({
+      options: Object.values(ConnectionStatus).map((status) => ({
         label: formatUtils.convertEnumToHumanReadable(status),
         value: status,
       })),
@@ -103,123 +102,125 @@ export default function PlatformConnectionsPage() {
     },
   ];
 
-  const columns: ColumnDef<
-    RowDataWithActions<PlatformAppConnectionsListItem>
-  >[] = [
-    {
-      accessorKey: 'displayName',
-      size: 280,
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={t('Name')}
-          icon={Unplug}
-        />
-      ),
-      cell: ({ row }) => (
-        <CopyTextTooltip
-          title={t('External ID')}
-          text={row.original.externalId || ''}
-        >
-          <div className="flex items-center gap-2 w-fit min-w-0">
-            <ConnectorIconWithConnectorName
-              connectorName={row.original.connectorName}
-              showTooltip={false}
-              size="sm"
-            />
-            <TextWithTooltip tooltipMessage={row.original.displayName}>
-              <span className="truncate max-w-[160px] 2xl:max-w-[260px]">
-                {row.original.displayName}
-              </span>
-            </TextWithTooltip>
-          </div>
-        </CopyTextTooltip>
-      ),
-    },
-    {
-      accessorKey: 'status',
-      size: 130,
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={t('Status')}
-          icon={Activity}
-        />
-      ),
-      cell: ({ row }) => {
-        const status = row.original.status;
-        const { variant, icon: Icon } =
-          appConnectionUtils.getStatusIcon(status);
-        return (
-          <StatusIconWithText
-            icon={Icon}
-            text={formatUtils.convertEnumToHumanReadable(status)}
-            variant={variant}
+  const columns: ColumnDef<RowDataWithActions<PlatformConnectionsListItem>>[] =
+    [
+      {
+        accessorKey: 'displayName',
+        size: 280,
+        header: ({ column }) => (
+          <DataTableColumnHeader
+            column={column}
+            title={t('Name')}
+            icon={Unplug}
           />
-        );
+        ),
+        cell: ({ row }) => (
+          <CopyTextTooltip
+            title={t('External ID')}
+            text={row.original.externalId || ''}
+          >
+            <div className="flex items-center gap-2 w-fit min-w-0">
+              <ConnectorIconWithConnectorName
+                connectorName={row.original.connectorName}
+                showTooltip={false}
+                size="sm"
+              />
+              <TextWithTooltip tooltipMessage={row.original.displayName}>
+                <span className="truncate max-w-[160px] 2xl:max-w-[260px]">
+                  {row.original.displayName}
+                </span>
+              </TextWithTooltip>
+            </div>
+          </CopyTextTooltip>
+        ),
       },
-    },
-    {
-      accessorKey: 'projects',
-      size: 220,
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={t('Project')}
-          icon={Folder}
-        />
-      ),
-      cell: ({ row }) => <ProjectsCell projects={row.original.projects} />,
-    },
-    {
-      accessorKey: 'scope',
-      size: 120,
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={t('Scope')}
-          icon={Shield}
-        />
-      ),
-      cell: ({ row }) => <ScopeBadge scope={row.original.scope} />,
-    },
-    {
-      accessorKey: 'owner',
-      size: 200,
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('Owner')} icon={User} />
-      ),
-      cell: ({ row }) => {
-        const owner = row.original.owner;
-        if (!owner) {
-          return <span className="text-muted-foreground">{t('N/A')}</span>;
-        }
-        const fullName = [owner.firstName, owner.lastName]
-          .filter(Boolean)
-          .join(' ');
-        const label = fullName || owner.email;
-        return (
-          <TextWithTooltip tooltipMessage={owner.email}>
-            <span className="truncate max-w-[180px]">{label}</span>
-          </TextWithTooltip>
-        );
+      {
+        accessorKey: 'status',
+        size: 130,
+        header: ({ column }) => (
+          <DataTableColumnHeader
+            column={column}
+            title={t('Status')}
+            icon={Activity}
+          />
+        ),
+        cell: ({ row }) => {
+          const status = row.original.status;
+          const { variant, icon: Icon } = connectionUtils.getStatusIcon(status);
+          return (
+            <StatusIconWithText
+              icon={Icon}
+              text={formatUtils.convertEnumToHumanReadable(status)}
+              variant={variant}
+            />
+          );
+        },
       },
-    },
-    {
-      accessorKey: 'updated',
-      size: 150,
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={t('Connected At')}
-          icon={Clock}
-        />
-      ),
-      cell: ({ row }) => (
-        <FormattedDate date={new Date(row.original.updated)} />
-      ),
-    },
-  ];
+      {
+        accessorKey: 'projects',
+        size: 220,
+        header: ({ column }) => (
+          <DataTableColumnHeader
+            column={column}
+            title={t('Project')}
+            icon={Folder}
+          />
+        ),
+        cell: ({ row }) => <ProjectsCell projects={row.original.projects} />,
+      },
+      {
+        accessorKey: 'scope',
+        size: 120,
+        header: ({ column }) => (
+          <DataTableColumnHeader
+            column={column}
+            title={t('Scope')}
+            icon={Shield}
+          />
+        ),
+        cell: ({ row }) => <ScopeBadge scope={row.original.scope} />,
+      },
+      {
+        accessorKey: 'owner',
+        size: 200,
+        header: ({ column }) => (
+          <DataTableColumnHeader
+            column={column}
+            title={t('Owner')}
+            icon={User}
+          />
+        ),
+        cell: ({ row }) => {
+          const owner = row.original.owner;
+          if (!owner) {
+            return <span className="text-muted-foreground">{t('N/A')}</span>;
+          }
+          const fullName = [owner.firstName, owner.lastName]
+            .filter(Boolean)
+            .join(' ');
+          const label = fullName || owner.email;
+          return (
+            <TextWithTooltip tooltipMessage={owner.email}>
+              <span className="truncate max-w-[180px]">{label}</span>
+            </TextWithTooltip>
+          );
+        },
+      },
+      {
+        accessorKey: 'updated',
+        size: 150,
+        header: ({ column }) => (
+          <DataTableColumnHeader
+            column={column}
+            title={t('Connected At')}
+            icon={Clock}
+          />
+        ),
+        cell: ({ row }) => (
+          <FormattedDate date={new Date(row.original.updated)} />
+        ),
+      },
+    ];
 
   return (
     <div className="flex flex-col w-full">
@@ -232,7 +233,7 @@ export default function PlatformConnectionsPage() {
       {owners?.truncated && (
         <div className="px-6 pb-2 text-xs text-muted-foreground">
           {t('Owner filter is limited to the first {count} owners', {
-            count: MAX_PLATFORM_APP_CONNECTION_OWNERS,
+            count: MAX_PLATFORM_CONNECTION_OWNERS,
           })}
         </div>
       )}
@@ -251,8 +252,8 @@ export default function PlatformConnectionsPage() {
   );
 }
 
-const ScopeBadge = ({ scope }: { scope: AppConnectionScope }) => {
-  if (scope === AppConnectionScope.PLATFORM) {
+const ScopeBadge = ({ scope }: { scope: ConnectionScope }) => {
+  if (scope === ConnectionScope.PLATFORM) {
     return (
       <Badge variant="accent">
         <Globe />
@@ -266,7 +267,7 @@ const ScopeBadge = ({ scope }: { scope: AppConnectionScope }) => {
 const ProjectsCell = ({
   projects,
 }: {
-  projects: PlatformAppConnectionsListItem['projects'];
+  projects: PlatformConnectionsListItem['projects'];
 }) => {
   if (projects.length === 0) {
     return <span className="text-muted-foreground">{t('N/A')}</span>;

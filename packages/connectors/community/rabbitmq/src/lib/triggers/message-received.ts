@@ -3,14 +3,14 @@ import {
   TriggerStrategy,
   ConnectorPropValueSchema,
   Property,
-  AppConnectionValueForAuthProperty,
+  ConnectionValueForAuthProperty,
 } from '@fema/connector-sdk';
 import { DedupeStrategy, Polling, pollingHelper } from '@fema/connector-common';
 import { rabbitmqAuth } from '../auth';
 import { rabbitmqConnect } from '../common';
 import dayjs from 'dayjs';
 
-const polling: Polling<AppConnectionValueForAuthProperty<typeof rabbitmqAuth>, {
+const polling: Polling<ConnectionValueForAuthProperty<typeof rabbitmqAuth>, {
   queue: string,
   maxMessagesPerPoll: number,
 }> = {

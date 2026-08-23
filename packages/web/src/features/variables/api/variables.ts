@@ -1,6 +1,6 @@
 import { SeekPage } from '@fema/core-utils';
 import {
-  AppConnectionOwners,
+  ConnectionOwners,
   ListVariablesRequestQuery,
   RevealVariableResponse,
   UpdateVariableRequestBody,
@@ -41,10 +41,7 @@ export const variablesApi = {
   },
   getOwners(request: {
     projectId: string;
-  }): Promise<SeekPage<AppConnectionOwners>> {
-    return api.get<SeekPage<AppConnectionOwners>>(
-      '/v1/variables/owners',
-      request,
-    );
+  }): Promise<SeekPage<ConnectionOwners>> {
+    return api.get<SeekPage<ConnectionOwners>>('/v1/variables/owners', request);
   },
 };

@@ -1,4 +1,4 @@
-import { AppConnectionValue, EngineOperationType, EngineResponseStatus, ExecuteValidateAuthJobData, WorkerJobType } from '@fema/shared'
+import { ConnectionValue, EngineOperationType, EngineResponseStatus, ExecuteValidateAuthJobData, WorkerJobType } from '@fema/shared'
 import { workerSettings } from '../../config/worker-settings'
 import { JobContext, JobHandler, JobResultKind, SynchronousJobResult } from '../types'
 import { isSandboxTimeout } from '../utils/sandbox-helpers'
@@ -21,7 +21,7 @@ export const executeValidationJob: JobHandler<ExecuteValidateAuthJobData, Synchr
                 operationType: EngineOperationType.EXECUTE_VALIDATE_AUTH,
                 operation: {
                     connector: data.connector,
-                    auth: data.connectionValue as AppConnectionValue,
+                    auth: data.connectionValue as ConnectionValue,
                     platformId: data.platformId,
                     engineToken: ctx.engineToken,
                     internalApiUrl: ctx.internalApiUrl,

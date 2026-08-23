@@ -22,7 +22,7 @@ export type { SeekPage } from '@fema/core-utils';
 
 export {
   ConnectorCategory,
-  AppConnectionType,
+  ConnectionType,
   MarkdownVariant,
   OAuth2GrantType,
   WebhookHandshakeStrategy,

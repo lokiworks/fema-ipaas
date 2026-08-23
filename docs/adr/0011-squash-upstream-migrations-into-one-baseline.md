@@ -21,7 +21,7 @@ status: accepted
 
 上游迁移里大量带有 `isNotOneOfTheseEditions([ApEdition.CLOUD, ...])` 这类版本门，
 是 Step 1「代码中不允许出现 Edition 判断」的最大残留来源。而且 Step 3 会把
-project → workspace、flow → workflow、app_connection → connection 等表全部改名，
+project → workspace、flow → workflow、connection → connection 等表全部改名，
 这些历史迁移届时会全部失效。
 
 ## Why

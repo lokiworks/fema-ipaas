@@ -1,8 +1,8 @@
 import { Permission } from '@fema/core-utils';
 import {
-  AppConnectionScope,
-  AppConnectionStatus,
-  AppConnectionWithoutSensitiveData,
+  ConnectionScope,
+  ConnectionStatus,
+  ConnectionWithoutSensitiveData,
   PlatformRole,
 } from '@fema/shared';
 import { ColumnDef } from '@tanstack/react-table';
@@ -51,9 +51,9 @@ import {
   EditGlobalConnectionDialog,
   RenameConnectionDialog,
   RevalidateConnectionButton,
-  appConnectionsMutations,
-  appConnectionsQueries,
-  appConnectionUtils,
+  connectionsMutations,
+  connectionsQueries,
+  connectionUtils,
 } from '@/features/connections';
 import {
   ConnectorIconWithConnectorName,
@@ -65,11 +65,11 @@ import { userHooks } from '@/hooks/user-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 import { formatUtils } from '@/lib/format-utils';
 
-function AppConnectionsPage() {
+function ConnectionsPage() {
   const navigate = useNavigate();
   const [refresh, setRefresh] = useState(0);
   const [selectedRows, setSelectedRows] = useState<
-    Array<AppConnectionWithoutSensitiveData>
+    Array<ConnectionWithoutSensitiveData>
   >([]);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { checkAccess } = useAuthorization();
@@ -87,7 +87,7 @@ function AppConnectionsPage() {
   const limit = searchParams.get(LIMIT_QUERY_PARAM)
     ? parseInt(searchParams.get(LIMIT_QUERY_PARAM)!)
     : 10;
-  const status = (searchParams.getAll('status') as AppConnectionStatus[]) ?? [];
+  const status = (searchParams.getAll('status') as ConnectionStatus[]) ?? [];
   const connectorName = searchParams.get('connectorName') ?? undefined;
   const displayName = searchParams.get('displayName') ?? undefined;
 
@@ -95,7 +95,7 @@ function AppConnectionsPage() {
     data: connections,
     isLoading: connectionsLoading,
     refetch,
-  } = appConnectionsQueries.useAppConnections({
+  } = connectionsQueries.useConnections({
     request: {
       projectId,
       cursor,
@@ -109,7 +109,7 @@ function AppConnectionsPage() {
   });
 
   const { mutateAsync: deleteConnections } =
-    appConnectionsMutations.useBulkDeleteAppConnections(refetch);
+    connectionsMutations.useBulkDeleteConnections(refetch);
 
   const filteredData = useMemo(() => {
     if (!connections?.data) return undefined;
@@ -127,18 +127,18 @@ function AppConnectionsPage() {
     };
   }, [connections, location.search]);
 
-  const userHasPermissionToWriteAppConnection = checkAccess(
-    Permission.WRITE_APP_CONNECTION,
+  const userHasPermissionToWriteConnection = checkAccess(
+    Permission.WRITE_CONNECTION,
   );
-  const { data: owners } = appConnectionsQueries.useConnectionsOwners();
-  const filters: DataTableFilters<keyof AppConnectionWithoutSensitiveData>[] =
-    ownerColumnHooks.useOwnerColumnFilter<AppConnectionWithoutSensitiveData>(
+  const { data: owners } = connectionsQueries.useConnectionsOwners();
+  const filters: DataTableFilters<keyof ConnectionWithoutSensitiveData>[] =
+    ownerColumnHooks.useOwnerColumnFilter<ConnectionWithoutSensitiveData>(
       [
         {
           type: 'select',
           title: t('Status'),
           accessorKey: 'status',
-          options: Object.values(AppConnectionStatus).map((status) => {
+          options: Object.values(ConnectionStatus).map((status) => {
             return {
               label: formatUtils.convertEnumToHumanReadable(status),
               value: status,
@@ -165,9 +165,9 @@ function AppConnectionsPage() {
     );
 
   const columns: ColumnDef<
-    RowDataWithActions<AppConnectionWithoutSensitiveData>,
+    RowDataWithActions<ConnectionWithoutSensitiveData>,
     unknown
-  >[] = ownerColumnHooks.useOwnerColumn<AppConnectionWithoutSensitiveData>(
+  >[] = ownerColumnHooks.useOwnerColumn<ConnectionWithoutSensitiveData>(
     [
       {
         accessorKey: 'displayName',
@@ -182,7 +182,7 @@ function AppConnectionsPage() {
         cell: ({ row }) => {
           const isPlatformConnection = row.original.scope === 'PLATFORM';
           const accountIdentifier =
-            appConnectionUtils.getConnectionAccountIdentifier(row.original);
+            connectionUtils.getConnectionAccountIdentifier(row.original);
           return (
             <div className="flex items-center gap-2 min-w-0">
               <CopyTextTooltip
@@ -237,8 +237,7 @@ function AppConnectionsPage() {
         ),
         cell: ({ row }) => {
           const status = row.original.status;
-          const { variant, icon: Icon } =
-            appConnectionUtils.getStatusIcon(status);
+          const { variant, icon: Icon } = connectionUtils.getStatusIcon(status);
           return (
             <div className="text-left">
               <StatusIconWithText
@@ -300,16 +299,16 @@ function AppConnectionsPage() {
         size: 100,
         cell: ({ row }) => {
           const isPlatformConnection =
-            row.original.scope === AppConnectionScope.PLATFORM;
+            row.original.scope === ConnectionScope.PLATFORM;
           const userHasPermissionToRename = isPlatformConnection
             ? userPlatformRole === PlatformRole.ADMIN
-            : userHasPermissionToWriteAppConnection;
+            : userHasPermissionToWriteConnection;
           return (
             <div className="flex items-center gap-2 justify-end">
               {userHasPermissionToRename && (
                 <RevalidateConnectionButton connectionId={row.original.id} />
               )}
-              {row.original.scope === AppConnectionScope.PROJECT ? (
+              {row.original.scope === ConnectionScope.PROJECT ? (
                 <RenameConnectionDialog
                   connectionId={row.original.id}
                   currentName={row.original.displayName}
@@ -347,12 +346,12 @@ function AppConnectionsPage() {
     4,
   );
 
-  const bulkActions: BulkAction<AppConnectionWithoutSensitiveData>[] = useMemo(
+  const bulkActions: BulkAction<ConnectionWithoutSensitiveData>[] = useMemo(
     () => [
       {
         render: (_, resetSelection) => {
           const deletableRows = selectedRows.filter(
-            (row) => row.scope === AppConnectionScope.PROJECT,
+            (row) => row.scope === ConnectionScope.PROJECT,
           );
           return (
             <>
@@ -398,7 +397,7 @@ function AppConnectionsPage() {
     () => [
       <PermissionNeededTooltip
         key="replace"
-        hasPermission={userHasPermissionToWriteAppConnection}
+        hasPermission={userHasPermissionToWriteConnection}
       >
         <ReplaceConnectionsDialog
           projectId={projectId}
@@ -411,7 +410,7 @@ function AppConnectionsPage() {
             icon={ReplaceIcon}
             iconSize={16}
             variant="outline"
-            disabled={!userHasPermissionToWriteAppConnection}
+            disabled={!userHasPermissionToWriteConnection}
           >
             {t('Replace')}
           </AnimatedIconButton>
@@ -419,7 +418,7 @@ function AppConnectionsPage() {
       </PermissionNeededTooltip>,
       <PermissionNeededTooltip
         key="new"
-        hasPermission={userHasPermissionToWriteAppConnection}
+        hasPermission={userHasPermissionToWriteConnection}
       >
         <NewConnectionDialog
           isGlobalConnection={false}
@@ -432,14 +431,14 @@ function AppConnectionsPage() {
             icon={PlusIcon}
             iconSize={16}
             size="sm"
-            disabled={!userHasPermissionToWriteAppConnection}
+            disabled={!userHasPermissionToWriteConnection}
           >
             {t('New Connection')}
           </AnimatedIconButton>
         </NewConnectionDialog>
       </PermissionNeededTooltip>,
     ],
-    [userHasPermissionToWriteAppConnection, refresh],
+    [userHasPermissionToWriteConnection, refresh],
   );
   return (
     <div className="flex-col w-full">
@@ -462,4 +461,4 @@ function AppConnectionsPage() {
   );
 }
 
-export { AppConnectionsPage };
+export { ConnectionsPage };

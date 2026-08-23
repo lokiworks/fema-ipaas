@@ -1,5 +1,5 @@
 import { validateIndexBound } from '@fema/core-utils';
-import { AppConnectionOwners, UserWithMetaInformation } from '@fema/shared';
+import { ConnectionOwners, UserWithMetaInformation } from '@fema/shared';
 import { ColumnDef } from '@tanstack/react-table';
 import { t } from 'i18next';
 import { User } from 'lucide-react';
@@ -53,7 +53,7 @@ function useOwnerColumnFilter<
 >(
   filters: DataTableFilters<keyof T & string>[],
   index: number,
-  owners: AppConnectionOwners[] | undefined,
+  owners: ConnectionOwners[] | undefined,
 ): DataTableFilters<keyof T & string>[] {
   const {
     embedState: { isEmbedded },

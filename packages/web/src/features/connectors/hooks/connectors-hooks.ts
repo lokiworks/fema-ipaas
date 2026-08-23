@@ -28,7 +28,7 @@ import { useTranslation } from 'react-i18next';
 import semver from 'semver';
 
 import { useTelemetry } from '@/components/providers/telemetry-provider';
-import { appConnectionsApi } from '@/features/connections/api/app-connections';
+import { connectionsApi } from '@/features/connections/api/connections';
 import {
   StepMetadataWithSuggestions,
   CategorizedStepMetadataWithSuggestions,
@@ -439,8 +439,8 @@ export const connectorsHooks = {
     return useQuery<ConnectorMetadataModel, Error>({
       queryKey: ['connector', connectorName, connectionExternalId],
       queryFn: async () => {
-        const appConnection = (
-          await appConnectionsApi.list({
+        const connection = (
+          await connectionsApi.list({
             connectorName,
             limit: 1,
             projectId: authenticationSession.getProjectId()!,
@@ -448,12 +448,12 @@ export const connectorsHooks = {
         ).data.find(
           (connection) => connection.externalId === connectionExternalId,
         );
-        if (!appConnection) {
+        if (!connection) {
           return connectorsApi.get({ name: connectorName });
         }
         return connectorsApi.get({
-          name: appConnection.connectorName,
-          version: appConnection.connectorVersion,
+          name: connection.connectorName,
+          version: connection.connectorVersion,
         });
       },
       staleTime: Infinity,

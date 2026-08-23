@@ -2,17 +2,17 @@ import swagger from '@fastify/swagger'
 import { ConnectorMetadata } from '@fema/connector-sdk'
 import { isNil, spreadIfDefined } from '@fema/core-utils'
 import { apVersionUtil, onCallService, UNKNOWN_VERSION, wideEvent } from '@fema/server-utils'
-import { ApEnvironment, AppConnectionWithoutSensitiveData, ApplicationEventName, ConnectionDeletedEvent, ConnectionUpsertedEvent, Flow, FlowActivatedEvent, FlowCreatedEvent, FlowDeactivatedEvent, FlowDeletedEvent, FlowPublishedEvent, FlowRun, FlowRunFinishedEvent, FlowRunRetriedEvent, FlowRunStartedEvent, FlowUpdatedEvent, Folder, FolderCreatedEvent, FolderDeletedEvent, FolderUpdatedEvent, ProjectWithLimits, Template, UserEmailVerifiedEvent, UserInvitation, UserPasswordResetEvent, UserSignedInEvent, UserWithMetaInformation } from '@fema/shared'
+import { ApEnvironment, ApplicationEventName, ConnectionDeletedEvent, ConnectionUpsertedEvent, ConnectionWithoutSensitiveData, Flow, FlowActivatedEvent, FlowCreatedEvent, FlowDeactivatedEvent, FlowDeletedEvent, FlowPublishedEvent, FlowRun, FlowRunFinishedEvent, FlowRunRetriedEvent, FlowRunStartedEvent, FlowUpdatedEvent, Folder, FolderCreatedEvent, FolderDeletedEvent, FolderUpdatedEvent, ProjectWithLimits, Template, UserEmailVerifiedEvent, UserInvitation, UserPasswordResetEvent, UserSignedInEvent, UserWithMetaInformation } from '@fema/shared'
 import { createAdapter } from '@socket.io/redis-adapter'
 import { FastifyBaseLogger, FastifyInstance, FastifyRequest, HTTPMethods } from 'fastify'
 import { jsonSchemaTransform, jsonSchemaTransformObject } from 'fastify-type-provider-zod'
 import Mustache from 'mustache'
 import { globalRegistry } from 'zod/v4/core'
-import { appConnectionModule } from './app-connection/app-connection.module'
-import { platformAppConnectionModule } from './app-connection/platform-app-connection.module'
 import { authenticationModule } from './authentication/authentication.module'
 import { localAuthnModule } from './authentication/local-authn/local-authn.module'
 import { otpModule } from './authentication/otp/otp-module'
+import { connectionModule } from './connection/connection.module'
+import { platformConnectionModule } from './connection/platform-connection.module'
 import { communityConnectorsModule } from './connectors/community-connector-module'
 import { connectorSyncService } from './connectors/connector-sync-service'
 import { startDevConnectorWatcher } from './connectors/dev-connector-watcher'
@@ -87,7 +87,7 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
                     },
                 },
                 schemas: {
-                    'global-connection': { $ref: '#/components/schemas/app-connection' },
+                    'global-connection': { $ref: '#/components/schemas/connection' },
                 },
             },
             info: {
@@ -155,8 +155,8 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     await app.register(flowModule)
     await app.register(flowRunModule)
     await app.register(webhookModule)
-    await app.register(appConnectionModule)
-    await app.register(platformAppConnectionModule)
+    await app.register(connectionModule)
+    await app.register(platformConnectionModule)
     await app.register(variableModule)
     await app.register(openapiModule)
     await app.register(appEventRoutingModule)
@@ -310,7 +310,7 @@ function registerOpenApiSchemas() {
     globalRegistry.add(ProjectWithLimits, { id: 'project' })
     globalRegistry.add(Flow, { id: 'flow' })
     globalRegistry.add(FlowRun, { id: 'flow-run' })
-    globalRegistry.add(AppConnectionWithoutSensitiveData, { id: 'app-connection' })
+    globalRegistry.add(ConnectionWithoutSensitiveData, { id: 'connection' })
     globalRegistry.add(ConnectorMetadata, { id: 'connector' })
 }
 

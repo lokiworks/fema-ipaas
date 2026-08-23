@@ -1,4 +1,4 @@
-import { ConnectorPropValueSchema, Property, createTrigger, TriggerStrategy, AppConnectionValueForAuthProperty } from '@fema/connector-sdk';
+import { ConnectorPropValueSchema, Property, createTrigger, TriggerStrategy, ConnectionValueForAuthProperty } from '@fema/connector-sdk';
 import { DedupeStrategy, Polling, pollingHelper } from '@fema/connector-common';
 import { getClient, getProtocolBackwardCompatibility, endClient } from '../common';
 import { sftpAuth } from '../auth';
@@ -12,7 +12,7 @@ function getModifyTime(file: Client.FileInfo | FTPFileInfo, protocol: string): n
     dayjs((file as FTPFileInfo).modifiedAt).valueOf();
 }
 
-const polling: Polling<AppConnectionValueForAuthProperty<typeof sftpAuth>, { path: string; ignoreHiddenFiles?: boolean }> = {
+const polling: Polling<ConnectionValueForAuthProperty<typeof sftpAuth>, { path: string; ignoreHiddenFiles?: boolean }> = {
   strategy: DedupeStrategy.TIMEBASED,
   items: async ({ auth, propsValue, lastFetchEpochMS }) => {
     let client: Client | FTPClient | null = null;

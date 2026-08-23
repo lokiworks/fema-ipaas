@@ -31,6 +31,6 @@ Entry point: `secretManagersModule`, registered twice in `packages/server/api/sr
 - `packages/web/src/features/secret-managers/` — frontend api + hooks
 - `packages/web/src/app/routes/platform/security/secret-managers/` — platform admin UI page and connect dialog
 - `packages/server/api/test/integration/ee/secret-managers/` — integration tests plus a hashicorp mock
-- `packages/server/api/src/app/app-connection/` — the main consumer, resolves references via `secretManagersService`
+- `packages/server/api/src/app/connection/` — the main consumer, resolves references via `secretManagersService`
 
 Paths verified 2026-07-17.

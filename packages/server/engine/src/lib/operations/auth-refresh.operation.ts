@@ -1,7 +1,7 @@
 import { PropertyType } from '@fema/connector-sdk'
 import { isObject } from '@fema/core-utils'
 import {
-    AppConnectionType,
+    ConnectionType,
     EngineResponse,
     EngineResponseStatus,
     ExecuteRefreshTokenAuthOperation,
@@ -19,7 +19,7 @@ export const authRefreshOperation = {
 }
 
 async function refreshAuth(operation: ExecuteRefreshTokenAuthOperation): Promise<ExecuteRefreshTokenAuthResponse> {
-    if (operation.auth.type !== AppConnectionType.CUSTOM_AUTH) {
+    if (operation.auth.type !== ConnectionType.CUSTOM_AUTH) {
         return { skipped: true }
     }
     const call = await connectorAuth.callMethod({ operation, authValueType: operation.auth.type, methodPath: ['refresh', 'generate'] })

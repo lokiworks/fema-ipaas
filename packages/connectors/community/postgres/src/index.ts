@@ -3,7 +3,7 @@ import {
   Property,
   createConnector,
 } from '@fema/connector-sdk';
-import { AppConnectionType, ConnectorCategory } from '@fema/connector-sdk';
+import { ConnectionType, ConnectorCategory } from '@fema/connector-sdk';
 import { runQuery } from './lib/actions/run-query';
 import { findRows } from './lib/actions/find-rows';
 import { insertRow } from './lib/actions/insert-row';
@@ -71,7 +71,7 @@ export const postgresAuth = ConnectorAuth.CustomAuth({
   validate: async ({ auth }) => {
     try {
       const client = await pgClient({
-        type: AppConnectionType.CUSTOM_AUTH,
+        type: ConnectionType.CUSTOM_AUTH,
         props: auth,
       });
       await client.end();

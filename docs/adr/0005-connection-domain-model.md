@@ -7,7 +7,7 @@ status: accepted
 ## Decision
 
 Connection = **Connector + Credential + Endpoint + Network Channel** 的可复用连接实例，
-而不是上游 `AppConnection` 那种「某个 Connector 的一份账号密码」。
+而不是上游 `Connection` 那种「某个 Connector 的一份账号密码」。
 
 首版结构包含 `connectorName` / `connectorVersion` / `authType` / `encryptedCredentials` /
 `endpointConfig` / `networkAgentId` / `status`。作用域首版支持 Workspace 与 Personal，

@@ -1,6 +1,6 @@
 import { AIProviderName, apId, assertNotNullOrUndefined, ProjectRole, RoleType } from '@fema/core-utils'
 import { LATEST_CONTEXT_VERSION, ConnectorMetadata } from '@fema/connector-sdk'
-import { AIProvider, AppConnection, AppConnectionScope, AppConnectionStatus, AppConnectionType, ApplicationEvent, ApplicationEventName, ColorName, File, FileCompression, FileLocation, FileType, Flow, FlowOperationStatus, FlowRun, FlowRunStatus, FlowStatus, FlowTriggerType, FlowVersion, FlowVersionState, Folder, InvitationStatus, InvitationType, LATEST_FLOW_SCHEMA_VERSION, OtpModel, OtpState, OtpType, PackageType, ConnectorsFilterType, ConnectorType, Platform, PlatformPlan, PlatformRole, Project, ProjectIcon, ProjectType, RunEnvironment, Template, TemplateStatus, TemplateType, User, UserIdentity, UserIdentityProvider, UserInvitation, UserStatus } from '@fema/shared'
+import { AIProvider, Connection, ConnectionScope, ConnectionStatus, ConnectionType, ApplicationEvent, ApplicationEventName, ColorName, File, FileCompression, FileLocation, FileType, Flow, FlowOperationStatus, FlowRun, FlowRunStatus, FlowStatus, FlowTriggerType, FlowVersion, FlowVersionState, Folder, InvitationStatus, InvitationType, LATEST_FLOW_SCHEMA_VERSION, OtpModel, OtpState, OtpType, PackageType, ConnectorsFilterType, ConnectorType, Platform, PlatformPlan, PlatformRole, Project, ProjectIcon, ProjectType, RunEnvironment, Template, TemplateStatus, TemplateType, User, UserIdentity, UserIdentityProvider, UserInvitation, UserStatus } from '@fema/shared'
 import { faker } from '@faker-js/faker'
 import bcrypt from 'bcrypt'
 import dayjs from 'dayjs'
@@ -446,7 +446,7 @@ export const createMockFlowVersion = (
     }
 }
 
-export const createMockConnection = (connection: Partial<AppConnection>, ownerId: string): AppConnection<AppConnectionType.SECRET_TEXT> => {
+export const createMockConnection = (connection: Partial<Connection>, ownerId: string): Connection<ConnectionType.SECRET_TEXT> => {
     return {
         id: connection?.id ?? apId(),
         created: connection?.created ?? faker.date.recent().toISOString(),
@@ -455,12 +455,12 @@ export const createMockConnection = (connection: Partial<AppConnection>, ownerId
         projectIds: connection?.projectIds ?? [],
         connectorName: connection?.connectorName ?? faker.lorem.word(),
         displayName: connection?.displayName ?? faker.lorem.word(),
-        type: AppConnectionType.SECRET_TEXT,
-        scope: AppConnectionScope.PROJECT,
-        status: AppConnectionStatus.ACTIVE,
+        type: ConnectionType.SECRET_TEXT,
+        scope: ConnectionScope.PROJECT,
+        status: ConnectionStatus.ACTIVE,
         ownerId,
         value: {
-            type: AppConnectionType.SECRET_TEXT,
+            type: ConnectionType.SECRET_TEXT,
             secret_text: faker.lorem.word(),
         },
         metadata: connection?.metadata ?? {},
@@ -523,7 +523,7 @@ export const createMockCell = ({ recordId, fieldId, projectId }: { recordId: str
 
 type Solution = {
     table: Table
-    connection: AppConnection<AppConnectionType.SECRET_TEXT>
+    connection: Connection<ConnectionType.SECRET_TEXT>
     flow: Flow
     flowRun: FlowRun
     flowVersion: FlowVersion
@@ -543,7 +543,7 @@ export const createMockSolutionAndSave = async ({ projectId, platformId, userId 
     await databaseConnection().getRepository('field').save([field])
     await databaseConnection().getRepository('record').save([record])
     await databaseConnection().getRepository('cell').save([cell])
-    await databaseConnection().getRepository('app_connection').save([connection])
+    await databaseConnection().getRepository('connection').save([connection])
     await databaseConnection().getRepository('flow').save([flow])
     await databaseConnection().getRepository('flow_version').save([flowVersion])
     await databaseConnection().getRepository('flow_run').save([flowRun])
@@ -552,7 +552,7 @@ export const createMockSolutionAndSave = async ({ projectId, platformId, userId 
 
 export const checkIfSolutionExistsInDb = async (solution: Solution): Promise<boolean> => {
     const table = await databaseConnection().getRepository('table').findOneBy({ id: solution.table.id })
-    const connection = await databaseConnection().getRepository('app_connection').findOneBy({ id: solution.connection.id })
+    const connection = await databaseConnection().getRepository('connection').findOneBy({ id: solution.connection.id })
     const flow = await databaseConnection().getRepository('flow').findOneBy({ id: solution.flow.id })
     const flowRun = await databaseConnection().getRepository('flow_run').findOneBy({ id: solution.flowRun.id })
     const flowVersion = await databaseConnection().getRepository('flow_version').findOneBy({ id: solution.flowVersion.id })

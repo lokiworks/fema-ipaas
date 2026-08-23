@@ -1,5 +1,5 @@
-import { AppConnectionType } from '@fema/connector-sdk';
-import { AppConnectionValueForAuthProperty } from '@fema/connector-sdk';
+import { ConnectionType } from '@fema/connector-sdk';
+import { ConnectionValueForAuthProperty } from '@fema/connector-sdk';
 import { httpClient, HttpMethod } from '@fema/connector-common';
 import jwt from 'jsonwebtoken';
 import type { githubAuth } from '../auth';
@@ -112,11 +112,11 @@ export async function exchangeAppJwtForInstallationToken({
 }
 
 function isGithubAppAuth(auth: GithubAuth): auth is GithubAppAuth {
-  return auth.type === AppConnectionType.CUSTOM_AUTH;
+  return auth.type === ConnectionType.CUSTOM_AUTH;
 }
 
 function getUserToken(auth: GithubOAuth2Auth | GithubPatAuth): string {
-  return auth.type === AppConnectionType.SECRET_TEXT
+  return auth.type === ConnectionType.SECRET_TEXT
     ? auth.secret_text
     : auth.access_token;
 }
@@ -154,21 +154,21 @@ const installationTokenCache = new Map<
   { token: string; expiresAt: number }
 >();
 
-export type GithubAuthValue = AppConnectionValueForAuthProperty<
+export type GithubAuthValue = ConnectionValueForAuthProperty<
   typeof githubAuth
 >;
 
 type GithubOAuth2Auth = {
   type:
-    | AppConnectionType.OAUTH2
-    | AppConnectionType.CLOUD_OAUTH2
-    | AppConnectionType.PLATFORM_OAUTH2;
+    | ConnectionType.OAUTH2
+    | ConnectionType.CLOUD_OAUTH2
+    | ConnectionType.PLATFORM_OAUTH2;
   access_token: string;
   data: Record<string, unknown>;
 };
 
 type GithubAppAuth = {
-  type: AppConnectionType.CUSTOM_AUTH;
+  type: ConnectionType.CUSTOM_AUTH;
   props: {
     appId: string;
     installationId: string;
@@ -177,7 +177,7 @@ type GithubAppAuth = {
 };
 
 type GithubPatAuth = {
-  type: AppConnectionType.SECRET_TEXT;
+  type: ConnectionType.SECRET_TEXT;
   secret_text: string;
 };
 

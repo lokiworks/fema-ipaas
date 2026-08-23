@@ -1,6 +1,6 @@
 import {
-  AppConnectionType,
-  AppConnectionValue,
+  ConnectionType,
+  ConnectionValue,
   ExecutionType,
   RespondResponse,
   ResumePayload,
@@ -32,7 +32,7 @@ export type BaseContext<
 > = {
   flows: FlowsContext;
   step: StepContext;
-    auth: AppConnectionValueForAuthProperty<ConnectorAuth>;
+    auth: ConnectionValueForAuthProperty<ConnectorAuth>;
   propsValue: StaticPropsValue<Props>;
   store: Store;
   project: {
@@ -50,17 +50,17 @@ type ExtractOIDCProps<T> = T extends OIDCProperty<infer Props> ? Props : never;
 type ExtractOAuth2Props<T> = T extends OAuth2Property<infer Props> ? Props : never;
 
 
-export type AppConnectionValueForAuthProperty<T extends ConnectorAuthProperty | ConnectorAuthProperty[] | undefined> = 
-  T extends ConnectorAuthProperty[] ? AppConnectionValueForSingleAuthProperty<T[number]> :
-  T extends ConnectorAuthProperty ? AppConnectionValueForSingleAuthProperty<T> :
+export type ConnectionValueForAuthProperty<T extends ConnectorAuthProperty | ConnectorAuthProperty[] | undefined> = 
+  T extends ConnectorAuthProperty[] ? ConnectionValueForSingleAuthProperty<T[number]> :
+  T extends ConnectorAuthProperty ? ConnectionValueForSingleAuthProperty<T> :
   T extends undefined ? undefined : never;
 
-type AppConnectionValueForSingleAuthProperty<T extends ConnectorAuthProperty | undefined> =
-  T extends SecretTextProperty<boolean> ? AppConnectionValue<AppConnectionType.SECRET_TEXT> :
-  T extends BasicAuthProperty ? AppConnectionValue<AppConnectionType.BASIC_AUTH> :
-  T extends CustomAuthProperty<any> ? AppConnectionValue<AppConnectionType.CUSTOM_AUTH, StaticPropsValue<ExtractCustomAuthProps<T>>> :
-  T extends OIDCProperty<any> ? AppConnectionValue<AppConnectionType.OIDC, StaticPropsValue<ExtractOIDCProps<T>>> :
-  T extends OAuth2Property<any> ? AppConnectionValue<AppConnectionType.OAUTH2, StaticPropsValue<ExtractOAuth2Props<T>>> :
+type ConnectionValueForSingleAuthProperty<T extends ConnectorAuthProperty | undefined> =
+  T extends SecretTextProperty<boolean> ? ConnectionValue<ConnectionType.SECRET_TEXT> :
+  T extends BasicAuthProperty ? ConnectionValue<ConnectionType.BASIC_AUTH> :
+  T extends CustomAuthProperty<any> ? ConnectionValue<ConnectionType.CUSTOM_AUTH, StaticPropsValue<ExtractCustomAuthProps<T>>> :
+  T extends OIDCProperty<any> ? ConnectionValue<ConnectionType.OIDC, StaticPropsValue<ExtractOIDCProps<T>>> :
+  T extends OAuth2Property<any> ? ConnectionValue<ConnectionType.OAUTH2, StaticPropsValue<ExtractOAuth2Props<T>>> :
   T extends undefined ? undefined : never;
 type AppWebhookTriggerHookContext<
   ConnectorAuth extends ConnectorAuthProperty | ConnectorAuthProperty[] | undefined,
@@ -272,7 +272,7 @@ export interface FilesService {
 export interface ConnectionsManager {
   get(
     key: string
-  ): Promise<AppConnectionValue | Record<string, unknown> | string | null>;
+  ): Promise<ConnectionValue | Record<string, unknown> | string | null>;
 }
 
 export interface TagsManager {

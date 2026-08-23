@@ -314,7 +314,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             CREATE INDEX "idx_user_identity_id" ON "user" ("identityId")
         `)
         await queryRunner.query(`
-            CREATE TABLE "app_connection" (
+            CREATE TABLE "connection" (
                 "id" character varying(21) NOT NULL,
                 "created" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
                 "updated" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -335,10 +335,10 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             )
         `)
         await queryRunner.query(`
-            CREATE INDEX "idx_app_connection_platform_id_and_external_id" ON "app_connection" ("platformId", "externalId")
+            CREATE INDEX "idx_connection_platform_id_and_external_id" ON "connection" ("platformId", "externalId")
         `)
         await queryRunner.query(`
-            CREATE INDEX "idx_app_connection_owner_id" ON "app_connection" ("ownerId")
+            CREATE INDEX "idx_connection_owner_id" ON "connection" ("ownerId")
         `)
         await queryRunner.query(`
             CREATE TABLE "variable" (
@@ -669,8 +669,8 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             ADD CONSTRAINT "FK_dea97e26c765a4cdb575957a146" FOREIGN KEY ("identityId") REFERENCES "user_identity"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
         `)
         await queryRunner.query(`
-            ALTER TABLE "app_connection"
-            ADD CONSTRAINT "fk_app_connection_owner_id" FOREIGN KEY ("ownerId") REFERENCES "user"("id") ON DELETE
+            ALTER TABLE "connection"
+            ADD CONSTRAINT "fk_connection_owner_id" FOREIGN KEY ("ownerId") REFERENCES "user"("id") ON DELETE
             SET NULL ON UPDATE NO ACTION
         `)
         await queryRunner.query(`
@@ -751,7 +751,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             ALTER TABLE "variable" DROP CONSTRAINT "fk_variable_owner_id"
         `)
         await queryRunner.query(`
-            ALTER TABLE "app_connection" DROP CONSTRAINT "fk_app_connection_owner_id"
+            ALTER TABLE "connection" DROP CONSTRAINT "fk_connection_owner_id"
         `)
         await queryRunner.query(`
             ALTER TABLE "user" DROP CONSTRAINT "FK_dea97e26c765a4cdb575957a146"
@@ -895,13 +895,13 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             DROP TABLE "variable"
         `)
         await queryRunner.query(`
-            DROP INDEX "public"."idx_app_connection_owner_id"
+            DROP INDEX "public"."idx_connection_owner_id"
         `)
         await queryRunner.query(`
-            DROP INDEX "public"."idx_app_connection_platform_id_and_external_id"
+            DROP INDEX "public"."idx_connection_platform_id_and_external_id"
         `)
         await queryRunner.query(`
-            DROP TABLE "app_connection"
+            DROP TABLE "connection"
         `)
         await queryRunner.query(`
             DROP INDEX "public"."idx_user_identity_id"

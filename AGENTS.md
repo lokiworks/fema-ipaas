@@ -5,20 +5,21 @@ Open-source AI-first workflow automation platform. Self-hosted or cloud. 400+ co
 ## Architecture (Non-Obvious Rules)
 
 - **Multi-tenant**: Platform → Projects → Users. ALL queries MUST filter by `projectId` or `platformId`.
-- **Editions**: CE (`ce`), EE (`ee`), Cloud (`cloud`) via `FEMA_EDITION`. EE extends CE via `hooksFactory` — **never import `src/app/ee/` in CE code**.
-- **Feature gating**: `platformMustHaveFeatureEnabled((p) => p.plan.myFlag)` on EE modules.
+- **One edition.** There is no CE/EE/Cloud split, no `FEMA_EDITION`, and no `src/app/ee/`. Anything that reads like a paid tier is a bug — see `docs/adr/0002`.
+- **Limits, not plans**: instance-wide caps live in `SYSTEM_LIMITS`; per-workspace caps live on the workspace row.
 - **Entity registration**: New entities MUST be added to `getEntities()` in `database-connection.ts` — TypeORM does NOT auto-discover.
 - **HTTP**: `POST` for all create/update mutations. `DELETE` for deletes. Never PUT/PATCH.
 - **Security**: Every endpoint needs `securityAccess` config.
 - **Side effects**: Separated into `*-side-effects.ts` files, called explicitly after mutations.
 - **Multi-server**: Use `distributedLock`, BullMQ deduplication, or `FOR UPDATE SKIP LOCKED` for concurrent operations.
 - **Managed PostgreSQL**: No custom extensions. Use `sanitizeObjectForPostgresql()` for external data.
-- **Before modifying a module**: Read its subsystem page in `brain/<area>/` (and that area's `index.md` glossary) for domain language, entities, services, and integration details.
+- **Before modifying a module**: Read its subsystem page in `brain/knowledge/<area>/` (and that area's `index.md` glossary) for domain language, entities, services, and integration details.
 - **Cross-cutting libraries live in `packages/core/*`**, ordered thin → thick: `core-utils`, `core-connector-types`, `core-formula`, `core-execution` (thin, bundleable, framework-agnostic) and `core/shared` (the one thick, app-level member — **keeps the name `@fema/shared`**, carries DB/EE/management schemas + heavy deps). Connectors and the engine may import the thin members but **never** `@fema/shared`; connectors get what they need via `@fema/connector-sdk`. See `.claude/rules/core-packages.md`.
 | `brain/<area>/index.md` | 9 areas | First stop for an unfamiliar subsystem | Area glossary + list of its pages |
 | `brain/<area>/*.md` | one page per subsystem | When Claude explores that subsystem | Entity schemas, services, data workflows, gotchas |
 | `brain/decisions/*.md` | numbered, under `decisions/` | When Claude needs the *why* behind a design | One hard-to-reverse call each |
-| `.claude/rules/` | 3-5 lines each | Every session | Critical safety checks (entity registration, data isolation, edition safety) |
+| `.claude/rules/` | 3-5 lines each | Every session | Critical safety checks (entity registration, data isolation, safe HTTP) |
+| `docs/adr/` | numbered 0001+ | The *why* behind the fork's irreversible calls | One decision each |
 | `.agents/skills/` | one folder each | When invoked | Investigations, not conventions — `/debug-failed-run`, `/triage-*`, `/connector-builder`. Code shapes and conventions live in the wiki, not here. |
 - **Exported types and constants must be placed at the end of the file**, after all logic (functions, hooks, components, classes, etc.). This keeps the logic front and centre when reading a file, and groups the public contract at a predictable location.
 
@@ -71,7 +72,7 @@ Open-source AI-first workflow automation platform. Self-hosted or cloud. 400+ co
 
 ```bash
 npm run test-unit     # Vitest: engine + shared
-npm run test-api      # API integration (CE, EE, Cloud)
+npm run test-api      # API integration (needs Postgres + Redis; being rebuilt)
 ```
 API tests: `setupTestEnvironment()` + `createTestContext(app)` → `ctx.post()`, `ctx.get()`. DB auto-cleaned between tests.
 
@@ -111,17 +112,10 @@ When running in `--mode=cloud`, do not use OAuth2 connections — the OAuth prov
 
 - Always run `npm run lint-dev` as part of any verification step before considering a task complete.
 
-## White-Labeling & Edition Paths
+## White-Labeling
 
-- **All customer-facing UI must be white-labeled.** Sign-in/signup pages, email templates, logos, and any user-visible branding must use the platform's configured appearance (name, colors, logos) — never hardcode "FEMA Integration Platform" in user-facing surfaces.
-- **Test across all edition paths.** Every customer-facing feature must be verified on:
-  - **Community Edition** (self-hosted, `FEMA_EDITION=ce`) — no custom branding, open-source plan
-  - **Enterprise Edition** (self-hosted, `FEMA_EDITION=ee`) — custom branding behind `customAppearanceEnabled` flag
-  - **Cloud Freemium** (`FEMA_EDITION=cloud`, standard plan) — always applies platform branding
-  - **Cloud Self-Serve Paid** (`FEMA_EDITION=cloud`, upgraded plan) — same as freemium with higher limits
-  - **Cloud Enterprise** (`FEMA_EDITION=cloud`, enterprise plan) — full feature set
-- **Appearance is edition-gated.** Community always uses the default theme. Cloud always applies custom branding. Enterprise requires `platform.plan.customAppearanceEnabled`. See `packages/server/api/src/app/ee/helper/appearance-helper.ts`.
-- **Feature gating pattern:** Backend uses `platformMustHaveFeatureEnabled()` middleware (returns 402). Frontend uses `LockedFeatureGuard` component and `enabled: platform.plan.<flag>` on queries.
+- **All customer-facing UI must be white-labeled.** Sign-in/signup pages, email templates, logos and any user-visible branding come from the tenant's configured appearance (name, colors, logos). Never hardcode a product name in a user-visible surface.
+- The default theme is neutral (`packages/server/api/src/app/flags/theme.ts`) and its assets are local files under `packages/web/public/assets`, never a CDN.
 
 ## Useful Links
 

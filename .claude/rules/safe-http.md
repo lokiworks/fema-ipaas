@@ -1,3 +1,2 @@
 For any outbound HTTP in `packages/server/{api,worker,utils}`, use `safeHttp.axios` or `safeHttp.createAxios({ ... })` from `@fema/server-utils`. These wrap `request-filtering-agent` to reject private, loopback, link-local, and cloud-metadata IPs (configurable via `FEMA_SSRF_ALLOW_LIST`).
 Never call raw `fetch(...)` or `axios.create(...)` for URLs sourced from user input, admin config, OAuth token/refresh endpoints, or third-party integrations — they bypass SSRF protection and close the DNS-lookup-to-connect TOCTOU window the filtering agent handles.
-Hardcoded calls to trusted FEMA Integration Platform endpoints (`api.fema.local`, `secrets.fema.local`) should still use `apAxios`, which is itself built on `safeHttp`.

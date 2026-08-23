@@ -13,8 +13,7 @@ Fastify 5 + TypeORM (PostgreSQL) + BullMQ (Redis) + `fastify-type-provider-zod`.
 
 ## Project Structure
 
-- `src/app/` — Feature modules (workflows, connectors, tables, authentication, webhooks, etc.)
-- `src/app/ee/` — Enterprise features (SSO, SAML, SCIM, multi-tenancy)
+- `src/app/` — Feature modules (workflows, connectors, connections, authentication, webhooks, etc.)
 - `src/app/database/` — Database migrations and connection setup (TypeORM)
 - `src/app/helper/` — Shared server utilities
 
@@ -61,8 +60,8 @@ Email templates live in `src/assets/emails/`. When creating or modifying email t
 
 - Read existing code before making changes to understand patterns
 - Follow the existing controller/service pattern when adding new endpoints
-- Write database migrations for schema changes, never modify entities directly without a migration — see `brain/engineering/server-module-anatomy.md`
-- Keep enterprise features isolated in `src/app/ee/`
+- Write database migrations for schema changes, never modify entities directly without a migration — see `brain/knowledge/engineering/server-module-anatomy.md`
+- There is no `src/app/ee/` — see `.claude/rules/no-editions.md`
 
 ## Structured Logging Field Schema (evlog)
 

@@ -154,6 +154,11 @@ export function TenantSidebar() {
           icon: TerminalIcon,
         },
         {
+          to: '/tenant/connectors/builder',
+          label: t('Build a Connector'),
+          icon: MousePointerClickIcon,
+        },
+        {
           to: '/tenant/connectors/openapi',
           label: t('Import from OpenAPI'),
           icon: FileJson2Icon,

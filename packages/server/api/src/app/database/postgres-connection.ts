@@ -11,6 +11,7 @@ import { CreateWorkspaceMember1787900000000 } from './migration/postgres/1787900
 import { CreateAuditEvent1787900000001 } from './migration/postgres/1787900000001-CreateAuditEvent'
 import { CreateNetworkAgent1787900000002 } from './migration/postgres/1787900000002-CreateNetworkAgent'
 import { AddConnectorRegistryTrust1787900000003 } from './migration/postgres/1787900000003-AddConnectorRegistryTrust'
+import { CreateConnectorBlueprint1787900000004 } from './migration/postgres/1787900000004-CreateConnectorBlueprint'
 
 const getSslConfig = (): boolean | TlsOptions => {
     const useSsl = system.get(AppSystemProp.POSTGRES_USE_SSL)
@@ -29,6 +30,7 @@ export const getMigrations = (): (new () => Migration)[] => {
         CreateAuditEvent1787900000001,
         CreateNetworkAgent1787900000002,
         AddConnectorRegistryTrust1787900000003,
+        CreateConnectorBlueprint1787900000004,
     ]
 }
 

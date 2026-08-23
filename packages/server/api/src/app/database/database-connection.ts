@@ -7,6 +7,7 @@ import { AuditEventEntity } from '../audit/audit-event.entity'
 import { OtpEntity } from '../authentication/otp/otp-entity'
 import { UserIdentityEntity } from '../authentication/user-identity/user-identity-entity'
 import { ConnectionEntity } from '../connection/connection.entity'
+import { ConnectorBlueprintEntity } from '../connectors/blueprint/connector-blueprint.entity'
 import { ConnectorMetadataEntity } from '../connectors/metadata/connector-metadata-entity'
 import { FileEntity } from '../file/file.entity'
 import { FlagEntity } from '../flags/flag.entity'
@@ -46,6 +47,7 @@ function getEntities(): EntitySchema<unknown>[] {
         ExecutionEntity,
         AuditEventEntity,
         NetworkAgentEntity,
+        ConnectorBlueprintEntity,
         WorkspaceEntity,
         WorkspaceMemberEntity,
         StoreEntryEntity,

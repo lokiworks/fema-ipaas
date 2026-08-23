@@ -2453,5 +2453,21 @@
   "Could not generate the connector": "Could not generate the connector",
   "Show node palette": "Show node palette",
   "Hide node palette": "Hide node palette",
-  "Click + on the canvas to add a node.": "Click + on the canvas to add a node."
+  "Click + on the canvas to add a node.": "Click + on the canvas to add a node.",
+  "Build a Connector": "Build a Connector",
+  "Describe an HTTP API and generate a connector without writing code.": "Describe an HTTP API and generate a connector without writing code.",
+  "Open a saved connector": "Open a saved connector",
+  "1. Basic information": "1. Basic information",
+  "2. Connection": "2. Connection",
+  "3. Operations": "3. Operations",
+  "Documentation URL": "Documentation URL",
+  "Authentication": "Authentication",
+  "Add operation": "Add operation",
+  "Remove operation": "Remove operation",
+  "Add at least one operation before generating.": "Add at least one operation before generating.",
+  "Path": "Path",
+  "Add input": "Add input",
+  "Remove input": "Remove input",
+  "Generated files": "Generated files",
+  "Could not save the connector": "Could not save the connector"
 }

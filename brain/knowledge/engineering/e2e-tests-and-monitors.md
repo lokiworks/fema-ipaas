@@ -35,3 +35,11 @@ One Playwright suite in `packages/tests-e2e` feeds three consumers that fail ind
 - `packages/tests-e2e` — `playwright.config.ts` (local/CI), `global-setup.ts` (provisions or signs in the seed account), `pages/` (shared page objects), `scenarios/betterstack/` (the standalone monitor script)
 - `.github/workflows/e2e.yml` — the `ready-for-e2e` gate that calls the suite
 - `.github/workflows/sync-betterstack-playwright.yml` — the push-to-`main` upload
+
+## Which suites `npm run test-unit` actually runs
+
+`test-unit` runs the packages named in the root script's `--filter` list, then `turbo run test-unit --filter=api` as a second pass. Anything not in that list runs **nowhere**, which is how a broken safety check can sit red on main indefinitely — `@fema-ipaas/cli` had a failing `__dirname` bundler-guard test that nothing executed.
+
+- `api` splits by folder, not by name: `test/unit` is infra-free and runs in the loop; `test/integration` needs Postgres and Redis and runs only under `npm run test-api`. A BullMQ or system-jobs test belongs in `integration` no matter how unit-like it looks — several lived in `test/unit` and failed on every run.
+- After deleting a feature, delete its tests in the same change. Post-EE removal, `test/unit` still held suites for `ee/agent`, `knowledge-base`, `canary`, and agent step migrations, all importing modules that no longer existed.
+- Deleting a connector package means removing it from `turbo.json` too. A stale `@fema-ipaas/connector-x#build` in a `dependsOn` array makes turbo fail the whole run with "Could not find package", which reads like a broken checkout rather than a stale reference.

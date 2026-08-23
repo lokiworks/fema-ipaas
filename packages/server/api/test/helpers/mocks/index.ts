@@ -7,9 +7,6 @@ import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { AIProviderSchema } from '../../../src/app/ai/ai-provider-entity'
 import { databaseConnection } from '../../../src/app/database/database-connection'
-import { generateApiKey } from '../../../src/app/ee/api-keys/api-key-service'
-import { OAuthAppWithEncryptedSecret } from '../../../src/app/ee/oauth-apps/oauth-app.entity'
-import { TenantPlanEntity } from '../../../src/app/ee/tenant/tenant-plan/tenant-plan.entity'
 import { encryptUtils } from '../../../src/app/helper/encryption'
 import { ConnectorMetadataSchema } from '../../../src/app/connectors/metadata/connector-metadata-entity'
 import { connectorMetadataService } from '../../../src/app/connectors/metadata/connector-metadata-service'
@@ -47,20 +44,6 @@ export const createMockUser = (user?: Partial<User>): User => {
         externalId: user?.externalId,
         identityId: user?.identityId ?? apId(),
         tenantId: user?.tenantId ?? null,
-    }
-}
-
-export const createMockOAuthApp = async (
-    oAuthApp?: Partial<OAuthApp>,
-): Promise<OAuthAppWithEncryptedSecret> => {
-    return {
-        id: oAuthApp?.id ?? apId(),
-        created: oAuthApp?.created ?? faker.date.recent().toISOString(),
-        updated: oAuthApp?.updated ?? faker.date.recent().toISOString(),
-        tenantId: oAuthApp?.tenantId ?? apId(),
-        connectorName: oAuthApp?.connectorName ?? faker.lorem.word(),
-        clientId: oAuthApp?.clientId ?? apId(),
-        clientSecret: await encryptUtils.encryptString(faker.lorem.word()),
     }
 }
 
@@ -275,38 +258,6 @@ kxbNAUSuLQESkfZq1Dw5+tdBDJr29bxjmiSggyittTYn1B3iHACNoe4zj9sMQQIf
 j9mmntXsa/leIwBVspiEOHYZwJOe5+goSd8K1VIQJxC1DVBxB2eHxMvuo3eyJ0HE
 DlebIeZy4zrE1LPgRic1kfdemyxvuN3iwZnPGiY79nL1ZNDM3M4ApSMCAwEAAQ==
 -----END RSA PUBLIC KEY-----`
-
-export const createMockApiKey = (
-    apiKey?: Partial<Omit<ApiKey, 'hashedValue' | 'truncatedValue'>>,
-): ApiKey & { value: string } => {
-    const { secretHashed, secretTruncated, secret } = generateApiKey()
-    return {
-        id: apiKey?.id ?? apId(),
-        created: apiKey?.created ?? faker.date.recent().toISOString(),
-        updated: apiKey?.updated ?? faker.date.recent().toISOString(),
-        displayName: apiKey?.displayName ?? faker.lorem.word(),
-        tenantId: apiKey?.tenantId ?? apId(),
-        hashedValue: secretHashed,
-        value: secret,
-        truncatedValue: secretTruncated,
-    }
-}
-
-
-export const createMockSigningKey = (
-    signingKey?: Partial<SigningKey>,
-): SigningKey => {
-    return {
-        id: signingKey?.id ?? apId(),
-        created: signingKey?.created ?? faker.date.recent().toISOString(),
-        updated: signingKey?.updated ?? faker.date.recent().toISOString(),
-        displayName: signingKey?.displayName ?? faker.lorem.word(),
-        tenantId: signingKey?.tenantId ?? apId(),
-        publicKey: signingKey?.publicKey ?? MOCK_SIGNING_KEY_PUBLIC_KEY,
-        algorithm: signingKey?.algorithm ?? KeyAlgorithm.RSA,
-    }
-}
-
 
 export const createMockConnectorMetadata = (
     connectorMetadata?: Partial<Omit<ConnectorMetadataSchema, 'workspace'>>,
@@ -595,19 +546,6 @@ export const mockAndSaveBasicSetup = async (params?: MockBasicSetupParams): Prom
     })
 
     await databaseConnection().getRepository('tenant').save(mockTenant)
-    const hasPlanTable = databaseConnection().hasMetadata(TenantPlanEntity)
-    if (hasPlanTable) {
-        const mockTenantPlan = createMockTenantPlan({
-            tenantId: mockTenant.id,
-            auditLogEnabled: true,
-            apiKeysEnabled: true,
-            customRolesEnabled: true,
-            billedTeamWorkspacesLimit: null,
-            includedCredits: 1000,
-            ...params?.plan,
-        })
-        await databaseConnection().getRepository('tenant_plan').upsert(mockTenantPlan, ['tenantId'])
-    }
 
     mockOwner.tenantId = mockTenant.id
     await databaseConnection().getRepository('user').save(mockOwner)

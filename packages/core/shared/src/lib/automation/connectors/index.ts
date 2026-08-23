@@ -1,5 +1,6 @@
 export * from './dto/connector-requests'
 export * from './dto/openapi-import'
+export * from './dto/connector-blueprint'
 export * from './connector'
 export * from './utils'
 

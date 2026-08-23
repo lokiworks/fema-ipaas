@@ -16,6 +16,7 @@ import { otpModule } from './authentication/otp/otp-module'
 import { componentModule } from './components/component.module'
 import { connectionModule } from './connection/connection.module'
 import { tenantConnectionModule } from './connection/tenant-connection.module'
+import { connectorBlueprintModule } from './connectors/blueprint/connector-blueprint.module'
 import { communityConnectorsModule } from './connectors/community-connector-module'
 import { connectorSyncService } from './connectors/connector-sync-service'
 import { startDevConnectorWatcher } from './connectors/dev-connector-watcher'
@@ -161,6 +162,7 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     await app.register(encryptionModule)
     await app.register(networkAgentModule)
     await app.register(openApiImportModule)
+    await app.register(connectorBlueprintModule)
     registerAuditEventListener(app.log)
     await app.register(communityConnectorsModule)
     await app.register(collaborativeModule)

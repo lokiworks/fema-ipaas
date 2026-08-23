@@ -143,6 +143,17 @@
       ],
       "outputs": []
     },
+    "test-unit": {
+      "dependsOn": [
+        "^build"
+      ],
+      "inputs": [
+        "src/**",
+        "test/**",
+        "tsconfig*.json",
+        "vitest.config.ts"
+      ]
+    },
     "test": {
       "dependsOn": [
         "build"

@@ -4,7 +4,6 @@ import { FastifyInstance, InjectOptions } from 'fastify'
 import { generateMockToken } from './auth'
 import { db } from './db'
 import {
-    createMockApiKey,
     createMockWorkspaceMember,
     mockAndSaveBasicSetup,
     mockBasicUser,
@@ -69,71 +68,6 @@ export async function createMemberContext(
         workspace: parentCtx.workspace,
         token,
     })
-}
-
-export async function createServiceContext(
-    app: FastifyInstance,
-    parentCtx: TestContext,
-): Promise<TestContext> {
-    const mockApiKey = createMockApiKey({
-        tenantId: parentCtx.tenant.id,
-    })
-    await db.save('api_key', mockApiKey)
-
-    return buildContext(app, {
-        userIdentity: parentCtx.userIdentity,
-        user: parentCtx.user,
-        tenant: parentCtx.tenant,
-        workspace: parentCtx.workspace,
-        token: mockApiKey.value,
-    })
-}
-
-function buildContext(app: FastifyInstance, data: ContextData): TestContext {
-    const makeRequest = (method: string) => {
-        return (url: string, bodyOrQuery?: Record<string, unknown>, opts?: RequestOptions) => {
-            const inject: InjectOptions = {
-                method: method as InjectOptions['method'],
-                url: `/api${url}`,
-                headers: {
-                    authorization: `Bearer ${data.token}`,
-                },
-            }
-            if (method === 'GET' || method === 'DELETE') {
-                if (bodyOrQuery) {
-                    inject.query = bodyOrQuery as Record<string, string>
-                }
-            }
-            else {
-                inject.body = bodyOrQuery
-            }
-            if (opts?.query) {
-                inject.query = opts.query as Record<string, string>
-            }
-            return app.inject(inject)
-        }
-    }
-
-    return {
-        userIdentity: data.userIdentity,
-        user: data.user,
-        tenant: data.tenant,
-        workspace: data.workspace,
-        token: data.token,
-        get: makeRequest('GET'),
-        post: makeRequest('POST'),
-        put: makeRequest('PUT'),
-        delete: makeRequest('DELETE'),
-        inject: (opts: InjectOptions) => {
-            return app.inject({
-                ...opts,
-                headers: {
-                    authorization: `Bearer ${data.token}`,
-                    ...opts.headers,
-                },
-            })
-        },
-    }
 }
 
 export type TestContextParams = {

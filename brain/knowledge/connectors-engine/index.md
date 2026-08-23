@@ -27,6 +27,19 @@ Platform-owned flow logic nodes (Branch, Loop, Delay, Code, Stop, Approval) — 
   - Adding a `WorkflowActionType` means touching more than `getExecutors()`: `test-execution-context.ts` (sample-data seeding for downstream step tests) and `workflow-version-validator-util.ts` (the `valid` flag, twice — ADD_ACTION and UPDATE_ACTION) both switch on it. The `switch-exhaustiveness-check` lint rule catches these; `turbo build` does not, because the engine is esbuild-only.
   - `@fema-ipaas/components` is a **built dist** dependency of the engine and api. After adding a component, `turbo run build --filter=@fema-ipaas/components` before running engine tests, or the registry lookup silently misses it.
 
+### No-Code Connector Builder
+
+A stored blueprint (`connector_blueprint`) describing an HTTP API — base URL, default headers, auth type, and a list of operations with their inputs — that generates a connector package on demand (design doc section 9.1). CRUD plus `POST /v1/connector-blueprints/:id/generate`, UI at `/tenant/connectors/builder`.
+
+- **Where**: `packages/server/api/src/app/connectors/blueprint`. The generator is pure and unit tested; the blueprint row is the saved state so a half-built connector survives a page reload.
+- Each input declares where it goes — `query`, `path`, `header` or `body` — and the generator routes it accordingly. A path input is substituted into the path, never sent as a query param.
+
+- **Gotchas**:
+  - Like OpenAPI import, this emits **source files, not an installed connector**. Generated code goes through `fema connectors validate` and `publish` like anything else.
+  - Every input becomes `Property.ShortText`. There is no type picker yet, so numbers and dropdowns need hand-editing after generation.
+  - Auth maps to one SDK auth per blueprint type. `CUSTOM_AUTH` generates an empty `props: {}` — the fields have to be filled in by hand.
+  - `networkAgentId` is on the blueprint schema but nothing reads it, matching the network agent's own state ([ADR 0014](../../../docs/adr/0014-network-agent-model-lands-before-the-tunnel.md)).
+
 ### OpenAPI Import
 
 Turns an OpenAPI 3 or Swagger 2 document into a connector package (design doc section 24). Two tenant-admin endpoints under `/v1/connectors/openapi`: `parse` reads servers, security schemes and operations; `generate` emits the package files for the operations the user selected.

@@ -13,7 +13,7 @@
   "scripts": {
     "prepare": "husky install || true",
     "prebuild": "node tools/scripts/install-bun.js",
-    "serve:frontend": "turbo run serve --filter=web",
+    "serve:frontend": "turbo run serve --filter=web && turbo run test-unit --filter=api",
     "serve:backend": "turbo run serve --filter=api",
     "serve:engine": "turbo run serve --filter=@fema-ipaas/engine",
     "serve:worker": "turbo run serve --filter=worker",
@@ -32,7 +32,7 @@
     "lint-connectors": "turbo run lint --filter='@fema-ipaas/connector-*'",
     "lint-affected": "turbo run lint --affected",
     "lint-dev": "turbo run lint --filter='!@fema-ipaas/connector-*' --force -- --fix",
-    "test-unit": "turbo run test --filter=@fema-ipaas/cli --filter=@fema-ipaas/engine --filter=@fema-ipaas/shared --filter=@fema-ipaas/sandbox --filter=@fema-ipaas/core-utils --filter=@fema-ipaas/server-utils --filter=@fema-ipaas/connector-sdk --filter=web",
+    "test-unit": "turbo run test --filter=@fema-ipaas/cli --filter=@fema-ipaas/engine --filter=@fema-ipaas/shared --filter=@fema-ipaas/sandbox --filter=@fema-ipaas/core-utils --filter=@fema-ipaas/server-utils --filter=@fema-ipaas/connector-sdk --filter=web && turbo run test-unit --filter=api",
     "test-api": "turbo run check-migrations test --filter=api --concurrency=1",
     "agent-evals": "set -a && . ./.env.dev && set +a && tsx --tsconfig packages/server/worker/test/lib/agent-eval/cli/tsconfig.json packages/server/worker/test/lib/agent-eval/cli/index.ts",
     "agent-evals:ci": "if [ -f ./.env.dev ]; then set -a && . ./.env.dev && set +a; fi && vitest run --dir packages/server/worker/test/lib/agent-eval",

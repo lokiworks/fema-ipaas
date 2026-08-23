@@ -96,7 +96,7 @@ export const ExecutionEntity = new EntitySchema<ExecutionSchema>({
     },
     indices: [
         {
-            name: 'idx_run_workspace_id_environment_workflow_id_status_created_archived_',
+            name: 'idx_execution_ws_env_wf_status_created_archived',
             columns: ['workspaceId', 'environment', 'workflowId', 'status', 'created', 'archivedAt'],
         },
         {
@@ -112,7 +112,7 @@ export const ExecutionEntity = new EntitySchema<ExecutionSchema>({
             columns: ['workspaceId', 'environment', 'created', 'archivedAt', 'status'],
         },
         {
-            name: 'idx_run_workspace_id_environment_workflow_id_created_archived_at',
+            name: 'idx_execution_ws_env_wf_created_archived',
             columns: ['workspaceId', 'environment', 'workflowId', 'created', 'archivedAt'],
         },
         {

@@ -6,7 +6,7 @@ import { FastifyBaseLogger } from 'fastify'
 import { DatabaseType } from '../../database/database-type'
 import { RedisType } from '../../database/redis/types'
 import { pinoLogging } from '../logger'
-import { AppSystemProp, ContainerType, environmentVariables, SystemProp } from './system-props'
+import { AppSystemProp, ContainerType, ENV_PREFIX, environmentVariables, SystemProp } from './system-props'
 
 
 
@@ -89,7 +89,7 @@ export const system = {
                         prop,
                     },
                 },
-                `System property AP_${prop} is not defined, please check the documentation`,
+                `System property ${ENV_PREFIX}${prop} is not defined, please check the documentation`,
             )
         }
         return value
@@ -130,7 +130,7 @@ export const system = {
                         prop,
                     },
                 },
-                `System property AP_${prop} is not defined, please check the documentation`,
+                `System property ${ENV_PREFIX}${prop} is not defined, please check the documentation`,
             )
         }
         return value
@@ -154,7 +154,7 @@ export const system = {
                         prop,
                     },
                 },
-                `System property AP_${prop} is not defined, please check the documentation`,
+                `System property ${ENV_PREFIX}${prop} is not defined, please check the documentation`,
             )
         }
 

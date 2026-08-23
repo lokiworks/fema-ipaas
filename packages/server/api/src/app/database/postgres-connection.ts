@@ -6,7 +6,7 @@ import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
 import { commonProperties } from './database-connection'
 import { Migration } from './migration'
-import { InitialSchema1787465061531 } from './migration/postgres/1787465061531-InitialSchema'
+import { InitialSchema1787473797710 } from './migration/postgres/1787473797710-InitialSchema'
 
 const getSslConfig = (): boolean | TlsOptions => {
     const useSsl = system.get(AppSystemProp.POSTGRES_USE_SSL)
@@ -20,7 +20,7 @@ const getSslConfig = (): boolean | TlsOptions => {
 
 export const getMigrations = (): (new () => Migration)[] => {
     return [
-        InitialSchema1787465061531,
+        InitialSchema1787473797710,
     ]
 }
 

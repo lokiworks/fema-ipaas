@@ -38,7 +38,7 @@ export const AppEventRoutingEntity = new EntitySchema<AppEventRouting>({
             unique: false,
         },
         {
-            name: 'idx_app_event_workflow_id_workspace_id_appName_identifier_value_event',
+            name: 'idx_app_event_wf_ws_app_identifier_value_event',
             columns: ['appName', 'workspaceId', 'workflowId', 'identifierValue', 'event'],
             unique: true,
         },

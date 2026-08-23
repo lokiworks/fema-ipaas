@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm'
 
-export class InitialSchema1787465061531 implements MigrationInterface {
-    name = 'InitialSchema1787465061531'
+export class InitialSchema1787473797710 implements MigrationInterface {
+    name = 'InitialSchema1787473797710'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`
@@ -45,7 +45,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             CREATE INDEX "idx_app_event_routing_workflow_id" ON "app_event_routing" ("workflowId")
         `)
         await queryRunner.query(`
-            CREATE UNIQUE INDEX "idx_app_event_workflow_id_workspace_id_appName_identifier_value_event" ON "app_event_routing" (
+            CREATE UNIQUE INDEX "idx_app_event_wf_ws_app_identifier_value_event" ON "app_event_routing" (
                 "appName",
                 "workspaceId",
                 "workflowId",
@@ -109,9 +109,9 @@ export class InitialSchema1787465061531 implements MigrationInterface {
                 "ownerId" character varying,
                 "templateId" character varying,
                 "createdBy" jsonb,
-                CONSTRAINT "UQ_f6608fe13b916017a8202f993cb" UNIQUE ("publishedVersionId"),
-                CONSTRAINT "REL_f6608fe13b916017a8202f993c" UNIQUE ("publishedVersionId"),
-                CONSTRAINT "PK_6c2ad4a3e86394cd9bb7a80a228" PRIMARY KEY ("id")
+                CONSTRAINT "UQ_cb34ff661bf8a55e0d9f50d0986" UNIQUE ("publishedVersionId"),
+                CONSTRAINT "REL_cb34ff661bf8a55e0d9f50d098" UNIQUE ("publishedVersionId"),
+                CONSTRAINT "PK_eb5e4cc1a9ef2e94805b676751b" PRIMARY KEY ("id")
             )
         `)
         await queryRunner.query(`
@@ -142,7 +142,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
                 "state" character varying NOT NULL,
                 "backupFiles" jsonb,
                 "notes" jsonb NOT NULL,
-                CONSTRAINT "PK_2f20a52dcddf98d3fafe621a9f5" PRIMARY KEY ("id")
+                CONSTRAINT "PK_e61d12662fd18f475bba2e86b7d" PRIMARY KEY ("id")
             )
         `)
         await queryRunner.query(`
@@ -177,11 +177,11 @@ export class InitialSchema1787465061531 implements MigrationInterface {
                 "stepNameToTest" character varying,
                 "stepsCount" integer NOT NULL DEFAULT '0',
                 "pauseMetadata" jsonb,
-                CONSTRAINT "PK_858b1dd0d1055c44261ae00d45b" PRIMARY KEY ("id")
+                CONSTRAINT "PK_cc6684fedf29ec4c86db8448a2b" PRIMARY KEY ("id")
             )
         `)
         await queryRunner.query(`
-            CREATE INDEX "idx_run_workspace_id_environment_workflow_id_status_created_archived_" ON "execution" (
+            CREATE INDEX "idx_execution_ws_env_wf_status_created_archived" ON "execution" (
                 "workspaceId",
                 "environment",
                 "workflowId",
@@ -217,7 +217,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             )
         `)
         await queryRunner.query(`
-            CREATE INDEX "idx_run_workspace_id_environment_workflow_id_created_archived_at" ON "execution" (
+            CREATE INDEX "idx_execution_ws_env_wf_created_archived" ON "execution" (
                 "workspaceId",
                 "environment",
                 "workflowId",
@@ -258,7 +258,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
                 "metadata" jsonb,
                 "workerGroupId" character varying,
                 "executionDataRetentionDays" integer,
-                CONSTRAINT "PK_4d68b1358bb5b766d3e78f32f57" PRIMARY KEY ("id")
+                CONSTRAINT "PK_ca86b6f9b3be5fe26d307d09b49" PRIMARY KEY ("id")
             )
         `)
         await queryRunner.query(`
@@ -286,7 +286,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
                 "key" character varying(128) NOT NULL,
                 "workspaceId" character varying(21) NOT NULL,
                 "value" jsonb,
-                CONSTRAINT "UQ_6f251cc141de0a8d84d7a4ac17d" UNIQUE ("workspaceId", "key"),
+                CONSTRAINT "UQ_4c90692d05162626818309e5f43" UNIQUE ("workspaceId", "key"),
                 CONSTRAINT "PK_afb44ca7c0b4606b19deb1680d6" PRIMARY KEY ("id")
             )
         `)
@@ -331,7 +331,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
                 "metadata" jsonb,
                 "connectorVersion" character varying NOT NULL,
                 "preSelectForNewWorkspaces" boolean NOT NULL DEFAULT false,
-                CONSTRAINT "PK_9efa2d6633ecc57cc5adeafa039" PRIMARY KEY ("id")
+                CONSTRAINT "PK_be611ce8b8cf439091c82a334b2" PRIMARY KEY ("id")
             )
         `)
         await queryRunner.query(`
@@ -403,8 +403,8 @@ export class InitialSchema1787465061531 implements MigrationInterface {
                 "packageType" character varying NOT NULL,
                 "archiveId" character varying(21),
                 "i18n" json,
-                CONSTRAINT "REL_b43d7b070f0fc309932d4cf016" UNIQUE ("archiveId"),
-                CONSTRAINT "PK_b045821e9caf2be9aba520d96da" PRIMARY KEY ("id")
+                CONSTRAINT "REL_e9363ff853aa5e7c268661fd33" UNIQUE ("archiveId"),
+                CONSTRAINT "PK_c4b9358cd74cb75650f72629cc5" PRIMARY KEY ("id")
             )
         `)
         await queryRunner.query(`
@@ -433,8 +433,8 @@ export class InitialSchema1787465061531 implements MigrationInterface {
                 "federatedAuthProviders" jsonb NOT NULL,
                 "pinnedConnectors" character varying array NOT NULL,
                 "connectorSelectorConfig" jsonb,
-                CONSTRAINT "REL_94d6fd6494f0322c6f0e099141" UNIQUE ("ownerId"),
-                CONSTRAINT "PK_c33d6abeebd214bd2850bfd6b8e" PRIMARY KEY ("id")
+                CONSTRAINT "REL_feb05384c4e856435ed00355df" UNIQUE ("ownerId"),
+                CONSTRAINT "PK_da8c6efd67bb301e810e56ac139" PRIMARY KEY ("id")
             )
         `)
         await queryRunner.query(`
@@ -696,11 +696,11 @@ export class InitialSchema1787465061531 implements MigrationInterface {
         `)
         await queryRunner.query(`
             ALTER TABLE "trigger_source"
-            ADD CONSTRAINT "FK_3d3024c914f2fbf4f9e25029816" FOREIGN KEY ("workflowId") REFERENCES "workflow"("id") ON DELETE CASCADE ON UPDATE NO ACTION
+            ADD CONSTRAINT "FK_b88de9d358a062aed69f2e1fcb2" FOREIGN KEY ("workflowId") REFERENCES "workflow"("id") ON DELETE CASCADE ON UPDATE NO ACTION
         `)
         await queryRunner.query(`
             ALTER TABLE "trigger_source"
-            ADD CONSTRAINT "FK_5f28d74a4fdaf3fc91e6a0e7450" FOREIGN KEY ("workspaceId") REFERENCES "workspace"("id") ON DELETE CASCADE ON UPDATE NO ACTION
+            ADD CONSTRAINT "FK_1fabca1228850aad29b625c04e6" FOREIGN KEY ("workspaceId") REFERENCES "workspace"("id") ON DELETE CASCADE ON UPDATE NO ACTION
         `)
         await queryRunner.query(`
             ALTER TABLE "waitpoint"
@@ -730,10 +730,10 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             ALTER TABLE "waitpoint" DROP CONSTRAINT "fk_waitpoint_workspace_id"
         `)
         await queryRunner.query(`
-            ALTER TABLE "trigger_source" DROP CONSTRAINT "FK_5f28d74a4fdaf3fc91e6a0e7450"
+            ALTER TABLE "trigger_source" DROP CONSTRAINT "FK_1fabca1228850aad29b625c04e6"
         `)
         await queryRunner.query(`
-            ALTER TABLE "trigger_source" DROP CONSTRAINT "FK_3d3024c914f2fbf4f9e25029816"
+            ALTER TABLE "trigger_source" DROP CONSTRAINT "FK_b88de9d358a062aed69f2e1fcb2"
         `)
         await queryRunner.query(`
             ALTER TABLE "user_invitation" DROP CONSTRAINT "fk_user_invitation_workspace_id"
@@ -952,7 +952,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             DROP INDEX "public"."idx_run_workflow_id"
         `)
         await queryRunner.query(`
-            DROP INDEX "public"."idx_run_workspace_id_environment_workflow_id_created_archived_at"
+            DROP INDEX "public"."idx_execution_ws_env_wf_created_archived"
         `)
         await queryRunner.query(`
             DROP INDEX "public"."idx_run_workspace_id_environment_created_status_archived_at"
@@ -964,7 +964,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             DROP INDEX "public"."idx_run_workspace_id_environment_status_created_archived_at"
         `)
         await queryRunner.query(`
-            DROP INDEX "public"."idx_run_workspace_id_environment_workflow_id_status_created_archived_"
+            DROP INDEX "public"."idx_execution_ws_env_wf_status_created_archived"
         `)
         await queryRunner.query(`
             DROP TABLE "execution"
@@ -1015,7 +1015,7 @@ export class InitialSchema1787465061531 implements MigrationInterface {
             DROP INDEX "public"."idx_app_event_appName_identifier_event"
         `)
         await queryRunner.query(`
-            DROP INDEX "public"."idx_app_event_workflow_id_workspace_id_appName_identifier_value_event"
+            DROP INDEX "public"."idx_app_event_wf_ws_app_identifier_value_event"
         `)
         await queryRunner.query(`
             DROP INDEX "public"."idx_app_event_routing_workflow_id"

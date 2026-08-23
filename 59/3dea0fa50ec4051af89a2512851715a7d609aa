@@ -1,0 +1,2227 @@
+packages/server/api/src/app/workflows/workflow/workflow-publish-utils.ts
+  s_94864882421579::t_ff3c29763840a7 1,5-6,12,15-16
+packages/connectors/core/schedule/src/i18n/hi.json
+  s_94864882421579::t_ff3c29763840a7 34,41-45
+packages/core/utils/src/lib/permission.ts
+  s_94864882421579::t_ff3c29763840a7 5-7,41
+packages/web/src/app/builder/workflow-canvas/nodes/loop-return-node.tsx
+  s_94864882421579::t_ff3c29763840a7 4,20,32,37
+  s_94864882421579::t_7cda38fb019be5 24-25
+packages/connectors/core/store/src/i18n/uk.json
+  s_94864882421579::t_ff3c29763840a7 25
+packages/web/src/app/routes/platform/infra/health/components/system-health-tab.tsx
+  s_94864882421579::t_ff3c29763840a7 180
+packages/server/api/src/app/workers/migrations/job-data-migrations.ts
+  s_94864882421579::t_ff3c29763840a7 5,7,14-15,23,26-27,31,45,58,62,71,82,85,91,102,114,118
+brain/knowledge/workflows-execution/index.md
+  s_94864882421579::t_ff3c29763840a7 5,7,9-11,13,16-17,24,32,38-39,41,44-46,49-51,54,57-59,62,64,68-70,73-74,78
+packages/server/api/src/app/health/health-metrics.service.ts
+  s_94864882421579::t_7cda38fb019be5 9
+  s_94864882421579::t_ff3c29763840a7 56,58,60,63,71,78-79,116-117,121,123,126,129,145-146,157,165,168,203
+packages/web/src/features/authentication/components/sign-in-form.tsx
+  s_94864882421579::t_ff3c29763840a7 169
+packages/web/src/app/routes/variables/index.tsx
+  s_94864882421579::t_ff3c29763840a7 227,311
+packages/web/src/app/guards/after-import-workflow-redirect.tsx
+  s_94864882421579::t_ff3c29763840a7 5,7-8,12,14-15,20
+packages/connectors/community/slack/src/lib/common/request-action.ts
+  s_94864882421579::t_ff3c29763840a7 2,78-79
+packages/server/api/src/app/trigger/test-trigger/test-trigger-controller.ts
+  s_94864882421579::t_ff3c29763840a7 9,12-13,18-19,25,28
+packages/server/engine/test/handler/router-branching.test.ts
+  s_94864882421579::t_ff3c29763840a7 1-3,6-7,13,370,386,393-394,424-425
+packages/web/src/app/builder/workflow-canvas/workflow-drag-layer.tsx
+  s_94864882421579::t_ff3c29763840a7 15,17,30,33,43,51,90,93,96,163,169,172,175,188,192,202,227
+  s_94864882421579::t_7cda38fb019be5 122-127
+  s_94864882421579::t_e2bdb970714509 232
+packages/connectors/core/approval/src/i18n/pt.json
+  s_94864882421579::t_ff3c29763840a7 5-6
+packages/connectors/core/forms/src/i18n/zh.json
+  s_94864882421579::t_ff3c29763840a7 2,9-10,16-18
+packages/connectors/core/store/src/i18n/hy.json
+  s_94864882421579::t_ff3c29763840a7 25
+benchmark/setup.sh
+  s_94864882421579::t_ff3c29763840a7 84-86,89,91-92,119,129,131,229-231,236-238,243-245,250-254,257,260-261,266,268-269
+packages/core/execution/test/automation/engine/send-workflow-response-request.test.ts
+  s_94864882421579::t_ff3c29763840a7 2,4,8,16,24
+brain/knowledge/workflows-execution/templates.md
+  s_94864882421579::t_ff3c29763840a7 7,10,19,24,35
+packages/web/src/app/builder/test-step/test-sample-data-viewer.tsx
+  s_94864882421579::t_ff3c29763840a7 2,24
+packages/web/src/features/connectors/types/index.ts
+  s_94864882421579::t_ff3c29763840a7 9,12-13,24,36-39,63,71,80,82,89,94
+packages/server/AGENTS.md
+  s_94864882421579::t_ff3c29763840a7 16,49,73,79
+packages/server/api/src/app/connection/connection-service/connection-service.ts
+  s_94864882421579::t_ff3c29763840a7 211,214,280,283,287-288,290,295-296,301,304,306,308,317-320,324,330,333,339,342,344,353,355-356,360,437,442,447,852,870,876-881,883,888
+  s_94864882421579::t_7cda38fb019be5 20
+packages/server/engine/test/handler/context/workflow-execution-context-log-size.test.ts
+  s_94864882421579::t_ff3c29763840a7 1,3,6,8,14,16,21,45,52
+packages/server/worker/src/lib/api-notify-service.ts
+  s_94864882421579::t_ff3c29763840a7 7-8,13
+packages/web/src/app/builder/step-settings/router-settings/index.tsx
+  s_94864882421579::t_ff3c29763840a7 3-7,27,42,44,65,73,78-79,82,89-90,92,94,96,104,112,121,191,201,213,219,231
+docs/embedding/navigation.mdx
+  s_94864882421579::t_ff3c29763840a7 28,53,59-60,73,81
+packages/web/src/features/workflows/components/change-owner-dialog.tsx
+  s_94864882421579::t_ff3c29763840a7 1,30,40,46,59,66,69,71,76-77,86,95,97
+.agents/skills/agent-browser/references/authentication.md
+  s_94864882421579::t_ff3c29763840a7 3,9,12,19,74,79,173
+packages/connectors/core/approval/src/lib/actions/create-approval-link.ts
+  s_94864882421579::t_ff3c29763840a7 11-12,16
+packages/connectors/core/forms/src/i18n/translation.json
+  s_94864882421579::t_ff3c29763840a7 2,9-10,16-18
+packages/core/execution/src/lib/workflows/operations/duplicate-step.ts
+  s_94864882421579::t_ff3c29763840a7 2-4,6-7,10-11,16-17,24,26,38-40,42-43,54-55,60,63
+packages/server/api/src/app/template/template.entity.ts
+  s_94864882421579::t_ff3c29763840a7 36
+packages/tests-e2e/scenarios/connectors/connector-isolation.spec.ts
+  s_94864882421579::t_ff3c29763840a7 7,9,12,22,49
+packages/web/src/app/builder/workflow-canvas/nodes/step-node/step-node-skipped-status.tsx
+  s_94864882421579::t_ff3c29763840a7 3-5,13,23-24
+  s_94864882421579::t_7cda38fb019be5 21-22,30-32
+packages/connectors/core/schedule/src/lib/triggers/every-month.trigger.ts
+  s_94864882421579::t_ff3c29763840a7 15
+docs/admin-guide/guides/secret-managers/overview.mdx
+  s_94864882421579::t_ff3c29763840a7 15,53,61,70,72
+packages/web/src/features/automations/hooks/use-automations-mutations.ts
+  s_94864882421579::t_ff3c29763840a7 3-4,14-15,18,38-39,41,50-51,55-56,61-62,78,80,100,106-108,135-137,151-153,155,157-158,160-161,171,173,175,190-192,209,211-212,214,217-218,222-223,229,232-234,236,240-241,251,254,259,263,265-266
+  s_94864882421579::t_7cda38fb019be5 219-221
+benchmark/docker-compose.yml
+  s_94864882421579::t_ff3c29763840a7 14
+packages/core/shared/src/lib/core/file/index.ts
+  s_94864882421579::t_ff3c29763840a7 13,28,31,52,57,60,79-81,84
+packages/server/api/src/assets/prompts/guides/build_workflow.md
+  s_94864882421579::t_ff3c29763840a7 8,15-17,19,32,34,36-37,39,41,43,50,65,68,70,94,99,105,111-114,116,119,122,124-126,129,134-135,138,142,155,171,177
+packages/core/execution/src/lib/workflows/workflow.ts
+  s_94864882421579::t_ff3c29763840a7 7,9-10,15,24,28,30-32,34,36,38,43,46,52,56,59,62-64,68,72
+packages/server/api/src/app/workflows/execution/execution-module.ts
+  s_94864882421579::t_ff3c29763840a7 36,39,43,46,49,52,58,82,87,91
+packages/core/execution/src/lib/engine/engine-operation.ts
+  s_94864882421579::t_ff3c29763840a7 7-8,15,36,98,105,111-112,129,134,139,150
+packages/server/engine/src/lib/core/connector/connector-protocol.ts
+  s_94864882421579::t_ff3c29763840a7 80-81
+packages/web/public/locales/en/translation.json
+  s_94864882421579::t_ff3c29763840a7 4,30,70,144-145,264,416-417,427-430,440,452,471-472,474-476,480,496-497,499,512-513,518,612,622,628,635-636,638,642,794,799-800,812,818-820,822-823,827-828,839-841,851,855,857,860,873,879,910,918,923,926-928,931-932,935,937,940-943,945-949,968-970,976,980,982,1014,1077,1081,1114,1118,1150,1198,1315-1316,1326,1451,1453,1475,1500,1509,1513,1517,1543-1544,1576,1580-1581,1593-1599,1748,1755-1757,1784,1802-1803,1874,1878-1879,1900,1902,1982,2027,2039,2057,2062-2064,2069-2071,2075,2080,2083,2090-2094,2096-2098,2101-2102,2126,2143,2146-2147,2173,2185,2203,2211,2278,2281-2284,2364
+.agents/skills/connector-builder/connector-types.md
+  s_94864882421579::t_ff3c29763840a7 44,54,56,58,71
+packages/connectors/core/approval/src/i18n/translation.json
+  s_94864882421579::t_ff3c29763840a7 5-6,8-9
+packages/server/api/src/app/workers/migrations/refill-paused-jobs.ts
+  s_94864882421579::t_7cda38fb019be5 12-13
+packages/web/src/app/builder/workflow-canvas/widgets/viewing-old-version-widget.tsx
+  s_94864882421579::t_7cda38fb019be5 25-28
+  s_94864882421579::t_ff3c29763840a7 6,9,11,20,24,31,46,57,59
+packages/web/src/features/connectors/hooks/steps-hooks.ts
+  s_94864882421579::t_ff3c29763840a7 3-5,7,41,131,141,148-149,161,165
+packages/web/src/app/builder/workflow-canvas/widgets/builder-banner.tsx
+  s_94864882421579::t_ff3c29763840a7 7,9,13,21,31
+packages/server/api/src/app/workflows/execution/execution-service.ts
+  s_94864882421579::t_ff3c29763840a7 20-21,71,73,119,137-139,178-180,182,186,195,203,209,215,218-219,221,264,272,281,283,295,310,314,317,321-322,337,341-343,347-348,353-354,370,373-375,382,395-396,432,503-504,559,561,618,620-621,629,656,665-666,688,707,710,716,741-742,770,775,781,824,836,844,848,865,873,878,888,896,898,911,931
+  s_94864882421579::t_7cda38fb019be5 1,3
+packages/connectors/community/slack/src/i18n/ca.json
+  s_94864882421579::t_ff3c29763840a7 153,157
+packages/core/connector-types/src/lib/connector.ts
+  s_94864882421579::t_ff3c29763840a7 17
+packages/server/api/test/integration/connectors/connector-metadata.test.ts
+  s_94864882421579::t_ff3c29763840a7 3,12-13,404,414-417,419,421,434,440,445,455-458,462,475-476,480,490,501-504,507,520
+packages/server/sandbox/src/lib/cache/local-execution-cache.ts
+  s_94864882421579::t_ff3c29763840a7 9-10,81,85
+brain/knowledge/connections-auth/connections.md
+  s_94864882421579::t_ff3c29763840a7 7,10,26,28
+packages/web/src/app/components/global-search/access-history.ts
+  s_94864882421579::t_ff3c29763840a7 45
+packages/web/src/app/routes/templates/index.tsx
+  s_94864882421579::t_ff3c29763840a7 37-38,117-118
+  s_94864882421579::t_7cda38fb019be5 16
+docs/build-connectors/connector-reference/large-file-streaming.mdx
+  s_94864882421579::t_ff3c29763840a7 4,10,20,22,195
+packages/core/execution/AGENTS.md
+  s_94864882421579::t_ff3c29763840a7 3
+brain/knowledge/decisions/000016-action-run-code-cache-is-namespaced-per-platform.md
+  s_94864882421579::t_ff3c29763840a7 11-12,19,23,26,29,33,61,89,118,170,186,188,190,192-193,197,200,203,205-206,222
+packages/web/src/app/builder/state/connector-selector-state.ts
+  s_94864882421579::t_ff3c29763840a7 1,31
+packages/tests-e2e/pages/builder.page.ts
+  s_94864882421579::t_ff3c29763840a7 20-21,50,56-58,63
+packages/connectors/core/store/src/i18n/zh.json
+  s_94864882421579::t_ff3c29763840a7 24
+packages/server/api/src/app/workflows/workflow-version/workflow-version-backup.service.ts
+  s_94864882421579::t_ff3c29763840a7 2,6-8,10,14-15,21-23,28-30,37,40,43,45-46,51
+packages/server/api/src/app/workspace/workspace-service.ts
+  s_94864882421579::t_ff3c29763840a7 23,76,257-258,262,290,303
+docs/workflows/workspace-variables.mdx
+  s_94864882421579::t_ff3c29763840a7 4,7,9,17,24,41,44,48
+packages/server/api/src/app/workflows/workflow.module.ts
+  s_94864882421579::t_ff3c29763840a7 6-7,9-11,19,29
+packages/server/api/src/assets/prompts/guides/error_handling.md
+  s_94864882421579::t_ff3c29763840a7 5,8-9,26,29,32-35
+packages/tests-e2e/README.md
+  s_94864882421579::t_ff3c29763840a7 3,12
+packages/web/src/features/workflows/hooks/sample-data-hooks.ts
+  s_94864882421579::t_7cda38fb019be5 22-24,56-58,81-87
+  s_94864882421579::t_ff3c29763840a7 2-3,11-12,16-17,29,45-46,50-51,64,89,95,102-103
+docs/install/architecture/workers.mdx
+  s_94864882421579::t_ff3c29763840a7 3,7,11,15,31
+packages/web/src/app/builder/state/builder-state-provider.tsx
+  s_94864882421579::t_ff3c29763840a7 28-29
+packages/server/api/src/app/trigger/test-trigger/test-trigger-service.ts
+  s_94864882421579::t_7cda38fb019be5 1
+  s_94864882421579::t_ff3c29763840a7 5,9,17,21-22,24,29-30,38,46,54,63,65,68-69,77,90-91,97
+packages/core/shared/src/index.ts
+  s_94864882421579::t_ff3c29763840a7 33
+packages/web/src/app/builder/state/run-state.ts
+  s_94864882421579::t_ff3c29763840a7 3-5,7-9,32-33,57,61,84,99,120,123,131,133,135,141,143,182,184,186,208,210,226,296,310-311,327,341,387
+  s_94864882421579::t_7cda38fb019be5 213-220,222,297-300
+docs/install/configure-operate/production-setup.mdx
+  s_94864882421579::t_ff3c29763840a7 7,11,13,17,23,43,46,50,70,74,91,101-102,125
+packages/connectors/community/slack/src/i18n/translation.json
+  s_94864882421579::t_ff3c29763840a7 148,223,367,370-371,373
+packages/core/shared/src/lib/governance/audit-events/index.ts
+  s_94864882421579::t_7cda38fb019be5 2
+  s_94864882421579::t_ff3c29763840a7 20-29,186-187,189,230,232,234,242,244,246,248-249,252,263,265,267,269-270,273,277,285,287-289,292,302,304-305,308,310,312-313,316,318,320-321,324,380-385,396,400,402,405,408,410-419,447,449-453,457,459-465,467-479,482,486-487,489,492,496,499,502,506,508-514,519,522-529
+packages/web/src/app/routes/platform/workspaces/columns.tsx
+  s_94864882421579::t_ff3c29763840a7 74,77,84,89,98,101
+packages/cli/assets/db.json
+  s_94864882421579::t_ff3c29763840a7 438,2439
+packages/connectors/core/subflows/src/i18n/de.json
+  s_94864882421579::t_ff3c29763840a7 2-3,5-7,11,15-16,18
+packages/web/src/app/builder/test-step/test-step-cta-button.tsx
+  s_94864882421579::t_ff3c29763840a7 3-5,7,32,39,47,60,96-97,101-102,105
+packages/server/engine/test/handler/workflow-connector.test.ts
+  s_94864882421579::t_ff3c29763840a7 2-4,21,43,71,78,85-86,109-110
+docs/install/guarantees/reserved-resources.mdx
+  s_94864882421579::t_ff3c29763840a7 3,7,9,17,19,23,27,29,33,39-40
+packages/server/sandbox/src/lib/cache/workflow/workflow-cache.ts
+  s_94864882421579::t_ff3c29763840a7 8-9,11,14-16,19-20,23,27,29-30,33-37,41-42,45-46,49,53,58,69-70
+  s_94864882421579::t_7cda38fb019be5 2,4
+packages/connectors/core/delay/src/lib/common.ts
+  s_94864882421579::t_ff3c29763840a7 4
+packages/connectors/core/store/src/i18n/hu.json
+  s_94864882421579::t_ff3c29763840a7 25
+packages/connectors/core/webhook/src/i18n/vi.json
+  s_94864882421579::t_ff3c29763840a7 3,7,10,12,22-24
+docs/workflows/publishing-workflows.mdx
+  s_94864882421579::t_ff3c29763840a7 2,4,7,9
+packages/connectors/core/approval/src/i18n/ja.json
+  s_94864882421579::t_ff3c29763840a7 5-6
+packages/connectors/core/webhook/src/i18n/hy.json
+  s_94864882421579::t_ff3c29763840a7 3,7,10,12,22-24
+packages/core/execution/src/lib/workers/index.ts
+  s_94864882421579::t_ff3c29763840a7 110,112
+packages/connectors/core/subflows/src/i18n/fr.json
+  s_94864882421579::t_ff3c29763840a7 2-3,5-7,11,15-16,18
+brain/knowledge/platform-editions-ee/platform-copilot.md
+  s_94864882421579::t_ff3c29763840a7 7
+docs/endpoints/executions/get.mdx
+  s_94864882421579::t_ff3c29763840a7 2
+packages/connectors/core/manual-trigger/src/i18n/de.json
+  s_94864882421579::t_ff3c29763840a7 3,5
+packages/connectors/core/delay/src/i18n/ru.json
+  s_94864882421579::t_ff3c29763840a7 12
+packages/connectors/core/webhook/src/lib/triggers/catch-hook.ts
+  s_94864882421579::t_ff3c29763840a7 18,25,34,50
+packages/server/api/test/integration/file/file-cleanup.test.ts
+  s_94864882421579::t_ff3c29763840a7 13,18
+packages/web/src/app/builder/workflow-canvas/utils/types.ts
+  s_94864882421579::t_ff3c29763840a7 2,4,34
+packages/connectors/core/store/src/i18n/ca.json
+  s_94864882421579::t_ff3c29763840a7 25
+brain/knowledge/workflows-execution/workflows.md
+  s_94864882421579::t_ff3c29763840a7 5,7,10-11,13,16-17,19,23,26-27,29-34,37-38,41,44,46-49,51,54,56
+packages/connectors/CLAUDE.md
+  s_94864882421579::t_ff3c29763840a7 41,43,45
+docs/admin-guide/security/audit-logs/workflow-created.mdx
+  s_94864882421579::t_ff3c29763840a7 2-3
+packages/web/src/features/automations/components/create-new-menu.tsx
+  s_94864882421579::t_ff3c29763840a7 19,21-22,24,33,50,53,57,62,71,81,85,88-89,93,124,126-127,129,134
+  s_94864882421579::t_7cda38fb019be5 46-48,67-69
+packages/core/execution/src/lib/engine/engine-constants.ts
+  s_94864882421579::t_ff3c29763840a7 1,4-6
+packages/web/src/app/builder/workflow-canvas/widgets/publish-workflow-reminder-widget.tsx
+  s_94864882421579::t_ff3c29763840a7 4-6,20,27,33-34,37,43-45,48,52,60,64-65,71-72,74-76,81-83,107,146-147,150,155,161,163,165
+.agents/designs/workspace-replace-cli.md
+  s_94864882421579::t_ff3c29763840a7 18,24,39,61,73,83-84,94,103,108,143,154-155,166,173
+packages/server/api/src/app/helper/system/system-props.ts
+  s_94864882421579::t_ff3c29763840a7 36,46,69
+packages/connectors/core/subflows/src/lib/actions/stream-csv-to-workflow.ts
+  s_94864882421579::t_ff3c29763840a7 16,28,69-70,98
+packages/connectors/core/store/src/i18n/nl.json
+  s_94864882421579::t_ff3c29763840a7 24
+packages/core/execution/src/lib/workflows/operations/update-trigger.ts
+  s_94864882421579::t_ff3c29763840a7 3-4,6-7,11,19,21,24,28,31,36,44-46,48
+packages/server/api/test/integration/workers/job-broker-seed-cause.test.ts
+  s_94864882421579::t_ff3c29763840a7 31,53-54,117-118,169-170
+docs/admin-guide/guides/scim/providers/okta.mdx
+  s_94864882421579::t_ff3c29763840a7 152
+packages/core/shared/src/lib/automation/connectors/dto/connector-requests.ts
+  s_94864882421579::t_ff3c29763840a7 87-88
+packages/server/api/src/app/template/template-validator.ts
+  s_94864882421579::t_ff3c29763840a7 2,4,6,10,13,23,28-29,33,38-39,42-44,47-48,52,56,59-60,63,70
+docs/mcp/tools.mdx
+  s_94864882421579::t_ff3c29763840a7 11,13,17,19,21,23,27,31,35,39,44,48-49,51,53,57,88,94,108,148,203,207,213,238,240,242,244,248,250,252,256,260,263,265,269,272,274,278,281,283,287,291,295,299,301,303,305,307,311,323,327,336,340,353,362,372,381,385,393,401,418,434,445,449,528,530,532,536,541,546,550,557,565,569,579,581
+packages/web/src/app/routes/platform/infra/health/components/daily-health-strip.tsx
+  s_94864882421579::t_ff3c29763840a7 102,105
+packages/connectors/core/webhook/src/i18n/fr.json
+  s_94864882421579::t_ff3c29763840a7 2,6,9,11,21-23
+packages/server/api/test/helpers/workflow-generator.ts
+  s_94864882421579::t_ff3c29763840a7 2,7-9,11-14,18,20-22,32-33,45,53,67,69,85,87
+docs/admin-guide/guides/manage-concurrency.mdx
+  s_94864882421579::t_ff3c29763840a7 3,9,32,36
+packages/core/execution/src/lib/workflows/operations/move-branch.ts
+  s_94864882421579::t_ff3c29763840a7 1-3,8-10
+packages/server/engine/src/lib/variables/props-resolver.ts
+  s_94864882421579::t_7cda38fb019be5 7
+  s_94864882421579::t_ff3c29763840a7 237,317
+packages/web/src/app/builder/data-selector/data-selector-node-content.tsx
+  s_94864882421579::t_ff3c29763840a7 57,199
+  s_94864882421579::t_7cda38fb019be5 1-5,45-47
+packages/server/api/src/app/workflows/folder/folder.module.ts
+  s_94864882421579::t_ff3c29763840a7 11,40,49,53,110,126,146,165,181
+packages/connectors/core/webhook/src/i18n/sv.json
+  s_94864882421579::t_ff3c29763840a7 3,7,10,12,22-24
+packages/server/api/src/app/app.ts
+  s_94864882421579::t_ff3c29763840a7 155,182,289-294,311
+  s_94864882421579::t_7cda38fb019be5 5,52-56
+packages/connectors/core/webhook/src/i18n/pl.json
+  s_94864882421579::t_ff3c29763840a7 3,7,10,12,22-24
+.agents/skills/triage-security-advisories/SKILL.md
+  s_94864882421579::t_ff3c29763840a7 175,237
+brain/knowledge/execution-runtime/benchmark-cli.md
+  s_94864882421579::t_ff3c29763840a7 10,33,42
+packages/connectors/core/delay/src/i18n/vi.json
+  s_94864882421579::t_ff3c29763840a7 12
+packages/core/shared/src/lib/management/template/template.ts
+  s_94864882421579::t_7cda38fb019be5 2
+  s_94864882421579::t_ff3c29763840a7 19,23,35,87
+docs/embedding/provision-users.mdx
+  s_94864882421579::t_ff3c29763840a7 77
+packages/connectors/core/manual-trigger/src/i18n/es.json
+  s_94864882421579::t_ff3c29763840a7 3,5
+packages/connectors/core/webhook/src/i18n/de.json
+  s_94864882421579::t_ff3c29763840a7 2,6,9,11,21-23
+packages/core/execution/src/lib/workflows/operations/index.ts
+  s_94864882421579::t_ff3c29763840a7 4-6,9-11,18,28,31,35,119,121,123,125,130,190-191,193,196,217,219,223-224,227,231,235-237,239-241,243,247,251,255,259,263,267,271,275,279,283,287,291,295,299,303,307,311,315,319,326,328,331-332,334-335,337,341,344,347,351,354,358-359,361-363,368,372-374,379,383,387-389,394-395,397,401,405,409,413,417,421,428-429
+packages/server/api/src/app/workflows/execution/waitpoint/waitpoint-service.ts
+  s_94864882421579::t_ff3c29763840a7 131,135
+packages/server/api/src/app/workflows/workflow-version/migrations/index.ts
+  s_94864882421579::t_ff3c29763840a7 2,12,15-16,19-20,22-23,26,30-31,36,42,48-50
+packages/server/sandbox/test/lib/cache/connector-cache-traversal.test.ts
+  s_94864882421579::t_ff3c29763840a7 27
+packages/server/api/src/app/workflows/workflow-version/workflow-version-migration.service.ts
+  s_94864882421579::t_ff3c29763840a7 8-9,11-12,14-15,18,20-22,25,27,29,31,33,38-42,45-46
+  s_94864882421579::t_7cda38fb019be5 3,7
+packages/web/public/locales/zh/translation.json
+  s_94864882421579::t_ff3c29763840a7 4,30,70,144-145,264,416-417,427-430,440,452,471-472,474-476,480,496-497,499,512-513,518,612,622,628,635-636,638,642,794,799-800,812,818-820,822-823,827-828,839-841,851,855,857,860,873,879,910,918,923,926-928,931-932,935,937,940-943,945-949,968-970,976,980,982,1014,1077,1081,1114,1118,1150,1198,1315-1316,1326,1451,1453,1475,1500,1509,1513,1517,1543-1544,1576,1580-1581,1593-1599,1748,1755-1757,1784,1802-1803,1874,1878-1879,1900,1902,1982,2027,2039,2057,2062-2064,2069-2071,2075,2080,2083,2090-2094,2096-2098,2101-2102,2126,2143,2146-2147,2173,2185,2203,2211,2278,2281-2284
+packages/web/src/app/builder/step-settings/index.tsx
+  s_94864882421579::t_ff3c29763840a7 3-9,56,67,85,108,110-111,125,127,135,149,154,168-169,186,189,192,195,199,213,219,257-258,271-272,340-341,417,427,430-431,453,456,470,478,480-481
+  s_94864882421579::t_7cda38fb019be5 82-84,96-98,202-209,445-447
+packages/core/execution/src/lib/workflows/util/workflow-structure-util.ts
+  s_94864882421579::t_ff3c29763840a7 3-5,10,15-16,19-23,26-27,30-31,42,45-46,57,60-61,64-65,85,91,95,99,108,128,135-136,138-141,143-144,156,169-170,176,194-195,205-206,238,246,251,255-257,260-261,271,277
+packages/server/api/test/unit/app/workflows/trigger/workflow-trigger-side-effect.test.ts
+  s_94864882421579::t_ff3c29763840a7 47,62-63,105,119,134,157,170,183,194,210,226,233,241,248,255,266
+packages/server/api/src/app/workers/worker-module.ts
+  s_94864882421579::t_ff3c29763840a7 7,14
+  s_94864882421579::t_7cda38fb019be5 6
+.agents/skills/connector-output-schema/capture-recipes.md
+  s_94864882421579::t_ff3c29763840a7 27,32,36,40,42,49
+docs/install/architecture/latency.mdx
+  s_94864882421579::t_ff3c29763840a7 7,10,20,26,30,40,47,49,51,55,57,68,75
+packages/connectors/community/slack/src/lib/triggers/new-reaction-added.ts
+  s_94864882421579::t_ff3c29763840a7 35
+packages/connectors/core/webhook/src/i18n/hi.json
+  s_94864882421579::t_ff3c29763840a7 3,7,10,12,22-24
+packages/connectors/core/delay/src/i18n/pt.json
+  s_94864882421579::t_ff3c29763840a7 11
+packages/connectors/core/http/src/i18n/hi.json
+  s_94864882421579::t_ff3c29763840a7 31
+packages/connectors/core/schedule/src/i18n/ru.json
+  s_94864882421579::t_ff3c29763840a7 34,41-45
+packages/connectors/core/webhook/src/i18n/uk.json
+  s_94864882421579::t_ff3c29763840a7 3,7,10,12,22-24
+brain/knowledge/decisions/000013-sandbox-pool-is-a-pure-execute-cloud-run-pool-superseded.md
+  s_94864882421579::t_ff3c29763840a7 8,19
+packages/core/execution/test/workflow/workflow-helper.test.ts
+  s_94864882421579::t_ff3c29763840a7 6-15,24,26,30,37,54,77,98,111,138,141,145,156,161,167,185,189-192,194,197-198,202-203,205,208-209,215,220,238,257,260,265-266,271,280-281,288-289,296-299,301,303,323,332,346,358,363,365,372,376,378,388,392,394,410,419,428,440,449,457,462,471,483-485,489,506-507,512,514,518,542,549,563,578,581,583,589,599,605,619,625,640,647-648,651,653,656,662,666,680,693-695,699,702,705,728,731,759,761-763,772,775,784-786,795,797-799,809,811-813,822-823,825-826,830,832-834
+packages/server/api/src/app/workers/machine/machine-service.ts
+  s_94864882421579::t_ff3c29763840a7 28,31
+packages/server/engine/src/lib/operations/workflow.operation.ts
+  s_94864882421579::t_7cda38fb019be5 2,7
+  s_94864882421579::t_ff3c29763840a7 5,8,13-15,28-29,43,62-64,67,71,80,89,92,94,101,106,112,122,129-130,140-141,159,162,164,169,175,179,182,204,223,241,259,270,272,276-277,282,287
+packages/web/src/app/builder/data-selector/utils.ts
+  s_94864882421579::t_ff3c29763840a7 3-7,277,285,293,321,323
+brain/knowledge/platform-editions-ee/index.md
+  s_94864882421579::t_ff3c29763840a7 17,23,26
+packages/server/api/test/integration/file/files-controller.test.ts
+  s_94864882421579::t_ff3c29763840a7 44,78,112,145,225,277,326,350,357,375,407,415
+brain/knowledge/platform-editions-ee/license-keys.md
+  s_94864882421579::t_ff3c29763840a7 14,42
+packages/server/engine/test/handler/workflow-waitpoint-response.test.ts
+  s_94864882421579::t_ff3c29763840a7 3-4,8-9,15,19,54,56,69,82,87,102,104,116
+packages/connectors/community/github/src/i18n/translation.json
+  s_94864882421579::t_ff3c29763840a7 322
+docs/install/overview.mdx
+  s_94864882421579::t_ff3c29763840a7 16
+brain/knowledge/data-storage-observability/analytics.md
+  s_94864882421579::t_ff3c29763840a7 7,11,18-20,36
+packages/web/public/locales/ar/translation.json
+  s_94864882421579::t_ff3c29763840a7 4-5,19,66,82,241,253-255,318,334,336,339-340,366,388,394-395,397,400,404,408,414,418,429-431,436,485,490-491,493,498-500,505,556,559,592-593,669-670,797,799,849,866-867,943,1002,1019,1026-1028,1033,1038,1040,1044-1045,1048-1049,1057,1060-1063,1065-1067,1069-1070,1078-1079,1081,1090,1098-1100,1121,1192
+docs/workflows/building-workflows.mdx
+  s_94864882421579::t_ff3c29763840a7 2,4,8,12,16
+brain/knowledge/decisions/000027-email-sign-in-is-a-typed-code-on-the-existing-otp-primitive.md
+  s_94864882421579::t_ff3c29763840a7 29
+packages/connectors/core/schedule/src/i18n/de.json
+  s_94864882421579::t_ff3c29763840a7 33,40-44
+packages/server/sandbox/src/lib/create-sandbox-for-job.ts
+  s_94864882421579::t_ff3c29763840a7 40
+packages/web/src/app/builder/state/notes-state.tsx
+  s_94864882421579::t_ff3c29763840a7 4,54,60,72-73,87,96,114,133,154,162
+packages/connectors/core/forms/src/lib/triggers/form-trigger.ts
+  s_94864882421579::t_ff3c29763840a7 27,54,56
+packages/web/src/components/custom/markdown-input/index.tsx
+  s_94864882421579::t_ff3c29763840a7 117
+packages/web/src/features/workflows/components/share-template-dialog.tsx
+  s_94864882421579::t_ff3c29763840a7 36-38,48,51-52,59,69,72,84,101
+  s_94864882421579::t_7cda38fb019be5 22
+packages/web/public/locales/nl/translation.json
+  s_94864882421579::t_ff3c29763840a7 4,30,70,144-145,264,416-417,427-430,440,452,471-472,474-476,480,496-497,499,512-513,518,612,622,628,635-636,638,642,794,799-800,812,818-820,822-823,827-828,839-841,851,855,857,860,873,879,910,918,923,926-928,931-932,935,937,940-943,945-949,968-970,976,980,982,1014,1077,1081,1114,1118,1150,1198,1315-1316,1326,1451,1453,1475,1500,1509,1513,1517,1543-1544,1576,1580-1581,1593-1599,1748,1755-1757,1784,1802-1803,1874,1878-1879,1900,1902,1982,2027,2039,2057,2062-2064,2069-2071,2075,2080,2083,2090-2094,2096-2098,2101-2102,2126,2143,2146-2147,2173,2185,2203,2211,2278,2281-2284
+packages/web/src/app/components/workspace-layout/workspace-dashboard-layout-header.tsx
+  s_94864882421579::t_ff3c29763840a7 78
+packages/server/sandbox/test/lib/cache/workflow/code/package-dependencies.test.ts
+  s_94864882421579::t_ff3c29763840a7 2
+packages/web/src/app/builder/workflow-canvas/canvas-controls/use-fit-to-view.ts
+  s_94864882421579::t_7cda38fb019be5 7,126-129
+  s_94864882421579::t_ff3c29763840a7 5,39,70,86,90,156,159,180,188
+packages/core/execution/test/execution/execution/step-output.test.ts
+  s_94864882421579::t_ff3c29763840a7 2,7,11,19,31,42,53,66,100,115
+packages/core/utils/src/lib/mustache-utils.ts
+  s_94864882421579::t_ff3c29763840a7 5
+docs/handbook/engineering/playbooks/e2e-tests.mdx
+  s_94864882421579::t_ff3c29763840a7 24,63-64,72-73,75,80-81,88-89,104,111,117,135,141,190,193,196,204,217-218,235,245,259,278,281,290,356,361,370,376,391,394-397,405
+packages/server/api/test/integration/workers/action-run-cancellation.test.ts
+  s_94864882421579::t_ff3c29763840a7 2,39
+packages/web/src/features/workflows/api/workflows-api.tsx
+  s_94864882421579::t_ff3c29763840a7 3-11,13,20-22,24-25,28-29,33,45-46,51-54,57-61,65-66,68-69
+packages/connectors/community/slack/src/lib/triggers/new-command.ts
+  s_94864882421579::t_ff3c29763840a7 38
+packages/connectors/core/delay/src/i18n/id.json
+  s_94864882421579::t_ff3c29763840a7 12
+packages/web/src/app/routes/workspace-routes.tsx
+  s_94864882421579::t_ff3c29763840a7 12,17,20,54,64,74,78,80,84,92-93,99
+  s_94864882421579::t_7cda38fb019be5 18-19
+docs/handbook/engineering/postmortems/2026-03-19-redis-and-delay-overload.mdx
+  s_94864882421579::t_ff3c29763840a7 7,11-12,20,25,39,48,50,54
+brain/knowledge/decisions/000009-approval-links-require-a-post-confirmation-on-a-dedicated-route.md
+  s_94864882421579::t_ff3c29763840a7 8,11
+packages/connectors/core/delay/src/index.ts
+  s_94864882421579::t_ff3c29763840a7 12
+packages/web/src/features/workflows/components/workflow-version-state-dot.tsx
+  s_94864882421579::t_7cda38fb019be5 32-57
+  s_94864882421579::t_ff3c29763840a7 1,11-12,18,24,59-60
+packages/server/api/src/app/trigger/trigger-events/trigger-event.service.ts
+  s_94864882421579::t_7cda38fb019be5 1-2,10
+  s_94864882421579::t_ff3c29763840a7 19,22-23,36,42,53,55,59,63-64,72,86,93,98,105,110-111,123,141,143,153,160,165,171
+docs/handbook/engineering/playbooks/security-advisory-response.mdx
+  s_94864882421579::t_ff3c29763840a7 85
+packages/server/api/src/app/file/file.entity.ts
+  s_94864882421579::t_ff3c29763840a7 68-69,71
+packages/connectors/core/delay/src/i18n/nl.json
+  s_94864882421579::t_ff3c29763840a7 11
+packages/server/engine/src/lib/handler/context/engine-constants.ts
+  s_94864882421579::t_7cda38fb019be5 3
+  s_94864882421579::t_ff3c29763840a7 14-16,55-57,80,100-102,123,126,139,142-143,150,153-154,162,214-215,217-219,225-229,247-248,250-251,254,262,267
+packages/server/api/src/app/webhooks/webhook-handshake.ts
+  s_94864882421579::t_ff3c29763840a7 21-22,90-91
+  s_94864882421579::t_7cda38fb019be5 1
+packages/server/api/test/integration/webhooks/webhook.test.ts
+  s_94864882421579::t_ff3c29763840a7 1,6,11,20,22,24,26-28,30-32,43,52,64,71,73,75,77-79,81-83,94,104,106,108-110,112-114,125,136,138,140-142,144-146,157,167,169,171-173,175-177,188,199,201,203-205,207-209,220,230,232,234-236,238-240,251,263,265,267-269,271,281,292,294,296-298,300-302,315,326,328,330-332,334-336,347,358,360,362-364,366-368,380,389,412,414,416,418-420,426-427,451,460,483,485,487,489-491,497-498,522,533,535,537-539,541,551
+packages/web/src/app/builder/connector-properties/text-input-with-mentions/text-input-utils.ts
+  s_94864882421579::t_ff3c29763840a7 3,189,326,374
+brain/knowledge/eventing-webhooks/webhooks.md
+  s_94864882421579::t_ff3c29763840a7 7,10,14,18-21,23,31-32
+deploy/fema-helm/values.yaml
+  s_94864882421579::t_ff3c29763840a7 184
+packages/web/src/app/builder/test-step/test-runner-context.tsx
+  s_94864882421579::t_ff3c29763840a7 2-5,31-32,103,136,138,242,247,274
+  s_94864882421579::t_7cda38fb019be5 97-99
+packages/server/api/test/integration/workflows/execution/run-logs-file-fk.test.ts
+  s_94864882421579::t_ff3c29763840a7 2,5,9,25-28,31-32
+docs/admin-guide/guides/workspace-releases.mdx
+  s_94864882421579::t_ff3c29763840a7 7,19,47,57,83,88,103,113,120,122,124,128,141,143,185,187-189,240
+packages/connectors/core/forms/src/i18n/es.json
+  s_94864882421579::t_ff3c29763840a7 2,9-10,16-18
+packages/connectors/core/forms/src/lib/output-schemas.ts
+  s_94864882421579::t_ff3c29763840a7 33
+packages/connectors/core/schedule/src/i18n/pt.json
+  s_94864882421579::t_ff3c29763840a7 33,40-44
+packages/server/sandbox/src/lib/cache/workflow/workflow-steps.ts
+  s_94864882421579::t_7cda38fb019be5 1
+  s_94864882421579::t_ff3c29763840a7 2-10
+packages/connectors/core/subflows/src/lib/actions/respond.ts
+  s_94864882421579::t_ff3c29763840a7 2,11-12,62-65
+docs/docs.json
+  s_94864882421579::t_ff3c29763840a7 61,108,110-117,185-190,371,465,468-473,477
+docs/install/architecture/sandboxing.mdx
+  s_94864882421579::t_ff3c29763840a7 3,7
+packages/web/src/app/builder/run-details/workflow-step-input-output.tsx
+  s_94864882421579::t_ff3c29763840a7 4-6,43,48,50,52,58,75,86-87,91-92,184,186,188,192-193
+  s_94864882421579::t_7cda38fb019be5 44-45,55
+packages/connectors/community/slack/src/i18n/es.json
+  s_94864882421579::t_ff3c29763840a7 69,121,195,198-199,201
+packages/server/engine/src/lib/handler/connector-executor.ts
+  s_94864882421579::t_ff3c29763840a7 31,66,94,162-163
+  s_94864882421579::t_7cda38fb019be5 3
+packages/core/execution/src/lib/workflows/sample-data/index.ts
+  s_94864882421579::t_ff3c29763840a7 25-26,35
+packages/web/src/features/executions/hooks/execution-hooks.ts
+  s_94864882421579::t_ff3c29763840a7 5,8,11,20,125,129,133,135,138,143-144,146,197
+packages/web/src/features/workflows/utils/workflows-utils.tsx
+  s_94864882421579::t_7cda38fb019be5 64-66
+  s_94864882421579::t_ff3c29763840a7 2-3,13,15-16,24,26-27,29,36-40,42-43,55,58,60-61,69-70,72-73,79,81-82
+docs/handbook/engineering/onboarding/onboarding-check-list.mdx
+  s_94864882421579::t_ff3c29763840a7 37
+packages/connectors/community/slack/src/i18n/ja.json
+  s_94864882421579::t_ff3c29763840a7 69,121,195,198-199,201
+packages/server/engine/CLAUDE.md
+  s_94864882421579::t_ff3c29763840a7 7,13
+packages/web/public/locales/zh-TW/translation.json
+  s_94864882421579::t_ff3c29763840a7 4,30,70,144-145,264,416-417,427-430,440,452,471-472,474-476,480,496-497,499,512-513,518,612,622,628,635-636,638,642,794,799-800,812,818-820,822-823,827-828,839-841,851,855,857,860,873,879,910,918,923,926-928,931-932,935,937,940-943,945-949,968-970,976,980,982,1014,1077,1081,1114,1118,1150,1198,1315-1316,1326,1451,1453,1475,1500,1509,1513,1517,1543-1544,1576,1580-1581,1593-1599,1748,1755-1757,1784,1802-1803,1874,1878-1879,1900,1902,1982,2027,2039,2057,2062-2064,2069-2071,2075,2080,2083,2090-2094,2096-2098,2101-2102,2126,2143,2146-2147,2173,2185,2203,2211,2278,2281-2284
+packages/core/execution/src/lib/execution/test-execution-request.ts
+  s_94864882421579::t_ff3c29763840a7 3-4,7,12-13,17,24,26,35,43,48,55
+packages/web/src/app/builder/workflow-canvas/edges/use-edge-layout-space.ts
+  s_94864882421579::t_ff3c29763840a7 2,7,30
+brain/knowledge/decisions/000014-pending-invitations-reserve-seats.md
+  s_94864882421579::t_ff3c29763840a7 61
+packages/web/src/app/routes/forms/index.tsx
+  s_94864882421579::t_ff3c29763840a7 12,19
+docs/admin-guide/overview.mdx
+  s_94864882421579::t_ff3c29763840a7 21
+docs/handbook/engineering/postmortems/2026-03-16-infrastructure-upgrade.mdx
+  s_94864882421579::t_ff3c29763840a7 7,11-12,24,36,71
+docs/admin-guide/guides/structure-workspaces.mdx
+  s_94864882421579::t_ff3c29763840a7 9,12-13
+packages/connectors/core/http/src/i18n/zh.json
+  s_94864882421579::t_ff3c29763840a7 35-37
+packages/server/sandbox/test/lib/sandbox-manager.test.ts
+  s_94864882421579::t_ff3c29763840a7 31,33
+packages/web/src/app/builder/state/canvas-state.ts
+  s_94864882421579::t_7cda38fb019be5 10,68-72
+  s_94864882421579::t_ff3c29763840a7 2,9,28,55,75,113,116-117,131
+packages/server/api/src/app/file/file.module.ts
+  s_94864882421579::t_ff3c29763840a7 13
+packages/web/src/app/routes/platform/setup/templates/create-template-dialog.tsx
+  s_94864882421579::t_ff3c29763840a7 3,32,37,54,64,75,82,215-216
+  s_94864882421579::t_7cda38fb019be5 26,41-43,213-214
+packages/server/api/src/app/workflows/execution/executions-queue.ts
+  s_94864882421579::t_ff3c29763840a7 12,64-65,84,90-92,96
+docs/admin-guide/security/audit-logs/workflow-deleted.mdx
+  s_94864882421579::t_ff3c29763840a7 2-3
+docs/adr/index.md
+  s_94864882421579::t_ff3c29763840a7 16
+packages/core/utils/src/lib/platform-error.ts
+  s_94864882421579::t_ff3c29763840a7 1,26-27,89,96,239,255-256,262-263,313-314,480-481,526-527,570
+packages/web/src/app/components/global-search/search-result-item.tsx
+  s_94864882421579::t_ff3c29763840a7 49
+packages/connectors/core/http/src/i18n/ja.json
+  s_94864882421579::t_ff3c29763840a7 35-37
+packages/server/engine/test/handler/test-helper.ts
+  s_94864882421579::t_ff3c29763840a7 1-2,9-11,42,48,58,62,85,89,104,108,126-128
+packages/web/src/app/builder/test-step/test-action-section.tsx
+  s_94864882421579::t_ff3c29763840a7 3-4,6,30,44,67,71,81,85,175-176,199
+  s_94864882421579::t_7cda38fb019be5 181-184
+brain/knowledge/decisions/000021-legacy-free-platforms-are-comped-an-appsumo-clone-from-ensureenrolled.md
+  s_94864882421579::t_ff3c29763840a7 11,13,22,37,72,100
+packages/core/shared/src/lib/automation/connectors/connector.ts
+  s_94864882421579::t_ff3c29763840a7 55
+packages/web/src/app/routes/templates/id/workflow-card.tsx
+  s_94864882421579::t_ff3c29763840a7 1,7-8,10,14-15,17,19,23-24,31,34,36,41,44
+packages/server/worker/src/lib/execute/jobs/execute-action.ts
+  s_94864882421579::t_7cda38fb019be5 4
+  s_94864882421579::t_ff3c29763840a7 32,36,56,66-67
+packages/connectors/core/webhook/src/i18n/ca.json
+  s_94864882421579::t_ff3c29763840a7 3,7,10,12,22-24
+packages/server/api/src/app/file/file.service.ts
+  s_94864882421579::t_ff3c29763840a7 18,234,347,361-362,369,380
+packages/server/api/src/app/workers/job-queue/bullboard.ts
+  s_94864882421579::t_7cda38fb019be5 10
+.agents/skills/agent-browser/references/video-recording.md
+  s_94864882421579::t_ff3c29763840a7 128,152
+docs/workflows/formula-reference.mdx
+  s_94864882421579::t_ff3c29763840a7 104,106,161
+packages/connectors/community/postgres/src/lib/actions/run-query.ts
+  s_94864882421579::t_ff3c29763840a7 58
+packages/server/api/test/integration/connection/connection-replace.test.ts
+  s_94864882421579::t_ff3c29763840a7 1,7-8,131,149,151,153-156,159,172,187,189,191-194,197,207,214,229,231,233-236,239-241,273-274,276,278-281,285-287,291-293,322,324,326-329,333-335,339-341,370,372,374,376-379,383-385,389-391
+packages/web/src/app/builder/builder-header/workflow-status/index.tsx
+  s_94864882421579::t_ff3c29763840a7 2,11-14,19-27,33-34
+  s_94864882421579::t_7cda38fb019be5 6-9
+packages/connectors/core/store/src/i18n/pl.json
+  s_94864882421579::t_ff3c29763840a7 25
+packages/core/execution/src/lib/execution/waitpoint/index.ts
+  s_94864882421579::t_ff3c29763840a7 2
+packages/core/shared/src/lib/core/flag/flag.ts
+  s_94864882421579::t_ff3c29763840a7 47,53
+docs/admin-guide/security/audit-logs/workflow-activated.mdx
+  s_94864882421579::t_ff3c29763840a7 2-3
+packages/server/api/src/app/helper/logger/index.ts
+  s_94864882421579::t_ff3c29763840a7 48-49,51-52
+docs/admin-guide/guides/permissions.mdx
+  s_94864882421579::t_ff3c29763840a7 9,17-20,32-33,52
+docs/openapi.json
+  s_94864882421579::t_ff3c29763840a7 1
+packages/connectors/core/connections/src/lib/actions/read-connection.ts
+  s_94864882421579::t_ff3c29763840a7 21
+packages/core/execution/src/lib/workflows/test-trigger.ts
+  s_94864882421579::t_ff3c29763840a7 11-12,21
+packages/core/execution/src/lib/workflows/triggers/trigger-events/trigger-events-dto.ts
+  s_94864882421579::t_ff3c29763840a7 1,8,13-14,20
+docs/resources/diagrams/file-storage-signed-urls.html
+  s_94864882421579::t_ff3c29763840a7 65,90-91
+packages/connectors/core/schedule/src/lib/triggers/every-day.trigger.ts
+  s_94864882421579::t_ff3c29763840a7 9
+packages/web/src/features/executions/components/runs-table/columns.tsx
+  s_94864882421579::t_ff3c29763840a7 209,213,218-219
+packages/core/formula/src/lib/formula-evaluator.ts
+  s_94864882421579::t_ff3c29763840a7 11
+packages/server/api/src/app/trigger/app-event-routing/app-event-routing.module.ts
+  s_94864882421579::t_7cda38fb019be5 4,11,14
+  s_94864882421579::t_ff3c29763840a7 107-108,111-112,115-117,130,134-135
+packages/web/src/app/builder/workflow-canvas/widgets/minimap.tsx
+  s_94864882421579::t_ff3c29763840a7 2,76,78
+packages/web/src/features/connectors/utils/form-utils.tsx
+  s_94864882421579::t_ff3c29763840a7 31-34,60,65,79,528,530-531,533-534,549,554,562,571,573,592
+packages/connectors/core/subflows/src/i18n/ja.json
+  s_94864882421579::t_ff3c29763840a7 2-3,5-7,11,15-16,18
+docs/endpoints/workflows/create.mdx
+  s_94864882421579::t_ff3c29763840a7 2-3
+packages/server/api/src/app/workflows/workflow-version/migrations/workflow-migration-util.ts
+  s_94864882421579::t_ff3c29763840a7 1,3-6
+packages/connectors/core/schedule/src/i18n/zh.json
+  s_94864882421579::t_ff3c29763840a7 33,40-44
+brain/knowledge/decisions/000018-usage-counts-report-to-posthog-only.md
+  s_94864882421579::t_ff3c29763840a7 11,37
+packages/server/worker/src/lib/execute/jobs/execute-polling.ts
+  s_94864882421579::t_7cda38fb019be5 2
+  s_94864882421579::t_ff3c29763840a7 13,15-16,24-26,28,37-38,55,64,70
+packages/web/src/app/routes/platform/setup/templates/update-template-dialog.tsx
+  s_94864882421579::t_7cda38fb019be5 27,39-41,203-204
+  s_94864882421579::t_ff3c29763840a7 2,30,53,63,79,82,85,205-206
+brain/knowledge/data-storage-observability/key-value-store.md
+  s_94864882421579::t_ff3c29763840a7 7
+packages/connectors/core/store/src/i18n/vi.json
+  s_94864882421579::t_ff3c29763840a7 25
+packages/connectors/core/forms/src/index.ts
+  s_94864882421579::t_ff3c29763840a7 9
+packages/core/execution/src/lib/workflows/dto/list-workflows-request.ts
+  s_94864882421579::t_ff3c29763840a7 4-5,7,12,16,21,23,27,29,34
+packages/connectors/core/subflows/src/i18n/zh.json
+  s_94864882421579::t_ff3c29763840a7 2-3,5-7,11,15-16,18
+docs/install/configure-operate/setup-app-webhooks.mdx
+  s_94864882421579::t_ff3c29763840a7 46
+docs/workflows/debugging-runs.mdx
+  s_94864882421579::t_ff3c29763840a7 7
+packages/core/execution/src/lib/workflows/index.ts
+  s_94864882421579::t_ff3c29763840a7 3
+packages/web/src/features/automations/hooks/use-automations-dialogs.ts
+  s_94864882421579::t_ff3c29763840a7 50-51
+  s_94864882421579::t_7cda38fb019be5 17-18
+brain/knowledge/workflows-execution/folders.md
+  s_94864882421579::t_ff3c29763840a7 7,11-12,22-23,31,33-34,37
+packages/server/engine/src/lib/core/connector/trigger-runner.ts
+  s_94864882421579::t_7cda38fb019be5 3
+  s_94864882421579::t_ff3c29763840a7 6,39,111,177
+packages/server/engine/test/handler/code-executor-traversal.test.ts
+  s_94864882421579::t_ff3c29763840a7 3,16
+packages/web/src/app/builder/workflow-canvas/nodes/step-node/step-node-status-in-run.tsx
+  s_94864882421579::t_ff3c29763840a7 7,17
+packages/core/execution/test/execution/execution/execution-journal.test.ts
+  s_94864882421579::t_ff3c29763840a7 3,7,18,21,26,35,40,48,58,63,71,157
+packages/server/api/src/app/workflows/workflow/workflow-version.controller.ts
+  s_94864882421579::t_7cda38fb019be5 2
+  s_94864882421579::t_ff3c29763840a7 8-10,14,16-18,21-22,34,36,43,45,47
+brain/knowledge/connectors-engine/index.md
+  s_94864882421579::t_ff3c29763840a7 25,32,41,59,69,71
+packages/connectors/core/approval/src/i18n/nl.json
+  s_94864882421579::t_ff3c29763840a7 5-6
+packages/server/api/src/app/workflows/step-run/sample-data.controller.ts
+  s_94864882421579::t_ff3c29763840a7 6,14,21-22,24,28
+packages/server/api/src/assets/prompts/guides/ai.md
+  s_94864882421579::t_ff3c29763840a7 1,5,27,42
+packages/server/api/test/integration/webhooks/webhook-handshake-double-consume.test.ts
+  s_94864882421579::t_ff3c29763840a7 1,7,31,36,44,51,53-58
+packages/connectors/core/webhook/src/i18n/es.json
+  s_94864882421579::t_ff3c29763840a7 2,6,9,11,21-23
+brain/knowledge/workflows-execution/variables.md
+  s_94864882421579::t_ff3c29763840a7 7
+packages/server/engine/test/handler/workflow-codes.test.ts
+  s_94864882421579::t_ff3c29763840a7 1,3-4,16,30-31,42,62,80,91,102,113,123,133,138,143-144,159-160
+packages/server/engine/test/handler/workflow-log-size.test.ts
+  s_94864882421579::t_ff3c29763840a7 1,3-5,22,25-26,31-34,102,113,121-123,126-127,133,153,155,173,175
+packages/connectors/community/slack/src/lib/actions/request-approval-direct-message.ts
+  s_94864882421579::t_ff3c29763840a7 2,6,21,30,35,96
+packages/connectors/core/subflows/src/lib/triggers/callable-workflow.ts
+  s_94864882421579::t_ff3c29763840a7 9,11-12,14-15,17,42,72,74,82,84
+packages/web/src/app/builder/connectors-selector/connectors-card-list.tsx
+  s_94864882421579::t_ff3c29763840a7 2-4,50,199,211,221-223
+packages/server/api/test/integration/workflows/execution/resume-execution.test.ts
+  s_94864882421579::t_ff3c29763840a7 2,5-7,13,46-47,49-51,53,57-58,75,78-81,83-85,87,91-92,111-112,114-116,118,122-123,135-136,150,174-176,178-180,182,186-187,202-204,206-208,210,215-216,239-240,242-244,246,254-255,298-299,301-303,305,313-314,351,374-375,401-402,404-406,408,412-413,438-439,441-443,445,449-450,536-537,544,577-578,580-582,584,588-589,670-671,673-675,677,681-682,784-786,788-790,792,796-797,811,816-817,819-821,823,827-828
+packages/web/src/features/automations/hooks/use-automations-selection.ts
+  s_94864882421579::t_ff3c29763840a7 116,122-123,131,136
+packages/server/engine/src/lib/handler/action-run-step-runner.ts
+  s_94864882421579::t_ff3c29763840a7 3-4,8,10,19
+packages/server/api/src/assets/prompts/guides/one_time_task.md
+  s_94864882421579::t_ff3c29763840a7 7,28
+packages/web/src/app/builder/connector-properties/auto-form-field-wrapper.tsx
+  s_94864882421579::t_7cda38fb019be5 6-10
+  s_94864882421579::t_ff3c29763840a7 206
+docs/install/architecture/overview.mdx
+  s_94864882421579::t_ff3c29763840a7 3,9,13,18,20,59,62
+packages/web/src/app/builder/workflow-canvas/edges/loop-start-edge.tsx
+  s_94864882421579::t_7cda38fb019be5 26-27
+  s_94864882421579::t_ff3c29763840a7 4,24,30,34-36,41,43-44,54,61-62
+packages/core/execution/src/lib/workflows/dto/count-workflows-request.ts
+  s_94864882421579::t_ff3c29763840a7 3,8
+packages/web/src/components/custom/global-connection-utils.tsx
+  s_94864882421579::t_ff3c29763840a7 19,29
+packages/core/execution/src/lib/workflows/triggers/trigger.ts
+  s_94864882421579::t_ff3c29763840a7 28,44,53,59,64
+packages/server/api/src/app/trigger/trigger-source/workflow-trigger-side-effect.ts
+  s_94864882421579::t_ff3c29763840a7 18,20,26,32-33,40,71,75,81-82,92,95,101,108,115,126,130,141,147,152-153,173,182,187-189,200,205-206,210,216-218,226,230
+  s_94864882421579::t_7cda38fb019be5 6-7
+packages/server/api/src/app/workers/job/runs-metadata-queue-factory.ts
+  s_94864882421579::t_ff3c29763840a7 70,106-107
+packages/web/src/app/builder/workflow-versions/index.tsx
+  s_94864882421579::t_7cda38fb019be5 14-19
+  s_94864882421579::t_ff3c29763840a7 7,11,13,22,25,35,37-43,53,55
+packages/web/src/app/builder/connectors-selector/index.tsx
+  s_94864882421579::t_ff3c29763840a7 1,41,63-64,117,123
+  s_94864882421579::t_7cda38fb019be5 124-125
+brain/knowledge/eventing-webhooks/event-destinations.md
+  s_94864882421579::t_ff3c29763840a7 7,18,21-25,27,37
+packages/web/src/app/builder/workflow-canvas/widgets/test-workflow-widget.tsx
+  s_94864882421579::t_ff3c29763840a7 3,9,16,21,41-42,45-46,49-51,66,70,79,101,103,105,110,112
+  s_94864882421579::t_7cda38fb019be5 22-34,86-88
+packages/connectors/core/store/src/i18n/fr.json
+  s_94864882421579::t_ff3c29763840a7 24-25
+packages/server/api/src/assets/prompts/guides/control_workflow.md
+  s_94864882421579::t_ff3c29763840a7 1,3,37,54-55
+packages/tests-e2e/pages/automations.page.ts
+  s_94864882421579::t_ff3c29763840a7 34,38,40
+packages/web/src/app/builder/workflow-canvas/canvas-controls/index.tsx
+  s_94864882421579::t_ff3c29763840a7 25-26,63,72,77,80,82,87,116-117,119,167
+packages/web/src/app/components/workflow-actions-menu.tsx
+  s_94864882421579::t_ff3c29763840a7 37-39,44,46-48,61-63,88,93,95-96,102,106,108-109,115,127,148-149,162,171,187,190,210,229,232,236,248,250,253-254,280,282,289,297,301-302,315-316,331,334,339,345,352,355,359,378,387,394
+  s_94864882421579::t_7cda38fb019be5 2-6,78-80,119-126,128-146,204-205,284-287
+packages/server/sandbox/test/lib/cache/workflow/workflow-provisioning.test.ts
+  s_94864882421579::t_ff3c29763840a7 6,8,13,25,34,37-38,41,43,48,53,63-66,69-70,73,81,86,88-89,93,96,99,101-102,105-106,109,111-112,116,127,129-130,134,138-139,141-142,144,147,150
+.agents/skills/connector-builder/auth-patterns.md
+  s_94864882421579::t_ff3c29763840a7 40
+packages/server/worker/src/lib/execute/job-registry.ts
+  s_94864882421579::t_ff3c29763840a7 34
+  s_94864882421579::t_7cda38fb019be5 9
+.agents/skills/agent-browser/SKILL.md
+  s_94864882421579::t_ff3c29763840a7 156,485
+packages/server/api/src/assets/prompts/guides/about_activeconnectors.md
+  s_94864882421579::t_ff3c29763840a7 31
+packages/web/src/app/guards/agents-flag-guard.tsx
+  s_94864882421579::t_ff3c29763840a7 15
+brain/knowledge/eventing-webhooks/index.md
+  s_94864882421579::t_ff3c29763840a7 10,27,32
+packages/connectors/community/slack/src/lib/common/utils.ts
+  s_94864882421579::t_ff3c29763840a7 35,38,45
+packages/server/api/test/integration/workflows/workflow/workflow-lifecycle-events.test.ts
+  s_94864882421579::t_ff3c29763840a7 4-11,21,25,40,58-59,62-63,69,74-75,77,79,83,87,93,95,97-99,104-105,109,111,113-115,120-121,127,129-131,136,138-139,144,146-148,153,155-156,161,163,165,169-170,176-178,182,184-185,187-189,194-195,197-198,201,203-204,206-207,213-214,216-217,220,222-223,225-227,232-234,242,244-245,251-254,259,261,263-264,271,276,278-279,292-293,297,299,304,308,312,320,335,339,343-344,346,350,352,354,358,360-362,364,368,372,374
+packages/connectors/core/delay/src/i18n/fr.json
+  s_94864882421579::t_ff3c29763840a7 11
+packages/server/api/src/app/workflows/workflow/workflow.service.ts
+  s_94864882421579::t_7cda38fb019be5 1,3,20
+  s_94864882421579::t_ff3c29763840a7 21-27,31-32,34,38,43,47-50,56,60-61,63,69-72,75,80,83,98,100,103,116,139,142,146,149,151,156,158,162,173,193,195-196,200-201,205,207,209,211,216,218-219,223-224,227,231,236,238,245,251-254,264-265,275,279-280,288-289,295-296,310-311,320-321,330,333-335,338-340,344,346,348,352-353,358-359,365,367,369,373,378-379,382,386,395-396,402-403,408-411,413-414,417,421,428,434,438,443,450,454-455,460-462,466,473-474,476-477,481,483-484,490-492,500-503,505-506,511-512,515-517,519,523,525,527,531-533,535-537,542,549,552,556,561-562,570,573-574,578,590,593,603,613-614,619,621,629-631,638,641,643,646,661,664-666,668-669,675,678-680,682-685,693-694,700-702,705,709,711,720,722,727,730,734,738-742,745-747,749,753-754,756,758,768,779-782,792,796,804,806,819,825,831,834,840,844,847,849,853,860,863,872,874-875,885,890,896,903,909,914-916,919-920,922-923,927,931,939-940,947,951
+packages/connectors/core/forms/src/i18n/ru.json
+  s_94864882421579::t_ff3c29763840a7 3,10-11,17-19
+docs/build-connectors/building-connectors/create-trigger.mdx
+  s_94864882421579::t_ff3c29763840a7 133,143
+packages/web/src/app/builder/workflow-canvas/utils/consts.ts
+  s_94864882421579::t_ff3c29763840a7 2-7,22,25-27,29,38-39,46,50,64-65,68-69,77,125
+  s_94864882421579::t_7cda38fb019be5 20,97-98
+docs/admin-guide/security/audit-logs/workflow-deactivated.mdx
+  s_94864882421579::t_ff3c29763840a7 2-3
+packages/connectors/core/subflows/src/i18n/nl.json
+  s_94864882421579::t_ff3c29763840a7 2-3,5-7,11,15-16,18
+docs/admin-guide/guides/secret-managers/cyberark-conjur.mdx
+  s_94864882421579::t_ff3c29763840a7 134
+packages/server/api/src/app/workers/rpc/worker-rpc-service.ts
+  s_94864882421579::t_7cda38fb019be5 3,17-22
+  s_94864882421579::t_ff3c29763840a7 94,96-97,102,110,119,121,139,142,150,158-160,163-164,167,200,205,207,218,220,225,229,232-233,239,242,255,257,260,267-270,274-275,281-282,285-286
+packages/connectors/core/webhook/src/i18n/pt.json
+  s_94864882421579::t_ff3c29763840a7 2,6,9,11,21-23
+packages/server/api/src/app/workflows/workflow/workflow-execution-cache.ts
+  s_94864882421579::t_ff3c29763840a7 3,9,11-12,15,17,19-21,25-27,33-35,40-42,48-49,54
+  s_94864882421579::t_7cda38fb019be5 1
+packages/web/src/app/builder/workflow-canvas/nodes/workflow-end-widget-node.tsx
+  s_94864882421579::t_ff3c29763840a7 4,6,24,32,37
+packages/server/api/src/app/workflows/workflow/human-input/human-input.service.ts
+  s_94864882421579::t_7cda38fb019be5 1
+  s_94864882421579::t_ff3c29763840a7 2,7-8,29-30,33,38-40,44-46,52-53,55,57-58,60,64-68,72-74,78,81-84,91-93,96-98,101-102
+brain/knowledge/connectors-engine/building-connectors.md
+  s_94864882421579::t_ff3c29763840a7 17,22-24,26-28
+packages/server/sandbox/test/lib/utils/path-safety.test.ts
+  s_94864882421579::t_ff3c29763840a7 17
+packages/connectors/core/forms/src/i18n/fr.json
+  s_94864882421579::t_ff3c29763840a7 2,9-10,16-18
+packages/core/shared/src/lib/management/workspace/workspace.ts
+  s_94864882421579::t_ff3c29763840a7 47,54-55
+packages/server/api/src/app/workers/job/index.ts
+  s_94864882421579::t_ff3c29763840a7 56,63
+packages/web/src/features/connectors/components/connector-icon-list.tsx
+  s_94864882421579::t_ff3c29763840a7 2-4,46,53,75
+packages/connectors/core/http/src/i18n/ru.json
+  s_94864882421579::t_ff3c29763840a7 33
+packages/web/src/app/builder/connectors-selector/connector-actions-or-triggers-list.tsx
+  s_94864882421579::t_ff3c29763840a7 3-4,35,41,45,51,55-57,107-108,114
+packages/server/api/src/app/workflows/workflow/workflow.repo.ts
+  s_94864882421579::t_ff3c29763840a7 2,4
+packages/connectors/core/store/src/i18n/de.json
+  s_94864882421579::t_ff3c29763840a7 24
+packages/connectors/community/slack/src/i18n/de.json
+  s_94864882421579::t_ff3c29763840a7 69,121,195,198-199,201
+brain/knowledge/platform-editions-ee/ee-overview.md
+  s_94864882421579::t_ff3c29763840a7 21
+packages/server/api/src/app/workers/job-queue/interceptors/zombie-polling-interceptor.ts
+  s_94864882421579::t_ff3c29763840a7 15-16,18,22-23
+packages/server/api/src/app/workflows/workflow/workflow.jobs.ts
+  s_94864882421579::t_ff3c29763840a7 8-11,17,21,29,34,37,40,46,48-50,53-55,60-61,68-70
+packages/tests-e2e/pages/authentication.page.ts
+  s_94864882421579::t_ff3c29763840a7 129
+packages/core/formula/src/lib/function-implementations.ts
+  s_94864882421579::t_ff3c29763840a7 94,262,410
+packages/server/api/test/integration/workflows/execution/list-executions.test.ts
+  s_94864882421579::t_ff3c29763840a7 15
+packages/server/worker/src/lib/execute/jobs/execute-webhook.ts
+  s_94864882421579::t_7cda38fb019be5 2
+  s_94864882421579::t_ff3c29763840a7 9-10,30,32-33,41-42,45,47,58-59,79-80,99-100,121,124,138,150
+packages/web/src/app/builder/index.tsx
+  s_94864882421579::t_ff3c29763840a7 2-6,32-36,48,58,62,64,76,142-143,145-146,157,160,162,232,255,259-260,265,269-270,274-275,280-281,283
+  s_94864882421579::t_7cda38fb019be5 16,218-220,241-243
+packages/web/src/app/builder/step-settings/update-connector-version-dialog/update-connector-version-utils.tsx
+  s_94864882421579::t_ff3c29763840a7 4-7,171,175,189,214,216,219,230,233,246
+packages/web/src/app/routes/platform/workspaces/index.tsx
+  s_94864882421579::t_ff3c29763840a7 290,338
+  s_94864882421579::t_7cda38fb019be5 291-293
+.agents/skills/design/README.md
+  s_94864882421579::t_ff3c29763840a7 70,78,83,91-92,94-95,99-100,148,155
+packages/web/src/features/workspaces/stores/workspaces-collection.test.ts
+  s_94864882421579::t_ff3c29763840a7 57,72-73,408-409
+packages/connectors/core/crypto/src/lib/actions/generate-password.ts
+  s_94864882421579::t_ff3c29763840a7 13
+.agents/skills/connector-builder/output-quality.md
+  s_94864882421579::t_ff3c29763840a7 150
+packages/connectors/core/store/src/i18n/ja.json
+  s_94864882421579::t_ff3c29763840a7 24
+packages/web/src/app/builder/workflow-canvas/edges/router-end-edge.tsx
+  s_94864882421579::t_ff3c29763840a7 4,25,29,39,46,49-50,53-54,63-64,72,87-88,93-94,102,109-110
+packages/web/src/features/workflows/components/workflow-status-toggle.tsx
+  s_94864882421579::t_7cda38fb019be5 39-41,43-45
+  s_94864882421579::t_ff3c29763840a7 2,15-16,18-19,22-24,28-29,32-33,37-38,42,55,59-60,66-71,78,82,86,95-96
+brain/knowledge/decisions/000016-ai-sdk-7-is-a-maintenance-bump-the-agent-loop-keeps-its-own-machinery.md
+  s_94864882421579::t_ff3c29763840a7 46
+packages/connectors/core/webhook/src/i18n/bg.json
+  s_94864882421579::t_ff3c29763840a7 3,7,10,12,22-24
+.agents/skills/profile-worker-memory/SKILL.md
+  s_94864882421579::t_ff3c29763840a7 76,97-98,101,105
+packages/connectors/core/webhook/src/i18n/it.json
+  s_94864882421579::t_ff3c29763840a7 3,7,10,12,22-24
+packages/server/api/src/app/helper/system/system.ts
+  s_94864882421579::t_ff3c29763840a7 28,45,59
+packages/server/api/src/app/workflows/execution/execution-hooks.ts
+  s_94864882421579::t_7cda38fb019be5 2
+  s_94864882421579::t_ff3c29763840a7 5,15-17,26
+packages/web/src/app/routes/runs/id/index.tsx
+  s_94864882421579::t_ff3c29763840a7 1,10,17,24-25,29,60-61
+  s_94864882421579::t_7cda38fb019be5 37-40,43-46
+packages/server/api/test/unit/app/workflows/workflow-lock/workflow-lock.test.ts
+  s_94864882421579::t_ff3c29763840a7 35
+packages/web/src/app/builder/connector-properties/dynamic-dropdown-connector-property.tsx
+  s_94864882421579::t_ff3c29763840a7 21-22,85-86
+packages/connectors/core/store/src/i18n/sv.json
+  s_94864882421579::t_ff3c29763840a7 25
+packages/connectors/core/subflows/src/i18n/vi.json
+  s_94864882421579::t_ff3c29763840a7 2-4,6-8,12,16-17,19
+docs/workflows/passing-data.mdx
+  s_94864882421579::t_ff3c29763840a7 7,9,11,22,28,60,103,117
+docs/install/architecture/connector-syncing.mdx
+  s_94864882421579::t_ff3c29763840a7 3,10,13,16,25,28
+packages/server/api/src/app/file/files-service.ts
+  s_94864882421579::t_ff3c29763840a7 68
+brain/knowledge/workflows-execution/action-run.md
+  s_94864882421579::t_ff3c29763840a7 7,9,12-13,33,35-36,40,42-43,45,48,58
+packages/connectors/community/slack/src/i18n/hi.json
+  s_94864882421579::t_ff3c29763840a7 153,157
+packages/connectors/core/schedule/src/i18n/id.json
+  s_94864882421579::t_ff3c29763840a7 34,41-45
+packages/server/api/src/app/helper/system-jobs/common.ts
+  s_94864882421579::t_ff3c29763840a7 2,11,20-21,28,52
+  s_94864882421579::t_7cda38fb019be5 1
+brain/knowledge/execution-runtime/workers.md
+  s_94864882421579::t_ff3c29763840a7 7,9,19,29-30,32-34,41-43,62,66,72,91,93,96,98,108
+packages/web/public/locales/ru/translation.json
+  s_94864882421579::t_ff3c29763840a7 4-5,9,19,74,90,112,242,255-257,324,330,339,357,359,361,363,365,380,382,384,387,391,399,405,411,457-463,471-472,540,546,550,584,658-659,773,775,802,833,840-841,948,1003-1005,1015,1032-1036,1038,1078,1087,1127,1145,1152-1154,1159,1164,1166,1170-1171,1174-1175,1184,1187-1190,1192-1196,1203-1204,1206,1211-1213,1221,1249,1256,1258,1260,1264-1266,1341
+packages/connectors/core/http/src/lib/actions/send-http-request-action.ts
+  s_94864882421579::t_ff3c29763840a7 34,259-261
+packages/web/src/app/builder/test-step/index.tsx
+  s_94864882421579::t_ff3c29763840a7 1,8,10-11,17,20,25,27,29,34
+brain/knowledge/decisions/000005-freeze-connector-versions-in-the-workflow-bundle-manifest.md
+  s_94864882421579::t_ff3c29763840a7 5,8,11,14,17
+docs/handbook/engineering/playbooks/canary-deployment.mdx
+  s_94864882421579::t_ff3c29763840a7 71
+packages/connectors/core/forms/src/i18n/id.json
+  s_94864882421579::t_ff3c29763840a7 3,10-11,17-19
+packages/server/api/src/app/workflows/workflow/workflow.entity.ts
+  s_94864882421579::t_ff3c29763840a7 6-9,18-19,25,28-29,42,44,62,83,88,93,98,107,117,127,133,137-138,147,152,158
+docs/endpoints/executions/list.mdx
+  s_94864882421579::t_ff3c29763840a7 2
+packages/server/api/src/assets/emails/platform-deleted.html
+  s_94864882421579::t_ff3c29763840a7 41,47
+packages/server/engine/src/lib/handler/base-executor.ts
+  s_94864882421579::t_7cda38fb019be5 2
+  s_94864882421579::t_ff3c29763840a7 5,7,21,23,26,28,32-33
+brain/knowledge/connections-auth/secret-managers.md
+  s_94864882421579::t_ff3c29763840a7 7
+packages/server/worker/src/lib/execute/jobs/execute-property.ts
+  s_94864882421579::t_ff3c29763840a7 27
+packages/web/src/app/builder/run-list/index.tsx
+  s_94864882421579::t_ff3c29763840a7 20,26-27,46,51,113
+packages/core/execution/src/lib/workflows/dto/workflow-mcp.requests.ts
+  s_94864882421579::t_ff3c29763840a7 4-5
+docs/install/configure-operate/sandboxing.mdx
+  s_94864882421579::t_ff3c29763840a7 3,7
+packages/web/src/app/components/sidebar/dashboard/index.tsx
+  s_94864882421579::t_ff3c29763840a7 257,341
+packages/server/api/src/app/webhooks/webhook-controller.ts
+  s_94864882421579::t_ff3c29763840a7 18,22,29,31,33-35,51,55,62,64,66-67,70,83,85,87,90,103,105,107,110,120,122,124,127
+  s_94864882421579::t_7cda38fb019be5 13
+packages/server/api/test/integration/workers/job-broker-invalid-schema.test.ts
+  s_94864882421579::t_ff3c29763840a7 2,32-33,37-38,58
+packages/web/src/app/builder/workflow-canvas/widgets/incomplete-settings-widget.tsx
+  s_94864882421579::t_ff3c29763840a7 2-4,6,15,18,24,30-31,33,37-38,43,52,56,72
+  s_94864882421579::t_7cda38fb019be5 46-48
+packages/core/execution/src/lib/workflows/operations/add-action-util.ts
+  s_94864882421579::t_ff3c29763840a7 3-5,8-9,12,15,32
+benchmark/run-workerpool.sh
+  s_94864882421579::t_ff3c29763840a7 46-49,63-64,67,73
+packages/core/utils/src/lib/id-generator.ts
+  s_94864882421579::t_ff3c29763840a7 17-18
+docs/embedding/sdk-server-requests.mdx
+  s_94864882421579::t_ff3c29763840a7 28
+packages/core/shared/src/lib/core/common/telemetry.ts
+  s_94864882421579::t_ff3c29763840a7 4-5,20,25-26,58,62,64,67,72-73,76-77,121-122,131,144,217-218,221,224-228,232,294,296-297,302,304,307,309-310,316
+  s_94864882421579::t_7cda38fb019be5 1
+packages/server/api/src/app/trigger/trigger-source/trigger-utils.ts
+  s_94864882421579::t_ff3c29763840a7 3,9,12,21-22,24-26,33-34,37,71
+packages/core/execution/src/lib/workflows/operations/update-sample-data-info.ts
+  s_94864882421579::t_ff3c29763840a7 2-3,7-8
+packages/web/src/features/forms/hooks/forms-hooks.ts
+  s_94864882421579::t_ff3c29763840a7 7,11,13-14
+packages/server/worker/src/lib/execute/utils/webhook-url.ts
+  s_94864882421579::t_ff3c29763840a7 1,4
+packages/server/api/test/unit/app/workflows/execution/run-timeline.test.ts
+  s_94864882421579::t_ff3c29763840a7 2
+packages/core/execution/test/workflow/nested-workflow-validation.test.ts
+  s_94864882421579::t_ff3c29763840a7 1-3,8,28,35,41,45-47,49,57,66,73-75,77,85
+packages/server/api/src/app/workflows/workflow-version/workflow-version-side-effects.ts
+  s_94864882421579::t_7cda38fb019be5 8
+  s_94864882421579::t_ff3c29763840a7 2,12-13,18,21,26-27,33-34,44-45,49,51-54,59-60,69-70,77-78,84-85,94-95,109-110,112
+brain/knowledge/decisions/000027-an-agent-is-a-workspace-scoped-row-that-workflow-steps-reference-live.md
+  s_94864882421579::t_ff3c29763840a7 2,11,16-19,24-25,32-33,35,40,44
+packages/server/api/test/integration/workflows/workflow/workflow-operations.test.ts
+  s_94864882421579::t_ff3c29763840a7 2-8,11,19-20,37-39,42-43,45-46,48,52,55,58,61,67-68,72-73,75-76,78,84-85,88-90,92-94,96,106-107,110-111,113-114,116,120-124,127,130,136-137,141-142,144-145,147,153-154,157,163,165-166,176-177,183-184,188,190-191,200,206-207,212,214-215,225,237-238,242,244-245,247,262,267,271-272,276,278-279,283,302,307,311-312,315,317-318,322,338-339,341,364-365,368,370-371,375,392-393,395,426-427,430,432-433,437,454-455,457,478,482-483,486,488-489,493,509-510,520,524-525,528,530-531,535,551-552,563,567-568,571,573-574,578,594-595,600,616-617,631-632,635-636,639,641-642,644,646,659-660,663,666-667,670,672-673,675,677,683,707-709,714,718,720,722,724-726,729,731,736-737,743-745,749-750,753,763,765,767,769-771,774,776-778,781,785-786,792-794,798-799,802,810-811,814-815,817-819,821,823,828
+packages/server/api/src/app/workflows/folder/folder.entity.ts
+  s_94864882421579::t_7cda38fb019be5 1
+  s_94864882421579::t_ff3c29763840a7 9,44,46
+packages/web/src/app/builder/workflow-canvas/widgets/workflow-end-widget.tsx
+  s_94864882421579::t_ff3c29763840a7 3,7-8,17-18
+packages/web/src/app/routes/platform/infra/workers/by-workspace-view.tsx
+  s_94864882421579::t_ff3c29763840a7 160-161,169
+packages/web/src/app/routes/authenticate/index.tsx
+  s_94864882421579::t_ff3c29763840a7 17
+packages/server/api/test/integration/workflows/workflow/error-handler.test.ts
+  s_94864882421579::t_ff3c29763840a7 26,37
+packages/web/src/features/executions/components/timeline-bar.tsx
+  s_94864882421579::t_ff3c29763840a7 41
+docs/install/troubleshooting/websocket-issues.mdx
+  s_94864882421579::t_ff3c29763840a7 9-10
+packages/web/src/app/routes/platform/infra/health/components/internal-errors-table.tsx
+  s_94864882421579::t_ff3c29763840a7 50,67,75,79,87
+packages/core/shared/src/lib/automation/connection/connection.ts
+  s_94864882421579::t_ff3c29763840a7 138
+packages/server/sandbox/test/lib/cache/workflow/code/code-builder.test.ts
+  s_94864882421579::t_ff3c29763840a7 5,17,19,53,65-66,109,128,173,201
+packages/connectors/sdk/src/lib/property/input/date-range-property.ts
+  s_94864882421579::t_ff3c29763840a7 48
+packages/web/src/app/builder/workflow-canvas/context-menu/canvas-context-menu-content.tsx
+  s_94864882421579::t_ff3c29763840a7 2-5,66,74,90,93,95,101,106,111-112,147,186,212,254,268,288,318,336,345,373,388
+  s_94864882421579::t_7cda38fb019be5 82-87,251-252
+packages/connectors/core/schedule/src/lib/triggers/every-week.trigger.ts
+  s_94864882421579::t_ff3c29763840a7 15
+docs/admin-guide/guides/workspace-replace-cli.mdx
+  s_94864882421579::t_ff3c29763840a7 7,23,27,81,87-88,98,106,115,121,157,165-166,178,182,184,226,228
+docs/embedding/embeddable-mcp.mdx
+  s_94864882421579::t_ff3c29763840a7 11,28,41,60,166
+packages/connectors/core/approval/src/i18n/vi.json
+  s_94864882421579::t_ff3c29763840a7 6-7
+packages/connectors/core/schedule/src/index.ts
+  s_94864882421579::t_ff3c29763840a7 13
+docs/build-connectors/connector-reference/authentication.mdx
+  s_94864882421579::t_ff3c29763840a7 7
+packages/connectors/core/store/src/i18n/hi.json
+  s_94864882421579::t_ff3c29763840a7 25
+packages/server/engine/test/handler/workflow-error-handling.test.ts
+  s_94864882421579::t_ff3c29763840a7 5,26,61,100,117,138
+packages/server/worker/src/lib/execute/jobs/execute-workflow.ts
+  s_94864882421579::t_7cda38fb019be5 4
+  s_94864882421579::t_ff3c29763840a7 10-13,16,19,23,25-28,33,37-40,43,50,55,59,76,81,93,98,102,106,112,114-115,117,119,166,183-184,193,195
+packages/server/worker/src/lib/worker.ts
+  s_94864882421579::t_ff3c29763840a7 202,341,344
+packages/web/src/app/builder/connectors-selector/generic-connector-selector-item.tsx
+  s_94864882421579::t_ff3c29763840a7 2,23-24
+packages/connectors/core/approval/src/lib/actions/wait-for-approval.ts
+  s_94864882421579::t_ff3c29763840a7 10-11,15
+.agents/skills/connector-builder/trigger-patterns.md
+  s_94864882421579::t_ff3c29763840a7 17,130,133,186
+packages/connectors/core/forms/src/i18n/hi.json
+  s_94864882421579::t_ff3c29763840a7 3,10-11,17-19
+packages/web/src/app/builder/test-step/utils/test-step-hooks.ts
+  s_94864882421579::t_ff3c29763840a7 9,11,22,40-41,50,57-58,68,104,111,131-132,140-141,184-185,192,212,214-216
+packages/server/sandbox/src/lib/sandbox/isolate.ts
+  s_94864882421579::t_ff3c29763840a7 117,119
+packages/server/api/src/app/workers/engine-response-watcher.ts
+  s_94864882421579::t_ff3c29763840a7 7,49,55
+packages/server/sandbox/src/lib/cache/workflow/code/code-cache.ts
+  s_94864882421579::t_ff3c29763840a7 9-11,14-15,17,28-30,35
+.agents/skills/design/SKILL.md
+  s_94864882421579::t_ff3c29763840a7 3,8,20-21,47,54,70-73,147,162
+packages/web/src/app/connections/multi-auth-list.tsx
+  s_94864882421579::t_ff3c29763840a7 165
+packages/connectors/core/delay/src/lib/actions/delay-for-action.ts
+  s_94864882421579::t_ff3c29763840a7 30,76
+packages/server/sandbox/test/lib/cache/workflow/code/code-cache-traversal.test.ts
+  s_94864882421579::t_ff3c29763840a7 7,60,66,71,75,78,86,98,111
+packages/server/api/test/integration/workflows/workflow/human-input/human-input.test.ts
+  s_94864882421579::t_ff3c29763840a7 2,9-10,29-30,43,45,47,49-51,53,76-77,81,86,95,105,108,110,112,114-116,118-119,123,130-131,144,146,148,150-152,154,169-170,174,179,188
+brain/knowledge/workflows-execution/triggers.md
+  s_94864882421579::t_ff3c29763840a7 7,11,13-14,24,34,45
+packages/connectors/core/forms/src/lib/actions/return-response.ts
+  s_94864882421579::t_ff3c29763840a7 13
+packages/server/api/test/unit/app/workflows/workflow-version/migrate-v22-agent-step-to-thin-client.test.ts
+  s_94864882421579::t_ff3c29763840a7 1,3,5,10,16,22,25,32,46,57,63,69,78-79
+packages/web/src/features/templates/hooks/use-gradient-from-connectors.ts
+  s_94864882421579::t_ff3c29763840a7 2-4,139,143,167
+packages/connectors/core/schedule/src/i18n/vi.json
+  s_94864882421579::t_ff3c29763840a7 34,41-45
+packages/server/engine/src/lib/handler/context/workflow-execution-context.ts
+  s_94864882421579::t_ff3c29763840a7 16,19,33,47-48,51,53,68-69,90-91,98-99,107,110,136,147-148,154-155,161-162,168-169,194,257,274
+  s_94864882421579::t_7cda38fb019be5 2
+packages/connectors/core/webhook/src/i18n/zh.json
+  s_94864882421579::t_ff3c29763840a7 2,6,9,11,21-23
+packages/web/src/app/builder/workflow-canvas/widgets/use-workflow-lock.ts
+  s_94864882421579::t_7cda38fb019be5 11-13
+  s_94864882421579::t_ff3c29763840a7 8-10,17,19,21,27,31,34,52
+brain/knowledge/workflows-execution/executions.md
+  s_94864882421579::t_ff3c29763840a7 5,7,10,20,23,25,27-28,32,34,44-46
+packages/connectors/core/subflows/src/i18n/es.json
+  s_94864882421579::t_ff3c29763840a7 2-3,5-7,11,15-16,18
+packages/server/sandbox/test/lib/cache/workflow/workflow-bundle-store.test.ts
+  s_94864882421579::t_ff3c29763840a7 7,10-11,21,28,33-34,37,39,45,51,58,63,65,67-68,71,75,86-87,90,92,94,97,99,102,107-108,110-111,113-114,116-118,123-124,130,132,134,136,143-144,146,148,150,160-161,163,165,167,174-175,178,181,183,186,192-193,195-196,200
+packages/server/api/test/integration/workers/workflow-worker.test.ts
+  s_94864882421579::t_ff3c29763840a7 8-9,24-26,36,39,41-42,44,53
+docs/adr/0011-squash-upstream-migrations-into-one-baseline.md
+  s_94864882421579::t_ff3c29763840a7 11-12,24
+packages/server/engine/src/lib/handler/code-executor.ts
+  s_94864882421579::t_7cda38fb019be5 4
+  s_94864882421579::t_ff3c29763840a7 29,42,56
+packages/core/execution/src/lib/execution/state/step-output.ts
+  s_94864882421579::t_ff3c29763840a7 2-3,13,23,70,107,110-111,113-114,129,134,148,152,164
+packages/web/src/features/automations/lib/utils.ts
+  s_94864882421579::t_ff3c29763840a7 1,9,13,17,20,22-25,43,45-48,76,99,102,152,168,174-177
+  s_94864882421579::t_7cda38fb019be5 170-172
+packages/web/src/app/builder/connector-properties/text-input-with-mentions/tiptap-editor.tsx
+  s_94864882421579::t_ff3c29763840a7 7,240
+packages/core/shared/src/lib/management/template/template-telemetry.ts
+  s_94864882421579::t_ff3c29763840a7 25,31
+packages/server/api/src/app/flags/webhook-secrets-util.ts
+  s_94864882421579::t_ff3c29763840a7 2,38,40
+packages/server/api/test/README.md
+  s_94864882421579::t_ff3c29763840a7 24,42
+brain/knowledge/execution-runtime/gotcha-code-cache-is-namespaced-by-workflowversionid-never-reuse-a-constant.md
+  s_94864882421579::t_ff3c29763840a7 5,7,11-13,16,25,30,33-34,37-38,47,63-65
+packages/web/public/locales/fr/translation.json
+  s_94864882421579::t_ff3c29763840a7 4,30,70,144-145,264,416-417,427-430,440,452,471-472,474-476,480,496-497,499,512-513,518,612,622,628,635-636,638,642,794,799-800,812,818-820,822-823,827-828,839-841,851,855,857,860,873,879,910,918,923,926-928,931-932,935,937,940-943,945-949,968-970,976,980,982,1014,1077,1081,1114,1118,1150,1198,1315-1316,1326,1451,1453,1475,1500,1509,1513,1517,1543-1544,1576,1580-1581,1593-1599,1748,1755-1757,1784,1802-1803,1874,1878-1879,1900,1902,1982,2027,2039,2057,2062-2064,2069-2071,2075,2080,2083,2090-2094,2096-2098,2101-2102,2126,2143,2146-2147,2173,2185,2203,2211,2278,2281-2284
+packages/server/api/src/app/trigger/trigger-source/trigger-source-service.ts
+  s_94864882421579::t_ff3c29763840a7 18,20-21,25,28,35,38,47,49-51,55-57,59,69,73,88-89,92,98-100,105,109,111,115-116,119,123,145-146,148,153,155,160,167-168,170-172,179,190,197-198,202-203,208-209,213-214,226,233
+  s_94864882421579::t_7cda38fb019be5 1-2,8,11
+packages/web/src/app/builder/workflow-canvas/widgets/run-info-widget.tsx
+  s_94864882421579::t_ff3c29763840a7 26,28,165,167,241
+packages/web/src/app/routes/platform/setup/templates/index.tsx
+  s_94864882421579::t_ff3c29763840a7 150
+brain/knowledge/connections-auth/index.md
+  s_94864882421579::t_ff3c29763840a7 11,13,16,32
+packages/server/api/src/app/database/migration/postgres/1787465061531-InitialSchema.ts
+  s_94864882421579::t_ff3c29763840a7 15,23,26,38,45,48,51,97,118,121,124,127,130,134,149,152,155,163-164,184,187,220,223,229,238,257,491-492,504,508,512,518,574,604,611-612,616-617,621-622,625-626,629-630,634-635,648,652,699,769,772,781,784,787,790,793,796,802,838,844,847,850,943,952,955,967,973,976,979,982,985,988,991,994,997,1018,1021,1030,1033
+packages/core/shared/src/lib/automation/trigger/index.ts
+  s_94864882421579::t_ff3c29763840a7 47,50
+.agents/skills/connector-builder/ai-metadata.md
+  s_94864882421579::t_ff3c29763840a7 3,31,105
+packages/web/src/features/workflows/index.ts
+  s_94864882421579::t_ff3c29763840a7 1,5-7,9
+packages/server/api/test/unit/app/workflows/workflow/workflow-publish-utils.test.ts
+  s_94864882421579::t_ff3c29763840a7 1,3,5,7,24-25,33,35,42,49,56,63,70,77
+packages/server/api/src/app/workers/job-queue/interceptors/rate-limiter-interceptor.ts
+  s_94864882421579::t_ff3c29763840a7 3,12,15,22,46-47,82,90
+packages/server/api/test/helpers/mocks/index.ts
+  s_94864882421579::t_ff3c29763840a7 3,75,100,133,389,394-395,405,407-415,419-421,423,432-445,527,529,539-541,547-548,550,556,558,560
+packages/core/shared/CLAUDE.md
+  s_94864882421579::t_ff3c29763840a7 18-19
+packages/connectors/core/webhook/src/index.ts
+  s_94864882421579::t_ff3c29763840a7 9
+docs/resources/diagrams/activeconnectors-architecture.html
+  s_94864882421579::t_ff3c29763840a7 30,62,104-105,114
+docs/install/options/railway.mdx
+  s_94864882421579::t_ff3c29763840a7 17,89,97
+packages/core/execution/src/lib/workflows/util/workflow-connector-util.ts
+  s_94864882421579::t_ff3c29763840a7 1-3,5,12-14
+packages/web/src/app/builder/workflow-canvas/nodes/note-node/note-drag-overlay.tsx
+  s_94864882421579::t_e2bdb970714509 65
+  s_94864882421579::t_ff3c29763840a7 13,47,70,73
+packages/web/src/app/builder/connector-properties/action-error-handling.tsx
+  s_94864882421579::t_ff3c29763840a7 1,29
+packages/core/execution/src/lib/workflows/operations/skip-action.ts
+  s_94864882421579::t_ff3c29763840a7 1-2,5-6
+.agents/skills/triage-image-cves/SKILL.md
+  s_94864882421579::t_ff3c29763840a7 30
+docs/build-connectors/connector-reference/triggers/overview.mdx
+  s_94864882421579::t_ff3c29763840a7 35,38-39,51,63
+packages/web/src/app/builder/workflow-canvas/utils/bulk-actions.ts
+  s_94864882421579::t_ff3c29763840a7 2-6,17,22-24,26,45,55,71,76,78,94,97,111,113,115-116,119
+  s_94864882421579::t_7cda38fb019be5 98-100
+packages/connectors/core/schedule/src/i18n/ja.json
+  s_94864882421579::t_ff3c29763840a7 33,40-44
+docs/mcp/overview.mdx
+  s_94864882421579::t_ff3c29763840a7 7,42-43,54-56,60
+packages/server/sandbox/test/lib/cache/action-run-cache.test.ts
+  s_94864882421579::t_ff3c29763840a7 148,154,160,162,176,185,197
+packages/core/execution/src/lib/workflows/operations/import-workflow.ts
+  s_94864882421579::t_ff3c29763840a7 2-6,8,10,15,17,22,24,29-30,34,43,46,57,62,76-77,81,92,103-104,114,116,121,123,127,133-134,136-137,145,149-150,159-160,173,177
+.github/workflows/benchmark.yml
+  s_94864882421579::t_ff3c29763840a7 61,65-67,85,99
+.github/workflows/smoke-test.yml
+  s_94864882421579::t_ff3c29763840a7 51,55-57,62,68,70,86,90-92,98,119,124-126,132-133,154,159-161,167-168,175
+packages/server/api/test/integration/workflows/execution/execute-workflow-e2e.test.ts
+  s_94864882421579::t_ff3c29763840a7 2,5,7,19,21-23,35,40-41,89,91,114,138,140,143-145,147,149,155,171-173,175-177,179,184,186-187,196,210,213,215-217,219,231,234,236,258,260,281,283,286-288,291,293,298,313-315,317-318,320,342-343,345,350,352-353,361,374,376,378,380-382,384,396,399-400,402,430-431,451,453,476,496,499,501-503,505,520,522,524,531,538,575,611,625-626,628-630,632,647,650,657,672,685,701,704,706-708,710,725,732,739,787,790,797,818-819,825,832,842,848,868,885,903,906,908-910,912,927,930,937,971,991,1010,1025,1028,1030-1032,1034,1049,1052,1059,1082,1085,1092,1115,1121
+packages/server/api/src/app/workers/job-queue/job-queue.ts
+  s_94864882421579::t_ff3c29763840a7 3,35,42,65,69,73,130,208,262
+packages/server/api/src/app/workflows/workflow/human-input/form-controller.ts
+  s_94864882421579::t_ff3c29763840a7 9-10,19,21
+packages/server/engine/src/lib/helper/dynamic-prop-keys.ts
+  s_94864882421579::t_ff3c29763840a7 31
+packages/server/worker/src/lib/execute/jobs/execute-trigger-hook.ts
+  s_94864882421579::t_ff3c29763840a7 14,16-17,22,26-27,30,39-40
+  s_94864882421579::t_7cda38fb019be5 2
+docs/install/architecture/benchmark.mdx
+  s_94864882421579::t_ff3c29763840a7 11,13,17,21,90,92,106,108,111,113,143,168,205,228
+brain/knowledge/connections-auth/ee-authentication-sso-rbac.md
+  s_94864882421579::t_ff3c29763840a7 7,18
+docs/admin-guide/security/audit-logs/overview.mdx
+  s_94864882421579::t_ff3c29763840a7 10,22,28-31,33-35
+packages/server/api/test/integration/workflows/execution/mark-parent-run-cross-tenant.test.ts
+  s_94864882421579::t_ff3c29763840a7 2,4,6,20-21,23-25,27,31-32
+packages/web/public/locales/de/translation.json
+  s_94864882421579::t_ff3c29763840a7 4,30,70,144-145,264,416-417,427-430,440,452,471-472,474-476,480,496-497,499,512-513,518,612,622,628,635-636,638,642,794,799-800,812,818-820,822-823,827-828,839-841,851,855,857,860,873,879,910,918,923,926-928,931-932,935,937,940-943,945-949,968-970,976,980,982,1014,1077,1081,1114,1118,1150,1198,1315-1316,1326,1451,1453,1475,1500,1509,1513,1517,1543-1544,1576,1580-1581,1593-1599,1748,1755-1757,1784,1802-1803,1874,1878-1879,1900,1902,1982,2027,2039,2057,2062-2064,2069-2071,2075,2080,2083,2090-2094,2096-2098,2101-2102,2126,2143,2146-2147,2173,2185,2203,2211,2278,2281-2284
+packages/server/api/test/integration/workflows/execution/bulk-retry-execution.test.ts
+  s_94864882421579::t_ff3c29763840a7 1,5,24,38,63,80,90,92,97-98,102,115,135,155-157,159-161,163,167-168,181,188-189,219-220
+packages/web/src/features/forms/api/human-input-api.tsx
+  s_94864882421579::t_ff3c29763840a7 12-13,17-18,48,62,122
+packages/web/src/features/templates/components/explore-template-card.tsx
+  s_94864882421579::t_ff3c29763840a7 18,20,70,72
+packages/web/src/features/automations/components/automations-empty-state.tsx
+  s_94864882421579::t_ff3c29763840a7 108,110,155,157,213-214,249,255-257,260,262,268,279,291
+  s_94864882421579::t_7cda38fb019be5 18-19,201-203
+packages/connectors/sdk/src/index.ts
+  s_94864882421579::t_ff3c29763840a7 40-42,53,55
+docs/build-connectors/building-connectors/create-action.mdx
+  s_94864882421579::t_ff3c29763840a7 112
+packages/server/api/test/integration/workers/platform-queue-migration.test.ts
+  s_94864882421579::t_ff3c29763840a7 2,37,42,44,59,64,66,75,83-84,89,91,94,96,113,118,120,135-136,140,142,145,147,163,182-183,199,201,203,222,224,244,255,260-262
+packages/core/shared/src/lib/authentication/authn/access-control-list.ts
+  s_94864882421579::t_ff3c29763840a7 8-10,39-41,64
+packages/core/connector-types/src/lib/execution-contracts.ts
+  s_94864882421579::t_ff3c29763840a7 78,81,97,103,108
+packages/cli/README.md
+  s_94864882421579::t_ff3c29763840a7 11
+packages/connectors/core/webhook/src/i18n/hu.json
+  s_94864882421579::t_ff3c29763840a7 3,7,10,12,22-24
+packages/server/api/test/integration/workflows/execution/resume-service.test.ts
+  s_94864882421579::t_ff3c29763840a7 2,4-6,8,32-33,35-37,39,43-44,62,66
+packages/connectors/community/slack/src/lib/actions/send-direct-message-action.ts
+  s_94864882421579::t_ff3c29763840a7 2,11,34,45,57-58
+packages/server/api/src/app/workflows/workflow-version/workflow-version.service.ts
+  s_94864882421579::t_ff3c29763840a7 11-14,16,18,20,26-28,31-33,38,47,51,60,63,69,83,85,92-93,95,100,102,104-106,109,120-121,127,130,139-140,143,145-147,152-153,159-160,165-166,172-173,175,180,185,190-191,194,203,205,208,210-212,216,221-222,228-229,231,240,245-246,251-252,258,263-264,267,269,276,280,283,285-286,289-290,310-312,315,321,327-328,330,334-336,365-367,374,377,386-387,394-395,404-405
+  s_94864882421579::t_7cda38fb019be5 1-2
+packages/web/src/app/builder/builder-header/workflow-status/view-draft-or-edit-workflow-button.tsx
+  s_94864882421579::t_7cda38fb019be5 22-27,84-86
+  s_94864882421579::t_ff3c29763840a7 2,12-13,15,20-21,29-30,36,42,64,77-78,80,82,88
+packages/web/src/features/executions/utils/execution-utils.ts
+  s_94864882421579::t_ff3c29763840a7 4,60
+docs/build-connectors/connector-reference/properties.mdx
+  s_94864882421579::t_ff3c29763840a7 177,653
+packages/connectors/community/slack/src/i18n/id.json
+  s_94864882421579::t_ff3c29763840a7 153,157
+docs/embedding/configure-embedding.mdx
+  s_94864882421579::t_ff3c29763840a7 15
+packages/connectors/core/forms/src/i18n/pt.json
+  s_94864882421579::t_ff3c29763840a7 2,9-10,16-18
+.agents/skills/debug-failed-run/SKILL.md
+  s_94864882421579::t_ff3c29763840a7 3,6,8,10,15,35,42,44,58
+packages/connectors/core/store/src/i18n/translation.json
+  s_94864882421579::t_ff3c29763840a7 24
+docs/handbook/engineering/onboarding/downtime-incident.mdx
+  s_94864882421579::t_ff3c29763840a7 85
+packages/server/api/src/app/connection/connection-service/connection.handler.ts
+  s_94864882421579::t_7cda38fb019be5 3,13-14
+  s_94864882421579::t_ff3c29763840a7 22,25-26,30,32,36-38,42-43,45-51,53,56,345-346,350-351,353-354,358,360-361,365-366,371,377-379,384,386,391-392,397-398,402-403,427,434
+packages/server/api/src/app/trigger/trigger-events/trigger-event.entity.ts
+  s_94864882421579::t_7cda38fb019be5 1
+  s_94864882421579::t_ff3c29763840a7 9,18,29-30,34-35,65,67,71-72
+packages/web/src/features/forms/components/ap-form.tsx
+  s_94864882421579::t_ff3c29763840a7 179,181,186
+.agents/skills/agent-browser/templates/authenticated-session.sh
+  s_94864882421579::t_ff3c29763840a7 21,69,77
+packages/connectors/core/subflows/src/lib/common.ts
+  s_94864882421579::t_ff3c29763840a7 1-2,6,8,12,17,19-20,22-29,32,35-36,39,41,44,48-49,54,56,60,64,67,69-71,73,75,78,95-96,99-100,102-104,113,122,138-139,144
+packages/server/api/src/assets/prompts/chat-system-prompt.md
+  s_94864882421579::t_ff3c29763840a7 32,53,55,61,95,111,117,119,182,195,218,234,240,257,269,271,277,281,287,293,321,324,330-331,353,357,379
+packages/connectors/core/forms/src/i18n/nl.json
+  s_94864882421579::t_ff3c29763840a7 2,9-10,16-18
+docs/build-connectors/connector-reference/connector-versioning.mdx
+  s_94864882421579::t_ff3c29763840a7 10,18
+packages/server/api/src/app/workspace/workspace.jobs.ts
+  s_94864882421579::t_ff3c29763840a7 6-7,23-26,32
+  s_94864882421579::t_7cda38fb019be5 5
+packages/web/src/app/builder/workflow-canvas/widgets/index.tsx
+  s_94864882421579::t_ff3c29763840a7 4-5,9,11,13,18,28,34,37,50-51,66,91-92
+  s_94864882421579::t_7cda38fb019be5 6,62-64,81-82
+packages/server/api/test/integration/workflows/folder/folder-list.test.ts
+  s_94864882421579::t_ff3c29763840a7 5,9-10,27-32,43,48-49,59,64-65,74-77,79,87,101,108,112,141,145-146,148
+packages/web/src/features/automations/lib/types.ts
+  s_94864882421579::t_ff3c29763840a7 2,4,6,14,31,35
+packages/web/src/app/builder/connector-properties/dynamic-connector-property.tsx
+  s_94864882421579::t_ff3c29763840a7 37-38,144-145
+packages/server/sandbox/src/lib/resolver.ts
+  s_94864882421579::t_7cda38fb019be5 3
+  s_94864882421579::t_ff3c29763840a7 5-6,12,19,21-24,29,35,48,54
+brain/knowledge/engineering/index.md
+  s_94864882421579::t_ff3c29763840a7 14
+brain/knowledge/workflows-execution/gotcha-a-chat-tool-lives-in-four-files-and-losing-the-worker-one-fails-silently.md
+  s_94864882421579::t_ff3c29763840a7 21
+packages/connectors/core/store/src/lib/actions/common.ts
+  s_94864882421579::t_ff3c29763840a7 5,14-15,20,44-45
+packages/core/execution/src/lib/workflows/folders/folder-requests.ts
+  s_94864882421579::t_ff3c29763840a7 22
+docs/admin-guide/security/audit-logs/execution-finished.mdx
+  s_94864882421579::t_ff3c29763840a7 2-3
+packages/web/src/components/custom/home-button.tsx
+  s_94864882421579::t_ff3c29763840a7 23,32
+packages/server/sandbox/src/lib/utils/bundle-http.ts
+  s_94864882421579::t_ff3c29763840a7 10,21
+packages/web/public/locales/es/translation.json
+  s_94864882421579::t_ff3c29763840a7 4,30,70,144-145,264,416-417,427-430,440,452,471-472,474-476,480,496-497,499,512-513,518,612,622,628,635-636,638,642,794,799-800,812,818-820,822-823,827-828,839-841,851,855,857,860,873,879,910,918,923,926-928,931-932,935,937,940-943,945-949,968-970,976,980,982,1014,1077,1081,1114,1118,1150,1198,1315-1316,1326,1451,1453,1475,1500,1509,1513,1517,1543-1544,1576,1580-1581,1593-1599,1748,1755-1757,1784,1802-1803,1874,1878-1879,1900,1902,1982,2027,2039,2057,2062-2064,2069-2071,2075,2080,2083,2090-2094,2096-2098,2101-2102,2126,2143,2146-2147,2173,2185,2203,2211,2278,2281-2284
+packages/server/STYLE.md
+  s_94864882421579::t_ff3c29763840a7 12-14,17,20,30,33,61,69,72-73,79,84,92,126,141,144,153,156,158,161
+packages/connectors/core/store/src/i18n/ar.json
+  s_94864882421579::t_ff3c29763840a7 25
+packages/connectors/core/webhook/src/i18n/nl.json
+  s_94864882421579::t_ff3c29763840a7 2,6,9,11,21-23
+packages/server/api/src/app/trigger/app-event-routing/app-event-routing.service.ts
+  s_94864882421579::t_ff3c29763840a7 1,22,33,36,44,48,60,67
+packages/server/api/src/app/workflows/workflow-version/workflow-version-validator-util.ts
+  s_94864882421579::t_7cda38fb019be5 7
+  s_94864882421579::t_ff3c29763840a7 28-30,33,35,40-41,51,56,63,65,70-71,81,86,93,95,98-99,111,129-130,217
+packages/connectors/core/approval/src/i18n/zh.json
+  s_94864882421579::t_ff3c29763840a7 5-6
+packages/web/src/app/builder/run-list/execution-card.tsx
+  s_94864882421579::t_7cda38fb019be5 200-201
+  s_94864882421579::t_ff3c29763840a7 3,43,67,178,180,198
+packages/core/execution/test/workflow/cof-branches.test.ts
+  s_94864882421579::t_ff3c29763840a7 3-11,15-16,27-29,33,61-63,67,89,91,94-95,100,104,126,142-143,154-156,163,173-175,182,196-198,205,215,222-223,230,237,253-255,258,277-279,282-283,295-297,300,321,340,342,349-351,358-359,385-387,389,403,419-421,423,440,449-451,453,467,479-481,483,500,502
+packages/connectors/community/slack/src/lib/actions/request-approval-message.ts
+  s_94864882421579::t_ff3c29763840a7 2,12,26,34,39,98
+packages/server/api/src/app/workflows/execution/waitpoint/resume-controller.ts
+  s_94864882421579::t_ff3c29763840a7 9,91,94,134,165-167,279,281-283
+packages/web/src/app/builder/workflow-canvas/hooks.tsx
+  s_94864882421579::t_ff3c29763840a7 19,25,41,44,55,102,105,116-117,119-122,188,230
+  s_94864882421579::t_7cda38fb019be5 100-101,106,109-111
+packages/web/src/app/builder/workflow-canvas/nodes/step-node/step-node-badge-container.tsx
+  s_94864882421579::t_ff3c29763840a7 6
+  s_94864882421579::t_7cda38fb019be5 18-20
+packages/web/src/features/executions/components/runs-table/failed-step-dialog.tsx
+  s_94864882421579::t_ff3c29763840a7 3,6-7,29,49-51,71,84,139-141,143,149-150,160
+  s_94864882421579::t_7cda38fb019be5 144-147,212-216
+packages/core/execution/src/index.ts
+  s_94864882421579::t_ff3c29763840a7 2,4-23
+packages/web/src/app/builder/run-details/loop-iteration-input.tsx
+  s_94864882421579::t_7cda38fb019be5 25-40
+  s_94864882421579::t_ff3c29763840a7 3,6,45,65,82
+packages/connectors/core/webhook/src/i18n/id.json
+  s_94864882421579::t_ff3c29763840a7 3,7,10,12,22-24
+packages/web/src/app/builder/test-step/test-trigger-section/index.tsx
+  s_94864882421579::t_7cda38fb019be5 2-6
+  s_94864882421579::t_ff3c29763840a7 11,29-30,35,39,41,53,58-59,65,265,268
+packages/web/src/app/builder/workflow-canvas/edges/add-button.tsx
+  s_94864882421579::t_ff3c29763840a7 10,32,53,67,71,83,110,119
+  s_94864882421579::t_7cda38fb019be5 12,54-55,64-65,75-76,80-81,92-94,99-102,107-108,121-122
+packages/server/api/src/app/workflows/execution/waitpoint/resume-service.ts
+  s_94864882421579::t_ff3c29763840a7 74,83,117,159
+packages/connectors/core/delay/src/i18n/ja.json
+  s_94864882421579::t_ff3c29763840a7 11
+packages/web/src/app/builder/step-data/step-data-panel-host.tsx
+  s_94864882421579::t_ff3c29763840a7 2,8,22-23,25,33-34,59,89-90,95
+  s_94864882421579::t_7cda38fb019be5 10
+packages/connectors/core/store/src/i18n/ru.json
+  s_94864882421579::t_ff3c29763840a7 25
+packages/connectors/core/tags/src/lib/add-tag.ts
+  s_94864882421579::t_ff3c29763840a7 15
+packages/connectors/sdk/src/lib/test/index.ts
+  s_94864882421579::t_ff3c29763840a7 65,68,70
+packages/core/connector-types/src/index.ts
+  s_94864882421579::t_ff3c29763840a7 50,55
+packages/web/src/app/builder/workflow-canvas/nodes/note-node/index.tsx
+  s_94864882421579::t_ff3c29763840a7 18,36,39
+packages/connectors/core/http/src/i18n/es.json
+  s_94864882421579::t_ff3c29763840a7 35-37
+packages/server/worker/test/lib/execute/jobs/execute-workflow.test.ts
+  s_94864882421579::t_ff3c29763840a7 3-4,8,12,15,20-21,27,40,54,61,65,68-69,80-81,89,116,129,144,160,175-176,179,182,189,193,198
+packages/connectors/core/store/src/i18n/it.json
+  s_94864882421579::t_ff3c29763840a7 25
+brain/knowledge/platform-editions-ee/user-invitations.md
+  s_94864882421579::t_ff3c29763840a7 33
+brain/knowledge/ai-intelligence/ai-mcp.md
+  s_94864882421579::t_ff3c29763840a7 11,14,42
+packages/server/api/test/integration/connectors/connector-options-e2e.test.ts
+  s_94864882421579::t_ff3c29763840a7 14-15,28-29,59,62,64-66,68,82,107-108
+packages/core/shared/src/lib/management/template/workflow-template/index.ts
+  s_94864882421579::t_ff3c29763840a7 1
+packages/server/api/src/app/workflows/pre-warm-workers.ts
+  s_94864882421579::t_ff3c29763840a7 9,15,17-18,25-29,40,51,77-78,80,85
+  s_94864882421579::t_7cda38fb019be5 2
+CLAUDE.md
+  s_94864882421579::t_ff3c29763840a7 19,54,90
+packages/server/api/test/integration/workflows/workflow/workflow.test.ts
+  s_94864882421579::t_ff3c29763840a7 3-6,9,21-22,38-40,43-44,70-71,84,94,107,109,111,113-114,117,133-134,136-137,142,145,150,153,157,160,162,164,166-167,170-171,173-174,181,187,191,206,221,223,225,227-228,230,232,248,250-251,256,259,265,268,275-276,279,281,283,285,287,289-291,293,302,305,308-309,311-312,314,320-321,324,327-328,330,336-337,342,345-346,348-349,353-354,361,364-365,369-370,373,375,377,379-380,383,394,403-405
+packages/connectors/core/approval/src/i18n/de.json
+  s_94864882421579::t_ff3c29763840a7 5-6
+packages/server/sandbox/src/lib/sandbox/types.ts
+  s_94864882421579::t_ff3c29763840a7 43
+packages/server/engine/test/operations/trigger-hook-operation.test.ts
+  s_94864882421579::t_ff3c29763840a7 2-3,6,30,35-36,41,46,50,57
+packages/web/src/app/builder/workflow-versions/workflow-versions-card.tsx
+  s_94864882421579::t_ff3c29763840a7 2,24,29,31,34-35,60,65,67,69,74,79,95-97,99,112,118,120-121,131,146-147,149-150,153
+  s_94864882421579::t_7cda38fb019be5 37-39,45-54
+packages/connectors/core/schedule/src/i18n/nl.json
+  s_94864882421579::t_ff3c29763840a7 33,40-44
+packages/web/src/app/routes/connections/index.tsx
+  s_94864882421579::t_ff3c29763840a7 271,276,292
+packages/server/api/test/unit/app/webhooks/webhook-request-converter.test.ts
+  s_94864882421579::t_ff3c29763840a7 73
+.agents/rules/mintlify.md
+  s_94864882421579::t_ff3c29763840a7 47
+packages/connectors/core/subflows/src/i18n/ca.json
+  s_94864882421579::t_ff3c29763840a7 2-4,6-8,12,16-17,19
+packages/server/api/src/app/workflows/step-run/sample-data.service.ts
+  s_94864882421579::t_7cda38fb019be5 1-2
+  s_94864882421579::t_ff3c29763840a7 6,9-10,20,50,52,56,58-59,63,76,81-82,84,95-96,103,113,125-126,131,139,144
+packages/web/src/app/routes/automations/index.tsx
+  s_94864882421579::t_ff3c29763840a7 29,86,173,175,177,184-185,188,212-213,215,218,240,268,270,272,274,278,300,302,304-305,361-362,370,372,376
+  s_94864882421579::t_7cda38fb019be5 58-60
+packages/server/sandbox/src/lib/cache/cache-paths.ts
+  s_94864882421579::t_ff3c29763840a7 27-28
+packages/web/src/features/automations/components/automations-filters.tsx
+  s_94864882421579::t_ff3c29763840a7 4,59,61,63,66,86,88,90,93,100,102,135,235,250,253-254,258,272-273,275
+  s_94864882421579::t_7cda38fb019be5 268-270
+packages/server/engine/test/handler/workflow-rerun.test.ts
+  s_94864882421579::t_ff3c29763840a7 2-3,35-37,39,42,46,49-50,52,56
+packages/server/api/src/app/workers/migrations/refill-polling-jobs.ts
+  s_94864882421579::t_ff3c29763840a7 27,33-35
+  s_94864882421579::t_7cda38fb019be5 1
+docs/handbook/engineering/playbooks/testing-strategy.mdx
+  s_94864882421579::t_ff3c29763840a7 75,81
+packages/server/api/test/integration/workers/job-broker-error-propagation.test.ts
+  s_94864882421579::t_ff3c29763840a7 33-34,84-85,134-135,185-186,237-238
+packages/server/worker/test/lib/worker.test.ts
+  s_94864882421579::t_ff3c29763840a7 187,191,196,538,542,546,726-727
+packages/core/shared/src/lib/management/template/index.ts
+  s_94864882421579::t_ff3c29763840a7 1
+packages/web/src/app/builder/workflow-canvas/nodes/step-node/step-node-chevron.tsx
+  s_94864882421579::t_ff3c29763840a7 5
+  s_94864882421579::t_7cda38fb019be5 14-16
+packages/core/shared/src/lib/management/workspace/workspace-requests.ts
+  s_94864882421579::t_ff3c29763840a7 7
+packages/connectors/core/store/src/lib/actions/store-get-action.ts
+  s_94864882421579::t_ff3c29763840a7 40,69-70
+docs/build-connectors/connector-reference/ai-metadata.mdx
+  s_94864882421579::t_ff3c29763840a7 49
+packages/server/engine/test/handler/workflow-branching.test.ts
+  s_94864882421579::t_ff3c29763840a7 2-3,6-7,26,31,506,516
+packages/server/engine/src/lib/connector-context/workflows.ts
+  s_94864882421579::t_ff3c29763840a7 3,6,8,13,26,28,34,37-38
+  s_94864882421579::t_7cda38fb019be5 1
+docs/install/architecture/durable-execution.mdx
+  s_94864882421579::t_ff3c29763840a7 9,13,31
+packages/cli/src/lib/commands/benchmark.spec.ts
+  s_94864882421579::t_ff3c29763840a7 45,133,135-140,142-144
+packages/connectors/core/forms/src/lib/triggers/chat-trigger.ts
+  s_94864882421579::t_ff3c29763840a7 14,21,30,32
+packages/web/src/app/routes/platform/infra/triggers/index.tsx
+  s_94864882421579::t_ff3c29763840a7 27
+.claude/agents/web.md
+  s_94864882421579::t_ff3c29763840a7 3
+brain/knowledge/connectors-engine/connectors.md
+  s_94864882421579::t_ff3c29763840a7 23
+packages/server/engine/src/lib/handler/context/test-execution-context.ts
+  s_94864882421579::t_7cda38fb019be5 3
+  s_94864882421579::t_ff3c29763840a7 6,9-10,17-18,22-23,26,28,36-37,47,56,58,70-74,83,90
+packages/web/src/features/workflows/components/import-workflow-dialog.tsx
+  s_94864882421579::t_7cda38fb019be5 304-307
+  s_94864882421579::t_ff3c29763840a7 3,47,50,58,75-76,94-95,104,106,108,116,123,125,130,135-136,143,147-148,178,241,249,255,328
+brain/knowledge/decisions/000003-engine-posts-run-time-callbacks-directly-to-the-app.md
+  s_94864882421579::t_ff3c29763840a7 8
+packages/web/src/app/builder/data-display/friendly-error-view.tsx
+  s_94864882421579::t_ff3c29763840a7 204
+packages/server/engine/test/helper/execution-progress-reporter.test.ts
+  s_94864882421579::t_ff3c29763840a7 1,3,36-37,40,92,139,143,146-147,153,158,213,217-219,226
+packages/server/api/src/app/trigger/trigger-source/trigger-source-entity.ts
+  s_94864882421579::t_7cda38fb019be5 1
+  s_94864882421579::t_ff3c29763840a7 6,19,23,58-59,64-65,70-71,80-81,87,89
+docs/endpoints/workflows/update.mdx
+  s_94864882421579::t_ff3c29763840a7 2-3
+packages/connectors/core/subflows/src/i18n/ru.json
+  s_94864882421579::t_ff3c29763840a7 2-4,6-8,12,16-17,19
+packages/server/engine/test/connector-context/store.test.ts
+  s_94864882421579::t_ff3c29763840a7 8,20,62,106,113,116,119,130,133,143
+packages/core/execution/src/lib/engine/execution-errors.ts
+  s_94864882421579::t_ff3c29763840a7 81,83
+packages/server/api/test/integration/webhooks/webhook-xml-parsing.test.ts
+  s_94864882421579::t_ff3c29763840a7 1,5,18,20,22,24-28,33,36,44,47,55,58,68,71,82,93
+brain/knowledge/data-storage-observability/audit-logs.md
+  s_94864882421579::t_ff3c29763840a7 10,20,24
+packages/connectors/community/slack/src/lib/common/props.ts
+  s_94864882421579::t_ff3c29763840a7 90-91,93
+packages/server/api/src/app/workflows/execution/execution-controller.ts
+  s_94864882421579::t_ff3c29763840a7 2,19,57,70,77,84,90,97,111,141,161,172,185,189,199,201,228,237
+docs/overview/welcome.mdx
+  s_94864882421579::t_ff3c29763840a7 12,60
+packages/core/shared/src/lib/management/analytics/index.ts
+  s_94864882421579::t_ff3c29763840a7 2,16,24-26,29,33,35-36,43
+docs/install/architecture/waitpoints.mdx
+  s_94864882421579::t_ff3c29763840a7 6,12,34-35,60,63,73,77
+packages/server/api/src/app/helper/system-jobs/system-job.ts
+  s_94864882421579::t_ff3c29763840a7 118
+packages/server/engine/src/lib/helper/error-handling.ts
+  s_94864882421579::t_ff3c29763840a7 4,7,12,30,33,49-50,55,59
+packages/web/src/app/routes/templates/id/index.tsx
+  s_94864882421579::t_ff3c29763840a7 3-6,18-19,30,44,50-51,55-56,60,62,66,69,73,75,78,82,85,100,209,216-217,219-221,224-225,228,269,273-274,281,295,299
+packages/connectors/core/store/src/i18n/es.json
+  s_94864882421579::t_ff3c29763840a7 24
+packages/server/api/src/app/workers/migrations/refill-renew-webhook-jobs.ts
+  s_94864882421579::t_ff3c29763840a7 36,42-43
+packages/web/src/features/workspaces/components/new-workspace-dialog.tsx
+  s_94864882421579::t_ff3c29763840a7 159
+packages/connectors/core/delay/src/lib/actions/delay-until-action.ts
+  s_94864882421579::t_ff3c29763840a7 14,50,83
+packages/connectors/core/forms/src/i18n/ja.json
+  s_94864882421579::t_ff3c29763840a7 2,9-10,16-18
+.agents/skills/connector-builder/SKILL.md
+  s_94864882421579::t_ff3c29763840a7 106,213,238
+packages/core/shared/src/lib/management/platform/platform.model.ts
+  s_94864882421579::t_ff3c29763840a7 12,46,116
+docs/install/reference/environment-variables.mdx
+  s_94864882421579::t_ff3c29763840a7 46,139,150,168,250,253,259
+docs/admin-guide/security/audit-logs/workflow-published.mdx
+  s_94864882421579::t_ff3c29763840a7 2-3
+docs/handbook/engineering/playbooks/infrastructure.mdx
+  s_94864882421579::t_ff3c29763840a7 26
+packages/connectors/core/subflows/src/i18n/hi.json
+  s_94864882421579::t_ff3c29763840a7 2-4,6-8,12,16-17,19
+packages/web/src/app/routes/workflows/id/index.tsx
+  s_94864882421579::t_7cda38fb019be5 33-36,39-42,61-63
+  s_94864882421579::t_ff3c29763840a7 2,13,17-18,21,24-26,51,59,80-81,94
+packages/connectors/community/slack/src/i18n/fr.json
+  s_94864882421579::t_ff3c29763840a7 69,121,195,198-199,201
+docs/build-connectors/connector-reference/triggers/webhook-trigger.mdx
+  s_94864882421579::t_ff3c29763840a7 21-22,36
+packages/server/worker/src/lib/execute/jobs/renew-webhook.ts
+  s_94864882421579::t_7cda38fb019be5 2
+  s_94864882421579::t_ff3c29763840a7 12,14-15,23-24,27,35-36
+packages/server/api/test/integration/webhooks/webhook-multipart-file.test.ts
+  s_94864882421579::t_ff3c29763840a7 1,6,21,32,43,48,53,67,86,89,93,97,106,110,114,116-121
+docs/install/configure-operate/setup-s3.mdx
+  s_94864882421579::t_ff3c29763840a7 19-20,34
+packages/web/src/components/providers/embed-provider.tsx
+  s_94864882421579::t_ff3c29763840a7 8,12-13,22,32,36-37,42
+packages/web/src/features/connectors/utils/connector-search-utils.ts
+  s_94864882421579::t_ff3c29763840a7 3-4,16,18-19,21,24-25,62-63,76-78,80,86,130-131,184
+packages/connectors/core/manual-trigger/src/i18n/translation.json
+  s_94864882421579::t_ff3c29763840a7 3,5
+docs/install/troubleshooting/bullboard.mdx
+  s_94864882421579::t_ff3c29763840a7 3,11,45-46,49,51-52,63,75
+packages/server/engine/src/lib/handler/loop-executor.ts
+  s_94864882421579::t_ff3c29763840a7 6,67
+packages/core/formula/src/lib/function-registry.ts
+  s_94864882421579::t_ff3c29763840a7 773,797
+packages/connectors/core/subflows/src/i18n/pt.json
+  s_94864882421579::t_ff3c29763840a7 2-3,5-7,11,15-16,18
+packages/web/src/app/routes/platform/infra/health/components/stuck-jobs-table.tsx
+  s_94864882421579::t_7cda38fb019be5 69-71
+  s_94864882421579::t_ff3c29763840a7 53
+brain/knowledge/decisions/000014-action-runs-dispatch-as-synchronous-user-interaction-jobs.md
+  s_94864882421579::t_ff3c29763840a7 5,10,15,17-18,22-24,35,54-55,57
+docs/install/guarantees/disaster-recovery.mdx
+  s_94864882421579::t_ff3c29763840a7 9-10,20,54,70
+packages/connectors/core/delay/src/i18n/de.json
+  s_94864882421579::t_ff3c29763840a7 11
+packages/web/src/app/components/workspace-settings/general/index.tsx
+  s_94864882421579::t_ff3c29763840a7 41,213,224,228,231,235,250
+docs/endpoints/workflows/delete.mdx
+  s_94864882421579::t_ff3c29763840a7 2-3
+packages/web/src/features/templates/components/share-template.tsx
+  s_94864882421579::t_ff3c29763840a7 13,27,31,34,72,74,76
+packages/web/src/features/connectors/components/install-connector-dialog.tsx
+  s_94864882421579::t_ff3c29763840a7 189
+packages/web/src/app/builder/builder-hooks.ts
+  s_94864882421579::t_7cda38fb019be5 14
+  s_94864882421579::t_ff3c29763840a7 31,39-40,54,61
+brain/knowledge/workflows-execution/chat.md
+  s_94864882421579::t_ff3c29763840a7 7,21,35,37
+.agents/skills/connector-output-schema/SKILL.md
+  s_94864882421579::t_ff3c29763840a7 3,8,48
+packages/web/src/app/builder/data-selector/index.tsx
+  s_94864882421579::t_ff3c29763840a7 4-8,39,46-47,54-55,135,143
+packages/server/api/src/app/flags/flag.service.ts
+  s_94864882421579::t_ff3c29763840a7 110-111,203,226-227
+packages/connectors/core/webhook/src/lib/actions/return-response.ts
+  s_94864882421579::t_ff3c29763840a7 18,29,101,103,107-108,141,148
+docs/endpoints/workflows/schema.mdx
+  s_94864882421579::t_ff3c29763840a7 2-3
+packages/server/api/test/unit/app/workflows/migrations/expression-rewriter.test.ts
+  s_94864882421579::t_ff3c29763840a7 2,223,227,231,235,330,334,338
+packages/server/engine/src/lib/operations/property.operation.ts
+  s_94864882421579::t_ff3c29763840a7 43,45
+brain/knowledge/data-storage-observability/index.md
+  s_94864882421579::t_ff3c29763840a7 11,19,23,27,31,35,37,39,43
+packages/connectors/core/store/src/i18n/ko.json
+  s_94864882421579::t_ff3c29763840a7 25
+packages/server/engine/test/helper/error-handling.test.ts
+  s_94864882421579::t_ff3c29763840a7 2,7,32,46,67
+packages/server/api/src/app/trigger/trigger-events/trigger-event-controller.ts
+  s_94864882421579::t_ff3c29763840a7 10,21,27-28,34
+packages/web/src/app/builder/shortcuts.ts
+  s_94864882421579::t_7cda38fb019be5 1-4
+  s_94864882421579::t_ff3c29763840a7 10-12,17,28,47,52,56,73,99,120-122,128,143
+packages/web/src/app/components/global-search/use-global-search-results.ts
+  s_94864882421579::t_ff3c29763840a7 75-76,78,166,199,235,270,272,295-298,331
+  s_94864882421579::t_7cda38fb019be5 7,109-124
+packages/web/src/features/automations/components/automations-table-row.tsx
+  s_94864882421579::t_7cda38fb019be5 46,221-223,227-229,302-308
+  s_94864882421579::t_ff3c29763840a7 1,47-48,67,69,71-72,90,92-93,202,204-205,225-226,276,290,310,312-313,364,379,392,407,409-410
+packages/core/execution/src/lib/workers/job-data.ts
+  s_94864882421579::t_ff3c29763840a7 7-9,36-38,41,44,46,57-58,76,88,103-104,114-116,121,124,127-128,139,143,145,149,151-152,161,163,213-214,229,293
+packages/server/api/src/app/workspace/workspace-side-effects.ts
+  s_94864882421579::t_7cda38fb019be5 9
+  s_94864882421579::t_ff3c29763840a7 3,17-19,25-26,32,34,36,40,48-50,53,58
+packages/server/api/src/app/workspace/workspace-entity.ts
+  s_94864882421579::t_ff3c29763840a7 19,64,151,153
+  s_94864882421579::t_7cda38fb019be5 8
+.agents/chat-engineering-gaps.md
+  s_94864882421579::t_ff3c29763840a7 12,39,43-44,52
+packages/core/execution/src/lib/workflows/operations/add-branch.ts
+  s_94864882421579::t_ff3c29763840a7 2-4,8-10,18
+brain/knowledge/eventing-webhooks/workflow-failure-alerts.md
+  s_94864882421579::t_ff3c29763840a7 5,7,15-16,23,26
+docs/mcp/tool-search.mdx
+  s_94864882421579::t_ff3c29763840a7 15,17
+packages/web/src/app/builder/test-step/test-trigger-section/trigger-event-select.tsx
+  s_94864882421579::t_ff3c29763840a7 1,26
+packages/web/src/features/workflows/hooks/workflow-hooks.tsx
+  s_94864882421579::t_7cda38fb019be5 42-45,49-51,56-58,285-288,334-339,401-402
+  s_94864882421579::t_ff3c29763840a7 4-12,37,39-40,46-47,54,60,68-69,73-75,87,90-91,95-97,102,106-107,110,144,154,156,166,168-170,172-174,177-178,181,188,196,201,204,206-209,219,222,224,226-228,238,242,257,263-265,268,270-271,275-276,280,291-292,300,304,306,308,310-312,319,328-329,340-341,343,353,355,360-361,365,372,375,383-385,387,394-395,398,403-405,410,416,421,423-424,428,430,433-437,440-441,445,447,449,453-454,456,458-459,463,471,476-478,483-484,488-490,498,500-502,509-510,513-515,523-524,526,528-529,561-562,565,567,570-573
+packages/connectors/core/schedule/src/i18n/fr.json
+  s_94864882421579::t_ff3c29763840a7 33,40-44
+docs/handbook/engineering/playbooks/structured-logging.mdx
+  s_94864882421579::t_ff3c29763840a7 18,21,23,26,35,59-61,70,73-74
+packages/server/api/test/unit/app/workflows/workflow-version/remove-connections-and-sample-data.test.ts
+  s_94864882421579::t_ff3c29763840a7 1,4,13,16,40-41,45,47,55,58,62,69-70,73,75,77,88-90,92,94,97,99,101
+packages/web/src/assets/img/custom/celeberation.json
+  s_94864882421579::t_ff3c29763840a7 1
+packages/server/engine/src/lib/connector-context/file-uploader.ts
+  s_94864882421579::t_ff3c29763840a7 24
+brain/knowledge/decisions/000029-the-engine-never-imports-a-connector-a-fresh-child-process-does.md
+  s_94864882421579::t_ff3c29763840a7 23-25
+packages/server/engine/src/lib/api/engine-file-api.ts
+  s_94864882421579::t_ff3c29763840a7 146
+packages/web/src/app/builder/workflow-canvas/nodes/step-node/index.tsx
+  s_94864882421579::t_ff3c29763840a7 3-4,6,18,37,48,62-64,70,78,122,135-137,216,239,244,257-258,260
+  s_94864882421579::t_7cda38fb019be5 20,60-61,65-67,131-132
+benchmark/run-local.sh
+  s_94864882421579::t_ff3c29763840a7 16,18,42-44,51,61
+packages/connectors/core/webhook/src/i18n/translation.json
+  s_94864882421579::t_ff3c29763840a7 2,6,9,11,21-23
+packages/server/engine/test/handler/workflow-looping.test.ts
+  s_94864882421579::t_ff3c29763840a7 1-3,7,16,22,48,50,62-63,69-70,83-84,92,103,116,127
+docs/workflows/using-formulas.mdx
+  s_94864882421579::t_ff3c29763840a7 36,141
+packages/web/src/features/workspaces/stores/workspace-collection.ts
+  s_94864882421579::t_ff3c29763840a7 63-64
+  s_94864882421579::t_7cda38fb019be5 66-67
+packages/server/api/src/app/connectors/metadata/connector-metadata-controller.ts
+  s_94864882421579::t_7cda38fb019be5 10-11
+  s_94864882421579::t_ff3c29763840a7 130,132-133,135,140
+packages/connectors/core/webhook/src/i18n/ko.json
+  s_94864882421579::t_ff3c29763840a7 3,7,10,12,22-24
+packages/web/src/app/builder/workflow-versions/overwrite-draft-dialog.tsx
+  s_94864882421579::t_7cda38fb019be5 40-42,50-52
+  s_94864882421579::t_ff3c29763840a7 18,30-31,34-36,47,77
+packages/server/api/src/app/database/database-connection.ts
+  s_94864882421579::t_ff3c29763840a7 41-42
+  s_94864882421579::t_7cda38fb019be5 23-27
+docs/install/guarantees/execution-isolation.mdx
+  s_94864882421579::t_ff3c29763840a7 3,7,17-18,22,30-31
+packages/core/execution/src/lib/workflows/workflow-version.ts
+  s_94864882421579::t_ff3c29763840a7 5,7,9,14,16,18,23,29,31,33,36,42
+packages/server/sandbox/src/lib/cache/workflow/workflow-provisioning.ts
+  s_94864882421579::t_ff3c29763840a7 6-8,10-11,13,15-18,22,26,29-31,34,39-40,42,44,47,50,52,54,59,61,63,68-69,83-84,86,90,102-103,106-107,112,117,129,141,151-152,154
+  s_94864882421579::t_7cda38fb019be5 3
+packages/connectors/core/delay/src/i18n/ca.json
+  s_94864882421579::t_ff3c29763840a7 12
+packages/web/src/app/builder/connector-properties/text-input-with-mentions/components/function-search-popover.tsx
+  s_94864882421579::t_ff3c29763840a7 266
+packages/web/src/app/builder/step-settings/connector-settings/connection-select.tsx
+  s_94864882421579::t_ff3c29763840a7 87
+brain/knowledge/engineering/ci-pr-review-hygiene.md
+  s_94864882421579::t_ff3c29763840a7 9
+docs/adr/0004-separate-connector-and-workflow-component.md
+  s_94864882421579::t_ff3c29763840a7 2,12,28
+docs/resources/diagrams/cold-vs-warm.html
+  s_94864882421579::t_ff3c29763840a7 30,71,73
+packages/server/api/src/assets/emails/issue-created.html
+  s_94864882421579::t_ff3c29763840a7 11,35,41
+packages/core/shared/src/lib/core/health/health-metrics-request.ts
+  s_94864882421579::t_ff3c29763840a7 26-27,40-41,56
+packages/server/engine/src/lib/operations/index.ts
+  s_94864882421579::t_7cda38fb019be5 3,11
+  s_94864882421579::t_ff3c29763840a7 20-21
+packages/server/engine/src/lib/connector-context/store.ts
+  s_94864882421579::t_ff3c29763840a7 8,10-11,18-19,24-25,139,146-147,175
+  s_94864882421579::t_7cda38fb019be5 3
+docs/about/changelog.mdx
+  s_94864882421579::t_ff3c29763840a7 44,49-50,53,57,70,72,74,78-79,94,121,133,144,171-172
+packages/connectors/core/http/src/i18n/ca.json
+  s_94864882421579::t_ff3c29763840a7 31
+brain/knowledge/engineering/web-feature-anatomy.md
+  s_94864882421579::t_ff3c29763840a7 68,70
+packages/connectors/sdk/src/lib/context/index.ts
+  s_94864882421579::t_ff3c29763840a7 27,33,143-144,157,169,208,291
+packages/core/execution/src/lib/execution/execution.ts
+  s_94864882421579::t_ff3c29763840a7 6,35,40-41,66,71-72,81
+brain/knowledge/ai-intelligence/ai-agents.md
+  s_94864882421579::t_ff3c29763840a7 7,11-12,17,28,30,32-34,50
+packages/core/execution/src/lib/workflows/dto/create-workflow-request.ts
+  s_94864882421579::t_ff3c29763840a7 4,14
+packages/connectors/community/slack/src/lib/actions/send-message-action.ts
+  s_94864882421579::t_ff3c29763840a7 9,12,55,65,85-86
+docs/admin-guide/guides/event-streaming.mdx
+  s_94864882421579::t_ff3c29763840a7 11,13,17,20,22-23,25,30,34,47-48,57,61
+docs/build-connectors/connector-reference/workflow-control.mdx
+  s_94864882421579::t_ff3c29763840a7 2,4,7,9,11,68,92,96,150
+brain/knowledge/data-storage-observability/tables.md
+  s_94864882421579::t_ff3c29763840a7 7,13,17-18,39,43
+packages/connectors/community/slack/src/i18n/ru.json
+  s_94864882421579::t_ff3c29763840a7 160,163
+packages/web/src/app/routes/platform/setup/connectors/customize-selector-dialog.tsx
+  s_94864882421579::t_ff3c29763840a7 170
+packages/web/src/app/builder/workflow-canvas/widgets/selection-chevron-button.tsx
+  s_94864882421579::t_ff3c29763840a7 7,19,49,61
+packages/core/connector-types/src/lib/workflow-contracts.ts
+  s_94864882421579::t_ff3c29763840a7 4,9,37,40,44
+packages/web/src/app/builder/workflow-canvas/edges/router-start-edge.tsx
+  s_94864882421579::t_ff3c29763840a7 4,31,40,45,52,64,71-72,79,85-86,100-101,104,108,120,132,159,165-166
+  s_94864882421579::t_7cda38fb019be5 110-111
+brain/knowledge/data-storage-observability/file-storage.md
+  s_94864882421579::t_ff3c29763840a7 10,12,39
+packages/server/engine/test/handler/workflow-with-response.test.ts
+  s_94864882421579::t_ff3c29763840a7 2-3,6,32,38
+packages/server/api/src/app/workers/migrations/unify-old-queues-to-one.ts
+  s_94864882421579::t_ff3c29763840a7 2,6,10-11,57,59,62,65,72-73,76-77
+brain/knowledge/workflows-execution/human-input.md
+  s_94864882421579::t_ff3c29763840a7 7,10-11,13,16-17,19,22-24,32-33,37,40
+packages/web/src/app/routes/public-routes.tsx
+  s_94864882421579::t_ff3c29763840a7 49
+brain/knowledge/decisions/000002-transitional-multi-box-concurrency-honor-ap-worker-concurrency.md
+  s_94864882421579::t_ff3c29763840a7 25
+docs/handbook/engineering/playbooks/releases.mdx
+  s_94864882421579::t_ff3c29763840a7 6
+packages/core/execution/src/lib/engine/requests.ts
+  s_94864882421579::t_ff3c29763840a7 3,6,54,66-67,71
+packages/server/api/src/app/connectors/metadata/connector-metadata-service.ts
+  s_94864882421579::t_7cda38fb019be5 4
+  s_94864882421579::t_ff3c29763840a7 10,181-182,185,194,199,202,206-210,213-216,219,222,224-228,230,532
+packages/server/api/test/integration/workflows/execution/waitpoint.test.ts
+  s_94864882421579::t_ff3c29763840a7 2,4,6,8,33-34,36-38,40,44-45,51,237,468,496,547,608
+packages/web/src/app/builder/workflow-canvas/nodes/step-node/step-node-run-duration-and-connector-name.tsx
+  s_94864882421579::t_ff3c29763840a7 26,30,38
+packages/server/sandbox/test/lib/sandbox/sandbox.test.ts
+  s_94864882421579::t_ff3c29763840a7 79,135,143,148,164,175,180,191,196,208,232,239,263,281,293,305,337,508,538,546,571,590,614,634,641,665,743,759,772,801,828
+packages/web/src/app/builder/step-settings/step-navigation-buttons.tsx
+  s_94864882421579::t_7cda38fb019be5 17-22
+  s_94864882421579::t_ff3c29763840a7 2,25-26,87
+packages/server/api/src/app/workflows/workflow/workflow.controller.ts
+  s_94864882421579::t_7cda38fb019be5 2
+  s_94864882421579::t_ff3c29763840a7 12-14,18,20-21,29,36,38,42-43,45,51-52,62-65,70,75,81,86-87,102-103,109,111-112,119-120,127-128,132,135,147-148,154,163,175,179,184-185,187,189,195,199,204-205,207,209,214,218,223,227,231,233,237,239,243,250,254,256,260,262,266,268,273,277,279,283,285
+docs/install/configure-operate/enterprise-license.mdx
+  s_94864882421579::t_ff3c29763840a7 15
+packages/server/engine/src/lib/handler/workflow-executor.ts
+  s_94864882421579::t_ff3c29763840a7 11-12,16,20,22-25,30-31,39,41-43,47,55,64,71-72,74-78,90,96,98,102,104,108,110,122,128-129,134-135,137-138,158,166-170,172,174,179,185
+  s_94864882421579::t_7cda38fb019be5 3
+packages/web/src/features/templates/components/use-template-dialog.tsx
+  s_94864882421579::t_ff3c29763840a7 3,72-73,78-79,83,94,100,102-104,107-108,111,115-116,125,141-142,150,152-153,183
+  s_94864882421579::t_7cda38fb019be5 34
+brain/knowledge/decisions/000015-streaming-csv-fanout-is-a-bounded-fire-and-forget-action.md
+  s_94864882421579::t_ff3c29763840a7 9,18,20,24,26
+packages/web/src/lib/route-utils.ts
+  s_94864882421579::t_7cda38fb019be5 34-37
+  s_94864882421579::t_8852e411e98a06 8-9,46
+docs/install/configure-operate/worker-groups.mdx
+  s_94864882421579::t_ff3c29763840a7 47,56
+packages/server/api/src/app/workflows/workflow-version/workflow-version-entity.ts
+  s_94864882421579::t_ff3c29763840a7 8-9,11,13-14,17,60-61,65,70,74,87,90,92,96-97
+  s_94864882421579::t_7cda38fb019be5 1
+packages/connectors/core/forms/src/i18n/de.json
+  s_94864882421579::t_ff3c29763840a7 2,9-10,16-18
+brain/knowledge/engineering/api-endpoints.md
+  s_94864882421579::t_ff3c29763840a7 20
+packages/server/sandbox/src/lib/cache/workflow/code/code-builder.ts
+  s_94864882421579::t_ff3c29763840a7 50-51,55
+packages/web/src/features/authentication/components/auth-animation.tsx
+  s_94864882421579::t_ff3c29763840a7 215,217,548,574,633,664,678,697,716,730,1259
+.agents/skills/playwright-e2e-testing/SKILL.md
+  s_94864882421579::t_ff3c29763840a7 19,311
+packages/connectors/community/slack/src/lib/triggers/new-mention.ts
+  s_94864882421579::t_ff3c29763840a7 30
+packages/connectors/community/slack/src/lib/actions/request-action-message.ts
+  s_94864882421579::t_ff3c29763840a7 12,27,45
+packages/connectors/core/http/src/i18n/pt.json
+  s_94864882421579::t_ff3c29763840a7 35-37
+packages/web/src/app/builder/workflow-canvas/utils/layout-consts.ts
+  s_94864882421579::t_ff3c29763840a7 2-8,13,20,26-27,36-42,49,52,71
+packages/connectors/community/slack/src/lib/triggers/new-reaction-removed.ts
+  s_94864882421579::t_ff3c29763840a7 34
+packages/connectors/core/manual-trigger/src/lib/triggers/manual-trigger.ts
+  s_94864882421579::t_ff3c29763840a7 9,11,15
+docs/admin-guide/guides/manage-connectors.mdx
+  s_94864882421579::t_ff3c29763840a7 11,27,52
+packages/web/src/features/connections/utils/oauth2-utils.ts
+  s_94864882421579::t_ff3c29763840a7 24
+packages/server/api/src/app/webhooks/webhook-request-converter.ts
+  s_94864882421579::t_ff3c29763840a7 36,43,61,73,95,106,109,111,118,146
+packages/web/src/app/builder/workflow-canvas/utils/workflow-canvas-utils.ts
+  s_94864882421579::t_7cda38fb019be5 489-490,705-707
+  s_94864882421579::t_ff3c29763840a7 3-5,7-9,13-14,20,22,40,48,51,95,138-140,146-147,163,165,167,172,246,254,278,363,386,420,459,484,508,540,575,605,623,632,640-641,644-645,649,653-655,658,700,702-703,711,719,723-724,729,733,744
+packages/connectors/core/store/src/i18n/bg.json
+  s_94864882421579::t_ff3c29763840a7 25
+packages/server/api/src/app/trigger/app-event-routing/app-event-routing.entity.ts
+  s_94864882421579::t_ff3c29763840a7 1,13,26,36-37,41-42
+packages/server/sandbox/src/lib/types.ts
+  s_94864882421579::t_7cda38fb019be5 2
+  s_94864882421579::t_ff3c29763840a7 6-7,19,25-26,53-54,64,94-95,108
+packages/connectors/core/forms/src/i18n/ca.json
+  s_94864882421579::t_ff3c29763840a7 3,10-11,17-19
+packages/server/api/test/unit/app/core/canary/canary-proxy.integration.test.ts
+  s_94864882421579::t_ff3c29763840a7 42-43
+packages/web/AGENTS.md
+  s_94864882421579::t_ff3c29763840a7 14,21
+packages/server/api/src/app/helper/error-handler.ts
+  s_94864882421579::t_ff3c29763840a7 90
+packages/server/engine/test/handler/context/workflow-execution-context-slice.test.ts
+  s_94864882421579::t_ff3c29763840a7 1,3,5,8,15
+packages/server/sandbox/test/lib/sandbox.test.ts
+  s_94864882421579::t_ff3c29763840a7 63,69
+packages/core/shared/src/lib/governance/system-limits.ts
+  s_94864882421579::t_ff3c29763840a7 32
+packages/server/api/src/app/template/template.service.ts
+  s_94864882421579::t_7cda38fb019be5 2
+  s_94864882421579::t_ff3c29763840a7 32,37,59,73,75,77,81,97
+docs/admin-guide/security/audit-logs/workflow-updated.mdx
+  s_94864882421579::t_ff3c29763840a7 2-3
+brain/knowledge/execution-runtime/index.md
+  s_94864882421579::t_ff3c29763840a7 7,18,21,27,35-36,44-45,49-50,53,57
+docs/install/architecture/network-security.mdx
+  s_94864882421579::t_ff3c29763840a7 11,18,43,52,62,64,68,70
+packages/web/src/app/variables/variable-dialog.tsx
+  s_94864882421579::t_ff3c29763840a7 147
+docs/build-connectors/connector-reference/persistent-storage.mdx
+  s_94864882421579::t_ff3c29763840a7 9
+packages/connectors/community/slack/src/lib/auth.ts
+  s_94864882421579::t_ff3c29763840a7 13
+packages/connectors/core/schedule/src/lib/triggers/every-x-minutes.trigger.ts
+  s_94864882421579::t_ff3c29763840a7 11
+packages/web/src/features/automations/components/automations-selection-bar.tsx
+  s_94864882421579::t_ff3c29763840a7 57
+packages/web/src/app/connections/replace-connections-dialog.tsx
+  s_94864882421579::t_ff3c29763840a7 2,52,210-211,214,218,223,252,271,281,436,444,447,462,464,469,475,489,518
+  s_94864882421579::t_7cda38fb019be5 81-83,106-128,453-455,537-538
+packages/web/src/app/builder/connector-properties/array-property-in-inline-item-mode.tsx
+  s_94864882421579::t_ff3c29763840a7 9,40
+packages/connectors/core/http/src/i18n/de.json
+  s_94864882421579::t_ff3c29763840a7 35-37
+packages/server/api/test/integration/webhooks/webhook-oversized-file.test.ts
+  s_94864882421579::t_ff3c29763840a7 4,9,26,36,45,51,55,64,70,80,89,96,98-103
+packages/server/worker/test/lib/worker-settings-override.test.ts
+  s_94864882421579::t_ff3c29763840a7 48,50,77,81,86
+brain/knowledge/workflows-execution/subflows.md
+  s_94864882421579::t_ff3c29763840a7 7,10-12,15,19-20,30-32,34,43-44,46,48
+packages/web/src/app/builder/test-step/custom-test-step/test-webhook-dialog.tsx
+  s_94864882421579::t_ff3c29763840a7 1,74,81,97,107
+docs/embedding/embed-builder.mdx
+  s_94864882421579::t_ff3c29763840a7 38,69,73,77,79-80,87-88
+packages/connectors/core/manual-trigger/src/i18n/pt.json
+  s_94864882421579::t_ff3c29763840a7 3,5
+packages/server/api/test/integration/engine-services/engine-services.test.ts
+  s_94864882421579::t_ff3c29763840a7 4,8,15-16,57-62,64-65,67-70,72-73,75,78-79,82,90-105,109-110,114-117,119-122,124,127-128,131,138,141-142,145,342,357,369,379-380,384,388,391-392
+packages/connectors/community/slack/src/i18n/pt.json
+  s_94864882421579::t_ff3c29763840a7 69,121,195,198-199,201
+packages/connectors/core/approval/src/i18n/es.json
+  s_94864882421579::t_ff3c29763840a7 5-6
+packages/server/engine/src/lib/handler/router-executor.ts
+  s_94864882421579::t_ff3c29763840a7 8-9,88,93,129
+packages/connectors/community/github/src/lib/actions/trigger-workflow-dispatch.ts
+  s_94864882421579::t_ff3c29763840a7 104,146,157,162,214
+packages/web/src/app/builder/workflow-canvas/utils/workflow-screenshot-utils.ts
+  s_94864882421579::t_ff3c29763840a7 12,14,17,22-24,27,29,36-37,39,41,47,54,87,92,105-106,188,261,291,295,305,310,397,490,502,615-616
+docs/adr/0007-runtime-keeps-worker-sandbox-engine.md
+  s_94864882421579::t_ff3c29763840a7 38
+docs/endpoints/workflows/get.mdx
+  s_94864882421579::t_ff3c29763840a7 2-3
+packages/web/src/app/builder/connectors-selector/explore-tab-content.tsx
+  s_94864882421579::t_ff3c29763840a7 1,33
+AGENTS.md
+  s_94864882421579::t_ff3c29763840a7 19,54,90
+packages/server/api/test/unit/app/workflows/workflow-version/workflow-version.service.test.ts
+  s_94864882421579::t_ff3c29763840a7 3-6,10,44,50-52,56-57,62-63,69,94,99-100,106,113,127,134,139,149-150,153,159,163,165,170,177-178,181,185,187,192,197-198,205,211,215,217,222
+packages/web/src/app/builder/workflow-canvas/index.tsx
+  s_94864882421579::t_ff3c29763840a7 3-7,34-37,42,49,60,67,73,93,98-99,115,118,126,129,143,155,168-170,172,179,219,229,231,255,266,272,275,277,280,289-290,292,295,300,309,313-314,317,324-325,333
+  s_94864882421579::t_7cda38fb019be5 40,75-78,162-164
+docs/admin-guide/security/audit-logs/execution-started.mdx
+  s_94864882421579::t_ff3c29763840a7 2-3
+packages/connectors/core/delay/src/i18n/es.json
+  s_94864882421579::t_ff3c29763840a7 11
+brain/knowledge/platform-editions-ee/workspaces.md
+  s_94864882421579::t_ff3c29763840a7 7,12
+packages/core/connector-types/src/lib/workflows.ts
+  s_94864882421579::t_ff3c29763840a7 2-4,6
+packages/core/shared/src/lib/automation/variable/variable.ts
+  s_94864882421579::t_ff3c29763840a7 31
+packages/core/execution/src/lib/workers/worker-contract.ts
+  s_94864882421579::t_ff3c29763840a7 2,4-5,9,20-21,33-34,38,42-43,49,54-55,73,77-79,82,85-86,93,97,103
+packages/connectors/core/delay/src/lib/output-schemas.ts
+  s_94864882421579::t_ff3c29763840a7 5,15,27
+brain/knowledge/platform-editions-ee/platform-configuration.md
+  s_94864882421579::t_ff3c29763840a7 16,29
+packages/cli/src/lib/commands/benchmark.ts
+  s_94864882421579::t_ff3c29763840a7 42-43,56,60,68-69,74-77,235,239,357,360,363,385-386,388-389,391,393,396-397,399-400,408,410-411,415-416,429-430,490,496-499,502-503,506-508,520-521,523,527,529,533,540,592,595,616,695,720,787,789-791,796-797,800-804,923,1017,1020,1023-1029,1107,1112,1144,1153
+packages/connectors/core/approval/src/i18n/fr.json
+  s_94864882421579::t_ff3c29763840a7 5-6
+packages/core/execution/src/lib/workflows/folders/list-folders-response.ts
+  s_94864882421579::t_ff3c29763840a7 3
+packages/server/api/test/unit/app/workflows/migrations/migrate-v21-step-output-nesting.test.ts
+  s_94864882421579::t_ff3c29763840a7 3-6,9,11,14,20,27-28,49,74,100,127,185,206,231,252,276,301,325,348,370,394,426,460,481,489,513,517,541
+packages/web/src/features/executions/api/executions-api.ts
+  s_94864882421579::t_ff3c29763840a7 8,15,45,53,57,71,104,109
+packages/web/src/app/builder/builder-header/builder-header.tsx
+  s_94864882421579::t_ff3c29763840a7 4-5,36-37,46,49-50,52,64,67-68,73-74,84,88-90,97,115,124,129,134,139,145,149-150,153,158-159,161,163,174,197,210-211,220
+  s_94864882421579::t_7cda38fb019be5 92-94
+brain/knowledge/decisions/000024-configuring-an-agent-step-tool-authorises-the-action-not-its-arguments.md
+  s_94864882421579::t_ff3c29763840a7 7-8,12,55
+packages/server/api/src/app/workflows/workflow/human-input/chat-controller.ts
+  s_94864882421579::t_ff3c29763840a7 9-10,19,21
+packages/server/api/src/app/workers/engine-controller.ts
+  s_94864882421579::t_ff3c29763840a7 10-12,14,18-19,33-36,39,96-97,106,111,120,122,167,172
+  s_94864882421579::t_7cda38fb019be5 2
+packages/connectors/core/manual-trigger/src/i18n/nl.json
+  s_94864882421579::t_ff3c29763840a7 3,5
+packages/web/src/app/builder/state/workflow-state.ts
+  s_94864882421579::t_ff3c29763840a7 3-9,11,22,26,28-30,34,37,40,47,52-53,58-59,78-80,85-86,89-91,93,101-103,106-107,116-117,169-171,175,181-182,186,193,195,200,203-204,207-210,212,218,223-224,227-229,235-237,244,258,262,266,269,279,281,287-288,299-300,308-309,327,334,341-342,344,348,356,361,369,374,387-388,390,394,399-400,405,418,433,436-437,439-441,443-444,446,448,450,452,456,458-459
+  s_94864882421579::t_7cda38fb019be5 65-68,123-124,163-166,191-192,238-241,273-276
+packages/web/src/app/builder/workflow-canvas/nodes/step-node/step-node-status-in-draft.tsx
+  s_94864882421579::t_7cda38fb019be5 46-49
+  s_94864882421579::t_ff3c29763840a7 3-4,6,22,51,63,66,146
+packages/web/src/app/components/global-search/global-search-context.tsx
+  s_94864882421579::t_ff3c29763840a7 138
+packages/connectors/community/slack/src/i18n/zh.json
+  s_94864882421579::t_ff3c29763840a7 69,121,195,198-199,201
+packages/core/execution/src/lib/workflows/folders/folder.ts
+  s_94864882421579::t_ff3c29763840a7 18
+packages/connectors/core/forms/src/i18n/vi.json
+  s_94864882421579::t_ff3c29763840a7 3,10-11,17-19
+packages/web/public/locales/pt/translation.json
+  s_94864882421579::t_ff3c29763840a7 4,30,70,144-145,264,416-417,427-430,440,452,471-472,474-476,480,496-497,499,512-513,518,612,622,628,635-636,638,642,794,799-800,812,818-820,822-823,827-828,839-841,851,855,857,860,873,879,910,918,923,926-928,931-932,935,937,940-943,945-949,968-970,976,980,982,1014,1077,1081,1114,1118,1150,1198,1315-1316,1326,1451,1453,1475,1500,1509,1513,1517,1543-1544,1576,1580-1581,1593-1599,1748,1755-1757,1784,1802-1803,1874,1878-1879,1900,1902,1982,2027,2039,2057,2062-2064,2069-2071,2075,2080,2083,2090-2094,2096-2098,2101-2102,2126,2143,2146-2147,2173,2185,2203,2211,2278,2281-2284
+packages/web/src/features/automations/components/automations-table.tsx
+  s_94864882421579::t_ff3c29763840a7 1,32,34,36-37,98,100,102-103,196,198,200-201,203,232,234,270,272
+packages/server/engine/test/handler/workflow-with-pause.test.ts
+  s_94864882421579::t_ff3c29763840a7 3,5,11,45,58,63,77-79,94-95,126-127,129,132,149,173-175,184-185,248,250
+packages/core/execution/src/lib/workflows/operations/move-action.ts
+  s_94864882421579::t_ff3c29763840a7 1-4,7-9,14,16,22,24
+packages/connectors/core/delay/src/i18n/zh.json
+  s_94864882421579::t_ff3c29763840a7 11
+packages/core/execution/src/lib/workflows/operations/delete-action.ts
+  s_94864882421579::t_ff3c29763840a7 1-3,7,9-10,12,14,18,23,28,37-38
+packages/connectors/core/subflows/src/i18n/translation.json
+  s_94864882421579::t_ff3c29763840a7 2-3,5-7,12,16-17,19,24
+docs/install/troubleshooting/truncated-logs.mdx
+  s_94864882421579::t_ff3c29763840a7 3,9,22,31
+packages/connectors/core/http/src/i18n/id.json
+  s_94864882421579::t_ff3c29763840a7 31
+packages/connectors/community/slack/src/i18n/nl.json
+  s_94864882421579::t_ff3c29763840a7 69,121,195,198-199,201
+docs/handbook/engineering/postmortems/2026-03-redis-queue-events-overload.mdx
+  s_94864882421579::t_ff3c29763840a7 7,15
+packages/web/src/app/builder/workflow-canvas/nodes/big-add-button-node.tsx
+  s_94864882421579::t_7cda38fb019be5 14,118-119
+  s_94864882421579::t_ff3c29763840a7 12,35,48,64-65,71-72,88,173,178
+packages/connectors/core/subflows/src/index.ts
+  s_94864882421579::t_ff3c29763840a7 2-4,8-10,13,16-17
+packages/connectors/core/subflows/src/lib/actions/call-workflow.ts
+  s_94864882421579::t_ff3c29763840a7 8,10,12,14-16,18-20,41,46,48,53-54,57,70,87,97-100,116
+packages/core/execution/src/lib/workflows/operations/notes-operations.ts
+  s_94864882421579::t_ff3c29763840a7 2,6-8,14,17-20,23-26
+packages/connectors/core/store/src/lib/actions/store-put-action.ts
+  s_94864882421579::t_ff3c29763840a7 41
+brain/knowledge/platform-editions-ee/ee-workspaces-rbac.md
+  s_94864882421579::t_ff3c29763840a7 11-12,17,22-23,28
+packages/server/api/src/assets/prompts/guides/tables.md
+  s_94864882421579::t_ff3c29763840a7 3,7,11,41,43
+packages/core/execution/src/lib/execution/state/index.ts
+  s_94864882421579::t_ff3c29763840a7 4
+packages/core/execution/src/lib/workflows/operations/update-action.ts
+  s_94864882421579::t_ff3c29763840a7 3-5,8-9,14,27,29-31,35,41-43,47,53-55,59,66-68,72
+packages/server/engine/src/lib/helper/execution-progress-reporter.ts
+  s_94864882421579::t_ff3c29763840a7 12,35,40,43,52,57-58,62,66,98,102,107-108,127,138,143-144,213,240,253
+packages/server/api/src/assets/prompts/chat-compaction-prompt.md
+  s_94864882421579::t_ff3c29763840a7 5,8,13
+packages/server/api/test/integration/connection/connection.test.ts
+  s_94864882421579::t_ff3c29763840a7 409
+packages/server/api/test/integration/workflows/execution/retry-execution.test.ts
+  s_94864882421579::t_ff3c29763840a7 1,6,30-31,33-35,37,41-42,50,53,60,80,98,105,108,110,121-122,124-126,128,149-150,172-173,183,203-204,206-208,210,218-219,241-242,250
+packages/server/worker/src/lib/execute/utils/trigger-run-recorder.ts
+  s_94864882421579::t_7cda38fb019be5 3
+  s_94864882421579::t_ff3c29763840a7 5-6,9,13,20
+packages/connectors/core/approval/src/i18n/ru.json
+  s_94864882421579::t_ff3c29763840a7 6-7
+docs/install/architecture/autoscaling.mdx
+  s_94864882421579::t_ff3c29763840a7 7,10,26,32
+packages/web/src/features/workflows/utils/template-parser.ts
+  s_94864882421579::t_ff3c29763840a7 1,10-12,18,25-26,36,41-43,45,47
+packages/connectors/core/manual-trigger/src/i18n/zh.json
+  s_94864882421579::t_ff3c29763840a7 3,5
+packages/server/api/test/unit/app/workers/migrations/job-data-migrations.test.ts
+  s_94864882421579::t_ff3c29763840a7 1,5-7,9,28,30,34-35,52-54,64,66,70,79,86,90,99,104,106,108,111,119,124,131,136,143,148,154,160,166,182,188,195,201,207,213,219,224,230
+packages/server/engine/test/variables/props-resolver.test.ts
+  s_94864882421579::t_ff3c29763840a7 3-4,17-18,21,46,54,61,67-68,81,88,97,104,301,307-308,315,336-337,357-358,371-372,385-386,410-411,424-425
+packages/web/src/app/builder/step-settings/connector-settings/index.tsx
+  s_94864882421579::t_ff3c29763840a7 59-60,69-72,341
+packages/web/src/app/builder/connectors-selector/custom-connector-selector-items-utils.ts
+  s_94864882421579::t_ff3c29763840a7 1,28
+packages/server/api/src/app/template/template.controller.ts
+  s_94864882421579::t_ff3c29763840a7 42-43,72-73
+  s_94864882421579::t_7cda38fb019be5 10
+packages/web/src/app/builder/workflow-canvas/edges/branch-label.tsx
+  s_94864882421579::t_ff3c29763840a7 3,5-6,23-24,82,97,116-117,134,143,156,182,205
+  s_94864882421579::t_7cda38fb019be5 57-60,135-136
+packages/web/src/app/builder/workflow-canvas/nodes/step-node/step-drag-overlay.tsx
+  s_94864882421579::t_ff3c29763840a7 1,12,26,30,46-47
+  s_94864882421579::t_7cda38fb019be5 14-18
+packages/core/execution/src/lib/workflows/triggers/trigger-events/trigger-event.ts
+  s_94864882421579::t_ff3c29763840a7 9
+docs/build-connectors/misc/create-new-ai-provider.mdx
+  s_94864882421579::t_ff3c29763840a7 93,99
+packages/server/sandbox/src/lib/cache/workflow/workflow-bundle-store.ts
+  s_94864882421579::t_ff3c29763840a7 9,13-15,17,26,33,40,49,52,54,56,58,60-61,73-74,82,92,96,100-101,108,113,120,124-125,129-130
+  s_94864882421579::t_7cda38fb019be5 4
+packages/core/shared/src/lib/automation/connection/dto/upsert-connection-request.ts
+  s_94864882421579::t_ff3c29763840a7 204,208
+packages/server/engine/src/lib/core/connector/connector-context-builder.ts
+  s_94864882421579::t_7cda38fb019be5 10
+  s_94864882421579::t_ff3c29763840a7 3,46,52,55-56,104,116,119-120,148,151-152,267,275-276,280
+brain/knowledge/engineering/server-module-anatomy.md
+  s_94864882421579::t_ff3c29763840a7 140
+packages/server/api/src/app/trigger/dedupe-service.ts
+  s_94864882421579::t_ff3c29763840a7 9-10,15,20
+packages/connectors/core/webhook/src/i18n/ja.json
+  s_94864882421579::t_ff3c29763840a7 2,6,9,11,21-23
+packages/core/execution/src/lib/workflows/util/workflow-canvas-util.ts
+  s_94864882421579::t_ff3c29763840a7 1-3,5-11,13,17,20-21,25-26,28-29,31-35,37-38,40,43,52,59,68,75,77-80,82-84,88,91,100,106,125,134,138,145-146,151,158,160,169,172-173,179,184,189,192,198,200,203
+packages/server/api/src/app/workflows/execution/execution-entity.ts
+  s_94864882421579::t_ff3c29763840a7 5-6,17-18,30-31,99-100,115-116,119-120,131-132,160,162,166-167,170,172,176-177
+brain/knowledge/connections-auth/managed-auth.md
+  s_94864882421579::t_ff3c29763840a7 14
+benchmark/EXPERIMENTS.md
+  s_94864882421579::t_ff3c29763840a7 23,37,39,41,44,78,80,88,90,120-121,277
+packages/connectors/community/slack/src/lib/actions/request-action-direct-message.ts
+  s_94864882421579::t_ff3c29763840a7 10,23,31
+packages/connectors/core/http/src/i18n/vi.json
+  s_94864882421579::t_ff3c29763840a7 33
+packages/core/shared/src/lib/management/template/template.requests.ts
+  s_94864882421579::t_7cda38fb019be5 3
+  s_94864882421579::t_ff3c29763840a7 15,19,28,30,32,35,42,44
+brain/knowledge/ai-intelligence/index.md
+  s_94864882421579::t_ff3c29763840a7 17
+packages/web/src/app/builder/connectors-selector/approvals-tab-content.tsx
+  s_94864882421579::t_7cda38fb019be5 71-74
+  s_94864882421579::t_ff3c29763840a7 2,118,131
+packages/web/src/app/builder/workflow-canvas/edges/straight-line-edge.tsx
+  s_94864882421579::t_ff3c29763840a7 4,27,38,44,48,50-51
+packages/web/src/app/builder/test-step/test-trigger-section/manual-webhook-test-button.tsx
+  s_94864882421579::t_ff3c29763840a7 1,20
+packages/core/execution/src/lib/workflows/operations/paste-operations.ts
+  s_94864882421579::t_ff3c29763840a7 1-3,5-6,27-28,31-32,34-35,39,50
+brain/knowledge/decisions/000020-credit-gating-fails-open-on-an-unknown-balance.md
+  s_94864882421579::t_ff3c29763840a7 82,102,106,117,128
+benchmark/run-gke.sh
+  s_94864882421579::t_ff3c29763840a7 51,58,80,91,96-98,104,190,196
+packages/connectors/core/subflows/src/i18n/id.json
+  s_94864882421579::t_ff3c29763840a7 2-4,6-8,12,16-17,19
+packages/connectors/core/webhook/src/i18n/ru.json
+  s_94864882421579::t_ff3c29763840a7 3,7,10,12,22-24
+brain/knowledge/ai-intelligence/mcp-server.md
+  s_94864882421579::t_ff3c29763840a7 7,12,17,19-20,27,31,44,46
+brain/knowledge/engineering/architecture-spine.md
+  s_94864882421579::t_ff3c29763840a7 25,42
+packages/server/sandbox/test/lib/cache/connector-installer.test.ts
+  s_94864882421579::t_ff3c29763840a7 83
+benchmark/k8s-sandbox.yaml
+  s_94864882421579::t_ff3c29763840a7 4,30
+packages/connectors/community/slack/src/i18n/vi.json
+  s_94864882421579::t_ff3c29763840a7 157,161
+packages/web/src/features/workflows/components/workflow-created-by-badge.tsx
+  s_94864882421579::t_ff3c29763840a7 1,12-13,17,20-21
+docs/workflows/versioning.mdx
+  s_94864882421579::t_ff3c29763840a7 4,7,9,12,14,16
+packages/connectors/core/manual-trigger/src/i18n/fr.json
+  s_94864882421579::t_ff3c29763840a7 3,5
+brain/knowledge/decisions/000025-connection-connector-binding-is-enforced-in-the-engine.md
+  s_94864882421579::t_ff3c29763840a7 47
+packages/server/api/src/app/helper/system-validator.ts
+  s_94864882421579::t_ff3c29763840a7 64,66,188,287-288,290
+.agents/skills/triage-dependabot-alerts/SKILL.md
+  s_94864882421579::t_ff3c29763840a7 16,188
+packages/connectors/core/store/src/i18n/id.json
+  s_94864882421579::t_ff3c29763840a7 25
+packages/web/src/features/connectors/hooks/connectors-hooks.ts
+  s_94864882421579::t_ff3c29763840a7 10-11,14,58,132,251-252,269-271,300,489,494,499-500,543,546,549
+packages/core/execution/src/lib/workflows/operations/add-action.ts
+  s_94864882421579::t_ff3c29763840a7 4-6,10,15,28,30,33,39,42,46,49,53,56,83,105,115,117,138-139,150,152
+docs/handbook/engineering/playbooks/ai-engineering-guide.mdx
+  s_94864882421579::t_ff3c29763840a7 21,34
+packages/web/src/features/workflows/hooks/trigger-event-hooks.ts
+  s_94864882421579::t_ff3c29763840a7 10,14,18
+docs/resources/diagrams/autoscaling-drain.html
+  s_94864882421579::t_ff3c29763840a7 32,63
+packages/server/api/src/app/workflows/workflow/workflow-service-side-effects.ts
+  s_94864882421579::t_7cda38fb019be5 2
+  s_94864882421579::t_ff3c29763840a7 8,11-12,17,19-20,27,29-30,40,42-43,48-49,54-56,60-62,67,69,71,76,78,80-84,87,90,94-95,101,103,105-106,111,115,117-118,125-126,128-129,134-136,143,146-147,150-153,157,163-165
+packages/connectors/core/http/src/i18n/translation.json
+  s_94864882421579::t_ff3c29763840a7 35-37
+packages/connectors/core/manual-trigger/src/i18n/ja.json
+  s_94864882421579::t_ff3c29763840a7 3,5
+packages/server/sandbox/test/lib/cache/workflow/code/code-cache.test.ts
+  s_94864882421579::t_ff3c29763840a7 6,24,26,33,44
+packages/web/src/features/automations/hooks/use-automations-data.ts
+  s_94864882421579::t_7cda38fb019be5 12,57-59
+  s_94864882421579::t_ff3c29763840a7 2,4,66,72,80-83,85,93,100,147,155,161,177,182,194,221,226,231,245,268,271,273-275
+packages/connectors/core/schedule/src/i18n/ca.json
+  s_94864882421579::t_ff3c29763840a7 34,41-45
+packages/core/execution/src/lib/execution/state/execution-journal.ts
+  s_94864882421579::t_ff3c29763840a7 2,16,59,75,99,121,145
+packages/core/execution/src/lib/workflows/operations/delete-branch.ts
+  s_94864882421579::t_ff3c29763840a7 1-3,6-8
+packages/connectors/core/approval/src/index.ts
+  s_94864882421579::t_ff3c29763840a7 13
+brain/knowledge/platform-editions-ee/ee-platform-plans-billing.md
+  s_94864882421579::t_ff3c29763840a7 10-12,18,22,27,50
+packages/server/engine/test/handler/workflow-skip-progress.test.ts
+  s_94864882421579::t_ff3c29763840a7 1,3,15,19,21,27,44-46,58,64-66,88-89
+docs/embedding/sdk-changelog.mdx
+  s_94864882421579::t_ff3c29763840a7 33,42,47,51,69-70,79,99,117-118
+packages/connectors/core/schedule/src/lib/triggers/every-hour.trigger.ts
+  s_94864882421579::t_ff3c29763840a7 8
+packages/connectors/core/delay/src/i18n/hi.json
+  s_94864882421579::t_ff3c29763840a7 12
+packages/server/engine/src/lib/api/engine-run-api.ts
+  s_94864882421579::t_ff3c29763840a7 1,14-15,44
+packages/server/engine/test/handler/workflow-with-delay.test.ts
+  s_94864882421579::t_ff3c29763840a7 2-3,9,22-23,37-39,55,69-71,75-76,99,109-111,121,123,136-138,155,164-166
+packages/tests-e2e/scenarios/workflows/webhook-should-return-response.spec.ts
+  s_94864882421579::t_ff3c29763840a7 9,41
+.agents/skills/agent-browser/references/session-management.md
+  s_94864882421579::t_ff3c29763840a7 22
+brain/knowledge/decisions/000026-delete-platform-is-a-cloud-owner-action-purged-by-one-cascading-job.md
+  s_94864882421579::t_ff3c29763840a7 11,13,31,53
+packages/server/worker/test/lib/execute/utils/trigger-run-recorder.test.ts
+  s_94864882421579::t_ff3c29763840a7 1,5,10-11,14,16,22,33,43,52,60,62,73
+packages/connectors/core/store/src/i18n/pt.json
+  s_94864882421579::t_ff3c29763840a7 24
+packages/core/execution/src/lib/execution/dto/list-executions-request.ts
+  s_94864882421579::t_ff3c29763840a7 4,7
+packages/connectors/community/slack/src/lib/actions/update-message.ts
+  s_94864882421579::t_ff3c29763840a7 3-4,18,37,54-55
+packages/server/worker/test/lib/execute/utils/webhook-url.test.ts
+  s_94864882421579::t_ff3c29763840a7 6,9-10,14-15,19-20,24-25,29-30,74,83-84,100,104,108-109,115-116
+packages/web/src/features/executions/components/runs-table/index.tsx
+  s_94864882421579::t_7cda38fb019be5 172-176
+  s_94864882421579::t_ff3c29763840a7 3,49,113,130,178,187-188,190-192,230,305,383,456,463,500,507,591,598
+packages/connectors/core/http/src/i18n/nl.json
+  s_94864882421579::t_ff3c29763840a7 35-37
+packages/server/api/src/assets/prompts/guides/state.md
+  s_94864882421579::t_ff3c29763840a7 22
+packages/web/src/features/connectors/utils/step-utils.tsx
+  s_94864882421579::t_7cda38fb019be5 28-29,47-49,119-120
+  s_94864882421579::t_ff3c29763840a7 8-10,12-13,32,36,38,42,44,50,52,56,60-62,67,71-72,88,94-97,104-105,123,127,152-153,174,182-183,202,213
+packages/connectors/core/delay/src/i18n/translation.json
+  s_94864882421579::t_ff3c29763840a7 11
+docs/install/reference/breaking-changes.mdx
+  s_94864882421579::t_ff3c29763840a7 34,36,38,64,97,103,108,118-119,132,175-176,181,200-201,216,231,261,267-269,280,338,342,348,377-378,385,389,412,422,428
+benchmark/setup-math.sh
+  s_94864882421579::t_ff3c29763840a7 4,17,19-21,24,26,75-76,78,80,82-85,88
+packages/connectors/core/webhook/src/i18n/ar.json
+  s_94864882421579::t_ff3c29763840a7 3,7,10,12,22-24
+packages/server/api/src/app/workflows/folder/folder.service.ts
+  s_94864882421579::t_ff3c29763840a7 7,12,62,115-116,139,142
+packages/web/src/app/builder/step-settings/step-settings-context.tsx
+  s_94864882421579::t_ff3c29763840a7 42,55
+  s_94864882421579::t_7cda38fb019be5 7-11
+packages/core/shared/src/lib/management/template/workflow-template/workflow-template.request.ts
+  s_94864882421579::t_ff3c29763840a7 4,8
+packages/web/src/app/builder/types/index.ts
+  s_94864882421579::t_ff3c29763840a7 9
+packages/connectors/core/schedule/src/i18n/es.json
+  s_94864882421579::t_ff3c29763840a7 33,40-44
+packages/web/src/features/connectors/utils/connector-selector-utils.ts
+  s_94864882421579::t_ff3c29763840a7 12-13,18,21,24,27-28,56-58,85,87-88,102,112,115,148,177,180,192-193,195,202-203,205,233,243,266,276,370,373,375-377
+docs/endpoints/workflows/list.mdx
+  s_94864882421579::t_ff3c29763840a7 2-3
+packages/server/sandbox/test/lib/create-sandbox-for-job.test.ts
+  s_94864882421579::t_ff3c29763840a7 39,41,67,69
+docs/endpoints/executions/schema.mdx
+  s_94864882421579::t_ff3c29763840a7 2
+packages/core/execution/src/lib/workflows/actions/action.ts
+  s_94864882421579::t_ff3c29763840a7 7,51-52,73,94,109,290,293,297,301-302,306,308-309,315-316,321,341-345,348,350-351,355,357-358,362,364,369,371
+packages/server/api/test/unit/app/core/canary/canary-routing.middleware.test.ts
+  s_94864882421579::t_ff3c29763840a7 25,27-29,162,170,175,180,184-185,191
+packages/core/shared/src/lib/automation/webhook/dto.ts
+  s_94864882421579::t_ff3c29763840a7 5
+packages/server/engine/test/operations/workflow-operation-invariants.test.ts
+  s_94864882421579::t_ff3c29763840a7 7,9-10,16,53,56,61-62,67,74,81,89,103-104,107,118,121,138,143,150,158,175,194-195,202-203,212-213,223,226,238,252,267,281,287,293,304,306,313,318-319,330,336,347,349,354,373,379,384,395,397,404,422,428,434,445,447,452,466,483,505,509,528,533,553,565,568,588,592,607,611,626,644
+packages/core/execution/src/lib/workflows/operations/copy-action-operations.ts
+  s_94864882421579::t_ff3c29763840a7 1-3,5-6,8-9,11,17
+packages/server/sandbox/src/lib/sandbox.ts
+  s_94864882421579::t_ff3c29763840a7 59,68,113,118,121,126-129,139
+packages/connectors/core/http/src/i18n/fr.json
+  s_94864882421579::t_ff3c29763840a7 35-37
+docs/install/reference/limits.mdx
+  s_94864882421579::t_ff3c29763840a7 19,34,36,41,43,49-50,58,66,69,75,78,84,138
+packages/web/src/app/builder/workflow-canvas/edges/loop-return-edge.tsx
+  s_94864882421579::t_ff3c29763840a7 4,29,33,36-37,40,44,47-48,51,59-60,70,77-78
+  s_94864882421579::t_7cda38fb019be5 22-23
+brain/knowledge/decisions/000010-async-webhook-ack-is-redis-durable-not-postgres-durable.md
+  s_94864882421579::t_ff3c29763840a7 14
+docs/admin-guide/guides/secret-managers/hashicorp.mdx
+  s_94864882421579::t_ff3c29763840a7 55,75,78
+packages/server/api/test/integration/trigger-events/trigger-event.test.ts
+  s_94864882421579::t_ff3c29763840a7 2,24-25,28,32,38,47-48,51,54,60,66,74,77-78,81,85,96-97,100,102-104,108,119,123-124,127,131
+packages/server/api/src/app/webhooks/webhook.service.ts
+  s_94864882421579::t_ff3c29763840a7 22,28-30,33,36,40-41,47,50,61,69-71,75-77,86,92,96,98-99,101-102,104-105,107,110-113,118-119,131-133,163,165-166,170,172,179,181-184,188,190,197-198,200,208,210,219,224,226,246,250,255,262,264-265,276-277,279,298-299,323,325,329,338,342,345,357,362,377-378,382
+  s_94864882421579::t_7cda38fb019be5 1,3,14-16
+docs/install/guarantees/crash-recovery.mdx
+  s_94864882421579::t_ff3c29763840a7 7,10,25
+packages/server/sandbox/src/lib/sandbox/sandbox.ts
+  s_94864882421579::t_ff3c29763840a7 23,32-33,35-36,152,158,165,230,386,394
+packages/connectors/core/webhook/src/lib/actions/return-response-and-wait-for-next-webhook.ts
+  s_94864882421579::t_ff3c29763840a7 25-26,30
+brain/knowledge/ai-intelligence/ai-providers.md
+  s_94864882421579::t_ff3c29763840a7 7,44
+packages/connectors/core/schedule/src/i18n/translation.json
+  s_94864882421579::t_ff3c29763840a7 33,40-44
+packages/web/public/locales/ja/translation.json
+  s_94864882421579::t_ff3c29763840a7 4,30,70,144-145,264,416-417,427-430,440,452,471-472,474-476,480,496-497,499,512-513,518,612,622,628,635-636,638,642,794,799-800,812,818-820,822-823,827-828,839-841,851,855,857,860,873,879,910,918,923,926-928,931-932,935,937,940-943,945-949,968-970,976,980,982,1014,1077,1081,1114,1118,1150,1198,1315-1316,1326,1451,1453,1475,1500,1509,1513,1517,1543-1544,1576,1580-1581,1593-1599,1748,1755-1757,1784,1802-1803,1874,1878-1879,1900,1902,1982,2027,2039,2057,2062-2064,2069-2071,2075,2080,2083,2090-2094,2096-2098,2101-2102,2126,2143,2146-2147,2173,2185,2203,2211,2278,2281-2284
+packages/server/api/src/app/helper/errors/catalog.ts
+  s_94864882421579::t_ff3c29763840a7 4
+packages/server/api/src/app/workflows/execution/engine-run-callback-service.ts
+  s_94864882421579::t_ff3c29763840a7 2,21,119-120
+README.md
+  s_94864882421579::t_55761555541853 71,91
+packages/web/src/lib/navigation-utils.tsx
+  s_94864882421579::t_2ff8593b7d3757 25
+packages/web/test/app/builder/connector-properties/dynamic-connector-property.test.tsx
+  s_94864882421579::t_a7c040ed7710c5 30
+packages/web/test/app/builder/connector-properties/text-input-with-mentions/components/function-search-popover.test.tsx
+  s_94864882421579::t_bffcc6318d0eaa 79
+packages/web/test/app/builder/data-selector/utils.test.ts
+  s_94864882421579::t_8818dc3bf113ce 4,23,25
+packages/web/test/app/builder/shortcuts.test.tsx
+  s_94864882421579::t_5347789a05e18b 6-11,33,36,40,43,46,54-55,60,68,85,87-88,178,187
+packages/web/test/app/builder/workflow-canvas/utils/layout-consts.test.ts
+  s_94864882421579::t_39349312b0624c 3,5,8,11
+packages/web/test/app/builder/workflow-canvas/utils/svg-path-utils.test.ts
+  s_94864882421579::t_21f40c83f0c9c4 3
+packages/web/test/app/builder/workflow-canvas/utils/workflow-canvas-utils.test.ts
+  s_94864882421579::t_ddbc7262661dc7 5-8,12-13,30,42,47,56-57,63,71,81,83-84,93-94,106-107
+packages/web/test/app/builder/workflow-canvas/widgets/use-workflow-lock.test.tsx
+  s_94864882421579::t_877e31f22a1e30 6-7,22,32,37,45,66-67,78,82,113,125
+packages/web/test/app/components/global-search/global-search-context.test.tsx
+  s_94864882421579::t_926aa0ea6ac9c4 7
+packages/web/test/hooks/use-resource-lock.test.tsx
+  s_94864882421579::t_7d9f3f8db0da38 88
+packages/web/test/lib/acquisition-utils.test.ts
+  s_94864882421579::t_1fa34be8228dbf 81,84
+packages/web/test/lib/route-utils.test.ts
+  s_94864882421579::t_d076b9471807bf 20
+packages/web/tsconfig.app.json
+  s_94864882421579::t_70cad000702c9d 39
+smoke-test/verify-delay.sh
+  s_94864882421579::t_99034dde3a3fcb 8,45-47,52-53,55-57,61,125,127-129,134-136,141,143,145,149,155,162,170-171,173,179,181,186,201
+smoke-test/verify-isolation.sh
+  s_94864882421579::t_9cc40e98da20c9 4,8,16
+smoke-test/verify-memory-limit.sh
+  s_94864882421579::t_239eb67d1d59a8 4-5,12,21,41,66
+smoke-test/verify-memory.sh
+  s_94864882421579::t_21da16b3ebe361 4,10,14
+smoke-test/verify-perf.sh
+  s_94864882421579::t_6c04d6760f6a4c 4,15,31,34
+smoke-test/verify-s3.sh
+  s_94864882421579::t_94e618e5a2dd0a 7-8,12,21,43,51,68,71,80
+smoke-test/verify.sh
+  s_94864882421579::t_59fd2c9737141f 4,12,37
+tools/scripts/pr-size-check.test.ts
+  s_94864882421579::t_5cf8737ae52765 65
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "593dea0fa50ec4051af89a2512851715a7d609aa",
+  "prompts": {},
+  "sessions": {
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

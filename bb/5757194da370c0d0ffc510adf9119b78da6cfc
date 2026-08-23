@@ -1,0 +1,25 @@
+brain/knowledge/decisions/000030-this-fork-has-no-editions-the-ee-pages-are-history.md
+  s_94864882421579::t_e7606dd795b9b6 1-37
+brain/knowledge/platform-editions-ee/index.md
+  s_94864882421579::t_e7606dd795b9b6 7-10,54-66
+brain/knowledge/engineering/index.md
+  s_94864882421579::t_2761b4e00c829d 38-39
+brain/knowledge/engineering/regenerate-the-baseline-migration.md
+  s_94864882421579::t_8935d8cd4a291d 1-63
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "bb5757194da370c0d0ffc510adf9119b78da6cfc",
+  "prompts": {},
+  "sessions": {
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

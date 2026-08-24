@@ -2516,5 +2516,8 @@
   "connections need attention": "connections need attention",
   "Most used connectors": "Most used connectors",
   "Recently edited": "Recently edited",
-  "No workflows yet": "No workflows yet"
+  "No workflows yet": "No workflows yet",
+  "Control how people sign in to this tenant": "Control how people sign in to this tenant",
+  "Sign-in is turned off": "Sign-in is turned off",
+  "This tenant does not allow signing in with an email address. Ask an administrator to turn it back on.": "This tenant does not allow signing in with an email address. Ask an administrator to turn it back on."
 }

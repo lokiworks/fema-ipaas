@@ -43,7 +43,6 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from '@/components/ui/input-otp';
-import { HorizontalSeparatorWithText } from '@/components/ui/separator';
 import { authMutations } from '@/features/authentication/hooks/auth-hooks';
 import { captchaUtils } from '@/features/authentication/utils/captcha-utils';
 import { flagsHooks } from '@/hooks/flags-hooks';
@@ -54,14 +53,8 @@ import { useRedirectAfterLogin } from '@/lib/navigation-utils';
 import { cn } from '@/lib/utils';
 
 import { CheckEmailNote } from '../check-email-note';
-import { SamlLoginForm } from '../saml-login-form';
 import { SignInForm } from '../sign-in-form';
 import { SignUpForm } from '../sign-up-form';
-import {
-  ThirdPartyLogin,
-  useShowThirdPartyProviders,
-  useThirdPartyAvailability,
-} from '../third-party-logins';
 
 import { TurnstileWidget, useTurnstileSiteKey } from './turnstile-widget';
 
@@ -88,7 +81,6 @@ export function AuthDrawerBody({ initialMode }: AuthDrawerBodyProps) {
   const [step, setStep] = useState<Step>(
     authenticationSession.isOnboarding() ? 'name' : 'method',
   );
-  const [samlOpen, setSamlOpen] = useState(false);
   // An invitation arrives as /sign-up?email=…, which that route forwards here
   // with the search intact. The address is the invitee's, and they have no
   // account yet, so the card opens on sign-up with the field already filled.
@@ -127,7 +119,7 @@ export function AuthDrawerBody({ initialMode }: AuthDrawerBodyProps) {
     <AutoHeight>
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
-          key={samlOpen ? 'saml' : step}
+          key={step}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -136,8 +128,6 @@ export function AuthDrawerBody({ initialMode }: AuthDrawerBodyProps) {
           <AuthStep
             step={step}
             setStep={setStep}
-            samlOpen={samlOpen}
-            setSamlOpen={setSamlOpen}
             mode={mode}
             setMode={setMode}
             emailForCode={emailForCode}
@@ -195,8 +185,6 @@ function AutoHeight({ children }: { children: React.ReactNode }) {
 function AuthStep({
   step,
   setStep,
-  samlOpen,
-  setSamlOpen,
   mode,
   setMode,
   emailForCode,
@@ -221,8 +209,6 @@ function AuthStep({
   const effectiveMode: AuthMode = firstUser ? 'signup' : mode;
   const emailAuthEnabled = emailAuthEnabledFlag ?? true;
   const passwordlessAvailable = usePasswordlessAvailable();
-  const showThirdParty = useShowThirdPartyProviders();
-  const thirdParty = useThirdPartyAvailability();
 
   // The confirmation is a beat, not a screen: hold it just long enough to read
   // as "that worked" before the name question replaces it.
@@ -238,19 +224,6 @@ function AuthStep({
     authenticationSession.clearSession();
     setStep('method');
   }, [setStep]);
-
-  if (samlOpen) {
-    return (
-      <DrawerShell>
-        <BackLink onClick={() => setSamlOpen(false)} />
-        <Heading title={t('Single sign-on')} />
-        <SamlLoginForm
-          onBack={() => setSamlOpen(false)}
-          showBackButton={false}
-        />
-      </DrawerShell>
-    );
-  }
 
   if (step === 'verified') {
     return (
@@ -272,12 +245,17 @@ function AuthStep({
     );
   }
 
-  // No email/password auth at all — third-party only.
+  // Email sign-in is the only way in, so turning it off leaves nobody a way in.
+  // Say so, rather than showing an empty panel.
   if (!emailAuthEnabled) {
     return (
       <DrawerShell>
-        <Heading title={t('Welcome')} />
-        <ThirdPartyLogin isSignUp={mode === 'signup'} />
+        <Heading title={t('Sign-in is turned off')} />
+        <p className="text-sm text-muted-foreground">
+          {t(
+            'This tenant does not allow signing in with an email address. Ask an administrator to turn it back on.',
+          )}
+        </p>
       </DrawerShell>
     );
   }
@@ -294,14 +272,6 @@ function AuthStep({
               : t('Welcome back')
           }
         />
-        {showThirdParty && (
-          <>
-            <ThirdPartyLogin isSignUp={effectiveMode === 'signup'} />
-            <HorizontalSeparatorWithText className="my-5 text-muted-foreground">
-              {t('or')}
-            </HorizontalSeparatorWithText>
-          </>
-        )}
         {effectiveMode === 'signup' ? (
           <SignUpForm
             showCheckYourEmailNote={checkEmailNote}
@@ -371,17 +341,6 @@ function AuthStep({
       <h1 className={cn(AUTH_TITLE_CLASS, 'mb-6')}>
         {t('Dream big. Automate the rest.')}
       </h1>
-      {/* Google leads: it is one tap against typing an address and waiting for
-          a code. SAML is enterprise plumbing — it lives with the quiet links
-          below so it never competes with the primary path. */}
-      {thirdParty.google && (
-        <>
-          <ThirdPartyLogin isSignUp={mode === 'signup'} hideSaml />
-          <HorizontalSeparatorWithText className="my-4 text-muted-foreground">
-            {t('or')}
-          </HorizontalSeparatorWithText>
-        </>
-      )}
       <EmailStep
         invitedEmail={invitedEmail}
         captchaToken={captchaToken}
@@ -401,22 +360,6 @@ function AuthStep({
         >
           {t('Use password')}
         </button>
-        {thirdParty.saml && (
-          <>
-            <span aria-hidden className="text-border">
-              •
-            </span>
-            <button
-              type="button"
-              onClick={() => {
-                window.location.href = '/api/v1/authn/saml/login';
-              }}
-              className="transition-colors hover:text-foreground"
-            >
-              {t('Use SSO')}
-            </button>
-          </>
-        )}
       </div>
       <LegalNote />
     </DrawerShell>
@@ -1085,8 +1028,6 @@ type AuthDrawerBodyProps = {
 type AuthStepProps = {
   step: Step;
   setStep: Dispatch<SetStateAction<Step>>;
-  samlOpen: boolean;
-  setSamlOpen: Dispatch<SetStateAction<boolean>>;
   mode: AuthMode;
   setMode: Dispatch<SetStateAction<AuthMode>>;
   emailForCode: string;

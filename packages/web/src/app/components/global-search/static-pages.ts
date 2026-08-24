@@ -123,9 +123,9 @@ export const STATIC_PAGES: StaticPage[] = [
     requiresTenantAdmin: true,
   },
   {
-    id: 'page-tenant-sso',
-    label: 'Tenant Admin — Single Sign On',
-    href: '/tenant/security/sso',
+    id: 'page-tenant-authentication',
+    label: 'Tenant Admin — Authentication',
+    href: '/tenant/security/authentication',
     icon: LogInIcon,
     requiresTenantAdmin: true,
   },

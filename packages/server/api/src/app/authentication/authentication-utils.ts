@@ -1,14 +1,39 @@
 import { ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil } from '@fema-ipaas/core-utils'
-import { ApEnvironment, AuthenticationResponse, EndpointScope, PrincipalType, TelemetryEventName, TenantRole, User, UserIdentity, UserIdentityProvider, UserStatus, Workspace, WorkspaceType } from '@fema-ipaas/shared'
+import { ApEnvironment, AuthenticationResponse, EndpointScope, PrincipalType, TelemetryEventName, Tenant, TenantRole, User, UserIdentity, UserIdentityProvider, UserStatus, Workspace, WorkspaceType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyRequest } from 'fastify'
+import { repoFactory } from '../core/db/repo-factory'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
 import { telemetry } from '../helper/telemetry.utils'
+import { TenantEntity } from '../tenant/tenant.entity'
 import { userService } from '../user/user-service'
 import { userInvitationsService } from '../user-invitations/user-invitation.service'
 import { workspaceService } from '../workspace/workspace-service'
 import { accessTokenManager } from './lib/access-token-manager'
 import { userIdentityService } from './user-identity/user-identity-service'
+
+// Its own repo rather than tenantService: tenant.service imports these helpers, and the cycle
+// would leave one of the two modules half-initialised at require time.
+const tenantRepo = repoFactory<Tenant>(TenantEntity)
+
+export function isDomainAllowed({ email, enforce, allowedDomains }: IsDomainAllowedParams): boolean {
+    if (!enforce) {
+        return true
+    }
+    const domain = domainOf(email)
+    if (isNil(domain)) {
+        return false
+    }
+    return allowedDomains.some((allowedDomain) => allowedDomain.trim().toLowerCase() === domain)
+}
+
+function domainOf(email: string): string | null {
+    const parts = email.trim().toLowerCase().split('@')
+    if (parts.length !== 2 || parts[1].length === 0) {
+        return null
+    }
+    return parts[1]
+}
 
 export const authenticationUtils = (log: FastifyBaseLogger) => ({
     async assertUserIsInvitedToTenantOrWorkspace({
@@ -119,16 +144,28 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
         }
     },
 
-    async assertDomainIsAllowed(_params: AssertDomainIsAllowedParams): Promise<void> {
-        return
+    async assertDomainIsAllowed({ email, tenantId }: AssertDomainIsAllowedParams): Promise<void> {
+        const tenant = await tenantRepo().findOneByOrFail({ id: tenantId })
+        if (isDomainAllowed({ email, enforce: tenant.enforceAllowedAuthDomains, allowedDomains: tenant.allowedAuthDomains })) {
+            return
+        }
+        throw new ApplicationError({
+            code: ErrorCode.DOMAIN_NOT_ALLOWED,
+            params: { domain: domainOf(email) ?? email },
+        })
     },
 
-    async assertEmailMatchesSsoDomain(_params: AssertEmailMatchesSsoDomainParams): Promise<void> {
-        return
-    },
-
-    async assertEmailAuthIsEnabled(_params: AssertEmailAuthIsEnabledParams): Promise<void> {
-        return
+    async assertEmailAuthIsEnabled({ tenantId, provider }: AssertEmailAuthIsEnabledParams): Promise<void> {
+        if (provider !== UserIdentityProvider.EMAIL) {
+            return
+        }
+        const tenant = await tenantRepo().findOneByOrFail({ id: tenantId })
+        if (!tenant.emailAuthEnabled) {
+            throw new ApplicationError({
+                code: ErrorCode.EMAIL_AUTH_DISABLED,
+                params: {},
+            })
+        }
     },
 
     async sendTelemetry({
@@ -195,6 +232,12 @@ type SendTelemetryParams = {
     workspaceId: string
 }
 
+type IsDomainAllowedParams = {
+    email: string
+    enforce: boolean
+    allowedDomains: string[]
+}
+
 type AssertDomainIsAllowedParams = {
     email: string
     tenantId: string
@@ -203,11 +246,6 @@ type AssertDomainIsAllowedParams = {
 type AssertEmailAuthIsEnabledParams = {
     tenantId: string
     provider: UserIdentityProvider
-}
-
-type AssertEmailMatchesSsoDomainParams = {
-    email: string
-    tenantId: string
 }
 
 type AssertUserIsInvitedToTenantOrWorkspaceParams = {

@@ -135,8 +135,8 @@ export function TenantSidebar() {
           icon: ScrollTextIcon,
         },
         {
-          to: '/tenant/security/sso',
-          label: t('Single Sign On'),
+          to: '/tenant/security/authentication',
+          label: t('Authentication'),
           icon: LogInIcon,
         },
       ],

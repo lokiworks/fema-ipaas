@@ -7,11 +7,9 @@ import {
   VerifyEmailRequestBody,
   AuthenticationResponse,
   ClaimTokenRequest,
-  FederatedAuthnLoginResponse,
   SignInRequest,
   SignUpRequest,
   SwitchTenantRequest,
-  ThirdPartyAuthnProviderEnum,
   UserIdentity,
   VerifyEmailCodeRequest,
 } from '@fema-ipaas/shared';
@@ -30,11 +28,6 @@ export const authenticationApi = {
       '/v1/authentication/sign-up',
       request,
     );
-  },
-  getFederatedAuthLoginUrl(providerName: ThirdPartyAuthnProviderEnum) {
-    return api.get<FederatedAuthnLoginResponse>(`/v1/authn/federated/login`, {
-      providerName,
-    });
   },
   getCurrentWorkspaceRole(query: { workspaceId: string }) {
     return api.get<WorkspaceRole | null>('/v1/workspace-members/role', query);

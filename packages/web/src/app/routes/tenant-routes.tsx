@@ -10,8 +10,10 @@ const SettingsHealthPage = React.lazy(() => import('./tenant/infra/health'));
 const TriggerHealthPage = React.lazy(() => import('./tenant/infra/triggers'));
 const SettingsWorkersPage = React.lazy(() => import('./tenant/infra/workers'));
 const WorkspacesPage = React.lazy(() => import('./tenant/workspaces'));
-const SSOPage = React.lazy(() =>
-  import('./tenant/security/sso').then((m) => ({ default: m.SSOPage })),
+const AuthenticationPage = React.lazy(() =>
+  import('./tenant/security/sso').then((m) => ({
+    default: m.AuthenticationPage,
+  })),
 );
 const GeneralPage = React.lazy(() =>
   import('./tenant/setup/general').then((m) => ({
@@ -133,7 +135,11 @@ export const tenantRoutes = [
       </TenantLayout>
     ),
   },
-  tenantRoute('/tenant/security/sso', 'Single Sign On', SSOPage),
+  tenantRoute(
+    '/tenant/security/authentication',
+    'Authentication',
+    AuthenticationPage,
+  ),
   {
     path: '/tenant/infra',
     element: (

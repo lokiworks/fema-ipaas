@@ -1,4 +1,3 @@
-export { samlSsoApi } from './api/saml-sso-api';
 export { workersApi } from './api/workers-api';
 export { ssoMutations } from './hooks/sso-hooks';
 export { tenantConnectorsMutations } from './hooks/tenant-connectors-hooks';

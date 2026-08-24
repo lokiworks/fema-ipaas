@@ -1,0 +1,59 @@
+packages/web/src/features/workspaces/components/new-workspace-dialog.tsx
+  s_94864882421579::t_8a86f5e2622386 59,66
+packages/server/api/src/app/database/redis/keys.ts
+  s_94864882421579::t_eaf656f8dec7ee 3-4
+  s_94864882421579::t_3e4505cc74019a 1
+packages/web/src/app/routes/tenant/infra/workers/worker-assignments-tab.tsx
+  s_94864882421579::t_fd2af6f96805cf 15
+packages/web/src/app/components/sidebar/dashboard/index.tsx
+  s_94864882421579::t_771a0de044dc3b 192-196,198-215
+  s_94864882421579::t_b46168a6aacbce 191
+  s_94864882421579::t_759354e7a8085f 73-74
+packages/web/src/features/templates/components/templates-browse-dialog.tsx
+  s_94864882421579::t_640da2a963cf76 68,139
+packages/web/src/features/connectors/components/install-connector-dialog.tsx
+  s_94864882421579::t_640da2a963cf76 231
+packages/web/src/app/builder/index.tsx
+  s_94864882421579::t_771a0de044dc3b 178
+packages/web/src/app/routes/tenant/infra/workers/index.tsx
+  s_94864882421579::t_1f0d782e0a7249 77-80,132-134
+packages/web/src/app/routes/tenant/setup/general/appearance-section.tsx
+  s_94864882421579::t_640da2a963cf76 125-129,272
+  s_94864882421579::t_79662c10e49fef 130-132
+packages/web/src/app/routes/templates/index.tsx
+  s_94864882421579::t_771a0de044dc3b 47
+  s_94864882421579::t_7ca1f761cf6299 24-25,59-74,76,81,88-89
+packages/web/src/features/automations/components/automations-empty-state.tsx
+  s_94864882421579::t_640da2a963cf76 212
+packages/server/api/src/app/tenant/tenant.service.ts
+  s_94864882421579::t_69b0d792186634 206,215
+packages/web/src/app/components/workspace-layout/workspace-dashboard-page-header.tsx
+  s_94864882421579::t_15d3cf0532785b 2
+  s_94864882421579::t_1f0d782e0a7249 59
+packages/server/api/test/helpers/mocks/index.ts
+  s_94864882421579::t_362c4c0318f23a 147-149
+packages/web/src/features/workspaces/components/edit-workspace-dialog.tsx
+  s_94864882421579::t_15d3cf0532785b 20
+  s_94864882421579::t_8a86f5e2622386 63,129
+packages/core/shared/package.json
+  s_94864882421579::t_fb080950090a1a 3
+packages/web/src/app/components/workspace-settings/general/index.tsx
+  s_94864882421579::t_323c667e12b1d4 58,147,193
+  s_94864882421579::t_771a0de044dc3b 149,152-156,158-192,194-204,206-216,220-222
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "b918e9799852b56f4702ec6bdb1e852191cb3a7d",
+  "prompts": {},
+  "sessions": {
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

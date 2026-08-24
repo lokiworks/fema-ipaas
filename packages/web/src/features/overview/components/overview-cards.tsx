@@ -1,4 +1,10 @@
-import { ExecutionStatus } from '@fema-ipaas/shared';
+import {
+  ConnectionHealthSummary,
+  ConnectionStatus,
+  ConnectorUsageSummary,
+  ExecutionStatus,
+  RecentlyEditedWorkflow,
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { Link } from 'react-router-dom';
 
@@ -138,3 +144,144 @@ export function FailingWorkflowsCard({
     </Card>
   );
 }
+
+export function ConnectionHealthCard({
+  health,
+  isLoading,
+}: {
+  health: ConnectionHealthSummary[];
+  isLoading: boolean;
+}) {
+  const total = health.reduce((sum, entry) => sum + entry.count, 0);
+  const broken = health
+    .filter((entry) => entry.status !== ConnectionStatus.ACTIVE)
+    .reduce((sum, entry) => sum + entry.count, 0);
+
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-medium text-muted-foreground">
+          {t('Connection health')}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <Skeleton className="h-24 w-full" />
+        ) : total === 0 ? (
+          <div className="py-6 text-sm text-muted-foreground">
+            {t('No connections yet')}
+          </div>
+        ) : (
+          <Link
+            to={authenticationSession.appendWorkspaceRoutePrefix(
+              '/connections',
+            )}
+            className="flex flex-col gap-1"
+          >
+            <span className="text-2xl font-semibold">
+              {broken === 0 ? t('All healthy') : `${broken} / ${total}`}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {broken === 0
+                ? t('{count} connections working', { count: total })
+                : t('connections need attention')}
+            </span>
+          </Link>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+export function TopConnectorsCard({
+  connectors,
+  isLoading,
+}: {
+  connectors: ConnectorUsageSummary[];
+  isLoading: boolean;
+}) {
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-medium text-muted-foreground">
+          {t('Most used connectors')}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <Skeleton className="h-24 w-full" />
+        ) : connectors.length === 0 ? (
+          <div className="py-6 text-sm text-muted-foreground">
+            {t('No connections yet')}
+          </div>
+        ) : (
+          <div className="flex flex-col divide-y">
+            {connectors.map((connector) => (
+              <div
+                key={connector.connectorName}
+                className="flex items-center justify-between py-2 text-sm"
+              >
+                <span className="truncate">
+                  {connectorNameUtils.readable(connector.connectorName)}
+                </span>
+                <span className="shrink-0 pl-3 text-muted-foreground">
+                  {connector.count}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+export function RecentlyEditedCard({
+  workflows,
+  isLoading,
+}: {
+  workflows: RecentlyEditedWorkflow[];
+  isLoading: boolean;
+}) {
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-medium text-muted-foreground">
+          {t('Recently edited')}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <Skeleton className="h-24 w-full" />
+        ) : workflows.length === 0 ? (
+          <div className="py-6 text-sm text-muted-foreground">
+            {t('No workflows yet')}
+          </div>
+        ) : (
+          <div className="flex flex-col divide-y">
+            {workflows.map((workflow) => (
+              <Link
+                key={workflow.workflowId}
+                to={authenticationSession.appendWorkspaceRoutePrefix(
+                  `/workflows/${workflow.workflowId}`,
+                )}
+                className="flex items-center justify-between py-2 text-sm hover:underline"
+              >
+                <span className="truncate">{workflow.displayName}</span>
+                <span className="shrink-0 pl-3 text-muted-foreground">
+                  {formatUtils.formatDateOnly(new Date(workflow.updated))}
+                </span>
+              </Link>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+const connectorNameUtils = {
+  readable(connectorName: string): string {
+    return connectorName.replace('@fema-ipaas/connector-', '');
+  },
+};

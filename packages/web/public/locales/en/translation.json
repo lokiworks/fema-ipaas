@@ -2508,5 +2508,13 @@
   "Run workflows and manage connections": "Run workflows and manage connections",
   "Read-only access": "Read-only access",
   "Developer": "Developer",
-  "Viewer": "Viewer"
+  "Viewer": "Viewer",
+  "Connection health": "Connection health",
+  "No connections yet": "No connections yet",
+  "All healthy": "All healthy",
+  "{count} connections working": "{count} connections working",
+  "connections need attention": "connections need attention",
+  "Most used connectors": "Most used connectors",
+  "Recently edited": "Recently edited",
+  "No workflows yet": "No workflows yet"
 }

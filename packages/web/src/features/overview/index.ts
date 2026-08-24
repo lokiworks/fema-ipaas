@@ -4,4 +4,7 @@ export {
   OverviewStatCard,
   RunTrendChart,
   FailingWorkflowsCard,
+  ConnectionHealthCard,
+  TopConnectorsCard,
+  RecentlyEditedCard,
 } from './components/overview-cards';

@@ -10,9 +10,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
+  ConnectionHealthCard,
   FailingWorkflowsCard,
   OverviewStatCard,
+  RecentlyEditedCard,
   RunTrendChart,
+  TopConnectorsCard,
   overviewHooks,
 } from '@/features/overview';
 
@@ -115,6 +118,21 @@ export function HomePage() {
         <RunTrendChart trend={trend} isLoading={isLoading} />
         <FailingWorkflowsCard
           workflows={data?.topFailingWorkflows ?? []}
+          isLoading={isLoading}
+        />
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        <ConnectionHealthCard
+          health={data?.connectionHealth ?? []}
+          isLoading={isLoading}
+        />
+        <TopConnectorsCard
+          connectors={data?.topConnectors ?? []}
+          isLoading={isLoading}
+        />
+        <RecentlyEditedCard
+          workflows={data?.recentlyEditedWorkflows ?? []}
           isLoading={isLoading}
         />
       </div>

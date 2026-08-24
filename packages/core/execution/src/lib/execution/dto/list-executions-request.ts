@@ -57,13 +57,35 @@ export const FailingWorkflowSummary = z.object({
     lastFailure: z.string(),
 })
 
+export const ConnectionHealthSummary = z.object({
+    status: z.string(),
+    count: z.number(),
+})
+
+export const ConnectorUsageSummary = z.object({
+    connectorName: z.string(),
+    count: z.number(),
+})
+
+export const RecentlyEditedWorkflow = z.object({
+    workflowId: z.string(),
+    displayName: z.string(),
+    updated: z.string(),
+})
+
 export const WorkspaceOverviewResponse = z.object({
     countByStatus: z.array(ExecutionCountByStatus),
     dailyTrend: z.array(ExecutionDailyTrend),
     topFailingWorkflows: z.array(FailingWorkflowSummary),
+    connectionHealth: z.array(ConnectionHealthSummary),
+    topConnectors: z.array(ConnectorUsageSummary),
+    recentlyEditedWorkflows: z.array(RecentlyEditedWorkflow),
 })
 
 export type WorkspaceOverviewRequest = z.infer<typeof WorkspaceOverviewRequest>
 export type ExecutionDailyTrend = z.infer<typeof ExecutionDailyTrend>
 export type FailingWorkflowSummary = z.infer<typeof FailingWorkflowSummary>
+export type ConnectionHealthSummary = z.infer<typeof ConnectionHealthSummary>
+export type ConnectorUsageSummary = z.infer<typeof ConnectorUsageSummary>
+export type RecentlyEditedWorkflow = z.infer<typeof RecentlyEditedWorkflow>
 export type WorkspaceOverviewResponse = z.infer<typeof WorkspaceOverviewResponse>

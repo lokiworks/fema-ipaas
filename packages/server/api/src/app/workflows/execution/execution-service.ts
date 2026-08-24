@@ -1,9 +1,10 @@
 import { apId, ApplicationError, Cursor, ErrorCode, ExecutionId, isNil, SeekPage, TenantId, WorkflowId, WorkflowVersionId, WorkspaceId } from '@fema-ipaas/core-utils'
 import { apDayjs, wideEvent } from '@fema-ipaas/server-utils'
-import { ExecuteWorkflowJobData, Execution, ExecutionCountByStatus, ExecutionStatus, ExecutionType, ExecutionWithRetryError, ExecutioOutputFile, FileCompression, FileType, GenericStepOutput, isExecutionStateTerminal, JobPayload, LATEST_JOB_DATA_SCHEMA_VERSION, logSerializer, LogSliceRef, ResumeReason, RunEnvironment, RunInternalError, SampleDataFileType, StepOutput, StepOutputStatus, StepOutputType, StreamStepProgress, WorkerJobType, WorkflowRetryStrategy, WorkflowVersion } from '@fema-ipaas/shared'
+import { ConnectionHealthSummary, ConnectorUsageSummary, ExecuteWorkflowJobData, Execution, ExecutionCountByStatus, ExecutionStatus, ExecutionType, ExecutionWithRetryError, ExecutioOutputFile, FileCompression, FileType, GenericStepOutput, isExecutionStateTerminal, JobPayload, LATEST_JOB_DATA_SCHEMA_VERSION, logSerializer, LogSliceRef, RecentlyEditedWorkflow, ResumeReason, RunEnvironment, RunInternalError, SampleDataFileType, StepOutput, StepOutputStatus, StepOutputType, StreamStepProgress, WorkerJobType, WorkflowRetryStrategy, WorkflowVersion } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import pLimit from 'p-limit'
 import { ArrayContains, In, IsNull, Not, Repository, SelectQueryBuilder } from 'typeorm'
+import { connectionsRepo } from '../../connection/connection-service/connection-service'
 import { repoFactory } from '../../core/db/repo-factory'
 import { distributedLock } from '../../database/redis-connections'
 import { fileCompressor } from '../../file/file-compressor'
@@ -519,6 +520,65 @@ export const executionService = (log: FastifyBaseLogger) => ({
             lastFailure: apDayjs(row.lastFailure.toISOString()).toISOString(),
         }))
     },
+    async connectionHealth(params: WorkspaceScopedParams): Promise<ConnectionHealthSummary[]> {
+        const results = await connectionsRepo().createQueryBuilder('connection')
+            .select('connection.status', 'status')
+            .addSelect('COUNT(*)', 'count')
+            .where(':workspaceId = ANY(connection."workspaceIds")', { workspaceId: params.workspaceId })
+            .groupBy('connection.status')
+            .getRawMany()
+        return results.map((row: { status: string, count: string }) => ({
+            status: row.status,
+            count: parseInt(row.count, 10),
+        }))
+    },
+    async topConnectors(params: LimitedWorkspaceScopedParams): Promise<ConnectorUsageSummary[]> {
+        const results = await connectionsRepo().createQueryBuilder('connection')
+            .select('connection.connectorName', 'connectorName')
+            .addSelect('COUNT(*)', 'count')
+            .where(':workspaceId = ANY(connection."workspaceIds")', { workspaceId: params.workspaceId })
+            .groupBy('connection.connectorName')
+            .orderBy('COUNT(*)', 'DESC')
+            .limit(params.limit)
+            .getRawMany()
+        return results.map((row: { connectorName: string, count: string }) => ({
+            connectorName: row.connectorName,
+            count: parseInt(row.count, 10),
+        }))
+    },
+    async recentlyEditedWorkflows(params: LimitedWorkspaceScopedParams): Promise<RecentlyEditedWorkflow[]> {
+        const results = await workflowRepo().createQueryBuilder('workflow')
+            .innerJoin('workflow_version', 'version', 'version."workflowId" = workflow.id')
+            .select('workflow.id', 'workflowId')
+            .addSelect('MAX(version.updated)', 'updated')
+            .where('workflow."workspaceId" = :workspaceId', { workspaceId: params.workspaceId })
+            .groupBy('workflow.id')
+            .orderBy('MAX(version.updated)', 'DESC')
+            .limit(params.limit)
+            .getRawMany()
+        if (results.length === 0) {
+            return []
+        }
+        const names = await workflowRepo().createQueryBuilder('workflow')
+            .innerJoin('workflow_version', 'version', 'version."workflowId" = workflow.id')
+            .select('workflow.id', 'id')
+            .addSelect('version.displayName', 'displayName')
+            .addSelect('version.updated', 'updated')
+            .where('workflow.id IN (:...workflowIds)', { workflowIds: results.map((row: { workflowId: string }) => row.workflowId) })
+            .orderBy('version.updated', 'DESC')
+            .getRawMany()
+        const displayNameById = new Map<string, string>()
+        for (const row of names as { id: string, displayName: string | null }[]) {
+            if (!displayNameById.has(row.id) && !isNil(row.displayName)) {
+                displayNameById.set(row.id, row.displayName)
+            }
+        }
+        return results.map((row: { workflowId: string, updated: Date }) => ({
+            workflowId: row.workflowId,
+            displayName: displayNameById.get(row.workflowId) ?? row.workflowId,
+            updated: apDayjs(row.updated.toISOString()).toISOString(),
+        }))
+    },
     async getOnePopulatedOrThrow(params: GetOneParams): Promise<Execution> {
         const execution = await this.getOneOrThrow(params)
         let steps = {}
@@ -1020,5 +1080,14 @@ type DailyTrendParams = {
 type TopFailingWorkflowsParams = {
     workspaceId: string
     createdAfter: string
+    limit: number
+}
+
+type WorkspaceScopedParams = {
+    workspaceId: string
+}
+
+type LimitedWorkspaceScopedParams = {
+    workspaceId: string
     limit: number
 }

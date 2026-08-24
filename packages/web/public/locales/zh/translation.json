@@ -2412,5 +2412,13 @@
   "Run workflows and manage connections": "运行工作流、管理连接",
   "Read-only access": "只读访问",
   "Developer": "开发者",
-  "Viewer": "访客"
+  "Viewer": "访客",
+  "Connection health": "连接健康度",
+  "No connections yet": "还没有连接",
+  "All healthy": "全部正常",
+  "{count} connections working": "{count} 个连接正常",
+  "connections need attention": "个连接需要处理",
+  "Most used connectors": "常用连接器",
+  "Recently edited": "最近编辑",
+  "No workflows yet": "还没有工作流"
 }

@@ -44,12 +44,15 @@ export const executionController: FastifyPluginAsyncZod = async (app) => {
     app.get('/overview', WorkspaceOverviewRouteConfig, async (request) => {
         const { workspaceId, days } = request.query
         const createdAfter = apDayjs().subtract(days, 'day').toISOString()
-        const [countByStatus, dailyTrend, topFailingWorkflows] = await Promise.all([
+        const [countByStatus, dailyTrend, topFailingWorkflows, connectionHealth, topConnectors, recentlyEditedWorkflows] = await Promise.all([
             executionService(request.log).countByStatus({ workspaceId, createdAfter }),
             executionService(request.log).dailyTrend({ workspaceId, createdAfter }),
             executionService(request.log).topFailingWorkflows({ workspaceId, createdAfter, limit: TOP_FAILING_WORKFLOWS_LIMIT }),
+            executionService(request.log).connectionHealth({ workspaceId }),
+            executionService(request.log).topConnectors({ workspaceId, limit: OVERVIEW_LIST_LIMIT }),
+            executionService(request.log).recentlyEditedWorkflows({ workspaceId, limit: OVERVIEW_LIST_LIMIT }),
         ])
-        return { countByStatus, dailyTrend, topFailingWorkflows }
+        return { countByStatus, dailyTrend, topFailingWorkflows, connectionHealth, topConnectors, recentlyEditedWorkflows }
     })
 
     app.get(
@@ -228,6 +231,7 @@ const ArchiveExecutionRequest = {
 }
 
 const TOP_FAILING_WORKFLOWS_LIMIT = 5
+const OVERVIEW_LIST_LIMIT = 5
 
 const WorkspaceOverviewRouteConfig = {
     config: {

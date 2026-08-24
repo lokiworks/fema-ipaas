@@ -1,0 +1,28 @@
+packages/web/public/locales/en/translation.json
+  s_94864882421579::t_d063820d5c8318 2522-2524
+packages/web/public/locales/zh/translation.json
+  s_94864882421579::t_d063820d5c8318 2426-2428
+packages/web/src/app/components/workspace-layout/index.tsx
+  s_94864882421579::t_2452afe934e042 30
+packages/web/src/app/components/workspace-layout/workspace-dashboard-layout-header.tsx
+  s_94864882421579::t_d063820d5c8318 195
+  s_94864882421579::t_d7ac4ec645b53b 17,146-151,163,178,185-194,196-203,208-211
+  s_94864882421579::t_2452afe934e042 2,97-108
+  s_94864882421579::t_1b08c617390305 212
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "aecf6f9caca7a17bb9eb517c6ecf93cf98340b1b",
+  "prompts": {},
+  "sessions": {
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

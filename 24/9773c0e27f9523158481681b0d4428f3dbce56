@@ -1,0 +1,56 @@
+packages/web/src/app/components/global-search/static-pages.ts
+  s_94864882421579::t_275931f16d6dd9 1,56-87,98,119-121,135,142,149
+packages/web/src/app/routes/tenant/security/sso/index.tsx
+  s_94864882421579::t_ccfd6646b13431 52-54,56-79,81-102,104-112,114-138,140-163
+packages/web/src/app/routes/tenant/setup/templates/index.tsx
+  s_94864882421579::t_ccfd6646b13431 207-250
+packages/web/src/app/components/sidebar/dashboard/index.tsx
+  s_94864882421579::t_8b20670e68b5fe 165
+packages/web/src/app/routes/tenant/workspaces/index.tsx
+  s_94864882421579::t_ccfd6646b13431 323-379
+  s_94864882421579::t_d977b13daaad52 90
+packages/web/src/app/routes/tenant/setup/connectors/customize-selector-dialog.tsx
+  s_94864882421579::t_6f600a4dece014 67
+  s_94864882421579::t_d3da0ae4eded7e 72
+packages/web/src/features/authentication/components/third-party-logins.tsx
+  s_94864882421579::t_0780cf3e7cded5 20,28,106
+packages/web/src/app/components/sidebar/tenant/index.tsx
+  s_94864882421579::t_b4ae6687af62f4 72-76,103-105,108-110,113-115,118-120,125,128-130,133-135,143,148,153
+packages/web/src/features/workspaces/components/tenant-switcher.tsx
+  s_94864882421579::t_5e36acb278268a 66-73,85-88
+packages/web/src/app/routes/tenant/setup/connectors/index.tsx
+  s_94864882421579::t_c55c561ec07090 120
+  s_94864882421579::t_d3da0ae4eded7e 143,153,179
+packages/web/src/app/routes/tenant/setup/connectors/connector-actions.tsx
+  s_94864882421579::t_f983c3bb0d11b1 37
+  s_94864882421579::t_c55c561ec07090 17
+packages/web/src/app/routes/tenant-routes.tsx
+  s_94864882421579::t_18e007507aeb0b 44-49,108-117
+packages/web/src/app/routes/tenant/workspaces/columns.tsx
+  s_94864882421579::t_beff4610dbd1d6 89
+  s_94864882421579::t_c55c561ec07090 1,4,90-106
+  s_94864882421579::t_d977b13daaad52 10
+  s_94864882421579::t_a46b845f1e2b5a 107
+packages/web/src/features/authentication/components/auth-landing/auth-drawer-body.tsx
+  s_94864882421579::t_bd5d62100ed0d6 280,299,379
+packages/web/src/app/routes/tenant/setup/connections/index.tsx
+  s_94864882421579::t_ccfd6646b13431 307-314,316-325
+packages/web/src/app/routes/tenant/users/index.tsx
+  s_94864882421579::t_ccfd6646b13431 108-139
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "249773c0e27f9523158481681b0d4428f3dbce56",
+  "prompts": {},
+  "sessions": {
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

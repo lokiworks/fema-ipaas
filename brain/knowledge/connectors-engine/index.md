@@ -127,6 +127,7 @@ This is not theoretical. Adding `WorkflowActionType.COMPONENT` broke a `Record<W
 - Run `npx tsc --noEmit -p packages/web/tsconfig.app.json` and `-p packages/server/engine/tsconfig.lib.json` yourself after any change to either, and **diff the file list** rather than expecting zero — a green run is not the baseline.
 - A new `@fema-ipaas/*` import in `web` must be registered in **three** places that do not share config: `tsconfig.app.json`'s `paths` (not inherited from `tsconfig.base.json`), `vite.config.mts`'s `resolve.alias`, and `vitest.config.ts`'s own `alias`. Miss the vitest one and `turbo build` plus `tsc` both stay green while `web#test` fails to collect every file that transitively imports it.
 - Engine tests only run correctly from the package dir (`cd packages/server/engine && npx vitest run`); from the repo root the root config applies and every file fails collection with `describe is not defined`.
+- **`api` and `worker` typecheck against `packages/core/shared/dist/**/*.d.ts`, not against shared's source.** Change a type in `@fema-ipaas/shared` and `tsc -p packages/server/api/tsconfig.app.json` will keep passing against the *previous* build. Run `npx turbo run build --filter=@fema-ipaas/shared` first, or the green run is measuring the type you just replaced.
 
 ### The engine gets only 64 file descriptors
 

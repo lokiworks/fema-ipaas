@@ -7,6 +7,8 @@ icon: 🏢
 > **历史资料。** 本仓库已删除整个 Edition 体系（见
 > [decisions/000030](../decisions/000030-this-fork-has-no-editions-the-ee-pages-are-history.md)）。
 > 本区所有页面描述的是上游 FEMA Integration Platform 的设计，不是本仓库的现状。
+> `TenantPlan` 的 22 个功能开关也已删除，现在只剩容量上限
+> （`usersLimit` / `workspacesLimit` / `activeWorkflowsLimit` / `workerGroupId`）。
 
 How FEMA Integration Platform' tenancy (Platform → Project) and Community/Enterprise split work. Rule of thumb: CE never imports `src/app/ee/`; CE declares hook interfaces via `hooksFactory.create<T>(ceDefault)`, EE injects the real impl via `.set(eeImpl)` in the `app.ts` edition switch. Plan flags and numeric limits on `PlatformPlan` — projected from the platform's Autumn billing customer — gate features per-endpoint with `platformMustHaveFeatureEnabled()` (HTTP 402).
 

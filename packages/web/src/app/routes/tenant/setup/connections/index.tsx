@@ -19,7 +19,6 @@ import { useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import { DashboardPageHeader } from '@/app/components/dashboard-page-header';
-import { LockedFeatureGuard } from '@/app/components/locked-feature-guard';
 import { NewConnectionDialog } from '@/app/connections/new-connection-dialog';
 import { ReconnectButtonDialog } from '@/app/connections/reconnect-button-dialog';
 import { AnimatedIconButton } from '@/components/custom/animated-icon-button';
@@ -50,7 +49,6 @@ import {
 } from '@/features/connections';
 import { ConnectorIconWithConnectorName } from '@/features/connectors';
 import { useAuthorization } from '@/hooks/authorization-hooks';
-import { tenantHooks } from '@/hooks/tenant-hooks';
 import { formatUtils } from '@/lib/format-utils';
 
 const STATUS_QUERY_PARAM = 'status';
@@ -82,7 +80,6 @@ const GlobalConnectionsTable = () => {
   >([]);
   const { checkAccess } = useAuthorization();
   const location = useLocation();
-  const { tenant } = tenantHooks.useCurrentTenant();
 
   const columns: ColumnDef<
     RowDataWithActions<ConnectionWithoutSensitiveData>,
@@ -307,34 +304,25 @@ const GlobalConnectionsTable = () => {
 
   return (
     <div className="flex-col w-full">
-      <LockedFeatureGuard
-        featureKey="GLOBAL_CONNECTIONS"
-        locked={!tenant.plan.globalConnectionsEnabled}
-        lockTitle={t('Enable Global Connections')}
-        lockDescription={t(
-          'Manage tenant-wide connections to external systems.',
+      <DashboardPageHeader
+        description={t('Manage tenant-wide connections to external systems.')}
+        title={t('Global Connections')}
+      />
+      <DataTable
+        emptyStateTextTitle={t('No global connections found')}
+        emptyStateTextDescription={t(
+          'Create a global connection that can be shared to multiple workspaces',
         )}
-      >
-        <DashboardPageHeader
-          description={t('Manage tenant-wide connections to external systems.')}
-          title={t('Global Connections')}
-        />
-        <DataTable
-          emptyStateTextTitle={t('No global connections found')}
-          emptyStateTextDescription={t(
-            'Create a global connection that can be shared to multiple workspaces',
-          )}
-          emptyStateIcon={<Globe className="size-14" />}
-          columns={columns}
-          page={globalConnections}
-          isLoading={isLoadingGlobalConnections}
-          filters={filters}
-          selectColumn={true}
-          onSelectedRowsChange={setSelectedRows}
-          bulkActions={bulkActions}
-          toolbarButtons={toolbarButtons}
-        />
-      </LockedFeatureGuard>
+        emptyStateIcon={<Globe className="size-14" />}
+        columns={columns}
+        page={globalConnections}
+        isLoading={isLoadingGlobalConnections}
+        filters={filters}
+        selectColumn={true}
+        onSelectedRowsChange={setSelectedRows}
+        bulkActions={bulkActions}
+        toolbarButtons={toolbarButtons}
+      />
     </div>
   );
 };

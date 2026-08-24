@@ -64,16 +64,12 @@ import { cn } from '@/lib/utils';
 const borderlessInputClass =
   'border-transparent bg-transparent shadow-none hover:border-input focus-visible:bg-background';
 
-export const CustomizeSelectorDialog = ({
-  isEnabled,
-}: {
-  isEnabled: boolean;
-}) => {
+export const CustomizeSelectorDialog = () => {
   const [open, setOpen] = useState(false);
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="outline" size="sm" disabled={!isEnabled}>
+        <Button variant="outline" size="sm">
           <Settings2Icon className="size-4 mr-2" />
           {t('Customize Selector')}
         </Button>

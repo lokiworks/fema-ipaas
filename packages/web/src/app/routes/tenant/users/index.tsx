@@ -8,7 +8,6 @@ import { User } from 'lucide-react';
 import { useMemo } from 'react';
 
 import { DashboardPageHeader } from '@/app/components/dashboard-page-header';
-import LockedFeatureGuard from '@/app/components/locked-feature-guard';
 import { DataTable } from '@/components/custom/data-table';
 import { internalErrorToast } from '@/components/ui/sonner';
 import {
@@ -106,48 +105,37 @@ export default function UsersPage() {
   const columns = createUsersTableColumns();
 
   return (
-    <LockedFeatureGuard
-      featureKey="USERS"
-      locked={false}
-      lockTitle={t('Unlock Users')}
-      lockDescription={t(
-        'Manage your users and their access to your workspaces',
-      )}
-    >
-      <div className="flex flex-col w-full">
-        <DashboardPageHeader
-          title={t('Users')}
-          description={t(
-            'Manage, delete, activate and deactivate users on tenant',
-          )}
-        />
-        <DataTable
-          emptyStateTextTitle={t('No users found')}
-          emptyStateTextDescription={t(
-            'Start inviting users to your workspace',
-          )}
-          emptyStateIcon={<User className="size-14" />}
-          columns={columns}
-          page={{
-            data: combinedData,
-            next: usersData?.next || null,
-            previous: usersData?.previous || null,
-          }}
-          hidePagination={true}
-          isLoading={isLoading}
-          actions={[
-            (row) => (
-              <UserActions
-                row={row}
-                isUpdatingStatus={isUpdatingStatus}
-                onDelete={handleDelete}
-                onToggleStatus={handleToggleStatus}
-                onUpdate={refetch}
-              />
-            ),
-          ]}
-        />
-      </div>
-    </LockedFeatureGuard>
+    <div className="flex flex-col w-full">
+      <DashboardPageHeader
+        title={t('Users')}
+        description={t(
+          'Manage, delete, activate and deactivate users on tenant',
+        )}
+      />
+      <DataTable
+        emptyStateTextTitle={t('No users found')}
+        emptyStateTextDescription={t('Start inviting users to your workspace')}
+        emptyStateIcon={<User className="size-14" />}
+        columns={columns}
+        page={{
+          data: combinedData,
+          next: usersData?.next || null,
+          previous: usersData?.previous || null,
+        }}
+        hidePagination={true}
+        isLoading={isLoading}
+        actions={[
+          (row) => (
+            <UserActions
+              row={row}
+              isUpdatingStatus={isUpdatingStatus}
+              onDelete={handleDelete}
+              onToggleStatus={handleToggleStatus}
+              onUpdate={refetch}
+            />
+          ),
+        ]}
+      />
+    </div>
   );
 }

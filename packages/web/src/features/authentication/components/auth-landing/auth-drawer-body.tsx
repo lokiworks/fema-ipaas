@@ -277,10 +277,7 @@ function AuthStep({
     return (
       <DrawerShell>
         <Heading title={t('Welcome')} />
-        <ThirdPartyLogin
-          isSignUp={mode === 'signup'}
-          onSamlClick={() => setSamlOpen(true)}
-        />
+        <ThirdPartyLogin isSignUp={mode === 'signup'} />
       </DrawerShell>
     );
   }
@@ -299,10 +296,7 @@ function AuthStep({
         />
         {showThirdParty && (
           <>
-            <ThirdPartyLogin
-              isSignUp={effectiveMode === 'signup'}
-              onSamlClick={() => setSamlOpen(true)}
-            />
+            <ThirdPartyLogin isSignUp={effectiveMode === 'signup'} />
             <HorizontalSeparatorWithText className="my-5 text-muted-foreground">
               {t('or')}
             </HorizontalSeparatorWithText>
@@ -382,11 +376,7 @@ function AuthStep({
           below so it never competes with the primary path. */}
       {thirdParty.google && (
         <>
-          <ThirdPartyLogin
-            isSignUp={mode === 'signup'}
-            onSamlClick={() => setSamlOpen(true)}
-            hideSaml
-          />
+          <ThirdPartyLogin isSignUp={mode === 'signup'} hideSaml />
           <HorizontalSeparatorWithText className="my-4 text-muted-foreground">
             {t('or')}
           </HorizontalSeparatorWithText>
@@ -419,10 +409,6 @@ function AuthStep({
             <button
               type="button"
               onClick={() => {
-                if (thirdParty.samlIsCloud) {
-                  setSamlOpen(true);
-                  return;
-                }
                 window.location.href = '/api/v1/authn/saml/login';
               }}
               className="transition-colors hover:text-foreground"

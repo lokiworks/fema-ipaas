@@ -17,18 +17,15 @@ import { oauth2Utils } from '@/features/connections/utils/oauth2-utils';
 import { flagsHooks } from '@/hooks/flags-hooks';
 
 // Mirrors the render gates below so callers can hide surrounding chrome — an
-// "or" divider — or place each provider themselves. SAML is offered on cloud
-// for enterprise SSO, and self-hosted only once a SAML config exists.
+// "or" divider — or place each provider themselves. SAML is offered once a SAML config exists.
 function useThirdPartyAvailability(): ThirdPartyAvailability {
   const { data: thirdPartyAuthProviders } =
     flagsHooks.useFlag<ThirdPartyAuthnProvidersToShowMap>(
       ApFlagId.THIRD_PARTY_AUTH_PROVIDERS_TO_SHOW_MAP,
     );
-  const isCloud = false;
   return {
     google: Boolean(thirdPartyAuthProviders?.google),
-    saml: isCloud || Boolean(thirdPartyAuthProviders?.saml),
-    samlIsCloud: isCloud,
+    saml: Boolean(thirdPartyAuthProviders?.saml),
   };
 }
 
@@ -44,11 +41,9 @@ const ThirdPartyIcon = ({ icon }: { icon: string }) => {
 const ThirdPartyLogin = React.memo(
   ({
     isSignUp,
-    onSamlClick,
     hideSaml = false,
   }: {
     isSignUp: boolean;
-    onSamlClick: () => void;
     hideSaml?: boolean;
   }) => {
     const { data: thirdPartyAuthProviders } =
@@ -58,7 +53,6 @@ const ThirdPartyLogin = React.memo(
     const { data: thirdPartyRedirectUrl } = flagsHooks.useFlag<string>(
       ApFlagId.THIRD_PARTY_AUTH_PROVIDER_REDIRECT_URL,
     );
-    const isCloud = false;
     const thirdPartyLogin = oauth2Utils.useThirdPartyLogin();
     const { capture } = useTelemetry();
     const availability = useThirdPartyAvailability();
@@ -109,25 +103,7 @@ const ThirdPartyLogin = React.memo(
             {t('Continue with Google')}
           </Button>
         )}
-        {!hideSaml && isCloud && (
-          <Button
-            variant="outline"
-            className="h-10 w-full rounded-lg text-sm font-normal"
-            onClick={() => {
-              capture({
-                name: TelemetryEventName.FEDERATED_LOGIN_STARTED,
-                payload: { provider: 'saml' },
-              });
-              onSamlClick();
-            }}
-          >
-            <ThirdPartyIcon icon={SamlIcon} />
-            {isSignUp
-              ? `${t(`Sign up With`)} ${t('SAML')}`
-              : `${t(`Sign in With`)} ${t('SAML')}`}
-          </Button>
-        )}
-        {!hideSaml && !isCloud && thirdPartyAuthProviders?.saml && (
+        {!hideSaml && thirdPartyAuthProviders?.saml && (
           <Button
             variant="outline"
             className="h-10 w-full rounded-lg text-sm font-normal"
@@ -161,5 +137,4 @@ export {
 type ThirdPartyAvailability = {
   google: boolean;
   saml: boolean;
-  samlIsCloud: boolean;
 };

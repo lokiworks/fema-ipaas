@@ -45,7 +45,6 @@ export const AppSidebarHeader = () => {
   const { checkAccess } = useAuthorization();
   const defaultRoute = determineDefaultRoute({
     checkAccess,
-    chatEnabled: currentTenant.plan.chatEnabled,
   });
   const branding = flagsHooks.useWebsiteBranding();
 

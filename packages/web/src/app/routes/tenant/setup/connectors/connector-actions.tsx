@@ -12,13 +12,9 @@ import { tenantHooks } from '@/hooks/tenant-hooks';
 
 type ConnectorActionsProps = {
   connectorName: string;
-  isEnabled: boolean;
 };
 
-const ConnectorActions = ({
-  connectorName,
-  isEnabled,
-}: ConnectorActionsProps) => {
+const ConnectorActions = ({ connectorName }: ConnectorActionsProps) => {
   const { tenant, refetch } = tenantHooks.useCurrentTenant();
 
   const { mutate: togglePin, isPending: isPinPending } =
@@ -38,14 +34,7 @@ const ConnectorActions = ({
             variant="ghost"
             size={'sm'}
             loading={isPinPending}
-            disabled={!isEnabled}
-            onClick={(e) => {
-              if (!isEnabled) {
-                e.preventDefault();
-                return;
-              }
-              togglePin(connectorName);
-            }}
+            onClick={() => togglePin(connectorName)}
           >
             {pinned ? (
               <PinOff className="size-4" />

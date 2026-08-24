@@ -1,25 +1,19 @@
+import { TerminalIcon } from 'lucide-react';
 import { type ComponentType } from 'react';
 
-import { BotIcon } from '@/components/icons/bot';
-import { ChartLineIcon } from '@/components/icons/chart-line';
 import { CompassIcon } from '@/components/icons/compass';
 import { FileHeartIcon } from '@/components/icons/file-heart';
 import { FileJson2Icon } from '@/components/icons/file-json2';
-import { FrameIcon } from '@/components/icons/frame';
-import { KeyRoundIcon } from '@/components/icons/key-round';
 import { LayoutGridIcon } from '@/components/icons/layout-grid';
 import { LogInIcon } from '@/components/icons/log-in';
 import { MousePointerClickIcon } from '@/components/icons/mouse-pointer-click';
 import { PaletteIcon } from '@/components/icons/palette';
 import { PuzzleIcon } from '@/components/icons/puzzle';
-import { ReceiptIcon } from '@/components/icons/receipt';
 import { ServerIcon } from '@/components/icons/server';
-import { Settings2Icon } from '@/components/icons/settings2';
 import { ShieldIcon } from '@/components/icons/shield';
 import { SquareDashedBottomCodeIcon } from '@/components/icons/square-dashed-bottom-code';
 import { UnplugIcon } from '@/components/icons/unplug';
 import { UsersIcon } from '@/components/icons/users';
-import { WebhookIcon } from '@/components/icons/webhook';
 import { WorkflowIcon } from '@/components/icons/workflow';
 
 export type StaticPage = {
@@ -43,12 +37,6 @@ export const STATIC_PAGES: StaticPage[] = [
     href: '/templates',
     icon: CompassIcon,
   },
-  {
-    id: 'page-impact',
-    label: 'Impact',
-    href: '/impact',
-    icon: ChartLineIcon,
-  },
   // Tenant Admin pages
   {
     id: 'page-tenant-workspaces',
@@ -65,10 +53,38 @@ export const STATIC_PAGES: StaticPage[] = [
     requiresTenantAdmin: true,
   },
   {
-    id: 'page-tenant-ai',
-    label: 'Tenant Admin — AI Providers',
-    href: '/tenant/setup/ai',
-    icon: BotIcon,
+    id: 'page-tenant-connections',
+    label: 'Tenant Admin — Connections',
+    href: '/tenant/connections',
+    icon: UnplugIcon,
+    requiresTenantAdmin: true,
+  },
+  {
+    id: 'page-tenant-connector-marketplace',
+    label: 'Tenant Admin — Connector Marketplace',
+    href: '/tenant/connectors',
+    icon: PuzzleIcon,
+    requiresTenantAdmin: true,
+  },
+  {
+    id: 'page-tenant-connector-development',
+    label: 'Tenant Admin — Connector Development',
+    href: '/tenant/connectors/development',
+    icon: TerminalIcon,
+    requiresTenantAdmin: true,
+  },
+  {
+    id: 'page-tenant-connector-builder',
+    label: 'Tenant Admin — Build a Connector',
+    href: '/tenant/connectors/builder',
+    icon: MousePointerClickIcon,
+    requiresTenantAdmin: true,
+  },
+  {
+    id: 'page-tenant-connector-openapi',
+    label: 'Tenant Admin — Import from OpenAPI',
+    href: '/tenant/connectors/openapi',
+    icon: FileJson2Icon,
     requiresTenantAdmin: true,
   },
   {
@@ -79,7 +95,7 @@ export const STATIC_PAGES: StaticPage[] = [
     requiresTenantAdmin: true,
   },
   {
-    id: 'page-tenant-connections',
+    id: 'page-tenant-global-connections',
     label: 'Tenant Admin — Global Connections',
     href: '/tenant/setup/connections',
     icon: UnplugIcon,
@@ -100,23 +116,9 @@ export const STATIC_PAGES: StaticPage[] = [
     requiresTenantAdmin: true,
   },
   {
-    id: 'page-tenant-billing',
-    label: 'Tenant Admin — Billing',
-    href: '/tenant/setup/billing',
-    icon: ReceiptIcon,
-    requiresTenantAdmin: true,
-  },
-  {
-    id: 'page-tenant-embedding',
-    label: 'Tenant Admin — Embedding',
-    href: '/tenant/security/embed',
-    icon: FrameIcon,
-    requiresTenantAdmin: true,
-  },
-  {
-    id: 'page-tenant-audit-logs',
-    label: 'Tenant Admin — Audit Logs',
-    href: '/tenant/security/audit-logs',
+    id: 'page-tenant-audit-log',
+    label: 'Tenant Admin — Audit Log',
+    href: '/tenant/audit',
     icon: SquareDashedBottomCodeIcon,
     requiresTenantAdmin: true,
   },
@@ -128,52 +130,24 @@ export const STATIC_PAGES: StaticPage[] = [
     requiresTenantAdmin: true,
   },
   {
-    id: 'page-tenant-workspace-roles',
-    label: 'Tenant Admin — Workspace Roles',
-    href: '/tenant/security/workspace-roles',
-    icon: Settings2Icon,
-    requiresTenantAdmin: true,
-  },
-  {
-    id: 'page-tenant-api-keys',
-    label: 'Tenant Admin — API Keys',
-    href: '/tenant/security/api-keys',
-    icon: FileJson2Icon,
-    requiresTenantAdmin: true,
-  },
-  {
-    id: 'page-tenant-secret-managers',
-    label: 'Tenant Admin — Secret Managers',
-    href: '/tenant/security/secret-managers',
-    icon: KeyRoundIcon,
-    requiresTenantAdmin: true,
-  },
-  {
     id: 'page-tenant-workers',
     label: 'Tenant Admin — Workers',
-    href: '/tenant/infrastructure/workers',
+    href: '/tenant/infra/workers',
     icon: ServerIcon,
     requiresTenantAdmin: true,
   },
   {
     id: 'page-tenant-health',
     label: 'Tenant Admin — Health',
-    href: '/tenant/infrastructure/health',
+    href: '/tenant/infra/health',
     icon: FileHeartIcon,
     requiresTenantAdmin: true,
   },
   {
     id: 'page-tenant-triggers',
     label: 'Tenant Admin — Triggers',
-    href: '/tenant/infrastructure/triggers',
+    href: '/tenant/infra/triggers',
     icon: MousePointerClickIcon,
-    requiresTenantAdmin: true,
-  },
-  {
-    id: 'page-tenant-event-streaming',
-    label: 'Tenant Admin — Event Streaming',
-    href: '/tenant/infrastructure/event-destinations',
-    icon: WebhookIcon,
     requiresTenantAdmin: true,
   },
   {

@@ -41,6 +41,12 @@ const ConnectorMarketplacePage = React.lazy(
 const ConnectorDevelopmentPage = React.lazy(
   () => import('./tenant/connectors/development'),
 );
+const ConnectorBuilderPage = React.lazy(
+  () => import('./tenant/connectors/builder'),
+);
+const OpenApiImportPage = React.lazy(
+  () => import('./tenant/connectors/openapi-import'),
+);
 const TenantConnectionsPage = React.lazy(() => import('./tenant/connections'));
 
 function SuspenseWrapper({ children }: { children: React.ReactNode }) {
@@ -98,6 +104,16 @@ export const tenantRoutes = [
     '/tenant/connectors/development',
     'Connector Development',
     ConnectorDevelopmentPage,
+  ),
+  tenantRoute(
+    '/tenant/connectors/builder',
+    'Build a Connector',
+    ConnectorBuilderPage,
+  ),
+  tenantRoute(
+    '/tenant/connectors/openapi',
+    'Import from OpenAPI',
+    OpenApiImportPage,
   ),
   tenantRoute(
     '/tenant/setup/connections',

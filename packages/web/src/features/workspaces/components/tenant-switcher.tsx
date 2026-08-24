@@ -23,7 +23,6 @@ export function TenantSwitcher({ children }: { children: React.ReactNode }) {
   const { data: allWorkspaces } = workspaceHooks.useWorkspacesForTenants();
   const { tenant: currentTenant } = tenantHooks.useCurrentTenant();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const isCloud = false;
 
   const tenants = React.useMemo(() => {
     if (!allWorkspaces) return [];
@@ -64,18 +63,14 @@ export function TenantSwitcher({ children }: { children: React.ReactNode }) {
           </DropdownMenuItem>
         ))}
       </ScrollArea>
-      {isCloud && (
-        <>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            onClick={() => setCreateDialogOpen(true)}
-            className="text-sm p-2 cursor-pointer"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            {t('Create Tenant')}
-          </DropdownMenuItem>
-        </>
-      )}
+      <DropdownMenuSeparator />
+      <DropdownMenuItem
+        onClick={() => setCreateDialogOpen(true)}
+        className="text-sm p-2 cursor-pointer"
+      >
+        <Plus className="mr-2 h-4 w-4" />
+        {t('Create Tenant')}
+      </DropdownMenuItem>
     </DropdownMenuContent>
   );
 
@@ -87,12 +82,10 @@ export function TenantSwitcher({ children }: { children: React.ReactNode }) {
         </DropdownMenuTrigger>
         {dropdownContent}
       </DropdownMenu>
-      {isCloud && (
-        <CreateTenantDialog
-          open={createDialogOpen}
-          onOpenChange={setCreateDialogOpen}
-        />
-      )}
+      <CreateTenantDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+      />
     </>
   );
 }

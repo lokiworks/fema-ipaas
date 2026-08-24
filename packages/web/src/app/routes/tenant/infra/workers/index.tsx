@@ -1,7 +1,6 @@
 import {
   WorkerGroupScope,
   WorkerMachineStatus,
-  WorkerMachineType,
   WorkerMachineWithStatus,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
@@ -11,7 +10,6 @@ import {
   Cpu,
   MemoryStick,
   HardDrive,
-  Zap,
   Layers,
   Activity,
 } from 'lucide-react';
@@ -20,13 +18,6 @@ import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { DashboardPageHeader } from '@/app/components/dashboard-page-header';
-import { RequestTrial } from '@/app/components/request-trial';
-import {
-  Alert,
-  AlertAction,
-  AlertDescription,
-  AlertTitle,
-} from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import {
   Card,
@@ -53,7 +44,6 @@ type TabValue = 'health' | 'worker-groups';
 
 export default function WorkersPage() {
   const { tenant } = tenantHooks.useCurrentTenant();
-  const isCloud = false;
   const { data: workersData, isLoading } = workersQueries.useWorkerMachines();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -68,8 +58,6 @@ export default function WorkersPage() {
     }
     setSearchParams(newParams, { replace: true });
   };
-
-  const fleetType = workersData?.[0]?.type;
 
   return (
     <div className="flex flex-col w-full gap-4 px-4">
@@ -98,36 +86,6 @@ export default function WorkersPage() {
 
         <TabsContent value="health">
           <div className="flex flex-col gap-4 pt-4">
-            {isCloud && fleetType === WorkerMachineType.SHARED && (
-              <Alert variant="primary">
-                <Zap size={16} />
-                <AlertTitle>{t('Upgrade to Dedicated Workers')}</AlertTitle>
-                <AlertDescription className="text-xs">
-                  {t(
-                    'Your automations run on shared workers where strict sandboxing adds overhead to every execution. Dedicated workers give you your own execution pool that stays warm and ready, so your automations start much faster.',
-                  )}
-                </AlertDescription>
-                <AlertAction>
-                  <RequestTrial
-                    featureKey="DEDICATED_WORKERS"
-                    buttonVariant="default"
-                    buttonSize="xs"
-                  />
-                </AlertAction>
-              </Alert>
-            )}
-            {isCloud && fleetType === WorkerMachineType.DEDICATED && (
-              <Alert variant="success">
-                <Zap size={16} />
-                <AlertTitle>{t('Dedicated Workers Active')}</AlertTitle>
-                <AlertDescription className="text-xs">
-                  {t(
-                    'Your workers run exclusively for your tenant. The execution pool stays warm with no sandboxing overhead, so your automations start instantly.',
-                  )}
-                </AlertDescription>
-              </Alert>
-            )}
-
             {isLoading && (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                 {[0, 1, 2].map((i) => (

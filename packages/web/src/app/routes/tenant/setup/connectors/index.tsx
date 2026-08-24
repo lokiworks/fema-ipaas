@@ -17,14 +17,12 @@ import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { DashboardPageHeader } from '@/app/components/dashboard-page-header';
-import { RequestTrial } from '@/app/components/request-trial';
 import { ConnectorActions } from '@/app/routes/tenant/setup/connectors/connector-actions';
 import { CustomizeSelectorDialog } from '@/app/routes/tenant/setup/connectors/customize-selector-dialog';
 import { SyncConnectorsButton } from '@/app/routes/tenant/setup/connectors/sync-connectors';
 import { DataTable, RowDataWithActions } from '@/components/custom/data-table';
 import { DataTableColumnHeader } from '@/components/custom/data-table/data-table-column-header';
 import { ConfirmationDeleteDialog } from '@/components/custom/delete-dialog';
-import { LockedAlert } from '@/components/custom/locked-alert';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { oauthAppsQueries } from '@/features/connections';
@@ -34,14 +32,11 @@ import {
   connectorsApi,
   connectorsHooks,
 } from '@/features/connectors';
-import { tenantHooks } from '@/hooks/tenant-hooks';
 import { api } from '@/lib/api';
 
 type TabValue = 'connectors' | 'connector-sets';
 
 const ConnectorsListTab = () => {
-  const { tenant } = tenantHooks.useCurrentTenant();
-  const isEnabled = tenant.plan.manageConnectorsEnabled;
   const [searchParams] = useSearchParams();
   const searchQuery = searchParams.get('name') ?? '';
   const {
@@ -122,10 +117,7 @@ const ConnectorsListTab = () => {
         cell: ({ row }) => {
           return (
             <div className="flex justify-end">
-              <ConnectorActions
-                connectorName={row.original.name}
-                isEnabled={isEnabled}
-              />
+              <ConnectorActions connectorName={row.original.name} />
               {row.original.connectorType === ConnectorType.CUSTOM && (
                 <ConfirmationDeleteDialog
                   title={t('Delete {name}', { name: row.original.name })}
@@ -148,7 +140,7 @@ const ConnectorsListTab = () => {
                     toast.error(t('Failed to delete connector'));
                   }}
                 >
-                  <Button variant="ghost" size={'sm'} disabled={!isEnabled}>
+                  <Button variant="ghost" size={'sm'}>
                     <Trash className="size-4 text-destructive" />
                   </Button>
                 </ConfirmationDeleteDialog>
@@ -158,7 +150,7 @@ const ConnectorsListTab = () => {
         },
       },
     ],
-    [isEnabled, refetchConnectors, refetchConnectorsOAuth2AppsMap],
+    [refetchConnectors, refetchConnectorsOAuth2AppsMap],
   );
 
   return (
@@ -184,7 +176,7 @@ const ConnectorsListTab = () => {
       }}
       isLoading={isLoading}
       toolbarButtons={[
-        <CustomizeSelectorDialog key="customize" isEnabled={isEnabled} />,
+        <CustomizeSelectorDialog key="customize" />,
         <SyncConnectorsButton key="sync" />,
         <InstallConnectorDialog
           key="install"
@@ -199,7 +191,6 @@ const ConnectorsListTab = () => {
 };
 
 const TenantConnectorsPage = () => {
-  const { tenant } = tenantHooks.useCurrentTenant();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = (searchParams.get('tab') as TabValue) || 'connectors';
 
@@ -222,22 +213,6 @@ const TenantConnectorsPage = () => {
         title={t('Connectors')}
       />
       <div className="mx-auto w-full flex flex-col flex-1 min-h-0">
-        {!tenant.plan.manageConnectorsEnabled && (
-          <div className="px-4 shrink-0">
-            <LockedAlert
-              title={t('Control Connectors')}
-              description={t(
-                "Show the connectors that matter most to your users and hide the ones you don't like.",
-              )}
-              button={
-                <RequestTrial
-                  featureKey="ENTERPRISE_CONNECTORS"
-                  buttonVariant="basic"
-                />
-              }
-            />
-          </div>
-        )}
         <Tabs
           value={activeTab}
           onValueChange={(v) => setTab(v as TabValue)}

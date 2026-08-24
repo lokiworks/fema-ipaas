@@ -4,7 +4,6 @@ import { CompassIcon, HouseIcon, PuzzleIcon } from 'lucide-react';
 import { useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { BoxIcon } from '@/components/icons/box';
 import { ConnectIcon } from '@/components/icons/connect';
 import { HistoryIcon } from '@/components/icons/history';
 import { VariableIcon } from '@/components/icons/variable';
@@ -12,7 +11,6 @@ import { WorkflowIcon } from '@/components/icons/workflow';
 import { useEmbedding } from '@/components/providers/embed-provider';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { workspaceCollectionUtils } from '@/features/workspaces';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 
@@ -64,7 +62,6 @@ const AnimatedTab = ({
 };
 
 export const WorkspaceDashboardLayoutHeader = () => {
-  const { workspace } = workspaceCollectionUtils.useCurrentWorkspace();
   const { checkAccess } = useAuthorization();
   const { embedState } = useEmbedding();
   const location = useLocation();
@@ -123,16 +120,6 @@ export const WorkspaceDashboardLayoutHeader = () => {
       icon: VariableIcon,
       hasPermission: checkAccess(Permission.READ_VARIABLE),
       show: true,
-    },
-    {
-      to: authenticationSession.appendWorkspaceRoutePrefix('/releases'),
-      icon: BoxIcon,
-      label: t('Releases'),
-      hasPermission:
-        workspace.releasesEnabled &&
-        checkAccess(Permission.READ_WORKSPACE_RELEASE) &&
-        !isEmbedded,
-      show: workspace.releasesEnabled,
     },
   ];
 

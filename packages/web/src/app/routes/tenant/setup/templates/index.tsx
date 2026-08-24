@@ -8,7 +8,6 @@ import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { DashboardPageHeader } from '@/app/components/dashboard-page-header';
-import LockedFeatureGuard from '@/app/components/locked-feature-guard';
 import { AnimatedIconButton } from '@/components/custom/animated-icon-button';
 import {
   DataTable,
@@ -28,14 +27,11 @@ import {
 } from '@/components/ui/tooltip';
 import { ConnectorIconList } from '@/features/connectors';
 import { templatesApi, templatesMutations } from '@/features/templates';
-import { tenantHooks } from '@/hooks/tenant-hooks';
 
 import { CreateTemplateDialog } from './create-template-dialog';
 import { UpdateTemplateDialog } from './update-template-dialog';
 
 const TenantTemplatesPage = () => {
-  const { tenant } = tenantHooks.useCurrentTenant();
-
   const [searchParams] = useSearchParams();
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['templates', searchParams.toString()],
@@ -207,61 +203,51 @@ const TenantTemplatesPage = () => {
     [refetch],
   );
 
-  const isEnabled = tenant.plan.manageTemplatesEnabled;
   return (
-    <LockedFeatureGuard
-      featureKey="TEMPLATES"
-      locked={!isEnabled}
-      lockTitle={t('Unlock Templates')}
-      lockDescription={t(
-        'Convert the most common automations into reusable templates 1 click away from your users',
-      )}
-    >
-      <div className="flex flex-col w-full">
-        <DashboardPageHeader
-          description={t(
-            'Convert the most common automations into reusable templates',
-          )}
-          title={t('Templates')}
-        />
-        <DataTable
-          emptyStateTextTitle={t('No templates found')}
-          emptyStateTextDescription={t(
-            'Create a template for your user to inspire them',
-          )}
-          emptyStateIcon={<FileText className="size-14" />}
-          columns={columnsWithCheckbox}
-          page={data}
-          hidePagination={true}
-          isLoading={isLoading}
-          bulkActions={bulkActions}
-          toolbarButtons={toolbarButtons}
-          actions={[
-            (row) => {
-              return (
-                <div className="flex items-end justify-end">
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <UpdateTemplateDialog
-                        onDone={() => refetch()}
-                        template={row}
-                      >
-                        <Button variant="ghost" className="size-8 p-0">
-                          <Pencil className="size-4" />
-                        </Button>
-                      </UpdateTemplateDialog>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom">
-                      {t('Edit template')}
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-              );
-            },
-          ]}
-        />
-      </div>
-    </LockedFeatureGuard>
+    <div className="flex flex-col w-full">
+      <DashboardPageHeader
+        description={t(
+          'Convert the most common automations into reusable templates',
+        )}
+        title={t('Templates')}
+      />
+      <DataTable
+        emptyStateTextTitle={t('No templates found')}
+        emptyStateTextDescription={t(
+          'Create a template for your user to inspire them',
+        )}
+        emptyStateIcon={<FileText className="size-14" />}
+        columns={columnsWithCheckbox}
+        page={data}
+        hidePagination={true}
+        isLoading={isLoading}
+        bulkActions={bulkActions}
+        toolbarButtons={toolbarButtons}
+        actions={[
+          (row) => {
+            return (
+              <div className="flex items-end justify-end">
+                <Tooltip>
+                  <TooltipTrigger>
+                    <UpdateTemplateDialog
+                      onDone={() => refetch()}
+                      template={row}
+                    >
+                      <Button variant="ghost" className="size-8 p-0">
+                        <Pencil className="size-4" />
+                      </Button>
+                    </UpdateTemplateDialog>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    {t('Edit template')}
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            );
+          },
+        ]}
+      />
+    </div>
   );
 };
 

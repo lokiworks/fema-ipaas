@@ -12,7 +12,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useDebounce } from 'use-debounce';
 
 import { SearchInput } from '@/components/custom/search-input';
-import { ChartLineIcon } from '@/components/icons/chart-line';
 import { CompassIcon } from '@/components/icons/compass';
 import { ShieldIcon } from '@/components/icons/shield';
 import { useEmbedding } from '@/components/providers/embed-provider';
@@ -163,27 +162,7 @@ export function WorkspaceDashboardSidebar({
     },
   };
 
-  const impactLink: SidebarItemType = {
-    type: 'link',
-    to: '/impact',
-    label: t('Impact'),
-    icon: ChartLineIcon,
-    show: true,
-    hasPermission: true,
-    isSubItem: false,
-    onClick: () => {
-      const page = STATIC_PAGES.find((p) => p.href === '/impact');
-      if (page)
-        recordAccess({
-          id: page.id,
-          type: 'page',
-          label: page.label,
-          href: page.href,
-        });
-    },
-  };
-
-  const items = [exploreLink, impactLink]
+  const items = [exploreLink]
     .filter((item) => item.show !== false)
     .filter(permissionFilter);
 

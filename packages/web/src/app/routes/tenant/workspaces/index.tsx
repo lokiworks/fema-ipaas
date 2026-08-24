@@ -7,7 +7,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { DashboardPageHeader } from '@/app/components/dashboard-page-header';
-import LockedFeatureGuard from '@/app/components/locked-feature-guard';
 import {
   DataTable,
   RowDataWithActions,
@@ -27,17 +26,14 @@ import {
   EditWorkspaceDialog,
   workspaceCollectionUtils,
 } from '@/features/workspaces';
-import { tenantHooks } from '@/hooks/tenant-hooks';
 import { formatUtils } from '@/lib/format-utils';
 import { validationUtils } from '@/lib/validation-utils';
 
 import { workspacesTableColumns } from './columns';
 
 export default function WorkspacesPage() {
-  const { tenant } = tenantHooks.useCurrentTenant();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const isEnabled = tenant.plan.billedTeamWorkspacesLimit !== 0;
   const { workspace: currentWorkspace } =
     workspaceCollectionUtils.useCurrentWorkspace();
 
@@ -91,13 +87,7 @@ export default function WorkspacesPage() {
         ).length ?? 0,
     }));
   }, [allWorkspaces, allGlobalConnectionsPage?.data]);
-  const columns = useMemo(
-    () =>
-      workspacesTableColumns({
-        tenant,
-      }),
-    [tenant],
-  );
+  const columns = useMemo(() => workspacesTableColumns(), []);
 
   const columnsWithCheckbox: ColumnDef<
     RowDataWithActions<WorkspaceWithLimits & { globalConnectionsCount: number }>
@@ -330,71 +320,62 @@ export default function WorkspacesPage() {
   ];
 
   return (
-    <LockedFeatureGuard
-      featureKey="WORKSPACES"
-      locked={!isEnabled}
-      lockTitle={t('Unlock Workspaces')}
-      lockDescription={t(
-        'Orchestrate your automation teams across workspaces with their own workflows, connections and usage quotas',
-      )}
-    >
-      <div className="flex flex-col w-full">
-        <DashboardPageHeader
-          title={t('Workspaces')}
-          description={t('Manage your automation workspaces')}
-        />
-        <DataTable
-          emptyStateTextTitle={t('No workspaces found')}
-          emptyStateTextDescription={t(
-            'Start by creating workspaces to manage your automation teams',
-          )}
-          emptyStateIcon={<Package className="size-14" />}
-          onRowClick={async (workspace) => {
-            await workspaceCollectionUtils.setCurrentWorkspace(workspace.id);
-            navigate('/');
-          }}
-          filters={[
-            {
-              type: 'input',
-              title: t('Name'),
-              accessorKey: 'displayName',
-              icon: CheckIcon,
-            },
-            {
-              type: 'select',
-              title: t('Type'),
-              accessorKey: 'type',
-              options: Object.values(WorkspaceType).map((type) => {
-                return {
-                  label:
-                    formatUtils.convertEnumToHumanReadable(type) + ' Workspace',
-                  value: type,
-                };
-              }),
-              icon: CheckIcon,
-            },
-          ]}
-          columns={columnsWithCheckbox}
-          page={{
-            data: allWorkspacesWithGlobalConnectionsCount,
-            next: null,
-            previous: null,
-          }}
-          isLoading={false}
-          clientPagination={true}
-          bulkActions={bulkActions}
-          toolbarButtons={toolbarButtons}
-          actions={actions}
-        />
-        <EditWorkspaceDialog
-          open={editDialogOpen}
-          onClose={() => {
-            setEditDialogOpen(false);
-          }}
-          initialValues={editDialogInitialValues}
-          workspaceId={editDialogWorkspaceId}
-        />
-      </div>
-    </LockedFeatureGuard>
+    <div className="flex flex-col w-full">
+      <DashboardPageHeader
+        title={t('Workspaces')}
+        description={t('Manage your automation workspaces')}
+      />
+      <DataTable
+        emptyStateTextTitle={t('No workspaces found')}
+        emptyStateTextDescription={t(
+          'Start by creating workspaces to manage your automation teams',
+        )}
+        emptyStateIcon={<Package className="size-14" />}
+        onRowClick={async (workspace) => {
+          await workspaceCollectionUtils.setCurrentWorkspace(workspace.id);
+          navigate('/');
+        }}
+        filters={[
+          {
+            type: 'input',
+            title: t('Name'),
+            accessorKey: 'displayName',
+            icon: CheckIcon,
+          },
+          {
+            type: 'select',
+            title: t('Type'),
+            accessorKey: 'type',
+            options: Object.values(WorkspaceType).map((type) => {
+              return {
+                label:
+                  formatUtils.convertEnumToHumanReadable(type) + ' Workspace',
+                value: type,
+              };
+            }),
+            icon: CheckIcon,
+          },
+        ]}
+        columns={columnsWithCheckbox}
+        page={{
+          data: allWorkspacesWithGlobalConnectionsCount,
+          next: null,
+          previous: null,
+        }}
+        isLoading={false}
+        clientPagination={true}
+        bulkActions={bulkActions}
+        toolbarButtons={toolbarButtons}
+        actions={actions}
+      />
+      <EditWorkspaceDialog
+        open={editDialogOpen}
+        onClose={() => {
+          setEditDialogOpen(false);
+        }}
+        initialValues={editDialogInitialValues}
+        workspaceId={editDialogWorkspaceId}
+      />
+    </div>
   );
 }

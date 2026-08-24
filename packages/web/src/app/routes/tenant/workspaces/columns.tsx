@@ -1,33 +1,13 @@
-import { isNil } from '@fema-ipaas/core-utils';
-import {
-  TenantWithoutSensitiveData,
-  WorkspaceWithLimits,
-  WorkspaceType,
-} from '@fema-ipaas/shared';
+import { WorkspaceWithLimits, WorkspaceType } from '@fema-ipaas/shared';
 import { ColumnDef } from '@tanstack/react-table';
 import { t } from 'i18next';
-import {
-  Lock,
-  User,
-  Tag,
-  Users,
-  Workflow,
-  Clock,
-  Hash,
-  Link2,
-} from 'lucide-react';
+import { Lock, User, Tag, Users, Workflow, Clock, Link2 } from 'lucide-react';
 
 import { RowDataWithActions } from '@/components/custom/data-table';
 import { DataTableColumnHeader } from '@/components/custom/data-table/data-table-column-header';
 import { FormattedDate } from '@/components/custom/formatted-date';
 
-type WorkspacesTableColumnsProps = {
-  tenant: TenantWithoutSensitiveData;
-};
-
-export const workspacesTableColumns = ({
-  tenant,
-}: WorkspacesTableColumnsProps): ColumnDef<
+export const workspacesTableColumns = (): ColumnDef<
   RowDataWithActions<WorkspaceWithLimits & { globalConnectionsCount: number }>
 >[] => {
   const columns: ColumnDef<
@@ -106,48 +86,25 @@ export const workspacesTableColumns = ({
     },
   ];
 
-  if (tenant.plan.embeddingEnabled) {
-    columns.push({
-      accessorKey: 'externalId',
-      size: 150,
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={t('External ID')}
-          icon={Hash}
-        />
-      ),
-      cell: ({ row }) => {
-        const displayValue =
-          isNil(row.original.externalId) ||
-          row.original.externalId?.length === 0
-            ? '-'
-            : row.original.externalId;
-        return <div className="text-left truncate">{displayValue}</div>;
-      },
-    });
-  }
-  if (tenant.plan.globalConnectionsEnabled) {
-    columns.push({
-      accessorKey: 'globalConnectionsCount',
-      size: 135,
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={t('Global Connections')}
-          icon={Link2}
-          className="w-full"
-        />
-      ),
-      cell: ({ row }) => {
-        return (
-          <div className="text-left tabular-nums">
-            {row.original.globalConnectionsCount}
-          </div>
-        );
-      },
-    });
-  }
+  columns.push({
+    accessorKey: 'globalConnectionsCount',
+    size: 135,
+    header: ({ column }) => (
+      <DataTableColumnHeader
+        column={column}
+        title={t('Global Connections')}
+        icon={Link2}
+        className="w-full"
+      />
+    ),
+    cell: ({ row }) => {
+      return (
+        <div className="text-left tabular-nums">
+          {row.original.globalConnectionsCount}
+        </div>
+      );
+    },
+  });
 
   columns.push({
     accessorKey: 'createdAt',

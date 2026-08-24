@@ -1,0 +1,29 @@
+packages/cli/src/index.ts
+  s_94864882421579::t_1aa23cdbc92326 12-13,28-29
+packages/cli/src/lib/commands/dev-connector.ts
+  s_94864882421579::t_1aa23cdbc92326 1-46
+packages/cli/src/lib/commands/test-connector.ts
+  s_94864882421579::t_c3a8ed8c352b9d 24-26,34,46,87-88,94
+  s_94864882421579::t_c77a78a35fe890 2-4,7-23,27-33,35-45,47,52,55-86,89-93,95-99
+  s_94864882421579::t_958ca2c3f881bd 1,48-51,53-54
+  s_94864882421579::t_d8c3f29b7b9b93 5-6
+packages/cli/src/lib/commands/test-connector.test.ts
+  s_94864882421579::t_c3a8ed8c352b9d 1,4,6,11,18-20,25,30,34,36
+  s_94864882421579::t_482a53ae50ad11 2-3,5,7-10,12-17,21-24,26-29,31-33,35,37-38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "3d9077f417b5d99141fbac033e0bd90be0bd3b2b",
+  "prompts": {},
+  "sessions": {
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

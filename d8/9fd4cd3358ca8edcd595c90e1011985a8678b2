@@ -1,0 +1,41 @@
+packages/web/src/app/routes/home/index.tsx
+  s_94864882421579::t_44de37ba79ef0b 13,16,18,124-137
+  s_94864882421579::t_edb0833227de67 138
+packages/web/src/features/overview/components/overview-cards.tsx
+  s_94864882421579::t_e0f9a3b4bd44dd 1-7,147-175,179-271,273-287
+  s_94864882421579::t_86c43173cd79a1 176-178
+  s_94864882421579::t_44de37ba79ef0b 272
+packages/core/execution/src/lib/execution/dto/list-executions-request.ts
+  s_94864882421579::t_a622f4d3fa13cf 60-75,80-82,88-90
+packages/web/public/locales/zh/translation.json
+  s_94864882421579::t_86c43173cd79a1 2415-2423
+packages/server/api/src/app/workflows/execution/execution-service.ts
+  s_94864882421579::t_efc44376504e4f 523-581
+  s_94864882421579::t_86c43173cd79a1 3,7
+  s_94864882421579::t_81c51bc7b66869 1085-1093
+packages/web/src/features/overview/index.ts
+  s_94864882421579::t_e0f9a3b4bd44dd 7-9
+packages/server/api/src/app/workflows/execution/execution-controller.ts
+  s_94864882421579::t_81c51bc7b66869 47,51-53,55
+  s_94864882421579::t_fc293bdd24d8b8 234
+packages/web/public/locales/en/translation.json
+  s_94864882421579::t_86c43173cd79a1 2511-2519
+packages/core/execution/package.json
+  s_94864882421579::t_12088f4d21befa 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "d89fd4cd3358ca8edcd595c90e1011985a8678b2",
+  "prompts": {},
+  "sessions": {
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

@@ -1,0 +1,41 @@
+packages/web/public/locales/zh/translation.json
+  s_94864882421579::t_24e92bd01110db 2405-2415
+packages/server/api/src/app/workspace/workspace-member.controller.ts
+  s_94864882421579::t_e0b52e1a1fea9d 2,19
+packages/server/api/src/app/workspace/workspace-member.service.ts
+  s_94864882421579::t_e0b52e1a1fea9d 2,7,24,37-41
+packages/web/public/locales/en/translation.json
+  s_94864882421579::t_24e92bd01110db 2501-2511
+packages/core/shared/src/lib/management/workspace/workspace-member.ts
+  s_94864882421579::t_c156c8e2aa3677 19-22,24
+  s_94864882421579::t_b4627ad1b059b0 3
+packages/web/src/features/workspace-members/hooks/workspace-members-hooks.ts
+  s_94864882421579::t_24e92bd01110db 32-33
+  s_94864882421579::t_5d4948c70cc7ff 1-2,8-31,34-49,51-53
+packages/web/src/app/components/workspace-settings/members/index.tsx
+  s_94864882421579::t_24e92bd01110db 14
+  s_94864882421579::t_b98d79efbe00f3 1-13,15-103
+packages/web/src/app/components/workspace-settings/index.tsx
+  s_94864882421579::t_f142fbb1c71369 24,101-102,110-115,122-127
+  s_94864882421579::t_dabd0ef93d9f78 4
+packages/core/shared/package.json
+  s_94864882421579::t_fb0e4a44f03f90 3
+packages/web/src/features/workspace-members/api/workspace-members-api.ts
+  s_94864882421579::t_e01c90456a6e8d 5,11-12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "95b8ef38b086106b365c8515d86d3fec08293af0",
+  "prompts": {},
+  "sessions": {
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

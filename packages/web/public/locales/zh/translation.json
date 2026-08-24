@@ -2423,5 +2423,7 @@
   "No workflows yet": "还没有工作流",
   "Control how people sign in to this tenant": "控制成员如何登录这个租户",
   "Sign-in is turned off": "登录已关闭",
-  "This tenant does not allow signing in with an email address. Ask an administrator to turn it back on.": "这个租户不允许用邮箱登录，请联系管理员重新开启。"
+  "This tenant does not allow signing in with an email address. Ask an administrator to turn it back on.": "这个租户不允许用邮箱登录，请联系管理员重新开启。",
+  "All runs": "全部执行",
+  "Failures": "失败记录"
 }

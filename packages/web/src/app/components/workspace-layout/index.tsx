@@ -27,6 +27,7 @@ export type WorkspaceDashboardLayoutHeaderTab = {
   hasPermission: boolean;
   show: boolean;
   beta?: boolean;
+  children?: { to: string; label: string }[];
 };
 
 const WorkspaceChangedRedirector = ({

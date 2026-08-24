@@ -1,4 +1,5 @@
 import { Permission } from '@fema-ipaas/core-utils';
+import { ExecutionStatus } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { CompassIcon, HouseIcon, PuzzleIcon } from 'lucide-react';
 import { useRef } from 'react';
@@ -13,6 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
+import { cn } from '@/lib/utils';
 
 import { WorkspaceDashboardPageHeader } from './workspace-dashboard-page-header';
 
@@ -92,6 +94,18 @@ export const WorkspaceDashboardLayoutHeader = () => {
       icon: HistoryIcon,
       hasPermission: checkAccess(Permission.READ_RUN),
       show: true,
+      children: [
+        {
+          to: authenticationSession.appendWorkspaceRoutePrefix('/runs'),
+          label: t('All runs'),
+        },
+        {
+          to: `${authenticationSession.appendWorkspaceRoutePrefix(
+            '/runs',
+          )}?status=${ExecutionStatus.FAILED}`,
+          label: t('Failures'),
+        },
+      ],
     },
     {
       to: authenticationSession.appendWorkspaceRoutePrefix('/connections'),
@@ -129,6 +143,12 @@ export const WorkspaceDashboardLayoutHeader = () => {
   const visibleSecondaryTabs = secondaryTabs.filter(
     (tab) => tab.show && tab.hasPermission,
   );
+  const currentLocation = `${location.pathname}${location.search}`;
+
+  const activeTab = [...visiblePrimaryTabs, ...visibleSecondaryTabs].find(
+    (tab) => location.pathname.includes(pathOf(tab.to)),
+  );
+  const subTabs = activeTab?.children ?? [];
 
   return (
     <div className="flex flex-col">
@@ -140,7 +160,7 @@ export const WorkspaceDashboardLayoutHeader = () => {
               <AnimatedTab
                 key={tab.to}
                 tab={tab}
-                isActive={location.pathname.includes(tab.to)}
+                isActive={location.pathname.includes(pathOf(tab.to))}
                 onClick={() => navigate(tab.to)}
               />
             ))}
@@ -155,16 +175,40 @@ export const WorkspaceDashboardLayoutHeader = () => {
               <AnimatedTab
                 key={tab.to}
                 tab={tab}
-                isActive={location.pathname.includes(tab.to)}
+                isActive={location.pathname.includes(pathOf(tab.to))}
                 onClick={() => navigate(tab.to)}
               />
             ))}
           </TabsList>
         </Tabs>
       )}
+      {!embedState.hideSideNav && subTabs.length > 1 && (
+        <div className="flex items-center gap-4 border-b px-5 py-2">
+          {subTabs.map((subTab) => (
+            <button
+              key={subTab.to}
+              type="button"
+              onClick={() => navigate(subTab.to)}
+              className={cn(
+                'text-sm text-muted-foreground transition-colors hover:text-foreground',
+                {
+                  'text-foreground font-medium': currentLocation === subTab.to,
+                },
+              )}
+            >
+              {subTab.label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
+
+// A tab's `to` may carry a query string, which never appears in pathname.
+function pathOf(to: string): string {
+  return to.split('?')[0];
+}
 
 WorkspaceDashboardLayoutHeader.displayName = 'WorkspaceDashboardLayoutHeader';
 

@@ -1,14 +1,14 @@
-import { ApId } from '@fema-ipaas/core-utils'
+import { EntityId } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 
 export const VerifyEmailRequestBody = z.object({
-    identityId: ApId,
+    identityId: EntityId,
     otp: z.string(),
 })
 export type VerifyEmailRequestBody = z.infer<typeof VerifyEmailRequestBody>
 
 export const ResetPasswordRequestBody = z.object({
-    identityId: ApId,
+    identityId: EntityId,
     otp: z.string(),
     newPassword: z.string(),
 })

@@ -10,8 +10,8 @@ import {
 } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import {
-    ApIdSchema,
     BaseColumnSchemaPart,
+    EntityIdSchema,
 } from '../database/database-common'
 
 type WorkspaceSchema = Workspace & {
@@ -33,7 +33,7 @@ export const WorkspaceEntity = new EntitySchema<WorkspaceSchema>({
             deleteDate: true,
             nullable: true,
         },
-        ownerId: ApIdSchema,
+        ownerId: EntityIdSchema,
         displayName: {
             type: String,
         },
@@ -42,7 +42,7 @@ export const WorkspaceEntity = new EntitySchema<WorkspaceSchema>({
             nullable: false,
         },
         tenantId: {
-            ...ApIdSchema,
+            ...EntityIdSchema,
         },
         externalId: {
             type: String,

@@ -1,4 +1,4 @@
-import { ApId, BaseModelSchema, DateOrString, Metadata, Nullable } from '@fema-ipaas/core-utils'
+import { BaseModelSchema, DateOrString, EntityId, Metadata, Nullable } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 
 export enum ColorName {
@@ -38,7 +38,7 @@ export const Workspace = z.object({
     deleted: Nullable(DateOrString),
     ownerId: z.string(),
     displayName: z.string(),
-    tenantId: ApId,
+    tenantId: EntityId,
     maxConcurrentJobs: Nullable(z.number()),
     type: z.nativeEnum(WorkspaceType),
     icon: WorkspaceIcon,

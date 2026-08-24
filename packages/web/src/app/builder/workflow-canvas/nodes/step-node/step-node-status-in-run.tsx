@@ -8,7 +8,7 @@ import { workflowCanvasUtils } from '../../utils/workflow-canvas-utils';
 
 import { StepNodeBadgeContainer } from './step-node-badge-container';
 
-const ApStepNodeStatusInRun = ({ stepName }: { stepName: string }) => {
+const StepNodeStatusInRun = ({ stepName }: { stepName: string }) => {
   const [run, loopIndexes] = useBuilderStateContext((state) => [
     state.run,
     state.loopsIndexes,
@@ -37,6 +37,6 @@ const ApStepNodeStatusInRun = ({ stepName }: { stepName: string }) => {
     </StepNodeBadgeContainer>
   );
 };
-ApStepNodeStatusInRun.displayName = 'ApStepNodeStatus';
+StepNodeStatusInRun.displayName = 'StepNodeStatus';
 
-export { ApStepNodeStatusInRun };
+export { StepNodeStatusInRun };

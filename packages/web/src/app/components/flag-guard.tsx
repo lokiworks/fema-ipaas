@@ -1,10 +1,10 @@
-import { ApFlagId } from '@fema-ipaas/shared';
+import { FlagId } from '@fema-ipaas/shared';
 
 import { flagsHooks } from '@/hooks/flags-hooks';
 
 type FlagGuardProps = {
   children: React.ReactNode;
-  flag: ApFlagId;
+  flag: FlagId;
 };
 const FlagGuard = ({ children, flag }: FlagGuardProps) => {
   const { data: flagValue } = flagsHooks.useFlag<boolean>(flag);

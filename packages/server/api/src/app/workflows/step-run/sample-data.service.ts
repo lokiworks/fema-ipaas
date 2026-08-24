@@ -1,4 +1,4 @@
-import { apId, isNil, stringifyNullOrUndefined, WorkflowId, WorkflowVersionId, WorkspaceId } from '@fema-ipaas/core-utils'
+import { generateId, isNil, stringifyNullOrUndefined, WorkflowId, WorkflowVersionId, WorkspaceId } from '@fema-ipaas/core-utils'
 import { DATA_TYPE_KEY_IN_FILE_METADATA, FileCompression, FileType, SampleDataDataType, SampleDataFileType, SampleDataSettings, SaveSampleDataResponse, Step, WorkflowAction, workflowStructureUtil, WorkflowTrigger, WorkflowVersion } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
@@ -103,7 +103,7 @@ export async function saveSampleData({
 async function useExistingOrCreateNewSampleId(workspaceId: WorkspaceId, workflowVersion: WorkflowVersion, step: WorkflowAction | WorkflowTrigger, fileType: FileType, log: FastifyBaseLogger): Promise<string> {
     const sampleDataId = fileType === FileType.SAMPLE_DATA ? step.settings.sampleData?.sampleDataFileId : step.settings.sampleData?.sampleDataInputFileId
     if (isNil(sampleDataId)) {
-        return apId()
+        return generateId()
     }
     const file = await fileService(log).getFile({
         workspaceId,
@@ -112,7 +112,7 @@ async function useExistingOrCreateNewSampleId(workspaceId: WorkspaceId, workflow
     })
     const isNewVersion = file?.metadata?.workflowVersionId !== workflowVersion.id
     if (isNewVersion || isNil(file)) {
-        return apId()
+        return generateId()
     }
     return file.id
 }

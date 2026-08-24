@@ -1,4 +1,4 @@
-import { ApId, Permission, SeekPage, UserId } from '@fema-ipaas/core-utils'
+import { EntityId, Permission, SeekPage, UserId } from '@fema-ipaas/core-utils'
 import { CountWorkflowsRequest, CreateWorkflowRequest, GetWorkflowQueryParamsRequest, GetWorkflowTemplateRequestQuery, ListWorkflowsRequest, PopulatedWorkflow, PrincipalType, SERVICE_KEY_SECURITY_OPENAPI, SharedTemplate, WorkflowOperationRequest, WorkflowOperationType, workflowStructureUtil, WorkflowTrigger } from '@fema-ipaas/shared'
 import { FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
@@ -44,7 +44,7 @@ export const workflowController: FastifyPluginAsyncZod = async (app) => {
             security: [SERVICE_KEY_SECURITY_OPENAPI],
             body: WorkflowOperationRequest,
             params: z.object({
-                id: ApId,
+                id: EntityId,
             }),
         },
         preValidation: async (request) => {
@@ -238,7 +238,7 @@ const GetWorkflowTemplateRequestOptions = {
         security: [SERVICE_KEY_SECURITY_OPENAPI],
         description: 'Export workflow as template',
         params: z.object({
-            id: ApId,
+            id: EntityId,
         }),
         querystring: GetWorkflowTemplateRequestQuery,
         response: {
@@ -261,7 +261,7 @@ const GetWorkflowRequestOptions = {
         security: [SERVICE_KEY_SECURITY_OPENAPI],
         description: 'Get a workflow by id',
         params: z.object({
-            id: ApId,
+            id: EntityId,
         }),
         querystring: GetWorkflowQueryParamsRequest,
         response: {
@@ -284,7 +284,7 @@ const DeleteWorkflowRequestOptions = {
         security: [SERVICE_KEY_SECURITY_OPENAPI],
         description: 'Delete a workflow',
         params: z.object({
-            id: ApId,
+            id: EntityId,
         }),
         response: {
             [StatusCodes.NO_CONTENT]: z.never(),

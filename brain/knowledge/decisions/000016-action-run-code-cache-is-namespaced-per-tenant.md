@@ -183,26 +183,26 @@ mtime re-check alone; that is accepted, the same way the sweep is convergent rat
 
 **The discriminator is structural, which is why the earlier `ar_` prefix was retired.** A prefix made
 classification lexical, and it was collision-proof only because `ALPHABET` in `core-utils/id-generator.ts`
-is `[0-9A-Za-z]`: no `apId` can start with `ar_`, so no workflow-version directory could be classified as
+is `[0-9A-Za-z]`: no `generateId` can start with `ar_`, so no workflow-version directory could be classified as
 managed. Adding `_` to that alphabet would have misclassified any id beginning `ar_` — roughly one in
 238 000 per id, so effectively certain at cloud scale — and the sweeper would have started eating workflow
 caches silently, from a one-character change three packages away with no test between it and data loss.
-Length could not help: `platformId` and `workflowVersionId` are both 21-char `apId`s.
+Length could not help: `platformId` and `workflowVersionId` are both 21-char `generateId`s.
 
 A directory does not remove that class of coupling so much as collapse its probability. A workflow-version
 directory can now only be swept if it lands *inside* `codes/action-runs/`, which requires a `workflowVersionId`
 equal to the string `action-runs` — needing `ALPHABET` to gain `-`, **and** `ID_LENGTH` to go from 21 to 11,
-**and** the `ApId` regex to change, all together. The sweep also no longer filters by name at all: it reads
+**and** the `EntityId` regex to change, all together. The sweep also no longer filters by name at all: it reads
 only its own directory, so nothing at the root of `codes/` is a candidate however old. A test pins that a
 workflow-version directory, a leftover `ar_`-prefixed directory and a stray file at the root of `codes/` all
-survive a sweep of arbitrarily aged entries, and a second pins that `ACTION_RUN_CODE_DIR` is not `apId`-shaped.
+survive a sweep of arbitrarily aged entries, and a second pins that `ACTION_RUN_CODE_DIR` is not `generateId`-shaped.
 
 **Pre-`action-runs/` builds are deliberately left to leak.** Bare-`sha256`, `mcp-workflow-version-id` and
 `ar_`-prefixed directories only ever existed on machines that ran intermediate commits of the branch that
 introduced this — none of these layouts ever reached `main`. Reclaiming them needs a name-sniffing branch
 that, unlike the managed path, has no TTL and no mtime re-check, and would `rm -rf` `mcp-workflow-version-id`
 every 30 minutes the day anything did provision under that still-live constant. Era-1 directories, named
-after real `apId`s, are indistinguishable from live workflow-version caches and are likewise **not** reclaimable
+after real `generateId`s, are indistinguishable from live workflow-version caches and are likewise **not** reclaimable
 — better to leak them than to risk a heuristic that eats a workflow's cache. On a dev box that ran those
 commits, `rm -rf cache/v12/codes` is the cleanup.
 

@@ -1,6 +1,6 @@
 import os from 'os'
 import { parseToJsonIfPossible } from '@fema-ipaas/core-utils'
-import { apDayjs, apVersionUtil, systemUsage } from '@fema-ipaas/server-utils'
+import { dayjsUtil, systemUsage, versionUtil } from '@fema-ipaas/server-utils'
 import { AppInstance } from '@fema-ipaas/shared'
 import { redisConnections } from '../database/redis-connections'
 
@@ -19,7 +19,7 @@ export const appMachineCache = {
         ])
         const instance: AppInstance = {
             hostname: os.hostname(),
-            version: apVersionUtil.getCurrentRelease(),
+            version: versionUtil.getCurrentRelease(),
             cpuCores,
             cpuUsagePercentage: systemUsage.getCpuUsage(),
             ramTotalBytes: memory.totalRamInBytes,
@@ -27,7 +27,7 @@ export const appMachineCache = {
             diskPercentage: disk.percentage,
             eventLoopDelayMs,
             ...cpuPressure,
-            updated: apDayjs().toISOString(),
+            updated: dayjsUtil().toISOString(),
         }
         const redisConnection = await redisConnections.useExisting()
         await redisConnection.hset(REDIS_KEY, instance.hostname, JSON.stringify(instance))
@@ -37,12 +37,12 @@ export const appMachineCache = {
         const redisConnection = await redisConnections.useExisting()
         const allFields = await redisConnection.hgetall(REDIS_KEY)
 
-        const now = apDayjs().valueOf()
+        const now = dayjsUtil().valueOf()
         const live: AppInstance[] = []
         const stale: string[] = []
         for (const [hostname, raw] of Object.entries(allFields)) {
             const parsed = parseToJsonIfPossible(raw) as AppInstance | undefined
-            const isOffline = !parsed || !parsed.updated || now - apDayjs(parsed.updated).valueOf() > OFFLINE_AFTER_MS
+            const isOffline = !parsed || !parsed.updated || now - dayjsUtil(parsed.updated).valueOf() > OFFLINE_AFTER_MS
             if (isOffline) {
                 stale.push(hostname)
                 continue

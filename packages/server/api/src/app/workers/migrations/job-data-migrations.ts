@@ -1,4 +1,4 @@
-import { apId, isNil } from '@fema-ipaas/core-utils'
+import { generateId, isNil } from '@fema-ipaas/core-utils'
 import { ExecutionType, JobData, ResumeReason, StreamStepProgress, WorkerJobType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { z } from 'zod'
@@ -25,7 +25,7 @@ function createMigrations(log: FastifyBaseLogger): JobMigration[] {
         migrate: async (job: JobData) => {
             if (job.jobType === WorkerJobType.EXECUTE_WORKFLOW) {
                 const workflowVersion = await workflowVersionService(log).getOne(job.workflowVersionId)
-                const logsFileId = 'logsFileId' in job ? job.logsFileId : apId()
+                const logsFileId = 'logsFileId' in job ? job.logsFileId : generateId()
                 return {
                     ...job,
                     workflowId: workflowVersion!.workflowId,

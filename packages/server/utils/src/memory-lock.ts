@@ -3,7 +3,7 @@ import { E_ALREADY_LOCKED, E_TIMEOUT, Mutex, MutexInterface, tryAcquire as makeT
 const memoryLocks = new Map<string, MutexInterface>()
 
 export const memoryLock = {
-    acquire: async (key: string, timeout?: number): Promise<ApLock> => {
+    acquire: async (key: string, timeout?: number): Promise<MemoryLock> => {
         let lock = memoryLocks.get(key)
         if (!lock) {
             if (timeout) {
@@ -21,7 +21,7 @@ export const memoryLock = {
             },
         }
     },
-    tryAcquire: async (key: string): Promise<ApLock | null> => {
+    tryAcquire: async (key: string): Promise<MemoryLock | null> => {
         let lock = memoryLocks.get(key)
         if (!lock) {
             lock = new Mutex()
@@ -61,6 +61,6 @@ type RunExclusiveParams<T> = {
     fn: () => Promise<T>
 }
 
-export type ApLock = {
+export type MemoryLock = {
     release(): Promise<unknown>
 }

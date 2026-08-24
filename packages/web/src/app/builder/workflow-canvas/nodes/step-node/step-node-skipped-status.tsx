@@ -14,7 +14,7 @@ import { workflowCanvasUtils } from '../../utils/workflow-canvas-utils';
 
 import { StepNodeBadgeContainer } from './step-node-badge-container';
 
-const ApStepNodeSkippedStatus = ({ stepName }: { stepName: string }) => {
+const StepNodeSkippedStatus = ({ stepName }: { stepName: string }) => {
   const [run, stepType, isInDraft, isSkipped] = useBuilderStateContext(
     (state) => [
       state.run,
@@ -47,5 +47,5 @@ const ApStepNodeSkippedStatus = ({ stepName }: { stepName: string }) => {
   );
 };
 
-ApStepNodeSkippedStatus.displayName = 'ApStepNodeSkippedStatus';
-export { ApStepNodeSkippedStatus };
+StepNodeSkippedStatus.displayName = 'StepNodeSkippedStatus';
+export { StepNodeSkippedStatus };

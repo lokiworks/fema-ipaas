@@ -1,4 +1,4 @@
-import { FEMA_FUNCTIONS, ApFunction } from '@fema-ipaas/expression';
+import { FEMA_FUNCTIONS, FormulaFunction } from '@fema-ipaas/expression';
 import { ExternalLink } from 'lucide-react';
 import { RefObject, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -23,7 +23,7 @@ type FunctionSearchPopoverProps = {
   query: string;
   position: { top: number; left: number };
   editorRef: RefObject<HTMLDivElement | null>;
-  onSelect: (fn: ApFunction) => void;
+  onSelect: (fn: FormulaFunction) => void;
   onClose: () => void;
   docsUrl?: string;
 };
@@ -38,7 +38,7 @@ export function FunctionSearchPopover({
 }: FunctionSearchPopoverProps) {
   const { t } = useTranslation();
   const [activeIdx, setActiveIdx] = useState(0);
-  const [hoveredFn, setHoveredFn] = useState<ApFunction | null>(null);
+  const [hoveredFn, setHoveredFn] = useState<FormulaFunction | null>(null);
   const [hoverItemRect, setHoverItemRect] = useState<DOMRect | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -109,11 +109,14 @@ export function FunctionSearchPopover({
 
   const tooltipOnRight = popoverLeft < 340;
 
-  const grouped = filtered.reduce<Record<string, ApFunction[]>>((acc, fn) => {
-    if (!acc[fn.category]) acc[fn.category] = [];
-    acc[fn.category].push(fn);
-    return acc;
-  }, {});
+  const grouped = filtered.reduce<Record<string, FormulaFunction[]>>(
+    (acc, fn) => {
+      if (!acc[fn.category]) acc[fn.category] = [];
+      acc[fn.category].push(fn);
+      return acc;
+    },
+    {},
+  );
 
   let globalIdx = 0;
 

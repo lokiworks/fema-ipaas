@@ -14,9 +14,9 @@ import {
   DialogFooter,
 } from '../../ui/dialog';
 
-import { useApErrorDialogStore } from './ap-error-dialog-store';
+import { useApErrorDialogStore } from './error-dialog-store';
 
-const ApErrorDialog = () => {
+const ErrorDialog = () => {
   const { params, closeDialog } = useApErrorDialogStore();
 
   if (isNil(params)) return null;
@@ -62,5 +62,5 @@ const ApErrorDialog = () => {
   );
 };
 
-ApErrorDialog.displayName = 'ApErrorDialog';
-export { ApErrorDialog };
+ErrorDialog.displayName = 'ErrorDialog';
+export { ErrorDialog };

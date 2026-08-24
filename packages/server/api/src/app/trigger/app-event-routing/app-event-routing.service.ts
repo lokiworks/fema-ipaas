@@ -1,4 +1,4 @@
-import { apId, WorkflowId, WorkspaceId } from '@fema-ipaas/core-utils'
+import { generateId, WorkflowId, WorkspaceId } from '@fema-ipaas/core-utils'
 import { repoFactory } from '../../core/db/repo-factory'
 import {
     AppEventRouting,
@@ -26,7 +26,7 @@ export const appEventRoutingService = {
         events.forEach((event) => {
             const upsert = appEventRoutingRepo().upsert(
                 {
-                    id: apId(),
+                    id: generateId(),
                     appName,
                     event,
                     identifierValue,

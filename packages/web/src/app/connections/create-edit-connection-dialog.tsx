@@ -7,7 +7,7 @@ import {
 } from '@fema-ipaas/connector-sdk';
 import { isNil } from '@fema-ipaas/core-utils';
 import {
-  ApFlagId,
+  FlagId,
   ConnectionScope,
   ConnectionType,
   ConnectionWithoutSensitiveData,
@@ -19,7 +19,7 @@ import { t } from 'i18next';
 import { useState } from 'react';
 import { Resolver, useForm } from 'react-hook-form';
 
-import { ApMarkdown } from '@/components/custom/markdown';
+import { Markdown } from '@/components/custom/markdown';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -59,7 +59,6 @@ import { authenticationSession } from '@/lib/authentication-session';
 import { BasicAuthConnectionSettings } from './basic-secret-connection-settings';
 import { CustomAuthConnectionSettings } from './custom-auth-connection-settings';
 import { MutliAuthList, AuthListItem } from './multi-auth-list';
-import { NetworkAgentSelector } from './network-agent-selector';
 import { OAuth2ConnectionSettings } from './oauth2-connection-settings';
 import { OIDCConnectionSettings } from './oidc-connection-settings';
 import { SecretTextConnectionSettings } from './secret-text-connection-settings';
@@ -91,9 +90,9 @@ function CreateOrEditConnectionSection({
     externalIdComingFromSdk,
   );
   const { data: redirectUrl } = flagsHooks.useFlag<string>(
-    ApFlagId.THIRD_PARTY_AUTH_PROVIDER_REDIRECT_URL,
+    FlagId.THIRD_PARTY_AUTH_PROVIDER_REDIRECT_URL,
   );
-  const { data: publicUrl } = flagsHooks.useFlag<string>(ApFlagId.PUBLIC_URL);
+  const { data: publicUrl } = flagsHooks.useFlag<string>(FlagId.PUBLIC_URL);
   const form = useForm<ConnectionFormValues>({
     defaultValues: {
       request: {
@@ -111,7 +110,6 @@ function CreateOrEditConnectionSection({
         workspaceIds: reconnectConnection?.workspaceIds ?? [],
         preSelectForNewWorkspaces: false,
         connectorVersion: connector.version,
-        networkAgentId: reconnectConnection?.networkAgentId ?? null,
       },
     },
     mode: 'onChange',
@@ -170,7 +168,7 @@ function CreateOrEditConnectionSection({
             }
           >
             {' '}
-            <ApMarkdown
+            <Markdown
               markdown={selectedAuth.authProperty.description}
               variables={{
                 redirectUrl: redirectUrl ?? '',
@@ -179,7 +177,7 @@ function CreateOrEditConnectionSection({
                 frontendUrl: oidcIssuerUrl,
                 frontendHost: oidcIssuerHost,
               }}
-            ></ApMarkdown>
+            ></Markdown>
             {selectedAuth.authProperty.description && (
               <Separator className="my-4" />
             )}
@@ -249,9 +247,6 @@ function CreateOrEditConnectionSection({
                 )}
               </div>
             )}
-            <div className="my-4">
-              <NetworkAgentSelector name="request.networkAgentId" />
-            </div>
             <div className="mt-3.5">
               <ConnectionSettings
                 selectedAuth={selectedAuth}

@@ -6,20 +6,7 @@ icon: 🔐
 
 How FEMA Integration Platform stores credentials and authenticates users, across CE/EE/Cloud. Multi-tenant rule throughout: connection queries filter by project via `ArrayContains([projectId])` on the `projectIds[]` array (never a scalar `projectId`), or by `scope = PLATFORM` for shared ones.
 
-### Network Agent
-
-Reaches systems inside a customer intranet without asking them to open an inbound port (design doc section 18). The agent makes an **outbound** Socket.IO connection to the `/network-agent` namespace, authenticating with its token; the server dispatches proxy requests down that connection and the agent performs the real HTTP inside the network. See [ADR 0016](../../../docs/adr/0016-the-network-agent-tunnel-is-an-outbound-socket-with-a-server-side-allowlist.md), which supersedes 0014.
-
-- **Where**: `packages/server/api/src/app/network-agent` (tunnel, allowlist, service, controller), `packages/network-agent` (the agent binary, `fema-network-agent`).
-- Connecting sets `status` ONLINE and refreshes `lastSeenAt`; disconnecting sets OFFLINE. Heartbeat every 30s.
-
-- **Gotchas**:
-  - **The allowlist is enforced on the server, before dispatch — never on the agent.** The agent runs on the customer's machines and can be patched or replaced; putting access control there would hand the "which internal addresses are reachable" decision to the side being controlled. The agent is a dumb pipe that only ever receives already-approved requests.
-  - **An empty allowlist denies everything.** A freshly created agent has authorised no targets, not all of them. Defaulting to allow would turn "forgot to configure the scope" into silent whole-network reach.
-  - The agent package deliberately does **not** depend on `@fema-ipaas/shared` and declares its own copy of the wire contract. It is a binary installed inside a customer network, and shared carries DB schemas and heavy deps irrelevant to forwarding one HTTP call. The two contract files are a protocol pair and must change together — changing one alone shows up at runtime as an event name that never matches and a request that silently never answers.
-  - Proxy requests time out after 30s rather than hanging on an agent that has gone away.
-  - Egress routing is **per process, not per request**. A connector runs in a fresh child process per call (ADR 0029), so when `connection-resolver` sees a `networkAgentId` it wraps that process's `fetch` for the rest of the call. Calls back to the platform's own internal API are excluded, or the proxy request would proxy itself.
-  - `deactivate()` restores the original `fetch`. It has to fully undo `activate()` — leaving the wrapper installed would silently route a later, unbound connection through an agent.
+**Network Agent** — does not exist, and should not come back. Self-hosted means the platform already sits in a network that can reach the business systems, so there is no gap to tunnel through; the edge cases (DMZ, cross-segment) belong to the operator's VPN or reverse proxy, not to us. See [ADR 0018](../../../docs/adr/0018-no-network-agent-self-hosting-removes-the-gap-it-bridged.md).
 
 ### Encryption at Rest & Key Rotation
 
@@ -52,7 +39,7 @@ Encrypted credential records (AES-256) that workflow steps use to call external 
 
 - **Entity/isolation**: `Connection` has `projectIds[]` (multi-project) + `scope` (PROJECT/PLATFORM). PROJECT connections queried with `ArrayContains([projectId])`; workflows reference by stable `externalId` (survives rename).
 - **OAuth refresh**: auto on retrieval; distributed Redis lock keyed `${platformId}_${externalId}` (project-invariant so shared connections serialize). Refresh_token/client_secret always stripped from API responses. CUSTOM_AUTH connectors can opt into refresh via a `refresh` callback (worker `EXECUTE_TOKEN_REFRESH` job).
-- **OIDC**: AP acts as an OIDC IdP so connectors assume cloud roles (e.g. AWS AssumeRoleWithWebIdentity) without long-lived creds. Engine-only `POST /v1/worker/oidc-token` issues RS256 JWTs; public `/.well-known/openid-configuration` + `jwks.json`. Signing key auto-generated into the `flag` table (first-writer-wins, zero setup).
+- **OIDC**: FEMA acts as an OIDC IdP so connectors assume cloud roles (e.g. AWS AssumeRoleWithWebIdentity) without long-lived creds. Engine-only `POST /v1/worker/oidc-token` issues RS256 JWTs; public `/.well-known/openid-configuration` + `jwks.json`. Signing key auto-generated into the `flag` table (first-writer-wins, zero setup).
 - **Gotcha**: `POST /replace` rewires workflow refs between connections; PLATFORM source can't be deleted via replace (`403`); deleting a project source `409`s while a published workflow still uses it. Deleting a connection does NOT cascade — workflows fail at runtime.
 
 ### Global Connections (EE/Cloud)
@@ -61,7 +48,7 @@ App connections with `scope = PLATFORM`, shared across projects, managed from pl
 
 ### OAuth Apps (EE)
 
-Platform owners register their own OAuth client_id/secret per connector so connections use vendor-branded consent instead of AP's shared creds. Table `oauth_app`, unique `(platformId, connectorName)`, `clientSecret` encrypted (jsonb). No plan flag. List is readable by any platform member (dialog needs to know which connectors have custom creds); create/delete are admin-only. Secret only used server-side during token exchange.
+Platform owners register their own OAuth client_id/secret per connector so connections use vendor-branded consent instead of FEMA's shared creds. Table `oauth_app`, unique `(platformId, connectorName)`, `clientSecret` encrypted (jsonb). No plan flag. List is readable by any platform member (dialog needs to know which connectors have custom creds); create/delete are admin-only. Secret only used server-side during token exchange.
 
 ### CE Authentication
 
@@ -73,7 +60,7 @@ Extends CE with SSO + RBAC. SAML 2.0 (`/v1/authn/saml/login` → IdP → ACS `/a
 
 ### Managed Auth / Embedding (EE)
 
-Lets SaaS vendors embed the AP builder. Vendor backend signs a short-lived JWT with an RSA private key (Signing Key); SDK exchanges it at public `POST /v1/managed-authn/external-token`. AP verifies against stored public key (by `kid`), auto-provisions project + user + membership, returns a 7-day AP token. Managed user emails are deterministic SHA-256 of `managed_<platformId>_<externalUserId>` (never real emails). Token payload versions v2/v3/v4 (union ordered v4→v3→v2); v4 carries a `connectorSet` key. Gated by `embeddingEnabled` (via signing keys).
+Lets SaaS vendors embed the FEMA builder. Vendor backend signs a short-lived JWT with an RSA private key (Signing Key); SDK exchanges it at public `POST /v1/managed-authn/external-token`. FEMA verifies against stored public key (by `kid`), auto-provisions project + user + membership, returns a 7-day FEMA token. Managed user emails are deterministic SHA-256 of `managed_<platformId>_<externalUserId>` (never real emails). Token payload versions v2/v3/v4 (union ordered v4→v3→v2); v4 carries a `connectorSet` key. Gated by `embeddingEnabled` (via signing keys).
 
 ### API Keys (EE)
 
@@ -89,14 +76,14 @@ Platform owners / members with `WRITE_INVITATION` invite users to a platform (gr
 
 ### SCIM 2.0 (EE)
 
-IdP-driven provisioning (Okta/Azure AD/Google). SCIM User → AP User+UserIdentity (provider SAML); SCIM Group → AP `TEAM` project. Auth = API key as Bearer (`platformAdminOnly SERVICE`); MIME `application/scim+json`. Endpoints under `/v1/scim/v2/Users|Groups` + discovery. DELETE user = deactivate (status INACTIVE), not hard delete. Group members added with `SCIM_DEFAULT_PROJECT_ROLE` (default EDITOR). Supports Patch + Filter (max 100); no bulk/sort/password. Gated by `scimEnabled`.
+IdP-driven provisioning (Okta/Azure AD/Google). SCIM User → FEMA User+UserIdentity (provider SAML); SCIM Group → FEMA `TEAM` project. Auth = API key as Bearer (`platformAdminOnly SERVICE`); MIME `application/scim+json`. Endpoints under `/v1/scim/v2/Users|Groups` + discovery. DELETE user = deactivate (status INACTIVE), not hard delete. Group members added with `SCIM_DEFAULT_PROJECT_ROLE` (default EDITOR). Supports Patch + Filter (max 100); no bulk/sort/password. Gated by `scimEnabled`.
 
 ## Pages
 
 - **App Connections** — the 7 auth types and stored credentials
 - **Global Connections** — platform-shared connections
 - **OAuth Apps** — custom per-connector client credentials
-- **Managed Auth** — embedded token → AP session, auto-provisioning
+- **Managed Auth** — embedded token → FEMA session, auto-provisioning
 - **Secret Managers** — external vaults (AWS, Vault, Conjur, 1Password)
 - **CE Authentication** — UserIdentity, OTP, federated login
 - **EE Authentication (SSO/RBAC)** — SAML 2.0, roles, enforcement

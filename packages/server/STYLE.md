@@ -61,7 +61,7 @@ Think of the const as a namespace — it groups the public API. A reader sees wh
 // packages/server/api/src/app/workflows/workflow/workflow.service.ts (shape)
 
 // 1. imports
-import { ApplicationError, apId, /* ... */ } from '@fema-ipaas/shared'
+import { ApplicationError, generateId, /* ... */ } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 // ...
 

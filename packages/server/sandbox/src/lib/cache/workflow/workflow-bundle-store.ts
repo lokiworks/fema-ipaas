@@ -1,6 +1,6 @@
 import path from 'node:path'
 import { isNil, tryCatch, tryCatchSync } from '@fema-ipaas/core-utils'
-import { type ApLogger } from '@fema-ipaas/server-utils'
+import { type Logger } from '@fema-ipaas/server-utils'
 import { ConnectorPackage, GetWorkflowBundleResponse, LATEST_WORKFLOW_SCHEMA_VERSION, WorkerToApiContract, WorkflowVersion } from '@fema-ipaas/shared'
 import { bundleHttp } from '../../utils/bundle-http'
 import { cacheUtils } from '../cache-paths'
@@ -10,7 +10,7 @@ import { workflowSteps } from './workflow-steps'
 
 const MISS = ''
 
-export const workflowBundleStore = (log: ApLogger, apiClient: WorkerToApiContract, basePath: string) => ({
+export const workflowBundleStore = (log: Logger, apiClient: WorkerToApiContract, basePath: string) => ({
     async tryFetch({ workflowVersionId, workspaceId }: TryFetchParams): Promise<MaterializedWorkflowBundle | null> {
         const cache = cacheState(path.join(cacheUtils(basePath).getGlobalCacheBundlesPath(), workflowVersionId))
         const { state } = await cache.getOrSetCache({

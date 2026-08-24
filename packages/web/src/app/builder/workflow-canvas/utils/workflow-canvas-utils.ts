@@ -22,16 +22,16 @@ import { NEW_WORKFLOW_QUERY_PARAM } from '@/lib/route-utils';
 
 import { workflowCanvasLayoutConsts } from './layout-consts';
 import {
-  ApBigAddButtonNode,
-  ApButtonData,
-  ApEdge,
-  ApEdgeType,
-  ApGraph,
-  ApGraphEndNode,
-  ApLoopReturnNode,
-  ApNodeType,
-  ApStepNode,
-  ApStraightLineEdge,
+  BigAddButtonNode,
+  ButtonData,
+  CanvasEdge,
+  CanvasEdgeType,
+  CanvasGraph,
+  GraphEndNode,
+  LoopReturnNode,
+  CanvasNodeType,
+  StepNode,
+  StraightLineEdge,
   CanvasOrientation,
 } from './types';
 
@@ -50,13 +50,13 @@ const getLayout = (orientation: CanvasOrientation) =>
 
 const createBigAddButtonGraph: (params: {
   parentStep: WorkflowAction;
-  nodeData: ApBigAddButtonNode['data'];
+  nodeData: BigAddButtonNode['data'];
   orientation: CanvasOrientation;
-}) => ApGraph = ({ parentStep, nodeData, orientation }) => {
+}) => CanvasGraph = ({ parentStep, nodeData, orientation }) => {
   const layout = getLayout(orientation);
-  const bigAddButtonNode: ApBigAddButtonNode = {
+  const bigAddButtonNode: BigAddButtonNode = {
     id: `${parentStep.name}-big-add-button-${nodeData.edgeId}`,
-    type: ApNodeType.BIG_ADD_BUTTON,
+    type: CanvasNodeType.BIG_ADD_BUTTON,
     position: { x: 0, y: 0 },
     data: nodeData,
     selectable: false,
@@ -64,9 +64,9 @@ const createBigAddButtonGraph: (params: {
       pointerEvents: 'all',
     },
   };
-  const graphEndNode: ApGraphEndNode = {
+  const graphEndNode: GraphEndNode = {
     id: `${parentStep.name}-subgraph-end-${nodeData.edgeId}`,
-    type: ApNodeType.GRAPH_END_WIDGET as const,
+    type: CanvasNodeType.GRAPH_END_WIDGET as const,
     position: {
       x: layout.stepCrossSize / 2,
       y: layout.stepAlongSize + layout.spaceAlongBetweenSteps,
@@ -75,11 +75,11 @@ const createBigAddButtonGraph: (params: {
     selectable: false,
   };
 
-  const straightLineEdge: ApStraightLineEdge = {
+  const straightLineEdge: StraightLineEdge = {
     id: `big-button-straight-line-for${nodeData.edgeId}`,
     source: `${parentStep.name}-big-add-button-${nodeData.edgeId}`,
     target: `${parentStep.name}-subgraph-end-${nodeData.edgeId}`,
-    type: ApEdgeType.STRAIGHT_LINE as const,
+    type: CanvasEdgeType.STRAIGHT_LINE as const,
     data: {
       drawArrowHead: false,
       hideAddButton: true,
@@ -96,11 +96,11 @@ const createStepGraph: (params: {
   step: WorkflowAction | WorkflowTrigger;
   graphAlongSize: number;
   orientation: CanvasOrientation;
-}) => ApGraph = ({ step, graphAlongSize, orientation }) => {
+}) => CanvasGraph = ({ step, graphAlongSize, orientation }) => {
   const layout = getLayout(orientation);
-  const stepNode: ApStepNode = {
+  const stepNode: StepNode = {
     id: step.name,
-    type: ApNodeType.STEP as const,
+    type: CanvasNodeType.STEP as const,
     position: { x: 0, y: 0 },
     data: {
       step,
@@ -112,9 +112,9 @@ const createStepGraph: (params: {
     },
   };
 
-  const graphEndNode: ApGraphEndNode = {
+  const graphEndNode: GraphEndNode = {
     id: `${step.name}-subgraph-end`,
-    type: ApNodeType.GRAPH_END_WIDGET as const,
+    type: CanvasNodeType.GRAPH_END_WIDGET as const,
     position: {
       x: layout.stepCrossSize / 2,
       y: graphAlongSize,
@@ -123,11 +123,11 @@ const createStepGraph: (params: {
     selectable: false,
   };
 
-  const straightLineEdge: ApStraightLineEdge = {
+  const straightLineEdge: StraightLineEdge = {
     id: `${step.name}-${step.nextAction?.name ?? 'graph-end'}-edge`,
     source: step.name,
     target: `${step.name}-subgraph-end`,
-    type: ApEdgeType.STRAIGHT_LINE as const,
+    type: CanvasEdgeType.STRAIGHT_LINE as const,
     data: {
       drawArrowHead: !isNil(step.nextAction),
       parentStepName: step.name,
@@ -148,7 +148,7 @@ const createStepGraph: (params: {
 const buildWorkflowGraph: (params: {
   step: WorkflowAction | WorkflowTrigger | undefined;
   orientation: CanvasOrientation;
-}) => ApGraph = ({ step, orientation }) => {
+}) => CanvasGraph = ({ step, orientation }) => {
   if (isNil(step)) {
     return {
       nodes: [],
@@ -156,7 +156,7 @@ const buildWorkflowGraph: (params: {
     };
   }
   const layout = getLayout(orientation);
-  const graph: ApGraph = createStepGraph({
+  const graph: CanvasGraph = createStepGraph({
     step,
     graphAlongSize: layout.stepAlongSize + layout.spaceAlongBetweenSteps,
     orientation,
@@ -187,9 +187,9 @@ const buildWorkflowGraph: (params: {
 };
 
 function offsetGraph(
-  graph: ApGraph,
+  graph: CanvasGraph,
   offset: { x: number; y: number },
-): ApGraph {
+): CanvasGraph {
   return {
     nodes: graph.nodes.map((node) => ({
       ...node,
@@ -206,7 +206,7 @@ function offsetGraph(
   };
 }
 
-function transposeGraphPositions(graph: ApGraph): ApGraph {
+function transposeGraphPositions(graph: CanvasGraph): CanvasGraph {
   return {
     nodes: graph.nodes.map((node) => ({
       ...node,
@@ -219,7 +219,7 @@ function transposeGraphPositions(graph: ApGraph): ApGraph {
   };
 }
 
-function mergeGraph(graph1: ApGraph, graph2: ApGraph): ApGraph {
+function mergeGraph(graph1: CanvasGraph, graph2: CanvasGraph): CanvasGraph {
   return {
     nodes: [...graph1.nodes, ...graph2.nodes],
     edges: [...graph1.edges, ...graph2.edges],
@@ -239,7 +239,7 @@ const calculateGraphBoundingBox = ({
   graph,
   orientation,
 }: {
-  graph: ApGraph;
+  graph: CanvasGraph;
   orientation: CanvasOrientation;
 }) => {
   const layout = getLayout(orientation);
@@ -275,7 +275,7 @@ const calculateGraphBoundingBox = ({
 const buildLoopChildGraph: (params: {
   step: LoopOnItemsAction;
   orientation: CanvasOrientation;
-}) => ApGraph = ({ step, orientation }) => {
+}) => CanvasGraph = ({ step, orientation }) => {
   const layout = getLayout(orientation);
   const childGraph = step.firstLoopAction
     ? buildWorkflowGraph({
@@ -308,9 +308,9 @@ const buildLoopChildGraph: (params: {
       2 -
     layout.stepCrossSize / 2;
 
-  const loopReturnNode: ApLoopReturnNode = {
+  const loopReturnNode: LoopReturnNode = {
     id: `${step.name}-loop-return-node`,
-    type: ApNodeType.LOOP_RETURN_NODE,
+    type: CanvasNodeType.LOOP_RETURN_NODE,
     position: {
       x: deltaLeftX + layout.stepCrossSize / 2,
       y:
@@ -329,12 +329,12 @@ const buildLoopChildGraph: (params: {
       childGraphBoundingBox.left,
     y: layout.loopOffsetAlong + layout.stepAlongSize,
   });
-  const edges: ApEdge[] = [
+  const edges: CanvasEdge[] = [
     {
       id: `${step.name}-loop-start-edge`,
       source: step.name,
       target: `${childGraph.nodes[0].id}`,
-      type: ApEdgeType.LOOP_START_EDGE as const,
+      type: CanvasEdgeType.LOOP_START_EDGE as const,
       data: {
         isLoopEmpty: isNil(step.firstLoopAction),
       },
@@ -343,7 +343,7 @@ const buildLoopChildGraph: (params: {
       id: `${step.name}-loop-return-node`,
       source: `${childGraph.nodes[childGraph.nodes.length - 1].id}`,
       target: `${step.name}-loop-return-node`,
-      type: ApEdgeType.LOOP_RETURN_EDGE as const,
+      type: CanvasEdgeType.LOOP_RETURN_EDGE as const,
       data: {
         parentStepName: step.name,
         isLoopEmpty: isNil(step.firstLoopAction),
@@ -354,9 +354,9 @@ const buildLoopChildGraph: (params: {
     },
   ];
 
-  const subgraphEndSubNode: ApGraphEndNode = {
+  const subgraphEndSubNode: GraphEndNode = {
     id: `${step.name}-loop-subgraph-end`,
-    type: ApNodeType.GRAPH_END_WIDGET,
+    type: CanvasNodeType.GRAPH_END_WIDGET,
     position: {
       x: layout.stepCrossSize / 2,
       y:
@@ -411,9 +411,9 @@ const buildRouterChildGraph = ({
     ),
   );
 
-  const subgraphEndSubNode: ApGraphEndNode = {
+  const subgraphEndSubNode: GraphEndNode = {
     id: `${step.name}-branch-subgraph-end`,
-    type: ApNodeType.GRAPH_END_WIDGET,
+    type: CanvasNodeType.GRAPH_END_WIDGET,
     position: {
       x: layout.stepCrossSize / 2,
       y:
@@ -426,14 +426,14 @@ const buildRouterChildGraph = ({
     data: {},
     selectable: false,
   };
-  const edges: ApEdge[] = childGraphsAfterOffset
+  const edges: CanvasEdge[] = childGraphsAfterOffset
     .map((childGraph, branchIndex) => {
       return [
         {
           id: `${step.name}-branch-${branchIndex}-start-edge`,
           source: step.name,
           target: `${childGraph.nodes[0].id}`,
-          type: ApEdgeType.ROUTER_START_EDGE as const,
+          type: CanvasEdgeType.ROUTER_START_EDGE as const,
           data: {
             isBranchEmpty: isNil(step.children[branchIndex]),
             label:
@@ -452,7 +452,7 @@ const buildRouterChildGraph = ({
           id: `${step.name}-branch-${branchIndex}-end-edge`,
           source: `${childGraph.nodes.at(-1)!.id}`,
           target: subgraphEndSubNode.id,
-          type: ApEdgeType.ROUTER_END_EDGE as const,
+          type: CanvasEdgeType.ROUTER_END_EDGE as const,
           data: {
             drawEndingVerticalLine: branchIndex === 0,
             verticalSpaceBetweenLastNodeInBranchAndEndLine:
@@ -486,7 +486,7 @@ const buildContinueOnFailureBranchesGraph = ({
 }: {
   step: WorkflowAction;
   orientation: CanvasOrientation;
-}): ApGraph => {
+}): CanvasGraph => {
   const layout = getLayout(orientation);
   const branches =
     step.type === WorkflowActionType.CODE ||
@@ -531,9 +531,9 @@ const buildContinueOnFailureBranchesGraph = ({
     ),
   );
 
-  const subgraphEndSubNode: ApGraphEndNode = {
+  const subgraphEndSubNode: GraphEndNode = {
     id: `${step.name}-cof-subgraph-end`,
-    type: ApNodeType.GRAPH_END_WIDGET,
+    type: CanvasNodeType.GRAPH_END_WIDGET,
     position: {
       x: layout.stepCrossSize / 2,
       y:
@@ -547,7 +547,7 @@ const buildContinueOnFailureBranchesGraph = ({
     selectable: false,
   };
 
-  const edges: ApEdge[] = childGraphsAfterOffset
+  const edges: CanvasEdge[] = childGraphsAfterOffset
     .map((childGraph, branchIndex) => {
       const { label, location, branch } = branchOrder[branchIndex];
       return [
@@ -555,7 +555,7 @@ const buildContinueOnFailureBranchesGraph = ({
           id: `${step.name}-cof-branch-${branchIndex}-start-edge`,
           source: step.name,
           target: `${childGraph.nodes[0].id}`,
-          type: ApEdgeType.ROUTER_START_EDGE as const,
+          type: CanvasEdgeType.ROUTER_START_EDGE as const,
           data: {
             isBranchEmpty: isNil(branch),
             label,
@@ -568,7 +568,7 @@ const buildContinueOnFailureBranchesGraph = ({
           id: `${step.name}-cof-branch-${branchIndex}-end-edge`,
           source: `${childGraph.nodes.at(-1)!.id}`,
           target: subgraphEndSubNode.id,
-          type: ApEdgeType.ROUTER_END_EDGE as const,
+          type: CanvasEdgeType.ROUTER_END_EDGE as const,
           data: {
             drawEndingVerticalLine: branchIndex === 0,
             verticalSpaceBetweenLastNodeInBranchAndEndLine:
@@ -598,7 +598,7 @@ const offsetRouterChildSteps = ({
   childGraphs,
   orientation,
 }: {
-  childGraphs: ApGraph[];
+  childGraphs: CanvasGraph[];
   orientation: CanvasOrientation;
 }) => {
   const layout = getLayout(orientation);
@@ -617,7 +617,7 @@ const offsetRouterChildSteps = ({
   );
 };
 
-const createAddOperationFromAddButtonData = (data: ApButtonData) => {
+const createAddOperationFromAddButtonData = (data: ButtonData) => {
   if (
     data.stepLocationRelativeToParent ===
     StepLocationRelativeToParent.INSIDE_BRANCH
@@ -681,11 +681,11 @@ const getStepStatus = (
   );
   return stepOutput?.status;
 };
-function buildNotesGraph(notes: Note[]): ApGraph {
+function buildNotesGraph(notes: Note[]): CanvasGraph {
   return {
     nodes: notes.map((note) => ({
       id: note.id,
-      type: ApNodeType.NOTE,
+      type: CanvasNodeType.NOTE,
       draggable: true,
       position: note.position,
       data: {
@@ -726,7 +726,10 @@ const doesSelectionRectangleExist = () => {
 };
 // Join edges are drawn on top of the tree's own layout rather than participating in it: they
 // connect two existing step nodes, so they need no space of their own and must not shift anything.
-function buildJoinEdges(version: WorkflowVersion, graph: ApGraph): ApEdge[] {
+function buildJoinEdges(
+  version: WorkflowVersion,
+  graph: CanvasGraph,
+): CanvasEdge[] {
   const nodeIds = new Set(graph.nodes.map((node) => node.id));
   return (version.graph?.joinEdges ?? [])
     .filter((edge) => nodeIds.has(edge.from) && nodeIds.has(edge.to))
@@ -734,7 +737,7 @@ function buildJoinEdges(version: WorkflowVersion, graph: ApGraph): ApEdge[] {
       id: `join-${edge.from}-${edge.to}`,
       source: edge.from,
       target: edge.to,
-      type: ApEdgeType.JOIN_EDGE as const,
+      type: CanvasEdgeType.JOIN_EDGE as const,
       data: { from: edge.from, to: edge.to },
       selectable: false,
       focusable: false,
@@ -750,15 +753,15 @@ export const workflowCanvasUtils = {
     version: WorkflowVersion;
     notes: Note[];
     orientation: CanvasOrientation;
-  }): ApGraph {
+  }): CanvasGraph {
     const stepsGraph = buildWorkflowGraph({
       step: version.trigger,
       orientation,
     });
     const notesGraph = buildNotesGraph(notes);
     const graphEndWidget = stepsGraph.nodes.findLast(
-      (node) => node.type === ApNodeType.GRAPH_END_WIDGET,
-    ) as ApGraphEndNode;
+      (node) => node.type === CanvasNodeType.GRAPH_END_WIDGET,
+    ) as GraphEndNode;
     if (graphEndWidget) {
       graphEndWidget.data.showWidget = true;
     } else {

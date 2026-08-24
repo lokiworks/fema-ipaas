@@ -1,5 +1,5 @@
 import { TenantId, WorkspaceId } from '@fema-ipaas/core-utils'
-import { apDayjs, apDayjsDuration } from '@fema-ipaas/server-utils'
+import { dayjsDuration, dayjsUtil } from '@fema-ipaas/server-utils'
 import { TriggerRunStatus, TriggerStatusReport } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import Redis from 'ioredis'
@@ -7,12 +7,12 @@ import { redisHelper } from '../../database/redis'
 
 export const triggerRunStats = (_log: FastifyBaseLogger, redisConnection: Redis) => ({
     async save({ tenantId, connectorName, status }: SaveParams): Promise<void> {
-        const day = apDayjs().format('YYYY-MM-DD')
+        const day = dayjsUtil().format('YYYY-MM-DD')
         const statusToStore = status === TriggerRunStatus.COMPLETED ? status : TriggerRunStatus.FAILED
         const redisKey = triggerRunRedisKey(tenantId, connectorName, day, statusToStore)
 
         await redisConnection.incr(redisKey)
-        await redisConnection.expire(redisKey, apDayjsDuration(14, 'days').asSeconds())
+        await redisConnection.expire(redisKey, dayjsDuration(14, 'days').asSeconds())
     },
 
     async getStatusReport(params: GetStatusReportParams): Promise<TriggerStatusReport> {

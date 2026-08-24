@@ -1,5 +1,5 @@
 import { isNil, partition } from '@fema-ipaas/core-utils'
-import { apVersionUtil } from '@fema-ipaas/server-utils'
+import { versionUtil } from '@fema-ipaas/server-utils'
 import { ExecutionMode, NetworkMode, WorkerGroupScope, WorkerMachineHealthcheckRequest, WorkerMachineStatus, WorkerMachineType, WorkerMachineWithStatus, WorkerSettingsResponse } from '@fema-ipaas/shared'
 
 import dayjs from 'dayjs'
@@ -54,7 +54,7 @@ async function buildSettingsResponse(_log: FastifyBaseLogger): Promise<WorkerSet
         ENFORCE_CONNECTION_CONNECTOR_BINDING: system.getBoolean(AppSystemProp.ENFORCE_CONNECTION_CONNECTOR_BINDING) ?? false,
         NETWORK_MODE: system.getOrThrow<NetworkMode>(AppSystemProp.NETWORK_MODE),
         PAGE_ONCALL_WEBHOOK: system.get(AppSystemProp.PAGE_ONCALL_WEBHOOK),
-        APP_VERSION: apVersionUtil.getCurrentRelease(),
+        APP_VERSION: versionUtil.getCurrentRelease(),
     }
     settingsCache.set(cacheKey, settings)
     return settings

@@ -1,5 +1,5 @@
-import { apId, ApplicationError, Cursor, ErrorCode, ExecutionId, isNil, SeekPage, TenantId, WorkflowId, WorkflowVersionId, WorkspaceId } from '@fema-ipaas/core-utils'
-import { apDayjs, wideEvent } from '@fema-ipaas/server-utils'
+import { ApplicationError, Cursor, ErrorCode, ExecutionId, generateId, isNil, SeekPage, TenantId, WorkflowId, WorkflowVersionId, WorkspaceId } from '@fema-ipaas/core-utils'
+import { dayjsUtil, wideEvent } from '@fema-ipaas/server-utils'
 import { ConnectionHealthSummary, ConnectorUsageSummary, ExecuteWorkflowJobData, Execution, ExecutionCountByStatus, ExecutionStatus, ExecutionType, ExecutionWithRetryError, ExecutioOutputFile, FileCompression, FileType, GenericStepOutput, isExecutionStateTerminal, JobPayload, LATEST_JOB_DATA_SCHEMA_VERSION, logSerializer, LogSliceRef, RecentlyEditedWorkflow, ResumeReason, RunEnvironment, RunInternalError, SampleDataFileType, StepOutput, StepOutputStatus, StepOutputType, StreamStepProgress, WorkerJobType, WorkflowRetryStrategy, WorkflowVersion } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import pLimit from 'p-limit'
@@ -149,7 +149,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
                     workspaceId: oldExecution.workspaceId,
                 }, {
                     status: ExecutionStatus.QUEUED,
-                    startTime: apDayjs().toISOString(),
+                    startTime: dayjsUtil().toISOString(),
                     finishTime: null,
                 })
                 const updatedExecution = await findExecutionOrThrow(oldExecution.id)
@@ -315,10 +315,10 @@ export const executionService = (log: FastifyBaseLogger) => ({
 
     async createQuotaExceededRun({ workflowVersion, payload, workspaceId, environment, parentRunId, failParentOnFailure, triggeredBy, shouldExecuteTriggerOnRetry }: CreateQuotaExceededRunParams): Promise<Execution> {
         const now = new Date().toISOString()
-        const logsFileId = apId()
+        const logsFileId = generateId()
         await persistQuotaExceededTriggerLog({ log, workflowVersion, workspaceId, payload, logsFileId, shouldExecuteTriggerOnRetry })
         const execution: Execution = {
-            id: apId(),
+            id: generateId(),
             workspaceId,
             workflowId: workflowVersion.workflowId,
             workflowVersionId: workflowVersion.id,
@@ -482,7 +482,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
             .orderBy('date_trunc(\'day\', execution.created)', 'ASC')
             .getRawMany()
         return results.map((row: { day: Date, status: ExecutionStatus, count: string }) => ({
-            day: apDayjs(row.day.toISOString()).toISOString(),
+            day: dayjsUtil(row.day.toISOString()).toISOString(),
             status: row.status,
             count: parseInt(row.count, 10),
         }))
@@ -517,7 +517,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
             workflowId: row.workflowId,
             displayName: displayNameById.get(row.workflowId) ?? row.workflowId,
             count: parseInt(row.count, 10),
-            lastFailure: apDayjs(row.lastFailure.toISOString()).toISOString(),
+            lastFailure: dayjsUtil(row.lastFailure.toISOString()).toISOString(),
         }))
     },
     async connectionHealth(params: WorkspaceScopedParams): Promise<ConnectionHealthSummary[]> {
@@ -576,7 +576,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
         return results.map((row: { workflowId: string, updated: Date }) => ({
             workflowId: row.workflowId,
             displayName: displayNameById.get(row.workflowId) ?? row.workflowId,
-            updated: apDayjs(row.updated.toISOString()).toISOString(),
+            updated: dayjsUtil(row.updated.toISOString()).toISOString(),
         }))
     },
     async getOnePopulatedOrThrow(params: GetOneParams): Promise<Execution> {
@@ -714,7 +714,7 @@ async function filterExecutionsAndApplyFilters(
 
 
 export async function addToQueue(params: AddToQueueParams, log: FastifyBaseLogger): Promise<Execution> {
-    const logsFileId = params.execution.logsFileId ?? apId()
+    const logsFileId = params.execution.logsFileId ?? generateId()
 
     let jobPayload: JobPayload = { type: 'inline', value: null }
     if (!isNil(params.payload) && isNil(params.workerHandlerId)) {
@@ -851,7 +851,7 @@ async function persistQuotaExceededTriggerLog({ log, workflowVersion, workspaceI
 async function queueOrCreateInstantly(params: CreateParams, log: FastifyBaseLogger): Promise<Execution> {
     const now = new Date().toISOString()
     const execution: Execution = {
-        id: apId(),
+        id: generateId(),
         workspaceId: params.workspaceId,
         workflowId: params.workflowId,
         workflowVersionId: params.workflowVersionId,
@@ -877,7 +877,7 @@ async function queueOrCreateInstantly(params: CreateParams, log: FastifyBaseLogg
 
 export function isOutsideRetentionWindow(createdTime: string, retentionDays: number): boolean {
     if (!createdTime) return false
-    return apDayjs(createdTime).add(retentionDays, 'day').isBefore(apDayjs())
+    return dayjsUtil(createdTime).add(retentionDays, 'day').isBefore(dayjsUtil())
 }
 
 type CreateParams = {

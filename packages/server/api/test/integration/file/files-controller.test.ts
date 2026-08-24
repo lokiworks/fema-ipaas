@@ -1,4 +1,4 @@
-import { apId } from '@fema-ipaas/core-utils'
+import { generateId } from '@fema-ipaas/core-utils'
 import { FileCompression, FileType, PrincipalType } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
@@ -28,11 +28,11 @@ describe('Files Controller', () => {
                 const { mockWorkspace, mockTenant } = await mockAndSaveBasicSetup()
                 const engineToken = await generateMockToken({
                     type: PrincipalType.ENGINE,
-                    id: apId(),
+                    id: generateId(),
                     workspaceId: mockWorkspace.id,
                     tenant: { id: mockTenant.id },
                 })
-                const fileId = apId()
+                const fileId = generateId()
                 const body = Buffer.from('hello world from a step file')
 
                 const response = await app!.inject({
@@ -62,11 +62,11 @@ describe('Files Controller', () => {
             const { mockWorkspace, mockTenant } = await mockAndSaveBasicSetup()
             const engineToken = await generateMockToken({
                 type: PrincipalType.ENGINE,
-                id: apId(),
+                id: generateId(),
                 workspaceId: mockWorkspace.id,
                 tenant: { id: mockTenant.id },
             })
-            const fileId = apId()
+            const fileId = generateId()
             const body = Buffer.from('streamed-content-'.repeat(5000))
 
             const putResponse = await app!.inject({
@@ -98,14 +98,14 @@ describe('Files Controller', () => {
                 const { mockWorkspace, mockTenant } = await mockAndSaveBasicSetup()
                 const engineToken = await generateMockToken({
                     type: PrincipalType.ENGINE,
-                    id: apId(),
+                    id: generateId(),
                     workspaceId: mockWorkspace.id,
                     tenant: { id: mockTenant.id },
                 })
 
                 const response = await app!.inject({
                     method: 'PUT',
-                    url: `/api/v1/files/${apId()}`,
+                    url: `/api/v1/files/${generateId()}`,
                     query: { token: engineToken },
                     headers: {
                         'content-type': 'application/octet-stream',
@@ -129,12 +129,12 @@ describe('Files Controller', () => {
             const { mockWorkspace, mockTenant } = await mockAndSaveBasicSetup()
             const userToken = await generateMockToken({
                 type: PrincipalType.USER,
-                id: apId(),
+                id: generateId(),
                 workspaceId: mockWorkspace.id,
                 tenant: { id: mockTenant.id },
                 tokenVersion: undefined,
             } as never)
-            const fileId = apId()
+            const fileId = generateId()
 
             const response = await app!.inject({
                 method: 'PUT',
@@ -154,14 +154,14 @@ describe('Files Controller', () => {
             const { mockWorkspace, mockTenant } = await mockAndSaveBasicSetup()
             const engineToken = await generateMockToken({
                 type: PrincipalType.ENGINE,
-                id: apId(),
+                id: generateId(),
                 workspaceId: mockWorkspace.id,
                 tenant: { id: mockTenant.id },
             })
 
             const response = await app!.inject({
                 method: 'PUT',
-                url: `/api/v1/files/${apId()}`,
+                url: `/api/v1/files/${generateId()}`,
                 query: { token: engineToken },
                 headers: {
                     'content-type': 'application/octet-stream',
@@ -180,14 +180,14 @@ describe('Files Controller', () => {
             const { mockWorkspace, mockTenant } = await mockAndSaveBasicSetup()
             const engineToken = await generateMockToken({
                 type: PrincipalType.ENGINE,
-                id: apId(),
+                id: generateId(),
                 workspaceId: mockWorkspace.id,
                 tenant: { id: mockTenant.id },
             })
 
             const response = await app!.inject({
                 method: 'PUT',
-                url: `/api/v1/files/${apId()}`,
+                url: `/api/v1/files/${generateId()}`,
                 query: { token: engineToken },
                 headers: {
                     'content-type': 'application/octet-stream',
@@ -209,11 +209,11 @@ describe('Files Controller', () => {
             const { mockWorkspace, mockTenant } = await mockAndSaveBasicSetup()
             const engineToken = await generateMockToken({
                 type: PrincipalType.ENGINE,
-                id: apId(),
+                id: generateId(),
                 workspaceId: mockWorkspace.id,
                 tenant: { id: mockTenant.id },
             })
-            const fileId = apId()
+            const fileId = generateId()
             const body = Buffer.from('downloadable content', 'utf-8')
 
             const putResponse = await app!.inject({
@@ -244,11 +244,11 @@ describe('Files Controller', () => {
             const { mockWorkspace, mockTenant } = await mockAndSaveBasicSetup()
             const engineToken = await generateMockToken({
                 type: PrincipalType.ENGINE,
-                id: apId(),
+                id: generateId(),
                 workspaceId: mockWorkspace.id,
                 tenant: { id: mockTenant.id },
             })
-            const fileId = apId()
+            const fileId = generateId()
             const body = Buffer.from('engine read', 'utf-8')
 
             await app!.inject({
@@ -279,11 +279,11 @@ describe('Files Controller', () => {
             const { mockWorkspace, mockTenant } = await mockAndSaveBasicSetup()
             const engineToken = await generateMockToken({
                 type: PrincipalType.ENGINE,
-                id: apId(),
+                id: generateId(),
                 workspaceId: mockWorkspace.id,
                 tenant: { id: mockTenant.id },
             })
-            const fileId = apId()
+            const fileId = generateId()
 
             await app!.inject({
                 method: 'PUT',
@@ -311,11 +311,11 @@ describe('Files Controller', () => {
             const { mockWorkspace, mockTenant } = await mockAndSaveBasicSetup()
             const engineToken = await generateMockToken({
                 type: PrincipalType.ENGINE,
-                id: apId(),
+                id: generateId(),
                 workspaceId: mockWorkspace.id,
                 tenant: { id: mockTenant.id },
             })
-            const fileId = apId()
+            const fileId = generateId()
 
             await app!.inject({
                 method: 'PUT',
@@ -371,7 +371,7 @@ describe('Files Controller', () => {
 
         it('rejects a download with a read token bound to a different fileId', async () => {
             const otherFileReadUrl = await filesService.constructReadUrl({
-                fileId: apId(),
+                fileId: generateId(),
                 fileType: FileType.WORKFLOW_STEP_FILE,
                 tenantId: null,
             })
@@ -379,7 +379,7 @@ describe('Files Controller', () => {
 
             const response = await app!.inject({
                 method: 'GET',
-                url: `/api/v1/files/${apId()}`,
+                url: `/api/v1/files/${generateId()}`,
                 query: { token: otherFileToken },
             })
 
@@ -392,11 +392,11 @@ describe('Files Controller', () => {
             const { mockWorkspace, mockTenant } = await mockAndSaveBasicSetup()
             const engineToken = await generateMockToken({
                 type: PrincipalType.ENGINE,
-                id: apId(),
+                id: generateId(),
                 workspaceId: mockWorkspace.id,
                 tenant: { id: mockTenant.id },
             })
-            const fileId = apId()
+            const fileId = generateId()
 
             await app!.inject({
                 method: 'PUT',

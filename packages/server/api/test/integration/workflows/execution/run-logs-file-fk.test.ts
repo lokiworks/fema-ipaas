@@ -1,4 +1,4 @@
-import { apId } from '@fema-ipaas/core-utils'
+import { generateId } from '@fema-ipaas/core-utils'
 import { FileCompression, FileType, ExecutionStatus, WorkflowVersionState, RunEnvironment, RunInternalErrorSource } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { afterEach, vi } from 'vitest'
@@ -69,7 +69,7 @@ describe('uploadRunLog — execution.logsFileId FK safety', () => {
                 runId,
                 workspaceId: ctx.workspace.id,
                 status: ExecutionStatus.INTERNAL_ERROR,
-                logsFileId: apId(),
+                logsFileId: generateId(),
                 internalError: {
                     source: RunInternalErrorSource.WORKER,
                     message: 'sandbox provisioning failed',

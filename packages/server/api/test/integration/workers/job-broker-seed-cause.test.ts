@@ -1,4 +1,4 @@
-import { apId } from '@fema-ipaas/core-utils'
+import { generateId } from '@fema-ipaas/core-utils'
 import { EngineResponseStatus, LATEST_JOB_DATA_SCHEMA_VERSION, TriggerHookType, WorkerJobType } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { redisConnections } from '../../../../src/app/database/redis-connections'
@@ -43,22 +43,22 @@ const failedKey = (): string => `bull:${QueueName.WORKER_JOBS}:failed`
 describe('jobBroker.completeJob — seed cause for stuck-active zombies', () => {
     it('SEED: silently swallows "Missing lock" on moveToCompleted, leaving job in active', async () => {
         const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
-        const requestId = apId()
+        const requestId = generateId()
 
         const jobData = {
             jobType: WorkerJobType.EXECUTE_TRIGGER_HOOK,
             tenantId: mockTenant.id,
             workspaceId: mockWorkspace.id,
             schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
-            workflowId: apId(),
-            workflowVersionId: apId(),
+            workflowId: generateId(),
+            workflowVersionId: generateId(),
             test: false,
             hookType: TriggerHookType.ON_ENABLE,
             requestId,
             webserverId: 'seed-cause-test',
         }
 
-        const jobId = apId()
+        const jobId = generateId()
         await jobQueue(app.log).add({
             type: JobType.ONE_TIME,
             id: jobId,
@@ -107,22 +107,22 @@ describe('jobBroker.completeJob — seed cause for stuck-active zombies', () => 
 
     it('SEED: same swallow happens on the INTERNAL_ERROR -> moveToFailed path', async () => {
         const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
-        const requestId = apId()
+        const requestId = generateId()
 
         const jobData = {
             jobType: WorkerJobType.EXECUTE_TRIGGER_HOOK,
             tenantId: mockTenant.id,
             workspaceId: mockWorkspace.id,
             schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
-            workflowId: apId(),
-            workflowVersionId: apId(),
+            workflowId: generateId(),
+            workflowVersionId: generateId(),
             test: false,
             hookType: TriggerHookType.ON_ENABLE,
             requestId,
             webserverId: 'seed-cause-test-2',
         }
 
-        const jobId = apId()
+        const jobId = generateId()
         await jobQueue(app.log).add({
             type: JobType.ONE_TIME,
             id: jobId,
@@ -159,22 +159,22 @@ describe('jobBroker.completeJob — seed cause for stuck-active zombies', () => 
 
     it('CONTROL: when the lock IS still valid, completeJob removes the job from active and increments atm', async () => {
         const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
-        const requestId = apId()
+        const requestId = generateId()
 
         const jobData = {
             jobType: WorkerJobType.EXECUTE_TRIGGER_HOOK,
             tenantId: mockTenant.id,
             workspaceId: mockWorkspace.id,
             schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
-            workflowId: apId(),
-            workflowVersionId: apId(),
+            workflowId: generateId(),
+            workflowVersionId: generateId(),
             test: false,
             hookType: TriggerHookType.ON_ENABLE,
             requestId,
             webserverId: 'seed-cause-control',
         }
 
-        const jobId = apId()
+        const jobId = generateId()
         await jobQueue(app.log).add({
             type: JobType.ONE_TIME,
             id: jobId,

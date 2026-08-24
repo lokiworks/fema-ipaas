@@ -1,4 +1,4 @@
-import { apId, OtpState, OtpType } from '@fema-ipaas/shared'
+import { generateId, OtpState, OtpType } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyInstance } from 'fastify'
 import { otpService } from '../../../../src/app/authentication/otp/otp-service'
@@ -12,7 +12,7 @@ async function seedRow({ email, value, version, type = OtpType.EMAIL_LOGIN }: Se
     const identity = createMockUserIdentity({ email, verified: true })
     await databaseConnection().getRepository('user_identity').save(identity)
     await databaseConnection().getRepository('otp').save({
-        id: apId(),
+        id: generateId(),
         updated: dayjs().toISOString(),
         type,
         identityId: identity.id,

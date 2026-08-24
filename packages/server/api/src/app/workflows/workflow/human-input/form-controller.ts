@@ -1,4 +1,4 @@
-import { ApId, OptionalBooleanFromQuery } from '@fema-ipaas/core-utils'
+import { EntityId, OptionalBooleanFromQuery } from '@fema-ipaas/core-utils'
 import { USE_DRAFT_QUERY_PARAM_NAME } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
@@ -18,7 +18,7 @@ const GetFormRequest = {
     schema: {
         description: 'Get a form by workflow id',
         params: z.object({
-            workflowId: ApId,
+            workflowId: EntityId,
         }),
         querystring: z.object({
             [USE_DRAFT_QUERY_PARAM_NAME]: OptionalBooleanFromQuery,

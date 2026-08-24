@@ -1,4 +1,4 @@
-import { apId, isNil } from '@fema-ipaas/core-utils'
+import { generateId, isNil } from '@fema-ipaas/core-utils'
 import { ExecutionStatus } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
@@ -23,7 +23,7 @@ export const waitpointService = (log: FastifyBaseLogger) => ({
             return { inserted: false, waitpoint: preCompleted }
         }
 
-        const id = apId()
+        const id = generateId()
         await waitpointRepo()
             .createQueryBuilder()
             .insert()

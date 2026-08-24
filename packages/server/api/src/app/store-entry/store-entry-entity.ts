@@ -1,8 +1,8 @@
 import { STORE_KEY_MAX_LENGTH, StoreEntry } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import {
-    ApIdSchema,
     BaseColumnSchemaPart,
+    EntityIdSchema,
 } from '../database/database-common'
 
 type StoreEntrySchema = StoreEntry
@@ -15,7 +15,7 @@ export const StoreEntryEntity = new EntitySchema<StoreEntrySchema>({
             type: String,
             length: STORE_KEY_MAX_LENGTH,
         },
-        workspaceId: ApIdSchema,
+        workspaceId: EntityIdSchema,
         value: {
             type: 'jsonb',
             nullable: true,

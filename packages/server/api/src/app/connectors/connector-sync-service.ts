@@ -1,6 +1,6 @@
 import { ConnectorMetadataModel } from '@fema-ipaas/connector-sdk'
 import { groupBy, isNil, tryCatch } from '@fema-ipaas/core-utils'
-import { apVersionUtil, safeHttp } from '@fema-ipaas/server-utils'
+import { safeHttp, versionUtil } from '@fema-ipaas/server-utils'
 import { ConnectorSource, ConnectorSyncMode, ConnectorType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import semver from 'semver'
@@ -121,7 +121,7 @@ async function installNewConnectors(cloudConnectors: ConnectorRegistryResponse[]
 
 async function listCloudConnectors(): Promise<ConnectorRegistryResponse[]> {
     const queryParams = new URLSearchParams()
-    queryParams.append('release', apVersionUtil.getCurrentRelease())
+    queryParams.append('release', versionUtil.getCurrentRelease())
     const base = registrySourceUrl()
     if (isNil(base)) {
         return []

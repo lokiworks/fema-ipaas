@@ -4,7 +4,7 @@ icon: 🔌
 
 # MCP Server
 
-Exposes an FEMA Integration Platform project as an MCP server so AI clients (Claude Desktop, Cursor, Windsurf) can read and manipulate workflows, connections, tables, and runs through a typed tool interface. One `McpServer` record per project (UNIQUE `projectId`), authenticated by a bearer token. Available in CE, EE, and Cloud.
+Exposes a FEMA Integration Platform project as an MCP server so AI clients (Claude Desktop, Cursor, Windsurf) can read and manipulate workflows, connections, tables, and runs through a typed tool interface. One `McpServer` record per project (UNIQUE `projectId`), authenticated by a bearer token. Available in CE, EE, and Cloud.
 
 ### Entities & services
 
@@ -30,10 +30,10 @@ Exposes an FEMA Integration Platform project as an MCP server so AI clients (Cla
 
 - Workflow attribution: `ap_create_workflow`/`ap_build_workflow`/`ap_duplicate_workflow` stamp `ownerId` (OAuth user) and `createdBy: { type: 'MCP', id }`.
 - `MCP_SERVER_CONNECTED` is deduped to at most one/user/server/day (`telemetryDedupe.onceToday`) — a daily-active signal, not request volume. Per-call usage is `MCP_TOOL_CALLED`.
-- OAuth discovery URLs are built via `domainHelper.getPublicUrlFromRequest` so subpath-hosted instances advertise the right prefix. `401`s carry an RFC 9728 `WWW-Authenticate: Bearer resource_metadata="…"` header. Host-root `.well-known/oauth-*` must still be forwarded to AP by the operator.
+- OAuth discovery URLs are built via `domainHelper.getPublicUrlFromRequest` so subpath-hosted instances advertise the right prefix. `401`s carry an RFC 9728 `WWW-Authenticate: Bearer resource_metadata="…"` header. Host-root `.well-known/oauth-*` must still be forwarded to FEMA by the operator.
 - **DCR must issue a client secret when `token_endpoint_auth_method` is omitted.** RFC 7591 §2 says an omitted value defaults to `client_secret_basic`, *not* `none`, and [Microsoft Copilot Studio](https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/plugin-authentication-dynamic-client-registration) refuses DCR outright without one ("DCR without a client secret isn't supported yet"). Defaulting an omitted method to `none` looks like it fixes the "public client handed a secret" contradiction, but it resolves it the wrong way: it breaks Copilot and makes `client_secret_basic` support unreachable for every client that omits the field. Resolve it the other way — default to `client_secret_basic` and keep issuing the secret.
 - `x-ap-conversation-id` header (EE chat) rebinds the server to a conversation's project, but only when scoping matches the token — it can never widen the grant.
-- External MCP-server validation for the agent connector lives under `agents/`, NOT here (it's a probe, not the AP-as-server feature).
+- External MCP-server validation for the agent connector lives under `agents/`, NOT here (it's a probe, not the FEMA-as-server feature).
 
 ### Key files
 

@@ -10,7 +10,7 @@ import {
 import { describe, expect, it, vi } from 'vitest';
 
 import { workflowCanvasUtils } from '@/app/builder/workflow-canvas/utils/workflow-canvas-utils';
-import { ApEdgeType, ApNodeType } from '@/app/builder/workflow-canvas/utils/types';
+import { CanvasEdgeType, CanvasNodeType } from '@/app/builder/workflow-canvas/utils/types';
 
 vi.mock('@/features/executions', () => ({
   executionUtils: {
@@ -72,7 +72,7 @@ const getStepNode = (
   name: string,
 ) => {
   const node = graph.nodes.find(
-    (n) => n.id === name && n.type === ApNodeType.STEP,
+    (n) => n.id === name && n.type === CanvasNodeType.STEP,
   );
   expect(node).toBeDefined();
   return node!;
@@ -109,7 +109,7 @@ describe('workflowCanvasUtils.createWorkflowGraph', () => {
       orientation: 'vertical',
     });
     const triggerEdge = graph.edges.find((edge) => edge.source === 'trigger');
-    expect(triggerEdge?.type).toEqual(ApEdgeType.STRAIGHT_LINE);
+    expect(triggerEdge?.type).toEqual(CanvasEdgeType.STRAIGHT_LINE);
     expect(triggerEdge?.target).toEqual('trigger-subgraph-end');
     const lastEdge = graph.edges.find((edge) => edge.source === 'step_1');
     expect(lastEdge?.target).toEqual('step_1-subgraph-end');

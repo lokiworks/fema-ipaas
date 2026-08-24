@@ -4,12 +4,12 @@ icon: 👤
 
 # SCIM
 
-SCIM 2.0 provisioning: lets enterprise IdPs (Okta, Azure AD, Google Workspace) automatically provision, update, and deprovision users and groups. SCIM Users map to AP platform users; SCIM Groups map to AP `TEAM` projects only. Auth is an API key as a Bearer token (`platformAdminOnly [SERVICE]`). Gated by `platform.plan.scimEnabled` (EE/Cloud).
+SCIM 2.0 provisioning: lets enterprise IdPs (Okta, Azure AD, Google Workspace) automatically provision, update, and deprovision users and groups. SCIM Users map to FEMA platform users; SCIM Groups map to FEMA `TEAM` projects only. Auth is an API key as a Bearer token (`platformAdminOnly [SERVICE]`). Gated by `platform.plan.scimEnabled` (EE/Cloud).
 
 ### Mapping
-- **SCIM User** → AP `User` + `UserIdentity` (new identities use `UserIdentityProvider.SAML`).
-- **SCIM Group** → AP `Project` with `type = TEAM` (personal projects excluded from listings).
-- `active` maps to `UserStatus.ACTIVE`/`INACTIVE`; `externalId` stored on the AP entity.
+- **SCIM User** → FEMA `User` + `UserIdentity` (new identities use `UserIdentityProvider.SAML`).
+- **SCIM Group** → FEMA `Project` with `type = TEAM` (personal projects excluded from listings).
+- `active` maps to `UserStatus.ACTIVE`/`INACTIVE`; `externalId` stored on the FEMA entity.
 - Custom extension schema `...fema:1.0:CustomUserAttributes` carries `platformRole`.
 
 ### How it works

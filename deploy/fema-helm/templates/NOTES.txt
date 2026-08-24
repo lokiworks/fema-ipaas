@@ -1,1 +1,17 @@
-Activepieces has been deployed successfully!
+FEMA Integration Platform has been deployed.
+
+Release:   {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+
+Get the application URL:
+{{- if .Values.ingress.enabled }}
+{{- range .Values.ingress.hosts }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ .host }}
+{{- end }}
+{{- else }}
+  kubectl --namespace {{ .Release.Namespace }} port-forward svc/{{ include "fema.fullname" . }} 8080:{{ .Values.service.port }}
+  then open http://127.0.0.1:8080
+{{- end }}
+
+Check that the pods are ready:
+  kubectl --namespace {{ .Release.Namespace }} get pods -l app.kubernetes.io/instance={{ .Release.Name }}

@@ -6,7 +6,7 @@ import {
 } from '@fema-ipaas/shared';
 import { Edge } from '@xyflow/react';
 
-export enum ApNodeType {
+export enum CanvasNodeType {
   STEP = 'STEP',
   ADD_BUTTON = 'ADD_BUTTON',
   BIG_ADD_BUTTON = 'BIG_ADD_BUTTON',
@@ -16,16 +16,16 @@ export enum ApNodeType {
   LOOP_RETURN_NODE = 'LOOP_RETURN_NODE',
   NOTE = 'NOTE',
 }
-export type ApBoundingBox = {
+export type BoundingBox = {
   width: number;
   height: number;
   left: number;
   right: number;
 };
 
-export type ApStepNode = {
+export type StepNode = {
   id: string;
-  type: ApNodeType.STEP;
+  type: CanvasNodeType.STEP;
   position: {
     x: number;
     y: number;
@@ -38,9 +38,9 @@ export type ApStepNode = {
   draggable?: boolean;
 };
 
-export type ApNoteNode = {
+export type NoteNode = {
   id: string;
-  type: ApNodeType.NOTE;
+  type: CanvasNodeType.NOTE;
   position: {
     x: number;
     y: number;
@@ -48,9 +48,9 @@ export type ApNoteNode = {
   data: Pick<Note, 'content' | 'ownerId' | 'color' | 'size'>;
 };
 
-export type ApLoopReturnNode = {
+export type LoopReturnNode = {
   id: string;
-  type: ApNodeType.LOOP_RETURN_NODE;
+  type: CanvasNodeType.LOOP_RETURN_NODE;
   position: {
     x: number;
     y: number;
@@ -59,7 +59,7 @@ export type ApLoopReturnNode = {
   selectable?: boolean;
 };
 
-export type ApButtonData = {
+export type ButtonData = {
   edgeId: string;
 } & (
   | {
@@ -77,21 +77,21 @@ export type ApButtonData = {
     }
 );
 
-export type ApBigAddButtonNode = {
+export type BigAddButtonNode = {
   id: string;
-  type: ApNodeType.BIG_ADD_BUTTON;
+  type: CanvasNodeType.BIG_ADD_BUTTON;
   position: {
     x: number;
     y: number;
   };
-  data: ApButtonData;
+  data: ButtonData;
   selectable?: boolean;
   style?: React.CSSProperties;
 };
 
-export type ApGraphEndNode = {
+export type GraphEndNode = {
   id: string;
-  type: ApNodeType.GRAPH_END_WIDGET;
+  type: CanvasNodeType.GRAPH_END_WIDGET;
   position: {
     x: number;
     y: number;
@@ -102,33 +102,33 @@ export type ApGraphEndNode = {
   selectable?: boolean;
 };
 
-export type ApNode =
-  | ApStepNode
-  | ApGraphEndNode
-  | ApBigAddButtonNode
-  | ApLoopReturnNode
-  | ApNoteNode;
+export type CanvasNode =
+  | StepNode
+  | GraphEndNode
+  | BigAddButtonNode
+  | LoopReturnNode
+  | NoteNode;
 
-export enum ApEdgeType {
-  STRAIGHT_LINE = 'ApStraightLineEdge',
-  LOOP_START_EDGE = 'ApLoopStartEdge',
-  LOOP_CLOSE_EDGE = 'ApLoopCloseEdge',
-  LOOP_RETURN_EDGE = 'ApLoopReturnEdge',
-  ROUTER_START_EDGE = 'ApRouterStartEdge',
-  ROUTER_END_EDGE = 'ApRouterEndEdge',
-  JOIN_EDGE = 'ApJoinEdge',
+export enum CanvasEdgeType {
+  STRAIGHT_LINE = 'StraightLineEdge',
+  LOOP_START_EDGE = 'LoopStartEdge',
+  LOOP_CLOSE_EDGE = 'LoopCloseEdge',
+  LOOP_RETURN_EDGE = 'LoopReturnEdge',
+  ROUTER_START_EDGE = 'RouterStartEdge',
+  ROUTER_END_EDGE = 'RouterEndEdge',
+  JOIN_EDGE = 'JoinEdge',
 }
 
-export type ApJoinEdge = Edge & {
-  type: ApEdgeType.JOIN_EDGE;
+export type JoinEdge = Edge & {
+  type: CanvasEdgeType.JOIN_EDGE;
   data: {
     from: string;
     to: string;
   };
 };
 
-export type ApStraightLineEdge = Edge & {
-  type: ApEdgeType.STRAIGHT_LINE;
+export type StraightLineEdge = Edge & {
+  type: CanvasEdgeType.STRAIGHT_LINE;
   data: {
     drawArrowHead: boolean;
     hideAddButton?: boolean;
@@ -136,19 +136,19 @@ export type ApStraightLineEdge = Edge & {
   };
 };
 
-export type ApLoopStartEdge = Edge & {
-  type: ApEdgeType.LOOP_START_EDGE;
+export type LoopStartEdge = Edge & {
+  type: CanvasEdgeType.LOOP_START_EDGE;
   data: {
     isLoopEmpty: boolean;
   };
 };
 
-export type ApLoopCloseEdge = Edge & {
-  type: ApEdgeType.LOOP_CLOSE_EDGE;
+export type LoopCloseEdge = Edge & {
+  type: CanvasEdgeType.LOOP_CLOSE_EDGE;
 };
 
-export type ApLoopReturnEdge = Edge & {
-  type: ApEdgeType.LOOP_RETURN_EDGE;
+export type LoopReturnEdge = Edge & {
+  type: CanvasEdgeType.LOOP_RETURN_EDGE;
   data: {
     parentStepName: string;
     isLoopEmpty: boolean;
@@ -157,8 +157,8 @@ export type ApLoopReturnEdge = Edge & {
   };
 };
 
-export type ApRouterStartEdge = Edge & {
-  type: ApEdgeType.ROUTER_START_EDGE;
+export type RouterStartEdge = Edge & {
+  type: CanvasEdgeType.ROUTER_START_EDGE;
   data: {
     isBranchEmpty: boolean;
     label: string;
@@ -177,8 +177,8 @@ export type ApRouterStartEdge = Edge & {
   );
 };
 
-export type ApRouterEndEdge = Edge & {
-  type: ApEdgeType.ROUTER_END_EDGE;
+export type RouterEndEdge = Edge & {
+  type: CanvasEdgeType.ROUTER_END_EDGE;
   data: {
     drawHorizontalLine: boolean;
     verticalSpaceBetweenLastNodeInBranchAndEndLine: number;
@@ -194,16 +194,16 @@ export type ApRouterEndEdge = Edge & {
   );
 };
 
-export type ApEdge =
-  | ApLoopStartEdge
-  | ApLoopReturnEdge
-  | ApStraightLineEdge
-  | ApRouterStartEdge
-  | ApRouterEndEdge
-  | ApJoinEdge;
-export type ApGraph = {
-  nodes: ApNode[];
-  edges: ApEdge[];
+export type CanvasEdge =
+  | LoopStartEdge
+  | LoopReturnEdge
+  | StraightLineEdge
+  | RouterStartEdge
+  | RouterEndEdge
+  | JoinEdge;
+export type CanvasGraph = {
+  nodes: CanvasNode[];
+  edges: CanvasEdge[];
 };
 
 export type CanvasOrientation = 'vertical' | 'horizontal';

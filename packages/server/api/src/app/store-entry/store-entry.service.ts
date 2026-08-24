@@ -1,4 +1,4 @@
-import { apId, sanitizeObjectForPostgresql, WorkspaceId } from '@fema-ipaas/core-utils'
+import { generateId, sanitizeObjectForPostgresql, WorkspaceId } from '@fema-ipaas/core-utils'
 import { PutStoreEntryRequest, StoreEntry } from '@fema-ipaas/shared'
 import { repoFactory } from '../core/db/repo-factory'
 import { StoreEntryEntity } from './store-entry-entity'
@@ -9,7 +9,7 @@ export const storeEntryService = {
     async upsert({ workspaceId, request }: { workspaceId: WorkspaceId, request: PutStoreEntryRequest }): Promise<StoreEntry | null> {
         const value = sanitizeObjectForPostgresql(request.value)
         const insertResult = await storeEntryRepo().upsert({
-            id: apId(),
+            id: generateId(),
             key: request.key,
             value,
             workspaceId,

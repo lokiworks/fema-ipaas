@@ -1,5 +1,5 @@
 import { isNil, tryCatch } from '@fema-ipaas/core-utils'
-import { type ApLogger, wideEvent } from '@fema-ipaas/server-utils'
+import { type Logger, wideEvent } from '@fema-ipaas/server-utils'
 import { ConnectorPackage, FailedStep, LATEST_WORKFLOW_SCHEMA_VERSION, WorkerToApiContract, WorkflowVersion, WorkflowVersionState } from '@fema-ipaas/shared'
 import { CodeArtifact, SandboxSettings } from '../../types'
 import { connectorCache, ConnectorNotFoundError } from '../connectors/connector-cache'
@@ -7,7 +7,7 @@ import { workflowBundleStore } from './workflow-bundle-store'
 import { workflowCache } from './workflow-cache'
 import { workflowSteps } from './workflow-steps'
 
-export const workflowProvisioning = (log: ApLogger, apiClient: WorkerToApiContract, basePath: string, getSettings: () => SandboxSettings) => ({
+export const workflowProvisioning = (log: Logger, apiClient: WorkerToApiContract, basePath: string, getSettings: () => SandboxSettings) => ({
     async resolve({ workflow, tenantId }: ResolveParams): Promise<ResolvedWorkflow> {
         // A bundle is an optimization: never let a fetch error fail the run — fall through to resolve.
         // Timed as workflowBundleDownloadMs so a run's breakdown shows the bundle fetch cost.
@@ -116,14 +116,14 @@ type ResolveParams = {
 type ResolveConnectorsParams = {
     workflowVersion: WorkflowVersion
     tenantId: string
-    log: ApLogger
+    log: Logger
     apiClient: WorkerToApiContract
     basePath: string
     getSettings: () => SandboxSettings
 }
 
 type BuildPublishBundleParams = {
-    log: ApLogger
+    log: Logger
     apiClient: WorkerToApiContract
     basePath: string
     workflowVersion: WorkflowVersion

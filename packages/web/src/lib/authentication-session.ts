@@ -10,20 +10,23 @@ import { jwtDecode } from 'jwt-decode';
 import { authenticationApi } from '@/api/authentication-api';
 import { queryClient } from '@/app/query-client';
 
-import { ApStorage } from './ap-browser-storage';
+import { BrowserStorage } from './browser-storage';
 const tokenKey = 'token';
 const workspaceIdKey = 'workspaceId';
 export const authenticationSession = {
   setWorkspaceId(workspaceId: string) {
-    ApStorage.getInstance().setItem(workspaceIdKey, workspaceId);
+    BrowserStorage.getInstance().setItem(workspaceIdKey, workspaceId);
   },
   saveResponse(response: AuthenticationResponse, isEmbedding: boolean) {
     if (isEmbedding) {
-      ApStorage.setInstanceToSessionStorage();
+      BrowserStorage.setInstanceToSessionStorage();
     }
-    ApStorage.getInstance().setItem(tokenKey, response.token);
+    BrowserStorage.getInstance().setItem(tokenKey, response.token);
     if (!isNil(response.workspaceId)) {
-      ApStorage.getInstance().setItem(workspaceIdKey, response.workspaceId);
+      BrowserStorage.getInstance().setItem(
+        workspaceIdKey,
+        response.workspaceId,
+      );
     }
     queryClient.invalidateQueries({ queryKey: ['flags'] });
     window.dispatchEvent(new Event('storage'));
@@ -43,7 +46,7 @@ export const authenticationSession = {
     }
   },
   getToken(): string | null {
-    return ApStorage.getInstance().getItem(tokenKey) ?? null;
+    return BrowserStorage.getInstance().getItem(tokenKey) ?? null;
   },
 
   getWorkspaceId(): string | null {
@@ -51,7 +54,7 @@ export const authenticationSession = {
     if (isNil(token)) {
       return null;
     }
-    const workspaceId = ApStorage.getInstance().getItem(workspaceIdKey);
+    const workspaceId = BrowserStorage.getInstance().getItem(workspaceIdKey);
     if (!isNil(workspaceId)) {
       return workspaceId;
     }
@@ -108,9 +111,9 @@ export const authenticationSession = {
     const result = await authenticationApi.switchTenant({
       tenantId,
     });
-    ApStorage.getInstance().setItem(tokenKey, result.token);
+    BrowserStorage.getInstance().setItem(tokenKey, result.token);
     if (!isNil(result.workspaceId)) {
-      ApStorage.getInstance().setItem(workspaceIdKey, result.workspaceId);
+      BrowserStorage.getInstance().setItem(workspaceIdKey, result.workspaceId);
     }
     window.location.href = '/';
   },
@@ -118,7 +121,7 @@ export const authenticationSession = {
     if (authenticationSession.getWorkspaceId() === workspaceId) {
       return;
     }
-    ApStorage.getInstance().setItem(workspaceIdKey, workspaceId);
+    BrowserStorage.getInstance().setItem(workspaceIdKey, workspaceId);
     window.dispatchEvent(new Event('storage'));
   },
   isLoggedIn(): boolean {
@@ -129,8 +132,8 @@ export const authenticationSession = {
     return !this.isJwtExpired(token);
   },
   clearSession() {
-    ApStorage.getInstance().removeItem(workspaceIdKey);
-    ApStorage.getInstance().removeItem(tokenKey);
+    BrowserStorage.getInstance().removeItem(workspaceIdKey);
+    BrowserStorage.getInstance().removeItem(tokenKey);
   },
   logOut() {
     this.clearSession();

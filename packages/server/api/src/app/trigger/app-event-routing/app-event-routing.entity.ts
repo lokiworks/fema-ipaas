@@ -1,6 +1,6 @@
 import { WorkflowId, WorkspaceId } from '@fema-ipaas/core-utils'
 import { EntitySchema } from 'typeorm'
-import { ApIdSchema, BaseColumnSchemaPart } from '../../database/database-common'
+import { BaseColumnSchemaPart, EntityIdSchema } from '../../database/database-common'
 
 export type AppEventRoutingId = string
 
@@ -22,8 +22,8 @@ export const AppEventRoutingEntity = new EntitySchema<AppEventRouting>({
         appName: {
             type: String,
         },
-        workspaceId: ApIdSchema,
-        workflowId: ApIdSchema,
+        workspaceId: EntityIdSchema,
+        workflowId: EntityIdSchema,
         identifierValue: {
             type: String,
         },

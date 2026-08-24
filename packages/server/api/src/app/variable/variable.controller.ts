@@ -1,4 +1,4 @@
-import { ApId, Permission, SeekPage } from '@fema-ipaas/core-utils'
+import { EntityId, Permission, SeekPage } from '@fema-ipaas/core-utils'
 import { ApplicationEventName, ConnectionOwners, ListVariablesRequestQuery, PrincipalType, RevealVariableResponse, SERVICE_KEY_SECURITY_OPENAPI, UpdateVariableRequestBody, UpsertVariableRequestBody, VariableWithoutSensitiveData } from '@fema-ipaas/shared'
 import { FastifyPluginCallbackZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
@@ -126,7 +126,7 @@ const UpdateVariableRequest = {
         tags: ['variables'],
         security: [SERVICE_KEY_SECURITY_OPENAPI],
         description: 'Update a workspace variable value or metadata. Name cannot be changed.',
-        params: z.object({ id: ApId }),
+        params: z.object({ id: EntityId }),
         body: UpdateVariableRequestBody,
         response: {
             [StatusCodes.OK]: VariableWithoutSensitiveData,
@@ -188,7 +188,7 @@ const RevealVariableRequest = {
         tags: ['variables'],
         security: [SERVICE_KEY_SECURITY_OPENAPI],
         description: 'Reveal a variable plaintext value',
-        params: z.object({ id: ApId }),
+        params: z.object({ id: EntityId }),
         response: {
             [StatusCodes.OK]: RevealVariableResponse,
         },
@@ -207,7 +207,7 @@ const DeleteVariableRequest = {
         tags: ['variables'],
         security: [SERVICE_KEY_SECURITY_OPENAPI],
         description: 'Delete a workspace variable',
-        params: z.object({ id: ApId }),
+        params: z.object({ id: EntityId }),
         response: {
             [StatusCodes.NO_CONTENT]: z.never(),
         },

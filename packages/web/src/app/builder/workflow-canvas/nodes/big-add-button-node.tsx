@@ -10,11 +10,11 @@ import { cn } from '@/lib/utils';
 
 import { useBuilderStateContext } from '../../builder-hooks';
 import { workflowCanvasConsts } from '../utils/consts';
-import { ApBigAddButtonNode } from '../utils/types';
+import { BigAddButtonNode } from '../utils/types';
 import { workflowCanvasUtils } from '../utils/workflow-canvas-utils';
 
-const ApBigAddButtonCanvasNode = React.memo(
-  ({ data, id }: Omit<ApBigAddButtonNode, 'position'>) => {
+const BigAddButtonCanvasNode = React.memo(
+  ({ data, id }: Omit<BigAddButtonNode, 'position'>) => {
     const [isIsStepInsideDropzone, setIsStepInsideDropzone] = useState(false);
     const [
       readonly,
@@ -182,5 +182,5 @@ const ApBigAddButtonCanvasNode = React.memo(
   },
 );
 
-ApBigAddButtonCanvasNode.displayName = 'ApBigAddButtonCanvasNode';
-export { ApBigAddButtonCanvasNode };
+BigAddButtonCanvasNode.displayName = 'BigAddButtonCanvasNode';
+export { BigAddButtonCanvasNode };

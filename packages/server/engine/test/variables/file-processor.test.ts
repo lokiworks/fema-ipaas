@@ -1,5 +1,5 @@
 import { buffer as readableToBuffer } from 'node:stream/consumers'
-import { ApFile, ApStreamingFile, ConnectorAuth, Property } from '@fema-ipaas/connector-sdk'
+import { ConnectorFile, StreamingFile, ConnectorAuth, Property } from '@fema-ipaas/connector-sdk'
 import { propsProcessor } from '../../src/lib/variables/props-processor'
 
 const HELLO_TXT_DATA_URL = 'data:text/plain;base64,aGVsbG8='
@@ -31,7 +31,7 @@ describe('File Processor', () => {
         const { processedInput, errors } = await resolveStreamingFile(FILE_URL)
 
         expect(errors).toEqual({})
-        const file: ApStreamingFile = processedInput.file
+        const file: StreamingFile = processedInput.file
         expect(file.filename).toBe('report.csv')
         expect(file.extension).toBe('csv')
         expect(file.size).toBe(11)
@@ -45,7 +45,7 @@ describe('File Processor', () => {
 
         const { processedInput } = await resolveStreamingFile(FILE_URL)
 
-        const file: ApStreamingFile = processedInput.file
+        const file: StreamingFile = processedInput.file
         expect(file.size).toBeUndefined()
     })
 
@@ -56,7 +56,7 @@ describe('File Processor', () => {
 
         const { processedInput } = await resolveStreamingFile(FILE_URL)
 
-        const file: ApStreamingFile = processedInput.file
+        const file: StreamingFile = processedInput.file
         expect(file.filename).toBe('archive.')
         expect(file.extension).toBeUndefined()
     })
@@ -99,7 +99,7 @@ describe('File Processor', () => {
         )
 
         expect(Object.keys(errors)).toContain('count')
-        const file: ApStreamingFile = processedInput.file
+        const file: StreamingFile = processedInput.file
         expect(file.body.destroyed).toBe(true)
     })
 
@@ -117,14 +117,14 @@ describe('File Processor', () => {
         )
 
         expect(errors).toEqual({})
-        const file: ApStreamingFile = processedInput.file
+        const file: StreamingFile = processedInput.file
         expect(file.filename).toBe('unknown.txt')
         expect(file.extension).toBe('txt')
         expect(file.size).toBe(5)
         expect((await readableToBuffer(file.body)).toString()).toBe('hello')
     })
 
-    it('still resolves a plain file property to a buffered ApFile', async () => {
+    it('still resolves a plain file property to a buffered ConnectorFile', async () => {
         const props = {
             file: Property.File({ displayName: 'File', required: true }),
         }
@@ -138,8 +138,8 @@ describe('File Processor', () => {
         )
 
         expect(errors).toEqual({})
-        const file: ApFile = processedInput.file
-        expect(file).toBeInstanceOf(ApFile)
+        const file: ConnectorFile = processedInput.file
+        expect(file).toBeInstanceOf(ConnectorFile)
         expect(file.data.toString()).toBe('hello')
     })
 })

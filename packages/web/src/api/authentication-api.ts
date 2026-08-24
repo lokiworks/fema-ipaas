@@ -1,4 +1,3 @@
-import { WorkspaceRole } from '@fema-ipaas/core-utils';
 import {
   CreateOtpRequestBody,
   CompleteSignUpRequest,
@@ -6,7 +5,6 @@ import {
   ResetPasswordRequestBody,
   VerifyEmailRequestBody,
   AuthenticationResponse,
-  ClaimTokenRequest,
   SignInRequest,
   SignUpRequest,
   SwitchTenantRequest,
@@ -26,15 +24,6 @@ export const authenticationApi = {
   signUp(request: SignUpRequest) {
     return api.post<AuthenticationResponse>(
       '/v1/authentication/sign-up',
-      request,
-    );
-  },
-  getCurrentWorkspaceRole(query: { workspaceId: string }) {
-    return api.get<WorkspaceRole | null>('/v1/workspace-members/role', query);
-  },
-  claimThirdPartyRequest(request: ClaimTokenRequest) {
-    return api.post<AuthenticationResponse>(
-      '/v1/authn/federated/claim',
       request,
     );
   },

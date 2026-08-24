@@ -1,4 +1,4 @@
-import { apId } from '@fema-ipaas/core-utils'
+import { generateId } from '@fema-ipaas/core-utils'
 import { FileCompression, FileLocation, FileType, PackageType, ConnectorType, Principal, PrincipalType } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
@@ -19,7 +19,7 @@ afterAll(async () => {
 
 async function engineToken(workspaceId: string, tenantId: string): Promise<string> {
     const principal: Principal = {
-        id: apId(),
+        id: generateId(),
         type: PrincipalType.ENGINE,
         workspaceId,
         tenant: { id: tenantId },
@@ -63,7 +63,7 @@ describe('Connector Bundle Endpoint', () => {
         const tenantA = await mockAndSaveBasicSetup()
         const tenantB = await mockAndSaveBasicSetup()
 
-        const archiveId = apId()
+        const archiveId = generateId()
         await db.save('file', createMockFile({
             id: archiveId,
             tenantId: tenantA.mockTenant.id,
@@ -97,7 +97,7 @@ describe('Connector Bundle Endpoint', () => {
         const tenantA = await mockAndSaveBasicSetup()
         const tenantB = await mockAndSaveBasicSetup()
 
-        const archiveId = apId()
+        const archiveId = generateId()
         await db.save('file', createMockFile({
             id: archiveId,
             tenantId: tenantA.mockTenant.id,

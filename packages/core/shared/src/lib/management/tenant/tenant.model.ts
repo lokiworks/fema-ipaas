@@ -1,4 +1,4 @@
-import { ApId, BaseModelSchema, DateOrString, Nullable } from '@fema-ipaas/core-utils'
+import { BaseModelSchema, DateOrString, EntityId, Nullable } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 import { FederatedAuthnProviderConfig, FederatedAuthnProviderConfigWithoutSensitiveData } from '../../core/federated-authn'
 import { SsoDomainVerification } from './sso-domain-verification'
@@ -73,7 +73,7 @@ export type ConnectorSelectorConfig = z.infer<typeof ConnectorSelectorConfig>
 
 export const Tenant = z.object({
     ...BaseModelSchema,
-    ownerId: ApId,
+    ownerId: EntityId,
     name: z.string(),
     primaryColor: z.string(),
     themeColors: Nullable(TenantThemeColors),
@@ -101,7 +101,7 @@ export const TenantWithoutSensitiveData = z.object({
     id: z.string(),
     created: DateOrString,
     updated: DateOrString,
-    ownerId: ApId,
+    ownerId: EntityId,
     name: z.string(),
     primaryColor: z.string(),
     themeColors: Nullable(TenantThemeColors),

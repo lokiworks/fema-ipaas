@@ -1,6 +1,6 @@
 import { isNil } from '@fema-ipaas/core-utils'
-import { type ApLogger } from '@fema-ipaas/server-utils'
-import { ApEnvironment, ExecutionMode } from '@fema-ipaas/shared'
+import { type Logger } from '@fema-ipaas/server-utils'
+import { ExecutionMode, RuntimeEnvironment } from '@fema-ipaas/shared'
 import { createSandboxForJob } from './create-sandbox-for-job'
 import { Sandbox } from './sandbox/types'
 import { SandboxSettings } from './types'
@@ -9,7 +9,7 @@ export function createSandboxManager({ boxId, basePath, getSettings }: { boxId: 
     let currentSandbox: Sandbox | null = null
 
     return {
-        acquire(params: { log: ApLogger }): Sandbox {
+        acquire(params: { log: Logger }): Sandbox {
             if (canReuseSandbox(getSettings) && currentSandbox && currentSandbox.isReady()) {
                 return currentSandbox
             }
@@ -22,7 +22,7 @@ export function createSandboxManager({ boxId, basePath, getSettings }: { boxId: 
             currentSandbox = createSandboxForJob({ ...params, boxId, reusable: canReuseSandbox(getSettings), basePath, getSettings })
             return currentSandbox
         },
-        async invalidate(log: ApLogger): Promise<void> {
+        async invalidate(log: Logger): Promise<void> {
             if (currentSandbox) {
                 log.info('Invalidating sandbox')
                 const sb = currentSandbox
@@ -30,12 +30,12 @@ export function createSandboxManager({ boxId, basePath, getSettings }: { boxId: 
                 await sb.shutdown()
             }
         },
-        async release(log: ApLogger): Promise<void> {
+        async release(log: Logger): Promise<void> {
             if (!canReuseSandbox(getSettings)) {
                 await this.invalidate(log)
             }
         },
-        async shutdown(log: ApLogger): Promise<void> {
+        async shutdown(log: Logger): Promise<void> {
             await this.invalidate(log)
         },
         getActiveSandbox(): ActiveSandboxInfo | null {
@@ -61,7 +61,7 @@ function canReuseSandbox(getSettings: () => SandboxSettings): boolean {
     if (!isNil(settings.REUSE_SANDBOX)) {
         return settings.REUSE_SANDBOX === 'true'
     }
-    if (settings.ENVIRONMENT === ApEnvironment.DEVELOPMENT) {
+    if (settings.ENVIRONMENT === RuntimeEnvironment.DEVELOPMENT) {
         return true
     }
     const trustedModes = [ExecutionMode.SANDBOX_CODE_ONLY, ExecutionMode.UNSANDBOXED]
@@ -79,9 +79,9 @@ export type ActiveSandboxInfo = {
 }
 
 export type SandboxManager = {
-    acquire(params: { log: ApLogger }): Sandbox
-    invalidate(log: ApLogger): Promise<void>
-    release(log: ApLogger): Promise<void>
-    shutdown(log: ApLogger): Promise<void>
+    acquire(params: { log: Logger }): Sandbox
+    invalidate(log: Logger): Promise<void>
+    release(log: Logger): Promise<void>
+    shutdown(log: Logger): Promise<void>
     getActiveSandbox(): ActiveSandboxInfo | null
 }

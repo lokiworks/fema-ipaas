@@ -1,4 +1,4 @@
-import { apId, EngineResponseStatus, WorkflowStatus, ConnectorType, PrincipalType, TriggerStrategy, WebhookHandshakeStrategy } from '@fema-ipaas/shared'
+import { generateId, EngineResponseStatus, WorkflowStatus, ConnectorType, PrincipalType, TriggerStrategy, WebhookHandshakeStrategy } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { generateMockToken } from '../../../helpers/auth'
@@ -420,7 +420,7 @@ describe('Webhook Service', () => {
         await db.update('workflow', mockWorkflow.id, { publishedVersionId: mockWorkflowVersion.id })
 
         await db.save('trigger_source', [{
-            id: apId(),
+            id: generateId(),
             created: new Date().toISOString(),
             updated: new Date().toISOString(),
             workflowId: mockWorkflow.id,
@@ -491,7 +491,7 @@ describe('Webhook Service', () => {
         await db.update('workflow', mockWorkflow.id, { publishedVersionId: mockWorkflowVersion.id })
 
         await db.save('trigger_source', [{
-            id: apId(),
+            id: generateId(),
             created: new Date().toISOString(),
             updated: new Date().toISOString(),
             workflowId: mockWorkflow.id,

@@ -1,5 +1,5 @@
 import { isNil, Permission } from '@fema-ipaas/core-utils';
-import { ApFlagId, WorkspaceType } from '@fema-ipaas/shared';
+import { FlagId, WorkspaceType } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { UsersRound, Lock } from 'lucide-react';
 import { useState } from 'react';
@@ -19,7 +19,7 @@ import {
   getWorkspaceName,
   workspaceCollectionUtils,
 } from '@/features/workspaces';
-import { ApWorkspaceDisplay } from '@/features/workspaces/components/ap-workspace-display';
+import { WorkspaceDisplay } from '@/features/workspaces/components/workspace-display';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { flagsHooks } from '@/hooks/flags-hooks';
 
@@ -45,7 +45,7 @@ export const WorkspaceDashboardPageHeader = ({
   );
 
   const { data: showWorkspaceMembersFlag } = flagsHooks.useFlag<boolean>(
-    ApFlagId.SHOW_WORKSPACE_MEMBERS,
+    FlagId.SHOW_WORKSPACE_MEMBERS,
   );
 
   const showWorkspaceMembersIcons =
@@ -76,7 +76,7 @@ export const WorkspaceDashboardPageHeader = ({
 
   const titleContent = (
     <div className="flex items-center gap-1">
-      <ApWorkspaceDisplay
+      <WorkspaceDisplay
         title={getWorkspaceName(workspace)}
         maxLengthToNotShowTooltip={30}
         titleClassName="text-sm font-medium"

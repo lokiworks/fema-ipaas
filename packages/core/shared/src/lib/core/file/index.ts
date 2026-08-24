@@ -1,7 +1,7 @@
-import { ApId, BaseModelSchema, Nullable } from '@fema-ipaas/core-utils'
+import { BaseModelSchema, EntityId, Nullable } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 
-export type FileId = ApId
+export type FileId = EntityId
 
 export enum FileType {
     /**

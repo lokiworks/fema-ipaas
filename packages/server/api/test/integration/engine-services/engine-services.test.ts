@@ -1,5 +1,5 @@
 import { AddressInfo } from 'net'
-import { apId } from '@fema-ipaas/core-utils'
+import { generateId } from '@fema-ipaas/core-utils'
 import { ContextVersion, StoreScope } from '@fema-ipaas/connector-sdk'
 import { ConnectionStatus, ConnectionType, ConnectionExpiredError, ConnectionNotFoundError, ConnectionConnectorMismatchError, FetchError, WorkflowStatus, WorkflowVersionState, PrincipalType } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
@@ -48,7 +48,7 @@ describe('Engine Services Integration', () => {
 
         engineToken = await generateMockToken({
             type: PrincipalType.ENGINE,
-            id: apId(),
+            id: generateId(),
             workspaceId,
             tenant: { id: tenantId },
         })
@@ -56,8 +56,8 @@ describe('Engine Services Integration', () => {
 
     describe('workflows.service — createWorkflowsContext().list()', () => {
         it('should return SeekPage<PopulatedWorkflow> with correct shape', async () => {
-            const workflowId = apId()
-            const workflowVersionId = apId()
+            const workflowId = generateId()
+            const workflowVersionId = generateId()
             const mockWorkflow = createMockWorkflow({
                 id: workflowId,
                 workspaceId,
@@ -106,10 +106,10 @@ describe('Engine Services Integration', () => {
         })
 
         it('should filter by externalIds', async () => {
-            const workflow1Id = apId()
-            const workflow2Id = apId()
-            const ext1 = apId()
-            const ext2 = apId()
+            const workflow1Id = generateId()
+            const workflow2Id = generateId()
+            const ext1 = generateId()
+            const ext2 = generateId()
 
             const workflow1 = createMockWorkflow({ id: workflow1Id, workspaceId, externalId: ext1 })
             const workflow2 = createMockWorkflow({ id: workflow2Id, workspaceId, externalId: ext2 })
@@ -138,8 +138,8 @@ describe('Engine Services Integration', () => {
             const workflowsContext = createWorkflowsContext({
                 engineToken: 'invalid-token',
                 internalApiUrl: apiUrl,
-                workflowId: apId(),
-                workflowVersionId: apId(),
+                workflowId: generateId(),
+                workflowVersionId: generateId(),
             })
 
             await expect(workflowsContext.list({})).rejects.toThrow(FetchError)
@@ -148,7 +148,7 @@ describe('Engine Services Integration', () => {
 
     describe('connections.service — createConnectionResolver().obtain()', () => {
         it('should obtain connection value with V1 context', async () => {
-            const externalId = apId()
+            const externalId = generateId()
             const secretText = 'my-super-secret'
             const connectionValue = {
                 type: ConnectionType.SECRET_TEXT,
@@ -184,7 +184,7 @@ describe('Engine Services Integration', () => {
         })
 
         it('should return raw secret_text for V0 context (undefined)', async () => {
-            const externalId = apId()
+            const externalId = generateId()
             const secretText = 'v0-secret-value'
             const connectionValue = {
                 type: ConnectionType.SECRET_TEXT,
@@ -228,7 +228,7 @@ describe('Engine Services Integration', () => {
         })
 
         it('should throw ConnectionExpiredError when connection status is ERROR', async () => {
-            const externalId = apId()
+            const externalId = generateId()
             const connectionValue = {
                 type: ConnectionType.SECRET_TEXT,
                 secret_text: 'expired-secret',
@@ -265,7 +265,7 @@ describe('Engine Services Integration', () => {
             })
 
             const saveConnection = async (connectionConnectorName: string): Promise<string> => {
-                const externalId = apId()
+                const externalId = generateId()
                 const mockConn = createMockConnection({
                     tenantId,
                     workspaceIds: [workspaceId],
@@ -339,7 +339,7 @@ describe('Engine Services Integration', () => {
             const store = createContextStore({
                 apiUrl,
                 prefix: '',
-                workflowId: apId(),
+                workflowId: generateId(),
                 engineToken,
             })
 
@@ -354,7 +354,7 @@ describe('Engine Services Integration', () => {
             const store = createContextStore({
                 apiUrl,
                 prefix: '',
-                workflowId: apId(),
+                workflowId: generateId(),
                 engineToken,
             })
 
@@ -366,7 +366,7 @@ describe('Engine Services Integration', () => {
             const store = createContextStore({
                 apiUrl,
                 prefix: '',
-                workflowId: apId(),
+                workflowId: generateId(),
                 engineToken,
             })
 
@@ -377,7 +377,7 @@ describe('Engine Services Integration', () => {
         })
 
         it('should isolate workflow-scoped vs workspace-scoped keys', async () => {
-            const workflowId = apId()
+            const workflowId = generateId()
             const store = createContextStore({
                 apiUrl,
                 prefix: 'test_',

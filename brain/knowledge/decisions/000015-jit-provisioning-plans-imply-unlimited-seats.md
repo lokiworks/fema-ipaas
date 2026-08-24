@@ -4,6 +4,10 @@ status: accepted
 
 # Plans that enable JIT provisioning (embedding / SCIM / SSO) must grant unlimited seats
 
+> **历史资料 —— 描述的是上游，不是本仓库。** 本页写的 Edition 体系、计费与席位、
+> license key、Cloud 形态在本仓库**都不存在**（Edition 已彻底删除，见
+> [decisions/000030](./000030-this-fork-has-no-editions-the-ee-pages-are-history.md)）。
+> 读它了解上游为什么那样设计可以，照着写代码不行——以 `docs/adr/` 和代码为准。
 
 ## Context
 

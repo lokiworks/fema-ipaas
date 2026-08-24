@@ -1,4 +1,4 @@
-import { ApFlagId } from '@fema-ipaas/shared';
+import { FlagId } from '@fema-ipaas/shared';
 import { useMutation } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { Check, ChevronsUpDown, Globe } from 'lucide-react';
@@ -31,7 +31,7 @@ export const LanguageToggle = () => {
   const { i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const { data: showCommunity } = flagsHooks.useFlag<boolean>(
-    ApFlagId.SHOW_COMMUNITY,
+    FlagId.SHOW_COMMUNITY,
   );
   const [selectedLanguage, setSelectedLanguage] = useState<string | undefined>(
     i18n.language ?? 'en',

@@ -1,4 +1,4 @@
-import { apId } from '@fema-ipaas/core-utils'
+import { generateId } from '@fema-ipaas/core-utils'
 import { WorkflowStatus, WorkflowTriggerType, WorkflowVersionState, PackageType, ConnectorType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
@@ -93,7 +93,7 @@ describe('Human Input API', () => {
         })
 
         it('should return 404 for non-existent workflow', async () => {
-            const nonExistentId = apId()
+            const nonExistentId = generateId()
             const response = await app?.inject({
                 method: 'GET',
                 url: `/api/v1/human-input/form/${nonExistentId}`,
@@ -186,7 +186,7 @@ describe('Human Input API', () => {
         })
 
         it('should return 404 for non-existent workflow', async () => {
-            const nonExistentId = apId()
+            const nonExistentId = generateId()
             const response = await app?.inject({
                 method: 'GET',
                 url: `/api/v1/human-input/chat/${nonExistentId}`,

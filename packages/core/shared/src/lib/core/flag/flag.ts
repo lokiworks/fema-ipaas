@@ -1,19 +1,17 @@
-import { ApId, BaseModel } from '@fema-ipaas/core-utils'
-
-export type FlagId = ApId
+import { BaseModel, EntityId } from '@fema-ipaas/core-utils'
 
 export type Flag = {
     value: unknown
-} & BaseModel<FlagId>
+} & BaseModel<EntityId>
 
-export enum ApEnvironment {
+export enum RuntimeEnvironment {
     PRODUCTION = 'prod',
     DEVELOPMENT = 'dev',
     TESTING = 'test',
 }
 
 
-export enum ApFlagId {
+export enum FlagId {
     SHOW_POWERED_BY_IN_FORM = 'SHOW_POWERED_BY_IN_FORM',
     CLOUD_AUTH_ENABLED = 'CLOUD_AUTH_ENABLED',
     AGENTS_CONFIGURED = 'AGENTS_CONFIGURED',

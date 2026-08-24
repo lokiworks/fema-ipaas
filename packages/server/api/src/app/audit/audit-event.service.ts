@@ -1,5 +1,5 @@
-import { apId, isNil, SeekPage } from '@fema-ipaas/core-utils'
-import { apDayjs } from '@fema-ipaas/server-utils'
+import { generateId, isNil, SeekPage } from '@fema-ipaas/core-utils'
+import { dayjsUtil } from '@fema-ipaas/server-utils'
 import { ApplicationEventName } from '@fema-ipaas/shared'
 
 import { FastifyBaseLogger } from 'fastify'
@@ -13,9 +13,9 @@ import { auditEventRepo } from './audit-event.repo'
 export const auditEventService = (log: FastifyBaseLogger) => ({
     async record(event: RecordableEvent): Promise<void> {
         try {
-            const now = apDayjs().toISOString()
+            const now = dayjsUtil().toISOString()
             await auditEventRepo().insert({
-                id: apId(),
+                id: generateId(),
                 created: now,
                 updated: now,
                 tenantId: event.tenantId,

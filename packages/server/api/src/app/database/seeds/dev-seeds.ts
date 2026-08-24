@@ -1,4 +1,4 @@
-import { ApEnvironment, UserIdentityProvider } from '@fema-ipaas/shared'
+import { RuntimeEnvironment, UserIdentityProvider } from '@fema-ipaas/shared'
 import { authenticationService } from '../../authentication/authentication.service'
 import { FlagEntity } from '../../flags/flag.entity'
 import { system } from '../../helper/system/system'
@@ -12,7 +12,7 @@ const log = system.globalLogger()
 
 const currentEnvIsNotDev = (): boolean => {
     const env = system.get(AppSystemProp.ENVIRONMENT)
-    return env !== ApEnvironment.DEVELOPMENT
+    return env !== RuntimeEnvironment.DEVELOPMENT
 }
 
 const devDataAlreadySeeded = async (): Promise<boolean> => {

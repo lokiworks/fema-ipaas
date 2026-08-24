@@ -1,8 +1,8 @@
 import { Tenant, User } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import {
-    ApIdSchema,
     BaseColumnSchemaPart,
+    EntityIdSchema,
 } from '../database/database-common'
 
 type TenantSchema = Tenant & {
@@ -14,7 +14,7 @@ export const TenantEntity = new EntitySchema<TenantSchema>({
     columns: {
         ...BaseColumnSchemaPart,
         ownerId: {
-            ...ApIdSchema,
+            ...EntityIdSchema,
             nullable: false,
         },
         name: {

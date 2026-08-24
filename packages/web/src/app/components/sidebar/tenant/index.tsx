@@ -1,5 +1,5 @@
 import { t } from 'i18next';
-import { NetworkIcon, ScrollTextIcon, TerminalIcon } from 'lucide-react';
+import { ScrollTextIcon, TerminalIcon } from 'lucide-react';
 import { ComponentType, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -33,7 +33,7 @@ import { useAuthorization } from '@/hooks/authorization-hooks';
 import { determineDefaultRoute } from '@/lib/route-utils';
 import { cn } from '@/lib/utils';
 
-import { ApSidebarItem } from '../ap-sidebar-item';
+import { SidebarNavItem } from '../sidebar-nav-item';
 import { SidebarUser } from '../sidebar-user';
 
 export function TenantSidebar() {
@@ -68,11 +68,6 @@ export function TenantSidebar() {
           to: '/tenant/connections',
           label: t('Connections'),
           icon: UnplugIcon,
-        },
-        {
-          to: '/tenant/network-agents',
-          label: t('Network Agents'),
-          icon: NetworkIcon,
         },
       ],
     },
@@ -188,7 +183,7 @@ export function TenantSidebar() {
               <SidebarGroupContent>
                 <SidebarMenu>
                   {group.items.map((item) => (
-                    <ApSidebarItem
+                    <SidebarNavItem
                       type="link"
                       key={item.label}
                       to={item.to}

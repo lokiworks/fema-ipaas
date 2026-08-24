@@ -1,4 +1,4 @@
-import { apId, ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil, SeekPage, spreadIfDefined } from '@fema-ipaas/core-utils'
+import { ApplicationError, assertNotNullOrUndefined, ErrorCode, generateId, isNil, SeekPage, spreadIfDefined } from '@fema-ipaas/core-utils'
 import { DefaultWorkspaceRole, InvitationStatus, InvitationType, TenantRole, UserInvitation, UserInvitationWithLink } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
@@ -94,7 +94,7 @@ export const userInvitationsService = (log: FastifyBaseLogger) => ({
         status,
         entityManager,
     }: CreateInvitationRecordParams): Promise<UserInvitation> {
-        const id = apId()
+        const id = generateId()
         await repo(entityManager).upsert({
             id,
             status,

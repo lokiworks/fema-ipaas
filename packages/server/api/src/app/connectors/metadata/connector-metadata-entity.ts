@@ -1,13 +1,13 @@
 import { ConnectorMetadataModel } from '@fema-ipaas/connector-sdk'
-import { ApId, BaseModel } from '@fema-ipaas/core-utils'
+import { BaseModel, EntityId } from '@fema-ipaas/core-utils'
 import { EntitySchema } from 'typeorm'
 import {
-    ApIdSchema,
     BaseColumnSchemaPart,
     COLLATION,
+    EntityIdSchema,
 } from '../../database/database-common'
 
-export type ConnectorMetadataSchema = BaseModel<ApId> & ConnectorMetadataModel
+export type ConnectorMetadataSchema = BaseModel<EntityId> & ConnectorMetadataModel
 
 export const ConnectorMetadataEntity =
   new EntitySchema<ConnectorMetadataSchema>({
@@ -97,7 +97,7 @@ export const ConnectorMetadataEntity =
               nullable: true,
           },
           archiveId: {
-              ...ApIdSchema,
+              ...EntityIdSchema,
               nullable: true,
           },
           i18n: {

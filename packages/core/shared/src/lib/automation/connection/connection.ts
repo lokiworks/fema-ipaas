@@ -1,4 +1,4 @@
-import { ApId, BaseModel, BaseModelSchema, Metadata, Nullable } from '@fema-ipaas/core-utils'
+import { BaseModel, BaseModelSchema, EntityId, Metadata, Nullable } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 import { UserWithMetaInformation } from '../../core/user'
 import { OAuth2GrantType } from './dto/upsert-connection-request'
@@ -111,7 +111,6 @@ export type Connection<Type extends ConnectionType = ConnectionType> = BaseModel
     metadata: Metadata | null
     connectorVersion: string
     preSelectForNewWorkspaces: boolean
-    networkAgentId: string | null
 }
 
 export type OAuth2Connection = Connection<ConnectionType.OAUTH2>
@@ -129,17 +128,16 @@ export const ConnectionWithoutSensitiveData = z.object({
     displayName: z.string(),
     type: z.nativeEnum(ConnectionType),
     connectorName: z.string(),
-    workspaceIds: z.array(ApId),
+    workspaceIds: z.array(EntityId),
     tenantId: Nullable(z.string()),
     scope: z.nativeEnum(ConnectionScope),
     status: z.nativeEnum(ConnectionStatus),
     ownerId: Nullable(z.string()),
     owner: Nullable(UserWithMetaInformation),
     metadata: Nullable(Metadata),
-    workflowIds: Nullable(z.array(ApId)),
+    workflowIds: Nullable(z.array(EntityId)),
     connectorVersion: z.string(),
     preSelectForNewWorkspaces: z.boolean(),
-    networkAgentId: Nullable(z.string()),
 }).describe('App connection is a connection to an external app.')
 export type ConnectionWithoutSensitiveData = z.infer<typeof ConnectionWithoutSensitiveData>
 

@@ -7,14 +7,14 @@ const databaseType = system.get(AppSystemProp.DB_TYPE)
 
 export const COLLATION = databaseType === DatabaseType.PGLITE ? undefined : 'en_natural'
 
-export const ApIdSchema = {
+export const EntityIdSchema = {
     type: String,
     length: 21,
 } as EntitySchemaColumnOptions
 
 export const BaseColumnSchemaPart = {
     id: {
-        ...ApIdSchema,
+        ...EntityIdSchema,
         primary: true,
     } as EntitySchemaColumnOptions,
     created: {

@@ -40,7 +40,7 @@ const keysWithinPath = (path: string) => {
     .map(removeQuotes);
 };
 
-type ApMentionNodeAttrs = {
+type StepMentionAttrs = {
   logoUrl?: string;
   displayText: string;
   serverValue: string;
@@ -190,7 +190,7 @@ function convertTextToTipTapJsonContent(
   stepsMetadata: (StepMetadataWithDisplayName | undefined)[],
   variableByName?: Map<string, string>,
 ): { type: TipTapNodeTypes.paragraph; content: JSONContent[] }[] {
-  // Strip ap-formula-v1::{...} wrappers before tokenizing so the editor can
+  // Strip fema-formula-v1::{...} wrappers before tokenizing so the editor can
   // reconstruct function nodes from the inner expression. Saved values use the
   // wrapper; the editor's internal tree does not.
   // `allowBroken` only kicks in when the saved value really did contain a
@@ -454,7 +454,7 @@ const buildVariableIconElement = (): Element => {
 
 const generateMentionHtmlElement = (mentionAttrs: MentionNodeAttrs) => {
   const mentionElement = document.createElement('span');
-  const apMentionNodeAttrs: ApMentionNodeAttrs = JSON.parse(
+  const stepMentionAttrs: StepMentionAttrs = JSON.parse(
     mentionAttrs.label || '{}',
   );
   mentionElement.className =
@@ -462,20 +462,20 @@ const generateMentionHtmlElement = (mentionAttrs: MentionNodeAttrs) => {
   assertNotNullOrUndefined(mentionAttrs.label, 'mentionAttrs.label');
   assertNotNullOrUndefined(mentionAttrs.id, 'mentionAttrs.id');
   assertNotNullOrUndefined(
-    apMentionNodeAttrs.displayText,
-    'apMentionNodeAttrs.displayText',
+    stepMentionAttrs.displayText,
+    'stepMentionAttrs.displayText',
   );
   mentionElement.dataset.id = mentionAttrs.id;
   mentionElement.dataset.label = mentionAttrs.label;
-  mentionElement.dataset.displayText = apMentionNodeAttrs.displayText;
+  mentionElement.dataset.displayText = stepMentionAttrs.displayText;
   mentionElement.dataset.type = TipTapNodeTypes.mention;
   mentionElement.contentEditable = 'false';
 
-  if (apMentionNodeAttrs.isVariable) {
+  if (stepMentionAttrs.isVariable) {
     mentionElement.appendChild(buildVariableIconElement());
-  } else if (apMentionNodeAttrs.logoUrl) {
+  } else if (stepMentionAttrs.logoUrl) {
     const imgElement = document.createElement('img');
-    imgElement.src = apMentionNodeAttrs.logoUrl;
+    imgElement.src = stepMentionAttrs.logoUrl;
     imgElement.className = 'object-contain w-4 h-4';
     mentionElement.appendChild(imgElement);
   } else {
@@ -484,10 +484,8 @@ const generateMentionHtmlElement = (mentionAttrs: MentionNodeAttrs) => {
     mentionElement.appendChild(emptyImagePlaceHolder);
   }
 
-  const mentiontextDiv = document.createTextNode(
-    apMentionNodeAttrs.displayText,
-  );
-  mentionElement.setAttribute('serverValue', apMentionNodeAttrs.serverValue);
+  const mentiontextDiv = document.createTextNode(stepMentionAttrs.displayText);
+  mentionElement.setAttribute('serverValue', stepMentionAttrs.serverValue);
 
   mentionElement.appendChild(mentiontextDiv);
   return mentionElement;

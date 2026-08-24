@@ -1,4 +1,4 @@
-import { BaseModelSchema, Nullable } from '@fema-ipaas/core-utils'
+import { BaseModelSchema } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 
 export enum BlueprintAuthType {
@@ -66,7 +66,6 @@ export const ConnectorBlueprintDefinition = z.object({
     defaultHeaders: z.record(z.string(), z.string()).default({}),
     auth: BlueprintAuth,
     actions: z.array(BlueprintAction).default([]),
-    networkAgentId: Nullable(z.string()),
 })
 
 export const ConnectorBlueprint = z.object({

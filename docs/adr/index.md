@@ -23,5 +23,8 @@ icon: 🧭
 | 0011 | [上游迁移压缩为单一基线，放弃从 FEMA Integration Platform 就地升级](0011-squash-upstream-migrations-into-one-baseline.md) | accepted |
 | 0012 | [节点分发用穷尽映射表，且暂不引入 UI Graph 编译层](0012-engine-dispatch-and-no-graph-compiler.md) | superseded by 0015 |
 | 0013 | [权限在工作空间角色上强制执行，成员关系是访问前提](0013-permissions-are-enforced-against-a-workspace-role.md) | accepted |
-| 0014 | [Network Agent 的数据模型先落地，隧道后做](0014-network-agent-model-lands-before-the-tunnel.md) | superseded by 0016 |
+| 0014 | [Network Agent 的数据模型先落地，隧道后做](0014-network-agent-model-lands-before-the-tunnel.md) | superseded by 0018 |
+| 0015 | [Parallel 与编译器落地，不重写 graph 持久化](0015-parallel-and-the-compiler-without-a-graph-persistence-rewrite.md) | accepted |
+| 0016 | [Network Agent 隧道是出站 socket，白名单在服务端执行](0016-the-network-agent-tunnel-is-an-outbound-socket-with-a-server-side-allowlist.md) | superseded by 0018 |
 | 0017 | [用 join edge 扩展 action 树，而不是换成 graph 持久化](0017-join-edges-extend-the-tree-instead-of-replacing-it.md) | accepted |
+| 0018 | [不做 Network Agent，自托管形态下它要跨越的鸿沟不存在](0018-no-network-agent-self-hosting-removes-the-gap-it-bridged.md) | accepted |

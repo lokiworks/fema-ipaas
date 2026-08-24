@@ -1,6 +1,6 @@
 import { ConnectorMetadata } from '@fema-ipaas/connector-sdk'
-import { apId, ApplicationError, Cursor, ErrorCode, isNil, Metadata, SeekPage, spreadIfDefined, spreadIfNotUndefined, TenantId, tryCatch, tryCatchSync, unique, UserId, WorkspaceId } from '@fema-ipaas/core-utils'
-import { ApEnvironment, Connection, ConnectionId, ConnectionOwners, ConnectionScope, ConnectionStatus, ConnectionType, ConnectionValue, ConnectionWithoutSensitiveData, EngineResponse, EngineResponseStatus, ExecuteResolveConnectionIdentifierResponse, ExecuteValidateAuthResponse, MAX_TENANT_CONNECTION_OWNERS, OAuth2GrantType, TenantConnectionOwner, TenantConnectionOwnersResponse, TenantConnectionsListItem, TenantConnectionWorkspaceInfo, TenantRole, UpsertConnectionRequestBody, User, UserIdentity, UserWithMetaInformation, WorkerJobType } from '@fema-ipaas/shared'
+import { ApplicationError, Cursor, ErrorCode, generateId, isNil, Metadata, SeekPage, spreadIfDefined, TenantId, tryCatch, tryCatchSync, unique, UserId, WorkspaceId } from '@fema-ipaas/core-utils'
+import { Connection, ConnectionId, ConnectionOwners, ConnectionScope, ConnectionStatus, ConnectionType, ConnectionValue, ConnectionWithoutSensitiveData, EngineResponse, EngineResponseStatus, ExecuteResolveConnectionIdentifierResponse, ExecuteValidateAuthResponse, MAX_TENANT_CONNECTION_OWNERS, OAuth2GrantType, RuntimeEnvironment, TenantConnectionOwner, TenantConnectionOwnersResponse, TenantConnectionsListItem, TenantConnectionWorkspaceInfo, TenantRole, UpsertConnectionRequestBody, User, UserIdentity, UserWithMetaInformation, WorkerJobType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import semver from 'semver'
 import { ArrayContains, Equal, FindOperator, FindOptionsWhere, ILike, In } from 'typeorm'
@@ -31,7 +31,7 @@ export const connectionsRepo = repoFactory(ConnectionEntity)
 
 export const connectionService = (log: FastifyBaseLogger) => ({
     async upsert(params: UpsertParams): Promise<ConnectionWithoutSensitiveData> {
-        const { workspaceIds, externalId, value, displayName, connectorName, ownerId, tenantId, scope, type, status, metadata, preSelectForNewWorkspaces, networkAgentId } = params
+        const { workspaceIds, externalId, value, displayName, connectorName, ownerId, tenantId, scope, type, status, metadata, preSelectForNewWorkspaces } = params
         const connectorVersion = params.connectorVersion ?? ( await connectorMetadataService(log).getOrThrow({
             name: connectorName,
             tenantId,
@@ -86,7 +86,7 @@ export const connectionService = (log: FastifyBaseLogger) => ({
             accountIdentifier,
         })
 
-        const newId = existingConnection?.id ?? apId()
+        const newId = existingConnection?.id ?? generateId()
         const connection = {
             displayName,
             ...spreadIfDefined('ownerId', ownerId),
@@ -101,7 +101,6 @@ export const connectionService = (log: FastifyBaseLogger) => ({
             tenantId,
             ...spreadIfDefined('metadata', connectionMetadata),
             ...spreadIfDefined('preSelectForNewWorkspaces', preSelectForNewWorkspaces),
-            ...spreadIfNotUndefined('networkAgentId', networkAgentId),
             connectorVersion,
         }
 
@@ -144,7 +143,6 @@ export const connectionService = (log: FastifyBaseLogger) => ({
                 accountIdentifier: typeof storedAccountIdentifier === 'string' ? storedAccountIdentifier : undefined,
             }))),
             ...spreadIfDefined('preSelectForNewWorkspaces', request.preSelectForNewWorkspaces),
-            ...spreadIfNotUndefined('networkAgentId', request.networkAgentId),
         })
 
         const updatedConnection = await connectionsRepo().findOneByOrFail(filter)
@@ -439,12 +437,12 @@ export const connectionService = (log: FastifyBaseLogger) => ({
         const workflowIdsByExternalId = await fetchWorkflowIdsForConnections(log, data)
 
         const promises = data.map(async (encryptedConnection) => {
-            const apConnection: Connection = await connectionHandler(log).decryptConnection(encryptedConnection)
+            const decryptedConnection: Connection = await connectionHandler(log).decryptConnection(encryptedConnection)
             const owner = mapToUserWithMetaInformation(encryptedConnection.owner)
-            const workflowIds = workflowIdsByExternalId.get(apConnection.externalId) ?? []
+            const workflowIds = workflowIdsByExternalId.get(decryptedConnection.externalId) ?? []
 
             return {
-                ...apConnection,
+                ...decryptedConnection,
                 owner,
                 workflowIds,
             }
@@ -746,7 +744,7 @@ const engineValidateAuth = async (
     log: FastifyBaseLogger,
 ): Promise<void> => {
     const environment = system.getOrThrow(AppSystemProp.ENVIRONMENT)
-    if (environment === ApEnvironment.TESTING) {
+    if (environment === RuntimeEnvironment.TESTING) {
         return
     }
     const { connectorName, auth, workspaceId, tenantId } = params
@@ -815,7 +813,7 @@ const engineResolveConnectionIdentifier = async (
     log: FastifyBaseLogger,
 ): Promise<string | undefined> => {
     const environment = system.getOrThrow(AppSystemProp.ENVIRONMENT)
-    if (environment === ApEnvironment.TESTING) {
+    if (environment === RuntimeEnvironment.TESTING) {
         return undefined
     }
     const { connectorName, auth, workspaceId, tenantId, connectionType } = params
@@ -937,7 +935,6 @@ type UpsertParams = {
     metadata?: Metadata
     connectorVersion?: string
     preSelectForNewWorkspaces?: boolean
-    networkAgentId?: string | null
 }
 
 
@@ -1010,7 +1007,6 @@ type UpdateParams = {
         workspaceIds: WorkspaceId[] | null
         metadata?: Metadata
         preSelectForNewWorkspaces?: boolean
-        networkAgentId?: string | null
     }
 }
 

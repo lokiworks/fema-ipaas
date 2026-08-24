@@ -4,6 +4,11 @@ icon: 🧑‍✈️
 
 # Platform Copilot
 
+> **历史资料 —— 描述的是上游，不是本仓库。** 本页写的 Edition 体系、计费与席位、
+> license key、Cloud 形态在本仓库**都不存在**（Edition 已彻底删除，见
+> [decisions/000030](../decisions/000030-this-fork-has-no-editions-the-ee-pages-are-history.md)）。
+> 读它了解上游为什么那样设计可以，照着写代码不行——以 `docs/adr/` 和代码为准。
+
 A backend-only RAG chat assistant that answers questions about the FEMA Integration Platform platform itself — codebase, docs, config — aimed at developers building on FEMA Integration Platform, not workflow end-users. Enhances the query, retrieves from a pre-indexed vector+full-text store, and streams responses via the Vercel AI SDK UI message stream. All editions (no plan-flag guard); both endpoints require `publicPlatform` scope (any authenticated USER).
 
 ### Entities & services

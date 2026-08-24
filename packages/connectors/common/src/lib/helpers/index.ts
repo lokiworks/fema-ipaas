@@ -10,7 +10,7 @@ import {
   FilesService,
   ConnectionValueForAuthProperty,
   ExtractConnectorAuthPropertyTypeForMethods,
-  ApFile,
+  ConnectorFile,
 } from '@fema-ipaas/connector-sdk';
 import {
   HttpHeaders,
@@ -402,7 +402,7 @@ i.e ${getBaseUrlForDescription(baseUrl, auth)}/resource or /resource`,
               fieldName: string;
               fieldType: 'text' | 'file';
               textFieldValue?: string;
-              fileFieldValue?: ApFile;
+              fileFieldValue?: ConnectorFile;
             }>;
 
             const formData = new FormData();

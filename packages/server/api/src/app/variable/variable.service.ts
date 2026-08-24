@@ -1,4 +1,4 @@
-import { apId, ApId, ApplicationError, Cursor, ErrorCode, isNil, Metadata, SeekPage, spreadIfDefined, TenantId, UserId, WorkspaceId } from '@fema-ipaas/core-utils'
+import { ApplicationError, Cursor, EntityId, ErrorCode, generateId, isNil, Metadata, SeekPage, spreadIfDefined, TenantId, UserId, WorkspaceId } from '@fema-ipaas/core-utils'
 import { ConnectionOwners, User, UserIdentity, UserWithMetaInformation, Variable, VariableWithoutSensitiveData } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { Equal, ILike, QueryFailedError } from 'typeorm'
@@ -13,7 +13,7 @@ export const variableRepo = repoFactory(VariableEntity)
 export const variableService = (log: FastifyBaseLogger) => ({
     async create(params: CreateParams): Promise<VariableWithoutSensitiveData> {
         const { workspaceId, tenantId, name, value, ownerId, metadata } = params
-        const id = apId()
+        const id = generateId()
         try {
             await variableRepo().insert({
                 id,
@@ -220,7 +220,7 @@ type CreateParams = {
 }
 
 type UpdateParams = {
-    id: ApId
+    id: EntityId
     workspaceId: string
     tenantId: string
     value: string | undefined
@@ -228,7 +228,7 @@ type UpdateParams = {
 }
 
 type GetOneParams = {
-    id: ApId
+    id: EntityId
     workspaceId: string
     tenantId: string
 }

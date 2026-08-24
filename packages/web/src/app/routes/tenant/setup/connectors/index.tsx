@@ -1,5 +1,5 @@
 import { ConnectorMetadataModelSummary } from '@fema-ipaas/connector-sdk';
-import { ApErrorParams, ErrorCode } from '@fema-ipaas/core-utils';
+import { ApplicationErrorParams, ErrorCode } from '@fema-ipaas/core-utils';
 import { ConnectorScope, ConnectorType } from '@fema-ipaas/shared';
 import { ColumnDef } from '@tanstack/react-table';
 import { t } from 'i18next';
@@ -131,9 +131,10 @@ const ConnectorsListTab = () => {
                   }}
                   onError={(error) => {
                     if (api.isError(error)) {
-                      const apError = error.response?.data as ApErrorParams;
-                      if (apError?.code === ErrorCode.VALIDATION) {
-                        toast.error(apError.params.message);
+                      const applicationError = error.response
+                        ?.data as ApplicationErrorParams;
+                      if (applicationError?.code === ErrorCode.VALIDATION) {
+                        toast.error(applicationError.params.message);
                         return;
                       }
                     }

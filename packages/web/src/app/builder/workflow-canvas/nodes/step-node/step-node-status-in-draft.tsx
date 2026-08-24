@@ -30,7 +30,7 @@ type DraftStepStatus =
   | 'tested'
   | 'untested';
 
-const ApStepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
+const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
   const [
     run,
     isBeingTested,
@@ -181,5 +181,5 @@ const ApStepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
   );
 };
 
-ApStepNodeStatusInDraft.displayName = 'ApStepNodeStatusInDraft';
-export { ApStepNodeStatusInDraft };
+StepNodeStatusInDraft.displayName = 'StepNodeStatusInDraft';
+export { StepNodeStatusInDraft };

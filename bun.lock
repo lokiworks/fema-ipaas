@@ -3,7 +3,7 @@
   "configVersion": 0,
   "workspaces": {
     "": {
-      "name": "activepieces",
+      "name": "fema-ipaas",
       "dependencies": {
         "jsonwebtoken": "9.0.1",
       },
@@ -488,7 +488,7 @@
     },
     "packages/core/execution": {
       "name": "@fema-ipaas/workflow-core",
-      "version": "0.14.0",
+      "version": "0.15.0",
       "dependencies": {
         "@fema-ipaas/connector-types": "workspace:*",
         "@fema-ipaas/core-utils": "workspace:*",
@@ -520,7 +520,7 @@
     },
     "packages/core/shared": {
       "name": "@fema-ipaas/shared",
-      "version": "0.140.0",
+      "version": "0.143.0",
       "dependencies": {
         "@fema-ipaas/connector-types": "workspace:*",
         "@fema-ipaas/core-utils": "workspace:*",
@@ -552,24 +552,6 @@
         "nanoid": "3.3.17",
         "tslib": "2.6.2",
         "zod": "4.3.6",
-      },
-      "devDependencies": {
-        "@types/node": "24.11.0",
-        "typescript": "5.5.4",
-        "vitest": "3.2.6",
-      },
-    },
-    "packages/network-agent": {
-      "name": "@fema-ipaas/network-agent",
-      "version": "0.1.0",
-      "bin": {
-        "fema-network-agent": "./dist/src/main.js",
-      },
-      "dependencies": {
-        "@fema-ipaas/shared": "workspace:*",
-        "axios": "1.14.2",
-        "socket.io-client": "4.8.1",
-        "tslib": "2.6.2",
       },
       "devDependencies": {
         "@types/node": "24.11.0",
@@ -1473,8 +1455,6 @@
     "@fema-ipaas/engine": ["@fema-ipaas/engine@workspace:packages/server/engine"],
 
     "@fema-ipaas/expression": ["@fema-ipaas/expression@workspace:packages/core/formula"],
-
-    "@fema-ipaas/network-agent": ["@fema-ipaas/network-agent@workspace:packages/network-agent"],
 
     "@fema-ipaas/sandbox": ["@fema-ipaas/sandbox@workspace:packages/server/sandbox"],
 

@@ -1,4 +1,4 @@
-import { ApId, Permission, SeekPage } from '@fema-ipaas/core-utils'
+import { EntityId, Permission, SeekPage } from '@fema-ipaas/core-utils'
 import { ApplicationEventName, DefaultWorkspaceRole, PrincipalType, WorkspaceMember, WorkspaceMemberWithUser } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
@@ -52,7 +52,7 @@ export const workspaceMemberController: FastifyPluginAsyncZod = async (app) => {
 
 const DEFAULT_LIMIT = 50
 
-const WorkspaceQuery = z.object({ workspaceId: ApId })
+const WorkspaceQuery = z.object({ workspaceId: EntityId })
 
 const GetMyRoleRequest = {
     config: {
@@ -93,8 +93,8 @@ const UpsertMemberRequest = {
     },
     schema: {
         body: z.object({
-            workspaceId: ApId,
-            userId: ApId,
+            workspaceId: EntityId,
+            userId: EntityId,
             role: z.enum(DefaultWorkspaceRole),
         }),
     },
@@ -107,7 +107,7 @@ const DeleteMemberRequest = {
         }),
     },
     schema: {
-        params: z.object({ id: ApId }),
+        params: z.object({ id: EntityId }),
         querystring: WorkspaceQuery,
     },
 }

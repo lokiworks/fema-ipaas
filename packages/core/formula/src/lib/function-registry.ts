@@ -1,4 +1,4 @@
-export const FEMA_FUNCTIONS: ApFunction[] = [
+export const FEMA_FUNCTIONS: FormulaFunction[] = [
     {
         name: 'combine',
         category: 'text',
@@ -1249,19 +1249,19 @@ export const FEMA_FUNCTIONS: ApFunction[] = [
     },
 ]
 
-export type ApFunctionBaseType = 'string' | 'number' | 'boolean' | 'date' | 'list'
-export type ApFunctionArgType = ApFunctionBaseType | ApFunctionBaseType[]
+export type FormulaFunctionBaseType = 'string' | 'number' | 'boolean' | 'date' | 'list'
+export type FormulaFunctionArgType = FormulaFunctionBaseType | FormulaFunctionBaseType[]
 
-export type ApFunctionDeprecation = {
+export type FormulaFunctionDeprecation = {
     replacement?: string
     removeAfter: string
 }
 
-export type ApFunctionArgCompatibility = {
+export type FormulaFunctionArgCompatibility = {
     defaultArgs?: unknown[]
 }
 
-export type ApFunction = {
+export type FormulaFunction = {
     name: string
     category: 'text' | 'number' | 'date' | 'list' | 'logic'
     description: string
@@ -1270,8 +1270,8 @@ export type ApFunction = {
     exampleResult: string
     minArgs: number
     maxArgs: number
-    argTypes: ApFunctionArgType[]
-    returnType: ApFunctionArgType
-    deprecated?: ApFunctionDeprecation
-    argCompatibility?: ApFunctionArgCompatibility
+    argTypes: FormulaFunctionArgType[]
+    returnType: FormulaFunctionArgType
+    deprecated?: FormulaFunctionDeprecation
+    argCompatibility?: FormulaFunctionArgCompatibility
 }

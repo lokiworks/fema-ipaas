@@ -1,4 +1,4 @@
-import { apId, ApId, ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil, Metadata, spreadIfDefined, spreadIfNotUndefined, UserId, WorkspaceId } from '@fema-ipaas/core-utils'
+import { ApplicationError, assertNotNullOrUndefined, EntityId, ErrorCode, generateId, isNil, Metadata, spreadIfDefined, spreadIfNotUndefined, UserId, WorkspaceId } from '@fema-ipaas/core-utils'
 import { ColorName, Workspace, WorkspaceIcon, WorkspaceType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { Brackets, EntityManager, IsNull, Not, ObjectLiteral, SelectQueryBuilder } from 'typeorm'
@@ -16,7 +16,7 @@ export const workspaceService = (log: FastifyBaseLogger) => ({
         const { callPostCreateHooks = true, entityManager, postCreateContext, ...rest } = params
         const icon = this.createWorkspaceIcon()
         const newWorkspace: NewWorkspace = {
-            id: apId(),
+            id: generateId(),
             ...rest,
             icon,
             releasesEnabled: false,
@@ -330,7 +330,7 @@ type GetByTenantIdAndExternalIdParams = {
 
 type AddWorkspaceToTenantParams = {
     workspaceId: WorkspaceId
-    tenantId: ApId
+    tenantId: EntityId
 }
 
 type NewWorkspace = Omit<Workspace, 'created' | 'updated' | 'deleted'>

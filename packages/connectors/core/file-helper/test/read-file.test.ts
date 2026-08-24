@@ -1,11 +1,11 @@
 /// <reference types="vitest/globals" />
 
 import { readFileAction } from '../src/lib/actions/read-file';
-import { createMockActionContext, ApFile } from '@fema-ipaas/connector-sdk';
+import { createMockActionContext, ConnectorFile } from '@fema-ipaas/connector-sdk';
 
 describe('readFileAction', () => {
   test('reads file as text', async () => {
-    const file = new ApFile('test.txt', Buffer.from('Hello, World!'), 'txt');
+    const file = new ConnectorFile('test.txt', Buffer.from('Hello, World!'), 'txt');
     const ctx = createMockActionContext({
       propsValue: { file, readOptions: 'text' },
     });
@@ -14,7 +14,7 @@ describe('readFileAction', () => {
   });
 
   test('reads file as base64', async () => {
-    const file = new ApFile('test.txt', Buffer.from('Hello'), 'txt');
+    const file = new ConnectorFile('test.txt', Buffer.from('Hello'), 'txt');
     const ctx = createMockActionContext({
       propsValue: { file, readOptions: 'base64' },
     });

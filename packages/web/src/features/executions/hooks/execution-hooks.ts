@@ -1,4 +1,4 @@
-import { ApErrorParams, ErrorCode } from '@fema-ipaas/core-utils';
+import { ApplicationErrorParams, ErrorCode } from '@fema-ipaas/core-utils';
 import {
   BulkActionOnRunsRequestBody,
   BulkArchiveActionOnRunsRequestBody,
@@ -148,13 +148,18 @@ export const executionMutations = {
       onSuccess,
       onError: (error: unknown) => {
         if (api.isError(error)) {
-          const apError = error.response?.data as ApErrorParams;
-          if (apError.code === ErrorCode.EXECUTION_RETRY_OUTSIDE_RETENTION) {
+          const applicationError = error.response
+            ?.data as ApplicationErrorParams;
+          if (
+            applicationError.code ===
+            ErrorCode.EXECUTION_RETRY_OUTSIDE_RETENTION
+          ) {
             toast.error(t('Retry failed'), {
               description: t(
                 'Retry is only available for {failedJobRetentionDays} after a run fails.',
                 {
-                  failedJobRetentionDays: apError.params.failedJobRetentionDays,
+                  failedJobRetentionDays:
+                    applicationError.params.failedJobRetentionDays,
                 },
               ),
               duration: 5000,

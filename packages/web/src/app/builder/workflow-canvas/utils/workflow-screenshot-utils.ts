@@ -2,7 +2,7 @@ import { tryCatch } from '@fema-ipaas/core-utils';
 import { Node } from '@xyflow/react';
 import { getFontEmbedCSS } from 'html-to-image';
 
-import { ApNodeType } from './types';
+import { CanvasNodeType } from './types';
 
 // collecting font-face CSS downloads and base64-encodes every font; do it
 // once per session instead of on every capture
@@ -19,7 +19,9 @@ async function downloadWorkflowAsImage({
   const viewportElement = document.querySelector<HTMLElement>(
     '.react-flow__viewport',
   );
-  const workflowNodes = nodes.filter((node) => node.type !== ApNodeType.NOTE);
+  const workflowNodes = nodes.filter(
+    (node) => node.type !== CanvasNodeType.NOTE,
+  );
   if (!viewportElement || workflowNodes.length === 0) {
     throw new Error('No workflow steps available to capture');
   }
@@ -178,7 +180,7 @@ function isCapturedElement(domNode: Element): boolean {
     'react-flow__viewport-portal',
   );
   const isNote = domNode.classList.contains(
-    `react-flow__node-${ApNodeType.NOTE}`,
+    `react-flow__node-${CanvasNodeType.NOTE}`,
   );
   const isExcluded = domNode.hasAttribute(SCREENSHOT_EXCLUDE_ATTRIBUTE);
   return !isBuilderPortal && !isNote && !isExcluded;

@@ -1,5 +1,5 @@
 import { isNil } from '@fema-ipaas/core-utils'
-import { ApEnvironment, ConnectorType } from '@fema-ipaas/shared'
+import { ConnectorType, RuntimeEnvironment } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { repoFactory } from '../../core/db/repo-factory'
 import { pubsub } from '../../helper/pubsub'
@@ -9,8 +9,8 @@ import { ConnectorMetadataEntity, ConnectorMetadataSchema } from './connector-me
 import { loadDevConnectorsIfEnabled } from './utils'
 
 const repo = repoFactory(ConnectorMetadataEntity)
-const environment = system.get<ApEnvironment>(AppSystemProp.ENVIRONMENT)
-const isTestingEnvironment = environment === ApEnvironment.TESTING
+const environment = system.get<RuntimeEnvironment>(AppSystemProp.ENVIRONMENT)
+const isTestingEnvironment = environment === RuntimeEnvironment.TESTING
 
 let cachedRegistry: ConnectorRegistryEntry[] | null = null
 let registryGeneration = 0

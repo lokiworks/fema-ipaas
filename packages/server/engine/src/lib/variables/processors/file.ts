@@ -1,5 +1,5 @@
 import { Readable } from 'node:stream'
-import { ApFile, ApStreamingFile, PropertyType } from '@fema-ipaas/connector-sdk'
+import { ConnectorFile, PropertyType, StreamingFile } from '@fema-ipaas/connector-sdk'
 import { isBase64, isNil, isString } from '@fema-ipaas/core-utils'
 import { ProcessorFn } from './types'
 
@@ -38,32 +38,32 @@ function parseBase64File(propertyValue: string): { extension: string, buffer: Bu
     }
 }
 
-function handleBase64File(propertyValue: string): ApFile | null {
+function handleBase64File(propertyValue: string): ConnectorFile | null {
     const parsed = parseBase64File(propertyValue)
     if (isNil(parsed)) {
         return null
     }
-    return new ApFile(
+    return new ConnectorFile(
         `unknown.${parsed.extension}`,
         parsed.buffer,
         parsed.extension,
     )
 }
 
-async function handleUrlFile(path: string): Promise<ApFile | null> {
+async function handleUrlFile(path: string): Promise<ConnectorFile | null> {
     const fileResponse = await fetch(path)
 
     const filename = getFileName(path, fileResponse.headers.get('content-disposition'), fileResponse.headers.get('content-type') ?? undefined) ?? 'unknown'
     const extension = extensionFromFilename(filename)
 
-    return new ApFile(
+    return new ConnectorFile(
         filename,
         Buffer.from(await fileResponse.arrayBuffer()),
         extension,
     )
 }
 
-async function handleStreamingFile(propertyValue: string): Promise<ApStreamingFile | null> {
+async function handleStreamingFile(propertyValue: string): Promise<StreamingFile | null> {
     const parsed = parseBase64File(propertyValue)
     if (!isNil(parsed)) {
         return {

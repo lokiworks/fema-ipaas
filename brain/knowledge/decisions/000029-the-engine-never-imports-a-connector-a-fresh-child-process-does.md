@@ -16,7 +16,7 @@ The engine is long-lived and served many operations, each `import()`ing connecto
 
 Process exit is the only reliable way to free a required module graph; a cache or a `delete require.cache` does not free native handles or the transitive graph. Everything the engine needs about a connector is data (props, auth, trigger type, `contextInfo`), so it can cross a process boundary — only *behaviour* has to run where the connector is loaded. Rejected: keeping metadata loading in-process and isolating only `run` (metadata loading is what most operations do, so the leak would remain), and a persistent connector process per version (it re-creates the leak with extra lifecycle).
 
-The child is a real bundled engine entry, not an inline `--eval` script, because file materialization must live with the engine's own file processor: `ApStreamingFile.body` is a `Readable` and cannot be structured-cloned.
+The child is a real bundled engine entry, not an inline `--eval` script, because file materialization must live with the engine's own file processor: `StreamingFile.body` is a `Readable` and cannot be structured-cloned.
 
 ## Consequences
 

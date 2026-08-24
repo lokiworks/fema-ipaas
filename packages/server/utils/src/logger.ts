@@ -12,11 +12,11 @@ function getCurrentLevel(): string {
     return currentLevel
 }
 
-function create({ bindings }: { bindings?: Record<string, unknown> } = {}): ApLogger {
+function create({ bindings }: { bindings?: Record<string, unknown> } = {}): Logger {
     return buildLogger(bindings ?? {})
 }
 
-function buildLogger(bindings: Record<string, unknown>): ApLogger {
+function buildLogger(bindings: Record<string, unknown>): Logger {
     return {
         get level() {
             return getCurrentLevel()
@@ -117,7 +117,7 @@ function buildLogger(bindings: Record<string, unknown>): ApLogger {
                 // never throw
             }
         },
-        child(childBindings: Record<string, unknown>): ApLogger {
+        child(childBindings: Record<string, unknown>): Logger {
             wideEvent.set(childBindings)
             return create({ bindings: { ...bindings, ...childBindings } })
         },
@@ -171,14 +171,14 @@ function normalizePinoArgsWithError(args: unknown[]): { message: string | undefi
     return { message: undefined, fields: {}, err: undefined }
 }
 
-export const apLogger = {
+export const loggerFactory = {
     create,
     setCurrentLevel,
 }
 
 // Interface matching pino's BaseLogger surface, structural substitute for FastifyBaseLogger.
 // Defined here so this package does not need fastify or pino as a dependency.
-export interface ApLogger {
+export interface Logger {
     level: string
     silent(): void
     info(...args: unknown[]): void
@@ -187,5 +187,5 @@ export interface ApLogger {
     fatal(...args: unknown[]): void
     debug(...args: unknown[]): void
     trace(...args: unknown[]): void
-    child(bindings: Record<string, unknown>): ApLogger
+    child(bindings: Record<string, unknown>): Logger
 }

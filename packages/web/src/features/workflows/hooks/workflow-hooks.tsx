@@ -1,11 +1,11 @@
 import {
-  ApErrorParams,
+  ApplicationErrorParams,
   isNil,
   ErrorCode,
   SeekPage,
 } from '@fema-ipaas/core-utils';
 import {
-  ApFlagId,
+  FlagId,
   WorkflowOperationType,
   WorkflowStatus,
   WorkflowVersion,
@@ -25,7 +25,7 @@ import { t } from 'i18next';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
-import { useApErrorDialogStore } from '@/components/custom/ap-error-dialog/ap-error-dialog-store';
+import { useApErrorDialogStore } from '@/components/custom/error-dialog/error-dialog-store';
 import { useSocket } from '@/components/providers/socket-provider';
 import { useTelemetry } from '@/components/providers/telemetry-provider';
 import { internalErrorToast } from '@/components/ui/sonner';
@@ -77,10 +77,10 @@ export const workflowHooks = {
     setIsPublishing,
   }: UseChangeWorkflowStatusParams) => {
     const { data: enableWorkflowOnPublish } = flagsHooks.useFlag<boolean>(
-      ApFlagId.ENABLE_WORKFLOW_ON_PUBLISH,
+      FlagId.ENABLE_WORKFLOW_ON_PUBLISH,
     );
     const { data: triggerTimeout } = flagsHooks.useFlag<number>(
-      ApFlagId.TRIGGER_TIMEOUT_SECONDS,
+      FlagId.TRIGGER_TIMEOUT_SECONDS,
     );
     const { openDialog } = useApErrorDialogStore();
     const { capture } = useTelemetry();
@@ -135,9 +135,9 @@ export const workflowHooks = {
           });
           return;
         }
-        const apError = error.response.data as ApErrorParams;
-        if (apError.code === ErrorCode.TRIGGER_UPDATE_STATUS) {
-          const params = apError.params as Record<string, string>;
+        const applicationError = error.response.data as ApplicationErrorParams;
+        if (applicationError.code === ErrorCode.TRIGGER_UPDATE_STATUS) {
+          const params = applicationError.params as Record<string, string>;
           openDialog({
             title:
               change === 'publish'
@@ -155,7 +155,7 @@ export const workflowHooks = {
               standardOutput: params.standardOutput || '',
             },
           });
-        } else if (apError.code === ErrorCode.QUOTA_EXCEEDED) {
+        } else if (applicationError.code === ErrorCode.QUOTA_EXCEEDED) {
           toast.error(t('Active workflows limit reached'), {
             description: t(
               'You have reached the maximum number of active workflows. Disable another workflow or increase the limit.',

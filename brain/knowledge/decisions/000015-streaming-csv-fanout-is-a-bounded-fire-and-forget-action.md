@@ -10,13 +10,13 @@ The `Stream CSV to Subflows` action (`@fema-ipaas/connector-subflows`) streams a
 
 ## Context
 
-The driver is fanning a large CSV out to one subflow run per batch of rows without the parent step ever holding the file. This was designed while framework read-side streaming was still deferred as YAGNI (see [000008](./000008-streaming-file-writes-go-through-the-app-one-path.md)), so a connector reading its own source stream via an `axios` GET on a URL text field was the only available path. Read-side streaming landed before this shipped ([000014](./000014-streaming-file-inputs-resolve-to-a-lazy-apstreamingfile.md)), so the input moved to a streaming `Property.File` and the connector dropped `axios` — the fan-out half is unaffected either way.
+The driver is fanning a large CSV out to one subflow run per batch of rows without the parent step ever holding the file. This was designed while framework read-side streaming was still deferred as YAGNI (see [000008](./000008-streaming-file-writes-go-through-the-app-one-path.md)), so a connector reading its own source stream via an `axios` GET on a URL text field was the only available path. Read-side streaming landed before this shipped ([000014](./000014-streaming-file-inputs-resolve-to-a-lazy-streamingfile.md)), so the input moved to a streaming `Property.File` and the connector dropped `axios` — the fan-out half is unaffected either way.
 
 ## Why
 
 - **Resumable checkpointing** (record the byte offset in `context.store`, continue past the timeout with HTTP `Range` requests across pause/resume windows) handles unbounded files but is a real project — offset bookkeeping, resumption correctness, dedupe/idempotency. Rejected as over-engineering for v1; the `batchIndex` in each payload leaves the door open, and a user can re-run from a known offset. Revisit only if the 600s ceiling measurably blocks real files.
 - **A backend BullMQ job outside the sandbox** escapes `WORKFLOW_TIMEOUT_SECONDS` and is correct for truly massive files, but it is not a connector — it needs API, queue and entity work plus a new operational surface. Wrong shape for the request.
-- **A plain (non-streaming)** `Property.File` **input** is impossible here: the engine materializes it into an `ApFile` Buffer before `run()` starts, so the whole file is in memory before any streaming code executes. `streaming: true` is what makes the file-picker shape viable — it resolves to an `ApStreamingFile` whose `body` is consumed lazily.
+- **A plain (non-streaming)** `Property.File` **input** is impossible here: the engine materializes it into an `ConnectorFile` Buffer before `run()` starts, so the whole file is in memory before any streaming code executes. `streaming: true` is what makes the file-picker shape viable — it resolves to an `StreamingFile` whose `body` is consumed lazily.
 - **Wait-for-response fan-in** (parent waits for every subflow) can't fit many batches inside one 600s step; fire-and-forget is the only model that works at fan-out width. `Call Workflow` remains the wait-for-response path for single invocations.
 
 ## Consequences

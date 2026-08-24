@@ -12,7 +12,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { INTERNAL_ERROR_MESSAGE } from '@/components/ui/sonner';
 import { workspaceCollectionUtils } from '@/features/workspaces';
-import { ApWorkspaceDisplay } from '@/features/workspaces/components/ap-workspace-display';
+import { WorkspaceDisplay } from '@/features/workspaces/components/workspace-display';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { userHooks } from '@/hooks/user-hooks';
 import { api } from '@/lib/api';
@@ -174,7 +174,7 @@ export function WorkspaceSettingsDialog({
         <div className="flex h-[700px]">
           <div className="w-[238px]">
             <nav className="bg-sidebar space-y-1 bg-muted rounded-sm rounded-r-none h-full flex flex-col rounded-l-md">
-              <ApWorkspaceDisplay
+              <WorkspaceDisplay
                 title={form.watch('workspaceName') ?? workspace.displayName}
                 icon={form.watch('icon') ?? workspace.icon}
                 containerClassName="px-3 my-4"

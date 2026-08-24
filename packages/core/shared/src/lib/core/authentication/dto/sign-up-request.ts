@@ -1,4 +1,4 @@
-import { ApId, SAFE_STRING_PATTERN } from '@fema-ipaas/core-utils'
+import { EntityId, SAFE_STRING_PATTERN } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 import { EmailType, PasswordType } from '../../user/user'
 import { MAX_CAPTCHA_TOKEN_LENGTH } from './passwordless-request'
@@ -16,7 +16,7 @@ export const SignUpRequest = z.object({
 export type SignUpRequest = z.infer<typeof SignUpRequest>
 
 export const SwitchTenantRequest = z.object({
-    tenantId: ApId,
+    tenantId: EntityId,
 })
 
 export type SwitchTenantRequest = z.infer<typeof SwitchTenantRequest>

@@ -21,11 +21,11 @@ import {
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { ApAvatar } from '@/components/custom/ap-avatar';
 import { ConfirmationDeleteDialog } from '@/components/custom/delete-dialog';
 import { FormattedDate } from '@/components/custom/formatted-date';
 import { LoadingSpinner } from '@/components/custom/spinner';
 import { TextWithTooltip } from '@/components/custom/text-with-tooltip';
+import { UserBadge } from '@/components/custom/user-badge';
 import { useEmbedding } from '@/components/providers/embed-provider';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -392,7 +392,7 @@ const RowItemOwner = ({ item }: { item: TreeItem }) => {
   if (isWorkflowItem(item)) {
     if (item.data.ownerId) {
       return (
-        <ApAvatar
+        <UserBadge
           id={item.data.ownerId}
           includeAvatar={true}
           includeName={true}

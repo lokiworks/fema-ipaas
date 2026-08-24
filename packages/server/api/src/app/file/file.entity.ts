@@ -1,8 +1,8 @@
 import { File, FileCompression, FileType, Workspace } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import {
-    ApIdSchema,
     BaseColumnSchemaPart,
+    EntityIdSchema,
 } from '../database/database-common'
 
 type FileSchema = File & {
@@ -13,8 +13,8 @@ export const FileEntity = new EntitySchema<FileSchema>({
     name: 'file',
     columns: {
         ...BaseColumnSchemaPart,
-        workspaceId: { ...ApIdSchema, nullable: true },
-        tenantId: { ...ApIdSchema, nullable: true },
+        workspaceId: { ...EntityIdSchema, nullable: true },
+        tenantId: { ...EntityIdSchema, nullable: true },
         data: {
             type: 'bytea',
             nullable: true,

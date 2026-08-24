@@ -7,7 +7,7 @@ import {
 } from '@fema-ipaas/shared';
 import { describe, expect, it } from 'vitest';
 
-import { ApEdgeType } from './types';
+import { CanvasEdgeType } from './types';
 import { workflowCanvasUtils } from './workflow-canvas-utils';
 
 const version = (
@@ -57,7 +57,7 @@ const joinEdgesOf = (joinEdges: { from: string; to: string }[]) =>
       notes: [],
       orientation: 'vertical',
     })
-    .edges.filter((edge) => edge.type === ApEdgeType.JOIN_EDGE);
+    .edges.filter((edge) => edge.type === CanvasEdgeType.JOIN_EDGE);
 
 describe('join edges on the canvas', () => {
   it('draws one edge per declared dependency', () => {

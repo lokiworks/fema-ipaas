@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import { useSearchParam } from 'react-use';
 
 import { LoadingScreen } from '@/components/custom/loading-screen';
-import { ApForm, formsQueries } from '@/features/forms';
+import { WorkflowForm, formsQueries } from '@/features/forms';
 
 import NotFoundPage from '../404-page';
 
@@ -28,7 +28,7 @@ export const FormPage = () => {
         />
       )}
 
-      {form && !isLoading && <ApForm form={form} useDraft={useDraft} />}
+      {form && !isLoading && <WorkflowForm form={form} useDraft={useDraft} />}
     </>
   );
 };

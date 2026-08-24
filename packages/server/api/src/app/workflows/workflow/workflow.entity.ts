@@ -11,8 +11,8 @@ import {
 } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import {
-    ApIdSchema,
     BaseColumnSchemaPart,
+    EntityIdSchema,
 } from '../../database/database-common'
 
 export type WorkflowSchema = Workflow & {
@@ -30,11 +30,11 @@ export const WorkflowEntity = new EntitySchema<WorkflowSchema>({
     columns: {
         ...BaseColumnSchemaPart,
         workspaceId: {
-            ...ApIdSchema,
+            ...EntityIdSchema,
             nullable: false,
         },
         folderId: {
-            ...ApIdSchema,
+            ...EntityIdSchema,
             nullable: true,
         },
         status: {
@@ -48,7 +48,7 @@ export const WorkflowEntity = new EntitySchema<WorkflowSchema>({
             nullable: false,
         },
         publishedVersionId: {
-            ...ApIdSchema,
+            ...EntityIdSchema,
             nullable: true,
             unique: true,
         },

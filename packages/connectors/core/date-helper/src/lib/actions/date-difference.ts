@@ -6,7 +6,7 @@ import {
   timeFormatDescription,
   parseDate,
   getCorrectedFormat,
-  apDayjs,
+  dayjsUtil,
 } from '../common';
 
 export const dateDifferenceAction = createAction({
@@ -80,7 +80,7 @@ export const dateDifferenceAction = createAction({
     const endDate = parseDate(inputEndDate, endDateFormat);
 
     const unitDifference = context.propsValue.unitDifference;
-    const difference = apDayjs.duration(endDate.diff(startDate));
+    const difference = dayjsUtil.duration(endDate.diff(startDate));
 
     const outputresponse: Record<string, number> = {};
     for (let i = 0; i < unitDifference.length; i++) {

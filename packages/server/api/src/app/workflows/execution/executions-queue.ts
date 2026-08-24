@@ -1,4 +1,4 @@
-import { apId, isNil, sanitizeObjectForPostgresql, spreadIfDefined } from '@fema-ipaas/core-utils'
+import { generateId, isNil, sanitizeObjectForPostgresql, spreadIfDefined } from '@fema-ipaas/core-utils'
 import { Execution, ExecutionStatus, isExecutionStateTerminal, RunTimeline } from '@fema-ipaas/shared'
 import { Queue, Worker } from 'bullmq'
 import { FastifyBaseLogger } from 'fastify'
@@ -220,7 +220,7 @@ export async function markParentRunAsFailed({
     const result = await waitpointService(log).complete({
         executionId: parentRunId,
         workspaceId: execution.workspaceId,
-        waitpointId: existingWaitpoint?.id ?? apId(),
+        waitpointId: existingWaitpoint?.id ?? generateId(),
         resumePayload: errorPayload,
     })
 

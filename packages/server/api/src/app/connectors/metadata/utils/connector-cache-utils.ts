@@ -1,4 +1,4 @@
-import { apId, isEmpty, isNil } from '@fema-ipaas/core-utils'
+import { generateId, isEmpty, isNil } from '@fema-ipaas/core-utils'
 import { ConnectorSource, ConnectorType, PackageType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import semVer from 'semver'
@@ -60,7 +60,7 @@ async function loadDevConnectors(log: FastifyBaseLogger, devConnectorsConfig: st
     const connectors = await fileConnectorsUtils(log).loadDistConnectorsMetadata(connectorsNames)
 
     return connectors.map((p): ConnectorMetadataSchema => ({
-        id: apId(),
+        id: generateId(),
         ...p,
         workspaceUsage: 0,
         connectorType: ConnectorType.OFFICIAL,

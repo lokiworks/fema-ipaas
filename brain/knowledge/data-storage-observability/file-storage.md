@@ -17,13 +17,13 @@ The central service for persisting binary files, backing the execution engine an
 - `file` entity columns: `location`, `s3Key`, `type`, `compression`, `data` (bytea), `metadata` (jsonb).
 - Files served through `PUT/GET /v1/files/:fileId`; legacy `/v1/step-files/signed` is a thin JWT-validating 302 redirect.
 
-### Streaming — write side (into AP storage)
+### Streaming — write side (into FEMA storage)
 - `ctx.files.write()` accepts a `Readable` or `Buffer` (connectors-framework ≥ 0.34.0). Streams are detected by **absent `Content-Length`** → `s3Helper.uploadStream` (~5MB parts) for S3, buffered into bytea for DB. See [decision 000008](../../decisions/000008-streaming-file-writes-go-through-the-app-one-path.md).
 - Reference consumer: the Amazon S3 **Read File** action streams `getObject().Body` straight into `files.write`, no in-sandbox buffering.
 - Inbound webhook files stream to S3 too; `@fastify/multipart` global `attachFieldsToBody` was removed, so each multipart consumer opts in explicitly ([decision 000011](../../decisions/000011-webhook-files-stream-to-s3-by-dropping-global-multipart-buffering.md)).
 
 ### Streaming — input side (out to an external service)
-- `Property.File({ streaming: true })` resolves to `ApStreamingFile = { filename, extension?, size?, body: Readable }` instead of the buffered `ApFile` (connectors-framework ≥ 0.35.0). Same `PropertyType.FILE` on the wire, so **zero frontend change**. See [decision 000014](../../decisions/000014-streaming-file-inputs-resolve-to-a-lazy-apstreamingfile.md).
+- `Property.File({ streaming: true })` resolves to `StreamingFile = { filename, extension?, size?, body: Readable }` instead of the buffered `ConnectorFile` (connectors-framework ≥ 0.35.0). Same `PropertyType.FILE` on the wire, so **zero frontend change**. See [decision 000014](../../decisions/000014-streaming-file-inputs-resolve-to-a-lazy-streamingfile.md).
 - Resolved in the engine's `fileProcessor` (`packages/server/engine/src/lib/variables/processors/file.ts`): a URL exposes the undrained `fetch` body via `Readable.fromWeb` with `size` from `Content-Length`; a base64 data URL decodes to a one-shot `Readable`. Replaces the unbounded `arrayBuffer()` on the URL path; the `catch → null` contract is kept.
 - Seven connectors consume it: Amazon S3, Azure Blob Storage, Dropbox, Google Drive, Microsoft OneDrive, Microsoft SharePoint, FTP/SFTP. Reference implementation is the Amazon S3 **Upload File** action — `lib-storage`'s `Upload` (~5MB parts, no content length needed) since [#14347](https://github.com/lokiworks/fema-ipaas/pull/14347); it previously used `putObject({ ContentLength: file.size })` and buffered whenever `size` was absent.
 - Three transport shapes, in order of preference: **chunking uploader** (S3 `Upload`, Azure `blockBlobClient.uploadStream` — no length needed, parts individually replayable); **SDK stream sink** (Google Drive `media.body`, SFTP `client.put`); **single-request HTTP PUT** (Dropbox, SharePoint, OneDrive via `httpClient` — needs `Content-Length`, so it reads `file.size` and keeps a `readableToBuffer` fallback when absent).

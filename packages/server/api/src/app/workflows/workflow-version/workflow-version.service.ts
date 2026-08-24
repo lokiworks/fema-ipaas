@@ -1,4 +1,4 @@
-import { apId, ApplicationError, Cursor, ErrorCode, isNil, sanitizeObjectForPostgresql, SeekPage, TenantId, UserId, WorkflowId, WorkflowVersionId, WorkspaceId } from '@fema-ipaas/core-utils'
+import { ApplicationError, Cursor, ErrorCode, generateId, isNil, sanitizeObjectForPostgresql, SeekPage, TenantId, UserId, WorkflowId, WorkflowVersionId, WorkspaceId } from '@fema-ipaas/core-utils'
 import { LATEST_WORKFLOW_SCHEMA_VERSION, Note, WorkflowOperationRequest, workflowOperations, WorkflowOperationType, workflowStructureUtil, WorkflowTriggerType, WorkflowVersion, WorkflowVersionState } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
@@ -262,7 +262,7 @@ export const workflowVersionService = (log: FastifyBaseLogger) => ({
         entityManager,
     }: CreateEmptyVersionParams): Promise<WorkflowVersion> {
         const workflowVersion: NewWorkflowVersion = {
-            id: apId(),
+            id: generateId(),
             displayName,
             workflowId,
             trigger: {

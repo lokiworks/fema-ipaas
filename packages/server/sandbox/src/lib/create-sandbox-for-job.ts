@@ -1,4 +1,4 @@
-import { type ApLogger } from '@fema-ipaas/server-utils'
+import { type Logger } from '@fema-ipaas/server-utils'
 import { ExecutionMode, maxSocketHttpBufferSizeBytes, NetworkMode } from '@fema-ipaas/shared'
 import { nanoid } from 'nanoid'
 import { cacheUtils } from './cache/cache-paths'
@@ -10,7 +10,7 @@ import { Sandbox, SandboxMount } from './sandbox/types'
 import { SandboxSettings } from './types'
 
 export function createSandboxForJob(params: {
-    log: ApLogger
+    log: Logger
     boxId: number
     reusable: boolean
     basePath: string
@@ -52,7 +52,7 @@ export function isIsolateMode(mode: ExecutionMode): boolean {
     return mode === ExecutionMode.SANDBOX_PROCESS || mode === ExecutionMode.SANDBOX_CODE_AND_PROCESS
 }
 
-function getProcessMaker(executionMode: string, log: ApLogger, boxId: number, paths: ReturnType<typeof cacheUtils>) {
+function getProcessMaker(executionMode: string, log: Logger, boxId: number, paths: ReturnType<typeof cacheUtils>) {
     switch (executionMode) {
         case ExecutionMode.SANDBOX_PROCESS:
         case ExecutionMode.SANDBOX_CODE_AND_PROCESS:

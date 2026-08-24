@@ -2,7 +2,7 @@ import { Readable } from 'stream'
 import { DeleteObjectsCommand, GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3, S3ClientConfig } from '@aws-sdk/client-s3'
 import { Upload } from '@aws-sdk/lib-storage'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
-import { apId, isNil, tryCatch, WorkspaceId } from '@fema-ipaas/core-utils'
+import { generateId, isNil, tryCatch, WorkspaceId } from '@fema-ipaas/core-utils'
 import { FileType } from '@fema-ipaas/shared'
 import { NodeHttpHandler } from '@smithy/node-http-handler'
 import contentDisposition from 'content-disposition'
@@ -163,7 +163,7 @@ export const s3Helper = (log: FastifyBaseLogger) => ({
     async validateS3Configuration(): Promise<void> {
         const client = getS3Client()
         const bucketName = getS3BucketName()
-        const testKey = `fema-${apId()}-validation-test-key`
+        const testKey = `fema-${generateId()}-validation-test-key`
 
         await client.putObject({
             Bucket: bucketName,

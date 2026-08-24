@@ -1,5 +1,5 @@
 import { isNil } from '@fema-ipaas/core-utils';
-import { ApFlagId } from '@fema-ipaas/shared';
+import { FlagId } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { useEffect, useRef, useState } from 'react';
 
@@ -38,7 +38,7 @@ function loadScript(): Promise<void> {
 
 export function useTurnstileSiteKey(): string | null {
   const { data: siteKey } = flagsHooks.useFlag<string>(
-    ApFlagId.TURNSTILE_SITE_KEY,
+    FlagId.TURNSTILE_SITE_KEY,
   );
   return siteKey ?? null;
 }

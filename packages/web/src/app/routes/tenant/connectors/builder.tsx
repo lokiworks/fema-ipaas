@@ -35,7 +35,6 @@ const EMPTY: ConnectorBlueprintDefinition = {
   defaultHeaders: {},
   auth: { type: BlueprintAuthType.NONE, description: '' },
   actions: [],
-  networkAgentId: null,
 };
 
 export default function ConnectorBuilderPage() {

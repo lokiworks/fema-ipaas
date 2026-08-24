@@ -1,8 +1,8 @@
 import { File, TriggerEvent, Workflow, Workspace } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import {
-    ApIdSchema,
     BaseColumnSchemaPart,
+    EntityIdSchema,
 } from '../../database/database-common'
 
 type TriggerEventSchema = {
@@ -15,8 +15,8 @@ export const TriggerEventEntity = new EntitySchema<TriggerEventSchema>({
     name: 'trigger_event',
     columns: {
         ...BaseColumnSchemaPart,
-        workflowId: ApIdSchema,
-        workspaceId: ApIdSchema,
+        workflowId: EntityIdSchema,
+        workspaceId: EntityIdSchema,
         sourceName: {
             type: String,
         },

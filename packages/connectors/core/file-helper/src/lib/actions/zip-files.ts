@@ -1,7 +1,7 @@
 import {
   Property,
   createAction,
-  ApFile,
+  ConnectorFile,
   ConnectorAuth,
 } from '@fema-ipaas/connector-sdk';
 import {
@@ -12,7 +12,7 @@ import {
 } from '@zip.js/zip.js';
 
 interface FileObject {
-  file: ApFile;
+  file: ConnectorFile;
   filePath: string;
 }
 

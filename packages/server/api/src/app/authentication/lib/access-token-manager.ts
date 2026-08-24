@@ -1,4 +1,4 @@
-import { apId, ApplicationError, ErrorCode, TenantId, WorkspaceId } from '@fema-ipaas/core-utils'
+import { ApplicationError, ErrorCode, generateId, TenantId, WorkspaceId } from '@fema-ipaas/core-utils'
 import { ALL_PRINCIPAL_TYPES, EnginePrincipal, Principal, PrincipalType, UserStatus, WorkerPrincipal } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
@@ -20,7 +20,7 @@ export const accessTokenManager = (log: FastifyBaseLogger) => ({
 
     async generateEngineToken({ jobId, workspaceId, tenantId }: GenerateEngineTokenParams): Promise<string> {
         const enginePrincipal: EnginePrincipal = {
-            id: jobId ?? apId(),
+            id: jobId ?? generateId(),
             type: PrincipalType.ENGINE,
             workspaceId,
             tenant: {
@@ -40,7 +40,7 @@ export const accessTokenManager = (log: FastifyBaseLogger) => ({
 
     async generateWorkerToken(): Promise<string> {
         const workerPrincipal: WorkerPrincipal = {
-            id: apId(),
+            id: generateId(),
             type: PrincipalType.WORKER,
         }
 

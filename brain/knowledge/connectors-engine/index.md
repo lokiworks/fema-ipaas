@@ -54,7 +54,6 @@ A stored blueprint (`connector_blueprint`) describing an HTTP API — base URL, 
   - Like OpenAPI import, this emits **source files, not an installed connector**. Generated code goes through `fema connectors validate` and `publish` like anything else.
   - Each input carries a `BlueprintFieldType` chosen in the UI, which selects the generated property kind. A DROPDOWN field renders its configured options as a StaticDropdown.
   - Auth maps to one SDK auth per blueprint type. `CUSTOM_AUTH` generates an empty `props: {}` — the fields have to be filled in by hand.
-  - `networkAgentId` is on the blueprint schema but nothing reads it, matching the network agent's own state ([ADR 0014](../../../docs/adr/0014-network-agent-model-lands-before-the-tunnel.md)).
 
 ### OpenAPI Import
 
@@ -113,7 +112,7 @@ Named, reusable connector/action/trigger visibility config a platform admin assi
 
 ### Formulas
 
-User-facing data transforms (81+ functions) inside any builder text input via a `/` slash editor; saved inline as `ap-formula-v1::{<expr>}::ap-formula-v1` so they round-trip through workflow JSON.
+User-facing data transforms (81+ functions) inside any builder text input via a `/` slash editor; saved inline as `fema-formula-v1::{<expr>}::fema-formula-v1` so they round-trip through workflow JSON.
 
 - **Where**: shared lib `packages/core/shared/src/lib/formula/` (`FEMA_FUNCTIONS` registry is the single source of truth; `formulaEvaluator.evaluate`, type checker). Editor is the TipTap `text-input-with-mentions`. Runtime hooks in the engine's `props-resolver.ts` pre-pass.
 - **Gotchas**: no HTTP endpoints, no DB tables, no worker job — evaluation is synchronous in the engine. Runs on **every** edition, unconditionally (even if the editor flag is off, saved formulas still evaluate). Uses `expr-eval`; preprocess normalizes `;`→`,`, `and/or/not`, and rewrites `if()` to lazy ternary. Changing a function = bump `@fema-ipaas/shared` minor; never hard-remove a function (mark `deprecated`).
@@ -164,7 +163,7 @@ Node processes that poll the app over Socket.IO and execute workflows. The worke
 A workflow step type (`@fema-ipaas/connector-agent`) running a ReAct-style LLM loop (up to `maxSteps`) that can call tools before producing a final answer. **No backend entity** — config lives in the workflow version's step settings.
 
 - **Tools** (`AgentTool` union): CONNECTOR action, WORKFLOW (child run), MCP server, KNOWLEDGE_BASE (semantic search on 768-dim embeddings). Config: `agentTools`, `structuredOutput`, `prompt`, `maxSteps`, `aiProviderModel`, optional web search.
-- **Gotchas**: external MCP tools validated server-side via `POST /v1/projects/:projectId/agent-tools/mcp/validate` (initialize→initialized→tools/list handshake) through SSRF-filtered `apAxios`; errors collapse to one generic message. Lives under `agents/` (agent connecting *out*), distinct from `mcp/` (exposing AP *as* an MCP server). `AgentTimeline` renders step blocks in the builder.
+- **Gotchas**: external MCP tools validated server-side via `POST /v1/projects/:projectId/agent-tools/mcp/validate` (initialize→initialized→tools/list handshake) through SSRF-filtered `apAxios`; errors collapse to one generic message. Lives under `agents/` (agent connecting *out*), distinct from `mcp/` (exposing FEMA *as* an MCP server). `AgentTimeline` renders step blocks in the builder.
 
 ## Pages
 

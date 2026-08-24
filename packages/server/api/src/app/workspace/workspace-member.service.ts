@@ -1,4 +1,4 @@
-import { apId, ApplicationError, ErrorCode, isNil, SeekPage } from '@fema-ipaas/core-utils'
+import { ApplicationError, ErrorCode, generateId, isNil, SeekPage } from '@fema-ipaas/core-utils'
 import { DefaultWorkspaceRole, Principal, PrincipalType, WorkspaceMember, WorkspaceMemberWithUser } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { buildPaginator } from '../helper/pagination/build-paginator'
@@ -46,7 +46,7 @@ export const workspaceMemberService = (log: FastifyBaseLogger) => ({
         if (!isNil(existing)) {
             return workspaceMemberRepo().save({ ...existing, role })
         }
-        return workspaceMemberRepo().save({ id: apId(), workspaceId, userId, role })
+        return workspaceMemberRepo().save({ id: generateId(), workspaceId, userId, role })
     },
 
     async delete({ id, workspaceId }: DeleteParams): Promise<WorkspaceMember> {

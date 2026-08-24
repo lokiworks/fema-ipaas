@@ -1,6 +1,6 @@
 import { PauseType, Workspace } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
-import { ApIdSchema, BaseColumnSchemaPart } from '../../../database/database-common'
+import { BaseColumnSchemaPart, EntityIdSchema } from '../../../database/database-common'
 import { Waitpoint, WaitpointStatus, WaitpointVersionEnum } from './waitpoint-types'
 
 type WaitpointSchema = Waitpoint & {
@@ -12,11 +12,11 @@ export const WaitpointEntity = new EntitySchema<WaitpointSchema>({
     columns: {
         ...BaseColumnSchemaPart,
         executionId: {
-            ...ApIdSchema,
+            ...EntityIdSchema,
             nullable: false,
         },
         workspaceId: {
-            ...ApIdSchema,
+            ...EntityIdSchema,
             nullable: false,
         },
         type: {

@@ -4,7 +4,7 @@ import { usePresence } from '@/hooks/use-presence';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 
-import { ApAvatar } from './ap-avatar';
+import { UserBadge } from './user-badge';
 
 const MAX_VISIBLE_AVATARS = 5;
 const AVATAR_SIZE = 28;
@@ -45,7 +45,7 @@ export function ActiveUsersWidget({ resourceId }: ActiveUsersWidgetProps) {
           className="rounded-full border-2"
           style={{ borderColor: getBorderColor(user.userId) }}
         >
-          <ApAvatar id={user.userId} size="small" />
+          <UserBadge id={user.userId} size="small" />
         </div>
       ))}
       {overflowCount > 0 && (

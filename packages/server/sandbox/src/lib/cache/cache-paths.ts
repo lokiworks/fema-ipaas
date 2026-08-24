@@ -1,7 +1,7 @@
 import { readdir, rm, stat } from 'fs/promises'
 import path from 'path'
 import { tryCatch } from '@fema-ipaas/core-utils'
-import { type ApLogger } from '@fema-ipaas/server-utils'
+import { type Logger } from '@fema-ipaas/server-utils'
 
 export const cacheUtils = (basePath: string) => ({
     getGlobalCachePathLatestVersion(): string {
@@ -40,7 +40,7 @@ export const cacheUtils = (basePath: string) => ({
     // both versions at once, so a previous version's directory is only abandoned once the current
     // one has been in use here long enough for the rollout to be over. Holding the grace period
     // costs disk; breaking it deletes the tree a still-running old worker executes from.
-    async deleteStaleCache(log: ApLogger): Promise<void> {
+    async deleteStaleCache(log: Logger): Promise<void> {
         try {
             const cacheDir = path.resolve(basePath)
             const entries = await readdir(cacheDir, { withFileTypes: true })

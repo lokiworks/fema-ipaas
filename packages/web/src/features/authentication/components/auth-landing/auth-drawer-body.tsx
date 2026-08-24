@@ -1,6 +1,6 @@
 import { ErrorCode, isNil } from '@fema-ipaas/core-utils';
 import {
-  ApFlagId,
+  FlagId,
   CreateOtpRequestBody,
   MAX_FULL_NAME_LENGTH,
   OtpType,
@@ -197,10 +197,10 @@ function AuthStep({
   onCaptchaSpent,
 }: AuthStepProps) {
   const { data: emailAuthEnabledFlag } = flagsHooks.useFlag<boolean>(
-    ApFlagId.EMAIL_AUTH_ENABLED,
+    FlagId.EMAIL_AUTH_ENABLED,
   );
   const { data: userCreated } = flagsHooks.useFlag<boolean>(
-    ApFlagId.USER_CREATED,
+    FlagId.USER_CREATED,
   );
   // Absent, not false: the flag has no row until the first account exists, so a
   // fresh install omits it from /v1/flags entirely. Flags are loaded through a
@@ -368,10 +368,10 @@ function AuthStep({
 
 function LegalNote() {
   const { data: termsUrl } = flagsHooks.useFlag<string>(
-    ApFlagId.TERMS_OF_SERVICE_URL,
+    FlagId.TERMS_OF_SERVICE_URL,
   );
   const { data: privacyUrl } = flagsHooks.useFlag<string>(
-    ApFlagId.PRIVACY_POLICY_URL,
+    FlagId.PRIVACY_POLICY_URL,
   );
 
   if (isNil(termsUrl) && isNil(privacyUrl)) {
@@ -896,10 +896,10 @@ function ModeSwitch({
 
 function usePasswordlessAvailable(): boolean {
   const { data: emailAuthEnabled } = flagsHooks.useFlag<boolean>(
-    ApFlagId.EMAIL_AUTH_ENABLED,
+    FlagId.EMAIL_AUTH_ENABLED,
   );
   const { data: smtpConfigured } = flagsHooks.useFlag<boolean>(
-    ApFlagId.SMTP_CONFIGURED,
+    FlagId.SMTP_CONFIGURED,
   );
   return (emailAuthEnabled ?? true) && !!smtpConfigured;
 }

@@ -1,8 +1,8 @@
 import swagger from '@fastify/swagger'
 import { ConnectorMetadata } from '@fema-ipaas/connector-sdk'
 import { isNil, spreadIfDefined } from '@fema-ipaas/core-utils'
-import { apVersionUtil, onCallService, UNKNOWN_VERSION, wideEvent } from '@fema-ipaas/server-utils'
-import { ApEnvironment, ApplicationEventName, ConnectionDeletedEvent, ConnectionUpsertedEvent, ConnectionWithoutSensitiveData, Execution, ExecutionFinishedEvent, ExecutionRetriedEvent, ExecutionStartedEvent, Folder, FolderCreatedEvent, FolderDeletedEvent, FolderUpdatedEvent, Template, UserEmailVerifiedEvent, UserInvitation, UserPasswordResetEvent, UserSignedInEvent, UserWithMetaInformation, Workflow, WorkflowActivatedEvent, WorkflowCreatedEvent, WorkflowDeactivatedEvent, WorkflowDeletedEvent, WorkflowPublishedEvent, WorkflowUpdatedEvent, WorkspaceWithLimits } from '@fema-ipaas/shared'
+import { onCallService, UNKNOWN_VERSION, versionUtil, wideEvent } from '@fema-ipaas/server-utils'
+import { ApplicationEventName, ConnectionDeletedEvent, ConnectionUpsertedEvent, ConnectionWithoutSensitiveData, Execution, ExecutionFinishedEvent, ExecutionRetriedEvent, ExecutionStartedEvent, Folder, FolderCreatedEvent, FolderDeletedEvent, FolderUpdatedEvent, RuntimeEnvironment, Template, UserEmailVerifiedEvent, UserInvitation, UserPasswordResetEvent, UserSignedInEvent, UserWithMetaInformation, Workflow, WorkflowActivatedEvent, WorkflowCreatedEvent, WorkflowDeactivatedEvent, WorkflowDeletedEvent, WorkflowPublishedEvent, WorkflowUpdatedEvent, WorkspaceWithLimits } from '@fema-ipaas/shared'
 import { createAdapter } from '@socket.io/redis-adapter'
 import { FastifyBaseLogger, FastifyInstance, FastifyRequest, HTTPMethods } from 'fastify'
 import { jsonSchemaTransform, jsonSchemaTransformObject } from 'fastify-type-provider-zod'
@@ -43,7 +43,6 @@ import { systemJobsSchedule } from './helper/system-jobs/system-job'
 import { systemSnapshot } from './helper/system-snapshot'
 import { validateEnvPropsOnStartup } from './helper/system-validator'
 import { shutdownTelemetry } from './helper/telemetry.utils'
-import { networkAgentModule } from './network-agent/network-agent.module'
 import { storeEntryModule } from './store-entry/store-entry.module'
 import { templateModule } from './template/template.module'
 import { tenantModule } from './tenant/tenant.module'
@@ -160,7 +159,6 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     await app.register(componentModule)
     await app.register(auditEventModule)
     await app.register(encryptionModule)
-    await app.register(networkAgentModule)
     await app.register(openApiImportModule)
     await app.register(connectorBlueprintModule)
     registerAuditEventListener(app.log)
@@ -259,7 +257,7 @@ export async function appPostBoot(app: FastifyInstance): Promise<void> {
     systemSnapshot.start({ log: app.log })
     await migrateQueuesAndRunConsumers(app)
     app.log.info('Queues migrated and consumers run')
-    if (environment === ApEnvironment.DEVELOPMENT) {
+    if (environment === RuntimeEnvironment.DEVELOPMENT) {
         app.log.warn(
             `[WARNING]: The application is running in ${environment} mode.`,
         )
@@ -276,7 +274,7 @@ export async function appPostBoot(app: FastifyInstance): Promise<void> {
 // NOT self-heal on deploy completion, so page immediately and log at error (see the "Release
 // Version Detection" section in packages/server/AGENTS.md).
 function assertReleaseReadable(log: FastifyBaseLogger): void {
-    const version = apVersionUtil.getCurrentRelease()
+    const version = versionUtil.getCurrentRelease()
     if (version !== UNKNOWN_VERSION) {
         log.info({ release: { version } }, '[appPostBoot] Release version detected from package.json')
         return

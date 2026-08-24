@@ -1,12 +1,12 @@
 import { BaseEdge, EdgeProps, getBezierPath } from '@xyflow/react';
 import { t } from 'i18next';
 
-import { ApJoinEdge } from '../utils/types';
+import { JoinEdge } from '../utils/types';
 
 // Join edges cut across the tree's own lines, so they are dashed and labelled rather than drawn
 // like a normal next-step edge — a reader should be able to tell at a glance that this is a
 // dependency, not the flow of execution.
-export const ApJoinCanvasEdge = ({
+export const JoinCanvasEdge = ({
   sourceX,
   sourceY,
   targetX,
@@ -14,7 +14,7 @@ export const ApJoinCanvasEdge = ({
   sourcePosition,
   targetPosition,
   markerEnd,
-}: EdgeProps & ApJoinEdge) => {
+}: EdgeProps & JoinEdge) => {
   const [path, labelX, labelY] = getBezierPath({
     sourceX,
     sourceY,

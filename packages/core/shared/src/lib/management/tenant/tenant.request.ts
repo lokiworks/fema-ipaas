@@ -1,4 +1,4 @@
-import { ApId, ApMultipartFile, Nullable, OptionalArrayFromQuery, OptionalBooleanFromQuery, SAFE_STRING_PATTERN, tryCatchSync } from '@fema-ipaas/core-utils'
+import { EntityId, Nullable, OptionalArrayFromQuery, OptionalBooleanFromQuery, SAFE_STRING_PATTERN, tryCatchSync, UploadedFile } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 import { FederatedAuthnProviderConfig } from '../../core/federated-authn'
 import { ConnectorSelectorConfig, TenantThemeColors } from './tenant.model'
@@ -52,9 +52,9 @@ export const UpdateTenantRequestBody = z.object({
     name: z.string().regex(new RegExp(SAFE_STRING_PATTERN)).optional(),
     primaryColor: z.string().optional(),
     themeColors: NullableThemeColorsFromMultipart,
-    logoIcon: z.optional(ApMultipartFile),
-    fullLogo: z.optional(ApMultipartFile),
-    favIcon: z.optional(ApMultipartFile),
+    logoIcon: z.optional(UploadedFile),
+    fullLogo: z.optional(UploadedFile),
+    favIcon: z.optional(UploadedFile),
     federatedAuthProviders: FederatedAuthnProviderConfig.optional(),
     cloudAuthEnabled: OptionalBooleanFromQuery,
     googleAuthEnabled: OptionalBooleanFromQuery,
@@ -70,7 +70,7 @@ export const UpdateTenantRequestBody = z.object({
 export type UpdateTenantRequestBody = z.infer<typeof UpdateTenantRequestBody>
 
 export const AdminRetryRunsRequestBody = z.object({
-    runIds: z.array(ApId).optional(),
+    runIds: z.array(EntityId).optional(),
     createdAfter: z.string(),
     createdBefore: z.string(),
 })

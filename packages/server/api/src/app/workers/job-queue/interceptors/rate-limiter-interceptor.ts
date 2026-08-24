@@ -1,5 +1,5 @@
 import { isNil, tryCatch } from '@fema-ipaas/core-utils'
-import { apDayjsDuration } from '@fema-ipaas/server-utils'
+import { dayjsDuration } from '@fema-ipaas/server-utils'
 import { ExecuteWorkflowJobData, JOB_PRIORITY, JobData, RATE_LIMIT_PRIORITY, RunEnvironment, WorkerJobType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { getConcurrencyPoolSetKey } from '../../../database/redis/keys'
@@ -44,7 +44,7 @@ async function getMaxConcurrentJobs({ workspaceId, log }: { workspaceId: string,
 }
 
 async function tryAcquireSlot({ jobId, jobData, log }: { jobId: string, jobData: ExecuteWorkflowJobData, log: FastifyBaseLogger }): Promise<boolean> {
-    const workflowTimeoutInMilliseconds = apDayjsDuration(system.getNumberOrThrow(AppSystemProp.WORKFLOW_TIMEOUT_SECONDS), 'seconds').add(1, 'minute').asMilliseconds()
+    const workflowTimeoutInMilliseconds = dayjsDuration(system.getNumberOrThrow(AppSystemProp.WORKFLOW_TIMEOUT_SECONDS), 'seconds').add(1, 'minute').asMilliseconds()
     const maxConcurrentJobs = await getMaxConcurrentJobs({ workspaceId: jobData.workspaceId, log })
     const setKey = getConcurrencyPoolSetKey(jobData.workspaceId)
     const currentTime = Date.now()

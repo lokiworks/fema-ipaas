@@ -5,7 +5,7 @@ import {
   timeFormatDescription,
   timeZoneOptions,
   getCorrectedFormat,
-  apDayjs
+  dayjsUtil
 } from '../common';
 import { getCurrentDateActionOutputSchema } from '../output-schemas';
 
@@ -47,6 +47,6 @@ export const getCurrentDate = createAction({
   async run(context) {
     const timeFormat = getCorrectedFormat(context.propsValue.timeFormat);
     const timeZone = context.propsValue.timeZone;
-    return { result: apDayjs().tz(timeZone).format(timeFormat) };
+    return { result: dayjsUtil().tz(timeZone).format(timeFormat) };
   },
 });

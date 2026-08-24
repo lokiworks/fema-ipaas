@@ -5,7 +5,7 @@ import { randomUUID } from 'node:crypto'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { PackageType, ConnectorType } from '@fema-ipaas/shared'
 import type { OfficialConnectorPackage, PrivateConnectorPackage } from '@fema-ipaas/shared'
-import type { ApLogger } from '@fema-ipaas/server-utils'
+import type { Logger } from '@fema-ipaas/server-utils'
 
 // Module-level variable updated per test so the vi.mock factory can reference it
 let testWorkspace = ''
@@ -70,7 +70,7 @@ const fakeLog = {
     fatal: vi.fn(),
     trace: vi.fn(),
     child: vi.fn().mockReturnThis(),
-} as unknown as ApLogger
+} as unknown as Logger
 
 // Every connector is installed from its bundle link; the dependency value is the engine bundle endpoint.
 const bundleSource = { publicApiUrl: 'http://localhost:3000/api/', engineToken: 'test-token' }

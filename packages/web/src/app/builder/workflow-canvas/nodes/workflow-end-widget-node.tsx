@@ -2,10 +2,10 @@ import { Handle, Position } from '@xyflow/react';
 
 import { useBuilderStateContext } from '../../builder-hooks';
 import { workflowCanvasConsts } from '../utils/consts';
-import { ApGraphEndNode } from '../utils/types';
+import { GraphEndNode } from '../utils/types';
 import WorkflowEndWidget from '../widgets/workflow-end-widget';
 
-const ApGraphEndWidgetNode = ({ data }: Omit<ApGraphEndNode, 'position'>) => {
+const GraphEndWidgetNode = ({ data }: Omit<GraphEndNode, 'position'>) => {
   const canvasOrientation = useBuilderStateContext(
     (state) => state.canvasOrientation,
   );
@@ -40,5 +40,5 @@ const ApGraphEndWidgetNode = ({ data }: Omit<ApGraphEndNode, 'position'>) => {
   );
 };
 
-ApGraphEndWidgetNode.displayName = 'ApGraphEndWidgetNode';
-export default ApGraphEndWidgetNode;
+GraphEndWidgetNode.displayName = 'GraphEndWidgetNode';
+export default GraphEndWidgetNode;

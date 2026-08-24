@@ -1,12 +1,12 @@
 import path from 'node:path'
 import { tryCatch } from '@fema-ipaas/core-utils'
-import { apDayjsDuration, fileSystemUtils } from '@fema-ipaas/server-utils'
-import { type ApLogger } from '@fema-ipaas/server-utils'
+import { dayjsDuration, fileSystemUtils } from '@fema-ipaas/server-utils'
+import { type Logger } from '@fema-ipaas/server-utils'
 import { type BuildFailure, build as esbuildBuild, type Message } from 'esbuild'
 import { stepFolderResolvePlugin } from './esbuild-build-options'
 import { CommandOutput, spawnWithKill } from './exec'
 
-export const bunRunner = (log: ApLogger) => ({
+export const bunRunner = (log: Logger) => ({
     async install({ path, filtersPath }: InstallParams): Promise<CommandOutput> {
         const filterArgs: string[] = filtersPath
             .map(sanitizeFilterPath)
@@ -25,7 +25,7 @@ export const bunRunner = (log: ApLogger) => ({
                 cwd: path,
             },
             printOutput: false,
-            timeoutMs: apDayjsDuration(10, 'minutes').asMilliseconds(),
+            timeoutMs: dayjsDuration(10, 'minutes').asMilliseconds(),
         }))
         if (error) {
             log.error({ error }, '[bunRunner#install] Failed to install dependencies')

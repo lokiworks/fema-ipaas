@@ -72,10 +72,10 @@ const routesWithErrorBoundary = routes.map((route) => ({
 export const memoryRouter = createMemoryRouter(routesWithErrorBoundary);
 const browserRouter = createBrowserRouter(routesWithErrorBoundary);
 
-const ApRouter = () => {
+const AppRouter = () => {
   const { embedState } = useEmbedding();
   const router = embedState.isEmbedded ? memoryRouter : browserRouter;
   return <RouterProvider router={router}></RouterProvider>;
 };
 
-export { ApRouter };
+export { AppRouter };

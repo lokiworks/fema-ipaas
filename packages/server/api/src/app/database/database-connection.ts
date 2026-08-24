@@ -13,7 +13,6 @@ import { FileEntity } from '../file/file.entity'
 import { FlagEntity } from '../flags/flag.entity'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
-import { NetworkAgentEntity } from '../network-agent/network-agent.entity'
 import { StoreEntryEntity } from '../store-entry/store-entry-entity'
 import { TemplateEntity } from '../template/template.entity'
 import { TenantEntity } from '../tenant/tenant.entity'
@@ -46,7 +45,6 @@ function getEntities(): EntitySchema<unknown>[] {
         WorkflowVersionEntity,
         ExecutionEntity,
         AuditEventEntity,
-        NetworkAgentEntity,
         ConnectorBlueprintEntity,
         WorkspaceEntity,
         WorkspaceMemberEntity,

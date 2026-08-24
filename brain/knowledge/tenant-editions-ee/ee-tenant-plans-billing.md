@@ -4,6 +4,11 @@ icon: 💳
 
 # EE Platform (Plans & Billing)
 
+> **历史资料 —— 描述的是上游，不是本仓库。** 本页写的 Edition 体系、计费与席位、
+> license key、Cloud 形态在本仓库**都不存在**（Edition 已彻底删除，见
+> [decisions/000030](../decisions/000030-this-fork-has-no-editions-the-ee-pages-are-history.md)）。
+> 读它了解上游为什么那样设计可以，照着写代码不行——以 `docs/adr/` 和代码为准。
+
 Billing and entitlements are powered by [Autumn](https://useautumn.com). Each platform is an Autumn customer holding a **customer-scoped API key**; every instance (Cloud + self-hosted EE) calls Autumn directly for entitlement reads, credit `track`, and cached customer state, while anything needing the Autumn **master key** (enroll, checkout, cancel, seat quantity, auto-top-up, portal) is proxied through the FEMA Integration Platform console (`AUTUMN_CONSOLE_URL`). The `PlatformPlan` entity is a **projection cache** of the customer's Autumn plan — request-path reads never hit Autumn inline. CE is unbilled (`OPEN_SOURCE_PLAN`, no-op provider).
 
 ### Entities & services

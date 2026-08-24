@@ -5,7 +5,7 @@ status: accepted
 # Connector tarballs are never mirrored into our own S3
 
 ## Decision
-`connectorBundle.resolve()` hands out exactly two kinds of link for a registry connector: the CDN's self-contained bundle when it serves one, otherwise the npm tarball. It does not consult, populate, or fall back to an FEMA Integration Platform-owned S3 copy, and there is no lazy caching job behind it — the `BUNDLE_CONNECTOR` system job was deleted rather than fixed. `ARCHIVE` (custom) connectors are unaffected; they are platform-scoped rows in our own file store and are still streamed from it.
+`connectorBundle.resolve()` hands out exactly two kinds of link for a registry connector: the CDN's self-contained bundle when it serves one, otherwise the npm tarball. It does not consult, populate, or fall back to a FEMA Integration Platform-owned S3 copy, and there is no lazy caching job behind it — the `BUNDLE_CONNECTOR` system job was deleted rather than fixed. `ARCHIVE` (custom) connectors are unaffected; they are platform-scoped rows in our own file store and are still streamed from it.
 
 ## Context
 Until Aug 2026 `resolve()` checked an S3 mirror first (`connectors/v2/`), and on a miss enqueued `BUNDLE_CONNECTOR` to populate it for next time. That job wrote **whichever source was preferred at cache time** — the CDN artifact when `FEMA_USE_CDN_FOR_BUNDLES` was on, the npm tarball otherwise.

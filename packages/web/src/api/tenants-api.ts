@@ -24,12 +24,6 @@ export const tenantApi = {
     return api.get<TenantWithoutSensitiveData>(`/v1/tenants/${tenantId}`);
   },
 
-  activateLicenseKey(licenseKey: string) {
-    return api.post<void>(`/v1/tenant-billing/activate`, {
-      licenseKey,
-    });
-  },
-
   update(req: UpdateTenantRequestBody, tenantId: string) {
     return api.post<TenantWithoutSensitiveData>(`/v1/tenants/${tenantId}`, req);
   },

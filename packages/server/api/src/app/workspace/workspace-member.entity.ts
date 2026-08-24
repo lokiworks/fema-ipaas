@@ -1,6 +1,6 @@
 import { User, Workspace, WorkspaceMember } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
-import { ApIdSchema, BaseColumnSchemaPart } from '../database/database-common'
+import { BaseColumnSchemaPart, EntityIdSchema } from '../database/database-common'
 
 type WorkspaceMemberSchema = WorkspaceMember & {
     workspace?: Workspace
@@ -11,8 +11,8 @@ export const WorkspaceMemberEntity = new EntitySchema<WorkspaceMemberSchema>({
     name: 'workspace_member',
     columns: {
         ...BaseColumnSchemaPart,
-        workspaceId: ApIdSchema,
-        userId: ApIdSchema,
+        workspaceId: EntityIdSchema,
+        userId: EntityIdSchema,
         role: {
             type: String,
             nullable: false,

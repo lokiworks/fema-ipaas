@@ -42,9 +42,9 @@ vi.mock('../src/wide-event', () => ({
     },
 }))
 
-import { apLogger } from '../src/ap-logger'
+import { loggerFactory } from '../src/logger'
 
-describe('apLogger', () => {
+describe('loggerFactory', () => {
     beforeEach(() => {
         vi.clearAllMocks()
         ambientState.active = false
@@ -56,14 +56,14 @@ describe('apLogger', () => {
 
     describe('without ambient wide event', () => {
         it('info(string) calls log.info with msg field', () => {
-            const logger = apLogger.create({})
+            const logger = loggerFactory.create({})
             logger.info('hello world')
             expect(spies.logInfoSpy).toHaveBeenCalledOnce()
             expect(spies.logInfoSpy.mock.calls[0][0]).toMatchObject({ msg: 'hello world' })
         })
 
         it('info(obj, string) uses string as msg and spreads obj', () => {
-            const logger = apLogger.create({})
+            const logger = loggerFactory.create({})
             logger.info({ userId: '42' }, 'user found')
             expect(spies.logInfoSpy).toHaveBeenCalledOnce()
             const arg = spies.logInfoSpy.mock.calls[0][0]
@@ -71,7 +71,7 @@ describe('apLogger', () => {
         })
 
         it('info(obj) without second arg has no msg', () => {
-            const logger = apLogger.create({})
+            const logger = loggerFactory.create({})
             logger.info({ event: 'login' })
             expect(spies.logInfoSpy).toHaveBeenCalledOnce()
             const arg = spies.logInfoSpy.mock.calls[0][0]
@@ -80,7 +80,7 @@ describe('apLogger', () => {
         })
 
         it('error(Error) logs to log.error with error details', () => {
-            const logger = apLogger.create({})
+            const logger = loggerFactory.create({})
             const err = new Error('boom')
             logger.error(err)
             expect(spies.logErrorSpy).toHaveBeenCalledOnce()
@@ -89,7 +89,7 @@ describe('apLogger', () => {
         })
 
         it('error(obj with .err Error) extracts the error under the error key', () => {
-            const logger = apLogger.create({})
+            const logger = loggerFactory.create({})
             const err = new Error('nested')
             logger.error({ err, requestId: 'r1' }, 'context msg')
             expect(spies.logErrorSpy).toHaveBeenCalledOnce()
@@ -100,31 +100,31 @@ describe('apLogger', () => {
 
         it('debug() calls log.debug, not wide event', () => {
             ambientState.active = true
-            const logger = apLogger.create({})
+            const logger = loggerFactory.create({})
             logger.debug('debug msg')
             expect(spies.logDebugSpy).toHaveBeenCalledOnce()
             expect(spies.wideInfoSpy).not.toHaveBeenCalled()
         })
 
         it('fatal() maps to error path', () => {
-            const logger = apLogger.create({})
+            const logger = loggerFactory.create({})
             logger.fatal('fatal msg')
             expect(spies.logErrorSpy).toHaveBeenCalledOnce()
         })
 
         it('trace() calls log.debug', () => {
-            const logger = apLogger.create({})
+            const logger = loggerFactory.create({})
             logger.trace('trace msg')
             expect(spies.logDebugSpy).toHaveBeenCalledOnce()
         })
 
         it('silent() does not throw', () => {
-            const logger = apLogger.create({})
+            const logger = loggerFactory.create({})
             expect(() => logger.silent()).not.toThrow()
         })
 
         it('does not throw on unexpected input', () => {
-            const logger = apLogger.create({})
+            const logger = loggerFactory.create({})
             expect(() => logger.info(null as unknown as string)).not.toThrow()
         })
     })
@@ -135,7 +135,7 @@ describe('apLogger', () => {
         })
 
         it('info(string) calls wide.info with message', () => {
-            const logger = apLogger.create({})
+            const logger = loggerFactory.create({})
             logger.info('ambient info')
             expect(spies.wideInfoSpy).toHaveBeenCalledOnce()
             expect(spies.wideInfoSpy.mock.calls[0][0]).toBe('ambient info')
@@ -143,14 +143,14 @@ describe('apLogger', () => {
         })
 
         it('warn(string) calls wide.warn', () => {
-            const logger = apLogger.create({})
+            const logger = loggerFactory.create({})
             logger.warn('some warning')
             expect(spies.wideWarnSpy).toHaveBeenCalledOnce()
             expect(spies.wideWarnSpy.mock.calls[0][0]).toBe('some warning')
         })
 
         it('error(Error) calls wide.error', () => {
-            const logger = apLogger.create({})
+            const logger = loggerFactory.create({})
             const err = new Error('wide error')
             logger.error(err)
             expect(spies.wideErrorSpy).toHaveBeenCalledOnce()
@@ -158,7 +158,7 @@ describe('apLogger', () => {
         })
 
         it('error(string) without an Error still lands at error level on the wide event', () => {
-            const logger = apLogger.create({})
+            const logger = loggerFactory.create({})
             logger.error('connection refused')
             expect(spies.wideErrorSpy).toHaveBeenCalledOnce()
             expect(spies.wideErrorSpy.mock.calls[0][0]).toBe('connection refused')
@@ -166,7 +166,7 @@ describe('apLogger', () => {
         })
 
         it('error(obj, msg) without an Error still lands at error level on the wide event', () => {
-            const logger = apLogger.create({})
+            const logger = loggerFactory.create({})
             logger.error({ quota: true }, 'quota exceeded')
             expect(spies.wideErrorSpy).toHaveBeenCalledOnce()
             expect(spies.wideErrorSpy.mock.calls[0][0]).toBe('quota exceeded')
@@ -175,7 +175,7 @@ describe('apLogger', () => {
         })
 
         it('info() merges bindings into fields', () => {
-            const logger = apLogger.create({ bindings: { service: 'api' } })
+            const logger = loggerFactory.create({ bindings: { service: 'api' } })
             logger.info({ userId: '1' }, 'request')
             expect(spies.wideInfoSpy).toHaveBeenCalledOnce()
             const ctx = spies.wideInfoSpy.mock.calls[0][1]
@@ -185,7 +185,7 @@ describe('apLogger', () => {
 
     describe('child()', () => {
         it('child() merges bindings and calls wideEvent.set', () => {
-            const logger = apLogger.create({ bindings: { parent: true } })
+            const logger = loggerFactory.create({ bindings: { parent: true } })
             const child = logger.child({ requestId: 'r99' })
             expect(spies.wideSetSpy).toHaveBeenCalledWith({ requestId: 'r99' })
             // Child should carry merged bindings (no ambient)
@@ -198,10 +198,10 @@ describe('apLogger', () => {
 
     describe('level property', () => {
         it('level returns the current configured level', () => {
-            apLogger.setCurrentLevel('warn')
-            const logger = apLogger.create({})
+            loggerFactory.setCurrentLevel('warn')
+            const logger = loggerFactory.create({})
             expect(logger.level).toBe('warn')
-            apLogger.setCurrentLevel('info') // restore
+            loggerFactory.setCurrentLevel('info') // restore
         })
     })
 })

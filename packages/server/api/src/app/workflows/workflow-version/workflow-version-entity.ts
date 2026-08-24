@@ -1,8 +1,8 @@
 import { User, Workflow, WorkflowVersion } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import {
-    ApIdSchema,
     BaseColumnSchemaPart,
+    EntityIdSchema,
 } from '../../database/database-common'
 
 export type WorkflowVersionSchema = {
@@ -14,7 +14,7 @@ export const WorkflowVersionEntity = new EntitySchema<WorkflowVersionSchema>({
     name: 'workflow_version',
     columns: {
         ...BaseColumnSchemaPart,
-        workflowId: ApIdSchema,
+        workflowId: EntityIdSchema,
         displayName: {
             type: String,
         },

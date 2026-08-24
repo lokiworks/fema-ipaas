@@ -1,4 +1,4 @@
-import { apId } from '@fema-ipaas/core-utils'
+import { generateId } from '@fema-ipaas/core-utils'
 import { ExecuteActionJobData, WorkflowActionType, LATEST_JOB_DATA_SCHEMA_VERSION, WorkerJobType } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { Job } from 'bullmq'
@@ -25,7 +25,7 @@ const jobKey = (jobId: string): string => `bull:${QueueName.WORKER_JOBS}:${jobId
 
 async function enqueueActionRunJob(): Promise<EnqueuedActionRunJob> {
     const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
-    const jobId = apId()
+    const jobId = generateId()
     const data: ExecuteActionJobData = {
         jobType: WorkerJobType.EXECUTE_ACTION,
         schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
@@ -43,7 +43,7 @@ async function enqueueActionRunJob(): Promise<EnqueuedActionRunJob> {
             },
         },
         expiresAt: Date.now() + 120_000,
-        requestId: apId(),
+        requestId: generateId(),
         webserverId: 'test-webserver',
     }
     await jobQueue(app.log).add({ type: JobType.ONE_TIME, id: jobId, data })
@@ -73,7 +73,7 @@ describe('jobQueue.cancelAndReportNeverStarted', () => {
         const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
 
         const result = await jobQueue(app.log).cancelAndReportNeverStarted({
-            jobId: apId(),
+            jobId: generateId(),
             tenantId: mockTenant.id,
             workspaceId: mockWorkspace.id,
             jobType: WorkerJobType.EXECUTE_ACTION,

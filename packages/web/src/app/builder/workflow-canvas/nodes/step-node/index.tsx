@@ -16,19 +16,19 @@ import { stepsHooks } from '@/features/connectors';
 import { cn } from '@/lib/utils';
 
 import { workflowCanvasConsts } from '../../utils/consts';
-import { ApStepNode } from '../../utils/types';
+import { StepNode } from '../../utils/types';
 import { workflowCanvasUtils } from '../../utils/workflow-canvas-utils';
 
 import { StepNodeChevron } from './step-node-chevron';
 import { StepNodeDisplayName } from './step-node-display-name';
 import { StepNodeLogo } from './step-node-logo';
-import { ApStepNodeSkippedStatus } from './step-node-skipped-status';
-import { ApStepNodeStatusInDraft } from './step-node-status-in-draft';
-import { ApStepNodeStatusInRun } from './step-node-status-in-run';
+import { StepNodeSkippedStatus } from './step-node-skipped-status';
+import { StepNodeStatusInDraft } from './step-node-status-in-draft';
+import { StepNodeStatusInRun } from './step-node-status-in-run';
 import { TriggerWidget } from './trigger-widget';
 
-const ApStepCanvasNode = React.memo(
-  ({ data: { step } }: NodeProps & Omit<ApStepNode, 'position'>) => {
+const StepCanvasNode = React.memo(
+  ({ data: { step } }: NodeProps & Omit<StepNode, 'position'>) => {
     const [
       selectStepByName,
       isSelected,
@@ -157,9 +157,9 @@ const ApStepCanvasNode = React.memo(
       >
         {isTrigger && <TriggerWidget isSelected={isSelected} />}
         <LoopIterationInput stepName={step.name} />
-        <ApStepNodeStatusInRun stepName={step.name} />
-        <ApStepNodeSkippedStatus stepName={step.name} />
-        <ApStepNodeStatusInDraft stepName={step.name} />
+        <StepNodeStatusInRun stepName={step.name} />
+        <StepNodeSkippedStatus stepName={step.name} />
+        <StepNodeStatusInDraft stepName={step.name} />
         <div
           className={cn('h-full w-full', {
             'px-3 overflow-hidden': !isHorizontal,
@@ -250,8 +250,8 @@ const ApStepCanvasNode = React.memo(
   },
 );
 
-ApStepCanvasNode.displayName = 'ApStepCanvasNode';
-export { ApStepCanvasNode };
+StepCanvasNode.displayName = 'StepCanvasNode';
+export { StepCanvasNode };
 
 function getConnectorSelectorOperationType(step: Step) {
   if (workflowStructureUtil.isTrigger(step.type)) {

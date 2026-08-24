@@ -1,4 +1,4 @@
-import { ApId } from '@fema-ipaas/core-utils'
+import { EntityId } from '@fema-ipaas/core-utils'
 import { ExecutionStatus, PauseType, RespondResponse, WaitpointVersion } from '@fema-ipaas/shared'
 
 enum WaitpointStatus {
@@ -18,11 +18,11 @@ type WaitpointResumePayload = {
 } | null
 
 type Waitpoint = {
-    id: ApId
+    id: EntityId
     created: string
     updated: string
-    executionId: ApId
-    workspaceId: ApId
+    executionId: EntityId
+    workspaceId: EntityId
     type: `${PauseType}`
     version: WaitpointVersion
     status: WaitpointStatus
@@ -35,8 +35,8 @@ type Waitpoint = {
 }
 
 type CreateForPauseParams = {
-    executionId: ApId
-    workspaceId: ApId
+    executionId: EntityId
+    workspaceId: EntityId
     stepName: string
     type: `${PauseType}`
     version: WaitpointVersion
@@ -52,9 +52,9 @@ type CreateForPauseResult = {
 }
 
 type CompleteParams = {
-    executionId: ApId
-    workspaceId: ApId
-    waitpointId: ApId
+    executionId: EntityId
+    workspaceId: EntityId
+    waitpointId: EntityId
     resumePayload: WaitpointResumePayload
     workerHandlerId?: string
 }
@@ -65,17 +65,17 @@ type CompleteResult = {
 }
 
 type HandleResumeSignalParams = {
-    executionId: ApId
-    waitpointId: ApId
+    executionId: EntityId
+    waitpointId: EntityId
     executionStatus: ExecutionStatus
-    workspaceId: ApId
+    workspaceId: EntityId
     resumePayload: WaitpointResumePayload
     workerHandlerId?: string
     onReady: (waitpoint: Waitpoint) => Promise<void>
 }
 
 type FindPendingByVersionParams = {
-    executionId: ApId
+    executionId: EntityId
     version: WaitpointVersion
 }
 

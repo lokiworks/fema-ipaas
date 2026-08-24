@@ -1,4 +1,4 @@
-import { AIProviderName, apId, assertNotNullOrUndefined, WorkspaceRole, RoleType } from '@fema-ipaas/core-utils'
+import { AIProviderName, generateId, assertNotNullOrUndefined, WorkspaceRole, RoleType } from '@fema-ipaas/core-utils'
 import { LATEST_CONTEXT_VERSION, ConnectorMetadata } from '@fema-ipaas/connector-sdk'
 import { AIProvider, Connection, ConnectionScope, ConnectionStatus, ConnectionType, ApplicationEvent, ApplicationEventName, ColorName, File, FileCompression, FileLocation, FileType, Workflow, WorkflowOperationStatus, Execution, ExecutionStatus, WorkflowStatus, WorkflowTriggerType, WorkflowVersion, WorkflowVersionState, Folder, InvitationStatus, InvitationType, LATEST_WORKFLOW_SCHEMA_VERSION, OtpModel, OtpState, OtpType, PackageType, ConnectorsFilterType, ConnectorType, Tenant, TenantPlan, TenantRole, Workspace, WorkspaceIcon, WorkspaceType, RunEnvironment, Template, TemplateStatus, TemplateType, User, UserIdentity, UserIdentityProvider, UserInvitation, UserStatus } from '@fema-ipaas/shared'
 import { faker } from '@faker-js/faker'
@@ -17,10 +17,10 @@ const HASHED_OTP_VERSION = 1
 
 export const createMockUserIdentity = (userIdentity?: Partial<UserIdentity>): UserIdentity => {
     return {
-        id: userIdentity?.id ?? apId(),
+        id: userIdentity?.id ?? generateId(),
         created: userIdentity?.created ?? faker.date.recent().toISOString(),
         updated: userIdentity?.updated ?? faker.date.recent().toISOString(),
-        email: (userIdentity?.email ?? `${apId()}@example.com`).toLowerCase().trim(),
+        email: (userIdentity?.email ?? `${generateId()}@example.com`).toLowerCase().trim(),
         firstName: userIdentity?.firstName ?? faker.person.firstName(),
         lastName: userIdentity?.lastName ?? faker.person.lastName(),
         tokenVersion: userIdentity?.tokenVersion ?? undefined,
@@ -36,13 +36,13 @@ export const createMockUserIdentity = (userIdentity?: Partial<UserIdentity>): Us
 
 export const createMockUser = (user?: Partial<User>): User => {
     return {
-        id: user?.id ?? apId(),
+        id: user?.id ?? generateId(),
         created: user?.created ?? faker.date.recent().toISOString(),
         updated: user?.updated ?? faker.date.recent().toISOString(),
         status: user?.status ?? UserStatus.ACTIVE,
         tenantRole: user?.tenantRole ?? faker.helpers.enumValue(TenantRole),
         externalId: user?.externalId,
-        identityId: user?.identityId ?? apId(),
+        identityId: user?.identityId ?? generateId(),
         tenantId: user?.tenantId ?? null,
     }
 }
@@ -51,12 +51,12 @@ export const createMockTemplate = (
     template?: Partial<Template>,
 ): Template => {
     return {
-        id: template?.id ?? apId(),
+        id: template?.id ?? generateId(),
         created: template?.created ?? faker.date.recent().toISOString(),
         updated: template?.updated ?? faker.date.recent().toISOString(),
         connectors: template?.connectors ?? [],
         workflows: template?.workflows ?? [createMockWorkflowVersion()],
-        tenantId: template?.tenantId ?? apId(),
+        tenantId: template?.tenantId ?? generateId(),
         name: template?.name ?? faker.lorem.word(),
         type: template?.type ?? TemplateType.CUSTOM,
         description: template?.description ?? faker.lorem.sentence(),
@@ -72,10 +72,10 @@ export const createMockTemplate = (
 
 export const createMockPlan = (plan?: Partial<WorkspacePlan>): WorkspacePlan => {
     return {
-        id: plan?.id ?? apId(),
+        id: plan?.id ?? generateId(),
         created: plan?.created ?? faker.date.recent().toISOString(),
         updated: plan?.updated ?? faker.date.recent().toISOString(),
-        workspaceId: plan?.workspaceId ?? apId(),
+        workspaceId: plan?.workspaceId ?? generateId(),
         name: plan?.name ?? faker.lorem.word(),
         locked: plan?.locked ?? false,
         connectors: plan?.connectors ?? [],
@@ -86,12 +86,12 @@ export const createMockPlan = (plan?: Partial<WorkspacePlan>): WorkspacePlan => 
 
 export const createMockUserInvitation = (userInvitation: Partial<UserInvitation>): UserInvitation => {
     return {
-        id: userInvitation.id ?? apId(),
+        id: userInvitation.id ?? generateId(),
         created: userInvitation.created ?? faker.date.recent().toISOString(),
         updated: userInvitation.updated ?? faker.date.recent().toISOString(),
         email: userInvitation.email ?? faker.internet.email(),
         type: userInvitation.type ?? faker.helpers.enumValue(InvitationType),
-        tenantId: userInvitation.tenantId ?? apId(),
+        tenantId: userInvitation.tenantId ?? generateId(),
         workspaceId: userInvitation.workspaceId,
         workspaceRole: userInvitation.workspaceRole,
         tenantRole: userInvitation.tenantRole,
@@ -104,14 +104,14 @@ export const createMockWorkspace = (workspace?: Partial<Workspace>): Workspace =
         color: faker.helpers.enumValue(ColorName),
     }
     return {
-        id: workspace?.id ?? apId(),
+        id: workspace?.id ?? generateId(),
         created: workspace?.created ?? faker.date.recent().toISOString(),
         updated: workspace?.updated ?? faker.date.recent().toISOString(),
         deleted: workspace?.deleted ?? null,
-        ownerId: workspace?.ownerId ?? apId(),
+        ownerId: workspace?.ownerId ?? generateId(),
         displayName: workspace?.displayName ?? faker.lorem.word(),
-        tenantId: workspace?.tenantId ?? apId(),
-        externalId: workspace?.externalId ?? apId(),
+        tenantId: workspace?.tenantId ?? generateId(),
+        externalId: workspace?.externalId ?? generateId(),
         releasesEnabled: workspace?.releasesEnabled ?? false,
         notifyWorkflowOwnerOnFailure: workspace?.notifyWorkflowOwnerOnFailure ?? false,
         metadata: workspace?.metadata ?? null,
@@ -125,11 +125,11 @@ export const createMockWorkspace = (workspace?: Partial<Workspace>): Workspace =
 
 export const createMockGitRepo = (gitRepo?: Partial<GitRepo>): GitRepo => {
     return {
-        id: gitRepo?.id ?? apId(),
+        id: gitRepo?.id ?? generateId(),
         branchType: faker.helpers.enumValue(GitBranchType),
         created: gitRepo?.created ?? faker.date.recent().toISOString(),
         updated: gitRepo?.updated ?? faker.date.recent().toISOString(),
-        workspaceId: gitRepo?.workspaceId ?? apId(),
+        workspaceId: gitRepo?.workspaceId ?? generateId(),
         remoteUrl: gitRepo?.remoteUrl ?? `git@${faker.internet.url()}`,
         sshPrivateKey: gitRepo?.sshPrivateKey ?? faker.internet.password(),
         branch: gitRepo?.branch ?? faker.lorem.word(),
@@ -139,10 +139,10 @@ export const createMockGitRepo = (gitRepo?: Partial<GitRepo>): GitRepo => {
 
 export const createMockTenantPlan = (tenantPlan?: Partial<TenantPlan>): TenantPlan => {
     return {
-        id: tenantPlan?.id ?? apId(),
+        id: tenantPlan?.id ?? generateId(),
         created: tenantPlan?.created ?? faker.date.recent().toISOString(),
         updated: tenantPlan?.updated ?? faker.date.recent().toISOString(),
-        tenantId: tenantPlan?.tenantId ?? apId(),
+        tenantId: tenantPlan?.tenantId ?? generateId(),
         usersLimit: tenantPlan?.usersLimit ?? null,
         workspacesLimit: tenantPlan?.workspacesLimit ?? null,
         activeWorkflowsLimit: tenantPlan?.activeWorkflowsLimit ?? null,
@@ -151,10 +151,10 @@ export const createMockTenantPlan = (tenantPlan?: Partial<TenantPlan>): TenantPl
 }
 export const createMockTenant = (tenant?: Partial<Tenant>): Tenant => {
     return {
-        id: tenant?.id ?? apId(),
+        id: tenant?.id ?? generateId(),
         created: tenant?.created ?? faker.date.recent().toISOString(),
         updated: tenant?.updated ?? faker.date.recent().toISOString(),
-        ownerId: tenant?.ownerId ?? apId(),
+        ownerId: tenant?.ownerId ?? generateId(),
         enforceAllowedAuthDomains: tenant?.enforceAllowedAuthDomains ?? false,
         federatedAuthProviders: tenant?.federatedAuthProviders ?? { saml: null },
         allowedAuthDomains: tenant?.allowedAuthDomains ?? [],
@@ -177,8 +177,8 @@ export const createMockTenant = (tenant?: Partial<Tenant>): Tenant => {
 export const createMockTenantWithOwner = (
     params?: CreateMockTenantWithOwnerParams,
 ): CreateMockTenantWithOwnerReturn => {
-    const mockOwnerId = params?.owner?.id ?? apId()
-    const mockTenantId = params?.tenant?.id ?? apId()
+    const mockOwnerId = params?.owner?.id ?? generateId()
+    const mockTenantId = params?.tenant?.id ?? generateId()
 
     const mockUserIdentity = createMockUserIdentity({})
 
@@ -210,13 +210,13 @@ export const createMockWorkspaceMember = (
 ): WorkspaceMember => {
     assertNotNullOrUndefined(workspaceMember?.userId, 'userId')
     return {
-        id: workspaceMember?.id ?? apId(),
+        id: workspaceMember?.id ?? generateId(),
         created: workspaceMember?.created ?? faker.date.recent().toISOString(),
         updated: workspaceMember?.updated ?? faker.date.recent().toISOString(),
-        tenantId: workspaceMember?.tenantId ?? apId(),
+        tenantId: workspaceMember?.tenantId ?? generateId(),
         workspaceRoleId: workspaceMember.workspaceRoleId,
         userId: workspaceMember?.userId,
-        workspaceId: workspaceMember?.workspaceId ?? apId(),
+        workspaceId: workspaceMember?.workspaceId ?? generateId(),
     }
 }
 
@@ -238,7 +238,7 @@ export const createMockConnectorMetadata = (
     connectorMetadata?: Partial<Omit<ConnectorMetadataSchema, 'workspace'>>,
 ): Omit<ConnectorMetadataSchema, 'workspace'> => {
     return {
-        id: connectorMetadata?.id ?? apId(),
+        id: connectorMetadata?.id ?? generateId(),
         workspaceUsage: 0,
         created: connectorMetadata?.created ?? faker.date.recent().toISOString(),
         updated: connectorMetadata?.updated ?? faker.date.recent().toISOString(),
@@ -266,7 +266,7 @@ export const createMockConnectorMetadata = (
 
 export const createAuditEvent = (auditEvent: Partial<ApplicationEvent>) => {
     return {
-        id: auditEvent.id ?? apId(),
+        id: auditEvent.id ?? generateId(),
         created: auditEvent.created ?? faker.date.recent().toISOString(),
         updated: auditEvent.updated ?? faker.date.recent().toISOString(),
         ip: auditEvent.ip ?? faker.internet.ip(),
@@ -283,7 +283,7 @@ export const createMockOtp = (otp?: Partial<OtpModel>): OtpModel => {
     const twentyMinutesAgo = now.subtract(5, 'minutes')
 
     return {
-        id: otp?.id ?? apId(),
+        id: otp?.id ?? generateId(),
         created: otp?.created ?? faker.date.recent().toISOString(),
         updated:
             otp?.updated ??
@@ -291,7 +291,7 @@ export const createMockOtp = (otp?: Partial<OtpModel>): OtpModel => {
                 .between({ from: twentyMinutesAgo.toDate(), to: now.toDate() })
                 .toISOString(),
         type: otp?.type ?? faker.helpers.enumValue(OtpType),
-        identityId: otp?.identityId ?? apId(),
+        identityId: otp?.identityId ?? generateId(),
         value:
             otp?.value ?? faker.number.int({ min: 100000, max: 999999 }).toString(),
         state: otp?.state ?? faker.helpers.enumValue(OtpState),
@@ -308,16 +308,16 @@ export const createMockOtpWithCode = async (otp?: Partial<OtpModel>): Promise<Mo
 
 export const createMockExecution = (execution?: Partial<Execution>): Execution => {
     return {
-        id: execution?.id ?? apId(),
+        id: execution?.id ?? generateId(),
         created: execution?.created ?? faker.date.recent().toISOString(),
         updated: execution?.updated ?? faker.date.recent().toISOString(),
-        workspaceId: execution?.workspaceId ?? apId(),
-        workflowId: execution?.workflowId ?? apId(),
+        workspaceId: execution?.workspaceId ?? generateId(),
+        workflowId: execution?.workflowId ?? generateId(),
         tags: execution?.tags ?? [],
         steps: {},
         failParentOnFailure: execution?.failParentOnFailure ?? false,
         parentRunId: execution?.parentRunId ?? undefined,
-        workflowVersionId: execution?.workflowVersionId ?? apId(),
+        workflowVersionId: execution?.workflowVersionId ?? generateId(),
         workflowVersion: execution?.workflowVersion,
         logsFileId: execution?.logsFileId ?? null,
         status: execution?.status ?? faker.helpers.enumValue(ExecutionStatus),
@@ -330,15 +330,15 @@ export const createMockExecution = (execution?: Partial<Execution>): Execution =
 
 export const createMockWorkflow = (workflow?: Partial<Workflow>): Workflow => {
     return {
-        id: workflow?.id ?? apId(),
+        id: workflow?.id ?? generateId(),
         created: workflow?.created ?? faker.date.recent().toISOString(),
         updated: workflow?.updated ?? faker.date.recent().toISOString(),
-        workspaceId: workflow?.workspaceId ?? apId(),
+        workspaceId: workflow?.workspaceId ?? generateId(),
         status: workflow?.status ?? faker.helpers.enumValue(WorkflowStatus),
         folderId: workflow?.folderId ?? null,
         operationStatus: workflow?.operationStatus ?? WorkflowOperationStatus.NONE,
         publishedVersionId: workflow?.publishedVersionId ?? null,
-        externalId: workflow?.externalId ?? apId(),
+        externalId: workflow?.externalId ?? generateId(),
     }
 }
 
@@ -355,11 +355,11 @@ export const createMockWorkflowVersion = (
     } as const
 
     return {
-        id: workflowVersion?.id ?? apId(),
+        id: workflowVersion?.id ?? generateId(),
         created: workflowVersion?.created ?? faker.date.recent().toISOString(),
         updated: workflowVersion?.updated ?? faker.date.recent().toISOString(),
         displayName: workflowVersion?.displayName ?? faker.word.words(),
-        workflowId: workflowVersion?.workflowId ?? apId(),
+        workflowId: workflowVersion?.workflowId ?? generateId(),
         agentIds: workflowVersion?.agentIds ?? [],
         trigger: workflowVersion?.trigger ?? emptyTrigger,
         connectionIds: workflowVersion?.connectionIds ?? [],
@@ -374,10 +374,10 @@ export const createMockWorkflowVersion = (
 
 export const createMockConnection = (connection: Partial<Connection>, ownerId: string): Connection<ConnectionType.SECRET_TEXT> => {
     return {
-        id: connection?.id ?? apId(),
+        id: connection?.id ?? generateId(),
         created: connection?.created ?? faker.date.recent().toISOString(),
         updated: connection?.updated ?? faker.date.recent().toISOString(),
-        tenantId: connection?.tenantId ?? apId(),
+        tenantId: connection?.tenantId ?? generateId(),
         workspaceIds: connection?.workspaceIds ?? [],
         connectorName: connection?.connectorName ?? faker.lorem.word(),
         displayName: connection?.displayName ?? faker.lorem.word(),
@@ -390,7 +390,7 @@ export const createMockConnection = (connection: Partial<Connection>, ownerId: s
             secret_text: faker.lorem.word(),
         },
         metadata: connection?.metadata ?? {},
-        externalId: connection?.externalId ?? apId(),
+        externalId: connection?.externalId ?? generateId(),
         owner: null,
         connectorVersion: connection?.connectorVersion ?? '0.0.0',
         preSelectForNewWorkspaces: connection?.preSelectForNewWorkspaces ?? false,
@@ -399,18 +399,18 @@ export const createMockConnection = (connection: Partial<Connection>, ownerId: s
 
 export const createMockTable = ({ workspaceId }: { workspaceId: string }): Table => {
     return {
-        id: apId(),
+        id: generateId(),
         created: faker.date.recent().toISOString(),
         updated: faker.date.recent().toISOString(),
         workspaceId,
-        externalId: apId(),
+        externalId: generateId(),
         name: faker.lorem.word(),
     }
 }
 
 export const createMockField = ({ tableId, workspaceId }: { tableId: string, workspaceId: string }): Field => {
     return {
-        id: apId(),
+        id: generateId(),
         created: faker.date.recent().toISOString(),
         updated: faker.date.recent().toISOString(),
         tableId,
@@ -418,7 +418,7 @@ export const createMockField = ({ tableId, workspaceId }: { tableId: string, wor
         data: {
             options: [],
         },
-        externalId: apId(),
+        externalId: generateId(),
         workspaceId,
         position: 0,
         type: FieldType.STATIC_DROPDOWN,
@@ -426,7 +426,7 @@ export const createMockField = ({ tableId, workspaceId }: { tableId: string, wor
 }
 export const createMockRecord = ({ tableId, workspaceId }: { tableId: string, workspaceId: string }): Record => {
     return {
-        id: apId(),
+        id: generateId(),
         created: faker.date.recent().toISOString(),
         updated: faker.date.recent().toISOString(),
         tableId,
@@ -436,7 +436,7 @@ export const createMockRecord = ({ tableId, workspaceId }: { tableId: string, wo
 
 export const createMockCell = ({ recordId, fieldId, workspaceId }: { recordId: string, fieldId: string, workspaceId: string }): Cell => {
     return {
-        id: apId(),
+        id: generateId(),
         created: faker.date.recent().toISOString(),
         updated: faker.date.recent().toISOString(),
         recordId,
@@ -559,11 +559,11 @@ export const createMockFile = (file?: Partial<File>): File => {
     const hasExplicitWorkspaceId = file !== undefined && 'workspaceId' in file
     const hasExplicitTenantId = file !== undefined && 'tenantId' in file
     return {
-        id: file?.id ?? apId(),
+        id: file?.id ?? generateId(),
         created: file?.created ?? faker.date.recent().toISOString(),
         updated: file?.updated ?? faker.date.recent().toISOString(),
-        tenantId: hasExplicitTenantId ? (file?.tenantId ?? null) : apId(),
-        workspaceId: hasExplicitWorkspaceId ? (file?.workspaceId ?? null) : apId(),
+        tenantId: hasExplicitTenantId ? (file?.tenantId ?? null) : generateId(),
+        workspaceId: hasExplicitWorkspaceId ? (file?.workspaceId ?? null) : generateId(),
         location: file?.location ?? FileLocation.DB,
         compression: file?.compression ?? faker.helpers.enumValue(FileCompression),
         data: file?.data ?? Buffer.from(faker.lorem.paragraphs()),
@@ -577,24 +577,24 @@ export const createMockFile = (file?: Partial<File>): File => {
 
 export const createMockWorkspaceRole = (workspaceRole?: Partial<WorkspaceRole>): WorkspaceRole => {
     return {
-        id: workspaceRole?.id ?? apId(),
+        id: workspaceRole?.id ?? generateId(),
         name: workspaceRole?.name ?? faker.lorem.word(),
         created: workspaceRole?.created ?? faker.date.recent().toISOString(),
         updated: workspaceRole?.updated ?? faker.date.recent().toISOString(),
         permissions: workspaceRole?.permissions ?? [],
-        tenantId: workspaceRole?.tenantId ?? apId(),
+        tenantId: workspaceRole?.tenantId ?? generateId(),
         type: workspaceRole?.type ?? faker.helpers.enumValue(RoleType),
     }
 }
 
 export const createMockWorkspaceRelease = (workspaceRelease?: Partial<WorkspaceRelease>): WorkspaceRelease => {
     return {
-        id: workspaceRelease?.id ?? apId(),
+        id: workspaceRelease?.id ?? generateId(),
         created: workspaceRelease?.created ?? faker.date.recent().toISOString(),
         updated: workspaceRelease?.updated ?? faker.date.recent().toISOString(),
-        workspaceId: workspaceRelease?.workspaceId ?? apId(),
-        importedBy: workspaceRelease?.importedBy ?? apId(),
-        fileId: workspaceRelease?.fileId ?? apId(),
+        workspaceId: workspaceRelease?.workspaceId ?? generateId(),
+        importedBy: workspaceRelease?.importedBy ?? generateId(),
+        fileId: workspaceRelease?.fileId ?? generateId(),
         name: workspaceRelease?.name ?? faker.lorem.word(),
         description: workspaceRelease?.description ?? faker.lorem.sentence(),
         type: workspaceRelease?.type ?? faker.helpers.enumValue(WorkspaceReleaseType),
@@ -603,10 +603,10 @@ export const createMockWorkspaceRelease = (workspaceRelease?: Partial<WorkspaceR
 
 export const createMockAIProvider = async (aiProvider?: Partial<AIProvider> & { enabledForChat?: boolean }): Promise<Omit<AIProviderSchema, 'tenant'>> => {
     return {
-        id: aiProvider?.id ?? apId(),
+        id: aiProvider?.id ?? generateId(),
         created: aiProvider?.created ?? faker.date.recent().toISOString(),
         updated: aiProvider?.updated ?? faker.date.recent().toISOString(),
-        tenantId: aiProvider?.tenantId ?? apId(),
+        tenantId: aiProvider?.tenantId ?? generateId(),
         provider: aiProvider?.provider ?? faker.helpers.enumValue(AIProviderName),
         displayName: aiProvider?.displayName ?? faker.lorem.word(),
         auth: await encryptUtils.encryptObject({
@@ -637,10 +637,10 @@ export const mockConnectorMetadata = async (mockLog: FastifyBaseLogger): Promise
 
 export const createMockFolder = (folder?: Partial<Folder>): Folder => {
     return {
-        id: folder?.id ?? apId(),
+        id: folder?.id ?? generateId(),
         created: folder?.created ?? faker.date.recent().toISOString(),
         updated: folder?.updated ?? faker.date.recent().toISOString(),
-        workspaceId: folder?.workspaceId ?? apId(),
+        workspaceId: folder?.workspaceId ?? generateId(),
         displayName: folder?.displayName ?? faker.lorem.word(),
         displayOrder: folder?.displayOrder ?? faker.number.int({ min: 0, max: 100 }),
     }
@@ -666,10 +666,10 @@ export const createMockEventDestination = (eventDestination?: Partial<{
     scope: EventDestinationScope
 } => {
     return {
-        id: eventDestination?.id ?? apId(),
+        id: eventDestination?.id ?? generateId(),
         created: eventDestination?.created ?? faker.date.recent().toISOString(),
         updated: eventDestination?.updated ?? faker.date.recent().toISOString(),
-        tenantId: eventDestination?.tenantId ?? apId(),
+        tenantId: eventDestination?.tenantId ?? generateId(),
         workspaceId: eventDestination?.workspaceId ?? null,
         events: eventDestination?.events ?? [faker.helpers.enumValue(ApplicationEventName)],
         url: eventDestination?.url ?? faker.internet.url(),

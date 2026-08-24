@@ -1,5 +1,5 @@
 import { unique } from '@fema-ipaas/core-utils'
-import { type ApLogger, fileSystemUtils, wideEvent } from '@fema-ipaas/server-utils'
+import { fileSystemUtils, type Logger, wideEvent } from '@fema-ipaas/server-utils'
 import { ConnectorPackage } from '@fema-ipaas/shared'
 import { CodeArtifact, SandboxSettings } from '../types'
 import { actionRunCache } from './action-run-cache'
@@ -9,7 +9,7 @@ import { engineInstaller } from './engine/engine-installer'
 import { codeBuilder } from './workflow/code/code-builder'
 import { codeCache } from './workflow/code/code-cache'
 
-export const localExecutionCache = (log: ApLogger, basePath: string, getSettings: () => SandboxSettings) => ({
+export const localExecutionCache = (log: Logger, basePath: string, getSettings: () => SandboxSettings) => ({
     async provision({
         connectors,
         codeSteps,
@@ -99,13 +99,13 @@ async function sweptWhileProvisioning({ dirPath, log }: SweptWhileProvisioningPa
 
 type SweptWhileProvisioningParams = {
     dirPath: string
-    log: ApLogger
+    log: Logger
 }
 
 type InstallCodeStepParams = {
     artifact: CodeArtifact
     codeCachePath: string
-    log: ApLogger
+    log: Logger
     getSettings: () => SandboxSettings
 }
 

@@ -4,7 +4,7 @@ import React from 'react';
 import { useFormContext } from 'react-hook-form';
 
 import { DictionaryInput } from '@/components/custom/dictionary-input';
-import { ApMarkdown } from '@/components/custom/markdown';
+import { Markdown } from '@/components/custom/markdown';
 import {
   FormField,
   FormItem,
@@ -41,7 +41,7 @@ const CodeSettings = React.memo(({ readonly }: CodeSettingsProps) => {
         render={({ field }) => (
           <FormItem>
             <div className="pb-4">
-              <ApMarkdown markdown={markdown} variant={MarkdownVariant.INFO} />
+              <Markdown markdown={markdown} variant={MarkdownVariant.INFO} />
             </div>
             <div className="flex items-center justify-between mb-2!">
               <FormLabel>{t('Inputs')}</FormLabel>
@@ -66,7 +66,7 @@ const CodeSettings = React.memo(({ readonly }: CodeSettingsProps) => {
       />
 
       <div>
-        <ApMarkdown
+        <Markdown
           markdown={warningMarkdown}
           variant={MarkdownVariant.WARNING}
         />

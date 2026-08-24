@@ -8,10 +8,10 @@ import { cn } from '@/lib/utils';
 
 import { useBuilderStateContext } from '../../builder-hooks';
 import { workflowCanvasConsts } from '../utils/consts';
-import { ApButtonData } from '../utils/types';
+import { ButtonData } from '../utils/types';
 import { workflowCanvasUtils } from '../utils/workflow-canvas-utils';
 
-const ApAddButton = React.memo((props: ApButtonData) => {
+const AddButton = React.memo((props: ButtonData) => {
   const [isStepInsideDropZone, setIsStepInsideDropzone] = useState(false);
   const [
     activeDraggingStep,
@@ -141,5 +141,5 @@ const ApAddButton = React.memo((props: ApButtonData) => {
   );
 });
 
-ApAddButton.displayName = 'ApAddButton';
-export { ApAddButton };
+AddButton.displayName = 'AddButton';
+export { AddButton };

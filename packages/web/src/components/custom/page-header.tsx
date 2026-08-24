@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 
-import { ApSidebarToggle } from '@/components/custom/ap-sidebar-toggle';
+import { SidebarToggle } from '@/components/custom/sidebar-toggle';
 import { useEmbedding } from '@/components/providers/embed-provider';
 import { cn } from '@/lib/utils';
 
@@ -26,7 +26,7 @@ export const PageHeader = ({
       )}
     >
       <div className="flex items-center gap-1 grow">
-        {showSidebarToggle && <ApSidebarToggle />}
+        {showSidebarToggle && <SidebarToggle />}
         <div className="grow">
           {typeof title === 'string' ? (
             <h1 className="text-base font-semibold">{title}</h1>

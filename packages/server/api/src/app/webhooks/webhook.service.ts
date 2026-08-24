@@ -1,4 +1,4 @@
-import { apId, assertNotNullOrUndefined, isNil, TenantId, WorkflowVersionId, WorkspaceId } from '@fema-ipaas/core-utils'
+import { assertNotNullOrUndefined, generateId, isNil, TenantId, WorkflowVersionId, WorkspaceId } from '@fema-ipaas/core-utils'
 import { wideEvent } from '@fema-ipaas/server-utils'
 import { EngineHttpResponse, EventPayload, Execution, ExecutionType, LATEST_JOB_DATA_SCHEMA_VERSION, RunEnvironment, StreamStepProgress, TriggerPayload, WorkerJobType, Workflow, WorkflowStatus } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
@@ -56,7 +56,7 @@ export const webhookService = {
         timeoutMs,
     }: HandleWebhookParams): Promise<EngineHttpResponse> {
         const webhookHeader = 'x-webhook-id'
-        const webhookRequestId = apId()
+        const webhookRequestId = generateId()
         wideEvent.set({
             workflow: { id: workflowId },
             webhook: {

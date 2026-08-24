@@ -19,11 +19,11 @@ features/{feature}/
   index.ts      # barrel — the feature's public surface
 ```
 
-Everything crossing the feature boundary goes through `index.ts`. See `features/tables/index.ts`: React components are exported **by name** (`ApTableHeader`, `ImportTableDialog`), while plain function/constant utils are grouped into one object first (`tablesApi`, `tableHooks`) and re-exported as that object.
+Everything crossing the feature boundary goes through `index.ts`. See `features/executions/index.ts`: React components are exported **by name** (`RunsTable`, `StepStatusIcon`), while plain function/constant utils are grouped into one object first (`executionsApi`, `executionUtils`) and re-exported as that object.
 
 ## API client and hooks
 
-API client: `features/tables/api/tables-api.ts`. Hooks: `features/tables/hooks/table-hooks.ts`.
+API client: `features/executions/api/executions-api.ts`. Hooks: `features/executions/hooks/execution-hooks.ts`.
 
 On any query that fetches a page's **primary** data — the table rows, the list, the thing the page exists to show — set `meta: { showErrorDialog: true }`. `QueryCache.onError` in `app/query-client.ts` turns that into the global error dialog. Leave it off for auxiliary queries (feature flags, connector metadata, single-item fetches, filter options, user details) — those should fail silently rather than throw a modal over the page.
 

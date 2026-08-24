@@ -1,4 +1,4 @@
-import { apId } from '@fema-ipaas/core-utils'
+import { generateId } from '@fema-ipaas/core-utils'
 import { TenantRole, TelemetryEventName, UserStatus } from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
@@ -69,7 +69,7 @@ async function tokenVersionOf(identityId: string): Promise<string> {
 }
 
 async function strandUser(identityId: string): Promise<string> {
-    const userId = apId()
+    const userId = generateId()
     await databaseConnection().getRepository('user').save({
         id: userId,
         identityId,

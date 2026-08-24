@@ -12,8 +12,8 @@ import {
   ConnectorOptionRequest,
   TenantWithoutSensitiveData,
   WorkflowTriggerType,
-  ApFlagId,
-  ApEnvironment,
+  FlagId,
+  RuntimeEnvironment,
   TelemetryEventName,
 } from '@fema-ipaas/shared';
 import {
@@ -223,8 +223,8 @@ export const connectorsHooks = {
   } => {
     const { selectedTab, selectedCustomTabId } = useConnectorSelectorTabs();
     const { capture } = useTelemetry();
-    const { data: environment } = flagsHooks.useFlag<ApEnvironment>(
-      ApFlagId.ENVIRONMENT,
+    const { data: environment } = flagsHooks.useFlag<RuntimeEnvironment>(
+      FlagId.ENVIRONMENT,
     );
     const { metadata, isLoading: isLoadingConnectors } =
       stepsHooks.useAllStepsMetadata(props);
@@ -412,7 +412,7 @@ export const connectorsHooks = {
   },
   useConnectorVersions: (connectorName: string) => {
     const { data: release } = flagsHooks.useFlag<string>(
-      ApFlagId.CURRENT_VERSION,
+      FlagId.CURRENT_VERSION,
     );
     const query = useQuery({
       queryKey: ['connectors-registry', release],
@@ -509,13 +509,13 @@ const getExploreTabContent = (
   queryResult: StepMetadataWithSuggestions[],
   tenant: TenantWithoutSensitiveData,
   type: 'action' | 'trigger',
-  environment: ApEnvironment | null,
+  environment: RuntimeEnvironment | null,
 ) => {
   const popularCategory: CategorizedStepMetadataWithSuggestions = {
     title: t('Popular'),
-    metadata: environment === ApEnvironment.DEVELOPMENT ? queryResult : [],
+    metadata: environment === RuntimeEnvironment.DEVELOPMENT ? queryResult : [],
   };
-  if (environment === ApEnvironment.DEVELOPMENT) {
+  if (environment === RuntimeEnvironment.DEVELOPMENT) {
     return [popularCategory];
   }
   const pinnedConnectors = getPinnedConnectors(

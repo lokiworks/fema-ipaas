@@ -28,7 +28,7 @@ export type SidebarItemType = {
   highlight?: boolean;
 };
 
-export const ApSidebarItem = (item: SidebarItemType) => {
+export const SidebarNavItem = (item: SidebarItemType) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { state } = useSidebar();

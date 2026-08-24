@@ -1,4 +1,4 @@
-import { apId, ApplicationError, ErrorCode, isNil, SeekPage, spreadIfDefined } from '@fema-ipaas/core-utils'
+import { ApplicationError, ErrorCode, generateId, isNil, SeekPage, spreadIfDefined } from '@fema-ipaas/core-utils'
 import { CreateTemplateRequestBody, ListTemplatesRequestQuery, Template, TemplateStatus, TemplateType, UpdateTemplateRequestBody, WorkflowVersionTemplate } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { ArrayContains, ArrayOverlap, Equal, IsNull } from 'typeorm'
@@ -44,7 +44,7 @@ export const templateService = (log: FastifyBaseLogger) => ({
             case TemplateType.CUSTOM:
             case TemplateType.SHARED: {
                 const newTemplate: NewTemplate = {
-                    id: apId(),
+                    id: generateId(),
                     name,
                     type,
                     summary,

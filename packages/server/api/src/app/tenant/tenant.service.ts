@@ -1,4 +1,4 @@
-import { apId, ApplicationError, ErrorCode, isNil, spreadIfDefined, spreadIfNotUndefined, TenantId, UserId } from '@fema-ipaas/core-utils'
+import { ApplicationError, ErrorCode, generateId, isNil, spreadIfDefined, spreadIfNotUndefined, TenantId, UserId } from '@fema-ipaas/core-utils'
 import { AuthenticationResponse, SsoDomainVerification, SYSTEM_LIMITS, Tenant, TenantPlanLimits, TenantRole, TenantWithoutFederatedAuth, TenantWithoutSensitiveData, UpdateTenantRequestBody, User, UserStatus, WorkspaceType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { nanoid } from 'nanoid'
@@ -43,7 +43,7 @@ export const tenantService = (log: FastifyBaseLogger) => ({
         } = params
 
         const newTenant: NewTenant = {
-            id: apId(),
+            id: generateId(),
             ownerId,
             name,
             primaryColor: primaryColor ?? defaultTheme.colors.primary.default,

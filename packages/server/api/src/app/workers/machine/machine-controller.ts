@@ -40,6 +40,10 @@ export const workerMachineController: FastifyPluginAsyncZod = async (app) => {
         return machineService(app.log).list(request.principal.tenant.id)
     })
 
+    app.get('/worker-groups', ListWorkersParams, async () => {
+        return machineService(app.log).listWorkspaceWorkerGroups()
+    })
+
     app.get('/queue-metrics', QueueMetricsParams, async () => {
         const allQueues = jobQueue(app.log).getAllQueues()
         const counts = await Promise.all(

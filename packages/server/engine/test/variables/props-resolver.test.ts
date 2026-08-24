@@ -1,5 +1,5 @@
 import { formulaEvaluator } from '@fema-ipaas/expression'
-import { ApFile, LATEST_CONTEXT_VERSION, ConnectorAuth, Property } from '@fema-ipaas/connector-sdk'
+import { ConnectorFile, LATEST_CONTEXT_VERSION, ConnectorAuth, Property } from '@fema-ipaas/connector-sdk'
 import { WorkflowActionType, WorkflowTriggerType, GenericStepOutput, PropertyExecutionType, PropertySettings, StepOutputStatus } from '@fema-ipaas/shared'
 import { WorkflowExecutorContext } from '../../src/lib/handler/context/workflow-execution-context'
 import { StepExecutionPath } from '../../src/lib/handler/context/step-execution-path'
@@ -630,7 +630,7 @@ describe('Props resolver', () => {
         const { processedInput, errors } = await propsProcessor.applyProcessorsAndValidators(input, props, ConnectorAuth.None(), false, {})
         expect(processedInput).toEqual({
             base64: null,
-            base64WithMime: new ApFile('unknown.png', Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAiAAAAC4CAYAAADaI1cbAAA0h0lEQVR4AezdA5AlPx7A8Zxt27Z9r5PB2SidWTqbr26S9Hr/tm3btu3723eDJD3r15ec17vzXr+Z', 'base64'), 'png'),
+            base64WithMime: new ConnectorFile('unknown.png', Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAiAAAAC4CAYAAADaI1cbAAA0h0lEQVR4AezdA5AlPx7A8Zxt27Z9r5PB2SidWTqbr26S9Hr/tm3btu3723eDJD3r15ec17vzXr+Z', 'base64'), 'png'),
         })
         expect(errors).toEqual({
             'base64': [

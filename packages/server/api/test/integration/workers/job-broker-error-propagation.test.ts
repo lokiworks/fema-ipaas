@@ -1,4 +1,4 @@
-import { apId } from '@fema-ipaas/core-utils'
+import { generateId } from '@fema-ipaas/core-utils'
 import { EngineResponseStatus, LATEST_JOB_DATA_SCHEMA_VERSION, TriggerHookType, WorkerJobType } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { engineResponseWatcher } from '../../../../src/app/workers/engine-response-watcher'
@@ -22,7 +22,7 @@ afterAll(async () => {
 describe('Job broker error propagation', () => {
     it('should propagate INTERNAL_ERROR with errorMessage through engine response watcher', async () => {
         const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
-        const requestId = apId()
+        const requestId = generateId()
         const webserverId = engineResponseWatcher(app.log).getServerId()
 
         const jobData = {
@@ -30,15 +30,15 @@ describe('Job broker error propagation', () => {
             tenantId: mockTenant.id,
             workspaceId: mockWorkspace.id,
             schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
-            workflowId: apId(),
-            workflowVersionId: apId(),
+            workflowId: generateId(),
+            workflowVersionId: generateId(),
             test: false,
             hookType: TriggerHookType.ON_ENABLE,
             requestId,
             webserverId,
         }
 
-        const jobId = apId()
+        const jobId = generateId()
         await jobQueue(app.log).add({
             type: JobType.ONE_TIME,
             id: jobId,
@@ -73,7 +73,7 @@ describe('Job broker error propagation', () => {
 
     it('should use default error message when INTERNAL_ERROR has no errorMessage', async () => {
         const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
-        const requestId = apId()
+        const requestId = generateId()
         const webserverId = engineResponseWatcher(app.log).getServerId()
 
         const jobData = {
@@ -81,15 +81,15 @@ describe('Job broker error propagation', () => {
             tenantId: mockTenant.id,
             workspaceId: mockWorkspace.id,
             schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
-            workflowId: apId(),
-            workflowVersionId: apId(),
+            workflowId: generateId(),
+            workflowVersionId: generateId(),
             test: false,
             hookType: TriggerHookType.ON_ENABLE,
             requestId,
             webserverId,
         }
 
-        const jobId = apId()
+        const jobId = generateId()
         await jobQueue(app.log).add({
             type: JobType.ONE_TIME,
             id: jobId,
@@ -123,7 +123,7 @@ describe('Job broker error propagation', () => {
 
     it('should treat USER_FAILURE as completed and propagate error through engine response watcher', async () => {
         const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
-        const requestId = apId()
+        const requestId = generateId()
         const webserverId = engineResponseWatcher(app.log).getServerId()
 
         const jobData = {
@@ -131,15 +131,15 @@ describe('Job broker error propagation', () => {
             tenantId: mockTenant.id,
             workspaceId: mockWorkspace.id,
             schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
-            workflowId: apId(),
-            workflowVersionId: apId(),
+            workflowId: generateId(),
+            workflowVersionId: generateId(),
             test: false,
             hookType: TriggerHookType.ON_ENABLE,
             requestId,
             webserverId,
         }
 
-        const jobId = apId()
+        const jobId = generateId()
         await jobQueue(app.log).add({
             type: JobType.ONE_TIME,
             id: jobId,
@@ -174,7 +174,7 @@ describe('Job broker error propagation', () => {
 
     it('should pass through USER_FAILURE response payload when provided', async () => {
         const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
-        const requestId = apId()
+        const requestId = generateId()
         const webserverId = engineResponseWatcher(app.log).getServerId()
 
         const jobData = {
@@ -182,15 +182,15 @@ describe('Job broker error propagation', () => {
             tenantId: mockTenant.id,
             workspaceId: mockWorkspace.id,
             schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
-            workflowId: apId(),
-            workflowVersionId: apId(),
+            workflowId: generateId(),
+            workflowVersionId: generateId(),
             test: false,
             hookType: TriggerHookType.ON_ENABLE,
             requestId,
             webserverId,
         }
 
-        const jobId = apId()
+        const jobId = generateId()
         await jobQueue(app.log).add({
             type: JobType.ONE_TIME,
             id: jobId,
@@ -226,7 +226,7 @@ describe('Job broker error propagation', () => {
 
     it('should pass through OK response as-is (regression guard)', async () => {
         const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
-        const requestId = apId()
+        const requestId = generateId()
         const webserverId = engineResponseWatcher(app.log).getServerId()
 
         const jobData = {
@@ -234,15 +234,15 @@ describe('Job broker error propagation', () => {
             tenantId: mockTenant.id,
             workspaceId: mockWorkspace.id,
             schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
-            workflowId: apId(),
-            workflowVersionId: apId(),
+            workflowId: generateId(),
+            workflowVersionId: generateId(),
             test: false,
             hookType: TriggerHookType.ON_ENABLE,
             requestId,
             webserverId,
         }
 
-        const jobId = apId()
+        const jobId = generateId()
         await jobQueue(app.log).add({
             type: JobType.ONE_TIME,
             id: jobId,

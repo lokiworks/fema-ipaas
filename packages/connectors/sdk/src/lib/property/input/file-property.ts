@@ -3,7 +3,7 @@ import * as z from "zod/mini";
 import { BasePropertySchema, TPropertyValue } from "./common";
 import { PropertyType } from "./property-type";
 
-export class ApFile {
+export class ConnectorFile {
     constructor(
         public filename: string,
         public data: Buffer,
@@ -21,7 +21,7 @@ export const FileProperty = z.object({
     ...TPropertyValue(z.unknown(), PropertyType.FILE).shape,
 })
 
-export type ApStreamingFile = {
+export type StreamingFile = {
     filename: string;
     extension?: string;
     size?: number;
@@ -30,4 +30,4 @@ export type ApStreamingFile = {
 
 export type FileProperty<R extends boolean, S extends boolean = false> = BasePropertySchema & {
     streaming?: S;
-} & TPropertyValue<S extends true ? ApStreamingFile : ApFile, PropertyType.FILE, R>;
+} & TPropertyValue<S extends true ? StreamingFile : ConnectorFile, PropertyType.FILE, R>;

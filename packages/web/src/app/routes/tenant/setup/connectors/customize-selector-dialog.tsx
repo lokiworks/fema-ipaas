@@ -1,6 +1,6 @@
 import { ConnectorMetadataModelSummary } from '@fema-ipaas/connector-sdk';
 import {
-  apId,
+  generateId,
   ConnectorSelectorTabConfig,
   ConnectorSelectorTabSection,
 } from '@fema-ipaas/shared';
@@ -115,7 +115,7 @@ const SelectorTabsEditor = ({ onClose }: { onClose: () => void }) => {
     setTabs((prev) => [
       ...prev,
       {
-        id: apId(),
+        id: generateId(),
         kind: 'CUSTOM',
         title: '',
         icon: connectorSelectorCustomization.getRandomIconKey(),
@@ -250,7 +250,10 @@ const TabCard = ({
 
   const addSection = () =>
     onChange({
-      sections: [...sections, { id: apId(), title: '', connectorNames: [] }],
+      sections: [
+        ...sections,
+        { id: generateId(), title: '', connectorNames: [] },
+      ],
     });
 
   const updateSection = (

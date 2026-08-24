@@ -4,12 +4,12 @@ icon: 🎫
 
 # Managed Auth
 
-Embedded authentication ("Embedding"): lets SaaS vendors embed the FEMA Integration Platform builder in their own product. The vendor's backend signs a short-lived JWT with an RSA private key (from a Signing Key), passes it to the AP embed SDK, which calls `POST /v1/managed-authn/external-token`. The server verifies the JWT against the stored public key, auto-provisions/retrieves the user + project + limits from the claims, and returns a full `AuthenticationResponse` (with access token). Gated by `platform.plan.embeddingEnabled` (on the signing-key module, not the endpoint).
+Embedded authentication ("Embedding"): lets SaaS vendors embed the FEMA Integration Platform builder in their own product. The vendor's backend signs a short-lived JWT with an RSA private key (from a Signing Key), passes it to the FEMA embed SDK, which calls `POST /v1/managed-authn/external-token`. The server verifies the JWT against the stored public key, auto-provisions/retrieves the user + project + limits from the claims, and returns a full `AuthenticationResponse` (with access token). Gated by `platform.plan.embeddingEnabled` (on the signing-key module, not the endpoint).
 
 ### Domain terms
-- **Signing Key**: RSA key pair; public key stored in AP, private key kept by the vendor. JWT header `kid` = Signing Key ID.
+- **Signing Key**: RSA key pair; public key stored in FEMA, private key kept by the vendor. JWT header `kid` = Signing Key ID.
 - **externalUserId**: vendor user id; hashed with platformId into a deterministic identity email `sha256("managed_<platformId>_<externalUserId>")` — managed users never have real emails.
-- **externalProjectId**: vendor project id; maps to an AP project via `externalId`.
+- **externalProjectId**: vendor project id; maps to a FEMA project via `externalId`.
 
 ### How it works (`externalToken` workflow)
 1. `externalTokenExtractor` resolves the signing key by `kid`, verifies RS256, parses the payload.
@@ -17,7 +17,7 @@ Embedded authentication ("Embedding"): lets SaaS vendors embed the FEMA Integrat
 3. Optionally set displayName, upsert a concurrency pool.
 4. `applyProjectConnectorAccess` — assigns the project's named connector set (runs **unconditionally** every exchange, no `manageConnectorsEnabled` gate here).
 5. `getOrCreateUser` by `(platformId, externalUserId)` using the hashed email.
-6. Upsert project membership (role defaults `EDITOR`); issue a 7-day AP token.
+6. Upsert project membership (role defaults `EDITOR`); issue a 7-day FEMA token.
 
 ### Token payload versions
 `z.union` ordered most-specific-first `[v4, v3, v2]` (v2 strips unknown keys and would otherwise swallow v3/v4):

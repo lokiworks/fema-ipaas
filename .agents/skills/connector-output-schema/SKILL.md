@@ -1,6 +1,6 @@
 ---
 name: connector-output-schema
-description: Generate `outputSchema` for an FEMA Integration Platform connector's actions and triggers, so a step's output renders as a curated, labelled tree in the workflow builder and data selector. Use when the user asks to add or improve outputSchema for a connector.
+description: Generate `outputSchema` for a FEMA Integration Platform connector's actions and triggers, so a step's output renders as a curated, labelled tree in the workflow builder and data selector. Use when the user asks to add or improve outputSchema for a connector.
 ---
 
 # Connector Output Schema Generator

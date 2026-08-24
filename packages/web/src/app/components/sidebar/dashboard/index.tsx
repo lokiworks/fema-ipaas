@@ -46,9 +46,9 @@ import { cn } from '@/lib/utils';
 import { recordAccess } from '../../global-search/access-history';
 import { GlobalSearchCommand } from '../../global-search/global-search-command';
 import { STATIC_PAGES } from '../../global-search/static-pages';
-import { SidebarGeneralItemType } from '../ap-sidebar-group';
-import { ApSidebarItem, SidebarItemType } from '../ap-sidebar-item';
 import { AppSidebarHeader } from '../sidebar-header';
+import { SidebarGeneralItemType } from '../sidebar-nav-group';
+import { SidebarNavItem, SidebarItemType } from '../sidebar-nav-item';
 import { SidebarUser } from '../sidebar-user';
 import WorkspaceSideBarItem from '../workspace';
 
@@ -168,7 +168,7 @@ export function WorkspaceDashboardSidebar({
             </div>
             <SidebarMenu>
               {items.map((item) => (
-                <ApSidebarItem key={item.label} {...item} />
+                <SidebarNavItem key={item.label} {...item} />
               ))}
             </SidebarMenu>
           </SidebarGroup>
@@ -306,7 +306,7 @@ function SidebarTenantAdminLink() {
 
   return (
     <SidebarMenu>
-      <ApSidebarItem
+      <SidebarNavItem
         type="link"
         to="/tenant/workspaces"
         label={t('Tenant Admin')}

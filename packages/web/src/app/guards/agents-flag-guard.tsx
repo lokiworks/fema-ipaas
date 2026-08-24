@@ -1,4 +1,4 @@
-import { ApFlagId } from '@fema-ipaas/shared';
+import { FlagId } from '@fema-ipaas/shared';
 import { Navigate } from 'react-router-dom';
 
 import { flagsHooks } from '@/hooks/flags-hooks';
@@ -9,7 +9,7 @@ type AgentsFlagGuardProps = {
 
 export const AgentsFlagGuard = ({ children }: AgentsFlagGuardProps) => {
   const { data: agentsEnabled } = flagsHooks.useFlag<boolean>(
-    ApFlagId.AGENTS_ENABLED,
+    FlagId.AGENTS_ENABLED,
   );
   if (agentsEnabled !== true) {
     return <Navigate to="/workflows" replace />;

@@ -4,7 +4,7 @@ import { useBuilderStateContext } from '../../builder-hooks';
 import { workflowCanvasConsts } from '../utils/consts';
 
 //used purely to help calculate the loop graph width
-const ApLoopReturnCanvasNode = () => {
+const LoopReturnCanvasNode = () => {
   const canvasOrientation = useBuilderStateContext(
     (state) => state.canvasOrientation,
   );
@@ -40,5 +40,5 @@ const ApLoopReturnCanvasNode = () => {
   );
 };
 
-ApLoopReturnCanvasNode.displayName = 'EmptyLoopReturnCanvasNode';
-export default ApLoopReturnCanvasNode;
+LoopReturnCanvasNode.displayName = 'EmptyLoopReturnCanvasNode';
+export default LoopReturnCanvasNode;

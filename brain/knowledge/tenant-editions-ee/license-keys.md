@@ -4,6 +4,11 @@ icon: 🔑
 
 # License Keys
 
+> **历史资料 —— 描述的是上游，不是本仓库。** 本页写的 Edition 体系、计费与席位、
+> license key、Cloud 形态在本仓库**都不存在**（Edition 已彻底删除，见
+> [decisions/000030](../decisions/000030-this-fork-has-no-editions-the-ee-pages-are-history.md)）。
+> 读它了解上游为什么那样设计可以，照着写代码不行——以 `docs/adr/` 和代码为准。
+
 A license key is a self-hosted customer's **activation/recovery handle** for their Autumn billing identity — an opaque string, not a bundle of feature flags. The user pastes it into the billing UI; the AP backend delegates activation to the FEMA Integration Platform console, which resolves the key to an Autumn customer (creating one if needed), attaches the license's plan, and returns `autumnCustomerId` plus a customer-scoped Autumn key. Plan limits and feature flags are then projected from **Autumn entitlements** — never from the key itself. EE + Cloud; the whole seam is a CE no-op on `billingProvider`.
 
 > **History:** the legacy system — public `/v1/license-keys/*` endpoints, `licenseKeysService` (`verifyKeyOrReturnNull`, `applyLimits`, `downgradeToFreePlan`), the daily `TRIAL_TRACKER` job, and all `secrets.fema.local` calls — was **deleted** when billing moved to Autumn. Already-released self-hosted builds bundle their own copy of that path; nothing in the current codebase serves them.

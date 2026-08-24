@@ -1,4 +1,4 @@
-import { apId } from '@fema-ipaas/core-utils'
+import { generateId } from '@fema-ipaas/core-utils'
 import { PrincipalType } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
@@ -22,7 +22,7 @@ describe('Workspace Worker API', () => {
 
             const mockToken = await generateMockToken({
                 type: PrincipalType.ENGINE,
-                id: apId(),
+                id: generateId(),
                 tenant: {
                     id: mockTenant.id,
                 },

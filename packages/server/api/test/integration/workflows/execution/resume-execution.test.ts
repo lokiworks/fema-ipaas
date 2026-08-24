@@ -1,4 +1,4 @@
-import { apId } from '@fema-ipaas/core-utils'
+import { generateId } from '@fema-ipaas/core-utils'
 import { ExecutionType, ExecutionStatus, WorkflowVersionState, RunEnvironment, StreamStepProgress } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { distributedStore } from '../../../../../src/app/database/redis-connections'
@@ -62,7 +62,7 @@ async function createPausedExecutionWithWaitpoint(params: {
     await db.save('execution', execution)
 
     await db.save('waitpoint', {
-        id: apId(),
+        id: generateId(),
         executionId: execution.id,
         workspaceId: params.workspaceId,
         stepName: 'approval',
@@ -97,7 +97,7 @@ describe('Resume workflow run', () => {
 
         const response = await app.inject({
             method: 'POST',
-            url: `/api/v1/executions/${execution.id}/requests/${apId()}`,
+            url: `/api/v1/executions/${execution.id}/requests/${generateId()}`,
             body: { data: 'test' },
         })
 
@@ -127,7 +127,7 @@ describe('Resume workflow run', () => {
         await db.save('execution', execution)
 
         const runId = execution.id
-        const requestId = apId()
+        const requestId = generateId()
 
         await distributedStore.merge(redisMetadataKey(runId), {
             id: runId,
@@ -139,7 +139,7 @@ describe('Resume workflow run', () => {
         })
 
         await db.save('waitpoint', {
-            id: apId(),
+            id: generateId(),
             executionId: runId,
             workspaceId: ctx.workspace.id,
             stepName: 'approval',
@@ -192,7 +192,7 @@ describe('Resume workflow run', () => {
 
         const response = await app.inject({
             method: 'POST',
-            url: `/api/v1/executions/${execution.id}/requests/${apId()}`,
+            url: `/api/v1/executions/${execution.id}/requests/${generateId()}`,
             body: { data: 'test' },
         })
 
@@ -209,7 +209,7 @@ describe('Resume workflow run', () => {
         })
         await db.save('workflow_version', workflowVersion)
 
-        const requestId = apId()
+        const requestId = generateId()
         const execution = createMockExecution({
             workspaceId: ctx.workspace.id,
             workflowId: workflow.id,
@@ -245,8 +245,8 @@ describe('Resume workflow run', () => {
         })
         await db.save('workflow_version', workflowVersion)
 
-        const runId = apId()
-        const requestId = apId()
+        const runId = generateId()
+        const requestId = generateId()
 
         const runMetadata: RunsMetadataUpsertData = {
             id: runId,
@@ -259,7 +259,7 @@ describe('Resume workflow run', () => {
         await distributedStore.merge(redisMetadataKey(runId), runMetadata)
 
         await db.save('waitpoint', {
-            id: apId(),
+            id: generateId(),
             executionId: runId,
             workspaceId: ctx.workspace.id,
             stepName: 'approval',
@@ -304,7 +304,7 @@ describe('Resume workflow run', () => {
         })
         await db.save('workflow_version', workflowVersion)
 
-        const runId = apId()
+        const runId = generateId()
         const resumeDateTime = new Date(Date.now() + 60000).toISOString()
 
         const runMetadata: RunsMetadataUpsertData = {
@@ -318,7 +318,7 @@ describe('Resume workflow run', () => {
         await distributedStore.merge(redisMetadataKey(runId), runMetadata)
 
         await db.save('waitpoint', {
-            id: apId(),
+            id: generateId(),
             executionId: runId,
             workspaceId: ctx.workspace.id,
             stepName: 'delay_step',
@@ -419,7 +419,7 @@ describe('Resume workflow run', () => {
         const result = await waitpointService(app.log).complete({
             executionId: parentRun.id,
             workspaceId: ctx.workspace.id,
-            waitpointId: apId(),
+            waitpointId: generateId(),
             resumePayload: {
                 payload: { body: { status: 'error', data: { message: 'Subflow execution failed' } } },
                 streamStepProgress: StreamStepProgress.WEBSOCKET,
@@ -456,7 +456,7 @@ describe('Resume workflow run', () => {
         const result = await waitpointService(app.log).complete({
             executionId: parentRun.id,
             workspaceId: ctx.workspace.id,
-            waitpointId: apId(),
+            waitpointId: generateId(),
             resumePayload: {
                 payload: { body: { status: 'error', data: { message: 'Subflow execution failed' } } },
                 streamStepProgress: StreamStepProgress.WEBSOCKET,
@@ -468,7 +468,7 @@ describe('Resume workflow run', () => {
 
         await waitpointService(app.log).handleResumeSignal({
             executionId: parentRun.id,
-            waitpointId: apId(),
+            waitpointId: generateId(),
             executionStatus: ExecutionStatus.FAILED,
             workspaceId: ctx.workspace.id,
             resumePayload: { body: { status: 'error' } },
@@ -560,7 +560,7 @@ describe('Resume workflow run', () => {
 
         const response = await app.inject({
             method: 'POST',
-            url: `/api/v1/executions/${execution.id}/requests/${apId()}`,
+            url: `/api/v1/executions/${execution.id}/requests/${generateId()}`,
             body: { status: 'approved' },
         })
 
@@ -592,7 +592,7 @@ describe('Resume workflow run', () => {
         })
         await db.save('execution', execution)
 
-        const waitpointId = apId()
+        const waitpointId = generateId()
         await db.save('waitpoint', {
             id: waitpointId,
             executionId: execution.id,
@@ -607,7 +607,7 @@ describe('Resume workflow run', () => {
 
         const response = await app.inject({
             method: 'POST',
-            url: `/api/v1/executions/${execution.id}/requests/${apId()}`,
+            url: `/api/v1/executions/${execution.id}/requests/${generateId()}`,
             body: { status: 'approved' },
         })
 
@@ -687,7 +687,7 @@ describe('Resume workflow run', () => {
 
         const response = await app.inject({
             method: 'GET',
-            url: `/api/v1/executions/${execution.id}/waitpoints/${apId()}/confirm`,
+            url: `/api/v1/executions/${execution.id}/waitpoints/${generateId()}/confirm`,
             headers: { accept: 'text/html' },
         })
 
@@ -802,7 +802,7 @@ describe('Resume workflow run', () => {
 
         const response = await app.inject({
             method: 'POST',
-            url: `/api/v1/executions/${execution.id}/requests/${apId()}/sync`,
+            url: `/api/v1/executions/${execution.id}/requests/${generateId()}/sync`,
             body: { data: 'test' },
         })
 
@@ -831,7 +831,7 @@ describe('Resume workflow run', () => {
         })
         await db.save('execution', execution)
 
-        const waitpointId = apId()
+        const waitpointId = generateId()
         const workerHandlerId = engineResponseWatcher(app.log).getServerId()
         await db.save('waitpoint', {
             id: waitpointId,
@@ -846,7 +846,7 @@ describe('Resume workflow run', () => {
 
         const responsePromise = app.inject({
             method: 'POST',
-            url: `/api/v1/executions/${execution.id}/requests/${apId()}/sync`,
+            url: `/api/v1/executions/${execution.id}/requests/${generateId()}/sync`,
             body: { data: 'test' },
         })
 

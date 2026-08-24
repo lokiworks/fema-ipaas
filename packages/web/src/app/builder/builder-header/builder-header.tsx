@@ -1,6 +1,6 @@
 import { Permission } from '@fema-ipaas/core-utils';
 import {
-  ApFlagId,
+  FlagId,
   WorkflowOperationType,
   WorkflowVersionState,
   supportUrl,
@@ -57,7 +57,7 @@ export const BuilderHeader = () => {
   const queryClient = useQueryClient();
   const openNewWindow = useNewWindow();
   const { data: showSupport } = flagsHooks.useFlag<boolean>(
-    ApFlagId.SHOW_COMMUNITY,
+    FlagId.SHOW_COMMUNITY,
   );
 
   const hasPermissionToReadRuns = useAuthorization().checkAccess(

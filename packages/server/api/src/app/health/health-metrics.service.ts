@@ -1,5 +1,5 @@
 import { TenantId } from '@fema-ipaas/core-utils'
-import { apDayjsDuration } from '@fema-ipaas/server-utils'
+import { dayjsDuration } from '@fema-ipaas/server-utils'
 import { ExecutionStatus, InternalErrorImpactItem, RunEnvironment, StuckJob, TenantMetricsHealthDay, TenantMetricsHealthHistory, TenantMetricsLive, TenantMetricsReport, TenantMetricsStatusPoint } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
@@ -268,7 +268,7 @@ export const healthMetricsService = (log: FastifyBaseLogger) => ({
 })
 
 const REPORT_CACHE_PREFIX = 'health-metrics:report'
-const REPORT_TTL_SECONDS = apDayjsDuration(6, 'hours').asSeconds() // only run metrics is cached
+const REPORT_TTL_SECONDS = dayjsDuration(6, 'hours').asSeconds() // only run metrics is cached
 const HEALTH_HISTORY_DAYS = 30
 
 // Limits for internal errors and stuck jobs . It's unlikely that these will exceed the limit, but even if it does we don't care much about all of them.

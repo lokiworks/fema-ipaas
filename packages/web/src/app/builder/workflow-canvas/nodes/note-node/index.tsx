@@ -16,12 +16,12 @@ import { cn } from '@/lib/utils';
 
 import { useBuilderStateContext } from '../../../builder-hooks';
 import { workflowCanvasConsts } from '../../utils/consts';
-import { ApNoteNode } from '../../utils/types';
+import { NoteNode } from '../../utils/types';
 
 import { NoteFooter } from './note-footer';
 import { NoteTools } from './note-tools';
 
-const ApNoteCanvasNode = (props: NodeProps & Omit<ApNoteNode, 'position'>) => {
+const NoteCanvasNode = (props: NodeProps & Omit<NoteNode, 'position'>) => {
   const [draggedNote, resizeNote, note, readonly] = useBuilderStateContext(
     (state) => [
       state.draggedNote,
@@ -114,7 +114,7 @@ const ApNoteCanvasNode = (props: NodeProps & Omit<ApNoteNode, 'position'>) => {
     </div>
   );
 };
-ApNoteCanvasNode.displayName = 'ApNoteCanvasNode';
+NoteCanvasNode.displayName = 'NoteCanvasNode';
 
 const NoteContent = ({ note, isDragging }: NoteContentProps) => {
   const { id, ownerId: creatorId, color, size } = note;
@@ -215,7 +215,7 @@ const NoteContent = ({ note, isDragging }: NoteContentProps) => {
     </div>
   );
 };
-export { ApNoteCanvasNode, NoteContent };
+export { NoteCanvasNode, NoteContent };
 type NoteContentProps = {
   note: Note;
   isDragging: boolean;

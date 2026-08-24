@@ -1,4 +1,4 @@
-import { apId } from '@fema-ipaas/core-utils'
+import { generateId } from '@fema-ipaas/core-utils'
 import { InvitationStatus, InvitationType, TenantRole } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
@@ -26,7 +26,7 @@ describe('Accept User Invitation API', () => {
         // arrange
         const { mockTenant } = await mockAndSaveBasicSetup()
         const invitationToken = await saveInvitationAndSignToken({
-            email: `${apId().toLowerCase()}@example.com`,
+            email: `${generateId().toLowerCase()}@example.com`,
             tenantId: mockTenant.id,
         })
 
@@ -45,7 +45,7 @@ describe('Accept User Invitation API', () => {
     it('Reports registered true when the email already has an identity', async () => {
         // arrange
         const { mockTenant } = await mockAndSaveBasicSetup()
-        const email = `${apId().toLowerCase()}@example.com`
+        const email = `${generateId().toLowerCase()}@example.com`
         await mockBasicUser({
             userIdentity: { email },
             user: {

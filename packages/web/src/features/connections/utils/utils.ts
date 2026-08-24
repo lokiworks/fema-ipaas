@@ -7,7 +7,11 @@ import {
   ConnectorMetadataModelSummary,
   PropertyType,
 } from '@fema-ipaas/connector-sdk';
-import { assertNotNullOrUndefined, isNil, apId } from '@fema-ipaas/core-utils';
+import {
+  assertNotNullOrUndefined,
+  isNil,
+  generateId,
+} from '@fema-ipaas/core-utils';
 import {
   ConnectionType,
   ConnectionWithoutSensitiveData,
@@ -95,7 +99,7 @@ export const newConnectionUtils = {
     }
 
     return {
-      externalId: apId(),
+      externalId: generateId(),
       displayName: connector.displayName,
     };
   },

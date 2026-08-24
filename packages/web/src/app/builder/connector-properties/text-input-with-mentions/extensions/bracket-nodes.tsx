@@ -1,4 +1,4 @@
-import { FEMA_FUNCTIONS, ApFunction } from '@fema-ipaas/expression';
+import { FEMA_FUNCTIONS, FormulaFunction } from '@fema-ipaas/expression';
 import { InputRule, Node, mergeAttributes } from '@tiptap/core';
 import { JSONContent } from '@tiptap/react';
 
@@ -14,7 +14,7 @@ const ZWS = '​';
 const fnNamePattern = FEMA_FUNCTIONS.map((f) => f.name).join('|');
 const inputRuleRegex = new RegExp(`(${fnNamePattern})\\($`);
 
-function buildInputRuleContent(fn: ApFunction, id: string): JSONContent[] {
+function buildInputRuleContent(fn: FormulaFunction, id: string): JSONContent[] {
   const content: JSONContent[] = [
     { type: FUNCTION_START_NODE_TYPE, attrs: { id, functionName: fn.name } },
     { type: 'text', text: ZWS },

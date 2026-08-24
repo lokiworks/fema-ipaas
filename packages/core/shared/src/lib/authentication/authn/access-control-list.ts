@@ -13,7 +13,6 @@ const VIEWER_PERMISSIONS: Permission[] = [
     Permission.READ_WORKSPACE_RELEASE,
     Permission.READ_WORKSPACE_MEMBER,
     Permission.READ_INVITATION,
-    Permission.READ_NETWORK_AGENT,
 ]
 
 const OPERATOR_PERMISSIONS: Permission[] = [
@@ -41,7 +40,6 @@ const WORKSPACE_ADMIN_PERMISSIONS: Permission[] = [
     Permission.WRITE_WORKSPACE_MEMBER,
     Permission.WRITE_INVITATION,
     Permission.MANAGE_CONNECTOR,
-    Permission.MANAGE_NETWORK_AGENT,
     Permission.READ_AUDIT,
 ]
 

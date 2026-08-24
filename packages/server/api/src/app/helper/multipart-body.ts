@@ -1,9 +1,9 @@
 import { Multipart } from '@fastify/multipart'
-import { ApMultipartFile } from '@fema-ipaas/core-utils'
+import { UploadedFile } from '@fema-ipaas/core-utils'
 
 /**
  * Rebuilds the body shape that `@fastify/multipart`'s `attachFieldsToBody: 'keyValues'` used to
- * produce, for routes whose schema expects files as `ApMultipartFile` (connector archives, tenant
+ * produce, for routes whose schema expects files as `UploadedFile` (connector archives, tenant
  * logos, knowledge-base uploads). That option is no longer registered globally, because its
  * `preValidation` hook buffered every part of every request — including webhook file uploads,
  * which must stream to storage.
@@ -20,7 +20,7 @@ export const attachMultipartFieldsToBody = async (request: MultipartRequest): Pr
     for await (const part of request.parts()) {
         if (part.type === 'file') {
             // toBuffer() throws FST_REQ_FILE_TOO_LARGE (413) when the part exceeds limits.fileSize.
-            const file: ApMultipartFile = {
+            const file: UploadedFile = {
                 filename: part.filename,
                 data: await part.toBuffer(),
                 type: 'file',

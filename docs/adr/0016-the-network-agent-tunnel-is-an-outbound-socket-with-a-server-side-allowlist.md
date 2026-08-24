@@ -1,7 +1,7 @@
 ---
 title: Network Agent 隧道是出站 socket，白名单在服务端执行
 icon: 🛰️
-status: accepted
+status: superseded by 0018-no-network-agent-self-hosting-removes-the-gap-it-bridged
 ---
 
 ## Decision

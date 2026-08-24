@@ -28,7 +28,7 @@ import { NoteDragOverlayMode } from '../state/notes-state';
 import NoteDragOverlay from './nodes/note-node/note-drag-overlay';
 import StepDragOverlay from './nodes/step-node/step-drag-overlay';
 import { workflowCanvasConsts } from './utils/consts';
-import { ApButtonData } from './utils/types';
+import { ButtonData } from './utils/types';
 
 const WorkflowDragLayer = ({ children }: { children: React.ReactNode }) => {
   const reactFlow = useReactFlow();
@@ -178,8 +178,8 @@ function handleStepDragEnd({
     !isNil(e.over?.data?.current) &&
     e.over.data.current.accepts === e.active.data?.current?.type;
   if (isOverSomething) {
-    const droppedAtNodeData: ApButtonData | undefined = e.over?.data
-      .current as unknown as ApButtonData | undefined;
+    const droppedAtNodeData: ButtonData | undefined = e.over?.data
+      .current as unknown as ButtonData | undefined;
     if (
       droppedAtNodeData?.parentStepName &&
       draggedStep &&

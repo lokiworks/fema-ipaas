@@ -1,4 +1,4 @@
-import { apId } from '@fema-ipaas/core-utils'
+import { generateId } from '@fema-ipaas/core-utils'
 import { TenantRole, PrincipalType, WorkspaceType, UserStatus } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
@@ -144,7 +144,7 @@ describe('User API', () => {
                 },
             })
             // arrange
-            const nonExistentUserId = apId()
+            const nonExistentUserId = generateId()
 
             const testToken = await generateMockToken({
                 type: PrincipalType.USER,
@@ -291,7 +291,7 @@ describe('User API', () => {
             // act
             const response = await app?.inject({
                 method: 'DELETE',
-                url: `/api/v1/users/${apId()}`,
+                url: `/api/v1/users/${generateId()}`,
                 headers: {
                     authorization: `Bearer ${mockOwnerToken}`,
                 },

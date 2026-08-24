@@ -8,8 +8,8 @@ import {
 } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import {
-    ApIdSchema,
     BaseColumnSchemaPart,
+    EntityIdSchema,
 } from '../../database/database-common'
 
 type ExecutionSchema = Execution & {
@@ -26,19 +26,19 @@ export const ExecutionEntity = new EntitySchema<ExecutionSchema>({
     name: 'execution',
     columns: {
         ...BaseColumnSchemaPart,
-        workspaceId: ApIdSchema,
-        workflowId: ApIdSchema,
-        workflowVersionId: ApIdSchema,
+        workspaceId: EntityIdSchema,
+        workflowId: EntityIdSchema,
+        workflowVersionId: EntityIdSchema,
         environment: {
             type: String,
             nullable: true,
         },
         logsFileId: {
-            ...ApIdSchema,
+            ...EntityIdSchema,
             nullable: true,
         },
         parentRunId: {
-            ...ApIdSchema,
+            ...EntityIdSchema,
             nullable: true,
         },
         failParentOnFailure: {

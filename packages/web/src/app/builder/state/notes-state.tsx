@@ -1,4 +1,4 @@
-import { apId } from '@fema-ipaas/core-utils';
+import { generateId } from '@fema-ipaas/core-utils';
 import {
   AddNoteRequest,
   WorkflowOperationType,
@@ -49,7 +49,7 @@ export const createNotesState = (
       set({ noteDragOverlayMode });
     },
     addNote: (request: Omit<AddNoteRequest, 'id'>) => {
-      const id = apId();
+      const id = generateId();
       get().applyOperation({
         type: WorkflowOperationType.ADD_NOTE,
         request: {

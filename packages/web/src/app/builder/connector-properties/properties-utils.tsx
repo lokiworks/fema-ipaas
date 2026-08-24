@@ -12,7 +12,7 @@ import { SecretInput } from '@/app/connections/secret-input';
 import { ColorPicker } from '@/components/custom/color-picker';
 import { DictionaryInput } from '@/components/custom/dictionary-input';
 import { JsonEditor } from '@/components/custom/json-editor';
-import { ApMarkdown } from '@/components/custom/markdown';
+import { Markdown } from '@/components/custom/markdown';
 import { MultiSelectConnectorProperty } from '@/components/custom/multi-select-connector-property';
 import { ReadMoreDescription } from '@/components/custom/read-more-description';
 import { SearchableSelect } from '@/components/custom/searchable-select';
@@ -126,7 +126,7 @@ export const selectGenericFormComponentForProperty = ({
       );
     case PropertyType.MARKDOWN:
       return (
-        <ApMarkdown
+        <Markdown
           markdown={property.description}
           variables={markdownVariables}
           variant={property.variant}

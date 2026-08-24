@@ -1,4 +1,4 @@
-import { ApplicationError, apId, ErrorCode } from '@fema-ipaas/core-utils'
+import { ApplicationError, generateId, ErrorCode } from '@fema-ipaas/core-utils'
 import { describe, expect, it } from 'vitest'
 import { ACTION_RUN_CODE_DIR } from '../../../src/lib/cache/cache-paths'
 import { assertSafeCodeNamespace, assertSafePathSegment } from '../../../src/lib/utils/path-safety'
@@ -15,16 +15,16 @@ function validationErrorFrom(run: () => void): ApplicationError | null {
 
 describe('assertSafeCodeNamespace', () => {
     it('accepts a workflow-version namespace, which is a single segment', () => {
-        expect(() => assertSafeCodeNamespace(apId())).not.toThrow()
+        expect(() => assertSafeCodeNamespace(generateId())).not.toThrow()
         expect(() => assertSafeCodeNamespace('fv-1')).not.toThrow()
     })
 
     it('accepts an action-run namespace, which is two segments', () => {
-        expect(() => assertSafeCodeNamespace(`${ACTION_RUN_CODE_DIR}/${apId()}_${'a'.repeat(64)}`)).not.toThrow()
+        expect(() => assertSafeCodeNamespace(`${ACTION_RUN_CODE_DIR}/${generateId()}_${'a'.repeat(64)}`)).not.toThrow()
     })
 
     it('rejects a third segment, so the cache can never grow a level nobody sweeps', () => {
-        const error = validationErrorFrom(() => assertSafeCodeNamespace(`${ACTION_RUN_CODE_DIR}/${apId()}/${'a'.repeat(64)}`))
+        const error = validationErrorFrom(() => assertSafeCodeNamespace(`${ACTION_RUN_CODE_DIR}/${generateId()}/${'a'.repeat(64)}`))
 
         expect(error?.error.code).toBe(ErrorCode.VALIDATION)
         expect(error?.error.params).toMatchObject({ message: expect.stringContaining('exceeds') })

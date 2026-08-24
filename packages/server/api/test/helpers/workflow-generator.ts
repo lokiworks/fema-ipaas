@@ -1,4 +1,4 @@
-import { apId } from '@fema-ipaas/core-utils'
+import { generateId } from '@fema-ipaas/core-utils'
 import { WorkflowAction, WorkflowActionType, WorkflowOperationStatus, WorkflowStatus, WorkflowTrigger, WorkflowTriggerType, WorkflowVersion, WorkflowVersionState, PopulatedWorkflow, PropertyExecutionType } from '@fema-ipaas/shared'
 import { faker } from '@faker-js/faker'
 import dayjs from 'dayjs'
@@ -9,7 +9,7 @@ export const workflowGenerator = {
         return workflowGenerator.randomizeMetadata(externalId, workflowVersionGenerator.simpleActionAndTrigger())
     },
     randomizeMetadata(externalId: string | undefined, version: Omit<WorkflowVersion, 'workflowId'>): PopulatedWorkflow {
-        const workflowId = apId()
+        const workflowId = generateId()
         const result: PopulatedWorkflow = {
             externalId: externalId ?? workflowId,
             version: {
@@ -20,8 +20,8 @@ export const workflowGenerator = {
             operationStatus: WorkflowOperationStatus.NONE,
             status: faker.helpers.enumValue(WorkflowStatus),
             id: workflowId,
-            workspaceId: apId(),
-            folderId: apId(),
+            workspaceId: generateId(),
+            folderId: generateId(),
             created: faker.date.recent().toISOString(),
             updated: faker.date.recent().toISOString(),
         }
@@ -32,11 +32,11 @@ export const workflowGenerator = {
 const workflowVersionGenerator = {
     simpleActionAndTrigger(): Omit<WorkflowVersion, 'workflowId'> {
         return {
-            id: apId(),
+            id: generateId(),
             displayName: faker.animal.dog(),
             created: faker.date.recent().toISOString(),
             updated: faker.date.recent().toISOString(),
-            updatedBy: apId(),
+            updatedBy: generateId(),
             valid: true,
             trigger: {
                 ...randomizeTriggerMetadata(generateTrigger()),
@@ -68,7 +68,7 @@ function generateAction(): WorkflowAction {
     return {
         type: WorkflowActionType.CONNECTOR,
         displayName: faker.hacker.noun(),
-        name: apId(),
+        name: generateId(),
         skip: false,
         lastUpdatedDate: dayjs().toISOString(),
         settings: {
@@ -86,7 +86,7 @@ function generateTrigger(): WorkflowTrigger {
     return {
         type: WorkflowTriggerType.CONNECTOR,
         displayName: faker.hacker.noun(),
-        name: apId(),
+        name: generateId(),
         lastUpdatedDate: dayjs().toISOString(),
         settings: {
             connectorName: faker.helpers.arrayElement(['@fema-ipaas/connector-schedule', '@fema-ipaas/connector-webhook']),

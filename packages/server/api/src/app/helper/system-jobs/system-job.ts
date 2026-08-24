@@ -1,5 +1,5 @@
 import { isNil, tryCatch } from '@fema-ipaas/core-utils'
-import { apDayjs, apDayjsDuration } from '@fema-ipaas/server-utils'
+import { dayjsDuration, dayjsUtil } from '@fema-ipaas/server-utils'
 import { Job, JobsOptions, Queue, Worker } from 'bullmq'
 import { Dayjs } from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
@@ -8,8 +8,8 @@ import { exceptionHandler } from '../exception-handler'
 import { SystemJobData, SystemJobName, SystemJobSchedule } from './common'
 import { systemJobHandlers } from './job-handlers'
 
-const FIFTEEN_MINUTES = apDayjsDuration(15, 'minute').asMilliseconds()
-const ONE_MONTH = apDayjsDuration(1, 'month').asSeconds()
+const FIFTEEN_MINUTES = dayjsDuration(15, 'minute').asMilliseconds()
+const ONE_MONTH = dayjsDuration(1, 'month').asSeconds()
 const SYSTEM_JOB_QUEUE = 'system-job-queue'
 
 export let systemJobsQueue: Queue<SystemJobData, unknown, SystemJobName>
@@ -153,7 +153,7 @@ async function removeDeprecatedJobs(log: FastifyBaseLogger): Promise<void> {
 
 const configureJobOptions = ({ date, jobId, customConfig }: { date: Dayjs, jobId: string, customConfig?: JobsOptions }): JobsOptions => {
     const config: JobsOptions = customConfig ?? {}
-    config.delay = date.diff(apDayjs(), 'milliseconds')
+    config.delay = date.diff(dayjsUtil(), 'milliseconds')
     return {
         ...config,
         jobId,

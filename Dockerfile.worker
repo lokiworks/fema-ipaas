@@ -68,5 +68,5 @@ COPY --from=build /usr/src/app/dist/packages/engine ./dist/packages/engine
 # to match the app's, so ship the workspace package.json (not 0.0.0).
 COPY --from=build /usr/src/app/package.json ./package.json
 
-LABEL service=activepieces-worker
+LABEL service=fema-ipaas-worker
 ENTRYPOINT ["node", "worker.js"]

@@ -79,11 +79,11 @@ All structured logging goes through evlog — `logger.{info,warn,error,debug}({ 
 
 Only the metadata object of a logging call (`logger.*`, `log.child`, `createLogger`, `wideEvent.set`) is grouped. **Data-model / wire fields stay flat** — `JobData.runId`, DB query args (`findOneBy({ id })`), service-call arguments (`resumeFromWaitpoint({ executionId })`), DTOs, return objects, and client event payloads are NOT logs and keep their original keys.
 
-## Release Version Detection (`apVersionUtil`)
+## Release Version Detection (`versionUtil`)
 
-`apVersionUtil.getCurrentRelease()` (in `@fema-ipaas/server-utils`, `ap-version.ts`) reads the running release from `<process.cwd()>/package.json`. **It is `cwd`-relative, not module-relative** — `__dirname` was tried and does not work in the bundled output, so do not "fix" it that way. On any failure (missing file, bad JSON, missing/non-string `version`) it logs a `warn` and returns the sentinel `UNKNOWN_VERSION` (`'0.0.0'`).
+`versionUtil.getCurrentRelease()` (in `@fema-ipaas/server-utils`, `version.ts`) reads the running release from `<process.cwd()>/package.json`. **It is `cwd`-relative, not module-relative** — `__dirname` was tried and does not work in the bundled output, so do not "fix" it that way. On any failure (missing file, bad JSON, missing/non-string `version`) it logs a `warn` and returns the sentinel `UNKNOWN_VERSION` (`'0.0.0'`).
 
-**`UNKNOWN_VERSION` means "the read failed", NOT "this process is version 0.0.0".** Never treat it as a real release. The worker↔app dispatch gate (added in PR #13518) stops a version-skewed worker from silently corrupting runs during rolling deploys. Both ends route their comparison through **`apVersionUtil.versionsAreCompatible({ versionA, versionB })`**, which is **fail-closed**:
+**`UNKNOWN_VERSION` means "the read failed", NOT "this process is version 0.0.0".** Never treat it as a real release. The worker↔app dispatch gate (added in PR #13518) stops a version-skewed worker from silently corrupting runs during rolling deploys. Both ends route their comparison through **`versionUtil.versionsAreCompatible({ versionA, versionB })`**, which is **fail-closed**:
 - `undefined` on either side (an old, pre-gate worker) → incompatible.
 - `'0.0.0'` on either side (read failed) → incompatible — **including when both sides are `'0.0.0'`**.
 - otherwise → compatible iff the two real versions are equal.

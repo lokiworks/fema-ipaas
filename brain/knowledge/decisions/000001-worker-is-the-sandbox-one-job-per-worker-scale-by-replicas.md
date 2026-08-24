@@ -14,7 +14,7 @@ Superseded a short-lived LOCAL_POOL / GCP_CLOUD_RUN exploration (worker-as-pool-
 
 ## Why
 
-Removes the Docker-socket requirement (the biggest risk in the prior model) — self-hosting is just "scale workers", which is how AP already scales. One capped container per job means an OOM kills exactly one worker; the shared-heap ratchet from reusing in-process slots can't happen across jobs. One execution path = far less code: no seam, no remote transport, no provisioner, no HTTP envelope to keep in sync.
+Removes the Docker-socket requirement (the biggest risk in the prior model) — self-hosting is just "scale workers", which is how FEMA already scales. One capped container per job means an OOM kills exactly one worker; the shared-heap ratchet from reusing in-process slots can't happen across jobs. One execution path = far less code: no seam, no remote transport, no provisioner, no HTTP envelope to keep in sync.
 
 ## Consequences
 

@@ -2,22 +2,22 @@ import { evaluateRaw } from './function-implementations'
 import { FEMA_FUNCTIONS } from './function-registry'
 
 const CURRENT_FORMULA_VERSION = 1
-const FORMULA_PREFIX = `ap-formula-v${CURRENT_FORMULA_VERSION}::{`
-const FORMULA_SUFFIX = `}::ap-formula-v${CURRENT_FORMULA_VERSION}`
+const FORMULA_PREFIX = `fema-formula-v${CURRENT_FORMULA_VERSION}::{`
+const FORMULA_SUFFIX = `}::fema-formula-v${CURRENT_FORMULA_VERSION}`
 // Mirrored close marker means tokenization is a plain regex split — no
 // brace-counting or string-literal tracking needed at the wrapper level.
 // `[\s\S]*?` matches any character including newlines, non-greedy so adjacent
 // formulas don't merge into one capture. The `v(\d+)` lets us route saved
 // workflows from older format versions to the right evaluator after we ship v2,
 // without a data migration.
-const FORMULA_REGEX = /ap-formula-v(\d+)::\{([\s\S]*?)\}::ap-formula-v\1/g
+const FORMULA_REGEX = /fema-formula-v(\d+)::\{([\s\S]*?)\}::fema-formula-v\1/g
 
 function wrap(expression: string): string {
     return `${FORMULA_PREFIX}${expression}${FORMULA_SUFFIX}`
 }
 
 function containsWrapper(input: string): boolean {
-    return /ap-formula-v\d+::\{/.test(input)
+    return /fema-formula-v\d+::\{/.test(input)
 }
 
 function unwrap(template: string): string {

@@ -5,7 +5,7 @@ import {
 } from '@fema-ipaas/connector-sdk';
 import { isNil } from '@fema-ipaas/core-utils';
 import {
-  ApFlagId,
+  FlagId,
   ConnectorAction,
   ConnectorActionSettings,
   ConnectorTrigger,
@@ -53,18 +53,18 @@ const ConnectorSettings = React.memo((props: ConnectorSettingsProps) => {
   );
 
   const { data: webhookPrefixUrl } = flagsHooks.useFlag<string>(
-    ApFlagId.WEBHOOK_URL_PREFIX,
+    FlagId.WEBHOOK_URL_PREFIX,
   );
 
   const { data: pausedWorkflowTimeoutDays } = flagsHooks.useFlag<number>(
-    ApFlagId.PAUSED_WORKFLOW_TIMEOUT_DAYS,
+    FlagId.PAUSED_WORKFLOW_TIMEOUT_DAYS,
   );
 
   const { data: webhookTimeoutSeconds } = flagsHooks.useFlag<number>(
-    ApFlagId.WEBHOOK_TIMEOUT_SECONDS,
+    FlagId.WEBHOOK_TIMEOUT_SECONDS,
   );
 
-  const { data: frontendUrl } = flagsHooks.useFlag<string>(ApFlagId.PUBLIC_URL);
+  const { data: frontendUrl } = flagsHooks.useFlag<string>(FlagId.PUBLIC_URL);
   const markdownVariables = {
     webhookUrl: `${webhookPrefixUrl}/${props.workflowId}`,
     formUrl: `${frontendUrl}forms/${props.workflowId}`,

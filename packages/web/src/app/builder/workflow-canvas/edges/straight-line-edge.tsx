@@ -2,19 +2,19 @@ import { StepLocationRelativeToParent } from '@fema-ipaas/shared';
 import { BaseEdge, EdgeProps } from '@xyflow/react';
 
 import { workflowCanvasConsts } from '../utils/consts';
-import { ApStraightLineEdge } from '../utils/types';
+import { StraightLineEdge } from '../utils/types';
 
-import { ApAddButton } from './add-button';
+import { AddButton } from './add-button';
 import { useEdgeLayoutSpace } from './use-edge-layout-space';
 
-export const ApStraightLineCanvasEdge = ({
+export const StraightLineCanvasEdge = ({
   sourceX,
   sourceY,
   targetX,
   targetY,
   data,
   id,
-}: EdgeProps & ApStraightLineEdge) => {
+}: EdgeProps & StraightLineEdge) => {
   const { layoutSource, layoutTarget, toCanvasPath } = useEdgeLayoutSpace({
     sourceX,
     sourceY,
@@ -51,11 +51,11 @@ export const ApStraightLineCanvasEdge = ({
           height={workflowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.height}
           className="overflow-visible cursor-default"
         >
-          <ApAddButton
+          <AddButton
             edgeId={id}
             parentStepName={data.parentStepName}
             stepLocationRelativeToParent={StepLocationRelativeToParent.AFTER}
-          ></ApAddButton>
+          ></AddButton>
         </foreignObject>
       )}
     </>

@@ -1,5 +1,5 @@
 import { isNil, WorkflowId } from '@fema-ipaas/core-utils'
-import { apDayjsDuration } from '@fema-ipaas/server-utils'
+import { dayjsDuration } from '@fema-ipaas/server-utils'
 import { WorkflowExecutionState, workflowExecutionStateKey } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { distributedStore } from '../../database/redis-connections'
@@ -17,7 +17,7 @@ export const workflowExecutionCache = (log: FastifyBaseLogger) => ({
         const cachedValue = await distributedStore.get<WorkflowExecutionState>(workflowExecutionStateKey(params.workflowId))
         if (isNil(cachedValue)) {
             const workflowExecutionCache = await getWorkflowExecutionCache(params, log)
-            await distributedStore.put(workflowExecutionStateKey(params.workflowId), workflowExecutionCache, apDayjsDuration(30, 'day').asSeconds())
+            await distributedStore.put(workflowExecutionStateKey(params.workflowId), workflowExecutionCache, dayjsDuration(30, 'day').asSeconds())
             return workflowExecutionCache
         }
         return cachedValue

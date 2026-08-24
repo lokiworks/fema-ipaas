@@ -1,5 +1,5 @@
 import { Connector, ConnectorAuthProperty } from '@fema-ipaas/connector-sdk'
-import { apId, ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil } from '@fema-ipaas/core-utils'
+import { ApplicationError, assertNotNullOrUndefined, ErrorCode, generateId, isNil } from '@fema-ipaas/core-utils'
 import { LATEST_JOB_DATA_SCHEMA_VERSION, RunEnvironment, WorkerJobType, WorkflowStatus } from '@fema-ipaas/shared'
 import { FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
@@ -98,7 +98,7 @@ export const appEventRoutingController: FastifyPluginAsyncZod = async (
                 identifierValue,
             })
             const eventsQueue = listeners.map(async (listener) => {
-                const requestId = apId()
+                const requestId = generateId()
                 const workflow = await workflowService(request.log).getOne({ id: listener.workflowId, workspaceId: listener.workspaceId })
                 if (isNil(workflow)) {
                     return

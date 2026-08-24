@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { ApId } from '@fema-ipaas/core-utils'
+import { EntityId } from '@fema-ipaas/core-utils'
 
 export enum TriggerTestStrategy {
     SIMULATION = 'SIMULATION',
@@ -7,9 +7,9 @@ export enum TriggerTestStrategy {
 }
 
 export const TestTriggerRequestBody = z.object({
-    workspaceId: ApId,
-    workflowId: ApId,
-    workflowVersionId: ApId,
+    workspaceId: EntityId,
+    workflowId: EntityId,
+    workflowVersionId: EntityId,
     testStrategy: z.nativeEnum(TriggerTestStrategy),
 })
 
@@ -17,8 +17,8 @@ export type TestTriggerRequestBody = z.infer<typeof TestTriggerRequestBody>
 
 
 export const CancelTestTriggerRequestBody = z.object({
-    workspaceId: ApId,
-    workflowId: ApId,
+    workspaceId: EntityId,
+    workflowId: EntityId,
 })
 
 export type CancelTestTriggerRequestBody = z.infer<typeof CancelTestTriggerRequestBody>

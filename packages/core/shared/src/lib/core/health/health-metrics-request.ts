@@ -1,4 +1,4 @@
-import { ApId } from '@fema-ipaas/core-utils'
+import { EntityId } from '@fema-ipaas/core-utils'
 import { ExecutionStatus } from '@fema-ipaas/workflow-core'
 import { z } from 'zod'
 
@@ -21,9 +21,9 @@ export const TenantMetricsStatusPoint = z.object({
 })
 
 export const InternalErrorImpactItem = z.object({
-    workspaceId: ApId,
+    workspaceId: EntityId,
     workspaceName: z.string(),
-    workflowId: ApId,
+    workflowId: EntityId,
     workflowName: z.string(),
     count: z.number(),
 })
@@ -36,10 +36,10 @@ export const TenantMetricsReport = z.object({
 })
 
 export const StuckJob = z.object({
-    executionId: ApId,
-    workflowId: ApId,
+    executionId: EntityId,
+    workflowId: EntityId,
     workflowName: z.string(),
-    workspaceId: ApId,
+    workspaceId: EntityId,
     workspaceName: z.string(),
     status: z.enum(ExecutionStatus),
 })

@@ -1,8 +1,8 @@
 import { OtpModel, OtpState, OtpType, UserIdentity } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import {
-    ApIdSchema,
     BaseColumnSchemaPart,
+    EntityIdSchema,
 } from '../../database/database-common'
 
 export type OtpSchema = OtpModel & {
@@ -19,7 +19,7 @@ export const OtpEntity = new EntitySchema<OtpSchema>({
             nullable: false,
         },
         identityId: {
-            ...ApIdSchema,
+            ...EntityIdSchema,
             nullable: false,
         },
         value: {

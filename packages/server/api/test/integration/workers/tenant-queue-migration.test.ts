@@ -1,4 +1,4 @@
-import { apId } from '@fema-ipaas/core-utils'
+import { generateId } from '@fema-ipaas/core-utils'
 import { WorkflowTriggerType, LATEST_JOB_DATA_SCHEMA_VERSION, WorkerJobType } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { getTenantGroupQueueName } from '../../../../src/app/workers/job'
@@ -21,8 +21,8 @@ describe('tenantQueueMigrationService', () => {
     let toQueueName: string
 
     beforeEach(() => {
-        fromQueueName = getTenantGroupQueueName(apId())
-        toQueueName = getTenantGroupQueueName(apId())
+        fromQueueName = getTenantGroupQueueName(generateId())
+        toQueueName = getTenantGroupQueueName(generateId())
     })
 
     afterEach(async () => {
@@ -33,9 +33,9 @@ describe('tenantQueueMigrationService', () => {
     })
 
     it('returns early without touching queues when fromQueueName equals toQueueName', async () => {
-        const tenantId = apId()
-        const workflowVersionId = apId()
-        const sameQueue = getTenantGroupQueueName(apId())
+        const tenantId = generateId()
+        const workflowVersionId = generateId()
+        const sameQueue = getTenantGroupQueueName(generateId())
         const queue = await jobQueue(app.log).getOrCreateQueue({ queueName: sameQueue })
 
         await queue.upsertJobScheduler(
@@ -55,8 +55,8 @@ describe('tenantQueueMigrationService', () => {
     })
 
     it('moves a POLLING scheduler from source queue to target queue', async () => {
-        const tenantId = apId()
-        const workflowVersionId = apId()
+        const tenantId = generateId()
+        const workflowVersionId = generateId()
         const fromQueue = await jobQueue(app.log).getOrCreateQueue({ queueName: fromQueueName })
         const toQueue = await jobQueue(app.log).getOrCreateQueue({ queueName: toQueueName })
 
@@ -78,10 +78,10 @@ describe('tenantQueueMigrationService', () => {
     })
 
     it('does not migrate schedulers belonging to a different tenant', async () => {
-        const tenantA = apId()
-        const tenantB = apId()
-        const workflowVersionA = apId()
-        const workflowVersionB = apId()
+        const tenantA = generateId()
+        const tenantB = generateId()
+        const workflowVersionA = generateId()
+        const workflowVersionB = generateId()
         const fromQueue = await jobQueue(app.log).getOrCreateQueue({ queueName: fromQueueName })
         const toQueue = await jobQueue(app.log).getOrCreateQueue({ queueName: toQueueName })
 
@@ -109,8 +109,8 @@ describe('tenantQueueMigrationService', () => {
     })
 
     it('removes the orphaned next-run delayed job from the source queue after scheduler migration', async () => {
-        const tenantId = apId()
-        const workflowVersionId = apId()
+        const tenantId = generateId()
+        const workflowVersionId = generateId()
         const fromQueue = await jobQueue(app.log).getOrCreateQueue({ queueName: fromQueueName })
         const toQueue = await jobQueue(app.log).getOrCreateQueue({ queueName: toQueueName })
 
@@ -130,10 +130,10 @@ describe('tenantQueueMigrationService', () => {
     })
 
     it('does not remove delayed jobs belonging to other-tenant schedulers on the source queue', async () => {
-        const tenantA = apId()
-        const tenantB = apId()
-        const workflowVersionA = apId()
-        const workflowVersionB = apId()
+        const tenantA = generateId()
+        const tenantB = generateId()
+        const workflowVersionA = generateId()
+        const workflowVersionB = generateId()
         const fromQueue = await jobQueue(app.log).getOrCreateQueue({ queueName: fromQueueName })
 
         await fromQueue.upsertJobScheduler(
@@ -155,12 +155,12 @@ describe('tenantQueueMigrationService', () => {
     })
 
     it('moves regular (one-time) waiting jobs for the tenant', async () => {
-        const tenantId = apId()
-        const jobId = apId()
+        const tenantId = generateId()
+        const jobId = generateId()
         const fromQueue = await jobQueue(app.log).getOrCreateQueue({ queueName: fromQueueName })
         const toQueue = await jobQueue(app.log).getOrCreateQueue({ queueName: toQueueName })
 
-        await fromQueue.add(jobId, buildPollingJobData({ tenantId, workflowVersionId: apId() }), { jobId })
+        await fromQueue.add(jobId, buildPollingJobData({ tenantId, workflowVersionId: generateId() }), { jobId })
 
         await tenantQueueMigrationService(app.log).migrateJobs({ fromQueueName, toQueueName, tenantId })
 
@@ -172,15 +172,15 @@ describe('tenantQueueMigrationService', () => {
     })
 
     it('does not move regular jobs belonging to a different tenant', async () => {
-        const tenantA = apId()
-        const tenantB = apId()
+        const tenantA = generateId()
+        const tenantB = generateId()
         const fromQueue = await jobQueue(app.log).getOrCreateQueue({ queueName: fromQueueName })
         const toQueue = await jobQueue(app.log).getOrCreateQueue({ queueName: toQueueName })
 
-        const jobIdA = apId()
-        const jobIdB = apId()
-        await fromQueue.add(jobIdA, buildPollingJobData({ tenantId: tenantA, workflowVersionId: apId() }), { jobId: jobIdA })
-        await fromQueue.add(jobIdB, buildPollingJobData({ tenantId: tenantB, workflowVersionId: apId() }), { jobId: jobIdB })
+        const jobIdA = generateId()
+        const jobIdB = generateId()
+        await fromQueue.add(jobIdA, buildPollingJobData({ tenantId: tenantA, workflowVersionId: generateId() }), { jobId: jobIdA })
+        await fromQueue.add(jobIdB, buildPollingJobData({ tenantId: tenantB, workflowVersionId: generateId() }), { jobId: jobIdB })
 
         await tenantQueueMigrationService(app.log).migrateJobs({ fromQueueName, toQueueName, tenantId: tenantA })
 
@@ -190,13 +190,13 @@ describe('tenantQueueMigrationService', () => {
 
     describe('batch logic', () => {
         it('migrates all schedulers when count exceeds batchSize', async () => {
-            const tenantId = apId()
+            const tenantId = generateId()
             const fromQueue = await jobQueue(app.log).getOrCreateQueue({ queueName: fromQueueName })
             const toQueue = await jobQueue(app.log).getOrCreateQueue({ queueName: toQueueName })
             const total = 5
 
             for (let i = 0; i < total; i++) {
-                const workflowVersionId = apId()
+                const workflowVersionId = generateId()
                 await fromQueue.upsertJobScheduler(
                     workflowVersionId,
                     { pattern: '*/5 * * * *', tz: 'UTC' },
@@ -211,16 +211,16 @@ describe('tenantQueueMigrationService', () => {
         })
 
         it('leaves other-tenant schedulers on source when count exceeds batchSize', async () => {
-            const tenantA = apId()
-            const tenantB = apId()
+            const tenantA = generateId()
+            const tenantB = generateId()
             const fromQueue = await jobQueue(app.log).getOrCreateQueue({ queueName: fromQueueName })
             const toQueue = await jobQueue(app.log).getOrCreateQueue({ queueName: toQueueName })
 
             // Interleave tenantA and tenantB schedulers to exercise multi-batch offset tracking
             for (let i = 0; i < 3; i++) {
-                const idA = apId()
+                const idA = generateId()
                 await fromQueue.upsertJobScheduler(idA, { pattern: '*/5 * * * *', tz: 'UTC' }, { name: idA, data: buildPollingJobData({ tenantId: tenantA, workflowVersionId: idA }) })
-                const idB = apId()
+                const idB = generateId()
                 await fromQueue.upsertJobScheduler(idB, { pattern: '*/10 * * * *', tz: 'UTC' }, { name: idB, data: buildPollingJobData({ tenantId: tenantB, workflowVersionId: idB }) })
             }
 
@@ -234,14 +234,14 @@ describe('tenantQueueMigrationService', () => {
         })
 
         it('migrates all regular jobs when count exceeds batchSize', async () => {
-            const tenantId = apId()
+            const tenantId = generateId()
             const fromQueue = await jobQueue(app.log).getOrCreateQueue({ queueName: fromQueueName })
             const toQueue = await jobQueue(app.log).getOrCreateQueue({ queueName: toQueueName })
             const total = 5
 
             for (let i = 0; i < total; i++) {
-                const jobId = apId()
-                await fromQueue.add(jobId, buildPollingJobData({ tenantId, workflowVersionId: apId() }), { jobId })
+                const jobId = generateId()
+                await fromQueue.add(jobId, buildPollingJobData({ tenantId, workflowVersionId: generateId() }), { jobId })
             }
 
             await tenantQueueMigrationService(app.log).migrateJobs({ fromQueueName, toQueueName, tenantId, batchSize: 2 })
@@ -254,11 +254,11 @@ describe('tenantQueueMigrationService', () => {
 
 function buildPollingJobData({ tenantId, workflowVersionId }: { tenantId: string, workflowVersionId: string }) {
     return {
-        workspaceId: apId(),
+        workspaceId: generateId(),
         tenantId,
         schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
         workflowVersionId,
-        workflowId: apId(),
+        workflowId: generateId(),
         triggerType: WorkflowTriggerType.CONNECTOR,
         jobType: WorkerJobType.EXECUTE_POLLING,
     }

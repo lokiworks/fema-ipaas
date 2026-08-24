@@ -1,4 +1,4 @@
-import { apId } from '@fema-ipaas/core-utils'
+import { generateId } from '@fema-ipaas/core-utils'
 import { FileCompression, FileType, JobPayload } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { fileService } from '../file/file.service'
@@ -24,7 +24,7 @@ async function offloadPayload(
     workspaceId: string,
     tenantId: string,
 ): Promise<JobPayload> {
-    const fileId = apId()
+    const fileId = generateId()
     const data = Buffer.from(JSON.stringify(payload), 'utf8')
     await fileService(log).save({
         fileId,
@@ -51,7 +51,7 @@ async function maybeOffloadPayload(
     if (payloadSize <= thresholdBytes) {
         return { type: 'inline', value: payload }
     }
-    const fileId = apId()
+    const fileId = generateId()
     const data = Buffer.from(JSON.stringify(payload), 'utf8')
     await fileService(log).save({
         fileId,

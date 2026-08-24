@@ -1,4 +1,8 @@
-import { ApErrorParams, ErrorCode, isNil } from '@fema-ipaas/core-utils';
+import {
+  ApplicationErrorParams,
+  ErrorCode,
+  isNil,
+} from '@fema-ipaas/core-utils';
 import axios, {
   AxiosError,
   AxiosRequestConfig,
@@ -170,7 +174,7 @@ export const api = {
     if (!isAxiosError(error)) {
       return false;
     }
-    const responseData = error.response?.data as ApErrorParams;
+    const responseData = error.response?.data as ApplicationErrorParams;
     return responseData.code === errorCode;
   },
   isError(error: unknown): error is HttpError {
@@ -178,7 +182,7 @@ export const api = {
   },
   extractServerErrorMessage(error: unknown, fallback: string): string {
     if (api.isError(error)) {
-      const data = error.response?.data as ApErrorParams | undefined;
+      const data = error.response?.data as ApplicationErrorParams | undefined;
       const message =
         data?.params && 'message' in data.params
           ? data.params.message

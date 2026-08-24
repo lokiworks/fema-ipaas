@@ -1,4 +1,4 @@
-import { ApId, assertNotNullOrUndefined, SeekPage } from '@fema-ipaas/core-utils'
+import { assertNotNullOrUndefined, EntityId, SeekPage } from '@fema-ipaas/core-utils'
 import { ListUsersRequestBody, PrincipalType, SERVICE_KEY_SECURITY_OPENAPI, UpdateUserRequestBody, UserWithMetaInformation } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
@@ -68,7 +68,7 @@ const ListUsersRequest = {
 const UpdateUserRequest = {
     schema: {
         params: z.object({
-            id: ApId,
+            id: EntityId,
         }),
         body: UpdateUserRequestBody,
         response: {
@@ -86,7 +86,7 @@ const UpdateUserRequest = {
 const DeleteUserRequest = {
     schema: {
         params: z.object({
-            id: ApId,
+            id: EntityId,
         }),
         tags: ['users'],
         description: 'Delete user',

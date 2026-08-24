@@ -1,4 +1,4 @@
-import { ApFlagId, ConnectorSyncMode } from '@fema-ipaas/shared';
+import { FlagId, ConnectorSyncMode } from '@fema-ipaas/shared';
 import { RefreshCcw } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -7,7 +7,7 @@ import { flagsHooks } from '@/hooks/flags-hooks';
 
 const SyncConnectorsButton = () => {
   const { data: connectorsSyncMode } = flagsHooks.useFlag<string>(
-    ApFlagId.CONNECTORS_SYNC_MODE,
+    FlagId.CONNECTORS_SYNC_MODE,
   );
   const { mutate: syncConnectors, isPending } =
     tenantConnectorsMutations.useSyncConnectors();

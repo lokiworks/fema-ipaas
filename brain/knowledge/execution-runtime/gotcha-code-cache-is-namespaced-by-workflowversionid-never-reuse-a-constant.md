@@ -35,7 +35,7 @@ result on `provision.workflowVersionId` (so the mount is built) *and* on the `Co
 `ar_<platformId>_<sha256(sourceCode)>`: the hash keeps the build deterministic and cacheable, the
 `platformId` keeps one customer's compiled code out of another's directory, and the literal `ar_` prefix is
 how the sweeper tells action-run builds from workflow-version builds — length cannot, since `platformId` and
-`workflowVersionId` are both 21-char `apId`s.
+`workflowVersionId` are both 21-char `generateId`s.
 
 Do **not** clean the directory up at the end of a run. Reclamation is `actionRunCache.sweep`, a worker-local
 30-minute pass over `ar_*` (2h TTL, then oldest-first eviction past `AR_CACHE_MAX_DIRS`) driven from

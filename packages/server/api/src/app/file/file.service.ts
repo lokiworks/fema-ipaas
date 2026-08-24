@@ -1,6 +1,6 @@
 import { Readable } from 'node:stream'
 import { buffer as streamToBuffer } from 'node:stream/consumers'
-import { apId, ApplicationError, assertNotNullOrUndefined, ErrorCode, isMultipartFile, isNil, WorkspaceId } from '@fema-ipaas/core-utils'
+import { ApplicationError, assertNotNullOrUndefined, ErrorCode, generateId, isMultipartFile, isNil, WorkspaceId } from '@fema-ipaas/core-utils'
 import { File, FileCompression, FileId, FileLocation, FileType, Workspace } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
@@ -35,7 +35,7 @@ const saveFileToDb = async (baseFile: BaseFile, data: Buffer | null) => {
 export const fileService = (log: FastifyBaseLogger) => ({
     async save(params: SaveParams): Promise<File> {
         const baseFile: BaseFile = {
-            id: params.fileId ?? apId(),
+            id: params.fileId ?? generateId(),
             workspaceId: params.workspaceId,
             tenantId: params.tenantId,
             type: params.type,

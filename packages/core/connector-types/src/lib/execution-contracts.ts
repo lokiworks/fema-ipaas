@@ -1,4 +1,4 @@
-import { ApId, BaseModelSchema, DateOrString, Nullable } from '@fema-ipaas/core-utils'
+import { EntityId, BaseModelSchema, DateOrString, Nullable } from '@fema-ipaas/core-utils'
 import * as z from 'zod/mini'
 import { PackageType, ConnectorType } from './connector'
 import { TriggerStrategy } from './trigger'
@@ -87,7 +87,7 @@ export const TriggerSource = z.object({
 export type TriggerSource = z.infer<typeof TriggerSource>
 
 // ── file ───────────────────────────────────────────────────────────────────
-export type FileId = ApId
+export type FileId = EntityId
 
 export enum FileType {
     UNKNOWN = 'UNKNOWN',

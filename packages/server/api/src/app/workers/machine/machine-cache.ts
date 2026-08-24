@@ -1,5 +1,5 @@
 import { parseToJsonIfPossible } from '@fema-ipaas/core-utils'
-import { apDayjs } from '@fema-ipaas/server-utils'
+import { dayjsUtil } from '@fema-ipaas/server-utils'
 import { MachineInformation, WorkerGroupScope } from '@fema-ipaas/shared'
 import { redisConnections } from '../../database/redis-connections'
 
@@ -57,7 +57,7 @@ export const workerMachineCache = () => ({
     async upsert(worker: { id: string } & Partial<Omit<WorkerMachine, 'id'>>, existing?: WorkerMachine | null): Promise<void> {
         const redisConnection = await redisConnections.useExisting()
 
-        const now = apDayjs().toISOString()
+        const now = dayjsUtil().toISOString()
         if (existing) {
             const updated: WorkerMachine = {
                 ...existing,

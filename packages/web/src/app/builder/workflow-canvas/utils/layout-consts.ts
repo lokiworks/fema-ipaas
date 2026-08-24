@@ -8,7 +8,7 @@ import {
   WORKFLOW_CANVAS_VSPACE,
 } from '@fema-ipaas/shared';
 
-import { ApNodeType, CanvasOrientation } from './types';
+import { CanvasNodeType, CanvasOrientation } from './types';
 
 const ARC_LENGTH = WORKFLOW_CANVAS_ARC;
 const HORIZONTAL_LAYOUT_SPACE_BETWEEN_STEPS = 80;
@@ -59,14 +59,14 @@ const ORIENTATION_LAYOUT: Record<CanvasOrientation, OrientationLayout> = {
 const NODE_SELECTION_RECT_CLASS_NAME = 'react-flow__nodesselection-rect';
 
 const doesNodeAffectBoundingBoxWidth: (
-  type: ApNodeType,
+  type: CanvasNodeType,
 ) => type is
-  | ApNodeType.BIG_ADD_BUTTON
-  | ApNodeType.STEP
-  | ApNodeType.LOOP_RETURN_NODE = (type) =>
-  type === ApNodeType.BIG_ADD_BUTTON ||
-  type === ApNodeType.STEP ||
-  type === ApNodeType.LOOP_RETURN_NODE;
+  | CanvasNodeType.BIG_ADD_BUTTON
+  | CanvasNodeType.STEP
+  | CanvasNodeType.LOOP_RETURN_NODE = (type) =>
+  type === CanvasNodeType.BIG_ADD_BUTTON ||
+  type === CanvasNodeType.STEP ||
+  type === CanvasNodeType.LOOP_RETURN_NODE;
 
 export const workflowCanvasLayoutConsts = {
   ARC_LENGTH,

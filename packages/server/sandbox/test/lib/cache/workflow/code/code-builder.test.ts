@@ -3,7 +3,7 @@ import { readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { ExecutionMode, WorkflowVersionState, NetworkMode } from '@fema-ipaas/shared'
-import { ApLogger } from '@fema-ipaas/server-utils'
+import { Logger } from '@fema-ipaas/server-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const installMock = vi.fn()
@@ -28,8 +28,8 @@ function uniqueFolder(): string {
     return folder
 }
 
-function createNoopLog(): ApLogger {
-    const log: ApLogger = {
+function createNoopLog(): Logger {
+    const log: Logger = {
         level: 'silent',
         silent: () => undefined,
         info: () => undefined,

@@ -134,7 +134,7 @@ COPY --from=build /usr/src/app/dist/packages/web ./dist/packages/web/
 
 ENV NODE_ENV=production
 
-LABEL service=activepieces
+LABEL service=fema-ipaas
 
 # WORKER containers have no HTTP server; treat them as healthy (probe only the app).
 HEALTHCHECK --interval=10s --timeout=5s --start-period=60s --retries=5 \

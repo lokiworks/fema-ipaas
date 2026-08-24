@@ -115,10 +115,10 @@ async run(context) {
 ### Reading a file as a stream
 
 Add `streaming: true` to a `Property.File`. The property then resolves to an
-`ApStreamingFile` instead of an `ApFile`:
+`StreamingFile` instead of an `ConnectorFile`:
 
 ```ts
-type ApStreamingFile = {
+type StreamingFile = {
   filename: string;
   extension?: string;
   size?: number;      // may be undefined when the source doesn't report a length
@@ -184,7 +184,7 @@ if (file.size != null) {
 advertised length. Don't require it: prefer pattern 1 or 2, which never need it.
 
 <Tip>
-`Property.File()` without `streaming` is unchanged — it still resolves to an `ApFile` with a
+`Property.File()` without `streaming` is unchanged — it still resolves to an `ConnectorFile` with a
 `data` buffer, so existing actions keep working.
 </Tip>
 

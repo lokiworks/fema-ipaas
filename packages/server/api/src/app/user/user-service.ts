@@ -1,4 +1,4 @@
-import { apId, ApplicationError, assertNotNullOrUndefined, Cursor, ErrorCode, isNil, SeekPage, spreadIfDefined, TenantId, UserId, WorkspaceId } from '@fema-ipaas/core-utils'
+import { ApplicationError, assertNotNullOrUndefined, Cursor, ErrorCode, generateId, isNil, SeekPage, spreadIfDefined, TenantId, UserId, WorkspaceId } from '@fema-ipaas/core-utils'
 import { TenantRole, User, UserIdentity, UserStatus, UserWithMetaInformation, WorkspaceType } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
@@ -21,7 +21,7 @@ export const userService = (log: FastifyBaseLogger) => ({
     async create(params: CreateParams): Promise<User> {
         const isActive = params.isActive ?? true
         const user: NewUser = {
-            id: apId(),
+            id: generateId(),
             identityId: params.identityId,
             tenantRole: params.tenantRole,
             status: isActive ? UserStatus.ACTIVE : UserStatus.INACTIVE,

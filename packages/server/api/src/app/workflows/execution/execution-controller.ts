@@ -1,5 +1,5 @@
-import { ApId, ApplicationError, ErrorCode, isNil, omit, Permission, SeekPage } from '@fema-ipaas/core-utils'
-import { apDayjs } from '@fema-ipaas/server-utils'
+import { ApplicationError, EntityId, ErrorCode, isNil, omit, Permission, SeekPage } from '@fema-ipaas/core-utils'
+import { dayjsUtil } from '@fema-ipaas/server-utils'
 import { BulkActionOnRunsRequestBody, BulkArchiveActionOnRunsRequestBody, BulkCancelWorkflowRequestBody, CountExecutionsByStatusRequest, CountExecutionsByStatusResponse, Execution, ListExecutionsRequestQuery, PrincipalType, RetryWorkflowRequestBody, RunEnvironment, RunInternalErrorSource, SERVICE_KEY_SECURITY_OPENAPI, TenantRole, WorkspaceOverviewRequest, WorkspaceOverviewResponse } from '@fema-ipaas/shared'
 import { FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
@@ -43,7 +43,7 @@ export const executionController: FastifyPluginAsyncZod = async (app) => {
 
     app.get('/overview', WorkspaceOverviewRouteConfig, async (request) => {
         const { workspaceId, days } = request.query
-        const createdAfter = apDayjs().subtract(days, 'day').toISOString()
+        const createdAfter = dayjsUtil().subtract(days, 'day').toISOString()
         const [countByStatus, dailyTrend, topFailingWorkflows, connectionHealth, topConnectors, recentlyEditedWorkflows] = await Promise.all([
             executionService(request.log).countByStatus({ workspaceId, createdAfter }),
             executionService(request.log).dailyTrend({ workspaceId, createdAfter }),
@@ -176,7 +176,7 @@ const GetRequest = {
         description: 'Get Workflow Run',
         security: [SERVICE_KEY_SECURITY_OPENAPI],
         params: z.object({
-            id: ApId,
+            id: EntityId,
         }),
         response: {
             [StatusCodes.OK]: Execution,
@@ -195,7 +195,7 @@ const RetryWorkflowRequest = {
     },
     schema: {
         params: z.object({
-            id: ApId,
+            id: EntityId,
         }),
         body: RetryWorkflowRequestBody,
     },

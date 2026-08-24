@@ -1,4 +1,4 @@
-import { apVersionUtil, evlogSetup } from '@fema-ipaas/server-utils'
+import { evlogSetup, versionUtil } from '@fema-ipaas/server-utils'
 import { FastifyBaseLogger } from 'fastify'
 import { AppSystemProp, environmentVariables } from '../system/system-props'
 
@@ -15,7 +15,7 @@ function buildFacade(): FastifyBaseLogger {
     return evlogSetup.init({
         params: {
             serviceName: 'fema-api',
-            version: apVersionUtil.getCurrentRelease(),
+            version: versionUtil.getCurrentRelease(),
             environment: environmentVariables.getEnvironment(AppSystemProp.ENVIRONMENT),
             logLevel,
             logPretty,

@@ -1,4 +1,8 @@
-import { ApErrorParams, ErrorCode, isNil } from '@fema-ipaas/core-utils';
+import {
+  ApplicationErrorParams,
+  ErrorCode,
+  isNil,
+} from '@fema-ipaas/core-utils';
 import { Template } from '@fema-ipaas/shared';
 import { useMutation } from '@tanstack/react-query';
 import { t } from 'i18next';
@@ -35,8 +39,8 @@ const TemplateViewer = ({ template }: { template: Template }) => {
     },
     onError: (error) => {
       if (api.isError(error)) {
-        const apError = error.response?.data as ApErrorParams;
-        if (apError.code === ErrorCode.PERMISSION_DENIED) {
+        const applicationError = error.response?.data as ApplicationErrorParams;
+        if (applicationError.code === ErrorCode.PERMISSION_DENIED) {
           toast.error(t('Import Failed'), {
             description: t("You don't have permission to import this template"),
             duration: 3000,

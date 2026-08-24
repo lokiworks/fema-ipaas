@@ -1,4 +1,4 @@
-import { apId, assertEqual, createByteLruCache, isNil } from '@fema-ipaas/core-utils'
+import { assertEqual, createByteLruCache, generateId, isNil } from '@fema-ipaas/core-utils'
 import { BaseStepOutput, EngineGenericError, executionJournal, ExecutionStatus, FailedStep, FileType, GenericStepOutput, LogSliceRef, LoopStepOutput, LoopStepResult, RespondResponse, StepOutput, StepOutputStatus, StepOutputType, WorkflowActionType } from '@fema-ipaas/shared'
 import { engineFileApi } from '../../api/engine-file-api'
 import { loggingUtils } from '../../helper/logging-utils'
@@ -217,7 +217,7 @@ async function maybeSliceOutput({ value, engineApi }: MaybeSliceOutputParams): P
     const { fileId, readUrl } = await engineFileApi.upload({
         apiUrl: engineApi.internalApiUrl,
         engineToken: engineApi.engineToken,
-        fileId: apId(),
+        fileId: generateId(),
         type: FileType.EXECUTION_LOG_SLICE,
         data,
     })

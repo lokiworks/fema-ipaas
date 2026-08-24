@@ -1,7 +1,7 @@
-import { type ApLogger, apVersionUtil, evlogSetup } from '@fema-ipaas/server-utils'
+import { evlogSetup, type Logger, versionUtil } from '@fema-ipaas/server-utils'
 import { system, WorkerSystemProp } from './configs'
 
-function buildLogger(): ApLogger {
+function buildLogger(): Logger {
     const logLevel = system.get(WorkerSystemProp.LOG_LEVEL) ?? 'info'
     const logPretty = system.getBoolean(WorkerSystemProp.LOG_PRETTY) ?? false
     const sampleRateRaw = system.get(WorkerSystemProp.LOG_SAMPLE_RATE_INFO)
@@ -12,7 +12,7 @@ function buildLogger(): ApLogger {
     return evlogSetup.init({
         params: {
             serviceName: 'fema-worker',
-            version: apVersionUtil.getCurrentRelease(),
+            version: versionUtil.getCurrentRelease(),
             environment: system.get(WorkerSystemProp.ENVIRONMENT),
             logLevel,
             logPretty,
@@ -35,4 +35,4 @@ function buildLogger(): ApLogger {
     })
 }
 
-export const logger: ApLogger = buildLogger()
+export const logger: Logger = buildLogger()

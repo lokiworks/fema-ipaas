@@ -1,4 +1,4 @@
-import { apId } from '@fema-ipaas/core-utils'
+import { generateId } from '@fema-ipaas/core-utils'
 import { PrincipalType } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
@@ -44,7 +44,7 @@ describe('Workflow API for Worker', () => {
             await db.save('workflow_version', [mockWorkflowVersion])
 
             const mockToken = await generateMockToken({
-                id: apId(),
+                id: generateId(),
                 type: PrincipalType.WORKER,
             })
 

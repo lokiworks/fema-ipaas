@@ -1,5 +1,5 @@
 import {
-  ApFlagId,
+  FlagId,
   ExecutionStatus,
   isExecutionStateTerminal,
   StepOutputStatus,
@@ -84,13 +84,13 @@ const RunInfoWidget = () => {
     ? executionUtils.getStatusIcon(run.status)
     : { variant: 'default' as const, Icon: CircleHelp };
   const { data: timeoutSeconds } = flagsHooks.useFlag<number>(
-    ApFlagId.EXECUTION_TIME_SECONDS,
+    FlagId.EXECUTION_TIME_SECONDS,
   );
   const { data: memoryLimit } = flagsHooks.useFlag<number>(
-    ApFlagId.EXECUTION_MEMORY_LIMIT_KB,
+    FlagId.EXECUTION_MEMORY_LIMIT_KB,
   );
   const { data: logSizeLimit } = flagsHooks.useFlag<number>(
-    ApFlagId.EXECUTION_LOG_SIZE_LIMIT_MB,
+    FlagId.EXECUTION_LOG_SIZE_LIMIT_MB,
   );
   if (!run) {
     return null;

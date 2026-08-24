@@ -1,5 +1,5 @@
 import { tryCatch } from '@fema-ipaas/core-utils'
-import { ApLogger } from '@fema-ipaas/server-utils'
+import { Logger } from '@fema-ipaas/server-utils'
 import { EngineResponseStatus, TriggerRunStatus, WorkerToApiContract, WorkflowTriggerType, WorkflowVersion } from '@fema-ipaas/shared'
 
 export async function recordTriggerRun({ apiClient, log, workflowVersion, tenantId, status }: RecordTriggerRunParams): Promise<void> {
@@ -16,7 +16,7 @@ export async function recordTriggerRun({ apiClient, log, workflowVersion, tenant
 
 type RecordTriggerRunParams = {
     apiClient: WorkerToApiContract
-    log: ApLogger
+    log: Logger
     workflowVersion: WorkflowVersion
     tenantId: string
     status: EngineResponseStatus

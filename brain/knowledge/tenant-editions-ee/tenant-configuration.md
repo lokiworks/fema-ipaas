@@ -4,6 +4,11 @@ icon: 🏢
 
 # Platform Configuration
 
+> **历史资料 —— 描述的是上游，不是本仓库。** 本页写的 Edition 体系、计费与席位、
+> license key、Cloud 形态在本仓库**都不存在**（Edition 已彻底删除，见
+> [decisions/000030](../decisions/000030-this-fork-has-no-editions-the-ee-pages-are-history.md)）。
+> 读它了解上游为什么那样设计可以，照着写代码不行——以 `docs/adr/` 和代码为准。
+
 A **Platform** is the top-level tenant namespace in FEMA Integration Platform. Every install has at least one. It owns branding (logo, colors, favicon), auth settings (email auth toggle, allowed auth domains, federated SSO), and a `PlatformPlan` that governs feature flags and limits. On Cloud a user can own many platforms; on CE/EE there's typically one. Available in all editions.
 
 ### Entities & services

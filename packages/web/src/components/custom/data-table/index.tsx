@@ -1,6 +1,6 @@
 'use client';
 
-import { apId, isNil, SeekPage } from '@fema-ipaas/core-utils';
+import { generateId, isNil, SeekPage } from '@fema-ipaas/core-utils';
 import {
   ColumnDef as TanstackColumnDef,
   flexRender,
@@ -251,7 +251,7 @@ export function DataTable<
     ...((clientPagination || virtualizeRows) && {
       getPaginationRowModel: getPaginationRowModel(),
     }),
-    getRowId: () => apId(),
+    getRowId: () => generateId(),
     initialState: {
       pagination: {
         pageSize: virtualizeRows

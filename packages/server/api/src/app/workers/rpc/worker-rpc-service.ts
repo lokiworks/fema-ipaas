@@ -1,5 +1,5 @@
 import { assertNotNullOrUndefined, isNil } from '@fema-ipaas/core-utils'
-import { apVersionUtil, onCallService, UNKNOWN_VERSION } from '@fema-ipaas/server-utils'
+import { onCallService, UNKNOWN_VERSION, versionUtil } from '@fema-ipaas/server-utils'
 import { ExecutionType, FileCompression, FileLocation, FileType, WorkerGroupScope, WorkerToApiContract, WorkflowOperationType, WorkflowStatus } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { connectorMetadataService } from '../../connectors/metadata/connector-metadata-service'
@@ -56,8 +56,8 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
             log.info({ worker: { id: input.workerId }, workerGroup: assignment ?? undefined }, '[workerRpc#poll] Poll request received')
             await machineService(log).onConnection(input, assignment)
             const workerVersion = input.workerProps.version
-            const appVersion = apVersionUtil.getCurrentRelease()
-            if (!apVersionUtil.versionsAreCompatible({ versionA: workerVersion, versionB: appVersion })) {
+            const appVersion = versionUtil.getCurrentRelease()
+            if (!versionUtil.versionsAreCompatible({ versionA: workerVersion, versionB: appVersion })) {
                 const versionUnreadable = workerVersion === UNKNOWN_VERSION || appVersion === UNKNOWN_VERSION
                 if (versionUnreadable) {
                     log.error({ worker: { id: input.workerId }, workerVersion, appVersion }, '[workerRpc#poll] Withholding job — a release version could not be read from package.json (reported as 0.0.0); this will NOT self-heal on deploy completion, check the worker/app deployment (cwd/packaging)')

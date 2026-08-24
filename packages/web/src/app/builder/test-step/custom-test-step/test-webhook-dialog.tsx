@@ -1,4 +1,4 @@
-import { WorkflowAction, ApFlagId, WorkflowTrigger } from '@fema-ipaas/shared';
+import { WorkflowAction, FlagId, WorkflowTrigger } from '@fema-ipaas/shared';
 import { useMutation } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { useState } from 'react';
@@ -92,7 +92,7 @@ const TestTriggerWebhookDialog = ({
   onOpenChange,
 }: TestTriggerWebhookDialogProps) => {
   const { data: webhookPrefixUrl } = flagsHooks.useFlag<string>(
-    ApFlagId.WEBHOOK_URL_PREFIX,
+    FlagId.WEBHOOK_URL_PREFIX,
   );
   const workflowId = useBuilderStateContext((state) => state.workflow.id);
   const [isLoading, setIsLoading] = useState(false);

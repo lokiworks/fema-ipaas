@@ -1,4 +1,4 @@
-import { apId, ErrorCode } from '@fema-ipaas/core-utils'
+import { generateId, ErrorCode } from '@fema-ipaas/core-utils'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { createTestContext } from '../../../../helpers/test-context'
@@ -16,14 +16,14 @@ afterAll(async () => {
 
 describe('Error handler wire format', () => {
     it('returns 401 for an invalid bearer token', async () => {
-        // Use a route without required query params and a valid ApId-shaped path
+        // Use a route without required query params and a valid EntityId-shaped path
         // param, so schema validation (which runs before the auth preHandler)
         // does not 400 before auth rejects. The body shape on this path is
         // fastify's default error serialization (same as before the evlog
         // migration) — only the status code is contractual here.
         const response = await app?.inject({
             method: 'GET',
-            url: `/api/v1/workflows/${apId()}`,
+            url: `/api/v1/workflows/${generateId()}`,
             headers: {
                 authorization: 'Bearer invalid-token',
             },
@@ -34,7 +34,7 @@ describe('Error handler wire format', () => {
 
     it('returns { code, params } with correct status for ENTITY_NOT_FOUND (ApplicationError)', async () => {
         const ctx = await createTestContext(app!)
-        const response = await ctx.get(`/v1/workflows/${apId()}`)
+        const response = await ctx.get(`/v1/workflows/${generateId()}`)
 
         expect(response.statusCode).toBe(StatusCodes.NOT_FOUND)
         const body = response.json()

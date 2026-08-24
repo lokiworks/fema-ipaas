@@ -1,4 +1,4 @@
-import { isNil, apId } from '@fema-ipaas/core-utils';
+import { isNil, generateId } from '@fema-ipaas/core-utils';
 import {
   PopulatedWorkflow,
   WorkflowVersionState,
@@ -57,11 +57,11 @@ const TemplateDetailsPage = ({ template }: TemplateDetailsPageProps) => {
       return null;
     }
 
-    const workflowId = apId();
+    const workflowId = generateId();
     return {
       id: workflowId,
-      workspaceId: apId(),
-      externalId: apId(),
+      workspaceId: generateId(),
+      externalId: generateId(),
       folderId: null,
       status: WorkflowStatus.DISABLED,
       publishedVersionId: null,
@@ -71,7 +71,7 @@ const TemplateDetailsPage = ({ template }: TemplateDetailsPageProps) => {
       updated: template.updated,
       version: {
         ...selectedWorkflow,
-        id: apId(),
+        id: generateId(),
         workflowId: workflowId,
         created: template.created,
         updated: template.updated,

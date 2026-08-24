@@ -1,5 +1,5 @@
 import { isNil, tryCatch, unique } from '@fema-ipaas/core-utils'
-import { type ApLogger, fileSystemUtils } from '@fema-ipaas/server-utils'
+import { fileSystemUtils, type Logger } from '@fema-ipaas/server-utils'
 import { WorkerToApiContract, WorkflowVersion } from '@fema-ipaas/shared'
 import { cacheUtils } from './cache/cache-paths'
 import { codeBuilder } from './cache/workflow/code/code-builder'
@@ -78,12 +78,12 @@ type CreateResolverParams = {
     apiClient: WorkerToApiContract
     basePath: string
     getSettings: () => SandboxSettings
-    log: ApLogger
+    log: Logger
 }
 
 type CompileCodeStepsParams = {
     codes: CodeArtifact[]
     basePath: string
     getSettings: () => SandboxSettings
-    log: ApLogger
+    log: Logger
 }

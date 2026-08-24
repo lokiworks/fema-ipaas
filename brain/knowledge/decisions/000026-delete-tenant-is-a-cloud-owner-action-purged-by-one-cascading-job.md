@@ -4,6 +4,11 @@ status: accepted
 
 # Delete Platform is a Cloud, owner-only action purged by one cascading job
 
+> **历史资料 —— 描述的是上游，不是本仓库。** 本页写的 Edition 体系、计费与席位、
+> license key、Cloud 形态在本仓库**都不存在**（Edition 已彻底删除，见
+> [decisions/000030](./000030-this-fork-has-no-editions-the-ee-pages-are-history.md)）。
+> 读它了解上游为什么那样设计可以，照着写代码不行——以 `docs/adr/` 和代码为准。
+
 ## Decision
 
 The account-settings "Delete Your Account" control becomes **Delete Platform** and moves to **Platform Admin**, where the rest of the platform-wide destructive surface lives. It is confirmed by typing the **platform name**, not the owner's email, and it targets the **currently-active platform** — a Cloud owner's other platforms are untouched. It stays **Cloud-only** and **owner-only** (the existing `platformToEditMustBeOwnedByCurrentUser` check on `DELETE /v1/platforms/:id`).

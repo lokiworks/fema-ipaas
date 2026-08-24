@@ -2,9 +2,9 @@ import { StepLocationRelativeToParent } from '@fema-ipaas/shared';
 import { BaseEdge, EdgeProps } from '@xyflow/react';
 
 import { workflowCanvasConsts } from '../utils/consts';
-import { ApRouterStartEdge } from '../utils/types';
+import { RouterStartEdge } from '../utils/types';
 
-import { ApAddButton } from './add-button';
+import { AddButton } from './add-button';
 import { BranchLabel } from './branch-label';
 import { useEdgeLayoutSpace } from './use-edge-layout-space';
 
@@ -13,7 +13,7 @@ const HORIZONTAL_BUTTON_END_MARGIN = 26;
 // gap between the branch label pill and the entry-line add button
 const HORIZONTAL_LABEL_BUTTON_GAP = 14;
 
-export const ApRouterStartCanvasEdge = ({
+export const RouterStartCanvasEdge = ({
   sourceX,
   sourceY,
   targetX,
@@ -22,7 +22,7 @@ export const ApRouterStartCanvasEdge = ({
   source,
   target,
   id,
-}: EdgeProps & Omit<ApRouterStartEdge, 'position'>) => {
+}: EdgeProps & Omit<RouterStartEdge, 'position'>) => {
   const { isHorizontal, layout, layoutSource, layoutTarget, toCanvasPath } =
     useEdgeLayoutSpace({ sourceX, sourceY, targetX, targetY });
 
@@ -168,21 +168,21 @@ export const ApRouterStartCanvasEdge = ({
         >
           {data.stepLocationRelativeToParent !==
             StepLocationRelativeToParent.INSIDE_BRANCH && (
-            <ApAddButton
+            <AddButton
               edgeId={id}
               stepLocationRelativeToParent={data.stepLocationRelativeToParent}
               parentStepName={source}
-            ></ApAddButton>
+            ></AddButton>
           )}
 
           {data.stepLocationRelativeToParent ===
             StepLocationRelativeToParent.INSIDE_BRANCH && (
-            <ApAddButton
+            <AddButton
               edgeId={id}
               stepLocationRelativeToParent={data.stepLocationRelativeToParent}
               parentStepName={source}
               branchIndex={data.branchIndex}
-            ></ApAddButton>
+            ></AddButton>
           )}
         </foreignObject>
       )}

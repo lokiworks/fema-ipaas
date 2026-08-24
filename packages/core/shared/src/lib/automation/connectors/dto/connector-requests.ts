@@ -1,4 +1,4 @@
-import { ApMultipartFile, OptionalArrayFromQuery, OptionalBooleanFromQuery } from '@fema-ipaas/core-utils'
+import { OptionalArrayFromQuery, OptionalBooleanFromQuery, UploadedFile } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 import { ConnectorCategory, PackageType } from '../connector'
 
@@ -103,7 +103,7 @@ export const AddConnectorRequestBody = z.union([
         scope: z.literal(ConnectorScope.TENANT),
         connectorName: z.string().min(1),
         connectorVersion: ExactVersionType,
-        connectorArchive: ApMultipartFile,
+        connectorArchive: UploadedFile,
         checksum: z.string().optional(),
         signature: z.string().optional(),
     }).describe('Private Connector'),

@@ -1,4 +1,4 @@
-import { apId } from '@fema-ipaas/core-utils'
+import { generateId } from '@fema-ipaas/core-utils'
 import { ConnectionScope, ConnectionStatus, ConnectionType, PackageType, ConnectorType, PLACEHOLDER_CONNECTION_TYPE } from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
@@ -280,7 +280,7 @@ describe('Connection CE API', () => {
 
         it('should return 404 for non-existent connection', async () => {
             const ctx = await setup()
-            const nonExistentId = apId()
+            const nonExistentId = generateId()
 
             const response = await ctx.post(`/v1/connections/${nonExistentId}`, {
                 displayName: 'Updated Name',
@@ -412,7 +412,7 @@ describe('Connection CE API', () => {
         it('should return 404 for a non-existent connection', async () => {
             const ctx = await setup()
 
-            const response = await ctx.get(`/v1/connections/${apId()}`)
+            const response = await ctx.get(`/v1/connections/${generateId()}`)
 
             expect(response?.statusCode).toBe(StatusCodes.NOT_FOUND)
         })
@@ -510,7 +510,7 @@ describe('Connection CE API', () => {
 
         it('should return 404 for non-existent connection', async () => {
             const ctx = await setup()
-            const nonExistentId = apId()
+            const nonExistentId = generateId()
 
             const response = await ctx.delete(`/v1/connections/${nonExistentId}`)
 

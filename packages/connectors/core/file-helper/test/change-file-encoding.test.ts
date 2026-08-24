@@ -1,11 +1,11 @@
 /// <reference types="vitest/globals" />
 
 import { changeFileEncoding } from '../src/lib/actions/change-file-encoding';
-import { createMockActionContext, ApFile } from '@fema-ipaas/connector-sdk';
+import { createMockActionContext, ConnectorFile } from '@fema-ipaas/connector-sdk';
 
 describe('changeFileEncoding', () => {
   test('changes encoding from utf8 to base64', async () => {
-    const file = new ApFile('input.txt', Buffer.from('Hello, World!', 'utf8'), 'txt');
+    const file = new ConnectorFile('input.txt', Buffer.from('Hello, World!', 'utf8'), 'txt');
     const ctx = createMockActionContext({
       propsValue: {
         inputFile: file,

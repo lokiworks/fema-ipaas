@@ -1,4 +1,4 @@
-import { ApFlagId, feedbackUrl } from '@fema-ipaas/shared';
+import { FlagId, feedbackUrl } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { MessageSquarePlusIcon, SearchXIcon } from 'lucide-react';
 
@@ -8,7 +8,7 @@ import { flagsHooks } from '@/hooks/flags-hooks';
 
 const NoResultsFound = () => {
   const { data: showCommunityLinks } = flagsHooks.useFlag<boolean>(
-    ApFlagId.SHOW_COMMUNITY,
+    FlagId.SHOW_COMMUNITY,
   );
   const isEmbedding = useEmbedding().embedState.isEmbedded;
   const showRequestConnectorButton = showCommunityLinks && !isEmbedding;

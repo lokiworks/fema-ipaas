@@ -7,7 +7,7 @@ import {
   isExecutionStateTerminal,
   Execution,
   ExecutionStatus,
-  ApFlagId,
+  FlagId,
   LogSliceRef,
   StepOutputType,
   RunInternalError,
@@ -111,7 +111,7 @@ export const WorkflowStepInputOutput = () => {
     ignoreInternalError: true,
   });
   const { data: rententionDays } = flagsHooks.useFlag<number>(
-    ApFlagId.EXECUTION_DATA_RETENTION_DAYS,
+    FlagId.EXECUTION_DATA_RETENTION_DAYS,
   );
 
   if (

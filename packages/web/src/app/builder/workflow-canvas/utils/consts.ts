@@ -8,20 +8,20 @@ import {
   NoteColorVariant,
 } from '@fema-ipaas/shared';
 
-import { ApJoinCanvasEdge } from '../edges/join-edge';
-import { ApLoopReturnLineCanvasEdge as ApLoopReturnCanvasEdge } from '../edges/loop-return-edge';
-import { ApLoopStartLineCanvasEdge as ApLoopStartCanvasEdge } from '../edges/loop-start-edge';
-import { ApRouterEndCanvasEdge } from '../edges/router-end-edge';
-import { ApRouterStartCanvasEdge } from '../edges/router-start-edge';
-import { ApStraightLineCanvasEdge } from '../edges/straight-line-edge';
-import { ApBigAddButtonCanvasNode } from '../nodes/big-add-button-node';
-import ApLoopReturnCanvasNode from '../nodes/loop-return-node';
-import { ApNoteCanvasNode } from '../nodes/note-node';
-import { ApStepCanvasNode } from '../nodes/step-node';
-import ApGraphEndWidgetNode from '../nodes/workflow-end-widget-node';
+import { JoinCanvasEdge } from '../edges/join-edge';
+import { LoopReturnLineCanvasEdge as LoopReturnCanvasEdge } from '../edges/loop-return-edge';
+import { LoopStartLineCanvasEdge as LoopStartCanvasEdge } from '../edges/loop-start-edge';
+import { RouterEndCanvasEdge } from '../edges/router-end-edge';
+import { RouterStartCanvasEdge } from '../edges/router-start-edge';
+import { StraightLineCanvasEdge } from '../edges/straight-line-edge';
+import { BigAddButtonCanvasNode } from '../nodes/big-add-button-node';
+import LoopReturnCanvasNode from '../nodes/loop-return-node';
+import { NoteCanvasNode } from '../nodes/note-node';
+import { StepCanvasNode } from '../nodes/step-node';
+import GraphEndWidgetNode from '../nodes/workflow-end-widget-node';
 
 import { workflowCanvasLayoutConsts } from './layout-consts';
-import { ApEdgeType, ApNodeType } from './types';
+import { CanvasEdgeType, CanvasNodeType } from './types';
 
 const ARC_LENGTH = workflowCanvasLayoutConsts.ARC_LENGTH;
 const ORIENTATION_LAYOUT = workflowCanvasLayoutConsts.ORIENTATION_LAYOUT;
@@ -50,26 +50,29 @@ const DRAGGED_STEP_TAG = 'dragged-step';
 const DRAGGED_NOTE_TAG = 'dragged-note';
 const HORIZONTAL_SPACE_BETWEEN_NODES = WORKFLOW_CANVAS_HSPACE;
 const FEMA_NODE_SIZE: Record<
-  Exclude<ApNodeType, ApNodeType.GRAPH_START_WIDGET | ApNodeType.NOTE>,
+  Exclude<
+    CanvasNodeType,
+    CanvasNodeType.GRAPH_START_WIDGET | CanvasNodeType.NOTE
+  >,
   { height: number; width: number }
 > = {
-  [ApNodeType.BIG_ADD_BUTTON]: {
+  [CanvasNodeType.BIG_ADD_BUTTON]: {
     height: 50,
     width: 50,
   },
-  [ApNodeType.ADD_BUTTON]: {
+  [CanvasNodeType.ADD_BUTTON]: {
     height: 20,
     width: 20,
   },
-  [ApNodeType.STEP]: {
+  [CanvasNodeType.STEP]: {
     height: WORKFLOW_CANVAS_STEP_HEIGHT,
     width: WORKFLOW_CANVAS_STEP_WIDTH,
   },
-  [ApNodeType.LOOP_RETURN_NODE]: {
+  [CanvasNodeType.LOOP_RETURN_NODE]: {
     height: WORKFLOW_CANVAS_STEP_HEIGHT,
     width: WORKFLOW_CANVAS_STEP_WIDTH,
   },
-  [ApNodeType.GRAPH_END_WIDGET]: {
+  [CanvasNodeType.GRAPH_END_WIDGET]: {
     height: 0,
     width: 0,
   },
@@ -98,19 +101,19 @@ export const workflowCanvasConsts = {
   doesNodeAffectBoundingBox:
     workflowCanvasLayoutConsts.doesNodeAffectBoundingBox,
   edgeTypes: {
-    [ApEdgeType.STRAIGHT_LINE]: ApStraightLineCanvasEdge,
-    [ApEdgeType.LOOP_START_EDGE]: ApLoopStartCanvasEdge,
-    [ApEdgeType.LOOP_RETURN_EDGE]: ApLoopReturnCanvasEdge,
-    [ApEdgeType.ROUTER_START_EDGE]: ApRouterStartCanvasEdge,
-    [ApEdgeType.ROUTER_END_EDGE]: ApRouterEndCanvasEdge,
-    [ApEdgeType.JOIN_EDGE]: ApJoinCanvasEdge,
+    [CanvasEdgeType.STRAIGHT_LINE]: StraightLineCanvasEdge,
+    [CanvasEdgeType.LOOP_START_EDGE]: LoopStartCanvasEdge,
+    [CanvasEdgeType.LOOP_RETURN_EDGE]: LoopReturnCanvasEdge,
+    [CanvasEdgeType.ROUTER_START_EDGE]: RouterStartCanvasEdge,
+    [CanvasEdgeType.ROUTER_END_EDGE]: RouterEndCanvasEdge,
+    [CanvasEdgeType.JOIN_EDGE]: JoinCanvasEdge,
   },
   nodeTypes: {
-    [ApNodeType.STEP]: ApStepCanvasNode,
-    [ApNodeType.LOOP_RETURN_NODE]: ApLoopReturnCanvasNode,
-    [ApNodeType.BIG_ADD_BUTTON]: ApBigAddButtonCanvasNode,
-    [ApNodeType.GRAPH_END_WIDGET]: ApGraphEndWidgetNode,
-    [ApNodeType.NOTE]: ApNoteCanvasNode,
+    [CanvasNodeType.STEP]: StepCanvasNode,
+    [CanvasNodeType.LOOP_RETURN_NODE]: LoopReturnCanvasNode,
+    [CanvasNodeType.BIG_ADD_BUTTON]: BigAddButtonCanvasNode,
+    [CanvasNodeType.GRAPH_END_WIDGET]: GraphEndWidgetNode,
+    [CanvasNodeType.NOTE]: NoteCanvasNode,
   },
   DRAGGED_STEP_TAG,
   DRAGGED_NOTE_TAG,

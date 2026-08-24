@@ -2,7 +2,7 @@ import { isNil } from '@fema-ipaas/core-utils';
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
 import { t } from 'i18next';
 
-import { useApErrorDialogStore } from '@/components/custom/ap-error-dialog/ap-error-dialog-store';
+import { useApErrorDialogStore } from '@/components/custom/error-dialog/error-dialog-store';
 import { internalErrorToast } from '@/components/ui/sonner';
 import { api } from '@/lib/api';
 

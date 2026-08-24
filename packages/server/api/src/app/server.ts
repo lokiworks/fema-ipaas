@@ -4,9 +4,9 @@ import formBody from '@fastify/formbody'
 import fastifyHttpProxy from '@fastify/http-proxy'
 import fastifyMultipart from '@fastify/multipart'
 import fastifyStatic from '@fastify/static'
-import { apId, spreadIfDefined } from '@fema-ipaas/core-utils'
-import { apLogger, evlogFastify, useWideEventLogger, wideEvent } from '@fema-ipaas/server-utils'
-import { ApEnvironment, maxSocketHttpBufferSizeBytes, NETWORK_AGENT_NAMESPACE } from '@fema-ipaas/shared'
+import { generateId, spreadIfDefined } from '@fema-ipaas/core-utils'
+import { evlogFastify, loggerFactory, useWideEventLogger, wideEvent } from '@fema-ipaas/server-utils'
+import { maxSocketHttpBufferSizeBytes, RuntimeEnvironment } from '@fema-ipaas/shared'
 import fastify, { FastifyInstance } from 'fastify'
 import { fastifyRawBody } from 'fastify-raw-body'
 import fastifySocketIO from 'fastify-socket'
@@ -22,7 +22,6 @@ import { exceptionHandler } from './helper/exception-handler'
 import { rejectedPromiseHandler } from './helper/promise-handler'
 import { system } from './helper/system/system'
 import { AppSystemProp } from './helper/system/system-props'
-import { networkAgentTunnel } from './network-agent/network-agent-tunnel'
 
 
 export let app: FastifyInstance | undefined = undefined
@@ -57,11 +56,6 @@ export const setupServer = async (): Promise<FastifyInstance> => {
                 .catch(() => next(new Error('Authentication error')))
         })
         app.io.on('connection', (socket: Socket) => rejectedPromiseHandler(websocketService.init(socket, app!.log), app!.log))
-        // Agents live on their own namespace: they authenticate with an agent token, not a user or
-        // worker principal, so they must not pass through the principal middleware above.
-        app.io.of(NETWORK_AGENT_NAMESPACE).on('connection', (socket: Socket) =>
-            rejectedPromiseHandler(networkAgentTunnel.onConnection(socket, app!.log), app!.log),
-        )
     }
 
     if (system.isApp()) {
@@ -98,7 +92,7 @@ export const setupServer = async (): Promise<FastifyInstance> => {
     }
 
     const environment = system.get(AppSystemProp.ENVIRONMENT)
-    if (system.isApp() && environment !== ApEnvironment.DEVELOPMENT) {
+    if (system.isApp() && environment !== RuntimeEnvironment.DEVELOPMENT) {
         const frontendPath = path.resolve(process.cwd(), 'dist/packages/web')
         await app.register(fastifyStatic, {
             root: frontendPath,
@@ -121,7 +115,7 @@ export const setupServer = async (): Promise<FastifyInstance> => {
         if (request.url.startsWith('/api/')) {
             return reply.code(404).send({ statusCode: 404, error: 'Not Found', message: 'Route not found' })
         }
-        if (system.isApp() && environment !== ApEnvironment.DEVELOPMENT) {
+        if (system.isApp() && environment !== RuntimeEnvironment.DEVELOPMENT) {
             if (hasStaticFileExtension(request.url)) {
                 return reply.code(404).send({ statusCode: 404, error: 'Not Found', message: 'Asset not found' })
             }
@@ -152,7 +146,7 @@ async function setupBaseApp(): Promise<FastifyInstance> {
         pluginTimeout: 120000,
         bodyLimit: Math.max(fileSizeLimit + 4, executionLogSizeLimit + 4, 25) * 1024 * 1024,
         genReqId: () => {
-            return `req_${apId()}`
+            return `req_${generateId()}`
         },
     })
 
@@ -173,7 +167,7 @@ async function setupBaseApp(): Promise<FastifyInstance> {
 
     // No attachFieldsToBody: consumers read files/fields explicitly via request.file()/parts(),
     // so large uploads (webhook files) can stream to storage instead of being buffered whole.
-    // A route whose schema expects ApMultipartFile on the body must attach
+    // A route whose schema expects UploadedFile on the body must attach
     // attachMultipartFieldsToBody (helper/multipart-body.ts) itself, or its validation will fail.
     await app.register(fastifyMultipart, {
         limits: {
@@ -205,7 +199,7 @@ async function setupBaseApp(): Promise<FastifyInstance> {
         app.getDefaultJsonParser('ignore', 'ignore'),
     )
 
-    // Forward the generated request id (req_<apId>) into the header the evlog plugin reads.
+    // Forward the generated request id (req_<generateId>) into the header the evlog plugin reads.
     // This hook runs before the evlog plugin's own onRequest hook so the id is available.
     app.addHook('onRequest', (request, _reply, done) => {
         request.headers['x-request-id'] = request.id
@@ -233,7 +227,7 @@ async function setupBaseApp(): Promise<FastifyInstance> {
     app.addHook('onRequest', (request, _reply, done) => {
         try {
             const wide = useWideEventLogger()
-            const structuredLog = apLogger.create({ bindings: {} })
+            const structuredLog = loggerFactory.create({ bindings: {} })
             Object.assign(request, { log: structuredLog })
             wideEvent.run({ logger: wide, fn: () => done() })
         }

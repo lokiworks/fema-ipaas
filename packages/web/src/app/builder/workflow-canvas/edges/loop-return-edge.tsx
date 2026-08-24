@@ -2,19 +2,19 @@ import { StepLocationRelativeToParent } from '@fema-ipaas/shared';
 import { BaseEdge, EdgeProps } from '@xyflow/react';
 
 import { workflowCanvasConsts } from '../utils/consts';
-import { ApLoopReturnEdge } from '../utils/types';
+import { LoopReturnEdge } from '../utils/types';
 
-import { ApAddButton } from './add-button';
+import { AddButton } from './add-button';
 import { useEdgeLayoutSpace } from './use-edge-layout-space';
 
-export const ApLoopReturnLineCanvasEdge = ({
+export const LoopReturnLineCanvasEdge = ({
   sourceX,
   sourceY,
   targetX,
   targetY,
   data,
   id,
-}: EdgeProps & ApLoopReturnEdge) => {
+}: EdgeProps & LoopReturnEdge) => {
   const { isHorizontal, layout, layoutSource, layoutTarget, toCanvasPath } =
     useEdgeLayoutSpace({ sourceX, sourceY, targetX, targetY });
 
@@ -78,11 +78,11 @@ export const ApLoopReturnLineCanvasEdge = ({
           height={workflowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.height}
           className="overflow-visible"
         >
-          <ApAddButton
+          <AddButton
             edgeId={id}
             stepLocationRelativeToParent={StepLocationRelativeToParent.AFTER}
             parentStepName={data.parentStepName}
-          ></ApAddButton>
+          ></AddButton>
         </foreignObject>
       }
     </>

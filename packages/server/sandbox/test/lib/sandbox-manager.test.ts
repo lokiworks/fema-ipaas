@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { ApEnvironment, ExecutionMode, NetworkMode } from '@fema-ipaas/shared'
+import { RuntimeEnvironment, ExecutionMode, NetworkMode } from '@fema-ipaas/shared'
 
 vi.mock('../../src/lib/create-sandbox-for-job', () => ({
     createSandboxForJob: vi.fn().mockReturnValue({
@@ -59,7 +59,7 @@ describe('sandbox-manager canReuseSandbox', () => {
     it('SANDBOX_PROCESS mode → sandbox NOT reusable (release invalidates)', async () => {
         const settings = buildSettings({
             executionMode: ExecutionMode.SANDBOX_PROCESS,
-            environment: ApEnvironment.PRODUCTION,
+            environment: RuntimeEnvironment.PRODUCTION,
         })
 
         const manager = createSandboxManager({ boxId: 1, basePath: '/tmp', getSettings: () => settings })
@@ -76,7 +76,7 @@ describe('sandbox-manager canReuseSandbox', () => {
     it('SANDBOX_CODE_AND_PROCESS mode → sandbox NOT reusable (release invalidates)', async () => {
         const settings = buildSettings({
             executionMode: ExecutionMode.SANDBOX_CODE_AND_PROCESS,
-            environment: ApEnvironment.PRODUCTION,
+            environment: RuntimeEnvironment.PRODUCTION,
         })
 
         const manager = createSandboxManager({ boxId: 1, basePath: '/tmp', getSettings: () => settings })
@@ -91,7 +91,7 @@ describe('sandbox-manager canReuseSandbox', () => {
     it('SANDBOX_CODE_ONLY mode → sandbox reusable (release does NOT invalidate)', async () => {
         const settings = buildSettings({
             executionMode: ExecutionMode.SANDBOX_CODE_ONLY,
-            environment: ApEnvironment.PRODUCTION,
+            environment: RuntimeEnvironment.PRODUCTION,
         })
 
         const manager = createSandboxManager({ boxId: 1, basePath: '/tmp', getSettings: () => settings })
@@ -106,7 +106,7 @@ describe('sandbox-manager canReuseSandbox', () => {
     it('UNSANDBOXED mode → sandbox reusable (release does NOT invalidate)', async () => {
         const settings = buildSettings({
             executionMode: ExecutionMode.UNSANDBOXED,
-            environment: ApEnvironment.PRODUCTION,
+            environment: RuntimeEnvironment.PRODUCTION,
         })
 
         const manager = createSandboxManager({ boxId: 1, basePath: '/tmp', getSettings: () => settings })
@@ -121,7 +121,7 @@ describe('sandbox-manager canReuseSandbox', () => {
     it('DEVELOPMENT environment → sandbox reusable regardless of execution mode', async () => {
         const settings = buildSettings({
             executionMode: ExecutionMode.SANDBOX_PROCESS,
-            environment: ApEnvironment.DEVELOPMENT,
+            environment: RuntimeEnvironment.DEVELOPMENT,
         })
 
         const manager = createSandboxManager({ boxId: 1, basePath: '/tmp', getSettings: () => settings })

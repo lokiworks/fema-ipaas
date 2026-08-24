@@ -1,35 +1,35 @@
-import type { ApId, TenantId, WorkspaceId } from '@fema-ipaas/core-utils'
+import type { EntityId, TenantId, WorkspaceId } from '@fema-ipaas/core-utils'
 import { PrincipalType } from './principal-type'
 
 export type WorkerPrincipal = {
-    id: ApId
+    id: EntityId
     type: PrincipalType.WORKER
 }
 
 export type AnnonymousPrincipal = {
-    id: ApId
+    id: EntityId
     type: PrincipalType.UNKNOWN
 }
 
 export type ServicePrincipal = {
-    id: ApId
+    id: EntityId
     type: PrincipalType.SERVICE
     tenant: {
-        id: ApId
+        id: EntityId
     }
 }
 
 export type UserPrincipal = {
-    id: ApId
+    id: EntityId
     type: PrincipalType.USER
     tenant: {
-        id: ApId
+        id: EntityId
     }
     tokenVersion?: string
 }
 
 export type EnginePrincipal = {
-    id: ApId
+    id: EntityId
     type: PrincipalType.ENGINE
     workspaceId: WorkspaceId
     tenant: {
@@ -39,7 +39,7 @@ export type EnginePrincipal = {
 
 
 export type OnboardingPrincipal = {
-    id: ApId
+    id: EntityId
     type: PrincipalType.ONBOARDING
     tokenVersion?: string
 }

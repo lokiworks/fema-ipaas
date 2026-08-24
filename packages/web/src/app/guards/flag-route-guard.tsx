@@ -1,4 +1,4 @@
-import { ApFlagId } from '@fema-ipaas/shared';
+import { FlagId } from '@fema-ipaas/shared';
 import { Navigate } from 'react-router-dom';
 
 import { flagsHooks } from '../../hooks/flags-hooks';
@@ -7,7 +7,7 @@ export const FlagRouteGuard = ({
   flag,
   children,
 }: {
-  flag: ApFlagId;
+  flag: FlagId;
   children: React.ReactNode;
 }) => {
   const { data: flagValue } = flagsHooks.useFlag<boolean>(flag);

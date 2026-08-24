@@ -1,13 +1,13 @@
 import path from 'path'
 import { ApplicationError, ErrorCode } from '@fema-ipaas/core-utils'
-import { type ApLogger, wideEvent } from '@fema-ipaas/server-utils'
-import { ApEnvironment, ConnectorPackage, ConnectorType, EXACT_VERSION_REGEX, PackageType, WorkerToApiContract } from '@fema-ipaas/shared'
+import { type Logger, wideEvent } from '@fema-ipaas/server-utils'
+import { ConnectorPackage, ConnectorType, EXACT_VERSION_REGEX, PackageType, RuntimeEnvironment, WorkerToApiContract } from '@fema-ipaas/shared'
 import { SandboxSettings } from '../../types'
 import { cacheUtils } from '../cache-paths'
 import { cacheState, NO_SAVE_GUARD } from '../cache-state'
 import { isValidPackageName } from './connector-installer'
 
-export const connectorCache = (log: ApLogger, apiClient: WorkerToApiContract, basePath: string, getSettings: () => SandboxSettings) => ({
+export const connectorCache = (log: Logger, apiClient: WorkerToApiContract, basePath: string, getSettings: () => SandboxSettings) => ({
     async getConnector({ connectorName, connectorVersion, tenantId }: ConnectorCacheKey): Promise<ConnectorPackage> {
         if (!isValidPackageName(connectorName)) {
             throw new ApplicationError({
@@ -28,7 +28,7 @@ export const connectorCache = (log: ApLogger, apiClient: WorkerToApiContract, ba
             key: cacheKey,
             cacheMiss: (_: string) => {
                 const environment = getSettings().ENVIRONMENT
-                if (environment === ApEnvironment.TESTING) {
+                if (environment === RuntimeEnvironment.TESTING) {
                     return true
                 }
                 const devConnectors = getSettings().DEV_CONNECTORS

@@ -38,14 +38,14 @@ export const getWorkspaceGroupQueueName = (workerGroupId: string): string => {
     return `workspace-${workerGroupId}-jobs`
 }
 
-export const ApQueueJob = z.object({
+export const QueueJob = z.object({
     id: z.string(),
     data: z.custom<JobData>(),
     engineToken: z.string(),
     attempsStarted: z.number(),
 })
 
-export type ApQueueJob = z.infer<typeof ApQueueJob>
+export type QueueJob = z.infer<typeof QueueJob>
 
 export const MigrateJobsRequest = z.object({
     jobData: z.record(z.string(), z.unknown()),

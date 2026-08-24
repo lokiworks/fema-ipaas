@@ -4,6 +4,11 @@ icon: 🔌
 
 # Embed
 
+> **历史资料 —— 描述的是上游，不是本仓库。** 本页写的 Edition 体系、计费与席位、
+> license key、Cloud 形态在本仓库**都不存在**（Edition 已彻底删除，见
+> [decisions/000030](../decisions/000030-this-fork-has-no-editions-the-ee-pages-are-history.md)）。
+> 读它了解上游为什么那样设计可以，照着写代码不行——以 `docs/adr/` 和代码为准。
+
 Running the FEMA Integration Platform builder inside someone else's SaaS: a signed JWT provisions the user, an iframe hosts the builder, and a per-request CSP decides who is allowed to frame it. Enterprise + Cloud only — both modules gate on `platform.plan.embeddingEnabled`.
 
 The integration steps a customer follows (SDK script, `fema.configure(...)`, connector customization, predefined connections) are public and live at [docs/embedding](https://github.com/lokiworks/fema-ipaas/docs/embedding). This page is the parts that are not public: what the server actually does, plus the SDK↔client handshake the docs treat as a black box.

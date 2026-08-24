@@ -1,11 +1,11 @@
 import path from 'path'
 import { isNil, WorkflowVersionId } from '@fema-ipaas/core-utils'
-import { type ApLogger, wideEvent } from '@fema-ipaas/server-utils'
+import { type Logger, wideEvent } from '@fema-ipaas/server-utils'
 import { LATEST_WORKFLOW_SCHEMA_VERSION, WorkerToApiContract, WorkflowVersion, WorkflowVersionState } from '@fema-ipaas/shared'
 import { cacheUtils } from '../cache-paths'
 import { cacheState } from '../cache-state'
 
-export const workflowCache = (log: ApLogger, apiClient: WorkerToApiContract, basePath: string) => ({
+export const workflowCache = (log: Logger, apiClient: WorkerToApiContract, basePath: string) => ({
     async getVersion({ workflowVersionId }: GetWorkflowRequest): Promise<WorkflowVersion | null> {
         try {
             const cache = cacheState(path.join(cacheUtils(basePath).getGlobalCacheWorkflowsPath(), workflowVersionId))

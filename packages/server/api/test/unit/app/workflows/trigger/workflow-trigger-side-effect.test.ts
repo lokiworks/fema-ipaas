@@ -1,6 +1,6 @@
 import { ApplicationError, ErrorCode } from '@fema-ipaas/core-utils'
 import { TriggerStrategy } from '@fema-ipaas/connector-sdk'
-import { ApEnvironment, EngineResponseStatus, TriggerSourceScheduleType } from '@fema-ipaas/shared'
+import { RuntimeEnvironment, EngineResponseStatus, TriggerSourceScheduleType } from '@fema-ipaas/shared'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mockSubmitAndWaitForResponse = vi.fn()
@@ -11,7 +11,7 @@ const mockAddJob = vi.fn()
 
 vi.mock('../../../../../src/app/helper/system/system', () => ({
     system: {
-        getOrThrow: vi.fn().mockReturnValue(ApEnvironment.PRODUCTION),
+        getOrThrow: vi.fn().mockReturnValue(RuntimeEnvironment.PRODUCTION),
         getNumber: vi.fn().mockReturnValue(5),
         getNumberOrThrow: vi.fn().mockReturnValue(5),
     },

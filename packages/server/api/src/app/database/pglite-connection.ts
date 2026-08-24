@@ -3,7 +3,7 @@ import path from 'node:path'
 import { types } from '@electric-sql/pglite'
 import { vector } from '@electric-sql/pglite/vector'
 import { spreadIfDefined } from '@fema-ipaas/core-utils'
-import { ApEnvironment } from '@fema-ipaas/shared'
+import { RuntimeEnvironment } from '@fema-ipaas/shared'
 import { DataSource } from 'typeorm'
 import { PGliteDriver } from 'typeorm-pglite'
 import { system } from '../helper/system/system'
@@ -12,23 +12,23 @@ import { commonProperties } from './database-connection'
 import { getMigrations } from './postgres-connection'
 
 const getPGliteDataPathFromDisk = (): string => {
-    const apConfigDirectoryPath = system.getOrThrow(AppSystemProp.CONFIG_PATH)
-    const pgliteDataPath = path.resolve(path.join(apConfigDirectoryPath, 'pglite'))
+    const configDirectoryPath = system.getOrThrow(AppSystemProp.CONFIG_PATH)
+    const pgliteDataPath = path.resolve(path.join(configDirectoryPath, 'pglite'))
     mkdirSync(pgliteDataPath, { recursive: true })
     return pgliteDataPath
 }
 
 const getPGliteDataPath = (): string | undefined => {
-    const env = system.getOrThrow<ApEnvironment>(AppSystemProp.ENVIRONMENT)
+    const env = system.getOrThrow<RuntimeEnvironment>(AppSystemProp.ENVIRONMENT)
 
-    if (env === ApEnvironment.TESTING) {
+    if (env === RuntimeEnvironment.TESTING) {
         return undefined // In-memory mode
     }
     return getPGliteDataPathFromDisk()
 }
 
 export const createPGliteDataSource = (): DataSource => {
-    const env = system.getOrThrow<ApEnvironment>(AppSystemProp.ENVIRONMENT)
+    const env = system.getOrThrow<RuntimeEnvironment>(AppSystemProp.ENVIRONMENT)
 
     const dataPath = getPGliteDataPath()
 
@@ -63,10 +63,10 @@ export const createPGliteDataSource = (): DataSource => {
                 },
             },
         }).driver,
-        migrationsRun: env !== ApEnvironment.TESTING,
+        migrationsRun: env !== RuntimeEnvironment.TESTING,
         migrationsTransactionMode: 'each',
-        migrations: env !== ApEnvironment.TESTING ? getMigrations() : [],
-        synchronize: env === ApEnvironment.TESTING,
+        migrations: env !== RuntimeEnvironment.TESTING ? getMigrations() : [],
+        synchronize: env === RuntimeEnvironment.TESTING,
         ...commonProperties,
     })
 }

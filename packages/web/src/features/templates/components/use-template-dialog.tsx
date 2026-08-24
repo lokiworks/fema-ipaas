@@ -36,7 +36,7 @@ import {
   getWorkspaceName,
   workspaceCollectionUtils,
 } from '@/features/workspaces';
-import { ApWorkspaceDisplay } from '@/features/workspaces/components/ap-workspace-display';
+import { WorkspaceDisplay } from '@/features/workspaces/components/workspace-display';
 import { authenticationSession } from '@/lib/authentication-session';
 
 type UseTemplateDialogProps = {
@@ -170,7 +170,7 @@ export const UseTemplateDialog = ({
               <SelectContent>
                 {workspaces?.map((workspace) => (
                   <SelectItem key={workspace.id} value={workspace.id}>
-                    <ApWorkspaceDisplay
+                    <WorkspaceDisplay
                       title={getWorkspaceName(workspace)}
                       icon={workspace.icon}
                       workspaceType={workspace.type}

@@ -1,5 +1,5 @@
 import { auditEnricher, auditRedactPreset, enricherPlugin, initLogger, RedactConfig } from 'evlog'
-import { apLogger, ApLogger } from './ap-logger'
+import { loggerFactory, Logger } from './logger'
 import { evlogDrains, EvlogDrainConfig } from './evlog-drains'
 
 // Module-level flush function; replaced each time init() is called.
@@ -118,7 +118,7 @@ const REDACT_CONFIG: RedactConfig = {
     replacement: '[REDACTED]',
 }
 
-function init({ params }: { params: EvlogSetupParams }): ApLogger {
+function init({ params }: { params: EvlogSetupParams }): Logger {
     const mappedLevel = LEVEL_MAP[params.logLevel ?? 'info'] ?? 'info'
 
     const resolved = evlogDrains.resolve({ config: params.drainConfig })
@@ -146,9 +146,9 @@ function init({ params }: { params: EvlogSetupParams }): ApLogger {
         plugins: [enricherPlugin('audit-context', auditEnricher())],
     })
 
-    apLogger.setCurrentLevel(mappedLevel)
+    loggerFactory.setCurrentLevel(mappedLevel)
 
-    return apLogger.create({})
+    return loggerFactory.create({})
 }
 
 async function flush(): Promise<void> {

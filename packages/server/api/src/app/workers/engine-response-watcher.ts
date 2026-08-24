@@ -1,11 +1,11 @@
-import { apId } from '@fema-ipaas/core-utils'
+import { generateId } from '@fema-ipaas/core-utils'
 import { FastifyBaseLogger } from 'fastify'
 import { pubsub } from '../helper/pubsub'
 
 type EngineResponseWithId<T> = { requestId: string, response: T }
 
 const listeners = new Map<string, (workflowResponse: EngineResponseWithId<unknown>) => void>()
-const SERVER_ID = apId()
+const SERVER_ID = generateId()
 
 export const engineResponseWatcher = (log: FastifyBaseLogger) => ({
     getServerId(): string {

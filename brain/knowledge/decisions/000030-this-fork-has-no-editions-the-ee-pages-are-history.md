@@ -10,10 +10,10 @@ status: accepted
 开源 iPaaS。Edition 体系已彻底删除：`packages/ee`、`src/app/ee`、`FEMA_EDITION`、
 `ApEdition`、`getEdition()` 在树中为 0 引用。
 
-本 fork 自己的架构决策记录在 **`docs/adr/`**（编号 0001-0011），不在
+本 fork 自己的架构决策记录在 **`docs/adr/`**（编号自 0001 起递增），不在
 `brain/knowledge/decisions/`——设计文档 §52 指定了那个位置。
 
-`brain/knowledge/platform-editions-ee/` 下的所有页面从此是**上游历史资料**：
+`brain/knowledge/tenant-editions-ee/` 下的所有页面从此是**上游历史资料**：
 它们描述的 hooksFactory 边界、`PlatformPlan` 计费门、EE 模块注册开关在本仓库已不存在。
 读它们了解上游为什么那样设计可以，照着写代码不行。
 
@@ -32,6 +32,6 @@ status: accepted
 
 ## Consequences
 
-- 读 `platform-editions-ee/` 时默认它与代码不一致，以 `docs/adr/` 和代码为准。
+- 读 `tenant-editions-ee/` 时默认它与代码不一致，以 `docs/adr/` 和代码为准。
 - 被 EE 覆盖但属于开源核心目标的能力（RBAC、审计、SSO、Git Sync、成员管理）
   是**重写**而非搬运，实现细节与上游不同。

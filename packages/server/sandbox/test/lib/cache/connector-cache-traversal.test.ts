@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto'
 import { ApplicationError, ErrorCode } from '@fema-ipaas/core-utils'
 import { describe, expect, it, vi } from 'vitest'
 import type { WorkerToApiContract } from '@fema-ipaas/shared'
-import type { ApLogger } from '@fema-ipaas/server-utils'
+import type { Logger } from '@fema-ipaas/server-utils'
 import { connectorCache } from '../../../src/lib/cache/connectors/connector-cache'
 
 const fakeLog = {
@@ -17,7 +17,7 @@ const fakeLog = {
     fatal: vi.fn(),
     trace: vi.fn(),
     child: vi.fn().mockReturnThis(),
-} as unknown as ApLogger
+} as unknown as Logger
 
 const fakeGetSettings = () => ({
     EXECUTION_MODE: 'UNSANDBOXED',

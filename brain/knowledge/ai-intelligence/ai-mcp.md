@@ -39,7 +39,7 @@ Project-scoped document store (PDF/DOCX/TXT/CSV) → text chunks → optional 76
 
 ### Platform Copilot
 
-Backend-only RAG chat that answers questions about the FEMA Integration Platform platform (codebase + docs) — for developers building on AP, not workflow end-users.
+Backend-only RAG chat that answers questions about the FEMA Integration Platform platform (codebase + docs) — for developers building on FEMA, not workflow end-users.
 
 - **Entity/services**: `copilot_code_chunks` (vector(768) + `tsvector` full-text). Hybrid search = RRF merge of vector cosine (70%) + Postgres full-text (30%). `read_file` + `list_directory` tools hit GitHub raw/API at chat time.
 - **Integration/gotchas**: source lives only as compiled JS under `.../dist/src/app/platform-copilot/`. All editions, any authenticated USER (`publicPlatform`). Index rebuilt weekly (`COPILOT_INDEX_REFRESH`, Sun 03:00 UTC) or via `/index` / at startup if empty. Streams via Vercel AI SDK UI message protocol, capped at 5 LLM steps.

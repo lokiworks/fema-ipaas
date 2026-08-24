@@ -1,4 +1,4 @@
-import { apId, ApplicationError, ErrorCode, isNil, spreadIfDefined } from '@fema-ipaas/core-utils'
+import { ApplicationError, ErrorCode, generateId, isNil, spreadIfDefined } from '@fema-ipaas/core-utils'
 import { cryptoUtils } from '@fema-ipaas/server-utils'
 import { UserIdentity } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
@@ -35,7 +35,7 @@ export const userIdentityService = (log: FastifyBaseLogger) => ({
             created: new Date().toISOString(),
             updated: new Date().toISOString(),
             verified: params.verified,
-            id: apId(),
+            id: generateId(),
             password: hashedPassword,
             trackEvents: params.trackEvents,
             newsLetter: params.newsLetter,

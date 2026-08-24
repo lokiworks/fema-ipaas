@@ -1,7 +1,7 @@
-import { ApErrorParams, ErrorCode } from '@fema-ipaas/core-utils';
+import { ApplicationErrorParams, ErrorCode } from '@fema-ipaas/core-utils';
 import {
   AddConnectorRequestBody,
-  ApFlagId,
+  FlagId,
   PackageType,
   ConnectorScope,
 } from '@fema-ipaas/shared';
@@ -16,7 +16,7 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 
 import { AnimatedIconButton } from '@/components/custom/animated-icon-button';
-import { ApMarkdown } from '@/components/custom/markdown';
+import { Markdown } from '@/components/custom/markdown';
 import { PlusIcon } from '@/components/icons/plus';
 import { Button } from '@/components/ui/button';
 import {
@@ -66,7 +66,7 @@ const InstallConnectorDialog = ({
   const [isOpen, setIsOpen] = useState(false);
 
   const { data: privateConnectorsEnabled } = flagsHooks.useFlag<boolean>(
-    ApFlagId.PRIVATE_CONNECTORS_ENABLED,
+    FlagId.PRIVATE_CONNECTORS_ENABLED,
   );
 
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -153,7 +153,9 @@ const InstallConnectorDialog = ({
           });
           return;
         }
-        const responseData = error.response?.data as ApErrorParams | undefined;
+        const responseData = error.response?.data as
+          | ApplicationErrorParams
+          | undefined;
         if (
           responseData?.code === ErrorCode.ENGINE_OPERATION_FAILURE &&
           responseData.params.message
@@ -181,7 +183,7 @@ const InstallConnectorDialog = ({
         <DialogHeader>
           <DialogTitle>{t('Install a connector')}</DialogTitle>
           <DialogDescription>
-            <ApMarkdown
+            <Markdown
               markdown={
                 'Use this to install a [custom connector](https://github.com/lokiworks/fema-ipaas/docs/build-connectors/building-connectors/create-action) that you (or someone else) created. Once the connector is installed, you can use it in the workflow builder.\n\nWarning: Make sure you trust the author as the connector will have access to your workflow data and it might not be compatible with the current version of FEMA Integration Tenant.'
               }

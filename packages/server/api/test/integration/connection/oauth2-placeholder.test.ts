@@ -1,4 +1,4 @@
-import { apId, ErrorCode } from '@fema-ipaas/core-utils'
+import { generateId, ErrorCode } from '@fema-ipaas/core-utils'
 import { PropertyType } from '@fema-ipaas/connector-sdk'
 import { PackageType, ConnectorType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyInstance } from 'fastify'
@@ -31,7 +31,7 @@ const saveOAuth2Connector = async ({ tenantId, tokenUrl, scope, props }: {
     scope: string[]
     props: Record<string, unknown>
 }): Promise<string> => {
-    const connectorName = `connector-${apId()}`
+    const connectorName = `connector-${generateId()}`
     await db.save('connector_metadata', createMockConnectorMetadata({
         name: connectorName,
         version: '1.0.0',
@@ -55,7 +55,7 @@ const saveOAuth2Connector = async ({ tenantId, tokenUrl, scope, props }: {
 
 describe('OAuth2 unresolved placeholder guard', () => {
     it('rejects a token url whose placeholder has no matching prop, naming the prop label', async () => {
-        const tenantId = apId()
+        const tenantId = generateId()
         const connectorName = await saveOAuth2Connector({
             tenantId,
             tokenUrl: 'https://{cloud}/{tenant}/oauth2/v2.0/token',
@@ -77,7 +77,7 @@ describe('OAuth2 unresolved placeholder guard', () => {
     })
 
     it('rejects a prop that is present but empty', async () => {
-        const tenantId = apId()
+        const tenantId = generateId()
         const connectorName = await saveOAuth2Connector({
             tenantId,
             tokenUrl: 'https://{cloud}/{tenant}/oauth2/v2.0/token',
@@ -99,7 +99,7 @@ describe('OAuth2 unresolved placeholder guard', () => {
     })
 
     it('rejects a placeholder that only appears in the declared scope', async () => {
-        const tenantId = apId()
+        const tenantId = generateId()
         const connectorName = await saveOAuth2Connector({
             tenantId,
             tokenUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
@@ -121,7 +121,7 @@ describe('OAuth2 unresolved placeholder guard', () => {
     })
 
     it('resolves the token url when every placeholder is supplied', async () => {
-        const tenantId = apId()
+        const tenantId = generateId()
         const connectorName = await saveOAuth2Connector({
             tenantId,
             tokenUrl: 'https://{cloud}/{tenant}/oauth2/v2.0/token',
@@ -140,7 +140,7 @@ describe('OAuth2 unresolved placeholder guard', () => {
     })
 
     it('accepts braces that come from a prop value rather than the template', async () => {
-        const tenantId = apId()
+        const tenantId = generateId()
         const connectorName = await saveOAuth2Connector({
             tenantId,
             tokenUrl: '{tokenUrl}',

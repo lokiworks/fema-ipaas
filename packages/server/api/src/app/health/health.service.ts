@@ -1,5 +1,5 @@
-import { apVersionUtil, systemUsage, UNKNOWN_VERSION } from '@fema-ipaas/server-utils'
-import { apId, FileLocation, GetDiagnosticsResponse, GetSystemHealthChecksResponse, InfraCheck, ReleaseHealth, tryCatch, unique } from '@fema-ipaas/shared'
+import { systemUsage, UNKNOWN_VERSION, versionUtil } from '@fema-ipaas/server-utils'
+import { FileLocation, generateId, GetDiagnosticsResponse, GetSystemHealthChecksResponse, InfraCheck, ReleaseHealth, tryCatch, unique } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { databaseConnection } from '../database/database-connection'
 import { redisConnections } from '../database/redis-connections'
@@ -45,7 +45,7 @@ export const healthStatusService = (log: FastifyBaseLogger) => ({
         const [workers, databaseHealthy, latestVersion] = await Promise.all([
             machineService(log).list(tenantId),
             healthStatusService(log).checkDatabaseHealth(),
-            apVersionUtil.getLatestRelease(),
+            versionUtil.getLatestRelease(),
         ])
         const hasWorkers = workers.length > 0
         const release = buildReleaseHealth(log, workers.map(worker => worker.information.workerProps.version))
@@ -136,7 +136,7 @@ async function measureStorage(log: FastifyBaseLogger): Promise<InfraCheck> {
     if (location !== FileLocation.S3) {
         return { ok: true, latencyMs: null, detail: `FILE_STORAGE_LOCATION=${location ?? 'unset'} — no S3 round-trip to measure` }
     }
-    const s3Key = `diagnostics/healthcheck-${apId()}.txt`
+    const s3Key = `diagnostics/healthcheck-${generateId()}.txt`
     const startedAt = Date.now()
     const { error } = await tryCatch(async () => {
         await s3Helper(log).uploadFile(s3Key, Buffer.from('fema-diagnostics'))
@@ -155,9 +155,9 @@ async function measureStorage(log: FastifyBaseLogger): Promise<InfraCheck> {
 // (worker-rpc-service.ts). A `current` of UNKNOWN_VERSION ('0.0.0') means the app itself failed
 // to read its release, which fail-closes the gate for every worker.
 function buildReleaseHealth(log: FastifyBaseLogger, workerVersions: Array<string | undefined>): ReleaseHealth {
-    const current = apVersionUtil.getCurrentRelease()
+    const current = versionUtil.getCurrentRelease()
     const mismatched = workerVersions
-        .filter(workerVersion => !apVersionUtil.versionsAreCompatible({ versionA: workerVersion, versionB: current }))
+        .filter(workerVersion => !versionUtil.versionsAreCompatible({ versionA: workerVersion, versionB: current }))
         .map(workerVersion => workerVersion ?? UNKNOWN_WORKER_VERSION)
     const mismatchedVersions = unique(mismatched)
     if (current === UNKNOWN_VERSION || mismatched.length > 0) {

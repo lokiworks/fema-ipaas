@@ -1,5 +1,5 @@
 import { Readable } from 'node:stream'
-import { ApId, ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil } from '@fema-ipaas/core-utils'
+import { ApplicationError, assertNotNullOrUndefined, EntityId, ErrorCode, isNil } from '@fema-ipaas/core-utils'
 import { ALL_PRINCIPAL_TYPES, EnginePrincipal, FileCompression, FileTransportQueryParams, FileType, Principal, PrincipalType } from '@fema-ipaas/shared'
 import contentDisposition from 'content-disposition'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
@@ -24,7 +24,7 @@ export const filesController: FastifyPluginAsyncZod = async (app) => {
             security: securityAccess.unscoped(ALL_PRINCIPAL_TYPES),
         },
         schema: {
-            params: z.object({ fileId: ApId }),
+            params: z.object({ fileId: EntityId }),
             querystring: FileTransportQueryParams,
             body: z.unknown(),
         },
@@ -108,7 +108,7 @@ export const filesController: FastifyPluginAsyncZod = async (app) => {
             security: securityAccess.unscoped(ALL_PRINCIPAL_TYPES),
         },
         schema: {
-            params: z.object({ fileId: ApId }),
+            params: z.object({ fileId: EntityId }),
             querystring: FileTransportQueryParams,
         },
     }, async (request, reply) => {

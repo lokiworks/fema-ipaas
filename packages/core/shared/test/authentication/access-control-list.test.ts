@@ -19,7 +19,6 @@ describe('workspace role permissions', () => {
             Permission.WRITE_WORKSPACE_MEMBER,
             Permission.WRITE_WORKSPACE,
             Permission.MANAGE_CONNECTOR,
-            Permission.MANAGE_NETWORK_AGENT,
             Permission.READ_AUDIT,
         ]
         for (const permission of writePermissions) {

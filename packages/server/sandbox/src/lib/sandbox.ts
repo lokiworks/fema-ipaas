@@ -1,5 +1,5 @@
 import { ApplicationError, ErrorCode, isNil, tryCatch } from '@fema-ipaas/core-utils'
-import { type ApLogger, wideEvent } from '@fema-ipaas/server-utils'
+import { type Logger, wideEvent } from '@fema-ipaas/server-utils'
 import { ConnectorPackage } from '@fema-ipaas/shared'
 import { localExecutionCache } from './cache/local-execution-cache'
 import { createResolver } from './resolver'
@@ -142,7 +142,7 @@ export function createSandboxRuntime({ concurrency = 1, basePath, getSettings }:
                 log.warn({ error: String(error) }, 'Cache prewarm failed')
             }
         },
-        async shutdown(shutdownLog: ApLogger): Promise<void> {
+        async shutdown(shutdownLog: Logger): Promise<void> {
             await Promise.all(managers.map((manager) => manager.shutdown(shutdownLog)))
         },
     }

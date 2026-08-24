@@ -4,7 +4,7 @@ import {
     WebhookRenewStrategy,
 } from '@fema-ipaas/connector-sdk'
 import { ApplicationError, ErrorCode, isNil, tryCatch, WorkflowId, WorkflowVersionId } from '@fema-ipaas/core-utils'
-import { ApEnvironment, EngineResponse, EngineResponseStatus, ExecuteTriggerResponse, LATEST_JOB_DATA_SCHEMA_VERSION, ScheduleOptions, TriggerHookType, TriggerSourceScheduleType, WorkerJobType, WorkflowTriggerType } from '@fema-ipaas/shared'
+import { EngineResponse, EngineResponseStatus, ExecuteTriggerResponse, LATEST_JOB_DATA_SCHEMA_VERSION, RuntimeEnvironment, ScheduleOptions, TriggerHookType, TriggerSourceScheduleType, WorkerJobType, WorkflowTriggerType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
@@ -13,12 +13,12 @@ import { userInteractionWatcher } from '../../workers/user-interaction-watcher'
 import { workspaceService } from '../../workspace/workspace-service'
 import { appEventRoutingService } from '../app-event-routing/app-event-routing.service'
 
-const environment = system.getOrThrow<ApEnvironment>(AppSystemProp.ENVIRONMENT)
+const environment = system.getOrThrow<RuntimeEnvironment>(AppSystemProp.ENVIRONMENT)
 
 export const workflowTriggerSideEffect = (log: FastifyBaseLogger) => {
     return {
         async enable(params: EnableWorkflowTriggerParams): Promise<ActiveTriggerReturn> {
-            if (environment === ApEnvironment.TESTING) {
+            if (environment === RuntimeEnvironment.TESTING) {
                 return {
                     scheduleOptions: undefined,
                 }
@@ -69,7 +69,7 @@ export const workflowTriggerSideEffect = (log: FastifyBaseLogger) => {
             }
         },
         async disable(params: DisableWorkflowTriggerParams): Promise<void> {
-            if (environment === ApEnvironment.TESTING) {
+            if (environment === RuntimeEnvironment.TESTING) {
                 return
             }
             const { workflowId, workflowVersionId, workspaceId, simulate, connectorTrigger } = params

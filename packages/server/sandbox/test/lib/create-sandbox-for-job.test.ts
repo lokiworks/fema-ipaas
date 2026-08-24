@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { ApEnvironment, ExecutionMode, NetworkMode } from '@fema-ipaas/shared'
+import { RuntimeEnvironment, ExecutionMode, NetworkMode } from '@fema-ipaas/shared'
 
 const { createSandboxMock, isolateProcessMock, simpleProcessMock, getGlobalCacheCommonPathMock, getGlobalCodeCachePathMock, getEnginePathMock } = vi.hoisted(() => ({
     createSandboxMock: vi.fn(),
@@ -69,7 +69,7 @@ function buildSettings(overrides: Partial<Settings> = {}): Settings {
         WORKFLOW_TIMEOUT_SECONDS: 600,
         LOG_LEVEL: 'info',
         LOG_PRETTY: 'false',
-        ENVIRONMENT: ApEnvironment.PRODUCTION,
+        ENVIRONMENT: RuntimeEnvironment.PRODUCTION,
         APP_WEBHOOK_SECRETS: '{}',
         MAX_EXECUTION_LOG_SIZE_MB: 10,
         MAX_FILE_SIZE_MB: 10,

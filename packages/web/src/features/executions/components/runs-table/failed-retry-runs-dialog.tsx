@@ -1,5 +1,5 @@
 import { ErrorCode } from '@fema-ipaas/core-utils';
-import { ApFlagId, ExecutionWithRetryError } from '@fema-ipaas/shared';
+import { FlagId, ExecutionWithRetryError } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { ExternalLink } from 'lucide-react';
 
@@ -31,7 +31,7 @@ export const FailedRetryRunsDialog = ({
 }: FailedRetryRunsDialogProps) => {
   const openNewWindow = useNewWindow();
   const { data: retentionDays } = flagsHooks.useFlag<number>(
-    ApFlagId.EXECUTION_DATA_RETENTION_DAYS,
+    FlagId.EXECUTION_DATA_RETENTION_DAYS,
   );
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

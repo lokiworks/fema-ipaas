@@ -1,6 +1,6 @@
 import { ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil } from '@fema-ipaas/core-utils'
 import { cryptoUtils } from '@fema-ipaas/server-utils'
-import { ApFlagId, AuthenticationResponse, TenantWithoutSensitiveData, User, UserIdentity, UserIdentityProvider } from '@fema-ipaas/shared'
+import { AuthenticationResponse, FlagId, TenantWithoutSensitiveData, User, UserIdentity, UserIdentityProvider } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { flagService } from '../flags/flag.service'
 import { system } from '../helper/system/system'
@@ -59,7 +59,7 @@ export const authenticationService = (log: FastifyBaseLogger) => ({
             verified: hasInvitations || isFederatedProvider,
         })
         await sendVerificationOrAutoVerify(userIdentity, log)
-        await flagService(log).save({ id: ApFlagId.USER_CREATED, value: true })
+        await flagService(log).save({ id: FlagId.USER_CREATED, value: true })
         await authenticationUtils(log).saveNewsLetterSubscriber(userIdentity)
         await userInvitationsService(log).provisionUserInvitation({ email: params.email })
 

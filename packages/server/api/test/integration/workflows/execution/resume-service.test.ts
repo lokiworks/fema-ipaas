@@ -1,4 +1,4 @@
-import { apId } from '@fema-ipaas/core-utils'
+import { generateId } from '@fema-ipaas/core-utils'
 import { ExecutionStatus, WorkflowVersionState, PauseType, RunEnvironment } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { resumeService } from '../../../../../src/app/workflows/execution/waitpoint/resume-service'
@@ -47,7 +47,7 @@ async function createExecutionAndWaitpoint(params: {
     })
     await db.save('execution', execution)
 
-    const waitpointId = apId()
+    const waitpointId = generateId()
     await db.save('waitpoint', {
         id: waitpointId,
         executionId: execution.id,
@@ -153,7 +153,7 @@ describe('resumeService resumeFromWaitpointWithoutLock', () => {
             waitpointStatus: WaitpointStatus.PENDING,
         })
 
-        const bogusWaitpointId = apId()
+        const bogusWaitpointId = generateId()
         const result = await resumeService(app.log).resumeFromWaitpointWithoutLock({
             executionId: execution.id,
             waitpointId: bogusWaitpointId,

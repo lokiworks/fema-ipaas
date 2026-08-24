@@ -1,4 +1,4 @@
-import { apId } from '@fema-ipaas/core-utils'
+import { generateId } from '@fema-ipaas/core-utils'
 import { ExecuteWorkflowJobData, ExecutionType, LATEST_JOB_DATA_SCHEMA_VERSION, RunEnvironment, StreamStepProgress, WorkerJobType } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { redisConnections } from '../../../../src/app/database/redis-connections'
@@ -34,18 +34,18 @@ describe('jobBroker.tryDequeue — invalid-schema poison handling', () => {
             schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
             workspaceId: mockWorkspace.id,
             tenantId: mockTenant.id,
-            workflowId: apId(),
-            workflowVersionId: apId(),
-            runId: apId(),
+            workflowId: generateId(),
+            workflowVersionId: generateId(),
+            runId: generateId(),
             environment: RunEnvironment.PRODUCTION,
             executionType: ExecutionType.BEGIN,
             streamStepProgress: StreamStepProgress.NONE,
             payload: { type: 'inline', value: null },
-            logsFileId: apId(),
+            logsFileId: generateId(),
             logsUploadUrl: 'https://example.invalid/v1/executions/logs?token=x',
         }
 
-        const jobId = apId()
+        const jobId = generateId()
         await jobQueue(app.log).add({
             type: JobType.ONE_TIME,
             id: jobId,
@@ -59,7 +59,7 @@ describe('jobBroker.tryDequeue — invalid-schema poison handling', () => {
             schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
             workspaceId: mockWorkspace.id,
             tenantId: mockTenant.id,
-            runId: apId(),
+            runId: generateId(),
             executionType: 'BEGIN',
         })
         await redis.hset(jobKey(jobId), 'data', poisonedRaw)

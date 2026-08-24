@@ -1,4 +1,4 @@
-import { ApFlagId } from '@fema-ipaas/shared';
+import { FlagId } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -13,10 +13,10 @@ import { AuthAnimation } from './auth-animation';
 
 const TermsFooter = () => {
   const { data: termsOfServiceUrl } = flagsHooks.useFlag<string>(
-    ApFlagId.TERMS_OF_SERVICE_URL,
+    FlagId.TERMS_OF_SERVICE_URL,
   );
   const { data: privacyPolicyUrl } = flagsHooks.useFlag<string>(
-    ApFlagId.PRIVACY_POLICY_URL,
+    FlagId.PRIVACY_POLICY_URL,
   );
 
   if (!termsOfServiceUrl && !privacyPolicyUrl) {

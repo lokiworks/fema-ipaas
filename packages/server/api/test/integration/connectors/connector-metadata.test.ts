@@ -1,4 +1,4 @@
-import { apId } from '@fema-ipaas/core-utils'
+import { generateId } from '@fema-ipaas/core-utils'
 import { ActionBase } from '@fema-ipaas/connector-sdk'
 import { DefaultWorkspaceRole, WorkflowTriggerType, PackageType, ConnectorType, PrincipalType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyInstance } from 'fastify'
@@ -37,7 +37,7 @@ describe('Connector Metadata CE API', () => {
         it('should return connector categories', async () => {
             const testToken = await generateMockToken({
                 type: PrincipalType.UNKNOWN,
-                id: apId(),
+                id: generateId(),
             })
 
             const response = await app?.inject({
@@ -67,7 +67,7 @@ describe('Connector Metadata CE API', () => {
 
             const testToken = await generateMockToken({
                 type: PrincipalType.UNKNOWN,
-                id: apId(),
+                id: generateId(),
             })
 
             const response = await app?.inject({
@@ -103,7 +103,7 @@ describe('Connector Metadata CE API', () => {
 
             const testToken = await generateMockToken({
                 type: PrincipalType.UNKNOWN,
-                id: apId(),
+                id: generateId(),
             })
 
             const response = await app?.inject({
@@ -134,7 +134,7 @@ describe('Connector Metadata CE API', () => {
 
             const testToken = await generateMockToken({
                 type: PrincipalType.UNKNOWN,
-                id: apId(),
+                id: generateId(),
             })
 
             const response = await app?.inject({
@@ -156,7 +156,7 @@ describe('Connector Metadata CE API', () => {
 
             const testToken = await generateMockToken({
                 type: PrincipalType.UNKNOWN,
-                id: apId(),
+                id: generateId(),
             })
 
             const response = await app?.inject({
@@ -253,7 +253,7 @@ describe('Connector Metadata CE API', () => {
 
             const testToken = await generateMockToken({
                 type: PrincipalType.UNKNOWN,
-                id: apId(),
+                id: generateId(),
             })
             const response = await app?.inject({
                 method: 'GET',
@@ -310,7 +310,7 @@ describe('Connector Metadata CE API', () => {
             const ctx = await createTestContext(app!)
             await connectorCache(mockLog).setup()
 
-            const response = await ctx.delete(`/v1/connectors/${apId()}`)
+            const response = await ctx.delete(`/v1/connectors/${generateId()}`)
 
             expect(response?.statusCode).toBe(StatusCodes.NOT_FOUND)
         })
@@ -388,7 +388,7 @@ describe('Connector Metadata CE API', () => {
                 name: '@custom/other-tenant-connector',
                 connectorType: ConnectorType.CUSTOM,
                 packageType: PackageType.REGISTRY,
-                tenantId: apId(),
+                tenantId: generateId(),
                 version: '0.1.0',
             })
             await db.save('connector_metadata', mockConnector)
@@ -530,7 +530,7 @@ describe('Connector Metadata CE API', () => {
 
     describe('connectorMetadataService.get() — custom connectors', () => {
         it('should return undefined for custom connector when tenantId is not provided', async () => {
-            const tenantId = apId()
+            const tenantId = generateId()
             const mockConnector = createMockConnectorMetadata({
                 name: '@custom/my-connector',
                 connectorType: ConnectorType.CUSTOM,
@@ -549,7 +549,7 @@ describe('Connector Metadata CE API', () => {
         })
 
         it('should return custom connector when tenantId is provided', async () => {
-            const tenantId = apId()
+            const tenantId = generateId()
             const mockConnector = createMockConnectorMetadata({
                 name: '@custom/my-connector',
                 connectorType: ConnectorType.CUSTOM,
@@ -588,7 +588,7 @@ describe('Connector Metadata CE API', () => {
             await db.save('connector_metadata', mockConnector)
             await connectorCache(mockLog).setup()
 
-            const testToken = await generateMockToken({ type: PrincipalType.UNKNOWN, id: apId() })
+            const testToken = await generateMockToken({ type: PrincipalType.UNKNOWN, id: generateId() })
             const response = await app?.inject({
                 method: 'GET',
                 url: '/api/v1/connectors/audience-detail-connector',
@@ -611,7 +611,7 @@ describe('Connector Metadata CE API', () => {
             await db.save('connector_metadata', mockConnector)
             await connectorCache(mockLog).setup()
 
-            const testToken = await generateMockToken({ type: PrincipalType.UNKNOWN, id: apId() })
+            const testToken = await generateMockToken({ type: PrincipalType.UNKNOWN, id: generateId() })
             const response = await app?.inject({
                 method: 'GET',
                 url: '/api/v1/connectors/audience-detail-connector?audience=all',
@@ -633,7 +633,7 @@ describe('Connector Metadata CE API', () => {
             await db.save('connector_metadata', mockConnector)
             await connectorCache(mockLog).setup()
 
-            const testToken = await generateMockToken({ type: PrincipalType.UNKNOWN, id: apId() })
+            const testToken = await generateMockToken({ type: PrincipalType.UNKNOWN, id: generateId() })
             const response = await app?.inject({
                 method: 'GET',
                 url: '/api/v1/connectors/audience-detail-connector?audience=ai',
@@ -675,7 +675,7 @@ describe('Connector Metadata CE API', () => {
             await db.save('connector_metadata', mockConnector)
             await connectorCache(mockLog).setup()
 
-            const testToken = await generateMockToken({ type: PrincipalType.UNKNOWN, id: apId() })
+            const testToken = await generateMockToken({ type: PrincipalType.UNKNOWN, id: generateId() })
             const response = await app?.inject({
                 method: 'GET',
                 url: '/api/v1/connectors?suggestionType=ACTION',
@@ -700,7 +700,7 @@ describe('Connector Metadata CE API', () => {
             await db.save('connector_metadata', mockConnector)
             await connectorCache(mockLog).setup()
 
-            const testToken = await generateMockToken({ type: PrincipalType.UNKNOWN, id: apId() })
+            const testToken = await generateMockToken({ type: PrincipalType.UNKNOWN, id: generateId() })
             const response = await app?.inject({
                 method: 'GET',
                 url: '/api/v1/connectors?suggestionType=ACTION&audience=all',
@@ -725,7 +725,7 @@ describe('Connector Metadata CE API', () => {
             await db.save('connector_metadata', mockConnector)
             await connectorCache(mockLog).setup()
 
-            const testToken = await generateMockToken({ type: PrincipalType.UNKNOWN, id: apId() })
+            const testToken = await generateMockToken({ type: PrincipalType.UNKNOWN, id: generateId() })
             const response = await app?.inject({
                 method: 'GET',
                 url: '/api/v1/connectors',
@@ -749,7 +749,7 @@ describe('Connector Metadata CE API', () => {
             await db.save('connector_metadata', mockConnector)
             await connectorCache(mockLog).setup()
 
-            const testToken = await generateMockToken({ type: PrincipalType.UNKNOWN, id: apId() })
+            const testToken = await generateMockToken({ type: PrincipalType.UNKNOWN, id: generateId() })
             const response = await app?.inject({
                 method: 'GET',
                 url: '/api/v1/connectors?audience=all',

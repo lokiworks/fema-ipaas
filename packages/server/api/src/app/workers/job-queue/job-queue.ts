@@ -1,5 +1,5 @@
-import { ApId, isNil, tryCatch } from '@fema-ipaas/core-utils'
-import { apDayjsDuration, memoryLock } from '@fema-ipaas/server-utils'
+import { EntityId, isNil, tryCatch } from '@fema-ipaas/core-utils'
+import { dayjsDuration, memoryLock } from '@fema-ipaas/server-utils'
 import { ExecuteWorkflowJobData, getDefaultJobPriority, JOB_PRIORITY, JobData, PollingJobData, RenewWebhookJobData, ScheduleOptions, TriggerSourceScheduleType, UserInteractionJobData, WebhookJobData, WorkerJobType } from '@fema-ipaas/shared'
 import { Job, Queue } from 'bullmq'
 import { FastifyBaseLogger } from 'fastify'
@@ -10,8 +10,8 @@ import { workspaceWorkerGroupService } from '../../workspace/workspace-worker-gr
 import { getWorkspaceGroupQueueName, QueueName } from '../job'
 import { workerCapacity } from '../machine/worker-capacity'
 
-const EIGHT_MINUTES_IN_MILLISECONDS = apDayjsDuration(8, 'minute').asMilliseconds()
-const REDIS_FAILED_JOB_RETENTION_DAYS = apDayjsDuration(system.getNumberOrThrow(AppSystemProp.REDIS_FAILED_JOB_RETENTION_DAYS), 'day').asSeconds()
+const EIGHT_MINUTES_IN_MILLISECONDS = dayjsDuration(8, 'minute').asMilliseconds()
+const REDIS_FAILED_JOB_RETENTION_DAYS = dayjsDuration(system.getNumberOrThrow(AppSystemProp.REDIS_FAILED_JOB_RETENTION_DAYS), 'day').asSeconds()
 const REDIS_FAILED_JOB_RETRY_COUNT = system.getNumberOrThrow(AppSystemProp.REDIS_FAILED_JOB_RETENTION_MAX_COUNT)
 
 const dedicatedWorkersQueues = new Map<string, Queue>()
@@ -62,7 +62,7 @@ export const jobQueue = (log: FastifyBaseLogger) => ({
         }
     },
 
-    async removeRepeatingJob({ workflowVersionId }: { workflowVersionId: ApId }): Promise<void> {
+    async removeRepeatingJob({ workflowVersionId }: { workflowVersionId: EntityId }): Promise<void> {
         const allQueues = [...dedicatedWorkersQueues.values()].filter(queue => !isNil(queue))
 
         await Promise.allSettled(
@@ -238,7 +238,7 @@ type GetQueueNameParams = {
 }
 
 type RemoveOneTimeJobParams = {
-    jobId: ApId
+    jobId: EntityId
     tenantId: string | null
     workspaceId?: string | null
     jobType?: WorkerJobType
@@ -251,7 +251,7 @@ type RemoveAllExecutionJobsParams = {
 }
 
 type BaseAddParams<JD extends Omit<JobData, 'engineToken'>, JT extends JobType> = {
-    id: ApId
+    id: EntityId
     data: JD
     type: JT
     delay?: number

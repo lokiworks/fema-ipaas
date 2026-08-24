@@ -1,9 +1,9 @@
 import { isNil } from '@fema-ipaas/core-utils';
 import fs from 'fs'
 import path from 'path'
-import { apLogger } from './ap-logger'
+import { loggerFactory } from './logger'
 
-const logger = apLogger.create()
+const logger = loggerFactory.create()
 
 let cachedCurrentRelease: string | undefined
 
@@ -29,7 +29,7 @@ function readCurrentRelease(): string {
     return cachedCurrentRelease
 }
 
-export const apVersionUtil = {
+export const versionUtil = {
     getCurrentRelease(): string {
         return readCurrentRelease()
     },

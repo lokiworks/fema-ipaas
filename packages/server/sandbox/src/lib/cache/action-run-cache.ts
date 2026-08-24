@@ -1,7 +1,7 @@
 import { readdir, rm, stat, utimes } from 'node:fs/promises'
 import path from 'node:path'
 import { ApplicationError, ErrorCode, isNil, tryCatch } from '@fema-ipaas/core-utils'
-import { type ApLogger } from '@fema-ipaas/server-utils'
+import { type Logger } from '@fema-ipaas/server-utils'
 import { ACTION_RUN_CODE_DIR, cacheUtils } from './cache-paths'
 
 export const actionRunCache = {
@@ -154,7 +154,7 @@ type NamespaceParams = {
 
 type SweepParams = {
     basePath: string
-    log: ApLogger
+    log: Logger
 }
 
 type DirEntry = {

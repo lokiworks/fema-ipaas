@@ -1,4 +1,4 @@
-import { apId } from '@fema-ipaas/core-utils'
+import { generateId } from '@fema-ipaas/core-utils'
 import { OtpState, OtpType, TenantRole, UserIdentityProvider, UserStatus } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
@@ -125,10 +125,10 @@ describe('Passwordless Authentication API', () => {
         it('lets an invited member through even on a throwaway domain', async () => {
             const invited = 'guest@mailinator.com'
             await databaseConnection().getRepository('user_invitation').save({
-                id: apId(),
+                id: generateId(),
                 email: invited,
                 type: 'TENANT',
-                tenantId: apId(),
+                tenantId: generateId(),
                 status: 'ACCEPTED',
                 tenantRole: TenantRole.MEMBER,
             })

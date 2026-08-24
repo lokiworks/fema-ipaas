@@ -1,5 +1,5 @@
 import { isNil } from '@fema-ipaas/core-utils';
-import { ApFlagId } from '@fema-ipaas/shared';
+import { FlagId } from '@fema-ipaas/shared';
 
 import { FlagsMap } from '@/api/flags-api';
 import { queryClient } from '@/app/query-client';
@@ -36,16 +36,16 @@ function isChunkLoadError(error: unknown): boolean {
   return CHUNK_LOAD_ERROR_REGEX.test(message);
 }
 
-function readFlag<T>(flagId: ApFlagId): T | undefined {
+function readFlag<T>(flagId: FlagId): T | undefined {
   const flags = queryClient.getQueryData<FlagsMap>(['flags']);
   return flags?.[flagId] as T | undefined;
 }
 
 function init(): void {
   sentry.initialize({
-    dsn: readFlag<string>(ApFlagId.FRONTEND_SENTRY_DSN),
-    environment: readFlag<string>(ApFlagId.ENVIRONMENT),
-    release: readFlag<string>(ApFlagId.CURRENT_VERSION),
+    dsn: readFlag<string>(FlagId.FRONTEND_SENTRY_DSN),
+    environment: readFlag<string>(FlagId.ENVIRONMENT),
+    release: readFlag<string>(FlagId.CURRENT_VERSION),
   });
 }
 
@@ -58,8 +58,8 @@ function buildCaptureContext(report: FrontendErrorReport) {
     tags: {
       source: report.source,
       is_chunk_load_error: isChunkLoadError(report.error),
-      app_version: readFlag<string>(ApFlagId.CURRENT_VERSION) ?? 'unknown',
-      app_environment: readFlag<string>(ApFlagId.ENVIRONMENT) ?? 'unknown',
+      app_version: readFlag<string>(FlagId.CURRENT_VERSION) ?? 'unknown',
+      app_environment: readFlag<string>(FlagId.ENVIRONMENT) ?? 'unknown',
     },
     user: isNil(userId)
       ? undefined

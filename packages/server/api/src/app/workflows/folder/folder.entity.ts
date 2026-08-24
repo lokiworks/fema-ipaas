@@ -1,8 +1,8 @@
 import { Folder as Folder, Workflow, Workspace } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import {
-    ApIdSchema,
     BaseColumnSchemaPart,
+    EntityIdSchema,
 } from '../../database/database-common'
 
 export type FolderSchema = {
@@ -17,7 +17,7 @@ export const FolderEntity = new EntitySchema<FolderSchema>({
         displayName: {
             type: String,
         },
-        workspaceId: ApIdSchema,
+        workspaceId: EntityIdSchema,
         displayOrder: {
             type: Number,
             default: 0,

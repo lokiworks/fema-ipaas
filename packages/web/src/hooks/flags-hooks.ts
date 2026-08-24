@@ -1,4 +1,4 @@
-import { ApFlagId } from '@fema-ipaas/shared';
+import { FlagId } from '@fema-ipaas/shared';
 import { useSuspenseQuery } from '@tanstack/react-query';
 
 import { flagsApi, FlagsMap } from '../api/flags-api';
@@ -43,10 +43,10 @@ export const flagsHooks = {
     });
   },
   useWebsiteBranding: () => {
-    const { data: theme } = flagsHooks.useFlag<WebsiteBrand>(ApFlagId.THEME);
+    const { data: theme } = flagsHooks.useFlag<WebsiteBrand>(FlagId.THEME);
     return theme!;
   },
-  useFlag: <T>(flagId: ApFlagId) => {
+  useFlag: <T>(flagId: FlagId) => {
     const data = useSuspenseQuery<FlagsMap, Error>({
       queryKey: ['flags'],
       queryFn: flagsApi.getAll,

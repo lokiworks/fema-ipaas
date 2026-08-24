@@ -14,7 +14,7 @@ import {
   SidebarMenuSubItem,
 } from '@/components/ui/sidebar-shadcn';
 
-import { ApSidebarItem, SidebarItemType } from './ap-sidebar-item';
+import { SidebarNavItem, SidebarItemType } from './sidebar-nav-item';
 
 export type SidebarGeneralItemType = SidebarItemType | SidebarGroupType;
 
@@ -29,7 +29,7 @@ export type SidebarGroupType = {
   isActive?: (pathname: string) => boolean;
 };
 
-export function ApSidebareGroup(item: SidebarGroupType) {
+export function SidebarNavGroup(item: SidebarGroupType) {
   const location = useLocation();
   const iconRef = useRef<AnimatedIconHandle | null>(null);
   const [isHovered, setIsHovered] = useState(false);
@@ -70,7 +70,7 @@ export function ApSidebareGroup(item: SidebarGroupType) {
                 link.show && (
                   <SidebarMenuSubItem key={link.label}>
                     <SidebarMenuButton asChild>
-                      <ApSidebarItem
+                      <SidebarNavItem
                         to={link.to}
                         label={link.label}
                         icon={link.icon}

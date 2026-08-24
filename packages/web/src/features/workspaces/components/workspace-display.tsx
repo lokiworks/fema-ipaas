@@ -22,7 +22,7 @@ function useSidebarSafe(): string {
   return context?.state ?? 'expanded';
 }
 
-type ApWorkspaceDisplayProps = {
+type WorkspaceDisplayProps = {
   title: string;
   icon?: WorkspaceIcon;
   containerClassName?: string;
@@ -34,7 +34,7 @@ type ApWorkspaceDisplayProps = {
   framePersonalIcon?: boolean;
 };
 
-export const ApWorkspaceDisplay = ({
+export const WorkspaceDisplay = ({
   title,
   icon,
   containerClassName = '',
@@ -44,7 +44,7 @@ export const ApWorkspaceDisplay = ({
   workspaceType,
   inSidebar = false,
   framePersonalIcon = false,
-}: ApWorkspaceDisplayProps) => {
+}: WorkspaceDisplayProps) => {
   const sidebarState = useSidebarSafe();
   const workspaceAvatar = isNil(icon) ? null : workspaceType ===
     WorkspaceType.TEAM ? (

@@ -1,4 +1,4 @@
-import { ApId, SeekPage } from '@fema-ipaas/core-utils'
+import { EntityId, SeekPage } from '@fema-ipaas/core-utils'
 import { ConnectorBlueprint, GenerateFromBlueprintResponse, PrincipalType, UpsertConnectorBlueprintRequest } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
@@ -59,5 +59,5 @@ const UpsertRequest = {
 
 const GetRequest = {
     config: { security: adminOnly },
-    schema: { params: z.object({ id: ApId }) },
+    schema: { params: z.object({ id: EntityId }) },
 }

@@ -3,7 +3,7 @@ import {
   ConnectorAuthProperty,
 } from '@fema-ipaas/connector-sdk';
 import {
-  ApErrorParams,
+  ApplicationErrorParams,
   ErrorCode,
   isNil,
   SeekPage,
@@ -124,8 +124,8 @@ export const connectionsMutations = {
             message: err.message,
           });
         } else if (api.isError(err)) {
-          const apError = err.response?.data as ApErrorParams;
-          switch (apError.code) {
+          const applicationError = err.response?.data as ApplicationErrorParams;
+          switch (applicationError.code) {
             case ErrorCode.INVALID_CLOUD_CLAIM: {
               setErrorMessage(
                 t(
@@ -137,7 +137,7 @@ export const connectionsMutations = {
             case ErrorCode.INVALID_CLAIM: {
               setErrorMessage(
                 t('Connection failed with error {msg}', {
-                  msg: apError.params.message,
+                  msg: applicationError.params.message,
                 }),
               );
               break;
@@ -145,7 +145,7 @@ export const connectionsMutations = {
             case ErrorCode.INVALID_CONNECTION: {
               setErrorMessage(
                 t('Connection failed with error {msg}', {
-                  msg: apError.params.error,
+                  msg: applicationError.params.error,
                 }),
               );
               break;
@@ -160,7 +160,7 @@ export const connectionsMutations = {
             case ErrorCode.SECRET_MANAGER_GET_SECRET_FAILED: {
               setErrorMessage(
                 t('Secret was not found: "{msg}"', {
-                  msg: apError.params.message,
+                  msg: applicationError.params.message,
                 }),
               );
               break;
@@ -168,7 +168,7 @@ export const connectionsMutations = {
             case ErrorCode.SECRET_MANAGER_CONNECTION_FAILED: {
               setErrorMessage(
                 t('Failed to connect to secret manager with error: "{msg}"', {
-                  msg: apError.params.message,
+                  msg: applicationError.params.message,
                 }),
               );
               break;
@@ -176,7 +176,7 @@ export const connectionsMutations = {
             case ErrorCode.VALIDATION: {
               setErrorMessage(
                 t('Validation error: {msg}', {
-                  msg: apError.params.message,
+                  msg: applicationError.params.message,
                 }),
               );
               break;
@@ -305,14 +305,16 @@ export const connectionsMutations = {
       },
       onError: (error) => {
         if (api.isError(error)) {
-          const apError = error.response?.data as ApErrorParams;
+          const applicationError = error.response
+            ?.data as ApplicationErrorParams;
           if (
-            apError?.code === ErrorCode.VALIDATION ||
-            apError?.code === ErrorCode.AUTHORIZATION
+            applicationError?.code === ErrorCode.VALIDATION ||
+            applicationError?.code === ErrorCode.AUTHORIZATION
           ) {
             toast.error(t('Error'), {
               description: t(
-                apError.params.message ?? 'Failed to replace connections',
+                applicationError.params.message ??
+                  'Failed to replace connections',
               ),
             });
             return;

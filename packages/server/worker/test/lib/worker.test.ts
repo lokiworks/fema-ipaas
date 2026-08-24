@@ -22,14 +22,14 @@ vi.mock('../../src/lib/execute/job-registry', () => ({
     getHandler: (...args: unknown[]) => mockGetHandler(...args),
 }))
 
-// APP_VERSION must match the worker's own FEMA_VERSION (apVersionUtil.getCurrentRelease, read from the
+// APP_VERSION must match the worker's own FEMA_VERSION (versionUtil.getCurrentRelease, read from the
 // same cwd package.json) or the worker↔app version gate fail-closes and pauses polling forever.
 // These are plain functions, not vi.fn().mockReturnValue(...) — afterEach calls vi.restoreAllMocks(),
 // which strips a mock's return value and would make getSettings() return undefined from the second
 // test onward, crashing every poll loop before it reaches poll().
 vi.mock('../../src/lib/config/worker-settings', async () => {
-    const { apVersionUtil } = await vi.importActual<typeof import('@fema-ipaas/server-utils')>('@fema-ipaas/server-utils')
-    const settings = { PUBLIC_URL: 'http://localhost:3000', APP_VERSION: apVersionUtil.getCurrentRelease() }
+    const { versionUtil } = await vi.importActual<typeof import('@fema-ipaas/server-utils')>('@fema-ipaas/server-utils')
+    const settings = { PUBLIC_URL: 'http://localhost:3000', APP_VERSION: versionUtil.getCurrentRelease() }
     return {
         workerSettings: {
             set: () => undefined,

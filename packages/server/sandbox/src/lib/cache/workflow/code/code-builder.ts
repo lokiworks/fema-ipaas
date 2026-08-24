@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs'
 import fs, { rm } from 'node:fs/promises'
 import path from 'node:path'
 import { tryCatch, tryCatchSync } from '@fema-ipaas/core-utils'
-import { type ApLogger, cryptoUtils, fileSystemUtils, wideEvent } from '@fema-ipaas/server-utils'
+import { cryptoUtils, fileSystemUtils, type Logger, wideEvent } from '@fema-ipaas/server-utils'
 import { ExecutionMode } from '@fema-ipaas/shared'
 import { CodeArtifact, SandboxSettings } from '../../../types'
 import { bunRunner } from '../../../utils/bun-runner'
@@ -42,7 +42,7 @@ const INVALID_ARTIFACT_TEMPLATE = `
     };
     `
 
-export const codeBuilder = (log: ApLogger, getSettings: () => SandboxSettings) => ({
+export const codeBuilder = (log: Logger, getSettings: () => SandboxSettings) => ({
     async processCodeStep({
         artifact,
         codesFolderPath,
@@ -156,7 +156,7 @@ function getPackageJson(packageJson: string, getSettings: () => SandboxSettings)
     })
 }
 
-async function installDependencies({ path, packageJson }: InstallDependenciesParams, log: ApLogger): Promise<void> {
+async function installDependencies({ path, packageJson }: InstallDependenciesParams, log: Logger): Promise<void> {
     await fs.writeFile(`${path}/package.json`, packageJson, 'utf8')
     const deps = Object.entries(JSON.parse(packageJson).dependencies ?? {})
     if (deps.length > 0) {
@@ -164,7 +164,7 @@ async function installDependencies({ path, packageJson }: InstallDependenciesPar
     }
 }
 
-async function compileCode({ path, code }: CompileCodeParams, log: ApLogger): Promise<void> {
+async function compileCode({ path, code }: CompileCodeParams, log: Logger): Promise<void> {
     await fs.writeFile(`${path}/tsconfig.json`, TS_CONFIG_CONTENT, {
         encoding: 'utf8',
         flag: 'w',

@@ -1,5 +1,5 @@
 import { ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil } from '@fema-ipaas/core-utils'
-import { ApEnvironment, AuthenticationResponse, EndpointScope, PrincipalType, TelemetryEventName, Tenant, TenantRole, User, UserIdentity, UserIdentityProvider, UserStatus, Workspace, WorkspaceType } from '@fema-ipaas/shared'
+import { AuthenticationResponse, EndpointScope, PrincipalType, RuntimeEnvironment, TelemetryEventName, Tenant, TenantRole, User, UserIdentity, UserIdentityProvider, UserStatus, Workspace, WorkspaceType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyRequest } from 'fastify'
 import { repoFactory } from '../core/db/repo-factory'
 import { system } from '../helper/system/system'
@@ -190,7 +190,7 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
 
     async saveNewsLetterSubscriber(identity: UserIdentity): Promise<void> {
         const environment = system.get(AppSystemProp.ENVIRONMENT)
-        if (environment !== ApEnvironment.PRODUCTION) {
+        if (environment !== RuntimeEnvironment.PRODUCTION) {
             return
         }
         try {

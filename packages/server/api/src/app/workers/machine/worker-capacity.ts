@@ -1,5 +1,5 @@
 import { isNil } from '@fema-ipaas/core-utils'
-import { ApEnvironment, WorkerGroupScope } from '@fema-ipaas/shared'
+import { RuntimeEnvironment, WorkerGroupScope } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import { pubsub } from '../../helper/pubsub'
@@ -9,7 +9,7 @@ import { workerMachineCache } from './machine-cache'
 
 dayjs.extend(utc)
 
-const isTestingEnvironment = system.get(AppSystemProp.ENVIRONMENT) === ApEnvironment.TESTING
+const isTestingEnvironment = system.get(AppSystemProp.ENVIRONMENT) === RuntimeEnvironment.TESTING
 
 export function parseWorkerConcurrency(value: string | undefined): number {
     const parsed = Number(value)

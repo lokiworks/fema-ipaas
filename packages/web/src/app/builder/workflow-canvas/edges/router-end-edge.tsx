@@ -2,19 +2,19 @@ import { StepLocationRelativeToParent } from '@fema-ipaas/shared';
 import { BaseEdge, EdgeProps } from '@xyflow/react';
 
 import { workflowCanvasConsts } from '../utils/consts';
-import { ApRouterEndEdge } from '../utils/types';
+import { RouterEndEdge } from '../utils/types';
 
-import { ApAddButton } from './add-button';
+import { AddButton } from './add-button';
 import { useEdgeLayoutSpace } from './use-edge-layout-space';
 
-export const ApRouterEndCanvasEdge = ({
+export const RouterEndCanvasEdge = ({
   sourceX,
   targetX,
   targetY,
   sourceY,
   data,
   id,
-}: EdgeProps & Omit<ApRouterEndEdge, 'position'>) => {
+}: EdgeProps & Omit<RouterEndEdge, 'position'>) => {
   const { isHorizontal, layout, layoutSource, layoutTarget, toCanvasPath } =
     useEdgeLayoutSpace({ sourceX, sourceY, targetX, targetY });
 
@@ -110,7 +110,7 @@ export const ApRouterEndCanvasEdge = ({
           height={workflowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.height}
           className="overflow-visible"
         >
-          <ApAddButton
+          <AddButton
             edgeId={id}
             stepLocationRelativeToParent={StepLocationRelativeToParent.AFTER}
             parentStepName={data.routerOrBranchStepName}

@@ -1,13 +1,13 @@
 import { EntitySchema } from 'typeorm'
-import { ApIdSchema, BaseColumnSchemaPart } from '../database/database-common'
+import { BaseColumnSchemaPart, EntityIdSchema } from '../database/database-common'
 
 export const AuditEventEntity = new EntitySchema<AuditEventRow>({
     name: 'audit_event',
     columns: {
         ...BaseColumnSchemaPart,
-        tenantId: ApIdSchema,
+        tenantId: EntityIdSchema,
         workspaceId: {
-            ...ApIdSchema,
+            ...EntityIdSchema,
             nullable: true,
         },
         workspaceDisplayName: {
@@ -15,7 +15,7 @@ export const AuditEventEntity = new EntitySchema<AuditEventRow>({
             nullable: true,
         },
         userId: {
-            ...ApIdSchema,
+            ...EntityIdSchema,
             nullable: true,
         },
         userEmail: {

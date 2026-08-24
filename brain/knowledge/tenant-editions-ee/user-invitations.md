@@ -4,6 +4,11 @@ icon: ✉️
 
 # User Invitations
 
+> **历史资料 —— 描述的是上游，不是本仓库。** 本页写的 Edition 体系、计费与席位、
+> license key、Cloud 形态在本仓库**都不存在**（Edition 已彻底删除，见
+> [decisions/000030](../decisions/000030-this-fork-has-no-editions-the-ee-pages-are-history.md)）。
+> 读它了解上游为什么那样设计可以，照着写代码不行——以 `docs/adr/` 和代码为准。
+
 Lets platform owners (and project members with `WRITE_INVITATION`) invite users to a platform (granting a `PlatformRole`) or a specific project (granting a named `ProjectRole`). New invites are either auto-accepted or kept PENDING with an emailed JWT link the recipient clicks to accept without a login session. On acceptance, platform role or project membership is provisioned, then the invitation is deleted. Pending invitations **reserve seats**: an invite that would add a new platform user consumes a seat at creation time, so `usedSeats` = active users + distinct reserved (non-expired) invites (decision 000014).
 
 ### Entity

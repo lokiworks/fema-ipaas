@@ -1,4 +1,4 @@
-export { ApWorkspaceDisplay } from './components/ap-workspace-display';
+export { WorkspaceDisplay } from './components/workspace-display';
 export { CreateWorkspaceButton } from './components/create-workspace-button';
 export { EditWorkspaceDialog } from './components/edit-workspace-dialog';
 export { NewWorkspaceDialog } from './components/new-workspace-dialog';

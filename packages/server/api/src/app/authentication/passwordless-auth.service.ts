@@ -1,6 +1,6 @@
 import { ApplicationError, ErrorCode, isNil } from '@fema-ipaas/core-utils'
 import { cryptoUtils } from '@fema-ipaas/server-utils'
-import { ApFlagId, AuthenticationResponse, OtpType, TelemetryEventName, UserIdentity, UserIdentityProvider } from '@fema-ipaas/shared'
+import { AuthenticationResponse, FlagId, OtpType, TelemetryEventName, UserIdentity, UserIdentityProvider } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { flagService } from '../flags/flag.service'
 import { rejectedPromiseHandler } from '../helper/promise-handler'
@@ -75,7 +75,7 @@ export const passwordlessAuthService = (log: FastifyBaseLogger) => ({
             throw new ApplicationError({ code: ErrorCode.INVALID_OTP, params: {} })
         }
         const verifiedIdentity = identity.verified ? identity : await userIdentityService(log).verifyAndDiscardPassword(identity.id)
-        await flagService(log).save({ id: ApFlagId.USER_CREATED, value: true })
+        await flagService(log).save({ id: FlagId.USER_CREATED, value: true })
 
         const preferredTenantId = isNil(tenantId)
             ? await authenticationService(log).resolvePreferredTenantId({ identityId: verifiedIdentity.id })

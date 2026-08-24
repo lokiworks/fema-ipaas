@@ -1,5 +1,5 @@
 import * as z from "zod/mini";
-import { ApFile } from "./file-property";
+import { ConnectorFile } from "./file-property";
 import { PropertyType } from "./property-type";
 
 
@@ -57,7 +57,7 @@ export type TPropertyValue<
     : U extends PropertyType.DATE_RANGE
     ? object
     : U extends PropertyType.FILE
-    ? ApFile
+    ? ConnectorFile
     : U extends PropertyType.COLOR
     ? string
     : unknown;

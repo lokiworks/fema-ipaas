@@ -17,7 +17,7 @@ Zod schemas + `z.infer` types go in `packages/core/shared/src/lib/{domain}/`, ex
 `EntitySchema`, never decorators. See `tables/table/table.entity.ts`.
 
 - `...BaseColumnSchemaPart` for `id` / `created` / `updated`
-- `ApIdSchema` for foreign keys — `{ ...ApIdSchema, nullable: false }`
+- `EntityIdSchema` for foreign keys — `{ ...EntityIdSchema, nullable: false }`
 - `projectId` column + relation to project, `CASCADE` delete
 - `foreignKeyConstraintName` on every join column
 - Array columns: `{ type: String, array: true, nullable: false }`

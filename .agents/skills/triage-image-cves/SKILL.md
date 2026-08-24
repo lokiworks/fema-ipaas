@@ -1,6 +1,6 @@
 ---
 name: triage-image-cves
-description: Scan an FEMA Integration Platform Docker image with grype for OS/base-image (deb) and application (npm) CVEs of High/Critical severity. Lists the 3 most-recent published tags and lets the user pick which to scan, validates each finding is real and reachable, and proves candidate fixes in an isolated git worktree (rebuild image + re-scan + tests + container smoke-run + codebase diff) before proposing anything — fixes are NEVER auto-applied; the user decides per finding. Use when the user asks to grype-scan the image, triage container/image vulnerabilities, or check a shipped Docker image for CVEs.
+description: Scan a FEMA Integration Platform Docker image with grype for OS/base-image (deb) and application (npm) CVEs of High/Critical severity. Lists the 3 most-recent published tags and lets the user pick which to scan, validates each finding is real and reachable, and proves candidate fixes in an isolated git worktree (rebuild image + re-scan + tests + container smoke-run + codebase diff) before proposing anything — fixes are NEVER auto-applied; the user decides per finding. Use when the user asks to grype-scan the image, triage container/image vulnerabilities, or check a shipped Docker image for CVEs.
 ---
 
 # Triage Image CVEs (grype container scan)

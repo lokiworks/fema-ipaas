@@ -1,4 +1,4 @@
-import { ApId, isNil } from '@fema-ipaas/core-utils'
+import { EntityId, isNil } from '@fema-ipaas/core-utils'
 import { ALL_PRINCIPAL_TYPES, ExecutionStatus } from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyReply } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
@@ -49,7 +49,7 @@ export const resumeController: FastifyPluginAsyncZod = async (app) => {
     /**
      * @deprecated Deprecated since 2026-04-13. can be only removed after all paused jobs after deployment of this version to sink.
      * Handles resume for V0 waitpoints created by legacy connectors using run.pause() + generateResumeUrl().
-     * The requestId param is NOT validated — executionId (an unguessable apId) provides access control.
+     * The requestId param is NOT validated — executionId (an unguessable generateId) provides access control.
      */
     app.all('/:id/requests/:requestId', V0ResumeExecutionRequest, async (req, reply) => {
         const headers = req.headers as Record<string, string>
@@ -205,7 +205,7 @@ const ResumeByWaitpointRequest = {
     },
     schema: {
         params: z.object({
-            id: ApId,
+            id: EntityId,
             waitpointId: z.string(),
         }),
     },
@@ -217,7 +217,7 @@ const V0ResumeExecutionRequest = {
     },
     schema: {
         params: z.object({
-            id: ApId,
+            id: EntityId,
             requestId: z.string(),
         }),
     },

@@ -1,4 +1,4 @@
-import { apId, ExecutionId, isNil } from '@fema-ipaas/core-utils'
+import { ExecutionId, generateId, isNil } from '@fema-ipaas/core-utils'
 import { EngineHttpResponse, Execution, ExecutionStatus, ExecutionType, isExecutionStateTerminal, ResumeReason, RunEnvironment, StreamStepProgress } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
@@ -139,7 +139,7 @@ async function enqueueResume(params: EnqueueResumeParams, log: FastifyBaseLogger
         execution,
         tenantId,
         workerHandlerId: workerHandlerId ?? waitpoint?.workerHandlerId ?? undefined,
-        httpRequestId: httpRequestId ?? waitpoint?.httpRequestId ?? apId(),
+        httpRequestId: httpRequestId ?? waitpoint?.httpRequestId ?? generateId(),
         streamStepProgress: execution.environment === RunEnvironment.TESTING
             ? StreamStepProgress.WEBSOCKET
             : StreamStepProgress.NONE,

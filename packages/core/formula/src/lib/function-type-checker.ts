@@ -1,5 +1,5 @@
 import { FEMA_FUNCTIONS } from './function-registry'
-import type { ApFunctionArgType } from './function-registry'
+import type { FormulaFunctionArgType } from './function-registry'
 
 type DocNode = {
     type?: string
@@ -172,7 +172,7 @@ function splitIntoArgs(nodes: DocNode[]): DocNode[][] {
     return args
 }
 
-function inferArgType(argNodes: DocNode[]): ApFunctionArgType | null {
+function inferArgType(argNodes: DocNode[]): FormulaFunctionArgType | null {
     let depth = 0
     let topLevelFnName: string | null = null
     let topLevelCount = 0

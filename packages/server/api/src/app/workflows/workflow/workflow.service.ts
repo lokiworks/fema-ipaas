@@ -1,5 +1,5 @@
-import { apId, ApplicationError, assertNotNullOrUndefined, Cursor, ErrorCode, isNil, Metadata, SeekPage, TenantId, tryCatch, UserId, WorkflowId, WorkflowVersionId, WorkspaceId } from '@fema-ipaas/core-utils'
-import { apDayjs, apDayjsDuration } from '@fema-ipaas/server-utils'
+import { ApplicationError, assertNotNullOrUndefined, Cursor, ErrorCode, generateId, isNil, Metadata, SeekPage, TenantId, tryCatch, UserId, WorkflowId, WorkflowVersionId, WorkspaceId } from '@fema-ipaas/core-utils'
+import { dayjsDuration, dayjsUtil } from '@fema-ipaas/server-utils'
 import { CreateWorkflowRequest, PopulatedWorkflow, SharedTemplate, TelemetryEventName, TemplateStatus, TemplateType, TriggerSource, UncategorizedFolderId, UserWithMetaInformation, Workflow, workflowConnectorUtil, WorkflowCreator, WorkflowOperationRequest, WorkflowOperationStatus, WorkflowOperationType, WorkflowStatus, WorkflowTriggerType, WorkflowVersion, WorkflowVersionState } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
@@ -32,13 +32,13 @@ export const workflowService = (log: FastifyBaseLogger) => ({
     async create({ workspaceId, request, externalId, ownerId, templateId, createdBy, ip, emitEvents = true }: CreateParams): Promise<PopulatedWorkflow> {
         const folderId = await getFolderIdFromRequest({ workspaceId, folderId: request.folderId, folderName: request.folderName, log })
         const newWorkflow: NewWorkflow = {
-            id: apId(),
+            id: generateId(),
             workspaceId,
             folderId,
             status: WorkflowStatus.DISABLED,
             ownerId,
             publishedVersionId: null,
-            externalId: externalId ?? apId(),
+            externalId: externalId ?? generateId(),
             metadata: request.metadata,
             operationStatus: WorkflowOperationStatus.NONE,
             templateId,
@@ -647,12 +647,12 @@ export const workflowService = (log: FastifyBaseLogger) => ({
             },
             schedule: {
                 type: 'one-time',
-                date: apDayjs(),
+                date: dayjsUtil(),
             },
             customConfig: {
                 backoff: {
                     type: 'exponential',
-                    delay: apDayjsDuration(5, 'second').asMilliseconds(),
+                    delay: dayjsDuration(5, 'second').asMilliseconds(),
                 },
             },
         })

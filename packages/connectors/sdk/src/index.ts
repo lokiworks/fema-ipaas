@@ -8,7 +8,7 @@ export {
   isString,
   isNotUndefined,
   assertNotNullOrUndefined,
-  apId,
+  generateId,
   chunk,
   unique,
   pickBy,

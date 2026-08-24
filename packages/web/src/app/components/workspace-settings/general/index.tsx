@@ -1,5 +1,5 @@
 import {
-  ApFlagId,
+  FlagId,
   ColorName,
   TenantRole,
   WORKSPACE_COLOR_PALETTE,
@@ -49,10 +49,10 @@ export const GeneralSettings = ({ form }: GeneralSettingsProps) => {
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
   const { workspace } = workspaceCollectionUtils.useCurrentWorkspace();
   const { data: isRateLimiterEnabled } = flagsHooks.useFlag<boolean>(
-    ApFlagId.WORKSPACE_RATE_LIMITER_ENABLED,
+    FlagId.WORKSPACE_RATE_LIMITER_ENABLED,
   );
   const { data: defaultConcurrentJobsLimit } = flagsHooks.useFlag<number>(
-    ApFlagId.DEFAULT_CONCURRENT_JOBS_LIMIT,
+    FlagId.DEFAULT_CONCURRENT_JOBS_LIMIT,
   );
   const showGeneralSettings = workspace.type === WorkspaceType.TEAM;
 

@@ -1,27 +1,27 @@
 import { z } from 'zod'
 import { OptionalArrayFromQuery, OptionalBooleanFromQuery } from '@fema-ipaas/core-utils'
-import { ApId } from '@fema-ipaas/core-utils'
+import { EntityId } from '@fema-ipaas/core-utils'
 import { ExecutionStatus } from '../state/workflow-execution'
 
 export const ListExecutionsRequestQuery = z.object({
-    workflowId: OptionalArrayFromQuery(ApId),
+    workflowId: OptionalArrayFromQuery(EntityId),
     tags: OptionalArrayFromQuery(z.string()),
     status: OptionalArrayFromQuery(z.nativeEnum(ExecutionStatus)),
     limit: z.coerce.number().optional(),
     cursor: z.string().optional(),
     createdAfter: z.string().optional(),
     createdBefore: z.string().optional(),
-    workspaceId: ApId,
+    workspaceId: EntityId,
     failedStepName: z.string().optional(),
     failedStepMessage: z.string().optional(),
-    executionIds: OptionalArrayFromQuery(ApId),
+    executionIds: OptionalArrayFromQuery(EntityId),
     includeArchived: OptionalBooleanFromQuery,
 })
 
 export type ListExecutionsRequestQuery = z.infer<typeof ListExecutionsRequestQuery>
 
 export const CountExecutionsByStatusRequest = z.object({
-    workspaceId: ApId,
+    workspaceId: EntityId,
     createdAfter: z.string().optional(),
     createdBefore: z.string().optional(),
 })
@@ -40,7 +40,7 @@ export type ExecutionCountByStatus = z.infer<typeof ExecutionCountByStatus>
 export type CountExecutionsByStatusResponse = z.infer<typeof CountExecutionsByStatusResponse>
 
 export const WorkspaceOverviewRequest = z.object({
-    workspaceId: ApId,
+    workspaceId: EntityId,
     days: z.coerce.number().min(1).max(90).default(7),
 })
 

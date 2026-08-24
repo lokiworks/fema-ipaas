@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import { isNil } from '@fema-ipaas/core-utils'
-import { type ApLogger } from '@fema-ipaas/server-utils'
+import { type Logger } from '@fema-ipaas/server-utils'
 import { WorkflowActionType, WorkflowTriggerType, WorkflowVersion, WorkflowVersionState, LATEST_WORKFLOW_SCHEMA_VERSION, PackageType, ConnectorType, WorkerToApiContract } from '@fema-ipaas/shared'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cacheUtils } from '../../../../src/lib/cache/cache-paths'
@@ -23,7 +23,7 @@ function uniqueBasePath(): string {
     return folder
 }
 
-const fakeLog = { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn().mockReturnThis() } as unknown as ApLogger
+const fakeLog = { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn().mockReturnThis() } as unknown as Logger
 
 function buildWorkflowVersion(overrides: Partial<WorkflowVersion> = {}): WorkflowVersion {
     return {

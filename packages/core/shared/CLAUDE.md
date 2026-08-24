@@ -8,13 +8,13 @@ Zod schema + `z.infer` dual export. Use `BaseModelSchema` (id, created, updated)
 
 ## Key Utilities (`src/lib/core/common/`)
 
-`apId()`, `isNil()`, `isEmpty()`, `tryCatch()`, `tryCatchSync()`, `spreadIfDefined()`, `spreadIfNotUndefined()`, `ApplicationError({ code, params })`, `SeekPage<T>`, `formErrors`, `chunk()`, `partition()`, `unique()`, `omit()`, `deepMergeAndCast()`, `sanitizeObjectForPostgresql()`, `kebabCase()`, `camelCase()`, `debounce()`, `applyFunctionToValues()`
+`generateId()`, `isNil()`, `isEmpty()`, `tryCatch()`, `tryCatchSync()`, `spreadIfDefined()`, `spreadIfNotUndefined()`, `ApplicationError({ code, params })`, `SeekPage<T>`, `formErrors`, `chunk()`, `partition()`, `unique()`, `omit()`, `deepMergeAndCast()`, `sanitizeObjectForPostgresql()`, `kebabCase()`, `camelCase()`, `debounce()`, `applyFunctionToValues()`
 
 ## Key Enums (where to ADD new entries)
 
 - `Permission` (`src/lib/core/common/security/`) — 26 permissions. Add READ/WRITE pairs for new features.
 - `ErrorCode` (`src/lib/core/common/application-error.ts`) — 66 codes. Also add HTTP mapping in server's `error-handler.ts`.
-- `ApFlagId` (`src/lib/core/flag/flag.ts`) — 42 feature flags.
+- `FlagId` (`src/lib/core/flag/flag.ts`) — 42 feature flags.
 - `WorkflowOperationType` — 26 workflow modification ops. Add new op types here + handler in workflow service.
 - `WorkflowActionType` — CODE, CONNECTOR, LOOP_ON_ITEMS, ROUTER.
 - `ExecutionStatus` — 12 states (QUEUED, RUNNING, SUCCEEDED, FAILED, PAUSED, TIMEOUT, CANCELED, etc.).

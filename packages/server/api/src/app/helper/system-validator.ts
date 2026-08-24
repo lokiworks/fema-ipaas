@@ -1,6 +1,6 @@
 import { inspect } from 'util'
 import { isNil } from '@fema-ipaas/core-utils'
-import { ApEnvironment, ConnectorSyncMode, DefaultWorkspaceRole, ExecutionMode, FileLocation, NetworkMode } from '@fema-ipaas/shared'
+import { ConnectorSyncMode, DefaultWorkspaceRole, ExecutionMode, FileLocation, NetworkMode, RuntimeEnvironment } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { DatabaseType } from '../database/database-type'
 import { RedisType } from '../database/redis/types'
@@ -75,7 +75,7 @@ const systemPropValidators: {
     [AppSystemProp.LOG_LEVEL]: enumValidator(['error', 'warn', 'info', 'debug', 'trace']),
     [AppSystemProp.LOG_PRETTY]: booleanValidator,
     [AppSystemProp.LOG_FILE]: booleanValidator,
-    [AppSystemProp.ENVIRONMENT]: enumValidator(Object.values(ApEnvironment)),
+    [AppSystemProp.ENVIRONMENT]: enumValidator(Object.values(RuntimeEnvironment)),
     [AppSystemProp.CLOUD_CHAT_ROLLOUT_CAP]: numberValidator,
     [AppSystemProp.TRIGGER_TIMEOUT_SECONDS]: numberValidator,
     [AppSystemProp.TRIGGER_HOOKS_TIMEOUT_SECONDS]: numberValidator,
@@ -266,7 +266,7 @@ export const validateEnvPropsOnStartup = async (log: FastifyBaseLogger): Promise
     const environment = system.get(AppSystemProp.ENVIRONMENT)
     const fileStorageLocation = process.env.FEMA_FILE_STORAGE_LOCATION
     
-    if (environment !== ApEnvironment.TESTING && fileStorageLocation === FileLocation.S3) {
+    if (environment !== RuntimeEnvironment.TESTING && fileStorageLocation === FileLocation.S3) {
         try {
             await s3Helper(log).validateS3Configuration()
         }

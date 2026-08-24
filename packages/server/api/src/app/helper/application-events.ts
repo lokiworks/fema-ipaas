@@ -1,4 +1,4 @@
-import { apId, isNil, TenantId, tryCatch, UserId, WorkspaceId } from '@fema-ipaas/core-utils'
+import { generateId, isNil, TenantId, tryCatch, UserId, WorkspaceId } from '@fema-ipaas/core-utils'
 import { ApplicationEvent, PrincipalType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyRequest } from 'fastify'
 import { authenticationUtils } from '../authentication/authentication-utils'
@@ -55,7 +55,7 @@ export const applicationEvents = (log: FastifyBaseLogger) => ({
                 data,
                 workspaceId,
                 tenantId,
-                id: apId(),
+                id: generateId(),
                 created: new Date().toISOString(),
                 updated: new Date().toISOString(),
             } as ApplicationEvent
@@ -75,7 +75,7 @@ async function enrichAuditEventParam(requestOrMeta: ApplicationEventSource, para
     const { data: user } = await tryCatch(async () => isNil(userId) ? undefined : userService(log).getOneOrFail({ id: userId }))
     const identity = isNil(user?.identityId) ? undefined : await userIdentityService(log).getOneOrFail({ id: user.identityId })
     const eventToSave: unknown = {
-        id: apId(),
+        id: generateId(),
         created: new Date().toISOString(),
         updated: new Date().toISOString(),
         userId,

@@ -3,8 +3,8 @@ import { copyFile, rename } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { isNil, tryCatch } from '@fema-ipaas/core-utils'
 import { fileSystemUtils } from '@fema-ipaas/server-utils'
-import { type ApLogger } from '@fema-ipaas/server-utils'
-import { ApEnvironment } from '@fema-ipaas/shared'
+import { type Logger } from '@fema-ipaas/server-utils'
+import { RuntimeEnvironment } from '@fema-ipaas/shared'
 import { nanoid } from 'nanoid'
 import { SandboxSettings } from '../../types'
 
@@ -12,9 +12,9 @@ const engineDistPath = 'dist/packages/engine'
 const engineBundles = ['main.js', 'connector-child.js']
 const installedPaths = new Map<string, Promise<void>>()
 
-export const engineInstaller = (_log: ApLogger, getSettings: () => SandboxSettings) => ({
+export const engineInstaller = (_log: Logger, getSettings: () => SandboxSettings) => ({
     async install({ path }: InstallParams): Promise<EngineInstallResult> {
-        const isDev = getSettings().ENVIRONMENT === ApEnvironment.DEVELOPMENT
+        const isDev = getSettings().ENVIRONMENT === RuntimeEnvironment.DEVELOPMENT
         const inFlight = installedPaths.get(path)
         if (!isNil(inFlight) && !isDev) {
             await inFlight

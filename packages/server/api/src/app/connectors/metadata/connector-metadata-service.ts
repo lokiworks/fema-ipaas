@@ -1,6 +1,6 @@
 import { ConnectorMetadata, ConnectorMetadataModel, ConnectorMetadataModelSummary, ConnectorPackageInformation, connectorTranslation } from '@fema-ipaas/connector-sdk'
-import { apId, ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil, LocalesEnum, TenantId } from '@fema-ipaas/core-utils'
-import { apVersionUtil } from '@fema-ipaas/server-utils'
+import { ApplicationError, assertNotNullOrUndefined, ErrorCode, generateId, isNil, LocalesEnum, TenantId } from '@fema-ipaas/core-utils'
+import { versionUtil } from '@fema-ipaas/server-utils'
 import { ConnectorAudienceFilter, ConnectorCategory, ConnectorOrderBy, ConnectorPackage, ConnectorSortBy, ConnectorSource, ConnectorType, EXACT_VERSION_REGEX, PackageType, PrivateConnectorPackage, PublicConnectorPackage, SuggestionType, workflowConnectorUtil } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
@@ -145,7 +145,7 @@ export const connectorMetadataService = (log: FastifyBaseLogger) => {
                 tenantId,
             })
             const savedConnector = await connectorRepos().save({
-                id: apId(),
+                id: generateId(),
                 packageType,
                 connectorType,
                 source,
@@ -334,7 +334,7 @@ const findExactVersion = async (
 ): Promise<{ name: string, version: string, tenantId: string | undefined } | undefined> => {
     const { name, version, tenantId } = params
     const versionToSearch = findNextExcludedVersion(version)
-    const currentRelease = apVersionUtil.getCurrentRelease()
+    const currentRelease = versionUtil.getCurrentRelease()
     const registry = filterRegistry(await loadRegistry(log), { release: currentRelease, tenantId })
     const matchingRegistryEntries = registry.filter((entry) => {
         if (entry.name !== name) {
@@ -408,7 +408,7 @@ const increaseMajorVersion = (version: string): string => {
 }
 
 async function fetchLatestConnectors({ tenantId, locale = LocalesEnum.ENGLISH, log }: FetchLatestConnectorsParams): Promise<ConnectorMetadataSchema[]> {
-    const currentRelease = apVersionUtil.getCurrentRelease()
+    const currentRelease = versionUtil.getCurrentRelease()
 
     const latestConnectors = await dedupe(`latest-connectors:${currentRelease}`, () => fetchLatestCompatibleConnectorsFromDB(currentRelease))
     const translatedConnectors = translateConnectors(latestConnectors, locale)

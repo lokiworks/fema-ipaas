@@ -1,4 +1,4 @@
-import { apId, ApplicationError, ErrorCode, isNil, WorkflowId } from '@fema-ipaas/core-utils'
+import { ApplicationError, ErrorCode, generateId, isNil, WorkflowId } from '@fema-ipaas/core-utils'
 import { PopulatedTriggerSource, TemplateTelemetryEventType, TriggerSource, WorkflowVersion } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { In } from 'typeorm'
@@ -41,7 +41,7 @@ export const triggerSourceService = (log: FastifyBaseLogger) => {
             })
             log.info('[triggerSourceService#enable] Soft deleted trigger source')
             const triggerSourceWithouSchedule: Omit<TriggerSource, 'created' | 'updated' | 'schedule'> = {
-                id: apId(),
+                id: generateId(),
                 type: connectorTrigger.type,
                 workspaceId,
                 workflowId: workflowVersion.workflowId,

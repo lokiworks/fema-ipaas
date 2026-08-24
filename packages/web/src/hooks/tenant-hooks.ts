@@ -11,8 +11,6 @@ import { toast } from 'sonner';
 import { tenantApi } from '@/api/tenants-api';
 import { authenticationSession } from '@/lib/authentication-session';
 
-import { flagsHooks } from './flags-hooks';
-
 export const tenantHooks = {
   useDeleteTenant: () => {
     const navigate = useNavigate();
@@ -48,30 +46,5 @@ export const tenantHooks = {
         queryClient.setQueryData(['tenant', currentTenantId], tenant);
       },
     };
-  },
-  useUpdateLisenceKey: (queryClient: QueryClient) => {
-    const currentTenantId = authenticationSession.getTenantId();
-
-    return useMutation({
-      mutationFn: async (tempLicenseKey: string) => {
-        if (tempLicenseKey.trim() === '') return;
-        await tenantApi.activateLicenseKey(tempLicenseKey.trim());
-      },
-      onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: ['tenant', currentTenantId],
-        });
-        queryClient.invalidateQueries({
-          queryKey: flagsHooks.queryKey,
-        });
-        queryClient.invalidateQueries({
-          queryKey: ['tenant-billing-subscription'],
-        });
-        toast.success(t('License activated successfully!'));
-      },
-      onError: () => {
-        toast.error(t('Activation failed, invalid license key'));
-      },
-    });
   },
 };

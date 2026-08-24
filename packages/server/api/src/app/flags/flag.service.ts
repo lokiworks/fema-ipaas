@@ -1,6 +1,6 @@
 import { isNil } from '@fema-ipaas/core-utils'
-import { apVersionUtil } from '@fema-ipaas/server-utils'
-import { ApFlagId, ExecutionMode, Flag } from '@fema-ipaas/shared'
+import { versionUtil } from '@fema-ipaas/server-utils'
+import { ExecutionMode, Flag, FlagId } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { In } from 'typeorm'
@@ -23,175 +23,175 @@ export const flagService = (log: FastifyBaseLogger) => ({
             value: flag.value,
         })
     },
-    async getOne(flagId: ApFlagId): Promise<Flag | null> {
+    async getOne(flagId: FlagId): Promise<Flag | null> {
         return flagRepo().findOneBy({ id: flagId })
     },
     async getAll(): Promise<Flag[]> {
         const flags = await flagRepo().findBy({
             id: In([
-                ApFlagId.SHOW_POWERED_BY_IN_FORM,
-                ApFlagId.CLOUD_AUTH_ENABLED,
-                ApFlagId.CURRENT_VERSION,
-                ApFlagId.EMAIL_AUTH_ENABLED,
-                ApFlagId.EXECUTION_DATA_RETENTION_DAYS,
-                ApFlagId.ENVIRONMENT,
-                ApFlagId.PUBLIC_URL,
-                ApFlagId.PRIVACY_POLICY_URL,
-                ApFlagId.CONNECTORS_SYNC_MODE,
-                ApFlagId.PRIVATE_CONNECTORS_ENABLED,
-                ApFlagId.EXECUTION_TIME_SECONDS,
-                ApFlagId.SHOW_COMMUNITY,
-                ApFlagId.SUPPORTED_APP_WEBHOOKS,
-                ApFlagId.TELEMETRY_ENABLED,
-                ApFlagId.TEMPLATES_WORKSPACE_ID,
-                ApFlagId.TERMS_OF_SERVICE_URL,
-                ApFlagId.THEME,
-                ApFlagId.THIRD_PARTY_AUTH_PROVIDER_REDIRECT_URL,
-                ApFlagId.THIRD_PARTY_AUTH_PROVIDERS_TO_SHOW_MAP,
-                ApFlagId.SAML_AUTH_ACS_URL,
-                ApFlagId.USER_CREATED,
-                ApFlagId.WEBHOOK_URL_PREFIX,
-                ApFlagId.ALLOW_NPM_PACKAGES_IN_CODE_STEP,
-                ApFlagId.MAX_FIELDS_PER_TABLE,
-                ApFlagId.MAX_RECORDS_PER_TABLE,
-                ApFlagId.MAX_FILE_SIZE_MB,
-                ApFlagId.TEMPLATES_CATEGORIES,
+                FlagId.SHOW_POWERED_BY_IN_FORM,
+                FlagId.CLOUD_AUTH_ENABLED,
+                FlagId.CURRENT_VERSION,
+                FlagId.EMAIL_AUTH_ENABLED,
+                FlagId.EXECUTION_DATA_RETENTION_DAYS,
+                FlagId.ENVIRONMENT,
+                FlagId.PUBLIC_URL,
+                FlagId.PRIVACY_POLICY_URL,
+                FlagId.CONNECTORS_SYNC_MODE,
+                FlagId.PRIVATE_CONNECTORS_ENABLED,
+                FlagId.EXECUTION_TIME_SECONDS,
+                FlagId.SHOW_COMMUNITY,
+                FlagId.SUPPORTED_APP_WEBHOOKS,
+                FlagId.TELEMETRY_ENABLED,
+                FlagId.TEMPLATES_WORKSPACE_ID,
+                FlagId.TERMS_OF_SERVICE_URL,
+                FlagId.THEME,
+                FlagId.THIRD_PARTY_AUTH_PROVIDER_REDIRECT_URL,
+                FlagId.THIRD_PARTY_AUTH_PROVIDERS_TO_SHOW_MAP,
+                FlagId.SAML_AUTH_ACS_URL,
+                FlagId.USER_CREATED,
+                FlagId.WEBHOOK_URL_PREFIX,
+                FlagId.ALLOW_NPM_PACKAGES_IN_CODE_STEP,
+                FlagId.MAX_FIELDS_PER_TABLE,
+                FlagId.MAX_RECORDS_PER_TABLE,
+                FlagId.MAX_FILE_SIZE_MB,
+                FlagId.TEMPLATES_CATEGORIES,
             ]),
         })
         const now = dayjs().toISOString()
         const created = now
         const updated = now
-        const currentVersion = apVersionUtil.getCurrentRelease()
+        const currentVersion = versionUtil.getCurrentRelease()
         flags.push(
             {
-                id: ApFlagId.ENVIRONMENT,
+                id: FlagId.ENVIRONMENT,
                 value: system.get(AppSystemProp.ENVIRONMENT),
                 created,
                 updated,
             },
             {
-                id: ApFlagId.FRONTEND_SENTRY_DSN,
+                id: FlagId.FRONTEND_SENTRY_DSN,
                 value: system.get(AppSystemProp.FRONTEND_SENTRY_DSN) ?? null,
                 created,
                 updated,
             },
             {
-                id: ApFlagId.AGENTS_CONFIGURED,
+                id: FlagId.AGENTS_CONFIGURED,
                 // TODO (@abuaboud): add new check
                 value: true,
                 created,
                 updated,
             },
             {
-                id: ApFlagId.SHOW_ALERTS,
+                id: FlagId.SHOW_ALERTS,
                 value: false,
                 created,
                 updated,
             },
             {
-                id: ApFlagId.SHOW_WORKSPACE_MEMBERS,
+                id: FlagId.SHOW_WORKSPACE_MEMBERS,
                 value: false,
                 created,
                 updated,
             },
             {
-                id: ApFlagId.SHOW_POWERED_BY_IN_FORM,
+                id: FlagId.SHOW_POWERED_BY_IN_FORM,
                 value: true,
                 created,
                 updated,
             },
             {
-                id: ApFlagId.CONNECTORS_SYNC_MODE,
+                id: FlagId.CONNECTORS_SYNC_MODE,
                 value: system.get(AppSystemProp.CONNECTORS_SYNC_MODE),
                 created,
                 updated,
             },
             {
-                id: ApFlagId.ENABLE_WORKFLOW_ON_PUBLISH,
+                id: FlagId.ENABLE_WORKFLOW_ON_PUBLISH,
                 value: system.getBoolean(AppSystemProp.ENABLE_WORKFLOW_ON_PUBLISH) ?? true,
                 created,
                 updated,
             },
             {
-                id: ApFlagId.EXECUTION_DATA_RETENTION_DAYS,
+                id: FlagId.EXECUTION_DATA_RETENTION_DAYS,
                 value: system.getNumber(AppSystemProp.EXECUTION_DATA_RETENTION_DAYS),
                 created,
                 updated,
             },
             {
-                id: ApFlagId.CLOUD_AUTH_ENABLED,
+                id: FlagId.CLOUD_AUTH_ENABLED,
                 value: system.getBoolean(AppSystemProp.CLOUD_AUTH_ENABLED) ?? true,
                 created,
                 updated,
             },
             {
-                id: ApFlagId.THIRD_PARTY_AUTH_PROVIDERS_TO_SHOW_MAP,
+                id: FlagId.THIRD_PARTY_AUTH_PROVIDERS_TO_SHOW_MAP,
                 value: {},
                 created,
                 updated,
             },
             {
-                id: ApFlagId.THIRD_PARTY_AUTH_PROVIDER_REDIRECT_URL,
+                id: FlagId.THIRD_PARTY_AUTH_PROVIDER_REDIRECT_URL,
                 value: null,
                 created,
                 updated,
             },
             {
-                id: ApFlagId.EMAIL_AUTH_ENABLED,
+                id: FlagId.EMAIL_AUTH_ENABLED,
                 value: true,
                 created,
                 updated,
             },
             {
-                id: ApFlagId.THEME,
+                id: FlagId.THEME,
                 value: defaultTheme,
                 created,
                 updated,
             },
             {
-                id: ApFlagId.SHOW_COMMUNITY,
+                id: FlagId.SHOW_COMMUNITY,
                 value: true,
                 created,
                 updated,
             },
             {
-                id: ApFlagId.PRIVATE_CONNECTORS_ENABLED,
+                id: FlagId.PRIVATE_CONNECTORS_ENABLED,
                 value: false,
                 created,
                 updated,
             },
             {
-                id: ApFlagId.PRIVACY_POLICY_URL,
+                id: FlagId.PRIVACY_POLICY_URL,
                 value: 'https://github.com/lokiworks/fema-ipaas/privacy',
                 created,
                 updated,
             },
             {
-                id: ApFlagId.TERMS_OF_SERVICE_URL,
+                id: FlagId.TERMS_OF_SERVICE_URL,
                 value: 'https://github.com/lokiworks/fema-ipaas/terms',
                 created,
                 updated,
             },
             {
-                id: ApFlagId.TELEMETRY_ENABLED,
+                id: FlagId.TELEMETRY_ENABLED,
                 value: system.getBoolean(AppSystemProp.TELEMETRY_ENABLED) ?? true,
                 created,
                 updated,
             },
             {
-                id: ApFlagId.AGENTS_ENABLED,
+                id: FlagId.AGENTS_ENABLED,
                 value: system.getBoolean(AppSystemProp.AGENTS_ENABLED) ?? false,
                 created,
                 updated,
             },
             {
-                id: ApFlagId.TOOL_SEARCH_ENABLED,
+                id: FlagId.TOOL_SEARCH_ENABLED,
                 value: false,
                 created,
                 updated,
             },
             {
-                id: ApFlagId.PUBLIC_URL,
+                id: FlagId.PUBLIC_URL,
                 value: await domainHelper.getPublicUrl({
                     path: '',
                 }),
@@ -199,97 +199,97 @@ export const flagService = (log: FastifyBaseLogger) => ({
                 updated,
             },
             {
-                id: ApFlagId.EXECUTION_TIME_SECONDS,
+                id: FlagId.EXECUTION_TIME_SECONDS,
                 value: system.getNumberOrThrow(AppSystemProp.WORKFLOW_TIMEOUT_SECONDS),
                 created,
                 updated,
             },
             {
-                id: ApFlagId.TRIGGER_TIMEOUT_SECONDS,
+                id: FlagId.TRIGGER_TIMEOUT_SECONDS,
                 value: system.getNumberOrThrow(AppSystemProp.TRIGGER_TIMEOUT_SECONDS),
                 created,
                 updated,
             },
             {
-                id: ApFlagId.EXECUTION_MEMORY_LIMIT_KB,
+                id: FlagId.EXECUTION_MEMORY_LIMIT_KB,
                 value: system.getNumber(AppSystemProp.SANDBOX_MEMORY_LIMIT),
                 created,
                 updated,
             },
             {
-                id: ApFlagId.EXECUTION_LOG_SIZE_LIMIT_MB,
+                id: FlagId.EXECUTION_LOG_SIZE_LIMIT_MB,
                 value: system.getNumber(AppSystemProp.MAX_EXECUTION_LOG_SIZE_MB),
                 created,
                 updated,
             },
             {
-                id: ApFlagId.PAUSED_WORKFLOW_TIMEOUT_DAYS,
+                id: FlagId.PAUSED_WORKFLOW_TIMEOUT_DAYS,
                 value: system.getNumber(AppSystemProp.PAUSED_WORKFLOW_TIMEOUT_DAYS),
                 created,
                 updated,
             },
             {
-                id: ApFlagId.WEBHOOK_TIMEOUT_SECONDS,
+                id: FlagId.WEBHOOK_TIMEOUT_SECONDS,
                 value: system.getNumber(AppSystemProp.WEBHOOK_TIMEOUT_SECONDS),
                 created,
                 updated,
             },
             {
-                id: ApFlagId.CURRENT_VERSION,
+                id: FlagId.CURRENT_VERSION,
                 value: currentVersion,
                 created,
                 updated,
             },
             {
-                id: ApFlagId.ALLOW_NPM_PACKAGES_IN_CODE_STEP,
+                id: FlagId.ALLOW_NPM_PACKAGES_IN_CODE_STEP,
                 value: system.get(AppSystemProp.EXECUTION_MODE) !== ExecutionMode.SANDBOX_CODE_ONLY,
                 created,
                 updated,
             },
             {
-                id: ApFlagId.MAX_RECORDS_PER_TABLE,
+                id: FlagId.MAX_RECORDS_PER_TABLE,
                 value: system.getNumber(AppSystemProp.MAX_RECORDS_PER_TABLE),
                 created,
                 updated,
             },
             {
-                id: ApFlagId.MAX_FIELDS_PER_TABLE,
+                id: FlagId.MAX_FIELDS_PER_TABLE,
                 value: system.getNumber(AppSystemProp.MAX_FIELDS_PER_TABLE),
                 created,
                 updated,
             },
             {
-                id: ApFlagId.MAX_FILE_SIZE_MB,
+                id: FlagId.MAX_FILE_SIZE_MB,
                 value: system.getNumber(AppSystemProp.MAX_FILE_SIZE_MB),
                 created,
                 updated,
             },
             {
-                id: ApFlagId.WORKSPACE_RATE_LIMITER_ENABLED,
+                id: FlagId.WORKSPACE_RATE_LIMITER_ENABLED,
                 value: system.getBoolean(AppSystemProp.WORKSPACE_RATE_LIMITER_ENABLED) ?? false,
                 created,
                 updated,
             },
             {
-                id: ApFlagId.DEFAULT_CONCURRENT_JOBS_LIMIT,
+                id: FlagId.DEFAULT_CONCURRENT_JOBS_LIMIT,
                 value: system.getNumber(AppSystemProp.DEFAULT_CONCURRENT_JOBS_LIMIT),
                 created,
                 updated,
             },
             {
-                id: ApFlagId.SMTP_CONFIGURED,
+                id: FlagId.SMTP_CONFIGURED,
                 value: emailService(log).isConfigured(),
                 created,
                 updated,
             },
             {
-                id: ApFlagId.TURNSTILE_SITE_KEY,
+                id: FlagId.TURNSTILE_SITE_KEY,
                 value: turnstile.siteKey() ?? null,
                 created,
                 updated,
             },
             {
-                id: ApFlagId.PGVECTOR_AVAILABLE,
+                id: FlagId.PGVECTOR_AVAILABLE,
                 value: false,
                 created,
                 updated,
@@ -299,7 +299,7 @@ export const flagService = (log: FastifyBaseLogger) => ({
         if (system.isApp()) {
             flags.push(
                 {
-                    id: ApFlagId.WEBHOOK_URL_PREFIX,
+                    id: FlagId.WEBHOOK_URL_PREFIX,
                     value: await domainHelper.getPublicApiUrl({
                         path: 'v1/webhooks',
                     }),
@@ -307,7 +307,7 @@ export const flagService = (log: FastifyBaseLogger) => ({
                     updated,
                 },
                 {
-                    id: ApFlagId.SUPPORTED_APP_WEBHOOKS,
+                    id: FlagId.SUPPORTED_APP_WEBHOOKS,
                     value: getSupportedAppWebhooks(),
                     created,
                     updated,
@@ -334,13 +334,13 @@ function getSupportedAppWebhooks(): string[] {
 }
 
 export type FlagType =
-    | BaseFlagStructure<ApFlagId.PUBLIC_URL, string>
-    | BaseFlagStructure<ApFlagId.TELEMETRY_ENABLED, boolean>
-    | BaseFlagStructure<ApFlagId.USER_CREATED, boolean>
-    | BaseFlagStructure<ApFlagId.WEBHOOK_URL_PREFIX, string>
-    | BaseFlagStructure<ApFlagId.TEMPLATES_CATEGORIES, string[]>
+    | BaseFlagStructure<FlagId.PUBLIC_URL, string>
+    | BaseFlagStructure<FlagId.TELEMETRY_ENABLED, boolean>
+    | BaseFlagStructure<FlagId.USER_CREATED, boolean>
+    | BaseFlagStructure<FlagId.WEBHOOK_URL_PREFIX, string>
+    | BaseFlagStructure<FlagId.TEMPLATES_CATEGORIES, string[]>
 
-type BaseFlagStructure<K extends ApFlagId, V> = {
+type BaseFlagStructure<K extends FlagId, V> = {
     id: K
     value: V
 }

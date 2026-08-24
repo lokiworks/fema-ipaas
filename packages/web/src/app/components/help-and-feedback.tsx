@@ -1,4 +1,4 @@
-import { ApFlagId, supportUrl } from '@fema-ipaas/shared';
+import { FlagId, supportUrl } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { BookOpen, CircleHelp, History } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -13,7 +13,7 @@ import { flagsHooks } from '@/hooks/flags-hooks';
 
 export const HelpAndFeedback = () => {
   const { data: showCommunity } = flagsHooks.useFlag<boolean>(
-    ApFlagId.SHOW_COMMUNITY,
+    FlagId.SHOW_COMMUNITY,
   );
 
   return (

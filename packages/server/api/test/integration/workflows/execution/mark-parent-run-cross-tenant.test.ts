@@ -1,4 +1,4 @@
-import { apId } from '@fema-ipaas/core-utils'
+import { generateId } from '@fema-ipaas/core-utils'
 import { ExecutionStatus, WorkflowVersionState, RunEnvironment } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { markParentRunAsFailed } from '../../../../../src/app/workflows/execution/executions-queue'
@@ -35,7 +35,7 @@ async function createPausedParentWithWaitpoint(workspaceId: string) {
     })
     await db.save('execution', execution)
 
-    const waitpointId = apId()
+    const waitpointId = generateId()
     await db.save('waitpoint', {
         id: waitpointId,
         executionId: execution.id,
@@ -59,7 +59,7 @@ describe('markParentRunAsFailed tenant isolation', () => {
 
         await markParentRunAsFailed({
             parentRunId: victimRun.id,
-            childRunId: apId(),
+            childRunId: generateId(),
             workspaceId: workspaceA.id,
             log: app.log,
         })
@@ -78,7 +78,7 @@ describe('markParentRunAsFailed tenant isolation', () => {
 
         await markParentRunAsFailed({
             parentRunId: parentRun.id,
-            childRunId: apId(),
+            childRunId: generateId(),
             workspaceId: mockWorkspace.id,
             log: app.log,
         })

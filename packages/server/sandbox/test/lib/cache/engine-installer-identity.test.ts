@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { ApEnvironment } from '@fema-ipaas/shared'
+import { RuntimeEnvironment } from '@fema-ipaas/shared'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { engineInstaller } from '../../../src/lib/cache/engine/engine-installer'
 
@@ -24,7 +24,7 @@ async function makeSandboxRoot(): Promise<Root> {
     return { root, target }
 }
 
-const settings = (): { ENVIRONMENT: ApEnvironment } => ({ ENVIRONMENT: ApEnvironment.PRODUCTION })
+const settings = (): { ENVIRONMENT: RuntimeEnvironment } => ({ ENVIRONMENT: RuntimeEnvironment.PRODUCTION })
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const installer = () => engineInstaller(undefined as any, settings as any)

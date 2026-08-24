@@ -1,4 +1,4 @@
-import { apId } from '@fema-ipaas/core-utils'
+import { generateId } from '@fema-ipaas/core-utils'
 import { PrincipalType } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
@@ -29,7 +29,7 @@ beforeEach(async () => {
     workspaceId = mockWorkspace.id
     engineToken = await generateMockToken({
         type: PrincipalType.ENGINE,
-        id: apId(),
+        id: generateId(),
         workspaceId,
         tenant: { id: tenantId },
     })
@@ -64,7 +64,7 @@ describe('OIDC Token Endpoint', () => {
         it('should reject requests with a user token instead of an engine token', async () => {
             const userToken = await generateMockToken({
                 type: PrincipalType.USER,
-                id: apId(),
+                id: generateId(),
                 workspaceId,
                 tenant: { id: tenantId },
             })

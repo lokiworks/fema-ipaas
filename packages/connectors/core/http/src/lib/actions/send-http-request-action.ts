@@ -8,7 +8,7 @@ import {
   toFailsafeOutput,
 } from '@fema-ipaas/connector-common';
 import {
-  ApFile,
+  ConnectorFile,
   createAction,
   DynamicPropsValue,
   ConnectorAuth,
@@ -439,5 +439,5 @@ type FormDataField = {
   fieldName: string;
   fieldType: 'text' | 'file';
   textFieldValue?: string;
-  fileFieldValue?: ApFile;
+  fileFieldValue?: ConnectorFile;
 };

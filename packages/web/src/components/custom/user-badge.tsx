@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 
 import { UserAvatar } from './user-avatar';
 
-interface ApAvatarProps {
+interface UserBadgeProps {
   id: string | null;
   size: 'small' | 'medium' | 'xsmall';
   includeAvatar?: boolean;
@@ -19,13 +19,13 @@ interface ApAvatarProps {
   hideHover?: boolean;
 }
 
-export const ApAvatar = ({
+export const UserBadge = ({
   id,
   includeAvatar = true,
   includeName = false,
   size = 'medium',
   hideHover = false,
-}: ApAvatarProps) => {
+}: UserBadgeProps) => {
   const avatarSize = getAvatarSize(size);
 
   const { data: user } = userHooks.useUserById(id);

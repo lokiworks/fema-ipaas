@@ -4,6 +4,11 @@ status: accepted
 
 # Credit gating fails open on an unknown balance, and decides from cache only
 
+> **历史资料 —— 描述的是上游，不是本仓库。** 本页写的 Edition 体系、计费与席位、
+> license key、Cloud 形态在本仓库**都不存在**（Edition 已彻底删除，见
+> [decisions/000030](./000030-this-fork-has-no-editions-the-ee-pages-are-history.md)）。
+> 读它了解上游为什么那样设计可以，照着写代码不行——以 `docs/adr/` 和代码为准。
+
 ## Context
 
 The credit gate sits on hot paths that must not depend on a third party being reachable: the worker
@@ -138,4 +143,4 @@ credit-gated on workflow runs — usage is still tracked, only enforcement is of
 - **Scheduling a refresh when the cache read failed.** The refresh needs the Redis that just failed, so
   its debounce cannot hold and each request would hit Postgres and Autumn directly. See above.
 - **Reading the balance from Autumn per request** (no cache): the request-path rule for all
-  entitlement reads, see `brain/platform-editions-ee/ee-platform-plans-billing.md`.
+  entitlement reads, see `brain/knowledge/tenant-editions-ee/ee-tenant-plans-billing.md`.

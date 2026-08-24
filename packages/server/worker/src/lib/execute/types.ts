@@ -1,5 +1,5 @@
 import { Resolver, Runtime } from '@fema-ipaas/sandbox'
-import { type ApLogger } from '@fema-ipaas/server-utils'
+import { type Logger } from '@fema-ipaas/server-utils'
 import { EngineResponseStatus, JobData, WorkerJobType, WorkerToApiContract } from '@fema-ipaas/shared'
 
 export enum JobResultKind {
@@ -16,7 +16,7 @@ export type JobContext = {
     engineToken: string
     internalApiUrl: string
     publicApiUrl: string
-    log: ApLogger
+    log: Logger
 }
 
 export type FireAndForgetJobResult = {

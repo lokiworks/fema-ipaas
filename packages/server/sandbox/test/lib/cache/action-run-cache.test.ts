@@ -2,8 +2,8 @@ import { randomUUID } from 'node:crypto'
 import { chmod, mkdir, rm, stat, utimes, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
-import { ApplicationError, apId, ApId, ErrorCode } from '@fema-ipaas/core-utils'
-import { ApLogger } from '@fema-ipaas/server-utils'
+import { ApplicationError, generateId, EntityId, ErrorCode } from '@fema-ipaas/core-utils'
+import { Logger } from '@fema-ipaas/server-utils'
 import { afterEach, describe, expect, it } from 'vitest'
 import { actionRunCache, ACTION_RUN_CACHE_ACTIVE_WINDOW_MS, ACTION_RUN_CACHE_MAX_DIRS } from '../../../src/lib/cache/action-run-cache'
 import { ACTION_RUN_CODE_DIR, cacheUtils } from '../../../src/lib/cache/cache-paths'
@@ -16,8 +16,8 @@ function uniqueBasePath(): string {
     return basePath
 }
 
-function createNoopLog(): ApLogger {
-    const log: ApLogger = {
+function createNoopLog(): Logger {
+    const log: Logger = {
         level: 'silent',
         silent: () => undefined,
         info: () => undefined,
@@ -38,7 +38,7 @@ function createRecordingLog(): RecordingLog {
     const record = (level: LogLevel) => (...args: unknown[]) => {
         calls.push({ level, payload: args[0] })
     }
-    const log: ApLogger = {
+    const log: Logger = {
         level: 'debug',
         silent: () => undefined,
         info: record('info'),
@@ -75,7 +75,7 @@ async function seedOldestFirst({ basePath, total, ageOffsetMs = ACTION_RUN_CACHE
     return Promise.all(
         Array.from({ length: total }, (_, index) => seedStepDir({
             basePath,
-            namespace: actionRunCache.namespace({ tenantId: apId(), sourceHash: `${label}${index.toString(16)}`.padStart(64, '0') }),
+            namespace: actionRunCache.namespace({ tenantId: generateId(), sourceHash: `${label}${index.toString(16)}`.padStart(64, '0') }),
             ageMs: ageOffsetMs + (total - index) * SECOND_MS,
         })),
     )
@@ -116,8 +116,8 @@ afterEach(async () => {
 describe('actionRunCache.namespace', () => {
     it('prefixes the tenant so two tenants never share a directory for identical source', () => {
         const sourceHash = 'a'.repeat(64)
-        const tenantA = apId()
-        const tenantB = apId()
+        const tenantA = generateId()
+        const tenantB = generateId()
 
         const nameA = actionRunCache.namespace({ tenantId: tenantA, sourceHash })
         const nameB = actionRunCache.namespace({ tenantId: tenantB, sourceHash })
@@ -145,29 +145,29 @@ describe('actionRunCache.namespace', () => {
 })
 
 describe('actionRunCache namespace classification', () => {
-    it('never claims a workflow-version namespace, because an apId is a single path segment', () => {
+    it('never claims a workflow-version namespace, because an generateId is a single path segment', () => {
         for (let attempt = 0; attempt < 100; attempt++) {
-            expect(actionRunCache.isActionRunNamespace(apId())).toBe(false)
+            expect(actionRunCache.isActionRunNamespace(generateId())).toBe(false)
         }
     })
 
-    it('uses a directory name no apId can produce, so a workflow version can never land inside it', () => {
-        expect(ACTION_RUN_CODE_DIR.length).not.toBe(apId().length)
+    it('uses a directory name no generateId can produce, so a workflow version can never land inside it', () => {
+        expect(ACTION_RUN_CODE_DIR.length).not.toBe(generateId().length)
     })
 })
 
 describe('actionRunCache.sweep', () => {
     it('reclaims managed dirs past the TTL and leaves workflow versions alone', async () => {
         const basePath = uniqueBasePath()
-        const workflowVersionDir = await seedStepDir({ basePath, namespace: apId(), ageMs: 90 * 24 * HOUR_MS })
+        const workflowVersionDir = await seedStepDir({ basePath, namespace: generateId(), ageMs: 90 * 24 * HOUR_MS })
         const freshDir = await seedStepDir({
             basePath,
-            namespace: actionRunCache.namespace({ tenantId: apId(), sourceHash: '1'.repeat(64) }),
+            namespace: actionRunCache.namespace({ tenantId: generateId(), sourceHash: '1'.repeat(64) }),
             ageMs: HOUR_MS,
         })
         const expiredDir = await seedStepDir({
             basePath,
-            namespace: actionRunCache.namespace({ tenantId: apId(), sourceHash: '2'.repeat(64) }),
+            namespace: actionRunCache.namespace({ tenantId: generateId(), sourceHash: '2'.repeat(64) }),
             ageMs: 3 * HOUR_MS,
         })
 
@@ -182,13 +182,13 @@ describe('actionRunCache.sweep', () => {
         const basePath = uniqueBasePath()
         const codesPath = cacheUtils(basePath).getGlobalCodeCachePath()
         const ancient = 90 * 24 * HOUR_MS
-        const workflowVersionDir = await seedStepDir({ basePath, namespace: apId(), ageMs: ancient })
-        const legacyPrefixedDir = await seedStepDir({ basePath, namespace: `ar_${apId()}_${'d'.repeat(64)}`, ageMs: ancient })
+        const workflowVersionDir = await seedStepDir({ basePath, namespace: generateId(), ageMs: ancient })
+        const legacyPrefixedDir = await seedStepDir({ basePath, namespace: `ar_${generateId()}_${'d'.repeat(64)}`, ageMs: ancient })
         const strayFile = join(codesPath, 'stray.txt')
         await writeFile(strayFile, 'not a cache dir', 'utf8')
         await seedStepDir({
             basePath,
-            namespace: actionRunCache.namespace({ tenantId: apId(), sourceHash: 'e'.repeat(64) }),
+            namespace: actionRunCache.namespace({ tenantId: generateId(), sourceHash: 'e'.repeat(64) }),
             ageMs: ancient,
         })
 
@@ -250,7 +250,7 @@ describe('actionRunCache.sweep', () => {
 
         const freshDir = await seedStepDir({
             basePath,
-            namespace: actionRunCache.namespace({ tenantId: apId(), sourceHash: '7'.repeat(64) }),
+            namespace: actionRunCache.namespace({ tenantId: generateId(), sourceHash: '7'.repeat(64) }),
         })
 
         await actionRunCache.sweep({ basePath, log: noopLog })
@@ -294,7 +294,7 @@ describe('actionRunCache.sweep observability', () => {
         const basePath = uniqueBasePath()
         await seedStepDir({
             basePath,
-            namespace: actionRunCache.namespace({ tenantId: apId(), sourceHash: '3'.repeat(64) }),
+            namespace: actionRunCache.namespace({ tenantId: generateId(), sourceHash: '3'.repeat(64) }),
         })
         const recording = createRecordingLog()
 
@@ -309,12 +309,12 @@ describe('actionRunCache.sweep observability', () => {
         const basePath = uniqueBasePath()
         await seedStepDir({
             basePath,
-            namespace: actionRunCache.namespace({ tenantId: apId(), sourceHash: '4'.repeat(64) }),
+            namespace: actionRunCache.namespace({ tenantId: generateId(), sourceHash: '4'.repeat(64) }),
             ageMs: 3 * HOUR_MS,
         })
         await seedStepDir({
             basePath,
-            namespace: actionRunCache.namespace({ tenantId: apId(), sourceHash: '5'.repeat(64) }),
+            namespace: actionRunCache.namespace({ tenantId: generateId(), sourceHash: '5'.repeat(64) }),
         })
         const recording = createRecordingLog()
 
@@ -335,7 +335,7 @@ describe('actionRunCache.sweep observability', () => {
         const actionRunsPath = cacheUtils(basePath).getActionRunCodeCachePath()
         const expiredDir = await seedStepDir({
             basePath,
-            namespace: actionRunCache.namespace({ tenantId: apId(), sourceHash: '6'.repeat(64) }),
+            namespace: actionRunCache.namespace({ tenantId: generateId(), sourceHash: '6'.repeat(64) }),
             ageMs: 3 * HOUR_MS,
         })
         const recording = createRecordingLog()
@@ -357,7 +357,7 @@ describe('actionRunCache.sweep observability', () => {
 describe('actionRunCache.touch', () => {
     it('advances the directory mtime so a reused build survives the next sweep', async () => {
         const basePath = uniqueBasePath()
-        const namespace = actionRunCache.namespace({ tenantId: apId(), sourceHash: '8'.repeat(64) })
+        const namespace = actionRunCache.namespace({ tenantId: generateId(), sourceHash: '8'.repeat(64) })
         const dirPath = await seedStepDir({ basePath, namespace, ageMs: 3 * HOUR_MS })
 
         await actionRunCache.touch(dirPath)
@@ -376,7 +376,7 @@ describe('actionRunCache.touch', () => {
 describe('actionRunCache.settlePendingRemoval', () => {
     it('reports nothing pending for a directory no sweep is touching', async () => {
         const basePath = uniqueBasePath()
-        const namespace = actionRunCache.namespace({ tenantId: apId(), sourceHash: '9'.repeat(64) })
+        const namespace = actionRunCache.namespace({ tenantId: generateId(), sourceHash: '9'.repeat(64) })
         const dirPath = await seedStepDir({ basePath, namespace })
 
         await expect(actionRunCache.settlePendingRemoval(dirPath)).resolves.toBe(false)
@@ -384,7 +384,7 @@ describe('actionRunCache.settlePendingRemoval', () => {
 
     it('waits out a removal that is already past its mtime re-check, so a provision can rebuild instead of running deleted code', async () => {
         const basePath = uniqueBasePath()
-        const namespace = actionRunCache.namespace({ tenantId: apId(), sourceHash: 'b'.repeat(64) })
+        const namespace = actionRunCache.namespace({ tenantId: generateId(), sourceHash: 'b'.repeat(64) })
         const dirPath = await seedStepDir({ basePath, namespace, ageMs: 3 * HOUR_MS, extraFiles: 1000 })
 
         const sweeping = actionRunCache.sweep({ basePath, log: noopLog })
@@ -419,6 +419,6 @@ type LogCall = {
 }
 
 type RecordingLog = {
-    log: ApLogger
+    log: Logger
     payloadsAt: (level: LogLevel) => unknown[]
 }

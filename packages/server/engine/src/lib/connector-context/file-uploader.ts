@@ -1,6 +1,6 @@
 import { Readable } from 'node:stream'
 import { FilesService } from '@fema-ipaas/connector-sdk'
-import { apId } from '@fema-ipaas/core-utils'
+import { generateId } from '@fema-ipaas/core-utils'
 import { FileSizeError, FileType } from '@fema-ipaas/shared'
 import { engineFileApi } from '../api/engine-file-api'
 
@@ -20,7 +20,7 @@ export function createFileUploader({ engineToken, apiUrl }: CreateFileUploaderPa
             const { readUrl } = await engineFileApi.upload({
                 engineToken,
                 apiUrl,
-                fileId: apId(),
+                fileId: generateId(),
                 type: FileType.WORKFLOW_STEP_FILE,
                 fileName,
                 data,

@@ -1,7 +1,7 @@
 import { rm, writeFile } from 'node:fs/promises'
 import path, { dirname, join } from 'node:path'
 import { ensureTrailingSlash, groupBy, isEmpty, isNil, tryCatch } from '@fema-ipaas/core-utils'
-import { type ApLogger, fileSystemUtils, memoryLock, wideEvent } from '@fema-ipaas/server-utils'
+import { fileSystemUtils, type Logger, memoryLock, wideEvent } from '@fema-ipaas/server-utils'
 import { ConnectorPackage, ConnectorType, ExecutionMode, getConnectorNameFromAlias, PackageType } from '@fema-ipaas/shared'
 import writeFileAtomic from 'write-file-atomic'
 import { SandboxSettings } from '../../types'
@@ -14,7 +14,7 @@ const VALID_UNSCOPED_NAME_REGEX = /^[^/]+$/
 const relativeConnectorPath = (connector: ConnectorPackage) => join('./', 'connectors', `${connector.connectorName}-${connector.connectorVersion}`)
 const connectorPath = (rootWorkspace: string, connector: ConnectorPackage) => join(rootWorkspace, 'connectors', `${connector.connectorName}-${connector.connectorVersion}`)
 
-export const connectorInstaller = (log: ApLogger, basePath: string, getSettings: () => SandboxSettings) => ({
+export const connectorInstaller = (log: Logger, basePath: string, getSettings: () => SandboxSettings) => ({
     async install({ connectors, includeFilters, publicApiUrl, engineToken }: InstallParams): Promise<void> {
         const groupedConnectors = groupConnectorsByPackagePath(connectors, basePath, getSettings)
         const installPromises = Object.entries(groupedConnectors).map(async ([packagePath, connectorsInGroup]) => {
@@ -42,7 +42,7 @@ function getCustomConnectorsPath(basePath: string, tenantId: string, getSettings
     }
 }
 
-async function installConnectors(rootWorkspace: string, connectors: ConnectorPackage[], includeFilters: boolean, log: ApLogger, bundleSource: BundleSource, getSettings: () => SandboxSettings): Promise<void> {
+async function installConnectors(rootWorkspace: string, connectors: ConnectorPackage[], includeFilters: boolean, log: Logger, bundleSource: BundleSource, getSettings: () => SandboxSettings): Promise<void> {
     const devConnectors = getSettings().DEV_CONNECTORS
     const nonDevConnectors = connectors.filter(connector => !devConnectors.includes(getConnectorNameFromAlias(connector.connectorName)))
     const { validConnectors, invalidConnectors } = partitionValidConnectorNames(nonDevConnectors)
@@ -164,7 +164,7 @@ async function rollbackInstallation(rootWorkspace: string, connectors: Connector
 async function tryInstallConnectorsIndividually(
     rootWorkspace: string,
     connectors: ConnectorPackage[],
-    log: ApLogger,
+    log: Logger,
 ): Promise<ConnectorPackage[]> {
     const failures: ConnectorPackage[] = []
     for (const connector of connectors) {

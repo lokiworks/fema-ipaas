@@ -1,4 +1,4 @@
-import { apId, ApplicationError, ErrorCode, isNil } from '@fema-ipaas/core-utils'
+import { ApplicationError, ErrorCode, generateId, isNil } from '@fema-ipaas/core-utils'
 import { LATEST_JOB_DATA_SCHEMA_VERSION, UserInteractionJobDataWithoutWatchingInformation, WorkerJobType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { engineResponseWatcher } from './engine-response-watcher'
@@ -9,7 +9,7 @@ const WATCHER_GRACE_MS = 10 * 1000
 
 export const userInteractionWatcher = {
     submitAndWaitForResponse: async <T>(request: UserInteractionJobDataWithoutWatchingInformation, log: FastifyBaseLogger, requestId?: string): Promise<T> => {
-        const id = requestId ?? apId()
+        const id = requestId ?? generateId()
         await jobQueue(log).add({
             id,
             type: JobType.ONE_TIME,

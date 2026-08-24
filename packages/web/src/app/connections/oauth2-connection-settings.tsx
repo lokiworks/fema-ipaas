@@ -6,8 +6,8 @@ import {
 } from '@fema-ipaas/connector-sdk';
 import { isNil } from '@fema-ipaas/core-utils';
 import {
-  ApErrorParams,
-  ApFlagId,
+  ApplicationErrorParams,
+  FlagId,
   ConnectionType,
   ErrorCode,
   OAuth2GrantType,
@@ -74,7 +74,7 @@ function OAuth2ConnectionSettings({
   const isConnectButtonEnabled =
     isClientIdValid && isClientSecretValid && isPropsValid && hasSelectedScopes;
   const { data: thirdPartyUrl } = flagsHooks.useFlag<string>(
-    ApFlagId.THIRD_PARTY_AUTH_PROVIDER_REDIRECT_URL,
+    FlagId.THIRD_PARTY_AUTH_PROVIDER_REDIRECT_URL,
   );
   const redirectUrl =
     oauth2App.oauth2Type === ConnectionType.CLOUD_OAUTH2
@@ -331,15 +331,15 @@ async function openPopup({
     authorizationUrl = result.authorizationUrl;
     codeVerifier = result.codeVerifier;
   } catch (error: unknown) {
-    const apError = api.isError(error)
-      ? (error.response?.data as ApErrorParams | undefined)
+    const applicationError = api.isError(error)
+      ? (error.response?.data as ApplicationErrorParams | undefined)
       : undefined;
     form.setError('request.value.code', {
       type: 'manual',
       message:
-        apError?.code === ErrorCode.INVALID_CONNECTION
+        applicationError?.code === ErrorCode.INVALID_CONNECTION
           ? t('Connection failed with error {msg}', {
-              msg: apError.params.error,
+              msg: applicationError.params.error,
             })
           : api.extractServerErrorMessage(
               error,

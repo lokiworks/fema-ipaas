@@ -1,4 +1,4 @@
-import { apId, isNil, TenantId } from '@fema-ipaas/core-utils'
+import { generateId, isNil, TenantId } from '@fema-ipaas/core-utils'
 import { OtpModel, OtpState, OtpType } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
@@ -45,7 +45,7 @@ export const otpService = (log: FastifyBaseLogger) => ({
                 }
                 const freshCode = otpGenerator.generate({ type })
                 const newOtp: Omit<OtpModel, 'created'> = {
-                    id: apId(),
+                    id: generateId(),
                     updated: dayjs().toISOString(),
                     type,
                     identityId,

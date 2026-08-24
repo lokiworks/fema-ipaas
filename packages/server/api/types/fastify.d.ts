@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { AuthorizationType } from '../src/app/core/security/authorization/common'
 import { FastifyRouteSecurity } from '../src/app/core/security/authorization/fastify-security'
-import { ApId, Permission } from '@fema-ipaas/core-utils';
+import { EntityId, Permission } from '@fema-ipaas/core-utils';
 import { EndpointScope, MaybeWorkspaceExtra, Principal, Principal, PrincipalForTypes, PrincipalForTypes, PrincipalType } from '@fema-ipaas/shared';
 import fastify, {
     RouteShorthandOptions as BaseRouteShorthandOptions,

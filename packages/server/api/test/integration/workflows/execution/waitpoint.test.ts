@@ -1,4 +1,4 @@
-import { apId } from '@fema-ipaas/core-utils'
+import { generateId } from '@fema-ipaas/core-utils'
 import { ExecutionStatus, WorkflowVersionState, PauseType, RunEnvironment } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { waitpointService } from '../../../../../src/app/workflows/execution/waitpoint/waitpoint-service'
@@ -223,7 +223,7 @@ describe('Waitpoint service', () => {
             const result = await waitpointService(app.log).complete({
                 executionId: execution.id,
                 workspaceId: ctx.workspace.id,
-                waitpointId: apId(),
+                waitpointId: generateId(),
                 resumePayload: { body: { status: 'error' } },
             })
 
@@ -240,14 +240,14 @@ describe('Waitpoint service', () => {
             const firstResult = await waitpointService(app.log).complete({
                 executionId: execution.id,
                 workspaceId: ctx.workspace.id,
-                waitpointId: apId(),
+                waitpointId: generateId(),
                 resumePayload: { body: { first: true } },
             })
 
             const secondResult = await waitpointService(app.log).complete({
                 executionId: execution.id,
                 workspaceId: ctx.workspace.id,
-                waitpointId: apId(),
+                waitpointId: generateId(),
                 resumePayload: { body: { second: true } },
             })
 
@@ -384,7 +384,7 @@ describe('Waitpoint service', () => {
 
     describe('getByExecutionId', () => {
         it('should return null when no waitpoint exists', async () => {
-            const result = await waitpointService(app.log).getByExecutionId(apId())
+            const result = await waitpointService(app.log).getByExecutionId(generateId())
             expect(result).toBeNull()
         })
 
@@ -445,13 +445,13 @@ describe('Waitpoint service', () => {
                 waitpointService(app.log).complete({
                     executionId: execution.id,
                     workspaceId: ctx.workspace.id,
-                    waitpointId: apId(),
+                    waitpointId: generateId(),
                     resumePayload: { body: { first: true } },
                 }),
                 waitpointService(app.log).complete({
                     executionId: execution.id,
                     workspaceId: ctx.workspace.id,
-                    waitpointId: apId(),
+                    waitpointId: generateId(),
                     resumePayload: { body: { second: true } },
                 }),
             ])
@@ -529,7 +529,7 @@ describe('Waitpoint service', () => {
             let onReadyCalled = false
             const result = await waitpointService(app.log).handleResumeSignal({
                 executionId: execution.id,
-                waitpointId: apId(),
+                waitpointId: generateId(),
                 executionStatus: ExecutionStatus.RUNNING,
                 workspaceId: ctx.workspace.id,
                 resumePayload: { body: { msg: 'hello' } },
@@ -550,7 +550,7 @@ describe('Waitpoint service', () => {
             let onReadyCalled = false
             const result = await waitpointService(app.log).handleResumeSignal({
                 executionId: execution.id,
-                waitpointId: apId(),
+                waitpointId: generateId(),
                 executionStatus: ExecutionStatus.SUCCEEDED,
                 workspaceId: ctx.workspace.id,
                 resumePayload: null,
@@ -578,7 +578,7 @@ describe('Waitpoint service', () => {
             let onReadyCalled = false
             const result = await waitpointService(app.log).handleResumeSignal({
                 executionId: execution.id,
-                waitpointId: apId(),
+                waitpointId: generateId(),
                 executionStatus: ExecutionStatus.PAUSED,
                 workspaceId: ctx.workspace.id,
                 resumePayload: null,
@@ -664,7 +664,7 @@ describe('Waitpoint service', () => {
             const { execution } = await createExecution()
 
             await db.save('waitpoint', {
-                id: apId(),
+                id: generateId(),
                 executionId: execution.id,
                 workspaceId: ctx.workspace.id,
                 stepName: 'approval',
@@ -685,7 +685,7 @@ describe('Waitpoint service', () => {
             const { execution } = await createExecution()
 
             await db.save('waitpoint', {
-                id: apId(),
+                id: generateId(),
                 executionId: execution.id,
                 workspaceId: ctx.workspace.id,
                 stepName: 'approval',
@@ -704,7 +704,7 @@ describe('Waitpoint service', () => {
             const { execution } = await createExecution()
 
             await db.save('waitpoint', {
-                id: apId(),
+                id: generateId(),
                 executionId: execution.id,
                 workspaceId: ctx.workspace.id,
                 stepName: 'approval',

@@ -1,6 +1,6 @@
 ---
 name: connector-builder
-description: Build and edit FEMA Integration Platform connectors (integrations) — creating new connectors, adding actions or triggers, or fixing bugs in existing ones. Use when the user asks to work on an FEMA Integration Platform connector, connector, or integration.
+description: Build and edit FEMA Integration Platform connectors (integrations) — creating new connectors, adding actions or triggers, or fixing bugs in existing ones. Use when the user asks to work on a FEMA Integration Platform connector, connector, or integration.
 ---
 
 # FEMA Integration Platform Connector Builder

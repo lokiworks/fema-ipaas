@@ -1,7 +1,7 @@
 import { Property, createAction } from '@fema-ipaas/connector-sdk';
 import dayjs from 'dayjs';
 import {
-  apDayjs,
+  dayjsUtil,
    getCorrectedFormat,
   optionalTimeFormats,
   parseDate,
@@ -105,7 +105,7 @@ export const addSubtractDateAction = createAction({
       let timeToSet = setTime;
       
       if (useCurrentTime) {
-        const now = apDayjs().tz(timeZone);
+        const now = dayjsUtil().tz(timeZone);
         timeToSet = `${now.hour().toString().padStart(2, '0')}:${now.minute().toString().padStart(2, '0')}`;
       }
 
@@ -166,7 +166,7 @@ function addSubtractTime(date: Date, expression: string, timeZone?: string): day
   }
   
   // Create timezone-aware dayjs object if timezone is provided
-  let dayjsDate = timeZone ? apDayjs(date).tz(timeZone) : apDayjs(date);
+  let dayjsDate = timeZone ? dayjsUtil(date).tz(timeZone) : dayjsUtil(date);
   
   for (let i = 0; i < numbers.length; i++) {
     let val = units[i].toLowerCase();

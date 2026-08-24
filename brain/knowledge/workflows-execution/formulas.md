@@ -7,8 +7,8 @@ icon: 🧮
 In-builder data transformation: users transform any text input using ~104 functions (text, number, date, list, logic) inserted via a `/` slash menu as TipTap badge nodes, with a live preview + type-check panel under the input.
 
 ### How it works
-- Saved formulas persist inline in the input string via a versioned wrapper: `ap-formula-v1::{<expr>}::ap-formula-v1`, so they round-trip through serialization without colliding with plain text. Multiple formulas + plain text in one input concatenate; a single-formula input returns the raw typed value (preserves number/list/boolean).
-- At runtime the engine's `props-resolver.ts` (~line 105) does a **pre-pass**: `formulaEvaluator.containsWrapper(input)` (matches `/ap-formula-v\d+::\{/`) routes the input through `preResolveFormulaVars` (dedup + resolve every `{{var}}` once via the same `resolveSingleToken` path as normal vars) then `formulaEvaluator.evaluate`.
+- Saved formulas persist inline in the input string via a versioned wrapper: `fema-formula-v1::{<expr>}::fema-formula-v1`, so they round-trip through serialization without colliding with plain text. Multiple formulas + plain text in one input concatenate; a single-formula input returns the raw typed value (preserves number/list/boolean).
+- At runtime the engine's `props-resolver.ts` (~line 105) does a **pre-pass**: `formulaEvaluator.containsWrapper(input)` (matches `/fema-formula-v\d+::\{/`) routes the input through `preResolveFormulaVars` (dedup + resolve every `{{var}}` once via the same `resolveSingleToken` path as normal vars) then `formulaEvaluator.evaluate`.
 - `preprocessExpression` pipeline: `replaceJsonArrays` → `preResolveVarsToPlaceholders` → `wrapStringArgs` (auto-quote args the registry expects as string) → `rewriteLazyIf` (`if(c;t;e)` → `(c)?(t):(e)` for short-circuit) → `normalizeExpression` (`;`→`,`, `and`/`or`/`not`→`&&`/`||`/`!`). Then `expr-eval`'s singleton `Parser` evaluates, with impls on `parser.functions.<name>`.
 
 ### Entities & files

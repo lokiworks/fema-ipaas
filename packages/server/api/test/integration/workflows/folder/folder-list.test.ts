@@ -1,4 +1,4 @@
-import { apId } from '@fema-ipaas/core-utils'
+import { generateId } from '@fema-ipaas/core-utils'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import qs from 'qs'
@@ -93,7 +93,7 @@ describe('Folder N+1 fix', () => {
                 // Unique displayName per folder: faker.lorem.word() collides across 25
                 // folders in one workspace, violating idx_folder_workspace_id_display_name.
                 Array.from({ length: 25 }, async (_item, index) => {
-                    const folder = createMockFolder({ workspaceId: ctx.workspace.id, displayName: `folder-${index}-${apId()}` })
+                    const folder = createMockFolder({ workspaceId: ctx.workspace.id, displayName: `folder-${index}-${generateId()}` })
                     await db.save('folder', folder)
                     return folder
                 }),

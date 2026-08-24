@@ -3,7 +3,7 @@ import { useCallback, useEffect } from 'react';
 
 import { useBuilderStateContext } from '../../builder-hooks';
 import { workflowCanvasConsts } from '../utils/consts';
-import { ApNode, CanvasOrientation } from '../utils/types';
+import { CanvasNode, CanvasOrientation } from '../utils/types';
 import { workflowCanvasUtils } from '../utils/workflow-canvas-utils';
 
 const verticalPaddingOnFitView = 100;
@@ -69,7 +69,7 @@ const useFitToView = ({
       }
       const graphHeight = workflowCanvasUtils.calculateGraphBoundingBox({
         graph: {
-          nodes: nodes as ApNode[],
+          nodes: nodes as CanvasNode[],
           edges: [],
         },
         orientation: effectiveOrientation,

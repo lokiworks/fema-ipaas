@@ -2,7 +2,7 @@ import { createServer } from 'http'
 import os from 'os'
 import { ApplicationError, isNil, spreadIfDefined, tryCatch } from '@fema-ipaas/core-utils'
 import { ACTION_RUN_CACHE_FIRST_SWEEP_DELAY_MS, ACTION_RUN_CACHE_SWEEP_INTERVAL_MS, actionRunCache, cacheUtils, createResolver, createSandboxRuntime, Runtime } from '@fema-ipaas/sandbox'
-import { apVersionUtil, createLogger, onCallService, systemUsage, UNKNOWN_VERSION, wideEvent } from '@fema-ipaas/server-utils'
+import { createLogger, onCallService, systemUsage, UNKNOWN_VERSION, versionUtil, wideEvent } from '@fema-ipaas/server-utils'
 import { ApiToWorkerContract, ConsumeJobRequest, createNotifyServer, createRpcClient, EngineResponseStatus, ExecutionMode, JobData, SandboxInformation, WebsocketServerEvent, WorkerMachineHealthcheckRequest, WorkerProps, WorkerSettingsResponse, WorkerToApiContract } from '@fema-ipaas/shared'
 import { nanoid } from 'nanoid'
 import { io, Socket } from 'socket.io-client'
@@ -15,7 +15,7 @@ import { JobContext, JobResult, JobResultKind } from './execute/types'
 import { sandboxConfig } from './runtime/sandbox-config'
 
 
-const FEMA_VERSION = apVersionUtil.getCurrentRelease()
+const FEMA_VERSION = versionUtil.getCurrentRelease()
 
 const VERSION_MISMATCH_POLL_PAUSE_MS = 10_000
 
@@ -222,7 +222,7 @@ async function pollAndExecute(apiClient: WorkerToApiContract, runtime: Runtime, 
     while (polling && connectionGeneration === generation) {
         markPollLoopIteration({ workerIndex, busy: false })
         const appVersion = workerSettings.getSettings().APP_VERSION
-        if (!apVersionUtil.versionsAreCompatible({ versionA: appVersion, versionB: FEMA_VERSION })) {
+        if (!versionUtil.versionsAreCompatible({ versionA: appVersion, versionB: FEMA_VERSION })) {
             const versionUnreadable = appVersion === UNKNOWN_VERSION || FEMA_VERSION === UNKNOWN_VERSION
             if (versionUnreadable) {
                 workerLog.error({ appVersion, workerVersion: FEMA_VERSION }, 'Pausing polling — a release version could not be read from package.json (reported as 0.0.0); this will NOT self-heal on reconnect, check the worker/app deployment (cwd/packaging)')

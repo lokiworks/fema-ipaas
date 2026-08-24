@@ -1,12 +1,12 @@
 import { z } from 'zod'
 import * as zMini from 'zod/mini'
 import { BaseModelSchema, Nullable } from '@fema-ipaas/core-utils'
-import { ApId } from '@fema-ipaas/core-utils'
+import { EntityId } from '@fema-ipaas/core-utils'
 import { Metadata } from '@fema-ipaas/core-utils'
 import { TriggerSource, WebhookHandshakeConfiguration } from '@fema-ipaas/connector-types'
 import { WorkflowVersion } from './workflow-version'
 
-type WorkflowId = ApId
+type WorkflowId = EntityId
 export enum WorkflowStatus {
     ENABLED = 'ENABLED',
     DISABLED = 'DISABLED',
@@ -28,8 +28,8 @@ export const WorkflowCreatorType = {
 export type WorkflowCreatorType = typeof WorkflowCreatorType[keyof typeof WorkflowCreatorType]
 
 export const WorkflowCreator = z.discriminatedUnion('type', [
-    z.object({ type: z.literal(WorkflowCreatorType.MCP), id: ApId }),
-    z.object({ type: z.literal(WorkflowCreatorType.AGENT), id: ApId }),
+    z.object({ type: z.literal(WorkflowCreatorType.MCP), id: EntityId }),
+    z.object({ type: z.literal(WorkflowCreatorType.AGENT), id: EntityId }),
 ])
 export type WorkflowCreator = z.infer<typeof WorkflowCreator>
 

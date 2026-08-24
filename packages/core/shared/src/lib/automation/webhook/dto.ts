@@ -1,8 +1,8 @@
-import { ApId } from '@fema-ipaas/core-utils'
+import { EntityId } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 
 export const WebhookUrlParams = z.object({
-    workflowId: ApId,
+    workflowId: EntityId,
 })
 
 export type WebhookUrlParams = z.infer<typeof WebhookUrlParams>

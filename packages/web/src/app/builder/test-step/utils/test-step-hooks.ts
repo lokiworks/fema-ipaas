@@ -1,5 +1,5 @@
 import {
-  ApErrorParams,
+  ApplicationErrorParams,
   ErrorCode,
   formatConnectorError,
   isString,
@@ -156,12 +156,15 @@ export const testStepHooks = {
       },
       onError: (error) => {
         if (api.isError(error)) {
-          const apError = error.response?.data as ApErrorParams;
-          if (apError.code === ErrorCode.TEST_TRIGGER_FAILED) {
-            const rawMessage = apError.params.message;
+          const applicationError = error.response
+            ?.data as ApplicationErrorParams;
+          if (applicationError.code === ErrorCode.TEST_TRIGGER_FAILED) {
+            const rawMessage = applicationError.params.message;
             const structured =
               tryParseFriendlyConnectorError(rawMessage) ??
-              formatConnectorError(isString(rawMessage) ? rawMessage : apError);
+              formatConnectorError(
+                isString(rawMessage) ? rawMessage : applicationError,
+              );
             setErrorMessage(JSON.stringify(structured));
             return;
           }

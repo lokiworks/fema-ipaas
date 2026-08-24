@@ -1,6 +1,6 @@
 import { isNil } from '@fema-ipaas/core-utils';
 import {
-  ApFunction,
+  FormulaFunction,
   formulaEvaluator,
   typeCheckTiptapDoc,
 } from '@fema-ipaas/expression';
@@ -290,7 +290,7 @@ export const TiptapEditor = ({
     setSlashState(INITIAL_SLASH_STATE);
   }, []);
 
-  const handleFunctionSelect = useCallback((fn: ApFunction) => {
+  const handleFunctionSelect = useCallback((fn: FormulaFunction) => {
     const editor = editorRef.current;
     if (!editor) return;
     insertFunctionAtPos({

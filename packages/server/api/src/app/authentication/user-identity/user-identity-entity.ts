@@ -1,6 +1,6 @@
 import { UserIdentity } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
-import { ApIdSchema, BaseColumnSchemaPart } from '../../database/database-common'
+import { BaseColumnSchemaPart, EntityIdSchema } from '../../database/database-common'
 
 export const UserIdentityEntity = new EntitySchema<UserIdentity>({
     name: 'user_identity',
@@ -48,7 +48,7 @@ export const UserIdentityEntity = new EntitySchema<UserIdentity>({
             nullable: true,
         },
         lastLoggedInTenantId: {
-            ...ApIdSchema,
+            ...EntityIdSchema,
             nullable: true,
         },
     },

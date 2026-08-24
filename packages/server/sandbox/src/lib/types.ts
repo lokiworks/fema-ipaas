@@ -1,4 +1,4 @@
-import { type ApLogger } from '@fema-ipaas/server-utils'
+import { type Logger } from '@fema-ipaas/server-utils'
 import { ConnectorPackage, EngineOperation, EngineOperationType, EngineResponse, FailedStep, NetworkMode, SourceCode, WorkerToApiContract, WorkflowVersion, WorkflowVersionState } from '@fema-ipaas/shared'
 
 // Two roles:
@@ -33,12 +33,12 @@ export type Runtime = {
     execute(params: ExecuteParams): Promise<RuntimeExecutionResult>
     getActiveExecutors(): RuntimeExecutorInfo[]
     prewarm(params: PreWarmSandboxParams): Promise<void>
-    shutdown(log: ApLogger): Promise<void>
+    shutdown(log: Logger): Promise<void>
 }
 
 export type ExecuteParams = {
     workerIndex: number
-    log: ApLogger
+    log: Logger
     operationType: EngineOperationType
     operation: EngineOperation
     timeoutInSeconds: number
@@ -47,7 +47,7 @@ export type ExecuteParams = {
 }
 
 export type PreWarmSandboxParams = {
-    log: ApLogger
+    log: Logger
     apiClient?: WorkerToApiContract
     publicApiUrl?: string
     // Warm just this workflow (e.g. on publish) instead of the tenant's whole active set.
@@ -99,7 +99,7 @@ export type CodeArtifact = {
 // Field names intentionally match WorkerSettingsResponse so workerSettings.getSettings is
 // directly assignable to () => SandboxSettings without wrapping.
 // ENVIRONMENT and EXECUTION_MODE are strings (matching the Zod schema) — comparisons
-// against ApEnvironment / ExecutionMode enum values still work because enum values are strings.
+// against RuntimeEnvironment / ExecutionMode enum values still work because enum values are strings.
 export type SandboxSettings = {
     EXECUTION_MODE: string
     DEV_CONNECTORS: string[]
@@ -120,5 +120,5 @@ export type SandboxSettings = {
 export type SandboxDeps = {
     basePath: string
     getSettings: () => SandboxSettings
-    log: ApLogger
+    log: Logger
 }

@@ -1,4 +1,4 @@
-import { apId, ApplicationError, Cursor, ErrorCode, SeekPage, WorkflowId, WorkspaceId } from '@fema-ipaas/core-utils'
+import { ApplicationError, Cursor, ErrorCode, generateId, SeekPage, WorkflowId, WorkspaceId } from '@fema-ipaas/core-utils'
 import { ConnectorTrigger, EngineResponse, EngineResponseStatus, ExecuteTriggerResponse, FileCompression, FileType, getConnectorMajorAndMinorVersion, PopulatedWorkflow, TriggerEventWithPayload, TriggerHookType, WorkerJobType, WorkflowTrigger, WorkflowTriggerType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { repoFactory } from '../../core/db/repo-factory'
@@ -27,7 +27,7 @@ export const triggerEventService = (log: FastifyBaseLogger) => ({
         const data = Buffer.from(JSON.stringify(payload))
         const file = await fileService(log).save({
             workspaceId,
-            fileName: `${apId()}.json`,
+            fileName: `${generateId()}.json`,
             data,
             size: data.length,
             type: FileType.TRIGGER_EVENT_FILE,
@@ -36,7 +36,7 @@ export const triggerEventService = (log: FastifyBaseLogger) => ({
         const sourceName = getSourceName(workflow.version.trigger)
 
         const trigger = await triggerEventRepo().save({
-            id: apId(),
+            id: generateId(),
             fileId: file.id,
             workspaceId,
             workflowId: workflow.id,

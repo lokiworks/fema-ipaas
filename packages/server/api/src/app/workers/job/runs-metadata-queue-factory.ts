@@ -1,12 +1,12 @@
-import { apId, ApId } from '@fema-ipaas/core-utils'
-import { apDayjsDuration } from '@fema-ipaas/server-utils'
+import { EntityId, generateId } from '@fema-ipaas/core-utils'
+import { dayjsDuration } from '@fema-ipaas/server-utils'
 import { ExecutionStatus, FailedStep, RunEnvironment } from '@fema-ipaas/shared'
 import { Queue } from 'bullmq'
 import Redis from 'ioredis'
 import { DistributedStore } from '../../database/redis/distributed-store-factory'
 import { QueueName } from './index'
 
-export const redisMetadataKey = (runId: ApId): string => `runs_metadata:${runId}`
+export const redisMetadataKey = (runId: EntityId): string => `runs_metadata:${runId}`
 
 export const runsMetadataQueueFactory = ({
     createRedisConnection,
@@ -22,11 +22,11 @@ export const runsMetadataQueueFactory = ({
                     attempts: 5,
                     backoff: {
                         type: 'exponential',
-                        delay: apDayjsDuration(8, 'minute').asMilliseconds(),
+                        delay: dayjsDuration(8, 'minute').asMilliseconds(),
                     },
                     removeOnComplete: true,
                     removeOnFail: {
-                        age: apDayjsDuration(config.redisFailedJobRetentionDays, 'day').asSeconds(),
+                        age: dayjsDuration(config.redisFailedJobRetentionDays, 'day').asSeconds(),
                         count: config.redisFailedJobRetentionMaxCount,
                     },
                 },
@@ -43,7 +43,7 @@ export const runsMetadataQueueFactory = ({
 
             await distributedStore.merge(redisMetadataKey(cleanedParams.id), {
                 ...cleanedParams,
-                requestId: apId(),
+                requestId: generateId(),
             })
 
             await queueInstance.add(

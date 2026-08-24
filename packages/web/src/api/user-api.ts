@@ -17,7 +17,4 @@ export const userApi = {
       data: formData,
     });
   },
-  deleteProfilePicture(): Promise<{ success: boolean }> {
-    return api.delete<{ success: boolean }>('/v1/users/me/profile-picture');
-  },
 };

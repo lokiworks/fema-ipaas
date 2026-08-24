@@ -1,5 +1,5 @@
 import { isNil } from '@fema-ipaas/core-utils';
-import { ApFunction } from '@fema-ipaas/expression';
+import { FormulaFunction } from '@fema-ipaas/expression';
 import { Editor, Extension } from '@tiptap/core';
 import { Node as ProseMirrorNode } from '@tiptap/pm/model';
 import { JSONContent } from '@tiptap/react';
@@ -173,7 +173,7 @@ export type SetSlashCommandHandlerParams = {
 
 export type InsertFunctionAtPosParams = {
   editor: Editor;
-  fn: ApFunction;
+  fn: FormulaFunction;
   from: number;
   query: string;
 };

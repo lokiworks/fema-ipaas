@@ -1,5 +1,5 @@
-import { apId, ApplicationError, ErrorCode, isNil, SeekPage } from '@fema-ipaas/core-utils'
-import { apDayjs } from '@fema-ipaas/server-utils'
+import { ApplicationError, ErrorCode, generateId, isNil, SeekPage } from '@fema-ipaas/core-utils'
+import { dayjsUtil } from '@fema-ipaas/server-utils'
 import { ConnectorBlueprint, ConnectorBlueprintDefinition } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { repoFactory } from '../../core/db/repo-factory'
@@ -10,14 +10,14 @@ const blueprintRepo = repoFactory(ConnectorBlueprintEntity)
 
 export const connectorBlueprintService = (_log: FastifyBaseLogger) => ({
     async upsert({ id, tenantId, definition }: UpsertParams): Promise<ConnectorBlueprint> {
-        const now = apDayjs().toISOString()
+        const now = dayjsUtil().toISOString()
         if (!isNil(id)) {
             const existing = await this.getOneOrThrow({ id, tenantId })
             await blueprintRepo().update(existing.id, { definition, updated: now })
             return this.getOneOrThrow({ id, tenantId })
         }
         const created: ConnectorBlueprint = {
-            id: apId(),
+            id: generateId(),
             created: now,
             updated: now,
             tenantId,

@@ -1,4 +1,4 @@
-import { apId, isNil } from '@fema-ipaas/core-utils'
+import { generateId, isNil } from '@fema-ipaas/core-utils'
 import { DefaultWorkspaceRole, Principal, SigningKeyId } from '@fema-ipaas/shared'
 import { faker } from '@faker-js/faker'
 import jwt, { Algorithm, JwtPayload, SignOptions } from 'jsonwebtoken'
@@ -91,9 +91,9 @@ export const generateMockExternalToken = (
     params?: Partial<GenerateMockExternalTokenParams>,
 ): GenerateMockExternalTokenReturn => {
     const commonPayload = {
-        externalUserId: params?.externalUserId ?? apId(),
+        externalUserId: params?.externalUserId ?? generateId(),
         role: params?.workspaceRole as DefaultWorkspaceRole ?? DefaultWorkspaceRole.ADMIN,
-        externalWorkspaceId: params?.externalWorkspaceId ?? apId(),
+        externalWorkspaceId: params?.externalWorkspaceId ?? generateId(),
         firstName: params?.externalFirstName ?? faker.person.firstName(),
         lastName: params?.externalLastName ?? faker.person.lastName(),
         concurrencyPoolKey: params?.concurrencyPoolKey,
@@ -106,7 +106,7 @@ export const generateMockExternalToken = (
 
     const algorithm = 'RS256'
     const key = params?.privateKey ?? MOCK_SIGNING_KEY_PRIVATE_KEY
-    const keyId = params?.signingKeyId ?? apId()
+    const keyId = params?.signingKeyId ?? generateId()
 
     const mockExternalToken = generateToken({
         payload: mockExternalTokenPayload,

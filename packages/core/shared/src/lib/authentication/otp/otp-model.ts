@@ -1,8 +1,8 @@
-import { ApId, BaseModelSchema } from '@fema-ipaas/core-utils'
+import { BaseModelSchema, EntityId } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 import { OtpType } from './otp-type'
 
-export type OtpId = ApId
+export type OtpId = EntityId
 
 export enum OtpState {
     PENDING = 'PENDING',
@@ -12,7 +12,7 @@ export enum OtpState {
 export const OtpModel = z.object({
     ...BaseModelSchema,
     type: z.nativeEnum(OtpType),
-    identityId: ApId,
+    identityId: EntityId,
     value: z.string(),
     state: z.nativeEnum(OtpState),
     attempts: z.number(),

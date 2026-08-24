@@ -1,4 +1,4 @@
-import { ApId, Permission, SeekPage } from '@fema-ipaas/core-utils'
+import { EntityId, Permission, SeekPage } from '@fema-ipaas/core-utils'
 import { wideEvent } from '@fema-ipaas/server-utils'
 import { ApplicationError, ApplicationEventName, ConnectionOwners, ConnectionScope, ConnectionStatus, ConnectionType, ConnectionWithoutSensitiveData, ErrorCode, GetOAuth2AuthorizationUrlRequestBody, GetOAuth2AuthorizationUrlResponse, ListConnectionOwnersRequestQuery, ListConnectionsRequestQuery, PLACEHOLDER_CONNECTION_TYPE, PrincipalType, ReplaceConnectionsRequestBody, SERVICE_KEY_SECURITY_OPENAPI, UpdateConnectionValueRequestBody, UpsertConnectionRequestBody } from '@fema-ipaas/shared'
 import { FastifyPluginCallbackZod } from 'fastify-type-provider-zod'
@@ -26,7 +26,6 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
             scope: ConnectionScope.WORKSPACE,
             metadata: request.body.metadata,
             connectorVersion: request.body.connectorVersion,
-            networkAgentId: request.body.networkAgentId,
         }
         const connection = request.body.type === PLACEHOLDER_CONNECTION_TYPE
             ? await connectionService(request.log).upsert({
@@ -61,7 +60,6 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
                 displayName: request.body.displayName,
                 workspaceIds: null,
                 metadata: request.body.metadata,
-                networkAgentId: request.body.networkAgentId,
             },
         })
         return connection
@@ -225,7 +223,7 @@ const UpdateConnectionValueRequest = {
         description: 'Update an app connection value',
         body: UpdateConnectionValueRequestBody,
         params: z.object({
-            id: ApId,
+            id: EntityId,
         }),
     },
 }
@@ -287,7 +285,7 @@ const GetConnectionRequest = {
         security: [SERVICE_KEY_SECURITY_OPENAPI],
         description: 'Get an app connection by id',
         params: z.object({
-            id: ApId,
+            id: EntityId,
         }),
         response: {
             [StatusCodes.OK]: ConnectionWithoutSensitiveData,
@@ -311,7 +309,7 @@ const RevalidateConnectionRequest = {
         security: [SERVICE_KEY_SECURITY_OPENAPI],
         description: 'Revalidate an app connection and refresh its runtime status',
         params: z.object({
-            id: ApId,
+            id: EntityId,
         }),
         response: {
             [StatusCodes.OK]: ConnectionWithoutSensitiveData,
@@ -356,7 +354,7 @@ const DeleteConnectionRequest = {
         security: [SERVICE_KEY_SECURITY_OPENAPI],
         description: 'Delete an app connection',
         params: z.object({
-            id: ApId,
+            id: EntityId,
         }),
         response: {
             [StatusCodes.NO_CONTENT]: z.never(),

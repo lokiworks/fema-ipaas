@@ -5,7 +5,7 @@ import {
   timeFormatDescription,
   timeZoneOptions,
   getCorrectedFormat,
-  apDayjs,
+  dayjsUtil,
 } from '../common';
 import * as z from 'zod/mini'
 import { propsValidation } from '@fema-ipaas/connector-common';
@@ -70,7 +70,7 @@ export const lastDayOfPreviousMonthAction = createAction({
     const useCurrentTime = context.propsValue.currentTime as boolean;
     let providedTime = context.propsValue.time as string;
 
-    const baseDateTime = apDayjs().tz(selectedTimeZone);
+    const baseDateTime = dayjsUtil().tz(selectedTimeZone);
 
     if (useCurrentTime === true) {
       providedTime = `${baseDateTime.hour()}:${baseDateTime.minute()}`;

@@ -8,7 +8,7 @@ Templates are a library of reusable workflow (and table) blueprints users can br
 
 ### Entities & services
 - **Template** entity: name, summary, description, type, status, platformId (nullable), workflows (jsonb `WorkflowVersionTemplate[]`), tables, tags, categories (indexed text[]), connectors (indexed text[]).
-- **TemplateType**: `OFFICIAL` (AP-curated, platformId=null), `CUSTOM` (platform-owned, needs `manageTemplatesEnabled`), `SHARED` (ad-hoc share URL, not listable).
+- **TemplateType**: `OFFICIAL` (FEMA-curated, platformId=null), `CUSTOM` (platform-owned, needs `manageTemplatesEnabled`), `SHARED` (ad-hoc share URL, not listable).
 - **TemplateStatus**: `PUBLISHED` (visible) or `ARCHIVED` (hidden).
 - Services: `template.service.ts` (CRUD + list), `template-validator.ts`, `community-templates.service.ts`, EE `platform-template.service.ts`.
 

@@ -10,7 +10,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
-export const ApSidebarToggle = () => {
+export const SidebarToggle = () => {
   const { open, isHoverExpanded, setOpen } = useSidebar();
   const pinnedOpen = open && !isHoverExpanded;
   return (

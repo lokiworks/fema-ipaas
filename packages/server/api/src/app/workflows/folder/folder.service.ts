@@ -1,4 +1,4 @@
-import { apId, ApplicationError, Cursor, ErrorCode, isNil, SeekPage, WorkspaceId } from '@fema-ipaas/core-utils'
+import { ApplicationError, Cursor, ErrorCode, generateId, isNil, SeekPage, WorkspaceId } from '@fema-ipaas/core-utils'
 import { CreateFolderRequest, Folder, FolderDto, FolderId, UpdateFolderRequest } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { repoFactory } from '../../core/db/repo-factory'
@@ -49,7 +49,7 @@ export const workflowFolderService = (log: FastifyBaseLogger) => ({
                 request,
             })
         }
-        const folderId = apId()
+        const folderId = generateId()
         await folderRepo().upsert({
             id: folderId,
             workspaceId,
@@ -76,7 +76,7 @@ export const workflowFolderService = (log: FastifyBaseLogger) => ({
             })
             return folderRepo().findOneByOrFail({ id: existing.id, workspaceId })
         }
-        const folderId = apId()
+        const folderId = generateId()
         await folderRepo().insert({
             id: folderId,
             workspaceId,

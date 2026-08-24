@@ -8,7 +8,7 @@ import {
   timeFormatDescription,
   timeZoneOptions,
   getCorrectedFormat,
-  apDayjs,
+  dayjsUtil,
 } from '../common';
 import * as z from 'zod/mini'
 import { propsValidation } from '@fema-ipaas/connector-common';
@@ -91,7 +91,7 @@ export const nextDayofWeek = createAction({
     const currentTime = context.propsValue.currentTime as boolean;
     let time = context.propsValue.time as string;
 
-    let nextOccurrence = apDayjs().tz(timeZone);
+    let nextOccurrence = dayjsUtil().tz(timeZone);
 
     if (currentTime === true) {
       time = `${nextOccurrence.hour()}:${nextOccurrence.minute()}`;
@@ -119,7 +119,7 @@ export const nextDayofWeek = createAction({
     let dayDiff = dayIndex - nextOccurrence.day();
     if (
       dayDiff < 0 ||
-      (dayDiff === 0 && nextOccurrence.isBefore(apDayjs().tz(timeZone)))
+      (dayDiff === 0 && nextOccurrence.isBefore(dayjsUtil().tz(timeZone)))
     ) {
       // If it's a past day in the week or today but past time, move to next week
       dayDiff += 7;

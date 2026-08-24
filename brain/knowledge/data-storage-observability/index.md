@@ -20,7 +20,7 @@ Project-scoped encrypted secrets referenced in workflows as `{{variables['NAME']
 
 ### File Storage
 
-Central binary persistence with two backends: DB (`bytea`) or S3-compatible (AWS/R2/MinIO/OCI). `FileType` decides location + retention — expiring execution files (logs, step files, payloads) follow `FILE_STORAGE_LOCATION`; non-expiring files (assets, avatars, releases) always DB. Optional Zstd compression, transparent on read. Hourly cleanup job deletes stale execution files past `EXECUTION_DATA_RETENTION_DAYS`. `WORKFLOW_BUNDLE` is the one non-expiring type that's configurable (S3 signed URLs let workers fetch directly). Step files download via short-lived JWT. Files reach connectors in two shapes: **ApFile** (buffered `Buffer` + `base64`, from a plain `Property.File()`) and **ApStreamingFile** (`{ filename, extension?, size?, body: Readable }`, from `Property.File({ streaming: true })`) — a one-shot lazy file the engine never buffers, for uploading large files out to an external service.
+Central binary persistence with two backends: DB (`bytea`) or S3-compatible (AWS/R2/MinIO/OCI). `FileType` decides location + retention — expiring execution files (logs, step files, payloads) follow `FILE_STORAGE_LOCATION`; non-expiring files (assets, avatars, releases) always DB. Optional Zstd compression, transparent on read. Hourly cleanup job deletes stale execution files past `EXECUTION_DATA_RETENTION_DAYS`. `WORKFLOW_BUNDLE` is the one non-expiring type that's configurable (S3 signed URLs let workers fetch directly). Step files download via short-lived JWT. Files reach connectors in two shapes: **ConnectorFile** (buffered `Buffer` + `base64`, from a plain `Property.File()`) and **StreamingFile** (`{ filename, extension?, size?, body: Readable }`, from `Property.File({ streaming: true })`) — a one-shot lazy file the engine never buffers, for uploading large files out to an external service.
 
 ### Secret Managers (EE)
 
@@ -62,7 +62,7 @@ Email on execution failure. First failure per workflowVersion per 24h window sen
 
 ### Event Destinations (EE)
 
-Streams platform/project events to webhook URLs in real time — internal AP workflow webhooks are valid targets (route into a workflow, fan out to Slack/Gmail/Teams). Subscribes to a subset of the 27 `ApplicationEventName` events. Delivery via BullMQ (`EVENT_DESTINATION` job) over `safeHttp` for external URLs; same-origin handler-workflow URLs skip BullMQ and dispatch through `webhookService.handleWebhook` (no outbound HTTP, dodges SSRF self-call, GIT-1539). Server-side cycle guard prevents recursion. Gated by `auditLogEnabled` (shares audit gating); lives under the Observability sidebar group. Frontend uses a TanStack DB live collection, not React Query.
+Streams platform/project events to webhook URLs in real time — internal FEMA workflow webhooks are valid targets (route into a workflow, fan out to Slack/Gmail/Teams). Subscribes to a subset of the 27 `ApplicationEventName` events. Delivery via BullMQ (`EVENT_DESTINATION` job) over `safeHttp` for external URLs; same-origin handler-workflow URLs skip BullMQ and dispatch through `webhookService.handleWebhook` (no outbound HTTP, dodges SSRF self-call, GIT-1539). Server-side cycle guard prevents recursion. Gated by `auditLogEnabled` (shares audit gating); lives under the Observability sidebar group. Frontend uses a TanStack DB live collection, not React Query.
 
 ### Benchmark CLI
 

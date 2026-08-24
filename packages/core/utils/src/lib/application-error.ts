@@ -1,9 +1,9 @@
-import type { ApId, WorkflowId, ExecutionId, WorkflowVersionId, WorkspaceId, UserId } from './id-generator'
+import type { EntityId, WorkflowId, ExecutionId, WorkflowVersionId, WorkspaceId, UserId } from './id-generator'
 import type { Permission, TenantUsageMetric } from './permission'
 import type { WorkspaceRole } from './workspace-role'
 
 export class ApplicationError extends Error {
-    constructor(public error: ApErrorParams, message?: string) {
+    constructor(public error: ApplicationErrorParams, message?: string) {
         super(error.code + (message ? `: ${message}` : ''))
     }
 
@@ -16,7 +16,7 @@ export class ApplicationError extends Error {
     }
 }
 
-export type ApErrorParams =
+export type ApplicationErrorParams =
     | AuthenticationParams
     | AuthorizationErrorParams
     | EmailIsNotVerifiedErrorParams
@@ -236,7 +236,7 @@ ErrorCode.TRIGGER_FAILED,
 export type JobRemovalFailureErrorParams = BaseErrorParams<
 ErrorCode.JOB_REMOVAL_FAILURE,
 {
-    workflowVersionId: ApId
+    workflowVersionId: EntityId
 }
 >
 

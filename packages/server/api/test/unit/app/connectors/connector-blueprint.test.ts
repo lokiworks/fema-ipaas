@@ -22,7 +22,6 @@ const BASE: ConnectorBlueprintDefinition = {
             { name: 'expand', displayName: 'Expand', description: '', required: false, in: 'query', type: BlueprintFieldType.TEXT, options: [] },
         ],
     }],
-    networkAgentId: null,
 }
 
 function generate(overrides: Partial<ConnectorBlueprintDefinition> = {}) {

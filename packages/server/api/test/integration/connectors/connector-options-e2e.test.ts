@@ -9,7 +9,7 @@
  *   - bun must be available for connector installation
  *   - Redis (in-memory via FEMA_REDIS_TYPE=MEMORY) is started automatically
  */
-import { apDayjs } from '@fema-ipaas/server-utils'
+import { dayjsUtil } from '@fema-ipaas/server-utils'
 import {
     WorkflowTriggerType,
     WorkflowVersionState,
@@ -76,7 +76,7 @@ describe('Connector Options E2E', () => {
                     propertySettings: {},
                 },
                 valid: true,
-                lastUpdatedDate: apDayjs().toISOString(),
+                lastUpdatedDate: dayjsUtil().toISOString(),
             },
         })
         await db.save('workflow_version', mockWorkflowVersion)

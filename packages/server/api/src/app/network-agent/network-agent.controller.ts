@@ -59,7 +59,7 @@ export const networkAgentController: FastifyPluginAsyncZod = async (app) => {
         })
     })
 
-    app.delete('/:id', GetRequest, async (request, reply) => {
+    app.delete('/:id', DeleteRequest, async (request, reply) => {
         await networkAgentService(request.log).delete({
             id: request.params.id,
             tenantId: request.principal.tenant.id,
@@ -72,8 +72,12 @@ const DEFAULT_LIMIT = 50
 
 const adminOnly = securityAccess.tenantAdminOnly([PrincipalType.USER, PrincipalType.SERVICE])
 
+// Listing is readable by anyone in the tenant: binding a connection to an agent is a workspace
+// task, and the list carries no secret — the token is returned once, at creation, and never stored.
+const tenantReadable = securityAccess.publicTenant([PrincipalType.USER, PrincipalType.SERVICE])
+
 const ListRequest = {
-    config: { security: adminOnly },
+    config: { security: tenantReadable },
     schema: { querystring: ListNetworkAgentsRequest },
 }
 
@@ -83,7 +87,7 @@ const CreateRequest = {
 }
 
 const GetRequest = {
-    config: { security: adminOnly },
+    config: { security: tenantReadable },
     schema: { params: NetworkAgentIdParams },
 }
 
@@ -92,6 +96,11 @@ const ProxyRequestConfig = {
         security: securityAccess.unscoped([PrincipalType.ENGINE, PrincipalType.USER, PrincipalType.SERVICE]),
     },
     schema: { body: ProxyThroughAgentRequest },
+}
+
+const DeleteRequest = {
+    config: { security: adminOnly },
+    schema: { params: NetworkAgentIdParams },
 }
 
 const UpdateRequest = {

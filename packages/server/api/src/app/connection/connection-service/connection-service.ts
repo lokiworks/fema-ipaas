@@ -1,5 +1,5 @@
 import { ConnectorMetadata } from '@fema-ipaas/connector-sdk'
-import { apId, ApplicationError, Cursor, ErrorCode, isNil, Metadata, SeekPage, spreadIfDefined, TenantId, tryCatch, tryCatchSync, unique, UserId, WorkspaceId } from '@fema-ipaas/core-utils'
+import { apId, ApplicationError, Cursor, ErrorCode, isNil, Metadata, SeekPage, spreadIfDefined, spreadIfNotUndefined, TenantId, tryCatch, tryCatchSync, unique, UserId, WorkspaceId } from '@fema-ipaas/core-utils'
 import { ApEnvironment, Connection, ConnectionId, ConnectionOwners, ConnectionScope, ConnectionStatus, ConnectionType, ConnectionValue, ConnectionWithoutSensitiveData, EngineResponse, EngineResponseStatus, ExecuteResolveConnectionIdentifierResponse, ExecuteValidateAuthResponse, MAX_TENANT_CONNECTION_OWNERS, OAuth2GrantType, TenantConnectionOwner, TenantConnectionOwnersResponse, TenantConnectionsListItem, TenantConnectionWorkspaceInfo, TenantRole, UpsertConnectionRequestBody, User, UserIdentity, UserWithMetaInformation, WorkerJobType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import semver from 'semver'
@@ -31,7 +31,7 @@ export const connectionsRepo = repoFactory(ConnectionEntity)
 
 export const connectionService = (log: FastifyBaseLogger) => ({
     async upsert(params: UpsertParams): Promise<ConnectionWithoutSensitiveData> {
-        const { workspaceIds, externalId, value, displayName, connectorName, ownerId, tenantId, scope, type, status, metadata, preSelectForNewWorkspaces } = params
+        const { workspaceIds, externalId, value, displayName, connectorName, ownerId, tenantId, scope, type, status, metadata, preSelectForNewWorkspaces, networkAgentId } = params
         const connectorVersion = params.connectorVersion ?? ( await connectorMetadataService(log).getOrThrow({
             name: connectorName,
             tenantId,
@@ -101,6 +101,7 @@ export const connectionService = (log: FastifyBaseLogger) => ({
             tenantId,
             ...spreadIfDefined('metadata', connectionMetadata),
             ...spreadIfDefined('preSelectForNewWorkspaces', preSelectForNewWorkspaces),
+            ...spreadIfNotUndefined('networkAgentId', networkAgentId),
             connectorVersion,
         }
 
@@ -143,6 +144,7 @@ export const connectionService = (log: FastifyBaseLogger) => ({
                 accountIdentifier: typeof storedAccountIdentifier === 'string' ? storedAccountIdentifier : undefined,
             }))),
             ...spreadIfDefined('preSelectForNewWorkspaces', request.preSelectForNewWorkspaces),
+            ...spreadIfNotUndefined('networkAgentId', request.networkAgentId),
         })
 
         const updatedConnection = await connectionsRepo().findOneByOrFail(filter)
@@ -935,6 +937,7 @@ type UpsertParams = {
     metadata?: Metadata
     connectorVersion?: string
     preSelectForNewWorkspaces?: boolean
+    networkAgentId?: string | null
 }
 
 
@@ -1007,6 +1010,7 @@ type UpdateParams = {
         workspaceIds: WorkspaceId[] | null
         metadata?: Metadata
         preSelectForNewWorkspaces?: boolean
+        networkAgentId?: string | null
     }
 }
 

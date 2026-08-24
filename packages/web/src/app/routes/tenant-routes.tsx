@@ -48,6 +48,7 @@ const OpenApiImportPage = React.lazy(
   () => import('./tenant/connectors/openapi-import'),
 );
 const TenantConnectionsPage = React.lazy(() => import('./tenant/connections'));
+const NetworkAgentsPage = React.lazy(() => import('./tenant/network-agents'));
 
 function SuspenseWrapper({ children }: { children: React.ReactNode }) {
   return <Suspense fallback={<RouteLoadingBar />}>{children}</Suspense>;
@@ -83,6 +84,7 @@ export const tenantRoutes = [
   tenantRoute('/tenant/users', 'Members', UsersPage),
   tenantRoute('/tenant/audit', 'Audit Log', AuditLogPage),
   tenantRoute('/tenant/connections', 'Connections', TenantConnectionsPage),
+  tenantRoute('/tenant/network-agents', 'Network Agents', NetworkAgentsPage),
   {
     path: '/tenant/setup',
     element: (

@@ -1,5 +1,5 @@
 import { t } from 'i18next';
-import { ScrollTextIcon, TerminalIcon } from 'lucide-react';
+import { NetworkIcon, ScrollTextIcon, TerminalIcon } from 'lucide-react';
 import { ComponentType, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -68,6 +68,11 @@ export function TenantSidebar() {
           to: '/tenant/connections',
           label: t('Connections'),
           icon: UnplugIcon,
+        },
+        {
+          to: '/tenant/network-agents',
+          label: t('Network Agents'),
+          icon: NetworkIcon,
         },
       ],
     },

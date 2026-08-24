@@ -59,6 +59,7 @@ import { authenticationSession } from '@/lib/authentication-session';
 import { BasicAuthConnectionSettings } from './basic-secret-connection-settings';
 import { CustomAuthConnectionSettings } from './custom-auth-connection-settings';
 import { MutliAuthList, AuthListItem } from './multi-auth-list';
+import { NetworkAgentSelector } from './network-agent-selector';
 import { OAuth2ConnectionSettings } from './oauth2-connection-settings';
 import { OIDCConnectionSettings } from './oidc-connection-settings';
 import { SecretTextConnectionSettings } from './secret-text-connection-settings';
@@ -110,6 +111,7 @@ function CreateOrEditConnectionSection({
         workspaceIds: reconnectConnection?.workspaceIds ?? [],
         preSelectForNewWorkspaces: false,
         connectorVersion: connector.version,
+        networkAgentId: reconnectConnection?.networkAgentId ?? null,
       },
     },
     mode: 'onChange',
@@ -247,6 +249,9 @@ function CreateOrEditConnectionSection({
                 )}
               </div>
             )}
+            <div className="my-4">
+              <NetworkAgentSelector name="request.networkAgentId" />
+            </div>
             <div className="mt-3.5">
               <ConnectionSettings
                 selectedAuth={selectedAuth}

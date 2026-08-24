@@ -26,6 +26,7 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
             scope: ConnectionScope.WORKSPACE,
             metadata: request.body.metadata,
             connectorVersion: request.body.connectorVersion,
+            networkAgentId: request.body.networkAgentId,
         }
         const connection = request.body.type === PLACEHOLDER_CONNECTION_TYPE
             ? await connectionService(request.log).upsert({
@@ -60,6 +61,7 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
                 displayName: request.body.displayName,
                 workspaceIds: null,
                 metadata: request.body.metadata,
+                networkAgentId: request.body.networkAgentId,
             },
         })
         return connection

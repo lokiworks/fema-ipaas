@@ -10,6 +10,7 @@ const commonAuthProps = {
     workspaceId: z.string(),
     metadata: z.optional(Metadata),
     connectorVersion: z.string().optional(),
+    networkAgentId: z.string().nullish(),
 }
 
 
@@ -144,6 +145,7 @@ export type UpsertConnectionRequestBody = z.infer<typeof UpsertConnectionRequest
 export const UpdateConnectionValueRequestBody = z.object({
     displayName: z.string().min(1),
     metadata: z.optional(Metadata),
+    networkAgentId: z.string().nullish(),
 })
 
 export const UpdateGlobalConnectionValueRequestBody = z.object({

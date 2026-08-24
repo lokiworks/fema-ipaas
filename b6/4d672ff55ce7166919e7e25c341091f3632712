@@ -1,0 +1,41 @@
+packages/web/public/locales/en/translation.json
+  s_94864882421579::t_63946e6a547100 2519-2522
+packages/web/src/app/components/global-search/static-pages.ts
+  s_94864882421579::t_8b6c32ed8f10c5 126-128
+packages/server/api/test/unit/app/authentication/allowed-domains.test.ts
+  s_94864882421579::t_7649a8419f630d 1-32
+packages/web/src/app/routes/tenant-routes.tsx
+  s_94864882421579::t_8b6c32ed8f10c5 13-16
+  s_94864882421579::t_80cdadd734996f 138-142
+packages/web/public/locales/zh/translation.json
+  s_94864882421579::t_63946e6a547100 2423-2426
+packages/web/src/app/components/sidebar/tenant/index.tsx
+  s_94864882421579::t_8b6c32ed8f10c5 138-139
+packages/web/src/features/authentication/components/auth-landing/auth-drawer-body.tsx
+  s_94864882421579::t_ce47448bf81893 122
+  s_94864882421579::t_16d5c6f93d7dc3 248-249,253-258
+packages/web/src/app/routes/tenant/security/sso/index.tsx
+  s_94864882421579::t_c69d9764991166 2,20,36-37,91-92
+packages/server/api/src/app/authentication/authentication-utils.ts
+  s_94864882421579::t_a88c43412b0507 19-37,149,152-155,235-239
+  s_94864882421579::t_78944513aa1fae 2,4,15-18,148,162
+  s_94864882421579::t_797dc593be0017 147,150-151,158-161,163-168
+  s_94864882421579::t_80cdadd734996f 8
+  s_94864882421579::t_d5032ace6dbe9b 240
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "b64d672ff55ce7166919e7e25c341091f3632712",
+  "prompts": {},
+  "sessions": {
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

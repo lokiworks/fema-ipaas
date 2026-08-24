@@ -1,0 +1,970 @@
+packages/web/src/app/components/workspace-settings/index.tsx
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 177
+  s_29d1069c8ecefe::t_f969509983745c 15
+packages/web/src/app/builder/builder-header/builder-header.tsx
+  s_29d1069c8ecefe::t_5eee57a396d292 3,60
+packages/web/src/components/custom/page-header.tsx
+  s_29d1069c8ecefe::t_f969509983745c 3
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 29
+packages/web/src/app/builder/step-settings/code-settings/code-editor.tsx
+  s_29d1069c8ecefe::t_5eee57a396d292 4,50
+packages/server/api/src/app/workspace/workspace-entity.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 14
+  s_29d1069c8ecefe::t_5eee57a396d292 36,45
+packages/web/src/app/builder/run-details/workflow-step-input-output.tsx
+  s_29d1069c8ecefe::t_5eee57a396d292 10,114
+packages/web/src/app/builder/workflow-canvas/nodes/note-node/index.tsx
+  s_29d1069c8ecefe::t_5339da6189b35d 19,24,117,218
+brain/knowledge/engineering/server-module-anatomy.md
+  s_29d1069c8ecefe::t_5eec637b13e33f 20
+packages/web/src/app/routes/tenant/setup/connectors/sync-connectors.tsx
+  s_29d1069c8ecefe::t_5eee57a396d292 1,10
+packages/server/api/src/app/store-entry/store-entry-entity.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 5
+  s_29d1069c8ecefe::t_5eee57a396d292 18
+Dockerfile.worker
+  s_29d1069c8ecefe::t_7905744d791d14 71
+brain/knowledge/ai-intelligence/ai-mcp.md
+  s_29d1069c8ecefe::t_3554afeeaafd87 42
+brain/knowledge/connectors-engine/index.md
+  s_29d1069c8ecefe::t_d7c3acec2eda0c 115
+  s_29d1069c8ecefe::t_3554afeeaafd87 166
+packages/core/utils/src/lib/id-generator.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 7,9,11,15-20
+packages/server/api/src/app/helper/multipart-body.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 2,6,23
+packages/connectors/core/date-helper/src/lib/actions/next-day-of-year.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 11,107,120,129
+packages/web/src/app/builder/workflow-canvas/edges/add-button.tsx
+  s_29d1069c8ecefe::t_5339da6189b35d 11,14,144-145
+packages/web/src/features/executions/hooks/execution-hooks.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1
+  s_29d1069c8ecefe::t_65170629c7c1e9 151-156,161-162
+packages/core/formula/src/lib/function-registry.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,1252-1253,1255,1260,1264,1273-1276
+packages/server/api/test/integration/authentication/passwordless-authn.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,128,131
+packages/web/src/app/builder/connector-properties/properties-utils.tsx
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 15,129
+packages/server/api/src/app/trigger/trigger-events/trigger-event.service.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+  s_29d1069c8ecefe::t_5eee57a396d292 30,39
+packages/server/api/src/app/workflows/execution/executions-queue.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,223
+packages/server/api/test/helpers/workflow-generator.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,12,23-24,35,39,71,89
+packages/server/api/src/app/helper/system-jobs/system-job.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 11-12,156
+  s_29d1069c8ecefe::t_65170629c7c1e9 2
+packages/server/api/src/app/workers/payload-offloader.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,27,54
+packages/web/src/app/routes/tenant/setup/connectors/index.tsx
+  s_29d1069c8ecefe::t_65170629c7c1e9 134-135
+  s_29d1069c8ecefe::t_5eee57a396d292 2
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 136-137
+packages/web/src/components/custom/active-users-widget.tsx
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 48
+  s_29d1069c8ecefe::t_f969509983745c 7
+packages/web/src/app/builder/workflow-canvas/utils/types.ts
+  s_29d1069c8ecefe::t_5339da6189b35d 9,19,26,28,41,43,51,53,62,80,82,87,92,94,105-119,122-123,130-131,139-140,146-147,150-151,160-161,180-181,197-206
+packages/server/api/src/app/audit/audit-event.service.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1-2,16,18
+packages/server/sandbox/src/lib/cache/workflow/workflow-cache.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 3,8
+packages/server/utils/test/version.test.ts
+  s_29d1069c8ecefe::t_3dc807265a7c36 16
+  s_29d1069c8ecefe::t_5a58ef6be3a40d 8,28,33,39,45,51,57,66,71,76,83,91
+  s_29d1069c8ecefe::t_1f565510ee38ce 10-11,25,29,34,40,46,52,58,60,64,67,72,77-79,84-85,92
+brain/knowledge/decisions/000020-credit-gating-fails-open-on-an-unknown-balance.md
+  s_29d1069c8ecefe::t_97a333cdce0245 146
+  s_29d1069c8ecefe::t_daf0e85052dd3b 7-11
+packages/server/api/src/app/workers/job/index.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 41,48
+packages/web/src/app/components/account-settings/language-toggle.tsx
+  s_29d1069c8ecefe::t_5eee57a396d292 1,34
+packages/server/api/src/app/workers/rpc/worker-rpc-service.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 59-60
+  s_29d1069c8ecefe::t_65170629c7c1e9 2
+packages/web/src/components/custom/data-table/index.tsx
+  s_29d1069c8ecefe::t_5eee57a396d292 3,254
+README.md
+  s_29d1069c8ecefe::t_4c45f5e8e9fd7a 2-3,7,9,11,15-18,23,25-27,29-32,34-35,37,39-49,51,53-56,58-59,61,63-64,66-69,71,73,75-77,79-80,82,84,86-89
+packages/web/src/app/guards/agents-flag-guard.tsx
+  s_29d1069c8ecefe::t_5eee57a396d292 1,12
+packages/web/src/app/builder/workflow-canvas/workflow-drag-layer.tsx
+  s_29d1069c8ecefe::t_5339da6189b35d 31,181-182
+packages/core/utils/src/lib/application-error.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,6,19,239
+packages/web/src/app/components/sidebar/tenant/index.tsx
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 186
+  s_29d1069c8ecefe::t_225934a8fbce5f 2
+  s_29d1069c8ecefe::t_f969509983745c 36
+packages/core/shared/CLAUDE.md
+  s_29d1069c8ecefe::t_6ab1ab3e6d7228 11,17
+packages/web/src/features/tenant-admin/api/workers-api.ts
+  s_94864882421579::t_247f60f3734079 10
+packages/server/api/src/app/workspace/workspace-member.controller.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,55,96-97,110
+packages/connectors/core/file-helper/test/check-file-type.test.ts
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 4,8,23
+brain/knowledge/decisions/000014-streaming-file-inputs-resolve-to-a-lazy-streamingfile.md
+  s_29d1069c8ecefe::t_5eec637b13e33f 1-27
+packages/core/formula/src/lib/formula-evaluator.ts
+  s_29d1069c8ecefe::t_d7c3acec2eda0c 5-6,13,20
+packages/web/src/lib/dom-utils.ts
+  s_29d1069c8ecefe::t_f20f439d253dbb 7
+packages/connectors/CLAUDE.md
+  s_29d1069c8ecefe::t_6ab1ab3e6d7228 37
+brain/knowledge/tenant-editions-ee/user-invitations.md
+  s_29d1069c8ecefe::t_daf0e85052dd3b 7-11
+packages/server/api/src/app/workspace/workspace-member.entity.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 14-15
+  s_29d1069c8ecefe::t_65170629c7c1e9 3
+packages/server/api/src/app/workflows/workflow/workflow-execution-cache.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 2,20
+packages/server/api/src/app/authentication/authentication-utils.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 193
+  s_29d1069c8ecefe::t_65170629c7c1e9 2
+packages/server/api/src/app/connectors/blueprint/connector-blueprint.controller.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,62
+packages/server/api/test/integration/file/files-controller.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,31,35,65,69,101,108,132,137,157,164,183,190,212,216,247,251,282,286,314,318,374,382,395,399
+packages/core/shared/src/lib/management/workspace/workspace.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+  s_29d1069c8ecefe::t_5eee57a396d292 41
+packages/web/src/app/builder/workflow-canvas/nodes/step-node/step-node-status-in-draft.tsx
+  s_29d1069c8ecefe::t_5339da6189b35d 33,184-185
+packages/server/sandbox/test/lib/cache/action-run-cache.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 5-6,19-20,41,78,119-120,148,150,154-155,162,165,170,185-186,191,253,297,312,317,338,360,379,387,422
+brain/knowledge/data-storage-observability/file-storage.md
+  s_29d1069c8ecefe::t_3554afeeaafd87 20
+  s_29d1069c8ecefe::t_c3dd8223b7558d 26
+docs/handbook/engineering/playbooks/releases.mdx
+  s_29d1069c8ecefe::t_5eec637b13e33f 95
+brain/knowledge/decisions/000016-action-run-code-cache-is-namespaced-per-tenant.md
+  s_29d1069c8ecefe::t_5eec637b13e33f 186,190,195,198,205
+packages/core/shared/src/lib/core/flag/flag.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 7,14
+  s_29d1069c8ecefe::t_b3aa6f3a5851aa 5
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+packages/server/api/src/app/authentication/user-identity/user-identity-entity.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 3
+  s_29d1069c8ecefe::t_5eee57a396d292 51
+packages/server/api/src/app/file/file.service.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 38
+  s_29d1069c8ecefe::t_65170629c7c1e9 3
+packages/web/src/app/builder/workflow-canvas/nodes/workflow-end-widget-node.tsx
+  s_29d1069c8ecefe::t_5339da6189b35d 5,8,43-44
+packages/server/api/src/app/connection/connection-service/connection-service.ts
+  s_29d1069c8ecefe::t_7b606d62122032 34
+  s_29d1069c8ecefe::t_65170629c7c1e9 2-3
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 440,442,445
+  s_29d1069c8ecefe::t_5eee57a396d292 89,747,816
+brain/knowledge/tenant-editions-ee/ee-tenant-plans-billing.md
+  s_29d1069c8ecefe::t_daf0e85052dd3b 7-11
+packages/server/api/test/integration/connectors/connector-bundle.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,22,66,100
+packages/server/api/test/integration/workflows/execution/run-logs-file-fk.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,72
+packages/server/sandbox/src/lib/cache/action-run-cache.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 4,157
+brain/knowledge/connections-auth/ce-authentication.md
+  s_29d1069c8ecefe::t_5eec637b13e33f 21
+packages/server/sandbox/test/lib/cache/connector-installer.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 8,73
+packages/web/src/app/builder/connector-properties/text-input-with-mentions/tiptap-editor.tsx
+  s_29d1069c8ecefe::t_5eee57a396d292 3,293
+packages/server/STYLE.md
+  s_29d1069c8ecefe::t_6ab1ab3e6d7228 64
+packages/core/shared/src/lib/authentication/otp/otp-model.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 5,15
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+deploy/fema-helm/templates/NOTES.txt
+  s_29d1069c8ecefe::t_7905744d791d14 1-7,11,13-17
+  s_29d1069c8ecefe::t_4dc1375202a1e0 8-10,12
+brain/knowledge/decisions/000016-managed-ai-metering-moves-to-centralized-worker-execution.md
+  s_29d1069c8ecefe::t_daf0e85052dd3b 7-11
+packages/server/api/test/unit/app/workflows/trigger/workflow-trigger-side-effect.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 3,14
+packages/server/api/src/app/connectors/blueprint/connector-blueprint.service.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+  s_29d1069c8ecefe::t_5eee57a396d292 2,13,20
+brain/knowledge/decisions/000017-scheduled-downgrades-cap-seats-immediately.md
+  s_29d1069c8ecefe::t_daf0e85052dd3b 7-10
+packages/server/api/src/app/database/pglite-connection.ts
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 15-16
+  s_29d1069c8ecefe::t_5eee57a396d292 6,22,24,31,66,68-69
+packages/web/src/app/builder/workflow-canvas/utils/consts.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 53-56
+  s_29d1069c8ecefe::t_5339da6189b35d 11-21,24,59,63,67,71,75,104-109,112-116
+packages/core/shared/src/lib/management/tenant/tenant.request.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 55-57,73
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+packages/server/api/src/app/workflows/execution/waitpoint/resume-controller.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,52,208,220
+packages/server/api/types/fastify.d.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 4
+packages/server/api/test/integration/connection/oauth2-placeholder.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,34,58,80,102,124,143
+packages/connectors/core/date-helper/src/lib/actions/add-subtract-date.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 4,108,169
+packages/server/api/test/integration/system-jobs/system-jobs.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,51,71,83,220,240
+brain/knowledge/decisions/000029-the-engine-never-imports-a-connector-a-fresh-child-process-does.md
+  s_29d1069c8ecefe::t_5eec637b13e33f 19
+packages/server/api/src/app/connection/connection.controller.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,226,288,312,357
+packages/server/sandbox/test/lib/cache/workflow/workflow-provisioning.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 5,18
+packages/server/sandbox/test/lib/create-sandbox-for-job.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 2,72
+packages/server/worker/test/lib/worker.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 25,31-32
+packages/server/api/test/integration/workflows/execution/resume-service.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,50,156
+packages/web/test/app/builder/workflow-canvas/utils/workflow-canvas-utils.test.ts
+  s_29d1069c8ecefe::t_5339da6189b35d 13,75,112
+packages/server/api/test/helpers/auth.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,94,96,109
+packages/core/connector-types/src/lib/execution-contracts.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,90
+packages/server/api/src/app/connectors/metadata/connector-metadata-entity.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 2,7
+  s_29d1069c8ecefe::t_5eee57a396d292 10,100
+Dockerfile
+  s_29d1069c8ecefe::t_7905744d791d14 137
+packages/connectors/core/date-helper/src/lib/actions/get-current-date.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 8,50
+packages/server/sandbox/test/lib/cache/engine-installer-identity.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 5,27
+brain/knowledge/engineering/web-feature-anatomy.md
+  s_29d1069c8ecefe::t_9518577b2ab05f 22,26
+packages/server/engine/src/lib/connector-context/file-uploader.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 3,23
+packages/server/api/test/integration/connectors/connector-metadata.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,40,70,106,137,159,256,313,391,533,552,591,614,636,678,703,728,752
+packages/core/execution/src/lib/workflows/triggers/trigger-events/trigger-events-dto.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 3,7,19
+packages/connectors/sdk/src/lib/property/input/file-property.ts
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 6,24,33
+packages/server/sandbox/src/lib/cache/workflow/code/code-builder.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 5
+  s_29d1069c8ecefe::t_5eee57a396d292 45,159,167
+packages/connectors/core/file-helper/test/change-file-encoding.test.ts
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 4,8
+packages/server/api/src/app/authentication/passwordless-auth.service.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 3
+  s_29d1069c8ecefe::t_5eee57a396d292 78
+packages/core/shared/src/lib/authentication/local-authn/index.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,5,11
+packages/connectors/core/http/src/lib/actions/send-http-request-action.ts
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 11,442
+packages/web/src/features/connectors/hooks/connectors-hooks.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 15-16,226-227,415,512,516,518
+packages/server/api/test/integration/workers/action-run-cancellation.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,28,46,76
+packages/server/engine/src/lib/handler/context/workflow-execution-context.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 220
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+packages/web/src/app/builder/connector-properties/text-input-with-mentions/extensions/function-slash-extension.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 2,176
+packages/server/api/src/app/workers/machine/worker-capacity.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 2,12
+packages/core/execution/src/lib/workflows/test-trigger.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 2,10-12,20-21
+packages/server/sandbox/src/lib/cache/cache-paths.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 4,43
+packages/server/sandbox/src/lib/resolver.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 2
+  s_29d1069c8ecefe::t_5eee57a396d292 81,88
+packages/web/src/app/builder/workflow-canvas/utils/workflow-canvas-utils.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 729-732
+  s_29d1069c8ecefe::t_5339da6189b35d 25-34,53,55,57,59,67,69,78,82,99,101,103,115,117,126,130,151,159,190,192,209,222,242,278,311,313,332,337,346,357,359,414,416,429,436,455,489,534,536,550,558,571,601,620,684,688,740,756,763-764
+packages/server/api/src/app/file/file.entity.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 5
+  s_29d1069c8ecefe::t_5eee57a396d292 16-17
+packages/web/src/features/automations/components/automations-table-row.tsx
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 395
+  s_29d1069c8ecefe::t_65170629c7c1e9 28
+brain/knowledge/connectors-engine/building-connectors.md
+  s_29d1069c8ecefe::t_c3dd8223b7558d 28
+packages/server/api/test/integration/workflows/execution/waitpoint.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,226,243,250,387,448,454,532,553,581,667,688,707
+packages/server/api/src/app/connectors/metadata/utils/connector-cache-utils.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,63
+packages/server/api/test/integration/authentication/otp-legacy-version.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,15
+packages/web/src/app/builder/workflow-canvas/nodes/step-node/step-node-skipped-status.tsx
+  s_29d1069c8ecefe::t_5339da6189b35d 17,50-51
+packages/web/src/app/connections/oauth2-connection-settings.tsx
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 334,340,342
+  s_29d1069c8ecefe::t_5eee57a396d292 9-10,77,335
+packages/server/api/test/integration/workers/job-broker-invalid-schema.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,37-39,44,48,62
+packages/web/src/app/builder/connector-properties/text-input-with-mentions/text-input-utils.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 487
+  s_29d1069c8ecefe::t_d7c3acec2eda0c 193
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 43,457,465-466,470,474,476,478,488
+packages/web/src/features/connections/utils/utils.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 10-14
+  s_29d1069c8ecefe::t_5eee57a396d292 102
+packages/server/api/test/integration/workflows/folder/folder-list.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,96
+packages/server/api/src/app/helper/app-machine-cache.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 3
+  s_29d1069c8ecefe::t_5eee57a396d292 22,30,40,45
+packages/server/sandbox/src/lib/cache/workflow/workflow-bundle-store.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 3,13
+packages/server/sandbox/src/lib/types.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,36,41,50,102,123
+packages/web/src/app/app.tsx
+  s_29d1069c8ecefe::t_f969509983745c 5
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 32
+  s_29d1069c8ecefe::t_5339da6189b35d 15,30
+packages/server/engine/test/variables/file-processor.test.ts
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 2,34,48,59,102,120,127,141-142
+brain/knowledge/connections-auth/scim.md
+  s_29d1069c8ecefe::t_3554afeeaafd87 7,10-12
+packages/server/api/src/app/workflows/workflow-version/workflow-version.service.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+  s_29d1069c8ecefe::t_5eee57a396d292 265
+packages/web/src/app/builder/test-step/utils/test-step-hooks.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 2
+  s_29d1069c8ecefe::t_65170629c7c1e9 159-160,165-167
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 161-162
+packages/core/shared/src/lib/core/file/index.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+  s_29d1069c8ecefe::t_5eee57a396d292 4
+packages/server/api/test/integration/workflows/workflow/human-input/human-input.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,96,189
+packages/web/src/app/builder/step-settings/loops-settings.tsx
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 6,28
+packages/server/api/src/app/authentication/lib/access-token-manager.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+  s_29d1069c8ecefe::t_5eee57a396d292 23,43
+brain/knowledge/connectors-engine/connectors.md
+  s_29d1069c8ecefe::t_5eec637b13e33f 26
+packages/connectors/sdk/src/lib/property/input/common.ts
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 2,60
+packages/core/shared/src/lib/automation/connectors/dto/connector-blueprint.ts
+  s_94864882421579::t_ab9776250c2e6c 1
+packages/server/api/src/app/connectors/metadata/connector-metadata-service.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 2
+  s_29d1069c8ecefe::t_5eee57a396d292 3,148,337,411
+deploy/fema-helm/templates/_helpers.tpl
+  s_29d1069c8ecefe::t_5a4975ed96bf39 4,13,29,36-38,48-49,56,58
+packages/server/api/src/app/workflows/execution/waitpoint/resume-service.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 142
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+packages/core/shared/src/lib/management/tenant/concurrency-pool.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 6
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+packages/web/src/app/guards/index.tsx
+  s_29d1069c8ecefe::t_5339da6189b35d 75,81
+packages/core/shared/src/lib/automation/connectors/dto/connector-requests.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+  s_29d1069c8ecefe::t_5eee57a396d292 106
+packages/server/api/src/app/flags/flag.service.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 2,26,32-58,64,67,73,79,86,92,98,104,110,116,122,128,134,140,146,152,158,164,170,176,182,188,194,202,208,214,220,226,232,238,244,250,256,262,268,274,280,286,292,302,310,337-341,343
+  s_29d1069c8ecefe::t_65170629c7c1e9 3
+packages/server/api/src/app/tenant/tenant.controller.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 167,185
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+  s_94864882421579::t_9162e08a441c32 2,10,15-37,136-144
+  s_94864882421579::t_3d0a2b064cd273 11
+  s_29d1069c8ecefe::t_33990aa7bf3b70 145-146
+packages/server/api/src/app/workflows/workflow/human-input/chat-controller.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,21
+packages/server/sandbox/src/lib/cache/workflow/workflow-provisioning.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 2,10,119,126
+packages/web/src/app/builder/workflow-canvas/edges/router-start-edge.tsx
+  s_29d1069c8ecefe::t_5339da6189b35d 5,7,16,25,171,175,180,185
+packages/server/api/src/app/workers/job-queue/job-queue.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1-2,13-14,65,241,254
+packages/server/sandbox/src/lib/create-sandbox-for-job.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,13,55
+packages/server/api/test/integration/user/tenant-user-community.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,147,294
+packages/server/api/src/app/user/tenant/tenant-user-controller.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+  s_29d1069c8ecefe::t_5eee57a396d292 71,89
+packages/web/src/app/builder/workflow-canvas/edges/loop-start-edge.tsx
+  s_29d1069c8ecefe::t_5339da6189b35d 5,7,10,18,65,71
+packages/connectors/core/file-helper/test/read-file.test.ts
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 4,8,17
+packages/server/api/src/app/workflows/step-run/sample-data.service.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,106,115
+packages/web/src/app/builder/workflow-canvas/nodes/note-node/note-footer.tsx
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 17
+  s_29d1069c8ecefe::t_f969509983745c 3
+packages/web/src/app/builder/workflow-canvas/edges/loop-return-edge.tsx
+  s_29d1069c8ecefe::t_5339da6189b35d 5,7,10,17,81,85
+packages/server/api/src/app/trigger/app-event-routing/app-event-routing.service.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,29
+packages/server/api/src/app/user-invitations/user-invitation.service.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 97
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+packages/connectors/sdk/src/index.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 11
+packages/server/api/src/app/workflows/execution/waitpoint/waitpoint-types.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,21,24-25,38-39,55-57,68-69,71,78
+packages/connectors/common/src/lib/helpers/index.ts
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 13,405
+brain/knowledge/eventing-webhooks/webhooks.md
+  s_29d1069c8ecefe::t_5eec637b13e33f 28
+packages/server/worker/src/lib/worker.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 5
+  s_29d1069c8ecefe::t_5eee57a396d292 18,225
+packages/server/api/src/app/app.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 4-5
+  s_29d1069c8ecefe::t_5eee57a396d292 260,277
+packages/server/api/src/app/workspace/workspace-member.service.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+  s_29d1069c8ecefe::t_5eee57a396d292 49
+packages/web/src/app/builder/workflow-canvas/canvas-controls/use-fit-to-view.ts
+  s_29d1069c8ecefe::t_5339da6189b35d 6,72
+packages/server/api/test/integration/workers/workflow-worker.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,47
+packages/web/src/app/components/sidebar/sidebar-nav-group.tsx
+  s_29d1069c8ecefe::t_f969509983745c 17,32,73
+brain/knowledge/workflows-execution/triggers.md
+  s_29d1069c8ecefe::t_3554afeeaafd87 17
+brain/knowledge/decisions/000015-jit-provisioning-plans-imply-unlimited-seats.md
+  s_29d1069c8ecefe::t_daf0e85052dd3b 7-10
+packages/server/sandbox/src/lib/cache/engine/engine-installer.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 6-7,15,17
+packages/web/src/app/builder/workflow-canvas/nodes/big-add-button-node.tsx
+  s_29d1069c8ecefe::t_5339da6189b35d 13,16-17,185-186
+packages/server/api/src/app/tenant/tenant.service.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+  s_29d1069c8ecefe::t_5eee57a396d292 46
+packages/server/api/src/app/connection/global-connection.controller.ts
+  s_94864882421579::t_02e6673d1ed606 2-76,78
+  s_94864882421579::t_0d86e6a14f00cd 77,83,85,87-92,95-99,103-109,112-117
+packages/server/engine/src/lib/variables/processors/file.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 2
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 41,46,53,59,66
+packages/web/src/app/builder/step-settings/connector-settings/index.tsx
+  s_29d1069c8ecefe::t_5eee57a396d292 8,56,60,64,67
+packages/web/src/app/query-client.ts
+  s_29d1069c8ecefe::t_f969509983745c 5
+packages/server/sandbox/test/lib/cache/workflow/code/code-builder.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 6,31-32
+packages/core/execution/src/lib/workflows/workflow.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 4,9,31-32
+packages/core/shared/src/lib/automation/webhook/dto.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,5
+packages/server/api/src/app/workflows/folder/folder.entity.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 20
+  s_29d1069c8ecefe::t_65170629c7c1e9 5
+packages/server/api/src/app/connectors/blueprint/connector-blueprint.entity.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 3
+  s_29d1069c8ecefe::t_5eee57a396d292 9
+packages/web/src/hooks/owner-column-hooks.tsx
+  s_29d1069c8ecefe::t_f969509983745c 15
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 99
+packages/core/shared/src/lib/core/store-entry/store-entry.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+  s_29d1069c8ecefe::t_5eee57a396d292 3
+packages/server/api/test/integration/workflows/execution/mark-parent-run-cross-tenant.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,38,62,81
+packages/web/src/app/builder/workflow-canvas/nodes/step-node/step-node-status-in-run.tsx
+  s_29d1069c8ecefe::t_5339da6189b35d 11,40,42
+packages/core/utils/src/lib/multipart-file.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 4,11,15
+packages/server/api/test/integration/workers/tenant-queue-migration.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,24-25,36-38,58-59,81-84,112-113,133-136,158-159,163,175-176,180-183,193,199,214-215,221,223,237,243-244,257,261
+packages/server/api/src/app/webhooks/webhook.service.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+  s_29d1069c8ecefe::t_5eee57a396d292 59
+packages/server/utils/test/logger.test.ts
+  s_29d1069c8ecefe::t_1f565510ee38ce 45,47,59,66,74,83,92,103,110,116,122,127,138,146,153,161,169,178,188,201-202,204
+brain/knowledge/tenant-editions-ee/users.md
+  s_29d1069c8ecefe::t_daf0e85052dd3b 7-11
+packages/server/sandbox/test/lib/utils/path-safety.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,18,23,27
+packages/web/src/features/forms/index.ts
+  s_29d1069c8ecefe::t_f969509983745c 2
+packages/web/src/features/workspaces/components/tenant-switcher.tsx
+  s_94864882421579::t_3d0a2b064cd273 2
+packages/server/worker/src/lib/execute/types.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 2,19
+packages/connectors/core/file-helper/src/lib/actions/zip-files.ts
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 4,15
+packages/server/AGENTS.md
+  s_29d1069c8ecefe::t_6ab1ab3e6d7228 82,84,86
+brain/knowledge/ai-intelligence/mcp-server.md
+  s_29d1069c8ecefe::t_3554afeeaafd87 33,36
+  s_29d1069c8ecefe::t_f20f439d253dbb 7
+packages/server/api/src/app/workspace/workspace-service.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+  s_29d1069c8ecefe::t_5eee57a396d292 19,333
+brain/knowledge/tenant-editions-ee/license-keys.md
+  s_29d1069c8ecefe::t_daf0e85052dd3b 7-11
+packages/server/api/src/app/workers/user-interaction-watcher.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+  s_29d1069c8ecefe::t_5eee57a396d292 12
+packages/server/api/src/app/workflows/workflow/human-input/form-controller.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,21
+packages/server/api/test/integration/user-invitations/accept-invitation.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,29,48
+packages/web/src/app/builder/workflow-canvas/edges/router-end-edge.tsx
+  s_29d1069c8ecefe::t_5339da6189b35d 5,7,10,17,113
+packages/server/api/src/app/database/database-common.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 10,17
+packages/server/api/src/app/trigger/trigger-source/workflow-trigger-side-effect.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 16,21,72
+  s_29d1069c8ecefe::t_65170629c7c1e9 7
+packages/server/api/src/app/workers/job/runs-metadata-queue-factory.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 2,9,25,29,46
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+packages/server/api/src/app/authentication/user-identity/user-identity-service.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+  s_29d1069c8ecefe::t_5eee57a396d292 38
+.agents/skills/triage-image-cves/SKILL.md
+  s_29d1069c8ecefe::t_40f0c8247a2e73 3
+packages/server/api/src/app/trigger/trigger-source/trigger-source-service.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 44
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+brain/knowledge/decisions/000013-active-user-seat-floor-is-enforced-db-authoritatively.md
+  s_29d1069c8ecefe::t_daf0e85052dd3b 7-10
+packages/server/api/src/app/trigger/trigger-run/trigger-run-stats.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 2
+  s_29d1069c8ecefe::t_5eee57a396d292 10,15
+packages/connectors/core/date-helper/src/lib/actions/first-day-of-prior-month.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 8,73
+brain/knowledge/tenant-editions-ee/ee-overview.md
+  s_29d1069c8ecefe::t_daf0e85052dd3b 7-11
+packages/core/shared/src/lib/core/authentication/dto/sign-up-request.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,19
+packages/web/src/app/builder/state/notes-state.tsx
+  s_29d1069c8ecefe::t_5eee57a396d292 1,52
+brain/knowledge/decisions/000030-this-fork-has-no-editions-the-ee-pages-are-history.md
+  s_29d1069c8ecefe::t_97a333cdce0245 13
+  s_29d1069c8ecefe::t_9b4047947d95d8 16,35
+packages/server/sandbox/src/lib/cache/connectors/connector-installer.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 17,45,167
+  s_29d1069c8ecefe::t_65170629c7c1e9 4
+packages/server/worker/src/lib/config/logger.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+  s_29d1069c8ecefe::t_5eee57a396d292 4,15,38
+packages/server/api/src/app/store-entry/store-entry.service.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,12
+brain/knowledge/decisions/000027-email-sign-in-is-a-typed-code-on-the-existing-otp-primitive.md
+  s_29d1069c8ecefe::t_5eec637b13e33f 8,36
+packages/web/src/app/components/workspace-layout/workspace-dashboard-page-header.tsx
+  s_29d1069c8ecefe::t_5eee57a396d292 2,48
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 79
+  s_29d1069c8ecefe::t_f969509983745c 22
+brain/knowledge/execution-runtime/gotcha-code-cache-is-namespaced-by-workflowversionid-never-reuse-a-constant.md
+  s_29d1069c8ecefe::t_5eec637b13e33f 38
+brain/knowledge/tenant-editions-ee/tenant-configuration.md
+  s_29d1069c8ecefe::t_daf0e85052dd3b 7-11
+packages/web/src/app/builder/workflow-canvas/edges/straight-line-edge.tsx
+  s_29d1069c8ecefe::t_5339da6189b35d 5,7,10,17,54,58
+brain/knowledge/ai-intelligence/ai-providers.md
+  s_29d1069c8ecefe::t_3554afeeaafd87 45
+packages/server/api/test/integration/connection/custom-auth-refresh.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,48,52,59,62,70-71,86-87,104,106-107,135,138,146
+packages/web/src/app/guards/flag-route-guard.tsx
+  s_29d1069c8ecefe::t_5eee57a396d292 1,10
+brain/knowledge/data-storage-observability/index.md
+  s_29d1069c8ecefe::t_5eec637b13e33f 23
+  s_29d1069c8ecefe::t_3554afeeaafd87 65
+packages/server/api/src/app/workflows/execution/waitpoint/waitpoint-entity.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 15,19
+  s_29d1069c8ecefe::t_65170629c7c1e9 3
+packages/server/utils/src/index.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 15,22
+  s_29d1069c8ecefe::t_1f565510ee38ce 2-3,11
+brain/knowledge/decisions/000015-streaming-csv-fanout-is-a-bounded-fire-and-forget-action.md
+  s_29d1069c8ecefe::t_5eec637b13e33f 19
+  s_29d1069c8ecefe::t_c3dd8223b7558d 13
+packages/core/shared/src/lib/core/health/health-metrics-request.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,24,26,39-40,42
+packages/web/src/app/builder/workflow-canvas/widgets/run-info-widget.tsx
+  s_29d1069c8ecefe::t_5eee57a396d292 2,87,90,93
+brain/knowledge/tenant-editions-ee/ee-workspaces-rbac.md
+  s_29d1069c8ecefe::t_daf0e85052dd3b 7-11
+brain/knowledge/workflows-execution/formulas.md
+  s_29d1069c8ecefe::t_d7c3acec2eda0c 10-11
+packages/web/src/app/builder/connectors-selector/no-results-found.tsx
+  s_29d1069c8ecefe::t_5eee57a396d292 1,11
+brain/knowledge/tenant-editions-ee/tenant-copilot.md
+  s_29d1069c8ecefe::t_daf0e85052dd3b 7-11
+packages/server/api/src/app/health/health-metrics.service.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 2,271
+docs/adr/index.md
+  s_29d1069c8ecefe::t_ceb66357974658 26-28,30
+packages/server/api/src/app/trigger/app-event-routing/app-event-routing.entity.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 25-26
+  s_29d1069c8ecefe::t_65170629c7c1e9 3
+docs/adr/0014-network-agent-model-lands-before-the-tunnel.md
+  s_29d1069c8ecefe::t_ceb66357974658 4
+packages/server/api/src/app/workspace/workspace-worker-group.service.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 2,8
+packages/server/api/src/app/helper/application-events.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,58,78
+packages/server/sandbox/src/lib/cache/local-execution-cache.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 2
+  s_29d1069c8ecefe::t_5eee57a396d292 12,102,108
+packages/server/api/test/integration/workflows/execution/resume-execution.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,65,100,130,142,195,212,248-249,262,307,321,422,459,471,563,595,610,690,805,834,849
+packages/server/api/test/integration/workflows/workflow/error-handler.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,19,26,37
+packages/web/src/app/builder/connector-properties/text-input-with-mentions/extensions/bracket-nodes.tsx
+  s_29d1069c8ecefe::t_5eee57a396d292 1,17
+packages/server/utils/src/version.ts
+  s_29d1069c8ecefe::t_1f565510ee38ce 4,6,32
+packages/server/api/src/app/workers/machine/machine-controller.ts
+  s_94864882421579::t_247f60f3734079 43-46
+packages/server/sandbox/src/lib/sandbox.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 2,145
+packages/server/api/src/app/tenant/tenant.entity.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 17
+  s_29d1069c8ecefe::t_65170629c7c1e9 5
+package.json
+  s_29d1069c8ecefe::t_225934a8fbce5f 135
+packages/server/api/test/integration/workers/job-broker-error-propagation.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,25,33-34,41,76,84-85,92,126,134-135,142,177,185-186,193,229,237-238,245
+packages/core/formula/src/lib/function-type-checker.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 2,175
+packages/server/api/test/integration/webhooks/webhook.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,423,494
+packages/web/src/app/builder/workflow-canvas/utils/workflow-screenshot-utils.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 22-24
+  s_29d1069c8ecefe::t_5339da6189b35d 5,183
+packages/web/src/app/routes/forms/index.tsx
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 7,31
+CLAUDE.md
+  s_29d1069c8ecefe::t_5eec637b13e33f 69
+brain/knowledge/decisions/000021-legacy-free-tenants-are-comped-an-appsumo-clone-from-ensureenrolled.md
+  s_29d1069c8ecefe::t_daf0e85052dd3b 7-11
+packages/server/api/src/app/workers/machine/machine-cache.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 2,60
+packages/web/src/app/builder/workflow-canvas/edges/join-edge.tsx
+  s_29d1069c8ecefe::t_5339da6189b35d 4,9,17
+packages/server/api/src/app/workers/machine/machine-service.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 2,57
+packages/server/api/src/app/workers/engine-response-watcher.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,8
+packages/web/src/app/connections/create-edit-connection-dialog.tsx
+  s_29d1069c8ecefe::t_5eee57a396d292 10,93,95
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 22,171,180
+packages/web/test/app/builder/connector-properties/text-input-with-mentions/text-input-utils.test.ts
+  s_29d1069c8ecefe::t_d7c3acec2eda0c 65,78-84
+packages/server/api/src/app/workflows/execution/execution-entity.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 12
+  s_29d1069c8ecefe::t_5eee57a396d292 29-31,37,41
+packages/server/api/src/app/workers/migrations/job-data-migrations.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,28
+packages/server/api/src/app/workflows/workflow/workflow.service.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 1-2
+  s_29d1069c8ecefe::t_5eee57a396d292 35,41,650,655
+packages/web/src/app/builder/workflow-canvas/nodes/loop-return-node.tsx
+  s_29d1069c8ecefe::t_5339da6189b35d 7,43-44
+packages/server/api/src/app/variable/variable.service.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+  s_29d1069c8ecefe::t_5eee57a396d292 16,223,231
+packages/server/api/src/app/workflows/execution/execution-service.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+  s_29d1069c8ecefe::t_5eee57a396d292 2,152,318,321,485,520,579,717,854,880
+packages/server/api/src/app/connectors/connector-sync-service.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 124
+  s_29d1069c8ecefe::t_65170629c7c1e9 3
+packages/server/api/src/app/workflows/workflow/workflow.controller.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,47,241,264,287
+packages/server/api/src/app/health/health.service.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 1-2
+  s_29d1069c8ecefe::t_5eee57a396d292 48,139,158,160
+packages/web/src/features/connectors/components/install-connector-dialog.tsx
+  s_29d1069c8ecefe::t_5eee57a396d292 1,4,69
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 19,186
+  s_29d1069c8ecefe::t_65170629c7c1e9 156-158
+packages/core/shared/package.json
+  s_29d1069c8ecefe::t_aac1e923e819e0 3
+packages/web/src/app/builder/workflow-canvas/utils/join-edges.test.ts
+  s_29d1069c8ecefe::t_5339da6189b35d 10,60
+packages/server/api/src/app/file/files-controller.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 27,111
+  s_29d1069c8ecefe::t_65170629c7c1e9 2
+packages/server/api/test/integration/connectors/connector-options-e2e.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 12,79
+packages/server/api/test/integration/engine-services/engine-services.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 2,51,59-60,109-112,141-142,151,187,231,268,342,357,369,380
+brain/knowledge/tenant-editions-ee/embed.md
+  s_29d1069c8ecefe::t_daf0e85052dd3b 7-11
+packages/server/api/test/helpers/mocks/index.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,20,23,39,45,54,59,75,78,89,94,107,111,113-114,128,132,142,145,154,157,180-181,213,216,219,241,269,286,294,311,314-315,320,333,336,341,358,362,377,380,393,402,406,413,421,429,439,562,565-566,580,585,592,595-597,606,609,640,643,669,672
+.agents/skills/connector-builder/SKILL.md
+  s_29d1069c8ecefe::t_40f0c8247a2e73 3
+packages/web/src/app/components/help-and-feedback.tsx
+  s_29d1069c8ecefe::t_5eee57a396d292 1,16
+packages/connectors/core/date-helper/src/lib/actions/date-difference.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 9,83
+packages/core/execution/src/lib/execution/dto/list-executions-request.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 3,7,14,17,24,43
+packages/server/api/test/integration/workers/workspace-worker.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,25
+packages/server/api/src/app/audit/audit-event.entity.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 2
+  s_29d1069c8ecefe::t_5eee57a396d292 8,10,18
+packages/web/src/app/components/flag-guard.tsx
+  s_29d1069c8ecefe::t_5eee57a396d292 1,7
+packages/web/src/app/builder/workflow-canvas/utils/layout-consts.ts
+  s_29d1069c8ecefe::t_5339da6189b35d 11,62,64-69
+packages/web/src/components/custom/markdown.tsx
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 71,215-216
+brain/knowledge/workflows-execution/action-run.md
+  s_29d1069c8ecefe::t_5eec637b13e33f 33,35
+brain/knowledge/connections-auth/ee-authentication-sso-rbac.md
+  s_29d1069c8ecefe::t_daf0e85052dd3b 7-11
+packages/server/api/test/integration/connection/connection.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,283,415,513
+packages/server/sandbox/test/lib/sandbox-manager.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 2,62,79,94,109,124
+packages/server/api/src/app/variable/variable.controller.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,129,191,210
+packages/connectors/sdk/src/lib/property/index.ts
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 8-9
+packages/server/api/src/app/file/s3-helper.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 5,166
+packages/web/src/features/templates/components/use-template-dialog.tsx
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 173
+  s_29d1069c8ecefe::t_f969509983745c 39
+packages/web/src/features/authentication/components/auth-landing/auth-drawer-body.tsx
+  s_29d1069c8ecefe::t_5eee57a396d292 3,200,203,371,374,899,902
+packages/server/api/src/app/connectors/metadata/connector-cache.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 2
+  s_29d1069c8ecefe::t_5eee57a396d292 12-13
+packages/web/src/features/executions/components/runs-table/failed-retry-runs-dialog.tsx
+  s_29d1069c8ecefe::t_5eee57a396d292 2,34
+packages/server/api/src/app/workflows/execution/waitpoint/waitpoint-service.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,26
+packages/web/src/lib/authentication-session.ts
+  s_29d1069c8ecefe::t_f969509983745c 13
+  s_29d1069c8ecefe::t_65170629c7c1e9 26-29
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 18,22,24,49,57,114,116,124,135-136
+packages/server/sandbox/src/lib/cache/connectors/connector-cache.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 4
+  s_29d1069c8ecefe::t_5eee57a396d292 3,10,31
+docs/build-connectors/connector-reference/large-file-streaming.mdx
+  s_29d1069c8ecefe::t_5eec637b13e33f 118,121,187
+brain/knowledge/workflows-execution/workflows.md
+  s_29d1069c8ecefe::t_4565e40cdace22 31
+brain/knowledge/decisions/000026-delete-tenant-is-a-cloud-owner-action-purged-by-one-cascading-job.md
+  s_29d1069c8ecefe::t_daf0e85052dd3b 7-11
+packages/server/api/src/app/database/seeds/dev-seeds.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,15
+packages/web/src/lib/api.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 177,185
+  s_29d1069c8ecefe::t_65170629c7c1e9 1-5
+packages/web/src/features/connections/hooks/connections-hooks.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 308-309,316-317
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 127-128,140,148,163,171,179,311-312
+  s_29d1069c8ecefe::t_5eee57a396d292 6
+packages/web/src/hooks/flags-hooks.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,46,49
+brain/knowledge/workflows-execution/templates.md
+  s_29d1069c8ecefe::t_3554afeeaafd87 11
+brain/knowledge/connections-auth/index.md
+  s_29d1069c8ecefe::t_3554afeeaafd87 42,51,63,79,86
+  s_29d1069c8ecefe::t_d96500dcc9ad55 9
+packages/server/sandbox/test/lib/cache/connector-cache-traversal.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 7,20
+brain/knowledge/decisions/000019-autumn-tenant-plan-schema-ships-additively.md
+  s_29d1069c8ecefe::t_daf0e85052dd3b 7-11
+packages/server/api/test/integration/tenant/first-tenant-provisioning.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,72
+packages/web/src/app/builder/step-settings/code-settings/index.tsx
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 7,44,69
+packages/server/api/src/app/template/template.service.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 47
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+packages/server/worker/src/lib/execute/utils/trigger-run-recorder.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 2,19
+brain/knowledge/decisions/000018-usage-counts-report-to-posthog-only.md
+  s_29d1069c8ecefe::t_daf0e85052dd3b 7-10
+packages/server/api/src/app/user/user-service.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 24
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+packages/core/shared/src/lib/automation/connection/connection.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+  s_29d1069c8ecefe::t_5eee57a396d292 131,138
+packages/connectors/core/date-helper/src/lib/actions/next-day-of-week.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 11,94,122
+packages/web/src/features/templates/components/share-template.tsx
+  s_29d1069c8ecefe::t_65170629c7c1e9 1-5
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 42-43
+docs/embedding/sdk-changelog.mdx
+  s_29d1069c8ecefe::t_f20f439d253dbb 33,37
+packages/web/src/features/authentication/components/auth-form-template.tsx
+  s_29d1069c8ecefe::t_5eee57a396d292 1,16,19
+packages/connectors/core/date-helper/src/lib/actions/last-day-of-prior-month.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 8,73
+brain/knowledge/workflows-execution/subflows.md
+  s_29d1069c8ecefe::t_5eec637b13e33f 20
+packages/server/api/src/app/workflows/workflow-version/workflow-version-entity.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 17
+  s_29d1069c8ecefe::t_65170629c7c1e9 5
+packages/server/api/src/app/authentication/authentication.service.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 3
+  s_29d1069c8ecefe::t_5eee57a396d292 62
+packages/web/src/app/builder/connector-properties/text-input-with-mentions/components/function-search-popover.tsx
+  s_29d1069c8ecefe::t_65170629c7c1e9 112-119
+  s_29d1069c8ecefe::t_5eee57a396d292 1,26,41
+packages/web/src/features/workspaces/index.ts
+  s_29d1069c8ecefe::t_f969509983745c 1
+packages/web/src/app/routes/redirect.tsx
+  s_29d1069c8ecefe::t_b3b3ba337e67d4 6-8,13,19,22-23,28,34
+packages/core/shared/src/lib/core/authentication/model/principal.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,5,10,15,18,23,26,32,42
+packages/server/api/src/app/workflows/folder/folder.service.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+  s_29d1069c8ecefe::t_5eee57a396d292 52,79
+packages/server/api/test/integration/workers/job-broker-seed-cause.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,46,53-54,61,110,117-118,125,162,169-170,177
+packages/web/src/app/components/sidebar/dashboard/index.tsx
+  s_29d1069c8ecefe::t_f969509983745c 50-51
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 171,309
+docs/adr/0018-no-network-agent-self-hosting-removes-the-gap-it-bridged.md
+  s_29d1069c8ecefe::t_f714b267eab571 1-52
+packages/web/src/lib/error-reporting.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 2,39,46-48,61-62
+packages/web/src/features/authentication/components/auth-landing/turnstile-widget.tsx
+  s_29d1069c8ecefe::t_5eee57a396d292 2,41
+brain/knowledge/connections-auth/connections.md
+  s_29d1069c8ecefe::t_3554afeeaafd87 18
+brain/knowledge/decisions/000023-cancellation-feedback-rides-the-cancel-call.md
+  s_29d1069c8ecefe::t_daf0e85052dd3b 7-11
+packages/server/api/src/app/trigger/trigger-events/trigger-event.entity.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 18-19
+  s_29d1069c8ecefe::t_65170629c7c1e9 5
+packages/server/api/src/app/workers/job-queue/interceptors/rate-limiter-interceptor.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 2,47
+packages/server/api/src/app/helper/system-validator.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 3
+  s_29d1069c8ecefe::t_5eee57a396d292 78,269
+packages/server/api/src/app/authentication/otp/otp-service.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,48
+packages/web/src/app/builder/test-step/custom-test-step/test-webhook-dialog.tsx
+  s_29d1069c8ecefe::t_5eee57a396d292 1,95
+packages/core/execution/src/lib/execution/test-execution-request.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 2,7,14,21-23,26,36-38,43,51-53,55
+packages/server/api/src/app/workflows/workflow/workflow.entity.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 33,37,51
+  s_29d1069c8ecefe::t_65170629c7c1e9 15
+packages/server/api/test/integration/oidc/oidc-token.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 1,32,67
+brain/knowledge/decisions/000028-connector-tarballs-are-never-mirrored-into-our-own-s3.md
+  s_29d1069c8ecefe::t_f20f439d253dbb 8
+.agents/skills/connector-output-schema/SKILL.md
+  s_29d1069c8ecefe::t_40f0c8247a2e73 3
+packages/server/worker/src/lib/api-notify-service.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 2,23
+packages/core/shared/src/lib/management/tenant/tenant.model.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+  s_29d1069c8ecefe::t_5eee57a396d292 76,104
+packages/server/api/src/app/trigger/app-event-routing/app-event-routing.module.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 101
+  s_29d1069c8ecefe::t_65170629c7c1e9 2
+packages/web/src/app/routes/templates/id/index.tsx
+  s_29d1069c8ecefe::t_5eee57a396d292 1,60,63-64,74
+packages/server/api/src/app/authentication/otp/otp-entity.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 5
+  s_29d1069c8ecefe::t_5eee57a396d292 22
+packages/server/utils/src/dayjs-helper.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 10,19
+packages/server/api/src/app/workflows/execution/execution-controller.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+  s_29d1069c8ecefe::t_5eee57a396d292 2,46,179,198
+packages/connectors/core/date-helper/src/lib/common/index.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 19,88,92,97
+brain/knowledge/connections-auth/managed-auth.md
+  s_29d1069c8ecefe::t_3554afeeaafd87 7,10,12,20
+packages/server/sandbox/src/lib/sandbox-manager.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 2,12,25,33,38,64,82-85
+  s_29d1069c8ecefe::t_65170629c7c1e9 3
+packages/web/src/app/components/workspace-settings/general/index.tsx
+  s_29d1069c8ecefe::t_5eee57a396d292 2,52,55
+brain/knowledge/tenant-editions-ee/workspaces.md
+  s_29d1069c8ecefe::t_daf0e85052dd3b 7-11
+packages/server/engine/test/variables/props-resolver.test.ts
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 2,633
+packages/web/src/features/workflows/hooks/workflow-hooks.tsx
+  s_29d1069c8ecefe::t_5eee57a396d292 2,8,80,83
+  s_29d1069c8ecefe::t_f969509983745c 28
+  s_29d1069c8ecefe::t_f94d1b39f7ecc8 138-140,158
+packages/server/sandbox/test/lib/cache/workflow/workflow-bundle-store.test.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 6,26
+packages/server/utils/src/evlog-setup.ts
+  s_29d1069c8ecefe::t_1f565510ee38ce 2
+  s_29d1069c8ecefe::t_5eee57a396d292 121,149,151
+packages/web/src/app/routes/tenant/setup/connectors/customize-selector-dialog.tsx
+  s_29d1069c8ecefe::t_65170629c7c1e9 253-256
+  s_29d1069c8ecefe::t_5eee57a396d292 3,118
+brain/knowledge/decisions/000014-pending-invitations-reserve-seats.md
+  s_29d1069c8ecefe::t_daf0e85052dd3b 7-10
+packages/web/src/app/builder/workflow-canvas/nodes/step-node/index.tsx
+  s_29d1069c8ecefe::t_5339da6189b35d 19,25-27,30-31,160-162,253-254
+packages/server/api/src/app/helper/logger/index.ts
+  s_29d1069c8ecefe::t_65170629c7c1e9 1
+  s_29d1069c8ecefe::t_5eee57a396d292 18
+packages/server/utils/src/memory-lock.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 6,24,64
+packages/server/sandbox/src/lib/utils/bun-runner.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 3-4,9,28
+docs/adr/0016-the-network-agent-tunnel-is-an-outbound-socket-with-a-server-side-allowlist.md
+  s_29d1069c8ecefe::t_ceb66357974658 4
+packages/server/api/src/app/server.ts
+  s_29d1069c8ecefe::t_5eee57a396d292 7,95,118,149,170,202,230
+  s_29d1069c8ecefe::t_65170629c7c1e9 8-9
+packages/web/src/components/custom/error-dialog/error-dialog.tsx
+  s_29d1069c8ecefe::t_f969509983745c 17,19,65-66
+brain/knowledge/decisions/000001-worker-is-the-sandbox-one-job-per-worker-scale-by-replicas.md
+  s_29d1069c8ecefe::t_3554afeeaafd87 17
+bun.lock
+  s_29d1069c8ecefe::t_803463039ebde4 6,491,523
+packages/server/api/src/app/connection/tenant-connection.module.ts
+  s_94864882421579::t_58f036465628e8 2,9-11
+packages/server/utils/src/logger.ts
+  s_29d1069c8ecefe::t_50c7335dc1768d 15,19,120,174,181,190
+packages/web/src/app/components/sidebar/sidebar-nav-item.tsx
+  s_29d1069c8ecefe::t_f3a48b6721adaf 31
+packages/web/src/components/custom/error-dialog/error-dialog-store.tsx
+  s_29d1069c8ecefe::t_b19ab96c3d873e 3,8-10,14
+packages/web/src/components/custom/sidebar-toggle.tsx
+  s_29d1069c8ecefe::t_f309114688ead3 13
+packages/web/src/components/custom/user-badge.tsx
+  s_29d1069c8ecefe::t_e0160b02193356 14,22,28
+packages/web/src/features/forms/components/workflow-form.tsx
+  s_29d1069c8ecefe::t_613c9f9f162306 2,20,41,107,139,305,320-321
+packages/web/src/features/workspaces/components/workspace-display.tsx
+  s_29d1069c8ecefe::t_8fb234a82910b0 25,37,47
+packages/web/src/lib/browser-storage.ts
+  s_29d1069c8ecefe::t_a48987fb3a7d4c 1,4,7-8,10,13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "676e1c637ce8c6da1e7d1ffe078fae1db466a65f",
+  "prompts": {},
+  "sessions": {
+    "s_29d1069c8ecefe": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c1b32382-0407-47eb-b207-a6ea10354386",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    },
+    "s_94864882421579": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "96aea354-9d63-433b-ad16-daaafc8b934e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

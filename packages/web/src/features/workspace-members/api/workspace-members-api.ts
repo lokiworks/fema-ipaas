@@ -2,13 +2,14 @@ import {
   DefaultWorkspaceRole,
   SeekPage,
   WorkspaceMember,
+  WorkspaceMemberWithUser,
 } from '@fema-ipaas/shared';
 
 import { api } from '@/lib/api';
 
 export const workspaceMembersApi = {
-  list(workspaceId: string): Promise<SeekPage<WorkspaceMember>> {
-    return api.get<SeekPage<WorkspaceMember>>('/v1/workspace-members', {
+  list(workspaceId: string): Promise<SeekPage<WorkspaceMemberWithUser>> {
+    return api.get<SeekPage<WorkspaceMemberWithUser>>('/v1/workspace-members', {
       workspaceId,
     });
   },

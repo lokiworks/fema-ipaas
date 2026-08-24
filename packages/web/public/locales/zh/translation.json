@@ -2402,5 +2402,15 @@
   "network agent": "网络代理",
   "Reach through": "访问方式",
   "The platform itself": "平台直连",
-  "Pick an agent when the system sits inside a network the platform cannot reach.": "当目标系统位于平台访问不到的网络中时，选择一个代理。"
+  "Pick an agent when the system sits inside a network the platform cannot reach.": "当目标系统位于平台访问不到的网络中时，选择一个代理。",
+  "No one has been added to this workspace yet.": "这个工作空间还没有添加成员。",
+  "Remove from workspace": "移出工作空间",
+  "They lose access to every workflow and connection in this workspace.": "该成员将失去对这个工作空间里所有工作流和连接的访问权限。",
+  "member": "成员",
+  "Full control of the workspace": "完全掌控这个工作空间",
+  "Build and publish workflows": "搭建并发布工作流",
+  "Run workflows and manage connections": "运行工作流、管理连接",
+  "Read-only access": "只读访问",
+  "Developer": "开发者",
+  "Viewer": "访客"
 }

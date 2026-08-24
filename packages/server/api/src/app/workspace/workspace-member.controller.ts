@@ -1,5 +1,5 @@
 import { ApId, Permission, SeekPage } from '@fema-ipaas/core-utils'
-import { ApplicationEventName, DefaultWorkspaceRole, PrincipalType, WorkspaceMember } from '@fema-ipaas/shared'
+import { ApplicationEventName, DefaultWorkspaceRole, PrincipalType, WorkspaceMember, WorkspaceMemberWithUser } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
@@ -16,7 +16,7 @@ export const workspaceMemberController: FastifyPluginAsyncZod = async (app) => {
         })
     })
 
-    app.get('/', ListMembersRequest, async (request): Promise<SeekPage<WorkspaceMember>> => {
+    app.get('/', ListMembersRequest, async (request): Promise<SeekPage<WorkspaceMemberWithUser>> => {
         return workspaceMemberService(request.log).list({
             workspaceId: request.query.workspaceId,
             cursor: request.query.cursor ?? null,

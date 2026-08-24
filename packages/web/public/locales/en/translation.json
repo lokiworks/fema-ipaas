@@ -2498,5 +2498,15 @@
   "network agent": "network agent",
   "Reach through": "Reach through",
   "The platform itself": "The platform itself",
-  "Pick an agent when the system sits inside a network the platform cannot reach.": "Pick an agent when the system sits inside a network the platform cannot reach."
+  "Pick an agent when the system sits inside a network the platform cannot reach.": "Pick an agent when the system sits inside a network the platform cannot reach.",
+  "No one has been added to this workspace yet.": "No one has been added to this workspace yet.",
+  "Remove from workspace": "Remove from workspace",
+  "They lose access to every workflow and connection in this workspace.": "They lose access to every workflow and connection in this workspace.",
+  "member": "member",
+  "Full control of the workspace": "Full control of the workspace",
+  "Build and publish workflows": "Build and publish workflows",
+  "Run workflows and manage connections": "Run workflows and manage connections",
+  "Read-only access": "Read-only access",
+  "Developer": "Developer",
+  "Viewer": "Viewer"
 }

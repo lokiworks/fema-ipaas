@@ -1,9 +1,10 @@
 import { apId, ApplicationError, ErrorCode, isNil, SeekPage } from '@fema-ipaas/core-utils'
-import { DefaultWorkspaceRole, Principal, PrincipalType, WorkspaceMember } from '@fema-ipaas/shared'
+import { DefaultWorkspaceRole, Principal, PrincipalType, WorkspaceMember, WorkspaceMemberWithUser } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { buildPaginator } from '../helper/pagination/build-paginator'
 import { paginationHelper } from '../helper/pagination/pagination-utils'
 import { Order } from '../helper/pagination/paginator'
+import { userService } from '../user/user-service'
 import { workspaceAccess } from './workspace-access'
 import { WorkspaceMemberEntity } from './workspace-member.entity'
 import { workspaceMemberRepo } from './workspace-member.repo'
@@ -20,7 +21,7 @@ export const workspaceMemberService = (log: FastifyBaseLogger) => ({
         return { role: role.name as DefaultWorkspaceRole, permissions: role.permissions }
     },
 
-    async list({ workspaceId, cursor, limit }: ListParams): Promise<SeekPage<WorkspaceMember>> {
+    async list({ workspaceId, cursor, limit }: ListParams): Promise<SeekPage<WorkspaceMemberWithUser>> {
         const decodedCursor = paginationHelper.decodeCursor(cursor)
         const paginator = buildPaginator({
             entity: WorkspaceMemberEntity,
@@ -33,7 +34,11 @@ export const workspaceMemberService = (log: FastifyBaseLogger) => ({
         })
         const query = workspaceMemberRepo().createQueryBuilder('workspace_member').where({ workspaceId })
         const { data, cursor: newCursor } = await paginator.paginate(query)
-        return paginationHelper.createPage<WorkspaceMember>(data, newCursor)
+        const withUsers = await Promise.all(data.map(async (member) => ({
+            ...member,
+            user: await userService(log).getMetaInformation({ id: member.userId }),
+        })))
+        return paginationHelper.createPage<WorkspaceMemberWithUser>(withUsers, newCursor)
     },
 
     async upsert({ workspaceId, userId, role }: UpsertParams): Promise<WorkspaceMember> {

@@ -1,7 +1,7 @@
 import { isNil, Permission, tryCatch } from '@fema-ipaas/core-utils';
 import { TenantRole, WorkspaceType } from '@fema-ipaas/shared';
 import { t } from 'i18next';
-import { Settings } from 'lucide-react';
+import { Settings, UsersRound } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils';
 import { WorkspaceAvatar } from '../workspace-avatar';
 
 import { GeneralSettings, FormValues } from './general';
+import { MembersSettings } from './members';
 
 type TabId =
   | 'general'
@@ -97,6 +98,8 @@ export function WorkspaceSettingsDialog({
   const hasGeneralSettings =
     workspace.type === WorkspaceType.TEAM || tenantRole === TenantRole.ADMIN;
 
+  const canReadMembers = checkAccess(Permission.READ_WORKSPACE_MEMBER);
+
   const tabs = [
     {
       id: 'general' as TabId,
@@ -104,12 +107,24 @@ export function WorkspaceSettingsDialog({
       icon: <Settings className="w-4 h-4" />,
       disabled: !hasGeneralSettings,
     },
+    {
+      id: 'members' as TabId,
+      label: t('Members'),
+      icon: <UsersRound className="w-4 h-4" />,
+      disabled: !canReadMembers,
+    },
   ].filter((tab) => !tab.disabled);
 
   const renderTabContent = () => {
     switch (activeTab) {
       case 'general':
         return <GeneralSettings form={form} />;
+      case 'members':
+        return (
+          <MembersSettings
+            readonly={!checkAccess(Permission.WRITE_WORKSPACE_MEMBER)}
+          />
+        );
       default:
         return null;
     }

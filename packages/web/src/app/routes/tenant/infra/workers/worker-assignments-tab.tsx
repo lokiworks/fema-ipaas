@@ -5,18 +5,14 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { workersQueries } from '@/features/tenant-admin';
 import { workspaceCollectionUtils } from '@/features/workspaces/stores/workspace-collection';
-import { tenantHooks } from '@/hooks/tenant-hooks';
 
 import { ByGroupView } from './by-group-view';
 import { ByWorkspaceView } from './by-workspace-view';
 
 export function WorkerAssignmentsTab() {
-  const { tenant } = tenantHooks.useCurrentTenant();
   const { data: workspaces } =
     workspaceCollectionUtils.useAllTenantWorkspaces();
-  const { data: capacity } = workersQueries.useWorkerGroups(
-    tenant.plan.workerGroupsEnabled,
-  );
+  const { data: capacity } = workersQueries.useWorkerGroups(true);
   const { data: workersData } = workersQueries.useWorkerMachines();
 
   const workerGroups = capacity?.groups ?? [];

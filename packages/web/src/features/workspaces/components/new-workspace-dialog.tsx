@@ -27,7 +27,6 @@ import { SkeletonList } from '@/components/ui/skeleton';
 import { internalErrorToast } from '@/components/ui/sonner';
 import { globalConnectionsQueries } from '@/features/connections';
 import { workspaceCollectionUtils } from '@/features/workspaces';
-import { tenantHooks } from '@/hooks/tenant-hooks';
 
 type NewWorkspaceDialogProps = {
   children: React.ReactNode;
@@ -36,8 +35,6 @@ type NewWorkspaceDialogProps = {
 
 export const NewWorkspaceDialog = (props: NewWorkspaceDialogProps) => {
   const [open, setOpen] = useState(false);
-  const { tenant } = tenantHooks.useCurrentTenant();
-  const globalConnectionsEnabled = tenant.plan.globalConnectionsEnabled;
 
   const { data: globalConnectionsPage, isLoading: isLoadingConnections } =
     globalConnectionsQueries.useGlobalConnections({
@@ -59,15 +56,14 @@ export const NewWorkspaceDialog = (props: NewWorkspaceDialogProps) => {
             )}
           </DialogDescription>
         </DialogHeader>
-        {(!isLoadingConnections || !globalConnectionsEnabled) && (
+        {!isLoadingConnections && (
           <NewWorkspaceForm
             setOpen={setOpen}
             globalConnections={globalConnections}
-            globalConnectionsEnabled={globalConnectionsEnabled}
             onCreate={props.onCreate}
           />
         )}
-        {isLoadingConnections && globalConnectionsEnabled && (
+        {isLoadingConnections && (
           <SkeletonList numberOfItems={3} className="h-10" />
         )}
       </DialogContent>
@@ -81,7 +77,6 @@ const NewWorkspaceForm = ({
 }: Omit<NewWorkspaceDialogProps, 'children'> & {
   setOpen: (open: boolean) => void;
   globalConnections: ConnectionWithoutSensitiveData[];
-  globalConnectionsEnabled: boolean;
 }) => {
   const queryClient = useQueryClient();
 

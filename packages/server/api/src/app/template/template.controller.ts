@@ -6,7 +6,6 @@ import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
 import { securityAccess } from '../core/security/authorization/fastify-security'
 import { tenantGuards } from '../core/security/tenant-guards'
-import { tenantService } from '../tenant/tenant.service'
 import { migrateWorkflowVersionTemplateList } from '../workflows/workflow-version/migrations'
 import { communityTemplates } from './community-templates.service'
 import { templateService } from './template.service'
@@ -234,10 +233,6 @@ async function loadCustomTemplatesOrReturnEmpty(
     }
     const tenantId = principal.type === PrincipalType.UNKNOWN || principal.type === PrincipalType.WORKER || principal.type === PrincipalType.ONBOARDING ? null : principal.tenant.id
     if (isNil(tenantId)) {
-        return []
-    }
-    const tenant = await tenantService(log).getOneWithPlanOrThrow(tenantId)
-    if (!tenant.plan.manageTemplatesEnabled) {
         return []
     }
     const customTemplates = await templateService(log).list({ tenantId, type: TemplateType.CUSTOM, ...query })

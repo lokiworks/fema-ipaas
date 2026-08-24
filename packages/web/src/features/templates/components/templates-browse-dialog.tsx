@@ -28,7 +28,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { tenantHooks } from '@/hooks/tenant-hooks';
 import { cn } from '@/lib/utils';
 
 import { templatesApi } from '../api/templates-api';
@@ -66,11 +65,7 @@ export const TemplatesBrowseDialog = ({
 
   const [debouncedSearch] = useDebounce(search, 300);
 
-  const { tenant } = tenantHooks.useCurrentTenant();
-  const isShowingOfficialTemplates = !tenant.plan.manageTemplatesEnabled;
-  const templateType = isShowingOfficialTemplates
-    ? TemplateType.OFFICIAL
-    : TemplateType.CUSTOM;
+  const templateType = TemplateType.CUSTOM;
 
   const { data: categories } = useQuery<string[]>({
     queryKey: ['template', 'categories'],
@@ -141,7 +136,7 @@ export const TemplatesBrowseDialog = ({
             </div>
           </div>
 
-          {isShowingOfficialTemplates && allCategories.length > 1 && (
+          {allCategories.length > 1 && (
             <div className="flex-shrink-0 border-t border-b py-2">
               <Carousel
                 opts={{ align: 'start', loop: false }}

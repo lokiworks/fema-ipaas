@@ -29,7 +29,6 @@ import {
 } from '@/components/ui/popover';
 import { workspaceCollectionUtils } from '@/features/workspaces';
 import { flagsHooks } from '@/hooks/flags-hooks';
-import { tenantHooks } from '@/hooks/tenant-hooks';
 import { userHooks } from '@/hooks/user-hooks';
 import { cn } from '@/lib/utils';
 
@@ -46,7 +45,6 @@ type GeneralSettingsProps = {
 };
 
 export const GeneralSettings = ({ form }: GeneralSettingsProps) => {
-  const { tenant } = tenantHooks.useCurrentTenant();
   const tenantRole = userHooks.getCurrentUserTenantRole();
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
   const { workspace } = workspaceCollectionUtils.useCurrentWorkspace();
@@ -57,8 +55,7 @@ export const GeneralSettings = ({ form }: GeneralSettingsProps) => {
     ApFlagId.DEFAULT_CONCURRENT_JOBS_LIMIT,
   );
   const showGeneralSettings = workspace.type === WorkspaceType.TEAM;
-  const showExternalIdSettings =
-    tenant.plan.embeddingEnabled && tenantRole === TenantRole.ADMIN;
+
   const colorOptions = Object.values(ColorName);
 
   return (
@@ -147,114 +144,88 @@ export const GeneralSettings = ({ form }: GeneralSettingsProps) => {
             </div>
           </div>
         )}
-        {showExternalIdSettings && (
+        {tenantRole === TenantRole.ADMIN && (
           <FormField
-            name="externalId"
+            name="maxConcurrentJobs"
             render={({ field }) => (
               <FormItem>
-                <Label htmlFor="externalId" className="text-sm font-medium">
-                  {t('External ID')}
+                <Label
+                  htmlFor="maxConcurrentJobs"
+                  className="text-sm font-medium"
+                >
+                  {t('Max Concurrent Jobs')}
                 </Label>
-
-                <Input
+                <ClearableInput
                   {...field}
-                  id="externalId"
-                  placeholder={t('org-3412321')}
-                  className="h-10 font-mono"
-                  disabled={form.formState.disabled}
+                  id="maxConcurrentJobs"
+                  type="number"
+                  min={1}
+                  placeholder={
+                    defaultConcurrentJobsLimit
+                      ? t('Default ({value})', {
+                          value: defaultConcurrentJobsLimit,
+                        })
+                      : t('Default')
+                  }
+                  value={field.value ?? ''}
+                  onChange={(e) =>
+                    field.onChange(
+                      e.target.value ? Number(e.target.value) : null,
+                    )
+                  }
+                  onClear={() => field.onChange(null)}
+                  disabled={form.formState.disabled || !isRateLimiterEnabled}
                 />
                 <FormDescription className="text-xs text-muted-foreground">
-                  {t('Used to identify the workspace based on your SaaS ID')}
+                  {isRateLimiterEnabled === false
+                    ? t(
+                        'The rate limiting feature is disabled. Enable the WORKSPACE_RATE_LIMITER_ENABLED environment variable to use this feature.',
+                      )
+                    : t(
+                        'Maximum number of workflows that can run at the same time for this workspace',
+                      )}
                 </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
         )}
-        {!tenant.plan.workerGroupsEnabled &&
-          tenantRole === TenantRole.ADMIN && (
-            <FormField
-              name="maxConcurrentJobs"
-              render={({ field }) => (
-                <FormItem>
-                  <Label
-                    htmlFor="maxConcurrentJobs"
-                    className="text-sm font-medium"
-                  >
-                    {t('Max Concurrent Jobs')}
-                  </Label>
-                  <ClearableInput
-                    {...field}
-                    id="maxConcurrentJobs"
-                    type="number"
-                    min={1}
-                    placeholder={
-                      defaultConcurrentJobsLimit
-                        ? t('Default ({value})', {
-                            value: defaultConcurrentJobsLimit,
-                          })
-                        : t('Default')
-                    }
-                    value={field.value ?? ''}
-                    onChange={(e) =>
-                      field.onChange(
-                        e.target.value ? Number(e.target.value) : null,
-                      )
-                    }
-                    onClear={() => field.onChange(null)}
-                    disabled={form.formState.disabled || !isRateLimiterEnabled}
-                  />
-                  <FormDescription className="text-xs text-muted-foreground">
-                    {isRateLimiterEnabled === false
-                      ? t(
-                          'The rate limiting feature is disabled. Enable the WORKSPACE_RATE_LIMITER_ENABLED environment variable to use this feature.',
-                        )
-                      : t(
-                          'Maximum number of workflows that can run at the same time for this workspace',
-                        )}
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
-        {tenant.plan.billedTeamWorkspacesLimit !== 0 &&
-          tenantRole === TenantRole.ADMIN && (
-            <FormField
-              name="activeWorkflowsLimit"
-              render={({ field }) => (
-                <FormItem>
-                  <Label
-                    htmlFor="activeWorkflowsLimit"
-                    className="text-sm font-medium"
-                  >
-                    {t('Active Workflows Limit')}
-                  </Label>
-                  <ClearableInput
-                    {...field}
-                    id="activeWorkflowsLimit"
-                    type="number"
-                    min={1}
-                    placeholder={t('Unlimited')}
-                    value={field.value ?? ''}
-                    onChange={(e) =>
-                      field.onChange(
-                        e.target.value ? Number(e.target.value) : null,
-                      )
-                    }
-                    onClear={() => field.onChange(null)}
-                    disabled={form.formState.disabled}
-                  />
-                  <FormDescription className="text-xs text-muted-foreground">
-                    {t(
-                      'Maximum number of enabled workflows in this workspace. Leave empty for no limit.',
-                    )}
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
+        {tenantRole === TenantRole.ADMIN && (
+          <FormField
+            name="activeWorkflowsLimit"
+            render={({ field }) => (
+              <FormItem>
+                <Label
+                  htmlFor="activeWorkflowsLimit"
+                  className="text-sm font-medium"
+                >
+                  {t('Active Workflows Limit')}
+                </Label>
+                <ClearableInput
+                  {...field}
+                  id="activeWorkflowsLimit"
+                  type="number"
+                  min={1}
+                  placeholder={t('Unlimited')}
+                  value={field.value ?? ''}
+                  onChange={(e) =>
+                    field.onChange(
+                      e.target.value ? Number(e.target.value) : null,
+                    )
+                  }
+                  onClear={() => field.onChange(null)}
+                  disabled={form.formState.disabled}
+                />
+                <FormDescription className="text-xs text-muted-foreground">
+                  {t(
+                    'Maximum number of enabled workflows in this workspace. Leave empty for no limit.',
+                  )}
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
       </div>
     </Form>
   );

@@ -43,7 +43,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { flagsHooks } from '@/hooks/flags-hooks';
-import { tenantHooks } from '@/hooks/tenant-hooks';
 import { api } from '@/lib/api';
 import { authenticationSession } from '@/lib/authentication-session';
 
@@ -64,8 +63,6 @@ const InstallConnectorDialog = ({
   onInstallConnector,
   scope,
 }: InstallConnectorDialogProps) => {
-  const { tenant } = tenantHooks.useCurrentTenant();
-  const isEnabled = tenant.plan.manageConnectorsEnabled;
   const [isOpen, setIsOpen] = useState(false);
 
   const { data: privateConnectorsEnabled } = flagsHooks.useFlag<boolean>(
@@ -231,7 +228,7 @@ const InstallConnectorDialog = ({
                         </SelectItem>
                         <SelectItem
                           value={PackageType.ARCHIVE}
-                          disabled={!isEnabled || !privateConnectorsEnabled}
+                          disabled={!privateConnectorsEnabled}
                         >
                           {t('Packed Archive (.tgz)')}
                         </SelectItem>

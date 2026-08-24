@@ -32,7 +32,6 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { workersQueries } from '@/features/tenant-admin';
-import { tenantHooks } from '@/hooks/tenant-hooks';
 import { useTimeAgo } from '@/hooks/use-time-ago';
 import { cn } from '@/lib/utils';
 
@@ -43,7 +42,6 @@ import { WorkerConfigsPopover } from './worker-configs-popover';
 type TabValue = 'health' | 'worker-groups';
 
 export default function WorkersPage() {
-  const { tenant } = tenantHooks.useCurrentTenant();
   const { data: workersData, isLoading } = workersQueries.useWorkerMachines();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -76,12 +74,10 @@ export default function WorkersPage() {
             <Activity className="w-4 h-4 mr-2" />
             {t('Health')}
           </TabsTrigger>
-          {tenant.plan.workerGroupsEnabled && (
-            <TabsTrigger variant="outline" value="worker-groups">
-              <Layers className="w-4 h-4 mr-2" />
-              {t('Worker groups')}
-            </TabsTrigger>
-          )}
+          <TabsTrigger variant="outline" value="worker-groups">
+            <Layers className="w-4 h-4 mr-2" />
+            {t('Worker groups')}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="health">
@@ -133,11 +129,9 @@ export default function WorkersPage() {
           </div>
         </TabsContent>
 
-        {tenant.plan.workerGroupsEnabled && (
-          <TabsContent value="worker-groups">
-            <WorkerAssignmentsTab />
-          </TabsContent>
-        )}
+        <TabsContent value="worker-groups">
+          <WorkerAssignmentsTab />
+        </TabsContent>
       </Tabs>
     </div>
   );

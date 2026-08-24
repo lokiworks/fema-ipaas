@@ -200,11 +200,10 @@ export const tenantService = (log: FastifyBaseLogger) => ({
         return {
             ...tenant,
             federatedAuthProviders: { saml: null },
-            usage: undefined,
             plan: SYSTEM_LIMITS,
         }
     },
-    async getOneWithPlanOrThrow(id: TenantId): Promise<Omit<TenantWithoutSensitiveData, 'usage'>> {
+    async getOneWithPlanOrThrow(id: TenantId): Promise<TenantWithoutSensitiveData> {
         const tenant = await this.getOneOrThrow(id)
         return {
             ...tenant,
@@ -213,14 +212,7 @@ export const tenantService = (log: FastifyBaseLogger) => ({
         }
     },
     async getOneWithPlanAndUsageOrThrow(id: TenantId): Promise<TenantWithoutSensitiveData> {
-        const tenant = await this.getOneOrThrow(id)
-        return {
-            ...tenant,
-            federatedAuthProviders: { saml: null },
-            usage: undefined,
-            billingEnforced: undefined,
-            plan: SYSTEM_LIMITS,
-        }
+        return this.getOneWithPlanOrThrow(id)
     },
 })
 

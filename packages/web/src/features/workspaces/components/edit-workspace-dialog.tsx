@@ -2,7 +2,6 @@ import { Permission } from '@fema-ipaas/core-utils';
 import {
   ConnectionWithoutSensitiveData,
   UpdateWorkspaceTenantRequest,
-  TenantRole,
 } from '@fema-ipaas/shared';
 import { useQueryClient } from '@tanstack/react-query';
 import { t } from 'i18next';
@@ -18,13 +17,7 @@ import {
   DialogFooter,
   DialogHeader,
 } from '@/components/ui/dialog';
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormMessage,
-  FormDescription,
-} from '@/components/ui/form';
+import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SkeletonList } from '@/components/ui/skeleton';
@@ -32,8 +25,6 @@ import { internalErrorToast } from '@/components/ui/sonner';
 import { globalConnectionsQueries } from '@/features/connections/hooks/global-connections-hooks';
 import { workspaceCollectionUtils } from '@/features/workspaces/stores/workspace-collection';
 import { useAuthorization } from '@/hooks/authorization-hooks';
-import { tenantHooks } from '@/hooks/tenant-hooks';
-import { userHooks } from '@/hooks/user-hooks';
 
 interface EditWorkspaceDialogProps {
   open: boolean;
@@ -51,9 +42,6 @@ export function EditWorkspaceDialog({
   workspaceId,
   initialValues,
 }: EditWorkspaceDialogProps) {
-  const { tenant } = tenantHooks.useCurrentTenant();
-  const globalConnectionsEnabled = tenant.plan.globalConnectionsEnabled;
-
   const { data: globalConnectionsPage, isLoading: isLoadingConnections } =
     globalConnectionsQueries.useGlobalConnections({
       request: { limit: 9999 },
@@ -72,13 +60,12 @@ export function EditWorkspaceDialog({
           </DialogTitle>
         </DialogHeader>
 
-        {!globalConnectionsEnabled || !isLoadingConnections ? (
+        {!isLoadingConnections ? (
           <EditWorkspaceForm
             onClose={onClose}
             workspaceId={workspaceId}
             initialValues={initialValues}
             globalConnections={globalConnections}
-            globalConnectionsEnabled={globalConnectionsEnabled}
           />
         ) : (
           <SkeletonList numberOfItems={3} className="h-10" />
@@ -92,17 +79,13 @@ const EditWorkspaceForm = ({
   onClose,
   workspaceId,
   initialValues,
-  globalConnectionsEnabled,
 }: {
   onClose: () => void;
   workspaceId: string;
   initialValues?: EditWorkspaceDialogProps['initialValues'];
   globalConnections: ConnectionWithoutSensitiveData[];
-  globalConnectionsEnabled: boolean;
 }) => {
   const { checkAccess } = useAuthorization();
-  const { tenant } = tenantHooks.useCurrentTenant();
-  const tenantRole = userHooks.getCurrentUserTenantRole();
   const queryClient = useQueryClient();
 
   const { mutate, isPending } = workspaceCollectionUtils.useUpdateWorkspace(
@@ -143,7 +126,7 @@ const EditWorkspaceForm = ({
           });
         })}
       >
-        {globalConnectionsEnabled && <GlobalConnectionWarning />}
+        <GlobalConnectionWarning />
         <FormField
           name="displayName"
           render={({ field }) => (
@@ -159,27 +142,6 @@ const EditWorkspaceForm = ({
             </FormItem>
           )}
         />
-
-        {tenant.plan.embeddingEnabled && tenantRole === TenantRole.ADMIN && (
-          <FormField
-            name="externalId"
-            render={({ field }) => (
-              <FormItem>
-                <Label htmlFor="externalId">{t('External ID')}</Label>
-                <FormDescription>
-                  {t('Used to identify the workspace based on your SaaS ID')}
-                </FormDescription>
-                <Input
-                  {...field}
-                  id="externalId"
-                  placeholder={t('org-3412321')}
-                  className="rounded-sm"
-                />
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
 
         <DialogFooter className="justify-end mt-6">
           <Button type="button" variant="outline" onClick={onClose}>

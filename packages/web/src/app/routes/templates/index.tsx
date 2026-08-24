@@ -14,26 +14,16 @@ import { SearchInput } from '@/components/custom/search-input';
 import { Button } from '@/components/ui/button';
 import { templatesTelemetryApi, templatesHooks } from '@/features/templates';
 import { workflowHooks } from '@/features/workflows';
-import { tenantHooks } from '@/hooks/tenant-hooks';
 import { DASHBOARD_CONTENT_PADDING_X } from '@/lib/utils';
 
-import { AllCategoriesView } from './all-categories-view';
-import { CategoryFilterCarousel } from './category-filter-carousel';
 import { EmptyTemplatesView } from './empty-templates-view';
 import { SelectedCategoryView } from './selected-category-view';
 
 const TemplatesPage = () => {
   const navigate = useNavigate();
-  const { data: templateCategories } = templatesHooks.useTemplateCategories();
-  const { tenant } = tenantHooks.useCurrentTenant();
-  const isShowingOfficialTemplates = !tenant.plan.manageTemplatesEnabled;
-  const { templates, isLoading, search, setSearch, category, setCategory } =
-    templatesHooks.useTemplates(
-      isShowingOfficialTemplates ? TemplateType.OFFICIAL : TemplateType.CUSTOM,
-    );
+  const { templates, isLoading, search, setSearch, category } =
+    templatesHooks.useTemplates(TemplateType.CUSTOM);
   const selectedCategory = category as string;
-  const { data: allOfficialTemplates, isLoading: isAllTemplatesLoading } =
-    templatesHooks.useAllOfficialTemplates();
   const { mutate: createWorkflow, isPending: isCreateWorkflowPending } =
     workflowHooks.useStartFromScratch(UncategorizedFolderId);
 
@@ -54,46 +44,9 @@ const TemplatesPage = () => {
     [navigate],
   );
 
-  const templatesByCategory = useMemo(() => {
-    const grouped: Record<string, Template[]> = {} as Record<
-      string,
-      Template[]
-    >;
+  const selectedCategoryTemplates = useMemo(() => templates || [], [templates]);
 
-    if (isShowingOfficialTemplates) {
-      allOfficialTemplates?.forEach((template: Template) => {
-        if (template.categories?.length) {
-          template.categories?.forEach((category: string) => {
-            if (!grouped[category]) {
-              grouped[category] = [];
-            }
-            grouped[category].push(template);
-          });
-        }
-      });
-    }
-
-    return grouped;
-  }, [allOfficialTemplates, isShowingOfficialTemplates]);
-
-  const categories = useMemo(() => {
-    return ['All', ...(templateCategories || [])];
-  }, [templateCategories]);
-
-  const selectedCategoryTemplates = useMemo(() => {
-    if (selectedCategory === 'All') {
-      return templates || [];
-    }
-    return templatesByCategory[selectedCategory] || [];
-  }, [selectedCategory, templates, templatesByCategory]);
-
-  const showLoading =
-    isLoading || (isShowingOfficialTemplates && isAllTemplatesLoading);
-  const showAllCategories =
-    isShowingOfficialTemplates && selectedCategory === 'All';
   const hasTemplates = templates && templates.length > 0;
-  const showCategoryTitleForOfficialTemplates =
-    isShowingOfficialTemplates && selectedCategory !== 'All';
 
   return (
     <div>
@@ -103,56 +56,37 @@ const TemplatesPage = () => {
             showSidebarToggle={true}
             className="static"
             title={
-              <>
-                <div className="flex flex-row w-full justify-between gap-1">
-                  <SearchInput
-                    value={search}
-                    onChange={handleSearchChange}
-                    placeholder={t('Search templates by name or description')}
-                  ></SearchInput>
-                  <div className="flex flex-row justify-end w-[50%]">
-                    <Button
-                      variant="outline"
-                      className="gap-2 h-full"
-                      onClick={() => createWorkflow()}
-                      disabled={isCreateWorkflowPending}
-                    >
-                      <Plus className="w-4 h-4" />
-                      {t('Start from scratch')}
-                    </Button>
-                  </div>
+              <div className="flex flex-row w-full justify-between gap-1">
+                <SearchInput
+                  value={search}
+                  onChange={handleSearchChange}
+                  placeholder={t('Search templates by name or description')}
+                ></SearchInput>
+                <div className="flex flex-row justify-end w-[50%]">
+                  <Button
+                    variant="outline"
+                    className="gap-2 h-full"
+                    onClick={() => createWorkflow()}
+                    disabled={isCreateWorkflowPending}
+                  >
+                    <Plus className="w-4 h-4" />
+                    {t('Start from scratch')}
+                  </Button>
                 </div>
-              </>
+              </div>
             }
           ></PageHeader>
-
-          {isShowingOfficialTemplates && categories && (
-            <CategoryFilterCarousel
-              categories={categories}
-              selectedCategory={selectedCategory}
-              onCategorySelect={setCategory}
-            />
-          )}
         </div>
         <div className={DASHBOARD_CONTENT_PADDING_X}>
-          {!hasTemplates && !showLoading ? (
+          {!hasTemplates && !isLoading ? (
             <EmptyTemplatesView />
-          ) : showAllCategories ? (
-            <AllCategoriesView
-              templatesByCategory={templatesByCategory}
-              categories={categories}
-              onCategorySelect={setCategory}
-              onTemplateSelect={handleTemplateSelect}
-              isLoading={showLoading}
-              hideHeader={!isShowingOfficialTemplates}
-            />
           ) : (
             <SelectedCategoryView
               category={selectedCategory}
               templates={selectedCategoryTemplates}
               onTemplateSelect={handleTemplateSelect}
-              isLoading={showLoading}
-              showCategoryTitle={showCategoryTitleForOfficialTemplates}
+              isLoading={isLoading}
+              showCategoryTitle={false}
             />
           )}
         </div>

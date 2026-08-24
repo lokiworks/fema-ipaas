@@ -22,7 +22,6 @@ import {
 } from '@/components/ui/resizable-panel';
 import { componentsHooks } from '@/features/components';
 import { connectorsHooks } from '@/features/connectors';
-import { tenantHooks } from '@/hooks/tenant-hooks';
 import { useElementSize } from '@/hooks/use-element-size';
 import { cn } from '@/lib/utils';
 
@@ -45,7 +44,6 @@ const DEFAULT_MIN_SIZE = '400px';
 const SPLIT_MODE_COLLAPSE_THRESHOLD_PX = 700;
 
 const BuilderPage = () => {
-  const { tenant } = tenantHooks.useCurrentTenant();
   const [
     workflowVersion,
     rightSidebar,
@@ -177,10 +175,7 @@ const BuilderPage = () => {
                 ></CanvasControls>
               )}
 
-            <ShowPoweredBy
-              position="absolute"
-              show={tenant?.plan.showPoweredBy}
-            />
+            <ShowPoweredBy position="absolute" show={false} />
             <DataSelector
               parentHeight={middlePanelSize.height}
               parentWidth={middlePanelSize.width}

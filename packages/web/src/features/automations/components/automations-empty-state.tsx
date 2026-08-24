@@ -207,12 +207,9 @@ export const AutomationsEmptyState = ({
   );
 
   const { tenant } = tenantHooks.useCurrentTenant();
-  const isShowingOfficialTemplates = !tenant.plan.manageTemplatesEnabled;
 
   const { templates, isLoading: isLoadingTemplates } =
-    templatesHooks.useTemplates(
-      isShowingOfficialTemplates ? TemplateType.OFFICIAL : TemplateType.CUSTOM,
-    );
+    templatesHooks.useTemplates(TemplateType.CUSTOM);
 
   const { mutate: createWorkflow, isPending: isCreateWorkflowPending } =
     workflowHooks.useStartFromScratch(UncategorizedFolderId);

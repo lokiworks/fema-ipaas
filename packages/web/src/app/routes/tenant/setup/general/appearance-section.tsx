@@ -77,7 +77,6 @@ const THEME_COLOR_FIELDS: { name: FieldPath<FromSchema>; label: string }[] = [
 export const AppearanceSection = () => {
   const { tenant } = tenantHooks.useCurrentTenant();
   const branding = flagsHooks.useWebsiteBranding();
-  const brandingLocked = !tenant.plan.customAppearanceEnabled;
 
   const form = useForm<FromSchema>({
     defaultValues: {
@@ -123,16 +122,14 @@ export const AppearanceSection = () => {
 
       const formdata = new FormData();
       formdata.append('name', name);
-      if (!brandingLocked) {
-        formdata.append('primaryColor', color);
-        formdata.append(
-          'themeColors',
-          customThemeColors ? JSON.stringify(themeColors) : 'null',
-        );
-        if (logo) formdata.append('fullLogo', logo);
-        if (icon) formdata.append('logoIcon', icon);
-        if (favicon) formdata.append('favIcon', favicon);
-      }
+      formdata.append('primaryColor', color);
+      formdata.append(
+        'themeColors',
+        customThemeColors ? JSON.stringify(themeColors) : 'null',
+      );
+      if (logo) formdata.append('fullLogo', logo);
+      if (icon) formdata.append('logoIcon', icon);
+      if (favicon) formdata.append('favIcon', favicon);
 
       await tenantApi.updateWithFormData(formdata, tenant.id);
       window.location.reload();
@@ -183,7 +180,6 @@ export const AppearanceSection = () => {
                         defaultFileName={tenant?.fullLogoUrl}
                         accept="image/*"
                         id="logoFile"
-                        disabled={brandingLocked}
                         className="rounded-sm"
                       />
                     </div>
@@ -203,7 +199,6 @@ export const AppearanceSection = () => {
                         defaultFileName={tenant?.logoIconUrl}
                         accept="image/*"
                         id="iconFile"
-                        disabled={brandingLocked}
                         className="rounded-sm"
                       />
                     </div>
@@ -225,7 +220,6 @@ export const AppearanceSection = () => {
                         defaultFileName={tenant?.favIconUrl}
                         accept="image/*"
                         id="faviconFile"
-                        disabled={brandingLocked}
                         className="rounded-sm"
                       />
                     </div>
@@ -241,7 +235,6 @@ export const AppearanceSection = () => {
                     <FormLabel htmlFor="color">{t('Primary Color')}</FormLabel>
                     <div className="flex flex-row gap-2 items-center">
                       <ColorPicker
-                        disabled={brandingLocked}
                         value={field.value as string}
                         onChange={(color: string) => field.onChange(color)}
                         className="flex flex-row gap-2 items-center"
@@ -263,7 +256,6 @@ export const AppearanceSection = () => {
                     <div className="flex flex-row gap-2 items-center">
                       <Switch
                         id="customThemeColors"
-                        disabled={brandingLocked}
                         checked={field.value}
                         onCheckedChange={field.onChange}
                       />
@@ -277,7 +269,7 @@ export const AppearanceSection = () => {
                 )}
               />
 
-              {form.watch('customThemeColors') && !brandingLocked && (
+              {form.watch('customThemeColors') && (
                 <div className="grid grid-cols-3 gap-4">
                   {THEME_COLOR_FIELDS.map(({ name, label }) => (
                     <FormField

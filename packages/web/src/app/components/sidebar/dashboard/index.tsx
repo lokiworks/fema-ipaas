@@ -40,7 +40,6 @@ import {
   getWorkspaceName,
 } from '@/features/workspaces';
 import { useIsTenantAdmin } from '@/hooks/authorization-hooks';
-import { tenantHooks } from '@/hooks/tenant-hooks';
 import { userHooks } from '@/hooks/user-hooks';
 import { cn } from '@/lib/utils';
 
@@ -65,29 +64,16 @@ export function WorkspaceDashboardSidebar({
   const [searchOpen, setSearchOpen] = useState(false);
   const navigate = useNavigate();
   const { data: currentUser } = userHooks.useCurrentUser();
-  const { tenant } = tenantHooks.useCurrentTenant();
   useEffect(() => {
     if (!searchOpen) {
       setSearchQuery('');
     }
   }, [searchOpen]);
 
-  const shouldShowNewWorkspaceButton = useMemo(() => {
-    if (tenant.plan.billedTeamWorkspacesLimit === 0) {
-      return false;
-    }
-    return currentUser?.tenantRole === TenantRole.ADMIN;
-  }, [tenant.plan.billedTeamWorkspacesLimit]);
-
-  const shouldShowSearchButton = useMemo(() => {
-    if (tenant.plan.billedTeamWorkspacesLimit === 0) {
-      return false;
-    }
-    return true;
-  }, [tenant.plan.billedTeamWorkspacesLimit]);
+  const shouldShowNewWorkspaceButton =
+    currentUser?.tenantRole === TenantRole.ADMIN;
 
   const shouldShowInlineAddButton =
-    tenant.plan.billedTeamWorkspacesLimit !== 0 &&
     currentUser?.tenantRole === TenantRole.ADMIN &&
     workspaces.filter((workspace) => workspace.type === WorkspaceType.TEAM)
       .length === 0;
@@ -202,33 +188,31 @@ export function WorkspaceDashboardSidebar({
                     }}
                   />
                 )}
-                {shouldShowSearchButton && (
-                  <Popover open={searchOpen} onOpenChange={setSearchOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 hover:bg-accent"
-                      >
-                        <Search />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent
-                      className="w-[280px] p-3"
-                      align="start"
-                      side="right"
-                      sideOffset={8}
+                <Popover open={searchOpen} onOpenChange={setSearchOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 hover:bg-accent"
                     >
-                      <SearchInput
-                        placeholder={t('Search workspaces...')}
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e)}
-                        className="h-8"
-                        autoFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                )}
+                      <Search />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="w-[280px] p-3"
+                    align="start"
+                    side="right"
+                    sideOffset={8}
+                  >
+                    <SearchInput
+                      placeholder={t('Search workspaces...')}
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e)}
+                      className="h-8"
+                      autoFocus
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
             <div

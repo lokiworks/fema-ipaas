@@ -1,5 +1,5 @@
 import { isNil, Permission } from '@fema-ipaas/core-utils';
-import { ApFlagId, TenantRole, WorkspaceType } from '@fema-ipaas/shared';
+import { ApFlagId, WorkspaceType } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { UsersRound, Lock } from 'lucide-react';
 import { useState } from 'react';
@@ -22,8 +22,6 @@ import {
 import { ApWorkspaceDisplay } from '@/features/workspaces/components/ap-workspace-display';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { flagsHooks } from '@/hooks/flags-hooks';
-import { tenantHooks } from '@/hooks/tenant-hooks';
-import { userHooks } from '@/hooks/user-hooks';
 
 import { WorkspaceSettingsDialog } from '../workspace-settings';
 
@@ -35,7 +33,6 @@ export const WorkspaceDashboardPageHeader = ({
   description?: React.ReactNode;
 }) => {
   const { workspace } = workspaceCollectionUtils.useCurrentWorkspace();
-  const { tenant } = tenantHooks.useCurrentTenant();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsInitialTab, setSettingsInitialTab] = useState<
     'general' | 'members' | 'alerts' | 'connectors' | 'environment'
@@ -43,7 +40,6 @@ export const WorkspaceDashboardPageHeader = ({
   const location = useLocation();
   const activeWorkspaceMembers = undefined as { length: number } | undefined;
   const { checkAccess } = useAuthorization();
-  const { data: user } = userHooks.useCurrentUser();
   const userHasPermissionToReadWorkspaceMembers = checkAccess(
     Permission.READ_WORKSPACE_MEMBER,
   );
@@ -60,9 +56,7 @@ export const WorkspaceDashboardPageHeader = ({
 
   const isWorkspacePage = location.pathname.includes('/workspaces/');
 
-  const hasGeneralSettings =
-    workspace.type === WorkspaceType.TEAM ||
-    (tenant.plan.embeddingEnabled && user?.tenantRole === TenantRole.ADMIN);
+  const hasGeneralSettings = workspace.type === WorkspaceType.TEAM;
 
   const getFirstAvailableTab = ():
     | 'general'

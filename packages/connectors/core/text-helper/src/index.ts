@@ -18,7 +18,7 @@ export const textHelper = createConnector({
   description: 'Tools for text processing',
   auth: ConnectorAuth.None(),
   minimumSupportedRelease: '0.36.1',
-  logoUrl: 'https://cdn.fema.local/connectors/new-core/text-helper.svg',
+  logoUrl: '/assets/connectors/text-helper.svg',
   authors: [
     'joeworkman',
     'kishanprmr',

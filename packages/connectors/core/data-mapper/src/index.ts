@@ -7,7 +7,7 @@ export const dataMapper = createConnector({
   description: 'tools to manipulate data structure',
 
   minimumSupportedRelease: '0.30.0',
-  logoUrl: 'https://cdn.fema.local/connectors/new-core/data-mapper.svg',
+  logoUrl: '/assets/connectors/data-mapper.svg',
   auth: ConnectorAuth.None(),
   categories: [ConnectorCategory.CORE],
   authors: ["kishanprmr","MoShizzle","AbdulTheActiveConnectorr","khaledmashaly","abuaboud"],

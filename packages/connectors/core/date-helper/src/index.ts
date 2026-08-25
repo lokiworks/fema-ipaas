@@ -17,7 +17,7 @@ export const utilityDate = createConnector({
   auth: ConnectorAuth.None(),
   minimumSupportedRelease: '0.36.1',
   categories: [ConnectorCategory.CORE],
-  logoUrl: 'https://cdn.fema.local/connectors/new-core/date-helper.svg',
+  logoUrl: '/assets/connectors/date-helper.svg',
   authors: [
     'joeworkman',
     'kishanprmr',

@@ -1,21 +1,12 @@
-import { WorkflowTriggerType } from '@fema-ipaas/shared';
 import { StoreApi } from 'zustand';
 
 import { RightSideBarType } from '@/app/builder/types';
-import { StepMetadataWithSuggestions } from '@/features/connectors';
+import {
+  ConnectorSelectorOperation,
+  StepMetadataWithSuggestions,
+} from '@/features/connectors';
 
 import { BuilderState } from '../builder-hooks';
-
-export type ConnectorSelectorState = {
-  openedConnectorSelectorStepNameOrAddButtonId: string | null;
-  setOpenedConnectorSelectorStepNameOrAddButtonId: (
-    stepNameOrAddButtonId: string | null,
-  ) => void;
-  selectedConnectorMetadataInConnectorSelector: StepMetadataWithSuggestions | null;
-  setSelectedConnectorMetadataInConnectorSelector: (
-    metadata: StepMetadataWithSuggestions | null,
-  ) => void;
-};
 
 export const createConnectorSelectorState = (
   _: StoreApi<BuilderState>['getState'],
@@ -23,18 +14,29 @@ export const createConnectorSelectorState = (
 ): ConnectorSelectorState => {
   return {
     openedConnectorSelectorStepNameOrAddButtonId: null,
+    connectorSelectorOperation: null,
     setOpenedConnectorSelectorStepNameOrAddButtonId: (
       stepNameOrAddButtonId: string | null,
+      operation?: ConnectorSelectorOperation,
     ) => {
       return set((state) => {
-        const isReplacingEmptyTrigger =
-          state.workflowVersion.trigger.type === WorkflowTriggerType.EMPTY &&
-          stepNameOrAddButtonId === 'trigger';
+        if (stepNameOrAddButtonId === null) {
+          return {
+            openedConnectorSelectorStepNameOrAddButtonId: null,
+            connectorSelectorOperation: null,
+            selectedConnectorMetadataInConnectorSelector: null,
+            rightSidebar:
+              state.rightSidebar === RightSideBarType.CONNECTOR_PICKER
+                ? RightSideBarType.NONE
+                : state.rightSidebar,
+          };
+        }
         return {
           openedConnectorSelectorStepNameOrAddButtonId: stepNameOrAddButtonId,
-          rightSidebar: isReplacingEmptyTrigger
-            ? RightSideBarType.NONE
-            : state.rightSidebar,
+          connectorSelectorOperation:
+            operation ?? state.connectorSelectorOperation,
+          selectedConnectorMetadataInConnectorSelector: null,
+          rightSidebar: RightSideBarType.CONNECTOR_PICKER,
         };
       });
     },
@@ -47,4 +49,17 @@ export const createConnectorSelectorState = (
       }));
     },
   };
+};
+
+export type ConnectorSelectorState = {
+  openedConnectorSelectorStepNameOrAddButtonId: string | null;
+  connectorSelectorOperation: ConnectorSelectorOperation | null;
+  setOpenedConnectorSelectorStepNameOrAddButtonId: (
+    stepNameOrAddButtonId: string | null,
+    operation?: ConnectorSelectorOperation,
+  ) => void;
+  selectedConnectorMetadataInConnectorSelector: StepMetadataWithSuggestions | null;
+  setSelectedConnectorMetadataInConnectorSelector: (
+    metadata: StepMetadataWithSuggestions | null,
+  ) => void;
 };

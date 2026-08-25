@@ -6,7 +6,7 @@ export const connections = createConnector({
   displayName: 'Connections',
   description: 'Read connections dynamically',
   minimumSupportedRelease: '0.36.1',
-  logoUrl: 'https://cdn.fema.local/connectors/new-core/connections.svg',
+  logoUrl: '/assets/connectors/connections.svg',
   categories: [ConnectorCategory.CORE],
   auth: ConnectorAuth.None(),
   authors: ["kishanprmr","AbdulTheActiveConnectorr","khaledmashaly","abuaboud"],

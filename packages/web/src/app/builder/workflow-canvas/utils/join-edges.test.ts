@@ -33,6 +33,7 @@ const version = (
     type: WorkflowTriggerType.EMPTY,
     settings: {},
     valid: true,
+    lastUpdatedDate: '2024-01-01T00:00:00.000Z',
     nextAction: {
       name: 'step_1',
       displayName: 'Step 1',

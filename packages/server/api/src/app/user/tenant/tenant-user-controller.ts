@@ -20,6 +20,16 @@ export const tenantUserController: FastifyPluginAsyncZod = async (app) => {
         })
     })
 
+    app.get('/:id', GetUserRequest, async (req) => {
+        const tenantId = req.principal.tenant.id
+        assertNotNullOrUndefined(tenantId, 'tenantId')
+
+        return userService(req.log).getOneByIdAndTenantIdOrThrow({
+            id: req.params.id,
+            tenantId,
+        })
+    })
+
     app.post('/:id', UpdateUserRequest, async (req) => {
         const tenantId = req.principal.tenant.id
         assertNotNullOrUndefined(tenantId, 'tenantId')
@@ -62,6 +72,23 @@ const ListUsersRequest = {
     },
     config: {
         security: securityAccess.nonEmbedUsersOnly([PrincipalType.USER, PrincipalType.SERVICE]),
+    },
+}
+
+const GetUserRequest = {
+    schema: {
+        params: z.object({
+            id: EntityId,
+        }),
+        response: {
+            [StatusCodes.OK]: UserWithMetaInformation,
+        },
+        tags: ['users'],
+        description: 'Get user by id',
+        security: [SERVICE_KEY_SECURITY_OPENAPI],
+    },
+    config: {
+        security: securityAccess.publicTenant([PrincipalType.USER, PrincipalType.SERVICE]),
     },
 }
 

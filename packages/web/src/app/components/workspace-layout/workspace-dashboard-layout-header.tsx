@@ -21,8 +21,8 @@ import { WorkspaceDashboardPageHeader } from './workspace-dashboard-page-header'
 import { WorkspaceDashboardLayoutHeaderTab } from '.';
 
 type AnimatedIconHandle = {
-  startAnimation: () => void;
-  stopAnimation: () => void;
+  startAnimation?: () => void;
+  stopAnimation?: () => void;
 };
 
 const AnimatedTab = ({
@@ -35,12 +35,12 @@ const AnimatedTab = ({
   onClick: () => void;
 }) => {
   const iconRef = useRef<AnimatedIconHandle>(null);
-  const IconComponent = tab.icon as React.ForwardRefExoticComponent<
+  const IconComponent: React.ComponentType<
     {
       className?: string;
       size?: number;
     } & React.RefAttributes<AnimatedIconHandle>
-  >;
+  > = tab.icon;
 
   return (
     <TabsTrigger
@@ -49,8 +49,8 @@ const AnimatedTab = ({
       className="pb-3"
       onClick={onClick}
       data-state={isActive ? 'active' : 'inactive'}
-      onMouseEnter={() => iconRef.current?.startAnimation()}
-      onMouseLeave={() => iconRef.current?.stopAnimation()}
+      onMouseEnter={() => iconRef.current?.startAnimation?.()}
+      onMouseLeave={() => iconRef.current?.stopAnimation?.()}
     >
       <IconComponent ref={iconRef} size={16} className="mr-2" />
       {tab.label}

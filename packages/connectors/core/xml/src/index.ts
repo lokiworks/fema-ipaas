@@ -8,7 +8,7 @@ export const xml = createConnector({
   description: 'Extensible Markup Language for storing and transporting data',
 
   minimumSupportedRelease: '0.30.0',
-  logoUrl: 'https://cdn.fema.local/connectors/xml.png',
+  logoUrl: '/assets/connectors/xml.svg',
   categories: [ConnectorCategory.CORE],
   auth: ConnectorAuth.None(),
   authors: ["Willianwg","kishanprmr","AbdulTheActiveConnectorr","khaledmashaly","abuaboud"],

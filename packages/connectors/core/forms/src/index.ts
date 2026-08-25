@@ -10,7 +10,7 @@ export const forms = createConnector({
   auth: ConnectorAuth.None(),
   minimumSupportedRelease: '0.65.0',
   categories: [ConnectorCategory.CORE],
-  logoUrl: 'https://cdn.fema.local/connectors/new-core/human-input.svg',
+  logoUrl: '/assets/connectors/human-input.svg',
   authors: ['anasbarg', 'MoShizzle', 'abuaboud'],
   actions: [returnResponse],
   triggers: [onFormSubmission, onChatSubmission],

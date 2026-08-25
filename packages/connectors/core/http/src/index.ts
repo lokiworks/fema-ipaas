@@ -5,7 +5,7 @@ import { parseUrl } from './lib/actions/parse-url';
 export const http = createConnector({
   displayName: 'HTTP',
   description: 'Sends HTTP requests and return responses',
-  logoUrl: 'https://cdn.fema.local/connectors/new-core/http.svg',
+  logoUrl: '/assets/connectors/http.svg',
   categories: [ConnectorCategory.CORE],
   auth: ConnectorAuth.None(),
   minimumSupportedRelease: '0.20.3',

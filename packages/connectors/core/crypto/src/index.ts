@@ -13,7 +13,7 @@ export const Crypto = createConnector({
   description: 'Generate random passwords and hash existing text',
   auth: ConnectorAuth.None(),
   minimumSupportedRelease: '0.30.0',
-  logoUrl: 'https://cdn.fema.local/connectors/new-core/crypto.svg',
+  logoUrl: '/assets/connectors/crypto.svg',
   categories: [ConnectorCategory.CORE],
   authors: ['AbdullahBitar', 'kishanprmr', 'abuaboud', 'matthieu-lombard', 'antonyvigouret', 'danielpoonwj', 'prasanna2000-max'],
   actions: [hashText, hmacSignature, rsaSignature, generatePassword, base64Decode, base64Encode, openpgpEncrypt],

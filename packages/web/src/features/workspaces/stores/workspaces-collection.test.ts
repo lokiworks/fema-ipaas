@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { ConnectorsFilterType, WorkspaceType } from '@fema-ipaas/shared';
+import { WorkspaceType } from '@fema-ipaas/shared';
 import type { WorkspaceWithLimits } from '@fema-ipaas/shared';
 import {
   and,
@@ -56,19 +56,7 @@ function makeWorkspace(
     releasesEnabled: false,
     notifyWorkflowOwnerOnFailure: false,
     metadata: null,
-    plan: {
-      id: `plan${id}`,
-      created: '2024-01-01T00:00:00.000Z',
-      updated: '2024-01-01T00:00:00.000Z',
-      workspaceId: id,
-      locked: false,
-      name: 'default',
-      connectorsFilterType: ConnectorsFilterType.NONE,
-      connectors: [],
-    },
     analytics: {
-      totalUsers: 0,
-      activeUsers: 0,
       totalWorkflows: 0,
       activeWorkflows: 0,
     },

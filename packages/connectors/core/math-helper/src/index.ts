@@ -15,7 +15,7 @@ export const math = createConnector({
   description: markdownDescription,
   auth: ConnectorAuth.None(),
   minimumSupportedRelease: '0.36.1',
-  logoUrl: 'https://cdn.fema.local/connectors/new-core/math-helper.svg',
+  logoUrl: '/assets/connectors/math-helper.svg',
   categories: [ConnectorCategory.CORE],
   authors: ["kishanprmr","MoShizzle","abuaboud"],
   actions: [

@@ -7,7 +7,7 @@ export const manualTriggerConnector = createConnector({
       displayName: "Manual Trigger",
       auth: ConnectorAuth.None(),
       minimumSupportedRelease: '0.78.0',
-      logoUrl: "https://cdn.fema.local/connectors/new-core/manual-trigger.svg",
+      logoUrl: "/assets/connectors/manual-trigger.svg",
       authors: ['AbdulTheActiveConnectorr'],
       actions: [],
       triggers: [manualTrigger],

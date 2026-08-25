@@ -11,7 +11,7 @@ export const workflows = createConnector({
   auth: ConnectorAuth.None(),
   minimumSupportedRelease: '0.82.0',
   categories: [ConnectorCategory.CORE, ConnectorCategory.WORKFLOW_CONTROL],
-  logoUrl: 'https://cdn.fema.local/connectors/new-core/subflows.svg',
+  logoUrl: '/assets/connectors/subflows.svg',
   authors: ['hazemadelkhalel'],
   actions: [callWorkflow, streamCsvToSubflows, response],
   triggers: [callableWorkflow],

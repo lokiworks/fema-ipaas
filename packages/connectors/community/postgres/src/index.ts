@@ -93,7 +93,7 @@ export const postgres = createConnector({
   description: "The world's most advanced open-source relational database",
   minimumSupportedRelease: '0.30.0',
   categories: [ConnectorCategory.DEVELOPER_TOOLS],
-  logoUrl: 'https://cdn.fema.local/connectors/postgres.png',
+  logoUrl: '/assets/connectors/postgres.svg',
   authors: ["AbdullahBitar", "Willianwg", "dentych", "kishanprmr", "AbdulTheActiveConnectorr", "khaledmashaly", "abuaboud"],
   auth: postgresAuth,
   actions: [findRows, insertRow, updateRow, deleteRow, getTables, runQuery],

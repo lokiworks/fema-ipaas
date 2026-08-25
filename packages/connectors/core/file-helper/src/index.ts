@@ -13,7 +13,7 @@ export const filesHelper = createConnector({
   description: 'Read file content and return it in different formats.',
   auth: ConnectorAuth.None(),
   minimumSupportedRelease: '0.30.0',
-  logoUrl: 'https://cdn.fema.local/connectors/new-core/file-helper.svg',
+  logoUrl: '/assets/connectors/file-helper.svg',
   categories: [ConnectorCategory.CORE],
   authors: ['kishanprmr', 'MoShizzle', 'abuaboud', 'Seb-C', 'danielpoonwj'],
   actions: [

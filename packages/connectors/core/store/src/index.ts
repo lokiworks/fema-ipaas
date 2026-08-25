@@ -11,7 +11,7 @@ export const storage = createConnector({
   displayName: 'Storage',
   description: 'Store or retrieve data from key/value database',
   minimumSupportedRelease: '0.30.0',
-  logoUrl: 'https://cdn.fema.local/connectors/new-core/store.svg',
+  logoUrl: '/assets/connectors/store.svg',
   categories: [ConnectorCategory.CORE],
   auth: ConnectorAuth.None(),
   authors: ["JanHolger","fardeenpanjwani-codeglo","Abdallah-Alwarawreh","Salem-Alaa","kishanprmr","MoShizzle","khaledmashaly","abuaboud"],

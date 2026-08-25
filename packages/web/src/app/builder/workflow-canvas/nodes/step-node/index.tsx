@@ -68,7 +68,11 @@ const StepCanvasNode = React.memo(
     );
     const chevronClickOverride =
       step.type === WorkflowTriggerType.EMPTY
-        ? () => setOpenedConnectorSelectorStepNameOrAddButtonId(step.name)
+        ? () =>
+            setOpenedConnectorSelectorStepNameOrAddButtonId(step.name, {
+              type: getConnectorSelectorOperationType(step),
+              stepName: step.name,
+            })
         : undefined;
 
     const { attributes, listeners, setNodeRef } = useDraggable({

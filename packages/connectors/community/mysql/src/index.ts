@@ -43,7 +43,7 @@ export const mysql = createConnector({
   description: "The world's most popular open-source database",
 
   minimumSupportedRelease: '0.30.0',
-  logoUrl: 'https://cdn.fema.local/connectors/mysql.png',
+  logoUrl: '/assets/connectors/mysql.svg',
   categories: [ConnectorCategory.DEVELOPER_TOOLS],
   authors: ["JanHolger","kishanprmr","khaledmashaly","abuaboud"],
   auth: mysqlAuth,

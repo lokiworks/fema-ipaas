@@ -9,7 +9,7 @@ const TICKS_PER_SCENE = SCENE_DURATION_MS / TICK_INTERVAL_MS;
 const TYPING_INTERVAL_MS = 20;
 const MORPHING_DURATION_MS = 800;
 
-const CDN = 'https://cdn.fema.local/connectors';
+const CDN = '/assets/connectors';
 
 const FULL_PROMPT =
   'When a new lead arrives, research their company and role. Score them 1-10 based on fit. If score > 7, ask me on Slack before sending a discount.';
@@ -376,7 +376,7 @@ function AgentCard({
                     <div className="flex items-center gap-2.5">
                       <div className="w-7 h-7 rounded-md bg-white border border-gray-200 flex items-center justify-center flex-shrink-0">
                         <img
-                          src={`${CDN}/hubspot.png`}
+                          src={`${CDN}/hubspot.svg`}
                           className="w-4 h-4"
                           alt=""
                         />
@@ -417,7 +417,7 @@ function AgentCard({
                           className="w-7 h-7 rounded-md bg-white border border-gray-200 flex items-center justify-center flex-shrink-0"
                         >
                           <img
-                            src={`${CDN}/${connector}.png`}
+                            src={`${CDN}/${connector}.svg`}
                             className="w-4 h-4"
                             alt=""
                           />
@@ -520,7 +520,7 @@ function Scene1({
                   className="group/icon relative w-12 h-12 rounded-lg bg-white border border-gray-200 p-2 hover:border-violet-400 hover:scale-105 hover:bg-violet-50 transition-all duration-150 cursor-pointer flex items-center justify-center hover:z-[100]"
                 >
                   <img
-                    src={`${CDN}/${app.slug}.png`}
+                    src={`${CDN}/${app.slug}.svg`}
                     alt={app.name}
                     className="w-7 h-7 object-contain pointer-events-none"
                   />
@@ -633,7 +633,7 @@ function Scene2({
           <WorkflowNode
             icon={
               <img
-                src={`${CDN}/hubspot.png`}
+                src={`${CDN}/hubspot.svg`}
                 className="w-[19px] h-[19px]"
                 alt=""
               />
@@ -678,7 +678,7 @@ function Scene2({
           <WorkflowNode
             icon={
               <img
-                src={`${CDN}/salesforce.png`}
+                src={`${CDN}/salesforce.svg`}
                 className="w-[19px] h-[19px]"
                 alt=""
               />
@@ -697,7 +697,7 @@ function Scene2({
           <WorkflowNode
             icon={
               <img
-                src={`${CDN}/slack.png`}
+                src={`${CDN}/slack.svg`}
                 className="w-[19px] h-[19px]"
                 alt=""
               />
@@ -730,7 +730,7 @@ function Scene2({
           <WorkflowNode
             icon={
               <img
-                src={`${CDN}/gmail.png`}
+                src={`${CDN}/gmail.svg`}
                 className="w-[19px] h-[19px]"
                 alt=""
               />

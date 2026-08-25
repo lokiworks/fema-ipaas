@@ -9,7 +9,7 @@ export const dataSummarizer = createConnector({
   displayName: 'Data Summarizer',
   auth: ConnectorAuth.None(),
   minimumSupportedRelease: '0.30.0',
-  logoUrl: 'https://cdn.fema.local/connectors/data-summarizer.svg',
+  logoUrl: '/assets/connectors/data-summarizer.svg',
   authors: ['tahboubali'],
   actions: [calculateAverage, calculateSum, countUniques, getMinMax],
   triggers: [],

@@ -7,7 +7,7 @@ export const tags = createConnector({
   description: 'Add custom tags to your run for filtration',
   auth: ConnectorAuth.None(),
   minimumSupportedRelease: '0.30.0',
-  logoUrl: 'https://cdn.fema.local/connectors/new-core/tags.svg',
+  logoUrl: '/assets/connectors/tags.svg',
   categories: [ConnectorCategory.CORE],
   authors: ["kishanprmr","MoShizzle","abuaboud"],
   actions: [addTag],

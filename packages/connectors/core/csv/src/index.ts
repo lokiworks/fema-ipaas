@@ -8,7 +8,7 @@ export const csv = createConnector({
   displayName: 'CSV',
   description: 'Manipulate CSV text',
   minimumSupportedRelease: '0.30.0',
-  logoUrl: 'https://cdn.fema.local/connectors/new-core/csv.svg',
+  logoUrl: '/assets/connectors/csv.svg',
   auth: ConnectorAuth.None(),
   categories: [ConnectorCategory.CORE],
   actions: [csvToJsonAction, jsonToCsvAction, excelToCsvAction],

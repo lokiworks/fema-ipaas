@@ -10,7 +10,7 @@ export const webhook = createConnector({
   auth: ConnectorAuth.None(),
   categories: [ConnectorCategory.CORE],
   minimumSupportedRelease: '0.82.0',
-  logoUrl: 'https://cdn.fema.local/connectors/new-core/webhooks.svg',
+  logoUrl: '/assets/connectors/webhooks.svg',
   authors: ['abuaboud', 'pfernandez98', 'kishanprmr','AbdulTheActiveConnectorr'],
   actions: [returnResponse,returnResponseAndWaitForNextWebhook],
   triggers: [catchWebhook],

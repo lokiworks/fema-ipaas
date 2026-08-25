@@ -1,5 +1,5 @@
 import { isNil } from '@fema-ipaas/core-utils';
-import { WorkflowTriggerType } from '@fema-ipaas/shared';
+import { WorkflowOperationType, WorkflowTriggerType } from '@fema-ipaas/shared';
 import { StoreApi } from 'zustand';
 
 import { RightSideBarType } from '@/app/builder/types';
@@ -126,11 +126,9 @@ export const createCanvasState = (
     ) => {
       set((state) => {
         const selectedNodes = isNil(selectedStep) ? [] : [selectedStep];
-        const rightSidebar =
+        const isUnconfiguredTrigger =
           selectedStep === 'trigger' &&
-          state.workflowVersion.trigger.type === WorkflowTriggerType.EMPTY
-            ? RightSideBarType.NONE
-            : RightSideBarType.CONNECTOR_SETTINGS;
+          state.workflowVersion.trigger.type === WorkflowTriggerType.EMPTY;
 
         const userPickedDifferentStepDuringRun =
           !options?.fromAutoFocus &&
@@ -138,9 +136,17 @@ export const createCanvasState = (
           state.selectedStep !== selectedStep;
 
         return {
-          openedConnectorSelectorStepNameOrAddButtonId: null,
+          openedConnectorSelectorStepNameOrAddButtonId: isUnconfiguredTrigger
+            ? selectedStep
+            : null,
+          connectorSelectorOperation: isUnconfiguredTrigger
+            ? { type: WorkflowOperationType.UPDATE_TRIGGER }
+            : null,
+          selectedConnectorMetadataInConnectorSelector: null,
           selectedStep,
-          rightSidebar,
+          rightSidebar: isUnconfiguredTrigger
+            ? RightSideBarType.CONNECTOR_PICKER
+            : RightSideBarType.CONNECTOR_SETTINGS,
           selectedBranchIndex: null,
           selectedNodes,
           chatDrawerOpenSource: null,

@@ -26,6 +26,7 @@ import { useElementSize } from '@/hooks/use-element-size';
 import { cn } from '@/lib/utils';
 
 import { BuilderHeader } from './builder-header/builder-header';
+import { ConnectorPickerPanel } from './connector-picker-panel';
 import { NodePalette } from './node-palette';
 import { RunsList } from './run-list';
 import { CursorPositionProvider } from './state/cursor-position-context';
@@ -245,6 +246,9 @@ const BuilderPage = () => {
                   <StepSettingsContainer />
                 </StepSettingsProvider>
               )}
+            {rightSidebar === RightSideBarType.CONNECTOR_PICKER && (
+              <ConnectorPickerPanel />
+            )}
             {rightSidebar === RightSideBarType.RUNS && <RunsList />}
             {rightSidebar === RightSideBarType.VERSIONS && (
               <WorkflowVersionsList />

@@ -1,6 +1,7 @@
 export enum RightSideBarType {
   NONE = 'none',
   CONNECTOR_SETTINGS = 'connector-settings',
+  CONNECTOR_PICKER = 'connector-picker',
   VERSIONS = 'versions',
   RUNS = 'runs',
 }

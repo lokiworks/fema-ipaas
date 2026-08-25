@@ -1,0 +1,158 @@
+packages/web/src/app/builder/connectors-selector/index.tsx
+  s_dea2145f358300::t_db7c046660e5f2 1,4,6,9,12-15,18-22,26-27,31-39
+packages/web/public/assets/connectors/subflows.svg
+  s_dea2145f358300::t_d7edbb292a75c9 1
+packages/web/public/assets/connectors/tags.svg
+  s_dea2145f358300::t_d7edbb292a75c9 1
+packages/web/public/assets/connectors/sap-ariba.svg
+  s_dea2145f358300::t_71afd59f7719a6 1
+packages/web/public/assets/connectors/xml.svg
+  s_dea2145f358300::t_d7edbb292a75c9 1
+packages/connectors/core/manual-trigger/src/index.ts
+  s_dea2145f358300::t_71ac92dd17c439 10
+packages/connectors/core/http/src/index.ts
+  s_dea2145f358300::t_a5fa39348a282f 8
+packages/web/public/assets/connectors/text-helper.svg
+  s_dea2145f358300::t_d7edbb292a75c9 1
+packages/web/src/features/workspaces/stores/workspaces-collection.test.ts
+  s_dea2145f358300::t_a5f33fc2951e41 2
+packages/web/public/assets/connectors/webhooks.svg
+  s_dea2145f358300::t_d7edbb292a75c9 1
+packages/web/public/assets/connectors/csv.svg
+  s_dea2145f358300::t_d7edbb292a75c9 1
+packages/web/public/assets/connectors/fallback.svg
+  s_dea2145f358300::t_d7edbb292a75c9 1
+packages/web/public/assets/connectors/mysql.svg
+  s_dea2145f358300::t_d7edbb292a75c9 1
+packages/connectors/core/csv/src/index.ts
+  s_dea2145f358300::t_a5fa39348a282f 11
+packages/web/public/assets/connectors/intercom.svg
+  s_dea2145f358300::t_71afd59f7719a6 1
+packages/web/public/assets/connectors/microsoft-teams.svg
+  s_dea2145f358300::t_71afd59f7719a6 1
+packages/web/public/assets/connectors/slack.svg
+  s_dea2145f358300::t_71afd59f7719a6 1
+packages/web/public/assets/connectors/http.svg
+  s_dea2145f358300::t_d7edbb292a75c9 1
+packages/web/src/app/builder/types/index.ts
+  s_dea2145f358300::t_20738282b50bcc 4
+packages/web/src/app/builder/connector-picker-panel/index.tsx
+  s_dea2145f358300::t_32304602b86893 1-196
+packages/web/src/features/authentication/components/auth-animation.tsx
+  s_dea2145f358300::t_71afd59f7719a6 12,379,420,523,636,681,700,733
+packages/connectors/core/forms/src/index.ts
+  s_dea2145f358300::t_a5fa39348a282f 13
+packages/web/public/assets/connectors/postgres.svg
+  s_dea2145f358300::t_d7edbb292a75c9 1
+packages/connectors/core/text-helper/src/index.ts
+  s_dea2145f358300::t_a5fa39348a282f 21
+packages/web/public/assets/connectors/data-mapper.svg
+  s_dea2145f358300::t_d7edbb292a75c9 1
+packages/connectors/core/data-summarizer/src/index.ts
+  s_dea2145f358300::t_a5fa39348a282f 12
+packages/connectors/community/mysql/src/index.ts
+  s_dea2145f358300::t_a5fa39348a282f 46
+packages/web/public/assets/connectors/schedule.svg
+  s_dea2145f358300::t_d7edbb292a75c9 1
+packages/web/public/assets/connectors/manual-trigger.svg
+  s_dea2145f358300::t_d7edbb292a75c9 1
+packages/connectors/core/connections/src/index.ts
+  s_dea2145f358300::t_a5fa39348a282f 9
+packages/connectors/community/postgres/src/index.ts
+  s_dea2145f358300::t_a5fa39348a282f 96
+packages/connectors/core/schedule/src/index.ts
+  s_dea2145f358300::t_a5fa39348a282f 12
+packages/server/api/src/app/user/tenant/tenant-user-controller.ts
+  s_dea2145f358300::t_9870fdd75fc53b 23-32,78-92
+  s_dea2145f358300::t_a002d0f80f3f21 93-94
+packages/web/src/app/builder/workflow-canvas/nodes/step-node/index.tsx
+  s_dea2145f358300::t_61be9e83d607c9 71-75
+packages/web/src/app/builder/state/canvas-state.ts
+  s_dea2145f358300::t_0c26e5951b4013 2
+  s_dea2145f358300::t_9e03de68f3d6c9 129,131,139-145,147-149
+packages/web/src/app/guards/permission-guard.tsx
+  s_dea2145f358300::t_91ded501732124 5,15-18
+packages/connectors/core/webhook/src/index.ts
+  s_dea2145f358300::t_a5fa39348a282f 13
+packages/web/public/assets/connectors/date-helper.svg
+  s_dea2145f358300::t_d7edbb292a75c9 1
+packages/connectors/core/data-mapper/src/index.ts
+  s_dea2145f358300::t_a5fa39348a282f 10
+packages/connectors/core/file-helper/src/index.ts
+  s_dea2145f358300::t_a5fa39348a282f 16
+packages/web/src/app/builder/state/connector-selector-state.ts
+  s_dea2145f358300::t_f992c6bda40f38 4-7,17,20,23-33,36-39,53-64
+  s_dea2145f358300::t_9466d41b314fad 65
+packages/web/public/assets/connectors/data-summarizer.svg
+  s_dea2145f358300::t_d7edbb292a75c9 1
+packages/connectors/core/xml/src/index.ts
+  s_dea2145f358300::t_a5fa39348a282f 11
+packages/connectors/core/subflows/src/index.ts
+  s_dea2145f358300::t_a5fa39348a282f 14
+packages/web/public/assets/connectors/human-input.svg
+  s_dea2145f358300::t_d7edbb292a75c9 1
+packages/web/public/assets/connectors/netsuite.svg
+  s_dea2145f358300::t_71afd59f7719a6 1
+packages/web/src/app/builder/index.tsx
+  s_dea2145f358300::t_c9ccd6660532c8 29,249-251
+packages/connectors/core/date-helper/src/index.ts
+  s_dea2145f358300::t_a5fa39348a282f 20
+packages/web/public/assets/connectors/jira.svg
+  s_dea2145f358300::t_71afd59f7719a6 1
+packages/connectors/core/tags/src/index.ts
+  s_dea2145f358300::t_a5fa39348a282f 10
+packages/connectors/core/math-helper/src/index.ts
+  s_dea2145f358300::t_a5fa39348a282f 18
+packages/web/public/assets/connectors/zendesk.svg
+  s_dea2145f358300::t_71afd59f7719a6 1
+packages/web/src/app/components/workspace-layout/workspace-dashboard-layout-header.tsx
+  s_dea2145f358300::t_a9734f3b2aa278 24-25,38,43,52-53
+packages/web/public/assets/connectors/math-helper.svg
+  s_dea2145f358300::t_d7edbb292a75c9 1
+packages/web/public/assets/connectors/connections.svg
+  s_dea2145f358300::t_d7edbb292a75c9 1
+packages/web/public/assets/connectors/gmail.svg
+  s_dea2145f358300::t_71afd59f7719a6 1
+packages/web/public/assets/connectors/snowflake.svg
+  s_dea2145f358300::t_71afd59f7719a6 1
+packages/web/public/assets/connectors/file-helper.svg
+  s_dea2145f358300::t_d7edbb292a75c9 1
+packages/web/public/assets/connectors/crypto.svg
+  s_dea2145f358300::t_d7edbb292a75c9 1
+packages/connectors/core/store/src/index.ts
+  s_dea2145f358300::t_a5fa39348a282f 14
+packages/web/public/assets/connectors/hubspot.svg
+  s_dea2145f358300::t_71afd59f7719a6 1
+packages/connectors/core/crypto/src/index.ts
+  s_dea2145f358300::t_a5fa39348a282f 16
+packages/web/src/app/builder/workflow-canvas/utils/join-edges.test.ts
+  s_dea2145f358300::t_164cea44408043 36
+packages/web/public/assets/connectors/microsoft-dynamics-crm.svg
+  s_dea2145f358300::t_71afd59f7719a6 1
+packages/web/public/assets/connectors/salesforce.svg
+  s_dea2145f358300::t_71afd59f7719a6 1
+packages/web/public/assets/connectors/service-now.svg
+  s_dea2145f358300::t_71afd59f7719a6 1
+packages/web/public/assets/connectors/store.svg
+  s_dea2145f358300::t_d7edbb292a75c9 1
+packages/web/public/assets/connectors/openai.svg
+  s_dea2145f358300::t_71afd59f7719a6 1
+.env.dev
+  s_dea2145f358300::t_400b06f9700c2d 4-5,14,16,24-33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "3dd0a7b272a075617223c0cab69ca45847145237",
+  "prompts": {},
+  "sessions": {
+    "s_dea2145f358300": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "152e1421-d569-4fd2-8e1b-394a35732492",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

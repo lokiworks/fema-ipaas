@@ -11,8 +11,14 @@ i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    fallbackLng: 'en',
+    fallbackLng: LocalesEnum.CHINESE_SIMPLIFIED,
     debug: false,
+    detection: {
+      order: ['querystring', 'localStorage'],
+      lookupQuerystring: 'lng',
+      lookupLocalStorage: 'i18nextLng',
+      caches: ['localStorage'],
+    },
     interpolation: {
       escapeValue: false, // not needed for react as it escapes by default
     },

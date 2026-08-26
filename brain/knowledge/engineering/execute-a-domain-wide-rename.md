@@ -49,6 +49,13 @@ icon: 🔤
 - **`.md` / `.yml` 也在替换范围内的话，会连带改掉产品名。** 本轮 `activepieces`
   被改成 `activeconnectors`，波及 370 个文件里的 PG 数据库名、Helm chart 名、CI 服务名。
   要么把产品名先排除，要么事后统一修一遍。
+- **`docs/` 里靠字符串索引的东西不会跟着改名，而且失败是静默的。** `project` → `workspace`
+  一轮之后，`docs/docs.json` 的导航里留下 14 条指向已改名页面的死条目（`endpoints/projects/*`、
+  `admin-guide/guides/structure-projects`、`workflows/project-variables`），
+  `docs/resources/screenshots/` 下的图片目录改了名但页面里的 `![](/resources/.../project-variables/x.png)`
+  没改。Mintlify 不会因此构建失败，只是页面 404、图片裂开。改完跑一遍校验：解析 `docs.json`
+  递归收集所有 page 字符串，逐个确认 `docs/<slug>.mdx` 存在；再用 `\]\((/[^)\s#]*)` 扫全部 mdx
+  的站内链接和图片路径。区分"因改名而失效"和"因删功能而失效"——前者要重指，后者才该删。
 
 ## 收尾
 

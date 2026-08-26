@@ -1,16 +1,17 @@
+import { t } from 'i18next';
 import {
   ArrowUp,
-  BarChart3,
   Check,
   ChevronsUpDown,
+  History,
   House,
-  MessageCircle,
+  Link2,
   Mic,
   Paperclip,
   Plus,
+  Puzzle,
   Search,
   Sparkles,
-  Table2,
   Workflow,
 } from 'lucide-react';
 
@@ -29,14 +30,14 @@ export function AuthBackdrop() {
       <div className="min-w-0 flex-1 p-1.5">
         <div className="flex h-full flex-col overflow-hidden rounded-xl border bg-background shadow-[2px_0px_4px_-2px_rgba(0,0,0,0.05),0px_2px_4px_-2px_rgba(0,0,0,0.05)]">
           <div className="flex items-center gap-2 border-b px-5 py-3 text-sm text-muted-foreground">
-            <MessageCircle className="size-4" />
+            <Workflow className="size-4" />
             <span className="font-medium text-foreground/80">
-              Daily Stripe summary
+              {buildRecentWorkflows()[0]}
             </span>
           </div>
           <div className="min-h-0 flex-1 overflow-hidden px-8 pt-8">
             <div className="mx-auto w-full max-w-3xl space-y-6">
-              {CONVERSATION.map((turn, index) =>
+              {buildConversation().map((turn, index) =>
                 turn.role === 'user' ? (
                   <UserTurn key={index} text={turn.text} />
                 ) : (
@@ -62,18 +63,18 @@ function SidebarFacsimile({ logoUrl }: { logoUrl: string }) {
       <div className="flex items-center gap-2 rounded-md px-1.5 py-1">
         <img src={logoUrl} alt="" className="size-5 object-contain" />
         <span className="truncate text-sm font-medium text-foreground/80">
-          Acme Inc
+          {t('Personal Workspace')}
         </span>
         <ChevronsUpDown className="ml-auto size-3.5 text-muted-foreground" />
       </div>
 
       <div className="flex items-center gap-2 rounded-lg bg-primary px-2.5 py-2 text-sm font-medium text-primary-foreground shadow-sm">
         <Plus className="size-4" strokeWidth={2.5} />
-        New chat
+        {t('New Workflow')}
       </div>
 
       <div className="flex flex-col gap-0.5">
-        {NAV_ITEMS.map(({ icon: Icon, label, active }) => (
+        {buildNavItems().map(({ icon: Icon, label, active }) => (
           <div
             key={label}
             className={
@@ -90,9 +91,9 @@ function SidebarFacsimile({ logoUrl }: { logoUrl: string }) {
 
       <div className="flex min-h-0 flex-col gap-1">
         <span className="px-2.5 pb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70">
-          Recent
+          {t('Recent')}
         </span>
-        {RECENT_CHATS.map((title, index) => (
+        {buildRecentWorkflows().map((title, index) => (
           <div
             key={title}
             className={
@@ -157,7 +158,7 @@ function ComposerFacsimile() {
   return (
     <div className="rounded-2xl border border-foreground/20 bg-background px-4 pb-2.5 pt-3.5">
       <p className="text-sm text-muted-foreground">
-        Tell me what you need... (@ to mention, : for emoji)
+        {t('Describe the automation you need…')}
       </p>
       <div className="mt-3 flex items-center justify-between">
         <div className="flex items-center gap-1">
@@ -176,47 +177,53 @@ function ComposerFacsimile() {
   );
 }
 
-const NAV_ITEMS = [
-  { icon: House, label: 'Home', active: false },
-  { icon: MessageCircle, label: 'Chats', active: true },
-  { icon: Workflow, label: 'Automations', active: false },
-  { icon: Table2, label: 'Tables', active: false },
-  { icon: BarChart3, label: 'Insights', active: false },
-  { icon: Search, label: 'Search', active: false },
+const buildNavItems = () => [
+  { icon: House, label: t('Home'), active: false },
+  { icon: Workflow, label: t('Workflows'), active: true },
+  { icon: History, label: t('Run Center'), active: false },
+  { icon: Link2, label: t('Connections'), active: false },
+  { icon: Puzzle, label: t('Connectors'), active: false },
+  { icon: Search, label: t('Search'), active: false },
 ];
 
-const RECENT_CHATS = [
-  'Daily Stripe summary',
-  'Chase overdue invoices',
-  'Onboard new signups',
-  'Weekly report to leadership',
-  'Sync HubSpot to Sheets',
-  'Tidy up my inbox',
+const buildRecentWorkflows = () => [
+  t('Daily order reconciliation'),
+  t('Sync new customers to the CRM'),
+  t('Nightly database export'),
+  t('Alert on failed payments'),
+  t('Weekly report to leadership'),
+  t('Clean up stale records'),
 ];
 
-const CONVERSATION: Turn[] = [
+const buildConversation = (): Turn[] => [
   {
     role: 'user',
-    text: "Every morning, pull yesterday's Stripe payments into a Google Sheet and post a summary in Slack.",
+    text: t(
+      'Every morning, pull yesterday’s orders from Postgres, turn them into a CSV, and POST it to our reporting endpoint.',
+    ),
   },
   {
     role: 'assistant',
-    activity: 'Checked Stripe, Google Sheets and Slack',
-    text: 'Done. It runs at 8:00 every morning, writes one row per payment, and posts the daily total to #finance.',
+    activity: t('Checked Schedule, Postgres, CSV and HTTP'),
+    text: t(
+      'Done. It runs at 08:00 every day, writes one row per order, and posts the file to your endpoint.',
+    ),
     steps: [
-      'Every day at 08:00',
-      'Stripe: list yesterday’s payments',
-      'Google Sheets: append rows',
-      'Slack: send summary to #finance',
+      t('Every day at 08:00'),
+      t('Postgres: query yesterday’s orders'),
+      t('CSV: convert rows to a file'),
+      t('HTTP: POST the file to the endpoint'),
     ],
   },
   {
     role: 'user',
-    text: 'Nice. Also ping me if a payment fails.',
+    text: t('Good. Also let me know when a run fails.'),
   },
   {
     role: 'assistant',
-    text: 'Added a branch: failed payments now send you a direct message the moment Stripe reports them.',
+    text: t(
+      'Added a branch: a failed run now notifies you the moment it happens.',
+    ),
   },
 ];
 

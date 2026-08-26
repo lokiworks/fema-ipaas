@@ -15,15 +15,18 @@ export const createConnectorSelectorState = (
   return {
     openedConnectorSelectorStepNameOrAddButtonId: null,
     connectorSelectorOperation: null,
+    connectorSelectorReplacedStepDisplayName: null,
     setOpenedConnectorSelectorStepNameOrAddButtonId: (
       stepNameOrAddButtonId: string | null,
       operation?: ConnectorSelectorOperation,
+      replacedStepDisplayName?: string,
     ) => {
       return set((state) => {
         if (stepNameOrAddButtonId === null) {
           return {
             openedConnectorSelectorStepNameOrAddButtonId: null,
             connectorSelectorOperation: null,
+            connectorSelectorReplacedStepDisplayName: null,
             selectedConnectorMetadataInConnectorSelector: null,
             rightSidebar:
               state.rightSidebar === RightSideBarType.CONNECTOR_PICKER
@@ -35,6 +38,8 @@ export const createConnectorSelectorState = (
           openedConnectorSelectorStepNameOrAddButtonId: stepNameOrAddButtonId,
           connectorSelectorOperation:
             operation ?? state.connectorSelectorOperation,
+          connectorSelectorReplacedStepDisplayName:
+            replacedStepDisplayName ?? null,
           selectedConnectorMetadataInConnectorSelector: null,
           rightSidebar: RightSideBarType.CONNECTOR_PICKER,
         };
@@ -54,9 +59,11 @@ export const createConnectorSelectorState = (
 export type ConnectorSelectorState = {
   openedConnectorSelectorStepNameOrAddButtonId: string | null;
   connectorSelectorOperation: ConnectorSelectorOperation | null;
+  connectorSelectorReplacedStepDisplayName: string | null;
   setOpenedConnectorSelectorStepNameOrAddButtonId: (
     stepNameOrAddButtonId: string | null,
     operation?: ConnectorSelectorOperation,
+    replacedStepDisplayName?: string,
   ) => void;
   selectedConnectorMetadataInConnectorSelector: StepMetadataWithSuggestions | null;
   setSelectedConnectorMetadataInConnectorSelector: (

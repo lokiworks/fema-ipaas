@@ -17,8 +17,8 @@ import {
   StepMetadataWithSuggestions,
 } from '../types';
 import {
-  CORE_ACTIONS_METADATA,
-  CORE_STEP_METADATA,
+  getCoreActionsMetadata,
+  getCoreStepMetadata,
   stepUtils,
 } from '../utils/step-utils';
 
@@ -96,8 +96,8 @@ export const stepsHooks = {
 
         switch (type) {
           case 'action': {
-            const filteredCoreActions = CORE_ACTIONS_METADATA.filter((step) =>
-              passSearch(searchQuery, step),
+            const filteredCoreActions = getCoreActionsMetadata().filter(
+              (step) => passSearch(searchQuery, step),
             );
             return [...filteredCoreActions, ...connectorsMetadata];
           }
@@ -117,7 +117,9 @@ export const stepsHooks = {
 };
 function passSearch(
   searchQuery: string | undefined,
-  data: (typeof CORE_STEP_METADATA)[keyof typeof CORE_STEP_METADATA],
+  data: ReturnType<typeof getCoreStepMetadata>[keyof ReturnType<
+    typeof getCoreStepMetadata
+  >],
 ) {
   if (!searchQuery) {
     return true;

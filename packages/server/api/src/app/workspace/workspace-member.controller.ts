@@ -78,6 +78,8 @@ const ListMembersRequest = {
         }),
     },
     schema: {
+        tags: ['workspace-members'],
+        description: 'List the members of a workspace.',
         querystring: WorkspaceQuery.extend({
             cursor: z.string().optional(),
             limit: z.coerce.number().optional(),
@@ -107,6 +109,8 @@ const DeleteMemberRequest = {
         }),
     },
     schema: {
+        tags: ['workspace-members'],
+        description: 'Remove a member from a workspace.',
         params: z.object({ id: EntityId }),
         querystring: WorkspaceQuery,
     },

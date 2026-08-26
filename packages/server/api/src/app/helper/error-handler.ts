@@ -76,20 +76,15 @@ function hasStatusCode(error: unknown): error is { statusCode: number } {
 }
 
 const statusCodeMap: Partial<Record<ErrorCode, StatusCodes>> = {
-    [ErrorCode.INVALID_API_KEY]: StatusCodes.UNAUTHORIZED,
     [ErrorCode.INVALID_BEARER_TOKEN]: StatusCodes.UNAUTHORIZED,
     [ErrorCode.QUOTA_EXCEEDED]: StatusCodes.PAYMENT_REQUIRED,
     [ErrorCode.CONNECTOR_SYNC_NOT_SUPPORTED]: StatusCodes.BAD_REQUEST,
     [ErrorCode.FEATURE_DISABLED]: StatusCodes.PAYMENT_REQUIRED,
-    [ErrorCode.AI_CREDIT_LIMIT_EXCEEDED]: StatusCodes.PAYMENT_REQUIRED,
-    [ErrorCode.CHAT_MESSAGE_LIMIT_EXCEEDED]: StatusCodes.TOO_MANY_REQUESTS,
     [ErrorCode.PERMISSION_DENIED]: StatusCodes.FORBIDDEN,
     [ErrorCode.ENTITY_NOT_FOUND]: StatusCodes.NOT_FOUND,
     [ErrorCode.EXISTING_USER]: StatusCodes.CONFLICT,
-    [ErrorCode.EXISTING_ALERT_CHANNEL]: StatusCodes.CONFLICT,
     [ErrorCode.WORKFLOW_OPERATION_IN_PROGRESS]: StatusCodes.CONFLICT,
     [ErrorCode.AUTHORIZATION]: StatusCodes.FORBIDDEN,
-    [ErrorCode.SIGN_UP_DISABLED]: StatusCodes.FORBIDDEN,
     [ErrorCode.WORKSPACE_EXTERNAL_ID_ALREADY_EXISTS]: StatusCodes.CONFLICT,
     [ErrorCode.INVALID_CREDENTIALS]: StatusCodes.UNAUTHORIZED,
     [ErrorCode.SESSION_EXPIRED]: StatusCodes.FORBIDDEN,
@@ -97,20 +92,11 @@ const statusCodeMap: Partial<Record<ErrorCode, StatusCodes>> = {
     [ErrorCode.USER_IS_INACTIVE]: StatusCodes.FORBIDDEN,
     [ErrorCode.DOMAIN_NOT_ALLOWED]: StatusCodes.FORBIDDEN,
     [ErrorCode.EMAIL_AUTH_DISABLED]: StatusCodes.FORBIDDEN,
-    [ErrorCode.INVALID_SMTP_CREDENTIALS]: StatusCodes.BAD_REQUEST,
-    [ErrorCode.INVALID_GIT_CREDENTIALS]: StatusCodes.BAD_REQUEST,
     [ErrorCode.INVALID_OTP]: StatusCodes.GONE,
     [ErrorCode.VALIDATION]: StatusCodes.CONFLICT,
     [ErrorCode.INVITATION_ONLY_SIGN_UP]: StatusCodes.FORBIDDEN,
     [ErrorCode.AUTHENTICATION]: StatusCodes.UNAUTHORIZED,
-    [ErrorCode.INVALID_LICENSE_KEY]: StatusCodes.BAD_REQUEST,
-    [ErrorCode.EMAIL_ALREADY_HAS_ACTIVATION_KEY]: StatusCodes.CONFLICT,
-    [ErrorCode.MCP_CONNECTOR_REQUIRES_CONNECTION]: StatusCodes.BAD_REQUEST,
-    [ErrorCode.MCP_CONNECTOR_CONNECTION_MISMATCH]: StatusCodes.BAD_REQUEST,
-    [ErrorCode.DOES_NOT_MEET_BUSINESS_REQUIREMENTS]: StatusCodes.UNPROCESSABLE_ENTITY,
     [ErrorCode.EXECUTION_RETRY_OUTSIDE_RETENTION]: StatusCodes.GONE,
-    [ErrorCode.SANDBOX_CAPACITY_EXCEEDED]: StatusCodes.TOO_MANY_REQUESTS,
-    [ErrorCode.CHAT_CONTEXT_LIMIT_EXCEEDED]: StatusCodes.BAD_REQUEST,
 }
 
 type WideErrorFields = {

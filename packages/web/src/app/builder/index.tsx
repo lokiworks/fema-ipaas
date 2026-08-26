@@ -40,7 +40,7 @@ const animateResizeClassName = `transition-all `;
 
 const SPLIT_MODE_INITIAL_OPEN_SIZE_PX = 1000;
 const SPLIT_MODE_SIDEBAR_SIZE_PX = 850;
-const DEFAULT_SIDEBAR_SIZE = '25%';
+const DEFAULT_SIDEBAR_SIZE = '480px';
 const DEFAULT_MIN_SIZE = '400px';
 const SPLIT_MODE_COLLAPSE_THRESHOLD_PX = 700;
 

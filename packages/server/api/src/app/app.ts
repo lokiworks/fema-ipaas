@@ -2,7 +2,7 @@ import swagger from '@fastify/swagger'
 import { ConnectorMetadata } from '@fema-ipaas/connector-sdk'
 import { isNil, spreadIfDefined } from '@fema-ipaas/core-utils'
 import { onCallService, UNKNOWN_VERSION, versionUtil, wideEvent } from '@fema-ipaas/server-utils'
-import { ApplicationEventName, ConnectionDeletedEvent, ConnectionUpsertedEvent, ConnectionWithoutSensitiveData, Execution, ExecutionFinishedEvent, ExecutionRetriedEvent, ExecutionStartedEvent, Folder, FolderCreatedEvent, FolderDeletedEvent, FolderUpdatedEvent, RuntimeEnvironment, Template, UserEmailVerifiedEvent, UserInvitation, UserPasswordResetEvent, UserSignedInEvent, UserWithMetaInformation, Workflow, WorkflowActivatedEvent, WorkflowCreatedEvent, WorkflowDeactivatedEvent, WorkflowDeletedEvent, WorkflowPublishedEvent, WorkflowUpdatedEvent, WorkspaceWithLimits } from '@fema-ipaas/shared'
+import { ApplicationEventName, ConnectionDeletedEvent, ConnectionUpsertedEvent, ConnectionWithoutSensitiveData, ConnectorPublishedEvent, Execution, ExecutionFinishedEvent, ExecutionResumedEvent, ExecutionRetriedEvent, ExecutionStartedEvent, Folder, FolderCreatedEvent, FolderDeletedEvent, FolderUpdatedEvent, MemberAddedEvent, MemberRemovedEvent, RuntimeEnvironment, SignUpEvent, Template, UserEmailVerifiedEvent, UserInvitation, UserPasswordResetEvent, UserSignedInEvent, UserWithMetaInformation, VariableDeletedEvent, VariableUpsertedEvent, VariableValueRevealedEvent, VariableWithoutSensitiveData, Workflow, WorkflowActivatedEvent, WorkflowCreatedEvent, WorkflowDeactivatedEvent, WorkflowDeletedEvent, WorkflowPublishedEvent, WorkflowUpdatedEvent, WorkspaceMemberWithUser, WorkspaceWithLimits } from '@fema-ipaas/shared'
 import { createAdapter } from '@socket.io/redis-adapter'
 import { FastifyBaseLogger, FastifyInstance, FastifyRequest, HTTPMethods } from 'fastify'
 import { jsonSchemaTransform, jsonSchemaTransformObject } from 'fastify-type-provider-zod'
@@ -311,19 +311,29 @@ function registerOpenApiSchemas() {
     globalRegistry.add(FolderDeletedEvent, { id: ApplicationEventName.FOLDER_DELETED })
     globalRegistry.add(ExecutionStartedEvent, { id: ApplicationEventName.EXECUTION_STARTED })
     globalRegistry.add(ExecutionFinishedEvent, { id: ApplicationEventName.EXECUTION_FINISHED })
+    globalRegistry.add(ExecutionResumedEvent, { id: ApplicationEventName.EXECUTION_RESUMED })
     globalRegistry.add(ExecutionRetriedEvent, { id: ApplicationEventName.EXECUTION_RETRIED })
+    globalRegistry.add(SignUpEvent, { id: ApplicationEventName.USER_SIGNED_UP })
     globalRegistry.add(UserSignedInEvent, { id: ApplicationEventName.USER_SIGNED_IN })
     globalRegistry.add(UserPasswordResetEvent, { id: ApplicationEventName.USER_PASSWORD_RESET })
     globalRegistry.add(UserEmailVerifiedEvent, { id: ApplicationEventName.USER_EMAIL_VERIFIED })
+    globalRegistry.add(VariableUpsertedEvent, { id: ApplicationEventName.VARIABLE_UPSERTED })
+    globalRegistry.add(VariableDeletedEvent, { id: ApplicationEventName.VARIABLE_DELETED })
+    globalRegistry.add(VariableValueRevealedEvent, { id: ApplicationEventName.VARIABLE_VALUE_REVEALED })
+    globalRegistry.add(MemberAddedEvent, { id: ApplicationEventName.MEMBER_ADDED })
+    globalRegistry.add(MemberRemovedEvent, { id: ApplicationEventName.MEMBER_REMOVED })
     globalRegistry.add(Template, { id: 'template' })
     globalRegistry.add(Folder, { id: 'folder' })
     globalRegistry.add(UserWithMetaInformation, { id: 'user' })
     globalRegistry.add(UserInvitation, { id: 'user-invitation' })
     globalRegistry.add(WorkspaceWithLimits, { id: 'workspace' })
+    globalRegistry.add(WorkspaceMemberWithUser, { id: 'workspace-member' })
     globalRegistry.add(Workflow, { id: 'workflow' })
     globalRegistry.add(Execution, { id: 'execution' })
     globalRegistry.add(ConnectionWithoutSensitiveData, { id: 'connection' })
+    globalRegistry.add(VariableWithoutSensitiveData, { id: 'variable' })
     globalRegistry.add(ConnectorMetadata, { id: 'connector' })
+    globalRegistry.add(ConnectorPublishedEvent, { id: ApplicationEventName.CONNECTOR_PUBLISHED })
 }
 
 const REDIRECT_HTML_TEMPLATE = `<!DOCTYPE html>

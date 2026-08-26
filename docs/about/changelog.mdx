@@ -4,24 +4,13 @@ description: "A log of all notable changes to FEMA Integration Platform"
 icon: "code-commit"
 ---
 
-<Update label="August 2026" description="AI-Ready Connectors: Tool Search, AI Metadata & Audience">
+<Update label="August 2026" description="AI-Ready Connectors: AI Metadata, Audience & Output Schemas">
 
-### AI-ready connectors: tool search, AI metadata, and audience
+### AI-ready connectors: AI metadata, audience, and output schemas
 
-The connector catalog is now built for AI agents as much as for humans. An agent connected
-through the [MCP server](/mcp/overview) can find the right action across hundreds of
-connectors by describing the task — then inspect its schema and run it.
-
-**Tool search**
-
-- **Search by task, not by name**: the new `ap_search_actions` and `ap_search_triggers`
-  MCP tools take a plain-language description (*"send a message to a Slack channel"*)
-  and return the most relevant actions or triggers, ranked by semantic similarity.
-  See [Tool Search](/mcp/tool-search).
-- **Honest no-match**: results below a relevance threshold are dropped rather than
-  padded, so agents don't grab a wrong tool when nothing fits.
-- **Self-host ready**: turn it on with `FEMA_TOOL_SEARCH_ENABLED`; semantic ranking uses
-  an OpenAI key, with a keyword fallback when none is configured.
+The connector catalog is now built for AI agents as much as for humans: actions and
+triggers describe themselves in agent terms, declare who they are for, and publish the
+shape of what they return.
 
 **AI metadata & audience**
 

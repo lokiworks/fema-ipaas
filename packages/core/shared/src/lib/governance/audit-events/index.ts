@@ -223,6 +223,13 @@ export const ExecutionFinishedEvent = z.object({
 })
 export type ExecutionFinishedEvent = z.infer<typeof ExecutionFinishedEvent>
 
+export const ExecutionResumedEvent = z.object({
+    ...BaseAuditEventProps,
+    action: z.literal(ApplicationEventName.EXECUTION_RESUMED),
+    data: ExecutionEventData,
+})
+export type ExecutionResumedEvent = z.infer<typeof ExecutionResumedEvent>
+
 export const ExecutionRetriedEvent = z.object({
     ...BaseAuditEventProps,
     action: z.literal(ApplicationEventName.EXECUTION_RETRIED),
@@ -356,6 +363,20 @@ export const MemberEvent = z.object({
     data: MemberEventData,
 })
 export type MemberEvent = z.infer<typeof MemberEvent>
+
+export const MemberAddedEvent = z.object({
+    ...BaseAuditEventProps,
+    action: z.literal(ApplicationEventName.MEMBER_ADDED),
+    data: MemberEventData,
+})
+export type MemberAddedEvent = z.infer<typeof MemberAddedEvent>
+
+export const MemberRemovedEvent = z.object({
+    ...BaseAuditEventProps,
+    action: z.literal(ApplicationEventName.MEMBER_REMOVED),
+    data: MemberEventData,
+})
+export type MemberRemovedEvent = z.infer<typeof MemberRemovedEvent>
 
 const AuthenticationEventData = z.object({
     user: UserMeta.optional(),

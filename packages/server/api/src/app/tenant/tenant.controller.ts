@@ -162,6 +162,8 @@ const UpdateTenantRequest = {
     },
     preValidation: attachMultipartFieldsToBody,
     schema: {
+        tags: ['tenants'],
+        description: 'Update a tenant, including its allowed embed origins.',
         body: UpdateTenantRequestBody,
         params: z.object({
             id: EntityId,

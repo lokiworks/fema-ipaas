@@ -8,6 +8,7 @@ const ConnectorSelector = ({
   id,
   operation,
   openSelectorOnClick = true,
+  stepToReplaceConnectorDisplayName,
 }: ConnectorSelectorProps) => {
   const [setOpenedConnectorSelectorStepNameOrAddButtonId] =
     useBuilderStateContext((state) => [
@@ -19,7 +20,11 @@ const ConnectorSelector = ({
       className="contents"
       onClick={() => {
         if (openSelectorOnClick) {
-          setOpenedConnectorSelectorStepNameOrAddButtonId(id, operation);
+          setOpenedConnectorSelectorStepNameOrAddButtonId(
+            id,
+            operation,
+            stepToReplaceConnectorDisplayName,
+          );
         }
       }}
     >

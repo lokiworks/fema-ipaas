@@ -17,6 +17,7 @@ import {
   useLiveSuspenseQuery,
 } from '@tanstack/react-db';
 import { QueryClient, useMutation, useQuery } from '@tanstack/react-query';
+import { t } from 'i18next';
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
@@ -255,7 +256,7 @@ export const getWorkspaceName = (
   workspace: Pick<WorkspaceWithLimits, 'type' | 'displayName'>,
 ): string => {
   return workspace.type === WorkspaceType.PERSONAL
-    ? 'Personal Workspace'
+    ? t('Personal Workspace')
     : workspace.displayName;
 };
 export const workspaceHooks = {

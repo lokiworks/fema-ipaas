@@ -87,6 +87,8 @@ const tenantAdminOnly = securityAccess.tenantAdminOnly([PrincipalType.USER, Prin
 const ListGlobalConnectionsRequest = {
     config: { security: tenantAdminOnly },
     schema: {
+        tags: ['global-connections'],
+        description: 'List the connections shared across every workspace in the tenant.',
         querystring: ListGlobalConnectionsRequestQuery,
         security: [SERVICE_KEY_SECURITY_OPENAPI],
     },
@@ -95,6 +97,8 @@ const ListGlobalConnectionsRequest = {
 const UpsertGlobalConnectionRequest = {
     config: { security: tenantAdminOnly },
     schema: {
+        tags: ['global-connections'],
+        description: 'Create a global connection, or replace the one with the same external id.',
         body: UpsertGlobalConnectionRequestBody,
         security: [SERVICE_KEY_SECURITY_OPENAPI],
     },
@@ -103,6 +107,8 @@ const UpsertGlobalConnectionRequest = {
 const UpdateGlobalConnectionRequest = {
     config: { security: tenantAdminOnly },
     schema: {
+        tags: ['global-connections'],
+        description: 'Update a global connection value.',
         params: z.object({ id: z.string() }),
         body: UpdateGlobalConnectionValueRequestBody,
         security: [SERVICE_KEY_SECURITY_OPENAPI],
@@ -112,6 +118,8 @@ const UpdateGlobalConnectionRequest = {
 const DeleteGlobalConnectionRequest = {
     config: { security: tenantAdminOnly },
     schema: {
+        tags: ['global-connections'],
+        description: 'Delete a global connection.',
         params: z.object({ id: z.string() }),
         security: [SERVICE_KEY_SECURITY_OPENAPI],
     },

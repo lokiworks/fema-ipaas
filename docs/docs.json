@@ -111,18 +111,10 @@
                      "workflows/passing-data",
                      "workflows/using-formulas",
                      "workflows/formula-reference",
-                     "workflows/project-variables",
+                     "workflows/workspace-variables",
                      "workflows/publishing-workflows",
                      "workflows/debugging-runs",
                      "workflows/versioning"
-                  ]
-               },
-               {
-                  "group": "MCP Server",
-                  "pages": [
-                     "mcp/overview",
-                     "mcp/tools",
-                     "mcp/tool-search"
                   ]
                },
                {
@@ -141,36 +133,12 @@
                {
                   "group": "Guides",
                   "pages": [
-                    "admin-guide/guides/structure-projects",
-                    "admin-guide/guides/manage-connectors",
-                    "admin-guide/guides/sso",
-                  {
-                     "group": "SCIM",
-                     "icon": "users",
-                     "pages": [
-                        "admin-guide/guides/scim/overview",
-                        "admin-guide/guides/scim/providers/okta",
-                        "admin-guide/guides/scim/providers/microsoft-entra-id"
-                     ]
-                  },
-                    "admin-guide/guides/manage-oauth2",
-                    "admin-guide/guides/setup-ai-providers",
-                    {
-                      "group": "Secret Managers",
-                      "icon": "key",
-                      "pages": [
-                        "admin-guide/guides/secret-managers/overview",
-                        "admin-guide/guides/secret-managers/aws",
-                        "admin-guide/guides/secret-managers/hashicorp",
-                        "admin-guide/guides/secret-managers/cyberark-conjur",
-                        "admin-guide/guides/secret-managers/onepassword"
-                      ]
-                    },
-                    "admin-guide/guides/permissions",
-                    "admin-guide/guides/event-streaming",
-                    "admin-guide/guides/project-releases",
-                    "admin-guide/guides/project-replace-cli",
-                    "admin-guide/guides/manage-concurrency"
+                     "admin-guide/guides/structure-workspaces",
+                     "admin-guide/guides/manage-connectors",
+                     "admin-guide/guides/sso",
+                     "admin-guide/guides/manage-oauth2",
+                     "admin-guide/guides/permissions",
+                     "admin-guide/guides/manage-concurrency"
                   ]
                },
                {
@@ -199,7 +167,14 @@
                            "admin-guide/security/audit-logs/user-signed-up",
                            "admin-guide/security/audit-logs/user-email-verified",
                            "admin-guide/security/audit-logs/user-password-reset",
-                           "admin-guide/security/audit-logs/signing-key-created"
+                           "admin-guide/security/audit-logs/execution-resumed",
+                           "admin-guide/security/audit-logs/execution-retried",
+                           "admin-guide/security/audit-logs/variable-upserted",
+                           "admin-guide/security/audit-logs/variable-deleted",
+                           "admin-guide/security/audit-logs/variable-value-revealed",
+                           "admin-guide/security/audit-logs/member-added",
+                           "admin-guide/security/audit-logs/member-removed",
+                           "admin-guide/security/audit-logs/connector-published"
                         ]
                      }
                   ]
@@ -238,7 +213,6 @@
                         "pages": [
                            "install/configure-operate/separate-workers",
                            "install/configure-operate/sandboxing",
-                           "install/configure-operate/enterprise-license",
                            "install/configure-operate/setup-ssl",
                            "install/configure-operate/setup-s3"
                         ]
@@ -317,7 +291,6 @@
                   "pages": [
                      "embedding/customize-connectors",
                      "embedding/embed-connections",
-                     "embedding/embeddable-mcp",
                      "embedding/navigation",
                      "embedding/predefined-connection",
                      "embedding/sdk-changelog",
@@ -411,14 +384,22 @@
                   "group": "Endpoints",
                   "pages": [
                      {
-                        "group": "Projects",
+                        "group": "Tenants",
                         "icon": "building",
                         "pages": [
-                           "endpoints/projects/schema",
-                           "endpoints/projects/create",
-                           "endpoints/projects/update",
-                           "endpoints/projects/list",
-                           "endpoints/projects/delete"
+                           "endpoints/tenants/get",
+                           "endpoints/tenants/update"
+                        ]
+                     },
+                     {
+                        "group": "Workspaces",
+                        "icon": "building",
+                        "pages": [
+                           "endpoints/workspaces/schema",
+                           "endpoints/workspaces/create",
+                           "endpoints/workspaces/update",
+                           "endpoints/workspaces/list",
+                           "endpoints/workspaces/delete"
                         ]
                      },
                      {
@@ -428,7 +409,8 @@
                            "endpoints/users/schema",
                            "endpoints/users/update",
                            "endpoints/users/list",
-                           "endpoints/users/delete"
+                           "endpoints/users/delete",
+                           "endpoints/users/get"
                         ]
                      },
                      {
@@ -442,12 +424,12 @@
                         ]
                      },
                      {
-                        "group": "Project Members",
+                        "group": "Workspace Members",
                         "icon": "user",
                         "pages": [
-                           "endpoints/project-members/schema",
-                           "endpoints/project-members/list",
-                           "endpoints/project-members/delete"
+                           "endpoints/workspace-members/schema",
+                           "endpoints/workspace-members/list",
+                           "endpoints/workspace-members/delete"
                         ]
                      },
                      {
@@ -458,7 +440,25 @@
                            "endpoints/connections/upsert",
                            "endpoints/connections/list",
                            "endpoints/connections/get",
-                           "endpoints/connections/delete"
+                           "endpoints/connections/delete",
+                           "endpoints/connections/update",
+                           "endpoints/connections/revalidate",
+                           "endpoints/connections/replace",
+                           "endpoints/connections/owners",
+                           "endpoints/connections/oauth2-authorization-url"
+                        ]
+                     },
+                     {
+                        "group": "Variables",
+                        "icon": "code",
+                        "pages": [
+                           "endpoints/variables/schema",
+                           "endpoints/variables/create",
+                           "endpoints/variables/list",
+                           "endpoints/variables/update",
+                           "endpoints/variables/delete",
+                           "endpoints/variables/reveal",
+                           "endpoints/variables/owners"
                         ]
                      },
                      {
@@ -470,7 +470,8 @@
                            "endpoints/workflows/update",
                            "endpoints/workflows/get",
                            "endpoints/workflows/list",
-                           "endpoints/workflows/delete"
+                           "endpoints/workflows/delete",
+                           "endpoints/workflows/export-template"
                         ]
                      },
                      {
@@ -479,14 +480,18 @@
                         "pages": [
                            "endpoints/executions/schema",
                            "endpoints/executions/get",
-                           "endpoints/executions/list"
+                           "endpoints/executions/list",
+                           "endpoints/executions/overview",
+                           "endpoints/executions/count-by-status",
+                           "endpoints/executions/cancel"
                         ]
                      },
                      {
                         "group": "Sample Data",
                         "icon": "database",
                         "pages": [
-                           "endpoints/sample-data/get"
+                           "endpoints/sample-data/get",
+                           "endpoints/sample-data/test-step"
                         ]
                      },
                      {
@@ -494,15 +499,8 @@
                         "icon": "plug",
                         "pages": [
                            "endpoints/connectors/schema",
-                           "endpoints/connectors/install"
-                        ]
-                     },
-                     {
-                        "group": "Project Releases",
-                        "icon": "cube",
-                        "pages": [
-                           "endpoints/project-releases/schema",
-                           "endpoints/project-releases/create"
+                           "endpoints/connectors/install",
+                           "endpoints/connectors/uninstall"
                         ]
                      },
                      {
@@ -514,14 +512,6 @@
                            "endpoints/global-connections/update",
                            "endpoints/global-connections/list",
                            "endpoints/global-connections/delete"
-                        ]
-                     },
-                     {
-                        "group": "Git Sync",
-                        "icon": "git",
-                        "pages": [
-                           "endpoints/git-repos/schema",
-                           "endpoints/git-repos/configure"
                         ]
                      },
                      {
@@ -544,7 +534,9 @@
                            "endpoints/templates/create",
                            "endpoints/templates/delete",
                            "endpoints/templates/get",
-                           "endpoints/templates/list"
+                           "endpoints/templates/list",
+                           "endpoints/templates/update",
+                           "endpoints/templates/categories"
                         ]
                      },
                      {
@@ -552,13 +544,6 @@
                         "icon": "server",
                         "pages": [
                            "endpoints/worker-machines/queue-metrics"
-                        ]
-                     },
-                     {
-                        "group": "Embedding",
-                        "icon": "code",
-                        "pages": [
-                           "endpoints/embedding/add-allowed-embed-origins"
                         ]
                      }
                   ]
@@ -612,7 +597,6 @@
                   "group": "Engineering Playbooks",
                   "icon": "code",
                   "pages": [
-                     "handbook/engineering/playbooks/run-ee",
                      "handbook/engineering/playbooks/building-for-self-hosting",
                      "handbook/engineering/playbooks/setup-betterstack",
                      "handbook/engineering/playbooks/releases",

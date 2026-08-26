@@ -27,14 +27,14 @@ import {
   StepMetadataWithActionOrTriggerOrAgentDisplayName,
 } from '../types';
 
-export const CORE_STEP_METADATA: Record<
+const buildCoreStepMetadata = (): Record<
   | Exclude<
       WorkflowActionType,
       WorkflowActionType.CONNECTOR | WorkflowActionType.COMPONENT
     >
   | WorkflowTriggerType.EMPTY,
   PrimitiveStepMetadata
-> = {
+> => ({
   [WorkflowActionType.CODE]: {
     displayName: t('Code'),
     logoUrl: '/assets/steps/code.svg',
@@ -44,7 +44,7 @@ export const CORE_STEP_METADATA: Record<
   [WorkflowActionType.LOOP_ON_ITEMS]: {
     displayName: t('Loop on Items'),
     logoUrl: '/assets/steps/loop.svg',
-    description: 'Iterate over a list of items',
+    description: t('Iterate over a list of items'),
     type: WorkflowActionType.LOOP_ON_ITEMS as const,
   },
   [WorkflowActionType.ROUTER]: {
@@ -69,13 +69,19 @@ export const CORE_STEP_METADATA: Record<
     description: t('Empty Trigger'),
     type: WorkflowTriggerType.EMPTY as const,
   },
-} as const;
-export const CORE_ACTIONS_METADATA = [
-  CORE_STEP_METADATA[WorkflowActionType.CODE],
-  CORE_STEP_METADATA[WorkflowActionType.LOOP_ON_ITEMS],
-  CORE_STEP_METADATA[WorkflowActionType.ROUTER],
-  CORE_STEP_METADATA[WorkflowActionType.PARALLEL],
-] as const;
+});
+
+export const getCoreStepMetadata = () => buildCoreStepMetadata();
+
+export const getCoreActionsMetadata = () => {
+  const metadata = buildCoreStepMetadata();
+  return [
+    metadata[WorkflowActionType.CODE],
+    metadata[WorkflowActionType.LOOP_ON_ITEMS],
+    metadata[WorkflowActionType.ROUTER],
+    metadata[WorkflowActionType.PARALLEL],
+  ];
+};
 
 export const stepUtils = {
   getKeys(
@@ -112,7 +118,7 @@ export const stepUtils = {
       case WorkflowActionType.CODE:
       case WorkflowTriggerType.EMPTY:
         return {
-          ...CORE_STEP_METADATA[step.type],
+          ...getCoreStepMetadata()[step.type],
           ...spreadIfDefined('logoUrl', customLogoUrl),
           actionOrTriggerOrAgentDisplayName: '',
           actionOrTriggerOrAgentDescription: '',
@@ -219,7 +225,9 @@ export function extractConnectorNamesAndCoreMetadata(
       connectorNamesSet.add(step.settings.connectorName);
     } else if (!excludeCore) {
       const coreMeta =
-        CORE_STEP_METADATA[step.type as keyof typeof CORE_STEP_METADATA];
+        getCoreStepMetadata()[
+          step.type as keyof ReturnType<typeof getCoreStepMetadata>
+        ];
       if (coreMeta) {
         coreMetadata.push(coreMeta);
       }

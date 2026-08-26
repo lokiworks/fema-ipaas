@@ -4,7 +4,6 @@ import { ResourceLockWidget } from '@/components/custom/resource-lock-widget';
 
 import { useBuilderStateContext } from '../../builder-hooks';
 
-import { PublishWorkflowReminderWidget } from './publish-workflow-reminder-widget';
 import { RunInfoWidget } from './run-info-widget';
 import { useWorkflowLock } from './use-workflow-lock';
 import { ViewingOldVersionWidget } from './viewing-old-version-widget';
@@ -25,12 +24,7 @@ const BuilderBanner = () => {
   if (!isNil(run)) {
     return <RunInfoWidget />;
   }
-  return (
-    <>
-      <ViewingOldVersionWidget />
-      <PublishWorkflowReminderWidget />
-    </>
-  );
+  return <ViewingOldVersionWidget />;
 };
 
 BuilderBanner.displayName = 'BuilderBanner';

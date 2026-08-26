@@ -112,28 +112,13 @@ Rolling back costs at most the codes issued after the deploy: the older build ca
 
 #### Disposable email addresses can no longer sign up
 
-Sign-up now refuses addresses from throwaway providers such as `mailinator.com` and `guerrillamail.com`, on both the emailed-code workflow and the password form. Federated sign-in (Google, SAML, JWT), managed authentication and SCIM provisioning are unaffected, since those addresses come from an identity provider you already trust.
-
-#### Plans and credits are now managed by our billing service
-
-Two license-key endpoints are removed: `GET /v1/license-keys/:licenseKey` and `POST /v1/license-keys/verify`. Applying a key is now `POST /v1/platform-billing/activate`.
-
-Four feature flags no longer appear in `GET /v1/flags`: `SHOW_BILLING_PAGE`, `CAN_BUY_ACTIVE_WORKFLOWS`, `CAN_BUY_AI_CREDITS` and `SHOW_BILLING_LIMITS_ON_SIDEBAR`. Whether the billing page appears is now decided from the edition and plan instead.
-
-#### Enterprise instances without a license key are placed on the free plan
-An Enterprise-edition instance with no license key previously ran with no credit enforcement. It is now enrolled on the free plan, so credit limits apply to it. Entering your license key restores your contracted limits.
-
-#### Running out of credits now stops production workflow runs
-When a platform has no credits left, new production runs are recorded with the `QUOTA_EXCEEDED` status instead of executing, and synchronous webhooks respond with HTTP 402. Such a run keeps its trigger payload, so it can be retried once credits are available. Test runs are unaffected.
+Sign-up now refuses addresses from throwaway providers such as `mailinator.com` and `guerrillamail.com`, on both the emailed-code workflow and the password form. Federated sign-in is unaffected, since those addresses come from an identity provider you already trust.
 
 #### The AI connector offers only the named model tiers for FEMA Integration Platform-provided AI
 In the AI connector, picking the FEMA Integration Platform-provided AI now lists only the named tiers (Fast, Expert, Heavy) rather than the full upstream model catalogue. Existing steps keep running on the model they already have, but that model no longer appears in the dropdown, so re-saving the step moves it onto one of the tiers.
 
 ### Do you need to take action?
 - Only if your members sign up with addresses from a disposable email provider. Set `FEMA_ALLOW_DISPOSABLE_EMAILS=true` to keep accepting them.
-- Only if you run the Enterprise edition without a license key. Enter your key so your contracted limits apply instead of the free plan's.
-- Only if you call `GET /v1/license-keys/:licenseKey` or `POST /v1/license-keys/verify`. Both are removed — use `POST /v1/platform-billing/activate` instead.
-- Only if you read `SHOW_BILLING_PAGE`, `CAN_BUY_ACTIVE_WORKFLOWS`, `CAN_BUY_AI_CREDITS` or `SHOW_BILLING_LIMITS_ON_SIDEBAR` from `GET /v1/flags`. They no longer exist.
 - Only if a workflow uses FEMA Integration Platform-provided AI on a model outside the Fast/Expert/Heavy tiers. Choose a tier the next time you edit that step.
 - No database action is required. The migration only adds columns and leaves the existing ones in place.
 #### Official connector bundles are served from the FEMA Integration Platform CDN by default
@@ -197,7 +182,7 @@ This is an important behavior change in how workflow run logs are stored and cap
 - Large step input values are replaced with a `(truncated, original size <N>)` placeholder in the log via the new `FEMA_EXECUTION_LOG_INPUT_TRUNCATE_THRESHOLD_KB` env var (default `2`). The step still receives the full value at runtime.
 - Runs whose combined step inputs and outputs exceed `FEMA_MAX_EXECUTION_LOG_SIZE_MB` now terminate with the new `LOG_SIZE_EXCEEDED` status instead of silently trimming inputs. Offloaded outputs still count their original size against the cap.
 - See [Limits → Files & workflow run logs](/install/reference/limits#files-execution-logs) for the full behavior, environment variables, and defaults.
-- Embedding now requires setting allowed embed origins, which means only the domains listed in the field can embed the app (wildcards are supported). There is also a new env variable `FEMA_ALLOWED_EMBED_ORIGINS` for setting pre-allowed origins, and a new endpoint for adding these origins — [check docs](/endpoints/embedding/add-allowed-embed-origins).
+- Embedding now requires setting allowed embed origins, which means only the domains listed in the field can embed the app (wildcards are supported). There is also a new env variable `FEMA_ALLOWED_EMBED_ORIGINS` for setting pre-allowed origins, and the origins are set on the tenant — [check docs](/endpoints/tenants/update).
 - "Sign in with Google" can no longer be enabled from the SSO page in the admin panel — that setting has been removed. It is now controlled solely by the `FEMA_GOOGLE_CLIENT_ID` and `FEMA_GOOGLE_CLIENT_SECRET` environment variables. The button only appears when both are set (and the platform's Google auth toggle is enabled).
 
 ### Do you need to take action?
@@ -464,4 +449,4 @@ If you use the embedding SDK or the create project member API with the `EXTERNAL
 
 - **Authentication:**
 
-Multiple platforms/projects are no longer supported in the community edition. Technically, everything is still there, but you have to hack using the API as the authentication system has now changed. If you have already created the users/platforms, they should continue to work, and no action is required.
+Multiple platforms/projects are no longer supported. Technically, everything is still there, but you have to hack using the API as the authentication system has now changed. If you have already created the users/platforms, they should continue to work, and no action is required.

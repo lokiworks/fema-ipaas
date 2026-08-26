@@ -1,6 +1,6 @@
 import { inspect } from 'util'
 import { isNil } from '@fema-ipaas/core-utils'
-import { ConnectorSyncMode, DefaultWorkspaceRole, ExecutionMode, FileLocation, NetworkMode, RuntimeEnvironment } from '@fema-ipaas/shared'
+import { ConnectorSyncMode, ExecutionMode, FileLocation, NetworkMode, RuntimeEnvironment } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { DatabaseType } from '../database/database-type'
 import { RedisType } from '../database/redis/types'
@@ -76,7 +76,6 @@ const systemPropValidators: {
     [AppSystemProp.LOG_PRETTY]: booleanValidator,
     [AppSystemProp.LOG_FILE]: booleanValidator,
     [AppSystemProp.ENVIRONMENT]: enumValidator(Object.values(RuntimeEnvironment)),
-    [AppSystemProp.CLOUD_CHAT_ROLLOUT_CAP]: numberValidator,
     [AppSystemProp.TRIGGER_TIMEOUT_SECONDS]: numberValidator,
     [AppSystemProp.TRIGGER_HOOKS_TIMEOUT_SECONDS]: numberValidator,
     [AppSystemProp.WORKFLOW_TIMEOUT_SECONDS]: numberValidator,
@@ -108,10 +107,8 @@ const systemPropValidators: {
     [AppSystemProp.CONNECTOR_REGISTRY_URL]: urlValidator,
     [AppSystemProp.CONTAINER_TYPE]: enumValidator(Object.values(ContainerType)),
     [AppSystemProp.PORT]: numberValidator,
-    [AppSystemProp.CONSOLE_API_SECRET_KEY]: stringValidator,
     // AppSystemProp
     [AppSystemProp.API_KEY]: stringValidator,
-    [AppSystemProp.TEMPLATES_API_KEY]: stringValidator,
     [AppSystemProp.TEMPLATE_MANAGER_API_KEY]: stringValidator,
     [AppSystemProp.API_RATE_LIMIT_AUTHN_ENABLED]: booleanValidator,
     [AppSystemProp.API_RATE_LIMIT_AUTHN_MAX]: numberValidator,
@@ -174,32 +171,18 @@ const systemPropValidators: {
     [AppSystemProp.SMTP_USERNAME]: stringValidator,
     [AppSystemProp.AGENTS_ENABLED]: booleanValidator,
     [AppSystemProp.TELEMETRY_ENABLED]: booleanValidator,
-    [AppSystemProp.TOOL_SEARCH_ENABLED]: booleanValidator,
     [AppSystemProp.TRIGGER_DEFAULT_POLL_INTERVAL]: numberValidator,
     [AppSystemProp.WEBHOOK_TIMEOUT_SECONDS]: numberValidator,
     [AppSystemProp.LOAD_TRANSLATIONS_FOR_DEV_CONNECTORS]: booleanValidator,
-    [AppSystemProp.APPSUMO_TOKEN]: stringValidator,
-    [AppSystemProp.AUTUMN_CONSOLE_URL]: urlValidator,
     [AppSystemProp.FILE_STORAGE_LOCATION]: enumValidator(Object.values(FileLocation)),
-    [AppSystemProp.FIREBASE_ADMIN_CREDENTIALS]: stringValidator,
     [AppSystemProp.FIREBASE_HASH_PARAMETERS]: stringValidator,
     [AppSystemProp.INTERNAL_URL]: stringValidator,
     [AppSystemProp.WORKERS]: numberValidator,
-    [AppSystemProp.FEATUREBASE_API_KEY]: stringValidator,
-    [AppSystemProp.OPENROUTER_PROVISION_KEY]: stringValidator,
-    [AppSystemProp.OPENAI_API_KEY]: stringValidator,
-    [AppSystemProp.SCIM_DEFAULT_WORKSPACE_ROLE]: enumValidator(Object.values(DefaultWorkspaceRole)),
 
     // AppSystemProp
     // Cloud
-    [AppSystemProp.GOOGLE_CLIENT_ID]: stringValidator,
-    [AppSystemProp.GOOGLE_CLIENT_SECRET]: stringValidator,
 
     // Cloudflare
-    [AppSystemProp.CLOUDFLARE_API_TOKEN]: stringValidator,
-    [AppSystemProp.CLOUDFLARE_API_BASE]: stringValidator,
-    [AppSystemProp.CLOUDFLARE_SAAS_FALLBACK_ORIGIN]: stringValidator,
-    [AppSystemProp.CLOUDFLARE_ZONE_ID]: stringValidator,
 
     // Tables
     [AppSystemProp.MAX_RECORDS_PER_TABLE]: numberValidator,
@@ -220,7 +203,6 @@ const systemPropValidators: {
     [AppSystemProp.WEBHOOK_PAYLOAD_INLINE_THRESHOLD_KB]: numberValidator,
 
     // Canary
-    [AppSystemProp.CANARY_APP_URL]: urlValidator,
     [AppSystemProp.IS_CANARY_APP]: booleanValidator,
     // SSRF protection
     [AppSystemProp.SSRF_ALLOW_LIST]: stringValidator,

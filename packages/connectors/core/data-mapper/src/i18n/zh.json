@@ -1,7 +1,7 @@
 {
-  "tools to manipulate data structure": "tools to manipulate data structure",
-  "Advanced Mapping": "Advanced Mapping",
-  "Map data from one format to another": "Map data from one format to another",
-  "Mapping": "Mapping",
-  "The mapping to use": "The mapping to use"
+  "tools to manipulate data structure": "数据结构处理工具",
+  "Advanced Mapping": "高级映射",
+  "Map data from one format to another": "把数据从一种结构映射到另一种",
+  "Mapping": "映射",
+  "The mapping to use": "要使用的映射"
 }

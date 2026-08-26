@@ -1,7 +1,7 @@
 import os from 'os'
 import path from 'path'
 import { ApplicationError, ErrorCode, isNil } from '@fema-ipaas/core-utils'
-import { ConnectorSyncMode, DefaultWorkspaceRole, ExecutionMode, FileLocation, NetworkMode } from '@fema-ipaas/shared'
+import { ConnectorSyncMode, ExecutionMode, FileLocation, NetworkMode } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { DatabaseType } from '../../database/database-type'
 import { RedisType } from '../../database/redis/types'
@@ -21,7 +21,6 @@ const systemPropDefaultValues: Partial<Record<SystemProp, string>> = {
     [AppSystemProp.CONFIG_PATH]: path.join(os.homedir(), '.fema'),
     [AppSystemProp.DB_TYPE]: DatabaseType.POSTGRES,
     [AppSystemProp.APP_WEBHOOK_SECRETS]: '{}',
-    [AppSystemProp.AUTUMN_CONSOLE_URL]: 'https://console.fema.local',
     [AppSystemProp.CONTAINER_TYPE]: ContainerType.WORKER_AND_APP,
     [AppSystemProp.PORT]: '3000',
     [AppSystemProp.EXECUTION_DATA_RETENTION_DAYS]: '30',
@@ -60,7 +59,6 @@ const systemPropDefaultValues: Partial<Record<SystemProp, string>> = {
     [AppSystemProp.ENFORCE_CONNECTION_CONNECTOR_BINDING]: 'false',
     [AppSystemProp.ISSUE_ARCHIVE_DAYS]: '7',
     [AppSystemProp.POSTGRES_IDLE_TIMEOUT_MS]: '300000',
-    [AppSystemProp.SCIM_DEFAULT_WORKSPACE_ROLE]: DefaultWorkspaceRole.OPERATOR,
     [AppSystemProp.NETWORK_MODE]: NetworkMode.UNRESTRICTED,
     [AppSystemProp.LOG_SAMPLE_RATE_INFO]: '100',
     [AppSystemProp.LOG_KEEP_SLOW_MS]: '2000',

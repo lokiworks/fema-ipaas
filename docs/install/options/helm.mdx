@@ -175,23 +175,6 @@ kubectl port-forward svc/fema 4200:80 --namespace default
 kubectl get all --namespace default
 ```
 
-## Editions
-
-FEMA Integration Platform supports three editions:
-
-- **`ce` (Community Edition)**: Open-source version with all core features (default)
-- **`ee` (Enterprise Edition)**: Self-hosted edition with advanced features like SSO, RBAC, and audit logs
-- **`cloud`**: For FEMA Integration Platform Cloud deployments
-
-Set the edition in your values file:
-
-```yaml
-fema:
-  edition: "ce"  # or "ee" for Enterprise Edition
-```
-
-For Enterprise Edition features and licensing, visit [fema.local](https://github.com/lokiworks/fema-ipaas/docs/admin-console/overview).
-
 ## Environment Variables
 
 For a complete list of configuration options, see the [Environment Variables](/install/reference/environment-variables) documentation. Most environment variables can be configured through the Helm values file under the `fema` section.

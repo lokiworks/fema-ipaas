@@ -2,7 +2,6 @@ import { WorkflowOperationType, WorkflowTriggerType } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import {
   BlocksIcon,
-  CheckCircle2Icon,
   ChevronLeftIcon,
   LayoutGridIcon,
   PuzzleIcon,
@@ -12,7 +11,6 @@ import { useEffect, useRef } from 'react';
 import { useDebounce } from 'use-debounce';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
-import { ApprovalsTabContent } from '@/app/builder/connectors-selector/approvals-tab-content';
 import { ComponentsTabContent } from '@/app/builder/connectors-selector/components-tab-content';
 import { ConnectorsCardList } from '@/app/builder/connectors-selector/connectors-card-list';
 import { ExploreTabContent } from '@/app/builder/connectors-selector/explore-tab-content';
@@ -57,12 +55,14 @@ const ConnectorPickerPanelContent = ({
     setSelectedConnectorMetadata,
     closePicker,
     deselectStep,
+    replacedStepDisplayName,
   ] = useBuilderStateContext((state) => [
     state.workflowVersion.trigger.type === WorkflowTriggerType.EMPTY,
     state.selectedConnectorMetadataInConnectorSelector,
     state.setSelectedConnectorMetadataInConnectorSelector,
     state.setOpenedConnectorSelectorStepNameOrAddButtonId,
     state.deselectStep,
+    state.connectorSelectorReplacedStepDisplayName,
   ]);
   const { searchQuery, setSearchQuery } = useConnectorSearchContext();
   const [debouncedQuery] = useDebounce(searchQuery, 300);
@@ -111,7 +111,16 @@ const ConnectorPickerPanelContent = ({
               {selectedConnectorMetadata.displayName}
             </Button>
           ) : (
-            <span className="font-semibold">{panelTitle(operation.type)}</span>
+            <div className="flex min-w-0 flex-col">
+              <span className="truncate font-semibold">
+                {panelTitle(operation.type)}
+              </span>
+              {replacedStepDisplayName && (
+                <span className="truncate text-xs font-normal text-muted-foreground">
+                  {t('Replacing {name}', { name: replacedStepDisplayName })}
+                </span>
+              )}
+            </div>
           )}
         </SidebarHeader>
         <Separator orientation="horizontal" />
@@ -130,7 +139,6 @@ const ConnectorPickerPanelContent = ({
         </div>
         <div className="flex min-h-0 grow flex-row overflow-hidden">
           <ExploreTabContent operation={operation} />
-          <ApprovalsTabContent operation={operation} />
           <ComponentsTabContent
             operation={operation}
             searchQuery={searchQuery === '' ? '' : debouncedQuery}
@@ -187,10 +195,5 @@ function buildTabsList(operationType: WorkflowOperationType) {
       icon: <BlocksIcon className="size-5" />,
     },
     ...baseTabs.slice(1),
-    {
-      value: ConnectorSelectorTabType.APPROVALS,
-      name: t('Approvals'),
-      icon: <CheckCircle2Icon className="size-5" />,
-    },
   ];
 }

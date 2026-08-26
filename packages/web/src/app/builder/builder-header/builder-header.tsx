@@ -32,6 +32,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import { foldersHooks } from '@/features/folders';
 import { workflowHooks } from '@/features/workflows';
 import { WorkflowCreatedByBadge } from '@/features/workflows/components/workflow-created-by-badge';
@@ -49,6 +50,7 @@ import { cn } from '@/lib/utils';
 import WorkflowActionMenu from '../../components/workflow-actions-menu';
 import { workflowCanvasConsts } from '../workflow-canvas/utils/consts';
 
+import { BuilderPublishSection } from './publish-section';
 import { BuilderWorkflowStatusSection } from './workflow-status';
 
 export const BuilderHeader = () => {
@@ -209,6 +211,8 @@ export const BuilderHeader = () => {
 
       <BuilderWorkflowStatusSection></BuilderWorkflowStatusSection>
       <WorkflowCreatedByBadge createdBy={workflow.createdBy} />
+      <Separator orientation="vertical" className="h-5" />
+      <BuilderPublishSection />
     </div>
   );
 
@@ -217,7 +221,7 @@ export const BuilderHeader = () => {
   return (
     <div
       style={{
-        height: `$${workflowCanvasConsts.BUILDER_HEADER_HEIGHT}px`,
+        height: `${workflowCanvasConsts.BUILDER_HEADER_HEIGHT}px`,
       }}
     >
       <PageHeader

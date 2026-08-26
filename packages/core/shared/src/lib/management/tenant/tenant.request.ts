@@ -77,19 +77,7 @@ export const AdminRetryRunsRequestBody = z.object({
 
 export type AdminRetryRunsRequestBody = z.infer<typeof AdminRetryRunsRequestBody>
 
-export const ApplyLicenseKeyByEmailRequestBody = z.object({
-    email: z.string(),
-    licenseKey: z.string(),
-})
 
-export type ApplyLicenseKeyByEmailRequestBody = z.infer<typeof ApplyLicenseKeyByEmailRequestBody>
-
-export const IncreaseAICreditsForTenantRequestBody = z.object({
-    tenantId: z.string(),
-    amountInUsd: z.number(),
-})
-
-export type IncreaseAICreditsForTenantRequestBody = z.infer<typeof IncreaseAICreditsForTenantRequestBody>
 
 export const AddAllowedEmbedOriginsRequestBody = z.object({
     allowedEmbedOrigins: z.array(allowedEmbedOriginSchema)

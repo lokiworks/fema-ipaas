@@ -240,10 +240,7 @@ Sign-in providers and SCIM provisioning.
 
 | Variable | Description | Default |
 |---|---|---|
-| `FEMA_GOOGLE_CLIENT_ID` | Google OAuth2 client ID for "Sign in with Google". Both this and `FEMA_GOOGLE_CLIENT_SECRET` must be set for the button to appear; it can no longer be configured from the admin SSO page. | `None` |
-| `FEMA_GOOGLE_CLIENT_SECRET` | Google OAuth2 client secret. Required together with `FEMA_GOOGLE_CLIENT_ID`. | `None` |
 | `FEMA_CLOUD_AUTH_ENABLED` | Use FEMA Integration Platform-hosted OAuth2 apps for connector connections. Set to `false` to disable them. | `true` |
-| `FEMA_SCIM_DEFAULT_PROJECT_ROLE` | Default project role for members added via SCIM group sync. One of `Admin`, `Editor`, `Viewer`. | `Editor` |
 
 ---
 
@@ -259,15 +256,3 @@ workflow-authoring defaults.
 | `FEMA_ENABLE_WORKFLOW_ON_PUBLISH` | Automatically enable a workflow when a new version is published. | `true` |
 | `FEMA_ENFORCE_CONNECTION_CONNECTOR_BINDING` | Reject a step's connection at runtime unless the connection was created for the same connector as the step. | `false` |
 | `FEMA_LOAD_TRANSLATIONS_FOR_DEV_CONNECTORS` | Load translations for dev connectors (configured via `FEMA_DEV_CONNECTORS`). Affects development mode only. | `false` |
-
----
-
-### Tool search
-
-Semantic discovery of connector actions and triggers for AI agents connected
-through the MCP server. See [Tool Search](/mcp/tool-search) for how it works.
-
-| Variable | Description | Default |
-|---|---|---|
-| `FEMA_TOOL_SEARCH_ENABLED` | Registers the `ap_search_actions` and `ap_search_triggers` MCP tools. Read live, so flipping it takes effect without a restart. | `false` |
-| `FEMA_OPENAI_API_KEY` | OpenAI API key that funds tool-search embeddings (indexing and queries). When unset, the platform's OpenAI [AI provider](/admin-guide/guides/setup-ai-providers) is used instead; with neither, tool search serves keyword matches rather than semantic ones. | `None` |

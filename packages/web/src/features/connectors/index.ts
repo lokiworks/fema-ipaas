@@ -41,7 +41,7 @@ export {
   connectorSelectorUtils,
 } from './utils/connector-selector-utils';
 export {
-  CORE_ACTIONS_METADATA,
+  getCoreActionsMetadata,
   extractConnectorNamesAndCoreMetadata,
   stepUtils,
 } from './utils/step-utils';

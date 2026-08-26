@@ -16,7 +16,7 @@ import {
   ConnectorSelectorOperation,
   StepMetadataWithSuggestions,
   connectorSelectorUtils,
-  CORE_ACTIONS_METADATA,
+  getCoreActionsMetadata,
   useConnectorSearchContext,
 } from '@/features/connectors';
 
@@ -55,7 +55,7 @@ export const convertStepMetadataToConnectorSelectorItems = (
     case WorkflowActionType.CODE:
     case WorkflowActionType.LOOP_ON_ITEMS:
     case WorkflowActionType.ROUTER: {
-      return CORE_ACTIONS_METADATA.filter(
+      return getCoreActionsMetadata().filter(
         (step) => step.type === stepMetadataWithSuggestions.type,
       );
     }

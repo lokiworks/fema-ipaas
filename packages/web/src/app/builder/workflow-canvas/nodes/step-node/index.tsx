@@ -6,6 +6,7 @@ import {
   workflowStructureUtil,
 } from '@fema-ipaas/shared';
 import { Handle, NodeProps, Position } from '@xyflow/react';
+import { t } from 'i18next';
 import React, { useMemo } from 'react';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
@@ -201,7 +202,11 @@ const StepCanvasNode = React.memo(
                     displayName={stepMetadata?.displayName ?? ''}
                   />
                   <StepNodeDisplayName
-                    stepDisplayName={step.displayName}
+                    stepDisplayName={
+                      step.type === WorkflowTriggerType.EMPTY
+                        ? t('Select Trigger')
+                        : step.displayName
+                    }
                     stepIndex={stepIndex}
                     isSkipped={isSkipped}
                     connectorDisplayName={stepMetadata?.displayName ?? ''}
@@ -223,7 +228,11 @@ const StepCanvasNode = React.memo(
             >
               <div className="flex flex-col items-center min-w-0 pointer-events-auto">
                 <StepNodeDisplayName
-                  stepDisplayName={step.displayName}
+                  stepDisplayName={
+                    step.type === WorkflowTriggerType.EMPTY
+                      ? t('Select Trigger')
+                      : step.displayName
+                  }
                   stepIndex={stepIndex}
                   isSkipped={isSkipped}
                   connectorDisplayName={stepMetadata?.displayName ?? ''}

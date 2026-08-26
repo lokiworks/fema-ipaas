@@ -1,4 +1,3 @@
-import { isNil } from '@fema-ipaas/core-utils'
 import { versionUtil } from '@fema-ipaas/server-utils'
 import { ExecutionMode, Flag, FlagId } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
@@ -12,7 +11,6 @@ import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
 import { FlagEntity } from './flag.entity'
 import { defaultTheme } from './theme'
-import { webhookSecretsUtils } from './webhook-secrets-util'
 
 const flagRepo = repoFactory(FlagEntity)
 
@@ -41,21 +39,16 @@ export const flagService = (log: FastifyBaseLogger) => ({
                 FlagId.PRIVATE_CONNECTORS_ENABLED,
                 FlagId.EXECUTION_TIME_SECONDS,
                 FlagId.SHOW_COMMUNITY,
-                FlagId.SUPPORTED_APP_WEBHOOKS,
                 FlagId.TELEMETRY_ENABLED,
-                FlagId.TEMPLATES_WORKSPACE_ID,
                 FlagId.TERMS_OF_SERVICE_URL,
                 FlagId.THEME,
                 FlagId.THIRD_PARTY_AUTH_PROVIDER_REDIRECT_URL,
-                FlagId.THIRD_PARTY_AUTH_PROVIDERS_TO_SHOW_MAP,
-                FlagId.SAML_AUTH_ACS_URL,
                 FlagId.USER_CREATED,
                 FlagId.WEBHOOK_URL_PREFIX,
                 FlagId.ALLOW_NPM_PACKAGES_IN_CODE_STEP,
                 FlagId.MAX_FIELDS_PER_TABLE,
                 FlagId.MAX_RECORDS_PER_TABLE,
                 FlagId.MAX_FILE_SIZE_MB,
-                FlagId.TEMPLATES_CATEGORIES,
             ]),
         })
         const now = dayjs().toISOString()
@@ -72,19 +65,6 @@ export const flagService = (log: FastifyBaseLogger) => ({
             {
                 id: FlagId.FRONTEND_SENTRY_DSN,
                 value: system.get(AppSystemProp.FRONTEND_SENTRY_DSN) ?? null,
-                created,
-                updated,
-            },
-            {
-                id: FlagId.AGENTS_CONFIGURED,
-                // TODO (@abuaboud): add new check
-                value: true,
-                created,
-                updated,
-            },
-            {
-                id: FlagId.SHOW_ALERTS,
-                value: false,
                 created,
                 updated,
             },
@@ -121,12 +101,6 @@ export const flagService = (log: FastifyBaseLogger) => ({
             {
                 id: FlagId.CLOUD_AUTH_ENABLED,
                 value: system.getBoolean(AppSystemProp.CLOUD_AUTH_ENABLED) ?? true,
-                created,
-                updated,
-            },
-            {
-                id: FlagId.THIRD_PARTY_AUTH_PROVIDERS_TO_SHOW_MAP,
-                value: {},
                 created,
                 updated,
             },
@@ -181,12 +155,6 @@ export const flagService = (log: FastifyBaseLogger) => ({
             {
                 id: FlagId.AGENTS_ENABLED,
                 value: system.getBoolean(AppSystemProp.AGENTS_ENABLED) ?? false,
-                created,
-                updated,
-            },
-            {
-                id: FlagId.TOOL_SEARCH_ENABLED,
-                value: false,
                 created,
                 updated,
             },
@@ -288,12 +256,6 @@ export const flagService = (log: FastifyBaseLogger) => ({
                 created,
                 updated,
             },
-            {
-                id: FlagId.PGVECTOR_AVAILABLE,
-                value: false,
-                created,
-                updated,
-            },
         )
 
         if (system.isApp()) {
@@ -306,39 +268,21 @@ export const flagService = (log: FastifyBaseLogger) => ({
                     created,
                     updated,
                 },
-                {
-                    id: FlagId.SUPPORTED_APP_WEBHOOKS,
-                    value: getSupportedAppWebhooks(),
-                    created,
-                    updated,
-                },
             )
         }
         return flags
     },
 
-    aiCreditsEnabled(): boolean {
-        return !isNil(system.get(AppSystemProp.OPENROUTER_PROVISION_KEY))
-    },
 })
 
 
 
-function getSupportedAppWebhooks(): string[] {
-    const webhookSecrets = system.get(AppSystemProp.APP_WEBHOOK_SECRETS)
-    if (isNil(webhookSecrets)) {
-        return []
-    }
-    const parsed = webhookSecretsUtils.parseWebhookSecrets(webhookSecrets)
-    return Object.keys(parsed)
-}
 
 export type FlagType =
     | BaseFlagStructure<FlagId.PUBLIC_URL, string>
     | BaseFlagStructure<FlagId.TELEMETRY_ENABLED, boolean>
     | BaseFlagStructure<FlagId.USER_CREATED, boolean>
     | BaseFlagStructure<FlagId.WEBHOOK_URL_PREFIX, string>
-    | BaseFlagStructure<FlagId.TEMPLATES_CATEGORIES, string[]>
 
 type BaseFlagStructure<K extends FlagId, V> = {
     id: K

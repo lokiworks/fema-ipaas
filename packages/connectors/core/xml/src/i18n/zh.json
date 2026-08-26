@@ -1,9 +1,9 @@
 {
   "Extensible Markup Language for storing and transporting data": "Extensible Markup Language for storing and transporting data",
-  "Convert JSON to XML": "Convert JSON to XML",
+  "Convert JSON to XML": "JSON 转 XML",
   "JSON": "JSON",
-  "Attribute field": "Attribute field",
-  "Header": "Header",
-  "Field to add your tag's attributes": "Field to add your tag's attributes",
-  "Add XML header": "Add XML header"
+  "Attribute field": "属性字段",
+  "Header": "表头",
+  "Field to add your tag's attributes": "用于添加标签属性的字段",
+  "Add XML header": "添加 XML 头"
 }

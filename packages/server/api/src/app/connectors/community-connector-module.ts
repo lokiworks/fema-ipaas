@@ -1,8 +1,9 @@
 import { ConnectorMetadataModel } from '@fema-ipaas/connector-sdk'
-import { AddConnectorRequestBody, PrincipalType } from '@fema-ipaas/shared'
+import { AddConnectorRequestBody, ApplicationEventName, PrincipalType } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { securityAccess } from '../core/security/authorization/fastify-security'
+import { applicationEvents } from '../helper/application-events'
 import { attachMultipartFieldsToBody } from '../helper/multipart-body'
 import { connectorInstallService } from './connector-install-service'
 
@@ -19,6 +20,8 @@ const communityConnectorsController: FastifyPluginAsyncZod = async (app) => {
             },
             preValidation: attachMultipartFieldsToBody,
             schema: {
+                tags: ['connectors'],
+                description: 'Install a connector into the tenant from npm or an uploaded archive.',
                 body: AddConnectorRequestBody,
             },
         },
@@ -28,6 +31,15 @@ const communityConnectorsController: FastifyPluginAsyncZod = async (app) => {
                 tenantId,
                 req.body,
             )
+            applicationEvents(req.log).sendUserEvent(req, {
+                action: ApplicationEventName.CONNECTOR_PUBLISHED,
+                data: {
+                    connector: {
+                        name: connectorMetadata.name,
+                        version: connectorMetadata.version,
+                    },
+                },
+            })
             return res.code(StatusCodes.CREATED).send(connectorMetadata)
         },
     )

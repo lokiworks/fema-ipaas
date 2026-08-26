@@ -1,0 +1,330 @@
+packages/server/api/scripts/generate-openapi.ts
+  s_4c792dc35a59fb::t_7974a42465c8c8 1-33,35-50
+  s_4c792dc35a59fb::t_fa77ccbbea92d9 34
+packages/connectors/core/forms/src/i18n/zh.json
+  s_dea2145f358300::t_89b4c01c5ed3e7 2-3,5-10,12-14,19-20
+docs/endpoints/templates/update.mdx
+  s_4c792dc35a59fb::t_910e9e46f519ec 1-4
+packages/connectors/core/webhook/package.json
+  s_dea2145f358300::t_ff01af1ff98d03 7
+docs/admin-guide/security/audit-logs/member-removed.mdx
+  s_4c792dc35a59fb::t_d78b0928321d2a 1-5
+docs/endpoints/overview.mdx
+  s_4c792dc35a59fb::t_d1256fc931f2d2 8
+packages/connectors/core/date-helper/src/i18n/zh.json
+  s_dea2145f358300::t_89b4c01c5ed3e7 3-13,15-16,22-23,25-39,41-44,489-515
+packages/web/src/app/builder/workflow-canvas/widgets/builder-banner.tsx
+  s_dea2145f358300::t_139f6f73fd4c42 27
+packages/server/api/src/app/tenant/tenant.controller.ts
+  s_4c792dc35a59fb::t_1238a79ee589e1 165-166
+packages/web/src/features/connectors/utils/step-utils.tsx
+  s_dea2145f358300::t_5601df2606bde8 30,37,47,72-84
+  s_dea2145f358300::t_19f666ffdc8480 121
+  s_dea2145f358300::t_371c481f463cbc 228-230
+docs/endpoints/connections/owners.mdx
+  s_4c792dc35a59fb::t_910e9e46f519ec 1-4
+packages/connectors/community/mysql/src/i18n/zh.json
+  s_dea2145f358300::t_89b4c01c5ed3e7 2,7-8,14,17-23,26,29-30,32,34,36,38-39,41-42
+docs/openapi.json
+  s_4c792dc35a59fb::t_eb5667f1677bfc 14404-14472,29346-29417
+  s_4c792dc35a59fb::t_fa77ccbbea92d9 1-4318,4450-4580,4674-4895,4897,4899-4909,4911-4912,4915,4917-4918,4920-4921,4924,4968,4972,4991,5024,5038,5045,5056,5060,5078-5079,5082,5085-5086,5133,5144,5148,5167,5420-6249,6293-6814,6882-14403,14473-17648,18282,18295-18309,18311-18324,18326,18328-18358,18360-18363,18365-18366,18368-18370,18383-18392,18394,18399-18403,18473-18509,18511-18524,18526,18528-18558,18560-18563,18565-18569,18571-18581,18583-18587,18657-18693,18695-18708,18710,18712-18742,18744-18747,18749-18753,18763,18773,18778-18779,18781-18785,18787-18788,18803-18807,18809,18812-18828,18830-18843,18845,18847-18877,18879-18882,18884-18888,18898,18908,18913-18914,18916-18920,18922-18923,18938-18942,18944,18947-18963,18965-18978,18980,18982-19012,19014-19017,19019-19020,19022-19023,19033,19048-19049,19051-19052,19054-19055,19057-19058,19070-19071,19073-19077,19082-19098,19100-19113,19115,19117-19147,19149-19152,19154-19155,19157-19158,19168,19183-19184,19186-19187,19189-19190,19192-19193,19205-19206,19208-19212,19217-19233,19235-19248,19250,19252-19282,19284-19287,19305-19306,19308-19309,19311-19312,19314-19315,19317-19320,19322,19325-19329,19331-19344,19346,19348-19378,19380-19383,19385-19386,19388-19389,19391-19392,19394-19395,19397-19400,19402,19405-19421,19423,19425-19455,19457-19460,19462-19463,19465-19466,19468-19469,19471-19472,19474-19477,19479,19482-19498,19500,19502-19510,19542-19543,19545-19546,19548-19549,19551-19554,19556,19559-19575,19577,19579-19609,19611-19614,19616-19620,19622-19623,19625-19626,19628-19632,19636-19652,19654-19667,19669,19671-19701,19703-19706,19708-19712,19714-19715,19717-19718,19720-19724,19728-19744,19746-19759,19761,19763-19793,19795-19798,19800-19801,19803-19804,19806-19807,19809-19810,19812-19816,19832-19835,19839-19851,19853,19855-19885,19887-19890,19892-19893,19895-19896,19898-19901,19904-19907,19911-19923,19925,19927-19957,19959-19962,19964-19965,19967-19968,19970-19973,19976-19979,19983-20970,21015-21546,21615-29345,29418-29616,29622,29630,29736-37550,37553,37555,37603-37604,37609,37619-37624,38713,38721,38723-38724,38726-38731,38733-38734,38736-38743,38745,38747-38751,38756-38758,38760-38762,38765,38768-38783,38821-38822,38826,38830,38834,38838,38855,38862,38870,38872,38972,38994,38999-39000,39043-39044,39105,39112-39114,39120,39122,39129,39140-39141,39144-39157,39159-39163,39235-39243,39247,39249-39250,39252-39253,39255-39256,39327-39332,39364-39365,39367-39372,39374-39376,39411,39418-39423,39434-39435,39521-39528,39546-39552,39554-40317,40391-41945
+  s_4c792dc35a59fb::t_db92e06033de7c 4319-4449,4581-4673,4896,4898,4910,4913-4914,4916,4919,4922-4923,4925-4967,4969-4971,4973-4990,4992-5023,5025-5037,5039-5044,5046-5055,5057-5059,5061-5077,5080-5081,5083-5084,5087-5132,5134-5143,5145-5147,5149-5166,5168-5419,17649-18281,18283-18294,18310,18325,18327,18359,18364,18367,18371-18382,18393,18395-18398,18404-18472,18510,18525,18527,18559,18564,18570,18582,18588-18656,18694,18709,18711,18743,18748,18754-18762,18764-18772,18774-18777,18780,18786,18789-18802,18808,18810-18811,18829,18844,18846,18878,18883,18889-18897,18899-18907,18909-18912,18915,18921,18924-18937,18943,18945-18946,18964,18979,18981,19013,19018,19021,19024-19032,19034-19047,19050,19053,19056,19059-19069,19072,19078-19081,19099,19114,19116,19148,19153,19156,19159-19167,19169-19182,19185,19188,19191,19194-19204,19207,19213-19216,19234,19249,19251,19283,19288-19304,19307,19310,19313,19316,19321,19323-19324,19330,19345,19347,19379,19384,19387,19390,19393,19396,19401,19403-19404,19422,19424,19456,19461,19464,19467,19470,19473,19478,19480-19481,19499,19501,19511-19541,19544,19547,19550,19555,19557-19558,19576,19578,19610,19615,19621,19624,19627,19633-19635,19653,19668,19670,19702,19707,19713,19716,19719,19725-19727,19745,19760,19762,19794,19799,19802,19805,19808,19811,19817-19831,19836-19838,19852,19854,19886,19891,19894,19897,19902-19903,19908-19910,19924,19926,19958,19963,19966,19969,19974-19975,19980-19982
+  s_4c792dc35a59fb::t_f697ef303e8c8f 6250-6292,20971-21014,29617-29621,29623-29629,29631-29735,37551-37552,37554,37556-37602,37605-37608,37610-37618,37625-38476,38478-38480,38482-38542,38544-38623,38625-38627,38629-38712,38714-38720,38722,38725,38732,38735,38744,38746,38752-38755,38759,38763-38764,38766-38767,38784-38820,38823-38825,38827-38829,38831-38833,38835-38837,38839-38854,38856-38861,38863-38869,38871,38873-38971,38973-38993,38995-38998,39001-39042,39045-39104,39106-39111,39115-39119,39121,39123-39128,39130-39139,39142-39143,39158,39164-39234,39244-39246,39248,39251,39254,39257-39326,39333-39363,39366,39373,39377-39410,39412-39417,39424-39433,39436-39520,39529-39545,39553,40318-40390
+  s_4c792dc35a59fb::t_b354a6586d25f4 6815-6881,21547-21614,38477,38481,38543,38624,38628
+packages/connectors/core/connections/package.json
+  s_dea2145f358300::t_ff01af1ff98d03 7
+packages/connectors/core/data-mapper/package.json
+  s_dea2145f358300::t_ff01af1ff98d03 7
+packages/web/src/app/builder/connectors-selector/connector-actions-or-triggers-list.tsx
+  s_dea2145f358300::t_19f666ffdc8480 19,58
+packages/connectors/core/manual-trigger/src/i18n/zh.json
+  s_dea2145f358300::t_89b4c01c5ed3e7 2,6
+packages/web/src/app/builder/connector-picker-panel/index.tsx
+  s_dea2145f358300::t_26031c361c7a86 58,65,114-123
+packages/connectors/community/postgres/src/i18n/zh.json
+  s_dea2145f358300::t_89b4c01c5ed3e7 7-16,19,21-25,28-33,35-36,42
+docs/endpoints/variables/list.mdx
+  s_4c792dc35a59fb::t_910e9e46f519ec 1-4
+packages/connectors/core/schedule/src/i18n/zh.json
+  s_dea2145f358300::t_89b4c01c5ed3e7 33-136,556-563
+docs/build-connectors/connector-reference/ai-metadata.mdx
+  s_4c792dc35a59fb::t_54c8bf0de375d7 7,20
+packages/connectors/core/data-summarizer/package.json
+  s_dea2145f358300::t_ff01af1ff98d03 7
+docs/endpoints/variables/schema.mdx
+  s_4c792dc35a59fb::t_910e9e46f519ec 1-5
+packages/connectors/core/math-helper/package.json
+  s_dea2145f358300::t_ff01af1ff98d03 8
+packages/web/src/features/authentication/components/auth-landing/auth-backdrop.tsx
+  s_dea2145f358300::t_0a6cfad006a690 161
+  s_dea2145f358300::t_ba3404aecca6af 33
+  s_dea2145f358300::t_040f6a52a201f2 1,6,8,12,181-186,190-195,201-203,207-210,212-215,220,224-226
+  s_dea2145f358300::t_3212db8e1c6b5c 66,73,94
+  s_dea2145f358300::t_364b332364468d 35,40,77,96,180,189,198
+packages/connectors/core/store/package.json
+  s_dea2145f358300::t_ff01af1ff98d03 7
+docs/endpoints/workspaces/schema.mdx
+  s_4c792dc35a59fb::t_d578ea7c62fc63 2-3,5
+packages/connectors/core/connections/src/i18n/zh.json
+  s_dea2145f358300::t_89b4c01c5ed3e7 2-4,6,8
+docs/admin-guide/guides/sso.mdx
+  s_4c792dc35a59fb::t_8944f52430ee7b 18-19,21-22,24-28,30-32
+  s_4c792dc35a59fb::t_eeee21fc770013 2-3,9-11,13,15,17,34,36-38,40-44,46,48-50,52-53
+brain/knowledge/decisions/000031-the-connector-selector-is-a-right-hand-panel-not-a-popover.md
+  s_dea2145f358300::t_00daae7465f121 1-41
+packages/connectors/core/csv/package.json
+  s_dea2145f358300::t_ff01af1ff98d03 17
+docs/endpoints/workspace-members/list.mdx
+  s_4c792dc35a59fb::t_d578ea7c62fc63 2-4
+packages/connectors/core/subflows/src/i18n/zh.json
+  s_dea2145f358300::t_89b4c01c5ed3e7 2-3,6,8-9,13-16,18-19
+docs/endpoints/executions/overview.mdx
+  s_4c792dc35a59fb::t_910e9e46f519ec 1-4
+docs/endpoints/workflows/export-template.mdx
+  s_4c792dc35a59fb::t_910e9e46f519ec 1-4
+docs/install/configure-operate/setup-ssl.mdx
+  s_4c792dc35a59fb::t_f8065773043fc2 8
+docs/endpoints/executions/count-by-status.mdx
+  s_4c792dc35a59fb::t_910e9e46f519ec 1-4
+docs/install/reference/limits.mdx
+  s_4c792dc35a59fb::t_54c8bf0de375d7 55-57
+docs/endpoints/variables/reveal.mdx
+  s_4c792dc35a59fb::t_910e9e46f519ec 1-4
+packages/connectors/core/xml/package.json
+  s_dea2145f358300::t_ff01af1ff98d03 15
+packages/core/shared/package.json
+  s_4c792dc35a59fb::t_82d8cdc72a2c3b 3
+packages/web/public/locales/zh/translation.json
+  s_dea2145f358300::t_d3882b472389b2 1369
+  s_dea2145f358300::t_0a6cfad006a690 1386-1387
+  s_dea2145f358300::t_c51d954b11b085 3-4,6-10,12,22,24,30,86,122-126,142,167,216-218,390,431,454,466,486,555,614,690,824,837,908,989,1019-1020,1180,1258,1366-1368
+  s_dea2145f358300::t_b076f809bd493e 2,135,161-162,171-172,177-187,189-196,205,210,222,234-235,240,242,254-255,308-309,363,419,421,424,430,449,469,471,473,477,540,552-553,556,629-631,633-635,637-638,640-641,643-647,655-660,662-665,667-669,671,682,721,731-754,757,760,764-768,770-771,774,1025-1026,1028,1030,1032-1034,1036,1038-1039,1044,1051-1053,1096-1102,1104,1135-1136,1139,1223-1245,1247-1255,1363-1365
+  s_dea2145f358300::t_4c9f7b91abfcb1 37-43,48,56-58,61-62,64,70,74-76,82-84,93,95,115-116,131-132,134,139-140,156-158,160,197-198,200-204,212-213,219,227-228,230,233,236-237,239,252,258,265,315,326-327,329-338,340-345,361-362,364,366-368,410-418,422-423,427,439,446-448,470,476,478,508-510,516-519,521,525,527-534,536-537,544-545,549,560,572,584,595,600,605-613,615-621,623-625,627-628,636,648-654,670,673,676-681,699,701-702,727,729-730,755,772-773,778,855,874,882-884,886-888,891,898-899,903,968,976,994,1027,1060-1061,1067-1068,1090,1103,1112,1138,1141,1150,1174-1175,1177,1181-1182,1194,1197
+  s_dea2145f358300::t_364b332364468d 1001
+  s_dea2145f358300::t_3212db8e1c6b5c 1385
+  s_dea2145f358300::t_03280e2474369e 13-16,18-21,23,25-29,31-36,49,52-53,63,65-67,69,72-73,78-79,100-103,108,110-113,121,129-130,136,141,150-151,153,155,166,169-170,207-209,220,225-226,229,245,247,264,356-357,359,375,384,386-389,391,395,397,399,406-407,425,433-436,438,440,453,455,459-463,472,487,490,495,498,500-502,561,568,589,591,604,639,642,674,684,692,694,705,708,712,717,723,725-726,794-795,797-799,812-813,822,827-830,832-833,835,838-843,845-854,856-857,860-861,863-865,867,871-872,875-878,892-894,897,900,905-906,912-913,915,917,950-951,967,969-970,972,977-978,980-986,991-993,995-1000,1002-1009,1011-1016,1018,1021-1024,1031,1041-1042,1049,1059,1062-1063,1065-1066,1069-1070,1072-1073,1078,1082,1086-1089,1105-1110,1120-1123,1130-1134,1154-1155,1159-1160,1178,1191,1204,1206-1207,1210,1212-1222,1246,1270,1272,1288,1290,1309-1310,1324,1328,1330,1334
+  s_dea2145f358300::t_68ca6259a44f62 199
+  s_dea2145f358300::t_040f6a52a201f2 1370-1384
+docs/endpoints/workspaces/list.mdx
+  s_4c792dc35a59fb::t_d578ea7c62fc63 2-4
+docs/about/changelog.mdx
+  s_4c792dc35a59fb::t_54c8bf0de375d7 7,9,11-13
+docs/endpoints/executions/cancel.mdx
+  s_4c792dc35a59fb::t_910e9e46f519ec 1-4
+docs/endpoints/workspaces/delete.mdx
+  s_4c792dc35a59fb::t_d578ea7c62fc63 2-4
+docs/endpoints/connections/revalidate.mdx
+  s_4c792dc35a59fb::t_910e9e46f519ec 1-4
+packages/connectors/core/date-helper/package.json
+  s_dea2145f358300::t_ff01af1ff98d03 7
+docs/endpoints/sample-data/test-step.mdx
+  s_4c792dc35a59fb::t_910e9e46f519ec 1-4
+docs/endpoints/workspaces/create.mdx
+  s_4c792dc35a59fb::t_d578ea7c62fc63 2-4
+packages/web/src/features/connectors/index.ts
+  s_dea2145f358300::t_19f666ffdc8480 44
+brain/knowledge/engineering/api-endpoints.md
+  s_4c792dc35a59fb::t_f20b7472262b93 10,15-17,25-48
+packages/connectors/core/forms/package.json
+  s_dea2145f358300::t_ff01af1ff98d03 7
+docs/admin-guide/security/audit-logs/variable-deleted.mdx
+  s_4c792dc35a59fb::t_d78b0928321d2a 1-5
+packages/connectors/core/xml/src/i18n/zh.json
+  s_dea2145f358300::t_89b4c01c5ed3e7 3,5-9
+packages/core/utils/src/lib/application-error.ts
+  s_4c792dc35a59fb::t_61f469c75351dc 1
+brain/knowledge/decisions/000032-the-ui-defaults-to-simplified-chinese-not-the-browser-locale.md
+  s_dea2145f358300::t_d302242cb58504 1-41
+docs/endpoints/connections/update.mdx
+  s_4c792dc35a59fb::t_910e9e46f519ec 1-4
+packages/connectors/community/mysql/package.json
+  s_dea2145f358300::t_ff01af1ff98d03 15
+packages/web/src/i18n.ts
+  s_dea2145f358300::t_b8f27c84bf5111 14,16-21
+docs/docs.json
+  s_4c792dc35a59fb::t_d78b0928321d2a 170-175
+  s_4c792dc35a59fb::t_9dd3923d21c1e8 114,136-141,398-402,430-432,656
+  s_4c792dc35a59fb::t_910e9e46f519ec 412-413,443-461,473-474,483-486,493-494,502-503,537-539
+  s_4c792dc35a59fb::t_d04d8b670c2657 387-395,427
+  s_4c792dc35a59fb::t_eb5667f1677bfc 176-177
+docs/endpoints/workspace-members/delete.mdx
+  s_4c792dc35a59fb::t_d578ea7c62fc63 2-4
+docs/endpoints/connectors/uninstall.mdx
+  s_4c792dc35a59fb::t_910e9e46f519ec 1-4
+docs/endpoints/variables/delete.mdx
+  s_4c792dc35a59fb::t_910e9e46f519ec 1-4
+docs/admin-guide/security/audit-logs/overview.mdx
+  s_4c792dc35a59fb::t_54c8bf0de375d7 20
+  s_4c792dc35a59fb::t_d78b0928321d2a 30-31,42-46,53-55
+  s_4c792dc35a59fb::t_eb5667f1677bfc 57-58
+docs/endpoints/tenants/get.mdx
+  s_4c792dc35a59fb::t_d578ea7c62fc63 1-4
+packages/connectors/core/text-helper/src/i18n/zh.json
+  s_dea2145f358300::t_89b4c01c5ed3e7 2-3,5-13,15-20,22-23,27-29,31-41,43,45-46,48-50,52,55-58,60
+packages/connectors/core/crypto/src/i18n/zh.json
+  s_dea2145f358300::t_89b4c01c5ed3e7 3-8,12-14,17-20,22-28,30-33,41-43,45,47,50-53
+docs/admin-guide/security/audit-logs/execution-resumed.mdx
+  s_4c792dc35a59fb::t_d78b0928321d2a 1-5
+packages/connectors/core/csv/src/i18n/zh.json
+  s_dea2145f358300::t_89b4c01c5ed3e7 2-4,8-9,11-12,15-18
+packages/web/src/app/builder/builder-header/publish-section.tsx
+  s_dea2145f358300::t_0dc2dd3e9c6535 95-97
+  s_dea2145f358300::t_0a6cfad006a690 69-80,82,102-104
+  s_dea2145f358300::t_94c52e47c0f2b6 1-68,81,83-94,98-101,105-183
+packages/web/src/app/builder/workflow-canvas/nodes/step-node/index.tsx
+  s_dea2145f358300::t_371c481f463cbc 9,232-235
+  s_dea2145f358300::t_9f927ca0d0b348 205-209,231
+brain/knowledge/connectors-engine/building-connectors.md
+  s_dea2145f358300::t_2d1c43963a88de 32-33
+  s_4c792dc35a59fb::t_b642abf67510a7 30
+  s_4c792dc35a59fb::t_3b379d2ba34880 31
+packages/connectors/core/tags/package.json
+  s_dea2145f358300::t_ff01af1ff98d03 7
+packages/connectors/core/manual-trigger/package.json
+  s_dea2145f358300::t_ff01af1ff98d03 17
+brain/knowledge/engineering/web-feature-anatomy.md
+  s_dea2145f358300::t_618ddff18080dc 71,76-79
+  s_4c792dc35a59fb::t_b642abf67510a7 81
+  s_dea2145f358300::t_66b437b94c5b90 80
+packages/connectors/core/data-summarizer/src/i18n/zh.json
+  s_dea2145f358300::t_89b4c01c5ed3e7 2-7,12,15
+packages/web/src/features/connectors/hooks/steps-hooks.ts
+  s_dea2145f358300::t_19f666ffdc8480 20
+  s_dea2145f358300::t_3f52b672f1cf27 21
+  s_dea2145f358300::t_371c481f463cbc 99-100,120-122
+packages/connectors/core/tags/src/i18n/zh.json
+  s_dea2145f358300::t_89b4c01c5ed3e7 2-4,6,8
+packages/web/src/app/builder/index.tsx
+  s_dea2145f358300::t_4b1a6cac6e44a0 43
+docs/workflows/workspace-variables.mdx
+  s_4c792dc35a59fb::t_62322deeb8a47d 22,28
+brain/knowledge/engineering/execute-a-domain-wide-rename.md
+  s_4c792dc35a59fb::t_50a0021a1e8b80 52-58
+docs/endpoints/workspaces/update.mdx
+  s_4c792dc35a59fb::t_d578ea7c62fc63 2-4
+packages/connectors/core/text-helper/package.json
+  s_dea2145f358300::t_ff01af1ff98d03 20
+packages/web/public/locales/en/translation.json
+  s_dea2145f358300::t_d3882b472389b2 1366
+  s_dea2145f358300::t_3212db8e1c6b5c 1382
+  s_dea2145f358300::t_0a6cfad006a690 1383
+  s_4c792dc35a59fb::t_298f931cf9c6e4 1384-1387
+  s_dea2145f358300::t_26031c361c7a86 1363-1365
+  s_dea2145f358300::t_040f6a52a201f2 1367-1381
+docs/install/reference/breaking-changes.mdx
+  s_4c792dc35a59fb::t_f8065773043fc2 452
+  s_4c792dc35a59fb::t_d578ea7c62fc63 185
+  s_4c792dc35a59fb::t_d99368c20442fb 115
+packages/server/api/src/app/app.ts
+  s_4c792dc35a59fb::t_d78b0928321d2a 314,316,320-324
+  s_4c792dc35a59fb::t_910e9e46f519ec 334
+  s_4c792dc35a59fb::t_e296de62ce8fbf 336
+  s_4c792dc35a59fb::t_1238a79ee589e1 330
+  s_4c792dc35a59fb::t_61f469c75351dc 5
+docs/endpoints/connections/oauth2-authorization-url.mdx
+  s_4c792dc35a59fb::t_910e9e46f519ec 1-4
+packages/server/api/src/app/connection/global-connection.controller.ts
+  s_4c792dc35a59fb::t_1238a79ee589e1 90-91,100-101,110-111,121-122
+packages/web/src/app/builder/connectors-selector/index.tsx
+  s_dea2145f358300::t_03648f49033dd4 11,23-27
+docs/admin-guide/security/audit-logs/variable-value-revealed.mdx
+  s_4c792dc35a59fb::t_d78b0928321d2a 1-5
+packages/core/shared/src/lib/governance/audit-events/index.ts
+  s_4c792dc35a59fb::t_d78b0928321d2a 226-232,367-379
+  s_4c792dc35a59fb::t_1939a744eea1c3 380
+packages/server/api/src/app/workspace/workspace-member.controller.ts
+  s_4c792dc35a59fb::t_1238a79ee589e1 81-82,112-113
+packages/connectors/community/postgres/package.json
+  s_dea2145f358300::t_ff01af1ff98d03 16
+docs/endpoints/tenants/update.mdx
+  s_4c792dc35a59fb::t_d578ea7c62fc63 1-4
+docs/endpoints/workspace-members/schema.mdx
+  s_4c792dc35a59fb::t_d578ea7c62fc63 2-3,5
+packages/core/utils/package.json
+  s_4c792dc35a59fb::t_9bcdd06b3d2cb6 3
+docs/admin-guide/security/audit-logs/member-added.mdx
+  s_4c792dc35a59fb::t_d78b0928321d2a 1-5
+docs/endpoints/connections/replace.mdx
+  s_4c792dc35a59fb::t_910e9e46f519ec 1-4
+docs/admin-guide/security/audit-logs/connector-published.mdx
+  s_4c792dc35a59fb::t_eb5667f1677bfc 1-5
+packages/connectors/core/http/src/i18n/zh.json
+  s_dea2145f358300::t_89b4c01c5ed3e7 2-3,7,10,12-17,19,28,32-38
+packages/web/src/app/builder/builder-header/builder-header.tsx
+  s_dea2145f358300::t_139f6f73fd4c42 35,53,214-215,224
+packages/connectors/core/crypto/package.json
+  s_dea2145f358300::t_ff01af1ff98d03 16
+docs/endpoints/variables/create.mdx
+  s_4c792dc35a59fb::t_910e9e46f519ec 1-4
+docs/install/overview.mdx
+  s_4c792dc35a59fb::t_f8065773043fc2 7,10
+packages/connectors/core/math-helper/src/i18n/zh.json
+  s_dea2145f358300::t_89b4c01c5ed3e7 3-9,11-12,15-17
+packages/connectors/core/subflows/package.json
+  s_dea2145f358300::t_ff01af1ff98d03 7
+packages/server/api/src/app/connectors/community-connector-module.ts
+  s_4c792dc35a59fb::t_1238a79ee589e1 23-24
+  s_4c792dc35a59fb::t_e296de62ce8fbf 2,6,34-42
+docs/endpoints/templates/categories.mdx
+  s_4c792dc35a59fb::t_910e9e46f519ec 1-4
+packages/connectors/core/data-mapper/src/i18n/zh.json
+  s_dea2145f358300::t_89b4c01c5ed3e7 2-7
+packages/connectors/core/http/package.json
+  s_dea2145f358300::t_ff01af1ff98d03 16
+packages/connectors/core/schedule/package.json
+  s_dea2145f358300::t_ff01af1ff98d03 7
+packages/web/src/features/workspaces/stores/workspace-collection.ts
+  s_dea2145f358300::t_0a6cfad006a690 20
+  s_dea2145f358300::t_d3882b472389b2 259
+packages/connectors/core/file-helper/package.json
+  s_dea2145f358300::t_ff01af1ff98d03 15
+packages/server/api/src/app/helper/system-validator.ts
+  s_4c792dc35a59fb::t_e0f5109d71b329 3
+docs/admin-guide/security/audit-logs/execution-retried.mdx
+  s_4c792dc35a59fb::t_d78b0928321d2a 1-5
+packages/connectors/core/file-helper/src/i18n/zh.json
+  s_dea2145f358300::t_89b4c01c5ed3e7 3-7,9-11,14,16-29,31-32,34,36,45,121-123
+packages/server/api/package.json
+  s_4c792dc35a59fb::t_1e7cc25dfd96ab 139,143,145-149
+  s_4c792dc35a59fb::t_2920bcd4301a84 142
+docs/endpoints/variables/owners.mdx
+  s_4c792dc35a59fb::t_910e9e46f519ec 1-4
+docs/endpoints/variables/update.mdx
+  s_4c792dc35a59fb::t_910e9e46f519ec 1-4
+docs/install/options/docker.mdx
+  s_4c792dc35a59fb::t_f8065773043fc2 8
+packages/web/src/app/builder/state/connector-selector-state.ts
+  s_dea2145f358300::t_03648f49033dd4 18,22,29,41-42,62,66
+packages/server/api/src/app/helper/system/system.ts
+  s_4c792dc35a59fb::t_e0f5109d71b329 4
+docs/admin-guide/security/audit-logs/variable-upserted.mdx
+  s_4c792dc35a59fb::t_d78b0928321d2a 1-5
+docs/endpoints/users/get.mdx
+  s_4c792dc35a59fb::t_910e9e46f519ec 1-4
+.env.dev
+  s_dea2145f358300::t_5215e1b2fbee14 16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "f8dce547b8e81fbacbea8dcd6dd2db30f04d0735",
+  "prompts": {},
+  "sessions": {
+    "s_4c792dc35a59fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9f888276-9ded-4bd8-8df6-c6834b8f360e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    },
+    "s_dea2145f358300": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "152e1421-d569-4fd2-8e1b-394a35732492",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

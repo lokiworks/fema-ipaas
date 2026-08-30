@@ -33,6 +33,14 @@ FEMA Integration Platform: open-source AI-first workflow automation platform (se
 
 ## Gotchas
 
+**A TypeScript enum defined in two core packages is two unrelated types.** `ExecutionType` lived
+both in `core/connector-types` and in `core/execution`, with identical members. `@fema-ipaas/shared`
+re-exports both packages, so `import { ExecutionType } from '@fema-ipaas/shared'` resolved to one of
+them and every value typed against the other was rejected with "Two different types with this name
+exist, but they are unrelated" — an error that reads like a broken build rather than a duplicate
+definition. `ConnectorSource` and `PackageType` are still duplicated the same way. When a thin core
+package needs an enum another one already owns, **re-export it**, never redeclare it.
+
 **`distributedLock().runExclusive` waits for the *whole* `timeoutInSeconds` under contention — never put one on a request path.** `distributed-lock-factory.ts` configures Redlock with `retryCount = Math.ceil(timeout / 200)` and `retryDelay: 200`, so the retry budget is exactly the lock TTL: a `timeoutInSeconds: 15` lock retries 75 times before giving up, and each retry is its own Redis round-trip. N concurrent requests contending on one key therefore generate up to N×75 pure-retry commands against shared Redis *while* every one of them stalls for up to 15s. Read-mostly checks belong on the cache with the fetch scheduled behind the response (`rejectedPromiseHandler` + `distributedStore.runOnceWithin` gives cluster-wide dedupe without a lock); reserve `runExclusive` for genuine write serialization off the hot path. Surfaced 2026-08 in the Autumn credits gate (PR #14436, `f0638438`), where an exhausted or cold platform made every webhook, AI-proxy call and chat turn take a reverify lock plus a `platform_plan` SELECT plus a 5s Autumn HTTP call inline — a ~20s worst case on the highest-volume path in the product. Related: [[ee-platform-plans-billing]].
 
 **Don't `.max()` a business limit on a request body — cap server-side.** A `.max()` on a request-body field rejects the *whole* request with a 400 the moment a user crosses it, so a user editing a list that reaches 50 items loses their entire save. Reserve `.max()` for a true trust-boundary DoS guard (Fastify's global body limit already covers gross abuse) and let business limits just *apply*: accept the input and `slice(0, MAX)` in the service layer, so the write always succeeds with the limit quietly enforced. Surfaced 2026-07 on `POST /v1/chat/memory`, where the schema's `.max(50)`/`.max(280)` duplicated a `slice` the save helper already did — redundant *and* a data-loss bug.

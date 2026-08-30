@@ -43,3 +43,35 @@ One Playwright suite in `packages/tests-e2e` feeds three consumers that fail ind
 - `api` splits by folder, not by name: `test/unit` is infra-free and runs in the loop; `test/integration` needs Postgres and Redis and runs only under `npm run test-api`. A BullMQ or system-jobs test belongs in `integration` no matter how unit-like it looks — several lived in `test/unit` and failed on every run.
 - After deleting a feature, delete its tests in the same change. Post-EE removal, `test/unit` still held suites for `ee/agent`, `knowledge-base`, `canary`, and agent step migrations, all importing modules that no longer existed.
 - Deleting a connector package means removing it from `turbo.json` too. A stale `@fema-ipaas/connector-x#build` in a `dependsOn` array makes turbo fail the whole run with "Could not find package", which reads like a broken checkout rather than a stale reference.
+
+## The API integration suite (`npm run test-api`)
+
+`packages/server/api/test/integration` runs on PGlite (`FEMA_DB_TYPE=PGLITE` in `.env.tests`) and an
+in-memory Redis (`FEMA_REDIS_TYPE=MEMORY`), so it needs no containers. `check-migrations` runs first
+and is the step that proves the entities and the migrations still agree.
+
+- **An unknown `FEMA_*` name in `.env.tests` is not an error — it is a silent default.** The file
+  carried upstream-era names long after the rename (`FEMA_PIECES_SYNC_MODE`, `FEMA_DEV_PIECES`,
+  `FEMA_EDITION`), which left `CONNECTORS_SYNC_MODE` on its `OFFICIAL_AUTO` default: the suite was
+  reaching for the connector registry over the network on every run. When you rename a system prop,
+  grep `.env.*` too.
+- **`FEMA_DEV_CONNECTORS` takes the short connector name (`webhook`), not the package name.**
+  Everything that reads it runs the value through `getConnectorNameFromAlias`, which strips the scope
+  and the `connector-` prefix. `@fema-ipaas/connector-webhook` looks correct and matches nothing.
+- **Nothing in the `@fema-ipaas` scope is published to npm.** Any test that wires a connector up as
+  `PackageType.REGISTRY` dies on `Failed to fetch connector bundle …: 404 Not Found` once the engine
+  actually runs it. Register the connectors the test needs as dev connectors and build their `dist`.
+- **A test that needs a real Redis must skip itself, not hang.** `active-invariant` and
+  `remove-deprecated-jobs` drive real BullMQ; they probe the host through
+  `test/helpers/redis-availability.ts` and `describe.skipIf` out. Without that they burned two
+  minutes each on a `beforeAll` hook timeout, which reads like a broken suite rather than a missing
+  service.
+- **`tsconfig.spec.json` is typechecked by nothing in CI.** Vitest only transpiles, so the test tree
+  had accumulated ~100 type errors — stale enum members (`DefaultProjectRole.EDITOR`), removed job
+  fields, mocks for entities that no longer exist. `npm run typecheck` in `packages/server/api`
+  now covers `tsconfig.app.json` *and* `tsconfig.spec.json`; run it after touching tests.
+- **The custom-connector archive is generated, not hand-carried.**
+  `packages/server/api/src/assets/e2e-custom-echo-0.0.1.tgz` is built from
+  `test/fixtures/e2e-custom-echo` by `npm run build-e2e-connector-archive` (esbuild bundles the SDK
+  in, so the archive has no dependencies to install). The committed one was an upstream artifact
+  importing `@activepieces/pieces-framework` and could never run here.

@@ -1,0 +1,264 @@
+packages/server/api/src/app/project/project-side-effects.ts
+  s_9ba85259973959::t_d7134aed075c9d 48
+packages/server/api/test/integration/workflows/execution/bulk-retry-execution.test.ts
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 3
+  s_fe1331d5451f7f::t_22e82506de2418 4-7
+packages/server/api/test/integration/workers/job-broker-invalid-schema.test.ts
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 4-7
+  s_fe1331d5451f7f::t_22e82506de2418 8-9
+packages/tests-e2e/scenarios/connectors/connector-isolation.spec.ts
+  s_fe1331d5451f7f::t_94b36a43ceb808 29
+  s_fe1331d5451f7f::t_3fc1032764e3cc 44-45
+packages/server/api/test/integration/workflows/execution/retry-execution.test.ts
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 4
+  s_fe1331d5451f7f::t_22e82506de2418 5-8
+  s_fe1331d5451f7f::t_67af7d793e313c 3
+packages/server/api/test/integration/workers/machine/machine-service.test.ts
+  s_9ba85259973959::t_98d5dcb1cd0792 2
+  s_9ba85259973959::t_94e857d3d29ef2 22-25,27-28
+  s_9ba85259973959::t_f27e806bed6e23 4,6-9,20,70,79
+  s_fe1331d5451f7f::t_db52360e979eb0 11,18,32,72,81
+  s_9ba85259973959::t_38045d6db26613 10
+packages/server/api/test/integration/user/tenant-user-community.test.ts
+  s_fe1331d5451f7f::t_22e82506de2418 6,12-13
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 5
+packages/server/api/test/integration/database/rollback.test.ts
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 2-5
+packages/server/api/test/integration/workflows/folder/folder-events.test.ts
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 4
+  s_fe1331d5451f7f::t_22e82506de2418 5-9
+packages/server/api/test/integration/authentication/password-hasher.test.ts
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 2
+packages/server/api/test/integration/flags/flags.test.ts
+  s_fe1331d5451f7f::t_22e82506de2418 3
+packages/server/api/test/integration/webhooks/webhook-multipart-file.test.ts
+  s_fe1331d5451f7f::t_22e82506de2418 5-7
+packages/server/api/test/integration/webhooks/webhook-xml-parsing.test.ts
+  s_fe1331d5451f7f::t_22e82506de2418 4-6
+packages/server/api/test/integration/webhooks/webhook-oversized-file.test.ts
+  s_fe1331d5451f7f::t_22e82506de2418 8-10
+packages/server/api/test/integration/authentication/passwordless-authn.test.ts
+  s_fe1331d5451f7f::t_22e82506de2418 12-13
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 5-9
+  s_fe1331d5451f7f::t_67af7d793e313c 10-11
+packages/server/api/test/integration/engine-services/engine-services.test.ts
+  s_fe1331d5451f7f::t_0ecb0af6a8a89d 6-9
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 10
+  s_fe1331d5451f7f::t_22e82506de2418 11-12,18-19
+packages/server/api/test/integration/webhooks/webhook.test.ts
+  s_fe1331d5451f7f::t_22e82506de2418 4-7
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 8
+packages/web/src/app/builder/step-settings/index.tsx
+  s_fe1331d5451f7f::t_bf47ae6d66fce7 307-322
+  s_fe1331d5451f7f::t_7c99afa3a39493 39
+packages/server/api/test/integration/connectors/connector-options-e2e.test.ts
+  s_fe1331d5451f7f::t_22e82506de2418 24-26,32
+  s_fe1331d5451f7f::t_0ecb0af6a8a89d 22
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 23
+packages/server/api/test/integration/workflows/execution/execute-workflow-e2e.test.ts
+  s_9ba85259973959::t_de0b44a59bbade 49
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 34-35
+  s_fe1331d5451f7f::t_0ecb0af6a8a89d 33
+  s_fe1331d5451f7f::t_22e82506de2418 36-38,44
+brain/knowledge/engineering/web-feature-anatomy.md
+  s_fe1331d5451f7f::t_5fbecbb5103be8 82-87
+packages/server/api/test/helpers/auth.ts
+  s_9ba85259973959::t_7b494fb3974666 1-2
+packages/server/api/test/integration/workflows/workflow/error-handler.test.ts
+  s_fe1331d5451f7f::t_22e82506de2418 4-5
+packages/server/api/test/integration/workers/action-run-cancellation.test.ts
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 5-8
+  s_fe1331d5451f7f::t_22e82506de2418 9-10
+packages/server/api/test/integration/workers/job-broker-error-propagation.test.ts
+  s_fe1331d5451f7f::t_22e82506de2418 7-8
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 4-6
+packages/server/api/test/integration/workers/project-worker.test.ts
+  s_fe1331d5451f7f::t_22e82506de2418 5-7
+packages/tests-e2e/scenarios/workflows/webhook-should-return-response.spec.ts
+  s_fe1331d5451f7f::t_3fc1032764e3cc 32-33
+  s_fe1331d5451f7f::t_94b36a43ceb808 16
+packages/server/api/test/integration/system-jobs/remove-deprecated-jobs.test.ts
+  s_fe1331d5451f7f::t_ac2c14375ca9fc 25,34
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 5
+  s_9ba85259973959::t_d4c108a2520bb2 6,9-11,27
+packages/server/api/test/integration/workers/job-queue/active-invariant.test.ts
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 6-7
+  s_9ba85259973959::t_d4c108a2520bb2 8,26-28,155
+packages/server/api/test/integration/connection/custom-auth-refresh.test.ts
+  s_fe1331d5451f7f::t_67af7d793e313c 6
+  s_fe1331d5451f7f::t_22e82506de2418 7-9
+packages/server/api/test/helpers/test-context.ts
+  s_9ba85259973959::t_e1ac1ef948c8e6 1,51,128
+  s_9ba85259973959::t_ea9a879c7d1744 2
+  s_9ba85259973959::t_13b015e382f776 24-32,61-69,73-121,135-144
+  s_9ba85259973959::t_5d95f7b2055d28 145
+packages/server/api/test/helpers/redis-availability.ts
+  s_9ba85259973959::t_7027ab41615963 1-25
+packages/server/api/test/integration/workflows/folder/folder-list.test.ts
+  s_fe1331d5451f7f::t_67af7d793e313c 5
+  s_fe1331d5451f7f::t_22e82506de2418 6,11-13
+  s_9ba85259973959::t_eb71ea885e7845 35
+packages/server/api/src/app/workers/machine/machine-service.ts
+  s_9ba85259973959::t_69ef9f3501c604 100
+packages/server/api/test/integration/connectors/connector-metadata.test.ts
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 6-8
+  s_fe1331d5451f7f::t_22e82506de2418 9-10,15-17
+packages/server/api/test/integration/workers/tenant-queue-migration.test.ts
+  s_fe1331d5451f7f::t_22e82506de2418 7
+  s_fe1331d5451f7f::t_67af7d793e313c 6
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 4-5
+packages/server/api/test/integration/file/file-cleanup.test.ts
+  s_fe1331d5451f7f::t_22e82506de2418 6-8
+  s_fe1331d5451f7f::t_67af7d793e313c 5
+packages/server/api/test/integration/connection/oauth2-placeholder.test.ts
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 5
+  s_fe1331d5451f7f::t_22e82506de2418 6-8
+packages/server/api/test/integration/connectors/connector-sync-service.test.ts
+  s_9ba85259973959::t_a2d3d26a9af35a 2,46,73,91,113,131
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 7-8
+  s_fe1331d5451f7f::t_22e82506de2418 9
+packages/server/api/test/integration/oidc/oidc-token.test.ts
+  s_fe1331d5451f7f::t_22e82506de2418 7-9
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 6
+packages/server/api/test/integration/connectors/connector-install.test.ts
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 13-15
+  s_fe1331d5451f7f::t_22e82506de2418 16-17
+  s_fe1331d5451f7f::t_ac2c14375ca9fc 23
+packages/server/api/src/app/connectors/metadata/connector-metadata-service.ts
+  s_fe1331d5451f7f::t_993f94aa3db48b 418
+packages/server/api/test/integration/webhooks/webhook-handshake-double-consume.test.ts
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 4,6
+  s_fe1331d5451f7f::t_22e82506de2418 5,7-8
+packages/server/api/test/integration/workers/job-queue/job-broker.test.ts
+  s_9ba85259973959::t_748a8b4a1cb3ef 1,49-62
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 2,31
+  s_fe1331d5451f7f::t_db52360e979eb0 9,15,24
+packages/server/api/src/app/database/migration/postgres/1787473797710-InitialSchema.ts
+  s_fe1331d5451f7f::t_1359492d5c022f 2-11,17-21,406-408,732-736
+packages/server/api/test/integration/workflows/workflow/human-input/human-input.test.ts
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 5-6
+  s_fe1331d5451f7f::t_22e82506de2418 7,12-14
+packages/server/api/test/integration/connection/connection-replace.test.ts
+  s_fe1331d5451f7f::t_22e82506de2418 4,9-11
+packages/server/api/src/app/database/migration/postgres/1787900000006-RenameWorkspaceToProject.ts
+  s_fe1331d5451f7f::t_4a8225f6727e15 62-63,121-122
+packages/server/api/test/helpers/mocks/index.ts
+  s_9ba85259973959::t_35474190acf770 1
+  s_9ba85259973959::t_3309c2fa18f9e2 206,213-214
+  s_9ba85259973959::t_222786340fb237 257
+  s_9ba85259973959::t_ea9a879c7d1744 3
+packages/server/api/test/integration/user-invitations/accept-invitation.test.ts
+  s_fe1331d5451f7f::t_22e82506de2418 6,11-12
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 5
+packages/server/api/test/integration/authentication/authentication.test.ts
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 3
+  s_fe1331d5451f7f::t_22e82506de2418 7-8
+packages/server/api/test/integration/workers/workflow-worker.test.ts
+  s_fe1331d5451f7f::t_22e82506de2418 5-6,12-13
+packages/server/api/test/integration/workflows/execution/run-logs-file-fk.test.ts
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 5,7
+  s_fe1331d5451f7f::t_67af7d793e313c 6
+  s_fe1331d5451f7f::t_22e82506de2418 8-11
+packages/server/api/test/integration/workflows/workflow/workflow.test.ts
+  s_9ba85259973959::t_fd3c0345ec2803 65,190
+  s_fe1331d5451f7f::t_22e82506de2418 18-19,24-26
+  s_9ba85259973959::t_ee1b7652066618 152,267
+packages/server/api/test/integration/workflows/execution/resume-execution.test.ts
+  s_fe1331d5451f7f::t_22e82506de2418 12-15
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 4,6-11
+  s_fe1331d5451f7f::t_67af7d793e313c 5
+packages/server/api/test/integration/tenant/first-tenant-provisioning.test.ts
+  s_fe1331d5451f7f::t_22e82506de2418 8-9
+  s_fe1331d5451f7f::t_67af7d793e313c 7
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 5-6
+  s_fe1331d5451f7f::t_db52360e979eb0 13-14
+packages/server/api/test/integration/oidc/oidc-discovery.test.ts
+  s_fe1331d5451f7f::t_22e82506de2418 4
+packages/server/api/test/integration/workflows/workflow/workflow-operations.test.ts
+  s_fe1331d5451f7f::t_22e82506de2418 16-17,23-25
+  s_9ba85259973959::t_200908659f86b9 651,683
+packages/server/api/test/integration/workflows/execution/list-executions.test.ts
+  s_fe1331d5451f7f::t_22e82506de2418 2-3
+packages/server/api/test/integration/authentication/otp-legacy-version.test.ts
+  s_fe1331d5451f7f::t_22e82506de2418 6-7
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 4-5
+packages/server/api/test/integration/workflows/execution/mark-parent-run-cross-tenant.test.ts
+  s_fe1331d5451f7f::t_22e82506de2418 5-7
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 4
+packages/server/api/test/integration/authentication/otp-service.test.ts
+  s_fe1331d5451f7f::t_22e82506de2418 6-7
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 3-5
+packages/server/api/test/integration/project/project.test.ts
+  s_fe1331d5451f7f::t_22e82506de2418 5-7
+  s_9ba85259973959::t_ea9a879c7d1744 47,49,65
+brain/knowledge/decisions/000033-the-editor-is-three-columns-tools-left-config-right.md
+  s_fe1331d5451f7f::t_5fbecbb5103be8 58-69
+packages/server/api/test/integration/workflows/execution/resume-service.test.ts
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 4-6
+  s_fe1331d5451f7f::t_22e82506de2418 7-10
+packages/server/api/test/integration/workers/job-broker-seed-cause.test.ts
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 4-7
+  s_fe1331d5451f7f::t_22e82506de2418 8-9
+packages/server/api/test/integration/workflows/execution/waitpoint.test.ts
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 4-6
+  s_fe1331d5451f7f::t_22e82506de2418 7-10
+packages/server/api/test/integration/connectors/connector-bundle.test.ts
+  s_fe1331d5451f7f::t_22e82506de2418 5-8
+packages/server/api/test/integration/trigger-events/trigger-event.test.ts
+  s_fe1331d5451f7f::t_22e82506de2418 6-7
+packages/server/api/test/integration/system-jobs/system-jobs.test.ts
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 3-4
+  s_fe1331d5451f7f::t_22e82506de2418 5
+packages/server/api/test/integration/connection/connection-events.test.ts
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 10-11
+  s_fe1331d5451f7f::t_22e82506de2418 12-16
+packages/server/api/test/integration/file/files-controller.test.ts
+  s_fe1331d5451f7f::t_67af7d793e313c 6
+  s_fe1331d5451f7f::t_22e82506de2418 8-10
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 7
+packages/tests-e2e/pages/builder.page.ts
+  s_fe1331d5451f7f::t_94b36a43ceb808 13-18
+  s_fe1331d5451f7f::t_419af7e9ec2add 19-23,42,48,61
+  s_fe1331d5451f7f::t_7d56a7f786bd27 28-30
+packages/server/api/test/integration/connection/connection.test.ts
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 5
+  s_fe1331d5451f7f::t_22e82506de2418 6-7,11-13
+packages/server/api/test/integration/helper/pagination.test.ts
+  s_9ba85259973959::t_eb71ea885e7845 5
+  s_fe1331d5451f7f::t_22e82506de2418 4,6-7
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 3
+packages/server/api/test/integration/workflows/workflow/workflow-lifecycle-events.test.ts
+  s_fe1331d5451f7f::t_22e82506de2418 23-27
+  s_fe1331d5451f7f::t_67af7d793e313c 21
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 22
+packages/server/api/test/integration/workers/machine/machine-list-filter.test.ts
+  s_9ba85259973959::t_ef269e1a52764f 72,81,97,129
+  s_fe1331d5451f7f::t_5fdc9a62d643d8 3-4
+  s_fe1331d5451f7f::t_db52360e979eb0 8
+packages/server/api/.env.tests
+  s_9ba85259973959::t_7d732647133415 13-14,24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "47b1c59b623098336f70d700055533e21b22e69a",
+  "prompts": {},
+  "sessions": {
+    "s_9ba85259973959": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "980ed77b-543a-425f-add7-a2b2270e607b",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    },
+    "s_fe1331d5451f7f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "51e84a0f-3321-4647-be3f-a2e4cb39393d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

@@ -36,6 +36,7 @@ import {
   ActionTestRunnerProvider,
   TriggerTestRunnerProvider,
 } from '../test-step/test-runner-context';
+import { TestStepCTAButton } from '../test-step/test-step-cta-button';
 
 import { CodeSettings } from './code-settings';
 import { ComponentSettings } from './component-settings';
@@ -303,15 +304,22 @@ const StepSettingsContainer = () => {
       <TabsContent value="output" className="mt-0 min-h-0 flex-1">
         <div className="flex h-full min-h-0 flex-col">
           {showTestPanel ? (
-            <StepDataPanelHost
-              workflowId={workflowVersion.workflowId}
-              workflowVersionId={workflowVersion.id}
-              projectId={project?.id}
-              stepType={modifiedStep.type}
-              showGenerateSampleData={showGenerateSampleData}
-              showStepInputOutFromRun={showStepInputOutFromRun}
-              saving={saving}
-            />
+            <>
+              <div className="min-h-0 flex-1">
+                <StepDataPanelHost
+                  workflowId={workflowVersion.workflowId}
+                  workflowVersionId={workflowVersion.id}
+                  projectId={project?.id}
+                  stepType={modifiedStep.type}
+                  showGenerateSampleData={showGenerateSampleData}
+                  showStepInputOutFromRun={showStepInputOutFromRun}
+                  saving={saving}
+                />
+              </div>
+              <div className="shrink-0 border-t p-2">
+                <TestStepCTAButton />
+              </div>
+            </>
           ) : (
             <div className="px-4 pt-6 text-sm text-muted-foreground">
               {t('This step produces no output to preview.')}

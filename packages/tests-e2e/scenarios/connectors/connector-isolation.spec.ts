@@ -26,6 +26,7 @@ test.describe('Connector isolation — CE', () => {
       trigger: 'Catch Webhook'
     });
 
+    await builderPage.openStepInputTab();
     const webhookInput = page.locator('input.grow.bg-background');
     const webhookUrl = await webhookInput.inputValue();
 
@@ -39,6 +40,8 @@ test.describe('Connector isolation — CE', () => {
       connector: 'Webhook',
       action: 'Return Response'
     });
+
+    await builderPage.openStepInputTab();
 
     await page.locator('div.cm-activeLine.cm-line').fill('');
     await page.locator('div.cm-activeLine.cm-line').fill(

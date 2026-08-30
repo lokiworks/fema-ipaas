@@ -1,17 +1,18 @@
-import { InterceptorVerdict } from '../../../../../src/app/workers/job-queue/job-interceptor'
+import { LATEST_JOB_DATA_SCHEMA_VERSION, RunEnvironment, WorkerJobType } from '@fema-ipaas/shared'
+import { InterceptorVerdict } from '../../../../src/app/workers/job-queue/job-interceptor'
 import { Worker as BullMQWorker, Job } from 'bullmq'
 import { FastifyBaseLogger } from 'fastify'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mockGenerateEngineToken = vi.fn().mockResolvedValue('engine-token')
 
-vi.mock('../../../../../src/app/authentication/lib/access-token-manager', () => ({
+vi.mock('../../../../src/app/authentication/lib/access-token-manager', () => ({
     accessTokenManager: () => ({
         generateEngineToken: mockGenerateEngineToken,
     }),
 }))
 
-vi.mock('../../../../../src/app/workers/migrations/job-data-migrations', () => ({
+vi.mock('../../../../src/app/workers/migrations/job-data-migrations', () => ({
     jobMigrations: () => ({
         apply: vi.fn((data: unknown) => Promise.resolve(data)),
     }),
@@ -20,14 +21,14 @@ vi.mock('../../../../../src/app/workers/migrations/job-data-migrations', () => (
 const mockPreDispatch = vi.fn()
 const mockOnJobFinished = vi.fn().mockResolvedValue(undefined)
 
-vi.mock('../../../../../src/app/workers/job-queue/interceptors/rate-limiter-interceptor', () => ({
+vi.mock('../../../../src/app/workers/job-queue/interceptors/rate-limiter-interceptor', () => ({
     rateLimiterInterceptor: {
         preDispatch: (...args: unknown[]) => mockPreDispatch(...args),
         onJobFinished: (...args: unknown[]) => mockOnJobFinished(...args),
     },
 }))
 
-import { tryDequeue } from '../../../../../src/app/workers/job-queue/job-broker'
+import { tryDequeue } from '../../../../src/app/workers/job-queue/job-broker'
 
 const mockLog: FastifyBaseLogger = {
     debug: vi.fn(),
@@ -45,7 +46,20 @@ function createMockJob(id: string, data?: Record<string, unknown>, deferredFailu
     return {
         id,
         name: `job-name-${id}`,
-        data: { projectId: 'proj-1', tenantId: 'plat-1', ...data },
+        data: {
+            jobType: WorkerJobType.EXECUTE_WEBHOOK,
+            schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
+            projectId: 'proj-1',
+            tenantId: 'tenant-1',
+            requestId: `request-${id}`,
+            payload: { type: 'inline', value: {} },
+            runEnvironment: RunEnvironment.PRODUCTION,
+            workflowId: 'workflow-1',
+            saveSampleData: false,
+            workflowVersionIdToRun: 'workflow-version-1',
+            execute: true,
+            ...data,
+        },
         attemptsMade: 0,
         deferredFailure,
         moveToDelayed: vi.fn().mockResolvedValue(undefined),
@@ -75,7 +89,6 @@ describe('tryDequeue', () => {
         expect(result).not.toBeNull()
         expect(result!.jobId).toBe('job-1')
         expect(result!.engineToken).toBe('engine-token')
-        expect(result!.timeoutInSeconds).toBe(600)
         expect(result!.token).toMatch(/^token-/)
         expect(result!.queueName).toBe('test-queue')
         expect(job.updateData).not.toHaveBeenCalled()

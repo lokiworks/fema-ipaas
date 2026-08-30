@@ -1,11 +1,11 @@
 import { FileType, Workflow, WorkflowStatus, Project, WebhookHandshakeStrategy } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
-import { webhookHandshake } from '../../../../src/app/webhooks/webhook-handshake'
-import { db } from '../../../helpers/db'
-import { databaseConnection } from '../../../../src/app/database/database-connection'
-import { createMockWorkflow, createMockWorkflowVersion, mockAndSaveBasicSetup } from '../../../helpers/mocks'
-import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
+import { webhookHandshake } from '../../../src/app/webhooks/webhook-handshake'
+import { db } from '../../helpers/db'
+import { databaseConnection } from '../../../src/app/database/database-connection'
+import { createMockWorkflow, createMockWorkflowVersion, mockAndSaveBasicSetup } from '../../helpers/mocks'
+import { setupTestEnvironment, teardownTestEnvironment } from '../../helpers/test-setup'
 
 let app: FastifyInstance
 

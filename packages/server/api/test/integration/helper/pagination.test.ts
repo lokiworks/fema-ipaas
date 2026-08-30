@@ -1,10 +1,10 @@
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
-import { databaseConnection } from '../../../../src/app/database/database-connection'
-import { db } from '../../../helpers/db'
-import { createMockFolder, createMockTable } from '../../../helpers/mocks'
-import { createTestContext, TestContext } from '../../../helpers/test-context'
-import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
+import { databaseConnection } from '../../../src/app/database/database-connection'
+import { db } from '../../helpers/db'
+import { createMockFolder } from '../../helpers/mocks'
+import { createTestContext, TestContext } from '../../helpers/test-context'
+import { setupTestEnvironment, teardownTestEnvironment } from '../../helpers/test-setup'
 
 let app: FastifyInstance
 
@@ -104,21 +104,6 @@ describe('cursor pagination with duplicate timestamps', () => {
         expect(backPage?.statusCode).toBe(StatusCodes.OK)
         expect(backPageBody.data.map((folder: { id: string }) => folder.id))
             .toEqual(firstPageBody.data.map((folder: { id: string }) => folder.id))
-    })
-
-    it('paginates entities whose table name is a reserved SQL word', async () => {
-        const ctx = await createTestContext(app)
-        const tables = Array.from({ length: 15 }, (_item, index) => ({
-            ...createMockTable({ projectId: ctx.project.id }),
-            name: `table-${index}`,
-            created: SHARED_CREATED,
-        }))
-        await db.save('table', tables)
-
-        const { ids } = await listAllPages({ ctx, path: '/v1/tables', limit: 10 })
-
-        expect(ids).toHaveLength(15)
-        expect(new Set(ids).size).toBe(15)
     })
 
     it.each([

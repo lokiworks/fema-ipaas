@@ -1,10 +1,10 @@
 import { WorkflowRetryStrategy, ExecutionStatus, WorkflowVersionState, RunEnvironment } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
-import { databaseConnection } from '../../../../../src/app/database/database-connection'
-import { db } from '../../../../helpers/db'
-import { createMockWorkflow, createMockExecution, createMockWorkflowVersion, mockAndSaveBasicSetup } from '../../../../helpers/mocks'
-import { createTestContext, TestContext } from '../../../../helpers/test-context'
-import { setupTestEnvironment, teardownTestEnvironment } from '../../../../helpers/test-setup'
+import { databaseConnection } from '../../../../src/app/database/database-connection'
+import { db } from '../../../helpers/db'
+import { createMockWorkflow, createMockExecution, createMockWorkflowVersion, mockAndSaveBasicSetup } from '../../../helpers/mocks'
+import { createTestContext, TestContext } from '../../../helpers/test-context'
+import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
 
 let app: FastifyInstance
 let ctx: TestContext

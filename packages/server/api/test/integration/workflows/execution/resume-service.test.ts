@@ -1,13 +1,13 @@
 import { generateId } from '@fema-ipaas/core-utils'
 import { ExecutionStatus, WorkflowVersionState, PauseType, RunEnvironment } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
-import { resumeService } from '../../../../../src/app/workflows/execution/waitpoint/resume-service'
-import { waitpointService } from '../../../../../src/app/workflows/execution/waitpoint/waitpoint-service'
-import { WaitpointStatus } from '../../../../../src/app/workflows/execution/waitpoint/waitpoint-types'
-import { db } from '../../../../helpers/db'
-import { createMockWorkflow, createMockExecution, createMockWorkflowVersion } from '../../../../helpers/mocks'
-import { createTestContext, TestContext } from '../../../../helpers/test-context'
-import { setupTestEnvironment, teardownTestEnvironment } from '../../../../helpers/test-setup'
+import { resumeService } from '../../../../src/app/workflows/execution/waitpoint/resume-service'
+import { waitpointService } from '../../../../src/app/workflows/execution/waitpoint/waitpoint-service'
+import { WaitpointStatus } from '../../../../src/app/workflows/execution/waitpoint/waitpoint-types'
+import { db } from '../../../helpers/db'
+import { createMockWorkflow, createMockExecution, createMockWorkflowVersion } from '../../../helpers/mocks'
+import { createTestContext, TestContext } from '../../../helpers/test-context'
+import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
 
 let app: FastifyInstance
 let ctx: TestContext

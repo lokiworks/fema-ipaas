@@ -2,10 +2,10 @@ import { generateId, ErrorCode } from '@fema-ipaas/core-utils'
 import { PropertyType } from '@fema-ipaas/connector-sdk'
 import { PackageType, ConnectorType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyInstance } from 'fastify'
-import { oauth2Util } from '../../../../src/app/connection/connection-service/oauth2/oauth2-util'
-import { db } from '../../../helpers/db'
-import { createMockConnectorMetadata } from '../../../helpers/mocks'
-import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
+import { oauth2Util } from '../../../src/app/connection/connection-service/oauth2/oauth2-util'
+import { db } from '../../helpers/db'
+import { createMockConnectorMetadata } from '../../helpers/mocks'
+import { setupTestEnvironment, teardownTestEnvironment } from '../../helpers/test-setup'
 
 let app: FastifyInstance | null = null
 let mockLog: FastifyBaseLogger

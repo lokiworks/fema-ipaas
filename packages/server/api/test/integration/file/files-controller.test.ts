@@ -3,11 +3,11 @@ import { FileCompression, FileType, PrincipalType } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { vi } from 'vitest'
-import { fileService } from '../../../../src/app/file/file.service'
-import { filesService } from '../../../../src/app/file/files-service'
-import { generateMockToken } from '../../../helpers/auth'
-import { mockAndSaveBasicSetup } from '../../../helpers/mocks'
-import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
+import { fileService } from '../../../src/app/file/file.service'
+import { filesService } from '../../../src/app/file/files-service'
+import { generateMockToken } from '../../helpers/auth'
+import { mockAndSaveBasicSetup } from '../../helpers/mocks'
+import { setupTestEnvironment, teardownTestEnvironment } from '../../helpers/test-setup'
 
 let app: FastifyInstance | null = null
 

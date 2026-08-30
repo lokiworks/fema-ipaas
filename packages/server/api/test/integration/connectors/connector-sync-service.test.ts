@@ -1,11 +1,12 @@
 import {
+    ConnectorSource,
     PackageType,
     ConnectorType,
 } from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyInstance } from 'fastify'
-import { databaseConnection } from '../../../../src/app/database/database-connection'
-import { connectorMetadataService } from '../../../../src/app/connectors/metadata/connector-metadata-service'
-import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
+import { databaseConnection } from '../../../src/app/database/database-connection'
+import { connectorMetadataService } from '../../../src/app/connectors/metadata/connector-metadata-service'
+import { setupTestEnvironment, teardownTestEnvironment } from '../../helpers/test-setup'
 
 
 let app: FastifyInstance | null = null
@@ -42,6 +43,7 @@ describe('Connector Metadata Create', () => {
             },
             packageType: PackageType.REGISTRY,
             connectorType: ConnectorType.OFFICIAL,
+            source: ConnectorSource.OFFICIAL,
             publishCacheRefresh: false,
         })
 
@@ -68,6 +70,7 @@ describe('Connector Metadata Create', () => {
             },
             packageType: PackageType.REGISTRY,
             connectorType: ConnectorType.OFFICIAL,
+            source: ConnectorSource.OFFICIAL,
             publishCacheRefresh: false,
         })
 
@@ -85,6 +88,7 @@ describe('Connector Metadata Create', () => {
             },
             packageType: PackageType.REGISTRY,
             connectorType: ConnectorType.OFFICIAL,
+            source: ConnectorSource.OFFICIAL,
             publishCacheRefresh: false,
         })).rejects.toThrow()
     })
@@ -106,6 +110,7 @@ describe('Connector Metadata Create', () => {
             },
             packageType: PackageType.REGISTRY,
             connectorType: ConnectorType.OFFICIAL,
+            source: ConnectorSource.OFFICIAL,
             publishCacheRefresh: false,
         })
 
@@ -123,6 +128,7 @@ describe('Connector Metadata Create', () => {
             },
             packageType: PackageType.REGISTRY,
             connectorType: ConnectorType.OFFICIAL,
+            source: ConnectorSource.OFFICIAL,
             publishCacheRefresh: false,
         })
 

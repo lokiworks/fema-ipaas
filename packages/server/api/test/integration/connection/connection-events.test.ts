@@ -7,13 +7,13 @@ import {
 } from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
-import * as applicationEventsModule from '../../../../src/app/helper/application-events'
-import { connectorMetadataService } from '../../../../src/app/connectors/metadata/connector-metadata-service'
-import { actionsEmitted } from '../../../helpers/application-events'
-import { db } from '../../../helpers/db'
-import { createMockConnectorMetadata } from '../../../helpers/mocks'
-import { createTestContext, TestContext } from '../../../helpers/test-context'
-import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
+import * as applicationEventsModule from '../../../src/app/helper/application-events'
+import { connectorMetadataService } from '../../../src/app/connectors/metadata/connector-metadata-service'
+import { actionsEmitted } from '../../helpers/application-events'
+import { db } from '../../helpers/db'
+import { createMockConnectorMetadata } from '../../helpers/mocks'
+import { createTestContext, TestContext } from '../../helpers/test-context'
+import { setupTestEnvironment, teardownTestEnvironment } from '../../helpers/test-setup'
 
 let app: FastifyInstance
 let mockLog: FastifyBaseLogger

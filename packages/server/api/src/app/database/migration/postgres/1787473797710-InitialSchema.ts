@@ -1,12 +1,24 @@
 import { MigrationInterface, QueryRunner } from 'typeorm'
+import { system } from '../../../helper/system/system'
+import { AppSystemProp } from '../../../helper/system/system-props'
+import { DatabaseType } from '../../database-type'
+
+// PGlite is compiled without ICU, so the natural-sort collation cannot exist there.
+// `database-common.ts` already drops it from the entity columns on PGlite; the
+// migration has to make the same choice or it fails on the very first statement.
+const supportsIcuCollation =
+    system.get(AppSystemProp.DB_TYPE) !== DatabaseType.PGLITE
+const collateVersion = supportsIcuCollation ? ' COLLATE "en_natural"' : ''
 
 export class InitialSchema1787473797710 implements MigrationInterface {
     name = 'InitialSchema1787473797710'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`
-            CREATE COLLATION IF NOT EXISTS en_natural (LOCALE = 'en-US-u-kn-true', PROVIDER = 'icu')
-        `)
+        if (supportsIcuCollation) {
+            await queryRunner.query(`
+                CREATE COLLATION IF NOT EXISTS en_natural (LOCALE = 'en-US-u-kn-true', PROVIDER = 'icu')
+            `)
+        }
         await queryRunner.query(`
             CREATE TABLE "trigger_event" (
                 "id" character varying(21) NOT NULL,
@@ -391,9 +403,9 @@ export class InitialSchema1787473797710 implements MigrationInterface {
                 "workspaceUsage" integer NOT NULL DEFAULT '0',
                 "description" character varying,
                 "tenantId" character varying,
-                "version" character varying COLLATE "en_natural" NOT NULL,
-                "minimumSupportedRelease" character varying COLLATE "en_natural" NOT NULL,
-                "maximumSupportedRelease" character varying COLLATE "en_natural" NOT NULL,
+                "version" character varying${collateVersion} NOT NULL,
+                "minimumSupportedRelease" character varying${collateVersion} NOT NULL,
+                "maximumSupportedRelease" character varying${collateVersion} NOT NULL,
                 "auth" json,
                 "actions" json NOT NULL,
                 "triggers" json NOT NULL,
@@ -717,9 +729,11 @@ export class InitialSchema1787473797710 implements MigrationInterface {
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`
-            DROP COLLATION IF EXISTS en_natural
-        `)
+        if (supportsIcuCollation) {
+            await queryRunner.query(`
+                DROP COLLATION IF EXISTS en_natural
+            `)
+        }
         await queryRunner.query(`
             ALTER TABLE "template" DROP CONSTRAINT "fk_template_tenant_id"
         `)

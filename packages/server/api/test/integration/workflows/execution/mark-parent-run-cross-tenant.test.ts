@@ -1,10 +1,10 @@
 import { generateId } from '@fema-ipaas/core-utils'
 import { ExecutionStatus, WorkflowVersionState, RunEnvironment } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
-import { markParentRunAsFailed } from '../../../../../src/app/workflows/execution/executions-queue'
-import { db } from '../../../../helpers/db'
-import { createMockWorkflow, createMockWorkflowVersion, createMockExecution, mockAndSaveBasicSetup } from '../../../../helpers/mocks'
-import { setupTestEnvironment, teardownTestEnvironment } from '../../../../helpers/test-setup'
+import { markParentRunAsFailed } from '../../../../src/app/workflows/execution/executions-queue'
+import { db } from '../../../helpers/db'
+import { createMockWorkflow, createMockWorkflowVersion, createMockExecution, mockAndSaveBasicSetup } from '../../../helpers/mocks'
+import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
 
 let app: FastifyInstance
 

@@ -2,10 +2,10 @@ import { generateId } from '@fema-ipaas/core-utils'
 import { FileCompression, FileLocation, FileType, PackageType, ConnectorType, Principal, PrincipalType } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
-import { generateMockToken } from '../../../helpers/auth'
-import { db } from '../../../helpers/db'
-import { createMockFile, createMockConnectorMetadata, mockAndSaveBasicSetup } from '../../../helpers/mocks'
-import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
+import { generateMockToken } from '../../helpers/auth'
+import { db } from '../../helpers/db'
+import { createMockFile, createMockConnectorMetadata, mockAndSaveBasicSetup } from '../../helpers/mocks'
+import { setupTestEnvironment, teardownTestEnvironment } from '../../helpers/test-setup'
 
 let app: FastifyInstance | null = null
 

@@ -1,11 +1,10 @@
-import { AIProviderName, generateId, assertNotNullOrUndefined, ProjectRole, RoleType } from '@fema-ipaas/core-utils'
+import { generateId, assertNotNullOrUndefined } from '@fema-ipaas/core-utils'
 import { LATEST_CONTEXT_VERSION, ConnectorMetadata } from '@fema-ipaas/connector-sdk'
-import { AIProvider, Connection, ConnectionScope, ConnectionStatus, ConnectionType, ApplicationEvent, ApplicationEventName, ColorName, File, FileCompression, FileLocation, FileType, Workflow, WorkflowOperationStatus, Execution, ExecutionStatus, WorkflowStatus, WorkflowTriggerType, WorkflowVersion, WorkflowVersionState, Folder, InvitationStatus, InvitationType, LATEST_WORKFLOW_SCHEMA_VERSION, OtpModel, OtpState, OtpType, PackageType, ConnectorsFilterType, ConnectorType, Tenant, TenantPlan, TenantRole, Project, ProjectIcon, ProjectType, RunEnvironment, Template, TemplateStatus, TemplateType, User, UserIdentity, UserIdentityProvider, UserInvitation, UserStatus } from '@fema-ipaas/shared'
+import { Connection, ConnectionScope, ConnectionStatus, ConnectionType, ApplicationEvent, ApplicationEventName, ColorName, File, FileCompression, FileLocation, FileType, Workflow, WorkflowOperationStatus, Execution, ExecutionStatus, WorkflowStatus, WorkflowTriggerType, WorkflowVersion, WorkflowVersionState, Folder, InvitationStatus, InvitationType, LATEST_WORKFLOW_SCHEMA_VERSION, OtpModel, OtpState, OtpType, PackageType, ConnectorsFilterType, ConnectorSource, ConnectorType, DefaultProjectRole, ProjectMember, Tenant, TenantRole, Project, ProjectIcon, ProjectType, RunEnvironment, Template, TemplateStatus, TemplateType, User, UserIdentity, UserIdentityProvider, UserInvitation, UserStatus } from '@fema-ipaas/shared'
 import { faker } from '@faker-js/faker'
 import bcrypt from 'bcrypt'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
-import { AIProviderSchema } from '../../../src/app/ai/ai-provider-entity'
 import { databaseConnection } from '../../../src/app/database/database-connection'
 import { encryptUtils } from '../../../src/app/helper/encryption'
 import { ConnectorMetadataSchema } from '../../../src/app/connectors/metadata/connector-metadata-entity'
@@ -204,18 +203,15 @@ export const createMockTenantWithOwner = (
 }
 
 export const createMockProjectMember = (
-    projectMember?: Omit<Partial<ProjectMember>, 'projectRoleId'> & {
-        projectRoleId: string
-    },
+    projectMember?: Partial<ProjectMember>,
 ): ProjectMember => {
     assertNotNullOrUndefined(projectMember?.userId, 'userId')
     return {
         id: projectMember?.id ?? generateId(),
         created: projectMember?.created ?? faker.date.recent().toISOString(),
         updated: projectMember?.updated ?? faker.date.recent().toISOString(),
-        tenantId: projectMember?.tenantId ?? generateId(),
-        projectRoleId: projectMember.projectRoleId,
-        userId: projectMember?.userId,
+        role: projectMember?.role ?? DefaultProjectRole.ADMIN,
+        userId: projectMember.userId,
         projectId: projectMember?.projectId ?? generateId(),
     }
 }
@@ -258,6 +254,7 @@ export const createMockConnectorMetadata = (
         connectorType: connectorMetadata?.connectorType ?? faker.helpers.enumValue(ConnectorType),
         packageType:
             connectorMetadata?.packageType ?? faker.helpers.enumValue(PackageType),
+        source: connectorMetadata?.source ?? ConnectorSource.OFFICIAL,
         archiveId: connectorMetadata?.archiveId,
         categories: connectorMetadata?.categories ?? [],
         contextInfo: connectorMetadata?.contextInfo ?? { version: LATEST_CONTEXT_VERSION },
@@ -397,94 +394,6 @@ export const createMockConnection = (connection: Partial<Connection>, ownerId: s
     }
 }
 
-export const createMockTable = ({ projectId }: { projectId: string }): Table => {
-    return {
-        id: generateId(),
-        created: faker.date.recent().toISOString(),
-        updated: faker.date.recent().toISOString(),
-        projectId,
-        externalId: generateId(),
-        name: faker.lorem.word(),
-    }
-}
-
-export const createMockField = ({ tableId, projectId }: { tableId: string, projectId: string }): Field => {
-    return {
-        id: generateId(),
-        created: faker.date.recent().toISOString(),
-        updated: faker.date.recent().toISOString(),
-        tableId,
-        name: faker.lorem.word(),
-        data: {
-            options: [],
-        },
-        externalId: generateId(),
-        projectId,
-        position: 0,
-        type: FieldType.STATIC_DROPDOWN,
-    }
-}
-export const createMockRecord = ({ tableId, projectId }: { tableId: string, projectId: string }): Record => {
-    return {
-        id: generateId(),
-        created: faker.date.recent().toISOString(),
-        updated: faker.date.recent().toISOString(),
-        tableId,
-        projectId,
-    }
-}
-
-export const createMockCell = ({ recordId, fieldId, projectId }: { recordId: string, fieldId: string, projectId: string }): Cell => {
-    return {
-        id: generateId(),
-        created: faker.date.recent().toISOString(),
-        updated: faker.date.recent().toISOString(),
-        recordId,
-        fieldId,
-        projectId,
-        value: faker.lorem.word(),
-    }
-}
-
-
-type Solution = {
-    table: Table
-    connection: Connection<ConnectionType.SECRET_TEXT>
-    workflow: Workflow
-    execution: Execution
-    workflowVersion: WorkflowVersion
-    cell: Cell
-}
-
-export const createMockSolutionAndSave = async ({ projectId, tenantId, userId }: { projectId: string, tenantId: string, userId: string }): Promise<Solution> => {
-    const table = createMockTable({ projectId })
-    const field = createMockField({ tableId: table.id, projectId })
-    const record = createMockRecord({ tableId: table.id, projectId })
-    const cell = createMockCell({ recordId: record.id, fieldId: field.id, projectId })
-    const connection = createMockConnection({ projectIds: [projectId], tenantId }, userId)
-    const workflow = createMockWorkflow({ projectId })
-    const workflowVersion = createMockWorkflowVersion({ workflowId: workflow.id })
-    const execution = createMockExecution({ projectId, workflowId: workflow.id, workflowVersionId: workflowVersion.id })
-    await databaseConnection().getRepository('table').save([table])
-    await databaseConnection().getRepository('field').save([field])
-    await databaseConnection().getRepository('record').save([record])
-    await databaseConnection().getRepository('cell').save([cell])
-    await databaseConnection().getRepository('connection').save([connection])
-    await databaseConnection().getRepository('workflow').save([workflow])
-    await databaseConnection().getRepository('workflow_version').save([workflowVersion])
-    await databaseConnection().getRepository('execution').save([execution])
-    return { table, connection, workflow, execution, workflowVersion, cell }
-}
-
-export const checkIfSolutionExistsInDb = async (solution: Solution): Promise<boolean> => {
-    const table = await databaseConnection().getRepository('table').findOneBy({ id: solution.table.id })
-    const connection = await databaseConnection().getRepository('connection').findOneBy({ id: solution.connection.id })
-    const workflow = await databaseConnection().getRepository('workflow').findOneBy({ id: solution.workflow.id })
-    const execution = await databaseConnection().getRepository('execution').findOneBy({ id: solution.execution.id })
-    const workflowVersion = await databaseConnection().getRepository('workflow_version').findOneBy({ id: solution.workflowVersion.id })
-    const cell = await databaseConnection().getRepository('cell').findOneBy({ id: solution.cell.id })
-    return table !== null && connection !== null && workflow !== null && execution !== null && workflowVersion !== null && cell !== null
-}
 export const mockBasicUser = async ({ userIdentity, user }: { userIdentity?: Partial<UserIdentity>, user?: Partial<User> }) => {
     const mockUserIdentity = createMockUserIdentity({
         verified: true,
@@ -540,21 +449,6 @@ export const mockAndSaveBasicSetup = async (params?: MockBasicSetupParams): Prom
     }
 }
 
-type MockBasicSetupWithApiKey = MockBasicSetup & { mockApiKey: ApiKey & { value: string } }
-export const mockAndSaveBasicSetupWithApiKey = async (params?: MockBasicSetupParams): Promise<MockBasicSetupWithApiKey> => {
-    const basicSetup = await mockAndSaveBasicSetup(params)
-
-    const mockApiKey = createMockApiKey({
-        tenantId: basicSetup.mockTenant.id,
-    })
-    await databaseConnection().getRepository('api_key').save(mockApiKey)
-
-    return {
-        ...basicSetup,
-        mockApiKey,
-    }
-}
-
 export const createMockFile = (file?: Partial<File>): File => {
     const hasExplicitProjectId = file !== undefined && 'projectId' in file
     const hasExplicitTenantId = file !== undefined && 'tenantId' in file
@@ -573,55 +467,6 @@ export const createMockFile = (file?: Partial<File>): File => {
         s3Key: file?.s3Key ?? null,
         size: file?.size ?? null,
     }
-}
-
-export const createMockProjectRole = (projectRole?: Partial<ProjectRole>): ProjectRole => {
-    return {
-        id: projectRole?.id ?? generateId(),
-        name: projectRole?.name ?? faker.lorem.word(),
-        created: projectRole?.created ?? faker.date.recent().toISOString(),
-        updated: projectRole?.updated ?? faker.date.recent().toISOString(),
-        permissions: projectRole?.permissions ?? [],
-        tenantId: projectRole?.tenantId ?? generateId(),
-        type: projectRole?.type ?? faker.helpers.enumValue(RoleType),
-    }
-}
-
-export const createMockProjectRelease = (projectRelease?: Partial<ProjectRelease>): ProjectRelease => {
-    return {
-        id: projectRelease?.id ?? generateId(),
-        created: projectRelease?.created ?? faker.date.recent().toISOString(),
-        updated: projectRelease?.updated ?? faker.date.recent().toISOString(),
-        projectId: projectRelease?.projectId ?? generateId(),
-        importedBy: projectRelease?.importedBy ?? generateId(),
-        fileId: projectRelease?.fileId ?? generateId(),
-        name: projectRelease?.name ?? faker.lorem.word(),
-        description: projectRelease?.description ?? faker.lorem.sentence(),
-        type: projectRelease?.type ?? faker.helpers.enumValue(ProjectReleaseType),
-    }
-}
-
-export const createMockAIProvider = async (aiProvider?: Partial<AIProvider> & { enabledForChat?: boolean }): Promise<Omit<AIProviderSchema, 'tenant'>> => {
-    return {
-        id: aiProvider?.id ?? generateId(),
-        created: aiProvider?.created ?? faker.date.recent().toISOString(),
-        updated: aiProvider?.updated ?? faker.date.recent().toISOString(),
-        tenantId: aiProvider?.tenantId ?? generateId(),
-        provider: aiProvider?.provider ?? faker.helpers.enumValue(AIProviderName),
-        displayName: aiProvider?.displayName ?? faker.lorem.word(),
-        auth: await encryptUtils.encryptObject({
-            apiKey: process.env.OPENAI_API_KEY || faker.string.uuid(),
-        }),
-        config: aiProvider?.config ?? {},
-        enabledForChat: aiProvider?.enabledForChat ?? aiProvider?.provider === AIProviderName.FEMA,
-    }
-
-}
-
-export const mockAndSaveAIProvider = async (params?: Partial<AIProvider> & { enabledForChat?: boolean }): Promise<Omit<AIProviderSchema, 'tenant'>> => {
-    const mockAIProvider = await createMockAIProvider(params)
-    await databaseConnection().getRepository('ai_provider').upsert(mockAIProvider, ['tenantId', 'provider'])
-    return mockAIProvider
 }
 
 export const mockConnectorMetadata = async (mockLog: FastifyBaseLogger): Promise<ConnectorMetadata> => {
@@ -699,7 +544,6 @@ type MockBasicSetup = {
 type MockBasicSetupParams = {
     userIdentity?: Partial<UserIdentity>
     user?: Partial<User>
-    plan?: Partial<TenantPlan>
     tenant?: Partial<Tenant>
     project?: Partial<Project>
 }

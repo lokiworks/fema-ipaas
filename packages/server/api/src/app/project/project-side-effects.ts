@@ -3,7 +3,6 @@ import { Project, ProjectType, ProjectWithLimits } from '@fema-ipaas/shared'
 import { WorkflowStatus } from '@fema-ipaas/workflow-core'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
-import { IsNull } from 'typeorm'
 import { SystemJobName } from '../helper/system-jobs/common'
 import { systemJobsSchedule } from '../helper/system-jobs/system-job'
 import { workflowRepo } from '../workflows/workflow/workflow.repo'
@@ -46,10 +45,7 @@ export const projectSideEffects = (log: FastifyBaseLogger) => ({
     async scheduleHardDelete(projectId: ProjectId): Promise<void> {
         const tenantId = await projectService(log).getTenantId(projectId)
         const preDeletedWorkflowIds = await workflowRepo()
-            .createQueryBuilder('workflow')
-            .select('workflow.id')
-            .where({ projectId, deleted: IsNull() })
-            .getMany()
+            .find({ where: { projectId }, select: ['id'] })
             .then((workflows) => workflows.map((workflow) => workflow.id))
 
         await systemJobsSchedule(log).upsertJob({

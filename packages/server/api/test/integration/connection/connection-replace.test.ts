@@ -1,14 +1,14 @@
 import { Connection, ConnectionScope, WorkflowStatus, WorkflowVersionState } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
-import { db } from '../../../helpers/db'
+import { db } from '../../helpers/db'
 import {
     createMockConnection,
     createMockWorkflow,
     createMockWorkflowVersion,
-} from '../../../helpers/mocks'
-import { createTestContext } from '../../../helpers/test-context'
-import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
+} from '../../helpers/mocks'
+import { createTestContext } from '../../helpers/test-context'
+import { setupTestEnvironment, teardownTestEnvironment } from '../../helpers/test-setup'
 
 let app: FastifyInstance | null = null
 

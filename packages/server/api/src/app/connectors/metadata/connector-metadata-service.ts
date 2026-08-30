@@ -415,7 +415,7 @@ async function fetchLatestConnectors({ tenantId, locale = LocalesEnum.ENGLISH, l
 
     const devConnectors = await loadDevConnectorsIfEnabled(log)
     const translatedDevConnectors = devConnectors.map((connector) =>
-        connectorTranslation.translateConnector<ConnectorMetadataSchema>({ connector, locale, mutate: true }),
+        connectorTranslation.translateConnector<ConnectorMetadataSchema>({ connector, locale, mutate: false }),
     )
 
     const devConnectorNames = new Set(translatedDevConnectors.map((p) => p.name))

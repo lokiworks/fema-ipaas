@@ -2,15 +2,15 @@ import { generateId } from '@fema-ipaas/core-utils'
 import { ConnectionScope, ConnectionStatus, ConnectionType, PackageType, ConnectorType, PLACEHOLDER_CONNECTION_TYPE } from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
-import { connectorMetadataService } from '../../../../src/app/connectors/metadata/connector-metadata-service'
-import { db } from '../../../helpers/db'
-import { describeWithAuth } from '../../../helpers/describe-with-auth'
+import { connectorMetadataService } from '../../../src/app/connectors/metadata/connector-metadata-service'
+import { db } from '../../helpers/db'
+import { describeWithAuth } from '../../helpers/describe-with-auth'
 import {
     createMockConnection,
     createMockConnectorMetadata,
-} from '../../../helpers/mocks'
-import { createTestContext } from '../../../helpers/test-context'
-import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
+} from '../../helpers/mocks'
+import { createTestContext } from '../../helpers/test-context'
+import { setupTestEnvironment, teardownTestEnvironment } from '../../helpers/test-setup'
 
 let app: FastifyInstance | null = null
 let mockLog: FastifyBaseLogger

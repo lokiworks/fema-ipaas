@@ -96,17 +96,8 @@ export const machineService = (log: FastifyBaseLogger) => {
 
             await workerMachineCache().delete(offLineWorkers.map(worker => worker.id))
 
-            const tenantWorkerGroupId = null
             return onlineWorkers
-                .filter(worker => {
-                    if (worker.workerGroupScope === WorkerGroupScope.TENANT) {
-                        return !isNil(tenantWorkerGroupId) && worker.workerGroupId === tenantWorkerGroupId
-                    }
-                    if (worker.workerGroupScope === WorkerGroupScope.PROJECT) {
-                        return true
-                    }
-                    return isNil(tenantWorkerGroupId)
-                })
+                .filter(worker => worker.workerGroupScope !== WorkerGroupScope.TENANT)
                 .map(worker => ({
                     ...worker,
                     status: WorkerMachineStatus.ONLINE,

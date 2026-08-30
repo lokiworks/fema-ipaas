@@ -1,8 +1,8 @@
 import { dayjsUtil } from '@fema-ipaas/server-utils'
 import { FastifyInstance } from 'fastify'
-import { SystemJobName } from '../../../../src/app/helper/system-jobs/common'
-import { systemJobsQueue, systemJobsSchedule } from '../../../../src/app/helper/system-jobs/system-job'
-import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
+import { SystemJobName } from '../../../src/app/helper/system-jobs/common'
+import { systemJobsQueue, systemJobsSchedule } from '../../../src/app/helper/system-jobs/system-job'
+import { setupTestEnvironment, teardownTestEnvironment } from '../../helpers/test-setup'
 
 const TEST_PREFIX = 'test-'
 

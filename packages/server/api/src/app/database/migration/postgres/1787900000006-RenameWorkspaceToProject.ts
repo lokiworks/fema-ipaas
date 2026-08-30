@@ -59,6 +59,8 @@ export class RenameWorkspaceToProject1787900000006 implements MigrationInterface
         await queryRunner.query('ALTER INDEX "idx_workspace_tenant_id" RENAME TO "idx_project_tenant_id"')
         await queryRunner.query('ALTER INDEX "idx_workspace_tenant_id_external_id" RENAME TO "idx_project_tenant_id_external_id"')
         await queryRunner.query('ALTER INDEX "idx_workspace_worker_group" RENAME TO "idx_project_worker_group"')
+        await queryRunner.query('ALTER TABLE "store-entry" RENAME CONSTRAINT "UQ_4c90692d05162626818309e5f43" TO "UQ_6f251cc141de0a8d84d7a4ac17d"')
+        await queryRunner.query('ALTER TABLE "trigger_source" RENAME CONSTRAINT "FK_1fabca1228850aad29b625c04e6" TO "FK_5f28d74a4fdaf3fc91e6a0e7450"')
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
@@ -116,5 +118,7 @@ export class RenameWorkspaceToProject1787900000006 implements MigrationInterface
         await queryRunner.query('ALTER INDEX "idx_project_worker_group" RENAME TO "idx_workspace_worker_group"')
         await queryRunner.query('ALTER TABLE "project" RENAME TO "workspace"')
         await queryRunner.query('ALTER TABLE "project_member" RENAME TO "workspace_member"')
+        await queryRunner.query('ALTER TABLE "store-entry" RENAME CONSTRAINT "UQ_6f251cc141de0a8d84d7a4ac17d" TO "UQ_4c90692d05162626818309e5f43"')
+        await queryRunner.query('ALTER TABLE "trigger_source" RENAME CONSTRAINT "FK_5f28d74a4fdaf3fc91e6a0e7450" TO "FK_1fabca1228850aad29b625c04e6"')
     }
 }

@@ -2,11 +2,13 @@ import { Queue } from 'bullmq'
 import { FastifyBaseLogger } from 'fastify'
 import IORedis from 'ioredis'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { SystemJobName } from '../../../../../src/app/helper/system-jobs/common'
+import { SystemJobName } from '../../../src/app/helper/system-jobs/common'
+import { redisAvailability } from '../../helpers/redis-availability'
 
 const SYSTEM_JOB_QUEUE = 'system-job-queue'
-const REDIS_HOST = process.env.FEMA_REDIS_HOST ?? 'localhost'
-const REDIS_PORT = Number(process.env.FEMA_REDIS_PORT ?? '6379')
+const REDIS_HOST = redisAvailability.host
+const REDIS_PORT = redisAvailability.port
+const REDIS_REACHABLE = await redisAvailability.isReachable()
 const REDIS_DB = 9
 
 const loggedErrors: unknown[] = []
@@ -20,16 +22,16 @@ const log: FastifyBaseLogger = {
 } as unknown as FastifyBaseLogger
 
 let seedQueue: Queue
-let systemJobsSchedule: typeof import('../../../../../src/app/helper/system-jobs/system-job').systemJobsSchedule
+let systemJobsSchedule: typeof import('../../../src/app/helper/system-jobs/system-job').systemJobsSchedule
 
-describe('removeDeprecatedJobs', () => {
+describe.skipIf(!REDIS_REACHABLE)('removeDeprecatedJobs', () => {
     beforeAll(async () => {
         process.env.FEMA_REDIS_TYPE = 'default'
         process.env.FEMA_REDIS_HOST = REDIS_HOST
         process.env.FEMA_REDIS_PORT = String(REDIS_PORT)
         process.env.FEMA_REDIS_DB = String(REDIS_DB)
         delete process.env.FEMA_REDIS_URL
-        systemJobsSchedule = (await import('../../../../../src/app/helper/system-jobs/system-job')).systemJobsSchedule
+        systemJobsSchedule = (await import('../../../src/app/helper/system-jobs/system-job')).systemJobsSchedule
 
         seedQueue = new Queue(SYSTEM_JOB_QUEUE, {
             connection: new IORedis({ host: REDIS_HOST, port: REDIS_PORT, db: REDIS_DB, maxRetriesPerRequest: null }),

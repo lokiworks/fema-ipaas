@@ -1,11 +1,11 @@
 import { generateId, EngineResponseStatus, WorkflowStatus, ConnectorType, PrincipalType, TriggerStrategy, WebhookHandshakeStrategy } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
-import { generateMockToken } from '../../../helpers/auth'
-import { db } from '../../../helpers/db'
-import { createMockWorkflow, createMockWorkflowVersion, createMockConnectorMetadata, mockAndSaveBasicSetup } from '../../../helpers/mocks'
-import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
-import { userInteractionWatcher } from '../../../../src/app/workers/user-interaction-watcher'
+import { generateMockToken } from '../../helpers/auth'
+import { db } from '../../helpers/db'
+import { createMockWorkflow, createMockWorkflowVersion, createMockConnectorMetadata, mockAndSaveBasicSetup } from '../../helpers/mocks'
+import { setupTestEnvironment, teardownTestEnvironment } from '../../helpers/test-setup'
+import { userInteractionWatcher } from '../../../src/app/workers/user-interaction-watcher'
 
 let app: FastifyInstance | null = null
 const MOCK_WORKFLOW_ID = '8hfKOpm3kY1yAi1ApYOa1'

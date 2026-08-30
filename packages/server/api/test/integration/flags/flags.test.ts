@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
-import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
+import { setupTestEnvironment, teardownTestEnvironment } from '../../helpers/test-setup'
 
 let app: FastifyInstance | null = null
 

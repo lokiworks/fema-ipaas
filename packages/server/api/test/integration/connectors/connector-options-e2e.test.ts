@@ -19,17 +19,17 @@ import {
 } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
-import { worker } from '../../../../../worker/src/lib/worker'
-import { databaseConnection } from '../../../../src/app/database/database-connection'
-import { generateMockToken } from '../../../helpers/auth'
-import { db } from '../../../helpers/db'
-import { setupE2eEnvironment } from '../../../helpers/e2e-setup'
+import { worker } from '../../../../worker/src/lib/worker'
+import { databaseConnection } from '../../../src/app/database/database-connection'
+import { generateMockToken } from '../../helpers/auth'
+import { db } from '../../helpers/db'
+import { setupE2eEnvironment } from '../../helpers/e2e-setup'
 import {
     createMockWorkflow,
     createMockWorkflowVersion,
     createMockConnectorMetadata,
     mockAndSaveBasicSetup,
-} from '../../../helpers/mocks'
+} from '../../helpers/mocks'
 
 let app: FastifyInstance
 let apiUrl: string

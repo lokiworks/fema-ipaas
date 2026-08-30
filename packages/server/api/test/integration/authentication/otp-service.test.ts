@@ -1,10 +1,10 @@
 import { OtpType } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
-import { otpService } from '../../../../src/app/authentication/otp/otp-service'
-import { databaseConnection } from '../../../../src/app/database/database-connection'
-import { distributedStore } from '../../../../src/app/database/redis-connections'
-import { createMockUserIdentity } from '../../../helpers/mocks'
-import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
+import { otpService } from '../../../src/app/authentication/otp/otp-service'
+import { databaseConnection } from '../../../src/app/database/database-connection'
+import { distributedStore } from '../../../src/app/database/redis-connections'
+import { createMockUserIdentity } from '../../helpers/mocks'
+import { setupTestEnvironment, teardownTestEnvironment } from '../../helpers/test-setup'
 
 let app: FastifyInstance | null = null
 

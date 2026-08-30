@@ -1,8 +1,8 @@
 import { QueryRunner } from 'typeorm'
-import { initializeDatabase } from '../../../../src/app/database'
-import { databaseConnection, resetDatabaseConnection } from '../../../../src/app/database/database-connection'
-import { Migration } from '../../../../src/app/database/migration'
-import { identifyCandidatesByManifest, identifyReleaseCandidates, verifyDatabaseState } from '../../../../src/app/database/rollback-migrations'
+import { initializeDatabase } from '../../../src/app/database'
+import { databaseConnection, resetDatabaseConnection } from '../../../src/app/database/database-connection'
+import { Migration } from '../../../src/app/database/migration'
+import { identifyCandidatesByManifest, identifyReleaseCandidates, verifyDatabaseState } from '../../../src/app/database/rollback-migrations'
 
 const TEST_TABLE = 'rollback_test_table'
 

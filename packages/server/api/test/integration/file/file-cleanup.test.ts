@@ -2,10 +2,10 @@ import { FileCompression, FileLocation, FileType } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyInstance } from 'fastify'
 import { In } from 'typeorm'
-import { fileRepo, fileService } from '../../../../src/app/file/file.service'
-import { db } from '../../../helpers/db'
-import { createMockFile, createMockProject, mockAndSaveBasicSetup } from '../../../helpers/mocks'
-import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
+import { fileRepo, fileService } from '../../../src/app/file/file.service'
+import { db } from '../../helpers/db'
+import { createMockFile, createMockProject, mockAndSaveBasicSetup } from '../../helpers/mocks'
+import { setupTestEnvironment, teardownTestEnvironment } from '../../helpers/test-setup'
 
 let app: FastifyInstance | null = null
 

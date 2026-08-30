@@ -2,16 +2,16 @@ import { generateId } from '@fema-ipaas/core-utils'
 import { TenantRole, TelemetryEventName, UserStatus } from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
-import { authenticationUtils } from '../../../../src/app/authentication/authentication-utils'
-import { databaseConnection } from '../../../../src/app/database/database-connection'
-import { tenantService } from '../../../../src/app/tenant/tenant.service'
-import { createMockTenant, createMockUserIdentity } from '../../../helpers/mocks'
-import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
+import { authenticationUtils } from '../../../src/app/authentication/authentication-utils'
+import { databaseConnection } from '../../../src/app/database/database-connection'
+import { tenantService } from '../../../src/app/tenant/tenant.service'
+import { createMockTenant, createMockUserIdentity } from '../../helpers/mocks'
+import { setupTestEnvironment, teardownTestEnvironment } from '../../helpers/test-setup'
 
 const trackProject = vi.fn()
 
-vi.mock('../../../../src/app/helper/telemetry.utils', async (importOriginal) => {
-    const actual = await importOriginal<typeof import('../../../../src/app/helper/telemetry.utils')>()
+vi.mock('../../../src/app/helper/telemetry.utils', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('../../../src/app/helper/telemetry.utils')>()
     return {
         ...actual,
         telemetry: (log: FastifyBaseLogger) => ({ ...actual.telemetry(log), trackProject }),

@@ -30,23 +30,23 @@ import {
 } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
-import { worker } from '../../../../../../worker/src/lib/worker'
-import { databaseConnection } from '../../../../../src/app/database/database-connection'
-import { executionService } from '../../../../../src/app/workflows/execution/execution-service'
-import { db } from '../../../../helpers/db'
-import { createTestContext } from '../../../../helpers/test-context'
-import { setupE2eEnvironment } from '../../../../helpers/e2e-setup'
+import { worker } from '../../../../../worker/src/lib/worker'
+import { databaseConnection } from '../../../../src/app/database/database-connection'
+import { executionService } from '../../../../src/app/workflows/execution/execution-service'
+import { db } from '../../../helpers/db'
+import { createTestContext } from '../../../helpers/test-context'
+import { setupE2eEnvironment } from '../../../helpers/e2e-setup'
 import {
     createMockWorkflow,
     createMockWorkflowVersion,
     createMockConnectorMetadata,
     mockAndSaveBasicSetup,
-} from '../../../../helpers/mocks'
+} from '../../../helpers/mocks'
 
 const CUSTOM_CONNECTOR_NAME = 'e2e-custom-echo'
 const CUSTOM_CONNECTOR_VERSION = '0.0.1'
 const customConnectorArchive = readFileSync(
-    join(__dirname, '../../../../../src/assets/e2e-custom-echo-0.0.1.tgz'),
+    join(__dirname, '../../../../src/assets/e2e-custom-echo-0.0.1.tgz'),
 )
 
 let app: FastifyInstance

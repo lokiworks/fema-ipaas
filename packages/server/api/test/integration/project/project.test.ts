@@ -1,11 +1,10 @@
-import { ErrorCode } from '@fema-ipaas/core-utils'
 import { PrincipalType, ProjectType } from '@fema-ipaas/shared'
 import { faker } from '@faker-js/faker'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
-import { generateMockToken } from '../../../helpers/auth'
-import { mockAndSaveBasicSetup } from '../../../helpers/mocks'
-import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
+import { generateMockToken } from '../../helpers/auth'
+import { mockAndSaveBasicSetup } from '../../helpers/mocks'
+import { setupTestEnvironment, teardownTestEnvironment } from '../../helpers/test-setup'
 
 let app: FastifyInstance | null = null
 
@@ -22,7 +21,6 @@ describe('Project API (CE)', () => {
         it('should create one team project', async () => {
             const { mockOwner, mockTenant } = await mockAndSaveBasicSetup({
                 project: { type: ProjectType.PERSONAL },
-                plan: { billedTeamProjectsLimit: 1 },
             })
 
             const testToken = await generateMockToken({
@@ -46,9 +44,9 @@ describe('Project API (CE)', () => {
             expect(responseBody.tenantId).toBe(mockTenant.id)
         })
 
-        it('should fail to create a second team project', async () => {
+        it('should create a second team project', async () => {
             const { mockOwner, mockTenant } = await mockAndSaveBasicSetup({
-                plan: { billedTeamProjectsLimit: 1 },
+                project: { type: ProjectType.PERSONAL },
             })
 
             const testToken = await generateMockToken({
@@ -64,9 +62,7 @@ describe('Project API (CE)', () => {
                 headers: { authorization: `Bearer ${testToken}` },
             })
 
-            expect(response?.statusCode).toBe(StatusCodes.PAYMENT_REQUIRED)
-            const responseBody = response?.json()
-            expect(responseBody?.code).toBe(ErrorCode.FEATURE_DISABLED)
+            expect(response?.statusCode).toBe(StatusCodes.CREATED)
         })
     })
 })

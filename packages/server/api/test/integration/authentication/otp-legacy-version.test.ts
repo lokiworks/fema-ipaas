@@ -1,10 +1,10 @@
 import { generateId, OtpState, OtpType } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyInstance } from 'fastify'
-import { otpService } from '../../../../src/app/authentication/otp/otp-service'
-import { databaseConnection } from '../../../../src/app/database/database-connection'
-import { createMockUserIdentity } from '../../../helpers/mocks'
-import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
+import { otpService } from '../../../src/app/authentication/otp/otp-service'
+import { databaseConnection } from '../../../src/app/database/database-connection'
+import { createMockUserIdentity } from '../../helpers/mocks'
+import { setupTestEnvironment, teardownTestEnvironment } from '../../helpers/test-setup'
 
 let app: FastifyInstance | null = null
 

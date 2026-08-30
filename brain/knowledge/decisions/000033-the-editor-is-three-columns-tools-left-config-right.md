@@ -55,3 +55,15 @@ status: accepted
 - **主操作保留「发布」，不是飞书的「完成」。** 飞书的「完成」语义是退出编辑回到它的
   *流程预览页*，我们没有这一层；主操作的真实语义是让工作流生效。照抄「完成」会让按钮
   说的和做的不是一回事。这是有意识的偏离，不是遗漏。
+- **`mutate: true` 会跨语言污染连接器缓存。** `fetchLatestConnectors` 原本用
+  `translateConnector({ mutate: true })` 就地改写 dev 连接器的缓存对象。把 `displayName`
+  加进 `pathsToValuesToTranslate` 之后，只要有一个 `locale=zh` 的请求打过来，缓存里的连接器名
+  就被永久改成中文——之后英文用户拿到的也是中文，因为 `translateConnector` 对 `en` 找不到
+  `i18n['en']` 就原样返回那个已被污染的对象。已改为 `mutate: false`。
+  **给可翻译字段表加字段时，先确认调用点不是就地修改共享缓存。**
+- **右侧面板分 tab 之后，e2e 要跟着切 tab。** 步骤属性在「入参」、测试与样本数据在「出参」。
+  `builder.page.ts` 的 `openStepInputTab` / `openStepOutputTab` 就是为此存在，
+  `testTrigger` / `testStep` / `loadSampleData` 已内聚了切 tab 动作。
+- **e2e 把语言钉成 en。** 界面默认简体中文，而这些用例断言的是英文文案，所以
+  `playwright.config.ts` 的 `use.storageState` 和 `global-setup.ts` 都会写入
+  `localStorage['fema.language'] = 'en'`。改语言解析逻辑时记得同步这两处。

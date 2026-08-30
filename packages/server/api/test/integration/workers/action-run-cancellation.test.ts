@@ -2,12 +2,12 @@ import { generateId } from '@fema-ipaas/core-utils'
 import { ExecuteActionJobData, WorkflowActionType, LATEST_JOB_DATA_SCHEMA_VERSION, WorkerJobType } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { Job } from 'bullmq'
-import { redisConnections } from '../../../../src/app/database/redis-connections'
-import { QueueName } from '../../../../src/app/workers/job'
-import { jobBroker } from '../../../../src/app/workers/job-queue/job-broker'
-import { jobQueue, JobType } from '../../../../src/app/workers/job-queue/job-queue'
-import { mockAndSaveBasicSetup } from '../../../helpers/mocks'
-import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
+import { redisConnections } from '../../../src/app/database/redis-connections'
+import { QueueName } from '../../../src/app/workers/job'
+import { jobBroker } from '../../../src/app/workers/job-queue/job-broker'
+import { jobQueue, JobType } from '../../../src/app/workers/job-queue/job-queue'
+import { mockAndSaveBasicSetup } from '../../helpers/mocks'
+import { setupTestEnvironment, teardownTestEnvironment } from '../../helpers/test-setup'
 
 let app: FastifyInstance
 

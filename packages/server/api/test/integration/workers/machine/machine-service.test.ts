@@ -1,28 +1,39 @@
 import { ExecutionMode } from '@fema-ipaas/shared'
+import { RedisType } from '@fema-ipaas/server-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { AppSystemProp } from '../../../../src/app/helper/system/system-props'
 
-vi.mock('../../../../../src/app/workers/machine/machine-cache', () => ({
+const mockSystemValues: Record<string, string> = {
+    [AppSystemProp.REDIS_TYPE]: RedisType.MEMORY,
+    [AppSystemProp.EXECUTION_MODE]: ExecutionMode.UNSANDBOXED,
+}
+
+vi.mock('../../../../src/app/workers/machine/machine-cache', () => ({
     workerMachineCache: vi.fn(() => ({
         findOne: vi.fn().mockResolvedValue(null),
         upsert: vi.fn().mockResolvedValue(undefined),
     })),
 }))
 
-vi.mock('../../../../../src/app/helper/system/system', () => ({
+vi.mock('../../../../src/app/helper/system/system', () => ({
     system: {
-        getOrThrow: vi.fn().mockReturnValue('test-value'),
+        getOrThrow: vi.fn((prop: string) => mockSystemValues[prop] ?? 'test-value'),
         getNumberOrThrow: vi.fn().mockReturnValue(60),
+        getNumber: vi.fn().mockReturnValue(null),
+        getBoolean: vi.fn().mockReturnValue(undefined),
+        getBooleanOrThrow: vi.fn().mockReturnValue(false),
+        getList: vi.fn().mockReturnValue([]),
         get: vi.fn().mockReturnValue(undefined),
+        isWorker: vi.fn().mockReturnValue(false),
+        isApp: vi.fn().mockReturnValue(true),
     },
 }))
 
-vi.mock('../../../../../src/app/helper/domain-helper', () => ({
+vi.mock('../../../../src/app/helper/domain-helper', () => ({
     domainHelper: {
         getPublicUrl: vi.fn().mockResolvedValue('https://example.com'),
     },
 }))
-
-import { system } from '../../../../../src/app/helper/system/system'
 
 const mockLog = {
     info: vi.fn(),
@@ -56,18 +67,18 @@ describe('machineService — execution mode', () => {
     })
 
     it('should return system default execution mode for shared workers', async () => {
-        vi.mocked(system.getOrThrow).mockReturnValue(ExecutionMode.SANDBOX_PROCESS as any)
+        mockSystemValues[AppSystemProp.EXECUTION_MODE] = ExecutionMode.SANDBOX_PROCESS
 
-        const { machineService: freshMachineService } = await import('../../../../../src/app/workers/machine/machine-service')
+        const { machineService: freshMachineService } = await import('../../../../src/app/workers/machine/machine-service')
         const result = await freshMachineService(mockLog).onConnection(mockHealthcheck)
 
         expect(result.EXECUTION_MODE).toBe(ExecutionMode.SANDBOX_PROCESS)
     })
 
     it('should return system default execution mode for dedicated workers', async () => {
-        vi.mocked(system.getOrThrow).mockReturnValue(ExecutionMode.SANDBOX_CODE_AND_PROCESS as any)
+        mockSystemValues[AppSystemProp.EXECUTION_MODE] = ExecutionMode.SANDBOX_CODE_AND_PROCESS
 
-        const { machineService: freshMachineService } = await import('../../../../../src/app/workers/machine/machine-service')
+        const { machineService: freshMachineService } = await import('../../../../src/app/workers/machine/machine-service')
         const result = await freshMachineService(mockLog).onConnection(mockHealthcheck, 'my-worker-group')
 
         expect(result.EXECUTION_MODE).toBe(ExecutionMode.SANDBOX_CODE_AND_PROCESS)

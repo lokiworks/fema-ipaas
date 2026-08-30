@@ -13,6 +13,7 @@ test.describe('Webhooks', () => {
       trigger: 'Catch Webhook'
     });
 
+    await builderPage.openStepInputTab();
     const webhookInput = page.locator('input.grow.bg-background');
     const webhookUrl = await webhookInput.inputValue();
     const runVersion = Math.floor(Math.random() * 100000);
@@ -27,6 +28,8 @@ test.describe('Webhooks', () => {
       connector: 'Webhook',
       action: 'Return Response'
     });
+
+    await builderPage.openStepInputTab();
 
     //clear
     await page.locator('div.cm-activeLine.cm-line').fill(

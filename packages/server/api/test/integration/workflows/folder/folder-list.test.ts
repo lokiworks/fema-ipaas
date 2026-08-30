@@ -2,17 +2,15 @@ import { generateId } from '@fema-ipaas/core-utils'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import qs from 'qs'
-import { workflowService } from '../../../../../src/app/workflows/workflow/workflow.service'
-import { tableService } from '../../../../../src/app/tables/table/table.service'
-import { db } from '../../../../helpers/db'
+import { workflowService } from '../../../../src/app/workflows/workflow/workflow.service'
+import { db } from '../../../helpers/db'
 import {
     createMockWorkflow,
     createMockWorkflowVersion,
     createMockFolder,
-    createMockTable,
-} from '../../../../helpers/mocks'
-import { createTestContext, TestContext } from '../../../../helpers/test-context'
-import { setupTestEnvironment, teardownTestEnvironment } from '../../../../helpers/test-setup'
+} from '../../../helpers/mocks'
+import { createTestContext, TestContext } from '../../../helpers/test-context'
+import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
 
 let app: FastifyInstance
 
@@ -32,22 +30,15 @@ async function saveWorkflowInFolder(ctx: TestContext, folderId: string | null): 
     return workflow.id
 }
 
-async function saveTableInFolder(ctx: TestContext, folderId: string | null): Promise<string> {
-    const table = { ...createMockTable({ projectId: ctx.project.id }), folderId }
-    await db.save('table', table)
-    return table.id
-}
-
 describe('Folder N+1 fix', () => {
     describe('GET /v1/folders enrichment', () => {
-        it('returns numberOfWorkflows and numberOfTables per folder', async () => {
+        it('returns numberOfWorkflows per folder', async () => {
             const ctx = await createTestContext(app)
             const folder = createMockFolder({ projectId: ctx.project.id })
             await db.save('folder', folder)
 
             await saveWorkflowInFolder(ctx, folder.id)
             await saveWorkflowInFolder(ctx, folder.id)
-            await saveTableInFolder(ctx, folder.id)
 
             const response = await ctx.get('/v1/folders', {
                 projectId: ctx.project.id,
@@ -57,7 +48,6 @@ describe('Folder N+1 fix', () => {
             expect(response?.statusCode).toBe(StatusCodes.OK)
             const target = response?.json().data.find((f: { id: string }) => f.id === folder.id)
             expect(target.numberOfWorkflows).toBe(2)
-            expect(target.numberOfTables).toBe(1)
         })
     })
 
@@ -113,30 +103,6 @@ describe('Folder N+1 fix', () => {
         })
     })
 
-    describe('GET /v1/tables?folderIds', () => {
-        it('returns tables from the given folders only', async () => {
-            const ctx = await createTestContext(app)
-            const folderA = createMockFolder({ projectId: ctx.project.id })
-            const folderB = createMockFolder({ projectId: ctx.project.id })
-            await db.save('folder', folderA)
-            await db.save('folder', folderB)
-
-            const tableA = await saveTableInFolder(ctx, folderA.id)
-            await saveTableInFolder(ctx, folderB.id)
-            await saveTableInFolder(ctx, null)
-
-            const response = await ctx.get('/v1/tables', {
-                projectId: ctx.project.id,
-                folderIds: [folderA.id],
-                limit: 100,
-            })
-
-            expect(response?.statusCode).toBe(StatusCodes.OK)
-            const ids = response?.json().data.map((t: { id: string }) => t.id)
-            expect(ids).toEqual([tableA])
-        })
-    })
-
     describe('empty folderIds filter', () => {
         it('workflowService.list returns no workflows for an empty folderIds without erroring', async () => {
             const ctx = await createTestContext(app)
@@ -149,26 +115,6 @@ describe('Folder N+1 fix', () => {
                 projectIds: [ctx.project.id],
                 folderIds: [],
                 limit: 100,
-            })
-
-            expect(page.data).toEqual([])
-        })
-
-        it('tableService.list returns no tables for an empty folderIds without erroring', async () => {
-            const ctx = await createTestContext(app)
-            const folder = createMockFolder({ projectId: ctx.project.id })
-            await db.save('folder', folder)
-            await saveTableInFolder(ctx, folder.id)
-            await saveTableInFolder(ctx, null)
-
-            const page = await tableService.list({
-                projectId: ctx.project.id,
-                cursor: undefined,
-                limit: 100,
-                name: undefined,
-                externalIds: undefined,
-                folderId: undefined,
-                folderIds: [],
             })
 
             expect(page.data).toEqual([])

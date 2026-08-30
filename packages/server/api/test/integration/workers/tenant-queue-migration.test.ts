@@ -1,10 +1,10 @@
 import { generateId } from '@fema-ipaas/core-utils'
 import { WorkflowTriggerType, LATEST_JOB_DATA_SCHEMA_VERSION, WorkerJobType } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
-import { getTenantGroupQueueName } from '../../../../src/app/workers/job'
-import { jobQueue } from '../../../../src/app/workers/job-queue/job-queue'
-import { tenantQueueMigrationService } from '../../../../src/app/workers/tenant-queue-migration.service'
-import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
+import { getTenantGroupQueueName } from '../../../src/app/workers/job'
+import { jobQueue } from '../../../src/app/workers/job-queue/job-queue'
+import { tenantQueueMigrationService } from '../../../src/app/workers/tenant-queue-migration.service'
+import { setupTestEnvironment, teardownTestEnvironment } from '../../helpers/test-setup'
 
 let app: FastifyInstance
 

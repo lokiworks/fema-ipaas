@@ -2,16 +2,16 @@ import { generateId } from '@fema-ipaas/core-utils'
 import { WorkflowStatus, WorkflowTriggerType, WorkflowVersionState, PackageType, ConnectorType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
-import { databaseConnection } from '../../../../../../src/app/database/database-connection'
-import { connectorCache } from '../../../../../../src/app/connectors/metadata/connector-cache'
-import { db } from '../../../../../helpers/db'
+import { databaseConnection } from '../../../../../src/app/database/database-connection'
+import { connectorCache } from '../../../../../src/app/connectors/metadata/connector-cache'
+import { db } from '../../../../helpers/db'
 import {
     createMockWorkflow,
     createMockWorkflowVersion,
     createMockConnectorMetadata,
-} from '../../../../../helpers/mocks'
-import { createTestContext } from '../../../../../helpers/test-context'
-import { setupTestEnvironment, teardownTestEnvironment } from '../../../../../helpers/test-setup'
+} from '../../../../helpers/mocks'
+import { createTestContext } from '../../../../helpers/test-context'
+import { setupTestEnvironment, teardownTestEnvironment } from '../../../../helpers/test-setup'
 
 let app: FastifyInstance | null = null
 let mockLog: FastifyBaseLogger

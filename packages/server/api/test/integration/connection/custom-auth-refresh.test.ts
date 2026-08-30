@@ -3,10 +3,10 @@ import { PropertyType } from '@fema-ipaas/connector-sdk'
 import { Connection, ConnectionScope, ConnectionStatus, ConnectionType, CustomAuthConnectionValue, PackageType, ConnectorType } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger, FastifyInstance } from 'fastify'
-import { connectionHandler } from '../../../../src/app/connection/connection-service/connection.handler'
-import { db } from '../../../helpers/db'
-import { createMockConnectorMetadata } from '../../../helpers/mocks'
-import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
+import { connectionHandler } from '../../../src/app/connection/connection-service/connection.handler'
+import { db } from '../../helpers/db'
+import { createMockConnectorMetadata } from '../../helpers/mocks'
+import { setupTestEnvironment, teardownTestEnvironment } from '../../helpers/test-setup'
 
 let app: FastifyInstance | null = null
 let mockLog: FastifyBaseLogger

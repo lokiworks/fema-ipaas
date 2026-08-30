@@ -3,8 +3,9 @@ import { Worker as BullMQWorker, Job, Queue } from 'bullmq'
 import { FastifyBaseLogger } from 'fastify'
 import IORedis from 'ioredis'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { jobAssignmentTracker } from '../../../../../src/app/workers/job-queue/job-assignment-tracker'
-import { createQueueDispatcher } from '../../../../../src/app/workers/job-queue/queue-dispatcher'
+import { jobAssignmentTracker } from '../../../../src/app/workers/job-queue/job-assignment-tracker'
+import { createQueueDispatcher } from '../../../../src/app/workers/job-queue/queue-dispatcher'
+import { redisAvailability } from '../../../helpers/redis-availability'
 
 /**
  * Pins the production invariant: the BullMQ `active` list must never exceed the total number of
@@ -22,8 +23,9 @@ import { createQueueDispatcher } from '../../../../../src/app/workers/job-queue/
  * dispatcher + REAL BullMQ against the local test redis, contrasting abandon-on-stop vs reclaim.
  */
 
-const REDIS_HOST = process.env.FEMA_REDIS_HOST ?? 'localhost'
-const REDIS_PORT = Number(process.env.FEMA_REDIS_PORT ?? '6379')
+const REDIS_HOST = redisAvailability.host
+const REDIS_PORT = redisAvailability.port
+const REDIS_REACHABLE = await redisAvailability.isReachable()
 const PREFIX = 'ap-active-invariant-test'
 
 const log: FastifyBaseLogger = {
@@ -150,7 +152,7 @@ function sleep(ms: number): Promise<void> {
     return new Promise(r => setTimeout(r, ms))
 }
 
-describe('BullMQ active-list invariant: active <= total worker concurrency', () => {
+describe.skipIf(!REDIS_REACHABLE)('BullMQ active-list invariant: active <= total worker concurrency', () => {
     beforeAll(async () => {
         const r = mkConn()
         const keys = await r.keys(`${PREFIX}:*`)

@@ -13,16 +13,16 @@ import {
 } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
-import { db } from '../../../../helpers/db'
-import { describeWithAuth } from '../../../../helpers/describe-with-auth'
+import { db } from '../../../helpers/db'
+import { describeWithAuth } from '../../../helpers/describe-with-auth'
 import {
     createMockWorkflow,
     createMockWorkflowVersion,
     createMockFolder,
     createMockConnectorMetadata,
-} from '../../../../helpers/mocks'
-import { createTestContext } from '../../../../helpers/test-context'
-import { setupTestEnvironment, teardownTestEnvironment } from '../../../../helpers/test-setup'
+} from '../../../helpers/mocks'
+import { createTestContext } from '../../../helpers/test-context'
+import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
 
 let app: FastifyInstance | null = null
 
@@ -648,6 +648,7 @@ describe('Workflow Operations API', () => {
                         settings: {},
                         valid: false,
                         displayName: 'Select Trigger',
+                        lastUpdatedDate: new Date().toISOString(),
                     },
                     schemaVersion: null,
                     notes: null,
@@ -679,6 +680,7 @@ describe('Workflow Operations API', () => {
                         displayName: 'Select Trigger',
                         settings: {},
                         valid: false,
+                        lastUpdatedDate: new Date().toISOString(),
                         nextAction: {
                             type: WorkflowActionType.CODE,
                             displayName: 'Code Step',

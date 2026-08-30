@@ -10,11 +10,24 @@ export class BuilderPage extends BasePage {
     await this.page.getByText(params.trigger).click();
   }
 
+  // The node config panel splits into Action / Input / Output / Error Handling
+  // tabs; step properties (webhook URL, connector inputs) live under Input.
+  async openStepInputTab() {
+    await this.page.getByRole('tab', { name: 'Input' }).click();
+  }
+
+  // Testing a step and its sample data now live under the Output tab.
+  async openStepOutputTab() {
+    await this.page.getByRole('tab', { name: 'Output' }).click();
+  }
+
   async addAction(params: { connector: string; action: string }) {
     await this.page.getByTestId('add-action-button').click();
     await this.page.getByTestId('connectors-search-input').fill(params.connector);    
     await this.page.getByTestId(params.connector).click();
-    await this.page.getByText(params.action).nth(1).click();
+    // The connector grid shows the connector name once; the action list that
+    // follows shows the action name once, so first() is the action.
+    await this.page.getByText(params.action).first().click();
   }
 
   async testWorkflowAndWaitForSuccess() {
@@ -26,11 +39,13 @@ export class BuilderPage extends BasePage {
   }
 
   async testStep() {
+    await this.openStepOutputTab();
     await this.page.getByRole('button', { name: 'Test Step Ctrl + G' }).click();
     await this.page.waitForTimeout(8000);
   }
 
   async testTrigger() {
+    await this.openStepOutputTab();
     await this.page.getByTestId('test-trigger-button').click();
     await this.page.waitForTimeout(5000);
   }
@@ -43,6 +58,7 @@ export class BuilderPage extends BasePage {
   }
 
   async loadSampleData() {
+    await this.openStepOutputTab();
     await this.page.getByText('Load Sample data').click();
     await this.page.waitForTimeout(8000);
   }

@@ -10,17 +10,17 @@ import {
 import { FastifyBaseLogger, FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { MockInstance } from 'vitest'
-import { databaseConnection } from '../../../../src/app/database/database-connection'
-import { connectorMetadataService } from '../../../../src/app/connectors/metadata/connector-metadata-service'
-import { userInteractionWatcher } from '../../../../src/app/workers/user-interaction-watcher'
-import { createMemberContext, createTestContext } from '../../../helpers/test-context'
-import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
+import { databaseConnection } from '../../../src/app/database/database-connection'
+import { connectorMetadataService } from '../../../src/app/connectors/metadata/connector-metadata-service'
+import { userInteractionWatcher } from '../../../src/app/workers/user-interaction-watcher'
+import { createMemberContext, createTestContext } from '../../helpers/test-context'
+import { setupTestEnvironment, teardownTestEnvironment } from '../../helpers/test-setup'
 
 const CONNECTOR_NAME = 'testing-before-new-ci-discord'
 const CONNECTOR_VERSION = '0.4.4'
 
 const tgzBuffer = readFileSync(
-    join(__dirname, '../../../../src/assets/private-connector-test.tgz'),
+    join(__dirname, '../../../src/assets/private-connector-test.tgz'),
 )
 
 const mockConnectorMetadata = {

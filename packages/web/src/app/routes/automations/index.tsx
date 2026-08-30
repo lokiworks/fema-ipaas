@@ -26,32 +26,28 @@ import { usePinnedItems } from '@/features/automations/hooks/use-pinned-items';
 import { TreeItem } from '@/features/automations/lib/types';
 import { connectionsQueries } from '@/features/connections';
 import { connectorsHooks } from '@/features/connectors';
+import { projectCollectionUtils, getProjectName } from '@/features/projects';
 import { ImportWorkflowDialog } from '@/features/workflows/components/import-workflow-dialog';
-import {
-  workspaceCollectionUtils,
-  getWorkspaceName,
-} from '@/features/workspaces';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 
 export const AutomationsPage = () => {
-  const { workspaceId: workspaceIdFromUrl } = useParams<{
-    workspaceId: string;
+  const { projectId: projectIdFromUrl } = useParams<{
+    projectId: string;
   }>();
-  const workspaceId =
-    workspaceIdFromUrl ?? authenticationSession.getWorkspaceId()!;
+  const projectId = projectIdFromUrl ?? authenticationSession.getProjectId()!;
 
-  return <AutomationsPageContent key={workspaceId} workspaceId={workspaceId} />;
+  return <AutomationsPageContent key={projectId} projectId={projectId} />;
 };
 
-const AutomationsPageContent = ({ workspaceId }: { workspaceId: string }) => {
+const AutomationsPageContent = ({ projectId }: { projectId: string }) => {
   const [, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const { data: allWorkspaces = [] } = workspaceCollectionUtils.useAll();
-  const currentWorkspaceName = (() => {
-    const p = allWorkspaces.find((proj) => proj.id === workspaceId);
-    return p ? getWorkspaceName(p) : null;
+  const { data: allProjects = [] } = projectCollectionUtils.useAll();
+  const currentProjectName = (() => {
+    const p = allProjects.find((proj) => proj.id === projectId);
+    return p ? getProjectName(p) : null;
   })();
 
   const { checkAccess } = useAuthorization();
@@ -130,8 +126,8 @@ const AutomationsPageContent = ({ workspaceId }: { workspaceId: string }) => {
   const dialogs = useAutomationsDialogs({ mutations, selectedItems });
 
   const { data: connections } = connectionsQueries.useConnections({
-    request: { workspaceId, limit: 10000 },
-    extraKeys: [workspaceId],
+    request: { projectId, limit: 10000 },
+    extraKeys: [projectId],
   });
 
   const { connectors } = connectorsHooks.useConnectors({});
@@ -171,7 +167,7 @@ const AutomationsPageContent = ({ workspaceId }: { workspaceId: string }) => {
         }
         toggleFolder(item.id);
       } else if (item.type === 'workflow') {
-        const href = authenticationSession.appendWorkspaceRoutePrefix(
+        const href = authenticationSession.appendProjectRoutePrefix(
           `/workflows/${item.id}`,
         );
         const workflowData = item.data as {
@@ -187,7 +183,7 @@ const AutomationsPageContent = ({ workspaceId }: { workspaceId: string }) => {
           href,
           status: workflowData?.status ?? null,
           folderName,
-          workspaceName: currentWorkspaceName,
+          projectName: currentProjectName,
         });
         if (ctrlKey) {
           window.open(href, '_blank');
@@ -200,7 +196,7 @@ const AutomationsPageContent = ({ workspaceId }: { workspaceId: string }) => {
       navigate,
       toggleFolder,
       folders,
-      currentWorkspaceName,
+      currentProjectName,
       clearSelection,
       expandedFolders,
     ],
@@ -287,7 +283,7 @@ const AutomationsPageContent = ({ workspaceId }: { workspaceId: string }) => {
             isLoading={isLoading}
             selectedItems={selectedItems}
             expandedFolders={expandedFolders}
-            workspaceMembers={undefined}
+            projectMembers={undefined}
             folders={folders}
             selectableCount={selectableItems.length}
             isPinned={isPinned}

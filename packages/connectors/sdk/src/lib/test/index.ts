@@ -58,8 +58,8 @@ export function createMockActionContext<
         return;
       },
     },
-    workspace: {
-      id: 'test-workspace-id',
+    project: {
+      id: 'test-project-id',
       externalId: async () => undefined,
     },
     workflows: {

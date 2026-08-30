@@ -68,7 +68,7 @@ afterAll(async () => {
 }, 15_000)
 
 async function setupSubflowFixtures({ childAlwaysFails = false, retryOnFailure = false }: { childAlwaysFails?: boolean, retryOnFailure?: boolean } = {}) {
-    const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
+    const { mockTenant, mockProject } = await mockAndSaveBasicSetup()
 
     const webhookConnector = createMockConnectorMetadata({
         name: '@fema-ipaas/connector-webhook',
@@ -136,7 +136,7 @@ async function setupSubflowFixtures({ childAlwaysFails = false, retryOnFailure =
     }
 
     const childWorkflow = createMockWorkflow({
-        workspaceId: mockWorkspace.id,
+        projectId: mockProject.id,
         status: WorkflowStatus.ENABLED,
     })
 
@@ -208,7 +208,7 @@ async function setupSubflowFixtures({ childAlwaysFails = false, retryOnFailure =
     }
 
     const parentWorkflow = createMockWorkflow({
-        workspaceId: mockWorkspace.id,
+        projectId: mockProject.id,
     })
     await db.save('workflow', parentWorkflow)
 
@@ -233,11 +233,11 @@ async function setupSubflowFixtures({ childAlwaysFails = false, retryOnFailure =
     })
     await db.save('workflow_version', parentWorkflowVersion)
 
-    return { parentWorkflow, parentWorkflowVersion, childWorkflow, mockTenant, mockWorkspace }
+    return { parentWorkflow, parentWorkflowVersion, childWorkflow, mockTenant, mockProject }
 }
 
 async function setupSubflowWithWebhookResponseFixtures() {
-    const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
+    const { mockTenant, mockProject } = await mockAndSaveBasicSetup()
 
     const webhookConnector = createMockConnectorMetadata({
         name: '@fema-ipaas/connector-webhook',
@@ -279,7 +279,7 @@ async function setupSubflowWithWebhookResponseFixtures() {
     }
 
     const childWorkflow = createMockWorkflow({
-        workspaceId: mockWorkspace.id,
+        projectId: mockProject.id,
         status: WorkflowStatus.ENABLED,
     })
 
@@ -372,7 +372,7 @@ async function setupSubflowWithWebhookResponseFixtures() {
     }
 
     const parentWorkflow = createMockWorkflow({
-        workspaceId: mockWorkspace.id,
+        projectId: mockProject.id,
         status: WorkflowStatus.ENABLED,
     })
     await db.save('workflow', parentWorkflow)
@@ -399,16 +399,16 @@ async function setupSubflowWithWebhookResponseFixtures() {
     await db.save('workflow_version', parentWorkflowVersion)
     await db.update('workflow', parentWorkflow.id, { publishedVersionId: parentWorkflowVersion.id })
 
-    return { parentWorkflow, parentWorkflowVersion, mockTenant, mockWorkspace }
+    return { parentWorkflow, parentWorkflowVersion, mockTenant, mockProject }
 }
 
-async function pollExecutionToCompletion(executionId: string, workspaceId: string) {
+async function pollExecutionToCompletion(executionId: string, projectId: string) {
     const maxWaitMs = 120_000
     const pollIntervalMs = 500
     const start = Date.now()
     let result = await executionService(app.log).getOnePopulatedOrThrow({
         id: executionId,
-        workspaceId,
+        projectId,
     })
 
     while (
@@ -420,7 +420,7 @@ async function pollExecutionToCompletion(executionId: string, workspaceId: strin
         await new Promise((resolve) => setTimeout(resolve, pollIntervalMs))
         result = await executionService(app.log).getOnePopulatedOrThrow({
             id: executionId,
-            workspaceId,
+            projectId,
         })
     }
 
@@ -429,7 +429,7 @@ async function pollExecutionToCompletion(executionId: string, workspaceId: strin
 
 describe('Execute Workflow E2E', () => {
     it('executes a webhook → data mapper → code workflow end-to-end', async () => {
-        const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
+        const { mockTenant, mockProject } = await mockAndSaveBasicSetup()
 
         // Save connector metadata records
         const webhookConnector = createMockConnectorMetadata({
@@ -494,7 +494,7 @@ describe('Execute Workflow E2E', () => {
         }
 
         const mockWorkflow = createMockWorkflow({
-            workspaceId: mockWorkspace.id,
+            projectId: mockProject.id,
         })
         await db.save('workflow', mockWorkflow)
 
@@ -529,7 +529,7 @@ describe('Execute Workflow E2E', () => {
             streamStepProgress: StreamStepProgress.NONE,
             executeTrigger: false,
             workflowVersionId: mockWorkflowVersion.id,
-            workspaceId: mockWorkspace.id,
+            projectId: mockProject.id,
             workerHandlerId: undefined,
             httpRequestId: undefined,
             failParentOnFailure: undefined,
@@ -541,7 +541,7 @@ describe('Execute Workflow E2E', () => {
         const start = Date.now()
         let result = await executionService(app.log).getOnePopulatedOrThrow({
             id: execution.id,
-            workspaceId: mockWorkspace.id,
+            projectId: mockProject.id,
         })
 
         while (
@@ -551,7 +551,7 @@ describe('Execute Workflow E2E', () => {
             await new Promise((resolve) => setTimeout(resolve, pollIntervalMs))
             result = await executionService(app.log).getOnePopulatedOrThrow({
                 id: execution.id,
-                workspaceId: mockWorkspace.id,
+                projectId: mockProject.id,
             })
         }
         console.log(result)
@@ -622,7 +622,7 @@ describe('Execute Workflow E2E', () => {
             },
         }
 
-        const mockWorkflow = createMockWorkflow({ workspaceId: ctx.workspace.id })
+        const mockWorkflow = createMockWorkflow({ projectId: ctx.project.id })
         await db.save('workflow', mockWorkflow)
 
         const mockWorkflowVersion = createMockWorkflowVersion({
@@ -655,13 +655,13 @@ describe('Execute Workflow E2E', () => {
             streamStepProgress: StreamStepProgress.NONE,
             executeTrigger: false,
             workflowVersionId: mockWorkflowVersion.id,
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             workerHandlerId: undefined,
             httpRequestId: undefined,
             failParentOnFailure: undefined,
         })
 
-        const result = await pollExecutionToCompletion(execution.id, ctx.workspace.id)
+        const result = await pollExecutionToCompletion(execution.id, ctx.project.id)
 
         expect(result.status).toBe(ExecutionStatus.SUCCEEDED)
         expect(result.steps.step_1.output).toEqual(
@@ -670,7 +670,7 @@ describe('Execute Workflow E2E', () => {
     }, 180_000)
 
     it('handles concurrent workflow run executions without jobs getting stuck', async () => {
-        const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
+        const { mockTenant, mockProject } = await mockAndSaveBasicSetup()
 
         const webhookConnector = createMockConnectorMetadata({
             name: '@fema-ipaas/connector-webhook',
@@ -699,7 +699,7 @@ describe('Execute Workflow E2E', () => {
         }
 
         const mockWorkflow = createMockWorkflow({
-            workspaceId: mockWorkspace.id,
+            projectId: mockProject.id,
         })
         await db.save('workflow', mockWorkflow)
 
@@ -737,7 +737,7 @@ describe('Execute Workflow E2E', () => {
                     streamStepProgress: StreamStepProgress.NONE,
                     executeTrigger: false,
                     workflowVersionId: mockWorkflowVersion.id,
-                    workspaceId: mockWorkspace.id,
+                    projectId: mockProject.id,
                     workerHandlerId: undefined,
                     httpRequestId: undefined,
                     failParentOnFailure: undefined,
@@ -767,7 +767,7 @@ describe('Execute Workflow E2E', () => {
             for (const [id] of pending) {
                 const updated = await executionService(app.log).getOnePopulatedOrThrow({
                     id,
-                    workspaceId: mockWorkspace.id,
+                    projectId: mockProject.id,
                 })
                 results.set(id, updated.status)
             }
@@ -784,7 +784,7 @@ describe('Execute Workflow E2E', () => {
     }, 30_000)
 
     it('executes parent → child subflow with wait-for-response', async () => {
-        const { parentWorkflow, parentWorkflowVersion, mockTenant, mockWorkspace } = await setupSubflowFixtures()
+        const { parentWorkflow, parentWorkflowVersion, mockTenant, mockProject } = await setupSubflowFixtures()
 
         const execution = await executionService(app.log).start({
             workflowId: parentWorkflow.id,
@@ -795,13 +795,13 @@ describe('Execute Workflow E2E', () => {
             streamStepProgress: StreamStepProgress.NONE,
             executeTrigger: false,
             workflowVersionId: parentWorkflowVersion.id,
-            workspaceId: mockWorkspace.id,
+            projectId: mockProject.id,
             workerHandlerId: undefined,
             httpRequestId: undefined,
             failParentOnFailure: undefined,
         })
 
-        const result = await pollExecutionToCompletion(execution.id, mockWorkspace.id)
+        const result = await pollExecutionToCompletion(execution.id, mockProject.id)
 
         expect(result.status).toBe(ExecutionStatus.SUCCEEDED)
         expect(result.steps.step_1.output).toEqual(
@@ -816,7 +816,7 @@ describe('Execute Workflow E2E', () => {
     }, 180_000)
 
     it('retry-on-failure of a wait-for-response Call Workflow retries the parent step and fails after maxAttempts without re-invoking the child subflow', async () => {
-        const { parentWorkflow, parentWorkflowVersion, childWorkflow, mockTenant, mockWorkspace } = await setupSubflowFixtures({
+        const { parentWorkflow, parentWorkflowVersion, childWorkflow, mockTenant, mockProject } = await setupSubflowFixtures({
             childAlwaysFails: true,
             retryOnFailure: true,
         })
@@ -830,13 +830,13 @@ describe('Execute Workflow E2E', () => {
             streamStepProgress: StreamStepProgress.NONE,
             executeTrigger: false,
             workflowVersionId: parentWorkflowVersion.id,
-            workspaceId: mockWorkspace.id,
+            projectId: mockProject.id,
             workerHandlerId: undefined,
             httpRequestId: undefined,
             failParentOnFailure: undefined,
         })
 
-        const result = await pollExecutionToCompletion(execution.id, mockWorkspace.id)
+        const result = await pollExecutionToCompletion(execution.id, mockProject.id)
         const childRunCount = await databaseConnection()
             .getRepository('execution')
             .count({ where: { workflowId: childWorkflow.id } })
@@ -846,7 +846,7 @@ describe('Execute Workflow E2E', () => {
     }, 180_000)
 
     it('executes a webhook → delay_for → code workflow without infinite loop', async () => {
-        const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
+        const { mockTenant, mockProject } = await mockAndSaveBasicSetup()
 
         const webhookConnector = createMockConnectorMetadata({
             name: '@fema-ipaas/connector-webhook',
@@ -901,7 +901,7 @@ describe('Execute Workflow E2E', () => {
         }
 
         const mockWorkflow = createMockWorkflow({
-            workspaceId: mockWorkspace.id,
+            projectId: mockProject.id,
         })
         await db.save('workflow', mockWorkflow)
 
@@ -935,13 +935,13 @@ describe('Execute Workflow E2E', () => {
             streamStepProgress: StreamStepProgress.NONE,
             executeTrigger: false,
             workflowVersionId: mockWorkflowVersion.id,
-            workspaceId: mockWorkspace.id,
+            projectId: mockProject.id,
             workerHandlerId: undefined,
             httpRequestId: undefined,
             failParentOnFailure: undefined,
         })
 
-        const result = await pollExecutionToCompletion(execution.id, mockWorkspace.id)
+        const result = await pollExecutionToCompletion(execution.id, mockProject.id)
         expect(result.status).toBe(ExecutionStatus.SUCCEEDED)
         expect(result.steps.step_2.output).toEqual(
             expect.objectContaining({ resumed: true }),
@@ -949,7 +949,7 @@ describe('Execute Workflow E2E', () => {
     }, 60_000)
 
     it('slices a >32 KB step output, persists it across a delay/resume, and materializes it for a downstream step', async () => {
-        const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
+        const { mockTenant, mockProject } = await mockAndSaveBasicSetup()
 
         const webhookConnector = createMockConnectorMetadata({
             name: '@fema-ipaas/connector-webhook',
@@ -1023,7 +1023,7 @@ describe('Execute Workflow E2E', () => {
         }
 
         const mockWorkflow = createMockWorkflow({
-            workspaceId: mockWorkspace.id,
+            projectId: mockProject.id,
         })
         await db.save('workflow', mockWorkflow)
 
@@ -1057,13 +1057,13 @@ describe('Execute Workflow E2E', () => {
             streamStepProgress: StreamStepProgress.NONE,
             executeTrigger: false,
             workflowVersionId: mockWorkflowVersion.id,
-            workspaceId: mockWorkspace.id,
+            projectId: mockProject.id,
             workerHandlerId: undefined,
             httpRequestId: undefined,
             failParentOnFailure: undefined,
         })
 
-        const result = await pollExecutionToCompletion(execution.id, mockWorkspace.id)
+        const result = await pollExecutionToCompletion(execution.id, mockProject.id)
         expect(result.status).toBe(ExecutionStatus.SUCCEEDED)
         // step_1 was offloaded to a EXECUTION_LOG_SLICE file; the journal stores a LogSliceRef.
         expect(result.steps.step_1.outputType).toBe(StepOutputType.SLICE)
@@ -1079,7 +1079,7 @@ describe('Execute Workflow E2E', () => {
     }, 60_000)
 
     it('executes parent → child subflow with wait-for-response in test step mode', async () => {
-        const { parentWorkflow, parentWorkflowVersion, mockTenant, mockWorkspace } = await setupSubflowFixtures()
+        const { parentWorkflow, parentWorkflowVersion, mockTenant, mockProject } = await setupSubflowFixtures()
 
         const execution = await executionService(app.log).start({
             workflowId: parentWorkflow.id,
@@ -1090,14 +1090,14 @@ describe('Execute Workflow E2E', () => {
             streamStepProgress: StreamStepProgress.WEBSOCKET,
             executeTrigger: false,
             workflowVersionId: parentWorkflowVersion.id,
-            workspaceId: mockWorkspace.id,
+            projectId: mockProject.id,
             workerHandlerId: undefined,
             httpRequestId: undefined,
             failParentOnFailure: undefined,
             stepNameToTest: 'step_1',
         })
 
-        const result = await pollExecutionToCompletion(execution.id, mockWorkspace.id)
+        const result = await pollExecutionToCompletion(execution.id, mockProject.id)
 
         expect(result.status).toBe(ExecutionStatus.SUCCEEDED)
         expect(result.steps.step_1.output).toEqual(

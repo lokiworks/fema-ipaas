@@ -19,7 +19,7 @@ export const VariableEntity = new EntitySchema<VariableSchema>({
         name: {
             type: String,
         },
-        workspaceId: {
+        projectId: {
             type: String,
             nullable: false,
         },
@@ -41,8 +41,8 @@ export const VariableEntity = new EntitySchema<VariableSchema>({
     },
     indices: [
         {
-            name: 'idx_variable_workspace_id_and_name',
-            columns: ['workspaceId', 'name'],
+            name: 'idx_variable_project_id_and_name',
+            columns: ['projectId', 'name'],
             unique: true,
         },
         {

@@ -12,7 +12,7 @@ export const generateId = customAlphabet(ALPHABET, ID_LENGTH)
 
 export const secureApId = (length: number) => customAlphabet(ALPHABET, length)()
 
-export type WorkspaceId = EntityId
+export type ProjectId = EntityId
 export type ExecutionId = EntityId
 export type WorkflowId = EntityId
 export type WorkflowVersionId = EntityId

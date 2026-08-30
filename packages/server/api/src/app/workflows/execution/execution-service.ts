@@ -1,4 +1,4 @@
-import { ApplicationError, Cursor, ErrorCode, ExecutionId, generateId, isNil, SeekPage, TenantId, WorkflowId, WorkflowVersionId, WorkspaceId } from '@fema-ipaas/core-utils'
+import { ApplicationError, Cursor, ErrorCode, ExecutionId, generateId, isNil, ProjectId, SeekPage, TenantId, WorkflowId, WorkflowVersionId } from '@fema-ipaas/core-utils'
 import { dayjsUtil, wideEvent } from '@fema-ipaas/server-utils'
 import { ConnectionHealthSummary, ConnectorUsageSummary, ExecuteWorkflowJobData, Execution, ExecutionCountByStatus, ExecutionStatus, ExecutionType, ExecutionWithRetryError, ExecutioOutputFile, FileCompression, FileType, GenericStepOutput, isExecutionStateTerminal, JobPayload, LATEST_JOB_DATA_SCHEMA_VERSION, logSerializer, LogSliceRef, RecentlyEditedWorkflow, ResumeReason, RunEnvironment, RunInternalError, SampleDataFileType, StepOutput, StepOutputStatus, StepOutputType, StreamStepProgress, WorkerJobType, WorkflowRetryStrategy, WorkflowVersion } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
@@ -14,9 +14,9 @@ import { paginationHelper } from '../../helper/pagination/pagination-utils'
 import { Order } from '../../helper/pagination/paginator'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
+import { projectService } from '../../project/project-service'
 import { jobQueue, JobType } from '../../workers/job-queue/job-queue'
 import { payloadOffloader } from '../../workers/payload-offloader'
-import { workspaceService } from '../../workspace/workspace-service'
 import { sampleDataService } from '../step-run/sample-data.service'
 import { workflowRepo } from '../workflow/workflow.repo'
 import { workflowService } from '../workflow/workflow.service'
@@ -33,10 +33,10 @@ export const WEBHOOK_TIMEOUT_MS = system.getNumberOrThrow(AppSystemProp.WEBHOOK_
 export const executionRepo = repoFactory<Execution>(ExecutionEntity)
 
 export const executionService = (log: FastifyBaseLogger) => ({
-    async upsert({ id, workspaceId }: { id: ExecutionId, workspaceId: WorkspaceId }): Promise<Execution> {
-        const existingExecution = await executionRepo().findOneBy({ id, workspaceId })
+    async upsert({ id, projectId }: { id: ExecutionId, projectId: ProjectId }): Promise<Execution> {
+        const existingExecution = await executionRepo().findOneBy({ id, projectId })
         if (isNil(existingExecution)) {
-            return executionRepo().save({ id, workspaceId })
+            return executionRepo().save({ id, projectId })
         }
         return existingExecution
     },
@@ -57,7 +57,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
 
 
         const whereClause: Record<string, unknown> = {
-            workspaceId: params.workspaceId,
+            projectId: params.projectId,
         }
         if (!isNil(params.environment)) {
             whereClause.environment = params.environment
@@ -113,15 +113,15 @@ export const executionService = (log: FastifyBaseLogger) => ({
         const { data, cursor: newCursor } = await paginator.paginate(query)
         return paginationHelper.createPage<Execution>(data, newCursor)
     },
-    async retry({ executionId, strategy, workspaceId }: RetryParams): Promise<Execution> {
+    async retry({ executionId, strategy, projectId }: RetryParams): Promise<Execution> {
         const oldExecution = await executionService(log).getOnePopulatedOrThrow({
             id: executionId,
-            workspaceId,
+            projectId,
         })
         log.info({ execution: { id: executionId }, workflow: { id: oldExecution.workflowId }, strategy }, 'Workflow run retry initiated')
 
-        const workspace = await workspaceService(log).getOneOrThrow(oldExecution.workspaceId)
-        const retentionDays = getEffectiveExecutionDataRetentionDays(workspace.executionDataRetentionDays)
+        const project = await projectService(log).getOneOrThrow(oldExecution.projectId)
+        const retentionDays = getEffectiveExecutionDataRetentionDays(project.executionDataRetentionDays)
         if (
             isExecutionStateTerminal({ status: oldExecution.status, ignoreInternalError: false }) &&
             isOutsideRetentionWindow(oldExecution.created, retentionDays)
@@ -146,14 +146,14 @@ export const executionService = (log: FastifyBaseLogger) => ({
 
                 await executionRepo().update({
                     id: oldExecution.id,
-                    workspaceId: oldExecution.workspaceId,
+                    projectId: oldExecution.projectId,
                 }, {
                     status: ExecutionStatus.QUEUED,
                     startTime: dayjsUtil().toISOString(),
                     finishTime: null,
                 })
                 const updatedExecution = await findExecutionOrThrow(oldExecution.id)
-                const tenantId = await workspaceService(log).getTenantId(updatedExecution.workspaceId)
+                const tenantId = await projectService(log).getTenantId(updatedExecution.projectId)
                 await executionSideEffects(log).onRetry({ execution: updatedExecution, tenantId })
                 if (triggerFailed) {
                     return addToQueue({
@@ -187,7 +187,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
                 return this.start({
                     workflowId: oldExecution.workflowId,
                     payload,
-                    tenantId: await workspaceService(log).getTenantId(oldExecution.workspaceId),
+                    tenantId: await projectService(log).getTenantId(oldExecution.projectId),
                     executionType: ExecutionType.BEGIN,
                     streamStepProgress: StreamStepProgress.NONE,
                     workerHandlerId: undefined,
@@ -195,17 +195,17 @@ export const executionService = (log: FastifyBaseLogger) => ({
                     executeTrigger: triggerFailed,
                     environment: oldExecution.environment,
                     workflowVersionId: latestWorkflowVersion.id,
-                    workspaceId: oldExecution.workspaceId,
+                    projectId: oldExecution.projectId,
                     failParentOnFailure: oldExecution.failParentOnFailure,
                     parentRunId: oldExecution.parentRunId,
                 })
             }
         }
     },
-    async cancel({ workspaceId, tenantId, executionIds, excludeExecutionIds, status, workflowId, createdAfter, createdBefore }: CancelParams): Promise<void> {
+    async cancel({ projectId, tenantId, executionIds, excludeExecutionIds, status, workflowId, createdAfter, createdBefore }: CancelParams): Promise<void> {
         const filteredStatus = status ?? CANCELLABLE_STATUSES
         const executions = await filterExecutionsAndApplyFilters({
-            workspaceId,
+            projectId,
             executionIds,
             status: filteredStatus,
             workflowId,
@@ -235,7 +235,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
         const filteredExecutions = await filterExecutionsAndApplyFilters(params)
         await executionRepo().update({
             id: In(filteredExecutions.map(execution => execution.id)),
-            workspaceId: params.workspaceId,
+            projectId: params.projectId,
         }, {
             archivedAt: new Date().toISOString(),
         })
@@ -245,7 +245,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
         const limit = pLimit(10)
         const results = await Promise.allSettled(
             filteredExecutions.map(execution =>
-                limit(() => this.retry({ executionId: execution.id, strategy: params.strategy, workspaceId: params.workspaceId })),
+                limit(() => this.retry({ executionId: execution.id, strategy: params.strategy, projectId: params.projectId })),
             ),
         )
         return results.map((result, i) => {
@@ -270,7 +270,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
         workerHandlerId,
         streamStepProgress,
         httpRequestId,
-        workspaceId,
+        projectId,
         workflowVersionId,
         parentRunId,
         failParentOnFailure,
@@ -279,7 +279,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
         environment,
     }: StartParams): Promise<Execution> {
         const newExecution = await queueOrCreateInstantly({
-            workspaceId,
+            projectId,
             workflowVersionId,
             parentRunId,
             workflowId,
@@ -309,17 +309,17 @@ export const executionService = (log: FastifyBaseLogger) => ({
         }, log)
 
         await executionSideEffects(log).onStart({ execution: newExecution, tenantId })
-        log.info({ execution: { id: newExecution.id }, workflow: { id: workflowId }, workspace: { id: workspaceId }, executionType }, 'Workflow run started')
+        log.info({ execution: { id: newExecution.id }, workflow: { id: workflowId }, project: { id: projectId }, executionType }, 'Workflow run started')
         return newExecution
     },
 
-    async createQuotaExceededRun({ workflowVersion, payload, workspaceId, environment, parentRunId, failParentOnFailure, triggeredBy, shouldExecuteTriggerOnRetry }: CreateQuotaExceededRunParams): Promise<Execution> {
+    async createQuotaExceededRun({ workflowVersion, payload, projectId, environment, parentRunId, failParentOnFailure, triggeredBy, shouldExecuteTriggerOnRetry }: CreateQuotaExceededRunParams): Promise<Execution> {
         const now = new Date().toISOString()
         const logsFileId = generateId()
-        await persistQuotaExceededTriggerLog({ log, workflowVersion, workspaceId, payload, logsFileId, shouldExecuteTriggerOnRetry })
+        await persistQuotaExceededTriggerLog({ log, workflowVersion, projectId, payload, logsFileId, shouldExecuteTriggerOnRetry })
         const execution: Execution = {
             id: generateId(),
-            workspaceId,
+            projectId,
             workflowId: workflowVersion.workflowId,
             workflowVersionId: workflowVersion.id,
             environment,
@@ -336,22 +336,22 @@ export const executionService = (log: FastifyBaseLogger) => ({
             triggeredBy,
         }
         await runsMetadataQueue(log).add(execution)
-        log.info({ execution: { id: execution.id }, workflow: { id: workflowVersion.workflowId }, workspace: { id: workspaceId } }, 'Workflow run admitted as QUOTA_EXCEEDED')
+        log.info({ execution: { id: execution.id }, workflow: { id: workflowVersion.workflowId }, project: { id: projectId } }, 'Workflow run admitted as QUOTA_EXCEEDED')
         return execution
     },
 
-    async test({ workspaceId, workflowVersionId, parentRunId, stepNameToTest, triggeredBy }: TestParams): Promise<Execution> {
+    async test({ projectId, workflowVersionId, parentRunId, stepNameToTest, triggeredBy }: TestParams): Promise<Execution> {
         const workflowVersion = await workflowVersionService(log).getOneOrThrow(workflowVersionId)
-        await workflowService(log).getOneOrThrow({ id: workflowVersion.workflowId, workspaceId })
+        await workflowService(log).getOneOrThrow({ id: workflowVersion.workflowId, projectId })
 
         const triggerPayload = await sampleDataService(log).getOrReturnEmpty({
-            workspaceId,
+            projectId,
             workflowVersion,
             stepName: workflowVersion.trigger.name,
             type: SampleDataFileType.OUTPUT,
         })
         const execution = await queueOrCreateInstantly({
-            workspaceId,
+            projectId,
             workflowId: workflowVersion.workflowId,
             workflowVersionId: workflowVersion.id,
             environment: RunEnvironment.TESTING,
@@ -366,24 +366,24 @@ export const executionService = (log: FastifyBaseLogger) => ({
             executionType: ExecutionType.BEGIN,
             workerHandlerId: undefined,
             httpRequestId: undefined,
-            tenantId: await workspaceService(log).getTenantId(workspaceId),
+            tenantId: await projectService(log).getTenantId(projectId),
             executeTrigger: false,
             streamStepProgress: StreamStepProgress.WEBSOCKET,
-            sampleData: !isNil(stepNameToTest) ? await sampleDataService(log).getSampleDataForWorkflow(workspaceId, workflowVersion, SampleDataFileType.OUTPUT) : undefined,
+            sampleData: !isNil(stepNameToTest) ? await sampleDataService(log).getSampleDataForWorkflow(projectId, workflowVersion, SampleDataFileType.OUTPUT) : undefined,
         }, log)
     },
-    async startManualTrigger({ workspaceId, workflowVersionId, triggeredBy }: StartManualTriggerParams): Promise<Execution> {
+    async startManualTrigger({ projectId, workflowVersionId, triggeredBy }: StartManualTriggerParams): Promise<Execution> {
         const workflowVersion = await workflowVersionService(log).getOneOrThrow(workflowVersionId)
-        await workflowService(log).getOneOrThrow({ id: workflowVersion.workflowId, workspaceId })
+        await workflowService(log).getOneOrThrow({ id: workflowVersion.workflowId, projectId })
         const triggerPayload = {}
-        const tenantId = await workspaceService(log).getTenantId(workspaceId)
+        const tenantId = await projectService(log).getTenantId(projectId)
 
         const creditsExhausted = false
         if (creditsExhausted) {
             return this.createQuotaExceededRun({
                 workflowVersion,
                 payload: triggerPayload,
-                workspaceId,
+                projectId,
                 environment: RunEnvironment.PRODUCTION,
                 parentRunId: undefined,
                 failParentOnFailure: undefined,
@@ -393,7 +393,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
         }
 
         const execution = await queueOrCreateInstantly({
-            workspaceId,
+            projectId,
             workflowId: workflowVersion.workflowId,
             workflowVersionId: workflowVersion.id,
             environment: RunEnvironment.PRODUCTION,
@@ -417,7 +417,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
     async getOne(params: GetOneParams): Promise<Execution | null> {
         const execution = await queryBuilderForExecution(executionRepo()).where({
             id: params.id,
-            ...(params.workspaceId ? { workspaceId: params.workspaceId } : {}),
+            ...(params.projectId ? { projectId: params.projectId } : {}),
         }).getOne()
 
         return execution
@@ -442,7 +442,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
         if (isNil(execution.logsFileId)) {
             return null
         }
-        const stateFile = await readLogsFile(log, execution.logsFileId, execution.workspaceId)
+        const stateFile = await readLogsFile(log, execution.logsFileId, execution.projectId)
         return stateFile?.executionState.steps ?? null
     },
     async countByStatus(params: CountByStatusParams): Promise<ExecutionCountByStatus[]> {
@@ -450,7 +450,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
             .select('execution.status', 'status')
             .addSelect('COUNT(*)', 'count')
             .where({
-                workspaceId: params.workspaceId,
+                projectId: params.projectId,
                 environment: RunEnvironment.PRODUCTION,
                 archivedAt: IsNull(),
             })
@@ -472,7 +472,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
             .addSelect('execution.status', 'status')
             .addSelect('COUNT(*)', 'count')
             .where({
-                workspaceId: params.workspaceId,
+                projectId: params.projectId,
                 environment: RunEnvironment.PRODUCTION,
                 archivedAt: IsNull(),
             })
@@ -493,7 +493,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
             .addSelect('COUNT(*)', 'count')
             .addSelect('MAX(execution.created)', 'lastFailure')
             .where({
-                workspaceId: params.workspaceId,
+                projectId: params.projectId,
                 environment: RunEnvironment.PRODUCTION,
                 archivedAt: IsNull(),
             })
@@ -520,11 +520,11 @@ export const executionService = (log: FastifyBaseLogger) => ({
             lastFailure: dayjsUtil(row.lastFailure.toISOString()).toISOString(),
         }))
     },
-    async connectionHealth(params: WorkspaceScopedParams): Promise<ConnectionHealthSummary[]> {
+    async connectionHealth(params: ProjectScopedParams): Promise<ConnectionHealthSummary[]> {
         const results = await connectionsRepo().createQueryBuilder('connection')
             .select('connection.status', 'status')
             .addSelect('COUNT(*)', 'count')
-            .where(':workspaceId = ANY(connection."workspaceIds")', { workspaceId: params.workspaceId })
+            .where(':projectId = ANY(connection."projectIds")', { projectId: params.projectId })
             .groupBy('connection.status')
             .getRawMany()
         return results.map((row: { status: string, count: string }) => ({
@@ -532,11 +532,11 @@ export const executionService = (log: FastifyBaseLogger) => ({
             count: parseInt(row.count, 10),
         }))
     },
-    async topConnectors(params: LimitedWorkspaceScopedParams): Promise<ConnectorUsageSummary[]> {
+    async topConnectors(params: LimitedProjectScopedParams): Promise<ConnectorUsageSummary[]> {
         const results = await connectionsRepo().createQueryBuilder('connection')
             .select('connection.connectorName', 'connectorName')
             .addSelect('COUNT(*)', 'count')
-            .where(':workspaceId = ANY(connection."workspaceIds")', { workspaceId: params.workspaceId })
+            .where(':projectId = ANY(connection."projectIds")', { projectId: params.projectId })
             .groupBy('connection.connectorName')
             .orderBy('COUNT(*)', 'DESC')
             .limit(params.limit)
@@ -546,12 +546,12 @@ export const executionService = (log: FastifyBaseLogger) => ({
             count: parseInt(row.count, 10),
         }))
     },
-    async recentlyEditedWorkflows(params: LimitedWorkspaceScopedParams): Promise<RecentlyEditedWorkflow[]> {
+    async recentlyEditedWorkflows(params: LimitedProjectScopedParams): Promise<RecentlyEditedWorkflow[]> {
         const results = await workflowRepo().createQueryBuilder('workflow')
             .innerJoin('workflow_version', 'version', 'version."workflowId" = workflow.id')
             .select('workflow.id', 'workflowId')
             .addSelect('MAX(version.updated)', 'updated')
-            .where('workflow."workspaceId" = :workspaceId', { workspaceId: params.workspaceId })
+            .where('workflow."projectId" = :projectId', { projectId: params.projectId })
             .groupBy('workflow.id')
             .orderBy('MAX(version.updated)', 'DESC')
             .limit(params.limit)
@@ -584,7 +584,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
         let steps = {}
         let internalError: RunInternalError | undefined = undefined
         if (!isNil(execution.logsFileId)) {
-            const stateFile = await readLogsFile(log, execution.logsFileId, execution.workspaceId)
+            const stateFile = await readLogsFile(log, execution.logsFileId, execution.projectId)
             if (!isNil(stateFile)) {
                 steps = stateFile.executionState.steps
                 internalError = stateFile.internalError
@@ -604,11 +604,11 @@ async function cancelSingleRun(log: FastifyBaseLogger, execution: Execution, ten
         key: `runs_metadata_${execution.id}`,
         timeoutInSeconds: 30,
         fn: async () => {
-            await jobQueue(log).removeAllExecutionJobs({ executionId: execution.id, tenantId, workspaceId: execution.workspaceId })
+            await jobQueue(log).removeAllExecutionJobs({ executionId: execution.id, tenantId, projectId: execution.projectId })
             await waitpointService(log).deleteByExecutionId(execution.id)
             await runsMetadataQueue(log).add({
                 id: execution.id,
-                workspaceId: execution.workspaceId,
+                projectId: execution.projectId,
                 status: ExecutionStatus.CANCELED,
             })
         },
@@ -655,7 +655,7 @@ async function filterExecutionsAndApplyFilters(
     params: FilterExecutionsAndApplyFiltersParams,
 ): Promise<Execution[]> {
     let query = executionRepo().createQueryBuilder('execution').where({
-        workspaceId: params.workspaceId,
+        projectId: params.projectId,
         environment: RunEnvironment.PRODUCTION,
     })
 
@@ -718,16 +718,16 @@ export async function addToQueue(params: AddToQueueParams, log: FastifyBaseLogge
 
     let jobPayload: JobPayload = { type: 'inline', value: null }
     if (!isNil(params.payload) && isNil(params.workerHandlerId)) {
-        jobPayload = await payloadOffloader.offloadPayload(log, params.payload, params.execution.workspaceId, params.tenantId)
+        jobPayload = await payloadOffloader.offloadPayload(log, params.payload, params.execution.projectId, params.tenantId)
     }
     else if (!isNil(params.payload)) {
-        jobPayload = await payloadOffloader.maybeOffloadPayload(log, params.payload, params.execution.workspaceId, params.tenantId)
+        jobPayload = await payloadOffloader.maybeOffloadPayload(log, params.payload, params.execution.projectId, params.tenantId)
     }
 
     const commonJobData = {
         schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
         workerHandlerId: params.workerHandlerId ?? null,
-        workspaceId: params.execution.workspaceId,
+        projectId: params.execution.projectId,
         tenantId: params.tenantId,
         environment: params.execution.environment,
         workflowId: params.execution.workflowId,
@@ -790,7 +790,7 @@ async function resolveStepOutput({ step, execution, log }: ResolveStepOutputPara
     }
     const ref = step.output as LogSliceRef
     const file = await fileService(log).getDataOrUndefined({
-        workspaceId: execution.workspaceId,
+        projectId: execution.projectId,
         fileId: ref.fileId,
         type: FileType.EXECUTION_LOG_SLICE,
     })
@@ -807,9 +807,9 @@ async function resolveStepOutput({ step, execution, log }: ResolveStepOutputPara
     return JSON.parse(file.data.toString('utf-8'))
 }
 
-async function readLogsFile(log: FastifyBaseLogger, logsFileId: string, workspaceId: string): Promise<ExecutioOutputFile | null> {
+async function readLogsFile(log: FastifyBaseLogger, logsFileId: string, projectId: string): Promise<ExecutioOutputFile | null> {
     const result = await fileService(log).getDataOrUndefined({
-        workspaceId,
+        projectId,
         fileId: logsFileId,
         type: FileType.EXECUTION_LOG,
     })
@@ -819,7 +819,7 @@ async function readLogsFile(log: FastifyBaseLogger, logsFileId: string, workspac
     return JSON.parse(result.data.toString('utf-8'))
 }
 
-async function persistQuotaExceededTriggerLog({ log, workflowVersion, workspaceId, payload, logsFileId, shouldExecuteTriggerOnRetry }: PersistQuotaExceededTriggerLogParams): Promise<void> {
+async function persistQuotaExceededTriggerLog({ log, workflowVersion, projectId, payload, logsFileId, shouldExecuteTriggerOnRetry }: PersistQuotaExceededTriggerLogParams): Promise<void> {
     const triggerStep = GenericStepOutput.create({
         input: {},
         type: workflowVersion.trigger.type,
@@ -836,10 +836,10 @@ async function persistQuotaExceededTriggerLog({ log, workflowVersion, workspaceI
         data: await logSerializer.serialize(outputFile),
         compression: FileCompression.ZSTD,
     })
-    const tenantId = await workspaceService(log).getTenantId(workspaceId)
+    const tenantId = await projectService(log).getTenantId(projectId)
     await fileService(log).save({
         fileId: logsFileId,
-        workspaceId,
+        projectId,
         tenantId,
         type: FileType.EXECUTION_LOG,
         data,
@@ -852,7 +852,7 @@ async function queueOrCreateInstantly(params: CreateParams, log: FastifyBaseLogg
     const now = new Date().toISOString()
     const execution: Execution = {
         id: generateId(),
-        workspaceId: params.workspaceId,
+        projectId: params.projectId,
         workflowId: params.workflowId,
         workflowVersionId: params.workflowVersionId,
         environment: params.environment,
@@ -881,7 +881,7 @@ export function isOutsideRetentionWindow(createdTime: string, retentionDays: num
 }
 
 type CreateParams = {
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     workflowVersionId: WorkflowVersionId
     triggeredBy?: string
     parentRunId?: ExecutionId
@@ -892,7 +892,7 @@ type CreateParams = {
 }
 
 type ListParams = {
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     workflowId: WorkflowId[] | undefined
     status: ExecutionStatus[] | undefined
     cursor: Cursor | null
@@ -909,7 +909,7 @@ type ListParams = {
 
 type GetOneParams = {
     id: ExecutionId
-    workspaceId: WorkspaceId | undefined
+    projectId: ProjectId | undefined
 }
 
 type ResolveStepOutputParams = {
@@ -938,7 +938,7 @@ export type AddToQueueParams = AddToQueueParamsCommon & (
 type CreateQuotaExceededRunParams = {
     workflowVersion: WorkflowVersion
     payload: unknown
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     environment: RunEnvironment
     parentRunId?: ExecutionId
     failParentOnFailure: boolean | undefined
@@ -949,7 +949,7 @@ type CreateQuotaExceededRunParams = {
 type PersistQuotaExceededTriggerLogParams = {
     log: FastifyBaseLogger
     workflowVersion: WorkflowVersion
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     payload: unknown
     logsFileId: string
     shouldExecuteTriggerOnRetry: boolean
@@ -961,7 +961,7 @@ type StartParams = {
     tenantId: TenantId
     environment: RunEnvironment
     workflowVersionId: WorkflowVersionId
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     parentRunId?: ExecutionId
     failParentOnFailure: boolean | undefined
     stepNameToTest?: string
@@ -976,7 +976,7 @@ type StartParams = {
 
 
 type TestParams = {
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     workflowVersionId: WorkflowVersionId
     triggeredBy?: string
     parentRunId?: ExecutionId
@@ -984,18 +984,18 @@ type TestParams = {
 }
 
 type StartManualTriggerParams = {
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     workflowVersionId: WorkflowVersionId
     triggeredBy: string
 }
 type RetryParams = {
     executionId: ExecutionId
     strategy: WorkflowRetryStrategy
-    workspaceId: WorkspaceId
+    projectId: ProjectId
 }
 
 type CancelParams = {
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     tenantId: TenantId
     executionIds?: ExecutionId[]
     excludeExecutionIds?: ExecutionId[]
@@ -1006,7 +1006,7 @@ type CancelParams = {
 }
 
 type BulkRetryParams = {
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     executionIds?: ExecutionId[]
     strategy: WorkflowRetryStrategy
     status?: ExecutionStatus[]
@@ -1020,7 +1020,7 @@ type BulkRetryParams = {
 }
 
 type BulkArchiveActionParams = {
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     executionIds?: ExecutionId[]
     status?: ExecutionStatus[]
     workflowId?: WorkflowId[]
@@ -1033,13 +1033,13 @@ type BulkArchiveActionParams = {
 }
 
 type CountByStatusParams = {
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     createdAfter?: string
     createdBefore?: string
 }
 
 type FilterExecutionsAndApplyFiltersParams = {
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     executionIds?: ExecutionId[]
     status?: ExecutionStatus[]
     archived?: boolean
@@ -1073,21 +1073,21 @@ const FAILED_STATUSES = [
 ]
 
 type DailyTrendParams = {
-    workspaceId: string
+    projectId: string
     createdAfter: string
 }
 
 type TopFailingWorkflowsParams = {
-    workspaceId: string
+    projectId: string
     createdAfter: string
     limit: number
 }
 
-type WorkspaceScopedParams = {
-    workspaceId: string
+type ProjectScopedParams = {
+    projectId: string
 }
 
-type LimitedWorkspaceScopedParams = {
-    workspaceId: string
+type LimitedProjectScopedParams = {
+    projectId: string
     limit: number
 }

@@ -15,7 +15,7 @@ export const workflowProvisioning = (log: Logger, apiClient: WorkerToApiContract
             name: 'workflowBundleDownload',
             fn: () => workflowBundleStore(log, apiClient, basePath).tryFetch({
                 workflowVersionId: workflow.versionId,
-                workspaceId: workflow.workspaceId,
+                projectId: workflow.projectId,
             }),
         }))
         if (bundleError) {
@@ -37,7 +37,7 @@ export const workflowProvisioning = (log: Logger, apiClient: WorkerToApiContract
                 throw error
             }
             log.warn({ error: String(error), workflow: { id: workflow.id } }, 'Workflow disabled due to missing connector')
-            const { error: disableError } = await tryCatch(() => apiClient.disableWorkflow({ workflowId: workflow.id, workspaceId: workflow.workspaceId }))
+            const { error: disableError } = await tryCatch(() => apiClient.disableWorkflow({ workflowId: workflow.id, projectId: workflow.projectId }))
             if (disableError) {
                 log.error({ error: String(disableError), workflow: { id: workflow.id } }, 'Failed to disable workflow after missing connector')
             }
@@ -51,14 +51,14 @@ export const workflowProvisioning = (log: Logger, apiClient: WorkerToApiContract
             connectors,
             code: { kind: 'source', steps: extractCodeArtifacts(workflowVersion) },
             // The compiled code only exists on disk after install, so the caller invokes this afterwards.
-            publishBundle: shouldPublish ? buildPublishBundle({ log, apiClient, basePath, workflowVersion, connectors, workspaceId: workflow.workspaceId, tenantId }) : null,
+            publishBundle: shouldPublish ? buildPublishBundle({ log, apiClient, basePath, workflowVersion, connectors, projectId: workflow.projectId, tenantId }) : null,
         }
     },
 })
 
-function buildPublishBundle({ log, apiClient, basePath, workflowVersion, connectors, workspaceId, tenantId }: BuildPublishBundleParams): PublishBundle {
+function buildPublishBundle({ log, apiClient, basePath, workflowVersion, connectors, projectId, tenantId }: BuildPublishBundleParams): PublishBundle {
     return async () => {
-        const { error } = await tryCatch(() => workflowBundleStore(log, apiClient, basePath).publish({ workflowVersion, connectors, workspaceId, tenantId }))
+        const { error } = await tryCatch(() => workflowBundleStore(log, apiClient, basePath).publish({ workflowVersion, connectors, projectId, tenantId }))
         if (error) {
             log.warn({ error: String(error), workflowVersion: { id: workflowVersion.id } }, 'Failed to publish workflow bundle')
         }
@@ -109,7 +109,7 @@ function extractCodeArtifacts(workflowVersion: WorkflowVersion): CodeArtifact[] 
 }
 
 type ResolveParams = {
-    workflow: { id: string, versionId: string, workspaceId: string }
+    workflow: { id: string, versionId: string, projectId: string }
     tenantId: string
 }
 
@@ -128,7 +128,7 @@ type BuildPublishBundleParams = {
     basePath: string
     workflowVersion: WorkflowVersion
     connectors: ConnectorPackage[]
-    workspaceId: string
+    projectId: string
     tenantId: string
 }
 

@@ -40,7 +40,7 @@ async function createWaitpoint({ runtime, stepName, hooks, params }: CreateWaitp
         apiUrl: runtime.internalApiUrl,
         engineToken: runtime.engineToken,
         executionId: runtime.executionId,
-        workspaceId: runtime.workspaceId,
+        projectId: runtime.projectId,
         stepName,
         type: params.type,
         version: params.version ?? 'V1',
@@ -84,7 +84,7 @@ export type SuspendableRuntime = {
     internalApiUrl: string
     publicApiUrl: string
     engineToken: string
-    workspaceId: string
+    projectId: string
     executionId: string
     actionRunMode: boolean
     workerHandlerId?: string

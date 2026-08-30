@@ -1,8 +1,11 @@
 ---
 title: 连接器选择器是右侧面板，不是画布浮层
 icon: 🎚️
-status: accepted
+status: superseded by 000033-the-editor-is-three-columns-tools-left-config-right
 ---
+
+> **已被推翻。** 本决策的飞书依据是错的——AnyCross 的连接器选择在**左侧**功能区，右侧只放节点配置。
+> 见 [[000033-the-editor-is-three-columns-tools-left-config-right]]。下面保留原文以记录当时的推理。
 
 ## Decision
 

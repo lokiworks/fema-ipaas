@@ -4,8 +4,9 @@ import {
   PropertyType,
 } from '@fema-ipaas/connector-sdk';
 import { isNil } from '@fema-ipaas/core-utils';
-import { PropertySettings } from '@fema-ipaas/shared';
+import { PropertyExecutionType, PropertySettings } from '@fema-ipaas/shared';
 import { t } from 'i18next';
+import React from 'react';
 import { ControllerRenderProps, UseFormReturn } from 'react-hook-form';
 
 import { SecretInput } from '@/app/connections/secret-input';
@@ -17,6 +18,7 @@ import { MultiSelectConnectorProperty } from '@/components/custom/multi-select-c
 import { ReadMoreDescription } from '@/components/custom/read-more-description';
 import { SearchableSelect } from '@/components/custom/searchable-select';
 import { FormControl } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import { RequiredFieldAsterisk } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 
@@ -49,6 +51,26 @@ export const selectGenericFormComponentForProperty = ({
   hideDescription,
   enableMarkdownForInputWithMention,
 }: SelectGenericFormComponentForPropertyParams) => {
+  const valueTypeOverride = propertySettings?.[propertyName]?.type;
+  const valueTypeEditor = isNil(valueTypeOverride)
+    ? undefined
+    : VALUE_TYPE_EDITORS[valueTypeOverride];
+  if (!isNil(valueTypeEditor)) {
+    return (
+      <AutoFormFieldWrapper
+        propertyName={propertyName}
+        inputName={inputName}
+        property={property}
+        field={field}
+        hideLabel={hideLabel}
+        disabled={disabled}
+        allowDynamicValues={allowDynamicValues}
+        dynamicInputModeToggled={false}
+      >
+        {valueTypeEditor({ field, disabled })}
+      </AutoFormFieldWrapper>
+    );
+  }
   switch (property.type) {
     case PropertyType.ARRAY:
       return (
@@ -468,4 +490,63 @@ export type SelectGenericFormComponentForPropertyParams = {
           }
       ))
     | null;
+};
+
+const VALUE_TYPE_EDITORS: Partial<
+  Record<
+    PropertyExecutionType,
+    (params: ValueTypeEditorParams) => React.ReactNode
+  >
+> = {
+  [PropertyExecutionType.STRING]: (params) => (
+    <FormControl>
+      <Input
+        {...params.field}
+        value={typeof params.field.value === 'string' ? params.field.value : ''}
+        disabled={params.disabled}
+        placeholder={t('String')}
+      />
+    </FormControl>
+  ),
+  [PropertyExecutionType.NUMBER]: (params) => (
+    <FormControl>
+      <Input
+        {...params.field}
+        type="number"
+        value={typeof params.field.value === 'number' ? params.field.value : ''}
+        onChange={(event) =>
+          params.field.onChange(
+            event.target.value === '' ? '' : Number(event.target.value),
+          )
+        }
+        disabled={params.disabled}
+        placeholder={t('Number')}
+      />
+    </FormControl>
+  ),
+  [PropertyExecutionType.BOOLEAN]: (params) => (
+    <FormControl>
+      <Switch
+        checked={params.field.value === true}
+        onCheckedChange={params.field.onChange}
+        disabled={params.disabled}
+      />
+    </FormControl>
+  ),
+  [PropertyExecutionType.OBJECT]: (params) => (
+    <JsonEditor field={params.field} readonly={params.disabled}></JsonEditor>
+  ),
+  [PropertyExecutionType.ARRAY]: (params) => (
+    <JsonEditor field={params.field} readonly={params.disabled}></JsonEditor>
+  ),
+  [PropertyExecutionType.NULL]: () => (
+    <div className="rounded-md border border-dashed px-3 py-2 font-mono text-xs text-muted-foreground">
+      null
+    </div>
+  ),
+};
+
+type ValueTypeEditorParams = {
+  field: ControllerRenderProps;
+  disabled: boolean;
 };

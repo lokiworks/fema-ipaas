@@ -1,6 +1,6 @@
 import { CancelTestTriggerRequestBody, PrincipalType, TestTriggerRequestBody } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
-import { WorkspaceResourceType } from '../../core/security/authorization/common'
+import { ProjectResourceType } from '../../core/security/authorization/common'
 import { securityAccess } from '../../core/security/authorization/fastify-security'
 import { testTriggerService } from '../../trigger/test-trigger/test-trigger-service'
 
@@ -11,13 +11,13 @@ export const testTriggerController: FastifyPluginAsyncZod = async (app) => {
         const logWithContext = req.log.child({
             workflow: { id: workflowId },
             workflowVersion: { id: workflowVersionId },
-            workspace: { id: req.workspaceId },
+            project: { id: req.projectId },
             testStrategy,
         })
         return testTriggerService(logWithContext).test({
             workflowId,
             workflowVersionId,
-            workspaceId: req.workspaceId,
+            projectId: req.projectId,
             testStrategy,
         })
     })
@@ -26,7 +26,7 @@ export const testTriggerController: FastifyPluginAsyncZod = async (app) => {
 
         return testTriggerService(req.log).cancel({
             workflowId,
-            workspaceId: req.workspaceId,
+            projectId: req.projectId,
         })
     })
 }
@@ -36,8 +36,8 @@ const TestTriggerRequest = {
         body: TestTriggerRequestBody,
     },
     config: {
-        security: securityAccess.workspace([PrincipalType.USER], undefined, {
-            type: WorkspaceResourceType.BODY,
+        security: securityAccess.project([PrincipalType.USER], undefined, {
+            type: ProjectResourceType.BODY,
         }),
     },
 }
@@ -47,8 +47,8 @@ const CancelTestTriggerRequest = {
         body: CancelTestTriggerRequestBody,
     },
     config: {
-        security: securityAccess.workspace([PrincipalType.USER], undefined, {
-            type: WorkspaceResourceType.BODY,
+        security: securityAccess.project([PrincipalType.USER], undefined, {
+            type: ProjectResourceType.BODY,
         }),
     },
 }

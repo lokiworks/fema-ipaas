@@ -5,7 +5,7 @@ import {
     SaveTriggerEventRequest,
 } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
-import { WorkspaceResourceType } from '../../core/security/authorization/common'
+import { ProjectResourceType } from '../../core/security/authorization/common'
 import { securityAccess } from '../../core/security/authorization/fastify-security'
 import { workflowService } from '../../workflows/workflow/workflow.service'
 import { triggerEventService } from './trigger-event.service'
@@ -17,7 +17,7 @@ export const triggerEventController: FastifyPluginAsyncZod = async (fastify) => 
 
     fastify.post('/', SaveTriggerEventRequestParams, async (request) => {
         return triggerEventService(request.log).saveEvent({
-            workspaceId: request.workspaceId,
+            projectId: request.projectId,
             workflowId: request.body.workflowId,
             payload: request.body.mockData,
         })
@@ -26,11 +26,11 @@ export const triggerEventController: FastifyPluginAsyncZod = async (fastify) => 
     fastify.get('/', ListTriggerEventsRequestParams, async (request) => {
         const workflow = await workflowService(request.log).getOnePopulatedOrThrow({
             id: request.query.workflowId,
-            workspaceId: request.workspaceId,
+            projectId: request.projectId,
         })
 
         return triggerEventService(request.log).list({
-            workspaceId: request.workspaceId,
+            projectId: request.projectId,
             workflow,
             cursor: request.query.cursor ?? null,
             limit: request.query.limit ?? DEFAULT_PAGE_SIZE,
@@ -45,8 +45,8 @@ const ListTriggerEventsRequestParams = {
         querystring: ListTriggerEventsRequest,
     },
     config: {
-        security: securityAccess.workspace([PrincipalType.USER], undefined, {
-            type: WorkspaceResourceType.QUERY,
+        security: securityAccess.project([PrincipalType.USER], undefined, {
+            type: ProjectResourceType.QUERY,
         }),
     },
 }
@@ -56,8 +56,8 @@ const SaveTriggerEventRequestParams = {
         body: SaveTriggerEventRequest,
     },
     config: {
-        security: securityAccess.workspace([PrincipalType.USER], undefined, {
-            type: WorkspaceResourceType.BODY,
+        security: securityAccess.project([PrincipalType.USER], undefined, {
+            type: ProjectResourceType.BODY,
         }),
     },
 }

@@ -1,4 +1,4 @@
-import { ApplicationError, assertNotNullOrUndefined, Cursor, ErrorCode, generateId, isNil, Metadata, SeekPage, TenantId, tryCatch, UserId, WorkflowId, WorkflowVersionId, WorkspaceId } from '@fema-ipaas/core-utils'
+import { ApplicationError, assertNotNullOrUndefined, Cursor, ErrorCode, generateId, isNil, Metadata, ProjectId, SeekPage, TenantId, tryCatch, UserId, WorkflowId, WorkflowVersionId } from '@fema-ipaas/core-utils'
 import { dayjsDuration, dayjsUtil } from '@fema-ipaas/server-utils'
 import { CreateWorkflowRequest, PopulatedWorkflow, SharedTemplate, TelemetryEventName, TemplateStatus, TemplateType, TriggerSource, UncategorizedFolderId, UserWithMetaInformation, Workflow, workflowConnectorUtil, WorkflowCreator, WorkflowOperationRequest, WorkflowOperationStatus, WorkflowOperationType, WorkflowStatus, WorkflowTriggerType, WorkflowVersion, WorkflowVersionState } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
@@ -15,8 +15,8 @@ import { AppSystemProp } from '../../helper/system/system-props'
 import { SystemJobName } from '../../helper/system-jobs/common'
 import { systemJobsSchedule } from '../../helper/system-jobs/system-job'
 import { telemetry } from '../../helper/telemetry.utils'
+import { projectService } from '../../project/project-service'
 import { triggerSourceService } from '../../trigger/trigger-source/trigger-source-service'
-import { workspaceService } from '../../workspace/workspace-service'
 import { workflowFolderService } from '../folder/folder.service'
 import { workflowVersionMigrationService } from '../workflow-version/workflow-version-migration.service'
 import { workflowVersionRepo, workflowVersionService } from '../workflow-version/workflow-version.service'
@@ -29,11 +29,11 @@ import { workflowRepo } from './workflow.repo'
 
 
 export const workflowService = (log: FastifyBaseLogger) => ({
-    async create({ workspaceId, request, externalId, ownerId, templateId, createdBy, ip, emitEvents = true }: CreateParams): Promise<PopulatedWorkflow> {
-        const folderId = await getFolderIdFromRequest({ workspaceId, folderId: request.folderId, folderName: request.folderName, log })
+    async create({ projectId, request, externalId, ownerId, templateId, createdBy, ip, emitEvents = true }: CreateParams): Promise<PopulatedWorkflow> {
+        const folderId = await getFolderIdFromRequest({ projectId, folderId: request.folderId, folderName: request.folderName, log })
         const newWorkflow: NewWorkflow = {
             id: generateId(),
-            workspaceId,
+            projectId,
             folderId,
             status: WorkflowStatus.DISABLED,
             ownerId,
@@ -57,7 +57,7 @@ export const workflowService = (log: FastifyBaseLogger) => ({
         })
 
         rejectedPromiseHandler(
-            telemetry(log).trackWorkspace(savedWorkflow.workspaceId, {
+            telemetry(log).trackProject(savedWorkflow.projectId, {
                 name: TelemetryEventName.CREATED_WORKFLOW,
                 payload: {
                     workflowId: savedWorkflow.id,
@@ -66,15 +66,15 @@ export const workflowService = (log: FastifyBaseLogger) => ({
             log,
         )
 
-        log.info({ workflow: { id: savedWorkflow.id }, workspace: { id: workspaceId }, displayName: request.displayName }, 'Workflow created')
+        log.info({ workflow: { id: savedWorkflow.id }, project: { id: projectId }, displayName: request.displayName }, 'Workflow created')
         const createdWorkflow = {
             ...savedWorkflow,
             version: savedWorkflowVersion,
         }
         if (emitEvents) {
             workflowSideEffects(log).onCreated({
-                tenantId: await workspaceService(log).getTenantId(workspaceId),
-                workspaceId,
+                tenantId: await projectService(log).getTenantId(projectId),
+                projectId,
                 userId: ownerId,
                 ip,
                 workflow: createdWorkflow,
@@ -84,7 +84,7 @@ export const workflowService = (log: FastifyBaseLogger) => ({
     },
 
     async list({
-        workspaceIds,
+        projectIds,
         tenantId,
         cursorRequest,
         limit = Paginator.NO_LIMIT,
@@ -115,13 +115,13 @@ export const workflowService = (log: FastifyBaseLogger) => ({
 
         const queryBuilder = workflowRepo().createQueryBuilder('ff').where({ operationStatus: Not(WorkflowOperationStatus.DELETING) })
 
-        if (workspaceIds) {
-            queryBuilder.andWhere({ workspaceId: In(workspaceIds) })
+        if (projectIds) {
+            queryBuilder.andWhere({ projectId: In(projectIds) })
         }
         else {
             queryBuilder
-                .innerJoin('workspace', 'workspace', 'workspace.id = ff."workspaceId"')
-                .andWhere('workspace."tenantId" = :tenantId', { tenantId })
+                .innerJoin('project', 'project', 'project.id = ff."projectId"')
+                .andWhere('project."tenantId" = :tenantId', { tenantId })
         }
 
         if (folderId !== undefined) {
@@ -202,7 +202,7 @@ export const workflowService = (log: FastifyBaseLogger) => ({
                     },
                 })
             }
-            const migratedVersion = await workflowVersionMigrationService(log).migrate(workflow.version, workflow.workspaceId)
+            const migratedVersion = await workflowVersionMigrationService(log).migrate(workflow.version, workflow.projectId)
             return {
                 ...workflow,
                 version: migratedVersion,
@@ -227,24 +227,24 @@ export const workflowService = (log: FastifyBaseLogger) => ({
         if (isNil(workflow)) {
             return null
         }
-        const workspaceExists = await workspaceService(log).exists({
-            workspaceId: workflow.workspaceId,
+        const projectExists = await projectService(log).exists({
+            projectId: workflow.projectId,
         })
-        if (!workspaceExists) {
+        if (!projectExists) {
             return null
         }
         return workflow
     },
-    async getOne({ id, workspaceId, entityManager }: GetOneParams): Promise<Workflow | null> {
-        const workspaceExists = await workspaceService(log).exists({
-            workspaceId,
+    async getOne({ id, projectId, entityManager }: GetOneParams): Promise<Workflow | null> {
+        const projectExists = await projectService(log).exists({
+            projectId,
         })
-        if (!workspaceExists) {
+        if (!projectExists) {
             return null
         }
         return workflowRepo(entityManager).findOneBy({
             id,
-            workspaceId,
+            projectId,
         })
     },
 
@@ -256,7 +256,7 @@ export const workflowService = (log: FastifyBaseLogger) => ({
 
     async getOnePopulated({
         id,
-        workspaceId,
+        projectId,
         versionId,
         removeConnectionsName = false,
         removeSampleData = false,
@@ -265,14 +265,14 @@ export const workflowService = (log: FastifyBaseLogger) => ({
         const workflow = await workflowRepo(entityManager).findOne({
             where: {
                 id,
-                workspaceId,
+                projectId,
             },
         })
 
-        const workspaceExists = await workspaceService(log).exists({
-            workspaceId,
+        const projectExists = await projectService(log).exists({
+            projectId,
         })
-        if (isNil(workflow) || !workspaceExists) {
+        if (isNil(workflow) || !projectExists) {
             return null
         }
 
@@ -282,12 +282,12 @@ export const workflowService = (log: FastifyBaseLogger) => ({
             removeConnectionsName,
             removeSampleData,
             entityManager,
-            workspaceId,
+            projectId,
         })
 
         const triggerSource = await triggerSourceService(log).getByWorkflowId({
             workflowId: id,
-            workspaceId,
+            projectId,
             simulate: undefined,
         })
 
@@ -302,7 +302,7 @@ export const workflowService = (log: FastifyBaseLogger) => ({
 
     async getOnePopulatedOrThrow({
         id,
-        workspaceId,
+        projectId,
         versionId,
         removeConnectionsName = false,
         removeSampleData = false,
@@ -310,7 +310,7 @@ export const workflowService = (log: FastifyBaseLogger) => ({
     }: GetOnePopulatedParams): Promise<PopulatedWorkflow> {
         const workflow = await this.getOnePopulated({
             id,
-            workspaceId,
+            projectId,
             versionId,
             removeConnectionsName,
             removeSampleData,
@@ -324,7 +324,7 @@ export const workflowService = (log: FastifyBaseLogger) => ({
     async update({
         id,
         userId = null,
-        workspaceId,
+        projectId,
         tenantId,
         operation,
         previousWorkflow,
@@ -332,14 +332,14 @@ export const workflowService = (log: FastifyBaseLogger) => ({
         emitEvents = true,
     }: UpdateParams): Promise<PopulatedWorkflow> {
         const workflowBeforeOperation = emitEvents
-            ? previousWorkflow ?? await this.getOnePopulatedOrThrow({ id, workspaceId })
+            ? previousWorkflow ?? await this.getOnePopulatedOrThrow({ id, projectId })
             : undefined
 
         let previouslyPublishedVersion: WorkflowVersion | undefined
         if (operation.type === WorkflowOperationType.LOCK_AND_PUBLISH || operation.type === WorkflowOperationType.CHANGE_STATUS) {
             const workflow = await this.getOneOrThrow({
                 id,
-                workspaceId,
+                projectId,
             })
             if (workflow.operationStatus === WorkflowOperationStatus.DELETING) {
                 throw new ApplicationError({
@@ -359,19 +359,19 @@ export const workflowService = (log: FastifyBaseLogger) => ({
                 const publishedWorkflow = await this.updatedPublishedVersionId({
                     id,
                     userId,
-                    workspaceId,
+                    projectId,
                     tenantId,
                 })
                 const isRepublish = !isNil(previouslyPublishedVersion) && workflowPublishUtils.isSameTrigger({
                     published: previouslyPublishedVersion.trigger,
                     toPublish: publishedWorkflow.version.trigger,
                 })
-                await applyStatusChange({ id, workspaceId, newStatus: operation.request.status ?? WorkflowStatus.ENABLED, isRepublish }, log)
+                await applyStatusChange({ id, projectId, newStatus: operation.request.status ?? WorkflowStatus.ENABLED, isRepublish }, log)
                 break
             }
 
             case WorkflowOperationType.CHANGE_STATUS: {
-                await applyStatusChange({ id, workspaceId, newStatus: operation.request.status }, log)
+                await applyStatusChange({ id, projectId, newStatus: operation.request.status }, log)
                 break
             }
 
@@ -386,7 +386,7 @@ export const workflowService = (log: FastifyBaseLogger) => ({
             case WorkflowOperationType.UPDATE_METADATA: {
                 await this.updateMetadata({
                     id,
-                    workspaceId,
+                    projectId,
                     metadata: operation.request.metadata,
                 })
                 break
@@ -416,7 +416,7 @@ export const workflowService = (log: FastifyBaseLogger) => ({
                 })
                 await workflowVersionService(log).applyOperation({
                     userId,
-                    workspaceId,
+                    projectId,
                     tenantId,
                     workflowVersion: lastVersion,
                     userOperation: operation,
@@ -426,14 +426,14 @@ export const workflowService = (log: FastifyBaseLogger) => ({
             default: {
                 const { version: lastVersion, createdNewDraft } = await createNewDraftIfVersionIsPublished({
                     workflowId: id,
-                    workspaceId,
+                    projectId,
                     tenantId,
                     userId,
                     log,
                 })
                 const { error } = await tryCatch(() => workflowVersionService(log).applyOperation({
                     userId,
-                    workspaceId,
+                    projectId,
                     tenantId,
                     workflowVersion: lastVersion,
                     userOperation: operation,
@@ -449,12 +449,12 @@ export const workflowService = (log: FastifyBaseLogger) => ({
 
         const updatedWorkflow = await this.getOnePopulatedOrThrow({
             id,
-            workspaceId,
+            projectId,
         })
         if (!isNil(workflowBeforeOperation)) {
             workflowSideEffects(log).onOperationApplied({
                 tenantId,
-                workspaceId,
+                projectId,
                 userId,
                 ip,
                 workflow: updatedWorkflow,
@@ -468,10 +468,10 @@ export const workflowService = (log: FastifyBaseLogger) => ({
     async updatedPublishedVersionId({
         id,
         userId,
-        workspaceId,
+        projectId,
         tenantId,
     }: UpdatePublishedVersionIdParams): Promise<PopulatedWorkflow> {
-        const workflowToUpdate = await this.getOneOrThrow({ id, workspaceId })
+        const workflowToUpdate = await this.getOneOrThrow({ id, projectId })
 
         const workflowVersionToPublish = await workflowVersionService(log).getWorkflowVersionOrThrow({
             workflowId: id,
@@ -481,7 +481,7 @@ export const workflowService = (log: FastifyBaseLogger) => ({
         if (workflowToUpdate.status === WorkflowStatus.ENABLED && !isNil(workflowToUpdate.publishedVersionId)) {
             await triggerSourceService(log).disable({
                 workflowId: workflowToUpdate.id,
-                workspaceId: workflowToUpdate.workspaceId,
+                projectId: workflowToUpdate.projectId,
                 simulate: false,
                 ignoreError: true,
             })
@@ -491,7 +491,7 @@ export const workflowService = (log: FastifyBaseLogger) => ({
             const lockedWorkflowVersion = await lockWorkflowVersionIfNotLocked({
                 workflowVersion: workflowVersionToPublish,
                 userId,
-                workspaceId,
+                projectId,
                 tenantId,
                 entityManager,
                 log,
@@ -508,17 +508,17 @@ export const workflowService = (log: FastifyBaseLogger) => ({
         })
         // a static import here closes a circular graph (→ websockets → mcp/tools → mcp-utils → back here) that crashes module load.
         const { websocketService } = await import('../../core/websockets.service')
-        websocketService.notifyWorkers().workflowPublished({ workflowId: publishedWorkflow.id, workflowVersionId: publishedWorkflow.version.id, workspaceId: publishedWorkflow.workspaceId })
+        websocketService.notifyWorkers().workflowPublished({ workflowId: publishedWorkflow.id, workflowVersionId: publishedWorkflow.version.id, projectId: publishedWorkflow.projectId })
         return publishedWorkflow
     },
 
-    async delete({ id, workspaceId, previousWorkflow, userId, ip, emitEvents = true }: DeleteParams): Promise<void> {
+    async delete({ id, projectId, previousWorkflow, userId, ip, emitEvents = true }: DeleteParams): Promise<void> {
         const deletedWorkflow = emitEvents
-            ? previousWorkflow ?? await this.getOnePopulatedOrThrow({ id, workspaceId })
+            ? previousWorkflow ?? await this.getOnePopulatedOrThrow({ id, projectId })
             : undefined
         const workflow = await this.getOneOrThrow({
             id,
-            workspaceId,
+            projectId,
         })
         if (workflow.operationStatus !== WorkflowOperationStatus.NONE) {
             throw new ApplicationError({
@@ -532,11 +532,11 @@ export const workflowService = (log: FastifyBaseLogger) => ({
         await workflowRepo().update(id, {
             operationStatus: WorkflowOperationStatus.DELETING,
         })
-        log.info({ workflow: { id }, workspace: { id: workspaceId } }, 'Workflow deletion requested')
+        log.info({ workflow: { id }, project: { id: projectId } }, 'Workflow deletion requested')
         if (!isNil(deletedWorkflow)) {
             workflowSideEffects(log).onDeleted({
-                tenantId: await workspaceService(log).getTenantId(workspaceId),
-                workspaceId,
+                tenantId: await projectService(log).getTenantId(projectId),
+                projectId,
                 userId,
                 ip,
                 workflow: deletedWorkflow,
@@ -545,22 +545,22 @@ export const workflowService = (log: FastifyBaseLogger) => ({
     },
 
     async deleteAllByTenantId(tenantId: TenantId): Promise<void> {
-        const workspaceIds = await workspaceService(log).getWorkspaceIdsByTenant(tenantId)
+        const projectIds = await projectService(log).getProjectIdsByTenant(tenantId)
         const workflows = await workflowRepo().findBy({
-            workspaceId: In(workspaceIds),
+            projectId: In(projectIds),
         })
-        await Promise.all(workflows.map((workflow) => this.delete({ id: workflow.id, workspaceId: workflow.workspaceId, emitEvents: false })))
+        await Promise.all(workflows.map((workflow) => this.delete({ id: workflow.id, projectId: workflow.projectId, emitEvents: false })))
     },
 
     async getTemplate({
         workflowId,
         userMetadata,
         versionId,
-        workspaceId,
+        projectId,
     }: GetTemplateParams): Promise<SharedTemplate> {
         const workflow = await this.getOnePopulatedOrThrow({
             id: workflowId,
-            workspaceId,
+            projectId,
             versionId,
             removeConnectionsName: true,
             removeSampleData: true,
@@ -585,35 +585,35 @@ export const workflowService = (log: FastifyBaseLogger) => ({
         return template
     },
 
-    async count({ workspaceId, folderId, status }: CountParams): Promise<number> {
+    async count({ projectId, folderId, status }: CountParams): Promise<number> {
         if (folderId === undefined) {
-            return workflowRepo().countBy({ workspaceId, status })
+            return workflowRepo().countBy({ projectId, status })
         }
 
         return workflowRepo().countBy({
             folderId: folderId !== UncategorizedFolderId ? folderId : IsNull(),
-            workspaceId,
+            projectId,
             status,
         })
     },
 
-    async existsByWorkspaceAndStatus(params: ExistsByWorkspaceAndStatusParams): Promise<boolean> {
-        const { workspaceId, status, entityManager } = params
+    async existsByProjectAndStatus(params: ExistsByProjectAndStatusParams): Promise<boolean> {
+        const { projectId, status, entityManager } = params
 
         return workflowRepo(entityManager).existsBy({
-            workspaceId,
+            projectId,
             status,
         })
     },
 
     async updateMetadata({
         id,
-        workspaceId,
+        projectId,
         metadata,
     }: UpdateMetadataParams): Promise<PopulatedWorkflow> {
         const workflowToUpdate = await this.getOneOrThrow({
             id,
-            workspaceId,
+            projectId,
         })
 
         workflowToUpdate.metadata = metadata
@@ -622,14 +622,14 @@ export const workflowService = (log: FastifyBaseLogger) => ({
 
         return this.getOnePopulatedOrThrow({
             id,
-            workspaceId,
+            projectId,
         })
     },
 
-    async updateLastModified({ workflowId, workspaceId, entityManager }: UpdateLastModifiedParams): Promise<void> {
+    async updateLastModified({ workflowId, projectId, entityManager }: UpdateLastModifiedParams): Promise<void> {
         await workflowRepo(entityManager).update({
             id: workflowId,
-            workspaceId,
+            projectId,
         }, {
             updated: dayjs().toISOString(),
         })
@@ -658,34 +658,34 @@ export const workflowService = (log: FastifyBaseLogger) => ({
         })
     },
 
-    async countWorkflowsByWorkspaces(workspaceIds: WorkspaceId[]): Promise<Map<WorkspaceId, number>> {
-        if (workspaceIds.length === 0) return new Map()
+    async countWorkflowsByProjects(projectIds: ProjectId[]): Promise<Map<ProjectId, number>> {
+        if (projectIds.length === 0) return new Map()
         
         const result = await workflowRepo()
             .createQueryBuilder('workflow')
-            .select('workflow.workspaceId', 'workspaceId')
+            .select('workflow.projectId', 'projectId')
             .addSelect('COUNT(*)', 'count')
-            .where('workflow.workspaceId IN (:...workspaceIds)', { workspaceIds })
-            .groupBy('workflow.workspaceId')
+            .where('workflow.projectId IN (:...projectIds)', { projectIds })
+            .groupBy('workflow.projectId')
             .getRawMany()
         
-        return new Map(result.map(r => [r.workspaceId, parseInt(r.count)]))
+        return new Map(result.map(r => [r.projectId, parseInt(r.count)]))
     },
 
-    async countActiveWorkflowsByWorkspaces(workspaceIds: WorkspaceId[]): Promise<Map<WorkspaceId, number>> {
-        if (workspaceIds.length === 0) return new Map()
+    async countActiveWorkflowsByProjects(projectIds: ProjectId[]): Promise<Map<ProjectId, number>> {
+        if (projectIds.length === 0) return new Map()
         
         const result = await workflowRepo()
             .createQueryBuilder('workflow')
-            .select('workflow.workspaceId', 'workspaceId')
+            .select('workflow.projectId', 'projectId')
             .addSelect('COUNT(*)', 'count')
-            .where('workflow.workspaceId IN (:...workspaceIds)', { workspaceIds })
+            .where('workflow.projectId IN (:...projectIds)', { projectIds })
             .andWhere('workflow.status = :status', { status: WorkflowStatus.ENABLED })
             .andWhere('workflow.operationStatus != :deleting', { deleting: WorkflowOperationStatus.DELETING })
-            .groupBy('workflow.workspaceId')
+            .groupBy('workflow.projectId')
             .getRawMany()
         
-        return new Map(result.map(r => [r.workspaceId, parseInt(r.count)]))
+        return new Map(result.map(r => [r.projectId, parseInt(r.count)]))
     },
 })
 
@@ -693,7 +693,7 @@ export const workflowService = (log: FastifyBaseLogger) => ({
 const lockWorkflowVersionIfNotLocked = async ({
     workflowVersion,
     userId,
-    workspaceId,
+    projectId,
     tenantId,
     entityManager,
     log,
@@ -704,7 +704,7 @@ const lockWorkflowVersionIfNotLocked = async ({
 
     return workflowVersionService(log).applyOperation({
         userId,
-        workspaceId,
+        projectId,
         tenantId,
         workflowVersion,
         userOperation: {
@@ -718,7 +718,7 @@ const lockWorkflowVersionIfNotLocked = async ({
 
 async function applyStatusChange(params: {
     id: WorkflowId
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     newStatus: WorkflowStatus
     isRepublish?: boolean
 }, log: FastifyBaseLogger): Promise<void> {
@@ -729,7 +729,7 @@ async function applyStatusChange(params: {
         fn: async () => {
             const workflowToUpdate = await workflowService(log).getOneOrThrow({
                 id: params.id,
-                workspaceId: params.workspaceId,
+                projectId: params.projectId,
             })
             if (workflowToUpdate.status === params.newStatus) {
                 return
@@ -760,15 +760,15 @@ async function applyStatusChange(params: {
     })
 }
 
-export const getFolderIdFromRequest = async ({ workspaceId, folderId, folderName, log }: { workspaceId: string, folderId: string | undefined, folderName: string | undefined, log: FastifyBaseLogger }) => {
+export const getFolderIdFromRequest = async ({ projectId, folderId, folderName, log }: { projectId: string, folderId: string | undefined, folderName: string | undefined, log: FastifyBaseLogger }) => {
     if (folderId) {
         return folderId
     }
     if (folderName) {
         return (await workflowFolderService(log).upsert({
-            workspaceId,
+            projectId,
             request: {
-                workspaceId,
+                projectId,
                 displayName: folderName,
             },
         })).id
@@ -788,7 +788,7 @@ const assertWorkflowIsNotNull: <T extends Workflow>(
 }
 
 type CreateParams = EventEmissionParams & {
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     request: CreateWorkflowRequest
     ownerId?: UserId
     externalId?: string
@@ -811,13 +811,13 @@ type ListParamsBase = {
 }
 
 type ListParams = ListParamsBase & (
-    | { workspaceIds: WorkspaceId[], tenantId?: never }
-    | { workspaceIds?: never, tenantId: TenantId }
+    | { projectIds: ProjectId[], tenantId?: never }
+    | { projectIds?: never, tenantId: TenantId }
 )
 
 type GetOneParams = {
     id: WorkflowId
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     entityManager?: EntityManager
 }
 
@@ -830,12 +830,12 @@ type GetOnePopulatedParams = GetOneParams & {
 type GetTemplateParams = {
     workflowId: WorkflowId
     userMetadata: UserWithMetaInformation | null
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     versionId: WorkflowVersionId | undefined
 }
 
 type CountParams = {
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     folderId?: string
     status?: WorkflowStatus
 }
@@ -843,7 +843,7 @@ type CountParams = {
 type UpdateParams = EventEmissionParams & {
     id: WorkflowId
     userId?: UserId | null
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     operation: WorkflowOperationRequest
     tenantId: TenantId
     previousWorkflow?: PopulatedWorkflow
@@ -853,12 +853,12 @@ type UpdatePublishedVersionIdParams = {
     id: WorkflowId
     userId: UserId | null
     tenantId: TenantId
-    workspaceId: WorkspaceId
+    projectId: ProjectId
 }
 
 type DeleteParams = EventEmissionParams & {
     id: WorkflowId
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     userId?: UserId
     previousWorkflow?: PopulatedWorkflow
 }
@@ -874,40 +874,40 @@ type NewWorkflow = Omit<Workflow, 'created' | 'updated'>
 type LockWorkflowVersionIfNotLockedParams = {
     workflowVersion: WorkflowVersion
     userId: UserId | null
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     tenantId: TenantId
     entityManager: EntityManager
     log: FastifyBaseLogger
 }
 
-type ExistsByWorkspaceAndStatusParams = {
-    workspaceId: WorkspaceId
+type ExistsByProjectAndStatusParams = {
+    projectId: ProjectId
     status: WorkflowStatus
     entityManager: EntityManager
 }
 
 type UpdateMetadataParams = {
     id: WorkflowId
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     metadata: Metadata | null | undefined
 }
 
 type UpdateLastModifiedParams = {
     workflowId: WorkflowId
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     entityManager?: EntityManager
 }
 
 /** When the latest version is locked (published snapshot), creates a new draft and imports it. */
 async function createNewDraftIfVersionIsPublished({
     workflowId,
-    workspaceId,
+    projectId,
     tenantId,
     userId,
     log,
 }: {
     workflowId: WorkflowId
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     tenantId: TenantId
     userId: UserId | null
     log: FastifyBaseLogger
@@ -946,7 +946,7 @@ async function createNewDraftIfVersionIsPublished({
             for (const operation of operations) {
                 draftVersion = await workflowVersionService(log).applyOperation({
                     userId,
-                    workspaceId,
+                    projectId,
                     tenantId,
                     workflowVersion: draftVersion,
                     userOperation: operation,

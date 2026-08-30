@@ -11,7 +11,7 @@ import * as z from 'zod/mini'
  * - Analytics and tracking information
  *
  * @example
- * // Example metadata for a workspace
+ * // Example metadata for a project
  * const metadata = {
  *   department: "marketing",
  *   priority: 1,

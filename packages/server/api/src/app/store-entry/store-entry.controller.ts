@@ -18,7 +18,7 @@ export const storeEntryController: FastifyPluginAsyncZod = async (fastify) => {
             return
         }
         const response = await storeEntryService.upsert({
-            workspaceId: request.principal.workspaceId,
+            projectId: request.principal.projectId,
             request: request.body,
         })
         await reply.status(StatusCodes.OK).send(response)
@@ -27,7 +27,7 @@ export const storeEntryController: FastifyPluginAsyncZod = async (fastify) => {
 
     fastify.get('/', GetRequest, async (request, reply) => {
         const value = await storeEntryService.getOne({
-            workspaceId: request.principal.workspaceId,
+            projectId: request.principal.projectId,
             key: request.query.key,
         })
 
@@ -41,7 +41,7 @@ export const storeEntryController: FastifyPluginAsyncZod = async (fastify) => {
 
     fastify.delete('/', DeleteStoreRequest, async (request) => {
         return storeEntryService.delete({
-            workspaceId: request.principal.workspaceId,
+            projectId: request.principal.projectId,
             key: request.query.key,
         })
     },

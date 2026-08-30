@@ -21,7 +21,7 @@ const SHARED_CREATED = '2026-01-01T00:00:00.000Z'
 async function seedFolders(ctx: TestContext, count: number): Promise<string[]> {
     const folders = Array.from({ length: count }, (_item, index) =>
         createMockFolder({
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             displayName: `folder-${index}`,
             created: SHARED_CREATED,
         }),
@@ -37,7 +37,7 @@ async function listAllPages({ ctx, path, limit }: { ctx: TestContext, path: stri
 
     do {
         const response = await ctx.get(path, {
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             limit,
             ...(cursor ? { cursor } : {}),
         })
@@ -68,8 +68,8 @@ describe('cursor pagination with duplicate timestamps', () => {
         const ctx = await createTestContext(app)
         const seededIds = await seedFolders(ctx, 15)
         await databaseConnection().query(
-            'UPDATE folder SET created = $1 WHERE "workspaceId" = $2',
-            ['2026-01-01 00:00:00.123456+00', ctx.workspace.id],
+            'UPDATE folder SET created = $1 WHERE "projectId" = $2',
+            ['2026-01-01 00:00:00.123456+00', ctx.project.id],
         )
 
         const { ids } = await listAllPages({ ctx, path: '/v1/folders', limit: 10 })
@@ -84,18 +84,18 @@ describe('cursor pagination with duplicate timestamps', () => {
         await seedFolders(ctx, 15)
 
         const firstPage = await ctx.get('/v1/folders', {
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             limit: 10,
         })
         const firstPageBody = firstPage?.json()
         const secondPage = await ctx.get('/v1/folders', {
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             limit: 10,
             cursor: firstPageBody.next,
         })
         const secondPageBody = secondPage?.json()
         const backPage = await ctx.get('/v1/folders', {
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             limit: 10,
             cursor: secondPageBody.previous,
         })
@@ -109,7 +109,7 @@ describe('cursor pagination with duplicate timestamps', () => {
     it('paginates entities whose table name is a reserved SQL word', async () => {
         const ctx = await createTestContext(app)
         const tables = Array.from({ length: 15 }, (_item, index) => ({
-            ...createMockTable({ workspaceId: ctx.workspace.id }),
+            ...createMockTable({ projectId: ctx.project.id }),
             name: `table-${index}`,
             created: SHARED_CREATED,
         }))
@@ -132,7 +132,7 @@ describe('cursor pagination with duplicate timestamps', () => {
         await seedFolders(ctx, 5)
 
         const response = await ctx.get('/v1/folders', {
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             limit: 10,
             cursor: encodeCursor(JSON.stringify(payload)),
         })
@@ -146,7 +146,7 @@ describe('cursor pagination with duplicate timestamps', () => {
         await seedFolders(ctx, 5)
 
         const response = await ctx.get('/v1/folders', {
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             limit: 10,
             cursor: encodeCursor(`created:${Date.parse(SHARED_CREATED)}`),
         })

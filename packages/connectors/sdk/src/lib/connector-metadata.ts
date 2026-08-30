@@ -160,7 +160,7 @@ export type ConnectorMetadataSummary = Omit<ConnectorMetadata, "actions" | "trig
 
 
 const ConnectorPackageMetadata = z.object({
-  workspaceUsage: z.number(),
+  projectUsage: z.number(),
   connectorType: z.enum(ConnectorType),
   packageType: z.enum(PackageType),
   source: z.enum(ConnectorSource),

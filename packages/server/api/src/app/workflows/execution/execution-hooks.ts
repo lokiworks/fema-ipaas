@@ -18,7 +18,7 @@ export const executionHooks = (log: FastifyBaseLogger) => ({
         const isConnectorTrigger = !isNil(workflowVersion) && workflowVersion.trigger.type === WorkflowTriggerType.CONNECTOR && !isNil(workflowVersion.trigger.settings.triggerName)
         const isManualTrigger = isConnectorTrigger && isManualConnectorTrigger({ connectorName: workflowVersion.trigger.settings.connectorName, triggerName: workflowVersion.trigger.settings.triggerName })
         if (execution.environment === RunEnvironment.TESTING || isManualTrigger) {
-            websocketService.to(execution.workspaceId).emit(WebsocketClientEvent.UPDATE_RUN_PROGRESS, {
+            websocketService.to(execution.projectId).emit(WebsocketClientEvent.UPDATE_RUN_PROGRESS, {
                 execution,
             })
         }
@@ -26,7 +26,7 @@ export const executionHooks = (log: FastifyBaseLogger) => ({
             log.info({
                 execution: { id: execution.id, status: execution.status },
                 workflow: { id: execution.workflowId },
-                workspace: { id: execution.workspaceId },
+                project: { id: execution.projectId },
                 step: { name: execution.failedStep },
             }, '[executionHooks#onFinish] Production run failed')
         }

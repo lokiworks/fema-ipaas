@@ -8,9 +8,9 @@ import { EngineResponse, EngineResponseStatus, ExecuteTriggerResponse, LATEST_JO
 import { FastifyBaseLogger } from 'fastify'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
+import { projectService } from '../../project/project-service'
 import { jobQueue, JobType } from '../../workers/job-queue/job-queue'
 import { userInteractionWatcher } from '../../workers/user-interaction-watcher'
-import { workspaceService } from '../../workspace/workspace-service'
 import { appEventRoutingService } from '../app-event-routing/app-event-routing.service'
 
 const environment = system.getOrThrow<RuntimeEnvironment>(AppSystemProp.ENVIRONMENT)
@@ -23,16 +23,16 @@ export const workflowTriggerSideEffect = (log: FastifyBaseLogger) => {
                     scheduleOptions: undefined,
                 }
             }
-            const { workflowId, workflowVersionId, workspaceId, simulate, connectorTrigger, isRepublish } = params
+            const { workflowId, workflowVersionId, projectId, simulate, connectorTrigger, isRepublish } = params
 
-            const tenantId = await workspaceService(log).getTenantId(workspaceId)
+            const tenantId = await projectService(log).getTenantId(projectId)
             const engineHelperResponse = await userInteractionWatcher.submitAndWaitForResponse<EngineResponse<ExecuteTriggerResponse<TriggerHookType.ON_ENABLE>>>({
                 jobType: WorkerJobType.EXECUTE_TRIGGER_HOOK,
                 hookType: TriggerHookType.ON_ENABLE,
                 workflowId,
                 workflowVersionId,
                 tenantId,
-                workspaceId,
+                projectId,
                 test: simulate,
                 isRepublish,
             }, log)
@@ -72,8 +72,8 @@ export const workflowTriggerSideEffect = (log: FastifyBaseLogger) => {
             if (environment === RuntimeEnvironment.TESTING) {
                 return
             }
-            const { workflowId, workflowVersionId, workspaceId, simulate, connectorTrigger } = params
-            const tenantId = await workspaceService(log).getTenantId(workspaceId)
+            const { workflowId, workflowVersionId, projectId, simulate, connectorTrigger } = params
+            const tenantId = await projectService(log).getTenantId(projectId)
             const { error, data: engineHelperResponse } = await tryCatch(
                 () => userInteractionWatcher.submitAndWaitForResponse<EngineResponse<ExecuteTriggerResponse<TriggerHookType.ON_DISABLE>>>({
                     jobType: WorkerJobType.EXECUTE_TRIGGER_HOOK,
@@ -81,7 +81,7 @@ export const workflowTriggerSideEffect = (log: FastifyBaseLogger) => {
                     workflowId,
                     workflowVersionId,
                     test: simulate,
-                    workspaceId,
+                    projectId,
                     tenantId,
                 }, log),
             )
@@ -97,7 +97,7 @@ export const workflowTriggerSideEffect = (log: FastifyBaseLogger) => {
             switch (connectorTrigger.type) {
                 case TriggerStrategy.APP_WEBHOOK:
                     await appEventRoutingService.deleteListeners({
-                        workspaceId,
+                        projectId,
                         workflowId,
                     })
                     break
@@ -123,10 +123,10 @@ export const workflowTriggerSideEffect = (log: FastifyBaseLogger) => {
     }
 }
 
-async function handleAppWebhookTrigger({ engineHelperResponse, workflowId, workspaceId, connectorName }: ActiveTriggerParams): Promise<ActiveTriggerReturn> {
+async function handleAppWebhookTrigger({ engineHelperResponse, workflowId, projectId, connectorName }: ActiveTriggerParams): Promise<ActiveTriggerReturn> {
     for (const listener of engineHelperResponse.response?.listeners ?? []) {
         await appEventRoutingService.createListeners({
-            workspaceId,
+            projectId,
             workflowId,
             appName: connectorName,
             events: listener.events,
@@ -138,17 +138,17 @@ async function handleAppWebhookTrigger({ engineHelperResponse, workflowId, works
     }
 }
 
-async function handleWebhookTrigger({ workflowId, workflowVersionId, workspaceId, connectorTrigger, log }: ActiveTriggerParams): Promise<ActiveTriggerReturn> {
+async function handleWebhookTrigger({ workflowId, workflowVersionId, projectId, connectorTrigger, log }: ActiveTriggerParams): Promise<ActiveTriggerReturn> {
     const renewConfiguration = connectorTrigger.renewConfiguration
     switch (renewConfiguration?.strategy) {
         case WebhookRenewStrategy.CRON: {
-            const tenantId = await workspaceService(log).getTenantId(workspaceId)
+            const tenantId = await projectService(log).getTenantId(projectId)
             await jobQueue(log).add({
                 id: workflowVersionId,
                 type: JobType.REPEATING,
                 data: {
                     schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
-                    workspaceId,
+                    projectId,
                     workflowVersionId,
                     workflowId,
                     jobType: WorkerJobType.RENEW_WEBHOOK,
@@ -170,20 +170,20 @@ async function handleWebhookTrigger({ workflowId, workflowVersionId, workspaceId
     }
 }
 
-async function handlePollingTrigger({ engineHelperResponse, workflowId, workflowVersionId, workspaceId, log }: ActiveTriggerParams): Promise<ActiveTriggerReturn> {
+async function handlePollingTrigger({ engineHelperResponse, workflowId, workflowVersionId, projectId, log }: ActiveTriggerParams): Promise<ActiveTriggerReturn> {
     const pollIntervalMinutes = system.getNumberOrThrow(AppSystemProp.TRIGGER_DEFAULT_POLL_INTERVAL)
     const defaultScheduleOptions: ScheduleOptions = {
         type: TriggerSourceScheduleType.INTERVAL,
         intervalMs: pollIntervalMinutes * 60_000,
     }
     const scheduleOptions = engineHelperResponse.response?.scheduleOptions ?? defaultScheduleOptions
-    const tenantId = await workspaceService(log).getTenantId(workspaceId)
+    const tenantId = await projectService(log).getTenantId(projectId)
     await jobQueue(log).add({
         id: workflowVersionId,
         type: JobType.REPEATING,
         data: {
             schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
-            workspaceId,
+            projectId,
             workflowVersionId,
             workflowId,
             triggerType: WorkflowTriggerType.CONNECTOR,
@@ -217,7 +217,7 @@ type EnableWorkflowTriggerParams = {
     workflowId: WorkflowId
     workflowVersionId: WorkflowVersionId
     connectorName: string
-    workspaceId: string
+    projectId: string
     connectorTrigger: TriggerBase
     simulate: boolean
     isRepublish?: boolean

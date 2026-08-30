@@ -7,10 +7,10 @@ import { redisConnections } from '../../database/redis-connections'
 const DELETE_LEGACY_REDIS_KEYS_KEY = 'delete_legacy_redis_keys_v2'
 
 const LEGACY_PATTERNS = [
-    'tasks:workspace:*',
+    'tasks:project:*',
     'tasks:tenant:*',
-    'workspace-usage:*',
-    'workspace-*-usage-tasks:*',
+    'project-usage:*',
+    'project-*-usage-tasks:*',
     'tenant:*:worker_group_id',
 ]
 

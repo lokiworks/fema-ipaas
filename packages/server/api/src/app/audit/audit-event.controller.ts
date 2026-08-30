@@ -9,7 +9,7 @@ export const auditEventController: FastifyPluginAsyncZod = async (app) => {
     app.get('/', ListAuditEventsRouteConfig, async (request): Promise<SeekPage<AuditEventRow>> => {
         return auditEventService(request.log).list({
             tenantId: request.principal.tenant.id,
-            workspaceId: request.query.workspaceId,
+            projectId: request.query.projectId,
             action: request.query.action,
             userId: request.query.userId,
             createdAfter: request.query.createdAfter,

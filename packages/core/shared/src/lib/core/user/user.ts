@@ -4,16 +4,16 @@ import { z } from 'zod'
 export enum TenantRole {
     /**
      * Tenant administrator with full control over tenant settings,
-     * users, and all workspaces
+     * users, and all projects
      */
     ADMIN = 'ADMIN',
     /**
-     * Regular tenant member with access only to workspaces they are
+     * Regular tenant member with access only to projects they are
      * explicitly invited to
      */
     MEMBER = 'MEMBER',
     /**
-     * Tenant operator with automatic access to all workspaces without editior permission, except (others' private workspaces) in the
+     * Tenant operator with automatic access to all projects without editior permission, except (others' private projects) in the
      * tenant but no tenant administration capabilities
      */
     OPERATOR = 'OPERATOR',

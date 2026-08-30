@@ -47,7 +47,7 @@ export function InternalErrorsTable({
         </CardTitle>
         <CardDescription>
           {t(
-            'Internal errors are failures inside FEMA Integration Tenant itself (engine or worker), not in your workflow logic. Grouped by the workspace and workflow they affected.',
+            'Internal errors are failures inside FEMA Integration Tenant itself (engine or worker), not in your workflow logic. Grouped by the project and workflow they affected.',
           )}
         </CardDescription>
       </CardHeader>
@@ -63,7 +63,7 @@ export function InternalErrorsTable({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t('Workspace')}</TableHead>
+                <TableHead>{t('Project')}</TableHead>
                 <TableHead>{t('Workflow')}</TableHead>
                 <TableHead className="text-right">{t('Errors')}</TableHead>
                 <TableHead className="text-right">{t('Share')}</TableHead>
@@ -72,16 +72,16 @@ export function InternalErrorsTable({
             <TableBody>
               {errors.map((error) => (
                 <TableRow
-                  key={`${error.workspaceId}-${error.workflowId}`}
+                  key={`${error.projectId}-${error.workflowId}`}
                   className="cursor-pointer"
                   onClick={() =>
                     navigate(
-                      `/workspaces/${error.workspaceId}/runs?workflowId=${error.workflowId}`,
+                      `/projects/${error.projectId}/runs?workflowId=${error.workflowId}`,
                     )
                   }
                 >
                   <TableCell className="text-muted-foreground">
-                    {error.workspaceName}
+                    {error.projectName}
                   </TableCell>
                   <TableCell className="font-medium">
                     {error.workflowName}

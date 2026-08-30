@@ -13,7 +13,7 @@ export const executeWorkflowJob: JobHandler<ExecuteWorkflowJobData, FireAndForge
         const timeoutInSeconds = workerSettings.getSettings().WORKFLOW_TIMEOUT_SECONDS
 
         const { data: resolved, error: provisionError } = await tryCatch(() =>
-            ctx.resolver.resolve({ tenantId: data.tenantId, publicApiUrl: ctx.publicApiUrl, engineToken: ctx.engineToken, workflow: { id: data.workflowId, versionId: data.workflowVersionId, workspaceId: data.workspaceId } }),
+            ctx.resolver.resolve({ tenantId: data.tenantId, publicApiUrl: ctx.publicApiUrl, engineToken: ctx.engineToken, workflow: { id: data.workflowId, versionId: data.workflowVersionId, projectId: data.projectId } }),
         )
         if (provisionError) {
             await reportWorkflowStatus({ ctx, data, status: ExecutionStatus.INTERNAL_ERROR, internalError: toInternalError(RunInternalErrorSource.WORKER, provisionError) })
@@ -66,7 +66,7 @@ export const executeWorkflowJob: JobHandler<ExecuteWorkflowJobData, FireAndForge
             // with no status so it only merges the timings the engine's own report can't measure.
             await tryCatch(() => ctx.apiClient.uploadRunLog({
                 runId: data.runId,
-                workspaceId: data.workspaceId,
+                projectId: data.projectId,
                 provisionMs: result.timings.provisionMs,
                 bootMs: result.timings.bootMs,
                 runMs: result.timings.runMs,
@@ -118,7 +118,7 @@ function buildWorkflowOperation(
     const base = {
         workflowVersion,
         executionId: data.runId,
-        workspaceId: data.workspaceId,
+        projectId: data.projectId,
         workerHandlerId: data.workerHandlerId ?? null,
         runEnvironment: data.environment,
         httpRequestId: data.httpRequestId ?? null,
@@ -169,7 +169,7 @@ async function reportWorkflowStatus({ ctx, data, status, internalError, failedSt
     await ctx.apiClient.uploadRunLog({
         runId: data.runId,
         status,
-        workspaceId: data.workspaceId,
+        projectId: data.projectId,
         streamStepProgress: data.streamStepProgress,
         finishTime: new Date().toISOString(),
         ...(isNil(internalError) ? {} : { logsFileId: data.logsFileId }),
@@ -181,7 +181,7 @@ async function reportWorkflowStatus({ ctx, data, status, internalError, failedSt
         onCallService(ctx.log, workerSettings.getSettings().PAGE_ONCALL_WEBHOOK).page({
             code: ErrorCode.ENGINE_OPERATION_FAILURE,
             message: `Workflow run ${data.runId} ended with INTERNAL_ERROR`,
-            params: { runId: data.runId, workflowId: data.workflowId, workspaceId: data.workspaceId },
+            params: { runId: data.runId, workflowId: data.workflowId, projectId: data.projectId },
         }).catch((e) => ctx.log.error({ execution: { id: data.runId }, error: inspect(e) }, 'Failed to send on-call page for INTERNAL_ERROR'))
     }
 }

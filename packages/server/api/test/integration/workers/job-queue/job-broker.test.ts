@@ -45,7 +45,7 @@ function createMockJob(id: string, data?: Record<string, unknown>, deferredFailu
     return {
         id,
         name: `job-name-${id}`,
-        data: { workspaceId: 'proj-1', tenantId: 'plat-1', ...data },
+        data: { projectId: 'proj-1', tenantId: 'plat-1', ...data },
         attemptsMade: 0,
         deferredFailure,
         moveToDelayed: vi.fn().mockResolvedValue(undefined),

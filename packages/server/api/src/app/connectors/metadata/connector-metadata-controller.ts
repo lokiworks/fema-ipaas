@@ -4,7 +4,7 @@ import { ALL_PRINCIPAL_TYPES, ConnectorAudienceFilter, ConnectorCategory, Connec
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
-import { WorkspaceResourceType } from '../../core/security/authorization/common'
+import { ProjectResourceType } from '../../core/security/authorization/common'
 import { securityAccess } from '../../core/security/authorization/fastify-security'
 import { userInteractionWatcher } from '../../workers/user-interaction-watcher'
 import { sampleDataService } from '../../workflows/step-run/sample-data.service'
@@ -42,10 +42,10 @@ const baseConnectorsController: FastifyPluginAsyncZod = async (app) => {
             })
         }
         const tenantId = getTenantId(req.principal)
-        const workspaceId = req.query.workspaceId
+        const projectId = req.query.projectId
         const connectorMetadataSummary = await connectorMetadataService(req.log).list({
             includeHidden: query.includeHidden ?? false,
-            workspaceId,
+            projectId,
             tenantId,
             categories: query.categories,
             searchQuery: query.searchQuery,
@@ -77,7 +77,7 @@ const baseConnectorsController: FastifyPluginAsyncZod = async (app) => {
                 version,
                 locale: req.query.locale as LocalesEnum | undefined,
             })
-            const policy = await resolveVisibility({ tenantId, workspaceId: req.query.workspaceId, log: req.log })
+            const policy = await resolveVisibility({ tenantId, projectId: req.query.projectId, log: req.log })
             const visibleConnector = applyVisibilityPolicy({ policy, connector })
             return filterModelActionsByAudience(visibleConnector, req.query.audience)
         },
@@ -97,7 +97,7 @@ const baseConnectorsController: FastifyPluginAsyncZod = async (app) => {
                 version,
                 locale: req.query.locale as LocalesEnum | undefined,
             })
-            const policy = await resolveVisibility({ tenantId, workspaceId: req.query.workspaceId, log: req.log })
+            const policy = await resolveVisibility({ tenantId, projectId: req.query.projectId, log: req.log })
             const visibleConnector = applyVisibilityPolicy({ policy, connector })
             return filterModelActionsByAudience(visibleConnector, req.query.audience)
         },
@@ -125,18 +125,18 @@ const baseConnectorsController: FastifyPluginAsyncZod = async (app) => {
         '/options',
         OptionsConnectorRequest,
         async (req) => {
-            const workspaceId = req.workspaceId
+            const projectId = req.projectId
             const tenant = req.principal.tenant
             const workflow = await workflowService(req.log).getOnePopulatedOrThrow({
-                workspaceId,
+                projectId,
                 id: req.body.workflowId,
                 versionId: req.body.workflowVersionId,
             })
-            const sampleData = await sampleDataService(req.log).getSampleDataForWorkflow(workspaceId, workflow.version, SampleDataFileType.OUTPUT)
+            const sampleData = await sampleDataService(req.log).getSampleDataForWorkflow(projectId, workflow.version, SampleDataFileType.OUTPUT)
             const { response } = await userInteractionWatcher.submitAndWaitForResponse<EngineResponse<unknown>>({
                 jobType: WorkerJobType.EXECUTE_PROPERTY,
                 tenantId: tenant.id,
-                workspaceId,
+                projectId,
                 workflowVersion: workflow.version,
                 propertyName: req.body.propertyName,
                 actionOrTriggerName: req.body.actionOrTriggerName,
@@ -234,8 +234,8 @@ const OptionsConnectorRequest = {
         body: ConnectorOptionRequest,
     },
     config: {
-        security: securityAccess.workspace([PrincipalType.USER], undefined, {
-            type: WorkspaceResourceType.BODY,
+        security: securityAccess.project([PrincipalType.USER], undefined, {
+            type: ProjectResourceType.BODY,
         }),
     },
 }

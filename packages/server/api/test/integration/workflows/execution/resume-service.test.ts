@@ -25,11 +25,11 @@ beforeEach(async () => {
 })
 
 async function createExecutionAndWaitpoint(params: {
-    workspaceId: string
+    projectId: string
     executionStatus?: ExecutionStatus
     waitpointStatus?: WaitpointStatus
 }) {
-    const workflow = createMockWorkflow({ workspaceId: params.workspaceId })
+    const workflow = createMockWorkflow({ projectId: params.projectId })
     await db.save('workflow', workflow)
 
     const workflowVersion = createMockWorkflowVersion({
@@ -39,7 +39,7 @@ async function createExecutionAndWaitpoint(params: {
     await db.save('workflow_version', workflowVersion)
 
     const execution = createMockExecution({
-        workspaceId: params.workspaceId,
+        projectId: params.projectId,
         workflowId: workflow.id,
         workflowVersionId: workflowVersion.id,
         status: params.executionStatus ?? ExecutionStatus.PAUSED,
@@ -51,7 +51,7 @@ async function createExecutionAndWaitpoint(params: {
     await db.save('waitpoint', {
         id: waitpointId,
         executionId: execution.id,
-        workspaceId: params.workspaceId,
+        projectId: params.projectId,
         stepName: 'approval',
         type: 'WEBHOOK',
         status: params.waitpointStatus ?? WaitpointStatus.PENDING,
@@ -65,7 +65,7 @@ async function createExecutionAndWaitpoint(params: {
 describe('resumeService resumeFromWaitpointWithoutLock', () => {
     it('consumes a PENDING waitpoint and enqueues resume when workflow is PAUSED (worker-before-callback ordering)', async () => {
         const { execution, waitpointId } = await createExecutionAndWaitpoint({
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             executionStatus: ExecutionStatus.PAUSED,
             waitpointStatus: WaitpointStatus.PENDING,
         })
@@ -84,14 +84,14 @@ describe('resumeService resumeFromWaitpointWithoutLock', () => {
 
     it('consumes a COMPLETED waitpoint when race recovery fires (callback-before-worker ordering)', async () => {
         const { execution, waitpointId } = await createExecutionAndWaitpoint({
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             executionStatus: ExecutionStatus.RUNNING,
             waitpointStatus: WaitpointStatus.PENDING,
         })
 
         await waitpointService(app.log).complete({
             executionId: execution.id,
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             waitpointId,
             resumePayload: { body: { status: 'early' } },
         })
@@ -112,14 +112,14 @@ describe('resumeService resumeFromWaitpointWithoutLock', () => {
 
     it('does not leave a stale COMPLETED row to poison the next pause cycle (leftover-row regression)', async () => {
         const { execution, waitpointId } = await createExecutionAndWaitpoint({
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             executionStatus: ExecutionStatus.RUNNING,
             waitpointStatus: WaitpointStatus.PENDING,
         })
 
         await waitpointService(app.log).complete({
             executionId: execution.id,
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             waitpointId,
             resumePayload: { body: { status: 'quick' } },
         })
@@ -134,7 +134,7 @@ describe('resumeService resumeFromWaitpointWithoutLock', () => {
 
         const freshPause = await waitpointService(app.log).createForPause({
             executionId: execution.id,
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             stepName: 'approval',
             type: PauseType.WEBHOOK,
             version: 'V1',
@@ -148,7 +148,7 @@ describe('resumeService resumeFromWaitpointWithoutLock', () => {
 
     it('returns stale=true when no PENDING waitpoint exists', async () => {
         const { execution } = await createExecutionAndWaitpoint({
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             executionStatus: ExecutionStatus.PAUSED,
             waitpointStatus: WaitpointStatus.PENDING,
         })

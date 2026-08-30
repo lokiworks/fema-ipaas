@@ -55,8 +55,8 @@ export function TenantSidebar() {
       label: t('General'),
       items: [
         {
-          to: '/tenant/workspaces',
-          label: t('Workspaces'),
+          to: '/tenant/projects',
+          label: t('Projects'),
           icon: LayoutGridIcon,
         },
         {

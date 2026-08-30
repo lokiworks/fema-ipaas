@@ -1,4 +1,4 @@
-import { ApplicationError, Cursor, ErrorCode, generateId, isNil, sanitizeObjectForPostgresql, SeekPage, TenantId, UserId, WorkflowId, WorkflowVersionId, WorkspaceId } from '@fema-ipaas/core-utils'
+import { ApplicationError, Cursor, ErrorCode, generateId, isNil, ProjectId, sanitizeObjectForPostgresql, SeekPage, TenantId, UserId, WorkflowId, WorkflowVersionId } from '@fema-ipaas/core-utils'
 import { LATEST_WORKFLOW_SCHEMA_VERSION, Note, WorkflowOperationRequest, workflowOperations, WorkflowOperationType, workflowStructureUtil, WorkflowTriggerType, WorkflowVersion, WorkflowVersionState } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
@@ -18,7 +18,7 @@ export const workflowVersionRepo = repoFactory(WorkflowVersionEntity)
 export const workflowVersionService = (log: FastifyBaseLogger) => ({
     async applyOperation({
         workflowVersion,
-        workspaceId,
+        projectId,
         userId,
         userOperation,
         entityManager,
@@ -59,7 +59,7 @@ export const workflowVersionService = (log: FastifyBaseLogger) => ({
             }
             case WorkflowOperationType.SAVE_SAMPLE_DATA: {
                 const sampleDataSettings = await sampleDataService(log).saveSampleDataFileIdsInStep({
-                    workspaceId,
+                    projectId,
                     workflowVersionId: mutatedWorkflowVersion.id,
                     stepName: userOperation.request.stepName,
                     payload: userOperation.request.payload,
@@ -81,7 +81,7 @@ export const workflowVersionService = (log: FastifyBaseLogger) => ({
         }
         for (const operation of operations) {
             mutatedWorkflowVersion = await applySingleOperation({
-                workspaceId,
+                projectId,
                 workflowVersion: mutatedWorkflowVersion,
                 operation,
                 tenantId,
@@ -136,7 +136,7 @@ export const workflowVersionService = (log: FastifyBaseLogger) => ({
         })
     },
 
-    async getLatestVersionsByWorkflowIds(workflowIds: WorkflowId[], workspaceId?: WorkspaceId): Promise<Map<WorkflowId, WorkflowVersion>> {
+    async getLatestVersionsByWorkflowIds(workflowIds: WorkflowId[], projectId?: ProjectId): Promise<Map<WorkflowId, WorkflowVersion>> {
         if (workflowIds.length === 0) {
             return new Map()
         }
@@ -149,7 +149,7 @@ export const workflowVersionService = (log: FastifyBaseLogger) => ({
             .getMany()
         const migratedEntries = await Promise.all(
             latestVersions.map(async (version) => {
-                const migrated = await workflowVersionMigrationService(log).migrate(version, workspaceId)
+                const migrated = await workflowVersionMigrationService(log).migrate(version, projectId)
                 return [version.workflowId, migrated] as const
             }),
         )
@@ -224,7 +224,7 @@ export const workflowVersionService = (log: FastifyBaseLogger) => ({
         removeConnectionsName = false,
         removeSampleData = false,
         entityManager,
-        workspaceId,
+        projectId,
     }: GetWorkflowVersionOrThrowParams): Promise<WorkflowVersion> {
         const workflowVersion: WorkflowVersion | null = await findOne(log, {
             where: {
@@ -235,7 +235,7 @@ export const workflowVersionService = (log: FastifyBaseLogger) => ({
             order: {
                 created: 'DESC',
             },
-        }, entityManager, workspaceId)
+        }, entityManager, projectId)
 
         if (isNil(workflowVersion)) {
             throw new ApplicationError({
@@ -307,17 +307,17 @@ export const workflowVersionService = (log: FastifyBaseLogger) => ({
 
 
 
-async function findOne(log: FastifyBaseLogger, options: FindOneOptions, entityManager?: EntityManager, workspaceId?: WorkspaceId): Promise<WorkflowVersion | null> {
+async function findOne(log: FastifyBaseLogger, options: FindOneOptions, entityManager?: EntityManager, projectId?: ProjectId): Promise<WorkflowVersion | null> {
     const workflowVersion = await workflowVersionRepo(entityManager).findOne(options)
     if (isNil(workflowVersion)) {
         return null
     }
-    return workflowVersionMigrationService(log).migrate(workflowVersion, workspaceId)
+    return workflowVersionMigrationService(log).migrate(workflowVersion, projectId)
 }
 
 
 async function applySingleOperation({
-    workspaceId,
+    projectId,
     workflowVersion,
     operation,
     tenantId,
@@ -326,7 +326,7 @@ async function applySingleOperation({
     entityManager,
 }: ApplySingleOperationParams): Promise<WorkflowVersion> {
     await workflowVersionSideEffects(log).preApplyOperation({
-        workspaceId,
+        projectId,
         workflowVersion,
         operation,
         entityManager,
@@ -368,7 +368,7 @@ type GetWorkflowVersionOrThrowParams = {
     removeConnectionsName?: boolean
     removeSampleData?: boolean
     entityManager?: EntityManager
-    workspaceId?: WorkspaceId
+    projectId?: ProjectId
 }
 
 type NewWorkflowVersion = Omit<WorkflowVersion, 'created' | 'updated'>
@@ -382,7 +382,7 @@ type CreateEmptyVersionParams = {
 }
 
 type ApplySingleOperationParams = {
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     workflowVersion: WorkflowVersion
     operation: WorkflowOperationRequest
     tenantId: TenantId
@@ -399,7 +399,7 @@ type ListWorkflowVersionParams = {
 
 type ApplyOperationParams = {
     userId: UserId | null
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     tenantId: TenantId
     workflowVersion: WorkflowVersion
     userOperation: WorkflowOperationRequest

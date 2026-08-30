@@ -93,28 +93,28 @@ export const passwordlessAuthService = (log: FastifyBaseLogger) => ({
                     params: { message: 'User is not invited to the tenant' },
                 })
             }
-            const user = await userService(log).getOrCreateWithWorkspace({
+            const user = await userService(log).getOrCreateWithProject({
                 identity: verifiedIdentity,
                 tenantId,
             })
             await userInvitationsService(log).provisionUserInvitation({ email })
-            return authenticationUtils(log).getWorkspaceAndToken({
+            return authenticationUtils(log).getProjectAndToken({
                 userId: user.id,
                 tenantId,
-                workspaceId: null,
+                projectId: null,
             })
         }
 
         if (!isNil(preferredTenantId)) {
             await assertTenantAuthIsOpenTo({ email, tenantId: preferredTenantId, log })
-            const user = await userService(log).getOrCreateWithWorkspace({
+            const user = await userService(log).getOrCreateWithProject({
                 identity: verifiedIdentity,
                 tenantId: preferredTenantId,
             })
-            return authenticationUtils(log).getWorkspaceAndToken({
+            return authenticationUtils(log).getProjectAndToken({
                 userId: user.id,
                 tenantId: preferredTenantId,
-                workspaceId: null,
+                projectId: null,
             })
         }
         return authenticationUtils(log).getOnboardingResponse({ identityId: verifiedIdentity.id })
@@ -126,7 +126,7 @@ export const passwordlessAuthService = (log: FastifyBaseLogger) => ({
         const writeNames = async (): Promise<void> => {
             await userIdentityService(log).updateNames({ id: identityId, firstName, lastName })
         }
-        const { response, provisioned } = await tenantService(log).createTenantWithWorkspace({
+        const { response, provisioned } = await tenantService(log).createTenantWithProject({
             identityId,
             name: signupNames.tenantNameFromPerson({ firstName, email: identity.email }),
             invalidatePreviousTokens: false,

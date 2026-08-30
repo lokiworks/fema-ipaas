@@ -11,44 +11,44 @@ export function extractResourceName(url: string): string | undefined {
 }
 
 /**
- * Throws an authz error if response entities contain a `workspaceId` property and
- * the `workspaceId` property value does not match the principal's `workspaceId`.
+ * Throws an authz error if response entities contain a `projectId` property and
+ * the `projectId` property value does not match the principal's `projectId`.
  * Otherwise, does nothing.
  */
-export const entitiesMustBeOwnedByCurrentWorkspace: preSerializationHookHandler<Payload | null> = (request, _response, payload, done) => {
+export const entitiesMustBeOwnedByCurrentProject: preSerializationHookHandler<Payload | null> = (request, _response, payload, done) => {
     request.log.trace(
         { payload, principal: request.principal, route: request.routeOptions.config },
-        'entitiesMustBeOwnedByCurrentWorkspace',
+        'entitiesMustBeOwnedByCurrentProject',
     )
-    const principalWorkspaceId = request.principal.type === PrincipalType.ENGINE ? request.principal.workspaceId : (request.workspaceId ?? undefined)
+    const principalProjectId = request.principal.type === PrincipalType.ENGINE ? request.principal.projectId : (request.projectId ?? undefined)
 
-    if (isObject(payload) && !isNil(principalWorkspaceId)) {
+    if (isObject(payload) && !isNil(principalProjectId)) {
         let verdict: AuthzVerdict = 'ALLOW'
 
-        if ('workspaceId' in payload) {
-            if (payload.workspaceId !== principalWorkspaceId) {
+        if ('projectId' in payload) {
+            if (payload.projectId !== principalProjectId) {
                 verdict = 'DENY'
             }
         }
         else if ('data' in payload && Array.isArray(payload.data)) {
-            const someEntityNotOwnedByCurrentWorkspace = payload.data.some((entity) => {
-                return 'workspaceId' in entity && entity.workspaceId !== principalWorkspaceId
+            const someEntityNotOwnedByCurrentProject = payload.data.some((entity) => {
+                return 'projectId' in entity && entity.projectId !== principalProjectId
             })
 
-            if (someEntityNotOwnedByCurrentWorkspace) {
+            if (someEntityNotOwnedByCurrentProject) {
                 verdict = 'DENY'
             }
         }
 
         if (verdict === 'DENY') {
             request.log.warn({
-                principalWorkspaceId,
+                principalProjectId,
                 route: request.routeOptions.config,
-            }, 'Authorization denied: entity not owned by current workspace')
+            }, 'Authorization denied: entity not owned by current project')
             throw new ApplicationError({
                 code: ErrorCode.AUTHORIZATION,
                 params: {
-                    message: 'not owned by current workspace',
+                    message: 'not owned by current project',
                 },
             })
         }
@@ -58,7 +58,7 @@ export const entitiesMustBeOwnedByCurrentWorkspace: preSerializationHookHandler<
 }
 
 type SingleEntity = {
-    workspaceId?: string
+    projectId?: string
 }
 
 type MultipleEntities = {

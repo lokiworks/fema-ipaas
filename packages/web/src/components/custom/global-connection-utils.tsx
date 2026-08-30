@@ -16,7 +16,7 @@ export const GlobalConnectionWarning = () => {
       <TriangleAlert className="h-4 w-4" />
       <AlertDescription>
         {t(
-          'Deselecting a global connection from a workspace that has a workflow using it, will break the workflow.',
+          'Deselecting a global connection from a project that has a workflow using it, will break the workflow.',
         )}
       </AlertDescription>
     </Alert>

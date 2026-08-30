@@ -19,7 +19,7 @@ import {
   CommandList,
   CommandSeparator,
 } from '@/components/ui/command';
-import { workspaceCollectionUtils } from '@/features/workspaces';
+import { projectCollectionUtils } from '@/features/projects';
 
 import { recordAccess, type AccessedItemType } from './access-history';
 import { SearchResultRow } from './search-result-item';
@@ -81,10 +81,9 @@ function GlobalSearchDialogContent({
 
   const navigateToItem = useCallback(
     (type: string, href: string) => {
-      if (type === 'workspace') {
-        const workspaceId = href.split('/workspaces/')[1]?.split('/')[0];
-        if (workspaceId)
-          workspaceCollectionUtils.setCurrentWorkspace(workspaceId);
+      if (type === 'project') {
+        const projectId = href.split('/projects/')[1]?.split('/')[0];
+        if (projectId) projectCollectionUtils.setCurrentProject(projectId);
       }
       navigate(href);
       handleOpenChange(false);
@@ -102,7 +101,7 @@ function GlobalSearchDialogContent({
           href: item.href,
           status: item.status,
           folderName: item.folderName,
-          workspaceName: item.workspaceName,
+          projectName: item.projectName,
           iconBgColor: item.iconBgColor,
           iconTextColor: item.iconTextColor,
           iconLetter: item.iconLetter,

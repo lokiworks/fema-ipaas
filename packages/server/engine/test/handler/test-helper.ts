@@ -18,7 +18,7 @@ export const generateMockEngineConstants = (params?: Partial<EngineConstants>): 
                 retryInterval: 1,
             },
             engineToken: params?.engineToken ?? 'engineToken',
-            workspaceId: params?.workspaceId ?? 'workspaceId',
+            projectId: params?.projectId ?? 'projectId',
             triggerConnectorName: params?.triggerConnectorName ?? 'mcp-trigger-connector-name',
             streamStepProgress: params?.streamStepProgress ?? StreamStepProgress.NONE,
             workerHandlerId: params?.workerHandlerId ?? null,
@@ -162,7 +162,7 @@ export function buildMockBeginExecuteWorkflowOperation(
     params: Partial<ResolvedBeginExecuteWorkflowOperation> & Pick<BeginExecuteWorkflowOperation, 'workflowVersion'>,
 ): ResolvedBeginExecuteWorkflowOperation {
     return {
-        workspaceId: 'workspaceId',
+        projectId: 'projectId',
         engineToken: 'engineToken',
         internalApiUrl: 'http://127.0.0.1:3000/',
         publicApiUrl: 'http://127.0.0.1:4200/api/',

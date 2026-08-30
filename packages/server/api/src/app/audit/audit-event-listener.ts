@@ -10,7 +10,7 @@ export function registerAuditEventListener(log: FastifyBaseLogger): void {
         userEvent: (listenerLog) => (event) => {
             rejectedPromiseHandler(persist(listenerLog, event), listenerLog)
         },
-        workerEvent: (listenerLog) => (_workspaceId, event) => {
+        workerEvent: (listenerLog) => (_projectId, event) => {
             rejectedPromiseHandler(persist(listenerLog, event), listenerLog)
         },
     })
@@ -19,8 +19,8 @@ export function registerAuditEventListener(log: FastifyBaseLogger): void {
 async function persist(log: FastifyBaseLogger, event: ApplicationEvent): Promise<void> {
     await auditEventService(log).record({
         tenantId: event.tenantId,
-        workspaceId: event.workspaceId,
-        workspaceDisplayName: event.workspaceDisplayName,
+        projectId: event.projectId,
+        projectDisplayName: event.projectDisplayName,
         userId: event.userId,
         userEmail: event.userEmail,
         ip: event.ip,

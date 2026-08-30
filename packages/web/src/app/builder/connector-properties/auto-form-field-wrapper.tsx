@@ -3,6 +3,7 @@ import {
   ConnectorProperty,
   PropertyType,
 } from '@fema-ipaas/connector-sdk';
+import { isNil } from '@fema-ipaas/core-utils';
 import {
   WorkflowAction,
   WorkflowTrigger,
@@ -28,7 +29,7 @@ import { formUtils } from '@/features/connectors';
 import { cn } from '@/lib/utils';
 
 import { ArrayConnectorPropertyInInlineItemMode } from './array-property-in-inline-item-mode';
-import { DynamicValueToggleButton } from './dynamic-value-toggle-button';
+import { PropertyTypeSwitcher } from './property-type-switcher';
 import { TextInputWithMentions } from './text-input-with-mentions';
 
 function AutoFormFieldWrapper({
@@ -162,6 +163,28 @@ export function getValueForInputOnDynamicToggleChange(
 ) {
   const isAuthProperty = isConnectorAuthProperty(property);
   switch (newMode) {
+    case PropertyExecutionType.NULL:
+      return null;
+    case PropertyExecutionType.STRING:
+      return typeof currentValue === 'string'
+        ? currentValue
+        : isNil(currentValue)
+        ? ''
+        : JSON.stringify(currentValue);
+    case PropertyExecutionType.NUMBER: {
+      const asNumber = Number(currentValue);
+      return Number.isFinite(asNumber) ? asNumber : 0;
+    }
+    case PropertyExecutionType.BOOLEAN:
+      return Boolean(currentValue);
+    case PropertyExecutionType.OBJECT:
+      return typeof currentValue === 'object' &&
+        !Array.isArray(currentValue) &&
+        !isNil(currentValue)
+        ? currentValue
+        : {};
+    case PropertyExecutionType.ARRAY:
+      return Array.isArray(currentValue) ? currentValue : [];
     case PropertyExecutionType.DYNAMIC: {
       if (!isAuthProperty && property.type === PropertyType.ARRAY) {
         return formUtils.getDefaultPropertyValue({
@@ -235,15 +258,16 @@ function DynamicValueToggle({
       );
     }
   }
+  const currentMode =
+    form.getValues().settings?.propertySettings?.[propertyName]?.type ??
+    (isToggled ? PropertyExecutionType.DYNAMIC : PropertyExecutionType.MANUAL);
+
   return (
-    <DynamicValueToggleButton
-      pressed={isToggled}
-      onPressedChange={(newIsToggled) =>
-        handleDynamicValueToggleChange(
-          newIsToggled
-            ? PropertyExecutionType.DYNAMIC
-            : PropertyExecutionType.MANUAL,
-        )
+    <PropertyTypeSwitcher
+      value={currentMode}
+      onChange={handleDynamicValueToggleChange}
+      onReset={() =>
+        handleDynamicValueToggleChange(PropertyExecutionType.MANUAL)
       }
       disabled={disabled}
     />

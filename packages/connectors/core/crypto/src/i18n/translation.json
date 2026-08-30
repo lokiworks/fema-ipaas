@@ -49,5 +49,6 @@
   "SHA384": "SHA384",
   "The text to be signed": "The text to be signed",
   "Output Encoding": "Output Encoding",
-  "The encoding of the output signature": "The encoding of the output signature"
+  "The encoding of the output signature": "The encoding of the output signature",
+  "Crypto": "Crypto"
 }

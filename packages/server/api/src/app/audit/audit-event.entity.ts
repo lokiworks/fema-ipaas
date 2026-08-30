@@ -6,11 +6,11 @@ export const AuditEventEntity = new EntitySchema<AuditEventRow>({
     columns: {
         ...BaseColumnSchemaPart,
         tenantId: EntityIdSchema,
-        workspaceId: {
+        projectId: {
             ...EntityIdSchema,
             nullable: true,
         },
-        workspaceDisplayName: {
+        projectDisplayName: {
             type: String,
             nullable: true,
         },
@@ -42,8 +42,8 @@ export const AuditEventEntity = new EntitySchema<AuditEventRow>({
             unique: false,
         },
         {
-            name: 'idx_audit_event_workspace_action',
-            columns: ['workspaceId', 'action'],
+            name: 'idx_audit_event_project_action',
+            columns: ['projectId', 'action'],
             unique: false,
         },
     ],
@@ -54,8 +54,8 @@ export type AuditEventRow = {
     created: string
     updated: string
     tenantId: string
-    workspaceId: string | null
-    workspaceDisplayName: string | null
+    projectId: string | null
+    projectDisplayName: string | null
     userId: string | null
     userEmail: string | null
     ip: string | null

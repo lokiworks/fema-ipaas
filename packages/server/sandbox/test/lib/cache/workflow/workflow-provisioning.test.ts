@@ -50,7 +50,7 @@ function workflowWithConnector(overrides: Partial<WorkflowVersion> = {}): Workfl
 
 const httpConnector = { packageType: PackageType.REGISTRY, name: '@fema-ipaas/connector-http', version: '1.0.5', connectorType: ConnectorType.OFFICIAL }
 
-const workflow = { id: 'workflow1', versionId: 'fv1', workspaceId: 'p1' }
+const workflow = { id: 'workflow1', versionId: 'fv1', projectId: 'p1' }
 
 afterEach(async () => {
     for (const f of folders) {
@@ -147,7 +147,7 @@ describe('workflowProvisioning.resolve', () => {
         const resolved = await workflowProvisioning(fakeLog, apiClient, uniqueBasePath(), getSettings).resolve({ workflow, tenantId: 'plat1' })
 
         expect(resolved.kind).toBe('disabled')
-        expect(disableWorkflow).toHaveBeenCalledWith({ workflowId: 'workflow1', workspaceId: 'p1' })
+        expect(disableWorkflow).toHaveBeenCalledWith({ workflowId: 'workflow1', projectId: 'p1' })
         if (resolved.kind === 'disabled') {
             expect(resolved.failedStep?.name).toBe('step_1')
             expect(resolved.failedStep?.displayName).toBe('HTTP')

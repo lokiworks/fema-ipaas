@@ -101,7 +101,6 @@ export const createRunState = (
           userManuallySelectedStepDuringRun: isNewRun
             ? false
             : state.userManuallySelectedStepDuringRun,
-          isStepDataPanelOpen: isNewRun ? true : state.isStepDataPanelOpen,
         };
       }),
     selectFailedStep: () => {
@@ -124,7 +123,6 @@ export const createRunState = (
         loopsIndexes: {},
         selectedBranchIndex: null,
         userManuallySelectedStepDuringRun: false,
-        isStepDataPanelOpen: false,
       }),
     setLoopIndex: (stepName: string, index: number) => {
       set((state) => {

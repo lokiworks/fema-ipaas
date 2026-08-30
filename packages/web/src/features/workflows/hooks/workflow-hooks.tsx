@@ -44,27 +44,20 @@ import { NEW_WORKFLOW_QUERY_PARAM } from '@/lib/route-utils';
 import { workflowsApi } from '../api/workflows-api';
 import { workflowsUtils } from '../utils/workflows-utils';
 
-const createWorkflowsQueryKey = (workspaceId: string) => [
-  'workflows',
-  workspaceId,
-];
+const createWorkflowsQueryKey = (projectId: string) => ['workflows', projectId];
 export const workflowHooks = {
   invalidateWorkflowsQuery: (queryClient: QueryClient) => {
     queryClient.invalidateQueries({
-      queryKey: createWorkflowsQueryKey(
-        authenticationSession.getWorkspaceId()!,
-      ),
+      queryKey: createWorkflowsQueryKey(authenticationSession.getProjectId()!),
     });
   },
-  useWorkflows: (request: Omit<ListWorkflowsRequest, 'workspaceId'>) => {
+  useWorkflows: (request: Omit<ListWorkflowsRequest, 'projectId'>) => {
     return useQuery({
-      queryKey: createWorkflowsQueryKey(
-        authenticationSession.getWorkspaceId()!,
-      ),
+      queryKey: createWorkflowsQueryKey(authenticationSession.getProjectId()!),
       queryFn: async () => {
         return await workflowsApi.list({
           ...request,
-          workspaceId: authenticationSession.getWorkspaceId()!,
+          projectId: authenticationSession.getProjectId()!,
         });
       },
       staleTime: 5 * 1000,
@@ -245,7 +238,7 @@ export const workflowHooks = {
     return useMutation({
       mutationFn: async () => {
         const workflow = await workflowsApi.create({
-          workspaceId: authenticationSession.getWorkspaceId()!,
+          projectId: authenticationSession.getProjectId()!,
           displayName: t('Untitled'),
         });
         const mcpConnector = await connectorsApi.get({
@@ -419,7 +412,7 @@ export const workflowHooks = {
             ? await foldersApi.get(folderId)
             : undefined;
         const workflow = await workflowsApi.create({
-          workspaceId: authenticationSession.getWorkspaceId()!,
+          projectId: authenticationSession.getProjectId()!,
           displayName: t('Untitled'),
           folderName: folder?.displayName,
         });
@@ -467,11 +460,11 @@ export const workflowHooks = {
   },
   importWorkflowsFromTemplates: async ({
     templates,
-    workspaceId,
+    projectId,
     folderName,
   }: {
     templates: Template[];
-    workspaceId: string;
+    projectId: string;
     folderName?: string;
   }): Promise<PopulatedWorkflow[]> => {
     if (templates.length === 0) {
@@ -494,7 +487,7 @@ export const workflowHooks = {
         const workflow = await workflowsApi.create({
           displayName: templateWorkflow.displayName,
           templateId: template.id,
-          workspaceId,
+          projectId,
           folderName,
         });
 

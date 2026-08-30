@@ -69,7 +69,7 @@ export const flagService = (log: FastifyBaseLogger) => ({
                 updated,
             },
             {
-                id: FlagId.SHOW_WORKSPACE_MEMBERS,
+                id: FlagId.SHOW_PROJECT_MEMBERS,
                 value: false,
                 created,
                 updated,
@@ -233,8 +233,8 @@ export const flagService = (log: FastifyBaseLogger) => ({
                 updated,
             },
             {
-                id: FlagId.WORKSPACE_RATE_LIMITER_ENABLED,
-                value: system.getBoolean(AppSystemProp.WORKSPACE_RATE_LIMITER_ENABLED) ?? false,
+                id: FlagId.PROJECT_RATE_LIMITER_ENABLED,
+                value: system.getBoolean(AppSystemProp.PROJECT_RATE_LIMITER_ENABLED) ?? false,
                 created,
                 updated,
             },

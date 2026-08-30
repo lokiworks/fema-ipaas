@@ -1,4 +1,4 @@
-import type { UserId, WorkflowId, WorkspaceId } from '@fema-ipaas/core-utils'
+import type { ProjectId, UserId, WorkflowId } from '@fema-ipaas/core-utils'
 import type { RunEnvironment } from '@fema-ipaas/workflow-core'
 
 type WorkflowCreated = {
@@ -16,7 +16,7 @@ type TemplateSearch = {
 }
 
 type RunCreated = {
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     workflowId: WorkflowId
     environment: RunEnvironment
     count: number
@@ -31,7 +31,7 @@ type SignedUp = {
     email?: string
     firstName?: string
     lastName?: string
-    workspaceId: WorkspaceId
+    projectId: ProjectId
 }
 
 type EmailCodeRequested = {
@@ -120,7 +120,7 @@ type Referral = {
 
 type WorkflowShared = {
     workflowId: WorkflowId
-    workspaceId: WorkspaceId
+    projectId: ProjectId
 }
 
 type OpenedFromDashboard = {
@@ -129,25 +129,25 @@ type OpenedFromDashboard = {
 
 type FormsViewed = {
     workflowId: string
-    workspaceId: string
+    projectId: string
     formProps: Record<string, unknown>
 }
 
 type UserInvited = {
     tenantId: string
-    workspaceId?: string
+    projectId?: string
     email: string
 }
 
 type TriggerFailuresExceeded = {
-    workspaceId: string
+    projectId: string
     workflowId: string
     connectorName: string
     connectorVersion: string
 }
 type AiProviderConfiguredOrUsed = {
     provider: string
-    workspaceId: string
+    projectId: string
     tenantId: string
 }
 
@@ -158,7 +158,7 @@ type McpToolCalled = {
 
 type McpServerConnected = {
     userId: string
-    workspaceId?: string
+    projectId?: string
     tenantId?: string
 }
 

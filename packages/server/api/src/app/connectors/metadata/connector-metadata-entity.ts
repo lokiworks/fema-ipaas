@@ -31,7 +31,7 @@ export const ConnectorMetadataEntity =
               type: String,
               nullable: false,
           },
-          workspaceUsage: {
+          projectUsage: {
               type: Number,
               nullable: false,
               default: 0,

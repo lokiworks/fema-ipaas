@@ -23,11 +23,11 @@ beforeEach(async () => {
 })
 
 async function createFailedExecution(params: {
-    workspaceId: string
+    projectId: string
     startTime?: string
     finishTime?: string
 }) {
-    const workflow = createMockWorkflow({ workspaceId: params.workspaceId })
+    const workflow = createMockWorkflow({ projectId: params.projectId })
     await db.save('workflow', workflow)
 
     const workflowVersion = createMockWorkflowVersion({
@@ -37,7 +37,7 @@ async function createFailedExecution(params: {
     await db.save('workflow_version', workflowVersion)
 
     const execution = createMockExecution({
-        workspaceId: params.workspaceId,
+        projectId: params.projectId,
         workflowId: workflow.id,
         workflowVersionId: workflowVersion.id,
         status: ExecutionStatus.FAILED,
@@ -53,12 +53,12 @@ async function createFailedExecution(params: {
 describe('Retry workflow run', () => {
     it('should retry from failed step and transition to queued status', async () => {
         const { execution } = await createFailedExecution({
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
         })
 
         const response = await ctx.post(`/v1/executions/${execution.id}/retry`, {
             strategy: WorkflowRetryStrategy.FROM_FAILED_STEP,
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
         })
 
         expect(response.statusCode).toBe(200)
@@ -71,14 +71,14 @@ describe('Retry workflow run', () => {
         const originalStartTime = new Date('2020-01-01T00:00:00.000Z').toISOString()
         const originalFinishTime = new Date('2020-01-01T00:05:00.000Z').toISOString()
         const { execution } = await createFailedExecution({
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             startTime: originalStartTime,
             finishTime: originalFinishTime,
         })
 
         const response = await ctx.post(`/v1/executions/${execution.id}/retry`, {
             strategy: WorkflowRetryStrategy.FROM_FAILED_STEP,
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
         })
 
         expect(response.statusCode).toBe(200)
@@ -91,12 +91,12 @@ describe('Retry workflow run', () => {
 
     it('should retry on latest version and create a new run', async () => {
         const { execution } = await createFailedExecution({
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
         })
 
         const response = await ctx.post(`/v1/executions/${execution.id}/retry`, {
             strategy: WorkflowRetryStrategy.ON_LATEST_VERSION,
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
         })
 
         expect(response.statusCode).toBe(200)
@@ -108,17 +108,17 @@ describe('Retry workflow run', () => {
     it('should return 400 for invalid workflow run id', async () => {
         const response = await ctx.post('/v1/executions/non-existent-id/retry', {
             strategy: WorkflowRetryStrategy.FROM_FAILED_STEP,
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
         })
 
         expect(response.statusCode).toBe(400)
     })
 
     it('should materialize a sliced trigger output on ON_LATEST_VERSION retry instead of replaying the LogSliceRef', async () => {
-        const workspaceId = ctx.workspace.id
+        const projectId = ctx.project.id
         const tenantId = ctx.tenant.id
 
-        const workflow = createMockWorkflow({ workspaceId })
+        const workflow = createMockWorkflow({ projectId })
         await db.save('workflow', workflow)
 
         const workflowVersion = createMockWorkflowVersion({
@@ -133,7 +133,7 @@ describe('Retry workflow run', () => {
         }
         const sliceData = Buffer.from(JSON.stringify(realTriggerOutput), 'utf-8')
         const sliceFile = await fileService(app.log).save({
-            workspaceId,
+            projectId,
             tenantId,
             type: FileType.EXECUTION_LOG_SLICE,
             data: sliceData,
@@ -159,7 +159,7 @@ describe('Retry workflow run', () => {
         }
         const logData = Buffer.from(JSON.stringify(logContent), 'utf-8')
         const logFile = await fileService(app.log).save({
-            workspaceId,
+            projectId,
             tenantId,
             type: FileType.EXECUTION_LOG,
             data: logData,
@@ -168,7 +168,7 @@ describe('Retry workflow run', () => {
         })
 
         const execution = createMockExecution({
-            workspaceId,
+            projectId,
             workflowId: workflow.id,
             workflowVersionId: workflowVersion.id,
             status: ExecutionStatus.SUCCEEDED,
@@ -181,7 +181,7 @@ describe('Retry workflow run', () => {
 
         const response = await ctx.post(`/v1/executions/${execution.id}/retry`, {
             strategy: WorkflowRetryStrategy.ON_LATEST_VERSION,
-            workspaceId,
+            projectId,
         })
 
         expect(response.statusCode).toBe(200)
@@ -197,10 +197,10 @@ describe('Retry workflow run', () => {
     })
 
     it('should fail with 404 on ON_LATEST_VERSION retry when the sliced trigger output file is gone', async () => {
-        const workspaceId = ctx.workspace.id
+        const projectId = ctx.project.id
         const tenantId = ctx.tenant.id
 
-        const workflow = createMockWorkflow({ workspaceId })
+        const workflow = createMockWorkflow({ projectId })
         await db.save('workflow', workflow)
 
         const workflowVersion = createMockWorkflowVersion({
@@ -228,7 +228,7 @@ describe('Retry workflow run', () => {
         }
         const logData = Buffer.from(JSON.stringify(logContent), 'utf-8')
         const logFile = await fileService(app.log).save({
-            workspaceId,
+            projectId,
             tenantId,
             type: FileType.EXECUTION_LOG,
             data: logData,
@@ -237,7 +237,7 @@ describe('Retry workflow run', () => {
         })
 
         const execution = createMockExecution({
-            workspaceId,
+            projectId,
             workflowId: workflow.id,
             workflowVersionId: workflowVersion.id,
             status: ExecutionStatus.SUCCEEDED,
@@ -248,7 +248,7 @@ describe('Retry workflow run', () => {
 
         const response = await ctx.post(`/v1/executions/${execution.id}/retry`, {
             strategy: WorkflowRetryStrategy.ON_LATEST_VERSION,
-            workspaceId,
+            projectId,
         })
 
         expect(response.statusCode).toBe(404)

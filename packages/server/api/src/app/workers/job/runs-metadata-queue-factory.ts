@@ -48,7 +48,7 @@ export const runsMetadataQueueFactory = ({
 
             await queueInstance.add(
                 'update-run-metadata',
-                { runId: cleanedParams.id, workspaceId: cleanedParams.workspaceId },
+                { runId: cleanedParams.id, projectId: cleanedParams.projectId },
                 { deduplication: { id: cleanedParams.id } },
             )
         },
@@ -67,7 +67,7 @@ export const runsMetadataQueueFactory = ({
 }
 
 const RUNS_METADATA_UPSERT_KEYS: (keyof RunsMetadataUpsertData)[] = [
-    'id', 'workspaceId', 'created', 'workflowId', 'workflowVersionId', 'environment',
+    'id', 'projectId', 'created', 'workflowId', 'workflowVersionId', 'environment',
     'triggeredBy', 'startTime', 'finishTime', 'status', 'tags',
     'failedStep', 'stepNameToTest', 'parentRunId', 'failParentOnFailure',
     'logsFileId', 'updated', 'stepsCount', 'requestId',
@@ -91,7 +91,7 @@ type RunsMetadataQueueFactoryParams = {
 
 export type RunsMetadataJobData = {
     runId: string
-    workspaceId: string
+    projectId: string
 }
 
 export type RunsMetadataQueueConfig = {
@@ -101,7 +101,7 @@ export type RunsMetadataQueueConfig = {
 
 export type RunsMetadataUpsertData = {
     id: string
-    workspaceId: string
+    projectId: string
     created?: string
     workflowId?: string
     workflowVersionId?: string

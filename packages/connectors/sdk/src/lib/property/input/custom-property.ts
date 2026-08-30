@@ -5,7 +5,7 @@ import { PropertyType } from "./property-type";
 
 // Code should be a valid javascript function that takes a single argument which is an object
 /*
-(ctx: {containerId:string, value: unknown, onChange: (value: unknown) => void, isEmbeded: boolean, workspaceId:string}) => void
+(ctx: {containerId:string, value: unknown, onChange: (value: unknown) => void, isEmbeded: boolean, projectId:string}) => void
 */
 export const CustomProperty = z.object({
   ...BasePropertySchema.shape,
@@ -24,7 +24,7 @@ export type CustomPropertyCodeFunctionParams =
     value: unknown,
     onChange: (value: unknown) => void,
     isEmbeded: boolean,
-    workspaceId:string,
+    projectId:string,
     property: Pick<CustomProperty<boolean>, 'displayName' | 'description' | 'required'>,
     disabled: boolean
   }

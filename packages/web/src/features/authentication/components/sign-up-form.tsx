@@ -74,7 +74,7 @@ const SignUpForm = ({
       if (data.verified) {
         authenticationSession.saveResponse(data, false);
 
-        if (isNil(data.workspaceId)) {
+        if (isNil(data.projectId)) {
           navigate('/create-tenant');
           return;
         }

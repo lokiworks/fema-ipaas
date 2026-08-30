@@ -115,7 +115,7 @@ const ImportWorkflowDialog = (
 
       return workflowHooks.importWorkflowsFromTemplates({
         templates,
-        workspaceId: authenticationSession.getWorkspaceId()!,
+        projectId: authenticationSession.getProjectId()!,
         folderName: folder?.displayName,
       });
     },

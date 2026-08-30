@@ -29,8 +29,8 @@ vi.mock('../../../../../src/app/connectors/metadata/connector-metadata-service',
     })),
 }))
 
-vi.mock('../../../../../src/app/workspace/workspace-service', () => ({
-    workspaceService: vi.fn(() => ({
+vi.mock('../../../../../src/app/project/project-service', () => ({
+    projectService: vi.fn(() => ({
         getTenantId: mockGetTenantId,
     })),
 }))
@@ -157,7 +157,7 @@ describe('workflowVersionService.applyOperation - USE_AS_DRAFT', () => {
         mockRepoFindOne.mockResolvedValue(previousVersion)
 
         const result = await workflowVersionService(mockLog).applyOperation({
-            workspaceId: 'proj-1',
+            projectId: 'proj-1',
             tenantId: 'tenant-1',
             userId: 'user-1',
             workflowVersion: currentDraft,
@@ -179,7 +179,7 @@ describe('workflowVersionService.applyOperation - USE_AS_DRAFT', () => {
         mockRepoFindOne.mockResolvedValue(previousVersion)
 
         const result = await workflowVersionService(mockLog).applyOperation({
-            workspaceId: 'proj-1',
+            projectId: 'proj-1',
             tenantId: 'tenant-1',
             userId: 'user-1',
             workflowVersion: currentDraft,
@@ -209,7 +209,7 @@ describe('workflowVersionService.applyOperation - USE_AS_DRAFT', () => {
         mockRepoFindOne.mockResolvedValue(previousVersion)
 
         const result = await workflowVersionService(mockLog).applyOperation({
-            workspaceId: 'proj-1',
+            projectId: 'proj-1',
             tenantId: 'tenant-1',
             userId: 'user-1',
             workflowVersion: currentDraft,

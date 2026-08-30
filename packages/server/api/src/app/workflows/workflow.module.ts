@@ -13,9 +13,9 @@ export const workflowModule: FastifyPluginAsyncZod = async (app) => {
     // Membership-only by design: a test run mirrors the membership-only
     // /v1/sample-data/test-step route. Only production manual runs require WRITE_RUN.
     websocketService.addListener(PrincipalType.USER, WebsocketServerEvent.TEST_EXECUTION, (socket) => {
-        return async (data: TestExecutionRequestBody, principal, workspaceId) => {
+        return async (data: TestExecutionRequestBody, principal, projectId) => {
             const execution = await executionService(app.log).test({
-                workspaceId,
+                projectId,
                 workflowVersionId: data.workflowVersionId,
                 triggeredBy: principal.id,
             })
@@ -23,9 +23,9 @@ export const workflowModule: FastifyPluginAsyncZod = async (app) => {
         }
     })
     websocketService.addListener(PrincipalType.USER, WebsocketServerEvent.MANUAL_TRIGGER_RUN_STARTED, (socket) => {
-        return async (data: TestExecutionRequestBody, principal, workspaceId) => {
+        return async (data: TestExecutionRequestBody, principal, projectId) => {
             const execution = await executionService(app.log).startManualTrigger({
-                workspaceId,
+                projectId,
                 workflowVersionId: data.workflowVersionId,
                 triggeredBy: principal.id,
             })

@@ -36,20 +36,20 @@ afterAll(async () => {
 
 describe('Engine Services Integration', () => {
     let engineToken: string
-    let workspaceId: string
+    let projectId: string
     let tenantId: string
     let ownerId: string
 
     beforeEach(async () => {
-        const { mockTenant, mockWorkspace, mockOwner } = await mockAndSaveBasicSetup()
-        workspaceId = mockWorkspace.id
+        const { mockTenant, mockProject, mockOwner } = await mockAndSaveBasicSetup()
+        projectId = mockProject.id
         tenantId = mockTenant.id
         ownerId = mockOwner.id
 
         engineToken = await generateMockToken({
             type: PrincipalType.ENGINE,
             id: generateId(),
-            workspaceId,
+            projectId,
             tenant: { id: tenantId },
         })
     })
@@ -60,7 +60,7 @@ describe('Engine Services Integration', () => {
             const workflowVersionId = generateId()
             const mockWorkflow = createMockWorkflow({
                 id: workflowId,
-                workspaceId,
+                projectId,
                 status: WorkflowStatus.ENABLED,
                 externalId: 'ext-workflow-1',
             })
@@ -90,7 +90,7 @@ describe('Engine Services Integration', () => {
             const populatedWorkflow = result.data.find(f => f.id === workflowId)
             expect(populatedWorkflow).toBeDefined()
             expect(populatedWorkflow!.id).toBe(workflowId)
-            expect(populatedWorkflow!.workspaceId).toBe(workspaceId)
+            expect(populatedWorkflow!.projectId).toBe(projectId)
             expect(populatedWorkflow!.externalId).toBe('ext-workflow-1')
             expect(populatedWorkflow!.status).toBe(WorkflowStatus.ENABLED)
             expect(populatedWorkflow!.version).toBeDefined()
@@ -111,8 +111,8 @@ describe('Engine Services Integration', () => {
             const ext1 = generateId()
             const ext2 = generateId()
 
-            const workflow1 = createMockWorkflow({ id: workflow1Id, workspaceId, externalId: ext1 })
-            const workflow2 = createMockWorkflow({ id: workflow2Id, workspaceId, externalId: ext2 })
+            const workflow1 = createMockWorkflow({ id: workflow1Id, projectId, externalId: ext1 })
+            const workflow2 = createMockWorkflow({ id: workflow2Id, projectId, externalId: ext2 })
             const version1 = createMockWorkflowVersion({ workflowId: workflow1Id })
             const version2 = createMockWorkflowVersion({ workflowId: workflow2Id })
 
@@ -158,7 +158,7 @@ describe('Engine Services Integration', () => {
 
             const mockConn = createMockConnection({
                 tenantId,
-                workspaceIds: [workspaceId],
+                projectIds: [projectId],
                 externalId,
                 status: ConnectionStatus.ACTIVE,
             }, ownerId)
@@ -169,7 +169,7 @@ describe('Engine Services Integration', () => {
             })
 
             const connectionService = createConnectionResolver({
-                workspaceId,
+                projectId,
                 engineToken,
                 apiUrl,
                 contextVersion: ContextVersion.V1,
@@ -194,7 +194,7 @@ describe('Engine Services Integration', () => {
 
             const mockConn = createMockConnection({
                 tenantId,
-                workspaceIds: [workspaceId],
+                projectIds: [projectId],
                 externalId,
                 status: ConnectionStatus.ACTIVE,
             }, ownerId)
@@ -205,7 +205,7 @@ describe('Engine Services Integration', () => {
             })
 
             const connectionService = createConnectionResolver({
-                workspaceId,
+                projectId,
                 engineToken,
                 apiUrl,
                 contextVersion: undefined,
@@ -218,7 +218,7 @@ describe('Engine Services Integration', () => {
 
         it('should throw ConnectionNotFoundError for missing connection', async () => {
             const connectionService = createConnectionResolver({
-                workspaceId,
+                projectId,
                 engineToken,
                 apiUrl,
                 contextVersion: ContextVersion.V1,
@@ -237,7 +237,7 @@ describe('Engine Services Integration', () => {
 
             const mockConn = createMockConnection({
                 tenantId,
-                workspaceIds: [workspaceId],
+                projectIds: [projectId],
                 externalId,
             }, ownerId)
 
@@ -248,7 +248,7 @@ describe('Engine Services Integration', () => {
             })
 
             const connectionService = createConnectionResolver({
-                workspaceId,
+                projectId,
                 engineToken,
                 apiUrl,
                 contextVersion: ContextVersion.V1,
@@ -268,7 +268,7 @@ describe('Engine Services Integration', () => {
                 const externalId = generateId()
                 const mockConn = createMockConnection({
                     tenantId,
-                    workspaceIds: [workspaceId],
+                    projectIds: [projectId],
                     externalId,
                     connectorName: connectionConnectorName,
                 }, ownerId)
@@ -287,7 +287,7 @@ describe('Engine Services Integration', () => {
                 const externalId = await saveConnection('@fema-ipaas/connector-google-sheets')
 
                 const connectionService = createConnectionResolver({
-                    workspaceId,
+                    projectId,
                     engineToken,
                     apiUrl,
                     contextVersion: ContextVersion.V1,
@@ -302,7 +302,7 @@ describe('Engine Services Integration', () => {
                 const externalId = await saveConnection(connectorName)
 
                 const connectionService = createConnectionResolver({
-                    workspaceId,
+                    projectId,
                     engineToken,
                     apiUrl,
                     contextVersion: ContextVersion.V1,
@@ -319,7 +319,7 @@ describe('Engine Services Integration', () => {
                 const externalId = await saveConnection('@fema-ipaas/connector-google-sheets')
 
                 const connectionService = createConnectionResolver({
-                    workspaceId,
+                    projectId,
                     engineToken,
                     apiUrl,
                     contextVersion: ContextVersion.V1,
@@ -376,7 +376,7 @@ describe('Engine Services Integration', () => {
             expect(result).toBeNull()
         })
 
-        it('should isolate workflow-scoped vs workspace-scoped keys', async () => {
+        it('should isolate workflow-scoped vs project-scoped keys', async () => {
             const workflowId = generateId()
             const store = createContextStore({
                 apiUrl,
@@ -386,13 +386,13 @@ describe('Engine Services Integration', () => {
             })
 
             await store.put('sharedKey', { scope: 'workflow' }, StoreScope.WORKFLOW)
-            await store.put('sharedKey', { scope: 'workspace' }, StoreScope.WORKSPACE)
+            await store.put('sharedKey', { scope: 'project' }, StoreScope.PROJECT)
 
             const workflowValue = await store.get('sharedKey', StoreScope.WORKFLOW)
             expect(workflowValue).toEqual({ scope: 'workflow' })
 
-            const workspaceValue = await store.get('sharedKey', StoreScope.WORKSPACE)
-            expect(workspaceValue).toEqual({ scope: 'workspace' })
+            const projectValue = await store.get('sharedKey', StoreScope.PROJECT)
+            expect(projectValue).toEqual({ scope: 'project' })
         })
     })
 

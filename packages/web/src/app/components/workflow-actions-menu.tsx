@@ -82,7 +82,7 @@ const WorkflowActionMenu: React.FC<WorkflowActionMenuProps> = ({
   const { embedState } = useEmbedding();
   const isDevelopmentBranch = false;
   const [open, setOpen] = useState(false);
-  const hasWorkspaceMembers = false;
+  const hasProjectMembers = false;
 
   const [isRenameOpen, setIsRenameOpen] = useState(false);
   const [renameValue, setRenameValue] = useState(workflowVersion.displayName);
@@ -125,7 +125,7 @@ const WorkflowActionMenu: React.FC<WorkflowActionMenuProps> = ({
         };
         const createdWorkflow = await workflowsApi.create({
           displayName: modifiedWorkflowVersion.displayName,
-          workspaceId: authenticationSession.getWorkspaceId()!,
+          projectId: authenticationSession.getProjectId()!,
           folderId: workflow.folderId ?? undefined,
         });
         const updatedWorkflow = await workflowsApi.update(createdWorkflow.id, {
@@ -224,7 +224,7 @@ const WorkflowActionMenu: React.FC<WorkflowActionMenuProps> = ({
               </DropdownMenuItem>
             </PermissionNeededTooltip>
           )}
-          {!readonly && hasWorkspaceMembers && !embedState.isEmbedded && (
+          {!readonly && hasProjectMembers && !embedState.isEmbedded && (
             <PermissionNeededTooltip
               hasPermission={userHasPermissionToUpdateWorkflow}
             >

@@ -1,4 +1,4 @@
-import { generateId, sanitizeObjectForPostgresql, WorkspaceId } from '@fema-ipaas/core-utils'
+import { generateId, ProjectId, sanitizeObjectForPostgresql } from '@fema-ipaas/core-utils'
 import { PutStoreEntryRequest, StoreEntry } from '@fema-ipaas/shared'
 import { repoFactory } from '../core/db/repo-factory'
 import { StoreEntryEntity } from './store-entry-entity'
@@ -6,17 +6,17 @@ import { StoreEntryEntity } from './store-entry-entity'
 const storeEntryRepo = repoFactory<StoreEntry>(StoreEntryEntity)
 
 export const storeEntryService = {
-    async upsert({ workspaceId, request }: { workspaceId: WorkspaceId, request: PutStoreEntryRequest }): Promise<StoreEntry | null> {
+    async upsert({ projectId, request }: { projectId: ProjectId, request: PutStoreEntryRequest }): Promise<StoreEntry | null> {
         const value = sanitizeObjectForPostgresql(request.value)
         const insertResult = await storeEntryRepo().upsert({
             id: generateId(),
             key: request.key,
             value,
-            workspaceId,
-        }, ['workspaceId', 'key'])
+            projectId,
+        }, ['projectId', 'key'])
 
         return {
-            workspaceId,
+            projectId,
             key: request.key,
             value,
             id: insertResult.identifiers[0].id,
@@ -25,26 +25,26 @@ export const storeEntryService = {
         }
     },
     async getOne({
-        workspaceId,
+        projectId,
         key,
     }: {
-        workspaceId: WorkspaceId
+        projectId: ProjectId
         key: string
     }): Promise<StoreEntry | null> {
         return storeEntryRepo().findOneBy({
-            workspaceId,
+            projectId,
             key,
         })
     },
     async delete({
-        workspaceId,
+        projectId,
         key,
     }: {
-        workspaceId: WorkspaceId
+        projectId: ProjectId
         key: string
     }): Promise<void> {
         await storeEntryRepo().delete({
-            workspaceId,
+            projectId,
             key,
         })
     },

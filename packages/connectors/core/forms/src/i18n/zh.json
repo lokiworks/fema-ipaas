@@ -1,7 +1,7 @@
 {
   "Trigger a workflow through human input.": "通过人工输入触发工作流。",
   "Respond on UI": "在界面上响应",
-  "Return a file or text (markdown) as a response.": "Return a file or text (markdown) as a response.",
+  "Return a file or text (markdown) as a response.": "以文件或文本（markdown）作为响应返回。",
   "Text (Markdown)": "文本（Markdown）",
   "Attachment": "附件",
   "Web Form": "网页表单",
@@ -12,9 +12,10 @@
   "Wait for Response": "等待响应",
   "Inputs": "输入",
   "Bot Name": "机器人名称",
-  "**Published Form URL:**\n```text\n{{formUrl}}\n```\nUse this for production, views the published version of the form.\n<br>\n<br>\n**Draft Form URL:**\n```text\n{{formUrl}}?useDraft=true\n```\nUse this to generate sample data, views the draft version of the form (the one you are editing now).\n": "**Published Form URL:**\n```text\n{{formUrl}}\n```\nUse this for production, views the published version of the form.\n<br>\n<br>\n**Draft Form URL:**\n```text\n{{formUrl}}?useDraft=true\n```\nUse this to generate sample data, views the draft version of the form (the one you are editing now).\n",
-  "\nIf **Wait for Response** is enabled, use **Respond on UI** in your workflow to provide a response back to the form.\n": "\nIf **Wait for Response** is enabled, use **Respond on UI** in your workflow to provide a response back to the form.\n",
-  "\n**Published Chat URL:**\n```text\n{{chatUrl}}\n```\nUse this for production, views the published version of the chat workflow.\n<br>\n<br>\n": "\n**Published Chat URL:**\n```text\n{{chatUrl}}\n```\nUse this for production, views the published version of the chat workflow.\n<br>\n<br>\n",
-  "\nThis trigger sets up a chat interface. Ensure that **Respond on UI** is used in your workflow": "\nThis trigger sets up a chat interface. Ensure that **Respond on UI** is used in your workflow",
-  "The name of the chatbot": "对话机器人的名称"
+  "**Published Form URL:**\n```text\n{{formUrl}}\n```\nUse this for production, views the published version of the form.\n<br>\n<br>\n**Draft Form URL:**\n```text\n{{formUrl}}?useDraft=true\n```\nUse this to generate sample data, views the draft version of the form (the one you are editing now).\n": "**已发布表单的 URL：**\n```text\n{{formUrl}}\n```\n用于生产环境，打开的是表单的已发布版本。\n<br>\n<br>\n**草稿表单的 URL：**\n```text\n{{formUrl}}?useDraft=true\n```\n用于生成示例数据，打开的是表单的草稿版本（也就是你正在编辑的这份）。\n",
+  "\nIf **Wait for Response** is enabled, use **Respond on UI** in your workflow to provide a response back to the form.\n": "\n如果启用了**等待响应**，请在工作流中使用**在界面上响应**，把结果返回给表单。\n",
+  "\n**Published Chat URL:**\n```text\n{{chatUrl}}\n```\nUse this for production, views the published version of the chat workflow.\n<br>\n<br>\n": "\n**已发布对话的 URL：**\n```text\n{{chatUrl}}\n```\n用于生产环境，打开的是对话工作流的已发布版本。\n<br>\n<br>\n",
+  "\nThis trigger sets up a chat interface. Ensure that **Respond on UI** is used in your workflow": "\n该触发器会创建一个对话界面。请确保工作流中使用了**在界面上响应**",
+  "The name of the chatbot": "对话机器人的名称",
+  "Human Input": "人工输入"
 }

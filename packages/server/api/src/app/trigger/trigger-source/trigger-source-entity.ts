@@ -1,10 +1,10 @@
-import { TriggerSource, Workflow, Workspace } from '@fema-ipaas/shared'
+import { Project, TriggerSource, Workflow } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import { BaseColumnSchemaPart } from '../../database/database-common'
 
 export type TriggerSourceSchema = TriggerSource & {
     workflow: Workflow
-    workspace: Workspace
+    project: Project
 }
 
 export const TriggerSourceEntity = new EntitySchema<TriggerSourceSchema>({
@@ -28,7 +28,7 @@ export const TriggerSourceEntity = new EntitySchema<TriggerSourceSchema>({
             type: String,
             nullable: false,
         },
-        workspaceId: {
+        projectId: {
             type: String,
             nullable: false,
         },
@@ -55,8 +55,8 @@ export const TriggerSourceEntity = new EntitySchema<TriggerSourceSchema>({
     },
     indices: [
         {
-            columns: ['workspaceId', 'workflowId', 'simulate'],
-            name: 'idx_trigger_workspace_id_workflow_id_simulate',
+            columns: ['projectId', 'workflowId', 'simulate'],
+            name: 'idx_trigger_project_id_workflow_id_simulate',
             where: 'deleted IS NULL',
             unique: true,
         },
@@ -72,8 +72,8 @@ export const TriggerSourceEntity = new EntitySchema<TriggerSourceSchema>({
             unique: false,
         },
         {
-            columns: ['workspaceId'],
-            name: 'idx_trigger_workspace_id',
+            columns: ['projectId'],
+            name: 'idx_trigger_project_id',
             unique: false,
         },
         {
@@ -91,9 +91,9 @@ export const TriggerSourceEntity = new EntitySchema<TriggerSourceSchema>({
             cascade: true,
             onDelete: 'CASCADE',
         },
-        workspace: {
+        project: {
             type: 'many-to-one',
-            target: 'workspace',
+            target: 'project',
             inverseSide: 'triggers',
             cascade: true,
             onDelete: 'CASCADE',

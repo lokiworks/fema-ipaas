@@ -10,12 +10,14 @@ import {
 } from '@fema-ipaas/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import deepEqual from 'deep-equal';
+import { t } from 'i18next';
 import { useEffect, useRef, useState } from 'react';
 import { useForm, Resolver } from 'react-hook-form';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { Form } from '@/components/ui/form';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   stepsHooks,
   connectorSelectorUtils,
@@ -23,7 +25,7 @@ import {
   ConnectorIcon,
   ConnectorStepMetadata,
 } from '@/features/connectors';
-import { workspaceCollectionUtils } from '@/features/workspaces';
+import { projectCollectionUtils } from '@/features/projects';
 import { cn, GAP_SIZE_FOR_STEP_SETTINGS } from '@/lib/utils';
 
 import { ActionErrorHandlingForm } from '../connector-properties/action-error-handling';
@@ -34,7 +36,6 @@ import {
   ActionTestRunnerProvider,
   TriggerTestRunnerProvider,
 } from '../test-step/test-runner-context';
-import { TestStepCTAButton } from '../test-step/test-step-cta-button';
 
 import { CodeSettings } from './code-settings';
 import { ComponentSettings } from './component-settings';
@@ -45,12 +46,13 @@ import { LoopsSettings } from './loops-settings';
 import { ParallelSettings } from './parallel-settings';
 import { RouterSettings } from './router-settings';
 import { StepNavigationButtons } from './step-navigation-buttons';
+import { StepOperationSummary } from './step-operation-summary';
 import { useStepSettingsContext } from './step-settings-context';
 import { UpdateConnectorVersionDialog } from './update-connector-version-dialog/update-connector-version-dialog';
 
 const StepSettingsContainer = () => {
   const { selectedStep, connectorModel, formSchema } = useStepSettingsContext();
-  const { workspace } = workspaceCollectionUtils.useCurrentWorkspace();
+  const { project } = projectCollectionUtils.useCurrentProject();
   const [
     readonly,
     exitStepSettings,
@@ -60,8 +62,6 @@ const StepSettingsContainer = () => {
     selectedBranchIndex,
     setSelectedBranchIndex,
     run,
-    stepDataPanelView,
-    isStepDataPanelOpen,
   ] = useBuilderStateContext((state) => [
     state.readonly,
     state.exitStepSettings,
@@ -71,8 +71,6 @@ const StepSettingsContainer = () => {
     state.selectedBranchIndex,
     state.setSelectedBranchIndex,
     state.run,
-    state.stepDataPanelView,
-    state.isStepDataPanelOpen,
   ]);
 
   const { stepMetadata } = stepsHooks.useStepMetadata({
@@ -177,49 +175,79 @@ const StepSettingsContainer = () => {
   }, []);
 
   const showTestPanel = showGenerateSampleData || showStepInputOutFromRun;
+  const isConnectorNode =
+    modifiedStep.type === WorkflowActionType.CONNECTOR ||
+    modifiedStep.type === WorkflowTriggerType.CONNECTOR;
 
-  const settingsForm = (
-    <ScrollArea className="h-full">
-      <div
-        className={cn(
-          'flex flex-col px-4 pb-6 pt-3',
-          GAP_SIZE_FOR_STEP_SETTINGS,
-        )}
-      >
-        {modifiedStep.type === WorkflowActionType.LOOP_ON_ITEMS && (
-          <LoopsSettings readonly={readonly}></LoopsSettings>
-        )}
-        {modifiedStep.type === WorkflowActionType.CODE && (
-          <CodeSettings readonly={readonly}></CodeSettings>
-        )}
-        {modifiedStep.type === WorkflowActionType.COMPONENT && (
-          <ComponentSettings step={modifiedStep} readonly={readonly} />
-        )}
-        {modifiedStep.type === WorkflowActionType.CONNECTOR && modifiedStep && (
-          <ConnectorSettings
-            step={modifiedStep}
-            workflowId={workflowVersion.workflowId}
-            readonly={readonly}
-          ></ConnectorSettings>
-        )}
-        {modifiedStep.type === WorkflowActionType.ROUTER && modifiedStep && (
-          <RouterSettings readonly={readonly}></RouterSettings>
-        )}
-        {modifiedStep.type === WorkflowActionType.PARALLEL && (
-          <ParallelSettings readonly={readonly} />
-        )}
-        {workflowStructureUtil.isAction(modifiedStep.type) && (
-          <JoinEdgesSection stepName={modifiedStep.name} readonly={readonly} />
-        )}
-        {modifiedStep.type === WorkflowTriggerType.CONNECTOR &&
-          modifiedStep && (
+  const nodeSettingsForm = (
+    <>
+      {modifiedStep.type === WorkflowActionType.LOOP_ON_ITEMS && (
+        <LoopsSettings readonly={readonly}></LoopsSettings>
+      )}
+      {modifiedStep.type === WorkflowActionType.CODE && (
+        <CodeSettings readonly={readonly}></CodeSettings>
+      )}
+      {modifiedStep.type === WorkflowActionType.COMPONENT && (
+        <ComponentSettings step={modifiedStep} readonly={readonly} />
+      )}
+      {modifiedStep.type === WorkflowActionType.ROUTER && (
+        <RouterSettings readonly={readonly}></RouterSettings>
+      )}
+      {modifiedStep.type === WorkflowActionType.PARALLEL && (
+        <ParallelSettings readonly={readonly} />
+      )}
+    </>
+  );
+
+  const sectionContent = (section: 'action' | 'input' | 'error') => {
+    if (isConnectorNode) {
+      return (
+        <>
+          {section === 'action' && stepMetadata && (
+            <StepOperationSummary
+              step={modifiedStep}
+              connectorDisplayName={stepMetadata.displayName}
+              logoUrl={stepMetadata.logoUrl}
+              operationDisplayName={modifiedStep.displayName}
+              readonly={readonly}
+            />
+          )}
+          {(modifiedStep.type === WorkflowActionType.CONNECTOR ||
+            modifiedStep.type === WorkflowTriggerType.CONNECTOR) && (
             <ConnectorSettings
+              section={section}
               step={modifiedStep}
               workflowId={workflowVersion.workflowId}
               readonly={readonly}
-            ></ConnectorSettings>
+            />
           )}
-        {showActionErrorHandlingForm && (
+        </>
+      );
+    }
+    return (
+      <>
+        {section === 'action' && (
+          <>
+            {stepMetadata && (
+              <StepOperationSummary
+                step={modifiedStep}
+                connectorDisplayName={stepMetadata.displayName}
+                logoUrl={stepMetadata.logoUrl}
+                operationDisplayName={modifiedStep.displayName}
+                readonly={readonly}
+                hideChangeAction={true}
+              />
+            )}
+            {workflowStructureUtil.isAction(modifiedStep.type) && (
+              <JoinEdgesSection
+                stepName={modifiedStep.name}
+                readonly={readonly}
+              />
+            )}
+          </>
+        )}
+        {section === 'input' && nodeSettingsForm}
+        {section === 'error' && showActionErrorHandlingForm && (
           <ActionErrorHandlingForm
             hideContinueOnFailure={
               stepMetadata.type === WorkflowActionType.CONNECTOR
@@ -234,8 +262,64 @@ const StepSettingsContainer = () => {
             }
           ></ActionErrorHandlingForm>
         )}
-      </div>
-    </ScrollArea>
+      </>
+    );
+  };
+
+  const settingsForm = (
+    <Tabs defaultValue="action" className="flex h-full w-full flex-col">
+      <TabsList className="mx-4 mt-2 grid shrink-0 grid-cols-4">
+        <TabsTrigger value="action">{t('Action')}</TabsTrigger>
+        <TabsTrigger value="input" className="gap-1.5">
+          {t('Input')}
+          {!modifiedStep.valid && (
+            <span
+              aria-label={t('Has validation errors')}
+              className="size-1.5 shrink-0 rounded-full bg-warning"
+            />
+          )}
+        </TabsTrigger>
+        <TabsTrigger value="output">{t('Output')}</TabsTrigger>
+        <TabsTrigger value="error">{t('Error Handling')}</TabsTrigger>
+      </TabsList>
+      {(['action', 'input', 'error'] as const).map((section) => (
+        <TabsContent
+          key={section}
+          value={section}
+          className="mt-0 min-h-0 flex-1"
+        >
+          <ScrollArea className="h-full">
+            <div
+              className={cn(
+                'flex flex-col px-4 pb-6 pt-3',
+                GAP_SIZE_FOR_STEP_SETTINGS,
+              )}
+            >
+              {sectionContent(section)}
+            </div>
+          </ScrollArea>
+        </TabsContent>
+      ))}
+      <TabsContent value="output" className="mt-0 min-h-0 flex-1">
+        <div className="flex h-full min-h-0 flex-col">
+          {showTestPanel ? (
+            <StepDataPanelHost
+              workflowId={workflowVersion.workflowId}
+              workflowVersionId={workflowVersion.id}
+              projectId={project?.id}
+              stepType={modifiedStep.type}
+              showGenerateSampleData={showGenerateSampleData}
+              showStepInputOutFromRun={showStepInputOutFromRun}
+              saving={saving}
+            />
+          ) : (
+            <div className="px-4 pt-6 text-sm text-muted-foreground">
+              {t('This step produces no output to preview.')}
+            </div>
+          )}
+        </div>
+      </TabsContent>
+    </Tabs>
   );
 
   return (
@@ -336,30 +420,7 @@ const StepSettingsContainer = () => {
           key={`${selectedStep.name}-${selectedStep.type}`}
         >
           <StepTestRunnerProvider step={selectedStep}>
-            <StepSettingsLayout
-              isSplit={
-                showTestPanel &&
-                isStepDataPanelOpen &&
-                stepDataPanelView === 'split'
-              }
-              showTestPanel={showTestPanel}
-              isStepDataPanelOpen={isStepDataPanelOpen}
-              settingsForm={settingsForm}
-              testPanelHost={
-                showTestPanel ? (
-                  <StepDataPanelHost
-                    mode={stepDataPanelView === 'split' ? 'split' : 'drawer'}
-                    workflowId={workflowVersion.workflowId}
-                    workflowVersionId={workflowVersion.id}
-                    workspaceId={workspace?.id}
-                    stepType={modifiedStep.type}
-                    showGenerateSampleData={showGenerateSampleData}
-                    showStepInputOutFromRun={showStepInputOutFromRun}
-                    saving={saving}
-                  />
-                ) : null
-              }
-            />
+            {settingsForm}
           </StepTestRunnerProvider>
         </DynamicPropertiesProvider>
       </form>
@@ -368,62 +429,6 @@ const StepSettingsContainer = () => {
 };
 StepSettingsContainer.displayName = 'StepSettingsContainer';
 export { StepSettingsContainer };
-
-type StepSettingsLayoutProps = {
-  isSplit: boolean;
-  showTestPanel: boolean;
-  isStepDataPanelOpen: boolean;
-  settingsForm: React.ReactNode;
-  testPanelHost: React.ReactNode;
-};
-
-const StepSettingsLayout = ({
-  isSplit,
-  showTestPanel,
-  isStepDataPanelOpen,
-  settingsForm,
-  testPanelHost,
-}: StepSettingsLayoutProps) => {
-  if (isSplit) {
-    return (
-      <div className="relative flex-1 min-h-0 flex flex-row">
-        <div className="w-1/2 min-w-0 min-h-0 h-full">{settingsForm}</div>
-        {testPanelHost && (
-          <div className="w-1/2 min-w-0 min-h-0 h-full pt-2 pl-1">
-            {testPanelHost}
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  return (
-    <div className="relative flex-1 min-h-0 flex flex-col w-full">
-      <div
-        className={cn('min-h-0', isStepDataPanelOpen ? 'h-[40%]' : 'flex-1')}
-      >
-        {settingsForm}
-      </div>
-      {showTestPanel && !isStepDataPanelOpen && (
-        <div className="shrink-0">
-          <TestStepCTAButton />
-        </div>
-      )}
-      {testPanelHost && (
-        <div
-          className={cn(
-            'absolute bottom-0 left-0 right-0 h-0 transition-all z-50',
-            {
-              'h-[60%]': isStepDataPanelOpen,
-            },
-          )}
-        >
-          {testPanelHost}
-        </div>
-      )}
-    </div>
-  );
-};
 
 type ConnectorVersionInHeaderProps = {
   step: WorkflowAction | WorkflowTrigger;

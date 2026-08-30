@@ -1,4 +1,4 @@
-import { ApplicationError, Cursor, ErrorCode, generateId, isNil, SeekPage, WorkspaceId } from '@fema-ipaas/core-utils'
+import { ApplicationError, Cursor, ErrorCode, generateId, isNil, ProjectId, SeekPage } from '@fema-ipaas/core-utils'
 import { CreateFolderRequest, Folder, FolderDto, FolderId, UpdateFolderRequest } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { repoFactory } from '../../core/db/repo-factory'
@@ -11,18 +11,18 @@ export const folderRepo = repoFactory(FolderEntity)
 
 export const workflowFolderService = (log: FastifyBaseLogger) => ({
     async delete(params: DeleteParams): Promise<void> {
-        const { workspaceId, folderId } = params
-        const folder = await this.getOneOrThrow({ workspaceId, folderId })
+        const { projectId, folderId } = params
+        const folder = await this.getOneOrThrow({ projectId, folderId })
         await folderRepo().delete({
             id: folder.id,
-            workspaceId,
+            projectId,
         })
     },
     async update(params: UpdateParams): Promise<FolderDto> {
-        const { workspaceId, folderId, request } = params
-        const folder = await this.getOneOrThrow({ workspaceId, folderId })
+        const { projectId, folderId, request } = params
+        const folder = await this.getOneOrThrow({ projectId, folderId })
         const folderWithDisplayName = await this.getOneByDisplayNameCaseInsensitive({
-            workspaceId,
+            projectId,
             displayName: request.displayName,
         })
         if (folderWithDisplayName && folderWithDisplayName.id !== folderId) {
@@ -34,17 +34,17 @@ export const workflowFolderService = (log: FastifyBaseLogger) => ({
         await folderRepo().update(folder.id, {
             displayName: request.displayName,
         })
-        return this.getOneOrThrow({ workspaceId, folderId })
+        return this.getOneOrThrow({ projectId, folderId })
     },
     async upsert(params: UpsertParams): Promise<FolderDto> {
-        const { workspaceId, request } = params
+        const { projectId, request } = params
         const folderWithDisplayName = await this.getOneByDisplayNameCaseInsensitive({
-            workspaceId,
+            projectId,
             displayName: request.displayName,
         })
         if (!isNil(folderWithDisplayName)) {
             return this.update({
-                workspaceId,
+                projectId,
                 folderId: folderWithDisplayName.id,
                 request,
             })
@@ -52,50 +52,50 @@ export const workflowFolderService = (log: FastifyBaseLogger) => ({
         const folderId = generateId()
         await folderRepo().upsert({
             id: folderId,
-            workspaceId,
+            projectId,
             displayName: request.displayName,
             externalId: folderId,
-        }, ['workspaceId', 'displayName'])
-        const folder = await folderRepo().findOneByOrFail({ workspaceId, id: folderId })
+        }, ['projectId', 'displayName'])
+        const folder = await folderRepo().findOneByOrFail({ projectId, id: folderId })
         return {
             ...folder,
             numberOfWorkflows: 0,
         }
     },
-    async listAllByWorkspace(params: ListAllParams): Promise<Folder[]> {
-        const { workspaceId } = params
-        return folderRepo().find({ where: { workspaceId } })
+    async listAllByProject(params: ListAllParams): Promise<Folder[]> {
+        const { projectId } = params
+        return folderRepo().find({ where: { projectId } })
     },
     async upsertByExternalId(params: UpsertByExternalIdParams): Promise<Folder> {
-        const { workspaceId, externalId, displayName, displayOrder } = params
-        const existing = await folderRepo().findOneBy({ workspaceId, externalId })
+        const { projectId, externalId, displayName, displayOrder } = params
+        const existing = await folderRepo().findOneBy({ projectId, externalId })
         if (!isNil(existing)) {
             await folderRepo().update(existing.id, {
                 displayName,
                 displayOrder,
             })
-            return folderRepo().findOneByOrFail({ id: existing.id, workspaceId })
+            return folderRepo().findOneByOrFail({ id: existing.id, projectId })
         }
         const folderId = generateId()
         await folderRepo().insert({
             id: folderId,
-            workspaceId,
+            projectId,
             displayName,
             displayOrder,
             externalId,
         })
-        return folderRepo().findOneByOrFail({ id: folderId, workspaceId })
+        return folderRepo().findOneByOrFail({ id: folderId, projectId })
     },
     async deleteByExternalId(params: DeleteByExternalIdParams): Promise<void> {
-        const { workspaceId, externalId } = params
-        const existing = await folderRepo().findOneBy({ workspaceId, externalId })
+        const { projectId, externalId } = params
+        const existing = await folderRepo().findOneBy({ projectId, externalId })
         if (isNil(existing)) {
             return
         }
-        await folderRepo().delete({ id: existing.id, workspaceId })
+        await folderRepo().delete({ id: existing.id, projectId })
     },
     async list(params: ListParams): Promise<SeekPage<FolderDto>> {
-        const { workspaceId, cursorRequest, limit } = params
+        const { projectId, cursorRequest, limit } = params
         const decodedCursor = paginationHelper.decodeCursor(cursorRequest)
         const paginator = buildPaginator({
             entity: FolderEntity,
@@ -109,7 +109,7 @@ export const workflowFolderService = (log: FastifyBaseLogger) => ({
         
         const queryBuilder = folderRepo()
             .createQueryBuilder('folder')
-            .where('folder.workspaceId = :workspaceId', { workspaceId })
+            .where('folder.projectId = :projectId', { projectId })
             .addSelect((subQuery) => subQuery
                 .select('COUNT(*)::int')
                 .from('workflow', 'workflow')
@@ -119,15 +119,15 @@ export const workflowFolderService = (log: FastifyBaseLogger) => ({
         return paginationHelper.createPage(paginationResponse.data, paginationResponse.cursor)
     },
     async getOneByDisplayNameCaseInsensitive(params: GetOneByDisplayNameParams): Promise<Folder | null> {
-        const { workspaceId, displayName } = params
+        const { projectId, displayName } = params
         return folderRepo().createQueryBuilder('folder')
-            .where('folder.workspaceId = :workspaceId', { workspaceId })
+            .where('folder.projectId = :projectId', { projectId })
             .andWhere('LOWER(folder.displayName) = LOWER(:displayName)', { displayName })
             .getOne()
     },
     async getOneOrThrow(params: GetOneOrThrowParams): Promise<FolderDto> {
-        const { workspaceId, folderId } = params
-        const folder = await folderRepo().findOneBy({ workspaceId, id: folderId })
+        const { projectId, folderId } = params
+        const folder = await folderRepo().findOneBy({ projectId, id: folderId })
         if (!folder) {
             throw new ApplicationError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
@@ -136,7 +136,7 @@ export const workflowFolderService = (log: FastifyBaseLogger) => ({
                 },
             })
         }
-        const numberOfWorkflows = await workflowService(log).count({ workspaceId, folderId })
+        const numberOfWorkflows = await workflowService(log).count({ projectId, folderId })
         return {
             ...folder,
             numberOfWorkflows,
@@ -145,49 +145,49 @@ export const workflowFolderService = (log: FastifyBaseLogger) => ({
 })
 
 type DeleteParams = {
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     folderId: FolderId
 }
 
 type UpdateParams = {
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     folderId: FolderId
     request: UpdateFolderRequest
 }
 
 type UpsertParams = {
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     request: CreateFolderRequest
 }
 
 type ListParams = {
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     cursorRequest: Cursor | null
     limit: number
 }
 
 type GetOneByDisplayNameParams = {
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     displayName: string
 }
 
 type GetOneOrThrowParams = {
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     folderId: FolderId
 }
 
 type ListAllParams = {
-    workspaceId: WorkspaceId
+    projectId: ProjectId
 }
 
 type UpsertByExternalIdParams = {
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     externalId: string
     displayName: string
     displayOrder: number
 }
 
 type DeleteByExternalIdParams = {
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     externalId: string
 }

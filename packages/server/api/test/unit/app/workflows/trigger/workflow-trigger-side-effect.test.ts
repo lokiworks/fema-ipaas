@@ -17,8 +17,8 @@ vi.mock('../../../../../src/app/helper/system/system', () => ({
     },
 }))
 
-vi.mock('../../../../../src/app/workspace/workspace-service', () => ({
-    workspaceService: vi.fn(() => ({
+vi.mock('../../../../../src/app/project/project-service', () => ({
+    projectService: vi.fn(() => ({
         getTenantId: mockGetTenantId,
     })),
 }))
@@ -62,7 +62,7 @@ const BASE_PARAMS = {
     workflowId: 'workflow-1',
     workflowVersionId: 'fv-1',
     connectorName: '@fema-ipaas/connector-test',
-    workspaceId: 'proj-1',
+    projectId: 'proj-1',
     simulate: false,
 }
 
@@ -262,7 +262,7 @@ describe('workflowTriggerSideEffect', () => {
             })
 
             expect(mockDeleteListeners).toHaveBeenCalledWith({
-                workspaceId: 'proj-1',
+                projectId: 'proj-1',
                 workflowId: 'workflow-1',
             })
         })

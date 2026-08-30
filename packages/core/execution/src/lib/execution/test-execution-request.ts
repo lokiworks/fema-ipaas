@@ -11,14 +11,14 @@ export type TestExecutionRequestBody = z.infer<typeof TestExecutionRequestBody>
 
 export const RetryWorkflowRequestBody = z.object({
     strategy: z.nativeEnum(WorkflowRetryStrategy),
-    workspaceId: EntityId,
+    projectId: EntityId,
 })
 
 export type RetryWorkflowRequestBody = z.infer<typeof RetryWorkflowRequestBody>
 
 
 export const BulkActionOnRunsRequestBody = z.object({
-    workspaceId: EntityId,
+    projectId: EntityId,
     executionIds: z.array(EntityId).optional(),
     excludeExecutionIds: z.array(EntityId).optional(),
     strategy: z.nativeEnum(WorkflowRetryStrategy),
@@ -33,7 +33,7 @@ export const BulkActionOnRunsRequestBody = z.object({
 export type BulkActionOnRunsRequestBody = z.infer<typeof BulkActionOnRunsRequestBody>
 
 export const BulkCancelWorkflowRequestBody = z.object({
-    workspaceId: EntityId,
+    projectId: EntityId,
     executionIds: z.array(EntityId).optional(),
     excludeExecutionIds: z.array(EntityId).optional(),
     status: z.array(z.union([
@@ -48,7 +48,7 @@ export const BulkCancelWorkflowRequestBody = z.object({
 export type BulkCancelWorkflowRequestBody = z.infer<typeof BulkCancelWorkflowRequestBody>
 
 export const BulkArchiveActionOnRunsRequestBody = z.object({
-    workspaceId: EntityId,
+    projectId: EntityId,
     executionIds: z.array(EntityId).optional(),
     excludeExecutionIds: z.array(EntityId).optional(),
     status: z.array(z.nativeEnum(ExecutionStatus)).optional(),

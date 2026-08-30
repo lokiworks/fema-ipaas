@@ -126,6 +126,11 @@ const ConnectorSettings = React.memo((props: ConnectorSettingsProps) => {
     (name) => `settings.input.${name}`,
   );
 
+  const section = props.section;
+  const showAction = isNil(section) || section === 'action';
+  const showInput = isNil(section) || section === 'input';
+  const showError = isNil(section) || section === 'error';
+
   return (
     <div className="flex flex-col gap-4 w-full">
       {!connectorModel && (
@@ -144,41 +149,23 @@ const ConnectorSettings = React.memo((props: ConnectorSettingsProps) => {
 
       {connectorModel && (
         <>
-          {connectorModel.auth && (showAuthForAction || showAuthForTrigger) && (
-            <ConnectionSelect
-              isTrigger={!isNil(selectedTrigger)}
-              connector={connectorModel}
-              disabled={props.readonly}
-            ></ConnectionSelect>
-          )}
-          {selectedAction && (
-            <>
-              <GenericPropertiesForm
-                key={`${selectedAction.name}-essential`}
-                prefixValue={'settings.input'}
-                props={actionSplit.essential}
-                propertyGroups={selectedAction.propertyGroups}
-                propertySettings={selectedStep.settings.propertySettings}
+          {showAction &&
+            connectorModel.auth &&
+            (showAuthForAction || showAuthForTrigger) && (
+              <ConnectionSelect
+                isTrigger={!isNil(selectedTrigger)}
+                connector={connectorModel}
                 disabled={props.readonly}
-                useMentionTextInput={true}
-                markdownVariables={markdownVariables}
-                dynamicPropsInfo={{
-                  connectorName: connectorModel.name,
-                  connectorVersion: connectorModel.version,
-                  actionOrTriggerName: selectedAction.name,
-                  placedInside: 'stepSettings',
-                  updateFormSchema,
-                  updatePropertySettingsSchema,
-                }}
-              ></GenericPropertiesForm>
-              <AdvancedSection
-                count={actionAdvancedCount}
-                watchPaths={actionAdvancedWatchPaths}
-              >
+              ></ConnectionSelect>
+            )}
+          {(showInput || showError) && selectedAction && (
+            <>
+              {showInput && (
                 <GenericPropertiesForm
-                  key={`${selectedAction.name}-advanced`}
+                  key={`${selectedAction.name}-essential`}
                   prefixValue={'settings.input'}
-                  props={actionSplit.advanced}
+                  props={actionSplit.essential}
+                  propertyGroups={selectedAction.propertyGroups}
                   propertySettings={selectedStep.settings.propertySettings}
                   disabled={props.readonly}
                   useMentionTextInput={true}
@@ -192,8 +179,32 @@ const ConnectorSettings = React.memo((props: ConnectorSettingsProps) => {
                     updatePropertySettingsSchema,
                   }}
                 ></GenericPropertiesForm>
-              </AdvancedSection>
-              {errorHandlingItemsCount > 0 && (
+              )}
+              {showInput && (
+                <AdvancedSection
+                  count={actionAdvancedCount}
+                  watchPaths={actionAdvancedWatchPaths}
+                >
+                  <GenericPropertiesForm
+                    key={`${selectedAction.name}-advanced`}
+                    prefixValue={'settings.input'}
+                    props={actionSplit.advanced}
+                    propertySettings={selectedStep.settings.propertySettings}
+                    disabled={props.readonly}
+                    useMentionTextInput={true}
+                    markdownVariables={markdownVariables}
+                    dynamicPropsInfo={{
+                      connectorName: connectorModel.name,
+                      connectorVersion: connectorModel.version,
+                      actionOrTriggerName: selectedAction.name,
+                      placedInside: 'stepSettings',
+                      updateFormSchema,
+                      updatePropertySettingsSchema,
+                    }}
+                  ></GenericPropertiesForm>
+                </AdvancedSection>
+              )}
+              {showError && errorHandlingItemsCount > 0 && (
                 <ActionErrorHandlingForm
                   hideContinueOnFailure={hideContinueOnFailure}
                   hideRetryOnFailure={hideRetryOnFailure}
@@ -202,7 +213,7 @@ const ConnectorSettings = React.memo((props: ConnectorSettingsProps) => {
               )}
             </>
           )}
-          {selectedTrigger && (
+          {showInput && selectedTrigger && (
             <>
               <GenericPropertiesForm
                 key={`${selectedTrigger.name}-essential`}
@@ -336,7 +347,10 @@ function splitProps({
   };
 }
 
+export type ConnectorSettingsSection = 'action' | 'input' | 'error';
+
 type ConnectorSettingsProps = {
+  section?: ConnectorSettingsSection;
   step: ConnectorAction | ConnectorTrigger;
   workflowId: string;
   readonly: boolean;

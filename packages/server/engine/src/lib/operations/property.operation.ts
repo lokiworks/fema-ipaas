@@ -51,7 +51,7 @@ async function executeProps(operation: ExecutePropsOptions): Promise<ExecuteProp
         const executionState = await testExecutionContext.stateFromWorkflowVersion({
             apiUrl: operation.internalApiUrl,
             workflowVersion: operation.workflowVersion,
-            workspaceId: operation.workspaceId,
+            projectId: operation.projectId,
             engineToken: operation.engineToken,
             sampleData: operation.sampleData,
             engineConstants: constants,
@@ -59,7 +59,7 @@ async function executeProps(operation: ExecutePropsOptions): Promise<ExecuteProp
         const contextVersion = description.metadata.contextInfo?.version
         const { resolvedInput } = await createPropsResolver({
             apiUrl: constants.internalApiUrl,
-            workspaceId: constants.workspaceId,
+            projectId: constants.projectId,
             engineToken: constants.engineToken,
             contextVersion,
             stepNames: constants.stepNames,
@@ -119,14 +119,14 @@ async function executeComponentProps(operation: ExecutePropsOptions, componentTy
         const executionState = await testExecutionContext.stateFromWorkflowVersion({
             apiUrl: operation.internalApiUrl,
             workflowVersion: operation.workflowVersion,
-            workspaceId: operation.workspaceId,
+            projectId: operation.projectId,
             engineToken: operation.engineToken,
             sampleData: operation.sampleData,
             engineConstants: constants,
         })
         const { resolvedInput } = await createPropsResolver({
             apiUrl: constants.internalApiUrl,
-            workspaceId: constants.workspaceId,
+            projectId: constants.projectId,
             engineToken: constants.engineToken,
             contextVersion: undefined,
             stepNames: constants.stepNames,

@@ -15,7 +15,7 @@
   "Timeout(in seconds)": "超时（秒）",
   "Follow redirects": "跟随重定向",
   "On Failure": "失败时",
-  "Enable for files like PDFs, images, etc. A base64 body will be returned.": "Enable for files like PDFs, images, etc. A base64 body will be returned.",
+  "Enable for files like PDFs, images, etc. A base64 body will be returned.": "处理 PDF、图片等文件时请开启，响应体将以 base64 返回。",
   "Use a proxy for this request": "本次请求走代理",
   "GET": "获取",
   "POST": "帖子",
@@ -34,5 +34,6 @@
   "Do not retry": "不重试",
   "Continue workflow on all errors": "遇到任何错误都继续执行",
   "Continue workflow on 4xx errors": "遇到 4xx 错误时继续执行",
-  "Do not continue (stop the workflow)": "不继续（停止工作流）"
+  "Do not continue (stop the workflow)": "不继续（停止工作流）",
+  "HTTP": "HTTP"
 }

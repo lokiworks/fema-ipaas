@@ -13,7 +13,7 @@ export const callWorkflow = createAction({
   classification: 'WRITE',
   displayName: 'Call Workflow',
   description: 'Call a workflow that has "Callable Workflow" trigger',
-  aiMetadata: { description: 'Dispatches a run of another workflow in this workspace that starts with a "Callable Workflow" trigger, passing a payload entered as key-value pairs or raw JSON, and can optionally wait for that subflow to send back a "Return Response". Pick it to reuse a workflow as a subroutine; prefer Stream CSV to Subflows for large CSV input. The target workflow must be published and enabled, and when Wait for Response is on, a subflow failure also fails this run; not idempotent, since every call starts a new subflow run.', idempotent: false },
+  aiMetadata: { description: 'Dispatches a run of another workflow in this project that starts with a "Callable Workflow" trigger, passing a payload entered as key-value pairs or raw JSON, and can optionally wait for that subflow to send back a "Return Response". Pick it to reuse a workflow as a subroutine; prefer Stream CSV to Subflows for large CSV input. The target workflow must be published and enabled, and when Wait for Response is on, a subflow failure also fails this run; not idempotent, since every call starts a new subflow run.', idempotent: false },
   props: {
     workflowId: subflowDropdown({
       displayName: 'Workflow',

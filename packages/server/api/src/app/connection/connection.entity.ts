@@ -43,7 +43,7 @@ export const ConnectionEntity = new EntitySchema<ConnectionSchema>({
             type: String,
             nullable: true,
         },
-        workspaceIds: {
+        projectIds: {
             type: String,
             array: true,
             nullable: false,
@@ -61,7 +61,7 @@ export const ConnectionEntity = new EntitySchema<ConnectionSchema>({
         connectorVersion: {
             type: String,
         },
-        preSelectForNewWorkspaces: {
+        preSelectForNewProjects: {
             type: Boolean,
             nullable: false,
             default: false,
@@ -77,8 +77,8 @@ export const ConnectionEntity = new EntitySchema<ConnectionSchema>({
             columns: ['ownerId'],
         },
         {
-            name: 'idx_connection_workspace_ids_gin',
-            columns: ['workspaceIds'],
+            name: 'idx_connection_project_ids_gin',
+            columns: ['projectIds'],
             synchronize: false,
         },
     ],

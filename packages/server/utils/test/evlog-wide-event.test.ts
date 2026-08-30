@@ -164,7 +164,7 @@ describe('wideEvent', () => {
                 wideEvent.audit({
                     action: 'connection.listed',
                     actor: { type: 'user', id: 'usr_1' },
-                    target: { type: 'workspace', id: 'proj_1' },
+                    target: { type: 'project', id: 'proj_1' },
                 })
             },
         })
@@ -173,7 +173,7 @@ describe('wideEvent', () => {
             audit: {
                 action: 'connection.listed',
                 actor: { type: 'user', id: 'usr_1' },
-                target: { type: 'workspace', id: 'proj_1' },
+                target: { type: 'project', id: 'proj_1' },
                 outcome: 'success',
             },
         })

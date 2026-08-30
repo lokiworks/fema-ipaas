@@ -7,7 +7,7 @@ import { ConsumeJobRequest, ConsumeJobResponse, WorkerMachineHealthcheckRequest 
 
 export type SubmitPayloadsRequest = {
     workflowVersionId: string
-    workspaceId: string
+    projectId: string
     payloads: unknown[]
     httpRequestId?: string
     environment: RunEnvironment
@@ -19,20 +19,20 @@ export type SubmitPayloadsRequest = {
 export type SavePayloadRequest = {
     workflowId: string
     workflowVersionId: string
-    workspaceId: string
+    projectId: string
     payloads: unknown[]
 }
 
 export type GetConnectorRequest = {
     name: string
     version?: string
-    workspaceId?: string
+    projectId?: string
     tenantId?: string
 }
 
 export type GetWorkflowBundleRequest = {
     workflowVersionId: string
-    workspaceId: string
+    projectId: string
 }
 
 export type GetWorkflowBundleResponse =
@@ -41,7 +41,7 @@ export type GetWorkflowBundleResponse =
 
 export type PrepareWorkflowBundleUploadRequest = {
     workflowVersionId: string
-    workspaceId: string
+    projectId: string
     tenantId: string
     size: number
 }
@@ -53,7 +53,7 @@ export type PrepareWorkflowBundleUploadResponse =
 
 export type UploadWorkflowBundleRequest = {
     workflowVersionId: string
-    workspaceId: string
+    projectId: string
     tenantId: string
     data: Buffer
 }
@@ -84,21 +84,21 @@ export type WorkerToApiContract = {
 
 export type DisableWorkflowRequest = {
     workflowId: string
-    workspaceId: string
+    projectId: string
 }
 
 export type PrewarmDataRequest = {
     workerGroupId: string | undefined
-    workspaceWorker: boolean | undefined
-    workflow?: { id: string, versionId: string, workspaceId: string }
+    projectWorker: boolean | undefined
+    workflow?: { id: string, versionId: string, projectId: string }
 }
 
 export type PrewarmDataResponse = {
-    workflows: { id: string, versionId: string, workspaceId: string }[]
+    workflows: { id: string, versionId: string, projectId: string }[]
     tenantId: string
     engineToken: string
 }
 
 export type ApiToWorkerContract = {
-    workflowPublished(input: { workflowId: string, workflowVersionId: string, workspaceId: string }): void
+    workflowPublished(input: { workflowId: string, workflowVersionId: string, projectId: string }): void
 }

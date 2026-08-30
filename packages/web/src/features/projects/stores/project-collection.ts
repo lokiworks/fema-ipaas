@@ -1,0 +1,292 @@
+import { isNil, SeekPage } from '@fema-ipaas/core-utils';
+import {
+  CreateTenantProjectRequest,
+  ListProjectRequestForTenantQueryParams,
+  UpdateProjectTenantRequest,
+  ProjectType,
+  ProjectWithLimits,
+  ProjectWithLimitsWithTenant,
+} from '@fema-ipaas/shared';
+import { queryCollectionOptions } from '@tanstack/query-db-collection';
+import {
+  and,
+  createCollection,
+  eq,
+  like,
+  or,
+  useLiveSuspenseQuery,
+} from '@tanstack/react-db';
+import { QueryClient, useMutation, useQuery } from '@tanstack/react-query';
+import { t } from 'i18next';
+import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+
+import { useEmbedding } from '@/components/providers/embed-provider';
+import { api } from '@/lib/api';
+import { authenticationSession } from '@/lib/authentication-session';
+
+const collectionQueryClient = new QueryClient();
+
+export const projectCollection = createCollection<ProjectWithLimits, string>(
+  queryCollectionOptions({
+    queryKey: ['projects'],
+    queryClient: collectionQueryClient,
+    queryFn: async () => {
+      const request: ListProjectRequestForTenantQueryParams = {
+        cursor: undefined,
+        limit: 30000,
+      };
+      const response = await api.get<SeekPage<ProjectWithLimits>>(
+        '/v1/projects',
+        request,
+      );
+      return response.data;
+    },
+    getKey: (item) => item.id,
+    onUpdate: async ({ transaction }) => {
+      for (const { original, modified } of transaction.mutations) {
+        // Only send fields that actually changed, so e.g. a name/icon edit never
+        // re-writes maxConcurrentJobs/workerGroupId (which are edited elsewhere).
+        const request: UpdateProjectTenantRequest = {};
+        if (modified.displayName !== original.displayName) {
+          request.displayName = modified.displayName;
+        }
+        if (modified.metadata !== original.metadata) {
+          request.metadata = modified.metadata ?? undefined;
+        }
+        if (modified.releasesEnabled !== original.releasesEnabled) {
+          request.releasesEnabled = modified.releasesEnabled;
+        }
+        if (
+          modified.notifyWorkflowOwnerOnFailure !==
+          original.notifyWorkflowOwnerOnFailure
+        ) {
+          request.notifyWorkflowOwnerOnFailure =
+            modified.notifyWorkflowOwnerOnFailure;
+        }
+        if (modified.externalId !== original.externalId) {
+          request.externalId =
+            !isNil(modified.externalId) && modified.externalId.trim() !== ''
+              ? modified.externalId
+              : undefined;
+        }
+        if (modified.icon !== original.icon) {
+          request.icon = modified.icon;
+        }
+        if (modified.maxConcurrentJobs !== original.maxConcurrentJobs) {
+          request.maxConcurrentJobs = modified.maxConcurrentJobs;
+        }
+        if (modified.workerGroupId !== original.workerGroupId) {
+          request.workerGroupId = modified.workerGroupId;
+        }
+        if (Object.keys(request).length === 0) {
+          continue;
+        }
+        await api.post<ProjectWithLimits>(
+          `/v1/projects/${original.id}`,
+          request,
+        );
+      }
+    },
+    onInsert: async ({ transaction }) => {
+      for (const { modified } of transaction.mutations) {
+        await api.post<ProjectWithLimits>('/v1/projects', modified);
+      }
+    },
+    onDelete: async ({ transaction }) => {
+      for (const { original } of transaction.mutations) {
+        await api.delete<void>(`/v1/projects/${original.id}`);
+      }
+    },
+  }),
+);
+
+export const projectCollectionUtils = {
+  useCreateProject: (
+    onSuccess: (project: ProjectWithLimits) => void,
+    onError: (error: Error) => void,
+  ) => {
+    return useMutation({
+      mutationFn: (request: CreateTenantProjectRequest) =>
+        api.post<ProjectWithLimits>('/v1/projects', request),
+      onSuccess: async (data) => {
+        await projectCollection.preload();
+        projectCollection.utils.writeInsert(data);
+        onSuccess(data);
+      },
+      onError: (error) => {
+        onError(error);
+      },
+    });
+  },
+  useUpdateProject: (
+    onSuccess: () => void,
+    onError: (error: Error) => void,
+  ) => {
+    return useMutation({
+      mutationFn: ({
+        projectId,
+        request,
+      }: {
+        projectId: string;
+        request: UpdateProjectTenantRequest;
+      }) => api.post<ProjectWithLimits>(`/v1/projects/${projectId}`, request),
+      onSuccess: async (data) => {
+        await projectCollection.preload();
+        projectCollection.utils.writeUpdate(data);
+        onSuccess();
+      },
+      onError,
+    });
+  },
+  update: (projectId: string, request: UpdateProjectTenantRequest) => {
+    return projectCollection.update(projectId, (draft) => {
+      Object.assign(
+        draft,
+        Object.fromEntries(
+          Object.entries(request).filter(([_, value]) => value !== undefined),
+        ),
+      );
+    });
+  },
+  delete: (projectIds: string[]) => {
+    projectCollection.delete(projectIds);
+  },
+  refetchProjects: () => projectCollection.utils.refetch(),
+  setCurrentProject: (projectId: string, pathName?: string) => {
+    authenticationSession.switchToProject(projectId);
+    if (pathName) {
+      const pathNameWithNewProjectId = pathName.replace(
+        /\/projects\/\w+/,
+        `/projects/${projectId}`,
+      );
+      window.location.href = pathNameWithNewProjectId;
+    }
+  },
+  useCurrentProject: () => {
+    const projectId = authenticationSession.getProjectId();
+    const { data } = useLiveSuspenseQuery(
+      (q) =>
+        q
+          .from({ project: projectCollection })
+          .where(({ project }) => eq(project.id, projectId))
+          .select(({ project }) => ({ ...project }))
+          .findOne(),
+      [projectId],
+    );
+    return {
+      project: data!,
+    };
+  },
+  useAll: () => {
+    const currentUserId = authenticationSession.getCurrentUserId();
+    return useLiveSuspenseQuery(
+      (q) =>
+        q
+          .from({ project: projectCollection })
+          .where(({ project }) =>
+            or(
+              eq(project.type, ProjectType.TEAM),
+              and(
+                eq(project.type, ProjectType.PERSONAL),
+                eq(project.ownerId, currentUserId),
+              ),
+            ),
+          )
+          .orderBy(({ project }) => project.type, 'asc')
+          .orderBy(({ project }) => project.created, 'asc')
+          .select(({ project }) => ({ ...project })),
+      [currentUserId],
+    );
+  },
+  useAllTenantProjects: (filters?: {
+    displayName?: string;
+    type?: ProjectType[];
+  }) => {
+    return useLiveSuspenseQuery(
+      (q) => {
+        let query = q.from({ project: projectCollection });
+
+        if (filters?.displayName) {
+          query = query.where(({ project }) =>
+            like(project.displayName, `%${filters.displayName}%`),
+          );
+        }
+
+        if (filters?.type && filters.type.length > 0) {
+          query = query.where(({ project }) => {
+            const types = filters.type!;
+            if (types.length === 1) {
+              return eq(project.type, types[0]);
+            }
+            const conditions = types.map((t) => eq(project.type, t)) as [
+              any,
+              any,
+              ...any[],
+            ];
+            return or(...conditions);
+          });
+        }
+
+        return query
+          .orderBy(({ project }) => project.type, 'asc')
+          .orderBy(({ project }) => project.created, 'asc')
+          .select(({ project }) => ({ ...project }));
+      },
+      [filters?.displayName, filters?.type?.join(',')],
+    );
+  },
+  useHasAccessToProject: (projectId: string) => {
+    const { data } = useLiveSuspenseQuery((q) =>
+      q
+        .from({ project: projectCollection })
+        .where(({ project }) => eq(project.id, projectId))
+        .select(({ project }) => ({ ...project }))
+        .findOne(),
+    );
+    return !isNil(data);
+  },
+};
+
+export const getProjectName = (
+  project: Pick<ProjectWithLimits, 'type' | 'displayName'>,
+): string => {
+  return project.type === ProjectType.PERSONAL
+    ? t('Personal Project')
+    : project.displayName;
+};
+export const projectHooks = {
+  useProjectsForTenants: () => {
+    return useQuery<ProjectWithLimitsWithTenant[], Error>({
+      queryKey: ['projects-for-tenants'],
+      queryFn: async () => {
+        return api.get<ProjectWithLimitsWithTenant[]>('/v1/tenants');
+      },
+    });
+  },
+  useReloadPageIfProjectIdChanged: (projectId: string) => {
+    const { embedState } = useEmbedding();
+    const location = useLocation();
+    useEffect(() => {
+      const handleVisibilityChange = () => {
+        const currentProjectId = authenticationSession.getProjectId();
+        const isTemplateRoute = location.pathname.startsWith('/templates');
+        if (
+          currentProjectId !== projectId &&
+          document.visibilityState === 'visible' &&
+          !embedState.isEmbedded &&
+          !isTemplateRoute
+        ) {
+          window.location.reload();
+        }
+      };
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      return () => {
+        document.removeEventListener(
+          'visibilitychange',
+          handleVisibilityChange,
+        );
+      };
+    }, [projectId, embedState.isEmbedded, location.pathname]);
+  },
+};

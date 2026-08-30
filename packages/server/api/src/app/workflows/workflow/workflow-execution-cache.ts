@@ -3,9 +3,9 @@ import { dayjsDuration } from '@fema-ipaas/server-utils'
 import { WorkflowExecutionState, workflowExecutionStateKey } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { distributedStore } from '../../database/redis-connections'
+import { projectService } from '../../project/project-service'
 import { triggerSourceService } from '../../trigger/trigger-source/trigger-source-service'
 import { webhookHandshake } from '../../webhooks/webhook-handshake'
-import { workspaceService } from '../../workspace/workspace-service'
 import { workflowService } from './workflow.service'
 
 export const workflowExecutionCache = (log: FastifyBaseLogger) => ({
@@ -39,14 +39,14 @@ async function getWorkflowExecutionCache(params: GetParams, log: FastifyBaseLogg
     }
     const triggerSource = await triggerSourceService(log).getByWorkflowId({
         workflowId: workflow.id,
-        workspaceId: workflow.workspaceId,
+        projectId: workflow.projectId,
         simulate: params.simulate,
     })
     return {
         exists: true,
         handshakeConfiguration: await webhookHandshake.getWebhookHandshakeConfiguration({ triggerSource, logger: log }) ?? undefined,
         workflow,
-        tenantId: await workspaceService(log).getTenantId(workflow.workspaceId),
+        tenantId: await projectService(log).getTenantId(workflow.projectId),
     }
 }
 

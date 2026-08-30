@@ -11,7 +11,7 @@ export const AuthenticationResponse = UserWithoutPassword.merge(
 ).merge(
     z.object({
         token: z.string(),
-        workspaceId: z.string().nullable(),
+        projectId: z.string().nullable(),
     }),
 )
 export type AuthenticationResponse = z.infer<typeof AuthenticationResponse>

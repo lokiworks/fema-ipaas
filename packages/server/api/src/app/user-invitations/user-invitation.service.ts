@@ -1,5 +1,5 @@
 import { ApplicationError, assertNotNullOrUndefined, ErrorCode, generateId, isNil, SeekPage, spreadIfDefined } from '@fema-ipaas/core-utils'
-import { DefaultWorkspaceRole, InvitationStatus, InvitationType, TenantRole, UserInvitation, UserInvitationWithLink } from '@fema-ipaas/shared'
+import { DefaultProjectRole, InvitationStatus, InvitationType, TenantRole, UserInvitation, UserInvitationWithLink } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { EntityManager, IsNull, ObjectLiteral, SelectQueryBuilder } from 'typeorm'
@@ -10,8 +10,8 @@ import { emailService } from '../helper/email/email-service'
 import { JwtAudience, jwtUtils } from '../helper/jwt-utils'
 import { buildPaginator } from '../helper/pagination/build-paginator'
 import { paginationHelper } from '../helper/pagination/pagination-utils'
+import { projectMemberService } from '../project/project-member.service'
 import { userService } from '../user/user-service'
-import { workspaceMemberService } from '../workspace/workspace-member.service'
 import { UserInvitationEntity } from './user-invitation.entity'
 
 export const userInvitationRepo = repoFactory(UserInvitationEntity)
@@ -54,7 +54,7 @@ export const userInvitationsService = (log: FastifyBaseLogger) => ({
         log.info({ count: invitations.length }, '[provisionUserInvitation] list invitations')
         for (const invitation of invitations) {
             log.info({ invitation }, '[provisionUserInvitation] provision')
-            const user = await userService(log).getOrCreateWithWorkspace({
+            const user = await userService(log).getOrCreateWithProject({
                 identity,
                 tenantId: invitation.tenantId,
             })
@@ -68,13 +68,13 @@ export const userInvitationsService = (log: FastifyBaseLogger) => ({
                     })
                     break
                 }
-                case InvitationType.WORKSPACE: {
-                    const { workspaceId } = invitation
-                    assertNotNullOrUndefined(workspaceId, 'workspaceId')
-                    await workspaceMemberService(log).upsert({
-                        workspaceId,
+                case InvitationType.PROJECT: {
+                    const { projectId } = invitation
+                    assertNotNullOrUndefined(projectId, 'projectId')
+                    await projectMemberService(log).upsert({
+                        projectId,
                         userId: user.id,
-                        role: toWorkspaceRole(invitation.workspaceRoleId),
+                        role: toProjectRole(invitation.projectRoleId),
                     })
                     break
                 }
@@ -87,9 +87,9 @@ export const userInvitationsService = (log: FastifyBaseLogger) => ({
     async createInvitationRecord({
         email,
         tenantId,
-        workspaceId,
+        projectId,
         type,
-        workspaceRoleId,
+        projectRoleId,
         tenantRole,
         status,
         entityManager,
@@ -101,10 +101,10 @@ export const userInvitationsService = (log: FastifyBaseLogger) => ({
             type,
             email: email.toLowerCase().trim(),
             tenantId,
-            workspaceRoleId: type === InvitationType.TENANT ? undefined : workspaceRoleId!,
-            tenantRole: type === InvitationType.WORKSPACE ? undefined : tenantRole!,
-            workspaceId: type === InvitationType.TENANT ? undefined : workspaceId!,
-        }, ['email', 'tenantId', 'workspaceId'])
+            projectRoleId: type === InvitationType.TENANT ? undefined : projectRoleId!,
+            tenantRole: type === InvitationType.PROJECT ? undefined : tenantRole!,
+            projectId: type === InvitationType.TENANT ? undefined : projectId!,
+        }, ['email', 'tenantId', 'projectId'])
 
         return this.getOneOrThrow({
             id,
@@ -122,7 +122,7 @@ export const userInvitationsService = (log: FastifyBaseLogger) => ({
                 tenantId: userInvitation.tenantId,
             })
             if (emailService(log).isConfigured()) {
-                await emailService(log).sendWorkspaceMemberAdded({
+                await emailService(log).sendProjectMemberAdded({
                     userInvitation,
                 })
             }
@@ -175,14 +175,14 @@ export const userInvitationsService = (log: FastifyBaseLogger) => ({
         const queryBuilder = repo().createQueryBuilder('user_invitation')
             .where({
                 tenantId: params.tenantId,
-                ...spreadIfDefined('workspaceId', params.workspaceId),
+                ...spreadIfDefined('projectId', params.projectId),
                 ...spreadIfDefined('status', params.status),
                 ...spreadIfDefined('type', params.type),
             })
         const { data, cursor } = await paginator.paginate(queryBuilder)
         const enrichedData = await Promise.all(data.map(async (invitation) => {
             return {
-                workspaceRole: null,
+                projectRole: null,
                 ...invitation,
             }
         }))
@@ -248,22 +248,22 @@ export const userInvitationsService = (log: FastifyBaseLogger) => ({
     async getByEmailAndTenantIdOrThrow({
         email,
         tenantId,
-        workspaceId,
+        projectId,
     }: GetOneByTenantIdAndEmailParams): Promise<UserInvitation | null> {
         return repo().findOneBy({
             email,
             tenantId,
-            workspaceId: isNil(workspaceId) ? IsNull() : workspaceId,
+            projectId: isNil(projectId) ? IsNull() : projectId,
         })
     },
 })
 
-function toWorkspaceRole(workspaceRoleId: string | null | undefined): DefaultWorkspaceRole {
-    const roles: string[] = Object.values(DefaultWorkspaceRole)
-    if (!isNil(workspaceRoleId) && roles.includes(workspaceRoleId)) {
-        return workspaceRoleId as DefaultWorkspaceRole
+function toProjectRole(projectRoleId: string | null | undefined): DefaultProjectRole {
+    const roles: string[] = Object.values(DefaultProjectRole)
+    if (!isNil(projectRoleId) && roles.includes(projectRoleId)) {
+        return projectRoleId as DefaultProjectRole
     }
-    return DefaultWorkspaceRole.VIEWER
+    return DefaultProjectRole.VIEWER
 }
 
 export const INVITATION_EXPIRY_SECONDS = dayjs.duration(7, 'days').asSeconds()
@@ -319,7 +319,7 @@ const enrichWithInvitationLink = async (userInvitation: UserInvitation, expireyI
 type ListUserParams = {
     tenantId: string
     type: InvitationType
-    workspaceId: string | null
+    projectId: string | null
     status?: InvitationStatus
     limit: number
     cursor: string | null
@@ -355,10 +355,10 @@ export type CreateInvitationRecordParams = {
     email: string
     tenantId: string
     tenantRole: TenantRole | null
-    workspaceId: string | null
+    projectId: string | null
     status: InvitationStatus
     type: InvitationType
-    workspaceRoleId: string | null
+    projectRoleId: string | null
     entityManager?: EntityManager
 }
 
@@ -381,5 +381,5 @@ export type CountReservedSeatsParams = {
 type GetOneByTenantIdAndEmailParams = {
     email: string
     tenantId: string
-    workspaceId: string | null
+    projectId: string | null
 }

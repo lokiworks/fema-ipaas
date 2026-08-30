@@ -4,8 +4,8 @@ import { FastifyBaseLogger } from 'fastify'
 import { accessTokenManager } from '../authentication/lib/access-token-manager'
 import { distributedLock, distributedStore } from '../database/redis-connections'
 import Paginator from '../helper/pagination/paginator'
+import { projectService } from '../project/project-service'
 import { tenantService } from '../tenant/tenant.service'
-import { workspaceService } from '../workspace/workspace-service'
 import { workflowService } from './workflow/workflow.service'
 
 
@@ -22,10 +22,10 @@ const BASE_LIST_PARAMS = {
 
 export const preWarmWorkersService = (log: FastifyBaseLogger) => ({
     async getPrewarmData(input: PrewarmDataRequest): Promise<PrewarmDataResponse> {
-        // Targeted prewarm (workflowPublished): the workflow is already known, so skip listing (and the cache) and just mint a token for its workspace.
+        // Targeted prewarm (workflowPublished): the workflow is already known, so skip listing (and the cache) and just mint a token for its project.
         if (!isNil(input.workflow)) {
-            const tenantId = await workspaceService(log).getTenantId(input.workflow.workspaceId)
-            const engineToken = await accessTokenManager(log).generateEngineToken({ workspaceId: input.workflow.workspaceId, tenantId })
+            const tenantId = await projectService(log).getTenantId(input.workflow.projectId)
+            const engineToken = await accessTokenManager(log).generateEngineToken({ projectId: input.workflow.projectId, tenantId })
             return { workflows: [input.workflow], tenantId, engineToken }
         }
 
@@ -34,7 +34,7 @@ export const preWarmWorkersService = (log: FastifyBaseLogger) => ({
             return EMPTY_RESPONSE
         }
         const engineToken = await accessTokenManager(log).generateEngineToken({
-            workspaceId: scope.tokenWorkspaceId,
+            projectId: scope.tokenProjectId,
             tenantId: scope.tenantId,
         })
         return { workflows: scope.workflows, tenantId: scope.tenantId, engineToken }
@@ -75,14 +75,14 @@ async function computeScope(input: PrewarmDataRequest, log: FastifyBaseLogger): 
     const tenantId = tenant.id
 
     const activeWorkflows = await workflowService(log).list({ ...BASE_LIST_PARAMS, tenantId })
-    const workflows = activeWorkflows.data.map((workflow) => ({ id: workflow.id, versionId: workflow.version.id, workspaceId: workflow.workspaceId }))
-    const tokenWorkspaceId = (await workspaceService(log).getWorkspaceIdsByTenant(tenantId))[0]
-    return { workflows, tenantId, tokenWorkspaceId }
+    const workflows = activeWorkflows.data.map((workflow) => ({ id: workflow.id, versionId: workflow.version.id, projectId: workflow.projectId }))
+    const tokenProjectId = (await projectService(log).getProjectIdsByTenant(tenantId))[0]
+    return { workflows, tenantId, tokenProjectId }
 }
 
 
 type PrewarmScope = {
     workflows: PrewarmDataResponse['workflows']
     tenantId: string
-    tokenWorkspaceId: string
+    tokenProjectId: string
 }

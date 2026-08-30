@@ -12,9 +12,7 @@ import { cn } from '@/lib/utils';
 import { DataDisplayTabs } from '../data-display/data-display-tabs';
 import { ErrorExplanationContext } from '../data-display/explanation-prompt';
 import { FriendlyErrorView } from '../data-display/friendly-error-view';
-import { ClosePanelButton } from '../step-data/close-panel-button';
 import { StepDataPanelHeader } from '../step-data/step-data-panel-header';
-import { StepDataPanelViewToggle } from '../step-data/step-data-panel-view-toggle';
 
 import { JsonTreeSkeleton } from './json-tree-skeleton';
 import { TestButtonTooltip } from './test-step-tooltip';
@@ -195,10 +193,7 @@ const TestPanelToolbar = ({
       hasLogs={hasLogs}
       disabled={disabled}
     />
-    <div className="flex items-center gap-1 shrink-0">
-      <StepDataPanelViewToggle disabled={disabled} />
-      <ClosePanelButton />
-    </div>
+    <div className="flex items-center gap-1 shrink-0"></div>
   </div>
 );
 

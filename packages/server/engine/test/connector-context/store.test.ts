@@ -116,14 +116,14 @@ describe('store service', () => {
             expect(calledUrl).toContain('test_workflow_workflow-123%2FmyKey')
         })
 
-        it('WORKSPACE scope prefixes key without workflow id', async () => {
+        it('PROJECT scope prefixes key without workflow id', async () => {
             const fetchSpy = vi.spyOn(global, 'fetch').mockResolvedValue(new Response(
                 JSON.stringify({ key: 'k', value: null }),
                 { status: 200, headers: { 'Content-Type': 'application/json' } },
             ))
 
             const store = createContextStore(STORE_PARAMS)
-            await store.get('myKey', StoreScope.WORKSPACE)
+            await store.get('myKey', StoreScope.PROJECT)
 
             const calledUrl = fetchSpy.mock.calls[0][0].toString()
             expect(calledUrl).toContain('test_myKey')

@@ -9,7 +9,7 @@ import { useMutation } from '@tanstack/react-query';
 import { t } from 'i18next';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
-import { RightSideBarType } from '@/app/builder/types';
+import { LeftSideBarType, RightSideBarType } from '@/app/builder/types';
 import { LoadingSpinner } from '@/components/custom/spinner';
 import { Button } from '@/components/ui/button';
 import {
@@ -30,6 +30,7 @@ export const BuilderPublishSection = () => {
     setWorkflow,
     setVersion,
     setRightSidebar,
+    setLeftSidebar,
     workflowVersion,
     run,
   ] = useBuilderStateContext((state) => [
@@ -41,6 +42,7 @@ export const BuilderPublishSection = () => {
     state.setWorkflow,
     state.setVersion,
     state.setRightSidebar,
+    state.setLeftSidebar,
     state.workflowVersion,
     state.run,
   ]);
@@ -64,6 +66,7 @@ export const BuilderPublishSection = () => {
       onSuccess: (updatedWorkflow) => {
         setVersion(updatedWorkflow.version);
         setRightSidebar(RightSideBarType.NONE);
+        setLeftSidebar(LeftSideBarType.NONE);
       },
     });
   const { mutate: discardChange, isPending: isDiscardingChanges } = useMutation(

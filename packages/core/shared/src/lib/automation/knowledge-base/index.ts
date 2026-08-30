@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 const KnowledgeBaseFile = z.object({
     ...BaseModelSchema,
-    workspaceId: z.string(),
+    projectId: z.string(),
     fileId: z.string(),
     displayName: z.string(),
 })

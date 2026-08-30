@@ -16,8 +16,8 @@ afterAll(async () => {
     await teardownTestEnvironment()
 })
 
-async function createPausedParentWithWaitpoint(workspaceId: string) {
-    const workflow = createMockWorkflow({ workspaceId })
+async function createPausedParentWithWaitpoint(projectId: string) {
+    const workflow = createMockWorkflow({ projectId })
     await db.save('workflow', workflow)
 
     const workflowVersion = createMockWorkflowVersion({
@@ -27,7 +27,7 @@ async function createPausedParentWithWaitpoint(workspaceId: string) {
     await db.save('workflow_version', workflowVersion)
 
     const execution = createMockExecution({
-        workspaceId,
+        projectId,
         workflowId: workflow.id,
         workflowVersionId: workflowVersion.id,
         status: ExecutionStatus.PAUSED,
@@ -39,7 +39,7 @@ async function createPausedParentWithWaitpoint(workspaceId: string) {
     await db.save('waitpoint', {
         id: waitpointId,
         executionId: execution.id,
-        workspaceId,
+        projectId,
         stepName: 'approval',
         type: 'WEBHOOK',
         status: 'PENDING',
@@ -51,16 +51,16 @@ async function createPausedParentWithWaitpoint(workspaceId: string) {
 }
 
 describe('markParentRunAsFailed tenant isolation', () => {
-    it('does not fail a parent run that belongs to another workspace', async () => {
-        const { mockWorkspace: workspaceA } = await mockAndSaveBasicSetup()
-        const { mockWorkspace: workspaceB } = await mockAndSaveBasicSetup()
+    it('does not fail a parent run that belongs to another project', async () => {
+        const { mockProject: projectA } = await mockAndSaveBasicSetup()
+        const { mockProject: projectB } = await mockAndSaveBasicSetup()
 
-        const { execution: victimRun, waitpointId } = await createPausedParentWithWaitpoint(workspaceB.id)
+        const { execution: victimRun, waitpointId } = await createPausedParentWithWaitpoint(projectB.id)
 
         await markParentRunAsFailed({
             parentRunId: victimRun.id,
             childRunId: generateId(),
-            workspaceId: workspaceA.id,
+            projectId: projectA.id,
             log: app.log,
         })
 
@@ -71,15 +71,15 @@ describe('markParentRunAsFailed tenant isolation', () => {
         expect(run?.status).toBe(ExecutionStatus.PAUSED)
     })
 
-    it('fails a parent run in the same workspace', async () => {
-        const { mockWorkspace } = await mockAndSaveBasicSetup()
+    it('fails a parent run in the same project', async () => {
+        const { mockProject } = await mockAndSaveBasicSetup()
 
-        const { execution: parentRun, waitpointId } = await createPausedParentWithWaitpoint(mockWorkspace.id)
+        const { execution: parentRun, waitpointId } = await createPausedParentWithWaitpoint(mockProject.id)
 
         await markParentRunAsFailed({
             parentRunId: parentRun.id,
             childRunId: generateId(),
-            workspaceId: mockWorkspace.id,
+            projectId: mockProject.id,
             log: app.log,
         })
 

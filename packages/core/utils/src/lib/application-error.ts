@@ -1,6 +1,6 @@
-import type { WorkflowId, ExecutionId, WorkflowVersionId, WorkspaceId, UserId } from './id-generator'
+import type { WorkflowId, ExecutionId, WorkflowVersionId, ProjectId, UserId } from './id-generator'
 import type { Permission, TenantUsageMetric } from './permission'
-import type { WorkspaceRole } from './workspace-role'
+import type { ProjectRole } from './project-role'
 
 export class ApplicationError extends Error {
     constructor(public error: ApplicationErrorParams, message?: string) {
@@ -46,7 +46,7 @@ export type ApplicationErrorParams =
     | DomainIsNotAllowedErrorParams
     | EmailAuthIsDisabledParams
     | SessionExpiredParams
-    | WorkspaceExternalIdAlreadyExistsParams
+    | ProjectExternalIdAlreadyExistsParams
     | SandboxMemoryIssueParams
     | SandboxExecutionTimeoutParams
     | SandboxInternalErrorParams
@@ -112,8 +112,8 @@ export type PermissionDeniedErrorParams = BaseErrorParams<
 ErrorCode.PERMISSION_DENIED,
 {
     userId: UserId
-    workspaceId: WorkspaceId
-    workspaceRole: WorkspaceRole | null
+    projectId: ProjectId
+    projectRole: ProjectRole | null
     permission: Permission | undefined
 }
 >
@@ -264,7 +264,7 @@ ErrorCode.AUTHENTICATION,
 
 export type InvalidOtpParams = BaseErrorParams<ErrorCode.INVALID_OTP, Record<string, never>>
 
-export type WorkspaceExternalIdAlreadyExistsParams = BaseErrorParams<ErrorCode.WORKSPACE_EXTERNAL_ID_ALREADY_EXISTS, {
+export type ProjectExternalIdAlreadyExistsParams = BaseErrorParams<ErrorCode.PROJECT_EXTERNAL_ID_ALREADY_EXISTS, {
     externalId: string
 }>
 
@@ -310,7 +310,7 @@ export enum ErrorCode {
     SANDBOX_INTERNAL_ERROR = 'SANDBOX_INTERNAL_ERROR',
     EMAIL_AUTH_DISABLED = 'EMAIL_AUTH_DISABLED',
     EXISTING_USER = 'EXISTING_USER',
-    WORKSPACE_EXTERNAL_ID_ALREADY_EXISTS = 'WORKSPACE_EXTERNAL_ID_ALREADY_EXISTS',
+    PROJECT_EXTERNAL_ID_ALREADY_EXISTS = 'PROJECT_EXTERNAL_ID_ALREADY_EXISTS',
     WORKFLOW_OPERATION_INVALID = 'WORKFLOW_OPERATION_INVALID',
     WORKFLOW_OPERATION_IN_PROGRESS = 'WORKFLOW_OPERATION_IN_PROGRESS',
     EXECUTION_RETRY_OUTSIDE_RETENTION = 'EXECUTION_RETRY_OUTSIDE_RETENTION',

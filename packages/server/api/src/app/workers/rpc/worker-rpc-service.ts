@@ -10,6 +10,7 @@ import { signedFileTransport } from '../../file/signed-file-transport'
 import { rejectedPromiseHandler } from '../../helper/promise-handler'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
+import { projectService } from '../../project/project-service'
 import { dedupeService } from '../../trigger/dedupe-service'
 import { triggerEventService } from '../../trigger/trigger-events/trigger-event.service'
 import { triggerRunStats } from '../../trigger/trigger-run/trigger-run-stats'
@@ -20,8 +21,7 @@ import { preWarmWorkersService } from '../../workflows/pre-warm-workers'
 import { workflowSideEffects } from '../../workflows/workflow/workflow-service-side-effects'
 import { workflowService } from '../../workflows/workflow/workflow.service'
 import { workflowVersionService } from '../../workflows/workflow-version/workflow-version.service'
-import { workspaceService } from '../../workspace/workspace-service'
-import { getTenantGroupQueueName, getWorkspaceGroupQueueName, QueueName, WorkerGroupAssignment } from '../job'
+import { getProjectGroupQueueName, getTenantGroupQueueName, QueueName, WorkerGroupAssignment } from '../job'
 import { jobBroker } from '../job-queue/job-broker'
 import { machineService } from '../machine/machine-service'
 
@@ -29,8 +29,8 @@ const getPollQueueName = (assignment: WorkerGroupAssignment | null): string => {
     if (isNil(assignment)) {
         return QueueName.WORKER_JOBS
     }
-    return assignment.scope === WorkerGroupScope.WORKSPACE
-        ? getWorkspaceGroupQueueName(assignment.id)
+    return assignment.scope === WorkerGroupScope.PROJECT
+        ? getProjectGroupQueueName(assignment.id)
         : getTenantGroupQueueName(assignment.id)
 }
 
@@ -87,18 +87,18 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
         },
 
         async uploadRunLog(input) {
-            await engineRunCallbackService(log).uploadRunLog({ workspaceId: input.workspaceId, request: input })
+            await engineRunCallbackService(log).uploadRunLog({ projectId: input.projectId, request: input })
         },
 
         async submitPayloads(input) {
-            const { workflowVersionId, workspaceId, payloads, httpRequestId, streamStepProgress, environment, parentRunId, failParentOnFailure } = input
+            const { workflowVersionId, projectId, payloads, httpRequestId, streamStepProgress, environment, parentRunId, failParentOnFailure } = input
 
             const workflowVersion = await workflowVersionService(log).getOne(workflowVersionId)
             if (!workflowVersion) {
                 return []
             }
 
-            const tenantId = await workspaceService(log).getTenantId(workspaceId)
+            const tenantId = await projectService(log).getTenantId(projectId)
             const filterPayloads = await dedupeService.filterUniquePayloads(workflowVersionId, payloads)
 
             const creditsExhausted = false
@@ -109,7 +109,7 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
                         ? executionService(log).createQuotaExceededRun({
                             workflowVersion,
                             payload,
-                            workspaceId,
+                            projectId,
                             environment,
                             parentRunId,
                             failParentOnFailure,
@@ -120,7 +120,7 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
                             environment,
                             workflowVersionId,
                             payload,
-                            workspaceId,
+                            projectId,
                             tenantId,
                             httpRequestId,
                             workerHandlerId: undefined,
@@ -136,19 +136,19 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
         },
 
         async savePayloads(input) {
-            const { workflowId, workspaceId, payloads } = input
+            const { workflowId, projectId, payloads } = input
             const savePayloads = payloads.map((payload) =>
                 rejectedPromiseHandler(triggerEventService(log).saveEvent({
                     workflowId,
                     payload,
-                    workspaceId,
+                    projectId,
                 }), log),
             )
             rejectedPromiseHandler(Promise.all(savePayloads), log)
             if (payloads.length > 0) {
                 await triggerSourceService(log).disable({
                     workflowId,
-                    workspaceId,
+                    projectId,
                     simulate: true,
                     ignoreError: true,
                 })
@@ -171,7 +171,7 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
             return connectorMetadataService(log).get({
                 name: input.name,
                 version: input.version,
-                workspaceId: input.workspaceId,
+                projectId: input.projectId,
                 tenantId: input.tenantId,
             })
         },
@@ -203,7 +203,7 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
             // into app memory — the worker pulls them straight from S3 via a signed URL.
             const file = await fileService(log).getFile({
                 fileId: input.workflowVersionId,
-                workspaceId: input.workspaceId,
+                projectId: input.projectId,
                 type: FileType.WORKFLOW_BUNDLE,
             })
             if (isNil(file)) {
@@ -216,7 +216,7 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
             }
             const { data } = await fileService(log).getDataOrThrow({
                 fileId: input.workflowVersionId,
-                workspaceId: input.workspaceId,
+                projectId: input.projectId,
                 type: FileType.WORKFLOW_BUNDLE,
             })
             return { kind: 'inline', data }
@@ -237,7 +237,7 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
             // hand back a signed PUT URL for a direct-to-S3 upload.
             const file = await fileService(log).save({
                 fileId: input.workflowVersionId,
-                workspaceId: input.workspaceId,
+                projectId: input.projectId,
                 tenantId: input.tenantId,
                 type: FileType.WORKFLOW_BUNDLE,
                 data: null,
@@ -255,7 +255,7 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
         async uploadWorkflowBundle(input) {
             await fileService(log).save({
                 fileId: input.workflowVersionId,
-                workspaceId: input.workspaceId,
+                projectId: input.projectId,
                 tenantId: input.tenantId,
                 type: FileType.WORKFLOW_BUNDLE,
                 data: input.data,
@@ -265,16 +265,16 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
         },
 
         async disableWorkflow(input) {
-            const { workflowId, workspaceId } = input
-            const workflow = await workflowService(log).getOneOrThrow({ id: workflowId, workspaceId })
+            const { workflowId, projectId } = input
+            const workflow = await workflowService(log).getOneOrThrow({ id: workflowId, projectId })
             if (workflow.status === WorkflowStatus.DISABLED) {
                 return
             }
-            const tenantId = await workspaceService(log).getTenantId(workspaceId)
+            const tenantId = await projectService(log).getTenantId(projectId)
             const disabledWorkflow = await workflowService(log).update({
                 id: workflowId,
                 userId: null,
-                workspaceId,
+                projectId,
                 tenantId,
                 emitEvents: false,
                 operation: {
@@ -282,8 +282,8 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
                     request: { status: WorkflowStatus.DISABLED },
                 },
             })
-            workflowSideEffects(log).onDisabledByWorker({ workflow: disabledWorkflow, workspaceId, tenantId })
-            log.info({ workflow: { id: workflowId }, workspace: { id: workspaceId } }, '[workerRpc#disableWorkflow] Workflow disabled by worker request')
+            workflowSideEffects(log).onDisabledByWorker({ workflow: disabledWorkflow, projectId, tenantId })
+            log.info({ workflow: { id: workflowId }, project: { id: projectId } }, '[workerRpc#disableWorkflow] Workflow disabled by worker request')
         },
 
     }

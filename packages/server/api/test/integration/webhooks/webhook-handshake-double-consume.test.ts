@@ -1,4 +1,4 @@
-import { FileType, Workflow, WorkflowStatus, Workspace, WebhookHandshakeStrategy } from '@fema-ipaas/shared'
+import { FileType, Workflow, WorkflowStatus, Project, WebhookHandshakeStrategy } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { webhookHandshake } from '../../../../src/app/webhooks/webhook-handshake'
@@ -28,7 +28,7 @@ describe('Webhook file streaming with a handshake-configured trigger', () => {
             strategy: WebhookHandshakeStrategy.HEADER_PRESENT,
             paramName: 'x-ap-handshake-absent',
         })
-        const { mockWorkflow, mockWorkspace } = await createEnabledWorkflow()
+        const { mockWorkflow, mockProject } = await createEnabledWorkflow()
         const content = 'A'.repeat(4 * 1024 * 1024)
 
         const response = await app.inject({
@@ -40,7 +40,7 @@ describe('Webhook file streaming with a handshake-configured trigger', () => {
         expect(response.statusCode).toBe(StatusCodes.OK)
 
         const files = await databaseConnection().getRepository('file').findBy({
-            workspaceId: mockWorkspace.id,
+            projectId: mockProject.id,
             type: FileType.WORKFLOW_STEP_FILE,
         })
         expect(files).toHaveLength(1)
@@ -48,12 +48,12 @@ describe('Webhook file streaming with a handshake-configured trigger', () => {
     })
 })
 
-async function createEnabledWorkflow(): Promise<{ mockWorkflow: Workflow, mockWorkspace: Workspace }> {
-    const { mockWorkspace } = await mockAndSaveBasicSetup()
-    const mockWorkflow = createMockWorkflow({ workspaceId: mockWorkspace.id, status: WorkflowStatus.ENABLED })
+async function createEnabledWorkflow(): Promise<{ mockWorkflow: Workflow, mockProject: Project }> {
+    const { mockProject } = await mockAndSaveBasicSetup()
+    const mockWorkflow = createMockWorkflow({ projectId: mockProject.id, status: WorkflowStatus.ENABLED })
     await db.save('workflow', [mockWorkflow])
     const mockWorkflowVersion = createMockWorkflowVersion({ workflowId: mockWorkflow.id })
     await db.save('workflow_version', [mockWorkflowVersion])
     await db.update('workflow', mockWorkflow.id, { publishedVersionId: mockWorkflowVersion.id })
-    return { mockWorkflow, mockWorkspace }
+    return { mockWorkflow, mockProject }
 }

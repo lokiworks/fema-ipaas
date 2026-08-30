@@ -23,8 +23,8 @@ function packageJsonFor(definition: ConnectorBlueprintDefinition): string {
         description: definition.description || `${definition.displayName} connector`,
         main: './src/index.js',
         dependencies: {
-            '@fema-ipaas/connector-sdk': 'workspace:*',
-            '@fema-ipaas/connector-common': 'workspace:*',
+            '@fema-ipaas/connector-sdk': 'project:*',
+            '@fema-ipaas/connector-common': 'project:*',
         },
     }, null, 2)}\n`
 }

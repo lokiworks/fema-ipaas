@@ -21,13 +21,13 @@ async function waitForCondition(fn: () => Promise<boolean>, timeoutMs = 5000): P
     throw new Error('waitForCondition timed out')
 }
 
-async function createRunningExecution(params: { workspaceId: string, logsFileId?: string }): Promise<{ runId: string }> {
-    const workflow = createMockWorkflow({ workspaceId: params.workspaceId })
+async function createRunningExecution(params: { projectId: string, logsFileId?: string }): Promise<{ runId: string }> {
+    const workflow = createMockWorkflow({ projectId: params.projectId })
     await db.save('workflow', workflow)
     const workflowVersion = createMockWorkflowVersion({ workflowId: workflow.id, state: WorkflowVersionState.LOCKED })
     await db.save('workflow_version', workflowVersion)
     const execution = createMockExecution({
-        workspaceId: params.workspaceId,
+        projectId: params.projectId,
         workflowId: workflow.id,
         workflowVersionId: workflowVersion.id,
         status: ExecutionStatus.RUNNING,
@@ -59,15 +59,15 @@ afterEach(() => {
 
 describe('uploadRunLog — execution.logsFileId FK safety', () => {
     it('backs logsFileId with a created file on a Cloud worker internal error, so the FK never dangles', async () => {
-        const { runId } = await createRunningExecution({ workspaceId: ctx.workspace.id })
+        const { runId } = await createRunningExecution({ projectId: ctx.project.id })
 
         // Cloud + worker-source internal error: the engine never uploaded a log file for this logsFileId.
         // uploadRunLog must materialize the file before referencing it, otherwise fk_execution_logs_file_id throws.
         await engineRunCallbackService(app.log).uploadRunLog({
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             request: {
                 runId,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 status: ExecutionStatus.INTERNAL_ERROR,
                 logsFileId: generateId(),
                 internalError: {
@@ -87,27 +87,27 @@ describe('uploadRunLog — execution.logsFileId FK safety', () => {
         expect(run?.status).toBe(ExecutionStatus.INTERNAL_ERROR)
         // No FK violation: the run row updated and logsFileId points at a file that was created on demand.
         expect(run?.logsFileId).not.toBeNull()
-        const fileExists = await fileService(app.log).exists({ workspaceId: ctx.workspace.id, fileId: run!.logsFileId!, type: FileType.EXECUTION_LOG })
+        const fileExists = await fileService(app.log).exists({ projectId: ctx.project.id, fileId: run!.logsFileId!, type: FileType.EXECUTION_LOG })
         expect(fileExists).toBe(true)
     })
 
     it('links logsFileId when the log file exists (engine backup path)', async () => {
         const data = Buffer.from(JSON.stringify({ executionState: { steps: {}, tags: [] } }), 'utf-8')
         const logFile = await fileService(app.log).save({
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             tenantId: ctx.tenant.id,
             type: FileType.EXECUTION_LOG,
             data,
             size: data.length,
             compression: FileCompression.NONE,
         })
-        const { runId } = await createRunningExecution({ workspaceId: ctx.workspace.id })
+        const { runId } = await createRunningExecution({ projectId: ctx.project.id })
 
         await engineRunCallbackService(app.log).uploadRunLog({
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             request: {
                 runId,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 status: ExecutionStatus.SUCCEEDED,
                 logsFileId: logFile.id,
             },

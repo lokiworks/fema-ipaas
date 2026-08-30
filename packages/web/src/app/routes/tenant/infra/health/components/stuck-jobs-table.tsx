@@ -51,7 +51,7 @@ export function StuckJobsTable({ stuckJobs, isLoading }: StuckJobsTableProps) {
             <TableHeader>
               <TableRow>
                 <TableHead>{t('Workflow')}</TableHead>
-                <TableHead>{t('Workspace')}</TableHead>
+                <TableHead>{t('Project')}</TableHead>
                 <TableHead>{t('Status')}</TableHead>
               </TableRow>
             </TableHeader>
@@ -62,7 +62,7 @@ export function StuckJobsTable({ stuckJobs, isLoading }: StuckJobsTableProps) {
                   className="cursor-pointer"
                   onClick={() =>
                     navigate(
-                      `/workspaces/${job.workspaceId}/runs/${job.executionId}`,
+                      `/projects/${job.projectId}/runs/${job.executionId}`,
                     )
                   }
                 >
@@ -70,7 +70,7 @@ export function StuckJobsTable({ stuckJobs, isLoading }: StuckJobsTableProps) {
                     {job.workflowName}
                   </TableCell>
                   <TableCell className="text-muted-foreground">
-                    {job.workspaceName}
+                    {job.projectName}
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline">

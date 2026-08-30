@@ -1,12 +1,12 @@
 {
-  "Receive HTTP requests and trigger workflows using unique URLs.": "使用唯一的 URL 接收HTTP 请求和触发流。",
+  "Receive HTTP requests and trigger workflows using unique URLs.": "通过唯一的 URL 接收 HTTP 请求并触发工作流。",
   "Return Response": "退货回复",
   "Respond and Wait for Next Webhook": "响应并等待下一个 Webhook",
   "return a response": "返回响应",
-  "return a response and wait for the next webhook to resume the workflow": "返回响应并等待下一个 web 钩子以恢复流",
+  "return a response and wait for the next webhook to resume the workflow": "返回响应，并等待下一个 Webhook 来恢复工作流",
   "Response Type": "响应类型",
   "Response": "答复",
-  "Workflow Execution": "流执行",
+  "Workflow Execution": "工作流运行",
   "Markdown": "Markdown",
   "**Respond and Wait for Next Webhook**<br> \n            Check the response header (x-fema-resume-webhook-url) for the next webhook URL and call it to resume the workflow. <br>\n            ": "**响应并等待下一个 Webhook**<br> \n            请检查下一个 webhook URL 的响应头(x-activethes-resume-webhook-url) 并调用它来恢复流程。 <br>\n            ",
   "JSON": "JSON",
@@ -18,10 +18,11 @@
   "Receive incoming HTTP/webhooks using any HTTP method such as GET, POST, PUT, DELETE, etc.": "使用 GET、POST、PUT、DELETE等任何HTTP 方法接收传入的 HTTP/webhooks 。",
   "Authentication": "认证",
   "Authentication Fields": "身份验证字段",
-  "**Live URL:**\n```text\n{{webhookUrl}}\n```\ngenerate sample data & triggers published workflow.\n\n": "**Live URL:**\n```text\n{{webhookUrl}}\n```\ngenerate sample data & triggers published workflow.\n\n",
-  "**Synchronous Requests:**\n\nIf you expect a response from this webhook, add `/sync` to the end of the URL. \nIf it takes more than 30 seconds, it will return a 408 Request Timeout response.\n\nTo return data, add an Webhook step to your workflow with the Return Response action.\n": "**Synchronous Requests:**\n\nIf you expect a response from this webhook, add `/sync` to the end of the URL. \nIf it takes more than 30 seconds, it will return a 408 Request Timeout response.\n\nTo return data, add an Webhook step to your workflow with the Return Response action.\n",
-  "\n**Test URL:**\n\nif you want to generate sample data without triggering the workflow, append `/test` to your webhook URL.\n\n": "\n**Test URL:**\n\nif you want to generate sample data without triggering the workflow, append `/test` to your webhook URL.\n\n",
+  "**Live URL:**\n```text\n{{webhookUrl}}\n```\ngenerate sample data & triggers published workflow.\n\n": "**正式 URL：**\n```text\n{{webhookUrl}}\n```\n用于生成示例数据，并触发已发布的工作流。\n\n",
+  "**Synchronous Requests:**\n\nIf you expect a response from this webhook, add `/sync` to the end of the URL. \nIf it takes more than 30 seconds, it will return a 408 Request Timeout response.\n\nTo return data, add an Webhook step to your workflow with the Return Response action.\n": "**同步请求：**\n\n如果你希望这个 webhook 返回响应，请在 URL 末尾加上 `/sync`。\n若处理超过 30 秒，会返回 408 请求超时。\n\n要返回数据，请在工作流中添加一个 Webhook 步骤，并使用「返回响应」动作。\n",
+  "\n**Test URL:**\n\nif you want to generate sample data without triggering the workflow, append `/test` to your webhook URL.\n\n": "\n**测试 URL：**\n\n如果只想生成示例数据而不触发工作流，请在 webhook URL 末尾加上 `/test`。\n\n",
   "None": "无",
   "Basic Auth": "基本认证",
-  "Header Auth": "头部认证"
+  "Header Auth": "头部认证",
+  "Webhook": "Webhook"
 }

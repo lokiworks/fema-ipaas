@@ -243,19 +243,19 @@ function displayNameSchema(required: boolean) {
   return z.string();
 }
 
-const WORKSPACE_FORM_EXTRAS_SCHEMA = z.object({
+const PROJECT_FORM_EXTRAS_SCHEMA = z.object({
   connectorVersion: z.string().optional(),
-  workspaceIds: z.array(z.string()),
-  preSelectForNewWorkspaces: z.boolean(),
+  projectIds: z.array(z.string()),
+  preSelectForNewProjects: z.boolean(),
 });
 
 const GLOBAL_CONNECTION_EXTRAS_SCHEMA = z.object({
   scope: z.literal(ConnectionScope.TENANT),
-  workspaceIds: z
+  projectIds: z
     .array(z.string())
-    .min(1, { error: t('Please select at least one workspace') }),
+    .min(1, { error: t('Please select at least one project') }),
   metadata: z.optional(Metadata),
-  preSelectForNewWorkspaces: z.boolean().optional(),
+  preSelectForNewProjects: z.boolean().optional(),
 });
 
 function connectionNameSchema(required: boolean) {
@@ -304,14 +304,14 @@ function buildOAuth2ValueSchema(
   }
 }
 
-const WORKSPACE_NAME_OMIT = { externalId: true, displayName: true } as const;
+const PROJECT_NAME_OMIT = { externalId: true, displayName: true } as const;
 const GLOBAL_NAME_OMIT = {
-  workspaceId: true,
+  projectId: true,
   externalId: true,
   displayName: true,
 } as const;
-const WORKSPACE_NAME_AND_VALUE_OMIT = {
-  ...WORKSPACE_NAME_OMIT,
+const PROJECT_NAME_AND_VALUE_OMIT = {
+  ...PROJECT_NAME_OMIT,
   value: true,
 } as const;
 const GLOBAL_NAME_AND_VALUE_OMIT = {
@@ -338,13 +338,13 @@ function extendUpsertSchema(
   isGlobalConnection: boolean,
 ) {
   const base = upsertSchema
-    .omit(isGlobalConnection ? GLOBAL_NAME_OMIT : WORKSPACE_NAME_OMIT)
+    .omit(isGlobalConnection ? GLOBAL_NAME_OMIT : PROJECT_NAME_OMIT)
     .extend(names.shape);
   return isGlobalConnection
     ? base
         .extend(GLOBAL_CONNECTION_EXTRAS_SCHEMA.shape)
-        .extend(WORKSPACE_FORM_EXTRAS_SCHEMA.shape)
-    : base.extend(WORKSPACE_FORM_EXTRAS_SCHEMA.shape);
+        .extend(PROJECT_FORM_EXTRAS_SCHEMA.shape)
+    : base.extend(PROJECT_FORM_EXTRAS_SCHEMA.shape);
 }
 
 function extendCustomAuthUpsertSchema(
@@ -353,13 +353,13 @@ function extendCustomAuthUpsertSchema(
 ) {
   const omit = isGlobalConnection
     ? GLOBAL_NAME_AND_VALUE_OMIT
-    : WORKSPACE_NAME_AND_VALUE_OMIT;
+    : PROJECT_NAME_AND_VALUE_OMIT;
   const base = UpsertCustomAuthRequest.omit(omit).extend(names.shape);
   const withExtras = isGlobalConnection
     ? base
         .extend(GLOBAL_CONNECTION_EXTRAS_SCHEMA.shape)
-        .extend(WORKSPACE_FORM_EXTRAS_SCHEMA.shape)
-    : base.extend(WORKSPACE_FORM_EXTRAS_SCHEMA.shape);
+        .extend(PROJECT_FORM_EXTRAS_SCHEMA.shape)
+    : base.extend(PROJECT_FORM_EXTRAS_SCHEMA.shape);
   return withExtras.extend(CUSTOM_AUTH_VALUE_PROPS.shape);
 }
 
@@ -369,13 +369,13 @@ function extendOIDCUpsertSchema(
 ) {
   const omit = isGlobalConnection
     ? GLOBAL_NAME_AND_VALUE_OMIT
-    : WORKSPACE_NAME_AND_VALUE_OMIT;
+    : PROJECT_NAME_AND_VALUE_OMIT;
   const base = UpsertOIDCRequest.omit(omit).extend(names.shape);
   const withExtras = isGlobalConnection
     ? base
         .extend(GLOBAL_CONNECTION_EXTRAS_SCHEMA.shape)
-        .extend(WORKSPACE_FORM_EXTRAS_SCHEMA.shape)
-    : base.extend(WORKSPACE_FORM_EXTRAS_SCHEMA.shape);
+        .extend(PROJECT_FORM_EXTRAS_SCHEMA.shape)
+    : base.extend(PROJECT_FORM_EXTRAS_SCHEMA.shape);
   return withExtras.extend(OIDC_VALUE_PROPS.shape);
 }
 
@@ -387,7 +387,7 @@ function buildOAuth2RequestSchema(
   const names = connectionNameSchema(showConnectionNameField);
   const omit = isGlobalConnection
     ? GLOBAL_NAME_AND_VALUE_OMIT
-    : WORKSPACE_NAME_AND_VALUE_OMIT;
+    : PROJECT_NAME_AND_VALUE_OMIT;
   const buildBranch = (
     schema: ZodObject<z.ZodRawShape>,
     connectionType:
@@ -403,10 +403,8 @@ function buildOAuth2RequestSchema(
       ? base
           .extend(GLOBAL_CONNECTION_EXTRAS_SCHEMA.shape)
           .extend(valueShape.shape)
-          .extend(WORKSPACE_FORM_EXTRAS_SCHEMA.shape)
-      : base
-          .extend(valueShape.shape)
-          .extend(WORKSPACE_FORM_EXTRAS_SCHEMA.shape);
+          .extend(PROJECT_FORM_EXTRAS_SCHEMA.shape)
+      : base.extend(valueShape.shape).extend(PROJECT_FORM_EXTRAS_SCHEMA.shape);
   };
 
   return z.object({

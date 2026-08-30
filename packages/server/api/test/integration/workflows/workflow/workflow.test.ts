@@ -42,9 +42,9 @@ describe('Workflow API', () => {
 
             const response = await ctx.post('/v1/workflows', {
                 displayName: 'test workflow',
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 metadata: { foo: 'bar' },
-            }, { query: { workspaceId: ctx.workspace.id } })
+            }, { query: { projectId: ctx.project.id } })
 
             expect(response?.statusCode).toBe(StatusCodes.CREATED)
             const responseBody = response?.json()
@@ -53,7 +53,7 @@ describe('Workflow API', () => {
             expect(responseBody?.id).toHaveLength(21)
             expect(responseBody?.created).toBeDefined()
             expect(responseBody?.updated).toBeDefined()
-            expect(responseBody?.workspaceId).toBe(ctx.workspace.id)
+            expect(responseBody?.projectId).toBe(ctx.project.id)
             expect(responseBody?.folderId).toBeNull()
             expect(responseBody?.status).toBe('DISABLED')
             expect(responseBody?.publishedVersionId).toBeNull()
@@ -105,7 +105,7 @@ describe('Workflow API', () => {
             await db.save('connector_metadata', mockConnectorMetadata1)
 
             const mockWorkflow = createMockWorkflow({
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 status: WorkflowStatus.DISABLED,
             })
             await db.save('workflow', mockWorkflow)
@@ -145,7 +145,7 @@ describe('Workflow API', () => {
                 expect(responseBody.id).toBe(mockWorkflow.id)
                 expect(responseBody.created).toBeDefined()
                 expect(responseBody.updated).toBeDefined()
-                expect(responseBody.workspaceId).toBe(ctx.workspace.id)
+                expect(responseBody.projectId).toBe(ctx.project.id)
                 expect(responseBody.folderId).toBeNull()
                 expect(responseBody.publishedVersionId).toBe(mockWorkflowVersion.id)
                 expect(responseBody.metadata).toBeNull()
@@ -158,7 +158,7 @@ describe('Workflow API', () => {
             const ctx = await createTestContext(app!)
 
             const mockWorkflow = createMockWorkflow({
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 status: WorkflowStatus.ENABLED,
             })
             await db.save('workflow', mockWorkflow)
@@ -181,7 +181,7 @@ describe('Workflow API', () => {
             expect(responseBody?.id).toBe(mockWorkflow.id)
             expect(responseBody?.created).toBeDefined()
             expect(responseBody?.updated).toBeDefined()
-            expect(responseBody?.workspaceId).toBe(ctx.workspace.id)
+            expect(responseBody?.projectId).toBe(ctx.project.id)
             expect(responseBody?.folderId).toBeNull()
             expect(responseBody?.status).toBe('DISABLED')
             expect(responseBody?.publishedVersionId).toBe(mockWorkflowVersion.id)
@@ -219,7 +219,7 @@ describe('Workflow API', () => {
             await db.save('connector_metadata', mockConnectorMetadata1)
 
             const mockWorkflow = createMockWorkflow({
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 status: WorkflowStatus.DISABLED,
             })
             await db.save('workflow', mockWorkflow)
@@ -259,7 +259,7 @@ describe('Workflow API', () => {
                 expect(responseBody.id).toBe(mockWorkflow.id)
                 expect(responseBody.created).toBeDefined()
                 expect(responseBody.updated).toBeDefined()
-                expect(responseBody.workspaceId).toBe(ctx.workspace.id)
+                expect(responseBody.projectId).toBe(ctx.project.id)
                 expect(responseBody.folderId).toBeNull()
                 expect(responseBody.status).toBe('ENABLED')
                 expect(responseBody.publishedVersionId).toBe(mockWorkflowVersion.id)
@@ -277,11 +277,11 @@ describe('Workflow API', () => {
             const ctx = await createTestContext(app!)
 
             const mockEnabledWorkflow = createMockWorkflow({
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 status: WorkflowStatus.ENABLED,
             })
             const mockDisabledWorkflow = createMockWorkflow({
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 status: WorkflowStatus.DISABLED,
             })
             await db.save('workflow', [mockEnabledWorkflow, mockDisabledWorkflow])
@@ -291,7 +291,7 @@ describe('Workflow API', () => {
             await db.save('workflow_version', [mockEnabledWorkflowVersion, mockDisabledWorkflowVersion])
 
             const response = await ctx.get('/v1/workflows', {
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 status: 'ENABLED',
             })
 
@@ -305,13 +305,13 @@ describe('Workflow API', () => {
         it('Populates Workflow version', async () => {
             const ctx = await createTestContext(app!)
 
-            const mockWorkflow = createMockWorkflow({ workspaceId: ctx.workspace.id })
+            const mockWorkflow = createMockWorkflow({ projectId: ctx.project.id })
             await db.save('workflow', mockWorkflow)
 
             const mockWorkflowVersion = createMockWorkflowVersion({ workflowId: mockWorkflow.id })
             await db.save('workflow_version', mockWorkflowVersion)
 
-            const response = await ctx.get('/v1/workflows', { workspaceId: ctx.workspace.id })
+            const response = await ctx.get('/v1/workflows', { projectId: ctx.project.id })
 
             expect(response?.statusCode).toBe(StatusCodes.OK)
             const responseBody = response?.json()
@@ -324,10 +324,10 @@ describe('Workflow API', () => {
         it('Fails if a workflow with no version exists', async () => {
             const ctx = await createTestContext(app!)
 
-            const mockWorkflow = createMockWorkflow({ workspaceId: ctx.workspace.id })
+            const mockWorkflow = createMockWorkflow({ projectId: ctx.project.id })
             await db.save('workflow', mockWorkflow)
 
-            const response = await ctx.get('/v1/workflows', { workspaceId: ctx.workspace.id })
+            const response = await ctx.get('/v1/workflows', { projectId: ctx.project.id })
 
             expect(response?.statusCode).toBe(StatusCodes.NOT_FOUND)
             const responseBody = response?.json()
@@ -342,7 +342,7 @@ describe('Workflow API', () => {
         it('Updates workflow metadata', async () => {
             const ctx = await createTestContext(app!)
 
-            const mockWorkflow = createMockWorkflow({ workspaceId: ctx.workspace.id })
+            const mockWorkflow = createMockWorkflow({ projectId: ctx.project.id })
             await db.save('workflow', mockWorkflow)
 
             const mockWorkflowVersion = createMockWorkflowVersion({ workflowId: mockWorkflow.id })
@@ -371,7 +371,7 @@ describe('Workflow API', () => {
             const ctx = await createTestContext(app!)
 
             const mockWorkflow = createMockWorkflow({
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 status: WorkflowStatus.ENABLED,
             })
             await db.save('workflow', mockWorkflow)

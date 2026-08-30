@@ -6,7 +6,7 @@ export const ListAuditEventsRequest = z.object({
     limit: z.coerce.number().optional(),
     cursor: z.string().optional(),
     action: OptionalArrayFromQuery(z.string()),
-    workspaceId: OptionalArrayFromQuery(z.string()),
+    projectId: OptionalArrayFromQuery(z.string()),
     userId: z.string().optional(),
     createdBefore: z.string().optional(),
     createdAfter: z.string().optional(),
@@ -47,8 +47,8 @@ export enum ApplicationEventName {
 const BaseAuditEventProps = {
     ...BaseModelSchema,
     tenantId: z.string(),
-    workspaceId: z.string().optional(),
-    workspaceDisplayName: z.string().optional(),
+    projectId: z.string().optional(),
+    projectDisplayName: z.string().optional(),
     userId: z.string().optional(),
     userEmail: z.string().optional(),
     ip: z.string().optional(),
@@ -65,7 +65,7 @@ const ConnectionEventData = z.object({
         created: DateOrString,
         updated: DateOrString,
     }),
-    workspace: z.object({
+    project: z.object({
         displayName: z.string(),
     }).optional(),
 })
@@ -101,7 +101,7 @@ const VariableEventData = z.object({
         created: DateOrString,
         updated: DateOrString,
     }),
-    workspace: z.object({
+    project: z.object({
         displayName: z.string(),
     }).optional(),
 })
@@ -140,7 +140,7 @@ export type VariableValueRevealedEvent = z.infer<typeof VariableValueRevealedEve
 
 const FolderEventData = z.object({
     folder: Folder.pick({ id: true, displayName: true, created: true, updated: true }),
-    workspace: z.object({
+    project: z.object({
         displayName: z.string(),
     }).optional(),
 })
@@ -192,7 +192,7 @@ const ExecutionEventData = z.object({
         workflowDisplayName: z.string().optional(),
         status: z.string(),
     }),
-    workspace: z.object({
+    project: z.object({
         displayName: z.string(),
     }).optional(),
 })
@@ -242,7 +242,7 @@ export const WorkflowCreatedEvent = z.object({
     action: z.literal(ApplicationEventName.WORKFLOW_CREATED),
     data: z.object({
         workflow: Workflow.pick({ id: true, externalId: true, created: true, updated: true }),
-        workspace: z.object({
+        project: z.object({
             displayName: z.string(),
             externalId: Nullable(z.string()),
         }).optional(),
@@ -263,7 +263,7 @@ export const WorkflowDeletedEvent = z.object({
             created: true,
             updated: true,
         }),
-        workspace: z.object({
+        project: z.object({
             displayName: z.string(),
             externalId: Nullable(z.string()),
         }).optional(),
@@ -285,7 +285,7 @@ export const WorkflowUpdatedEvent = z.object({
             updated: true,
         }),
         request: WorkflowOperationRequest,
-        workspace: z.object({
+        project: z.object({
             displayName: z.string(),
             externalId: Nullable(z.string()),
         }).optional(),
@@ -303,7 +303,7 @@ const WorkflowLifecycleEventData = z.object({
         created: true,
         updated: true,
     }),
-    workspace: z.object({
+    project: z.object({
         displayName: z.string(),
         externalId: Nullable(z.string()),
     }).optional(),
@@ -503,7 +503,7 @@ export function summarizeApplicationEvent(event: ApplicationEvent) {
         case ApplicationEventName.MEMBER_ADDED:
             return `User ${event.data.member.userId} was added as ${event.data.member.role}`
         case ApplicationEventName.MEMBER_REMOVED:
-            return `User ${event.data.member.userId} was removed from the workspace`
+            return `User ${event.data.member.userId} was removed from the project`
     }
 }
 

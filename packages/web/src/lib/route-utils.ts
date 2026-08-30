@@ -2,7 +2,7 @@ import { Permission } from '@fema-ipaas/core-utils';
 
 import { authenticationSession } from './authentication-session';
 
-export const routesThatRequireWorkspaceId = {
+export const routesThatRequireProjectId = {
   home: '/home',
   runs: '/runs',
   singleRun: '/runs/:runId',
@@ -21,12 +21,12 @@ export const determineDefaultRoute = ({
   checkAccess: (permission: Permission) => boolean;
 }) => {
   if (checkAccess(Permission.READ_RUN)) {
-    return authenticationSession.appendWorkspaceRoutePrefix('/home');
+    return authenticationSession.appendProjectRoutePrefix('/home');
   }
   if (checkAccess(Permission.READ_WORKFLOW)) {
-    return authenticationSession.appendWorkspaceRoutePrefix('/automations');
+    return authenticationSession.appendProjectRoutePrefix('/automations');
   }
-  return authenticationSession.appendWorkspaceRoutePrefix('/settings');
+  return authenticationSession.appendProjectRoutePrefix('/settings');
 };
 
 export const NEW_WORKFLOW_QUERY_PARAM = 'newWorkflow';

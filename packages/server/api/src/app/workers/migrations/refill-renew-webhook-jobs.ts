@@ -4,8 +4,8 @@ import { LATEST_JOB_DATA_SCHEMA_VERSION, TriggerSourceScheduleType, TriggerStrat
 import { FastifyBaseLogger } from 'fastify'
 import { IsNull } from 'typeorm'
 import { connectorMetadataService } from '../../connectors/metadata/connector-metadata-service'
+import { projectService } from '../../project/project-service'
 import { triggerSourceRepo } from '../../trigger/trigger-source/trigger-source-service'
-import { workspaceService } from '../../workspace/workspace-service'
 import { jobQueue, JobType } from '../job-queue/job-queue'
 
 export const refillRenewWebhookJobs = (log: FastifyBaseLogger) => ({
@@ -26,7 +26,7 @@ export const refillRenewWebhookJobs = (log: FastifyBaseLogger) => ({
                 const connectorMetadata = await connectorMetadataService(log).get({
                     name: triggerSource.connectorName,
                     version: triggerSource.connectorVersion,
-                    tenantId: await workspaceService(log).getTenantId(triggerSource.workspaceId),
+                    tenantId: await projectService(log).getTenantId(triggerSource.projectId),
                 })
                 const connectorTrigger = connectorMetadata?.triggers?.[triggerSource.triggerName]
                 if (isNil(connectorTrigger) || isNil(connectorTrigger.renewConfiguration) || connectorTrigger.renewConfiguration.strategy !== WebhookRenewStrategy.CRON) {
@@ -36,8 +36,8 @@ export const refillRenewWebhookJobs = (log: FastifyBaseLogger) => ({
                     id: triggerSource.workflowVersionId,
                     type: JobType.REPEATING,
                     data: {
-                        workspaceId: triggerSource.workspaceId,
-                        tenantId: await workspaceService(log).getTenantId(triggerSource.workspaceId),
+                        projectId: triggerSource.projectId,
+                        tenantId: await projectService(log).getTenantId(triggerSource.projectId),
                         schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
                         workflowVersionId: triggerSource.workflowVersionId,
                         workflowId: triggerSource.workflowId,

@@ -80,7 +80,7 @@ function makeWorkflowVersion(): WorkflowVersion {
 
 function makeBeginOperation(overrides?: Partial<BeginExecuteWorkflowOperation>): BeginExecuteWorkflowOperation {
     return {
-        workspaceId: 'proj-1',
+        projectId: 'proj-1',
         engineToken: 'test-token',
         internalApiUrl: engineApi.url,
         publicApiUrl: 'http://localhost:4200/api/',
@@ -145,7 +145,7 @@ function makeWorkflowVersionWithTwoApprovals(): WorkflowVersion {
 
 function makeResumeOperation(overrides?: Partial<ResumeExecuteWorkflowOperation>): ResumeExecuteWorkflowOperation {
     return {
-        workspaceId: 'proj-1',
+        projectId: 'proj-1',
         engineToken: 'test-token',
         internalApiUrl: engineApi.url,
         publicApiUrl: 'http://localhost:4200/api/',

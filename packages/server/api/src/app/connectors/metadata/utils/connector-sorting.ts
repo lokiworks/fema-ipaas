@@ -50,7 +50,7 @@ const reverseIfDesc = (
 
 const sortByPopularity = (connectors: ConnectorMetadataSchema[]): ConnectorMetadataSchema[] => {
     return connectors.sort((a, b) =>
-        a.workspaceUsage - b.workspaceUsage,
+        a.projectUsage - b.projectUsage,
     )
 }
 

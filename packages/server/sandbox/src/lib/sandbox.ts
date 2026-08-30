@@ -117,7 +117,7 @@ export function createSandboxRuntime({ concurrency = 1, basePath, getSettings }:
             const { error } = await tryCatch(async () => {
                 const { workflows, tenantId, engineToken } = await apiClient.getPrewarmData({
                     workerGroupId: getSettings().WORKER_GROUP_ID,
-                    workspaceWorker: getSettings().WORKSPACE_WORKER,
+                    projectWorker: getSettings().PROJECT_WORKER,
                     workflow,
                 })
                 const resolver = createResolver({ apiClient, basePath, getSettings, log })

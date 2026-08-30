@@ -23,7 +23,7 @@ export const executeActionJob: JobHandler<ExecuteActionJobData, SynchronousJobRe
                 operationType: EngineOperationType.EXECUTE_ACTION,
                 operation: {
                     step: data.step,
-                    workspaceId: data.workspaceId,
+                    projectId: data.projectId,
                     tenantId: data.tenantId,
                     engineToken: ctx.engineToken,
                     internalApiUrl: ctx.internalApiUrl,

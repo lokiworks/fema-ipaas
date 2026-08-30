@@ -1,5 +1,5 @@
 {
-  "\nPerform mathematical operations.\n": "\nPerform mathematical operations.\n",
+  "\nPerform mathematical operations.\n": "\n执行数学运算。\n",
   "Addition": "加法",
   "Subtraction": "减法",
   "Multiplication": "乘法",
@@ -7,11 +7,12 @@
   "Modulo": "取模",
   "Generate Random Number": "生成随机数",
   "Add the first number and the second number": "把第一个数与第二个数相加",
-  "Subtract the first number from the second number": "Subtract the first number from the second number",
+  "Subtract the first number from the second number": "用第二个数减去第一个数",
   "Multiply first number by the second number": "第一个数乘以第二个数",
   "Divide first number by the second number": "第一个数除以第二个数",
-  "Get the remainder of the first number divided by second number": "Get the remainder of the first number divided by second number",
-  "Generate random number between two numbers (inclusive)": "Generate random number between two numbers (inclusive)",
+  "Get the remainder of the first number divided by second number": "取第一个数除以第二个数的余数",
+  "Generate random number between two numbers (inclusive)": "生成两个数之间的随机数（含两端）",
   "First Number": "第一个数",
-  "Second Number": "第二个数"
+  "Second Number": "第二个数",
+  "Math Helper": "数学助手"
 }

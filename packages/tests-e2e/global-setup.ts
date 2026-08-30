@@ -12,6 +12,11 @@ async function globalSetup() {
   const context = await browser.newContext({
     baseURL: process.env.FEMA_FRONTEND_URL,
   });
+  // The UI defaults to Simplified Chinese; these specs assert on English copy,
+  // so pin the locale before anything renders.
+  await context.addInitScript(() => {
+    window.localStorage.setItem('fema.language', 'en');
+  });
   const page = await context.newPage();
 
   const authPage = new AuthenticationPage(page);

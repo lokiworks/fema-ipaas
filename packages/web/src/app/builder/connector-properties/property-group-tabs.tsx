@@ -20,8 +20,8 @@ import {
 import { cn } from '@/lib/utils';
 
 import { getValueForInputOnDynamicToggleChange } from './auto-form-field-wrapper';
-import { DynamicValueToggleButton } from './dynamic-value-toggle-button';
 import { MentionChipsInput } from './mention-chips-input';
+import { PropertyTypeSwitcher } from './property-type-switcher';
 import { TextInputWithMentions } from './text-input-with-mentions';
 
 function PropertyGroupTabs({
@@ -79,11 +79,8 @@ function PropertyGroupTabs({
   const isDynamicKey = (key: string): boolean =>
     propertySettings?.[key]?.type === PropertyExecutionType.DYNAMIC;
 
-  const toggleDynamic = (key: string) => {
+  const toggleDynamic = (key: string, nextMode: PropertyExecutionType) => {
     const inputName = inputNameFor(key);
-    const nextMode = isDynamicKey(key)
-      ? PropertyExecutionType.MANUAL
-      : PropertyExecutionType.DYNAMIC;
     form.setValue(
       `settings.propertySettings.${key}`,
       {
@@ -108,7 +105,6 @@ function PropertyGroupTabs({
   }
 
   const anyRequired = tabKeys.some((key) => properties[key].required);
-  const activeDynamic = isDynamicKey(safeActiveKey);
   const activeFieldState = form.getFieldState(
     inputNameFor(safeActiveKey),
     form.formState,
@@ -146,9 +142,15 @@ function PropertyGroupTabs({
         <span className="grow" />
 
         {allowDynamicValues && (
-          <DynamicValueToggleButton
-            pressed={activeDynamic}
-            onPressedChange={() => toggleDynamic(safeActiveKey)}
+          <PropertyTypeSwitcher
+            value={
+              propertySettings?.[safeActiveKey]?.type ??
+              PropertyExecutionType.MANUAL
+            }
+            onChange={(nextMode) => toggleDynamic(safeActiveKey, nextMode)}
+            onReset={() =>
+              toggleDynamic(safeActiveKey, PropertyExecutionType.MANUAL)
+            }
             disabled={disabled}
           />
         )}

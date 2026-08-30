@@ -26,7 +26,7 @@ export const webhookController: FastifyPluginAsyncZod = async (app) => {
                 },
             })
             const response = await webhookService.handleWebhook({
-                data: (workspaceId: string) => convertRequest(request, workspaceId, request.params.workflowId),
+                data: (projectId: string) => convertRequest(request, projectId, request.params.workflowId),
                 logger: request.log,
                 workflowId: request.params.workflowId,
                 async: false,
@@ -59,7 +59,7 @@ export const webhookController: FastifyPluginAsyncZod = async (app) => {
                 },
             })
             const response = await webhookService.handleWebhook({
-                data: (workspaceId: string) => convertRequest(request, workspaceId, request.params.workflowId),
+                data: (projectId: string) => convertRequest(request, projectId, request.params.workflowId),
                 logger: request.log,
                 workflowId: request.params.workflowId,
                 async: true,
@@ -82,7 +82,7 @@ export const webhookController: FastifyPluginAsyncZod = async (app) => {
 
     app.all('/:workflowId/draft/sync', WEBHOOK_PARAMS, async (request, reply) => {
         const response = await webhookService.handleWebhook({
-            data: (workspaceId: string) => convertRequest(request, workspaceId, request.params.workflowId),
+            data: (projectId: string) => convertRequest(request, projectId, request.params.workflowId),
             logger: request.log,
             workflowId: request.params.workflowId,
             async: false,
@@ -90,7 +90,7 @@ export const webhookController: FastifyPluginAsyncZod = async (app) => {
             workflowVersionToRun: WebhookWorkflowVersionToRun.LATEST,
             execute: true,
             onRunCreated: (run) => {
-                app.io.to(run.workspaceId).emit(WebsocketClientEvent.TEST_EXECUTION_STARTED, run)
+                app.io.to(run.projectId).emit(WebsocketClientEvent.TEST_EXECUTION_STARTED, run)
             },
             ...extractHeaderFromRequest(request),
         })
@@ -102,7 +102,7 @@ export const webhookController: FastifyPluginAsyncZod = async (app) => {
 
     app.all('/:workflowId/draft', WEBHOOK_PARAMS, async (request, reply) => {
         const response = await webhookService.handleWebhook({
-            data: (workspaceId: string) => convertRequest(request, workspaceId, request.params.workflowId),
+            data: (projectId: string) => convertRequest(request, projectId, request.params.workflowId),
             logger: request.log,
             workflowId: request.params.workflowId,
             async: true,
@@ -119,7 +119,7 @@ export const webhookController: FastifyPluginAsyncZod = async (app) => {
 
     app.all('/:workflowId/test', WEBHOOK_PARAMS, async (request, reply) => {
         const response = await webhookService.handleWebhook({
-            data: (workspaceId: string) => convertRequest(request, workspaceId, request.params.workflowId),
+            data: (projectId: string) => convertRequest(request, projectId, request.params.workflowId),
             logger: request.log,
             workflowId: request.params.workflowId,
             async: true,

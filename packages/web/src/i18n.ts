@@ -16,7 +16,7 @@ i18n
     detection: {
       order: ['querystring', 'localStorage'],
       lookupQuerystring: 'lng',
-      lookupLocalStorage: 'i18nextLng',
+      lookupLocalStorage: 'fema.language',
       caches: ['localStorage'],
     },
     interpolation: {

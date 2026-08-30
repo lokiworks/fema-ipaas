@@ -7,6 +7,7 @@ import { ConnectorCategory } from '@fema-ipaas/connector-sdk';
 
 export const dataSummarizer = createConnector({
   displayName: 'Data Summarizer',
+  description: 'Aggregate lists of values: sum, average, min/max and unique counts',
   auth: ConnectorAuth.None(),
   minimumSupportedRelease: '0.30.0',
   logoUrl: '/assets/connectors/data-summarizer.svg',

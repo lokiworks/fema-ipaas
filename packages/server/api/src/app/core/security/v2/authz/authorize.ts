@@ -2,9 +2,9 @@ import { ApplicationError, ErrorCode, isNil } from '@fema-ipaas/core-utils'
 import { Principal, PrincipalType, TenantRole, UserIdentityProvider } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { userIdentityService } from '../../../../authentication/user-identity/user-identity-service'
+import { projectAccess } from '../../../../project/project-access'
 import { userService } from '../../../../user/user-service'
-import { workspaceAccess } from '../../../../workspace/workspace-access'
-import { AuthorizationRouteSecurity, WorkspaceAuthorizationConfig } from '../../authorization/authorization'
+import { AuthorizationRouteSecurity, ProjectAuthorizationConfig } from '../../authorization/authorization'
 import { AuthorizationType, RouteKind } from '../../authorization/common'
 
 export const authorizeOrThrow = async (principal: Principal, security: AuthorizationRouteSecurity, log: FastifyBaseLogger): Promise<void> => {
@@ -12,9 +12,9 @@ export const authorizeOrThrow = async (principal: Principal, security: Authoriza
         return
     }
     switch (security.authorization.type) {
-        case AuthorizationType.WORKSPACE:
+        case AuthorizationType.PROJECT:
             await assertPrinicpalIsOneOf(security.authorization.allowedPrincipals, principal.type)
-            await assertAccessToWorkspace(principal, security.authorization, log)
+            await assertAccessToProject(principal, security.authorization, log)
             break
         case AuthorizationType.TENANT:
             await assertPrinicpalIsOneOf(security.authorization.allowedPrincipals, principal.type)
@@ -83,19 +83,19 @@ async function assertTenantIsOwnedByCurrentPrincipal(principal: Principal, log: 
 }
 
 
-async function assertAccessToWorkspace(principal: Principal, workspaceSecurity: WorkspaceAuthorizationConfig, log: FastifyBaseLogger): Promise<void> {
-    if (isNil(workspaceSecurity.workspaceId)) {
+async function assertAccessToProject(principal: Principal, projectSecurity: ProjectAuthorizationConfig, log: FastifyBaseLogger): Promise<void> {
+    if (isNil(projectSecurity.projectId)) {
         throw new ApplicationError({
             code: ErrorCode.AUTHORIZATION,
             params: {
-                message: 'Workspace ID is required',
+                message: 'Project ID is required',
             },
         })
     }
-    await workspaceAccess(log).assertPrincipalCanAccessWorkspace({
+    await projectAccess(log).assertPrincipalCanAccessProject({
         principal,
-        workspaceId: workspaceSecurity.workspaceId,
-        permission: workspaceSecurity.permission,
+        projectId: projectSecurity.projectId,
+        permission: projectSecurity.permission,
     })
 }
 

@@ -7,7 +7,7 @@ export enum TriggerTestStrategy {
 }
 
 export const TestTriggerRequestBody = z.object({
-    workspaceId: EntityId,
+    projectId: EntityId,
     workflowId: EntityId,
     workflowVersionId: EntityId,
     testStrategy: z.nativeEnum(TriggerTestStrategy),
@@ -17,7 +17,7 @@ export type TestTriggerRequestBody = z.infer<typeof TestTriggerRequestBody>
 
 
 export const CancelTestTriggerRequestBody = z.object({
-    workspaceId: EntityId,
+    projectId: EntityId,
     workflowId: EntityId,
 })
 

@@ -39,9 +39,9 @@ export const STATIC_PAGES: StaticPage[] = [
   },
   // Tenant Admin pages
   {
-    id: 'page-tenant-workspaces',
-    label: 'Tenant Admin — Workspaces',
-    href: '/tenant/workspaces',
+    id: 'page-tenant-projects',
+    label: 'Tenant Admin — Projects',
+    href: '/tenant/projects',
     icon: LayoutGridIcon,
     requiresTenantAdmin: true,
   },
@@ -153,7 +153,7 @@ export const STATIC_PAGES: StaticPage[] = [
   {
     id: 'page-tenant-admin',
     label: 'Tenant Admin',
-    href: '/tenant/workspaces',
+    href: '/tenant/projects',
     icon: ShieldIcon,
     requiresTenantAdmin: true,
   },

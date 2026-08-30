@@ -2,7 +2,7 @@ import swagger from '@fastify/swagger'
 import { ConnectorMetadata } from '@fema-ipaas/connector-sdk'
 import { isNil, spreadIfDefined } from '@fema-ipaas/core-utils'
 import { onCallService, UNKNOWN_VERSION, versionUtil, wideEvent } from '@fema-ipaas/server-utils'
-import { ApplicationEventName, ConnectionDeletedEvent, ConnectionUpsertedEvent, ConnectionWithoutSensitiveData, ConnectorPublishedEvent, Execution, ExecutionFinishedEvent, ExecutionResumedEvent, ExecutionRetriedEvent, ExecutionStartedEvent, Folder, FolderCreatedEvent, FolderDeletedEvent, FolderUpdatedEvent, MemberAddedEvent, MemberRemovedEvent, RuntimeEnvironment, SignUpEvent, Template, UserEmailVerifiedEvent, UserInvitation, UserPasswordResetEvent, UserSignedInEvent, UserWithMetaInformation, VariableDeletedEvent, VariableUpsertedEvent, VariableValueRevealedEvent, VariableWithoutSensitiveData, Workflow, WorkflowActivatedEvent, WorkflowCreatedEvent, WorkflowDeactivatedEvent, WorkflowDeletedEvent, WorkflowPublishedEvent, WorkflowUpdatedEvent, WorkspaceMemberWithUser, WorkspaceWithLimits } from '@fema-ipaas/shared'
+import { ApplicationEventName, ConnectionDeletedEvent, ConnectionUpsertedEvent, ConnectionWithoutSensitiveData, ConnectorPublishedEvent, Execution, ExecutionFinishedEvent, ExecutionResumedEvent, ExecutionRetriedEvent, ExecutionStartedEvent, Folder, FolderCreatedEvent, FolderDeletedEvent, FolderUpdatedEvent, MemberAddedEvent, MemberRemovedEvent, ProjectMemberWithUser, ProjectWithLimits, RuntimeEnvironment, SignUpEvent, Template, UserEmailVerifiedEvent, UserInvitation, UserPasswordResetEvent, UserSignedInEvent, UserWithMetaInformation, VariableDeletedEvent, VariableUpsertedEvent, VariableValueRevealedEvent, VariableWithoutSensitiveData, Workflow, WorkflowActivatedEvent, WorkflowCreatedEvent, WorkflowDeactivatedEvent, WorkflowDeletedEvent, WorkflowPublishedEvent, WorkflowUpdatedEvent } from '@fema-ipaas/shared'
 import { createAdapter } from '@socket.io/redis-adapter'
 import { FastifyBaseLogger, FastifyInstance, FastifyRequest, HTTPMethods } from 'fastify'
 import { jsonSchemaTransform, jsonSchemaTransformObject } from 'fastify-type-provider-zod'
@@ -43,6 +43,8 @@ import { systemJobsSchedule } from './helper/system-jobs/system-job'
 import { systemSnapshot } from './helper/system-snapshot'
 import { validateEnvPropsOnStartup } from './helper/system-validator'
 import { shutdownTelemetry } from './helper/telemetry.utils'
+import { projectBackgroundJobs } from './project/project.jobs'
+import { projectModule } from './project/project.module'
 import { storeEntryModule } from './store-entry/store-entry.module'
 import { templateModule } from './template/template.module'
 import { tenantModule } from './tenant/tenant.module'
@@ -60,8 +62,6 @@ import { folderModule } from './workflows/folder/folder.module'
 import { humanInputModule } from './workflows/workflow/human-input/human-input.module'
 import { workflowBackgroundJobs } from './workflows/workflow/workflow.jobs'
 import { workflowModule } from './workflows/workflow.module'
-import { workspaceBackgroundJobs } from './workspace/workspace.jobs'
-import { workspaceModule } from './workspace/workspace.module'
 
 export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> => {
 
@@ -132,10 +132,10 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     app.addHook('preHandler', (request, _reply, done) => {
         try {
             const principal = request.principal
-            const workspaceId = extractWorkspaceId(principal)
+            const projectId = extractProjectId(principal)
             const tenantId = extractTenantId(principal)
             wideEvent.set({
-                ...spreadIfDefined('workspace', isNil(workspaceId) ? undefined : { id: workspaceId }),
+                ...spreadIfDefined('project', isNil(projectId) ? undefined : { id: projectId }),
                 ...spreadIfDefined('tenant', isNil(tenantId) ? undefined : { id: tenantId }),
                 ...spreadIfDefined('principalType', principal?.type),
             })
@@ -177,7 +177,7 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     await app.register(localAuthnModule)
     await app.register(triggerModule)
     await app.register(tenantModule)
-    await app.register(workspaceModule)
+    await app.register(projectModule)
     await app.register(humanInputModule)
     await app.register(tenantUserModule)
     await app.register(invitationModule)
@@ -192,7 +192,7 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     }
 
     systemJobHandlers.registerJobHandler(SystemJobName.DELETE_WORKFLOW, (data) => workflowBackgroundJobs(app.log).deleteWorkflowHandler(data))
-    systemJobHandlers.registerJobHandler(SystemJobName.HARD_DELETE_WORKSPACE, (data) => workspaceBackgroundJobs(app.log).hardDeleteWorkspaceHandler(data))
+    systemJobHandlers.registerJobHandler(SystemJobName.HARD_DELETE_PROJECT, (data) => projectBackgroundJobs(app.log).hardDeleteProjectHandler(data))
 
     app.get(
         '/redirect',
@@ -293,8 +293,8 @@ function extractTenantId(principal: { tenant?: { id?: string } } | null | undefi
     return principal?.tenant?.id
 }
 
-function extractWorkspaceId(principal: { workspaceId?: string } | null | undefined): string | undefined {
-    return principal?.workspaceId
+function extractProjectId(principal: { projectId?: string } | null | undefined): string | undefined {
+    return principal?.projectId
 }
 
 function registerOpenApiSchemas() {
@@ -326,8 +326,8 @@ function registerOpenApiSchemas() {
     globalRegistry.add(Folder, { id: 'folder' })
     globalRegistry.add(UserWithMetaInformation, { id: 'user' })
     globalRegistry.add(UserInvitation, { id: 'user-invitation' })
-    globalRegistry.add(WorkspaceWithLimits, { id: 'workspace' })
-    globalRegistry.add(WorkspaceMemberWithUser, { id: 'workspace-member' })
+    globalRegistry.add(ProjectWithLimits, { id: 'project' })
+    globalRegistry.add(ProjectMemberWithUser, { id: 'project-member' })
     globalRegistry.add(Workflow, { id: 'workflow' })
     globalRegistry.add(Execution, { id: 'execution' })
     globalRegistry.add(ConnectionWithoutSensitiveData, { id: 'connection' })

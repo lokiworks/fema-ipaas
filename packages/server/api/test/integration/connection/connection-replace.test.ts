@@ -28,12 +28,12 @@ describe('POST /v1/connections/replace', () => {
 
         const source = createMockConnection({
             tenantId: ctx.tenant.id,
-            workspaceIds: [ctx.workspace.id],
+            projectIds: [ctx.project.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         const target = createMockConnection({
             tenantId: ctx.tenant.id,
-            workspaceIds: [ctx.workspace.id],
+            projectIds: [ctx.project.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         await db.save('connection', [source, target])
@@ -41,7 +41,7 @@ describe('POST /v1/connections/replace', () => {
         const response = await ctx.post('/v1/connections/replace', {
             sourceConnectionId: source.id,
             targetConnectionId: target.id,
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
         })
 
         expect(response?.statusCode).toBe(StatusCodes.NO_CONTENT)
@@ -54,12 +54,12 @@ describe('POST /v1/connections/replace', () => {
 
         const source = createMockConnection({
             tenantId: ctx.tenant.id,
-            workspaceIds: [ctx.workspace.id],
+            projectIds: [ctx.project.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         const target = createMockConnection({
             tenantId: ctx.tenant.id,
-            workspaceIds: [ctx.workspace.id],
+            projectIds: [ctx.project.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         await db.save('connection', [source, target])
@@ -67,7 +67,7 @@ describe('POST /v1/connections/replace', () => {
         const response = await ctx.post('/v1/connections/replace', {
             sourceConnectionId: source.id,
             targetConnectionId: target.id,
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             deleteSourceConnection: true,
         })
 
@@ -81,7 +81,7 @@ describe('POST /v1/connections/replace', () => {
 
         const source = createMockConnection({
             tenantId: ctx.tenant.id,
-            workspaceIds: [ctx.workspace.id],
+            projectIds: [ctx.project.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         await db.save('connection', source)
@@ -89,7 +89,7 @@ describe('POST /v1/connections/replace', () => {
         const response = await ctx.post('/v1/connections/replace', {
             sourceConnectionId: source.id,
             targetConnectionId: source.id,
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             deleteSourceConnection: true,
         })
 
@@ -98,20 +98,20 @@ describe('POST /v1/connections/replace', () => {
         expect(stillThere?.id).toBe(source.id)
     })
 
-    it('rejects deleting a tenant source from the workspace replace', async () => {
+    it('rejects deleting a tenant source from the project replace', async () => {
         const ctx = await createTestContext(app!)
 
         const source: Connection = {
             ...createMockConnection({
                 tenantId: ctx.tenant.id,
-                workspaceIds: [ctx.workspace.id],
+                projectIds: [ctx.project.id],
                 connectorName: CONNECTOR_NAME,
             }, ctx.user.id),
             scope: ConnectionScope.TENANT,
         }
         const target = createMockConnection({
             tenantId: ctx.tenant.id,
-            workspaceIds: [ctx.workspace.id],
+            projectIds: [ctx.project.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         await db.save('connection', [source, target])
@@ -119,7 +119,7 @@ describe('POST /v1/connections/replace', () => {
         const response = await ctx.post('/v1/connections/replace', {
             sourceConnectionId: source.id,
             targetConnectionId: target.id,
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             deleteSourceConnection: true,
         })
 
@@ -134,20 +134,20 @@ describe('POST /v1/connections/replace', () => {
         const source: Connection = {
             ...createMockConnection({
                 tenantId: ctx.tenant.id,
-                workspaceIds: [ctx.workspace.id],
+                projectIds: [ctx.project.id],
                 connectorName: CONNECTOR_NAME,
             }, ctx.user.id),
             scope: ConnectionScope.TENANT,
         }
         const target = createMockConnection({
             tenantId: ctx.tenant.id,
-            workspaceIds: [ctx.workspace.id],
+            projectIds: [ctx.project.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         await db.save('connection', [source, target])
 
         const workflow = createMockWorkflow({
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             status: WorkflowStatus.DISABLED,
         })
         await db.save('workflow', workflow)
@@ -161,7 +161,7 @@ describe('POST /v1/connections/replace', () => {
         const response = await ctx.post('/v1/connections/replace', {
             sourceConnectionId: source.id,
             targetConnectionId: target.id,
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
         })
 
         expect(response?.statusCode).toBe(StatusCodes.NO_CONTENT)
@@ -174,18 +174,18 @@ describe('POST /v1/connections/replace', () => {
 
         const source = createMockConnection({
             tenantId: ctx.tenant.id,
-            workspaceIds: [ctx.workspace.id],
+            projectIds: [ctx.project.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         const target = createMockConnection({
             tenantId: ctx.tenant.id,
-            workspaceIds: [ctx.workspace.id],
+            projectIds: [ctx.project.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         await db.save('connection', [source, target])
 
         const workflow = createMockWorkflow({
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             status: WorkflowStatus.DISABLED,
         })
         await db.save('workflow', workflow)
@@ -199,7 +199,7 @@ describe('POST /v1/connections/replace', () => {
         const response = await ctx.post('/v1/connections/replace', {
             sourceConnectionId: source.id,
             targetConnectionId: target.id,
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             deleteSourceConnection: true,
         })
 
@@ -216,18 +216,18 @@ describe('POST /v1/connections/replace', () => {
 
         const source = createMockConnection({
             tenantId: ctx.tenant.id,
-            workspaceIds: [ctx.workspace.id],
+            projectIds: [ctx.project.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         const target = createMockConnection({
             tenantId: ctx.tenant.id,
-            workspaceIds: [ctx.workspace.id],
+            projectIds: [ctx.project.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         await db.save('connection', [source, target])
 
         const workflow = createMockWorkflow({
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             status: WorkflowStatus.DISABLED,
         })
         await db.save('workflow', workflow)
@@ -243,7 +243,7 @@ describe('POST /v1/connections/replace', () => {
         const response = await ctx.post('/v1/connections/replace', {
             sourceConnectionId: source.id,
             targetConnectionId: target.id,
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             deleteSourceConnection: true,
         })
 
@@ -257,12 +257,12 @@ describe('POST /v1/connections/replace', () => {
 
         const source = createMockConnection({
             tenantId: ctx.tenant.id,
-            workspaceIds: [ctx.workspace.id],
+            projectIds: [ctx.project.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         const target = createMockConnection({
             tenantId: ctx.tenant.id,
-            workspaceIds: [ctx.workspace.id],
+            projectIds: [ctx.project.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         await db.save('connection', [source, target])
@@ -272,7 +272,7 @@ describe('POST /v1/connections/replace', () => {
         // the draft, so a draft-and-published replace must refuse instead of
         // reporting success while the published workflow stays on the old connection.
         const workflow = createMockWorkflow({
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             status: WorkflowStatus.DISABLED,
         })
         await db.save('workflow', workflow)
@@ -295,7 +295,7 @@ describe('POST /v1/connections/replace', () => {
         const response = await ctx.post('/v1/connections/replace', {
             sourceConnectionId: source.id,
             targetConnectionId: target.id,
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             applyToPublishedVersions: true,
         })
 
@@ -309,18 +309,18 @@ describe('POST /v1/connections/replace', () => {
 
         const source = createMockConnection({
             tenantId: ctx.tenant.id,
-            workspaceIds: [ctx.workspace.id],
+            projectIds: [ctx.project.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         const target = createMockConnection({
             tenantId: ctx.tenant.id,
-            workspaceIds: [ctx.workspace.id],
+            projectIds: [ctx.project.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         await db.save('connection', [source, target])
 
         const workflow = createMockWorkflow({
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             status: WorkflowStatus.DISABLED,
         })
         await db.save('workflow', workflow)
@@ -343,7 +343,7 @@ describe('POST /v1/connections/replace', () => {
         const response = await ctx.post('/v1/connections/replace', {
             sourceConnectionId: source.id,
             targetConnectionId: target.id,
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
         })
 
         expect(response?.statusCode).toBe(StatusCodes.NO_CONTENT)
@@ -356,12 +356,12 @@ describe('POST /v1/connections/replace', () => {
 
         const source = createMockConnection({
             tenantId: ctx.tenant.id,
-            workspaceIds: [ctx.workspace.id],
+            projectIds: [ctx.project.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         const target = createMockConnection({
             tenantId: ctx.tenant.id,
-            workspaceIds: [ctx.workspace.id],
+            projectIds: [ctx.project.id],
             connectorName: CONNECTOR_NAME,
         }, ctx.user.id)
         await db.save('connection', [source, target])
@@ -370,7 +370,7 @@ describe('POST /v1/connections/replace', () => {
         // it, so the workflow is invisible to the replace's connection filter and its
         // published version would be orphaned by the delete.
         const workflow = createMockWorkflow({
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             status: WorkflowStatus.DISABLED,
         })
         await db.save('workflow', workflow)
@@ -393,7 +393,7 @@ describe('POST /v1/connections/replace', () => {
         const response = await ctx.post('/v1/connections/replace', {
             sourceConnectionId: source.id,
             targetConnectionId: target.id,
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             deleteSourceConnection: true,
             applyToPublishedVersions: true,
         })

@@ -2,14 +2,12 @@ import { isNil } from '@fema-ipaas/core-utils';
 import { WorkflowOperationType, WorkflowTriggerType } from '@fema-ipaas/shared';
 import { StoreApi } from 'zustand';
 
-import { RightSideBarType } from '@/app/builder/types';
+import { LeftSideBarType, RightSideBarType } from '@/app/builder/types';
 import { executionUtils } from '@/features/executions';
 
 import { BuilderState } from '../builder-hooks';
 import { CanvasOrientation } from '../workflow-canvas/utils/types';
 import { workflowCanvasUtils } from '../workflow-canvas/utils/workflow-canvas-utils';
-
-export type StepDataPanelView = 'drawer' | 'split';
 
 export type CanvasState = {
   canvasOrientation: CanvasOrientation;
@@ -17,6 +15,7 @@ export type CanvasState = {
   readonly: boolean;
   hideTestWidget: boolean;
   rightSidebar: RightSideBarType;
+  leftSidebar: LeftSideBarType;
   selectedStep: string | null;
   activeDraggingStep: string | null;
   selectedBranchIndex: number | null;
@@ -27,6 +26,7 @@ export type CanvasState = {
   exitStepSettings: () => void;
   renameWorkflowClientSide: (newName: string) => void;
   setRightSidebar: (rightSidebar: RightSideBarType) => void;
+  setLeftSidebar: (leftSidebar: LeftSideBarType) => void;
   removeStepSelection: () => void;
   selectStepByName: (
     stepName: string,
@@ -44,10 +44,6 @@ export type CanvasState = {
     isFocusInsideListMapperModeInput: boolean,
   ) => void;
   deselectStep: () => void;
-  stepDataPanelView: StepDataPanelView;
-  setStepDataPanelView: (view: StepDataPanelView) => void;
-  isStepDataPanelOpen: boolean;
-  setStepDataPanelOpen: (open: boolean) => void;
 };
 
 type CanvasStateInitialState = Pick<
@@ -94,6 +90,7 @@ export const createCanvasState = (
       initiallySelectedStep && !isEmptyTriggerInitiallySelected
         ? RightSideBarType.CONNECTOR_SETTINGS
         : RightSideBarType.NONE,
+    leftSidebar: LeftSideBarType.NONE,
     removeStepSelection: () =>
       set({
         selectedStep: null,
@@ -145,8 +142,11 @@ export const createCanvasState = (
           selectedConnectorMetadataInConnectorSelector: null,
           selectedStep,
           rightSidebar: isUnconfiguredTrigger
-            ? RightSideBarType.CONNECTOR_PICKER
+            ? RightSideBarType.NONE
             : RightSideBarType.CONNECTOR_SETTINGS,
+          leftSidebar: isUnconfiguredTrigger
+            ? LeftSideBarType.CONNECTOR_PICKER
+            : state.leftSidebar,
           selectedBranchIndex: null,
           selectedNodes,
           chatDrawerOpenSource: null,
@@ -177,6 +177,7 @@ export const createCanvasState = (
         selectedBranchIndex: null,
       })),
     setRightSidebar: (rightSidebar: RightSideBarType) => set({ rightSidebar }),
+    setLeftSidebar: (leftSidebar: LeftSideBarType) => set({ leftSidebar }),
     selectedBranchIndex: null,
     selectedNodes: [],
     setSelectedNodes: (nodes) => {
@@ -206,24 +207,6 @@ export const createCanvasState = (
         isFocusInsideListMapperModeInput,
       }));
     },
-    stepDataPanelView: getStepDataPanelViewFromLocalStorage(),
-    setStepDataPanelView: (view: StepDataPanelView) => {
-      localStorage.setItem(STEP_DATA_PANEL_VIEW_KEY_IN_LOCAL_STORAGE, view);
-      return set(() => ({
-        stepDataPanelView: view,
-      }));
-    },
-    isStepDataPanelOpen:
-      getTestPanelOpenFromLocalStorage() || !isNil(initialState.run),
-    setStepDataPanelOpen: (open: boolean) => {
-      localStorage.setItem(
-        TEST_PANEL_OPEN_KEY_IN_LOCAL_STORAGE,
-        open ? 'open' : 'closed',
-      );
-      return set(() => ({
-        isStepDataPanelOpen: open,
-      }));
-    },
   };
 };
 
@@ -241,17 +224,4 @@ function getPanningModeFromLocalStorage(): 'grab' | 'pan' {
     'grab'
     ? 'grab'
     : 'pan';
-}
-
-const STEP_DATA_PANEL_VIEW_KEY_IN_LOCAL_STORAGE = 'ap.builder.testPanelView';
-function getStepDataPanelViewFromLocalStorage(): StepDataPanelView {
-  return localStorage.getItem(STEP_DATA_PANEL_VIEW_KEY_IN_LOCAL_STORAGE) ===
-    'split'
-    ? 'split'
-    : 'drawer';
-}
-
-const TEST_PANEL_OPEN_KEY_IN_LOCAL_STORAGE = 'ap.builder.testPanelOpen';
-function getTestPanelOpenFromLocalStorage(): boolean {
-  return localStorage.getItem(TEST_PANEL_OPEN_KEY_IN_LOCAL_STORAGE) === 'open';
 }

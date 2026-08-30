@@ -17,11 +17,11 @@ afterAll(async () => {
     await teardownTestEnvironment()
 })
 
-async function engineToken(workspaceId: string, tenantId: string): Promise<string> {
+async function engineToken(projectId: string, tenantId: string): Promise<string> {
     const principal: Principal = {
         id: generateId(),
         type: PrincipalType.ENGINE,
-        workspaceId,
+        projectId,
         tenant: { id: tenantId },
     }
     return generateMockToken(principal)
@@ -42,7 +42,7 @@ describe('Connector Bundle Endpoint', () => {
     })
 
     it('redirects a registry connector to the npm tarball, never to our own S3', async () => {
-        const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
+        const { mockTenant, mockProject } = await mockAndSaveBasicSetup()
         await db.save('connector_metadata', createMockConnectorMetadata({
             name: '@fema-ipaas/connector-bundle-official',
             version: '1.2.3',
@@ -50,7 +50,7 @@ describe('Connector Bundle Endpoint', () => {
             connectorType: ConnectorType.OFFICIAL,
             tenantId: undefined,
         }))
-        const token = await engineToken(mockWorkspace.id, mockTenant.id)
+        const token = await engineToken(mockProject.id, mockTenant.id)
 
         const response = await app!.inject(bundleRequest('@fema-ipaas/connector-bundle-official', '1.2.3', token))
 
@@ -67,7 +67,7 @@ describe('Connector Bundle Endpoint', () => {
         await db.save('file', createMockFile({
             id: archiveId,
             tenantId: tenantA.mockTenant.id,
-            workspaceId: null,
+            projectId: null,
             type: FileType.PACKAGE_ARCHIVE,
             location: FileLocation.DB,
             compression: FileCompression.NONE,
@@ -82,8 +82,8 @@ describe('Connector Bundle Endpoint', () => {
             archiveId,
         }))
 
-        const tokenA = await engineToken(tenantA.mockWorkspace.id, tenantA.mockTenant.id)
-        const tokenB = await engineToken(tenantB.mockWorkspace.id, tenantB.mockTenant.id)
+        const tokenA = await engineToken(tenantA.mockProject.id, tenantA.mockTenant.id)
+        const tokenB = await engineToken(tenantB.mockProject.id, tenantB.mockTenant.id)
 
         const ownerResponse = await app!.inject(bundleRequest('@acme/connector-private', '0.0.1', tokenA))
         expect(ownerResponse.statusCode).toBe(StatusCodes.OK)
@@ -101,15 +101,15 @@ describe('Connector Bundle Endpoint', () => {
         await db.save('file', createMockFile({
             id: archiveId,
             tenantId: tenantA.mockTenant.id,
-            workspaceId: null,
+            projectId: null,
             type: FileType.PACKAGE_ARCHIVE,
             location: FileLocation.DB,
             compression: FileCompression.NONE,
             data: Buffer.from('archive-bytes'),
         }))
 
-        const tokenA = await engineToken(tenantA.mockWorkspace.id, tenantA.mockTenant.id)
-        const tokenB = await engineToken(tenantB.mockWorkspace.id, tenantB.mockTenant.id)
+        const tokenA = await engineToken(tenantA.mockProject.id, tenantA.mockTenant.id)
+        const tokenB = await engineToken(tenantB.mockProject.id, tenantB.mockTenant.id)
         const byArchive = (token: string) => ({
             method: 'GET' as const,
             url: `/api/v1/engine/connectors/bundle?archiveId=${archiveId}`,

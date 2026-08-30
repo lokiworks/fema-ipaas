@@ -1,12 +1,12 @@
 import { isNil } from '@fema-ipaas/core-utils';
 import {
-  WORKSPACE_COLOR_PALETTE,
+  PROJECT_COLOR_PALETTE,
   TenantRole,
-  WorkspaceType,
+  ProjectType,
   TemplateTelemetryEventType,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
-import { Search } from 'lucide-react';
+import { Search, PuzzleIcon } from 'lucide-react';
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useDebounce } from 'use-debounce';
@@ -33,12 +33,12 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar-shadcn';
 import { VirtualizedScrollArea } from '@/components/ui/virtualized-scroll-area';
-import { templatesTelemetryApi } from '@/features/templates';
 import {
-  CreateWorkspaceButton,
-  workspaceCollectionUtils,
-  getWorkspaceName,
-} from '@/features/workspaces';
+  CreateProjectButton,
+  projectCollectionUtils,
+  getProjectName,
+} from '@/features/projects';
+import { templatesTelemetryApi } from '@/features/templates';
 import { useIsTenantAdmin } from '@/hooks/authorization-hooks';
 import { userHooks } from '@/hooks/user-hooks';
 import { cn } from '@/lib/utils';
@@ -46,16 +46,16 @@ import { cn } from '@/lib/utils';
 import { recordAccess } from '../../global-search/access-history';
 import { GlobalSearchCommand } from '../../global-search/global-search-command';
 import { STATIC_PAGES } from '../../global-search/static-pages';
+import ProjectSideBarItem from '../project';
 import { AppSidebarHeader } from '../sidebar-header';
 import { SidebarGeneralItemType } from '../sidebar-nav-group';
 import { SidebarNavItem, SidebarItemType } from '../sidebar-nav-item';
 import { SidebarUser } from '../sidebar-user';
-import WorkspaceSideBarItem from '../workspace';
 
-export function WorkspaceDashboardSidebar({
+export function ProjectDashboardSidebar({
   className,
 }: { className?: string } = {}) {
-  const { data: workspaces } = workspaceCollectionUtils.useAll();
+  const { data: projects } = projectCollectionUtils.useAll();
   const { embedState } = useEmbedding();
   const { state } = useSidebar();
   const location = useLocation();
@@ -70,48 +70,48 @@ export function WorkspaceDashboardSidebar({
     }
   }, [searchOpen]);
 
-  const shouldShowNewWorkspaceButton =
+  const shouldShowNewProjectButton =
     currentUser?.tenantRole === TenantRole.ADMIN;
 
   const shouldShowInlineAddButton =
     currentUser?.tenantRole === TenantRole.ADMIN &&
-    workspaces.filter((workspace) => workspace.type === WorkspaceType.TEAM)
-      .length === 0;
+    projects.filter((project) => project.type === ProjectType.TEAM).length ===
+      0;
 
   const isSearchMode = debouncedSearchQuery.length > 0;
 
-  const displayWorkspaces = useMemo(() => {
+  const displayProjects = useMemo(() => {
     if (isSearchMode) {
       const query = debouncedSearchQuery.toLowerCase();
-      return workspaces.filter((workspace) =>
-        workspace.displayName.toLowerCase().includes(query),
+      return projects.filter((project) =>
+        project.displayName.toLowerCase().includes(query),
       );
     }
-    return workspaces;
-  }, [isSearchMode, debouncedSearchQuery, workspaces]);
-  const handleWorkspaceSelect = useCallback(
-    async (workspaceId: string) => {
-      const workspace = workspaces.find((p) => p.id === workspaceId);
-      if (workspace) {
-        const palette = workspace.icon
-          ? WORKSPACE_COLOR_PALETTE[workspace.icon.color]
+    return projects;
+  }, [isSearchMode, debouncedSearchQuery, projects]);
+  const handleProjectSelect = useCallback(
+    async (projectId: string) => {
+      const project = projects.find((p) => p.id === projectId);
+      if (project) {
+        const palette = project.icon
+          ? PROJECT_COLOR_PALETTE[project.icon.color]
           : null;
-        const name = getWorkspaceName(workspace);
+        const name = getProjectName(project);
         recordAccess({
-          id: `workspace-${workspaceId}`,
-          type: 'workspace',
+          id: `project-${projectId}`,
+          type: 'project',
           label: name,
-          href: `/workspaces/${workspaceId}/automations`,
+          href: `/projects/${projectId}/automations`,
           iconBgColor: palette?.color,
           iconTextColor: palette?.textColor,
           iconLetter: name.charAt(0).toUpperCase(),
         });
       }
-      workspaceCollectionUtils.setCurrentWorkspace(workspaceId);
-      navigate(`/workspaces/${workspaceId}/automations`);
+      projectCollectionUtils.setCurrentProject(projectId);
+      navigate(`/projects/${projectId}/automations`);
       setSearchOpen(false);
     },
-    [navigate, workspaces],
+    [navigate, projects],
   );
 
   const permissionFilter = (link: SidebarGeneralItemType) => {
@@ -148,7 +148,17 @@ export function WorkspaceDashboardSidebar({
     },
   };
 
-  const items = [exploreLink]
+  const connectorsLink: SidebarItemType = {
+    type: 'link',
+    to: '/tenant/connectors',
+    label: t('Connectors'),
+    show: !embedState.isEmbedded,
+    icon: PuzzleIcon,
+    hasPermission: true,
+    isSubItem: false,
+  };
+
+  const items = [exploreLink, connectorsLink]
     .filter((item) => item.show !== false)
     .filter(permissionFilter);
 
@@ -177,14 +187,14 @@ export function WorkspaceDashboardSidebar({
 
           <SidebarGroup className="flex-1 overflow-hidden">
             <div className="flex items-center justify-between group-data-[collapsible=icon]:hidden">
-              <SidebarGroupLabel>{t('Workspaces')}</SidebarGroupLabel>
+              <SidebarGroupLabel>{t('Projects')}</SidebarGroupLabel>
               <div className="flex items-center justify-center gap-2">
-                {shouldShowNewWorkspaceButton && (
-                  <CreateWorkspaceButton
+                {shouldShowNewProjectButton && (
+                  <CreateProjectButton
                     variant="icon"
-                    workspaces={workspaces ?? []}
-                    onCreate={(workspace) => {
-                      navigate(`/workspaces/${workspace.id}/workflows`);
+                    projects={projects ?? []}
+                    onCreate={(project) => {
+                      navigate(`/projects/${project.id}/workflows`);
                     }}
                   />
                 )}
@@ -205,7 +215,7 @@ export function WorkspaceDashboardSidebar({
                     sideOffset={8}
                   >
                     <SearchInput
-                      placeholder={t('Search workspaces...')}
+                      placeholder={t('Search projects...')}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e)}
                       className="h-8"
@@ -222,7 +232,7 @@ export function WorkspaceDashboardSidebar({
               }}
             >
               <div className="flex max-h-[100%]">
-                {displayWorkspaces.length > 0 ? (
+                {displayProjects.length > 0 ? (
                   <VirtualizedScrollArea
                     className={cn(
                       'flex-1',
@@ -230,23 +240,21 @@ export function WorkspaceDashboardSidebar({
                         ? 'flex flex-col items-center scrollbar-none'
                         : '',
                     )}
-                    items={displayWorkspaces}
+                    items={displayProjects}
                     estimateSize={() => 35}
-                    getItemKey={(index) =>
-                      displayWorkspaces[index]?.id ?? index
-                    }
+                    getItemKey={(index) => displayProjects[index]?.id ?? index}
                     overscan={10}
-                    renderItem={(workspace) => (
+                    renderItem={(project) => (
                       <SidebarMenuItem className="w-full">
-                        <WorkspaceSideBarItem
-                          key={workspace.id}
-                          workspace={workspace}
-                          isCurrentWorkspace={
+                        <ProjectSideBarItem
+                          key={project.id}
+                          project={project}
+                          isCurrentProject={
                             location.pathname.includes(
-                              `/workspaces/${workspace.id}`,
+                              `/projects/${project.id}`,
                             ) && !location.pathname.includes('/agents')
                           }
-                          handleWorkspaceSelect={handleWorkspaceSelect}
+                          handleProjectSelect={handleProjectSelect}
                         />
                       </SidebarMenuItem>
                     )}
@@ -254,7 +262,7 @@ export function WorkspaceDashboardSidebar({
                 ) : (
                   isSearchMode && (
                     <div className="px-2 py-2 text-sm text-muted-foreground">
-                      {state === 'expanded' && t('No workspaces found.')}
+                      {state === 'expanded' && t('No projects found.')}
                     </div>
                   )
                 )}
@@ -262,11 +270,11 @@ export function WorkspaceDashboardSidebar({
               {shouldShowInlineAddButton && state === 'expanded' && (
                 <SidebarMenu>
                   <SidebarMenuItem>
-                    <CreateWorkspaceButton
+                    <CreateProjectButton
                       variant="sidebar-menu"
-                      workspaces={workspaces ?? []}
-                      onCreate={(workspace) => {
-                        navigate(`/workspaces/${workspace.id}/workflows`);
+                      projects={projects ?? []}
+                      onCreate={(project) => {
+                        navigate(`/projects/${project.id}/workflows`);
                       }}
                     />
                   </SidebarMenuItem>
@@ -308,7 +316,7 @@ function SidebarTenantAdminLink() {
     <SidebarMenu>
       <SidebarNavItem
         type="link"
-        to="/tenant/workspaces"
+        to="/tenant/projects"
         label={t('Tenant Admin')}
         icon={ShieldIcon}
         isSubItem={false}
@@ -317,7 +325,7 @@ function SidebarTenantAdminLink() {
         onClick={() => {
           const page = STATIC_PAGES.find(
             (p) =>
-              p.href === '/tenant/workspaces' && p.id === 'page-tenant-admin',
+              p.href === '/tenant/projects' && p.id === 'page-tenant-admin',
           );
           if (page)
             recordAccess({
@@ -332,4 +340,4 @@ function SidebarTenantAdminLink() {
   );
 }
 
-export const SIDEBAR_ID = 'workspace-sidebar';
+export const SIDEBAR_ID = 'project-sidebar';

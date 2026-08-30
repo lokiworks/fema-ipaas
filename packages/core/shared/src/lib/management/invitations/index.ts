@@ -1,10 +1,10 @@
-import { BaseModelSchema, Nullable, NullableEnum, WorkspaceRole } from '@fema-ipaas/core-utils'
+import { BaseModelSchema, Nullable, NullableEnum, ProjectRole } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 import { TenantRole } from '../../core/user/index'
 
 export enum InvitationType {
     TENANT = 'TENANT',
-    WORKSPACE = 'WORKSPACE',
+    PROJECT = 'PROJECT',
 }
 
 export enum InvitationStatus {
@@ -19,9 +19,9 @@ export const UserInvitation = z.object({
     type: z.nativeEnum(InvitationType),
     tenantId: z.string(),
     tenantRole: NullableEnum(TenantRole),
-    workspaceId: Nullable(z.string()),
-    workspaceRoleId: Nullable(z.string()),
-    workspaceRole: Nullable(WorkspaceRole),
+    projectId: Nullable(z.string()),
+    projectRoleId: Nullable(z.string()),
+    projectRole: Nullable(ProjectRole),
 })
 
 export type UserInvitation = z.infer<typeof UserInvitation>
@@ -34,10 +34,10 @@ export type UserInvitationWithLink = z.infer<typeof UserInvitationWithLink>
 
 export const SendUserInvitationRequest = z.union([
     z.object({
-        type: z.literal(InvitationType.WORKSPACE),
+        type: z.literal(InvitationType.PROJECT),
         email: z.string(),
-        workspaceId: z.string(),
-        workspaceRole: z.string(),
+        projectId: z.string(),
+        projectRole: z.string(),
     }),
     z.object({
         type: z.literal(InvitationType.TENANT),
@@ -59,7 +59,7 @@ export const ListUserInvitationsRequest = z.object({
     limit: z.coerce.number().optional(),
     cursor: z.string().optional(),
     type: z.nativeEnum(InvitationType),
-    workspaceId: Nullable(z.string()),
+    projectId: Nullable(z.string()),
     status: z.nativeEnum(InvitationStatus).optional(),
 })
 

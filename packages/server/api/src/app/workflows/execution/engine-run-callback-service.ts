@@ -5,17 +5,17 @@ import { websocketService } from '../../core/websockets.service'
 import { fileCompressor } from '../../file/file-compressor'
 import { fileService } from '../../file/file.service'
 import { pubsub } from '../../helper/pubsub'
+import { projectService } from '../../project/project-service'
 import { RunsMetadataUpsertData } from '../../workers/job'
-import { workspaceService } from '../../workspace/workspace-service'
 import { runsMetadataQueue } from './executions-queue'
 
 export const engineRunCallbackService = (log: FastifyBaseLogger) => ({
-    updateRunProgress({ workspaceId, request }: UpdateRunProgressParams): void {
-        websocketService.to(workspaceId).emit(WebsocketClientEvent.UPDATE_RUN_PROGRESS, request)
+    updateRunProgress({ projectId, request }: UpdateRunProgressParams): void {
+        websocketService.to(projectId).emit(WebsocketClientEvent.UPDATE_RUN_PROGRESS, request)
     },
 
-    updateStepProgress({ workspaceId, request }: UpdateStepProgressParams): void {
-        websocketService.to(workspaceId).emit(WebsocketClientEvent.TEST_STEP_PROGRESS, request)
+    updateStepProgress({ projectId, request }: UpdateStepProgressParams): void {
+        websocketService.to(projectId).emit(WebsocketClientEvent.TEST_STEP_PROGRESS, request)
     },
 
     async sendWorkflowResponse({ request }: SendWorkflowResponseParams): Promise<void> {
@@ -25,21 +25,21 @@ export const engineRunCallbackService = (log: FastifyBaseLogger) => ({
         )
     },
 
-    async uploadRunLog({ workspaceId, request }: UploadRunLogParams): Promise<void> {
+    async uploadRunLog({ projectId, request }: UploadRunLogParams): Promise<void> {
         const internalErrorEnabled = request.internalError?.source === RunInternalErrorSource.ENGINE || true
         const internalError = internalErrorEnabled ? request.internalError : undefined
         const isTerminal = !isNil(request.status) && isExecutionStateTerminal({ status: request.status, ignoreInternalError: false })
         if (isTerminal && !isNil(request.logsFileId)) {
             await ensureLogsFileExists({
                 log,
-                workspaceId,
+                projectId,
                 logsFileId: request.logsFileId,
                 internalError,
             })
         }
         const logData: RunsMetadataUpsertData = {
             id: request.runId,
-            workspaceId,
+            projectId,
             status: request.status,
             tags: request.tags,
             logsFileId: request.logsFileId,
@@ -55,21 +55,21 @@ export const engineRunCallbackService = (log: FastifyBaseLogger) => ({
         await runsMetadataQueue(log).add(logData)
 
         if (request.stepResponse && request.streamStepProgress === StreamStepProgress.WEBSOCKET) {
-            const stepData = { ...request.stepResponse, workspaceId }
+            const stepData = { ...request.stepResponse, projectId }
             if (!isTerminal) {
-                websocketService.to(workspaceId).emit(WebsocketClientEvent.TEST_STEP_PROGRESS, stepData)
+                websocketService.to(projectId).emit(WebsocketClientEvent.TEST_STEP_PROGRESS, stepData)
             }
             else {
-                websocketService.to(workspaceId).emit(WebsocketClientEvent.TEST_STEP_FINISHED, stepData)
+                websocketService.to(projectId).emit(WebsocketClientEvent.TEST_STEP_FINISHED, stepData)
             }
         }
     },
 })
 
-async function ensureLogsFileExists({ log, workspaceId, logsFileId, internalError }: EnsureLogsFileParams): Promise<void> {
+async function ensureLogsFileExists({ log, projectId, logsFileId, internalError }: EnsureLogsFileParams): Promise<void> {
     const { error } = await tryCatch(async () => {
         const fileExists = await fileService(log).exists({
-            workspaceId,
+            projectId,
             fileId: logsFileId,
             type: FileType.EXECUTION_LOG,
         })
@@ -78,7 +78,7 @@ async function ensureLogsFileExists({ log, workspaceId, logsFileId, internalErro
         }
 
         const existing = fileExists
-            ? await fileService(log).getDataOrUndefined({ workspaceId, fileId: logsFileId, type: FileType.EXECUTION_LOG })
+            ? await fileService(log).getDataOrUndefined({ projectId, fileId: logsFileId, type: FileType.EXECUTION_LOG })
             : undefined
         const outputFile: ExecutioOutputFile = !isNil(existing)
             ? JSON.parse(existing.data.toString('utf-8'))
@@ -89,10 +89,10 @@ async function ensureLogsFileExists({ log, workspaceId, logsFileId, internalErro
             compression: FileCompression.ZSTD,
         })
 
-        const tenantId = await workspaceService(log).getTenantId(workspaceId)
+        const tenantId = await projectService(log).getTenantId(projectId)
         await fileService(log).save({
             fileId: logsFileId,
-            workspaceId,
+            projectId,
             tenantId,
             type: FileType.EXECUTION_LOG,
             data,
@@ -102,17 +102,17 @@ async function ensureLogsFileExists({ log, workspaceId, logsFileId, internalErro
     })
 
     if (error) {
-        log.error({ error, logsFileId, workspace: { id: workspaceId } }, '[uploadRunLog] Failed to ensure logs file exists')
+        log.error({ error, logsFileId, project: { id: projectId } }, '[uploadRunLog] Failed to ensure logs file exists')
     }
 }
 
 type UpdateRunProgressParams = {
-    workspaceId: string
+    projectId: string
     request: unknown
 }
 
 type UpdateStepProgressParams = {
-    workspaceId: string
+    projectId: string
     request: UpdateStepProgressRequest
 }
 
@@ -121,13 +121,13 @@ type SendWorkflowResponseParams = {
 }
 
 type UploadRunLogParams = {
-    workspaceId: string
+    projectId: string
     request: UploadRunLogsRequest
 }
 
 type EnsureLogsFileParams = {
     log: FastifyBaseLogger
-    workspaceId: string
+    projectId: string
     logsFileId: string
     internalError?: RunInternalError
 }

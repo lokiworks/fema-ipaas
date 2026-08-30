@@ -2,7 +2,7 @@ import { CustomProperty as CustomPropertyType } from '@fema-ipaas/connector-sdk'
 import { useEffect, useId } from 'react';
 
 import { useEmbedding } from '@/components/providers/embed-provider';
-import { workspaceCollectionUtils } from '@/features/workspaces';
+import { projectCollectionUtils } from '@/features/projects';
 const CUSTOM_PROPERTY_CONTAINER_ID = 'custom-property-container';
 
 type CustomPropertyParams = {
@@ -28,7 +28,7 @@ const CustomProperty = ({
   disabled,
   property,
 }: CustomPropertyParams) => {
-  const { workspace } = workspaceCollectionUtils.useCurrentWorkspace();
+  const { project } = projectCollectionUtils.useCurrentProject();
   const { embedState } = useEmbedding();
   const id = useId();
   const containerId = CUSTOM_PROPERTY_CONTAINER_ID + '-' + id;
@@ -39,7 +39,7 @@ const CustomProperty = ({
         value,
         onChange,
         isEmbedded: embedState.isEmbedded,
-        workspaceId: workspace.id,
+        projectId: project.id,
         disabled,
         property,
       };

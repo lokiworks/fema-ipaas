@@ -3,8 +3,8 @@ import { EngineHttpResponse, Execution, ExecutionStatus, ExecutionType, isExecut
 import { FastifyBaseLogger } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { distributedLock } from '../../../database/redis-connections'
+import { projectService } from '../../../project/project-service'
 import { engineResponseWatcher } from '../../../workers/engine-response-watcher'
-import { workspaceService } from '../../../workspace/workspace-service'
 import { addToQueue, executionService, findExecutionOrThrow, WEBHOOK_TIMEOUT_MS } from '../execution-service'
 import { executionSideEffects } from '../execution-side-effects'
 import { waitpointService } from './waitpoint-service'
@@ -25,7 +25,7 @@ export const resumeService = (log: FastifyBaseLogger) => ({
             executionId,
             waitpointId,
             executionStatus: execution.status,
-            workspaceId: execution.workspaceId,
+            projectId: execution.projectId,
             resumePayload: resumePayload ?? null,
             workerHandlerId,
             onReady: async (waitpoint) => {
@@ -74,7 +74,7 @@ export const resumeService = (log: FastifyBaseLogger) => ({
     async handleSyncResumeWorkflow({ runId, waitpointId, payload, correlationId }: HandleSyncResumeWorkflowParams): Promise<EngineHttpResponse> {
         const execution = await executionService(log).getOnePopulatedOrThrow({
             id: runId,
-            workspaceId: undefined,
+            projectId: undefined,
         })
 
         if (isExecutionStateTerminal({ status: execution.status, ignoreInternalError: false })) {
@@ -130,7 +130,7 @@ export const resumeService = (log: FastifyBaseLogger) => ({
 
 async function enqueueResume(params: EnqueueResumeParams, log: FastifyBaseLogger): Promise<void> {
     const { execution, waitpoint, resumePayload, workerHandlerId, httpRequestId } = params
-    const tenantId = await workspaceService(log).getTenantId(execution.workspaceId)
+    const tenantId = await projectService(log).getTenantId(execution.projectId)
     // Namespace the BullMQ job with waitpoint id so it cannot be deduplicated
     // against the still-active BEGIN job or a consecutive resume for a different waitpoint
     const waitpointId = waitpoint?.id ?? 'legacy'

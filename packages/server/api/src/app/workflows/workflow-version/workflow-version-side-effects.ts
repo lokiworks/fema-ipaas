@@ -1,4 +1,4 @@
-import { isNil, WorkspaceId } from '@fema-ipaas/core-utils'
+import { isNil, ProjectId } from '@fema-ipaas/core-utils'
 import { FileType, WorkflowOperationRequest, WorkflowOperationType, workflowStructureUtil, WorkflowVersion } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { EntityManager } from 'typeorm'
@@ -8,7 +8,7 @@ import { sampleDataService } from '../step-run/sample-data.service'
 import { workflowService } from '../workflow/workflow.service'
 
 type OnApplyOperationParams = {
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     workflowVersion: WorkflowVersion
     operation: WorkflowOperationRequest
     entityManager?: EntityManager
@@ -17,14 +17,14 @@ type OnApplyOperationParams = {
 
 export const workflowVersionSideEffects = (log: FastifyBaseLogger) => ({
     async preApplyOperation({
-        workspaceId,
+        projectId,
         workflowVersion,
         operation,
         entityManager,
     }: OnApplyOperationParams): Promise<void> {
         try {
-            await handleSampleDataDeletion(workspaceId, workflowVersion, operation, log)
-            await handleUpdateTriggerWebhookSimulation(workspaceId, workflowVersion, operation, log)
+            await handleSampleDataDeletion(projectId, workflowVersion, operation, log)
+            await handleUpdateTriggerWebhookSimulation(projectId, workflowVersion, operation, log)
         }
         catch (e) {
             // Ignore error and continue the operation peacefully
@@ -32,7 +32,7 @@ export const workflowVersionSideEffects = (log: FastifyBaseLogger) => ({
         }
         await workflowService(log).updateLastModified({
             workflowId: workflowVersion.workflowId,
-            workspaceId,
+            projectId,
             entityManager,
         })
     },
@@ -41,7 +41,7 @@ export const workflowVersionSideEffects = (log: FastifyBaseLogger) => ({
 
 
 
-async function handleSampleDataDeletion(workspaceId: WorkspaceId, workflowVersion: WorkflowVersion, operation: WorkflowOperationRequest, log: FastifyBaseLogger): Promise<void> {
+async function handleSampleDataDeletion(projectId: ProjectId, workflowVersion: WorkflowVersion, operation: WorkflowOperationRequest, log: FastifyBaseLogger): Promise<void> {
     if (operation.type !== WorkflowOperationType.UPDATE_TRIGGER && operation.type !== WorkflowOperationType.DELETE_ACTION) {
         return
     }
@@ -55,7 +55,7 @@ async function handleSampleDataDeletion(workspaceId: WorkspaceId, workflowVersio
             const sampleDataExists = !isNil(stepToDelete?.settings.sampleData?.sampleDataFileId)
             if (triggerChanged && sampleDataExists) {
                 await sampleDataService(log).deleteForStep({
-                    workspaceId,
+                    projectId,
                     workflowVersionId: workflowVersion.id,
                     workflowId: workflowVersion.workflowId,
                     fileId: stepToDelete.settings.sampleData.sampleDataFileId,
@@ -65,7 +65,7 @@ async function handleSampleDataDeletion(workspaceId: WorkspaceId, workflowVersio
             const sampleDataInputExists = !isNil(stepToDelete?.settings.sampleData?.sampleDataInputFileId)
             if (triggerChanged && sampleDataInputExists) {
                 await sampleDataService(log).deleteForStep({
-                    workspaceId,
+                    projectId,
                     workflowVersionId: workflowVersion.id,
                     workflowId: workflowVersion.workflowId,
                     fileId: stepToDelete.settings.sampleData.sampleDataInputFileId,
@@ -80,7 +80,7 @@ async function handleSampleDataDeletion(workspaceId: WorkspaceId, workflowVersio
                 const sampleDataExists = !isNil(step.settings.sampleData?.sampleDataFileId)
                 if (sampleDataExists) {
                     await sampleDataService(log).deleteForStep({
-                        workspaceId,
+                        projectId,
                         workflowVersionId: workflowVersion.id,
                         workflowId: workflowVersion.workflowId,
                         fileId: step.settings.sampleData.sampleDataFileId,
@@ -90,7 +90,7 @@ async function handleSampleDataDeletion(workspaceId: WorkspaceId, workflowVersio
                 const sampleDataInputExists = !isNil(step.settings.sampleData?.sampleDataInputFileId)
                 if (sampleDataInputExists) {
                     await sampleDataService(log).deleteForStep({
-                        workspaceId,
+                        projectId,
                         workflowVersionId: workflowVersion.id,
                         workflowId: workflowVersion.workflowId,
                         fileId: step.settings.sampleData.sampleDataInputFileId,
@@ -106,11 +106,11 @@ async function handleSampleDataDeletion(workspaceId: WorkspaceId, workflowVersio
 
 }
 
-async function handleUpdateTriggerWebhookSimulation(workspaceId: WorkspaceId, workflowVersion: WorkflowVersion, operation: WorkflowOperationRequest, log: FastifyBaseLogger): Promise<void> {
+async function handleUpdateTriggerWebhookSimulation(projectId: ProjectId, workflowVersion: WorkflowVersion, operation: WorkflowOperationRequest, log: FastifyBaseLogger): Promise<void> {
     if (operation.type === WorkflowOperationType.UPDATE_TRIGGER) {
         await triggerSourceService(log).disable({
             workflowId: workflowVersion.workflowId,
-            workspaceId,
+            projectId,
             simulate: true,
             ignoreError: true,
         })

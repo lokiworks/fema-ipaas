@@ -7,17 +7,17 @@ import { authenticationSession } from '@/lib/authentication-session';
 
 const STORAGE_KEY_PREFIX = 'ap_pinned_items_';
 
-function getStorageKey(workspaceId: string, userId: string): string {
-  return `${STORAGE_KEY_PREFIX}${workspaceId}_${userId}`;
+function getStorageKey(projectId: string, userId: string): string {
+  return `${STORAGE_KEY_PREFIX}${projectId}_${userId}`;
 }
 
 /**
  * Stored as an ordered array where index 0 = most recently pinned (shown first).
  * New pins are prepended so "last pinned = very top".
  */
-function readPinnedList(workspaceId: string, userId: string): string[] {
+function readPinnedList(projectId: string, userId: string): string[] {
   try {
-    const raw = localStorage.getItem(getStorageKey(workspaceId, userId));
+    const raw = localStorage.getItem(getStorageKey(projectId, userId));
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (
@@ -34,26 +34,22 @@ function readPinnedList(workspaceId: string, userId: string): string[] {
 }
 
 function writePinnedList(
-  workspaceId: string,
+  projectId: string,
   userId: string,
   list: string[],
 ): void {
-  localStorage.setItem(
-    getStorageKey(workspaceId, userId),
-    JSON.stringify(list),
-  );
+  localStorage.setItem(getStorageKey(projectId, userId), JSON.stringify(list));
 }
 
 export function usePinnedItems() {
-  const { workspaceId: workspaceIdFromUrl } = useParams<{
-    workspaceId: string;
+  const { projectId: projectIdFromUrl } = useParams<{
+    projectId: string;
   }>();
-  const workspaceId =
-    workspaceIdFromUrl ?? authenticationSession.getWorkspaceId()!;
+  const projectId = projectIdFromUrl ?? authenticationSession.getProjectId()!;
   const userId = authenticationSession.getCurrentUserId()!;
 
   const [pinnedList, setPinnedList] = useState<string[]>(() =>
-    readPinnedList(workspaceId, userId),
+    readPinnedList(projectId, userId),
   );
 
   const pinnedIds = new Set(pinnedList);
@@ -82,7 +78,7 @@ export function usePinnedItems() {
         } else {
           next = [itemId, ...prev];
         }
-        writePinnedList(workspaceId, userId, next);
+        writePinnedList(projectId, userId, next);
         return next;
       });
       if (wasPinned) {
@@ -91,7 +87,7 @@ export function usePinnedItems() {
         toast.success(t('Favorited and moved to the top.'));
       }
     },
-    [workspaceId, userId, pinnedList],
+    [projectId, userId, pinnedList],
   );
 
   const unpinItem = useCallback(
@@ -99,11 +95,11 @@ export function usePinnedItems() {
       setPinnedList((prev) => {
         if (!prev.includes(itemId)) return prev;
         const next = prev.filter((id) => id !== itemId);
-        writePinnedList(workspaceId, userId, next);
+        writePinnedList(projectId, userId, next);
         return next;
       });
     },
-    [workspaceId, userId],
+    [projectId, userId],
   );
 
   return { pinnedIds, pinnedList, isPinned, pinOrder, togglePin, unpinItem };

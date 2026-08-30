@@ -23,5 +23,6 @@
   "\n**Test URL:**\n\nif you want to generate sample data without triggering the workflow, append `/test` to your webhook URL.\n\n": "\n**Test URL:**\n\nif you want to generate sample data without triggering the workflow, append `/test` to your webhook URL.\n\n",
   "None": "None",
   "Basic Auth": "Basic Auth",
-  "Header Auth": "Header Auth"
+  "Header Auth": "Header Auth",
+  "Webhook": "Webhook"
 }

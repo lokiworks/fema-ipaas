@@ -3,7 +3,7 @@ import { TemplateType } from '@fema-ipaas/shared';
 import { Navigate, useParams, useLocation } from 'react-router-dom';
 
 import { PageTitle } from '@/app/components/page-title';
-import { WorkspaceDashboardLayout } from '@/app/components/workspace-layout';
+import { ProjectDashboardLayout } from '@/app/components/project-layout';
 import { TemplateDetailsPage } from '@/app/routes/templates/id';
 import { LoadingScreen } from '@/components/custom/loading-screen';
 import { ShareTemplate, templatesHooks } from '@/features/templates';
@@ -25,9 +25,9 @@ const TemplateDetailsWrapper = () => {
 
   const token = authenticationSession.getToken();
   const isNotAuthenticated = isNil(token);
-  const useWorkspaceLayout = template.type !== TemplateType.SHARED;
+  const useProjectLayout = template.type !== TemplateType.SHARED;
 
-  if (isNotAuthenticated && useWorkspaceLayout) {
+  if (isNotAuthenticated && useProjectLayout) {
     return (
       <Navigate
         to={`/sign-in?${FROM_QUERY_PARAM}=${location.pathname}${location.search}`}
@@ -42,8 +42,8 @@ const TemplateDetailsWrapper = () => {
     </PageTitle>
   );
 
-  if (useWorkspaceLayout) {
-    return <WorkspaceDashboardLayout>{content}</WorkspaceDashboardLayout>;
+  if (useProjectLayout) {
+    return <ProjectDashboardLayout>{content}</ProjectDashboardLayout>;
   }
 
   return <ShareTemplate template={template} />;

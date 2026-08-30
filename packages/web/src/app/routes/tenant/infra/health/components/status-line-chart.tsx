@@ -24,7 +24,7 @@ const SERIES: Array<{ status: ExecutionStatus; label: string; color: string }> =
       label: 'Internal error',
       color: '#ef4444',
     },
-    { status: ExecutionStatus.CANCELED, label: 'Cancelled', color: '#9ca3af' },
+    { status: ExecutionStatus.CANCELED, label: 'Canceled', color: '#9ca3af' },
   ];
 
 type StatusLineChartProps = {

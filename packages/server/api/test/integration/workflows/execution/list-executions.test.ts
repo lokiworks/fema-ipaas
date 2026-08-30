@@ -17,7 +17,7 @@ describeWithAuth('List workflow runs endpoint', () => app!, (setup) => {
         const ctx = await setup()
 
         const response = await ctx.get('/v1/executions', {
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
         })
 
         expect(response?.statusCode).toBe(200)

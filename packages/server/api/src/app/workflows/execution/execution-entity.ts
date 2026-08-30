@@ -1,10 +1,10 @@
 import {
     Execution,
     File,
+    Project,
     User,
     Workflow,
     WorkflowVersion,
-    Workspace,
 } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import {
@@ -13,7 +13,7 @@ import {
 } from '../../database/database-common'
 
 type ExecutionSchema = Execution & {
-    workspace: Workspace
+    project: Project
     workflow: Workflow
     workflowVersion: WorkflowVersion
     logsFile: File
@@ -26,7 +26,7 @@ export const ExecutionEntity = new EntitySchema<ExecutionSchema>({
     name: 'execution',
     columns: {
         ...BaseColumnSchemaPart,
-        workspaceId: EntityIdSchema,
+        projectId: EntityIdSchema,
         workflowId: EntityIdSchema,
         workflowVersionId: EntityIdSchema,
         environment: {
@@ -97,23 +97,23 @@ export const ExecutionEntity = new EntitySchema<ExecutionSchema>({
     indices: [
         {
             name: 'idx_execution_ws_env_wf_status_created_archived',
-            columns: ['workspaceId', 'environment', 'workflowId', 'status', 'created', 'archivedAt'],
+            columns: ['projectId', 'environment', 'workflowId', 'status', 'created', 'archivedAt'],
         },
         {
-            name: 'idx_run_workspace_id_environment_status_created_archived_at',
-            columns: ['workspaceId', 'environment', 'status', 'created', 'archivedAt'],
+            name: 'idx_run_project_id_environment_status_created_archived_at',
+            columns: ['projectId', 'environment', 'status', 'created', 'archivedAt'],
         },
         {
-            name: 'idx_run_workspace_id_environment_created_archived_at',
-            columns: ['workspaceId', 'environment', 'created', 'archivedAt'],
+            name: 'idx_run_project_id_environment_created_archived_at',
+            columns: ['projectId', 'environment', 'created', 'archivedAt'],
         },
         {
-            name: 'idx_run_workspace_id_environment_created_status_archived_at',
-            columns: ['workspaceId', 'environment', 'created', 'archivedAt', 'status'],
+            name: 'idx_run_project_id_environment_created_status_archived_at',
+            columns: ['projectId', 'environment', 'created', 'archivedAt', 'status'],
         },
         {
             name: 'idx_execution_ws_env_wf_created_archived',
-            columns: ['workspaceId', 'environment', 'workflowId', 'created', 'archivedAt'],
+            columns: ['projectId', 'environment', 'workflowId', 'created', 'archivedAt'],
         },
         {
             name: 'idx_run_workflow_id',
@@ -147,14 +147,14 @@ export const ExecutionEntity = new EntitySchema<ExecutionSchema>({
                 foreignKeyConstraintName: 'fk_execution_triggered_by_user_id',
             },
         },
-        workspace: {
+        project: {
             type: 'many-to-one',
-            target: 'workspace',
+            target: 'project',
             cascade: true,
             onDelete: 'CASCADE',
             joinColumn: {
-                name: 'workspaceId',
-                foreignKeyConstraintName: 'fk_execution_workspace_id',
+                name: 'projectId',
+                foreignKeyConstraintName: 'fk_execution_project_id',
             },
         },
         workflow: {

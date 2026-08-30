@@ -11,7 +11,7 @@ import { workflowSteps } from './workflow-steps'
 const MISS = ''
 
 export const workflowBundleStore = (log: Logger, apiClient: WorkerToApiContract, basePath: string) => ({
-    async tryFetch({ workflowVersionId, workspaceId }: TryFetchParams): Promise<MaterializedWorkflowBundle | null> {
+    async tryFetch({ workflowVersionId, projectId }: TryFetchParams): Promise<MaterializedWorkflowBundle | null> {
         const cache = cacheState(path.join(cacheUtils(basePath).getGlobalCacheBundlesPath(), workflowVersionId))
         const { state } = await cache.getOrSetCache({
             key: workflowVersionId,
@@ -23,7 +23,7 @@ export const workflowBundleStore = (log: Logger, apiClient: WorkerToApiContract,
             // optimization and must never fail the run.
             installFn: async () => {
                 const { data: state, error } = await tryCatch(async () => {
-                    const response = await apiClient.getWorkflowBundle({ workflowVersionId, workspaceId })
+                    const response = await apiClient.getWorkflowBundle({ workflowVersionId, projectId })
                     const data = await resolveBundleData(response)
                     if (isNil(data)) {
                         return MISS
@@ -49,7 +49,7 @@ export const workflowBundleStore = (log: Logger, apiClient: WorkerToApiContract,
         return isNil(manifest) ? null : { workflowVersion: manifest.workflowVersion, connectors: manifest.connectors }
     },
 
-    async publish({ workflowVersion, connectors, workspaceId, tenantId }: PublishParams): Promise<void> {
+    async publish({ workflowVersion, connectors, projectId, tenantId }: PublishParams): Promise<void> {
         const codes = codeCache(cacheUtils(basePath).getGlobalCodeCachePath())
         const compiledSteps = await Promise.all(workflowSteps.code(workflowVersion).map(async ({ name: stepName }) => ({
             stepName,
@@ -59,7 +59,7 @@ export const workflowBundleStore = (log: Logger, apiClient: WorkerToApiContract,
         const data = Buffer.from(JSON.stringify(manifest), 'utf8')
         const prepared = await apiClient.prepareWorkflowBundleUpload({
             workflowVersionId: workflowVersion.id,
-            workspaceId,
+            projectId,
             tenantId,
             size: data.length,
         })
@@ -72,7 +72,7 @@ export const workflowBundleStore = (log: Logger, apiClient: WorkerToApiContract,
         }
         await apiClient.uploadWorkflowBundle({
             workflowVersionId: workflowVersion.id,
-            workspaceId,
+            projectId,
             tenantId,
             data,
         })
@@ -106,13 +106,13 @@ function parseManifest(value: string | null): WorkflowBundleManifest | null {
 
 type TryFetchParams = {
     workflowVersionId: string
-    workspaceId: string
+    projectId: string
 }
 
 type PublishParams = {
     workflowVersion: WorkflowVersion
     connectors: ConnectorPackage[]
-    workspaceId: string
+    projectId: string
     tenantId: string
 }
 

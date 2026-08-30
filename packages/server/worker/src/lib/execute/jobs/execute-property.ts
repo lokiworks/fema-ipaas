@@ -33,7 +33,7 @@ export const executePropertyJob: JobHandler<ExecutePropertyJobData, SynchronousJ
                     workflowVersion: data.workflowVersion,
                     input: data.input,
                     sampleData: data.sampleData,
-                    workspaceId: data.workspaceId,
+                    projectId: data.projectId,
                     searchValue: data.searchValue,
                     tenantId: data.tenantId,
                     engineToken: ctx.engineToken,

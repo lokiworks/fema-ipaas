@@ -1,5 +1,5 @@
 import { Permission } from '@fema-ipaas/core-utils';
-import { DefaultWorkspaceRole, TenantRole } from '@fema-ipaas/shared';
+import { DefaultProjectRole, TenantRole } from '@fema-ipaas/shared';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
@@ -7,19 +7,19 @@ import { userHooks } from '@/hooks/user-hooks';
 import { api } from '@/lib/api';
 import { authenticationSession } from '@/lib/authentication-session';
 
-export const useWorkspaceRole = () => {
-  const workspaceId = authenticationSession.getWorkspaceId();
+export const useProjectRole = () => {
+  const projectId = authenticationSession.getProjectId();
   return useQuery({
-    queryKey: ['workspace-member-role', workspaceId],
+    queryKey: ['project-member-role', projectId],
     queryFn: () =>
-      api.get<MyWorkspaceRole>('/v1/workspace-members/me', { workspaceId }),
-    enabled: !!workspaceId,
+      api.get<MyProjectRole>('/v1/project-members/me', { projectId }),
+    enabled: !!projectId,
     staleTime: 5 * 60 * 1000,
   });
 };
 
 export const useAuthorization = () => {
-  const { data, isLoading } = useWorkspaceRole();
+  const { data, isLoading } = useProjectRole();
   const granted = useMemo(
     () => new Set(data?.permissions ?? []),
     [data?.permissions],
@@ -28,7 +28,7 @@ export const useAuthorization = () => {
   const checkAccess = (permission: Permission) =>
     !isLoading && granted.has(permission);
 
-  return { checkAccess, isFetchingWorkspaceRole: isLoading };
+  return { checkAccess, isFetchingProjectRole: isLoading };
 };
 
 export const useIsTenantAdmin = () => {
@@ -36,7 +36,7 @@ export const useIsTenantAdmin = () => {
   return tenantRole === TenantRole.ADMIN;
 };
 
-export type MyWorkspaceRole = {
-  role: DefaultWorkspaceRole | null;
+export type MyProjectRole = {
+  role: DefaultProjectRole | null;
   permissions: string[];
 };

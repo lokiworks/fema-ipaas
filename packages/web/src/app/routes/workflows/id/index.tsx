@@ -22,7 +22,7 @@ const WorkflowBuilderPage = () => {
     isLoading,
     isError,
   } = useQuery<PopulatedWorkflow, Error>({
-    queryKey: ['workflow', workflowId, authenticationSession.getWorkspaceId()],
+    queryKey: ['workflow', workflowId, authenticationSession.getProjectId()],
     queryFn: () => workflowsApi.get(workflowId!),
     gcTime: 0,
     retry: false,
@@ -32,13 +32,13 @@ const WorkflowBuilderPage = () => {
   const { data: sampleData, isLoading: isSampleDataLoading } =
     sampleDataHooks.useSampleDataForWorkflow(
       workflow?.version,
-      workflow?.workspaceId,
+      workflow?.projectId,
     );
 
   const { data: sampleDataInput, isLoading: isSampleDataInputLoading } =
     sampleDataHooks.useSampleDataInputForWorkflow(
       workflow?.version,
-      workflow?.workspaceId,
+      workflow?.projectId,
     );
   if (isLoading || isSampleDataLoading || isSampleDataInputLoading) {
     return (

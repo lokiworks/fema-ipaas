@@ -10,7 +10,7 @@ export const executePollingJob: JobHandler<PollingJobData, FireAndForgetJobResul
     async execute(ctx: JobContext, data: PollingJobData): Promise<FireAndForgetJobResult> {
         const timeoutInSeconds = workerSettings.getSettings().TRIGGER_TIMEOUT_SECONDS
 
-        const resolved = await ctx.resolver.resolve({ tenantId: data.tenantId, publicApiUrl: ctx.publicApiUrl, engineToken: ctx.engineToken, workflow: { id: data.workflowId, versionId: data.workflowVersionId, workspaceId: data.workspaceId } })
+        const resolved = await ctx.resolver.resolve({ tenantId: data.tenantId, publicApiUrl: ctx.publicApiUrl, engineToken: ctx.engineToken, workflow: { id: data.workflowId, versionId: data.workflowVersionId, projectId: data.projectId } })
 
         if (resolved.kind === 'workflow-not-found') {
             ctx.log.info({ workflowVersion: { id: data.workflowVersionId } }, 'Workflow version not found for polling trigger, skipping')
@@ -37,7 +37,7 @@ export const executePollingJob: JobHandler<PollingJobData, FireAndForgetJobResul
                     workflowVersion,
                     webhookUrl: getWebhookUrl(ctx.publicApiUrl, data.workflowId),
                     test: false,
-                    workspaceId: data.workspaceId,
+                    projectId: data.projectId,
                     tenantId: data.tenantId,
                     engineToken: ctx.engineToken,
                     internalApiUrl: ctx.internalApiUrl,
@@ -53,7 +53,7 @@ export const executePollingJob: JobHandler<PollingJobData, FireAndForgetJobResul
                 if (triggerResult.output.length > 0) {
                     await ctx.apiClient.submitPayloads({
                         workflowVersionId: data.workflowVersionId,
-                        workspaceId: data.workspaceId,
+                        projectId: data.projectId,
                         payloads: triggerResult.output,
                         environment: RunEnvironment.PRODUCTION,
                         streamStepProgress: StreamStepProgress.NONE,

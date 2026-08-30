@@ -1,14 +1,14 @@
 import { ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil } from '@fema-ipaas/core-utils'
-import { AuthenticationResponse, EndpointScope, PrincipalType, RuntimeEnvironment, TelemetryEventName, Tenant, TenantRole, User, UserIdentity, UserIdentityProvider, UserStatus, Workspace, WorkspaceType } from '@fema-ipaas/shared'
+import { AuthenticationResponse, EndpointScope, PrincipalType, Project, ProjectType, RuntimeEnvironment, TelemetryEventName, Tenant, TenantRole, User, UserIdentity, UserIdentityProvider, UserStatus } from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyRequest } from 'fastify'
 import { repoFactory } from '../core/db/repo-factory'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
 import { telemetry } from '../helper/telemetry.utils'
+import { projectService } from '../project/project-service'
 import { TenantEntity } from '../tenant/tenant.entity'
 import { userService } from '../user/user-service'
 import { userInvitationsService } from '../user-invitations/user-invitation.service'
-import { workspaceService } from '../workspace/workspace-service'
 import { accessTokenManager } from './lib/access-token-manager'
 import { userIdentityService } from './user-identity/user-identity-service'
 
@@ -36,10 +36,10 @@ function domainOf(email: string): string | null {
 }
 
 export const authenticationUtils = (log: FastifyBaseLogger) => ({
-    async assertUserIsInvitedToTenantOrWorkspace({
+    async assertUserIsInvitedToTenantOrProject({
         email,
         tenantId,
-    }: AssertUserIsInvitedToTenantOrWorkspaceParams): Promise<void> {
+    }: AssertUserIsInvitedToTenantOrProjectParams): Promise<void> {
         const isInvited = await userInvitationsService(log).hasAnyAcceptedInvitations({
             tenantId,
             email,
@@ -55,21 +55,21 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
         }
     },
 
-    async getWorkspaceAndToken(params: GetWorkspaceAndTokenParams): Promise<AuthenticationResponse> {
+    async getProjectAndToken(params: GetProjectAndTokenParams): Promise<AuthenticationResponse> {
         const user = await userService(log).getOneOrFail({ id: params.userId })
-        const workspaces = await workspaceService(log).getAllForUser({
+        const projects = await projectService(log).getAllForUser({
             tenantId: params.tenantId,
             userId: params.userId,
             isPrivileged: userService(log).isUserPrivileged(user),
         })
-        const workspace = isNil(params.workspaceId)
-            ? findPersonalWorkspace(workspaces, params.userId) ?? workspaces?.[0]
-            : workspaces.find((workspace) => workspace.id === params.workspaceId)
-        if (isNil(workspace)) {
+        const project = isNil(params.projectId)
+            ? findPersonalProject(projects, params.userId) ?? projects?.[0]
+            : projects.find((project) => project.id === params.projectId)
+        if (isNil(project)) {
             throw new ApplicationError({
                 code: ErrorCode.INVITATION_ONLY_SIGN_UP,
                 params: {
-                    message: 'No workspace found for user',
+                    message: 'No project found for user',
                 },
             })
         }
@@ -107,7 +107,7 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
             newsLetter: identity.newsLetter,
             verified: identity.verified,
             token,
-            workspaceId: workspace.id,
+            projectId: project.id,
         }
     },
 
@@ -140,7 +140,7 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
             newsLetter: identity.newsLetter,
             verified: identity.verified,
             token,
-            workspaceId: null,
+            projectId: null,
         }
     },
 
@@ -171,15 +171,15 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
     async sendTelemetry({
         user,
         identity,
-        workspaceId,
+        projectId,
     }: SendTelemetryParams): Promise<void> {
         try {
             await telemetry(log).identify(identity, user)
-            await telemetry(log).trackWorkspace(workspaceId, {
+            await telemetry(log).trackProject(projectId, {
                 name: TelemetryEventName.SIGNED_UP,
                 payload: {
                     userId: user.id,
-                    workspaceId,
+                    projectId,
                 },
             })
         }
@@ -215,21 +215,21 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
             return request.principal.id
         }
         // TODO currently it's same as api service, but it's better to get it from api key service, in case we introduced more admin users
-        const workspaceId = request.principal.type === PrincipalType.ENGINE ? request.principal.workspaceId : request.workspaceId
-        assertNotNullOrUndefined(workspaceId, 'workspaceId')
-        const workspace = await workspaceService(log).getOneOrThrow(workspaceId)
-        return workspace.ownerId
+        const projectId = request.principal.type === PrincipalType.ENGINE ? request.principal.projectId : request.projectId
+        assertNotNullOrUndefined(projectId, 'projectId')
+        const project = await projectService(log).getOneOrThrow(projectId)
+        return project.ownerId
     },
 })
 
-function findPersonalWorkspace(workspaces: Workspace[], userId: string): Workspace | undefined {
-    return workspaces.find((workspace) => workspace.ownerId === userId && workspace.type === WorkspaceType.PERSONAL)
+function findPersonalProject(projects: Project[], userId: string): Project | undefined {
+    return projects.find((project) => project.ownerId === userId && project.type === ProjectType.PERSONAL)
 }
 
 type SendTelemetryParams = {
     identity: UserIdentity
     user: User
-    workspaceId: string
+    projectId: string
 }
 
 type IsDomainAllowedParams = {
@@ -248,7 +248,7 @@ type AssertEmailAuthIsEnabledParams = {
     provider: UserIdentityProvider
 }
 
-type AssertUserIsInvitedToTenantOrWorkspaceParams = {
+type AssertUserIsInvitedToTenantOrProjectParams = {
     email: string
     tenantId: string
 }
@@ -257,9 +257,9 @@ type GetOnboardingResponseParams = {
     identityId: string
 }
 
-type GetWorkspaceAndTokenParams = {
+type GetProjectAndTokenParams = {
     userId: string
     tenantId: string
-    workspaceId: string | null
+    projectId: string | null
     scope?: EndpointScope
 }

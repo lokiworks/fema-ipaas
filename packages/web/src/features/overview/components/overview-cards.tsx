@@ -125,7 +125,7 @@ export function FailingWorkflowsCard({
             {workflows.map((workflow) => (
               <Link
                 key={workflow.workflowId}
-                to={`${authenticationSession.appendWorkspaceRoutePrefix(
+                to={`${authenticationSession.appendProjectRoutePrefix(
                   '/runs',
                 )}?workflowId=${workflow.workflowId}&status=${
                   ExecutionStatus.FAILED
@@ -173,9 +173,7 @@ export function ConnectionHealthCard({
           </div>
         ) : (
           <Link
-            to={authenticationSession.appendWorkspaceRoutePrefix(
-              '/connections',
-            )}
+            to={authenticationSession.appendProjectRoutePrefix('/connections')}
             className="flex flex-col gap-1"
           >
             <span className="text-2xl font-semibold">
@@ -262,7 +260,7 @@ export function RecentlyEditedCard({
             {workflows.map((workflow) => (
               <Link
                 key={workflow.workflowId}
-                to={authenticationSession.appendWorkspaceRoutePrefix(
+                to={authenticationSession.appendProjectRoutePrefix(
                   `/workflows/${workflow.workflowId}`,
                 )}
                 className="flex items-center justify-between py-2 text-sm hover:underline"

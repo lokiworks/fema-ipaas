@@ -61,7 +61,7 @@ describe('Workflow application events', () => {
 
             const response = await ctx.post('/v1/workflows', {
                 displayName: 'My workflow',
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
             })
 
             expect(response?.statusCode).toBe(StatusCodes.CREATED)
@@ -262,7 +262,7 @@ describe('Workflow application events', () => {
 
             await workflowService(app.log).update({
                 id: workflow.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 tenantId: ctx.tenant.id,
                 userId: ctx.user.id,
                 operation: renameOperation,
@@ -277,7 +277,7 @@ describe('Workflow application events', () => {
 
             await workflowService(app.log).update({
                 id: workflow.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 tenantId: ctx.tenant.id,
                 userId: ctx.user.id,
                 operation: renameOperation,
@@ -333,7 +333,7 @@ async function seedPublishableWorkflow({
     await db.save('connector_metadata', connectorMetadata)
 
     const workflow = createMockWorkflow({
-        workspaceId: ctx.workspace.id,
+        projectId: ctx.project.id,
         status: initialStatus,
     })
     await db.save('workflow', workflow)

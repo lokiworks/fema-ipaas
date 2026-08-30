@@ -1,4 +1,4 @@
-import { ExecutionToolStatus } from '../../../src/lib/agents'
+import { ExecutionToolStatus } from '@fema-ipaas/connector-types'
 import { normalizeToolOutputToExecuteResponse } from '../../../src/lib/engine/engine-operation'
 
 describe('normalizeToolOutputToExecuteResponse', () => {

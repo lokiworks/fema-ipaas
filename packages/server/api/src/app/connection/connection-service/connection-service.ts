@@ -1,6 +1,6 @@
 import { ConnectorMetadata } from '@fema-ipaas/connector-sdk'
-import { ApplicationError, Cursor, ErrorCode, generateId, isNil, Metadata, SeekPage, spreadIfDefined, TenantId, tryCatch, tryCatchSync, unique, UserId, WorkspaceId } from '@fema-ipaas/core-utils'
-import { Connection, ConnectionId, ConnectionOwners, ConnectionScope, ConnectionStatus, ConnectionType, ConnectionValue, ConnectionWithoutSensitiveData, EngineResponse, EngineResponseStatus, ExecuteResolveConnectionIdentifierResponse, ExecuteValidateAuthResponse, MAX_TENANT_CONNECTION_OWNERS, OAuth2GrantType, RuntimeEnvironment, TenantConnectionOwner, TenantConnectionOwnersResponse, TenantConnectionsListItem, TenantConnectionWorkspaceInfo, TenantRole, UpsertConnectionRequestBody, User, UserIdentity, UserWithMetaInformation, WorkerJobType } from '@fema-ipaas/shared'
+import { ApplicationError, Cursor, ErrorCode, generateId, isNil, Metadata, ProjectId, SeekPage, spreadIfDefined, TenantId, tryCatch, tryCatchSync, unique, UserId } from '@fema-ipaas/core-utils'
+import { Connection, ConnectionId, ConnectionOwners, ConnectionScope, ConnectionStatus, ConnectionType, ConnectionValue, ConnectionWithoutSensitiveData, EngineResponse, EngineResponseStatus, ExecuteResolveConnectionIdentifierResponse, ExecuteValidateAuthResponse, MAX_TENANT_CONNECTION_OWNERS, OAuth2GrantType, RuntimeEnvironment, TenantConnectionOwner, TenantConnectionOwnersResponse, TenantConnectionProjectInfo, TenantConnectionsListItem, TenantRole, UpsertConnectionRequestBody, User, UserIdentity, UserWithMetaInformation, WorkerJobType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import semver from 'semver'
 import { ArrayContains, Equal, FindOperator, FindOptionsWhere, ILike, In } from 'typeorm'
@@ -15,10 +15,10 @@ import { buildPaginator } from '../../helper/pagination/build-paginator'
 import { paginationHelper } from '../../helper/pagination/pagination-utils'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
+import { projectRepo } from '../../project/project-service'
 import { userService } from '../../user/user-service'
 import { userInteractionWatcher } from '../../workers/user-interaction-watcher'
 import { workflowService } from '../../workflows/workflow/workflow.service'
-import { workspaceRepo } from '../../workspace/workspace-service'
 import {
     ConnectionEntity,
     ConnectionSchema,
@@ -31,20 +31,20 @@ export const connectionsRepo = repoFactory(ConnectionEntity)
 
 export const connectionService = (log: FastifyBaseLogger) => ({
     async upsert(params: UpsertParams): Promise<ConnectionWithoutSensitiveData> {
-        const { workspaceIds, externalId, value, displayName, connectorName, ownerId, tenantId, scope, type, status, metadata, preSelectForNewWorkspaces } = params
+        const { projectIds, externalId, value, displayName, connectorName, ownerId, tenantId, scope, type, status, metadata, preSelectForNewProjects } = params
         const connectorVersion = params.connectorVersion ?? ( await connectorMetadataService(log).getOrThrow({
             name: connectorName,
             tenantId,
         })).version
         validateConnectorVersion(connectorVersion)
-        await assertWorkspaceIds(workspaceIds, tenantId)
+        await assertProjectIds(projectIds, tenantId)
 
         if (status === ConnectionStatus.MISSING) {
             const existingForPlaceholder = await connectionsRepo().findOneBy({
                 externalId,
                 scope,
                 tenantId,
-                ...(workspaceIds ? { workspaceIds: ArrayContains(workspaceIds) } : {}),
+                ...(projectIds ? { projectIds: ArrayContains(projectIds) } : {}),
             })
             if (!isNil(existingForPlaceholder) && existingForPlaceholder.status !== ConnectionStatus.MISSING) {
                 log.info({ connection: { id: existingForPlaceholder.id }, connector: { name: connectorName }, tenant: { id: tenantId }, existingStatus: existingForPlaceholder.status }, 'Placeholder upsert skipped — non-missing connection already exists')
@@ -56,7 +56,7 @@ export const connectionService = (log: FastifyBaseLogger) => ({
             value,
             connectorName,
             connectorVersion,
-            workspaceId: workspaceIds[0],
+            projectId: projectIds[0],
             tenantId,
         }, log)
 
@@ -69,14 +69,14 @@ export const connectionService = (log: FastifyBaseLogger) => ({
             externalId,
             scope,
             tenantId,
-            ...(workspaceIds ? { workspaceIds: ArrayContains(workspaceIds) } : {}),
+            ...(projectIds ? { projectIds: ArrayContains(projectIds) } : {}),
         })
 
         const accountIdentifier = await resolveConnectionAccountIdentifier({
             connectionType: type,
             auth: validatedConnectionValue,
             connectorName,
-            workspaceId: workspaceIds[0],
+            projectId: projectIds[0],
             tenantId,
             log,
         })
@@ -97,10 +97,10 @@ export const connectionService = (log: FastifyBaseLogger) => ({
             type,
             id: newId,
             scope,
-            workspaceIds,
+            projectIds,
             tenantId,
             ...spreadIfDefined('metadata', connectionMetadata),
-            ...spreadIfDefined('preSelectForNewWorkspaces', preSelectForNewWorkspaces),
+            ...spreadIfDefined('preSelectForNewProjects', preSelectForNewProjects),
             connectorVersion,
         }
 
@@ -109,24 +109,24 @@ export const connectionService = (log: FastifyBaseLogger) => ({
         const updatedConnection = await connectionsRepo().findOneByOrFail({
             id: newId,
             tenantId,
-            ...(workspaceIds ? { workspaceIds: ArrayContains(workspaceIds) } : {}),
+            ...(projectIds ? { projectIds: ArrayContains(projectIds) } : {}),
             scope,
         })
         log.info({ connection: { id: newId }, connector: { name: connectorName }, tenant: { id: tenantId }, isNew: isNil(existingConnection) }, 'App connection upserted')
         return this.removeSensitiveData(updatedConnection)
     },
     async update(params: UpdateParams): Promise<ConnectionWithoutSensitiveData> {
-        const { workspaceIds, id, request, scope, tenantId } = params
+        const { projectIds, id, request, scope, tenantId } = params
 
-        if (!isNil(request.workspaceIds)) {
-            await assertWorkspaceIds(request.workspaceIds, tenantId)
+        if (!isNil(request.projectIds)) {
+            await assertProjectIds(request.projectIds, tenantId)
         }
 
         const filter: FindOptionsWhere<ConnectionSchema> = {
             id,
             scope,
             tenantId,
-            ...(workspaceIds ? { workspaceIds: ArrayContains(workspaceIds) } : {}),
+            ...(projectIds ? { projectIds: ArrayContains(projectIds) } : {}),
         }
 
         const storedMetadata = isNil(request.metadata)
@@ -136,26 +136,26 @@ export const connectionService = (log: FastifyBaseLogger) => ({
 
         await connectionsRepo().update(filter, {
             displayName: request.displayName,
-            ...spreadIfDefined('workspaceIds', request.workspaceIds),
+            ...spreadIfDefined('projectIds', request.projectIds),
             ...(isNil(request.metadata) ? {} : spreadIfDefined('metadata', mergeConnectionMetadata({
                 requestMetadata: request.metadata,
                 existingMetadata: storedMetadata,
                 accountIdentifier: typeof storedAccountIdentifier === 'string' ? storedAccountIdentifier : undefined,
             }))),
-            ...spreadIfDefined('preSelectForNewWorkspaces', request.preSelectForNewWorkspaces),
+            ...spreadIfDefined('preSelectForNewProjects', request.preSelectForNewProjects),
         })
 
         const updatedConnection = await connectionsRepo().findOneByOrFail(filter)
         return this.removeSensitiveData(updatedConnection)
     },
     async getOne({
-        workspaceId,
+        projectId,
         tenantId,
         externalId,
     }: GetOneByName): Promise<Connection | null> {
         const encryptedConnection = await connectionsRepo().findOne({
             where: {
-                workspaceIds: ArrayContains([workspaceId]),
+                projectIds: ArrayContains([projectId]),
                 externalId,
                 tenantId,
             },
@@ -164,7 +164,7 @@ export const connectionService = (log: FastifyBaseLogger) => ({
         if (isNil(encryptedConnection)) {
             return null
         }
-        const connection = await this.decryptAndRefreshConnection(encryptedConnection, workspaceId, log)
+        const connection = await this.decryptAndRefreshConnection(encryptedConnection, projectId, log)
 
         if (isNil(connection)) {
             return null
@@ -179,9 +179,9 @@ export const connectionService = (log: FastifyBaseLogger) => ({
         }
     },
 
-    async getOneWithoutValue({ workspaceId, tenantId, externalId }: GetOneByName): Promise<ConnectionWithoutSensitiveData | null> {
+    async getOneWithoutValue({ projectId, tenantId, externalId }: GetOneByName): Promise<ConnectionWithoutSensitiveData | null> {
         const connection = await connectionsRepo().findOneBy({
-            workspaceIds: ArrayContains([workspaceId]),
+            projectIds: ArrayContains([projectId]),
             externalId,
             tenantId,
         })
@@ -192,7 +192,7 @@ export const connectionService = (log: FastifyBaseLogger) => ({
         const connectionById = await connectionsRepo().findOneBy({
             id: params.id,
             tenantId: params.tenantId,
-            ...(params.workspaceId ? { workspaceIds: ArrayContains([params.workspaceId]) } : {}),
+            ...(params.projectId ? { projectIds: ArrayContains([params.projectId]) } : {}),
         })
         if (isNil(connectionById)) {
             throw new ApplicationError({
@@ -215,14 +215,14 @@ export const connectionService = (log: FastifyBaseLogger) => ({
         }
     },
 
-    async revalidate({ id, workspaceId, tenantId }: RevalidateParams): Promise<ConnectionWithoutSensitiveData> {
-        const metadata = await this.getOneOrThrowWithoutValue({ id, workspaceId, tenantId })
+    async revalidate({ id, projectId, tenantId }: RevalidateParams): Promise<ConnectionWithoutSensitiveData> {
+        const metadata = await this.getOneOrThrowWithoutValue({ id, projectId, tenantId })
         const connection = await connectionHandler(log).revalidateConnection({
             id,
             tenantId,
-            workspaceId,
+            projectId,
             externalId: metadata.externalId,
-            validate: ({ connectorName, value }) => engineValidateAuth({ connectorName, workspaceId, tenantId, auth: value }, log),
+            validate: ({ connectorName, value }) => engineValidateAuth({ connectorName, projectId, tenantId, auth: value }, log),
             log,
         })
         if (isNil(connection)) {
@@ -235,7 +235,7 @@ export const connectionService = (log: FastifyBaseLogger) => ({
     },
 
     async replace(params: ReplaceParams): Promise<void> {
-        const { sourceConnectionId, targetConnectionId, workspaceId, tenantId, userId, deleteSourceConnection, applyToPublishedVersions } = params
+        const { sourceConnectionId, targetConnectionId, projectId, tenantId, userId, deleteSourceConnection, applyToPublishedVersions } = params
         if (sourceConnectionId === targetConnectionId) {
             throw new ApplicationError({
                 code: ErrorCode.VALIDATION,
@@ -246,13 +246,13 @@ export const connectionService = (log: FastifyBaseLogger) => ({
         }
         const sourceConnection = await this.getOneOrThrowWithoutValue({
             id: sourceConnectionId,
-            workspaceId,
+            projectId,
             tenantId,
         })
 
         const targetConnection = await this.getOneOrThrowWithoutValue({
             id: targetConnectionId,
-            workspaceId,
+            projectId,
             tenantId,
         })
 
@@ -265,9 +265,9 @@ export const connectionService = (log: FastifyBaseLogger) => ({
             })
         }
 
-        // Mirrors the workspace-route DELETE guard: tenant connections are managed
+        // Mirrors the project-route DELETE guard: tenant connections are managed
         // from the tenant admin page and must not be deletable through a
-        // workspace-scoped replace, no matter which workspaces still use them.
+        // project-scoped replace, no matter which projects still use them.
         if (deleteSourceConnection && sourceConnection.scope === ConnectionScope.TENANT) {
             throw new ApplicationError({
                 code: ErrorCode.AUTHORIZATION,
@@ -285,7 +285,7 @@ export const connectionService = (log: FastifyBaseLogger) => ({
         // the newer draft, so the user has to publish or repoint them first.
         // Without it, a delete would orphan every published reference.
         const publishedWorkflowsUsingConnection = deleteSourceConnection || applyToPublishedVersions
-            ? await connectionHandler(log).countPublishedWorkflowsReferencingConnection({ workspaceId, externalId: sourceConnection.externalId, applyToPublishedVersions })
+            ? await connectionHandler(log).countPublishedWorkflowsReferencingConnection({ projectId, externalId: sourceConnection.externalId, applyToPublishedVersions })
             : 0
         if (publishedWorkflowsUsingConnection > 0) {
             throw new ApplicationError({
@@ -306,7 +306,7 @@ export const connectionService = (log: FastifyBaseLogger) => ({
         const repointedWorkflowIds = new Set<string>()
         for (;;) {
             const workflowsPage = await workflowService(log).list({
-                workspaceIds: [workspaceId],
+                projectIds: [projectId],
                 cursorRequest: null,
                 limit: 1000,
                 folderId: undefined,
@@ -342,7 +342,7 @@ export const connectionService = (log: FastifyBaseLogger) => ({
         // orphan that workflow. The list covers latest-version references; the
         // count covers published versions the list cannot see.
         const remainingWorkflows = await workflowService(log).list({
-            workspaceIds: [workspaceId],
+            projectIds: [projectId],
             cursorRequest: null,
             limit: 1,
             folderId: undefined,
@@ -352,7 +352,7 @@ export const connectionService = (log: FastifyBaseLogger) => ({
         })
         const remainingPublishedWorkflows = remainingWorkflows.data.length > 0
             ? 0
-            : await connectionHandler(log).countPublishedWorkflowsReferencingConnection({ workspaceId, externalId: sourceConnection.externalId, applyToPublishedVersions: false })
+            : await connectionHandler(log).countPublishedWorkflowsReferencingConnection({ projectId, externalId: sourceConnection.externalId, applyToPublishedVersions: false })
         if (remainingWorkflows.data.length > 0 || remainingPublishedWorkflows > 0) {
             throw new ApplicationError({
                 code: ErrorCode.VALIDATION,
@@ -366,7 +366,7 @@ export const connectionService = (log: FastifyBaseLogger) => ({
             id: sourceConnection.id,
             tenantId,
             scope: sourceConnection.scope,
-            workspaceId,
+            projectId,
         })
     },
 
@@ -375,14 +375,14 @@ export const connectionService = (log: FastifyBaseLogger) => ({
             id: params.id,
             tenantId: params.tenantId,
             scope: params.scope,
-            ...(params.workspaceId ? { workspaceIds: ArrayContains([params.workspaceId]) } : {}),
+            ...(params.projectId ? { projectIds: ArrayContains([params.projectId]) } : {}),
         })
         log.info({ connection: { id: params.id }, tenant: { id: params.tenantId } }, 'App connection deleted')
     },
 
     async list({
-        workspaceId,
-        workspaceIds,
+        projectId,
+        projectIds,
         ownerIds,
         connectorName,
         cursorRequest,
@@ -405,7 +405,7 @@ export const connectionService = (log: FastifyBaseLogger) => ({
         })
 
         const querySelector: Record<string, string | FindOperator<string>> = {
-            ...(workspaceId ? { workspaceIds: ArrayContains([workspaceId]) } : {}),
+            ...(projectId ? { projectIds: ArrayContains([projectId]) } : {}),
             ...spreadIfDefined('scope', scope),
             tenantId,
         }
@@ -429,8 +429,8 @@ export const connectionService = (log: FastifyBaseLogger) => ({
             .leftJoinAndSelect('connection.owner', 'owner')
             .leftJoinAndSelect('owner.identity', 'owner_identity')
             .where(querySelector)
-        if (!isNil(workspaceIds) && workspaceIds.length > 0) {
-            queryBuilder.andWhere('connection."workspaceIds" && :workspaceIds::varchar[]', { workspaceIds })
+        if (!isNil(projectIds) && projectIds.length > 0) {
+            queryBuilder.andWhere('connection."projectIds" && :projectIds::varchar[]', { projectIds })
         }
         const { data, cursor } = await paginator.paginate(queryBuilder)
 
@@ -463,7 +463,7 @@ export const connectionService = (log: FastifyBaseLogger) => ({
 
     async decryptAndRefreshConnection(
         encryptedConnection: ConnectionSchema,
-        workspaceId: WorkspaceId,
+        projectId: ProjectId,
         log: FastifyBaseLogger,
     ): Promise<Connection | null> {
         const connection = await connectionHandler(log).decryptConnection(encryptedConnection)
@@ -471,20 +471,20 @@ export const connectionService = (log: FastifyBaseLogger) => ({
             return oauth2Util(log).removeRefreshTokenAndClientSecret(connection)
         }
 
-        const refreshedConnection = await connectionHandler(log).lockAndRefreshConnection({ tenantId: connection.tenantId, workspaceId, externalId: connection.externalId, log })
+        const refreshedConnection = await connectionHandler(log).lockAndRefreshConnection({ tenantId: connection.tenantId, projectId, externalId: connection.externalId, log })
         if (isNil(refreshedConnection)) {
             return null
         }
         return oauth2Util(log).removeRefreshTokenAndClientSecret(refreshedConnection)
     },
-    async deleteAllWorkspaceConnections(workspaceId: string) {
+    async deleteAllProjectConnections(projectId: string) {
         await connectionsRepo().delete({
-            scope: ConnectionScope.WORKSPACE,
-            workspaceIds: ArrayContains([workspaceId]),
+            scope: ConnectionScope.PROJECT,
+            projectIds: ArrayContains([projectId]),
         })
     },
 
-    async getOwners({ workspaceId: _workspaceId, tenantId }: { workspaceId: WorkspaceId, tenantId: TenantId }): Promise<ConnectionOwners[]> {
+    async getOwners({ projectId: _projectId, tenantId }: { projectId: ProjectId, tenantId: TenantId }): Promise<ConnectionOwners[]> {
         const tenantAdmins = (await userService(log).getByTenantRole(tenantId, TenantRole.ADMIN)).map(user => ({
             firstName: user.identity.firstName,
             lastName: user.identity.lastName,
@@ -501,23 +501,23 @@ export const connectionService = (log: FastifyBaseLogger) => ({
             status: params.status,
             scope: params.scope,
             tenantId: params.tenantId,
-            workspaceId: null,
-            workspaceIds: params.workspaceIds,
+            projectId: null,
+            projectIds: params.projectIds,
             ownerIds: params.ownerIds,
             cursorRequest: params.cursorRequest,
             limit: params.limit,
             externalIds: undefined,
         })
 
-        const workspaceIdsToLookUp = unique(page.data.flatMap((connection) => connection.workspaceIds))
-        const workspacesById = await fetchWorkspacesForTenant(workspaceIdsToLookUp, params.tenantId)
+        const projectIdsToLookUp = unique(page.data.flatMap((connection) => connection.projectIds))
+        const projectsById = await fetchProjectsForTenant(projectIdsToLookUp, params.tenantId)
 
         const data: TenantConnectionsListItem[] = page.data.map((connection) => {
             const sanitized = service.removeSensitiveData(connection)
-            const workspaces: TenantConnectionWorkspaceInfo[] = connection.workspaceIds
-                .map((id) => workspacesById.get(id))
-                .filter((workspace): workspace is TenantConnectionWorkspaceInfo => workspace !== undefined)
-            return { ...sanitized, workspaces }
+            const projects: TenantConnectionProjectInfo[] = connection.projectIds
+                .map((id) => projectsById.get(id))
+                .filter((project): project is TenantConnectionProjectInfo => project !== undefined)
+            return { ...sanitized, projects }
         })
 
         return { ...page, data }
@@ -545,48 +545,48 @@ export const connectionService = (log: FastifyBaseLogger) => ({
 
 })
 
-const fetchWorkspacesForTenant = async (workspaceIds: string[], tenantId: string): Promise<Map<string, TenantConnectionWorkspaceInfo>> => {
-    if (workspaceIds.length === 0) {
+const fetchProjectsForTenant = async (projectIds: string[], tenantId: string): Promise<Map<string, TenantConnectionProjectInfo>> => {
+    if (projectIds.length === 0) {
         return new Map()
     }
-    const workspaces = await workspaceRepo().find({
-        where: { id: In(workspaceIds), tenantId },
+    const projects = await projectRepo().find({
+        where: { id: In(projectIds), tenantId },
         select: ['id', 'displayName', 'type'],
     })
-    return new Map(workspaces.map((workspace) => [workspace.id, { id: workspace.id, displayName: workspace.displayName, type: workspace.type }]))
+    return new Map(projects.map((project) => [project.id, { id: project.id, displayName: project.displayName, type: project.type }]))
 }
 
-async function assertWorkspaceIds(workspaceIds: WorkspaceId[], tenantId: string): Promise<void> {
-    const filteredWorkspaces = await workspaceRepo().countBy({
-        id: In(workspaceIds),
+async function assertProjectIds(projectIds: ProjectId[], tenantId: string): Promise<void> {
+    const filteredProjects = await projectRepo().countBy({
+        id: In(projectIds),
         tenantId,
     })
-    if (filteredWorkspaces !== workspaceIds.length) {
+    if (filteredProjects !== projectIds.length) {
         throw new ApplicationError({
             code: ErrorCode.ENTITY_NOT_FOUND,
             params: {
-                entityType: 'Workspace',
+                entityType: 'Project',
             },
         })
     }
 }
 // The generic path decodes the OIDC id_token / email claim from the token
 // response — this covers every provider that returns one (Google, Microsoft, …).
-// Anything provider-specific (Slack's workspace/user) lives in the connector's own
+// Anything provider-specific (Slack's project/user) lives in the connector's own
 // getConnectionIdentifier hook, resolved via the engine. Best-effort — never
 // throws, returns undefined on any miss.
 const resolveConnectionAccountIdentifier = async ({
     connectionType,
     auth,
     connectorName,
-    workspaceId,
+    projectId,
     tenantId,
     log,
 }: {
     connectionType: ConnectionType
     auth: ConnectionValue
     connectorName: string
-    workspaceId: WorkspaceId | undefined
+    projectId: ProjectId | undefined
     tenantId: string
     log: FastifyBaseLogger
 }): Promise<string | undefined> => {
@@ -599,7 +599,7 @@ const resolveConnectionAccountIdentifier = async ({
             return emailFromToken
         }
     }
-    return engineResolveConnectionIdentifier({ connectorName, workspaceId, tenantId, auth, connectionType }, log)
+    return engineResolveConnectionIdentifier({ connectorName, projectId, tenantId, auth, connectionType }, log)
 }
 
 const OAUTH_CONNECTION_TYPES = [
@@ -641,7 +641,7 @@ const validateConnectionValue = async (
     params: ValidateConnectionValueParams,
     log: FastifyBaseLogger,
 ): Promise<ConnectionValue> => {
-    const { value, connectorName, connectorVersion, workspaceId, tenantId } = params
+    const { value, connectorName, connectorVersion, projectId, tenantId } = params
 
     switch (value.type) {
         case ConnectionType.TENANT_OAUTH2: {
@@ -652,7 +652,7 @@ const validateConnectionValue = async (
                 props: value.props,
             })
             return oauth2Handler[value.type](log).claim({
-                workspaceId,
+                projectId,
                 tenantId,
                 connectorName,
                 request: {
@@ -675,7 +675,7 @@ const validateConnectionValue = async (
                 props: value.props,
             })
             return oauth2Handler[value.type](log).claim({
-                workspaceId,
+                projectId,
                 tenantId,
                 connectorName,
                 request: {
@@ -698,7 +698,7 @@ const validateConnectionValue = async (
             })
             
             const auth = await oauth2Handler[value.type](log).claim({
-                workspaceId,
+                projectId,
                 tenantId,
                 connectorName,
                 request: {
@@ -716,7 +716,7 @@ const validateConnectionValue = async (
             })
             await engineValidateAuth({
                 connectorName,
-                workspaceId,
+                projectId,
                 tenantId,
                 auth,
             }, log)
@@ -731,7 +731,7 @@ const validateConnectionValue = async (
             await engineValidateAuth({
                 tenantId,
                 connectorName,
-                workspaceId,
+                projectId,
                 auth: value,
             }, log)
     }
@@ -747,7 +747,7 @@ const engineValidateAuth = async (
     if (environment === RuntimeEnvironment.TESTING) {
         return
     }
-    const { connectorName, auth, workspaceId, tenantId } = params
+    const { connectorName, auth, projectId, tenantId } = params
 
     const connectorMetadata = await connectorMetadataService(log).getOrThrow({
         name: connectorName,
@@ -760,7 +760,7 @@ const engineValidateAuth = async (
             connectorName,
             connectorVersion: connectorMetadata.version,
         }),
-        workspaceId,
+        projectId,
         tenantId,
         connectionValue: auth,
         jobType: WorkerJobType.EXECUTE_VALIDATION,
@@ -816,7 +816,7 @@ const engineResolveConnectionIdentifier = async (
     if (environment === RuntimeEnvironment.TESTING) {
         return undefined
     }
-    const { connectorName, auth, workspaceId, tenantId, connectionType } = params
+    const { connectorName, auth, projectId, tenantId, connectionType } = params
     const { data: identifier } = await tryCatch(async () => {
         const connectorMetadata = await connectorMetadataService(log).getOrThrow({
             name: connectorName,
@@ -832,7 +832,7 @@ const engineResolveConnectionIdentifier = async (
                 connectorName,
                 connectorVersion: connectorMetadata.version,
             }),
-            workspaceId,
+            projectId,
             tenantId,
             connectionValue: auth,
             connectionType,
@@ -851,24 +851,24 @@ const engineResolveConnectionIdentifier = async (
 
 async function fetchWorkflowIdsForConnections(
     log: FastifyBaseLogger,
-    connections: Pick<ConnectionSchema, 'externalId' | 'workspaceIds'>[],
+    connections: Pick<ConnectionSchema, 'externalId' | 'projectIds'>[],
 ): Promise<Map<string, string[]>> {
     const allExternalIds = new Set<string>()
-    const allWorkspaceIds = new Set<string>()
+    const allProjectIds = new Set<string>()
     
     connections.forEach((connection) => {
         allExternalIds.add(connection.externalId)
-        connection.workspaceIds.forEach((workspaceId) => {
-            allWorkspaceIds.add(workspaceId)
+        connection.projectIds.forEach((projectId) => {
+            allProjectIds.add(projectId)
         })
     })
 
-    if (allExternalIds.size === 0 || allWorkspaceIds.size === 0) {
+    if (allExternalIds.size === 0 || allProjectIds.size === 0) {
         return new Map<string, string[]>()
     }
 
     const workflowsPage = await workflowService(log).list({
-        workspaceIds: Array.from(allWorkspaceIds),
+        projectIds: Array.from(allProjectIds),
         cursorRequest: null,
         connectionExternalIds: Array.from(allExternalIds),
     })
@@ -922,7 +922,7 @@ function validateConnectorVersion(connectorVersion: string): void {
     }
 }
 type UpsertParams = {
-    workspaceIds: WorkspaceId[]
+    projectIds: ProjectId[]
     ownerId: string | null
     tenantId: string
     scope: ConnectionScope
@@ -934,30 +934,30 @@ type UpsertParams = {
     connectorName: string
     metadata?: Metadata
     connectorVersion?: string
-    preSelectForNewWorkspaces?: boolean
+    preSelectForNewProjects?: boolean
 }
 
 
 type GetOneByName = {
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     tenantId: string
     externalId: string
 }
 
 type GetOneParams = {
-    workspaceId: WorkspaceId | null
+    projectId: ProjectId | null
     tenantId: string
     id: string
 }
 
 type RevalidateParams = {
     id: ConnectionId
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     tenantId: TenantId
 }
 
 type DeleteParams = {
-    workspaceId: WorkspaceId | null
+    projectId: ProjectId | null
     scope: ConnectionScope
     id: ConnectionId
     tenantId: string
@@ -967,13 +967,13 @@ type ValidateConnectionValueParams = {
     value: Extract<UpsertConnectionRequestBody, { value: unknown }>['value']
     connectorName: string
     connectorVersion: string
-    workspaceId: WorkspaceId | undefined
+    projectId: ProjectId | undefined
     tenantId: string
 }
 
 type ListParams = {
-    workspaceId: WorkspaceId | null
-    workspaceIds?: WorkspaceId[]
+    projectId: ProjectId | null
+    projectIds?: ProjectId[]
     ownerIds?: string[]
     tenantId: string
     connectorName: string | undefined
@@ -991,28 +991,28 @@ type ListForTenantParams = {
     displayName: string | undefined
     status: ConnectionStatus[] | undefined
     scope: ConnectionScope | undefined
-    workspaceIds: WorkspaceId[] | undefined
+    projectIds: ProjectId[] | undefined
     ownerIds: string[] | undefined
     cursorRequest: Cursor | null
     limit: number
 }
 
 type UpdateParams = {
-    workspaceIds: WorkspaceId[] | null
+    projectIds: ProjectId[] | null
     tenantId: string
     id: ConnectionId
     scope: ConnectionScope
     request: {
         displayName: string
-        workspaceIds: WorkspaceId[] | null
+        projectIds: ProjectId[] | null
         metadata?: Metadata
-        preSelectForNewWorkspaces?: boolean
+        preSelectForNewProjects?: boolean
     }
 }
 
 type EngineValidateAuthParams = {
     connectorName: string
-    workspaceId: WorkspaceId | undefined
+    projectId: ProjectId | undefined
     tenantId: string
     auth: ConnectionValue
 }
@@ -1024,7 +1024,7 @@ type EngineResolveConnectionIdentifierParams = EngineValidateAuthParams & {
 type ReplaceParams = {
     sourceConnectionId: ConnectionId
     targetConnectionId: ConnectionId
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     tenantId: string
     userId: UserId
     deleteSourceConnection: boolean

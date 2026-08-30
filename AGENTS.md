@@ -4,9 +4,9 @@ Open-source AI-first workflow automation platform. Self-hosted or cloud. 400+ co
 
 ## Architecture (Non-Obvious Rules)
 
-- **Multi-tenant**: Platform → Projects → Users. ALL queries MUST filter by `projectId` or `platformId`.
+- **Multi-tenant**: Tenant → Project → Users. ALL queries MUST filter by `projectId` or `tenantId`.
 - **One edition.** There is no CE/EE/Cloud split, no `FEMA_EDITION`, and no `src/app/ee/`. Anything that reads like a paid tier is a bug — see `docs/adr/0002`.
-- **Limits, not plans**: instance-wide caps live in `SYSTEM_LIMITS`; per-workspace caps live on the workspace row.
+- **Limits, not plans**: instance-wide caps live in `SYSTEM_LIMITS`; per-project caps live on the project row.
 - **Entity registration**: New entities MUST be added to `getEntities()` in `database-connection.ts` — TypeORM does NOT auto-discover.
 - **HTTP**: `POST` for all create/update mutations. `DELETE` for deletes. Never PUT/PATCH.
 - **Security**: Every endpoint needs `securityAccess` config.

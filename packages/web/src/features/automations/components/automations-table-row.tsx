@@ -57,7 +57,7 @@ type AutomationsTableRowProps = {
   isSelected: boolean;
   isExpanded: boolean;
   isPinned: boolean;
-  workspaceMembers: any;
+  projectMembers: any;
   folders: FolderDto[];
   onRowClick: () => void;
   onToggleSelection: () => void;

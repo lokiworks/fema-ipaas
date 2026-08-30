@@ -1,4 +1,4 @@
-import { File, TriggerEvent, Workflow, Workspace } from '@fema-ipaas/shared'
+import { File, Project, TriggerEvent, Workflow } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import {
     BaseColumnSchemaPart,
@@ -7,7 +7,7 @@ import {
 
 type TriggerEventSchema = {
     workflow: Workflow
-    workspace: Workspace
+    project: Project
     file: File
 } & TriggerEvent
 
@@ -16,7 +16,7 @@ export const TriggerEventEntity = new EntitySchema<TriggerEventSchema>({
     columns: {
         ...BaseColumnSchemaPart,
         workflowId: EntityIdSchema,
-        workspaceId: EntityIdSchema,
+        projectId: EntityIdSchema,
         sourceName: {
             type: String,
         },
@@ -26,8 +26,8 @@ export const TriggerEventEntity = new EntitySchema<TriggerEventSchema>({
     },
     indices: [
         {
-            name: 'idx_trigger_event_workspace_id_workflow_id',
-            columns: ['workspaceId', 'workflowId'],
+            name: 'idx_trigger_event_project_id_workflow_id',
+            columns: ['projectId', 'workflowId'],
             unique: false,
         },
         {
@@ -42,14 +42,14 @@ export const TriggerEventEntity = new EntitySchema<TriggerEventSchema>({
         },
     ],
     relations: {
-        workspace: {
+        project: {
             type: 'many-to-one',
-            target: 'workspace',
+            target: 'project',
             cascade: true,
             onDelete: 'CASCADE',
             joinColumn: {
-                name: 'workspaceId',
-                foreignKeyConstraintName: 'fk_trigger_event_workspace_id',
+                name: 'projectId',
+                foreignKeyConstraintName: 'fk_trigger_event_project_id',
             },
         },
         file: {

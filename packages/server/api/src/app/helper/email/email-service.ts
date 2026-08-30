@@ -1,8 +1,8 @@
 import { isNil, TenantId } from '@fema-ipaas/core-utils'
 import { OtpType, UserIdentity, UserInvitation } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
+import { projectService } from '../../project/project-service'
 import { tenantService } from '../../tenant/tenant.service'
-import { workspaceService } from '../../workspace/workspace-service'
 import { domainHelper } from '../domain-helper'
 import { mailSender, MailTemplateVariables } from './mail-sender'
 
@@ -44,30 +44,30 @@ export const emailService = (log: FastifyBaseLogger) => ({
 
     async sendInvitation({ userInvitation, invitationLink }: SendInvitationParams): Promise<void> {
         const branding = await brandingFor(userInvitation.tenantId, log)
-        const workspace = isNil(userInvitation.workspaceId) ? null : await workspaceService(log).getOne(userInvitation.workspaceId)
+        const project = isNil(userInvitation.projectId) ? null : await projectService(log).getOne(userInvitation.projectId)
         await mailSender(log).send({
             to: userInvitation.email,
             subject: `You have been invited to ${branding.tenantName}`,
             template: 'invitation-email',
             variables: {
                 ...branding,
-                workspaceName: workspace?.displayName ?? branding.tenantName,
+                projectName: project?.displayName ?? branding.tenantName,
                 setupLink: invitationLink,
             },
         })
     },
 
-    async sendWorkspaceMemberAdded({ userInvitation }: SendWorkspaceMemberAddedParams): Promise<void> {
+    async sendProjectMemberAdded({ userInvitation }: SendProjectMemberAddedParams): Promise<void> {
         const branding = await brandingFor(userInvitation.tenantId, log)
-        const workspace = isNil(userInvitation.workspaceId) ? null : await workspaceService(log).getOne(userInvitation.workspaceId)
+        const project = isNil(userInvitation.projectId) ? null : await projectService(log).getOne(userInvitation.projectId)
         await mailSender(log).send({
             to: userInvitation.email,
-            subject: `You now have access to ${workspace?.displayName ?? branding.tenantName}`,
-            template: 'workspace-member-added',
+            subject: `You now have access to ${project?.displayName ?? branding.tenantName}`,
+            template: 'project-member-added',
             variables: {
                 ...branding,
-                workspaceName: workspace?.displayName ?? branding.tenantName,
-                role: userInvitation.workspaceRoleId ?? 'Member',
+                projectName: project?.displayName ?? branding.tenantName,
+                role: userInvitation.projectRoleId ?? 'Member',
                 loginLink: await domainHelper.getPublicUrl({ path: '' }),
             },
         })
@@ -99,7 +99,7 @@ type SendInvitationParams = {
     invitationLink: string
 }
 
-type SendWorkspaceMemberAddedParams = {
+type SendProjectMemberAddedParams = {
     userInvitation: UserInvitation
 }
 

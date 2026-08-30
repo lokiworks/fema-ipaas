@@ -25,6 +25,11 @@ import { useBuilderStateContext } from '../builder-hooks';
 
 import { ConnectorActionsOrTriggersList } from './connector-actions-or-triggers-list';
 import { ConnectorCardListItem } from './connector-card-item';
+import {
+  CONNECTOR_GRID_COLUMNS,
+  CONNECTOR_GRID_ROW_HEIGHT,
+  ConnectorGridItem,
+} from './connector-grid-item';
 import { NoResultsFound } from './no-results-found';
 
 type ConnectorsCardListProps = {
@@ -85,7 +90,7 @@ export const ConnectorsCardList: React.FC<ConnectorsCardListProps> = ({
         onMouseMove={() => {
           setMouseMoved(!isLoadingConnectors);
         }}
-        className={cn('w-full md:w-[250px] md:min-w-[250px] transition-all ', {
+        className={cn('w-full min-w-0 transition-all ', {
           'w-full md:w-full': searchQuery.length > 0 || noResultsFound,
         })}
       >
@@ -113,6 +118,25 @@ export const ConnectorsCardList: React.FC<ConnectorsCardListProps> = ({
                     id={item.displayName}
                   >
                     {item.displayName}
+                  </div>
+                );
+              }
+              if ('isGridRow' in item) {
+                return (
+                  <div
+                    className="grid gap-1 px-2"
+                    style={{
+                      gridTemplateColumns: `repeat(${CONNECTOR_GRID_COLUMNS}, minmax(0, 1fr))`,
+                      height: `${CONNECTOR_GRID_ROW_HEIGHT}px`,
+                    }}
+                  >
+                    {item.connectors.map((connectorMetadata) => (
+                      <ConnectorGridItem
+                        key={connectorMetadata.displayName}
+                        connectorMetadata={connectorMetadata}
+                        isTemporaryDisabledUntilNextCursorMove={!mouseMoved}
+                      />
+                    ))}
                   </div>
                 );
               }
@@ -159,6 +183,11 @@ type VirtualizedItem = {
       isCategory: false;
       connectorMetadata: StepMetadataWithSuggestions;
     }
+  | {
+      isCategory: false;
+      isGridRow: true;
+      connectors: StepMetadataWithSuggestions[];
+    }
 );
 const transformConnectorsMetadataToVirtualizedItems = (
   searchResult: CategorizedStepMetadataWithSuggestions[],
@@ -172,6 +201,27 @@ const transformConnectorsMetadataToVirtualizedItems = (
         height: CONNECTOR_SELECTOR_ELEMENTS_HEIGHTS.CATEGORY_ITEM_HEIGHT,
         isCategory: true,
       });
+    }
+    if (!showActionsOrTriggersInsideConnectorsList) {
+      for (
+        let start = 0;
+        start < category.metadata.length;
+        start += CONNECTOR_GRID_COLUMNS
+      ) {
+        const connectors = category.metadata.slice(
+          start,
+          start + CONNECTOR_GRID_COLUMNS,
+        );
+        result.push({
+          id: `${category.title}-row-${start}`,
+          displayName: connectors[0].displayName,
+          height: CONNECTOR_GRID_ROW_HEIGHT,
+          isCategory: false,
+          isGridRow: true,
+          connectors,
+        });
+      }
+      return result;
     }
     category.metadata.forEach((connectorMetadata, index) => {
       result.push({

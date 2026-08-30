@@ -114,7 +114,7 @@ export default function UsersPage() {
       />
       <DataTable
         emptyStateTextTitle={t('No users found')}
-        emptyStateTextDescription={t('Start inviting users to your workspace')}
+        emptyStateTextDescription={t('Start inviting users to your project')}
         emptyStateIcon={<User className="size-14" />}
         columns={columns}
         page={{

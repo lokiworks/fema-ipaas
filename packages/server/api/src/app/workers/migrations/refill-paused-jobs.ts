@@ -67,7 +67,7 @@ export const refillPausedRuns = (log: FastifyBaseLogger) => ({
             await systemJobsSchedule(log).upsertJob({
                 job: {
                     name: SystemJobName.RESUME_DELAY_WAITPOINT,
-                    data: { executionId: pausedRun.id, workspaceId: pausedRun.workspaceId, waitpointId: waitpoint.id },
+                    data: { executionId: pausedRun.id, projectId: pausedRun.projectId, waitpointId: waitpoint.id },
                     jobId: `resume-delay-${pausedRun.id}`,
                 },
                 schedule: {

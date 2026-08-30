@@ -8,7 +8,7 @@ Use this connector if you are unsure which connection to use beforehand, such as
 
 **Notes:**
 - You can retrieve the external ID from the connection settings page by hovering over the connection name.
-- Use this action to retrieve connection values by their external IDs from this workspace.
+- Use this action to retrieve connection values by their external IDs from this project.
 - After testing the step, you can use the dynamic value in the connector by clicking (X) and referring to this step.
 `;
 
@@ -18,7 +18,7 @@ export const readConnection = createAction({
   classification: 'READ',
   displayName: 'Read Connection',
   description: 'Fetch connection by name',
-  aiMetadata: { description: 'Looks up a stored app connection in the current workspace by its external ID, so a workflow can resolve credentials at runtime instead of binding one fixed connection at build time (for example when the external ID arrives in a webhook payload). When the connection is known up front, configure the target connector action with its own auth instead. Requires the exact external ID and throws if no connection matches; read-only and idempotent.', idempotent: true },
+  aiMetadata: { description: 'Looks up a stored app connection in the current project by its external ID, so a workflow can resolve credentials at runtime instead of binding one fixed connection at build time (for example when the external ID arrives in a webhook payload). When the connection is known up front, configure the target connector action with its own auth instead. Requires the exact external ID and throws if no connection matches; read-only and idempotent.', idempotent: true },
   props: {
     info: Property.MarkDown({
       value: markdown,

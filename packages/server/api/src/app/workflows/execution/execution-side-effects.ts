@@ -25,7 +25,7 @@ export const executionSideEffects = (log: FastifyBaseLogger) => ({
             durationMs: durationOf(execution),
         })
         applicationEvents(log).sendWorkerEvent({
-            workspaceId: execution.workspaceId,
+            projectId: execution.projectId,
             tenantId,
             action: ApplicationEventName.EXECUTION_FINISHED,
             data: {
@@ -35,7 +35,7 @@ export const executionSideEffects = (log: FastifyBaseLogger) => ({
     },
     async onResume({ execution, tenantId }: ExecutionSideEffectParams): Promise<void> {
         applicationEvents(log).sendWorkerEvent({
-            workspaceId: execution.workspaceId,
+            projectId: execution.projectId,
             tenantId,
             action: ApplicationEventName.EXECUTION_RESUMED,
             data: {
@@ -45,7 +45,7 @@ export const executionSideEffects = (log: FastifyBaseLogger) => ({
     },
     async onRetry({ execution, tenantId }: ExecutionSideEffectParams): Promise<void> {
         applicationEvents(log).sendWorkerEvent({
-            workspaceId: execution.workspaceId,
+            projectId: execution.projectId,
             tenantId,
             action: ApplicationEventName.EXECUTION_RETRIED,
             data: {
@@ -55,7 +55,7 @@ export const executionSideEffects = (log: FastifyBaseLogger) => ({
     },
     async onStart({ execution, tenantId }: ExecutionSideEffectParams): Promise<void> {
         applicationEvents(log).sendWorkerEvent({
-            workspaceId: execution.workspaceId,
+            projectId: execution.projectId,
             tenantId,
             action: ApplicationEventName.EXECUTION_STARTED,
             data: {

@@ -34,7 +34,7 @@ export const RetriedRunsSnackbar = ({
           variant={'outline'}
           size="sm"
           onClick={() => {
-            navigate(authenticationSession.appendWorkspaceRoutePrefix(`/runs`));
+            navigate(authenticationSession.appendProjectRoutePrefix(`/runs`));
             setSearchParams({
               [RUN_IDS_QUERY_PARAM]: retriedRunsIds,
               [LIMIT_QUERY_PARAM]: retriedRunsIds.length.toString(),

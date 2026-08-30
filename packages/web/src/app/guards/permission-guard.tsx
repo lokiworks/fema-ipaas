@@ -12,8 +12,8 @@ export const RoutePermissionGuard = ({
   children: ReactNode;
   requiredPermissions: Permission | Permission[];
 }) => {
-  const { checkAccess, isFetchingWorkspaceRole } = useAuthorization();
-  if (isFetchingWorkspaceRole) {
+  const { checkAccess, isFetchingProjectRole } = useAuthorization();
+  if (isFetchingProjectRole) {
     return <RouteLoadingBar />;
   }
   const permissions = Array.isArray(permission) ? permission : [permission];

@@ -40,7 +40,7 @@ export {
   // workflow contracts
   WorkflowStatus,
   WorkflowTriggerType,
-  Workspace,
+  Project,
   StopResponse,
   USE_DRAFT_QUERY_PARAM_NAME,
   RAW_PAYLOAD_HEADER,

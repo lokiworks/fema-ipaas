@@ -13,6 +13,8 @@ import { FileEntity } from '../file/file.entity'
 import { FlagEntity } from '../flags/flag.entity'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
+import { ProjectEntity } from '../project/project-entity'
+import { ProjectMemberEntity } from '../project/project-member.entity'
 import { StoreEntryEntity } from '../store-entry/store-entry-entity'
 import { TemplateEntity } from '../template/template.entity'
 import { TenantEntity } from '../tenant/tenant.entity'
@@ -27,8 +29,6 @@ import { WaitpointEntity } from '../workflows/execution/waitpoint/waitpoint-enti
 import { FolderEntity } from '../workflows/folder/folder.entity'
 import { WorkflowEntity } from '../workflows/workflow/workflow.entity'
 import { WorkflowVersionEntity } from '../workflows/workflow-version/workflow-version-entity'
-import { WorkspaceEntity } from '../workspace/workspace-entity'
-import { WorkspaceMemberEntity } from '../workspace/workspace-member.entity'
 import { DatabaseType } from './database-type'
 import { createPGliteDataSource } from './pglite-connection'
 import { createPostgresDataSource } from './postgres-connection'
@@ -46,8 +46,8 @@ function getEntities(): EntitySchema<unknown>[] {
         ExecutionEntity,
         AuditEventEntity,
         ConnectorBlueprintEntity,
-        WorkspaceEntity,
-        WorkspaceMemberEntity,
+        ProjectEntity,
+        ProjectMemberEntity,
         StoreEntryEntity,
         UserEntity,
         ConnectionEntity,

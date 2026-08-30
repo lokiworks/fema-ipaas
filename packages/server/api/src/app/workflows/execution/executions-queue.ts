@@ -7,8 +7,8 @@ import { domainHelper } from '../../helper/domain-helper'
 import { exceptionHandler } from '../../helper/exception-handler'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
+import { projectService } from '../../project/project-service'
 import { QueueName, redisMetadataKey, RunsMetadataJobData, RunsMetadataQueueConfig, runsMetadataQueueFactory, RunsMetadataUpsertData } from '../../workers/job'
-import { workspaceService } from '../../workspace/workspace-service'
 import { workflowService } from '../workflow/workflow.service'
 import { executionRepo } from './execution-service'
 import { executionSideEffects } from './execution-side-effects'
@@ -60,7 +60,7 @@ export const runsMetadataQueue = (log: FastifyBaseLogger) => ({
                                 const timeline = buildTimeline({ existingExecution, runMetadata })
                                 await executionRepo().update(job.data.runId, {
                                     ...spreadIfDefined('timeline', timeline),
-                                    ...spreadIfDefined('workspaceId', runMetadata.workspaceId),
+                                    ...spreadIfDefined('projectId', runMetadata.projectId),
                                     ...spreadIfDefined('workflowId', runMetadata.workflowId),
                                     ...spreadIfDefined('workflowVersionId', runMetadata.workflowVersionId),
                                     ...spreadIfDefined('environment', runMetadata.environment),
@@ -105,7 +105,7 @@ export const runsMetadataQueue = (log: FastifyBaseLogger) => ({
                                 await markParentRunAsFailed({
                                     parentRunId,
                                     childRunId: savedExecution.id,
-                                    workspaceId: savedExecution.workspaceId,
+                                    projectId: savedExecution.projectId,
                                     log,
                                 })
                             }
@@ -114,7 +114,7 @@ export const runsMetadataQueue = (log: FastifyBaseLogger) => ({
                                 await distributedStore.deleteKeyIfFieldValueMatches(key, 'requestId', runMetadata.requestId)
                             }
                             if (!isNil(runMetadata.finishTime)) {
-                                const tenantId = await workspaceService(log).getTenantId(savedExecution.workspaceId)
+                                const tenantId = await projectService(log).getTenantId(savedExecution.projectId)
                                 await executionSideEffects(log).onFinish({ execution: savedExecution, tenantId })
                             }
 
@@ -156,7 +156,7 @@ export const runsMetadataQueue = (log: FastifyBaseLogger) => ({
     async add(params: RunsMetadataUpsertData): Promise<void> {
         log.info({
             execution: { id: params.id },
-            workspace: { id: params.workspaceId },
+            project: { id: params.projectId },
         }, '[runsMetadataQueue#add] Adding runs metadata to queue')
         await queue.add(params)
     },
@@ -191,19 +191,19 @@ function buildTimeline({ existingExecution, runMetadata }: BuildTimelineParams):
 export async function markParentRunAsFailed({
     parentRunId,
     childRunId,
-    workspaceId,
+    projectId,
     log,
 }: MarkParentRunAsFailedParams): Promise<void> {
     const execution = await executionRepo().findOneBy({
         id: parentRunId,
-        workspaceId,
+        projectId,
     })
 
     if (isNil(execution) || isExecutionStateTerminal({ status: execution.status, ignoreInternalError: false })) {
         return
     }
 
-    const childRunUrl = await domainHelper.getPublicUrl({ path: `/workspaces/${workspaceId}/runs/${childRunId}` })
+    const childRunUrl = await domainHelper.getPublicUrl({ path: `/projects/${projectId}/runs/${childRunId}` })
     const errorPayload = {
         body: {
             status: 'error',
@@ -219,7 +219,7 @@ export async function markParentRunAsFailed({
     const existingWaitpoint = await waitpointService(log).getByExecutionId(parentRunId)
     const result = await waitpointService(log).complete({
         executionId: parentRunId,
-        workspaceId: execution.workspaceId,
+        projectId: execution.projectId,
         waitpointId: existingWaitpoint?.id ?? generateId(),
         resumePayload: errorPayload,
     })
@@ -241,6 +241,6 @@ type BuildTimelineParams = {
 type MarkParentRunAsFailedParams = {
     parentRunId: string
     childRunId: string
-    workspaceId: string
+    projectId: string
     log: FastifyBaseLogger
 }

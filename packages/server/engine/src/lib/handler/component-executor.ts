@@ -84,7 +84,7 @@ const executeAction: ActionHandler<ComponentAction> = async ({ action, execution
                 workflowId: constants.workflowId,
                 workflowVersionId: constants.workflowVersionId,
             }),
-            workspaceId: constants.workspaceId,
+            projectId: constants.projectId,
             tenantId: constants.tenantId,
             step: { name: action.name, displayName: action.displayName },
         }
@@ -131,7 +131,7 @@ function toSuspendableRuntime(constants: EngineConstants) {
         internalApiUrl: constants.internalApiUrl,
         publicApiUrl: constants.publicApiUrl,
         engineToken: constants.engineToken,
-        workspaceId: constants.workspaceId,
+        projectId: constants.projectId,
         executionId: constants.executionId,
         actionRunMode: constants.actionRunMode,
         workerHandlerId: constants.workerHandlerId ?? undefined,

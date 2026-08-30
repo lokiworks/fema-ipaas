@@ -24,7 +24,7 @@ vi.mock('@/features/variables/api/variables', () => ({ variablesApi: {} }));
 vi.mock('@/lib/api', () => ({ api: { isApError: () => false } }));
 
 vi.mock('@/lib/authentication-session', () => ({
-  authenticationSession: { getWorkspaceId: () => 'test-workspace' },
+  authenticationSession: { getProjectId: () => 'test-project' },
 }));
 
 vi.mock('@/components/ui/dialog', () => ({

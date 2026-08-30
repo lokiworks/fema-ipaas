@@ -1,6 +1,6 @@
 import { ContextVersion } from '@fema-ipaas/connector-sdk'
-import { ensureTrailingSlash, isNil, TenantId, WorkspaceId } from '@fema-ipaas/core-utils'
-import { BaseEngineOperation, BeginExecuteWorkflowOperation, DEFAULT_MCP_DATA, EngineGenericError, ExecutePropsOptions, ExecuteTriggerOperation, ExecutionState, ExecutionType, ResumeExecuteWorkflowOperation, ResumePayload, RunEnvironment, StreamStepProgress, TriggerHookType, WorkflowGraph, workflowStructureUtil, WorkflowTrigger, WorkflowVersionState, Workspace } from '@fema-ipaas/shared'
+import { ensureTrailingSlash, isNil, ProjectId, TenantId } from '@fema-ipaas/core-utils'
+import { BaseEngineOperation, BeginExecuteWorkflowOperation, DEFAULT_MCP_DATA, EngineGenericError, ExecutePropsOptions, ExecuteTriggerOperation, ExecutionState, ExecutionType, Project, ResumeExecuteWorkflowOperation, ResumePayload, RunEnvironment, StreamStepProgress, TriggerHookType, WorkflowGraph, workflowStructureUtil, WorkflowTrigger, WorkflowVersionState } from '@fema-ipaas/shared'
 import { retryFetch } from '../../api/retry-fetch'
 import { createPropsResolver, PropsResolver } from '../../variables/props-resolver'
 
@@ -21,7 +21,7 @@ type EngineConstantsParams = {
     internalApiUrl: string
     retryConstants: RetryConstants
     engineToken: string
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     streamStepProgress: StreamStepProgress
     workerHandlerId: string | null
     httpRequestId: string | null
@@ -63,7 +63,7 @@ export class EngineConstants {
     public readonly internalApiUrl: string
     public readonly retryConstants: RetryConstants
     public readonly engineToken: string
-    public readonly workspaceId: WorkspaceId
+    public readonly projectId: ProjectId
     public readonly streamStepProgress: StreamStepProgress
     public readonly workerHandlerId: string | null
     public readonly httpRequestId: string | null
@@ -73,7 +73,7 @@ export class EngineConstants {
     public readonly logsFileId?: string
     public readonly stepNames: string[] = []
     public readonly actionRunMode: boolean
-    private workspace: Workspace | null = null
+    private project: Project | null = null
 
     public get isRunningApTests(): boolean {
         return EngineConstants.TEST_MODE
@@ -109,7 +109,7 @@ export class EngineConstants {
         this.retryConstants = params.retryConstants
         this.triggerConnectorName = params.triggerConnectorName
         this.engineToken = params.engineToken
-        this.workspaceId = params.workspaceId
+        this.projectId = params.projectId
         this.streamStepProgress = params.streamStepProgress
         this.workerHandlerId = params.workerHandlerId
         this.httpRequestId = params.httpRequestId
@@ -168,7 +168,7 @@ export class EngineConstants {
     }
     public getPropsResolver({ contextVersion, connectorName }: GetPropsResolverParams): PropsResolver {
         return createPropsResolver({
-            workspaceId: this.workspaceId,
+            projectId: this.projectId,
             engineToken: this.engineToken,
             apiUrl: this.internalApiUrl,
             contextVersion,
@@ -176,26 +176,26 @@ export class EngineConstants {
             connectorName,
         })
     }
-    private async getWorkspace(): Promise<Workspace> {
-        if (this.workspace) {
-            return this.workspace
+    private async getProject(): Promise<Project> {
+        if (this.project) {
+            return this.project
         }
 
-        const getWorkerWorkspaceEndpoint = `${this.internalApiUrl}v1/worker/workspace`
+        const getWorkerProjectEndpoint = `${this.internalApiUrl}v1/worker/project`
 
-        const response = await retryFetch(getWorkerWorkspaceEndpoint, {
+        const response = await retryFetch(getWorkerProjectEndpoint, {
             headers: {
                 Authorization: `Bearer ${this.engineToken}`,
             },
         })
 
-        this.workspace = await response.json() as Workspace
-        return this.workspace
+        this.project = await response.json() as Project
+        return this.project
     }
 
-    public externalWorkspaceId = async (): Promise<string | undefined> => {
-        const workspace = await this.getWorkspace()
-        return workspace.externalId ?? undefined
+    public externalProjectId = async (): Promise<string | undefined> => {
+        const project = await this.getProject()
+        return project.externalId ?? undefined
     }
 }
 
@@ -204,7 +204,7 @@ function sharedFields(input: SharedFieldsSource) {
         publicApiUrl: input.publicApiUrl,
         internalApiUrl: ensureTrailingSlash(input.internalApiUrl),
         engineToken: input.engineToken,
-        workspaceId: input.workspaceId,
+        projectId: input.projectId,
         timeoutInSeconds: input.timeoutInSeconds,
         tenantId: input.tenantId,
         retryConstants: DEFAULT_RETRY_CONSTANTS,
@@ -244,7 +244,7 @@ type SharedFieldsSource = {
     publicApiUrl: string
     internalApiUrl: string
     engineToken: string
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     timeoutInSeconds: number
     tenantId: TenantId
 }

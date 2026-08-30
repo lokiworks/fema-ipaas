@@ -2,7 +2,7 @@ import { EngineGenericError, ExecutionError, FetchError, VariableNotFoundError }
 import { retryFetch } from '../api/retry-fetch'
 import { utils } from '../utils'
 
-export const createVariableResolver = ({ workspaceId: _workspaceId, engineToken, apiUrl }: CreateVariableResolverParams): VariableResolver => {
+export const createVariableResolver = ({ projectId: _projectId, engineToken, apiUrl }: CreateVariableResolverParams): VariableResolver => {
     return {
         async obtain(name: string): Promise<string> {
             const url = `${apiUrl}v1/worker/variables/${encodeURIComponent(name)}`
@@ -47,7 +47,7 @@ type VariableResolver = {
 }
 
 type CreateVariableResolverParams = {
-    workspaceId: string
+    projectId: string
     apiUrl: string
     engineToken: string
 }

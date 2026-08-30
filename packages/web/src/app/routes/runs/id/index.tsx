@@ -10,7 +10,7 @@ import { executionsApi } from '@/features/executions';
 import { workflowsApi, sampleDataHooks } from '@/features/workflows';
 
 const ExecutionPage = () => {
-  const { runId, workspaceId } = useParams();
+  const { runId, projectId } = useParams();
   const { data, isLoading } = useQuery<
     {
       run: Execution;
@@ -36,13 +36,13 @@ const ExecutionPage = () => {
   const { data: sampleData, isLoading: isSampleDataLoading } =
     sampleDataHooks.useSampleDataForWorkflow(
       data?.workflow?.version,
-      workspaceId,
+      projectId,
     );
 
   const { data: sampleDataInput, isLoading: isSampleDataInputLoading } =
     sampleDataHooks.useSampleDataInputForWorkflow(
       data?.workflow?.version,
-      workspaceId,
+      projectId,
     );
 
   if (isLoading || isSampleDataLoading || isSampleDataInputLoading) {

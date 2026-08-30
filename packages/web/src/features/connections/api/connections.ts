@@ -58,16 +58,15 @@ export const connectionsApi = {
     );
   },
   getOAuth2AuthorizationUrl(
-    request: Omit<GetOAuth2AuthorizationUrlRequestBody, 'workspaceId'> & {
-      workspaceId?: string;
+    request: Omit<GetOAuth2AuthorizationUrlRequestBody, 'projectId'> & {
+      projectId?: string;
     },
   ): Promise<GetOAuth2AuthorizationUrlResponse> {
-    const { workspaceId: workspaceIdOverride, ...rest } = request;
-    const workspaceId =
-      workspaceIdOverride ?? authenticationSession.getWorkspaceId();
+    const { projectId: projectIdOverride, ...rest } = request;
+    const projectId = projectIdOverride ?? authenticationSession.getProjectId();
     return api.post<GetOAuth2AuthorizationUrlResponse>(
       '/v1/connections/oauth2/authorization-url',
-      { ...rest, workspaceId },
+      { ...rest, projectId },
     );
   },
 };

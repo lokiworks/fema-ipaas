@@ -26,7 +26,7 @@ export const tenantConnectionsQueries = {
         const cursor = searchParams.get(CURSOR_QUERY_PARAM);
         const limit = searchParams.get(LIMIT_QUERY_PARAM);
         const status = searchParams.getAll('status') as ConnectionStatus[];
-        const workspaceIds = searchParams.getAll('workspaceIds');
+        const projectIds = searchParams.getAll('projectIds');
         const ownerIds = searchParams.getAll('ownerIds');
         return tenantConnectionsApi.list({
           cursor: cursor ?? undefined,
@@ -34,7 +34,7 @@ export const tenantConnectionsQueries = {
           displayName: searchParams.get('displayName') ?? undefined,
           connectorName: searchParams.get('connectorName') ?? undefined,
           status: status.length > 0 ? status : undefined,
-          workspaceIds: workspaceIds.length > 0 ? workspaceIds : undefined,
+          projectIds: projectIds.length > 0 ? projectIds : undefined,
           ownerIds: ownerIds.length > 0 ? ownerIds : undefined,
         });
       },

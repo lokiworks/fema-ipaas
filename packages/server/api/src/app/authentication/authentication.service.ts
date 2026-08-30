@@ -29,7 +29,7 @@ export const authenticationService = (log: FastifyBaseLogger) => ({
                 tenantId,
             })
             if (system.get(AppSystemProp.ALLOW_OPEN_SIGN_UP) !== 'true') {
-                await authenticationUtils(log).assertUserIsInvitedToTenantOrWorkspace({
+                await authenticationUtils(log).assertUserIsInvitedToTenantOrProject({
                     email: params.email,
                     tenantId,
                 })
@@ -38,17 +38,17 @@ export const authenticationService = (log: FastifyBaseLogger) => ({
                 ...params,
                 verified: true,
             })
-            const user = await userService(log).getOrCreateWithWorkspace({
+            const user = await userService(log).getOrCreateWithProject({
                 identity: userIdentity,
                 tenantId,
             })
             await userInvitationsService(log).provisionUserInvitation({ email: params.email })
 
             log.info({ email: params.email, tenant: { id: tenantId } }, 'User signed up to existing tenant')
-            return authenticationUtils(log).getWorkspaceAndToken({
+            return authenticationUtils(log).getProjectAndToken({
                 userId: user.id,
                 tenantId,
-                workspaceId: null,
+                projectId: null,
             })
         }
 
@@ -65,17 +65,17 @@ export const authenticationService = (log: FastifyBaseLogger) => ({
 
         const preferredTenantId = await getPreferredTenantId(userIdentity.id, log)
         if (!isNil(preferredTenantId)) {
-            const user = await userService(log).getOrCreateWithWorkspace({
+            const user = await userService(log).getOrCreateWithProject({
                 identity: userIdentity,
                 tenantId: preferredTenantId,
             })
             log.info({ email: params.email, provider: params.provider, preferredTenantId }, 'User signed up with invitation, returning preferred tenant token')
-            const authResponse =  await authenticationUtils(log).getWorkspaceAndToken({
+            const authResponse =  await authenticationUtils(log).getProjectAndToken({
                 userId: user.id,
                 tenantId: preferredTenantId,
-                workspaceId: null,
+                projectId: null,
             })
-            await authenticationUtils(log).sendTelemetry({ identity: userIdentity, user, workspaceId: authResponse.workspaceId ?? '' })
+            await authenticationUtils(log).sendTelemetry({ identity: userIdentity, user, projectId: authResponse.projectId ?? '' })
             return authResponse
         }
         log.info({ email: params.email, provider: params.provider }, 'User signed up without tenant')
@@ -105,10 +105,10 @@ export const authenticationService = (log: FastifyBaseLogger) => ({
         })
         assertNotNullOrUndefined(user, 'User not found')
         log.info({ email: params.email, tenant: { id: tenantId } }, 'User signed in with password')
-        return authenticationUtils(log).getWorkspaceAndToken({
+        return authenticationUtils(log).getProjectAndToken({
             userId: user.id,
             tenantId,
-            workspaceId: null,
+            projectId: null,
         })
     },
     async resolvePreferredTenantId({ identityId }: ResolvePreferredTenantIdParams): Promise<string | null> {
@@ -148,29 +148,29 @@ export const authenticationService = (log: FastifyBaseLogger) => ({
                 imageUrl: params.imageUrl,
             })
         }
-        const user = await userService(log).getOrCreateWithWorkspace({
+        const user = await userService(log).getOrCreateWithProject({
             identity: userIdentity,
             tenantId,
         })
         await userInvitationsService(log).provisionUserInvitation({ email: params.email })
-        return authenticationUtils(log).getWorkspaceAndToken({
+        return authenticationUtils(log).getProjectAndToken({
             userId: user.id,
             tenantId,
-            workspaceId: null,
+            projectId: null,
         })
     },
     async switchTenant(params: SwitchTenantParams): Promise<AuthenticationResponse> {
-        const tenants = await tenantService(log).listTenantsForIdentityWithAtleastWorkspace({ identityId: params.identityId })
+        const tenants = await tenantService(log).listTenantsForIdentityWithAtleastProject({ identityId: params.identityId })
         const tenant = tenants.find((tenant) => tenant.id === params.tenantId)
         await assertUserCanSwitchToTenant(tenant)
 
         assertNotNullOrUndefined(tenant, 'Tenant not found')
         const user = await getUserForTenant(params.identityId, tenant, log)
         log.info({ user: { id: user.id }, tenant: { id: tenant.id } }, 'User switched tenant')
-        return authenticationUtils(log).getWorkspaceAndToken({
+        return authenticationUtils(log).getProjectAndToken({
             userId: user.id,
             tenantId: tenant.id,
-            workspaceId: null,
+            projectId: null,
         })
     },
 })

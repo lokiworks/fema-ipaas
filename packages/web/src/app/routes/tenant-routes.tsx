@@ -9,7 +9,7 @@ import { TenantLayout } from '../components/tenant-layout';
 const SettingsHealthPage = React.lazy(() => import('./tenant/infra/health'));
 const TriggerHealthPage = React.lazy(() => import('./tenant/infra/triggers'));
 const SettingsWorkersPage = React.lazy(() => import('./tenant/infra/workers'));
-const WorkspacesPage = React.lazy(() => import('./tenant/workspaces'));
+const ProjectsPage = React.lazy(() => import('./tenant/projects'));
 const AuthenticationPage = React.lazy(() =>
   import('./tenant/security/sso').then((m) => ({
     default: m.AuthenticationPage,
@@ -76,12 +76,12 @@ export const tenantRoutes = [
     element: (
       <TenantLayout>
         <PageTitle title="Tenant">
-          <Navigate to="/tenant/workspaces" />
+          <Navigate to="/tenant/projects" />
         </PageTitle>
       </TenantLayout>
     ),
   },
-  tenantRoute('/tenant/workspaces', 'Workspaces', WorkspacesPage),
+  tenantRoute('/tenant/projects', 'Projects', ProjectsPage),
   tenantRoute('/tenant/users', 'Members', UsersPage),
   tenantRoute('/tenant/audit', 'Audit Log', AuditLogPage),
   tenantRoute('/tenant/connections', 'Connections', TenantConnectionsPage),

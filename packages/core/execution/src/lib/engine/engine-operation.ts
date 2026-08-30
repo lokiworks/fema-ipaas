@@ -1,4 +1,4 @@
-import { ExecutionId, TenantId, WorkspaceId } from '@fema-ipaas/core-utils'
+import { ExecutionId, TenantId, ProjectId } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 import { ExecutionToolStatus, PredefinedInputsStructure } from '@fema-ipaas/connector-types'
 import { ConnectionType, ConnectionValue } from '@fema-ipaas/connector-types'
@@ -56,7 +56,7 @@ export type EngineStderr = z.infer<typeof EngineStderr>
 
 
 export type BaseEngineOperation = {
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     engineToken: string
     internalApiUrl: string
     publicApiUrl: string
@@ -64,12 +64,12 @@ export type BaseEngineOperation = {
     tenantId: TenantId
 }
 
-export type ExecuteValidateAuthOperation = Omit<BaseEngineOperation, 'workspaceId'> & {
+export type ExecuteValidateAuthOperation = Omit<BaseEngineOperation, 'projectId'> & {
     connector: ConnectorPackage
     auth: ConnectionValue
 }
 
-export type ExecuteResolveConnectionIdentifierOperation = Omit<BaseEngineOperation, 'workspaceId'> & {
+export type ExecuteResolveConnectionIdentifierOperation = Omit<BaseEngineOperation, 'projectId'> & {
     connector: ConnectorPackage
     auth: ConnectionValue
     connectionType: ConnectionType

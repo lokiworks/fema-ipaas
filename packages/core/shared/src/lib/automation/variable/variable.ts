@@ -12,7 +12,7 @@ export type VariableValue = {
 
 export type Variable = BaseModel<VariableId> & {
     name: string
-    workspaceId: string
+    projectId: string
     tenantId: string
     ownerId: string | null
     owner: UserWithMetaInformation | null
@@ -23,10 +23,10 @@ export type Variable = BaseModel<VariableId> & {
 export const VariableWithoutSensitiveData = z.object({
     ...BaseModelSchema,
     name: z.string(),
-    workspaceId: z.string(),
+    projectId: z.string(),
     tenantId: z.string(),
     ownerId: Nullable(z.string()),
     owner: Nullable(UserWithMetaInformation),
     metadata: Nullable(Metadata),
-}).describe('A workspace-scoped encrypted variable that workflows can reference via {{variables[\'NAME\']}}.')
+}).describe('A project-scoped encrypted variable that workflows can reference via {{variables[\'NAME\']}}.')
 export type VariableWithoutSensitiveData = z.infer<typeof VariableWithoutSensitiveData>

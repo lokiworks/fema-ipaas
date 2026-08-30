@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 export const ListVariablesRequestQuery = z.object({
-    workspaceId: z.string(),
+    projectId: z.string(),
     cursor: z.string().optional(),
     limit: z.coerce.number().optional(),
     name: z.string().optional(),

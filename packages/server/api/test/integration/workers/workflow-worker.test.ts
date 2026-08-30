@@ -7,7 +7,7 @@ import { db } from '../../../helpers/db'
 import {
     createMockWorkflow,
     createMockWorkflowVersion,
-    createMockWorkspace,
+    createMockProject,
     mockAndSaveBasicSetup,
 } from '../../../helpers/mocks'
 import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
@@ -23,18 +23,18 @@ afterAll(async () => {
 })
 describe('Workflow API for Worker', () => {
     describe('Get Workflow from Worker', () => {
-        it('should deny worker access to workflow from another workspace', async () => {
-            const { mockTenant, mockOwner, mockWorkspace } = await mockAndSaveBasicSetup()
+        it('should deny worker access to workflow from another project', async () => {
+            const { mockTenant, mockOwner, mockProject } = await mockAndSaveBasicSetup()
 
-            const mockWorkspace2 = createMockWorkspace({
+            const mockProject2 = createMockProject({
                 tenantId: mockTenant.id,
                 ownerId: mockOwner.id,
             })
 
-            await db.save('workspace', [mockWorkspace2])
+            await db.save('project', [mockProject2])
 
             const mockWorkflow = createMockWorkflow({
-                workspaceId: mockWorkspace.id,
+                projectId: mockProject.id,
             })
             await db.save('workflow', [mockWorkflow])
 

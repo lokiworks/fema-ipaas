@@ -141,7 +141,7 @@ function createKey(prefix: string, scope: StoreScope, workflowId: WorkflowId, ke
         throw new StorageInvalidKeyError(key)
     }
     switch (scope) {
-        case StoreScope.WORKSPACE:
+        case StoreScope.PROJECT:
             return prefix + key
         case StoreScope.WORKFLOW:
             return prefix + 'workflow_' + workflowId + '/' + key

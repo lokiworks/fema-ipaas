@@ -8,13 +8,13 @@ import { tenantService } from '../../../../src/app/tenant/tenant.service'
 import { createMockTenant, createMockUserIdentity } from '../../../helpers/mocks'
 import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
 
-const trackWorkspace = vi.fn()
+const trackProject = vi.fn()
 
 vi.mock('../../../../src/app/helper/telemetry.utils', async (importOriginal) => {
     const actual = await importOriginal<typeof import('../../../../src/app/helper/telemetry.utils')>()
     return {
         ...actual,
-        telemetry: (log: FastifyBaseLogger) => ({ ...actual.telemetry(log), trackWorkspace }),
+        telemetry: (log: FastifyBaseLogger) => ({ ...actual.telemetry(log), trackProject }),
     }
 })
 
@@ -43,7 +43,7 @@ async function createViaRoute({ token, name }: { token: string, name: string }) 
 }
 
 async function createFirstTenant(identityId: string, callerTokenVersion?: string) {
-    const { response } = await tenantService(app!.log).createTenantWithWorkspace({
+    const { response } = await tenantService(app!.log).createTenantWithProject({
         identityId,
         name: 'Ahmad',
         invalidatePreviousTokens: true,
@@ -54,7 +54,7 @@ async function createFirstTenant(identityId: string, callerTokenVersion?: string
 }
 
 function provisionFirstTenant(identityId: string) {
-    return tenantService(app!.log).createTenantWithWorkspace({
+    return tenantService(app!.log).createTenantWithProject({
         identityId,
         name: 'Ahmad',
         invalidatePreviousTokens: true,
@@ -89,8 +89,8 @@ afterAll(async () => {
 })
 
 beforeEach(async () => {
-    trackWorkspace.mockClear()
-    await databaseConnection().getRepository('workspace').createQueryBuilder().delete().execute()
+    trackProject.mockClear()
+    await databaseConnection().getRepository('project').createQueryBuilder().delete().execute()
     await databaseConnection().getRepository('tenant').createQueryBuilder().delete().execute()
     await databaseConnection().getRepository('user').createQueryBuilder().delete().execute()
     await databaseConnection().getRepository('user_identity').createQueryBuilder().delete().execute()
@@ -105,7 +105,7 @@ describe('First tenant provisioning', () => {
 
         expect(second.tenantId).toBe(first.tenantId)
         expect(await databaseConnection().getRepository('tenant').count()).toBe(1)
-        expect(await databaseConnection().getRepository('workspace').count()).toBe(1)
+        expect(await databaseConnection().getRepository('project').count()).toBe(1)
         expect(await databaseConnection().getRepository('user').count()).toBe(1)
     })
 
@@ -153,20 +153,20 @@ describe('First tenant provisioning', () => {
 
         const response = await createFirstTenant(identityId)
 
-        const signedUp = trackWorkspace.mock.calls.filter(([, event]) => event.name === TelemetryEventName.SIGNED_UP)
+        const signedUp = trackProject.mock.calls.filter(([, event]) => event.name === TelemetryEventName.SIGNED_UP)
         expect(signedUp).toHaveLength(1)
-        expect(signedUp[0][0]).toBe(response.workspaceId)
+        expect(signedUp[0][0]).toBe(response.projectId)
     })
 
-    it('repairs a tenant left without a workspace instead of wedging the identity', async () => {
+    it('repairs a tenant left without a project instead of wedging the identity', async () => {
         const identityId = await seedVerifiedIdentity()
         const first = await createFirstTenant(identityId)
-        await databaseConnection().getRepository('workspace').createQueryBuilder().delete().execute()
+        await databaseConnection().getRepository('project').createQueryBuilder().delete().execute()
 
         const retry = await createFirstTenant(identityId)
 
         expect(retry.tenantId).toBe(first.tenantId)
-        expect(await databaseConnection().getRepository('workspace').count()).toBe(1)
+        expect(await databaseConnection().getRepository('project').count()).toBe(1)
         expect(await databaseConnection().getRepository('tenant').count()).toBe(1)
     })
 

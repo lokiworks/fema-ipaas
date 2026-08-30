@@ -56,18 +56,18 @@ export const stepsHooks = {
   },
   useAllStepsMetadata: ({ searchQuery, type, enabled }: UseMetadataProps) => {
     const { i18n } = useTranslation();
-    const workspaceId = authenticationSession.getWorkspaceId()!;
+    const projectId = authenticationSession.getProjectId()!;
     const query = useQuery<StepMetadataWithSuggestions[], Error>({
       queryKey: [
         'connectors-metadata',
         searchQuery,
         type,
-        workspaceId,
+        projectId,
         i18n.language,
       ],
       queryFn: async () => {
         const connectors = await connectorsApi.list({
-          workspaceId,
+          projectId,
           searchQuery,
           suggestionType:
             type === 'action' ? SuggestionType.ACTION : SuggestionType.TRIGGER,

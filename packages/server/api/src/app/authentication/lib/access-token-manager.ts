@@ -1,4 +1,4 @@
-import { ApplicationError, ErrorCode, generateId, TenantId, WorkspaceId } from '@fema-ipaas/core-utils'
+import { ApplicationError, ErrorCode, generateId, ProjectId, TenantId } from '@fema-ipaas/core-utils'
 import { ALL_PRINCIPAL_TYPES, EnginePrincipal, Principal, PrincipalType, UserStatus, WorkerPrincipal } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
@@ -18,11 +18,11 @@ export const accessTokenManager = (log: FastifyBaseLogger) => ({
         })
     },
 
-    async generateEngineToken({ jobId, workspaceId, tenantId }: GenerateEngineTokenParams): Promise<string> {
+    async generateEngineToken({ jobId, projectId, tenantId }: GenerateEngineTokenParams): Promise<string> {
         const enginePrincipal: EnginePrincipal = {
             id: jobId ?? generateId(),
             type: PrincipalType.ENGINE,
-            workspaceId,
+            projectId,
             tenant: {
                 id: tenantId,
             },
@@ -121,7 +121,7 @@ async function assertUserSession(log: FastifyBaseLogger, decoded: Principal | Pr
 }
 
 type GenerateEngineTokenParams = {
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     jobId?: string
     tenantId: TenantId
 }

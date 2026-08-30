@@ -1,8 +1,8 @@
 import { ApplicationError, ErrorCode, isNil } from '@fema-ipaas/core-utils'
-import { Principal, PrincipalType, TenantRole, WorkspaceType } from '@fema-ipaas/shared'
+import { Principal, PrincipalType, ProjectType, TenantRole } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
+import { projectService } from '../../project/project-service'
 import { userService } from '../../user/user-service'
-import { workspaceService } from '../../workspace/workspace-service'
 
 export const tenantGuards = {
     async assertPrincipalIsTenantAdmin({ principal, log }: PrincipalParams): Promise<void> {
@@ -19,15 +19,15 @@ export const tenantGuards = {
         }
     },
 
-    async assertWorkspaceIsTeamType({ workspaceId, log }: WorkspaceParams): Promise<void> {
-        if (isNil(workspaceId)) {
+    async assertProjectIsTeamType({ projectId, log }: ProjectParams): Promise<void> {
+        if (isNil(projectId)) {
             return
         }
-        const workspace = await workspaceService(log).getOne(workspaceId)
-        if (isNil(workspace) || workspace.type !== WorkspaceType.TEAM) {
+        const project = await projectService(log).getOne(projectId)
+        if (isNil(project) || project.type !== ProjectType.TEAM) {
             throw new ApplicationError({
                 code: ErrorCode.AUTHORIZATION,
-                params: { message: 'Operation is only allowed on team workspaces' },
+                params: { message: 'Operation is only allowed on team projects' },
             })
         }
     },
@@ -38,7 +38,7 @@ type PrincipalParams = {
     log: FastifyBaseLogger
 }
 
-type WorkspaceParams = {
-    workspaceId: string | undefined | null
+type ProjectParams = {
+    projectId: string | undefined | null
     log: FastifyBaseLogger
 }

@@ -28,5 +28,6 @@
   "Comma": "Comma",
   "Tab": "Tab",
   "Extra Data": "Extra Data",
-  "Optional data sent to every subflow call alongside the batch rows. Reference the output of a previous step.": "Optional data sent to every subflow call alongside the batch rows. Reference the output of a previous step."
+  "Optional data sent to every subflow call alongside the batch rows. Reference the output of a previous step.": "Optional data sent to every subflow call alongside the batch rows. Reference the output of a previous step.",
+  "Sub Workflows": "Sub Workflows"
 }

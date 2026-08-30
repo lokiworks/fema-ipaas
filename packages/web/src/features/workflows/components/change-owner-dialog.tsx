@@ -46,7 +46,7 @@ const ChangeOwnerDialog = ({
   workflow,
   onOwnerChange,
 }: ChangeOwnerDialogProps) => {
-  const workspaceMembers: {
+  const projectMembers: {
     userId: string;
     user: { firstName: string; lastName: string; email: string };
   }[] = [];
@@ -109,8 +109,8 @@ const ChangeOwnerDialog = ({
                     value={field.value || undefined}
                     disabled={
                       isLoading ||
-                      !workspaceMembers ||
-                      workspaceMembers.length === 0
+                      !projectMembers ||
+                      projectMembers.length === 0
                     }
                   >
                     <SelectTrigger>
@@ -118,9 +118,9 @@ const ChangeOwnerDialog = ({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
-                        {workspaceMembers &&
-                          workspaceMembers.length > 0 &&
-                          workspaceMembers.map((member) => (
+                        {projectMembers &&
+                          projectMembers.length > 0 &&
+                          projectMembers.map((member) => (
                             <SelectItem
                               key={member.userId}
                               value={member.userId}

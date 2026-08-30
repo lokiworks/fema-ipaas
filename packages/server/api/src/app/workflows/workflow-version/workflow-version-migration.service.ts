@@ -1,4 +1,4 @@
-import { ErrorCode, isNil, spreadIfDefined, tryCatch, WorkspaceId } from '@fema-ipaas/core-utils'
+import { ErrorCode, isNil, ProjectId, spreadIfDefined, tryCatch } from '@fema-ipaas/core-utils'
 import { onCallService } from '@fema-ipaas/server-utils'
 import { LATEST_WORKFLOW_SCHEMA_VERSION, WorkflowVersion } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
@@ -9,7 +9,7 @@ import { workflowVersionBackupService } from './workflow-version-backup.service'
 import { workflowVersionRepo } from './workflow-version.service'
 
 export const workflowVersionMigrationService = (log: FastifyBaseLogger) => ({
-    async migrate(workflowVersion: WorkflowVersion, workspaceId?: WorkspaceId): Promise<WorkflowVersion> {
+    async migrate(workflowVersion: WorkflowVersion, projectId?: ProjectId): Promise<WorkflowVersion> {
         // Early exit if already at latest version
         if (workflowVersion.schemaVersion === LATEST_WORKFLOW_SCHEMA_VERSION) {
             return workflowVersion
@@ -22,7 +22,7 @@ export const workflowVersionMigrationService = (log: FastifyBaseLogger) => ({
             backupFiles[workflowVersion.schemaVersion] = await workflowVersionBackupService(log).store(workflowVersion)
         }
 
-        const { data: migratedWorkflowVersion, error: migrationError } = await tryCatch(() => workflowMigrations.apply(workflowVersion, { log, workspaceId }))
+        const { data: migratedWorkflowVersion, error: migrationError } = await tryCatch(() => workflowMigrations.apply(workflowVersion, { log, projectId }))
         if (migrationError) {
             log.error({ migrationError }, '[workflowVersionMigration] Failed to migrate workflow version')
             onCallService(log, system.get(AppSystemProp.PAGE_ONCALL_WEBHOOK)).page({

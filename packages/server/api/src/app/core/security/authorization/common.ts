@@ -4,12 +4,12 @@ import { EntitySchema } from 'typeorm'
 
 export enum AuthorizationType {
     TENANT = 'TENANT',
-    WORKSPACE = 'WORKSPACE',
+    PROJECT = 'PROJECT',
     UNSCOPED = 'UNSCOPED',
     NONE = 'NONE',
 }
 
-export enum WorkspaceResourceType {
+export enum ProjectResourceType {
     TABLE = 'TABLE',
     QUERY = 'QUERY',
     BODY = 'BODY',
@@ -27,8 +27,8 @@ export enum EntitySourceType {
     BODY = 'BODY',
 }
 
-export type WorkspaceTableResource = {
-    type: WorkspaceResourceType.TABLE
+export type ProjectTableResource = {
+    type: ProjectResourceType.TABLE
     tableName: EntitySchema<unknown>
     entitySourceType?: EntitySourceType // defaults to PARAM
     lookup?: {
@@ -37,35 +37,35 @@ export type WorkspaceTableResource = {
     }
 }
 
-export type WorkspaceQueryResource = {
-    type: WorkspaceResourceType.QUERY
-    queryKey?: string // defaults to workspaceId
+export type ProjectQueryResource = {
+    type: ProjectResourceType.QUERY
+    queryKey?: string // defaults to projectId
 }
 
-export type WorkspaceBodyResource = {
-    type: WorkspaceResourceType.BODY
-    bodyKey?: string // defaults to workspaceId
+export type ProjectBodyResource = {
+    type: ProjectResourceType.BODY
+    bodyKey?: string // defaults to projectId
 }
 
-export type WorkspaceParamResource = {
-    type: WorkspaceResourceType.PARAM
-    paramKey?: string // defaults to workspaceId
+export type ProjectParamResource = {
+    type: ProjectResourceType.PARAM
+    paramKey?: string // defaults to projectId
 }
 
-export type WorkspaceResource = WorkspaceTableResource | WorkspaceQueryResource | WorkspaceBodyResource | WorkspaceParamResource
+export type ProjectResource = ProjectTableResource | ProjectQueryResource | ProjectBodyResource | ProjectParamResource
 
 export type TenantAuthorization = {
     type: AuthorizationType.TENANT
     adminOnly: boolean
     nonEmbedUsersOnly?: boolean
     allowedPrincipals: readonly (PrincipalType.USER | PrincipalType.ENGINE | PrincipalType.SERVICE)[]
-    workspaceResource?: WorkspaceResource
+    projectResource?: ProjectResource
 }
 
-export type WorkspaceAuthorization = {
-    type: AuthorizationType.WORKSPACE
+export type ProjectAuthorization = {
+    type: AuthorizationType.PROJECT
     allowedPrincipals: readonly (PrincipalType.USER | PrincipalType.ENGINE | PrincipalType.SERVICE)[]
-    workspaceResource: WorkspaceResource
+    projectResource: ProjectResource
     permission?: Permission
 }
 

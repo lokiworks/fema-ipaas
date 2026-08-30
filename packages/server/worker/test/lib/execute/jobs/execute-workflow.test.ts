@@ -60,7 +60,7 @@ function makeWorkflowVersion(): WorkflowVersion {
 
 function makeResumeJobData(overrides?: Partial<ExecuteWorkflowJobData>): ExecuteWorkflowJobData {
     return {
-        workspaceId: 'proj-1',
+        projectId: 'proj-1',
         tenantId: 'plat-1',
         jobType: WorkerJobType.EXECUTE_WORKFLOW,
         environment: RunEnvironment.PRODUCTION,

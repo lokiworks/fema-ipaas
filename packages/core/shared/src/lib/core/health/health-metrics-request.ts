@@ -21,8 +21,8 @@ export const TenantMetricsStatusPoint = z.object({
 })
 
 export const InternalErrorImpactItem = z.object({
-    workspaceId: EntityId,
-    workspaceName: z.string(),
+    projectId: EntityId,
+    projectName: z.string(),
     workflowId: EntityId,
     workflowName: z.string(),
     count: z.number(),
@@ -39,8 +39,8 @@ export const StuckJob = z.object({
     executionId: EntityId,
     workflowId: EntityId,
     workflowName: z.string(),
-    workspaceId: EntityId,
-    workspaceName: z.string(),
+    projectId: EntityId,
+    projectName: z.string(),
     status: z.enum(ExecutionStatus),
 })
 

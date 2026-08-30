@@ -45,16 +45,19 @@ const StepNodeRunDurationAndConnectorName = ({
       })}
     >
       <TextWithTooltip
-        tooltipMessage={connectorDisplayName}
-        key={connectorDisplayName + selectedStepOutput?.duration}
+        tooltipMessage={`${connectorDisplayName} · ${stepName}`}
+        key={stepName + selectedStepOutput?.duration}
       >
         <div
-          className={cn('text-xs text-muted-foreground truncate grow shrink', {
-            'w-full': !isHorizontal,
-            'text-center': isHorizontal,
-          })}
+          className={cn(
+            'font-mono text-[11px] text-muted-foreground truncate grow shrink',
+            {
+              'w-full': !isHorizontal,
+              'text-center': isHorizontal,
+            },
+          )}
         >
-          {connectorDisplayName}
+          {stepName}
         </div>
       </TextWithTooltip>
       {selectedStepOutput && (

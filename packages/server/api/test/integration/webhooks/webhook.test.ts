@@ -18,9 +18,9 @@ afterAll(async () => {
 })
 describe('Webhook Service', () => {
     it('should accept webhook for enabled workflow', async () => {
-        const { mockWorkspace, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
+        const { mockProject, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
         const mockWorkflow = createMockWorkflow({
-            workspaceId: mockWorkspace.id,
+            projectId: mockProject.id,
             status: WorkflowStatus.ENABLED,
         })
         await db.save('workflow', [mockWorkflow])
@@ -69,9 +69,9 @@ describe('Webhook Service', () => {
         expect(response?.statusCode).toBe(StatusCodes.GONE)
     })
     it('should return NOT FOUND if the workflow is disabled', async () => {
-        const { mockWorkspace, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
+        const { mockProject, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
         const mockWorkflow = createMockWorkflow({
-            workspaceId: mockWorkspace.id,
+            projectId: mockProject.id,
             status: WorkflowStatus.DISABLED,
         })
         await db.save('workflow', [mockWorkflow])
@@ -100,9 +100,9 @@ describe('Webhook Service', () => {
     })
 
     it('should pass query parameters in webhook payload', async () => {
-        const { mockWorkspace, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
+        const { mockProject, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
         const mockWorkflow = createMockWorkflow({
-            workspaceId: mockWorkspace.id,
+            projectId: mockProject.id,
             status: WorkflowStatus.ENABLED,
         })
         await db.save('workflow', [mockWorkflow])
@@ -132,9 +132,9 @@ describe('Webhook Service', () => {
     })
 
     it('should accept GET method', async () => {
-        const { mockWorkspace, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
+        const { mockProject, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
         const mockWorkflow = createMockWorkflow({
-            workspaceId: mockWorkspace.id,
+            projectId: mockProject.id,
             status: WorkflowStatus.ENABLED,
         })
         await db.save('workflow', [mockWorkflow])
@@ -163,9 +163,9 @@ describe('Webhook Service', () => {
     })
 
     it('should accept PUT method', async () => {
-        const { mockWorkspace, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
+        const { mockProject, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
         const mockWorkflow = createMockWorkflow({
-            workspaceId: mockWorkspace.id,
+            projectId: mockProject.id,
             status: WorkflowStatus.ENABLED,
         })
         await db.save('workflow', [mockWorkflow])
@@ -195,9 +195,9 @@ describe('Webhook Service', () => {
     })
 
     it('should accept DELETE method', async () => {
-        const { mockWorkspace, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
+        const { mockProject, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
         const mockWorkflow = createMockWorkflow({
-            workspaceId: mockWorkspace.id,
+            projectId: mockProject.id,
             status: WorkflowStatus.ENABLED,
         })
         await db.save('workflow', [mockWorkflow])
@@ -226,9 +226,9 @@ describe('Webhook Service', () => {
     })
 
     it('should return x-webhook-id header in response', async () => {
-        const { mockWorkspace, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
+        const { mockProject, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
         const mockWorkflow = createMockWorkflow({
-            workspaceId: mockWorkspace.id,
+            projectId: mockProject.id,
             status: WorkflowStatus.ENABLED,
         })
         await db.save('workflow', [mockWorkflow])
@@ -259,9 +259,9 @@ describe('Webhook Service', () => {
     })
 
     it('should accept webhook on draft endpoint', async () => {
-        const { mockWorkspace, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
+        const { mockProject, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
         const mockWorkflow = createMockWorkflow({
-            workspaceId: mockWorkspace.id,
+            projectId: mockProject.id,
             status: WorkflowStatus.DISABLED,
         })
         await db.save('workflow', [mockWorkflow])
@@ -288,9 +288,9 @@ describe('Webhook Service', () => {
     })
 
     it('should return 413 when webhook payload exceeds MAX_WEBHOOK_PAYLOAD_SIZE_MB', async () => {
-        const { mockWorkspace, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
+        const { mockProject, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
         const mockWorkflow = createMockWorkflow({
-            workspaceId: mockWorkspace.id,
+            projectId: mockProject.id,
             status: WorkflowStatus.ENABLED,
         })
         await db.save('workflow', [mockWorkflow])
@@ -322,9 +322,9 @@ describe('Webhook Service', () => {
     })
 
     it('should accept webhook payload under MAX_WEBHOOK_PAYLOAD_SIZE_MB', async () => {
-        const { mockWorkspace, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
+        const { mockProject, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
         const mockWorkflow = createMockWorkflow({
-            workspaceId: mockWorkspace.id,
+            projectId: mockProject.id,
             status: WorkflowStatus.ENABLED,
         })
         await db.save('workflow', [mockWorkflow])
@@ -354,9 +354,9 @@ describe('Webhook Service', () => {
     })
 
     it('should return 413 for sync webhook when payload exceeds limit', async () => {
-        const { mockWorkspace, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
+        const { mockProject, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
         const mockWorkflow = createMockWorkflow({
-            workspaceId: mockWorkspace.id,
+            projectId: mockProject.id,
             status: WorkflowStatus.ENABLED,
         })
         await db.save('workflow', [mockWorkflow])
@@ -387,7 +387,7 @@ describe('Webhook Service', () => {
     })
 
     it('should process handshake for DISABLED workflow during publish window', async () => {
-        const { mockWorkspace, mockTenant } = await mockAndSaveBasicSetup()
+        const { mockProject, mockTenant } = await mockAndSaveBasicSetup()
 
         const triggerName = 'new_webhook'
         const connectorName = 'test-handshake-connector'
@@ -410,7 +410,7 @@ describe('Webhook Service', () => {
         await db.save('connector_metadata', [mockConnector])
 
         const mockWorkflow = createMockWorkflow({
-            workspaceId: mockWorkspace.id,
+            projectId: mockProject.id,
             status: WorkflowStatus.DISABLED,
         })
         await db.save('workflow', [mockWorkflow])
@@ -425,7 +425,7 @@ describe('Webhook Service', () => {
             updated: new Date().toISOString(),
             workflowId: mockWorkflow.id,
             workflowVersionId: mockWorkflowVersion.id,
-            workspaceId: mockWorkspace.id,
+            projectId: mockProject.id,
             connectorName,
             connectorVersion,
             triggerName,
@@ -458,7 +458,7 @@ describe('Webhook Service', () => {
     })
 
     it('should process handshake for ENABLED workflow on re-verification ping', async () => {
-        const { mockWorkspace, mockTenant } = await mockAndSaveBasicSetup()
+        const { mockProject, mockTenant } = await mockAndSaveBasicSetup()
 
         const triggerName = 'new_webhook'
         const connectorName = 'test-handshake-connector-enabled'
@@ -481,7 +481,7 @@ describe('Webhook Service', () => {
         await db.save('connector_metadata', [mockConnector])
 
         const mockWorkflow = createMockWorkflow({
-            workspaceId: mockWorkspace.id,
+            projectId: mockProject.id,
             status: WorkflowStatus.ENABLED,
         })
         await db.save('workflow', [mockWorkflow])
@@ -496,7 +496,7 @@ describe('Webhook Service', () => {
             updated: new Date().toISOString(),
             workflowId: mockWorkflow.id,
             workflowVersionId: mockWorkflowVersion.id,
-            workspaceId: mockWorkspace.id,
+            projectId: mockProject.id,
             connectorName,
             connectorVersion,
             triggerName,
@@ -529,9 +529,9 @@ describe('Webhook Service', () => {
     })
 
     it('should accept webhook on test endpoint without execution', async () => {
-        const { mockWorkspace, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
+        const { mockProject, mockTenant, mockOwner } = await mockAndSaveBasicSetup()
         const mockWorkflow = createMockWorkflow({
-            workspaceId: mockWorkspace.id,
+            projectId: mockProject.id,
             status: WorkflowStatus.DISABLED,
         })
         await db.save('workflow', [mockWorkflow])

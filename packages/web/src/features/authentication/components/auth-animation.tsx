@@ -53,7 +53,7 @@ type LeadRow = {
 
 const LEADS: LeadRow[] = [
   {
-    name: 'Sarah Chen',
+    name: '陈思远',
     company: 'Stripe',
     score: 92,
     status: 'Qualified',
@@ -63,7 +63,7 @@ const LEADS: LeadRow[] = [
     dotColor: 'bg-emerald-500',
   },
   {
-    name: 'Mike Johnson',
+    name: '林卓然',
     company: 'Shopify',
     score: 68,
     status: 'Nurturing',
@@ -73,7 +73,7 @@ const LEADS: LeadRow[] = [
     dotColor: 'bg-amber-500',
   },
   {
-    name: 'Lisa Park',
+    name: '周雨桐',
     company: 'Figma',
     score: 34,
     status: 'New',
@@ -83,7 +83,7 @@ const LEADS: LeadRow[] = [
     dotColor: 'bg-gray-400',
   },
   {
-    name: 'Alex Rivera',
+    name: '赵启明',
     company: 'Notion',
     score: 85,
     status: 'Qualified',
@@ -93,7 +93,7 @@ const LEADS: LeadRow[] = [
     dotColor: 'bg-emerald-500',
   },
   {
-    name: 'Jordan Lee',
+    name: '李嘉懿',
     company: 'Vercel',
     score: 52,
     status: 'Nurturing',
@@ -103,7 +103,7 @@ const LEADS: LeadRow[] = [
     dotColor: 'bg-amber-500',
   },
   {
-    name: 'Emma Wilson',
+    name: '孙晓宁',
     company: 'Linear',
     score: 78,
     status: 'Qualified',
@@ -508,7 +508,7 @@ function Scene1({
         <div className="w-64 -ml-16 relative z-50">
           {/* Header */}
           <div className="px-4 py-3 border border-gray-200 border-b-0 rounded-t-xl bg-white">
-            <p className="font-semibold text-gray-900 text-sm">Add Tools</p>
+            <p className="font-semibold text-gray-900 text-sm">添加工具</p>
           </div>
 
           {/* Tools grid */}
@@ -534,7 +534,7 @@ function Scene1({
 
           {/* Footer */}
           <div className="px-4 py-3 bg-gray-50 border border-gray-200 border-t-gray-100 rounded-b-xl flex items-center justify-between">
-            <p className="text-gray-900 font-semibold">685+ apps</p>
+            <p className="text-gray-900 font-semibold">685+ 个应用</p>
             <span className="text-xs text-violet-600 font-medium">
               Browse all &rarr;
             </span>
@@ -768,7 +768,7 @@ function Scene3({
           {/* Slack header */}
           <div className="px-3 py-2 bg-[#4A154B] flex items-center gap-2">
             <SlackSvgIcon />
-            <span className="text-white/90 text-sm">#sales</span>
+            <span className="text-white/90 text-sm">#销售</span>
           </div>
 
           {/* Message */}
@@ -780,19 +780,17 @@ function Scene3({
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline gap-2 mb-1">
                   <span className="font-bold text-gray-900 text-sm">
-                    Lead Qualifier
+                    线索评估助手
                   </span>
                   <span className="text-gray-400 text-xs">11:42 AM</span>
                 </div>
 
                 <div className="space-y-2 text-sm text-gray-800 leading-relaxed">
                   <p>
-                    Hey! <strong>Sarah Chen</strong> from TechCorp just signed
-                    up.
+                    <strong>陈思远</strong>（远景科技）刚刚注册了。
                   </p>
                   <p className="text-gray-600">
-                    She&apos;s VP of Engineering and matches our ICP. Should I
-                    send the intro sequence?
+                    他是工程副总裁，符合我们的目标客户画像。要发送首次触达邮件吗？
                   </p>
                 </div>
 
@@ -895,7 +893,7 @@ function Scene4({
           <div className="flex-1" />
           <div className="flex items-center gap-1.5 text-xs text-gray-500">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            <span>Synced</span>
+            <span>已同步</span>
           </div>
         </div>
 

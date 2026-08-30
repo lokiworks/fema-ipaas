@@ -183,21 +183,21 @@ describe('machineService.list — tenant filtering', () => {
         expect(result[0].type).toBe(WorkerMachineType.SHARED)
     })
 
-    it('should return workspace-scope workers to any tenant', async () => {
+    it('should return project-scope workers to any tenant', async () => {
         mockGetWorkerGroupId.mockResolvedValue(null)
 
         await workerMachineCache().upsert({
-            id: 'workspace-worker',
-            information: fakeMachineInfo('workspace-worker'),
+            id: 'project-worker',
+            information: fakeMachineInfo('project-worker'),
             type: 'DEDICATED',
-            workerGroupScope: WorkerGroupScope.WORKSPACE,
+            workerGroupScope: WorkerGroupScope.PROJECT,
             workerGroupId: '1cpu_machine',
         })
 
         const result = await machineService(mockLogger).list('any-tenant');
         expect(result).toHaveLength(1)
-        expect(result[0].id).toBe('workspace-worker')
-        expect(result[0].workerGroupScope).toBe(WorkerGroupScope.WORKSPACE)
+        expect(result[0].id).toBe('project-worker')
+        expect(result[0].workerGroupScope).toBe(WorkerGroupScope.PROJECT)
     })
 
     it('should include legacy workers with no type as shared', async () => {

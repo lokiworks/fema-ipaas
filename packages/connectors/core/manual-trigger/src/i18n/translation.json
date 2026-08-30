@@ -2,5 +2,6 @@
   "Manual Trigger": "Manual Trigger",
   "Manually start your own workflow without any extra configurations": "Manually start your own workflow without any extra configurations",
   "Markdown": "Markdown",
-  "Manual triggers are used to start a workflow on demand, publish your workflow and click (Run Workflow) at the start of the workflow.": "Manual triggers are used to start a workflow on demand, publish your workflow and click (Run Workflow) at the start of the workflow."
+  "Manual triggers are used to start a workflow on demand, publish your workflow and click (Run Workflow) at the start of the workflow.": "Manual triggers are used to start a workflow on demand, publish your workflow and click (Run Workflow) at the start of the workflow.",
+  "Start a workflow by hand, with no extra configuration": "Start a workflow by hand, with no extra configuration"
 }

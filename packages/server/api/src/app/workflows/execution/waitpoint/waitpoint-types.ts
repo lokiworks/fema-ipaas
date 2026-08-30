@@ -22,7 +22,7 @@ type Waitpoint = {
     created: string
     updated: string
     executionId: EntityId
-    workspaceId: EntityId
+    projectId: EntityId
     type: `${PauseType}`
     version: WaitpointVersion
     status: WaitpointStatus
@@ -36,7 +36,7 @@ type Waitpoint = {
 
 type CreateForPauseParams = {
     executionId: EntityId
-    workspaceId: EntityId
+    projectId: EntityId
     stepName: string
     type: `${PauseType}`
     version: WaitpointVersion
@@ -53,7 +53,7 @@ type CreateForPauseResult = {
 
 type CompleteParams = {
     executionId: EntityId
-    workspaceId: EntityId
+    projectId: EntityId
     waitpointId: EntityId
     resumePayload: WaitpointResumePayload
     workerHandlerId?: string
@@ -68,7 +68,7 @@ type HandleResumeSignalParams = {
     executionId: EntityId
     waitpointId: EntityId
     executionStatus: ExecutionStatus
-    workspaceId: EntityId
+    projectId: EntityId
     resumePayload: WaitpointResumePayload
     workerHandlerId?: string
     onReady: (waitpoint: Waitpoint) => Promise<void>

@@ -14,10 +14,10 @@ import { machineService } from './machine-service'
 export const workerMachineController: FastifyPluginAsyncZod = async (app) => {
 
     websocketService.addListener(PrincipalType.WORKER, WebsocketServerEvent.FETCH_WORKER_SETTINGS, (socket) => {
-        return async (request: WorkerMachineHealthcheckRequest, _principal, _workspaceId, callback?: (data: unknown) => void) => {
+        return async (request: WorkerMachineHealthcheckRequest, _principal, _projectId, callback?: (data: unknown) => void) => {
             const rawWorkerGroupValue = socket.handshake.auth?.workerGroupId
-            const workspaceWorker = socket.handshake.auth?.workspaceWorker === true
-            const assignment = parseWorkerGroupValue({ value: typeof rawWorkerGroupValue === 'string' ? rawWorkerGroupValue : undefined, workspaceWorker })
+            const projectWorker = socket.handshake.auth?.projectWorker === true
+            const assignment = parseWorkerGroupValue({ value: typeof rawWorkerGroupValue === 'string' ? rawWorkerGroupValue : undefined, projectWorker })
             const response = await machineService(app.log).onConnection(request, assignment)
             callback?.(response)
             createRpcServer<WorkerToApiContract>(socket, createHandlers(app.log, assignment, socket.id), app.log)
@@ -41,7 +41,7 @@ export const workerMachineController: FastifyPluginAsyncZod = async (app) => {
     })
 
     app.get('/worker-groups', ListWorkersParams, async () => {
-        return machineService(app.log).listWorkspaceWorkerGroups()
+        return machineService(app.log).listProjectWorkerGroups()
     })
 
     app.get('/queue-metrics', QueueMetricsParams, async () => {

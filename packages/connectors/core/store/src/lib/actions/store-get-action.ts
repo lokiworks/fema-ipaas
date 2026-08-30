@@ -62,7 +62,7 @@ export const storageGetAction = createAction({
       options: {
         options: [
           {
-            label: 'Workspace',
+            label: 'Project',
             value: ConnectorStoreScope.WORKSPACE,
           },
           {

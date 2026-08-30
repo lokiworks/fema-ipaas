@@ -9,7 +9,7 @@ export type ComponentExecutionContext<Input> = {
     server: ServerContext
     store: Store
     workflows: WorkflowsContext
-    workspaceId: string
+    projectId: string
     tenantId: string
     step: {
         name: string

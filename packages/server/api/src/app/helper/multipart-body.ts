@@ -37,7 +37,7 @@ export const attachMultipartFieldsToBody = async (request: MultipartRequest): Pr
 
 // Structural rather than FastifyRequest: a FastifyRequest parameter makes each route infer its
 // ContextConfig from this hook instead of from its own `config`, which silently widens
-// `request.principal` and collapses `request.workspaceId` to undefined (see types/fastify.d.ts).
+// `request.principal` and collapses `request.projectId` to undefined (see types/fastify.d.ts).
 type MultipartRequest = {
     isMultipart: () => boolean
     parts: () => AsyncIterableIterator<Multipart>

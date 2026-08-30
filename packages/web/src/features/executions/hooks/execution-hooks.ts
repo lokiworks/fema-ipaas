@@ -70,7 +70,7 @@ const STATUS_CATEGORIES = [
 function groupByCategory(data: ExecutionCountByStatus[]) {
   const statusToCount = new Map(data.map((d) => [d.status, d.count]));
   return STATUS_CATEGORIES.map((cat) => ({
-    label: cat.label,
+    label: t(cat.label),
     color: cat.color,
     count: cat.statuses.reduce(
       (sum, s) => sum + (statusToCount.get(s) ?? 0),
@@ -89,14 +89,14 @@ export const executionQueries = {
       refetchInterval: 7000,
     }),
   useRunStats: () => {
-    const workspaceId = authenticationSession.getWorkspaceId()!;
+    const projectId = authenticationSession.getProjectId()!;
 
     const { data, isLoading, dataUpdatedAt, refetch } = useQuery({
-      queryKey: ['execution-count-by-status', workspaceId],
+      queryKey: ['execution-count-by-status', projectId],
       queryFn: () => {
         const range = getDefaultRange(DEFAULT_DATE_PRESET);
         return executionsApi.countByStatus({
-          workspaceId,
+          projectId,
           createdAfter: range.from.toISOString(),
           createdBefore: range.to.toISOString(),
         });
@@ -131,13 +131,13 @@ export const executionMutations = {
       {
         runId: string;
         workflowId: string;
-        workspaceId: string;
+        projectId: string;
         retryStrategy: WorkflowRetryStrategy;
       }
     >({
-      mutationFn: async ({ runId, workflowId, workspaceId, retryStrategy }) => {
+      mutationFn: async ({ runId, workflowId, projectId, retryStrategy }) => {
         const updatedRun = await executionsApi.retry(runId, {
-          workspaceId,
+          projectId,
           strategy: retryStrategy,
         });
         const populatedWorkflow = await workflowsApi.get(workflowId, {

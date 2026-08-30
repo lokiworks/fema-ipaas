@@ -1,10 +1,10 @@
-import { WorkspaceId } from '@fema-ipaas/core-utils'
+import { ProjectId } from '@fema-ipaas/core-utils'
 import { WorkflowVersion, WorkflowVersionState, WorkflowVersionTemplate } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 
 export type MigrationContext = {
     log: FastifyBaseLogger
-    workspaceId?: WorkspaceId
+    projectId?: ProjectId
 }
 
 export type Migration = {

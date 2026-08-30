@@ -133,15 +133,15 @@ describe('benchmarkUtils.aggregateOutsideRuns', () => {
     it('groups runs by workflow with count and avg run time, busiest first', () => {
         const at = (ms: number) => new Date(ms).toISOString();
         const workflows = benchmarkUtils.aggregateOutsideRuns([
-            { workflowId: 'a', workspaceId: 'p1', startTime: at(0), finishTime: at(100) },
-            { workflowId: 'a', workspaceId: 'p1', startTime: at(0), finishTime: at(300) },
-            { workflowId: 'a', workspaceId: 'p1' }, // still counted, excluded from avg (no timestamps)
-            { workflowId: 'b', workspaceId: 'p2', startTime: at(0), finishTime: at(50) },
-            { workspaceId: 'p2' }, // no workflowId — dropped
+            { workflowId: 'a', projectId: 'p1', startTime: at(0), finishTime: at(100) },
+            { workflowId: 'a', projectId: 'p1', startTime: at(0), finishTime: at(300) },
+            { workflowId: 'a', projectId: 'p1' }, // still counted, excluded from avg (no timestamps)
+            { workflowId: 'b', projectId: 'p2', startTime: at(0), finishTime: at(50) },
+            { projectId: 'p2' }, // no workflowId — dropped
         ]);
         expect(workflows).toEqual([
-            { workflowId: 'a', workspaceId: 'p1', runs: 3, avgRunMs: 200 },
-            { workflowId: 'b', workspaceId: 'p2', runs: 1, avgRunMs: 50 },
+            { workflowId: 'a', projectId: 'p1', runs: 3, avgRunMs: 200 },
+            { workflowId: 'b', projectId: 'p2', runs: 1, avgRunMs: 50 },
         ]);
     });
 });

@@ -16,7 +16,7 @@ export type ResolveInput = {
     tenantId: string
     publicApiUrl: string
     engineToken: string
-    workflow?: { id: string, versionId: string, workspaceId: string }
+    workflow?: { id: string, versionId: string, projectId: string }
     connectors?: ConnectorPackage[]
     codes?: CodeArtifact[]
 }
@@ -51,7 +51,7 @@ export type PreWarmSandboxParams = {
     apiClient?: WorkerToApiContract
     publicApiUrl?: string
     // Warm just this workflow (e.g. on publish) instead of the tenant's whole active set.
-    workflow?: { id: string, versionId: string, workspaceId: string }
+    workflow?: { id: string, versionId: string, projectId: string }
 }
 
 // The Resolver's output and the pool's input. The pool installs each connector straight from a link: it
@@ -114,7 +114,7 @@ export type SandboxSettings = {
     SSRF_ALLOW_LIST: string[]
     ENFORCE_CONNECTION_CONNECTOR_BINDING: boolean
     WORKER_GROUP_ID?: string | undefined
-    WORKSPACE_WORKER?: boolean | undefined
+    PROJECT_WORKER?: boolean | undefined
 }
 
 export type SandboxDeps = {

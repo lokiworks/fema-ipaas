@@ -1,4 +1,4 @@
-import { test } from '../../../fixtures';
+import { test } from '../../fixtures';
 
 test.describe('Webhooks', () => {
   test('should handle webhook with return response', async ({ page, automationsPage, builderPage }) => {

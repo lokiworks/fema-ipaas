@@ -42,13 +42,13 @@ const failedKey = (): string => `bull:${QueueName.WORKER_JOBS}:failed`
  */
 describe('jobBroker.completeJob — seed cause for stuck-active zombies', () => {
     it('SEED: silently swallows "Missing lock" on moveToCompleted, leaving job in active', async () => {
-        const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
+        const { mockTenant, mockProject } = await mockAndSaveBasicSetup()
         const requestId = generateId()
 
         const jobData = {
             jobType: WorkerJobType.EXECUTE_TRIGGER_HOOK,
             tenantId: mockTenant.id,
-            workspaceId: mockWorkspace.id,
+            projectId: mockProject.id,
             schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
             workflowId: generateId(),
             workflowVersionId: generateId(),
@@ -106,13 +106,13 @@ describe('jobBroker.completeJob — seed cause for stuck-active zombies', () => 
     })
 
     it('SEED: same swallow happens on the INTERNAL_ERROR -> moveToFailed path', async () => {
-        const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
+        const { mockTenant, mockProject } = await mockAndSaveBasicSetup()
         const requestId = generateId()
 
         const jobData = {
             jobType: WorkerJobType.EXECUTE_TRIGGER_HOOK,
             tenantId: mockTenant.id,
-            workspaceId: mockWorkspace.id,
+            projectId: mockProject.id,
             schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
             workflowId: generateId(),
             workflowVersionId: generateId(),
@@ -158,13 +158,13 @@ describe('jobBroker.completeJob — seed cause for stuck-active zombies', () => 
     })
 
     it('CONTROL: when the lock IS still valid, completeJob removes the job from active and increments atm', async () => {
-        const { mockTenant, mockWorkspace } = await mockAndSaveBasicSetup()
+        const { mockTenant, mockProject } = await mockAndSaveBasicSetup()
         const requestId = generateId()
 
         const jobData = {
             jobType: WorkerJobType.EXECUTE_TRIGGER_HOOK,
             tenantId: mockTenant.id,
-            workspaceId: mockWorkspace.id,
+            projectId: mockProject.id,
             schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
             workflowId: generateId(),
             workflowVersionId: generateId(),

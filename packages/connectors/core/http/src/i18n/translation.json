@@ -34,5 +34,6 @@
   "Do not retry": "Do not retry",
   "Continue workflow on all errors": "Continue workflow on all errors",
   "Continue workflow on 4xx errors": "Continue workflow on 4xx errors",
-  "Do not continue (stop the workflow)": "Do not continue (stop the workflow)"
+  "Do not continue (stop the workflow)": "Do not continue (stop the workflow)",
+  "HTTP": "HTTP"
 }

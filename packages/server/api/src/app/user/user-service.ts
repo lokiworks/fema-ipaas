@@ -1,5 +1,5 @@
-import { ApplicationError, assertNotNullOrUndefined, Cursor, ErrorCode, generateId, isNil, SeekPage, spreadIfDefined, TenantId, UserId, WorkspaceId } from '@fema-ipaas/core-utils'
-import { TenantRole, User, UserIdentity, UserStatus, UserWithMetaInformation, WorkspaceType } from '@fema-ipaas/shared'
+import { ApplicationError, assertNotNullOrUndefined, Cursor, ErrorCode, generateId, isNil, ProjectId, SeekPage, spreadIfDefined, TenantId, UserId } from '@fema-ipaas/core-utils'
+import { ProjectType, TenantRole, User, UserIdentity, UserStatus, UserWithMetaInformation } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { nanoid } from 'nanoid'
@@ -9,9 +9,9 @@ import { repoFactory } from '../core/db/repo-factory'
 import { transaction } from '../core/db/transaction'
 import { buildPaginator } from '../helper/pagination/build-paginator'
 import { paginationHelper } from '../helper/pagination/pagination-utils'
+import { projectService } from '../project/project-service'
+import { projectSideEffects } from '../project/project-side-effects'
 import { tenantService } from '../tenant/tenant.service'
-import { workspaceService } from '../workspace/workspace-service'
-import { workspaceSideEffects } from '../workspace/workspace-side-effects'
 import { UserEntity, UserSchema } from './user-entity'
 
 
@@ -30,7 +30,7 @@ export const userService = (log: FastifyBaseLogger) => ({
         }
         return userRepo().save(user)
     },
-    async getOrCreateWithWorkspace({ identity, tenantId }: GetOrCreateWithWorkspaceParams): Promise<User> {
+    async getOrCreateWithProject({ identity, tenantId }: GetOrCreateWithProjectParams): Promise<User> {
         const user = await this.getOneByIdentityAndTenant({
             identityId: identity.id,
             tenantId,
@@ -42,11 +42,11 @@ export const userService = (log: FastifyBaseLogger) => ({
                 tenantRole: TenantRole.MEMBER,
             })
 
-            await workspaceService(log).create({
-                displayName: identity.firstName + '\'s Workspace',
+            await projectService(log).create({
+                displayName: identity.firstName + '\'s Project',
                 ownerId: newUser.id,
                 tenantId,
-                type: WorkspaceType.PERSONAL,
+                type: ProjectType.PERSONAL,
             })
             return newUser
         }
@@ -157,7 +157,7 @@ export const userService = (log: FastifyBaseLogger) => ({
         if (isNil(user)) {
             return
         }
-        await workspaceSideEffects(log).deletePersonalWorkspaceForUser({
+        await projectSideEffects(log).deletePersonalProjectForUser({
             userId: id,
             tenantId,
         })
@@ -172,7 +172,7 @@ export const userService = (log: FastifyBaseLogger) => ({
     async removeFromTenant({ id, tenantId }: DeleteParams): Promise<void> {
         await assertNotTenantOwner({ id, tenantId, log })
         const user = await this.getOneOrFail({ id })
-        await workspaceSideEffects(log).deletePersonalWorkspaceForUser({
+        await projectSideEffects(log).deletePersonalProjectForUser({
             userId: id,
             tenantId,
         })
@@ -196,8 +196,8 @@ export const userService = (log: FastifyBaseLogger) => ({
     async getByTenantRole(id: TenantId, role: TenantRole): Promise<UserSchema[]> {
         return userRepo().find({ where: { tenantId: id, tenantRole: role }, relations: { identity: true } })
     },
-    async listWorkspaceUsers({ tenantId, workspaceId }: ListUsersForWorkspaceParams): Promise<UserWithMetaInformation[]> {
-        const users = await getUsersForWorkspace(tenantId, workspaceId)
+    async listProjectUsers({ tenantId, projectId }: ListUsersForProjectParams): Promise<UserWithMetaInformation[]> {
+        const users = await getUsersForProject(tenantId, projectId)
         const usersWithMetaInformation = await userRepo().find({ where: { tenantId, id: In(users) }, relations: { identity: true } }).then((users) => users.map(this.getMetaInformation))
         return Promise.all(usersWithMetaInformation)
     },
@@ -265,7 +265,7 @@ async function deleteIdentityIfOrphaned({ identityId, entityManager }: { identit
     }
 }
 
-async function getUsersForWorkspace(tenantId: TenantId, _workspaceId: string): Promise<UserId[]> {
+async function getUsersForProject(tenantId: TenantId, _projectId: string): Promise<UserId[]> {
     return userRepo().find({ where: { tenantId, tenantRole: TenantRole.ADMIN } }).then((users) => users.map((user) => user.id))
 }
 
@@ -277,8 +277,8 @@ type GetOneByIdAndTenantIdParams = {
     id: UserId
     tenantId: TenantId
 }
-type ListUsersForWorkspaceParams = {
-    workspaceId: WorkspaceId
+type ListUsersForProjectParams = {
+    projectId: ProjectId
     tenantId: TenantId
 }
 
@@ -345,7 +345,7 @@ type UpdateTenantIdParams = {
     tenantId: string
 }
 
-type GetOrCreateWithWorkspaceParams = {
+type GetOrCreateWithProjectParams = {
     identity: UserIdentity
     tenantId: string
 }

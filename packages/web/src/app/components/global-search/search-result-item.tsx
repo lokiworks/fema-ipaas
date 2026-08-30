@@ -32,7 +32,7 @@ function ItemIcon({
   iconTextColor,
   iconLetter,
 }: ItemIconProps) {
-  if (type === 'workspace') {
+  if (type === 'project') {
     if (iconBgColor) {
       return (
         <span
@@ -80,25 +80,25 @@ function ItemIcon({
 }
 
 function ItemMeta({
-  workspaceName,
+  projectName,
   folderName,
   updated,
 }: {
-  workspaceName?: string | null;
+  projectName?: string | null;
   folderName?: string | null;
   updated?: string | null;
 }) {
-  const hasWorkspace = !!workspaceName;
+  const hasProject = !!projectName;
   const hasFolder = !!folderName;
   const hasUpdated = updated != null;
 
-  if (!hasWorkspace && !hasFolder && !hasUpdated) return null;
+  if (!hasProject && !hasFolder && !hasUpdated) return null;
 
   return (
     <span className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground/80">
       <span>—</span>
-      {hasWorkspace && <span>{workspaceName}</span>}
-      {hasWorkspace && hasFolder && <span>/</span>}
+      {hasProject && <span>{projectName}</span>}
+      {hasProject && hasFolder && <span>/</span>}
       {hasFolder && (
         <span className="flex items-center gap-0.5">
           <FolderIcon
@@ -109,7 +109,7 @@ function ItemMeta({
           <span>{folderName}</span>
         </span>
       )}
-      {(hasWorkspace || hasFolder) && hasUpdated && (
+      {(hasProject || hasFolder) && hasUpdated && (
         <Dot className="size-3! shrink-0 text-muted-foreground/80" />
       )}
       {hasUpdated && (
@@ -177,7 +177,7 @@ export function SearchResultRow({
         </span>
       )}
       <ItemMeta
-        workspaceName={item.workspaceName}
+        projectName={item.projectName}
         folderName={item.folderName}
         updated={item.updated}
       />

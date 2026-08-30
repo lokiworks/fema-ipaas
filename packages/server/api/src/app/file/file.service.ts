@@ -1,7 +1,7 @@
 import { Readable } from 'node:stream'
 import { buffer as streamToBuffer } from 'node:stream/consumers'
-import { ApplicationError, assertNotNullOrUndefined, ErrorCode, generateId, isMultipartFile, isNil, WorkspaceId } from '@fema-ipaas/core-utils'
-import { File, FileCompression, FileId, FileLocation, FileType, Workspace } from '@fema-ipaas/shared'
+import { ApplicationError, assertNotNullOrUndefined, ErrorCode, generateId, isMultipartFile, isNil, ProjectId } from '@fema-ipaas/core-utils'
+import { File, FileCompression, FileId, FileLocation, FileType, Project } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { In, LessThan, LessThanOrEqual } from 'typeorm'
@@ -10,7 +10,7 @@ import { exceptionHandler } from '../helper/exception-handler'
 import { jwtUtils } from '../helper/jwt-utils'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
-import { workspaceRepo } from '../workspace/workspace-repo'
+import { projectRepo } from '../project/project-repo'
 import { fileCompressor } from './file-compressor'
 import { FileEntity } from './file.entity'
 import { s3Helper } from './s3-helper'
@@ -22,7 +22,7 @@ const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 
 export const fileRepo = repoFactory<File>(FileEntity)
 const EXECUTION_DATA_RETENTION_DAYS = system.getNumberOrThrow(AppSystemProp.EXECUTION_DATA_RETENTION_DAYS)
 
-type BaseFile = Pick<File, 'id' | 'workspaceId' | 'tenantId' | 'type' | 'fileName' | 'compression' | 'size' | 'metadata' | 'created' | 'updated'>
+type BaseFile = Pick<File, 'id' | 'projectId' | 'tenantId' | 'type' | 'fileName' | 'compression' | 'size' | 'metadata' | 'created' | 'updated'>
 
 const saveFileToDb = async (baseFile: BaseFile, data: Buffer | null) => {
     assertNotNullOrUndefined(data, 'data is required')
@@ -36,7 +36,7 @@ export const fileService = (log: FastifyBaseLogger) => ({
     async save(params: SaveParams): Promise<File> {
         const baseFile: BaseFile = {
             id: params.fileId ?? generateId(),
-            workspaceId: params.workspaceId,
+            projectId: params.projectId,
             tenantId: params.tenantId,
             type: params.type,
             fileName: params.fileName,
@@ -56,7 +56,7 @@ export const fileService = (log: FastifyBaseLogger) => ({
                 return saveFileToDb(baseFile, params.data)
             }
             case FileLocation.S3: {
-                const s3Key = await s3Helper(log).constructS3Key(params.tenantId, params.workspaceId, params.type, baseFile.id)
+                const s3Key = await s3Helper(log).constructS3Key(params.tenantId, params.projectId, params.type, baseFile.id)
                 // A stream can be consumed once, so it has no S3-error DB fallback.
                 if (params.data instanceof Readable) {
                     const size = await s3Helper(log).uploadStream(s3Key, params.data)
@@ -77,15 +77,15 @@ export const fileService = (log: FastifyBaseLogger) => ({
     },
     async exists(params: GetOneParams): Promise<boolean> {
         const file = await fileRepo().findOneBy({
-            workspaceId: params.workspaceId,
+            projectId: params.projectId,
             id: params.fileId,
             type: normalizeTypeFilter(params.type),
         })
         return !isNil(file)
     },
-    async getFile({ workspaceId, fileId, type }: GetOneParams): Promise<File | null> {
+    async getFile({ projectId, fileId, type }: GetOneParams): Promise<File | null> {
         const file = await fileRepo().findOneBy({
-            workspaceId,
+            projectId,
             id: fileId,
             type: normalizeTypeFilter(type),
         })
@@ -105,9 +105,9 @@ export const fileService = (log: FastifyBaseLogger) => ({
         }
         return file
     },
-    async getDataOrUndefined({ workspaceId, fileId, type }: GetOneParams): Promise<GetDataResponse | undefined> {
+    async getDataOrUndefined({ projectId, fileId, type }: GetOneParams): Promise<GetDataResponse | undefined> {
         try {
-            return await this.getDataOrThrow({ workspaceId, fileId, type })
+            return await this.getDataOrThrow({ projectId, fileId, type })
         }
         catch (error) {
             log.error({
@@ -117,9 +117,9 @@ export const fileService = (log: FastifyBaseLogger) => ({
         }
 
     },
-    async getDataOrThrow({ workspaceId, fileId, type }: GetOneParams): Promise<GetDataResponse> {
+    async getDataOrThrow({ projectId, fileId, type }: GetOneParams): Promise<GetDataResponse> {
         const file = await fileRepo().findOneBy({
-            workspaceId,
+            projectId,
             id: fileId,
             type: normalizeTypeFilter(type),
         })
@@ -143,10 +143,10 @@ export const fileService = (log: FastifyBaseLogger) => ({
             fileName: file.fileName ?? undefined,
         }
     },
-    async delete(params: { workspaceId: WorkspaceId, fileId: FileId }): Promise<void> {
+    async delete(params: { projectId: ProjectId, fileId: FileId }): Promise<void> {
         const file = await fileRepo().findOneBy({
             id: params.fileId,
-            workspaceId: params.workspaceId,
+            projectId: params.projectId,
         })
         if (isNil(file)) {
             return
@@ -159,20 +159,20 @@ export const fileService = (log: FastifyBaseLogger) => ({
     async deleteStaleBulk(types: FileType[]) {
         const maximumFilesToDeletePerIteration = 4000
         const maximumFilesToDeletePerRun = 1_000_000
-        const customRetentionWorkspaces = await workspaceRepo().find({
+        const customRetentionProjects = await projectRepo().find({
             select: ['id', 'executionDataRetentionDays'],
             where: {
                 executionDataRetentionDays: LessThan(EXECUTION_DATA_RETENTION_DAYS),
             },
         })
         const cleanupPasses: CleanupPass[] = [
-            ...Array.from(groupWorkspaceIdsByRetentionDays(customRetentionWorkspaces), ([retentionDays, workspaceIds]) => ({
+            ...Array.from(groupProjectIdsByRetentionDays(customRetentionProjects), ([retentionDays, projectIds]) => ({
                 retentionDateBoundary: dayjs().subtract(retentionDays, 'days').toISOString(),
-                workspaceIds,
+                projectIds,
             })),
             {
                 retentionDateBoundary: dayjs().subtract(EXECUTION_DATA_RETENTION_DAYS, 'days').toISOString(),
-                workspaceIds: undefined,
+                projectIds: undefined,
             },
         ]
         let totalAffected = 0
@@ -194,7 +194,7 @@ export const fileService = (log: FastifyBaseLogger) => ({
                         where: {
                             type,
                             created: LessThanOrEqual(pass.retentionDateBoundary),
-                            ...(pass.workspaceIds ? { workspaceId: In(pass.workspaceIds) } : {}),
+                            ...(pass.projectIds ? { projectId: In(pass.projectIds) } : {}),
                         },
                         order: { created: 'ASC' },
                         take: maximumFilesToDeletePerIteration,
@@ -328,18 +328,18 @@ function normalizeTypeFilter(type: FileType | FileType[] | undefined) {
     return Array.isArray(type) ? In(type) : type
 }
 
-function groupWorkspaceIdsByRetentionDays(workspaces: Pick<Workspace, 'id' | 'executionDataRetentionDays'>[]): Map<number, WorkspaceId[]> {
-    const retentionDaysToWorkspaceIds = new Map<number, WorkspaceId[]>()
-    for (const workspace of workspaces) {
-        const effectiveRetentionDays = getEffectiveExecutionDataRetentionDays(workspace.executionDataRetentionDays)
+function groupProjectIdsByRetentionDays(projects: Pick<Project, 'id' | 'executionDataRetentionDays'>[]): Map<number, ProjectId[]> {
+    const retentionDaysToProjectIds = new Map<number, ProjectId[]>()
+    for (const project of projects) {
+        const effectiveRetentionDays = getEffectiveExecutionDataRetentionDays(project.executionDataRetentionDays)
         if (effectiveRetentionDays >= EXECUTION_DATA_RETENTION_DAYS) {
             continue
         }
-        const workspaceIds = retentionDaysToWorkspaceIds.get(effectiveRetentionDays) ?? []
-        workspaceIds.push(workspace.id)
-        retentionDaysToWorkspaceIds.set(effectiveRetentionDays, workspaceIds)
+        const projectIds = retentionDaysToProjectIds.get(effectiveRetentionDays) ?? []
+        projectIds.push(project.id)
+        retentionDaysToProjectIds.set(effectiveRetentionDays, projectIds)
     }
-    return retentionDaysToWorkspaceIds
+    return retentionDaysToProjectIds
 }
 
 export function getLocationForFile(type: FileType) {
@@ -376,7 +376,7 @@ function isExecutionDataFileThatExpires(type: FileType) {
         case FileType.SAMPLE_DATA:
         case FileType.SAMPLE_DATA_INPUT:
         case FileType.PACKAGE_ARCHIVE:
-        case FileType.WORKSPACE_RELEASE:
+        case FileType.PROJECT_RELEASE:
         case FileType.WORKFLOW_VERSION_BACKUP:
         case FileType.KNOWLEDGE_BASE:
             return false
@@ -387,7 +387,7 @@ function isExecutionDataFileThatExpires(type: FileType) {
 
 type SaveParams = {
     fileId?: FileId | undefined
-    workspaceId?: WorkspaceId
+    projectId?: ProjectId
     data: Buffer | Readable | null
     size?: number
     type: FileType
@@ -399,7 +399,7 @@ type SaveParams = {
 
 type GetOneParams = {
     fileId?: FileId
-    workspaceId?: WorkspaceId
+    projectId?: ProjectId
     type?: FileType | FileType[]
 }
 
@@ -410,7 +410,7 @@ type FileToken = {
 
 type CleanupPass = {
     retentionDateBoundary: string
-    workspaceIds: WorkspaceId[] | undefined
+    projectIds: ProjectId[] | undefined
 }
 
 type UploadPublicAssetParams = {

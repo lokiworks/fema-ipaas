@@ -11,7 +11,7 @@ export const userInvitationsHooks = {
       queryFn: () => {
         return userInvitationApi
           .list({
-            type: InvitationType.WORKSPACE,
+            type: InvitationType.PROJECT,
             cursor: undefined,
             limit: 100,
           })

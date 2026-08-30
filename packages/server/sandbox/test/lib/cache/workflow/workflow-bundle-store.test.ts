@@ -91,10 +91,10 @@ describe('workflowBundleStore', () => {
         const codes = codeCache(cacheUtils(basePath).getGlobalCodeCachePath())
         await codes.writeCompiledStep({ workflowVersionId: workflowVersion.id, stepName: 'step_1', compiledJs: 'exports.code = () => 1' })
 
-        await workflowBundleStore(fakeLog, apiClient, basePath).publish({ workflowVersion, connectors: [connector], workspaceId: 'p1', tenantId: 'plat1' })
+        await workflowBundleStore(fakeLog, apiClient, basePath).publish({ workflowVersion, connectors: [connector], projectId: 'p1', tenantId: 'plat1' })
 
         const fetchBasePath = uniqueBasePath()
-        const fetched = await workflowBundleStore(fakeLog, apiClient, fetchBasePath).tryFetch({ workflowVersionId: workflowVersion.id, workspaceId: 'p1' })
+        const fetched = await workflowBundleStore(fakeLog, apiClient, fetchBasePath).tryFetch({ workflowVersionId: workflowVersion.id, projectId: 'p1' })
 
         expect(fetched?.workflowVersion.id).toBe('fv1')
         expect(fetched?.connectors).toEqual([connector])
@@ -108,10 +108,10 @@ describe('workflowBundleStore', () => {
         const workflowVersion = buildWorkflowVersion()
         const codes = codeCache(cacheUtils(basePath).getGlobalCodeCachePath())
         await codes.writeCompiledStep({ workflowVersionId: workflowVersion.id, stepName: 'step_1', compiledJs: 'exports.code = () => 1' })
-        await workflowBundleStore(fakeLog, apiClient, basePath).publish({ workflowVersion, connectors: [connector], workspaceId: 'p1', tenantId: 'plat1' })
+        await workflowBundleStore(fakeLog, apiClient, basePath).publish({ workflowVersion, connectors: [connector], projectId: 'p1', tenantId: 'plat1' })
 
-        const first = await workflowBundleStore(fakeLog, apiClient, basePath).tryFetch({ workflowVersionId: workflowVersion.id, workspaceId: 'p1' })
-        const second = await workflowBundleStore(fakeLog, apiClient, basePath).tryFetch({ workflowVersionId: workflowVersion.id, workspaceId: 'p1' })
+        const first = await workflowBundleStore(fakeLog, apiClient, basePath).tryFetch({ workflowVersionId: workflowVersion.id, projectId: 'p1' })
+        const second = await workflowBundleStore(fakeLog, apiClient, basePath).tryFetch({ workflowVersionId: workflowVersion.id, projectId: 'p1' })
 
         expect(first?.workflowVersion.id).toBe('fv1')
         expect(second?.workflowVersion.id).toBe('fv1')
@@ -121,7 +121,7 @@ describe('workflowBundleStore', () => {
     it('tryFetch returns null when no bundle is stored', async () => {
         const basePath = uniqueBasePath()
         const apiClient = { async getWorkflowBundle() { return null } } as unknown as WorkerToApiContract
-        expect(await workflowBundleStore(fakeLog, apiClient, basePath).tryFetch({ workflowVersionId: 'fv1', workspaceId: 'p1' })).toBeNull()
+        expect(await workflowBundleStore(fakeLog, apiClient, basePath).tryFetch({ workflowVersionId: 'fv1', projectId: 'p1' })).toBeNull()
     })
 
     it('tryFetch ignores a bundle whose schemaVersion is stale (self-heals via rebuild)', async () => {
@@ -131,9 +131,9 @@ describe('workflowBundleStore', () => {
         const codes = codeCache(cacheUtils(basePath).getGlobalCodeCachePath())
         await codes.writeCompiledStep({ workflowVersionId: staleWorkflowVersion.id, stepName: 'step_1', compiledJs: 'old' })
 
-        await workflowBundleStore(fakeLog, apiClient, basePath).publish({ workflowVersion: staleWorkflowVersion, connectors: [connector], workspaceId: 'p1', tenantId: 'plat1' })
+        await workflowBundleStore(fakeLog, apiClient, basePath).publish({ workflowVersion: staleWorkflowVersion, connectors: [connector], projectId: 'p1', tenantId: 'plat1' })
 
-        expect(await workflowBundleStore(fakeLog, apiClient, basePath).tryFetch({ workflowVersionId: staleWorkflowVersion.id, workspaceId: 'p1' })).toBeNull()
+        expect(await workflowBundleStore(fakeLog, apiClient, basePath).tryFetch({ workflowVersionId: staleWorkflowVersion.id, projectId: 'p1' })).toBeNull()
     })
 
     it('publish uploads via signed PUT (no inline RPC) when prepare returns a url', async () => {
@@ -147,7 +147,7 @@ describe('workflowBundleStore', () => {
         const codes = codeCache(cacheUtils(basePath).getGlobalCodeCachePath())
         await codes.writeCompiledStep({ workflowVersionId: workflowVersion.id, stepName: 'step_1', compiledJs: 'exports.code = () => 1' })
 
-        await workflowBundleStore(fakeLog, apiClient, basePath).publish({ workflowVersion, connectors: [connector], workspaceId: 'p1', tenantId: 'plat1' })
+        await workflowBundleStore(fakeLog, apiClient, basePath).publish({ workflowVersion, connectors: [connector], projectId: 'p1', tenantId: 'plat1' })
 
         expect(put).toHaveBeenCalledOnce()
         expect(put.mock.calls[0][0]).toBe('https://s3/put')
@@ -164,7 +164,7 @@ describe('workflowBundleStore', () => {
         const codes = codeCache(cacheUtils(basePath).getGlobalCodeCachePath())
         await codes.writeCompiledStep({ workflowVersionId: workflowVersion.id, stepName: 'step_1', compiledJs: 'exports.code = () => 1' })
 
-        await workflowBundleStore(fakeLog, apiClient, basePath).publish({ workflowVersion, connectors: [connector], workspaceId: 'p1', tenantId: 'plat1' })
+        await workflowBundleStore(fakeLog, apiClient, basePath).publish({ workflowVersion, connectors: [connector], projectId: 'p1', tenantId: 'plat1' })
 
         expect(put).not.toHaveBeenCalled()
     })
@@ -178,7 +178,7 @@ describe('workflowBundleStore', () => {
             getWorkflowBundle: vi.fn(async () => ({ kind: 'url', url: 'https://s3/get' })),
         } as unknown as WorkerToApiContract
 
-        const fetched = await workflowBundleStore(fakeLog, apiClient, basePath).tryFetch({ workflowVersionId: workflowVersion.id, workspaceId: 'p1' })
+        const fetched = await workflowBundleStore(fakeLog, apiClient, basePath).tryFetch({ workflowVersionId: workflowVersion.id, projectId: 'p1' })
 
         expect(fetched?.workflowVersion.id).toBe('fv1')
         expect(bundleHttp.getBuffer).toHaveBeenCalledWith('https://s3/get')
@@ -192,8 +192,8 @@ describe('workflowBundleStore', () => {
         const getWorkflowBundle = vi.fn(async () => ({ kind: 'url', url: 'https://s3/get' }))
         const apiClient = { getWorkflowBundle } as unknown as WorkerToApiContract
 
-        const first = await workflowBundleStore(fakeLog, apiClient, basePath).tryFetch({ workflowVersionId: 'fv1', workspaceId: 'p1' })
-        const second = await workflowBundleStore(fakeLog, apiClient, basePath).tryFetch({ workflowVersionId: 'fv1', workspaceId: 'p1' })
+        const first = await workflowBundleStore(fakeLog, apiClient, basePath).tryFetch({ workflowVersionId: 'fv1', projectId: 'p1' })
+        const second = await workflowBundleStore(fakeLog, apiClient, basePath).tryFetch({ workflowVersionId: 'fv1', projectId: 'p1' })
 
         expect(first).toBeNull()
         expect(second).toBeNull()

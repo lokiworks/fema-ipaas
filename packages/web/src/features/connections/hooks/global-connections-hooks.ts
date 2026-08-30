@@ -11,7 +11,7 @@ import { internalErrorToast } from '@/components/ui/sonner';
 
 import { globalConnectionsApi } from '../api/global-connections';
 import {
-  NoWorkspaceSelected,
+  NoProjectSelected,
   ConnectionNameAlreadyExists,
   isConnectionNameUnique,
 } from '../utils/utils';
@@ -69,8 +69,8 @@ export const globalConnectionsMutations = {
     setIsOpen: (isOpen: boolean) => void,
     editConnectionForm: UseFormReturn<{
       displayName: string;
-      workspaceIds: string[];
-      preSelectForNewWorkspaces: boolean;
+      projectIds: string[];
+      preSelectForNewProjects: boolean;
     }>,
   ) =>
     useMutation<
@@ -79,16 +79,16 @@ export const globalConnectionsMutations = {
       {
         connectionId: string;
         displayName: string;
-        workspaceIds: string[];
-        preSelectForNewWorkspaces: boolean;
+        projectIds: string[];
+        preSelectForNewProjects: boolean;
         currentName: string;
       }
     >({
       mutationFn: async ({
         connectionId,
         displayName,
-        workspaceIds,
-        preSelectForNewWorkspaces,
+        projectIds,
+        preSelectForNewProjects,
         currentName,
       }) => {
         if (
@@ -100,13 +100,13 @@ export const globalConnectionsMutations = {
         ) {
           throw new ConnectionNameAlreadyExists();
         }
-        if (workspaceIds.length === 0) {
-          throw new NoWorkspaceSelected();
+        if (projectIds.length === 0) {
+          throw new NoProjectSelected();
         }
         return globalConnectionsApi.update(connectionId, {
           displayName,
-          workspaceIds,
-          preSelectForNewWorkspaces,
+          projectIds,
+          preSelectForNewProjects,
         });
       },
       onSuccess: () => {
@@ -121,8 +121,8 @@ export const globalConnectionsMutations = {
           editConnectionForm.setError('displayName', {
             message: error.message,
           });
-        } else if (error instanceof NoWorkspaceSelected) {
-          editConnectionForm.setError('workspaceIds', {
+        } else if (error instanceof NoProjectSelected) {
+          editConnectionForm.setError('projectIds', {
             message: error.message,
           });
         } else {

@@ -10,7 +10,7 @@ export const ListWorkflowsRequest = z.object({
     limit: z.coerce.number().optional(),
     cursor: z.string().optional(),
     status: OptionalArrayFromQuery(z.nativeEnum(WorkflowStatus)),
-    workspaceId: z.string(),
+    projectId: z.string(),
     name: z.string().optional(),
     agentExternalIds: OptionalArrayFromQuery(z.string()),
     versionState: z.nativeEnum(WorkflowVersionState).optional(),

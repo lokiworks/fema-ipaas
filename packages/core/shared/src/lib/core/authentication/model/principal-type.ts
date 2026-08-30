@@ -15,5 +15,5 @@ export const SERVICE_KEY_SECURITY_OPENAPI = {
 
 export enum EndpointScope {
     TENANT = 'TENANT',
-    WORKSPACE = 'WORKSPACE',
+    PROJECT = 'PROJECT',
 }

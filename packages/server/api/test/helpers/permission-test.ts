@@ -1,4 +1,4 @@
-import { DefaultWorkspaceRole } from '@fema-ipaas/shared'
+import { DefaultProjectRole } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { createMemberContext, createTestContext, TestContext } from './test-context'
@@ -15,7 +15,7 @@ export function describeRolePermissions(config: RolePermissionConfig): void {
     if (allowedRoles.length > 0) {
         it.each(allowedRoles)('Succeeds if user role is %s', async (role) => {
             const ctx = await createTestContext(app())
-            const memberCtx = await createMemberContext(app(), ctx, { workspaceRole: role })
+            const memberCtx = await createMemberContext(app(), ctx, { projectRole: role })
             if (beforeEachFn) {
                 await beforeEachFn(ctx)
             }
@@ -27,7 +27,7 @@ export function describeRolePermissions(config: RolePermissionConfig): void {
     if (forbiddenRoles.length > 0) {
         it.each(forbiddenRoles)('Fails if user role is %s', async (role) => {
             const ctx = await createTestContext(app())
-            const memberCtx = await createMemberContext(app(), ctx, { workspaceRole: role })
+            const memberCtx = await createMemberContext(app(), ctx, { projectRole: role })
             if (beforeEachFn) {
                 await beforeEachFn(ctx)
             }
@@ -37,7 +37,7 @@ export function describeRolePermissions(config: RolePermissionConfig): void {
             const responseBody = response.json()
             expect(responseBody?.code).toBe('PERMISSION_DENIED')
             expect(responseBody?.params?.userId).toBe(memberCtx.user.id)
-            expect(responseBody?.params?.workspaceId).toBe(ctx.workspace.id)
+            expect(responseBody?.params?.projectId).toBe(ctx.project.id)
         })
     }
 }
@@ -45,7 +45,7 @@ export function describeRolePermissions(config: RolePermissionConfig): void {
 type RolePermissionConfig = {
     app: () => FastifyInstance
     request: (memberCtx: TestContext, ownerCtx: TestContext) => ReturnType<FastifyInstance['inject']>
-    allowedRoles: DefaultWorkspaceRole[]
-    forbiddenRoles: DefaultWorkspaceRole[]
+    allowedRoles: DefaultProjectRole[]
+    forbiddenRoles: DefaultProjectRole[]
     beforeEach?: (ctx: TestContext) => Promise<void>
 }

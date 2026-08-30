@@ -15,7 +15,7 @@ export const StoreEntryEntity = new EntitySchema<StoreEntrySchema>({
             type: String,
             length: STORE_KEY_MAX_LENGTH,
         },
-        workspaceId: EntityIdSchema,
+        projectId: EntityIdSchema,
         value: {
             type: 'jsonb',
             nullable: true,
@@ -23,7 +23,7 @@ export const StoreEntryEntity = new EntitySchema<StoreEntrySchema>({
     },    
     uniques: [
         {
-            columns: ['workspaceId', 'key'],
+            columns: ['projectId', 'key'],
         },
     ],
 })

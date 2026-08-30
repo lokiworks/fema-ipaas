@@ -25,11 +25,11 @@ describe('Files Controller', () => {
             vi.useFakeTimers({ shouldAdvanceTime: true })
             vi.setSystemTime(new Date('2026-01-01T00:00:00Z'))
             try {
-                const { mockWorkspace, mockTenant } = await mockAndSaveBasicSetup()
+                const { mockProject, mockTenant } = await mockAndSaveBasicSetup()
                 const engineToken = await generateMockToken({
                     type: PrincipalType.ENGINE,
                     id: generateId(),
-                    workspaceId: mockWorkspace.id,
+                    projectId: mockProject.id,
                     tenant: { id: mockTenant.id },
                 })
                 const fileId = generateId()
@@ -59,11 +59,11 @@ describe('Files Controller', () => {
         })
 
         it('streams the body to storage and returns identical bytes on download', async () => {
-            const { mockWorkspace, mockTenant } = await mockAndSaveBasicSetup()
+            const { mockProject, mockTenant } = await mockAndSaveBasicSetup()
             const engineToken = await generateMockToken({
                 type: PrincipalType.ENGINE,
                 id: generateId(),
-                workspaceId: mockWorkspace.id,
+                projectId: mockProject.id,
                 tenant: { id: mockTenant.id },
             })
             const fileId = generateId()
@@ -95,11 +95,11 @@ describe('Files Controller', () => {
             const originalMaxFileSize = process.env.FEMA_MAX_FILE_SIZE_MB
             process.env.FEMA_MAX_FILE_SIZE_MB = '0.000001'
             try {
-                const { mockWorkspace, mockTenant } = await mockAndSaveBasicSetup()
+                const { mockProject, mockTenant } = await mockAndSaveBasicSetup()
                 const engineToken = await generateMockToken({
                     type: PrincipalType.ENGINE,
                     id: generateId(),
-                    workspaceId: mockWorkspace.id,
+                    projectId: mockProject.id,
                     tenant: { id: mockTenant.id },
                 })
 
@@ -126,11 +126,11 @@ describe('Files Controller', () => {
         })
 
         it('rejects a request whose token is not an engine principal', async () => {
-            const { mockWorkspace, mockTenant } = await mockAndSaveBasicSetup()
+            const { mockProject, mockTenant } = await mockAndSaveBasicSetup()
             const userToken = await generateMockToken({
                 type: PrincipalType.USER,
                 id: generateId(),
-                workspaceId: mockWorkspace.id,
+                projectId: mockProject.id,
                 tenant: { id: mockTenant.id },
                 tokenVersion: undefined,
             } as never)
@@ -151,11 +151,11 @@ describe('Files Controller', () => {
         })
 
         it('rejects a request without X-AP-File-Type', async () => {
-            const { mockWorkspace, mockTenant } = await mockAndSaveBasicSetup()
+            const { mockProject, mockTenant } = await mockAndSaveBasicSetup()
             const engineToken = await generateMockToken({
                 type: PrincipalType.ENGINE,
                 id: generateId(),
-                workspaceId: mockWorkspace.id,
+                projectId: mockProject.id,
                 tenant: { id: mockTenant.id },
             })
 
@@ -177,11 +177,11 @@ describe('Files Controller', () => {
         })
 
         it('rejects an unsupported X-AP-File-Type', async () => {
-            const { mockWorkspace, mockTenant } = await mockAndSaveBasicSetup()
+            const { mockProject, mockTenant } = await mockAndSaveBasicSetup()
             const engineToken = await generateMockToken({
                 type: PrincipalType.ENGINE,
                 id: generateId(),
-                workspaceId: mockWorkspace.id,
+                projectId: mockProject.id,
                 tenant: { id: mockTenant.id },
             })
 
@@ -206,11 +206,11 @@ describe('Files Controller', () => {
 
     describe('GET /v1/files/:fileId', () => {
         it('returns the bytes when called with the per-file FILE_READ token', async () => {
-            const { mockWorkspace, mockTenant } = await mockAndSaveBasicSetup()
+            const { mockProject, mockTenant } = await mockAndSaveBasicSetup()
             const engineToken = await generateMockToken({
                 type: PrincipalType.ENGINE,
                 id: generateId(),
-                workspaceId: mockWorkspace.id,
+                projectId: mockProject.id,
                 tenant: { id: mockTenant.id },
             })
             const fileId = generateId()
@@ -241,11 +241,11 @@ describe('Files Controller', () => {
         })
 
         it('returns the bytes when called with the engine principal token', async () => {
-            const { mockWorkspace, mockTenant } = await mockAndSaveBasicSetup()
+            const { mockProject, mockTenant } = await mockAndSaveBasicSetup()
             const engineToken = await generateMockToken({
                 type: PrincipalType.ENGINE,
                 id: generateId(),
-                workspaceId: mockWorkspace.id,
+                projectId: mockProject.id,
                 tenant: { id: mockTenant.id },
             })
             const fileId = generateId()
@@ -276,11 +276,11 @@ describe('Files Controller', () => {
             { type: FileType.EXECUTION_LOG_SLICE, extension: 'json' },
             { type: FileType.WORKFLOW_STEP_FILE, extension: 'bin' },
         ])('names an unnamed $type download <id>.$extension', async ({ type, extension }) => {
-            const { mockWorkspace, mockTenant } = await mockAndSaveBasicSetup()
+            const { mockProject, mockTenant } = await mockAndSaveBasicSetup()
             const engineToken = await generateMockToken({
                 type: PrincipalType.ENGINE,
                 id: generateId(),
-                workspaceId: mockWorkspace.id,
+                projectId: mockProject.id,
                 tenant: { id: mockTenant.id },
             })
             const fileId = generateId()
@@ -308,11 +308,11 @@ describe('Files Controller', () => {
         })
 
         it('keeps the uploaded name when the file has one', async () => {
-            const { mockWorkspace, mockTenant } = await mockAndSaveBasicSetup()
+            const { mockProject, mockTenant } = await mockAndSaveBasicSetup()
             const engineToken = await generateMockToken({
                 type: PrincipalType.ENGINE,
                 id: generateId(),
-                workspaceId: mockWorkspace.id,
+                projectId: mockProject.id,
                 tenant: { id: mockTenant.id },
             })
             const fileId = generateId()
@@ -343,9 +343,9 @@ describe('Files Controller', () => {
             { fileName: '報告書.json', expected: 'attachment; filename="???.json"; filename*=UTF-8\'\'%E5%A0%B1%E5%91%8A%E6%9B%B8.json' },
             { fileName: 'evil\r\nX-Injected: 1.json', expected: 'attachment; filename="evil??X-Injected: 1.json"; filename*=UTF-8\'\'evil%0D%0AX-Injected%3A%201.json' },
         ])('escapes $fileName in the disposition header without emitting a raw newline', async ({ fileName, expected }) => {
-            const { mockWorkspace, mockTenant } = await mockAndSaveBasicSetup()
+            const { mockProject, mockTenant } = await mockAndSaveBasicSetup()
             const file = await fileService(app!.log).save({
-                workspaceId: mockWorkspace.id,
+                projectId: mockProject.id,
                 tenantId: mockTenant.id,
                 type: FileType.WORKFLOW_STEP_FILE,
                 compression: FileCompression.NONE,
@@ -389,11 +389,11 @@ describe('Files Controller', () => {
 
     describe('GET /v1/step-files/signed (backward-compat alias)', () => {
         it('resolves an old-shape signed step-file URL', async () => {
-            const { mockWorkspace, mockTenant } = await mockAndSaveBasicSetup()
+            const { mockProject, mockTenant } = await mockAndSaveBasicSetup()
             const engineToken = await generateMockToken({
                 type: PrincipalType.ENGINE,
                 id: generateId(),
-                workspaceId: mockWorkspace.id,
+                projectId: mockProject.id,
                 tenant: { id: mockTenant.id },
             })
             const fileId = generateId()

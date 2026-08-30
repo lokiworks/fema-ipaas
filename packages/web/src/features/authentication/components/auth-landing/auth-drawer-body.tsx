@@ -238,7 +238,7 @@ function AuthStep({
       <DrawerShell>
         <Heading
           title={t('What should we call you?')}
-          subtitle={t('This names your workspace and how we greet you.')}
+          subtitle={t('This names your project and how we greet you.')}
         />
         <NameStep onSessionRejected={abandonOnboarding} />
       </DrawerShell>
@@ -748,8 +748,8 @@ function CodeStep({
       onSuccess: (data) => {
         authenticationSession.saveResponse(data, false);
         // A brand-new member arrives on the pre-tenant onboarding token, so
-        // there is no workspace yet: ask their name before building the tenant.
-        if (isNil(data.workspaceId)) {
+        // there is no project yet: ask their name before building the tenant.
+        if (isNil(data.projectId)) {
           onNeedsName();
           return;
         }

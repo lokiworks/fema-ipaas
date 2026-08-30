@@ -1,4 +1,4 @@
-import { assertNotNullOrUndefined, generateId, isNil, TenantId, WorkflowVersionId, WorkspaceId } from '@fema-ipaas/core-utils'
+import { assertNotNullOrUndefined, generateId, isNil, ProjectId, TenantId, WorkflowVersionId } from '@fema-ipaas/core-utils'
 import { wideEvent } from '@fema-ipaas/server-utils'
 import { EngineHttpResponse, EventPayload, Execution, ExecutionType, LATEST_JOB_DATA_SCHEMA_VERSION, RunEnvironment, StreamStepProgress, TriggerPayload, WorkerJobType, Workflow, WorkflowStatus } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
@@ -89,13 +89,13 @@ export const webhookService = {
         // can only be read once. The handshake check and the payload resolution below both need it,
         // so memoize — a second call would stream an empty body and hand the run a 0-byte file URL.
         let resolvedDataPromise: Promise<EventPayload> | undefined
-        const resolveData = (): Promise<EventPayload> => (resolvedDataPromise ??= data(workflow.workspaceId))
+        const resolveData = (): Promise<EventPayload> => (resolvedDataPromise ??= data(workflow.projectId))
 
         wideEvent.set({
             webhook: {
                 workflowFound: true,
             },
-            workspace: { id: workflow.workspaceId },
+            project: { id: workflow.projectId },
             tenant: { id: workflowExecutionResult.tenantId },
         })
         const workflowVersionIdToRun = await webhookService.getWorkflowVersionIdToRun(workflowVersionToRun, workflow)
@@ -110,7 +110,7 @@ export const webhookService = {
                 handshakeConfiguration: workflowExecutionResult.handshakeConfiguration,
                 workflowId: workflow.id,
                 workflowVersionId: workflowVersionIdToRun,
-                workspaceId: workflow.workspaceId,
+                projectId: workflow.projectId,
                 logger: pinoLogger,
             })
             if (!isNil(response)) {
@@ -178,7 +178,7 @@ export const webhookService = {
         wideEvent.set({ webhook: { mode: 'sync' } })
         const workflowHttpResponse = await handleSync({
             payload: resolvedPayload,
-            workspaceId: workflow.workspaceId,
+            projectId: workflow.projectId,
             workflow,
             tenantId: workflowExecutionResult.tenantId,
             runEnvironment: workflowVersionToRun === WebhookWorkflowVersionToRun.LOCKED_FALL_BACK_TO_LATEST ? RunEnvironment.PRODUCTION : RunEnvironment.TESTING,
@@ -207,7 +207,7 @@ export const webhookService = {
 async function handleAsync(params: AsyncWebhookParams): Promise<EngineHttpResponse> {
     const { workflow, logger, webhookRequestId, payload, workflowVersionIdToRun, webhookHeader, saveSampleData, execute, runEnvironment, parentRunId, failParentOnFailure, tenantId } = params
 
-    const jobPayload = await payloadOffloader.offloadPayload(logger, payload, workflow.workspaceId, tenantId)
+    const jobPayload = await payloadOffloader.offloadPayload(logger, payload, workflow.projectId, tenantId)
 
     await wideEvent.timed({
         name: 'webhookQueueAdd',
@@ -216,7 +216,7 @@ async function handleAsync(params: AsyncWebhookParams): Promise<EngineHttpRespon
             type: JobType.ONE_TIME,
             data: {
                 tenantId,
-                workspaceId: workflow.workspaceId,
+                projectId: workflow.projectId,
                 schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
                 requestId: webhookRequestId,
                 payload: jobPayload,
@@ -243,7 +243,7 @@ async function handleAsync(params: AsyncWebhookParams): Promise<EngineHttpRespon
 }
 
 async function handleSync(params: SyncWebhookParams): Promise<EngineHttpResponse> {
-    const { payload, workspaceId, workflow, logger, webhookRequestId, workerHandlerId, workflowVersionIdToRun, runEnvironment, saveSampleData, workflowVersionToRun, parentRunId, failParentOnFailure, tenantId, timeoutMs } = params
+    const { payload, projectId, workflow, logger, webhookRequestId, workerHandlerId, workflowVersionIdToRun, runEnvironment, saveSampleData, workflowVersionToRun, parentRunId, failParentOnFailure, tenantId, timeoutMs } = params
 
     if (saveSampleData) {
         rejectedPromiseHandler(savePayload({
@@ -278,7 +278,7 @@ async function handleSync(params: SyncWebhookParams): Promise<EngineHttpResponse
         const quotaExceededRun = await executionService(logger).createQuotaExceededRun({
             workflowVersion,
             payload,
-            workspaceId,
+            projectId,
             environment: runEnvironment,
             parentRunId,
             failParentOnFailure,
@@ -299,7 +299,7 @@ async function handleSync(params: SyncWebhookParams): Promise<EngineHttpResponse
         workflowVersionId: workflowVersionIdToRun,
         payload,
         workerHandlerId,
-        workspaceId,
+        projectId,
         executeTrigger: true,
         httpRequestId: webhookRequestId,
         executionType: ExecutionType.BEGIN,
@@ -335,7 +335,7 @@ async function savePayload(params: Omit<AsyncWebhookParams, 'saveSampleData' | '
         parentRunId,
         failParentOnFailure,
     })
-    await triggerSourceService(logger).disable({ workflowId: workflow.id, workspaceId: workflow.workspaceId, simulate: true, ignoreError: true })
+    await triggerSourceService(logger).disable({ workflowId: workflow.id, projectId: workflow.projectId, simulate: true, ignoreError: true })
 }
 
 type HandleWebhookParams = {
@@ -343,7 +343,7 @@ type HandleWebhookParams = {
     async: boolean
     saveSampleData: boolean
     workflowVersionToRun: WebhookWorkflowVersionToRun
-    data: (workspaceId: string) => Promise<EventPayload>
+    data: (projectId: string) => Promise<EventPayload>
     logger: FastifyBaseLogger
     payload?: Record<string, unknown>
     execute: boolean
@@ -371,7 +371,7 @@ type AsyncWebhookParams = {
 type SyncWebhookParams = {
     payload: unknown
     saveSampleData: boolean
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     runEnvironment: RunEnvironment
     tenantId: TenantId
     workflowVersionToRun: WebhookWorkflowVersionToRun

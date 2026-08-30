@@ -88,11 +88,11 @@ describe('connectorBlueprintGenerator', () => {
         expect(withBody).toContain('HttpMethod.POST')
     })
 
-    it('pins the sdk as a workspace dependency and uses an exact version', () => {
+    it('pins the sdk as a project dependency and uses an exact version', () => {
         const packageJson = JSON.parse(generate()['package.json'])
         expect(packageJson.name).toBe('@fema-ipaas/connector-orders')
         expect(packageJson.version).toBe('1.0.0')
-        expect(packageJson.dependencies['@fema-ipaas/connector-sdk']).toBe('workspace:*')
+        expect(packageJson.dependencies['@fema-ipaas/connector-sdk']).toBe('project:*')
     })
 
     it('renders each field type as its matching property kind', () => {

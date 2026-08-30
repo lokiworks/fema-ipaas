@@ -6,7 +6,7 @@ import { scriptEvaluator } from './script-evaluator'
 
 export const connectionToken = {
     async handle(params: ConnectionTokenParams): Promise<unknown> {
-        const { variableName, engineToken, workspaceId, apiUrl, censoredInput, contextVersion, connectorName } = params
+        const { variableName, engineToken, projectId, apiUrl, censoredInput, contextVersion, connectorName } = params
         const connectionName = parseConnectionNameOnly(variableName)
         if (isNil(connectionName)) {
             return ''
@@ -14,7 +14,7 @@ export const connectionToken = {
         if (censoredInput) {
             return '**REDACTED**'
         }
-        const connection = await createConnectionResolver({ engineToken, workspaceId, apiUrl, contextVersion, connectorName }).obtain(connectionName)
+        const connection = await createConnectionResolver({ engineToken, projectId, apiUrl, contextVersion, connectorName }).obtain(connectionName)
         const pathAfterConnectionName = parsePathAfterConnectionName(variableName, connectionName)
         if (isNil(pathAfterConnectionName) || pathAfterConnectionName.length === 0) {
             return connection
@@ -59,7 +59,7 @@ function parseSquareBracketConnectionPath(variableName: string): string | null {
 type ConnectionTokenParams = {
     variableName: string
     engineToken: string
-    workspaceId: string
+    projectId: string
     apiUrl: string
     censoredInput: boolean
     contextVersion: ContextVersion | undefined

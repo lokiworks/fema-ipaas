@@ -2,9 +2,9 @@ import { isNil } from '@fema-ipaas/core-utils'
 import { PrincipalType } from '@fema-ipaas/shared'
 import { FastifyRequest } from 'fastify'
 import { AuthorizationRouteSecurity } from '../../authorization/authorization'
-import { AuthorizationType, RouteKind, WorkspaceResourceType } from '../../authorization/common'
+import { AuthorizationType, ProjectResourceType, RouteKind } from '../../authorization/common'
 import { authorizeOrThrow } from './authorize'
-import { workspaceIdExtractor } from './workspaceIdExtractor'
+import { projectIdExtractor } from './projectIdExtractor'
 
 
 export const authorizationMiddleware = async (request: FastifyRequest): Promise<void> => {
@@ -17,9 +17,9 @@ export const authorizationMiddleware = async (request: FastifyRequest): Promise<
     if (bullmqRoute) {
         return
     }
-    if (!isNil(security) && security.kind === RouteKind.AUTHENTICATED && security.authorization.type === AuthorizationType.WORKSPACE) {
+    if (!isNil(security) && security.kind === RouteKind.AUTHENTICATED && security.authorization.type === AuthorizationType.PROJECT) {
         // @ts-expect-error: explicit override for Fastify typing assignment
-        request.workspaceId = securityAccessRequest.authorization.workspaceId
+        request.projectId = securityAccessRequest.authorization.projectId
     }
 }
 
@@ -31,14 +31,14 @@ export async function convertToSecurityAccessRequest(request: FastifyRequest): P
         }
     }
     switch (security.authorization.type) {
-        case AuthorizationType.WORKSPACE:
+        case AuthorizationType.PROJECT:
             return {
                 kind: RouteKind.AUTHENTICATED,
                 authorization: {
-                    type: AuthorizationType.WORKSPACE,
+                    type: AuthorizationType.PROJECT,
                     allowedPrincipals: security.authorization.allowedPrincipals,
                     permission: security.authorization.permission,
-                    workspaceId: await getWorkspaceIdFromRequest(request),
+                    projectId: await getProjectIdFromRequest(request),
                 },
             }
         case AuthorizationType.TENANT:
@@ -70,9 +70,9 @@ export async function convertToSecurityAccessRequest(request: FastifyRequest): P
     }
 }
 
-export async function getWorkspaceIdFromRequest(request: FastifyRequest): Promise<string | undefined> {
+export async function getProjectIdFromRequest(request: FastifyRequest): Promise<string | undefined> {
     if (request.principal.type === PrincipalType.ENGINE) {
-        return request.principal.workspaceId
+        return request.principal.projectId
     }
     const security = request.routeOptions.config?.security
     if (!security) {
@@ -81,22 +81,22 @@ export async function getWorkspaceIdFromRequest(request: FastifyRequest): Promis
     if (security.kind === RouteKind.PUBLIC) {
         return undefined
     }
-    if (security.authorization.type !== AuthorizationType.WORKSPACE && security.authorization.type !== AuthorizationType.TENANT) {
+    if (security.authorization.type !== AuthorizationType.PROJECT && security.authorization.type !== AuthorizationType.TENANT) {
         return undefined
     }
-    const workspaceResource = security.authorization.workspaceResource
-    if (isNil(workspaceResource)) {
+    const projectResource = security.authorization.projectResource
+    if (isNil(projectResource)) {
         return undefined
     }
 
-    switch (workspaceResource.type) {
-        case WorkspaceResourceType.TABLE:
-            return workspaceIdExtractor.fromTable(request, workspaceResource)
-        case WorkspaceResourceType.QUERY:
-            return workspaceIdExtractor.fromQuery(request, workspaceResource)
-        case WorkspaceResourceType.BODY:
-            return workspaceIdExtractor.fromBody(request, workspaceResource)
-        case WorkspaceResourceType.PARAM:
-            return workspaceIdExtractor.fromParam(request, workspaceResource)
+    switch (projectResource.type) {
+        case ProjectResourceType.TABLE:
+            return projectIdExtractor.fromTable(request, projectResource)
+        case ProjectResourceType.QUERY:
+            return projectIdExtractor.fromQuery(request, projectResource)
+        case ProjectResourceType.BODY:
+            return projectIdExtractor.fromBody(request, projectResource)
+        case ProjectResourceType.PARAM:
+            return projectIdExtractor.fromParam(request, projectResource)
     }
 }

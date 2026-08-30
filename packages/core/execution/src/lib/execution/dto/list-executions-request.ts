@@ -11,7 +11,7 @@ export const ListExecutionsRequestQuery = z.object({
     cursor: z.string().optional(),
     createdAfter: z.string().optional(),
     createdBefore: z.string().optional(),
-    workspaceId: EntityId,
+    projectId: EntityId,
     failedStepName: z.string().optional(),
     failedStepMessage: z.string().optional(),
     executionIds: OptionalArrayFromQuery(EntityId),
@@ -21,7 +21,7 @@ export const ListExecutionsRequestQuery = z.object({
 export type ListExecutionsRequestQuery = z.infer<typeof ListExecutionsRequestQuery>
 
 export const CountExecutionsByStatusRequest = z.object({
-    workspaceId: EntityId,
+    projectId: EntityId,
     createdAfter: z.string().optional(),
     createdBefore: z.string().optional(),
 })
@@ -39,8 +39,8 @@ export type CountExecutionsByStatusRequest = z.infer<typeof CountExecutionsBySta
 export type ExecutionCountByStatus = z.infer<typeof ExecutionCountByStatus>
 export type CountExecutionsByStatusResponse = z.infer<typeof CountExecutionsByStatusResponse>
 
-export const WorkspaceOverviewRequest = z.object({
-    workspaceId: EntityId,
+export const ProjectOverviewRequest = z.object({
+    projectId: EntityId,
     days: z.coerce.number().min(1).max(90).default(7),
 })
 
@@ -73,7 +73,7 @@ export const RecentlyEditedWorkflow = z.object({
     updated: z.string(),
 })
 
-export const WorkspaceOverviewResponse = z.object({
+export const ProjectOverviewResponse = z.object({
     countByStatus: z.array(ExecutionCountByStatus),
     dailyTrend: z.array(ExecutionDailyTrend),
     topFailingWorkflows: z.array(FailingWorkflowSummary),
@@ -82,10 +82,10 @@ export const WorkspaceOverviewResponse = z.object({
     recentlyEditedWorkflows: z.array(RecentlyEditedWorkflow),
 })
 
-export type WorkspaceOverviewRequest = z.infer<typeof WorkspaceOverviewRequest>
+export type ProjectOverviewRequest = z.infer<typeof ProjectOverviewRequest>
 export type ExecutionDailyTrend = z.infer<typeof ExecutionDailyTrend>
 export type FailingWorkflowSummary = z.infer<typeof FailingWorkflowSummary>
 export type ConnectionHealthSummary = z.infer<typeof ConnectionHealthSummary>
 export type ConnectorUsageSummary = z.infer<typeof ConnectorUsageSummary>
 export type RecentlyEditedWorkflow = z.infer<typeof RecentlyEditedWorkflow>
-export type WorkspaceOverviewResponse = z.infer<typeof WorkspaceOverviewResponse>
+export type ProjectOverviewResponse = z.infer<typeof ProjectOverviewResponse>

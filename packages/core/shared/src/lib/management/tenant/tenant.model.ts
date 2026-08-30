@@ -7,7 +7,7 @@ export const TenantPlan = z.object({
     ...BaseModelSchema,
     tenantId: z.string(),
     usersLimit: Nullable(z.number()),
-    workspacesLimit: Nullable(z.number()),
+    projectsLimit: Nullable(z.number()),
     activeWorkflowsLimit: Nullable(z.number()),
     workerGroupId: Nullable(z.string()),
 })

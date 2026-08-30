@@ -38,5 +38,6 @@
   "Arguments can be used using ? in the condition": "Arguments can be used using ? in the condition",
   "Specify the columns you want to select": "Specify the columns you want to select",
   "The query string to execute, use ? for arguments to avoid SQL injection.": "The query string to execute, use ? for arguments to avoid SQL injection.",
-  "Arguments to use in the query, if any. Should be in the same order as the ? in the query string..": "Arguments to use in the query, if any. Should be in the same order as the ? in the query string.."
+  "Arguments to use in the query, if any. Should be in the same order as the ? in the query string..": "Arguments to use in the query, if any. Should be in the same order as the ? in the query string..",
+  "MySQL": "MySQL"
 }

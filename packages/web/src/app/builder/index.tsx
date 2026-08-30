@@ -7,7 +7,6 @@ import {
 } from '@fema-ipaas/shared';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { PanelImperativeHandle } from 'react-resizable-panels';
-import { usePrevious } from 'react-use';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { DataSelector } from '@/app/builder/data-selector';
@@ -26,23 +25,17 @@ import { useElementSize } from '@/hooks/use-element-size';
 import { cn } from '@/lib/utils';
 
 import { BuilderHeader } from './builder-header/builder-header';
-import { ConnectorPickerPanel } from './connector-picker-panel';
-import { NodePalette } from './node-palette';
-import { RunsList } from './run-list';
+import { BuilderLeftPanel } from './left-panel';
 import { CursorPositionProvider } from './state/cursor-position-context';
 import { StepSettingsContainer } from './step-settings';
 import { WorkflowCanvas } from './workflow-canvas';
 import { workflowCanvasHooks } from './workflow-canvas/hooks';
 import { workflowCanvasConsts } from './workflow-canvas/utils/consts';
 import { BuilderBanner } from './workflow-canvas/widgets/builder-banner';
-import { WorkflowVersionsList } from './workflow-versions';
 const animateResizeClassName = `transition-all `;
 
-const SPLIT_MODE_INITIAL_OPEN_SIZE_PX = 1000;
-const SPLIT_MODE_SIDEBAR_SIZE_PX = 850;
-const DEFAULT_SIDEBAR_SIZE = '480px';
-const DEFAULT_MIN_SIZE = '400px';
-const SPLIT_MODE_COLLAPSE_THRESHOLD_PX = 700;
+const DEFAULT_SIDEBAR_SIZE = '320px';
+const DEFAULT_MIN_SIZE = '280px';
 
 const BuilderPage = () => {
   const [
@@ -51,10 +44,6 @@ const BuilderPage = () => {
     selectedStepName,
     removeAllStepTestsListeners,
     selectedStep,
-    stepDataPanelView,
-    isStepDataPanelOpen,
-    setStepDataPanelView,
-    setStepDataPanelOpen,
   ] = useBuilderStateContext((state) => [
     state.workflowVersion,
     state.rightSidebar,
@@ -64,10 +53,6 @@ const BuilderPage = () => {
       state.selectedStep ?? '',
       state.workflowVersion.trigger,
     ),
-    state.stepDataPanelView,
-    state.isStepDataPanelOpen,
-    state.setStepDataPanelView,
-    state.setStepDataPanelOpen,
   ]);
   useEffect(() => {
     return () => {
@@ -83,17 +68,8 @@ const BuilderPage = () => {
     window.addEventListener('pointerup', handlePointerUp);
     return () => window.removeEventListener('pointerup', handlePointerUp);
   }, []);
-  const isSplitForConnector =
-    rightSidebar === RightSideBarType.CONNECTOR_SETTINGS &&
-    stepDataPanelView === 'split' &&
-    isStepDataPanelOpen;
-  const prefersSplitLayout =
-    rightSidebar === RightSideBarType.CONNECTOR_SETTINGS &&
-    stepDataPanelView === 'split';
-
   const rightHandleRef = useRef<PanelImperativeHandle>(null);
   const rightSidePanelRef = useRef<HTMLDivElement>(null);
-  const previousRightSidebar = usePrevious(rightSidebar);
 
   useLayoutEffect(() => {
     const handle = rightHandleRef.current;
@@ -102,36 +78,12 @@ const BuilderPage = () => {
       handle.resize('0%');
       return;
     }
-    const isInitialOpen = previousRightSidebar === RightSideBarType.NONE;
-    const targetSize = prefersSplitLayout
-      ? isInitialOpen
-        ? SPLIT_MODE_INITIAL_OPEN_SIZE_PX
-        : SPLIT_MODE_SIDEBAR_SIZE_PX
-      : DEFAULT_SIDEBAR_SIZE;
+    const targetSize = DEFAULT_SIDEBAR_SIZE;
     handle.resize(targetSize);
     const rafId = window.requestAnimationFrame(() => handle.resize(targetSize));
     return () => window.cancelAnimationFrame(rafId);
-  }, [prefersSplitLayout, previousRightSidebar, rightSidebar]);
+  }, [rightSidebar]);
 
-  useEffect(() => {
-    if (!isSplitForConnector || !isDraggingHandle) return;
-    const el = rightSidePanelRef.current;
-    if (!el) return;
-    const observer = new ResizeObserver((entries) => {
-      const width = entries[0]?.contentRect.width ?? 0;
-      if (width > 0 && width < SPLIT_MODE_COLLAPSE_THRESHOLD_PX) {
-        setStepDataPanelView('drawer');
-        setStepDataPanelOpen(false);
-      }
-    });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [
-    isSplitForConnector,
-    isDraggingHandle,
-    setStepDataPanelView,
-    setStepDataPanelOpen,
-  ]);
   const {
     connectorModel,
     isNotFound: connectorModelNotFound,
@@ -156,7 +108,7 @@ const BuilderPage = () => {
         <BuilderHeader />
       </div>
       <ResizablePanelGroup orientation="horizontal">
-        <NodePalette />
+        <BuilderLeftPanel />
         <ResizablePanel defaultSize="100%" id="workflow-canvas">
           <div ref={middlePanelRef} className="relative h-full w-full">
             <CursorPositionProvider>
@@ -203,13 +155,7 @@ const BuilderPage = () => {
           minSize={
             rightSidebar === RightSideBarType.NONE ? '0%' : DEFAULT_MIN_SIZE
           }
-          maxSize={
-            rightSidebar === RightSideBarType.NONE
-              ? '0%'
-              : prefersSplitLayout
-              ? '95%'
-              : '60%'
-          }
+          maxSize={rightSidebar === RightSideBarType.NONE ? '0%' : '60%'}
           className={cn('min-w-0 bg-background z-30', {
             [animateResizeClassName]: !isDraggingHandle,
           })}
@@ -246,13 +192,6 @@ const BuilderPage = () => {
                   <StepSettingsContainer />
                 </StepSettingsProvider>
               )}
-            {rightSidebar === RightSideBarType.CONNECTOR_PICKER && (
-              <ConnectorPickerPanel />
-            )}
-            {rightSidebar === RightSideBarType.RUNS && <RunsList />}
-            {rightSidebar === RightSideBarType.VERSIONS && (
-              <WorkflowVersionsList />
-            )}
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>

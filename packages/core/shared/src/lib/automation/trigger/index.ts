@@ -43,7 +43,7 @@ export type ScheduleOptions = z.infer<typeof ScheduleOptions>
 export const TriggerSource = z.object({
     ...BaseModelSchema,
     type: z.nativeEnum(TriggerStrategy),
-    workspaceId: z.string(),
+    projectId: z.string(),
     workflowId: z.string(),
     triggerName: z.string(),
     schedule: Nullable(ScheduleOptions),

@@ -57,7 +57,7 @@ function makeOperation(triggerPayload: ExecuteTriggerOperation<TriggerHookType.R
         workflowVersion: makeWorkflowVersion(),
         webhookUrl: 'http://localhost:4200/webhook',
         triggerPayload,
-        workspaceId: 'workspace-1',
+        projectId: 'project-1',
         tenantId: 'tenant-1',
         engineToken: 'test-token',
         internalApiUrl: 'http://localhost:3000/',

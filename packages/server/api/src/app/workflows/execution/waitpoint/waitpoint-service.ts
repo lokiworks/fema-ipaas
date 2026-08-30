@@ -31,7 +31,7 @@ export const waitpointService = (log: FastifyBaseLogger) => ({
             .values({
                 id,
                 executionId: params.executionId,
-                workspaceId: params.workspaceId,
+                projectId: params.projectId,
                 stepName: params.stepName,
                 type: params.type,
                 version: params.version,
@@ -57,7 +57,7 @@ export const waitpointService = (log: FastifyBaseLogger) => ({
             await systemJobsSchedule(log).upsertJob({
                 job: {
                     name: SystemJobName.RESUME_DELAY_WAITPOINT,
-                    data: { executionId: params.executionId, workspaceId: params.workspaceId, waitpointId: waitpoint.id },
+                    data: { executionId: params.executionId, projectId: params.projectId, waitpointId: waitpoint.id },
                     jobId: `resume-delay-${params.executionId}`,
                 },
                 schedule: {
@@ -97,7 +97,7 @@ export const waitpointService = (log: FastifyBaseLogger) => ({
     },
 
     async handleResumeSignal(params: HandleResumeSignalParams): Promise<boolean> {
-        const { executionId, waitpointId, executionStatus, workspaceId, resumePayload, workerHandlerId, onReady } = params
+        const { executionId, waitpointId, executionStatus, projectId, resumePayload, workerHandlerId, onReady } = params
 
         if (executionStatus === ExecutionStatus.PAUSED) {
             const waitpoint = await transaction(async (entityManager) => {
@@ -123,7 +123,7 @@ export const waitpointService = (log: FastifyBaseLogger) => ({
         }
 
         if (executionStatus === ExecutionStatus.RUNNING || executionStatus === ExecutionStatus.QUEUED) {
-            const { completedExisting } = await this.complete({ executionId, workspaceId, waitpointId, resumePayload, workerHandlerId })
+            const { completedExisting } = await this.complete({ executionId, projectId, waitpointId, resumePayload, workerHandlerId })
             if (!completedExisting) {
                 log.info({ execution: { id: executionId }, waitpoint: { id: waitpointId } }, '[waitpointService#handleResumeSignal] Stale resume signal during RUNNING/QUEUED, ignoring')
                 return false

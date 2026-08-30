@@ -15,7 +15,7 @@ export enum WorkerMachineType {
 
 export enum WorkerGroupScope {
     TENANT = 'tenant',
-    WORKSPACE = 'workspace',
+    PROJECT = 'project',
 }
 
 export enum NetworkMode {
@@ -135,7 +135,7 @@ export const WorkerSettingsResponse = z.object({
     ENFORCE_CONNECTION_CONNECTOR_BINDING: z.boolean(),
     PAGE_ONCALL_WEBHOOK: z.string().optional(),
     APP_VERSION: z.string().optional(),
-    WORKSPACE_WORKER: z.boolean().optional(),
+    PROJECT_WORKER: z.boolean().optional(),
 })
 
 export type WorkerSettingsResponse = z.infer<typeof WorkerSettingsResponse>

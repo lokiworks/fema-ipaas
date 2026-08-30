@@ -254,7 +254,7 @@ describe('tenantQueueMigrationService', () => {
 
 function buildPollingJobData({ tenantId, workflowVersionId }: { tenantId: string, workflowVersionId: string }) {
     return {
-        workspaceId: generateId(),
+        projectId: generateId(),
         tenantId,
         schemaVersion: LATEST_JOB_DATA_SCHEMA_VERSION,
         workflowVersionId,

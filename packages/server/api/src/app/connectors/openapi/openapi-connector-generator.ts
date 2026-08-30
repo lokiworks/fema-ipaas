@@ -32,8 +32,8 @@ function packageJsonFor({ connectorName, displayName, version }: { connectorName
         description: `${displayName} connector generated from an OpenAPI document`,
         main: './src/index.js',
         dependencies: {
-            '@fema-ipaas/connector-sdk': 'workspace:*',
-            '@fema-ipaas/connector-common': 'workspace:*',
+            '@fema-ipaas/connector-sdk': 'project:*',
+            '@fema-ipaas/connector-common': 'project:*',
         },
     }, null, 2)}\n`
 }

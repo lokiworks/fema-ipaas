@@ -19,8 +19,8 @@ export const auditEventService = (log: FastifyBaseLogger) => ({
                 created: now,
                 updated: now,
                 tenantId: event.tenantId,
-                workspaceId: event.workspaceId ?? null,
-                workspaceDisplayName: event.workspaceDisplayName ?? null,
+                projectId: event.projectId ?? null,
+                projectDisplayName: event.projectDisplayName ?? null,
                 userId: event.userId ?? null,
                 userEmail: event.userEmail ?? null,
                 ip: event.ip ?? null,
@@ -46,7 +46,7 @@ export const auditEventService = (log: FastifyBaseLogger) => ({
         })
         let query = auditEventRepo().createQueryBuilder('audit_event').where({
             tenantId: params.tenantId,
-            ...(isNil(params.workspaceId) || params.workspaceId.length === 0 ? {} : { workspaceId: In(params.workspaceId) }),
+            ...(isNil(params.projectId) || params.projectId.length === 0 ? {} : { projectId: In(params.projectId) }),
             ...(isNil(params.action) || params.action.length === 0 ? {} : { action: In(params.action) }),
             ...(isNil(params.userId) ? {} : { userId: params.userId }),
         })
@@ -63,8 +63,8 @@ export const auditEventService = (log: FastifyBaseLogger) => ({
 
 type RecordableEvent = {
     tenantId: string
-    workspaceId?: string | null
-    workspaceDisplayName?: string | null
+    projectId?: string | null
+    projectDisplayName?: string | null
     userId?: string | null
     userEmail?: string | null
     ip?: string | null
@@ -74,7 +74,7 @@ type RecordableEvent = {
 
 type ListParams = {
     tenantId: string
-    workspaceId?: string[]
+    projectId?: string[]
     action?: string[]
     userId?: string
     createdAfter?: string

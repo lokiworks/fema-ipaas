@@ -32,7 +32,7 @@ export const HelpAndFeedback = () => {
           >
             <div className="flex items-center gap-2">
               <BookOpen className="size-4" />
-              <span>Documentation</span>
+              <span>{t('Documentation')}</span>
             </div>
           </Link>
         </DropdownMenuItem>

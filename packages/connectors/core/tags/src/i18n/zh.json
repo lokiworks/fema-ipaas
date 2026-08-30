@@ -4,5 +4,6 @@
   "Add a tag to the current execution": "为本次运行添加标签",
   "Markdown": "Markdown",
   "Tag Name": "标签名",
-  "\nThis action add a tag to the current execution, this tag can be used to filter the execution in the **API** only at this moment.\n<br>\n<br>\n**Note:** If you are looking to use it in the user interface, please open a feature request.\n": "\nThis action add a tag to the current execution, this tag can be used to filter the execution in the **API** only at this moment.\n<br>\n<br>\n**Note:** If you are looking to use it in the user interface, please open a feature request.\n"
+  "\nThis action add a tag to the current execution, this tag can be used to filter the execution in the **API** only at this moment.\n<br>\n<br>\n**Note:** If you are looking to use it in the user interface, please open a feature request.\n": "\n该动作会给当前运行打上一个标签，目前这个标签只能在 **API** 中用于筛选运行记录。\n<br>\n<br>\n**注意：**如果你希望在界面上也能使用，请提一个需求。\n",
+  "Tags": "标签"
 }

@@ -68,11 +68,11 @@ function ConnectionSelect(params: ConnectionSelectProps) {
   } = connectionsQueries.useConnections({
     request: {
       connectorName: params.connector.name,
-      workspaceId: authenticationSession.getWorkspaceId()!,
+      projectId: authenticationSession.getProjectId()!,
       limit: 1000,
     },
     connectorAuth: params.connector.auth,
-    extraKeys: [params.connector.name, authenticationSession.getWorkspaceId()!],
+    extraKeys: [params.connector.name, authenticationSession.getProjectId()!],
     staleTime: 0,
   });
   const selectedConnection = connections?.data?.find(
@@ -84,7 +84,7 @@ function ConnectionSelect(params: ConnectionSelectProps) {
     selectedConnection?.scope === ConnectionScope.TENANT;
   // The create/reconnect dialog runs in global (TENANT) scope ONLY when
   // reconnecting an existing global connection. Creating a brand-new connection
-  // from a workspace workflow must default to WORKSPACE scope, otherwise it silently
+  // from a project workflow must default to PROJECT scope, otherwise it silently
   // inherits the selected connection's tenant scope and (for non-admins) hits
   // the tenant-admin-only global-connections endpoint (GIT-1587).
   const isReconnectingGlobalConnection =

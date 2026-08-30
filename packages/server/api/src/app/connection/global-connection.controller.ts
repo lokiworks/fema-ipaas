@@ -13,7 +13,7 @@ export const globalConnectionController: FastifyPluginAsyncZod = async (app) => 
         const { displayName, connectorName, status, cursor, limit } = request.query
         const connections = await connectionService(request.log).list({
             tenantId: request.principal.tenant.id,
-            workspaceId: null,
+            projectId: null,
             scope: ConnectionScope.TENANT,
             connectorName,
             displayName,
@@ -32,7 +32,7 @@ export const globalConnectionController: FastifyPluginAsyncZod = async (app) => 
         const ownerId = await securityHelper.getUserIdFromRequest(request)
         const baseUpsert = {
             tenantId: request.principal.tenant.id,
-            workspaceIds: request.body.workspaceIds,
+            projectIds: request.body.projectIds,
             externalId: request.body.externalId ?? request.body.displayName,
             displayName: request.body.displayName,
             connectorName: request.body.connectorName,
@@ -40,7 +40,7 @@ export const globalConnectionController: FastifyPluginAsyncZod = async (app) => 
             scope: ConnectionScope.TENANT,
             metadata: request.body.metadata,
             connectorVersion: request.body.connectorVersion,
-            preSelectForNewWorkspaces: request.body.preSelectForNewWorkspaces,
+            preSelectForNewProjects: request.body.preSelectForNewProjects,
         }
         const connection = await connectionService(request.log).upsert({
             ...baseUpsert,
@@ -58,13 +58,13 @@ export const globalConnectionController: FastifyPluginAsyncZod = async (app) => 
         return connectionService(request.log).update({
             id: request.params.id,
             tenantId: request.principal.tenant.id,
-            workspaceIds: null,
+            projectIds: null,
             scope: ConnectionScope.TENANT,
             request: {
                 displayName: request.body.displayName,
-                workspaceIds: request.body.workspaceIds ?? null,
+                projectIds: request.body.projectIds ?? null,
                 metadata: request.body.metadata,
-                preSelectForNewWorkspaces: request.body.preSelectForNewWorkspaces,
+                preSelectForNewProjects: request.body.preSelectForNewProjects,
             },
         })
     })
@@ -73,7 +73,7 @@ export const globalConnectionController: FastifyPluginAsyncZod = async (app) => 
         await connectionService(request.log).delete({
             id: request.params.id,
             tenantId: request.principal.tenant.id,
-            workspaceId: null,
+            projectId: null,
             scope: ConnectionScope.TENANT,
         })
         await reply.status(StatusCodes.NO_CONTENT).send()
@@ -88,7 +88,7 @@ const ListGlobalConnectionsRequest = {
     config: { security: tenantAdminOnly },
     schema: {
         tags: ['global-connections'],
-        description: 'List the connections shared across every workspace in the tenant.',
+        description: 'List the connections shared across every project in the tenant.',
         querystring: ListGlobalConnectionsRequestQuery,
         security: [SERVICE_KEY_SECURITY_OPENAPI],
     },

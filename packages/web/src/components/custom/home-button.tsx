@@ -29,7 +29,7 @@ const HomeButtonWrapper = ({ children }: { children: React.ReactNode }) => {
     return <div onClick={handleClick}>{children}</div>;
   }
   return (
-    <Link to={authenticationSession.appendWorkspaceRoutePrefix('/workflows')}>
+    <Link to={authenticationSession.appendProjectRoutePrefix('/workflows')}>
       {children}
     </Link>
   );

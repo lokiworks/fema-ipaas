@@ -5,7 +5,7 @@ import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import Mustache from 'mustache'
 import { z } from 'zod'
 import { securityAccess } from '../../../core/security/authorization/fastify-security'
-import { workspaceService } from '../../../workspace/workspace-service'
+import { projectService } from '../../../project/project-service'
 import { workflowVersionService } from '../../workflow-version/workflow-version.service'
 import { findExecutionOrThrow } from '../execution-service'
 import { resumePageHooks, ResumePageTheme } from './resume-page-hooks'
@@ -81,7 +81,7 @@ export const resumeController: FastifyPluginAsyncZod = async (app) => {
 
 async function serveConfirmationPage({ executionId, waitpointId, url, queryParams, log, reply }: ConfirmationPageParams): Promise<void> {
     const execution = await findExecutionOrThrow(executionId)
-    const theme = await resolveResumePageTheme({ workspaceId: execution.workspaceId, log })
+    const theme = await resolveResumePageTheme({ projectId: execution.projectId, log })
     const waitpoint = await waitpointService(log).findByIdAndExecutionId({ waitpointId, executionId })
     const isOpen = !isNil(waitpoint) && waitpoint.status === WaitpointStatus.PENDING && execution.status === ExecutionStatus.PAUSED
     if (!isOpen) {
@@ -114,7 +114,7 @@ async function handleConfirmResume({ executionId, waitpointId, action, body, hea
         await reply.send({ message: stale ? EXPIRED_MESSAGE : RECORDED_MESSAGE })
         return
     }
-    const theme = await resolveResumePageTheme({ workspaceId: execution.workspaceId, log })
+    const theme = await resolveResumePageTheme({ projectId: execution.projectId, log })
     const extra = stale
         ? { title: ALREADY_TITLE, message: ALREADY_MESSAGE, success: false }
         : { title: RECORDED_TITLE, message: recordedMessageForAction(action), success: true }
@@ -157,8 +157,8 @@ async function handleLegacySyncResume({ executionId, body, headers, queryParams,
     await reply.status(response.status).headers(response.headers).send(response.body)
 }
 
-async function resolveResumePageTheme({ workspaceId, log }: { workspaceId: string, log: FastifyBaseLogger }): Promise<ResumePageTheme> {
-    const tenantId = await workspaceService(log).getTenantId(workspaceId)
+async function resolveResumePageTheme({ projectId, log }: { projectId: string, log: FastifyBaseLogger }): Promise<ResumePageTheme> {
+    const tenantId = await projectService(log).getTenantId(projectId)
     return resumePageHooks.get(log).getTheme({ tenantId })
 }
 

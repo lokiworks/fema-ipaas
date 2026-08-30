@@ -51,7 +51,7 @@ const copyReferenceToClipboard = async (name: string) => {
 };
 
 function VariablesPage() {
-  const workspaceId = authenticationSession.getWorkspaceId()!;
+  const projectId = authenticationSession.getProjectId()!;
   const { checkAccess } = useAuthorization();
   const canWrite = checkAccess(Permission.WRITE_VARIABLE);
 
@@ -76,7 +76,7 @@ function VariablesPage() {
     refetch,
   } = variablesQueries.useVariables({
     request: {
-      workspaceId,
+      projectId,
       cursor,
       limit,
       name,
@@ -86,7 +86,7 @@ function VariablesPage() {
       cursor ?? '',
       String(limit),
       name ?? '',
-      workspaceId,
+      projectId,
     ],
     showErrorDialog: true,
   });
@@ -94,7 +94,7 @@ function VariablesPage() {
   const { mutateAsync: deleteVariable } =
     variablesMutations.useBulkDeleteVariables(refetch);
 
-  const { data: owners } = variablesQueries.useVariableOwners(workspaceId);
+  const { data: owners } = variablesQueries.useVariableOwners(projectId);
 
   const filteredData = useMemo(() => {
     if (!variables?.data) return undefined;

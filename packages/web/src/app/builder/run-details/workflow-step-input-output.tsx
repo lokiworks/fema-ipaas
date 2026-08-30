@@ -32,9 +32,7 @@ import { stepPropertiesSnapshotUtils } from '../data-display/build-step-properti
 import { DataDisplayTabs } from '../data-display/data-display-tabs';
 import { ErrorExplanationContext } from '../data-display/explanation-prompt';
 import { FriendlyErrorView } from '../data-display/friendly-error-view';
-import { ClosePanelButton } from '../step-data/close-panel-button';
 import { StepDataPanelHeader } from '../step-data/step-data-panel-header';
-import { StepDataPanelViewToggle } from '../step-data/step-data-panel-view-toggle';
 
 import { truncatedInputUtils } from './truncated-input-utils';
 
@@ -151,10 +149,7 @@ export const WorkflowStepInputOutput = () => {
   if (!selectedStepOutput || !selectedStep) {
     return (
       <div className="flex flex-col h-full w-full">
-        <div className="flex items-center justify-end gap-1 px-3 py-2 shrink-0">
-          <StepDataPanelViewToggle />
-          <ClosePanelButton />
-        </div>
+        <div className="flex items-center justify-end gap-1 px-3 py-2 shrink-0"></div>
         <div className="grow flex flex-col items-center justify-center w-full px-6 py-10 gap-4 text-center">
           <div className="flex items-center justify-center size-12 rounded-full bg-muted text-muted-foreground">
             <Info className="size-6" />
@@ -241,10 +236,7 @@ export const WorkflowStepInputOutput = () => {
               )}
               <TabsTrigger value="output">{t('Output')}</TabsTrigger>
             </TabsList>
-            <div className="flex items-center gap-1 shrink-0">
-              <StepDataPanelViewToggle />
-              <ClosePanelButton />
-            </div>
+            <div className="flex items-center gap-1 shrink-0"></div>
           </div>
 
           {!isTrigger && (

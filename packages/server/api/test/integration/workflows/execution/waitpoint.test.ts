@@ -30,7 +30,7 @@ afterEach(() => {
 })
 
 async function createExecution(params?: { status?: ExecutionStatus }) {
-    const workflow = createMockWorkflow({ workspaceId: ctx.workspace.id })
+    const workflow = createMockWorkflow({ projectId: ctx.project.id })
     await db.save('workflow', workflow)
 
     const workflowVersion = createMockWorkflowVersion({
@@ -40,7 +40,7 @@ async function createExecution(params?: { status?: ExecutionStatus }) {
     await db.save('workflow_version', workflowVersion)
 
     const execution = createMockExecution({
-        workspaceId: ctx.workspace.id,
+        projectId: ctx.project.id,
         workflowId: workflow.id,
         workflowVersionId: workflowVersion.id,
         status: params?.status ?? ExecutionStatus.PAUSED,
@@ -58,7 +58,7 @@ describe('Waitpoint service', () => {
 
             const result = await waitpointService(app.log).createForPause({
                 executionId: execution.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 stepName: 'approval',
                 type: PauseType.WEBHOOK,
             })
@@ -74,21 +74,21 @@ describe('Waitpoint service', () => {
 
             const step1Pause = await waitpointService(app.log).createForPause({
                 executionId: execution.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 stepName: 'step_1',
                 type: PauseType.WEBHOOK,
             })
 
             await waitpointService(app.log).complete({
                 executionId: execution.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 waitpointId: step1Pause.waitpoint.id,
                 resumePayload: { body: { from: 'step_1' } },
             })
 
             const step2Pause = await waitpointService(app.log).createForPause({
                 executionId: execution.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 stepName: 'step_2',
                 type: PauseType.WEBHOOK,
             })
@@ -104,7 +104,7 @@ describe('Waitpoint service', () => {
 
             const firstPause = await waitpointService(app.log).createForPause({
                 executionId: execution.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 stepName: 'approval',
                 type: PauseType.WEBHOOK,
             })
@@ -112,14 +112,14 @@ describe('Waitpoint service', () => {
 
             await waitpointService(app.log).complete({
                 executionId: execution.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 waitpointId: firstPause.waitpoint.id,
                 resumePayload: { body: { data: 'test' } },
             })
 
             const result = await waitpointService(app.log).createForPause({
                 executionId: execution.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 stepName: 'approval',
                 type: PauseType.WEBHOOK,
             })
@@ -135,7 +135,7 @@ describe('Waitpoint service', () => {
 
             const result = await waitpointService(app.log).createForPause({
                 executionId: execution.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 stepName: 'delay_step',
                 type: PauseType.DELAY,
                 resumeDateTime: resumeAt,
@@ -154,7 +154,7 @@ describe('Waitpoint service', () => {
             const { execution } = await createExecution()
             const pauseParams = {
                 executionId: execution.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 stepName: 'delay_step',
                 type: PauseType.DELAY,
                 resumeDateTime: new Date(Date.now() + 60000).toISOString(),
@@ -180,7 +180,7 @@ describe('Waitpoint service', () => {
 
             const result = await waitpointService(app.log).createForPause({
                 executionId: execution.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 stepName: 'webhook_step',
                 type: PauseType.WEBHOOK,
                 responseToSend: { status: 200, body: 'ok' },
@@ -200,14 +200,14 @@ describe('Waitpoint service', () => {
 
             const pauseResult = await waitpointService(app.log).createForPause({
                 executionId: execution.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 stepName: 'approval',
                 type: PauseType.WEBHOOK,
             })
 
             const result = await waitpointService(app.log).complete({
                 executionId: execution.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 waitpointId: pauseResult.waitpoint.id,
                 resumePayload: { body: { greeting: 'Hello' } },
             })
@@ -222,7 +222,7 @@ describe('Waitpoint service', () => {
 
             const result = await waitpointService(app.log).complete({
                 executionId: execution.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 waitpointId: generateId(),
                 resumePayload: { body: { status: 'error' } },
             })
@@ -239,14 +239,14 @@ describe('Waitpoint service', () => {
 
             const firstResult = await waitpointService(app.log).complete({
                 executionId: execution.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 waitpointId: generateId(),
                 resumePayload: { body: { first: true } },
             })
 
             const secondResult = await waitpointService(app.log).complete({
                 executionId: execution.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 waitpointId: generateId(),
                 resumePayload: { body: { second: true } },
             })
@@ -265,7 +265,7 @@ describe('Waitpoint service', () => {
 
             const step1Pause = await waitpointService(app.log).createForPause({
                 executionId: execution.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 stepName: 'step_1',
                 type: PauseType.WEBHOOK,
             })
@@ -275,7 +275,7 @@ describe('Waitpoint service', () => {
                 executionId: execution.id,
                 waitpointId: step1Pause.waitpoint.id,
                 executionStatus: ExecutionStatus.PAUSED,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 resumePayload: { body: { status: 'success', data: { from: 'step_1' } } },
                 onReady: async () => {},
             })
@@ -287,7 +287,7 @@ describe('Waitpoint service', () => {
                 executionId: execution.id,
                 waitpointId: step1Pause.waitpoint.id,
                 executionStatus: ExecutionStatus.RUNNING,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 resumePayload: { body: { status: 'error', data: { from: 'step_1_retry' } } },
                 onReady: async () => {
                     throw new Error('onReady should not be called for stale signal')
@@ -296,7 +296,7 @@ describe('Waitpoint service', () => {
 
             const step2Pause = await waitpointService(app.log).createForPause({
                 executionId: execution.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 stepName: 'step_2',
                 type: PauseType.WEBHOOK,
             })
@@ -315,7 +315,7 @@ describe('Waitpoint service', () => {
             for (const stepName of stepNames) {
                 const pause = await waitpointService(app.log).createForPause({
                     executionId: execution.id,
-                    workspaceId: ctx.workspace.id,
+                    projectId: ctx.project.id,
                     stepName,
                     type: PauseType.WEBHOOK,
                 })
@@ -327,7 +327,7 @@ describe('Waitpoint service', () => {
                     executionId: execution.id,
                     waitpointId: pause.waitpoint.id,
                     executionStatus: ExecutionStatus.PAUSED,
-                    workspaceId: ctx.workspace.id,
+                    projectId: ctx.project.id,
                     resumePayload: { body: { status: 'success', data: { from: stepName } } },
                     onReady: async () => {},
                 })
@@ -338,7 +338,7 @@ describe('Waitpoint service', () => {
                             executionId: execution.id,
                             waitpointId: stepWaitpointIds['step_2'],
                             executionStatus: ExecutionStatus.RUNNING,
-                            workspaceId: ctx.workspace.id,
+                            projectId: ctx.project.id,
                             resumePayload: { body: { status: 'error', data: { from: 'step_2_retry_' + retry } } },
                             onReady: async () => {
                                 throw new Error('Stale step_2 retry should not call onReady')
@@ -359,7 +359,7 @@ describe('Waitpoint service', () => {
 
             await waitpointService(app.log).createForPause({
                 executionId: execution.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 stepName: 'approval',
                 type: PauseType.WEBHOOK,
             })
@@ -371,7 +371,7 @@ describe('Waitpoint service', () => {
 
             const result = await waitpointService(app.log).createForPause({
                 executionId: execution.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 stepName: 'delay_step',
                 type: PauseType.DELAY,
                 resumeDateTime: new Date().toISOString(),
@@ -393,7 +393,7 @@ describe('Waitpoint service', () => {
 
             await waitpointService(app.log).createForPause({
                 executionId: execution.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 stepName: 'approval',
                 type: PauseType.WEBHOOK,
             })
@@ -410,7 +410,7 @@ describe('Waitpoint service', () => {
 
             const pause = await waitpointService(app.log).createForPause({
                 executionId: execution.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 stepName: 'approval',
                 type: PauseType.WEBHOOK,
             })
@@ -418,13 +418,13 @@ describe('Waitpoint service', () => {
             const [result1, result2] = await Promise.all([
                 waitpointService(app.log).complete({
                     executionId: execution.id,
-                    workspaceId: ctx.workspace.id,
+                    projectId: ctx.project.id,
                     waitpointId: pause.waitpoint.id,
                     resumePayload: { body: { first: true } },
                 }),
                 waitpointService(app.log).complete({
                     executionId: execution.id,
-                    workspaceId: ctx.workspace.id,
+                    projectId: ctx.project.id,
                     waitpointId: pause.waitpoint.id,
                     resumePayload: { body: { second: true } },
                 }),
@@ -444,13 +444,13 @@ describe('Waitpoint service', () => {
             const [result1, result2] = await Promise.all([
                 waitpointService(app.log).complete({
                     executionId: execution.id,
-                    workspaceId: ctx.workspace.id,
+                    projectId: ctx.project.id,
                     waitpointId: generateId(),
                     resumePayload: { body: { first: true } },
                 }),
                 waitpointService(app.log).complete({
                     executionId: execution.id,
-                    workspaceId: ctx.workspace.id,
+                    projectId: ctx.project.id,
                     waitpointId: generateId(),
                     resumePayload: { body: { second: true } },
                 }),
@@ -470,7 +470,7 @@ describe('Waitpoint service', () => {
 
             const pauseResult = await waitpointService(app.log).createForPause({
                 executionId: execution.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 stepName: 'approval',
                 type: PauseType.WEBHOOK,
             })
@@ -480,7 +480,7 @@ describe('Waitpoint service', () => {
                 executionId: execution.id,
                 waitpointId: pauseResult.waitpoint.id,
                 executionStatus: ExecutionStatus.PAUSED,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 resumePayload: null,
                 onReady: async (waitpoint) => {
                     calledWith = { workerHandlerId: waitpoint.workerHandlerId }
@@ -498,7 +498,7 @@ describe('Waitpoint service', () => {
 
             const pause = await waitpointService(app.log).createForPause({
                 executionId: execution.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 stepName: 'approval',
                 type: PauseType.WEBHOOK,
             })
@@ -508,7 +508,7 @@ describe('Waitpoint service', () => {
                 executionId: execution.id,
                 waitpointId: pause.waitpoint.id,
                 executionStatus: ExecutionStatus.RUNNING,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 resumePayload: { body: { msg: 'hello' } },
                 onReady: async () => {
                     onReadyCalled = true
@@ -531,7 +531,7 @@ describe('Waitpoint service', () => {
                 executionId: execution.id,
                 waitpointId: generateId(),
                 executionStatus: ExecutionStatus.RUNNING,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 resumePayload: { body: { msg: 'hello' } },
                 onReady: async () => {
                     onReadyCalled = true
@@ -552,7 +552,7 @@ describe('Waitpoint service', () => {
                 executionId: execution.id,
                 waitpointId: generateId(),
                 executionStatus: ExecutionStatus.SUCCEEDED,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 resumePayload: null,
                 onReady: async () => {
                     onReadyCalled = true
@@ -570,7 +570,7 @@ describe('Waitpoint service', () => {
 
             await waitpointService(app.log).createForPause({
                 executionId: execution.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 stepName: 'approval',
                 type: PauseType.WEBHOOK,
             })
@@ -580,7 +580,7 @@ describe('Waitpoint service', () => {
                 executionId: execution.id,
                 waitpointId: generateId(),
                 executionStatus: ExecutionStatus.PAUSED,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 resumePayload: null,
                 onReady: async () => {
                     onReadyCalled = true
@@ -598,7 +598,7 @@ describe('Waitpoint service', () => {
 
             const delayPause = await waitpointService(app.log).createForPause({
                 executionId: execution.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 stepName: 'delay_step',
                 type: PauseType.DELAY,
                 resumeDateTime: new Date(Date.now() + 60000).toISOString(),
@@ -609,7 +609,7 @@ describe('Waitpoint service', () => {
             await waitpointService(app.log).deleteByExecutionId(execution.id)
             const approvalPause = await waitpointService(app.log).createForPause({
                 executionId: execution.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 stepName: 'approval_step',
                 type: PauseType.WEBHOOK,
             })
@@ -619,7 +619,7 @@ describe('Waitpoint service', () => {
                 executionId: execution.id,
                 waitpointId: staleWaitpointId,
                 executionStatus: ExecutionStatus.PAUSED,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 resumePayload: null,
                 onReady: async () => {
                     throw new Error('Should not resume wrong waitpoint')
@@ -641,14 +641,14 @@ describe('Waitpoint service', () => {
 
             const pauseResult = await waitpointService(app.log).createForPause({
                 executionId: execution.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 stepName: 'approval',
                 type: PauseType.WEBHOOK,
             })
 
             const completeResult = await waitpointService(app.log).complete({
                 executionId: execution.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 waitpointId: pauseResult.waitpoint.id,
                 resumePayload: { body: { approved: true } },
             })
@@ -666,7 +666,7 @@ describe('Waitpoint service', () => {
             await db.save('waitpoint', {
                 id: generateId(),
                 executionId: execution.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 stepName: 'approval',
                 type: 'WEBHOOK',
                 version: 'V0',
@@ -687,7 +687,7 @@ describe('Waitpoint service', () => {
             await db.save('waitpoint', {
                 id: generateId(),
                 executionId: execution.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 stepName: 'approval',
                 type: 'WEBHOOK',
                 version: 'V1',
@@ -706,7 +706,7 @@ describe('Waitpoint service', () => {
             await db.save('waitpoint', {
                 id: generateId(),
                 executionId: execution.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 stepName: 'approval',
                 type: 'WEBHOOK',
                 version: 'V0',

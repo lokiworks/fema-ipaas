@@ -2,7 +2,7 @@ import { Permission } from '@fema-ipaas/core-utils';
 import { t } from 'i18next';
 import { useState } from 'react';
 
-import { RightSideBarType } from '@/app/builder/types';
+import { LeftSideBarType } from '@/app/builder/types';
 import { PermissionNeededTooltip } from '@/components/custom/permission-needed-tooltip';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,14 +27,14 @@ const OverwriteDraftDialog = ({
   versionNumber,
 }: OverwriteDraftDialogProps) => {
   const { checkAccess } = useAuthorization();
-  const [setVersion, setRightSidebar, workflow] = useBuilderStateContext(
-    (state) => [state.setVersion, state.setRightSidebar, state.workflow],
+  const [setVersion, setLeftSidebar, workflow] = useBuilderStateContext(
+    (state) => [state.setVersion, state.setLeftSidebar, state.workflow],
   );
   const { mutate: overWriteDraftWithVersion, isPending: isOverwritingDraft } =
     workflowHooks.useOverWriteDraftWithVersion({
       onSuccess: (updatedWorkflow) => {
         setVersion(updatedWorkflow.version);
-        setRightSidebar(RightSideBarType.NONE);
+        setLeftSidebar(LeftSideBarType.NONE);
       },
     });
   const userHasPermissionToWriteWorkflow = checkAccess(

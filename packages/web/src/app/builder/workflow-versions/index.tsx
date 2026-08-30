@@ -1,7 +1,7 @@
 import { t } from 'i18next';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
-import { RightSideBarType } from '@/app/builder/types';
+import { LeftSideBarType } from '@/app/builder/types';
 import { CardList, CardListItemSkeleton } from '@/components/custom/card-list';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { workflowHooks } from '@/features/workflows';
@@ -11,10 +11,10 @@ import { SidebarHeader } from '../sidebar-header';
 import { WorkflowVersionDetailsCard } from './workflow-versions-card';
 
 const WorkflowVersionsList = () => {
-  const [workflow, setRightSidebar, selectedWorkflowVersion] =
+  const [workflow, setLeftSidebar, selectedWorkflowVersion] =
     useBuilderStateContext((state) => [
       state.workflow,
-      state.setRightSidebar,
+      state.setLeftSidebar,
       state.workflowVersion,
     ]);
 
@@ -26,7 +26,7 @@ const WorkflowVersionsList = () => {
 
   return (
     <>
-      <SidebarHeader onClose={() => setRightSidebar(RightSideBarType.NONE)}>
+      <SidebarHeader onClose={() => setLeftSidebar(LeftSideBarType.NONE)}>
         {t('Version History')}
       </SidebarHeader>
       <CardList>

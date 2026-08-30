@@ -45,7 +45,7 @@ export type WorkflowExecutionState = {
 }
 export const Workflow = z.object({
     ...BaseModelSchema,
-    workspaceId: z.string(),
+    projectId: z.string(),
     externalId: z.string(),
     ownerId: Nullable(z.string()),
     folderId: Nullable(z.string()),

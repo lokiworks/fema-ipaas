@@ -3,15 +3,14 @@ import { Info } from 'lucide-react';
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { projectCollectionUtils } from '@/features/projects/stores/project-collection';
 import { workersQueries } from '@/features/tenant-admin';
-import { workspaceCollectionUtils } from '@/features/workspaces/stores/workspace-collection';
 
 import { ByGroupView } from './by-group-view';
-import { ByWorkspaceView } from './by-workspace-view';
+import { ByProjectView } from './by-project-view';
 
 export function WorkerAssignmentsTab() {
-  const { data: workspaces } =
-    workspaceCollectionUtils.useAllTenantWorkspaces();
+  const { data: projects } = projectCollectionUtils.useAllTenantProjects();
   const { data: capacity } = workersQueries.useWorkerGroups(true);
   const { data: workersData } = workersQueries.useWorkerMachines();
 
@@ -25,7 +24,7 @@ export function WorkerAssignmentsTab() {
         <Info className="size-4" />
         <AlertDescription className="text-sm">
           {t(
-            'Worker groups reserve a dedicated queue for the workspaces you assign. Defined in your deployment with FEMA_WORKER_GROUP_ID.',
+            'Worker groups reserve a dedicated queue for the projects you assign. Defined in your deployment with FEMA_WORKER_GROUP_ID.',
           )}{' '}
           <a
             href="https://github.com/lokiworks/fema-ipaas/docs/install/configure-operate/worker-groups"
@@ -38,18 +37,18 @@ export function WorkerAssignmentsTab() {
         </AlertDescription>
       </Alert>
 
-      <Tabs defaultValue="by-workspace" className="w-full">
+      <Tabs defaultValue="by-project" className="w-full">
         <TabsList variant="default">
-          <TabsTrigger variant="default" value="by-workspace">
-            {t('By workspace')}
+          <TabsTrigger variant="default" value="by-project">
+            {t('By project')}
           </TabsTrigger>
           <TabsTrigger variant="default" value="by-group">
             {t('By group')}
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="by-workspace">
-          <ByWorkspaceView
+        <TabsContent value="by-project">
+          <ByProjectView
             workerGroups={workerGroups}
             sharedSlots={sharedSlots}
           />
@@ -57,7 +56,7 @@ export function WorkerAssignmentsTab() {
 
         <TabsContent value="by-group">
           <ByGroupView
-            workspaces={workspaces}
+            projects={projects}
             workerGroups={workerGroups}
             workers={workers}
           />

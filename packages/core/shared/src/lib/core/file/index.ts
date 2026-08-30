@@ -49,10 +49,10 @@ export enum FileType {
      */
     TRIGGER_EVENT_FILE = 'TRIGGER_EVENT_FILE',
     /**
-     * Snapshot of a workspace's workflows/connections/tables for release versioning
+     * Snapshot of a project's workflows/connections/tables for release versioning
      * and rollback. Kept indefinitely.
      */
-    WORKSPACE_RELEASE = 'WORKSPACE_RELEASE',
+    PROJECT_RELEASE = 'PROJECT_RELEASE',
     /**
      * Snapshot of a single workflow version's schema for migration/rollback.
      * Kept indefinitely.
@@ -108,7 +108,7 @@ export enum FileLocation {
 
 export const File = z.object({
     ...BaseModelSchema,
-    workspaceId: Nullable(z.string()),
+    projectId: Nullable(z.string()),
     tenantId: Nullable(z.string()),
     type: z.nativeEnum(FileType),
     compression: z.nativeEnum(FileCompression),

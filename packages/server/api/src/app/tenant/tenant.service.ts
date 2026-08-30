@@ -1,5 +1,5 @@
 import { ApplicationError, ErrorCode, generateId, isNil, spreadIfDefined, spreadIfNotUndefined, TenantId, UserId } from '@fema-ipaas/core-utils'
-import { AuthenticationResponse, SsoDomainVerification, SYSTEM_LIMITS, Tenant, TenantPlanLimits, TenantRole, TenantWithoutFederatedAuth, TenantWithoutSensitiveData, UpdateTenantRequestBody, User, UserStatus, WorkspaceType } from '@fema-ipaas/shared'
+import { AuthenticationResponse, ProjectType, SsoDomainVerification, SYSTEM_LIMITS, Tenant, TenantPlanLimits, TenantRole, TenantWithoutFederatedAuth, TenantWithoutSensitiveData, UpdateTenantRequestBody, User, UserStatus } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { nanoid } from 'nanoid'
 import { authenticationUtils } from '../authentication/authentication-utils'
@@ -7,29 +7,29 @@ import { userIdentityRepository, userIdentityService } from '../authentication/u
 import { repoFactory } from '../core/db/repo-factory'
 import { distributedLock } from '../database/redis-connections'
 import { defaultTheme } from '../flags/theme'
+import { projectService } from '../project/project-service'
 import { userService } from '../user/user-service'
-import { workspaceService } from '../workspace/workspace-service'
 import { TenantEntity } from './tenant.entity'
 
 export const tenantRepo = repoFactory<Tenant>(TenantEntity)
 
 export const tenantService = (log: FastifyBaseLogger) => ({
-    async listTenantsForIdentityWithAtleastWorkspace(params: ListTenantsForIdentityParams): Promise<TenantWithoutSensitiveData[]> {
+    async listTenantsForIdentityWithAtleastProject(params: ListTenantsForIdentityParams): Promise<TenantWithoutSensitiveData[]> {
         const users = await userService(log).getByIdentityId({ identityId: params.identityId })
 
-        const tenantsWithWorkspaces = await Promise.all(users.map(async (user) => {
+        const tenantsWithProjects = await Promise.all(users.map(async (user) => {
             if (isNil(user.tenantId) || user.status === UserStatus.INACTIVE) {
                 return null
             }
-            const hasWorkspaces = await workspaceService(log).userHasWorkspaces({
+            const hasProjects = await projectService(log).userHasProjects({
                 tenantId: user.tenantId,
                 userId: user.id,
                 isPrivileged: userService(log).isUserPrivileged(user),
             })
-            return hasWorkspaces ? user.tenantId : null
+            return hasProjects ? user.tenantId : null
         }))
 
-        const tenants = await Promise.all(tenantsWithWorkspaces.filter((tenantId) => !isNil(tenantId)).map((tenantId) => this.getOneWithPlanOrThrow(tenantId)))
+        const tenants = await Promise.all(tenantsWithProjects.filter((tenantId) => !isNil(tenantId)).map((tenantId) => this.getOneWithPlanOrThrow(tenantId)))
         return tenants
     },
     async create(params: AddParams): Promise<TenantWithoutFederatedAuth> {
@@ -70,7 +70,7 @@ export const tenantService = (log: FastifyBaseLogger) => ({
         log.info({ tenant: { id: savedTenant.id }, ownerId }, 'Tenant created')
         return stripFederatedAuth(savedTenant)
     },
-    async createTenantWithWorkspace({ identityId, name, invalidatePreviousTokens, isFirstTenant, callerTokenVersion, beforeProvision }: CreateTenantWithWorkspaceParams): Promise<CreateTenantWithWorkspaceResult> {
+    async createTenantWithProject({ identityId, name, invalidatePreviousTokens, isFirstTenant, callerTokenVersion, beforeProvision }: CreateTenantWithProjectParams): Promise<CreateTenantWithProjectResult> {
         return distributedLock(log).runExclusive({
             key: `create-tenant-${identityId}`,
             timeoutInSeconds: 30,
@@ -96,20 +96,20 @@ export const tenantService = (log: FastifyBaseLogger) => ({
                         tenantId: null,
                     })
                 const tenant = await this.create({ ownerId: owner.id, name })
-                const personalWorkspace = await workspaceService(log).create({
-                    displayName: personalWorkspaceName(name),
+                const personalProject = await projectService(log).create({
+                    displayName: personalProjectName(name),
                     ownerId: owner.id,
                     tenantId: tenant.id,
-                    type: WorkspaceType.PERSONAL,
+                    type: ProjectType.PERSONAL,
                 })
                 if (invalidatePreviousTokens) {
                     await rotateTokenVersion(identityId)
                 }
-                await reportSignup({ identityId, user: owner, workspaceId: personalWorkspace.id, log })
-                const response = await authenticationUtils(log).getWorkspaceAndToken({
+                await reportSignup({ identityId, user: owner, projectId: personalProject.id, log })
+                const response = await authenticationUtils(log).getProjectAndToken({
                     userId: owner.id,
                     tenantId: tenant.id,
-                    workspaceId: personalWorkspace.id,
+                    projectId: personalProject.id,
                 })
                 return { response, provisioned: true }
             },
@@ -220,7 +220,7 @@ function findProvisionedOwner(users: User[]): TenantOwner | undefined {
     return users.find((user): user is TenantOwner => !isNil(user.tenantId))
 }
 
-async function resumeProvisionedTenant({ owner, identityId, name, invalidatePreviousTokens, callerTokenVersion, log }: ResumeProvisionedTenantParams): Promise<CreateTenantWithWorkspaceResult> {
+async function resumeProvisionedTenant({ owner, identityId, name, invalidatePreviousTokens, callerTokenVersion, log }: ResumeProvisionedTenantParams): Promise<CreateTenantWithProjectResult> {
     const identity = await userIdentityService(log).getOneOrFail({ id: identityId })
     const earlierAttemptNeverRotated = isSameTokenVersion(identity.tokenVersion, callerTokenVersion)
     const response = await finishExistingTenant({
@@ -234,7 +234,7 @@ async function resumeProvisionedTenant({ owner, identityId, name, invalidatePrev
     return { response, provisioned: false }
 }
 
-async function linkOwnerToTenant({ ownerId, tenantId, identityId, name, invalidatePreviousTokens, log }: LinkOwnerToTenantParams): Promise<CreateTenantWithWorkspaceResult> {
+async function linkOwnerToTenant({ ownerId, tenantId, identityId, name, invalidatePreviousTokens, log }: LinkOwnerToTenantParams): Promise<CreateTenantWithProjectResult> {
     await userService(log).addOwnerToTenant({ id: ownerId, tenantId })
     const owner = await userService(log).getOneOrFail({ id: ownerId })
     const response = await finishExistingTenant({
@@ -245,17 +245,17 @@ async function linkOwnerToTenant({ ownerId, tenantId, identityId, name, invalida
         identityId,
         log,
     })
-    if (!isNil(response.workspaceId)) {
-        await reportSignup({ identityId, user: owner, workspaceId: response.workspaceId, log })
+    if (!isNil(response.projectId)) {
+        await reportSignup({ identityId, user: owner, projectId: response.projectId, log })
     }
     return { response, provisioned: true }
 }
 
-async function reportSignup({ identityId, user, workspaceId, log }: ReportSignupParams): Promise<void> {
+async function reportSignup({ identityId, user, projectId, log }: ReportSignupParams): Promise<void> {
     await authenticationUtils(log).sendTelemetry({
         identity: await userIdentityService(log).getOneOrFail({ id: identityId }),
         user,
-        workspaceId,
+        projectId,
     })
 }
 
@@ -270,35 +270,35 @@ async function rotateTokenVersion(identityId: string): Promise<void> {
     })
 }
 
-function personalWorkspaceName(tenantName: string): string {
+function personalProjectName(tenantName: string): string {
     const noun = ' Tenant'
     if (tenantName.endsWith(noun)) {
-        return `${tenantName.slice(0, -noun.length)} Workspace`
+        return `${tenantName.slice(0, -noun.length)} Project`
     }
-    return /['’]s$/.test(tenantName) ? `${tenantName} Workspace` : `${tenantName}'s Workspace`
+    return /['’]s$/.test(tenantName) ? `${tenantName} Project` : `${tenantName}'s Project`
 }
 
 async function finishExistingTenant({ user, tenantId, name, invalidatePreviousTokens, identityId, log }: FinishExistingTenantParams): Promise<AuthenticationResponse> {
-    const hasWorkspaces = await workspaceService(log).userHasWorkspaces({
+    const hasProjects = await projectService(log).userHasProjects({
         tenantId,
         userId: user.id,
         isPrivileged: userService(log).isUserPrivileged(user),
     })
-    const workspace = hasWorkspaces
+    const project = hasProjects
         ? null
-        : await workspaceService(log).create({
-            displayName: personalWorkspaceName(name),
+        : await projectService(log).create({
+            displayName: personalProjectName(name),
             ownerId: user.id,
             tenantId,
-            type: WorkspaceType.PERSONAL,
+            type: ProjectType.PERSONAL,
         })
     if (invalidatePreviousTokens) {
         await rotateTokenVersion(identityId)
     }
-    return authenticationUtils(log).getWorkspaceAndToken({
+    return authenticationUtils(log).getProjectAndToken({
         userId: user.id,
         tenantId,
-        workspaceId: workspace?.id ?? null,
+        projectId: project?.id ?? null,
     })
 }
 
@@ -332,12 +332,12 @@ type UpdateParams = UpdateTenantRequestBody & {
     ssoDomainVerification?: SsoDomainVerification | null
 }
 
-type CreateTenantWithWorkspaceResult = {
+type CreateTenantWithProjectResult = {
     response: AuthenticationResponse
     provisioned: boolean
 }
 
-type CreateTenantWithWorkspaceParams = {
+type CreateTenantWithProjectParams = {
     identityId: string
     name: string
     invalidatePreviousTokens: boolean
@@ -376,7 +376,7 @@ type FinishExistingTenantParams = {
 type ReportSignupParams = {
     identityId: string
     user: User
-    workspaceId: string
+    projectId: string
     log: FastifyBaseLogger
 }
 

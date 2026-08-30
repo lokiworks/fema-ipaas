@@ -16,12 +16,12 @@ const SocketContext = React.createContext<typeof socket>(socket);
 
 export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const token = authenticationSession.getToken();
-  const workspaceId = authenticationSession.getWorkspaceId();
+  const projectId = authenticationSession.getProjectId();
   const toastIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (token) {
-      socket.auth = { token, workspaceId };
+      socket.auth = { token, projectId };
       if (!socket.connected) {
         socket.connect();
 
@@ -55,7 +55,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       socket.off('disconnect');
       socket.disconnect();
     };
-  }, [token, workspaceId]);
+  }, [token, projectId]);
 
   return (
     <SocketContext.Provider value={socket}>{children}</SocketContext.Provider>

@@ -27,21 +27,14 @@ const SOFT_PRIMARY_CTA_CLASSES =
   'w-full justify-center bg-primary/5 enabled:hover:bg-primary/15 enabled:hover:text-primary text-primary border-primary/20';
 
 const TestStepCTAButton = () => {
-  const [
-    selectedStep,
-    workflowVersion,
-    isStepBeingTested,
-    setStepDataPanelOpen,
-    run,
-    saving,
-  ] = useBuilderStateContext((state) => [
-    state.selectedStep,
-    state.workflowVersion,
-    state.isStepBeingTested,
-    state.setStepDataPanelOpen,
-    state.run,
-    state.saving,
-  ]);
+  const [selectedStep, workflowVersion, isStepBeingTested, run, saving] =
+    useBuilderStateContext((state) => [
+      state.selectedStep,
+      state.workflowVersion,
+      state.isStepBeingTested,
+      state.run,
+      state.saving,
+    ]);
 
   const currentStep = selectedStep
     ? workflowStructureUtil.getStep(selectedStep, workflowVersion.trigger)
@@ -55,7 +48,7 @@ const TestStepCTAButton = () => {
     currentStep.settings?.sampleData?.lastTestDate,
   );
   const stepIsRunning = isStepBeingTested(currentStep.name);
-  const onOpenPanel = () => setStepDataPanelOpen(true);
+  const onOpenPanel = () => undefined;
 
   if (isWorkflowAction(currentStep)) {
     return (

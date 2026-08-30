@@ -1,4 +1,4 @@
-import type { EntityId, TenantId, WorkspaceId } from '@fema-ipaas/core-utils'
+import type { EntityId, ProjectId, TenantId } from '@fema-ipaas/core-utils'
 import { PrincipalType } from './principal-type'
 
 export type WorkerPrincipal = {
@@ -31,7 +31,7 @@ export type UserPrincipal = {
 export type EnginePrincipal = {
     id: EntityId
     type: PrincipalType.ENGINE
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     tenant: {
         id: TenantId
     }

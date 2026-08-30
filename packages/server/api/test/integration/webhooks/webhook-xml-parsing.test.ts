@@ -16,9 +16,9 @@ afterAll(async () => {
 })
 
 async function createEnabledWorkflow() {
-    const { mockWorkspace } = await mockAndSaveBasicSetup()
+    const { mockProject } = await mockAndSaveBasicSetup()
     const mockWorkflow = createMockWorkflow({
-        workspaceId: mockWorkspace.id,
+        projectId: mockProject.id,
         status: WorkflowStatus.ENABLED,
     })
     await db.save('workflow', [mockWorkflow])

@@ -5,7 +5,7 @@ import { t } from 'i18next';
 import React, { useMemo } from 'react';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
-import { RightSideBarType } from '@/app/builder/types';
+import { LeftSideBarType } from '@/app/builder/types';
 import {
   CardListEmpty,
   CardListItemSkeleton,
@@ -23,9 +23,9 @@ type RunsListItem =
   | { type: 'execution'; run: Execution }
   | { type: 'loadMoreButton'; id: 'loadMoreButton' };
 const RunsList = React.memo(() => {
-  const [workflow, setRightSidebar, run] = useBuilderStateContext((state) => [
+  const [workflow, setLeftSidebar, run] = useBuilderStateContext((state) => [
     state.workflow,
-    state.setRightSidebar,
+    state.setLeftSidebar,
     state.run,
   ]);
 
@@ -49,7 +49,7 @@ const RunsList = React.memo(() => {
     queryFn: ({ pageParam }) =>
       executionsApi.list({
         workflowId: [workflow.id],
-        workspaceId: authenticationSession.getWorkspaceId()!,
+        projectId: authenticationSession.getProjectId()!,
         limit: 15,
         cursor: pageParam as string | undefined,
       }),
@@ -95,7 +95,7 @@ const RunsList = React.memo(() => {
 
   return (
     <div className="h-full w-full flex flex-col">
-      <SidebarHeader onClose={() => setRightSidebar(RightSideBarType.NONE)}>
+      <SidebarHeader onClose={() => setLeftSidebar(LeftSideBarType.NONE)}>
         {t('Recent Runs')}
       </SidebarHeader>
       {isLoading && <CardListItemSkeleton numberOfCards={10} />}

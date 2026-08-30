@@ -18,7 +18,7 @@ export type BaseConnectorAuthSchema<AuthValueSchema> = {
   }
   >;
   // Resolves a human-readable label for a connection made with this auth
-  // (e.g. the account email, or Slack's "display-name (workspace)"), shown in
+  // (e.g. the account email, or Slack's "display-name (project)"), shown in
   // the UI so users can tell which account a connection belongs to. Best-effort.
   getConnectionIdentifier?: (params: { auth: AuthValueSchema; server: Omit<ServerContext, 'token'> }) => Promise<string | undefined>;
   // Derived by Connector.metadata(), not authored: functions cannot survive metadata

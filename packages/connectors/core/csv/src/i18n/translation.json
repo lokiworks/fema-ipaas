@@ -14,5 +14,6 @@
   "Provide a JSON array to convert to CSV format.": "Provide a JSON array to convert to CSV format.",
   "Select the delimiter type for the CSV file.": "Select the delimiter type for the CSV file.",
   "Comma": "Comma",
-  "Tab": "Tab"
+  "Tab": "Tab",
+  "CSV": "CSV"
 }

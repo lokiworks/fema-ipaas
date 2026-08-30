@@ -18,7 +18,7 @@ export const StopResponse = z.object({
 })
 export type StopResponse = z.infer<typeof StopResponse>
 
-export const Workspace = z.object({
+export const Project = z.object({
     ...BaseModelSchema,
     deleted: Nullable(DateOrString),
     ownerId: z.string(),
@@ -26,7 +26,7 @@ export const Workspace = z.object({
     tenantId: z.string(),
     externalId: Nullable(z.string()),
 })
-export type Workspace = z.infer<typeof Workspace>
+export type Project = z.infer<typeof Project>
 
 export const USE_DRAFT_QUERY_PARAM_NAME = 'useDraft'
 

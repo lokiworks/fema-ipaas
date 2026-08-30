@@ -54,10 +54,10 @@ afterAll(async () => {
 
 describe('Connector Options E2E', () => {
     it('returns dynamic properties for webhook authFields via full worker round-trip', async () => {
-        const { mockTenant, mockWorkspace, mockOwner } = await mockAndSaveBasicSetup()
+        const { mockTenant, mockProject, mockOwner } = await mockAndSaveBasicSetup()
 
         const mockWorkflow = createMockWorkflow({
-            workspaceId: mockWorkspace.id,
+            projectId: mockProject.id,
         })
         await db.save('workflow', mockWorkflow)
 
@@ -103,7 +103,7 @@ describe('Connector Options E2E', () => {
                 authorization: `Bearer ${token}`,
             },
             body: {
-                workspaceId: mockWorkspace.id,
+                projectId: mockProject.id,
                 workflowId: mockWorkflow.id,
                 workflowVersionId: mockWorkflowVersion.id,
                 connectorName: '@fema-ipaas/connector-webhook',

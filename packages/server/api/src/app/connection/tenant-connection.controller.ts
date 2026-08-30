@@ -7,14 +7,14 @@ import { connectionService } from './connection-service/connection-service'
 
 export const tenantConnectionController: FastifyPluginAsyncZod = async (app) => {
     app.get('/', ListTenantConnectionsRequest, async (request): Promise<SeekPage<TenantConnectionsListItem>> => {
-        const { displayName, connectorName, status, scope, cursor, limit, workspaceIds, ownerIds } = request.query
+        const { displayName, connectorName, status, scope, cursor, limit, projectIds, ownerIds } = request.query
         return connectionService(request.log).listForTenant({
             tenantId: request.principal.tenant.id,
             connectorName,
             displayName,
             status,
             scope,
-            workspaceIds,
+            projectIds,
             ownerIds,
             cursorRequest: cursor ?? null,
             limit: limit ?? DEFAULT_PAGE_SIZE,

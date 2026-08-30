@@ -20,7 +20,7 @@ export const workflowGenerator = {
             operationStatus: WorkflowOperationStatus.NONE,
             status: faker.helpers.enumValue(WorkflowStatus),
             id: workflowId,
-            workspaceId: generateId(),
+            projectId: generateId(),
             folderId: generateId(),
             created: faker.date.recent().toISOString(),
             updated: faker.date.recent().toISOString(),

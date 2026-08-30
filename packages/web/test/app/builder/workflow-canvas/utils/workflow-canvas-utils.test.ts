@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 import {
   CodeAction,
+  WORKFLOW_CANVAS_STEP_HEIGHT,
+  WORKFLOW_CANVAS_VSPACE,
   EmptyTrigger,
   WorkflowActionType,
   WorkflowTriggerType,
@@ -86,7 +88,10 @@ describe('workflowCanvasUtils.createWorkflowGraph', () => {
       orientation: 'vertical',
     });
     expect(getStepNode(graph, 'trigger').position).toEqual({ x: 0, y: 0 });
-    expect(getStepNode(graph, 'step_1').position).toEqual({ x: 0, y: 120 });
+    expect(getStepNode(graph, 'step_1').position).toEqual({
+      x: 0,
+      y: WORKFLOW_CANVAS_STEP_HEIGHT + WORKFLOW_CANVAS_VSPACE,
+    });
   });
 
   it('lays steps out left to right in horizontal orientation', () => {

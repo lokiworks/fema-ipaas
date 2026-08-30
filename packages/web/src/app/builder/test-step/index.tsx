@@ -9,7 +9,7 @@ type TestStepContainerProps = {
   isSaving: boolean;
   workflowId: string;
   type: WorkflowActionType | WorkflowTriggerType;
-  workspaceId: string;
+  projectId: string;
 };
 
 const TestStepContainer = React.memo(
@@ -18,7 +18,7 @@ const TestStepContainer = React.memo(
     isSaving,
     type,
     workflowId,
-    workspaceId,
+    projectId,
   }: TestStepContainerProps) => {
     return (
       <div className="flex flex-col h-full">
@@ -27,13 +27,13 @@ const TestStepContainer = React.memo(
             workflowId={workflowId}
             isSaving={isSaving}
             workflowVersionId={workflowVersionId}
-            workspaceId={workspaceId}
+            projectId={projectId}
           ></TestTriggerSection>
         ) : (
           <TestActionSection
             workflowVersionId={workflowVersionId}
             isSaving={isSaving}
-            workspaceId={workspaceId}
+            projectId={projectId}
           ></TestActionSection>
         )}
       </div>

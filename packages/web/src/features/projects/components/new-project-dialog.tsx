@@ -1,0 +1,193 @@
+import {
+  ConnectionWithoutSensitiveData,
+  CreateTenantProjectRequest,
+  ProjectWithLimits,
+} from '@fema-ipaas/shared';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useQueryClient } from '@tanstack/react-query';
+import { t } from 'i18next';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { SkeletonList } from '@/components/ui/skeleton';
+import { internalErrorToast } from '@/components/ui/sonner';
+import { globalConnectionsQueries } from '@/features/connections';
+import { projectCollectionUtils } from '@/features/projects';
+
+type NewProjectDialogProps = {
+  children: React.ReactNode;
+  onCreate?: (project: ProjectWithLimits) => void;
+};
+
+export const NewProjectDialog = (props: NewProjectDialogProps) => {
+  const [open, setOpen] = useState(false);
+
+  const { data: globalConnectionsPage, isLoading: isLoadingConnections } =
+    globalConnectionsQueries.useGlobalConnections({
+      request: { limit: 9999 },
+      extraKeys: [],
+    });
+
+  const globalConnections = globalConnectionsPage?.data ?? [];
+
+  return (
+    <Dialog key={open ? 'open' : 'closed'} open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{props.children}</DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{t('Create Project')}</DialogTitle>
+          <DialogDescription>
+            {t(
+              'Set up a new project to organize your automations and connections.',
+            )}
+          </DialogDescription>
+        </DialogHeader>
+        {!isLoadingConnections && (
+          <NewProjectForm
+            setOpen={setOpen}
+            globalConnections={globalConnections}
+            onCreate={props.onCreate}
+          />
+        )}
+        {isLoadingConnections && (
+          <SkeletonList numberOfItems={3} className="h-10" />
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+const NewProjectForm = ({
+  onCreate,
+  setOpen,
+}: Omit<NewProjectDialogProps, 'children'> & {
+  setOpen: (open: boolean) => void;
+  globalConnections: ConnectionWithoutSensitiveData[];
+}) => {
+  const queryClient = useQueryClient();
+
+  const form = useForm<CreateTenantProjectRequest>({
+    resolver: zodResolver(
+      z.object({
+        displayName: z.string().min(1, t('Name is required')),
+        alertReceiverEmail: z
+          .email(t('Invalid email'))
+          .nullable()
+          .optional()
+          .or(z.literal('')),
+      }),
+    ),
+    defaultValues: {},
+  });
+
+  const handleCreate = () => {
+    mutate(form.getValues());
+  };
+
+  const { mutate, isPending } = projectCollectionUtils.useCreateProject(
+    (data) => {
+      onCreate?.(data);
+      setOpen(false);
+      queryClient.invalidateQueries({
+        queryKey: globalConnectionsQueries.getGlobalConnectionsQueryKey([]),
+      });
+    },
+    (error) => {
+      console.error(error);
+      internalErrorToast();
+    },
+  );
+
+  return (
+    <>
+      <Form {...form}>
+        <form
+          className="grid space-y-4"
+          onSubmit={(e) => form.handleSubmit(handleCreate)(e)}
+        >
+          <FormField
+            name="displayName"
+            render={({ field }) => (
+              <FormItem className="grid space-y-2">
+                <Label htmlFor="displayName" showRequiredIndicator>
+                  {t('Project Name')}
+                </Label>
+                <Input
+                  {...field}
+                  id="displayName"
+                  placeholder={t('Project Name')}
+                  className="rounded-sm"
+                />
+              </FormItem>
+            )}
+          />
+          <FormField
+            name="alertReceiverEmail"
+            render={({ field }) => (
+              <FormItem className="grid space-y-2">
+                <Label htmlFor="alertReceiverEmail">
+                  {t('Alert Receiver Email')}
+                </Label>
+                <Input
+                  {...field}
+                  id="alertReceiverEmail"
+                  type="email"
+                  placeholder="alerts@example.com"
+                  className="rounded-sm"
+                  value={field.value ?? ''}
+                />
+                <span className="text-xs text-muted-foreground">
+                  {t('Receives workflow failure emails for this project.')}
+                </span>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          {form?.formState?.errors?.root?.serverError && (
+            <FormMessage>
+              {form.formState.errors.root.serverError.message}
+            </FormMessage>
+          )}
+          <DialogFooter>
+            <Button
+              variant={'outline'}
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                setOpen(false);
+              }}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              disabled={isPending}
+              loading={isPending}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                form.handleSubmit(handleCreate)(e);
+              }}
+            >
+              {t('Create Project')}
+            </Button>
+          </DialogFooter>
+        </form>
+      </Form>
+    </>
+  );
+};

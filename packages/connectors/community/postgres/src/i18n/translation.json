@@ -70,5 +70,6 @@
   "Use something like a created timestamp or an auto-incrementing ID.": "Use something like a created timestamp or an auto-incrementing ID.",
   "The direction to sort by such that the newest rows are fetched first.": "The direction to sort by such that the newest rows are fetched first.",
   "Ascending": "Ascending",
-  "Descending": "Descending"
+  "Descending": "Descending",
+  "Postgres": "Postgres"
 }

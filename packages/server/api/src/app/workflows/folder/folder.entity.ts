@@ -1,4 +1,4 @@
-import { Folder as Folder, Workflow, Workspace } from '@fema-ipaas/shared'
+import { Folder as Folder, Project, Workflow } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import {
     BaseColumnSchemaPart,
@@ -7,7 +7,7 @@ import {
 
 export type FolderSchema = {
     workflows: Workflow[]
-    workspace: Workspace
+    project: Project
 } & Folder
 
 export const FolderEntity = new EntitySchema<FolderSchema>({
@@ -17,7 +17,7 @@ export const FolderEntity = new EntitySchema<FolderSchema>({
         displayName: {
             type: String,
         },
-        workspaceId: EntityIdSchema,
+        projectId: EntityIdSchema,
         displayOrder: {
             type: Number,
             default: 0,
@@ -29,13 +29,13 @@ export const FolderEntity = new EntitySchema<FolderSchema>({
     },
     indices: [
         {
-            name: 'idx_folder_workspace_id_display_name',
-            columns: ['workspaceId', 'displayName'],
+            name: 'idx_folder_project_id_display_name',
+            columns: ['projectId', 'displayName'],
             unique: true,
         },
         {
-            name: 'idx_folder_workspace_id_external_id',
-            columns: ['workspaceId', 'externalId'],
+            name: 'idx_folder_project_id_external_id',
+            columns: ['projectId', 'externalId'],
             unique: true,
             where: '"externalId" IS NOT NULL',
         },
@@ -46,15 +46,15 @@ export const FolderEntity = new EntitySchema<FolderSchema>({
             target: 'workflow',
             inverseSide: 'folder',
         },
-        workspace: {
+        project: {
             type: 'many-to-one',
-            target: 'workspace',
+            target: 'project',
             cascade: true,
             onDelete: 'CASCADE',
             joinColumn: {
-                name: 'workspaceId',
+                name: 'projectId',
                 referencedColumnName: 'id',
-                foreignKeyConstraintName: 'fk_folder_workspace',
+                foreignKeyConstraintName: 'fk_folder_project',
             },
         },
     },

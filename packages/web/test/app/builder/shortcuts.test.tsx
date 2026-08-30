@@ -36,7 +36,7 @@ function buildWorkflow(): PopulatedWorkflow {
     id: 'workflow-1',
     created: now,
     updated: now,
-    workspaceId: 'workspace-1',
+    projectId: 'project-1',
     externalId: 'workflow-1',
     ownerId: null,
     folderId: null,

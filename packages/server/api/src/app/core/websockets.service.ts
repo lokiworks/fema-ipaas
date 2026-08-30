@@ -1,13 +1,13 @@
-import { ApplicationError, ErrorCode, isNil, Permission, WorkspaceRole } from '@fema-ipaas/core-utils'
+import { ApplicationError, ErrorCode, isNil, Permission, ProjectRole } from '@fema-ipaas/core-utils'
 import { ApiToWorkerContract, createNotifyClient, Principal, PrincipalForType, PrincipalType, WebsocketServerEvent } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { Socket } from 'socket.io'
 import { accessTokenManager } from '../authentication/lib/access-token-manager'
 import { rejectedPromiseHandler } from '../helper/promise-handler'
+import { projectAccess } from '../project/project-access'
 import { app } from '../server'
-import { workspaceAccess } from '../workspace/workspace-access'
 
-export type WebsocketListener<T, PR extends PrincipalType.USER | PrincipalType.WORKER> = (socket: Socket) => (data: T, principal: PrincipalForType<PR>, workspaceId: PR extends PrincipalType.USER ? string : null, callback?: (data: unknown) => void) => Promise<void>
+export type WebsocketListener<T, PR extends PrincipalType.USER | PrincipalType.WORKER> = (socket: Socket) => (data: T, principal: PrincipalForType<PR>, projectId: PR extends PrincipalType.USER ? string : null, callback?: (data: unknown) => void) => Promise<void>
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ListenerMap<PR extends PrincipalType.USER | PrincipalType.WORKER> = Partial<Record<WebsocketServerEvent, WebsocketListener<any, PR>>>
@@ -32,17 +32,17 @@ export const websocketService = {
         }
 
         const castedType = type as keyof typeof listener
-        const workspaceId = socket.handshake.auth.workspaceId
-        let workspaceRole: WorkspaceRole | undefined
+        const projectId = socket.handshake.auth.projectId
+        let projectRole: ProjectRole | undefined
         switch (type) {
             case PrincipalType.USER: {
-                workspaceRole = await validateWorkspaceId({ userId: principal.id, workspaceId, log })
+                projectRole = await validateProjectId({ userId: principal.id, projectId, log })
                 log.info({
                     message: 'User connected',
                     user: { id: principal.id },
-                    workspace: { id: workspaceId },
+                    project: { id: projectId },
                 })
-                await socket.join(workspaceId)
+                await socket.join(projectId)
                 await socket.join(principal.id)
                 break
             }
@@ -70,15 +70,15 @@ export const websocketService = {
             // onto it or the handler never fires (it never did — worker cleanup relied on the 60s sweep).
             const socketEvent = event === WebsocketServerEvent.DISCONNECT ? 'disconnect' : event
             socket.on(socketEvent, async (data, callback) => {
-                // Permissions are a workspace-role concept, so they only apply to USER principals.
+                // Permissions are a project-role concept, so they only apply to USER principals.
                 const requiredPermission = castedType === PrincipalType.USER
                     ? eventPermissions[event as WebsocketServerEvent]
                     : undefined
-                if (!isNil(requiredPermission) && !hasPermission(workspaceRole, requiredPermission)) {
-                    log.warn({ event, userId: principal.id, workspaceId, requiredPermission }, 'Websocket event blocked: missing permission')
+                if (!isNil(requiredPermission) && !hasPermission(projectRole, requiredPermission)) {
+                    log.warn({ event, userId: principal.id, projectId, requiredPermission }, 'Websocket event blocked: missing permission')
                     return
                 }
-                return rejectedPromiseHandler(handler(socket)(data, principal, workspaceId, callback), log)
+                return rejectedPromiseHandler(handler(socket)(data, principal, projectId, callback), log)
             })
         }
     },
@@ -107,17 +107,17 @@ export const websocketService = {
     },
 }
 
-const validateWorkspaceId = async ({ userId, workspaceId, log }: ValidateWorkspaceIdArgs): Promise<WorkspaceRole> => {
-    if (isNil(workspaceId)) {
+const validateProjectId = async ({ userId, projectId, log }: ValidateProjectIdArgs): Promise<ProjectRole> => {
+    if (isNil(projectId)) {
         throw new ApplicationError({
             code: ErrorCode.AUTHENTICATION,
             params: {
-                message: 'Workspace ID is required',
+                message: 'Project ID is required',
             },
         })
     }
-    const role = await workspaceAccess(log).resolveRole({
-        workspaceId,
+    const role = await projectAccess(log).resolveRole({
+        projectId,
         userId,
     })
 
@@ -125,19 +125,19 @@ const validateWorkspaceId = async ({ userId, workspaceId, log }: ValidateWorkspa
         throw new ApplicationError({
             code: ErrorCode.AUTHORIZATION,
             params: {
-                message: 'User not allowed to access this workspace',
+                message: 'User not allowed to access this project',
             },
         })
     }
     return role
 }
 
-function hasPermission(role: WorkspaceRole | undefined, permission: Permission): boolean {
+function hasPermission(role: ProjectRole | undefined, permission: Permission): boolean {
     return !isNil(role) && (role.permissions ?? []).includes(permission)
 }
 
-type ValidateWorkspaceIdArgs = {
+type ValidateProjectIdArgs = {
     userId: string
-    workspaceId?: string
+    projectId?: string
     log: FastifyBaseLogger
 }

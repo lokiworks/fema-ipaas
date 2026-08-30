@@ -39,7 +39,7 @@ describe('generateEngineToken', () => {
     it('issues a JWT whose lifetime equals EXECUTION_DATA_RETENTION_DAYS, not the legacy 100-year value', async () => {
         const token = await manager.generateEngineToken({
             jobId: 'job-1',
-            workspaceId: 'proj-1',
+            projectId: 'proj-1',
             tenantId: 'plat-1',
         })
 
@@ -51,7 +51,7 @@ describe('generateEngineToken', () => {
         const expectedSeconds = dayjs.duration(RETENTION_DAYS, 'day').asSeconds()
         expect(decoded.exp - decoded.iat).toBe(expectedSeconds)
         expect(decoded.type).toBe(PrincipalType.ENGINE)
-        expect(decoded.workspaceId).toBe('proj-1')
+        expect(decoded.projectId).toBe('proj-1')
         expect(decoded.tenant.id).toBe('plat-1')
     })
 })

@@ -1,16 +1,16 @@
 import { TriggerBase } from '@fema-ipaas/connector-sdk'
-import { ApplicationError, ErrorCode, isNil, WorkspaceId } from '@fema-ipaas/core-utils'
+import { ApplicationError, ErrorCode, isNil, ProjectId } from '@fema-ipaas/core-utils'
 import { WorkflowTriggerType, WorkflowVersion } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { connectorMetadataService } from '../../connectors/metadata/connector-metadata-service'
-import { workspaceService } from '../../workspace/workspace-service'
+import { projectService } from '../../project/project-service'
 
 export const triggerUtils = (log: FastifyBaseLogger) => ({
-    async getConnectorTriggerOrThrow({ workflowVersion, workspaceId }: GetConnectorTriggerOrThrowParams): Promise<TriggerBase> {
+    async getConnectorTriggerOrThrow({ workflowVersion, projectId }: GetConnectorTriggerOrThrowParams): Promise<TriggerBase> {
 
         const connectorTrigger = await this.getConnectorTrigger({
             workflowVersion,
-            workspaceId,
+            projectId,
 
         })
         if (isNil(connectorTrigger)) {
@@ -30,7 +30,7 @@ export const triggerUtils = (log: FastifyBaseLogger) => ({
         }
         return connectorTrigger
     },
-    async getConnectorTrigger({ workflowVersion, workspaceId }: GetConnectorTriggerOrThrowParams): Promise<TriggerBase | null> {
+    async getConnectorTrigger({ workflowVersion, projectId }: GetConnectorTriggerOrThrowParams): Promise<TriggerBase | null> {
         if (workflowVersion.trigger.type !== WorkflowTriggerType.CONNECTOR) {
             return null
         }
@@ -42,11 +42,11 @@ export const triggerUtils = (log: FastifyBaseLogger) => ({
             connectorName,
             connectorVersion,
             triggerName,
-            workspaceId,
+            projectId,
         })
     },
-    async getConnectorTriggerByName({ connectorName, connectorVersion, triggerName, workspaceId }: GetConnectorTriggerByNameParams): Promise<TriggerBase | null> {
-        const tenantId = await workspaceService(log).getTenantId(workspaceId)
+    async getConnectorTriggerByName({ connectorName, connectorVersion, triggerName, projectId }: GetConnectorTriggerByNameParams): Promise<TriggerBase | null> {
+        const tenantId = await projectService(log).getTenantId(projectId)
         const connector = await connectorMetadataService(log).get({
             tenantId,
             name: connectorName,
@@ -64,10 +64,10 @@ type GetConnectorTriggerByNameParams = {
     connectorName: string
     connectorVersion: string
     triggerName: string
-    workspaceId: WorkspaceId
+    projectId: ProjectId
 }
 
 type GetConnectorTriggerOrThrowParams = {
     workflowVersion: WorkflowVersion
-    workspaceId: WorkspaceId
+    projectId: ProjectId
 }

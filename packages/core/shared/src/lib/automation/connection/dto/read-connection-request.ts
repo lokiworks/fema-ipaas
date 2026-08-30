@@ -1,11 +1,11 @@
 import { OptionalArrayFromQuery } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
-import { WorkspaceType } from '../../../management/workspace/workspace'
+import { ProjectType } from '../../../management/project/project'
 import { ConnectionScope, ConnectionStatus, ConnectionWithoutSensitiveData } from '../connection'
 
 export const ListConnectionsRequestQuery = z.object({
     cursor: z.string().optional(),
-    workspaceId: z.string(),
+    projectId: z.string(),
     scope: z.nativeEnum(ConnectionScope).optional(),
     connectorName: z.string().optional(),
     displayName: z.string().optional(),
@@ -24,11 +24,11 @@ export type GetConnectionForWorkerRequestQuery = z.infer<
     typeof GetConnectionForWorkerRequestQuery
 >
 
-export const ListGlobalConnectionsRequestQuery = ListConnectionsRequestQuery.omit({ workspaceId: true })
+export const ListGlobalConnectionsRequestQuery = ListConnectionsRequestQuery.omit({ projectId: true })
 export type ListGlobalConnectionsRequestQuery = z.infer<typeof ListGlobalConnectionsRequestQuery>
 
 export const ListConnectionOwnersRequestQuery = z.object({
-    workspaceId: z.string(),
+    projectId: z.string(),
 })
 export type ListConnectionOwnersRequestQuery = z.infer<typeof ListConnectionOwnersRequestQuery>
 
@@ -39,20 +39,20 @@ export const ListTenantConnectionsRequestQuery = z.object({
     connectorName: z.string().optional(),
     scope: z.nativeEnum(ConnectionScope).optional(),
     status: OptionalArrayFromQuery(z.nativeEnum(ConnectionStatus)),
-    workspaceIds: OptionalArrayFromQuery(z.string()),
+    projectIds: OptionalArrayFromQuery(z.string()),
     ownerIds: OptionalArrayFromQuery(z.string()),
 })
 export type ListTenantConnectionsRequestQuery = z.infer<typeof ListTenantConnectionsRequestQuery>
 
-export const TenantConnectionWorkspaceInfo = z.object({
+export const TenantConnectionProjectInfo = z.object({
     id: z.string(),
     displayName: z.string(),
-    type: z.nativeEnum(WorkspaceType),
+    type: z.nativeEnum(ProjectType),
 })
-export type TenantConnectionWorkspaceInfo = z.infer<typeof TenantConnectionWorkspaceInfo>
+export type TenantConnectionProjectInfo = z.infer<typeof TenantConnectionProjectInfo>
 
 export const TenantConnectionsListItem = ConnectionWithoutSensitiveData.extend({
-    workspaces: z.array(TenantConnectionWorkspaceInfo),
+    projects: z.array(TenantConnectionProjectInfo),
 })
 export type TenantConnectionsListItem = z.infer<typeof TenantConnectionsListItem>
 

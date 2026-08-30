@@ -1,4 +1,3 @@
-import { Permission } from '@fema-ipaas/core-utils';
 import {
   FlagId,
   WorkflowOperationType,
@@ -8,7 +7,7 @@ import {
 } from '@fema-ipaas/shared';
 import { useQueryClient } from '@tanstack/react-query';
 import { t } from 'i18next';
-import { ChevronDown, CircleHelp, HistoryIcon } from 'lucide-react';
+import { ChevronDown, CircleHelp } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {
   createSearchParams,
@@ -17,7 +16,7 @@ import {
 } from 'react-router-dom';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
-import { RightSideBarType } from '@/app/builder/types';
+import { LeftSideBarType } from '@/app/builder/types';
 import { ActiveUsersWidget } from '@/components/custom/active-users-widget';
 import EditableText from '@/components/custom/editable-text';
 import { HomeButton } from '@/components/custom/home-button';
@@ -34,13 +33,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { foldersHooks } from '@/features/folders';
+import { getProjectName, projectCollectionUtils } from '@/features/projects';
 import { workflowHooks } from '@/features/workflows';
 import { WorkflowCreatedByBadge } from '@/features/workflows/components/workflow-created-by-badge';
-import {
-  getWorkspaceName,
-  workspaceCollectionUtils,
-} from '@/features/workspaces';
-import { useAuthorization } from '@/hooks/authorization-hooks';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 import { useNewWindow } from '@/lib/navigation-utils';
@@ -50,7 +45,9 @@ import { cn } from '@/lib/utils';
 import WorkflowActionMenu from '../../components/workflow-actions-menu';
 import { workflowCanvasConsts } from '../workflow-canvas/utils/consts';
 
+import { DebugButton } from './debug-button';
 import { BuilderPublishSection } from './publish-section';
+import { RunStateChip } from './run-state-chip';
 import { BuilderWorkflowStatusSection } from './workflow-status';
 
 export const BuilderHeader = () => {
@@ -62,25 +59,22 @@ export const BuilderHeader = () => {
     FlagId.SHOW_COMMUNITY,
   );
 
-  const hasPermissionToReadRuns = useAuthorization().checkAccess(
-    Permission.READ_WORKFLOW,
-  );
   const [
     workflow,
     workflowVersion,
     moveToFolderClientSide,
     applyOperation,
-    setRightSidebar,
+    setLeftSidebar,
   ] = useBuilderStateContext((state) => [
     state.workflow,
     state.workflowVersion,
     state.moveToFolderClientSide,
     state.applyOperation,
-    state.setRightSidebar,
+    state.setLeftSidebar,
   ]);
 
   const { embedState } = useEmbedding();
-  const { workspace } = workspaceCollectionUtils.useCurrentWorkspace();
+  const { project } = projectCollectionUtils.useCurrentProject();
 
   const { data: folderData } = foldersHooks.useFolder(
     workflow.folderId ?? UncategorizedFolderId,
@@ -98,8 +92,7 @@ export const BuilderHeader = () => {
 
   const goToWorkflowsPage = () => {
     navigate({
-      pathname:
-        authenticationSession.appendWorkspaceRoutePrefix('/automations'),
+      pathname: authenticationSession.appendProjectRoutePrefix('/automations'),
       search: createSearchParams({
         folderId: folderData?.id ?? UncategorizedFolderId,
       }).toString(),
@@ -117,7 +110,7 @@ export const BuilderHeader = () => {
                   onClick={goToWorkflowsPage}
                   className="cursor-pointer text-sm"
                 >
-                  {getWorkspaceName(workspace)}
+                  {getProjectName(project)}
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
@@ -154,7 +147,7 @@ export const BuilderHeader = () => {
                   />
                   <WorkflowActionMenu
                     onVersionsListClick={() => {
-                      setRightSidebar(RightSideBarType.VERSIONS);
+                      setLeftSidebar(LeftSideBarType.VERSIONS);
                     }}
                     insideBuilder={true}
                     workflow={workflow}
@@ -179,6 +172,7 @@ export const BuilderHeader = () => {
             </BreadcrumbItem>
           )}
         </BreadcrumbList>
+        <RunStateChip />
       </Breadcrumb>
     </div>
   );
@@ -198,20 +192,10 @@ export const BuilderHeader = () => {
       {!embedState.hideActiveUsers && (
         <ActiveUsersWidget resourceId={workflow.id} />
       )}
-      {hasPermissionToReadRuns && (
-        <Button
-          variant="ghost"
-          onClick={() => setRightSidebar(RightSideBarType.RUNS)}
-          className="gap-2 px-2"
-        >
-          <HistoryIcon className="w-4 h-4" />
-          {t('Runs')}
-        </Button>
-      )}
-
       <BuilderWorkflowStatusSection></BuilderWorkflowStatusSection>
       <WorkflowCreatedByBadge createdBy={workflow.createdBy} />
       <Separator orientation="vertical" className="h-5" />
+      <DebugButton />
       <BuilderPublishSection />
     </div>
   );

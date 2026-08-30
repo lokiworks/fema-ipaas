@@ -25,7 +25,7 @@ export default function ConnectorMarketplacePage() {
     searchQuery: debouncedSearch,
     includeHidden: true,
     isTableQuery: true,
-    skipWorkspaceFilter: true,
+    skipProjectFilter: true,
   });
 
   const grouped = useMemo(() => groupBySource(connectors ?? []), [connectors]);

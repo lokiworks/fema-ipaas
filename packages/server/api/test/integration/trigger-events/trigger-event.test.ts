@@ -23,12 +23,12 @@ describe('Trigger Events API', () => {
 
             const workflowResponse = await ctx.post('/v1/workflows', {
                 displayName: 'trigger event test workflow',
-                workspaceId: ctx.workspace.id,
-            }, { query: { workspaceId: ctx.workspace.id } })
+                projectId: ctx.project.id,
+            }, { query: { projectId: ctx.project.id } })
             const workflow: PopulatedWorkflow = workflowResponse?.json()
 
             const response = await ctx.post('/v1/trigger-events', {
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 workflowId: workflow.id,
                 mockData: { key: 'value', nested: { a: 1 } },
             })
@@ -36,7 +36,7 @@ describe('Trigger Events API', () => {
             expect(response?.statusCode).toBe(StatusCodes.OK)
             const body = response?.json()
             expect(body.workflowId).toBe(workflow.id)
-            expect(body.workspaceId).toBe(ctx.workspace.id)
+            expect(body.projectId).toBe(ctx.project.id)
         })
     })
 
@@ -46,23 +46,23 @@ describe('Trigger Events API', () => {
 
             const workflowResponse = await ctx.post('/v1/workflows', {
                 displayName: 'list trigger events workflow',
-                workspaceId: ctx.workspace.id,
-            }, { query: { workspaceId: ctx.workspace.id } })
+                projectId: ctx.project.id,
+            }, { query: { projectId: ctx.project.id } })
             const workflow: PopulatedWorkflow = workflowResponse?.json()
 
             await ctx.post('/v1/trigger-events', {
                 workflowId: workflow.id,
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 mockData: { event: 'one' },
             })
             await ctx.post('/v1/trigger-events', {
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 workflowId: workflow.id,
                 mockData: { event: 'two' },
             })
 
             const response = await ctx.get('/v1/trigger-events', {
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 workflowId: workflow.id,
             })
 
@@ -76,12 +76,12 @@ describe('Trigger Events API', () => {
 
             const workflowResponse = await ctx.post('/v1/workflows', {
                 displayName: 'empty trigger events workflow',
-                workspaceId: ctx.workspace.id,
-            }, { query: { workspaceId: ctx.workspace.id } })
+                projectId: ctx.project.id,
+            }, { query: { projectId: ctx.project.id } })
             const workflow: PopulatedWorkflow = workflowResponse?.json()
 
             const response = await ctx.get('/v1/trigger-events', {
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 workflowId: workflow.id,
             })
 
@@ -95,16 +95,16 @@ describe('Trigger Events API', () => {
 
             const workflowResponse = await ctx.post('/v1/workflows', {
                 displayName: 'paginate trigger events workflow',
-                workspaceId: ctx.workspace.id,
-            }, { query: { workspaceId: ctx.workspace.id } })
+                projectId: ctx.project.id,
+            }, { query: { projectId: ctx.project.id } })
             const workflow: PopulatedWorkflow = workflowResponse?.json()
 
-            await ctx.post('/v1/trigger-events', { workspaceId: ctx.workspace.id, workflowId: workflow.id, mockData: { n: 1 } })
-            await ctx.post('/v1/trigger-events', { workspaceId: ctx.workspace.id, workflowId: workflow.id, mockData: { n: 2 } })
-            await ctx.post('/v1/trigger-events', { workspaceId: ctx.workspace.id, workflowId: workflow.id, mockData: { n: 3 } })
+            await ctx.post('/v1/trigger-events', { projectId: ctx.project.id, workflowId: workflow.id, mockData: { n: 1 } })
+            await ctx.post('/v1/trigger-events', { projectId: ctx.project.id, workflowId: workflow.id, mockData: { n: 2 } })
+            await ctx.post('/v1/trigger-events', { projectId: ctx.project.id, workflowId: workflow.id, mockData: { n: 3 } })
 
             const response = await ctx.get('/v1/trigger-events', {
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 workflowId: workflow.id,
                 limit: '2',
             })
@@ -115,19 +115,19 @@ describe('Trigger Events API', () => {
         })
     })
 
-    describe('Cross-workspace isolation', () => {
-        it('should not allow saving events for another workspace workflow', async () => {
+    describe('Cross-project isolation', () => {
+        it('should not allow saving events for another project workflow', async () => {
             const ctx1 = await createTestContext(app!)
             const ctx2 = await createTestContext(app!)
 
             const workflowResponse = await ctx1.post('/v1/workflows', {
-                displayName: 'cross workspace workflow',
-                workspaceId: ctx1.workspace.id,
-            }, { query: { workspaceId: ctx1.workspace.id } })
+                displayName: 'cross project workflow',
+                projectId: ctx1.project.id,
+            }, { query: { projectId: ctx1.project.id } })
             const workflow: PopulatedWorkflow = workflowResponse?.json()
 
             const response = await ctx2.post('/v1/trigger-events', {
-                workspaceId: ctx2.workspace.id,
+                projectId: ctx2.project.id,
                 workflowId: workflow.id,
                 mockData: { unauthorized: true },
             })

@@ -1,13 +1,13 @@
-import { WorkspaceId } from '@fema-ipaas/core-utils'
-import { NoneAuthorization, PublicRoute, RouteKind, TenantAuthorization, UnscopedAuthorization, WorkspaceAuthorization } from './common'
+import { ProjectId } from '@fema-ipaas/core-utils'
+import { NoneAuthorization, ProjectAuthorization, PublicRoute, RouteKind, TenantAuthorization, UnscopedAuthorization } from './common'
 
-export type WorkspaceAuthorizationConfig = Omit<WorkspaceAuthorization, 'workspaceResource'> & {
-    workspaceId: WorkspaceId | undefined
+export type ProjectAuthorizationConfig = Omit<ProjectAuthorization, 'projectResource'> & {
+    projectId: ProjectId | undefined
 }
 
 type AuthorizationRuleConfig =
     | TenantAuthorization
-    | WorkspaceAuthorizationConfig
+    | ProjectAuthorizationConfig
     | UnscopedAuthorization
     | NoneAuthorization
 

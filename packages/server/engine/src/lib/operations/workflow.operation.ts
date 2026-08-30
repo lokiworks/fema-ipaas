@@ -93,7 +93,7 @@ const executeSingleStepOrWorkflow = async (input: ResolvedExecuteWorkflowOperati
             apiUrl: input.internalApiUrl,
             workflowVersion: input.workflowVersion,
             excludedStepName: input.stepNameToTest!,
-            workspaceId: input.workspaceId,
+            projectId: input.projectId,
             engineToken: input.engineToken,
             sampleData: input.sampleData,
             engineConstants: constants,

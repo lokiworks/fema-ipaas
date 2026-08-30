@@ -1,9 +1,14 @@
 export enum RightSideBarType {
   NONE = 'none',
   CONNECTOR_SETTINGS = 'connector-settings',
+}
+
+export enum LeftSideBarType {
+  NONE = 'none',
   CONNECTOR_PICKER = 'connector-picker',
-  VERSIONS = 'versions',
   RUNS = 'runs',
+  VERSIONS = 'versions',
+  VALIDATION = 'validation',
 }
 
 export enum ChatDrawerSource {

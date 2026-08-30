@@ -30,7 +30,7 @@ const TemplateViewer = ({ template }: { template: Template }) => {
     mutationFn: async () => {
       const workflows = await workflowHooks.importWorkflowsFromTemplates({
         templates: [template],
-        workspaceId: authenticationSession.getWorkspaceId()!,
+        projectId: authenticationSession.getProjectId()!,
       });
       return workflows[0];
     },

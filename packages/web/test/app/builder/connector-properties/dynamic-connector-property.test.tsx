@@ -19,7 +19,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 vi.mock('i18next', () => ({ t: (key: string) => key }));
 
 vi.mock('@/lib/authentication-session', () => ({
-  authenticationSession: { getWorkspaceId: () => 'test-workspace' },
+  authenticationSession: { getProjectId: () => 'test-project' },
 }));
 
 vi.mock('@/app/builder/builder-hooks', () => ({

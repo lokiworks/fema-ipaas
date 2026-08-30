@@ -1,4 +1,4 @@
-import { ApplicationError, Cursor, ErrorCode, generateId, SeekPage, WorkflowId, WorkspaceId } from '@fema-ipaas/core-utils'
+import { ApplicationError, Cursor, ErrorCode, generateId, ProjectId, SeekPage, WorkflowId } from '@fema-ipaas/core-utils'
 import { ConnectorTrigger, EngineResponse, EngineResponseStatus, ExecuteTriggerResponse, FileCompression, FileType, getConnectorMajorAndMinorVersion, PopulatedWorkflow, TriggerEventWithPayload, TriggerHookType, WorkerJobType, WorkflowTrigger, WorkflowTriggerType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { repoFactory } from '../../core/db/repo-factory'
@@ -6,27 +6,27 @@ import { fileService } from '../../file/file.service'
 import { buildPaginator } from '../../helper/pagination/build-paginator'
 import { paginationHelper } from '../../helper/pagination/pagination-utils'
 import { Order } from '../../helper/pagination/paginator'
+import { projectService } from '../../project/project-service'
 import { userInteractionWatcher } from '../../workers/user-interaction-watcher'
 import { workflowService } from '../../workflows/workflow/workflow.service'
-import { workspaceService } from '../../workspace/workspace-service'
 import { TriggerEventEntity } from './trigger-event.entity'
 
 export const triggerEventRepo = repoFactory(TriggerEventEntity)
 
 export const triggerEventService = (log: FastifyBaseLogger) => ({
     async saveEvent({
-        workspaceId,
+        projectId,
         workflowId,
         payload,
     }: SaveEventParams): Promise<TriggerEventWithPayload> {
         const workflow = await workflowService(log).getOnePopulatedOrThrow({
             id: workflowId,
-            workspaceId,
+            projectId,
         })
 
         const data = Buffer.from(JSON.stringify(payload))
         const file = await fileService(log).save({
-            workspaceId,
+            projectId,
             fileName: `${generateId()}.json`,
             data,
             size: data.length,
@@ -38,7 +38,7 @@ export const triggerEventService = (log: FastifyBaseLogger) => ({
         const trigger = await triggerEventRepo().save({
             id: generateId(),
             fileId: file.id,
-            workspaceId,
+            projectId,
             workflowId: workflow.id,
             sourceName,
         })
@@ -49,11 +49,11 @@ export const triggerEventService = (log: FastifyBaseLogger) => ({
     },
 
     async test({
-        workspaceId,
+        projectId,
         workflow,
     }: TestParams): Promise<SeekPage<TriggerEventWithPayload>> {
         const trigger = workflow.version.trigger
-        const tenantId = await workspaceService(log).getTenantId(workspaceId)
+        const tenantId = await projectService(log).getTenantId(projectId)
         const emptyPage = paginationHelper.createPage<TriggerEventWithPayload>([], null)
         switch (trigger.type) {
             case WorkflowTriggerType.CONNECTOR: {
@@ -63,12 +63,12 @@ export const triggerEventService = (log: FastifyBaseLogger) => ({
                     workflowId: workflow.id,
                     workflowVersionId: workflow.version.id,
                     test: true,
-                    workspaceId,
+                    projectId,
                     jobType: WorkerJobType.EXECUTE_TRIGGER_HOOK,
                     tenantId,
                 }, log)
                 await triggerEventRepo().delete({
-                    workspaceId,
+                    projectId,
                     workflowId: workflow.id,
                 })
                 if (engineResponse.status !== EngineResponseStatus.OK) {
@@ -82,14 +82,14 @@ export const triggerEventService = (log: FastifyBaseLogger) => ({
 
                 for (const output of engineResponse.response.output) {
                     await this.saveEvent({
-                        workspaceId,
+                        projectId,
                         workflowId: workflow.id,
                         payload: output,
                     })
                 }
 
                 return this.list({
-                    workspaceId,
+                    projectId,
                     workflow,
                     cursor: null,
                     limit: engineResponse.response.output.length,
@@ -101,7 +101,7 @@ export const triggerEventService = (log: FastifyBaseLogger) => ({
     },
 
     async list({
-        workspaceId,
+        projectId,
         workflow,
         cursor,
         limit,
@@ -119,7 +119,7 @@ export const triggerEventService = (log: FastifyBaseLogger) => ({
             },
         })
         const query = triggerEventRepo().createQueryBuilder('trigger_event').where({
-            workspaceId,
+            projectId,
             workflowId,
             sourceName,
         })
@@ -156,18 +156,18 @@ function getSourceName(trigger: WorkflowTrigger): string {
 }
 
 type TestParams = {
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     workflow: PopulatedWorkflow
 }
 
 type SaveEventParams = {
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     workflowId: WorkflowId
     payload: unknown
 }
 
 type ListParams = {
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     workflow: PopulatedWorkflow
     cursor: Cursor | null
     limit: number

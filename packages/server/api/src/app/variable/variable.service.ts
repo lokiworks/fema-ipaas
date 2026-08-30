@@ -1,4 +1,4 @@
-import { ApplicationError, Cursor, EntityId, ErrorCode, generateId, isNil, Metadata, SeekPage, spreadIfDefined, TenantId, UserId, WorkspaceId } from '@fema-ipaas/core-utils'
+import { ApplicationError, Cursor, EntityId, ErrorCode, generateId, isNil, Metadata, ProjectId, SeekPage, spreadIfDefined, TenantId, UserId } from '@fema-ipaas/core-utils'
 import { ConnectionOwners, User, UserIdentity, UserWithMetaInformation, Variable, VariableWithoutSensitiveData } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { Equal, ILike, QueryFailedError } from 'typeorm'
@@ -12,12 +12,12 @@ export const variableRepo = repoFactory(VariableEntity)
 
 export const variableService = (log: FastifyBaseLogger) => ({
     async create(params: CreateParams): Promise<VariableWithoutSensitiveData> {
-        const { workspaceId, tenantId, name, value, ownerId, metadata } = params
+        const { projectId, tenantId, name, value, ownerId, metadata } = params
         const id = generateId()
         try {
             await variableRepo().insert({
                 id,
-                workspaceId,
+                projectId,
                 tenantId,
                 name,
                 ownerId: ownerId ?? null,
@@ -34,23 +34,23 @@ export const variableService = (log: FastifyBaseLogger) => ({
             }
             throw error
         }
-        log.info({ id, workspace: { id: workspaceId }, name }, 'Variable created')
-        return getOneOrThrowWithoutValue({ id, workspaceId, tenantId })
+        log.info({ id, project: { id: projectId }, name }, 'Variable created')
+        return getOneOrThrowWithoutValue({ id, projectId, tenantId })
     },
 
     async update(params: UpdateParams): Promise<VariableWithoutSensitiveData> {
-        const { id, workspaceId, tenantId, value, metadata } = params
-        await getOneOrThrowWithoutValue({ id, workspaceId, tenantId })
-        await variableRepo().update({ id, workspaceId, tenantId }, {
+        const { id, projectId, tenantId, value, metadata } = params
+        await getOneOrThrowWithoutValue({ id, projectId, tenantId })
+        await variableRepo().update({ id, projectId, tenantId }, {
             ...(isNil(value) ? {} : { value: await encryptUtils.encryptObject({ secret_text: value }) }),
             ...spreadIfDefined('metadata', metadata),
         })
-        log.info({ id, workspace: { id: workspaceId } }, 'Variable updated')
-        return getOneOrThrowWithoutValue({ id, workspaceId, tenantId })
+        log.info({ id, project: { id: projectId } }, 'Variable updated')
+        return getOneOrThrowWithoutValue({ id, projectId, tenantId })
     },
 
     async list(params: ListParams): Promise<SeekPage<VariableWithoutSensitiveData>> {
-        const { workspaceId, tenantId, cursor, limit, name } = params
+        const { projectId, tenantId, cursor, limit, name } = params
         const decodedCursor = paginationHelper.decodeCursor(cursor ?? null)
         const paginator = buildPaginator({
             entity: VariableEntity,
@@ -67,7 +67,7 @@ export const variableService = (log: FastifyBaseLogger) => ({
             .leftJoinAndSelect('variable.owner', 'owner')
             .leftJoinAndSelect('owner.identity', 'owner_identity')
             .where({
-                workspaceId: Equal(workspaceId),
+                projectId: Equal(projectId),
                 tenantId: Equal(tenantId),
                 ...(isNil(name) ? {} : { name: ILike(`%${name}%`) }),
             })
@@ -77,8 +77,8 @@ export const variableService = (log: FastifyBaseLogger) => ({
         return paginationHelper.createPage<VariableWithoutSensitiveData>(sanitized, nextCursor)
     },
 
-    async getOwners(params: { workspaceId: WorkspaceId, tenantId: TenantId }): Promise<ConnectionOwners[]> {
-        const { workspaceId, tenantId } = params
+    async getOwners(params: { projectId: ProjectId, tenantId: TenantId }): Promise<ConnectionOwners[]> {
+        const { projectId, tenantId } = params
         return variableRepo()
             .createQueryBuilder('variable')
             .innerJoin('variable.owner', 'owner')
@@ -86,7 +86,7 @@ export const variableService = (log: FastifyBaseLogger) => ({
             .select('owner_identity.firstName', 'firstName')
             .addSelect('owner_identity.lastName', 'lastName')
             .addSelect('owner_identity.email', 'email')
-            .where('variable.workspaceId = :workspaceId', { workspaceId })
+            .where('variable.projectId = :projectId', { projectId })
             .andWhere('variable.tenantId = :tenantId', { tenantId })
             .distinct(true)
             .limit(MAX_VARIABLE_OWNERS)
@@ -98,8 +98,8 @@ export const variableService = (log: FastifyBaseLogger) => ({
     },
 
     async getDecryptedValue(params: GetOneParams): Promise<string> {
-        const { id, workspaceId, tenantId } = params
-        const row = await variableRepo().findOneBy({ id, workspaceId, tenantId })
+        const { id, projectId, tenantId } = params
+        const row = await variableRepo().findOneBy({ id, projectId, tenantId })
         if (isNil(row)) {
             throw new ApplicationError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
@@ -114,8 +114,8 @@ export const variableService = (log: FastifyBaseLogger) => ({
     },
 
     async getDecryptedValueForWorker(params: GetForWorkerParams): Promise<string> {
-        const { workspaceId, name } = params
-        const row = await variableRepo().findOneBy({ workspaceId, name })
+        const { projectId, name } = params
+        const row = await variableRepo().findOneBy({ projectId, name })
         if (isNil(row)) {
             throw new ApplicationError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
@@ -131,19 +131,19 @@ export const variableService = (log: FastifyBaseLogger) => ({
 
     async delete(params: GetOneParams): Promise<VariableWithoutSensitiveData> {
         const target = await getOneOrThrowWithoutValue(params)
-        await variableRepo().delete({ id: params.id, workspaceId: params.workspaceId, tenantId: params.tenantId })
-        log.info({ id: params.id, workspace: { id: params.workspaceId } }, 'Variable deleted')
+        await variableRepo().delete({ id: params.id, projectId: params.projectId, tenantId: params.tenantId })
+        log.info({ id: params.id, project: { id: params.projectId } }, 'Variable deleted')
         return target
     },
 })
 
 async function getOneOrThrowWithoutValue(params: GetOneParams): Promise<VariableWithoutSensitiveData> {
-    const { id, workspaceId, tenantId } = params
+    const { id, projectId, tenantId } = params
     const row = await variableRepo()
         .createQueryBuilder('variable')
         .leftJoinAndSelect('variable.owner', 'owner')
         .leftJoinAndSelect('owner.identity', 'owner_identity')
-        .where({ id, workspaceId, tenantId })
+        .where({ id, projectId, tenantId })
         .getOne()
     if (isNil(row)) {
         throw new ApplicationError({
@@ -178,7 +178,7 @@ function stripSensitiveData(row: VariableSchema): VariableWithoutSensitiveData {
         created: row.created,
         updated: row.updated,
         name: row.name,
-        workspaceId: row.workspaceId,
+        projectId: row.projectId,
         tenantId: row.tenantId,
         ownerId: row.ownerId,
         owner: mapToUserWithMetaInformation(row.owner ?? null),
@@ -211,7 +211,7 @@ function mapToUserWithMetaInformation(owner: (User & { identity?: UserIdentity }
 }
 
 type CreateParams = {
-    workspaceId: string
+    projectId: string
     tenantId: string
     name: string
     value: string
@@ -221,7 +221,7 @@ type CreateParams = {
 
 type UpdateParams = {
     id: EntityId
-    workspaceId: string
+    projectId: string
     tenantId: string
     value: string | undefined
     metadata: Metadata | undefined
@@ -229,17 +229,17 @@ type UpdateParams = {
 
 type GetOneParams = {
     id: EntityId
-    workspaceId: string
+    projectId: string
     tenantId: string
 }
 
 type GetForWorkerParams = {
-    workspaceId: string
+    projectId: string
     name: string
 }
 
 type ListParams = {
-    workspaceId: string
+    projectId: string
     tenantId: string
     cursor: Cursor | undefined
     limit: number | undefined

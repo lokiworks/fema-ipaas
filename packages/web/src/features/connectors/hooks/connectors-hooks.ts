@@ -68,7 +68,7 @@ type UseConnectorProps = {
   name: string;
   version?: string;
   enabled?: boolean;
-  workspaceId?: string;
+  projectId?: string;
 };
 
 type UseMultipleConnectorsProps = {
@@ -79,7 +79,7 @@ type UseConnectorsProps = {
   searchQuery?: string;
   includeHidden?: boolean;
   isTableQuery?: boolean;
-  skipWorkspaceFilter?: boolean;
+  skipProjectFilter?: boolean;
 };
 type UseConnectorsSearchProps = {
   searchQuery: string;
@@ -93,17 +93,17 @@ export const connectorsHooks = {
     name,
     version,
     enabled = true,
-    workspaceId,
+    projectId,
   }: UseConnectorProps) => {
     const { i18n } = useTranslation();
     const query = useQuery<ConnectorMetadataModel, Error>({
-      queryKey: ['connector', name, version, i18n.language, workspaceId],
+      queryKey: ['connector', name, version, i18n.language, projectId],
       queryFn: () =>
         connectorsApi.get({
           name,
           version,
           locale: i18n.language as LocalesEnum,
-          workspaceId,
+          projectId,
         }),
       staleTime: Infinity,
       enabled,
@@ -182,24 +182,24 @@ export const connectorsHooks = {
     searchQuery,
     includeHidden = false,
     isTableQuery = false,
-    skipWorkspaceFilter = false,
+    skipProjectFilter = false,
   }: UseConnectorsProps) => {
     const { i18n } = useTranslation();
-    const workspaceId = skipWorkspaceFilter
+    const projectId = skipProjectFilter
       ? undefined
-      : authenticationSession.getWorkspaceId()!;
+      : authenticationSession.getProjectId()!;
     const query = useQuery<ConnectorMetadataModelSummary[], Error>({
       queryKey: [
         isTableQuery ? 'connectors-table' : 'connectors',
         searchQuery,
         includeHidden,
-        skipWorkspaceFilter,
-        workspaceId,
+        skipProjectFilter,
+        projectId,
         i18n.language,
       ],
       queryFn: () =>
         connectorsApi.list({
-          workspaceId,
+          projectId,
           searchQuery,
           includeHidden,
           locale: i18n.language as LocalesEnum,
@@ -444,7 +444,7 @@ export const connectorsHooks = {
           await connectionsApi.list({
             connectorName,
             limit: 1,
-            workspaceId: authenticationSession.getWorkspaceId()!,
+            projectId: authenticationSession.getProjectId()!,
           })
         ).data.find(
           (connection) => connection.externalId === connectionExternalId,

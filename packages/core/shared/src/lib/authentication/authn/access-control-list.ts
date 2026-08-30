@@ -1,5 +1,5 @@
 import { Permission } from '@fema-ipaas/core-utils'
-import { DefaultWorkspaceRole } from '../../management/workspace/workspace-member'
+import { DefaultProjectRole } from '../../management/project/project-member'
 
 const VIEWER_PERMISSIONS: Permission[] = [
     Permission.READ_WORKFLOW,
@@ -7,11 +7,11 @@ const VIEWER_PERMISSIONS: Permission[] = [
     Permission.READ_CONNECTOR,
     Permission.READ_RUN,
     Permission.READ_TEMPLATE,
-    Permission.READ_WORKSPACE,
+    Permission.READ_PROJECT,
     Permission.READ_FOLDER,
     Permission.READ_VARIABLE,
-    Permission.READ_WORKSPACE_RELEASE,
-    Permission.READ_WORKSPACE_MEMBER,
+    Permission.READ_PROJECT_RELEASE,
+    Permission.READ_PROJECT_MEMBER,
     Permission.READ_INVITATION,
 ]
 
@@ -29,23 +29,23 @@ const DEVELOPER_PERMISSIONS: Permission[] = [
     Permission.PUBLISH_WORKFLOW,
     Permission.WRITE_FOLDER,
     Permission.WRITE_VARIABLE,
-    Permission.WRITE_WORKSPACE_RELEASE,
+    Permission.WRITE_PROJECT_RELEASE,
     Permission.MANAGE_CONNECTOR_DEVELOPMENT,
     Permission.MANAGE_TEMPLATE,
 ]
 
-const WORKSPACE_ADMIN_PERMISSIONS: Permission[] = [
+const PROJECT_ADMIN_PERMISSIONS: Permission[] = [
     ...DEVELOPER_PERMISSIONS,
-    Permission.WRITE_WORKSPACE,
-    Permission.WRITE_WORKSPACE_MEMBER,
+    Permission.WRITE_PROJECT,
+    Permission.WRITE_PROJECT_MEMBER,
     Permission.WRITE_INVITATION,
     Permission.MANAGE_CONNECTOR,
     Permission.READ_AUDIT,
 ]
 
-export const rolePermissions: Record<DefaultWorkspaceRole, Permission[]> = {
-    [DefaultWorkspaceRole.ADMIN]: WORKSPACE_ADMIN_PERMISSIONS,
-    [DefaultWorkspaceRole.DEVELOPER]: DEVELOPER_PERMISSIONS,
-    [DefaultWorkspaceRole.OPERATOR]: OPERATOR_PERMISSIONS,
-    [DefaultWorkspaceRole.VIEWER]: VIEWER_PERMISSIONS,
+export const rolePermissions: Record<DefaultProjectRole, Permission[]> = {
+    [DefaultProjectRole.ADMIN]: PROJECT_ADMIN_PERMISSIONS,
+    [DefaultProjectRole.DEVELOPER]: DEVELOPER_PERMISSIONS,
+    [DefaultProjectRole.OPERATOR]: OPERATOR_PERMISSIONS,
+    [DefaultProjectRole.VIEWER]: VIEWER_PERMISSIONS,
 }

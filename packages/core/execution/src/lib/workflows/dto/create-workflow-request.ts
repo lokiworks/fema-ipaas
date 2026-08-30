@@ -6,7 +6,7 @@ export const CreateWorkflowRequest = z.object({
     /**If folderId is provided, folderName is ignored */
     folderId: z.string().optional(),
     folderName: z.string().optional(),
-    workspaceId: z.string(),
+    projectId: z.string(),
     templateId: z.string().optional(),
     metadata: z.optional(Metadata),
 })

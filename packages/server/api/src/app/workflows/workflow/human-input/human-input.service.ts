@@ -2,8 +2,8 @@ import { ApplicationError, ErrorCode, isNil, WorkflowId } from '@fema-ipaas/core
 import { ChatUIResponse, FormInputType, FormResponse, PopulatedWorkflow } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { connectorMetadataService } from '../../../connectors/metadata/connector-metadata-service'
+import { projectService } from '../../../project/project-service'
 import { tenantService } from '../../../tenant/tenant.service'
-import { workspaceService } from '../../../workspace/workspace-service'
 import { workflowVersionService } from '../../workflow-version/workflow-version.service'
 import { workflowRepo } from '../workflow.repo'
 
@@ -50,14 +50,14 @@ export const humanInputService = (log: FastifyBaseLogger) => ({
         const connectorVersion = await connectorMetadataService(log).resolveExactVersion({
             name: FORMS_CONNECTOR_NAME,
             version: workflow.version.trigger.settings.connectorVersion,
-            tenantId: await workspaceService(log).getTenantId(workflow.workspaceId),
+            tenantId: await projectService(log).getTenantId(workflow.projectId),
         })
         const triggerSettings = workflow.version.trigger.settings
         return {
             id: workflow.id,
             title: workflow.version.displayName,
             props: triggerSettings.triggerName === FILE_TRIGGER ? SIMPLE_FILE_PROPS : triggerSettings.input,
-            workspaceId: workflow.workspaceId,
+            projectId: workflow.projectId,
             version: connectorVersion,
         }
     },
@@ -75,13 +75,13 @@ export const humanInputService = (log: FastifyBaseLogger) => ({
                 },
             })
         }
-        const tenantId = await workspaceService(log).getTenantId(workflow.workspaceId)
+        const tenantId = await projectService(log).getTenantId(workflow.projectId)
         const tenant = await tenantService(log).getOneOrThrow(tenantId)
         return {
             id: workflow.id,
             title: workflow.version.displayName,
             props: workflow.version.trigger.settings.input,
-            workspaceId: workflow.workspaceId,
+            projectId: workflow.projectId,
             tenantLogoUrl: tenant.logoIconUrl,
             tenantName: tenant.name,
         }

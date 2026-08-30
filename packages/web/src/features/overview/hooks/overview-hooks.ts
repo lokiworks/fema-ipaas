@@ -5,12 +5,12 @@ import { authenticationSession } from '@/lib/authentication-session';
 import { overviewApi } from '../api/overview-api';
 
 export const overviewHooks = {
-  useWorkspaceOverview: (days: number) => {
-    const workspaceId = authenticationSession.getWorkspaceId();
+  useProjectOverview: (days: number) => {
+    const projectId = authenticationSession.getProjectId();
     return useQuery({
-      queryKey: ['workspace-overview', workspaceId, days],
-      queryFn: () => overviewApi.get({ workspaceId: workspaceId!, days }),
-      enabled: !!workspaceId,
+      queryKey: ['project-overview', projectId, days],
+      queryFn: () => overviewApi.get({ projectId: projectId!, days }),
+      enabled: !!projectId,
       staleTime: 60 * 1000,
       meta: { showErrorDialog: true, loadSubsetOptions: {} },
     });

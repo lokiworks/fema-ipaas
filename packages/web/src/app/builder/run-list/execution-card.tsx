@@ -47,7 +47,7 @@ const ExecutionCard = React.memo(
     const userHasPermissionToRetryRun = useAuthorization().checkAccess(
       Permission.WRITE_RUN,
     );
-    const workspaceId = authenticationSession.getWorkspaceId();
+    const projectId = authenticationSession.getProjectId();
     const navigate = useNavigate();
 
     const [isRetryDropdownOpen, setIsRetryDropdownOpen] =
@@ -176,7 +176,7 @@ const ExecutionCard = React.memo(
                       retryRun({
                         runId: run.id,
                         workflowId: run.workflowId,
-                        workspaceId: workspaceId!,
+                        projectId: projectId!,
                         retryStrategy: WorkflowRetryStrategy.ON_LATEST_VERSION,
                       });
                     }}
@@ -196,7 +196,7 @@ const ExecutionCard = React.memo(
                           retryRun({
                             runId: run.id,
                             workflowId: run.workflowId,
-                            workspaceId: workspaceId!,
+                            projectId: projectId!,
                             retryStrategy:
                               WorkflowRetryStrategy.FROM_FAILED_STEP,
                           });

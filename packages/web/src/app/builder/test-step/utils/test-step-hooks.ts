@@ -46,14 +46,14 @@ export const testStepHooks = {
         setErrorMessage?.(undefined);
         const ids = (
           await triggerEventsApi.list({
-            workspaceId: authenticationSession.getWorkspaceId()!,
+            projectId: authenticationSession.getProjectId()!,
             workflowId,
             cursor: undefined,
             limit: 5,
           })
         ).data.map((triggerEvent) => triggerEvent.id);
         await triggerEventsApi.test({
-          workspaceId: authenticationSession.getWorkspaceId()!,
+          projectId: authenticationSession.getProjectId()!,
           workflowId,
           workflowVersionId,
           testStrategy: TriggerTestStrategy.SIMULATION,
@@ -64,7 +64,7 @@ export const testStepHooks = {
             return [];
           }
           const newData = await triggerEventsApi.list({
-            workspaceId: authenticationSession.getWorkspaceId()!,
+            projectId: authenticationSession.getProjectId()!,
             workflowId,
             cursor: undefined,
             limit: 5,
@@ -107,7 +107,7 @@ export const testStepHooks = {
     return useMutation({
       mutationFn: async (mockData: unknown) => {
         const data = await triggerEventsApi.saveTriggerMockdata({
-          workspaceId: authenticationSession.getWorkspaceId()!,
+          projectId: authenticationSession.getProjectId()!,
           workflowId,
           mockData,
         });
@@ -136,7 +136,7 @@ export const testStepHooks = {
       mutationFn: async () => {
         setErrorMessage(undefined);
         const { data } = await triggerEventsApi.test({
-          workspaceId: authenticationSession.getWorkspaceId()!,
+          projectId: authenticationSession.getProjectId()!,
           workflowId,
           workflowVersionId,
           testStrategy: TriggerTestStrategy.TEST_FUNCTION,
@@ -191,7 +191,7 @@ export const testStepHooks = {
       mutationFn: async () => {
         const response = await executionsApi.testStep({
           request: {
-            workspaceId: authenticationSession.getWorkspaceId()!,
+            projectId: authenticationSession.getProjectId()!,
             workflowVersionId,
             stepName: currentStep.name,
           },

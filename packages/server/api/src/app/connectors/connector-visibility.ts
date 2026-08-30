@@ -15,6 +15,6 @@ export type VisibilityPolicy = {
 
 type ResolveVisibilityParams = {
     tenantId: string | undefined
-    workspaceId: string | undefined
+    projectId: string | undefined
     log: FastifyBaseLogger
 }

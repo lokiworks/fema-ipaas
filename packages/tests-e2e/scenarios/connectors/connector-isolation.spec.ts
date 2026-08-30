@@ -1,11 +1,11 @@
-import { test } from '../../../fixtures';
+import { test } from '../../fixtures';
 
 /**
  * Warmup resilience smoke test.
  *
  * Triggers a connector sync (which may cause warmup for some connectors) and then
  * verifies the worker remains healthy by successfully running a Webhook workflow.
- * A broken connector published with workspace:* dependencies must not prevent other
+ * A broken connector published with project:* dependencies must not prevent other
  * workflows from executing.
  */
 test.describe('Connector isolation — CE', () => {

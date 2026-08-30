@@ -4,7 +4,7 @@ import { FastifyInstance } from 'fastify'
 import { In } from 'typeorm'
 import { fileRepo, fileService } from '../../../../src/app/file/file.service'
 import { db } from '../../../helpers/db'
-import { createMockFile, createMockWorkspace, mockAndSaveBasicSetup } from '../../../helpers/mocks'
+import { createMockFile, createMockProject, mockAndSaveBasicSetup } from '../../../helpers/mocks'
 import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
 
 let app: FastifyInstance | null = null
@@ -21,9 +21,9 @@ afterAll(async () => {
 
 const daysAgo = (days: number): string => dayjs().subtract(days, 'days').toISOString()
 
-const saveLogFile = async ({ workspaceId, tenantId, created }: { workspaceId: string | null, tenantId: string, created: string }): Promise<string> => {
+const saveLogFile = async ({ projectId, tenantId, created }: { projectId: string | null, tenantId: string, created: string }): Promise<string> => {
     const file = createMockFile({
-        workspaceId,
+        projectId,
         tenantId,
         created,
         type: FileType.EXECUTION_LOG,
@@ -35,44 +35,44 @@ const saveLogFile = async ({ workspaceId, tenantId, created }: { workspaceId: st
 }
 
 describe('fileService.deleteStaleBulk', () => {
-    it('applies shorter per-workspace retention and treats the instance value as a ceiling', async () => {
-        const { mockOwner, mockTenant, mockWorkspace: defaultWorkspace } = await mockAndSaveBasicSetup()
+    it('applies shorter per-project retention and treats the instance value as a ceiling', async () => {
+        const { mockOwner, mockTenant, mockProject: defaultProject } = await mockAndSaveBasicSetup()
 
-        const shortRetentionWorkspace = createMockWorkspace({
+        const shortRetentionProject = createMockProject({
             ownerId: mockOwner.id,
             tenantId: mockTenant.id,
             executionDataRetentionDays: 7,
         })
-        const aboveCeilingWorkspace = createMockWorkspace({
+        const aboveCeilingProject = createMockProject({
             ownerId: mockOwner.id,
             tenantId: mockTenant.id,
             executionDataRetentionDays: 60,
         })
-        const belowFloorWorkspace = createMockWorkspace({
+        const belowFloorProject = createMockProject({
             ownerId: mockOwner.id,
             tenantId: mockTenant.id,
             executionDataRetentionDays: 3,
         })
-        await db.save('workspace', [shortRetentionWorkspace, aboveCeilingWorkspace, belowFloorWorkspace])
+        await db.save('project', [shortRetentionProject, aboveCeilingProject, belowFloorProject])
 
-        const defaultWorkspaceStale = await saveLogFile({ workspaceId: defaultWorkspace.id, tenantId: mockTenant.id, created: daysAgo(40) })
-        const defaultWorkspaceFresh = await saveLogFile({ workspaceId: defaultWorkspace.id, tenantId: mockTenant.id, created: daysAgo(10) })
-        const shortWorkspaceStale = await saveLogFile({ workspaceId: shortRetentionWorkspace.id, tenantId: mockTenant.id, created: daysAgo(10) })
-        const shortWorkspaceFresh = await saveLogFile({ workspaceId: shortRetentionWorkspace.id, tenantId: mockTenant.id, created: daysAgo(3) })
-        const aboveCeilingStale = await saveLogFile({ workspaceId: aboveCeilingWorkspace.id, tenantId: mockTenant.id, created: daysAgo(40) })
-        const aboveCeilingFresh = await saveLogFile({ workspaceId: aboveCeilingWorkspace.id, tenantId: mockTenant.id, created: daysAgo(10) })
-        const belowFloorStale = await saveLogFile({ workspaceId: belowFloorWorkspace.id, tenantId: mockTenant.id, created: daysAgo(10) })
-        const belowFloorClamped = await saveLogFile({ workspaceId: belowFloorWorkspace.id, tenantId: mockTenant.id, created: daysAgo(4) })
-        const orphanStale = await saveLogFile({ workspaceId: null, tenantId: mockTenant.id, created: daysAgo(40) })
-        const orphanFresh = await saveLogFile({ workspaceId: null, tenantId: mockTenant.id, created: daysAgo(10) })
+        const defaultProjectStale = await saveLogFile({ projectId: defaultProject.id, tenantId: mockTenant.id, created: daysAgo(40) })
+        const defaultProjectFresh = await saveLogFile({ projectId: defaultProject.id, tenantId: mockTenant.id, created: daysAgo(10) })
+        const shortProjectStale = await saveLogFile({ projectId: shortRetentionProject.id, tenantId: mockTenant.id, created: daysAgo(10) })
+        const shortProjectFresh = await saveLogFile({ projectId: shortRetentionProject.id, tenantId: mockTenant.id, created: daysAgo(3) })
+        const aboveCeilingStale = await saveLogFile({ projectId: aboveCeilingProject.id, tenantId: mockTenant.id, created: daysAgo(40) })
+        const aboveCeilingFresh = await saveLogFile({ projectId: aboveCeilingProject.id, tenantId: mockTenant.id, created: daysAgo(10) })
+        const belowFloorStale = await saveLogFile({ projectId: belowFloorProject.id, tenantId: mockTenant.id, created: daysAgo(10) })
+        const belowFloorClamped = await saveLogFile({ projectId: belowFloorProject.id, tenantId: mockTenant.id, created: daysAgo(4) })
+        const orphanStale = await saveLogFile({ projectId: null, tenantId: mockTenant.id, created: daysAgo(40) })
+        const orphanFresh = await saveLogFile({ projectId: null, tenantId: mockTenant.id, created: daysAgo(10) })
 
         await fileService(app!.log).deleteStaleBulk([FileType.EXECUTION_LOG])
 
         const allIds = [
-            defaultWorkspaceStale,
-            defaultWorkspaceFresh,
-            shortWorkspaceStale,
-            shortWorkspaceFresh,
+            defaultProjectStale,
+            defaultProjectFresh,
+            shortProjectStale,
+            shortProjectFresh,
             aboveCeilingStale,
             aboveCeilingFresh,
             belowFloorStale,
@@ -84,8 +84,8 @@ describe('fileService.deleteStaleBulk', () => {
         const survivingIds = survivingFiles.map(file => file.id).sort()
 
         expect(survivingIds).toEqual([
-            defaultWorkspaceFresh,
-            shortWorkspaceFresh,
+            defaultProjectFresh,
+            shortProjectFresh,
             aboveCeilingFresh,
             belowFloorClamped,
             orphanFresh,

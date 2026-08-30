@@ -39,7 +39,7 @@ describe('Workflow Operations API', () => {
         it('should get a workflow by id', async () => {
             const ctx = await setup()
 
-            const mockWorkflow = createMockWorkflow({ workspaceId: ctx.workspace.id })
+            const mockWorkflow = createMockWorkflow({ projectId: ctx.project.id })
             await db.save('workflow', mockWorkflow)
 
             const mockWorkflowVersion = createMockWorkflowVersion({ workflowId: mockWorkflow.id })
@@ -50,7 +50,7 @@ describe('Workflow Operations API', () => {
             expect(response?.statusCode).toBe(StatusCodes.OK)
             const body = response?.json()
             expect(body.id).toBe(mockWorkflow.id)
-            expect(body.workspaceId).toBe(ctx.workspace.id)
+            expect(body.projectId).toBe(ctx.project.id)
             expect(body.version).toBeDefined()
             expect(body.version.id).toBe(mockWorkflowVersion.id)
         })
@@ -64,12 +64,12 @@ describe('Workflow Operations API', () => {
         })
     })
 
-    describe('GET /v1/workflows/:id (Cross-workspace)', () => {
-        it('should deny access for workflow in another workspace', async () => {
+    describe('GET /v1/workflows/:id (Cross-project)', () => {
+        it('should deny access for workflow in another project', async () => {
             const ctx1 = await createTestContext(app!)
             const ctx2 = await createTestContext(app!)
 
-            const mockWorkflow = createMockWorkflow({ workspaceId: ctx1.workspace.id })
+            const mockWorkflow = createMockWorkflow({ projectId: ctx1.project.id })
             await db.save('workflow', mockWorkflow)
 
             const mockWorkflowVersion = createMockWorkflowVersion({ workflowId: mockWorkflow.id })
@@ -82,11 +82,11 @@ describe('Workflow Operations API', () => {
     })
 
     describeWithAuth('GET /v1/workflows/count', () => app!, (setup) => {
-        it('should count workflows in workspace', async () => {
+        it('should count workflows in project', async () => {
             const ctx = await setup()
 
-            const mockWorkflow1 = createMockWorkflow({ workspaceId: ctx.workspace.id })
-            const mockWorkflow2 = createMockWorkflow({ workspaceId: ctx.workspace.id })
+            const mockWorkflow1 = createMockWorkflow({ projectId: ctx.project.id })
+            const mockWorkflow2 = createMockWorkflow({ projectId: ctx.project.id })
             await db.save('workflow', [mockWorkflow1, mockWorkflow2])
 
             const mockWorkflowVersion1 = createMockWorkflowVersion({ workflowId: mockWorkflow1.id })
@@ -94,7 +94,7 @@ describe('Workflow Operations API', () => {
             await db.save('workflow_version', [mockWorkflowVersion1, mockWorkflowVersion2])
 
             const response = await ctx.get('/v1/workflows/count', {
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
             })
 
             expect(response?.statusCode).toBe(StatusCodes.OK)
@@ -107,7 +107,7 @@ describe('Workflow Operations API', () => {
         it('should delete a workflow', async () => {
             const ctx = await setup()
 
-            const mockWorkflow = createMockWorkflow({ workspaceId: ctx.workspace.id, status: WorkflowStatus.DISABLED })
+            const mockWorkflow = createMockWorkflow({ projectId: ctx.project.id, status: WorkflowStatus.DISABLED })
             await db.save('workflow', mockWorkflow)
 
             const mockWorkflowVersion = createMockWorkflowVersion({ workflowId: mockWorkflow.id })
@@ -118,7 +118,7 @@ describe('Workflow Operations API', () => {
             expect(response?.statusCode).toBe(StatusCodes.NO_CONTENT)
 
             // Verify the workflow no longer appears in list
-            const listResponse = await ctx.get('/v1/workflows', { workspaceId: ctx.workspace.id })
+            const listResponse = await ctx.get('/v1/workflows', { projectId: ctx.project.id })
             const workflows = listResponse?.json().data ?? []
             const workflowIds = workflows.map((f: Record<string, string>) => f.id)
             expect(workflowIds).not.toContain(mockWorkflow.id)
@@ -133,12 +133,12 @@ describe('Workflow Operations API', () => {
         })
     })
 
-    describe('DELETE /v1/workflows/:id (Cross-workspace)', () => {
-        it('should deny deleting workflow from another workspace', async () => {
+    describe('DELETE /v1/workflows/:id (Cross-project)', () => {
+        it('should deny deleting workflow from another project', async () => {
             const ctx1 = await createTestContext(app!)
             const ctx2 = await createTestContext(app!)
 
-            const mockWorkflow = createMockWorkflow({ workspaceId: ctx1.workspace.id, status: WorkflowStatus.DISABLED })
+            const mockWorkflow = createMockWorkflow({ projectId: ctx1.project.id, status: WorkflowStatus.DISABLED })
             await db.save('workflow', mockWorkflow)
 
             const mockWorkflowVersion = createMockWorkflowVersion({ workflowId: mockWorkflow.id })
@@ -156,8 +156,8 @@ describe('Workflow Operations API', () => {
 
             const createResponse = await ctx.post('/v1/workflows', {
                 displayName: 'Original Name',
-                workspaceId: ctx.workspace.id,
-            }, { query: { workspaceId: ctx.workspace.id } })
+                projectId: ctx.project.id,
+            }, { query: { projectId: ctx.project.id } })
 
             expect(createResponse?.statusCode).toBe(StatusCodes.CREATED)
             const workflow: PopulatedWorkflow = createResponse?.json()
@@ -177,13 +177,13 @@ describe('Workflow Operations API', () => {
         it('should move workflow to folder', async () => {
             const ctx = await createTestContext(app!)
 
-            const mockFolder = createMockFolder({ workspaceId: ctx.workspace.id })
+            const mockFolder = createMockFolder({ projectId: ctx.project.id })
             await db.save('folder', mockFolder)
 
             const createResponse = await ctx.post('/v1/workflows', {
                 displayName: 'test workflow',
-                workspaceId: ctx.workspace.id,
-            }, { query: { workspaceId: ctx.workspace.id } })
+                projectId: ctx.project.id,
+            }, { query: { projectId: ctx.project.id } })
 
             const workflow: PopulatedWorkflow = createResponse?.json()
 
@@ -200,14 +200,14 @@ describe('Workflow Operations API', () => {
         it('should move workflow to null (unfolder)', async () => {
             const ctx = await createTestContext(app!)
 
-            const mockFolder = createMockFolder({ workspaceId: ctx.workspace.id })
+            const mockFolder = createMockFolder({ projectId: ctx.project.id })
             await db.save('folder', mockFolder)
 
             const createResponse = await ctx.post('/v1/workflows', {
                 displayName: 'test workflow',
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 folderId: mockFolder.id,
-            }, { query: { workspaceId: ctx.workspace.id } })
+            }, { query: { projectId: ctx.project.id } })
 
             const workflow: PopulatedWorkflow = createResponse?.json()
 
@@ -236,8 +236,8 @@ describe('Workflow Operations API', () => {
 
             const createResponse = await ctx.post('/v1/workflows', {
                 displayName: 'test workflow',
-                workspaceId: ctx.workspace.id,
-            }, { query: { workspaceId: ctx.workspace.id } })
+                projectId: ctx.project.id,
+            }, { query: { projectId: ctx.project.id } })
 
             const workflow: PopulatedWorkflow = createResponse?.json()
 
@@ -270,8 +270,8 @@ describe('Workflow Operations API', () => {
 
             const createResponse = await ctx.post('/v1/workflows', {
                 displayName: 'test workflow',
-                workspaceId: ctx.workspace.id,
-            }, { query: { workspaceId: ctx.workspace.id } })
+                projectId: ctx.project.id,
+            }, { query: { projectId: ctx.project.id } })
 
             const workflow: PopulatedWorkflow = createResponse?.json()
 
@@ -310,8 +310,8 @@ describe('Workflow Operations API', () => {
 
             const createResponse = await ctx.post('/v1/workflows', {
                 displayName: 'test workflow',
-                workspaceId: ctx.workspace.id,
-            }, { query: { workspaceId: ctx.workspace.id } })
+                projectId: ctx.project.id,
+            }, { query: { projectId: ctx.project.id } })
             const workflow: PopulatedWorkflow = createResponse?.json()
 
             await ctx.post(`/v1/workflows/${workflow.id}`, {
@@ -363,8 +363,8 @@ describe('Workflow Operations API', () => {
 
             const createResponse = await ctx.post('/v1/workflows', {
                 displayName: 'test workflow',
-                workspaceId: ctx.workspace.id,
-            }, { query: { workspaceId: ctx.workspace.id } })
+                projectId: ctx.project.id,
+            }, { query: { projectId: ctx.project.id } })
             const workflow: PopulatedWorkflow = createResponse?.json()
 
             await ctx.post(`/v1/workflows/${workflow.id}`, {
@@ -425,8 +425,8 @@ describe('Workflow Operations API', () => {
 
             const createResponse = await ctx.post('/v1/workflows', {
                 displayName: 'test workflow',
-                workspaceId: ctx.workspace.id,
-            }, { query: { workspaceId: ctx.workspace.id } })
+                projectId: ctx.project.id,
+            }, { query: { projectId: ctx.project.id } })
             const workflow: PopulatedWorkflow = createResponse?.json()
 
             await ctx.post(`/v1/workflows/${workflow.id}`, {
@@ -481,8 +481,8 @@ describe('Workflow Operations API', () => {
 
             const createResponse = await ctx.post('/v1/workflows', {
                 displayName: 'test workflow',
-                workspaceId: ctx.workspace.id,
-            }, { query: { workspaceId: ctx.workspace.id } })
+                projectId: ctx.project.id,
+            }, { query: { projectId: ctx.project.id } })
             const workflow: PopulatedWorkflow = createResponse?.json()
 
             await ctx.post(`/v1/workflows/${workflow.id}`, {
@@ -523,8 +523,8 @@ describe('Workflow Operations API', () => {
 
             const createResponse = await ctx.post('/v1/workflows', {
                 displayName: 'test workflow',
-                workspaceId: ctx.workspace.id,
-            }, { query: { workspaceId: ctx.workspace.id } })
+                projectId: ctx.project.id,
+            }, { query: { projectId: ctx.project.id } })
             const workflow: PopulatedWorkflow = createResponse?.json()
 
             await ctx.post(`/v1/workflows/${workflow.id}`, {
@@ -566,8 +566,8 @@ describe('Workflow Operations API', () => {
 
             const createResponse = await ctx.post('/v1/workflows', {
                 displayName: 'test workflow',
-                workspaceId: ctx.workspace.id,
-            }, { query: { workspaceId: ctx.workspace.id } })
+                projectId: ctx.project.id,
+            }, { query: { projectId: ctx.project.id } })
             const workflow: PopulatedWorkflow = createResponse?.json()
 
             await ctx.post(`/v1/workflows/${workflow.id}`, {
@@ -634,8 +634,8 @@ describe('Workflow Operations API', () => {
 
             const createResponse = await ctx.post('/v1/workflows', {
                 displayName: 'test workflow',
-                workspaceId: ctx.workspace.id,
-            }, { query: { workspaceId: ctx.workspace.id } })
+                projectId: ctx.project.id,
+            }, { query: { projectId: ctx.project.id } })
             const workflow: PopulatedWorkflow = createResponse?.json()
 
             const response = await ctx.post(`/v1/workflows/${workflow.id}`, {
@@ -665,8 +665,8 @@ describe('Workflow Operations API', () => {
 
             const createResponse = await ctx.post('/v1/workflows', {
                 displayName: 'test workflow',
-                workspaceId: ctx.workspace.id,
-            }, { query: { workspaceId: ctx.workspace.id } })
+                projectId: ctx.project.id,
+            }, { query: { projectId: ctx.project.id } })
             const workflow: PopulatedWorkflow = createResponse?.json()
 
             const response = await ctx.post(`/v1/workflows/${workflow.id}`, {
@@ -716,7 +716,7 @@ describe('Workflow Operations API', () => {
             const ctx = await createTestContext(app!)
 
             const mockWorkflow = createMockWorkflow({
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 status: WorkflowStatus.DISABLED,
             })
             await db.save('workflow', mockWorkflow)
@@ -761,7 +761,7 @@ describe('Workflow Operations API', () => {
             const ctx = await createTestContext(app!)
 
             const mockWorkflow = createMockWorkflow({
-                workspaceId: ctx.workspace.id,
+                projectId: ctx.project.id,
                 status: WorkflowStatus.DISABLED,
             })
             await db.save('workflow', mockWorkflow)
@@ -811,7 +811,7 @@ describe('Workflow Operations API', () => {
         it('should list workflow versions', async () => {
             const ctx = await createTestContext(app!)
 
-            const mockWorkflow = createMockWorkflow({ workspaceId: ctx.workspace.id })
+            const mockWorkflow = createMockWorkflow({ projectId: ctx.project.id })
             await db.save('workflow', mockWorkflow)
 
             const mockWorkflowVersion = createMockWorkflowVersion({

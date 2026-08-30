@@ -1,18 +1,18 @@
 import { ApplicationError, EntityId, ErrorCode, isNil } from '@fema-ipaas/core-utils'
-import { AuthenticationResponse, CreateTenantRequest, FileType, PrincipalType, SERVICE_KEY_SECURITY_OPENAPI, TenantWithoutSensitiveData, UpdateTenantRequestBody, WorkspaceWithLimitsWithTenant } from '@fema-ipaas/shared'
+import { AuthenticationResponse, CreateTenantRequest, FileType, PrincipalType, ProjectWithLimitsWithTenant, SERVICE_KEY_SECURITY_OPENAPI, TenantWithoutSensitiveData, UpdateTenantRequestBody } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
 import { securityAccess } from '../core/security/authorization/fastify-security'
 import { fileService } from '../file/file.service'
 import { attachMultipartFieldsToBody } from '../helper/multipart-body'
+import { projectService } from '../project/project-service'
+import { projectSideEffects } from '../project/project-side-effects'
 import { userService } from '../user/user-service'
-import { workspaceService } from '../workspace/workspace-service'
-import { workspaceSideEffects } from '../workspace/workspace-side-effects'
 import { tenantService } from './tenant.service'
 
 export const tenantController: FastifyPluginAsyncZod = async (app) => {
-    app.get('/', ListMyTenantsEndpoint, async (req): Promise<WorkspaceWithLimitsWithTenant[]> => {
+    app.get('/', ListMyTenantsEndpoint, async (req): Promise<ProjectWithLimitsWithTenant[]> => {
         const currentUser = await userService(req.log).getOneOrFail({ id: req.principal.id })
         const memberships = await userService(req.log).getUsersByIdentityId({ identityId: currentUser.identityId })
         const perTenant = await Promise.all(memberships.map(async (membership) => {
@@ -24,15 +24,15 @@ export const tenantController: FastifyPluginAsyncZod = async (app) => {
                 return null
             }
             const user = await userService(req.log).getOneOrFail({ id: membership.id })
-            const workspaces = await workspaceService(req.log).getAllForUser({
+            const projects = await projectService(req.log).getAllForUser({
                 tenantId: membership.tenantId,
                 userId: membership.id,
                 isPrivileged: userService(req.log).isUserPrivileged(user),
             })
-            const enriched = await Promise.all(workspaces.map((workspace) => workspaceSideEffects(req.log).enrich(workspace)))
-            return { tenantName: tenant.name, workspaces: enriched }
+            const enriched = await Promise.all(projects.map((project) => projectSideEffects(req.log).enrich(project)))
+            return { tenantName: tenant.name, projects: enriched }
         }))
-        return perTenant.filter((entry): entry is WorkspaceWithLimitsWithTenant => !isNil(entry))
+        return perTenant.filter((entry): entry is ProjectWithLimitsWithTenant => !isNil(entry))
     })
 
     app.post('/', CreateTenantEndpoint, async (req) => {
@@ -49,7 +49,7 @@ export const tenantController: FastifyPluginAsyncZod = async (app) => {
         const identityId = isOnboarding
             ? req.principal.id
             : (await userService(req.log).getOneOrFail({ id: req.principal.id })).identityId
-        const { response } = await tenantService(req.log).createTenantWithWorkspace({
+        const { response } = await tenantService(req.log).createTenantWithProject({
             identityId,
             name: req.body.name,
             invalidatePreviousTokens: isOnboarding,
@@ -139,7 +139,7 @@ const ListMyTenantsEndpoint = {
     },
     schema: {
         response: {
-            [StatusCodes.OK]: z.array(WorkspaceWithLimitsWithTenant),
+            [StatusCodes.OK]: z.array(ProjectWithLimitsWithTenant),
         },
     },
 }

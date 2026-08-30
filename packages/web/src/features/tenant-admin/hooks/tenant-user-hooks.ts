@@ -23,10 +23,10 @@ export const tenantUserKeys = {
 export const tenantUserHooks = {
   useUsers: () => {
     const { data: currentUser } = userHooks.useCurrentUser();
-    const { checkAccess, isFetchingWorkspaceRole } = useAuthorization();
+    const { checkAccess, isFetchingProjectRole } = useAuthorization();
     const hasInvitePermission = checkAccess(Permission.WRITE_INVITATION);
     const canListUsers =
-      !isNil(currentUser) && hasInvitePermission && !isFetchingWorkspaceRole;
+      !isNil(currentUser) && hasInvitePermission && !isFetchingProjectRole;
     return useQuery<SeekPage<UserWithMetaInformation>, Error>({
       queryKey: tenantUserKeys.users,
       queryFn: async () => {
@@ -46,7 +46,7 @@ export const tenantUserHooks = {
             type: InvitationType.TENANT,
             cursor: undefined,
             limit: 100,
-            workspaceId: null,
+            projectId: null,
           })
           .then((res) => res.data);
       },

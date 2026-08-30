@@ -6,8 +6,8 @@ import { FastifyBaseLogger } from 'fastify'
 import { distributedStore } from '../database/redis-connections'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
+import { projectService } from '../project/project-service'
 import { executionRepo } from '../workflows/execution/execution-service'
-import { workspaceService } from '../workspace/workspace-service'
 
 type ReportWindow = {
     createdAfter: string
@@ -18,33 +18,33 @@ function buildReportCacheKey(tenantId: TenantId, window: ReportWindow): string {
     return `${REPORT_CACHE_PREFIX}:${tenantId}:${window.createdAfter}:${window.createdBefore}`
 }
 
-async function countsByStatus(workspaceIds: string[], window: ReportWindow): Promise<Map<ExecutionStatus, number>> {
+async function countsByStatus(projectIds: string[], window: ReportWindow): Promise<Map<ExecutionStatus, number>> {
     const rows: Array<{ status: ExecutionStatus, count: string }> = await executionRepo().query(`
         SELECT status, COUNT(*) AS count
         FROM execution
-        WHERE "workspaceId" = ANY($1)
+        WHERE "projectId" = ANY($1)
           AND environment = $2
           AND "archivedAt" IS NULL
           AND created >= $3
           AND created <= $4
         GROUP BY status
-    `, [workspaceIds, RunEnvironment.PRODUCTION, window.createdAfter, window.createdBefore])
+    `, [projectIds, RunEnvironment.PRODUCTION, window.createdAfter, window.createdBefore])
 
     return new Map(rows.map((row) => [row.status, Number(row.count)]))
 }
 
-async function buildStatusTimeseries(workspaceIds: string[], window: ReportWindow): Promise<TenantMetricsStatusPoint[]> {
+async function buildStatusTimeseries(projectIds: string[], window: ReportWindow): Promise<TenantMetricsStatusPoint[]> {
     const rows: Array<{ day: Date, status: ExecutionStatus, count: string }> = await executionRepo().query(`
         SELECT DATE_TRUNC('day', created) AS day, status, COUNT(*) AS count
         FROM execution
-        WHERE "workspaceId" = ANY($1)
+        WHERE "projectId" = ANY($1)
           AND environment = $2
           AND "archivedAt" IS NULL
           AND created >= $3
           AND created <= $4
         GROUP BY day, status
         ORDER BY day ASC
-    `, [workspaceIds, RunEnvironment.PRODUCTION, window.createdAfter, window.createdBefore])
+    `, [projectIds, RunEnvironment.PRODUCTION, window.createdAfter, window.createdBefore])
     return rows.map((row) => ({
         day: dayjs(row.day).toISOString(),
         status: row.status,
@@ -52,29 +52,29 @@ async function buildStatusTimeseries(workspaceIds: string[], window: ReportWindo
     }))
 }
 
-async function buildInternalErrorImpact(workspaceIds: string[], window: ReportWindow): Promise<InternalErrorImpactItem[]> {
-    const rows: Array<{ workspaceId: string, workflowId: string, workspaceName: string | null, workflowName: string | null, count: string }> = await executionRepo().query(`
-        SELECT fr."workspaceId" AS "workspaceId",
+async function buildInternalErrorImpact(projectIds: string[], window: ReportWindow): Promise<InternalErrorImpactItem[]> {
+    const rows: Array<{ projectId: string, workflowId: string, projectName: string | null, workflowName: string | null, count: string }> = await executionRepo().query(`
+        SELECT fr."projectId" AS "projectId",
                fr."workflowId" AS "workflowId",
-               MAX(p."displayName") AS "workspaceName",
+               MAX(p."displayName") AS "projectName",
                MAX(fv."displayName") AS "workflowName",
                COUNT(*) AS count
         FROM execution fr
         LEFT JOIN workflow_version fv ON fv.id = fr."workflowVersionId"
-        LEFT JOIN workspace p ON p.id = fr."workspaceId"
-        WHERE fr."workspaceId" = ANY($1)
+        LEFT JOIN project p ON p.id = fr."projectId"
+        WHERE fr."projectId" = ANY($1)
           AND fr.environment = $2
           AND fr."archivedAt" IS NULL
           AND fr.status = $3
           AND fr.created >= $4
           AND fr.created <= $5
-        GROUP BY fr."workspaceId", fr."workflowId"
+        GROUP BY fr."projectId", fr."workflowId"
         ORDER BY COUNT(*) DESC
         LIMIT $6
-    `, [workspaceIds, RunEnvironment.PRODUCTION, ExecutionStatus.INTERNAL_ERROR, window.createdAfter, window.createdBefore, INTERNAL_ERROR_LIMIT])
+    `, [projectIds, RunEnvironment.PRODUCTION, ExecutionStatus.INTERNAL_ERROR, window.createdAfter, window.createdBefore, INTERNAL_ERROR_LIMIT])
     return rows.map((row) => ({
-        workspaceId: row.workspaceId,
-        workspaceName: row.workspaceName ?? '',
+        projectId: row.projectId,
+        projectName: row.projectName ?? '',
         workflowId: row.workflowId,
         workflowName: row.workflowName ?? '',
         count: Number(row.count),
@@ -97,18 +97,18 @@ function summarize(counts: Map<ExecutionStatus, number>): { completed: number, s
     return { completed, successRate }
 }
 
-async function queueStatusCounts(workspaceIds: string[], window: ReportWindow): Promise<Map<ExecutionStatus, number>> {
+async function queueStatusCounts(projectIds: string[], window: ReportWindow): Promise<Map<ExecutionStatus, number>> {
     const rows: Array<{ status: ExecutionStatus, count: string }> = await executionRepo().query(`
         SELECT status, COUNT(*) AS count
         FROM execution
-        WHERE "workspaceId" = ANY($1)
+        WHERE "projectId" = ANY($1)
           AND environment = $2
           AND "archivedAt" IS NULL
           AND status = ANY($3)
           AND created >= $4
           AND created <= $5
         GROUP BY status
-    `, [workspaceIds, RunEnvironment.PRODUCTION, [ExecutionStatus.RUNNING, ExecutionStatus.QUEUED], window.createdAfter, window.createdBefore])
+    `, [projectIds, RunEnvironment.PRODUCTION, [ExecutionStatus.RUNNING, ExecutionStatus.QUEUED], window.createdAfter, window.createdBefore])
     return new Map(rows.map((row) => [row.status, Number(row.count)]))
 }
 
@@ -117,18 +117,18 @@ function stuckBeforeIso(): string {
     return dayjs().subtract(workflowTimeoutSeconds, 'second').toISOString()
 }
 
-async function buildStuckJobs(workspaceIds: string[], window: ReportWindow): Promise<StuckJob[]> {
-    const rows: Array<{ executionId: string, workflowId: string, workspaceId: string, status: ExecutionStatus, workflowName: string | null, workspaceName: string | null }> = await executionRepo().query(`
+async function buildStuckJobs(projectIds: string[], window: ReportWindow): Promise<StuckJob[]> {
+    const rows: Array<{ executionId: string, workflowId: string, projectId: string, status: ExecutionStatus, workflowName: string | null, projectName: string | null }> = await executionRepo().query(`
         SELECT fr.id AS "executionId",
                fr."workflowId" AS "workflowId",
-               fr."workspaceId" AS "workspaceId",
+               fr."projectId" AS "projectId",
                fr.status AS status,
                fv."displayName" AS "workflowName",
-               p."displayName" AS "workspaceName"
+               p."displayName" AS "projectName"
         FROM execution fr
         LEFT JOIN workflow_version fv ON fv.id = fr."workflowVersionId"
-        LEFT JOIN workspace p ON p.id = fr."workspaceId"
-        WHERE fr."workspaceId" = ANY($1)
+        LEFT JOIN project p ON p.id = fr."projectId"
+        WHERE fr."projectId" = ANY($1)
           AND fr.environment = $2
           AND fr."archivedAt" IS NULL
           AND fr.status = $3
@@ -139,13 +139,13 @@ async function buildStuckJobs(workspaceIds: string[], window: ReportWindow): Pro
           AND fr.created <= $6
         ORDER BY fr."startTime" ASC
         LIMIT $7
-    `, [workspaceIds, RunEnvironment.PRODUCTION, ExecutionStatus.RUNNING, stuckBeforeIso(), window.createdAfter, window.createdBefore, STUCK_JOBS_LIMIT])
+    `, [projectIds, RunEnvironment.PRODUCTION, ExecutionStatus.RUNNING, stuckBeforeIso(), window.createdAfter, window.createdBefore, STUCK_JOBS_LIMIT])
     return rows.map((row) => ({
         executionId: row.executionId,
         workflowId: row.workflowId,
         workflowName: row.workflowName ?? '',
-        workspaceId: row.workspaceId,
-        workspaceName: row.workspaceName ?? '',
+        projectId: row.projectId,
+        projectName: row.projectName ?? '',
         status: row.status,
     }))
 }
@@ -159,7 +159,7 @@ function buildEmptyHealthHistory(): TenantMetricsHealthDay[] {
     }))
 }
 
-async function buildHealthHistory(workspaceIds: string[]): Promise<TenantMetricsHealthDay[]> {
+async function buildHealthHistory(projectIds: string[]): Promise<TenantMetricsHealthDay[]> {
     const windowStart = dayjs().startOf('day').subtract(HEALTH_HISTORY_DAYS - 1, 'day').toISOString()
 
     const errorRows: Array<{ day: Date, internalErrors: string, affectedWorkflows: string }> = await executionRepo().query(`
@@ -167,18 +167,18 @@ async function buildHealthHistory(workspaceIds: string[]): Promise<TenantMetrics
                COUNT(*) AS "internalErrors",
                COUNT(DISTINCT "workflowId") AS "affectedWorkflows"
         FROM execution
-        WHERE "workspaceId" = ANY($1)
+        WHERE "projectId" = ANY($1)
           AND environment = $2
           AND "archivedAt" IS NULL
           AND status = $3
           AND created >= $4
         GROUP BY day
-    `, [workspaceIds, RunEnvironment.PRODUCTION, ExecutionStatus.INTERNAL_ERROR, windowStart])
+    `, [projectIds, RunEnvironment.PRODUCTION, ExecutionStatus.INTERNAL_ERROR, windowStart])
 
     const stuckRows: Array<{ day: Date, stuckJobs: string }> = await executionRepo().query(`
         SELECT DATE_TRUNC('day', "startTime") AS day, COUNT(*) AS "stuckJobs"
         FROM execution
-        WHERE "workspaceId" = ANY($1)
+        WHERE "projectId" = ANY($1)
           AND environment = $2
           AND "archivedAt" IS NULL
           AND status = $3
@@ -187,7 +187,7 @@ async function buildHealthHistory(workspaceIds: string[]): Promise<TenantMetrics
           AND "startTime" >= $4
           AND "startTime" < $5
         GROUP BY day
-    `, [workspaceIds, RunEnvironment.PRODUCTION, ExecutionStatus.RUNNING, windowStart, stuckBeforeIso()])
+    `, [projectIds, RunEnvironment.PRODUCTION, ExecutionStatus.RUNNING, windowStart, stuckBeforeIso()])
 
     const errorByDay = new Map(errorRows.map((row) => [dayjs(row.day).format('YYYY-MM-DD'), row]))
     const stuckByDay = new Map(stuckRows.map((row) => [dayjs(row.day).format('YYYY-MM-DD'), row]))
@@ -215,16 +215,16 @@ export const healthMetricsService = (log: FastifyBaseLogger) => ({
         }
 
         const nextRefreshAt = dayjs().add(REPORT_TTL_SECONDS, 'second').toISOString()
-        const workspaceIds = await workspaceService(log).getWorkspaceIdsByTenant(tenantId)
-        if (workspaceIds.length === 0) {
+        const projectIds = await projectService(log).getProjectIdsByTenant(tenantId)
+        if (projectIds.length === 0) {
             return { summary: { completed: 0, successRate: 0, previousCompleted: 0, previousSuccessRate: 0 }, statusTimeseries: [], internalErrors: [], nextRefreshAt }
         }
 
         const [currentCounts, previousCounts, statusTimeseries, internalErrors] = await Promise.all([
-            countsByStatus(workspaceIds, window),
-            countsByStatus(workspaceIds, previousWindow(window)),
-            buildStatusTimeseries(workspaceIds, window),
-            buildInternalErrorImpact(workspaceIds, window),
+            countsByStatus(projectIds, window),
+            countsByStatus(projectIds, previousWindow(window)),
+            buildStatusTimeseries(projectIds, window),
+            buildInternalErrorImpact(projectIds, window),
         ])
 
         const current = summarize(currentCounts)
@@ -244,13 +244,13 @@ export const healthMetricsService = (log: FastifyBaseLogger) => ({
         return value
     },
     getQueueMetrics: async (tenantId: TenantId, window: ReportWindow): Promise<TenantMetricsLive> => {
-        const workspaceIds = await workspaceService(log).getWorkspaceIdsByTenant(tenantId)
-        if (workspaceIds.length === 0) {
+        const projectIds = await projectService(log).getProjectIdsByTenant(tenantId)
+        if (projectIds.length === 0) {
             return { running: 0, queued: 0, stuckJobs: [] }
         }
         const [counts, stuckJobs] = await Promise.all([
-            queueStatusCounts(workspaceIds, window),
-            buildStuckJobs(workspaceIds, window),
+            queueStatusCounts(projectIds, window),
+            buildStuckJobs(projectIds, window),
         ])
         return {
             running: counts.get(ExecutionStatus.RUNNING) ?? 0,
@@ -259,11 +259,11 @@ export const healthMetricsService = (log: FastifyBaseLogger) => ({
         }
     },
     getHealthHistory: async (tenantId: TenantId): Promise<TenantMetricsHealthHistory> => {
-        const workspaceIds = await workspaceService(log).getWorkspaceIdsByTenant(tenantId)
-        if (workspaceIds.length === 0) {
+        const projectIds = await projectService(log).getProjectIdsByTenant(tenantId)
+        if (projectIds.length === 0) {
             return { days: buildEmptyHealthHistory() }
         }
-        return { days: await buildHealthHistory(workspaceIds) }
+        return { days: await buildHealthHistory(projectIds) }
     },
 })
 

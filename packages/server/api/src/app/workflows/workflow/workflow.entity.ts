@@ -1,13 +1,13 @@
 import {
     Execution,
     Folder,
+    Project,
     TriggerEvent,
     User,
     Workflow,
     WorkflowOperationStatus,
     WorkflowStatus,
     WorkflowVersion,
-    Workspace,
 } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import {
@@ -17,7 +17,7 @@ import {
 
 export type WorkflowSchema = Workflow & {
     versions: WorkflowVersion[]
-    workspace: Workspace
+    project: Project
     runs: Execution[]
     folder?: Folder
     owner?: User
@@ -29,7 +29,7 @@ export const WorkflowEntity = new EntitySchema<WorkflowSchema>({
     name: 'workflow',
     columns: {
         ...BaseColumnSchemaPart,
-        workspaceId: {
+        projectId: {
             ...EntityIdSchema,
             nullable: false,
         },
@@ -80,8 +80,8 @@ export const WorkflowEntity = new EntitySchema<WorkflowSchema>({
     },
     indices: [
         {
-            name: 'idx_workflow_workspace_id',
-            columns: ['workspaceId'],
+            name: 'idx_workflow_project_id',
+            columns: ['projectId'],
             unique: false,
         },
         {
@@ -95,8 +95,8 @@ export const WorkflowEntity = new EntitySchema<WorkflowSchema>({
             unique: false,
         },
         {
-            name: 'idx_workflow_workspace_id_status',
-            columns: ['workspaceId', 'status'],
+            name: 'idx_workflow_project_id_status',
+            columns: ['projectId', 'status'],
             unique: false,
         },
     ],
@@ -137,14 +137,14 @@ export const WorkflowEntity = new EntitySchema<WorkflowSchema>({
             target: 'workflow_version',
             inverseSide: 'workflow',
         },
-        workspace: {
+        project: {
             type: 'many-to-one',
-            target: 'workspace',
+            target: 'project',
             cascade: true,
             onDelete: 'CASCADE',
             joinColumn: {
-                name: 'workspaceId',
-                foreignKeyConstraintName: 'fk_workflow_workspace_id',
+                name: 'projectId',
+                foreignKeyConstraintName: 'fk_workflow_project_id',
             },
         },
         publishedVersion: {

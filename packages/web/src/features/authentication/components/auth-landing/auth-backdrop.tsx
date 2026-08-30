@@ -63,7 +63,7 @@ function SidebarFacsimile({ logoUrl }: { logoUrl: string }) {
       <div className="flex items-center gap-2 rounded-md px-1.5 py-1">
         <img src={logoUrl} alt="" className="size-5 object-contain" />
         <span className="truncate text-sm font-medium text-foreground/80">
-          {t('Personal Workspace')}
+          {t('Personal Project')}
         </span>
         <ChevronsUpDown className="ml-auto size-3.5 text-muted-foreground" />
       </div>

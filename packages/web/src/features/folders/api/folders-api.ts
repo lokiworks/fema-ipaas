@@ -14,7 +14,7 @@ export const foldersApi = {
     const request: ListFolderRequest = {
       cursor: undefined,
       limit: 1000000,
-      workspaceId: authenticationSession.getWorkspaceId()!,
+      projectId: authenticationSession.getProjectId()!,
     };
 
     const response = await api.get<any>('/v1/folders', request);

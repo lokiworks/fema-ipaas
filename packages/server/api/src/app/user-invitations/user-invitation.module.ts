@@ -1,16 +1,16 @@
-import { ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil, Permission, SeekPage, WorkspaceRole } from '@fema-ipaas/core-utils'
+import { ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil, Permission, ProjectRole, SeekPage } from '@fema-ipaas/core-utils'
 import { InvitationStatus, InvitationType, ListUserInvitationsRequest, Principal, PrincipalType, SendUserInvitationRequest, SERVICE_KEY_SECURITY_OPENAPI, UserInvitation, UserInvitationWithLink } from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
 import { userIdentityService } from '../authentication/user-identity/user-identity-service'
-import { WorkspaceResourceType } from '../core/security/authorization/common'
+import { ProjectResourceType } from '../core/security/authorization/common'
 import { securityAccess } from '../core/security/authorization/fastify-security'
 import { tenantGuards } from '../core/security/tenant-guards'
+import { projectAccess } from '../project/project-access'
+import { projectService } from '../project/project-service'
 import { userService } from '../user/user-service'
-import { workspaceAccess } from '../workspace/workspace-access'
-import { workspaceService } from '../workspace/workspace-service'
 import { INVITATION_EXPIRY_SECONDS, userInvitationsService } from './user-invitation.service'
 
 export const invitationModule: FastifyPluginAsyncZod = async (app) => {
@@ -22,9 +22,9 @@ const invitationController: FastifyPluginAsyncZod = async (app) => {
     app.post('/', UpsertUserInvitationRequestParams, async (request, reply) => {
         const { email, type } = request.body
         switch (type) {
-            case InvitationType.WORKSPACE:
-                await tenantGuards.assertWorkspaceIsTeamType({ workspaceId: request.body.workspaceId, log: request.log })
-                await assertPrincipalHasPermissionToWorkspace(app, request, reply, request.principal, request.body.workspaceId, Permission.WRITE_INVITATION)
+            case InvitationType.PROJECT:
+                await tenantGuards.assertProjectIsTeamType({ projectId: request.body.projectId, log: request.log })
+                await assertPrincipalHasPermissionToProject(app, request, reply, request.principal, request.body.projectId, Permission.WRITE_INVITATION)
                 break
             case InvitationType.TENANT:
                 await tenantGuards.assertPrincipalIsTenantAdmin({ principal: request.principal, log: request.log })
@@ -32,15 +32,15 @@ const invitationController: FastifyPluginAsyncZod = async (app) => {
         }
         const tenantId = request.principal.tenant.id
         const status = await shouldAutoAcceptInvitation(request.principal, request.body, tenantId, request.log) ? InvitationStatus.ACCEPTED : InvitationStatus.PENDING
-        const workspaceRole = await getWorkspaceRoleAndAssertIfFound(tenantId, request.body)
+        const projectRole = await getProjectRoleAndAssertIfFound(tenantId, request.body)
 
         const invitationRecordParams = {
             email,
             type,
             tenantId,
-            tenantRole: type === InvitationType.WORKSPACE ? null : request.body.tenantRole,
-            workspaceId: type === InvitationType.TENANT ? null : request.body.workspaceId,
-            workspaceRoleId: type === InvitationType.TENANT ? null : workspaceRole?.id ?? null,
+            tenantRole: type === InvitationType.PROJECT ? null : request.body.tenantRole,
+            projectId: type === InvitationType.TENANT ? null : request.body.projectId,
+            projectRoleId: type === InvitationType.TENANT ? null : projectRole?.id ?? null,
             status,
         }
 
@@ -54,13 +54,13 @@ const invitationController: FastifyPluginAsyncZod = async (app) => {
     })
 
     app.get('/', ListUserInvitationsRequestParams, async (request, reply) => {
-        if (!isNil(request.query.workspaceId) && request.query.type === InvitationType.WORKSPACE) {
-            await tenantGuards.assertWorkspaceIsTeamType({ workspaceId: request.query.workspaceId, log: request.log })
+        if (!isNil(request.query.projectId) && request.query.type === InvitationType.PROJECT) {
+            await tenantGuards.assertProjectIsTeamType({ projectId: request.query.projectId, log: request.log })
         }
-        const workspaceId = await getWorkspaceIdAndAssertPermission(app, request, reply, request.principal, request.query)
+        const projectId = await getProjectIdAndAssertPermission(app, request, reply, request.principal, request.query)
         const invitations = await userInvitationsService(request.log).list({
             tenantId: request.principal.tenant.id,
-            workspaceId: request.query.type === InvitationType.WORKSPACE ? workspaceId : null,
+            projectId: request.query.type === InvitationType.PROJECT ? projectId : null,
             type: request.query.type,
             status: request.query.status,
             cursor: request.query.cursor ?? null,
@@ -84,9 +84,9 @@ const invitationController: FastifyPluginAsyncZod = async (app) => {
             tenantId: request.principal.tenant.id,
         })
         switch (invitation.type) {
-            case InvitationType.WORKSPACE: {
-                assertNotNullOrUndefined(invitation.workspaceId, 'workspaceId')
-                await assertPrincipalHasPermissionToWorkspace(app, request, reply, request.principal, invitation.workspaceId, Permission.WRITE_INVITATION)
+            case InvitationType.PROJECT: {
+                assertNotNullOrUndefined(invitation.projectId, 'projectId')
+                await assertPrincipalHasPermissionToProject(app, request, reply, request.principal, invitation.projectId, Permission.WRITE_INVITATION)
                 break
             }
             case InvitationType.TENANT:
@@ -102,14 +102,14 @@ const invitationController: FastifyPluginAsyncZod = async (app) => {
 }
 
 
-const getWorkspaceRoleAndAssertIfFound = async (tenantId: string, request: SendUserInvitationRequest): Promise<WorkspaceRole | null> => {
+const getProjectRoleAndAssertIfFound = async (tenantId: string, request: SendUserInvitationRequest): Promise<ProjectRole | null> => {
     const { type } = request
     if (type === InvitationType.TENANT) {
         return null
     }
     return null
 }
-async function getWorkspaceIdAndAssertPermission<R extends Principal>(
+async function getProjectIdAndAssertPermission<R extends Principal>(
     app: FastifyInstance,
     request: FastifyRequest,
     reply: FastifyReply,
@@ -117,13 +117,13 @@ async function getWorkspaceIdAndAssertPermission<R extends Principal>(
     requestQuery: ListUserInvitationsRequest,
 ): Promise<string | null> {
     if (principal.type === PrincipalType.SERVICE) {
-        if (isNil(requestQuery.workspaceId)) {
+        if (isNil(requestQuery.projectId)) {
             return null
         }
-        await assertPrincipalHasPermissionToWorkspace(app, request, reply, principal, requestQuery.workspaceId, Permission.READ_INVITATION)
-        return requestQuery.workspaceId
+        await assertPrincipalHasPermissionToProject(app, request, reply, principal, requestQuery.projectId, Permission.READ_INVITATION)
+        return requestQuery.projectId
     }
-    return requestQuery.workspaceId ?? null
+    return requestQuery.projectId ?? null
 }
 
 async function shouldAutoAcceptInvitation(principal: Principal, request: SendUserInvitationRequest, tenantId: string, log: FastifyBaseLogger): Promise<boolean> {
@@ -147,28 +147,28 @@ async function shouldAutoAcceptInvitation(principal: Principal, request: SendUse
     return !isNil(user)
 }
 
-async function assertPrincipalHasPermissionToWorkspace<R extends Principal & { tenant: { id: string } }>(
+async function assertPrincipalHasPermissionToProject<R extends Principal & { tenant: { id: string } }>(
     fastify: FastifyInstance,
     request: FastifyRequest, reply: FastifyReply, principal: R,
-    workspaceId: string, _permission: Permission): Promise<void> {
-    const workspace = await workspaceService(request.log).getOneOrThrow(workspaceId)
-    if (isNil(workspace) || workspace.tenantId !== principal.tenant.id) {
+    projectId: string, _permission: Permission): Promise<void> {
+    const project = await projectService(request.log).getOneOrThrow(projectId)
+    if (isNil(project) || project.tenantId !== principal.tenant.id) {
         throw new ApplicationError({
             code: ErrorCode.AUTHORIZATION,
             params: {
-                message: 'user does not have access to the workspace',
+                message: 'user does not have access to the project',
             },
         })
     }
-    await workspaceAccess(request.log).assertPrincipalCanAccessWorkspace({ principal: request.principal, workspaceId })
+    await projectAccess(request.log).assertPrincipalCanAccessProject({ principal: request.principal, projectId })
 }
 
 
 const ListUserInvitationsRequestParams = {
     config: {
         security: securityAccess.publicTenant([PrincipalType.USER, PrincipalType.SERVICE], {
-            type: WorkspaceResourceType.QUERY,
-            queryKey: 'workspaceId',
+            type: ProjectResourceType.QUERY,
+            queryKey: 'projectId',
         }),
     },
     schema: {
@@ -211,7 +211,7 @@ const DeleteInvitationRequestParams = {
 const UpsertUserInvitationRequestParams = {
     config: {
         security: securityAccess.publicTenant([PrincipalType.USER, PrincipalType.SERVICE], {
-            type: WorkspaceResourceType.BODY,
+            type: ProjectResourceType.BODY,
         }),
     },
     schema: {

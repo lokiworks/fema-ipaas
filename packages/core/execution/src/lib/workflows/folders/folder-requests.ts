@@ -3,7 +3,7 @@ import { Cursor } from '@fema-ipaas/core-utils'
 
 export const CreateFolderRequest = z.object({
     displayName: z.string(),
-    workspaceId: z.string(),
+    projectId: z.string(),
 })
 
 export type CreateFolderRequest = z.infer<typeof CreateFolderRequest>
@@ -24,7 +24,7 @@ export type DeleteWorkflowRequest = z.infer<typeof DeleteFolderRequest>
 export const ListFolderRequest = z.object({
     limit: z.coerce.number().optional(),
     cursor: z.string().optional(),
-    workspaceId: z.string(),
+    projectId: z.string(),
 })
 
 export type ListFolderRequest = Omit<z.infer<typeof ListFolderRequest>, 'cursor'> & { cursor: Cursor | undefined }

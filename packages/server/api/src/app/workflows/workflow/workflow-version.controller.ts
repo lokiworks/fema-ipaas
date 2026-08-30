@@ -3,7 +3,7 @@ import { ListWorkflowVersionRequest, PrincipalType, WorkflowVersionMetadata } fr
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
-import { WorkspaceResourceType } from '../../core/security/authorization/common'
+import { ProjectResourceType } from '../../core/security/authorization/common'
 import { securityAccess } from '../../core/security/authorization/fastify-security'
 import { workflowVersionService } from '../workflow-version/workflow-version.service'
 import { WorkflowEntity } from './workflow.entity'
@@ -16,7 +16,7 @@ export const workflowVersionController: FastifyPluginAsyncZod = async (fastify) 
     fastify.get('/:workflowId/versions', ListVersionParams, async (request) => {
         const workflow = await workflowService(request.log).getOneOrThrow({
             id: request.params.workflowId,
-            workspaceId: request.workspaceId,
+            projectId: request.projectId,
         })
         return workflowVersionService(request.log).list({
             workflowId: workflow.id,
@@ -29,8 +29,8 @@ export const workflowVersionController: FastifyPluginAsyncZod = async (fastify) 
 
 const ListVersionParams = {
     config: {
-        security: securityAccess.workspace([PrincipalType.USER], undefined, {
-            type: WorkspaceResourceType.TABLE,
+        security: securityAccess.project([PrincipalType.USER], undefined, {
+            type: ProjectResourceType.TABLE,
             tableName: WorkflowEntity,
             lookup: {
                 paramKey: 'workflowId',

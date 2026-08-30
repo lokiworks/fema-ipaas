@@ -10,7 +10,7 @@ import { sampleDataApi } from '../api/sample-data-api';
 export const sampleDataHooks = {
   useSampleDataForWorkflow: (
     workflowVersion: WorkflowVersion | undefined,
-    workspaceId: string | undefined,
+    projectId: string | undefined,
   ) => {
     return useQuery({
       queryKey: ['sampleData', workflowVersion?.id],
@@ -28,7 +28,7 @@ export const sampleDataHooks = {
               [step.name]: await getSampleData(
                 workflowVersion!,
                 step.name,
-                workspaceId!,
+                projectId!,
                 SampleDataFileType.OUTPUT,
               ),
             };
@@ -44,7 +44,7 @@ export const sampleDataHooks = {
   },
   useSampleDataInputForWorkflow: (
     workflowVersion: WorkflowVersion | undefined,
-    workspaceId: string | undefined,
+    projectId: string | undefined,
   ) => {
     return useQuery({
       queryKey: ['sampleDataInput', workflowVersion?.id],
@@ -63,7 +63,7 @@ export const sampleDataHooks = {
                 ? await getSampleData(
                     workflowVersion!,
                     step.name,
-                    workspaceId!,
+                    projectId!,
                     SampleDataFileType.INPUT,
                   )
                 : undefined,
@@ -94,7 +94,7 @@ export const sampleDataHooks = {
 async function getSampleData(
   workflowVersion: WorkflowVersion,
   stepName: string,
-  workspaceId: string,
+  projectId: string,
   type: SampleDataFileType,
 ): Promise<unknown> {
   return sampleDataApi
@@ -102,7 +102,7 @@ async function getSampleData(
       workflowId: workflowVersion.workflowId,
       workflowVersionId: workflowVersion.id,
       stepName,
-      workspaceId,
+      projectId,
       type,
     })
     .catch((error) => {

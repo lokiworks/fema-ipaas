@@ -3,7 +3,7 @@ import { ExecutionStatus, TelemetryEventName } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyPluginAsync } from 'fastify'
 import { Between, EntityManager } from 'typeorm'
-import { entitiesMustBeOwnedByCurrentWorkspace } from '../../authentication/authorization'
+import { entitiesMustBeOwnedByCurrentProject } from '../../authentication/authorization'
 import { rejectedPromiseHandler } from '../../helper/promise-handler'
 import { SystemJobData, SystemJobName } from '../../helper/system-jobs/common'
 import { systemJobHandlers } from '../../helper/system-jobs/job-handlers'
@@ -20,7 +20,7 @@ import { waitpointController } from './waitpoint/waitpoint-controller'
 const RUN_TELEMETRY_STATEMENT_TIMEOUT_MS = 5 * 60 * 1000 // 5 minutes
 
 export const executionModule: FastifyPluginAsync = async (app) => {
-    app.addHook('preSerialization', entitiesMustBeOwnedByCurrentWorkspace)
+    app.addHook('preSerialization', entitiesMustBeOwnedByCurrentProject)
     await app.register(executionController, { prefix: '/v1/executions' })
     await app.register(resumeController, { prefix: '/v1/executions' })
     await app.register(waitpointController, { prefix: '/v1/waitpoints' })
@@ -33,28 +33,28 @@ export const executionModule: FastifyPluginAsync = async (app) => {
         }, 'Run telemetry started')
         const startOfDay = dayjs().startOf('day').toISOString()
         const endOfDay = dayjs().endOf('day').toISOString()
-        const workspaceWorkflowCounts = await executionRepo().manager.transaction(async (entityManager: EntityManager) => {
+        const projectWorkflowCounts = await executionRepo().manager.transaction(async (entityManager: EntityManager) => {
             await entityManager.query(`SET LOCAL statement_timeout = ${RUN_TELEMETRY_STATEMENT_TIMEOUT_MS}`)
             return entityManager.createQueryBuilder(ExecutionEntity, 'execution')
-                .select('"workspaceId", "workflowId", "environment", COUNT(*) as count')
+                .select('"projectId", "workflowId", "environment", COUNT(*) as count')
                 .where({
                     created: Between(startOfDay, endOfDay),
                 })
-                .groupBy('"workspaceId", "workflowId", "environment"')
+                .groupBy('"projectId", "workflowId", "environment"')
                 .getRawMany()
         })
-        for (const { workspaceId, workflowId, environment, count } of workspaceWorkflowCounts) {
+        for (const { projectId, workflowId, environment, count } of projectWorkflowCounts) {
             app.log.info({
-                workspace: { id: workspaceId },
+                project: { id: projectId },
                 workflow: { id: workflowId },
                 environment,
                 count: parseInt(count, 10),
             }, 'Tracking workflow run created')
             rejectedPromiseHandler(
-                telemetry(app.log).trackWorkspace(workspaceId, {
+                telemetry(app.log).trackProject(projectId, {
                     name: TelemetryEventName.EXECUTION_CREATED,
                     payload: {
-                        workspaceId,
+                        projectId,
                         workflowId,
                         environment,
                         count: parseInt(count, 10),
@@ -76,7 +76,7 @@ export const executionModule: FastifyPluginAsync = async (app) => {
         },
     })
     systemJobHandlers.registerJobHandler(SystemJobName.RESUME_DELAY_WAITPOINT, async (data: SystemJobData<SystemJobName.RESUME_DELAY_WAITPOINT>) => {
-        const execution = await executionService(app.log).getOne({ id: data.executionId, workspaceId: data.workspaceId })
+        const execution = await executionService(app.log).getOne({ id: data.executionId, projectId: data.projectId })
         if (isNil(execution)) {
             app.log.info({ execution: { id: data.executionId }, waitpoint: { id: data.waitpointId } },
                 '[RESUME_DELAY_WAITPOINT] Workflow run no longer exists (expired/deleted), skipping')

@@ -7,8 +7,8 @@ import { FastifyBaseLogger } from 'fastify'
 import semVer from 'semver'
 import { EntityManager, In, IsNull } from 'typeorm'
 import { repoFactory } from '../../core/db/repo-factory'
+import { projectService } from '../../project/project-service'
 import { workflowVersionRepo } from '../../workflows/workflow-version/workflow-version.service'
-import { workspaceService } from '../../workspace/workspace-service'
 import { resolveVisibility } from '../connector-visibility'
 import { connectorCache, ConnectorRegistryEntry } from './connector-cache'
 import { ConnectorMetadataEntity, ConnectorMetadataSchema } from './connector-metadata-entity'
@@ -28,7 +28,7 @@ export const connectorMetadataService = (log: FastifyBaseLogger) => {
                 locale,
                 log,
             }))
-            const policy = await resolveVisibility({ tenantId: params.tenantId, workspaceId: params.workspaceId, log })
+            const policy = await resolveVisibility({ tenantId: params.tenantId, projectId: params.projectId, log })
             const audience = params.audience ?? ConnectorAudienceFilter.HUMAN
             const audienceConnectors = translatedConnectors.map((connector) => ({ ...connector, actions: filterActionsByAudience(connector.actions, audience) }))
             const sortedConnectors = await connectorListUtils(log).sortAndSearchConnectors({
@@ -52,7 +52,7 @@ export const connectorMetadataService = (log: FastifyBaseLogger) => {
                 version: connector.version,
             }))
         },
-        async get({ workspaceId, tenantId, version, name }: GetOrThrowParams): Promise<ConnectorMetadataModel | undefined> {
+        async get({ projectId, tenantId, version, name }: GetOrThrowParams): Promise<ConnectorMetadataModel | undefined> {
             const bestMatch = await findExactVersion(log, { name, version, tenantId })
             if (isNil(bestMatch)) {
                 return undefined
@@ -68,7 +68,7 @@ export const connectorMetadataService = (log: FastifyBaseLogger) => {
                 return undefined
             }
 
-            const policy = await resolveVisibility({ tenantId, workspaceId, log })
+            const policy = await resolveVisibility({ tenantId, projectId, log })
             if (isNil(policy)) {
                 return connector
             }
@@ -97,7 +97,7 @@ export const connectorMetadataService = (log: FastifyBaseLogger) => {
                 id,
             })
             await connectorRepos().update(id, {
-                workspaceUsage: usage,
+                projectUsage: usage,
                 updated: existingMetadata.updated,
                 created: existingMetadata.created,
             })
@@ -196,8 +196,8 @@ export const connectorMetadataService = (log: FastifyBaseLogger) => {
 }
 
 async function findWorkflowsUsingConnector({ connectorName, tenantId, log }: FindWorkflowsUsingConnectorParams): Promise<string[]> {
-    const workspaceIds = await workspaceService(log).getWorkspaceIdsByTenant(tenantId)
-    if (workspaceIds.length === 0) {
+    const projectIds = await projectService(log).getProjectIdsByTenant(tenantId)
+    if (projectIds.length === 0) {
         return []
     }
     const latestVersionSubquery = workflowVersionRepo()
@@ -209,7 +209,7 @@ async function findWorkflowsUsingConnector({ connectorName, tenantId, log }: Fin
 
     const candidates = await workflowVersionRepo().createQueryBuilder('workflow_version')
         .innerJoin('workflow_version.workflow', 'workflow')
-        .where('workflow."workspaceId" IN (:...workspaceIds)', { workspaceIds })
+        .where('workflow."projectId" IN (:...projectIds)', { projectIds })
         .andWhere('workflow_version.trigger::text LIKE :needle', { needle: `%"${connectorName}"%` })
         .andWhere(`(workflow_version.id = workflow."publishedVersionId" OR workflow_version.id = (${latestVersionSubquery.getQuery()}))`)
         .getMany()
@@ -507,7 +507,7 @@ function filterRegistry(registry: ConnectorRegistryEntry[], params: { release: s
 
 
 type ListParams = {
-    workspaceId?: string
+    projectId?: string
     tenantId?: string
     includeHidden: boolean
     categories?: ConnectorCategory[]
@@ -523,7 +523,7 @@ type GetOrThrowParams = {
     name: string
     version?: string
     entityManager?: EntityManager
-    workspaceId?: string
+    projectId?: string
     tenantId?: string
     locale?: LocalesEnum
 }
@@ -542,7 +542,7 @@ type FindWorkflowsUsingConnectorParams = {
 type CreateParams = {
     connectorMetadata: ConnectorMetadata
     tenantId?: string
-    workspaceId?: string
+    projectId?: string
     packageType: PackageType
     connectorType: ConnectorType
     source: ConnectorSource

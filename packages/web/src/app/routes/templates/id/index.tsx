@@ -60,7 +60,7 @@ const TemplateDetailsPage = ({ template }: TemplateDetailsPageProps) => {
     const workflowId = generateId();
     return {
       id: workflowId,
-      workspaceId: generateId(),
+      projectId: generateId(),
       externalId: generateId(),
       folderId: null,
       status: WorkflowStatus.DISABLED,

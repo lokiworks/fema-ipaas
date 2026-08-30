@@ -54,7 +54,7 @@ describe('App connection application events', () => {
             externalId: 'event-test-connection',
             displayName: 'Event Test Connection',
             connectorName: connector.name,
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             type: ConnectionType.SECRET_TEXT,
             value: {
                 type: ConnectionType.SECRET_TEXT,
@@ -77,7 +77,7 @@ describe('App connection application events', () => {
             externalId: 'event-test-connection-to-delete',
             displayName: 'Event Test Connection',
             connectorName: connector.name,
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
             type: ConnectionType.SECRET_TEXT,
             value: {
                 type: ConnectionType.SECRET_TEXT,
@@ -103,14 +103,14 @@ describe('App connection application events', () => {
         const auditSpy = vi.spyOn(wideEvent, 'audit')
 
         const response = await ctx.get('/v1/connections', {
-            workspaceId: ctx.workspace.id,
+            projectId: ctx.project.id,
         })
 
         expect(response?.statusCode).toBe(StatusCodes.OK)
         expect(auditSpy).toHaveBeenCalledWith(expect.objectContaining({
             action: 'connection.listed',
             actor: expect.objectContaining({ type: 'user' }),
-            target: expect.objectContaining({ type: 'workspace', id: ctx.workspace.id }),
+            target: expect.objectContaining({ type: 'project', id: ctx.project.id }),
         }))
     })
 })

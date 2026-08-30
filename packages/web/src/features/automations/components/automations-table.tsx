@@ -19,7 +19,7 @@ type AutomationsTableProps = {
   isLoading: boolean;
   selectedItems: SelectedItemsMap;
   expandedFolders: Set<string>;
-  workspaceMembers: unknown[] | undefined;
+  projectMembers: unknown[] | undefined;
   folders: FolderDto[];
   selectableCount: number;
   isPinned: (itemId: string) => boolean;
@@ -85,7 +85,7 @@ export const AutomationsTable = ({
   isLoading,
   selectedItems,
   expandedFolders,
-  workspaceMembers,
+  projectMembers,
   folders,
   selectableCount,
   isPinned,
@@ -184,7 +184,7 @@ export const AutomationsTable = ({
                         isSelected={isItemSelected(group.item)}
                         isExpanded={expandedFolders.has(group.item.id)}
                         isPinned={isPinned(group.item.id)}
-                        workspaceMembers={workspaceMembers}
+                        projectMembers={projectMembers}
                         folders={folders}
                         onRowClick={() => onRowClick(group.item)}
                         onToggleSelection={() =>
@@ -220,7 +220,7 @@ export const AutomationsTable = ({
                             isSelected={isItemSelected(child)}
                             isExpanded={false}
                             isPinned={isPinned(child.id)}
-                            workspaceMembers={workspaceMembers}
+                            projectMembers={projectMembers}
                             folders={folders}
                             onRowClick={() => onRowClick(child)}
                             onToggleSelection={() =>
@@ -260,7 +260,7 @@ export const AutomationsTable = ({
                     isSelected={isItemSelected(group.item)}
                     isExpanded={false}
                     isPinned={isPinned(group.item.id)}
-                    workspaceMembers={workspaceMembers}
+                    projectMembers={projectMembers}
                     folders={folders}
                     onRowClick={() => onRowClick(group.item)}
                     onToggleSelection={() => onToggleItemSelection(group.item)}

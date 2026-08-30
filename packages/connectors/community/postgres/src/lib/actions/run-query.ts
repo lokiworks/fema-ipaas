@@ -55,7 +55,7 @@ export const runQuery = createAction({
     const client = await pgClient(context.auth, context.propsValue.query_timeout, context.propsValue.application_name, context.propsValue.connection_timeout_ms);
     const { query } = context.propsValue;
     const queryWithMetadata = `
-    /* Source : /workspaces/${context.workspace.id}/workflows/${context.workflows.current.id}/runs/${context.run.id} */
+    /* Source : /projects/${context.project.id}/workflows/${context.workflows.current.id}/runs/${context.run.id} */
     ${query}
     `
     const args = context.propsValue.args || [];

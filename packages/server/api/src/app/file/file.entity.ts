@@ -1,4 +1,4 @@
-import { File, FileCompression, FileType, Workspace } from '@fema-ipaas/shared'
+import { File, FileCompression, FileType, Project } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import {
     BaseColumnSchemaPart,
@@ -6,14 +6,14 @@ import {
 } from '../database/database-common'
 
 type FileSchema = File & {
-    workspace: Workspace
+    project: Project
 }
 
 export const FileEntity = new EntitySchema<FileSchema>({
     name: 'file',
     columns: {
         ...BaseColumnSchemaPart,
-        workspaceId: { ...EntityIdSchema, nullable: true },
+        projectId: { ...EntityIdSchema, nullable: true },
         tenantId: { ...EntityIdSchema, nullable: true },
         data: {
             type: 'bytea',
@@ -52,17 +52,17 @@ export const FileEntity = new EntitySchema<FileSchema>({
     },
     indices: [
         {
-            name: 'idx_file_workspace_id_type_created',
-            columns: ['workspaceId', 'type', 'created'],
+            name: 'idx_file_project_id_type_created',
+            columns: ['projectId', 'type', 'created'],
         },
         {
             name: 'idx_file_type_created_desc',
             columns: ['type', 'created'],
         },
         {
-            name: 'idx_file_tenant_id_null_workspace',
+            name: 'idx_file_tenant_id_null_project',
             columns: ['tenantId'],
-            where: '"workspaceId" IS NULL',
+            where: '"projectId" IS NULL',
         },
         {
             // Real index is a partial expression index on (type, (metadata->>'workflowId')),
@@ -74,14 +74,14 @@ export const FileEntity = new EntitySchema<FileSchema>({
         },
     ],
     relations: {
-        workspace: {
+        project: {
             type: 'many-to-one',
-            target: 'workspace',
+            target: 'project',
             cascade: true,
             onDelete: 'CASCADE',
             joinColumn: {
-                name: 'workspaceId',
-                foreignKeyConstraintName: 'fk_file_workspace_id',
+                name: 'projectId',
+                foreignKeyConstraintName: 'fk_file_project_id',
             },
         },
     },

@@ -46,7 +46,7 @@ const seedDevUser = async (): Promise<void> => {
         provider: UserIdentityProvider.EMAIL,
     })
 
-    await tenantService(log).createTenantWithWorkspace({
+    await tenantService(log).createTenantWithProject({
         identityId: response.id,
         name: 'dev\'s Tenant',
         invalidatePreviousTokens: true,

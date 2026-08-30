@@ -52,7 +52,7 @@ export const filesController: FastifyPluginAsyncZod = async (app) => {
             }
             const file = await fileService(request.log).save({
                 fileId,
-                workspaceId: principal.workspaceId,
+                projectId: principal.projectId,
                 tenantId: principal.tenant.id,
                 type: fileType,
                 fileName,
@@ -88,7 +88,7 @@ export const filesController: FastifyPluginAsyncZod = async (app) => {
         const maxFileSizeInBytes = system.getNumberOrThrow(AppSystemProp.MAX_FILE_SIZE_MB) * 1024 * 1024
         await fileService(request.log).save({
             fileId,
-            workspaceId: principal.workspaceId,
+            projectId: principal.projectId,
             tenantId: principal.tenant.id,
             type: fileType,
             fileName,
@@ -114,8 +114,8 @@ export const filesController: FastifyPluginAsyncZod = async (app) => {
     }, async (request, reply) => {
         const { fileId } = request.params
         const { token } = request.query
-        const workspaceId = await authorizeRead({ token, fileId, log: request.log })
-        const file = await fileService(request.log).getFileOrThrow({ fileId, workspaceId })
+        const projectId = await authorizeRead({ token, fileId, log: request.log })
+        const file = await fileService(request.log).getFileOrThrow({ fileId, projectId })
         const redirected = await signedFileTransport.maybeRedirectToS3Get({
             reply,
             log: request.log,
@@ -126,7 +126,7 @@ export const filesController: FastifyPluginAsyncZod = async (app) => {
         }
         const { data } = await fileService(request.log).getDataOrThrow({
             fileId: file.id,
-            workspaceId: file.workspaceId ?? undefined,
+            projectId: file.projectId ?? undefined,
             type: file.type,
         })
         const mimeType = file.metadata?.mimetype ?? 'application/octet-stream'
@@ -175,7 +175,7 @@ async function authorizeRead({ token, fileId, log }: AuthorizeReadParams): Promi
     }
     const principal = await tryVerifyEnginePrincipal(token, log)
     if (principal) {
-        return principal.workspaceId
+        return principal.projectId
     }
     throw new ApplicationError({
         code: ErrorCode.INVALID_BEARER_TOKEN,

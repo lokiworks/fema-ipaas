@@ -7,16 +7,16 @@ import {
 
 import { PageTitle } from '@/app/components/page-title';
 import { authRoutes } from '@/app/routes/auth-routes';
+import { projectRoutes } from '@/app/routes/project-routes';
 import { publicRoutes } from '@/app/routes/public-routes';
 import { tenantRoutes } from '@/app/routes/tenant-routes';
-import { workspaceRoutes } from '@/app/routes/workspace-routes';
 import { RouteLoadingBar } from '@/components/custom/route-loading-bar';
 import { useEmbedding } from '@/components/providers/embed-provider';
 
 import { RouteErrorBoundary } from '../components/global-error-boundary';
 
 import { DefaultRoute } from './default-route';
-import { TokenCheckerWrapper } from './workspace-route-wrapper';
+import { TokenCheckerWrapper } from './project-route-wrapper';
 
 const CrashTestPage = import.meta.env.DEV
   ? lazy(() =>
@@ -43,11 +43,11 @@ const devRoutes =
 const routes = [
   ...devRoutes,
   ...publicRoutes,
-  ...workspaceRoutes,
+  ...projectRoutes,
   ...authRoutes,
   ...tenantRoutes,
   {
-    path: '/workspaces/:workspaceId',
+    path: '/projects/:projectId',
     element: (
       <TokenCheckerWrapper>
         <DefaultRoute></DefaultRoute>

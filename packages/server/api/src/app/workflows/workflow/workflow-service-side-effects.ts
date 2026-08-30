@@ -1,4 +1,4 @@
-import { isNil, TenantId, WorkspaceId } from '@fema-ipaas/core-utils'
+import { isNil, ProjectId, TenantId } from '@fema-ipaas/core-utils'
 import { ApplicationEventName, FileType, PopulatedWorkflow, Workflow, WorkflowOperationRequest, WorkflowOperationType, WorkflowStatus, WorkflowVersion } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { applicationEvents, MetaInformation } from '../../helper/application-events'
@@ -17,7 +17,7 @@ export const workflowSideEffects = (log: FastifyBaseLogger) => ({
             case WorkflowStatus.ENABLED: {
                 await triggerSourceService(log).enable({
                     workflowVersion: publishedWorkflowVersion,
-                    workspaceId: workflowToUpdate.workspaceId,
+                    projectId: workflowToUpdate.projectId,
                     simulate: false,
                     templateId,
                     isRepublish,
@@ -27,7 +27,7 @@ export const workflowSideEffects = (log: FastifyBaseLogger) => ({
             case WorkflowStatus.DISABLED: {
                 await triggerSourceService(log).disable({
                     workflowId: publishedWorkflowVersion.workflowId,
-                    workspaceId: workflowToUpdate.workspaceId,
+                    projectId: workflowToUpdate.projectId,
                     simulate: false,
                     ignoreError: false,
                     templateId,
@@ -46,19 +46,19 @@ export const workflowSideEffects = (log: FastifyBaseLogger) => ({
         }
         await triggerSourceService(log).disable({
             workflowId: workflowToDelete.id,
-            workspaceId: workflowToDelete.workspaceId,
+            projectId: workflowToDelete.projectId,
             simulate: false,
             ignoreError: true,
         })
 
         await sampleDataService(log).deleteForWorkflow({
-            workspaceId: workflowToDelete.workspaceId,
+            projectId: workflowToDelete.projectId,
             workflowId: workflowToDelete.id,
             fileType: FileType.SAMPLE_DATA,
         })
 
         await sampleDataService(log).deleteForWorkflow({
-            workspaceId: workflowToDelete.workspaceId,
+            projectId: workflowToDelete.projectId,
             workflowId: workflowToDelete.id,
             fileType: FileType.SAMPLE_DATA_INPUT,
         })
@@ -108,9 +108,9 @@ export const workflowSideEffects = (log: FastifyBaseLogger) => ({
         })
     },
 
-    onDisabledByWorker({ workflow, workspaceId, tenantId }: OnDisabledByWorkerParams): void {
+    onDisabledByWorker({ workflow, projectId, tenantId }: OnDisabledByWorkerParams): void {
         applicationEvents(log).sendWorkerEvent({
-            workspaceId,
+            projectId,
             tenantId,
             action: ApplicationEventName.WORKFLOW_DEACTIVATED,
             data: {
@@ -155,7 +155,7 @@ type OnOperationAppliedParams = WorkflowEventParams & {
 
 type OnDisabledByWorkerParams = {
     workflow: PopulatedWorkflow
-    workspaceId: WorkspaceId
+    projectId: ProjectId
     tenantId: TenantId
 }
 

@@ -25,11 +25,10 @@ export function useAutomationsData(
   filters: AutomationsFilters,
   pinnedList?: string[],
 ) {
-  const { workspaceId: workspaceIdFromUrl } = useParams<{
-    workspaceId: string;
+  const { projectId: projectIdFromUrl } = useParams<{
+    projectId: string;
   }>();
-  const workspaceId =
-    workspaceIdFromUrl ?? authenticationSession.getWorkspaceId()!;
+  const projectId = projectIdFromUrl ?? authenticationSession.getProjectId()!;
   const queryClient = useQueryClient();
   const isFiltered = hasNonFolderFilters(filters);
 
@@ -43,7 +42,7 @@ export function useAutomationsData(
   >(new Map());
 
   const foldersQuery = useQuery({
-    queryKey: ['folders', workspaceId],
+    queryKey: ['folders', projectId],
     queryFn: () => foldersApi.list(),
     staleTime: STALE_TIME,
     refetchOnMount: 'always',
@@ -60,11 +59,11 @@ export function useAutomationsData(
   }, [foldersQuery.data]);
 
   const folderContentsQuery = useQuery<FolderContentsMap>({
-    queryKey: ['all-folder-contents', workspaceId, folderIds],
+    queryKey: ['all-folder-contents', projectId, folderIds],
     queryFn: async () => {
       const folders = foldersQuery.data!;
       const workflowsPage = await workflowsApi.list({
-        workspaceId,
+        projectId,
         folderIds: folders.map((f) => f.id),
         limit: FOLDER_CONTENTS_LIMIT,
         cursor: undefined,
@@ -80,10 +79,10 @@ export function useAutomationsData(
   const skipWorkflows =
     filters.typeFilter.length > 0 && !filters.typeFilter.includes('workflow');
   const rootWorkflowsQuery = useQuery({
-    queryKey: ['root-workflows', workspaceId, filters],
+    queryKey: ['root-workflows', projectId, filters],
     queryFn: () =>
       workflowsApi.list({
-        workspaceId,
+        projectId,
         folderId: isFiltered ? undefined : UncategorizedFolderId,
         limit: 1000,
         cursor: undefined,

@@ -1,5 +1,5 @@
 import { ConnectorMetadata, ConnectorMetadataModel } from '@fema-ipaas/connector-sdk'
-import { ApplicationError, ErrorCode, isNil, TenantId, WorkspaceId } from '@fema-ipaas/core-utils'
+import { ApplicationError, ErrorCode, isNil, ProjectId, TenantId } from '@fema-ipaas/core-utils'
 import { AddConnectorRequestBody, ConnectorPackage, ConnectorSource, ConnectorType, EngineResponse, EngineResponseStatus, ExecuteExtractConnectorMetadata, FileCompression, FileId, FileType, PackageType, WorkerJobType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { fileService } from '../file/file.service'
@@ -75,7 +75,7 @@ async function saveConnectorPackage(tenantId: string | undefined, params: AddCon
     switch (params.packageType) {
         case PackageType.ARCHIVE: {
             const archiveId = await saveArchive({
-                workspaceId: undefined,
+                projectId: undefined,
                 tenantId,
                 archive: params.connectorArchive.data as Buffer,
             }, log)
@@ -103,7 +103,7 @@ const extractConnectorInformation = async (request: ExecuteExtractConnectorMetad
         jobType: WorkerJobType.EXECUTE_EXTRACT_CONNECTOR_INFORMATION,
         tenantId: request.tenantId,
         connector: request,
-        workspaceId: undefined,
+        projectId: undefined,
     }, log)
 
     if (engineResponse.status !== EngineResponseStatus.OK) {
@@ -116,10 +116,10 @@ const saveArchive = async (
     params: GetConnectorArchivePackageParams,
     log: FastifyBaseLogger,
 ): Promise<FileId> => {
-    const { workspaceId, tenantId, archive } = params
+    const { projectId, tenantId, archive } = params
 
     const archiveFile = await fileService(log).save({
-        workspaceId: isNil(tenantId) ? workspaceId : undefined,
+        projectId: isNil(tenantId) ? projectId : undefined,
         tenantId,
         data: archive,
         size: archive.length,
@@ -132,7 +132,7 @@ const saveArchive = async (
 
 type GetConnectorArchivePackageParams = {
     archive: Buffer
-    workspaceId?: WorkspaceId
+    projectId?: ProjectId
     tenantId?: TenantId
 }
 

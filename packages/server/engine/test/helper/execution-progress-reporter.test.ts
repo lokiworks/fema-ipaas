@@ -6,7 +6,7 @@ import { generateMockEngineConstants } from '../handler/test-helper'
 const { uploadRunLogMock, updateRunProgressMock, updateStepProgressMock } = vi.hoisted(() => ({
     uploadRunLogMock: vi.fn<(params: { apiUrl: string, engineToken: string, request: UploadRunLogsRequest }) => Promise<void>>(async () => undefined),
     updateRunProgressMock: vi.fn<(params: { apiUrl: string, engineToken: string, request: UpdateRunProgressRequest }) => Promise<void>>(async () => undefined),
-    updateStepProgressMock: vi.fn<(params: { apiUrl: string, engineToken: string, request: { workspaceId: string, runId: string, output: unknown } }) => Promise<void>>(async () => undefined),
+    updateStepProgressMock: vi.fn<(params: { apiUrl: string, engineToken: string, request: { projectId: string, runId: string, output: unknown } }) => Promise<void>>(async () => undefined),
 }))
 
 vi.mock('../../src/lib/api/engine-run-api', () => ({
@@ -180,7 +180,7 @@ describe('execution-progress-reporter slicing in single-step test mode', () => {
         // The streaming frame must carry the actual payload and only progress fields —
         // never the terminal success/standardError fields that 400'd the run (#13885).
         expect(lastCall![0].request).toEqual({
-            workspaceId: engineConstants.workspaceId,
+            projectId: engineConstants.projectId,
             runId: engineConstants.executionId,
             output: big,
         })

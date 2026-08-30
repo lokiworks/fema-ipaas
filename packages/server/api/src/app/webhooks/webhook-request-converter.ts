@@ -7,7 +7,7 @@ import { fileService } from '../file/file.service'
 import { enforceByteLimit, filesService, fileTooLargeError } from '../file/files-service'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
-import { workspaceService } from '../workspace/workspace-service'
+import { projectService } from '../project/project-service'
 
 const BINARY_CONTENT_TYPE_PATTERNS = [
     /^image\//,
@@ -32,7 +32,7 @@ export function isMultipartContentType(contentType: string | undefined): boolean
 
 export async function convertRequest(
     request: FastifyRequest,
-    workspaceId: string,
+    projectId: string,
     workflowId: string,
 ): Promise<EventPayload> {
     const contentType = request.headers['content-type']
@@ -40,7 +40,7 @@ export async function convertRequest(
     return {
         method: request.method,
         headers: request.headers as Record<string, string>,
-        body: await convertBody(request, workspaceId, workflowId),
+        body: await convertBody(request, projectId, workflowId),
         queryParams: request.query as Record<string, string>,
         // Streamed bodies (binary/multipart) are consumed straight to storage, so there is no
         // raw payload to forward; rawBody is captured only for the string-parsed signed types.
@@ -57,11 +57,11 @@ export function extractHeaderFromRequest(request: FastifyRequest): Pick<Executio
 
 async function convertBody(
     request: FastifyRequest,
-    workspaceId: string,
+    projectId: string,
     workflowId: string,
 ): Promise<unknown> {
     if (request.isMultipart()) {
-        const tenantId = await workspaceService(request.log).getTenantId(workspaceId)
+        const tenantId = await projectService(request.log).getTenantId(projectId)
         const maxFileSizeInBytes = system.getNumberOrThrow(AppSystemProp.MAX_FILE_SIZE_MB) * 1024 * 1024
         const jsonResult: Record<string, unknown> = {}
         for await (const part of request.parts()) {
@@ -72,7 +72,7 @@ async function convertBody(
                     fileName: part.filename,
                     workflowId,
                     tenantId,
-                    workspaceId,
+                    projectId,
                 })
                 jsonResult[part.fieldname] = appendMultiValue(jsonResult[part.fieldname], url)
             }
@@ -85,7 +85,7 @@ async function convertBody(
 
     const contentType = request.headers['content-type']
     if (isBinaryContentType(contentType)) {
-        const tenantId = await workspaceService(request.log).getTenantId(workspaceId)
+        const tenantId = await projectService(request.log).getTenantId(projectId)
         const extension = mime.extension(contentType?.split(';')[0] || '') || 'bin'
         const maxFileSizeInBytes = system.getNumberOrThrow(AppSystemProp.MAX_FILE_SIZE_MB) * 1024 * 1024
         const url = await saveStepFileAndConstructUrl({
@@ -94,7 +94,7 @@ async function convertBody(
             fileName: `file.${extension}`,
             workflowId,
             tenantId,
-            workspaceId,
+            projectId,
         })
         return { fileUrl: url }
     }
@@ -103,14 +103,14 @@ async function convertBody(
 }
 
 async function saveStepFileAndConstructUrl(params: SaveStepFileParams): Promise<string> {
-    const { log, data, fileName, workflowId, tenantId, workspaceId } = params
+    const { log, data, fileName, workflowId, tenantId, projectId } = params
     const file = await fileService(log).save({
         data,
         metadata: { stepName: 'trigger', workflowId },
         fileName,
         type: FileType.WORKFLOW_STEP_FILE,
         compression: FileCompression.NONE,
-        workspaceId,
+        projectId,
         tenantId,
     })
     return filesService.constructReadUrl({
@@ -145,5 +145,5 @@ type SaveStepFileParams = {
     fileName: string
     workflowId: string
     tenantId: string
-    workspaceId: string
+    projectId: string
 }

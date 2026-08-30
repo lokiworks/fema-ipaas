@@ -138,7 +138,7 @@ const DynamicPropertiesImplementation = React.memo(
       mutate(
         {
           request: {
-            workspaceId: authenticationSession.getWorkspaceId()!,
+            projectId: authenticationSession.getProjectId()!,
             connectorName: props.connectorName,
             connectorVersion: props.connectorVersion,
             componentType: props.componentType,

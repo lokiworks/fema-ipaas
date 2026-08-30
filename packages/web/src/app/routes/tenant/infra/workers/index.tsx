@@ -212,7 +212,7 @@ function WorkerCard({ worker, index }: WorkerCardProps) {
           <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
             <Tooltip>
               <TooltipTrigger asChild>
-                {worker.workerGroupScope === WorkerGroupScope.WORKSPACE &&
+                {worker.workerGroupScope === WorkerGroupScope.PROJECT &&
                 worker.workerGroupId ? (
                   <Badge
                     variant="outline"
@@ -236,10 +236,10 @@ function WorkerCard({ worker, index }: WorkerCardProps) {
                 )}
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
-                {worker.workerGroupScope === WorkerGroupScope.WORKSPACE &&
+                {worker.workerGroupScope === WorkerGroupScope.PROJECT &&
                 worker.workerGroupId
                   ? t(
-                      'This worker runs the workspaces assigned to the {group} group.',
+                      'This worker runs the projects assigned to the {group} group.',
                       {
                         group: worker.workerGroupId.replaceAll('_', ' '),
                       },
@@ -289,7 +289,7 @@ function WorkerCard({ worker, index }: WorkerCardProps) {
           label={
             <>
               <HardDrive className="size-3" />
-              <span>Disk</span>
+              <span>{t('Disk')}</span>
             </>
           }
           value={diskInfo.percentage}

@@ -1,15 +1,15 @@
-import { UserId, WorkspaceId } from '@fema-ipaas/core-utils'
+import { ProjectId, UserId } from '@fema-ipaas/core-utils'
 import { TelemetryEvent, User, UserIdentity } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 
 export const telemetry = (_log: FastifyBaseLogger) => ({
-    async identify(_identity: UserIdentity, _user?: User, _workspaceId?: WorkspaceId): Promise<void> {
+    async identify(_identity: UserIdentity, _user?: User, _projectId?: ProjectId): Promise<void> {
         return
     },
-    async trackTenant(_tenantId: WorkspaceId, _event: TelemetryEvent): Promise<void> {
+    async trackTenant(_tenantId: ProjectId, _event: TelemetryEvent): Promise<void> {
         return
     },
-    async trackWorkspace(_workspaceId: WorkspaceId, _event: TelemetryEvent): Promise<void> {
+    async trackProject(_projectId: ProjectId, _event: TelemetryEvent): Promise<void> {
         return
     },
     async trackIdentity(_identityId: string, _event: TelemetryEvent): Promise<void> {

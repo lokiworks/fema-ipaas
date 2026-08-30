@@ -38,7 +38,7 @@ export const authenticationController: FastifyPluginAsyncZod = async (
             applicationEvents(request.log).sendUserEvent({
                 tenantId: signUpResponse.tenantId,
                 userId: signUpResponse.id,
-                workspaceId: signUpResponse.workspaceId ?? undefined,
+                projectId: signUpResponse.projectId ?? undefined,
                 ip: networkUtils.extractClientRealIp(request, system.get(AppSystemProp.CLIENT_REAL_IP_HEADER)),
             }, {
                 action: ApplicationEventName.USER_SIGNED_UP,
@@ -64,7 +64,7 @@ export const authenticationController: FastifyPluginAsyncZod = async (
             applicationEvents(request.log).sendUserEvent({
                 tenantId: response.tenantId,
                 userId: response.id,
-                workspaceId: response.workspaceId ?? undefined,
+                projectId: response.projectId ?? undefined,
                 ip: networkUtils.extractClientRealIp(request, system.get(AppSystemProp.CLIENT_REAL_IP_HEADER)),
             }, {
                 action: ApplicationEventName.USER_SIGNED_IN,
@@ -105,7 +105,7 @@ export const authenticationController: FastifyPluginAsyncZod = async (
             applicationEvents(request.log).sendUserEvent({
                 tenantId: response.tenantId,
                 userId: response.id,
-                workspaceId: response.workspaceId ?? undefined,
+                projectId: response.projectId ?? undefined,
                 ip: networkUtils.extractClientRealIp(request, system.get(AppSystemProp.CLIENT_REAL_IP_HEADER)),
             }, {
                 action: ApplicationEventName.USER_SIGNED_IN,
@@ -133,7 +133,7 @@ export const authenticationController: FastifyPluginAsyncZod = async (
             applicationEvents(request.log).sendUserEvent({
                 tenantId: response.tenantId,
                 userId: response.id,
-                workspaceId: response.workspaceId ?? undefined,
+                projectId: response.projectId ?? undefined,
                 ip: networkUtils.extractClientRealIp(request, system.get(AppSystemProp.CLIENT_REAL_IP_HEADER)),
             }, {
                 action: ApplicationEventName.USER_SIGNED_UP,

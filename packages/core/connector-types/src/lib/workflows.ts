@@ -7,7 +7,7 @@
 export type PopulatedWorkflowSummary = {
     id: string
     externalId?: string
-    workspaceId?: string
+    projectId?: string
     status?: string
     version: {
         id: string

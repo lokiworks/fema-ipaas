@@ -7,7 +7,7 @@ import { propsProcessor } from '../../src/lib/variables/props-processor'
 import { createPropsResolver } from '../../src/lib/variables/props-resolver'
 
 const propsResolverService = createPropsResolver({
-    workspaceId: 'WORKSPACE_ID',
+    projectId: 'PROJECT_ID',
     engineToken: 'WORKER_TOKEN',
     apiUrl: 'http://127.0.0.1:3000',
     contextVersion: LATEST_CONTEXT_VERSION,

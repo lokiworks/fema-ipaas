@@ -3,7 +3,7 @@ import { FileType, GetWorkflowVersionForWorkerRequest, ListWorkflowsRequest, Pri
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
-import { entitiesMustBeOwnedByCurrentWorkspace } from '../authentication/authorization'
+import { entitiesMustBeOwnedByCurrentProject } from '../authentication/authorization'
 import { connectorBundle } from '../connectors/connector-bundle'
 import { securityAccess } from '../core/security/authorization/fastify-security'
 import { fileService } from '../file/file.service'
@@ -13,11 +13,11 @@ import { workflowVersionService } from '../workflows/workflow-version/workflow-v
 
 export const workflowEngineWorker: FastifyPluginAsyncZod = async (app) => {
 
-    app.addHook('preSerialization', entitiesMustBeOwnedByCurrentWorkspace)
+    app.addHook('preSerialization', entitiesMustBeOwnedByCurrentProject)
 
-    app.get('/populated-workflows', GetAllWorkflowsByWorkspaceParams, async (request) => {
+    app.get('/populated-workflows', GetAllWorkflowsByProjectParams, async (request) => {
         return workflowService(request.log).list({
-            workspaceIds: [request.principal.workspaceId],
+            projectIds: [request.principal.projectId],
             limit: request.query.limit ?? 1000000,
             cursorRequest: request.query.cursor ?? null,
             folderId: request.query.folderId,
@@ -34,7 +34,7 @@ export const workflowEngineWorker: FastifyPluginAsyncZod = async (app) => {
         const workflowVersion = await workflowVersionService(request.log).getOneOrThrow(request.query.versionId)
         await workflowService(request.log).getOneOrThrow({
             id: workflowVersion.workflowId,
-            workspaceId: request.principal.workspaceId,
+            projectId: request.principal.projectId,
         })
         return workflowVersion
     })
@@ -50,7 +50,7 @@ export const workflowEngineWorker: FastifyPluginAsyncZod = async (app) => {
             version: request.query.version,
             archiveId: request.query.archiveId,
             tenantId: request.principal.tenant.id,
-            workspaceId: request.principal.workspaceId,
+            projectId: request.principal.projectId,
         })
         if (resolution.type === 'not-found') {
             return reply.status(StatusCodes.NOT_FOUND).send()
@@ -60,7 +60,7 @@ export const workflowEngineWorker: FastifyPluginAsyncZod = async (app) => {
         }
         const { data } = await fileService(request.log).getDataOrThrow({
             fileId: resolution.archiveId,
-            workspaceId: undefined,
+            projectId: undefined,
             type: FileType.PACKAGE_ARCHIVE,
         })
         return reply
@@ -71,7 +71,7 @@ export const workflowEngineWorker: FastifyPluginAsyncZod = async (app) => {
 
     app.post('/run-progress', RunProgressRequest, async (request, reply) => {
         engineRunCallbackService(request.log).updateRunProgress({
-            workspaceId: request.principal.workspaceId,
+            projectId: request.principal.projectId,
             request: request.body,
         })
         return reply.status(StatusCodes.OK).send()
@@ -79,7 +79,7 @@ export const workflowEngineWorker: FastifyPluginAsyncZod = async (app) => {
 
     app.post('/step-progress', StepProgressRequest, async (request, reply) => {
         engineRunCallbackService(request.log).updateStepProgress({
-            workspaceId: request.principal.workspaceId,
+            projectId: request.principal.projectId,
             request: request.body,
         })
         return reply.status(StatusCodes.OK).send()
@@ -87,7 +87,7 @@ export const workflowEngineWorker: FastifyPluginAsyncZod = async (app) => {
 
     app.post('/run-logs', RunLogsRequest, async (request, reply) => {
         await engineRunCallbackService(request.log).uploadRunLog({
-            workspaceId: request.principal.workspaceId,
+            projectId: request.principal.projectId,
             request: request.body,
         })
         return reply.status(StatusCodes.OK).send()
@@ -103,12 +103,12 @@ export const workflowEngineWorker: FastifyPluginAsyncZod = async (app) => {
 }
 
 
-const GetAllWorkflowsByWorkspaceParams = {
+const GetAllWorkflowsByProjectParams = {
     config: {
         security: securityAccess.engine(),
     },
     schema: {
-        querystring: ListWorkflowsRequest.omit({ workspaceId: true }),
+        querystring: ListWorkflowsRequest.omit({ projectId: true }),
     },
 }
 

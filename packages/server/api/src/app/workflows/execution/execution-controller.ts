@@ -1,11 +1,11 @@
 import { ApplicationError, EntityId, ErrorCode, isNil, omit, Permission, SeekPage } from '@fema-ipaas/core-utils'
 import { dayjsUtil } from '@fema-ipaas/server-utils'
-import { BulkActionOnRunsRequestBody, BulkArchiveActionOnRunsRequestBody, BulkCancelWorkflowRequestBody, CountExecutionsByStatusRequest, CountExecutionsByStatusResponse, Execution, ListExecutionsRequestQuery, PrincipalType, RetryWorkflowRequestBody, RunEnvironment, RunInternalErrorSource, SERVICE_KEY_SECURITY_OPENAPI, TenantRole, WorkspaceOverviewRequest, WorkspaceOverviewResponse } from '@fema-ipaas/shared'
+import { BulkActionOnRunsRequestBody, BulkArchiveActionOnRunsRequestBody, BulkCancelWorkflowRequestBody, CountExecutionsByStatusRequest, CountExecutionsByStatusResponse, Execution, ListExecutionsRequestQuery, PrincipalType, ProjectOverviewRequest, ProjectOverviewResponse, RetryWorkflowRequestBody, RunEnvironment, RunInternalErrorSource, SERVICE_KEY_SECURITY_OPENAPI, TenantRole } from '@fema-ipaas/shared'
 import { FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
-import { WorkspaceResourceType } from '../../core/security/authorization/common'
+import { ProjectResourceType } from '../../core/security/authorization/common'
 import { securityAccess } from '../../core/security/authorization/fastify-security'
 import { userService } from '../../user/user-service'
 import { ExecutionEntity } from './execution-entity'
@@ -16,7 +16,7 @@ const DEFAULT_PAGING_LIMIT = 10
 export const executionController: FastifyPluginAsyncZod = async (app) => {
     app.get('/', ListRequest, async (request) => {
         return executionService(request.log).list({
-            workspaceId: request.query.workspaceId,
+            projectId: request.query.projectId,
             workflowId: request.query.workflowId,
             tags: request.query.tags,
             status: request.query.status,
@@ -34,23 +34,23 @@ export const executionController: FastifyPluginAsyncZod = async (app) => {
 
     app.get('/count-by-status', CountByStatusRouteConfig, async (request) => {
         const data = await executionService(request.log).countByStatus({
-            workspaceId: request.query.workspaceId,
+            projectId: request.query.projectId,
             createdAfter: request.query.createdAfter,
             createdBefore: request.query.createdBefore,
         })
         return { data }
     })
 
-    app.get('/overview', WorkspaceOverviewRouteConfig, async (request) => {
-        const { workspaceId, days } = request.query
+    app.get('/overview', ProjectOverviewRouteConfig, async (request) => {
+        const { projectId, days } = request.query
         const createdAfter = dayjsUtil().subtract(days, 'day').toISOString()
         const [countByStatus, dailyTrend, topFailingWorkflows, connectionHealth, topConnectors, recentlyEditedWorkflows] = await Promise.all([
-            executionService(request.log).countByStatus({ workspaceId, createdAfter }),
-            executionService(request.log).dailyTrend({ workspaceId, createdAfter }),
-            executionService(request.log).topFailingWorkflows({ workspaceId, createdAfter, limit: TOP_FAILING_WORKFLOWS_LIMIT }),
-            executionService(request.log).connectionHealth({ workspaceId }),
-            executionService(request.log).topConnectors({ workspaceId, limit: OVERVIEW_LIST_LIMIT }),
-            executionService(request.log).recentlyEditedWorkflows({ workspaceId, limit: OVERVIEW_LIST_LIMIT }),
+            executionService(request.log).countByStatus({ projectId, createdAfter }),
+            executionService(request.log).dailyTrend({ projectId, createdAfter }),
+            executionService(request.log).topFailingWorkflows({ projectId, createdAfter, limit: TOP_FAILING_WORKFLOWS_LIMIT }),
+            executionService(request.log).connectionHealth({ projectId }),
+            executionService(request.log).topConnectors({ projectId, limit: OVERVIEW_LIST_LIMIT }),
+            executionService(request.log).recentlyEditedWorkflows({ projectId, limit: OVERVIEW_LIST_LIMIT }),
         ])
         return { countByStatus, dailyTrend, topFailingWorkflows, connectionHealth, topConnectors, recentlyEditedWorkflows }
     })
@@ -60,7 +60,7 @@ export const executionController: FastifyPluginAsyncZod = async (app) => {
         GetRequest,
         async (request, reply) => {
             const execution = await executionService(request.log).getOnePopulatedOrThrow({
-                workspaceId: request.workspaceId,
+                projectId: request.projectId,
                 id: request.params.id,
             })
             const internalErrorEnabled = execution.internalError?.source === RunInternalErrorSource.ENGINE || true
@@ -73,7 +73,7 @@ export const executionController: FastifyPluginAsyncZod = async (app) => {
         const execution = await executionService(req.log).retry({
             executionId: req.params.id,
             strategy: req.body.strategy,
-            workspaceId: req.body.workspaceId,
+            projectId: req.body.projectId,
         })
 
         if (isNil(execution)) {
@@ -91,7 +91,7 @@ export const executionController: FastifyPluginAsyncZod = async (app) => {
 
     app.post('/cancel', BulkCancelWorkflowRequest, async (req) => {
         return executionService(req.log).cancel({
-            workspaceId: req.workspaceId,
+            projectId: req.projectId,
             tenantId: req.principal.tenant.id,
             executionIds: req.body.executionIds,
             excludeExecutionIds: req.body.excludeExecutionIds,
@@ -104,7 +104,7 @@ export const executionController: FastifyPluginAsyncZod = async (app) => {
 
     app.post('/retry', BulkRetryWorkflowRequest, async (req) => {
         return executionService(req.log).bulkRetry({
-            workspaceId: req.workspaceId,
+            projectId: req.projectId,
             executionIds: req.body.executionIds,
             excludeExecutionIds: req.body.excludeExecutionIds,
             strategy: req.body.strategy,
@@ -119,7 +119,7 @@ export const executionController: FastifyPluginAsyncZod = async (app) => {
 
     app.post('/archive', ArchiveExecutionRequest, async (req) => {
         return executionService(req.log).bulkArchive({
-            workspaceId: req.workspaceId,
+            projectId: req.projectId,
             executionIds: req.body.executionIds,
             excludeExecutionIds: req.body.excludeExecutionIds,
             status: req.body.status,
@@ -145,10 +145,10 @@ const ExecutionFilteredWithNoSteps = Execution.omit({ steps: true })
 
 const ListRequest = {
     config: {
-        security: securityAccess.workspace(
+        security: securityAccess.project(
             [PrincipalType.USER, PrincipalType.SERVICE], 
             Permission.READ_RUN, {
-                type: WorkspaceResourceType.QUERY,
+                type: ProjectResourceType.QUERY,
             }),
     },
     schema: {
@@ -164,10 +164,10 @@ const ListRequest = {
 
 const GetRequest = {
     config: {
-        security: securityAccess.workspace(
+        security: securityAccess.project(
             [PrincipalType.USER, PrincipalType.SERVICE], 
             Permission.READ_RUN, {
-                type: WorkspaceResourceType.TABLE,
+                type: ProjectResourceType.TABLE,
                 tableName: ExecutionEntity,
             }),
     },
@@ -186,10 +186,10 @@ const GetRequest = {
 
 const RetryWorkflowRequest = {
     config: {
-        security: securityAccess.workspace(
+        security: securityAccess.project(
             [PrincipalType.USER, PrincipalType.SERVICE], 
             Permission.WRITE_RUN, {
-                type: WorkspaceResourceType.TABLE,
+                type: ProjectResourceType.TABLE,
                 tableName: ExecutionEntity,
             }),
     },
@@ -203,10 +203,10 @@ const RetryWorkflowRequest = {
 
 const BulkCancelWorkflowRequest = {
     config: {
-        security: securityAccess.workspace(
+        security: securityAccess.project(
             [PrincipalType.USER, PrincipalType.SERVICE], 
             Permission.WRITE_RUN, {
-                type: WorkspaceResourceType.BODY,
+                type: ProjectResourceType.BODY,
             }),
     },
     schema: {
@@ -219,10 +219,10 @@ const BulkCancelWorkflowRequest = {
 
 const ArchiveExecutionRequest = {
     config: {
-        security: securityAccess.workspace(
+        security: securityAccess.project(
             [PrincipalType.USER, PrincipalType.SERVICE], 
             Permission.WRITE_RUN, {
-                type: WorkspaceResourceType.BODY,
+                type: ProjectResourceType.BODY,
             }),
     },
     schema: {
@@ -233,31 +233,31 @@ const ArchiveExecutionRequest = {
 const TOP_FAILING_WORKFLOWS_LIMIT = 5
 const OVERVIEW_LIST_LIMIT = 5
 
-const WorkspaceOverviewRouteConfig = {
+const ProjectOverviewRouteConfig = {
     config: {
-        security: securityAccess.workspace(
+        security: securityAccess.project(
             [PrincipalType.USER, PrincipalType.SERVICE],
             Permission.READ_RUN, {
-                type: WorkspaceResourceType.QUERY,
+                type: ProjectResourceType.QUERY,
             }),
     },
     schema: {
         tags: ['executions'],
-        description: 'Workspace run overview',
+        description: 'Project run overview',
         security: [SERVICE_KEY_SECURITY_OPENAPI],
-        querystring: WorkspaceOverviewRequest,
+        querystring: ProjectOverviewRequest,
         response: {
-            [StatusCodes.OK]: WorkspaceOverviewResponse,
+            [StatusCodes.OK]: ProjectOverviewResponse,
         },
     },
 }
 
 const CountByStatusRouteConfig = {
     config: {
-        security: securityAccess.workspace(
+        security: securityAccess.project(
             [PrincipalType.USER, PrincipalType.SERVICE],
             Permission.READ_RUN, {
-                type: WorkspaceResourceType.QUERY,
+                type: ProjectResourceType.QUERY,
             }),
     },
     schema: {
@@ -273,10 +273,10 @@ const CountByStatusRouteConfig = {
 
 const BulkRetryWorkflowRequest = {
     config: {
-        security: securityAccess.workspace(
+        security: securityAccess.project(
             [PrincipalType.USER, PrincipalType.SERVICE],
             Permission.WRITE_RUN, {
-                type: WorkspaceResourceType.BODY,
+                type: ProjectResourceType.BODY,
             }),
     },
     schema: {

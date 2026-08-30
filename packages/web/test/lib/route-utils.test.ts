@@ -5,7 +5,7 @@ import { determineDefaultRoute } from '@/lib/route-utils';
 
 vi.mock('@/lib/authentication-session', () => ({
   authenticationSession: {
-    appendWorkspaceRoutePrefix: (path: string) => path,
+    appendProjectRoutePrefix: (path: string) => path,
   },
 }));
 

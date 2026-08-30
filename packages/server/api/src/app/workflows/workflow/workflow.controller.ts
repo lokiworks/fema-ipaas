@@ -4,8 +4,8 @@ import { FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
-import { entitiesMustBeOwnedByCurrentWorkspace } from '../../authentication/authorization'
-import { WorkspaceResourceType } from '../../core/security/authorization/common'
+import { entitiesMustBeOwnedByCurrentProject } from '../../authentication/authorization'
+import { ProjectResourceType } from '../../core/security/authorization/common'
 import { securityAccess } from '../../core/security/authorization/fastify-security'
 import { networkUtils } from '../../helper/network-utils'
 import { userService } from '../../user/user-service'
@@ -16,10 +16,10 @@ import { workflowService } from './workflow.service'
 const DEFAULT_PAGE_SIZE = 10
 
 export const workflowController: FastifyPluginAsyncZod = async (app) => {
-    app.addHook('preSerialization', entitiesMustBeOwnedByCurrentWorkspace)
+    app.addHook('preSerialization', entitiesMustBeOwnedByCurrentProject)
     app.post('/', CreateWorkflowRequestOptions, async (request, reply) => {
         const newWorkflow = await workflowService(request.log).create({
-            workspaceId: request.workspaceId,
+            projectId: request.projectId,
             request: request.body,
             ownerId: actorUserId(request),
             templateId: request.body.templateId,
@@ -31,10 +31,10 @@ export const workflowController: FastifyPluginAsyncZod = async (app) => {
 
     app.post('/:id', {
         config: {
-            security: securityAccess.workspace(
+            security: securityAccess.project(
                 [PrincipalType.USER, PrincipalType.SERVICE], 
                 Permission.UPDATE_WORKFLOW_STATUS, {
-                    type: WorkspaceResourceType.TABLE,
+                    type: ProjectResourceType.TABLE,
                     tableName: WorkflowEntity,
                 }),
         },
@@ -69,14 +69,14 @@ export const workflowController: FastifyPluginAsyncZod = async (app) => {
     }, async (request) => {
         const workflow = await workflowService(request.log).getOnePopulatedOrThrow({
             id: request.params.id,
-            workspaceId: request.workspaceId,
+            projectId: request.projectId,
         })
 
         return workflowService(request.log).update({
             id: request.params.id,
             userId: actorUserId(request),
             tenantId: request.principal.tenant.id,
-            workspaceId: request.workspaceId,
+            projectId: request.projectId,
             operation: cleanOperation(request.body),
             previousWorkflow: workflow,
             ip: networkUtils.clientIp(request),
@@ -85,7 +85,7 @@ export const workflowController: FastifyPluginAsyncZod = async (app) => {
 
     app.get('/', ListWorkflowsRequestOptions, async (request) => {
         return workflowService(request.log).list({
-            workspaceIds: [request.workspaceId],
+            projectIds: [request.projectId],
             folderId: request.query.folderId,
             folderIds: request.query.folderIds,
             cursorRequest: request.query.cursor ?? null,
@@ -102,7 +102,7 @@ export const workflowController: FastifyPluginAsyncZod = async (app) => {
     app.get('/count', CountWorkflowsRequestOptions, async (request) => {
         return workflowService(request.log).count({
             folderId: request.query.folderId,
-            workspaceId: request.workspaceId,
+            projectId: request.projectId,
         })
     })
 
@@ -111,7 +111,7 @@ export const workflowController: FastifyPluginAsyncZod = async (app) => {
         return workflowService(request.log).getTemplate({
             workflowId: request.params.id,
             userMetadata,
-            workspaceId: request.workspaceId,
+            projectId: request.projectId,
             versionId: undefined,
         })
     })
@@ -119,7 +119,7 @@ export const workflowController: FastifyPluginAsyncZod = async (app) => {
     app.get('/:id', GetWorkflowRequestOptions, async (request) => {
         return workflowService(request.log).getOnePopulatedOrThrow({
             id: request.params.id,
-            workspaceId: request.workspaceId,
+            projectId: request.projectId,
             versionId: request.query.versionId,
         })
     })
@@ -127,11 +127,11 @@ export const workflowController: FastifyPluginAsyncZod = async (app) => {
     app.delete('/:id', DeleteWorkflowRequestOptions, async (request, reply) => {
         const workflow = await workflowService(request.log).getOnePopulatedOrThrow({
             id: request.params.id,
-            workspaceId: request.workspaceId,
+            projectId: request.projectId,
         })
         await workflowService(request.log).delete({
             id: request.params.id,
-            workspaceId: request.workspaceId,
+            projectId: request.projectId,
             previousWorkflow: workflow,
             userId: actorUserId(request),
             ip: networkUtils.clientIp(request),
@@ -174,10 +174,10 @@ function cleanOperation(operation: WorkflowOperationRequest): WorkflowOperationR
 
 const CreateWorkflowRequestOptions = {
     config: {
-        security: securityAccess.workspace(
+        security: securityAccess.project(
             [PrincipalType.USER, PrincipalType.SERVICE], 
             Permission.WRITE_WORKFLOW, {
-                type: WorkspaceResourceType.BODY,
+                type: ProjectResourceType.BODY,
             }),
     },
     schema: {
@@ -194,10 +194,10 @@ const CreateWorkflowRequestOptions = {
 
 const ListWorkflowsRequestOptions = {
     config: {
-        security: securityAccess.workspace(
+        security: securityAccess.project(
             [PrincipalType.USER, PrincipalType.SERVICE], 
             Permission.READ_WORKFLOW, {
-                type: WorkspaceResourceType.QUERY,
+                type: ProjectResourceType.QUERY,
             }),
     },
     schema: {
@@ -213,10 +213,10 @@ const ListWorkflowsRequestOptions = {
 
 const CountWorkflowsRequestOptions = {
     config: {
-        security: securityAccess.workspace(
+        security: securityAccess.project(
             [PrincipalType.USER, PrincipalType.SERVICE], 
             Permission.READ_WORKFLOW, {
-                type: WorkspaceResourceType.QUERY,
+                type: ProjectResourceType.QUERY,
             }),
     },
     schema: {
@@ -226,10 +226,10 @@ const CountWorkflowsRequestOptions = {
 
 const GetWorkflowTemplateRequestOptions = {
     config: {
-        security: securityAccess.workspace(
+        security: securityAccess.project(
             [PrincipalType.USER, PrincipalType.SERVICE], 
             Permission.READ_WORKFLOW, {
-                type: WorkspaceResourceType.TABLE,
+                type: ProjectResourceType.TABLE,
                 tableName: WorkflowEntity,
             }),
     },
@@ -249,10 +249,10 @@ const GetWorkflowTemplateRequestOptions = {
 
 const GetWorkflowRequestOptions = {
     config: {
-        security: securityAccess.workspace(
+        security: securityAccess.project(
             [PrincipalType.USER, PrincipalType.SERVICE], 
             Permission.READ_WORKFLOW, {
-                type: WorkspaceResourceType.TABLE,
+                type: ProjectResourceType.TABLE,
                 tableName: WorkflowEntity,
             }),
     },
@@ -272,10 +272,10 @@ const GetWorkflowRequestOptions = {
 
 const DeleteWorkflowRequestOptions = {
     config: {
-        security: securityAccess.workspace(
+        security: securityAccess.project(
             [PrincipalType.USER, PrincipalType.SERVICE], 
             Permission.WRITE_WORKFLOW, {
-                type: WorkspaceResourceType.TABLE,
+                type: ProjectResourceType.TABLE,
                 tableName: WorkflowEntity,
             }),
     },

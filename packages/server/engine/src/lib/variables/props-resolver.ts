@@ -31,7 +31,7 @@ async function replaceTokensAsync(
 }
 
 
-export const createPropsResolver = ({ engineToken, workspaceId, apiUrl, contextVersion, stepNames, connectorName }: PropsResolverParams) => {
+export const createPropsResolver = ({ engineToken, projectId, apiUrl, contextVersion, stepNames, connectorName }: PropsResolverParams) => {
     return {
         resolve: async <T = unknown>(params: ResolveInputParams): Promise<ResolveResult<T>> => {
             const { unresolvedInput, executionState } = params
@@ -46,7 +46,7 @@ export const createPropsResolver = ({ engineToken, workspaceId, apiUrl, contextV
             try {
                 const resolveOptions = {
                     engineToken,
-                    workspaceId,
+                    projectId,
                     apiUrl,
                     getStepView,
                     scriptSession,
@@ -86,10 +86,10 @@ export const createPropsResolver = ({ engineToken, workspaceId, apiUrl, contextV
  * tokenThatNeedResolving: [`{{firstName}}`, `{{lastName}}`]
  */
 async function resolveInputAsync(params: ResolveInputInternalParams): Promise<unknown> {
-    const { input, getStepView, engineToken, workspaceId, apiUrl, censoredInput, scriptSession, stepNames, connectorName } = params
+    const { input, getStepView, engineToken, projectId, apiUrl, censoredInput, scriptSession, stepNames, connectorName } = params
 
     if (formulaEvaluator.containsWrapper(input)) {
-        const formulaOptions = { engineToken, workspaceId, apiUrl, getStepView, censoredInput, scriptSession, stepNames, connectorName, contextVersion: params.contextVersion }
+        const formulaOptions = { engineToken, projectId, apiUrl, getStepView, censoredInput, scriptSession, stepNames, connectorName, contextVersion: params.contextVersion }
         const { expression: preResolvedExpr, vars: preResolvedVars } = await preResolveFormulaVars({ expression: input, resolveOptions: formulaOptions })
         const { result, error } = formulaEvaluator.evaluate({ expression: preResolvedExpr, sampleData: preResolvedVars })
         if (error) {
@@ -101,7 +101,7 @@ async function resolveInputAsync(params: ResolveInputInternalParams): Promise<un
     const tokensThatNeedResolving = extractMustacheTokens(input)
     const resolveOptions = {
         engineToken,
-        workspaceId,
+        projectId,
         apiUrl,
         getStepView,
         censoredInput,
@@ -137,12 +137,12 @@ async function resolveInputAsync(params: ResolveInputInternalParams): Promise<un
 }
 
 async function resolveSingleToken(params: ResolveSingleTokenParams): Promise<unknown> {
-    const { variableName, engineToken, workspaceId, apiUrl, censoredInput, contextVersion, connectorName, getStepView, scriptSession, stepNames } = params
+    const { variableName, engineToken, projectId, apiUrl, censoredInput, contextVersion, connectorName, getStepView, scriptSession, stepNames } = params
     if (variableName.startsWith(VARIABLES)) {
-        return variableToken.handle({ variableName, engineToken, workspaceId, apiUrl, censoredInput })
+        return variableToken.handle({ variableName, engineToken, projectId, apiUrl, censoredInput })
     }
     if (variableName.startsWith(CONNECTIONS)) {
-        return connectionToken.handle({ variableName, engineToken, workspaceId, apiUrl, censoredInput, contextVersion, connectorName })
+        return connectionToken.handle({ variableName, engineToken, projectId, apiUrl, censoredInput, contextVersion, connectorName })
     }
     const segments = propertyPath.parse(variableName)
     if (isNil(segments) || segments.length === 0) {
@@ -184,7 +184,7 @@ async function evalWithPropertyPath({ segments, getStepView }: {
 
 
 const mergeFlattenedKeysArraysIntoOneArray = async (token: string, partsThatNeedResolving: string[],
-    resolveOptions: Pick<ResolveInputInternalParams, 'engineToken' | 'workspaceId' | 'apiUrl' | 'getStepView' | 'censoredInput' | 'scriptSession' | 'stepNames' | 'connectorName'>,
+    resolveOptions: Pick<ResolveInputInternalParams, 'engineToken' | 'projectId' | 'apiUrl' | 'getStepView' | 'censoredInput' | 'scriptSession' | 'stepNames' | 'connectorName'>,
     contextVersion: ContextVersion | undefined,
 ) => {
     const resolvedValues: Record<string, unknown> = {}
@@ -246,7 +246,7 @@ function createMemoizedStepViewGetter(executionState: WorkflowExecutorContext): 
     }
 }
 
-type PreResolveOptions = Pick<ResolveInputInternalParams, 'engineToken' | 'workspaceId' | 'apiUrl' | 'getStepView' | 'censoredInput' | 'contextVersion' | 'scriptSession' | 'stepNames' | 'connectorName'>
+type PreResolveOptions = Pick<ResolveInputInternalParams, 'engineToken' | 'projectId' | 'apiUrl' | 'getStepView' | 'censoredInput' | 'contextVersion' | 'scriptSession' | 'stepNames' | 'connectorName'>
 
 async function preResolveFormulaVars({ expression, resolveOptions }: {
     expression: string
@@ -290,7 +290,7 @@ type ResolveSingleTokenParams = {
     variableName: string
     getStepView: GetStepView
     engineToken: string
-    workspaceId: string
+    projectId: string
     apiUrl: string
     censoredInput: boolean
     contextVersion: ContextVersion | undefined
@@ -302,7 +302,7 @@ type ResolveSingleTokenParams = {
 type ResolveInputInternalParams = {
     input: string
     engineToken: string
-    workspaceId: string
+    projectId: string
     apiUrl: string
     censoredInput: boolean
     getStepView: GetStepView
@@ -325,7 +325,7 @@ type ResolveResult<T = unknown> = {
 
 type PropsResolverParams = {
     engineToken: string
-    workspaceId: string
+    projectId: string
     apiUrl: string
     contextVersion: ContextVersion | undefined
     stepNames: string[]

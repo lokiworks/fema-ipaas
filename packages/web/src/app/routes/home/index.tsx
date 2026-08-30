@@ -35,7 +35,7 @@ const PERIODS = [
 
 export function HomePage() {
   const [days, setDays] = useState('7');
-  const { data, isLoading } = overviewHooks.useWorkspaceOverview(Number(days));
+  const { data, isLoading } = overviewHooks.useProjectOverview(Number(days));
 
   const summary = useMemo(() => {
     const counts = data?.countByStatus ?? [];

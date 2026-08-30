@@ -48,7 +48,7 @@ export const GetConnectorRequestParams = z.object({
 export type GetConnectorRequestParams = z.infer<typeof GetConnectorRequestParams>
 
 export const ListConnectorsRequestQuery = z.object({
-    workspaceId: z.string().optional(),
+    projectId: z.string().optional(),
     release: ExactVersionType.optional(),
     includeHidden: OptionalBooleanFromQuery,
     audience: z.nativeEnum(ConnectorAudienceFilter).optional(),
@@ -71,7 +71,7 @@ export type RegistryConnectorsRequestQuery = z.infer<typeof RegistryConnectorsRe
 
 export const GetConnectorRequestQuery = z.object({
     version: VersionType.optional(),
-    workspaceId: z.string().optional(),
+    projectId: z.string().optional(),
     locale: z.string().optional(),
     audience: z.nativeEnum(ConnectorAudienceFilter).optional(),
 })
@@ -79,7 +79,7 @@ export const GetConnectorRequestQuery = z.object({
 export type GetConnectorRequestQuery = z.infer<typeof GetConnectorRequestQuery>
 
 export const ConnectorOptionRequest = z.object({
-    workspaceId: z.string(),
+    projectId: z.string(),
     connectorName: z.string().optional(),
     connectorVersion: z.optional(VersionType),
     componentType: z.string().optional(),

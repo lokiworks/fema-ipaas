@@ -8,9 +8,9 @@ export const connectionWorkerController: FastifyPluginAsyncZod = async (app) => 
 
     app.get('/:externalId', GetConnectionRequest, async (request): Promise<Connection> => {
         const enginePrincipal = (request.principal as EnginePrincipal)
-        assertNotNullOrUndefined(enginePrincipal.workspaceId, 'workspaceId')
+        assertNotNullOrUndefined(enginePrincipal.projectId, 'projectId')
         const connection = await connectionService(request.log).getOne({
-            workspaceId: enginePrincipal.workspaceId,
+            projectId: enginePrincipal.projectId,
             tenantId: enginePrincipal.tenant.id,
             externalId: request.params.externalId,
         })

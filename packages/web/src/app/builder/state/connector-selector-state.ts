@@ -1,6 +1,6 @@
 import { StoreApi } from 'zustand';
 
-import { RightSideBarType } from '@/app/builder/types';
+import { LeftSideBarType } from '@/app/builder/types';
 import {
   ConnectorSelectorOperation,
   StepMetadataWithSuggestions,
@@ -28,10 +28,10 @@ export const createConnectorSelectorState = (
             connectorSelectorOperation: null,
             connectorSelectorReplacedStepDisplayName: null,
             selectedConnectorMetadataInConnectorSelector: null,
-            rightSidebar:
-              state.rightSidebar === RightSideBarType.CONNECTOR_PICKER
-                ? RightSideBarType.NONE
-                : state.rightSidebar,
+            leftSidebar:
+              state.leftSidebar === LeftSideBarType.CONNECTOR_PICKER
+                ? LeftSideBarType.NONE
+                : state.leftSidebar,
           };
         }
         return {
@@ -41,7 +41,7 @@ export const createConnectorSelectorState = (
           connectorSelectorReplacedStepDisplayName:
             replacedStepDisplayName ?? null,
           selectedConnectorMetadataInConnectorSelector: null,
-          rightSidebar: RightSideBarType.CONNECTOR_PICKER,
+          leftSidebar: LeftSideBarType.CONNECTOR_PICKER,
         };
       });
     },

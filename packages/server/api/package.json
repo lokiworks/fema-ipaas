@@ -148,6 +148,7 @@
     "test": "npm run test-integration",
     "test-integration": "export $(cat .env.tests | xargs) && vitest run test/integration --bail 1 --passWithNoTests=false",
     "test-unit": "vitest run test/unit",
+    "typecheck": "tsc -p tsconfig.app.json --noEmit && tsc -p tsconfig.spec.json --noEmit",
     "test:docker": "UID=\"$(id -u)\" GID=\"$(id -g)\" docker compose --profile full -f docker-compose.test.yml up --exit-code-from app --attach app"
   }
 }

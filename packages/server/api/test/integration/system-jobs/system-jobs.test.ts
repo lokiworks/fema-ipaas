@@ -1,4 +1,5 @@
 import { dayjsUtil } from '@fema-ipaas/server-utils'
+import { Queue } from 'bullmq'
 import { FastifyInstance } from 'fastify'
 import { SystemJobName } from '../../../src/app/helper/system-jobs/common'
 import { systemJobsQueue, systemJobsSchedule } from '../../../src/app/helper/system-jobs/system-job'
@@ -8,14 +9,20 @@ const TEST_PREFIX = 'test-'
 
 let app: FastifyInstance
 let schedule: ReturnType<typeof systemJobsSchedule>
+// The exported queue is typed to SystemJobName, so a legacy '::' scheduler id — the very
+// thing removeDeprecatedJobs cleans up — cannot be seeded through it. This raw handle over
+// the same queue lets the test write those ids.
+let legacyQueue: Queue
 
 beforeAll(async () => {
     app = await setupTestEnvironment()
     schedule = systemJobsSchedule(app.log)
     await schedule.init()
+    legacyQueue = new Queue(systemJobsQueue.name, systemJobsQueue.opts)
 })
 
 afterAll(async () => {
+    await legacyQueue.close()
     await schedule.close()
     await teardownTestEnvironment()
 })
@@ -145,7 +152,7 @@ describe('System Jobs', () => {
         // Simulate a legacy scheduler by creating one with a key containing '::'
         // This mimics what older BullMQ versions produced when no jobId was set.
         const legacyKey = `${SystemJobName.FILE_CLEANUP_TRIGGER}::0:UTC:0 3 * * *`
-        await systemJobsQueue.upsertJobScheduler(legacyKey, {
+        await legacyQueue.upsertJobScheduler(legacyKey, {
             pattern: '0 3 * * *',
             tz: 'UTC',
         }, {
@@ -172,7 +179,7 @@ describe('System Jobs', () => {
     it('should keep new-format schedulers while removing legacy ones', async () => {
         // Create a legacy scheduler (key contains ::)
         const legacyKey = `${SystemJobName.CONNECTORS_ANALYTICS}::0:UTC:0 12 * * *`
-        await systemJobsQueue.upsertJobScheduler(legacyKey, {
+        await legacyQueue.upsertJobScheduler(legacyKey, {
             pattern: '0 12 * * *',
             tz: 'UTC',
         }, {
@@ -181,7 +188,7 @@ describe('System Jobs', () => {
         })
 
         // Create a new-format scheduler (key is just the jobId, no ::)
-        await systemJobsQueue.upsertJobScheduler('connectors-analytics', {
+        await legacyQueue.upsertJobScheduler('connectors-analytics', {
             pattern: '0 12 * * *',
             tz: 'UTC',
         }, {

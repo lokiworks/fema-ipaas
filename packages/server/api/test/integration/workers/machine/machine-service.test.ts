@@ -1,5 +1,6 @@
-import { ExecutionMode } from '@fema-ipaas/shared'
+import { ExecutionMode, WorkerGroupScope, WorkerMachineHealthcheckRequest } from '@fema-ipaas/shared'
 import { RedisType } from '@fema-ipaas/server-utils'
+import { FastifyBaseLogger } from 'fastify'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AppSystemProp } from '../../../../src/app/helper/system/system-props'
 
@@ -45,13 +46,17 @@ const mockLog = {
     trace: vi.fn(),
     silent: vi.fn(),
     level: 'info',
-} as any
+} as unknown as FastifyBaseLogger
 
-const mockHealthcheck = {
+const mockHealthcheck: WorkerMachineHealthcheckRequest = {
     workerId: 'test-worker-1',
     cpuUsagePercentage: 10,
     ramUsagePercentage: 20,
     totalAvailableRamInBytes: 1024,
+    totalCpuCores: 1,
+    ip: '127.0.0.1',
+    workerProps: {},
+    sandboxes: [],
     diskInfo: {
         total: 1000,
         free: 500,
@@ -79,7 +84,7 @@ describe('machineService — execution mode', () => {
         mockSystemValues[AppSystemProp.EXECUTION_MODE] = ExecutionMode.SANDBOX_CODE_AND_PROCESS
 
         const { machineService: freshMachineService } = await import('../../../../src/app/workers/machine/machine-service')
-        const result = await freshMachineService(mockLog).onConnection(mockHealthcheck, 'my-worker-group')
+        const result = await freshMachineService(mockLog).onConnection(mockHealthcheck, { scope: WorkerGroupScope.PROJECT, id: 'my-worker-group' })
 
         expect(result.EXECUTION_MODE).toBe(ExecutionMode.SANDBOX_CODE_AND_PROCESS)
     })

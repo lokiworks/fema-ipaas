@@ -1,4 +1,4 @@
-import { generateId, EngineResponseStatus, WorkflowStatus, ConnectorType, PrincipalType, TriggerStrategy, WebhookHandshakeStrategy } from '@fema-ipaas/shared'
+import { generateId, EngineResponseStatus, WorkflowStatus, ConnectorType, PrincipalType, TriggerStrategy, TriggerTestStrategy, WebhookHandshakeStrategy } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { generateMockToken } from '../../helpers/auth'
@@ -400,6 +400,14 @@ describe('Webhook Service', () => {
             version: connectorVersion,
             triggers: {
                 [triggerName]: {
+                    name: triggerName,
+                    displayName: triggerName,
+                    description: '',
+                    props: {},
+                    requireAuth: false,
+                    type: TriggerStrategy.WEBHOOK,
+                    sampleData: {},
+                    testStrategy: TriggerTestStrategy.SIMULATION,
                     handshakeConfiguration: {
                         strategy: WebhookHandshakeStrategy.QUERY_PRESENT,
                         paramName: 'hub_challenge',
@@ -471,6 +479,14 @@ describe('Webhook Service', () => {
             version: connectorVersion,
             triggers: {
                 [triggerName]: {
+                    name: triggerName,
+                    displayName: triggerName,
+                    description: '',
+                    props: {},
+                    requireAuth: false,
+                    type: TriggerStrategy.WEBHOOK,
+                    sampleData: {},
+                    testStrategy: TriggerTestStrategy.SIMULATION,
                     handshakeConfiguration: {
                         strategy: WebhookHandshakeStrategy.QUERY_PRESENT,
                         paramName: 'hub_challenge',

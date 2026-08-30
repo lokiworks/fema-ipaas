@@ -1,11 +1,9 @@
+import { ExecutionType } from '@fema-ipaas/connector-types'
 import { z } from 'zod'
 import { TriggerPayload } from '../../engine'
 import { StepOutput } from './step-output'
 
-export enum ExecutionType {
-    BEGIN = 'BEGIN',
-    RESUME = 'RESUME',
-}
+export { ExecutionType }
 
 export type ExecutionState = {
     steps: Record<string, StepOutput>

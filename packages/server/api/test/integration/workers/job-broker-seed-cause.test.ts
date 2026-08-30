@@ -1,5 +1,5 @@
 import { generateId } from '@fema-ipaas/core-utils'
-import { EngineResponseStatus, LATEST_JOB_DATA_SCHEMA_VERSION, TriggerHookType, WorkerJobType } from '@fema-ipaas/shared'
+import { EngineResponseStatus, ExecuteTriggerHookJobData, LATEST_JOB_DATA_SCHEMA_VERSION, TriggerHookType, WorkerJobType } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { redisConnections } from '../../../src/app/database/redis-connections'
 import { QueueName } from '../../../src/app/workers/job'
@@ -45,7 +45,7 @@ describe('jobBroker.completeJob — seed cause for stuck-active zombies', () => 
         const { mockTenant, mockProject } = await mockAndSaveBasicSetup()
         const requestId = generateId()
 
-        const jobData = {
+        const jobData: ExecuteTriggerHookJobData = {
             jobType: WorkerJobType.EXECUTE_TRIGGER_HOOK,
             tenantId: mockTenant.id,
             projectId: mockProject.id,
@@ -109,7 +109,7 @@ describe('jobBroker.completeJob — seed cause for stuck-active zombies', () => 
         const { mockTenant, mockProject } = await mockAndSaveBasicSetup()
         const requestId = generateId()
 
-        const jobData = {
+        const jobData: ExecuteTriggerHookJobData = {
             jobType: WorkerJobType.EXECUTE_TRIGGER_HOOK,
             tenantId: mockTenant.id,
             projectId: mockProject.id,
@@ -161,7 +161,7 @@ describe('jobBroker.completeJob — seed cause for stuck-active zombies', () => 
         const { mockTenant, mockProject } = await mockAndSaveBasicSetup()
         const requestId = generateId()
 
-        const jobData = {
+        const jobData: ExecuteTriggerHookJobData = {
             jobType: WorkerJobType.EXECUTE_TRIGGER_HOOK,
             tenantId: mockTenant.id,
             projectId: mockProject.id,

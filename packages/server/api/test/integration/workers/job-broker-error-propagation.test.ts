@@ -1,5 +1,5 @@
 import { generateId } from '@fema-ipaas/core-utils'
-import { EngineResponseStatus, LATEST_JOB_DATA_SCHEMA_VERSION, TriggerHookType, WorkerJobType } from '@fema-ipaas/shared'
+import { EngineResponseStatus, ExecuteTriggerHookJobData, LATEST_JOB_DATA_SCHEMA_VERSION, TriggerHookType, WorkerJobType } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { engineResponseWatcher } from '../../../src/app/workers/engine-response-watcher'
 import { jobBroker } from '../../../src/app/workers/job-queue/job-broker'
@@ -25,7 +25,7 @@ describe('Job broker error propagation', () => {
         const requestId = generateId()
         const webserverId = engineResponseWatcher(app.log).getServerId()
 
-        const jobData = {
+        const jobData: ExecuteTriggerHookJobData = {
             jobType: WorkerJobType.EXECUTE_TRIGGER_HOOK,
             tenantId: mockTenant.id,
             projectId: mockProject.id,
@@ -76,7 +76,7 @@ describe('Job broker error propagation', () => {
         const requestId = generateId()
         const webserverId = engineResponseWatcher(app.log).getServerId()
 
-        const jobData = {
+        const jobData: ExecuteTriggerHookJobData = {
             jobType: WorkerJobType.EXECUTE_TRIGGER_HOOK,
             tenantId: mockTenant.id,
             projectId: mockProject.id,
@@ -126,7 +126,7 @@ describe('Job broker error propagation', () => {
         const requestId = generateId()
         const webserverId = engineResponseWatcher(app.log).getServerId()
 
-        const jobData = {
+        const jobData: ExecuteTriggerHookJobData = {
             jobType: WorkerJobType.EXECUTE_TRIGGER_HOOK,
             tenantId: mockTenant.id,
             projectId: mockProject.id,
@@ -177,7 +177,7 @@ describe('Job broker error propagation', () => {
         const requestId = generateId()
         const webserverId = engineResponseWatcher(app.log).getServerId()
 
-        const jobData = {
+        const jobData: ExecuteTriggerHookJobData = {
             jobType: WorkerJobType.EXECUTE_TRIGGER_HOOK,
             tenantId: mockTenant.id,
             projectId: mockProject.id,
@@ -229,7 +229,7 @@ describe('Job broker error propagation', () => {
         const requestId = generateId()
         const webserverId = engineResponseWatcher(app.log).getServerId()
 
-        const jobData = {
+        const jobData: ExecuteTriggerHookJobData = {
             jobType: WorkerJobType.EXECUTE_TRIGGER_HOOK,
             tenantId: mockTenant.id,
             projectId: mockProject.id,

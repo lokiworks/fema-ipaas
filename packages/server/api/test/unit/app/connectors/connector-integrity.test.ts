@@ -1,5 +1,5 @@
 import { createSign, generateKeyPairSync } from 'node:crypto'
-import { ApplicationError } from '@fema-ipaas/core-utils'
+import { ApplicationError, isNil } from '@fema-ipaas/core-utils'
 import { connectorIntegrity } from '../../../../src/app/connectors/integrity/connector-integrity'
 
 function reasonOf(run: () => void): string {
@@ -7,7 +7,7 @@ function reasonOf(run: () => void): string {
         run()
     }
     catch (error) {
-        if (error instanceof ApplicationError && 'message' in error.error.params) {
+        if (error instanceof ApplicationError && !isNil(error.error.params) && 'message' in error.error.params) {
             return String(error.error.params.message)
         }
         return String(error)

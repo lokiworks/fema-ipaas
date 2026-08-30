@@ -419,6 +419,7 @@ describe('Connector Metadata CE API', () => {
                 displayName: 'My Webhook Workflow',
                 trigger: {
                     type: WorkflowTriggerType.CONNECTOR,
+                    lastUpdatedDate: new Date().toISOString(),
                     name: 'trigger',
                     settings: {
                         connectorName: mockConnector.name,
@@ -460,6 +461,7 @@ describe('Connector Metadata CE API', () => {
                 created: '2020-01-01T00:00:00.000Z',
                 trigger: {
                     type: WorkflowTriggerType.CONNECTOR,
+                    lastUpdatedDate: new Date().toISOString(),
                     name: 'trigger',
                     settings: {
                         connectorName: mockConnector.name,
@@ -505,6 +507,7 @@ describe('Connector Metadata CE API', () => {
                 updatedBy: otherCtx.user.id,
                 trigger: {
                     type: WorkflowTriggerType.CONNECTOR,
+                    lastUpdatedDate: new Date().toISOString(),
                     name: 'trigger',
                     settings: {
                         connectorName: mockConnector.name,

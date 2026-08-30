@@ -64,7 +64,7 @@ async function runSimulation(params: { queueName: string, workers: number, jobs:
         const token = `token-${Date.now()}-${Math.random().toString(36).slice(2)}`
         const job = await worker.getNextJob(token)
         if (!job) return null
-        return { jobId: job.id!, jobData: {} as ConsumeJobRequest['jobData'], timeoutInSeconds: 600, attempsStarted: 0, engineToken: 'x', token, queueName }
+        return { jobId: job.id!, jobData: {} as ConsumeJobRequest['jobData'], attempsStarted: 0, engineToken: 'x', token, queueName }
     }
     const returnJobToQueue = async (jobId: string, token: string): Promise<void> => {
         const job = await Job.fromId(bullWorker, jobId)

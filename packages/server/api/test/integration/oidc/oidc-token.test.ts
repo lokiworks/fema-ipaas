@@ -65,7 +65,6 @@ describe('OIDC Token Endpoint', () => {
             const userToken = await generateMockToken({
                 type: PrincipalType.USER,
                 id: generateId(),
-                projectId,
                 tenant: { id: tenantId },
             })
 

@@ -63,6 +63,10 @@ function buildChainedWorkflowVersion(stepCount: number): WorkflowVersion {
         schemaVersion: '1',
         connectionIds: [],
         agentIds: [],
+        notes: [],
+        updatedBy: null,
+        backupFiles: null,
+        graph: null,
     }
 }
 

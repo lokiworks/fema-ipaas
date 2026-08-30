@@ -386,9 +386,7 @@ describe('Resume workflow run', () => {
             projectId: ctx.project.id,
             waitpointId: existingWaitpoint!.id,
             resumePayload: {
-                payload: { body: { status: 'error', data: { message: 'Subflow execution failed' } } },
-                streamStepProgress: StreamStepProgress.WEBSOCKET,
-                executionType: ExecutionType.RESUME,
+                body: { status: 'error', data: { message: 'Subflow execution failed' } },
             },
         })
 
@@ -421,9 +419,7 @@ describe('Resume workflow run', () => {
             projectId: ctx.project.id,
             waitpointId: generateId(),
             resumePayload: {
-                payload: { body: { status: 'error', data: { message: 'Subflow execution failed' } } },
-                streamStepProgress: StreamStepProgress.WEBSOCKET,
-                executionType: ExecutionType.RESUME,
+                body: { status: 'error', data: { message: 'Subflow execution failed' } },
             },
         })
 
@@ -458,9 +454,7 @@ describe('Resume workflow run', () => {
             projectId: ctx.project.id,
             waitpointId: generateId(),
             resumePayload: {
-                payload: { body: { status: 'error', data: { message: 'Subflow execution failed' } } },
-                streamStepProgress: StreamStepProgress.WEBSOCKET,
-                executionType: ExecutionType.RESUME,
+                body: { status: 'error', data: { message: 'Subflow execution failed' } },
             },
         })
         expect(result.completedExisting).toBe(false)

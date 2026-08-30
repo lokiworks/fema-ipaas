@@ -51,6 +51,7 @@ describe('Human Input API', () => {
                 state: WorkflowVersionState.LOCKED,
                 trigger: {
                     type: WorkflowTriggerType.CONNECTOR,
+                    lastUpdatedDate: new Date().toISOString(),
                     settings: {
                         connectorName: '@fema-ipaas/connector-forms',
                         connectorVersion: '0.2.0',
@@ -152,6 +153,7 @@ describe('Human Input API', () => {
                 state: WorkflowVersionState.LOCKED,
                 trigger: {
                     type: WorkflowTriggerType.CONNECTOR,
+                    lastUpdatedDate: new Date().toISOString(),
                     settings: {
                         connectorName: '@fema-ipaas/connector-forms',
                         connectorVersion: '0.3.0',

@@ -1,4 +1,4 @@
-import { ExecuteWorkflowJobData, ExecutionType, WorkflowTriggerType, PollingJobData, ResumeReason, RunEnvironment, StreamStepProgress, WorkerJobType } from '@fema-ipaas/shared'
+import { BeginExecuteWorkflowJobData, ExecutionType, WorkflowTriggerType, PollingJobData, ResumeExecuteWorkflowJobData, ResumeReason, RunEnvironment, StreamStepProgress, WorkerJobType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -25,7 +25,7 @@ const mockLog: FastifyBaseLogger = {
 
 const LATEST = 10
 
-function baseWorkflowJob(overrides: Partial<ExecuteWorkflowJobData> = {}): ExecuteWorkflowJobData {
+function baseWorkflowJob(overrides: Record<string, unknown> = {}): Record<string, unknown> {
     return {
         jobType: WorkerJobType.EXECUTE_WORKFLOW,
         schemaVersion: 6,
@@ -67,13 +67,14 @@ describe('jobMigrations v6 → v7 (dropLogsUploadUrl)', () => {
             logsUploadUrl: 'https://old-api.example.com/v1/executions/logs?token=ABC',
         }
 
-        const migrated = await jobMigrations(mockLog).apply(legacy) as ExecuteWorkflowJobData & Record<string, unknown>
+        const migrated = await jobMigrations(mockLog).apply(legacy)
 
         expect(migrated.schemaVersion).toBe(LATEST)
-        expect(migrated.logsUploadUrl).toBeUndefined()
+        expect(migrated).not.toHaveProperty('logsUploadUrl')
         // Other identifying fields preserved
-        expect(migrated.runId).toBe('run-1')
-        expect(migrated.logsFileId).toBe('file-1')
+        const workflowJob = BeginExecuteWorkflowJobData.parse(migrated)
+        expect(workflowJob.runId).toBe('run-1')
+        expect(workflowJob.logsFileId).toBe('file-1')
     })
 
     it('passes through non-EXECUTE_WORKFLOW jobs at v6 without mutating shape, bumps to latest', async () => {
@@ -92,7 +93,7 @@ describe('jobMigrations v6 → v7 (dropLogsUploadUrl)', () => {
         const migrated = await jobMigrations(mockLog).apply(job)
 
         expect(migrated.schemaVersion).toBe(LATEST)
-        expect(migrated.runId).toBe('run-1')
+        expect(BeginExecuteWorkflowJobData.parse(migrated).runId).toBe('run-1')
     })
 })
 
@@ -108,7 +109,7 @@ describe('jobMigrations v7 → v8 (backfillRequiredExecuteWorkflowFields)', () =
             progressUpdateType: 'TEST_WORKFLOW',
         } as Record<string, unknown>
 
-        const migrated = await jobMigrations(mockLog).apply(legacy) as ExecuteWorkflowJobData
+        const migrated = BeginExecuteWorkflowJobData.parse(await jobMigrations(mockLog).apply(legacy))
 
         expect(migrated.schemaVersion).toBe(LATEST)
         expect(migrated.streamStepProgress).toBe(StreamStepProgress.WEBSOCKET)
@@ -121,7 +122,7 @@ describe('jobMigrations v7 → v8 (backfillRequiredExecuteWorkflowFields)', () =
             progressUpdateType: 'WEBHOOK_RESPONSE',
         } as Record<string, unknown>
 
-        const migrated = await jobMigrations(mockLog).apply(legacy) as ExecuteWorkflowJobData
+        const migrated = BeginExecuteWorkflowJobData.parse(await jobMigrations(mockLog).apply(legacy))
 
         expect(migrated.streamStepProgress).toBe(StreamStepProgress.WEBSOCKET)
     })
@@ -133,7 +134,7 @@ describe('jobMigrations v7 → v8 (backfillRequiredExecuteWorkflowFields)', () =
             progressUpdateType: undefined,
         } as Record<string, unknown>
 
-        const migrated = await jobMigrations(mockLog).apply(legacy) as ExecuteWorkflowJobData
+        const migrated = BeginExecuteWorkflowJobData.parse(await jobMigrations(mockLog).apply(legacy))
 
         expect(migrated.streamStepProgress).toBe(StreamStepProgress.NONE)
     })
@@ -145,7 +146,7 @@ describe('jobMigrations v7 → v8 (backfillRequiredExecuteWorkflowFields)', () =
             synchronousHandlerId: 'handler-7',
         } as Record<string, unknown>
 
-        const migrated = await jobMigrations(mockLog).apply(legacy) as ExecuteWorkflowJobData
+        const migrated = BeginExecuteWorkflowJobData.parse(await jobMigrations(mockLog).apply(legacy))
 
         expect(migrated.workerHandlerId).toBe('handler-7')
     })
@@ -157,7 +158,7 @@ describe('jobMigrations v7 → v8 (backfillRequiredExecuteWorkflowFields)', () =
             streamStepProgress: StreamStepProgress.WEBSOCKET,
         })
 
-        const migrated = await jobMigrations(mockLog).apply(job) as ExecuteWorkflowJobData
+        const migrated = BeginExecuteWorkflowJobData.parse(await jobMigrations(mockLog).apply(job))
 
         expect(migrated.workerHandlerId).toBe('explicit-handler')
         expect(migrated.streamStepProgress).toBe(StreamStepProgress.WEBSOCKET)
@@ -185,7 +186,7 @@ describe('jobMigrations v9 → v10 (addResumeReason)', () => {
             payload: { type: 'inline', value: null },
         })
 
-        const migrated = await jobMigrations(mockLog).apply(job) as ExecuteWorkflowJobData
+        const migrated = ResumeExecuteWorkflowJobData.parse(await jobMigrations(mockLog).apply(job))
 
         expect(migrated.schemaVersion).toBe(LATEST)
         expect(migrated.resumeReason).toBe(ResumeReason.RETRY)
@@ -198,7 +199,7 @@ describe('jobMigrations v9 → v10 (addResumeReason)', () => {
             payload: { type: 'inline', value: { body: { action: 'approve' }, headers: {}, queryParams: {} } },
         })
 
-        const migrated = await jobMigrations(mockLog).apply(job) as ExecuteWorkflowJobData
+        const migrated = ResumeExecuteWorkflowJobData.parse(await jobMigrations(mockLog).apply(job))
 
         expect(migrated.resumeReason).toBe(ResumeReason.WAITPOINT)
     })
@@ -210,7 +211,7 @@ describe('jobMigrations v9 → v10 (addResumeReason)', () => {
             payload: { type: 'ref', fileId: 'offloaded-payload-1' },
         })
 
-        const migrated = await jobMigrations(mockLog).apply(job) as ExecuteWorkflowJobData
+        const migrated = ResumeExecuteWorkflowJobData.parse(await jobMigrations(mockLog).apply(job))
 
         expect(migrated.resumeReason).toBe(ResumeReason.WAITPOINT)
     })
@@ -221,10 +222,10 @@ describe('jobMigrations v9 → v10 (addResumeReason)', () => {
             executionType: ExecutionType.BEGIN,
         })
 
-        const migrated = await jobMigrations(mockLog).apply(job) as ExecuteWorkflowJobData
+        const migrated = await jobMigrations(mockLog).apply(job)
 
         expect(migrated.schemaVersion).toBe(LATEST)
-        expect(migrated.resumeReason).toBeUndefined()
+        expect(migrated).not.toHaveProperty('resumeReason')
     })
 
     it('only bumps schemaVersion for non-EXECUTE_WORKFLOW jobs at v9', async () => {

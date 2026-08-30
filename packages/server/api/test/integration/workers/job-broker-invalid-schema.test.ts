@@ -42,7 +42,6 @@ describe('jobBroker.tryDequeue — invalid-schema poison handling', () => {
             streamStepProgress: StreamStepProgress.NONE,
             payload: { type: 'inline', value: null },
             logsFileId: generateId(),
-            logsUploadUrl: 'https://example.invalid/v1/executions/logs?token=x',
         }
 
         const jobId = generateId()

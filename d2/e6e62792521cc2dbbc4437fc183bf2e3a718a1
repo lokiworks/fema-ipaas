@@ -1,0 +1,55 @@
+packages/server/api/test/integration/workers/machine/machine-list-filter.test.ts
+  s_9ba85259973959::t_0e538bdbc991ef 49
+packages/server/api/package.json
+  s_9ba85259973959::t_afdfcfde3e1c03 151
+packages/server/api/test/integration/workers/job-broker-seed-cause.test.ts
+  s_9ba85259973959::t_b8e10d8b37c65d 2,48,112,164
+packages/server/api/test/integration/workflows/workflow/human-input/human-input.test.ts
+  s_9ba85259973959::t_0e538bdbc991ef 54,156
+packages/server/api/test/integration/system-jobs/system-jobs.test.ts
+  s_9ba85259973959::t_13f433aaa9193c 2,12-15,21,25,155,182,191
+packages/server/api/test/unit/app/workers/migrations/job-data-migrations.test.ts
+  s_9ba85259973959::t_f7d863b2581437 1,28,70,73,75-77,96,189,202,214,225,228
+  s_9ba85259973959::t_c82fb9169a6970 112,125,137,149,161
+packages/server/api/test/integration/workers/job-queue/active-invariant.test.ts
+  s_9ba85259973959::t_0e538bdbc991ef 67
+packages/server/api/test/unit/app/workflows/workflow-version/remove-connections-and-sample-data.test.ts
+  s_9ba85259973959::t_ba6f1846491f16 66-69
+packages/server/api/test/integration/workers/machine/machine-service.test.ts
+  s_9ba85259973959::t_de2ca0acb5002b 1,87
+  s_9ba85259973959::t_7227d3e1597174 3,49,51,56-59
+packages/server/api/test/unit/app/connectors/connector-integrity.test.ts
+  s_9ba85259973959::t_3e6d2c8c9389a5 2,10
+packages/server/api/test/integration/workers/job-broker-error-propagation.test.ts
+  s_9ba85259973959::t_b8e10d8b37c65d 2,28,79,129,180,232
+packages/server/api/test/integration/webhooks/webhook.test.ts
+  s_9ba85259973959::t_96f3761e34db05 1
+  s_9ba85259973959::t_5d7cfc98e08d7e 403-406,408-410,482-485,487-489
+  s_9ba85259973959::t_44499b18ca6963 407,486
+packages/server/api/test/unit/app/workflows/trigger/workflow-trigger-side-effect.test.ts
+  s_9ba85259973959::t_3e6d2c8c9389a5 99
+packages/server/api/test/integration/connectors/connector-metadata.test.ts
+  s_9ba85259973959::t_f2d96cb47e32a3 422,464,510
+packages/server/api/test/integration/workflows/execution/resume-execution.test.ts
+  s_9ba85259973959::t_9471131e314d02 389,422,457
+packages/core/execution/src/lib/execution/state/execution-output.ts
+  s_9ba85259973959::t_3db1621d024428 1,6
+packages/server/api/src/app/project/project-side-effects.ts
+  s_9ba85259973959::t_9591f10283980f 10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "d2e6e62792521cc2dbbc4437fc183bf2e3a718a1",
+  "prompts": {},
+  "sessions": {
+    "s_9ba85259973959": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "980ed77b-543a-425f-add7-a2b2270e607b",
+        "model": "claude-opus-5"
+      },
+      "human_author": "lokiworks <lokiworks.yen@gmail.com>"
+    }
+  }
+}

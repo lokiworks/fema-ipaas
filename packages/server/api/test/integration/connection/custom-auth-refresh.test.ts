@@ -1,5 +1,5 @@
-import { generateId, isNil } from '@fema-ipaas/core-utils'
-import { PropertyType } from '@fema-ipaas/connector-sdk'
+import { generateId, isNil, spreadIfDefined } from '@fema-ipaas/core-utils'
+import { ConnectorAuth, ConnectorAuthProperty } from '@fema-ipaas/connector-sdk'
 import { Connection, ConnectionScope, ConnectionStatus, ConnectionType, CustomAuthConnectionValue, PackageType, ConnectorType } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger, FastifyInstance } from 'fastify'
@@ -20,12 +20,16 @@ afterAll(async () => {
     await teardownTestEnvironment()
 })
 
-const customAuthOf = (overrides: Record<string, unknown>) => ({
-    type: PropertyType.CUSTOM_AUTH,
+const customAuthOf = ({ hasRefresh }: { hasRefresh: boolean }): ConnectorAuthProperty => ConnectorAuth.CustomAuth({
     displayName: 'Connection',
     required: true,
     props: {},
-    ...overrides,
+    ...spreadIfDefined('refresh', hasRefresh
+        ? {
+            defaultExpiresIn: 3300,
+            generate: async () => ({ access_token: generateId() }),
+        }
+        : undefined),
 })
 
 const saveCustomAuthConnector = async ({ connectorName, connectorVersion, tenantId, hasRefresh }: { connectorName: string, connectorVersion: string, tenantId: string | undefined, hasRefresh: boolean }): Promise<void> => {
@@ -39,7 +43,7 @@ const saveCustomAuthConnector = async ({ connectorName, connectorVersion, tenant
         maximumSupportedRelease: '999.999.999',
         // Functions (generate) do not survive metadata serialization; the stored
         // refresh is a plain object, so detection only checks for its presence.
-        auth: customAuthOf(hasRefresh ? { refresh: { defaultExpiresIn: 3300 } } : {}),
+        auth: customAuthOf({ hasRefresh }),
     })
     await db.save('connector_metadata', mockConnector)
 }

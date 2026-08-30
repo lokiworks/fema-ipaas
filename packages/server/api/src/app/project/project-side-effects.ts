@@ -1,13 +1,17 @@
 import { ApplicationError, ErrorCode, isNil, ProjectId } from '@fema-ipaas/core-utils'
-import { Project, ProjectType, ProjectWithLimits } from '@fema-ipaas/shared'
+import { Project, ProjectType, ProjectWithLimits, Tenant } from '@fema-ipaas/shared'
 import { WorkflowStatus } from '@fema-ipaas/workflow-core'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
+import { repoFactory } from '../core/db/repo-factory'
 import { SystemJobName } from '../helper/system-jobs/common'
 import { systemJobsSchedule } from '../helper/system-jobs/system-job'
 import { workflowRepo } from '../workflows/workflow/workflow.repo'
+import { TenantEntity } from '../tenant/tenant.entity'
 import { projectRepo } from './project-repo'
 import { projectService } from './project-service'
+
+const tenantRepo = repoFactory<Tenant>(TenantEntity)
 
 const HARD_DELETE_GRACE_PERIOD_DAYS = 7
 
@@ -67,7 +71,12 @@ export const projectSideEffects = (log: FastifyBaseLogger) => ({
             tenantId,
             type: ProjectType.PERSONAL,
         })
+        if (personalProjects.length === 0) {
+            return
+        }
+        const tenant = await tenantRepo().findOneByOrFail({ id: tenantId })
         for (const project of personalProjects) {
+            await projectRepo().update({ id: project.id }, { ownerId: tenant.ownerId })
             await projectRepo().softDelete({ id: project.id })
             await this.scheduleHardDelete(project.id)
         }

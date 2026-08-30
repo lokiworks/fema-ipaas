@@ -1,3 +1,4 @@
+import { LATEST_CONTEXT_VERSION } from '@fema-ipaas/connector-sdk'
 import {
     ConnectorSource,
     PackageType,
@@ -33,6 +34,7 @@ describe('Connector Metadata Create', () => {
             connectorMetadata: {
                 name: 'connector-a',
                 displayName: 'Connector A',
+                description: 'Connector A',
                 version: '1.0.0',
                 minimumSupportedRelease: '0.0.0',
                 maximumSupportedRelease: '9.9.9',
@@ -40,6 +42,7 @@ describe('Connector Metadata Create', () => {
                 triggers: {},
                 authors: [],
                 logoUrl: 'https://example.com/logo.png',
+                contextInfo: { version: LATEST_CONTEXT_VERSION },
             },
             packageType: PackageType.REGISTRY,
             connectorType: ConnectorType.OFFICIAL,
@@ -60,6 +63,7 @@ describe('Connector Metadata Create', () => {
             connectorMetadata: {
                 name: 'connector-dup',
                 displayName: 'Connector Dup',
+                description: 'Connector Dup',
                 version: '1.0.0',
                 minimumSupportedRelease: '0.0.0',
                 maximumSupportedRelease: '9.9.9',
@@ -67,6 +71,7 @@ describe('Connector Metadata Create', () => {
                 triggers: {},
                 authors: [],
                 logoUrl: 'https://example.com/logo.png',
+                contextInfo: { version: LATEST_CONTEXT_VERSION },
             },
             packageType: PackageType.REGISTRY,
             connectorType: ConnectorType.OFFICIAL,
@@ -78,6 +83,7 @@ describe('Connector Metadata Create', () => {
             connectorMetadata: {
                 name: 'connector-dup',
                 displayName: 'Connector Dup',
+                description: 'Connector Dup',
                 version: '1.0.0',
                 minimumSupportedRelease: '0.0.0',
                 maximumSupportedRelease: '9.9.9',
@@ -85,6 +91,7 @@ describe('Connector Metadata Create', () => {
                 triggers: {},
                 authors: [],
                 logoUrl: 'https://example.com/logo.png',
+                contextInfo: { version: LATEST_CONTEXT_VERSION },
             },
             packageType: PackageType.REGISTRY,
             connectorType: ConnectorType.OFFICIAL,
@@ -100,6 +107,7 @@ describe('Connector Metadata Create', () => {
             connectorMetadata: {
                 name: 'delete-me',
                 displayName: 'Delete Me',
+                description: 'Delete Me',
                 version: '1.0.0',
                 minimumSupportedRelease: '0.0.0',
                 maximumSupportedRelease: '9.9.9',
@@ -107,6 +115,7 @@ describe('Connector Metadata Create', () => {
                 triggers: {},
                 authors: [],
                 logoUrl: 'https://example.com/logo.png',
+                contextInfo: { version: LATEST_CONTEXT_VERSION },
             },
             packageType: PackageType.REGISTRY,
             connectorType: ConnectorType.OFFICIAL,
@@ -118,6 +127,7 @@ describe('Connector Metadata Create', () => {
             connectorMetadata: {
                 name: 'keep-me',
                 displayName: 'Keep Me',
+                description: 'Keep Me',
                 version: '1.0.0',
                 minimumSupportedRelease: '0.0.0',
                 maximumSupportedRelease: '9.9.9',
@@ -125,6 +135,7 @@ describe('Connector Metadata Create', () => {
                 triggers: {},
                 authors: [],
                 logoUrl: 'https://example.com/logo.png',
+                contextInfo: { version: LATEST_CONTEXT_VERSION },
             },
             packageType: PackageType.REGISTRY,
             connectorType: ConnectorType.OFFICIAL,

@@ -6,7 +6,8 @@
  *
  * Prerequisites:
  *   - Engine must be built (cache/v8/common/main.js)
- *   - bun must be available for connector installation
+ *   - packages/connectors/core/webhook must be built (it is loaded as a dev connector,
+ *     so nothing is fetched from a registry)
  *   - Redis (in-memory via FEMA_REDIS_TYPE=MEMORY) is started automatically
  */
 import { dayjsUtil } from '@fema-ipaas/server-utils'
@@ -31,10 +32,14 @@ import {
     mockAndSaveBasicSetup,
 } from '../../helpers/mocks'
 
+const CONNECTOR_NAME = '@fema-ipaas/connector-webhook'
+const DEV_CONNECTOR_FOLDER = 'webhook'
+
 let app: FastifyInstance
 let apiUrl: string
 
 beforeAll(async () => {
+    process.env.FEMA_DEV_CONNECTORS = DEV_CONNECTOR_FOLDER
     const ctx = await setupE2eEnvironment()
     app = ctx.app
     apiUrl = ctx.apiUrl
@@ -69,7 +74,7 @@ describe('Connector Options E2E', () => {
                 name: 'trigger',
                 displayName: 'Catch Webhook',
                 settings: {
-                    connectorName: '@fema-ipaas/connector-webhook',
+                    connectorName: CONNECTOR_NAME,
                     connectorVersion: '~0.1.29',
                     triggerName: 'catch_webhook',
                     input: { authType: 'basic' },
@@ -82,7 +87,7 @@ describe('Connector Options E2E', () => {
         await db.save('workflow_version', mockWorkflowVersion)
 
         const mockConnector = createMockConnectorMetadata({
-            name: '@fema-ipaas/connector-webhook',
+            name: CONNECTOR_NAME,
             version: '0.1.29',
             tenantId: undefined,
             packageType: PackageType.REGISTRY,
@@ -106,7 +111,7 @@ describe('Connector Options E2E', () => {
                 projectId: mockProject.id,
                 workflowId: mockWorkflow.id,
                 workflowVersionId: mockWorkflowVersion.id,
-                connectorName: '@fema-ipaas/connector-webhook',
+                connectorName: CONNECTOR_NAME,
                 connectorVersion: '~0.1.29',
                 actionOrTriggerName: 'catch_webhook',
                 propertyName: 'authFields',

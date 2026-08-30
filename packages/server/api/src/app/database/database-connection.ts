@@ -59,11 +59,8 @@ function getEntities(): EntitySchema<unknown>[] {
         UserIdentityEntity,
         TriggerSourceEntity,
         WaitpointEntity,
-        // Enterprise
         OtpEntity,
         TemplateEntity,
-        // CLOUD
-
     ]
 }
 

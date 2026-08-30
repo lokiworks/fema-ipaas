@@ -1,7 +1,7 @@
 import { AddressInfo } from 'net'
 import { generateId } from '@fema-ipaas/core-utils'
 import { ContextVersion, StoreScope } from '@fema-ipaas/connector-sdk'
-import { ConnectionStatus, ConnectionType, ConnectionExpiredError, ConnectionNotFoundError, ConnectionConnectorMismatchError, FetchError, WorkflowStatus, WorkflowVersionState, PrincipalType } from '@fema-ipaas/shared'
+import { ConnectionStatus, ConnectionType, ConnectionExpiredError, ConnectionNotFoundError, ConnectionConnectorMismatchError, FetchError, PopulatedWorkflow, WorkflowStatus, WorkflowVersionState, PrincipalType } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { createConnectionResolver } from '../../../../engine/src/lib/connector-context/connection-resolver'
 import { createFileUploader } from '../../../../engine/src/lib/connector-context/file-uploader'
@@ -87,8 +87,9 @@ describe('Engine Services Integration', () => {
             expect(Array.isArray(result.data)).toBe(true)
             expect(result.data.length).toBeGreaterThanOrEqual(1)
 
-            const populatedWorkflow = result.data.find(f => f.id === workflowId)
-            expect(populatedWorkflow).toBeDefined()
+            const summary = result.data.find(f => f.id === workflowId)
+            expect(summary).toBeDefined()
+            const populatedWorkflow = PopulatedWorkflow.parse(summary)
             expect(populatedWorkflow!.id).toBe(workflowId)
             expect(populatedWorkflow!.projectId).toBe(projectId)
             expect(populatedWorkflow!.externalId).toBe('ext-workflow-1')

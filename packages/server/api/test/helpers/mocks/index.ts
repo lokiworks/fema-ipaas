@@ -69,20 +69,6 @@ export const createMockTemplate = (
     }
 }
 
-export const createMockPlan = (plan?: Partial<ProjectPlan>): ProjectPlan => {
-    return {
-        id: plan?.id ?? generateId(),
-        created: plan?.created ?? faker.date.recent().toISOString(),
-        updated: plan?.updated ?? faker.date.recent().toISOString(),
-        projectId: plan?.projectId ?? generateId(),
-        name: plan?.name ?? faker.lorem.word(),
-        locked: plan?.locked ?? false,
-        connectors: plan?.connectors ?? [],
-        connectorsFilterType: plan?.connectorsFilterType ?? ConnectorsFilterType.NONE,
-        activeWorkflowsLimit: plan?.activeWorkflowsLimit ?? null,
-    }
-}
-
 export const createMockUserInvitation = (userInvitation: Partial<UserInvitation>): UserInvitation => {
     return {
         id: userInvitation.id ?? generateId(),
@@ -115,39 +101,12 @@ export const createMockProject = (project?: Partial<Project>): Project => {
         notifyWorkflowOwnerOnFailure: project?.notifyWorkflowOwnerOnFailure ?? false,
         metadata: project?.metadata ?? null,
         type: project?.type ?? ProjectType.TEAM,
-        poolId: project?.poolId ?? null,
         workerGroupId: project?.workerGroupId ?? null,
         executionDataRetentionDays: project?.executionDataRetentionDays ?? null,
         icon,
     }
 }
 
-export const createMockGitRepo = (gitRepo?: Partial<GitRepo>): GitRepo => {
-    return {
-        id: gitRepo?.id ?? generateId(),
-        branchType: faker.helpers.enumValue(GitBranchType),
-        created: gitRepo?.created ?? faker.date.recent().toISOString(),
-        updated: gitRepo?.updated ?? faker.date.recent().toISOString(),
-        projectId: gitRepo?.projectId ?? generateId(),
-        remoteUrl: gitRepo?.remoteUrl ?? `git@${faker.internet.url()}`,
-        sshPrivateKey: gitRepo?.sshPrivateKey ?? faker.internet.password(),
-        branch: gitRepo?.branch ?? faker.lorem.word(),
-        slug: gitRepo?.slug ?? faker.lorem.word(),
-    }
-}
-
-export const createMockTenantPlan = (tenantPlan?: Partial<TenantPlan>): TenantPlan => {
-    return {
-        id: tenantPlan?.id ?? generateId(),
-        created: tenantPlan?.created ?? faker.date.recent().toISOString(),
-        updated: tenantPlan?.updated ?? faker.date.recent().toISOString(),
-        tenantId: tenantPlan?.tenantId ?? generateId(),
-        usersLimit: tenantPlan?.usersLimit ?? null,
-        projectsLimit: tenantPlan?.projectsLimit ?? null,
-        activeWorkflowsLimit: tenantPlan?.activeWorkflowsLimit ?? null,
-        workerGroupId: tenantPlan?.workerGroupId ?? null,
-    }
-}
 export const createMockTenant = (tenant?: Partial<Tenant>): Tenant => {
     return {
         id: tenant?.id ?? generateId(),
@@ -215,20 +174,6 @@ export const createMockProjectMember = (
         projectId: projectMember?.projectId ?? generateId(),
     }
 }
-
-const MOCK_SIGNING_KEY_PUBLIC_KEY = `-----BEGIN RSA PUBLIC KEY-----
-MIICCgKCAgEAlnd5vGP/1bzcndN/yRD+ZTd6tuemxaJd+12bOZ2QCXcTM03AKSp3
-NE5QMyIi13PXMg+z1uPowfivPJ4iVTMaW1U00O7JlUduGR0VrG0BCJlfEf852V71
-TfE+2+EpMme9Yw6Gs/YAuOwgVwu3n/XF0il3FTIm1oY1a/MA79rv0RSscnIgCaYJ
-e86LWm+H6753Si0MIId/ajIfYYIndN6qRIlPsgagdL+kljUSPEiIzmV0POxTltBo
-tXL1t7Mu+meJrY85MXG5W8BS05+q6dJql7Cl0UbPK152ziakB+biMI/4hYlaOIBT
-3KeOcz/Jg7Zv21Y0tbdrZ5osVrrNpFsCV7PGyQIUDVmmnCHrOEBS2XM5zOHzTxMl
-JQh3Db318rB5415zuBTzrO+20++03kH4SwZEEBg1SDAInYwLOWldbTuZuD0Hx7P2
-g4a3OqHHVOcAgtsHgmU7/zCgCIETg4KbRdpSsqOm/YJDWWoLDTwvKnH5QHSBacq1
-kxbNAUSuLQESkfZq1Dw5+tdBDJr29bxjmiSggyittTYn1B3iHACNoe4zj9sMQQIf
-j9mmntXsa/leIwBVspiEOHYZwJOe5+goSd8K1VIQJxC1DVBxB2eHxMvuo3eyJ0HE
-DlebIeZy4zrE1LPgRic1kfdemyxvuN3iwZnPGiY79nL1ZNDM3M4ApSMCAwEAAQ==
------END RSA PUBLIC KEY-----`
 
 export const createMockConnectorMetadata = (
     connectorMetadata?: Partial<Omit<ConnectorMetadataSchema, 'project'>>,
@@ -488,37 +433,6 @@ export const createMockFolder = (folder?: Partial<Folder>): Folder => {
         projectId: folder?.projectId ?? generateId(),
         displayName: folder?.displayName ?? faker.lorem.word(),
         displayOrder: folder?.displayOrder ?? faker.number.int({ min: 0, max: 100 }),
-    }
-}
-
-export const createMockEventDestination = (eventDestination?: Partial<{
-    id: string
-    created: string
-    updated: string
-    tenantId: string
-    projectId: string | null
-    events: ApplicationEventName[]
-    url: string
-    scope: EventDestinationScope
-}>): {
-    id: string
-    created: string
-    updated: string
-    tenantId: string
-    projectId: string | null
-    events: ApplicationEventName[]
-    url: string
-    scope: EventDestinationScope
-} => {
-    return {
-        id: eventDestination?.id ?? generateId(),
-        created: eventDestination?.created ?? faker.date.recent().toISOString(),
-        updated: eventDestination?.updated ?? faker.date.recent().toISOString(),
-        tenantId: eventDestination?.tenantId ?? generateId(),
-        projectId: eventDestination?.projectId ?? null,
-        events: eventDestination?.events ?? [faker.helpers.enumValue(ApplicationEventName)],
-        url: eventDestination?.url ?? faker.internet.url(),
-        scope: eventDestination?.scope ?? EventDestinationScope.TENANT,
     }
 }
 

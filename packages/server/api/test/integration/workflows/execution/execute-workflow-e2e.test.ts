@@ -43,6 +43,7 @@ import {
     mockAndSaveBasicSetup,
 } from '../../../helpers/mocks'
 
+const DEV_CONNECTOR_FOLDERS = ['webhook', 'subflows', 'data-mapper']
 const CUSTOM_CONNECTOR_NAME = 'e2e-custom-echo'
 const CUSTOM_CONNECTOR_VERSION = '0.0.1'
 const customConnectorArchive = readFileSync(
@@ -52,6 +53,7 @@ const customConnectorArchive = readFileSync(
 let app: FastifyInstance
 
 beforeAll(async () => {
+    process.env.FEMA_DEV_CONNECTORS = DEV_CONNECTOR_FOLDERS.join(',')
     const ctx = await setupE2eEnvironment()
     app = ctx.app
     await worker.start({
@@ -183,15 +185,7 @@ async function setupSubflowFixtures({ childAlwaysFails = false, retryOnFailure =
             connectorVersion: '0.4.11',
             actionName: 'callWorkflow',
             input: {
-                workflow: {
-                    externalId: childWorkflow.externalId,
-                    exampleData: {
-                        sampleData: {
-                            name: '',
-                            greeting: '',
-                        },
-                    },
-                },
+                workflowId: childWorkflow.externalId,
                 mode: 'simple',
                 workflowProps: {
                     payload: {
@@ -349,14 +343,7 @@ async function setupSubflowWithWebhookResponseFixtures() {
             connectorVersion: '0.4.11',
             actionName: 'callWorkflow',
             input: {
-                workflow: {
-                    externalId: childWorkflow.externalId,
-                    exampleData: {
-                        sampleData: {
-                            message: '',
-                        },
-                    },
-                },
+                workflowId: childWorkflow.externalId,
                 mode: 'simple',
                 workflowProps: {
                     payload: {
@@ -855,14 +842,7 @@ describe('Execute Workflow E2E', () => {
             packageType: PackageType.REGISTRY,
             connectorType: ConnectorType.OFFICIAL,
         })
-        const delayConnector = createMockConnectorMetadata({
-            name: '@fema-ipaas/connector-webhook',
-            version: '0.3.26',
-            tenantId: undefined,
-            packageType: PackageType.REGISTRY,
-            connectorType: ConnectorType.OFFICIAL,
-        })
-        await databaseConnection().getRepository('connector_metadata').save([webhookConnector, delayConnector])
+        await databaseConnection().getRepository('connector_metadata').save([webhookConnector])
 
         const codeAction = {
             type: WorkflowActionType.CODE as const,
@@ -882,17 +862,15 @@ describe('Execute Workflow E2E', () => {
         }
 
         const delayAction = {
-            type: WorkflowActionType.CONNECTOR as const,
+            type: WorkflowActionType.COMPONENT as const,
             name: 'step_1',
             displayName: 'Delay For',
             valid: true,
             settings: {
-                connectorName: '@fema-ipaas/connector-webhook',
-                connectorVersion: '0.3.26',
-                actionName: 'delayFor',
+                componentType: 'runtime/delay',
                 input: {
                     unit: 'seconds',
-                    delayFor: 11,
+                    amount: 11,
                 },
                 propertySettings: {},
                 errorHandlingOptions: {},
@@ -958,14 +936,7 @@ describe('Execute Workflow E2E', () => {
             packageType: PackageType.REGISTRY,
             connectorType: ConnectorType.OFFICIAL,
         })
-        const delayConnector = createMockConnectorMetadata({
-            name: '@fema-ipaas/connector-webhook',
-            version: '0.3.26',
-            tenantId: undefined,
-            packageType: PackageType.REGISTRY,
-            connectorType: ConnectorType.OFFICIAL,
-        })
-        await databaseConnection().getRepository('connector_metadata').save([webhookConnector, delayConnector])
+        await databaseConnection().getRepository('connector_metadata').save([webhookConnector])
 
         const referenceAction = {
             type: WorkflowActionType.CODE as const,
@@ -988,17 +959,15 @@ describe('Execute Workflow E2E', () => {
         }
 
         const delayAction = {
-            type: WorkflowActionType.CONNECTOR as const,
+            type: WorkflowActionType.COMPONENT as const,
             name: 'step_2',
             displayName: 'Delay For',
             valid: true,
             settings: {
-                connectorName: '@fema-ipaas/connector-webhook',
-                connectorVersion: '0.3.26',
-                actionName: 'delayFor',
+                componentType: 'runtime/delay',
                 input: {
                     unit: 'seconds',
-                    delayFor: 2,
+                    amount: 2,
                 },
                 propertySettings: {},
                 errorHandlingOptions: {},

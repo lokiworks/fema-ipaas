@@ -1,5 +1,5 @@
 import { generateId } from '@fema-ipaas/core-utils'
-import { OtpState, OtpType, TenantRole, UserIdentityProvider, UserStatus } from '@fema-ipaas/shared'
+import { OtpModel, OtpState, OtpType, TenantRole, UserIdentityProvider, UserStatus } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { passwordHasher } from '../../../src/app/authentication/lib/password-hasher'
@@ -8,6 +8,7 @@ import { userIdentityService } from '../../../src/app/authentication/user-identi
 import { databaseConnection } from '../../../src/app/database/database-connection'
 import { distributedStore } from '../../../src/app/database/redis-connections'
 import { passwordlessAuthService } from '../../../src/app/authentication/passwordless-auth.service'
+import { db } from '../../helpers/db'
 import { tenantService } from '../../../src/app/tenant/tenant.service'
 import { createMockTenant } from '../../helpers/mocks'
 import { setupTestEnvironment, teardownTestEnvironment } from '../../helpers/test-setup'
@@ -46,12 +47,12 @@ async function storedIdentity(email: string) {
     return databaseConnection().getRepository('user_identity').findOneBy({ email })
 }
 
-async function storedOtpRow(email: string) {
+async function storedOtpRow(email: string): Promise<OtpModel | null> {
     const identity = await databaseConnection().getRepository('user_identity').findOneBy({ email })
     if (identity === null) {
         return null
     }
-    return databaseConnection().getRepository('otp').findOneBy({
+    return db.findOneBy<OtpModel>('otp', {
         identityId: identity.id,
         type: OtpType.EMAIL_LOGIN,
     })

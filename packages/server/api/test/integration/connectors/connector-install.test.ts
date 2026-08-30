@@ -102,7 +102,7 @@ describe('POST /v1/connectors — private connector installation', () => {
 
     it('should reject installation by a non-tenant-admin user', async () => {
         const ctx = await createTestContext(app!)
-        const memberCtx = await createMemberContext(app!, ctx, { projectRole: DefaultProjectRole.EDITOR })
+        const memberCtx = await createMemberContext(app!, ctx, { projectRole: DefaultProjectRole.DEVELOPER })
 
         const formData = new FormData()
         formData.append(

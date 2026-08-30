@@ -1,5 +1,5 @@
 import { generateId, ErrorCode } from '@fema-ipaas/core-utils'
-import { PropertyType } from '@fema-ipaas/connector-sdk'
+import { ConnectorAuth, OAuth2Props, Property } from '@fema-ipaas/connector-sdk'
 import { PackageType, ConnectorType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyInstance } from 'fastify'
 import { oauth2Util } from '../../../src/app/connection/connection-service/oauth2/oauth2-util'
@@ -19,8 +19,7 @@ afterAll(async () => {
     await teardownTestEnvironment()
 })
 
-const shortText = (displayName: string) => ({
-    type: PropertyType.SHORT_TEXT,
+const shortText = (displayName: string) => Property.ShortText({
     displayName,
     required: true,
 })
@@ -29,7 +28,7 @@ const saveOAuth2Connector = async ({ tenantId, tokenUrl, scope, props }: {
     tenantId: string
     tokenUrl: string
     scope: string[]
-    props: Record<string, unknown>
+    props: OAuth2Props
 }): Promise<string> => {
     const connectorName = `connector-${generateId()}`
     await db.save('connector_metadata', createMockConnectorMetadata({
@@ -40,15 +39,14 @@ const saveOAuth2Connector = async ({ tenantId, tokenUrl, scope, props }: {
         packageType: PackageType.REGISTRY,
         minimumSupportedRelease: '0.0.0',
         maximumSupportedRelease: '999.999.999',
-        auth: {
-            type: PropertyType.OAUTH2,
+        auth: ConnectorAuth.OAuth2({
             displayName: 'Connection',
             required: true,
             authUrl: 'https://{cloud}/{tenant}/oauth2/v2.0/authorize',
             tokenUrl,
             scope,
             props,
-        },
+        }),
     }))
     return connectorName
 }

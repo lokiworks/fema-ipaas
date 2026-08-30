@@ -363,7 +363,7 @@ describe('Connector Metadata CE API', () => {
         it('should reject deletion by a non-admin tenant member with 403', async () => {
             const ownerCtx = await createTestContext(app!)
             const memberCtx = await createMemberContext(app!, ownerCtx, {
-                projectRole: DefaultProjectRole.EDITOR,
+                projectRole: DefaultProjectRole.DEVELOPER,
             })
             const mockConnector = createMockConnectorMetadata({
                 name: '@custom/member-cannot-delete',

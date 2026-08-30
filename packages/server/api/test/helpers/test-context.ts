@@ -143,6 +143,8 @@ type BuildContextParams = {
     data: ContextData
 }
 
+type InjectResponse = Awaited<ReturnType<FastifyInstance['inject']>>
+
 type ContextData = {
     userIdentity: UserIdentity
     user: User
@@ -157,9 +159,9 @@ export type TestContext = {
     tenant: Tenant
     project: Project
     token: string
-    get: (url: string, query?: Record<string, unknown>, opts?: RequestOptions) => ReturnType<FastifyInstance['inject']>
-    post: (url: string, body?: Record<string, unknown>, opts?: RequestOptions) => ReturnType<FastifyInstance['inject']>
-    put: (url: string, body?: Record<string, unknown>, opts?: RequestOptions) => ReturnType<FastifyInstance['inject']>
-    delete: (url: string, query?: Record<string, unknown>, opts?: RequestOptions) => ReturnType<FastifyInstance['inject']>
-    inject: (opts: InjectOptions) => ReturnType<FastifyInstance['inject']>
+    get: (url: string, query?: Record<string, unknown>, opts?: RequestOptions) => Promise<InjectResponse>
+    post: (url: string, body?: Record<string, unknown>, opts?: RequestOptions) => Promise<InjectResponse>
+    put: (url: string, body?: Record<string, unknown>, opts?: RequestOptions) => Promise<InjectResponse>
+    delete: (url: string, query?: Record<string, unknown>, opts?: RequestOptions) => Promise<InjectResponse>
+    inject: (opts: InjectOptions) => Promise<InjectResponse>
 }

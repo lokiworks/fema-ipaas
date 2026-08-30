@@ -2,7 +2,8 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "../../../dist/out-tsc",
-    "module": "commonjs",
+    "module": "es2022",
+    "moduleResolution": "node",
     "types": ["vitest/globals", "node"]
   },
   "include": [

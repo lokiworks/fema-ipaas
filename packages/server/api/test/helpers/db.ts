@@ -1,13 +1,14 @@
+import { ObjectLiteral } from 'typeorm'
 import { databaseConnection } from '../../src/app/database/database-connection'
 
 export const db = {
-    save<T extends Record<string, unknown>>(entity: string, data: T | T[]): Promise<T> {
+    async save<T extends ObjectLiteral>(entity: string, data: T | T[]): Promise<void> {
         const items = Array.isArray(data) ? data : [data]
-        return databaseConnection().getRepository(entity).save(items) as Promise<T>
+        await databaseConnection().getRepository<T>(entity).save(items)
     },
 
-    update(entity: string, id: string, data: Record<string, unknown>): Promise<unknown> {
-        return databaseConnection().getRepository(entity).update(id, data)
+    async update(entity: string, id: string, data: Record<string, unknown>): Promise<void> {
+        await databaseConnection().getRepository(entity).update(id, data)
     },
 
     findOneByOrFail<T>(entity: string, where: Record<string, unknown>): Promise<T> {

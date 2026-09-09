@@ -4,7 +4,6 @@ import { StreamStepProgress } from '../../engine/engine-operation'
 
 export enum ExecutionStatus {
     FAILED = 'FAILED',
-    QUOTA_EXCEEDED = 'QUOTA_EXCEEDED',
     INTERNAL_ERROR = 'INTERNAL_ERROR',
     PAUSED = 'PAUSED',
     QUEUED = 'QUEUED',
@@ -65,7 +64,6 @@ export const isExecutionStateTerminal = ({ status, ignoreInternalError }: { stat
         case ExecutionStatus.SUCCEEDED:
         case ExecutionStatus.TIMEOUT:
         case ExecutionStatus.FAILED:
-        case ExecutionStatus.QUOTA_EXCEEDED:
         case ExecutionStatus.MEMORY_LIMIT_EXCEEDED:
         case ExecutionStatus.LOG_SIZE_EXCEEDED:
         case ExecutionStatus.CANCELED:
@@ -83,7 +81,6 @@ export const isExecutionStateTerminal = ({ status, ignoreInternalError }: { stat
 export const FAILED_STATES = [
     ExecutionStatus.FAILED,
     ExecutionStatus.INTERNAL_ERROR,
-    ExecutionStatus.QUOTA_EXCEEDED,
     ExecutionStatus.TIMEOUT,
     ExecutionStatus.MEMORY_LIMIT_EXCEEDED,
 ]

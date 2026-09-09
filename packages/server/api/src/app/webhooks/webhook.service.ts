@@ -270,28 +270,6 @@ async function handleSync(params: SyncWebhookParams): Promise<EngineHttpResponse
         }
     }
 
-    const creditsExhausted = false
-
-    if (creditsExhausted) {
-        const workflowVersion = await workflowVersionRepo().findOneBy({ id: workflowVersionIdToRun })
-        assertNotNullOrUndefined(workflowVersion, 'workflowVersion')
-        const quotaExceededRun = await executionService(logger).createQuotaExceededRun({
-            workflowVersion,
-            payload,
-            projectId,
-            environment: runEnvironment,
-            parentRunId,
-            failParentOnFailure,
-            shouldExecuteTriggerOnRetry: true,
-        })
-        wideEvent.set({ execution: { id: quotaExceededRun.id }, webhook: { quotaExceeded: true } })
-        return {
-            status: StatusCodes.PAYMENT_REQUIRED,
-            body: {},
-            headers: {},
-        }
-    }
-
     const createdRun = await executionService(logger).start({
         tenantId,
         environment: runEnvironment,

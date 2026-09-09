@@ -11,7 +11,6 @@ export enum SystemJobName {
     DELETE_WORKFLOW = 'delete-workflow',
     HARD_DELETE_PROJECT = 'hard-delete-project',
     HARD_DELETE_TENANT = 'hard-delete-tenant',
-    BILLING_USAGE_REPORT = 'billing-usage-report',
     RESUME_DELAY_WAITPOINT = 'resume-delay-waitpoint',
     TOOL_SEARCH_REINDEX = 'tool-search-reindex',
     CHAT_STALE_SWEEP = 'chat-stale-sweep',
@@ -52,7 +51,6 @@ type SystemJobDataMap = {
     [SystemJobName.DELETE_WORKFLOW]: DeleteWorkflowDurableSystemJobData
     [SystemJobName.HARD_DELETE_PROJECT]: HardDeleteProjectSystemJobData
     [SystemJobName.HARD_DELETE_TENANT]: HardDeleteTenantSystemJobData
-    [SystemJobName.BILLING_USAGE_REPORT]: Record<string, never>
     [SystemJobName.RESUME_DELAY_WAITPOINT]: ResumeDelayWaitpointSystemJobData
     [SystemJobName.TOOL_SEARCH_REINDEX]: ToolSearchReindexSystemJobData
     [SystemJobName.CHAT_STALE_SWEEP]: Record<string, never>

@@ -1,8 +1,9 @@
 import { ApplicationError, ErrorCode, generateId, isNil, spreadIfDefined, spreadIfNotUndefined, TenantId, UserId } from '@fema-ipaas/core-utils'
-import { AuthenticationResponse, ProjectType, SsoDomainVerification, SYSTEM_LIMITS, Tenant, TenantPlanLimits, TenantRole, TenantWithoutFederatedAuth, TenantWithoutSensitiveData, UpdateTenantRequestBody, User, UserStatus } from '@fema-ipaas/shared'
+import { AuthenticationResponse, ProjectType, SsoDomainVerification, SYSTEM_LIMITS, Tenant, TenantLimits, TenantRole, TenantWithoutFederatedAuth, TenantWithoutSensitiveData, UpdateTenantRequestBody, User, UserStatus } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { nanoid } from 'nanoid'
 import { authenticationUtils } from '../authentication/authentication-utils'
+import { signupNames } from '../authentication/lib/signup-names'
 import { userIdentityRepository, userIdentityService } from '../authentication/user-identity/user-identity-service'
 import { repoFactory } from '../core/db/repo-factory'
 import { distributedLock } from '../database/redis-connections'
@@ -29,7 +30,7 @@ export const tenantService = (log: FastifyBaseLogger) => ({
             return hasProjects ? user.tenantId : null
         }))
 
-        const tenants = await Promise.all(tenantsWithProjects.filter((tenantId) => !isNil(tenantId)).map((tenantId) => this.getOneWithPlanOrThrow(tenantId)))
+        const tenants = await Promise.all(tenantsWithProjects.filter((tenantId) => !isNil(tenantId)).map((tenantId) => this.getOneWithLimitsOrThrow(tenantId)))
         return tenants
     },
     async create(params: AddParams): Promise<TenantWithoutFederatedAuth> {
@@ -97,7 +98,7 @@ export const tenantService = (log: FastifyBaseLogger) => ({
                     })
                 const tenant = await this.create({ ownerId: owner.id, name })
                 const personalProject = await projectService(log).create({
-                    displayName: personalProjectName(name),
+                    displayName: signupNames.personalProjectName({ ownerName: name }),
                     ownerId: owner.id,
                     tenantId: tenant.id,
                     type: ProjectType.PERSONAL,
@@ -192,7 +193,7 @@ export const tenantService = (log: FastifyBaseLogger) => ({
             .getRawOne<{ federatedAuthProviders: { saml?: unknown } | null }>()
         return !isNil(result?.federatedAuthProviders?.saml)
     },
-    async getOneWithPlan(id: TenantId): Promise<TenantWithoutSensitiveData | null> {
+    async getOneWithLimits(id: TenantId): Promise<TenantWithoutSensitiveData | null> {
         const tenant = await this.getOne(id)
         if (isNil(tenant)) {
             return null
@@ -200,19 +201,16 @@ export const tenantService = (log: FastifyBaseLogger) => ({
         return {
             ...tenant,
             federatedAuthProviders: { saml: null },
-            plan: SYSTEM_LIMITS,
+            limits: SYSTEM_LIMITS,
         }
     },
-    async getOneWithPlanOrThrow(id: TenantId): Promise<TenantWithoutSensitiveData> {
+    async getOneWithLimitsOrThrow(id: TenantId): Promise<TenantWithoutSensitiveData> {
         const tenant = await this.getOneOrThrow(id)
         return {
             ...tenant,
             federatedAuthProviders: { saml: null },
-            plan: SYSTEM_LIMITS,
+            limits: SYSTEM_LIMITS,
         }
-    },
-    async getOneWithPlanAndUsageOrThrow(id: TenantId): Promise<TenantWithoutSensitiveData> {
-        return this.getOneWithPlanOrThrow(id)
     },
 })
 
@@ -270,14 +268,6 @@ async function rotateTokenVersion(identityId: string): Promise<void> {
     })
 }
 
-function personalProjectName(tenantName: string): string {
-    const noun = ' Tenant'
-    if (tenantName.endsWith(noun)) {
-        return `${tenantName.slice(0, -noun.length)} Project`
-    }
-    return /['’]s$/.test(tenantName) ? `${tenantName} Project` : `${tenantName}'s Project`
-}
-
 async function finishExistingTenant({ user, tenantId, name, invalidatePreviousTokens, identityId, log }: FinishExistingTenantParams): Promise<AuthenticationResponse> {
     const hasProjects = await projectService(log).userHasProjects({
         tenantId,
@@ -287,7 +277,7 @@ async function finishExistingTenant({ user, tenantId, name, invalidatePreviousTo
     const project = hasProjects
         ? null
         : await projectService(log).create({
-            displayName: personalProjectName(name),
+            displayName: signupNames.personalProjectName({ ownerName: name }),
             ownerId: user.id,
             tenantId,
             type: ProjectType.PERSONAL,
@@ -324,7 +314,7 @@ type NewTenant = Omit<Tenant, 'created' | 'updated'>
 
 type UpdateParams = UpdateTenantRequestBody & {
     id: TenantId
-    plan?: Partial<TenantPlanLimits>
+    plan?: Partial<TenantLimits>
     logoIconUrl?: string
     fullLogoUrl?: string
     favIconUrl?: string

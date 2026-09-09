@@ -3,18 +3,13 @@ import { z } from 'zod'
 import { FederatedAuthnProviderConfig, FederatedAuthnProviderConfigWithoutSensitiveData } from '../../core/federated-authn'
 import { SsoDomainVerification } from './sso-domain-verification'
 
-export const TenantPlan = z.object({
-    ...BaseModelSchema,
-    tenantId: z.string(),
+export const TenantLimits = z.object({
     usersLimit: Nullable(z.number()),
     projectsLimit: Nullable(z.number()),
     activeWorkflowsLimit: Nullable(z.number()),
     workerGroupId: Nullable(z.string()),
 })
-export type TenantPlan = z.infer<typeof TenantPlan>
-
-export const TenantPlanLimits = TenantPlan.omit({ id: true, tenantId: true, created: true, updated: true })
-export type TenantPlanLimits = z.infer<typeof TenantPlanLimits>
+export type TenantLimits = z.infer<typeof TenantLimits>
 
 export const HEX_COLOR_PATTERN = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/
 
@@ -97,7 +92,7 @@ export type TenantWithoutFederatedAuth = Omit<Tenant, 'federatedAuthProviders'>
 
 export const TenantWithoutSensitiveData = z.object({
     federatedAuthProviders: Nullable(FederatedAuthnProviderConfigWithoutSensitiveData),
-    plan: TenantPlanLimits,
+    limits: TenantLimits,
     id: z.string(),
     created: DateOrString,
     updated: DateOrString,

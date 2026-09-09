@@ -1,6 +1,6 @@
-import { TenantPlanLimits } from '../management/tenant/tenant.model'
+import { TenantLimits } from '../management/tenant/tenant.model'
 
-export const SYSTEM_LIMITS: TenantPlanLimits = {
+export const SYSTEM_LIMITS: TenantLimits = {
     usersLimit: null,
     projectsLimit: null,
     activeWorkflowsLimit: null,

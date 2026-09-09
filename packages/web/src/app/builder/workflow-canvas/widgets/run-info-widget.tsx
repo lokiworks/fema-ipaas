@@ -47,10 +47,6 @@ function getStatusText({
       return t('Run Failed');
     case ExecutionStatus.PAUSED:
       return t('Run Paused');
-    case ExecutionStatus.QUOTA_EXCEEDED:
-      return t(
-        'This run stopped because your tenant ran out of credits. It can be retried once credits are available.',
-      );
     case ExecutionStatus.LOG_SIZE_EXCEEDED:
       return t(
         'Run failed due to output of steps exceeding the log size limit of {logSizeLimit} MB',
@@ -108,7 +104,7 @@ const RunInfoWidget = () => {
       key={run.id + run.status}
     >
       <div className="flex items-center justify-between w-full flex-wrap">
-        <div className="flex items-center text-sm shrink-0">
+        <div className="flex min-w-0 flex-wrap items-center text-sm">
           <Icon className="size-5 mr-2" />
           <span className="text-foreground dark:text-foreground font-medium">
             {getStatusText({

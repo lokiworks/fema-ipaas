@@ -40,7 +40,6 @@ const STATUS_CATEGORIES = [
       ExecutionStatus.INTERNAL_ERROR,
       ExecutionStatus.TIMEOUT,
       ExecutionStatus.MEMORY_LIMIT_EXCEEDED,
-      ExecutionStatus.QUOTA_EXCEEDED,
       ExecutionStatus.LOG_SIZE_EXCEEDED,
     ],
     color: 'hsl(var(--destructive))',

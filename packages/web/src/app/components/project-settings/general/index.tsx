@@ -37,7 +37,6 @@ export type FormValues = {
   icon: ProjectIcon;
   externalId?: string;
   maxConcurrentJobs?: number | null;
-  activeWorkflowsLimit?: number | null;
 };
 
 type GeneralSettingsProps = {
@@ -184,42 +183,6 @@ export const GeneralSettings = ({ form }: GeneralSettingsProps) => {
                     : t(
                         'Maximum number of workflows that can run at the same time for this project',
                       )}
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
-        {tenantRole === TenantRole.ADMIN && (
-          <FormField
-            name="activeWorkflowsLimit"
-            render={({ field }) => (
-              <FormItem>
-                <Label
-                  htmlFor="activeWorkflowsLimit"
-                  className="text-sm font-medium"
-                >
-                  {t('Active Workflows Limit')}
-                </Label>
-                <ClearableInput
-                  {...field}
-                  id="activeWorkflowsLimit"
-                  type="number"
-                  min={1}
-                  placeholder={t('Unlimited')}
-                  value={field.value ?? ''}
-                  onChange={(e) =>
-                    field.onChange(
-                      e.target.value ? Number(e.target.value) : null,
-                    )
-                  }
-                  onClear={() => field.onChange(null)}
-                  disabled={form.formState.disabled}
-                />
-                <FormDescription className="text-xs text-muted-foreground">
-                  {t(
-                    'Maximum number of enabled workflows in this project. Leave empty for no limit.',
-                  )}
                 </FormDescription>
                 <FormMessage />
               </FormItem>

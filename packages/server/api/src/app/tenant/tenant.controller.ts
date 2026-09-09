@@ -98,7 +98,7 @@ export const tenantController: FastifyPluginAsyncZod = async (app) => {
             fullLogoUrl,
             favIconUrl,
         })
-        return tenantService(req.log).getOneWithPlanAndUsageOrThrow(tenantId)
+        return tenantService(req.log).getOneWithLimitsOrThrow(tenantId)
     })
 
     app.get('/:id', GetTenantRequest, async (req) => {
@@ -110,7 +110,7 @@ export const tenantController: FastifyPluginAsyncZod = async (app) => {
                 },
             })
         }
-        const tenant = await tenantService(req.log).getOneWithPlanAndUsageOrThrow(req.principal.tenant.id)
+        const tenant = await tenantService(req.log).getOneWithLimitsOrThrow(req.principal.tenant.id)
         return tenant
     })
 

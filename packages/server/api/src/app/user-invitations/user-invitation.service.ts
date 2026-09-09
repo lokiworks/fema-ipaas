@@ -2,7 +2,7 @@ import { ApplicationError, assertNotNullOrUndefined, ErrorCode, generateId, isNi
 import { DefaultProjectRole, InvitationStatus, InvitationType, TenantRole, UserInvitation, UserInvitationWithLink } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
-import { EntityManager, IsNull, ObjectLiteral, SelectQueryBuilder } from 'typeorm'
+import { EntityManager, IsNull } from 'typeorm'
 import { userIdentityService } from '../authentication/user-identity/user-identity-service'
 import { repoFactory } from '../core/db/repo-factory'
 import { domainHelper } from '../helper/domain-helper'
@@ -130,37 +130,6 @@ export const userInvitationsService = (log: FastifyBaseLogger) => ({
         }
         return enrichWithInvitationLink(userInvitation, invitationExpirySeconds, log)
     },
-    async wouldAddNewUser({ email, tenantId }: { email: string, tenantId: string }): Promise<boolean> {
-        const identity = await userIdentityService(log).getIdentityByEmail(email)
-        if (isNil(identity)) {
-            return true
-        }
-        const existingUser = await userService(log).getOneByIdentityAndTenant({ identityId: identity.id, tenantId })
-        return isNil(existingUser)
-    },
-    async countReservedSeats({ tenantId, entityManager }: CountReservedSeatsParams): Promise<number> {
-        const query = repo(entityManager)
-            .createQueryBuilder('invitation')
-            .select('COUNT(DISTINCT LOWER(invitation.email))', 'count')
-        const result = await withinReservationWindow(query, tenantId)
-            .andWhere(EMAIL_IS_NOT_ALREADY_A_TENANT_USER)
-            .getRawOne<{ count: string }>()
-        return Number(result?.count ?? 0)
-    },
-    async countAdditionalSeatsNeeded({
-        email,
-        tenantId,
-        entityManager,
-    }: CountAdditionalSeatsNeededParams): Promise<number> {
-        const addsNewUser = await this.wouldAddNewUser({ email, tenantId })
-        if (!addsNewUser) {
-            return 0
-        }
-        const alreadyReserved = await withinReservationWindow(repo(entityManager).createQueryBuilder('invitation'), tenantId)
-            .andWhere('LOWER(invitation.email) = :email', { email: email.toLowerCase().trim() })
-            .getExists()
-        return alreadyReserved ? 0 : 1
-    },
     async list(params: ListUserParams): Promise<SeekPage<UserInvitation>> {
         const decodedCursor = paginationHelper.decodeCursor(params.cursor ?? null)
         const paginator = buildPaginator({
@@ -272,22 +241,6 @@ export function getInvitationExpiryCutoff(): string {
     return dayjs().subtract(INVITATION_EXPIRY_SECONDS, 'seconds').toISOString()
 }
 
-function withinReservationWindow<T extends ObjectLiteral>(query: SelectQueryBuilder<T>, tenantId: string): SelectQueryBuilder<T> {
-    return query
-        .where('invitation.tenantId = :tenantId', { tenantId })
-        .andWhere('invitation.status IN (:...statuses)', { statuses: [InvitationStatus.PENDING, InvitationStatus.ACCEPTED] })
-        .andWhere('invitation.updated > :expiryCutoff', { expiryCutoff: getInvitationExpiryCutoff() })
-}
-
-const EMAIL_IS_NOT_ALREADY_A_TENANT_USER = `NOT EXISTS (
-    SELECT 1
-    FROM user_identity identity
-    INNER JOIN "user" existing_user
-        ON existing_user."identityId" = identity.id
-        AND existing_user."tenantId" = invitation."tenantId"
-    WHERE LOWER(identity.email) = LOWER(invitation.email)
-)`
-
 async function generateInvitationLink(userInvitation: UserInvitation, expireyInSeconds: number): Promise<string> {
     const token = await jwtUtils.sign({
         payload: {
@@ -365,17 +318,6 @@ export type CreateInvitationRecordParams = {
 export type FinalizeInvitationParams = {
     userInvitation: UserInvitation
     invitationExpirySeconds: number
-}
-
-export type CountAdditionalSeatsNeededParams = {
-    email: string
-    tenantId: string
-    entityManager?: EntityManager
-}
-
-export type CountReservedSeatsParams = {
-    tenantId: string
-    entityManager?: EntityManager
 }
 
 type GetOneByTenantIdAndEmailParams = {

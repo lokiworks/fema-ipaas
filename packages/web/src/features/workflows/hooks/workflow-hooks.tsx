@@ -148,13 +148,6 @@ export const workflowHooks = {
               standardOutput: params.standardOutput || '',
             },
           });
-        } else if (applicationError.code === ErrorCode.QUOTA_EXCEEDED) {
-          toast.error(t('Active workflows limit reached'), {
-            description: t(
-              'You have reached the maximum number of active workflows. Disable another workflow or increase the limit.',
-            ),
-            duration: 5000,
-          });
         } else {
           internalErrorToast();
         }

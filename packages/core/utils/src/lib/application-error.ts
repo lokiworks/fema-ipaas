@@ -1,5 +1,5 @@
 import type { WorkflowId, ExecutionId, WorkflowVersionId, ProjectId, UserId } from './id-generator'
-import type { Permission, TenantUsageMetric } from './permission'
+import type { Permission } from './permission'
 import type { ProjectRole } from './project-role'
 
 export class ApplicationError extends Error {
@@ -34,7 +34,6 @@ export type ApplicationErrorParams =
     | InvalidOtpParams
     | InvitationOnlySignUpParams
     | PermissionDeniedErrorParams
-    | QuotaExceededParams
     | FeatureDisabledErrorParams
     | SystemInvalidErrorParams
     | SystemPropNotDefinedErrorParams
@@ -241,15 +240,6 @@ ErrorCode.INVALID_CONNECTION,
 }
 >
 
-export type QuotaExceededParams = BaseErrorParams<
-ErrorCode.QUOTA_EXCEEDED,
-{
-    metric: TenantUsageMetric
-    usage?: number
-    limit?: number
-}
->
-
 export type FeatureDisabledErrorParams = BaseErrorParams<
 ErrorCode.FEATURE_DISABLED,
 {
@@ -323,7 +313,6 @@ export enum ErrorCode {
     INVALID_OTP = 'INVALID_OTP',
     INVITATION_ONLY_SIGN_UP = 'INVITATION_ONLY_SIGN_UP',
     PERMISSION_DENIED = 'PERMISSION_DENIED',
-    QUOTA_EXCEEDED = 'QUOTA_EXCEEDED',
     FEATURE_DISABLED = 'FEATURE_DISABLED',
     SYSTEM_PROP_INVALID = 'SYSTEM_PROP_INVALID',
     SYSTEM_PROP_NOT_DEFINED = 'SYSTEM_PROP_NOT_DEFINED',

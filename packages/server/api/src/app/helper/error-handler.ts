@@ -77,7 +77,6 @@ function hasStatusCode(error: unknown): error is { statusCode: number } {
 
 const statusCodeMap: Partial<Record<ErrorCode, StatusCodes>> = {
     [ErrorCode.INVALID_BEARER_TOKEN]: StatusCodes.UNAUTHORIZED,
-    [ErrorCode.QUOTA_EXCEEDED]: StatusCodes.PAYMENT_REQUIRED,
     [ErrorCode.CONNECTOR_SYNC_NOT_SUPPORTED]: StatusCodes.BAD_REQUEST,
     [ErrorCode.FEATURE_DISABLED]: StatusCodes.PAYMENT_REQUIRED,
     [ErrorCode.PERMISSION_DENIED]: StatusCodes.FORBIDDEN,

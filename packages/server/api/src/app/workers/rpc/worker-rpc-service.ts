@@ -101,35 +101,23 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
             const tenantId = await projectService(log).getTenantId(projectId)
             const filterPayloads = await dedupeService.filterUniquePayloads(workflowVersionId, payloads)
 
-            const creditsExhausted = false
-
             const executions = await Promise.all(
                 filterPayloads.map((payload) =>
-                    creditsExhausted
-                        ? executionService(log).createQuotaExceededRun({
-                            workflowVersion,
-                            payload,
-                            projectId,
-                            environment,
-                            parentRunId,
-                            failParentOnFailure,
-                            shouldExecuteTriggerOnRetry: false,
-                        })
-                        : executionService(log).start({
-                            workflowId: workflowVersion.workflowId,
-                            environment,
-                            workflowVersionId,
-                            payload,
-                            projectId,
-                            tenantId,
-                            httpRequestId,
-                            workerHandlerId: undefined,
-                            executionType: ExecutionType.BEGIN,
-                            streamStepProgress,
-                            executeTrigger: false,
-                            parentRunId,
-                            failParentOnFailure,
-                        }),
+                    executionService(log).start({
+                        workflowId: workflowVersion.workflowId,
+                        environment,
+                        workflowVersionId,
+                        payload,
+                        projectId,
+                        tenantId,
+                        httpRequestId,
+                        workerHandlerId: undefined,
+                        executionType: ExecutionType.BEGIN,
+                        streamStepProgress,
+                        executeTrigger: false,
+                        parentRunId,
+                        failParentOnFailure,
+                    }),
                 ),
             )
             return executions

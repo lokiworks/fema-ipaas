@@ -4,6 +4,7 @@ import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { nanoid } from 'nanoid'
 import { EntityManager, In, IsNull } from 'typeorm'
+import { signupNames } from '../authentication/lib/signup-names'
 import { userIdentityRepository, userIdentityService } from '../authentication/user-identity/user-identity-service'
 import { repoFactory } from '../core/db/repo-factory'
 import { transaction } from '../core/db/transaction'
@@ -43,7 +44,7 @@ export const userService = (log: FastifyBaseLogger) => ({
             })
 
             await projectService(log).create({
-                displayName: identity.firstName + '\'s Project',
+                displayName: signupNames.personalProjectName({ ownerName: identity.firstName }),
                 ownerId: newUser.id,
                 tenantId,
                 type: ProjectType.PERSONAL,

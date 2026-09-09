@@ -250,9 +250,9 @@ describe('Passwordless Authentication API', () => {
             expect(identity?.firstName).toBe('Ahmad')
             expect(identity?.lastName).toBe('Bin Tash')
             const tenant = await databaseConnection().getRepository('tenant').findOneBy({ id: body?.tenantId })
-            expect(tenant?.name).toBe("Ahmad's Tenant")
+            expect(tenant?.name).toBe('Ahmad 的租户')
             const project = await databaseConnection().getRepository('project').findOneBy({ tenantId: body?.tenantId })
-            expect(project?.displayName).toBe("Ahmad's Project")
+            expect(project?.displayName).toBe('Ahmad 的项目')
         })
 
         it('consumes one code exactly once, even when two confirmations race it', async () => {

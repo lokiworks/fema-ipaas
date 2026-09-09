@@ -1,5 +1,6 @@
 import { RuntimeEnvironment, UserIdentityProvider } from '@fema-ipaas/shared'
 import { authenticationService } from '../../authentication/authentication.service'
+import { signupNames } from '../../authentication/lib/signup-names'
 import { FlagEntity } from '../../flags/flag.entity'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
@@ -48,7 +49,7 @@ const seedDevUser = async (): Promise<void> => {
 
     await tenantService(log).createTenantWithProject({
         identityId: response.id,
-        name: 'dev\'s Tenant',
+        name: signupNames.tenantNameFromPerson({ firstName: 'Dev', email: DEV_EMAIL }),
         invalidatePreviousTokens: true,
         isFirstTenant: true,
         callerTokenVersion: undefined,

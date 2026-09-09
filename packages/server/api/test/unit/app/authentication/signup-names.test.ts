@@ -1,6 +1,22 @@
+import { LocalesEnum } from '@fema-ipaas/core-utils'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
+const systemGet = vi.fn()
+
+vi.mock('../../../../src/app/helper/system/system', () => ({
+    system: { get: (...args: unknown[]) => systemGet(...args) },
+}))
+
 import { signupNames } from '../../../../src/app/authentication/lib/signup-names'
 
+function useLanguage(language: LocalesEnum | undefined): void {
+    systemGet.mockReturnValue(language)
+}
+
 describe('signupNames', () => {
+    beforeEach(() => useLanguage(LocalesEnum.ENGLISH))
+    afterEach(() => vi.clearAllMocks())
+
     describe('firstNameFromEmail', () => {
         it.each([
             ['ahmad@fema.local', 'Ahmad'],
@@ -76,6 +92,22 @@ describe('signupNames', () => {
             expect(name.length).toBeLessThanOrEqual(100)
         })
 
+        it('names the tenant in the configured language', () => {
+            useLanguage(LocalesEnum.CHINESE_SIMPLIFIED)
+
+            expect(
+                signupNames.tenantNameFromPerson({ firstName: 'Ahmad', email: 'a.b@fema.local' }),
+            ).toBe('Ahmad 的租户')
+        })
+
+        it('falls back to Simplified Chinese when no language is configured', () => {
+            useLanguage(undefined)
+
+            expect(
+                signupNames.tenantNameFromPerson({ firstName: 'Ahmad', email: 'a.b@fema.local' }),
+            ).toBe('Ahmad 的租户')
+        })
+
         it('never produces a name the tenant name rule rejects', () => {
             const safeString = new RegExp('^[^./]+$')
             const name = signupNames.tenantNameFromPerson({
@@ -88,4 +120,27 @@ describe('signupNames', () => {
         })
     })
 
+    describe('personalProjectName', () => {
+        it.each([
+            ['Ahmad', "Ahmad's Project"],
+            ["Ahmad's", "Ahmad's Project"],
+            ["Ahmad's Tenant", "Ahmad's Project"],
+        ])('names the project from %s -> %s', (ownerName, expected) => {
+            expect(signupNames.personalProjectName({ ownerName })).toBe(expected)
+        })
+
+        it.each([
+            ['Ahmad', 'Ahmad 的项目'],
+            ['Ahmad 的租户', 'Ahmad 的项目'],
+            ["Ahmad's Tenant", 'Ahmad 的项目'],
+        ])('names the project in Simplified Chinese from %s -> %s', (ownerName, expected) => {
+            useLanguage(LocalesEnum.CHINESE_SIMPLIFIED)
+
+            expect(signupNames.personalProjectName({ ownerName })).toBe(expected)
+        })
+
+        it('keeps a name that merely ends in the suffix word intact', () => {
+            expect(signupNames.personalProjectName({ ownerName: ' Tenant' })).toBe("Tenant's Project")
+        })
+    })
 })

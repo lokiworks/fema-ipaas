@@ -46,7 +46,7 @@ type FormInputWithName = FormInput & {
   name: string;
 };
 
-/**We do this because it was the behaviour in previous versions of FEMA Integration Tenant.*/
+/**We do this because it was the behaviour in previous versions of FEMA Integration Platform.*/
 const putBackQuotesForInputNames = (
   value: Record<string, unknown>,
   inputs: FormInputWithName[],
@@ -194,10 +194,10 @@ const WorkflowForm = ({ form, useDraft }: WorkflowFormProps) => {
   );
   return (
     <div className="w-full h-full flex">
-      <div className="container py-20">
+      <div className="container px-4 py-20">
         <Form {...reactForm}>
           <form onSubmit={(e) => reactForm.handleSubmit(() => mutate())(e)}>
-            <Card className="w-[500px] mx-auto">
+            <Card className="w-full max-w-[500px] mx-auto">
               <CardHeader>
                 <CardTitle className="text-center">{form?.title}</CardTitle>
               </CardHeader>
@@ -241,7 +241,7 @@ const WorkflowForm = ({ form, useDraft }: WorkflowFormProps) => {
                                   {input.displayName} {input.required && '*'}
                                 </FormLabel>
                                 <FormControl className="flex flex-col gap-1">
-                                  <>
+                                  <div>
                                     {input.type === FormInputType.TEXT_AREA && (
                                       <Textarea
                                         {...field}
@@ -281,7 +281,7 @@ const WorkflowForm = ({ form, useDraft }: WorkflowFormProps) => {
                                     <ReadMoreDescription
                                       text={input.description ?? ''}
                                     />
-                                  </>
+                                  </div>
                                 </FormControl>
                               </FormItem>
                             )}

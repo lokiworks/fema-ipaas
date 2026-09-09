@@ -47,7 +47,7 @@ export function InternalErrorsTable({
         </CardTitle>
         <CardDescription>
           {t(
-            'Internal errors are failures inside FEMA Integration Tenant itself (engine or worker), not in your workflow logic. Grouped by the project and workflow they affected.',
+            'Internal errors are failures inside FEMA Integration Platform itself (engine or worker), not in your workflow logic. Grouped by the project and workflow they affected.',
           )}
         </CardDescription>
       </CardHeader>

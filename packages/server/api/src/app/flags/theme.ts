@@ -74,7 +74,7 @@ export function generateTheme({
 
 export const defaultTheme = generateTheme({
     primaryColor: '#2D6CDF',
-    websiteName: 'Integration Tenant',
+    websiteName: 'Integration Platform',
     fullLogoUrl: '/assets/full-logo.svg',
     favIconUrl: '/assets/logo.svg',
     logoIconUrl: '/assets/logo.svg',

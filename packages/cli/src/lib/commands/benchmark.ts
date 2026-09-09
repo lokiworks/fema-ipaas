@@ -9,7 +9,7 @@ const BENCHMARK_DOC = 'Load-test a deployment\'s sync-webhook path, auto-discove
 
 export const benchmarkCommand = new Command('benchmark')
     .description(BENCHMARK_DOC)
-    .option('--url <url>', 'FEMA Integration Tenant base URL (dev env API port)', 'http://localhost:3000')
+    .option('--url <url>', 'FEMA Integration Platform base URL (dev env API port)', 'http://localhost:3000')
     .option('--requests <n>', 'Total requests to fire (default: 40 x concurrency)')
     .option('--concurrency <c>', 'Concurrent connections (default: auto = sum of worker execution slots)')
     .option('--api-key <key>', 'Tenant API key (Bearer). Or set FEMA_API_KEY.')

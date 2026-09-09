@@ -97,7 +97,7 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
                 },
             },
             info: {
-                title: 'FEMA Integration Tenant API',
+                title: 'FEMA Integration Platform API',
                 version: '0.0.0',
             },
         },

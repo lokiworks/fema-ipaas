@@ -22,9 +22,7 @@ describe('determineDefaultRoute', () => {
     expect(
       determineDefaultRoute({ checkAccess: allow([Permission.READ_WORKFLOW]) }),
     ).toBe('/automations');
-    expect(determineDefaultRoute({ checkAccess: () => false })).toBe(
-      '/settings',
-    );
+    expect(determineDefaultRoute({ checkAccess: () => false })).toBe('/home');
   });
 
   it('prefers home over workflows when the user can read runs', () => {

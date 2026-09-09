@@ -26,7 +26,7 @@ export const determineDefaultRoute = ({
   if (checkAccess(Permission.READ_WORKFLOW)) {
     return authenticationSession.appendProjectRoutePrefix('/automations');
   }
-  return authenticationSession.appendProjectRoutePrefix('/settings');
+  return authenticationSession.appendProjectRoutePrefix('/home');
 };
 
 export const NEW_WORKFLOW_QUERY_PARAM = 'newWorkflow';

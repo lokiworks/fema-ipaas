@@ -1,6 +1,6 @@
 import { Permission } from '@fema-ipaas/core-utils';
 import React, { Suspense } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 
 import { PageTitle } from '@/app/components/page-title';
 import { RouteLoadingBar } from '@/components/custom/route-loading-bar';
@@ -39,16 +39,6 @@ const VariablesPage = lazyWithRetry(
   () => import('./variables').then((m) => ({ default: m.VariablesPage })),
   'variables',
 );
-
-const SettingsRerouter = () => {
-  const { hash } = useLocation();
-  const fragmentWithoutHash = hash.slice(1).toLowerCase();
-  return fragmentWithoutHash ? (
-    <Navigate to={`/settings/${fragmentWithoutHash}`} replace />
-  ) : (
-    <Navigate to="/settings/team" replace />
-  );
-};
 
 function SuspenseWrapper({ children }: { children: React.ReactNode }) {
   return <Suspense fallback={<RouteLoadingBar />}>{children}</Suspense>;
@@ -168,10 +158,6 @@ export const projectRoutes = [
   }),
   ...ProjectRouterWrapper({
     path: routesThatRequireProjectId.settings,
-    element: (
-      <ProjectDashboardLayout>
-        <SettingsRerouter></SettingsRerouter>
-      </ProjectDashboardLayout>
-    ),
+    element: <Navigate to={routesThatRequireProjectId.home} replace />,
   }),
 ];

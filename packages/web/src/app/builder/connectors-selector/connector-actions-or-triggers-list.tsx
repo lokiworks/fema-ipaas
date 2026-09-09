@@ -91,7 +91,7 @@ export const ConnectorActionsOrTriggersList: React.FC<
   );
   return (
     <ScrollArea className="h-full" viewPortClassName="h-full">
-      <CardList className="min-w-[350px] h-full gap-0" listClassName="gap-0">
+      <CardList className="h-full gap-0" listClassName="gap-0">
         {actionsOrTriggers &&
           actionsOrTriggers.map((item, index) => {
             return (

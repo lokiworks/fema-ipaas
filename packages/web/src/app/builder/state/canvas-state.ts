@@ -90,7 +90,9 @@ export const createCanvasState = (
       initiallySelectedStep && !isEmptyTriggerInitiallySelected
         ? RightSideBarType.CONNECTOR_SETTINGS
         : RightSideBarType.NONE,
-    leftSidebar: LeftSideBarType.NONE,
+    leftSidebar: isEmptyTriggerInitiallySelected
+      ? LeftSideBarType.CONNECTOR_PICKER
+      : LeftSideBarType.NONE,
     removeStepSelection: () =>
       set({
         selectedStep: null,

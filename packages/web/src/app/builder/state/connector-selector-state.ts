@@ -1,3 +1,4 @@
+import { WorkflowOperationType, WorkflowTriggerType } from '@fema-ipaas/shared';
 import { StoreApi } from 'zustand';
 
 import { LeftSideBarType } from '@/app/builder/types';
@@ -9,12 +10,18 @@ import {
 import { BuilderState } from '../builder-hooks';
 
 export const createConnectorSelectorState = (
-  _: StoreApi<BuilderState>['getState'],
+  initialState: ConnectorSelectorInitialState,
   set: StoreApi<BuilderState>['setState'],
 ): ConnectorSelectorState => {
+  const { trigger } = initialState.workflowVersion;
+  const startsOnEmptyTrigger = trigger.type === WorkflowTriggerType.EMPTY;
   return {
-    openedConnectorSelectorStepNameOrAddButtonId: null,
-    connectorSelectorOperation: null,
+    openedConnectorSelectorStepNameOrAddButtonId: startsOnEmptyTrigger
+      ? trigger.name
+      : null,
+    connectorSelectorOperation: startsOnEmptyTrigger
+      ? { type: WorkflowOperationType.UPDATE_TRIGGER }
+      : null,
     connectorSelectorReplacedStepDisplayName: null,
     setOpenedConnectorSelectorStepNameOrAddButtonId: (
       stepNameOrAddButtonId: string | null,
@@ -55,6 +62,8 @@ export const createConnectorSelectorState = (
     },
   };
 };
+
+type ConnectorSelectorInitialState = Pick<BuilderState, 'workflowVersion'>;
 
 export type ConnectorSelectorState = {
   openedConnectorSelectorStepNameOrAddButtonId: string | null;

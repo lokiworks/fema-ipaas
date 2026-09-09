@@ -92,7 +92,6 @@ const TestTriggerSection = React.memo(
       return (
         <div className="flex flex-col h-full">
           <StepDataPanelHeader status="idle" />
-          <div className="flex justify-end px-3 py-2 shrink-0"></div>
         </div>
       );
     }
@@ -167,7 +166,6 @@ const TestTriggerSection = React.memo(
         {showFirstTimeTestingSection && !errorMessage && isFirstTimeTesting && (
           <div className="flex flex-col h-full">
             <StepDataPanelHeader status="testing" />
-            <div className="flex justify-end px-3 py-2 shrink-0"></div>
             <div className="flex-1 min-h-0 px-3 pb-3 overflow-auto">
               <JsonTreeSkeleton />
             </div>
@@ -178,7 +176,6 @@ const TestTriggerSection = React.memo(
           !isFirstTimeTesting && (
             <div className="flex flex-col h-full">
               <StepDataPanelHeader status="idle" />
-              <div className="flex justify-end px-3 py-2 shrink-0"></div>
               <div className="grow flex flex-col items-center justify-center w-full px-6 py-10 gap-4 text-center">
                 <div className="flex items-center justify-center size-12 rounded-full bg-primary/10 text-primary">
                   <Zap className="size-6" />

@@ -3,7 +3,7 @@ import { WorkflowTrigger } from '../triggers/trigger'
 import { workflowStructureUtil } from './workflow-structure-util'
 
 export const WORKFLOW_CANVAS_STEP_HEIGHT = 52
-export const WORKFLOW_CANVAS_STEP_WIDTH = 176
+export const WORKFLOW_CANVAS_STEP_WIDTH = 240
 export const WORKFLOW_CANVAS_VSPACE = 60
 export const WORKFLOW_CANVAS_ARC = 15
 export const WORKFLOW_CANVAS_LOOP_VOFFSET = WORKFLOW_CANVAS_VSPACE * 1.5 + 2 * WORKFLOW_CANVAS_ARC // 120

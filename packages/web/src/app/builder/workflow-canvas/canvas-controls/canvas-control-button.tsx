@@ -29,6 +29,7 @@ const CanvasControlButton = ({
         <Button
           variant={active ? 'default' : 'ghost'}
           size="icon"
+          aria-label={tooltip}
           disabled={disabled}
           onClick={onClick}
         >

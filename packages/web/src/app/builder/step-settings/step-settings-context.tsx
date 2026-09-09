@@ -3,7 +3,7 @@ import {
   ConnectorPropertyMap,
   connectorPropertiesUtils,
 } from '@fema-ipaas/connector-sdk';
-import { setAtPath } from '@fema-ipaas/core-utils';
+import { isNil, setAtPath } from '@fema-ipaas/core-utils';
 import {
   WorkflowAction,
   WorkflowTrigger,
@@ -112,11 +112,20 @@ export const StepSettingsProvider = ({
     // previously step settings schema didn't have this property, so we need to set it
     // we can't always set it to MANUAL, because some sub properties might be dynamic and have the same name as the dynamic (parent) property i.e values property in insert row (Google Sheets)
     // which will override the sub property exectuion type
-    if (!selectedStep.settings?.propertySettings?.[propertyName]) {
+    const storedSettings =
+      selectedStep.settings?.propertySettings?.[propertyName];
+    if (!storedSettings) {
       form.setValue(
         `settings.propertySettings.${propertyName}.type`,
         PropertyExecutionType.MANUAL,
       );
+    }
+    const isSchemaEmpty = Object.keys(schema).length === 0;
+    const isStoredSchemaEmpty =
+      isNil(storedSettings?.schema) ||
+      Object.keys(storedSettings.schema).length === 0;
+    if (isSchemaEmpty && isStoredSchemaEmpty) {
+      return;
     }
     form.setValue(`settings.propertySettings.${propertyName}.schema`, schema);
   };

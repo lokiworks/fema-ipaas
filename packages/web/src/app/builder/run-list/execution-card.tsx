@@ -74,7 +74,7 @@ const ExecutionCard = React.memo(
           <span>
             {run.status === ExecutionStatus.CANCELED ? (
               <Tooltip>
-                <TooltipTrigger>
+                <TooltipTrigger asChild>
                   <Icon
                     className={cn('w-5 h-5', {
                       'text-success': variant === 'success',
@@ -145,8 +145,8 @@ const ExecutionCard = React.memo(
                 onOpenChange={setIsRetryDropdownOpen}
               >
                 <Tooltip>
-                  <TooltipTrigger>
-                    <DropdownMenuTrigger>
+                  <TooltipTrigger asChild>
+                    <DropdownMenuTrigger asChild>
                       <Button
                         variant="ghost"
                         size={'icon'}

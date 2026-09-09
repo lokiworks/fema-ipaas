@@ -100,15 +100,15 @@ export const BuilderHeader = () => {
   };
 
   const titleContent = (
-    <div className="flex items-center gap-2 px-4">
-      <Breadcrumb>
-        <BreadcrumbList>
+    <div className="flex min-w-0 items-center gap-2 px-4">
+      <Breadcrumb className="min-w-0">
+        <BreadcrumbList className="min-w-0 flex-nowrap">
           {!embedState.disableNavigationInBuilder && (
             <>
               <BreadcrumbItem>
                 <BreadcrumbLink
                   onClick={goToWorkflowsPage}
-                  className="cursor-pointer text-sm"
+                  className="cursor-pointer whitespace-nowrap text-sm"
                 >
                   {getProjectName(project)}
                 </BreadcrumbLink>
@@ -117,12 +117,13 @@ export const BuilderHeader = () => {
             </>
           )}
           {!embedState.hideWorkflowNameInBuilder && (
-            <BreadcrumbItem>
-              <BreadcrumbPage>
+            <BreadcrumbItem className="min-w-0">
+              <BreadcrumbPage className="min-w-0">
                 <div
-                  className={cn('flex items-center gap-1 text-sm', {
-                    'max-w-[500px]': !isEditingWorkflowName,
-                  })}
+                  className={cn(
+                    'flex min-w-0 items-center gap-1 overflow-hidden text-sm',
+                    { 'max-w-[500px]': !isEditingWorkflowName },
+                  )}
                 >
                   <EditableText
                     className="hover:cursor-text"
@@ -162,6 +163,7 @@ export const BuilderHeader = () => {
                   >
                     <Button
                       variant="ghost"
+                      aria-label={t('More actions')}
                       className="size-6 flex items-center justify-center"
                     >
                       <ChevronDown className="h-4 w-4 text-muted-foreground" />
@@ -178,7 +180,7 @@ export const BuilderHeader = () => {
   );
 
   const rightContent = (
-    <div className="flex items-center justify-center gap-4">
+    <div className="flex shrink-0 flex-nowrap items-center justify-center gap-4">
       {showSupport && (
         <Button
           variant="ghost"

@@ -153,8 +153,20 @@ const StepCanvasNode = React.memo(
             'rounded-tl-none': isTrigger && !isHorizontal,
             'hover:border-ring': !isSelected,
           },
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
         )}
         onClick={(e) => handleStepClick(e)}
+        onKeyDown={(e) => {
+          if (e.target !== e.currentTarget) {
+            return;
+          }
+          if (e.key !== 'Enter' && e.key !== ' ') {
+            return;
+          }
+          e.preventDefault();
+          selectStepByName(step.name);
+          setSelectedBranchIndex(null);
+        }}
         key={step.name}
         ref={isConnectorSelectorOpened ? null : setNodeRef}
         {...stepNodeDivAttributes}

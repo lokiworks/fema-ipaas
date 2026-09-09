@@ -92,7 +92,7 @@ const LoopIterationInput = ({ stepName }: { stepName: string }) => {
           currentIndex={currentIndex}
         />
         <Tooltip>
-          <TooltipTrigger>
+          <TooltipTrigger asChild>
             <Input
               ref={inputRef}
               className={`py-2 w-[35px] px-0 h-[35px] animate-in fade-in bg-background border-solid rounded-md text-center !text-xs transition-all duration-300 ease-in-out ${

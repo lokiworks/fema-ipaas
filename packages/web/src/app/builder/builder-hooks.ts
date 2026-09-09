@@ -52,7 +52,10 @@ export type BuilderStore = ReturnType<typeof createBuilderStore>;
 export const createBuilderStore = (initialState: BuilderInitialState) =>
   create<BuilderState>((set, get) => {
     const workflowState = createWorkflowState(initialState, get, set);
-    const connectorSelectorState = createConnectorSelectorState(get, set);
+    const connectorSelectorState = createConnectorSelectorState(
+      initialState,
+      set,
+    );
     const runState = createRunState(initialState, get, set);
     const canvasState = createCanvasState(initialState, set);
     const stepFormState = createStepFormState(set);

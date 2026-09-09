@@ -7,6 +7,7 @@ import {
 } from '@fema-ipaas/shared';
 import { useMutation } from '@tanstack/react-query';
 import { t } from 'i18next';
+import { CircleCheck } from 'lucide-react';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { LeftSideBarType, RightSideBarType } from '@/app/builder/types';
@@ -84,7 +85,19 @@ export const BuilderPublishSection = () => {
     },
   );
 
+  const isViewingPublishedVersion =
+    !isNil(workflow.publishedVersionId) &&
+    workflow.publishedVersionId === workflowVersion.id;
+
   if (!canPublish) {
+    if (isNil(run) && isViewingPublishedVersion) {
+      return (
+        <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-xs text-muted-foreground">
+          <CircleCheck className="size-3.5 text-success" />
+          {t('Published')}
+        </span>
+      );
+    }
     return null;
   }
 
@@ -101,7 +114,7 @@ export const BuilderPublishSection = () => {
 
   return (
     <div className="flex items-center gap-2">
-      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+      <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-xs text-muted-foreground">
         {isBusy && (
           <LoadingSpinner className="size-3 stroke-muted-foreground" />
         )}

@@ -18,7 +18,6 @@ import {
 import { t } from 'i18next';
 
 import { executionUtils } from '@/features/executions';
-import { NEW_WORKFLOW_QUERY_PARAM } from '@/lib/route-utils';
 
 import { workflowCanvasLayoutConsts } from './layout-consts';
 import {
@@ -706,14 +705,8 @@ function determineInitiallySelectedStep(
   const firstInvalidStep = workflowStructureUtil
     .getAllSteps(workflowVersion.trigger)
     .find((s) => !s.valid);
-  const isNewWorkflow = window.location.search.includes(
-    NEW_WORKFLOW_QUERY_PARAM,
-  );
   if (failedStepNameInRun) {
     return failedStepNameInRun;
-  }
-  if (isNewWorkflow) {
-    return null;
   }
   return firstInvalidStep?.name ?? 'trigger';
 }

@@ -41,6 +41,7 @@ export const DataSelectorSizeTogglers = ({
         <TooltipTrigger asChild>
           <Button
             size="icon"
+            aria-label={t('Expand')}
             className={buttonClassName(DataSelectorSizeState.EXPANDED)}
             onClick={() => handleClick(DataSelectorSizeState.EXPANDED)}
             variant="basic"
@@ -54,6 +55,7 @@ export const DataSelectorSizeTogglers = ({
         <TooltipTrigger asChild>
           <Button
             size="icon"
+            aria-label={t('Dock')}
             className={buttonClassName(DataSelectorSizeState.DOCKED)}
             onClick={() => handleClick(DataSelectorSizeState.DOCKED)}
             variant="basic"
@@ -67,6 +69,7 @@ export const DataSelectorSizeTogglers = ({
         <TooltipTrigger asChild>
           <Button
             size="icon"
+            aria-label={t('Minimize')}
             className={buttonClassName(DataSelectorSizeState.COLLAPSED)}
             onClick={() => handleClick(DataSelectorSizeState.COLLAPSED)}
             variant="basic"

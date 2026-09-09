@@ -16,22 +16,14 @@ import { TextInputWithMentions } from '../../connector-properties/text-input-wit
 
 import { CodeEditor } from './code-editor';
 
-const markdown = `
-To use data from previous steps in your code, include them as pairs of keys and values below. 
-
-You can access these inputs in your code using \`inputs.key\`, where \`key\` is the name you assigned below.  
-`;
-
-const warningMarkdown = `
-**const code** is the entry to the code. If it is removed or renamed, your step will fail.
-`;
-
 type CodeSettingsProps = {
   readonly: boolean;
 };
 
 const CodeSettings = React.memo(({ readonly }: CodeSettingsProps) => {
   const form = useFormContext<CodeAction>();
+  const markdown = t('codeStepInputsHelp');
+  const warningMarkdown = t('codeStepEntryWarning');
 
   return (
     <div className="flex flex-col gap-4">

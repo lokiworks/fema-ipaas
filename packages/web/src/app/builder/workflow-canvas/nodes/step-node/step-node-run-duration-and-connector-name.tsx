@@ -50,14 +50,14 @@ const StepNodeRunDurationAndConnectorName = ({
       >
         <div
           className={cn(
-            'font-mono text-[11px] text-muted-foreground truncate grow shrink',
+            'text-[11px] text-muted-foreground truncate grow shrink',
             {
               'w-full': !isHorizontal,
               'text-center': isHorizontal,
             },
           )}
         >
-          {stepName}
+          {connectorDisplayName}
         </div>
       </TextWithTooltip>
       {selectedStepOutput && (

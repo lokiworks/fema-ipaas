@@ -8,16 +8,15 @@ import { FormField, FormItem, FormLabel } from '@/components/ui/form';
 
 import { TextInputWithMentions } from '../connector-properties/text-input-with-mentions';
 
-const markdown = t(
-  'Select the items to iterate over from the previous step by clicking on the **Items** input, which should be a **list** of items.\n\nThe loop will iterate over each item in the list and execute the next step for every item.',
-);
-
 type LoopsSettingsProps = {
   readonly: boolean;
 };
 
 const LoopsSettings = React.memo(({ readonly }: LoopsSettingsProps) => {
   const form = useFormContext<LoopOnItemsAction>();
+  const markdown = t(
+    'Select the items to iterate over from the previous step by clicking on the **Items** input, which should be a **list** of items.\n\nThe loop will iterate over each item in the list and execute the next step for every item.',
+  );
 
   return (
     <FormField

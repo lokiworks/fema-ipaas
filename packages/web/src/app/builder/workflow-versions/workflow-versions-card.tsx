@@ -72,22 +72,21 @@ const WorkflowVersionDetailsCard = React.memo(
             email={workflowVersion.updatedByUser.email}
           />
         )}
-        <div className="grid gap-2">
+        <div className="grid min-w-0 grow gap-2">
           <FormattedDate
             date={new Date(workflowVersion.created)}
             includeTime={true}
-            className="text-sm font-medium leading-none select-none cursor-default"
+            className="truncate whitespace-nowrap text-sm font-medium leading-none select-none cursor-default"
           ></FormattedDate>
           <p className="flex gap-1 text-xs text-muted-foreground">
             {t('Version')} #{workflowVersionNumber}
           </p>
         </div>
-        <div className="grow"></div>
-        <div className="flex font-medium gap-2 justify-center items-center">
+        <div className="flex shrink-0 items-center justify-center gap-1 font-medium">
           {selected && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="size-10 flex justify-center items-center">
+                <div className="size-7 flex justify-center items-center">
                   <EyeIcon className="w-5 h-5 "></EyeIcon>
                 </div>
               </TooltipTrigger>
@@ -106,7 +105,13 @@ const WorkflowVersionDetailsCard = React.memo(
             open={dropdownMenuOpen}
           >
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" disabled={isPending} size={'icon'}>
+              <Button
+                variant="ghost"
+                aria-label={t('More actions')}
+                disabled={isPending}
+                size={'icon'}
+                className="size-7"
+              >
                 <EllipsisVertical />
               </Button>
             </DropdownMenuTrigger>

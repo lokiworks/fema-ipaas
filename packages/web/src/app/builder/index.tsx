@@ -34,19 +34,21 @@ import { workflowCanvasConsts } from './workflow-canvas/utils/consts';
 import { BuilderBanner } from './workflow-canvas/widgets/builder-banner';
 const animateResizeClassName = `transition-all `;
 
-const DEFAULT_SIDEBAR_SIZE = '320px';
+const DEFAULT_SIDEBAR_SIZE_PX = 320;
 const DEFAULT_MIN_SIZE = '280px';
 
 const BuilderPage = () => {
   const [
     workflowVersion,
     rightSidebar,
+    leftSidebar,
     selectedStepName,
     removeAllStepTestsListeners,
     selectedStep,
   ] = useBuilderStateContext((state) => [
     state.workflowVersion,
     state.rightSidebar,
+    state.leftSidebar,
     state.selectedStep,
     state.removeAllStepTestsListeners,
     workflowStructureUtil.getStep(
@@ -78,11 +80,12 @@ const BuilderPage = () => {
       handle.resize('0%');
       return;
     }
-    const targetSize = DEFAULT_SIDEBAR_SIZE;
-    handle.resize(targetSize);
-    const rafId = window.requestAnimationFrame(() => handle.resize(targetSize));
+    handle.resize(DEFAULT_SIDEBAR_SIZE_PX);
+    const rafId = window.requestAnimationFrame(() =>
+      handle.resize(DEFAULT_SIDEBAR_SIZE_PX),
+    );
     return () => window.cancelAnimationFrame(rafId);
-  }, [rightSidebar]);
+  }, [rightSidebar, leftSidebar]);
 
   const {
     connectorModel,

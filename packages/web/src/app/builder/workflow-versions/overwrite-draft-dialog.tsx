@@ -1,6 +1,7 @@
 import { Permission } from '@fema-ipaas/core-utils';
 import { t } from 'i18next';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 import { LeftSideBarType } from '@/app/builder/types';
 import { PermissionNeededTooltip } from '@/components/custom/permission-needed-tooltip';
@@ -35,6 +36,7 @@ const OverwriteDraftDialog = ({
       onSuccess: (updatedWorkflow) => {
         setVersion(updatedWorkflow.version);
         setLeftSidebar(LeftSideBarType.NONE);
+        toast.success(t('draftReplacedWithVersion', { versionNumber }));
       },
     });
   const userHasPermissionToWriteWorkflow = checkAccess(
@@ -42,16 +44,18 @@ const OverwriteDraftDialog = ({
   );
   const [open, setOpen] = useState(false);
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger
-        disabled={!userHasPermissionToWriteWorkflow}
-        className="w-full"
-      >
-        <PermissionNeededTooltip
-          hasPermission={userHasPermissionToWriteWorkflow}
-        >
-          {children}
-        </PermissionNeededTooltip>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => setOpen(next && userHasPermissionToWriteWorkflow)}
+    >
+      <DialogTrigger asChild disabled={!userHasPermissionToWriteWorkflow}>
+        <div className="w-full">
+          <PermissionNeededTooltip
+            hasPermission={userHasPermissionToWriteWorkflow}
+          >
+            {children}
+          </PermissionNeededTooltip>
+        </div>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

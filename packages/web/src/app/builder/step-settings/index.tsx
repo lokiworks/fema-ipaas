@@ -25,6 +25,7 @@ import {
   ConnectorIcon,
   ConnectorStepMetadata,
 } from '@/features/connectors';
+import { executionUtils } from '@/features/executions';
 import { projectCollectionUtils } from '@/features/projects';
 import { cn, GAP_SIZE_FOR_STEP_SETTINGS } from '@/lib/utils';
 
@@ -158,6 +159,9 @@ const StepSettingsContainer = () => {
     !readonly && !isManualTrigger && !isEmptyTrigger;
   const showStepInputOutFromRun =
     !isNil(run) && !isManualTrigger && !isEmptyTrigger;
+  const openOnRunOutput =
+    showStepInputOutFromRun &&
+    executionUtils.getStatusIcon(run.status).variant === 'error';
 
   const [isEditingStepOrBranchName, setIsEditingStepOrBranchName] =
     useState(false);
@@ -268,10 +272,15 @@ const StepSettingsContainer = () => {
   };
 
   const settingsForm = (
-    <Tabs defaultValue="action" className="flex h-full w-full flex-col">
-      <TabsList className="mx-4 mt-2 grid shrink-0 grid-cols-4">
-        <TabsTrigger value="action">{t('Action')}</TabsTrigger>
-        <TabsTrigger value="input" className="gap-1.5">
+    <Tabs
+      defaultValue={openOnRunOutput ? 'output' : 'action'}
+      className="flex h-full w-full flex-col"
+    >
+      <TabsList className="mx-4 mt-2 flex shrink-0 justify-start overflow-x-auto scrollbar-none">
+        <TabsTrigger value="action" className="px-2">
+          {t('Action')}
+        </TabsTrigger>
+        <TabsTrigger value="input" className="gap-1.5 px-2">
           {t('Input')}
           {!modifiedStep.valid && (
             <span
@@ -280,8 +289,12 @@ const StepSettingsContainer = () => {
             />
           )}
         </TabsTrigger>
-        <TabsTrigger value="output">{t('Output')}</TabsTrigger>
-        <TabsTrigger value="error">{t('Error Handling')}</TabsTrigger>
+        <TabsTrigger value="output" className="px-2">
+          {t('Output')}
+        </TabsTrigger>
+        <TabsTrigger value="error" className="px-2">
+          {t('Error Handling')}
+        </TabsTrigger>
       </TabsList>
       {(['action', 'input', 'error'] as const).map((section) => (
         <TabsContent

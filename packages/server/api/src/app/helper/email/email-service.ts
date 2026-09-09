@@ -15,7 +15,7 @@ const OTP_TEMPLATES: Record<OtpType, { template: string, subject: string }> = {
 async function brandingFor(tenantId: TenantId | null, log: FastifyBaseLogger): Promise<MailTemplateVariables> {
     const tenant = isNil(tenantId) ? null : await tenantService(log).getOne(tenantId)
     return {
-        tenantName: tenant?.name ?? 'Integration Tenant',
+        tenantName: tenant?.name ?? 'Integration Platform',
         fullLogoUrl: tenant?.fullLogoUrl ?? '',
         primaryColor: tenant?.primaryColor ?? '#1F2329',
         primaryColorLight: tenant?.primaryColor ?? '#F5F6F7',
@@ -73,6 +73,25 @@ export const emailService = (log: FastifyBaseLogger) => ({
         })
     },
 
+    async sendWorkflowFailure({ tenantId, to, projectName, workflowName, runUrl, failedAt, failedStepDisplayName, failedStepNumber, failedStepMessage }: SendWorkflowFailureParams): Promise<void> {
+        const branding = await brandingFor(tenantId, log)
+        await mailSender(log).send({
+            to,
+            subject: `[${projectName}] Workflow "${workflowName}" failed`,
+            template: 'issue-created',
+            variables: {
+                ...branding,
+                projectName,
+                workflowName,
+                runUrl,
+                createdAt: failedAt,
+                failedStepDisplayName,
+                failedStepNumber,
+                failedStepMessage,
+            },
+        })
+    },
+
     async sendTenantDeleted({ tenantId, email, purgeDate }: SendTenantDeletedParams): Promise<void> {
         const branding = await brandingFor(tenantId, log)
         await mailSender(log).send({
@@ -101,6 +120,18 @@ type SendInvitationParams = {
 
 type SendProjectMemberAddedParams = {
     userInvitation: UserInvitation
+}
+
+type SendWorkflowFailureParams = {
+    tenantId: TenantId
+    to: string
+    projectName: string
+    workflowName: string
+    runUrl: string
+    failedAt: string
+    failedStepDisplayName: string
+    failedStepNumber: string
+    failedStepMessage: string
 }
 
 type SendTenantDeletedParams = {

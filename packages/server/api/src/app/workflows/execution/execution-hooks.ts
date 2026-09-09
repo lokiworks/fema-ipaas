@@ -4,6 +4,7 @@ import { FastifyBaseLogger } from 'fastify'
 import { websocketService } from '../../core/websockets.service'
 import { otelExecutionMetrics } from '../../helper/otel-execution-metrics'
 import { workflowVersionService } from '../workflow-version/workflow-version.service'
+import { executionFailureNotifier } from './execution-failure-notifier'
 
 export const executionHooks = (log: FastifyBaseLogger) => ({
     async onFinish(execution: Execution): Promise<void> {
@@ -29,6 +30,9 @@ export const executionHooks = (log: FastifyBaseLogger) => ({
                 project: { id: execution.projectId },
                 step: { name: execution.failedStep },
             }, '[executionHooks#onFinish] Production run failed')
+            if (!isNil(workflowVersion)) {
+                await executionFailureNotifier(log).notifyOwner({ execution, workflowVersion })
+            }
         }
     },
 })

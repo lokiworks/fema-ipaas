@@ -1,13 +1,12 @@
 import { ApplicationError, Cursor, ErrorCode, ExecutionId, generateId, isNil, ProjectId, SeekPage, TenantId, WorkflowId, WorkflowVersionId } from '@fema-ipaas/core-utils'
 import { dayjsUtil, wideEvent } from '@fema-ipaas/server-utils'
-import { ConnectionHealthSummary, ConnectorUsageSummary, ExecuteWorkflowJobData, Execution, ExecutionCountByStatus, ExecutionStatus, ExecutionType, ExecutionWithRetryError, ExecutioOutputFile, FileCompression, FileType, GenericStepOutput, isExecutionStateTerminal, JobPayload, LATEST_JOB_DATA_SCHEMA_VERSION, logSerializer, LogSliceRef, RecentlyEditedWorkflow, ResumeReason, RunEnvironment, RunInternalError, SampleDataFileType, StepOutput, StepOutputStatus, StepOutputType, StreamStepProgress, WorkerJobType, WorkflowRetryStrategy, WorkflowVersion } from '@fema-ipaas/shared'
+import { ConnectionHealthSummary, ConnectorUsageSummary, ExecuteWorkflowJobData, Execution, ExecutionCountByStatus, ExecutionStatus, ExecutionType, ExecutionWithRetryError, ExecutioOutputFile, FileType, isExecutionStateTerminal, JobPayload, LATEST_JOB_DATA_SCHEMA_VERSION, LogSliceRef, RecentlyEditedWorkflow, ResumeReason, RunEnvironment, RunInternalError, SampleDataFileType, StepOutput, StepOutputStatus, StepOutputType, StreamStepProgress, WorkerJobType, WorkflowRetryStrategy } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import pLimit from 'p-limit'
 import { ArrayContains, In, IsNull, Not, Repository, SelectQueryBuilder } from 'typeorm'
 import { connectionsRepo } from '../../connection/connection-service/connection-service'
 import { repoFactory } from '../../core/db/repo-factory'
 import { distributedLock } from '../../database/redis-connections'
-import { fileCompressor } from '../../file/file-compressor'
 import { fileService, getEffectiveExecutionDataRetentionDays } from '../../file/file.service'
 import { buildPaginator } from '../../helper/pagination/build-paginator'
 import { paginationHelper } from '../../helper/pagination/pagination-utils'
@@ -313,32 +312,6 @@ export const executionService = (log: FastifyBaseLogger) => ({
         return newExecution
     },
 
-    async createQuotaExceededRun({ workflowVersion, payload, projectId, environment, parentRunId, failParentOnFailure, triggeredBy, shouldExecuteTriggerOnRetry }: CreateQuotaExceededRunParams): Promise<Execution> {
-        const now = new Date().toISOString()
-        const logsFileId = generateId()
-        await persistQuotaExceededTriggerLog({ log, workflowVersion, projectId, payload, logsFileId, shouldExecuteTriggerOnRetry })
-        const execution: Execution = {
-            id: generateId(),
-            projectId,
-            workflowId: workflowVersion.workflowId,
-            workflowVersionId: workflowVersion.id,
-            environment,
-            parentRunId,
-            failParentOnFailure: failParentOnFailure ?? true,
-            status: ExecutionStatus.QUOTA_EXCEEDED,
-            created: now,
-            updated: now,
-            startTime: now,
-            finishTime: now,
-            logsFileId,
-            tags: [],
-            steps: {},
-            triggeredBy,
-        }
-        await runsMetadataQueue(log).add(execution)
-        log.info({ execution: { id: execution.id }, workflow: { id: workflowVersion.workflowId }, project: { id: projectId } }, 'Workflow run admitted as QUOTA_EXCEEDED')
-        return execution
-    },
 
     async test({ projectId, workflowVersionId, parentRunId, stepNameToTest, triggeredBy }: TestParams): Promise<Execution> {
         const workflowVersion = await workflowVersionService(log).getOneOrThrow(workflowVersionId)
@@ -377,20 +350,6 @@ export const executionService = (log: FastifyBaseLogger) => ({
         await workflowService(log).getOneOrThrow({ id: workflowVersion.workflowId, projectId })
         const triggerPayload = {}
         const tenantId = await projectService(log).getTenantId(projectId)
-
-        const creditsExhausted = false
-        if (creditsExhausted) {
-            return this.createQuotaExceededRun({
-                workflowVersion,
-                payload: triggerPayload,
-                projectId,
-                environment: RunEnvironment.PRODUCTION,
-                parentRunId: undefined,
-                failParentOnFailure: undefined,
-                triggeredBy,
-                shouldExecuteTriggerOnRetry: false,
-            })
-        }
 
         const execution = await queueOrCreateInstantly({
             projectId,
@@ -819,35 +778,6 @@ async function readLogsFile(log: FastifyBaseLogger, logsFileId: string, projectI
     return JSON.parse(result.data.toString('utf-8'))
 }
 
-async function persistQuotaExceededTriggerLog({ log, workflowVersion, projectId, payload, logsFileId, shouldExecuteTriggerOnRetry }: PersistQuotaExceededTriggerLogParams): Promise<void> {
-    const triggerStep = GenericStepOutput.create({
-        input: {},
-        type: workflowVersion.trigger.type,
-        status: shouldExecuteTriggerOnRetry ? StepOutputStatus.FAILED : StepOutputStatus.SUCCEEDED,
-        output: payload,
-    })
-    const outputFile: ExecutioOutputFile = {
-        executionState: {
-            steps: { [workflowVersion.trigger.name]: triggerStep },
-            tags: [],
-        },
-    }
-    const data = await fileCompressor.compress({
-        data: await logSerializer.serialize(outputFile),
-        compression: FileCompression.ZSTD,
-    })
-    const tenantId = await projectService(log).getTenantId(projectId)
-    await fileService(log).save({
-        fileId: logsFileId,
-        projectId,
-        tenantId,
-        type: FileType.EXECUTION_LOG,
-        data,
-        size: data.length,
-        compression: FileCompression.ZSTD,
-    })
-}
-
 async function queueOrCreateInstantly(params: CreateParams, log: FastifyBaseLogger): Promise<Execution> {
     const now = new Date().toISOString()
     const execution: Execution = {
@@ -934,26 +864,6 @@ export type AddToQueueParams = AddToQueueParamsCommon & (
     | { executionType: ExecutionType.RESUME, resumeReason: ResumeReason }
 )
 
-
-type CreateQuotaExceededRunParams = {
-    workflowVersion: WorkflowVersion
-    payload: unknown
-    projectId: ProjectId
-    environment: RunEnvironment
-    parentRunId?: ExecutionId
-    failParentOnFailure: boolean | undefined
-    triggeredBy?: string
-    shouldExecuteTriggerOnRetry: boolean
-}
-
-type PersistQuotaExceededTriggerLogParams = {
-    log: FastifyBaseLogger
-    workflowVersion: WorkflowVersion
-    projectId: ProjectId
-    payload: unknown
-    logsFileId: string
-    shouldExecuteTriggerOnRetry: boolean
-}
 
 type StartParams = {
     workflowId: WorkflowId
@@ -1069,7 +979,6 @@ const FAILED_STATUSES = [
     ExecutionStatus.INTERNAL_ERROR,
     ExecutionStatus.TIMEOUT,
     ExecutionStatus.MEMORY_LIMIT_EXCEEDED,
-    ExecutionStatus.QUOTA_EXCEEDED,
 ]
 
 type DailyTrendParams = {

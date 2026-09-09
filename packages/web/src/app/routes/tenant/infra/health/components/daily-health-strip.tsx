@@ -50,6 +50,7 @@ export function DailyHealthStrip({ onSeeRuns }: DailyHealthStripProps) {
               <Button
                 variant="ghost"
                 size="icon"
+                aria-label={t('View runs health')}
                 className="h-7 w-7 shrink-0"
                 onClick={onSeeRuns}
               >

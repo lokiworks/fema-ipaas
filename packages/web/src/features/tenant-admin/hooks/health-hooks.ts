@@ -11,5 +11,6 @@ export const healthQueries = {
     useQuery({
       queryKey: healthKeys.all,
       queryFn: () => healthApi.getSystemHealthChecks(),
+      meta: { showErrorDialog: true, loadSubsetOptions: {} },
     }),
 };

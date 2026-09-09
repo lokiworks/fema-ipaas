@@ -1,6 +1,12 @@
 import dayjs from 'dayjs';
 import { t } from 'i18next';
-import { Activity, Calendar, HeartPulse, LineChart } from 'lucide-react';
+import {
+  Activity,
+  Calendar,
+  HeartPulse,
+  LineChart,
+  Stethoscope,
+} from 'lucide-react';
 import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 
@@ -14,12 +20,13 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
+import { DiagnosticsTab } from './components/diagnostics-tab';
 import { QueueTab } from './components/queue-tab';
 import { RunsTab } from './components/runs-tab';
 import { SystemHealthTab } from './components/system-health-tab';
 import { healthMetricsQueries } from './lib/health-metrics-hooks';
 
-type TabValue = 'system' | 'runs' | 'queue';
+type TabValue = 'system' | 'runs' | 'queue' | 'diagnostics';
 
 type MonthOption = { value: string; label: string };
 
@@ -110,6 +117,10 @@ export default function SettingsHealthPage() {
             <Activity className="w-4 h-4 mr-2" />
             {t('Queue Health')}
           </TabsTrigger>
+          <TabsTrigger variant="outline" value="diagnostics">
+            <Stethoscope className="w-4 h-4 mr-2" />
+            {t('Diagnostics')}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="system">
@@ -122,6 +133,10 @@ export default function SettingsHealthPage() {
 
         <TabsContent value="queue">
           <QueueTab live={live} isLoading={isLiveLoading} />
+        </TabsContent>
+
+        <TabsContent value="diagnostics">
+          <DiagnosticsTab enabled={activeTab === 'diagnostics'} />
         </TabsContent>
       </Tabs>
     </div>

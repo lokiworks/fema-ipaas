@@ -27,7 +27,7 @@ export const GetSystemHealthChecksResponse = z.object({
 export const InfraCheck = z.object({
     ok: z.boolean(),
     latencyMs: z.number().nullable(),
-    detail: z.string().optional(),
+    detail: z.string().nullable(),
 })
 
 export const DeploymentConfig = z.object({

@@ -35,6 +35,14 @@ export const healthMetricsQueries = {
       refetchInterval: LIVE_REFETCH_INTERVAL_MS,
     });
   },
+  useDiagnostics: (enabled = true) => {
+    return useQuery({
+      queryKey: ['tenant-diagnostics'],
+      queryFn: () => healthMetricsApi.getDiagnostics(),
+      enabled,
+      refetchInterval: LIVE_REFETCH_INTERVAL_MS,
+    });
+  },
   useHealthHistory: (enabled = true) => {
     return useQuery({
       queryKey: ['tenant-metrics-health-history'],

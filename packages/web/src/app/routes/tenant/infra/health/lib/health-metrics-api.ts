@@ -1,4 +1,5 @@
 import {
+  GetDiagnosticsResponse,
   TenantMetricsHealthHistory,
   TenantMetricsLive,
   TenantMetricsReport,
@@ -18,6 +19,9 @@ export const healthMetricsApi = {
     createdBefore: string;
   }): Promise<TenantMetricsLive> {
     return api.get<TenantMetricsLive>('/v1/health/queue-metrics', range);
+  },
+  getDiagnostics(): Promise<GetDiagnosticsResponse> {
+    return api.get<GetDiagnosticsResponse>('/v1/health/diagnostics');
   },
   getHealthHistory(): Promise<TenantMetricsHealthHistory> {
     return api.get<TenantMetricsHealthHistory>('/v1/health/history');

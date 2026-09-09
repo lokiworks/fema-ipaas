@@ -112,7 +112,7 @@ async function measureDatabase(log: FastifyBaseLogger): Promise<InfraCheck> {
         log.warn({ error }, '[diagnostics] database check failed')
         return { ok: false, latencyMs: null, detail: String(error) }
     }
-    return { ok: true, latencyMs: Date.now() - startedAt }
+    return { ok: true, latencyMs: Date.now() - startedAt, detail: null }
 }
 
 async function measureRedis(log: FastifyBaseLogger): Promise<InfraCheck> {
@@ -125,7 +125,7 @@ async function measureRedis(log: FastifyBaseLogger): Promise<InfraCheck> {
         log.warn({ error }, '[diagnostics] redis check failed')
         return { ok: false, latencyMs: null, detail: String(error) }
     }
-    return { ok: true, latencyMs: Date.now() - startedAt }
+    return { ok: true, latencyMs: Date.now() - startedAt, detail: null }
 }
 
 // Write + read a tiny object against the configured bucket to get the authoritative in-region S3
@@ -134,7 +134,7 @@ async function measureRedis(log: FastifyBaseLogger): Promise<InfraCheck> {
 async function measureStorage(log: FastifyBaseLogger): Promise<InfraCheck> {
     const location = system.get(AppSystemProp.FILE_STORAGE_LOCATION)
     if (location !== FileLocation.S3) {
-        return { ok: true, latencyMs: null, detail: `FILE_STORAGE_LOCATION=${location ?? 'unset'} — no S3 round-trip to measure` }
+        return { ok: true, latencyMs: null, detail: null }
     }
     const s3Key = `diagnostics/healthcheck-${generateId()}.txt`
     const startedAt = Date.now()
@@ -147,7 +147,7 @@ async function measureStorage(log: FastifyBaseLogger): Promise<InfraCheck> {
         log.warn({ error }, '[diagnostics] storage round-trip failed')
         return { ok: false, latencyMs: null, detail: String(error) }
     }
-    return { ok: true, latencyMs: Date.now() - startedAt }
+    return { ok: true, latencyMs: Date.now() - startedAt, detail: null }
 }
 
 // Surfaces the exact "workers connected but idle" state behind version-skew: workers whose

@@ -37,15 +37,22 @@ type SystemHealthTabProps = {
 };
 
 export function SystemHealthTab({ onSeeRuns }: SystemHealthTabProps) {
-  const { data: systemHealth, isPending } = healthQueries.useSystemHealth();
+  const {
+    data: systemHealth,
+    isPending,
+    isError,
+  } = healthQueries.useSystemHealth();
   const latestVersion = systemHealth?.latestVersion;
   const release = systemHealth?.release;
   const currentVersion = release?.current;
 
+  const latestVersionKnown =
+    !!latestVersion && latestVersion !== UNREADABLE_RELEASE_VERSION;
+
   const isVersionUpToDate = React.useMemo(() => {
-    if (!currentVersion || !latestVersion) return false;
+    if (!currentVersion || !latestVersionKnown || !latestVersion) return false;
     return semver.gte(currentVersion, latestVersion);
-  }, [currentVersion, latestVersion]);
+  }, [currentVersion, latestVersion, latestVersionKnown]);
 
   const releaseIntegrityOk =
     !!release &&
@@ -81,7 +88,11 @@ export function SystemHealthTab({ onSeeRuns }: SystemHealthTabProps) {
       id: 'version',
       title: t('Version'),
       icon: <Package className="size-4" />,
-      status: isVersionUpToDate ? 'passed' : 'failed',
+      status: !latestVersionKnown
+        ? 'na'
+        : isVersionUpToDate
+        ? 'passed'
+        : 'failed',
       link: 'https://github.com/lokiworks/fema-ipaas/releases',
       message: (
         <span className="flex flex-wrap items-center gap-x-2">
@@ -90,7 +101,9 @@ export function SystemHealthTab({ onSeeRuns }: SystemHealthTabProps) {
           </span>
           <span className="size-1 rounded-full bg-border" />
           <span>
-            {t('Latest')} {latestVersion || t('Unknown')}
+            {latestVersionKnown
+              ? `${t('Latest')} ${latestVersion}`
+              : t('The latest release could not be checked from this network.')}
           </span>
         </span>
       ),
@@ -107,7 +120,7 @@ export function SystemHealthTab({ onSeeRuns }: SystemHealthTabProps) {
       id: 'app-disk',
       title: t('Disk'),
       icon: <HardDrive className="size-4" />,
-      status: toStatus(systemHealth?.disk),
+      status: toStatus(systemHealth?.disk, isError),
       link: HARDWARE_DOCS_LINK,
       message: t('At least 30GB of disk space is required.'),
     },
@@ -115,7 +128,7 @@ export function SystemHealthTab({ onSeeRuns }: SystemHealthTabProps) {
       id: 'app-ram',
       title: t('RAM'),
       icon: <MemoryStick className="size-4" />,
-      status: toStatus(systemHealth?.appRam),
+      status: toStatus(systemHealth?.appRam, isError),
       link: HARDWARE_DOCS_LINK,
       message: t('At least 2GB of RAM is required.'),
     },
@@ -123,7 +136,7 @@ export function SystemHealthTab({ onSeeRuns }: SystemHealthTabProps) {
       id: 'app-cpu',
       title: t('CPU'),
       icon: <Cpu className="size-4" />,
-      status: toStatus(systemHealth?.appCpu),
+      status: toStatus(systemHealth?.appCpu, isError),
       link: HARDWARE_DOCS_LINK,
       message: t('At least 1 CPU core is required.'),
     },
@@ -136,7 +149,7 @@ export function SystemHealthTab({ onSeeRuns }: SystemHealthTabProps) {
       id: 'worker-ram',
       title: t('RAM'),
       icon: <MemoryStick className="size-4" />,
-      status: toStatus(systemHealth?.workerRam),
+      status: toStatus(systemHealth?.workerRam, isError),
       link: HARDWARE_DOCS_LINK,
       message: workersConnected
         ? t('At least 1GB of RAM is required per worker.')
@@ -146,7 +159,7 @@ export function SystemHealthTab({ onSeeRuns }: SystemHealthTabProps) {
       id: 'worker-cpu',
       title: t('CPU'),
       icon: <Cpu className="size-4" />,
-      status: toStatus(systemHealth?.workerCpu),
+      status: toStatus(systemHealth?.workerCpu, isError),
       link: HARDWARE_DOCS_LINK,
       message: workersConnected
         ? t('At least 0.5 CPU core is required per worker.')
@@ -188,7 +201,8 @@ export function SystemHealthTab({ onSeeRuns }: SystemHealthTabProps) {
   );
 }
 
-function toStatus(value: boolean | null | undefined): Status {
+function toStatus(value: boolean | null | undefined, isError = false): Status {
+  if (isError) return 'unavailable';
   if (value === null) return 'na';
   if (value === undefined) return 'loading';
   return value ? 'passed' : 'failed';
@@ -303,9 +317,14 @@ const STATUS_CONFIG = {
     text: 'text-muted-foreground',
     dot: 'bg-muted-foreground',
   },
+  unavailable: {
+    label: 'Check unavailable',
+    text: 'text-destructive-700',
+    dot: 'bg-destructive-600',
+  },
 } as const;
 
-type Status = 'passed' | 'failed' | 'na' | 'loading';
+type Status = 'passed' | 'failed' | 'na' | 'loading' | 'unavailable';
 
 type HealthRow = {
   id: string;

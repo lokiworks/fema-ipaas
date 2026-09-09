@@ -6,6 +6,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
+    setupFiles: [path.resolve(__dirname, './test/setup-i18n.ts')],
   },
   resolve: {
     alias: {

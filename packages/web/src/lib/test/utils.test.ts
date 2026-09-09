@@ -2,16 +2,6 @@
 import { AxiosError, AxiosHeaders } from 'axios';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-vi.mock('i18next', () => ({
-  default: { language: 'en' },
-  t: (key: string, opts?: Record<string, unknown>) => {
-    if (!opts) return key;
-    return key.replace(/\{(\w+)\}/g, (_, k: string) =>
-      String(opts[k] ?? `{${k}}`),
-    );
-  },
-}));
-
 import { formatUtils } from '../format-utils';
 import { validationUtils } from '../validation-utils';
 
@@ -67,7 +57,7 @@ describe('formatUtils.formatDuration', () => {
   });
 
   it('formats minutes and seconds', () => {
-    expect(formatUtils.formatDuration(90000)).toBe('1 minutes 30 seconds');
+    expect(formatUtils.formatDuration(90000)).toBe('1 minute 30 seconds');
   });
 
   it('formats minutes and seconds in short mode', () => {

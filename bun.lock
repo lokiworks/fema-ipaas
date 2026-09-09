@@ -129,15 +129,44 @@
     },
     "packages/connectors/common": {
       "name": "@fema-ipaas/connector-common",
-      "version": "0.12.9",
+      "version": "0.13.0",
       "dependencies": {
         "@fema-ipaas/connector-sdk": "workspace:*",
         "@fema-ipaas/core-utils": "workspace:*",
         "form-data": "4.0.6",
+        "undici": "7.29.0",
         "zod": "4.3.6",
       },
       "devDependencies": {
         "tslib": "2.6.2",
+      },
+    },
+    "packages/connectors/community/beisen": {
+      "name": "@fema-ipaas/connector-beisen",
+      "version": "0.1.3",
+      "dependencies": {
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
+      },
+      "devDependencies": {
+        "tslib": "2.6.2",
+        "vitest": "3.2.6",
+      },
+    },
+    "packages/connectors/community/feishu": {
+      "name": "@fema-ipaas/connector-feishu",
+      "version": "0.1.2",
+      "dependencies": {
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
+      },
+      "devDependencies": {
+        "tslib": "2.6.2",
+        "vitest": "3.2.6",
       },
     },
     "packages/connectors/community/mysql": {
@@ -520,7 +549,7 @@
     },
     "packages/core/shared": {
       "name": "@fema-ipaas/shared",
-      "version": "0.143.0",
+      "version": "0.147.0",
       "dependencies": {
         "@fema-ipaas/connector-types": "workspace:*",
         "@fema-ipaas/core-utils": "workspace:*",
@@ -545,7 +574,7 @@
     },
     "packages/core/utils": {
       "name": "@fema-ipaas/core-utils",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "dependencies": {
         "deepmerge-ts": "7.1.0",
         "ipaddr.js": "2.3.0",
@@ -687,6 +716,7 @@
         "@types/qs": "6.9.7",
         "@types/semver": "7.5.6",
         "@types/tinycolor2": "1.4.5",
+        "esbuild": "0.28.1",
         "form-data": "4.0.6",
         "sandbox-agent": "0.4.2",
         "tsconfig-paths": "4.2.0",
@@ -1404,6 +1434,8 @@
 
     "@fema-ipaas/components": ["@fema-ipaas/components@workspace:packages/components/builtin"],
 
+    "@fema-ipaas/connector-beisen": ["@fema-ipaas/connector-beisen@workspace:packages/connectors/community/beisen"],
+
     "@fema-ipaas/connector-common": ["@fema-ipaas/connector-common@workspace:packages/connectors/common"],
 
     "@fema-ipaas/connector-connections": ["@fema-ipaas/connector-connections@workspace:packages/connectors/core/connections"],
@@ -1417,6 +1449,8 @@
     "@fema-ipaas/connector-data-summarizer": ["@fema-ipaas/connector-data-summarizer@workspace:packages/connectors/core/data-summarizer"],
 
     "@fema-ipaas/connector-date-helper": ["@fema-ipaas/connector-date-helper@workspace:packages/connectors/core/date-helper"],
+
+    "@fema-ipaas/connector-feishu": ["@fema-ipaas/connector-feishu@workspace:packages/connectors/community/feishu"],
 
     "@fema-ipaas/connector-file-helper": ["@fema-ipaas/connector-file-helper@workspace:packages/connectors/core/file-helper"],
 

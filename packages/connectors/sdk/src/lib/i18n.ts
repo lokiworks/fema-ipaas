@@ -68,7 +68,13 @@ export const connectorTranslation = {
     "triggers.*.description",
     "triggers.*.props.*.displayName",
     "triggers.*.props.*.description",
-    "triggers.*.props.*.options.options.*.label"
+    "triggers.*.props.*.options.options.*.label",
+    "actions.*.props.*.properties.*.displayName",
+    "actions.*.props.*.properties.*.description",
+    "actions.*.props.*.properties.*.options.options.*.label",
+    "triggers.*.props.*.properties.*.displayName",
+    "triggers.*.props.*.properties.*.description",
+    "triggers.*.props.*.properties.*.options.options.*.label"
   ]
 }
 

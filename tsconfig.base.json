@@ -38,6 +38,9 @@
       "@fema-ipaas/connector-approval": [
         "packages/connectors/core/approval/src/index.ts"
       ],
+      "@fema-ipaas/connector-beisen": [
+        "packages/connectors/community/beisen/src/index.ts"
+      ],
       "@fema-ipaas/connector-connections": [
         "packages/connectors/core/connections/src/index.ts"
       ],
@@ -58,6 +61,9 @@
       ],
       "@fema-ipaas/connector-delay": [
         "packages/connectors/core/delay/src/index.ts"
+      ],
+      "@fema-ipaas/connector-feishu": [
+        "packages/connectors/community/feishu/src/index.ts"
       ],
       "@fema-ipaas/connector-file-helper": [
         "packages/connectors/core/file-helper/src/index.ts"

@@ -1,6 +1,6 @@
 import os from 'os'
 import path from 'path'
-import { ApplicationError, ErrorCode, isNil } from '@fema-ipaas/core-utils'
+import { ApplicationError, ErrorCode, isNil, LocalesEnum } from '@fema-ipaas/core-utils'
 import { ConnectorSyncMode, ExecutionMode, FileLocation, NetworkMode } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { DatabaseType } from '../../database/database-type'
@@ -31,6 +31,7 @@ const systemPropDefaultValues: Partial<Record<SystemProp, string>> = {
     [AppSystemProp.EXECUTION_MODE]: ExecutionMode.UNSANDBOXED,
     [AppSystemProp.WEBHOOK_TIMEOUT_SECONDS]: '30',
     [AppSystemProp.LOAD_TRANSLATIONS_FOR_DEV_CONNECTORS]: 'false',
+    [AppSystemProp.DEFAULT_LANGUAGE]: LocalesEnum.CHINESE_SIMPLIFIED,
     [AppSystemProp.LOG_LEVEL]: 'info',
     [AppSystemProp.ALLOW_DISPOSABLE_EMAILS]: 'false',
     [AppSystemProp.LOG_PRETTY]: 'false',

@@ -1,63 +1,82 @@
 /// <reference types="vitest/globals" />
 
-import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
-import { AxiosHttpClient, HttpMethod } from '@fema-ipaas/connector-common';
-import type { AxiosInstance } from 'axios';
+import { FetchHttpClient, HttpMethod } from '@fema-ipaas/connector-common';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-describe('AxiosHttpClient', () => {
+const PROXY_ENV_KEYS = ['HTTP_PROXY', 'HTTPS_PROXY', 'http_proxy', 'https_proxy'];
+
+function stubFetch() {
+  const spy = vi.fn().mockResolvedValue(
+    new Response('{}', { status: 200, headers: { 'content-type': 'application/json' } }),
+  );
+  vi.stubGlobal('fetch', spy);
+  return spy;
+}
+
+function initOf(spy: ReturnType<typeof stubFetch>) {
+  return spy.mock.calls[0][1];
+}
+
+describe('FetchHttpClient proxying', () => {
   beforeEach(() => {
-    delete process.env['HTTP_PROXY'];
-    delete process.env['HTTPS_PROXY'];
-    delete process.env['http_proxy'];
-    delete process.env['https_proxy'];
+    for (const key of PROXY_ENV_KEYS) {
+      delete process.env[key];
+    }
   });
 
   afterEach(() => {
-    delete process.env['HTTP_PROXY'];
-    delete process.env['HTTPS_PROXY'];
-    delete process.env['http_proxy'];
-    delete process.env['https_proxy'];
+    vi.unstubAllGlobals();
+    for (const key of PROXY_ENV_KEYS) {
+      delete process.env[key];
+    }
   });
 
-  it('does not attach a proxy agent when HTTP_PROXY / HTTPS_PROXY are unset', async () => {
-    const requestSpy = vi.fn().mockResolvedValue({ status: 200, headers: {}, data: {} });
-    const fakeAxios = { request: requestSpy } as unknown as AxiosInstance;
+  it('sends no dispatcher on a plain request', async () => {
+    const spy = stubFetch();
 
-    const client = new AxiosHttpClient();
-    await client.sendRequest({ method: HttpMethod.GET, url: 'https://api.example.com/data' }, fakeAxios);
+    await new FetchHttpClient().sendRequest({
+      method: HttpMethod.GET,
+      url: 'https://api.example.com/data',
+    });
 
-    const calledConfig = requestSpy.mock.calls[0][0];
-    expect(calledConfig.httpAgent).toBeUndefined();
-    expect(calledConfig.httpsAgent).toBeUndefined();
-    expect(calledConfig.proxy).toBeUndefined();
+    expect(initOf(spy).dispatcher).toBeUndefined();
   });
 
-  it('attaches proxy agents when HTTPS_PROXY is set (and disables axios built-in proxy detection)', async () => {
+  it('ignores the ambient proxy environment, so egress stays under the engine SSRF guards', async () => {
+    const spy = stubFetch();
     process.env['HTTPS_PROXY'] = 'http://127.0.0.1:4444';
     process.env['HTTP_PROXY'] = 'http://127.0.0.1:4444';
-
-    const requestSpy = vi.fn().mockResolvedValue({ status: 200, headers: {}, data: {} });
-    const fakeAxios = { request: requestSpy } as unknown as AxiosInstance;
-
-    const client = new AxiosHttpClient();
-    await client.sendRequest({ method: HttpMethod.GET, url: 'https://api.example.com/data' }, fakeAxios);
-
-    const calledConfig = requestSpy.mock.calls[0][0];
-    expect(calledConfig.httpAgent?.constructor?.name).toBe('HttpProxyAgent');
-    expect(calledConfig.httpsAgent?.constructor?.name).toBe('HttpsProxyAgent');
-    expect(calledConfig.proxy).toBe(false);
-  });
-
-  it('honours lowercase http_proxy / https_proxy (curl-style env)', async () => {
     process.env['https_proxy'] = 'http://127.0.0.1:4444';
 
-    const requestSpy = vi.fn().mockResolvedValue({ status: 200, headers: {}, data: {} });
-    const fakeAxios = { request: requestSpy } as unknown as AxiosInstance;
+    await new FetchHttpClient().sendRequest({
+      method: HttpMethod.GET,
+      url: 'https://api.example.com/data',
+    });
 
-    const client = new AxiosHttpClient();
-    await client.sendRequest({ method: HttpMethod.GET, url: 'https://api.example.com/data' }, fakeAxios);
+    expect(initOf(spy).dispatcher).toBeUndefined();
+  });
 
-    const calledConfig = requestSpy.mock.calls[0][0];
-    expect(calledConfig.httpsAgent?.constructor?.name).toBe('HttpsProxyAgent');
+  it('uses the dispatcher the caller supplies, which is how the HTTP connector proxies a request', async () => {
+    const spy = stubFetch();
+    const dispatcher = { marker: 'caller-supplied-proxy-agent' };
+
+    await new FetchHttpClient().sendRequest(
+      { method: HttpMethod.GET, url: 'https://api.example.com/data' },
+      { dispatcher },
+    );
+
+    expect(initOf(spy).dispatcher).toBe(dispatcher);
+  });
+
+  it('opts out of certificate verification only when the request asks for it', async () => {
+    const spy = stubFetch();
+
+    await new FetchHttpClient().sendRequest({
+      method: HttpMethod.GET,
+      url: 'https://api.example.com/data',
+      rejectUnauthorized: false,
+    });
+
+    expect(initOf(spy).dispatcher).toBeDefined();
   });
 });

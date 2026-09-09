@@ -246,6 +246,13 @@ export const httpSendRequestAction = createAction({
       required: false,
       defaultValue: false,
     }),
+    allowUntrustedCertificate: Property.Checkbox({
+      displayName: 'Allow untrusted TLS certificate',
+      description:
+        'Skip certificate verification for this request only. Turn this on solely for an internal host with a self-signed certificate, since it removes the protection against an intercepted connection.',
+      required: false,
+      defaultValue: false,
+    }),
     failureMode: Property.StaticDropdown({
       displayName: 'On Failure',
       required: false,
@@ -282,6 +289,7 @@ export const httpSendRequestAction = createAction({
       authType,
       authFields,
       followRedirects,
+      allowUntrustedCertificate,
     } = context.propsValue;
 
     assertNotNullOrUndefined(method, 'Method');
@@ -294,6 +302,7 @@ export const httpSendRequestAction = createAction({
       queryParams: queryParams as QueryParams,
       timeout: timeout ? timeout * 1000 : 0,
       followRedirects,
+      rejectUnauthorized: !allowUntrustedCertificate,
     };
 
     switch (authType) {

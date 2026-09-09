@@ -1,4 +1,5 @@
 import { PassThrough, Readable } from 'node:stream';
+import { Agent } from 'undici';
 import { BaseHttpClient } from './base-http-client';
 import { DelegatingAuthenticationConverter } from './delegating-authentication-converter';
 import { HttpError } from './http-error';
@@ -26,8 +27,6 @@ export class FetchHttpClient extends BaseHttpClient {
     request: HttpRequest<HttpRequestBody>,
     options?: SendRequestOptions
   ): Promise<HttpResponse<ResponseBody>> {
-    process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
-
     const { urlWithoutQueryParams, queryParams: urlQueryParams } = this.getUrl(request);
     const headers = this.getHeaders(request);
     const queryParams = request.queryParams ?? {};
@@ -63,8 +62,9 @@ export class FetchHttpClient extends BaseHttpClient {
           init.duplex = 'half';
         }
         // A caller-supplied undici Dispatcher (e.g. a ProxyAgent) for per-request proxying.
-        if (options?.dispatcher !== undefined) {
-          init.dispatcher = options.dispatcher;
+        const dispatcher = options?.dispatcher ?? insecureDispatcherFor(request);
+        if (dispatcher !== undefined) {
+          init.dispatcher = dispatcher;
         }
         return await fetch(finalUrl, init);
       } finally {
@@ -91,6 +91,16 @@ export class FetchHttpClient extends BaseHttpClient {
     };
   }
 }
+
+function insecureDispatcherFor(request: HttpRequest<HttpRequestBody>): unknown {
+  if (request.rejectUnauthorized !== false) {
+    return undefined;
+  }
+  insecureAgent ??= new Agent({ connect: { rejectUnauthorized: false } });
+  return insecureAgent;
+}
+
+let insecureAgent: Agent | undefined;
 
 function acceptsRequestBody(method: HttpMethod): boolean {
   return method !== HttpMethod.GET && method !== HttpMethod.HEAD;

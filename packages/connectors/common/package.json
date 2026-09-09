@@ -1,6 +1,6 @@
 {
   "name": "@fema-ipaas/connector-common",
-  "version": "0.12.9",
+  "version": "0.13.0",
   "type": "commonjs",
   "sideEffects": false,
   "main": "./dist/src/index.js",
@@ -13,6 +13,7 @@
     "@fema-ipaas/connector-sdk": "workspace:*",
     "@fema-ipaas/core-utils": "workspace:*",
     "form-data": "4.0.6",
+    "undici": "7.29.0",
     "zod": "4.3.6"
   },
   "devDependencies": {

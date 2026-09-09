@@ -13,7 +13,7 @@ GET /v1/worker-machines/queue-metrics/prometheus/:queueName
 
 - Available on self-hosted Community and Enterprise. Not registered on Cloud.
 - `:queueName` is optional and defaults to `workerJobs` (the shared queue). Pass a worker-group queue name (e.g. `platform-<groupId>-jobs`) to scrape a dedicated queue.
-- Auth: `Authorization: Bearer <platform API key>` (an `sk-...` key created under platform admin). Platform admin user tokens work too.
+- Auth: `Authorization: Bearer <platform API key>` (an `sk-...` key created under tenant admin). Tenant admin user tokens work too.
 - Returns `text/plain`. Responds `404` if the queue has not been initialized on this app instance.
 
 ### Example

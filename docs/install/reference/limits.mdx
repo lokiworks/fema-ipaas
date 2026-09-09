@@ -51,10 +51,10 @@ window. `FEMA_PAUSED_WORKFLOW_TIMEOUT_DAYS` **cannot exceed**
 needs to resume.
 </Tip>
 
-Platform admins can shorten the execution-data retention window for a single
-workspace by setting `executionDataRetentionDays` on the
-[update workspace endpoint](/endpoints/workspaces/update); `null` reverts the
-workspace to the instance-wide value. The value must be between
+Tenant admins can shorten the execution-data retention window for a single
+project by setting `executionDataRetentionDays` on the
+[update project endpoint](/endpoints/projects/update); `null` reverts the
+project to the instance-wide value. The value must be between
 `FEMA_PAUSED_WORKFLOW_TIMEOUT_DAYS` (a shorter window would delete the data a
 still-paused run needs to resume) and `FEMA_EXECUTION_DATA_RETENTION_DAYS` (the
 instance value is the ceiling). Raise the instance value if you need a wider

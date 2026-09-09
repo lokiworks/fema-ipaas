@@ -6,7 +6,7 @@ icon: "Link"
 Use predefined connections to allow users to access your connector in the embedded app without re-entering authentication credentials.
 
 The high-level steps are:
-- Create a global connection for a project using the API in the platform admin. Only platform admins can edit or delete global connections.
+- Create a global connection for a project using the API in the tenant admin. Only tenant admins can edit or delete global connections.
 - (Optional) Hide the connections dropdown in the connector settings.
 
 ### Prerequisites
@@ -17,7 +17,7 @@ The high-level steps are:
 
 <Steps>
   <Step title="Create an API Key">
-    Go to **Platform Admin → Security → API Keys** and create an API key. Save it for use in the next step.
+    Go to **Tenant Admin → Security → API Keys** and create an API key. Save it for use in the next step.
     ![Create API Key](/resources/screenshots/create-api-key.png)
   </Step>
   <Step title="Create a Global Connection via API">

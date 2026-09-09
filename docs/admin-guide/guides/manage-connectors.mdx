@@ -8,7 +8,7 @@ icon: "puzzle-connector"
 
 **Connectors** are the building blocks of FEMA Integration Platform — they are integrations and connectors (like Google Sheets, Slack, OpenAI, etc.) that users can use in their automation workflows.
 
-As a platform administrator, you have full control over which connectors are available to your users. This allows you to:
+As a tenant administrator, you have full control over which connectors are available to your users. This allows you to:
 
 - **Enforce security policies** by restricting access to certain integrations
 - **Simplify the user experience** by showing only relevant connectors for your use case
@@ -18,7 +18,7 @@ There are **two levels** of connector management:
 
 | Level | Who Can Manage | Scope |
 |-------|----------------|-------|
-| **Platform Level** | Platform Admin | Install and remove across the entire platform |
+| **Platform Level** | Tenant Admin | Install and remove across the entire platform |
 | **Project Level** | Project Admin | Show/hide specific connectors for specfic project |
 
 <Note>
@@ -29,7 +29,7 @@ Connectors are standard npm packages — official connectors are **auto-synced f
 
 ## Platform-Level Management
 
-Platform administrators can manage connectors for the entire FEMA Integration Platform instance from **Platform Admin → Setup → Connectors**.
+Tenant administrators can manage connectors for the entire FEMA Integration Platform instance from **Tenant Admin → Setup → Connectors**.
 
 ## Project-Level Management
 
@@ -77,7 +77,7 @@ If you've built a custom connector for your organization, you can upload it dire
     This generates a tarball in `dist/packages/connectors/your-connector-name`.
   </Step>
   <Step title="Navigate to Connectors Settings">
-    Go to **Platform Admin → Setup → Connectors** and click **Install Connector**.
+    Go to **Tenant Admin → Setup → Connectors** and click **Install Connector**.
   </Step>
   <Step title="Select File Upload">
     Choose **Upload File** as the installation source.

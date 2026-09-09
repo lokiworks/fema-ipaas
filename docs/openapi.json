@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "FEMA Integration Tenant API",
+    "title": "FEMA Integration Platform API",
     "version": "0.0.0"
   },
   "components": {
@@ -33,10 +33,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -78,7 +78,7 @@
                   "updated"
                 ]
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -131,10 +131,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -410,7 +410,13 @@
                                               "type": "string",
                                               "enum": [
                                                 "MANUAL",
-                                                "DYNAMIC"
+                                                "DYNAMIC",
+                                                "STRING",
+                                                "NUMBER",
+                                                "BOOLEAN",
+                                                "OBJECT",
+                                                "ARRAY",
+                                                "NULL"
                                               ]
                                             },
                                             "schema": {}
@@ -864,7 +870,13 @@
                                               "type": "string",
                                               "enum": [
                                                 "MANUAL",
-                                                "DYNAMIC"
+                                                "DYNAMIC",
+                                                "STRING",
+                                                "NUMBER",
+                                                "BOOLEAN",
+                                                "OBJECT",
+                                                "ARRAY",
+                                                "NULL"
                                               ]
                                             },
                                             "schema": {}
@@ -970,7 +982,13 @@
                                               "type": "string",
                                               "enum": [
                                                 "MANUAL",
-                                                "DYNAMIC"
+                                                "DYNAMIC",
+                                                "STRING",
+                                                "NUMBER",
+                                                "BOOLEAN",
+                                                "OBJECT",
+                                                "ARRAY",
+                                                "NULL"
                                               ]
                                             },
                                             "schema": {}
@@ -1609,7 +1627,13 @@
                                                   "type": "string",
                                                   "enum": [
                                                     "MANUAL",
-                                                    "DYNAMIC"
+                                                    "DYNAMIC",
+                                                    "STRING",
+                                                    "NUMBER",
+                                                    "BOOLEAN",
+                                                    "OBJECT",
+                                                    "ARRAY",
+                                                    "NULL"
                                                   ]
                                                 },
                                                 "schema": {}
@@ -1715,7 +1739,13 @@
                                                   "type": "string",
                                                   "enum": [
                                                     "MANUAL",
-                                                    "DYNAMIC"
+                                                    "DYNAMIC",
+                                                    "STRING",
+                                                    "NUMBER",
+                                                    "BOOLEAN",
+                                                    "OBJECT",
+                                                    "ARRAY",
+                                                    "NULL"
                                                   ]
                                                 },
                                                 "schema": {}
@@ -2215,7 +2245,13 @@
                                               "type": "string",
                                               "enum": [
                                                 "MANUAL",
-                                                "DYNAMIC"
+                                                "DYNAMIC",
+                                                "STRING",
+                                                "NUMBER",
+                                                "BOOLEAN",
+                                                "OBJECT",
+                                                "ARRAY",
+                                                "NULL"
                                               ]
                                             },
                                             "schema": {}
@@ -3040,7 +3076,7 @@
                   }
                 ]
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -3095,10 +3131,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -3167,7 +3203,7 @@
                   "updated"
                 ]
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -3221,10 +3257,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -3293,7 +3329,7 @@
                   "updated"
                 ]
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -3347,10 +3383,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -3419,7 +3455,7 @@
                   "updated"
                 ]
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -3473,10 +3509,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -3545,7 +3581,7 @@
                   "updated"
                 ]
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -3599,10 +3635,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -3660,7 +3696,7 @@
                   "updated"
                 ]
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -3703,10 +3739,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -3764,7 +3800,7 @@
                   "updated"
                 ]
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -3807,10 +3843,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -3852,7 +3888,7 @@
                   "updated"
                 ]
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -3895,10 +3931,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -3940,7 +3976,7 @@
                   "updated"
                 ]
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -3983,10 +4019,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -4028,7 +4064,7 @@
                   "updated"
                 ]
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -4071,10 +4107,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -4159,7 +4195,7 @@
                   "status"
                 ]
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -4202,10 +4238,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -4290,7 +4326,7 @@
                   "status"
                 ]
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -4333,10 +4369,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -4421,7 +4457,7 @@
                   "status"
                 ]
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -4464,10 +4500,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -4552,7 +4588,7 @@
                   "status"
                 ]
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -4595,10 +4631,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -4688,10 +4724,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -4762,10 +4798,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -4836,10 +4872,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -4910,10 +4946,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -4955,7 +4991,7 @@
                   "updated"
                 ]
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -4998,10 +5034,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -5043,7 +5079,7 @@
                   "updated"
                 ]
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -5086,10 +5122,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -5131,7 +5167,7 @@
                   "updated"
                 ]
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -5174,10 +5210,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -5243,10 +5279,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -5457,7 +5493,13 @@
                                     "type": "string",
                                     "enum": [
                                       "MANUAL",
-                                      "DYNAMIC"
+                                      "DYNAMIC",
+                                      "STRING",
+                                      "NUMBER",
+                                      "BOOLEAN",
+                                      "OBJECT",
+                                      "ARRAY",
+                                      "NULL"
                                     ]
                                   },
                                   "schema": {}
@@ -5848,7 +5890,7 @@
           "updated": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
           "displayName": {
@@ -5872,7 +5914,7 @@
           "id",
           "created",
           "updated",
-          "workspaceId",
+          "projectId",
           "displayName",
           "displayOrder"
         ]
@@ -5995,7 +6037,7 @@
             "type": "string",
             "enum": [
               "TENANT",
-              "WORKSPACE"
+              "PROJECT"
             ]
           },
           "tenantId": {
@@ -6016,7 +6058,7 @@
               }
             ]
           },
-          "workspaceId": {
+          "projectId": {
             "anyOf": [
               {
                 "type": "string"
@@ -6026,7 +6068,7 @@
               }
             ]
           },
-          "workspaceRoleId": {
+          "projectRoleId": {
             "anyOf": [
               {
                 "type": "string"
@@ -6036,7 +6078,7 @@
               }
             ]
           },
-          "workspaceRole": {
+          "projectRole": {
             "anyOf": [
               {
                 "type": "object",
@@ -6101,9 +6143,9 @@
           "tenantId"
         ]
       },
-      "workspaceInput": {
+      "projectInput": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "#/components/schemas/workspaceInput",
+        "$id": "#/components/schemas/projectInput",
         "type": "object",
         "properties": {
           "id": {
@@ -6225,11 +6267,15 @@
               },
               "activeWorkflows": {
                 "type": "number"
+              },
+              "members": {
+                "type": "number"
               }
             },
             "required": [
               "totalWorkflows",
-              "activeWorkflows"
+              "activeWorkflows",
+              "members"
             ]
           }
         },
@@ -6247,9 +6293,9 @@
           "analytics"
         ]
       },
-      "workspace-memberInput": {
+      "project-memberInput": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "#/components/schemas/workspace-memberInput",
+        "$id": "#/components/schemas/project-memberInput",
         "type": "object",
         "properties": {
           "id": {
@@ -6261,7 +6307,7 @@
           "updated": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
           "userId": {
@@ -6284,7 +6330,7 @@
           "id",
           "created",
           "updated",
-          "workspaceId",
+          "projectId",
           "userId",
           "role",
           "user"
@@ -6304,7 +6350,7 @@
           "updated": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
           "externalId": {
@@ -6440,7 +6486,7 @@
           "id",
           "created",
           "updated",
-          "workspaceId",
+          "projectId",
           "externalId",
           "status",
           "operationStatus"
@@ -6460,7 +6506,7 @@
           "updated": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
           "workflowId": {
@@ -6506,7 +6552,6 @@
             "type": "string",
             "enum": [
               "FAILED",
-              "QUOTA_EXCEEDED",
               "INTERNAL_ERROR",
               "PAUSED",
               "QUEUED",
@@ -6666,7 +6711,7 @@
           "id",
           "created",
           "updated",
-          "workspaceId",
+          "projectId",
           "workflowId",
           "failParentOnFailure",
           "workflowVersionId",
@@ -6710,7 +6755,7 @@
           "connectorName": {
             "type": "string"
           },
-          "workspaceIds": {
+          "projectIds": {
             "type": "array",
             "items": {
               "type": "string",
@@ -6730,7 +6775,7 @@
           "scope": {
             "type": "string",
             "enum": [
-              "WORKSPACE",
+              "PROJECT",
               "TENANT"
             ]
           },
@@ -6793,7 +6838,7 @@
           "connectorVersion": {
             "type": "string"
           },
-          "preSelectForNewWorkspaces": {
+          "preSelectForNewProjects": {
             "type": "boolean"
           }
         },
@@ -6805,11 +6850,11 @@
           "displayName",
           "type",
           "connectorName",
-          "workspaceIds",
+          "projectIds",
           "scope",
           "status",
           "connectorVersion",
-          "preSelectForNewWorkspaces"
+          "preSelectForNewProjects"
         ]
       },
       "variableInput": {
@@ -6829,7 +6874,7 @@
           "name": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
           "tenantId": {
@@ -6875,7 +6920,7 @@
           "created",
           "updated",
           "name",
-          "workspaceId",
+          "projectId",
           "tenantId"
         ]
       },
@@ -14418,10 +14463,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -14487,10 +14532,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -14533,7 +14578,7 @@
                 ],
                 "additionalProperties": false
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -14589,10 +14634,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -14881,7 +14926,13 @@
                                               "type": "string",
                                               "enum": [
                                                 "MANUAL",
-                                                "DYNAMIC"
+                                                "DYNAMIC",
+                                                "STRING",
+                                                "NUMBER",
+                                                "BOOLEAN",
+                                                "OBJECT",
+                                                "ARRAY",
+                                                "NULL"
                                               ]
                                             },
                                             "schema": {}
@@ -15359,7 +15410,13 @@
                                               "type": "string",
                                               "enum": [
                                                 "MANUAL",
-                                                "DYNAMIC"
+                                                "DYNAMIC",
+                                                "STRING",
+                                                "NUMBER",
+                                                "BOOLEAN",
+                                                "OBJECT",
+                                                "ARRAY",
+                                                "NULL"
                                               ]
                                             },
                                             "schema": {}
@@ -15472,7 +15529,13 @@
                                               "type": "string",
                                               "enum": [
                                                 "MANUAL",
-                                                "DYNAMIC"
+                                                "DYNAMIC",
+                                                "STRING",
+                                                "NUMBER",
+                                                "BOOLEAN",
+                                                "OBJECT",
+                                                "ARRAY",
+                                                "NULL"
                                               ]
                                             },
                                             "schema": {}
@@ -16142,7 +16205,13 @@
                                                   "type": "string",
                                                   "enum": [
                                                     "MANUAL",
-                                                    "DYNAMIC"
+                                                    "DYNAMIC",
+                                                    "STRING",
+                                                    "NUMBER",
+                                                    "BOOLEAN",
+                                                    "OBJECT",
+                                                    "ARRAY",
+                                                    "NULL"
                                                   ]
                                                 },
                                                 "schema": {}
@@ -16255,7 +16324,13 @@
                                                   "type": "string",
                                                   "enum": [
                                                     "MANUAL",
-                                                    "DYNAMIC"
+                                                    "DYNAMIC",
+                                                    "STRING",
+                                                    "NUMBER",
+                                                    "BOOLEAN",
+                                                    "OBJECT",
+                                                    "ARRAY",
+                                                    "NULL"
                                                   ]
                                                 },
                                                 "schema": {}
@@ -16778,7 +16853,13 @@
                                               "type": "string",
                                               "enum": [
                                                 "MANUAL",
-                                                "DYNAMIC"
+                                                "DYNAMIC",
+                                                "STRING",
+                                                "NUMBER",
+                                                "BOOLEAN",
+                                                "OBJECT",
+                                                "ARRAY",
+                                                "NULL"
                                               ]
                                             },
                                             "schema": {}
@@ -17649,7 +17730,7 @@
                   }
                 ]
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -17707,10 +17788,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -17781,7 +17862,7 @@
                 ],
                 "additionalProperties": false
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -17838,10 +17919,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -17912,7 +17993,7 @@
                 ],
                 "additionalProperties": false
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -17969,10 +18050,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -18043,7 +18124,7 @@
                 ],
                 "additionalProperties": false
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -18100,10 +18181,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -18174,7 +18255,7 @@
                 ],
                 "additionalProperties": false
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -18231,10 +18312,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -18293,7 +18374,7 @@
                 ],
                 "additionalProperties": false
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -18339,10 +18420,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -18401,7 +18482,7 @@
                 ],
                 "additionalProperties": false
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -18447,10 +18528,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -18493,7 +18574,7 @@
                 ],
                 "additionalProperties": false
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -18539,10 +18620,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -18585,7 +18666,7 @@
                 ],
                 "additionalProperties": false
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -18631,10 +18712,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -18677,7 +18758,7 @@
                 ],
                 "additionalProperties": false
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -18723,10 +18804,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -18812,7 +18893,7 @@
                 ],
                 "additionalProperties": false
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -18858,10 +18939,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -18947,7 +19028,7 @@
                 ],
                 "additionalProperties": false
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -18993,10 +19074,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -19082,7 +19163,7 @@
                 ],
                 "additionalProperties": false
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -19128,10 +19209,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -19217,7 +19298,7 @@
                 ],
                 "additionalProperties": false
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -19263,10 +19344,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -19359,10 +19440,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -19436,10 +19517,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -19513,10 +19594,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -19590,10 +19671,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -19636,7 +19717,7 @@
                 ],
                 "additionalProperties": false
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -19682,10 +19763,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -19728,7 +19809,7 @@
                 ],
                 "additionalProperties": false
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -19774,10 +19855,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -19820,7 +19901,7 @@
                 ],
                 "additionalProperties": false
               },
-              "workspace": {
+              "project": {
                 "type": "object",
                 "properties": {
                   "displayName": {
@@ -19866,10 +19947,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -19938,10 +20019,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -20157,7 +20238,13 @@
                                     "type": "string",
                                     "enum": [
                                       "MANUAL",
-                                      "DYNAMIC"
+                                      "DYNAMIC",
+                                      "STRING",
+                                      "NUMBER",
+                                      "BOOLEAN",
+                                      "OBJECT",
+                                      "ARRAY",
+                                      "NULL"
                                     ]
                                   },
                                   "schema": {}
@@ -20565,7 +20652,7 @@
           "updated": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
           "displayName": {
@@ -20589,7 +20676,7 @@
           "id",
           "created",
           "updated",
-          "workspaceId",
+          "projectId",
           "displayName",
           "displayOrder"
         ],
@@ -20714,7 +20801,7 @@
             "type": "string",
             "enum": [
               "TENANT",
-              "WORKSPACE"
+              "PROJECT"
             ]
           },
           "tenantId": {
@@ -20735,7 +20822,7 @@
               }
             ]
           },
-          "workspaceId": {
+          "projectId": {
             "anyOf": [
               {
                 "type": "string"
@@ -20745,7 +20832,7 @@
               }
             ]
           },
-          "workspaceRoleId": {
+          "projectRoleId": {
             "anyOf": [
               {
                 "type": "string"
@@ -20755,7 +20842,7 @@
               }
             ]
           },
-          "workspaceRole": {
+          "projectRole": {
             "anyOf": [
               {
                 "type": "object",
@@ -20822,9 +20909,9 @@
         ],
         "additionalProperties": false
       },
-      "workspace": {
+      "project": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "#/components/schemas/workspace",
+        "$id": "#/components/schemas/project",
         "type": "object",
         "properties": {
           "id": {
@@ -20947,11 +21034,15 @@
               },
               "activeWorkflows": {
                 "type": "number"
+              },
+              "members": {
+                "type": "number"
               }
             },
             "required": [
               "totalWorkflows",
-              "activeWorkflows"
+              "activeWorkflows",
+              "members"
             ],
             "additionalProperties": false
           }
@@ -20971,9 +21062,9 @@
         ],
         "additionalProperties": false
       },
-      "workspace-member": {
+      "project-member": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "#/components/schemas/workspace-member",
+        "$id": "#/components/schemas/project-member",
         "type": "object",
         "properties": {
           "id": {
@@ -20985,7 +21076,7 @@
           "updated": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
           "userId": {
@@ -21008,7 +21099,7 @@
           "id",
           "created",
           "updated",
-          "workspaceId",
+          "projectId",
           "userId",
           "role",
           "user"
@@ -21029,7 +21120,7 @@
           "updated": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
           "externalId": {
@@ -21167,7 +21258,7 @@
           "id",
           "created",
           "updated",
-          "workspaceId",
+          "projectId",
           "externalId",
           "status",
           "operationStatus"
@@ -21188,7 +21279,7 @@
           "updated": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
           "workflowId": {
@@ -21235,7 +21326,6 @@
             "type": "string",
             "enum": [
               "FAILED",
-              "QUOTA_EXCEEDED",
               "INTERNAL_ERROR",
               "PAUSED",
               "QUEUED",
@@ -21399,7 +21489,7 @@
           "id",
           "created",
           "updated",
-          "workspaceId",
+          "projectId",
           "workflowId",
           "failParentOnFailure",
           "workflowVersionId",
@@ -21444,7 +21534,7 @@
           "connectorName": {
             "type": "string"
           },
-          "workspaceIds": {
+          "projectIds": {
             "type": "array",
             "items": {
               "type": "string",
@@ -21464,7 +21554,7 @@
           "scope": {
             "type": "string",
             "enum": [
-              "WORKSPACE",
+              "PROJECT",
               "TENANT"
             ]
           },
@@ -21527,7 +21617,7 @@
           "connectorVersion": {
             "type": "string"
           },
-          "preSelectForNewWorkspaces": {
+          "preSelectForNewProjects": {
             "type": "boolean"
           }
         },
@@ -21539,11 +21629,11 @@
           "displayName",
           "type",
           "connectorName",
-          "workspaceIds",
+          "projectIds",
           "scope",
           "status",
           "connectorVersion",
-          "preSelectForNewWorkspaces"
+          "preSelectForNewProjects"
         ],
         "additionalProperties": false
       },
@@ -21564,7 +21654,7 @@
           "name": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
           "tenantId": {
@@ -21610,7 +21700,7 @@
           "created",
           "updated",
           "name",
-          "workspaceId",
+          "projectId",
           "tenantId"
         ],
         "additionalProperties": false
@@ -29363,10 +29453,10 @@
           "tenantId": {
             "type": "string"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "string"
           },
-          "workspaceDisplayName": {
+          "projectDisplayName": {
             "type": "string"
           },
           "userId": {
@@ -29436,13 +29526,13 @@
                   "displayName": {
                     "type": "string"
                   },
-                  "workspaceId": {
+                  "projectId": {
                     "type": "string"
                   }
                 },
                 "required": [
                   "displayName",
-                  "workspaceId"
+                  "projectId"
                 ]
               }
             }
@@ -29487,7 +29577,7 @@
               "type": "string"
             },
             "in": "query",
-            "name": "workspaceId",
+            "name": "projectId",
             "required": true
           }
         ],
@@ -29761,7 +29851,7 @@
                   "folderName": {
                     "type": "string"
                   },
-                  "workspaceId": {
+                  "projectId": {
                     "type": "string"
                   },
                   "templateId": {
@@ -29777,7 +29867,7 @@
                 },
                 "required": [
                   "displayName",
-                  "workspaceId"
+                  "projectId"
                 ]
               }
             }
@@ -29806,7 +29896,7 @@
                     "updated": {
                       "type": "string"
                     },
-                    "workspaceId": {
+                    "projectId": {
                       "type": "string"
                     },
                     "externalId": {
@@ -30016,7 +30106,13 @@
                                             "type": "string",
                                             "enum": [
                                               "MANUAL",
-                                              "DYNAMIC"
+                                              "DYNAMIC",
+                                              "STRING",
+                                              "NUMBER",
+                                              "BOOLEAN",
+                                              "OBJECT",
+                                              "ARRAY",
+                                              "NULL"
                                             ]
                                           },
                                           "schema": {}
@@ -30364,7 +30460,7 @@
                     "id",
                     "created",
                     "updated",
-                    "workspaceId",
+                    "projectId",
                     "externalId",
                     "status",
                     "operationStatus",
@@ -30438,7 +30534,7 @@
               "type": "string"
             },
             "in": "query",
-            "name": "workspaceId",
+            "name": "projectId",
             "required": true
           },
           {
@@ -30522,7 +30618,7 @@
                           "updated": {
                             "type": "string"
                           },
-                          "workspaceId": {
+                          "projectId": {
                             "type": "string"
                           },
                           "externalId": {
@@ -30732,7 +30828,13 @@
                                                   "type": "string",
                                                   "enum": [
                                                     "MANUAL",
-                                                    "DYNAMIC"
+                                                    "DYNAMIC",
+                                                    "STRING",
+                                                    "NUMBER",
+                                                    "BOOLEAN",
+                                                    "OBJECT",
+                                                    "ARRAY",
+                                                    "NULL"
                                                   ]
                                                 },
                                                 "schema": {}
@@ -31080,7 +31182,7 @@
                           "id",
                           "created",
                           "updated",
-                          "workspaceId",
+                          "projectId",
                           "externalId",
                           "status",
                           "operationStatus",
@@ -31351,7 +31453,13 @@
                                               "type": "string",
                                               "enum": [
                                                 "MANUAL",
-                                                "DYNAMIC"
+                                                "DYNAMIC",
+                                                "STRING",
+                                                "NUMBER",
+                                                "BOOLEAN",
+                                                "OBJECT",
+                                                "ARRAY",
+                                                "NULL"
                                               ]
                                             },
                                             "schema": {}
@@ -31819,7 +31927,13 @@
                                               "type": "string",
                                               "enum": [
                                                 "MANUAL",
-                                                "DYNAMIC"
+                                                "DYNAMIC",
+                                                "STRING",
+                                                "NUMBER",
+                                                "BOOLEAN",
+                                                "OBJECT",
+                                                "ARRAY",
+                                                "NULL"
                                               ]
                                             },
                                             "schema": {}
@@ -31927,7 +32041,13 @@
                                               "type": "string",
                                               "enum": [
                                                 "MANUAL",
-                                                "DYNAMIC"
+                                                "DYNAMIC",
+                                                "STRING",
+                                                "NUMBER",
+                                                "BOOLEAN",
+                                                "OBJECT",
+                                                "ARRAY",
+                                                "NULL"
                                               ]
                                             },
                                             "schema": {}
@@ -32626,7 +32746,13 @@
                                                   "type": "string",
                                                   "enum": [
                                                     "MANUAL",
-                                                    "DYNAMIC"
+                                                    "DYNAMIC",
+                                                    "STRING",
+                                                    "NUMBER",
+                                                    "BOOLEAN",
+                                                    "OBJECT",
+                                                    "ARRAY",
+                                                    "NULL"
                                                   ]
                                                 },
                                                 "schema": {}
@@ -32734,7 +32860,13 @@
                                                   "type": "string",
                                                   "enum": [
                                                     "MANUAL",
-                                                    "DYNAMIC"
+                                                    "DYNAMIC",
+                                                    "STRING",
+                                                    "NUMBER",
+                                                    "BOOLEAN",
+                                                    "OBJECT",
+                                                    "ARRAY",
+                                                    "NULL"
                                                   ]
                                                 },
                                                 "schema": {}
@@ -33292,7 +33424,13 @@
                                               "type": "string",
                                               "enum": [
                                                 "MANUAL",
-                                                "DYNAMIC"
+                                                "DYNAMIC",
+                                                "STRING",
+                                                "NUMBER",
+                                                "BOOLEAN",
+                                                "OBJECT",
+                                                "ARRAY",
+                                                "NULL"
                                               ]
                                             },
                                             "schema": {}
@@ -34264,7 +34402,7 @@
                     "updated": {
                       "type": "string"
                     },
-                    "workspaceId": {
+                    "projectId": {
                       "type": "string"
                     },
                     "externalId": {
@@ -34474,7 +34612,13 @@
                                             "type": "string",
                                             "enum": [
                                               "MANUAL",
-                                              "DYNAMIC"
+                                              "DYNAMIC",
+                                              "STRING",
+                                              "NUMBER",
+                                              "BOOLEAN",
+                                              "OBJECT",
+                                              "ARRAY",
+                                              "NULL"
                                             ]
                                           },
                                           "schema": {}
@@ -34822,7 +34966,7 @@
                     "id",
                     "created",
                     "updated",
-                    "workspaceId",
+                    "projectId",
                     "externalId",
                     "status",
                     "operationStatus",
@@ -35050,7 +35194,13 @@
                                               "type": "string",
                                               "enum": [
                                                 "MANUAL",
-                                                "DYNAMIC"
+                                                "DYNAMIC",
+                                                "STRING",
+                                                "NUMBER",
+                                                "BOOLEAN",
+                                                "OBJECT",
+                                                "ARRAY",
+                                                "NULL"
                                               ]
                                             },
                                             "schema": {}
@@ -35460,7 +35610,7 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "workspaceId": {
+                  "projectId": {
                     "type": "string"
                   },
                   "workflowVersionId": {
@@ -35471,7 +35621,7 @@
                   }
                 },
                 "required": [
-                  "workspaceId",
+                  "projectId",
                   "workflowVersionId",
                   "stepName"
                 ]
@@ -35527,7 +35677,7 @@
               "type": "string"
             },
             "in": "query",
-            "name": "workspaceId",
+            "name": "projectId",
             "required": true
           },
           {
@@ -35592,7 +35742,6 @@
                 "type": "string",
                 "enum": [
                   "FAILED",
-                  "QUOTA_EXCEEDED",
                   "INTERNAL_ERROR",
                   "PAUSED",
                   "QUEUED",
@@ -35647,7 +35796,7 @@
               "pattern": "^[0-9a-zA-Z]{21}$"
             },
             "in": "query",
-            "name": "workspaceId",
+            "name": "projectId",
             "required": true
           },
           {
@@ -35714,7 +35863,7 @@
                           "updated": {
                             "type": "string"
                           },
-                          "workspaceId": {
+                          "projectId": {
                             "type": "string"
                           },
                           "workflowId": {
@@ -35761,7 +35910,6 @@
                             "type": "string",
                             "enum": [
                               "FAILED",
-                              "QUOTA_EXCEEDED",
                               "INTERNAL_ERROR",
                               "PAUSED",
                               "QUEUED",
@@ -35911,7 +36059,7 @@
                           "id",
                           "created",
                           "updated",
-                          "workspaceId",
+                          "projectId",
                           "workflowId",
                           "failParentOnFailure",
                           "workflowVersionId",
@@ -35966,7 +36114,7 @@
               "pattern": "^[0-9a-zA-Z]{21}$"
             },
             "in": "query",
-            "name": "workspaceId",
+            "name": "projectId",
             "required": true
           },
           {
@@ -36008,7 +36156,6 @@
                             "type": "string",
                             "enum": [
                               "FAILED",
-                              "QUOTA_EXCEEDED",
                               "INTERNAL_ERROR",
                               "PAUSED",
                               "QUEUED",
@@ -36048,7 +36195,7 @@
         "tags": [
           "executions"
         ],
-        "description": "Workspace run overview",
+        "description": "Project run overview",
         "parameters": [
           {
             "schema": {
@@ -36056,7 +36203,7 @@
               "pattern": "^[0-9a-zA-Z]{21}$"
             },
             "in": "query",
-            "name": "workspaceId",
+            "name": "projectId",
             "required": true
           },
           {
@@ -36093,7 +36240,6 @@
                             "type": "string",
                             "enum": [
                               "FAILED",
-                              "QUOTA_EXCEEDED",
                               "INTERNAL_ERROR",
                               "PAUSED",
                               "QUEUED",
@@ -36128,7 +36274,6 @@
                             "type": "string",
                             "enum": [
                               "FAILED",
-                              "QUOTA_EXCEEDED",
                               "INTERNAL_ERROR",
                               "PAUSED",
                               "QUEUED",
@@ -36305,7 +36450,7 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "workspaceId": {
+                  "projectId": {
                     "type": "string",
                     "pattern": "^[0-9a-zA-Z]{21}$"
                   },
@@ -36357,7 +36502,7 @@
                   }
                 },
                 "required": [
-                  "workspaceId"
+                  "projectId"
                 ]
               }
             }
@@ -36399,7 +36544,7 @@
                       "connectorName": {
                         "type": "string"
                       },
-                      "workspaceId": {
+                      "projectId": {
                         "type": "string"
                       },
                       "metadata": {
@@ -36442,7 +36587,7 @@
                       "externalId",
                       "displayName",
                       "connectorName",
-                      "workspaceId",
+                      "projectId",
                       "type",
                       "value"
                     ],
@@ -36460,7 +36605,7 @@
                       "connectorName": {
                         "type": "string"
                       },
-                      "workspaceId": {
+                      "projectId": {
                         "type": "string"
                       },
                       "metadata": {
@@ -36546,7 +36691,7 @@
                       "externalId",
                       "displayName",
                       "connectorName",
-                      "workspaceId",
+                      "projectId",
                       "type",
                       "value"
                     ],
@@ -36564,7 +36709,7 @@
                       "connectorName": {
                         "type": "string"
                       },
-                      "workspaceId": {
+                      "projectId": {
                         "type": "string"
                       },
                       "metadata": {
@@ -36633,7 +36778,7 @@
                       "externalId",
                       "displayName",
                       "connectorName",
-                      "workspaceId",
+                      "projectId",
                       "type",
                       "value"
                     ],
@@ -36651,7 +36796,7 @@
                       "connectorName": {
                         "type": "string"
                       },
-                      "workspaceId": {
+                      "projectId": {
                         "type": "string"
                       },
                       "metadata": {
@@ -36725,7 +36870,7 @@
                       "externalId",
                       "displayName",
                       "connectorName",
-                      "workspaceId",
+                      "projectId",
                       "type",
                       "value"
                     ],
@@ -36743,7 +36888,7 @@
                       "connectorName": {
                         "type": "string"
                       },
-                      "workspaceId": {
+                      "projectId": {
                         "type": "string"
                       },
                       "metadata": {
@@ -36791,7 +36936,7 @@
                       "externalId",
                       "displayName",
                       "connectorName",
-                      "workspaceId",
+                      "projectId",
                       "type",
                       "value"
                     ],
@@ -36809,7 +36954,7 @@
                       "connectorName": {
                         "type": "string"
                       },
-                      "workspaceId": {
+                      "projectId": {
                         "type": "string"
                       },
                       "metadata": {
@@ -36855,7 +37000,7 @@
                       "externalId",
                       "displayName",
                       "connectorName",
-                      "workspaceId",
+                      "projectId",
                       "type",
                       "value"
                     ],
@@ -36873,7 +37018,7 @@
                       "connectorName": {
                         "type": "string"
                       },
-                      "workspaceId": {
+                      "projectId": {
                         "type": "string"
                       },
                       "metadata": {
@@ -36919,7 +37064,7 @@
                       "externalId",
                       "displayName",
                       "connectorName",
-                      "workspaceId",
+                      "projectId",
                       "type",
                       "value"
                     ],
@@ -36937,7 +37082,7 @@
                       "connectorName": {
                         "type": "string"
                       },
-                      "workspaceId": {
+                      "projectId": {
                         "type": "string"
                       },
                       "metadata": {
@@ -36975,7 +37120,7 @@
                       "externalId",
                       "displayName",
                       "connectorName",
-                      "workspaceId",
+                      "projectId",
                       "type",
                       "value"
                     ],
@@ -36993,7 +37138,7 @@
                       "connectorName": {
                         "type": "string"
                       },
-                      "workspaceId": {
+                      "projectId": {
                         "type": "string"
                       },
                       "metadata": {
@@ -37017,7 +37162,7 @@
                       "externalId",
                       "displayName",
                       "connectorName",
-                      "workspaceId",
+                      "projectId",
                       "type"
                     ],
                     "description": "Placeholder"
@@ -37057,14 +37202,14 @@
               "type": "string"
             },
             "in": "query",
-            "name": "workspaceId",
+            "name": "projectId",
             "required": true
           },
           {
             "schema": {
               "type": "string",
               "enum": [
-                "WORKSPACE",
+                "PROJECT",
                 "TENANT"
               ]
             },
@@ -37335,7 +37480,7 @@
               "type": "string"
             },
             "in": "query",
-            "name": "workspaceId",
+            "name": "projectId",
             "required": true
           }
         ],
@@ -37425,7 +37570,7 @@
                   "targetConnectionId": {
                     "type": "string"
                   },
-                  "workspaceId": {
+                  "projectId": {
                     "type": "string"
                   },
                   "deleteSourceConnection": {
@@ -37440,7 +37585,7 @@
                 "required": [
                   "sourceConnectionId",
                   "targetConnectionId",
-                  "workspaceId"
+                  "projectId"
                 ]
               }
             }
@@ -37484,7 +37629,7 @@
                   "connectorVersion": {
                     "type": "string"
                   },
-                  "workspaceId": {
+                  "projectId": {
                     "type": "string"
                   },
                   "clientId": {
@@ -37553,7 +37698,7 @@
         "tags": [
           "global-connections"
         ],
-        "description": "List the connections shared across every workspace in the tenant.",
+        "description": "List the connections shared across every project in the tenant.",
         "parameters": [
           {
             "schema": {
@@ -37567,7 +37712,7 @@
             "schema": {
               "type": "string",
               "enum": [
-                "WORKSPACE",
+                "PROJECT",
                 "TENANT"
               ]
             },
@@ -37687,7 +37832,7 @@
                           "TENANT"
                         ]
                       },
-                      "workspaceIds": {
+                      "projectIds": {
                         "type": "array",
                         "items": {
                           "type": "string"
@@ -37696,7 +37841,7 @@
                       "externalId": {
                         "type": "string"
                       },
-                      "preSelectForNewWorkspaces": {
+                      "preSelectForNewProjects": {
                         "type": "boolean"
                       }
                     },
@@ -37706,7 +37851,7 @@
                       "type",
                       "value",
                       "scope",
-                      "workspaceIds"
+                      "projectIds"
                     ]
                   },
                   {
@@ -37802,7 +37947,7 @@
                           "TENANT"
                         ]
                       },
-                      "workspaceIds": {
+                      "projectIds": {
                         "type": "array",
                         "items": {
                           "type": "string"
@@ -37811,7 +37956,7 @@
                       "externalId": {
                         "type": "string"
                       },
-                      "preSelectForNewWorkspaces": {
+                      "preSelectForNewProjects": {
                         "type": "boolean"
                       }
                     },
@@ -37821,7 +37966,7 @@
                       "type",
                       "value",
                       "scope",
-                      "workspaceIds"
+                      "projectIds"
                     ]
                   },
                   {
@@ -37900,7 +38045,7 @@
                           "TENANT"
                         ]
                       },
-                      "workspaceIds": {
+                      "projectIds": {
                         "type": "array",
                         "items": {
                           "type": "string"
@@ -37909,7 +38054,7 @@
                       "externalId": {
                         "type": "string"
                       },
-                      "preSelectForNewWorkspaces": {
+                      "preSelectForNewProjects": {
                         "type": "boolean"
                       }
                     },
@@ -37919,7 +38064,7 @@
                       "type",
                       "value",
                       "scope",
-                      "workspaceIds"
+                      "projectIds"
                     ]
                   },
                   {
@@ -38003,7 +38148,7 @@
                           "TENANT"
                         ]
                       },
-                      "workspaceIds": {
+                      "projectIds": {
                         "type": "array",
                         "items": {
                           "type": "string"
@@ -38012,7 +38157,7 @@
                       "externalId": {
                         "type": "string"
                       },
-                      "preSelectForNewWorkspaces": {
+                      "preSelectForNewProjects": {
                         "type": "boolean"
                       }
                     },
@@ -38022,7 +38167,7 @@
                       "type",
                       "value",
                       "scope",
-                      "workspaceIds"
+                      "projectIds"
                     ]
                   },
                   {
@@ -38080,7 +38225,7 @@
                           "TENANT"
                         ]
                       },
-                      "workspaceIds": {
+                      "projectIds": {
                         "type": "array",
                         "items": {
                           "type": "string"
@@ -38089,7 +38234,7 @@
                       "externalId": {
                         "type": "string"
                       },
-                      "preSelectForNewWorkspaces": {
+                      "preSelectForNewProjects": {
                         "type": "boolean"
                       }
                     },
@@ -38099,7 +38244,7 @@
                       "type",
                       "value",
                       "scope",
-                      "workspaceIds"
+                      "projectIds"
                     ]
                   },
                   {
@@ -38155,7 +38300,7 @@
                           "TENANT"
                         ]
                       },
-                      "workspaceIds": {
+                      "projectIds": {
                         "type": "array",
                         "items": {
                           "type": "string"
@@ -38164,7 +38309,7 @@
                       "externalId": {
                         "type": "string"
                       },
-                      "preSelectForNewWorkspaces": {
+                      "preSelectForNewProjects": {
                         "type": "boolean"
                       }
                     },
@@ -38174,7 +38319,7 @@
                       "type",
                       "value",
                       "scope",
-                      "workspaceIds"
+                      "projectIds"
                     ]
                   },
                   {
@@ -38230,7 +38375,7 @@
                           "TENANT"
                         ]
                       },
-                      "workspaceIds": {
+                      "projectIds": {
                         "type": "array",
                         "items": {
                           "type": "string"
@@ -38239,7 +38384,7 @@
                       "externalId": {
                         "type": "string"
                       },
-                      "preSelectForNewWorkspaces": {
+                      "preSelectForNewProjects": {
                         "type": "boolean"
                       }
                     },
@@ -38249,7 +38394,7 @@
                       "type",
                       "value",
                       "scope",
-                      "workspaceIds"
+                      "projectIds"
                     ]
                   },
                   {
@@ -38297,7 +38442,7 @@
                           "TENANT"
                         ]
                       },
-                      "workspaceIds": {
+                      "projectIds": {
                         "type": "array",
                         "items": {
                           "type": "string"
@@ -38306,7 +38451,7 @@
                       "externalId": {
                         "type": "string"
                       },
-                      "preSelectForNewWorkspaces": {
+                      "preSelectForNewProjects": {
                         "type": "boolean"
                       }
                     },
@@ -38316,7 +38461,7 @@
                       "type",
                       "value",
                       "scope",
-                      "workspaceIds"
+                      "projectIds"
                     ]
                   }
                 ]
@@ -38352,7 +38497,7 @@
                     "type": "string",
                     "minLength": 1
                   },
-                  "workspaceIds": {
+                  "projectIds": {
                     "type": "array",
                     "items": {
                       "type": "string"
@@ -38365,7 +38510,7 @@
                     },
                     "additionalProperties": {}
                   },
-                  "preSelectForNewWorkspaces": {
+                  "preSelectForNewProjects": {
                     "type": "boolean"
                   }
                 },
@@ -38430,14 +38575,14 @@
         "tags": [
           "variables"
         ],
-        "description": "Create a workspace variable. Fails if a variable with the same name already exists.",
+        "description": "Create a project variable. Fails if a variable with the same name already exists.",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
-                  "workspaceId": {
+                  "projectId": {
                     "type": "string"
                   },
                   "name": {
@@ -38458,7 +38603,7 @@
                   }
                 },
                 "required": [
-                  "workspaceId",
+                  "projectId",
                   "name",
                   "value"
                 ]
@@ -38489,14 +38634,14 @@
         "tags": [
           "variables"
         ],
-        "description": "List workspace variables",
+        "description": "List project variables",
         "parameters": [
           {
             "schema": {
               "type": "string"
             },
             "in": "query",
-            "name": "workspaceId",
+            "name": "projectId",
             "required": true
           },
           {
@@ -38580,7 +38725,7 @@
         "tags": [
           "variables"
         ],
-        "description": "Update a workspace variable value or metadata. Name cannot be changed.",
+        "description": "Update a project variable value or metadata. Name cannot be changed.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -38636,7 +38781,7 @@
         "tags": [
           "variables"
         ],
-        "description": "Delete a workspace variable",
+        "description": "Delete a project variable",
         "parameters": [
           {
             "schema": {
@@ -38672,14 +38817,14 @@
         "tags": [
           "variables"
         ],
-        "description": "List users who own at least one variable in the workspace",
+        "description": "List users who own at least one variable in the project",
         "parameters": [
           {
             "schema": {
               "type": "string"
             },
             "in": "query",
-            "name": "workspaceId",
+            "name": "projectId",
             "required": true
           }
         ],
@@ -39186,7 +39331,7 @@
                         }
                       ]
                     },
-                    "plan": {
+                    "limits": {
                       "type": "object",
                       "properties": {
                         "usersLimit": {
@@ -39199,7 +39344,7 @@
                             }
                           ]
                         },
-                        "workspacesLimit": {
+                        "projectsLimit": {
                           "anyOf": [
                             {
                               "type": "number"
@@ -39526,7 +39671,7 @@
                     }
                   },
                   "required": [
-                    "plan",
+                    "limits",
                     "id",
                     "created",
                     "updated",
@@ -39605,7 +39750,7 @@
                         }
                       ]
                     },
-                    "plan": {
+                    "limits": {
                       "type": "object",
                       "properties": {
                         "usersLimit": {
@@ -39618,7 +39763,7 @@
                             }
                           ]
                         },
-                        "workspacesLimit": {
+                        "projectsLimit": {
                           "anyOf": [
                             {
                               "type": "number"
@@ -39945,7 +40090,7 @@
                     }
                   },
                   "required": [
-                    "plan",
+                    "limits",
                     "id",
                     "created",
                     "updated",
@@ -39971,12 +40116,12 @@
         }
       }
     },
-    "/v1/workspaces": {
+    "/v1/projects": {
       "get": {
         "tags": [
-          "workspaces"
+          "projects"
         ],
-        "description": "List the workspaces the caller can access inside the current tenant.",
+        "description": "List the projects the caller can access inside the current tenant.",
         "parameters": [
           {
             "schema": {
@@ -40050,7 +40195,7 @@
                     "data": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/workspace"
+                        "$ref": "#/components/schemas/project"
                       }
                     },
                     "next": {
@@ -40086,9 +40231,9 @@
       },
       "post": {
         "tags": [
-          "workspaces"
+          "projects"
         ],
-        "description": "Create a workspace inside the current tenant.",
+        "description": "Create a project inside the current tenant.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -40153,7 +40298,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/workspace"
+                  "$ref": "#/components/schemas/project"
                 }
               }
             }
@@ -40161,12 +40306,12 @@
         }
       }
     },
-    "/v1/workspaces/{id}": {
+    "/v1/projects/{id}": {
       "post": {
         "tags": [
-          "workspaces"
+          "projects"
         ],
-        "description": "Update a workspace inside the current tenant.",
+        "description": "Update a project inside the current tenant.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -40278,7 +40423,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/workspace"
+                  "$ref": "#/components/schemas/project"
                 }
               }
             }
@@ -40287,9 +40432,9 @@
       },
       "delete": {
         "tags": [
-          "workspaces"
+          "projects"
         ],
-        "description": "Soft-delete a workspace and schedule its permanent removal.",
+        "description": "Soft-delete a project and schedule its permanent removal.",
         "parameters": [
           {
             "schema": {
@@ -40319,12 +40464,12 @@
         }
       }
     },
-    "/v1/workspace-members": {
+    "/v1/project-members": {
       "get": {
         "tags": [
-          "workspace-members"
+          "project-members"
         ],
-        "description": "List the members of a workspace.",
+        "description": "List the members of a project.",
         "parameters": [
           {
             "schema": {
@@ -40332,7 +40477,7 @@
               "pattern": "^[0-9a-zA-Z]{21}$"
             },
             "in": "query",
-            "name": "workspaceId",
+            "name": "projectId",
             "required": true
           },
           {
@@ -40359,12 +40504,12 @@
         }
       }
     },
-    "/v1/workspace-members/{id}": {
+    "/v1/project-members/{id}": {
       "delete": {
         "tags": [
-          "workspace-members"
+          "project-members"
         ],
-        "description": "Remove a member from a workspace.",
+        "description": "Remove a member from a project.",
         "parameters": [
           {
             "schema": {
@@ -40372,7 +40517,7 @@
               "pattern": "^[0-9a-zA-Z]{21}$"
             },
             "in": "query",
-            "name": "workspaceId",
+            "name": "projectId",
             "required": true
           },
           {
@@ -40625,24 +40770,24 @@
                       "type": {
                         "type": "string",
                         "enum": [
-                          "WORKSPACE"
+                          "PROJECT"
                         ]
                       },
                       "email": {
                         "type": "string"
                       },
-                      "workspaceId": {
+                      "projectId": {
                         "type": "string"
                       },
-                      "workspaceRole": {
+                      "projectRole": {
                         "type": "string"
                       }
                     },
                     "required": [
                       "type",
                       "email",
-                      "workspaceId",
-                      "workspaceRole"
+                      "projectId",
+                      "projectRole"
                     ]
                   },
                   {
@@ -40713,7 +40858,7 @@
                       "type": "string",
                       "enum": [
                         "TENANT",
-                        "WORKSPACE"
+                        "PROJECT"
                       ]
                     },
                     "tenantId": {
@@ -40734,7 +40879,7 @@
                         }
                       ]
                     },
-                    "workspaceId": {
+                    "projectId": {
                       "anyOf": [
                         {
                           "type": "string"
@@ -40744,7 +40889,7 @@
                         }
                       ]
                     },
-                    "workspaceRoleId": {
+                    "projectRoleId": {
                       "anyOf": [
                         {
                           "type": "string"
@@ -40754,7 +40899,7 @@
                         }
                       ]
                     },
-                    "workspaceRole": {
+                    "projectRole": {
                       "anyOf": [
                         {
                           "type": "object",
@@ -40855,7 +41000,7 @@
               "type": "string",
               "enum": [
                 "TENANT",
-                "WORKSPACE"
+                "PROJECT"
               ]
             },
             "in": "query",
@@ -40874,7 +41019,7 @@
               ]
             },
             "in": "query",
-            "name": "workspaceId",
+            "name": "projectId",
             "required": false
           },
           {
@@ -41184,7 +41329,13 @@
                                             "type": "string",
                                             "enum": [
                                               "MANUAL",
-                                              "DYNAMIC"
+                                              "DYNAMIC",
+                                              "STRING",
+                                              "NUMBER",
+                                              "BOOLEAN",
+                                              "OBJECT",
+                                              "ARRAY",
+                                              "NULL"
                                             ]
                                           },
                                           "schema": {}
@@ -41686,7 +41837,13 @@
                                             "type": "string",
                                             "enum": [
                                               "MANUAL",
-                                              "DYNAMIC"
+                                              "DYNAMIC",
+                                              "STRING",
+                                              "NUMBER",
+                                              "BOOLEAN",
+                                              "OBJECT",
+                                              "ARRAY",
+                                              "NULL"
                                             ]
                                           },
                                           "schema": {}

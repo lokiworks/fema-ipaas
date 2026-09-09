@@ -65,6 +65,7 @@ protect connections and tokens, and telemetry.
 | ❗ `FEMA_JWT_SECRET` | 32-character hexadecimal key used to sign JWT tokens. Generate one with `openssl rand -hex 32`. | `None` |
 | `FEMA_CONFIG_PATH` | Path where the PGLite database and local settings are stored. | `~/.fema` |
 | `FEMA_INTERNAL_URL` | (Beta) Internal URL used for SSO authentication, e.g. `https://demo.fema.local/api`. | `None` |
+| `FEMA_DEFAULT_LANGUAGE` | Language used for names the server generates without a browser to ask, such as the tenant and personal project created at sign-up. `zh` or `en`. | `zh` |
 | `FEMA_TELEMETRY_ENABLED` | Collect anonymous telemetry. | `true` |
 
 <Warning>
@@ -224,13 +225,20 @@ Outbound mail for invitations, notifications, and password resets.
 | `FEMA_SMTP_PORT` | SMTP server port, e.g. `587`. | `None` |
 | `FEMA_SMTP_USERNAME` | SMTP username. | `None` |
 | `FEMA_SMTP_PASSWORD` | SMTP password. | `None` |
-| `FEMA_SMTP_SENDER_EMAIL` | Email address that mail is sent from. | `None` |
-| `FEMA_SMTP_SENDER_NAME` | Sender name shown on outgoing mail. | `None` |
+| `FEMA_SMTP_SENDER_EMAIL` | Email address that mail is sent from. | `no-reply@localhost` |
+| `FEMA_SMTP_SENDER_NAME` | Sender name shown on outgoing mail. | Tenant name |
+| `FEMA_SMTP_TLS_REJECT_UNAUTHORIZED` | Reject SMTP servers whose TLS certificate does not verify. | `true` |
 
-SMTP can be configured from the platform admin screen or through these
-variables. The environment variables are used **only when the admin screen has
-no email configuration**, and only when `FEMA_SMTP_HOST`, `FEMA_SMTP_PORT`,
-`FEMA_SMTP_USERNAME`, and `FEMA_SMTP_PASSWORD` are all set. TLS is supported.
+SMTP is configured through these variables only; there is no admin screen for
+it. Mail is enabled as soon as `FEMA_SMTP_HOST` and `FEMA_SMTP_PORT` are set —
+username and password are optional, for relays that do not authenticate. Port
+`465` switches to implicit TLS; any other port uses STARTTLS. Set
+`FEMA_SMTP_TLS_REJECT_UNAUTHORIZED` to `false` only for a relay with a
+self-signed certificate.
+
+With no SMTP configured, the platform degrades quietly rather than failing:
+email sign-in is hidden, invitations must be delivered by copying their link,
+and workflow failure notifications are skipped.
 
 ---
 

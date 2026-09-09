@@ -9,11 +9,11 @@ If you would like to only show specific connectors to your embedding users, we r
 
 ## Connector Sets (recommended)
 
-A connector set is a reusable, named selection of connectors (and, optionally, which of their actions/triggers are visible). You build the set once in the platform admin, give it a **Key**, then reference that key from your provision token.
+A connector set is a reusable, named selection of connectors (and, optionally, which of their actions/triggers are visible). You build the set once in the tenant admin, give it a **Key**, then reference that key from your provision token.
 
 <Steps>
     <Step title="Create a Connector Set">
-        Go to **Platform Admin -> Setup -> Connectors -> Connector Sets**, create a set, choose which connectors are visible, and give it a **Key** (e.g. `premium`). If you leave the key blank, one is generated from the name.
+        Go to **Tenant Admin -> Setup -> Connectors -> Connector Sets**, create a set, choose which connectors are visible, and give it a **Key** (e.g. `premium`). If you leave the key blank, one is generated from the name.
     </Step>
     <Step title="Reference the set in the Provision Token">
         Issue a **v4** token and set the `connectorSet` claim to the set's key. Check how to generate a token in [provisioning users](./provision-users).
@@ -36,7 +36,7 @@ Older integrations select connectors by tag using a **v3** token. New integratio
 
 <Steps>
     <Step title="Tag Connectors">
-        Tag the connectors you would like to show to your user by going to **Platform Admin -> Setup -> Connectors**, selecting the connectors you would like to tag and hit **Apply Tags**
+        Tag the connectors you would like to show to your user by going to **Tenant Admin -> Setup -> Connectors**, selecting the connectors you would like to tag and hit **Apply Tags**
 
         ![Bulk Tag](../resources/screenshots/tag-connectors.png)
     </Step>

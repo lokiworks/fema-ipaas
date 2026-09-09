@@ -111,7 +111,7 @@
                      "workflows/passing-data",
                      "workflows/using-formulas",
                      "workflows/formula-reference",
-                     "workflows/workspace-variables",
+                     "workflows/project-variables",
                      "workflows/publishing-workflows",
                      "workflows/debugging-runs",
                      "workflows/versioning"
@@ -133,7 +133,7 @@
                {
                   "group": "Guides",
                   "pages": [
-                     "admin-guide/guides/structure-workspaces",
+                     "admin-guide/guides/structure-projects",
                      "admin-guide/guides/manage-connectors",
                      "admin-guide/guides/sso",
                      "admin-guide/guides/manage-oauth2",
@@ -392,14 +392,14 @@
                         ]
                      },
                      {
-                        "group": "Workspaces",
+                        "group": "Projects",
                         "icon": "building",
                         "pages": [
-                           "endpoints/workspaces/schema",
-                           "endpoints/workspaces/create",
-                           "endpoints/workspaces/update",
-                           "endpoints/workspaces/list",
-                           "endpoints/workspaces/delete"
+                           "endpoints/projects/schema",
+                           "endpoints/projects/create",
+                           "endpoints/projects/update",
+                           "endpoints/projects/list",
+                           "endpoints/projects/delete"
                         ]
                      },
                      {
@@ -424,12 +424,12 @@
                         ]
                      },
                      {
-                        "group": "Workspace Members",
+                        "group": "Project Members",
                         "icon": "user",
                         "pages": [
-                           "endpoints/workspace-members/schema",
-                           "endpoints/workspace-members/list",
-                           "endpoints/workspace-members/delete"
+                           "endpoints/project-members/schema",
+                           "endpoints/project-members/list",
+                           "endpoints/project-members/delete"
                         ]
                      },
                      {

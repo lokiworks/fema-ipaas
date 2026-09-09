@@ -67,3 +67,22 @@ status: accepted
 - **e2e 把语言钉成 en。** 界面默认简体中文，而这些用例断言的是英文文案，所以
   `playwright.config.ts` 的 `use.storageState` 和 `global-setup.ts` 都会写入
   `localStorage['fema.language'] = 'en'`。改语言解析逻辑时记得同步这两处。
+- **`PanelImperativeHandle.resize()` 不能传 `'320px'` 这种带单位的字符串。**
+  react-resizable-panels 4.7 的类型注释说字符串可以带 `px`，实测 `resize('320px')` 被误解析，
+  面板直接钉到 `maxSize`（当时是 60%，1512px 视口下就是 843px，画布只剩 562px）。
+  实测对照：`resize(320)` → 320px ✅、`resize('320px')` → 60% ❌、`resize('21%')` → 21% ✅、
+  `resize(21)` → 21% ——**数值 >100 当像素、≤100 当百分比**。所以固定像素宽度一律传数字。
+- **面板宽度存的是百分比，左栏一开右栏就缩水。** 左侧工具栏 + 260px 面板不在
+  `ResizablePanelGroup` 里，它们一出现 group 变窄，右栏那个百分比换算出来的像素宽度就跟着掉
+  （320px → 261px，标题栏会丢掉步骤名）。所以那个 `useLayoutEffect` 的依赖里必须有
+  `leftSidebar`，左右开合时重新把右栏钉回 320px。
+- **左栏「连接器」按钮必须同时设置 `connectorSelectorOperation`。**
+  `ConnectorPickerPanel` 在 operation 为 null 时 `return null`，而 `ToolRail` 的 `onSelect`
+  只改 `leftSidebar`——结果点开是一块 260px 的空白板，飞书那个「随时打开左栏浏览连接器」的
+  心智根本不成立，连接器面板只能被画布的 `+` 被动唤起。`BuilderLeftPanel` 现在自己算目标：
+  触发器为 EMPTY 就走 `UPDATE_TRIGGER`，否则取主路径最后一步做 `ADD_ACTION` / `AFTER`。
+- **节点卡片副标题给的是连接器名，不是 `step.name`。** 原来那里用等宽字体渲染
+  `step.name`，等于把 `trigger`、`step_1` 这种内部标识摆给用户看；内部名留在 tooltip 里
+  （公式引用时才需要）。另外卡片逻辑宽度 `WORKFLOW_CANVAS_STEP_WIDTH` 从 176 加到 240——
+  176px 减去 px-3、logo 36、chevron 28 和两个 10px 间距后，标题只剩 ~66px，
+  「1. 捕获Webhook」都放不下。

@@ -33,6 +33,9 @@ const ConnectorActions = ({ connectorName }: ConnectorActionsProps) => {
           <Button
             variant="ghost"
             size={'sm'}
+            aria-label={
+              pinned ? t('Unpin this connector') : t('Pin this connector')
+            }
             loading={isPinPending}
             onClick={() => togglePin(connectorName)}
           >

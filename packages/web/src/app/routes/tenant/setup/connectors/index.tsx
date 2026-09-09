@@ -20,6 +20,7 @@ import { DashboardPageHeader } from '@/app/components/dashboard-page-header';
 import { ConnectorActions } from '@/app/routes/tenant/setup/connectors/connector-actions';
 import { CustomizeSelectorDialog } from '@/app/routes/tenant/setup/connectors/customize-selector-dialog';
 import { SyncConnectorsButton } from '@/app/routes/tenant/setup/connectors/sync-connectors';
+import { VerifyIntegrityButton } from '@/app/routes/tenant/setup/connectors/verify-integrity';
 import { DataTable, RowDataWithActions } from '@/components/custom/data-table';
 import { DataTableColumnHeader } from '@/components/custom/data-table/data-table-column-header';
 import { ConfirmationDeleteDialog } from '@/components/custom/delete-dialog';
@@ -43,6 +44,7 @@ const ConnectorsListTab = () => {
     connectors,
     refetch: refetchConnectors,
     isLoading,
+    isError,
   } = connectorsHooks.useConnectors({
     searchQuery,
     includeHidden: true,
@@ -176,9 +178,11 @@ const ConnectorsListTab = () => {
         previous: null,
       }}
       isLoading={isLoading}
+      isError={isError}
       toolbarButtons={[
         <CustomizeSelectorDialog key="customize" />,
         <SyncConnectorsButton key="sync" />,
+        <VerifyIntegrityButton key="verify-integrity" />,
         <InstallConnectorDialog
           key="install"
           onInstallConnector={() => refetchConnectors()}

@@ -1,4 +1,5 @@
 import { FlagId, ConnectorSyncMode } from '@fema-ipaas/shared';
+import { t } from 'i18next';
 import { RefreshCcw } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -21,7 +22,7 @@ const SyncConnectorsButton = () => {
           loading={isPending}
           size={'sm'}
         >
-          <RefreshCcw className="w-4 h-4 mr-2" /> Sync from Cloud
+          <RefreshCcw className="w-4 h-4 mr-2" /> {t('Sync from Cloud')}
         </Button>
       )}
     </>

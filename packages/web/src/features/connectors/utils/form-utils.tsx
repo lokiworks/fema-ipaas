@@ -206,16 +206,19 @@ function getDefaultValueForProperties({
 }): Record<string, unknown> {
   const defaultValues = Object.entries(props).reduce<Record<string, unknown>>(
     (defaultValues, [propertyName, property]) => {
-      defaultValues[propertyName] =
-        //we specifically check for undefined because null is a valid value
-        existingInput[propertyName] === undefined
-          ? getDefaultPropertyValue({
-              property,
-              dynamicInputModeToggled:
-                propertySettings?.[propertyName]?.type ===
-                PropertyExecutionType.DYNAMIC,
-            })
-          : existingInput[propertyName];
+      //we specifically check for undefined because null is a valid value
+      const hasExistingValue = existingInput[propertyName] !== undefined;
+      if (!hasExistingValue && property.type === PropertyType.MARKDOWN) {
+        return defaultValues;
+      }
+      defaultValues[propertyName] = hasExistingValue
+        ? existingInput[propertyName]
+        : getDefaultPropertyValue({
+            property,
+            dynamicInputModeToggled:
+              propertySettings?.[propertyName]?.type ===
+              PropertyExecutionType.DYNAMIC,
+          });
       return defaultValues;
     },
     {},

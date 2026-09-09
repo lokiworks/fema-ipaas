@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React from 'react';
 
 type DataListProps = {
@@ -23,7 +24,7 @@ export const DataList: React.FC<DataListProps> = ({
   if (entries.length === 0) {
     return (
       <div className={`text-sm text-muted-foreground italic ${className}`}>
-        No data available
+        {t('No data available')}
       </div>
     );
   }

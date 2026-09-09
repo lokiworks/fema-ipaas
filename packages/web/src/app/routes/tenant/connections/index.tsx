@@ -43,10 +43,13 @@ import {
 } from '@/features/connectors';
 import { getProjectName, projectCollectionUtils } from '@/features/projects';
 import { tenantConnectionsQueries } from '@/features/tenant-admin/hooks/tenant-connections-hooks';
-import { formatUtils } from '@/lib/format-utils';
 
 export default function TenantConnectionsPage() {
-  const { data: connections, isLoading } = tenantConnectionsQueries.useList();
+  const {
+    data: connections,
+    isLoading,
+    isError,
+  } = tenantConnectionsQueries.useList();
   const { data: owners } = tenantConnectionsQueries.useOwners();
   const { data: projects } = projectCollectionUtils.useAllTenantProjects();
   const { connectors } = connectorsHooks.useConnectors({});
@@ -66,7 +69,7 @@ export default function TenantConnectionsPage() {
       accessorKey: 'status',
       icon: CheckIcon,
       options: Object.values(ConnectionStatus).map((status) => ({
-        label: formatUtils.convertEnumToHumanReadable(status),
+        label: connectionUtils.getStatusLabel(status),
         value: status,
       })),
     },
@@ -149,7 +152,7 @@ export default function TenantConnectionsPage() {
         return (
           <StatusIconWithText
             icon={Icon}
-            text={formatUtils.convertEnumToHumanReadable(status)}
+            text={connectionUtils.getStatusLabel(status)}
             variant={variant}
           />
         );
@@ -241,6 +244,7 @@ export default function TenantConnectionsPage() {
         columns={columns}
         page={connections}
         isLoading={isLoading}
+        isError={isError}
         filters={filters}
       />
     </div>

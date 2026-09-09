@@ -29,13 +29,13 @@ export const ConnectorSelectorTabs = ({
       className="w-full min-w-0"
     >
       <TabsList
-        className={`h-full w-full flex gap-3 px-2 justify-start rounded-none bg-background overflow-x-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none]`}
+        className={`h-full w-full flex gap-1 px-2 justify-start rounded-none bg-background overflow-x-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none]`}
       >
         {tabs.map((tab) => (
           <TabsTrigger
             key={tab.key}
             value={tab.key}
-            className={`flex flex-col h-full rounded-md w-[85px] max-w-[85px] shrink-0
+            className={`flex flex-col h-full rounded-md flex-1 min-w-[56px] max-w-[85px]
               hover:bg-gray-300/30 dark:hover:bg-gray-300/10
                data-[state=active]:text-primary data-[state=active]:shadow-none
                border-transparent data-[state=active]:border-primary data-[state=active]:active data-[state=active]:bg-transparent

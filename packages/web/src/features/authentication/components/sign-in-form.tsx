@@ -201,6 +201,9 @@ const SignInForm = ({ onForgotPassword }: SignInFormProps) => {
                     variant="ghost"
                     size="icon"
                     tabIndex={-1}
+                    aria-label={
+                      showPassword ? t('Hide password') : t('Show password')
+                    }
                     onClick={() => setShowPassword((v) => !v)}
                     className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
                   >

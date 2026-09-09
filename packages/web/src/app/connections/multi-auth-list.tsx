@@ -29,7 +29,6 @@ import {
   ConnectorsOAuth2AppsMap,
   oauth2Utils,
 } from '@/features/connections';
-import { formatUtils } from '@/lib/format-utils';
 
 export function MutliAuthList({
   connectorAuth,
@@ -78,7 +77,7 @@ export function MutliAuthList({
         value={selectedOption?.value ?? null}
       />
       <DialogFooter className="mt-4">
-        <div className="mx-5 w-full flex justify-end gap-2">
+        <div className="flex w-full justify-end gap-2 px-5">
           <DialogClose asChild>
             <Button variant="outline">{t('Cancel')}</Button>
           </DialogClose>
@@ -100,7 +99,7 @@ const getDisplayName = (auth: ConnectorAuthProperty): string => {
   } else if (auth.type === PropertyType.OAUTH2) {
     return 'OAuth2';
   }
-  return formatUtils.convertEnumToHumanReadable(auth.type);
+  return AUTH_TYPE_LABELS[auth.type]?.() ?? auth.type;
 };
 
 function createOAuth2Options(
@@ -189,4 +188,11 @@ type MutliAuthListProps = {
   connectorsOAuth2AppsMap: ConnectorsOAuth2AppsMap;
   selectedItem: AuthListItem;
   connectorName: string;
+};
+
+const AUTH_TYPE_LABELS: Partial<Record<PropertyType, () => string>> = {
+  [PropertyType.BASIC_AUTH]: () => t('Basic auth'),
+  [PropertyType.SECRET_TEXT]: () => t('Secret text'),
+  [PropertyType.CUSTOM_AUTH]: () => t('Custom auth'),
+  [PropertyType.OAUTH2]: () => 'OAuth2',
 };

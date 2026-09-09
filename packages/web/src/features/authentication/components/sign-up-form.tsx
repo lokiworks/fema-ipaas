@@ -289,6 +289,11 @@ const SignUpForm = ({
                           variant="ghost"
                           size="icon"
                           tabIndex={-1}
+                          aria-label={
+                            showPassword
+                              ? t('Hide password')
+                              : t('Show password')
+                          }
                           onClick={() => setShowPassword((v) => !v)}
                           className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
                         >

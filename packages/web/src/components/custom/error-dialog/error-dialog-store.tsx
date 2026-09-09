@@ -1,4 +1,7 @@
+import { t } from 'i18next';
 import { create } from 'zustand';
+
+import { api } from '@/lib/api';
 
 type ErrorDialogParams = {
   title: string;
@@ -16,3 +19,17 @@ export const useApErrorDialogStore = create<ErrorDialogStore>((set) => ({
   openDialog: (params) => set({ params }),
   closeDialog: () => set({ params: null }),
 }));
+
+export function openQueryErrorDialog(error: unknown, queryKey: unknown): void {
+  const { openDialog } = useApErrorDialogStore.getState();
+  openDialog({
+    title: t('Failed to load data'),
+    description: t(
+      'Something went wrong while loading your data. Your data is safe — please try again by refreshing the page.',
+    ),
+    error: {
+      queryKey,
+      details: api.isError(error) ? error.response?.data : String(error),
+    },
+  });
+}

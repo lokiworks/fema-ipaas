@@ -25,9 +25,9 @@ export const PageHeader = ({
         className,
       )}
     >
-      <div className="flex items-center gap-1 grow">
+      <div className="flex min-w-0 items-center gap-1 grow">
         {showSidebarToggle && <SidebarToggle />}
-        <div className="grow">
+        <div className="min-w-0 grow">
           {typeof title === 'string' ? (
             <h1 className="text-base font-semibold">{title}</h1>
           ) : (
@@ -39,7 +39,7 @@ export const PageHeader = ({
         </div>
         {leftContent}
       </div>
-      {rightContent}
+      {rightContent && <div className="shrink-0">{rightContent}</div>}
     </div>
   );
 };

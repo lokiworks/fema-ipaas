@@ -13,7 +13,7 @@ import {
 } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { t } from 'i18next';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, TriangleAlert } from 'lucide-react';
 import React, { useRef, useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useDeepCompareEffect } from 'react-use';
@@ -75,6 +75,7 @@ interface DataTableProps<
     e: React.MouseEvent<HTMLTableRowElement, MouseEvent>,
   ) => void;
   isLoading: boolean;
+  isError?: boolean;
   filters?: DataTableFilters<Keys>[];
   customFilters?: React.ReactNode[];
   onSelectedRowsChange?: (rows: RowDataWithActions<TData>[]) => void;
@@ -116,6 +117,7 @@ export function DataTable<
   filters = [],
   actions = [],
   isLoading,
+  isError = false,
   onSelectedRowsChange,
   hidePagination,
   bulkActions = [],
@@ -142,6 +144,7 @@ export function DataTable<
     header: ({ table }) => (
       <div className="flex items-center h-full">
         <Checkbox
+          aria-label={t('Select all rows')}
           checked={table.getIsAllPageRowsSelected()}
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         />
@@ -150,6 +153,7 @@ export function DataTable<
     cell: ({ row }) => (
       <div className="flex items-center h-full">
         <Checkbox
+          aria-label={t('Select row')}
           checked={row.getIsSelected()}
           disabled={!row.getCanSelect()}
           onCheckedChange={(value) => row.toggleSelected(!!value)}
@@ -235,7 +239,7 @@ export function DataTable<
     setNextPageCursor(page?.next ?? undefined);
     setPreviousPageCursor(page?.previous ?? undefined);
     setTableData(enrichPageData(page?.data ?? []));
-  }, [page?.data]);
+  }, [page?.data ?? []]);
 
   const table = useReactTable({
     data: tableData,
@@ -263,9 +267,12 @@ export function DataTable<
     },
   });
 
+  const findColumnById = (accessorKey: string) =>
+    table.getAllFlatColumns().find((column) => column.id === accessorKey);
+
   useEffect(() => {
     filters?.forEach((filter) => {
-      const column = table.getColumn(filter.accessorKey);
+      const column = findColumnById(filter.accessorKey);
       if (!column) return;
       if (filter.type === 'input') {
         const value = searchParams.get(filter.accessorKey);
@@ -347,7 +354,7 @@ export function DataTable<
                 filters.map((filter) => (
                   <DataTableFilter
                     key={filter.accessorKey}
-                    column={table.getColumn(filter.accessorKey)}
+                    column={findColumnById(filter.accessorKey)}
                     {...filter}
                   />
                 ))}
@@ -434,13 +441,24 @@ export function DataTable<
                         key={row.id}
                         data-index={virtualRow.index}
                         className={cn(
-                          'cursor-pointer',
+                          'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset',
                           {
                             'hover:bg-background cursor-default':
                               isNil(onRowClick),
                           },
                           getRowClassName?.(row.original, rowIndex),
                         )}
+                        tabIndex={isNil(onRowClick) ? undefined : 0}
+                        onKeyDown={(e) => {
+                          if (
+                            isNil(onRowClick) ||
+                            (e.key !== 'Enter' && e.key !== ' ')
+                          ) {
+                            return;
+                          }
+                          e.preventDefault();
+                          e.currentTarget.click();
+                        }}
                         onClick={(e) => {
                           const clickedCellIndex = (
                             e.target as HTMLElement
@@ -527,12 +545,23 @@ export function DataTable<
                 rows.map((row, rowIndex) => (
                   <TableRow
                     className={cn(
-                      'cursor-pointer',
+                      'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset',
                       {
                         'hover:bg-background cursor-default': isNil(onRowClick),
                       },
                       getRowClassName?.(row.original, rowIndex),
                     )}
+                    tabIndex={isNil(onRowClick) ? undefined : 0}
+                    onKeyDown={(e) => {
+                      if (
+                        isNil(onRowClick) ||
+                        (e.key !== 'Enter' && e.key !== ' ')
+                      ) {
+                        return;
+                      }
+                      e.preventDefault();
+                      e.currentTarget.click();
+                    }}
                     onClick={(e) => {
                       const clickedCellIndex = (
                         e.target as HTMLElement
@@ -610,14 +639,28 @@ export function DataTable<
                   className="h-[350px] text-center"
                 >
                   <div className="flex flex-col items-center justify-center gap-2">
-                    {emptyStateIcon ? emptyStateIcon : <></>}
-                    <p className="text-lg font-semibold">
-                      {emptyStateTextTitle}
-                    </p>
-                    {emptyStateTextDescription && (
-                      <p className="text-sm text-muted-foreground ">
-                        {emptyStateTextDescription}
-                      </p>
+                    {isError ? (
+                      <>
+                        <TriangleAlert className="size-14 text-destructive-600" />
+                        <p className="text-lg font-semibold">
+                          {t('Could not load this list')}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {t('Refresh the page to try again.')}
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        {emptyStateIcon ? emptyStateIcon : <></>}
+                        <p className="text-lg font-semibold">
+                          {emptyStateTextTitle}
+                        </p>
+                        {emptyStateTextDescription && (
+                          <p className="text-sm text-muted-foreground ">
+                            {emptyStateTextDescription}
+                          </p>
+                        )}
+                      </>
                     )}
                   </div>
                 </TableCell>

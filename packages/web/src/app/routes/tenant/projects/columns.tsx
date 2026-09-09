@@ -37,25 +37,20 @@ export const projectsTableColumns = (): ColumnDef<
       enableHiding: true,
     },
     {
-      accessorKey: 'users',
+      accessorKey: 'members',
       size: 120,
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          title={t('Active Users')}
+          title={t('Members')}
           icon={Users}
           className="w-full"
         />
       ),
       cell: ({ row }) => {
         return (
-          <div className="text-left tabular-nums">
-            <span className="font-medium">
-              {row.original.analytics.activeWorkflows}
-            </span>
-            <span className="text-muted-foreground">
-              {` / ${row.original.analytics.totalWorkflows}`}
-            </span>
+          <div className="text-left tabular-nums font-medium">
+            {row.original.analytics.members}
           </div>
         );
       },

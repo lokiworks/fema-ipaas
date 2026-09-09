@@ -27,6 +27,7 @@ import {
   DialogClose,
   DialogContent,
   DialogFooter,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -154,6 +155,11 @@ function CreateOrEditConnectionSection({
                   })}
             </div>
           </DialogTitle>
+          <DialogDescription className="px-5">
+            {t(
+              'Enter the credentials this workflow will use to reach the app.',
+            )}
+          </DialogDescription>
         </DialogHeader>
       )}
 
@@ -286,7 +292,7 @@ function CreateOrEditConnectionSection({
             </div>
           ) : (
             <DialogFooter className="mt-0">
-              <div className="mx-5 flex gap-2 w-full">
+              <div className="flex w-full gap-2 px-5">
                 {showTryAnotherMethodButton && (
                   <Button
                     variant="outline"
@@ -440,7 +446,7 @@ function CreateOrEditConnectionDialog({
     >
       <DialogContent
         onInteractOutside={(e) => e.preventDefault()}
-        className="max-h-[70vh] px-0  min-w-[450px] max-w-[450px] lg:min-w-[650px] lg:max-w-[650px] overflow-y-auto"
+        className="max-h-[70vh] px-0 w-[calc(100vw-2rem)] sm:min-w-[450px] sm:max-w-[450px] lg:min-w-[650px] lg:max-w-[650px] overflow-y-auto"
       >
         {loadingConnectorsOAuth2AppsMap && hasOAuth2ConnectorAuth(connector) ? (
           <>
@@ -456,6 +462,11 @@ function CreateOrEditConnectionDialog({
                       })}
                 </div>
               </DialogTitle>
+              <DialogDescription className="px-5">
+                {t(
+                  'Enter the credentials this workflow will use to reach the app.',
+                )}
+              </DialogDescription>
             </DialogHeader>
             <SkeletonList numberOfItems={4} className="h-7 mt-2"></SkeletonList>
           </>

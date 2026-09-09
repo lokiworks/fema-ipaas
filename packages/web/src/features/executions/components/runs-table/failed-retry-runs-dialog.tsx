@@ -14,7 +14,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { executionUtils } from '@/features/executions/utils/execution-utils';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
-import { formatUtils } from '@/lib/format-utils';
 import { useNewWindow } from '@/lib/navigation-utils';
 import { cn } from '@/lib/utils';
 
@@ -61,7 +60,7 @@ export const FailedRetryRunsDialog = ({
                       />
                       <span className="truncate">
                         {t('Previous status')}:{' '}
-                        {formatUtils.convertEnumToHumanReadable(run.status)}
+                        {executionUtils.getStatusLabel(run.status)}
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground">

@@ -11,10 +11,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -76,30 +76,30 @@ const EditGlobalConnectionDialog: React.FC<EditGlobalConnectionDialogProps> = ({
   return (
     <Tooltip>
       <Dialog open={isOpen} onOpenChange={(open) => setIsOpen(open)}>
-        <DialogTrigger asChild>
-          <>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled={!userHasPermissionToEdit}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  setIsOpen(true);
-                }}
-              >
-                <Pencil className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              {!userHasPermissionToEdit ? t('Permission needed') : t('Edit')}
-            </TooltipContent>
-          </>
-        </DialogTrigger>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-label={t('Edit Global Connection')}
+            disabled={!userHasPermissionToEdit}
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              setIsOpen(true);
+            }}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          {!userHasPermissionToEdit ? t('Permission needed') : t('Edit')}
+        </TooltipContent>
         <DialogContent onInteractOutside={(event) => event.preventDefault()}>
           <DialogHeader>
             <DialogTitle>{t('Edit Global Connection')}</DialogTitle>
+            <DialogDescription>
+              {t('Rename it or change which projects can use it.')}
+            </DialogDescription>
           </DialogHeader>
           <Form {...editConnectionForm}>
             <form

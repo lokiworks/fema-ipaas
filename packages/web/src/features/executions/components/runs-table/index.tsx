@@ -52,7 +52,6 @@ import {
   useIsTenantAdmin,
 } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
-import { formatUtils } from '@/lib/format-utils';
 import { useNewWindow } from '@/lib/navigation-utils';
 
 import { runsTableColumns } from './columns';
@@ -102,7 +101,7 @@ export const RunsTable = () => {
     setHasSeededDefaultRange(true);
   }, [hasSeededDefaultRange, setSearchParams]);
 
-  const { data, isLoading, refetch } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['execution-table', searchParams.toString(), projectId],
     enabled: hasSeededDefaultRange,
     staleTime: 0,
@@ -199,9 +198,7 @@ export const RunsTable = () => {
           accessorKey: 'status',
           options: Object.values(ExecutionStatus).map((status) => {
             return {
-              label:
-                executionUtils.getStatusLabelOverride(status) ??
-                formatUtils.convertEnumToHumanReadable(status),
+              label: executionUtils.getStatusLabel(status),
               value: status,
               icon: executionUtils.getStatusIcon(status).Icon,
             };
@@ -234,6 +231,9 @@ export const RunsTable = () => {
     onSuccess: (runs) => {
       const runsIds = runs.map((run) => run.id);
       setRetriedRunsIds(runsIds);
+      if (runsIds.length > 0) {
+        toast.success(t('retryQueued', { count: runsIds.length }));
+      }
       const isAlreadyViewingRetriedRuns = searchParams.get(RUN_IDS_QUERY_PARAM);
       refetch();
       if (isAlreadyViewingRetriedRuns) {
@@ -594,6 +594,7 @@ export const RunsTable = () => {
         columns={columns}
         page={data}
         isLoading={isLoading || isFetchingWorkflows}
+        isError={isError}
         filters={customFilters.length > 0 ? [] : filters}
         bulkActions={bulkActions}
         onRowClick={(row, newWindow) => handleRowClick(row, newWindow)}

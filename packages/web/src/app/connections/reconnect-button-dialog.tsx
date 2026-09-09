@@ -40,6 +40,7 @@ const ReconnectButtonDialog = ({
           <span className="inline-flex">
             <Button
               onClick={() => setOpen(true)}
+              aria-label={t('Reconnect')}
               disabled={!hasPermission}
               variant={'ghost'}
             >

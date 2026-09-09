@@ -66,6 +66,16 @@ export const connectionUtils = {
         };
     }
   },
+  getStatusLabel(status: ConnectionStatus): string {
+    switch (status) {
+      case ConnectionStatus.ACTIVE:
+        return t('Active');
+      case ConnectionStatus.MISSING:
+        return t('Missing');
+      case ConnectionStatus.ERROR:
+        return t('Error');
+    }
+  },
   getConnectionAccountIdentifier(
     connection: ConnectionWithoutSensitiveData,
   ): string | undefined {

@@ -184,17 +184,19 @@ const TemplateDetailsPage = ({ template }: TemplateDetailsPageProps) => {
                     {t('Use Template')}
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
-                  {template.type !== TemplateType.SHARED && (
-                    <Button
-                      variant="outline"
-                      onClick={handleUseWithGuide}
-                      size="xl"
-                      className="flex-1"
-                    >
-                      {t('Setup guide')}
-                      <ExternalLink className="w-4 h-4 ml-2" />
-                    </Button>
-                  )}
+                  {template.type !== TemplateType.SHARED &&
+                    !isNil(template.blogUrl) &&
+                    template.blogUrl !== '' && (
+                      <Button
+                        variant="outline"
+                        onClick={handleUseWithGuide}
+                        size="xl"
+                        className="flex-1"
+                      >
+                        {t('Setup guide')}
+                        <ExternalLink className="w-4 h-4 ml-2" />
+                      </Button>
+                    )}
                 </div>
 
                 <div className="flex flex-col gap-2">

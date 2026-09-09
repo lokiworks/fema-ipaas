@@ -73,6 +73,7 @@ const AuthenticationPage = () => {
           </ItemContent>
           <ItemActions>
             <Switch
+              aria-label={t('Allowed Email Login')}
               checked={emailAuthEnabled}
               onCheckedChange={() =>
                 toggleEmailAuthentication({

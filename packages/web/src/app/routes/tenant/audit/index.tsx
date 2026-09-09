@@ -1,19 +1,30 @@
-import {
-  ApplicationEvent,
-  summarizeApplicationEvent,
-} from '@fema-ipaas/shared';
+import { ApplicationEvent } from '@fema-ipaas/shared';
 import { ColumnDef } from '@tanstack/react-table';
 import { t } from 'i18next';
-import { ScrollText } from 'lucide-react';
+import { Filter, ScrollText } from 'lucide-react';
 import { useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import { DataTable, RowDataWithActions } from '@/components/custom/data-table';
 import { DataTableColumnHeader } from '@/components/custom/data-table/data-table-column-header';
 import { FormattedDate } from '@/components/custom/formatted-date';
-import { auditEventsHooks } from '@/features/audit-events';
+import { TextWithTooltip } from '@/components/custom/text-with-tooltip';
+import {
+  AUDIT_EVENT_SOURCE,
+  auditEventsHooks,
+  auditEventUtils,
+} from '@/features/audit-events';
 
 export default function AuditLogPage() {
-  const { data, isLoading } = auditEventsHooks.useAuditEvents();
+  const [searchParams] = useSearchParams();
+  const sources = searchParams.getAll('source');
+  const action = useMemo(
+    () => auditEventUtils.actionsForSources(sources),
+    [sources.join(',')],
+  );
+  const { data, isLoading, isError } = auditEventsHooks.useAuditEvents({
+    action,
+  });
 
   const columns = useMemo<
     ColumnDef<RowDataWithActions<ApplicationEvent>, unknown>[]
@@ -43,7 +54,9 @@ export default function AuditLogPage() {
           <DataTableColumnHeader column={column} title={t('Action')} />
         ),
         cell: ({ row }) => (
-          <span className="font-mono text-xs">{row.original.action}</span>
+          <span className="text-sm">
+            {auditEventUtils.actionLabel(row.original.action)}
+          </span>
         ),
       },
       {
@@ -51,11 +64,18 @@ export default function AuditLogPage() {
         header: ({ column }) => (
           <DataTableColumnHeader column={column} title={t('Details')} />
         ),
-        cell: ({ row }) => (
-          <span className="text-sm text-muted-foreground">
-            {summarizeApplicationEvent(row.original)}
-          </span>
-        ),
+        cell: ({ row }) => {
+          const summary = auditEventUtils.summarize(row.original);
+          return (
+            <div className="min-w-0 max-w-[min(52vw,640px)]">
+              <TextWithTooltip tooltipMessage={summary}>
+                <p className="truncate text-sm text-muted-foreground">
+                  {summary}
+                </p>
+              </TextWithTooltip>
+            </div>
+          );
+        },
       },
     ],
     [],
@@ -66,7 +86,9 @@ export default function AuditLogPage() {
       <div>
         <h1 className="text-2xl font-semibold">{t('Audit Log')}</h1>
         <p className="text-sm text-muted-foreground">
-          {t('Who changed what, kept separate from what the system executed.')}
+          {t(
+            'Who changed what, and what the system executed. Filter by source to keep them apart.',
+          )}
         </p>
       </div>
       <DataTable
@@ -76,8 +98,21 @@ export default function AuditLogPage() {
         )}
         emptyStateIcon={<ScrollText className="size-14" />}
         columns={columns}
+        filters={[
+          {
+            type: 'select',
+            title: t('Source'),
+            accessorKey: 'source',
+            icon: Filter,
+            options: [
+              { label: t('People'), value: AUDIT_EVENT_SOURCE.HUMAN },
+              { label: t('System'), value: AUDIT_EVENT_SOURCE.SYSTEM },
+            ],
+          },
+        ]}
         page={data}
         isLoading={isLoading}
+        isError={isError}
       />
     </div>
   );

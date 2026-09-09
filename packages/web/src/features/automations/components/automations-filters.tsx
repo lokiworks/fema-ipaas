@@ -33,7 +33,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { useOwnerOptions } from '@/features/automations/hooks/use-owner-options';
 import { TemplatesBrowseDialog } from '@/features/templates';
-import { formatUtils } from '@/lib/format-utils';
 import { cn, DASHBOARD_CONTENT_PADDING_X } from '@/lib/utils';
 
 import { CreateNewMenu } from './create-new-menu';
@@ -101,7 +100,7 @@ export const AutomationsFilters = ({
 
   const statusOptions = Object.values(WorkflowStatus).map((status) => ({
     value: status,
-    label: formatUtils.convertEnumToHumanReadable(status),
+    label: status === WorkflowStatus.ENABLED ? t('Enabled') : t('Disabled'),
   }));
 
   const folderOptions = folders.map((folder) => ({

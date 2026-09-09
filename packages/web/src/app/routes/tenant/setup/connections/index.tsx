@@ -49,7 +49,6 @@ import {
 } from '@/features/connections';
 import { ConnectorIconWithConnectorName } from '@/features/connectors';
 import { useAuthorization } from '@/hooks/authorization-hooks';
-import { formatUtils } from '@/lib/format-utils';
 
 const STATUS_QUERY_PARAM = 'status';
 const filters: DataTableFilters<keyof ConnectionWithoutSensitiveData>[] = [
@@ -65,7 +64,7 @@ const filters: DataTableFilters<keyof ConnectionWithoutSensitiveData>[] = [
     accessorKey: STATUS_QUERY_PARAM,
     options: Object.values(ConnectionStatus).map((status) => {
       return {
-        label: formatUtils.convertEnumToReadable(status),
+        label: connectionUtils.getStatusLabel(status),
         value: status,
       };
     }),
@@ -130,7 +129,7 @@ const GlobalConnectionsTable = () => {
           <div className="text-left">
             <StatusIconWithText
               icon={Icon}
-              text={formatUtils.convertEnumToReadable(status)}
+              text={connectionUtils.getStatusLabel(status)}
               variant={variant}
             />
           </div>
@@ -207,6 +206,7 @@ const GlobalConnectionsTable = () => {
   const {
     data: globalConnections,
     isLoading: isLoadingGlobalConnections,
+    isError: isGlobalConnectionsError,
     refetch: refetchGlobalConnections,
   } = globalConnectionsQueries.useGlobalConnections({
     request: {
@@ -250,7 +250,7 @@ const GlobalConnectionsTable = () => {
                   'The selected connections will be permanently deleted.',
                 )}
                 warning={<DeleteConnectionWarning />}
-                entityName="connections"
+                entityName={t('Connections')}
                 buttonText={t('Delete')}
                 mutationFn={async () => {
                   try {
@@ -317,6 +317,7 @@ const GlobalConnectionsTable = () => {
         columns={columns}
         page={globalConnections}
         isLoading={isLoadingGlobalConnections}
+        isError={isGlobalConnectionsError}
         filters={filters}
         selectColumn={true}
         onSelectedRowsChange={setSelectedRows}

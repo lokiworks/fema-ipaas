@@ -1,5 +1,6 @@
 import { isNil } from '@fema-ipaas/core-utils';
 import { USE_DRAFT_QUERY_PARAM_NAME } from '@fema-ipaas/shared';
+import { t } from 'i18next';
 import { useParams } from 'react-router-dom';
 import { useSearchParam } from 'react-use';
 
@@ -23,8 +24,8 @@ export const FormPage = () => {
       {isLoading && <LoadingScreen />}
       {isError && (
         <NotFoundPage
-          title="Hmm... this form isn't here"
-          description="The form you're looking for isn't here or maybe hasn't been published by the owner yet"
+          title={t('formNotFoundTitle')}
+          description={t('formNotFoundDescription')}
         />
       )}
 

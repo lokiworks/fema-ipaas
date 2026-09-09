@@ -16,16 +16,26 @@ import {
   or,
   useLiveSuspenseQuery,
 } from '@tanstack/react-db';
-import { QueryClient, useMutation, useQuery } from '@tanstack/react-query';
+import {
+  QueryClient,
+  useMutation,
+  useQuery,
+  QueryCache,
+} from '@tanstack/react-query';
 import { t } from 'i18next';
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
+import { openQueryErrorDialog } from '@/components/custom/error-dialog/error-dialog-store';
 import { useEmbedding } from '@/components/providers/embed-provider';
 import { api } from '@/lib/api';
 import { authenticationSession } from '@/lib/authentication-session';
 
-const collectionQueryClient = new QueryClient();
+const collectionQueryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onError: (error, query) => openQueryErrorDialog(error, query.queryKey),
+  }),
+});
 
 export const projectCollection = createCollection<ProjectWithLimits, string>(
   queryCollectionOptions({

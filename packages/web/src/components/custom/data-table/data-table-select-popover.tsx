@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import { CheckIcon, ListFilterIcon } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
@@ -87,7 +88,7 @@ const DataTableSelectPopover = ({
         <Command>
           <CommandInput placeholder={title} />
           <CommandList>
-            <CommandEmpty>No results found.</CommandEmpty>
+            <CommandEmpty>{t('No results found.')}</CommandEmpty>
 
             <CommandGroup>
               <ScrollArea viewPortClassName="max-h-[200px]">
@@ -149,7 +150,7 @@ const DataTableSelectPopover = ({
                     onSelect={() => handleFilterChange([])}
                     className="justify-center text-center"
                   >
-                    Clear filters
+                    {t('Clear filters')}
                   </CommandItem>
                 </CommandGroup>
               </>

@@ -34,12 +34,14 @@ export default function UsersPage() {
   const {
     data: usersData,
     isLoading: usersLoading,
+    isError: usersError,
     refetch: refetchUsers,
   } = tenantUserHooks.useUsers();
 
   const {
     data: invitationsData,
     isLoading: invitationsLoading,
+    isError: invitationsError,
     refetch: refetchInvitations,
   } = tenantUserHooks.useTenantInvitations();
 
@@ -67,6 +69,7 @@ export default function UsersPage() {
   }, [usersData, invitationsData]);
 
   const isLoading = usersLoading || invitationsLoading;
+  const isError = usersError || invitationsError;
 
   const { mutate: deleteUser } = tenantUserMutations.useDeleteUser({
     onSuccess: refetch,
@@ -124,6 +127,7 @@ export default function UsersPage() {
         }}
         hidePagination={true}
         isLoading={isLoading}
+        isError={isError}
         actions={[
           (row) => (
             <UserActions

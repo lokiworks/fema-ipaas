@@ -82,6 +82,7 @@ export const runsTableColumns = ({
     header: ({ table }) => (
       <div className="flex items-center h-full relative">
         <Checkbox
+          aria-label={t('Select all rows')}
           checked={selectedAll || table.getIsAllPageRowsSelected()}
           onCheckedChange={(value) => {
             const isChecked = !!value;
@@ -170,6 +171,7 @@ export const runsTableColumns = ({
       return (
         <div className="flex items-center h-full">
           <Checkbox
+            aria-label={t('Select row')}
             checked={isSelected}
             onCheckedChange={(value) => {
               const isChecked = !!value;
@@ -244,10 +246,7 @@ export const runsTableColumns = ({
         <div className="text-left">
           <StatusIconWithText
             icon={Icon}
-            text={
-              executionUtils.getStatusLabelOverride(status) ??
-              formatUtils.convertEnumToReadable(status)
-            }
+            text={executionUtils.getStatusLabel(status)}
             variant={variant}
           />
         </div>

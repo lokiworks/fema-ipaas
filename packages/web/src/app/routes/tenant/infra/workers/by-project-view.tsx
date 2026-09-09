@@ -45,7 +45,11 @@ export function ByProjectView({
 
   const queryClient = useQueryClient();
 
-  const { data: page, isLoading } = useTenantProjectsPage({
+  const {
+    data: page,
+    isLoading,
+    isError,
+  } = useTenantProjectsPage({
     cursor,
     limit,
     displayName,
@@ -96,6 +100,7 @@ export function ByProjectView({
         columns={columns}
         page={page}
         isLoading={isLoading}
+        isError={isError}
         emptyStateTextTitle={t('No projects yet')}
         emptyStateTextDescription={t(
           'Start by creating projects to manage your automation teams',

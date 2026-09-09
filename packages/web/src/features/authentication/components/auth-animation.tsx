@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { cn } from '@/lib/utils';
@@ -329,7 +330,7 @@ function AgentCard({
                 {title}
               </div>
               <div className="text-gray-500 truncate leading-tight text-xs">
-                AI Agent
+                {t('AI Agent')}
               </div>
             </div>
           </div>
@@ -347,7 +348,7 @@ function AgentCard({
               {/* Instructions */}
               <div>
                 <label className="text-xs font-bold text-gray-400 uppercase mb-1.5 block">
-                  Instructions
+                  {t('Instructions')}
                 </label>
                 {showInstructions ? (
                   <div className="p-3 rounded-lg bg-violet-50 border border-violet-200 min-h-[60px]">
@@ -382,7 +383,7 @@ function AgentCard({
                         />
                       </div>
                       <span className="text-sm font-medium text-gray-700">
-                        New Lead
+                        {t('New Lead')}
                       </span>
                     </div>
                   ) : (
@@ -797,7 +798,7 @@ function Scene3({
                 {/* Slack-style buttons */}
                 <div className="flex gap-2 mt-3">
                   <button className="px-4 py-1.5 bg-[#007a5a] hover:bg-[#148567] text-white text-sm font-medium rounded transition-colors">
-                    Send intro
+                    {t('Send intro')}
                   </button>
                   <button className="px-4 py-1.5 bg-white hover:bg-gray-50 text-gray-700 text-sm font-medium rounded border border-gray-300 transition-colors">
                     Skip
@@ -887,7 +888,7 @@ function Scene4({
               <TableSvg />
             </div>
             <span className="font-semibold text-gray-900 text-sm">
-              Lead Scores
+              {t('Lead Scores')}
             </span>
           </div>
           <div className="flex-1" />

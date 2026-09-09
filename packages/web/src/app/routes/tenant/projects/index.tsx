@@ -2,7 +2,7 @@ import { ProjectType, ProjectWithLimits } from '@fema-ipaas/shared';
 import { ColumnDef } from '@tanstack/react-table';
 import { t } from 'i18next';
 import { CheckIcon, Package, Pencil, Trash } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -26,40 +26,23 @@ import {
   EditProjectDialog,
   projectCollectionUtils,
 } from '@/features/projects';
-import { formatUtils } from '@/lib/format-utils';
 import { validationUtils } from '@/lib/validation-utils';
 
 import { projectsTableColumns } from './columns';
 
 export default function ProjectsPage() {
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const { project: currentProject } =
     projectCollectionUtils.useCurrentProject();
 
-  useEffect(() => {
-    if (!searchParams.has('type')) {
-      setSearchParams(
-        (prev) => {
-          const newParams = new URLSearchParams(prev);
-          newParams.set('type', ProjectType.TEAM);
-          return newParams;
-        },
-        { replace: true },
-      );
-    }
-  }, []);
-
   const displayNameFilter = searchParams.get('displayName') || undefined;
-  const typeFilter = searchParams.getAll('type');
+  const typeFilter = searchParams.getAll('type').filter(isProjectType);
 
   const filters = useMemo(
     () => ({
       displayName: displayNameFilter,
-      type:
-        typeFilter.length > 0
-          ? typeFilter.map((t) => t as ProjectType)
-          : undefined,
+      type: typeFilter.length > 0 ? typeFilter : undefined,
     }),
     [displayNameFilter, typeFilter.join(',')],
   );
@@ -70,7 +53,7 @@ export default function ProjectsPage() {
   const [selectedRows, setSelectedRows] = useState<ProjectWithLimits[]>([]);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editDialogInitialValues, setEditDialogInitialValues] =
-    useState<any>(null);
+    useState<EditProjectInitialValues>();
   const [editDialogProjectId, setEditDialogProjectId] = useState<string>('');
   const { data: allGlobalConnectionsPage } =
     globalConnectionsQueries.useGlobalConnections({
@@ -114,6 +97,7 @@ export default function ProjectsPage() {
 
         return (
           <Checkbox
+            aria-label={t('Select all rows')}
             checked={allSelectableSelected || someSelectableSelected}
             onCheckedChange={(value) => {
               const isChecked = !!value;
@@ -154,9 +138,10 @@ export default function ProjectsPage() {
 
         return (
           <Tooltip>
-            <TooltipTrigger>
+            <TooltipTrigger asChild>
               <div className={isDisabled ? 'cursor-not-allowed' : ''}>
                 <Checkbox
+                  aria-label={t('Select row')}
                   checked={isChecked}
                   disabled={isDisabled}
                   onCheckedChange={(value) => {
@@ -294,12 +279,16 @@ export default function ProjectsPage() {
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
+                aria-label={t('Edit project')}
                 className="size-8 p-0"
                 onClick={async (e) => {
                   e.stopPropagation();
                   e.preventDefault();
                   setEditDialogInitialValues({
                     projectName: row.displayName,
+                    externalId: row.externalId ?? undefined,
+                    notifyWorkflowOwnerOnFailure:
+                      row.notifyWorkflowOwnerOnFailure,
                   });
                   setEditDialogProjectId(row.id);
                   setEditDialogOpen(true);
@@ -345,7 +334,9 @@ export default function ProjectsPage() {
             options: Object.values(ProjectType).map((type) => {
               return {
                 label:
-                  formatUtils.convertEnumToHumanReadable(type) + ' Project',
+                  type === ProjectType.TEAM
+                    ? t('Team Project')
+                    : t('Personal Project'),
                 value: type,
               };
             }),
@@ -375,3 +366,13 @@ export default function ProjectsPage() {
     </div>
   );
 }
+
+function isProjectType(value: string): value is ProjectType {
+  return Object.values(ProjectType).some((type) => type === value);
+}
+
+type EditProjectInitialValues = {
+  projectName?: string;
+  externalId?: string;
+  notifyWorkflowOwnerOnFailure?: boolean;
+};

@@ -52,6 +52,9 @@ const WorkflowStatusToggle = ({ workflow }: WorkflowStatusToggleProps) => {
         <TooltipTrigger asChild>
           <div className="flex items-center justify-center">
             <Switch
+              aria-label={
+                isWorkflowPublished ? t('Workflow is on') : t('Workflow is off')
+              }
               checked={isWorkflowPublished}
               onCheckedChange={() => changeStatus()}
               disabled={

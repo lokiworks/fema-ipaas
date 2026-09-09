@@ -46,7 +46,7 @@ export const WorkflowCard = ({
               size="md"
               className="flex gap-1.5"
               background="white"
-              excludeCore={true}
+              excludeCore={false}
             />
           </div>
         )}

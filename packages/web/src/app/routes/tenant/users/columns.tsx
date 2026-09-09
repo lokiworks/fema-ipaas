@@ -50,7 +50,7 @@ export const createUsersTableColumns = (): ColumnDefWithAccessorKey[] => [
         <div className="flex items-center gap-2">
           {isInvitation && (
             <Tooltip>
-              <TooltipTrigger>
+              <TooltipTrigger asChild>
                 <Info className="h-4 w-4 text-orange-700" />
               </TooltipTrigger>
               <TooltipContent>

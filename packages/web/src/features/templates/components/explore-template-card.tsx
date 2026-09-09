@@ -74,7 +74,7 @@ export const ExploreTemplateCard = React.memo(
               size="md"
               className="flex gap-0.5"
               background="white"
-              excludeCore={true}
+              excludeCore={false}
             />
           )}
         </div>

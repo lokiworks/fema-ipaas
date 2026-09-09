@@ -1,7 +1,7 @@
 import { FolderDto, PopulatedWorkflow } from '@fema-ipaas/shared';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import { t } from 'i18next';
-import { Activity, Clock, Info, Type, User } from 'lucide-react';
+import { Activity, Clock, Info, Type, User, TriangleAlert } from 'lucide-react';
 
 import { useEmbedding } from '@/components/providers/embed-provider';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -17,6 +17,7 @@ import { CreateInFolderKind } from './create-new-menu';
 type AutomationsTableProps = {
   items: TreeItem[];
   isLoading: boolean;
+  isError?: boolean;
   selectedItems: SelectedItemsMap;
   expandedFolders: Set<string>;
   projectMembers: unknown[] | undefined;
@@ -83,6 +84,7 @@ function AutomationsSkeletonRow({
 export const AutomationsTable = ({
   items,
   isLoading,
+  isError = false,
   selectedItems,
   expandedFolders,
   projectMembers,
@@ -115,6 +117,7 @@ export const AutomationsTable = ({
         <div className="flex items-center h-8 text-xs border-b font-medium text-foreground bg-muted/50">
           <div className="w-10 shrink-0 pl-4 pr-1">
             <Checkbox
+              aria-label={t('Select all rows')}
               checked={
                 selectableCount > 0 && selectedItems.size === selectableCount
               }
@@ -149,7 +152,17 @@ export const AutomationsTable = ({
           <div className="w-[80px] shrink-0 px-2"></div>
         </div>
 
-        {isLoading ? (
+        {isError ? (
+          <div className="flex flex-col items-center justify-center gap-2 py-20">
+            <TriangleAlert className="size-14 text-destructive-600" />
+            <p className="text-lg font-semibold">
+              {t('Could not load this list')}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {t('Refresh the page to try again.')}
+            </p>
+          </div>
+        ) : isLoading ? (
           <div>
             {Array.from({ length: 10 }).map((_, i) => (
               <AutomationsSkeletonRow
@@ -174,9 +187,14 @@ export const AutomationsTable = ({
                     className="border-b"
                   >
                     <div
-                      className={cn(rowClassName)}
+                      className={cn(rowClassName, FOCUS_RING)}
+                      role="button"
+                      tabIndex={0}
                       onClick={(e) =>
                         onRowClick(group.item, e.ctrlKey || e.metaKey)
+                      }
+                      onKeyDown={(e) =>
+                        activateOnKey(e, () => onRowClick(group.item))
                       }
                     >
                       <AutomationsTableRow
@@ -210,9 +228,14 @@ export const AutomationsTable = ({
                       {group.children.map((child) => (
                         <div
                           key={`${child.type}-${child.id}`}
-                          className={cn(rowClassName, 'border-t')}
+                          className={cn(rowClassName, 'border-t', FOCUS_RING)}
+                          role="button"
+                          tabIndex={0}
                           onClick={(e) =>
                             onRowClick(child, e.ctrlKey || e.metaKey)
+                          }
+                          onKeyDown={(e) =>
+                            activateOnKey(e, () => onRowClick(child))
                           }
                         >
                           <AutomationsTableRow
@@ -250,9 +273,14 @@ export const AutomationsTable = ({
               return (
                 <div
                   key={`${group.item.type}-${group.item.id}`}
-                  className={cn(rowClassName, 'border-b')}
+                  className={cn(rowClassName, 'border-b', FOCUS_RING)}
+                  role="button"
+                  tabIndex={0}
                   onClick={(e) =>
                     onRowClick(group.item, e.ctrlKey || e.metaKey)
+                  }
+                  onKeyDown={(e) =>
+                    activateOnKey(e, () => onRowClick(group.item))
                   }
                 >
                   <AutomationsTableRow
@@ -283,3 +311,20 @@ export const AutomationsTable = ({
     </div>
   );
 };
+
+function activateOnKey(
+  event: React.KeyboardEvent<HTMLDivElement>,
+  activate: () => void,
+): void {
+  if (event.key !== 'Enter' && event.key !== ' ') {
+    return;
+  }
+  if (event.target !== event.currentTarget) {
+    return;
+  }
+  event.preventDefault();
+  activate();
+}
+
+const FOCUS_RING =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset';

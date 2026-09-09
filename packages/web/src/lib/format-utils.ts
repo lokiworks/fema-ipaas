@@ -177,26 +177,29 @@ export const formatUtils = {
       const durationMsFormatted = Math.floor(durationMs);
       return short
         ? `${durationMsFormatted} ms`
-        : `${durationMsFormatted} milliseconds`;
+        : t('durationMilliseconds', { count: durationMsFormatted });
     }
     const seconds = Math.floor(durationMs / 1000);
     const minutes = Math.floor(seconds / 60);
 
     if (seconds < 60) {
-      return short ? `${seconds} s` : `${seconds} seconds`;
+      return short ? `${seconds} s` : t('durationSeconds', { count: seconds });
     }
 
     if (minutes > 0) {
       const remainingSeconds = seconds % 60;
-      return short
-        ? `${minutes} min ${
-            remainingSeconds > 0 ? `${remainingSeconds} s` : ''
-          }`
-        : `${minutes} minutes${
-            remainingSeconds > 0 ? ` ${remainingSeconds} seconds` : ''
-          }`;
+      if (short) {
+        return `${minutes} min ${
+          remainingSeconds > 0 ? `${remainingSeconds} s` : ''
+        }`;
+      }
+      return remainingSeconds > 0
+        ? `${t('durationMinutes', { count: minutes })} ${t('durationSeconds', {
+            count: remainingSeconds,
+          })}`
+        : t('durationMinutes', { count: minutes });
     }
-    return short ? `${seconds} s` : `${seconds} seconds`;
+    return short ? `${seconds} s` : t('durationSeconds', { count: seconds });
   },
   formatStorageSize(bytes: number): string {
     if (bytes < 1024) {

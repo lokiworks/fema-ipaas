@@ -8,6 +8,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
@@ -81,17 +82,13 @@ const NewProjectForm = ({
   const queryClient = useQueryClient();
 
   const form = useForm<CreateTenantProjectRequest>({
+    mode: 'onChange',
     resolver: zodResolver(
       z.object({
-        displayName: z.string().min(1, t('Name is required')),
-        alertReceiverEmail: z
-          .email(t('Invalid email'))
-          .nullable()
-          .optional()
-          .or(z.literal('')),
+        displayName: z.string().min(1, 'Name is required'),
       }),
     ),
-    defaultValues: {},
+    defaultValues: { displayName: '' },
   });
 
   const handleCreate = () => {
@@ -100,6 +97,7 @@ const NewProjectForm = ({
 
   const { mutate, isPending } = projectCollectionUtils.useCreateProject(
     (data) => {
+      toast.success(t('projectCreated', { projectName: data.displayName }));
       onCreate?.(data);
       setOpen(false);
       queryClient.invalidateQueries({
@@ -113,81 +111,58 @@ const NewProjectForm = ({
   );
 
   return (
-    <>
-      <Form {...form}>
-        <form
-          className="grid space-y-4"
-          onSubmit={(e) => form.handleSubmit(handleCreate)(e)}
-        >
-          <FormField
-            name="displayName"
-            render={({ field }) => (
-              <FormItem className="grid space-y-2">
-                <Label htmlFor="displayName" showRequiredIndicator>
-                  {t('Project Name')}
-                </Label>
-                <Input
-                  {...field}
-                  id="displayName"
-                  placeholder={t('Project Name')}
-                  className="rounded-sm"
-                />
-              </FormItem>
-            )}
-          />
-          <FormField
-            name="alertReceiverEmail"
-            render={({ field }) => (
-              <FormItem className="grid space-y-2">
-                <Label htmlFor="alertReceiverEmail">
-                  {t('Alert Receiver Email')}
-                </Label>
-                <Input
-                  {...field}
-                  id="alertReceiverEmail"
-                  type="email"
-                  placeholder="alerts@example.com"
-                  className="rounded-sm"
-                  value={field.value ?? ''}
-                />
-                <span className="text-xs text-muted-foreground">
-                  {t('Receives workflow failure emails for this project.')}
-                </span>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          {form?.formState?.errors?.root?.serverError && (
-            <FormMessage>
-              {form.formState.errors.root.serverError.message}
-            </FormMessage>
+    <Form {...form}>
+      <form
+        className="grid space-y-4"
+        onSubmit={(e) => form.handleSubmit(handleCreate)(e)}
+      >
+        <FormField
+          name="displayName"
+          render={({ field }) => (
+            <FormItem className="grid space-y-2">
+              <Label htmlFor="displayName" showRequiredIndicator>
+                {t('Project Name')}
+              </Label>
+              <Input
+                {...field}
+                id="displayName"
+                placeholder={t('Project Name')}
+                className="rounded-sm"
+              />
+              <FormMessage />
+            </FormItem>
           )}
-          <DialogFooter>
-            <Button
-              variant={'outline'}
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                setOpen(false);
-              }}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-              disabled={isPending}
-              loading={isPending}
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                form.handleSubmit(handleCreate)(e);
-              }}
-            >
-              {t('Create Project')}
-            </Button>
-          </DialogFooter>
-        </form>
-      </Form>
-    </>
+        />
+        {form?.formState?.errors?.root?.serverError && (
+          <FormMessage>
+            {form.formState.errors.root.serverError.message}
+          </FormMessage>
+        )}
+        <DialogFooter>
+          <Button
+            variant={'outline'}
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              setOpen(false);
+            }}
+          >
+            {t('Cancel')}
+          </Button>
+          <Button
+            disabled={isPending}
+            loading={isPending}
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              form.handleSubmit(handleCreate)(e);
+            }}
+          >
+            {t('Create Project')}
+          </Button>
+        </DialogFooter>
+      </form>
+    </Form>
   );
 };

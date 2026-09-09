@@ -39,7 +39,7 @@ const setFavicon = (url: string) => {
 export function ThemeProvider({
   children,
   defaultTheme = 'system',
-  storageKey = 'ap-ui-theme',
+  storageKey = 'fema.theme',
   ...props
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(
@@ -60,7 +60,6 @@ export function ThemeProvider({
       ? 'light'
       : theme;
     root.classList.remove('light', 'dark');
-    document.title = branding.websiteName;
     document.documentElement.style.setProperty(
       '--primary',
       colorsUtils.hexToHslString(branding.colors.primary.default),

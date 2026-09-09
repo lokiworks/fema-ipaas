@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -18,7 +19,7 @@ const AuthenticatePage = () => {
     }
   }, [response]);
 
-  return <>Please wait...</>;
+  return <>{t('Please wait...')}</>;
 };
 
 export default AuthenticatePage;

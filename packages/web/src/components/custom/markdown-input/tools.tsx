@@ -165,7 +165,7 @@ const ImageTool = ({
             onPointerDown={(ev) => ev.stopPropagation()}
             onKeyDown={(ev) => ev.key === 'Enter' && handleAddImage()}
             type="text"
-            placeholder="Enter image URL"
+            placeholder={t('Enter image URL')}
             value={imageUrl}
             onChange={(e) => setImageUrl(e.target.value)}
           />

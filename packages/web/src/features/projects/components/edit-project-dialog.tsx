@@ -1,14 +1,10 @@
 import { Permission } from '@fema-ipaas/core-utils';
-import {
-  ConnectionWithoutSensitiveData,
-  UpdateProjectTenantRequest,
-} from '@fema-ipaas/shared';
+import { UpdateProjectTenantRequest } from '@fema-ipaas/shared';
 import { useQueryClient } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
-import { GlobalConnectionWarning } from '@/components/custom/global-connection-utils';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -20,8 +16,8 @@ import {
 import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { SkeletonList } from '@/components/ui/skeleton';
 import { internalErrorToast } from '@/components/ui/sonner';
+import { Switch } from '@/components/ui/switch';
 import { globalConnectionsQueries } from '@/features/connections/hooks/global-connections-hooks';
 import { projectCollectionUtils } from '@/features/projects/stores/project-collection';
 import { useAuthorization } from '@/hooks/authorization-hooks';
@@ -33,6 +29,7 @@ interface EditProjectDialogProps {
   initialValues?: {
     projectName?: string;
     externalId?: string;
+    notifyWorkflowOwnerOnFailure?: boolean;
   };
 }
 
@@ -42,14 +39,6 @@ export function EditProjectDialog({
   projectId,
   initialValues,
 }: EditProjectDialogProps) {
-  const { data: globalConnectionsPage, isLoading: isLoadingConnections } =
-    globalConnectionsQueries.useGlobalConnections({
-      request: { limit: 9999 },
-      extraKeys: [],
-    });
-
-  const globalConnections = globalConnectionsPage?.data ?? [];
-
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-md w-full">
@@ -60,16 +49,11 @@ export function EditProjectDialog({
           </DialogTitle>
         </DialogHeader>
 
-        {!isLoadingConnections ? (
-          <EditProjectForm
-            onClose={onClose}
-            projectId={projectId}
-            initialValues={initialValues}
-            globalConnections={globalConnections}
-          />
-        ) : (
-          <SkeletonList numberOfItems={3} className="h-10" />
-        )}
+        <EditProjectForm
+          onClose={onClose}
+          projectId={projectId}
+          initialValues={initialValues}
+        />
       </DialogContent>
     </Dialog>
   );
@@ -83,7 +67,6 @@ const EditProjectForm = ({
   onClose: () => void;
   projectId: string;
   initialValues?: EditProjectDialogProps['initialValues'];
-  globalConnections: ConnectionWithoutSensitiveData[];
 }) => {
   const { checkAccess } = useAuthorization();
   const queryClient = useQueryClient();
@@ -108,6 +91,8 @@ const EditProjectForm = ({
     defaultValues: {
       displayName: initialValues?.projectName,
       externalId: initialValues?.externalId,
+      notifyWorkflowOwnerOnFailure:
+        initialValues?.notifyWorkflowOwnerOnFailure ?? false,
     },
     disabled: checkAccess(Permission.WRITE_PROJECT) === false,
   });
@@ -122,11 +107,11 @@ const EditProjectForm = ({
             request: {
               displayName: values.displayName,
               externalId: values.externalId,
+              notifyWorkflowOwnerOnFailure: values.notifyWorkflowOwnerOnFailure,
             },
           });
         })}
       >
-        <GlobalConnectionWarning />
         <FormField
           name="displayName"
           render={({ field }) => (
@@ -139,6 +124,30 @@ const EditProjectForm = ({
                 className="rounded-sm"
               />
               <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          name="notifyWorkflowOwnerOnFailure"
+          render={({ field }) => (
+            <FormItem className="flex items-center justify-between gap-4">
+              <div className="min-w-0 space-y-1">
+                <Label htmlFor="notifyWorkflowOwnerOnFailure">
+                  {t('Email the project owner when a workflow fails')}
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  {t(
+                    'At most one email per workflow per hour. Requires SMTP to be configured.',
+                  )}
+                </p>
+              </div>
+              <Switch
+                id="notifyWorkflowOwnerOnFailure"
+                checked={field.value}
+                disabled={field.disabled}
+                onCheckedChange={field.onChange}
+              />
             </FormItem>
           )}
         />

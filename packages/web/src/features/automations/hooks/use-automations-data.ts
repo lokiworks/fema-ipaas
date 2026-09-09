@@ -215,10 +215,16 @@ export function useAutomationsData(
   }, [isFiltered, hasFolderFilter, expandedFolders, treeItems]);
 
   const totalPages = Math.ceil(totalPageItems / pageSize);
+  const isError =
+    foldersQuery.isError ||
+    (rootWorkflowsQuery.isError && !skipWorkflows) ||
+    folderContentsQuery.isError;
+
   const isLoading =
-    foldersQuery.isLoading ||
-    (rootWorkflowsQuery.isLoading && !skipWorkflows) ||
-    folderContentsQuery.isLoading;
+    !isError &&
+    (foldersQuery.isLoading ||
+      (rootWorkflowsQuery.isLoading && !skipWorkflows) ||
+      folderContentsQuery.isLoading);
 
   const invalidateAll = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['folders'] });
@@ -243,6 +249,7 @@ export function useAutomationsData(
     folders: foldersQuery.data ?? [],
     rootWorkflows: rootWorkflowsQuery.data?.data ?? [],
     isLoading,
+    isError,
     isFiltered,
     expandedFolders: effectiveExpandedFolders,
     toggleFolder,

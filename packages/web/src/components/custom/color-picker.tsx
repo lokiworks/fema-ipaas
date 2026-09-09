@@ -1,5 +1,6 @@
 'use client';
 
+import { t } from 'i18next';
 import { forwardRef, useMemo, useState } from 'react';
 import { HexColorPicker } from 'react-colorful';
 
@@ -40,6 +41,7 @@ const ColorPicker = forwardRef<
         <PopoverTrigger asChild disabled={disabled} onBlur={onBlur}>
           <Button
             {...props}
+            aria-label={t('pickColor', { color: parsedValue })}
             className={cn('block rounded-full', className)}
             name={name}
             onClick={() => {

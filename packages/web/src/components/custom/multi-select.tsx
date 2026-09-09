@@ -63,9 +63,7 @@ const useMultiSelect = () => {
   const context = React.useContext(MultiSelectContext);
 
   if (!context) {
-    throw new Error(
-      t('useMultiSelect must be used within MultiSelectProvider'),
-    );
+    throw new Error('useMultiSelect must be used within MultiSelectProvider');
   }
 
   return context;

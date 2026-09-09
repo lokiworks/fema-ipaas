@@ -33,7 +33,7 @@ import { UpdateTemplateDialog } from './update-template-dialog';
 
 const TenantTemplatesPage = () => {
   const [searchParams] = useSearchParams();
-  const { data, isLoading, refetch } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['templates', searchParams.toString()],
     staleTime: 0,
     meta: { showErrorDialog: true, loadSubsetOptions: {} },
@@ -221,6 +221,7 @@ const TenantTemplatesPage = () => {
         page={data}
         hidePagination={true}
         isLoading={isLoading}
+        isError={isError}
         bulkActions={bulkActions}
         toolbarButtons={toolbarButtons}
         actions={[
@@ -228,12 +229,16 @@ const TenantTemplatesPage = () => {
             return (
               <div className="flex items-end justify-end">
                 <Tooltip>
-                  <TooltipTrigger>
+                  <TooltipTrigger asChild>
                     <UpdateTemplateDialog
                       onDone={() => refetch()}
                       template={row}
                     >
-                      <Button variant="ghost" className="size-8 p-0">
+                      <Button
+                        variant="ghost"
+                        aria-label={t('Edit template')}
+                        className="size-8 p-0"
+                      >
                         <Pencil className="size-4" />
                       </Button>
                     </UpdateTemplateDialog>

@@ -25,14 +25,18 @@ export const EditUserAction = ({ row, onUpdate }: EditUserActionProps) => {
   return (
     <div className="flex items-end justify-end">
       <Tooltip>
-        <TooltipTrigger>
+        <TooltipTrigger asChild>
           <UpdateUserDialog
             userId={row.data.id}
             role={row.data.tenantRole}
             externalId={row.data.externalId ?? undefined}
             onUpdate={onUpdate}
           >
-            <Button variant="ghost" className="size-8 p-0">
+            <Button
+              variant="ghost"
+              aria-label={t('Edit user')}
+              className="size-8 p-0"
+            >
               <Pencil className="size-4" />
             </Button>
           </UpdateUserDialog>

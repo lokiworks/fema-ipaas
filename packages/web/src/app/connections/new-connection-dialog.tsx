@@ -9,6 +9,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -80,9 +81,12 @@ const NewConnectionDialog = React.memo(
           }}
         >
           <DialogTrigger asChild>{children}</DialogTrigger>
-          <DialogContent className="min-w-[700px] max-w-[700px] h-[680px] max-h-[680px] flex flex-col">
+          <DialogContent className="w-[calc(100vw-2rem)] sm:min-w-[700px] sm:max-w-[700px] max-h-[680px] flex flex-col">
             <DialogHeader>
               <DialogTitle>{t('New Connection')}</DialogTitle>
+              <DialogDescription>
+                {t('Pick the app you want to connect to.')}
+              </DialogDescription>
             </DialogHeader>
             <div className="mb-4">
               <Input

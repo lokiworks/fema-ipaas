@@ -50,6 +50,7 @@ const ProjectSideBarItem = ({
   const isCollapsed = state === 'collapsed';
   return (
     <SidebarMenuButton
+      aria-label={projectName}
       onClick={() => handleProjectSelect(project.id)}
       className={cn('', {
         'bg-sidebar-accent! ': isCurrentProject,

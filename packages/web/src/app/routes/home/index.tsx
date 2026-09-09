@@ -24,7 +24,6 @@ const FAILED_STATUSES: ExecutionStatus[] = [
   ExecutionStatus.INTERNAL_ERROR,
   ExecutionStatus.TIMEOUT,
   ExecutionStatus.MEMORY_LIMIT_EXCEEDED,
-  ExecutionStatus.QUOTA_EXCEEDED,
 ];
 
 const PERIODS = [
@@ -66,10 +65,8 @@ export function HomePage() {
       }
       byDay.set(point.day, bucket);
     }
-    return [...byDay.entries()]
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([day, counts]) => ({ day, ...counts }));
-  }, [data]);
+    return buildContiguousTrend({ byDay, days: Number(days) });
+  }, [data, days]);
 
   return (
     <div className="flex flex-col gap-4 p-6">
@@ -139,3 +136,39 @@ export function HomePage() {
     </div>
   );
 }
+
+function buildContiguousTrend({
+  byDay,
+  days,
+}: {
+  byDay: Map<string, DayCounts>;
+  days: number;
+}): TrendPoint[] {
+  const totals = new Map<string, DayCounts>();
+  for (const [isoDay, counts] of byDay) {
+    const key = isoDay.slice(0, 10);
+    const bucket = totals.get(key) ?? { succeeded: 0, failed: 0 };
+    totals.set(key, {
+      succeeded: bucket.succeeded + counts.succeeded,
+      failed: bucket.failed + counts.failed,
+    });
+  }
+  const now = new Date();
+  return Array.from({ length: days }, (_, index) => {
+    const date = new Date(
+      Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate() - (days - 1 - index),
+      ),
+    );
+    const key = date.toISOString().slice(0, 10);
+    return {
+      day: date.toISOString(),
+      ...(totals.get(key) ?? { succeeded: 0, failed: 0 }),
+    };
+  });
+}
+
+type DayCounts = { succeeded: number; failed: number };
+type TrendPoint = DayCounts & { day: string };

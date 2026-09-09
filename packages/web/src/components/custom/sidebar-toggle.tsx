@@ -19,6 +19,7 @@ export const SidebarToggle = () => {
         <Button
           variant="ghost"
           size="icon"
+          aria-label={pinnedOpen ? t('Close Sidebar') : t('Open Sidebar')}
           onClick={() => setOpen(!pinnedOpen)}
         >
           {pinnedOpen ? (

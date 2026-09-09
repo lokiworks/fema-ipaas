@@ -21,6 +21,7 @@ const SelectUtilButton = ({
       <TooltipTrigger asChild>
         <Button
           variant="ghost"
+          aria-label={tooltipText}
           className="opacity-50 shrink-0 h-6 w-6 rounded-xs"
           size={'icon'}
           type="button"

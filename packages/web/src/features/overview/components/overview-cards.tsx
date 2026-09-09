@@ -68,11 +68,11 @@ export function RunTrendChart({
             {t('No runs in this period')}
           </div>
         ) : (
-          <div className="flex h-32 items-end gap-1">
+          <div className="flex h-32 items-stretch gap-1">
             {trend.map((point) => (
               <div
                 key={point.day}
-                className="flex flex-1 flex-col justify-end gap-px"
+                className="flex flex-1 flex-col justify-end gap-px overflow-hidden rounded-sm bg-muted/40"
                 title={`${formatUtils.formatDateOnly(new Date(point.day))} · ${
                   point.succeeded
                 } ${t('succeeded')}, ${point.failed} ${t('failed')}`}

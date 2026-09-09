@@ -125,7 +125,11 @@ export const AutomationsTableRow = ({
         className="w-10 shrink-0 pl-4 pr-1 flex items-center"
         onClick={(e) => e.stopPropagation()}
       >
-        <Checkbox checked={isSelected} onCheckedChange={onToggleSelection} />
+        <Checkbox
+          aria-label={t('Select row')}
+          checked={isSelected}
+          onCheckedChange={onToggleSelection}
+        />
       </div>
       <div
         className={cn(
@@ -138,6 +142,9 @@ export const AutomationsTableRow = ({
           <Tooltip>
             <TooltipTrigger asChild>
               <button
+                aria-label={
+                  isPinned ? t('Remove from favorites') : t('Add to favorites')
+                }
                 onClick={onTogglePin}
                 className="p-0.5 rounded hover:bg-muted transition-colors"
               >
@@ -249,7 +256,12 @@ export const AutomationsTableRow = ({
         )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={t('More actions')}
+              className="h-8 w-8"
+            >
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>

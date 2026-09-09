@@ -81,6 +81,7 @@ const AutomationsPageContent = ({ projectId }: { projectId: string }) => {
     folders,
     rootWorkflows,
     isLoading,
+    isError,
     expandedFolders,
     toggleFolder,
     loadMoreInFolder,
@@ -234,9 +235,9 @@ const AutomationsPageContent = ({ projectId }: { projectId: string }) => {
   };
 
   const hasAnyItems = rootWorkflows.length > 0 || folders.length > 0;
-  const isEmptyState = !hasAnyItems && !isLoading && !filtersActive;
+  const isEmptyState = !hasAnyItems && !isLoading && !filtersActive && !isError;
   const isNoResultsState =
-    treeItems.length === 0 && filtersActive && !isLoading;
+    treeItems.length === 0 && filtersActive && !isLoading && !isError;
 
   if (isEmptyState) {
     return <AutomationsEmptyState onRefresh={() => invalidateAll()} />;
@@ -281,6 +282,7 @@ const AutomationsPageContent = ({ projectId }: { projectId: string }) => {
           <AutomationsTable
             items={treeItems}
             isLoading={isLoading}
+            isError={isError}
             selectedItems={selectedItems}
             expandedFolders={expandedFolders}
             projectMembers={undefined}

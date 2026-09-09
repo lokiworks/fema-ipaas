@@ -63,7 +63,6 @@ import { useAuthorization } from '@/hooks/authorization-hooks';
 import { ownerColumnHooks } from '@/hooks/owner-column-hooks';
 import { userHooks } from '@/hooks/user-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
-import { formatUtils } from '@/lib/format-utils';
 
 function ConnectionsPage() {
   const navigate = useNavigate();
@@ -94,6 +93,7 @@ function ConnectionsPage() {
   const {
     data: connections,
     isLoading: connectionsLoading,
+    isError: connectionsError,
     refetch,
   } = connectionsQueries.useConnections({
     request: {
@@ -140,7 +140,7 @@ function ConnectionsPage() {
           accessorKey: 'status',
           options: Object.values(ConnectionStatus).map((status) => {
             return {
-              label: formatUtils.convertEnumToHumanReadable(status),
+              label: connectionUtils.getStatusLabel(status),
               value: status,
             };
           }),
@@ -242,7 +242,7 @@ function ConnectionsPage() {
             <div className="text-left">
               <StatusIconWithText
                 icon={Icon}
-                text={formatUtils.convertEnumToHumanReadable(status)}
+                text={connectionUtils.getStatusLabel(status)}
                 variant={variant}
               />
             </div>
@@ -451,6 +451,7 @@ function ConnectionsPage() {
         columns={columns}
         page={filteredData}
         isLoading={connectionsLoading}
+        isError={connectionsError}
         filters={filters}
         selectColumn={true}
         onSelectedRowsChange={setSelectedRows}

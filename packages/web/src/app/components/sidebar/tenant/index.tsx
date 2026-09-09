@@ -1,5 +1,9 @@
 import { t } from 'i18next';
-import { ScrollTextIcon, TerminalIcon } from 'lucide-react';
+import {
+  KeyRound as KeyRoundIcon,
+  ScrollTextIcon,
+  TerminalIcon,
+} from 'lucide-react';
 import { ComponentType, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -133,6 +137,11 @@ export function TenantSidebar() {
           to: '/tenant/security/authentication',
           label: t('Authentication'),
           icon: LogInIcon,
+        },
+        {
+          to: '/tenant/security/encryption',
+          label: t('Encryption'),
+          icon: KeyRoundIcon,
         },
       ],
     },

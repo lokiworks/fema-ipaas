@@ -32,10 +32,11 @@ export const ToggleUserStatusAction = ({
   return (
     <div className="flex items-end justify-end">
       <Tooltip>
-        <TooltipTrigger>
+        <TooltipTrigger asChild>
           <Button
             disabled={isUpdatingStatus || isAdmin}
             variant="ghost"
+            aria-label={isActive ? t('Deactivate user') : t('Activate user')}
             className="size-8 p-0"
             loading={isUpdatingStatus}
             onClick={() => {

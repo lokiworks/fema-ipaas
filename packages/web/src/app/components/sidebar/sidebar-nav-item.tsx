@@ -48,6 +48,7 @@ export const SidebarNavItem = (item: SidebarItemType) => {
 
   const button = (
     <SidebarMenuButton
+      aria-label={item.label}
       className={cn(
         { 'bg-sidebar-accent hover:bg-sidebar-accent!': isLinkActive },
         item.highlight && !isLinkActive && 'hover:bg-sidebar-accent/60',

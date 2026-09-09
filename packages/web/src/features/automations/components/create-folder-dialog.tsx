@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/dialog';
 import { FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { internalErrorToast } from '@/components/ui/sonner';
 import { foldersApi } from '@/features/folders/api/folders-api';
 import { api } from '@/lib/api';
@@ -100,7 +101,10 @@ export const CreateFolderDialog = ({
               control={form.control}
               name="displayName"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="grid space-y-2">
+                  <Label htmlFor="folder" showRequiredIndicator>
+                    {t('Folder Name')}
+                  </Label>
                   <Input
                     {...field}
                     required

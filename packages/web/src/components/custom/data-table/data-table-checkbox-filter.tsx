@@ -1,34 +1,37 @@
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { cn } from '@/lib/utils';
+import { useId } from 'react';
 
-type DataTableCheckboxProps = {
-  label: string;
-  checked: boolean;
-  handleCheckedChange: (checked: boolean) => void;
-};
+import { buttonVariants } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { cn } from '@/lib/utils';
 
 export function DataTableInputCheckbox({
   label,
   checked,
   handleCheckedChange,
 }: DataTableCheckboxProps) {
+  const checkboxId = useId();
   return (
-    <Button
-      type="button"
-      variant="outline"
+    <label
+      htmlFor={checkboxId}
       className={cn(
+        buttonVariants({ variant: 'outline' }),
         'flex items-center space-x-2 border-dashed rounded-md px-3 py-2 h-9',
-        'hover:bg-accent/5',
+        'cursor-pointer font-normal hover:bg-accent/5',
         checked && 'bg-accent/10 border-accent text-accent-foreground',
       )}
-      onClick={() => handleCheckedChange(!checked)}
     >
-      <Checkbox checked={checked} className="pointer-events-none" />
-      <Label className="text-sm font-normal leading-none select-none cursor-pointer">
-        {label}
-      </Label>
-    </Button>
+      <Checkbox
+        id={checkboxId}
+        checked={checked}
+        onCheckedChange={(value) => handleCheckedChange(value === true)}
+      />
+      <span className="text-sm leading-none select-none">{label}</span>
+    </label>
   );
 }
+
+type DataTableCheckboxProps = {
+  label: string;
+  checked: boolean;
+  handleCheckedChange: (checked: boolean) => void;
+};

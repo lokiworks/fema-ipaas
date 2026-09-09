@@ -29,7 +29,7 @@ export const DeleteUserAction = ({
   return (
     <div className="flex items-end justify-end">
       <Tooltip>
-        <TooltipTrigger>
+        <TooltipTrigger asChild>
           <ConfirmationDeleteDialog
             title={isInvitation ? t('Delete Invitation') : t('Delete User')}
             message={

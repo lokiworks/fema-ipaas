@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import { useEffect } from 'react';
 
 import { flagsHooks } from '@/hooks/flags-hooks';
@@ -11,7 +12,7 @@ const PageTitle = ({ title, children }: PageTitleProps) => {
   const websiteBranding = flagsHooks.useWebsiteBranding();
 
   useEffect(() => {
-    document.title = `${title} | ${websiteBranding.websiteName}`;
+    document.title = `${t(title)} | ${websiteBranding.websiteName}`;
   }, [title, websiteBranding.websiteName]);
 
   return children;

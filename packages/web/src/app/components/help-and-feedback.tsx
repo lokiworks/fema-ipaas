@@ -54,7 +54,7 @@ export const HelpAndFeedback = () => {
         {showCommunity && (
           <>
             <div className="flex text-xs text-muted-foreground items-center gap-2 px-2 py-1">
-              <span>Need Help?</span>
+              <span>{t('Need Help?')}</span>
             </div>
             <DropdownMenuItem asChild>
               <Link

@@ -155,9 +155,7 @@ function RunsStatusChart() {
                         className="size-2.5 rounded-full"
                         style={{ backgroundColor: cat.color }}
                       />
-                      <span>
-                        {formatUtils.convertEnumToHumanReadable(cat.label)}
-                      </span>
+                      <span>{t(cat.label)}</span>
                     </div>
                     <span className="font-medium tabular-nums">
                       {formatUtils.formatNumberCompact(cat.count)}

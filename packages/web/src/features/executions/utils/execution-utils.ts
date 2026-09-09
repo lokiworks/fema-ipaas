@@ -229,7 +229,6 @@ export const executionUtils = {
         };
       case ExecutionStatus.MEMORY_LIMIT_EXCEEDED:
       case ExecutionStatus.LOG_SIZE_EXCEEDED:
-      case ExecutionStatus.QUOTA_EXCEEDED:
       case ExecutionStatus.INTERNAL_ERROR:
       case ExecutionStatus.TIMEOUT:
         return {
@@ -238,10 +237,28 @@ export const executionUtils = {
         };
     }
   },
-  getStatusLabelOverride(status: ExecutionStatus): string | null {
-    if (status === ExecutionStatus.QUOTA_EXCEEDED) {
-      return t('Out of credits');
+  getStatusLabel(status: ExecutionStatus): string {
+    switch (status) {
+      case ExecutionStatus.SUCCEEDED:
+        return t('Succeeded');
+      case ExecutionStatus.FAILED:
+        return t('Failed');
+      case ExecutionStatus.RUNNING:
+        return t('Running');
+      case ExecutionStatus.QUEUED:
+        return t('Queued');
+      case ExecutionStatus.PAUSED:
+        return t('Paused');
+      case ExecutionStatus.CANCELED:
+        return t('Canceled');
+      case ExecutionStatus.TIMEOUT:
+        return t('Timeout');
+      case ExecutionStatus.INTERNAL_ERROR:
+        return t('Internal error');
+      case ExecutionStatus.MEMORY_LIMIT_EXCEEDED:
+        return t('Memory limit exceeded');
+      case ExecutionStatus.LOG_SIZE_EXCEEDED:
+        return t('Log size exceeded');
     }
-    return null;
   },
 };

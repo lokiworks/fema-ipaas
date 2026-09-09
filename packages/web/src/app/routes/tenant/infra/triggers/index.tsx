@@ -79,7 +79,11 @@ const generateLastXDays = (days: number): string[] => {
 };
 
 export default function TriggerHealthPage() {
-  const { data: report, isLoading } = triggerRunHooks.useStatusReport();
+  const {
+    data: report,
+    isLoading,
+    isError,
+  } = triggerRunHooks.useStatusReport();
 
   const triggerHealthData: TriggerHealthRow[] = isLoading
     ? []
@@ -156,7 +160,7 @@ export default function TriggerHealthPage() {
       header: ({ column }: any) => (
         <DataTableColumnHeader
           column={column}
-          title="Connector"
+          title={t('Connector')}
           icon={Puzzle}
         />
       ),
@@ -202,7 +206,7 @@ export default function TriggerHealthPage() {
       header: ({ column }: any) => (
         <DataTableColumnHeader
           column={column}
-          title="Total Runs (14D)"
+          title={t('Total runs (14 days)')}
           icon={Hash}
         />
       ),
@@ -216,7 +220,7 @@ export default function TriggerHealthPage() {
       header: ({ column }: any) => (
         <DataTableColumnHeader
           column={column}
-          title="Last Results"
+          title={t('Recent results')}
           icon={BarChart3}
         />
       ),
@@ -228,7 +232,7 @@ export default function TriggerHealthPage() {
       accessorKey: 'last24Hours',
       size: 70,
       header: ({ column }: any) => (
-        <DataTableColumnHeader column={column} title="24H" icon={Clock} />
+        <DataTableColumnHeader column={column} title={t('24h')} icon={Clock} />
       ),
       cell: ({ row }: any) => (
         <div className={cn('font-medium')}>{row.original.last24Hours}%</div>
@@ -238,7 +242,11 @@ export default function TriggerHealthPage() {
       accessorKey: 'last7Days',
       size: 65,
       header: ({ column }: any) => (
-        <DataTableColumnHeader column={column} title="7D" icon={Calendar} />
+        <DataTableColumnHeader
+          column={column}
+          title={t('7d')}
+          icon={Calendar}
+        />
       ),
       cell: ({ row }: any) => (
         <div className={cn('font-medium')}>{row.original.last7Days}%</div>
@@ -248,7 +256,11 @@ export default function TriggerHealthPage() {
       accessorKey: 'last14Days',
       size: 65,
       header: ({ column }: any) => (
-        <DataTableColumnHeader column={column} title="14D" icon={Calendar} />
+        <DataTableColumnHeader
+          column={column}
+          title={t('14d')}
+          icon={Calendar}
+        />
       ),
       cell: ({ row }: any) => (
         <div className={cn('font-medium')}>{row.original.last14Days}%</div>
@@ -272,6 +284,7 @@ export default function TriggerHealthPage() {
         columns={columns}
         page={{ data: triggerHealthData, previous: '', next: '' }}
         isLoading={isLoading}
+        isError={isError}
       />
     </div>
   );

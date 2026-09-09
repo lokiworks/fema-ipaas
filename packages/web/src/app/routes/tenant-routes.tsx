@@ -15,6 +15,11 @@ const AuthenticationPage = React.lazy(() =>
     default: m.AuthenticationPage,
   })),
 );
+const EncryptionPage = React.lazy(() =>
+  import('./tenant/security/encryption').then((m) => ({
+    default: m.EncryptionPage,
+  })),
+);
 const GeneralPage = React.lazy(() =>
   import('./tenant/setup/general').then((m) => ({
     default: m.GeneralPage,
@@ -128,7 +133,7 @@ export const tenantRoutes = [
     element: (
       <TenantLayout>
         <PageTitle title="Security">
-          <Navigate to="/tenant/security/sso" replace />
+          <Navigate to="/tenant/security/authentication" replace />
         </PageTitle>
       </TenantLayout>
     ),
@@ -138,6 +143,7 @@ export const tenantRoutes = [
     'Authentication',
     AuthenticationPage,
   ),
+  tenantRoute('/tenant/security/encryption', 'Encryption', EncryptionPage),
   {
     path: '/tenant/infra',
     element: (

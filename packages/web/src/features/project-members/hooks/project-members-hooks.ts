@@ -10,12 +10,12 @@ const membersQueryKey = (projectId: string | null) => [
   projectId,
 ];
 
-function useMembers() {
+function useMembers({ enabled = true }: UseMembersParams = {}) {
   const projectId = authenticationSession.getProjectId();
   return useQuery({
     queryKey: membersQueryKey(projectId),
     queryFn: () => projectMembersApi.list(projectId!),
-    enabled: !!projectId,
+    enabled: enabled && !!projectId,
   });
 }
 
@@ -50,4 +50,8 @@ export const projectMembersHooks = {
   useMembers,
   useUpdateMemberRole,
   useRemoveMember,
+};
+
+type UseMembersParams = {
+  enabled?: boolean;
 };

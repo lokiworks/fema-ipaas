@@ -69,12 +69,6 @@ export const flagService = (log: FastifyBaseLogger) => ({
                 updated,
             },
             {
-                id: FlagId.SHOW_PROJECT_MEMBERS,
-                value: false,
-                created,
-                updated,
-            },
-            {
                 id: FlagId.SHOW_POWERED_BY_IN_FORM,
                 value: true,
                 created,

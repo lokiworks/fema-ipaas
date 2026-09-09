@@ -1,5 +1,5 @@
-import { ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil, Permission, ProjectRole, SeekPage } from '@fema-ipaas/core-utils'
-import { InvitationStatus, InvitationType, ListUserInvitationsRequest, Principal, PrincipalType, SendUserInvitationRequest, SERVICE_KEY_SECURITY_OPENAPI, UserInvitation, UserInvitationWithLink } from '@fema-ipaas/shared'
+import { ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil, Permission, SeekPage } from '@fema-ipaas/core-utils'
+import { DefaultProjectRole, InvitationStatus, InvitationType, ListUserInvitationsRequest, Principal, PrincipalType, SendUserInvitationRequest, SERVICE_KEY_SECURITY_OPENAPI, UserInvitation, UserInvitationWithLink } from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
@@ -32,7 +32,7 @@ const invitationController: FastifyPluginAsyncZod = async (app) => {
         }
         const tenantId = request.principal.tenant.id
         const status = await shouldAutoAcceptInvitation(request.principal, request.body, tenantId, request.log) ? InvitationStatus.ACCEPTED : InvitationStatus.PENDING
-        const projectRole = await getProjectRoleAndAssertIfFound(tenantId, request.body)
+        const projectRole = resolveProjectRoleOrThrow(request.body)
 
         const invitationRecordParams = {
             email,
@@ -40,7 +40,7 @@ const invitationController: FastifyPluginAsyncZod = async (app) => {
             tenantId,
             tenantRole: type === InvitationType.PROJECT ? null : request.body.tenantRole,
             projectId: type === InvitationType.TENANT ? null : request.body.projectId,
-            projectRoleId: type === InvitationType.TENANT ? null : projectRole?.id ?? null,
+            projectRoleId: type === InvitationType.TENANT ? null : projectRole,
             status,
         }
 
@@ -102,12 +102,20 @@ const invitationController: FastifyPluginAsyncZod = async (app) => {
 }
 
 
-const getProjectRoleAndAssertIfFound = async (tenantId: string, request: SendUserInvitationRequest): Promise<ProjectRole | null> => {
-    const { type } = request
-    if (type === InvitationType.TENANT) {
+const resolveProjectRoleOrThrow = (request: SendUserInvitationRequest): DefaultProjectRole | null => {
+    if (request.type === InvitationType.TENANT) {
         return null
     }
-    return null
+    const role = Object.values(DefaultProjectRole).find((candidate) => candidate === request.projectRole)
+    if (isNil(role)) {
+        throw new ApplicationError({
+            code: ErrorCode.VALIDATION,
+            params: {
+                message: `Unknown project role "${request.projectRole}", expected one of ${Object.values(DefaultProjectRole).join(', ')}`,
+            },
+        })
+    }
+    return role
 }
 async function getProjectIdAndAssertPermission<R extends Principal>(
     app: FastifyInstance,

@@ -61,7 +61,7 @@ export function useProjectNavTabs() {
     },
     {
       to: authenticationSession.appendProjectRoutePrefix('/variables'),
-      label: t('Resources'),
+      label: t('Variables'),
       icon: VariableIcon,
       hasPermission: checkAccess(Permission.READ_VARIABLE),
       show: true,

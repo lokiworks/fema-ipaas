@@ -8,6 +8,7 @@ import { SystemJobName } from '../helper/system-jobs/common'
 import { systemJobsSchedule } from '../helper/system-jobs/system-job'
 import { TenantEntity } from '../tenant/tenant.entity'
 import { workflowRepo } from '../workflows/workflow/workflow.repo'
+import { projectMemberRepo } from './project-member.repo'
 import { projectRepo } from './project-repo'
 import { projectService } from './project-service'
 
@@ -17,9 +18,10 @@ const HARD_DELETE_GRACE_PERIOD_DAYS = 7
 
 export const projectSideEffects = (log: FastifyBaseLogger) => ({
     async enrich(project: Project): Promise<ProjectWithLimits> {
-        const [totalWorkflows, activeWorkflows] = await Promise.all([
+        const [totalWorkflows, activeWorkflows, members] = await Promise.all([
             workflowRepo().countBy({ projectId: project.id }),
             workflowRepo().countBy({ projectId: project.id, status: WorkflowStatus.ENABLED }),
+            projectMemberRepo().countBy({ projectId: project.id }),
         ])
         const { deleted: _deleted, ...rest } = project
         return {
@@ -27,6 +29,7 @@ export const projectSideEffects = (log: FastifyBaseLogger) => ({
             analytics: {
                 totalWorkflows,
                 activeWorkflows,
+                members,
             },
         }
     },

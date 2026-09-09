@@ -64,6 +64,7 @@ function makeProject(
     analytics: {
       totalWorkflows: 0,
       activeWorkflows: 0,
+      members: 0,
     },
   };
 }

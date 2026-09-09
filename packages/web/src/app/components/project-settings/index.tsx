@@ -8,7 +8,12 @@ import { toast } from 'sonner';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { INTERNAL_ERROR_MESSAGE } from '@/components/ui/sonner';
 import { projectCollectionUtils } from '@/features/projects';
@@ -171,6 +176,10 @@ export function ProjectSettingsDialog({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-5xl w-full max-h-[95vh] rounded-sm flex flex-col p-0">
+        <DialogTitle className="sr-only">{t('Project settings')}</DialogTitle>
+        <DialogDescription className="sr-only">
+          {t('Rename this project, manage its members and adjust its limits.')}
+        </DialogDescription>
         <div className="flex h-[700px]">
           <div className="w-[238px]">
             <nav className="bg-sidebar space-y-1 bg-muted rounded-sm rounded-r-none h-full flex flex-col rounded-l-md">
@@ -182,12 +191,20 @@ export function ProjectSettingsDialog({
                 maxLengthToNotShowTooltip={18}
                 projectType={project.type}
               />
-              <div className="flex flex-col px-2 gap-1">
+              <div
+                role="tablist"
+                aria-orientation="vertical"
+                aria-label={t('Project settings')}
+                className="flex flex-col px-2 gap-1"
+              >
                 {tabs.map((tab) => (
-                  <div
+                  <button
                     key={tab.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={activeTab === tab.id}
                     className={cn(
-                      'flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm font-medium transition-all cursor-pointer hover:bg-sidebar-accent',
+                      'flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm font-medium transition-all cursor-pointer text-left hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                       {
                         'bg-sidebar-accent': activeTab === tab.id,
                       },
@@ -196,7 +213,7 @@ export function ProjectSettingsDialog({
                   >
                     {tab.icon}
                     {tab.label}
-                  </div>
+                  </button>
                 ))}
               </div>
             </nav>

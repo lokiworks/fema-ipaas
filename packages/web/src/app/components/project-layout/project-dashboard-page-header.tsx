@@ -1,5 +1,5 @@
 import { isNil, Permission } from '@fema-ipaas/core-utils';
-import { FlagId, ProjectType } from '@fema-ipaas/shared';
+import { ProjectType } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { UsersRound, Lock } from 'lucide-react';
 import { useState } from 'react';
@@ -15,10 +15,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { projectMembersHooks } from '@/features/project-members';
 import { getProjectName, projectCollectionUtils } from '@/features/projects';
 import { ProjectDisplay } from '@/features/projects/components/project-display';
 import { useAuthorization } from '@/hooks/authorization-hooks';
-import { flagsHooks } from '@/hooks/flags-hooks';
 
 import { ProjectSettingsDialog } from '../project-settings';
 
@@ -35,21 +35,23 @@ export const ProjectDashboardPageHeader = ({
     'general' | 'members' | 'alerts' | 'connectors' | 'environment'
   >('general');
   const location = useLocation();
-  const activeProjectMembers = undefined as { length: number } | undefined;
   const { checkAccess } = useAuthorization();
   const userHasPermissionToReadProjectMembers = checkAccess(
     Permission.READ_PROJECT_MEMBER,
   );
 
-  const { data: showProjectMembersFlag } = flagsHooks.useFlag<boolean>(
-    FlagId.SHOW_PROJECT_MEMBERS,
-  );
+  const isTeamProject = project.type === ProjectType.TEAM;
+
+  const { data: projectMembers } = projectMembersHooks.useMembers({
+    enabled: isTeamProject && userHasPermissionToReadProjectMembers,
+  });
+
+  const memberCount = projectMembers?.data.length;
 
   const showProjectMembersIcons =
-    showProjectMembersFlag &&
+    isTeamProject &&
     userHasPermissionToReadProjectMembers &&
-    !isNil(activeProjectMembers) &&
-    project.type === ProjectType.TEAM;
+    !isNil(memberCount);
 
   const isProjectPage = location.pathname.includes('/projects/');
 
@@ -62,11 +64,7 @@ export const ProjectDashboardPageHeader = ({
     | 'connectors'
     | 'environment' => {
     if (hasGeneralSettings) return 'general';
-    if (
-      project.type === ProjectType.TEAM &&
-      showProjectMembersFlag &&
-      userHasPermissionToReadProjectMembers
-    )
+    if (isTeamProject && userHasPermissionToReadProjectMembers)
       return 'members';
     return 'connectors';
   };
@@ -104,18 +102,16 @@ export const ProjectDashboardPageHeader = ({
         <Button
           variant="ghost"
           className="gap-2"
-          aria-label={`View ${activeProjectMembers?.length} team member${
-            activeProjectMembers?.length !== 1 ? 's' : ''
-          }`}
+          aria-label={t('viewTeamMembers', {
+            count: memberCount ?? 0,
+          })}
           onClick={() => {
             setSettingsInitialTab('members');
             setSettingsOpen(true);
           }}
         >
           <UsersRound className="w-4 h-4" />
-          <span className="text-sm font-medium">
-            {activeProjectMembers?.length}
-          </span>
+          <span className="text-sm font-medium">{memberCount}</span>
         </Button>
       )}
       <AnimatedIconButton
@@ -123,6 +119,7 @@ export const ProjectDashboardPageHeader = ({
         iconSize={16}
         variant="ghost"
         size="icon"
+        aria-label={t('Project settings')}
         className="h-8 w-8"
         onClick={() => {
           setSettingsInitialTab(getFirstAvailableTab());

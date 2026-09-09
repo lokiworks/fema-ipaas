@@ -17,5 +17,13 @@
   "\n**Published Chat URL:**\n```text\n{{chatUrl}}\n```\nUse this for production, views the published version of the chat workflow.\n<br>\n<br>\n": "\n**已发布对话的 URL：**\n```text\n{{chatUrl}}\n```\n用于生产环境，打开的是对话工作流的已发布版本。\n<br>\n<br>\n",
   "\nThis trigger sets up a chat interface. Ensure that **Respond on UI** is used in your workflow": "\n该触发器会创建一个对话界面。请确保工作流中使用了**在界面上响应**",
   "The name of the chatbot": "对话机器人的名称",
-  "Human Input": "人工输入"
+  "Human Input": "人工输入",
+  "Field Name": "字段名称",
+  "Field Type": "字段类型",
+  "Field Description": "字段说明",
+  "Required": "必填",
+  "Text": "单行文本",
+  "Text Area": "多行文本",
+  "File": "文件",
+  "Toggle": "开关"
 }

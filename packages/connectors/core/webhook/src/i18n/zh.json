@@ -14,15 +14,15 @@
   "Redirect": "重定向",
   "Stop": "停止",
   "Respond and Continue": "响应并继续",
-  "Catch Webhook": "捕获Webhook",
+  "Catch Webhook": "捕获 Webhook",
   "Receive incoming HTTP/webhooks using any HTTP method such as GET, POST, PUT, DELETE, etc.": "使用 GET、POST、PUT、DELETE等任何HTTP 方法接收传入的 HTTP/webhooks 。",
   "Authentication": "认证",
   "Authentication Fields": "身份验证字段",
   "**Live URL:**\n```text\n{{webhookUrl}}\n```\ngenerate sample data & triggers published workflow.\n\n": "**正式 URL：**\n```text\n{{webhookUrl}}\n```\n用于生成示例数据，并触发已发布的工作流。\n\n",
-  "**Synchronous Requests:**\n\nIf you expect a response from this webhook, add `/sync` to the end of the URL. \nIf it takes more than 30 seconds, it will return a 408 Request Timeout response.\n\nTo return data, add an Webhook step to your workflow with the Return Response action.\n": "**同步请求：**\n\n如果你希望这个 webhook 返回响应，请在 URL 末尾加上 `/sync`。\n若处理超过 30 秒，会返回 408 请求超时。\n\n要返回数据，请在工作流中添加一个 Webhook 步骤，并使用「返回响应」动作。\n",
   "\n**Test URL:**\n\nif you want to generate sample data without triggering the workflow, append `/test` to your webhook URL.\n\n": "\n**测试 URL：**\n\n如果只想生成示例数据而不触发工作流，请在 webhook URL 末尾加上 `/test`。\n\n",
   "None": "无",
   "Basic Auth": "基本认证",
   "Header Auth": "头部认证",
-  "Webhook": "Webhook"
+  "Webhook": "Webhook",
+  "**Synchronous Requests:**\n\nIf you expect a response from this webhook, add `/sync` to the end of the URL.\nIf it takes more than {{webhookTimeoutSeconds}} seconds, it will return a 408 Request Timeout response.\n\nTo return data, add a Webhook step to your workflow with the Return Response action.\n": "**同步请求：**\n\n如果你希望这个 webhook 返回响应，请在 URL 末尾加上 `/sync`。\n若处理超过 {{webhookTimeoutSeconds}} 秒，会返回 408 请求超时。\n\n要返回数据，请在工作流中添加一个 Webhook 步骤，并使用「返回响应」动作。\n"
 }

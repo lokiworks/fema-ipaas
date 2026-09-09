@@ -17,5 +17,13 @@
   "\n**Published Chat URL:**\n```text\n{{chatUrl}}\n```\nUse this for production, views the published version of the chat workflow.\n<br>\n<br>\n": "\n**Published Chat URL:**\n```text\n{{chatUrl}}\n```\nUse this for production, views the published version of the chat workflow.\n<br>\n<br>\n",
   "\nThis trigger sets up a chat interface. Ensure that **Respond on UI** is used in your workflow": "\nThis trigger sets up a chat interface. Ensure that **Respond on UI** is used in your workflow",
   "The name of the chatbot": "The name of the chatbot",
-  "Human Input": "Human Input"
+  "Human Input": "Human Input",
+  "Field Name": "Field Name",
+  "Field Type": "Field Type",
+  "Field Description": "Field Description",
+  "Required": "Required",
+  "Text": "Text",
+  "Text Area": "Text Area",
+  "File": "File",
+  "Toggle": "Toggle"
 }

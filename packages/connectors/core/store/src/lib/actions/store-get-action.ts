@@ -63,7 +63,7 @@ export const storageGetAction = createAction({
         options: [
           {
             label: 'Project',
-            value: ConnectorStoreScope.WORKSPACE,
+            value: ConnectorStoreScope.PROJECT,
           },
           {
             label: 'Workflow',
@@ -75,7 +75,7 @@ export const storageGetAction = createAction({
           },
         ],
       },
-      defaultValue: StoreScope.WORKSPACE,
+      defaultValue: ConnectorStoreScope.PROJECT,
     }),
   },
   async run(context) {

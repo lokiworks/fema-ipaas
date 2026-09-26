@@ -1,0 +1,139 @@
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 400; font-display: swap; src: url('../fonts/inter-v20-latin-regular.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 500; font-display: swap; src: url('../fonts/inter-v20-latin-500.ttf') format('truetype'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 600; font-display: swap; src: url('../fonts/inter-v20-latin-600.ttf') format('truetype'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 700; font-display: swap; src: url('../fonts/inter-v20-latin-700.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 800; font-display: swap; src: url('../fonts/inter-v20-latin-800.woff2') format('woff2'); }
+
+:root {
+  --font-sans: 'Inter', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
+
+  --primary: hsl(257 74% 57%);
+  --primary-hover: color-mix(in srgb, var(--primary) 88%, black);
+  --primary-foreground: #fff;
+  --primary-text: var(--primary);
+  --primary-50: color-mix(in srgb, var(--primary) 6%, white);
+  --primary-100: color-mix(in srgb, var(--primary) 14%, white);
+  --primary-200: color-mix(in srgb, var(--primary) 30%, white);
+  --primary-300: color-mix(in srgb, var(--primary) 55%, black);
+  --ring: color-mix(in srgb, var(--primary) 45%, transparent);
+
+  --n-0: #ffffff;
+  --n-50: #fafafa;
+  --n-100: #f5f5f5;
+  --n-150: #efefef;
+  --n-200: #e5e5e5;
+  --n-300: #d4d4d4;
+  --n-400: #a3a3a3;
+  --n-500: #737373;
+  --n-600: #525252;
+  --n-700: #404040;
+  --n-800: #262626;
+  --n-900: #171717;
+  --n-950: #0a0a0a;
+
+  --shell: var(--n-50);
+  --background: #fff;
+  --surface: #fff;
+  --surface-2: var(--n-50);
+  --muted: var(--n-100);
+  --muted-2: var(--n-150);
+  --accent: color-mix(in srgb, var(--n-200) 60%, transparent);
+  --foreground: var(--n-950);
+  --text-2: var(--n-700);
+  --muted-foreground: var(--n-500);
+  --border: var(--n-200);
+  --border-strong: var(--n-300);
+  --input: var(--n-200);
+  --overlay: rgb(0 0 0 / 0.5);
+
+  --success: hsl(160 84% 39%);
+  --success-soft: hsl(152 81% 96%);
+  --success-text: hsl(163 94% 24%);
+  --destructive: hsl(350 89% 60%);
+  --destructive-soft: hsl(356 100% 97%);
+  --destructive-text: hsl(345 83% 41%);
+  --warning: hsl(38 92% 50%);
+  --warning-soft: hsl(48 100% 96%);
+  --warning-text: hsl(26 90% 37%);
+  --info: hsl(217 91% 60%);
+  --info-soft: hsl(214 100% 97%);
+  --info-text: hsl(224 76% 48%);
+
+  --canvas-bg: #fbfbfb;
+  --canvas-dot: #b2b2b2;
+
+  --radius-xs: 2px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.04);
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.06);
+  --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+  --shadow-lg: 0 20px 32px -8px rgb(0 0 0 / 0.14), 0 6px 12px -6px rgb(0 0 0 / 0.08);
+
+  --ease: cubic-bezier(0.35, 0, 0.25, 1);
+  --dur: 200ms;
+  --dur-fast: 150ms;
+
+  --text-xss: 10.4px;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 28px;
+
+  color-scheme: light;
+}
+
+.dark {
+  --primary: hsl(257 74% 60%);
+  --primary-hover: color-mix(in srgb, var(--primary) 85%, white);
+  --primary-50: color-mix(in srgb, var(--primary) 16%, #171717);
+  --primary-100: color-mix(in srgb, var(--primary) 26%, #171717);
+  --primary-200: color-mix(in srgb, var(--primary) 42%, #171717);
+  --primary-300: color-mix(in srgb, var(--primary) 45%, white);
+  --primary-text: color-mix(in srgb, var(--primary) 70%, white);
+
+  --shell: var(--n-950);
+  --background: var(--n-900);
+  --surface: var(--n-900);
+  --surface-2: #1c1c1c;
+  --muted: var(--n-800);
+  --muted-2: #2e2e2e;
+  --accent: hsl(0 0% 100% / 0.08);
+  --foreground: #f5f5f5;
+  --text-2: #d4d4d4;
+  --muted-foreground: #a3a3a3;
+  --border: hsl(0 0% 100% / 0.14);
+  --border-strong: hsl(0 0% 100% / 0.22);
+  --input: hsl(0 0% 100% / 0.16);
+  --overlay: rgb(0 0 0 / 0.6);
+
+  --success: hsl(160 60% 52%);
+  --success-soft: hsl(160 50% 14%);
+  --success-text: hsl(158 64% 70%);
+  --destructive: hsl(351 95% 72%);
+  --destructive-soft: hsl(350 45% 16%);
+  --destructive-text: hsl(351 95% 80%);
+  --warning: hsl(43 97% 56%);
+  --warning-soft: hsl(38 50% 14%);
+  --warning-text: hsl(43 97% 70%);
+  --info: hsl(213 94% 68%);
+  --info-soft: hsl(217 45% 16%);
+  --info-text: hsl(213 94% 78%);
+
+  --canvas-bg: #171717;
+  --canvas-dot: #3a3a3a;
+
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.5);
+  --shadow-lg: 0 20px 32px -8px rgb(0 0 0 / 0.6);
+
+  color-scheme: dark;
+}

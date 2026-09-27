@@ -1,10 +1,11 @@
-import { Project, User, UserIdentity } from '@fema-ipaas/shared'
+import { Project, TenantModule, User, UserIdentity } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import { BaseColumnSchemaPart } from '../database/database-common'
 
 export type UserSchema = User & {
     projects: Project[]
     identity: UserIdentity
+    modules: TenantModule[]
 }
 
 export const UserEntity = new EntitySchema<UserSchema>({
@@ -33,6 +34,12 @@ export const UserEntity = new EntitySchema<UserSchema>({
         lastActiveDate: {
             type: 'timestamp with time zone',
             nullable: true,
+        },
+        modules: {
+            type: String,
+            array: true,
+            nullable: false,
+            default: [],
         },
     },
     indices: [

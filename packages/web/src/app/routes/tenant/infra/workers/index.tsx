@@ -35,21 +35,22 @@ import { workersQueries } from '@/features/tenant-admin';
 import { useTimeAgo } from '@/hooks/use-time-ago';
 import { cn } from '@/lib/utils';
 
+import { NodesTab } from './nodes-tab';
 import { SandboxesPopover } from './sandboxes-popover';
 import { WorkerAssignmentsTab } from './worker-assignments-tab';
 import { WorkerConfigsPopover } from './worker-configs-popover';
 
-type TabValue = 'health' | 'worker-groups';
+type TabValue = 'nodes' | 'health' | 'worker-groups';
 
 export default function WorkersPage() {
   const { data: workersData, isLoading } = workersQueries.useWorkerMachines();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const activeTab = (searchParams.get('tab') as TabValue) || 'health';
+  const activeTab = (searchParams.get('tab') as TabValue) || 'nodes';
 
   const setTab = (tab: TabValue) => {
     const newParams = new URLSearchParams(searchParams);
-    if (tab === 'health') {
+    if (tab === 'nodes') {
       newParams.delete('tab');
     } else {
       newParams.set('tab', tab);
@@ -70,6 +71,10 @@ export default function WorkersPage() {
         className="w-full"
       >
         <TabsList variant="outline" className="border-b w-full">
+          <TabsTrigger variant="outline" value="nodes">
+            <Server className="w-4 h-4 mr-2" />
+            {t('Nodes')}
+          </TabsTrigger>
           <TabsTrigger variant="outline" value="health">
             <Activity className="w-4 h-4 mr-2" />
             {t('Health')}
@@ -79,6 +84,10 @@ export default function WorkersPage() {
             {t('Worker groups')}
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="nodes">
+          <NodesTab />
+        </TabsContent>
 
         <TabsContent value="health">
           <div className="flex flex-col gap-4 pt-4">

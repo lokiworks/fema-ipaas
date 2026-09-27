@@ -1,5 +1,5 @@
 import { isNil } from '@fema-ipaas/core-utils'
-import { ExecutionStatus, FailedStep } from '@fema-ipaas/workflow-core'
+import { errorHandlingUtils, ExecutionStatus, FailedStep } from '@fema-ipaas/workflow-core'
 import { Issue, IssueKind, IssueSeverity } from './issue'
 import { IssueFix, IssueFixKind, IssueInsight, IssueInsightCause, ReplayReason } from './issue-requests'
 
@@ -12,29 +12,27 @@ export const issueUtils = {
 }
 
 function classifyFailure({ workflowId, executionStatus, failedStep }: ClassifyFailureParams): FailureClassification {
-    const message = readableMessage(failedStep.message)
-    const connection = matchConnectionFailure(message)
-    if (!isNil(connection)) {
+    const classified = errorHandlingUtils.classifyErrorMessage({
+        message: failedStep.message,
+        timedOut: executionStatus === ExecutionStatus.TIMEOUT,
+    })
+    if (!isNil(classified.connectionExternalId)) {
         return {
             kind: IssueKind.CONNECTION,
-            signature: `conn:${connection.externalId}`,
-            errorCode: connection.errorCode,
-            connectionExternalId: connection.externalId,
+            signature: `conn:${classified.connectionExternalId}`,
+            errorCode: classified.errorCode,
+            connectionExternalId: classified.connectionExternalId,
             httpStatus: null,
-            message,
+            message: classified.message,
         }
     }
-    const httpStatus = extractHttpStatus(message)
-    const errorCode = executionStatus === ExecutionStatus.TIMEOUT
-        ? STEP_TIMEOUT_CODE
-        : isNil(httpStatus) ? STEP_FAILED_CODE : `HTTP_${httpStatus}`
     return {
         kind: IssueKind.STEP,
-        signature: `${workflowId}:${failedStep.name}:${errorCode}`,
-        errorCode,
+        signature: `${workflowId}:${failedStep.name}:${classified.errorCode}`,
+        errorCode: classified.errorCode,
         connectionExternalId: null,
-        httpStatus,
-        message,
+        httpStatus: classified.httpStatus,
+        message: classified.message,
     }
 }
 
@@ -118,27 +116,6 @@ function isTransientHttpStatus(errorCode: string | null | undefined): boolean {
     return !isNil(status) && TRANSIENT_HTTP_STATUSES.includes(status)
 }
 
-function matchConnectionFailure(message: string): ConnectionFailure | null {
-    const expired = CONNECTION_EXPIRED_PATTERN.exec(message)
-    if (!isNil(expired)) {
-        return { externalId: expired[1], errorCode: 'CONNECTION_EXPIRED' }
-    }
-    const notFound = CONNECTION_NOT_FOUND_PATTERN.exec(message)
-    if (!isNil(notFound)) {
-        return { externalId: notFound[1], errorCode: 'CONNECTION_NOT_FOUND' }
-    }
-    const loading = CONNECTION_LOADING_PATTERN.exec(message)
-    if (!isNil(loading)) {
-        return { externalId: loading[1], errorCode: 'CONNECTION_LOADING_FAILED' }
-    }
-    return null
-}
-
-function extractHttpStatus(message: string): number | null {
-    const match = HTTP_STATUS_PATTERN.exec(message)
-    return isNil(match) ? null : Number(match[1])
-}
-
 function httpStatusOf(errorCode: string | null | undefined): number | null {
     if (isNil(errorCode) || !errorCode.startsWith('HTTP_')) {
         return null
@@ -161,24 +138,14 @@ function fix({ kind, disabledReason }: { kind: IssueFixKind, disabledReason?: Re
 }
 
 const STEP_TIMEOUT_CODE = 'STEP_TIMEOUT'
-const STEP_FAILED_CODE = 'STEP_FAILED'
 const HIGH_SEVERITY_OCCURRENCES = 10
 const MEDIUM_SEVERITY_OCCURRENCES = 3
 const TRANSIENT_HTTP_STATUSES = [429, 502, 503, 504, 529]
-const CONNECTION_EXPIRED_PATTERN = /connection \(([^)]+)\) expired/
-const CONNECTION_NOT_FOUND_PATTERN = /connection \(([^)]+)\) not found/
-const CONNECTION_LOADING_PATTERN = /Failed to load connection \(([^)]+)\)/
-const HTTP_STATUS_PATTERN = /\b([45]\d\d)\b/
 
 type ClassifyFailureParams = {
     workflowId: string
     executionStatus: ExecutionStatus
     failedStep: FailedStep
-}
-
-type ConnectionFailure = {
-    externalId: string
-    errorCode: string
 }
 
 type InsightOfParams = {

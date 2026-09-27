@@ -63,9 +63,13 @@ export function GenerateWorkflowButton() {
 export function GenerateWorkflowDialog({
   open,
   onOpenChange,
+  initialPrompt,
+  projectId,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initialPrompt?: string;
+  projectId?: string;
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -73,6 +77,8 @@ export function GenerateWorkflowDialog({
         <GenerateWorkflowForm
           key={open ? 'open' : 'closed'}
           onOpenChange={onOpenChange}
+          initialPrompt={initialPrompt}
+          targetProjectId={projectId}
         />
       </DialogContent>
     </Dialog>
@@ -81,10 +87,15 @@ export function GenerateWorkflowDialog({
 
 function GenerateWorkflowForm({
   onOpenChange,
+  initialPrompt,
+  targetProjectId,
 }: {
   onOpenChange: (open: boolean) => void;
+  initialPrompt?: string;
+  targetProjectId?: string;
 }) {
-  const projectId = authenticationSession.getProjectId() ?? '';
+  const projectId =
+    targetProjectId ?? authenticationSession.getProjectId() ?? '';
   const navigate = useNavigate();
   const models = aiHooks.useModelSelection(projectId);
   const [plan, setPlan] = useState<WorkflowPlan | null>(null);
@@ -92,7 +103,7 @@ function GenerateWorkflowForm({
   const form = useForm<PromptValues>({
     resolver: zodResolver(PromptSchema),
     mode: 'onChange',
-    defaultValues: defaultPromptValues(),
+    defaultValues: defaultPromptValues(initialPrompt),
   });
   const { mutate: generate, isPending: isPlanning } = aiHooks.useGeneratePlan({
     onError: (message) =>
@@ -134,11 +145,7 @@ function GenerateWorkflowForm({
       {
         onSuccess: ({ workflowId }) => {
           onOpenChange(false);
-          navigate(
-            authenticationSession.appendProjectRoutePrefix(
-              `/workflows/${workflowId}`,
-            ),
-          );
+          navigate(`/projects/${projectId}/workflows/${workflowId}`);
         },
       },
     );
@@ -392,8 +399,8 @@ function PlanStepRow({
   );
 }
 
-function defaultPromptValues(): PromptValues {
-  return { prompt: '' };
+function defaultPromptValues(initialPrompt?: string): PromptValues {
+  return { prompt: (initialPrompt ?? '').slice(0, AI_PROMPT_MAX_LENGTH) };
 }
 
 function examplePrompts(): string[] {

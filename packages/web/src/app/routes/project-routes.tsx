@@ -67,6 +67,10 @@ const MappingTablesPage = lazyWithRetry(
     import('./mapping-tables').then((m) => ({ default: m.MappingTablesPage })),
   'mapping-tables',
 );
+const DataStoresPage = lazyWithRetry(
+  () => import('./data-stores').then((m) => ({ default: m.DataStoresPage })),
+  'data-stores',
+);
 const ConnectionsPage = lazyWithRetry(
   () => import('./connections').then((m) => ({ default: m.ConnectionsPage })),
   'connections',
@@ -246,6 +250,20 @@ export const projectRoutes = [
           <PageTitle title="Mapping tables">
             <SuspenseWrapper>
               <MappingTablesPage />
+            </SuspenseWrapper>
+          </PageTitle>
+        </RoutePermissionGuard>
+      </ProjectDashboardLayout>
+    ),
+  }),
+  ...ProjectRouterWrapper({
+    path: routesThatRequireProjectId.dataStores,
+    element: (
+      <ProjectDashboardLayout>
+        <RoutePermissionGuard requiredPermissions={Permission.READ_WORKFLOW}>
+          <PageTitle title="Data stores">
+            <SuspenseWrapper>
+              <DataStoresPage />
             </SuspenseWrapper>
           </PageTitle>
         </RoutePermissionGuard>

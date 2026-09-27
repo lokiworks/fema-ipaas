@@ -12,6 +12,7 @@ import { LoadingSpinner } from '@/components/custom/spinner';
 import { buttonVariants } from '@/components/ui/button';
 import { workflowsApi, sampleDataHooks } from '@/features/workflows';
 import { authenticationSession } from '@/lib/authentication-session';
+import { recentVisits } from '@/lib/recent-visits';
 import { cn } from '@/lib/utils';
 
 const WorkflowBuilderPage = () => {
@@ -23,7 +24,16 @@ const WorkflowBuilderPage = () => {
     isError,
   } = useQuery<PopulatedWorkflow, Error>({
     queryKey: ['workflow', workflowId, authenticationSession.getProjectId()],
-    queryFn: () => workflowsApi.get(workflowId!),
+    queryFn: async () => {
+      const loaded = await workflowsApi.get(workflowId!);
+      recentVisits.record({
+        type: 'workflow',
+        id: loaded.id,
+        projectId: loaded.projectId,
+        name: loaded.version.displayName,
+      });
+      return loaded;
+    },
     gcTime: 0,
     retry: false,
     refetchOnWindowFocus: false,

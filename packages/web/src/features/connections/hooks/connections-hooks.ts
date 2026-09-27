@@ -9,12 +9,17 @@ import {
   SeekPage,
 } from '@fema-ipaas/core-utils';
 import {
+  AddConnectionSharesRequestBody,
   ConnectionScope,
+  ConnectionScopeImpactRequestBody,
   ConnectionStatus,
   ConnectionWithoutSensitiveData,
+  ListAccessibleConnectionsRequestQuery,
   ListConnectionsRequestQuery,
   PLACEHOLDER_CONNECTION_TYPE,
   ReplaceConnectionsRequestBody,
+  UpdateConnectionAccessRequestBody,
+  UpdateConnectionShareRequestBody,
   UpsertConnectionRequestBody,
 } from '@fema-ipaas/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -66,6 +71,21 @@ type UseUpsertConnectionProps = {
     };
   }>;
   setOpen: (open: boolean, connection?: ConnectionWithoutSensitiveData) => void;
+};
+
+export const connectionAccessQueryKeys = {
+  accessible: (extraKeys: unknown[]) => ['connections-accessible', ...extraKeys],
+  detail: (connectionId: string) => ['connection-detail', connectionId],
+  accessImpact: (params: {
+    connectionId: string;
+    allProjects: boolean;
+    projectIds: string[];
+  }) => [
+    'connection-access-impact',
+    params.connectionId,
+    params.allProjects,
+    ...params.projectIds,
+  ],
 };
 
 export const connectionsMutations = {
@@ -288,6 +308,100 @@ export const connectionsMutations = {
     });
   },
 
+  useAddConnectionShares: ({ connectionId }: { connectionId: string }) => {
+    const queryClient = useQueryClient();
+    return useMutation({
+      mutationFn: (request: AddConnectionSharesRequestBody) =>
+        connectionsApi.addShares(connectionId, request),
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: connectionAccessQueryKeys.detail(connectionId),
+        });
+        queryClient.invalidateQueries({ queryKey: ['connections-accessible'] });
+        toast.success(t('Success'), {
+          description: t('Connection shared.'),
+          duration: 3000,
+        });
+      },
+      onError: () => {
+        internalErrorToast();
+      },
+    });
+  },
+
+  useUpdateConnectionShare: ({ connectionId }: { connectionId: string }) => {
+    const queryClient = useQueryClient();
+    return useMutation({
+      mutationFn: ({
+        userId,
+        request,
+      }: {
+        userId: string;
+        request: UpdateConnectionShareRequestBody;
+      }) => connectionsApi.updateShare(connectionId, userId, request),
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: connectionAccessQueryKeys.detail(connectionId),
+        });
+        queryClient.invalidateQueries({ queryKey: ['connections-accessible'] });
+      },
+      onError: () => {
+        internalErrorToast();
+      },
+    });
+  },
+
+  useRemoveConnectionShare: ({ connectionId }: { connectionId: string }) => {
+    const queryClient = useQueryClient();
+    return useMutation({
+      mutationFn: ({ userId }: { userId: string }) =>
+        connectionsApi.removeShare(connectionId, userId),
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: connectionAccessQueryKeys.detail(connectionId),
+        });
+        queryClient.invalidateQueries({ queryKey: ['connections-accessible'] });
+      },
+      onError: () => {
+        internalErrorToast();
+      },
+    });
+  },
+
+  useUpdateConnectionAccess: ({ connectionId }: { connectionId: string }) => {
+    const queryClient = useQueryClient();
+    return useMutation({
+      mutationFn: (request: UpdateConnectionAccessRequestBody) =>
+        connectionsApi.updateAccess(connectionId, request),
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: connectionAccessQueryKeys.detail(connectionId),
+        });
+        queryClient.invalidateQueries({ queryKey: ['connections-accessible'] });
+        toast.success(t('Success'), {
+          description: t('Connection scope updated.'),
+          duration: 3000,
+        });
+      },
+      onError: () => {
+        internalErrorToast();
+      },
+    });
+  },
+
+  useDeleteAccessibleConnection: () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+      mutationFn: (connectionId: string) => connectionsApi.delete(connectionId),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['connections-accessible'] });
+      },
+      onError: () => {
+        internalErrorToast();
+      },
+    });
+  },
+
   useReplaceConnections: ({
     setDialogOpen,
     refetch,
@@ -388,6 +502,60 @@ export const connectionsQueries = {
         connectorName: sp.get('connectorName') ?? undefined,
       };
     }, [search]);
+  },
+
+  useAccessibleConnections: ({
+    request,
+    extraKeys,
+  }: {
+    request: ListAccessibleConnectionsRequestQuery;
+    extraKeys: unknown[];
+  }) => {
+    return useQuery({
+      queryKey: connectionAccessQueryKeys.accessible(extraKeys),
+      meta: { showErrorDialog: true, loadSubsetOptions: {} },
+      queryFn: () => connectionsApi.listAccessible(request),
+    });
+  },
+
+  useConnectionDetail: ({
+    connectionId,
+    enabled,
+  }: {
+    connectionId: string | null;
+    enabled?: boolean;
+  }) => {
+    return useQuery({
+      queryKey: connectionAccessQueryKeys.detail(connectionId ?? ''),
+      queryFn: () => connectionsApi.getDetail(connectionId!),
+      enabled: !isNil(connectionId) && (enabled ?? true),
+    });
+  },
+
+  useConnectionAccessImpact: ({
+    connectionId,
+    allProjects,
+    projectIds,
+    enabled,
+  }: {
+    connectionId: string;
+    allProjects: boolean;
+    projectIds: string[];
+    enabled: boolean;
+  }) => {
+    return useQuery({
+      queryKey: connectionAccessQueryKeys.accessImpact({
+        connectionId,
+        allProjects,
+        projectIds,
+      }),
+      queryFn: () =>
+        connectionsApi.getAccessImpact(connectionId, {
+          allProjects,
+          projectIds,
+        }),
+      enabled,
+    });
   },
 
   useConnectionsOwners: () => {

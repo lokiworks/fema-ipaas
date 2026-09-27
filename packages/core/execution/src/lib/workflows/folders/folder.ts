@@ -10,7 +10,12 @@ export const Folder = z.object({
     displayName: z.string(),
     displayOrder: z.number(),
     externalId: Nullable(z.string()),
+    parentId: Nullable(z.string()),
 })
+
+export const FOLDER_NAME_MAX_LENGTH = 50
+export const FOLDER_MAX_DEPTH = 3
+export const FOLDER_LIMIT_PER_PROJECT = 100
 
 export const UncategorizedFolderId = 'NULL'
 export type Folder = z.infer<typeof Folder>

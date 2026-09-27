@@ -28,6 +28,9 @@ export const authenticationService = (log: FastifyBaseLogger) => ({
                 email: params.email,
                 tenantId,
             })
+            if (params.provider === UserIdentityProvider.EMAIL) {
+                await authenticationUtils(log).assertPasswordMeetsPolicy({ password: params.password, tenantIds: [tenantId] })
+            }
             if (system.get(AppSystemProp.ALLOW_OPEN_SIGN_UP) !== 'true') {
                 await authenticationUtils(log).assertUserIsInvitedToTenantOrProject({
                     email: params.email,

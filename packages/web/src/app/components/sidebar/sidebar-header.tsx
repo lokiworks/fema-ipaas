@@ -12,10 +12,9 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar-shadcn';
 import { TenantSwitcher } from '@/features/projects';
-import { useAuthorization } from '@/hooks/authorization-hooks';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { tenantHooks } from '@/hooks/tenant-hooks';
-import { determineDefaultRoute } from '@/lib/route-utils';
+import { WORKSPACE_HOME_ROUTE } from '@/lib/route-utils';
 
 function SidebarLogoCollapsed({ linkTo }: { linkTo?: string }) {
   const branding = flagsHooks.useWebsiteBranding();
@@ -42,17 +41,13 @@ export const AppSidebarHeader = () => {
   const showSwitcher = false && !embedState.isEmbedded;
   const { state } = useSidebar();
   const { tenant: currentTenant } = tenantHooks.useCurrentTenant();
-  const { checkAccess } = useAuthorization();
-  const defaultRoute = determineDefaultRoute({
-    checkAccess,
-  });
   const branding = flagsHooks.useWebsiteBranding();
 
   if (!showSwitcher) {
     return (
       <SidebarHeader className="pb-0">
         <div className="w-full flex items-center gap-2">
-          <SidebarLogoCollapsed linkTo={defaultRoute} />
+          <SidebarLogoCollapsed linkTo={WORKSPACE_HOME_ROUTE} />
           {state !== 'collapsed' && (
             <h1 className="truncate text-sm font-medium">
               {branding.websiteName}
@@ -67,7 +62,7 @@ export const AppSidebarHeader = () => {
     <SidebarHeader>
       <SidebarMenu>
         <SidebarMenuItem className="flex items-center">
-          <SidebarLogoCollapsed linkTo={defaultRoute} />
+          <SidebarLogoCollapsed linkTo={WORKSPACE_HOME_ROUTE} />
           {state !== 'collapsed' && (
             <div className="flex-1 min-w-0">
               <TenantSwitcher>

@@ -58,6 +58,10 @@ export const WorkflowVersionEntity = new EntitySchema<WorkflowVersionSchema>({
             type: 'jsonb',
             nullable: true,
         },
+        publishNote: {
+            type: String,
+            nullable: true,
+        },
     },
     indices: [
         {

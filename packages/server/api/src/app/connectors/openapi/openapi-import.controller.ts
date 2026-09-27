@@ -1,12 +1,15 @@
 import { ApplicationError, ErrorCode } from '@fema-ipaas/core-utils'
-import { GenerateConnectorFromOpenApiRequest, GenerateConnectorFromOpenApiResponse, ParseOpenApiRequest, ParseOpenApiResponse, PrincipalType } from '@fema-ipaas/shared'
+import { GenerateConnectorFromOpenApiRequest, GenerateConnectorFromOpenApiResponse, ParseOpenApiRequest, ParseOpenApiResponse, PrincipalType, TenantModule } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { securityAccess } from '../../core/security/authorization/fastify-security'
+import { tenantModuleGuard } from '../../tenant-access/tenant-module-guard'
 import { openApiConnectorGenerator } from './openapi-connector-generator'
 import { openApiParser } from './openapi-parser'
 
 export const openApiImportController: FastifyPluginAsyncZod = async (app) => {
+    app.addHook('preHandler', tenantModuleGuard.requireModule(TenantModule.CONNECTOR_DEVELOPMENT))
+
     app.post('/parse', ParseRequest, async (request): Promise<ParseOpenApiResponse> => {
         return openApiParser.parse(parseDocument(request.body.document))
     })
@@ -40,10 +43,10 @@ function parseDocument(raw: string): unknown {
     }
 }
 
-const adminOnly = securityAccess.tenantAdminOnly([PrincipalType.USER])
+const connectorDevelopers = securityAccess.publicTenant([PrincipalType.USER])
 
 const ParseRequest = {
-    config: { security: adminOnly },
+    config: { security: connectorDevelopers },
     schema: {
         body: ParseOpenApiRequest,
         response: { [StatusCodes.OK]: ParseOpenApiResponse },
@@ -51,7 +54,7 @@ const ParseRequest = {
 }
 
 const GenerateRequest = {
-    config: { security: adminOnly },
+    config: { security: connectorDevelopers },
     schema: {
         body: GenerateConnectorFromOpenApiRequest,
         response: { [StatusCodes.OK]: GenerateConnectorFromOpenApiResponse },

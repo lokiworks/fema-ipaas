@@ -1,12 +1,31 @@
-import { PrincipalType } from '@fema-ipaas/shared'
+import { EncryptionKeyStatus, PrincipalType } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
+import { StatusCodes } from 'http-status-codes'
 import { encryptionRotationService, RotationReport } from '../../../helper/encryption-rotation.service'
 import { securityAccess } from '../authorization/fastify-security'
+import { encryptionStatusService } from './encryption-status.service'
 
 export const encryptionController: FastifyPluginAsyncZod = async (app) => {
-    app.post('/rotate', RotateKeyRequest, async (request): Promise<RotationReport> => {
-        return encryptionRotationService(request.log).rotate()
+    app.get('/status', StatusRequest, async (request): Promise<EncryptionKeyStatus> => {
+        return encryptionStatusService(request.log).get()
     })
+
+    app.post('/rotate', RotateKeyRequest, async (request): Promise<RotationReport> => {
+        const report = await encryptionRotationService(request.log).rotate()
+        await encryptionStatusService(request.log).recordReencryption()
+        return report
+    })
+}
+
+const StatusRequest = {
+    config: {
+        security: securityAccess.tenantAdminOnly([PrincipalType.USER]),
+    },
+    schema: {
+        response: {
+            [StatusCodes.OK]: EncryptionKeyStatus,
+        },
+    },
 }
 
 const RotateKeyRequest = {

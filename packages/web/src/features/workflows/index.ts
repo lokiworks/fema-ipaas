@@ -5,6 +5,8 @@ export { ChangeOwnerDialog } from './components/change-owner-dialog';
 export { WorkflowStatusToggle } from './components/workflow-status-toggle';
 export { WorkflowVersionStateDot } from './components/workflow-version-state-dot';
 export { ImportWorkflowDialog } from './components/import-workflow-dialog';
+export { NewWorkflowDialog } from './components/new-workflow-dialog';
+export type { NewWorkflowDialogProps } from './components/new-workflow-dialog';
 export { ShareTemplateDialog } from './components/share-template-dialog';
 export { workflowHooks } from './hooks/workflow-hooks';
 export { sampleDataHooks } from './hooks/sample-data-hooks';

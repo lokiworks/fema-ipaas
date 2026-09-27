@@ -8,6 +8,7 @@ import {
 export type FolderSchema = {
     workflows: Workflow[]
     project: Project
+    parent?: Folder | null
 } & Folder
 
 export const FolderEntity = new EntitySchema<FolderSchema>({
@@ -26,12 +27,23 @@ export const FolderEntity = new EntitySchema<FolderSchema>({
             type: String,
             nullable: true,
         },
+        parentId: {
+            ...EntityIdSchema,
+            nullable: true,
+        },
     },
     indices: [
         {
             name: 'idx_folder_project_id_display_name',
             columns: ['projectId', 'displayName'],
             unique: true,
+            where: '"parentId" IS NULL',
+        },
+        {
+            name: 'idx_folder_parent_id_display_name',
+            columns: ['parentId', 'displayName'],
+            unique: true,
+            where: '"parentId" IS NOT NULL',
         },
         {
             name: 'idx_folder_project_id_external_id',
@@ -41,6 +53,17 @@ export const FolderEntity = new EntitySchema<FolderSchema>({
         },
     ],
     relations: {
+        parent: {
+            type: 'many-to-one',
+            target: 'folder',
+            onDelete: 'CASCADE',
+            nullable: true,
+            joinColumn: {
+                name: 'parentId',
+                referencedColumnName: 'id',
+                foreignKeyConstraintName: 'fk_folder_parent_id',
+            },
+        },
         workflows: {
             type: 'one-to-many',
             target: 'workflow',

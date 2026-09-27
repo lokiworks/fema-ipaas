@@ -11,6 +11,7 @@ import { AppSystemProp } from '../../helper/system/system-props'
 import { WorkerGroupAssignment } from '../job'
 import { workerMachineCache } from './machine-cache'
 import { parseWorkerConcurrency, workerCapacity } from './worker-capacity'
+import { workerFleetService } from './worker-fleet.service'
 
 dayjs.extend(utc)
 
@@ -67,6 +68,8 @@ export const machineService = (log: FastifyBaseLogger) => {
                 message: 'Worker disconnected',
                 worker: { id: request.workerId },
             })
+            const departing = await workerMachineCache().findOne(request.workerId)
+            await workerFleetService(log).rememberDepartures({ machines: isNil(departing) ? [] : [departing] })
             await workerMachineCache().delete([request.workerId])
             await workerCapacity.invalidate()
         },
@@ -94,6 +97,7 @@ export const machineService = (log: FastifyBaseLogger) => {
 
             const [onlineWorkers, offLineWorkers] = partition(allWorkers, (worker) => dayjs(worker.updated).isAfter(offlineThreshold))
 
+            await workerFleetService(log).rememberDepartures({ machines: offLineWorkers })
             await workerMachineCache().delete(offLineWorkers.map(worker => worker.id))
 
             return onlineWorkers

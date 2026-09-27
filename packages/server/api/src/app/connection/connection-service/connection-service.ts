@@ -23,6 +23,7 @@ import {
     ConnectionEntity,
     ConnectionSchema,
 } from '../connection.entity'
+import { connectionAvailability } from './connection-availability'
 import { mergeConnectionMetadata } from './connection-metadata'
 import { connectionHandler } from './connection.handler'
 import { oauth2Handler } from './oauth2'
@@ -31,7 +32,7 @@ export const connectionsRepo = repoFactory(ConnectionEntity)
 
 export const connectionService = (log: FastifyBaseLogger) => ({
     async upsert(params: UpsertParams): Promise<ConnectionWithoutSensitiveData> {
-        const { projectIds, externalId, value, displayName, connectorName, ownerId, tenantId, scope, type, status, metadata, preSelectForNewProjects } = params
+        const { projectIds, externalId, value, displayName, connectorName, ownerId, tenantId, scope, type, status, metadata, preSelectForNewProjects, skipEngineValidation } = params
         const connectorVersion = params.connectorVersion ?? ( await connectorMetadataService(log).getOrThrow({
             name: connectorName,
             tenantId,
@@ -58,6 +59,7 @@ export const connectionService = (log: FastifyBaseLogger) => ({
             connectorVersion,
             projectId: projectIds[0],
             tenantId,
+            skipEngineValidation: skipEngineValidation === true,
         }, log)
 
         const encryptedConnectionValue = await encryptUtils.encryptObject({
@@ -89,7 +91,7 @@ export const connectionService = (log: FastifyBaseLogger) => ({
         const newId = existingConnection?.id ?? generateId()
         const connection = {
             displayName,
-            ...spreadIfDefined('ownerId', ownerId),
+            ...spreadIfDefined('ownerId', existingConnection?.ownerId ?? ownerId),
             status: status ?? ConnectionStatus.ACTIVE,
             value: encryptedConnectionValue,
             externalId,
@@ -122,19 +124,22 @@ export const connectionService = (log: FastifyBaseLogger) => ({
             await assertProjectIds(request.projectIds, tenantId)
         }
 
-        const filter: FindOptionsWhere<ConnectionSchema> = {
-            id,
-            scope,
-            tenantId,
-            ...(projectIds ? { projectIds: ArrayContains(projectIds) } : {}),
-        }
+        const filter: FindOptionsWhere<ConnectionSchema>[] = connectionAvailability.whereAvailableIn({
+            projectId: projectIds?.[0],
+            where: {
+                id,
+                tenantId,
+                ...spreadIfDefined('scope', scope),
+            },
+        })
 
         const storedMetadata = isNil(request.metadata)
             ? undefined
             : (await connectionsRepo().findOneByOrFail(filter)).metadata
         const storedAccountIdentifier = storedMetadata?.['accountIdentifier']
 
-        await connectionsRepo().update(filter, {
+        const target = await connectionsRepo().findOneOrFail({ where: filter, select: ['id'] })
+        await connectionsRepo().update({ id: target.id, tenantId }, {
             displayName: request.displayName,
             ...spreadIfDefined('projectIds', request.projectIds),
             ...(isNil(request.metadata) ? {} : spreadIfDefined('metadata', mergeConnectionMetadata({
@@ -145,7 +150,7 @@ export const connectionService = (log: FastifyBaseLogger) => ({
             ...spreadIfDefined('preSelectForNewProjects', request.preSelectForNewProjects),
         })
 
-        const updatedConnection = await connectionsRepo().findOneByOrFail(filter)
+        const updatedConnection = await connectionsRepo().findOneByOrFail({ id: target.id, tenantId })
         return this.removeSensitiveData(updatedConnection)
     },
     async getOne({
@@ -154,11 +159,13 @@ export const connectionService = (log: FastifyBaseLogger) => ({
         externalId,
     }: GetOneByName): Promise<Connection | null> {
         const encryptedConnection = await connectionsRepo().findOne({
-            where: {
-                projectIds: ArrayContains([projectId]),
-                externalId,
-                tenantId,
-            },
+            where: connectionAvailability.whereAvailableIn({
+                projectId,
+                where: {
+                    externalId,
+                    tenantId,
+                },
+            }),
         })
 
         if (isNil(encryptedConnection)) {
@@ -180,20 +187,24 @@ export const connectionService = (log: FastifyBaseLogger) => ({
     },
 
     async getOneWithoutValue({ projectId, tenantId, externalId }: GetOneByName): Promise<ConnectionWithoutSensitiveData | null> {
-        const connection = await connectionsRepo().findOneBy({
-            projectIds: ArrayContains([projectId]),
-            externalId,
-            tenantId,
-        })
+        const connection = await connectionsRepo().findOneBy(connectionAvailability.whereAvailableIn({
+            projectId,
+            where: {
+                externalId,
+                tenantId,
+            },
+        }))
         return isNil(connection) ? null : this.removeSensitiveData(connection)
     },
 
     async getOneOrThrowWithoutValue(params: GetOneParams): Promise<ConnectionWithoutSensitiveData> {
-        const connectionById = await connectionsRepo().findOneBy({
-            id: params.id,
-            tenantId: params.tenantId,
-            ...(params.projectId ? { projectIds: ArrayContains([params.projectId]) } : {}),
-        })
+        const connectionById = await connectionsRepo().findOneBy(connectionAvailability.whereAvailableIn({
+            projectId: params.projectId,
+            where: {
+                id: params.id,
+                tenantId: params.tenantId,
+            },
+        }))
         if (isNil(connectionById)) {
             throw new ApplicationError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
@@ -371,18 +382,28 @@ export const connectionService = (log: FastifyBaseLogger) => ({
     },
 
     async delete(params: DeleteParams): Promise<void> {
-        await connectionsRepo().delete({
-            id: params.id,
-            tenantId: params.tenantId,
-            scope: params.scope,
-            ...(params.projectId ? { projectIds: ArrayContains([params.projectId]) } : {}),
+        const target = await connectionsRepo().findOne({
+            where: connectionAvailability.whereAvailableIn({
+                projectId: params.projectId,
+                where: {
+                    id: params.id,
+                    tenantId: params.tenantId,
+                    ...spreadIfDefined('scope', params.scope),
+                },
+            }),
+            select: ['id'],
         })
+        if (isNil(target)) {
+            return
+        }
+        await connectionsRepo().delete({ id: target.id, tenantId: params.tenantId })
         log.info({ connection: { id: params.id }, tenant: { id: params.tenantId } }, 'App connection deleted')
     },
 
     async list({
         projectId,
         projectIds,
+        visibleToUserId,
         ownerIds,
         connectorName,
         cursorRequest,
@@ -405,7 +426,6 @@ export const connectionService = (log: FastifyBaseLogger) => ({
         })
 
         const querySelector: Record<string, string | FindOperator<string>> = {
-            ...(projectId ? { projectIds: ArrayContains([projectId]) } : {}),
             ...spreadIfDefined('scope', scope),
             tenantId,
         }
@@ -429,6 +449,12 @@ export const connectionService = (log: FastifyBaseLogger) => ({
             .leftJoinAndSelect('connection.owner', 'owner')
             .leftJoinAndSelect('owner.identity', 'owner_identity')
             .where(querySelector)
+        if (!isNil(projectId)) {
+            queryBuilder.andWhere(connectionAvailability.sqlAvailableIn({ alias: 'connection', param: 'availableProjectId' }), { availableProjectId: projectId })
+        }
+        if (!isNil(visibleToUserId)) {
+            queryBuilder.andWhere(connectionAvailability.sqlVisibleTo({ alias: 'connection', userParam: 'visibleToUserId' }), { visibleToUserId })
+        }
         if (!isNil(projectIds) && projectIds.length > 0) {
             queryBuilder.andWhere('connection."projectIds" && :projectIds::varchar[]', { projectIds })
         }
@@ -478,10 +504,17 @@ export const connectionService = (log: FastifyBaseLogger) => ({
         return oauth2Util(log).removeRefreshTokenAndClientSecret(refreshedConnection)
     },
     async deleteAllProjectConnections(projectId: string) {
-        await connectionsRepo().delete({
-            scope: ConnectionScope.PROJECT,
-            projectIds: ArrayContains([projectId]),
-        })
+        await connectionsRepo()
+            .createQueryBuilder()
+            .update()
+            .set({ projectIds: () => 'array_remove("projectIds", :removedProjectId)' })
+            .where('"projectIds" @> ARRAY[:removedProjectId]::varchar[]', { removedProjectId: projectId })
+            .execute()
+        await connectionsRepo()
+            .createQueryBuilder()
+            .delete()
+            .where('"scope" = :scope AND cardinality("projectIds") = 0', { scope: ConnectionScope.PROJECT })
+            .execute()
     },
 
     async getOwners({ projectId: _projectId, tenantId }: { projectId: ProjectId, tenantId: TenantId }): Promise<ConnectionOwners[]> {
@@ -641,7 +674,7 @@ const validateConnectionValue = async (
     params: ValidateConnectionValueParams,
     log: FastifyBaseLogger,
 ): Promise<ConnectionValue> => {
-    const { value, connectorName, connectorVersion, projectId, tenantId } = params
+    const { value, connectorName, connectorVersion, projectId, tenantId, skipEngineValidation } = params
 
     switch (value.type) {
         case ConnectionType.TENANT_OAUTH2: {
@@ -714,12 +747,14 @@ const validateConnectionValue = async (
                     scope: value.scope,
                 },
             })
-            await engineValidateAuth({
-                connectorName,
-                projectId,
-                tenantId,
-                auth,
-            }, log)
+            if (!skipEngineValidation) {
+                await engineValidateAuth({
+                    connectorName,
+                    projectId,
+                    tenantId,
+                    auth,
+                }, log)
+            }
             return auth
         }
         case ConnectionType.NO_AUTH:
@@ -728,12 +763,14 @@ const validateConnectionValue = async (
         case ConnectionType.OIDC:
         case ConnectionType.BASIC_AUTH:
         case ConnectionType.SECRET_TEXT:
-            await engineValidateAuth({
-                tenantId,
-                connectorName,
-                projectId,
-                auth: value,
-            }, log)
+            if (!skipEngineValidation) {
+                await engineValidateAuth({
+                    tenantId,
+                    connectorName,
+                    projectId,
+                    auth: value,
+                }, log)
+            }
     }
 
     return value
@@ -935,6 +972,7 @@ type UpsertParams = {
     metadata?: Metadata
     connectorVersion?: string
     preSelectForNewProjects?: boolean
+    skipEngineValidation?: boolean
 }
 
 
@@ -958,7 +996,7 @@ type RevalidateParams = {
 
 type DeleteParams = {
     projectId: ProjectId | null
-    scope: ConnectionScope
+    scope?: ConnectionScope
     id: ConnectionId
     tenantId: string
 }
@@ -969,11 +1007,13 @@ type ValidateConnectionValueParams = {
     connectorVersion: string
     projectId: ProjectId | undefined
     tenantId: string
+    skipEngineValidation?: boolean
 }
 
 type ListParams = {
     projectId: ProjectId | null
     projectIds?: ProjectId[]
+    visibleToUserId?: string
     ownerIds?: string[]
     tenantId: string
     connectorName: string | undefined
@@ -1001,7 +1041,7 @@ type UpdateParams = {
     projectIds: ProjectId[] | null
     tenantId: string
     id: ConnectionId
-    scope: ConnectionScope
+    scope?: ConnectionScope
     request: {
         displayName: string
         projectIds: ProjectId[] | null

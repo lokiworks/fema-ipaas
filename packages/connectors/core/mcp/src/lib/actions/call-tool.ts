@@ -2,6 +2,7 @@ import { createAction, Property, tryCatch } from '@fema-ipaas/connector-sdk';
 import { z } from 'zod';
 import { mcpAuth } from '../auth';
 import { mcpClient } from '../common/mcp-client';
+import { mcpSession } from '../common/mcp-session';
 
 export const callTool = createAction({
   auth: mcpAuth,
@@ -29,13 +30,9 @@ export const callTool = createAction({
             options: [],
           };
         }
-        const { data, error } = await tryCatch(async () => {
-          const session = await mcpClient.connect({
-            url: auth.props.url,
-            authorization: auth.props.token,
-          });
-          return mcpClient.listTools({ session });
-        });
+        const { data, error } = await tryCatch(() =>
+          mcpSession.run({ auth, fn: (session) => mcpClient.listTools({ session }) }),
+        );
         if (error !== null) {
           return { disabled: true, placeholder: error.message, options: [] };
         }
@@ -58,14 +55,10 @@ export const callTool = createAction({
   },
   async run(context) {
     const name = context.propsValue.tool;
-    const session = await mcpClient.connect({
-      url: context.auth.props.url,
-      authorization: context.auth.props.token,
-    });
-    const result = await mcpClient.callTool({
-      session,
-      name,
-      args: parseArguments(context.propsValue.arguments),
+    const args = parseArguments(context.propsValue.arguments);
+    const result = await mcpSession.run({
+      auth: context.auth,
+      fn: (session) => mcpClient.callTool({ session, name, args }),
     });
     if (result.isError) {
       throw new Error(

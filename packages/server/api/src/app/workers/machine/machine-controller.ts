@@ -1,15 +1,19 @@
-import { isNil } from '@fema-ipaas/core-utils'
-import { createRpcServer, PrincipalType, WebsocketServerEvent, WorkerMachineHealthcheckRequest, WorkerToApiContract } from '@fema-ipaas/shared'
+import { ApplicationError, ErrorCode, isNil } from '@fema-ipaas/core-utils'
+import { ApplicationEventName, createRpcServer, PrincipalType, WebsocketServerEvent, WorkerFleet, WorkerMachineHealthcheckRequest, WorkerToApiContract } from '@fema-ipaas/shared'
+import { FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
 import { securityAccess } from '../../core/security/authorization/fastify-security'
 import { websocketService } from '../../core/websockets.service'
+import { applicationEvents } from '../../helper/application-events'
+import { tenantService } from '../../tenant/tenant.service'
 import { parseWorkerGroupValue, QueueName } from '../job'
 import { jobBroker } from '../job-queue/job-broker'
 import { jobQueue } from '../job-queue/job-queue'
 import { createHandlers } from '../rpc/worker-rpc-service'
 import { machineService } from './machine-service'
+import { workerFleetService } from './worker-fleet.service'
 
 export const workerMachineController: FastifyPluginAsyncZod = async (app) => {
 
@@ -40,6 +44,31 @@ export const workerMachineController: FastifyPluginAsyncZod = async (app) => {
         return machineService(app.log).list(request.principal.tenant.id)
     })
 
+    app.get('/fleet', FleetParams, async () => {
+        return workerFleetService(app.log).list()
+    })
+
+    app.post('/:id/drain', WorkerActionParams, async (request) => {
+        await assertPrimaryTenant(request)
+        await workerFleetService(request.log).drain({ workerId: request.params.id })
+        auditWorkerChange({ request, workerId: request.params.id, detail: 'drained' })
+        return workerFleetService(request.log).list()
+    })
+
+    app.post('/:id/resume', WorkerActionParams, async (request) => {
+        await assertPrimaryTenant(request)
+        await workerFleetService(request.log).resume({ workerId: request.params.id })
+        auditWorkerChange({ request, workerId: request.params.id, detail: 'resumed' })
+        return workerFleetService(request.log).list()
+    })
+
+    app.delete('/:id', WorkerActionParams, async (request, reply) => {
+        await assertPrimaryTenant(request)
+        await workerFleetService(request.log).remove({ workerId: request.params.id })
+        auditWorkerChange({ request, workerId: request.params.id, detail: 'removed' })
+        return reply.status(StatusCodes.NO_CONTENT).send()
+    })
+
     app.get('/worker-groups', ListWorkersParams, async () => {
         return machineService(app.log).listProjectWorkerGroups()
     })
@@ -66,6 +95,46 @@ export const workerMachineController: FastifyPluginAsyncZod = async (app) => {
     }
 }
 
+
+async function assertPrimaryTenant(request: FastifyRequest): Promise<void> {
+    const primary = await tenantService(request.log).getOldestTenant()
+    const tenantId = request.principal.type === PrincipalType.USER ? request.principal.tenant.id : null
+    if (isNil(primary) || primary.id !== tenantId) {
+        throw new ApplicationError({
+            code: ErrorCode.AUTHORIZATION,
+            params: { message: 'Workers are shared by the whole instance and can only be managed from the primary tenant' },
+        })
+    }
+}
+
+function auditWorkerChange({ request, workerId, detail }: { request: FastifyRequest, workerId: string, detail: string }): void {
+    applicationEvents(request.log).sendUserEvent(request, {
+        action: ApplicationEventName.WORKER_STATE_CHANGED,
+        data: { target: workerId, detail },
+    })
+}
+
+const FleetParams = {
+    config: {
+        security: securityAccess.tenantAdminOnly([PrincipalType.USER]),
+    },
+    schema: {
+        tags: ['worker-machines'],
+        response: {
+            [StatusCodes.OK]: WorkerFleet,
+        },
+    },
+}
+
+const WorkerActionParams = {
+    config: {
+        security: securityAccess.tenantAdminOnly([PrincipalType.USER]),
+    },
+    schema: {
+        tags: ['worker-machines'],
+        params: z.object({ id: z.string() }),
+    },
+}
 
 const ListWorkersParams = {
     config: {

@@ -4,6 +4,7 @@ import { Cursor } from '@fema-ipaas/core-utils'
 export const CreateFolderRequest = z.object({
     displayName: z.string(),
     projectId: z.string(),
+    parentId: z.string().optional(),
 })
 
 export type CreateFolderRequest = z.infer<typeof CreateFolderRequest>

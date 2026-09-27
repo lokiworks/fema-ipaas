@@ -19,7 +19,7 @@ const folderController: FastifyPluginAsyncZod = async (fastify) => {
     fastify.addHook('preSerialization', entitiesMustBeOwnedByCurrentProject)
 
     fastify.post('/', CreateFolderParams, async (request) => {
-        const createdFolder = await folderService(request.log).upsert({
+        const createdFolder = await folderService(request.log).create({
             projectId: request.projectId,
             request: request.body,
         })

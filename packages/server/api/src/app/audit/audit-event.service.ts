@@ -1,6 +1,6 @@
 import { generateId, isNil, SeekPage } from '@fema-ipaas/core-utils'
 import { dayjsUtil } from '@fema-ipaas/server-utils'
-import { ApplicationEventName } from '@fema-ipaas/shared'
+import { ApplicationEventName, TENANT_ACCESS_LIMITS } from '@fema-ipaas/shared'
 
 import { FastifyBaseLogger } from 'fastify'
 import { In } from 'typeorm'
@@ -58,6 +58,17 @@ export const auditEventService = (log: FastifyBaseLogger) => ({
         }
         const { data, cursor } = await paginator.paginate(query)
         return paginationHelper.createPage<AuditEventRow>(data, cursor)
+    },
+
+    async purgeExpired(): Promise<number> {
+        const cutoff = dayjsUtil().subtract(TENANT_ACCESS_LIMITS.auditRetentionDays, 'day').toISOString()
+        const result = await auditEventRepo().createQueryBuilder()
+            .delete()
+            .where('created < :cutoff', { cutoff })
+            .execute()
+        const deleted = result.affected ?? 0
+        log.info({ deletedCount: deleted, cutoff }, '[auditEvents] purged events past retention')
+        return deleted
     },
 })
 

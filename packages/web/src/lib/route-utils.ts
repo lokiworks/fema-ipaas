@@ -12,6 +12,7 @@ export const routesThatRequireProjectId = {
   releases: '/releases',
   singleRelease: '/releases/:releaseId',
   mappingTables: '/mapping-tables',
+  dataStores: '/data-stores',
   mcpServices: '/mcp-services',
   aiUsage: '/ai-usage',
   workflows: '/workflows',
@@ -37,5 +38,6 @@ export const determineDefaultRoute = ({
   return authenticationSession.appendProjectRoutePrefix('/home');
 };
 
+export const WORKSPACE_HOME_ROUTE = '/';
 export const NEW_WORKFLOW_QUERY_PARAM = 'newWorkflow';
 export const NEW_CONNECTION_QUERY_PARAM = 'newConnection';

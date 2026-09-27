@@ -9,16 +9,20 @@ import { AlertPolicyEntity, AlertRecordEntity, NotificationChannelEntity } from 
 import { AuditEventEntity } from '../audit/audit-event.entity'
 import { OtpEntity } from '../authentication/otp/otp-entity'
 import { UserIdentityEntity } from '../authentication/user-identity/user-identity-entity'
+import { ConnectionShareEntity } from '../connection/connection-share.entity'
 import { ConnectionEntity } from '../connection/connection.entity'
 import { ConnectorBlueprintEntity } from '../connectors/blueprint/connector-blueprint.entity'
+import { ConnectorDemandEntity } from '../connectors/demand/connector-demand.entity'
 import { ConnectorMetadataEntity } from '../connectors/metadata/connector-metadata-entity'
+import { DataStoreEntity } from '../data-store/data-store.entity'
 import { FileEntity } from '../file/file.entity'
 import { FlagEntity } from '../flags/flag.entity'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
 import { IssueActivityEntity, IssueEntity } from '../issue/issue.entity'
 import { MappingTableEntity } from '../mapping-table/mapping-table.entity'
-import { McpServiceEntity } from '../mcp-service/mcp-service.entity'
+import { McpServerEntity } from '../mcp-server/mcp-server.entity'
+import { McpServiceEntity, McpServiceMemberEntity, McpServiceUsageEntity } from '../mcp-service/mcp-service.entity'
 import { DataErasureRequestEntity } from '../privacy/data-erasure.entity'
 import { PrivacySettingsEntity } from '../privacy/privacy-settings.entity'
 import { ProjectEntity } from '../project/project-entity'
@@ -27,7 +31,10 @@ import { ConnectionReplacementEntity, WorkflowReleaseEntity } from '../release/r
 import { StoreEntryEntity } from '../store-entry/store-entry-entity'
 import { TemplateEntity } from '../template/template.entity'
 import { TenantEntity } from '../tenant/tenant.entity'
+import { ModuleAccessRequestEntity } from '../tenant-access/module-access-request.entity'
 import { AppEventRoutingEntity } from '../trigger/app-event-routing/app-event-routing.entity'
+import { DedupedEventEntity } from '../trigger/deduped-event/deduped-event.entity'
+import { HolidayCalendarEntity } from '../trigger/holiday-calendar/holiday-calendar.entity'
 import { TriggerEventEntity } from '../trigger/trigger-events/trigger-event.entity'
 import { TriggerSourceEntity } from '../trigger/trigger-source/trigger-source-entity'
 import { UserEntity } from '../user/user-entity'
@@ -79,10 +86,19 @@ function getEntities(): EntitySchema<unknown>[] {
         WorkflowReleaseEntity,
         ConnectionReplacementEntity,
         MappingTableEntity,
+        DataStoreEntity,
         AiUsageEntity,
         AgentApprovalEntity,
         DataErasureRequestEntity,
         McpServiceEntity,
+        McpServiceMemberEntity,
+        McpServiceUsageEntity,
+        McpServerEntity,
+        ConnectionShareEntity,
+        ConnectorDemandEntity,
+        ModuleAccessRequestEntity,
+        DedupedEventEntity,
+        HolidayCalendarEntity,
     ]
 }
 

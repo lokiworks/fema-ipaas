@@ -1,4 +1,4 @@
-import { Permission } from '@fema-ipaas/core-utils';
+import { isNil, Permission } from '@fema-ipaas/core-utils';
 import {
   WorkflowOperationType,
   WorkflowVersion,
@@ -12,6 +12,7 @@ import {
   Download,
   GalleryVerticalEnd,
   Import,
+  LayoutTemplate,
   Pencil,
   Share2,
   Trash2,
@@ -31,9 +32,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { MoveToFolderDialog } from '@/features/automations/components/move-to-folder-dialog';
 import { RenameDialog } from '@/features/automations/components/rename-dialog';
 import { foldersHooks } from '@/features/folders';
+import { GenerateTemplateDialog } from '@/features/templates';
 import { workflowHooks, workflowsApi } from '@/features/workflows';
 import { ChangeOwnerDialog } from '@/features/workflows/components/change-owner-dialog';
 import { ImportWorkflowDialog } from '@/features/workflows/components/import-workflow-dialog';
@@ -87,6 +94,8 @@ const WorkflowActionMenu: React.FC<WorkflowActionMenuProps> = ({
   const [isRenameOpen, setIsRenameOpen] = useState(false);
   const [renameValue, setRenameValue] = useState(workflowVersion.displayName);
   const [isMoveOpen, setIsMoveOpen] = useState(false);
+  const [isGenerateTemplateOpen, setIsGenerateTemplateOpen] = useState(false);
+  const isPublished = !isNil(workflow.publishedVersionId);
   const [folderToMoveId, setFolderToMoveId] = useState('');
   const { folders } = foldersHooks.useFolders();
 
@@ -323,6 +332,32 @@ const WorkflowActionMenu: React.FC<WorkflowActionMenuProps> = ({
               </DropdownMenuItem>
             </ShareTemplateDialog>
           )}
+          {!embedState.isEmbedded && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div>
+                  <DropdownMenuItem
+                    disabled={!isPublished}
+                    onSelect={(e) => {
+                      e.preventDefault();
+                      setOpen(false);
+                      setIsGenerateTemplateOpen(true);
+                    }}
+                  >
+                    <div className="flex cursor-pointer flex-row gap-2 items-center">
+                      <LayoutTemplate className="h-4 w-4" />
+                      <span>{t('Generate template')}</span>
+                    </div>
+                  </DropdownMenuItem>
+                </div>
+              </TooltipTrigger>
+              {!isPublished && (
+                <TooltipContent side="left">
+                  {t('Publish the workflow before generating a template')}
+                </TooltipContent>
+              )}
+            </Tooltip>
+          )}
           {!readonly &&
             (!embedState.isEmbedded ||
               !embedState.disableNavigationInBuilder ||
@@ -377,6 +412,13 @@ const WorkflowActionMenu: React.FC<WorkflowActionMenuProps> = ({
         onChange={setRenameValue}
         onConfirm={() => renameWorkflow()}
         isRenaming={isRenamePending}
+      />
+      <GenerateTemplateDialog
+        open={isGenerateTemplateOpen}
+        onOpenChange={setIsGenerateTemplateOpen}
+        workflowId={workflow.id}
+        projectId={workflow.projectId}
+        workflowName={workflowVersion.displayName}
       />
       <MoveToFolderDialog
         open={isMoveOpen}

@@ -1,7 +1,12 @@
+import { TenantModule } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import {
+  BoxesIcon,
+  InboxIcon,
+  ShieldQuestionIcon,
   ArrowUpCircleIcon,
   BellRingIcon,
+  CalendarOffIcon,
   DatabaseBackupIcon,
   KeyRound as KeyRoundIcon,
   ScrollTextIcon,
@@ -37,7 +42,11 @@ import {
   SidebarGroupLabel,
   SidebarSeparator,
 } from '@/components/ui/sidebar-shadcn';
-import { useAuthorization } from '@/hooks/authorization-hooks';
+import { tenantAccessHooks } from '@/features/tenant-access';
+import {
+  useAuthorization,
+  useIsTenantAdmin,
+} from '@/hooks/authorization-hooks';
 import { determineDefaultRoute } from '@/lib/route-utils';
 import { cn } from '@/lib/utils';
 
@@ -51,12 +60,18 @@ export function TenantSidebar() {
   });
   const chevronRef = useRef<ChevronLeftIconHandle>(null);
 
-  const groups: {
+  const isTenantAdmin = useIsTenantAdmin();
+  const { data: myAccess } = tenantAccessHooks.useMyAccess();
+  const pendingRequests = tenantAccessHooks.usePendingRequestCount();
+
+  const allGroups: {
     label: string;
     items: {
       to: string;
       label: string;
       icon?: ComponentType<{ className?: string }>;
+      badge?: string;
+      module?: TenantModule;
     }[];
   }[] = [
     {
@@ -73,9 +88,25 @@ export function TenantSidebar() {
           icon: UsersIcon,
         },
         {
+          to: '/tenant/access/requests',
+          label: t('Permission requests'),
+          icon: InboxIcon,
+          badge: pendingRequests > 0 ? String(pendingRequests) : undefined,
+        },
+        {
+          to: '/tenant/access/settings',
+          label: t('Permission settings'),
+          icon: ShieldQuestionIcon,
+        },
+        {
           to: '/tenant/connections',
           label: t('Connections'),
           icon: UnplugIcon,
+        },
+        {
+          to: '/tenant/resources',
+          label: t('Integration resources'),
+          icon: BoxesIcon,
         },
       ],
     },
@@ -91,16 +122,19 @@ export function TenantSidebar() {
           to: '/tenant/connectors/development',
           label: t('Connector Development'),
           icon: TerminalIcon,
+          module: TenantModule.CONNECTOR_DEVELOPMENT,
         },
         {
           to: '/tenant/connectors/builder',
           label: t('Build a Connector'),
           icon: MousePointerClickIcon,
+          module: TenantModule.CONNECTOR_DEVELOPMENT,
         },
         {
           to: '/tenant/connectors/openapi',
           label: t('Import from OpenAPI'),
           icon: FileJson2Icon,
+          module: TenantModule.CONNECTOR_DEVELOPMENT,
         },
       ],
     },
@@ -127,6 +161,11 @@ export function TenantSidebar() {
           label: t('Templates'),
           icon: LayoutGridIcon,
         },
+        {
+          to: '/tenant/setup/holidays',
+          label: t('Holiday calendar'),
+          icon: CalendarOffIcon,
+        },
       ],
     },
     {
@@ -139,7 +178,7 @@ export function TenantSidebar() {
         },
         {
           to: '/tenant/security/authentication',
-          label: t('Authentication'),
+          label: t('Sign-in and security'),
           icon: LogInIcon,
         },
         {
@@ -190,6 +229,18 @@ export function TenantSidebar() {
       ],
     },
   ];
+  const groups = isTenantAdmin
+    ? allGroups
+    : allGroups
+        .map((group) => ({
+          ...group,
+          items: group.items.filter(
+            (item) =>
+              item.module !== undefined &&
+              (myAccess?.modules ?? []).includes(item.module),
+          ),
+        }))
+        .filter((group) => group.items.length > 0);
 
   return (
     <Sidebar className="border-r-0!">
@@ -222,6 +273,7 @@ export function TenantSidebar() {
                       to={item.to}
                       label={item.label}
                       icon={item.icon}
+                      badge={item.badge}
                     />
                   ))}
                 </SidebarMenu>

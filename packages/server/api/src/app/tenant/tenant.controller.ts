@@ -8,6 +8,7 @@ import { fileService } from '../file/file.service'
 import { attachMultipartFieldsToBody } from '../helper/multipart-body'
 import { projectService } from '../project/project-service'
 import { projectSideEffects } from '../project/project-side-effects'
+import { tenantSettingsGuards } from '../tenant-access/login-security.service'
 import { userService } from '../user/user-service'
 import { tenantService } from './tenant.service'
 
@@ -69,6 +70,10 @@ export const tenantController: FastifyPluginAsyncZod = async (app) => {
             })
         }
         const tenantId = req.principal.tenant.id
+        tenantSettingsGuards.assertBrandingAssetsWithinLimit([req.body.logoIcon, req.body.fullLogo, req.body.favIcon])
+        if (req.body.emailAuthEnabled === false) {
+            tenantSettingsGuards.assertAnotherMethodStaysEnabled({ emailAuthEnabled: false })
+        }
 
         const [logoIconUrl, fullLogoUrl, favIconUrl] = await Promise.all([
             fileService(app.log).uploadPublicAsset({

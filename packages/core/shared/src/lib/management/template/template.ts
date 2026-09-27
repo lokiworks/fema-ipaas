@@ -1,4 +1,4 @@
-import { BaseModelSchema, ColorHex, Metadata, Nullable } from '@fema-ipaas/core-utils'
+import { BaseModelSchema, ColorHex, Metadata, Nullable, NullableEnum } from '@fema-ipaas/core-utils'
 import { Note, WorkflowVersion } from '@fema-ipaas/workflow-core'
 import { z } from 'zod'
 
@@ -16,6 +16,11 @@ export enum TemplateType {
     CUSTOM = 'CUSTOM',
 }
 
+export enum TemplateVisibility {
+    PRIVATE = 'PRIVATE',
+    TENANT = 'TENANT',
+}
+
 export const WorkflowVersionTemplate = WorkflowVersion.omit({
     id: true,
     created: true,
@@ -27,6 +32,7 @@ export const WorkflowVersionTemplate = WorkflowVersion.omit({
     connectionIds: true,
     backupFiles: true,
     notes: true,
+    publishNote: true,
 }).extend({
     description: z.string().optional(),
     //notes were optional for old json templates
@@ -87,8 +93,17 @@ export const Template = z.object({
     workflows: z.array(WorkflowVersionTemplate).optional(),
     tables: z.array(TableTemplate).optional(),
     status: z.nativeEnum(TemplateStatus),
+    createdBy: Nullable(z.string()),
+    visibility: NullableEnum(TemplateVisibility),
+    usageCount: z.number().optional(),
+    featured: z.boolean().optional(),
 })
 export type Template = z.infer<typeof Template>
 
 export const SharedTemplate = Template.omit({ tenantId: true, id: true, created: true, updated: true })
 export type SharedTemplate = z.infer<typeof SharedTemplate>
+
+export const TEMPLATE_NAME_MAX_LENGTH = 50
+export const TEMPLATE_DESCRIPTION_MAX_LENGTH = 300
+export const TEMPLATE_CATEGORY_MAX_LENGTH = 30
+export const TEMPLATE_HELP_LINK_REGEX = /^https?:\/\/\S+$/

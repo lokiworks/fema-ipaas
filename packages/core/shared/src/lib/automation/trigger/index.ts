@@ -1,6 +1,8 @@
 import { BaseModelSchema, Nullable } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 
+export * from './trigger-runtime'
+
 export enum TriggerStrategy {
     POLLING = 'POLLING',
     WEBHOOK = 'WEBHOOK',

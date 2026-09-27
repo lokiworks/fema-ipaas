@@ -2,6 +2,7 @@ import dayjs from 'dayjs';
 import { t } from 'i18next';
 import {
   Activity,
+  Boxes,
   Calendar,
   HeartPulse,
   LineChart,
@@ -20,13 +21,14 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
+import { ComponentHealthTab } from './components/component-health-tab';
 import { DiagnosticsTab } from './components/diagnostics-tab';
 import { QueueTab } from './components/queue-tab';
 import { RunsTab } from './components/runs-tab';
 import { SystemHealthTab } from './components/system-health-tab';
 import { healthMetricsQueries } from './lib/health-metrics-hooks';
 
-type TabValue = 'system' | 'runs' | 'queue' | 'diagnostics';
+type TabValue = 'components' | 'system' | 'runs' | 'queue' | 'diagnostics';
 
 type MonthOption = { value: string; label: string };
 
@@ -44,7 +46,7 @@ function buildMonthOptions(): MonthOption[] {
 export default function SettingsHealthPage() {
   const monthOptions = React.useMemo(buildMonthOptions, []);
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = (searchParams.get('tab') as TabValue) || 'system';
+  const activeTab = (searchParams.get('tab') as TabValue) || 'components';
   const selectedMonth = searchParams.get('month') || monthOptions[0].value;
 
   const range = React.useMemo(() => {
@@ -62,7 +64,7 @@ export default function SettingsHealthPage() {
 
   const setTab = (tab: TabValue) => {
     const newParams = new URLSearchParams(searchParams);
-    if (tab === 'system') {
+    if (tab === 'components') {
       newParams.delete('tab');
     } else {
       newParams.set('tab', tab);
@@ -105,6 +107,10 @@ export default function SettingsHealthPage() {
         className="w-full"
       >
         <TabsList variant="outline" className="border-b w-full">
+          <TabsTrigger variant="outline" value="components">
+            <Boxes className="w-4 h-4 mr-2" />
+            {t('Components')}
+          </TabsTrigger>
           <TabsTrigger variant="outline" value="system">
             <HeartPulse className="w-4 h-4 mr-2" />
             {t('System Health')}
@@ -122,6 +128,10 @@ export default function SettingsHealthPage() {
             {t('Diagnostics')}
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="components">
+          <ComponentHealthTab />
+        </TabsContent>
 
         <TabsContent value="system">
           <SystemHealthTab onSeeRuns={() => setTab('runs')} />

@@ -1,6 +1,7 @@
 import { createAction } from '@fema-ipaas/connector-sdk';
 import { mcpAuth } from '../auth';
 import { mcpClient } from '../common/mcp-client';
+import { mcpSession } from '../common/mcp-session';
 
 export const listTools = createAction({
   auth: mcpAuth,
@@ -15,11 +16,7 @@ export const listTools = createAction({
   },
   props: {},
   async run(context) {
-    const session = await mcpClient.connect({
-      url: context.auth.props.url,
-      authorization: context.auth.props.token,
-    });
-    const tools = await mcpClient.listTools({ session });
+    const tools = await mcpSession.run({ auth: context.auth, fn: (session) => mcpClient.listTools({ session }) });
     return {
       tools: tools.map((tool) => ({
         name: tool.name,

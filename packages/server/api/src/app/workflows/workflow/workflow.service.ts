@@ -21,6 +21,7 @@ import { workflowFolderService } from '../folder/folder.service'
 import { workflowVersionMigrationService } from '../workflow-version/workflow-version-migration.service'
 import { workflowVersionRepo, workflowVersionService } from '../workflow-version/workflow-version.service'
 import { workflowExecutionCache } from './workflow-execution-cache'
+import { workflowNaming } from './workflow-naming'
 import { workflowPublishUtils } from './workflow-publish-utils'
 import { workflowSideEffects } from './workflow-service-side-effects'
 import { WorkflowEntity } from './workflow.entity'
@@ -30,6 +31,8 @@ import { workflowRepo } from './workflow.repo'
 
 export const workflowService = (log: FastifyBaseLogger) => ({
     async create({ projectId, request, externalId, ownerId, templateId, createdBy, ip, emitEvents = true }: CreateParams): Promise<PopulatedWorkflow> {
+        await workflowNaming.assertCanAddWorkflows({ projectId, count: 1 })
+        const displayName = await workflowNaming.uniqueName({ projectId, displayName: request.displayName })
         const folderId = await getFolderIdFromRequest({ projectId, folderId: request.folderId, folderName: request.folderName, log })
         const newWorkflow: NewWorkflow = {
             id: generateId(),
@@ -48,7 +51,7 @@ export const workflowService = (log: FastifyBaseLogger) => ({
             const workflow = await workflowRepo(entityManager).save(newWorkflow)
             const workflowVersion = await workflowVersionService(log).createEmptyVersion({
                 workflowId: workflow.id,
-                displayName: request.displayName,
+                displayName,
                 notes: [],
                 schemaVersion: null,
                 entityManager,
@@ -66,7 +69,7 @@ export const workflowService = (log: FastifyBaseLogger) => ({
             log,
         )
 
-        log.info({ workflow: { id: savedWorkflow.id }, project: { id: projectId }, displayName: request.displayName }, 'Workflow created')
+        log.info({ workflow: { id: savedWorkflow.id }, project: { id: projectId }, displayName }, 'Workflow created')
         const createdWorkflow = {
             ...savedWorkflow,
             version: savedWorkflowVersion,

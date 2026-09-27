@@ -8,5 +8,16 @@ export {
   templatesHooks,
   templatesMutations,
   templateKeys,
+  TEMPLATE_CENTER_QUERY_KEY,
 } from './hooks/templates-hook';
 export { useGradientFromConnectors } from './hooks/use-gradient-from-connectors';
+export { TemplateCard } from './components/template-card';
+export { TemplateConnectorChain } from './components/template-connector-chain';
+export { TemplateDetailDrawer } from './components/template-detail-drawer';
+export { TemplatePickerDialog } from './components/template-picker-dialog';
+export { GenerateTemplateDialog } from './components/generate-template-dialog';
+export {
+  templateCenterUtils,
+  TemplateCenterSort,
+  TemplateCenterTab,
+} from './utils/template-center-utils';

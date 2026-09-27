@@ -1,13 +1,16 @@
 import { EntityId, SeekPage } from '@fema-ipaas/core-utils'
-import { ConnectorBlueprint, GenerateFromBlueprintResponse, PrincipalType, UpsertConnectorBlueprintRequest } from '@fema-ipaas/shared'
+import { ConnectorBlueprint, GenerateFromBlueprintResponse, PrincipalType, TenantModule, UpsertConnectorBlueprintRequest } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
 import { securityAccess } from '../../core/security/authorization/fastify-security'
+import { tenantModuleGuard } from '../../tenant-access/tenant-module-guard'
 import { connectorBlueprintGenerator } from './connector-blueprint-generator'
 import { connectorBlueprintService } from './connector-blueprint.service'
 
 export const connectorBlueprintController: FastifyPluginAsyncZod = async (app) => {
+    app.addHook('preHandler', tenantModuleGuard.requireModule(TenantModule.CONNECTOR_DEVELOPMENT))
+
     app.get('/', ListRequest, async (request): Promise<SeekPage<ConnectorBlueprint>> => {
         return connectorBlueprintService(request.log).list(request.principal.tenant.id)
     })
@@ -48,16 +51,16 @@ export const connectorBlueprintController: FastifyPluginAsyncZod = async (app) =
     })
 }
 
-const adminOnly = securityAccess.tenantAdminOnly([PrincipalType.USER])
+const connectorDevelopers = securityAccess.publicTenant([PrincipalType.USER])
 
-const ListRequest = { config: { security: adminOnly } }
+const ListRequest = { config: { security: connectorDevelopers } }
 
 const UpsertRequest = {
-    config: { security: adminOnly },
+    config: { security: connectorDevelopers },
     schema: { body: UpsertConnectorBlueprintRequest },
 }
 
 const GetRequest = {
-    config: { security: adminOnly },
+    config: { security: connectorDevelopers },
     schema: { params: z.object({ id: EntityId }) },
 }

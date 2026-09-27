@@ -1,4 +1,4 @@
-import { BaseModelSchema, DateOrString, Nullable, OptionalArrayFromQuery } from '@fema-ipaas/core-utils'
+import { BaseModelSchema, DateOrString, isNil, Nullable, OptionalArrayFromQuery } from '@fema-ipaas/core-utils'
 import { Folder, Workflow, WorkflowOperationRequest, WorkflowOperationType, WorkflowVersion } from '@fema-ipaas/workflow-core'
 import { z } from 'zod'
 import { UserWithMetaInformation } from '../../core/user/user'
@@ -47,6 +47,25 @@ export enum ApplicationEventName {
     PRIVACY_SETTINGS_UPDATED = 'privacy.settings.updated',
     PERSONAL_DATA_ERASURE = 'privacy.personal_data.erasure',
     AGENT_APPROVAL_DECIDED = 'agent.approval.decided',
+    CONNECTION_SHARE_UPDATED = 'connection.share.updated',
+    MCP_TOOL_TRIED = 'mcp.tool.tried',
+    CONNECTOR_DEMAND_SUBMITTED = 'connector.demand.submitted',
+    MCP_SERVICE_CHANGED = 'mcp.service.changed',
+    TENANT_USERS_INVITED = 'tenant.users.invited',
+    TENANT_USER_ACCESS_CHANGED = 'tenant.user.access.changed',
+    TENANT_USER_REMOVED = 'tenant.user.removed',
+    TENANT_USER_PASSWORD_RESET = 'tenant.user.password.reset',
+    MODULE_ACCESS_REQUEST_DECIDED = 'tenant.module.request.decided',
+    MODULE_ACCESS_SETTINGS_UPDATED = 'tenant.module.settings.updated',
+    RESOURCES_OWNERSHIP_TRANSFERRED = 'tenant.resources.transferred',
+    LOGIN_SETTINGS_UPDATED = 'tenant.login.settings.updated',
+    WORKER_STATE_CHANGED = 'tenant.worker.state.changed',
+    AUDIT_LOG_EXPORTED = 'tenant.audit.exported',
+    DATA_STORE_CREATED = 'data_store.created',
+    DATA_STORE_UPDATED = 'data_store.updated',
+    DATA_STORE_DELETED = 'data_store.deleted',
+    DATA_STORE_CLEARED = 'data_store.cleared',
+    DATA_STORE_RECORD_DELETED = 'data_store.record.deleted',
 }
 
 const BaseAuditEventProps = {
@@ -503,6 +522,105 @@ export const AgentApprovalDecidedEvent = z.object({
 })
 export type AgentApprovalDecidedEvent = z.infer<typeof AgentApprovalDecidedEvent>
 
+export const ConnectionShareUpdatedEvent = z.object({
+    ...BaseAuditEventProps,
+    action: z.literal(ApplicationEventName.CONNECTION_SHARE_UPDATED),
+    data: z.object({
+        connection: z.object({
+            id: z.string(),
+            displayName: z.string(),
+        }),
+        change: z.enum(['ADDED', 'UPDATED', 'REMOVED', 'PROJECT_MEMBERS']),
+        targetUser: z.object({
+            id: z.string(),
+            email: z.string(),
+        }).nullable(),
+        permission: z.string().nullable(),
+    }),
+})
+export type ConnectionShareUpdatedEvent = z.infer<typeof ConnectionShareUpdatedEvent>
+
+export const McpToolTriedEvent = z.object({
+    ...BaseAuditEventProps,
+    action: z.literal(ApplicationEventName.MCP_TOOL_TRIED),
+    data: z.object({
+        server: z.object({
+            id: z.string(),
+            displayName: z.string(),
+        }),
+        toolName: z.string(),
+        success: z.boolean(),
+    }),
+})
+export type McpToolTriedEvent = z.infer<typeof McpToolTriedEvent>
+
+export const ConnectorDemandSubmittedEvent = z.object({
+    ...BaseAuditEventProps,
+    action: z.literal(ApplicationEventName.CONNECTOR_DEMAND_SUBMITTED),
+    data: z.object({
+        demand: z.object({
+            id: z.string(),
+            appName: z.string(),
+        }),
+    }),
+})
+export type ConnectorDemandSubmittedEvent = z.infer<typeof ConnectorDemandSubmittedEvent>
+
+export const McpServiceChangedEvent = z.object({
+    ...BaseAuditEventProps,
+    action: z.literal(ApplicationEventName.MCP_SERVICE_CHANGED),
+    data: z.object({
+        service: z.object({
+            id: z.string(),
+            name: z.string(),
+        }),
+        change: z.enum(['CREATED', 'UPDATED', 'TOOLS_UPDATED', 'CONNECTIONS_UPDATED', 'AVAILABILITY_UPDATED', 'PUBLISHED', 'PAUSED', 'ENABLED', 'LISTED', 'UNLISTED', 'KEY_RESET', 'TRANSFERRED', 'DELETED', 'OBTAINED', 'TOOL_DEBUGGED']),
+        detail: z.string().nullable(),
+    }),
+})
+export type McpServiceChangedEvent = z.infer<typeof McpServiceChangedEvent>
+
+export const TenantAdminEvent = z.object({
+    ...BaseAuditEventProps,
+    action: z.union([
+        z.literal(ApplicationEventName.TENANT_USERS_INVITED),
+        z.literal(ApplicationEventName.TENANT_USER_ACCESS_CHANGED),
+        z.literal(ApplicationEventName.TENANT_USER_REMOVED),
+        z.literal(ApplicationEventName.TENANT_USER_PASSWORD_RESET),
+        z.literal(ApplicationEventName.MODULE_ACCESS_REQUEST_DECIDED),
+        z.literal(ApplicationEventName.MODULE_ACCESS_SETTINGS_UPDATED),
+        z.literal(ApplicationEventName.RESOURCES_OWNERSHIP_TRANSFERRED),
+        z.literal(ApplicationEventName.LOGIN_SETTINGS_UPDATED),
+        z.literal(ApplicationEventName.WORKER_STATE_CHANGED),
+        z.literal(ApplicationEventName.AUDIT_LOG_EXPORTED),
+    ]),
+    data: z.object({
+        target: z.string(),
+        detail: z.string().optional(),
+    }),
+})
+export type TenantAdminEvent = z.infer<typeof TenantAdminEvent>
+
+export const DataStoreEvent = z.object({
+    ...BaseAuditEventProps,
+    action: z.union([
+        z.literal(ApplicationEventName.DATA_STORE_CREATED),
+        z.literal(ApplicationEventName.DATA_STORE_UPDATED),
+        z.literal(ApplicationEventName.DATA_STORE_DELETED),
+        z.literal(ApplicationEventName.DATA_STORE_CLEARED),
+        z.literal(ApplicationEventName.DATA_STORE_RECORD_DELETED),
+    ]),
+    data: z.object({
+        dataStore: z.object({
+            id: z.string(),
+            name: z.string(),
+        }),
+        key: z.string().optional(),
+        count: z.number().optional(),
+    }),
+})
+export type DataStoreEvent = z.infer<typeof DataStoreEvent>
+
 export const ApplicationEvent = z.union([
     ConnectionEvent,
     VariableEvent,
@@ -523,6 +641,12 @@ export const ApplicationEvent = z.union([
     PrivacySettingsUpdatedEvent,
     PersonalDataErasureEvent,
     AgentApprovalDecidedEvent,
+    ConnectionShareUpdatedEvent,
+    McpToolTriedEvent,
+    ConnectorDemandSubmittedEvent,
+    McpServiceChangedEvent,
+    TenantAdminEvent,
+    DataStoreEvent,
 ])
 
 export type ApplicationEvent = z.infer<typeof ApplicationEvent>
@@ -577,6 +701,14 @@ export function summarizeApplicationEvent(event: ApplicationEvent) {
             return 'Privacy settings were updated'
         case ApplicationEventName.AGENT_APPROVAL_DECIDED:
             return `Agent tool call ${event.data.approval.tool} in run ${event.data.approval.executionId} was ${event.data.approved ? 'approved' : 'rejected'}`
+        case ApplicationEventName.CONNECTION_SHARE_UPDATED:
+            return `Sharing of connection ${event.data.connection.displayName} changed (${event.data.change.toLowerCase()}${isNil(event.data.targetUser) ? '' : ` ${event.data.targetUser.email}`}${isNil(event.data.permission) ? '' : `: ${event.data.permission}`})`
+        case ApplicationEventName.MCP_TOOL_TRIED:
+            return `MCP tool ${event.data.toolName} of ${event.data.server.displayName} was tried${event.data.success ? '' : ' and failed'}`
+        case ApplicationEventName.CONNECTOR_DEMAND_SUBMITTED:
+            return `Connector request for ${event.data.demand.appName} was submitted`
+        case ApplicationEventName.MCP_SERVICE_CHANGED:
+            return `MCP service ${event.data.service.name}: ${event.data.change.toLowerCase()}${isNil(event.data.detail) ? '' : ` (${event.data.detail})`}`
         case ApplicationEventName.PERSONAL_DATA_ERASURE:
             return `Personal data erasure for ${event.data.request.valueHint}: ${event.data.phase.toLowerCase()} (${event.data.matchedRuns} runs)`
         case ApplicationEventName.USER_SIGNED_IN:
@@ -593,6 +725,27 @@ export function summarizeApplicationEvent(event: ApplicationEvent) {
             return `User ${event.data.member.userId} was added as ${event.data.member.role}`
         case ApplicationEventName.MEMBER_REMOVED:
             return `User ${event.data.member.userId} was removed from the project`
+        case ApplicationEventName.TENANT_USERS_INVITED:
+        case ApplicationEventName.TENANT_USER_ACCESS_CHANGED:
+        case ApplicationEventName.TENANT_USER_REMOVED:
+        case ApplicationEventName.TENANT_USER_PASSWORD_RESET:
+        case ApplicationEventName.MODULE_ACCESS_REQUEST_DECIDED:
+        case ApplicationEventName.MODULE_ACCESS_SETTINGS_UPDATED:
+        case ApplicationEventName.RESOURCES_OWNERSHIP_TRANSFERRED:
+        case ApplicationEventName.LOGIN_SETTINGS_UPDATED:
+        case ApplicationEventName.WORKER_STATE_CHANGED:
+        case ApplicationEventName.AUDIT_LOG_EXPORTED:
+            return isNil(event.data.detail) ? event.data.target : `${event.data.target}: ${event.data.detail}`
+        case ApplicationEventName.DATA_STORE_CREATED:
+            return `Data store "${event.data.dataStore.name}" was created`
+        case ApplicationEventName.DATA_STORE_UPDATED:
+            return `Data store "${event.data.dataStore.name}" was updated`
+        case ApplicationEventName.DATA_STORE_DELETED:
+            return `Data store "${event.data.dataStore.name}" was deleted`
+        case ApplicationEventName.DATA_STORE_CLEARED:
+            return `${event.data.count ?? 0} records in data store "${event.data.dataStore.name}" were cleared`
+        case ApplicationEventName.DATA_STORE_RECORD_DELETED:
+            return `Key "${event.data.key ?? ''}" was deleted from data store "${event.data.dataStore.name}"`
     }
 }
 

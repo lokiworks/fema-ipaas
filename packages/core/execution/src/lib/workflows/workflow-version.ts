@@ -26,6 +26,7 @@ export const WorkflowVersion = z.object({
     backupFiles: Nullable(z.record(z.string(), z.string())),
     notes: z.array(Note),
     graph: Nullable(WorkflowGraph),
+    publishNote: Nullable(z.string()),
 })
 
 export type WorkflowVersion = z.infer<typeof WorkflowVersion>

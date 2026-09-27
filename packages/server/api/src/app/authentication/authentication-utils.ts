@@ -1,6 +1,7 @@
 import { ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil } from '@fema-ipaas/core-utils'
-import { AuthenticationResponse, EndpointScope, PrincipalType, Project, ProjectType, RuntimeEnvironment, TelemetryEventName, Tenant, TenantRole, User, UserIdentity, UserIdentityProvider, UserStatus } from '@fema-ipaas/shared'
+import { AuthenticationResponse, EndpointScope, PasswordType, PrincipalType, Project, ProjectType, RuntimeEnvironment, TelemetryEventName, Tenant, TENANT_ACCESS_LIMITS, TenantRole, User, UserIdentity, UserIdentityProvider, UserStatus } from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyRequest } from 'fastify'
+import { In } from 'typeorm'
 import { repoFactory } from '../core/db/repo-factory'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
@@ -90,6 +91,7 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
                 },
             })
         }
+        const tenant = await tenantRepo().findOneBy({ id: params.tenantId })
         const token = await accessTokenManager(log).generateToken({
             id: user.id,
             type: PrincipalType.USER,
@@ -97,7 +99,7 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
                 id: params.tenantId,
             },
             tokenVersion: identity.tokenVersion,
-        })
+        }, sessionDurationSeconds(tenant?.sessionDurationDays))
         return {
             ...user,
             firstName: identity.firstName,
@@ -153,6 +155,19 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
             code: ErrorCode.DOMAIN_NOT_ALLOWED,
             params: { domain: domainOf(email) ?? email },
         })
+    },
+
+    async assertPasswordMeetsPolicy({ password, tenantIds }: AssertPasswordMeetsPolicyParams): Promise<void> {
+        const tenants = tenantIds.length === 0 ? [] : await tenantRepo().find({ where: { id: In(tenantIds) }, select: ['id', 'passwordMinLength'] })
+        const minLength = Math.max(PasswordType.minLength ?? 0, ...tenants.map((tenant) => tenant.passwordMinLength ?? 0))
+        if (password.length < minLength) {
+            throw new ApplicationError({
+                code: ErrorCode.VALIDATION,
+                params: {
+                    message: `Password must be at least ${minLength} characters`,
+                },
+            })
+        }
     },
 
     async assertEmailAuthIsEnabled({ tenantId, provider }: AssertEmailAuthIsEnabledParams): Promise<void> {
@@ -241,6 +256,19 @@ type IsDomainAllowedParams = {
 type AssertDomainIsAllowedParams = {
     email: string
     tenantId: string
+}
+
+function sessionDurationSeconds(days: number | undefined): number {
+    const allowed = TENANT_ACCESS_LIMITS.sessionDurationOptions
+    const effective = !isNil(days) && allowed.includes(days) ? days : TENANT_ACCESS_LIMITS.defaultSessionDurationDays
+    return effective * SECONDS_PER_DAY
+}
+
+const SECONDS_PER_DAY = 24 * 60 * 60
+
+type AssertPasswordMeetsPolicyParams = {
+    password: string
+    tenantIds: string[]
 }
 
 type AssertEmailAuthIsEnabledParams = {

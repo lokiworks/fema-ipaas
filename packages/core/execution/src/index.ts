@@ -2,10 +2,13 @@
 // (workflows, execution, engine operations, workers). See SRE-163.
 
 export * from './lib/workflows/actions/action'
+export * from './lib/workflows/actions/error-handling'
 export * from './lib/workflows/execution-plan'
 export * from './lib/workflows/operations'
 export * from './lib/workflows/operations/paste-operations'
 export * from './lib/workflows/triggers/trigger'
+export * from './lib/workflows/triggers/schedule-util'
+export * from './lib/workflows/triggers/trigger-run-settings'
 export * from './lib/workflows/triggers/trigger-events/trigger-events-dto'
 export * from './lib/workflows/triggers/trigger-events/trigger-event'
 export * from './lib/workflows/triggers/trigger-run'

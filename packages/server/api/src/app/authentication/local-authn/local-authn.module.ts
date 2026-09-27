@@ -1,10 +1,12 @@
-import { ApplicationError, ErrorCode } from '@fema-ipaas/core-utils'
+import { ApplicationError, ErrorCode, isNil } from '@fema-ipaas/core-utils'
 import { OtpType, ResetPasswordRequestBody, UserIdentity, VerifyEmailRequestBody } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { securityAccess } from '../../core/security/authorization/fastify-security'
 import { authnRateLimit } from '../../core/security/rate-limit'
+import { userService } from '../../user/user-service'
+import { authenticationUtils } from '../authentication-utils'
 import { otpService } from '../otp/otp-service'
 import { userIdentityService } from '../user-identity/user-identity-service'
 
@@ -29,6 +31,11 @@ const localAuthnController: FastifyPluginAsyncZod = async (app) => {
             otp: req.body.otp,
             type: OtpType.PASSWORD_RESET,
             log: req.log,
+        })
+        const memberships = await userService(req.log).getUsersByIdentityId({ identityId: req.body.identityId })
+        await authenticationUtils(req.log).assertPasswordMeetsPolicy({
+            password: req.body.newPassword,
+            tenantIds: memberships.map((membership) => membership.tenantId).filter((tenantId): tenantId is string => !isNil(tenantId)),
         })
         await userIdentityService(req.log).updatePassword({
             id: req.body.identityId,

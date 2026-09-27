@@ -1,9 +1,13 @@
 import { isNil } from '@fema-ipaas/core-utils';
-import { HEX_COLOR_PATTERN } from '@fema-ipaas/shared';
+import {
+  formErrors,
+  HEX_COLOR_PATTERN,
+  TENANT_BRANDING_LIMITS,
+} from '@fema-ipaas/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { t } from 'i18next';
-import { useRef } from 'react';
+import { ChangeEvent, useRef, useState } from 'react';
 import { FieldPath, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -50,7 +54,14 @@ const ThemeColorsSchema = z.object({
 });
 
 const FromSchema = z.object({
-  name: z.string(),
+  name: z
+    .string()
+    .trim()
+    .min(1, formErrors.required)
+    .max(TENANT_BRANDING_LIMITS.productNameMaxLength, 'productNameTooLong'),
+  welcomeText: z
+    .string()
+    .max(TENANT_BRANDING_LIMITS.welcomeTextMaxLength, 'welcomeTextTooLong'),
   logoUrl: z.string(),
   iconUrl: z.string(),
   faviconUrl: z.string(),
@@ -83,6 +94,7 @@ export const AppearanceSection = () => {
   const form = useForm<FromSchema>({
     defaultValues: {
       name: tenant?.name,
+      welcomeText: tenant?.welcomeText ?? '',
       logoUrl: tenant?.fullLogoUrl,
       iconUrl: tenant?.logoIconUrl,
       faviconUrl: tenant?.favIconUrl,
@@ -114,16 +126,19 @@ export const AppearanceSection = () => {
   const logoRef = useRef<HTMLInputElement>(null);
   const iconRef = useRef<HTMLInputElement>(null);
   const faviconRef = useRef<HTMLInputElement>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
   const { mutate: updateTenant, isPending } = useMutation({
     mutationFn: async () => {
       const logo = logoRef.current?.files?.[0];
       const icon = iconRef.current?.files?.[0];
       const favicon = faviconRef.current?.files?.[0];
-      const { name, color, customThemeColors, themeColors } = form.getValues();
+      const { name, welcomeText, color, customThemeColors, themeColors } =
+        form.getValues();
 
       const formdata = new FormData();
       formdata.append('name', name);
+      formdata.append('welcomeText', welcomeText);
       formdata.append('primaryColor', color);
       formdata.append(
         'themeColors',
@@ -146,7 +161,7 @@ export const AppearanceSection = () => {
 
   return (
     <>
-      <div className="grid gap-4">
+      <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
         <Form {...form}>
           <form
             className="grid space-y-4 mt-4"
@@ -157,14 +172,44 @@ export const AppearanceSection = () => {
                 name="name"
                 render={({ field }) => (
                   <FormItem className="grid space-y-2">
-                    <FormLabel htmlFor="name">{t('Tenant Name')}</FormLabel>
+                    <FormLabel htmlFor="name">{t('Product name')}</FormLabel>
                     <Input
                       {...field}
                       required
                       id="name"
-                      placeholder={t('Tenant Name')}
+                      maxLength={TENANT_BRANDING_LIMITS.productNameMaxLength}
+                      placeholder={t('Product name')}
                       className="rounded-sm"
                     />
+                    <FormDescription>
+                      {t(
+                        'Shown on the sign-in page, in emails and in the console. Up to 20 characters.',
+                      )}
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="welcomeText"
+                render={({ field }) => (
+                  <FormItem className="grid space-y-2">
+                    <FormLabel htmlFor="welcomeText">
+                      {t('Sign-in welcome text')}
+                    </FormLabel>
+                    <Input
+                      {...field}
+                      id="welcomeText"
+                      maxLength={TENANT_BRANDING_LIMITS.welcomeTextMaxLength}
+                      className="rounded-sm"
+                    />
+                    <FormDescription>
+                      {t(
+                        'Shown on the left of the sign-in page. Up to 30 characters; leave empty to hide it.',
+                      )}
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -180,11 +225,20 @@ export const AppearanceSection = () => {
                         type="file"
                         ref={logoRef}
                         defaultFileName={tenant?.fullLogoUrl}
-                        accept="image/*"
+                        accept="image/png,image/svg+xml,image/jpeg"
                         id="logoFile"
                         className="rounded-sm"
+                        onChange={(event) => {
+                          const file = acceptBrandingFile(event);
+                          setLogoPreview(
+                            file ? URL.createObjectURL(file) : null,
+                          );
+                        }}
                       />
                     </div>
+                    <FormDescription>
+                      {t('PNG, SVG or JPG, at most 256 KB.')}
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -202,6 +256,7 @@ export const AppearanceSection = () => {
                         accept="image/*"
                         id="iconFile"
                         className="rounded-sm"
+                        onChange={acceptBrandingFile}
                       />
                     </div>
                     <FormMessage />
@@ -223,6 +278,7 @@ export const AppearanceSection = () => {
                         accept="image/*"
                         id="faviconFile"
                         className="rounded-sm"
+                        onChange={acceptBrandingFile}
                       />
                     </div>
                     <FormMessage />
@@ -316,10 +372,87 @@ export const AppearanceSection = () => {
             </div>
           </form>
         </Form>
+        <div className="flex flex-col gap-2 pt-4">
+          <span className="text-xs text-muted-foreground">
+            {t('Sign-in page preview')}
+          </span>
+          <LoginPreview
+            productName={form.watch('name')}
+            welcomeText={form.watch('welcomeText')}
+            color={form.watch('color')}
+            logoUrl={logoPreview ?? tenant?.fullLogoUrl ?? null}
+            emailAuthEnabled={tenant?.emailAuthEnabled ?? true}
+          />
+        </div>
       </div>
     </>
   );
 };
+
+function acceptBrandingFile(event: ChangeEvent<HTMLInputElement>): File | null {
+  const file = event.target.files?.[0] ?? null;
+  if (file && file.size > TENANT_BRANDING_LIMITS.logoMaxBytes) {
+    toast.error(t('Logo files must be at most 256 KB'));
+    event.target.value = '';
+    return null;
+  }
+  return file;
+}
+
+function LoginPreview({
+  productName,
+  welcomeText,
+  color,
+  logoUrl,
+  emailAuthEnabled,
+}: {
+  productName: string;
+  welcomeText: string;
+  color: string;
+  logoUrl: string | null;
+  emailAuthEnabled: boolean;
+}) {
+  const buttonColor = colorContrast.isReadableOnWhite(color)
+    ? color
+    : undefined;
+  const name = productName.trim().length > 0 ? productName : t('Product name');
+  return (
+    <div className="grid grid-cols-2 overflow-hidden rounded-lg border text-xs">
+      <div className="flex flex-col gap-3 bg-muted p-4">
+        <div className="flex items-center gap-2">
+          {logoUrl && (
+            <img src={logoUrl} alt="" className="size-6 object-contain" />
+          )}
+          <span className="font-medium">{name}</span>
+        </div>
+        {welcomeText.trim().length > 0 && (
+          <span className="text-sm">{welcomeText}</span>
+        )}
+      </div>
+      <div className="flex flex-col gap-2 p-4">
+        <span className="font-medium">
+          {t('Sign in to {name}', { name })}
+        </span>
+        {emailAuthEnabled ? (
+          <>
+            <div className="h-6 rounded border" />
+            <div className="h-6 rounded border" />
+            <div
+              className="flex h-6 items-center justify-center rounded bg-primary text-primary-foreground"
+              style={buttonColor ? { backgroundColor: buttonColor } : undefined}
+            >
+              {t('Sign in')}
+            </div>
+          </>
+        ) : (
+          <span className="text-muted-foreground">
+            {t('No sign-in method is turned on')}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
 
 function PrimaryColorContrast({ color }: { color: string }) {
   const ratio = colorContrast.ratio({

@@ -2,7 +2,9 @@ import { ApplicationError, Cursor, ErrorCode, generateId, isNil, ProjectId, sani
 import { LATEST_WORKFLOW_SCHEMA_VERSION, Note, WorkflowOperationRequest, workflowOperations, WorkflowOperationType, workflowStructureUtil, WorkflowTriggerType, WorkflowVersion, WorkflowVersionState } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
-import { EntityManager, FindOneOptions } from 'typeorm'
+import { EntityManager, FindOneOptions, In } from 'typeorm'
+import { connectionAccessService } from '../../connection/connection-access.service'
+import { ConnectionEntity } from '../../connection/connection.entity'
 import { repoFactory } from '../../core/db/repo-factory'
 import { buildPaginator } from '../../helper/pagination/build-paginator'
 import { paginationHelper } from '../../helper/pagination/pagination-utils'
@@ -14,6 +16,7 @@ import { workflowVersionSideEffects } from './workflow-version-side-effects'
 import { workflowVersionValidationUtil } from './workflow-version-validator-util'
 
 export const workflowVersionRepo = repoFactory(WorkflowVersionEntity)
+const stepConnectionRepo = repoFactory(ConnectionEntity)
 
 export const workflowVersionService = (log: FastifyBaseLogger) => ({
     async applyOperation({
@@ -102,6 +105,15 @@ export const workflowVersionService = (log: FastifyBaseLogger) => ({
             mutatedWorkflowVersion.updatedBy = userId
         }
         mutatedWorkflowVersion.connectionIds = workflowStructureUtil.extractConnectionIds(mutatedWorkflowVersion)
+        await assertNewConnectionsUsable({
+            log,
+            previousConnectionIds: workflowVersion.connectionIds ?? [],
+            nextConnectionIds: mutatedWorkflowVersion.connectionIds,
+            operationType: userOperation.type,
+            projectId,
+            tenantId,
+            userId,
+        })
         mutatedWorkflowVersion.agentIds = workflowStructureUtil.extractAgentIds(mutatedWorkflowVersion)
         return workflowVersionRepo(entityManager).save(sanitizeObjectForPostgresql(mutatedWorkflowVersion))
     },
@@ -316,6 +328,18 @@ async function findOne(log: FastifyBaseLogger, options: FindOneOptions, entityMa
 }
 
 
+async function assertNewConnectionsUsable({ log, previousConnectionIds, nextConnectionIds, operationType, projectId, tenantId, userId }: AssertNewConnectionsParams): Promise<void> {
+    if (isNil(userId) || EXEMPT_FROM_CONNECTION_ACCESS.includes(operationType)) {
+        return
+    }
+    const added = nextConnectionIds.filter((externalId) => !previousConnectionIds.includes(externalId))
+    if (added.length === 0) {
+        return
+    }
+    const connections = await stepConnectionRepo().find({ where: { tenantId, externalId: In(added) } })
+    await connectionAccessService(log).assertUsableInProject({ externalIds: added, projectId, tenantId, userId, connections })
+}
+
 async function applySingleOperation({
     projectId,
     workflowVersion,
@@ -395,6 +419,18 @@ type ListWorkflowVersionParams = {
     workflowId: WorkflowId
     cursorRequest: Cursor | null
     limit: number
+}
+
+const EXEMPT_FROM_CONNECTION_ACCESS: WorkflowOperationType[] = [WorkflowOperationType.USE_AS_DRAFT]
+
+type AssertNewConnectionsParams = {
+    log: FastifyBaseLogger
+    previousConnectionIds: string[]
+    nextConnectionIds: string[]
+    operationType: WorkflowOperationType
+    projectId: ProjectId
+    tenantId: TenantId
+    userId: UserId | null
 }
 
 type ApplyOperationParams = {

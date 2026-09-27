@@ -66,6 +66,24 @@ export const TemplateEntity = new EntitySchema<TemplateSchema>({
             type: String,
             array: true,
         },
+        createdBy: {
+            type: String,
+            nullable: true,
+        },
+        visibility: {
+            type: String,
+            nullable: true,
+        },
+        usageCount: {
+            type: Number,
+            nullable: false,
+            default: 0,
+        },
+        featured: {
+            type: Boolean,
+            nullable: false,
+            default: false,
+        },
     },
     indices: [
         {

@@ -84,6 +84,18 @@ export const ProjectEntity = new EntitySchema<ProjectSchema>({
             type: Number,
             nullable: true,
         },
+        description: {
+            type: String,
+            nullable: true,
+        },
+        workflowsLimit: {
+            type: Number,
+            nullable: true,
+        },
+        monthlyRunsLimit: {
+            type: Number,
+            nullable: true,
+        },
     },
     indices: [
         {

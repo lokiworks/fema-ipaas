@@ -1,5 +1,5 @@
 import { ApplicationError, ErrorCode, generateId, isNil, spreadIfDefined, spreadIfNotUndefined, TenantId, UserId } from '@fema-ipaas/core-utils'
-import { AuthenticationResponse, ProjectType, SsoDomainVerification, SYSTEM_LIMITS, Tenant, TenantLimits, TenantRole, TenantWithoutFederatedAuth, TenantWithoutSensitiveData, UpdateTenantRequestBody, User, UserStatus } from '@fema-ipaas/shared'
+import { AuthenticationResponse, ProjectType, SsoDomainVerification, SYSTEM_LIMITS, Tenant, TENANT_ACCESS_LIMITS, TenantLimits, TenantRole, TenantWithoutFederatedAuth, TenantWithoutSensitiveData, UpdateTenantRequestBody, User, UserStatus } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { nanoid } from 'nanoid'
 import { authenticationUtils } from '../authentication/authentication-utils'
@@ -60,6 +60,10 @@ export const tenantService = (log: FastifyBaseLogger) => ({
             connectorSelectorConfig: null,
             allowedEmbedOrigins: [],
             googleAuthEnabled: true,
+            welcomeText: null,
+            passwordMinLength: TENANT_ACCESS_LIMITS.defaultPasswordMinLength,
+            sessionDurationDays: TENANT_ACCESS_LIMITS.defaultSessionDurationDays,
+            moduleAccessSettings: null,
         }
 
         const savedTenant = await tenantRepo().save(newTenant)
@@ -167,6 +171,7 @@ export const tenantService = (log: FastifyBaseLogger) => ({
             ...spreadIfDefined('ssoDomainVerification', params.ssoDomainVerification),
             ...spreadIfDefined('pinnedConnectors', params.pinnedConnectors),
             ...spreadIfNotUndefined('connectorSelectorConfig', params.connectorSelectorConfig),
+            ...spreadIfNotUndefined('welcomeText', normalizeWelcomeText(params.welcomeText)),
         }
         log.info({ tenant: { id: params.id } }, 'Tenant updated')
         const saved = await tenantRepo().save(updatedTenant)
@@ -290,6 +295,14 @@ async function finishExistingTenant({ user, tenantId, name, invalidatePreviousTo
         tenantId,
         projectId: project?.id ?? null,
     })
+}
+
+function normalizeWelcomeText(welcomeText: string | undefined): string | null | undefined {
+    if (welcomeText === undefined) {
+        return undefined
+    }
+    const trimmed = welcomeText.trim()
+    return trimmed.length === 0 ? null : trimmed
 }
 
 function stripFederatedAuth(tenant: Tenant): TenantWithoutFederatedAuth {

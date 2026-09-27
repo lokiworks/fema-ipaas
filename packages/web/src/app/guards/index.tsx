@@ -12,8 +12,12 @@ import { publicRoutes } from '@/app/routes/public-routes';
 import { tenantRoutes } from '@/app/routes/tenant-routes';
 import { RouteLoadingBar } from '@/components/custom/route-loading-bar';
 import { useEmbedding } from '@/components/providers/embed-provider';
+import { lazyWithRetry } from '@/lib/lazy-with-retry';
+import { WORKSPACE_HOME_ROUTE } from '@/lib/route-utils';
 
+import { AllowOnlyLoggedInUserOnlyGuard } from '../components/allow-logged-in-user-only-guard';
 import { RouteErrorBoundary } from '../components/global-error-boundary';
+import { ProjectDashboardLayout } from '../components/project-layout';
 
 import { DefaultRoute } from './default-route';
 import { TokenCheckerWrapper } from './project-route-wrapper';
@@ -25,6 +29,14 @@ const CrashTestPage = import.meta.env.DEV
       })),
     )
   : null;
+
+const WorkspaceHomePage = lazyWithRetry(
+  () =>
+    import('../routes/workspace-home').then((m) => ({
+      default: m.WorkspaceHomePage,
+    })),
+  'workspace-home',
+);
 
 const devRoutes =
   import.meta.env.DEV && CrashTestPage
@@ -46,6 +58,20 @@ const routes = [
   ...projectRoutes,
   ...authRoutes,
   ...tenantRoutes,
+  {
+    path: WORKSPACE_HOME_ROUTE,
+    element: (
+      <AllowOnlyLoggedInUserOnlyGuard>
+        <ProjectDashboardLayout>
+          <PageTitle title="Home">
+            <Suspense fallback={<RouteLoadingBar />}>
+              <WorkspaceHomePage />
+            </Suspense>
+          </PageTitle>
+        </ProjectDashboardLayout>
+      </AllowOnlyLoggedInUserOnlyGuard>
+    ),
+  },
   {
     path: '/projects/:projectId',
     element: (

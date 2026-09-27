@@ -7,6 +7,7 @@ import { SampleDataSetting } from '../sample-data'
 
 export const AUTHENTICATION_PROPERTY_NAME = 'auth'
 export const TRIGGER_DEDUPE_MAX_WINDOW_SECONDS = 30 * 24 * 60 * 60
+export const TRIGGER_MAX_CONCURRENT_RUNS = 20
 
 
 export const TriggerDedupeSettings = z.object({
@@ -16,9 +17,24 @@ export const TriggerDedupeSettings = z.object({
 })
 export type TriggerDedupeSettings = z.infer<typeof TriggerDedupeSettings>
 
+export enum ScheduleOverlapPolicy {
+    SKIP = 'SKIP',
+    QUEUE = 'QUEUE',
+    PARALLEL = 'PARALLEL',
+}
+
+export const TriggerConcurrencySettings = z.object({
+    maxConcurrentRuns: z.number().int().min(0).max(TRIGGER_MAX_CONCURRENT_RUNS),
+    orderKeyPath: z.string().optional(),
+})
+export type TriggerConcurrencySettings = z.infer<typeof TriggerConcurrencySettings>
+
 const connectorTriggerSettingsFields = {
     sampleData: SampleDataSetting.optional(),
     dedupe: TriggerDedupeSettings.optional(),
+    concurrency: TriggerConcurrencySettings.optional(),
+    scheduleOverlap: z.enum(ScheduleOverlapPolicy).optional(),
+    skipHolidays: z.boolean().optional(),
     propertySettings: z.record(z.string(), PropertySettings),
     customLogoUrl: z.string().optional(),
     connectorName: z.string(),

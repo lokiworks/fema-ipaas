@@ -42,7 +42,15 @@ const TenantTemplatesPage = React.lazy(() =>
     default: m.TenantTemplatesPage,
   })),
 );
+const HolidayCalendarPage = React.lazy(() =>
+  import('./tenant/setup/holidays').then((m) => ({
+    default: m.HolidayCalendarPage,
+  })),
+);
 const UsersPage = React.lazy(() => import('./tenant/users'));
+const AccessRequestsPage = React.lazy(() => import('./tenant/access/requests'));
+const AccessSettingsPage = React.lazy(() => import('./tenant/access/settings'));
+const ResourcesPage = React.lazy(() => import('./tenant/resources'));
 const AlertsPage = React.lazy(() => import('./tenant/alerts'));
 const PrivacyPage = React.lazy(() =>
   import('./tenant/security/privacy').then((m) => ({
@@ -96,6 +104,17 @@ export const tenantRoutes = [
   },
   tenantRoute('/tenant/projects', 'Projects', ProjectsPage),
   tenantRoute('/tenant/users', 'Members', UsersPage),
+  tenantRoute(
+    '/tenant/access/requests',
+    'Permission requests',
+    AccessRequestsPage,
+  ),
+  tenantRoute(
+    '/tenant/access/settings',
+    'Permission settings',
+    AccessSettingsPage,
+  ),
+  tenantRoute('/tenant/resources', 'Integration resources', ResourcesPage),
   tenantRoute('/tenant/audit', 'Audit Log', AuditLogPage),
   tenantRoute('/tenant/alerts', 'Alerts', AlertsPage),
   tenantRoute('/tenant/connections', 'Connections', TenantConnectionsPage),
@@ -137,6 +156,11 @@ export const tenantRoutes = [
     GlobalConnectionsTable,
   ),
   tenantRoute('/tenant/setup/templates', 'Templates', TenantTemplatesPage),
+  tenantRoute(
+    '/tenant/setup/holidays',
+    'Holiday calendar',
+    HolidayCalendarPage,
+  ),
   {
     path: '/tenant/security',
     element: (

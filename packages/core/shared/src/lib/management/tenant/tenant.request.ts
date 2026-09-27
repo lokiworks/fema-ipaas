@@ -65,6 +65,7 @@ export const UpdateTenantRequestBody = z.object({
     connectorSelectorConfig: NullableConnectorSelectorConfigFromMultipart.optional(),
     allowedEmbedOrigins: z.array(allowedEmbedOriginSchema)
         .optional(),
+    welcomeText: z.string().trim().max(30, 'welcomeTextTooLong').optional(),
 })
 
 export type UpdateTenantRequestBody = z.infer<typeof UpdateTenantRequestBody>

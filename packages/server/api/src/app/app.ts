@@ -32,6 +32,7 @@ import { oidcModule } from './core/security/oidc/oidc.module'
 import { rateLimitModule } from './core/security/rate-limit'
 import { authenticationMiddleware } from './core/security/v2/authn/authentication-middleware'
 import { authorizationMiddleware } from './core/security/v2/authz/authorization-middleware'
+import { dataStoreModule } from './data-store/data-store.module'
 import { distributedLock, redisConnections } from './database/redis-connections'
 import { fileModule } from './file/file.module'
 import { flagModule } from './flags/flag.module'
@@ -46,16 +47,21 @@ import { systemJobsSchedule } from './helper/system-jobs/system-job'
 import { systemSnapshot } from './helper/system-snapshot'
 import { validateEnvPropsOnStartup } from './helper/system-validator'
 import { shutdownTelemetry } from './helper/telemetry.utils'
+import { homeModule } from './home/home.module'
 import { issueModule } from './issue/issue.module'
 import { mappingTableModule } from './mapping-table/mapping-table.module'
+import { connectorMarketModule } from './connectors/market/connector-market.module'
+import { mcpServerModule } from './mcp-server/mcp-server.module'
 import { mcpServiceModule } from './mcp-service/mcp-service.module'
 import { privacyModule } from './privacy/privacy.module'
 import { projectBackgroundJobs } from './project/project.jobs'
 import { projectModule } from './project/project.module'
+import { projectWorkspaceModule } from './project-workspace/project-workspace.module'
 import { releaseModule } from './release/release.module'
 import { storeEntryModule } from './store-entry/store-entry.module'
 import { templateModule } from './template/template.module'
 import { tenantModule } from './tenant/tenant.module'
+import { tenantAccessModule } from './tenant-access/tenant-access.module'
 import { appEventRoutingModule } from './trigger/app-event-routing/app-event-routing.module'
 import { triggerModule } from './trigger/trigger.module'
 import { tenantUserModule } from './user/tenant/tenant-user-module'
@@ -179,13 +185,19 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     await app.register(tenantConnectionModule)
     await app.register(variableModule)
     await app.register(issueModule)
+    await app.register(homeModule)
     await app.register(alertModule)
     await app.register(privacyModule)
     await app.register(releaseModule)
     await app.register(mappingTableModule)
+    await app.register(projectWorkspaceModule)
+    await app.register(dataStoreModule)
     await app.register(aiModule)
     await app.register(agentApprovalModule)
     await app.register(mcpServiceModule)
+    await app.register(mcpServerModule)
+    await app.register(connectorMarketModule)
+    await app.register(tenantAccessModule)
     await app.register(openapiModule)
     await app.register(appEventRoutingModule)
     await app.register(authenticationModule)

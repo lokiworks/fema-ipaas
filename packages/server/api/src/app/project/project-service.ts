@@ -13,8 +13,8 @@ export { projectRepo }
 
 export const projectService = (log: FastifyBaseLogger) => ({
     async create(params: CreateParams): Promise<Project> {
-        const { callPostCreateHooks = true, entityManager, postCreateContext, ...rest } = params
-        const icon = this.createProjectIcon()
+        const { callPostCreateHooks = true, entityManager, postCreateContext, icon: requestedIcon, ...rest } = params
+        const icon = requestedIcon ?? this.createProjectIcon()
         const newProject: NewProject = {
             id: generateId(),
             ...rest,
@@ -81,6 +81,9 @@ export const projectService = (log: FastifyBaseLogger) => ({
             ...(request.maxConcurrentJobs !== undefined ? { maxConcurrentJobs: request.maxConcurrentJobs } : {}),
             ...(request.workerGroupId !== undefined ? { workerGroupId: request.workerGroupId } : {}),
             ...spreadIfNotUndefined('executionDataRetentionDays', request.executionDataRetentionDays),
+            ...spreadIfNotUndefined('description', request.description),
+            ...spreadIfNotUndefined('workflowsLimit', request.workflowsLimit),
+            ...spreadIfNotUndefined('monthlyRunsLimit', request.monthlyRunsLimit),
         }
 
         const teamUpdate = request.type === ProjectType.TEAM ? {
@@ -93,6 +96,24 @@ export const projectService = (log: FastifyBaseLogger) => ({
             await projectWorkerGroupService(log).invalidate({ projectId })
         }
         return this.getOneOrThrow(projectId)
+    },
+
+    async assertDisplayNameAvailable({ tenantId, displayName, excludeProjectId }: AssertDisplayNameAvailableParams): Promise<void> {
+        const query = projectRepo()
+            .createQueryBuilder('project')
+            .where('project."tenantId" = :tenantId', { tenantId })
+            .andWhere('project.deleted IS NULL')
+            .andWhere('project.type = :teamType', { teamType: ProjectType.TEAM })
+            .andWhere('LOWER(TRIM(project."displayName")) = LOWER(TRIM(:displayName))', { displayName })
+        if (!isNil(excludeProjectId)) {
+            query.andWhere('project.id != :excludeProjectId', { excludeProjectId })
+        }
+        if (await query.getExists()) {
+            throw new ApplicationError({
+                code: ErrorCode.VALIDATION,
+                params: { message: 'projectNameTaken' },
+            })
+        }
     },
 
     async getTenantId(projectId: ProjectId): Promise<string> {
@@ -297,6 +318,9 @@ type UpdateTeamProjectParams = {
     workerGroupId?: string | null
     executionDataRetentionDays?: number | null
     icon?: ProjectIcon
+    description?: string | null
+    workflowsLimit?: number | null
+    monthlyRunsLimit?: number | null
 }
 
 type UpdatePersonalProjectParams = {
@@ -310,6 +334,9 @@ type UpdatePersonalProjectParams = {
     maxConcurrentJobs?: number | null
     workerGroupId?: string | null
     executionDataRetentionDays?: number | null
+    description?: string | null
+    workflowsLimit?: number | null
+    monthlyRunsLimit?: number | null
 }
 
 type UpdateParams = UpdateTeamProjectParams | UpdatePersonalProjectParams
@@ -322,9 +349,17 @@ type CreateParams = {
     externalId?: string
     metadata?: Metadata
     maxConcurrentJobs?: number
+    description?: string | null
+    icon?: ProjectIcon
     callPostCreateHooks?: boolean
     postCreateContext?: ProjectPostCreateContext
     entityManager?: EntityManager
+}
+
+type AssertDisplayNameAvailableParams = {
+    tenantId: string
+    displayName: string
+    excludeProjectId?: string
 }
 
 type GetByTenantIdAndExternalIdParams = {

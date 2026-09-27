@@ -472,7 +472,7 @@ export const workflowHooks = {
         return await workflowsApi.update(workflow.id, {
           type: WorkflowOperationType.IMPORT_WORKFLOW,
           request: {
-            displayName: templateWorkflow.displayName,
+            displayName: workflow.version.displayName,
             trigger: updatedTrigger,
             schemaVersion: templateWorkflow.schemaVersion,
             notes: templateWorkflow.notes,

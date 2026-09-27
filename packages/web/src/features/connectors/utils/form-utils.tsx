@@ -45,6 +45,8 @@ import {
 import { t } from 'i18next';
 import { z, ZodObject, ZodType } from 'zod';
 
+import { triggerSettingsValidation } from '@/features/trigger-runtime/utils/trigger-settings-validation';
+
 // `connectorPropertiesUtils.buildSchema` returns a zod/mini object (connectors-framework uses zod/mini
 // for bundle size), but the web validates with classic zod (react-hook-form + zodResolver) and
 // calls classic instance methods on this schema — `.optional()`, `.extend()`, `.omit()`,
@@ -629,16 +631,26 @@ export const formUtils = {
             settings: ConnectorTriggerSettings.omit({
               input: true,
               triggerName: true,
-            }).extend(
-              z.object({
-                triggerName: z.string().min(1),
-                input: buildInputSchemaForStep(
-                  type,
-                  connector,
-                  actionNameOrTriggerName,
+            })
+              .extend(
+                z.object({
+                  triggerName: z.string().min(1),
+                  input: buildInputSchemaForStep(
+                    type,
+                    connector,
+                    actionNameOrTriggerName,
+                  ),
+                }).shape,
+              )
+              .superRefine((settings, ctx) =>
+                triggerSettingsValidation.issuesOf(settings).forEach((issue) =>
+                  ctx.addIssue({
+                    code: 'custom',
+                    path: issue.path,
+                    message: issue.message,
+                  }),
                 ),
-              }).shape,
-            ),
+              ),
           }).shape,
         );
       }

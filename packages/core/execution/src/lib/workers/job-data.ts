@@ -119,6 +119,13 @@ export const PollingJobData = z.object({
 })
 export type PollingJobData = z.infer<typeof PollingJobData>
 
+export const RunConcurrencyTicket = z.object({
+    maxConcurrentRuns: z.number().int().min(0),
+    orderKey: z.string().optional(),
+    enqueuedAt: z.number(),
+})
+export type RunConcurrencyTicket = z.infer<typeof RunConcurrencyTicket>
+
 const ExecuteWorkflowJobDataCommon = z.object({
     projectId: z.string(),
     tenantId: z.string(),
@@ -136,6 +143,7 @@ const ExecuteWorkflowJobDataCommon = z.object({
     sampleData: z.record(z.string(), z.unknown()).optional(),
     logsFileId: z.string(),
     logPrivacy: LogPrivacy.optional(),
+    concurrency: RunConcurrencyTicket.optional(),
 })
 
 export const BeginExecuteWorkflowJobData = ExecuteWorkflowJobDataCommon.extend({

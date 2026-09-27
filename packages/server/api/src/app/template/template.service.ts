@@ -1,9 +1,13 @@
 import { ApplicationError, ErrorCode, generateId, isNil, SeekPage, spreadIfDefined } from '@fema-ipaas/core-utils'
-import { CreateTemplateRequestBody, ListTemplatesRequestQuery, Template, TemplateStatus, TemplateType, UpdateTemplateRequestBody, WorkflowVersionTemplate } from '@fema-ipaas/shared'
+import { CreateTemplateRequestBody, GenerateTemplateFromWorkflowRequestBody, ListTemplatesRequestQuery, Template, TemplateStatus, TemplateType, TemplateVisibility, UpdateTemplateRequestBody, WorkflowVersionTemplate } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { ArrayContains, ArrayOverlap, Equal, IsNull } from 'typeorm'
 import { repoFactory } from '../core/db/repo-factory'
 import { paginationHelper } from '../helper/pagination/pagination-utils'
+import { userService } from '../user/user-service'
+import { workflowService } from '../workflows/workflow/workflow.service'
+import { workflowVersionService } from '../workflows/workflow-version/workflow-version.service'
+import { templateFromWorkflow } from './template-from-workflow'
 import { templateValidator } from './template-validator'
 import { TemplateEntity } from './template.entity'
 
@@ -27,7 +31,7 @@ export const templateService = (log: FastifyBaseLogger) => ({
         }
         return template
     },
-    async create({ tenantId, params }: CreateParams): Promise<Template> {
+    async create({ tenantId, params, createdBy = null, visibility = null }: CreateParams): Promise<Template> {
         const preparedTemplate = await templateValidator.validateAndPrepare({
             workflows: params.workflows,
             tenantId,
@@ -58,17 +62,45 @@ export const templateService = (log: FastifyBaseLogger) => ({
                     connectors,
                     workflows,
                     status: TemplateStatus.PUBLISHED,
+                    createdBy,
+                    visibility,
+                    usageCount: 0,
+                    featured: params.featured ?? false,
                 }
                 return templateRepo().save(newTemplate)
             }
         }
     },
 
-    async update({ id, params }: UpdateParams): Promise<Template> {
-        const { name, summary, description, tags, blogUrl, metadata, categories, status } = params
-        const template = await this.getOneOrThrow({ id })
+    async createFromWorkflow({ projectId, tenantId, userId, request }: CreateFromWorkflowParams): Promise<Template> {
+        const workflow = await workflowService(log).getOneOrThrow({ id: request.workflowId, projectId })
+        if (isNil(workflow.publishedVersionId)) {
+            throw new ApplicationError({
+                code: ErrorCode.VALIDATION,
+                params: {
+                    message: 'Only a published workflow can be turned into a template',
+                },
+            })
+        }
+        const version = await workflowVersionService(log).getWorkflowVersionOrThrow({
+            workflowId: workflow.id,
+            versionId: workflow.publishedVersionId,
+            removeSampleData: true,
+            projectId,
+        })
+        const user = await userService(log).getMetaInformation({ id: userId })
+        const params = templateFromWorkflow.buildCreateBody({
+            request,
+            version,
+            author: templateFromWorkflow.authorName(user),
+            externalId: workflow.externalId,
+        })
+        return this.create({ tenantId, params, createdBy: userId, visibility: request.visibility })
+    },
 
-        const newTags = tags ?? []
+    async update({ id, params }: UpdateParams): Promise<Template> {
+        const { name, summary, description, tags, blogUrl, metadata, categories, status, featured } = params
+        const template = await this.getOneOrThrow({ id })
 
         let sanatizedWorkflows: WorkflowVersionTemplate[] | undefined = undefined
         let connectors: string[] | undefined = undefined
@@ -96,15 +128,15 @@ export const templateService = (log: FastifyBaseLogger) => ({
                     ...spreadIfDefined('categories', categories),
                     ...spreadIfDefined('workflows', sanatizedWorkflows),
                     ...spreadIfDefined('connectors', connectors),
-                    ...spreadIfDefined('tags', newTags),
                     ...spreadIfDefined('status', status),
+                    ...spreadIfDefined('featured', featured),
                 })
                 return templateRepo().findOneByOrFail({ id })
             }
         }
     },
 
-    async list({ tenantId, connectors, tags, search, type, category }: ListParams): Promise<SeekPage<Template>> {
+    async list({ tenantId, connectors, tags, search, type, category, viewerUserId = null }: ListParams): Promise<SeekPage<Template>> {
         const commonFilters: Record<string, unknown> = {}
 
         if (connectors) {
@@ -149,6 +181,12 @@ export const templateService = (log: FastifyBaseLogger) => ({
                 { tags },
             )
         }
+        if (type === TemplateType.CUSTOM) {
+            queryBuilder.andWhere(
+                '(template."createdBy" IS NULL OR template.visibility = :tenantVisibility OR template."createdBy" = :viewerUserId)',
+                { tenantVisibility: TemplateVisibility.TENANT, viewerUserId: viewerUserId ?? '' },
+            )
+        }
         if (search) {
             queryBuilder.andWhere(
                 '(template.name ILIKE :search OR template.summary ILIKE :search OR template.description ILIKE :search)',
@@ -158,6 +196,16 @@ export const templateService = (log: FastifyBaseLogger) => ({
 
         const templates = await queryBuilder.getMany()
         return paginationHelper.createPage(templates, null)
+    },
+
+    async incrementUsage({ id, tenantId }: IncrementUsageParams): Promise<void> {
+        await templateRepo()
+            .createQueryBuilder()
+            .update()
+            .set({ usageCount: () => '"usageCount" + 1' })
+            .where('id = :id', { id })
+            .andWhere('("tenantId" IS NULL OR "tenantId" = :tenantId)', { tenantId })
+            .execute()
     },
 
     async delete({ id }: DeleteParams): Promise<void> {
@@ -172,6 +220,8 @@ type GetParams = {
 type CreateParams = {
     tenantId: string | undefined
     params: CreateTemplateRequestBody
+    createdBy?: string | null
+    visibility?: TemplateVisibility | null
 }
 
 type NewTemplate = Omit<Template, 'created' | 'updated'>
@@ -179,6 +229,19 @@ type NewTemplate = Omit<Template, 'created' | 'updated'>
 type ListParams = Omit<ListTemplatesRequestQuery, 'type'> & {
     tenantId: string | null
     type: TemplateType
+    viewerUserId?: string | null
+}
+
+type CreateFromWorkflowParams = {
+    projectId: string
+    tenantId: string
+    userId: string
+    request: GenerateTemplateFromWorkflowRequestBody
+}
+
+type IncrementUsageParams = {
+    id: string
+    tenantId: string
 }
 
 type DeleteParams = {

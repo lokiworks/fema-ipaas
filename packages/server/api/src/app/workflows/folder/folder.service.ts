@@ -1,11 +1,15 @@
 import { ApplicationError, Cursor, ErrorCode, generateId, isNil, ProjectId, SeekPage } from '@fema-ipaas/core-utils'
-import { CreateFolderRequest, Folder, FolderDto, FolderId, UpdateFolderRequest } from '@fema-ipaas/shared'
+import { CreateFolderRequest, Folder, FOLDER_LIMIT_PER_PROJECT, FOLDER_MAX_DEPTH, FolderDto, FolderId, UpdateFolderRequest } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
+import { IsNull } from 'typeorm'
 import { repoFactory } from '../../core/db/repo-factory'
+import { transaction } from '../../core/db/transaction'
 import { buildPaginator } from '../../helper/pagination/build-paginator'
 import { paginationHelper } from '../../helper/pagination/pagination-utils'
 import { workflowService } from '../workflow/workflow.service'
+import { workflowRepo } from '../workflow/workflow.repo'
 import { FolderEntity } from './folder.entity'
+import { folderTreeUtils } from './folder-tree-utils'
 
 export const folderRepo = repoFactory(FolderEntity)
 
@@ -13,28 +17,69 @@ export const workflowFolderService = (log: FastifyBaseLogger) => ({
     async delete(params: DeleteParams): Promise<void> {
         const { projectId, folderId } = params
         const folder = await this.getOneOrThrow({ projectId, folderId })
-        await folderRepo().delete({
-            id: folder.id,
-            projectId,
+        const parentId = folder.parentId ?? null
+        await transaction(async (entityManager) => {
+            const all = await folderRepo(entityManager).findBy({ projectId })
+            const children = all.filter((candidate) => candidate.parentId === folder.id)
+            const siblingNames = all
+                .filter((candidate) => (candidate.parentId ?? null) === parentId && candidate.id !== folder.id)
+                .map((candidate) => candidate.displayName)
+            const renames = folderTreeUtils.planMoveUp({ children, siblingNames })
+            for (const rename of renames) {
+                await folderRepo(entityManager).update({ id: rename.id, projectId }, { parentId, displayName: rename.displayName })
+            }
+            await workflowRepo(entityManager).update({ projectId, folderId: folder.id }, { folderId: parentId })
+            await folderRepo(entityManager).delete({ id: folder.id, projectId })
         })
     },
     async update(params: UpdateParams): Promise<FolderDto> {
         const { projectId, folderId, request } = params
         const folder = await this.getOneOrThrow({ projectId, folderId })
-        const folderWithDisplayName = await this.getOneByDisplayNameCaseInsensitive({
-            projectId,
-            displayName: request.displayName,
-        })
-        if (folderWithDisplayName && folderWithDisplayName.id !== folderId) {
-            throw new ApplicationError({
-                code: ErrorCode.VALIDATION,
-                params: { message: 'Folder displayName is used' },
-            })
-        }
+        const displayName = folderTreeUtils.assertValidName(request.displayName)
+        await this.assertNameAvailable({ projectId, parentId: folder.parentId ?? null, displayName, excludeFolderId: folder.id })
         await folderRepo().update(folder.id, {
-            displayName: request.displayName,
+            displayName,
         })
         return this.getOneOrThrow({ projectId, folderId })
+    },
+    async create(params: UpsertParams): Promise<FolderDto> {
+        const { projectId, request } = params
+        const displayName = folderTreeUtils.assertValidName(request.displayName)
+        const parentId = request.parentId ?? null
+        const all = await folderRepo().findBy({ projectId })
+        if (all.length >= FOLDER_LIMIT_PER_PROJECT) {
+            throw folderValidationError('folderLimitReached')
+        }
+        if (!isNil(parentId)) {
+            const parent = all.find((candidate) => candidate.id === parentId)
+            if (isNil(parent)) {
+                throw folderValidationError('folderParentNotFound')
+            }
+            if (folderTreeUtils.depthOf({ folderId: parentId, folders: all }) >= FOLDER_MAX_DEPTH) {
+                throw folderValidationError('folderTooDeep')
+            }
+        }
+        await this.assertNameAvailable({ projectId, parentId, displayName })
+        const folderId = generateId()
+        await folderRepo().insert({
+            id: folderId,
+            projectId,
+            displayName,
+            externalId: folderId,
+            parentId,
+        })
+        const folder = await folderRepo().findOneByOrFail({ projectId, id: folderId })
+        return {
+            ...folder,
+            numberOfWorkflows: 0,
+        }
+    },
+    async assertNameAvailable({ projectId, parentId, displayName, excludeFolderId }: AssertNameAvailableParams): Promise<void> {
+        const siblings = await folderRepo().findBy({ projectId, parentId: isNil(parentId) ? IsNull() : parentId })
+        const taken = siblings.some((sibling) => sibling.id !== excludeFolderId && sibling.displayName.trim().toLowerCase() === displayName.trim().toLowerCase())
+        if (taken) {
+            throw folderValidationError('folderNameTaken')
+        }
     },
     async upsert(params: UpsertParams): Promise<FolderDto> {
         const { projectId, request } = params
@@ -43,11 +88,7 @@ export const workflowFolderService = (log: FastifyBaseLogger) => ({
             displayName: request.displayName,
         })
         if (!isNil(folderWithDisplayName)) {
-            return this.update({
-                projectId,
-                folderId: folderWithDisplayName.id,
-                request,
-            })
+            return this.getOneOrThrow({ projectId, folderId: folderWithDisplayName.id })
         }
         const folderId = generateId()
         await folderRepo().upsert({
@@ -55,8 +96,9 @@ export const workflowFolderService = (log: FastifyBaseLogger) => ({
             projectId,
             displayName: request.displayName,
             externalId: folderId,
-        }, ['projectId', 'displayName'])
-        const folder = await folderRepo().findOneByOrFail({ projectId, id: folderId })
+            parentId: null,
+        }, { conflictPaths: ['projectId', 'displayName'], indexPredicate: '"parentId" IS NULL' })
+        const folder = await folderRepo().findOneByOrFail({ projectId, displayName: request.displayName, parentId: IsNull() })
         return {
             ...folder,
             numberOfWorkflows: 0,
@@ -122,6 +164,7 @@ export const workflowFolderService = (log: FastifyBaseLogger) => ({
         const { projectId, displayName } = params
         return folderRepo().createQueryBuilder('folder')
             .where('folder.projectId = :projectId', { projectId })
+            .andWhere('folder."parentId" IS NULL')
             .andWhere('LOWER(folder.displayName) = LOWER(:displayName)', { displayName })
             .getOne()
     },
@@ -143,6 +186,20 @@ export const workflowFolderService = (log: FastifyBaseLogger) => ({
         }
     },
 })
+
+function folderValidationError(message: string): ApplicationError {
+    return new ApplicationError({
+        code: ErrorCode.VALIDATION,
+        params: { message },
+    })
+}
+
+type AssertNameAvailableParams = {
+    projectId: ProjectId
+    parentId: string | null
+    displayName: string
+    excludeFolderId?: string
+}
 
 type DeleteParams = {
     projectId: ProjectId

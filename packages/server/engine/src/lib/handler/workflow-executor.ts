@@ -1,8 +1,9 @@
 import { performance } from 'node:perf_hooks'
 import { isNil } from '@fema-ipaas/core-utils'
-import { EngineGenericError, ExecutionStatus, ExecutionType, GenericStepOutput, StepOutputStatus, WorkflowAction, WorkflowActionType, WorkflowTrigger } from '@fema-ipaas/shared'
+import { EngineGenericError, errorHandlingUtils, ErrorOutcome, ExecutionStatus, ExecutionType, GenericStepOutput, StepOutputStatus, WorkflowAction, WorkflowActionType, WorkflowTrigger } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { triggerRunner } from '../core/connector/trigger-runner'
+import { resolveFailedStepStrategy } from '../helper/error-handling'
 import { executionProgressReporter } from '../helper/execution-progress-reporter'
 import { loggingUtils } from '../helper/logging-utils'
 import { BaseExecutor } from './base-executor'
@@ -161,8 +162,8 @@ async function runContinueOnFailureBranchIfNeeded({ action, executionState, cons
     if (action.type !== WorkflowActionType.CODE && action.type !== WorkflowActionType.CONNECTOR && action.type !== WorkflowActionType.COMPONENT) {
         return executionState
     }
-    const cofEnabled = action.settings.errorHandlingOptions?.continueOnFailure?.value
-    if (!cofEnabled) {
+    const usesStrategy = !isNil(action.settings.errorHandlingOptions?.strategy)
+    if (!errorHandlingUtils.usesBranches(action.settings.errorHandlingOptions)) {
         return executionState
     }
     const branches = action.continueOnFailureBranches
@@ -174,7 +175,8 @@ async function runContinueOnFailureBranchIfNeeded({ action, executionState, cons
     }
     const stepOutput = executionState.getStepOutput(action.name)
     const stepFailed = stepOutput?.status === StepOutputStatus.FAILED
-    const branchHead = stepFailed ? branches?.onFailure : branches?.onSuccess
+    const takeFailureBranch = stepFailed && (!usesStrategy || resolveFailedStepStrategy({ executionState, action })?.outcome === ErrorOutcome.BRANCH)
+    const branchHead = takeFailureBranch ? branches?.onFailure : branches?.onSuccess
     if (isNil(branchHead)) {
         return executionState
     }

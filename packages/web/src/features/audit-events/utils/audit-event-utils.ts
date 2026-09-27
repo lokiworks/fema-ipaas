@@ -202,6 +202,29 @@ function summarize(event: ApplicationEvent): string {
         tool: event.data.approval.tool,
         run: event.data.approval.executionId,
       });
+    case ApplicationEventName.CONNECTION_SHARE_UPDATED:
+      return t('auditConnectionShareUpdated', {
+        connection: event.data.connection.displayName,
+        change: event.data.change,
+        user: event.data.targetUser?.email ?? '',
+        permission: event.data.permission ?? '',
+      });
+    case ApplicationEventName.MCP_TOOL_TRIED:
+      return t('auditMcpToolTried', {
+        tool: event.data.toolName,
+        server: event.data.server.displayName,
+        success: String(event.data.success),
+      });
+    case ApplicationEventName.CONNECTOR_DEMAND_SUBMITTED:
+      return t('auditConnectorDemandSubmitted', {
+        app: event.data.demand.appName,
+      });
+    case ApplicationEventName.MCP_SERVICE_CHANGED:
+      return t('auditMcpServiceChanged', {
+        service: event.data.service.name,
+        change: event.data.change,
+        detail: event.data.detail ?? '',
+      });
     case ApplicationEventName.PERSONAL_DATA_ERASURE:
       return t('auditPersonalDataErasure', {
         phase: event.data.phase,
@@ -231,6 +254,35 @@ function summarize(event: ApplicationEvent): string {
       });
     case ApplicationEventName.MEMBER_REMOVED:
       return t('auditMemberRemoved', { user: event.data.member.userId });
+    case ApplicationEventName.DATA_STORE_CREATED:
+      return t('auditDataStoreCreated', { name: event.data.dataStore.name });
+    case ApplicationEventName.DATA_STORE_UPDATED:
+      return t('auditDataStoreUpdated', { name: event.data.dataStore.name });
+    case ApplicationEventName.DATA_STORE_DELETED:
+      return t('auditDataStoreDeleted', { name: event.data.dataStore.name });
+    case ApplicationEventName.DATA_STORE_CLEARED:
+      return t('auditDataStoreCleared', {
+        name: event.data.dataStore.name,
+        count: event.data.count ?? 0,
+      });
+    case ApplicationEventName.DATA_STORE_RECORD_DELETED:
+      return t('auditDataStoreRecordDeleted', {
+        name: event.data.dataStore.name,
+        key: event.data.key ?? '',
+      });
+    case ApplicationEventName.TENANT_USERS_INVITED:
+    case ApplicationEventName.TENANT_USER_ACCESS_CHANGED:
+    case ApplicationEventName.TENANT_USER_REMOVED:
+    case ApplicationEventName.TENANT_USER_PASSWORD_RESET:
+    case ApplicationEventName.MODULE_ACCESS_REQUEST_DECIDED:
+    case ApplicationEventName.MODULE_ACCESS_SETTINGS_UPDATED:
+    case ApplicationEventName.RESOURCES_OWNERSHIP_TRANSFERRED:
+    case ApplicationEventName.LOGIN_SETTINGS_UPDATED:
+    case ApplicationEventName.WORKER_STATE_CHANGED:
+    case ApplicationEventName.AUDIT_LOG_EXPORTED:
+      return event.data.detail
+        ? `${event.data.target} · ${event.data.detail}`
+        : event.data.target;
   }
 }
 
@@ -267,6 +319,12 @@ const ACTION_LABELS: Record<ApplicationEventName, () => string> = {
     t('Privacy settings updated'),
   [ApplicationEventName.AGENT_APPROVAL_DECIDED]: () =>
     t('Agent tool call reviewed'),
+  [ApplicationEventName.CONNECTION_SHARE_UPDATED]: () =>
+    t('Connection sharing changed'),
+  [ApplicationEventName.MCP_TOOL_TRIED]: () => t('MCP tool tried'),
+  [ApplicationEventName.CONNECTOR_DEMAND_SUBMITTED]: () =>
+    t('Connector request submitted'),
+  [ApplicationEventName.MCP_SERVICE_CHANGED]: () => t('MCP service changed'),
   [ApplicationEventName.PERSONAL_DATA_ERASURE]: () =>
     t('Personal data erasure'),
   [ApplicationEventName.USER_SIGNED_UP]: () => t('User signed up'),
@@ -276,6 +334,28 @@ const ACTION_LABELS: Record<ApplicationEventName, () => string> = {
   [ApplicationEventName.CONNECTOR_PUBLISHED]: () => t('Connector published'),
   [ApplicationEventName.MEMBER_ADDED]: () => t('Member added'),
   [ApplicationEventName.MEMBER_REMOVED]: () => t('Member removed'),
+  [ApplicationEventName.DATA_STORE_CREATED]: () => t('Data store created'),
+  [ApplicationEventName.DATA_STORE_UPDATED]: () => t('Data store updated'),
+  [ApplicationEventName.DATA_STORE_DELETED]: () => t('Data store deleted'),
+  [ApplicationEventName.DATA_STORE_CLEARED]: () => t('Data store cleared'),
+  [ApplicationEventName.DATA_STORE_RECORD_DELETED]: () =>
+    t('Data store key deleted'),
+  [ApplicationEventName.TENANT_USERS_INVITED]: () => t('Users added'),
+  [ApplicationEventName.TENANT_USER_ACCESS_CHANGED]: () =>
+    t('User permissions changed'),
+  [ApplicationEventName.TENANT_USER_REMOVED]: () => t('User removed'),
+  [ApplicationEventName.TENANT_USER_PASSWORD_RESET]: () =>
+    t('Password reset by admin'),
+  [ApplicationEventName.MODULE_ACCESS_REQUEST_DECIDED]: () =>
+    t('Permission request reviewed'),
+  [ApplicationEventName.MODULE_ACCESS_SETTINGS_UPDATED]: () =>
+    t('Permission settings changed'),
+  [ApplicationEventName.RESOURCES_OWNERSHIP_TRANSFERRED]: () =>
+    t('Resource ownership transferred'),
+  [ApplicationEventName.LOGIN_SETTINGS_UPDATED]: () =>
+    t('Sign-in settings changed'),
+  [ApplicationEventName.WORKER_STATE_CHANGED]: () => t('Worker changed'),
+  [ApplicationEventName.AUDIT_LOG_EXPORTED]: () => t('Audit log exported'),
 };
 
 function actionsForSources(sources: string[]): string[] | undefined {

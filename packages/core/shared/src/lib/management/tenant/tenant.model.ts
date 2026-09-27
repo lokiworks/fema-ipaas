@@ -1,6 +1,7 @@
 import { BaseModelSchema, DateOrString, EntityId, Nullable } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 import { FederatedAuthnProviderConfig, FederatedAuthnProviderConfigWithoutSensitiveData } from '../../core/federated-authn'
+import { ModuleAccessSettings } from '../tenant-access'
 import { SsoDomainVerification } from './sso-domain-verification'
 
 export const TenantLimits = z.object({
@@ -86,6 +87,10 @@ export const Tenant = z.object({
     emailAuthEnabled: z.boolean(),
     pinnedConnectors: z.array(z.string()),
     connectorSelectorConfig: Nullable(ConnectorSelectorConfig),
+    welcomeText: Nullable(z.string()),
+    passwordMinLength: z.number(),
+    sessionDurationDays: z.number(),
+    moduleAccessSettings: Nullable(ModuleAccessSettings),
 })
 export type Tenant = z.infer<typeof Tenant>
 export type TenantWithoutFederatedAuth = Omit<Tenant, 'federatedAuthProviders'>
@@ -113,5 +118,9 @@ export const TenantWithoutSensitiveData = z.object({
     emailAuthEnabled: z.boolean(),
     pinnedConnectors: z.array(z.string()),
     connectorSelectorConfig: Nullable(ConnectorSelectorConfig),
+    welcomeText: Nullable(z.string()),
+    passwordMinLength: z.number(),
+    sessionDurationDays: z.number(),
+    moduleAccessSettings: Nullable(ModuleAccessSettings),
 })
 export type TenantWithoutSensitiveData = z.infer<typeof TenantWithoutSensitiveData>

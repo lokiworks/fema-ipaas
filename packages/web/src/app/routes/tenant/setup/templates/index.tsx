@@ -1,8 +1,17 @@
 import { Template, TemplateType } from '@fema-ipaas/shared';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
 import { t } from 'i18next';
-import { FileText, Pencil, Trash, Tag, Clock, Puzzle } from 'lucide-react';
+import {
+  FileText,
+  Flame,
+  Pencil,
+  Star,
+  Trash,
+  Tag,
+  Clock,
+  Puzzle,
+} from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -20,6 +29,7 @@ import { FormattedDate } from '@/components/custom/formatted-date';
 import { PlusIcon } from '@/components/icons/plus';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import {
   Tooltip,
   TooltipContent,
@@ -45,6 +55,13 @@ const TenantTemplatesPage = () => {
   });
 
   const [selectedRows, setSelectedRows] = useState<Template[]>([]);
+
+  const { mutate: setFeatured, isPending: isFeaturedPending } = useMutation({
+    mutationFn: ({ id, featured }: { id: string; featured: boolean }) =>
+      templatesApi.update(id, { featured }),
+    onSuccess: () => refetch(),
+    onError: () => toast.error(t('Failed to update the template')),
+  });
 
   const bulkDeleteMutation = templatesMutations.useBulkDeleteTemplates({
     onSuccess: () => {
@@ -149,6 +166,39 @@ const TenantTemplatesPage = () => {
           <ConnectorIconList trigger={trigger} maxNumberOfIconsToShow={2} />
         );
       },
+    },
+    {
+      accessorKey: 'usageCount',
+      size: 80,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('Uses')} icon={Flame} />
+      ),
+      cell: ({ row }) => (
+        <div className="text-left">{row.original.usageCount ?? 0}</div>
+      ),
+    },
+    {
+      accessorKey: 'featured',
+      size: 90,
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={t('Featured')}
+          icon={Star}
+        />
+      ),
+      cell: ({ row }) => (
+        <div onClick={(e) => e.stopPropagation()}>
+          <Switch
+            aria-label={t('Featured')}
+            checked={row.original.featured === true}
+            disabled={isFeaturedPending}
+            onCheckedChange={(checked) =>
+              setFeatured({ id: row.original.id, featured: checked })
+            }
+          />
+        </div>
+      ),
     },
   ];
 

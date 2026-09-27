@@ -4,7 +4,6 @@ import { Connection, ConnectionStatus, ConnectionType, ConnectionValue, Connecti
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { lru, LRU } from 'tiny-lru'
-import { ArrayContains } from 'typeorm'
 import { connectorMetadataService, getConnectorPackageWithoutArchive } from '../../connectors/metadata/connector-metadata-service'
 import { distributedLock } from '../../database/redis-connections'
 import { encryptUtils } from '../../helper/encryption'
@@ -14,6 +13,7 @@ import { userInteractionWatcher } from '../../workers/user-interaction-watcher'
 import { workflowService } from '../../workflows/workflow/workflow.service'
 import { workflowVersionRepo, workflowVersionService } from '../../workflows/workflow-version/workflow-version.service'
 import { ConnectionSchema } from '../connection.entity'
+import { connectionAvailability } from './connection-availability'
 import { connectionsRepo } from './connection-service'
 import { oauth2Handler } from './oauth2'
 import { oauth2Util } from './oauth2/oauth2-util'
@@ -157,10 +157,13 @@ export const connectionHandler = (log: FastifyBaseLogger) => ({
                 let connection: Connection | null = null
 
                 try {
-                    const encryptedConnection = await connectionsRepo().findOneBy({
-                        projectIds: ArrayContains([projectId]),
-                        externalId,
-                    })
+                    const encryptedConnection = await connectionsRepo().findOneBy(connectionAvailability.whereAvailableIn({
+                        projectId,
+                        where: {
+                            tenantId,
+                            externalId,
+                        },
+                    }))
                     if (isNil(encryptedConnection)) {
                         return encryptedConnection
                     }
@@ -204,11 +207,13 @@ export const connectionHandler = (log: FastifyBaseLogger) => ({
             key: `${tenantId}_${externalId}`,
             timeoutInSeconds: 60,
             fn: async () => {
-                const encryptedConnection = await connectionsRepo().findOneBy({
-                    id,
-                    tenantId,
-                    projectIds: ArrayContains([projectId]),
-                })
+                const encryptedConnection = await connectionsRepo().findOneBy(connectionAvailability.whereAvailableIn({
+                    projectId,
+                    where: {
+                        id,
+                        tenantId,
+                    },
+                }))
                 if (isNil(encryptedConnection)) {
                     return null
                 }

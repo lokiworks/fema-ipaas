@@ -14,6 +14,7 @@ export const GeneralPage = () => {
 
   return (
     <CenteredPage
+      widthClassName="max-w-[64rem]"
       title={t('General')}
       description={t('Change the settings for your tenant.')}
     >

@@ -1,5 +1,6 @@
 import {
     Connection,
+    ConnectionSharePermission,
     ConnectionStatus,
     User,
     UserIdentity,
@@ -13,6 +14,7 @@ import { EncryptedObject } from '../helper/encryption'
 export type ConnectionSchema = Omit<Connection, 'value'> & {
     value: EncryptedObject
     owner?: (User & { identity?: UserIdentity })
+    projectMembersPermission?: ConnectionSharePermission | null
 }
 
 export const ConnectionEntity = new EntitySchema<ConnectionSchema>({
@@ -65,6 +67,10 @@ export const ConnectionEntity = new EntitySchema<ConnectionSchema>({
             type: Boolean,
             nullable: false,
             default: false,
+        },
+        projectMembersPermission: {
+            type: String,
+            nullable: true,
         },
     },
     indices: [

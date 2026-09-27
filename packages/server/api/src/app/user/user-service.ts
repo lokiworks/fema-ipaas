@@ -1,5 +1,5 @@
 import { ApplicationError, assertNotNullOrUndefined, Cursor, ErrorCode, generateId, isNil, ProjectId, SeekPage, spreadIfDefined, TenantId, UserId } from '@fema-ipaas/core-utils'
-import { ProjectType, TenantRole, User, UserIdentity, UserStatus, UserWithMetaInformation } from '@fema-ipaas/shared'
+import { ProjectType, TenantModule, TenantRole, User, UserIdentity, UserStatus, UserWithMetaInformation } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { nanoid } from 'nanoid'
@@ -56,7 +56,7 @@ export const userService = (log: FastifyBaseLogger) => ({
     async updateLastActiveDate({ id }: UpdateLastActiveDateParams): Promise<void> {
         await userRepo().update({ id }, { lastActiveDate: dayjs().toISOString() })
     },
-    async update({ id, status, tenantId, tenantRole, externalId }: UpdateParams): Promise<UserWithMetaInformation> {
+    async update({ id, status, tenantId, tenantRole, externalId, modules }: UpdateParams): Promise<UserWithMetaInformation> {
         const user = await this.getOrThrow({ id })
         assertNotNullOrUndefined(user.tenantId, 'tenantId')
 
@@ -87,6 +87,7 @@ export const userService = (log: FastifyBaseLogger) => ({
             ...spreadIfDefined('status', status),
             ...spreadIfDefined('tenantRole', tenantRole),
             ...spreadIfDefined('externalId', externalId),
+            ...spreadIfDefined('modules', modules),
         })
 
         await applyUpdate()
@@ -312,6 +313,7 @@ type UpdateParams = {
     tenantId: TenantId
     tenantRole?: TenantRole
     externalId?: string
+    modules?: TenantModule[]
 }
 
 type CreateParams = {

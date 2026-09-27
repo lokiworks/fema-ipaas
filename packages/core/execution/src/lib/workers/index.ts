@@ -5,6 +5,7 @@ import { JobData } from './job-data'
 
 export enum WorkerMachineStatus {
     ONLINE = 'ONLINE',
+    DRAINING = 'DRAINING',
     OFFLINE = 'OFFLINE',
 }
 
@@ -37,6 +38,7 @@ export const WorkerProps = z.object({
     WORKER_CONCURRENCY: z.string().optional(),
     SANDBOX_MEMORY_LIMIT: z.string().optional(),
     REUSE_SANDBOX: z.string().optional(),
+    LABELS: z.string().optional(),
     version: z.string().optional(),
 })
 

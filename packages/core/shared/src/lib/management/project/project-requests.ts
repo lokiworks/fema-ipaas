@@ -13,15 +13,20 @@ export const UpdateProjectTenantRequest = z.object({
     maxConcurrentJobs: z.optional(Nullable(z.number().int().positive())),
     workerGroupId: z.optional(Nullable(z.string())),
     executionDataRetentionDays: z.optional(Nullable(z.number().int().positive())),
+    description: z.optional(Nullable(z.string().max(300, 'projectDescriptionTooLong'))),
+    workflowsLimit: z.optional(Nullable(z.number().int().positive())),
+    monthlyRunsLimit: z.optional(Nullable(z.number().int().positive())),
 })
 
 export type UpdateProjectTenantRequest = z.infer<typeof UpdateProjectTenantRequest>
 
 export const CreateTenantProjectRequest = z.object({
-    displayName: z.string().regex(new RegExp(SAFE_STRING_PATTERN)),
+    displayName: z.string().regex(new RegExp(SAFE_STRING_PATTERN)).max(100, 'projectNameTooLong'),
     externalId: Nullable(z.string()),
     metadata: Nullable(Metadata),
     maxConcurrentJobs: Nullable(z.number()),
+    description: z.optional(Nullable(z.string().max(300, 'projectDescriptionTooLong'))),
+    icon: ProjectIcon.optional(),
 })
 
 export type CreateTenantProjectRequest = z.infer<typeof CreateTenantProjectRequest>

@@ -84,6 +84,24 @@ export const connectionUtils = {
       ? accountIdentifier
       : undefined;
   },
+  getAuthTypeLabel(type: ConnectionType): string {
+    switch (type) {
+      case ConnectionType.OAUTH2:
+      case ConnectionType.TENANT_OAUTH2:
+      case ConnectionType.CLOUD_OAUTH2:
+        return t('OAuth 2.0');
+      case ConnectionType.SECRET_TEXT:
+        return t('API Key');
+      case ConnectionType.BASIC_AUTH:
+        return t('Basic Auth');
+      case ConnectionType.CUSTOM_AUTH:
+        return t('Custom Auth');
+      case ConnectionType.OIDC:
+        return t('OIDC');
+      case ConnectionType.NO_AUTH:
+        return t('No Auth');
+    }
+  },
 };
 
 export const newConnectionUtils = {

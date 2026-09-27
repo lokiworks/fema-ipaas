@@ -14,5 +14,21 @@
   "Arguments": "Arguments",
   "The tool's arguments as a JSON object, following the tool's input schema": "The tool's arguments as a JSON object, following the tool's input schema",
   "List tools": "List tools",
-  "List the tools the MCP server offers, with their input schemas": "List the tools the MCP server offers, with their input schemas"
+  "List the tools the MCP server offers, with their input schemas": "List the tools the MCP server offers, with their input schemas",
+  "One connection is one external MCP server reached over Streamable HTTP or SSE": "One connection is one external MCP server reached over Streamable HTTP or SSE",
+  "The endpoint of the MCP server, e.g. https://example.com/mcp": "The endpoint of the MCP server, e.g. https://example.com/mcp",
+  "Transport": "Transport",
+  "Streamable HTTP is the current protocol; SSE is the legacy one some servers still use": "Streamable HTTP is the current protocol; SSE is the legacy one some servers still use",
+  "SSE (legacy)": "SSE (legacy)",
+  "Authentication": "Authentication",
+  "Choose None only for servers that sit inside a network with its own access control": "Choose None only for servers that sit inside a network with its own access control",
+  "None": "None",
+  "Bearer token": "Bearer token",
+  "Sent as the Authorization header; \"Bearer \" is added when missing": "Sent as the Authorization header; \"Bearer \" is added when missing",
+  "MCP server (OAuth 2.0)": "MCP server (OAuth 2.0)",
+  "An MCP server that signs users in with OAuth 2.0": "An MCP server that signs users in with OAuth 2.0",
+  "Authorization URL": "Authorization URL",
+  "Token URL": "Token URL",
+  "Test server connection": "Test server connection",
+  "Check that the worker can reach the MCP server and read its tool list": "Check that the worker can reach the MCP server and read its tool list"
 }

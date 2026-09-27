@@ -1,5 +1,5 @@
 import { ApplicationError, assertNotNullOrUndefined, ErrorCode, generateId, isNil, SeekPage, spreadIfDefined } from '@fema-ipaas/core-utils'
-import { DefaultProjectRole, InvitationStatus, InvitationType, TenantRole, UserInvitation, UserInvitationWithLink } from '@fema-ipaas/shared'
+import { DefaultProjectRole, InvitationStatus, InvitationType, TenantModule, TenantRole, UserInvitation, UserInvitationWithLink } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { EntityManager, IsNull } from 'typeorm'
@@ -65,6 +65,7 @@ export const userInvitationsService = (log: FastifyBaseLogger) => ({
                         id: user.id,
                         tenantId: invitation.tenantId,
                         tenantRole: invitation.tenantRole,
+                        modules: invitation.modules ?? undefined,
                     })
                     break
                 }
@@ -93,6 +94,7 @@ export const userInvitationsService = (log: FastifyBaseLogger) => ({
         tenantRole,
         status,
         entityManager,
+        modules,
     }: CreateInvitationRecordParams): Promise<UserInvitation> {
         const id = generateId()
         await repo(entityManager).upsert({
@@ -104,6 +106,7 @@ export const userInvitationsService = (log: FastifyBaseLogger) => ({
             projectRoleId: type === InvitationType.TENANT ? undefined : projectRoleId!,
             tenantRole: type === InvitationType.PROJECT ? undefined : tenantRole!,
             projectId: type === InvitationType.TENANT ? undefined : projectId!,
+            modules: type === InvitationType.TENANT ? modules ?? null : null,
         }, ['email', 'tenantId', 'projectId'])
 
         return this.getOneOrThrow({
@@ -313,6 +316,7 @@ export type CreateInvitationRecordParams = {
     type: InvitationType
     projectRoleId: string | null
     entityManager?: EntityManager
+    modules?: TenantModule[]
 }
 
 export type FinalizeInvitationParams = {

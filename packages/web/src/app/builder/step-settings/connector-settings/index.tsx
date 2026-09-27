@@ -24,7 +24,7 @@ import { ConnectorNotAvailableAlert } from '../connector-not-available-alert';
 import { useStepSettingsContext } from '../step-settings-context';
 
 import { ConnectionSelect } from './connection-select';
-import { TriggerDedupeSettingsSection } from './trigger-dedupe-settings';
+import { TriggerRunSettings } from './trigger-run-settings';
 
 const ConnectorSettings = React.memo((props: ConnectorSettingsProps) => {
   const {
@@ -256,8 +256,13 @@ const ConnectorSettings = React.memo((props: ConnectorSettingsProps) => {
                   }}
                 ></GenericPropertiesForm>
               </AdvancedSection>
-              <TriggerDedupeSettingsSection disabled={props.readonly} />
             </>
+          )}
+          {showError && selectedTrigger && (
+            <TriggerRunSettings
+              disabled={props.readonly}
+              workflowId={props.workflowId}
+            />
           )}
         </>
       )}

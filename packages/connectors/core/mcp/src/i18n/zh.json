@@ -14,5 +14,21 @@
   "Arguments": "参数",
   "The tool's arguments as a JSON object, following the tool's input schema": "工具参数，JSON 对象，按工具的输入结构填写",
   "List tools": "列出工具",
-  "List the tools the MCP server offers, with their input schemas": "列出 MCP 服务器提供的工具及其输入结构"
+  "List the tools the MCP server offers, with their input schemas": "列出 MCP 服务器提供的工具及其输入结构",
+  "One connection is one external MCP server reached over Streamable HTTP or SSE": "一个连接对应一台可通过 Streamable HTTP 或 SSE 访问的外部 MCP 服务器",
+  "The endpoint of the MCP server, e.g. https://example.com/mcp": "MCP 服务器的地址，例如 https://example.com/mcp",
+  "Transport": "传输方式",
+  "Streamable HTTP is the current protocol; SSE is the legacy one some servers still use": "Streamable HTTP 是现行协议；部分服务器仍只支持旧版 SSE",
+  "SSE (legacy)": "SSE（旧版）",
+  "Authentication": "认证",
+  "Choose None only for servers that sit inside a network with its own access control": "只有服务器位于有其他访问控制的内网时才选择「无」",
+  "None": "无",
+  "Bearer token": "Bearer Token",
+  "Sent as the Authorization header; \"Bearer \" is added when missing": "作为 Authorization 请求头发送；缺少 \"Bearer \" 前缀时会自动补上",
+  "MCP server (OAuth 2.0)": "MCP 服务器（OAuth 2.0）",
+  "An MCP server that signs users in with OAuth 2.0": "使用 OAuth 2.0 登录的 MCP 服务器",
+  "Authorization URL": "授权地址",
+  "Token URL": "Token 地址",
+  "Test server connection": "测试服务器连接",
+  "Check that the worker can reach the MCP server and read its tool list": "检查工作节点能否访问 MCP 服务器并读取工具列表"
 }

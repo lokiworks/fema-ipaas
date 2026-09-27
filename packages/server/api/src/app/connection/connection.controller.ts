@@ -1,4 +1,4 @@
-import { EntityId, Permission, SeekPage } from '@fema-ipaas/core-utils'
+import { EntityId, isNil, Permission, SeekPage } from '@fema-ipaas/core-utils'
 import { wideEvent } from '@fema-ipaas/server-utils'
 import { ApplicationError, ApplicationEventName, ConnectionOwners, ConnectionScope, ConnectionStatus, ConnectionType, ConnectionWithoutSensitiveData, ErrorCode, GetOAuth2AuthorizationUrlRequestBody, GetOAuth2AuthorizationUrlResponse, ListConnectionOwnersRequestQuery, ListConnectionsRequestQuery, PLACEHOLDER_CONNECTION_TYPE, PrincipalType, ReplaceConnectionsRequestBody, SERVICE_KEY_SECURITY_OPENAPI, UpdateConnectionValueRequestBody, UpsertConnectionRequestBody } from '@fema-ipaas/shared'
 import { FastifyPluginCallbackZod } from 'fastify-type-provider-zod'
@@ -9,6 +9,7 @@ import { securityAccess } from '../core/security/authorization/fastify-security'
 import { applicationEvents } from '../helper/application-events'
 import { auditEvents } from '../helper/audit-events'
 import { securityHelper } from '../helper/security-helper'
+import { connectionAccessService } from './connection-access.service'
 import { connectionService } from './connection-service/connection-service'
 import { oauth2Util } from './connection-service/oauth2/oauth2-util'
 import { ConnectionEntity } from './connection.entity'
@@ -16,6 +17,14 @@ import { ConnectionEntity } from './connection.entity'
 export const connectionController: FastifyPluginCallbackZod = (app, _opts, done) => {
     app.post('/', UpsertConnectionRequest, async (request, reply) => {
         const ownerId = await securityHelper.getUserIdFromRequest(request)
+        const existingConnection = await connectionService(request.log).getOneWithoutValue({
+            projectId: request.projectId,
+            tenantId: request.principal.tenant.id,
+            externalId: request.body.externalId,
+        })
+        if (!isNil(existingConnection)) {
+            await connectionAccessService(request.log).assertCanManage({ connection: existingConnection, principal: principalOf(request.principal) })
+        }
         const baseUpsert = {
             tenantId: request.principal.tenant.id,
             projectIds: [request.projectId],
@@ -51,11 +60,16 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
     })
 
     app.post('/:id', UpdateConnectionValueRequest, async (request) => {
+        const existingConnection = await connectionService(request.log).getOneOrThrowWithoutValue({
+            id: request.params.id,
+            tenantId: request.principal.tenant.id,
+            projectId: null,
+        })
+        await connectionAccessService(request.log).assertCanManage({ connection: existingConnection, principal: principalOf(request.principal) })
         const connection = await connectionService(request.log).update({
             id: request.params.id,
             tenantId: request.principal.tenant.id,
-            projectIds: [request.projectId],
-            scope: ConnectionScope.PROJECT,
+            projectIds: null,
             request: {
                 displayName: request.body.displayName,
                 projectIds: null,
@@ -75,6 +89,7 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
             scope,
             tenantId: request.principal.tenant.id,
             projectId: request.projectId,
+            visibleToUserId: request.principal.type === PrincipalType.USER ? request.principal.id : undefined,
             cursorRequest: cursor ?? null,
             limit: limit ?? DEFAULT_PAGE_SIZE,
             externalIds: undefined,
@@ -105,10 +120,16 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
     })
 
     app.post('/:id/revalidate', RevalidateConnectionRequest, async (request): Promise<ConnectionWithoutSensitiveData> => {
+        const connection = await connectionService(request.log).getOneOrThrowWithoutValue({
+            id: request.params.id,
+            tenantId: request.principal.tenant.id,
+            projectId: null,
+        })
+        const projectId = await connectionAccessService(request.log).projectToActIn({ connection, principal: principalOf(request.principal) })
         return connectionService(request.log).revalidate({
             id: request.params.id,
             tenantId: request.principal.tenant.id,
-            projectId: request.projectId,
+            projectId,
         })
     })
 
@@ -127,6 +148,14 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
 
     app.post('/replace', ReplaceConnectionsRequest, async (request, reply) => {
         const { sourceConnectionId, targetConnectionId, deleteSourceConnection, applyToPublishedVersions } = request.body
+        if (deleteSourceConnection) {
+            const sourceConnection = await connectionService(request.log).getOneOrThrowWithoutValue({
+                id: sourceConnectionId,
+                tenantId: request.principal.tenant.id,
+                projectId: request.projectId,
+            })
+            await connectionAccessService(request.log).assertOwner({ connection: sourceConnection, principal: principalOf(request.principal) })
+        }
         await connectionService(request.log).replace({
             sourceConnectionId,
             targetConnectionId,
@@ -143,9 +172,9 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
         const connection = await connectionService(request.log).getOneOrThrowWithoutValue({
             id: request.params.id,
             tenantId: request.principal.tenant.id,
-            projectId: request.projectId,
+            projectId: null,
         })
-        if (connection.scope === ConnectionScope.TENANT) {
+        if (request.principal.type !== PrincipalType.USER && connection.scope === ConnectionScope.TENANT) {
             throw new ApplicationError({
                 code: ErrorCode.AUTHORIZATION,
                 params: {
@@ -153,11 +182,11 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
                 },
             })
         }
+        await connectionAccessService(request.log).assertOwner({ connection, principal: principalOf(request.principal) })
         await connectionService(request.log).delete({
             id: request.params.id,
             tenantId: request.principal.tenant.id,
-            scope: ConnectionScope.PROJECT,
-            projectId: request.projectId,
+            projectId: null,
         })
         applicationEvents(request.log).sendUserEvent(request, {
             action: ApplicationEventName.CONNECTION_DELETED,
@@ -180,6 +209,10 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
         })
     })
     done()
+}
+
+function principalOf(principal: { id: string, type: PrincipalType, tenant: { id: string } }): { id: string, type: PrincipalType, tenantId: string } {
+    return { id: principal.id, type: principal.type, tenantId: principal.tenant.id }
 }
 
 const DEFAULT_PAGE_SIZE = 10
@@ -208,14 +241,7 @@ const UpsertConnectionRequest = {
 
 const UpdateConnectionValueRequest = {
     config: {
-        security: securityAccess.project(
-            [PrincipalType.USER, PrincipalType.SERVICE],
-            Permission.WRITE_CONNECTION,
-            {
-                type: ProjectResourceType.TABLE,
-                tableName: ConnectionEntity,
-            },
-        ),
+        security: securityAccess.publicTenant([PrincipalType.USER, PrincipalType.SERVICE]),
     },
     schema: {
         tags: ['connections'],
@@ -295,14 +321,7 @@ const GetConnectionRequest = {
 
 const RevalidateConnectionRequest = {
     config: {
-        security: securityAccess.project(
-            [PrincipalType.USER, PrincipalType.SERVICE],
-            Permission.WRITE_CONNECTION,
-            {
-                type: ProjectResourceType.TABLE,
-                tableName: ConnectionEntity,
-            },
-        ),
+        security: securityAccess.publicTenant([PrincipalType.USER, PrincipalType.SERVICE]),
     },
     schema: {
         tags: ['connections'],
@@ -340,14 +359,7 @@ const ListConnectionOwnersRequest = {
 
 const DeleteConnectionRequest = {
     config: {
-        security: securityAccess.project(
-            [PrincipalType.USER, PrincipalType.SERVICE],
-            Permission.WRITE_CONNECTION,
-            {
-                type: ProjectResourceType.TABLE,
-                tableName: ConnectionEntity,
-            },
-        ),
+        security: securityAccess.publicTenant([PrincipalType.USER, PrincipalType.SERVICE]),
     },
     schema: {
         tags: ['connections'],

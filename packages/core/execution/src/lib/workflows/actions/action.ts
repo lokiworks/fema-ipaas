@@ -3,6 +3,7 @@ import { STEP_NAME_REGEX } from '@fema-ipaas/core-utils'
 import { VersionType } from '@fema-ipaas/connector-types'
 import { PropertySettings } from '../properties'
 import { SampleDataSetting } from '../sample-data'
+import { ErrorHandlingRule, ErrorStrategy } from './error-handling'
 
 export enum WorkflowActionType {
     CODE = 'CODE',
@@ -42,11 +43,15 @@ export const ActionErrorHandlingOptions = z.object({
     retryOnFailure: z.object({
         value: z.boolean().optional(),
     }).optional(),
+    strategy: ErrorStrategy.optional(),
+    rules: z.array(ErrorHandlingRule).optional(),
 }).optional()
 
 export type ActionErrorHandlingOptions = {
     continueOnFailure?: { value?: boolean }
     retryOnFailure?: { value?: boolean }
+    strategy?: ErrorStrategy
+    rules?: ErrorHandlingRule[]
 } | undefined
 
 export type ContinueOnFailureBranches = {

@@ -1,6 +1,6 @@
 import { assertNotNullOrUndefined, isNil } from '@fema-ipaas/core-utils'
 import { onCallService, UNKNOWN_VERSION, versionUtil } from '@fema-ipaas/server-utils'
-import { ExecutionType, FileCompression, FileLocation, FileType, WorkerGroupScope, WorkerToApiContract, WorkflowOperationType, WorkflowStatus, WorkflowTriggerType } from '@fema-ipaas/shared'
+import { ExecutionType, FileCompression, FileLocation, FileType, WorkerGroupScope, WorkerToApiContract, WorkflowOperationType, WorkflowStatus } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { connectorMetadataService } from '../../connectors/metadata/connector-metadata-service'
 import { redisConnections } from '../../database/redis-connections'
@@ -8,12 +8,14 @@ import { fileService, getLocationForFile } from '../../file/file.service'
 import { s3Helper } from '../../file/s3-helper'
 import { signedFileTransport } from '../../file/signed-file-transport'
 import { rejectedPromiseHandler } from '../../helper/promise-handler'
+import { sleep } from '../../helper/sleep'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
 import { projectService } from '../../project/project-service'
 import { dedupeService } from '../../trigger/dedupe-service'
 import { triggerEventService } from '../../trigger/trigger-events/trigger-event.service'
 import { triggerRunStats } from '../../trigger/trigger-run/trigger-run-stats'
+import { triggerRunPolicy } from '../../trigger/trigger-run-policy'
 import { triggerSourceService } from '../../trigger/trigger-source/trigger-source-service'
 import { engineRunCallbackService } from '../../workflows/execution/engine-run-callback-service'
 import { executionService } from '../../workflows/execution/execution-service'
@@ -24,6 +26,7 @@ import { workflowVersionService } from '../../workflows/workflow-version/workflo
 import { getProjectGroupQueueName, getTenantGroupQueueName, QueueName, WorkerGroupAssignment } from '../job'
 import { jobBroker } from '../job-queue/job-broker'
 import { machineService } from '../machine/machine-service'
+import { workerFleetService } from '../machine/worker-fleet.service'
 
 const getPollQueueName = (assignment: WorkerGroupAssignment | null): string => {
     if (isNil(assignment)) {
@@ -35,6 +38,8 @@ const getPollQueueName = (assignment: WorkerGroupAssignment | null): string => {
 }
 
 let pagedForUnreadableAppVersion = false
+
+const DRAINED_POLL_IDLE_MS = 5000
 
 function pageOnceForUnreadableAppVersion(log: FastifyBaseLogger, appVersion: string): void {
     if (pagedForUnreadableAppVersion) {
@@ -70,6 +75,11 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
                 }
                 return null
             }
+            if (await workerFleetService(log).isDrained({ workerId: input.workerId })) {
+                log.debug({ worker: { id: input.workerId } }, '[workerRpc#poll] Worker is draining, withholding new jobs')
+                await sleep(DRAINED_POLL_IDLE_MS)
+                return null
+            }
             const pollQueueName = getPollQueueName(assignment)
             const job = await jobBroker(log).poll(pollQueueName, connectionId)
             if (job) {
@@ -100,32 +110,28 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
 
             const tenantId = await projectService(log).getTenantId(projectId)
             const connectorDeduped = await dedupeService.filterUniquePayloads(workflowVersionId, payloads)
-            const filterPayloads = await dedupeService.filterByWorkflowDedupe({
-                workflowId: workflowVersion.workflowId,
-                settings: workflowVersion.trigger.type === WorkflowTriggerType.CONNECTOR ? workflowVersion.trigger.settings.dedupe : undefined,
+            return triggerRunPolicy(log).startRuns({
+                workflowVersion,
+                projectId,
+                tenantId,
                 payloads: connectorDeduped,
+                startRun: ({ payload, concurrency }) => executionService(log).start({
+                    workflowId: workflowVersion.workflowId,
+                    environment,
+                    workflowVersionId,
+                    payload,
+                    projectId,
+                    tenantId,
+                    httpRequestId,
+                    workerHandlerId: undefined,
+                    executionType: ExecutionType.BEGIN,
+                    streamStepProgress,
+                    executeTrigger: false,
+                    parentRunId,
+                    failParentOnFailure,
+                    concurrency,
+                }),
             })
-
-            const executions = await Promise.all(
-                filterPayloads.map((payload) =>
-                    executionService(log).start({
-                        workflowId: workflowVersion.workflowId,
-                        environment,
-                        workflowVersionId,
-                        payload,
-                        projectId,
-                        tenantId,
-                        httpRequestId,
-                        workerHandlerId: undefined,
-                        executionType: ExecutionType.BEGIN,
-                        streamStepProgress,
-                        executeTrigger: false,
-                        parentRunId,
-                        failParentOnFailure,
-                    }),
-                ),
-            )
-            return executions
         },
 
         async savePayloads(input) {

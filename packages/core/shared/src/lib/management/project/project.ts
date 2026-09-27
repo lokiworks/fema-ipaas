@@ -49,6 +49,9 @@ export const Project = z.object({
     metadata: Nullable(Metadata),
     workerGroupId: Nullable(z.string()),
     executionDataRetentionDays: Nullable(z.number()),
+    description: Nullable(z.string()),
+    workflowsLimit: Nullable(z.number()),
+    monthlyRunsLimit: Nullable(z.number()),
 })
 
 const projectAnalytics = z.object({

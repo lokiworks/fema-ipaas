@@ -1,9 +1,10 @@
 import { generateId, ProjectId, sanitizeObjectForPostgresql } from '@fema-ipaas/core-utils'
 import { PutStoreEntryRequest, StoreEntry } from '@fema-ipaas/shared'
+import { IsNull } from 'typeorm'
 import { repoFactory } from '../core/db/repo-factory'
-import { StoreEntryEntity } from './store-entry-entity'
+import { IMPLICIT_STORE_INDEX_PREDICATE, StoreEntryEntity, StoreEntrySchema } from './store-entry-entity'
 
-const storeEntryRepo = repoFactory<StoreEntry>(StoreEntryEntity)
+export const storeEntryRepo = repoFactory<StoreEntrySchema>(StoreEntryEntity)
 
 export const storeEntryService = {
     async upsert({ projectId, request }: { projectId: ProjectId, request: PutStoreEntryRequest }): Promise<StoreEntry | null> {
@@ -13,7 +14,10 @@ export const storeEntryService = {
             key: request.key,
             value,
             projectId,
-        }, ['projectId', 'key'])
+        }, {
+            conflictPaths: ['projectId', 'key'],
+            indexPredicate: IMPLICIT_STORE_INDEX_PREDICATE,
+        })
 
         return {
             projectId,
@@ -31,10 +35,22 @@ export const storeEntryService = {
         projectId: ProjectId
         key: string
     }): Promise<StoreEntry | null> {
-        return storeEntryRepo().findOneBy({
+        const entry = await storeEntryRepo().findOneBy({
             projectId,
             key,
+            dataStoreId: IsNull(),
         })
+        if (entry === null) {
+            return null
+        }
+        return {
+            id: entry.id,
+            created: entry.created,
+            updated: entry.updated,
+            projectId: entry.projectId,
+            key: entry.key,
+            value: entry.value,
+        }
     },
     async delete({
         projectId,
@@ -46,6 +62,7 @@ export const storeEntryService = {
         await storeEntryRepo().delete({
             projectId,
             key,
+            dataStoreId: IsNull(),
         })
     },
 }

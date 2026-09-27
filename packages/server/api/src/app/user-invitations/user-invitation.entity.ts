@@ -1,9 +1,10 @@
-import { Project, UserInvitation } from '@fema-ipaas/shared'
+import { Project, TenantModule, UserInvitation } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import { BaseColumnSchemaPart } from '../database/database-common'
 
 type UserInvitationSchema = UserInvitation & {
     project?: Project
+    modules?: TenantModule[] | null
 }
 export const UserInvitationEntity = new EntitySchema<UserInvitationSchema>({
     name: 'user_invitation',
@@ -34,6 +35,11 @@ export const UserInvitationEntity = new EntitySchema<UserInvitationSchema>({
         },
         projectRoleId: {
             type: String,
+            nullable: true,
+        },
+        modules: {
+            type: String,
+            array: true,
             nullable: true,
         },
     },

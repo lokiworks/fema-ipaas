@@ -2,6 +2,7 @@ import { createConnector } from '@fema-ipaas/connector-sdk';
 import { ConnectorCategory } from '@fema-ipaas/connector-sdk';
 import { callTool } from './lib/actions/call-tool';
 import { listTools } from './lib/actions/list-tools';
+import { testServer } from './lib/actions/test-server';
 import { mcpAuth } from './lib/auth';
 
 export const mcp = createConnector({
@@ -12,6 +13,6 @@ export const mcp = createConnector({
   auth: mcpAuth,
   categories: [ConnectorCategory.ARTIFICIAL_INTELLIGENCE, ConnectorCategory.DEVELOPER_TOOLS],
   authors: ['lokiworks'],
-  actions: [callTool, listTools],
+  actions: [callTool, listTools, testServer],
   triggers: [],
 });

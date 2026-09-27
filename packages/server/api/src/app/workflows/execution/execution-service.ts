@@ -1,6 +1,6 @@
 import { ApplicationError, Cursor, ErrorCode, ExecutionId, generateId, isNil, ProjectId, SeekPage, TenantId, WorkflowId, WorkflowVersionId } from '@fema-ipaas/core-utils'
 import { dayjsUtil, wideEvent } from '@fema-ipaas/server-utils'
-import { ConnectionHealthSummary, ConnectorUsageSummary, ExecuteWorkflowJobData, Execution, ExecutionCountByStatus, ExecutionStatus, ExecutionType, ExecutionWithRetryError, ExecutioOutputFile, FileType, isExecutionStateTerminal, JobPayload, LATEST_JOB_DATA_SCHEMA_VERSION, LogSliceRef, RecentlyEditedWorkflow, ResumeReason, RunEnvironment, RunInternalError, SampleDataFileType, StepOutput, StepOutputStatus, StepOutputType, StreamStepProgress, WorkerJobType, WorkflowRetryStrategy } from '@fema-ipaas/shared'
+import { ConnectionHealthSummary, ConnectorUsageSummary, ExecuteWorkflowJobData, Execution, ExecutionCountByStatus, ExecutionStatus, ExecutionType, ExecutionWithRetryError, ExecutioOutputFile, FileType, isExecutionStateTerminal, JobPayload, LATEST_JOB_DATA_SCHEMA_VERSION, LogSliceRef, RecentlyEditedWorkflow, ResumeReason, RunConcurrencyTicket, RunEnvironment, RunInternalError, SampleDataFileType, StepOutput, StepOutputStatus, StepOutputType, StreamStepProgress, WorkerJobType, WorkflowRetryStrategy } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import pLimit from 'p-limit'
 import { ArrayContains, In, IsNull, Not, Repository, SelectQueryBuilder } from 'typeorm'
@@ -15,6 +15,7 @@ import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
 import { privacyService } from '../../privacy/privacy.service'
 import { projectService } from '../../project/project-service'
+import { workflowConcurrencyQueue } from '../../workers/job-queue/interceptors/workflow-concurrency-interceptor'
 import { jobQueue, JobType } from '../../workers/job-queue/job-queue'
 import { payloadOffloader } from '../../workers/payload-offloader'
 import { sampleDataService } from '../step-run/sample-data.service'
@@ -283,6 +284,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
         tenantId,
         stepNameToTest,
         environment,
+        concurrency,
     }: StartParams): Promise<Execution> {
         const newExecution = await queueOrCreateInstantly({
             projectId,
@@ -312,6 +314,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
             workerHandlerId,
             httpRequestId,
             streamStepProgress,
+            concurrency,
         }, log)
 
         await executionSideEffects(log).onStart({ execution: newExecution, tenantId })
@@ -732,6 +735,7 @@ export async function addToQueue(params: AddToQueueParams, log: FastifyBaseLogge
         sampleData: params.sampleData,
         logsFileId,
         logPrivacy,
+        concurrency: params.concurrency,
     }
     const data: ExecuteWorkflowJobData = params.executionType === ExecutionType.RESUME
         ? {
@@ -744,8 +748,10 @@ export async function addToQueue(params: AddToQueueParams, log: FastifyBaseLogge
             executionType: ExecutionType.BEGIN,
             executeTrigger: params.executeTrigger,
         }
+    const jobId = params.jobId ?? params.execution.id
+    await workflowConcurrencyQueue.register({ jobId, jobData: data, log })
     await jobQueue(log).add({
-        id: params.jobId ?? params.execution.id,
+        id: jobId,
         type: JobType.ONE_TIME,
         data,
     })
@@ -890,6 +896,7 @@ type AddToQueueParamsCommon = {
     streamStepProgress: StreamStepProgress
     sampleData?: Record<string, unknown>
     jobId?: string
+    concurrency?: RunConcurrencyTicket
 }
 
 export type AddToQueueParams = AddToQueueParamsCommon & (
@@ -914,6 +921,7 @@ type StartParams = {
     httpRequestId: string | undefined
     streamStepProgress: StreamStepProgress
     sampleData?: Record<string, unknown>
+    concurrency?: RunConcurrencyTicket
 }
 
 

@@ -90,6 +90,24 @@ export const TenantEntity = new EntitySchema<TenantSchema>({
             type: 'jsonb',
             nullable: true,
         },
+        welcomeText: {
+            type: String,
+            nullable: true,
+        },
+        passwordMinLength: {
+            type: Number,
+            nullable: false,
+            default: 10,
+        },
+        sessionDurationDays: {
+            type: Number,
+            nullable: false,
+            default: 7,
+        },
+        moduleAccessSettings: {
+            type: 'jsonb',
+            nullable: true,
+        },
     },
     indices: [
         {

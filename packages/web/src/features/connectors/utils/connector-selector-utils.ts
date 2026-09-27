@@ -28,6 +28,10 @@ import {
   WorkflowVersion,
   WorkflowOperationType,
   AUTHENTICATION_PROPERTY_NAME,
+  errorHandlingUtils,
+  ErrorStrategyMode,
+  ScheduleOverlapPolicy,
+  scheduleUtils,
 } from '@fema-ipaas/shared';
 import { useRef } from 'react';
 
@@ -301,7 +305,11 @@ const getDefaultStepValues = ({
             connectorVersion:
               connectorSelectorItem.connectorMetadata.connectorVersion,
             input,
-            errorHandlingOptions,
+            errorHandlingOptions:
+              connectorSelectorItem.connectorMetadata.connectorName ===
+              AI_CONNECTOR_NAME
+                ? AI_ERROR_HANDLING_OPTIONS
+                : errorHandlingOptions,
             propertySettings: Object.fromEntries(
               Object.entries(input).map(([key]) => [
                 key,
@@ -334,6 +342,11 @@ const getDefaultStepValues = ({
             connectorVersion:
               connectorSelectorItem.connectorMetadata.connectorVersion,
             input,
+            ...(scheduleUtils.isScheduleConnector(
+              connectorSelectorItem.connectorMetadata.connectorName,
+            )
+              ? { scheduleOverlap: ScheduleOverlapPolicy.SKIP }
+              : {}),
             propertySettings: Object.fromEntries(
               Object.entries(input).map(([key]) => [
                 key,
@@ -392,6 +405,16 @@ const useAdjustConnectorListHeightToAvailableSpace = () => {
     popoverTriggerRef,
   };
 };
+const AI_CONNECTOR_NAME = '@fema-ipaas/connector-ai';
+const AI_ERROR_HANDLING_OPTIONS: CodeAction['settings']['errorHandlingOptions'] =
+  {
+    continueOnFailure: { value: false },
+    retryOnFailure: { value: true },
+    strategy: errorHandlingUtils.withRetry({
+      mode: ErrorStrategyMode.RETRY_THEN_STOP,
+    }),
+    rules: [],
+  };
 const MAX_CONNECTOR_SELECTOR_LIST_HEIGHT = 300 as const;
 const MIN_CONNECTOR_SELECTOR_LIST_HEIGHT = 100 as const;
 const SEARCH_INPUT_DIV_HEIGHT = 113 as const;

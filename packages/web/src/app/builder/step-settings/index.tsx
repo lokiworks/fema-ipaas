@@ -293,7 +293,9 @@ const StepSettingsContainer = () => {
           {t('Output')}
         </TabsTrigger>
         <TabsTrigger value="error" className="px-2">
-          {t('Error Handling')}
+          {modifiedStep.type === WorkflowTriggerType.CONNECTOR
+            ? t('Run settings')
+            : t('Error Handling')}
         </TabsTrigger>
       </TabsList>
       {(['action', 'input', 'error'] as const).map((section) => (

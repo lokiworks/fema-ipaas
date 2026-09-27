@@ -1,7 +1,8 @@
-import { DiagnosticsBundle, GetDiagnosticsResponse, GetSystemHealthChecksResponse, PrincipalType, SetupChecklist, SetupStatus, SystemOverview, TenantMetricsHealthHistory, TenantMetricsLive, TenantMetricsReport, TenantMetricsReportRequest } from '@fema-ipaas/shared'
+import { ComponentHealthCheck, ComponentHealthReport, DiagnosticsBundle, GetDiagnosticsResponse, GetSystemHealthChecksResponse, PrincipalType, SetupChecklist, SetupStatus, SystemOverview, TenantMetricsHealthHistory, TenantMetricsLive, TenantMetricsReport, TenantMetricsReportRequest } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { securityAccess } from '../core/security/authorization/fastify-security'
+import { componentHealthService } from './component-health.service'
 import { healthMetricsService } from './health-metrics.service'
 import { healthStatusService } from './health.service'
 import { systemOverviewService } from './system-overview.service'
@@ -29,6 +30,14 @@ const healthController: FastifyPluginAsyncZod = async (app) => {
     ),
     app.get('/system', GetSystemHealthChecks, async (request, reply) => {
         await reply.status(StatusCodes.OK).send(await healthStatusService(app.log).getSystemHealthChecks(request.principal.tenant.id))
+    })
+
+    app.get('/components', GetComponentHealthRequest, async (request): Promise<ComponentHealthReport> => {
+        return componentHealthService(request.log).check({ tenantId: request.principal.tenant.id })
+    })
+
+    app.post('/backup-confirmation', ConfirmBackupRequest, async (request): Promise<ComponentHealthCheck> => {
+        return componentHealthService(request.log).confirmBackup()
     })
 
     app.get('/run-metrics', GetRunMetricsRequest, async (request) => {
@@ -67,6 +76,28 @@ const healthController: FastifyPluginAsyncZod = async (app) => {
     app.get('/diagnostics-bundle', GetDiagnosticsBundleRequest, async (request) => {
         return systemOverviewService(request.log).getDiagnosticsBundle({ tenantId: request.principal.tenant.id })
     })
+}
+
+const GetComponentHealthRequest = {
+    config: {
+        security: securityAccess.tenantAdminOnly([PrincipalType.USER]),
+    },
+    schema: {
+        response: {
+            [StatusCodes.OK]: ComponentHealthReport,
+        },
+    },
+}
+
+const ConfirmBackupRequest = {
+    config: {
+        security: securityAccess.tenantAdminOnly([PrincipalType.USER]),
+    },
+    schema: {
+        response: {
+            [StatusCodes.OK]: ComponentHealthCheck,
+        },
+    },
 }
 
 const GetSystemHealthChecks = {

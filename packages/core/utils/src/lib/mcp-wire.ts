@@ -57,6 +57,8 @@ function toolsOf(listResult: Record<string, unknown>): McpTool[] {
         name: tool.name,
         description: tool.description ?? '',
         inputSchema: tool.inputSchema ?? { type: 'object', properties: {} },
+        ...spreadTitle(tool.title ?? tool.annotations?.title),
+        ...(tool.annotations?.readOnlyHint === undefined ? {} : { readOnly: tool.annotations.readOnlyHint }),
     }))
 }
 
@@ -95,6 +97,10 @@ function error({ id, code, message }: { id: string | number | null, code: number
     return { jsonrpc: '2.0', id, error: { code, message } }
 }
 
+function spreadTitle(title: string | undefined): { title?: string } {
+    return title === undefined || title.trim().length === 0 ? {} : { title: title.trim() }
+}
+
 function normalizeAuthorization(value: string): string {
     const trimmed = value.trim()
     return /^(bearer|basic)\s/i.test(trimmed) ? trimmed : `Bearer ${trimmed}`
@@ -128,8 +134,13 @@ const JsonRpcRequest = z.object({
 const ToolsListResult = z.object({
     tools: z.array(z.object({
         name: z.string(),
+        title: z.optional(z.string()),
         description: z.optional(z.string()),
         inputSchema: z.optional(JsonObject),
+        annotations: z.optional(z.object({
+            title: z.optional(z.string()),
+            readOnlyHint: z.optional(z.boolean()),
+        })),
     })),
 })
 
@@ -157,6 +168,8 @@ export type McpTool = {
     name: string
     description: string
     inputSchema: Record<string, unknown>
+    title?: string
+    readOnly?: boolean
 }
 
 export type McpToolResult = {

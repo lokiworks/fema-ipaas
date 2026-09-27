@@ -9,9 +9,9 @@ import {
 } from '@fema-ipaas/shared';
 import { ReactFlowProvider } from '@xyflow/react';
 import { t } from 'i18next';
-import { ArrowLeft, ArrowRight, Link, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Link, ExternalLink } from 'lucide-react';
 import { useMemo, useState, useRef, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { BuilderStateProvider } from '@/app/builder/state/builder-state-provider';
@@ -21,10 +21,8 @@ import { TagWithBright } from '@/components/custom/tag-with-bright';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useSidebar } from '@/components/ui/sidebar-shadcn';
-import { UseTemplateDialog } from '@/features/templates/components/use-template-dialog';
-import { authenticationSession } from '@/lib/authentication-session';
+import { TemplateUseAction } from '@/features/templates/components/template-use-action';
 import { formatUtils } from '@/lib/format-utils';
-import { FROM_QUERY_PARAM } from '@/lib/navigation-utils';
 
 import { ConnectorCard } from './connector-card';
 import { WorkflowCard } from './workflow-card';
@@ -34,18 +32,14 @@ type TemplateDetailsPageProps = {
 };
 
 const TemplateDetailsPage = ({ template }: TemplateDetailsPageProps) => {
-  const token = authenticationSession.getToken();
-  const location = useLocation();
   const navigate = useNavigate();
   const [hasCanvasBeenInitialised, setHasCanvasBeenInitialised] =
     useState(false);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedWorkflowIndex, setSelectedWorkflowIndex] = useState(0);
   const [renderKey, setRenderKey] = useState(0);
   const { setOpen } = useSidebar();
   const hasClosedSidebar = useRef(false);
-  const isNotAuthenticated = isNil(token);
 
   const mockWorkflow = useMemo<PopulatedWorkflow | null>(() => {
     if (!template || !template.workflows || template.workflows.length === 0) {
@@ -98,16 +92,6 @@ const TemplateDetailsPage = ({ template }: TemplateDetailsPageProps) => {
     }, 50);
     return () => clearTimeout(timer);
   }, [selectedWorkflowIndex]);
-
-  const handleUseTemplate = () => {
-    if (isNil(token)) {
-      navigate(
-        `/sign-in?${FROM_QUERY_PARAM}=${location.pathname}${location.search}`,
-      );
-      return;
-    }
-    setIsDialogOpen(true);
-  };
 
   const handleUseWithGuide = () => {
     if (template.blogUrl) {
@@ -176,14 +160,7 @@ const TemplateDetailsPage = ({ template }: TemplateDetailsPageProps) => {
 
               <div className="flex flex-col gap-8 min-w-0">
                 <div className="flex flex-row justify-center gap-3 min-w-0">
-                  <Button
-                    onClick={handleUseTemplate}
-                    size="xl"
-                    className="flex-1"
-                  >
-                    {t('Use Template')}
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
+                  <TemplateUseAction template={template} />
                   {template.type !== TemplateType.SHARED &&
                     !isNil(template.blogUrl) &&
                     template.blogUrl !== '' && (
@@ -304,13 +281,6 @@ const TemplateDetailsPage = ({ template }: TemplateDetailsPageProps) => {
           </div>
         </div>
       </div>
-      {!isNotAuthenticated && (
-        <UseTemplateDialog
-          template={template}
-          open={isDialogOpen}
-          onOpenChange={setIsDialogOpen}
-        />
-      )}
     </div>
   );
 };

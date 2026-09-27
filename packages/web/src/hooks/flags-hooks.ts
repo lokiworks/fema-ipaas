@@ -5,6 +5,7 @@ import { flagsApi, FlagsMap } from '../api/flags-api';
 
 type WebsiteBrand = {
   websiteName: string;
+  welcomeText?: string | null;
   logos: {
     fullLogoUrl: string;
     favIconUrl: string;

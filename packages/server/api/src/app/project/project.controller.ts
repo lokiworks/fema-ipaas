@@ -1,10 +1,12 @@
-import { ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil, SeekPage } from '@fema-ipaas/core-utils'
-import { CreateTenantProjectRequest, ListProjectRequestForTenantQueryParams, PrincipalType, ProjectType, ProjectWithLimits, SERVICE_KEY_SECURITY_OPENAPI, UpdateProjectTenantRequest } from '@fema-ipaas/shared'
+import { ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil, Permission, SeekPage } from '@fema-ipaas/core-utils'
+import { CreateTenantProjectRequest, DefaultProjectRole, ListProjectRequestForTenantQueryParams, PrincipalType, ProjectType, ProjectWithLimits, SERVICE_KEY_SECURITY_OPENAPI, UpdateProjectTenantRequest } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
+import { ProjectResourceType } from '../core/security/authorization/common'
 import { securityAccess } from '../core/security/authorization/fastify-security'
 import { userService } from '../user/user-service'
+import { projectMemberService } from './project-member.service'
 import { projectRepo, projectService } from './project-service'
 import { projectSideEffects } from './project-side-effects'
 
@@ -31,15 +33,21 @@ export const projectController: FastifyPluginAsyncZod = async (app) => {
 
     app.post('/', CreateProjectRequest, async (request, reply) => {
         const tenantId = request.principal.tenant.id
+        await projectService(request.log).assertDisplayNameAvailable({ tenantId, displayName: request.body.displayName })
         const project = await projectService(request.log).create({
             ownerId: request.principal.id,
-            displayName: request.body.displayName,
+            displayName: request.body.displayName.trim(),
             type: ProjectType.TEAM,
             tenantId,
             ...(isNil(request.body.externalId) ? {} : { externalId: request.body.externalId }),
             ...(isNil(request.body.metadata) ? {} : { metadata: request.body.metadata }),
             ...(isNil(request.body.maxConcurrentJobs) ? {} : { maxConcurrentJobs: request.body.maxConcurrentJobs }),
+            ...(isNil(request.body.description) ? {} : { description: request.body.description.trim() }),
+            ...(isNil(request.body.icon) ? {} : { icon: request.body.icon }),
         })
+        if (request.principal.type === PrincipalType.USER) {
+            await projectMemberService(request.log).upsert({ projectId: project.id, userId: request.principal.id, role: DefaultProjectRole.ADMIN })
+        }
         return reply.status(StatusCodes.CREATED).send(await projectSideEffects(request.log).enrich(project))
     })
 
@@ -49,6 +57,9 @@ export const projectController: FastifyPluginAsyncZod = async (app) => {
             tenantId: request.principal.tenant.id,
             log: request.log,
         })
+        if (!isNil(request.body.displayName) && request.body.displayName !== project.displayName) {
+            await projectService(request.log).assertDisplayNameAvailable({ tenantId: request.principal.tenant.id, displayName: request.body.displayName, excludeProjectId: project.id })
+        }
         const updated = await projectService(request.log).update(project.id, {
             type: project.type,
             ...request.body,
@@ -98,7 +109,7 @@ const ListProjectsRequest = {
 
 const CreateProjectRequest = {
     config: {
-        security: securityAccess.tenantAdminOnly([PrincipalType.USER, PrincipalType.SERVICE]),
+        security: securityAccess.publicTenant([PrincipalType.USER, PrincipalType.SERVICE]),
     },
     schema: {
         tags: ['projects'],
@@ -129,7 +140,10 @@ const UpdateProjectRequest = {
 
 const DeleteProjectRequest = {
     config: {
-        security: securityAccess.tenantAdminOnly([PrincipalType.USER, PrincipalType.SERVICE]),
+        security: securityAccess.project([PrincipalType.USER, PrincipalType.SERVICE], Permission.WRITE_PROJECT, {
+            type: ProjectResourceType.PARAM,
+            paramKey: 'id',
+        }),
     },
     schema: {
         tags: ['projects'],

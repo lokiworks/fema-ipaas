@@ -1,4 +1,5 @@
 import { CodeAction, WorkflowAction, WorkflowActionType, ConnectorAction } from '../actions/action'
+import { errorHandlingUtils } from '../actions/error-handling'
 import { WorkflowTrigger } from '../triggers/trigger'
 import { workflowStructureUtil } from './workflow-structure-util'
 
@@ -173,7 +174,7 @@ function hasContinueOnFailureBranches(step: Step | WorkflowAction): step is Code
     if (step.type !== WorkflowActionType.CODE && step.type !== WorkflowActionType.CONNECTOR) {
         return false
     }
-    return step.settings.errorHandlingOptions?.continueOnFailure?.value ?? false
+    return errorHandlingUtils.usesBranches(step.settings.errorHandlingOptions)
 }
 
 function getContinueOnFailureBranchPair(step: CodeAction | ConnectorAction): (WorkflowAction | undefined)[] {

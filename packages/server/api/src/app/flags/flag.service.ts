@@ -100,7 +100,9 @@ export const flagService = (log: FastifyBaseLogger) => ({
             },
             {
                 id: FlagId.THIRD_PARTY_AUTH_PROVIDER_REDIRECT_URL,
-                value: null,
+                value: await domainHelper.getPublicUrl({
+                    path: '/redirect',
+                }),
                 created,
                 updated,
             },

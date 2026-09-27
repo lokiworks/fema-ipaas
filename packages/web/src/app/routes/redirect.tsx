@@ -19,7 +19,7 @@ const RedirectPage: React.FC = React.memo(() => {
     const code = new URLSearchParams(location.search).get('code');
 
     if (window.opener && code) {
-      window.opener.postMessage({ code }, '*');
+      window.opener.postMessage({ code }, window.location.origin);
       return;
     }
     if (!window.opener && !code) {

@@ -39,7 +39,7 @@ Encrypted credential records (OAuth2 tokens, API keys, basic/custom auth, OIDC p
 - **重新授权不改所有者、不改可用范围。** `upsert` 命中已有连接时沿用原 `ownerId`、`projectIds`、`scope`；以前可编辑成员重新授权会顺手把自己变成所有者，并把多项目连接缩成当前项目。
 - **引用判断只看新增的连接。** `applyOperation` 比较操作前后的 `connectionIds`，只校验新出现的；别人配置好的步骤照样能改其他字段。`USE_AS_DRAFT`（回滚草稿）不校验。
 - **`externalId` 在租户内不唯一。** 两个项目可以有同名 externalId 的连接，所以按 externalId 找连接时一定要再按项目可用性过滤（`connectionAvailability.whereAvailableIn`），不能只按租户找。
-- **自托管下 OAuth2 授权码流程走不通。** 回调地址来自 flag `THIRD_PARTY_AUTH_PROVIDER_REDIRECT_URL`，`flag.service.ts` 里写死为 `null`，连接弹窗显示并发给对方的是 `no_redirect_url_found`。前端 `/redirect` 路由其实在。连接器开发的认证测试和 MCP 服务器表单用的是同一个 flag。
+- **OAuth2 回调地址是 `<FEMA_FRONTEND_URL>/redirect`。** 来自 flag `THIRD_PARTY_AUTH_PROVIDER_REDIRECT_URL`，以前写死为 `null`，界面显示 `no_redirect_url_found`，自托管下授权码流程走不通。回调页只把授权码 `postMessage` 给同源的打开者；用和 `FEMA_FRONTEND_URL` 不同的地址（比如 IP）访问平台时，弹窗授权会收不到授权码，要用配置的那个地址访问。连接器开发的认证测试和 MCP 服务器表单用的是同一个 flag。
 - **没有租户级 OAuth 应用。** `CLOUD_OAUTH2` 一律抛 `INVALID_CLOUD_CLAIM`，`TENANT_OAUTH2` 的实现没有注入（`setTenantOAuthService` 无调用方），前端 `useConnectorsOAuth2AppsMap` 返回空对象，所以每个人都得在连接弹窗里自己填 Client ID 和 Secret。国产系统（飞书、北森）目前走 `CustomAuth` 填自建应用的 App ID 和 Secret，不受这条影响。
 
 ### Key files

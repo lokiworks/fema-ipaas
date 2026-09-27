@@ -8,7 +8,10 @@ type NewProjectDialogProps = {
   onCreate?: (project: ProjectWithLimits) => void;
 };
 
-export const NewProjectDialog = ({ children, onCreate }: NewProjectDialogProps) => {
+export const NewProjectDialog = ({
+  children,
+  onCreate,
+}: NewProjectDialogProps) => {
   const [open, setOpen] = useState(false);
   return (
     <>

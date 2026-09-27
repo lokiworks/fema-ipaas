@@ -35,10 +35,13 @@ export function NodesTab() {
   const { data: fleet, isLoading } = tenantAccessHooks.useWorkerFleet();
   const [addOpen, setAddOpen] = useState(false);
   const nodes = fleet?.nodes ?? [];
-  const online = nodes.filter((node) => node.status === WorkerNodeStatus.ONLINE);
+  const online = nodes.filter(
+    (node) => node.status === WorkerNodeStatus.ONLINE,
+  );
   const capacity = online.reduce((sum, node) => sum + node.concurrency, 0);
   const lagging = nodes.filter(
-    (node) => node.status !== WorkerNodeStatus.OFFLINE && !node.versionMatchesApp,
+    (node) =>
+      node.status !== WorkerNodeStatus.OFFLINE && !node.versionMatchesApp,
   );
 
   return (
@@ -86,12 +89,18 @@ export function NodesTab() {
             {nodes.length === 0 && (
               <TableRow>
                 <TableCell colSpan={7} className="text-muted-foreground">
-                  {t('No workers yet. Add at least one worker so workflows can run.')}
+                  {t(
+                    'No workers yet. Add at least one worker so workflows can run.',
+                  )}
                 </TableCell>
               </TableRow>
             )}
             {nodes.map((node) => (
-              <NodeRow key={node.id} node={node} appVersion={fleet?.appVersion ?? ''} />
+              <NodeRow
+                key={node.id}
+                node={node}
+                appVersion={fleet?.appVersion ?? ''}
+              />
             ))}
           </TableBody>
         </Table>
@@ -105,10 +114,19 @@ export function NodesTab() {
   );
 }
 
-function NodeRow({ node, appVersion }: { node: WorkerNode; appVersion: string }) {
+function NodeRow({
+  node,
+  appVersion,
+}: {
+  node: WorkerNode;
+  appVersion: string;
+}) {
   const heartbeat = useTimeAgo(new Date(node.lastHeartbeatAt));
-  const { mutate: act, mutateAsync: actAsync, isPending } =
-    tenantAccessHooks.useWorkerAction();
+  const {
+    mutate: act,
+    mutateAsync: actAsync,
+    isPending,
+  } = tenantAccessHooks.useWorkerAction();
   const offline = node.status === WorkerNodeStatus.OFFLINE;
   return (
     <TableRow>
@@ -143,9 +161,12 @@ function NodeRow({ node, appVersion }: { node: WorkerNode; appVersion: string })
                 <AlertCircle className="size-4 text-warning-700" />
               </TooltipTrigger>
               <TooltipContent>
-                {t('Does not match the app version {version}; upgrade this worker', {
-                  version: appVersion,
-                })}
+                {t(
+                  'Does not match the app version {version}; upgrade this worker',
+                  {
+                    version: appVersion,
+                  },
+                )}
               </TooltipContent>
             </Tooltip>
           )}

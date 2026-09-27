@@ -22,8 +22,9 @@ export function HomeRecentVisits({
 }) {
   return (
     <HomeSection
-      title={t('Recent')}
+      title={t('Recently visited')}
       description={t('Workflows and data stores you opened recently')}
+      tourTarget="home-recent"
     >
       {visits.length === 0 ? (
         <Card className="flex items-center gap-3 p-4">

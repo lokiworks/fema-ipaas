@@ -118,7 +118,10 @@ function canCreateSubfolder({
   if (folders.length >= FOLDER_LIMIT_PER_PROJECT) {
     return { allowed: false, reason: 'limit' };
   }
-  if (folderId !== null && folderDepth({ folderId, folders }) >= FOLDER_MAX_DEPTH) {
+  if (
+    folderId !== null &&
+    folderDepth({ folderId, folders }) >= FOLDER_MAX_DEPTH
+  ) {
     return { allowed: false, reason: 'depth' };
   }
   return { allowed: true, reason: null };

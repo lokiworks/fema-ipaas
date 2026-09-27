@@ -9,6 +9,7 @@ export enum LeftSideBarType {
   RUNS = 'runs',
   VERSIONS = 'versions',
   VALIDATION = 'validation',
+  SEARCH = 'search',
 }
 
 export enum ChatDrawerSource {

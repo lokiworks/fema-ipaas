@@ -6,10 +6,10 @@ import { repoFactory } from '../../core/db/repo-factory'
 import { transaction } from '../../core/db/transaction'
 import { buildPaginator } from '../../helper/pagination/build-paginator'
 import { paginationHelper } from '../../helper/pagination/pagination-utils'
-import { workflowService } from '../workflow/workflow.service'
 import { workflowRepo } from '../workflow/workflow.repo'
-import { FolderEntity } from './folder.entity'
+import { workflowService } from '../workflow/workflow.service'
 import { folderTreeUtils } from './folder-tree-utils'
+import { FolderEntity } from './folder.entity'
 
 export const folderRepo = repoFactory(FolderEntity)
 

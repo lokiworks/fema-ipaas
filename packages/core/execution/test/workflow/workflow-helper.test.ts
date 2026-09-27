@@ -314,6 +314,7 @@ describe('Workflow Helper', () => {
                     },
                 },
                 triggerName: 'cron_expression',
+                displayNumber: 'schedule-trigger-1',
             },
             displayName: 'Cron Expression',
             nextAction: {
@@ -323,6 +324,7 @@ describe('Workflow Helper', () => {
                 type: WorkflowActionType.LOOP_ON_ITEMS,
                 settings: {
                     items: 'items',
+                    displayNumber: 'loop-1',
                 },
                 lastUpdatedDate: expect.any(String),
                 firstLoopAction: {
@@ -333,6 +335,7 @@ describe('Workflow Helper', () => {
                     lastUpdatedDate: expect.any(String),
                     settings: {
                         input: {},
+                        displayNumber: 'script-1',
                         sourceCode: {
                             code: 'test',
                             packageJson: '{}',
@@ -347,6 +350,7 @@ describe('Workflow Helper', () => {
                     lastUpdatedDate: expect.any(String),
                     settings: {
                         input: {},
+                        displayNumber: 'script-2',
                         sourceCode: {
                             code: 'test',
                             packageJson: '{}',

@@ -1,5 +1,5 @@
 import { t } from 'i18next';
-import { Check, ChevronRight } from 'lucide-react';
+import { Check, ChevronRight, Compass } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { MessageTooltip } from '@/components/custom/message-tooltip';
@@ -16,6 +16,7 @@ export function HomeOnboardingCard({
   canCreateWorkflow,
   onProjectCreated,
   onNewWorkflow,
+  onStartTour,
 }: {
   productName: string;
   hasProject: boolean;
@@ -23,13 +24,17 @@ export function HomeOnboardingCard({
   canCreateWorkflow: boolean;
   onProjectCreated: () => void;
   onNewWorkflow: () => void;
+  onStartTour: () => void;
 }) {
   const [dismissed, setDismissed] = useState(readDismissed);
   if (dismissed) {
     return null;
   }
   return (
-    <section className="flex flex-col gap-4 rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 to-background p-5 md:flex-row md:items-center md:gap-6">
+    <section
+      data-tour="home-start"
+      className="flex flex-col gap-4 rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 to-background p-5 md:flex-row md:items-center md:gap-6"
+    >
       <div className="flex flex-1 flex-col gap-1">
         <span className="text-base font-bold">
           {t('Welcome to {productName}', { productName })}
@@ -39,7 +44,11 @@ export function HomeOnboardingCard({
             'Two steps to your first automation: create a project, then create a workflow in it.',
           )}
         </span>
-        <div className="pt-3">
+        <div className="flex gap-2 pt-3">
+          <Button size="sm" onClick={onStartTour}>
+            <Compass className="size-4" />
+            {t('Start the guided tour')}
+          </Button>
           <Button
             size="sm"
             variant="ghost"

@@ -30,6 +30,7 @@ import {
   CONNECTOR_GRID_ROW_HEIGHT,
   ConnectorGridItem,
 } from './connector-grid-item';
+import { McpServerPickerEntries } from './mcp-server-picker-entries';
 import { NoResultsFound } from './no-results-found';
 
 type ConnectorsCardListProps = {
@@ -153,6 +154,10 @@ export const ConnectorsCardList: React.FC<ConnectorsCardListProps> = ({
         )}
 
         {noResultsFound && <NoResultsFound />}
+        {selectedTab === ConnectorSelectorTabType.APPS &&
+          searchQuery.length === 0 && (
+            <McpServerPickerEntries operation={operation} />
+          )}
       </div>
 
       {showActionsOrTriggersList && (

@@ -55,6 +55,7 @@ export const WorkflowCanvas = React.memo(
       rightSidebar,
       notes,
       canvasOrientation,
+      collapsedSteps,
     ] = useBuilderStateContext((state) => {
       return [
         state.workflowVersion,
@@ -66,6 +67,7 @@ export const WorkflowCanvas = React.memo(
         state.rightSidebar,
         state.workflowVersion.notes,
         state.canvasOrientation,
+        state.collapsedSteps,
       ];
     });
     const containerRef = useRef<HTMLDivElement>(null);
@@ -93,12 +95,13 @@ export const WorkflowCanvas = React.memo(
       workflowVersion,
       notes,
       selectedStep ?? '',
-    )}-${canvasOrientation}`;
+    )}-${canvasOrientation}-${collapsedSteps.join(',')}`;
     const graph = useMemo(() => {
       return workflowCanvasUtils.createWorkflowGraph({
         version: workflowVersion,
         notes,
         orientation: canvasOrientation,
+        collapsedSteps,
       });
     }, [graphKey]);
     const [contextMenuType, setContextMenuType] = useState<ContextMenuType>(
@@ -233,8 +236,9 @@ export const WorkflowCanvas = React.memo(
               draggable={false}
               edgesFocusable={false}
               elevateEdgesOnSelect={false}
-              maxZoom={1.5}
-              minZoom={0.5}
+              maxZoom={workflowCanvasConsts.MAX_ZOOM}
+              minZoom={workflowCanvasConsts.MIN_ZOOM}
+              zoomActivationKeyCode={ZOOM_ACTIVATION_KEYS}
               panOnDrag={inGrabPanningMode ? [0, 1] : [1]}
               zoomOnDoubleClick={false}
               panOnScroll={true}
@@ -270,6 +274,7 @@ export const WorkflowCanvas = React.memo(
 );
 
 WorkflowCanvas.displayName = 'WorkflowCanvas';
+const ZOOM_ACTIVATION_KEYS = ['Meta', 'Control'];
 const getChildrenKey = (step: Step) => {
   switch (step.type) {
     case WorkflowActionType.LOOP_ON_ITEMS:

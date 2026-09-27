@@ -180,7 +180,7 @@ function PolicyForm({ settings }: { settings: LoginSecuritySettings }) {
     mode: 'onChange',
     defaultValues: {
       passwordMinLength: settings.passwordMinLength,
-      sessionDurationDays: String(settings.sessionDurationDays),
+      sessionDurationDays: sessionOption(settings.sessionDurationDays),
     },
   });
   return (
@@ -302,6 +302,13 @@ function methodDescription(method: LoginMethod): string {
     case LoginMethod.DINGTALK:
       return t('Scan with DingTalk or sign in inside DingTalk');
   }
+}
+
+function sessionOption(days: number): '1' | '7' | '30' {
+  if (days === 1) {
+    return '1';
+  }
+  return days === 30 ? '30' : '7';
 }
 
 function sessionDays(value: string): 1 | 7 | 30 {

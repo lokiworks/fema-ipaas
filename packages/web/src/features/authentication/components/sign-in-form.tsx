@@ -1,5 +1,6 @@
 import { ErrorCode, isNil } from '@fema-ipaas/core-utils';
 import {
+  FlagId,
   OtpType,
   AuthenticationResponse,
   SignInRequest,
@@ -20,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { flagsHooks } from '@/hooks/flags-hooks';
 import { HttpError, api } from '@/lib/api';
 import { authenticationSession } from '@/lib/authentication-session';
 import { formatUtils } from '@/lib/format-utils';
@@ -37,6 +39,11 @@ type SignInSchema = z.infer<typeof SignInSchema>;
 const SignInForm = ({ onForgotPassword }: SignInFormProps) => {
   const [showCheckYourEmailNote, setShowCheckYourEmailNote] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showContactAdmin, setShowContactAdmin] = useState(false);
+  const { data: smtpFlag } = flagsHooks.useFlag<boolean>(
+    FlagId.SMTP_CONFIGURED,
+  );
+  const smtpConfigured = smtpFlag === true;
   const form = useForm<SignInSchema>({
     resolver: zodResolver(SignInSchema),
     defaultValues: {
@@ -165,25 +172,26 @@ const SignInForm = ({ onForgotPassword }: SignInFormProps) => {
               <FormItem className="grid space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">{t('Password')}</Label>
-                  {false &&
-                    // Inside the auth card the reset workflow is another step, not
-                    // another page — the caller hands us a handler for it.
-                    (onForgotPassword ? (
-                      <button
-                        type="button"
-                        onClick={onForgotPassword}
-                        className="text-muted-foreground text-xs hover:text-primary transition-all duration-200"
-                      >
-                        {t('Forgot your password?')}
-                      </button>
-                    ) : (
-                      <Link
-                        to="/forget-password"
-                        className="text-muted-foreground text-xs hover:text-primary transition-all duration-200"
-                      >
-                        {t('Forgot your password?')}
-                      </Link>
-                    ))}
+                  {smtpConfigured && !onForgotPassword ? (
+                    <Link
+                      to="/forget-password"
+                      className="text-muted-foreground text-xs hover:text-primary transition-all duration-200"
+                    >
+                      {t('Forgot your password?')}
+                    </Link>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        smtpConfigured && onForgotPassword
+                          ? onForgotPassword()
+                          : setShowContactAdmin(true)
+                      }
+                      className="text-muted-foreground text-xs hover:text-primary transition-all duration-200"
+                    >
+                      {t('Forgot your password?')}
+                    </button>
+                  )}
                 </div>
                 <div className="relative">
                   <Input
@@ -219,6 +227,13 @@ const SignInForm = ({ onForgotPassword }: SignInFormProps) => {
               </FormItem>
             )}
           />
+          {showContactAdmin && (
+            <p className="text-xs text-muted-foreground">
+              {t(
+                'Email is not set up on this platform, so a reset link cannot be sent. Ask an administrator to reset your password in member management.',
+              )}
+            </p>
+          )}
           {form?.formState?.errors?.root?.serverError && (
             <FormMessage>
               {form.formState.errors.root.serverError.message}

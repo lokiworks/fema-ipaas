@@ -134,7 +134,9 @@ function isExternalEmail({
   homeDomains: string[];
 }): boolean {
   const domain = emailDomain(email);
-  return homeDomains.length > 0 && domain !== null && !homeDomains.includes(domain);
+  return (
+    homeDomains.length > 0 && domain !== null && !homeDomains.includes(domain)
+  );
 }
 
 function parseLabels(text: string): string[] {
@@ -182,7 +184,9 @@ function workerDockerCommand({
     `  -e FEMA_FRONTEND_URL=${frontendUrl} \\`,
     `  -e FEMA_WORKER_TOKEN=<worker-token> \\`,
     `  -e FEMA_WORKER_CONCURRENCY=${concurrency} \\`,
-    ...(labels.length > 0 ? [`  -e FEMA_WORKER_LABELS=${labels.join(',')} \\`] : []),
+    ...(labels.length > 0
+      ? [`  -e FEMA_WORKER_LABELS=${labels.join(',')} \\`]
+      : []),
     `  -e FEMA_EXECUTION_MODE=SANDBOX_CODE_ONLY \\`,
     `  ghcr.io/lokiworks/fema-ipaas:${version}`,
   ];

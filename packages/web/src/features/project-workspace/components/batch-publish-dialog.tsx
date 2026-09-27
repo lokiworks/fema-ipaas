@@ -74,7 +74,8 @@ function BatchPublishBody({
     gcTime: 0,
     staleTime: 0,
   });
-  const { mutate: publish, isPending } = projectWorkspaceHooks.useBatchPublish();
+  const { mutate: publish, isPending } =
+    projectWorkspaceHooks.useBatchPublish();
 
   const items = check?.items ?? [];
   const toTest = check?.target === 'TEST';
@@ -333,7 +334,13 @@ function StepBar({ step }: { step: Step }) {
 function CheckBadge({ item }: { item: BatchPublishCheckItem }) {
   switch (item.status) {
     case BatchPublishCheckStatus.INVALID:
-      return <Badge variant="destructive">{t('Has errors, fix in the editor')}</Badge>;
+      return (
+        <Badge variant="destructive">
+          {item.reasons.includes('workflowLockedByAnotherEditor')
+            ? t('Someone else is editing it')
+            : t('Has errors, fix in the editor')}
+        </Badge>
+      );
     case BatchPublishCheckStatus.UNCHANGED:
       return <Badge variant="outline">{t('No unpublished changes')}</Badge>;
     case BatchPublishCheckStatus.WARNING:

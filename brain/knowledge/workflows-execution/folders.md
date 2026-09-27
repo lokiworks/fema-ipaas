@@ -4,34 +4,24 @@ icon: 📁
 
 # Folders
 
-Folders are a lightweight organizational layer for workflows within a project. Each folder has a display name (unique case-insensitively per project) and a display order; workflows join a folder via their `folderId`.
+文件夹是项目内组织工作流的一层目录，最多三层，工作流通过 `folderId` 挂在文件夹下。
 
-### Entities & services
-- **Folder** entity: id, displayName, projectId, displayOrder (default 0). Unique index `idx_folder_project_id_display_name` on `(projectId, displayName)`; many-to-one with project (CASCADE delete).
-- **FolderDto** — folder plus `numberOfWorkflows` and `numberOfTables`, computed at query time via correlated subqueries.
-- Service: `workflowFolderService` in `folder.service.ts` (module + controller combined as one Fastify plugin).
+### 规则
+- 每个项目最多 100 个文件夹，最多三层；名称 1–50 字，**同一层级**内不重名（不区分大小写）。常量 `FOLDER_LIMIT_PER_PROJECT` / `FOLDER_MAX_DEPTH` / `FOLDER_NAME_MAX_LENGTH` 在 `packages/core/execution/src/lib/workflows/folders/folder.ts`。
+- `parentId` 指向上级文件夹，为空即项目根目录。
+- 删除文件夹时，子文件夹和工作流移到上一级（不是根目录），整个过程在一个事务里完成。
 
-### How it works
-- Routes under `/v1/folders`, all requiring `projectId` resolvable via body/query/entity lookup:
-  - `POST /` — create (upsert), `POST /:id` — rename, `GET /:id`, `GET /` — paginated list with counts, `DELETE /:id`.
-- **Create is an upsert**: case-insensitive name match updates the existing folder instead of duplicating.
-- Rename validates new-name uniqueness (allowing the folder to keep its own name).
-- Audit events: `FOLDER_CREATED`, `FOLDER_UPDATED`, `FOLDER_DELETED` (fetched before delete so the event has full data).
+### 接口
+- `/v1/folders`：`POST /` 新建（可带 `parentId`），`POST /:id` 重命名，`GET /`、`GET /:id`，`DELETE /:id`。
+- 移动工作流走项目工作区的 `POST /v1/project-workspace/batch/move`，见 [项目工作区](project-workspace.md)。
 
 ### Gotchas
-- **`UncategorizedFolderId`** is the string literal `"NULL"` — a sentinel in the workflow list query matching workflows with no folder.
-- **Deleting a folder does NOT delete its workflows** — they become uncategorized (the workflow's `folderId` FK is nullable; not nulled automatically by the service).
-- `displayOrder` is client-managed, not maintained by the backend.
-- List is ordered ASC; counts come from correlated subqueries per row.
-
-### Editions
-Fully available in CE/EE/Cloud — no plan flag required.
+- `POST /v1/folders` 现在是严格新建，重名报 `folderNameTaken`；旧的「同名即返回已有文件夹」语义只保留在 `workflowFolderService.upsert`，供 `CreateWorkflowRequest.folderName` 这条老路径用，而且只在根目录层查找。
+- 唯一约束是两个部分索引：根目录层 `(projectId, displayName) WHERE parentId IS NULL`，子层 `(parentId, displayName) WHERE parentId IS NOT NULL`。对根目录做 `upsert` 必须带 `indexPredicate: '"parentId" IS NULL'`，否则 Postgres 找不到冲突目标。
+- 删除时子文件夹上移可能和上一级已有文件夹重名，服务端会自动加「 (2)」后缀，规则在 `folderTreeUtils.planMoveUp`。
+- `UncategorizedFolderId` 是字符串 `"NULL"`，只在老的工作流列表查询里当「未分类」用。
 
 ### Key files
-Entry point: `workflowFolderService`, exported from `folder.service.ts` and wired up by the folder Fastify plugin.
-
-- `packages/server/api/src/app/workflows/folder/` — backend slice: module/controller, service, TypeORM entity
-- `packages/core/execution/src/lib/workflows/folders/` — shared types: `Folder`, `FolderDto`, `UncategorizedFolderId`, request and list-response schemas
-- `packages/web/src/features/folders/` — frontend: API client, TanStack Query hooks, rename dialog
-
-Paths verified 2026-07-17. An earlier version pointed at `packages/core/shared/src/lib/automation/workflows/folders/`; those shared types now live in `packages/core/execution/src/lib/workflows/folders/`.
+- `packages/server/api/src/app/workflows/folder/` — `workflowFolderService`、`folderTreeUtils`、实体和路由
+- `packages/core/execution/src/lib/workflows/folders/` — `Folder`、请求 DTO、上限常量
+- `packages/web/src/features/project-workspace/` — 侧栏工作流树里的文件夹操作

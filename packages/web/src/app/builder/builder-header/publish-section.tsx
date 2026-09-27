@@ -32,6 +32,8 @@ import { workflowHooks, workflowsApi } from '@/features/workflows';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { flagsHooks } from '@/hooks/flags-hooks';
 
+import { usePublishGuard } from './publish-guard';
+
 export const BuilderPublishSection = () => {
   const { project } = projectCollectionUtils.useCurrentProject();
   if (project.releasesEnabled) {
@@ -53,6 +55,7 @@ function SingleEnvironmentPublishSection() {
     setLeftSidebar,
     workflowVersion,
     run,
+    editLockHolder,
   ] = useBuilderStateContext((state) => [
     state.saving,
     state.isPublishing,
@@ -65,7 +68,11 @@ function SingleEnvironmentPublishSection() {
     state.setLeftSidebar,
     state.workflowVersion,
     state.run,
+    state.editLockHolder,
   ]);
+  const guard = usePublishGuard({
+    lockedByName: editLockHolder?.userDisplayName ?? null,
+  });
   const canPublish = useCanPublish({
     workflowVersion,
     isPublishing,
@@ -157,18 +164,24 @@ function SingleEnvironmentPublishSection() {
               variant="default"
               loading={isSaving}
               name="Publish"
-              onClick={() => publish()}
-              disabled={!isValid || isBusy}
+              onClick={() => guard.run(() => publish())}
+              disabled={!isValid || isBusy || !isNil(guard.blockedReason)}
             >
               {t('Publish')}
             </Button>
           </div>
         </TooltipTrigger>
-        {isSaving && <TooltipContent>{t('Saving...')}</TooltipContent>}
-        {!isValid && (
-          <TooltipContent>{t('You have incomplete steps')}</TooltipContent>
+        {isSaving ? (
+          <TooltipContent>{t('Saving...')}</TooltipContent>
+        ) : !isNil(guard.blockedReason) ? (
+          <TooltipContent>{guard.blockedReason}</TooltipContent>
+        ) : (
+          !isValid && (
+            <TooltipContent>{t('You have incomplete steps')}</TooltipContent>
+          )
         )}
       </Tooltip>
+      {guard.dialog}
     </div>
   );
 }
@@ -184,6 +197,7 @@ function EnvironmentsPublishSection({ projectId }: { projectId: string }) {
     setVersion,
     workflowVersion,
     run,
+    editLockHolder,
   ] = useBuilderStateContext((state) => [
     state.saving,
     state.isPublishing,
@@ -194,7 +208,11 @@ function EnvironmentsPublishSection({ projectId }: { projectId: string }) {
     state.setVersion,
     state.workflowVersion,
     state.run,
+    state.editLockHolder,
   ]);
+  const guard = usePublishGuard({
+    lockedByName: editLockHolder?.userDisplayName ?? null,
+  });
   const { checkAccess } = useAuthorization();
   const canDeploy = checkAccess(Permission.WRITE_WORKFLOW);
   const canPromote = checkAccess(Permission.WRITE_PROJECT_RELEASE);
@@ -256,11 +274,15 @@ function EnvironmentsPublishSection({ projectId }: { projectId: string }) {
   });
   const promoteDisabledReason = isPublishing
     ? t('Deploying to test...')
+    : !isNil(editLockHolder)
+    ? guard.blockedReason
     : isNil(blocker)
     ? null
     : releaseUiUtils.promotionBlockerText(blocker);
   const deployDisabledReason = isSaving
     ? t('Saving...')
+    : !isNil(guard.blockedReason)
+    ? guard.blockedReason
     : !isValid
     ? t('You have incomplete steps')
     : null;
@@ -287,7 +309,7 @@ function EnvironmentsPublishSection({ projectId }: { projectId: string }) {
                 variant="default"
                 loading={isBusy}
                 name="Deploy to test"
-                onClick={() => deploy()}
+                onClick={() => guard.run(() => deploy())}
                 disabled={!isNil(deployDisabledReason) || isBusy}
               >
                 {t('Deploy to test')}
@@ -319,6 +341,7 @@ function EnvironmentsPublishSection({ projectId }: { projectId: string }) {
           )}
         </Tooltip>
       )}
+      {guard.dialog}
       <ReleaseRequestDialog
         open={promoteDialogOpen}
         onOpenChange={setPromoteDialogOpen}

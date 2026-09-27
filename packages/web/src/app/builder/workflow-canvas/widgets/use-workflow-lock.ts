@@ -1,27 +1,37 @@
-import { isNil } from '@fema-ipaas/core-utils';
+import { isNil, Permission } from '@fema-ipaas/core-utils';
+import { DefaultProjectRole } from '@fema-ipaas/shared';
 import { useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { useAuthorization, useProjectRole } from '@/hooks/authorization-hooks';
 import { useResourceLock } from '@/hooks/use-resource-lock';
 
 import { useBuilderStateContext } from '../../builder-hooks';
 import { workflowCanvasHooks } from '../hooks';
 
 function useWorkflowLock() {
-  const [readonly, workflowId, setReadOnly] = useBuilderStateContext(
-    (state) => [state.readonly, state.workflow.id, state.setReadOnly],
-  );
+  const [readonly, workflowId, setReadOnly, setEditLockHolder, saving] =
+    useBuilderStateContext((state) => [
+      state.readonly,
+      state.workflow.id,
+      state.setReadOnly,
+      state.setEditLockHolder,
+      state.saving,
+    ]);
   const run = useBuilderStateContext((state) => state.run);
   const readonlySetByLock = useRef(false);
+  const lastActivityAt = useRef(Date.now());
   const navigate = useNavigate();
   const { switchToDraft } = workflowCanvasHooks.useSwitchToDraft();
+  const { data: projectRole } = useProjectRole();
+  const { checkAccess } = useAuthorization();
 
-  // refresh the workflow in place after a successful take-over; a full-page
-  // reload would break the embed SDK handshake inside an iframe. When viewing
-  // a run, mirror EditWorkflowOrViewDraftButton: navigate to the workflow
-  // (client-side, embed-safe) instead of editing a draft under the run view.
-  // Branch on the builder run state, not the URL: embed mounts a memory
-  // router, so window.location never reflects the in-app route.
+  useEffect(() => {
+    if (saving) {
+      lastActivityAt.current = Date.now();
+    }
+  }, [saving]);
+
   const onTakeOver = useCallback(() => {
     if (!isNil(run)) {
       navigate(`/workflows/${workflowId}`);
@@ -30,10 +40,21 @@ function useWorkflowLock() {
     }
   }, [run, navigate, workflowId, switchToDraft]);
 
-  const { lockedBy, takeOver } = useResourceLock({
+  const isActive = useCallback(
+    () => Date.now() - lastActivityAt.current < ACTIVITY_WINDOW_MS,
+    [],
+  );
+
+  const { lockedBy, takeOver, requestEdit } = useResourceLock({
     resourceId: workflowId,
     onTakeOver,
+    isActive,
+    enabled: checkAccess(Permission.WRITE_WORKFLOW),
   });
+
+  useEffect(() => {
+    setEditLockHolder(lockedBy);
+  }, [lockedBy, setEditLockHolder]);
 
   useEffect(() => {
     if (lockedBy && !readonly) {
@@ -46,7 +67,14 @@ function useWorkflowLock() {
     }
   }, [lockedBy, readonly, setReadOnly]);
 
-  return { lockedBy, takeOver };
+  return {
+    lockedBy,
+    takeOver,
+    requestEdit,
+    canTakeOver: projectRole?.role === DefaultProjectRole.ADMIN,
+  };
 }
+
+const ACTIVITY_WINDOW_MS = 35_000;
 
 export { useWorkflowLock };

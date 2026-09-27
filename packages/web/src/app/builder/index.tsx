@@ -26,8 +26,11 @@ import { cn } from '@/lib/utils';
 
 import { BuilderHeader } from './builder-header/builder-header';
 import { BuilderLeftPanel } from './left-panel';
+import { ReferenceDragLayer } from './reference-drag/reference-drag-layer';
 import { CursorPositionProvider } from './state/cursor-position-context';
 import { StepSettingsContainer } from './step-settings';
+import { StepDisplayNumbersProvider } from './use-step-display-numbers';
+import { BuilderValidationProvider } from './validation/validation-context';
 import { WorkflowCanvas } from './workflow-canvas';
 import { workflowCanvasHooks } from './workflow-canvas/hooks';
 import { workflowCanvasConsts } from './workflow-canvas/utils/consts';
@@ -45,6 +48,7 @@ const BuilderPage = () => {
     selectedStepName,
     removeAllStepTestsListeners,
     selectedStep,
+    historyNonce,
   ] = useBuilderStateContext((state) => [
     state.workflowVersion,
     state.rightSidebar,
@@ -55,6 +59,7 @@ const BuilderPage = () => {
       state.selectedStep ?? '',
       state.workflowVersion.trigger,
     ),
+    state.historyNonce,
   ]);
   useEffect(() => {
     return () => {
@@ -106,99 +111,105 @@ const BuilderPage = () => {
     useState(false);
 
   return (
-    <div className="flex h-full w-full flex-col relative max-h-[100vh]">
-      <div className="z-40">
-        <BuilderHeader />
-      </div>
-      <ResizablePanelGroup orientation="horizontal">
-        <BuilderLeftPanel />
-        <ResizablePanel defaultSize="100%" id="workflow-canvas">
-          <div ref={middlePanelRef} className="relative h-full w-full">
-            <CursorPositionProvider>
-              <WorkflowCanvas
-                setHasCanvasBeenInitialised={setHasCanvasBeenInitialised}
-              ></WorkflowCanvas>
-            </CursorPositionProvider>
-
-            <BuilderBanner />
-            {middlePanelRef.current &&
-              middlePanelRef.current.clientWidth > 0 && (
-                <CanvasControls
-                  canvasHeight={middlePanelRef.current?.clientHeight ?? 0}
-                  canvasWidth={middlePanelRef.current?.clientWidth ?? 0}
-                  hasCanvasBeenInitialised={hasCanvasBeenInitialised}
-                  selectedStep={selectedStepName}
-                ></CanvasControls>
-              )}
-
-            <ShowPoweredBy position="absolute" show={false} />
-            <DataSelector
-              parentHeight={middlePanelSize.height}
-              parentWidth={middlePanelSize.width}
-            ></DataSelector>
+    <BuilderValidationProvider>
+      <StepDisplayNumbersProvider>
+        <div className="flex h-full w-full flex-col relative max-h-[100vh]">
+          <div className="z-40">
+            <BuilderHeader />
           </div>
-        </ResizablePanel>
+          <ReferenceDragLayer />
+          <ResizablePanelGroup orientation="horizontal">
+            <BuilderLeftPanel />
+            <ResizablePanel defaultSize="100%" id="workflow-canvas">
+              <div ref={middlePanelRef} className="relative h-full w-full">
+                <CursorPositionProvider>
+                  <WorkflowCanvas
+                    setHasCanvasBeenInitialised={setHasCanvasBeenInitialised}
+                  ></WorkflowCanvas>
+                </CursorPositionProvider>
 
-        <ResizableHandle
-          disabled={rightSidebar === RightSideBarType.NONE}
-          withHandle={rightSidebar !== RightSideBarType.NONE}
-          onPointerDown={() => setIsDraggingHandle(true)}
-          onPointerUp={() => setIsDraggingHandle(false)}
-          onPointerCancel={() => setIsDraggingHandle(false)}
-          className={
-            rightSidebar === RightSideBarType.NONE ? 'bg-transparent' : ''
-          }
-        />
+                <BuilderBanner />
+                {middlePanelRef.current &&
+                  middlePanelRef.current.clientWidth > 0 && (
+                    <CanvasControls
+                      canvasHeight={middlePanelRef.current?.clientHeight ?? 0}
+                      canvasWidth={middlePanelRef.current?.clientWidth ?? 0}
+                      hasCanvasBeenInitialised={hasCanvasBeenInitialised}
+                      selectedStep={selectedStepName}
+                    ></CanvasControls>
+                  )}
 
-        <ResizablePanel
-          panelRef={rightHandleRef}
-          id="right-sidebar"
-          collapsedSize="0%"
-          defaultSize="0%"
-          minSize={
-            rightSidebar === RightSideBarType.NONE ? '0%' : DEFAULT_MIN_SIZE
-          }
-          maxSize={rightSidebar === RightSideBarType.NONE ? '0%' : '60%'}
-          className={cn('min-w-0 bg-background z-30', {
-            [animateResizeClassName]: !isDraggingHandle,
-          })}
-          style={{
-            transitionDuration: `${
-              isDraggingHandle
-                ? 0
-                : workflowCanvasConsts.SIDEBAR_ANIMATION_DURATION
-            }ms`,
-          }}
-        >
-          <div ref={rightSidePanelRef} className="h-full w-full">
-            {rightSidebar === RightSideBarType.CONNECTOR_SETTINGS &&
-              selectedStep && (
-                <StepSettingsProvider
-                  connectorModel={connectorModel}
-                  componentProps={
-                    selectedStep.type === WorkflowActionType.COMPONENT
-                      ? flowComponents?.find(
-                          (candidate) =>
-                            candidate.type ===
-                            selectedStep.settings.componentType,
-                        )?.props
-                      : undefined
-                  }
-                  connectorModelNotFound={connectorModelNotFound}
-                  selectedStep={selectedStep}
-                  key={constructContainerKey({
-                    workflowVersionId: workflowVersion.id,
-                    step: selectedStep,
-                    hasConnectorModelLoaded: !!connectorModel,
-                  })}
-                >
-                  <StepSettingsContainer />
-                </StepSettingsProvider>
-              )}
-          </div>
-        </ResizablePanel>
-      </ResizablePanelGroup>
-    </div>
+                <ShowPoweredBy position="absolute" show={false} />
+                <DataSelector
+                  parentHeight={middlePanelSize.height}
+                  parentWidth={middlePanelSize.width}
+                ></DataSelector>
+              </div>
+            </ResizablePanel>
+
+            <ResizableHandle
+              disabled={rightSidebar === RightSideBarType.NONE}
+              withHandle={rightSidebar !== RightSideBarType.NONE}
+              onPointerDown={() => setIsDraggingHandle(true)}
+              onPointerUp={() => setIsDraggingHandle(false)}
+              onPointerCancel={() => setIsDraggingHandle(false)}
+              className={
+                rightSidebar === RightSideBarType.NONE ? 'bg-transparent' : ''
+              }
+            />
+
+            <ResizablePanel
+              panelRef={rightHandleRef}
+              id="right-sidebar"
+              collapsedSize="0%"
+              defaultSize="0%"
+              minSize={
+                rightSidebar === RightSideBarType.NONE ? '0%' : DEFAULT_MIN_SIZE
+              }
+              maxSize={rightSidebar === RightSideBarType.NONE ? '0%' : '60%'}
+              className={cn('min-w-0 bg-background z-30', {
+                [animateResizeClassName]: !isDraggingHandle,
+              })}
+              style={{
+                transitionDuration: `${
+                  isDraggingHandle
+                    ? 0
+                    : workflowCanvasConsts.SIDEBAR_ANIMATION_DURATION
+                }ms`,
+              }}
+            >
+              <div ref={rightSidePanelRef} className="h-full w-full">
+                {rightSidebar === RightSideBarType.CONNECTOR_SETTINGS &&
+                  selectedStep && (
+                    <StepSettingsProvider
+                      connectorModel={connectorModel}
+                      componentProps={
+                        selectedStep.type === WorkflowActionType.COMPONENT
+                          ? flowComponents?.find(
+                              (candidate) =>
+                                candidate.type ===
+                                selectedStep.settings.componentType,
+                            )?.props
+                          : undefined
+                      }
+                      connectorModelNotFound={connectorModelNotFound}
+                      selectedStep={selectedStep}
+                      key={constructContainerKey({
+                        workflowVersionId: workflowVersion.id,
+                        step: selectedStep,
+                        hasConnectorModelLoaded: !!connectorModel,
+                        historyNonce,
+                      })}
+                    >
+                      <StepSettingsContainer />
+                    </StepSettingsProvider>
+                  )}
+              </div>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </div>
+      </StepDisplayNumbersProvider>
+    </BuilderValidationProvider>
   );
 };
 
@@ -209,10 +220,12 @@ function constructContainerKey({
   workflowVersionId,
   step,
   hasConnectorModelLoaded,
+  historyNonce,
 }: {
   workflowVersionId: string;
   step?: WorkflowAction | WorkflowTrigger;
   hasConnectorModelLoaded: boolean;
+  historyNonce: number;
 }) {
   const stepName = step?.name;
   const triggerOrActionName =
@@ -238,5 +251,5 @@ function constructContainerKey({
     connectorName ?? ''
   }-${connectorVersion ?? ''}-${'skipped-' + !!isSkipped}-${
     hasConnectorModelLoaded ? 'loaded' : 'not-loaded'
-  }`;
+  }-${historyNonce}`;
 }

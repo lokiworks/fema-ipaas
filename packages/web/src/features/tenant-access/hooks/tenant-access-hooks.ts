@@ -65,9 +65,7 @@ function useSetEnabled() {
       tenantAccessApi.setEnabled({ userId, enabled }),
     onSuccess: (_member, variables) => {
       queryClient.invalidateQueries({ queryKey: tenantAccessKeys.members });
-      toast.success(
-        variables.enabled ? t('User enabled') : t('User disabled'),
-      );
+      toast.success(variables.enabled ? t('User enabled') : t('User disabled'));
     },
     onError: showError,
   });
@@ -92,7 +90,9 @@ function useRemoveMember() {
     }) => tenantAccessApi.removeMember({ userId, transferToUserId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: tenantAccessKeys.members });
-      queryClient.invalidateQueries({ queryKey: tenantAccessKeys.resourcesRoot });
+      queryClient.invalidateQueries({
+        queryKey: tenantAccessKeys.resourcesRoot,
+      });
       toast.success(t('User removed'));
     },
     onError: showError,
@@ -122,7 +122,9 @@ function useTransferResources() {
     mutationFn: (request: TransferResourcesRequestBody) =>
       tenantAccessApi.transferResources(request),
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: tenantAccessKeys.resourcesRoot });
+      queryClient.invalidateQueries({
+        queryKey: tenantAccessKeys.resourcesRoot,
+      });
       toast.success(
         t('transferredResourcesCount', { count: result.transferred }),
       );
@@ -163,7 +165,10 @@ function useRequests(status: ModuleAccessRequestStatus | undefined) {
 function usePendingRequestCount() {
   const isAdmin = useIsTenantAdmin();
   const { data } = useQuery({
-    queryKey: [...tenantAccessKeys.requestsRoot, ModuleAccessRequestStatus.PENDING],
+    queryKey: [
+      ...tenantAccessKeys.requestsRoot,
+      ModuleAccessRequestStatus.PENDING,
+    ],
     queryFn: () =>
       tenantAccessApi.listRequests(ModuleAccessRequestStatus.PENDING),
     enabled: isAdmin,
@@ -177,7 +182,9 @@ function useDecideRequest() {
     mutationFn: ({ id, approve }: { id: string; approve: boolean }) =>
       tenantAccessApi.decideRequest({ id, approve }),
     onSuccess: (_request, variables) => {
-      queryClient.invalidateQueries({ queryKey: tenantAccessKeys.requestsRoot });
+      queryClient.invalidateQueries({
+        queryKey: tenantAccessKeys.requestsRoot,
+      });
       queryClient.invalidateQueries({ queryKey: tenantAccessKeys.members });
       toast.success(
         variables.approve ? t('Request approved') : t('Request rejected'),

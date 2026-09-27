@@ -45,6 +45,7 @@ export const alertPolicyService = (_log: FastifyBaseLogger) => ({
 
 function normalize(request: UpsertAlertPolicyRequestBody): Omit<AlertPolicySchema, 'id' | 'created' | 'updated' | 'tenantId' | 'updatedById'> {
     const failureRate = request.events.includes(AlertTriggerEvent.FAILURE_RATE) ? request.failureRate : null
+    const capacityThresholdPercent = request.events.includes(AlertTriggerEvent.CAPACITY) ? request.capacityThresholdPercent ?? null : null
     return {
         name: request.name,
         enabled: request.enabled,
@@ -52,6 +53,7 @@ function normalize(request: UpsertAlertPolicyRequestBody): Omit<AlertPolicySchem
         workflowIds: [...new Set(request.workflowIds)],
         events: [...new Set(request.events)],
         failureRate,
+        capacityThresholdPercent,
         groupWindowMinutes: request.groupWindowMinutes,
         quietHours: request.quietHours,
         escalation: request.escalation.enabled ? request.escalation : { ...request.escalation, channelId: null },
@@ -66,6 +68,9 @@ async function validate({ tenantId, request, excludeId }: ValidateParams): Promi
     }
     if (request.events.includes(AlertTriggerEvent.FAILURE_RATE) && isNil(request.failureRate)) {
         invalid('Failure rate threshold is required')
+    }
+    if (request.events.includes(AlertTriggerEvent.CAPACITY) && isNil(request.capacityThresholdPercent)) {
+        invalid('Capacity threshold is required')
     }
     if (request.escalation.enabled && isNil(request.escalation.channelId)) {
         invalid('Escalation channel is required')
@@ -113,6 +118,7 @@ function toResponse(policy: AlertPolicySchema): AlertPolicy {
         workflowIds: policy.workflowIds,
         events: policy.events,
         failureRate: policy.failureRate,
+        capacityThresholdPercent: policy.capacityThresholdPercent ?? null,
         groupWindowMinutes: policy.groupWindowMinutes,
         quietHours: policy.quietHours,
         escalation: policy.escalation,

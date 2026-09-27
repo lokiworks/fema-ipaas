@@ -1,5 +1,5 @@
 import { isNil } from '@fema-ipaas/core-utils'
-import { WorkflowTrigger, workflowStructureUtil } from '@fema-ipaas/shared'
+import { workflowStructureUtil, WorkflowTrigger } from '@fema-ipaas/shared'
 
 function referencedConnectionIds(auth: unknown): string[] {
     if (typeof auth !== 'string') {

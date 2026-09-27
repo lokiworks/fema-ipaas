@@ -19,7 +19,7 @@ import { AllowOnlyLoggedInUserOnlyGuard } from '../components/allow-logged-in-us
 import { RouteErrorBoundary } from '../components/global-error-boundary';
 import { ProjectDashboardLayout } from '../components/project-layout';
 
-import { DefaultRoute } from './default-route';
+import { DefaultRoute, UnknownRoute } from './default-route';
 import { TokenCheckerWrapper } from './project-route-wrapper';
 
 const CrashTestPage = import.meta.env.DEV
@@ -36,6 +36,38 @@ const WorkspaceHomePage = lazyWithRetry(
       default: m.WorkspaceHomePage,
     })),
   'workspace-home',
+);
+
+const AllProjectsPage = lazyWithRetry(
+  () =>
+    import('../routes/projects').then((m) => ({
+      default: m.AllProjectsPage,
+    })),
+  'all-projects',
+);
+
+const RunLogsPage = lazyWithRetry(
+  () =>
+    import('../routes/runs').then((m) => ({
+      default: m.RunsPage,
+    })),
+  'run-logs',
+);
+
+const MonitorPage = lazyWithRetry(
+  () =>
+    import('../routes/monitor').then((m) => ({
+      default: m.MonitorPage,
+    })),
+  'run-monitor',
+);
+
+const AccountPage = lazyWithRetry(
+  () =>
+    import('../routes/account').then((m) => ({
+      default: m.AccountPage,
+    })),
+  'account',
 );
 
 const devRoutes =
@@ -73,6 +105,62 @@ const routes = [
     ),
   },
   {
+    path: '/projects',
+    element: (
+      <AllowOnlyLoggedInUserOnlyGuard>
+        <ProjectDashboardLayout>
+          <PageTitle title="All projects">
+            <Suspense fallback={<RouteLoadingBar />}>
+              <AllProjectsPage />
+            </Suspense>
+          </PageTitle>
+        </ProjectDashboardLayout>
+      </AllowOnlyLoggedInUserOnlyGuard>
+    ),
+  },
+  {
+    path: '/logs',
+    element: (
+      <AllowOnlyLoggedInUserOnlyGuard>
+        <ProjectDashboardLayout>
+          <PageTitle title="Run logs">
+            <Suspense fallback={<RouteLoadingBar />}>
+              <RunLogsPage />
+            </Suspense>
+          </PageTitle>
+        </ProjectDashboardLayout>
+      </AllowOnlyLoggedInUserOnlyGuard>
+    ),
+  },
+  {
+    path: '/monitor',
+    element: (
+      <AllowOnlyLoggedInUserOnlyGuard>
+        <ProjectDashboardLayout>
+          <PageTitle title="Run monitoring">
+            <Suspense fallback={<RouteLoadingBar />}>
+              <MonitorPage />
+            </Suspense>
+          </PageTitle>
+        </ProjectDashboardLayout>
+      </AllowOnlyLoggedInUserOnlyGuard>
+    ),
+  },
+  {
+    path: '/account',
+    element: (
+      <AllowOnlyLoggedInUserOnlyGuard>
+        <ProjectDashboardLayout>
+          <PageTitle title="Personal settings">
+            <Suspense fallback={<RouteLoadingBar />}>
+              <AccountPage />
+            </Suspense>
+          </PageTitle>
+        </ProjectDashboardLayout>
+      </AllowOnlyLoggedInUserOnlyGuard>
+    ),
+  },
+  {
     path: '/projects/:projectId',
     element: (
       <TokenCheckerWrapper>
@@ -83,8 +171,8 @@ const routes = [
   {
     path: '/*',
     element: (
-      <PageTitle title="Redirect">
-        <DefaultRoute></DefaultRoute>
+      <PageTitle title="Page not found">
+        <UnknownRoute />
       </PageTitle>
     ),
   },

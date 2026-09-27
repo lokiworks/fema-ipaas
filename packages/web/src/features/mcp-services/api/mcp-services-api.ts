@@ -1,40 +1,171 @@
 import {
+  CreateMcpServiceRequestBody,
+  ListMcpServicesRequestQuery,
+  McpConnectorToolParamsQuery,
   McpService,
-  McpServiceWithToken,
-  McpToolCandidate,
-  UpsertMcpServiceRequestBody,
+  McpServiceApiKey,
+  McpServiceIssues,
+  McpServiceMembership,
+  McpToolDebugRequestBody,
+  McpToolDebugResult,
+  McpToolParam,
+  McpWorkflowToolCandidate,
+  PublishMcpServiceRequestBody,
+  SetMcpServiceListedRequestBody,
+  SetMcpServiceStatusRequestBody,
+  TransferMcpServiceRequestBody,
+  UpdateMcpServiceAvailabilityRequestBody,
+  UpdateMcpServiceConnectionsRequestBody,
+  UpdateMcpServiceInfoRequestBody,
+  UpdateMcpServiceMyConnectionsRequestBody,
+  UpdateMcpServiceToolsRequestBody,
 } from '@fema-ipaas/shared';
 
 import { api } from '@/lib/api';
 
 export const mcpServicesApi = {
-  list(projectId: string): Promise<McpService[]> {
-    return api.get<McpService[]>('/v1/mcp-services', { projectId });
+  list(request: ListMcpServicesRequestQuery): Promise<McpService[]> {
+    return api.get<McpService[]>('/v1/mcp-services', request);
   },
-  candidates(projectId: string): Promise<McpToolCandidate[]> {
-    return api.get<McpToolCandidate[]>('/v1/mcp-services/candidates', {
+  candidates(projectId: string): Promise<McpWorkflowToolCandidate[]> {
+    return api.get<McpWorkflowToolCandidate[]>('/v1/mcp-services/candidates', {
       projectId,
     });
   },
-  create(request: UpsertMcpServiceRequestBody): Promise<McpServiceWithToken> {
-    return api.post<McpServiceWithToken>('/v1/mcp-services', request);
+  connectorToolParams(
+    request: McpConnectorToolParamsQuery,
+  ): Promise<McpToolParam[]> {
+    return api.get<McpToolParam[]>(
+      '/v1/mcp-services/connector-tool-params',
+      request,
+    );
   },
-  update({
+  create(request: CreateMcpServiceRequestBody): Promise<McpService> {
+    return api.post<McpService>('/v1/mcp-services', request);
+  },
+  get(id: string): Promise<McpService> {
+    return api.get<McpService>(`/v1/mcp-services/${id}`);
+  },
+  issues(id: string): Promise<McpServiceIssues> {
+    return api.get<McpServiceIssues>(`/v1/mcp-services/${id}/issues`);
+  },
+  updateInfo({
     id,
     request,
   }: {
     id: string;
-    request: UpsertMcpServiceRequestBody;
+    request: UpdateMcpServiceInfoRequestBody;
   }): Promise<McpService> {
-    return api.post<McpService>(`/v1/mcp-services/${id}`, request);
+    return api.post<McpService>(`/v1/mcp-services/${id}/info`, request);
   },
-  rotateToken(id: string): Promise<McpServiceWithToken> {
-    return api.post<McpServiceWithToken>(
-      `/v1/mcp-services/${id}/rotate-token`,
-      {},
-    );
+  updateTools({
+    id,
+    request,
+  }: {
+    id: string;
+    request: UpdateMcpServiceToolsRequestBody;
+  }): Promise<McpService> {
+    return api.post<McpService>(`/v1/mcp-services/${id}/tools`, request);
+  },
+  updateConnections({
+    id,
+    request,
+  }: {
+    id: string;
+    request: UpdateMcpServiceConnectionsRequestBody;
+  }): Promise<McpService> {
+    return api.post<McpService>(`/v1/mcp-services/${id}/connections`, request);
+  },
+  updateAvailability({
+    id,
+    request,
+  }: {
+    id: string;
+    request: UpdateMcpServiceAvailabilityRequestBody;
+  }): Promise<McpService> {
+    return api.post<McpService>(`/v1/mcp-services/${id}/availability`, request);
+  },
+  publish({
+    id,
+    request,
+  }: {
+    id: string;
+    request: PublishMcpServiceRequestBody;
+  }): Promise<McpService> {
+    return api.post<McpService>(`/v1/mcp-services/${id}/publish`, request);
+  },
+  setStatus({
+    id,
+    request,
+  }: {
+    id: string;
+    request: SetMcpServiceStatusRequestBody;
+  }): Promise<McpService> {
+    return api.post<McpService>(`/v1/mcp-services/${id}/status`, request);
+  },
+  setListed({
+    id,
+    request,
+  }: {
+    id: string;
+    request: SetMcpServiceListedRequestBody;
+  }): Promise<McpService> {
+    return api.post<McpService>(`/v1/mcp-services/${id}/listed`, request);
+  },
+  transfer({
+    id,
+    request,
+  }: {
+    id: string;
+    request: TransferMcpServiceRequestBody;
+  }): Promise<McpService> {
+    return api.post<McpService>(`/v1/mcp-services/${id}/transfer`, request);
   },
   delete(id: string): Promise<void> {
     return api.delete<void>(`/v1/mcp-services/${id}`);
+  },
+  obtain(id: string): Promise<McpServiceMembership> {
+    return api.post<McpServiceMembership>(`/v1/mcp-services/${id}/obtain`, {});
+  },
+  leave(id: string): Promise<void> {
+    return api.delete<void>(`/v1/mcp-services/${id}/obtain`);
+  },
+  membership(id: string): Promise<McpServiceMembership | null> {
+    return api.get<McpServiceMembership | null>(
+      `/v1/mcp-services/${id}/membership`,
+    );
+  },
+  myKey(id: string): Promise<McpServiceApiKey> {
+    return api.get<McpServiceApiKey>(`/v1/mcp-services/${id}/my-key`);
+  },
+  resetMyKey(id: string): Promise<McpServiceApiKey> {
+    return api.post<McpServiceApiKey>(
+      `/v1/mcp-services/${id}/my-key/reset`,
+      {},
+    );
+  },
+  updateMyConnections({
+    id,
+    request,
+  }: {
+    id: string;
+    request: UpdateMcpServiceMyConnectionsRequestBody;
+  }): Promise<McpServiceMembership> {
+    return api.post<McpServiceMembership>(
+      `/v1/mcp-services/${id}/my-connections`,
+      request,
+    );
+  },
+  debug({
+    id,
+    request,
+  }: {
+    id: string;
+    request: McpToolDebugRequestBody;
+  }): Promise<McpToolDebugResult> {
+    return api.post<McpToolDebugResult>(
+      `/v1/mcp-services/${id}/debug`,
+      request,
+    );
   },
 };

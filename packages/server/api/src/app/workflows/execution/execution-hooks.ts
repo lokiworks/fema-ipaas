@@ -19,7 +19,7 @@ export const executionHooks = (log: FastifyBaseLogger) => ({
         recordConnectorActionMetrics({ execution, workflowVersion })
         const isConnectorTrigger = !isNil(workflowVersion) && workflowVersion.trigger.type === WorkflowTriggerType.CONNECTOR && !isNil(workflowVersion.trigger.settings.triggerName)
         const isManualTrigger = isConnectorTrigger && isManualConnectorTrigger({ connectorName: workflowVersion.trigger.settings.connectorName, triggerName: workflowVersion.trigger.settings.triggerName })
-        if (execution.environment === RunEnvironment.TESTING || isManualTrigger) {
+        if (execution.environment === RunEnvironment.TESTING || isManualTrigger || !isNil(execution.triggeredBy)) {
             websocketService.to(execution.projectId).emit(WebsocketClientEvent.UPDATE_RUN_PROGRESS, {
                 execution,
             })

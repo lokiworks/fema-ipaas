@@ -73,6 +73,21 @@ export const emailService = (log: FastifyBaseLogger) => ({
         })
     },
 
+    async sendProjectAccessGranted({ tenantId, to, projectName, role }: SendProjectAccessGrantedParams): Promise<void> {
+        const branding = await brandingFor(tenantId, log)
+        await mailSender(log).send({
+            to,
+            subject: `You now have access to ${projectName}`,
+            template: 'project-member-added',
+            variables: {
+                ...branding,
+                projectName,
+                role,
+                loginLink: await domainHelper.getPublicUrl({ path: '' }),
+            },
+        })
+    },
+
     async sendWorkflowFailure({ tenantId, to, projectName, workflowName, runUrl, failedAt, failedStepDisplayName, failedStepNumber, failedStepMessage }: SendWorkflowFailureParams): Promise<void> {
         const branding = await brandingFor(tenantId, log)
         await mailSender(log).send({
@@ -135,6 +150,13 @@ type SendInvitationParams = {
 
 type SendProjectMemberAddedParams = {
     userInvitation: UserInvitation
+}
+
+type SendProjectAccessGrantedParams = {
+    tenantId: TenantId
+    to: string
+    projectName: string
+    role: string
 }
 
 type SendWorkflowFailureParams = {

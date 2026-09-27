@@ -517,7 +517,7 @@ describe('Connection CE API', () => {
             expect(response?.statusCode).toBe(StatusCodes.NOT_FOUND)
         })
 
-        it('should not delete a tenant-scoped connection from the project route', async () => {
+        it('should not let someone other than the owner delete a connection', async () => {
             const ctx = await setup()
 
             const tenantConnection = {
@@ -526,6 +526,7 @@ describe('Connection CE API', () => {
                     projectIds: [ctx.project.id],
                     externalId: 'tenant-delete-test',
                 }, ctx.user.id),
+                ownerId: null,
                 scope: ConnectionScope.TENANT,
             }
             await db.save('connection', tenantConnection)

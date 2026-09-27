@@ -89,6 +89,14 @@ describe('mcpWire', () => {
         expect(mcpWire.toolsOf(result)).toEqual([{ name: 'search', description: '', inputSchema: { type: 'object' } }])
     })
 
+    it('keeps the tool title and read-only hint', () => {
+        const tools = mcpWire.toolsOf({ tools: [{ name: 'search', title: 'Search pages', inputSchema: {}, annotations: { readOnlyHint: true } }, { name: 'delete_page', annotations: { title: 'Delete page', readOnlyHint: false } }] })
+        expect(tools).toEqual([
+            { name: 'search', description: '', inputSchema: {}, title: 'Search pages', readOnly: true },
+            { name: 'delete_page', description: '', inputSchema: { type: 'object', properties: {} }, title: 'Delete page', readOnly: false },
+        ])
+    })
+
     it('throws JSON-RPC errors', () => {
         expect(() => mcpWire.parseMessage({ contentType: 'application/json', text: '{"jsonrpc":"2.0","id":1,"error":{"code":-32601,"message":"nope"}}', id: 1 })).toThrow('MCP error -32601: nope')
     })

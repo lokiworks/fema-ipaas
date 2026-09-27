@@ -42,6 +42,7 @@ import { workflowRepo } from '../workflows/workflow/workflow.repo'
 import { workflowService } from '../workflows/workflow/workflow.service'
 import { workflowVersionRepo, workflowVersionService } from '../workflows/workflow-version/workflow-version.service'
 import { connectionReplacementRepo } from './connection-replacement.service'
+import { releaseSideEffects } from './release-side-effects'
 import { WorkflowReleaseEntity } from './release.entity'
 
 export const workflowReleaseRepo = repoFactory(WorkflowReleaseEntity)
@@ -118,7 +119,9 @@ export const workflowReleaseService = (log: FastifyBaseLogger) => ({
         if (!project.releasesEnabled || approversOf(project).length === 0) {
             return this.approve({ id, projectId: request.projectId, userId: requesterId, tenantId, comment: undefined, skipApproverCheck: true })
         }
-        return workflowReleaseRepo().findOneByOrFail({ id })
+        const created = await workflowReleaseRepo().findOneByOrFail({ id })
+        await releaseSideEffects(log).onRequested({ release: created })
+        return created
     },
 
     async getDetail({ id, projectId, currentUserId }: DetailParams): Promise<WorkflowReleaseDetail> {
@@ -164,7 +167,9 @@ export const workflowReleaseService = (log: FastifyBaseLogger) => ({
             comment: comment ?? null,
         })
         log.info({ project: { id: projectId }, workflow: { id: release.workflowId } }, '[workflowReleaseService#approve] Release deployed')
-        return workflowReleaseRepo().findOneByOrFail({ id })
+        const deployed = await workflowReleaseRepo().findOneByOrFail({ id })
+        await releaseSideEffects(log).onDecided({ release: deployed })
+        return deployed
     },
 
     async reject({ id, projectId, userId, comment }: RejectParams): Promise<WorkflowRelease> {
@@ -179,7 +184,9 @@ export const workflowReleaseService = (log: FastifyBaseLogger) => ({
             decidedAt: dayjsUtil().toISOString(),
             comment,
         })
-        return workflowReleaseRepo().findOneByOrFail({ id })
+        const rejected = await workflowReleaseRepo().findOneByOrFail({ id })
+        await releaseSideEffects(log).onDecided({ release: rejected })
+        return rejected
     },
 
     async withdraw({ id, projectId, userId }: WithdrawParams): Promise<WorkflowRelease> {
@@ -248,6 +255,8 @@ export const workflowReleaseService = (log: FastifyBaseLogger) => ({
             comment: ROLLBACK_WITHDRAW_COMMENT,
         })))
         log.info({ project: { id: request.projectId }, workflow: { id: workflow.id }, workflowVersion: { id: target.id } }, '[workflowReleaseService#rollback] Rolled back')
+        const rolledBackProject = await projectService(log).getOneOrThrow(request.projectId)
+        await releaseSideEffects(log).onRolledBack({ projectId: request.projectId, workflowId: workflow.id, versionId: target.id, approverIds: approversOf(rolledBackProject), actorId: userId })
         return { workflowId: workflow.id, publishedVersionId: updated.publishedVersionId ?? updated.version.id, withdrawnReleases: pending.length }
     },
 

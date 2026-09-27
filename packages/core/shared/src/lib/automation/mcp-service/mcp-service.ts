@@ -227,7 +227,7 @@ export const McpServiceApiKey = z.object({
 export type McpServiceApiKey = z.infer<typeof McpServiceApiKey>
 
 export const ListMcpServicesRequestQuery = z.object({
-    projectId: z.string(),
+    projectId: z.string().optional(),
     tab: z.enum(McpServiceListTab).optional(),
     search: z.string().optional(),
 })

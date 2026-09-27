@@ -2,6 +2,7 @@ import { ProjectId, TenantId, UserId } from '@fema-ipaas/core-utils'
 import { ProjectDirectoryItem, ProjectResourceCounts, ProjectType, TenantRole, WorkflowStatus } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { dataStoreService } from '../data-store/data-store.service'
+import { instanceLimits } from '../limits/instance-limits'
 import { mappingTableRepo } from '../mapping-table/mapping-table.service'
 import { userService } from '../user/user-service'
 import { variableRepo } from '../variable/variable.service'
@@ -69,7 +70,7 @@ export const projectDirectoryService = (log: FastifyBaseLogger) => ({
                 workflowCount: count?.total ?? 0,
                 runningCount: count?.running ?? 0,
                 memberCount: projectDirectoryUtils.memberCount({ ownerId: project.ownerId, memberUserIds: members.map((member) => member.userId) }),
-                workflowsLimit: project.workflowsLimit ?? null,
+                workflowsLimit: project.workflowsLimit ?? instanceLimits.projectWorkflows(),
                 monthlyRunsLimit: project.monthlyRunsLimit ?? null,
                 releasesEnabled: project.releasesEnabled,
             }

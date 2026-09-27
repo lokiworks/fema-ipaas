@@ -44,6 +44,7 @@ export enum ApplicationEventName {
     MEMBER_REMOVED = 'member.removed',
     EXECUTION_PAYLOAD_REVEALED = 'workflow.run.payload.revealed',
     ISSUE_REPLAYED = 'issue.replayed',
+    RUNS_RERUN = 'workflow.runs.rerun',
     PRIVACY_SETTINGS_UPDATED = 'privacy.settings.updated',
     PERSONAL_DATA_ERASURE = 'privacy.personal_data.erasure',
     AGENT_APPROVAL_DECIDED = 'agent.approval.decided',
@@ -61,11 +62,14 @@ export enum ApplicationEventName {
     LOGIN_SETTINGS_UPDATED = 'tenant.login.settings.updated',
     WORKER_STATE_CHANGED = 'tenant.worker.state.changed',
     AUDIT_LOG_EXPORTED = 'tenant.audit.exported',
+    PROJECT_LIMITS_UPDATED = 'tenant.project.limits.updated',
     DATA_STORE_CREATED = 'data_store.created',
     DATA_STORE_UPDATED = 'data_store.updated',
     DATA_STORE_DELETED = 'data_store.deleted',
     DATA_STORE_CLEARED = 'data_store.cleared',
     DATA_STORE_RECORD_DELETED = 'data_store.record.deleted',
+    PERSONAL_ACCESS_TOKEN_CREATED = 'user.access_token.created',
+    PERSONAL_ACCESS_TOKEN_REVOKED = 'user.access_token.revoked',
 }
 
 const BaseAuditEventProps = {
@@ -481,6 +485,17 @@ export const IssueReplayedEvent = z.object({
 })
 export type IssueReplayedEvent = z.infer<typeof IssueReplayedEvent>
 
+export const RunsRerunEvent = z.object({
+    ...BaseAuditEventProps,
+    action: z.literal(ApplicationEventName.RUNS_RERUN),
+    data: z.object({
+        strategy: z.string(),
+        count: z.number(),
+        executionIds: z.array(z.string()),
+    }),
+})
+export type RunsRerunEvent = z.infer<typeof RunsRerunEvent>
+
 export const PrivacySettingsUpdatedEvent = z.object({
     ...BaseAuditEventProps,
     action: z.literal(ApplicationEventName.PRIVACY_SETTINGS_UPDATED),
@@ -593,6 +608,7 @@ export const TenantAdminEvent = z.object({
         z.literal(ApplicationEventName.LOGIN_SETTINGS_UPDATED),
         z.literal(ApplicationEventName.WORKER_STATE_CHANGED),
         z.literal(ApplicationEventName.AUDIT_LOG_EXPORTED),
+        z.literal(ApplicationEventName.PROJECT_LIMITS_UPDATED),
     ]),
     data: z.object({
         target: z.string(),
@@ -621,6 +637,22 @@ export const DataStoreEvent = z.object({
 })
 export type DataStoreEvent = z.infer<typeof DataStoreEvent>
 
+export const PersonalAccessTokenEvent = z.object({
+    ...BaseAuditEventProps,
+    action: z.union([
+        z.literal(ApplicationEventName.PERSONAL_ACCESS_TOKEN_CREATED),
+        z.literal(ApplicationEventName.PERSONAL_ACCESS_TOKEN_REVOKED),
+    ]),
+    data: z.object({
+        token: z.object({
+            id: z.string(),
+            name: z.string(),
+            expiresAt: z.string().nullable(),
+        }),
+    }),
+})
+export type PersonalAccessTokenEvent = z.infer<typeof PersonalAccessTokenEvent>
+
 export const ApplicationEvent = z.union([
     ConnectionEvent,
     VariableEvent,
@@ -638,6 +670,7 @@ export const ApplicationEvent = z.union([
     MemberEvent,
     ExecutionPayloadRevealedEvent,
     IssueReplayedEvent,
+    RunsRerunEvent,
     PrivacySettingsUpdatedEvent,
     PersonalDataErasureEvent,
     AgentApprovalDecidedEvent,
@@ -647,6 +680,7 @@ export const ApplicationEvent = z.union([
     McpServiceChangedEvent,
     TenantAdminEvent,
     DataStoreEvent,
+    PersonalAccessTokenEvent,
 ])
 
 export type ApplicationEvent = z.infer<typeof ApplicationEvent>
@@ -697,6 +731,8 @@ export function summarizeApplicationEvent(event: ApplicationEvent) {
             return `Raw payload of step ${event.data.stepName} in run ${event.data.execution.id} was revealed`
         case ApplicationEventName.ISSUE_REPLAYED:
             return `${event.data.count} runs of issue "${event.data.issue.title}" were replayed`
+        case ApplicationEventName.RUNS_RERUN:
+            return `${event.data.count} runs were rerun (${event.data.strategy.toLowerCase()})`
         case ApplicationEventName.PRIVACY_SETTINGS_UPDATED:
             return 'Privacy settings were updated'
         case ApplicationEventName.AGENT_APPROVAL_DECIDED:
@@ -735,6 +771,7 @@ export function summarizeApplicationEvent(event: ApplicationEvent) {
         case ApplicationEventName.LOGIN_SETTINGS_UPDATED:
         case ApplicationEventName.WORKER_STATE_CHANGED:
         case ApplicationEventName.AUDIT_LOG_EXPORTED:
+        case ApplicationEventName.PROJECT_LIMITS_UPDATED:
             return isNil(event.data.detail) ? event.data.target : `${event.data.target}: ${event.data.detail}`
         case ApplicationEventName.DATA_STORE_CREATED:
             return `Data store "${event.data.dataStore.name}" was created`
@@ -746,6 +783,10 @@ export function summarizeApplicationEvent(event: ApplicationEvent) {
             return `${event.data.count ?? 0} records in data store "${event.data.dataStore.name}" were cleared`
         case ApplicationEventName.DATA_STORE_RECORD_DELETED:
             return `Key "${event.data.key ?? ''}" was deleted from data store "${event.data.dataStore.name}"`
+        case ApplicationEventName.PERSONAL_ACCESS_TOKEN_CREATED:
+            return `Personal access token "${event.data.token.name}" was created`
+        case ApplicationEventName.PERSONAL_ACCESS_TOKEN_REVOKED:
+            return `Personal access token "${event.data.token.name}" was revoked`
     }
 }
 

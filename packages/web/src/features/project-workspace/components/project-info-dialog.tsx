@@ -30,8 +30,8 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { projectCollectionUtils } from '@/features/projects/stores/project-collection';
 import { projectDirectoryHooks } from '@/features/projects/api/project-directory-api';
+import { projectCollectionUtils } from '@/features/projects/stores/project-collection';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
 
@@ -257,7 +257,10 @@ function ProjectInfoForm({
 }
 
 function defaultValues(
-  project: Pick<ProjectWithLimits, 'displayName' | 'description' | 'icon'> | null,
+  project: Pick<
+    ProjectWithLimits,
+    'displayName' | 'description' | 'icon'
+  > | null,
 ): SaveProjectInfoRequestBody {
   return {
     displayName: project?.displayName ?? '',

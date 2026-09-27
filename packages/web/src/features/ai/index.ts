@@ -11,3 +11,4 @@ export {
   GenerateWorkflowDialog,
 } from './components/generate-workflow-dialog';
 export { AiAssistantButton } from './components/ai-assistant-sheet';
+export type { AssistantBuilderBridge } from './components/ai-assistant-sheet';

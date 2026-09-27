@@ -41,6 +41,7 @@ export const projectWorkspaceController: FastifyPluginAsyncZod = async (app) => 
             projectId: request.projectId,
             workflowIds: request.body.workflowIds,
             tenantId: request.principal.tenant.id,
+            userId: request.principal.id,
         })
     })
 

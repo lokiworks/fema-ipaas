@@ -87,6 +87,8 @@ export const Execution = z.object({
     archivedAt: Nullable(z.string()),
     stepsCount: z.number().optional(),
     issueId: Nullable(z.string()),
+    rerunOfExecutionId: z.string().nullish(),
+    inPlaceRetryCount: z.number().optional(),
     privacyMaskedFields: z.number().optional(),
     payloadRedacted: z.boolean().optional(),
     // Populated only for tenant admins on INTERNAL_ERROR runs; stripped from the response otherwise.

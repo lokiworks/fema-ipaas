@@ -212,6 +212,7 @@ function triggerOperation({ plan, versions }: { plan: WorkflowPlan, versions: Ma
                 triggerName: plan.trigger.operationName,
                 input: inputOf(plan.trigger),
                 propertySettings: {},
+                pendingReview: true,
             },
         },
     }
@@ -235,6 +236,7 @@ function actionOperation({ step, index, versions }: { step: WorkflowPlanStep, in
                     input: inputOf(step),
                     propertySettings: {},
                     errorHandlingOptions: { continueOnFailure: { value: false }, retryOnFailure: { value: false } },
+                    pendingReview: true,
                 },
             },
         },
@@ -276,6 +278,12 @@ function clip(text: string): string {
     return text.length > DESCRIPTION_LIMIT ? `${text.slice(0, DESCRIPTION_LIMIT)}…` : text
 }
 
+export const aiCatalog = {
+    loadCatalog,
+    loadConnections,
+    catalogEntry,
+}
+
 const PLAN_MAX_TOKENS = 4096
 const CJK_PATTERN = /[\u4e00-\u9fff]/
 const DESCRIPTION_LIMIT = 140
@@ -303,7 +311,7 @@ const PlanDraft = z.object({
 })
 type PlanDraft = z.infer<typeof PlanDraft>
 
-type ConnectionRef = {
+export type ConnectionRef = {
     externalId: string
     connectorName: string
 }

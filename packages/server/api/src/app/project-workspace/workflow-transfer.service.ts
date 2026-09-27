@@ -15,10 +15,10 @@ import { FastifyBaseLogger } from 'fastify'
 import { In } from 'typeorm'
 import { connectionsRepo } from '../connection/connection-service/connection-service'
 import { folderRepo } from '../workflows/folder/folder.service'
-import { migrateWorkflowVersionTemplate } from '../workflows/workflow-version/migrations'
-import { workflowVersionService } from '../workflows/workflow-version/workflow-version.service'
 import { workflowNaming } from '../workflows/workflow/workflow-naming'
 import { workflowService } from '../workflows/workflow/workflow.service'
+import { migrateWorkflowVersionTemplate } from '../workflows/workflow-version/migrations'
+import { workflowVersionService } from '../workflows/workflow-version/workflow-version.service'
 import { workflowTransferUtils } from './workflow-transfer-utils'
 
 export const workflowTransferService = (log: FastifyBaseLogger) => ({

@@ -18,6 +18,9 @@ import { In, IsNull, LessThanOrEqual, MoreThanOrEqual } from 'typeorm'
 import { repoFactory } from '../core/db/repo-factory'
 import { domainHelper } from '../helper/domain-helper'
 import { IssueRecordEvent, issueRepo, issueService } from '../issue/issue.service'
+import { instanceLimits } from '../limits/instance-limits'
+import { runQuotaUtils } from '../limits/run-quota-utils'
+import { runQuota } from '../limits/run-quota.service'
 import { projectRepo } from '../project/project-repo'
 import { executionRepo } from '../workflows/execution/execution-service'
 import { alertPolicyService } from './alert-policy.service'
@@ -52,6 +55,7 @@ export const alertDispatcher = (log: FastifyBaseLogger) => ({
         for (const policy of policies) {
             await escalate({ policy, log })
             await checkFailureRate({ policy })
+            await checkCapacity({ policy, log })
         }
     },
 })
@@ -238,10 +242,54 @@ async function checkFailureRate({ policy }: { policy: AlertPolicySchema }): Prom
     }
 }
 
+async function checkCapacity({ policy, log }: { policy: AlertPolicySchema, log: FastifyBaseLogger }): Promise<void> {
+    const threshold = policy.capacityThresholdPercent
+    if (!policy.events.includes(AlertTriggerEvent.CAPACITY) || isNil(threshold)) {
+        return
+    }
+    const projects = await projectRepo().find({
+        where: policy.projectIds.length > 0 ? { tenantId: policy.tenantId, id: In(policy.projectIds) } : { tenantId: policy.tenantId },
+        select: ['id', 'monthlyRunsLimit'],
+    })
+    if (projects.length === 0) {
+        return
+    }
+    const usage = await runQuota(log).usageThisMonth({ projectIds: projects.map((project) => project.id) })
+    const monthStart = runQuotaUtils.monthStart(dayjsUtil())
+    for (const project of projects) {
+        const used = usage.get(project.id) ?? 0
+        const limit = project.monthlyRunsLimit ?? instanceLimits.runsPerMonth()
+        if (!runQuotaUtils.crossedThreshold({ used, limit, thresholdPercent: threshold })) {
+            continue
+        }
+        const alreadyAlerted = await alertRecordRepo().exists({
+            where: { policyId: policy.id, projectId: project.id, kind: AlertRecordKind.CAPACITY, created: MoreThanOrEqual(monthStart) },
+        })
+        if (alreadyAlerted) {
+            continue
+        }
+        const percent = ((runQuotaUtils.usageRatio({ used, limit }) ?? 0) * 100).toFixed(1)
+        await alertRecordRepo().insert({
+            id: generateId(),
+            tenantId: policy.tenantId,
+            policyId: policy.id,
+            projectId: project.id,
+            issueId: null,
+            kind: AlertRecordKind.CAPACITY,
+            channelIds: policy.channelIds,
+            mergedCount: 1,
+            status: AlertRecordStatus.PENDING,
+            scheduledAt: (quietHoursEnd({ quietHours: policy.quietHours, now: new Date() }) ?? new Date()).toISOString(),
+            sentAt: null,
+            error: null,
+            summary: `本月运行 ${used.toLocaleString('en-US')} / ${limit.toLocaleString('en-US')} 次（${percent}%），达到容量告警阈值 ${threshold}%`,
+        })
+    }
+}
+
 async function buildMessage({ record, issue }: { record: AlertRecordSchema, issue: Issue | null }): Promise<AlertMessage> {
-    const link = isNil(issue)
-        ? isNil(record.projectId) ? null : await domainHelper.getPublicUrl({ path: `projects/${record.projectId}/issues` })
-        : await domainHelper.getPublicUrl({ path: `projects/${issue.projectId}/issues/${issue.id}` })
+    const path = linkPath({ record, issue })
+    const link = isNil(path) ? null : await domainHelper.getPublicUrl({ path })
     const project = isNil(record.projectId) ? null : await projectRepo().findOne({ where: { id: record.projectId }, select: ['id', 'displayName'] })
     const lines = [
         isNil(project) ? null : `项目：${project.displayName}`,
@@ -250,6 +298,16 @@ async function buildMessage({ record, issue }: { record: AlertRecordSchema, issu
         isNil(issue) ? null : `原因：${issue.message.slice(0, MAX_MESSAGE_PREVIEW)}`,
     ].filter((line): line is string => !isNil(line))
     return { title: `【${KIND_LABELS[record.kind]}】${record.summary}`, body: lines.join('\n'), link }
+}
+
+function linkPath({ record, issue }: { record: AlertRecordSchema, issue: Issue | null }): string | null {
+    if (record.kind === AlertRecordKind.CAPACITY) {
+        return 'tenant/limits/usage'
+    }
+    if (!isNil(issue)) {
+        return `projects/${issue.projectId}/issues/${issue.id}`
+    }
+    return isNil(record.projectId) ? null : `projects/${record.projectId}/issues`
 }
 
 function summarize({ kind, issue, policy }: { kind: AlertRecordKind, issue: Issue | null, policy: AlertPolicySchema }): string {
@@ -314,6 +372,7 @@ const KIND_LABELS: Record<AlertRecordKind, string> = {
     [AlertRecordKind.THRESHOLD]: '失败率超阈值',
     [AlertRecordKind.ESCALATED]: '已升级',
     [AlertRecordKind.STILL_FAILING]: '仍在失败',
+    [AlertRecordKind.CAPACITY]: '容量告警',
 }
 
 type OnIssueRecordedParams = {

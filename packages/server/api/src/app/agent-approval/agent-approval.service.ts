@@ -7,12 +7,14 @@ import {
     CreateAgentApprovalRequestBody,
     DecideAgentApprovalRequestBody,
     ListAgentApprovalsRequestQuery,
+    NotificationType,
     privacyMasking,
 } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { ArrayContains, LessThan } from 'typeorm'
 import { repoFactory } from '../core/db/repo-factory'
+import { notificationService } from '../notification/notification.service'
 import { privacyService } from '../privacy/privacy.service'
 import { projectService } from '../project/project-service'
 import { findExecutionOrThrow } from '../workflows/execution/execution-service'
@@ -36,6 +38,7 @@ export const agentApprovalService = (log: FastifyBaseLogger) => ({
         const settings = await privacyService(log).get({ tenantId: project.tenantId })
         const masked = privacyMasking.maskDeep({ value: request.arguments, rules: settings.maskRules, maskAll: false })
         const id = generateId()
+        const approverIds = [...new Set([workflow?.ownerId, project.ownerId].filter((userId): userId is string => !isNil(userId)))]
         const maskedArguments: Record<string, unknown> = typeof masked.value === 'object' && masked.value !== null && !Array.isArray(masked.value) ? { ...masked.value } : {}
         await agentApprovalRepo().save({
             id,
@@ -50,13 +53,22 @@ export const agentApprovalService = (log: FastifyBaseLogger) => ({
             arguments: maskedArguments,
             message: request.message,
             status: AgentApprovalStatus.PENDING,
-            approverIds: [...new Set([workflow?.ownerId, project.ownerId].filter((userId): userId is string => !isNil(userId)))],
+            approverIds,
             decidedById: null,
             decidedAt: null,
             comment: null,
             expiresAt: dayjs().add(request.timeoutHours, 'hour').toISOString(),
         })
         log.info({ project: { id: projectId }, execution: { id: execution.id }, tool: { name: request.tool } }, '[agentApprovalService#create] Agent call waiting for approval')
+        await notificationService(log).notify({
+            tenantId: project.tenantId,
+            projectId,
+            recipientIds: approverIds,
+            type: NotificationType.AGENT_APPROVAL_REQUESTED,
+            title: request.tool,
+            body: request.message,
+            link: `/projects/${projectId}/agent-approvals`,
+        })
         return { id }
     },
 

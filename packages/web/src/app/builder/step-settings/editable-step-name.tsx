@@ -27,6 +27,7 @@ interface EditableStepNameProps {
   tooltipDescription?: string;
   connectorVersion?: string;
   stepIndex?: number;
+  displayNumber?: string;
 }
 
 const EditableStepName: React.FC<EditableStepNameProps> = ({
@@ -43,6 +44,7 @@ const EditableStepName: React.FC<EditableStepNameProps> = ({
   tooltipDescription,
   connectorVersion,
   stepIndex,
+  displayNumber,
 }) => {
   const inBranchView = !isNil(selectedBranchIndex);
   const showActionTooltip =
@@ -118,6 +120,11 @@ const EditableStepName: React.FC<EditableStepNameProps> = ({
                   {typeof stepIndex === 'number' && `${stepIndex}. `}
                   {displayName}
                 </span>
+                {displayNumber && (
+                  <span className="shrink-0 font-mono text-[11px] text-muted-foreground">
+                    {displayNumber}
+                  </span>
+                )}
                 {!readonly && (
                   <Pencil className="size-3.5 shrink-0 text-muted-foreground" />
                 )}

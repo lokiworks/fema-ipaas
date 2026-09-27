@@ -11,8 +11,10 @@ export enum WebsocketClientEvent {
     UPDATE_RUN_PROGRESS = 'UPDATE_RUN_PROGRESS',
     RESOURCE_LOCKED = 'RESOURCE_LOCKED',
     RESOURCE_UNLOCKED = 'RESOURCE_UNLOCKED',
+    RESOURCE_EDIT_REQUESTED = 'RESOURCE_EDIT_REQUESTED',
     PRESENCE_UPDATED = 'PRESENCE_UPDATED',
     CHAT_MESSAGE_CHUNK = 'CHAT_MESSAGE_CHUNK',
+    NOTIFICATION_CREATED = 'NOTIFICATION_CREATED',
 }
 
 export enum WebsocketServerEvent {
@@ -27,6 +29,7 @@ export enum WebsocketServerEvent {
     MANUAL_TRIGGER_RUN_STARTED = 'MANUAL_TRIGGER_RUN_STARTED',
     LOCK_RESOURCE = 'LOCK_RESOURCE',
     UNLOCK_RESOURCE = 'UNLOCK_RESOURCE',
+    REQUEST_RESOURCE_EDIT = 'REQUEST_RESOURCE_EDIT',
     JOIN_PRESENCE = 'JOIN_PRESENCE',
     LEAVE_PRESENCE = 'LEAVE_PRESENCE',
 }
@@ -34,6 +37,18 @@ export enum WebsocketServerEvent {
 export const LockResourceRequest = z.object({
     resourceId: z.string(),
     force: z.boolean().optional(),
+    active: z.boolean().optional(),
+})
+
+export const RequestResourceEditRequest = z.object({
+    resourceId: z.string(),
+})
+
+export const ResourceEditRequestedEvent = z.object({
+    resourceId: z.string(),
+    holderUserId: z.string(),
+    requesterUserId: z.string(),
+    requesterDisplayName: z.string(),
 })
 
 export const LockResourceResponse = z.object({
@@ -41,13 +56,17 @@ export const LockResourceResponse = z.object({
     lock: z.object({
         userId: z.string(),
         userDisplayName: z.string(),
+        expiresAt: z.string().optional(),
     }).nullable(),
+    reason: z.enum(['LOCKED', 'NOT_ALLOWED']).optional(),
 })
 
 export const ResourceLockedEvent = z.object({
     resourceId: z.string(),
     userId: z.string(),
     userDisplayName: z.string(),
+    previousUserId: z.string().optional(),
+    takenOver: z.boolean().optional(),
 })
 
 export const ResourceUnlockedEvent = z.object({
@@ -74,6 +93,8 @@ export type LockResourceRequest = z.infer<typeof LockResourceRequest>
 export type LockResourceResponse = z.infer<typeof LockResourceResponse>
 export type ResourceLockedEvent = z.infer<typeof ResourceLockedEvent>
 export type ResourceUnlockedEvent = z.infer<typeof ResourceUnlockedEvent>
+export type RequestResourceEditRequest = z.infer<typeof RequestResourceEditRequest>
+export type ResourceEditRequestedEvent = z.infer<typeof ResourceEditRequestedEvent>
 export type EmitTestStepProgressRequest = StepRunResponse & { projectId: string, sequence?: number }
 export type TestStepProgressEvent = UpdateStepProgressRequest | EmitTestStepProgressRequest
 export type PresenceRequest = z.infer<typeof PresenceRequest>

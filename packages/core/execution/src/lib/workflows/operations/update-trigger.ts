@@ -8,7 +8,7 @@ import { workflowStructureUtil } from '../util/workflow-structure-util'
 import { UpdateTriggerRequest } from '.'
 
 
-function createTrigger(name: string, request: UpdateTriggerRequest, nextAction: WorkflowAction | undefined, existingSampleData: SampleDataSettings | undefined): WorkflowTrigger {
+function createTrigger(name: string, request: UpdateTriggerRequest, nextAction: WorkflowAction | undefined, existingSampleData: SampleDataSettings | undefined, existingDisplayNumber: string | undefined): WorkflowTrigger {
     const baseProperties = {
         displayName: request.displayName,
         name,
@@ -29,7 +29,7 @@ function createTrigger(name: string, request: UpdateTriggerRequest, nextAction: 
             trigger = {
                 ...baseProperties,
                 type: WorkflowTriggerType.CONNECTOR,
-                settings: { ...request.settings, sampleData: existingSampleData },
+                settings: { ...request.settings, sampleData: existingSampleData, displayNumber: request.settings.displayNumber ?? existingDisplayNumber },
             }
             break
     }
@@ -44,7 +44,8 @@ function createTrigger(name: string, request: UpdateTriggerRequest, nextAction: 
 function _updateTrigger(workflowVersion: WorkflowVersion, request: UpdateTriggerRequest): WorkflowVersion {
     const trigger = workflowStructureUtil.getStepOrThrow(request.name, workflowVersion.trigger)
     const existingSampleData = trigger.type === WorkflowTriggerType.CONNECTOR ? trigger.settings.sampleData : undefined
-    const updatedTrigger = createTrigger(request.name, request, trigger.nextAction, existingSampleData)
+    const existingDisplayNumber = trigger.type === WorkflowTriggerType.CONNECTOR ? trigger.settings.displayNumber : undefined
+    const updatedTrigger = createTrigger(request.name, request, trigger.nextAction, existingSampleData, existingDisplayNumber)
     const next = workflowStructureUtil.transferWorkflow(workflowVersion, (parentStep) => {
         if (parentStep.name === request.name) {
             return updatedTrigger

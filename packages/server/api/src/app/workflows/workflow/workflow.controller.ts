@@ -1,10 +1,11 @@
-import { EntityId, Permission, SeekPage, UserId } from '@fema-ipaas/core-utils'
+import { EntityId, isNil, Permission, SeekPage, UserId } from '@fema-ipaas/core-utils'
 import { CountWorkflowsRequest, CreateWorkflowRequest, GetWorkflowQueryParamsRequest, GetWorkflowTemplateRequestQuery, ListWorkflowsRequest, PopulatedWorkflow, PrincipalType, SERVICE_KEY_SECURITY_OPENAPI, SharedTemplate, WorkflowOperationRequest, WorkflowOperationType, workflowStructureUtil, WorkflowTrigger } from '@fema-ipaas/shared'
 import { FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
 import { entitiesMustBeOwnedByCurrentProject } from '../../authentication/authorization'
+import { lockService } from '../../core/collaborative/lock/lock.service'
 import { ProjectResourceType } from '../../core/security/authorization/common'
 import { securityAccess } from '../../core/security/authorization/fastify-security'
 import { networkUtils } from '../../helper/network-utils'
@@ -76,6 +77,12 @@ export const workflowController: FastifyPluginAsyncZod = async (app) => {
             await workflowReleaseService(request.log).assertCanPublishDirectly({
                 projectId: request.projectId,
             })
+            if (isNil(request.body.request.versionId)) {
+                await lockService(request.log).assertNotLockedByOther({
+                    resourceId: request.params.id,
+                    userId: actorUserId(request),
+                })
+            }
         }
 
         return workflowService(request.log).update({

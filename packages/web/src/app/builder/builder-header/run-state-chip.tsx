@@ -3,14 +3,10 @@ import { ExecutionStatus } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
-import { formatUtils } from '@/lib/format-utils';
 import { cn } from '@/lib/utils';
 
 export function RunStateChip() {
-  const [run, workflowVersion] = useBuilderStateContext((state) => [
-    state.run,
-    state.workflowVersion,
-  ]);
+  const run = useBuilderStateContext((state) => state.run);
 
   const tone = isNil(run) ? IDLE : TONES[run.status] ?? IDLE;
 
@@ -24,12 +20,6 @@ export function RunStateChip() {
       >
         {tone.label()}
       </span>
-      {!isNil(workflowVersion.updated) && (
-        <span className="truncate text-[11px] text-muted-foreground">
-          {t('Last updated')}:{' '}
-          {formatUtils.formatDate(new Date(workflowVersion.updated))}
-        </span>
-      )}
     </div>
   );
 }

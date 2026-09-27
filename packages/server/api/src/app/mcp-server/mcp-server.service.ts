@@ -22,8 +22,8 @@ import {
     McpServerUsage,
     McpServerUsageItem,
     McpServerUsageKind,
-    McpServerWorkflowUsage,
     mcpServerUtils,
+    McpServerWorkflowUsage,
     OAuth2GrantType,
     PrincipalType,
     SyncMcpServerToolsResponse,
@@ -36,11 +36,11 @@ import {
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { z } from 'zod'
-import { ActionRunStatus, actionRunService } from '../action-run/action-run.service'
+import { actionRunService, ActionRunStatus } from '../action-run/action-run.service'
 import { connectionAccessService, connectionScopeHelper } from '../connection/connection-access.service'
 import { connectionReferenceService } from '../connection/connection-reference.service'
+import { connectionService, connectionsRepo } from '../connection/connection-service/connection-service'
 import { connectionShareService } from '../connection/connection-share.service'
-import { connectionsRepo, connectionService } from '../connection/connection-service/connection-service'
 import { ConnectionSchema } from '../connection/connection.entity'
 import { repoFactory } from '../core/db/repo-factory'
 import { encryptUtils } from '../helper/encryption'
@@ -125,7 +125,9 @@ export const mcpServerService = (log: FastifyBaseLogger) => ({
         })
         await connectionsRepo().update({ id: saved.id, tenantId }, { projectMembersPermission: ConnectionSharePermission.USE })
         const connection = await connectionsRepo().findOneOrFail({ where: { id: saved.id, tenantId }, relations: { owner: { identity: true } } })
-        const oauthProbe = isOAuth ? await probe({ log, tenantId, projectId: request.projectId, auth: referenceTo(connection), url: request.url }) : null
+        const oauthProbe = isOAuth
+            ? await probe({ log, tenantId, projectId: await connectionAccessService(log).projectToActIn({ connection, principal }), auth: referenceTo(connection), url: request.url })
+            : null
         const result = customProbe ?? oauthProbe
         await mcpServerRepo().save({
             id: generateId(),
@@ -184,6 +186,9 @@ export const mcpServerService = (log: FastifyBaseLogger) => ({
                 value: oauthValue({ request }),
                 skipEngineValidation: true,
             })
+        }
+        if (settingsChanged && request.auth.type === McpServerAuthType.OAUTH2 && isNil(request.auth.code) && connection.type === ConnectionType.OAUTH2) {
+            await rewriteOAuthTarget({ connection, url: request.url, transport: request.transport })
         }
         await connectionsRepo().update({ id: connection.id, tenantId }, { displayName: request.displayName, ...nextScope })
         const refreshed = await connectionsRepo().findOneOrFail({ where: { id: connection.id, tenantId }, relations: { owner: { identity: true } } })
@@ -300,8 +305,8 @@ function toModel({ connection, row, isAdmin, userId }: ToModelParams): McpServer
         id: connection.id,
         connectionId: connection.id,
         externalId: connection.externalId,
-        created: String(connection.created),
-        updated: String(connection.updated),
+        created: dayjs(connection.created).toISOString(),
+        updated: dayjs(connection.updated).toISOString(),
         displayName: connection.displayName,
         description: row.description,
         url: row.url,
@@ -312,7 +317,7 @@ function toModel({ connection, row, isAdmin, userId }: ToModelParams): McpServer
         connectionStatus: connection.status,
         lastError: row.lastError,
         tools: row.tools,
-        lastSyncedAt: isNil(row.lastSyncedAt) ? null : String(row.lastSyncedAt),
+        lastSyncedAt: isNil(row.lastSyncedAt) ? null : dayjs(row.lastSyncedAt).toISOString(),
         allProjects: 'allProjects' in connection ? connection.allProjects : false,
         projectIds: connection.projectIds,
         projects: 'projects' in connection ? connection.projects : [],
@@ -517,6 +522,15 @@ async function storedBearerToken(connection: ConnectionSchema): Promise<string |
     return value.success ? value.data.props.token ?? null : null
 }
 
+async function rewriteOAuthTarget({ connection, url, transport }: { connection: ConnectionSchema, url: string, transport: McpServerTransport }): Promise<void> {
+    const stored = StoredOAuthValue.safeParse(await encryptUtils.decryptObject<unknown>(connection.value))
+    if (!stored.success) {
+        return
+    }
+    const next = { ...stored.data, props: { ...stored.data.props, url: url.trim(), transport } }
+    await connectionsRepo().update({ id: connection.id, tenantId: connection.tenantId }, { value: await encryptUtils.encryptObject(next) })
+}
+
 function customAuthValue({ url, transport, auth, storedToken }: CustomAuthValueParams): CustomAuthConnectionValue {
     const token = auth.type === McpServerAuthType.BEARER ? (auth.token?.trim() || storedToken || '') : ''
     return {
@@ -608,6 +622,10 @@ const StoredProps = z.object({
         authType: z.string().nullish(),
         token: z.string().nullish(),
     }),
+})
+
+const StoredOAuthValue = z.looseObject({
+    props: z.record(z.string(), z.unknown()),
 })
 
 const ToolOutput = z.object({

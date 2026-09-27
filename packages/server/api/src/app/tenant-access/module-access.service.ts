@@ -1,9 +1,10 @@
 import { ApplicationError, ErrorCode, generateId, isNil } from '@fema-ipaas/core-utils'
-import { CreateModuleAccessRequestBody, DEFAULT_MODULE_ACCESS_SETTINGS, ModuleAccessContact, ModuleAccessRequest, ModuleAccessRequestStatus, ModuleAccessRequestWithUsers, ModuleAccessSettings, MyModuleAccess, PermissionDeniedHint, TenantModule, TenantRole, UserStatus } from '@fema-ipaas/shared'
+import { CreateModuleAccessRequestBody, DEFAULT_MODULE_ACCESS_SETTINGS, ModuleAccessContact, ModuleAccessRequest, ModuleAccessRequestStatus, ModuleAccessRequestWithUsers, ModuleAccessSettings, MyModuleAccess, NotificationType, PermissionDeniedHint, TenantModule, TenantRole, UserStatus } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { In } from 'typeorm'
 import { repoFactory } from '../core/db/repo-factory'
+import { notificationService } from '../notification/notification.service'
 import { tenantRepo } from '../tenant/tenant.service'
 import { userRepo, userService } from '../user/user-service'
 import { ModuleAccessRequestEntity } from './module-access-request.entity'
@@ -129,6 +130,14 @@ export const moduleAccessService = (log: FastifyBaseLogger) => ({
             status: decided.status,
             decidedBy: decided.decidedBy,
             decidedAt: decided.decidedAt,
+        })
+        await notificationService(log).notify({
+            tenantId,
+            recipientIds: [request.userId],
+            type: approve ? NotificationType.MODULE_ACCESS_APPROVED : NotificationType.MODULE_ACCESS_REJECTED,
+            title: request.module,
+            link: approve ? '/' : null,
+            actorId,
         })
         return decided
     },

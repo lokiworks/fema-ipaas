@@ -7,6 +7,7 @@ import { FileX } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 
 import { BuilderPage } from '@/app/builder';
+import { BuilderSnapshotProvider } from '@/app/builder/snapshot-context';
 import { BuilderStateProvider } from '@/app/builder/state/builder-state-provider';
 import { LoadingSpinner } from '@/components/custom/spinner';
 import { buttonVariants } from '@/components/ui/button';
@@ -16,16 +17,25 @@ import { recentVisits } from '@/lib/recent-visits';
 import { cn } from '@/lib/utils';
 
 const WorkflowBuilderPage = () => {
-  const { workflowId } = useParams();
+  const { workflowId, versionId } = useParams();
+  const snapshotVersionId = versionId ?? null;
 
   const {
     data: workflow,
     isLoading,
     isError,
   } = useQuery<PopulatedWorkflow, Error>({
-    queryKey: ['workflow', workflowId, authenticationSession.getProjectId()],
+    queryKey: [
+      'workflow',
+      workflowId,
+      authenticationSession.getProjectId(),
+      snapshotVersionId,
+    ],
     queryFn: async () => {
-      const loaded = await workflowsApi.get(workflowId!);
+      const loaded = await workflowsApi.get(
+        workflowId!,
+        snapshotVersionId ? { versionId: snapshotVersionId } : undefined,
+      );
       recentVisits.record({
         type: 'workflow',
         id: loaded.id,
@@ -85,18 +95,20 @@ const WorkflowBuilderPage = () => {
   }
 
   return (
-    <ReactFlowProvider>
-      <BuilderStateProvider
-        workflow={workflow}
-        workflowVersion={workflow!.version}
-        readonly={false}
-        hideTestWidget={false}
-        run={null}
-        outputSampleData={sampleData ?? {}}
-        inputSampleData={sampleDataInput ?? {}}
-      >
-        <BuilderPage />
-      </BuilderStateProvider>
+    <ReactFlowProvider key={snapshotVersionId ?? 'current'}>
+      <BuilderSnapshotProvider versionId={snapshotVersionId}>
+        <BuilderStateProvider
+          workflow={workflow}
+          workflowVersion={workflow!.version}
+          readonly={!!snapshotVersionId}
+          hideTestWidget={false}
+          run={null}
+          outputSampleData={sampleData ?? {}}
+          inputSampleData={sampleDataInput ?? {}}
+        >
+          <BuilderPage />
+        </BuilderStateProvider>
+      </BuilderSnapshotProvider>
     </ReactFlowProvider>
   );
 };

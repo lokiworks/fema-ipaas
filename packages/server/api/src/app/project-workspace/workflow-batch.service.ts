@@ -17,22 +17,24 @@ import {
 import { FastifyBaseLogger } from 'fastify'
 import { In } from 'typeorm'
 import { connectionsRepo } from '../connection/connection-service/connection-service'
+import { lockService } from '../core/collaborative/lock/lock.service'
 import { projectService } from '../project/project-service'
 import { workflowReleaseRepo, workflowReleaseService } from '../release/workflow-release.service'
 import { folderRepo } from '../workflows/folder/folder.service'
-import { workflowVersionRepo } from '../workflows/workflow-version/workflow-version.service'
 import { workflowRepo } from '../workflows/workflow/workflow.repo'
 import { workflowService } from '../workflows/workflow/workflow.service'
+import { workflowVersionRepo } from '../workflows/workflow-version/workflow-version.service'
 import { batchCheckUtils, BatchTarget } from './batch-check-utils'
 
 export const workflowBatchService = (log: FastifyBaseLogger) => ({
-    async check({ projectId, workflowIds, tenantId }: CheckParams): Promise<BatchPublishCheckResponse> {
+    async check({ projectId, workflowIds, tenantId, userId }: CheckParams): Promise<BatchPublishCheckResponse> {
         const target = await resolveTarget({ log, projectId })
         const workflows = await loadWorkflows({ log, projectId, workflowIds })
         const unhealthy = await unhealthyConnections({ tenantId, workflows })
+        const locks = await Promise.all(workflows.map((workflow) => lockService(log).getLock({ resourceId: workflow.id })))
         return {
             target,
-            items: workflows.map((workflow) => batchCheckUtils.classify({
+            items: workflows.map((workflow, index) => batchCheckUtils.classify({
                 target,
                 workflow: {
                     id: workflow.id,
@@ -43,13 +45,14 @@ export const workflowBatchService = (log: FastifyBaseLogger) => ({
                     publishedVersionId: workflow.publishedVersionId ?? null,
                     testVersionId: workflow.testVersionId ?? null,
                     unhealthyConnections: workflow.version.connectionIds.filter((id) => unhealthy.has(id)).length,
+                    lockedByOther: !isNil(locks[index]) && locks[index]?.userId !== userId,
                 },
             })),
         }
     },
 
     async publish({ projectId, workflowIds, description, userId, tenantId }: PublishParams): Promise<BatchPublishResponse> {
-        const check = await this.check({ projectId, workflowIds, tenantId })
+        const check = await this.check({ projectId, workflowIds, tenantId, userId })
         const results: BatchPublishResultItem[] = []
         for (const item of check.items) {
             results.push(await publishOne({ log, item, target: check.target, projectId, userId, tenantId, description }))
@@ -140,6 +143,7 @@ type CheckParams = {
     projectId: ProjectId
     workflowIds: string[]
     tenantId: TenantId
+    userId: UserId
 }
 
 type PublishParams = CheckParams & {

@@ -6,7 +6,7 @@ import {
   TemplateTelemetryEventType,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
-import { Search, PuzzleIcon } from 'lucide-react';
+import { ActivityIcon, Search, PuzzleIcon, ScrollTextIcon } from 'lucide-react';
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useDebounce } from 'use-debounce';
@@ -33,6 +33,8 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar-shadcn';
 import { VirtualizedScrollArea } from '@/components/ui/virtualized-scroll-area';
+import { HelpMenu } from '@/features/help';
+import { NotificationBell } from '@/features/notifications';
 import {
   CreateProjectButton,
   projectCollectionUtils,
@@ -158,7 +160,27 @@ export function ProjectDashboardSidebar({
     isSubItem: false,
   };
 
-  const items = [exploreLink, connectorsLink]
+  const runLogsLink: SidebarItemType = {
+    type: 'link',
+    to: '/logs',
+    label: t('Run logs'),
+    show: !embedState.isEmbedded,
+    icon: ScrollTextIcon,
+    hasPermission: true,
+    isSubItem: false,
+  };
+
+  const monitorLink: SidebarItemType = {
+    type: 'link',
+    to: '/monitor',
+    label: t('Run monitoring'),
+    show: !embedState.isEmbedded,
+    icon: ActivityIcon,
+    hasPermission: true,
+    isSubItem: false,
+  };
+
+  const items = [exploreLink, runLogsLink, monitorLink, connectorsLink]
     .filter((item) => item.show !== false)
     .filter(permissionFilter);
 
@@ -185,7 +207,10 @@ export function ProjectDashboardSidebar({
 
           <SidebarSeparator />
 
-          <SidebarGroup className="flex-1 overflow-hidden">
+          <SidebarGroup
+            className="flex-1 overflow-hidden"
+            data-tour="nav-projects"
+          >
             <div className="flex items-center justify-between group-data-[collapsible=icon]:hidden">
               <SidebarGroupLabel>{t('Projects')}</SidebarGroupLabel>
               <div className="flex items-center justify-center gap-2">
@@ -286,6 +311,8 @@ export function ProjectDashboardSidebar({
         <SidebarFooter>
           {state === 'expanded' && <DelayedSidebarUsageLimits />}
           <SidebarTenantAdminLink />
+          <HelpMenu />
+          <NotificationBell />
           <SidebarUser />
         </SidebarFooter>
       </Sidebar>

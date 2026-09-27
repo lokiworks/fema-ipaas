@@ -1,4 +1,5 @@
 import { BaseModelSchema, LlmProvider, Nullable } from '@fema-ipaas/core-utils'
+import { WorkflowOperationRequest } from '@fema-ipaas/workflow-core'
 import { z } from 'zod'
 import { formErrors } from '../../form-errors'
 
@@ -17,6 +18,14 @@ export enum CopilotMode {
     EXPLAIN = 'EXPLAIN',
     DIAGNOSE = 'DIAGNOSE',
     ASK = 'ASK',
+    MODIFY = 'MODIFY',
+}
+
+export enum CopilotChangeKind {
+    ADD_STEP = 'ADD_STEP',
+    UPDATE_INPUT = 'UPDATE_INPUT',
+    DELETE_STEP = 'DELETE_STEP',
+    RENAME_STEP = 'RENAME_STEP',
 }
 
 export const AiUsageRecord = z.object({
@@ -124,10 +133,44 @@ export const CopilotRequestBody = z.object({
 })
 export type CopilotRequestBody = z.infer<typeof CopilotRequestBody>
 
+export const CopilotStepRef = z.object({
+    name: z.string(),
+    displayName: z.string(),
+})
+export type CopilotStepRef = z.infer<typeof CopilotStepRef>
+
+export const CopilotDiagnosis = z.object({
+    failuresLast7Days: z.number(),
+    lastFailureAt: Nullable(z.string()),
+    failedStep: Nullable(CopilotStepRef),
+})
+export type CopilotDiagnosis = z.infer<typeof CopilotDiagnosis>
+
+export const CopilotChange = z.object({
+    kind: z.enum(CopilotChangeKind),
+    stepName: z.string(),
+    displayName: z.string(),
+    detail: z.string(),
+})
+export type CopilotChange = z.infer<typeof CopilotChange>
+
+export const CopilotProposal = z.object({
+    summary: z.string(),
+    changes: z.array(CopilotChange),
+    operations: z.array(WorkflowOperationRequest),
+    affectedStepNames: z.array(z.string()),
+    rejected: z.array(z.string()),
+    unsupported: Nullable(z.string()),
+})
+export type CopilotProposal = z.infer<typeof CopilotProposal>
+
 export const CopilotResponse = z.object({
     answer: z.string(),
     inputTokens: z.number(),
     outputTokens: z.number(),
+    referencedSteps: z.array(CopilotStepRef).optional(),
+    diagnosis: CopilotDiagnosis.optional(),
+    proposal: CopilotProposal.optional(),
 })
 export type CopilotResponse = z.infer<typeof CopilotResponse>
 

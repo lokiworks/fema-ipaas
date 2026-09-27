@@ -1,7 +1,3 @@
-import {
-  workflowStructureUtil,
-  StepLocationRelativeToParent,
-} from '@fema-ipaas/shared';
 import { useCallback, useEffect } from 'react';
 
 import { isEditableTarget } from '@/lib/dom-utils';
@@ -10,6 +6,7 @@ import { useBuilderStateContext } from './builder-hooks';
 import { CanvasShortcutsProps } from './workflow-canvas/context-menu/canvas-context-menu';
 import { canvasBulkActions } from './workflow-canvas/utils/bulk-actions';
 import { workflowCanvasConsts } from './workflow-canvas/utils/consts';
+import { pasteLocationUtils } from './workflow-canvas/utils/paste-location';
 
 export const useHandleKeyPressOnCanvas = () => {
   const [
@@ -18,22 +15,32 @@ export const useHandleKeyPressOnCanvas = () => {
     selectedStep,
     exitStepSettings,
     applyOperation,
+    applyOperations,
     readonly,
     setShowMinimap,
     showMinimap,
     setDraggedNote,
     setDraggedStep,
+    setSelectedNodes,
+    undo,
+    redo,
+    setHighlightedSteps,
   ] = useBuilderStateContext((state) => [
     state.selectedNodes,
     state.workflowVersion,
     state.selectedStep,
     state.exitStepSettings,
     state.applyOperation,
+    state.applyOperations,
     state.readonly,
     state.setShowMinimap,
     state.showMinimap,
     state.setDraggedNote,
     state.setActiveDraggingStep,
+    state.setSelectedNodes,
+    state.undo,
+    state.redo,
+    state.setHighlightedSteps,
   ]);
 
   const handleKeyDown = useCallback(
@@ -52,6 +59,7 @@ export const useHandleKeyPressOnCanvas = () => {
           `[data-${workflowCanvasConsts.STEP_CONTEXT_MENU_ATTRIBUTE}]`,
         );
       const insideBody = e.target === document.body;
+      const onCanvas = insideSelectionRect || !!insideStep || insideBody;
       const selectedNodesWithoutTrigger = selectedNodes.filter(
         (node) => node !== workflowVersion.trigger.name,
       );
@@ -68,23 +76,41 @@ export const useHandleKeyPressOnCanvas = () => {
             e.stopPropagation();
             e.preventDefault();
 
-            canvasBulkActions.copySelectedNodes({
+            void canvasBulkActions.copySelectedNodes({
               selectedNodes: selectedNodesWithoutTrigger,
               workflowVersion,
             });
           }
         },
+        Cut: () => {
+          if (
+            readonly ||
+            selectedNodesWithoutTrigger.length === 0 ||
+            document.getSelection()?.toString() !== ''
+          ) {
+            return;
+          }
+          e.stopPropagation();
+          e.preventDefault();
+          void canvasBulkActions.cutSelectedNodes({
+            selectedNodes: selectedNodesWithoutTrigger,
+            workflowVersion,
+            applyOperation,
+            selectedStep,
+            exitStepSettings,
+          });
+        },
         Delete: () => {
           if (readonly) {
             return;
           }
-          if (selectedNodes.length > 0) {
+          if (selectedNodesWithoutTrigger.length > 0) {
             e.stopPropagation();
             e.preventDefault();
             canvasBulkActions.deleteSelectedNodes({
               exitStepSettings,
               selectedStep,
-              selectedNodes,
+              selectedNodes: selectedNodesWithoutTrigger,
               applyOperation,
             });
           }
@@ -104,36 +130,42 @@ export const useHandleKeyPressOnCanvas = () => {
         ExitDrag: () => {
           setDraggedNote(null, null);
           setDraggedStep(null);
+          if (selectedStep) {
+            exitStepSettings();
+          }
+          setSelectedNodes([]);
+          setHighlightedSteps([]);
+        },
+        Undo: () => {
+          if (readonly || !onCanvas) {
+            return;
+          }
+          e.preventDefault();
+          undo();
+        },
+        Redo: () => {
+          if (readonly || !onCanvas) {
+            return;
+          }
+          e.preventDefault();
+          redo();
         },
         Paste: () => {
-          if (
-            readonly ||
-            (!insideSelectionRect && !insideStep && !insideBody)
-          ) {
+          if (readonly || !onCanvas) {
             return;
           }
           e.stopPropagation();
           e.preventDefault();
-          canvasBulkActions.getActionsInClipboard().then((actions) => {
-            if (actions.length > 0) {
-              const lastStep = [
-                workflowVersion.trigger,
-                ...workflowStructureUtil.getAllNextActionsWithoutChildren(
-                  workflowVersion.trigger,
-                ),
-              ].at(-1)!.name;
-              const lastSelectedNode =
-                selectedNodes.length === 1 ? selectedNodes[0] : null;
-              canvasBulkActions.pasteNodes(
-                workflowVersion,
-                {
-                  parentStepName: lastSelectedNode ?? lastStep,
-                  stepLocationRelativeToParent:
-                    StepLocationRelativeToParent.AFTER,
-                },
-                applyOperation,
-              );
-            }
+          const lastSelectedNode =
+            selectedNodes.length === 1 ? selectedNodes[0] : null;
+          const location = pasteLocationUtils.after(
+            lastSelectedNode ??
+              canvasBulkActions.getLastStepName(workflowVersion),
+          );
+          void canvasBulkActions.pasteNodes({
+            workflowVersion,
+            location,
+            applyOperations,
           });
         },
       });
@@ -142,6 +174,7 @@ export const useHandleKeyPressOnCanvas = () => {
       selectedNodes,
       workflowVersion,
       applyOperation,
+      applyOperations,
       selectedStep,
       exitStepSettings,
       readonly,
@@ -149,6 +182,10 @@ export const useHandleKeyPressOnCanvas = () => {
       showMinimap,
       setDraggedNote,
       setDraggedStep,
+      setSelectedNodes,
+      undo,
+      redo,
+      setHighlightedSteps,
     ],
   );
 
@@ -157,21 +194,22 @@ export const useHandleKeyPressOnCanvas = () => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 };
+
 const shortcutHandler = (
   event: KeyboardEvent,
   handlers: Record<keyof CanvasShortcutsProps, () => void>,
 ) => {
-  const shortcutActivated = Object.entries(CanvasShortcuts).find(
-    ([_, shortcut]) =>
-      shortcut.shortcutKey?.toLowerCase() === event.key.toLowerCase() &&
-      !!(
-        shortcut.withCtrl === event.ctrlKey ||
-        shortcut.withCtrl === event.metaKey
-      ) &&
-      !!shortcut.withShift === event.shiftKey,
-  );
+  const key = event.key === 'Backspace' ? 'Delete' : event.key;
+  const shortcutActivated = SHORTCUT_NAMES.find((name) => {
+    const shortcut = CanvasShortcuts[name];
+    return (
+      shortcut.shortcutKey?.toLowerCase() === key.toLowerCase() &&
+      !!shortcut.withCtrl === (event.ctrlKey || event.metaKey) &&
+      !!shortcut.withShift === event.shiftKey
+    );
+  });
   if (shortcutActivated) {
-    handlers[shortcutActivated[0] as keyof CanvasShortcutsProps]();
+    handlers[shortcutActivated]();
   }
 };
 
@@ -193,7 +231,7 @@ export const CanvasShortcuts: CanvasShortcutsProps = {
   },
   Delete: {
     withCtrl: false,
-    withShift: true,
+    withShift: false,
     shortcutKey: 'Delete',
   },
   Copy: {
@@ -201,9 +239,36 @@ export const CanvasShortcuts: CanvasShortcutsProps = {
     withShift: false,
     shortcutKey: 'c',
   },
+  Cut: {
+    withCtrl: true,
+    withShift: false,
+    shortcutKey: 'x',
+  },
   Skip: {
     withCtrl: true,
     withShift: false,
     shortcutKey: 'e',
   },
+  Undo: {
+    withCtrl: true,
+    withShift: false,
+    shortcutKey: 'z',
+  },
+  Redo: {
+    withCtrl: true,
+    withShift: true,
+    shortcutKey: 'z',
+  },
 };
+
+const SHORTCUT_NAMES: (keyof CanvasShortcutsProps)[] = [
+  'ExitDrag',
+  'Minimap',
+  'Paste',
+  'Delete',
+  'Copy',
+  'Cut',
+  'Skip',
+  'Undo',
+  'Redo',
+];

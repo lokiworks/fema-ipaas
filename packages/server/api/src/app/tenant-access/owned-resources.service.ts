@@ -170,21 +170,21 @@ async function keepPreviousOwnerAsDeveloper({ projectId, userId, entityManager }
 }
 
 async function listProjects({ tenantId, ownerId }: ListByOwnerParams): Promise<OwnedResource[]> {
-    const projects = await projectRepo().find({
-        where: {
-            tenantId,
-            deleted: IsNull(),
-            ...(isNil(ownerId) ? {} : { ownerId }),
-        },
-        select: ['id', 'displayName', 'ownerId', 'type', 'updated'],
-    })
-    return projects.map((project) => ({
+    const rows = await databaseConnection().query<ProjectRow[]>(
+        `SELECT p.id, p."displayName" AS "displayName", p."ownerId" AS "ownerId", p.type, p.updated
+         FROM project p
+         WHERE p."tenantId" = $1 AND p.deleted IS NULL AND ($2::varchar IS NULL OR p."ownerId" = $2)
+           AND (p.type <> $3 OR EXISTS (SELECT 1 FROM workflow w WHERE w."projectId" = p.id))
+         LIMIT ${ROW_CAP}`,
+        [tenantId, ownerId ?? null, ProjectType.PERSONAL],
+    )
+    return rows.map((row) => ({
         type: OwnedResourceType.PROJECT,
-        id: project.id,
-        name: project.displayName,
-        scope: project.type,
-        ownerId: project.ownerId,
-        updated: project.updated,
+        id: row.id,
+        name: row.displayName,
+        scope: row.type,
+        ownerId: row.ownerId,
+        updated: new Date(row.updated).toISOString(),
     }))
 }
 
@@ -228,6 +228,14 @@ async function listConnections({ tenantId, ownerId }: ListByOwnerParams): Promis
 
 const LIST_CAP = 1000
 const ROW_CAP = 5000
+
+type ProjectRow = {
+    id: string
+    displayName: string
+    ownerId: string
+    type: string
+    updated: string
+}
 
 type ProjectScopedRow = {
     id: string

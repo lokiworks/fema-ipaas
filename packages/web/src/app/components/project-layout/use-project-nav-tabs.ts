@@ -3,6 +3,7 @@ import { ExecutionStatus } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import {
   ChartColumnIcon,
+  DatabaseIcon,
   HouseIcon,
   RocketIcon,
   ServerCogIcon,
@@ -26,7 +27,7 @@ export function useProjectNavTabs() {
   const primaryTabs: ProjectDashboardLayoutHeaderTab[] = [
     {
       to: authenticationSession.appendProjectRoutePrefix('/home'),
-      label: t('Home'),
+      label: t('Project overview'),
       icon: HouseIcon,
       hasPermission: checkAccess(Permission.READ_RUN),
       show: true,
@@ -92,6 +93,13 @@ export function useProjectNavTabs() {
       to: authenticationSession.appendProjectRoutePrefix('/mapping-tables'),
       label: t('Mapping tables'),
       icon: Table2Icon,
+      hasPermission: checkAccess(Permission.READ_WORKFLOW),
+      show: true,
+    },
+    {
+      to: authenticationSession.appendProjectRoutePrefix('/data-stores'),
+      label: t('Data stores'),
+      icon: DatabaseIcon,
       hasPermission: checkAccess(Permission.READ_WORKFLOW),
       show: true,
     },

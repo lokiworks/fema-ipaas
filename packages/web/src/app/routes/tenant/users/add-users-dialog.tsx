@@ -87,12 +87,7 @@ function AddUsersForm({
   const emails = tenantAccessUtils.parseEmails(form.watch('emails'));
 
   if (result) {
-    return (
-      <InviteResult
-        result={result}
-        onDone={() => onOpenChange(false)}
-      />
-    );
+    return <InviteResult result={result} onDone={() => onOpenChange(false)} />;
   }
 
   return (
@@ -269,7 +264,11 @@ function addUsersDefaults(): AddUsersFormValues {
   };
 }
 
-const INVITABLE_ROLES = [TenantRole.MEMBER, TenantRole.OPERATOR, TenantRole.ADMIN];
+const INVITABLE_ROLES = [
+  TenantRole.MEMBER,
+  TenantRole.OPERATOR,
+  TenantRole.ADMIN,
+];
 
 const AddUsersFormSchema = z.object({
   emails: z
@@ -289,7 +288,11 @@ const AddUsersFormSchema = z.object({
         tenantAccessUtils.parseEmails(value).every(tenantAccessUtils.isEmail),
       'invalidEmail',
     ),
-  tenantRole: z.enum([TenantRole.ADMIN, TenantRole.MEMBER, TenantRole.OPERATOR]),
+  tenantRole: z.enum([
+    TenantRole.ADMIN,
+    TenantRole.MEMBER,
+    TenantRole.OPERATOR,
+  ]),
   modules: z.array(z.enum(TenantModule)),
 });
 

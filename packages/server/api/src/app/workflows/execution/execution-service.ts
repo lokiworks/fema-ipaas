@@ -13,6 +13,7 @@ import { paginationHelper } from '../../helper/pagination/pagination-utils'
 import { Order } from '../../helper/pagination/paginator'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
+import { runQuota } from '../../limits/run-quota.service'
 import { privacyService } from '../../privacy/privacy.service'
 import { projectService } from '../../project/project-service'
 import { workflowConcurrencyQueue } from '../../workers/job-queue/interceptors/workflow-concurrency-interceptor'
@@ -158,6 +159,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
                     status: ExecutionStatus.QUEUED,
                     startTime: dayjsUtil().toISOString(),
                     finishTime: null,
+                    inPlaceRetryCount: () => '"inPlaceRetryCount" + 1',
                 })
                 const updatedExecution = await findExecutionOrThrow(oldExecution.id)
                 const tenantId = await projectService(log).getTenantId(updatedExecution.projectId)
@@ -205,11 +207,12 @@ export const executionService = (log: FastifyBaseLogger) => ({
                     projectId: oldExecution.projectId,
                     failParentOnFailure: oldExecution.failParentOnFailure,
                     parentRunId: oldExecution.parentRunId,
+                    rerunOfExecutionId: oldExecution.rerunOfExecutionId ?? oldExecution.id,
                 })
             }
         }
     },
-    async cancel({ projectId, tenantId, executionIds, excludeExecutionIds, status, workflowId, createdAfter, createdBefore }: CancelParams): Promise<void> {
+    async cancel({ projectId, tenantId, executionIds, excludeExecutionIds, status, workflowId, createdAfter, createdBefore, includeChildRuns = true }: CancelParams): Promise<void> {
         const filteredStatus = status ?? CANCELLABLE_STATUSES
         const executions = await filterExecutionsAndApplyFilters({
             projectId,
@@ -221,7 +224,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
             excludeExecutionIds,
         })
         const cancelParentExecutions = await Promise.allSettled(executions.map(execution => cancelSingleRun(log, execution, tenantId)))
-        const childWorkflows = await getAllChildRuns(executions.map(execution => execution.id))
+        const childWorkflows = includeChildRuns ? await getAllChildRuns(executions.map(execution => execution.id)) : []
         log.info({
             executionsCount: executions.length,
             childWorkflowCount: childWorkflows.length,
@@ -237,6 +240,10 @@ export const executionService = (log: FastifyBaseLogger) => ({
     },
     async existsBy(runId: ExecutionId): Promise<boolean> {
         return executionRepo().existsBy({ id: runId })
+    },
+    async countCancellableChildRuns({ executionId }: { executionId: ExecutionId }): Promise<number> {
+        const children = await getAllChildRuns([executionId])
+        return children.length
     },
     async bulkArchive(params: BulkArchiveActionParams): Promise<void> {
         const filteredExecutions = await filterExecutionsAndApplyFilters(params)
@@ -285,7 +292,13 @@ export const executionService = (log: FastifyBaseLogger) => ({
         stepNameToTest,
         environment,
         concurrency,
+        rerunOfExecutionId,
     }: StartParams): Promise<Execution> {
+        const countsTowardQuota = environment === RunEnvironment.PRODUCTION && executionType === ExecutionType.BEGIN
+        const quota = countsTowardQuota ? await runQuota(log).admit({ projectId }) : null
+        if (!isNil(quota) && !quota.allowed) {
+            return runQuota(log).recordRejectedRun({ projectId, workflowId, workflowVersionId, parentRunId, failParentOnFailure, verdict: quota })
+        }
         const newExecution = await queueOrCreateInstantly({
             projectId,
             workflowVersionId,
@@ -294,6 +307,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
             failParentOnFailure,
             stepNameToTest,
             environment,
+            rerunOfExecutionId,
         }, log)
 
         wideEvent.set({
@@ -323,21 +337,23 @@ export const executionService = (log: FastifyBaseLogger) => ({
     },
 
 
-    async test({ projectId, workflowVersionId, parentRunId, stepNameToTest, triggeredBy }: TestParams): Promise<Execution> {
+    async test({ projectId, workflowVersionId, parentRunId, stepNameToTest, triggeredBy, payload, environment }: TestParams): Promise<Execution> {
         const workflowVersion = await workflowVersionService(log).getOneOrThrow(workflowVersionId)
         await workflowService(log).getOneOrThrow({ id: workflowVersion.workflowId, projectId })
 
-        const triggerPayload = await sampleDataService(log).getOrReturnEmpty({
-            projectId,
-            workflowVersion,
-            stepName: workflowVersion.trigger.name,
-            type: SampleDataFileType.OUTPUT,
-        })
+        const triggerPayload = payload !== undefined
+            ? payload
+            : await sampleDataService(log).getOrReturnEmpty({
+                projectId,
+                workflowVersion,
+                stepName: workflowVersion.trigger.name,
+                type: SampleDataFileType.OUTPUT,
+            })
         const execution = await queueOrCreateInstantly({
             projectId,
             workflowId: workflowVersion.workflowId,
             workflowVersionId: workflowVersion.id,
-            environment: RunEnvironment.TESTING,
+            environment: environment ?? RunEnvironment.TESTING,
             parentRunId,
             failParentOnFailure: undefined,
             stepNameToTest,
@@ -834,6 +850,7 @@ async function queueOrCreateInstantly(params: CreateParams, log: FastifyBaseLogg
         tags: [],
         steps: {},
         triggeredBy: params.triggeredBy,
+        rerunOfExecutionId: params.rerunOfExecutionId,
     }
     switch (params.environment) {
         case RunEnvironment.TESTING:
@@ -858,6 +875,7 @@ type CreateParams = {
     stepNameToTest?: string
     workflowId: WorkflowId
     environment: RunEnvironment
+    rerunOfExecutionId?: ExecutionId
 }
 
 type ListParams = {
@@ -922,6 +940,7 @@ type StartParams = {
     streamStepProgress: StreamStepProgress
     sampleData?: Record<string, unknown>
     concurrency?: RunConcurrencyTicket
+    rerunOfExecutionId?: ExecutionId
 }
 
 
@@ -932,6 +951,8 @@ type TestParams = {
     triggeredBy?: string
     parentRunId?: ExecutionId
     stepNameToTest?: string
+    payload?: unknown
+    environment?: RunEnvironment
 }
 
 type StartManualTriggerParams = {
@@ -954,6 +975,7 @@ type CancelParams = {
     workflowId?: WorkflowId[]
     createdAfter?: string
     createdBefore?: string
+    includeChildRuns?: boolean
 }
 
 type BulkRetryParams = {

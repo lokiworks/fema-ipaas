@@ -20,6 +20,9 @@ One execution instance per workflow version, trigger → terminal state. 12 stat
 - `failedStep` JSONB snapshot powers filtered retries, error search, failure emails, jump-to-failed-step.
 - Paid editions emit AI usage billing (`ai_usage_per_run`) on terminal runs.
 
+### Error Handling
+节点出错后的处理策略（终止 / 忽略 / 添加分支及其重试版本），按错误码匹配自定义规则，见 [节点错误处理](error-handling.md)。
+
 ### Action Runs
 A single connector action or code step executed directly, outside any workflow, synchronously — the unit behind MCP `ap_run_action` and the chat action/code tools. Execution only; nothing is persisted yet. Vocabulary for the job lifecycle, which four distinct stages share one overloaded word:
 - **Never started** — a *proof that nothing could have written*, not a lifecycle stage. **Sound** (never true when a write was possible — up to one accepted, effectively unreachable race; see [Action Runs](action-run.md)), deliberately **not complete** (may be false when nothing in fact ran). Two independent producers feed it: the sandbox refusing a run whose deadline already passed, and the API proving the job was never dequeued. *Avoid:* "didn't run", "not executed" — both invite reading it as a stage and weakening it.
@@ -54,9 +57,10 @@ A **Subflow** is a workflow invoked by another workflow rather than by its own e
 - Parent linkage is two headers (`x-parent-run-id`, `x-fail-parent-on-failure`); fan-out sets the latter false. Streaming bounds memory, not time — the step is still capped by `WORKFLOW_TIMEOUT_SECONDS`.
 
 ### Folders
-Lightweight per-project grouping for workflows and tables. Name unique case-insensitively per project.
-- `folder` entity (displayName, projectId, displayOrder). List returns `numberOfWorkflows`/`numberOfTables` via correlated subqueries. Create is an upsert by name.
-- Sentinel `"NULL"` (`UncategorizedFolderId`) filters workflows with no folder. Deleting a folder does NOT delete its workflows — they become uncategorized. Fires `FOLDER_CREATED/UPDATED/DELETED` audit events.
+项目内最多三层的工作流目录，同层不重名，删除时内容上移一层，见 [Folders](folders.md)。
+
+### Project Workspace
+项目侧栏的工作流树、项目概览、全部项目、批量发布、导入导出和复制项目，见 [项目工作区](project-workspace.md)。
 
 ### Templates
 Reusable workflow/table blueprints. Types: OFFICIAL (FEMA Integration Platform-curated, platformId null), CUSTOM (platform-owned, needs `manageTemplatesEnabled` flag), SHARED (ad-hoc, not listable).
@@ -77,5 +81,7 @@ Reusable workflow/table blueprints. Types: OFFICIAL (FEMA Integration Platform-c
 - **Formulas** — the `{{ ... }}` evaluator shared by engine, api and web
 - **Chat** — the conversational surface over a workflow
 - **问题中心** — 失败按原因聚合、重放、值班处理
+- **运行监控** — 跨项目的运行统计、趋势、保存视图和 AI 用量
+- **运行日志** — 跨项目的运行列表、全部 / 任一条件筛选、重跑血缘与重跑资格
 - **发布审批与测试环境** — 发布申请、测试值与测试连接替换、回滚
 - **字段映射与映射表** — `map_fields`、映射表、触发器去重

@@ -1,4 +1,4 @@
-import { isNil } from '@fema-ipaas/core-utils';
+import { isNil, tryCatch } from '@fema-ipaas/core-utils';
 import {
   PopulatedWorkflow,
   Template,
@@ -33,6 +33,8 @@ import { foldersApi, foldersHooks } from '@/features/folders';
 import { getProjectName, projectCollectionUtils } from '@/features/projects';
 import { ProjectDisplay } from '@/features/projects/components/project-display';
 import { templatesTelemetryApi } from '@/features/templates';
+import { templatesApi } from '@/features/templates/api/templates-api';
+import { templateCenterUtils } from '@/features/templates/utils/template-center-utils';
 import { workflowHooks } from '@/features/workflows';
 import { authenticationSession } from '@/lib/authentication-session';
 
@@ -72,8 +74,8 @@ export const UseTemplateDialog = ({
     { projectId: string; folderId: string }
   >({
     mutationFn: async ({ projectId, folderId }) => {
-      const workflows = template.workflows || [];
-      const hasMultipleWorkflows = workflows.length > 1;
+      const templateWorkflows = template.workflows || [];
+      const hasMultipleWorkflows = templateWorkflows.length > 1;
 
       let folderName: string | undefined;
 
@@ -88,11 +90,13 @@ export const UseTemplateDialog = ({
         folderName = folder.displayName;
       }
 
-      return await workflowHooks.importWorkflowsFromTemplates({
-        templates: [template],
+      const created = await workflowHooks.importWorkflowsFromTemplates({
+        templates: [templateCenterUtils.stripTemplateConnections(template)],
         projectId,
         folderName,
       });
+      await tryCatch(() => templatesApi.recordUsage(template.id));
+      return created;
     },
     onSuccess: (workflows) => {
       onOpenChange(false);

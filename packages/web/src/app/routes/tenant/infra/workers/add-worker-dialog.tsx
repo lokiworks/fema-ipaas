@@ -125,7 +125,9 @@ function AddWorkerGuide({
         )}
       </p>
       <div className="flex flex-col gap-2">
-        <Label>{t('1. Create a worker token on a machine that has FEMA_JWT_SECRET')}</Label>
+        <Label>
+          {t('1. Create a worker token on a machine that has FEMA_JWT_SECRET')}
+        </Label>
         <CopyToClipboardInput
           textToCopy="npx @fema-ipaas/cli workers token"
           useInput={true}

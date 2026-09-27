@@ -1,6 +1,7 @@
 import { ExecutionStatus } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { executionFailureNotifier } from '../../../../../src/app/workflows/execution/execution-failure-notifier'
 import { createMockExecution, createMockProject, createMockWorkflowVersion } from '../../../../helpers/mocks'
 
 const isConfigured = vi.fn()
@@ -8,6 +9,8 @@ const sendWorkflowFailure = vi.fn()
 const getOneProject = vi.fn()
 const getMetaInformation = vi.fn()
 const runOnceWithin = vi.fn()
+const notify = vi.fn()
+const allows = vi.fn()
 
 vi.mock('../../../../../src/app/helper/email/email-service', () => ({
     emailService: vi.fn(() => ({ isConfigured, sendWorkflowFailure })),
@@ -24,13 +27,18 @@ vi.mock('../../../../../src/app/database/redis-connections', async (importOrigin
         runOnceWithin: (...args: unknown[]) => runOnceWithin(...args),
     },
 }))
+vi.mock('../../../../../src/app/notification/notification.service', () => ({
+    notificationService: vi.fn(() => ({ notify })),
+}))
+vi.mock('../../../../../src/app/notification/notification-preference.service', () => ({
+    notificationPreferenceService: vi.fn(() => ({ allows })),
+}))
 vi.mock('../../../../../src/app/helper/domain-helper', () => ({
     domainHelper: {
         getPublicUrl: ({ path }: { path: string }) => Promise.resolve(`https://app.example.com/${path}`),
     },
 }))
 
-import { executionFailureNotifier } from '../../../../../src/app/workflows/execution/execution-failure-notifier'
 
 const log: FastifyBaseLogger = {
     level: 'info',
@@ -71,6 +79,8 @@ describe('executionFailureNotifier.notifyOwner', () => {
         isConfigured.mockReturnValue(true)
         getMetaInformation.mockResolvedValue({ email: 'owner@example.com' })
         sendWorkflowFailure.mockResolvedValue(undefined)
+        notify.mockResolvedValue(undefined)
+        allows.mockResolvedValue(true)
         runOnceWithin.mockImplementation(async (_key: string, _ttl: number, fn: () => Promise<unknown>) => {
             await fn()
             return true
@@ -95,14 +105,25 @@ describe('executionFailureNotifier.notifyOwner', () => {
         }))
     })
 
-    it('stays silent, and touches no database, when SMTP is unconfigured', async () => {
+    it('still notifies in the app but sends no email when SMTP is unconfigured', async () => {
         isConfigured.mockReturnValue(false)
         const { project, params } = buildFixture(true)
         getOneProject.mockResolvedValue(project)
 
         await executionFailureNotifier(log).notifyOwner(params)
 
-        expect(getOneProject).not.toHaveBeenCalled()
+        expect(notify).toHaveBeenCalledWith(expect.objectContaining({ recipientIds: [project.ownerId], title: 'Sync employees' }))
+        expect(sendWorkflowFailure).not.toHaveBeenCalled()
+    })
+
+    it('respects the owner turning failure emails off', async () => {
+        allows.mockResolvedValue(false)
+        const { project, params } = buildFixture(true)
+        getOneProject.mockResolvedValue(project)
+
+        await executionFailureNotifier(log).notifyOwner(params)
+
+        expect(notify).toHaveBeenCalledTimes(1)
         expect(sendWorkflowFailure).not.toHaveBeenCalled()
     })
 

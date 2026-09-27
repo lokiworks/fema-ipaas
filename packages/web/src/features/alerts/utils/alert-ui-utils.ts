@@ -32,6 +32,8 @@ function eventLabel(event: AlertTriggerEvent): string {
       return t('A connection stops working');
     case AlertTriggerEvent.FAILURE_RATE:
       return t('Failure rate exceeds a threshold');
+    case AlertTriggerEvent.CAPACITY:
+      return t('Monthly runs reach a capacity threshold');
   }
 }
 

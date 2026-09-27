@@ -1,12 +1,20 @@
 import { isNil } from '@fema-ipaas/core-utils';
 import { useQueryClient } from '@tanstack/react-query';
 import { t } from 'i18next';
-import { ChevronsUpDown, LogOut, UserCogIcon } from 'lucide-react';
-import { useState } from 'react';
+import {
+  Check,
+  ChevronsUpDown,
+  LogOut,
+  Moon,
+  Sun,
+  UserCogIcon,
+} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 import { UserAvatar } from '@/components/custom/user-avatar';
 import { useEmbedding } from '@/components/providers/embed-provider';
 import { useTelemetry } from '@/components/providers/telemetry-provider';
+import { useTheme } from '@/components/providers/theme-provider';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,11 +34,9 @@ import { userHooks } from '@/hooks/user-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 import { cn } from '@/lib/utils';
 
-import AccountSettingsDialog from '../account-settings';
-import { HelpAndFeedback } from '../help-and-feedback';
-
 export function SidebarUser() {
-  const [accountSettingsOpen, setAccountSettingsOpen] = useState(false);
+  const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
   const { embedState } = useEmbedding();
   const { data: user } = userHooks.useCurrentUser();
   const queryClient = useQueryClient();
@@ -108,13 +114,25 @@ export function SidebarUser() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => setAccountSettingsOpen(true)}>
+              <DropdownMenuItem onClick={() => navigate('/account')}>
                 <UserCogIcon className="w-4 h-4 mr-2" />
-                {t('Account Settings')}
+                {t('Personal settings')}
               </DropdownMenuItem>
-
-              <HelpAndFeedback />
             </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+              {t('Appearance')}
+            </DropdownMenuLabel>
+            <DropdownMenuItem onClick={() => setTheme('light')}>
+              <Sun className="w-4 h-4 mr-2" />
+              {t('Light')}
+              {theme === 'light' && <Check className="ml-auto size-4" />}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setTheme('dark')}>
+              <Moon className="w-4 h-4 mr-2" />
+              {t('Dark')}
+              {theme === 'dark' && <Check className="ml-auto size-4" />}
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout}>
               <LogOut className="w-4 h-4 mr-2" />
@@ -123,11 +141,6 @@ export function SidebarUser() {
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
-
-      <AccountSettingsDialog
-        open={accountSettingsOpen}
-        onClose={() => setAccountSettingsOpen(false)}
-      />
     </SidebarMenu>
   );
 }

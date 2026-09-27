@@ -21,9 +21,12 @@ import { t } from 'i18next';
 import {
   Bold,
   ChevronRight,
+  Copy,
   Italic,
   Link as LinkIcon,
   List,
+  PencilLine,
+  Trash2,
   Underline,
   XCircle,
 } from 'lucide-react';
@@ -31,6 +34,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { CopyButton } from '@/components/custom/clipboard/copy-button';
 import { useEmbedding } from '@/components/providers/embed-provider';
+import { Button } from '@/components/ui/button';
 import { inputClass } from '@/components/ui/input';
 import { stepsHooks } from '@/features/connectors';
 import { variablesQueries } from '@/features/variables/hooks/variables-hooks';
@@ -236,8 +240,16 @@ export const TiptapEditor = ({
 }: TiptapEditorProps) => {
   const isHtml = outputFormat === 'html';
   const { embedState } = useEmbedding();
-  const steps = useBuilderStateContext((state) =>
-    workflowStructureUtil.getAllSteps(state.workflowVersion.trigger),
+  const [trigger, selectedStepName] = useBuilderStateContext((state) => [
+    state.workflowVersion.trigger,
+    state.selectedStep,
+  ]);
+  const steps = useMemo(
+    () =>
+      isNil(selectedStepName)
+        ? workflowStructureUtil.getAllSteps(trigger)
+        : workflowStructureUtil.findPathToStep(trigger, selectedStepName),
+    [trigger, selectedStepName],
   );
   const stepsMetadata = stepsHooks
     .useStepsMetadata(steps)
@@ -249,9 +261,14 @@ export const TiptapEditor = ({
     });
 
   const sampleData = useBuilderStateContext((state) => state.outputSampleData);
-  const setInsertMentionHandler = useBuilderStateContext(
-    (state) => state.setInsertMentionHandler,
-  );
+  const [setInsertMentionHandler, requestDataSelector, setReferenceDrag] =
+    useBuilderStateContext((state) => [
+      state.setInsertMentionHandler,
+      state.requestDataSelector,
+      state.setReferenceDrag,
+    ]);
+  const pendingTriggerRef = useRef<string | null>(null);
+  const [capsule, setCapsule] = useState<CapsuleToolbarState | null>(null);
 
   const projectId = authenticationSession.getProjectId();
   const { data: variablesPage } = variablesQueries.useVariables({
@@ -309,7 +326,32 @@ export const TiptapEditor = ({
       stepsMetadata,
       variableByName,
     );
-    editorRef.current?.chain().focus().insertContent(mentionNode).run();
+    const current = editorRef.current;
+    if (!current) {
+      return;
+    }
+    const pendingTrigger = pendingTriggerRef.current;
+    pendingTriggerRef.current = null;
+    const { from } = current.state.selection;
+    const triggerStart = isNil(pendingTrigger)
+      ? null
+      : from - pendingTrigger.length;
+    const hasTrigger =
+      !isNil(pendingTrigger) &&
+      !isNil(triggerStart) &&
+      triggerStart >= 0 &&
+      current.state.doc.textBetween(triggerStart, from, '', '') ===
+        pendingTrigger;
+    if (hasTrigger && !isNil(triggerStart)) {
+      current
+        .chain()
+        .focus()
+        .deleteRange({ from: triggerStart, to: from })
+        .insertContent(mentionNode)
+        .run();
+      return;
+    }
+    current.chain().focus().insertContent(mentionNode).run();
   };
 
   const editor = useEditor({
@@ -333,6 +375,17 @@ export const TiptapEditor = ({
         },
     editorProps: {
       handleKeyDown: (view, event) => {
+        if (!isHtml && !event.metaKey && !event.ctrlKey) {
+          const { from } = view.state.selection;
+          const previousChar = docCharAt(view.state.doc, from - 1);
+          if (event.key === '$') {
+            pendingTriggerRef.current = '$';
+            requestDataSelector();
+          } else if (event.key === '{' && previousChar === '{') {
+            pendingTriggerRef.current = '{{';
+            requestDataSelector();
+          }
+        }
         if (event.key === 'Backspace') {
           const formulaTr = getFormulaBackspaceTransaction({
             state: view.state,
@@ -570,7 +623,76 @@ export const TiptapEditor = ({
       ref={editorWrapperRef}
     >
       {isHtml && !disabled && <RichTextToolbar editor={editor} />}
-      <EditorContent editor={editor} />
+      {!isHtml && !disabled && !isNil(selectedStepName) && (
+        <button
+          type="button"
+          aria-label={t('Drag to an upstream step to reference its output')}
+          title={t('Drag to an upstream step to reference its output')}
+          onPointerDown={(event) => {
+            event.preventDefault();
+            setReferenceDrag({
+              sourceStepName: selectedStepName,
+              allowedStepNames: steps.map((step) => step.name),
+              insert: insertMention,
+              origin: { x: event.clientX, y: event.clientY },
+            });
+          }}
+          className="absolute left-0 top-3 z-10 size-2.5 -translate-x-[calc(100%+4px)] cursor-crosshair rounded-full border border-primary bg-background hover:bg-primary"
+        />
+      )}
+      <div
+        onClick={(event) => {
+          const target = event.target;
+          if (!(target instanceof HTMLElement) || disabled) {
+            setCapsule(null);
+            return;
+          }
+          const mention = target.closest('[data-type="mention"]');
+          const wrapper = editorWrapperRef.current;
+          if (!(mention instanceof HTMLElement) || !wrapper) {
+            setCapsule(null);
+            return;
+          }
+          const mentionRect = mention.getBoundingClientRect();
+          const wrapperRect = wrapper.getBoundingClientRect();
+          setCapsule({
+            element: mention,
+            serverValue: mention.getAttribute('serverValue') ?? '',
+            top: mentionRect.top - wrapperRect.top,
+            left: mentionRect.left - wrapperRect.left,
+          });
+        }}
+      >
+        <EditorContent editor={editor} />
+      </div>
+      {capsule && editor && (
+        <CapsuleToolbar
+          state={capsule}
+          onClose={() => setCapsule(null)}
+          onDelete={() => {
+            const position = editor.view.posAtDOM(capsule.element, 0);
+            editor
+              .chain()
+              .focus()
+              .deleteRange({ from: position, to: position + 1 })
+              .run();
+            setCapsule(null);
+          }}
+          onEdit={() => {
+            const position = editor.view.posAtDOM(capsule.element, 0);
+            editor
+              .chain()
+              .focus()
+              .deleteRange({ from: position, to: position + 1 })
+              .insertContentAt(position, {
+                type: 'text',
+                text: capsule.serverValue,
+              })
+              .run();
+            setCapsule(null);
+          }}
+        />
+      )}
 
       {showPreview && (
         <div
@@ -645,6 +767,67 @@ export const TiptapEditor = ({
       )}
     </div>
   );
+};
+
+function CapsuleToolbar({
+  state,
+  onClose,
+  onDelete,
+  onEdit,
+}: {
+  state: CapsuleToolbarState;
+  onClose: () => void;
+  onDelete: () => void;
+  onEdit: () => void;
+}) {
+  return (
+    <div
+      className="absolute z-50 flex items-center gap-0.5 rounded-md border bg-background p-0.5 shadow-md"
+      style={{ top: Math.max(state.top - 30, 0), left: state.left }}
+      onMouseDown={(event) => event.preventDefault()}
+    >
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        className="h-6 gap-1 px-1.5 text-xs"
+        onClick={() => {
+          void navigator.clipboard.writeText(state.serverValue);
+          onClose();
+        }}
+      >
+        <Copy className="size-3" />
+        {t('Copy')}
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        className="h-6 gap-1 px-1.5 text-xs"
+        onClick={onEdit}
+      >
+        <PencilLine className="size-3" />
+        {t('Edit')}
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        className="h-6 gap-1 px-1.5 text-xs text-destructive"
+        onClick={onDelete}
+      >
+        <Trash2 className="size-3" />
+        {t('Delete')}
+      </Button>
+    </div>
+  );
+}
+
+type CapsuleToolbarState = {
+  element: HTMLElement;
+  serverValue: string;
+  top: number;
+  left: number;
 };
 
 const ZWS_CHAR = '\u200B';

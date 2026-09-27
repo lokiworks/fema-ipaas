@@ -1,6 +1,7 @@
 import { ApplicationError, ErrorCode, isNil, ProjectId } from '@fema-ipaas/core-utils'
 import { WORKFLOW_NAME_MAX_LENGTH } from '@fema-ipaas/shared'
 import { EntityManager } from 'typeorm'
+import { instanceLimits } from '../../limits/instance-limits'
 import { projectRepo } from '../../project/project-repo'
 import { workflowRepo } from './workflow.repo'
 
@@ -33,12 +34,13 @@ export const workflowNaming = {
     },
 
     async assertCanAddWorkflows({ projectId, count }: AssertCanAddParams): Promise<void> {
-        const project = await projectRepo().findOneBy({ id: projectId })
-        if (isNil(project) || isNil(project.workflowsLimit)) {
+        const project = await projectRepo().findOne({ where: { id: projectId }, select: ['id', 'workflowsLimit'] })
+        if (isNil(project)) {
             return
         }
+        const limit = project.workflowsLimit ?? instanceLimits.projectWorkflows()
         const existing = await workflowRepo().countBy({ projectId })
-        if (existing + count > project.workflowsLimit) {
+        if (existing + count > limit) {
             throw new ApplicationError({
                 code: ErrorCode.VALIDATION,
                 params: { message: 'projectWorkflowLimitReached' },

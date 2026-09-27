@@ -10,7 +10,7 @@ describe('textMentionUtils.parseLabelFromMention — flattenNestedKeys', () => {
       [],
     );
     // Regex matched and pulled out the clean step name (not "flattenNestedKeys(step_1").
-    expect(label.displayText).toBe('(Missing) step_1');
+    expect(label.displayText).toBe('Broken reference · step_1');
   });
 
   it('still parses the legacy (un-nested) form for backward compatibility', () => {
@@ -19,7 +19,7 @@ describe('textMentionUtils.parseLabelFromMention — flattenNestedKeys', () => {
       [],
       [],
     );
-    expect(label.displayText).toBe('(Missing) step_1');
+    expect(label.displayText).toBe('Broken reference · step_1');
   });
 });
 
@@ -58,7 +58,7 @@ describe('textMentionUtils.convertTextToTipTapJsonContent', () => {
 
   describe('references inside quotes keep their mention node', () => {
     it.each([
-      '"{{step_4[\'output\'][\'result\']}}"',
+      "\"{{step_4['output']['result']}}\"",
       '"{{step_4["output"]["result"]}}"',
       "'{{step_4.result}}'",
       'fullText contains "{{step_4.result}}',
@@ -72,7 +72,7 @@ describe('textMentionUtils.convertTextToTipTapJsonContent', () => {
     });
 
     it.each([
-      '"{{step_4[\'output\'][\'result\']}}"',
+      "\"{{step_4['output']['result']}}\"",
       '"{{step_4["output"]["result"]}}"',
       '"{{step_1.name}} upper(x)"',
       'fema-formula-v1::{upper("(CEO); still inside")}::fema-formula-v1',

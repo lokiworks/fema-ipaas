@@ -11,7 +11,6 @@ import {
 import {
   AddConnectionSharesRequestBody,
   ConnectionScope,
-  ConnectionScopeImpactRequestBody,
   ConnectionStatus,
   ConnectionWithoutSensitiveData,
   ListAccessibleConnectionsRequestQuery,
@@ -29,6 +28,7 @@ import { UseFormReturn } from 'react-hook-form';
 import { useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 
+import { tenantUserApi } from '@/api/tenant-user-api';
 import {
   CURSOR_QUERY_PARAM,
   LIMIT_QUERY_PARAM,
@@ -74,7 +74,10 @@ type UseUpsertConnectionProps = {
 };
 
 export const connectionAccessQueryKeys = {
-  accessible: (extraKeys: unknown[]) => ['connections-accessible', ...extraKeys],
+  accessible: (extraKeys: unknown[]) => [
+    'connections-accessible',
+    ...extraKeys,
+  ],
   detail: (connectionId: string) => ['connection-detail', connectionId],
   accessImpact: (params: {
     connectionId: string;
@@ -515,6 +518,14 @@ export const connectionsQueries = {
       queryKey: connectionAccessQueryKeys.accessible(extraKeys),
       meta: { showErrorDialog: true, loadSubsetOptions: {} },
       queryFn: () => connectionsApi.listAccessible(request),
+    });
+  },
+
+  useShareCandidates: () => {
+    return useQuery({
+      queryKey: ['connection-share-candidates'],
+      queryFn: () => tenantUserApi.list({ limit: 2000 }),
+      staleTime: 60 * 1000,
     });
   },
 

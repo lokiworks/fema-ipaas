@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { CAPACITY_ALERT_THRESHOLDS } from '../../governance/instance-limits'
 import {
     AlertEscalation,
     AlertRecordKind,
@@ -29,6 +30,7 @@ export const UpsertAlertPolicyRequestBody = z.object({
     workflowIds: z.array(z.string()),
     events: z.array(z.enum(AlertTriggerEvent)).min(1, 'alertPolicyEventsRequired'),
     failureRate: FailureRateCondition.nullable(),
+    capacityThresholdPercent: z.number().int().refine(isCapacityThreshold, 'invalidCapacityThreshold').nullable().optional(),
     groupWindowMinutes: z.number().int().min(1).max(1440),
     quietHours: QuietHours,
     escalation: AlertEscalation,
@@ -56,6 +58,10 @@ export const AlertRecordStats = z.object({
     issuesLast7Days: z.number(),
 })
 export type AlertRecordStats = z.infer<typeof AlertRecordStats>
+
+function isCapacityThreshold(value: number): boolean {
+    return CAPACITY_ALERT_THRESHOLDS.includes(value)
+}
 
 function channelProblem(body: ChannelDraft): ChannelProblem | null {
     if (body.type === NotificationChannelType.EMAIL) {

@@ -43,8 +43,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { tenantUserMutations } from '@/features/tenant-admin/hooks/tenant-user-hooks';
 import { tenantAccessHooks, tenantAccessUtils } from '@/features/tenant-access';
+import { tenantUserMutations } from '@/features/tenant-admin/hooks/tenant-user-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 
 import { AddUsersDialog } from './add-users-dialog';
@@ -55,9 +55,9 @@ import { ResetPasswordDialog } from './reset-password-dialog';
 export default function UsersPage() {
   const { data, isLoading, refetch } = tenantAccessHooks.useMembers();
   const { mutate: setEnabled } = tenantAccessHooks.useSetEnabled();
-  const { mutate: revokeInvitation } = tenantUserMutations.useDeleteInvitation(
-    { onSuccess: () => refetch() },
-  );
+  const { mutate: revokeInvitation } = tenantUserMutations.useDeleteInvitation({
+    onSuccess: () => refetch(),
+  });
   const currentUserId = authenticationSession.getCurrentUserId();
   const [scope, setScope] = useState<'all' | 'external'>('all');
   const [status, setStatus] = useState<TenantMemberStatus | 'any'>('any');

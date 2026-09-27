@@ -128,6 +128,7 @@ const AddButton = React.memo((props: ButtonData) => {
                   },
                 )}
                 data-testid="add-action-button"
+                data-tour="builder-add-step"
               >
                 {!isConnectorSelectorOpen && (
                   <Plus className="w-3 h-3 stroke-[3px] text-foreground" />

@@ -43,17 +43,14 @@ Platform-owned flow logic nodes (Branch, Loop, Delay, Code, Stop, Approval) — 
   - Adding a `WorkflowActionType` means touching more than `getExecutors()`: `test-execution-context.ts` (sample-data seeding for downstream step tests) and `workflow-version-validator-util.ts` (the `valid` flag, twice — ADD_ACTION and UPDATE_ACTION) both switch on it. The `switch-exhaustiveness-check` lint rule catches these; `turbo build` does not, because the engine is esbuild-only.
   - `@fema-ipaas/components` is a **built dist** dependency of the engine and api. After adding a component, `turbo run build --filter=@fema-ipaas/components` before running engine tests, or the registry lookup silently misses it.
 
-### No-Code Connector Builder
+### Connector Devkit (连接器开发)
 
-A stored blueprint (`connector_blueprint`) describing an HTTP API — base URL, default headers, auth type, and a list of operations with their inputs — that generates a connector package on demand (design doc section 9.1). CRUD plus `POST /v1/connector-blueprints/:id/generate`, UI at `/tenant/connectors/builder`.
-
-- **Where**: `packages/server/api/src/app/connectors/blueprint`. The generator is pure and unit tested; the blueprint row is the saved state so a half-built connector survives a page reload.
-- Each input declares where it goes — `query`, `path`, `header` or `body` — and the generator routes it accordingly. A path input is substituted into the path, never sent as a query param.
+界面上开发自定义连接器：草稿是 `connector_blueprint`，发布成真正的连接器版本（只在本租户可见），支持灰度到指定项目。
+详见子页 *connector-devkit*；包里只有数据清单，由引擎运行时解释执行（decision 000035）。
 
 - **Gotchas**:
-  - Like OpenAPI import, this emits **source files, not an installed connector**. Generated code goes through `fema connectors validate` and `publish` like anything else.
-  - Each input carries a `BlueprintFieldType` chosen in the UI, which selects the generated property kind. A DROPDOWN field renders its configured options as a StaticDropdown.
-  - Auth maps to one SDK auth per blueprint type. `CUSTOM_AUTH` generates an empty `props: {}` — the fields have to be filled in by hand.
+  - 旧的「生成 TypeScript 源码」构建器（`connector-blueprint-generator.ts`、`/tenant/connectors/builder`）已删除，`connector_blueprint` 的旧格式行需要迁移清掉。
+  - 灰度和停止支持在读取时由 `connectorVersionAvailability` 推导，`connector_metadata` 上没有任何标记，排查「为什么这个项目看不到新版本」要看 `connector_blueprint_version`。
 
 ### OpenAPI Import
 
@@ -63,7 +60,7 @@ Turns an OpenAPI 3 or Swagger 2 document into a connector package (design doc se
 - Path-level `parameters` are merged into every operation on that path, and a missing `operationId` is synthesised from method + path — both are common in hand-written specs.
 
 - **Gotchas**:
-  - The output is **source files, not an installed connector**. The user saves them under `packages/connectors` and runs `fema connectors validate` then `publish`. There is no path from the browser straight into the registry, deliberately: generated code should pass review and the validate rules before it runs.
+  - `/tenant/connectors/openapi` still emits **source files** for code-first developers. The devkit's 「从 OpenAPI 导入」 is a different path (`openapi-blueprint-mapper.ts`): OpenAPI 3.x only, it creates a draft blueprint (servers[0] → Base URL, one operation per path + method, query/path parameters and JSON requestBody properties → inputs, 200/201 example → sample output).
   - JSON only. YAML specs must be converted first; the endpoint returns a clear validation error rather than guessing.
   - Declared schema types map onto matching properties: `integer`/`number` → Number, `boolean` → Checkbox, `enum` → StaticDropdown carrying the values, `array`/`object` → Array/Object, `string` with `format: date-time` → DateTime, `password` → SecretText. An untyped parameter still falls back to ShortText — the generated connector is a good starting point, not a finished one.
   - Only the **first** server and the **first** security scheme are used. Multi-server or multi-auth specs need manual adjustment.
@@ -170,3 +167,4 @@ A workflow step type (`@fema-ipaas/connector-agent`) running a ReAct-style LLM l
 - **Connectors** — the catalog, metadata registry, versions
 - **Connector Sets** — per-project include/exclude visibility, the undeletable Default set
 - **Building Connectors** — authoring, testing and publishing a connector
+- **Connector Devkit** — 界面上开发、测试、灰度发布自定义连接器

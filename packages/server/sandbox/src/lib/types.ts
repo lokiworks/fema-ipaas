@@ -115,6 +115,9 @@ export type SandboxSettings = {
     ENFORCE_CONNECTION_CONNECTOR_BINDING: boolean
     WORKER_GROUP_ID?: string | undefined
     PROJECT_WORKER?: boolean | undefined
+    MAX_NODES_PER_RUN?: number | undefined
+    STEP_TIMEOUT_SECONDS?: number | undefined
+    MAX_STEP_PAYLOAD_MB?: number | undefined
 }
 
 export type SandboxDeps = {

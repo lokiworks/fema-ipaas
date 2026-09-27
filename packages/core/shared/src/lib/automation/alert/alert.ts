@@ -20,6 +20,7 @@ export enum AlertTriggerEvent {
     ISSUE_REOPENED = 'ISSUE_REOPENED',
     CONNECTION_INVALID = 'CONNECTION_INVALID',
     FAILURE_RATE = 'FAILURE_RATE',
+    CAPACITY = 'CAPACITY',
 }
 
 export enum AlertRecordKind {
@@ -28,6 +29,7 @@ export enum AlertRecordKind {
     THRESHOLD = 'THRESHOLD',
     ESCALATED = 'ESCALATED',
     STILL_FAILING = 'STILL_FAILING',
+    CAPACITY = 'CAPACITY',
 }
 
 export enum AlertRecordStatus {
@@ -81,6 +83,7 @@ export const AlertPolicy = z.object({
     workflowIds: z.array(z.string()),
     events: z.array(z.enum(AlertTriggerEvent)),
     failureRate: Nullable(FailureRateCondition),
+    capacityThresholdPercent: Nullable(z.number()),
     groupWindowMinutes: z.number(),
     quietHours: QuietHours,
     escalation: AlertEscalation,

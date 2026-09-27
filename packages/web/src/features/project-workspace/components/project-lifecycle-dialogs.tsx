@@ -34,7 +34,8 @@ export function DeleteProjectDialog({
     projectId: project.id,
     enabled: open,
   });
-  const { mutate: remove, isPending } = projectWorkspaceHooks.useDeleteProject();
+  const { mutate: remove, isPending } =
+    projectWorkspaceHooks.useDeleteProject();
   const blockedReason =
     project.runningCount > 0
       ? t(
@@ -116,10 +117,9 @@ export function CopyProjectDialog({
             {
               description:
                 result.clearedConnections > 0
-                  ? t(
-                      '{count} steps need their connection selected again',
-                      { count: result.clearedConnections },
-                    )
+                  ? t('{count} steps need their connection selected again', {
+                      count: result.clearedConnections,
+                    })
                   : undefined,
             },
           );

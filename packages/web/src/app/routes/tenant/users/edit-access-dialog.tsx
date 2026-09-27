@@ -103,16 +103,18 @@ function EditAccessForm({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {[TenantRole.MEMBER, TenantRole.OPERATOR, TenantRole.ADMIN].map(
-                    (role) => (
-                      <SelectItem key={role} value={role}>
-                        {tenantAccessUtils.roleLabel({
-                          tenantRole: role,
-                          isOwner: false,
-                        })}
-                      </SelectItem>
-                    ),
-                  )}
+                  {[
+                    TenantRole.MEMBER,
+                    TenantRole.OPERATOR,
+                    TenantRole.ADMIN,
+                  ].map((role) => (
+                    <SelectItem key={role} value={role}>
+                      {tenantAccessUtils.roleLabel({
+                        tenantRole: role,
+                        isOwner: false,
+                      })}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <FormMessage />

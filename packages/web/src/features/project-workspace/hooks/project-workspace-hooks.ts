@@ -13,8 +13,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { toast } from 'sonner';
 
-import { projectCollectionUtils } from '@/features/projects/stores/project-collection';
 import { PROJECT_DIRECTORY_QUERY_KEY } from '@/features/projects/api/project-directory-api';
+import { projectCollectionUtils } from '@/features/projects/stores/project-collection';
 import { api } from '@/lib/api';
 
 import { projectWorkspaceApi } from '../api/project-workspace-api';
@@ -27,7 +27,9 @@ function useInvalidateWorkspace() {
   const queryClient = useQueryClient();
   return () => {
     void queryClient.invalidateQueries({ queryKey: [WORKSPACE_KEY] });
-    void queryClient.invalidateQueries({ queryKey: PROJECT_DIRECTORY_QUERY_KEY });
+    void queryClient.invalidateQueries({
+      queryKey: PROJECT_DIRECTORY_QUERY_KEY,
+    });
     void queryClient.invalidateQueries({ queryKey: ['folders'] });
     void queryClient.invalidateQueries({ queryKey: ['workflows'] });
   };
@@ -171,7 +173,8 @@ function useRenameFolder() {
 function useDeleteFolder() {
   const invalidate = useInvalidateWorkspace();
   return useMutation({
-    mutationFn: (folderId: string) => projectWorkspaceApi.deleteFolder(folderId),
+    mutationFn: (folderId: string) =>
+      projectWorkspaceApi.deleteFolder(folderId),
     onSuccess: () => {
       invalidate();
       toast.success(t('Folder deleted'));

@@ -37,6 +37,8 @@ const connectorTriggerSettingsFields = {
     skipHolidays: z.boolean().optional(),
     propertySettings: z.record(z.string(), PropertySettings),
     customLogoUrl: z.string().optional(),
+    displayNumber: z.string().max(80).optional(),
+    pendingReview: z.boolean().optional(),
     connectorName: z.string(),
     connectorVersion: VersionType,
     triggerName: z.string().optional(),

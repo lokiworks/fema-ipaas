@@ -138,6 +138,9 @@ export const WorkerSettingsResponse = z.object({
     PAGE_ONCALL_WEBHOOK: z.string().optional(),
     APP_VERSION: z.string().optional(),
     PROJECT_WORKER: z.boolean().optional(),
+    MAX_NODES_PER_RUN: z.number().optional(),
+    STEP_TIMEOUT_SECONDS: z.number().optional(),
+    MAX_STEP_PAYLOAD_MB: z.number().optional(),
 })
 
 export type WorkerSettingsResponse = z.infer<typeof WorkerSettingsResponse>

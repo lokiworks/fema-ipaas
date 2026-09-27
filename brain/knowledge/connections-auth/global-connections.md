@@ -19,6 +19,8 @@ App connections scoped to a platform (`ConnectionScope.PLATFORM`) rather than a 
 - Module gated via `platformMustHaveFeatureEnabled((p) => p.plan.globalConnectionsEnabled)`.
 - When shown to project users in the builder picker, the shared `list` call runs with the project's ID and scope filtering handles visibility.
 
+- **`preSelectForNewProjects = true` 的全局连接就是「全部项目」可用。** 可用性判断（`connectionAvailability.whereAvailableIn`、`connectionAccessUtils.isAvailableInProject`）对它不看 `projectIds`，所以新建项目不用回写数组；这个标志在引入连接分享之前从未被读过。
+
 ### Key files
 Entry point: `globalConnectionModule`, registered twice in `packages/server/api/src/app/app.ts` (cloud and enterprise editions).
 

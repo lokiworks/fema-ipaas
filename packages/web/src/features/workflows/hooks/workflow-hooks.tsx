@@ -17,6 +17,7 @@ import {
   TelemetryEventName,
   UncategorizedFolderId,
   UpdateRunProgressRequest,
+  RunEnvironment,
 } from '@fema-ipaas/shared';
 import { QueryClient, useMutation, useQuery } from '@tanstack/react-query';
 import { t } from 'i18next';
@@ -316,12 +317,13 @@ export const workflowHooks = {
     isForManualTrigger: boolean;
   }) => {
     const socket = useSocket();
-    return useMutation<void>({
-      mutationFn: () =>
+    return useMutation<void, Error, TestRunOptions | void>({
+      mutationFn: (options) =>
         executionsApi.subscribeToTestWorkflowOrManualRun(
           socket,
           {
             workflowVersionId,
+            ...(options ?? {}),
           },
           onUpdateRun,
           isForManualTrigger,
@@ -521,4 +523,9 @@ type UseChangeWorkflowStatusParams = {
   change: 'publish' | WorkflowStatus;
   onSuccess: (workflow: PopulatedWorkflow) => void;
   setIsPublishing?: (isPublishing: boolean) => void;
+};
+
+type TestRunOptions = {
+  payload?: unknown;
+  environment?: RunEnvironment;
 };

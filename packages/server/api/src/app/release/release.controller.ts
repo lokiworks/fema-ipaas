@@ -21,6 +21,7 @@ import {
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
+import { lockService } from '../core/collaborative/lock/lock.service'
 import { ProjectResourceType } from '../core/security/authorization/common'
 import { securityAccess } from '../core/security/authorization/fastify-security'
 import { connectionReplacementService } from './connection-replacement.service'
@@ -55,6 +56,7 @@ export const workflowReleaseController: FastifyPluginAsyncZod = async (app) => {
     })
 
     app.post('/deploy-to-test', DeployToTestRequest, async (request): Promise<DeployToTestResponse> => {
+        await lockService(request.log).assertNotLockedByOther({ resourceId: request.body.workflowId, userId: request.principal.id })
         return workflowReleaseService(request.log).deployToTest({ request: request.body, userId: request.principal.id, tenantId: request.principal.tenant.id })
     })
 

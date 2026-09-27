@@ -3,6 +3,7 @@ import {
     DataSource,
     EntitySchema,
 } from 'typeorm'
+import { PersonalAccessTokenEntity } from '../account/personal-access-token.entity'
 import { AgentApprovalEntity } from '../agent-approval/agent-approval.entity'
 import { AiUsageEntity } from '../ai/ai-usage.entity'
 import { AlertPolicyEntity, AlertRecordEntity, NotificationChannelEntity } from '../alert/alert.entity'
@@ -11,6 +12,7 @@ import { OtpEntity } from '../authentication/otp/otp-entity'
 import { UserIdentityEntity } from '../authentication/user-identity/user-identity-entity'
 import { ConnectionShareEntity } from '../connection/connection-share.entity'
 import { ConnectionEntity } from '../connection/connection.entity'
+import { ConnectorBlueprintVersionEntity } from '../connectors/blueprint/connector-blueprint-version.entity'
 import { ConnectorBlueprintEntity } from '../connectors/blueprint/connector-blueprint.entity'
 import { ConnectorDemandEntity } from '../connectors/demand/connector-demand.entity'
 import { ConnectorMetadataEntity } from '../connectors/metadata/connector-metadata-entity'
@@ -23,11 +25,13 @@ import { IssueActivityEntity, IssueEntity } from '../issue/issue.entity'
 import { MappingTableEntity } from '../mapping-table/mapping-table.entity'
 import { McpServerEntity } from '../mcp-server/mcp-server.entity'
 import { McpServiceEntity, McpServiceMemberEntity, McpServiceUsageEntity } from '../mcp-service/mcp-service.entity'
+import { NotificationEntity } from '../notification/notification.entity'
 import { DataErasureRequestEntity } from '../privacy/data-erasure.entity'
 import { PrivacySettingsEntity } from '../privacy/privacy-settings.entity'
 import { ProjectEntity } from '../project/project-entity'
 import { ProjectMemberEntity } from '../project/project-member.entity'
 import { ConnectionReplacementEntity, WorkflowReleaseEntity } from '../release/release.entity'
+import { RunMonitorViewEntity } from '../run-monitor/run-monitor-view.entity'
 import { StoreEntryEntity } from '../store-entry/store-entry-entity'
 import { TemplateEntity } from '../template/template.entity'
 import { TenantEntity } from '../tenant/tenant.entity'
@@ -62,6 +66,7 @@ function getEntities(): EntitySchema<unknown>[] {
         ExecutionEntity,
         AuditEventEntity,
         ConnectorBlueprintEntity,
+        ConnectorBlueprintVersionEntity,
         ProjectEntity,
         ProjectMemberEntity,
         StoreEntryEntity,
@@ -88,6 +93,7 @@ function getEntities(): EntitySchema<unknown>[] {
         MappingTableEntity,
         DataStoreEntity,
         AiUsageEntity,
+        RunMonitorViewEntity,
         AgentApprovalEntity,
         DataErasureRequestEntity,
         McpServiceEntity,
@@ -97,6 +103,8 @@ function getEntities(): EntitySchema<unknown>[] {
         ConnectionShareEntity,
         ConnectorDemandEntity,
         ModuleAccessRequestEntity,
+        NotificationEntity,
+        PersonalAccessTokenEntity,
         DedupedEventEntity,
         HolidayCalendarEntity,
     ]

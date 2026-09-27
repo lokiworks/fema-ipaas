@@ -838,11 +838,13 @@ function DrawerShell({ children }: { children: React.ReactNode }) {
   const welcomeText = branding.welcomeText?.trim() ?? '';
   return (
     <div className="flex w-full flex-col px-8 pb-7 pt-9">
-      <div className="mb-5 flex justify-center">
+      <div className="mb-5 flex justify-center lg:hidden">
         <FullLogo className="h-7" />
       </div>
       {welcomeText.length > 0 && (
-        <p className="mb-4 text-sm text-muted-foreground">{welcomeText}</p>
+        <p className="mb-4 text-sm text-muted-foreground lg:hidden">
+          {welcomeText}
+        </p>
       )}
       {children}
     </div>

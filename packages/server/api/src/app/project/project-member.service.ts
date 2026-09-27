@@ -41,6 +41,10 @@ export const projectMemberService = (log: FastifyBaseLogger) => ({
         return paginationHelper.createPage<ProjectMemberWithUser>(withUsers, newCursor)
     },
 
+    async isMember({ projectId, userId }: { projectId: string, userId: string }): Promise<boolean> {
+        return projectMemberRepo().existsBy({ projectId, userId })
+    },
+
     async upsert({ projectId, userId, role }: UpsertParams): Promise<ProjectMember> {
         const existing = await projectMemberRepo().findOneBy({ projectId, userId })
         if (!isNil(existing)) {

@@ -1,4 +1,4 @@
-import { Project, TenantModule, User, UserIdentity } from '@fema-ipaas/shared'
+import { NotificationPreferences, Project, TenantModule, User, UserIdentity } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import { BaseColumnSchemaPart } from '../database/database-common'
 
@@ -6,6 +6,7 @@ export type UserSchema = User & {
     projects: Project[]
     identity: UserIdentity
     modules: TenantModule[]
+    notificationPreferences?: NotificationPreferences | null
 }
 
 export const UserEntity = new EntitySchema<UserSchema>({
@@ -40,6 +41,10 @@ export const UserEntity = new EntitySchema<UserSchema>({
             array: true,
             nullable: false,
             default: [],
+        },
+        notificationPreferences: {
+            type: 'jsonb',
+            nullable: true,
         },
     },
     indices: [

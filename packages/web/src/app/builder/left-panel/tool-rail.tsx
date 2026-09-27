@@ -7,6 +7,7 @@ import {
   HistoryIcon,
   LucideIcon,
   GitBranchIcon,
+  SearchIcon,
 } from 'lucide-react';
 
 import { LeftSideBarType } from '@/app/builder/types';
@@ -25,7 +26,10 @@ export function ToolRail({ active, onSelect, badges }: ToolRailProps) {
   );
 
   return (
-    <div className="flex h-full w-11 shrink-0 flex-col items-center gap-1 border-r bg-background py-2">
+    <div
+      data-tour="builder-tool-rail"
+      className="flex h-full w-11 shrink-0 flex-col items-center gap-1 border-r bg-background py-2"
+    >
       {visibleTools.map((tool) => {
         const isActive = active === tool.type;
         return (
@@ -46,11 +50,7 @@ export function ToolRail({ active, onSelect, badges }: ToolRailProps) {
                 )}
               >
                 <tool.icon className="size-4" />
-                {(badges?.[tool.type] ?? 0) > 0 && (
-                  <span className="absolute -right-0.5 -top-0.5 flex size-3.5 items-center justify-center rounded-full bg-warning text-[9px] font-medium leading-none text-warning-foreground">
-                    {badges?.[tool.type]}
-                  </span>
-                )}
+                <ToolBadgeDot badge={badges?.[tool.type]} />
               </button>
             </TooltipTrigger>
             <TooltipContent side="right">{tool.label()}</TooltipContent>
@@ -58,6 +58,24 @@ export function ToolRail({ active, onSelect, badges }: ToolRailProps) {
         );
       })}
     </div>
+  );
+}
+
+function ToolBadgeDot({ badge }: { badge: ToolBadge | undefined }) {
+  if (isNil(badge) || badge.count <= 0) {
+    return null;
+  }
+  return (
+    <span
+      className={cn(
+        'absolute right-0 top-0 flex h-3.5 min-w-3.5 items-center justify-center rounded-full px-0.5 text-[9px] font-medium leading-none',
+        badge.tone === 'error'
+          ? 'bg-destructive text-destructive-foreground'
+          : 'bg-warning text-warning-foreground',
+      )}
+    >
+      {badge.count > 99 ? '99+' : badge.count}
+    </span>
   );
 }
 
@@ -75,7 +93,7 @@ const TOOLS: {
   {
     type: LeftSideBarType.RUNS,
     icon: HistoryIcon,
-    label: () => t('Run History'),
+    label: () => t('Debug records'),
     permission: Permission.READ_WORKFLOW,
   },
   {
@@ -88,10 +106,20 @@ const TOOLS: {
     icon: CircleAlertIcon,
     label: () => t('Validation'),
   },
+  {
+    type: LeftSideBarType.SEARCH,
+    icon: SearchIcon,
+    label: () => t('Search steps'),
+  },
 ];
 
 export type ToolRailProps = {
   active: LeftSideBarType;
   onSelect: (type: LeftSideBarType) => void;
-  badges?: Partial<Record<LeftSideBarType, number>>;
+  badges?: Partial<Record<LeftSideBarType, ToolBadge>>;
+};
+
+export type ToolBadge = {
+  count: number;
+  tone: 'error' | 'warning';
 };

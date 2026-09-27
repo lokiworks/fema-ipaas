@@ -24,6 +24,7 @@ import { cn } from '@/lib/utils';
 
 import { ScrollArea } from '../../../components/ui/scroll-area';
 import { BuilderState, useBuilderStateContext } from '../builder-hooks';
+import { workflowValidator } from '../validation/workflow-validator';
 
 import { DataSelectorNode } from './data-selector-node';
 import {
@@ -127,6 +128,30 @@ const DataSelector = ({ parentHeight, parentWidth }: DataSelectorProps) => {
     (state) => state.selectedStep ?? '',
   );
   const defaultTab = isTriggerSelected ? 'variables' : 'data';
+  const [requestNonce, trigger] = useBuilderStateContext((state) => [
+    state.dataSelectorRequestNonce,
+    state.workflowVersion.trigger,
+  ]);
+  useEffect(() => {
+    if (requestNonce === 0) {
+      return;
+    }
+    setDataSelectorSize((size) =>
+      size === DataSelectorSizeState.COLLAPSED
+        ? DataSelectorSizeState.DOCKED
+        : size,
+    );
+    setShowDataSelector(true);
+  }, [requestNonce]);
+  const loopVariableNodes = useMemo(
+    () =>
+      buildLoopVariableNodes({
+        trigger,
+        selectedStepName,
+        sampleData,
+      }),
+    [trigger, selectedStepName, sampleData],
+  );
 
   const connectorPairs = useMemo(
     () =>
@@ -304,8 +329,10 @@ const DataSelector = ({ parentHeight, parentWidth }: DataSelectorProps) => {
     ],
   );
 
-  const currentStructure =
-    viewMode === 'friendly' ? friendlyStructure : advancedStructure;
+  const currentStructure = [
+    ...loopVariableNodes,
+    ...(viewMode === 'friendly' ? friendlyStructure : advancedStructure),
+  ];
   const [debouncedSearchTerm] = useDebounce(searchTerm, 250);
   const filteredNodes = useMemo(
     () => dataSelectorUtils.filterBy(currentStructure, debouncedSearchTerm),
@@ -410,7 +437,7 @@ const DataSelector = ({ parentHeight, parentWidth }: DataSelectorProps) => {
               className="gap-2 px-3 py-2 hover:text-foreground rounded-none"
             >
               <Database className="w-4 h-4" />
-              {t('Data')}
+              {t('Upstream steps')}
             </TabsTrigger>
             <TabsTrigger
               value="variables"
@@ -418,7 +445,7 @@ const DataSelector = ({ parentHeight, parentWidth }: DataSelectorProps) => {
               className="gap-2 px-3 py-2 hover:text-foreground rounded-none"
             >
               <Variable className="w-4 h-4" />
-              {t('Variables')}
+              {t('Project config')}
             </TabsTrigger>
           </TabsList>
 
@@ -483,6 +510,49 @@ const DataSelector = ({ parentHeight, parentWidth }: DataSelectorProps) => {
 };
 
 DataSelector.displayName = 'DataSelector';
+
+function buildLoopVariableNodes({
+  trigger,
+  selectedStepName,
+  sampleData,
+}: {
+  trigger: WorkflowTrigger;
+  selectedStepName: string;
+  sampleData: Record<string, unknown>;
+}): DataSelectorTreeNode[] {
+  const entry = workflowValidator
+    .collectSteps(trigger)
+    .find(({ step }) => step.name === selectedStepName);
+  if (!entry || entry.loops.length === 0) {
+    return [];
+  }
+  const children = entry.loops.flatMap((loopName) => {
+    const loop = workflowStructureUtil.getStep(loopName, trigger);
+    const loopSample = sampleData[loopName];
+    const sampleRecord =
+      typeof loopSample === 'object' && loopSample !== null ? loopSample : {};
+    return LOOP_VARIABLE_KEYS.map((key) => ({
+      key: `loop-variable-${loopName}-${key}`,
+      data: {
+        type: 'value' as const,
+        value: key in sampleRecord ? Reflect.get(sampleRecord, key) : '',
+        displayName: `${loop?.displayName ?? loopName} · ${key}`,
+        propertyPath: pathHelpers.convertValuePathToPropertyPath(loopName, key),
+        insertable: true,
+        stepName: loopName,
+      },
+    }));
+  });
+  return [
+    {
+      key: 'loop-variables',
+      data: { type: 'chunk' as const, displayName: t('Loop variables') },
+      children,
+    },
+  ];
+}
+
+const LOOP_VARIABLE_KEYS = ['item', 'index'];
 
 const EMPTY_OVERRIDES: ReadonlyMap<string, boolean> = new Map();
 

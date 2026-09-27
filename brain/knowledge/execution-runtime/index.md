@@ -60,3 +60,4 @@ The four calls a run emits to the app during execution: `updateRunProgress`, `up
 
 - **Workers** — the poll loop, worker groups, slots and reservations, and its gotchas: the version gate, system-job edition skew, `kamal app exec` leaking a permanent worker, serial per-queue dispatch as the real throughput cap, the silent mid-poll-loop wedge, and why polling starves first
 - **Benchmark CLI** — measuring throughput; queue-wait vs service-time
+- **实例上限与项目上限** — 8 项 `FEMA_*` 上限在哪里执行、默认值为什么不照搬原型、月度运行计数和容量告警

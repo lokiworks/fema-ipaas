@@ -3,6 +3,9 @@ import { BatchPublishCheckItem, BatchPublishCheckStatus } from '@fema-ipaas/shar
 export const batchCheckUtils = {
     classify({ target, workflow }: { target: BatchTarget, workflow: BatchCheckInput }): BatchPublishCheckItem {
         const base = { workflowId: workflow.id, displayName: workflow.displayName }
+        if (workflow.lockedByOther) {
+            return { ...base, status: BatchPublishCheckStatus.INVALID, reasons: ['workflowLockedByAnotherEditor'] }
+        }
         if (!workflow.valid) {
             return { ...base, status: BatchPublishCheckStatus.INVALID, reasons: ['workflowHasValidationErrors'] }
         }
@@ -28,4 +31,5 @@ export type BatchCheckInput = {
     publishedVersionId: string | null
     testVersionId: string | null
     unhealthyConnections: number
+    lockedByOther: boolean
 }

@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { useGlobalSearch } from '@/app/components/global-search/global-search-context';
 import { Skeleton } from '@/components/ui/skeleton';
 import { GenerateWorkflowDialog } from '@/features/ai';
+import { launchTour } from '@/features/help';
 import {
   HOME_RECENT_LIMIT,
   HomeAiBox,
@@ -100,6 +101,7 @@ export function WorkspaceHomePage() {
           canCreateWorkflow={hasEditable}
           onProjectCreated={refreshProjects}
           onNewWorkflow={() => setNewWorkflowOpen(true)}
+          onStartTour={() => launchTour('console')}
         />
       )}
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">

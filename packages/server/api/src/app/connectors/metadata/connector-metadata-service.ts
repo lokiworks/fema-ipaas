@@ -1,5 +1,5 @@
 import { ConnectorMetadata, ConnectorMetadataModel, ConnectorMetadataModelSummary, ConnectorPackageInformation, connectorTranslation } from '@fema-ipaas/connector-sdk'
-import { ApplicationError, assertNotNullOrUndefined, ErrorCode, generateId, isNil, LocalesEnum, TenantId } from '@fema-ipaas/core-utils'
+import { ApplicationError, assertNotNullOrUndefined, blueprintAvailability, ErrorCode, generateId, isNil, LocalesEnum, TenantId } from '@fema-ipaas/core-utils'
 import { versionUtil } from '@fema-ipaas/server-utils'
 import { ConnectorAudienceFilter, ConnectorCategory, ConnectorOrderBy, ConnectorPackage, ConnectorSortBy, ConnectorSource, ConnectorType, EXACT_VERSION_REGEX, PackageType, PrivateConnectorPackage, PublicConnectorPackage, SuggestionType, workflowConnectorUtil } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
@@ -9,6 +9,7 @@ import { EntityManager, In, IsNull } from 'typeorm'
 import { repoFactory } from '../../core/db/repo-factory'
 import { projectService } from '../../project/project-service'
 import { workflowVersionRepo } from '../../workflows/workflow-version/workflow-version.service'
+import { connectorVersionAvailability } from '../blueprint/connector-version-availability'
 import { resolveVisibility } from '../connector-visibility'
 import { connectorCache, ConnectorRegistryEntry } from './connector-cache'
 import { ConnectorMetadataEntity, ConnectorMetadataSchema } from './connector-metadata-entity'
@@ -23,11 +24,12 @@ export const connectorMetadataService = (log: FastifyBaseLogger) => {
         },
         async list(params: ListParams): Promise<ConnectorMetadataModelSummary[]> {
             const locale = params.locale ?? LocalesEnum.ENGLISH
-            const translatedConnectors = await dedupe(`list:${params.tenantId ?? ''}:${locale}`, () => fetchLatestConnectors({
+            const latestConnectors = await dedupe(`list:${params.tenantId ?? ''}:${locale}`, () => fetchLatestConnectors({
                 tenantId: params.tenantId,
                 locale,
                 log,
             }))
+            const translatedConnectors = await applyBlueprintAvailability({ connectors: latestConnectors, tenantId: params.tenantId, projectId: params.projectId, locale, log })
             const policy = await resolveVisibility({ tenantId: params.tenantId, projectId: params.projectId, log })
             const audience = params.audience ?? ConnectorAudienceFilter.HUMAN
             const audienceConnectors = translatedConnectors.map((connector) => ({ ...connector, actions: filterActionsByAudience(connector.actions, audience) }))
@@ -53,7 +55,7 @@ export const connectorMetadataService = (log: FastifyBaseLogger) => {
             }))
         },
         async get({ projectId, tenantId, version, name }: GetOrThrowParams): Promise<ConnectorMetadataModel | undefined> {
-            const bestMatch = await findExactVersion(log, { name, version, tenantId })
+            const bestMatch = await findExactVersion(log, { name, version, tenantId, projectId })
             if (isNil(bestMatch)) {
                 return undefined
             }
@@ -77,8 +79,8 @@ export const connectorMetadataService = (log: FastifyBaseLogger) => {
             }
             return policy.filterConnectorComponents(connector)
         },
-        async getOrThrow({ version, name, tenantId, locale }: GetOrThrowParams): Promise<ConnectorMetadataModel> {
-            const connector = await this.get({ version, name, tenantId })
+        async getOrThrow({ version, name, tenantId, locale, projectId }: GetOrThrowParams): Promise<ConnectorMetadataModel> {
+            const connector = await this.get({ version, name, tenantId, projectId })
             if (isNil(connector)) {
                 throw new ApplicationError({
                     code: ErrorCode.ENTITY_NOT_FOUND,
@@ -330,9 +332,9 @@ const sortByVersionDescending = <T extends { version: string }>(a: T, b: T): num
 
 const findExactVersion = async (
     log: FastifyBaseLogger,
-    params: { name: string, version: string | undefined, tenantId: string | undefined },
+    params: { name: string, version: string | undefined, tenantId: string | undefined, projectId?: string },
 ): Promise<{ name: string, version: string, tenantId: string | undefined } | undefined> => {
-    const { name, version, tenantId } = params
+    const { name, version, tenantId, projectId } = params
     const versionToSearch = findNextExcludedVersion(version)
     const currentRelease = versionUtil.getCurrentRelease()
     const registry = filterRegistry(await loadRegistry(log), { release: currentRelease, tenantId })
@@ -352,12 +354,52 @@ const findExactVersion = async (
     }
 
     const sortedEntries = matchingRegistryEntries.sort(sortByVersionDescending)
-    return {
-        name: sortedEntries[0].name,
-        version: sortedEntries[0].version,
-        tenantId: sortedEntries[0].tenantId,
+    const rules = await connectorVersionAvailability.rulesFor({ tenantId, connectorName: name })
+    if (rules.length === 0) {
+        return {
+            name: sortedEntries[0].name,
+            version: sortedEntries[0].version,
+            tenantId: sortedEntries[0].tenantId,
+        }
     }
+    const chosen = connectorVersionAvailability.pick({
+        rules,
+        candidates: sortedEntries.map((entry) => entry.version),
+        exact: !isNil(version) && EXACT_VERSION_REGEX.test(version),
+        projectId,
+    })
+    const entry = sortedEntries.find((candidate) => candidate.version === chosen)
+    return isNil(entry) ? undefined : { name: entry.name, version: entry.version, tenantId: entry.tenantId }
 }
+
+async function applyBlueprintAvailability({ connectors, tenantId, projectId, locale, log }: ApplyBlueprintAvailabilityParams): Promise<ConnectorMetadataSchema[]> {
+    const rulesByName = await connectorVersionAvailability.rulesForTenant(tenantId)
+    if (rulesByName.size === 0) {
+        return connectors
+    }
+    const registry = filterRegistry(await loadRegistry(log), { release: versionUtil.getCurrentRelease(), tenantId })
+    const adjusted = await Promise.all(connectors.map(async (connector) => {
+        const rules = rulesByName.get(connector.name)
+        if (isNil(rules) || connector.tenantId !== tenantId) {
+            return connector
+        }
+        const candidates = registry
+            .filter((entry) => entry.name === connector.name)
+            .sort(sortByVersionDescending)
+            .map((entry) => entry.version)
+        const selectable = blueprintAvailability.pickSelectable({ rules, packageVersions: candidates, projectId })
+        if (isNil(selectable)) {
+            return null
+        }
+        if (selectable === connector.version) {
+            return connector
+        }
+        const fetched = await fetchConnectorVersion({ connectorName: connector.name, version: selectable, tenantId, log })
+        return isNil(fetched) ? null : translateConnectors([fetched], locale)[0]
+    }))
+    return adjusted.filter((connector): connector is ConnectorMetadataSchema => !isNil(connector))
+}
+
 
 const findNextExcludedVersion = (version: string | undefined): { baseVersion: string, nextExcludedVersion: string } | undefined => {
     if (version?.startsWith('^')) {
@@ -517,6 +559,14 @@ type ListParams = {
     suggestionType?: SuggestionType
     locale?: LocalesEnum
     audience?: ConnectorAudienceFilter
+}
+
+type ApplyBlueprintAvailabilityParams = {
+    connectors: ConnectorMetadataSchema[]
+    tenantId: string | undefined
+    projectId: string | undefined
+    locale: LocalesEnum
+    log: FastifyBaseLogger
 }
 
 type GetOrThrowParams = {

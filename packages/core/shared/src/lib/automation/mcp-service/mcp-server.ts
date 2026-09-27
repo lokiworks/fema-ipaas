@@ -1,8 +1,8 @@
 import { Nullable } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 import { formErrors } from '../../form-errors'
-import { ConnectionPermission, ConnectionProjectRef } from '../connection/connection-share'
 import { ConnectionStatus } from '../connection/connection'
+import { ConnectionPermission, ConnectionProjectRef } from '../connection/connection-share'
 
 function validateUrl(value: string): McpServerUrlIssue | null {
     const text = value.trim()

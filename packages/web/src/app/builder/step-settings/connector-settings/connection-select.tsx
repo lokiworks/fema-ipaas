@@ -80,6 +80,14 @@ function ConnectionSelect(params: ConnectionSelectProps) {
       connection.externalId ===
       removeBrackets(form.getValues().settings.input.auth ?? ''),
   );
+  const selectedExternalId =
+    removeBrackets(form.getValues().settings.input.auth ?? '') ?? '';
+  const hasUnlistedSelection =
+    !isLoadingConnections &&
+    selectedExternalId.length > 0 &&
+    isNil(selectedConnection) &&
+    form.getValues().settings.propertySettings['auth']?.type !==
+      PropertyExecutionType.DYNAMIC;
   const isSelectedConnectionGlobal =
     selectedConnection?.scope === ConnectionScope.TENANT;
   // The create/reconnect dialog runs in global (TENANT) scope ONLY when
@@ -335,6 +343,13 @@ function ConnectionSelect(params: ConnectionSelectProps) {
                       })}
                   </SelectContent>
                 </Select>
+                {hasUnlistedSelection && (
+                  <p className="text-xs text-muted-foreground">
+                    {t(
+                      'This step uses a connection that is not shared with you or not available in this project. Keep it as it is, or choose one of your connections.',
+                    )}
+                  </p>
+                )}
               </AutoFormFieldWrapper>
             )}
         </>

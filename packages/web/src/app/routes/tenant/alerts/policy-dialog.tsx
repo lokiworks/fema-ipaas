@@ -1,6 +1,7 @@
 import {
   AlertPolicy,
   AlertTriggerEvent,
+  CAPACITY_ALERT_THRESHOLDS,
   FAILURE_RATE_WINDOWS_MINUTES,
   NotificationChannel,
   NotificationChannelStatus,
@@ -243,6 +244,40 @@ function PolicyForm({
                 />
               </div>
             )}
+            {events.includes(AlertTriggerEvent.CAPACITY) && (
+              <FormField
+                control={form.control}
+                name="capacityThresholdPercent"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('Capacity threshold')}</FormLabel>
+                    <Select
+                      value={String(field.value ?? DEFAULT_CAPACITY_THRESHOLD)}
+                      onValueChange={(value) => field.onChange(Number(value))}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="w-40">
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {CAPACITY_ALERT_THRESHOLDS.map((percent) => (
+                          <SelectItem key={percent} value={String(percent)}>
+                            {`${percent}%`}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>
+                      {t(
+                        'Notifies once per project per month when its runs this month reach this share of the project limit.',
+                      )}
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             <FormField
               control={form.control}
               name="groupWindowMinutes"
@@ -481,6 +516,8 @@ function defaultValuesFor(
       workflowIds: existing.workflowIds,
       events: existing.events,
       failureRate: existing.failureRate ?? DEFAULT_FAILURE_RATE,
+      capacityThresholdPercent:
+        existing.capacityThresholdPercent ?? DEFAULT_CAPACITY_THRESHOLD,
       groupWindowMinutes: existing.groupWindowMinutes,
       quietHours: existing.quietHours,
       escalation: existing.escalation,
@@ -494,6 +531,7 @@ function defaultValuesFor(
     workflowIds: [],
     events: [AlertTriggerEvent.ISSUE_NEW, AlertTriggerEvent.ISSUE_REOPENED],
     failureRate: DEFAULT_FAILURE_RATE,
+    capacityThresholdPercent: DEFAULT_CAPACITY_THRESHOLD,
     groupWindowMinutes: 30,
     quietHours: {
       enabled: true,
@@ -521,3 +559,4 @@ function toggle<T>({
 }
 
 const DEFAULT_FAILURE_RATE = { thresholdPercent: 20, windowMinutes: 60 };
+const DEFAULT_CAPACITY_THRESHOLD = 80;

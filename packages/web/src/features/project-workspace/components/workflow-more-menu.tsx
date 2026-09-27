@@ -122,9 +122,7 @@ export function WorkflowMoreMenu({
       {
         onSuccess: () => {
           toast.success(
-            releasesEnabled
-              ? t('Production stopped')
-              : t('Workflow stopped'),
+            releasesEnabled ? t('Production stopped') : t('Workflow stopped'),
           );
           close();
         },

@@ -1,4 +1,5 @@
 import { useDraggable } from '@dnd-kit/core';
+import { isNil } from '@fema-ipaas/core-utils';
 import {
   WorkflowOperationType,
   WorkflowTriggerType,
@@ -21,6 +22,7 @@ import { StepNode } from '../../utils/types';
 import { workflowCanvasUtils } from '../../utils/workflow-canvas-utils';
 
 import { StepNodeChevron } from './step-node-chevron';
+import { StepNodeCollapseToggle } from './step-node-collapse-toggle';
 import { StepNodeDisplayName } from './step-node-display-name';
 import { StepNodeLogo } from './step-node-logo';
 import { StepNodeSkippedStatus } from './step-node-skipped-status';
@@ -41,6 +43,8 @@ const StepCanvasNode = React.memo(
       setOpenedConnectorSelectorStepNameOrAddButtonId,
       isRightSidebarOpen,
       canvasOrientation,
+      isHighlighted,
+      referenceState,
     ] = useBuilderStateContext((state) => [
       state.selectStepByName,
       state.selectedStep === step.name,
@@ -52,6 +56,12 @@ const StepCanvasNode = React.memo(
       state.setOpenedConnectorSelectorStepNameOrAddButtonId,
       state.rightSidebar !== RightSideBarType.NONE,
       state.canvasOrientation,
+      state.highlightedSteps.includes(step.name),
+      isNil(state.referenceDrag)
+        ? 'idle'
+        : state.referenceDrag.allowedStepNames.includes(step.name)
+        ? 'allowed'
+        : 'blocked',
     ]);
     const isHorizontal = canvasOrientation === 'horizontal';
     const { stepMetadata } = stepsHooks.useStepMetadata({
@@ -136,12 +146,20 @@ const StepCanvasNode = React.memo(
           [`data-${workflowCanvasConsts.STEP_CONTEXT_MENU_ATTRIBUTE}`]:
             step.name,
         }}
+        data-tour="builder-step"
         style={{
           height: `${workflowCanvasConsts.STEP_NODE_SIZE[canvasOrientation].height}px`,
           width: `${workflowCanvasConsts.STEP_NODE_SIZE[canvasOrientation].width}px`,
           maxWidth: `${workflowCanvasConsts.STEP_NODE_SIZE[canvasOrientation].width}px`,
         }}
         onContextMenu={(e) => handleContextMenu(e)}
+        title={
+          referenceState === 'blocked'
+            ? t(
+                'You can only connect to upstream steps, and steps in different branches cannot use each other’s data',
+              )
+            : undefined
+        }
         className={cn(
           'transition-all border-box rounded-md border border-solid border-border relative overflow-visible  group',
           {
@@ -152,6 +170,9 @@ const StepCanvasNode = React.memo(
             'bg-accent': isSkipped,
             'rounded-tl-none': isTrigger && !isHorizontal,
             'hover:border-ring': !isSelected,
+            'ring-2 ring-primary/60 ring-offset-2':
+              isHighlighted || referenceState === 'allowed',
+            'opacity-40': referenceState === 'blocked',
           },
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
         )}
@@ -177,6 +198,7 @@ const StepCanvasNode = React.memo(
         <StepNodeStatusInRun stepName={step.name} />
         <StepNodeSkippedStatus stepName={step.name} />
         <StepNodeStatusInDraft stepName={step.name} />
+        <StepNodeCollapseToggle step={step} />
         <div
           className={cn('h-full w-full', {
             'px-3 overflow-hidden': !isHorizontal,

@@ -430,9 +430,7 @@ function LoginPreview({
         )}
       </div>
       <div className="flex flex-col gap-2 p-4">
-        <span className="font-medium">
-          {t('Sign in to {name}', { name })}
-        </span>
+        <span className="font-medium">{t('Sign in to {name}', { name })}</span>
         {emailAuthEnabled ? (
           <>
             <div className="h-6 rounded border" />

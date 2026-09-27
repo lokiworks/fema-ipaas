@@ -1,7 +1,7 @@
 import { isNil } from '@fema-ipaas/core-utils';
 import { FlagId } from '@fema-ipaas/shared';
 import { t } from 'i18next';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
 import { useTheme } from '@/components/providers/theme-provider';
 import { InstallChecksPanel } from '@/features/system';
@@ -9,10 +9,7 @@ import { flagsHooks } from '@/hooks/flags-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 import { useRedirectAfterLogin } from '@/lib/navigation-utils';
 
-import { AuthBackdrop } from './auth-backdrop';
 import { AuthDrawerBody, AuthMode } from './auth-drawer-body';
-
-const NUDGE_STREAK_WINDOW_MS = 700;
 
 export function AuthLanding({ initialMode }: AuthLandingProps) {
   const { setForceLightMode } = useTheme();
@@ -20,20 +17,10 @@ export function AuthLanding({ initialMode }: AuthLandingProps) {
   const signedIn =
     !isNil(authenticationSession.getToken()) &&
     !authenticationSession.isOnboarding();
-  const panelRef = useRef<HTMLElement | null>(null);
   const { data: userCreated } = flagsHooks.useFlag<boolean>(
     FlagId.USER_CREATED,
   );
   const firstUser = userCreated !== true;
-  const nudgeRef = useRef<{
-    lastAt: number;
-    streak: number;
-    animation: Animation | null;
-  }>({
-    lastAt: 0,
-    streak: 0,
-    animation: null,
-  });
 
   useEffect(() => {
     setForceLightMode(true);
@@ -50,58 +37,56 @@ export function AuthLanding({ initialMode }: AuthLandingProps) {
     return null;
   }
 
-  const nudgePanel = () => {
-    const panel = panelRef.current;
-    if (!panel) {
-      return;
-    }
-    panel
-      .querySelector<HTMLInputElement>(
-        'input:not([type="hidden"]):not([disabled])',
-      )
-      ?.focus();
-    const state = nudgeRef.current;
-    const now = performance.now();
-    state.streak =
-      now - state.lastAt < NUDGE_STREAK_WINDOW_MS ? state.streak + 1 : 0;
-    state.lastAt = now;
-    const peak = Math.min(1.015 + state.streak * 0.008, 1.045);
-    state.animation?.cancel();
-    state.animation = panel.animate(
-      [
-        { transform: 'scale(1)' },
-        { transform: `scale(${peak})`, offset: 0.3 },
-        { transform: 'scale(0.997)', offset: 0.6 },
-        { transform: 'scale(1)' },
-      ],
-      { duration: 320, easing: 'ease-in-out' },
-    );
-  };
-
   return (
-    <div className="relative h-dvh w-full overflow-hidden bg-white">
-      <AuthBackdrop />
-      <div
-        aria-hidden
-        onClick={nudgePanel}
-        className="absolute inset-0 z-40 cursor-default bg-neutral-50/78 backdrop-blur-[2.8px]"
-      />
-      <div className="pointer-events-none absolute inset-0 z-50 flex flex-col items-center justify-center gap-4 p-4 lg:flex-row animate-in fade-in zoom-in-95 duration-300 fill-mode-both">
+    <div className="grid min-h-dvh w-full grid-cols-1 bg-background lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+      <BrandPanel />
+      <main className="flex flex-col items-center justify-center gap-4 overflow-y-auto p-4 lg:flex-row lg:items-start lg:justify-start lg:p-16">
         <section
-          ref={panelRef}
           role="dialog"
           aria-label={t('Sign in or create your account')}
-          className="pointer-events-auto max-h-[90dvh] w-full max-w-[400px] overflow-hidden rounded-2xl border border-black/[0.06] bg-background shadow-[0_1px_2px_rgba(16,24,40,0.04),0_6px_12px_-4px_rgba(16,24,40,0.06),0_24px_40px_-12px_rgba(16,24,40,0.14),0_56px_80px_-32px_rgba(16,24,40,0.16)]"
+          className="w-full max-w-[400px] overflow-hidden rounded-2xl border bg-background shadow-sm"
         >
           <AuthDrawerBody initialMode={initialMode} />
         </section>
         {firstUser && (
-          <section className="pointer-events-auto max-h-[90dvh] w-full max-w-[400px] overflow-y-auto rounded-2xl border border-black/[0.06] bg-background">
+          <section className="max-h-[90dvh] w-full max-w-[400px] overflow-y-auto rounded-2xl border bg-background">
             <InstallChecksPanel />
           </section>
         )}
-      </div>
+      </main>
     </div>
+  );
+}
+
+function BrandPanel() {
+  const branding = flagsHooks.useWebsiteBranding();
+  const welcomeText = branding.welcomeText?.trim() ?? '';
+  return (
+    <aside className="hidden flex-col justify-between gap-8 border-r bg-sidebar p-12 lg:flex">
+      <div className="flex items-center gap-3">
+        <img
+          src={branding.logos.logoIconUrl}
+          alt=""
+          className="size-9 rounded-md object-contain"
+        />
+        <span className="text-lg font-semibold">{branding.websiteName}</span>
+      </div>
+      <div className="flex flex-col gap-3">
+        {welcomeText.length > 0 && (
+          <p className="max-w-md text-3xl font-semibold leading-snug text-foreground">
+            {welcomeText}
+          </p>
+        )}
+        <p className="max-w-md text-sm text-muted-foreground">
+          {t(
+            'Connect your systems, automate the work between them, and keep every run under control.',
+          )}
+        </p>
+      </div>
+      <span className="text-xs text-muted-foreground">
+        {branding.websiteName}
+      </span>
+    </aside>
   );
 }
 

@@ -6,6 +6,7 @@ import {
     ErasureStatus,
     FileCompression,
     FileType,
+    NotificationType,
 } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
@@ -18,6 +19,7 @@ import { fileRepo, fileService } from '../file/file.service'
 import { encryptUtils } from '../helper/encryption'
 import { SystemJobName } from '../helper/system-jobs/common'
 import { systemJobsSchedule } from '../helper/system-jobs/system-job'
+import { notificationService } from '../notification/notification.service'
 import { projectRepo } from '../project/project-repo'
 import { executionRepo } from '../workflows/execution/execution-service'
 import { workflowVersionService } from '../workflows/workflow-version/workflow-version.service'
@@ -98,8 +100,24 @@ export const dataErasureService = (log: FastifyBaseLogger) => ({
             log.error({ error, dataErasure: { id: requestId } }, '[dataErasureService#process] Erasure job failed')
             await dataErasureRepo().update({ id: requestId }, { status: ErasureStatus.FAILED, error: error.message, valueEncrypted: null, finishedAt: dayjs().toISOString() })
         }
+        await notifyIfFinished({ log, before: request })
     },
 })
+
+async function notifyIfFinished({ log, before }: { log: FastifyBaseLogger, before: DataErasureRequestSchema }): Promise<void> {
+    const after = await dataErasureRepo().findOneBy({ id: before.id })
+    if (isNil(after) || after.status === before.status || ![ErasureStatus.DONE, ErasureStatus.FAILED].includes(after.status)) {
+        return
+    }
+    await notificationService(log).notify({
+        tenantId: after.tenantId,
+        recipientIds: [after.requestedById],
+        type: after.status === ErasureStatus.DONE ? NotificationType.DATA_ERASURE_FINISHED : NotificationType.DATA_ERASURE_FAILED,
+        title: after.valueHint,
+        body: after.status === ErasureStatus.DONE ? null : after.error,
+        link: '/tenant/security/privacy',
+    })
+}
 
 async function scan({ log, request, value }: JobParams): Promise<void> {
     const projects = await projectRepo().find({ where: { tenantId: request.tenantId }, select: ['id'] })

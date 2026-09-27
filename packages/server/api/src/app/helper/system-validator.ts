@@ -5,6 +5,7 @@ import { FastifyBaseLogger } from 'fastify'
 import { DatabaseType } from '../database/database-type'
 import { RedisType } from '../database/redis/types'
 import { s3Helper } from '../file/s3-helper'
+import { limitValueParsers } from '../limits/limit-value-parsers'
 import { encryptUtils } from './encryption'
 import { jwtUtils } from './jwt-utils'
 import { system } from './system/system'
@@ -221,6 +222,26 @@ const systemPropValidators: {
         return !isNaN(n) && n >= 0 && n <= 100 ? true : 'Value must be a number between 0 and 100'
     },
     [AppSystemProp.LOG_KEEP_SLOW_MS]: numberValidator,
+    [AppSystemProp.MAX_CONCURRENT_RUNS]: positiveIntegerValidator,
+    [AppSystemProp.MAX_RUNS_PER_MONTH]: positiveIntegerValidator,
+    [AppSystemProp.PROJECT_MAX_WORKFLOWS]: positiveIntegerValidator,
+    [AppSystemProp.MAX_NODES_PER_RUN]: positiveIntegerValidator,
+    [AppSystemProp.RUN_TIMEOUT]: durationValidator,
+    [AppSystemProp.STEP_TIMEOUT]: durationValidator,
+    [AppSystemProp.MAX_STEP_PAYLOAD]: sizeValidator,
+    [AppSystemProp.LOG_RETENTION_DAYS]: positiveIntegerValidator,
+}
+
+function positiveIntegerValidator(value: string): true | string {
+    return isNil(limitValueParsers.positiveInteger(value)) ? 'Value must be a positive integer' : true
+}
+
+function durationValidator(value: string): true | string {
+    return isNil(limitValueParsers.durationSeconds(value)) ? 'Value must be a positive duration such as 600, 600s, 30m or 4h' : true
+}
+
+function sizeValidator(value: string): true | string {
+    return isNil(limitValueParsers.sizeMegabytes(value)) ? 'Value must be a positive size such as 4, 4MB or 512KB' : true
 }
 
 

@@ -2,6 +2,8 @@ import { TenantModule } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import {
   BoxesIcon,
+  FolderKanbanIcon,
+  GaugeIcon,
   InboxIcon,
   ShieldQuestionIcon,
   ArrowUpCircleIcon,
@@ -108,6 +110,21 @@ export function TenantSidebar() {
           label: t('Integration resources'),
           icon: BoxesIcon,
         },
+        {
+          to: '/tenant/limits/projects',
+          label: t('Projects and limits'),
+          icon: FolderKanbanIcon,
+        },
+      ],
+    },
+    {
+      label: t('Usage'),
+      items: [
+        {
+          to: '/tenant/limits/usage',
+          label: t('Usage and limits'),
+          icon: GaugeIcon,
+        },
       ],
     },
     {
@@ -119,15 +136,14 @@ export function TenantSidebar() {
           icon: PuzzleIcon,
         },
         {
+          to: '/tenant/connectors/requests',
+          label: t('Connector requests'),
+          icon: InboxIcon,
+        },
+        {
           to: '/tenant/connectors/development',
           label: t('Connector Development'),
           icon: TerminalIcon,
-          module: TenantModule.CONNECTOR_DEVELOPMENT,
-        },
-        {
-          to: '/tenant/connectors/builder',
-          label: t('Build a Connector'),
-          icon: MousePointerClickIcon,
           module: TenantModule.CONNECTOR_DEVELOPMENT,
         },
         {

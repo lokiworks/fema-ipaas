@@ -22,6 +22,7 @@ function _updateAction(workflowVersion: WorkflowVersion, request: UpdateActionRe
                 customLogoUrl: request.settings.customLogoUrl,
             },
         }
+        const carriedDisplayNumber = request.settings.displayNumber ?? stepToUpdate.settings.displayNumber
 
 
         let updatedAction: WorkflowAction
@@ -31,7 +32,7 @@ function _updateAction(workflowVersion: WorkflowVersion, request: UpdateActionRe
                 const existingSampleData = stepToUpdate.type === WorkflowActionType.CODE ? stepToUpdate.settings.sampleData : undefined
                 updatedAction = {
                     ...baseProps,
-                    settings: { ...request.settings, sampleData: existingSampleData },
+                    settings: { ...request.settings, sampleData: existingSampleData, displayNumber: carriedDisplayNumber },
                     type: WorkflowActionType.CODE,
                     nextAction: stepToUpdate.nextAction,
                     continueOnFailureBranches: existingContinueOnFailureBranches,
@@ -43,7 +44,7 @@ function _updateAction(workflowVersion: WorkflowVersion, request: UpdateActionRe
                 const existingSampleData = stepToUpdate.type === WorkflowActionType.CONNECTOR ? stepToUpdate.settings.sampleData : undefined
                 updatedAction = {
                     ...baseProps,
-                    settings: { ...request.settings, sampleData: existingSampleData },
+                    settings: { ...request.settings, sampleData: existingSampleData, displayNumber: carriedDisplayNumber },
                     type: WorkflowActionType.CONNECTOR,
                     nextAction: stepToUpdate.nextAction,
                     continueOnFailureBranches: existingContinueOnFailureBranches,
@@ -55,7 +56,7 @@ function _updateAction(workflowVersion: WorkflowVersion, request: UpdateActionRe
                 const existingSampleData = stepToUpdate.type === WorkflowActionType.COMPONENT ? stepToUpdate.settings.sampleData : undefined
                 updatedAction = {
                     ...baseProps,
-                    settings: { ...request.settings, sampleData: existingSampleData },
+                    settings: { ...request.settings, sampleData: existingSampleData, displayNumber: carriedDisplayNumber },
                     type: WorkflowActionType.COMPONENT,
                     nextAction: stepToUpdate.nextAction,
                     continueOnFailureBranches: existingContinueOnFailureBranches,
@@ -67,7 +68,7 @@ function _updateAction(workflowVersion: WorkflowVersion, request: UpdateActionRe
                 const firstLoopAction = stepToUpdate.type === WorkflowActionType.LOOP_ON_ITEMS ? stepToUpdate.firstLoopAction : undefined
                 updatedAction = {
                     ...baseProps,
-                    settings: { ...request.settings, sampleData: existingSampleData },
+                    settings: { ...request.settings, sampleData: existingSampleData, displayNumber: carriedDisplayNumber },
                     type: WorkflowActionType.LOOP_ON_ITEMS,
                     firstLoopAction,
                     nextAction: stepToUpdate.nextAction,
@@ -80,7 +81,7 @@ function _updateAction(workflowVersion: WorkflowVersion, request: UpdateActionRe
                 const children = stepToUpdate.type === WorkflowActionType.ROUTER ? stepToUpdate.children : [null, null]
                 updatedAction = {
                     ...baseProps,
-                    settings: { ...request.settings, sampleData: existingSampleData },
+                    settings: { ...request.settings, sampleData: existingSampleData, displayNumber: carriedDisplayNumber },
                     type: WorkflowActionType.ROUTER,
                     nextAction: stepToUpdate.nextAction,
                     children,
@@ -93,7 +94,7 @@ function _updateAction(workflowVersion: WorkflowVersion, request: UpdateActionRe
                 const children = stepToUpdate.type === WorkflowActionType.PARALLEL ? stepToUpdate.children : request.settings.branches.map(() => null)
                 updatedAction = {
                     ...baseProps,
-                    settings: { ...request.settings, sampleData: existingSampleData },
+                    settings: { ...request.settings, sampleData: existingSampleData, displayNumber: carriedDisplayNumber },
                     type: WorkflowActionType.PARALLEL,
                     nextAction: stepToUpdate.nextAction,
                     children,

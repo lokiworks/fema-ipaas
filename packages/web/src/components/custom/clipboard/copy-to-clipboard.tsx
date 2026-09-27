@@ -10,6 +10,7 @@ type CopyToClipboardInputProps = {
   textToCopy: string;
   useInput: boolean;
   fileName?: string;
+  displayValue?: string;
 };
 
 const noBorderInputClass = `border-none w-full rfocus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0`;
@@ -18,14 +19,16 @@ const CopyToClipboardInput = ({
   textToCopy,
   fileName,
   useInput,
+  displayValue,
 }: CopyToClipboardInputProps) => {
+  const shownValue = displayValue ?? textToCopy;
   return (
     <div className="flex gap-2 items-center bg-background border border-solid text-sm rounded block w-full select-none pr-3">
       {useInput ? (
-        <Input value={textToCopy} className={noBorderInputClass} readOnly />
+        <Input value={shownValue} className={noBorderInputClass} readOnly />
       ) : (
         <Textarea
-          value={textToCopy}
+          value={shownValue}
           rows={6}
           className={noBorderInputClass}
           readOnly

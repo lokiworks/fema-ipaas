@@ -3,7 +3,11 @@ import { t } from 'i18next';
 import { Globe } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { connectionAccessUiUtils } from '@/features/connections/utils/connection-access-utils';
 import { cn } from '@/lib/utils';
 
@@ -24,7 +28,11 @@ export function ConnectionPermissionTag({
   permission: ConnectionPermission;
 }) {
   return (
-    <Badge variant={permission === ConnectionPermission.OWNER ? 'default' : 'outline'}>
+    <Badge
+      variant={
+        permission === ConnectionPermission.OWNER ? 'default' : 'outline'
+      }
+    >
       {getPermissionLabel(permission)}
     </Badge>
   );
@@ -50,7 +58,11 @@ export function ConnectionScopeCell({
     );
   }
   if (!first) {
-    return <span className="text-muted-foreground text-sm">{t('No available projects')}</span>;
+    return (
+      <span className="text-muted-foreground text-sm">
+        {t('No available projects')}
+      </span>
+    );
   }
   return (
     <div className="flex items-center gap-1 min-w-0">
@@ -71,7 +83,11 @@ export function ConnectionScopeCell({
   );
 }
 
-export function ConnectionStatusDot({ tone }: { tone: 'success' | 'error' | 'default' }) {
+export function ConnectionStatusDot({
+  tone,
+}: {
+  tone: 'success' | 'error' | 'default';
+}) {
   return (
     <span
       className={cn('inline-block h-2 w-2 rounded-full', {

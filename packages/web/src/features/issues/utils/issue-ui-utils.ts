@@ -153,6 +153,8 @@ function alertKindLabel(kind: AlertRecordKind): string {
       return t('Escalated');
     case AlertRecordKind.STILL_FAILING:
       return t('Still failing');
+    case AlertRecordKind.CAPACITY:
+      return t('Capacity');
   }
 }
 

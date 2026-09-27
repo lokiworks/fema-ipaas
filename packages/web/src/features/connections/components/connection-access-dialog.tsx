@@ -1,23 +1,13 @@
-import { zodResolver } from '@hookform/resolvers/zod';
 import { isNil } from '@fema-ipaas/core-utils';
 import {
   ConnectionDetail,
   TenantRole,
   UpdateConnectionAccessRequestBody,
 } from '@fema-ipaas/shared';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { t } from 'i18next';
 import { useForm } from 'react-hook-form';
 
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import {
   MultiSelect,
   MultiSelectContent,
@@ -28,6 +18,16 @@ import {
   MultiSelectTrigger,
   MultiSelectValue,
 } from '@/components/custom/multi-select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
@@ -35,7 +35,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { connectionsMutations, connectionsQueries } from '@/features/connections';
+import {
+  connectionsMutations,
+  connectionsQueries,
+} from '@/features/connections/hooks/connections-hooks';
 import { projectCollectionUtils } from '@/features/projects';
 import { userHooks } from '@/hooks/user-hooks';
 
@@ -97,9 +100,8 @@ function ConnectionAccessFormFields({
   const { data: myProjects } = projectCollectionUtils.useAll();
   const tenantRole = userHooks.getCurrentUserTenantRole();
   const isTenantAdmin = tenantRole === TenantRole.ADMIN;
-  const { mutateAsync, isPending } = connectionsMutations.useUpdateConnectionAccess(
-    { connectionId },
-  );
+  const { mutateAsync, isPending } =
+    connectionsMutations.useUpdateConnectionAccess({ connectionId });
 
   const form = useForm<UpdateConnectionAccessRequestBody>({
     resolver: zodResolver(UpdateConnectionAccessRequestBody),
@@ -169,7 +171,9 @@ function ConnectionAccessFormFields({
                   </TooltipTrigger>
                   {!isTenantAdmin && (
                     <TooltipContent>
-                      {t('Only tenant admins can make a connection available to all projects')}
+                      {t(
+                        'Only tenant admins can make a connection available to all projects',
+                      )}
                     </TooltipContent>
                   )}
                 </Tooltip>
@@ -192,7 +196,11 @@ function ConnectionAccessFormFields({
                   }))}
                 >
                   <MultiSelectTrigger>
-                    <MultiSelectValue placeholder={t('Select projects that can use this connection')} />
+                    <MultiSelectValue
+                      placeholder={t(
+                        'Select projects that can use this connection',
+                      )}
+                    />
                   </MultiSelectTrigger>
                   <MultiSelectContent>
                     <MultiSelectSearch placeholder={t('Search...')} />
@@ -211,18 +219,25 @@ function ConnectionAccessFormFields({
             )}
           />
         )}
-        {impact && impact.lostWorkflows.length + impact.hiddenLostWorkflowCount > 0 && (
-          <Alert variant="warning">
-            <AlertDescription>
-              {t(
-                'After this change, {count} workflows will no longer be able to use this connection because their project is not in scope anymore.',
-                { count: impact.lostWorkflows.length + impact.hiddenLostWorkflowCount },
-              )}
-            </AlertDescription>
-          </Alert>
-        )}
+        {impact &&
+          impact.lostWorkflows.length + impact.hiddenLostWorkflowCount > 0 && (
+            <Alert variant="warning">
+              <AlertDescription>
+                {t(
+                  'After this change, {count} workflows will no longer be able to use this connection because their project is not in scope anymore.',
+                  {
+                    count:
+                      impact.lostWorkflows.length +
+                      impact.hiddenLostWorkflowCount,
+                  },
+                )}
+              </AlertDescription>
+            </Alert>
+          )}
         {form.formState.errors.root?.serverError && (
-          <FormMessage>{form.formState.errors.root.serverError.message}</FormMessage>
+          <FormMessage>
+            {form.formState.errors.root.serverError.message}
+          </FormMessage>
         )}
         <DialogFooter>
           <Button type="button" variant="outline" onClick={onDone}>

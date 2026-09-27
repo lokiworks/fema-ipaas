@@ -6,6 +6,7 @@ import { triggerRunner } from '../core/connector/trigger-runner'
 import { resolveFailedStepStrategy } from '../helper/error-handling'
 import { executionProgressReporter } from '../helper/execution-progress-reporter'
 import { loggingUtils } from '../helper/logging-utils'
+import { runLimits } from '../helper/run-limits'
 import { BaseExecutor } from './base-executor'
 import { codeExecutor } from './code-executor'
 import { componentExecutor } from './component-executor'
@@ -129,6 +130,9 @@ export const workflowExecutor = {
                 })
             }
             workflowExecutionContext = await applyLogSizeLimitIfExceeded(workflowExecutionContext, currentAction)
+            if (!testSingleStepMode) {
+                workflowExecutionContext = applyNodeLimitIfExceeded(workflowExecutionContext, currentAction)
+            }
 
             const shouldBreakExecution = workflowExecutionContext.verdict.status !== ExecutionStatus.RUNNING || testSingleStepMode
             previousAction = currentAction
@@ -184,6 +188,21 @@ async function runContinueOnFailureBranchIfNeeded({ action, executionState, cons
         action: branchHead,
         executionState,
         constants,
+    })
+}
+
+function applyNodeLimitIfExceeded(workflowExecutionContext: WorkflowExecutorContext, action: WorkflowAction): WorkflowExecutorContext {
+    const limit = runLimits.maxNodesPerRun()
+    if (isNil(limit) || workflowExecutionContext.verdict.status !== ExecutionStatus.RUNNING || !runLimits.exceedsNodeLimit({ stepsCount: workflowExecutionContext.stepsCount, limit })) {
+        return workflowExecutionContext
+    }
+    return workflowExecutionContext.setVerdict({
+        status: ExecutionStatus.FAILED,
+        failedStep: {
+            name: action.name,
+            displayName: action.displayName,
+            message: runLimits.nodeLimitMessage(limit),
+        },
     })
 }
 

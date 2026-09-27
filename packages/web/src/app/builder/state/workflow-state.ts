@@ -1,4 +1,4 @@
-import { isNil, debounce } from '@fema-ipaas/core-utils';
+import { isNil } from '@fema-ipaas/core-utils';
 import {
   WorkflowOperationRequest,
   WorkflowOperationType,
@@ -24,6 +24,8 @@ import { PromiseQueue } from '@/lib/promise-queue';
 
 import { BuilderState } from '../builder-hooks';
 import { workflowCanvasUtils } from '../workflow-canvas/utils/workflow-canvas-utils';
+
+import { UndoHistory, undoHistory } from './undo-history';
 
 export type WorkflowState = {
   workflow: PopulatedWorkflow;
@@ -67,6 +69,11 @@ export type WorkflowState = {
       operation: WorkflowOperationRequest,
     ) => void
   >;
+  history: UndoHistory;
+  historyNonce: number;
+  applyOperations: (operations: WorkflowOperationRequest[]) => void;
+  undo: () => void;
+  redo: () => void;
   handleAddingOrUpdatingStep: (props: {
     connectorSelectorItem: ConnectorSelectorItem;
     operation: ConnectorSelectorOperation;
@@ -88,13 +95,82 @@ export const createWorkflowState = (
   set: StoreApi<BuilderState>['setState'],
 ): WorkflowState => {
   const workflowUpdatesQueue = new PromiseQueue();
-  const debouncedAddToWorkflowUpdatesQueue = debounce(
-    (updateRequest: () => Promise<void>) => {
-      workflowUpdatesQueue.add(updateRequest);
-    },
-    1000,
-  );
+  const debouncer = createKeyedDebouncer({
+    wait: 1000,
+    onFire: (updateRequest) => workflowUpdatesQueue.add(updateRequest),
+  });
+  const debouncedAddToWorkflowUpdatesQueue = (
+    key: string,
+    updateRequest: () => Promise<void>,
+  ) => debouncer.schedule({ key, task: updateRequest });
+  const historyControl = { suspended: false };
+  const replayToward = (target: WorkflowVersion) => {
+    const operations = undoHistory.operationsToReach({
+      current: get().workflowVersion,
+      target,
+    });
+    historyControl.suspended = true;
+    try {
+      operations.forEach((operation) => get().applyOperation(operation));
+    } finally {
+      historyControl.suspended = false;
+    }
+  };
   return {
+    history: undoHistory.emptyHistory(),
+    historyNonce: 0,
+    applyOperations: (operations: WorkflowOperationRequest[]) => {
+      const before = get().workflowVersion;
+      historyControl.suspended = true;
+      try {
+        operations.forEach((operation) => get().applyOperation(operation));
+      } finally {
+        historyControl.suspended = false;
+      }
+      const after = get().workflowVersion;
+      if (
+        undoHistory.operationsToReach({ current: after, target: before })
+          .length === 0
+      ) {
+        return;
+      }
+      set((state) => ({
+        history: undoHistory.record({
+          history: state.history,
+          entry: { before, after, mergeKey: null, at: Date.now() },
+        }),
+      }));
+    },
+    undo: () => {
+      const { history, readonly } = get();
+      if (readonly) {
+        return;
+      }
+      const { history: next, entry } = undoHistory.takeUndo(history);
+      if (isNil(entry)) {
+        return;
+      }
+      replayToward(entry.before);
+      set((state) => ({
+        history: next,
+        historyNonce: state.historyNonce + 1,
+      }));
+    },
+    redo: () => {
+      const { history, readonly } = get();
+      if (readonly) {
+        return;
+      }
+      const { history: next, entry } = undoHistory.takeRedo(history);
+      if (isNil(entry)) {
+        return;
+      }
+      replayToward(entry.after);
+      set((state) => ({
+        history: next,
+        historyNonce: state.historyNonce + 1,
+      }));
+    },
     saving: false,
     outputSampleData: initialState.outputSampleData,
     inputSampleData: initialState.inputSampleData,
@@ -182,6 +258,28 @@ export const createWorkflowState = (
           state.workflowVersion,
           operation,
         );
+        const shouldRecord =
+          !historyControl.suspended &&
+          undoHistory.isUndoable(operation) &&
+          undoHistory.operationsToReach({
+            current: newWorkflowVersion,
+            target: state.workflowVersion,
+          }).length > 0;
+        const history = shouldRecord
+          ? undoHistory.record({
+              history: state.history,
+              entry: {
+                before: state.workflowVersion,
+                after: newWorkflowVersion,
+                mergeKey: undoHistory.mergeKeyOf({
+                  before: state.workflowVersion,
+                  after: newWorkflowVersion,
+                  operation,
+                }),
+                at: Date.now(),
+              },
+            })
+          : state.history;
         state.operationListeners.forEach((listener) => {
           listener(state.workflowVersion, operation);
         });
@@ -221,6 +319,7 @@ export const createWorkflowState = (
 
         switch (operation.type) {
           case WorkflowOperationType.SAVE_SAMPLE_DATA: {
+            debouncer.flush();
             workflowUpdatesQueue.add(updateRequest);
             break;
           }
@@ -255,15 +354,17 @@ export const createWorkflowState = (
                 outputSampleData,
               };
             });
+            debouncer.flush();
             workflowUpdatesQueue.add(updateRequest);
             break;
           }
           default: {
+            debouncer.flush();
             workflowUpdatesQueue.add(updateRequest);
           }
         }
 
-        return { workflowVersion: newWorkflowVersion };
+        return { workflowVersion: newWorkflowVersion, history };
       }),
     setVersion: (
       workflowVersion: WorkflowVersion,
@@ -279,6 +380,7 @@ export const createWorkflowState = (
         workflowVersion.trigger.type === WorkflowTriggerType.EMPTY;
       set((state) => ({
         workflowVersion,
+        history: undoHistory.emptyHistory(),
         run: null,
         selectedStep: shouldReselectInitialStep
           ? initiallySelectedStep
@@ -430,6 +532,40 @@ export const createWorkflowState = (
     },
   };
 };
+function createKeyedDebouncer({
+  wait,
+  onFire,
+}: {
+  wait: number;
+  onFire: (task: () => Promise<void>) => void;
+}) {
+  const pending = new Map<
+    string,
+    { timer: ReturnType<typeof setTimeout>; task: () => Promise<void> }
+  >();
+  const fire = (key: string) => {
+    const entry = pending.get(key);
+    if (isNil(entry)) {
+      return;
+    }
+    clearTimeout(entry.timer);
+    pending.delete(key);
+    onFire(entry.task);
+  };
+  return {
+    schedule: ({ key, task }: { key: string; task: () => Promise<void> }) => {
+      const existing = pending.get(key);
+      if (!isNil(existing)) {
+        clearTimeout(existing.timer);
+      }
+      pending.set(key, { timer: setTimeout(() => fire(key), wait), task });
+    },
+    flush: () => {
+      [...pending.keys()].forEach(fire);
+    },
+  };
+}
+
 /**Because the server creates the sample data files ids and we need to update the local workflow version with the new sample data files ids so when an update happens again in the future it doesn't get unset */
 const handleUpdatingSampleDataForStepLocallyAfterServerUpdate = ({
   operation,

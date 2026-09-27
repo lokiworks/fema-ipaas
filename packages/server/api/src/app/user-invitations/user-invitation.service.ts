@@ -10,6 +10,7 @@ import { emailService } from '../helper/email/email-service'
 import { JwtAudience, jwtUtils } from '../helper/jwt-utils'
 import { buildPaginator } from '../helper/pagination/build-paginator'
 import { paginationHelper } from '../helper/pagination/pagination-utils'
+import { projectMemberSideEffects } from '../project/project-member-side-effects'
 import { projectMemberService } from '../project/project-member.service'
 import { userService } from '../user/user-service'
 import { UserInvitationEntity } from './user-invitation.entity'
@@ -124,6 +125,16 @@ export const userInvitationsService = (log: FastifyBaseLogger) => ({
                 invitationId: userInvitation.id,
                 tenantId: userInvitation.tenantId,
             })
+            const memberUserId = isNil(userInvitation.projectId) ? null : await projectMemberSideEffects(log).findUserIdByEmail({ email: userInvitation.email, tenantId: userInvitation.tenantId })
+            if (!isNil(userInvitation.projectId) && !isNil(memberUserId)) {
+                await projectMemberSideEffects(log).onMemberAdded({
+                    projectId: userInvitation.projectId,
+                    userId: memberUserId,
+                    role: toProjectRole(userInvitation.projectRoleId),
+                    actorId: null,
+                })
+                return userInvitation
+            }
             if (emailService(log).isConfigured()) {
                 await emailService(log).sendProjectMemberAdded({
                     userInvitation,

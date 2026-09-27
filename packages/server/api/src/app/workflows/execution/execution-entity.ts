@@ -96,6 +96,15 @@ export const ExecutionEntity = new EntitySchema<ExecutionSchema>({
             ...EntityIdSchema,
             nullable: true,
         },
+        rerunOfExecutionId: {
+            ...EntityIdSchema,
+            nullable: true,
+        },
+        inPlaceRetryCount: {
+            type: Number,
+            nullable: false,
+            default: 0,
+        },
         // @deprecated — kept for backwards compatibility, use waitpoint table instead
         pauseMetadata: {
             type: 'jsonb',
@@ -151,6 +160,10 @@ export const ExecutionEntity = new EntitySchema<ExecutionSchema>({
         {
             name: 'idx_execution_issue_id',
             columns: ['issueId'],
+        },
+        {
+            name: 'idx_execution_rerun_of_execution_id',
+            columns: ['rerunOfExecutionId'],
         },
     ],
     relations: {

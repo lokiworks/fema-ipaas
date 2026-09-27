@@ -5,6 +5,7 @@ import { ConnectorSyncMode, ExecutionMode, FileLocation, NetworkMode } from '@fe
 import { FastifyBaseLogger } from 'fastify'
 import { DatabaseType } from '../../database/database-type'
 import { RedisType } from '../../database/redis/types'
+import { limitValueParsers } from '../../limits/limit-value-parsers'
 import { pinoLogging } from '../logger'
 import { AppSystemProp, ContainerType, ENV_PREFIX, environmentVariables, SystemProp } from './system-props'
 
@@ -172,5 +173,24 @@ export const system = {
 }
 
 const getEnvVarOrReturnDefaultValue = (prop: SystemProp): string | undefined => {
-    return environmentVariables.getEnvironment(prop) ?? systemPropDefaultValues[prop]
+    return environmentVariables.getEnvironment(prop) ?? aliasValue(prop) ?? systemPropDefaultValues[prop]
+}
+
+function aliasValue(prop: SystemProp): string | undefined {
+    const alias = PROP_ALIASES[prop]
+    if (isNil(alias)) {
+        return undefined
+    }
+    const parsed = alias.parse(environmentVariables.getEnvironment(alias.prop))
+    return isNil(parsed) ? undefined : String(parsed)
+}
+
+const PROP_ALIASES: Partial<Record<SystemProp, PropAlias>> = {
+    [AppSystemProp.WORKFLOW_TIMEOUT_SECONDS]: { prop: AppSystemProp.RUN_TIMEOUT, parse: limitValueParsers.durationSeconds },
+    [AppSystemProp.EXECUTION_DATA_RETENTION_DAYS]: { prop: AppSystemProp.LOG_RETENTION_DAYS, parse: limitValueParsers.positiveInteger },
+}
+
+type PropAlias = {
+    prop: AppSystemProp
+    parse: (raw: string | undefined) => number | null
 }

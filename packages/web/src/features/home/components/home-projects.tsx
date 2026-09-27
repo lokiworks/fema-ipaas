@@ -24,6 +24,7 @@ export function HomeProjects({
   return (
     <HomeSection
       title={t('My projects')}
+      tourTarget="home-projects"
       action={
         <Link to="/projects" className="text-xs text-primary hover:underline">
           {t('All projects')}

@@ -14,10 +14,7 @@
  * @testing-library/react (which is not a dependency of this package).
  */
 /* eslint-disable testing-library/no-unnecessary-act */
-import {
-  WebsocketClientEvent,
-  WebsocketServerEvent,
-} from '@fema-ipaas/shared';
+import { WebsocketClientEvent, WebsocketServerEvent } from '@fema-ipaas/shared';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -39,7 +36,7 @@ const socketState = vi.hoisted(() => {
   };
   type EmitCall = {
     event: string;
-    payload: { resourceId: string; force?: boolean };
+    payload: { resourceId: string; force?: boolean; active?: boolean };
     ack?: (response: LockResponse) => void;
   };
   type ClientHandler = (payload: unknown) => void;
@@ -56,7 +53,7 @@ const socketState = vi.hoisted(() => {
     },
     emit: (
       event: string,
-      payload: { resourceId: string; force?: boolean },
+      payload: { resourceId: string; force?: boolean; active?: boolean },
       ack?: (response: LockResponse) => void,
     ) => {
       emitCalls.push({ event, payload, ack });
@@ -141,7 +138,10 @@ describe('useResourceLock takeOver', () => {
 
     const initialAcquire = lockEmits()[0];
     expect(initialAcquire).toBeDefined();
-    expect(initialAcquire.payload).toEqual({ resourceId: RESOURCE_ID });
+    expect(initialAcquire.payload).toEqual({
+      resourceId: RESOURCE_ID,
+      active: true,
+    });
 
     await act(async () => {
       initialAcquire.ack?.({ acquired: false, lock: OTHER_USER });
@@ -156,6 +156,7 @@ describe('useResourceLock takeOver', () => {
     expect(forceAcquire?.payload).toEqual({
       resourceId: RESOURCE_ID,
       force: true,
+      active: true,
     });
 
     const emitCountBeforeAck = socketState.emitCalls.length;
@@ -183,7 +184,10 @@ describe('useResourceLock takeOver', () => {
     ).toBe(false);
 
     const reacquire = windowAfterForceAck[reacquireIndex];
-    expect(reacquire.payload).toEqual({ resourceId: RESOURCE_ID });
+    expect(reacquire.payload).toEqual({
+      resourceId: RESOURCE_ID,
+      active: true,
+    });
 
     await act(async () => {
       reacquire.ack?.({ acquired: true, lock: null });

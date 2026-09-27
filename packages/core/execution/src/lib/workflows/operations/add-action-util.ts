@@ -46,6 +46,8 @@ function clone(step: WorkflowAction, oldNameToNewName: Record<string, string>): 
     if (!isNil(sourceCode) && 'sourceCode' in step.settings) {
         step.settings.sourceCode = sourceCode
     }
+    const { displayNumber: _displayNumber, ...settingsWithoutNumber } = step.settings
+    step.settings = settingsWithoutNumber
     step.lastUpdatedDate = dayjs().toISOString()
     return step
 }

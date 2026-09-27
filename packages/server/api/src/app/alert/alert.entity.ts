@@ -91,6 +91,10 @@ export const AlertPolicyEntity = new EntitySchema<AlertPolicySchema>({
             type: 'jsonb',
             nullable: true,
         },
+        capacityThresholdPercent: {
+            type: Number,
+            nullable: true,
+        },
         groupWindowMinutes: {
             type: Number,
         },
@@ -230,6 +234,7 @@ export type AlertPolicySchema = {
     workflowIds: string[]
     events: AlertTriggerEvent[]
     failureRate: FailureRateCondition | null
+    capacityThresholdPercent: number | null
     groupWindowMinutes: number
     quietHours: QuietHours
     escalation: AlertEscalation

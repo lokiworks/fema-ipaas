@@ -1,4 +1,4 @@
-import { Nullable, SAFE_STRING_PATTERN } from '@fema-ipaas/core-utils'
+import { formErrors, Nullable, SAFE_STRING_PATTERN } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 import { ProjectIcon } from './project'
 import { DefaultProjectRole } from './project-member'
@@ -23,7 +23,7 @@ export const ProjectDirectoryItem = z.object({
 export type ProjectDirectoryItem = z.infer<typeof ProjectDirectoryItem>
 
 export const SaveProjectInfoRequestBody = z.object({
-    displayName: z.string().trim().min(1, 'formErrors.required').max(100, 'projectNameTooLong').regex(new RegExp(SAFE_STRING_PATTERN), 'projectNameInvalidCharacters'),
+    displayName: z.string().trim().min(1, formErrors.required).max(100, 'projectNameTooLong').regex(new RegExp(SAFE_STRING_PATTERN), 'projectNameInvalidCharacters'),
     description: z.string().trim().max(300, 'projectDescriptionTooLong').optional(),
     icon: ProjectIcon,
 })
@@ -48,7 +48,7 @@ export const CopyProjectResponse = z.object({
 export type CopyProjectResponse = z.infer<typeof CopyProjectResponse>
 
 export const CopyProjectRequestBody = z.object({
-    displayName: z.string().trim().min(1, 'formErrors.required').max(100, 'projectNameTooLong').regex(new RegExp(SAFE_STRING_PATTERN), 'projectNameInvalidCharacters'),
+    displayName: z.string().trim().min(1, formErrors.required).max(100, 'projectNameTooLong').regex(new RegExp(SAFE_STRING_PATTERN), 'projectNameInvalidCharacters'),
 })
 export type CopyProjectRequestBody = z.infer<typeof CopyProjectRequestBody>
 

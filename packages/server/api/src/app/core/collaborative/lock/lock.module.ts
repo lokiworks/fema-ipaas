@@ -1,8 +1,10 @@
-import { LockResourceRequest, PrincipalType, WebsocketClientEvent, WebsocketServerEvent } from '@fema-ipaas/shared'
+import { DefaultProjectRole, isNil, LockResourceRequest, PrincipalType, RequestResourceEditRequest, WebsocketClientEvent, WebsocketServerEvent } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
+import { projectAccess } from '../../../project/project-access'
 import { userService } from '../../../user/user-service'
 import { websocketService } from '../../websockets.service'
+import { lockSideEffects } from './lock-side-effects'
 import { lockService } from './lock.service'
 
 export const lockModule: FastifyPluginAsyncZod = async (app) => {
@@ -12,28 +14,43 @@ export const lockModule: FastifyPluginAsyncZod = async (app) => {
             try {
                 const user = await userService(app.log).getMetaInformation({ id: principal.id })
                 const displayName = `${user.firstName} ${user.lastName}`
+                if (data.force === true && !(await canTakeOver({ app, projectId, userId: principal.id }))) {
+                    const current = await lockService(app.log).getLock({ resourceId: data.resourceId })
+                    callback?.({ acquired: false, lock: current, reason: 'NOT_ALLOWED' })
+                    return
+                }
 
                 const result = await lockService(app.log).acquire({
                     resourceId: data.resourceId,
                     userId: principal.id,
                     userDisplayName: displayName,
                     force: data.force,
+                    active: data.active,
                 })
 
                 if (result.acquired) {
-                    if (!data.force) {
-                        socket.data.lockedResourceId = data.resourceId
-                    }
-                    socket.to(projectId).emit(WebsocketClientEvent.RESOURCE_LOCKED, {
+                    socket.data.lockedResourceId = data.resourceId
+                    const lockedEvent = {
                         resourceId: data.resourceId,
                         userId: principal.id,
                         userDisplayName: displayName,
-                    })
+                        ...(isNil(result.previousUserId) ? {} : { previousUserId: result.previousUserId, takenOver: result.takenOver }),
+                    }
+                    socket.to(projectId).emit(WebsocketClientEvent.RESOURCE_LOCKED, lockedEvent)
+                    if (result.takenOver === true && !isNil(result.previousUserId) && result.previousUserId !== principal.id) {
+                        await lockSideEffects(app.log).onTakenOver({
+                            resourceId: data.resourceId,
+                            projectId,
+                            tenantId: principal.tenant.id,
+                            previousUserId: result.previousUserId,
+                            actorId: principal.id,
+                        })
+                    }
                 }
 
                 registerLockDisconnectHandler({ socket, userId: principal.id, projectId, app })
 
-                callback?.(result)
+                callback?.({ acquired: result.acquired, lock: result.lock, ...(result.acquired ? {} : { reason: 'LOCKED' }) })
             }
             catch (error) {
                 app.log.error({ error }, '[LOCK_RESOURCE] Failed to acquire lock')
@@ -60,6 +77,34 @@ export const lockModule: FastifyPluginAsyncZod = async (app) => {
             }
         }
     })
+    websocketService.addListener(PrincipalType.USER, WebsocketServerEvent.REQUEST_RESOURCE_EDIT, () => {
+        return async (data: RequestResourceEditRequest, principal, _projectId, callback) => {
+            try {
+                const lock = await lockService(app.log).getLock({ resourceId: data.resourceId })
+                if (isNil(lock) || lock.userId === principal.id) {
+                    callback?.({ sent: false })
+                    return
+                }
+                const user = await userService(app.log).getMetaInformation({ id: principal.id })
+                websocketService.to(lock.userId).emit(WebsocketClientEvent.RESOURCE_EDIT_REQUESTED, {
+                    resourceId: data.resourceId,
+                    holderUserId: lock.userId,
+                    requesterUserId: principal.id,
+                    requesterDisplayName: `${user.firstName} ${user.lastName}`,
+                })
+                callback?.({ sent: true })
+            }
+            catch (error) {
+                app.log.error({ error }, '[REQUEST_RESOURCE_EDIT] Failed to send the edit request')
+                callback?.({ sent: false })
+            }
+        }
+    })
+}
+
+async function canTakeOver({ app, projectId, userId }: { app: FastifyInstance, projectId: string, userId: string }): Promise<boolean> {
+    const role = await projectAccess(app.log).resolveRole({ projectId, userId })
+    return role?.name === DefaultProjectRole.ADMIN
 }
 
 function registerLockDisconnectHandler({ socket, userId, projectId, app }: RegisterDisconnectHandlerParams): void {

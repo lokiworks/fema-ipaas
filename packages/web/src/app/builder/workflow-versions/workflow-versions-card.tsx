@@ -4,8 +4,16 @@ import {
   WorkflowVersionState,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
-import { EllipsisVertical, Eye, EyeIcon, History, Pencil } from 'lucide-react';
+import {
+  EllipsisVertical,
+  Eye,
+  EyeIcon,
+  GitCompare,
+  History,
+  Pencil,
+} from 'lucide-react';
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { CardListItem } from '@/components/custom/card-list';
@@ -26,6 +34,7 @@ import {
 } from '@/components/ui/tooltip';
 import { WorkflowVersionStateDot, workflowHooks } from '@/features/workflows';
 import { useAuthorization } from '@/hooks/authorization-hooks';
+import { authenticationSession } from '@/lib/authentication-session';
 
 import { OverwriteDraftDialog } from './overwrite-draft-dialog';
 import { RollbackVersionDialog } from './rollback-version-dialog';
@@ -36,7 +45,9 @@ const WorkflowVersionDetailsCard = React.memo(
     selected,
     publishedVersionId,
     workflowVersionNumber,
+    onCompare,
   }: WorkflowVersionDetailsCardProps) => {
+    const navigate = useNavigate();
     const { checkAccess } = useAuthorization();
     const userHasPermissionToWriteWorkflow = checkAccess(
       Permission.WRITE_WORKFLOW,
@@ -84,7 +95,9 @@ const WorkflowVersionDetailsCard = React.memo(
             className="truncate whitespace-nowrap text-sm font-medium leading-none select-none cursor-default"
           ></FormattedDate>
           <p className="flex gap-1 text-xs text-muted-foreground">
-            {t('Version')} #{workflowVersionNumber}
+            {workflowVersion.state === WorkflowVersionState.DRAFT
+              ? t('Draft')
+              : `v${workflowVersionNumber}`}
           </p>
         </div>
         <div className="flex shrink-0 items-center justify-center gap-1 font-medium">
@@ -122,11 +135,29 @@ const WorkflowVersionDetailsCard = React.memo(
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-52">
               <DropdownMenuItem
-                onClick={() => viewVersion(workflowVersion)}
+                onClick={() => {
+                  if (workflowVersion.state === WorkflowVersionState.LOCKED) {
+                    navigate(
+                      authenticationSession.appendProjectRoutePrefix(
+                        `/workflows/${workflowVersion.workflowId}/v/${workflowVersion.id}`,
+                      ),
+                    );
+                    return;
+                  }
+                  viewVersion(workflowVersion);
+                }}
                 className="w-full"
               >
                 <Eye className="mr-2 h-4 w-4" />
-                <span>{t('View')}</span>
+                <span>
+                  {workflowVersion.state === WorkflowVersionState.LOCKED
+                    ? t('View snapshot')
+                    : t('View')}
+                </span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onCompare} className="w-full">
+                <GitCompare className="mr-2 h-4 w-4" />
+                <span>{t('Compare')}</span>
               </DropdownMenuItem>
               {canRollbackToThisVersion && (
                 <RollbackVersionDialog
@@ -181,4 +212,5 @@ type WorkflowVersionDetailsCardProps = {
   selected: boolean;
   publishedVersionId: string | undefined | null;
   workflowVersionNumber: number;
+  onCompare: () => void;
 };

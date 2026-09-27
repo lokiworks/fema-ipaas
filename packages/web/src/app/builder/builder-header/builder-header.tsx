@@ -1,3 +1,4 @@
+import { isNil } from '@fema-ipaas/core-utils';
 import {
   FlagId,
   Permission,
@@ -17,6 +18,7 @@ import {
 } from 'react-router-dom';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
+import { useBuilderSnapshotVersionId } from '@/app/builder/snapshot-context';
 import { LeftSideBarType } from '@/app/builder/types';
 import { ActiveUsersWidget } from '@/components/custom/active-users-widget';
 import EditableText from '@/components/custom/editable-text';
@@ -51,6 +53,8 @@ import { workflowCanvasConsts } from '../workflow-canvas/utils/consts';
 import { DebugButton } from './debug-button';
 import { BuilderPublishSection } from './publish-section';
 import { RunStateChip } from './run-state-chip';
+import { useAssistantBridge } from './use-assistant-bridge';
+import { WorkflowMetaLine, WorkflowStateTags } from './workflow-header-status';
 import { BuilderWorkflowStatusSection } from './workflow-status';
 
 export const BuilderHeader = () => {
@@ -76,6 +80,8 @@ export const BuilderHeader = () => {
     state.setLeftSidebar,
   ]);
 
+  const assistantBridge = useAssistantBridge();
+  const snapshotVersionId = useBuilderSnapshotVersionId();
   const { embedState } = useEmbedding();
   const { project } = projectCollectionUtils.useCurrentProject();
   const { checkAccess } = useAuthorization();
@@ -104,8 +110,8 @@ export const BuilderHeader = () => {
   };
 
   const titleContent = (
-    <div className="flex min-w-0 items-center gap-2 px-4">
-      <Breadcrumb className="min-w-0">
+    <div className="flex min-w-0 flex-col justify-center gap-0.5 px-4">
+      <Breadcrumb className="flex min-w-0 items-center gap-2">
         <BreadcrumbList className="min-w-0 flex-nowrap">
           {!embedState.disableNavigationInBuilder && (
             <>
@@ -178,8 +184,10 @@ export const BuilderHeader = () => {
             </BreadcrumbItem>
           )}
         </BreadcrumbList>
+        <WorkflowStateTags />
         <RunStateChip />
       </Breadcrumb>
+      <WorkflowMetaLine />
     </div>
   );
 
@@ -205,10 +213,15 @@ export const BuilderHeader = () => {
         <AiAssistantButton
           projectId={workflow.projectId}
           workflowId={workflow.id}
+          bridge={assistantBridge}
         />
       )}
-      <DebugButton />
-      <BuilderPublishSection />
+      {isNil(snapshotVersionId) && <DebugButton />}
+      {isNil(snapshotVersionId) && (
+        <div data-tour="builder-publish" className="flex items-center">
+          <BuilderPublishSection />
+        </div>
+      )}
     </div>
   );
 

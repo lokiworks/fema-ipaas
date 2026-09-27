@@ -95,7 +95,8 @@ const createStepGraph: (params: {
   step: WorkflowAction | WorkflowTrigger;
   graphAlongSize: number;
   orientation: CanvasOrientation;
-}) => CanvasGraph = ({ step, graphAlongSize, orientation }) => {
+  isCollapsed: boolean;
+}) => CanvasGraph = ({ step, graphAlongSize, orientation, isCollapsed }) => {
   const layout = getLayout(orientation);
   const stepNode: StepNode = {
     id: step.name,
@@ -135,10 +136,11 @@ const createStepGraph: (params: {
   return {
     nodes: [stepNode, graphEndNode],
     edges:
-      step.type !== WorkflowActionType.LOOP_ON_ITEMS &&
-      step.type !== WorkflowActionType.ROUTER &&
-      step.type !== WorkflowActionType.PARALLEL &&
-      !sharedWorkflowCanvasUtils.hasContinueOnFailureBranches(step)
+      isCollapsed ||
+      (step.type !== WorkflowActionType.LOOP_ON_ITEMS &&
+        step.type !== WorkflowActionType.ROUTER &&
+        step.type !== WorkflowActionType.PARALLEL &&
+        !sharedWorkflowCanvasUtils.hasContinueOnFailureBranches(step))
         ? [straightLineEdge]
         : [],
   };
@@ -147,7 +149,8 @@ const createStepGraph: (params: {
 const buildWorkflowGraph: (params: {
   step: WorkflowAction | WorkflowTrigger | undefined;
   orientation: CanvasOrientation;
-}) => CanvasGraph = ({ step, orientation }) => {
+  collapsed: string[];
+}) => CanvasGraph = ({ step, orientation, collapsed }) => {
   if (isNil(step)) {
     return {
       nodes: [],
@@ -155,25 +158,29 @@ const buildWorkflowGraph: (params: {
     };
   }
   const layout = getLayout(orientation);
+  const isCollapsed = collapsed.includes(step.name);
   const graph: CanvasGraph = createStepGraph({
     step,
     graphAlongSize: layout.stepAlongSize + layout.spaceAlongBetweenSteps,
     orientation,
+    isCollapsed,
   });
-  const childGraph =
-    step.type === WorkflowActionType.LOOP_ON_ITEMS
-      ? buildLoopChildGraph({ step, orientation })
-      : step.type === WorkflowActionType.ROUTER ||
-        step.type === WorkflowActionType.PARALLEL
-      ? buildRouterChildGraph({ step, orientation })
-      : sharedWorkflowCanvasUtils.hasContinueOnFailureBranches(step)
-      ? buildContinueOnFailureBranchesGraph({ step, orientation })
-      : null;
+  const childGraph = isCollapsed
+    ? null
+    : step.type === WorkflowActionType.LOOP_ON_ITEMS
+    ? buildLoopChildGraph({ step, orientation, collapsed })
+    : step.type === WorkflowActionType.ROUTER ||
+      step.type === WorkflowActionType.PARALLEL
+    ? buildRouterChildGraph({ step, orientation, collapsed })
+    : sharedWorkflowCanvasUtils.hasContinueOnFailureBranches(step)
+    ? buildContinueOnFailureBranchesGraph({ step, orientation, collapsed })
+    : null;
 
   const graphWithChild = childGraph ? mergeGraph(graph, childGraph) : graph;
   const nextStepGraph = buildWorkflowGraph({
     step: step.nextAction,
     orientation,
+    collapsed,
   });
   return mergeGraph(
     graphWithChild,
@@ -274,12 +281,14 @@ const calculateGraphBoundingBox = ({
 const buildLoopChildGraph: (params: {
   step: LoopOnItemsAction;
   orientation: CanvasOrientation;
-}) => CanvasGraph = ({ step, orientation }) => {
+  collapsed: string[];
+}) => CanvasGraph = ({ step, orientation, collapsed }) => {
   const layout = getLayout(orientation);
   const childGraph = step.firstLoopAction
     ? buildWorkflowGraph({
         step: step.firstLoopAction,
         orientation,
+        collapsed,
       })
     : createBigAddButtonGraph({
         parentStep: step,
@@ -378,14 +387,16 @@ const buildLoopChildGraph: (params: {
 const buildRouterChildGraph = ({
   step,
   orientation,
+  collapsed,
 }: {
   step: BranchingAction;
   orientation: CanvasOrientation;
+  collapsed: string[];
 }) => {
   const layout = getLayout(orientation);
   const childGraphs = step.children.map((branch, index) => {
     return branch
-      ? buildWorkflowGraph({ step: branch, orientation })
+      ? buildWorkflowGraph({ step: branch, orientation, collapsed })
       : createBigAddButtonGraph({
           parentStep: step,
           nodeData: {
@@ -482,9 +493,11 @@ const buildRouterChildGraph = ({
 const buildContinueOnFailureBranchesGraph = ({
   step,
   orientation,
+  collapsed,
 }: {
   step: WorkflowAction;
   orientation: CanvasOrientation;
+  collapsed: string[];
 }): CanvasGraph => {
   const layout = getLayout(orientation);
   const branches =
@@ -507,7 +520,7 @@ const buildContinueOnFailureBranchesGraph = ({
 
   const childGraphs = branchOrder.map(({ branch, location }, index) =>
     branch
-      ? buildWorkflowGraph({ step: branch, orientation })
+      ? buildWorkflowGraph({ step: branch, orientation, collapsed })
       : createBigAddButtonGraph({
           parentStep: step,
           nodeData: {
@@ -742,14 +755,17 @@ export const workflowCanvasUtils = {
     version,
     notes,
     orientation,
+    collapsedSteps = [],
   }: {
     version: WorkflowVersion;
     notes: Note[];
     orientation: CanvasOrientation;
+    collapsedSteps?: string[];
   }): CanvasGraph {
     const stepsGraph = buildWorkflowGraph({
       step: version.trigger,
       orientation,
+      collapsed: collapsedSteps,
     });
     const notesGraph = buildNotesGraph(notes);
     const graphEndWidget = stepsGraph.nodes.findLast(

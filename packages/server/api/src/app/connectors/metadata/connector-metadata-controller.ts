@@ -75,6 +75,7 @@ const baseConnectorsController: FastifyPluginAsyncZod = async (app) => {
                 tenantId,
                 name: `${decodeScope}/${decodedName}`,
                 version,
+                projectId: req.query.projectId,
                 locale: req.query.locale as LocalesEnum | undefined,
             })
             const policy = await resolveVisibility({ tenantId, projectId: req.query.projectId, log: req.log })
@@ -95,6 +96,7 @@ const baseConnectorsController: FastifyPluginAsyncZod = async (app) => {
                 tenantId,
                 name: decodedName,
                 version,
+                projectId: req.query.projectId,
                 locale: req.query.locale as LocalesEnum | undefined,
             })
             const policy = await resolveVisibility({ tenantId, projectId: req.query.projectId, log: req.log })

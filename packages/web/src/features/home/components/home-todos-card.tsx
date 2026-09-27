@@ -23,7 +23,7 @@ export function HomeTodosCard({
   )?.projectId;
   return (
     <SideCard
-      title={t('Waiting for me')}
+      title={t('Waiting on me')}
       description={
         total > 0
           ? t('homeTodoCount', { count: total })

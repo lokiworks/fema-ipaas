@@ -206,9 +206,7 @@ function RequestAccessForm({
               module: tenantAccessUtils.moduleLabel(module),
             })}
           </DialogTitle>
-          {notice.length > 0 && (
-            <DialogDescription>{notice}</DialogDescription>
-          )}
+          {notice.length > 0 && <DialogDescription>{notice}</DialogDescription>}
         </DialogHeader>
         <FormField
           control={form.control}

@@ -151,35 +151,49 @@ function describe(check: ComponentHealthCheck): string {
           });
     case HealthComponent.TRIGGER_SCHEDULING:
       return check.level === ComponentHealthLevel.WARNING
-        ? t('{count} scheduled and polling triggers, but no worker is online to run them', {
-            count: text('scheduled'),
-          })
+        ? t(
+            '{count} scheduled and polling triggers, but no worker is online to run them',
+            {
+              count: Number(facts.scheduled ?? 0),
+            },
+          )
         : t('{count} scheduled and polling triggers are registered', {
-            count: text('scheduled'),
+            count: Number(facts.scheduled ?? 0),
           });
     case HealthComponent.WEBHOOK_INTAKE:
       return t('{count} webhook triggers receive calls at {url}', {
-        count: text('webhooks'),
+        count: Number(facts.webhooks ?? 0),
         url: text('url'),
       });
     case HealthComponent.FILE_STORAGE:
       return facts.location === 'S3'
         ? t('Object storage, bucket {bucket}', { bucket: text('bucket') })
-        : t('Files are stored in the database. Configure object storage before running more than one app instance.');
+        : t(
+            'Files are stored in the database. Configure object storage before running more than one app instance.',
+          );
     case HealthComponent.CONNECTOR_REGISTRY:
       return check.level === ComponentHealthLevel.NOT_CONFIGURED
-        ? t('Not configured. Only the connectors built into the image are available.')
+        ? t(
+            'Not configured. Only the connectors built into the image are available.',
+          )
         : t('Connected to {host}', { host: text('host') });
     case HealthComponent.SMTP:
       return check.level === ComponentHealthLevel.NOT_CONFIGURED
-        ? t('Not configured. Email notifications and invitation emails are not sent.')
+        ? t(
+            'Not configured. Email notifications and invitation emails are not sent.',
+          )
         : t('Sending through {host}', { host: text('host') });
     case HealthComponent.BACKUP:
       return check.level === ComponentHealthLevel.NOT_CONFIGURED
-        ? t('The platform does not run backups itself and no backup has been recorded yet.')
-        : t('Last backup recorded on {date}. The platform does not run backups itself.', {
-            date: new Date(text('confirmedAt')).toLocaleDateString(),
-          });
+        ? t(
+            'The platform does not run backups itself and no backup has been recorded yet.',
+          )
+        : t(
+            'Last backup recorded on {date}. The platform does not run backups itself.',
+            {
+              date: new Date(text('confirmedAt')).toLocaleDateString(),
+            },
+          );
     case HealthComponent.VERSION:
       return facts.updateCheckFailed === true
         ? t('Running {current}. Could not reach the update server.', {
@@ -194,12 +208,15 @@ function describe(check: ComponentHealthCheck): string {
             current: text('current'),
           });
     case HealthComponent.WORKERS:
-      return t('{online} online, {draining} draining, {offline} offline, {mismatched} on a different version', {
-        online: text('online'),
-        draining: text('draining'),
-        offline: text('offline'),
-        mismatched: text('versionMismatched'),
-      });
+      return t(
+        '{online} online, {draining} draining, {offline} offline, {mismatched} on a different version',
+        {
+          online: text('online'),
+          draining: text('draining'),
+          offline: text('offline'),
+          mismatched: text('versionMismatched'),
+        },
+      );
   }
 }
 

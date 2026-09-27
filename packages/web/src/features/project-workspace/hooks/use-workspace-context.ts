@@ -24,8 +24,13 @@ export function useWorkspaceContext(project: ProjectWithLimits) {
     (environments.data?.workflows ?? []).map((item) => [item.workflowId, item]),
   );
   const workflows = tree.data?.workflows ?? [];
-  const limit = project.workflowsLimit ?? null;
-  const limitReached = limit !== null && workflows.length >= limit;
+  const directoryItem = (directory ?? []).find(
+    (item) => item.id === project.id,
+  );
+  const workflowsLimit =
+    directoryItem?.workflowsLimit ?? project.workflowsLimit ?? null;
+  const limitReached =
+    workflowsLimit !== null && workflows.length >= workflowsLimit;
   return {
     project,
     projectId: project.id,
@@ -38,6 +43,8 @@ export function useWorkspaceContext(project: ProjectWithLimits) {
     environments: environments.data ?? null,
     environmentByWorkflow,
     limitReached,
+    workflowsLimit,
+    directoryItem,
     hasEditableProject: (directory ?? []).some((item) =>
       projectDirectoryUtils.canCreateWorkflow(item),
     ),

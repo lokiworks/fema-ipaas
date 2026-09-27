@@ -42,8 +42,11 @@ function ResetPasswordBody({
   member: TenantMember;
   onOpenChange: (open: boolean) => void;
 }) {
-  const { mutate: reset, data, isPending } =
-    tenantAccessHooks.useResetPassword();
+  const {
+    mutate: reset,
+    data,
+    isPending,
+  } = tenantAccessHooks.useResetPassword();
   const name = tenantAccessUtils.memberDisplayName(member);
   return (
     <div className="flex flex-col gap-4">

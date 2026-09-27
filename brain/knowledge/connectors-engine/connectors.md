@@ -29,14 +29,19 @@ The metadata catalog of automation integrations ("connectors") — each a named 
 - **The frontend `POST /v1/connectors/options` client only rejects for DYNAMIC.** `connectorsApi.options` (`packages/web/src/features/connectors/api/`) catches DROPDOWN failures, toasts, and *resolves* with a disabled-dropdown fallback — so for dropdowns every error path wired onto that mutation is dead: `useConnectorOptions`' `onError` handlers, its `retry: 1`, and the `if (error) throw error` into `DynamicPropertiesErrorBoundary`. DYNAMIC must rethrow: a swallowed failure arrives as a *successful* empty schema, which resets the property's children to defaults and gets persisted by step-settings autosave.
 - **`FEMA_DEV_CONNECTORS` shadows the DB registry copy by name**, so a dev connector failing the release gate removes the connector *entirely* rather than falling back to the published version. Dropping the name from `FEMA_DEV_CONNECTORS` (or bumping the local root `package.json`) brings it back.
 
+- **连接器市场的「最热」和「你的项目中有 N 个工作流在使用」来自 `GET /v1/connector-usage`。** 它用 `jsonb_path_query(trigger, 'lax $.**.connectorName')` 从每个工作流的最新版本里抽连接器名，一条 SQL 按项目分组；必须用 `lax`，`strict` 模式下 `.connectorName` 碰到数组或标量会直接报错。
+- **「提交需求」存进 `connector_demand`，租户管理员在后台处理。** 只有配置了 SMTP 才给管理员发邮件；不往告警渠道发，因为渠道绑在告警策略上，会被当成告警噪音。
+
 ### Key files
 Entry point: `connectorModule`, the Fastify plugin registered in `packages/server/api/src/app/app.ts` that mounts every `/v1/connectors` route.
 
 - `packages/server/api/src/app/connectors/metadata/` — controller, service, TypeORM entity, and the pub/sub-invalidated `connector-cache.ts`
 - `packages/server/api/src/app/connectors/` — `community-connector-module.ts` (POST `/v1/connectors` install), `connector-install-service.ts`, `connector-sync-service.ts`
 - `packages/server/api/src/app/ee/connectors/filters/connector-filtering-utils.ts` — `resolveVisibility` and the EE/Cloud `VisibilityPolicy`
+- `packages/server/api/src/app/connectors/market/`、`connectors/demand/` — 连接器使用统计和「提交需求」
 - `packages/web/src/features/connectors/api/` — frontend HTTP client
 - `packages/web/src/features/connectors/hooks/` — React Query hooks for listing, connector model, options, and output schema
+- `packages/web/src/features/connector-usage/`、`packages/web/src/features/connector-demands/` — 前端对 `/v1/connector-usage` 和 `/v1/connector-demands` 的封装，市场页（`packages/web/src/app/routes/tenant/connectors/marketplace.tsx`）和连接器详情页用它们拿热度、使用它的工作流、提需求
 - `packages/web/src/features/connectors/components/` — `ConnectorIcon`, `ConnectorIconList`, `ConnectorSelectorSearch`, `InstallConnectorDialog`
 - `packages/connectors/sdk/src/lib/output-schema.ts` — `OutputSchema` / `OutputSchemaField` / `FieldFormat` types
 

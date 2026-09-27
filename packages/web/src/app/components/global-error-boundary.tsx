@@ -51,7 +51,7 @@ const ErrorFallbackContent = ({
           <h1 className="text-xl font-semibold tracking-tight text-foreground">
             {isChunkError
               ? t('A new version is available')
-              : t('Something went wrong')}
+              : t('This page ran into an error')}
           </h1>
           <p className="text-sm text-muted-foreground leading-relaxed text-balance">
             {isChunkError
@@ -65,11 +65,14 @@ const ErrorFallbackContent = ({
         </div>
 
         <div className="flex items-center justify-center gap-3">
-          <Button onClick={() => window.location.reload()}>
+          <Button
+            variant={isChunkError ? 'default' : 'outline'}
+            onClick={() => window.location.reload()}
+          >
             <RefreshCcw className="size-4 mr-2" />
             {t('Reload page')}
           </Button>
-          <Button variant="outline" asChild>
+          <Button variant={isChunkError ? 'outline' : 'default'} asChild>
             <a href="/">{t('Go to home')}</a>
           </Button>
         </div>

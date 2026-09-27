@@ -194,6 +194,11 @@ function summarize(event: ApplicationEvent): string {
         count: event.data.count,
         issue: event.data.issue.title,
       });
+    case ApplicationEventName.RUNS_RERUN:
+      return t('auditRunsRerun', {
+        count: event.data.count,
+        strategy: event.data.strategy,
+      });
     case ApplicationEventName.PRIVACY_SETTINGS_UPDATED:
       return t('auditPrivacySettingsUpdated');
     case ApplicationEventName.AGENT_APPROVAL_DECIDED:
@@ -270,6 +275,14 @@ function summarize(event: ApplicationEvent): string {
         name: event.data.dataStore.name,
         key: event.data.key ?? '',
       });
+    case ApplicationEventName.PERSONAL_ACCESS_TOKEN_CREATED:
+      return t('Personal access token "{name}" was created', {
+        name: event.data.token.name,
+      });
+    case ApplicationEventName.PERSONAL_ACCESS_TOKEN_REVOKED:
+      return t('Personal access token "{name}" was revoked', {
+        name: event.data.token.name,
+      });
     case ApplicationEventName.TENANT_USERS_INVITED:
     case ApplicationEventName.TENANT_USER_ACCESS_CHANGED:
     case ApplicationEventName.TENANT_USER_REMOVED:
@@ -280,6 +293,7 @@ function summarize(event: ApplicationEvent): string {
     case ApplicationEventName.LOGIN_SETTINGS_UPDATED:
     case ApplicationEventName.WORKER_STATE_CHANGED:
     case ApplicationEventName.AUDIT_LOG_EXPORTED:
+    case ApplicationEventName.PROJECT_LIMITS_UPDATED:
       return event.data.detail
         ? `${event.data.target} · ${event.data.detail}`
         : event.data.target;
@@ -315,6 +329,7 @@ const ACTION_LABELS: Record<ApplicationEventName, () => string> = {
   [ApplicationEventName.EXECUTION_PAYLOAD_REVEALED]: () =>
     t('Run payload revealed'),
   [ApplicationEventName.ISSUE_REPLAYED]: () => t('Issue runs replayed'),
+  [ApplicationEventName.RUNS_RERUN]: () => t('Runs rerun'),
   [ApplicationEventName.PRIVACY_SETTINGS_UPDATED]: () =>
     t('Privacy settings updated'),
   [ApplicationEventName.AGENT_APPROVAL_DECIDED]: () =>
@@ -340,6 +355,10 @@ const ACTION_LABELS: Record<ApplicationEventName, () => string> = {
   [ApplicationEventName.DATA_STORE_CLEARED]: () => t('Data store cleared'),
   [ApplicationEventName.DATA_STORE_RECORD_DELETED]: () =>
     t('Data store key deleted'),
+  [ApplicationEventName.PERSONAL_ACCESS_TOKEN_CREATED]: () =>
+    t('Access token created'),
+  [ApplicationEventName.PERSONAL_ACCESS_TOKEN_REVOKED]: () =>
+    t('Access token revoked'),
   [ApplicationEventName.TENANT_USERS_INVITED]: () => t('Users added'),
   [ApplicationEventName.TENANT_USER_ACCESS_CHANGED]: () =>
     t('User permissions changed'),
@@ -356,6 +375,8 @@ const ACTION_LABELS: Record<ApplicationEventName, () => string> = {
     t('Sign-in settings changed'),
   [ApplicationEventName.WORKER_STATE_CHANGED]: () => t('Worker changed'),
   [ApplicationEventName.AUDIT_LOG_EXPORTED]: () => t('Audit log exported'),
+  [ApplicationEventName.PROJECT_LIMITS_UPDATED]: () =>
+    t('Project limits updated'),
 };
 
 function actionsForSources(sources: string[]): string[] | undefined {

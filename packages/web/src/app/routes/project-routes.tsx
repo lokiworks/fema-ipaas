@@ -58,6 +58,13 @@ const McpServicesPage = lazyWithRetry(
   () => import('./mcp-services').then((m) => ({ default: m.McpServicesPage })),
   'mcp-services',
 );
+const McpServiceDetailPage = lazyWithRetry(
+  () =>
+    import('./mcp-services/id').then((m) => ({
+      default: m.McpServiceDetailPage,
+    })),
+  'mcp-service-detail',
+);
 const AiUsagePage = lazyWithRetry(
   () => import('./ai-usage').then((m) => ({ default: m.AiUsagePage })),
   'ai-usage',
@@ -124,6 +131,20 @@ export const projectRoutes = [
   }),
   ...ProjectRouterWrapper({
     path: routesThatRequireProjectId.singleWorkflow,
+    element: (
+      <RoutePermissionGuard requiredPermissions={Permission.READ_WORKFLOW}>
+        <PageTitle title="Builder">
+          <BuilderLayout>
+            <SuspenseWrapper>
+              <WorkflowBuilderPage />
+            </SuspenseWrapper>
+          </BuilderLayout>
+        </PageTitle>
+      </RoutePermissionGuard>
+    ),
+  }),
+  ...ProjectRouterWrapper({
+    path: routesThatRequireProjectId.workflowSnapshot,
     element: (
       <RoutePermissionGuard requiredPermissions={Permission.READ_WORKFLOW}>
         <PageTitle title="Builder">
@@ -278,6 +299,20 @@ export const projectRoutes = [
           <PageTitle title="MCP services">
             <SuspenseWrapper>
               <McpServicesPage />
+            </SuspenseWrapper>
+          </PageTitle>
+        </RoutePermissionGuard>
+      </ProjectDashboardLayout>
+    ),
+  }),
+  ...ProjectRouterWrapper({
+    path: routesThatRequireProjectId.singleMcpService,
+    element: (
+      <ProjectDashboardLayout>
+        <RoutePermissionGuard requiredPermissions={Permission.READ_MCP_SERVICE}>
+          <PageTitle title="MCP service">
+            <SuspenseWrapper>
+              <McpServiceDetailPage />
             </SuspenseWrapper>
           </PageTitle>
         </RoutePermissionGuard>

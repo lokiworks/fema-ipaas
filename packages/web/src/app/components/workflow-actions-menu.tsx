@@ -14,12 +14,13 @@ import {
   Import,
   LayoutTemplate,
   Pencil,
+  ScrollText,
   Share2,
   Trash2,
   User,
 } from 'lucide-react';
 import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { ConfirmationDeleteDialog } from '@/components/custom/delete-dialog';
@@ -79,6 +80,7 @@ const WorkflowActionMenu: React.FC<WorkflowActionMenuProps> = ({
   insideBuilder,
 }) => {
   const isRunsPage = useLocation().pathname.includes('/runs');
+  const navigate = useNavigate();
   const openNewWindow = useNewWindow();
   const { checkAccess } = useAuthorization();
   const userHasPermissionToWriteFolder = checkAccess(Permission.WRITE_FOLDER);
@@ -281,6 +283,22 @@ const WorkflowActionMenu: React.FC<WorkflowActionMenuProps> = ({
               <div className="flex cursor-pointer  flex-row gap-2 items-center">
                 <GalleryVerticalEnd className="h-4 w-4" />
                 <span>{t('Versions')}</span>
+              </div>
+            </DropdownMenuItem>
+          )}
+          {insideBuilder && !isRunsPage && checkAccess(Permission.READ_RUN) && (
+            <DropdownMenuItem
+              onClick={() =>
+                navigate(
+                  `${authenticationSession.appendProjectRoutePrefix(
+                    '/runs',
+                  )}?workflowId=${workflow.id}`,
+                )
+              }
+            >
+              <div className="flex cursor-pointer  flex-row gap-2 items-center">
+                <ScrollText className="h-4 w-4" />
+                <span>{t('View runs')}</span>
               </div>
             </DropdownMenuItem>
           )}

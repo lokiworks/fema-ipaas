@@ -7,6 +7,7 @@ import Redis from 'ioredis'
 import { distributedLock, redisConnections } from '../../../database/redis-connections'
 import { system } from '../../../helper/system/system'
 import { AppSystemProp } from '../../../helper/system/system-props'
+import { QueueName } from '../../job'
 import { InterceptorResult, InterceptorVerdict, JobInterceptor } from '../job-interceptor'
 import { jobQueue } from '../job-queue'
 import { ConcurrencyStore, createWorkflowConcurrencyGate, WorkflowConcurrencyGate } from './workflow-concurrency-gate'
@@ -61,7 +62,7 @@ function gateFor({ log, job }: { log: FastifyBaseLogger, job: Job | null }): Wor
 }
 
 async function isJobAlive({ jobId, queueName, log }: { jobId: string, queueName: string | undefined, log: FastifyBaseLogger }): Promise<boolean> {
-    const queues = [...new Set([queueName, jobQueue(log).getSharedQueue().name].filter((name): name is string => !isNil(name)))]
+    const queues = [...new Set([queueName, QueueName.WORKER_JOBS].filter((name): name is string => !isNil(name)))]
     for (const name of queues) {
         const { data: queue } = await tryCatch(() => jobQueue(log).getOrCreateQueue({ queueName: name }))
         const found = isNil(queue) ? null : await queue.getJob(jobId)

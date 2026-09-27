@@ -71,7 +71,9 @@ export default function ResourcesPage() {
     const owner = members.find(
       (member) => member.kind === 'USER' && member.id === id,
     );
-    return owner ? tenantAccessUtils.memberDisplayName(owner) : t('Removed user');
+    return owner
+      ? tenantAccessUtils.memberDisplayName(owner)
+      : t('Removed user');
   };
 
   return (
@@ -141,7 +143,9 @@ export default function ResourcesPage() {
         </div>
         {data?.truncated && (
           <p className="text-xs text-muted-foreground">
-            {t('Only the first 1000 resources are shown. Narrow the filters to see the rest.')}
+            {t(
+              'Only the first 1000 resources are shown. Narrow the filters to see the rest.',
+            )}
           </p>
         )}
         {isLoading ? (
@@ -292,7 +296,9 @@ function TransferBody({
                 'Transfer {count} selected resources. Running workflows are not affected.',
                 { count: resources.length },
               )}{' '}
-          {t('When a project moves, the previous owner stays on it as a developer.')}
+          {t(
+            'When a project moves, the previous owner stays on it as a developer.',
+          )}
         </DialogDescription>
       </DialogHeader>
       <div className="flex flex-col gap-2">
@@ -305,9 +311,12 @@ function TransferBody({
         />
         {unchanged > 0 && (
           <p className="text-xs text-muted-foreground">
-            {t('{count} of them already belong to this person and stay as they are.', {
-              count: unchanged,
-            })}
+            {t(
+              '{count} of them already belong to this person and stay as they are.',
+              {
+                count: unchanged,
+              },
+            )}
           </p>
         )}
       </div>
@@ -341,10 +350,14 @@ function TransferBody({
 
 function scopeLabel(resource: OwnedResource): string {
   if (resource.type === OwnedResourceType.PROJECT) {
-    return resource.scope === ProjectType.PERSONAL ? t('Personal project') : t('Team project');
+    return resource.scope === ProjectType.PERSONAL
+      ? t('Personal project')
+      : t('Team project');
   }
   if (resource.type === OwnedResourceType.CONNECTION) {
-    return resource.scope === ConnectionScope.TENANT ? t('All projects') : t('Selected projects');
+    return resource.scope === ConnectionScope.TENANT
+      ? t('All projects')
+      : t('Selected projects');
   }
   return resource.scope ?? '—';
 }

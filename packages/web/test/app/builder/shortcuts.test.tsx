@@ -162,11 +162,11 @@ describe('canvas shortcuts while editing step inputs (GIT-1445)', () => {
     expect(applyOperation).not.toHaveBeenCalled();
   });
 
-  it('ignores Shift+Delete when focus is in an input', async () => {
+  it('ignores Delete when focus is in an input', async () => {
     const { container, applyOperation } = await setup();
     const field = document.createElement('input');
     container.appendChild(field);
-    dispatchKeyFrom(field, { key: 'Delete', shiftKey: true });
+    dispatchKeyFrom(field, { key: 'Delete' });
     expect(applyOperation).not.toHaveBeenCalled();
   });
 
@@ -180,9 +180,9 @@ describe('canvas shortcuts while editing step inputs (GIT-1445)', () => {
     });
   });
 
-  it('still deletes the selected step with Shift+Delete on the canvas', async () => {
+  it('still deletes the selected step with Delete on the canvas', async () => {
     const { applyOperation } = await setup();
-    dispatchKeyFrom(document.body, { key: 'Delete', shiftKey: true });
+    dispatchKeyFrom(document.body, { key: 'Delete' });
     expect(applyOperation).toHaveBeenCalledWith({
       type: WorkflowOperationType.DELETE_ACTION,
       request: { names: ['step_1'] },

@@ -1,5 +1,21 @@
+import { GlobalSearchResultType } from '@fema-ipaas/shared';
 import { t } from 'i18next';
-import { Dot, FolderIcon, User } from 'lucide-react';
+import {
+  ArrowRight,
+  Database,
+  Dot,
+  FolderIcon,
+  FolderKanban,
+  LayoutTemplate,
+  Link2,
+  LucideIcon,
+  Plug,
+  Server,
+  Siren,
+  TableProperties,
+  User,
+  Workflow,
+} from 'lucide-react';
 
 import { TableIcon } from '@/components/icons/table';
 import { WorkflowIcon } from '@/components/icons/workflow';
@@ -19,6 +35,7 @@ function timeAgo(date: Date | string): string {
 
 type ItemIconProps = {
   type: string;
+  resourceType?: GlobalSearchResultType;
   pageIcon?: React.ComponentType<{ className?: string; size?: number }>;
   iconBgColor?: string;
   iconTextColor?: string;
@@ -27,6 +44,7 @@ type ItemIconProps = {
 
 function ItemIcon({
   type,
+  resourceType,
   pageIcon: PageIcon,
   iconBgColor,
   iconTextColor,
@@ -74,6 +92,15 @@ function ItemIcon({
 
   if (type === 'page' && PageIcon) {
     return <PageIcon className="size-4 shrink-0 text-muted-foreground" />;
+  }
+
+  if (type === 'view-all') {
+    return <ArrowRight className="size-4 shrink-0 text-muted-foreground" />;
+  }
+
+  if (type === 'resource' && resourceType) {
+    const ResourceIcon = RESOURCE_ICONS[resourceType];
+    return <ResourceIcon className="size-4 shrink-0 text-muted-foreground" />;
   }
 
   return null;
@@ -163,6 +190,7 @@ export function SearchResultRow({
     <div className="flex min-w-0 flex-1 items-center gap-2">
       <ItemIcon
         type={item.type}
+        resourceType={item.resourceType}
         pageIcon={item.pageIcon}
         iconBgColor={item.iconBgColor}
         iconTextColor={item.iconTextColor}
@@ -176,6 +204,11 @@ export function SearchResultRow({
           {t('Live')}
         </span>
       )}
+      {item.subtitle && (
+        <span className="min-w-0 truncate text-xs text-muted-foreground">
+          {item.subtitle}
+        </span>
+      )}
       <ItemMeta
         projectName={item.projectName}
         folderName={item.folderName}
@@ -184,3 +217,16 @@ export function SearchResultRow({
     </div>
   );
 }
+
+const RESOURCE_ICONS: Record<GlobalSearchResultType, LucideIcon> = {
+  [GlobalSearchResultType.WORKFLOW]: Workflow,
+  [GlobalSearchResultType.PROJECT]: FolderKanban,
+  [GlobalSearchResultType.CONNECTION]: Link2,
+  [GlobalSearchResultType.CONNECTOR]: Plug,
+  [GlobalSearchResultType.MCP_SERVICE]: Server,
+  [GlobalSearchResultType.TEMPLATE]: LayoutTemplate,
+  [GlobalSearchResultType.DATA_STORE]: Database,
+  [GlobalSearchResultType.ISSUE]: Siren,
+  [GlobalSearchResultType.MAPPING_TABLE]: TableProperties,
+  [GlobalSearchResultType.MCP_SERVER]: Server,
+};

@@ -1,54 +1,112 @@
 import { Permission } from '@fema-ipaas/core-utils';
-import { McpService, McpServiceWithToken } from '@fema-ipaas/shared';
+import {
+  McpService,
+  McpServiceListTab,
+  TenantModule,
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
-import { KeyRound, Pencil, Plus, ServerCog, Trash2 } from 'lucide-react';
-import { ReactNode, useState } from 'react';
+import { Plus, SearchX, Server } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
-import { CopyToClipboardInput } from '@/components/custom/clipboard/copy-to-clipboard';
-import { ConfirmationDeleteDialog } from '@/components/custom/delete-dialog';
-import { FormattedDate } from '@/components/custom/formatted-date';
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/custom/empty';
 import { PermissionNeededTooltip } from '@/components/custom/permission-needed-tooltip';
-import { TextWithTooltip } from '@/components/custom/text-with-tooltip';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  McpServiceDialog,
-  McpTokenDialog,
+  McpAddToServiceDialog,
+  McpCreateServiceDialog,
+  McpServiceCard,
   mcpServicesHooks,
-  mcpServiceUtils,
 } from '@/features/mcp-services';
+import { ModuleGate } from '@/features/tenant-access';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 import { cn, DASHBOARD_CONTENT_PADDING_X } from '@/lib/utils';
 
+type ListTab = 'ALL' | 'MINE' | 'OBTAINED';
+
 function McpServicesPage() {
+  return (
+    <ModuleGate module={TenantModule.MCP_SERVICES}>
+      <McpServicesContent />
+    </ModuleGate>
+  );
+}
+
+function McpServicesContent() {
   const projectId = authenticationSession.getProjectId() ?? '';
+  const navigate = useNavigate();
   const { checkAccess } = useAuthorization();
   const canWrite = checkAccess(Permission.WRITE_MCP_SERVICE);
-  const { data: services, isLoading } =
-    mcpServicesHooks.useMcpServices(projectId);
-  const { mutateAsync: rotateToken } = mcpServicesHooks.useRotateToken();
-  const { mutateAsync: deleteService } = mcpServicesHooks.useDeleteMcpService();
-  const endpointFor = mcpServicesHooks.useEndpointUrl();
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing] = useState<McpService | null>(null);
-  const [tokenService, setTokenService] = useState<McpServiceWithToken | null>(
-    null,
-  );
-  const [rotating, setRotating] = useState<McpService | null>(null);
-  const [deleting, setDeleting] = useState<McpService | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [tab, setTab] = useState<ListTab>('ALL');
+  const [search, setSearch] = useState('');
+  const [createOpen, setCreateOpen] = useState(false);
+  const [pendingConnector, setPendingConnector] = useState<{
+    connectorName: string;
+    actionName: string;
+  } | null>(null);
+  const [creatingForConnector, setCreatingForConnector] = useState<{
+    connectorName: string;
+    actionName: string;
+  } | null>(null);
 
-  const openDialog = (service: McpService | null) => {
-    setEditing(service);
-    setDialogOpen(true);
+  const { data: services, isLoading } = mcpServicesHooks.useServices({
+    tab: McpServiceListTab.ALL,
+    search: '',
+  });
+
+  useEffect(() => {
+    const newTool = searchParams.get('newTool');
+    const connectorName = searchParams.get('connector');
+    const actionName = searchParams.get('action');
+    if (newTool === 'connector' && connectorName && actionName) {
+      setPendingConnector({ connectorName, actionName });
+      searchParams.delete('newTool');
+      searchParams.delete('connector');
+      searchParams.delete('action');
+      setSearchParams(searchParams, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const all = services ?? [];
+  const counts = {
+    ALL: all.length,
+    MINE: all.filter((service) => service.canEdit).length,
+    OBTAINED: all.filter((service) => service.obtained).length,
   };
+  const inTab = all.filter((service) => {
+    if (tab === 'MINE') return service.canEdit;
+    if (tab === 'OBTAINED') return service.obtained;
+    return true;
+  });
+  const query = search.trim().toLowerCase();
+  const list = useMemo(
+    () =>
+      inTab.filter(
+        (service) =>
+          !query ||
+          `${service.name}${service.key ?? ''}${service.description}`
+            .toLowerCase()
+            .includes(query),
+      ),
+    [inTab, query],
+  );
+
+  const myEditableServices = all.filter(
+    (service) => service.canEdit && service.projectId === projectId,
+  );
 
   return (
     <div
@@ -62,7 +120,7 @@ function McpServicesPage() {
           <h1 className="text-base font-semibold">{t('MCP services')}</h1>
           <p className="text-sm text-muted-foreground">
             {t(
-              'Publish workflows as tools that AI assistants such as Claude and Cursor can call. Each service has its own endpoint and token.',
+              'Package connector actions and published workflows into MCP services that AI assistants like Claude and Cursor can call directly.',
             )}
           </p>
         </div>
@@ -70,208 +128,160 @@ function McpServicesPage() {
           <Button
             size="sm"
             disabled={!canWrite}
-            onClick={() => openDialog(null)}
+            onClick={() => setCreateOpen(true)}
           >
             <Plus className="size-4 mr-1" />
-            {t('New MCP service')}
+            {t('Create MCP service')}
           </Button>
         </PermissionNeededTooltip>
       </div>
-      {isLoading && <Skeleton className="h-40 w-full" />}
-      {!isLoading && (services ?? []).length === 0 && (
-        <Card>
-          <CardContent className="flex flex-col items-start gap-2 py-6">
-            <ServerCog className="size-8 text-muted-foreground" />
-            <span className="text-sm font-medium">
-              {t('No MCP services yet')}
-            </span>
-            <span className="text-sm text-muted-foreground">
-              {t(
-                'Create a service, pick the workflows it exposes, then paste its endpoint and token into your AI assistant. Only published workflows that start with a Webhook trigger can be tools.',
-              )}
-            </span>
-          </CardContent>
-        </Card>
-      )}
-      {(services ?? []).map((service) => (
-        <ServiceCard
-          key={service.id}
-          service={service}
-          endpoint={endpointFor(service.id)}
-          canWrite={canWrite}
-          onEdit={() => openDialog(service)}
-          onRotate={() => setRotating(service)}
-          onDelete={() => setDeleting(service)}
+      <div className="flex items-center justify-between gap-4">
+        <Tabs value={tab} onValueChange={(value) => setTab(value as ListTab)}>
+          <TabsList>
+            <TabsTrigger value="ALL">
+              {t('All services ({count})', { count: counts.ALL })}
+            </TabsTrigger>
+            <TabsTrigger value="MINE">
+              {t('Developed by me ({count})', { count: counts.MINE })}
+            </TabsTrigger>
+            <TabsTrigger value="OBTAINED">
+              {t('Obtained by me ({count})', { count: counts.OBTAINED })}
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <Input
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder={t('Search by name, key or description')}
+          className="max-w-64"
         />
-      ))}
-      <McpServiceDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        projectId={projectId}
-        existing={editing}
-        onCreated={setTokenService}
-      />
-      <McpTokenDialog
-        service={tokenService}
-        onClose={() => setTokenService(null)}
-      />
-      <ConfirmationDeleteDialog
-        title={t('Rotate token')}
-        message={t(
-          'A new token is created and the current one stops working right away. Every client using this service must be updated with the new token.',
-        )}
-        entityName={rotating?.name ?? ''}
-        buttonText={t('Rotate token')}
-        open={rotating !== null}
-        onOpenChange={(open) => {
-          if (!open) {
-            setRotating(null);
-          }
-        }}
-        mutationFn={async () => {
-          if (!rotating) {
-            return;
-          }
-          const rotated = await rotateToken(rotating.id);
-          setRotating(null);
-          setTokenService(rotated);
-        }}
-      />
-      <ConfirmationDeleteDialog
-        title={t('Delete MCP service')}
-        message={t(
-          'Clients using this service lose access to its tools. The workflows themselves are not changed.',
-        )}
-        entityName={deleting?.name ?? ''}
-        buttonText={t('Delete')}
-        isDanger
-        open={deleting !== null}
-        onOpenChange={(open) => {
-          if (!open) {
-            setDeleting(null);
-          }
-        }}
-        mutationFn={async () => {
-          if (!deleting) {
-            return;
-          }
-          await deleteService(deleting.id);
-          setDeleting(null);
-        }}
-      />
-    </div>
-  );
-}
-
-function ServiceCard({
-  service,
-  endpoint,
-  canWrite,
-  onEdit,
-  onRotate,
-  onDelete,
-}: {
-  service: McpService;
-  endpoint: string;
-  canWrite: boolean;
-  onEdit: () => void;
-  onRotate: () => void;
-  onDelete: () => void;
-}) {
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-start justify-between gap-4">
-        <div className="flex min-w-0 flex-col gap-1">
-          <div className="flex min-w-0 items-center gap-2">
-            <TextWithTooltip tooltipMessage={service.name}>
-              <p className="text-sm font-semibold">{service.name}</p>
-            </TextWithTooltip>
-            <Badge variant={service.enabled ? 'success' : 'outline'}>
-              {service.enabled ? t('Enabled') : t('Disabled')}
-            </Badge>
-          </div>
-          {service.description && (
-            <CardDescription>{service.description}</CardDescription>
+      </div>
+      {isLoading && <Skeleton className="h-40 w-full" />}
+      {!isLoading && list.length === 0 && (
+        <Empty>
+          {query ? (
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <SearchX />
+              </EmptyMedia>
+              <EmptyTitle>{t('No matching services')}</EmptyTitle>
+              <EmptyDescription>
+                {t(
+                  'No service has a name, key or description containing "{query}"',
+                  {
+                    query: search.trim(),
+                  },
+                )}
+              </EmptyDescription>
+            </EmptyHeader>
+          ) : tab === 'OBTAINED' ? (
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <Server />
+              </EmptyMedia>
+              <EmptyTitle>{t('No services obtained yet')}</EmptyTitle>
+              <EmptyDescription>
+                {t(
+                  'Open a service listed on the enterprise MCP marketplace and click Obtain to start using it in your AI assistant.',
+                )}
+              </EmptyDescription>
+            </EmptyHeader>
+          ) : (
+            <>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <Server />
+                </EmptyMedia>
+                <EmptyTitle>{t('No MCP services yet')}</EmptyTitle>
+                <EmptyDescription>
+                  {t(
+                    'Package a connector action or a published workflow into a service that AI assistants can call.',
+                  )}
+                </EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent>
+                <PermissionNeededTooltip hasPermission={canWrite}>
+                  <Button
+                    disabled={!canWrite}
+                    onClick={() => setCreateOpen(true)}
+                  >
+                    <Plus className="size-4 mr-1" />
+                    {t('Create MCP service')}
+                  </Button>
+                </PermissionNeededTooltip>
+              </EmptyContent>
+            </>
+          )}
+        </Empty>
+      )}
+      {!isLoading && list.length > 0 && (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {list.map((service) => (
+            <McpServiceCard key={service.id} service={service} />
+          ))}
+          {!query && tab !== 'OBTAINED' && (
+            <PermissionNeededTooltip hasPermission={canWrite}>
+              <button
+                type="button"
+                disabled={!canWrite}
+                onClick={() => setCreateOpen(true)}
+                className="flex flex-col items-center justify-center gap-2 rounded-md border border-dashed p-4 text-sm text-muted-foreground hover:border-primary hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Plus className="size-5" />
+                {t('Create MCP service')}
+              </button>
+            </PermissionNeededTooltip>
           )}
         </div>
-        <div className="flex shrink-0 gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            disabled={!canWrite}
-            onClick={onEdit}
-          >
-            <Pencil className="size-4 mr-1" />
-            {t('Edit')}
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            disabled={!canWrite}
-            onClick={onRotate}
-          >
-            <KeyRound className="size-4 mr-1" />
-            {t('Rotate token')}
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            aria-label={t('Delete')}
-            disabled={!canWrite}
-            onClick={onDelete}
-          >
-            <Trash2 className="size-4" />
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
-        <dl className="grid grid-cols-3 gap-3 text-sm">
-          <Fact label={t('Tools')}>
-            {t('{count, plural, =0 {No tools} =1 {1 tool} other {# tools}}', {
-              count: service.tools.length,
-            })}
-          </Fact>
-          <Fact label={t('Token')}>
-            <span className="font-mono">
-              {mcpServiceUtils.maskedToken(service.tokenHint)}
-            </span>
-          </Fact>
-          <Fact label={t('Last used')}>
-            {service.lastUsedAt ? (
-              <FormattedDate
-                date={new Date(service.lastUsedAt)}
-                includeTime={true}
-              />
-            ) : (
-              t('Never used')
-            )}
-          </Fact>
-        </dl>
-        <div className="flex flex-col gap-1">
-          <span className="text-xs text-muted-foreground">
-            {t('Endpoint URL')}
-          </span>
-          <CopyToClipboardInput textToCopy={endpoint} useInput={true} />
-        </div>
-        {service.tools.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {service.tools.map((tool) => (
-              <Badge key={tool.name} variant="accent" className="font-mono">
-                {tool.name}
-              </Badge>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-function Fact({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="flex flex-col gap-0.5">
-      <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd>{children}</dd>
+      )}
+      <McpCreateServiceDialog
+        projectId={projectId}
+        open={createOpen}
+        onOpenChange={(open) => {
+          setCreateOpen(open);
+          if (!open) {
+            setCreatingForConnector(null);
+          }
+        }}
+        onCreated={(service: McpService) => {
+          const target = creatingForConnector;
+          setCreatingForConnector(null);
+          const suffix = target
+            ? `?newTool=connector&connector=${encodeURIComponent(
+                target.connectorName,
+              )}&action=${encodeURIComponent(target.actionName)}`
+            : '';
+          navigate(
+            authenticationSession.appendProjectRoutePrefix(
+              `/mcp-services/${service.id}${suffix}`,
+            ),
+          );
+        }}
+      />
+      {pendingConnector && (
+        <McpAddToServiceDialog
+          connectorName={pendingConnector.connectorName}
+          actionName={pendingConnector.actionName}
+          services={myEditableServices}
+          onClose={() => setPendingConnector(null)}
+          onPickExisting={(serviceId) => {
+            const { connectorName, actionName } = pendingConnector;
+            setPendingConnector(null);
+            navigate(
+              authenticationSession.appendProjectRoutePrefix(
+                `/mcp-services/${serviceId}?newTool=connector&connector=${encodeURIComponent(
+                  connectorName,
+                )}&action=${encodeURIComponent(actionName)}`,
+              ),
+            );
+          }}
+          onCreateNew={() => {
+            setCreatingForConnector(pendingConnector);
+            setPendingConnector(null);
+            setCreateOpen(true);
+          }}
+        />
+      )}
     </div>
   );
 }

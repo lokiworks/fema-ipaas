@@ -12,6 +12,7 @@ import { projectService } from '../../project/project-service'
 import { userInteractionWatcher } from '../../workers/user-interaction-watcher'
 import { workflowService } from '../../workflows/workflow/workflow.service'
 import { workflowVersionRepo, workflowVersionService } from '../../workflows/workflow-version/workflow-version.service'
+import { connectionBrokenNotifier } from '../connection-broken-notifier'
 import { ConnectionSchema } from '../connection.entity'
 import { connectionAvailability } from './connection-availability'
 import { connectionsRepo } from './connection-service'
@@ -189,6 +190,7 @@ export const connectionHandler = (log: FastifyBaseLogger) => ({
                             status: connection.status,
                             updated: dayjs().toISOString(),
                         })
+                        await connectionBrokenNotifier(log).notifyOwner({ connection, projectId })
                     }
                 }
                 return connection

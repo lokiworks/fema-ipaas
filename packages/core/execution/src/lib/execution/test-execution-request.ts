@@ -1,10 +1,12 @@
 import { z } from 'zod'
 import { EntityId } from '@fema-ipaas/core-utils'
 import { ExecutionStatus } from './state/workflow-execution'
-import { WorkflowRetryStrategy } from './execution'
+import { RunEnvironment, WorkflowRetryStrategy } from './execution'
 
 export const TestExecutionRequestBody = z.object({
     workflowVersionId: EntityId,
+    payload: z.unknown().optional(),
+    environment: z.enum(RunEnvironment).optional(),
 })
 
 export type TestExecutionRequestBody = z.infer<typeof TestExecutionRequestBody>

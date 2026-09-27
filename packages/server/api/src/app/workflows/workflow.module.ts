@@ -18,6 +18,8 @@ export const workflowModule: FastifyPluginAsyncZod = async (app) => {
                 projectId,
                 workflowVersionId: data.workflowVersionId,
                 triggeredBy: principal.id,
+                payload: data.payload,
+                environment: data.environment,
             })
             socket.emit(WebsocketClientEvent.TEST_EXECUTION_STARTED, execution)
         }

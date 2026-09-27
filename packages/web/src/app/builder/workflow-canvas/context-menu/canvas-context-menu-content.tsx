@@ -15,6 +15,7 @@ import {
   CopyPlus,
   Route,
   RouteOff,
+  Scissors,
   Trash,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -33,11 +34,13 @@ import { useBuilderStateContext } from '../../builder-hooks';
 import { CanvasShortcuts } from '../../shortcuts';
 import {
   copySelectedNodes,
+  cutSelectedNodes,
   deleteSelectedNodes,
   getLastLocationAsPasteLocation,
   pasteNodes,
   toggleSkipSelectedNodes,
 } from '../utils/bulk-actions';
+import { pasteLocationUtils } from '../utils/paste-location';
 
 import { CanvasContextMenuProps, ContextMenuType } from './canvas-context-menu';
 
@@ -67,6 +70,7 @@ export const CanvasContextMenuContent = ({
     exitStepSettings,
     readonly,
     setOpenedConnectorSelectorStepNameOrAddButtonId,
+    applyOperations,
   ] = useBuilderStateContext((state) => [
     state.selectedNodes,
     state.applyOperation,
@@ -75,6 +79,7 @@ export const CanvasContextMenuContent = ({
     state.exitStepSettings,
     state.readonly,
     state.setOpenedConnectorSelectorStepNameOrAddButtonId,
+    state.applyOperations,
   ]);
   const disabled = selectedNodes.length === 0;
   const areAllStepsSkipped = selectedNodes.every(
@@ -125,6 +130,21 @@ export const CanvasContextMenuContent = ({
 
   const showCopy =
     !doSelectedNodesIncludeTrigger && contextMenuType === ContextMenuType.STEP;
+  const showCut = showCopy && !readonly;
+  const pasteBeforeLocation =
+    selectedNodes.length === 1 && !doSelectedNodesIncludeTrigger
+      ? pasteLocationUtils.before({
+          trigger: workflowVersion.trigger,
+          stepName: selectedNodes[0],
+        })
+      : null;
+  const showPasteBefore =
+    !readonly &&
+    contextMenuType === ContextMenuType.STEP &&
+    pasteLocationUtils.isValid({
+      trigger: workflowVersion.trigger,
+      location: pasteBeforeLocation,
+    });
   const showCopyReference =
     selectedNodes.length === 1 && contextMenuType === ContextMenuType.STEP;
   const showDuplicate =
@@ -153,6 +173,8 @@ export const CanvasContextMenuContent = ({
   const showContextMenuContent =
     showReplace ||
     showCopy ||
+    showCut ||
+    showPasteBefore ||
     showCopyReference ||
     showDuplicate ||
     showSkip ||
@@ -188,6 +210,25 @@ export const CanvasContextMenuContent = ({
         >
           <ShortcutWrapper shortcut={CanvasShortcuts['Copy']}>
             <Copy className="w-4 h-4"></Copy> {t('Copy')}
+          </ShortcutWrapper>
+        </ContextMenuItem>
+      )}
+
+      {showCut && (
+        <ContextMenuItem
+          disabled={disabled}
+          onClick={() => {
+            void cutSelectedNodes({
+              selectedNodes,
+              workflowVersion,
+              applyOperation,
+              selectedStep,
+              exitStepSettings,
+            });
+          }}
+        >
+          <ShortcutWrapper shortcut={CanvasShortcuts['Cut']}>
+            <Scissors className="w-4 h-4"></Scissors> {t('Cut')}
           </ShortcutWrapper>
         </ContextMenuItem>
       )}
@@ -241,8 +282,23 @@ export const CanvasContextMenuContent = ({
         {(showPasteAsFirstLoopAction ||
           showPasteAsBranchChild ||
           showPasteAsCofBranchChild ||
-          showPasteAfterCurrentStep) && (
-          <ContextMenuSeparator></ContextMenuSeparator>
+          showPasteAfterCurrentStep ||
+          showPasteBefore) && <ContextMenuSeparator></ContextMenuSeparator>}
+
+        {showPasteBefore && pasteBeforeLocation && (
+          <ContextMenuItem
+            onClick={() => {
+              void pasteNodes({
+                workflowVersion,
+                location: pasteBeforeLocation,
+                applyOperations,
+              });
+            }}
+            className="flex items-center gap-2"
+          >
+            <ClipboardPaste className="w-4 h-4"></ClipboardPaste>{' '}
+            {t('Paste Above')}
+          </ContextMenuItem>
         )}
 
         {showPasteAfterLastStep && (
@@ -251,7 +307,11 @@ export const CanvasContextMenuContent = ({
               const pasteLocation =
                 getLastLocationAsPasteLocation(workflowVersion);
               if (pasteLocation) {
-                pasteNodes(workflowVersion, pasteLocation, applyOperation);
+                void pasteNodes({
+                  workflowVersion,
+                  location: pasteLocation,
+                  applyOperations,
+                });
               }
             }}
             className="flex items-center gap-2"
@@ -264,15 +324,15 @@ export const CanvasContextMenuContent = ({
         {showPasteAsFirstLoopAction && (
           <ContextMenuItem
             onClick={() => {
-              pasteNodes(
+              void pasteNodes({
                 workflowVersion,
-                {
+                location: {
                   parentStepName: selectedNodes[0],
                   stepLocationRelativeToParent:
                     StepLocationRelativeToParent.INSIDE_LOOP,
                 },
-                applyOperation,
-              );
+                applyOperations,
+              });
             }}
             className="flex items-center gap-2"
           >
@@ -284,20 +344,20 @@ export const CanvasContextMenuContent = ({
         {showPasteAfterCurrentStep && (
           <ContextMenuItem
             onClick={() => {
-              pasteNodes(
+              void pasteNodes({
                 workflowVersion,
-                {
+                location: {
                   parentStepName: selectedNodes[0],
                   stepLocationRelativeToParent:
                     StepLocationRelativeToParent.AFTER,
                 },
-                applyOperation,
-              );
+                applyOperations,
+              });
             }}
             className="flex items-center gap-2"
           >
             <ClipboardPlus className="w-4 h-4"></ClipboardPlus>{' '}
-            {t('Paste After')}
+            {doSelectedNodesIncludeTrigger ? t('Paste') : t('Paste Below')}
           </ContextMenuItem>
         )}
 
@@ -314,16 +374,16 @@ export const CanvasContextMenuContent = ({
                     <ContextMenuItem
                       key={branch.branchName}
                       onClick={() => {
-                        pasteNodes(
+                        void pasteNodes({
                           workflowVersion,
-                          {
+                          location: {
                             parentStepName: selectedNodes[0],
                             stepLocationRelativeToParent:
                               StepLocationRelativeToParent.INSIDE_BRANCH,
                             branchIndex,
                           },
-                          applyOperation,
-                        );
+                          applyOperations,
+                        });
                       }}
                     >
                       {branch.branchName}
@@ -341,17 +401,17 @@ export const CanvasContextMenuContent = ({
                       branchName: `Branch ${firstSelectedStep.settings.branches.length}`,
                     },
                   });
-                  pasteNodes(
+                  void pasteNodes({
                     workflowVersion,
-                    {
+                    location: {
                       parentStepName: firstSelectedStep.name,
                       stepLocationRelativeToParent:
                         StepLocationRelativeToParent.INSIDE_BRANCH,
                       branchIndex:
                         firstSelectedStep.settings.branches.length - 1,
                     },
-                    applyOperation,
-                  );
+                    applyOperations,
+                  });
                 }}
               >
                 + {t('New Branch')}
@@ -369,30 +429,30 @@ export const CanvasContextMenuContent = ({
             <ContextMenuSubContent>
               <ContextMenuItem
                 onClick={() => {
-                  pasteNodes(
+                  void pasteNodes({
                     workflowVersion,
-                    {
+                    location: {
                       parentStepName: selectedNodes[0],
                       stepLocationRelativeToParent:
                         StepLocationRelativeToParent.INSIDE_ON_SUCCESS_BRANCH,
                     },
-                    applyOperation,
-                  );
+                    applyOperations,
+                  });
                 }}
               >
                 {t('Success')}
               </ContextMenuItem>
               <ContextMenuItem
                 onClick={() => {
-                  pasteNodes(
+                  void pasteNodes({
                     workflowVersion,
-                    {
+                    location: {
                       parentStepName: selectedNodes[0],
                       stepLocationRelativeToParent:
                         StepLocationRelativeToParent.INSIDE_ON_FAILURE_BRANCH,
                     },
-                    applyOperation,
-                  );
+                    applyOperations,
+                  });
                 }}
               >
                 {t('Failure')}

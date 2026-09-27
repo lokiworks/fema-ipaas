@@ -4,6 +4,7 @@ import {
   WORKFLOW_DESCRIPTION_MAX_LENGTH,
   WORKFLOW_NAME_MAX_LENGTH,
   WorkflowOperationType,
+  formErrors,
 } from '@fema-ipaas/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { t } from 'i18next';
@@ -190,10 +191,7 @@ function flattenFolders({
           folder.parentId && ids.has(folder.parentId) ? folder.parentId : null;
         return parent === parentId;
       })
-      .flatMap((folder) => [
-        { folder, depth },
-        ...walk(folder.id, depth + 1),
-      ]);
+      .flatMap((folder) => [{ folder, depth }, ...walk(folder.id, depth + 1)]);
   return walk(null, 0);
 }
 
@@ -490,7 +488,7 @@ const InfoSchema = z.object({
   displayName: z
     .string()
     .trim()
-    .min(1, 'formErrors.required')
+    .min(1, formErrors.required)
     .max(WORKFLOW_NAME_MAX_LENGTH, 'workflowNameTooLong'),
   description: z
     .string()

@@ -53,6 +53,7 @@ Activation/recovery handle for a self-hosted platform's Autumn billing identity 
 - **License Keys** — activating self-hosted EE
 - **Embed** — signing keys, external tokens, the Cloudflare subdomain, and the frame-ancestors CSP
 - **Platform Copilot** — retired; kept for the migration trail
+- **管理后台** — 本仓库现状：模块权限、权限申请、资源转移、登录策略、工作节点、健康状态
 
 ## Gotchas
 - **Encryption key rotation was reachable only from a browser, and had no button.** `POST /v1/encryption/rotate` is `tenantAdminOnly([PrincipalType.USER])` — an API key cannot call it — yet nothing in the UI did either, so after changing `FEMA_ENCRYPTION_KEY` existing connections and variables silently stayed on the old key. It is now 安全 → 加密 (`/tenant/security/encryption`). The operation is idempotent: `rotateTable` skips rows already encrypted with the current key and reports scanned/rotated/failed per table, which is why a confirm dialog plus a result toast is enough.

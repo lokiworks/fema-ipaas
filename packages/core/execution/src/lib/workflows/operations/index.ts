@@ -9,6 +9,7 @@ import { Note } from '../note'
 import { SampleDataSetting, SaveSampleDataRequest } from '../sample-data'
 import { EmptyTrigger, WorkflowTrigger, WorkflowTriggerType, ConnectorTrigger, ConnectorTriggerSettings } from '../triggers/trigger'
 import { workflowConnectorUtil } from '../util/workflow-connector-util'
+import { stepDisplayNumberUtil } from '../util/step-display-number'
 import { workflowStructureUtil } from '../util/workflow-structure-util'
 import { _addAction } from './add-action'
 import { _addBranch } from './add-branch'
@@ -443,6 +444,9 @@ export const workflowOperations = {
             default:
                 break
         }
+        if (STEP_TREE_OPERATIONS.includes(operation.type)) {
+            clonedVersion.trigger = stepDisplayNumberUtil.assign(clonedVersion.trigger)
+        }
         clonedVersion.valid = workflowStructureUtil.getAllSteps(clonedVersion.trigger).every((step) => {
             const isSkipped = step.type != WorkflowTriggerType.EMPTY && step.type != WorkflowTriggerType.CONNECTOR && step.skip
             return step.valid || isSkipped
@@ -450,6 +454,15 @@ export const workflowOperations = {
         return clonedVersion
     },
 }
+
+const STEP_TREE_OPERATIONS: WorkflowOperationType[] = [
+    WorkflowOperationType.ADD_ACTION,
+    WorkflowOperationType.UPDATE_ACTION,
+    WorkflowOperationType.UPDATE_TRIGGER,
+    WorkflowOperationType.DUPLICATE_ACTION,
+    WorkflowOperationType.DUPLICATE_BRANCH,
+    WorkflowOperationType.IMPORT_WORKFLOW,
+]
 
 // Join edges are kept only when both endpoints still exist, so deleting a step cannot leave a
 // dependency on a name nothing resolves to — the Engine would then wait forever for it.

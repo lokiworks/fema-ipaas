@@ -1,4 +1,3 @@
-import { zodResolver } from '@hookform/resolvers/zod';
 import { isNil } from '@fema-ipaas/core-utils';
 import {
   AddConnectionSharesRequestBody,
@@ -7,22 +6,12 @@ import {
   ConnectionPermission,
   ConnectionSharePermission,
 } from '@fema-ipaas/shared';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { t } from 'i18next';
 import { X } from 'lucide-react';
 import { ReactNode } from 'react';
 import { useForm } from 'react-hook-form';
 
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import {
   MultiSelect,
   MultiSelectContent,
@@ -34,6 +23,18 @@ import {
   MultiSelectValue,
 } from '@/components/custom/multi-select';
 import { UserBadge } from '@/components/custom/user-badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
   SelectContent,
@@ -41,11 +42,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { connectionsMutations, connectionsQueries } from '@/features/connections';
-import { tenantUserHooks } from '@/features/tenant-admin/hooks/tenant-user-hooks';
+import {
+  connectionsMutations,
+  connectionsQueries,
+} from '@/features/connections/hooks/connections-hooks';
 
-const sharePermissionOptions: { value: ConnectionSharePermission; label: string; description: string }[] = [
+const sharePermissionOptions: {
+  value: ConnectionSharePermission;
+  label: string;
+  description: string;
+}[] = [
   {
     value: ConnectionSharePermission.USE,
     label: t('Can Use'),
@@ -59,7 +65,9 @@ const sharePermissionOptions: { value: ConnectionSharePermission; label: string;
 ];
 
 function getPermissionLabel(permission: ConnectionSharePermission): string {
-  const option = sharePermissionOptions.find((item) => item.value === permission);
+  const option = sharePermissionOptions.find(
+    (item) => item.value === permission,
+  );
   return option ? option.label : permission;
 }
 
@@ -105,7 +113,9 @@ function ShareConnectionContent({
   return (
     <>
       <DialogHeader>
-        <DialogTitle>{t('Share "{name}"', { name: detail.displayName })}</DialogTitle>
+        <DialogTitle>
+          {t('Share "{name}"', { name: detail.displayName })}
+        </DialogTitle>
         <DialogDescription>
           {t(
             'Members you share with can use this connection in the projects it is available in. They will never see the secret values.',
@@ -128,7 +138,11 @@ function ShareConnectionContent({
             firstName={detail.owner?.firstName}
             lastName={detail.owner?.lastName}
             email={detail.owner?.email}
-            trailing={<span className="text-sm text-muted-foreground">{t('Owner')}</span>}
+            trailing={
+              <span className="text-sm text-muted-foreground">
+                {t('Owner')}
+              </span>
+            }
           />
           {detail.shares.length === 0 && (
             <div className="px-1 py-3 text-sm text-muted-foreground">
@@ -144,7 +158,11 @@ function ShareConnectionContent({
               email={share.user?.email}
               trailing={
                 manage ? (
-                  <ShareRowActions connectionId={connectionId} userId={share.userId} permission={share.permission} />
+                  <ShareRowActions
+                    connectionId={connectionId}
+                    userId={share.userId}
+                    permission={share.permission}
+                  />
                 ) : (
                   <span className="text-sm text-muted-foreground">
                     {getPermissionLabel(share.permission)}
@@ -156,7 +174,10 @@ function ShareConnectionContent({
         </div>
       </ScrollArea>
       {detail.myPermission === ConnectionPermission.OWNER && (
-        <DefaultMembersPermissionSelector connectionId={connectionId} detail={detail} />
+        <DefaultMembersPermissionSelector
+          connectionId={connectionId}
+          detail={detail}
+        />
       )}
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onClose}>
@@ -174,7 +195,7 @@ function MemberRow({
   email,
   trailing,
 }: {
-  userId: string;
+  userId: string | null | undefined;
   firstName?: string;
   lastName?: string;
   email?: string;
@@ -183,10 +204,19 @@ function MemberRow({
   const name = [firstName, lastName].filter(Boolean).join(' ');
   return (
     <div className="flex items-center gap-3 rounded-sm px-1 py-2">
-      <UserBadge id={userId} size="medium" includeAvatar includeName={false} />
+      <UserBadge
+        id={userId ?? null}
+        size="medium"
+        includeAvatar
+        includeName={false}
+      />
       <div className="flex min-w-0 flex-1 flex-col">
         <span className="truncate text-sm">{name || email || userId}</span>
-        {email && <span className="truncate text-xs text-muted-foreground">{email}</span>}
+        {email && (
+          <span className="truncate text-xs text-muted-foreground">
+            {email}
+          </span>
+        )}
       </div>
       {trailing}
     </div>
@@ -202,12 +232,16 @@ function ShareRowActions({
   userId: string;
   permission: ConnectionSharePermission;
 }) {
-  const { mutate: updateShare } = connectionsMutations.useUpdateConnectionShare({
-    connectionId,
-  });
-  const { mutate: removeShare } = connectionsMutations.useRemoveConnectionShare({
-    connectionId,
-  });
+  const { mutate: updateShare } = connectionsMutations.useUpdateConnectionShare(
+    {
+      connectionId,
+    },
+  );
+  const { mutate: removeShare } = connectionsMutations.useRemoveConnectionShare(
+    {
+      connectionId,
+    },
+  );
   return (
     <div className="flex items-center gap-1">
       <Select
@@ -215,7 +249,11 @@ function ShareRowActions({
         onValueChange={(value) =>
           updateShare({
             userId,
-            request: { permission: value as ConnectionSharePermission },
+            request: {
+              permission:
+                toProjectMembersPermission(value) ??
+                ConnectionSharePermission.USE,
+            },
           })
         }
       >
@@ -250,7 +288,7 @@ function AddShareForm({
   connectionId: string;
   detail: ConnectionDetail;
 }) {
-  const { data: usersPage } = tenantUserHooks.useUsers();
+  const { data: usersPage } = connectionsQueries.useShareCandidates();
   const candidates = (usersPage?.data ?? []).filter(
     (user) =>
       user.id !== detail.ownerId &&
@@ -261,9 +299,10 @@ function AddShareForm({
     defaultValues: { userIds: [], permission: ConnectionSharePermission.USE },
     mode: 'onChange',
   });
-  const { mutateAsync, isPending } = connectionsMutations.useAddConnectionShares({
-    connectionId,
-  });
+  const { mutateAsync, isPending } =
+    connectionsMutations.useAddConnectionShares({
+      connectionId,
+    });
 
   const handleSubmit = form.handleSubmit(async (values) => {
     await mutateAsync(values);
@@ -289,7 +328,8 @@ function AddShareForm({
                 onValueChange={(value) => field.onChange(value)}
                 items={candidates.map((user) => ({
                   value: user.id,
-                  label: `${user.firstName} ${user.lastName}`.trim() || user.email,
+                  label:
+                    `${user.firstName} ${user.lastName}`.trim() || user.email,
                 }))}
               >
                 <MultiSelectTrigger>
@@ -307,7 +347,8 @@ function AddShareForm({
                     <MultiSelectEmpty>{t('No results')}</MultiSelectEmpty>
                     {candidates.map((user) => (
                       <MultiSelectItem key={user.id} value={user.id}>
-                        {`${user.firstName} ${user.lastName}`.trim() || user.email}
+                        {`${user.firstName} ${user.lastName}`.trim() ||
+                          user.email}
                       </MultiSelectItem>
                     ))}
                   </MultiSelectList>
@@ -349,6 +390,19 @@ function AddShareForm({
   );
 }
 
+function toProjectMembersPermission(
+  value: string,
+): ConnectionSharePermission | null {
+  switch (value) {
+    case ConnectionSharePermission.EDIT:
+      return ConnectionSharePermission.EDIT;
+    case ConnectionSharePermission.USE:
+      return ConnectionSharePermission.USE;
+    default:
+      return null;
+  }
+}
+
 function DefaultMembersPermissionSelector({
   connectionId,
   detail,
@@ -362,9 +416,13 @@ function DefaultMembersPermissionSelector({
   return (
     <div className="flex items-center justify-between gap-3 rounded-sm border p-3">
       <div className="flex flex-col">
-        <span className="text-sm font-medium">{t('All members of the available projects')}</span>
+        <span className="text-sm font-medium">
+          {t('All members of the available projects')}
+        </span>
         <span className="text-xs text-muted-foreground">
-          {t('Default permission for everyone in the projects this connection is available in')}
+          {t(
+            'Default permission for everyone in the projects this connection is available in',
+          )}
         </span>
       </div>
       <Select
@@ -374,8 +432,7 @@ function DefaultMembersPermissionSelector({
           updateAccess({
             allProjects: detail.allProjects,
             projectIds: detail.projectIds,
-            projectMembersPermission:
-              next === 'NONE' ? null : (next as ConnectionSharePermission),
+            projectMembersPermission: toProjectMembersPermission(next),
           })
         }
       >

@@ -3,7 +3,11 @@ import { FEMA_FUNCTIONS, formulaEvaluator } from '@fema-ipaas/expression';
 import { WorkflowAction, WorkflowTrigger } from '@fema-ipaas/shared';
 import { MentionNodeAttrs } from '@tiptap/extension-mention';
 import { JSONContent } from '@tiptap/react';
-import { Variable as VariableIcon } from 'lucide-react';
+import { t } from 'i18next';
+import {
+  TriangleAlert as TriangleAlertIcon,
+  Variable as VariableIcon,
+} from 'lucide-react';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
@@ -45,6 +49,7 @@ type StepMentionAttrs = {
   displayText: string;
   serverValue: string;
   isVariable?: boolean;
+  isBroken?: boolean;
 };
 const flattenNestedKeysRegex =
   /^flattenNestedKeys\((\w+)(?:\['output'\])?,\s*\[(.*?)\]\)$/;
@@ -58,6 +63,7 @@ enum TipTapNodeTypes {
 type StepMetadataWithDisplayName = StepMetadata & { stepDisplayName: string };
 
 const ZWS = '\u200B';
+const CURRENT_ITEM_ROOT = 'item';
 
 type ExprToken =
   | { kind: 'fn_open'; name: string; known: boolean }
@@ -338,20 +344,32 @@ function parseLabelFromMention(
       isVariable: true,
     };
   }
+  if (stepName === CURRENT_ITEM_ROOT) {
+    return {
+      displayText:
+        path.length > 0
+          ? `${t('Current item')} .${path.join('.')}`
+          : t('Current item'),
+      serverValue: mention,
+      logoUrl: undefined,
+      isVariable: true,
+    };
+  }
   const stepIdx = steps.findIndex((step) => step.name === stepName);
   if (stepIdx < 0) {
     return {
-      displayText: `(Missing) ${stepName}`,
+      displayText: `${t('Broken reference')} · ${stepName}`,
       serverValue: mention,
-      logoUrl: '/src/assets/img/custom/incomplete.png',
+      logoUrl: undefined,
+      isBroken: true,
     };
   }
   const stepMetadata = stepsMetadata[stepIdx];
   const friendlyPath = collapseEngineReservedPath(path);
+  const name = stepMetadata?.stepDisplayName ?? steps[stepIdx].displayName;
   return {
-    displayText: `${stepIdx + 1}. ${
-      stepMetadata?.stepDisplayName ?? ''
-    } ${friendlyPath.join(' ')}`,
+    displayText:
+      friendlyPath.length > 0 ? `${name} .${friendlyPath.join('.')}` : name,
     serverValue: mention,
     logoUrl: stepMetadata?.logoUrl,
   };
@@ -444,6 +462,19 @@ const VARIABLE_ICON_SVG_MARKUP = renderToStaticMarkup(
   }),
 );
 
+const buildBrokenIconElement = (): Element => {
+  const template = document.createElement('template');
+  template.innerHTML = renderToStaticMarkup(
+    createElement(TriangleAlertIcon, {
+      className: 'w-4 h-4 shrink-0 text-destructive',
+      'aria-hidden': true,
+    }),
+  );
+  const element = template.content.firstElementChild;
+  assertNotNullOrUndefined(element, 'brokenIconMarkup');
+  return element;
+};
+
 const buildVariableIconElement = (): Element => {
   const template = document.createElement('template');
   template.innerHTML = VARIABLE_ICON_SVG_MARKUP;
@@ -457,8 +488,9 @@ const generateMentionHtmlElement = (mentionAttrs: MentionNodeAttrs) => {
   const stepMentionAttrs: StepMentionAttrs = JSON.parse(
     mentionAttrs.label || '{}',
   );
-  mentionElement.className =
-    'inline-flex bg-muted/10 break-all my-1 mx-px border border-[#9e9e9e] border-solid items-center gap-2 py-1 px-2 rounded-[3px] text-muted-foreground ';
+  mentionElement.className = stepMentionAttrs.isBroken
+    ? 'inline-flex bg-destructive/10 break-all my-1 mx-px border border-destructive/60 border-solid items-center gap-2 py-1 px-2 rounded-[3px] text-destructive cursor-pointer'
+    : 'inline-flex bg-muted/10 break-all my-1 mx-px border border-[#9e9e9e] border-solid items-center gap-2 py-1 px-2 rounded-[3px] text-muted-foreground cursor-pointer';
   assertNotNullOrUndefined(mentionAttrs.label, 'mentionAttrs.label');
   assertNotNullOrUndefined(mentionAttrs.id, 'mentionAttrs.id');
   assertNotNullOrUndefined(
@@ -471,7 +503,10 @@ const generateMentionHtmlElement = (mentionAttrs: MentionNodeAttrs) => {
   mentionElement.dataset.type = TipTapNodeTypes.mention;
   mentionElement.contentEditable = 'false';
 
-  if (stepMentionAttrs.isVariable) {
+  if (stepMentionAttrs.isBroken) {
+    mentionElement.dataset.broken = 'true';
+    mentionElement.appendChild(buildBrokenIconElement());
+  } else if (stepMentionAttrs.isVariable) {
     mentionElement.appendChild(buildVariableIconElement());
   } else if (stepMentionAttrs.logoUrl) {
     const imgElement = document.createElement('img');

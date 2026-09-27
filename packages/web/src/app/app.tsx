@@ -8,6 +8,7 @@ import TelemetryProvider from '@/components/providers/telemetry-provider';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { HelpDrawer, TourHost } from '@/features/help';
 
 import { EmbeddingFontLoader } from './components/embedding-font-loader';
 import { GlobalErrorBoundary } from './components/global-error-boundary';
@@ -29,6 +30,8 @@ export function App() {
                     <ThemeProvider storageKey="fema.theme">
                       <AppRouter />
                       <Toaster position="bottom-right" />
+                      <HelpDrawer />
+                      <TourHost />
                       <ErrorDialog />
                     </ThemeProvider>
                   </React.Fragment>

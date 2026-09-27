@@ -93,6 +93,15 @@ function baseEnv({ settings, networkMode }: { settings: SandboxSettings, network
         NODE_PATH: '/usr/src/node_modules',
         FEMA_NETWORK_MODE: networkMode,
         ...(settings.ENFORCE_CONNECTION_CONNECTOR_BINDING ? { FEMA_ENFORCE_CONNECTION_CONNECTOR_BINDING: 'true' } : {}),
+        ...runLimitsEnv(settings),
+    }
+}
+
+function runLimitsEnv(settings: SandboxSettings): Record<string, string> {
+    return {
+        ...(settings.MAX_NODES_PER_RUN ? { FEMA_MAX_NODES_PER_RUN: String(settings.MAX_NODES_PER_RUN) } : {}),
+        ...(settings.STEP_TIMEOUT_SECONDS ? { FEMA_STEP_TIMEOUT_SECONDS: String(settings.STEP_TIMEOUT_SECONDS) } : {}),
+        ...(settings.MAX_STEP_PAYLOAD_MB ? { FEMA_MAX_STEP_PAYLOAD_MB: String(settings.MAX_STEP_PAYLOAD_MB) } : {}),
     }
 }
 

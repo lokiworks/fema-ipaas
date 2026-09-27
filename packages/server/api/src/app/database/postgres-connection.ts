@@ -21,6 +21,7 @@ import { MaskLogsBeforeWrite1790473281926 } from './migration/postgres/179047328
 import { AddTestDeployments1790473753032 } from './migration/postgres/1790473753032-AddTestDeployments'
 import { AddDataErasureRequests1790474079361 } from './migration/postgres/1790474079361-AddDataErasureRequests'
 import { AddAgentApprovals1790475172395 } from './migration/postgres/1790475172395-AddAgentApprovals'
+import { DesignDocRolloutSchema1790501279466 } from './migration/postgres/1790501279466-DesignDocRolloutSchema'
 
 const getSslConfig = (): boolean | TlsOptions => {
     const useSsl = system.get(AppSystemProp.POSTGRES_USE_SSL)
@@ -49,6 +50,7 @@ export const getMigrations = (): (new () => Migration)[] => {
         AddTestDeployments1790473753032,
         AddDataErasureRequests1790474079361,
         AddAgentApprovals1790475172395,
+        DesignDocRolloutSchema1790501279466,
     ]
 }
 

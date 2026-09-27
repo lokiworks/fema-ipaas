@@ -152,4 +152,4 @@ function ProjectDashboardLayoutInner({
   );
 }
 
-const PROJECTLESS_PATHS = ['/', '/projects'];
+const PROJECTLESS_PATHS = ['/', '/projects', '/logs', '/monitor', '/account'];

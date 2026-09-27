@@ -1,4 +1,7 @@
-import { PROJECT_COLOR_PALETTE } from '@fema-ipaas/shared';
+import {
+  GlobalSearchResultType,
+  PROJECT_COLOR_PALETTE,
+} from '@fema-ipaas/shared';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { t } from 'i18next';
 
@@ -10,6 +13,8 @@ import { useIsTenantAdmin } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 
 import { getAccessHistory } from './access-history';
+import { globalSearchApi } from './global-search-api';
+import { globalSearchUtils } from './global-search-utils';
 import { STATIC_PAGES, type StaticPage } from './static-pages';
 
 const SEARCH_LIMIT = 6;
@@ -69,6 +74,14 @@ export function useGlobalSearchResults(query: string, open: boolean) {
     (foldersQuery.data ?? []).map((f) => [f.id, f.displayName]),
   );
 
+  const globalSearchQuery = useQuery({
+    queryKey: ['global-search', query],
+    queryFn: () => globalSearchApi.search(query),
+    enabled: hasQuery && open,
+    staleTime: 15_000,
+    placeholderData: keepPreviousData,
+  });
+
   const workflowsQuery = useQuery({
     queryKey: ['global-search-workflows', projectId, query],
     queryFn: () =>
@@ -78,7 +91,7 @@ export function useGlobalSearchResults(query: string, open: boolean) {
         limit: SEARCH_LIMIT,
         cursor: undefined,
       }),
-    enabled: searchEnabled || suggestionsEnabled,
+    enabled: suggestionsEnabled,
     staleTime: hasQuery ? 15_000 : 60_000,
     placeholderData: keepPreviousData,
   });
@@ -157,8 +170,6 @@ export function useGlobalSearchResults(query: string, open: boolean) {
     href: page.href,
     pageIcon: page.icon,
   }));
-
-  const isSearchLoading = workflowsQuery.isLoading && searchEnabled;
 
   if (!hasQuery) {
     if (hasHistory) {
@@ -285,30 +296,41 @@ export function useGlobalSearchResults(query: string, open: boolean) {
     };
   }
 
+  const serverGroups: SearchResultGroup[] = (
+    globalSearchQuery.data?.groups ?? []
+  ).map((group) => ({
+    type: `resource-${group.type}`,
+    heading: globalSearchUtils.groupHeading(group.type),
+    items: globalSearchUtils
+      .toRows({ group, query, currentProjectId: projectId })
+      .map((row) => ({
+        id: row.id,
+        type: row.kind,
+        resourceType: row.resourceType,
+        label: row.label,
+        href: row.href,
+        subtitle: row.subtitle,
+        projectName: row.projectName,
+      })),
+    isLoading: false,
+  }));
+
   const groups: SearchResultGroup[] = [
-    {
-      type: 'workflow',
-      heading: t('Workflows'),
-      items: workflowResults,
-      isLoading: workflowsQuery.isLoading && searchEnabled,
-    },
-    {
-      type: 'table',
-      heading: t('Tables'),
-      items: tableResults,
-      isLoading: false,
-    },
+    ...(globalSearchQuery.isLoading && hasQuery
+      ? [
+          {
+            type: 'resource-loading',
+            heading: '',
+            items: [],
+            isLoading: true,
+          },
+        ]
+      : serverGroups),
     {
       type: 'folder',
       heading: t('Folders'),
       items: folderResults,
       isLoading: foldersQuery.isLoading && searchEnabled,
-    },
-    {
-      type: 'project',
-      heading: t('Projects'),
-      items: projectResults,
-      isLoading: false,
     },
     {
       type: 'page',
@@ -318,12 +340,21 @@ export function useGlobalSearchResults(query: string, open: boolean) {
     },
   ].filter((g) => g.isLoading || g.items.length > 0);
 
-  return { groups, isLoading: isSearchLoading };
+  return { groups, isLoading: globalSearchQuery.isLoading && hasQuery };
 }
 
 export type SearchResultItem = {
   id: string;
-  type: 'workflow' | 'table' | 'folder' | 'project' | 'page';
+  type:
+    | 'workflow'
+    | 'table'
+    | 'folder'
+    | 'project'
+    | 'page'
+    | 'resource'
+    | 'view-all';
+  resourceType?: GlobalSearchResultType;
+  subtitle?: string | null;
   label: string;
   href: string;
   status?: 'ENABLED' | 'DISABLED' | null;

@@ -1,5 +1,7 @@
 import { t } from 'i18next';
-import { Braces, Bug, Rocket, Server } from 'lucide-react';
+import { Braces, Compass, Rocket, Server, ShieldAlert } from 'lucide-react';
+
+import { helpStore, launchTour } from '@/features/help';
 
 import { SideCard, SideRow } from './side-card';
 
@@ -12,25 +14,28 @@ export function HomeLearnCard({
     <SideCard title={t('Get started')}>
       <div className="flex flex-col gap-0.5">
         <SideRow
+          icon={Compass}
+          title={t('Get to know the console')}
+          subtitle={t('Interactive tutorial')}
+          onClick={() => launchTour('console')}
+        />
+        <SideRow
           icon={Rocket}
-          title={t('Build your first workflow')}
-          subtitle={t('Help docs')}
-          to={`${DOCS_BASE_URL}/workflows/building-workflows`}
-          external={true}
+          title={t('Build your first workflow in 5 minutes')}
+          subtitle={t('Help article')}
+          onClick={() => helpStore.openHelp('quickstart')}
         />
         <SideRow
           icon={Braces}
           title={t('Use data from earlier steps')}
-          subtitle={t('Help docs')}
-          to={`${DOCS_BASE_URL}/workflows/passing-data`}
-          external={true}
+          subtitle={t('Help article')}
+          onClick={() => helpStore.openHelp('references')}
         />
         <SideRow
-          icon={Bug}
-          title={t('Debug failed runs')}
-          subtitle={t('Help docs')}
-          to={`${DOCS_BASE_URL}/workflows/debugging-runs`}
-          external={true}
+          icon={ShieldAlert}
+          title={t('Error handling and retries')}
+          subtitle={t('Help article')}
+          onClick={() => helpStore.openHelp('errors')}
         />
         {mcpProjectId && (
           <SideRow
@@ -44,5 +49,3 @@ export function HomeLearnCard({
     </SideCard>
   );
 }
-
-const DOCS_BASE_URL = 'https://github.com/lokiworks/fema-ipaas/docs';

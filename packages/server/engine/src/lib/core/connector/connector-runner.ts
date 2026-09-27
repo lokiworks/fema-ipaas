@@ -2,6 +2,7 @@ import { spawn } from 'node:child_process'
 import path from 'node:path'
 import { isNil, tryCatchSync } from '@fema-ipaas/core-utils'
 import { ConnectorMemoryLimitError, EngineGenericError } from '@fema-ipaas/shared'
+import { runLimits } from '../../helper/run-limits'
 import { connectorPath } from './connector-path'
 import { ChildMessage, CollectedHooks, ConnectorDescription, connectorProtocol, ContextRequest, ParentMessage } from './connector-protocol'
 
@@ -18,12 +19,12 @@ export const connectorRunner = {
         return description
     },
 
-    call: async ({ connector, path: methodPath, args = [], context }: CallParams): Promise<CallResult> => {
-        return runInChildProcess({ connector, request: { type: 'call', path: methodPath, args, context } })
+    call: async ({ connector, path: methodPath, args = [], context, timeoutMs }: CallParams): Promise<CallResult> => {
+        return runInChildProcess({ connector, request: { type: 'call', path: methodPath, args, context }, timeoutMs })
     },
 }
 
-async function runInChildProcess({ connector, request }: RunInChildProcessParams): Promise<CallResult> {
+async function runInChildProcess({ connector, request, timeoutMs }: RunInChildProcessParams): Promise<CallResult> {
     const entryPath = await connectorPath.resolve(connector)
 
     return new Promise((resolve, reject) => {
@@ -33,14 +34,22 @@ async function runInChildProcess({ connector, request }: RunInChildProcessParams
         })
         let settled = false
         let output = ''
+        let timer: NodeJS.Timeout | undefined
 
         const settle = (apply: () => void): void => {
             if (settled) {
                 return
             }
             settled = true
+            if (!isNil(timer)) {
+                clearTimeout(timer)
+            }
             child.kill()
             apply()
+        }
+
+        if (!isNil(timeoutMs) && timeoutMs > 0) {
+            timer = setTimeout(() => settle(() => reject(runLimits.stepTimeoutError(timeoutMs))), timeoutMs)
         }
 
         child.stdout?.on('data', (data: Buffer) => {
@@ -126,6 +135,7 @@ const descriptions = new Map<string, Promise<ConnectorDescription>>()
 type RunInChildProcessParams = {
     connector: ConnectorRef
     request: { type: 'describe' } | { type: 'call', path: string[], args: unknown[], context?: ContextRequest }
+    timeoutMs?: number | null
 }
 
 type ExitParams = {
@@ -145,6 +155,7 @@ export type CallParams = {
     path: string[]
     args?: unknown[]
     context?: ContextRequest
+    timeoutMs?: number | null
 }
 
 export type CallResult = {

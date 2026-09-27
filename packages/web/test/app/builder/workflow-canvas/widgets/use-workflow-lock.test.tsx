@@ -36,6 +36,8 @@ const harness = vi.hoisted(() => {
     readonly: boolean;
     workflow: { id: string };
     setReadOnly: (value: boolean) => void;
+    setEditLockHolder: (value: unknown) => void;
+    saving: boolean;
     run: Record<string, unknown> | null;
   };
   const navigate = vi.fn();
@@ -44,6 +46,8 @@ const harness = vi.hoisted(() => {
     readonly: true,
     workflow: { id: 'workflow-1' },
     setReadOnly: () => undefined,
+    setEditLockHolder: () => undefined,
+    saving: false,
     run: null,
   };
   const captured: { onTakeOver?: () => void } = {};
@@ -53,8 +57,16 @@ const harness = vi.hoisted(() => {
 vi.mock('@/hooks/use-resource-lock', () => ({
   useResourceLock: ({ onTakeOver }: { onTakeOver?: () => void }) => {
     harness.captured.onTakeOver = onTakeOver;
-    return { lockedBy: null, takeOver: vi.fn() };
+    return { lockedBy: null, takeOver: vi.fn(), requestEdit: vi.fn() };
   },
+}));
+
+vi.mock('@/hooks/authorization-hooks', () => ({
+  useProjectRole: () => ({ data: { role: 'Admin', permissions: [] } }),
+  useAuthorization: () => ({
+    checkAccess: () => true,
+    isFetchingProjectRole: false,
+  }),
 }));
 
 vi.mock('@/app/builder/builder-hooks', () => ({

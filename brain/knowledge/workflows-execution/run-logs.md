@@ -1,0 +1,27 @@
+---
+title: 运行日志
+icon: 📜
+---
+
+# 运行日志
+
+跨项目的运行记录列表（全局 `/logs`，项目内 `/projects/:projectId/runs` 是同一个页面、预置项目条件）。只返回调用者是成员的项目（租户管理员看全部项目，与连接、运行监控一致），且每个项目只返回保留期内的运行。
+
+**类型** —— 运行日志 = `environment = PRODUCTION`，调试日志 = `TESTING`，另有「全部」。「已去重」仍是按项目的 `?view=deduped` 页签。
+**筛选** —— URL 即状态：`type`、`match`（ALL/ANY）、`time` 或 `createdAfter/createdBefore`、`projectId`、`workflowId`、`status`、`connector`、`content`、`durationOperator`+`durationSeconds`、`executionIds`；旧参数 `failedStepMessage` 当作日志内容。解析与写回在 `runLogFilterUtils`，不完整的条件不进 URL、不进查询。时间条件永远 AND，其余条件按 ALL/ANY 组合。
+**重跑血缘** —— `execution.rerunOfExecutionId` 指向这次触发的**原始**运行（链根），不是上一跳；「从失败节点重跑」是原地续跑同一行，只把 `inPlaceRetryCount` 加一。
+**能否重跑** —— 由 `runRerunUtils.blockReason` 一处判定，服务端逐行返回，批量重跑时服务端再判一次，同一链根在一批里只重跑一次。
+
+## Gotchas
+- 执行行随工作流级联删除，所以「工作流已删除」这个不能重跑的原因在现有数据里几乎不会出现；同理被去重的触发不建 execution，`DEDUPED` 原因只为完整性保留。
+- 运行只记录 `RunEnvironment` 的 PRODUCTION / TESTING，测试环境部署（`test-env` webhook）的运行也记成 TESTING，和调试运行分不开，所以筛选里没有「环境」条件，环境列只如实显示生产 / 测试。
+- 错误数是按运行状态算的（失败为 1），列表不读日志文件；详情抽屉里的节点列表才按步骤数失败节点。
+- 「共尝试 N 次」和「沿用原结果，耗时 0 ms」都没做：引擎不在步骤输出里记录重试次数，也不标记原地续跑时沿用的节点。
+- 日志内容里的去重键只能匹配「后来有重复事件被拦下」的首次运行（`deduped_event.firstExecutionId` + `keyPreview`），其他运行的去重键只在 Redis 里，查不到。
+- 终止运行沿用 `executionService.cancel`，只能终止排队中 / 等待中的生产运行；`includeChildRuns: false` 时不连带取消子流程。
+
+## Key files
+- `packages/server/api/src/app/run-logs/` — `runLogService`（列表、范围、详情、批量重跑、终止）、`runLogQuery`、`runLogAccess`
+- `packages/core/shared/src/lib/automation/run-log/` — DTO、`runLogFilterUtils`、`runRerunUtils`
+- `packages/web/src/features/run-logs/` — 筛选面板、列表、详情抽屉
+- `packages/web/src/app/routes/runs/` — `RunsPage`

@@ -93,7 +93,11 @@ function GlobalSearchDialogContent({
 
   const handleSelectResult = useCallback(
     (item: SearchResultItem) => {
-      if (item.type !== 'folder') {
+      if (
+        item.type !== 'folder' &&
+        item.type !== 'resource' &&
+        item.type !== 'view-all'
+      ) {
         recordAccess({
           id: item.id,
           type: item.type as AccessedItemType,
@@ -134,7 +138,9 @@ function GlobalSearchDialogContent({
     >
       <div className="relative">
         <CommandInput
-          placeholder={t('Search pages, workflows, tables...')}
+          placeholder={t(
+            'Search workflows, projects, connections, connectors, MCP services or pages',
+          )}
           value={search}
           onValueChange={setSearch}
           containerClassName="border-b-0"

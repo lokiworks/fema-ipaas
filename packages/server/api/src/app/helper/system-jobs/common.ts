@@ -20,6 +20,8 @@ export enum SystemJobName {
     AGENT_APPROVAL_EXPIRY = 'agent-approval-expiry',
     AUDIT_EVENT_RETENTION = 'audit-event-retention',
     DATA_STORE_EXPIRY_PURGE = 'data-store-expiry-purge',
+    NOTIFICATION_RETENTION = 'notification-retention',
+    WEEKLY_DIGEST = 'weekly-digest',
 }
 
 type DeleteWorkflowDurableSystemJobData =  {
@@ -66,6 +68,8 @@ type SystemJobDataMap = {
     [SystemJobName.AGENT_APPROVAL_EXPIRY]: Record<string, never>
     [SystemJobName.AUDIT_EVENT_RETENTION]: Record<string, never>
     [SystemJobName.DATA_STORE_EXPIRY_PURGE]: Record<string, never>
+    [SystemJobName.NOTIFICATION_RETENTION]: Record<string, never>
+    [SystemJobName.WEEKLY_DIGEST]: Record<string, never>
 }
 
 export type SystemJobData<T extends SystemJobName = SystemJobName> = T extends SystemJobName ? SystemJobDataMap[T] : never

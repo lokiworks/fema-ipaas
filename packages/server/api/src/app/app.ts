@@ -8,6 +8,7 @@ import { FastifyBaseLogger, FastifyInstance, FastifyRequest, HTTPMethods } from 
 import { jsonSchemaTransform, jsonSchemaTransformObject } from 'fastify-type-provider-zod'
 import Mustache from 'mustache'
 import { globalRegistry } from 'zod/v4/core'
+import { accountModule } from './account/account.module'
 import { agentApprovalModule } from './agent-approval/agent-approval.module'
 import { aiModule } from './ai/ai.module'
 import { alertModule } from './alert/alert.module'
@@ -23,6 +24,7 @@ import { connectorBlueprintModule } from './connectors/blueprint/connector-bluep
 import { communityConnectorsModule } from './connectors/community-connector-module'
 import { connectorSyncService } from './connectors/connector-sync-service'
 import { startDevConnectorWatcher } from './connectors/dev-connector-watcher'
+import { connectorMarketModule } from './connectors/market/connector-market.module'
 import { connectorModule } from './connectors/metadata/connector-metadata-controller'
 import { connectorMetadataService } from './connectors/metadata/connector-metadata-service'
 import { openApiImportModule } from './connectors/openapi/openapi-import.module'
@@ -36,6 +38,7 @@ import { dataStoreModule } from './data-store/data-store.module'
 import { distributedLock, redisConnections } from './database/redis-connections'
 import { fileModule } from './file/file.module'
 import { flagModule } from './flags/flag.module'
+import { globalSearchModule } from './global-search/global-search.module'
 import { domainHelper } from './helper/domain-helper'
 import { clientLogsModule } from './helper/logs/client-logs.module'
 import { openapiModule } from './helper/openapi/openapi.module'
@@ -49,15 +52,18 @@ import { validateEnvPropsOnStartup } from './helper/system-validator'
 import { shutdownTelemetry } from './helper/telemetry.utils'
 import { homeModule } from './home/home.module'
 import { issueModule } from './issue/issue.module'
+import { limitsModule } from './limits/limits.module'
 import { mappingTableModule } from './mapping-table/mapping-table.module'
-import { connectorMarketModule } from './connectors/market/connector-market.module'
 import { mcpServerModule } from './mcp-server/mcp-server.module'
 import { mcpServiceModule } from './mcp-service/mcp-service.module'
+import { notificationModule } from './notification/notification.module'
 import { privacyModule } from './privacy/privacy.module'
 import { projectBackgroundJobs } from './project/project.jobs'
 import { projectModule } from './project/project.module'
 import { projectWorkspaceModule } from './project-workspace/project-workspace.module'
 import { releaseModule } from './release/release.module'
+import { runLogModule } from './run-logs/run-log.module'
+import { runMonitorModule } from './run-monitor/run-monitor.module'
 import { storeEntryModule } from './store-entry/store-entry.module'
 import { templateModule } from './template/template.module'
 import { tenantModule } from './tenant/tenant.module'
@@ -185,9 +191,12 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     await app.register(tenantConnectionModule)
     await app.register(variableModule)
     await app.register(issueModule)
+    await app.register(runLogModule)
     await app.register(homeModule)
+    await app.register(runMonitorModule)
     await app.register(alertModule)
     await app.register(privacyModule)
+    await app.register(limitsModule)
     await app.register(releaseModule)
     await app.register(mappingTableModule)
     await app.register(projectWorkspaceModule)
@@ -198,6 +207,9 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     await app.register(mcpServerModule)
     await app.register(connectorMarketModule)
     await app.register(tenantAccessModule)
+    await app.register(notificationModule)
+    await app.register(accountModule)
+    await app.register(globalSearchModule)
     await app.register(openapiModule)
     await app.register(appEventRoutingModule)
     await app.register(authenticationModule)

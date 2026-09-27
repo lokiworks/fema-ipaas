@@ -5,7 +5,11 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { connectionsQueries } from '@/features/connections/hooks/connections-hooks';
 import { projectCollectionUtils } from '@/features/projects';
@@ -28,7 +32,9 @@ export function ConnectionUsagePopover({
 
   if (workflowCount === 0) {
     return (
-      <span className="text-muted-foreground text-sm">{t('Not referenced')}</span>
+      <span className="text-muted-foreground text-sm">
+        {t('Not referenced')}
+      </span>
     );
   }
 
@@ -73,7 +79,10 @@ export function ConnectionUsagePopover({
                 }}
                 className={cn(
                   'flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent',
-                  { 'cursor-not-allowed opacity-60 hover:bg-transparent': !allowed },
+                  {
+                    'cursor-not-allowed opacity-60 hover:bg-transparent':
+                      !allowed,
+                  },
                 )}
               >
                 <Workflow className="h-4 w-4 shrink-0 text-muted-foreground" />

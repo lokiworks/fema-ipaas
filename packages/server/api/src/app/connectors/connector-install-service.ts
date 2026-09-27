@@ -60,7 +60,37 @@ export const connectorInstallService = (log: FastifyBaseLogger) => ({
             })
         }
     },
+
+    async installBuiltArchive({ tenantId, connectorName, connectorVersion, archive }: InstallBuiltArchiveParams): Promise<ConnectorMetadataModel> {
+        const checksum = connectorIntegrity.checksumOf(archive)
+        const archiveId = await saveArchive({ projectId: undefined, tenantId, archive }, log)
+        const connectorInformation = await extractConnectorInformation({
+            packageType: PackageType.ARCHIVE,
+            connectorType: ConnectorType.CUSTOM,
+            connectorName,
+            connectorVersion,
+            archiveId,
+            tenantId,
+        }, log)
+        return connectorMetadataService(log).create({
+            connectorMetadata: {
+                ...connectorInformation,
+                minimumSupportedRelease: connectorInformation.minimumSupportedRelease ?? '0.0.0',
+                maximumSupportedRelease: connectorInformation.maximumSupportedRelease ?? '999.999.999',
+                name: connectorName,
+                version: connectorVersion,
+                i18n: connectorInformation.i18n,
+            },
+            packageType: PackageType.ARCHIVE,
+            tenantId,
+            connectorType: ConnectorType.CUSTOM,
+            source: ConnectorSource.PRIVATE,
+            checksum,
+            archiveId,
+        })
+    },
 })
+
 
 
 function verifyArchive({ archive, params }: { archive: Buffer, params: AddConnectorRequestBody }): string {
@@ -136,3 +166,9 @@ type GetConnectorArchivePackageParams = {
     tenantId?: TenantId
 }
 
+type InstallBuiltArchiveParams = {
+    tenantId: string
+    connectorName: string
+    connectorVersion: string
+    archive: Buffer
+}

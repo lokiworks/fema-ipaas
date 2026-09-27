@@ -1,6 +1,6 @@
 import { ApplicationError, assertNotNullOrUndefined, ErrorCode, generateId, isNil, ProjectId, TenantId, WorkflowVersionId } from '@fema-ipaas/core-utils'
 import { wideEvent } from '@fema-ipaas/server-utils'
-import { EngineHttpResponse, EventPayload, Execution, ExecutionType, LATEST_JOB_DATA_SCHEMA_VERSION, RunEnvironment, StreamStepProgress, TriggerPayload, WorkerJobType, Workflow, WorkflowStatus } from '@fema-ipaas/shared'
+import { EngineHttpResponse, EventPayload, Execution, ExecutionStatus, ExecutionType, LATEST_JOB_DATA_SCHEMA_VERSION, RunEnvironment, StreamStepProgress, TriggerPayload, WorkerJobType, Workflow, WorkflowStatus } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { pinoLogging } from '../helper/logger'
@@ -295,6 +295,14 @@ async function handleSync(params: SyncWebhookParams): Promise<EngineHttpResponse
 
     wideEvent.set({ execution: { id: createdRun.id } })
     params.onRunCreated?.(createdRun)
+
+    if (createdRun.status === ExecutionStatus.FAILED) {
+        return {
+            status: StatusCodes.TOO_MANY_REQUESTS,
+            body: { runId: createdRun.id, message: createdRun.failedStep?.message ?? null },
+            headers: {},
+        }
+    }
 
     const listenerResult = await engineResponseWatcher(logger).oneTimeListener<EngineHttpResponse>(webhookRequestId, true, timeoutMs ?? WEBHOOK_TIMEOUT_MS, {
         status: StatusCodes.REQUEST_TIMEOUT,

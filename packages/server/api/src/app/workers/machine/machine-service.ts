@@ -1,6 +1,6 @@
 import { isNil, partition } from '@fema-ipaas/core-utils'
 import { versionUtil } from '@fema-ipaas/server-utils'
-import { ExecutionMode, NetworkMode, WorkerGroupScope, WorkerMachineHealthcheckRequest, WorkerMachineStatus, WorkerMachineType, WorkerMachineWithStatus, WorkerSettingsResponse } from '@fema-ipaas/shared'
+import { ExecutionMode, InstanceLimitKey, NetworkMode, WorkerGroupScope, WorkerMachineHealthcheckRequest, WorkerMachineStatus, WorkerMachineType, WorkerMachineWithStatus, WorkerSettingsResponse } from '@fema-ipaas/shared'
 
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
@@ -8,6 +8,7 @@ import { FastifyBaseLogger } from 'fastify'
 import { domainHelper } from '../../helper/domain-helper'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
+import { instanceLimits } from '../../limits/instance-limits'
 import { WorkerGroupAssignment } from '../job'
 import { workerMachineCache } from './machine-cache'
 import { parseWorkerConcurrency, workerCapacity } from './worker-capacity'
@@ -56,6 +57,9 @@ async function buildSettingsResponse(_log: FastifyBaseLogger): Promise<WorkerSet
         NETWORK_MODE: system.getOrThrow<NetworkMode>(AppSystemProp.NETWORK_MODE),
         PAGE_ONCALL_WEBHOOK: system.get(AppSystemProp.PAGE_ONCALL_WEBHOOK),
         APP_VERSION: versionUtil.getCurrentRelease(),
+        MAX_NODES_PER_RUN: instanceLimits.nodesPerRun(),
+        STEP_TIMEOUT_SECONDS: instanceLimits.isExplicit(InstanceLimitKey.STEP_TIMEOUT) ? instanceLimits.stepTimeoutSeconds() : undefined,
+        MAX_STEP_PAYLOAD_MB: instanceLimits.isExplicit(InstanceLimitKey.STEP_PAYLOAD) ? instanceLimits.stepPayloadMb() : undefined,
     }
     settingsCache.set(cacheKey, settings)
     return settings

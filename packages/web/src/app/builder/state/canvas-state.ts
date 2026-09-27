@@ -30,8 +30,17 @@ export type CanvasState = {
   removeStepSelection: () => void;
   selectStepByName: (
     stepName: string,
-    options?: { fromAutoFocus?: boolean },
+    options?: { fromAutoFocus?: boolean; tab?: string },
   ) => void;
+  stepPanelTab: string | null;
+  setStepPanelTab: (tab: string | null) => void;
+  editLockHolder: EditLockHolder | null;
+  setEditLockHolder: (holder: EditLockHolder | null) => void;
+  highlightedSteps: string[];
+  setHighlightedSteps: (steps: string[]) => void;
+  collapsedSteps: string[];
+  toggleCollapsedStep: (stepName: string) => void;
+  setCollapsedSteps: (steps: string[]) => void;
   resumeLiveFollow: () => void;
   setActiveDraggingStep: (stepName: string | null) => void;
   setReadOnly: (readOnly: boolean) => void;
@@ -119,9 +128,24 @@ export const createCanvasState = (
         };
       });
     },
+    stepPanelTab: null,
+    setStepPanelTab: (tab: string | null) => set({ stepPanelTab: tab }),
+    editLockHolder: null,
+    setEditLockHolder: (holder: EditLockHolder | null) =>
+      set({ editLockHolder: holder }),
+    highlightedSteps: [],
+    setHighlightedSteps: (steps: string[]) => set({ highlightedSteps: steps }),
+    collapsedSteps: [],
+    toggleCollapsedStep: (stepName: string) =>
+      set((state) => ({
+        collapsedSteps: state.collapsedSteps.includes(stepName)
+          ? state.collapsedSteps.filter((name) => name !== stepName)
+          : [...state.collapsedSteps, stepName],
+      })),
+    setCollapsedSteps: (steps: string[]) => set({ collapsedSteps: steps }),
     selectStepByName: (
       selectedStep: string,
-      options?: { fromAutoFocus?: boolean },
+      options?: { fromAutoFocus?: boolean; tab?: string },
     ) => {
       set((state) => {
         const selectedNodes = isNil(selectedStep) ? [] : [selectedStep];
@@ -143,6 +167,9 @@ export const createCanvasState = (
             : null,
           selectedConnectorMetadataInConnectorSelector: null,
           selectedStep,
+          stepPanelTab:
+            options?.tab ??
+            (state.selectedStep === selectedStep ? state.stepPanelTab : null),
           rightSidebar: isUnconfiguredTrigger
             ? RightSideBarType.NONE
             : RightSideBarType.CONNECTOR_SETTINGS,
@@ -227,3 +254,8 @@ function getPanningModeFromLocalStorage(): 'grab' | 'pan' {
     ? 'grab'
     : 'pan';
 }
+
+export type EditLockHolder = {
+  userId: string;
+  userDisplayName: string;
+};

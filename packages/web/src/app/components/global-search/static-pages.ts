@@ -10,6 +10,7 @@ import { MousePointerClickIcon } from '@/components/icons/mouse-pointer-click';
 import { PaletteIcon } from '@/components/icons/palette';
 import { PuzzleIcon } from '@/components/icons/puzzle';
 import { ServerIcon } from '@/components/icons/server';
+import { SettingsIcon } from '@/components/icons/settings';
 import { ShieldIcon } from '@/components/icons/shield';
 import { SquareDashedBottomCodeIcon } from '@/components/icons/square-dashed-bottom-code';
 import { UnplugIcon } from '@/components/icons/unplug';
@@ -71,13 +72,6 @@ export const STATIC_PAGES: StaticPage[] = [
     label: 'Tenant Admin — Connector Development',
     href: '/tenant/connectors/development',
     icon: TerminalIcon,
-    requiresTenantAdmin: true,
-  },
-  {
-    id: 'page-tenant-connector-builder',
-    label: 'Tenant Admin — Build a Connector',
-    href: '/tenant/connectors/builder',
-    icon: MousePointerClickIcon,
     requiresTenantAdmin: true,
   },
   {
@@ -165,10 +159,30 @@ export const STATIC_PAGES: StaticPage[] = [
     requiresTenantAdmin: true,
   },
   {
+    id: 'page-tenant-project-limits',
+    label: 'Tenant Admin — Projects and limits',
+    href: '/tenant/limits/projects',
+    icon: LayoutGridIcon,
+    requiresTenantAdmin: true,
+  },
+  {
+    id: 'page-tenant-usage-limits',
+    label: 'Tenant Admin — Usage and limits',
+    href: '/tenant/limits/usage',
+    icon: ServerIcon,
+    requiresTenantAdmin: true,
+  },
+  {
     id: 'page-tenant-admin',
     label: 'Tenant Admin',
     href: '/tenant/projects',
     icon: ShieldIcon,
     requiresTenantAdmin: true,
+  },
+  {
+    id: 'page-account',
+    label: 'Personal settings',
+    href: '/account',
+    icon: SettingsIcon,
   },
 ];

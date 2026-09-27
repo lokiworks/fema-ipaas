@@ -27,6 +27,7 @@ import { distributedLock } from '../database/redis-connections'
 import { projectAccess } from '../project/project-access'
 import { executionRepo } from '../workflows/execution/execution-service'
 import { workflowVersionService } from '../workflows/workflow-version/workflow-version.service'
+import { issueAssignmentSideEffects } from './issue-assignment-side-effects'
 import { IssueActivityEntity, IssueEntity } from './issue.entity'
 
 export const issueRepo = repoFactory(IssueEntity)
@@ -261,6 +262,7 @@ async function applyUpdate({ issue, request, actorId, log }: ApplyUpdateParams):
     }
     if (assigneeChanged) {
         await recordActivity({ issue, type: IssueActivityType.ASSIGNED, actorId, data: { assigneeId: request.assigneeId ?? null } })
+        await issueAssignmentSideEffects(log).onAssigned({ issue, assigneeId: request.assigneeId ?? null, actorId })
     }
     if (muteChanged) {
         await recordActivity({ issue, type: IssueActivityType.MUTED, actorId, data: { hours: request.mutedForHours ?? null } })

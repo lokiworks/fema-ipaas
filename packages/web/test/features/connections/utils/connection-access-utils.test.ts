@@ -1,4 +1,7 @@
-import { ConnectionPermission } from '@fema-ipaas/shared';
+import {
+  ConnectionOwnershipFilter,
+  ConnectionPermission,
+} from '@fema-ipaas/shared';
 import { describe, expect, it } from 'vitest';
 
 import { connectionAccessUiUtils } from '@/features/connections/utils/connection-access-utils';
@@ -65,7 +68,10 @@ describe('connectionAccessUiUtils.getScopeDisplay', () => {
 
   it('returns a null first project when the scope has no projects', () => {
     expect(
-      connectionAccessUiUtils.getScopeDisplay({ allProjects: false, projects: [] }),
+      connectionAccessUiUtils.getScopeDisplay({
+        allProjects: false,
+        projects: [],
+      }),
     ).toEqual({ allProjects: false, first: null, remainder: [] });
   });
 });
@@ -105,5 +111,25 @@ describe('connectionAccessUiUtils.buildDeleteConsequences', () => {
     });
     expect(result.workflowCount).toBe(1);
     expect(result.hasMoreWorkflows).toBe(false);
+  });
+});
+
+describe('connectionAccessUiUtils.parseOwnershipFilter', () => {
+  it('defaults to ALL for null or unknown values', () => {
+    expect(connectionAccessUiUtils.parseOwnershipFilter(null)).toBe(
+      ConnectionOwnershipFilter.ALL,
+    );
+    expect(connectionAccessUiUtils.parseOwnershipFilter('not-a-value')).toBe(
+      ConnectionOwnershipFilter.ALL,
+    );
+  });
+
+  it('recognizes MINE and SHARED', () => {
+    expect(connectionAccessUiUtils.parseOwnershipFilter('MINE')).toBe(
+      ConnectionOwnershipFilter.MINE,
+    );
+    expect(connectionAccessUiUtils.parseOwnershipFilter('SHARED')).toBe(
+      ConnectionOwnershipFilter.SHARED,
+    );
   });
 });

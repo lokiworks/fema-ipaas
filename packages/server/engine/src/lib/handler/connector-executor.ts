@@ -6,6 +6,7 @@ import { ConnectorRuntime } from '../core/connector/connector-protocol'
 import { connectorRunner } from '../core/connector/connector-runner'
 import { continueIfFailureHandler, runWithExponentialBackoff } from '../helper/error-handling'
 import { executionProgressReporter } from '../helper/execution-progress-reporter'
+import { runLimits } from '../helper/run-limits'
 import { HookResponse, utils } from '../utils'
 import { ActionHandler, BaseExecutor, failStep } from './base-executor'
 import { EngineConstants } from './context/engine-constants'
@@ -72,6 +73,7 @@ const executeAction: ActionHandler<ConnectorAction> = async ({ action, execution
         const useTestMethod = testSingleStepMode && description.hasPath(['actions', actionName, 'test'])
         const { result: output, hooks } = await connectorRunner.call({
             connector,
+            timeoutMs: runLimits.stepTimeoutMs(),
             path: ['actions', actionName, useTestMethod ? 'test' : 'run'],
             context: {
                 kind: 'action',
@@ -85,6 +87,7 @@ const executeAction: ActionHandler<ConnectorAction> = async ({ action, execution
             },
         })
 
+        runLimits.assertStepPayloadWithinLimit({ input: resolvedInput, output })
         const hookResponse: HookResponse = hooks?.hookResponse ?? { type: 'none', tags: [] }
         const newExecutionContext = executionState.addTags(hookResponse.tags)
 

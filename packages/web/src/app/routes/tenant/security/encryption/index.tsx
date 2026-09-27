@@ -67,7 +67,9 @@ const EncryptionPage = () => {
                 })}
               </AlertTitle>
               <AlertDescription>
-                {t('Rotating the key every 90 days is recommended. Follow the steps below.')}
+                {t(
+                  'Rotating the key every 90 days is recommended. Follow the steps below.',
+                )}
               </AlertDescription>
             </Alert>
           )}
@@ -93,10 +95,14 @@ const EncryptionPage = () => {
                   {status.source === EncryptionKeySource.ENVIRONMENT
                     ? t('Environment variable FEMA_ENCRYPTION_KEY')
                     : status.source === EncryptionKeySource.GENERATED_FILE
-                    ? t('Generated on first start and kept in the data directory')
+                    ? t(
+                        'Generated on first start and kept in the data directory',
+                      )
                     : t('Not configured')}
                 </dd>
-                <dt className="text-muted-foreground">{t('Key fingerprint')}</dt>
+                <dt className="text-muted-foreground">
+                  {t('Key fingerprint')}
+                </dt>
                 <dd className="font-mono">{status.keyId ?? '—'}</dd>
                 <dt className="text-muted-foreground">{t('In use since')}</dt>
                 <dd>

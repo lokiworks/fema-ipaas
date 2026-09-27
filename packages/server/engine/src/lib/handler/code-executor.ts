@@ -5,6 +5,7 @@ import { CodeAction, EngineGenericError, ExecutionError, ExecutionErrorType, Gen
 import { initCodeSandbox } from '../core/code/code-sandbox'
 import { continueIfFailureHandler, runWithExponentialBackoff } from '../helper/error-handling'
 import { executionProgressReporter } from '../helper/execution-progress-reporter'
+import { runLimits } from '../helper/run-limits'
 import { utils } from '../utils'
 import { ActionHandler, BaseExecutor, failStep } from './base-executor'
 
@@ -61,6 +62,7 @@ const executeAction: ActionHandler<CodeAction> = async ({ action, executionState
             inputs: resolvedInput,
         })
 
+        runLimits.assertStepPayloadWithinLimit({ input: resolvedInput, output })
         const succeeded = stepOutput.setOutput(output).setStatus(StepOutputStatus.SUCCEEDED).setDuration(performance.now() - stepStartTime)
         return (await executionState.upsertStep(action.name, succeeded)).incrementStepsExecuted()
     }))

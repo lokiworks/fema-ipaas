@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { ProjectResourceType } from '../core/security/authorization/common'
 import { securityAccess } from '../core/security/authorization/fastify-security'
 import { applicationEvents } from '../helper/application-events'
+import { projectMemberSideEffects } from './project-member-side-effects'
 import { projectMemberService } from './project-member.service'
 
 export const projectMemberController: FastifyPluginAsyncZod = async (app) => {
@@ -25,6 +26,7 @@ export const projectMemberController: FastifyPluginAsyncZod = async (app) => {
     })
 
     app.post('/', UpsertMemberRequest, async (request): Promise<ProjectMember> => {
+        const alreadyMember = await projectMemberService(request.log).isMember({ projectId: request.body.projectId, userId: request.body.userId })
         const member = await projectMemberService(request.log).upsert({
             projectId: request.body.projectId,
             userId: request.body.userId,
@@ -34,6 +36,9 @@ export const projectMemberController: FastifyPluginAsyncZod = async (app) => {
             action: ApplicationEventName.MEMBER_ADDED,
             data: { member: { userId: member.userId, role: member.role } },
         })
+        if (!alreadyMember) {
+            await projectMemberSideEffects(request.log).onMemberAdded({ projectId: member.projectId, userId: member.userId, role: member.role, actorId: request.principal.id })
+        }
         return member
     })
 

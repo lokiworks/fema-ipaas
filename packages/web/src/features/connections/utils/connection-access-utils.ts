@@ -1,4 +1,8 @@
-import { connectionAccessUtils, ConnectionPermission } from '@fema-ipaas/shared';
+import {
+  connectionAccessUtils,
+  ConnectionOwnershipFilter,
+  ConnectionPermission,
+} from '@fema-ipaas/shared';
 
 type PrimaryConnectionAction = 'reconnect' | 'edit' | 'view';
 
@@ -53,7 +57,9 @@ function buildDeleteConsequences({
   projectConfigCount: number;
   shareCount: number;
 } {
-  const workflowSampleNames = workflows.slice(0, 3).map((workflow) => workflow.displayName);
+  const workflowSampleNames = workflows
+    .slice(0, 3)
+    .map((workflow) => workflow.displayName);
   const workflowCount = workflows.length + hiddenWorkflowCount;
   return {
     workflowCount,
@@ -65,8 +71,20 @@ function buildDeleteConsequences({
   };
 }
 
+function parseOwnershipFilter(value: string | null): ConnectionOwnershipFilter {
+  switch (value) {
+    case ConnectionOwnershipFilter.MINE:
+      return ConnectionOwnershipFilter.MINE;
+    case ConnectionOwnershipFilter.SHARED:
+      return ConnectionOwnershipFilter.SHARED;
+    default:
+      return ConnectionOwnershipFilter.ALL;
+  }
+}
+
 export const connectionAccessUiUtils = {
   getPrimaryAction,
   getScopeDisplay,
   buildDeleteConsequences,
+  parseOwnershipFilter,
 };

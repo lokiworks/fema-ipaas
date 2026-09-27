@@ -1,4 +1,5 @@
 import {
+  formErrors,
   WORKFLOW_NAME_MAX_LENGTH,
   WorkflowExportFile,
 } from '@fema-ipaas/shared';
@@ -80,7 +81,7 @@ function ImportBody({
   const trimmed = name.trim();
   const nameError = picked
     ? trimmed.length === 0
-      ? t('formErrors.required')
+      ? t(formErrors.required)
       : workspaceUtils.isNameTaken({ name: trimmed, taken: existingNames })
       ? t('workflowNameTaken')
       : null

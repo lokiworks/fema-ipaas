@@ -1,4 +1,4 @@
-import { Folder, FOLDER_NAME_MAX_LENGTH } from '@fema-ipaas/shared';
+import { Folder, FOLDER_NAME_MAX_LENGTH, formErrors } from '@fema-ipaas/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { t } from 'i18next';
 import { useForm } from 'react-hook-form';
@@ -181,7 +181,7 @@ const FolderSchema = z.object({
   displayName: z
     .string()
     .trim()
-    .min(1, 'formErrors.required')
+    .min(1, formErrors.required)
     .max(FOLDER_NAME_MAX_LENGTH, 'folderNameTooLong'),
 });
 

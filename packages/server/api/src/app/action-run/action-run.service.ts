@@ -1,5 +1,5 @@
 import { generateId, isNil, tryCatch } from '@fema-ipaas/core-utils'
-import { ActionRunStep, EngineResponse, EngineResponseStatus, ExecuteActionResponse, WorkerJobType, WorkflowActionType } from '@fema-ipaas/shared'
+import { ActionRunStep, ConnectorPackage, EngineResponse, EngineResponseStatus, ExecuteActionResponse, WorkerJobType, WorkflowActionType } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { connectorMetadataService, getConnectorPackageWithoutArchive } from '../connectors/metadata/connector-metadata-service'
@@ -8,8 +8,11 @@ import { userInteractionWatcher } from '../workers/user-interaction-watcher'
 
 export const actionRunService = (log: FastifyBaseLogger) => ({
     async runConnectorAction({ tenantId, projectId, connectorName, actionName, input, timeoutSeconds = DEFAULT_TIMEOUT_SECONDS }: RunConnectorActionParams): Promise<ActionRunOutcome> {
-        const metadata = await connectorMetadataService(log).getOrThrow({ name: connectorName, version: undefined, tenantId })
+        const metadata = await connectorMetadataService(log).getOrThrow({ name: connectorName, version: undefined, tenantId, projectId })
         const connector = await getConnectorPackageWithoutArchive(log, tenantId, { connectorName, connectorVersion: metadata.version })
+        return this.runPackageAction({ tenantId, projectId, connector, actionName, input, timeoutSeconds })
+    },
+    async runPackageAction({ tenantId, projectId, connector, actionName, input, timeoutSeconds = DEFAULT_TIMEOUT_SECONDS }: RunPackageActionParams): Promise<ActionRunOutcome> {
         const step = ActionRunStep.parse({
             name: STEP_NAME,
             type: WorkflowActionType.CONNECTOR,
@@ -17,8 +20,8 @@ export const actionRunService = (log: FastifyBaseLogger) => ({
             displayName: actionName,
             lastUpdatedDate: dayjs().toISOString(),
             settings: {
-                connectorName,
-                connectorVersion: metadata.version,
+                connectorName: connector.connectorName,
+                connectorVersion: connector.connectorVersion,
                 actionName,
                 input,
                 propertySettings: {},
@@ -39,7 +42,7 @@ export const actionRunService = (log: FastifyBaseLogger) => ({
         const durationMs = Date.now() - started
         if (!isNil(error) || isNil(response)) {
             const neverStarted = await jobQueue(log).cancelAndReportNeverStarted({ jobId: requestId, tenantId, projectId, jobType: WorkerJobType.EXECUTE_ACTION })
-            log.warn({ connector: { name: connectorName }, project: { id: projectId }, neverStarted }, '[actionRunService#runConnectorAction] Worker did not answer in time')
+            log.warn({ connector: { name: connector.connectorName }, project: { id: projectId }, neverStarted }, '[actionRunService#runPackageAction] Worker did not answer in time')
             return { status: ActionRunStatus.TIMEOUT, output: null, errorMessage: error?.message ?? 'The worker did not answer', neverStarted, durationMs }
         }
         return toOutcome({ response, durationMs })
@@ -84,6 +87,15 @@ export enum ActionRunStatus {
 
 const STEP_NAME = 'step_1'
 const DEFAULT_TIMEOUT_SECONDS = 120
+
+type RunPackageActionParams = {
+    tenantId: string
+    projectId: string
+    connector: ConnectorPackage
+    actionName: string
+    input: Record<string, unknown>
+    timeoutSeconds?: number
+}
 
 type RunConnectorActionParams = {
     tenantId: string

@@ -1,9 +1,12 @@
+import { TenantModule } from '@fema-ipaas/shared';
 import React, { Suspense } from 'react';
 import { Navigate } from 'react-router-dom';
 
 import { PageTitle } from '@/app/components/page-title';
 import { RouteLoadingBar } from '@/components/custom/route-loading-bar';
+import { ModuleGate } from '@/features/tenant-access';
 
+import { AllowOnlyLoggedInUserOnlyGuard } from '../components/allow-logged-in-user-only-guard';
 import { TenantLayout } from '../components/tenant-layout';
 
 const SettingsHealthPage = React.lazy(() => import('./tenant/infra/health'));
@@ -52,6 +55,8 @@ const AccessRequestsPage = React.lazy(() => import('./tenant/access/requests'));
 const AccessSettingsPage = React.lazy(() => import('./tenant/access/settings'));
 const ResourcesPage = React.lazy(() => import('./tenant/resources'));
 const AlertsPage = React.lazy(() => import('./tenant/alerts'));
+const ProjectLimitsPage = React.lazy(() => import('./tenant/limits/projects'));
+const UsageLimitsPage = React.lazy(() => import('./tenant/limits/usage'));
 const PrivacyPage = React.lazy(() =>
   import('./tenant/security/privacy').then((m) => ({
     default: m.PrivacyPage,
@@ -61,11 +66,23 @@ const AuditLogPage = React.lazy(() => import('./tenant/audit'));
 const ConnectorMarketplacePage = React.lazy(
   () => import('./tenant/connectors/marketplace'),
 );
+const ConnectorDetailPage = React.lazy(
+  () => import('./tenant/connectors/detail'),
+);
+const McpServerDetailPage = React.lazy(
+  () => import('./tenant/connectors/mcp-detail'),
+);
+const ConnectorRequestsPage = React.lazy(
+  () => import('./tenant/connectors/requests'),
+);
 const ConnectorDevelopmentPage = React.lazy(
   () => import('./tenant/connectors/development'),
 );
-const ConnectorBuilderPage = React.lazy(
-  () => import('./tenant/connectors/builder'),
+const ConnectorDevelopmentDetailPage = React.lazy(
+  () => import('./tenant/connectors/development-detail'),
+);
+const ConnectorDevelopmentPublishPage = React.lazy(
+  () => import('./tenant/connectors/development-publish'),
 );
 const OpenApiImportPage = React.lazy(
   () => import('./tenant/connectors/openapi-import'),
@@ -117,6 +134,12 @@ export const tenantRoutes = [
   tenantRoute('/tenant/resources', 'Integration resources', ResourcesPage),
   tenantRoute('/tenant/audit', 'Audit Log', AuditLogPage),
   tenantRoute('/tenant/alerts', 'Alerts', AlertsPage),
+  tenantRoute(
+    '/tenant/limits/projects',
+    'Projects and limits',
+    ProjectLimitsPage,
+  ),
+  tenantRoute('/tenant/limits/usage', 'Usage and limits', UsageLimitsPage),
   tenantRoute('/tenant/connections', 'Connections', TenantConnectionsPage),
   {
     path: '/tenant/setup',
@@ -136,15 +159,64 @@ export const tenantRoutes = [
     ConnectorMarketplacePage,
   ),
   tenantRoute(
+    '/tenant/connectors/detail/:connectorName',
+    'Connector',
+    ConnectorDetailPage,
+  ),
+  tenantRoute(
+    '/tenant/connectors/mcp/:serverId',
+    'MCP Server',
+    McpServerDetailPage,
+  ),
+  tenantRoute(
+    '/tenant/connectors/requests',
+    'Connector Requests',
+    ConnectorRequestsPage,
+  ),
+  tenantRoute(
     '/tenant/connectors/development',
     'Connector Development',
     ConnectorDevelopmentPage,
   ),
   tenantRoute(
-    '/tenant/connectors/builder',
-    'Build a Connector',
-    ConnectorBuilderPage,
+    '/tenant/connectors/development/:id',
+    'Connector Development',
+    ConnectorDevelopmentDetailPage,
   ),
+  {
+    path: '/tenant/connectors/development/:id/publish',
+    element: (
+      <AllowOnlyLoggedInUserOnlyGuard>
+        <PageTitle title="Connector Development">
+          <SuspenseWrapper>
+            <ModuleGate module={TenantModule.CONNECTOR_DEVELOPMENT}>
+              <ConnectorDevelopmentPublishPage />
+            </ModuleGate>
+          </SuspenseWrapper>
+        </PageTitle>
+      </AllowOnlyLoggedInUserOnlyGuard>
+    ),
+  },
+  tenantRoute(
+    '/tenant/connectors/development/:id/:section',
+    'Connector Development',
+    ConnectorDevelopmentDetailPage,
+  ),
+  tenantRoute(
+    '/tenant/connectors/development/:id/:section/:sub',
+    'Connector Development',
+    ConnectorDevelopmentDetailPage,
+  ),
+  {
+    path: '/tenant/connectors/builder',
+    element: (
+      <TenantLayout>
+        <PageTitle title="Connector Development">
+          <Navigate to="/tenant/connectors/development" replace />
+        </PageTitle>
+      </TenantLayout>
+    ),
+  },
   tenantRoute(
     '/tenant/connectors/openapi',
     'Import from OpenAPI',

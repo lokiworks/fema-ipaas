@@ -38,6 +38,13 @@ import {
   TriggerTestRunnerProvider,
 } from '../test-step/test-runner-context';
 import { TestStepCTAButton } from '../test-step/test-step-cta-button';
+import { useStepDisplayNumbers } from '../use-step-display-numbers';
+import { useBuilderValidation } from '../validation/validation-context';
+import {
+  ValidationSeverity,
+  ValidationTab,
+  workflowValidator,
+} from '../validation/workflow-validator';
 
 import { CodeSettings } from './code-settings';
 import { ComponentSettings } from './component-settings';
@@ -46,6 +53,7 @@ import EditableStepName from './editable-step-name';
 import { JoinEdgesSection } from './join-edges-section';
 import { LoopsSettings } from './loops-settings';
 import { ParallelSettings } from './parallel-settings';
+import { PendingReviewNotice } from './pending-review-notice';
 import { RouterSettings } from './router-settings';
 import { StepNavigationButtons } from './step-navigation-buttons';
 import { StepOperationSummary } from './step-operation-summary';
@@ -64,6 +72,8 @@ const StepSettingsContainer = () => {
     selectedBranchIndex,
     setSelectedBranchIndex,
     run,
+    stepPanelTab,
+    setStepPanelTab,
   ] = useBuilderStateContext((state) => [
     state.readonly,
     state.exitStepSettings,
@@ -73,6 +83,8 @@ const StepSettingsContainer = () => {
     state.selectedBranchIndex,
     state.setSelectedBranchIndex,
     state.run,
+    state.stepPanelTab,
+    state.setStepPanelTab,
   ]);
 
   const { stepMetadata } = stepsHooks.useStepMetadata({
@@ -165,6 +177,26 @@ const StepSettingsContainer = () => {
 
   const [isEditingStepOrBranchName, setIsEditingStepOrBranchName] =
     useState(false);
+  const isPendingReview =
+    modifiedStep.type !== WorkflowTriggerType.EMPTY &&
+    form.watch('settings.pendingReview') === true;
+  const validation = useBuilderValidation();
+  const displayNumbers = useStepDisplayNumbers();
+  const stepIssues = workflowValidator.issuesForStep({
+    result: validation,
+    stepName: selectedStep.name,
+  });
+  const tabsWithErrors = stepIssues
+    .filter((issue) => issue.severity === ValidationSeverity.ERROR)
+    .map((issue) => issue.tab);
+  const [initialTab] = useState<string>(() =>
+    openOnRunOutput
+      ? 'output'
+      : workflowValidator.firstTabWithError({
+          result: validation,
+          stepName: selectedStep.name,
+        }) ?? 'action',
+  );
   const runAgentStep =
     modifiedStep.settings.connectorName === '@fema-ipaas/connector-ai' &&
     modifiedStep.settings.actionName === 'run_agent';
@@ -273,29 +305,32 @@ const StepSettingsContainer = () => {
 
   const settingsForm = (
     <Tabs
-      defaultValue={openOnRunOutput ? 'output' : 'action'}
+      value={stepPanelTab ?? initialTab}
+      onValueChange={setStepPanelTab}
       className="flex h-full w-full flex-col"
     >
       <TabsList className="mx-4 mt-2 flex shrink-0 justify-start overflow-x-auto scrollbar-none">
-        <TabsTrigger value="action" className="px-2">
+        <TabsTrigger value="action" className="gap-1.5 px-2">
           {t('Action')}
+          <TabErrorDot show={tabsWithErrors.includes(ValidationTab.ACTION)} />
         </TabsTrigger>
         <TabsTrigger value="input" className="gap-1.5 px-2">
           {t('Input')}
-          {!modifiedStep.valid && (
-            <span
-              aria-label={t('Has validation errors')}
-              className="size-1.5 shrink-0 rounded-full bg-warning"
-            />
-          )}
+          <TabErrorDot
+            show={
+              tabsWithErrors.includes(ValidationTab.INPUT) ||
+              !modifiedStep.valid
+            }
+          />
         </TabsTrigger>
         <TabsTrigger value="output" className="px-2">
           {t('Output')}
         </TabsTrigger>
-        <TabsTrigger value="error" className="px-2">
+        <TabsTrigger value="error" className="gap-1.5 px-2">
           {modifiedStep.type === WorkflowTriggerType.CONNECTOR
             ? t('Run settings')
             : t('Error Handling')}
+          <TabErrorDot show={tabsWithErrors.includes(ValidationTab.ERROR)} />
         </TabsTrigger>
       </TabsList>
       {(['action', 'input', 'error'] as const).map((section) => (
@@ -391,6 +426,7 @@ const StepSettingsContainer = () => {
                 workflowVersion.trigger,
                 selectedStep.name,
               )}
+              displayNumber={displayNumbers[selectedStep.name]}
               setDisplayName={(value) => {
                 form.setValue('displayName', value, {
                   shouldValidate: true,
@@ -439,6 +475,16 @@ const StepSettingsContainer = () => {
           />
         </div>
 
+        {isPendingReview && (
+          <PendingReviewNotice
+            readonly={readonly}
+            onConfirm={() => {
+              const { pendingReview: _pendingReview, ...settings } =
+                form.getValues().settings;
+              form.setValue('settings', settings, { shouldValidate: true });
+            }}
+          />
+        )}
         <DynamicPropertiesProvider
           key={`${selectedStep.name}-${selectedStep.type}`}
         >
@@ -481,6 +527,18 @@ const ConnectorVersionInHeader = ({
     </div>
   );
 };
+
+function TabErrorDot({ show }: { show: boolean }) {
+  if (!show) {
+    return null;
+  }
+  return (
+    <span
+      aria-label={t('Has validation errors')}
+      className="size-1.5 shrink-0 rounded-full bg-destructive"
+    />
+  );
+}
 
 const isWorkflowActionStep = (
   step: WorkflowAction | WorkflowTrigger,

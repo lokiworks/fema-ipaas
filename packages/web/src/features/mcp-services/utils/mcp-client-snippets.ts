@@ -1,8 +1,28 @@
-function mcpServersJson({ serverKey, endpoint, token }: SnippetInput): string {
+function cursorConfig({ serverKey, endpoint, token }: SnippetInput): string {
   return JSON.stringify(
     {
       mcpServers: {
         [serverKey]: {
+          url: endpoint,
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      },
+    },
+    null,
+    2,
+  );
+}
+
+function genericHttpConfig({
+  serverKey,
+  endpoint,
+  token,
+}: SnippetInput): string {
+  return JSON.stringify(
+    {
+      mcpServers: {
+        [serverKey]: {
+          type: 'http',
           url: endpoint,
           headers: { Authorization: `Bearer ${token}` },
         },
@@ -25,33 +45,18 @@ function claudeCodeCommand({
   ].join(' ');
 }
 
-function curlToolsList({
-  endpoint,
-  token,
-}: Omit<SnippetInput, 'serverKey'>): string {
-  const body = JSON.stringify({
-    jsonrpc: '2.0',
-    id: 1,
-    method: 'tools/list',
-    params: {},
-  });
-  return [
-    `curl -X POST ${shellQuote(endpoint)}`,
-    `  -H ${shellQuote(`Authorization: Bearer ${token}`)}`,
-    `  -H ${shellQuote('Content-Type: application/json')}`,
-    `  -H ${shellQuote('Accept: application/json, text/event-stream')}`,
-    `  -d ${shellQuote(body)}`,
-  ].join(' \\\n');
-}
-
 function shellQuote(value: string): string {
   return `'${value.replace(/'/g, `'\\''`)}'`;
 }
 
 export const mcpClientSnippets = {
-  mcpServersJson,
+  cursorConfig,
+  genericHttpConfig,
   claudeCodeCommand,
-  curlToolsList,
 };
 
-type SnippetInput = { serverKey: string; endpoint: string; token: string };
+export type SnippetInput = {
+  serverKey: string;
+  endpoint: string;
+  token: string;
+};

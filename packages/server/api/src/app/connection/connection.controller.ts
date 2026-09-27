@@ -1,6 +1,6 @@
 import { EntityId, isNil, Permission, SeekPage } from '@fema-ipaas/core-utils'
 import { wideEvent } from '@fema-ipaas/server-utils'
-import { ApplicationError, ApplicationEventName, ConnectionOwners, ConnectionScope, ConnectionStatus, ConnectionType, ConnectionWithoutSensitiveData, ErrorCode, GetOAuth2AuthorizationUrlRequestBody, GetOAuth2AuthorizationUrlResponse, ListConnectionOwnersRequestQuery, ListConnectionsRequestQuery, PLACEHOLDER_CONNECTION_TYPE, PrincipalType, ReplaceConnectionsRequestBody, SERVICE_KEY_SECURITY_OPENAPI, UpdateConnectionValueRequestBody, UpsertConnectionRequestBody } from '@fema-ipaas/shared'
+import { ApplicationError, ApplicationEventName, ConnectionOwners, ConnectionScope, ConnectionStatus, ConnectionType, ConnectionWithoutSensitiveData, ErrorCode, GetOAuth2AuthorizationUrlRequestBody, GetOAuth2AuthorizationUrlResponse, ListConnectionOwnersRequestQuery, ListConnectionsRequestQuery, MCP_CONNECTOR_NAME, PLACEHOLDER_CONNECTION_TYPE, PrincipalType, ReplaceConnectionsRequestBody, SERVICE_KEY_SECURITY_OPENAPI, UpdateConnectionValueRequestBody, UpsertConnectionRequestBody } from '@fema-ipaas/shared'
 import { FastifyPluginCallbackZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
@@ -9,6 +9,7 @@ import { securityAccess } from '../core/security/authorization/fastify-security'
 import { applicationEvents } from '../helper/application-events'
 import { auditEvents } from '../helper/audit-events'
 import { securityHelper } from '../helper/security-helper'
+import { mcpServerService } from '../mcp-server/mcp-server.service'
 import { connectionAccessService } from './connection-access.service'
 import { connectionService } from './connection-service/connection-service'
 import { oauth2Util } from './connection-service/oauth2/oauth2-util'
@@ -22,17 +23,18 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
             tenantId: request.principal.tenant.id,
             externalId: request.body.externalId,
         })
-        if (!isNil(existingConnection)) {
+        if (!isNil(existingConnection) && request.body.type !== PLACEHOLDER_CONNECTION_TYPE) {
             await connectionAccessService(request.log).assertCanManage({ connection: existingConnection, principal: principalOf(request.principal) })
         }
         const baseUpsert = {
             tenantId: request.principal.tenant.id,
-            projectIds: [request.projectId],
+            projectIds: existingConnection?.projectIds ?? [request.projectId],
             externalId: request.body.externalId,
             displayName: request.body.displayName,
             connectorName: request.body.connectorName,
             ownerId,
-            scope: ConnectionScope.PROJECT,
+            scope: existingConnection?.scope ?? ConnectionScope.PROJECT,
+            preSelectForNewProjects: existingConnection?.preSelectForNewProjects,
             metadata: request.body.metadata,
             connectorVersion: request.body.connectorVersion,
         }
@@ -182,12 +184,17 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
                 },
             })
         }
-        await connectionAccessService(request.log).assertOwner({ connection, principal: principalOf(request.principal) })
-        await connectionService(request.log).delete({
-            id: request.params.id,
-            tenantId: request.principal.tenant.id,
-            projectId: null,
-        })
+        if (connection.connectorName === MCP_CONNECTOR_NAME && request.principal.type === PrincipalType.USER) {
+            await mcpServerService(request.log).delete({ tenantId: request.principal.tenant.id, principal: principalOf(request.principal), id: request.params.id })
+        }
+        else {
+            await connectionAccessService(request.log).assertOwner({ connection, principal: principalOf(request.principal) })
+            await connectionService(request.log).delete({
+                id: request.params.id,
+                tenantId: request.principal.tenant.id,
+                projectId: null,
+            })
+        }
         applicationEvents(request.log).sendUserEvent(request, {
             action: ApplicationEventName.CONNECTION_DELETED,
             data: {

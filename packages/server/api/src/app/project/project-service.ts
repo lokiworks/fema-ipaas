@@ -4,6 +4,8 @@ import { FastifyBaseLogger } from 'fastify'
 import { Brackets, EntityManager, IsNull, Not, ObjectLiteral, SelectQueryBuilder } from 'typeorm'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
+import { projectLimitsGuard } from '../limits/project-limits.service'
+import { runQuota } from '../limits/run-quota.service'
 import { userService } from '../user/user-service'
 import { projectHooks, ProjectPostCreateContext } from './project-hooks'
 import { projectRepo } from './project-repo'
@@ -70,6 +72,7 @@ export const projectService = (log: FastifyBaseLogger) => ({
         const externalId = request.externalId?.trim() !== '' ? request.externalId : undefined
         await assertExternalIdIsUnique(externalId, projectId)
         assertRetentionDaysWithinInstanceBounds(request.executionDataRetentionDays)
+        await projectLimitsGuard.assertWithinBounds({ projectId, workflowsLimit: request.workflowsLimit, monthlyRunsLimit: request.monthlyRunsLimit })
 
         const baseUpdate = {
             ...spreadIfDefined('externalId', externalId),
@@ -92,6 +95,9 @@ export const projectService = (log: FastifyBaseLogger) => ({
         } : {}
 
         await projectRepo(entityManager).update({ id: projectId }, { ...baseUpdate, ...teamUpdate })
+        if (request.monthlyRunsLimit !== undefined) {
+            await runQuota(log).invalidateProjectLimit({ projectId })
+        }
         if (request.workerGroupId !== undefined) {
             await projectWorkerGroupService(log).invalidate({ projectId })
         }

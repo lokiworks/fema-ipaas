@@ -46,7 +46,7 @@ export function HomeTodayRunsCard({
           className={STAT_CLASS}
           title={t("View today's runs")}
         >
-          <Stat value={runs.total.toLocaleString()} label={t('Runs')} />
+          <Stat value={runs.total.toLocaleString()} label={t('Run count')} />
         </ProjectRunsLink>
         <ProjectRunsLink
           targets={failedTargets}

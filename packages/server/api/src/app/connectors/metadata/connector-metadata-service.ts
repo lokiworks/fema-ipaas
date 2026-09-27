@@ -13,7 +13,7 @@ import { connectorVersionAvailability } from '../blueprint/connector-version-ava
 import { resolveVisibility } from '../connector-visibility'
 import { connectorCache, ConnectorRegistryEntry } from './connector-cache'
 import { ConnectorMetadataEntity, ConnectorMetadataSchema } from './connector-metadata-entity'
-import { connectorListUtils, filterActionsByAudience, filterConnectorBasedOnType, isNewerVersion, isSupportedRelease, lastVersionOfEachConnector, loadDevConnectorsIfEnabled } from './utils'
+import { connectorListUtils, filterActionsByAudience, filterConnectorBasedOnType, findBundledReplacement, isNewerVersion, isSupportedRelease, lastVersionOfEachConnector, loadLocalConnectors } from './utils'
 
 export const connectorRepos = repoFactory(ConnectorMetadataEntity)
 
@@ -350,7 +350,8 @@ const findExactVersion = async (
     })
 
     if (matchingRegistryEntries.length === 0) {
-        return undefined
+        const bundled = await findBundledReplacement({ log, name, version })
+        return isNil(bundled) ? undefined : { name: bundled.name, version: bundled.version, tenantId: undefined }
     }
 
     const sortedEntries = matchingRegistryEntries.sort(sortByVersionDescending)
@@ -455,23 +456,23 @@ async function fetchLatestConnectors({ tenantId, locale = LocalesEnum.ENGLISH, l
     const latestConnectors = await dedupe(`latest-connectors:${currentRelease}`, () => fetchLatestCompatibleConnectorsFromDB(currentRelease))
     const translatedConnectors = translateConnectors(latestConnectors, locale)
 
-    const devConnectors = await loadDevConnectorsIfEnabled(log)
-    const translatedDevConnectors = devConnectors.map((connector) =>
+    const localConnectors = await loadLocalConnectors(log)
+    const translatedLocalConnectors = localConnectors.map((connector) =>
         connectorTranslation.translateConnector<ConnectorMetadataSchema>({ connector, locale, mutate: false }),
     )
 
-    const devConnectorNames = new Set(translatedDevConnectors.map((p) => p.name))
-    const merged = [...translatedConnectors.filter((p) => !devConnectorNames.has(p.name)), ...translatedDevConnectors]
+    const localConnectorNames = new Set(translatedLocalConnectors.map((p) => p.name))
+    const merged = [...translatedConnectors.filter((p) => !localConnectorNames.has(p.name)), ...translatedLocalConnectors]
         .filter((connector) => filterConnectorBasedOnType(tenantId, connector))
         .filter((connector) => isSupportedRelease(currentRelease, connector))
     return lastVersionOfEachConnector(merged)
 }
 
 async function fetchConnectorVersion({ connectorName, version, tenantId, log }: FetchConnectorVersionParams): Promise<ConnectorMetadataSchema | null> {
-    const devConnectors = await loadDevConnectorsIfEnabled(log)
-    const devConnector = devConnectors.find((p) => p.name === connectorName && p.version === version)
-    if (!isNil(devConnector)) {
-        return devConnector
+    const localConnectors = await loadLocalConnectors(log)
+    const localConnector = localConnectors.find((p) => p.name === connectorName && p.version === version)
+    if (!isNil(localConnector)) {
+        return localConnector
     }
 
     const foundConnector = await connectorRepos().findOne({

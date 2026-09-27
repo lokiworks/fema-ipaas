@@ -31,6 +31,10 @@ The metadata catalog of automation integrations ("connectors") — each a named 
 
 - **连接器市场的「最热」和「你的项目中有 N 个工作流在使用」来自 `GET /v1/connector-usage`。** 它用 `jsonb_path_query(trigger, 'lax $.**.connectorName')` 从每个工作流的最新版本里抽连接器名，一条 SQL 按项目分组；必须用 `lax`，`strict` 模式下 `.connectorName` 碰到数组或标量会直接报错。
 - **「提交需求」存进 `connector_demand`，租户管理员在后台处理。** 只有配置了 SMTP 才给管理员发邮件；不往告警渠道发，因为渠道绑在告警策略上，会被当成告警噪音。
+- **第一方连接器随镜像交付，从 `packages/connectors/{core,community,custom}/*/dist` 直接加载（决定 000037）。** 没设 `FEMA_DEV_CONNECTORS` 时，这些目录下所有构建好的连接器都是内置连接器；设了（包括空字符串）就只用显式列出的，这是开发和测试的行为。名单由 `localConnectorNames` 算出，通过 worker 设置的 `DEV_CONNECTORS` 下发给沙箱和引擎，所以它们不下载、不安装，直接读本地 dist。内置连接器总是加载翻译。
+- **内置连接器只在 UNSANDBOXED 和 `SANDBOX_CODE_ONLY` 模式下可用。** isolate 模式（`SANDBOX_PROCESS`、`SANDBOX_CODE_AND_PROCESS`）里引擎的工作目录是 `/root`，看不到 `packages/connectors`，连接器依赖的 bun 软链接也指向没挂载的 `/usr/src/app/node_modules`。待办：构建时为每个内置连接器生成带依赖的独立包，只读挂进沙箱；不要把整个应用目录挂进去。
+- **精简 worker 镜像（`Dockerfile.worker`）里没有内置连接器。** 它不带 `packages/connectors` 和工作区 `node_modules`，只在 `benchmark/` 里用；默认的 `docker-compose.yml` 和 helm 的 app、worker 都用主镜像。要让它能跑内置连接器，同样要走「每个连接器打成带依赖的独立包」这条路。
+- **没配注册中心时同步任务直接跳过。** 以前 `listCloudConnectors()` 返回空数组后，`deleteConnectorsIfNotOnCloud` 会把所有 OFFICIAL 连接器当成「云上已下架」删掉。
 
 ### Key files
 Entry point: `connectorModule`, the Fastify plugin registered in `packages/server/api/src/app/app.ts` that mounts every `/v1/connectors` route.

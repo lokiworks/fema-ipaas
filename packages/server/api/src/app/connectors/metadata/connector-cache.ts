@@ -6,7 +6,7 @@ import { pubsub } from '../../helper/pubsub'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
 import { ConnectorMetadataEntity, ConnectorMetadataSchema } from './connector-metadata-entity'
-import { loadDevConnectorsIfEnabled } from './utils'
+import { loadLocalConnectors } from './utils'
 
 const repo = repoFactory(ConnectorMetadataEntity)
 const environment = system.get<RuntimeEnvironment>(AppSystemProp.ENVIRONMENT)
@@ -30,8 +30,8 @@ export const connectorCache = (log: FastifyBaseLogger) => {
 
         async loadRegistry(): Promise<ConnectorRegistryEntry[]> {
             const persistedRegistry = await loadPersistedRegistry()
-            const devConnectors = (await loadDevConnectorsIfEnabled(log)).map(toRegistryEntry)
-            return [...persistedRegistry, ...devConnectors]
+            const localConnectors = (await loadLocalConnectors(log)).map(toRegistryEntry)
+            return [...persistedRegistry, ...localConnectors]
         },
 
         async invalidate(): Promise<void> {

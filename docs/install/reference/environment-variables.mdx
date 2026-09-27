@@ -260,6 +260,8 @@ workflow-authoring defaults.
 | Variable | Description | Default |
 |---|---|---|
 | `FEMA_CONNECTORS_SYNC_MODE` | `OFFICIAL_AUTO` syncs connector metadata automatically from the cloud; `NONE` disables syncing. | `OFFICIAL_AUTO` |
+| `FEMA_CONNECTOR_REGISTRY_URL` | Optional connector registry for updates and extra connectors. First-party connectors ship inside the image and work without it; when unset, syncing is skipped. | — |
+| `FEMA_DEV_CONNECTORS` | Development only. Comma-separated connector folder names to load from local `dist` folders. When unset, every connector built into the image is loaded. | — |
 | `FEMA_TRIGGER_DEFAULT_POLL_INTERVAL` | Minutes between checks for new data on connectors with scheduled triggers (e.g. new Google Contacts). | `5` |
 | `FEMA_ENABLE_WORKFLOW_ON_PUBLISH` | Automatically enable a workflow when a new version is published. | `true` |
 | `FEMA_ENFORCE_CONNECTION_CONNECTOR_BINDING` | Reject a step's connection at runtime unless the connection was created for the same connector as the step. | `false` |

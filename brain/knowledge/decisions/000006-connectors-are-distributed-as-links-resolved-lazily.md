@@ -22,3 +22,5 @@ Platform scoping is mandatory (data-isolation rule): the endpoint resolves via `
 
 - `getConnectorArchive` / `fetchArchive` are removed.
 - The link is the connector's own tarball, so `bun install` still needs npm egress for transitive deps.
+
+> 适用范围已被 [000037](000037-first-party-connectors-ship-inside-the-image.md) 收窄：第一方连接器打进镜像，这里只管注册中心来的连接器和自定义连接器。

@@ -1,4 +1,4 @@
-FROM node:24.14.0-bullseye-slim AS base
+FROM node:24.14.0-bookworm-slim AS base
 
 # C.UTF-8 ships with Debian, so no locale generation is needed.
 # REDISMS_VERSION pins the Redis that redis-memory-server (FEMA_REDIS_TYPE=MEMORY)
@@ -12,7 +12,7 @@ ENV LANG=C.UTF-8 \
 
 # Install all system dependencies in a single layer. No apt cache mounts: docker-clean in the
 # node base image wipes /var/cache/apt anyway, and a persisted /var/lib/apt/lists goes stale
-# against rotated bullseye-security packages, failing the build with hash/size fetch errors.
+# against rotated debian-security packages, failing the build with hash/size fetch errors.
 # libcap2 is isolate's runtime lib (the isolate binaries ship prebuilt in api assets).
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -74,6 +74,9 @@ COPY . .
 # Build frontend, engine, server API, and worker
 RUN npx turbo run build --filter=web --filter=@fema-ipaas/engine --filter=api --filter=worker
 
+# Build the first-party connectors shipped in the image, in a separate step to keep peak memory flat
+RUN npx turbo run build --filter='./packages/connectors/core/*' --filter='./packages/connectors/community/*'
+
 # The web build emits hidden source maps (vite build.sourcemap='hidden') used to
 # symbolicate production stack traces in Sentry/BetterStack error tracking. Upload
 # them here (cloud CI, guarded by a token) BEFORE stripping, then always remove the
@@ -88,18 +91,11 @@ RUN node -e "\
   process.stdout.write(JSON.stringify(names));\
 " > packages/server/api/dist/src/migration-manifest.json
 
-# Remove workspaces not needed at runtime: pieces except the 4 the api imports,
-# plus web/cli/tests-e2e/embed-sdk whose deps (react & friends) would otherwise land
-# in the runtime node_modules. dist/packages/web is already built and kept.
+# Remove workspaces not needed at runtime: web/cli/tests-e2e whose deps (react & friends)
+# would otherwise land in the runtime node_modules. dist/packages/web is already built and kept.
+# packages/connectors stays: its built dist folders are the built-in connectors.
 # Then drop the removed entries from the root workspaces list and regenerate bun.lock.
-RUN rm -rf packages/pieces/core packages/pieces/custom \
-      packages/web packages/cli packages/tests-e2e packages/ee && \
-    find packages/pieces/community -mindepth 1 -maxdepth 1 -type d \
-      ! -name slack \
-      ! -name square \
-      ! -name facebook-leads \
-      ! -name intercom \
-      -exec rm -rf {} + && \
+RUN rm -rf packages/web packages/cli packages/tests-e2e && \
     node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));p.workspaces=p.workspaces.filter(w=>fs.existsSync(w.replace('/*','')));fs.writeFileSync('package.json',JSON.stringify(p,null,2))" && \
     rm -f bun.lock && bun install
 

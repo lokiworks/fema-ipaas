@@ -43,6 +43,10 @@ export const connectorSyncService = (log: FastifyBaseLogger) => ({
             log.info('Connector sync service is disabled')
             return
         }
+        if (isNil(registrySourceUrl())) {
+            log.info('Connector registry is not configured, skipping connector sync')
+            return
+        }
         try {
             log.info('Starting connector synchronization')
             const startTime = performance.now()

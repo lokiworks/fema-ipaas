@@ -23,3 +23,5 @@ Not in scope, deliberately: `FEMA_USE_CDN_FOR_BUNDLES` still defaults to `false`
 
 ## Consequences
 Both S3 prefixes (`connectors/`, `connectors/v2/`) become dead storage and can be swept — and note `connectors/v2/` is nested inside `connectors/`, so a recursive delete hits both (see *File Storage*). Every connector install now depends on the CDN or npm being reachable, with no local buffer; a self-hoster with S3 configured no longer accumulates a private copy. During a rolling deploy, old instances keep enqueuing `bundle-connector` while new ones have no handler, so those jobs fail with `No handler for job bundle-connector` until the rollout finishes — they are cache-warming only, so nothing user-facing breaks. Reintroducing a mirror later means re-deciding the read order, and the rule to keep is that a mirror must never be consulted ahead of the source it was copied from.
+
+> 适用范围已被 [000037](000037-first-party-connectors-ship-inside-the-image.md) 收窄：第一方连接器打进镜像，这里只管注册中心来的连接器和自定义连接器。

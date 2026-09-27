@@ -34,41 +34,51 @@ export function lastVersionOfEachConnector(connectors: ConnectorMetadataSchema[]
     return Array.from(seen.values())
 }
 
-let devConnectorsCachePromise: Promise<ConnectorMetadataSchema[]> | null = null
+let localConnectorsCachePromise: Promise<ConnectorMetadataSchema[]> | null = null
+let builtInConnectorNamesPromise: Promise<string[]> | null = null
 
-export function invalidateDevConnectorCache(): void {
-    devConnectorsCachePromise = null
+export function invalidateLocalConnectorCache(): void {
+    localConnectorsCachePromise = null
 }
 
-export async function loadDevConnectorsIfEnabled(log: FastifyBaseLogger): Promise<ConnectorMetadataSchema[]> {
+export async function localConnectorNames(log: FastifyBaseLogger): Promise<string[]> {
     const devConnectorsConfig = system.get(AppSystemProp.DEV_CONNECTORS)
-    if (isNil(devConnectorsConfig) || isEmpty(devConnectorsConfig)) {
-        return []
+    if (!isNil(devConnectorsConfig)) {
+        return devConnectorsConfig.split(',').map((name) => name.trim()).filter((name) => !isEmpty(name))
     }
-    if (devConnectorsCachePromise) {
-        return devConnectorsCachePromise
+    if (isNil(builtInConnectorNamesPromise)) {
+        builtInConnectorNamesPromise = fileConnectorsUtils(log).listBuiltInConnectorNames()
+        builtInConnectorNamesPromise.catch(() => {
+            builtInConnectorNamesPromise = null
+        })
     }
-    devConnectorsCachePromise = loadDevConnectors(log, devConnectorsConfig)
-    devConnectorsCachePromise.catch(() => {
-        devConnectorsCachePromise = null
-    })
-    return devConnectorsCachePromise
+    return builtInConnectorNamesPromise
 }
 
-async function loadDevConnectors(log: FastifyBaseLogger, devConnectorsConfig: string): Promise<ConnectorMetadataSchema[]> {
-    const connectorsNames = devConnectorsConfig.split(',')
-    const connectors = await fileConnectorsUtils(log).loadDistConnectorsMetadata(connectorsNames)
+export async function loadLocalConnectors(log: FastifyBaseLogger): Promise<ConnectorMetadataSchema[]> {
+    if (localConnectorsCachePromise) {
+        return localConnectorsCachePromise
+    }
+    localConnectorsCachePromise = loadConnectorsFromDist(log)
+    localConnectorsCachePromise.catch(() => {
+        localConnectorsCachePromise = null
+    })
+    return localConnectorsCachePromise
+}
 
-    return connectors.map((p): ConnectorMetadataSchema => ({
-        id: generateId(),
-        ...p,
-        projectUsage: 0,
-        connectorType: ConnectorType.OFFICIAL,
-        packageType: PackageType.REGISTRY,
-        source: ConnectorSource.BUILT_IN,
-        created: new Date().toISOString(),
-        updated: new Date().toISOString(),
-    }))
+export async function findBundledReplacement({ log, name, version }: FindBundledReplacementParams): Promise<ConnectorMetadataSchema | undefined> {
+    if (isNil(version) || isNil(semVer.validRange(version))) {
+        return undefined
+    }
+    const requested = semVer.minVersion(version)
+    if (isNil(requested)) {
+        return undefined
+    }
+    const localConnectors = await loadLocalConnectors(log)
+    return localConnectors.find((connector) => connector.name === name
+        && !isNil(semVer.valid(connector.version))
+        && semVer.major(connector.version) === requested.major
+        && semVer.gte(connector.version, requested))
 }
 
 export function filterConnectorBasedOnType(tenantId: string | undefined, connector: ConnectorMetadataSchema | ConnectorRegistryEntry): boolean {
@@ -97,4 +107,31 @@ export function isSupportedRelease(release: string | undefined, connector: { min
         return false
     }
     return true
+}
+
+async function loadConnectorsFromDist(log: FastifyBaseLogger): Promise<ConnectorMetadataSchema[]> {
+    const connectorsNames = await localConnectorNames(log)
+    if (isEmpty(connectorsNames)) {
+        return []
+    }
+    const isBuiltIn = isNil(system.get(AppSystemProp.DEV_CONNECTORS))
+    const loadTranslations = isBuiltIn || system.getBoolean(AppSystemProp.LOAD_TRANSLATIONS_FOR_DEV_CONNECTORS) === true
+    const connectors = await fileConnectorsUtils(log).loadDistConnectorsMetadata({ connectorsNames, loadTranslations })
+
+    return connectors.map((p): ConnectorMetadataSchema => ({
+        id: generateId(),
+        ...p,
+        projectUsage: 0,
+        connectorType: ConnectorType.OFFICIAL,
+        packageType: PackageType.REGISTRY,
+        source: ConnectorSource.BUILT_IN,
+        created: new Date().toISOString(),
+        updated: new Date().toISOString(),
+    }))
+}
+
+type FindBundledReplacementParams = {
+    log: FastifyBaseLogger
+    name: string
+    version: string | undefined
 }

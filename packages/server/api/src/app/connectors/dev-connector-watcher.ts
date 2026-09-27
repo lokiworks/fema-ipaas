@@ -8,7 +8,7 @@ import chokidar from 'chokidar'
 import { FastifyInstance } from 'fastify'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
-import { invalidateDevConnectorCache } from './metadata/utils/connector-cache-utils'
+import { invalidateLocalConnectorCache } from './metadata/utils/connector-cache-utils'
 import { fileConnectorsUtils } from './metadata/utils/file-connectors-utils'
 
 const CONNECTORS_BUILDER_MUTEX_KEY = 'connectors-builder'
@@ -50,7 +50,7 @@ async function buildConnectors(app: FastifyInstance, connectorsInfo: ConnectorIn
             }
         }))
 
-        invalidateDevConnectorCache()
+        invalidateLocalConnectorCache()
         app.io.emit(WebsocketClientEvent.REFRESH_CONNECTOR)
         app.log.info('Changes are ready! Please refresh the frontend to see the new updates.')
     }

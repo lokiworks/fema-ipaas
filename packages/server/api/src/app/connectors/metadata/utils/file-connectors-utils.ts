@@ -1,14 +1,15 @@
 import { readdir, readFile, stat } from 'node:fs/promises'
-import { join, resolve } from 'node:path'
+import { join, relative, resolve } from 'node:path'
 import { cwd } from 'node:process'
 import { sep } from 'path'
 import { Connector, ConnectorMetadata, connectorTranslation } from '@fema-ipaas/connector-sdk'
+import { tryCatch } from '@fema-ipaas/core-utils'
 import { extractConnectorFromModule } from '@fema-ipaas/shared'
 import clearModule from 'clear-module'
 import { FastifyBaseLogger } from 'fastify'
-import { AppSystemProp, environmentVariables } from '../../../helper/system/system-props'
 
 const SOURCE_CONNECTORS_PATH = resolve(cwd(), 'packages', 'connectors')
+const BUILT_IN_CONNECTOR_GROUPS = ['core', 'community', 'custom']
 
 export const fileConnectorsUtils = (log: FastifyBaseLogger) => ({
 
@@ -55,18 +56,30 @@ export const fileConnectorsUtils = (log: FastifyBaseLogger) => ({
         return connectorPath ?? null
     },
 
-    loadDistConnectorsMetadata: async (connectorsNames: string[]): Promise<ConnectorMetadata[]> => {
-        try {
-            const devConnectors = await findAllDistConnectorsFolders(SOURCE_CONNECTORS_PATH)
-            const paths = devConnectors.filter(path => connectorsNames.some(name => path.endsWith(sep + name + sep + 'dist')))
-            const connectors = await Promise.all(paths.map((p) => loadConnectorFromFolder(p)))
-            return connectors.filter((p): p is ConnectorMetadata => p !== null)
-        }
-        catch (e) {
-            const err = e as Error
-            log.warn({ error: err }, '[fileConnectorMetadataService#loadDistConnectorsMetadata] Failed to load connectors from folder')
+    listBuiltInConnectorNames: async (): Promise<string[]> => {
+        const distFolders = await findAllDistConnectorsFolders(SOURCE_CONNECTORS_PATH)
+        return distFolders
+            .map((distFolder) => relative(SOURCE_CONNECTORS_PATH, distFolder).split(sep))
+            .filter((segments) => segments.length === 3 && BUILT_IN_CONNECTOR_GROUPS.includes(segments[0]))
+            .map((segments) => segments[1])
+    },
+
+    loadDistConnectorsMetadata: async ({ connectorsNames, loadTranslations }: LoadDistConnectorsMetadataParams): Promise<ConnectorMetadata[]> => {
+        const { data: distFolders, error } = await tryCatch(() => findAllDistConnectorsFolders(SOURCE_CONNECTORS_PATH))
+        if (error) {
+            log.warn({ error }, '[fileConnectorMetadataService#loadDistConnectorsMetadata] Failed to list connector folders')
             return []
         }
+        const paths = distFolders.filter(path => connectorsNames.some(name => path.endsWith(sep + name + sep + 'dist')))
+        const connectors = await Promise.all(paths.map(async (path) => {
+            const { data: connector, error: loadError } = await tryCatch(() => loadConnectorFromFolder({ folderPath: path, loadTranslations }))
+            if (loadError) {
+                log.warn({ error: loadError, path }, '[fileConnectorMetadataService#loadDistConnectorsMetadata] Failed to load connector from folder')
+                return null
+            }
+            return connector
+        }))
+        return connectors.filter((p): p is ConnectorMetadata => p !== null)
     },
 
 
@@ -117,9 +130,7 @@ const findAllDistConnectorsFolders = async (sourceConnectorsPath: string): Promi
     return distFolders
 }
 
-const loadConnectorFromFolder = async (
-    folderPath: string,
-): Promise<ConnectorMetadata | null> => {
+const loadConnectorFromFolder = async ({ folderPath, loadTranslations }: LoadConnectorFromFolderParams): Promise<ConnectorMetadata | null> => {
     const indexPath = join(folderPath, 'src', 'index')
     const packageJsonPath = join(folderPath, 'package.json')
     // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -133,7 +144,6 @@ const loadConnectorFromFolder = async (
         connectorVersion,
     })
     const originalMetadata = connector.metadata()
-    const loadTranslations = environmentVariables.getBooleanEnvironment(AppSystemProp.LOAD_TRANSLATIONS_FOR_DEV_CONNECTORS)
     const i18n = loadTranslations ? await connectorTranslation.initializeI18n(folderPath) : undefined
     const metadata: ConnectorMetadata = {
         ...originalMetadata,
@@ -145,4 +155,14 @@ const loadConnectorFromFolder = async (
     }
 
     return metadata
+}
+
+type LoadDistConnectorsMetadataParams = {
+    connectorsNames: string[]
+    loadTranslations: boolean
+}
+
+type LoadConnectorFromFolderParams = {
+    folderPath: string
+    loadTranslations: boolean
 }

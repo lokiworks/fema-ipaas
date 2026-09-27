@@ -5,6 +5,7 @@ import { ExecutionMode, InstanceLimitKey, NetworkMode, WorkerGroupScope, WorkerM
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import { FastifyBaseLogger } from 'fastify'
+import { localConnectorNames } from '../../connectors/metadata/utils'
 import { domainHelper } from '../../helper/domain-helper'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
@@ -18,7 +19,7 @@ dayjs.extend(utc)
 
 const settingsCache = new Map<string, WorkerSettingsResponse>()
 
-async function buildSettingsResponse(_log: FastifyBaseLogger): Promise<WorkerSettingsResponse> {
+async function buildSettingsResponse(log: FastifyBaseLogger): Promise<WorkerSettingsResponse> {
     const cacheKey = '__shared__'
     const cached = settingsCache.get(cacheKey)
     if (cached) {
@@ -39,7 +40,7 @@ async function buildSettingsResponse(_log: FastifyBaseLogger): Promise<WorkerSet
         MAX_FILE_SIZE_MB: system.getNumberOrThrow(AppSystemProp.MAX_FILE_SIZE_MB),
         SANDBOX_MEMORY_LIMIT: system.getOrThrow(AppSystemProp.SANDBOX_MEMORY_LIMIT),
         SANDBOX_PROPAGATED_ENV_VARS: system.get(AppSystemProp.SANDBOX_PROPAGATED_ENV_VARS)?.split(',').map(f => f.trim()) ?? [],
-        DEV_CONNECTORS: system.get(AppSystemProp.DEV_CONNECTORS)?.split(',') ?? [],
+        DEV_CONNECTORS: await localConnectorNames(log),
         SENTRY_DSN: system.get(AppSystemProp.SENTRY_DSN),
         LOKI_PASSWORD: system.get(AppSystemProp.LOKI_PASSWORD),
         LOKI_URL: system.get(AppSystemProp.LOKI_URL),

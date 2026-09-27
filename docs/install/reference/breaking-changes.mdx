@@ -8,6 +8,41 @@ icon: "hammer"
 
 ### What has changed?
 
+#### First-party connectors ship inside the image
+
+A fresh install used to have no connectors at all: every connector, including
+HTTP, Webhook, Schedule and AI, had to be downloaded from a connector registry that
+`FEMA_CONNECTOR_REGISTRY_URL` pointed at, and that variable has no default. Worse,
+when no registry was configured the hourly sync deleted every `OFFICIAL` connector
+row it found.
+
+The 24 first-party connectors are now built into the image and loaded from it
+directly, with no download or install step:
+
+- When `FEMA_DEV_CONNECTORS` is unset, every connector built into the image is
+  loaded. Setting it (even to an empty string) keeps the old development
+  behaviour of loading only the listed connectors.
+- A workflow pinned to a connector version the image does not carry runs on the
+  bundled version when it has the same major version and is not older than the
+  pin. A different major version is not substituted.
+- With no registry configured, the connector sync is skipped instead of deleting
+  connectors.
+- The image base moves from Debian 11 (bullseye) to Debian 12 (bookworm), because
+  the bullseye security archive no longer serves packages and the image could not
+  be built.
+- Built-in connectors run in the default `UNSANDBOXED` and `SANDBOX_CODE_ONLY`
+  execution modes. The isolate modes (`SANDBOX_PROCESS`,
+  `SANDBOX_CODE_AND_PROCESS`) and the slim `Dockerfile.worker` image do not carry
+  them yet.
+
+**When is action necessary?**
+
+If you run the worker with `FEMA_EXECUTION_MODE=SANDBOX_PROCESS` or
+`SANDBOX_CODE_AND_PROCESS`, keep a connector registry configured for now. If you
+set `FEMA_DEV_CONNECTORS` in production, unset it to get every built-in connector.
+If you build your own image on top of ours and install system packages, check them
+against Debian 12.
+
 #### The last of the billing and plan vocabulary is gone
 
 This fork has no editions, plans or credits, but several leftovers from upstream

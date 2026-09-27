@@ -1,6 +1,4 @@
 {
-  "Send Feishu messages, look up members, and read or write Bitable records": "Send Feishu messages, look up members, and read or write Bitable records",
-  "Create a custom app in the Feishu Open Platform, then copy the App ID and App Secret from the Credentials page. The app must be published and approved by an administrator; each action lists the permission it needs.": "Create a custom app in the Feishu Open Platform, then copy the App ID and App Secret from the Credentials page. The app must be published and approved by an administrator; each action lists the permission it needs.",
   "Region": "Region",
   "Choose Feishu for mainland China, Lark for the international edition.": "Choose Feishu for mainland China, Lark for the international edition.",
   "Feishu (mainland China)": "Feishu (mainland China)",
@@ -58,5 +56,24 @@
   "Leave empty unless encryption is switched on for this app.": "Leave empty unless encryption is switched on for this app.",
   "Event Type": "Event Type",
   "Only pass through this event type, for example im.message.receive_v1. Leave empty to accept every subscribed event.": "Only pass through this event type, for example im.message.receive_v1. Leave empty to accept every subscribed event.",
-  "Feishu sent an encrypted event but no Encrypt Key is configured on this trigger": "Feishu sent an encrypted event but no Encrypt Key is configured on this trigger"
+  "Feishu sent an encrypted event but no Encrypt Key is configured on this trigger": "Feishu sent an encrypted event but no Encrypt Key is configured on this trigger",
+  "**Set up a Feishu custom app (about 5 minutes)**\n\n1. Open the [Feishu Open Platform](https://open.feishu.cn/app) and create a **custom app** for your organization.\n2. On **Credentials & Basic Info**, copy the **App ID** and **App Secret** into the fields below.\n3. On **Permissions & Scopes**, add the permissions for the steps you will use:\n   - Send messages: `im:message:send_as_bot`\n   - Find users or provision accounts: `contact:user.id:readonly`\n   - Provision accounts: `contact:contact`, and add the tar": "**Set up a Feishu custom app (about 5 minutes)**\n\n1. Open the [Feishu Open Platform](https://open.feishu.cn/app) and create a **custom app** for your organization.\n2. On **Credentials & Basic Info**, copy the **App ID** and **App Secret** into the fields below.\n3. On **Permissions & Scopes**, add the permissions for the steps you will use:\n   - Send messages: `im:message:send_as_bot`\n   - Find users or provision accounts: `contact:user.id:readonly`\n   - Provision accounts: `contact:contact`, and add the target departments to the app's contact scope\n   - Bitable: `bitable:app`\n4. On **Version Management & Release**, create a version and publish it. An administrator has to approve it before the permissions take effect.\n\nSaving checks the App ID and App Secret. A missing permission shows up on the step that needs it, with the permission name in the error.",
+  "Send Feishu messages, look up and onboard members, and read or write Bitable records": "Send Feishu messages, look up and onboard members, and read or write Bitable records",
+  "Provision Employee Account": "Provision Employee Account",
+  "Create a Feishu account in a department, or return the existing one when the mobile or email is already in use": "Create a Feishu account in a department, or return the existing one when the mobile or email is already in use",
+  "Name": "Name",
+  "Mobile": "Mobile",
+  "Department ID": "Department ID",
+  "Employee Type": "Employee Type",
+  "Email": "Email",
+  "Employee Number": "Employee Number",
+  "Job Title": "Job Title",
+  "An 11-digit mainland number gets +86 added automatically; other regions need the country code, for example +85260000000.": "An 11-digit mainland number gets +86 added automatically; other regions need the country code, for example +85260000000.",
+  "The department ID shown in the Feishu admin console, or an open_department_id starting with od-. Map department names from the source system with a mapping table.": "The department ID shown in the Feishu admin console, or an open_department_id starting with od-. Map department names from the source system with a mapping table.",
+  "For example the employee number from the HR system.": "For example the employee number from the HR system.",
+  "Full-time": "Full-time",
+  "Intern": "Intern",
+  "Outsourced": "Outsourced",
+  "Contractor": "Contractor",
+  "Consultant": "Consultant"
 }

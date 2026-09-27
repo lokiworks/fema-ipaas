@@ -1,6 +1,5 @@
 {
   "Sync employees, employment records and the department tree out of Beisen iTalent": "同步北森 iTalent 的员工、任职记录与部门树",
-  "Open the Beisen admin console, go to My Connectors, create a connector and copy its Key and Secret. If that menu is missing, ask your Beisen project manager to enable Open Platform access.": "登录北森管理者后台，打开「我的链接器」创建一个链接器，复制其中的 Key 与 Secret。若看不到该菜单，请联系贵司的北森项目经理开通开放平台权限。",
   "App Key": "App Key",
   "App Secret": "App Secret",
   "The Key of the Beisen connector.": "北森链接器的 Key。",
@@ -55,5 +54,6 @@
   "Timezone": "时区",
   "The timezone Beisen reads the query window in. If this trigger keeps returning nothing while employees are clearly changing, this is the first setting to change.": "北森解读查询时间窗所用的时区。如果员工确实在变动而该触发器始终取不到数据，先改这一项。",
   "Beijing time (UTC+8)": "北京时间（UTC+8）",
-  "UTC": "UTC"
+  "UTC": "UTC",
+  "**Set up a Beisen connector**\n\n1. In the Beisen admin console, open **My Connectors** and create a connector.\n2. Copy its **Key** and **Secret** into the fields below.\n3. Grant the connector the data the steps read: employee records, organizations, and recruiting.\n\nIf **My Connectors** is missing, ask your Beisen project manager to enable Open Platform access. Saving checks the Key and Secret.": "**配置北森连接器**\n\n1. 在北森管理后台打开「我的连接器」，新建一个连接器。\n2. 复制它的 **Key** 和 **Secret**，填到下面。\n3. 给连接器开通步骤要读取的数据：员工信息、组织架构、招聘。\n\n找不到「我的连接器」时，请北森项目经理开通开放平台权限。保存时会校验 Key 和 Secret。"
 }

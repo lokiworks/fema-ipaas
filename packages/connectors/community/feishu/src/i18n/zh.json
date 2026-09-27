@@ -1,6 +1,4 @@
 {
-  "Send Feishu messages, look up members, and read or write Bitable records": "发送飞书消息、查找成员、读写多维表格",
-  "Create a custom app in the Feishu Open Platform, then copy the App ID and App Secret from the Credentials page. The app must be published and approved by an administrator; each action lists the permission it needs.": "在飞书开放平台创建企业自建应用,打开「凭证与基础信息」复制 App ID 与 App Secret。应用需先发布并通过管理员审批,每个动作所需的权限写在该动作的说明里。",
   "Region": "服务地区",
   "Choose Feishu for mainland China, Lark for the international edition.": "中国大陆版选飞书,海外版选 Lark。",
   "Feishu (mainland China)": "飞书(中国大陆)",
@@ -58,5 +56,24 @@
   "Leave empty unless encryption is switched on for this app.": "除非该应用开启了加密，否则留空。",
   "Event Type": "事件类型",
   "Only pass through this event type, for example im.message.receive_v1. Leave empty to accept every subscribed event.": "只放行该类型的事件，例如 im.message.receive_v1。留空则接收全部已订阅事件。",
-  "Feishu sent an encrypted event but no Encrypt Key is configured on this trigger": "飞书推送了加密事件，但该触发器没有配置 Encrypt Key"
+  "Feishu sent an encrypted event but no Encrypt Key is configured on this trigger": "飞书推送了加密事件，但该触发器没有配置 Encrypt Key",
+  "**Set up a Feishu custom app (about 5 minutes)**\n\n1. Open the [Feishu Open Platform](https://open.feishu.cn/app) and create a **custom app** for your organization.\n2. On **Credentials & Basic Info**, copy the **App ID** and **App Secret** into the fields below.\n3. On **Permissions & Scopes**, add the permissions for the steps you will use:\n   - Send messages: `im:message:send_as_bot`\n   - Find users or provision accounts: `contact:user.id:readonly`\n   - Provision accounts: `contact:contact`, and add the tar": "**配置飞书企业自建应用（约 5 分钟）**\n\n1. 打开[飞书开放平台](https://open.feishu.cn/app)，创建一个**企业自建应用**。\n2. 在「凭证与基础信息」复制 **App ID** 和 **App Secret**，填到下面。\n3. 在「权限管理」按要用的步骤开通权限：\n   - 发消息：`im:message:send_as_bot`\n   - 查找用户、开通账号：`contact:user.id:readonly`\n   - 开通账号：`contact:contact`，并把要开通到的部门加进应用的通讯录权限范围\n   - 多维表格：`bitable:app`\n4. 在「版本管理与发布」创建版本并发布，企业管理员审批通过后权限才生效。\n\n保存时会校验 App ID 和 App Secret。缺少某项权限时，用到它的步骤会报错并写明权限名。",
+  "Send Feishu messages, look up and onboard members, and read or write Bitable records": "发送飞书消息、查找和开通成员、读写多维表格",
+  "Provision Employee Account": "开通员工账号",
+  "Create a Feishu account in a department, or return the existing one when the mobile or email is already in use": "在指定部门开通飞书账号；手机号或邮箱已被使用时直接返回已有账号",
+  "Name": "姓名",
+  "Mobile": "手机号",
+  "Department ID": "部门 ID",
+  "Employee Type": "人员类型",
+  "Email": "邮箱",
+  "Employee Number": "工号",
+  "Job Title": "职务",
+  "An 11-digit mainland number gets +86 added automatically; other regions need the country code, for example +85260000000.": "11 位大陆手机号会自动补上 +86；其他地区请带国家码，例如 +85260000000。",
+  "The department ID shown in the Feishu admin console, or an open_department_id starting with od-. Map department names from the source system with a mapping table.": "飞书管理后台里看到的部门 ID，或以 od- 开头的 open_department_id。来源系统的部门名称请用映射表转换。",
+  "For example the employee number from the HR system.": "例如人事系统里的员工编号。",
+  "Full-time": "正式",
+  "Intern": "实习",
+  "Outsourced": "外包",
+  "Contractor": "劳务",
+  "Consultant": "顾问"
 }

@@ -4,8 +4,7 @@ import { feishuCommon } from './common';
 import { FEISHU_DOMAIN, LARK_DOMAIN } from './constants';
 
 export const feishuAuth = ConnectorAuth.CustomAuth({
-  description:
-    'Create a custom app in the Feishu Open Platform, then copy the App ID and App Secret from the Credentials page. The app must be published and approved by an administrator; each action lists the permission it needs.',
+  description: "**Set up a Feishu custom app (about 5 minutes)**\n\n1. Open the [Feishu Open Platform](https://open.feishu.cn/app) and create a **custom app** for your organization.\n2. On **Credentials & Basic Info**, copy the **App ID** and **App Secret** into the fields below.\n3. On **Permissions & Scopes**, add the permissions for the steps you will use:\n   - Send messages: `im:message:send_as_bot`\n   - Find users or provision accounts: `contact:user.id:readonly`\n   - Provision accounts: `contact:contact`, and add the target departments to the app's contact scope\n   - Bitable: `bitable:app`\n4. On **Version Management & Release**, create a version and publish it. An administrator has to approve it before the permissions take effect.\n\nSaving checks the App ID and App Secret. A missing permission shows up on the step that needs it, with the permission name in the error.",
   props: {
     domain: Property.StaticDropdown({
       displayName: 'Region',

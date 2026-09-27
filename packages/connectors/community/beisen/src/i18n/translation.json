@@ -1,6 +1,5 @@
 {
   "Sync employees, employment records and the department tree out of Beisen iTalent": "Sync employees, employment records and the department tree out of Beisen iTalent",
-  "Open the Beisen admin console, go to My Connectors, create a connector and copy its Key and Secret. If that menu is missing, ask your Beisen project manager to enable Open Platform access.": "Open the Beisen admin console, go to My Connectors, create a connector and copy its Key and Secret. If that menu is missing, ask your Beisen project manager to enable Open Platform access.",
   "App Key": "App Key",
   "App Secret": "App Secret",
   "The Key of the Beisen connector.": "The Key of the Beisen connector.",
@@ -55,5 +54,6 @@
   "Timezone": "Timezone",
   "The timezone Beisen reads the query window in. If this trigger keeps returning nothing while employees are clearly changing, this is the first setting to change.": "The timezone Beisen reads the query window in. If this trigger keeps returning nothing while employees are clearly changing, this is the first setting to change.",
   "Beijing time (UTC+8)": "Beijing time (UTC+8)",
-  "UTC": "UTC"
+  "UTC": "UTC",
+  "**Set up a Beisen connector**\n\n1. In the Beisen admin console, open **My Connectors** and create a connector.\n2. Copy its **Key** and **Secret** into the fields below.\n3. Grant the connector the data the steps read: employee records, organizations, and recruiting.\n\nIf **My Connectors** is missing, ask your Beisen project manager to enable Open Platform access. Saving checks the Key and Secret.": "**Set up a Beisen connector**\n\n1. In the Beisen admin console, open **My Connectors** and create a connector.\n2. Copy its **Key** and **Secret** into the fields below.\n3. Grant the connector the data the steps read: employee records, organizations, and recruiting.\n\nIf **My Connectors** is missing, ask your Beisen project manager to enable Open Platform access. Saving checks the Key and Secret."
 }

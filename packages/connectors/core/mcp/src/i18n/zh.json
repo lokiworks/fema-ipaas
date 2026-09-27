@@ -1,0 +1,18 @@
+{
+  "MCP server": "MCP 服务器",
+  "Call the tools of an external MCP server": "调用外部 MCP 服务器的工具",
+  "One connection is one external MCP server reachable over Streamable HTTP": "一个连接对应一台可通过 Streamable HTTP 访问的外部 MCP 服务器",
+  "Server URL": "服务器地址",
+  "The Streamable HTTP endpoint of the MCP server, e.g. https://example.com/mcp": "MCP 服务器的 Streamable HTTP 端点，例如 https://example.com/mcp",
+  "Access token": "访问令牌",
+  "Optional. Sent as the Authorization header; \"Bearer \" is added when missing": "可选，作为 Authorization 请求头发送；缺少 \"Bearer \" 前缀时会自动补上",
+  "Call tool": "调用工具",
+  "Call one tool of the MCP server and use its result": "调用 MCP 服务器的一个工具并使用它的结果",
+  "Tool": "工具",
+  "The tool to call, as listed by the MCP server": "要调用的工具，来自 MCP 服务器的工具列表",
+  "Connect an MCP server first": "请先连接 MCP 服务器",
+  "Arguments": "参数",
+  "The tool's arguments as a JSON object, following the tool's input schema": "工具参数，JSON 对象，按工具的输入结构填写",
+  "List tools": "列出工具",
+  "List the tools the MCP server offers, with their input schemas": "列出 MCP 服务器提供的工具及其输入结构"
+}

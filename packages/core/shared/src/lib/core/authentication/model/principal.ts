@@ -1,4 +1,5 @@
 import type { EntityId, ProjectId, TenantId } from '@fema-ipaas/core-utils'
+import type { RunEnvironment } from '@fema-ipaas/workflow-core'
 import { PrincipalType } from './principal-type'
 
 export type WorkerPrincipal = {
@@ -32,6 +33,7 @@ export type EnginePrincipal = {
     id: EntityId
     type: PrincipalType.ENGINE
     projectId: ProjectId
+    environment?: RunEnvironment
     tenant: {
         id: TenantId
     }

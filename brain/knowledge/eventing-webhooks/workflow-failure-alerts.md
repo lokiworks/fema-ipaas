@@ -2,38 +2,19 @@
 icon: 🚨
 ---
 
-# Workflow Failure Alerts
+# 失败告警
 
-Email notifications when a workflow run fails. On the first failure of a workflow version within a 24-hour window, the system emails all configured receivers for the project; later failures in the same window are suppressed via a Redis counter to avoid spam. Cloud/EE only (edition check is in service logic, no plan flag).
+问题中心记录一次失败后，按租户的**告警策略**决定要不要、发给谁、走哪个**通知渠道**。旧的「每个工作流版本 24 小时发一封邮件」机制已删除。
 
-### Entities & services
-- **Alert**: subscription tying a project to an email **receiver** (stored lowercased; lookups use `LOWER(receiver)`). **AlertChannel** is currently only `EMAIL`.
-- `alerts-service.ts`: `sendAlertOnRunFinish`, `add`, `list`, `delete`. Email via `email-service.ts` `sendIssueCreatedNotification`.
-- No unique index — the service enforces one alert per `(projectId, LOWER(receiver))`.
+**通知渠道** —— 飞书、企业微信、钉钉、Slack、通用 Webhook、邮件之一，租户级，密钥加密存储。
+**告警策略** —— 触发事件（新问题 / 重新打开 / 失败率）、范围、渠道、静默时段、升级规则。
+**告警记录** —— 每次发送（或因静默、限流被压下）的一行，用来排查「为什么没收到」。
 
-### How it works
-- `sendAlertOnRunFinish({ issueToAlert, executionId, failedStep })` runs after a failed production run. It increments Redis `workflow_fail_count:<workflowVersionId>` (expires 86400s); only when the count is 1 does it email.
-- It fetches **the run's own** workflow version (not the latest locked one) so `failedStep.name` is always findable and `failedStepNumber` is present.
-- Personal projects: exactly one receiver, the owner (single on/off switch). Team projects: any number of receivers, managed by admins with `WRITE_ALERT` + `WRITE_PROJECT`.
-- Endpoints `/v1/alerts`: GET (`READ_ALERT`), POST (`WRITE_ALERT`), DELETE `/:id`. Project post-create hooks auto-subscribe the owner (personal) or the `alertReceiverEmail` (team).
+## Gotchas
+- 静默时段内的告警不丢，存为待发送，由每分钟一次的 `ALERT_SWEEP` 系统任务在静默结束后补发；升级和失败率也在这个任务里算。
+- 邮件渠道依赖 SMTP；没配 SMTP 时渠道显示为不可用，不报错。
+- 钉钉加签密钥必须以 `SEC` 开头；Webhook 渠道带 `X-Signature`（HMAC-SHA256）。
 
-### Gotchas
-- Personal projects reject any receiver that isn't the owner's identity email (throws `VALIDATION`).
-- There is **no Issues feature** — the email CTA "View Run" links straight to `projects/<id>/runs/<runId>`. The old `checkIssuesEnabled`/`isIssue`/"View Issue" plumbing was removed.
-- Email subject: `[<project>] Workflow has an issue "<workflow>" ⚠️`. Platform admins can bulk subscribe/unsubscribe across projects (max 5 concurrent via `p-limit`).
-
-### Key files
-Entry point: `alertsService`, called from `packages/server/api/src/app/workflows/execution/execution-hooks.ts` when a run finishes.
-
-- `packages/server/api/src/app/ee/alerts/` — controller, service, entity, module registration
-- `packages/server/api/src/app/ee/helper/email/` — `sendIssueCreatedNotification` and the SMTP sender that builds the subject line
-- `packages/server/api/src/assets/emails/issue-created.html` — Mustache template for the failure email
-- `packages/server/api/src/app/ee/projects/` — EE post-create hooks plus the platform project controller and service that carry `alertReceiverEmail`
-- `packages/server/api/src/app/project/` — CE project hooks and service that plumb the post-create context
-- `packages/core/shared/src/lib/ee/alerts/` — `Alert` type, `AlertChannel`, and the list/create request schemas
-- `packages/core/shared/src/lib/management/project/project-requests.ts` — `CreatePlatformProjectRequest.alertReceiverEmail`
-- `packages/web/src/features/alerts/` — frontend API client and React Query hooks
-- `packages/web/src/app/components/project-settings/alerts/` — personal switch UI, team receiver list, add-receiver form
-- `packages/web/src/features/projects/components/` — platform admin bulk subscribe actions and the new-project dialog field
-
-Paths verified 2026-07-17.
+## Key files
+- `packages/server/api/src/app/alert/` — `alertDispatcher.onIssueRecorded`、`notificationChannelSender`
+- `packages/web/src/app/routes/tenant/alerts/`

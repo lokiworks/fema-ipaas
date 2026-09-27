@@ -6,10 +6,19 @@ import { PropertySettings } from '../properties'
 import { SampleDataSetting } from '../sample-data'
 
 export const AUTHENTICATION_PROPERTY_NAME = 'auth'
+export const TRIGGER_DEDUPE_MAX_WINDOW_SECONDS = 30 * 24 * 60 * 60
 
+
+export const TriggerDedupeSettings = z.object({
+    enabled: z.boolean(),
+    keyPath: z.string(),
+    windowSeconds: z.number().int().min(60).max(TRIGGER_DEDUPE_MAX_WINDOW_SECONDS),
+})
+export type TriggerDedupeSettings = z.infer<typeof TriggerDedupeSettings>
 
 const connectorTriggerSettingsFields = {
     sampleData: SampleDataSetting.optional(),
+    dedupe: TriggerDedupeSettings.optional(),
     propertySettings: z.record(z.string(), PropertySettings),
     customLogoUrl: z.string().optional(),
     connectorName: z.string(),

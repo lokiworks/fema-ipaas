@@ -1,5 +1,5 @@
 import { ApplicationError, Cursor, EntityId, ErrorCode, generateId, isNil, Metadata, ProjectId, SeekPage, spreadIfDefined, TenantId, UserId } from '@fema-ipaas/core-utils'
-import { ConnectionOwners, User, UserIdentity, UserWithMetaInformation, Variable, VariableWithoutSensitiveData } from '@fema-ipaas/shared'
+import { ConnectionOwners, RunEnvironment, User, UserIdentity, UserWithMetaInformation, Variable, VariableWithoutSensitiveData } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { Equal, ILike, QueryFailedError } from 'typeorm'
 import { repoFactory } from '../core/db/repo-factory'
@@ -12,7 +12,7 @@ export const variableRepo = repoFactory(VariableEntity)
 
 export const variableService = (log: FastifyBaseLogger) => ({
     async create(params: CreateParams): Promise<VariableWithoutSensitiveData> {
-        const { projectId, tenantId, name, value, ownerId, metadata } = params
+        const { projectId, tenantId, name, value, testValue, ownerId, metadata } = params
         const id = generateId()
         try {
             await variableRepo().insert({
@@ -22,6 +22,7 @@ export const variableService = (log: FastifyBaseLogger) => ({
                 name,
                 ownerId: ownerId ?? null,
                 value: await encryptUtils.encryptObject({ secret_text: value }),
+                testValue: isNil(testValue) ? null : await encryptUtils.encryptObject({ secret_text: testValue }),
                 ...spreadIfDefined('metadata', metadata),
             })
         }
@@ -39,10 +40,11 @@ export const variableService = (log: FastifyBaseLogger) => ({
     },
 
     async update(params: UpdateParams): Promise<VariableWithoutSensitiveData> {
-        const { id, projectId, tenantId, value, metadata } = params
+        const { id, projectId, tenantId, value, testValue, metadata } = params
         await getOneOrThrowWithoutValue({ id, projectId, tenantId })
         await variableRepo().update({ id, projectId, tenantId }, {
             ...(isNil(value) ? {} : { value: await encryptUtils.encryptObject({ secret_text: value }) }),
+            ...(testValue === undefined ? {} : { testValue: isNil(testValue) || testValue.length === 0 ? null : await encryptUtils.encryptObject({ secret_text: testValue }) }),
             ...spreadIfDefined('metadata', metadata),
         })
         log.info({ id, project: { id: projectId } }, 'Variable updated')
@@ -114,7 +116,7 @@ export const variableService = (log: FastifyBaseLogger) => ({
     },
 
     async getDecryptedValueForWorker(params: GetForWorkerParams): Promise<string> {
-        const { projectId, name } = params
+        const { projectId, name, environment } = params
         const row = await variableRepo().findOneBy({ projectId, name })
         if (isNil(row)) {
             throw new ApplicationError({
@@ -125,7 +127,8 @@ export const variableService = (log: FastifyBaseLogger) => ({
                 },
             })
         }
-        const decrypted = await encryptUtils.decryptObject<{ secret_text: string }>(row.value)
+        const source = environment === RunEnvironment.TESTING && !isNil(row.testValue) ? row.testValue : row.value
+        const decrypted = await encryptUtils.decryptObject<{ secret_text: string }>(source)
         return decrypted.secret_text
     },
 
@@ -183,6 +186,7 @@ function stripSensitiveData(row: VariableSchema): VariableWithoutSensitiveData {
         ownerId: row.ownerId,
         owner: mapToUserWithMetaInformation(row.owner ?? null),
         metadata: row.metadata,
+        hasTestValue: !isNil(row.testValue),
     }
 }
 
@@ -215,6 +219,7 @@ type CreateParams = {
     tenantId: string
     name: string
     value: string
+    testValue: string | undefined
     ownerId: UserId | null
     metadata: Metadata | undefined
 }
@@ -224,6 +229,7 @@ type UpdateParams = {
     projectId: string
     tenantId: string
     value: string | undefined
+    testValue: string | null | undefined
     metadata: Metadata | undefined
 }
 
@@ -236,6 +242,7 @@ type GetOneParams = {
 type GetForWorkerParams = {
     projectId: string
     name: string
+    environment: RunEnvironment | undefined
 }
 
 type ListParams = {

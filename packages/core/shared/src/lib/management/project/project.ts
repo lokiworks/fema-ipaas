@@ -44,6 +44,7 @@ export const Project = z.object({
     icon: ProjectIcon,
     externalId: Nullable(z.string()),
     releasesEnabled: z.boolean(),
+    releaseApproverIds: z.array(z.string()),
     notifyWorkflowOwnerOnFailure: z.boolean(),
     metadata: Nullable(Metadata),
     workerGroupId: Nullable(z.string()),

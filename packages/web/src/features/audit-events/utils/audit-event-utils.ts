@@ -184,6 +184,30 @@ function summarize(event: ApplicationEvent): string {
       return t('auditVariableDeleted', { variable: event.data.variable.name });
     case ApplicationEventName.VARIABLE_VALUE_REVEALED:
       return t('auditVariableRevealed', { variable: event.data.variable.name });
+    case ApplicationEventName.EXECUTION_PAYLOAD_REVEALED:
+      return t('auditRunPayloadRevealed', {
+        step: event.data.stepName,
+        run: event.data.execution.id,
+      });
+    case ApplicationEventName.ISSUE_REPLAYED:
+      return t('auditIssueReplayed', {
+        count: event.data.count,
+        issue: event.data.issue.title,
+      });
+    case ApplicationEventName.PRIVACY_SETTINGS_UPDATED:
+      return t('auditPrivacySettingsUpdated');
+    case ApplicationEventName.AGENT_APPROVAL_DECIDED:
+      return t('auditAgentApprovalDecided', {
+        approved: String(event.data.approved),
+        tool: event.data.approval.tool,
+        run: event.data.approval.executionId,
+      });
+    case ApplicationEventName.PERSONAL_DATA_ERASURE:
+      return t('auditPersonalDataErasure', {
+        phase: event.data.phase,
+        subject: event.data.request.valueHint,
+        count: event.data.matchedRuns,
+      });
     case ApplicationEventName.USER_SIGNED_IN:
       return t('auditUserSignedIn', { user: event.userEmail });
     case ApplicationEventName.USER_PASSWORD_RESET:
@@ -236,6 +260,15 @@ const ACTION_LABELS: Record<ApplicationEventName, () => string> = {
   [ApplicationEventName.VARIABLE_DELETED]: () => t('Variable deleted'),
   [ApplicationEventName.VARIABLE_VALUE_REVEALED]: () =>
     t('Variable value revealed'),
+  [ApplicationEventName.EXECUTION_PAYLOAD_REVEALED]: () =>
+    t('Run payload revealed'),
+  [ApplicationEventName.ISSUE_REPLAYED]: () => t('Issue runs replayed'),
+  [ApplicationEventName.PRIVACY_SETTINGS_UPDATED]: () =>
+    t('Privacy settings updated'),
+  [ApplicationEventName.AGENT_APPROVAL_DECIDED]: () =>
+    t('Agent tool call reviewed'),
+  [ApplicationEventName.PERSONAL_DATA_ERASURE]: () =>
+    t('Personal data erasure'),
   [ApplicationEventName.USER_SIGNED_UP]: () => t('User signed up'),
   [ApplicationEventName.USER_SIGNED_IN]: () => t('User signed in'),
   [ApplicationEventName.USER_PASSWORD_RESET]: () => t('Password reset'),

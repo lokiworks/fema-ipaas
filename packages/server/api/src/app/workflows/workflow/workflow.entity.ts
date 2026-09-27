@@ -23,6 +23,7 @@ export type WorkflowSchema = Workflow & {
     owner?: User
     events: TriggerEvent[]
     publishedVersion?: WorkflowVersion
+    testVersion?: WorkflowVersion
 }
 
 export const WorkflowEntity = new EntitySchema<WorkflowSchema>({
@@ -51,6 +52,14 @@ export const WorkflowEntity = new EntitySchema<WorkflowSchema>({
             ...EntityIdSchema,
             nullable: true,
             unique: true,
+        },
+        testVersionId: {
+            ...EntityIdSchema,
+            nullable: true,
+        },
+        testDeployedAt: {
+            type: 'timestamp with time zone',
+            nullable: true,
         },
         metadata: {
             type: 'jsonb',
@@ -156,6 +165,17 @@ export const WorkflowEntity = new EntitySchema<WorkflowSchema>({
                 name: 'publishedVersionId',
                 referencedColumnName: 'id',
                 foreignKeyConstraintName: 'fk_workflow_published_version',
+            },
+        },
+        testVersion: {
+            type: 'many-to-one',
+            target: 'workflow_version',
+            nullable: true,
+            onDelete: 'SET NULL',
+            joinColumn: {
+                name: 'testVersionId',
+                referencedColumnName: 'id',
+                foreignKeyConstraintName: 'fk_workflow_test_version',
             },
         },
     },

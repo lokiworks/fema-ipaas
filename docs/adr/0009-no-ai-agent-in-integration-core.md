@@ -1,7 +1,7 @@
 ---
 title: AI Agent 与 MCP 不进入 Integration Core
 icon: 🚧
-status: accepted
+status: superseded by 0019-ai-and-mcp-are-consumers-of-connectors
 ---
 
 ## Decision

@@ -1,0 +1,18 @@
+{
+  "MCP server": "MCP server",
+  "Call the tools of an external MCP server": "Call the tools of an external MCP server",
+  "One connection is one external MCP server reachable over Streamable HTTP": "One connection is one external MCP server reachable over Streamable HTTP",
+  "Server URL": "Server URL",
+  "The Streamable HTTP endpoint of the MCP server, e.g. https://example.com/mcp": "The Streamable HTTP endpoint of the MCP server, e.g. https://example.com/mcp",
+  "Access token": "Access token",
+  "Optional. Sent as the Authorization header; \"Bearer \" is added when missing": "Optional. Sent as the Authorization header; \"Bearer \" is added when missing",
+  "Call tool": "Call tool",
+  "Call one tool of the MCP server and use its result": "Call one tool of the MCP server and use its result",
+  "Tool": "Tool",
+  "The tool to call, as listed by the MCP server": "The tool to call, as listed by the MCP server",
+  "Connect an MCP server first": "Connect an MCP server first",
+  "Arguments": "Arguments",
+  "The tool's arguments as a JSON object, following the tool's input schema": "The tool's arguments as a JSON object, following the tool's input schema",
+  "List tools": "List tools",
+  "List the tools the MCP server offers, with their input schemas": "List the tools the MCP server offers, with their input schemas"
+}

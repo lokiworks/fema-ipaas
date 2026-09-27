@@ -13,6 +13,14 @@ import { AddConnectorRegistryTrust1787900000003 } from './migration/postgres/178
 import { CreateConnectorBlueprint1787900000004 } from './migration/postgres/1787900000004-CreateConnectorBlueprint'
 import { AddWorkflowGraph1787900000005 } from './migration/postgres/1787900000005-AddWorkflowGraph'
 import { RenameWorkspaceToProject1787900000006 } from './migration/postgres/1787900000006-RenameWorkspaceToProject'
+import { AddIssuesAlertsAndPrivacy1790465349745 } from './migration/postgres/1790465349745-AddIssuesAlertsAndPrivacy'
+import { AddReleasesAndEnvironments1790467622232 } from './migration/postgres/1790467622232-AddReleasesAndEnvironments'
+import { AddMappingTables1790468776314 } from './migration/postgres/1790468776314-AddMappingTables'
+import { AddAiUsageAndMcpServices1790471332672 } from './migration/postgres/1790471332672-AddAiUsageAndMcpServices'
+import { MaskLogsBeforeWrite1790473281926 } from './migration/postgres/1790473281926-MaskLogsBeforeWrite'
+import { AddTestDeployments1790473753032 } from './migration/postgres/1790473753032-AddTestDeployments'
+import { AddDataErasureRequests1790474079361 } from './migration/postgres/1790474079361-AddDataErasureRequests'
+import { AddAgentApprovals1790475172395 } from './migration/postgres/1790475172395-AddAgentApprovals'
 
 const getSslConfig = (): boolean | TlsOptions => {
     const useSsl = system.get(AppSystemProp.POSTGRES_USE_SSL)
@@ -33,6 +41,14 @@ export const getMigrations = (): (new () => Migration)[] => {
         CreateConnectorBlueprint1787900000004,
         AddWorkflowGraph1787900000005,
         RenameWorkspaceToProject1787900000006,
+        AddIssuesAlertsAndPrivacy1790465349745,
+        AddReleasesAndEnvironments1790467622232,
+        AddMappingTables1790468776314,
+        AddAiUsageAndMcpServices1790471332672,
+        MaskLogsBeforeWrite1790473281926,
+        AddTestDeployments1790473753032,
+        AddDataErasureRequests1790474079361,
+        AddAgentApprovals1790475172395,
     ]
 }
 

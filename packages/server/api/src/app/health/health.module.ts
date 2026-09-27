@@ -1,9 +1,10 @@
-import { GetDiagnosticsResponse, GetSystemHealthChecksResponse, PrincipalType, TenantMetricsHealthHistory, TenantMetricsLive, TenantMetricsReport, TenantMetricsReportRequest } from '@fema-ipaas/shared'
+import { DiagnosticsBundle, GetDiagnosticsResponse, GetSystemHealthChecksResponse, PrincipalType, SetupChecklist, SetupStatus, SystemOverview, TenantMetricsHealthHistory, TenantMetricsLive, TenantMetricsReport, TenantMetricsReportRequest } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { securityAccess } from '../core/security/authorization/fastify-security'
 import { healthMetricsService } from './health-metrics.service'
 import { healthStatusService } from './health.service'
+import { systemOverviewService } from './system-overview.service'
 
 export const healthModule: FastifyPluginAsyncZod = async (app) => {
     await app.register(healthController, { prefix: '/v1/health' })
@@ -49,6 +50,22 @@ const healthController: FastifyPluginAsyncZod = async (app) => {
 
     app.get('/diagnostics', GetDiagnosticsRequest, async (request) => {
         return healthStatusService(app.log).getDiagnostics(request.principal.tenant.id)
+    })
+
+    app.get('/setup', GetSetupStatusRequest, async (request) => {
+        return systemOverviewService(request.log).getSetupStatus()
+    })
+
+    app.get('/setup-checklist', GetSetupChecklistRequest, async (request) => {
+        return systemOverviewService(request.log).getSetupChecklist({ tenantId: request.principal.tenant.id })
+    })
+
+    app.get('/overview', GetSystemOverviewRequest, async (request) => {
+        return systemOverviewService(request.log).getOverview({ tenantId: request.principal.tenant.id })
+    })
+
+    app.get('/diagnostics-bundle', GetDiagnosticsBundleRequest, async (request) => {
+        return systemOverviewService(request.log).getDiagnosticsBundle({ tenantId: request.principal.tenant.id })
     })
 }
 
@@ -111,6 +128,57 @@ const GetDiagnosticsRequest = {
         description: 'Server-measured infra round-trip latency (db/redis/storage) + effective config',
         response: {
             200: GetDiagnosticsResponse,
+        },
+    },
+}
+
+const GetSystemOverviewRequest = {
+    config: {
+        security: securityAccess.tenantAdminOnly([PrincipalType.USER]),
+    },
+    schema: {
+        tags: ['health'],
+        description: 'Release, update check, infrastructure versions, encryption key source and optional services',
+        response: {
+            200: SystemOverview,
+        },
+    },
+}
+
+const GetDiagnosticsBundleRequest = {
+    config: {
+        security: securityAccess.tenantAdminOnly([PrincipalType.USER]),
+    },
+    schema: {
+        tags: ['health'],
+        description: 'Secret-free deployment summary to share when reporting a problem',
+        response: {
+            200: DiagnosticsBundle,
+        },
+    },
+}
+
+const GetSetupStatusRequest = {
+    config: {
+        security: securityAccess.public(),
+    },
+    schema: {
+        tags: ['health'],
+        description: 'Installation checks, only filled in before the first account exists',
+        response: {
+            200: SetupStatus,
+        },
+    },
+}
+
+const GetSetupChecklistRequest = {
+    config: {
+        security: securityAccess.tenantAdminOnly([PrincipalType.USER]),
+    },
+    schema: {
+        tags: ['health'],
+        response: {
+            200: SetupChecklist,
         },
     },
 }

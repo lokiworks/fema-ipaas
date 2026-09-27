@@ -116,6 +116,7 @@ export type RunsMetadataUpsertData = {
     parentRunId?: string
     failParentOnFailure?: boolean
     logsFileId?: string | null
+    displayLogsFileId?: string | null
     updated?: string
     stepsCount?: number
     requestId?: string

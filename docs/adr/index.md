@@ -18,7 +18,7 @@ icon: 🧭
 | 0006 | [WorkflowVersion 锁定 ConnectorVersion，运行时不漂移到 latest](0006-workflow-version-and-connector-version-lock.md) | accepted |
 | 0007 | [Runtime 保留 Worker / Sandbox / Engine，不推倒重写](0007-runtime-keeps-worker-sandbox-engine.md) | accepted |
 | 0008 | [UI 按企业集成心智重建，而不是自动化工具心智](0008-ui-follows-enterprise-integration-mental-model.md) | accepted |
-| 0009 | [AI Agent 与 MCP 不进入 Integration Core](0009-no-ai-agent-in-integration-core.md) | accepted |
+| 0009 | [AI Agent 与 MCP 不进入 Integration Core](0009-no-ai-agent-in-integration-core.md) | superseded by 0019 |
 | 0010 | [保持 MIT 并冻结上游基线](0010-license-and-upstream-notice-policy.md) | accepted |
 | 0011 | [上游迁移压缩为单一基线，放弃从 FEMA Integration Platform 就地升级](0011-squash-upstream-migrations-into-one-baseline.md) | accepted |
 | 0012 | [节点分发用穷尽映射表，且暂不引入 UI Graph 编译层](0012-engine-dispatch-and-no-graph-compiler.md) | superseded by 0015 |
@@ -28,3 +28,4 @@ icon: 🧭
 | 0016 | [Network Agent 隧道是出站 socket，白名单在服务端执行](0016-the-network-agent-tunnel-is-an-outbound-socket-with-a-server-side-allowlist.md) | superseded by 0018 |
 | 0017 | [用 join edge 扩展 action 树，而不是换成 graph 持久化](0017-join-edges-extend-the-tree-instead-of-replacing-it.md) | accepted |
 | 0018 | [不做 Network Agent，自托管形态下它要跨越的鸿沟不存在](0018-no-network-agent-self-hosting-removes-the-gap-it-bridged.md) | accepted |
+| 0019 | [AI 与 MCP 作为连接器的消费层进入产品，不进入 Connector Domain](0019-ai-and-mcp-are-consumers-of-connectors.md) | accepted |

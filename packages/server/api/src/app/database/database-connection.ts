@@ -3,6 +3,9 @@ import {
     DataSource,
     EntitySchema,
 } from 'typeorm'
+import { AgentApprovalEntity } from '../agent-approval/agent-approval.entity'
+import { AiUsageEntity } from '../ai/ai-usage.entity'
+import { AlertPolicyEntity, AlertRecordEntity, NotificationChannelEntity } from '../alert/alert.entity'
 import { AuditEventEntity } from '../audit/audit-event.entity'
 import { OtpEntity } from '../authentication/otp/otp-entity'
 import { UserIdentityEntity } from '../authentication/user-identity/user-identity-entity'
@@ -13,8 +16,14 @@ import { FileEntity } from '../file/file.entity'
 import { FlagEntity } from '../flags/flag.entity'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
+import { IssueActivityEntity, IssueEntity } from '../issue/issue.entity'
+import { MappingTableEntity } from '../mapping-table/mapping-table.entity'
+import { McpServiceEntity } from '../mcp-service/mcp-service.entity'
+import { DataErasureRequestEntity } from '../privacy/data-erasure.entity'
+import { PrivacySettingsEntity } from '../privacy/privacy-settings.entity'
 import { ProjectEntity } from '../project/project-entity'
 import { ProjectMemberEntity } from '../project/project-member.entity'
+import { ConnectionReplacementEntity, WorkflowReleaseEntity } from '../release/release.entity'
 import { StoreEntryEntity } from '../store-entry/store-entry-entity'
 import { TemplateEntity } from '../template/template.entity'
 import { TenantEntity } from '../tenant/tenant.entity'
@@ -61,6 +70,19 @@ function getEntities(): EntitySchema<unknown>[] {
         WaitpointEntity,
         OtpEntity,
         TemplateEntity,
+        IssueEntity,
+        IssueActivityEntity,
+        NotificationChannelEntity,
+        AlertPolicyEntity,
+        AlertRecordEntity,
+        PrivacySettingsEntity,
+        WorkflowReleaseEntity,
+        ConnectionReplacementEntity,
+        MappingTableEntity,
+        AiUsageEntity,
+        AgentApprovalEntity,
+        DataErasureRequestEntity,
+        McpServiceEntity,
     ]
 }
 

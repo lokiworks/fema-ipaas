@@ -4,5 +4,11 @@
   "Map data from one format to another": "Map data from one format to another",
   "Mapping": "Mapping",
   "The mapping to use": "The mapping to use",
-  "Data Mapper": "Data Mapper"
+  "Data Mapper": "Data Mapper",
+  "Map Fields": "Map Fields",
+  "Build an object field by field, with transforms and mapping-table lookups": "Build an object field by field, with transforms and mapping-table lookups",
+  "Field mapping": "Field mapping",
+  "Target fields and how each one is computed": "Target fields and how each one is computed",
+  "Fail when a field cannot be mapped": "Fail when a field cannot be mapped",
+  "When off, fields that fail keep their unconverted value and the step succeeds": "When off, fields that fail keep their unconverted value and the step succeeds"
 }

@@ -1,5 +1,6 @@
 import { isNil, tryParseFriendlyConnectorError } from '@fema-ipaas/core-utils';
 import {
+  AI_CONNECTOR_NAME,
   StepOutputStatus,
   workflowStructureUtil,
   WorkflowActionType,
@@ -22,8 +23,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { RunApprovalsNotice } from '@/features/agent-approvals';
 import { connectorsHooks } from '@/features/connectors';
 import { executionUtils } from '@/features/executions';
+import { MaskedPayloadNotice } from '@/features/privacy';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { formatUtils } from '@/lib/format-utils';
 
@@ -226,6 +229,17 @@ export const WorkflowStepInputOutput = () => {
           onValueChange={(value) => setActiveTab(value as RunActiveTab)}
           className="w-full"
         >
+          <MaskedPayloadNotice
+            executionId={run.id}
+            stepName={selectedStep.name}
+            maskedFields={run.privacyMaskedFields ?? 0}
+            redacted={run.payloadRedacted ?? false}
+          />
+          <RunApprovalsNotice
+            executionId={run.id}
+            stepName={selectedStep.name}
+            enabled={stepConnectorName === AI_CONNECTOR_NAME}
+          />
           <div className="flex items-center justify-between gap-2 shrink-0 mb-2">
             <TabsList className="h-9">
               {!isTrigger && (

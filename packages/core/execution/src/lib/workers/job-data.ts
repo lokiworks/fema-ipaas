@@ -4,6 +4,7 @@ import { isNil } from '@fema-ipaas/core-utils'
 import { ResumeReason, StreamStepProgress, TriggerHookType, TriggerPayload } from '../engine'
 import { ExecutionType } from '../execution/state/execution-output'
 import { RunEnvironment } from '../execution/execution'
+import { LogPrivacy } from '../execution/log-redaction'
 import { CodeActionSchema, ConnectorActionSchema } from '../workflows/actions/action'
 import { WorkflowVersion } from '../workflows/workflow-version'
 import { WorkflowTriggerType } from '../workflows/triggers/trigger'
@@ -134,6 +135,7 @@ const ExecuteWorkflowJobDataCommon = z.object({
     stepNameToTest: z.string().optional(),
     sampleData: z.record(z.string(), z.unknown()).optional(),
     logsFileId: z.string(),
+    logPrivacy: LogPrivacy.optional(),
 })
 
 export const BeginExecuteWorkflowJobData = ExecuteWorkflowJobDataCommon.extend({

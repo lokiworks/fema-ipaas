@@ -37,6 +37,10 @@ export const ExecutionEntity = new EntitySchema<ExecutionSchema>({
             ...EntityIdSchema,
             nullable: true,
         },
+        displayLogsFileId: {
+            ...EntityIdSchema,
+            nullable: true,
+        },
         parentRunId: {
             ...EntityIdSchema,
             nullable: true,
@@ -88,6 +92,10 @@ export const ExecutionEntity = new EntitySchema<ExecutionSchema>({
             nullable: false,
             default: 0,
         },
+        issueId: {
+            ...EntityIdSchema,
+            nullable: true,
+        },
         // @deprecated — kept for backwards compatibility, use waitpoint table instead
         pauseMetadata: {
             type: 'jsonb',
@@ -124,6 +132,11 @@ export const ExecutionEntity = new EntitySchema<ExecutionSchema>({
             columns: ['logsFileId'],
         },
         {
+            name: 'idx_run_raw_state_purge',
+            columns: ['finishTime'],
+            where: '"displayLogsFileId" IS NOT NULL AND "logsFileId" IS NOT NULL',
+        },
+        {
             name: 'idx_run_parent_run_id',
             columns: ['parentRunId'],
         },
@@ -134,6 +147,10 @@ export const ExecutionEntity = new EntitySchema<ExecutionSchema>({
         {
             name: 'idx_run_triggered_by',
             columns: ['triggeredBy'],
+        },
+        {
+            name: 'idx_execution_issue_id',
+            columns: ['issueId'],
         },
     ],
     relations: {

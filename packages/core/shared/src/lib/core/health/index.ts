@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 export * from './health-metrics-request'
+export * from './system-overview'
 
 export const ReleaseHealth = z.object({
     current: z.string(),

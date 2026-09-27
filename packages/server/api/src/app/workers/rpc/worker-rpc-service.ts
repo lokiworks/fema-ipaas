@@ -1,6 +1,6 @@
 import { assertNotNullOrUndefined, isNil } from '@fema-ipaas/core-utils'
 import { onCallService, UNKNOWN_VERSION, versionUtil } from '@fema-ipaas/server-utils'
-import { ExecutionType, FileCompression, FileLocation, FileType, WorkerGroupScope, WorkerToApiContract, WorkflowOperationType, WorkflowStatus } from '@fema-ipaas/shared'
+import { ExecutionType, FileCompression, FileLocation, FileType, WorkerGroupScope, WorkerToApiContract, WorkflowOperationType, WorkflowStatus, WorkflowTriggerType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { connectorMetadataService } from '../../connectors/metadata/connector-metadata-service'
 import { redisConnections } from '../../database/redis-connections'
@@ -99,7 +99,12 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
             }
 
             const tenantId = await projectService(log).getTenantId(projectId)
-            const filterPayloads = await dedupeService.filterUniquePayloads(workflowVersionId, payloads)
+            const connectorDeduped = await dedupeService.filterUniquePayloads(workflowVersionId, payloads)
+            const filterPayloads = await dedupeService.filterByWorkflowDedupe({
+                workflowId: workflowVersion.workflowId,
+                settings: workflowVersion.trigger.type === WorkflowTriggerType.CONNECTOR ? workflowVersion.trigger.settings.dedupe : undefined,
+                payloads: connectorDeduped,
+            })
 
             const executions = await Promise.all(
                 filterPayloads.map((payload) =>

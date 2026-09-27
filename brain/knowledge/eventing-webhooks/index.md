@@ -24,7 +24,7 @@ An outbound webhook subscribing to a chosen subset of Application Events at PLAT
 
 - **Webhooks** — inbound ingest, payload normalization, sync vs async, the Redis fast path
 - **Event Destinations** — outbound fan-out of Application Events
-- **Workflow Failure Alerts** — failure emails, Redis dedup, the 24h window
+- **失败告警** — 通知渠道、告警策略、静默与升级
 - **pubsub is the one shared Redis subscriber — reuse it** — why a second subscriber is the wrong reflex
 
 ## Related

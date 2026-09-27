@@ -4,6 +4,7 @@ import { ExecutionToolStatus, PredefinedInputsStructure } from '@fema-ipaas/conn
 import { ConnectionType, ConnectionValue } from '@fema-ipaas/connector-types'
 import { ExecutionType } from '../execution/state/execution-output'
 import { RunEnvironment } from '../execution/execution'
+import { LogPrivacy } from '../execution/log-redaction'
 import { CodeAction, ConnectorAction } from '../workflows/actions/action'
 import { WorkflowVersion } from '../workflows/workflow-version'
 import { ConnectorPackage } from '@fema-ipaas/connector-types'
@@ -120,6 +121,7 @@ type BaseExecuteWorkflowOperation<T extends ExecutionType> = BaseEngineOperation
     stepNameToTest: string | null
     sampleData?: Record<string, unknown>
     logsFileId?: string
+    logPrivacy?: LogPrivacy
 }
 
 export enum StreamStepProgress {

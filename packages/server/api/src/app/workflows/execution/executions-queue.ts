@@ -73,6 +73,7 @@ export const runsMetadataQueue = (log: FastifyBaseLogger) => ({
                                     ...spreadIfDefined('parentRunId', runMetadata.parentRunId),
                                     ...spreadIfDefined('failParentOnFailure', runMetadata.failParentOnFailure),
                                     ...spreadIfDefined('logsFileId', runMetadata.logsFileId),
+                                    ...spreadIfDefined('displayLogsFileId', runMetadata.displayLogsFileId),
                                     ...spreadIfDefined('updated', runMetadata.updated),
                                     ...spreadIfDefined('stepsCount', runMetadata.stepsCount),
                                 })

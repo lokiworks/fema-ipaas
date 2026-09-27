@@ -26,6 +26,7 @@ import {
   EditProjectDialog,
   projectCollectionUtils,
 } from '@/features/projects';
+import { SetupChecklistCard } from '@/features/system';
 import { validationUtils } from '@/lib/validation-utils';
 
 import { projectsTableColumns } from './columns';
@@ -310,6 +311,9 @@ export default function ProjectsPage() {
         title={t('Projects')}
         description={t('Manage your automation projects')}
       />
+      <div className="mb-4">
+        <SetupChecklistCard />
+      </div>
       <DataTable
         emptyStateTextTitle={t('No projects found')}
         emptyStateTextDescription={t(

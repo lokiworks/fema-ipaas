@@ -8,6 +8,9 @@ import { FastifyBaseLogger, FastifyInstance, FastifyRequest, HTTPMethods } from 
 import { jsonSchemaTransform, jsonSchemaTransformObject } from 'fastify-type-provider-zod'
 import Mustache from 'mustache'
 import { globalRegistry } from 'zod/v4/core'
+import { agentApprovalModule } from './agent-approval/agent-approval.module'
+import { aiModule } from './ai/ai.module'
+import { alertModule } from './alert/alert.module'
 import { registerAuditEventListener } from './audit/audit-event-listener'
 import { auditEventModule } from './audit/audit-event.module'
 import { authenticationModule } from './authentication/authentication.module'
@@ -43,8 +46,13 @@ import { systemJobsSchedule } from './helper/system-jobs/system-job'
 import { systemSnapshot } from './helper/system-snapshot'
 import { validateEnvPropsOnStartup } from './helper/system-validator'
 import { shutdownTelemetry } from './helper/telemetry.utils'
+import { issueModule } from './issue/issue.module'
+import { mappingTableModule } from './mapping-table/mapping-table.module'
+import { mcpServiceModule } from './mcp-service/mcp-service.module'
+import { privacyModule } from './privacy/privacy.module'
 import { projectBackgroundJobs } from './project/project.jobs'
 import { projectModule } from './project/project.module'
+import { releaseModule } from './release/release.module'
 import { storeEntryModule } from './store-entry/store-entry.module'
 import { templateModule } from './template/template.module'
 import { tenantModule } from './tenant/tenant.module'
@@ -170,6 +178,14 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     await app.register(connectionModule)
     await app.register(tenantConnectionModule)
     await app.register(variableModule)
+    await app.register(issueModule)
+    await app.register(alertModule)
+    await app.register(privacyModule)
+    await app.register(releaseModule)
+    await app.register(mappingTableModule)
+    await app.register(aiModule)
+    await app.register(agentApprovalModule)
+    await app.register(mcpServiceModule)
     await app.register(openapiModule)
     await app.register(appEventRoutingModule)
     await app.register(authenticationModule)

@@ -1,5 +1,6 @@
 import {
   FlagId,
+  Permission,
   WorkflowOperationType,
   WorkflowVersionState,
   supportUrl,
@@ -32,10 +33,12 @@ import {
 } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { AiAssistantButton } from '@/features/ai';
 import { foldersHooks } from '@/features/folders';
 import { getProjectName, projectCollectionUtils } from '@/features/projects';
 import { workflowHooks } from '@/features/workflows';
 import { WorkflowCreatedByBadge } from '@/features/workflows/components/workflow-created-by-badge';
+import { useAuthorization } from '@/hooks/authorization-hooks';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 import { useNewWindow } from '@/lib/navigation-utils';
@@ -75,6 +78,7 @@ export const BuilderHeader = () => {
 
   const { embedState } = useEmbedding();
   const { project } = projectCollectionUtils.useCurrentProject();
+  const { checkAccess } = useAuthorization();
 
   const { data: folderData } = foldersHooks.useFolder(
     workflow.folderId ?? UncategorizedFolderId,
@@ -197,6 +201,12 @@ export const BuilderHeader = () => {
       <BuilderWorkflowStatusSection></BuilderWorkflowStatusSection>
       <WorkflowCreatedByBadge createdBy={workflow.createdBy} />
       <Separator orientation="vertical" className="h-5" />
+      {checkAccess(Permission.READ_WORKFLOW) && (
+        <AiAssistantButton
+          projectId={workflow.projectId}
+          workflowId={workflow.id}
+        />
+      )}
       <DebugButton />
       <BuilderPublishSection />
     </div>

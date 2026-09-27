@@ -76,3 +76,6 @@ Reusable workflow/table blueprints. Types: OFFICIAL (FEMA Integration Platform-c
 - **Variables** — project-scoped values referenced from steps
 - **Formulas** — the `{{ ... }}` evaluator shared by engine, api and web
 - **Chat** — the conversational surface over a workflow
+- **问题中心** — 失败按原因聚合、重放、值班处理
+- **发布审批与测试环境** — 发布申请、测试值与测试连接替换、回滚
+- **字段映射与映射表** — `map_fields`、映射表、触发器去重

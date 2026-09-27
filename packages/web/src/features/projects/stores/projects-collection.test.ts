@@ -59,6 +59,7 @@ function makeProject(
     icon: { color: 'BLUE' as never },
     externalId: null,
     releasesEnabled: false,
+    releaseApproverIds: [],
     notifyWorkflowOwnerOnFailure: false,
     metadata: null,
     analytics: {

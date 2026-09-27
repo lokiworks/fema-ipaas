@@ -125,6 +125,7 @@ function buildWorkflowOperation(
         streamStepProgress: data.streamStepProgress,
         stepNameToTest: data.stepNameToTest ?? null,
         logsFileId: data.logsFileId,
+        logPrivacy: data.logPrivacy,
         timeoutInSeconds,
         tenantId: data.tenantId,
         engineToken: ctx.engineToken,

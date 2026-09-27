@@ -1,8 +1,11 @@
 import { isNil } from '@fema-ipaas/core-utils';
+import { FlagId } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { useEffect, useRef } from 'react';
 
 import { useTheme } from '@/components/providers/theme-provider';
+import { InstallChecksPanel } from '@/features/system';
+import { flagsHooks } from '@/hooks/flags-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 import { useRedirectAfterLogin } from '@/lib/navigation-utils';
 
@@ -18,6 +21,10 @@ export function AuthLanding({ initialMode }: AuthLandingProps) {
     !isNil(authenticationSession.getToken()) &&
     !authenticationSession.isOnboarding();
   const panelRef = useRef<HTMLElement | null>(null);
+  const { data: userCreated } = flagsHooks.useFlag<boolean>(
+    FlagId.USER_CREATED,
+  );
+  const firstUser = userCreated !== true;
   const nudgeRef = useRef<{
     lastAt: number;
     streak: number;
@@ -79,7 +86,7 @@ export function AuthLanding({ initialMode }: AuthLandingProps) {
         onClick={nudgePanel}
         className="absolute inset-0 z-40 cursor-default bg-neutral-50/78 backdrop-blur-[2.8px]"
       />
-      <div className="pointer-events-none absolute inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in zoom-in-95 duration-300 fill-mode-both">
+      <div className="pointer-events-none absolute inset-0 z-50 flex flex-col items-center justify-center gap-4 p-4 lg:flex-row animate-in fade-in zoom-in-95 duration-300 fill-mode-both">
         <section
           ref={panelRef}
           role="dialog"
@@ -88,6 +95,11 @@ export function AuthLanding({ initialMode }: AuthLandingProps) {
         >
           <AuthDrawerBody initialMode={initialMode} />
         </section>
+        {firstUser && (
+          <section className="pointer-events-auto max-h-[90dvh] w-full max-w-[400px] overflow-y-auto rounded-2xl border border-black/[0.06] bg-background">
+            <InstallChecksPanel />
+          </section>
+        )}
       </div>
     </div>
   );

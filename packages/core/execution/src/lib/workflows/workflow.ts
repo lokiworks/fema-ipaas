@@ -51,6 +51,8 @@ export const Workflow = z.object({
     folderId: Nullable(z.string()),
     status: z.nativeEnum(WorkflowStatus),
     publishedVersionId: Nullable(z.string()),
+    testVersionId: Nullable(z.string()),
+    testDeployedAt: Nullable(z.string()),
     metadata: Nullable(Metadata),
     /** @deprecated Only DELETING is actively used — ENABLING/DISABLING are no longer set */
     operationStatus: z.nativeEnum(WorkflowOperationStatus),

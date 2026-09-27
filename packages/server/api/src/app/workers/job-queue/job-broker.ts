@@ -1,5 +1,5 @@
 import { isNil, tryCatch } from '@fema-ipaas/core-utils'
-import { ConsumeJobRequest, ConsumeJobResponse, EngineResponseStatus, JobData } from '@fema-ipaas/shared'
+import { ConsumeJobRequest, ConsumeJobResponse, EngineResponseStatus, JobData, RunEnvironment } from '@fema-ipaas/shared'
 import { Worker as BullMQWorker, Job, UnrecoverableError } from 'bullmq'
 import { FastifyBaseLogger } from 'fastify'
 import { accessTokenManager } from '../../authentication/lib/access-token-manager'
@@ -144,6 +144,7 @@ async function tryDequeue(worker: BullMQWorker, queueName: string, log: FastifyB
         jobId,
         projectId: migratedData.projectId as string,
         tenantId: migratedData.tenantId,
+        environment: environmentOf(migratedData),
     })
 
     return {
@@ -322,3 +323,8 @@ export const jobBroker = (log: FastifyBaseLogger) => ({
         workerPromises.clear()
     },
 })
+
+function environmentOf(jobData: object): RunEnvironment | undefined {
+    const environment: unknown = 'environment' in jobData ? jobData.environment : undefined
+    return environment === RunEnvironment.TESTING || environment === RunEnvironment.PRODUCTION ? environment : undefined
+}

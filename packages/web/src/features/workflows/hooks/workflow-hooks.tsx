@@ -13,8 +13,6 @@ import {
   WorkflowVersionTemplate,
   ListWorkflowsRequest,
   PopulatedWorkflow,
-  WorkflowTrigger,
-  WorkflowTriggerType,
   Template,
   TelemetryEventName,
   UncategorizedFolderId,
@@ -29,9 +27,6 @@ import { useApErrorDialogStore } from '@/components/custom/error-dialog/error-di
 import { useSocket } from '@/components/providers/socket-provider';
 import { useTelemetry } from '@/components/providers/telemetry-provider';
 import { internalErrorToast } from '@/components/ui/sonner';
-import { connectorsApi } from '@/features/connectors/api/connectors-api';
-import { connectorSelectorUtils } from '@/features/connectors/utils/connector-selector-utils';
-import { stepUtils } from '@/features/connectors/utils/step-utils';
 import { executionsApi } from '@/features/executions/api/executions-api';
 import { foldersApi } from '@/features/folders/api/folders-api';
 import { templatesApi } from '@/features/templates/api/templates-api';
@@ -224,43 +219,6 @@ export const workflowHooks = {
         return result;
       },
       onSuccess,
-    });
-  },
-  useCreateMcpWorkflow: () => {
-    const navigate = useNavigate();
-    return useMutation({
-      mutationFn: async () => {
-        const workflow = await workflowsApi.create({
-          projectId: authenticationSession.getProjectId()!,
-          displayName: t('Untitled'),
-        });
-        const mcpConnector = await connectorsApi.get({
-          name: '@fema-ipaas/connector-mcp',
-        });
-        const trigger = mcpConnector.triggers['mcp_tool'];
-        if (!trigger) {
-          throw new Error('MCP trigger not found');
-        }
-        const stepData = connectorSelectorUtils.getDefaultStepValues({
-          stepName: 'trigger',
-          connectorSelectorItem: {
-            actionOrTrigger: trigger,
-            type: WorkflowTriggerType.CONNECTOR,
-            connectorMetadata: stepUtils.mapConnectorToMetadata({
-              connector: mcpConnector,
-              type: 'trigger',
-            }),
-          },
-        }) as WorkflowTrigger;
-        await workflowsApi.update(workflow.id, {
-          type: WorkflowOperationType.UPDATE_TRIGGER,
-          request: stepData,
-        });
-        return workflow;
-      },
-      onSuccess: (workflow) => {
-        navigate(`/workflows/${workflow.id}/`);
-      },
     });
   },
   useGetWorkflow: ({

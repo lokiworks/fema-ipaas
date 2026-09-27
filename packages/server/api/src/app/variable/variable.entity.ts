@@ -7,8 +7,9 @@ import { EntitySchema } from 'typeorm'
 import { BaseColumnSchemaPart } from '../database/database-common'
 import { EncryptedObject } from '../helper/encryption'
 
-export type VariableSchema = Omit<Variable, 'value'> & {
+export type VariableSchema = Omit<Variable, 'value' | 'hasTestValue'> & {
     value: EncryptedObject
+    testValue: EncryptedObject | null
     owner?: (User & { identity?: UserIdentity })
 }
 
@@ -33,6 +34,10 @@ export const VariableEntity = new EntitySchema<VariableSchema>({
         },
         value: {
             type: 'jsonb',
+        },
+        testValue: {
+            type: 'jsonb',
+            nullable: true,
         },
         metadata: {
             type: 'jsonb',

@@ -44,6 +44,7 @@ const FormSchema = z.object({
     .min(1, formErrors.required)
     .regex(VARIABLE_NAME_REGEX, 'invalidVariableName'),
   value: z.string().optional(),
+  testValue: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof FormSchema>;
@@ -90,6 +91,7 @@ function VariableForm(props: VariableFormProps) {
     defaultValues: {
       name: existing?.name ?? '',
       value: '',
+      testValue: '',
     },
   });
 
@@ -98,13 +100,18 @@ function VariableForm(props: VariableFormProps) {
       if (!projectId) {
         throw new Error('No project');
       }
+      const testValue = values.testValue?.length ? values.testValue : undefined;
       if (existing) {
-        return variablesApi.update(existing.id, { value: values.value });
+        return variablesApi.update(existing.id, {
+          value: values.value?.length ? values.value : undefined,
+          testValue,
+        });
       }
       return variablesApi.create({
         projectId,
         name: values.name,
         value: values.value ?? '',
+        testValue,
       });
     },
     onSuccess: (variable) => {
@@ -125,7 +132,8 @@ function VariableForm(props: VariableFormProps) {
   });
 
   const handleSubmit = (values: FormValues) => {
-    if (!values.value) {
+    const onlyTestValue = isEdit && !values.value && !!values.testValue;
+    if (!values.value && !onlyTestValue) {
       form.setError('value', { type: 'manual', message: formErrors.required });
       return;
     }
@@ -200,6 +208,34 @@ function VariableForm(props: VariableFormProps) {
                       )}
                     </Button>
                   </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+        {(!isEdit || showValueField) && (
+          <FormField
+            control={form.control}
+            name="testValue"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('Test value (optional)')}</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    type="text"
+                    autoComplete="off"
+                    spellCheck={false}
+                    className={cn(
+                      !valueVisible && '[-webkit-text-security:disc]',
+                    )}
+                    placeholder={
+                      existing?.hasTestValue
+                        ? t('Leave empty to keep the current test value')
+                        : t('Test runs in the editor use this value instead')
+                    }
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

@@ -73,6 +73,7 @@ export const Execution = z.object({
         displayName: z.string().optional(),
     }).optional(),
     logsFileId: Nullable(z.string()),
+    displayLogsFileId: Nullable(z.string()),
     status: z.nativeEnum(ExecutionStatus),
     startTime: z.string().nullish(),
     finishTime: z.string().nullish(),
@@ -85,6 +86,9 @@ export const Execution = z.object({
     stepNameToTest: z.string().optional(),
     archivedAt: Nullable(z.string()),
     stepsCount: z.number().optional(),
+    issueId: Nullable(z.string()),
+    privacyMaskedFields: z.number().optional(),
+    payloadRedacted: z.boolean().optional(),
     // Populated only for tenant admins on INTERNAL_ERROR runs; stripped from the response otherwise.
     internalError: RunInternalError.optional(),
 })

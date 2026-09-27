@@ -8,6 +8,7 @@ import { entitiesMustBeOwnedByCurrentProject } from '../../authentication/author
 import { ProjectResourceType } from '../../core/security/authorization/common'
 import { securityAccess } from '../../core/security/authorization/fastify-security'
 import { networkUtils } from '../../helper/network-utils'
+import { workflowReleaseService } from '../../release/workflow-release.service'
 import { userService } from '../../user/user-service'
 import { migrateWorkflowVersionTemplate } from '../workflow-version/migrations'
 import { WorkflowEntity } from './workflow.entity'
@@ -71,6 +72,11 @@ export const workflowController: FastifyPluginAsyncZod = async (app) => {
             id: request.params.id,
             projectId: request.projectId,
         })
+        if (request.body.type === WorkflowOperationType.LOCK_AND_PUBLISH) {
+            await workflowReleaseService(request.log).assertCanPublishDirectly({
+                projectId: request.projectId,
+            })
+        }
 
         return workflowService(request.log).update({
             id: request.params.id,

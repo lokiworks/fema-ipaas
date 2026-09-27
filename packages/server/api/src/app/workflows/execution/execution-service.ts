@@ -13,6 +13,7 @@ import { paginationHelper } from '../../helper/pagination/pagination-utils'
 import { Order } from '../../helper/pagination/paginator'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
+import { privacyService } from '../../privacy/privacy.service'
 import { projectService } from '../../project/project-service'
 import { jobQueue, JobType } from '../../workers/job-queue/job-queue'
 import { payloadOffloader } from '../../workers/payload-offloader'
@@ -118,6 +119,12 @@ export const executionService = (log: FastifyBaseLogger) => ({
             projectId,
         })
         log.info({ execution: { id: executionId }, workflow: { id: oldExecution.workflowId }, strategy }, 'Workflow run retry initiated')
+        if (strategy === WorkflowRetryStrategy.FROM_FAILED_STEP && isNil(oldExecution.logsFileId) && !isNil(oldExecution.displayLogsFileId)) {
+            throw new ApplicationError({
+                code: ErrorCode.VALIDATION,
+                params: { message: 'The original run data has passed its retention period. Rerun the whole workflow instead.' },
+            })
+        }
 
         const project = await projectService(log).getOneOrThrow(oldExecution.projectId)
         const retentionDays = getEffectiveExecutionDataRetentionDays(project.executionDataRetentionDays)
@@ -397,6 +404,10 @@ export const executionService = (log: FastifyBaseLogger) => ({
 
         return execution
     },
+    async readStateSteps({ logsFileId, projectId }: { logsFileId: string, projectId: string }): Promise<Record<string, StepOutput> | null> {
+        const stateFile = await readLogsFile(log, logsFileId, projectId)
+        return stateFile?.executionState.steps ?? null
+    },
     async getStepsOrNull({ execution }: { execution: Execution }): Promise<Record<string, StepOutput> | null> {
         if (isNil(execution.logsFileId)) {
             return null
@@ -538,6 +549,23 @@ export const executionService = (log: FastifyBaseLogger) => ({
             updated: dayjsUtil(row.updated.toISOString()).toISOString(),
         }))
     },
+    async getOneForDisplayOrThrow(params: GetOneParams): Promise<Execution> {
+        const execution = await this.getOneOrThrow(params)
+        if (isNil(execution.displayLogsFileId)) {
+            return this.getOnePopulatedOrThrow(params)
+        }
+        const [displayFile, rawFile] = await Promise.all([
+            readLogsFile(log, execution.displayLogsFileId, execution.projectId),
+            execution.status === ExecutionStatus.INTERNAL_ERROR && !isNil(execution.logsFileId)
+                ? readLogsFile(log, execution.logsFileId, execution.projectId)
+                : Promise.resolve(null),
+        ])
+        return {
+            ...execution,
+            steps: displayFile?.executionState.steps ?? {},
+            internalError: rawFile?.internalError,
+        }
+    },
     async getOnePopulatedOrThrow(params: GetOneParams): Promise<Execution> {
         const execution = await this.getOneOrThrow(params)
         let steps = {}
@@ -674,6 +702,10 @@ async function filterExecutionsAndApplyFilters(
 
 export async function addToQueue(params: AddToQueueParams, log: FastifyBaseLogger): Promise<Execution> {
     const logsFileId = params.execution.logsFileId ?? generateId()
+    const logPrivacy = await privacyService(log).logPrivacyFor({
+        tenantId: params.tenantId,
+        displayLogsFileId: params.execution.displayLogsFileId ?? generateId(),
+    })
 
     let jobPayload: JobPayload = { type: 'inline', value: null }
     if (!isNil(params.payload) && isNil(params.workerHandlerId)) {
@@ -699,6 +731,7 @@ export async function addToQueue(params: AddToQueueParams, log: FastifyBaseLogge
         stepNameToTest: params.execution.stepNameToTest ?? undefined,
         sampleData: params.sampleData,
         logsFileId,
+        logPrivacy,
     }
     const data: ExecuteWorkflowJobData = params.executionType === ExecutionType.RESUME
         ? {

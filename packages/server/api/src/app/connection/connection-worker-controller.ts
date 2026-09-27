@@ -1,7 +1,8 @@
 import { ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil } from '@fema-ipaas/core-utils'
-import { Connection, EnginePrincipal, GetConnectionForWorkerRequestQuery } from '@fema-ipaas/shared'
+import { Connection, EnginePrincipal, GetConnectionForWorkerRequestQuery, RunEnvironment } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { securityAccess } from '../core/security/authorization/fastify-security'
+import { connectionReplacementService } from '../release/connection-replacement.service'
 import { connectionService } from './connection-service/connection-service'
 
 export const connectionWorkerController: FastifyPluginAsyncZod = async (app) => {
@@ -9,10 +10,13 @@ export const connectionWorkerController: FastifyPluginAsyncZod = async (app) => 
     app.get('/:externalId', GetConnectionRequest, async (request): Promise<Connection> => {
         const enginePrincipal = (request.principal as EnginePrincipal)
         assertNotNullOrUndefined(enginePrincipal.projectId, 'projectId')
+        const externalId = enginePrincipal.environment === RunEnvironment.TESTING
+            ? await connectionReplacementService(request.log).resolveExternalIdForTesting({ projectId: enginePrincipal.projectId, externalId: request.params.externalId })
+            : request.params.externalId
         const connection = await connectionService(request.log).getOne({
             projectId: enginePrincipal.projectId,
             tenantId: enginePrincipal.tenant.id,
-            externalId: request.params.externalId,
+            externalId,
         })
 
         if (isNil(connection)) {

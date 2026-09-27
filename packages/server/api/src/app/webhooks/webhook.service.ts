@@ -1,4 +1,4 @@
-import { assertNotNullOrUndefined, generateId, isNil, ProjectId, TenantId, WorkflowVersionId } from '@fema-ipaas/core-utils'
+import { ApplicationError, assertNotNullOrUndefined, ErrorCode, generateId, isNil, ProjectId, TenantId, WorkflowVersionId } from '@fema-ipaas/core-utils'
 import { wideEvent } from '@fema-ipaas/server-utils'
 import { EngineHttpResponse, EventPayload, Execution, ExecutionType, LATEST_JOB_DATA_SCHEMA_VERSION, RunEnvironment, StreamStepProgress, TriggerPayload, WorkerJobType, Workflow, WorkflowStatus } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
@@ -22,10 +22,17 @@ const MAX_PAYLOAD_SIZE_BYTES = system.getNumberOrThrow(AppSystemProp.MAX_WEBHOOK
 export enum WebhookWorkflowVersionToRun {
     LOCKED_FALL_BACK_TO_LATEST = 'locked_fall_back_to_latest',
     LATEST = 'latest',
+    TEST_DEPLOYMENT = 'test_deployment',
 }
 
 export const webhookService = {
     async getWorkflowVersionIdToRun(type: WebhookWorkflowVersionToRun, workflow: Workflow): Promise<WorkflowVersionId> {
+        if (type === WebhookWorkflowVersionToRun.TEST_DEPLOYMENT) {
+            if (isNil(workflow.testVersionId)) {
+                throw new ApplicationError({ code: ErrorCode.ENTITY_NOT_FOUND, params: { entityId: workflow.id, entityType: 'TestDeployment', message: 'This workflow is not deployed to the test environment' } })
+            }
+            return workflow.testVersionId
+        }
         if (type === WebhookWorkflowVersionToRun.LOCKED_FALL_BACK_TO_LATEST && !isNil(workflow.publishedVersionId)) {
             return workflow.publishedVersionId
         }
@@ -128,7 +135,7 @@ export const webhookService = {
             }
         }
 
-        if (workflow.status === WorkflowStatus.DISABLED && !saveSampleData) {
+        if (workflow.status === WorkflowStatus.DISABLED && !saveSampleData && workflowVersionToRun !== WebhookWorkflowVersionToRun.TEST_DEPLOYMENT) {
             pinoLogger.warn({ workflow: { id: workflowId } }, 'Webhook received for disabled workflow')
             wideEvent.set({ webhook: { workflowFound: false } })
             return {

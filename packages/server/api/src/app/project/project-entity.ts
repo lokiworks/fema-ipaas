@@ -61,6 +61,12 @@ export const ProjectEntity = new EntitySchema<ProjectSchema>({
             nullable: false,
             default: false,
         },
+        releaseApproverIds: {
+            type: String,
+            array: true,
+            nullable: false,
+            default: '{}',
+        },
         notifyWorkflowOwnerOnFailure: {
             type: Boolean,
             nullable: false,

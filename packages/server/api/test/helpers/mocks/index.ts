@@ -98,6 +98,7 @@ export const createMockProject = (project?: Partial<Project>): Project => {
         tenantId: project?.tenantId ?? generateId(),
         externalId: project?.externalId ?? generateId(),
         releasesEnabled: project?.releasesEnabled ?? false,
+        releaseApproverIds: project?.releaseApproverIds ?? [],
         notifyWorkflowOwnerOnFailure: project?.notifyWorkflowOwnerOnFailure ?? false,
         metadata: project?.metadata ?? null,
         type: project?.type ?? ProjectType.TEAM,

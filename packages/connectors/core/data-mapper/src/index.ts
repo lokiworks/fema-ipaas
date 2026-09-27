@@ -1,6 +1,7 @@
 import { ConnectorAuth, createConnector } from '@fema-ipaas/connector-sdk';
 import { ConnectorCategory } from '@fema-ipaas/connector-sdk';
 import { advancedMapping } from './lib/actions/advanced-mapping';
+import { mapFields } from './lib/actions/map-fields';
 
 export const dataMapper = createConnector({
   displayName: 'Data Mapper',
@@ -11,6 +12,6 @@ export const dataMapper = createConnector({
   auth: ConnectorAuth.None(),
   categories: [ConnectorCategory.CORE],
   authors: ["kishanprmr","MoShizzle","AbdulTheActiveConnectorr","khaledmashaly","abuaboud"],
-  actions: [advancedMapping],
+  actions: [mapFields, advancedMapping],
   triggers: [],
 });

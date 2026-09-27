@@ -18,6 +18,7 @@ export type Variable = BaseModel<VariableId> & {
     owner: UserWithMetaInformation | null
     metadata: Metadata | null
     value: VariableValue
+    hasTestValue: boolean
 }
 
 export const VariableWithoutSensitiveData = z.object({
@@ -28,5 +29,6 @@ export const VariableWithoutSensitiveData = z.object({
     ownerId: Nullable(z.string()),
     owner: Nullable(UserWithMetaInformation),
     metadata: Nullable(Metadata),
+    hasTestValue: z.boolean(),
 }).describe('A project-scoped encrypted variable that workflows can reference via {{variables[\'NAME\']}}.')
 export type VariableWithoutSensitiveData = z.infer<typeof VariableWithoutSensitiveData>

@@ -17,8 +17,27 @@ export {
   camelCase,
   startCase,
   tryCatch,
+  dataMapping,
+  MappingSpec,
+  MappingTransformType,
+  MappingMissingBehavior,
+  llmWire,
+  LlmProvider,
+  mcpWire,
+  MCP_PROTOCOL_VERSION,
 } from '@fema-ipaas/core-utils';
-export type { SeekPage } from '@fema-ipaas/core-utils';
+export type {
+  SeekPage,
+  MappingTableData,
+  LlmConfig,
+  LlmContent,
+  LlmMessage,
+  LlmTool,
+  LlmResponse,
+  LlmUsage,
+  McpTool,
+  McpToolResult,
+} from '@fema-ipaas/core-utils';
 
 export {
   ConnectorCategory,

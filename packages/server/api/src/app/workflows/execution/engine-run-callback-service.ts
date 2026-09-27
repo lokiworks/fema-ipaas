@@ -43,6 +43,7 @@ export const engineRunCallbackService = (log: FastifyBaseLogger) => ({
             status: request.status,
             tags: request.tags,
             logsFileId: request.logsFileId,
+            displayLogsFileId: request.displayLogsFileId,
             failedStep: truncateFailedStepMessage(request.failedStep),
             startTime: request.startTime,
             finishTime: request.finishTime,

@@ -361,6 +361,7 @@ export const workflowService = (log: FastifyBaseLogger) => ({
                     userId,
                     projectId,
                     tenantId,
+                    versionId: operation.request.versionId,
                 })
                 const isRepublish = !isNil(previouslyPublishedVersion) && workflowPublishUtils.isSameTrigger({
                     published: previouslyPublishedVersion.trigger,
@@ -470,12 +471,13 @@ export const workflowService = (log: FastifyBaseLogger) => ({
         userId,
         projectId,
         tenantId,
+        versionId,
     }: UpdatePublishedVersionIdParams): Promise<PopulatedWorkflow> {
         const workflowToUpdate = await this.getOneOrThrow({ id, projectId })
 
         const workflowVersionToPublish = await workflowVersionService(log).getWorkflowVersionOrThrow({
             workflowId: id,
-            versionId: undefined,
+            versionId,
         })
 
         if (workflowToUpdate.status === WorkflowStatus.ENABLED && !isNil(workflowToUpdate.publishedVersionId)) {
@@ -854,6 +856,7 @@ type UpdatePublishedVersionIdParams = {
     userId: UserId | null
     tenantId: TenantId
     projectId: ProjectId
+    versionId?: string
 }
 
 type DeleteParams = EventEmissionParams & {

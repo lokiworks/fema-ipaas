@@ -42,6 +42,11 @@ export enum ApplicationEventName {
     CONNECTOR_PUBLISHED = 'connector.published',
     MEMBER_ADDED = 'member.added',
     MEMBER_REMOVED = 'member.removed',
+    EXECUTION_PAYLOAD_REVEALED = 'workflow.run.payload.revealed',
+    ISSUE_REPLAYED = 'issue.replayed',
+    PRIVACY_SETTINGS_UPDATED = 'privacy.settings.updated',
+    PERSONAL_DATA_ERASURE = 'privacy.personal_data.erasure',
+    AGENT_APPROVAL_DECIDED = 'agent.approval.decided',
 }
 
 const BaseAuditEventProps = {
@@ -429,6 +434,75 @@ export const SignUpEvent = z.object({
 })
 export type SignUpEvent = z.infer<typeof SignUpEvent>
 
+export const ExecutionPayloadRevealedEvent = z.object({
+    ...BaseAuditEventProps,
+    action: z.literal(ApplicationEventName.EXECUTION_PAYLOAD_REVEALED),
+    data: z.object({
+        execution: z.object({
+            id: z.string(),
+            workflowId: z.string(),
+        }),
+        stepName: z.string(),
+        reason: z.string().optional(),
+    }),
+})
+export type ExecutionPayloadRevealedEvent = z.infer<typeof ExecutionPayloadRevealedEvent>
+
+export const IssueReplayedEvent = z.object({
+    ...BaseAuditEventProps,
+    action: z.literal(ApplicationEventName.ISSUE_REPLAYED),
+    data: z.object({
+        issue: z.object({
+            id: z.string(),
+            title: z.string(),
+        }),
+        strategy: z.string(),
+        count: z.number(),
+    }),
+})
+export type IssueReplayedEvent = z.infer<typeof IssueReplayedEvent>
+
+export const PrivacySettingsUpdatedEvent = z.object({
+    ...BaseAuditEventProps,
+    action: z.literal(ApplicationEventName.PRIVACY_SETTINGS_UPDATED),
+    data: z.object({
+        logRetentionDays: z.number(),
+        payloadLevel: z.string(),
+    }),
+})
+export type PrivacySettingsUpdatedEvent = z.infer<typeof PrivacySettingsUpdatedEvent>
+
+export const PersonalDataErasureEvent = z.object({
+    ...BaseAuditEventProps,
+    action: z.literal(ApplicationEventName.PERSONAL_DATA_ERASURE),
+    data: z.object({
+        request: z.object({
+            id: z.string(),
+            kind: z.string(),
+            valueHint: z.string(),
+            reason: z.string(),
+        }),
+        phase: z.enum(['REQUESTED', 'CONFIRMED', 'CANCELED']),
+        matchedRuns: z.number(),
+    }),
+})
+export type PersonalDataErasureEvent = z.infer<typeof PersonalDataErasureEvent>
+
+export const AgentApprovalDecidedEvent = z.object({
+    ...BaseAuditEventProps,
+    action: z.literal(ApplicationEventName.AGENT_APPROVAL_DECIDED),
+    data: z.object({
+        approval: z.object({
+            id: z.string(),
+            tool: z.string(),
+            executionId: z.string(),
+        }),
+        approved: z.boolean(),
+        comment: z.string().nullable(),
+    }),
+})
+export type AgentApprovalDecidedEvent = z.infer<typeof AgentApprovalDecidedEvent>
+
 export const ApplicationEvent = z.union([
     ConnectionEvent,
     VariableEvent,
@@ -444,6 +518,11 @@ export const ApplicationEvent = z.union([
     SignUpEvent,
     ConnectorPublishedEvent,
     MemberEvent,
+    ExecutionPayloadRevealedEvent,
+    IssueReplayedEvent,
+    PrivacySettingsUpdatedEvent,
+    PersonalDataErasureEvent,
+    AgentApprovalDecidedEvent,
 ])
 
 export type ApplicationEvent = z.infer<typeof ApplicationEvent>
@@ -490,6 +569,16 @@ export function summarizeApplicationEvent(event: ApplicationEvent) {
             return `Variable ${event.data.variable.name} is deleted`
         case ApplicationEventName.VARIABLE_VALUE_REVEALED:
             return `Variable ${event.data.variable.name} value was revealed`
+        case ApplicationEventName.EXECUTION_PAYLOAD_REVEALED:
+            return `Raw payload of step ${event.data.stepName} in run ${event.data.execution.id} was revealed`
+        case ApplicationEventName.ISSUE_REPLAYED:
+            return `${event.data.count} runs of issue "${event.data.issue.title}" were replayed`
+        case ApplicationEventName.PRIVACY_SETTINGS_UPDATED:
+            return 'Privacy settings were updated'
+        case ApplicationEventName.AGENT_APPROVAL_DECIDED:
+            return `Agent tool call ${event.data.approval.tool} in run ${event.data.approval.executionId} was ${event.data.approved ? 'approved' : 'rejected'}`
+        case ApplicationEventName.PERSONAL_DATA_ERASURE:
+            return `Personal data erasure for ${event.data.request.valueHint}: ${event.data.phase.toLowerCase()} (${event.data.matchedRuns} runs)`
         case ApplicationEventName.USER_SIGNED_IN:
             return `User ${event.userEmail} signed in`
         case ApplicationEventName.USER_PASSWORD_RESET:

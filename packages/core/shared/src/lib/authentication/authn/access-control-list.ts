@@ -6,6 +6,8 @@ const VIEWER_PERMISSIONS: Permission[] = [
     Permission.READ_CONNECTION,
     Permission.READ_CONNECTOR,
     Permission.READ_RUN,
+    Permission.READ_ISSUE,
+    Permission.READ_MCP_SERVICE,
     Permission.READ_TEMPLATE,
     Permission.READ_PROJECT,
     Permission.READ_FOLDER,
@@ -19,6 +21,7 @@ const OPERATOR_PERMISSIONS: Permission[] = [
     ...VIEWER_PERMISSIONS,
     Permission.UPDATE_WORKFLOW_STATUS,
     Permission.WRITE_RUN,
+    Permission.WRITE_ISSUE,
     Permission.WRITE_CONNECTION,
 ]
 
@@ -30,6 +33,7 @@ const DEVELOPER_PERMISSIONS: Permission[] = [
     Permission.WRITE_FOLDER,
     Permission.WRITE_VARIABLE,
     Permission.WRITE_PROJECT_RELEASE,
+    Permission.WRITE_MCP_SERVICE,
     Permission.MANAGE_CONNECTOR_DEVELOPMENT,
     Permission.MANAGE_TEMPLATE,
 ]

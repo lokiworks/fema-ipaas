@@ -203,6 +203,7 @@ export type UpdateWorkflowStatusRequest = z.infer<typeof UpdateWorkflowStatusReq
 
 export const ChangePublishedVersionIdRequest = z.object({
     status: z.nativeEnum(WorkflowStatus).optional(),
+    versionId: z.string().optional(),
 })
 export type ChangePublishedVersionIdRequest = z.infer<
     typeof ChangePublishedVersionIdRequest

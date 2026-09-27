@@ -144,6 +144,20 @@ export const STATIC_PAGES: StaticPage[] = [
     requiresTenantAdmin: true,
   },
   {
+    id: 'page-tenant-system',
+    label: 'Tenant Admin — System and upgrades',
+    href: '/tenant/infra/system',
+    icon: ServerIcon,
+    requiresTenantAdmin: true,
+  },
+  {
+    id: 'page-tenant-backup',
+    label: 'Tenant Admin — Backup and restore',
+    href: '/tenant/infra/backup',
+    icon: ServerIcon,
+    requiresTenantAdmin: true,
+  },
+  {
     id: 'page-tenant-triggers',
     label: 'Tenant Admin — Triggers',
     href: '/tenant/infra/triggers',

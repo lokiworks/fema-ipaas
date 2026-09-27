@@ -6,6 +6,14 @@ export const routesThatRequireProjectId = {
   home: '/home',
   runs: '/runs',
   singleRun: '/runs/:runId',
+  issues: '/issues',
+  singleIssue: '/issues/:issueId',
+  agentApprovals: '/agent-approvals',
+  releases: '/releases',
+  singleRelease: '/releases/:releaseId',
+  mappingTables: '/mapping-tables',
+  mcpServices: '/mcp-services',
+  aiUsage: '/ai-usage',
   workflows: '/workflows',
   singleWorkflow: '/workflows/:workflowId',
   automations: '/automations',
@@ -30,3 +38,4 @@ export const determineDefaultRoute = ({
 };
 
 export const NEW_WORKFLOW_QUERY_PARAM = 'newWorkflow';
+export const NEW_CONNECTION_QUERY_PARAM = 'newConnection';

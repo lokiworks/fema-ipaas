@@ -19,6 +19,7 @@ import {
 import { useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+import { CreateOrEditConnectionDialog } from '@/app/connections/create-edit-connection-dialog';
 import { NewConnectionDialog } from '@/app/connections/new-connection-dialog';
 import { ReconnectButtonDialog } from '@/app/connections/reconnect-button-dialog';
 import { ReplaceConnectionsDialog } from '@/app/connections/replace-connections-dialog';
@@ -63,6 +64,7 @@ import { useAuthorization } from '@/hooks/authorization-hooks';
 import { ownerColumnHooks } from '@/hooks/owner-column-hooks';
 import { userHooks } from '@/hooks/user-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
+import { NEW_CONNECTION_QUERY_PARAM } from '@/lib/route-utils';
 
 function ConnectionsPage() {
   const navigate = useNavigate();
@@ -89,6 +91,9 @@ function ConnectionsPage() {
   const status = (searchParams.getAll('status') as ConnectionStatus[]) ?? [];
   const connectorName = searchParams.get('connectorName') ?? undefined;
   const displayName = searchParams.get('displayName') ?? undefined;
+  const newConnectionConnectorName = searchParams.get(
+    NEW_CONNECTION_QUERY_PARAM,
+  );
 
   const {
     data: connections,
@@ -458,7 +463,49 @@ function ConnectionsPage() {
         bulkActions={bulkActions}
         toolbarButtons={toolbarButtons}
       />
+      {newConnectionConnectorName && userHasPermissionToWriteConnection && (
+        <NewConnectionForConnector
+          connectorName={newConnectionConnectorName}
+          onDone={() => {
+            const params = new URLSearchParams(location.search);
+            params.delete(NEW_CONNECTION_QUERY_PARAM);
+            navigate(
+              { pathname: location.pathname, search: params.toString() },
+              { replace: true },
+            );
+            refetch();
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+function NewConnectionForConnector({
+  connectorName,
+  onDone,
+}: {
+  connectorName: string;
+  onDone: () => void;
+}) {
+  const { connectorModel } = connectorsHooks.useConnector({
+    name: connectorName,
+  });
+  if (!connectorModel) {
+    return null;
+  }
+  return (
+    <CreateOrEditConnectionDialog
+      connector={connectorModel}
+      open={true}
+      reconnectConnection={null}
+      isGlobalConnection={false}
+      setOpen={(open) => {
+        if (!open) {
+          onDone();
+        }
+      }}
+    />
   );
 }
 

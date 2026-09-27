@@ -35,6 +35,9 @@
       "@fema-ipaas/engine": [
         "packages/server/engine/src/main.ts"
       ],
+      "@fema-ipaas/connector-ai": [
+        "packages/connectors/core/ai/src/index.ts"
+      ],
       "@fema-ipaas/connector-approval": [
         "packages/connectors/core/approval/src/index.ts"
       ],
@@ -76,6 +79,9 @@
       ],
       "@fema-ipaas/connector-math-helper": [
         "packages/connectors/core/math-helper/src/index.ts"
+      ],
+      "@fema-ipaas/connector-mcp": [
+        "packages/connectors/core/mcp/src/index.ts"
       ],
       "@fema-ipaas/connector-mysql": [
         "packages/connectors/community/mysql/src/index.ts"

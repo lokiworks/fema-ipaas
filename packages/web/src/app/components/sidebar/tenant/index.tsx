@@ -1,7 +1,11 @@
 import { t } from 'i18next';
 import {
+  ArrowUpCircleIcon,
+  BellRingIcon,
+  DatabaseBackupIcon,
   KeyRound as KeyRoundIcon,
   ScrollTextIcon,
+  ShieldCheckIcon,
   TerminalIcon,
 } from 'lucide-react';
 import { ComponentType, useRef } from 'react';
@@ -143,6 +147,16 @@ export function TenantSidebar() {
           label: t('Encryption'),
           icon: KeyRoundIcon,
         },
+        {
+          to: '/tenant/security/privacy',
+          label: t('Data and privacy'),
+          icon: ShieldCheckIcon,
+        },
+        {
+          to: '/tenant/alerts',
+          label: t('Alerts'),
+          icon: BellRingIcon,
+        },
       ],
     },
     {
@@ -162,6 +176,16 @@ export function TenantSidebar() {
           to: '/tenant/infra/triggers',
           label: t('Triggers'),
           icon: MousePointerClickIcon,
+        },
+        {
+          to: '/tenant/infra/system',
+          label: t('System and upgrades'),
+          icon: ArrowUpCircleIcon,
+        },
+        {
+          to: '/tenant/infra/backup',
+          label: t('Backup and restore'),
+          icon: DatabaseBackupIcon,
         },
       ],
     },

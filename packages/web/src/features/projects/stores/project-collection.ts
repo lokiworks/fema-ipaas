@@ -67,6 +67,9 @@ export const projectCollection = createCollection<ProjectWithLimits, string>(
         if (modified.releasesEnabled !== original.releasesEnabled) {
           request.releasesEnabled = modified.releasesEnabled;
         }
+        if (modified.releaseApproverIds !== original.releaseApproverIds) {
+          request.releaseApproverIds = modified.releaseApproverIds;
+        }
         if (
           modified.notifyWorkflowOwnerOnFailure !==
           original.notifyWorkflowOwnerOnFailure

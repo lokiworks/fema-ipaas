@@ -12,6 +12,7 @@ export const variableWorkerController: FastifyPluginAsyncZod = async (app) => {
         const value = await variableService(request.log).getDecryptedValueForWorker({
             projectId: enginePrincipal.projectId,
             name: request.params.name,
+            environment: enginePrincipal.environment,
         })
         return { value }
     })

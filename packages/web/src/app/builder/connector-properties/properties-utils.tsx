@@ -29,6 +29,10 @@ import CustomProperty from './custom-property';
 import { DateRangeProperty } from './date-range-property';
 import { DynamicProperties } from './dynamic-connector-property';
 import { DynamicDropdownConnectorProperty } from './dynamic-dropdown-connector-property';
+import {
+  MAPPING_EDITOR_TARGET,
+  MappingEditorProperty,
+} from './mapping-editor-property';
 import { NumberStepper } from './number-stepper';
 import { RichTextProperty } from './rich-text-property';
 import { StaticDropdownCards } from './static-dropdown-cards';
@@ -51,6 +55,30 @@ export const selectGenericFormComponentForProperty = ({
   hideDescription,
   enableMarkdownForInputWithMention,
 }: SelectGenericFormComponentForPropertyParams) => {
+  if (
+    dynamicPropsInfo?.connectorName === MAPPING_EDITOR_TARGET.connectorName &&
+    dynamicPropsInfo.actionOrTriggerName === MAPPING_EDITOR_TARGET.actionName &&
+    propertyName === MAPPING_EDITOR_TARGET.propertyName
+  ) {
+    return (
+      <AutoFormFieldWrapper
+        propertyName={propertyName}
+        inputName={inputName}
+        property={property}
+        field={field}
+        hideLabel={hideLabel}
+        disabled={disabled}
+        allowDynamicValues={false}
+        dynamicInputModeToggled={false}
+      >
+        <MappingEditorProperty
+          value={field.value}
+          onChange={field.onChange}
+          disabled={disabled}
+        />
+      </AutoFormFieldWrapper>
+    );
+  }
   const valueTypeOverride = propertySettings?.[propertyName]?.type;
   const valueTypeEditor = isNil(valueTypeOverride)
     ? undefined

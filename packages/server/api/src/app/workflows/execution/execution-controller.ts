@@ -1,12 +1,14 @@
 import { ApplicationError, EntityId, ErrorCode, isNil, omit, Permission, SeekPage } from '@fema-ipaas/core-utils'
 import { dayjsUtil } from '@fema-ipaas/server-utils'
-import { BulkActionOnRunsRequestBody, BulkArchiveActionOnRunsRequestBody, BulkCancelWorkflowRequestBody, CountExecutionsByStatusRequest, CountExecutionsByStatusResponse, Execution, ListExecutionsRequestQuery, PrincipalType, ProjectOverviewRequest, ProjectOverviewResponse, RetryWorkflowRequestBody, RunEnvironment, RunInternalErrorSource, SERVICE_KEY_SECURITY_OPENAPI, TenantRole } from '@fema-ipaas/shared'
+import { ApplicationEventName, BulkActionOnRunsRequestBody, BulkArchiveActionOnRunsRequestBody, BulkCancelWorkflowRequestBody, CountExecutionsByStatusRequest, CountExecutionsByStatusResponse, Execution, ListExecutionsRequestQuery, PrincipalType, ProjectOverviewRequest, ProjectOverviewResponse, RetryWorkflowRequestBody, RevealExecutionPayloadRequestBody, RevealExecutionPayloadResponse, RunEnvironment, RunInternalErrorSource, SERVICE_KEY_SECURITY_OPENAPI, TenantRole } from '@fema-ipaas/shared'
 import { FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
 import { ProjectResourceType } from '../../core/security/authorization/common'
 import { securityAccess } from '../../core/security/authorization/fastify-security'
+import { applicationEvents } from '../../helper/application-events'
+import { privacyService } from '../../privacy/privacy.service'
 import { userService } from '../../user/user-service'
 import { ExecutionEntity } from './execution-entity'
 import { executionService } from './execution-service'
@@ -59,15 +61,44 @@ export const executionController: FastifyPluginAsyncZod = async (app) => {
         '/:id',
         GetRequest,
         async (request, reply) => {
-            const execution = await executionService(request.log).getOnePopulatedOrThrow({
+            const execution = await executionService(request.log).getOneForDisplayOrThrow({
                 projectId: request.projectId,
                 id: request.params.id,
             })
             const internalErrorEnabled = execution.internalError?.source === RunInternalErrorSource.ENGINE || true
             const canViewInternalError = internalErrorEnabled && await isRequesterTenantAdmin(request)
-            await reply.send(canViewInternalError ? execution : omit(execution, ['internalError']))
+            const masked = await privacyService(request.log).maskExecution({ execution, tenantId: request.principal.tenant.id })
+            await reply.send(canViewInternalError ? masked : omit(masked, ['internalError']))
         },
     )
+
+    app.post('/:id/reveal', RevealPayloadRequest, async (request) => {
+        await privacyService(request.log).assertCanReveal({
+            tenantId: request.principal.tenant.id,
+            userId: request.principal.id,
+            reason: request.body.reason,
+        })
+        const execution = await executionService(request.log).getOnePopulatedOrThrow({
+            projectId: request.projectId,
+            id: request.params.id,
+        })
+        if (isNil(execution.logsFileId)) {
+            throw new ApplicationError({
+                code: ErrorCode.VALIDATION,
+                params: { message: 'The original data has passed its retention period' },
+            })
+        }
+        const revealed = privacyService(request.log).revealStep({ execution, stepName: request.body.stepName })
+        applicationEvents(request.log).sendUserEvent(request, {
+            action: ApplicationEventName.EXECUTION_PAYLOAD_REVEALED,
+            data: {
+                execution: { id: execution.id, workflowId: execution.workflowId },
+                stepName: request.body.stepName,
+                reason: request.body.reason,
+            },
+        })
+        return revealed
+    })
 
     app.post('/:id/retry', RetryWorkflowRequest, async (req) => {
         const execution = await executionService(req.log).retry({
@@ -142,6 +173,22 @@ async function isRequesterTenantAdmin(request: FastifyRequest): Promise<boolean>
 }
 
 const ExecutionFilteredWithNoSteps = Execution.omit({ steps: true })
+
+const RevealPayloadRequest = {
+    config: {
+        security: securityAccess.project(
+            [PrincipalType.USER],
+            Permission.READ_RUN,
+            { type: ProjectResourceType.TABLE, tableName: ExecutionEntity },
+        ),
+    },
+    schema: {
+        tags: ['workflow-runs'],
+        params: z.object({ id: EntityId }),
+        body: RevealExecutionPayloadRequestBody,
+        response: { [StatusCodes.OK]: RevealExecutionPayloadResponse },
+    },
+}
 
 const ListRequest = {
     config: {

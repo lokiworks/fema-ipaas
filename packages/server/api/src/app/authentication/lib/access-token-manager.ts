@@ -1,5 +1,5 @@
-import { ApplicationError, ErrorCode, generateId, ProjectId, TenantId } from '@fema-ipaas/core-utils'
-import { ALL_PRINCIPAL_TYPES, EnginePrincipal, Principal, PrincipalType, UserStatus, WorkerPrincipal } from '@fema-ipaas/shared'
+import { ApplicationError, ErrorCode, generateId, isNil, ProjectId, TenantId } from '@fema-ipaas/core-utils'
+import { ALL_PRINCIPAL_TYPES, EnginePrincipal, Principal, PrincipalType, RunEnvironment, UserStatus, WorkerPrincipal } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { jwtUtils } from '../../helper/jwt-utils'
@@ -18,11 +18,12 @@ export const accessTokenManager = (log: FastifyBaseLogger) => ({
         })
     },
 
-    async generateEngineToken({ jobId, projectId, tenantId }: GenerateEngineTokenParams): Promise<string> {
+    async generateEngineToken({ jobId, projectId, tenantId, environment }: GenerateEngineTokenParams): Promise<string> {
         const enginePrincipal: EnginePrincipal = {
             id: jobId ?? generateId(),
             type: PrincipalType.ENGINE,
             projectId,
+            ...(isNil(environment) ? {} : { environment }),
             tenant: {
                 id: tenantId,
             },
@@ -124,4 +125,5 @@ type GenerateEngineTokenParams = {
     projectId: ProjectId
     jobId?: string
     tenantId: TenantId
+    environment?: RunEnvironment
 }

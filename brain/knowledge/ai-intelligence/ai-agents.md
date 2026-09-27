@@ -1,59 +1,22 @@
 ---
+title: AI 连接器与智能体
 icon: 🤖
 ---
 
-# AI Agents
+# AI 连接器与智能体
 
-A workflow step type (backed by `@fema-ipaas/connector-agent`) that runs an LLM-driven autonomous loop. Given a prompt, tools, an AI provider/model, and optional structured-output fields, it runs a ReAct-style loop (up to `maxSteps`) where the model can call any configured tool before producing a final answer.
+AI 连接器有两个操作：**询问模型**（`ask_model`，单次调用，可要求 JSON 输出）和 **AI 智能体**（`run_agent`）。智能体接一个或多个 MCP 服务器，在 `maxSteps` 内循环「模型 → 工具 → 模型」，返回答案和每一步的工具调用记录。
 
-### How it works
+## Gotchas
+- **人工确认**：`confirmWrites` 默认开，工具名按单词拆开后含 create / send / update / delete 等动词就先暂停；`confirmTools` 里的工具总是要确认。暂停时连接器建等待点、把智能体状态存进 `store`（`agent-state:<runId>:<stepName>`，超过 400KB 会截短旧的工具结果），再调 `POST /v1/worker/agent-approvals` 登记；审批人是工作流所有者和项目所有者。
+- 批准 / 拒绝走 `POST /v1/agent-approvals/:id/decide`，服务端用 `resumeService.resumeFromWaitpoint` 恢复运行，恢复载荷是 `AgentApprovalDecision`；公开的等待点恢复地址不交给用户。超时由每分钟的 `AGENT_APPROVAL_EXPIRY` 自动拒绝。
+- 用量按段上报：暂停前报一次，恢复后只报新增部分（状态里记着 `reportedUsage`）。
+- 护栏：`allowedTools` 非空时只把这些工具交给模型；模型点名别的工具会得到错误结果而不是被执行。步数用完时返回 `stoppedEarly: true`，不算失败。
+- 智能体的 MCP 鉴权可以写成连接引用，例如 `{{connections['my-mcp'].props.token}}`，避免把令牌明文写进步骤。
+- 用量由连接器调用 `POST /v1/worker/ai-usage` 上报（引擎令牌鉴权），上报失败不影响步骤结果。
+- 不要给 AI 连接器的操作加名为 `agentId` 的参数：`workflowStructureUtil` 会把它当成上游智能体引用去解析。
 
-- No backend entity of its own — the whole configuration lives inside the workflow version's step settings. The step is a `CONNECTOR` action on `@fema-ipaas/connector-agent`; `settings.input` holds `agentTools`, `structuredOutput`, `prompt`, `maxSteps`, `aiProviderModel` (`{ provider, model }`), and optional `webSearch`.
-- Configured entirely in the Workflow Builder (`web/src/app/builder/step-settings/agent-settings/`); a test panel runs a single agent step. `AgentTimeline` renders `AgentStepBlock[]` from the output as markdown blocks + expandable tool-call cards.
-
-### Tool types (AgentTool discriminated union)
-
-- **CONNECTOR** — a specific connector action (`connectorName`/`connectorVersion`/`actionName`); can carry `predefinedInput` locking certain fields.
-- **WORKFLOW** — calls another workflow by `externalWorkflowId`, executed as a child run.
-- **MCP** — connects to an external MCP server (SSE / StreamableHTTP / SimpleHTTP; None/Bearer/ApiKey/Headers auth).
-- **KNOWLEDGE_BASE** — semantic search over a KB file/table (cosine similarity, 768-dim embeddings).
-- **PredefinedInputsStructure** — per-field `AGENT_DECIDE` / `CHOOSE_YOURSELF` / `LEAVE_EMPTY` baked into the tool so the agent knows which inputs it controls.
-
-### Gotchas
-
-- Gated by `platform.plan.agentsEnabled`; when off, the step type is hidden from the connector selector. Off by default on Community, on for Cloud plans that include it.
-- External MCP tools are validated server-side via `POST /v1/projects/:projectId/agent-tools/mcp/validate` — a JSON-RPC `initialize` → `notifications/initialized` → `tools/list` handshake returning tool names. Outbound call routes through `apAxios` with `ssrf-agents.ts` rejecting private/loopback/link-local/meta IPs (allow ranges via `FEMA_SSRF_ALLOW_LIST`, CIDR). All error paths collapse to one generic message to avoid leaking reachability.
-- That validator lives under `agents/` (validating a server the agent connects *to*), deliberately separate from the `mcp/` module which exposes FEMA Integration Platform itself *as* an MCP server (opposite direction).
-- Shared types live in **two** packages on purpose: `core/connector-types/src/lib/agents.ts` (`zod/mini`, for connectors) and `core/execution/src/lib/agents/` (plain `zod`, for server/web). `AgentResult` is `prompt`, `steps[]`, `status`, optional `structuredOutput`.
-- **The enums and pure functions have exactly one home: `core/connector-types/src/lib/agents.ts`.** Do not re-declare `AgentToolType`, `McpAuthType`, `buildAuthHeaders`, `TASK_COMPLETION_TOOL_NAME`, or `mcpToolNameUtils` in `core-execution` — re-export them. They used to be duplicated byte-for-byte across both packages, which was silently load-bearing: if `createToolName` drifted, the tool names `migrate-v16` persisted would stop matching runtime names and every connector/workflow/MCP call on a migrated workflow would degrade to `ToolCallType.UNKNOWN`. `mcp-tool-name-util.test.ts` asserts both entry points resolve to the *same object*, so a re-fork fails the test rather than shipping.
-- The four `core/execution/src/lib/agents/` files are **not** uniform. `mcp-tool-name-util.ts` and `mcp.ts` are pure re-export shims (1 and 6 lines). `index.ts` and `tools.ts` re-export the canonical enums and functions but still **own** the execution-side plain-`zod` schema definitions — `tools.ts` declares the `AgentTool` union and the `McpAuth*` schemas, `index.ts` declares `AgentOutputField`, `MarkdownContentBlock`, `ToolCallContentBlock` and `AgentStepBlock`. Adding a field to one of those schemas means editing it there *and* in the `zod/mini` twin in `agents.ts`.
-- **A workflow-step run must not reuse chat's resolution logic.** Four separate production failures came from this one assumption while moving the step server-side, each looking like its own bug. `resolveChatProvider` made a step need Chat's provider configured before it would run at all, so an instance that never uses Chat could not run an agent step — and it bit twice, because `resolveFastModel` reached the same helper underneath, so every *configured connector tool* failed with a bare `ENTITY_NOT_FOUND` long after the main model had been fixed. Grep for the transitive callers, not just the direct ones. `resolveModelIdForProvider` treats its argument as a *tier* id and falls back to the tier default when it is not in the curated chat list — a step configured for `claude-sonnet-4.5` silently ran `4.6`, because a step names a concrete model while chat names a tier. And the chat tool set reaches an unattended run, where a tool that asks the user a question is worse than useless: the agent opened a connection picker, read the empty answer as a refusal, and stopped. When a value crosses between the two surfaces, check what it *means* on each side, not just that the types line up.
-- **A worker RPC failure reaches the worker as `error.message` and nothing else.** The envelope in `core/execution/src/lib/engine/rpc.ts` drops `ApplicationError.params` and the stack, so three unrelated causes (conversation gone, no chat-enabled provider, pinned provider has no row) all arrive as the same bare `ENTITY_NOT_FOUND` — unreadable in the failed-job list. `createRpcServer` logs the intact error on the app side; read *that* log, not the worker's.
-- **Whatever enqueues an agent run must pre-check the same thing the worker resolves.** The chat route asked "is any provider enabled for chat" while the worker looked up the run's *pinned* provider, and the workflow-step route checked nothing at all — so a run enqueued fine and could only fail. Both now call `agentHelpers.assertRunProviderConfigured`, which mirrors the worker's lookup. A pre-check that answers a *different* question than the worker is worse than none: it makes the failure look impossible.
-- **Everything the agent job does before its try/catch has no recovery.** `getAgentConfig` used to run outside it, so a config failure sent no error to the chat client and never called `releaseWorkflowStep` — the workflow run sat PAUSED until `FEMA_PAUSED_WORKFLOW_TIMEOUT_DAYS`. Anything added above that block needs its own failure path, or a paused run leaks.
-- **Build the unattended tool set as an allow-list.** Removing chat tools by name failed three times running — display tools, then build-plan and phase tools, then `ap_discover_action_auth` and `ap_load_guide`, which live with the local tools and so survived a filter written by tool group. Grouping tracks where a tool was constructed, not whether it assumes someone is reading. A workflow step gets exactly what it is listed: its configured connector actions, the public-web readers, and the structured-output tool. Anything added to chat later stays out by default.
-- A separate zod-free `agent-primitives.ts` holding those values was tried and **folded back** — don't re-create it. It bought no isolation: `core-execution` imports the `@fema-ipaas/connector-types` **barrel**, which re-exports `agents.ts`, so `zod/mini` comes along whatever the values live in.
-- Only the zod *schemas* stay duplicated — the `zod` vs `zod/mini` split is a real bundle-size decision, and a schema drift breaks loudly where a function drift did not.
-- **In `agents.ts` the enums must stay above the schemas that use them.** A TS enum compiles to a hoisted `var` plus a deferred IIFE, so a schema evaluating `z.literal(AgentToolType.CONNECTOR)` at module load before the enum block has run reads `undefined`. `tsc` catches it (`TS2450: Enum used before its declaration`), but only if you build — it is easy to introduce while reordering the file to satisfy the "exported types and constants at the end" convention.
-
-### Key files
-
-Entry point: `runAgent`, the createAction in the `ai` connector registered in `packages/connectors/community/ai/src/index.ts`.
-
-- `packages/connectors/community/ai/src/lib/actions/agents/` — the agent loop itself: `runAgent`, tool construction, output builder
-- `packages/core/connector-types/src/lib/agents.ts` — `AgentToolType`, `AgentConnectorProps`, `AgentStepBlock`, tool zod schemas; re-exported through `connectors-framework`
-- `packages/core/execution/src/lib/agents/` — execution-side agent types, tool schemas, MCP tool-name helpers
-- `packages/web/src/features/agents/` — all agent UI: tool dialogs and stores, `AgentTimeline`, `AIModelSelector`, `SUPPORTED_AI_PROVIDERS`, structured output
-- `packages/web/src/app/builder/step-settings/agent-settings/` — builder panel for configuring an agent step
-- `packages/web/src/app/builder/test-step/agent-test-step/` — test panel for running one agent step
-- `packages/server/api/src/app/agents/` — `agentsModule`, the `/agent-tools` route, and the external MCP tool validator
-- `packages/server/api/src/app/workflows/workflow-version/migrations/` — the agent step migrations (v7, v8, v14, v15, v16)
-- `packages/core/utils/src/lib/ssrf-ip-classifier.ts` and `packages/server/utils/src/safe-http.ts` — the SSRF guard on outbound calls
-
-Paths verified 2026-07-17. An earlier version pointed at `packages/core/shared/src/lib/automation/agents/`; those types now live in `packages/core/connector-types/src/lib/agents.ts` and `packages/core/execution/src/lib/agents/`.
-
-### Knowledge base gotchas
-
-- **A knowledge base uploaded through the UI is not searchable.** Nothing in the upload path generates chunk embeddings; `knowledge-base.controller.ts` only *accepts* an embedding on a chunk. Chunks land with `embedding IS NULL`, and search filters those out, so the result is an empty answer rather than an error.
-- **`knowledge_base_chunk` is created by a migration that records itself as run even when pgvector is absent.** A database that gains pgvector later never gets the table, because the migration is already marked complete. Deleting its row from `migrations` replays it safely, since the DDL is `CREATE TABLE IF NOT EXISTS`.
-- **Embeddings are stored at a fixed 768 dimensions, and most models do not return that.** `text-embedding-3-small` answers 1536, and the `dimensions` provider option is namespaced under `openai`, so the OpenRouter and managed paths never see it. `agentAiUtils.toStorageEmbedding` truncates and re-normalises instead, which is what the option does server-side and works whatever the provider returns. This only holds for Matryoshka-trained models — adding a model that is not one will truncate badly and silently.
+## Key files
+- `packages/connectors/core/ai/`
+- `packages/connectors/core/mcp/`
+- `packages/core/utils/src/lib/mcp-wire.ts`

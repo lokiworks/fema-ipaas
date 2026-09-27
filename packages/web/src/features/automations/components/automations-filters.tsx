@@ -31,6 +31,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { GenerateWorkflowButton } from '@/features/ai';
 import { useOwnerOptions } from '@/features/automations/hooks/use-owner-options';
 import { TemplatesBrowseDialog } from '@/features/templates';
 import { cn, DASHBOARD_CONTENT_PADDING_X } from '@/lib/utils';
@@ -260,6 +261,8 @@ export const AutomationsFilters = ({
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
+
+            {userHasPermissionToWriteWorkflow && <GenerateWorkflowButton />}
 
             <CreateNewMenu
               scope="root"

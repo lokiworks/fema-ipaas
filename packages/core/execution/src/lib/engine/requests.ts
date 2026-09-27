@@ -17,6 +17,7 @@ export const UploadRunLogsRequest = z.object({
     projectId: z.string(),
     streamStepProgress: z.nativeEnum(StreamStepProgress).optional(),
     logsFileId: z.string().optional(),
+    displayLogsFileId: z.string().optional(),
     stepNameToTest: z.string().optional(),
     failedStep: FailedStep.optional(),
     startTime: z.string().optional(),

@@ -3,7 +3,7 @@ import { zstdCompress as zstdCompressCallback } from 'node:zlib'
 import { setTimeout } from 'timers/promises'
 import { OutputContext } from '@fema-ipaas/connector-sdk'
 import { isNil, tryCatch } from '@fema-ipaas/core-utils'
-import { DEFAULT_MCP_DATA, EngineGenericError, FileCompression, FileType, isExecutionStateTerminal, logSerializer, RunEnvironment, StepOutputStatus, StepRunResponse, UpdateRunProgressRequest, UploadRunLogsRequest } from '@fema-ipaas/shared'
+import { DEFAULT_MCP_DATA, EngineGenericError, EXECUTION_LOG_MANIFEST_V2, FileCompression, FileType, isExecutionStateTerminal, logRedaction, logSerializer, RunEnvironment, StepOutputStatus, StepRunResponse, UpdateRunProgressRequest, UploadRunLogsRequest } from '@fema-ipaas/shared'
 import { Mutex } from 'async-mutex'
 import dayjs from 'dayjs'
 import { engineFileApi } from '../api/engine-file-api'
@@ -109,6 +109,7 @@ export const executionProgressReporter = {
                 },
             })
             const executionState = await zstdCompress(serialized)
+            const displayLogsFileId = await uploadDisplayLog({ engineConstants, workflowExecutorContext })
 
             const logsFileId = engineConstants.logsFileId
             if (isNil(logsFileId)) {
@@ -135,6 +136,7 @@ export const executionProgressReporter = {
                 status,
                 streamStepProgress: engineConstants.streamStepProgress,
                 logsFileId: engineConstants.logsFileId,
+                displayLogsFileId,
                 failedStep: 'failedStep' in workflowExecutorContext.verdict ? workflowExecutorContext.verdict.failedStep : undefined,
                 stepNameToTest: engineConstants.stepNameToTest,
                 stepResponse,
@@ -225,6 +227,27 @@ const extractStepResponse = (params: ExtractStepResponse): StepRunResponse | und
     }
 }
 
+async function uploadDisplayLog({ engineConstants, workflowExecutorContext }: UploadDisplayLogParams): Promise<string | undefined> {
+    const privacy = engineConstants.logPrivacy
+    if (isNil(privacy)) {
+        return undefined
+    }
+    const { steps } = logRedaction.redactSteps({ steps: JSON.parse(JSON.stringify(workflowExecutorContext.steps)), privacy })
+    const serialized = Buffer.from(JSON.stringify({
+        executionState: { steps, tags: Array.from(workflowExecutorContext.tags) },
+        version: EXECUTION_LOG_MANIFEST_V2,
+    }))
+    await engineFileApi.upload({
+        engineToken: engineConstants.engineToken,
+        apiUrl: engineConstants.internalApiUrl,
+        fileId: privacy.displayLogsFileId,
+        type: FileType.EXECUTION_LOG,
+        compression: FileCompression.ZSTD,
+        data: await zstdCompress(serialized),
+    })
+    return privacy.displayLogsFileId
+}
+
 type SendUpdateProgressParams = {
     engineConstants: EngineConstants
     request: UpdateRunProgressRequest
@@ -253,4 +276,9 @@ type ExtractStepResponse = {
     workflowExecutorContext: WorkflowExecutorContext
     runId: string
     stepName?: string
+}
+
+type UploadDisplayLogParams = {
+    engineConstants: EngineConstants
+    workflowExecutorContext: WorkflowExecutorContext
 }

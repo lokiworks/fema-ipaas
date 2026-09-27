@@ -117,6 +117,40 @@ export const webhookController: FastifyPluginAsyncZod = async (app) => {
             .send(response.body)
     })
 
+    app.all('/:workflowId/test-env/sync', WEBHOOK_PARAMS, async (request, reply) => {
+        const response = await webhookService.handleWebhook({
+            data: (projectId: string) => convertRequest(request, projectId, request.params.workflowId),
+            logger: request.log,
+            workflowId: request.params.workflowId,
+            async: false,
+            saveSampleData: false,
+            workflowVersionToRun: WebhookWorkflowVersionToRun.TEST_DEPLOYMENT,
+            execute: true,
+            ...extractHeaderFromRequest(request),
+        })
+        await reply
+            .status(response.status)
+            .headers(response.headers)
+            .send(response.body)
+    })
+
+    app.all('/:workflowId/test-env', WEBHOOK_PARAMS, async (request, reply) => {
+        const response = await webhookService.handleWebhook({
+            data: (projectId: string) => convertRequest(request, projectId, request.params.workflowId),
+            logger: request.log,
+            workflowId: request.params.workflowId,
+            async: true,
+            saveSampleData: false,
+            workflowVersionToRun: WebhookWorkflowVersionToRun.TEST_DEPLOYMENT,
+            execute: true,
+            ...extractHeaderFromRequest(request),
+        })
+        await reply
+            .status(response.status)
+            .headers(response.headers)
+            .send(response.body)
+    })
+
     app.all('/:workflowId/test', WEBHOOK_PARAMS, async (request, reply) => {
         const response = await webhookService.handleWebhook({
             data: (projectId: string) => convertRequest(request, projectId, request.params.workflowId),

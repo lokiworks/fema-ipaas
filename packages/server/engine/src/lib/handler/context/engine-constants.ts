@@ -1,6 +1,6 @@
 import { ContextVersion } from '@fema-ipaas/connector-sdk'
 import { ensureTrailingSlash, isNil, ProjectId, TenantId } from '@fema-ipaas/core-utils'
-import { BaseEngineOperation, BeginExecuteWorkflowOperation, DEFAULT_MCP_DATA, EngineGenericError, ExecutePropsOptions, ExecuteTriggerOperation, ExecutionState, ExecutionType, Project, ResumeExecuteWorkflowOperation, ResumePayload, RunEnvironment, StreamStepProgress, TriggerHookType, WorkflowGraph, workflowStructureUtil, WorkflowTrigger, WorkflowVersionState } from '@fema-ipaas/shared'
+import { BaseEngineOperation, BeginExecuteWorkflowOperation, DEFAULT_MCP_DATA, EngineGenericError, ExecutePropsOptions, ExecuteTriggerOperation, ExecutionState, ExecutionType, LogPrivacy, Project, ResumeExecuteWorkflowOperation, ResumePayload, RunEnvironment, StreamStepProgress, TriggerHookType, WorkflowGraph, workflowStructureUtil, WorkflowTrigger, WorkflowVersionState } from '@fema-ipaas/shared'
 import { retryFetch } from '../../api/retry-fetch'
 import { createPropsResolver, PropsResolver } from '../../variables/props-resolver'
 
@@ -29,6 +29,7 @@ type EngineConstantsParams = {
     runEnvironment?: RunEnvironment
     stepNameToTest?: string
     logsFileId?: string
+    logPrivacy?: LogPrivacy
     timeoutInSeconds: number
     tenantId: TenantId
     stepNames: string[]
@@ -71,6 +72,7 @@ export class EngineConstants {
     public readonly runEnvironment?: RunEnvironment
     public readonly stepNameToTest?: string
     public readonly logsFileId?: string
+    public readonly logPrivacy?: LogPrivacy
     public readonly stepNames: string[] = []
     public readonly actionRunMode: boolean
     private project: Project | null = null
@@ -117,6 +119,7 @@ export class EngineConstants {
         this.runEnvironment = params.runEnvironment
         this.stepNameToTest = params.stepNameToTest
         this.logsFileId = params.logsFileId
+        this.logPrivacy = params.logPrivacy
         this.tenantId = params.tenantId
         this.timeoutInSeconds = params.timeoutInSeconds
         this.stepNames = params.stepNames
@@ -136,6 +139,7 @@ export class EngineConstants {
             runEnvironment: input.runEnvironment,
             stepNameToTest: input.stepNameToTest ?? undefined,
             logsFileId: input.logsFileId,
+            logPrivacy: input.logPrivacy,
         })
     }
 

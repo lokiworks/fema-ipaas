@@ -4,7 +4,7 @@ import {
   WorkflowVersionState,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
-import { EllipsisVertical, Eye, EyeIcon, Pencil } from 'lucide-react';
+import { EllipsisVertical, Eye, EyeIcon, History, Pencil } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
@@ -28,6 +28,7 @@ import { WorkflowVersionStateDot, workflowHooks } from '@/features/workflows';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 
 import { OverwriteDraftDialog } from './overwrite-draft-dialog';
+import { RollbackVersionDialog } from './rollback-version-dialog';
 
 const WorkflowVersionDetailsCard = React.memo(
   ({
@@ -45,6 +46,10 @@ const WorkflowVersionDetailsCard = React.memo(
       state.setReadOnly,
     ]);
     const [dropdownMenuOpen, setDropdownMenuOpen] = useState(false);
+    const canRollbackToThisVersion =
+      workflowVersion.state === WorkflowVersionState.LOCKED &&
+      workflowVersion.id !== publishedVersionId &&
+      checkAccess(Permission.PUBLISH_WORKFLOW);
     const { mutate: viewVersion, isPending } =
       workflowHooks.useFetchWorkflowVersion({
         onSuccess: (populatedWorkflowVersion) => {
@@ -115,7 +120,7 @@ const WorkflowVersionDetailsCard = React.memo(
                 <EllipsisVertical />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-40">
+            <DropdownMenuContent className="w-52">
               <DropdownMenuItem
                 onClick={() => viewVersion(workflowVersion)}
                 className="w-full"
@@ -123,6 +128,23 @@ const WorkflowVersionDetailsCard = React.memo(
                 <Eye className="mr-2 h-4 w-4" />
                 <span>{t('View')}</span>
               </DropdownMenuItem>
+              {canRollbackToThisVersion && (
+                <RollbackVersionDialog
+                  versionId={workflowVersion.id}
+                  versionNumber={workflowVersionNumber}
+                  onDone={() => setDropdownMenuOpen(false)}
+                >
+                  <DropdownMenuItem
+                    className="w-full"
+                    onSelect={(e) => {
+                      e.preventDefault();
+                    }}
+                  >
+                    <History className="mr-2 h-4 w-4" />
+                    <span>{t('Roll back to this version')}</span>
+                  </DropdownMenuItem>
+                </RollbackVersionDialog>
+              )}
               {workflowVersion.state !== WorkflowVersionState.DRAFT && (
                 <OverwriteDraftDialog
                   versionNumber={workflowVersionNumber.toString()}

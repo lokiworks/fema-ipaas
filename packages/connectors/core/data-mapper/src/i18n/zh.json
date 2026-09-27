@@ -4,5 +4,11 @@
   "Map data from one format to another": "把数据从一种结构映射到另一种",
   "Mapping": "映射",
   "The mapping to use": "要使用的映射",
-  "Data Mapper": "数据映射"
+  "Data Mapper": "数据映射",
+  "Map Fields": "字段映射",
+  "Build an object field by field, with transforms and mapping-table lookups": "逐个字段组装对象，支持转换和查映射表",
+  "Field mapping": "字段映射",
+  "Target fields and how each one is computed": "目标字段以及每个字段的取值方式",
+  "Fail when a field cannot be mapped": "字段映射失败时让节点失败",
+  "When off, fields that fail keep their unconverted value and the step succeeds": "关闭后，映射失败的字段保留原值，节点仍然成功"
 }

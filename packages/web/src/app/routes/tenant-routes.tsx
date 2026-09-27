@@ -9,6 +9,8 @@ import { TenantLayout } from '../components/tenant-layout';
 const SettingsHealthPage = React.lazy(() => import('./tenant/infra/health'));
 const TriggerHealthPage = React.lazy(() => import('./tenant/infra/triggers'));
 const SettingsWorkersPage = React.lazy(() => import('./tenant/infra/workers'));
+const SystemPage = React.lazy(() => import('./tenant/infra/system'));
+const BackupPage = React.lazy(() => import('./tenant/infra/backup'));
 const ProjectsPage = React.lazy(() => import('./tenant/projects'));
 const AuthenticationPage = React.lazy(() =>
   import('./tenant/security/sso').then((m) => ({
@@ -41,6 +43,12 @@ const TenantTemplatesPage = React.lazy(() =>
   })),
 );
 const UsersPage = React.lazy(() => import('./tenant/users'));
+const AlertsPage = React.lazy(() => import('./tenant/alerts'));
+const PrivacyPage = React.lazy(() =>
+  import('./tenant/security/privacy').then((m) => ({
+    default: m.PrivacyPage,
+  })),
+);
 const AuditLogPage = React.lazy(() => import('./tenant/audit'));
 const ConnectorMarketplacePage = React.lazy(
   () => import('./tenant/connectors/marketplace'),
@@ -89,6 +97,7 @@ export const tenantRoutes = [
   tenantRoute('/tenant/projects', 'Projects', ProjectsPage),
   tenantRoute('/tenant/users', 'Members', UsersPage),
   tenantRoute('/tenant/audit', 'Audit Log', AuditLogPage),
+  tenantRoute('/tenant/alerts', 'Alerts', AlertsPage),
   tenantRoute('/tenant/connections', 'Connections', TenantConnectionsPage),
   {
     path: '/tenant/setup',
@@ -144,6 +153,7 @@ export const tenantRoutes = [
     AuthenticationPage,
   ),
   tenantRoute('/tenant/security/encryption', 'Encryption', EncryptionPage),
+  tenantRoute('/tenant/security/privacy', 'Data and privacy', PrivacyPage),
   {
     path: '/tenant/infra',
     element: (
@@ -157,4 +167,6 @@ export const tenantRoutes = [
   tenantRoute('/tenant/infra/health', 'System Health', SettingsHealthPage),
   tenantRoute('/tenant/infra/triggers', 'Triggers', TriggerHealthPage),
   tenantRoute('/tenant/infra/workers', 'Workers', SettingsWorkersPage),
+  tenantRoute('/tenant/infra/system', 'System and upgrades', SystemPage),
+  tenantRoute('/tenant/infra/backup', 'Backup and restore', BackupPage),
 ];

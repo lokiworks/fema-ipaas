@@ -18,6 +18,7 @@ export const variableController: FastifyPluginCallbackZod = (app, _opts, done) =
             tenantId: request.principal.tenant.id,
             name: request.body.name,
             value: request.body.value,
+            testValue: request.body.testValue,
             metadata: request.body.metadata,
             ownerId,
         })
@@ -34,6 +35,7 @@ export const variableController: FastifyPluginCallbackZod = (app, _opts, done) =
             projectId: request.projectId,
             tenantId: request.principal.tenant.id,
             value: request.body.value,
+            testValue: request.body.testValue,
             metadata: request.body.metadata,
         })
         applicationEvents(request.log).sendUserEvent(request, {

@@ -20,6 +20,7 @@ export const projectService = (log: FastifyBaseLogger) => ({
             ...rest,
             icon,
             releasesEnabled: false,
+            releaseApproverIds: [],
             notifyWorkflowOwnerOnFailure: false,
         }
         const savedProject = await projectRepo(entityManager).save(newProject)
@@ -73,6 +74,7 @@ export const projectService = (log: FastifyBaseLogger) => ({
         const baseUpdate = {
             ...spreadIfDefined('externalId', externalId),
             ...spreadIfDefined('releasesEnabled', request.releasesEnabled),
+            ...spreadIfDefined('releaseApproverIds', request.releaseApproverIds),
             ...spreadIfDefined('notifyWorkflowOwnerOnFailure', request.notifyWorkflowOwnerOnFailure),
             ...spreadIfDefined('metadata', request.metadata),
             ...(request.poolId !== undefined ? { poolId: request.poolId } : {}),
@@ -287,6 +289,7 @@ type UpdateTeamProjectParams = {
     displayName?: string
     externalId?: string
     releasesEnabled?: boolean
+    releaseApproverIds?: string[]
     notifyWorkflowOwnerOnFailure?: boolean
     metadata?: Metadata
     poolId?: string | null
@@ -300,6 +303,7 @@ type UpdatePersonalProjectParams = {
     type: ProjectType.PERSONAL
     externalId?: string
     releasesEnabled?: boolean
+    releaseApproverIds?: string[]
     notifyWorkflowOwnerOnFailure?: boolean
     metadata?: Metadata
     poolId?: string | null

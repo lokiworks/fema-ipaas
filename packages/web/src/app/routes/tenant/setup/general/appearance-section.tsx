@@ -23,6 +23,8 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { tenantHooks } from '@/hooks/tenant-hooks';
+import { colorContrast, MIN_UI_CONTRAST } from '@/lib/color-contrast';
+import { cn } from '@/lib/utils';
 
 const hexColor = z.string().regex(HEX_COLOR_PATTERN, 'invalidHexColor');
 
@@ -241,6 +243,7 @@ export const AppearanceSection = () => {
                       ></ColorPicker>
                       <FormMessage />
                     </div>
+                    <PrimaryColorContrast color={String(field.value ?? '')} />
                   </FormItem>
                 )}
               />
@@ -317,3 +320,26 @@ export const AppearanceSection = () => {
     </>
   );
 };
+
+function PrimaryColorContrast({ color }: { color: string }) {
+  const ratio = colorContrast.ratio({
+    foreground: color,
+    background: '#ffffff',
+  });
+  if (ratio === null) {
+    return null;
+  }
+  const readable = colorContrast.isReadableOnWhite(color);
+  return (
+    <FormDescription className={cn(!readable && 'text-destructive')}>
+      {readable
+        ? t('Contrast on a white background: {ratio}:1', {
+            ratio: ratio.toFixed(2),
+          })
+        : t(
+            'This color is too light to read on a white background ({ratio}:1, needs at least {min}:1).',
+            { ratio: ratio.toFixed(2), min: MIN_UI_CONTRAST },
+          )}
+    </FormDescription>
+  );
+}

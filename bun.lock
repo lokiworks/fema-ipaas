@@ -203,6 +203,21 @@
         "tslib": "2.6.2",
       },
     },
+    "packages/connectors/core/ai": {
+      "name": "@fema-ipaas/connector-ai",
+      "version": "0.1.0",
+      "dependencies": {
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
+        "zod": "4.3.6",
+      },
+      "devDependencies": {
+        "tslib": "2.6.2",
+        "vitest": "3.2.6",
+      },
+    },
     "packages/connectors/core/connections": {
       "name": "@fema-ipaas/connector-connections",
       "version": "0.5.10",
@@ -253,7 +268,7 @@
     },
     "packages/connectors/core/data-mapper": {
       "name": "@fema-ipaas/connector-data-mapper",
-      "version": "0.3.21",
+      "version": "0.4.0",
       "dependencies": {
         "@fema-ipaas/connector-common": "workspace:*",
         "@fema-ipaas/connector-sdk": "workspace:*",
@@ -361,6 +376,21 @@
     "packages/connectors/core/math-helper": {
       "name": "@fema-ipaas/connector-math-helper",
       "version": "0.0.30",
+      "dependencies": {
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
+        "zod": "4.3.6",
+      },
+      "devDependencies": {
+        "tslib": "2.6.2",
+        "vitest": "3.2.6",
+      },
+    },
+    "packages/connectors/core/mcp": {
+      "name": "@fema-ipaas/connector-mcp",
+      "version": "0.1.0",
       "dependencies": {
         "@fema-ipaas/connector-common": "workspace:*",
         "@fema-ipaas/connector-sdk": "workspace:*",
@@ -488,7 +518,7 @@
     },
     "packages/connectors/sdk": {
       "name": "@fema-ipaas/connector-sdk",
-      "version": "0.36.0",
+      "version": "0.37.0",
       "dependencies": {
         "@fema-ipaas/connector-types": "workspace:*",
         "@fema-ipaas/core-utils": "workspace:*",
@@ -549,7 +579,7 @@
     },
     "packages/core/shared": {
       "name": "@fema-ipaas/shared",
-      "version": "0.147.0",
+      "version": "0.148.0",
       "dependencies": {
         "@fema-ipaas/connector-types": "workspace:*",
         "@fema-ipaas/core-utils": "workspace:*",
@@ -574,7 +604,7 @@
     },
     "packages/core/utils": {
       "name": "@fema-ipaas/core-utils",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "dependencies": {
         "deepmerge-ts": "7.1.0",
         "ipaddr.js": "2.3.0",
@@ -1434,6 +1464,8 @@
 
     "@fema-ipaas/components": ["@fema-ipaas/components@workspace:packages/components/builtin"],
 
+    "@fema-ipaas/connector-ai": ["@fema-ipaas/connector-ai@workspace:packages/connectors/core/ai"],
+
     "@fema-ipaas/connector-beisen": ["@fema-ipaas/connector-beisen@workspace:packages/connectors/community/beisen"],
 
     "@fema-ipaas/connector-common": ["@fema-ipaas/connector-common@workspace:packages/connectors/common"],
@@ -1461,6 +1493,8 @@
     "@fema-ipaas/connector-manual-trigger": ["@fema-ipaas/connector-manual-trigger@workspace:packages/connectors/core/manual-trigger"],
 
     "@fema-ipaas/connector-math-helper": ["@fema-ipaas/connector-math-helper@workspace:packages/connectors/core/math-helper"],
+
+    "@fema-ipaas/connector-mcp": ["@fema-ipaas/connector-mcp@workspace:packages/connectors/core/mcp"],
 
     "@fema-ipaas/connector-mysql": ["@fema-ipaas/connector-mysql@workspace:packages/connectors/community/mysql"],
 

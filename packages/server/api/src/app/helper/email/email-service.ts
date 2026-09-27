@@ -92,6 +92,21 @@ export const emailService = (log: FastifyBaseLogger) => ({
         })
     },
 
+    async sendAlert({ tenantId, to, title, body, link }: SendAlertParams): Promise<void> {
+        const branding = await brandingFor(tenantId, log)
+        await mailSender(log).send({
+            to,
+            subject: title,
+            template: 'alert-notification',
+            variables: {
+                ...branding,
+                title,
+                body,
+                link: link ?? '',
+            },
+        })
+    },
+
     async sendTenantDeleted({ tenantId, email, purgeDate }: SendTenantDeletedParams): Promise<void> {
         const branding = await brandingFor(tenantId, log)
         await mailSender(log).send({
@@ -132,6 +147,14 @@ type SendWorkflowFailureParams = {
     failedStepDisplayName: string
     failedStepNumber: string
     failedStepMessage: string
+}
+
+type SendAlertParams = {
+    tenantId: TenantId
+    to: string
+    title: string
+    body: string
+    link: string | null
 }
 
 type SendTenantDeletedParams = {

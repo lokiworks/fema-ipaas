@@ -10,6 +10,7 @@ import { exceptionHandler } from '../helper/exception-handler'
 import { jwtUtils } from '../helper/jwt-utils'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
+import { PrivacySettingsEntity } from '../privacy/privacy-settings.entity'
 import { projectRepo } from '../project/project-repo'
 import { fileCompressor } from './file-compressor'
 import { FileEntity } from './file.entity'
@@ -21,6 +22,7 @@ const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 
 
 export const fileRepo = repoFactory<File>(FileEntity)
 const EXECUTION_DATA_RETENTION_DAYS = system.getNumberOrThrow(AppSystemProp.EXECUTION_DATA_RETENTION_DAYS)
+const privacySettingsRepo = repoFactory(PrivacySettingsEntity)
 
 type BaseFile = Pick<File, 'id' | 'projectId' | 'tenantId' | 'type' | 'fileName' | 'compression' | 'size' | 'metadata' | 'created' | 'updated'>
 
@@ -159,14 +161,17 @@ export const fileService = (log: FastifyBaseLogger) => ({
     async deleteStaleBulk(types: FileType[]) {
         const maximumFilesToDeletePerIteration = 4000
         const maximumFilesToDeletePerRun = 1_000_000
+        const tenantRetention = await tenantsWithShorterRetention()
+        const tenantIds = [...tenantRetention.keys()]
         const customRetentionProjects = await projectRepo().find({
-            select: ['id', 'executionDataRetentionDays'],
-            where: {
-                executionDataRetentionDays: LessThan(EXECUTION_DATA_RETENTION_DAYS),
-            },
+            select: ['id', 'tenantId', 'executionDataRetentionDays'],
+            where: [
+                { executionDataRetentionDays: LessThan(EXECUTION_DATA_RETENTION_DAYS) },
+                ...(tenantIds.length > 0 ? [{ tenantId: In(tenantIds) }] : []),
+            ],
         })
         const cleanupPasses: CleanupPass[] = [
-            ...Array.from(groupProjectIdsByRetentionDays(customRetentionProjects), ([retentionDays, projectIds]) => ({
+            ...Array.from(groupProjectIdsByRetentionDays({ projects: customRetentionProjects, tenantRetention }), ([retentionDays, projectIds]) => ({
                 retentionDateBoundary: dayjs().subtract(retentionDays, 'days').toISOString(),
                 projectIds,
             })),
@@ -328,10 +333,20 @@ function normalizeTypeFilter(type: FileType | FileType[] | undefined) {
     return Array.isArray(type) ? In(type) : type
 }
 
-function groupProjectIdsByRetentionDays(projects: Pick<Project, 'id' | 'executionDataRetentionDays'>[]): Map<number, ProjectId[]> {
+async function tenantsWithShorterRetention(): Promise<Map<string, number>> {
+    const settings = await privacySettingsRepo().find({
+        select: ['tenantId', 'logRetentionDays'],
+        where: { logRetentionDays: LessThan(EXECUTION_DATA_RETENTION_DAYS) },
+    })
+    return new Map(settings.map((setting) => [setting.tenantId, setting.logRetentionDays]))
+}
+
+function groupProjectIdsByRetentionDays({ projects, tenantRetention }: GroupByRetentionParams): Map<number, ProjectId[]> {
     const retentionDaysToProjectIds = new Map<number, ProjectId[]>()
     for (const project of projects) {
-        const effectiveRetentionDays = getEffectiveExecutionDataRetentionDays(project.executionDataRetentionDays)
+        const tenantDays = tenantRetention.get(project.tenantId)
+        const projectDays = isNil(tenantDays) ? project.executionDataRetentionDays : Math.min(tenantDays, project.executionDataRetentionDays ?? tenantDays)
+        const effectiveRetentionDays = getEffectiveExecutionDataRetentionDays(projectDays)
         if (effectiveRetentionDays >= EXECUTION_DATA_RETENTION_DAYS) {
             continue
         }
@@ -420,4 +435,9 @@ type UploadPublicAssetParams = {
     allowedMimeTypes?: string[]
     maxFileSizeInBytes?: number
     metadata?: Record<string, string>
+}
+
+type GroupByRetentionParams = {
+    projects: Pick<Project, 'id' | 'tenantId' | 'executionDataRetentionDays'>[]
+    tenantRetention: Map<string, number>
 }

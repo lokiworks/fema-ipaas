@@ -76,3 +76,4 @@ Streams platform/project events to webhook URLs in real time — internal FEMA w
 - **Knowledge Base** — documents chunked into vector embeddings for AI search
 - **Analytics** — usage reporting
 - **Audit Logs** — the persisted security-action record
+- **数据与隐私** — 记录级别、读取时打码、查看原文

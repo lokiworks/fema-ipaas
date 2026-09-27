@@ -1,6 +1,7 @@
 import { isNil, Permission } from '@fema-ipaas/core-utils';
 import {
   Execution,
+  FlagId,
   PopulatedWorkflow,
   WorkflowVersion,
   WorkflowVersionState,
@@ -8,6 +9,8 @@ import {
 import { useMutation } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { CircleCheck } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { LeftSideBarType, RightSideBarType } from '@/app/builder/types';
@@ -18,10 +21,26 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { workflowHooks } from '@/features/workflows';
+import { projectCollectionUtils } from '@/features/projects';
+import {
+  EnvironmentStatus,
+  ReleaseRequestDialog,
+  releasesHooks,
+  releaseUiUtils,
+} from '@/features/releases';
+import { workflowHooks, workflowsApi } from '@/features/workflows';
 import { useAuthorization } from '@/hooks/authorization-hooks';
+import { flagsHooks } from '@/hooks/flags-hooks';
 
 export const BuilderPublishSection = () => {
+  const { project } = projectCollectionUtils.useCurrentProject();
+  if (project.releasesEnabled) {
+    return <EnvironmentsPublishSection projectId={project.id} />;
+  }
+  return <SingleEnvironmentPublishSection />;
+};
+
+function SingleEnvironmentPublishSection() {
   const [
     isSaving,
     isPublishing,
@@ -152,7 +171,198 @@ export const BuilderPublishSection = () => {
       </Tooltip>
     </div>
   );
-};
+}
+
+function EnvironmentsPublishSection({ projectId }: { projectId: string }) {
+  const [
+    isSaving,
+    isPublishing,
+    setIsPublishing,
+    isValid,
+    workflow,
+    setWorkflow,
+    setVersion,
+    workflowVersion,
+    run,
+  ] = useBuilderStateContext((state) => [
+    state.saving,
+    state.isPublishing,
+    state.setIsPublishing,
+    state.workflowVersion.valid,
+    state.workflow,
+    state.setWorkflow,
+    state.setVersion,
+    state.workflowVersion,
+    state.run,
+  ]);
+  const { checkAccess } = useAuthorization();
+  const canDeploy = checkAccess(Permission.WRITE_WORKFLOW);
+  const canPromote = checkAccess(Permission.WRITE_PROJECT_RELEASE);
+  const [promoteDialogOpen, setPromoteDialogOpen] = useState(false);
+  const { data: webhookUrlPrefix } = flagsHooks.useFlag<string>(
+    FlagId.WEBHOOK_URL_PREFIX,
+  );
+  const { data: overview } = releasesHooks.useEnvironments({
+    projectId,
+    enabled: canPromote,
+    showErrorDialog: false,
+  });
+  const { mutateAsync: deployToTest } = releasesHooks.useDeployToTest();
+  const { mutate: deploy } = useMutation({
+    mutationFn: async () => {
+      setIsPublishing(true);
+      try {
+        await deployToTest({ projectId, workflowId: workflow.id });
+        return await workflowsApi.get(workflow.id);
+      } finally {
+        setIsPublishing(false);
+      }
+    },
+    onSuccess: (updatedWorkflow) => {
+      setWorkflow(updatedWorkflow);
+      setVersion(updatedWorkflow.version);
+      toast.success(t('Deployed to test'), {
+        description: releaseUiUtils.isWebhookTrigger(
+          updatedWorkflow.version.trigger,
+        )
+          ? t('Send test requests to {url}', {
+              url: releaseUiUtils.testWebhookUrl({
+                webhookUrlPrefix,
+                workflowId: updatedWorkflow.id,
+              }),
+            })
+          : undefined,
+      });
+    },
+  });
+  const { mutate: refreshWorkflow } = useMutation({
+    mutationFn: () => workflowsApi.get(workflow.id),
+    onSuccess: (updatedWorkflow) => setWorkflow(updatedWorkflow),
+  });
+
+  if (!isNil(run)) {
+    return null;
+  }
+
+  const isDraft = workflowVersion.state === WorkflowVersionState.DRAFT;
+  const isBusy = isPublishing || isSaving;
+  const pendingReleaseId =
+    overview?.workflows.find((row) => row.workflowId === workflow.id)
+      ?.pendingReleaseId ?? null;
+  const blocker = releaseUiUtils.promotionBlocker({
+    testVersionId: workflow.testVersionId,
+    productionVersionId: workflow.publishedVersionId,
+    pendingReleaseId,
+  });
+  const promoteDisabledReason = isPublishing
+    ? t('Deploying to test...')
+    : isNil(blocker)
+    ? null
+    : releaseUiUtils.promotionBlockerText(blocker);
+  const deployDisabledReason = isSaving
+    ? t('Saving...')
+    : !isValid
+    ? t('You have incomplete steps')
+    : null;
+  const status = releaseUiUtils.environmentStatus({
+    versionId: workflowVersion.id,
+    isDraft,
+    testVersionId: workflow.testVersionId,
+    productionVersionId: workflow.publishedVersionId,
+  });
+
+  return (
+    <div className="flex items-center gap-2">
+      <EnvironmentStatusText
+        status={status}
+        isSaving={isSaving}
+        isDeploying={isPublishing}
+      />
+      {canDeploy && isDraft && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="tooltip-wrapper">
+              <Button
+                size="sm"
+                variant="default"
+                loading={isBusy}
+                name="Deploy to test"
+                onClick={() => deploy()}
+                disabled={!isNil(deployDisabledReason) || isBusy}
+              >
+                {t('Deploy to test')}
+              </Button>
+            </div>
+          </TooltipTrigger>
+          {!isNil(deployDisabledReason) && (
+            <TooltipContent>{deployDisabledReason}</TooltipContent>
+          )}
+        </Tooltip>
+      )}
+      {canPromote && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="tooltip-wrapper">
+              <Button
+                size="sm"
+                variant={isDraft && canDeploy ? 'outline' : 'default'}
+                name="Promote to production"
+                onClick={() => setPromoteDialogOpen(true)}
+                disabled={!isNil(promoteDisabledReason)}
+              >
+                {t('Promote to production')}
+              </Button>
+            </div>
+          </TooltipTrigger>
+          {!isNil(promoteDisabledReason) && (
+            <TooltipContent>{promoteDisabledReason}</TooltipContent>
+          )}
+        </Tooltip>
+      )}
+      <ReleaseRequestDialog
+        open={promoteDialogOpen}
+        onOpenChange={setPromoteDialogOpen}
+        workflowId={workflow.id}
+        onPromoted={() => refreshWorkflow()}
+      />
+    </div>
+  );
+}
+
+function EnvironmentStatusText({
+  status,
+  isSaving,
+  isDeploying,
+}: {
+  status: EnvironmentStatus;
+  isSaving: boolean;
+  isDeploying: boolean;
+}) {
+  if (isSaving || isDeploying) {
+    return (
+      <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-xs text-muted-foreground">
+        <LoadingSpinner className="size-3 stroke-muted-foreground" />
+        {isSaving ? t('Saving...') : t('Deploying to test...')}
+      </span>
+    );
+  }
+  if (status === EnvironmentStatus.NONE) {
+    return null;
+  }
+  if (status === EnvironmentStatus.NOT_DEPLOYED) {
+    return (
+      <span className="flex shrink-0 items-center whitespace-nowrap text-xs text-muted-foreground">
+        {t('Changes not deployed to test')}
+      </span>
+    );
+  }
+  return (
+    <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-xs text-muted-foreground">
+      <CircleCheck className="size-3.5 text-success" />
+      {DEPLOYED_STATUS_LABELS[status]()}
+    </span>
+  );
+}
 
 const useCanPublish = ({
   workflowVersion,
@@ -197,3 +407,14 @@ function pickStatusText({
   }
   return t('Unpublished changes');
 }
+
+const DEPLOYED_STATUS_LABELS: Record<
+  | EnvironmentStatus.TEST
+  | EnvironmentStatus.PRODUCTION
+  | EnvironmentStatus.TEST_AND_PRODUCTION,
+  () => string
+> = {
+  [EnvironmentStatus.TEST]: () => t('In test'),
+  [EnvironmentStatus.PRODUCTION]: () => t('In production'),
+  [EnvironmentStatus.TEST_AND_PRODUCTION]: () => t('In test and production'),
+};

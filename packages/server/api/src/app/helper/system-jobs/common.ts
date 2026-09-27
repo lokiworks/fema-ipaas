@@ -14,6 +14,10 @@ export enum SystemJobName {
     RESUME_DELAY_WAITPOINT = 'resume-delay-waitpoint',
     TOOL_SEARCH_REINDEX = 'tool-search-reindex',
     CHAT_STALE_SWEEP = 'chat-stale-sweep',
+    ALERT_SWEEP = 'alert-sweep',
+    RAW_STATE_PURGE = 'raw-state-purge',
+    DATA_ERASURE = 'data-erasure',
+    AGENT_APPROVAL_EXPIRY = 'agent-approval-expiry',
 }
 
 type DeleteWorkflowDurableSystemJobData =  {
@@ -54,6 +58,10 @@ type SystemJobDataMap = {
     [SystemJobName.RESUME_DELAY_WAITPOINT]: ResumeDelayWaitpointSystemJobData
     [SystemJobName.TOOL_SEARCH_REINDEX]: ToolSearchReindexSystemJobData
     [SystemJobName.CHAT_STALE_SWEEP]: Record<string, never>
+    [SystemJobName.ALERT_SWEEP]: Record<string, never>
+    [SystemJobName.RAW_STATE_PURGE]: Record<string, never>
+    [SystemJobName.DATA_ERASURE]: { requestId: string }
+    [SystemJobName.AGENT_APPROVAL_EXPIRY]: Record<string, never>
 }
 
 export type SystemJobData<T extends SystemJobName = SystemJobName> = T extends SystemJobName ? SystemJobDataMap[T] : never

@@ -27,7 +27,7 @@ export function HomeOnboardingCard({
   onStartTour: () => void;
 }) {
   const [dismissed, setDismissed] = useState(readDismissed);
-  if (dismissed) {
+  if (dismissed || (hasProject && hasWorkflow)) {
     return null;
   }
   return (

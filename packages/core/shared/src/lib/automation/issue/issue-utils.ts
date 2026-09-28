@@ -7,7 +7,6 @@ export const issueUtils = {
     classifyFailure,
     severityOf,
     insightOf,
-    readableMessage,
     isTransientHttpStatus,
 }
 
@@ -100,17 +99,6 @@ function insightOf({ issue, connectionHealthy }: InsightOfParams): IssueInsight 
     }
 }
 
-function readableMessage(raw: string | undefined): string {
-    if (isNil(raw) || raw.trim().length === 0) {
-        return ''
-    }
-    const parsed = safeParseJson(raw)
-    if (typeof parsed === 'object' && parsed !== null && 'message' in parsed && typeof parsed.message === 'string') {
-        return parsed.message
-    }
-    return raw
-}
-
 function isTransientHttpStatus(errorCode: string | null | undefined): boolean {
     const status = httpStatusOf(errorCode)
     return !isNil(status) && TRANSIENT_HTTP_STATUSES.includes(status)
@@ -122,15 +110,6 @@ function httpStatusOf(errorCode: string | null | undefined): number | null {
     }
     const status = Number(errorCode.slice('HTTP_'.length))
     return Number.isFinite(status) ? status : null
-}
-
-function safeParseJson(raw: string): unknown {
-    try {
-        return JSON.parse(raw)
-    }
-    catch {
-        return null
-    }
 }
 
 function fix({ kind, disabledReason }: { kind: IssueFixKind, disabledReason?: ReplayReason | null }): IssueFix {

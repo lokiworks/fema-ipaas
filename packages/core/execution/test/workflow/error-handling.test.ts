@@ -16,6 +16,30 @@ describe('errorHandlingUtils.classifyErrorMessage', () => {
         expect(result.connectionExternalId).toBe('crm-main')
     })
 
+    it('turns an HTTP connector error into a readable message', () => {
+        const message = JSON.stringify({ response: { status: 404 }, request: {} })
+        const result = errorHandlingUtils.classifyErrorMessage({ message })
+        expect(result.message).toBe('HTTP 404')
+        expect(result.errorCode).toBe('HTTP_404')
+    })
+
+    it('keeps the API explanation from the HTTP response body', () => {
+        const withObject = JSON.stringify({ response: { status: 400, body: { code: 40001, msg: 'invalid department_id' } }, request: {} })
+        const withText = JSON.stringify({ response: { status: 502, body: 'Bad Gateway' }, request: {} })
+        expect(errorHandlingUtils.classifyErrorMessage({ message: withObject }).message).toBe('HTTP 400: invalid department_id')
+        expect(errorHandlingUtils.classifyErrorMessage({ message: withText }).message).toBe('HTTP 502: Bad Gateway')
+    })
+
+    it('reads the message even when another body field is not a string', () => {
+        const message = JSON.stringify({ response: { status: 422, body: { error: { code: 'E1' }, message: 'name is required' } }, request: {} })
+        expect(errorHandlingUtils.classifyErrorMessage({ message }).message).toBe('HTTP 422: name is required')
+    })
+
+    it('drops an HTML error page instead of putting it in the message', () => {
+        const message = JSON.stringify({ response: { status: 503, body: `<html>${'x'.repeat(500)}</html>` }, request: {} })
+        expect(errorHandlingUtils.classifyErrorMessage({ message }).message).toBe('HTTP 503')
+    })
+
     it('uses STEP_TIMEOUT for timed out runs and STEP_FAILED otherwise', () => {
         expect(errorHandlingUtils.classifyErrorMessage({ message: 'boom', timedOut: true }).errorCode).toBe('STEP_TIMEOUT')
         expect(errorHandlingUtils.classifyErrorMessage({ message: 'boom' }).errorCode).toBe('STEP_FAILED')

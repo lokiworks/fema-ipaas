@@ -135,10 +135,30 @@ function readableMessage(raw: string | undefined): string {
         return ''
     }
     const parsed = safeParseJson(raw)
-    if (typeof parsed === 'object' && parsed !== null && 'message' in parsed && typeof parsed.message === 'string') {
-        return parsed.message
+    const withMessage = MessageShape.safeParse(parsed)
+    if (withMessage.success) {
+        return withMessage.data.message
     }
-    return raw
+    const httpError = HttpErrorShape.safeParse(parsed)
+    if (!httpError.success) {
+        return raw
+    }
+    const { status, body } = httpError.data.response
+    const detail = bodyMessage(body)
+    return isNil(detail) ? `HTTP ${status}` : `HTTP ${status}: ${detail}`
+}
+
+function bodyMessage(body: unknown): string | null {
+    if (typeof body === 'string') {
+        const text = body.trim()
+        return text.length === 0 || text.length > MAX_BODY_MESSAGE_LENGTH ? null : text
+    }
+    const fields = BodyMessageShape.safeParse(body)
+    if (!fields.success) {
+        return null
+    }
+    const { message, error_description, error, msg } = fields.data
+    return [message, error_description, error, msg].find((value) => !isNil(value) && value.trim().length > 0) ?? null
 }
 
 function friendlyHttpStatus(raw: string | undefined): number | null {
@@ -226,6 +246,15 @@ const CONNECTION_EXPIRED_PATTERN = /connection \(([^)]+)\) expired/
 const CONNECTION_NOT_FOUND_PATTERN = /connection \(([^)]+)\) not found/
 const CONNECTION_LOADING_PATTERN = /Failed to load connection \(([^)]+)\)/
 const HTTP_STATUS_PATTERN = /\b([45]\d\d)\b/
+const MAX_BODY_MESSAGE_LENGTH = 200
+const MessageShape = z.object({ message: z.string() })
+const HttpErrorShape = z.object({ response: z.object({ status: z.number(), body: z.unknown().optional() }) })
+const BodyMessageShape = z.object({
+    message: z.string().optional().catch(undefined),
+    error_description: z.string().optional().catch(undefined),
+    error: z.string().optional().catch(undefined),
+    msg: z.string().optional().catch(undefined),
+})
 const RETRY_MODE_OF: Record<ErrorOutcome, ErrorStrategyMode> = {
     [ErrorOutcome.STOP]: ErrorStrategyMode.RETRY_THEN_STOP,
     [ErrorOutcome.IGNORE]: ErrorStrategyMode.RETRY_THEN_IGNORE,

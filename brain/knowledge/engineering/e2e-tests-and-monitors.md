@@ -31,6 +31,8 @@ One Playwright suite in `packages/tests-e2e` feeds three consumers that fail ind
 - **Sign-up is invitation-only once a platform exists** (`INVITATION_ONLY_SIGN_UP`), so the suite's sign-up path only works on a genuinely fresh instance. Against a dev-seeded database, set `E2E_EMAIL` / `E2E_PASSWORD` instead — `global-setup.ts` prefers them and signs in rather than signing up.
 - **Every workspace declares its own deps.** `@faker-js/faker` was imported by the page objects for months while only `server/api` declared it; under Bun's isolated linker that means the suite cannot import its own page objects at all.
 
+- **首发主线的端到端做法**见 [跑一遍首发主线](main-line-e2e.md)，用本机独立端口加模拟服务，不依赖 Docker。
+
 ## Key files
 - `packages/tests-e2e` — `playwright.config.ts` (local/CI), `global-setup.ts` (provisions or signs in the seed account), `pages/` (shared page objects), `scenarios/betterstack/` (the standalone monitor script)
 - `.github/workflows/e2e.yml` — the `ready-for-e2e` gate that calls the suite

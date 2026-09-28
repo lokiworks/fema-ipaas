@@ -8,7 +8,6 @@ import { t } from 'i18next';
 import { BellRing, Pencil, Plus, Send, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
-import { CenteredPage } from '@/app/components/centered-page';
 import { ConfirmationDeleteDialog } from '@/components/custom/delete-dialog';
 import { FormattedDate } from '@/components/custom/formatted-date';
 import { Badge } from '@/components/ui/badge';
@@ -29,33 +28,24 @@ import { issueUiUtils } from '@/features/issues';
 import { ChannelDialog } from './channel-dialog';
 import { PolicyDialog } from './policy-dialog';
 
-export default function AlertsPage() {
+export function AlertSettings() {
   return (
-    <CenteredPage
-      title={t('Alerts')}
-      description={t(
-        'Decide who hears about failures, through which channel, and how often.',
-      )}
-    >
-      <Tabs defaultValue="policies">
-        <TabsList>
-          <TabsTrigger value="policies">{t('Alert policies')}</TabsTrigger>
-          <TabsTrigger value="channels">
-            {t('Notification channels')}
-          </TabsTrigger>
-          <TabsTrigger value="records">{t('Alert history')}</TabsTrigger>
-        </TabsList>
-        <TabsContent value="policies">
-          <PoliciesTab />
-        </TabsContent>
-        <TabsContent value="channels">
-          <ChannelsTab />
-        </TabsContent>
-        <TabsContent value="records">
-          <RecordsTab />
-        </TabsContent>
-      </Tabs>
-    </CenteredPage>
+    <Tabs defaultValue="policies">
+      <TabsList>
+        <TabsTrigger value="policies">{t('Alert policies')}</TabsTrigger>
+        <TabsTrigger value="channels">{t('Notification channels')}</TabsTrigger>
+        <TabsTrigger value="records">{t('Alert history')}</TabsTrigger>
+      </TabsList>
+      <TabsContent value="policies">
+        <PoliciesTab />
+      </TabsContent>
+      <TabsContent value="channels">
+        <ChannelsTab />
+      </TabsContent>
+      <TabsContent value="records">
+        <RecordsTab />
+      </TabsContent>
+    </Tabs>
   );
 }
 

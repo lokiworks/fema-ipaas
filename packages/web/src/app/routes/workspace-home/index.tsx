@@ -5,13 +5,12 @@ import { useState } from 'react';
 
 import { useGlobalSearch } from '@/app/components/global-search/global-search-context';
 import { Skeleton } from '@/components/ui/skeleton';
-import { GenerateWorkflowDialog } from '@/features/ai';
 import { launchTour } from '@/features/help';
 import {
   HOME_RECENT_LIMIT,
-  HomeAiBox,
   HomeAttentionCard,
   HomeHero,
+  HomeIssuesCard,
   HomeLearnCard,
   HomeOnboardingCard,
   HomeProjects,
@@ -49,7 +48,6 @@ export function WorkspaceHomePage() {
     projectDirectoryHooks.useDirectory({ primary: true });
   const { data: summary } = homeHooks.useSummary({ since });
   const [newWorkflowOpen, setNewWorkflowOpen] = useState(false);
-  const [aiPrompt, setAiPrompt] = useState<string | null>(null);
 
   const projects = (directory ?? []).filter(projectDirectoryUtils.isMember);
   const memberProjectIds = projects.map((project) => project.id);
@@ -59,17 +57,12 @@ export function WorkspaceHomePage() {
     memberProjectIds[0] ??
     null;
   const hasEditable = projects.some(projectDirectoryUtils.canEdit);
-  const aiTarget = homeUtils.pickTargetProject({
+  const targetProject = homeUtils.pickTargetProject({
     projects,
     currentProjectId,
     canCreate: projectDirectoryUtils.canCreateWorkflow,
   });
   const newWorkflowDisabledReason = hasEditable ? null : NO_EDITABLE_PROJECT;
-  const aiDisabledReason = !hasEditable
-    ? NO_EDITABLE_PROJECT
-    : aiTarget === null
-    ? ALL_PROJECTS_FULL
-    : null;
   const visits = homeUtils.visibleRecentVisits({
     visits: recentVisits.list(),
     memberProjectIds,
@@ -89,10 +82,6 @@ export function WorkspaceHomePage() {
         onSearch={() => setSearchOpen(true)}
         onNewWorkflow={() => setNewWorkflowOpen(true)}
       />
-      <HomeAiBox
-        disabledReason={aiDisabledReason}
-        onSubmit={(prompt) => setAiPrompt(prompt)}
-      />
       {!isDirectoryLoading && (
         <HomeOnboardingCard
           productName={branding.websiteName}
@@ -104,6 +93,24 @@ export function WorkspaceHomePage() {
           onStartTour={() => launchTour('console')}
         />
       )}
+      <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <HomeTodayRunsCard
+          runs={summary?.runs}
+          projects={projects}
+          fallbackProjectId={fallbackProjectId}
+          now={now}
+        />
+        <HomeIssuesCard />
+        {summary && (
+          <HomeAttentionCard
+            failedRuns={summary.failedRuns}
+            brokenConnections={summary.brokenConnections}
+            runs={summary.runs}
+            projects={projects}
+            fallbackProjectId={fallbackProjectId}
+          />
+        )}
+      </div>
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="flex min-w-0 flex-col gap-6">
           <HomeRecentVisits visits={visits} projects={projects} />
@@ -115,7 +122,7 @@ export function WorkspaceHomePage() {
               onProjectCreated={refreshProjects}
             />
           )}
-          <HomeTemplates projectId={aiTarget?.id ?? null} />
+          <HomeTemplates projectId={targetProject?.id ?? null} />
         </div>
         <div className="flex min-w-0 flex-col gap-4">
           <HomeTodosCard
@@ -123,39 +130,14 @@ export function WorkspaceHomePage() {
             total={summary?.todoTotal ?? 0}
           />
           {isTenantAdmin && <SetupChecklistCard />}
-          <HomeTodayRunsCard
-            runs={summary?.runs}
-            projects={projects}
-            fallbackProjectId={fallbackProjectId}
-            now={now}
-          />
-          {summary && (
-            <HomeAttentionCard
-              failedRuns={summary.failedRuns}
-              brokenConnections={summary.brokenConnections}
-              runs={summary.runs}
-              projects={projects}
-              fallbackProjectId={fallbackProjectId}
-            />
-          )}
           <HomeLearnCard mcpProjectId={mcpProjectIdFor(projects)} />
         </div>
       </div>
       <NewWorkflowDialog
         open={newWorkflowOpen}
         onOpenChange={setNewWorkflowOpen}
-        projectId={aiTarget?.id}
+        projectId={targetProject?.id}
         pickProject={true}
-      />
-      <GenerateWorkflowDialog
-        open={aiPrompt !== null}
-        onOpenChange={(open) => {
-          if (!open) {
-            setAiPrompt(null);
-          }
-        }}
-        initialPrompt={aiPrompt ?? undefined}
-        projectId={aiTarget?.id}
       />
     </div>
   );
@@ -174,5 +156,3 @@ function mcpProjectIdFor(projects: ProjectDirectoryItem[]): string | null {
 
 const NO_EDITABLE_PROJECT =
   'You have no editable project yet. Create a project first.';
-const ALL_PROJECTS_FULL =
-  'Every project you can edit has reached its workflow limit';

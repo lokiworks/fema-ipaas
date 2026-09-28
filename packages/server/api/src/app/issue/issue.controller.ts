@@ -8,6 +8,7 @@ import {
     IssueActivity,
     IssueInsight,
     IssueKind,
+    IssueOverview,
     IssueProjectQuery,
     IssueReplayRequestBody,
     IssueReplayResult,
@@ -35,6 +36,10 @@ import { issueService } from './issue.service'
 export const issueController: FastifyPluginAsyncZod = async (app) => {
     app.get('/', ListIssuesRequest, async (request): Promise<SeekPage<IssueWithSeverity>> => {
         return issueService(request.log).list({ query: request.query, currentUserId: request.principal.id })
+    })
+
+    app.get('/overview', OverviewRequest, async (request): Promise<IssueOverview> => {
+        return issueService(request.log).overview({ userId: request.principal.id, tenantId: request.principal.tenant.id })
     })
 
     app.get('/summary', SummaryRequest, async (request): Promise<IssueSummary> => {
@@ -143,6 +148,16 @@ const ListIssuesRequest = {
         tags: ['issues'],
         querystring: ListIssuesRequestQuery,
         response: { [StatusCodes.OK]: SeekPage(IssueWithSeverity) },
+    },
+}
+
+const OverviewRequest = {
+    config: {
+        security: securityAccess.publicTenant([PrincipalType.USER]),
+    },
+    schema: {
+        tags: ['issues'],
+        response: { [StatusCodes.OK]: IssueOverview },
     },
 }
 

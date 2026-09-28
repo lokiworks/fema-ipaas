@@ -22,6 +22,14 @@ function useIssues(request: ListIssuesRequestQuery) {
   });
 }
 
+function useOverview({ showErrorDialog }: { showErrorDialog: boolean }) {
+  return useQuery({
+    queryKey: [ISSUES_KEY, 'overview'],
+    queryFn: () => issuesApi.overview(),
+    meta: { showErrorDialog, loadSubsetOptions: {} },
+  });
+}
+
 function useSummary(projectId: string) {
   return useQuery({
     queryKey: [ISSUES_KEY, 'summary', projectId],
@@ -164,6 +172,7 @@ const ISSUES_KEY = 'issues';
 
 export const issuesHooks = {
   useIssues,
+  useOverview,
   useSummary,
   useIssue,
   useActivities,

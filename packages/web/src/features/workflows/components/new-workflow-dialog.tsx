@@ -16,7 +16,6 @@ import {
   Globe,
   LucideIcon,
   MousePointerClick,
-  Siren,
   Sparkles,
   Zap,
 } from 'lucide-react';
@@ -152,7 +151,6 @@ function NewWorkflowForm({
     }),
   });
   const targetId = form.watch('projectId');
-  const trigger = form.watch('trigger');
   const typedName = form.watch('displayName').trim();
   const { data: tree } = useQuery({
     queryKey: ['new-workflow-project-tree', targetId],
@@ -377,11 +375,6 @@ function NewWorkflowForm({
                       label={t(choice.labelKey)}
                       description={t(choice.descriptionKey)}
                       selected={field.value === choice.value}
-                      disabledReason={
-                        choice.target === null
-                          ? 'Alert triggers are not available on this platform yet'
-                          : null
-                      }
                       onSelect={() => field.onChange(choice.value)}
                     />
                   ))}
@@ -396,7 +389,6 @@ function NewWorkflowForm({
                     'Pick the app and its event in the editor after creating',
                   )}
                   selected={field.value === APP_EVENT_TRIGGER}
-                  disabledReason={null}
                   onSelect={() => field.onChange(APP_EVENT_TRIGGER)}
                 />
                 <FormMessage />
@@ -419,13 +411,7 @@ function NewWorkflowForm({
             <Button
               type="submit"
               loading={isCreating}
-              disabled={
-                isCreating ||
-                !targetId ||
-                isFull ||
-                nameTaken ||
-                !newWorkflowTriggerUtils.isSelectable(trigger)
-              }
+              disabled={isCreating || !targetId || isFull || nameTaken}
             >
               {t('Create')}
             </Button>
@@ -441,25 +427,21 @@ function TriggerCard({
   label,
   description,
   selected,
-  disabledReason,
   onSelect,
 }: {
   icon: LucideIcon;
   label: string;
   description: string;
   selected: boolean;
-  disabledReason: string | null;
   onSelect: () => void;
 }) {
-  const card = (
+  return (
     <button
       type="button"
       aria-pressed={selected}
-      disabled={disabledReason !== null}
       onClick={onSelect}
       className={cn(
-        'flex w-full items-start gap-3 rounded-lg border p-3 text-left transition-colors',
-        'hover:border-primary/60 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-border',
+        'flex w-full items-start gap-3 rounded-lg border p-3 text-left transition-colors hover:border-primary/60',
         selected && 'border-primary bg-primary/5',
       )}
     >
@@ -471,14 +453,6 @@ function TriggerCard({
         <span className="text-xs text-muted-foreground">{description}</span>
       </span>
     </button>
-  );
-  if (disabledReason === null) {
-    return card;
-  }
-  return (
-    <MessageTooltip isDisabled={true} message={disabledReason}>
-      {card}
-    </MessageTooltip>
   );
 }
 
@@ -566,7 +540,6 @@ const TRIGGER_ICONS: Record<string, LucideIcon> = {
   manual: MousePointerClick,
   schedule: AlarmClock,
   subflow: Zap,
-  alert: Siren,
   form: ClipboardList,
 };
 

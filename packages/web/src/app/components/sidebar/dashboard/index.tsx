@@ -6,7 +6,13 @@ import {
   TemplateTelemetryEventType,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
-import { ActivityIcon, Search, PuzzleIcon, ScrollTextIcon } from 'lucide-react';
+import {
+  ActivityIcon,
+  Search,
+  PuzzleIcon,
+  ScrollTextIcon,
+  SirenIcon,
+} from 'lucide-react';
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useDebounce } from 'use-debounce';
@@ -170,6 +176,16 @@ export function ProjectDashboardSidebar({
     isSubItem: false,
   };
 
+  const issuesLink: SidebarItemType = {
+    type: 'link',
+    to: '/issue-center',
+    label: t('Issues'),
+    show: !embedState.isEmbedded,
+    icon: SirenIcon,
+    hasPermission: true,
+    isSubItem: false,
+  };
+
   const monitorLink: SidebarItemType = {
     type: 'link',
     to: '/monitor',
@@ -180,7 +196,13 @@ export function ProjectDashboardSidebar({
     isSubItem: false,
   };
 
-  const items = [exploreLink, runLogsLink, monitorLink, connectorsLink]
+  const items = [
+    exploreLink,
+    issuesLink,
+    runLogsLink,
+    monitorLink,
+    connectorsLink,
+  ]
     .filter((item) => item.show !== false)
     .filter(permissionFilter);
 

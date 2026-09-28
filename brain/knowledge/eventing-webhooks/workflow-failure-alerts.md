@@ -17,4 +17,4 @@ icon: 🚨
 
 ## Key files
 - `packages/server/api/src/app/alert/` — `alertDispatcher.onIssueRecorded`、`notificationChannelSender`
-- `packages/web/src/app/routes/tenant/alerts/`
+- `packages/web/src/app/routes/tenant/alerts/` — `AlertSettings`，挂在问题中心页的「告警设置」标签下（`/issue-center?tab=alerts`），不再是租户管理的独立页面

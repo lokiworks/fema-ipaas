@@ -54,7 +54,6 @@ const UsersPage = React.lazy(() => import('./tenant/users'));
 const AccessRequestsPage = React.lazy(() => import('./tenant/access/requests'));
 const AccessSettingsPage = React.lazy(() => import('./tenant/access/settings'));
 const ResourcesPage = React.lazy(() => import('./tenant/resources'));
-const AlertsPage = React.lazy(() => import('./tenant/alerts'));
 const ProjectLimitsPage = React.lazy(() => import('./tenant/limits/projects'));
 const UsageLimitsPage = React.lazy(() => import('./tenant/limits/usage'));
 const PrivacyPage = React.lazy(() =>
@@ -133,7 +132,10 @@ export const tenantRoutes = [
   ),
   tenantRoute('/tenant/resources', 'Integration resources', ResourcesPage),
   tenantRoute('/tenant/audit', 'Audit Log', AuditLogPage),
-  tenantRoute('/tenant/alerts', 'Alerts', AlertsPage),
+  {
+    path: '/tenant/alerts',
+    element: <Navigate to="/issue-center?tab=alerts" replace />,
+  },
   tenantRoute(
     '/tenant/limits/projects',
     'Projects and limits',

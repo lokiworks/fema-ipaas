@@ -208,7 +208,7 @@ function CapacityAlertCard({ rows }: { rows: ProjectLimitsRow[] }) {
             : t('No project has reached the threshold')}
         </span>
         <Button variant="outline" size="sm" className="self-start" asChild>
-          <Link to="/tenant/alerts">
+          <Link to="/issue-center?tab=alerts">
             {capacityPolicies.length > 0
               ? t('Manage alert policies')
               : t('Set up a capacity alert')}

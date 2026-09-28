@@ -86,3 +86,23 @@ export const IssueSummary = z.object({
     alertsLast7Days: z.number(),
 })
 export type IssueSummary = z.infer<typeof IssueSummary>
+
+export const IssueOverviewProject = z.object({
+    projectId: z.string(),
+    projectDisplayName: z.string(),
+    open: z.number(),
+    openHighSeverity: z.number(),
+    investigating: z.number(),
+})
+export type IssueOverviewProject = z.infer<typeof IssueOverviewProject>
+
+export const IssueOverviewItem = IssueWithSeverity.extend({
+    projectDisplayName: z.string(),
+})
+export type IssueOverviewItem = z.infer<typeof IssueOverviewItem>
+
+export const IssueOverview = z.object({
+    projects: z.array(IssueOverviewProject),
+    latest: z.array(IssueOverviewItem),
+})
+export type IssueOverview = z.infer<typeof IssueOverview>

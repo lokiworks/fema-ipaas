@@ -8,6 +8,9 @@ import {
     IssueActivityType,
     IssueKind,
     IssueListView,
+    IssueOverview,
+    IssueOverviewItem,
+    IssueOverviewProject,
     IssueSeverity,
     IssueSort,
     IssueStatus,
@@ -118,6 +121,33 @@ export const issueService = (log: FastifyBaseLogger) => ({
             failuresLast7Days,
             issuesLast7Days: issues.filter((issue) => dayjsUtil(issue.lastSeenAt).isAfter(weekAgo)).length,
             alertsLast7Days: 0,
+        }
+    },
+
+    async overview({ userId, tenantId }: OverviewParams): Promise<IssueOverview> {
+        const projects = await projectAccess(log).projectsWithPermission({ userId, tenantId, permission: Permission.READ_ISSUE })
+        if (projects.length === 0) {
+            return { projects: [], latest: [] }
+        }
+        const projectIds = projects.map((project) => project.id)
+        const now = dayjsUtil().toISOString()
+        const unresolved = await applySort({
+            builder: applyView({
+                builder: issueRepo().createQueryBuilder('issue').where('issue."projectId" IN (:...projectIds)', { projectIds }),
+                view: IssueListView.UNRESOLVED,
+                now,
+            }),
+            sort: IssueSort.LAST_SEEN,
+        }).getMany()
+        const active = unresolved.filter((issue) => !isMuted({ issue, now }))
+        const latest = active.slice(0, OVERVIEW_LATEST_LIMIT)
+        const nameByProject = new Map(projects.map((project) => [project.id, project.displayName]))
+        const latestWithSeverity = await withSeverityAcrossProjects({ issues: latest, log })
+        return {
+            projects: projects
+                .map((project) => overviewProject({ project, issues: active.filter((issue) => issue.projectId === project.id) }))
+                .filter((project) => project.open + project.investigating > 0),
+            latest: latestWithSeverity.map((issue): IssueOverviewItem => ({ ...issue, projectDisplayName: nameByProject.get(issue.projectId) ?? '' })),
         }
     },
 
@@ -315,6 +345,24 @@ async function withSeverity({ issues, projectId, log }: WithSeverityParams): Pro
     }))
 }
 
+async function withSeverityAcrossProjects({ issues, log }: { issues: Issue[], log: FastifyBaseLogger }): Promise<IssueWithSeverity[]> {
+    const projectIds = [...new Set(issues.map((issue) => issue.projectId))]
+    const perProject = await Promise.all(projectIds.map((projectId) => withSeverity({ issues: issues.filter((issue) => issue.projectId === projectId), projectId, log })))
+    const byId = new Map(perProject.flat().map((issue) => [issue.id, issue]))
+    return issues.map((issue) => byId.get(issue.id)).filter((issue): issue is IssueWithSeverity => !isNil(issue))
+}
+
+function overviewProject({ project, issues }: { project: { id: string, displayName: string }, issues: Issue[] }): IssueOverviewProject {
+    const open = issues.filter((issue) => issue.status === IssueStatus.OPEN)
+    return {
+        projectId: project.id,
+        projectDisplayName: project.displayName,
+        open: open.length,
+        openHighSeverity: open.filter((issue) => issueUtils.severityOf(issue) === IssueSeverity.HIGH).length,
+        investigating: issues.filter((issue) => issue.status === IssueStatus.INVESTIGATING).length,
+    }
+}
+
 async function countAffectedWorkflows(issueIds: string[]): Promise<Map<string, number>> {
     if (issueIds.length === 0) {
         return new Map()
@@ -422,6 +470,7 @@ function decodeOffset(cursor: string | undefined): number {
 }
 
 const DEFAULT_PAGE_SIZE = 20
+const OVERVIEW_LATEST_LIMIT = 50
 const MAX_ACTIVITIES = 200
 const MAX_TITLE_LENGTH = 200
 const HOURLY_BUCKETS = 24
@@ -466,6 +515,11 @@ type IssueRef = {
 type ListParams = {
     query: ListIssuesRequestQuery
     currentUserId: UserId
+}
+
+type OverviewParams = {
+    userId: UserId
+    tenantId: string
 }
 
 type SummaryParams = {

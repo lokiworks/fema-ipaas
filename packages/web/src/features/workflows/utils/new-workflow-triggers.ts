@@ -14,17 +14,9 @@ function targetFor(
   return findChoice(value).target;
 }
 
-function isSelectable(value: NewWorkflowTriggerValue): boolean {
-  if (value === APP_EVENT_TRIGGER) {
-    return true;
-  }
-  return findChoice(value).target !== null;
-}
-
 export const newWorkflowTriggerUtils = {
   findChoice,
   targetFor,
-  isSelectable,
 };
 
 export const APP_EVENT_TRIGGER = 'appEvent';
@@ -67,12 +59,6 @@ export const NEW_WORKFLOW_TRIGGER_CHOICES: NewWorkflowTriggerChoice[] = [
     },
   },
   {
-    value: 'alert',
-    labelKey: 'Alert trigger',
-    descriptionKey: 'Runs when a monitoring alert fires',
-    target: null,
-  },
-  {
     value: 'form',
     labelKey: 'Form trigger',
     descriptionKey: 'Runs when someone submits a form',
@@ -92,7 +78,7 @@ export type NewWorkflowTriggerChoice = {
   value: string;
   labelKey: string;
   descriptionKey: string;
-  target: NewWorkflowTriggerTarget | null;
+  target: NewWorkflowTriggerTarget;
 };
 
 export type NewWorkflowTriggerValue = string;

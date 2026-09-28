@@ -54,6 +54,13 @@ const RunLogsPage = lazyWithRetry(
   'run-logs',
 );
 
+const IssueCenterPage = lazyWithRetry(
+  () =>
+    import('../routes/issue-center').then((m) => ({
+      default: m.IssueCenterPage,
+    })),
+  'issue-center',
+);
 const MonitorPage = lazyWithRetry(
   () =>
     import('../routes/monitor').then((m) => ({
@@ -126,6 +133,20 @@ const routes = [
           <PageTitle title="Run logs">
             <Suspense fallback={<RouteLoadingBar />}>
               <RunLogsPage />
+            </Suspense>
+          </PageTitle>
+        </ProjectDashboardLayout>
+      </AllowOnlyLoggedInUserOnlyGuard>
+    ),
+  },
+  {
+    path: '/issue-center',
+    element: (
+      <AllowOnlyLoggedInUserOnlyGuard>
+        <ProjectDashboardLayout>
+          <PageTitle title="Issues">
+            <Suspense fallback={<RouteLoadingBar />}>
+              <IssueCenterPage />
             </Suspense>
           </PageTitle>
         </ProjectDashboardLayout>

@@ -7,13 +7,12 @@ import {
 } from '@/features/workflows/utils/new-workflow-triggers';
 
 describe('newWorkflowTriggerUtils', () => {
-  it('offers the six trigger choices in the documented order', () => {
+  it('offers the five trigger choices in the documented order', () => {
     expect(NEW_WORKFLOW_TRIGGER_CHOICES.map((choice) => choice.value)).toEqual([
       'webhook',
       'manual',
       'schedule',
       'subflow',
-      'alert',
       'form',
     ]);
   });
@@ -40,13 +39,7 @@ describe('newWorkflowTriggerUtils', () => {
     });
   });
 
-  it('keeps the alert trigger unavailable instead of faking it', () => {
-    expect(newWorkflowTriggerUtils.targetFor('alert')).toBeNull();
-    expect(newWorkflowTriggerUtils.isSelectable('alert')).toBe(false);
-  });
-
   it('creates app-event workflows with an empty trigger', () => {
     expect(newWorkflowTriggerUtils.targetFor(APP_EVENT_TRIGGER)).toBeNull();
-    expect(newWorkflowTriggerUtils.isSelectable(APP_EVENT_TRIGGER)).toBe(true);
   });
 });

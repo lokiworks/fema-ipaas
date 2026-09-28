@@ -5,6 +5,7 @@ import {
   Execution,
   IssueActivity,
   IssueInsight,
+  IssueOverview,
   IssueReplayRequestBody,
   IssueReplayResult,
   IssueSummary,
@@ -21,6 +22,9 @@ import { api } from '@/lib/api';
 export const issuesApi = {
   list(request: ListIssuesRequestQuery): Promise<SeekPage<IssueWithSeverity>> {
     return api.get<SeekPage<IssueWithSeverity>>('/v1/issues', request);
+  },
+  overview(): Promise<IssueOverview> {
+    return api.get<IssueOverview>('/v1/issues/overview');
   },
   summary(projectId: string): Promise<IssueSummary> {
     return api.get<IssueSummary>('/v1/issues/summary', { projectId });

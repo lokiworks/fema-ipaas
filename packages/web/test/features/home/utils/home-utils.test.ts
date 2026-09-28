@@ -1,4 +1,5 @@
 import {
+  ColorName,
   DefaultProjectRole,
   ExecutionStatus,
   ProjectDirectoryItem,
@@ -153,7 +154,7 @@ describe('homeUtils.pickTargetProject', () => {
     id,
     displayName: id,
     description: null,
-    icon: { color: 'RED' },
+    icon: { color: ColorName.RED },
     ownerId: 'o',
     ownerName: null,
     created: '',

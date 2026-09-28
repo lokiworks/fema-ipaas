@@ -1,4 +1,5 @@
 import {
+  GenericStepOutput,
   StepOutputStatus,
   WorkflowActionType,
   WorkflowTrigger,
@@ -58,20 +59,19 @@ const trigger: WorkflowTrigger = {
 const rows = debugRecordsUtils.listNodes({
   trigger,
   outputs: {
-    trigger: {
+    trigger: GenericStepOutput.create({
       type: WorkflowTriggerType.CONNECTOR,
       status: StepOutputStatus.SUCCEEDED,
       input: {},
       output: {},
-      duration: 5,
-    },
-    step_1: {
+    }).setDuration(5),
+    step_1: GenericStepOutput.create({
       type: WorkflowActionType.CONNECTOR,
       status: StepOutputStatus.FAILED,
       input: {},
-      errorMessage: '401 Unauthorized',
-      duration: 20,
-    },
+    })
+      .setErrorMessage('401 Unauthorized')
+      .setDuration(20),
   },
   displayNumbers: {
     trigger: 'webhook-trigger-1',

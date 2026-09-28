@@ -4854,5 +4854,6 @@
   "{count} investigating": "{count} investigating",
   "{count} unresolved, {high} high severity": "{count} unresolved, {high} high severity",
   "{count} unresolved": "{count} unresolved",
-  "No production failures waiting for you": "No production failures waiting for you"
+  "No production failures waiting for you": "No production failures waiting for you",
+  "The other system refused access; replay once permissions are fixed there": "The other system refused access; replay once permissions are fixed there"
 }

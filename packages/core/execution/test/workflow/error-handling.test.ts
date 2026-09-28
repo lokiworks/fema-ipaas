@@ -30,6 +30,12 @@ describe('errorHandlingUtils.classifyErrorMessage', () => {
         expect(errorHandlingUtils.classifyErrorMessage({ message: withText }).message).toBe('HTTP 502: Bad Gateway')
     })
 
+    it('unwraps an HTTP error nested inside a friendly connector error', () => {
+        const inner = JSON.stringify({ response: { status: 400, body: { code: 99991672, msg: 'Access denied' } }, request: {} })
+        const message = JSON.stringify({ __apErrorVersion: 1, message: inner })
+        expect(errorHandlingUtils.classifyErrorMessage({ message }).message).toBe('HTTP 400: Access denied')
+    })
+
     it('reads the message even when another body field is not a string', () => {
         const message = JSON.stringify({ response: { status: 422, body: { error: { code: 'E1' }, message: 'name is required' } }, request: {} })
         expect(errorHandlingUtils.classifyErrorMessage({ message }).message).toBe('HTTP 422: name is required')

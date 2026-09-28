@@ -1,9 +1,10 @@
 import {
   AuthenticationType,
+  HttpError,
   HttpMethod,
   httpClient,
 } from '@fema-ipaas/connector-common';
-import type { ConnectionValueForAuthProperty } from '@fema-ipaas/connector-sdk';
+import { tryCatch, type ConnectionValueForAuthProperty } from '@fema-ipaas/connector-sdk';
 
 import type { feishuAuth } from '../auth';
 import { FEISHU_DOMAIN } from '../constants';
@@ -19,7 +20,7 @@ async function obtainTenantAccessToken({
   appId,
   appSecret,
 }: TokenParams): Promise<string> {
-  const baseUrl = domain ?? FEISHU_DOMAIN;
+  const baseUrl = baseUrlFor(domain);
   const cacheKey = `${baseUrl}:${appId}:${appSecret}`;
   const cached = tokenCache.get(cacheKey);
   if (cached && cached.expiresAt > Date.now()) {
@@ -50,17 +51,44 @@ async function callApi<T>({
   queryParams,
 }: CallApiParams): Promise<T> {
   const token = await obtainTenantAccessToken(auth.props);
-  const response = await httpClient.sendRequest<FeishuEnvelope<T>>({
-    method,
-    url: `${auth.props.domain ?? FEISHU_DOMAIN}${path}`,
-    authentication: { type: AuthenticationType.BEARER_TOKEN, token },
-    ...(body ? { body } : {}),
-    ...(queryParams ? { queryParams } : {}),
-  });
+  const { data: response, error } = await tryCatch(() =>
+    httpClient.sendRequest<FeishuEnvelope<T>>({
+      method,
+      url: `${baseUrlFor(auth.props.domain)}${path}`,
+      authentication: { type: AuthenticationType.BEARER_TOKEN, token },
+      ...(body ? { body } : {}),
+      ...(queryParams ? { queryParams } : {}),
+    }),
+  );
+  if (error) {
+    throw fromHttpError(error);
+  }
   if (response.body.code !== 0) {
-    throw new Error(describeError(response.body.code, response.body.msg));
+    throw feishuError(response.body.code, response.body.msg);
   }
   return response.body.data;
+}
+
+function baseUrlFor(domain: string | undefined): string {
+  return process.env['FEMA_FEISHU_BASE_URL'] ?? domain ?? FEISHU_DOMAIN;
+}
+
+function fromHttpError(error: Error): Error {
+  if (!(error instanceof HttpError)) {
+    return error;
+  }
+  const body = error.response.body;
+  return isFeishuErrorBody(body) ? feishuError(body.code, body.msg) : error;
+}
+
+function feishuError(code: number, message: string): Error {
+  const status = HTTP_STATUS_BY_CODE[code];
+  const described = describeError(code, message);
+  return new Error(status ? `HTTP ${status}: ${described}` : described);
+}
+
+function isFeishuErrorBody(body: unknown): body is { code: number; msg: string } {
+  return typeof body === 'object' && body !== null && 'code' in body && typeof body.code === 'number' && 'msg' in body && typeof body.msg === 'string';
 }
 
 function describeError(code: number, message: string): string {
@@ -71,6 +99,11 @@ function describeError(code: number, message: string): string {
 const TOKEN_EXPIRY_MARGIN_SECONDS = 300;
 
 const tokenCache = new Map<string, { token: string; expiresAt: number }>();
+
+const HTTP_STATUS_BY_CODE: Record<number, number> = {
+  99991663: 401,
+  99991672: 403,
+};
 
 const ERROR_HINTS: Record<number, string> = {
   99991663: 'the app credentials are not valid, check the App ID and App Secret',

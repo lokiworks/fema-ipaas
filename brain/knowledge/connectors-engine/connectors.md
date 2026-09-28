@@ -34,6 +34,7 @@ The metadata catalog of automation integrations ("connectors") — each a named 
 - **第一方连接器随镜像交付，从 `packages/connectors/{core,community,custom}/*/dist` 直接加载（决定 000037）。** 没设 `FEMA_DEV_CONNECTORS` 时，这些目录下所有构建好的连接器都是内置连接器；设了（包括空字符串）就只用显式列出的，这是开发和测试的行为。名单由 `localConnectorNames` 算出，通过 worker 设置的 `DEV_CONNECTORS` 下发给沙箱和引擎，所以它们不下载、不安装，直接读本地 dist。内置连接器总是加载翻译。
 - **内置连接器只在 UNSANDBOXED 和 `SANDBOX_CODE_ONLY` 模式下可用。** isolate 模式（`SANDBOX_PROCESS`、`SANDBOX_CODE_AND_PROCESS`）里引擎的工作目录是 `/root`，看不到 `packages/connectors`，连接器依赖的 bun 软链接也指向没挂载的 `/usr/src/app/node_modules`。待办：构建时为每个内置连接器生成带依赖的独立包，只读挂进沙箱；不要把整个应用目录挂进去。
 - **精简 worker 镜像（`Dockerfile.worker`）里没有内置连接器。** 它不带 `packages/connectors` 和工作区 `node_modules`，只在 `benchmark/` 里用；默认的 `docker-compose.yml` 和 helm 的 app、worker 都用主镜像。要让它能跑内置连接器，同样要走「每个连接器打成带依赖的独立包」这条路。
+- **北森、飞书的接口地址可以用环境变量覆盖。** `FEMA_BEISEN_BASE_URL`、`FEMA_FEISHU_BASE_URL`（飞书优先于连接里选的地区），用于私有化网关和模拟服务；连接器跑在沙箱里，变量要同时列进 `FEMA_SANDBOX_PROPAGATED_ENV_VARS` 才传得进去。
 - **没配注册中心时同步任务直接跳过。** 以前 `listCloudConnectors()` 返回空数组后，`deleteConnectorsIfNotOnCloud` 会把所有 OFFICIAL 连接器当成「云上已下架」删掉。
 
 ### Key files

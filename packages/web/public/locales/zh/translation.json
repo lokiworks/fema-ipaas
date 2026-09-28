@@ -4854,5 +4854,6 @@
   "{count} investigating": "{count} 个处理中",
   "{count} unresolved, {high} high severity": "{count} 个未处理，其中 {high} 个高严重度",
   "{count} unresolved": "{count} 个未处理",
-  "No production failures waiting for you": "没有待处理的生产失败"
+  "No production failures waiting for you": "没有待处理的生产失败",
+  "The other system refused access; replay once permissions are fixed there": "对方系统拒绝授权，在对方系统修好权限后可以重跑"
 }

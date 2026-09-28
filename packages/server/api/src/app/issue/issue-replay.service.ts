@@ -44,6 +44,7 @@ export const issueReplayService = (log: FastifyBaseLogger) => ({
             connectionState,
             connectionExternalId: issue.connectionExternalId ?? null,
             transient: issueUtils.isTransientHttpStatus(issue.errorCode),
+            authorization: issueUtils.isAuthorizationHttpStatus(issue.errorCode),
         }))
         return { items }
     },
@@ -74,7 +75,7 @@ export const issueReplayService = (log: FastifyBaseLogger) => ({
     },
 })
 
-function classify({ execution, workflowUpdatedAt, connectionState, connectionExternalId, transient }: ClassifyParams): ReplayCheckItem {
+function classify({ execution, workflowUpdatedAt, connectionState, connectionExternalId, transient, authorization }: ClassifyParams): ReplayCheckItem {
     const item = (category: ReplayCategory, reason: ReplayReason): ReplayCheckItem => ({
         executionId: execution.id,
         category,
@@ -100,6 +101,9 @@ function classify({ execution, workflowUpdatedAt, connectionState, connectionExt
     }
     if (transient) {
         return item(ReplayCategory.REPLAYABLE, ReplayReason.TRANSIENT_ERROR)
+    }
+    if (authorization) {
+        return item(ReplayCategory.REPLAYABLE, ReplayReason.AUTHORIZATION_ERROR)
     }
     const failedAt = execution.finishTime ?? execution.created
     if (dayjsUtil(workflowUpdatedAt).isAfter(failedAt)) {
@@ -145,4 +149,5 @@ type ClassifyParams = {
     connectionState: ConnectionState
     connectionExternalId: string | null
     transient: boolean
+    authorization: boolean
 }

@@ -107,6 +107,10 @@ function replayReasonLabel(reason: ReplayReason): string {
       return t('The connection has recovered');
     case ReplayReason.TRANSIENT_ERROR:
       return t('Transient error (rate limit or timeout)');
+    case ReplayReason.AUTHORIZATION_ERROR:
+      return t(
+        'The other system refused access; replay once permissions are fixed there',
+      );
     case ReplayReason.WORKFLOW_CHANGED:
       return t('The workflow changed after the failure');
     case ReplayReason.UNCHANGED_SINCE_FAILURE:

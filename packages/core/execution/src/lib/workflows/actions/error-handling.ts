@@ -137,7 +137,8 @@ function readableMessage(raw: string | undefined): string {
     const parsed = safeParseJson(raw)
     const withMessage = MessageShape.safeParse(parsed)
     if (withMessage.success) {
-        return withMessage.data.message
+        const nested = withMessage.data.message
+        return isNil(safeParseJson(nested)) ? nested : readableMessage(nested)
     }
     const httpError = HttpErrorShape.safeParse(parsed)
     if (!httpError.success) {

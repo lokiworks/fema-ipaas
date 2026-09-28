@@ -8,6 +8,7 @@ export const issueUtils = {
     severityOf,
     insightOf,
     isTransientHttpStatus,
+    isAuthorizationHttpStatus,
 }
 
 function classifyFailure({ workflowId, executionStatus, failedStep }: ClassifyFailureParams): FailureClassification {
@@ -104,6 +105,11 @@ function isTransientHttpStatus(errorCode: string | null | undefined): boolean {
     return !isNil(status) && TRANSIENT_HTTP_STATUSES.includes(status)
 }
 
+function isAuthorizationHttpStatus(errorCode: string | null | undefined): boolean {
+    const status = httpStatusOf(errorCode)
+    return !isNil(status) && AUTHORIZATION_HTTP_STATUSES.includes(status)
+}
+
 function httpStatusOf(errorCode: string | null | undefined): number | null {
     if (isNil(errorCode) || !errorCode.startsWith('HTTP_')) {
         return null
@@ -120,6 +126,7 @@ const STEP_TIMEOUT_CODE = 'STEP_TIMEOUT'
 const HIGH_SEVERITY_OCCURRENCES = 10
 const MEDIUM_SEVERITY_OCCURRENCES = 3
 const TRANSIENT_HTTP_STATUSES = [429, 502, 503, 504, 529]
+const AUTHORIZATION_HTTP_STATUSES = [401, 403]
 
 type ClassifyFailureParams = {
     workflowId: string

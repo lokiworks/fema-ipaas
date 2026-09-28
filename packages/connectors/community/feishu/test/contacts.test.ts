@@ -8,6 +8,7 @@ vi.mock('@fema-ipaas/connector-common', async (importOriginal) => ({
 }));
 
 const { feishuContacts } = await import('../src/lib/common/contacts');
+const { HttpError } = await import('@fema-ipaas/connector-common');
 
 const auth = {
   type: 'CUSTOM_AUTH' as const,
@@ -97,6 +98,28 @@ describe('feishuContacts.provisionUser', () => {
     });
 
     await expect(feishuContacts.provisionUser({ auth, input })).rejects.toThrowError(/contact:user\.id:readonly.*Feishu error 99991672/);
+  });
+});
+
+describe('feishu HTTP errors', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
+  it('reads the Feishu code out of an HTTP 400 and reports a missing permission as 403', async () => {
+    sendRequest.mockImplementation(async ({ url }: { url: string }) => {
+      if (url.endsWith('/tenant_access_token/internal')) {
+        return reply({ code: 0, msg: 'ok', tenant_access_token: 't-1', expire: 7200 });
+      }
+      throw new HttpError({}, {
+        status: 400,
+        responseBody: { code: 99991672, msg: 'Access denied. One of the following scopes is required: [contact:contact]' },
+      });
+    });
+
+    await expect(feishuContacts.provisionUser({ auth, input })).rejects.toThrowError(
+      /^HTTP 403: Access denied.*\[contact:contact\].*Feishu error 99991672/,
+    );
   });
 });
 

@@ -34,3 +34,7 @@ FEMA Integration Platform 换皮」为完成判定，换肤达不到；且导航
 - 路由与页面是重建而非改造，Step 5 的改动量接近前端重写。
 - 运行中心成为一等公民：执行记录、失败记录、Webhook、运行统计四个子页面。
 - 「发布」是显式动作（Draft → Test → Publish），不再保存即生效。
+
+## 2026-10-01 修订
+
+「首页回答四个问题」一段和 Consequences 里「运行中心成为一等公民」一句，提议由 [ADR 0021](0021-the-home-page-centers-on-unmet-outcomes.md) 取代：首页以「未到位」为中心，运行看板退到「运行」页。0021 是 proposed，随产品中心方向一起确认；确认之前这两处照旧有效。本 ADR 的其余部分和 status 不变。依据：`design/research/landscape/contradictions.md` 1-1。

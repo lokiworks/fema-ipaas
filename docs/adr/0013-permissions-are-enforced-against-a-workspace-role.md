@@ -46,3 +46,4 @@ status: accepted
 - 存储过旧 `READ_WORKFLOW` 形式权限字符串的 API 消费方需要迁移到 `WORKFLOW:READ`。
 - 角色是硬编码的四个，不是数据库里的自定义角色表。自定义角色需要时再加，届时 `rolePermissions` 变成兜底默认值而非唯一来源。
 - 角色阶梯（Viewer ⊂ Operator ⊂ Developer ⊂ Admin）由 `packages/core/shared/test/authentication/access-control-list.test.ts` 钉住，改动会失败。
+- 补充（2026-10-01，ADR 0020）：「除此之外一律拒绝」之外开了两条受限通道，不是新角色。映射表负责人可以只维护自己负责的映射表；对方系统管理员可以在 IM 卡片上，以回调里的 IM 身份做重新检查这类幂等动作，含停用的动作仍须登录。文中的「工作空间」在代码里已改名为「项目」。

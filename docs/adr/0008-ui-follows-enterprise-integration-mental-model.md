@@ -37,4 +37,4 @@ FEMA Integration Platform 换皮」为完成判定，换肤达不到；且导航
 
 ## 2026-10-01 修订
 
-「首页回答四个问题」一段和 Consequences 里「运行中心成为一等公民」一句，提议由 [ADR 0021](0021-the-home-page-centers-on-unmet-outcomes.md) 取代：首页以「未到位」为中心，运行看板退到「运行」页。0021 是 proposed，随产品中心方向一起确认；确认之前这两处照旧有效。本 ADR 的其余部分和 status 不变。依据：`design/research/landscape/contradictions.md` 1-1。
+首页改按 AnyCross 的结构：新手引导、最近访问、我的项目、从模板新建，另加「待我处理」；运行统计（运行次数、成功率、失败的工作流、异常的连接）移到「运行监控」。上文「首页回答四个问题」一段以此为准，其余不变。曾提议的 ADR 0021（首页以「未到位」为中心）不采纳。

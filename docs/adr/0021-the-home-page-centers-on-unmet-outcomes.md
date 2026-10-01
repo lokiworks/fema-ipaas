@@ -1,8 +1,10 @@
 ---
 title: 首页以「未到位」为中心，运行看板退到「运行」页
 icon: 🏠
-status: proposed
+status: rejected
 ---
+
+> 2026-10-01 不采纳：产品以飞书 AnyCross 为蓝本，首页按 AnyCross 的结构，见 ADR 0008 的修订。本文保留作记录。
 
 ## Decision
 

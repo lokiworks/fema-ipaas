@@ -30,4 +30,4 @@ icon: 🧭
 | 0018 | [不做 Network Agent，自托管形态下它要跨越的鸿沟不存在](0018-no-network-agent-self-hosting-removes-the-gap-it-bridged.md) | accepted |
 | 0019 | [AI 与 MCP 作为连接器的消费层进入产品，不进入 Connector Domain](0019-ai-and-mcp-are-consumers-of-connectors.md) | accepted |
 | 0020 | [映射表负责人和 IM 卡片上的对方管理员是两条受限通道，不是新角色](0020-mapping-table-owners-and-im-card-operators-are-scoped-channels-not-roles.md) | accepted |
-| 0021 | [首页以「未到位」为中心，运行看板退到「运行」页](0021-the-home-page-centers-on-unmet-outcomes.md) | proposed |
+| 0021 | [首页以「未到位」为中心，运行看板退到「运行」页](0021-the-home-page-centers-on-unmet-outcomes.md) | rejected |

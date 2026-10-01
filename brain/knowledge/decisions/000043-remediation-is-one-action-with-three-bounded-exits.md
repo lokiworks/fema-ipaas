@@ -1,8 +1,10 @@
 ---
 title: 补救只有一个动作「补到位」，另有三个受限出口
 icon: 🩹
-status: accepted
+status: rejected
 ---
+
+> 2026-10-01 撤回：产品以飞书 AnyCross 为蓝本，补救沿用「重试」和「从失败节点重跑」，见产品备忘「可靠性原则」。本文保留作记录。
 
 ## Decision
 

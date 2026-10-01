@@ -1,5 +1,7 @@
 # 设计输入：把这个 iPaaS 从根上重新想清楚
 
+> 2026-10-01 产品负责人决定：产品以飞书 AnyCross 为蓝本，本文推荐的「结果台账」方向不采纳。本文和同目录的调研只当局部改进的参考。
+
 2026-10-01，第二版。依据：本目录全部十九份调研。第一轮十份：`build-lifecycle.md`、`operations.md`、`governance.md`、`declarative-sync.md`、`lightweight.md`、`ai-native.md`、`china.md` 七份拆解，以及 `users-and-scenarios.md`、`platform-inventory.md`、`critique-v3.md`；第二轮九份：`alternatives.md`、`feishu-capabilities.md`、`reachability-and-ai-clients.md`、`org-and-lifecycle.md`、`engine-spike.md`、`data-retention.md`、`second-scenario.md`、`ai-v1.md`、`contradictions.md`。另有 `../product-brief.md`，决定 000037 到 000042，ADR 0008、0013、0019，以及 2026-10-01 的拍板（第 5 节）。引用写成「文件 + 节号」，原始出处在对应文件里。
 
 这份文件是后续设计的唯一输入：第四版原型，产品备忘、ADR 和 brain 决定的修订，都以它为准。它不复述各份调研，只写跨调研才看得出来的东西，以及据此要做的判断。

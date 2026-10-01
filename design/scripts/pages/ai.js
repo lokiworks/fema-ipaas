@@ -1633,7 +1633,7 @@ const AIGEN_TRIGGER_CONFIG = {
   'webhook.catch': { auth: '无鉴权', bodyType: 'JSON' },
   'beisen.onboarding_completed': { interval: '5 分钟' },
   'beisen.employee_left': { interval: '15 分钟' },
-  'beisen.employee_changed': { interval: '5 分钟' },
+  'beisen.employee_changed': { interval: '5 分钟', changeType: '调岗' },
   'beisen.offer_accepted': { interval: '15 分钟' },
 };
 

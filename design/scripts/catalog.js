@@ -44,6 +44,7 @@ const CONNECTORS = [
       op('create_user', '开通账号', '在指定部门开通员工账号；按工号查重，已存在时返回原账号', { group: '通讯录' }),
       op('update_user', '调整部门和上级', '按工号更新员工的部门、直属上级和职务', { group: '通讯录' }),
       op('freeze_user', '暂停账号', '暂停后不能登录，数据保留，可以恢复', { group: '通讯录' }),
+      op('delete_user', '删除账号', '删除后不可恢复；文档、邮件等资源转给指定接收人', { group: '通讯录' }),
       op('create_calendar_event', '创建日程', '在指定日历中创建日程并邀请参与人', { group: '日历' }),
       op('create_doc', '创建云文档', '在指定文件夹下新建文档', { group: '云文档' }),
     ],
@@ -59,6 +60,7 @@ const CONNECTORS = [
     ],
     actions: [
       op('get_employee', '获取员工信息', '按工号查询员工档案'),
+      op('list_onboarding', '查询待入职员工', '按预计入职日期查询已录入、还没报到的员工'),
       op('list_departments', '查询组织架构', '返回全部部门与上下级关系'),
       op('update_employee', '更新员工信息', '修改员工档案字段'),
       op('create_candidate', '新建候选人', '在招聘模块中新建候选人'),
@@ -232,7 +234,7 @@ const CONNECTORS = [
     id: 'wecom', name: '企业微信', category: 'office', icon: letter('企', '#0082EF'), auth: 'apikey', official: true, version: '1.4.3', usage: 4760,
     desc: '应用消息、群机器人与通讯录。',
     triggers: [op('external_contact_added', '添加客户', '成员添加外部联系人时触发', { type: 'webhook' })],
-    actions: [op('send_app_message', '发送应用消息', '向成员发送应用消息'), op('robot_message', '群机器人消息', '通过群机器人发送消息')],
+    actions: [op('send_app_message', '发送应用消息', '向成员发送应用消息'), op('robot_message', '群机器人消息', '通过群机器人发送消息'), op('create_member', '创建成员', '在指定部门创建成员；按工号查重，已存在时返回原成员', { group: '通讯录' }), op('disable_member', '禁用成员', '禁用后不能登录，聊天记录保留，可以恢复', { group: '通讯录' })],
   },
   {
     id: 'gmail', name: 'Gmail', category: 'marketing', icon: img('gmail'), auth: 'oauth2', official: true, version: '1.9.0', usage: 5120,

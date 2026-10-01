@@ -882,6 +882,14 @@ function SidePanel({ kind, wf, state, refs, errors, warnings, records, searchQ, 
   </div>`;
 }
 
+function writeNodesOf({ wf, state, env }) {
+  return allNodes(wf).filter((n) => n.kind === 'action' && n.connectionId && !/^(get|query|search|list|read|bitable_search)/.test(n.op || '')).map((n) => {
+    const swapped = Boolean(env && (env.connectionMap || {})[n.connectionId]);
+    const conn = state.connections.find((c) => c.id === (swapped ? env.connectionMap[n.connectionId] : n.connectionId));
+    return { id: n.id, name: n.name, conn: conn ? conn.name : '未选择连接', sameAsProd: Boolean(env && env.key === 'test' && !swapped) };
+  });
+}
+
 function debugRecentEvents(wf, state) {
   const base = nodeOutput(wf.trigger);
   const c = resolveConnector(wf.trigger.connector);
@@ -937,11 +945,7 @@ function DebugModal({ open, onClose, wf, state, onRun }) {
   const used = new Set(allNodes(wf).map((n) => (['ai', 'agent'].includes(n.kind) ? n.config.connectionId : n.connectionId)).filter(Boolean));
   const swaps = Object.entries(env.connectionMap || {}).filter(([from]) => used.has(from)).map(([from, to]) => [state.connections.find((c) => c.id === from), state.connections.find((c) => c.id === to)]).filter(([a, b]) => a && b);
   const valid = (() => { try { JSON.parse(text); return true; } catch (e) { return false; } })();
-  const writes = allNodes(wf).filter((n) => n.kind === 'action' && n.connectionId && !/^(get|query|search|list|read|bitable_search)/.test(n.op || '')).map((n) => {
-    const swapped = Boolean(env && (env.connectionMap || {})[n.connectionId]);
-    const conn = state.connections.find((c) => c.id === (swapped ? env.connectionMap[n.connectionId] : n.connectionId));
-    return { id: n.id, name: n.name, conn: conn ? conn.name : '未选择连接', sameAsProd: Boolean(env && env.key === 'test' && !swapped) };
-  });
+  const writes = writeNodesOf({ wf, state, env });
   const risky = writes.some((w) => w.sameAsProd) || (env && env.key === 'prod');
   const editor = (rows) => html`<${CodeEditor} light value=${text} onChange=${setText} rows=${rows} label="调试出参" tools=${html`<${Fragment}>
     <${Button} size="xs" icon="CodeXml" onClick=${() => setText(sample)}>生成默认出参<//>
@@ -1144,6 +1148,7 @@ function PublishModal({ open, onClose, wf, state }) {
   const nextVersion = nextVersionNumber(state, wf);
   const used = new Set(allNodes(wf).map((n) => (['ai', 'agent'].includes(n.kind) ? n.config.connectionId : n.connectionId)).filter(Boolean));
   const swaps = testEnv ? Object.entries(testEnv.connectionMap).filter(([from]) => used.has(from)).map(([from, to]) => [state.connections.find((c) => c.id === from), state.connections.find((c) => c.id === to)]).filter(([a, b]) => a && b) : [];
+  const unswapped = testEnv ? writeNodesOf({ wf, state, env: testEnv }).filter((w) => w.sameAsProd) : [];
   const cancel = () => { clearTimeout(timer.current); setLoading(false); onClose(); };
   const publish = () => {
     setLoading(true);
@@ -1170,7 +1175,12 @@ function PublishModal({ open, onClose, wf, state }) {
   const names = (list) => list.slice(0, 3).map((n) => `「${n.node ? n.node.name : n.name}」`).join('') + (list.length > 3 ? ` 等 ${list.length} 个` : '');
   return html`<${Modal} open=${open} onClose=${cancel} title=${staged ? '发布到测试环境' : '发布工作流'} width=${560} footer=${html`<${Fragment}><${Button} onClick=${cancel}>取消<//><${Button} variant="primary" loading=${loading} onClick=${publish}>${staged ? '发布到测试' : '发布'}<//><//>`}>
     ${staged
-      ? html`<${Alert} tone="info" title="先发布到测试环境">运行时使用测试环境的配置值${swaps.length ? '和连接替换' : ''}，不会影响生产。验证通过后，在工作流页面「推广到生产」。<//>`
+      ? html`<${Alert} tone=${unswapped.length ? 'warning' : 'info'} title=${unswapped.length ? '测试环境没有给这些写操作换连接' : '先发布到测试环境'}>
+        ${unswapped.length
+          ? html`<div>${unswapped.map((w) => html`<div key=${w.id}>「${w.name}」→ ${w.conn}</div>`)}
+            <div style=${{ marginTop: 4 }}>测试环境运行时仍会用这些生产连接，会真的写进生产系统。建议先到<${Link} to=${`/integration/${wf.projectId}/config`} className="link">环境与配置<//>里设置测试环境的连接替换，再发布。</div></div>`
+          : html`<span>运行时使用测试环境的配置值${swaps.length ? '和连接替换' : ''}，不会影响生产。验证通过后，在工作流页面「推广到生产」。</span>`}
+      <//>`
       : html`<${Alert} tone="warning">发布后，工作流将开始运行。若当前工作流正在运行，新版本会替换正在运行的版本，请慎重操作。<//>`}
     <div style=${{ height: 16 }} />
     <${Field} label="本次改动" help=${current ? `和当前${staged ? '测试环境' : '线上'}的 v${current.version} 相比` : ''}>

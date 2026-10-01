@@ -203,8 +203,13 @@ function relChecksFor(state, wf, version) {
 }
 
 function relTestEvidence(state, wfId, version) {
-  const runs = state.runs.filter((r) => r.workflowId === wfId && r.env === 'test' && r.version === version && r.kind === 'run').sort((a, b) => b.startedAt - a.startedAt);
-  return { runs, m: runMetrics(runs) };
+  const ver = state.versions.find((v) => v.workflowId === wfId && v.version === version);
+  const snapshot = ver && ver.snapshot ? JSON.stringify(ver.snapshot) : null;
+  const sameGraph = (r) => Boolean(snapshot && r.graph && JSON.stringify({ trigger: r.graph.trigger, steps: r.graph.steps }) === snapshot);
+  const runs = state.runs
+    .filter((r) => r.workflowId === wfId && r.env === 'test' && ((r.kind === 'run' && r.version === version) || (r.kind === 'debug' && sameGraph(r))))
+    .sort((a, b) => b.startedAt - a.startedAt);
+  return { runs, m: runMetrics(runs.map((r) => ({ ...r, kind: 'run' }))) };
 }
 
 function relProjectApprovers(state, pid, env) {
@@ -271,7 +276,7 @@ function RelEvidence({ state, wfId, version, limit = 5 }) {
   if (!runs.length) {
     return html`<div className="rel-evidence-empty">
       <${Icon} name="TriangleAlert" size=${15} />
-      <span>v${version} 在测试环境还没有运行记录，上线前最好先在测试环境跑通一次。</span>
+      <span>v${version} 在测试环境还没有运行记录，上线前最好先在测试环境跑通一次。在编辑器里选「测试环境」调试，内容没改过的调试记录会算作这个版本的验证。</span>
     </div>`;
   }
   return html`<div className="rel-evidence">

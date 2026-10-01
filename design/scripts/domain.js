@@ -908,6 +908,10 @@ const MAPPING_SCHEMAS = {
     { key: '工号', type: '文本', required: true }, { key: '姓名', type: '文本', required: true }, { key: '手机号', type: '文本', required: true },
     { key: '部门', type: '文本', required: true }, { key: '直属上级', type: '人员' }, { key: '职务', type: '文本' }, { key: '邮箱', type: '文本' },
   ],
+  'wecom.create_member': [
+    { key: '工号', type: '文本', required: true }, { key: '姓名', type: '文本', required: true }, { key: '手机号', type: '文本', required: true },
+    { key: '部门', type: '文本', required: true }, { key: '职务', type: '文本' },
+  ],
   'feishu.update_user': [
     { key: '工号', type: '文本', required: true }, { key: '部门', type: '文本' }, { key: '直属上级', type: '人员' }, { key: '职务', type: '文本' },
   ],

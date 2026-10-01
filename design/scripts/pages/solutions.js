@@ -2,24 +2,74 @@ const SOL_CATEGORIES = ['全部', '人力资源', '审批协同', '财务', '研
 
 const SOL_FEISHU_CHATS = ['HR 入职服务', '人力资源部', '行政综合群', 'IT 桌面支持', '集成值班'];
 
+const SOL_FEISHU_DEPTS = { 研发中心: 'od-rd-001', 销售运营部: 'od-sales-002', 人力资源部: 'od-hr-003', 财务部: 'od-fin-004', 信息技术部: 'od-it-005', 行政部: 'od-admin-006' };
+
+const SOL_BEISEN_DEPTS = ['研发中心', '销售运营部', '人力资源部', '财务部', '信息技术部', '行政部', '深圳研发中心-平台组', '华南销售中心-深圳部'];
+
+const SOL_ATTENDANCE_SQL = 'SELECT dept, name, type, minutes\nFROM attendance_exception\nWHERE day = CURDATE() - INTERVAL 1 DAY\n  AND minutes > 10;';
+
+function solAttendancePatch(wf) {
+  return { ...wf, steps: wf.steps.map((n) => (n.op === 'execute_query' && n.config && !/minutes > 10/.test(n.config.sql || '') ? { ...n, config: { ...n.config, sql: String(n.config.sql || '').replace(/;?\s*$/, '\n  AND minutes > 10;') } } : n)) };
+}
+
+function solMap(rows) {
+  return { $map: { mode: 'object', fields: rows.map(([target, source, transforms]) => ({ id: uid('m'), target, source, transforms: transforms || [] })) } };
+}
+
+function solLookup(table) {
+  return table ? [{ type: 'lookup', arg: table.id }] : [];
+}
+
 const SOLUTION_CATALOG = [
   {
     id: 'beisen-feishu', name: '北森 → 飞书 人员同步', category: '人力资源', provider: 'official', version: '1.2', installs: 860, updatedAt: Date.now() - 12 * DAY,
-    summary: '员工入职、调岗、离职后，自动在飞书通讯录开通账号、调整部门、暂停账号，并通知 HR 群。',
-    points: ['入职前一天开通飞书账号，按部门对照放进对应部门', '调岗时同步部门、直属上级和职务', '离职当天暂停账号（可以恢复），7 天后提醒 IT 交接资源', '同一员工的变动按顺序处理，重复推送的变动自动去重'],
+    summary: '员工入职、调岗、离职后，自动在飞书通讯录开通账号、调整部门、暂停或删除账号，并通知 HR 群和 IT 群。',
+    points: ['入职后按部门对照开通飞书账号，可以提前一天发出激活邀请', '调岗时同步部门、直属上级和职务，只处理调岗，不处理入职和离职', '离职当天暂停账号（可以恢复）或删除账号，并通知 IT 回收设备', '同一员工的变动按顺序处理，重复推送的事件自动去重'],
     connectors: ['beisen', 'feishu'],
     workflows: [
-      { key: 'onboard', name: '员工入职开通飞书账号', desc: '北森录入入职后，按部门对照在飞书开通账号，并在 HR 群发欢迎卡片。', trigger: { connector: 'beisen', op: 'employee_changed' }, steps: [{ connector: 'beisen', op: 'get_employee' }, { connector: 'feishu', op: 'create_user' }, { connector: 'feishu', op: 'send_card' }] },
-      { key: 'transfer', name: '员工调岗同步部门', desc: '北森调岗生效后，更新飞书里的部门、直属上级和职务。', trigger: { connector: 'beisen', op: 'employee_changed' }, steps: [{ connector: 'beisen', op: 'get_employee' }, { connector: 'feishu', op: 'update_user' }] },
-      { key: 'leave', name: '员工离职暂停账号', desc: '北森离职生效当天暂停飞书账号，并通知 IT 回收设备。', trigger: { connector: 'beisen', op: 'employee_left' }, steps: [{ connector: 'feishu', op: 'freeze_user' }, { connector: 'feishu', op: 'send_message' }] },
+      {
+        key: 'onboard', name: '员工入职开通飞书账号', desc: '北森入职办完后，按部门对照在飞书开通账号，并在 HR 群发欢迎卡片。',
+        trigger: { connector: 'beisen', op: 'onboarding_completed' }, steps: [{ connector: 'feishu', op: 'create_user' }, { connector: 'feishu', op: 'send_card' }],
+        build: (cfg, env) => ({
+          trigger: { connector: 'beisen', op: 'onboarding_completed', name: '员工入职完成', config: { interval: '5 分钟' }, dedupe: '{{trigger.employee_id}}' },
+          steps: [
+            { connector: 'feishu', op: 'create_user', name: '开通飞书账号', config: { employee: solMap([['工号', '{{trigger.employee_id}}'], ['姓名', '{{trigger.name}}'], ['手机号', '{{trigger.mobile}}'], ['部门', '{{trigger.department}}', solLookup(env.deptTable)], ['直属上级', '{{trigger.manager}}'], ['职务', '{{trigger.position}}'], ['邮箱', '{{trigger.email}}']]), activateAt: cfg.openAt === 'day0' ? '入职当天 08:00' : '入职前 1 天 08:00' } },
+            { connector: 'feishu', op: 'send_card', name: '在 HR 群发欢迎卡片', config: { receiveType: '群聊', receiver: cfg.hrChat, template: '入职欢迎卡片' } },
+          ],
+        }),
+      },
+      {
+        key: 'transfer', name: '员工调岗同步部门', desc: '北森调岗生效后，更新飞书里的部门、直属上级和职务。',
+        trigger: { connector: 'beisen', op: 'employee_changed' }, steps: [{ connector: 'feishu', op: 'update_user' }],
+        build: (cfg, env) => ({
+          trigger: { connector: 'beisen', op: 'employee_changed', name: '员工调岗', config: { interval: '5 分钟', changeType: '调岗' }, dedupe: '{{trigger.employee_id}}-{{trigger.effective_date}}' },
+          steps: [
+            { connector: 'feishu', op: 'update_user', name: '更新飞书部门和上级', config: { employee: solMap([['工号', '{{trigger.employee_id}}'], ['部门', '{{trigger.department}}', solLookup(env.deptTable)], ['直属上级', '{{trigger.manager}}'], ['职务', '{{trigger.position}}']]) } },
+          ],
+        }),
+      },
+      {
+        key: 'leave', name: '员工离职处理飞书账号', desc: '北森离职生效当天暂停或删除飞书账号（安装时选择），并通知 IT 回收设备。',
+        trigger: { connector: 'beisen', op: 'employee_left' }, steps: [{ connector: 'feishu', op: 'freeze_user' }, { connector: 'feishu', op: 'send_message' }],
+        build: (cfg) => ({
+          trigger: { connector: 'beisen', op: 'employee_left', name: '员工离职', config: { interval: '15 分钟' }, dedupe: '{{trigger.employee_id}}' },
+          steps: [
+            cfg.leaveAction === 'delete'
+              ? { connector: 'feishu', op: 'delete_user', name: '删除飞书账号', config: { employeeId: '{{trigger.employee_id}}', heir: '直属上级' } }
+              : { connector: 'feishu', op: 'freeze_user', name: '暂停飞书账号', config: { employeeId: '{{trigger.employee_id}}' } },
+            { connector: 'feishu', op: 'send_message', name: '通知 IT 回收设备', config: { receiveType: '群聊', receiver: cfg.itChat, content: `{{trigger.name}}（{{trigger.employee_id}}）已离职，飞书账号已${cfg.leaveAction === 'delete' ? '删除，文档和邮件已转给直属上级' : '暂停'}，请回收设备` } },
+          ],
+        }),
+      },
     ],
-    mappingTables: [{ name: '北森部门 → 飞书部门', keyLabel: '北森部门', valueLabel: '飞书部门 ID', desc: '安装时按部门名称自动匹配，安装后到映射表确认' }],
+    mappingTables: [{ name: '北森部门 → 飞书部门', keyLabel: '北森部门', valueLabel: '飞书部门 ID', desc: '开通账号和调岗时用它把北森部门换成飞书部门', matches: SOL_FEISHU_DEPTS }],
     alerts: ['人员同步出现新问题时通知值班群'],
     config: [
       { key: 'hrChat', label: 'HR 通知群', type: 'select', options: SOL_FEISHU_CHATS, defaultValue: 'HR 入职服务', affects: ['员工入职开通飞书账号'], hint: '入职欢迎卡片发到这个群' },
+      { key: 'itChat', label: 'IT 通知群', type: 'select', options: SOL_FEISHU_CHATS, defaultValue: 'IT 桌面支持', affects: ['员工离职处理飞书账号'], hint: '离职后提醒回收设备' },
       { key: 'openAt', label: '开通时间', type: 'radio', options: [{ value: 'day0', label: '入职当天 08:00' }, { value: 'day-1', label: '入职前 1 天 08:00', desc: '新员工第一天就能登录；飞书会提前发出激活邀请' }], defaultValue: 'day-1', affects: ['员工入职开通飞书账号'] },
-      { key: 'leaveAction', label: '离职处理', type: 'radio', options: [{ value: 'freeze', label: '暂停账号（推荐）', desc: '不能登录，数据保留，可以恢复；7 天后提醒 IT 交接资源并操作离职' }, { value: 'delete', label: '直接删除账号', desc: '不可恢复；文档、邮件转给资源接收人', danger: true }], defaultValue: 'freeze', affects: ['员工离职暂停账号'] },
-      { key: 'deptMap', label: '部门对照', type: 'radio', options: [{ value: 'auto', label: '按部门名称自动匹配，安装后确认' }, { value: 'manual', label: '安装后手工维护映射表' }], defaultValue: 'auto', affects: ['员工入职开通飞书账号', '员工调岗同步部门'] },
+      { key: 'leaveAction', label: '离职处理', type: 'radio', options: [{ value: 'freeze', label: '暂停账号（推荐）', desc: '不能登录，数据保留，可以恢复' }, { value: 'delete', label: '直接删除账号', desc: '不可恢复；文档、邮件转给直属上级', danger: true }], defaultValue: 'freeze', affects: ['员工离职处理飞书账号'] },
+      { key: 'deptMap', label: '部门对照', type: 'radio', options: [{ value: 'auto', label: '按部门名称自动匹配，安装后确认' }, { value: 'manual', label: '安装后手工维护映射表' }], defaultValue: 'auto', affects: ['员工入职开通飞书账号', '员工调岗同步部门'], table: true },
     ],
     checks: [
       { key: 'conn-beisen', label: '北森连接可用', kind: 'connection', connector: 'beisen', blocking: true },
@@ -36,17 +86,37 @@ const SOLUTION_CATALOG = [
   },
   {
     id: 'beisen-wecom', name: '北森 → 企业微信 人员同步', category: '人力资源', provider: 'official', version: '1.0', installs: 312, updatedAt: Date.now() - 20 * DAY,
-    summary: '门店和分公司常用：北森员工入职、调岗、离职后，同步企业微信成员并通知店长。',
-    points: ['入职当天创建企业微信成员', '调岗时更新所在部门', '离职当天禁用成员，聊天记录保留'],
+    summary: '门店和分公司常用：北森员工入职、离职后，同步企业微信成员并通知店长或 HR。',
+    points: ['入职后在企业微信创建成员，按部门对照放进对应部门', '离职当天禁用成员，聊天记录保留，可以恢复'],
     connectors: ['beisen', 'wecom'],
     workflows: [
-      { key: 'onboard', name: '员工入职创建企业微信成员', desc: '北森入职后创建成员并通知店长。', trigger: { connector: 'beisen', op: 'employee_changed' }, steps: [{ connector: 'beisen', op: 'get_employee' }, { connector: 'wecom', op: 'send_app_message' }] },
-      { key: 'leave', name: '员工离职禁用企业微信成员', desc: '北森离职当天禁用成员。', trigger: { connector: 'beisen', op: 'employee_left' }, steps: [{ connector: 'wecom', op: 'send_app_message' }] },
+      {
+        key: 'onboard', name: '员工入职创建企业微信成员', desc: '北森入职办完后创建成员并通知店长。',
+        trigger: { connector: 'beisen', op: 'onboarding_completed' }, steps: [{ connector: 'wecom', op: 'create_member' }, { connector: 'wecom', op: 'send_app_message' }],
+        build: (cfg, env) => ({
+          trigger: { connector: 'beisen', op: 'onboarding_completed', name: '员工入职完成', config: { interval: '5 分钟' }, dedupe: '{{trigger.employee_id}}' },
+          steps: [
+            { connector: 'wecom', op: 'create_member', name: '创建企业微信成员', config: { employee: solMap([['工号', '{{trigger.employee_id}}'], ['姓名', '{{trigger.name}}'], ['手机号', '{{trigger.mobile}}'], ['部门', '{{trigger.department}}', solLookup(env.deptTable)], ['职务', '{{trigger.position}}']]) } },
+            { connector: 'wecom', op: 'send_app_message', name: cfg.notify === 'manager' ? '通知店长' : '通知 HR', config: { receiver: cfg.notify === 'manager' ? '{{trigger.manager}}' : '人力资源部', content: '新员工 {{trigger.name}}（{{trigger.employee_id}}）已加入企业微信，请安排入职引导' } },
+          ],
+        }),
+      },
+      {
+        key: 'leave', name: '员工离职禁用企业微信成员', desc: '北森离职当天禁用成员。',
+        trigger: { connector: 'beisen', op: 'employee_left' }, steps: [{ connector: 'wecom', op: 'disable_member' }, { connector: 'wecom', op: 'send_app_message' }],
+        build: (cfg) => ({
+          trigger: { connector: 'beisen', op: 'employee_left', name: '员工离职', config: { interval: '15 分钟' }, dedupe: '{{trigger.employee_id}}' },
+          steps: [
+            { connector: 'wecom', op: 'disable_member', name: '禁用企业微信成员', config: { employeeId: '{{trigger.employee_id}}' } },
+            { connector: 'wecom', op: 'send_app_message', name: cfg.notify === 'manager' ? '通知店长' : '通知 HR', config: { receiver: cfg.notify === 'manager' ? '{{trigger.manager}}' : '人力资源部', content: '{{trigger.name}}（{{trigger.employee_id}}）已离职，企业微信成员已禁用' } },
+          ],
+        }),
+      },
     ],
-    mappingTables: [{ name: '北森门店 → 企业微信部门', keyLabel: '北森门店', valueLabel: '企业微信部门 ID', desc: '安装后维护' }],
+    mappingTables: [{ name: '北森部门 → 企业微信部门', keyLabel: '北森部门', valueLabel: '企业微信部门 ID', desc: '创建成员时用它把北森部门换成企业微信部门', matches: {} }],
     alerts: ['人员同步出现新问题时通知值班群'],
     config: [
-      { key: 'notify', label: '通知谁', type: 'radio', options: [{ value: 'manager', label: '所在门店店长' }, { value: 'hr', label: 'HR 群' }], defaultValue: 'manager', affects: ['员工入职创建企业微信成员'] },
+      { key: 'notify', label: '通知谁', type: 'radio', options: [{ value: 'manager', label: '所在门店店长' }, { value: 'hr', label: 'HR' }], defaultValue: 'manager', affects: ['员工入职创建企业微信成员', '员工离职禁用企业微信成员'] },
     ],
     checks: [
       { key: 'conn-beisen', label: '北森连接可用', kind: 'connection', connector: 'beisen', blocking: true },
@@ -62,52 +132,117 @@ const SOLUTION_CATALOG = [
   },
   {
     id: 'onboard-it', name: '入职前一天提醒 IT 准备设备', category: '人力资源', provider: 'official', version: '1.1', installs: 540, updatedAt: Date.now() - 30 * DAY,
-    summary: '每个工作日下午查询明天入职的员工，把名单和工位发到 IT 群。',
-    points: ['每个工作日 17:00 运行，跳过法定节假日', '名单按部门分组，附工位和电脑配置'],
+    summary: '每个工作日下午查询预计入职的员工，把名单发到 IT 群。',
+    points: ['工作日 17:00 运行，跳过法定节假日', '名单里带部门、岗位和入职日期'],
     connectors: ['schedule', 'beisen', 'feishu'],
-    workflows: [{ key: 'remind', name: '入职前一天提醒 IT', desc: '查询明天入职的员工并通知 IT。', trigger: { connector: 'schedule', op: 'every' }, steps: [{ connector: 'beisen', op: 'get_employee' }, { connector: 'feishu', op: 'send_card' }] }],
+    workflows: [{
+      key: 'remind', name: '入职前一天提醒 IT', desc: '查询预计入职的员工并通知 IT。',
+      trigger: { connector: 'schedule', op: 'every' }, steps: [{ connector: 'beisen', op: 'list_onboarding' }, { connector: 'feishu', op: 'send_card' }],
+      build: (cfg) => ({
+        trigger: { connector: 'schedule', op: 'every', name: '定时任务', config: { mode: '按周触发', weekdays: ['周一', '周二', '周三', '周四', '周五'], at: cfg.at, timezone: 'Asia/Shanghai', skipHoliday: true } },
+        steps: [
+          { connector: 'beisen', op: 'list_onboarding', name: '查询待入职员工', config: { entryDate: cfg.entryDate } },
+          { connector: 'feishu', op: 'send_card', name: '通知 IT 准备设备', config: { receiveType: '群聊', receiver: cfg.chat, template: '通用通知卡片' } },
+        ],
+      }),
+    }],
     mappingTables: [], alerts: [],
-    config: [{ key: 'chat', label: '通知群', type: 'select', options: SOL_FEISHU_CHATS, defaultValue: 'IT 桌面支持', affects: ['入职前一天提醒 IT'] }],
+    config: [
+      { key: 'chat', label: '通知群', type: 'select', options: SOL_FEISHU_CHATS, defaultValue: 'IT 桌面支持', affects: ['入职前一天提醒 IT'] },
+      { key: 'entryDate', label: '提醒哪天入职的人', type: 'select', options: ['明天', '后天', '本周内'], defaultValue: '明天', affects: ['入职前一天提醒 IT'] },
+      { key: 'at', label: '运行时间', type: 'select', options: ['16:00', '17:00', '18:00'], defaultValue: '17:00', affects: ['入职前一天提醒 IT'] },
+    ],
     checks: [
       { key: 'conn-beisen', label: '北森连接可用', kind: 'connection', connector: 'beisen', blocking: true },
       { key: 'conn-feishu', label: '飞书连接可用', kind: 'connection', connector: 'feishu', blocking: true },
     ],
-    versions: [{ v: '1.1', at: Date.now() - 30 * DAY, notes: '名单按部门分组' }, { v: '1.0', at: Date.now() - 80 * DAY, notes: '首个版本' }],
+    versions: [{ v: '1.1', at: Date.now() - 30 * DAY, notes: '名单带上岗位和入职日期' }, { v: '1.0', at: Date.now() - 80 * DAY, notes: '首个版本' }],
   },
   {
     id: 'attendance-alert', name: '每日考勤异常提醒', category: '人力资源', provider: 'official', version: '1.1', installs: 1260, updatedAt: Date.now() - 8 * DAY,
-    summary: '每天早上汇总前一天的迟到、缺卡，私信本人并抄送直属上级。',
-    points: ['每天 09:30 运行', '只提醒本人和直属上级，不在群里公开'],
+    summary: '工作日早上汇总前一天的迟到、缺卡，发到管理群。',
+    points: ['工作日运行，跳过法定节假日', '只发到管理群，不在大群里公开'],
     connectors: ['schedule', 'mysql', 'feishu'],
-    workflows: [{ key: 'daily', name: '每日考勤异常日报', desc: '汇总前一天的考勤异常并私信。', trigger: { connector: 'schedule', op: 'every' }, steps: [{ connector: 'mysql', op: 'query' }, { connector: 'feishu', op: 'send_message' }] }],
+    workflows: [{
+      key: 'daily', name: '每日考勤异常日报', desc: '汇总前一天的考勤异常并发到管理群。',
+      trigger: { connector: 'schedule', op: 'every' }, steps: [{ connector: 'mysql', op: 'execute_query' }, { connector: 'feishu', op: 'send_card' }],
+      build: (cfg) => ({
+        trigger: { connector: 'schedule', op: 'every', name: '定时任务', config: { mode: '按周触发', weekdays: ['周一', '周二', '周三', '周四', '周五'], at: cfg.at, timezone: 'Asia/Shanghai', skipHoliday: true } },
+        steps: [
+          { connector: 'mysql', op: 'execute_query', name: '查询考勤异常', config: { sql: SOL_ATTENDANCE_SQL } },
+          { connector: 'feishu', op: 'send_card', name: '推送到管理群', config: { receiveType: '群聊', receiver: cfg.chat, template: '考勤日报卡片' } },
+        ],
+      }),
+    }],
     mappingTables: [], alerts: [],
-    config: [{ key: 'at', label: '运行时间', type: 'select', options: ['09:00', '09:30', '10:00'], defaultValue: '09:30', affects: ['每日考勤异常日报'] }],
-    checks: [{ key: 'conn-feishu', label: '飞书连接可用', kind: 'connection', connector: 'feishu', blocking: true }],
-    versions: [{ v: '1.1', at: Date.now() - 8 * DAY, notes: '抄送直属上级' }, { v: '1.0', at: Date.now() - 60 * DAY, notes: '首个版本' }],
+    config: [
+      { key: 'chat', label: '通知群', type: 'select', options: ['部门负责人群', ...SOL_FEISHU_CHATS], defaultValue: '部门负责人群', affects: ['每日考勤异常日报'] },
+      { key: 'at', label: '运行时间', type: 'select', options: ['09:00', '09:30', '10:00'], defaultValue: '09:30', affects: ['每日考勤异常日报'] },
+    ],
+    checks: [
+      { key: 'conn-mysql', label: '考勤库连接可用', kind: 'connection', connector: 'mysql', blocking: true },
+      { key: 'conn-feishu', label: '飞书连接可用', kind: 'connection', connector: 'feishu', blocking: true },
+      { key: 'table', label: '考勤库里有 attendance_exception 表', detail: '表里需要 dept、name、type、minutes、day 五列', who: '考勤系统管理员', blocking: false, sim: 'warn', failText: '无法从这里确认，请考勤系统管理员核对表结构' },
+    ],
+    versions: [
+      { v: '1.1', at: Date.now() - 8 * DAY, notes: '只汇总迟到、缺卡超过 10 分钟的记录', changes: ['「查询考勤异常」的 SQL 加上 minutes > 10'], patch: solAttendancePatch },
+      { v: '1.0', at: Date.now() - 60 * DAY, notes: '首个版本' },
+    ],
   },
   {
-    id: 'approval-kingdee', name: '飞书审批通过后生成金蝶付款单', category: '财务', provider: 'official', version: '1.0', installs: 205, updatedAt: Date.now() - 15 * DAY,
-    summary: '付款申请审批通过后，在金蝶云星空保存并提交付款单，把单号写回审批评论。',
-    points: ['按审批单号查重，同一张审批不会生成两张付款单', '金蝶里的审核由财务完成，平台只负责保存和提交', '审批被撤回时提醒财务作废暂存单'],
+    id: 'approval-kingdee', name: '飞书采购审批通过后生成金蝶采购订单', category: '财务', provider: 'official', version: '1.0', installs: 205, updatedAt: Date.now() - 15 * DAY,
+    summary: '采购申请审批通过后，在金蝶云星空保存并提交采购订单，把订单号发给申请人。',
+    points: ['按审批单号查重，同一张审批不会生成两张订单', '采购明细逐行映射成金蝶明细行，物料编码走映射表', '金蝶里的审核由财务完成，平台只负责保存和提交'],
     connectors: ['feishu', 'kingdee'],
-    workflows: [{ key: 'pay', name: '付款审批生成金蝶付款单', desc: '审批通过后保存并提交付款单。', trigger: { connector: 'feishu', op: 'approval_approved' }, steps: [{ connector: 'feishu', op: 'get_approval' }, { connector: 'kingdee', op: 'save_bill' }, { connector: 'kingdee', op: 'submit_bill' }, { connector: 'feishu', op: 'send_message' }] }],
-    mappingTables: [{ name: '费用类型 → 金蝶科目', keyLabel: '费用类型', valueLabel: '金蝶科目编码', desc: '安装后维护' }],
-    alerts: ['付款单出现新问题时通知财务群'],
-    config: [{ key: 'approval', label: '审批定义', type: 'select', options: ['付款申请', '费用报销', '采购申请（新）'], defaultValue: '付款申请', affects: ['付款审批生成金蝶付款单'] }],
+    workflows: [{
+      key: 'po', name: '采购审批生成金蝶采购订单', desc: '审批通过后保存并提交采购订单。',
+      trigger: { connector: 'feishu', op: 'approval_approved' }, steps: [{ connector: 'feishu', op: 'get_approval' }, { connector: 'kingdee', op: 'save_bill' }, { connector: 'kingdee', op: 'submit_bill' }, { connector: 'feishu', op: 'send_message' }],
+      build: (cfg, env) => ({
+        trigger: { connector: 'feishu', op: 'approval_approved', name: '审批实例通过', config: { approval: cfg.approval }, dedupe: '{{trigger.instance_code}}', dedupeWindow: '7d' },
+        steps: [
+          { connector: 'feishu', op: 'get_approval', name: '获取审批表单', config: { instanceCode: '{{trigger.instance_code}}' } },
+          { connector: 'kingdee', op: 'save_bill', name: '保存采购订单', config: { formId: 'PUR_PurchaseOrder', model: { $map: { mode: 'object', fields: [
+            { id: uid('m'), target: 'FDate', source: '{{trigger.end_time}}', transforms: [{ type: 'date', arg: 'YYYY-MM-DD' }] },
+            { id: uid('m'), target: 'FSupplierId', source: '', constant: cfg.supplier, transforms: [] },
+            { id: uid('m'), target: 'FEntity', source: '{{s1.form[0].value}}', transforms: [], eachOn: true, each: [
+              { id: uid('m'), target: 'FMaterialId', source: '{{item.物料编码}}', transforms: [{ type: 'trim' }, ...solLookup(env.materialTable)] },
+              { id: uid('m'), target: 'FQty', source: '{{item.数量}}', transforms: [{ type: 'number' }] },
+              { id: uid('m'), target: 'FPrice', source: '{{item.单价}}', transforms: [{ type: 'number' }, { type: 'round', arg: '2' }] },
+            ] },
+          ] } } } },
+          { connector: 'kingdee', op: 'submit_bill', name: '提交采购订单', config: { formId: 'PUR_PurchaseOrder', number: '{{s2.Result.Number}}' } },
+          { connector: 'feishu', op: 'send_message', name: '通知申请人', config: { receiveType: '用户', receiver: '{{trigger.user_id}}', content: '你的采购申请已生成金蝶订单 {{s2.Result.Number}}' } },
+        ],
+      }),
+    }],
+    mappingTables: [{ name: '物料编码对照', keyLabel: '采购物料编码', valueLabel: '金蝶物料内码', desc: '采购申请里的物料编码换成金蝶物料内码', matches: {} }],
+    alerts: ['采购订单出现新问题时通知财务群'],
+    config: [
+      { key: 'approval', label: '审批定义', type: 'select', options: ['采购申请（新）', '大额报销复核', '请假', '用印申请'], defaultValue: '采购申请（新）', affects: ['采购审批生成金蝶采购订单'] },
+      { key: 'supplier', label: '默认供应商编码', type: 'text', defaultValue: 'VEN00018', affects: ['采购审批生成金蝶采购订单'], hint: '审批表单里没有供应商时，订单用这个供应商' },
+    ],
     checks: [
       { key: 'conn-feishu', label: '飞书连接可用', kind: 'connection', connector: 'feishu', blocking: true },
       { key: 'conn-kingdee', label: '金蝶连接可用', kind: 'connection', connector: 'kingdee', blocking: true },
-      { key: 'unique', label: '金蝶付款单已开启「第三方单据编号」唯一校验', detail: '防止人工录入同一审批号的单据', who: '金蝶管理员', blocking: false, sim: 'warn', failText: '无法从这里确认，请金蝶管理员核对' },
+      { key: 'unique', label: '金蝶采购订单已开启「第三方单据编号」唯一校验', detail: '防止人工录入同一审批号的单据', who: '金蝶管理员', blocking: false, sim: 'warn', failText: '无法从这里确认，请金蝶管理员核对' },
     ],
     versions: [{ v: '1.0', at: Date.now() - 15 * DAY, notes: '首个版本' }],
   },
   {
     id: 'gitlab-jira', name: '流水线失败自动建缺陷', category: '研发', provider: 'official', version: '1.0', installs: 430, updatedAt: Date.now() - 50 * DAY,
-    summary: 'GitLab 流水线失败时在 Jira 创建缺陷并指派给提交人，修好后自动关闭。',
-    points: ['同一条流水线反复失败只建一个缺陷'],
+    summary: 'GitLab 流水线失败时在 Jira 创建缺陷。',
+    points: ['同一条流水线只建一个缺陷'],
     connectors: ['gitlab', 'jira'],
-    workflows: [{ key: 'bug', name: '流水线失败自动建缺陷', desc: '失败时建缺陷。', trigger: { connector: 'gitlab', op: 'pipeline_failed' }, steps: [{ connector: 'jira', op: 'create_issue' }] }],
-    mappingTables: [], alerts: [], config: [],
+    workflows: [{
+      key: 'bug', name: '流水线失败自动建缺陷', desc: '失败时建缺陷。',
+      trigger: { connector: 'gitlab', op: 'pipeline_failed' }, steps: [{ connector: 'jira', op: 'create_issue' }],
+      build: (cfg) => ({
+        trigger: { connector: 'gitlab', op: 'pipeline_failed', name: '流水线失败', config: {}, dedupe: '{{trigger.pipeline_id}}' },
+        steps: [{ connector: 'jira', op: 'create_issue', name: '创建缺陷', config: { project: cfg.project, issueType: '缺陷', summary: '流水线失败：{{trigger.ref}} · {{trigger.stage}}' } }],
+      }),
+    }],
+    mappingTables: [], alerts: [],
+    config: [{ key: 'project', label: 'Jira 项目', type: 'select', options: ['PLAT', 'IT', 'HR'], defaultValue: 'PLAT', affects: ['流水线失败自动建缺陷'] }],
     checks: [{ key: 'conn-gitlab', label: 'GitLab 连接可用', kind: 'connection', connector: 'gitlab', blocking: true }, { key: 'conn-jira', label: 'Jira 连接可用', kind: 'connection', connector: 'jira', blocking: true }],
     versions: [{ v: '1.0', at: Date.now() - 50 * DAY, notes: '首个版本' }],
   },
@@ -144,7 +279,8 @@ function solConnectorsOf(sol) {
 }
 
 function solUsableConnections(state, connector, pid) {
-  return state.connections.filter((c) => c.connector === connector && (!pid || c.scope === 'tenant' || (c.projectIds || []).includes(pid)) && connectionPerm(state, c));
+  const testTargets = new Set(pid ? projectEnvs(state, pid).filter((e) => e.key === 'test').flatMap((e) => Object.values(e.connectionMap || {})) : []);
+  return state.connections.filter((c) => !testTargets.has(c.id)).filter((c) => c.connector === connector && (!pid || c.scope === 'tenant' || (c.projectIds || []).includes(pid)) && connectionPerm(state, c));
 }
 
 function SolChain({ connectors, size = 26 }) {
@@ -298,10 +434,12 @@ function SolUpgradeModal({ install, onClose }) {
   const newer = sol.versions.filter((v) => solVersionCmp(v.v, install.version) > 0);
   const wfs = state.workflows.filter((w) => install.workflowIds.includes(w.id));
   const edited = wfs.filter((w) => w.draftChanged);
+  const patches = newer.filter((v) => v.patch).sort((a, b) => solVersionCmp(a.v, b.v)).map((v) => v.patch);
+  const changes = newer.flatMap((v) => v.changes || []);
   const upgrade = () => {
     Store.set((s) => ({
       ...s,
-      workflows: s.workflows.map((w) => (install.workflowIds.includes(w.id) ? { ...w, draftChanged: true, solution: { id: sol.id, version: sol.version }, updatedAt: Date.now() } : w)),
+      workflows: s.workflows.map((w) => (install.workflowIds.includes(w.id) ? { ...patches.reduce((acc, p) => p(acc), w), draftChanged: true, solution: { id: sol.id, version: sol.version }, updatedAt: Date.now() } : w)),
       solutionInstalls: s.solutionInstalls.map((i) => (i.id === install.id ? { ...i, version: sol.version, upgradedAt: Date.now() } : i)),
     }));
     addAudit('升级方案', `${sol.name} v${install.version} → v${sol.version}`, install.projectId);
@@ -319,12 +457,12 @@ function SolUpgradeModal({ install, onClose }) {
       <div>
         <div className="sol-label">升级会做什么</div>
         <ul className="sol-points">
-          <li><${Icon} name="Check" size=${14} />${wfs.length} 个工作流的草稿换成新版本。线上正在运行的版本不变，调试后发布才生效</li>
-          <li><${Icon} name="Check" size=${14} />现在的草稿先存进版本记录，升级后可以找回</li>
-          <li><${Icon} name="Check" size=${14} />连接、配置、映射表的内容都沿用，不会清空</li>
+          <li><${Icon} name="Check" size=${14} />把新版本的改动放进 ${wfs.length} 个工作流的草稿。线上正在运行的版本不变，调试后发布才生效</li>
+          ${changes.map((c) => html`<li key=${c}><${Icon} name="CornerDownRight" size=${14} />${c}</li>`)}
+          <li><${Icon} name="Check" size=${14} />连接、配置、映射表的内容都沿用，不会清空；发布时会列出本次改动</li>
         </ul>
       </div>
-      ${edited.length > 0 && html`<${Alert} tone="warning">${edited.map((w) => `「${w.name}」`).join('')}有没发布的改动，升级后要对照版本记录把改动补回去。<//>`}
+      ${edited.length > 0 && html`<${Alert} tone="warning">${edited.map((w) => `「${w.name}」`).join('')}已经有没发布的改动，新版本的改动会叠加在这份草稿上。<//>`}
     </div>
   <//>`;
 }
@@ -379,6 +517,7 @@ function SolutionInstallPage({ id, query }) {
   const [creatingFor, setCreatingFor] = useState(null);
   const [result, setResult] = useState(null);
   if (!sol || sol.building) return html`<div className="page"><div className="page-inner"><${Empty} icon="PackageX" title="这个方案现在不能安装" action=${html`<${Button} onClick=${() => navigate('/solutions')}>回到方案市场<//>`} /></div></div>`;
+  const reusable = target === 'existing' && pid ? (state.mappingTables || []).find((t) => t.projectId === pid && sol.mappingTables.some((m) => m.keyLabel === t.keyLabel && m.valueLabel === t.valueLabel)) : null;
   const needConnectors = solConnectorsOf(sol).filter((c) => (resolveConnector(c) || {}).auth !== 'none');
   const connOf = (c) => state.connections.find((x) => x.id === conns[c]);
   const projectError = target === 'existing' ? (!pid ? '请选择项目' : integLimitError(state, pid)) : (!newName.trim() ? '请输入项目名称' : state.projects.some((p) => p.name === newName.trim()) ? '已有同名项目' : null);
@@ -419,17 +558,30 @@ function SolutionInstallPage({ id, query }) {
     const connections = target === 'new' ? s.connections.map((c) => (chosenIds.includes(c.id) && c.scope !== 'tenant' && !(c.projectIds || []).includes(projectIdFinal) ? { ...c, projectIds: [...(c.projectIds || []), projectIdFinal] } : c)) : s.connections;
     const attach = (node) => (node && node.connector && connByConnector[node.connector] ? { ...node, connectionId: connByConnector[node.connector] } : node);
     const base = { ...s, projects, members, connections };
-    const created = sol.workflows.map((w) => {
-      const draft = workflowFromTemplate(w.graph ? { name: w.name, desc: w.desc, graph: w.graph } : { name: w.name, desc: w.desc, trigger: w.trigger, steps: w.steps }, projectIdFinal);
-      return { ...draft, name: integUniqueName(base, projectIdFinal, draft.name), trigger: attach(draft.trigger), steps: draft.steps.map(attach), solution: { id: sol.id, version: sol.version } };
+    const tableResults = sol.mappingTables.map((m) => {
+      const existing = (s.mappingTables || []).find((t) => t.projectId === projectIdFinal && t.keyLabel === m.keyLabel && t.valueLabel === m.valueLabel);
+      if (existing) return { m, table: existing, reused: true };
+      const rows = config.deptMap === 'manual' ? [] : Object.entries(m.matches || {}).map(([k, v]) => ({ k, v }));
+      return { m, reused: false, table: { id: uid('mt'), projectId: projectIdFinal, name: m.name, description: m.desc, keyLabel: m.keyLabel, valueLabel: m.valueLabel, missing: 'error', defaultValue: '', updatedAt: Date.now(), updatedBy: s.me, rows } };
     });
-    const unmatched = config.deptMap === 'auto' ? ['深圳研发中心-平台组', '华南销售中心-深圳部'] : [];
-    const tables = sol.mappingTables.map((m) => ({
-      id: uid('mt'), projectId: projectIdFinal, name: m.name, description: m.desc, keyLabel: m.keyLabel, valueLabel: m.valueLabel, missing: 'error', defaultValue: '', updatedAt: Date.now(), updatedBy: s.me,
-      rows: config.deptMap === 'auto' && sol.id === 'beisen-feishu' ? [{ k: '研发中心', v: 'od-rd-001' }, { k: '销售运营部', v: 'od-sales-002' }, { k: '人力资源部', v: 'od-hr-003' }, { k: '财务部', v: 'od-fin-004' }, { k: '信息技术部', v: 'od-it-005' }, { k: '行政部', v: 'od-admin-006' }] : [],
-    }));
+    const tables = tableResults.filter((t) => !t.reused).map((t) => t.table);
+    const tableByLabel = (label) => (tableResults.find((t) => t.m.keyLabel === label) || {}).table;
+    const env = { deptTable: tableByLabel('北森部门'), materialTable: tableByLabel('采购物料编码') };
+    const created = sol.workflows.map((w) => {
+      const spec = w.build(config, env);
+      const triggerBase = triggerFromPick(spec.trigger.connector, spec.trigger.op);
+      const orderKey = /employee_id/.test(spec.trigger.dedupe || '') ? '{{trigger.employee_id}}' : '';
+      const trigger = attach({
+        ...triggerBase, name: spec.trigger.name || triggerBase.name, config: { ...triggerBase.config, ...(spec.trigger.config || {}) },
+        ...(spec.trigger.dedupe ? { runSettings: { dedupe: { enabled: true, key: spec.trigger.dedupe, window: spec.trigger.dedupeWindow || '30d' }, concurrency: { max: 5, orderKey } } } : {}),
+      });
+      const steps = spec.steps.map((st, i) => attach({ ...actionFromPick(st.connector, st.op), id: `s${i + 1}`, name: st.name, config: st.config }));
+      const draft = newWorkflow({ projectId: projectIdFinal, name: spec.name || w.name, description: w.desc, trigger, steps });
+      return { ...draft, name: integUniqueName(base, projectIdFinal, draft.name), solution: { id: sol.id, version: sol.version } };
+    });
+    const unmatched = tableResults.filter((t) => t.m.keyLabel === '北森部门').flatMap((t) => SOL_BEISEN_DEPTS.filter((d) => !t.table.rows.some((r) => r.k === d)));
     const policies = sol.alerts.map((a) => ({ id: uid('ap'), name: a, enabled: true, projects: [projectIdFinal], workflows: created.map((w) => w.id), events: ['issue_new', 'issue_reopen'], channels: ['ch_ops'], groupWindow: 30, quiet: { enabled: true, from: '22:00', to: '08:00' }, escalation: { enabled: false, afterMin: 60, channel: null }, updatedBy: s.me, updatedAt: Date.now() }));
-    const record = { id: uid('si'), solutionId: sol.id, projectId: projectIdFinal, version: sol.version, installedAt: Date.now(), by: s.me, workflowIds: created.map((w) => w.id), mappingTableIds: tables.map((t) => t.id), config, skippedChecks: sol.checks.filter((c) => !c.blocking && (checks[c.key] || {}).state !== 'pass').map((c) => c.label) };
+    const record = { id: uid('si'), solutionId: sol.id, projectId: projectIdFinal, version: sol.version, installedAt: Date.now(), by: s.me, workflowIds: created.map((w) => w.id), mappingTableIds: tableResults.map((t) => t.table.id), config, skippedChecks: sol.checks.filter((c) => !c.blocking && (checks[c.key] || {}).state !== 'pass').map((c) => c.label) };
     Store.set({
       ...base,
       workflows: [...created, ...s.workflows],
@@ -438,7 +590,7 @@ function SolutionInstallPage({ id, query }) {
       solutionInstalls: [record, ...(s.solutionInstalls || [])],
     });
     addAudit('安装方案', `${sol.name} v${sol.version}`, projectIdFinal);
-    setResult({ record, created, tables, policies, unmatched, projectId: projectIdFinal });
+    setResult({ record, created, tableResults, policies, unmatched, projectId: projectIdFinal });
     setStep(4);
   };
   const steps = [{ title: '选择项目' }, { title: '连接' }, { title: '配置' }, { title: '安装检查' }, { title: '完成' }];
@@ -495,7 +647,10 @@ function SolutionInstallPage({ id, query }) {
         ${sol.config.map((c) => html`<${Field} key=${c.key} label=${c.label} hint=${`影响：${c.affects.join('、')}${c.hint ? `。${c.hint}` : ''}`}>
           ${c.type === 'select'
             ? html`<${Select} width=${320} value=${config[c.key]} onChange=${(v) => setConfig({ ...config, [c.key]: v })} options=${c.options.map((o) => ({ value: o, label: o }))} />`
-            : html`<${RadioCards} columns=${c.options.length > 2 ? 3 : 2} value=${config[c.key]} onChange=${(v) => setConfig({ ...config, [c.key]: v })} options=${c.options.map((o) => ({ value: o.value, label: o.label, desc: o.desc }))} />`}
+            : c.type === 'text'
+              ? html`<${Input} width=${320} value=${config[c.key]} onChange=${(v) => setConfig({ ...config, [c.key]: v })} />`
+              : html`<${RadioCards} columns=${c.options.length > 2 ? 3 : 2} disabled=${Boolean(c.table && reusable)} value=${config[c.key]} onChange=${(v) => setConfig({ ...config, [c.key]: v })} options=${c.options.map((o) => ({ value: o.value, label: o.label, desc: o.desc }))} />`}
+          ${c.table && reusable && html`<${Alert} tone="info" className="sol-gap">项目里已有映射表「${reusable.name}」（${reusable.rows.length} 条对照），会直接沿用，这一项不会生效。<//>`}
           ${c.key === 'leaveAction' && config.leaveAction === 'delete' && html`<${Alert} tone="warning" className="sol-gap">删除不可恢复。文档、邮件会转给直属上级，没有上级时保留在原账号名下；日程和问卷会被删除。<//>`}
         <//>`)}
       </div>`}
@@ -528,7 +683,7 @@ function SolutionInstallPage({ id, query }) {
         <div className="sol-done"><${Icon} name="PartyPopper" size=${28} /><div><h2>安装完成</h2><div className="muted">已装进项目「${project ? project.name : ''}」。工作流都还没启用，按下面的顺序检查后再启用。</div></div></div>
         <div className="sol-res">
           ${result.created.map((w) => html`<div key=${w.id} className="sol-res-row"><span className="sol-res-icon"><${Icon} name="Workflow" size=${16} /></span><div className="grow"><b>${w.name}</b><div className="text-xs muted">未启用 · 连接已填好</div></div><${Button} size="sm" onClick=${() => navigate(`/integration/${result.projectId}/wf/${w.id}?mode=edit`)}>打开调试<//></div>`)}
-          ${result.tables.map((t) => html`<div key=${t.id} className="sol-res-row"><span className="sol-res-icon"><${Icon} name="Table2" size=${16} /></span><div className="grow"><b>映射表「${t.name}」</b><div className="text-xs muted">${t.rows.length ? `按名称自动匹配了 ${t.rows.length} 个部门` : '空表，待维护'}${result.unmatched.length ? `；${result.unmatched.length} 个北森部门没找到同名的飞书部门：${result.unmatched.join('、')}` : ''}</div></div><${Button} size="sm" onClick=${() => navigate(`/integration/${result.projectId}/mappings?id=${t.id}`)}>去确认<//></div>`)}
+          ${result.tableResults.map(({ table: t, reused }) => html`<div key=${t.id} className="sol-res-row"><span className="sol-res-icon"><${Icon} name="Table2" size=${16} /></span><div className="grow"><b>映射表「${t.name}」</b><div className="text-xs muted">${reused ? '沿用项目里已有的这张表' : t.rows.length ? `按名称自动匹配了 ${t.rows.length} 个部门` : '空表，待维护'}${t.keyLabel === '北森部门' && result.unmatched.length ? `；北森里还有 ${result.unmatched.length} 个部门没有对照：${result.unmatched.join('、')}。补上之前，这些部门的员工开通账号会失败` : ''}</div></div><${Button} size="sm" onClick=${() => navigate(`/integration/${result.projectId}/mappings?id=${t.id}`)}>去确认<//></div>`)}
           ${result.policies.map((p) => html`<div key=${p.id} className="sol-res-row"><span className="sol-res-icon"><${Icon} name="BellRing" size=${16} /></span><div className="grow"><b>告警策略「${p.name}」</b><div className="text-xs muted">已启用，发到「集成值班」</div></div></div>`)}
         </div>
         ${result.record.skippedChecks.length > 0 && html`<${Alert} tone="warning" title="安装时跳过的检查">${result.record.skippedChecks.join('；')}。处理好之前，相关的运行可能失败。<//>`}

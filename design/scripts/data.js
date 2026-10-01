@@ -550,6 +550,7 @@ function seedState() {
     { id: 'c_mysql', name: '考勤库（只读）', connector: 'mysql', authType: 'custom', scope: 'project', projectIds: ['p1'], status: 'active', owner: 'u3', shares: [{ userId: 'u1', perm: 'edit' }, { userId: 'u2', perm: 'use' }], account: 'readonly@10.2.3.14:3306/hr_attendance', createdAt: now - 21 * DAY, updatedAt: now - 21 * DAY },
     { id: 'c_openai', name: 'OpenAI 公司账号', connector: 'openai', authType: 'apikey', scope: 'tenant', projectIds: [], status: 'active', owner: 'u1', shares: [{ userId: 'u4', perm: 'use' }], account: 'sk-…9f2a', createdAt: now - 50 * DAY, updatedAt: now - 50 * DAY },
     { id: 'c_claude', name: 'Claude 公司账号', connector: 'claude', authType: 'apikey', scope: 'tenant', projectIds: [], status: 'active', owner: 'u1', shares: [{ userId: 'u2', perm: 'use' }, { userId: 'u7', perm: 'use' }], account: 'sk-ant-…4d1c', createdAt: now - 45 * DAY, updatedAt: now - 45 * DAY },
+    { id: 'c_feishu_test', name: '飞书 · 测试企业（沙箱）', connector: 'feishu', authType: 'oauth2', scope: 'project', projectIds: ['p1'], status: 'active', owner: 'u2', shares: [{ userId: 'u1', perm: 'edit' }], account: 'cli_a5f3e9test（星河集成助手 · 测试）', createdAt: now - 40 * DAY, updatedAt: now - 40 * DAY },
     { id: 'c_kingdee_test', name: '金蝶云星空 · 测试账套', connector: 'kingdee', authType: 'custom', scope: 'project', projectIds: ['p1'], status: 'active', owner: 'u4', shares: [{ userId: 'u1', perm: 'edit' }, { userId: 'u12', perm: 'use' }], account: '账套 900001 · kd_api_test', createdAt: now - 40 * DAY, updatedAt: now - 10 * DAY },
     { id: 'c_wecom', name: '企业微信 · 销售助手应用', connector: 'wecom', authType: 'apikey', scope: 'project', projectIds: ['p3'], status: 'active', owner: 'u6', shares: [{ userId: 'u1', perm: 'use' }], account: 'corp ww8a2c · 应用 1000012', createdAt: now - 26 * DAY, updatedAt: now - 26 * DAY },
     { id: 'c_oa', name: '泛微 OA 生产环境', connector: 'cc_oa', authType: 'apikey', scope: 'tenant', projectIds: [], status: 'active', owner: 'u3', shares: [{ userId: 'u1', perm: 'use' }], account: 'X-Api-Token · oa-integration', createdAt: now - 60 * DAY, updatedAt: now - 4 * DAY },
@@ -681,7 +682,7 @@ function seedState() {
       },
     ],
     configGroups: [
-      { id: 'g_test', projectId: 'p1', key: 'test', name: '测试环境', description: '联调用的沙箱账套与测试群', connectionMap: { c_kingdee: 'c_kingdee_test' }, requireApproval: false, approvers: [] },
+      { id: 'g_test', projectId: 'p1', key: 'test', name: '测试环境', description: '联调用的沙箱账套与测试群', connectionMap: { c_kingdee: 'c_kingdee_test', c_feishu: 'c_feishu_test' }, requireApproval: false, approvers: [] },
       { id: 'g_prod', projectId: 'p1', key: 'prod', name: '生产环境', description: '正式账套与正式群', connectionMap: {}, requireApproval: true, approvers: ['u1'] },
     ],
     variables: [
@@ -784,7 +785,7 @@ function seedState() {
       ],
     },
     solutionInstalls: [
-      { id: 'si1', solutionId: 'attendance-alert', projectId: 'p1', version: '1.0', installedAt: now - 58 * DAY, by: 'u3', workflowIds: ['wf_attendance'], mappingTableIds: [], config: { at: '09:30' }, skippedChecks: [] },
+      { id: 'si1', solutionId: 'attendance-alert', projectId: 'p1', version: '1.0', installedAt: now - 58 * DAY, by: 'u3', workflowIds: ['wf_attendance'], mappingTableIds: [], config: { at: '09:00', chat: '部门负责人群' }, skippedChecks: [] },
     ],
     customSolutions: [],
     mappingTables: [
@@ -869,6 +870,13 @@ function seedState() {
 const SAMPLE_OUTPUT = {
   'beisen.onboarding_completed': { employee_id: 'XH20260918', name: '唐可欣', email: 'tangkexin@xinghe.tech', mobile: '13812345678', id_card: '310101199203051234', department: '研发中心', position: '前端工程师', manager: '周宁', entry_date: '2026-09-22' },
   'beisen.employee_changed': { employee_id: 'XH20230415', name: '赵磊', change_type: '调岗', department: '研发中心', previous_department: '销售运营部', position: '解决方案工程师', manager: '周宁', effective_date: '2026-10-08' },
+  'beisen.list_onboarding': { total: 2, items: [{ employee_id: 'XH20261005', name: '周晓雯', department: '研发中心', position: '测试工程师', entry_date: '2026-10-08' }, { employee_id: 'XH20261006', name: '吴凡', department: '销售运营部', position: '客户经理', entry_date: '2026-10-08' }] },
+  'feishu.create_user': { open_id: 'ou_9c4b21d7e0', employee_id: 'XH20260918', created: true, activate_invite_sent: true },
+  'feishu.update_user': { open_id: 'ou_9c4b21d7e0', employee_id: 'XH20230415', updated: ['部门', '直属上级', '职务'] },
+  'feishu.freeze_user': { open_id: 'ou_5a8e03b1c4', employee_id: 'XH20210311', status: '已暂停' },
+  'feishu.delete_user': { open_id: 'ou_5a8e03b1c4', employee_id: 'XH20210311', status: '已删除', resources_to: '周宁' },
+  'wecom.create_member': { userid: 'tangkexin', employee_id: 'XH20260918', created: true },
+  'wecom.disable_member': { userid: 'xunuo', employee_id: 'XH20210311', status: '已禁用' },
   'beisen.employee_left': { employee_id: 'XH20210311', name: '许诺', mobile: '13987654321', department: '销售运营部', last_day: '2026-09-24', reason: '个人发展' },
   'beisen.offer_accepted': { candidate_id: 'C88412', name: '宋雨桐', position: '招聘专员', hrbp: '陈思远', expected_date: '2026-10-08' },
   'beisen.get_employee': { employee_id: 'XH20210311', name: '许诺', department: '销售运营部', position: '大客户经理', entry_date: '2021-03-11', status: '离职' },

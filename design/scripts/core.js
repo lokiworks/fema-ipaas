@@ -110,7 +110,7 @@ function Link({ to, className, children, onClick, ...rest }) {
   return html`<a href=${`#${to}`} className=${className} onClick=${onClick} ...${rest}>${children}</a>`;
 }
 
-const STORE_KEY = 'fema-design-state-v8';
+const STORE_KEY = window.PROTOTYPE_STORE_KEY || 'fema-design-state-v8';
 
 function shiftTimes(value, delta) {
   if (Array.isArray(value)) return value.map((v) => shiftTimes(v, delta));

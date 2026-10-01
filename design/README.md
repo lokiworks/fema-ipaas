@@ -6,6 +6,8 @@
 
 调研依据见 [research/anycross-reference.md](research/anycross-reference.md)。
 
+**第三版在 [v3/](v3/README.md)**：只做首发主线（北森 → 飞书人员同步）的核心闭环，把上线之后的体验做深：值班看板、查人、问题与安全重放、对账、连接的速率与权限、方案向导。和这一版共用设计系统与基础组件，演示数据互不影响。编辑器、环境推广、AI 生成、MCP、自托管运维的交互仍以这一版为准。
+
 ## 怎么打开
 
 直接双击 `index.html`，用 Chrome、Edge 或 Safari 打开即可。不需要构建，也不需要联网：React、htm、Lucide 和字体都放在本地的 `vendor/`、`fonts/` 里。

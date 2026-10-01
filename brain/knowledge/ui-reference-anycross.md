@@ -26,6 +26,8 @@ icon: 🧭
 
 **产品备忘**：`design/research/product-brief.md` 写了原型第二轮要证明的七个场景和能力取舍，改原型前先读。
 
+**第三版原型**：`design/v3/`，只做首发主线的核心闭环（值班看板、查人、问题与安全重放、对账、连接速率与权限、方案向导），按备忘里的「可靠性原则」设计。和第二版共用 `scripts/core.js`、`scripts/ui.js` 和样式，靠 `window.PROTOTYPE_STORE_KEY` 分开存储。
+
 ## Gotchas
 
 - **没有独立的工作流列表页**。AnyCross 的工作流挂在项目二级侧栏里，按文件夹组织；原型也是这样做的。
@@ -38,6 +40,7 @@ icon: 🧭
 - **htm 模板只能有一个根节点**。多个根（包括元素旁边的一段文字）会返回数组并触发 React key 警告，用 `<${Fragment}>` 包起来。
 - **改演示数据结构要升存储版本号**。演示数据存在 localStorage（`core.js` 的 `STORE_KEY`），不升版本号时旧数据会按旧结构渲染出错。
 - **节点引用写的是节点 id，显示的是固定 ref**。配置里是 `{{s1.items}}`，界面显示节点名和 `feishu-1` 这类 ref；ref 创建后不随位置变化，复制粘贴经 `cloneNodes` 重写引用。
+- **改 `design/scripts/core.js`、`ui.js` 会同时影响两版原型**。第三版（`design/v3/`）直接加载这两个文件和 `styles/tokens.css`、`styles/app.css`，改完要两版都打开看。
 - **原型没有构建和类型检查**。改完要把 `index.html` 里的脚本按顺序拼起来跑 ESLint（至少 `no-undef`、`no-redeclare`），再用 React 开发版打开页面看控制台的 key 警告。
 
 ## Key files
